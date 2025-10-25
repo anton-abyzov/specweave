@@ -1,0 +1,39 @@
+---
+# Context Manifest for Feature: 001-context-loader
+# This declares what specifications, architecture docs, and ADRs are needed
+# to implement the context-loader feature.
+
+# Specification sections to load (business requirements)
+spec_sections:
+  - specs/modules/core/context-loading.md  # To be created
+  - specs/overview.md  # To be created
+
+# Documentation to load (architecture, decisions, principles)
+docs:
+  - docs/principles.md#4-context-precision
+  - docs/architecture/system-design.md#context-loading-architecture  # To be created
+  - docs/architecture/data/cache-structure.md  # To be created
+  - docs/decisions/004-context-loading-approach.md  # To be created
+  - docs/decisions/005-section-anchor-format.md  # To be created
+
+# Context budget (max tokens to load)
+max_context_tokens: 10000
+
+# Priority level (affects loading order when multiple manifests)
+priority: high
+
+# Auto-refresh context when specs change
+auto_refresh: false
+
+# Related features (dependencies or related work)
+related_features:
+  - 002-skill-router  # Will use context-loader
+  - 003-docs-updater  # Will use context-loader
+
+# Tags for search and categorization
+tags:
+  - core
+  - context
+  - performance
+  - p1
+---

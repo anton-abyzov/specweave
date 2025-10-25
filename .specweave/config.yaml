@@ -1,0 +1,132 @@
+# SpecWeave Configuration
+# Version: 1.0.0
+
+# Project Information
+project:
+  name: "specweave"
+  version: "0.1.0"
+  description: "Intent-Driven Development Framework"
+  type: "greenfield"  # greenfield | brownfield
+
+# Constitution
+constitution:
+  file: "specs/constitution.md"
+  version: "1.0.0"
+  enforce: true
+
+# Specifications
+specs:
+  root: "specs/"
+  modules: "specs/modules/"
+  constitution: "specs/constitution.md"
+  overview: "specs/overview.md"
+
+# Architecture
+architecture:
+  root: "architecture/"
+  system_design: "architecture/system-design.md"
+
+# ADRs (Architecture Decision Records)
+adrs:
+  root: "adrs/"
+  index: "adrs/index.md"
+  auto_number: true
+
+# Features
+features:
+  root: "features/"
+  auto_number: true
+  format: "###-short-name"  # e.g., 001-context-loader
+
+# Work Items
+work:
+  root: "work/"
+  issues: "work/issues/"
+  backlog: "work/backlog.md"
+
+# Documentation
+docs:
+  root: "docs/"
+  auto_update: true
+  preserve_manual: true
+
+# Context Loading
+context:
+  max_tokens: 10000  # Default max context per operation
+  cache_enabled: true
+  cache_dir: ".specweave/cache/"
+  manifest_required: true
+  selective_loading: true
+
+# Skills
+skills:
+  global_skills_dir: "~/.claude/skills/"
+  project_skills_dir: ".claude/skills/"
+  test_results_dir: "test-results/"  # Gitignored
+  min_tests_per_skill: 3
+
+# Claude Hooks
+hooks:
+  enabled: true
+  post_task_completion: true  # Update docs after task completion
+  pre_implementation: true     # Check regression risk before implementation
+  human_input_required: true   # Notify on human input needed
+
+# Testing
+testing:
+  tdd_enforced: true  # Tests before implementation
+  min_coverage: 80
+  integration_tests_required: true
+  e2e_for_critical_paths: true
+
+# Regression Prevention
+regression:
+  brownfield_check: true
+  require_existing_docs: true
+  require_tests_before_modification: true
+  impact_analysis: true
+
+# Integrations
+integrations:
+  jira:
+    enabled: false
+    url: ""
+    project_key: ""
+
+  github:
+    enabled: false
+    repo: ""
+
+  ado:
+    enabled: false
+    organization: ""
+    project: ""
+
+# Auto-Role Routing
+routing:
+  enabled: true
+  accuracy_target: 0.90
+  log_decisions: true
+
+# Logging
+logging:
+  level: "info"  # debug | info | warn | error
+  file: ".specweave/logs/specweave.log"
+  rotation: "daily"
+
+# Platform
+platform:
+  auto_detect: true
+  prefer_bash: true  # Use bash scripts on macOS/Linux
+
+# Development
+development:
+  temp_files_dir: "ai-temp-files/"
+  preserve_prototypes: true
+
+# Enterprise Features (disabled by default)
+enterprise:
+  enabled: false
+  multi_team_support: false
+  compliance_tracking: false
+  advanced_analytics: false

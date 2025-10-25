@@ -1,0 +1,141 @@
+site_name: SpecWeave
+site_description: Intent-Driven Development Framework - Where specifications are the source of truth
+site_author: SpecWeave Contributors
+site_url: https://yourusername.github.io/specweave
+
+repo_name: specweave
+repo_url: https://github.com/yourusername/specweave
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.integrate
+
+  icon:
+    repo: fontawesome/brands/github
+
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+
+nav:
+  - Home:
+    - Welcome: index.md
+    - Features: home/features.md
+    - Why SpecWeave: home/why-specweave.md
+    - Comparisons: home/comparisons.md
+
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+    - Your First Feature: getting-started/first-feature.md
+
+  - Guides:
+    - Writing Specifications: guides/writing-specs.md
+    - Creating Skills: guides/creating-skills.md
+    - Feature Planning: guides/feature-planning.md
+    - Testing Strategy: guides/testing-strategy.md
+    - Brownfield Onboarding: guides/brownfield-onboarding.md
+    - Context Manifests: guides/context-manifests.md
+
+  - Reference:
+    - CLI Commands: reference/cli-commands.md
+    - Skills API: reference/skills-api.md
+    - Context Manifests: reference/context-manifests.md
+    - Configuration: reference/configuration.md
+    - Hooks: reference/hooks.md
+
+  - Architecture:
+    - Overview: architecture/overview.md
+    - Skills System: architecture/skills-system.md
+    - Context Loading: architecture/context-loading.md
+    - Auto-Role Routing: architecture/auto-role-routing.md
+
+  - Principles: principles.md
+
+  - Decisions:
+    - Index: decisions/index.md
+
+  - Community:
+    - Contributing: community/contributing.md
+    - Code of Conduct: community/code-of-conduct.md
+    - Roadmap: ../features/roadmap.md
+
+  - Changelog:
+    - Releases: changelog/releases.md
+    - 2025-01: changelog/2025-01.md
+
+plugins:
+  - search:
+      lang: en
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - tables
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername/specweave
+    - icon: fontawesome/brands/youtube
+      link: https://youtube.com/@specweave
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/specweave
+
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+
+extra_css:
+  - stylesheets/extra.css
+
+copyright: Copyright &copy; 2025 SpecWeave Contributors
