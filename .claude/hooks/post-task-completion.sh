@@ -1,0 +1,1 @@
+../../src/hooks/post-task-completion.sh

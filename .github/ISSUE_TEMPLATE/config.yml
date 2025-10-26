@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/yourusername/specweave/blob/main/.specweave/docs/README.md
+    about: Browse the complete SpecWeave documentation
+  - name: GitHub Actions Setup Guide
+    url: https://github.com/yourusername/specweave/blob/main/.specweave/docs/guides/github-action-setup.md
+    about: Learn how to set up GitHub Actions with SpecWeave
+  - name: Discussions
+    url: https://github.com/yourusername/specweave/discussions
+    about: Ask questions and discuss with the community

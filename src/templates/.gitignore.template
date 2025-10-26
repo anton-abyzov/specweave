@@ -1,0 +1,81 @@
+# SpecWeave
+.specweave/cache/
+.specweave/increments/*/logs/       # Gitignored, but structure preserved
+.specweave/increments/*/test-results/
+
+# Dependencies (framework-agnostic)
+node_modules/          # JavaScript/TypeScript
+.pnpm-store/
+.yarn/
+.npm/
+__pycache__/           # Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+ENV/
+target/                # Rust
+Cargo.lock
+vendor/                # Go
+go.sum
+
+# Build outputs (framework-agnostic)
+.next/                 # NextJS
+dist/                  # Generic
+build/                 # Generic
+out/                   # Generic
+.output/               # Nuxt
+*.egg-info/            # Python
+__pypackages__/        # Python
+*.class                # Java
+*.jar                  # Java
+bin/                   # Go, Java
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# Database (framework-agnostic)
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+prisma/migrations/*/migration.sql   # Prisma (TypeScript)
+*/migrations/__pycache__/           # Django (Python)
+
+# Testing (framework-agnostic)
+coverage/              # Generic
+.nyc_output/           # JavaScript
+.coverage              # Python
+htmlcov/               # Python
+*.cover                # Python
+.pytest_cache/         # Python
+test-results/          # Playwright
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+.temp/
+tmp/

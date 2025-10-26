@@ -1,0 +1,21 @@
+---
+name: "Read Figma File - Community Framelink MCP"
+description: "Test reading Figma file via community Framelink MCP"
+input:
+  figma_url: "https://figma.com/file/ABC123"
+  mcp_type: "community_framelink"
+expected_output:
+  type: "figma_file_metadata"
+  fields:
+    - "fileId"
+    - "name"
+    - "components"
+    - "variables"
+validation:
+  - "File ID extracted correctly"
+  - "Components array populated"
+  - "Framelink-specific optimizations applied"
+success_criteria:
+  - "File read successfully"
+  - "Context reduced for AI accuracy"
+---

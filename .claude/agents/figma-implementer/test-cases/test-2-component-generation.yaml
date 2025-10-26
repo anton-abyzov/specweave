@@ -1,0 +1,30 @@
+---
+name: "Component Generation from Figma"
+description: "Test generation of React components from Figma components"
+input:
+  figma_url: "https://figma.com/file/ABC123"
+  framework: "react"
+  components:
+    - "Button"
+    - "Input"
+    - "FormField"
+expected_output:
+  type: "components"
+  files:
+    - "src/components/atoms/Button/Button.tsx"
+    - "src/components/atoms/Input/Input.tsx"
+    - "src/components/molecules/FormField/FormField.tsx"
+  features:
+    - "TypeScript interfaces"
+    - "Variants support"
+    - "Accessibility attributes"
+validation:
+  - "Components match Figma styles"
+  - "Props correspond to Figma properties"
+  - "TypeScript types exported"
+  - "Accessibility compliant"
+success_criteria:
+  - "All components render in Storybook"
+  - "Visual match with Figma (>95%)"
+  - "No accessibility violations"
+---

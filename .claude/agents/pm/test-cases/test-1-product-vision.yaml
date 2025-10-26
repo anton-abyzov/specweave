@@ -1,0 +1,46 @@
+---
+name: "Product Vision Creation"
+description: "Tests pm-agent's ability to create comprehensive product vision from business idea"
+priority: P1
+test_type: functional
+
+input:
+  prompt: "Create a product vision for a task management SaaS targeting small remote teams"
+  context:
+    target_market: "small businesses, 5-50 employees"
+    competition: "Asana, Trello, Monday.com"
+    budget: "limited, bootstrapped"
+
+expected_output:
+  files_created:
+    - "specifications/modules/task-management/product-vision.md"
+
+  content_includes:
+    - problem_statement: "Clear articulation of the pain point"
+    - target_users: "Specific user personas with demographics"
+    - value_proposition: "Unique selling points vs competitors"
+    - strategic_goals: "3-5 measurable business goals"
+    - success_metrics: "KPIs to track (DAU, MRR, NPS, etc.)"
+
+  structure:
+    sections:
+      - "Problem Statement"
+      - "Target Users"
+      - "Value Proposition"
+      - "Strategic Goals"
+      - "Success Metrics"
+      - "Competitive Analysis"
+
+validation:
+  - "Problem statement is specific and quantifiable"
+  - "Target users include at least 2 personas"
+  - "Value proposition differentiates from competitors"
+  - "Strategic goals are SMART (Specific, Measurable, Achievable, Relevant, Time-bound)"
+  - "Success metrics include both business and user metrics"
+
+success_criteria:
+  - file_created: true
+  - all_sections_present: true
+  - goals_measurable: true
+  - competitive_differentiation_clear: true
+---

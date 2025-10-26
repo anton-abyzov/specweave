@@ -1,0 +1,29 @@
+---
+name: "Design Tokens Generation"
+description: "Test generation of design tokens from Figma variables"
+input:
+  figma_variables:
+    - name: "color/primary/500"
+      value: "#3b82f6"
+    - name: "spacing/4"
+      value: "4px"
+  framework: "react"
+expected_output:
+  type: "design_tokens"
+  css_variables:
+    - "--color-primary-500: #3b82f6;"
+    - "--spacing-4: 0.25rem;"
+  tailwind_config:
+    colors:
+      primary:
+        500: "#3b82f6"
+    spacing:
+      4: "0.25rem"
+validation:
+  - "CSS variables correctly formatted"
+  - "Tailwind config valid"
+  - "TypeScript types generated"
+success_criteria:
+  - "All tokens converted"
+  - "No syntax errors"
+---

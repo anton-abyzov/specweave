@@ -1,0 +1,27 @@
+---
+name: "React Component Generation"
+description: "Test generation of React component from Figma component"
+input:
+  figma_component:
+    name: "Button"
+    variants:
+      - variant: "primary"
+        size: "md"
+    properties:
+      - name: "disabled"
+        type: "boolean"
+  framework: "react"
+expected_output:
+  type: "react_component"
+  files:
+    - "Button.tsx"
+    - "types.ts"
+  typescript_interface: true
+validation:
+  - "Component structure correct"
+  - "Props match Figma properties"
+  - "TypeScript types exported"
+success_criteria:
+  - "Component compiles"
+  - "No TypeScript errors"
+---

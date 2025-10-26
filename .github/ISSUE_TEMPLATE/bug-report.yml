@@ -1,0 +1,134 @@
+name: Bug Report
+description: Report a bug or issue
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+
+        This template helps you report bugs effectively.
+
+  - type: input
+    id: bug_title
+    attributes:
+      label: Bug Title
+      description: Short, descriptive title for the bug
+      placeholder: "e.g., Login fails with OAuth2, Payment processing timeout"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the bug? What's happening vs. what should happen?
+      placeholder: |
+        **Current behavior**: Describe what currently happens
+        **Expected behavior**: Describe what should happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Where does this bug occur?
+      placeholder: |
+        - OS: [e.g. macOS, Windows, Linux]
+        - Browser: [e.g. Chrome, Firefox, Safari]
+        - Version: [e.g. 1.2.3]
+      value: |
+        - OS:
+        - Browser:
+        - Version:
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical - System down or data loss
+        - High - Major functionality broken
+        - Medium - Functionality impaired
+        - Low - Minor issue or cosmetic
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which module/area is affected?
+      options:
+        - Authentication
+        - Payments
+        - User Management
+        - API
+        - UI/UX
+        - Infrastructure
+        - Documentation
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: error_logs
+    attributes:
+      label: Error Logs
+      description: Paste any relevant error logs or stack traces
+      placeholder: |
+        Paste error logs here (please format as code)
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add screenshots if applicable
+      placeholder: Drag and drop images here
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful
+      placeholder: |
+        - Related issues
+        - Workarounds attempted
+        - External references
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched for existing issues
+          required: true
+        - label: I have included all relevant information
+          required: true
+        - label: I can reproduce this bug consistently
+          required: false

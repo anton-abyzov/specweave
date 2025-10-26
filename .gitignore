@@ -18,6 +18,9 @@ build/
 *.pyc
 __pycache__/
 
+# MkDocs build output
+site/
+
 # Environment
 .env
 .env.local
@@ -25,10 +28,22 @@ __pycache__/
 
 # SpecWeave generated files
 .specweave/cache/
-.specweave/logs/
 .specweave/feedback/
+
+# Increment logs (inside each increment folder)
+.specweave/increments/*/logs/
+.specweave/increments/*/scripts/*.tmp
+.specweave/increments/*/reports/*.tmp
+
+# Claude Code (backups are intentionally committed for history)
+# .claude/backups/ - NOT ignored, preserve project history
+
+# Test results (generated, review before committing)
 test-results/
+**/test-results/
 *.test-result.md
+src/skills/**/test-results/
+src/agents/**/test-results/
 
 # OS
 .DS_Store
@@ -38,3 +53,7 @@ Thumbs.db
 tmp/
 temp/
 *.tmp
+
+# DEPRECATED: ai-logs/ folder removed in favor of increment-centric organization
+# All logs, scripts, and reports now live in .specweave/increments/{increment-id}/
+# This keeps all increment-related files together for better traceability

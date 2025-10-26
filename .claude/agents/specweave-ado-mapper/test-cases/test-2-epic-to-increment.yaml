@@ -1,0 +1,153 @@
+---
+name: "Import ADO Epic to Increment"
+description: "Tests if specweave-ado-mapper can import an Azure DevOps Epic with Features/User Stories/Tasks as a SpecWeave increment"
+input:
+  prompt: "Import ADO epic 12345"
+  ado_epic:
+    id: 12345
+    title: "Payment Integration"
+    description: "Integrate Stripe for payment processing"
+    work_item_type: "Epic"
+    state: "Active"
+    priority: 1
+    area_path: "MyProject\\Payments"
+    iteration: "Sprint 24"
+    tags: ["payments", "backend"]
+
+  ado_features:
+    - id: 12346
+      title: "Stripe Payment Processing"
+      work_item_type: "Feature"
+      parent: 12345
+      description: |
+        **As a** customer
+        **I want to** pay with credit card via Stripe
+        **So that** I can complete purchases
+
+        Acceptance Criteria:
+        - Valid card charges successfully
+        - Invalid card shows error
+        - 3D Secure supported
+        - Refunds processed
+        - Webhook notifications received
+        - Payment history tracked
+      tags: ["stripe", "payments"]
+
+  ado_user_stories:
+    - id: 12350
+      title: "Setup Stripe Account"
+      work_item_type: "User Story"
+      parent: 12345
+      description: |
+        **As a** developer
+        **I want to** setup Stripe account
+        **So that** we can process payments
+
+        Acceptance Criteria:
+        - Stripe account created
+        - API keys stored securely
+      tags: ["setup"]
+
+  ado_tasks:
+    - id: 12351
+      title: "Create Stripe account"
+      work_item_type: "Task"
+      parent: 12350
+      state: "New"
+
+    - id: 12352
+      title: "Generate API keys"
+      work_item_type: "Task"
+      parent: 12350
+      state: "New"
+
+    - id: 12353
+      title: "Create payment endpoint"
+      work_item_type: "Task"
+      parent: 12346
+      state: "New"
+
+    - id: 12354
+      title: "Integrate Stripe SDK"
+      work_item_type: "Task"
+      parent: 12346
+      state: "Active"
+
+expected_output:
+  type: "increment_created"
+  increment:
+    id: "0003"
+    folder: ".specweave/increments/0003-payment-integration/"
+
+    spec_md:
+      frontmatter:
+        increment_id: "0003"
+        title: "Payment Integration"
+        status: "in-progress"  # Mapped from Active
+        priority: "P1"
+        ado:
+          epic_id: "12345"
+          epic_url: "https://dev.azure.com/mycompany/MyProject/_workitems/edit/12345"
+          features:
+            - id: "12346"
+              user_story_id: "US3-001"
+          user_stories:
+            - id: "12350"
+              user_story_id: "US3-002"
+          area_path: "MyProject\\Payments"
+          iteration: "Sprint 24"
+          imported_at: "2025-10-26T14:00:00Z"
+      content_contains:
+        - "## Context"
+        - "**Area Path**: MyProject\\Payments"
+        - "**Iteration**: Sprint 24"
+        - "### US3-001: Stripe Payment Processing"
+        - "TC-0001: Valid card charges successfully"
+        - "TC-0006: Payment history tracked"
+        - "### US3-002: Setup Stripe Account"
+        - "TC-0007: Stripe account created"
+        - "**ADO Feature**: [12346]"
+        - "**ADO User Story**: [12350]"
+
+    tasks_md:
+      content_contains:
+        - "## User Story: US3-001 - Stripe Payment Processing"
+        - "- [ ] Create payment endpoint (ADO: 12353)"
+        - "- [ ] Integrate Stripe SDK (ADO: 12354)"
+        - "## User Story: US3-002 - Setup Stripe Account"
+        - "- [ ] Create Stripe account (ADO: 12351)"
+        - "- [ ] Generate API keys (ADO: 12352)"
+
+  ado_updated:
+    epic_custom_field:
+      SpecWeave.IncrementID: "0003-payment-integration"
+
+validation:
+  - "Increment auto-numbered correctly"
+  - "Area Path preserved in frontmatter"
+  - "Iteration preserved in frontmatter"
+  - "Feature → User Story (US3-001)"
+  - "User Story → User Story (US3-002)"
+  - "Acceptance Criteria parsed to TC-0001 format"
+  - "Tasks grouped by parent work item"
+  - "ADO IDs preserved in tasks"
+  - "State mapped (Active → in-progress)"
+  - "Priority mapped (1 → P1)"
+
+success_criteria:
+  - "Increment created with ADO metadata"
+  - "Area Path and Iteration stored"
+  - "Feature and User Story both become SpecWeave User Stories"
+  - "All tasks imported with ADO IDs"
+  - "Bidirectional traceability"
+
+state_mapping:
+  - ado: "New"
+    specweave: "planned"
+  - ado: "Active"
+    specweave: "in-progress"
+  - ado: "Resolved"
+    specweave: "in-progress"
+  - ado: "Closed"
+    specweave: "completed"
+---

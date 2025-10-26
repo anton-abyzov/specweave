@@ -1,0 +1,39 @@
+---
+name: "Basic Context Loading from Manifest"
+description: "Tests if context-loader can load specifications from a context manifest file"
+input:
+  prompt: "Load context for feature 001"
+  files:
+    - "features/001-skills-framework/context-manifest.yaml"
+  manifest_content:
+    spec_sections:
+      - "specifications/modules/core/skills-system.md"
+      - "specifications/modules/core/context-loading.md"
+    documentation:
+      - ".specweave/docs/architecture/skills-system.md"
+    max_context_tokens: 10000
+    priority: high
+expected_output:
+  type: "context_loaded"
+  files_loaded:
+    - "specifications/modules/core/skills-system.md"
+    - "specifications/modules/core/context-loading.md"
+    - ".specweave/docs/architecture/skills-system.md"
+  tokens_used: 7500
+  within_budget: true
+  contains:
+    - "Loaded 3 files"
+    - "Token usage: 7500/10000"
+    - "Context ready"
+validation:
+  - "Parses context-manifest.yaml correctly"
+  - "Loads all specified files"
+  - "Respects token budget (7500 < 10000)"
+  - "Returns loaded content"
+  - "No errors or warnings"
+success_criteria:
+  - "All files loaded successfully"
+  - "Token budget respected"
+  - "Content accessible to calling skill"
+  - "Performance <500ms"
+---

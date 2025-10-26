@@ -1,0 +1,821 @@
+# SpecWeave Enterprise - Full Automation Suite
+#
+# This workflow provides enterprise-grade spec-driven development automation
+# with advanced features for security, performance, and compliance.
+#
+# Increments:
+# - Everything from Standard workflow, PLUS:
+# - Security vulnerability scanning
+# - Performance regression detection
+# - Dependency analysis and updates
+# - Compliance validation
+# - Advanced analytics and reporting
+# - Multi-environment deployment validation
+#
+# Setup:
+# 1. Add secrets: ANTHROPIC_API_KEY, JIRA_TOKEN, SLACK_WEBHOOK
+# 2. Configure .specweave/config.yaml with enterprise settings
+# 3. Set up branch protection rules
+# 4. Configure CODEOWNERS for auto-assignment
+#
+# See: .specweave/docs/guides/github-action-enterprise-setup.md
+
+name: SpecWeave Enterprise
+
+on:
+  issues:
+    types: [opened, labeled, assigned]
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+  schedule:
+    # Run security scan daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  checks: write
+  security-events: write
+
+env:
+  NODE_VERSION: '20'
+  CLAUDE_MODEL: 'sonnet'
+
+jobs:
+  # ============================================================================
+  # Intelligent Issue Triage (Enhanced)
+  # ============================================================================
+
+  triage-issue:
+    name: Intelligent Issue Triage
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Analyze and Triage
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise SpecWeave issue triage with advanced analysis.
+
+            **Issue**: #${{ github.event.issue.number }} - "${{ github.event.issue.title }}"
+
+            **Enhanced Analysis**:
+
+            1. **Standard Triage** (type, priority, area, effort)
+            2. **Security Impact Analysis**
+               - Does this affect security?
+               - Privacy/compliance implications?
+               - Add `security` label if yes
+            3. **Business Impact Assessment**
+               - Revenue impact?
+               - User-facing?
+               - SLA considerations?
+            4. **Dependency Analysis**
+               - Blocks other features?
+               - Blocked by other features?
+               - Add `blocked` label if needed
+            5. **Team Assignment**
+               - Check CODEOWNERS
+               - Load team expertise from .specweave/config.yaml
+               - Assign to best-fit team member
+            6. **Project Board Management**
+               - Add to appropriate project
+               - Set sprint/milestone if applicable
+            7. **Stakeholder Notification**
+               - @ mention relevant stakeholders
+               - Post to Slack channel if critical
+
+            **Post Enhanced Triage Comment** with business context.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 10000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ============================================================================
+  # Auto Increment Planning (Enhanced)
+  # ============================================================================
+
+  plan-feature:
+    name: Auto Increment Planning
+    if: github.event_name == 'issues' && github.event.label.name == 'feature'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Increment Structure
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise SpecWeave feature planning.
+
+            **Enhanced Increment Generation**:
+
+            1. **Standard Increment Structure**
+               - spec.md, plan.md, tasks.md, tests.md, context-manifest.yaml
+
+            2. **Enterprise Additions**:
+               - **Security Considerations** section in spec.md
+                 - Threat modeling
+                 - Data sensitivity
+                 - Compliance requirements (GDPR, HIPAA, etc.)
+               - **Performance Requirements** section
+                 - SLAs
+                 - Load expectations
+                 - Scalability needs
+               - **Deployment Strategy** section in plan.md
+                 - Rollout plan
+                 - Increment flags
+                 - Rollback strategy
+               - **Monitoring & Observability** section
+                 - Metrics to track
+                 - Alerts to configure
+                 - Dashboards to create
+               - **Compliance Checklist** in tasks.md
+                 - Required approvals
+                 - Audit trail
+                 - Documentation requirements
+
+            3. **Risk Assessment**
+               - Technical risks
+               - Business risks
+               - Mitigation strategies
+
+            4. **Stakeholder Analysis**
+               - Who needs to review?
+               - Who needs to approve?
+               - Communication plan
+
+            **Create comprehensive enterprise-ready feature structure**.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Comprehensive PR Validation
+  # ============================================================================
+
+  validate-pr:
+    name: Comprehensive PR Validation
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Multi-Layer Validation
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise PR validation with comprehensive checks.
+
+            **Validation Layers**:
+
+            1. **Spec Validation** (Standard)
+            2. **Security Validation**
+               - No secrets in code
+               - Dependency vulnerabilities
+               - Secure coding practices
+               - Authentication/authorization changes reviewed
+            3. **Performance Validation**
+               - No obvious performance regressions
+               - Database query optimization
+               - API response time considerations
+            4. **Compliance Validation**
+               - GDPR compliance (if handling EU data)
+               - HIPAA compliance (if healthcare)
+               - SOC 2 requirements
+               - Audit logging present
+            5. **Accessibility Validation** (if UI changes)
+               - WCAG 2.1 AA compliance
+               - Screen reader compatibility
+               - Keyboard navigation
+            6. **Documentation Completeness**
+               - API docs updated
+               - User docs updated
+               - ADRs for architecture changes
+               - Changelog entry
+
+            **Post Comprehensive Report** with all validation results.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 20000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Security Scanning
+  # ============================================================================
+
+  security-scan:
+    name: Security Vulnerability Scan
+    if: |
+      github.event_name == 'pull_request' ||
+      github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --json > security-audit.json
+        continue-on-error: true
+
+      - name: Security Analysis
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise security analysis for SpecWeave project.
+
+            **Security Checks**:
+
+            1. **Dependency Vulnerabilities**
+               - Analyze security-audit.json
+               - Categorize by severity (critical, high, medium, low)
+               - Identify exploitable vulnerabilities
+
+            2. **Code Security Review**
+               - SQL injection risks
+               - XSS vulnerabilities
+               - CSRF protection
+               - Input validation
+               - Secrets management
+
+            3. **Authentication & Authorization**
+               - Token handling
+               - Session management
+               - Permission checks
+               - Rate limiting
+
+            4. **Data Protection**
+               - Encryption at rest
+               - Encryption in transit
+               - PII handling
+               - Data retention
+
+            5. **Infrastructure Security**
+               - Environment variable usage
+               - API key management
+               - Third-party integrations
+
+            **Post Security Report**:
+
+            ```markdown
+            ## 🔒 Security Scan Report
+
+            ### Critical Issues
+            [List critical vulnerabilities - BLOCK PR]
+
+            ### High Priority
+            [List high-priority issues - WARN]
+
+            ### Medium/Low
+            [List for tracking]
+
+            ### Recommendations
+            [Actionable remediation steps]
+
+            **Status**: [✅ Secure | ⚠️ Review | ❌ Critical Issues]
+            ```
+
+            **Block PR** if critical vulnerabilities found.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Brownfield Protection (Enhanced)
+  # ============================================================================
+
+  brownfield-check:
+    name: Enhanced Brownfield Protection
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Advanced Brownfield Analysis
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise brownfield protection with impact analysis.
+
+            **Enhanced Checks**:
+
+            1. **Standard Brownfield** (docs/tests exist)
+            2. **Dependency Impact Analysis**
+               - What depends on modified code?
+               - Generate dependency graph
+               - Identify all affected modules
+            3. **Breaking Change Detection**
+               - API signature changes
+               - Database schema changes
+               - Configuration changes
+               - Require migration plan if breaking
+            4. **Performance Impact**
+               - Complexity increase?
+               - Database query changes?
+               - Algorithm efficiency?
+            5. **Rollback Strategy**
+               - Can this be rolled back?
+               - Increment flag needed?
+               - Database migration reversible?
+            6. **Stakeholder Approval**
+               - Who needs to approve?
+               - Add reviewers automatically
+               - Require sign-off
+
+            **Post Enhanced Brownfield Report** with impact analysis.
+
+            **Block if**:
+            - Docs missing
+            - Tests missing
+            - Breaking changes without migration plan
+            - No rollback strategy for risky changes
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 18000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Performance Regression Detection
+  # ============================================================================
+
+  performance-check:
+    name: Performance Regression Detection
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Performance Tests
+        run: npm run perf -- --json > perf-results.json
+        continue-on-error: true
+
+      - name: Checkout Base Branch
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          git checkout ${{ github.event.pull_request.base.ref }}
+
+      - name: Run Baseline Performance Tests
+        run: npm run perf -- --json > perf-baseline.json
+        continue-on-error: true
+
+      - name: Performance Analysis
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise performance regression analysis.
+
+            **Compare**: perf-baseline.json (base) vs perf-results.json (PR)
+
+            **Analysis**:
+
+            1. **Response Time Regression**
+               - API endpoints slower by >10%?
+               - Database queries slower?
+               - Page load times increased?
+
+            2. **Resource Usage**
+               - Memory usage increased?
+               - CPU usage higher?
+               - Network bandwidth?
+
+            3. **Scalability Impact**
+               - Concurrent user capacity?
+               - Database connection pooling?
+               - Cache hit rates?
+
+            4. **Bundle Size** (if frontend)
+               - JavaScript bundle size increased?
+               - Critical path longer?
+               - First contentful paint slower?
+
+            **Post Performance Report**:
+
+            ```markdown
+            ## ⚡ Performance Analysis
+
+            ### Regression Detected
+            [List metrics with >10% regression]
+
+            ### Improvements
+            [List performance improvements]
+
+            ### Optimization Opportunities
+            [Suggestions for optimization]
+
+            **Status**: [✅ No Regression | ⚠️ Review | ❌ Critical Regression]
+            ```
+
+            **BLOCK PR** if critical regression (>25% slower).
+            **WARN** if moderate regression (>10% slower).
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 14000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Test Coverage (Enhanced)
+  # ============================================================================
+
+  validate-coverage:
+    name: Enhanced Test Coverage
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests with Coverage
+        run: |
+          npm test -- --coverage --json --outputFile=coverage/test-results.json
+          npm run test:e2e -- --reporter=json > coverage/e2e-results.json || true
+
+      - name: Advanced Coverage Analysis
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise test coverage analysis.
+
+            **Enhanced Checks**:
+
+            1. **TC-0001 Traceability** (Standard)
+            2. **Coverage Thresholds**
+               - Overall: >80%
+               - Critical paths: >90%
+               - Changed files: 100%
+            3. **Test Quality Assessment**
+               - Tests actually test something?
+               - No false positives?
+               - Edge cases covered?
+            4. **E2E Coverage** (Enhanced)
+               - Critical user journeys covered?
+               - Error scenarios tested?
+               - Browser compatibility?
+            5. **Integration Test Coverage**
+               - All integrations tested?
+               - Failure modes handled?
+               - Retry logic tested?
+            6. **Performance Test Coverage**
+               - Load tests for critical endpoints?
+               - Stress tests for scalability?
+
+            **Post Comprehensive Coverage Report** with quality metrics.
+
+            **Block if**:
+            - Coverage <80% overall
+            - Coverage <100% on changed critical files
+            - E2E tests missing for UI changes
+            - Test quality issues detected
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Compliance Validation
+  # ============================================================================
+
+  compliance-check:
+    name: Compliance Validation
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Compliance Analysis
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise compliance validation.
+
+            **Compliance Frameworks** (check .specweave/config.yaml):
+
+            1. **GDPR** (if enabled)
+               - PII handling documented?
+               - Data retention policies?
+               - Right to deletion implemented?
+               - Consent management?
+
+            2. **HIPAA** (if enabled)
+               - PHI encryption?
+               - Access logging?
+               - Audit trails?
+               - BAA requirements?
+
+            3. **SOC 2** (if enabled)
+               - Security controls documented?
+               - Change management process followed?
+               - Incident response plan?
+
+            4. **PCI DSS** (if payment processing)
+               - No card data in logs?
+               - Encryption standards met?
+               - Access controls?
+
+            **Post Compliance Report**:
+
+            ```markdown
+            ## ✅ Compliance Validation
+
+            ### GDPR Compliance
+            [Checklist results]
+
+            ### HIPAA Compliance
+            [Checklist results]
+
+            ### SOC 2 Requirements
+            [Checklist results]
+
+            **Status**: [✅ Compliant | ⚠️ Review | ❌ Non-Compliant]
+            ```
+
+            **Block** if non-compliant.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 14000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Auto-Documentation (Enhanced)
+  # ============================================================================
+
+  update-docs:
+    name: Enhanced Documentation Update
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comprehensive Doc Update
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise documentation auto-update.
+
+            **Standard Updates**: CLAUDE.md, API docs, changelog
+
+            **Enterprise Additions**:
+
+            1. **Architecture Diagrams**
+               - Update Mermaid diagrams if structure changed
+               - Component dependency graphs
+               - Data flow diagrams
+
+            2. **API Documentation**
+               - OpenAPI/Swagger specs
+               - Postman collections
+               - API versioning docs
+
+            3. **Runbooks**
+               - Deployment procedures
+               - Rollback procedures
+               - Incident response playbooks
+
+            4. **Compliance Documentation**
+               - Audit trail updates
+               - Security control documentation
+               - Change log for compliance
+
+            5. **Training Materials**
+               - Update tutorials if workflows changed
+               - Update examples
+               - Video script updates (mark for recording)
+
+            **Generate comprehensive documentation suite**.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Documentation
+        run: |
+          git config user.name "SpecWeave Enterprise Bot"
+          git config user.email "enterprise@specweave.ai"
+
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "docs: enterprise auto-update [skip ci]"
+            git push origin ${{ github.ref_name }}
+          fi
+
+  # ============================================================================
+  # External Integrations (Enhanced)
+  # ============================================================================
+
+  external-sync:
+    name: Enhanced External Sync
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Comprehensive Sync
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Enterprise external integrations sync.
+
+            **Integrations**:
+
+            1. **JIRA** (if enabled)
+               - Update issue status
+               - Sync sprint progress
+               - Update estimates vs actuals
+
+            2. **Slack** (if enabled)
+               - Post deployment notifications
+               - Alert on failures
+               - Daily standup summaries
+
+            3. **Azure DevOps** (if enabled)
+               - Sync work items
+               - Update boards
+               - Sync test results
+
+            4. **Confluence** (if enabled)
+               - Update documentation pages
+               - Sync architecture diagrams
+
+            5. **DataDog/New Relic** (if enabled)
+               - Create deployment markers
+               - Link commits to metrics
+
+            6. **PagerDuty** (if enabled)
+               - Update on-call runbooks
+               - Sync incident procedures
+
+            **Execute all configured integrations**.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 12000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          AZURE_DEVOPS_TOKEN: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+
+  # ============================================================================
+  # Analytics & Reporting
+  # ============================================================================
+
+  analytics-report:
+    name: Analytics & Reporting
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Analytics
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Generate enterprise analytics report.
+
+            **Metrics to Analyze** (last 30 days):
+
+            1. **Velocity Metrics**
+               - Increments completed
+               - Average cycle time
+               - Lead time
+               - Deployment frequency
+
+            2. **Quality Metrics**
+               - Test coverage trends
+               - Bug escape rate
+               - Mean time to resolution
+               - Spec drift incidents
+
+            3. **Efficiency Metrics**
+               - Time saved by automation
+               - Manual reviews vs auto-reviews
+               - Documentation auto-update rate
+
+            4. **Security Metrics**
+               - Vulnerabilities detected
+               - Mean time to patch
+               - Security scan coverage
+
+            5. **Compliance Metrics**
+               - Compliance validation rate
+               - Audit findings
+               - Documentation completeness
+
+            **Post Monthly Report** to Slack/Email.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 14000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

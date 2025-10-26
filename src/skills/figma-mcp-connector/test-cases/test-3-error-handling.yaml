@@ -1,0 +1,18 @@
+---
+name: "Error Handling - Invalid Token"
+description: "Test error handling for invalid Figma token"
+input:
+  figma_url: "https://figma.com/file/ABC123"
+  token: "invalid_token"
+expected_output:
+  type: "error"
+  error_code: "AUTHENTICATION_FAILED"
+  message: "Invalid Figma access token"
+validation:
+  - "Error detected correctly"
+  - "Clear error message provided"
+  - "Suggests solution (check FIGMA_ACCESS_TOKEN)"
+success_criteria:
+  - "Error handled gracefully"
+  - "User guidance provided"
+---

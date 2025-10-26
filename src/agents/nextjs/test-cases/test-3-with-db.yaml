@@ -1,0 +1,106 @@
+---
+name: "NextJS App with Prisma ORM and Postgres"
+description: "Add Prisma ORM with Postgres database, migrations, and API routes"
+skill: nextjs-agent
+priority: P1
+estimated_time: "15 minutes"
+
+input:
+  prompt: "Add Prisma ORM with Postgres and create a users API"
+  requirements:
+    orm: prisma
+    database: postgres
+    features:
+      - user_model
+      - api_routes
+      - type_safety
+
+expected_output:
+  files_created:
+    - prisma/schema.prisma
+    - lib/prisma.ts                    # Prisma client singleton
+    - app/api/users/route.ts          # Users API
+    - app/api/users/[id]/route.ts     # Single user API
+
+  prisma_schema:
+    datasource:
+      provider: postgresql
+      url: "env.DATABASE_URL"
+
+    models:
+      - User:
+          fields:
+            - id: String (uuid)
+            - email: String (unique)
+            - name: String (optional)
+            - createdAt: DateTime
+            - updatedAt: DateTime
+
+  environment_variables:
+    - DATABASE_URL: "postgresql://user:pass@localhost:5432/mydb"
+
+  api_routes:
+    - path: /api/users
+      methods:
+        - GET: "List all users"
+        - POST: "Create new user"
+
+    - path: /api/users/[id]
+      methods:
+        - GET: "Get user by ID"
+        - PUT: "Update user"
+        - DELETE: "Delete user"
+
+  prisma_client:
+    singleton: true
+    global_instance: true
+    hot_reload_safe: true
+
+  type_safety:
+    - Generated Prisma types
+    - Type-safe queries
+    - Autocomplete for models
+
+  commands:
+    - "npx prisma init"
+    - "npx prisma migrate dev --name init"
+    - "npx prisma generate"
+    - "npx prisma studio"
+
+validation:
+  - "Prisma schema valid"
+  - "Database connection works"
+  - "Migrations run successfully"
+  - "API routes return correct types"
+  - "Type-safe queries working"
+  - "Prisma Studio accessible"
+
+success_criteria:
+  - "Database connected"
+  - "Models defined and migrated"
+  - "API routes functional"
+  - "Type safety enforced"
+  - "CRUD operations working"
+
+example_usage:
+  server_component:
+    file: "app/users/page.tsx"
+    code: |
+      import { prisma } from '@/lib/prisma'
+
+      export default async function UsersPage() {
+        const users = await prisma.user.findMany()
+        return <div>{users.length} users</div>
+      }
+
+  api_route:
+    file: "app/api/users/route.ts"
+    code: |
+      import { NextResponse } from 'next/server'
+      import { prisma } from '@/lib/prisma'
+
+      export async function GET() {
+        const users = await prisma.user.findMany()
+        return NextResponse.json(users)
+      }
+---

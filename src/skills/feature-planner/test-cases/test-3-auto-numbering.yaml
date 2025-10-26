@@ -1,0 +1,24 @@
+---
+name: "Auto-Numbering Feature Test"
+description: "Tests that features are correctly auto-numbered when previous features exist"
+input:
+  prompt: "Plan a feature for email notifications"
+  files:
+    - "features/001-user-authentication/"
+    - "features/002-stripe-payment-integration/"
+expected_output:
+  type: "files_generated"
+  files:
+    - "features/003-email-notifications/spec.md"
+    - "features/003-email-notifications/plan.md"
+    - "features/003-email-notifications/tasks.md"
+    - "features/003-email-notifications/tests.md"
+    - "features/003-email-notifications/context-manifest.yaml"
+  contains:
+    - "feature: 003-email-notifications"
+    - "003"
+validation:
+  - "Feature number is 003 (incremented from 002)"
+  - "No conflicts with existing features"
+  - "features/README.md updated with new feature"
+---

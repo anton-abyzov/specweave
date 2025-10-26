@@ -1,11 +1,15 @@
 site_name: SpecWeave
-site_description: Intent-Driven Development Framework - Where specifications are the source of truth
+site_description: Spec-Driven Development Framework - Where specifications are the source of truth
 site_author: SpecWeave Contributors
-site_url: https://yourusername.github.io/specweave
+site_url: https://anton-abyzov.github.io/specweave
 
-repo_name: specweave
-repo_url: https://github.com/yourusername/specweave
-edit_uri: edit/main/docs/
+repo_name: anton-abyzov/specweave
+repo_url: https://github.com/anton-abyzov/specweave
+edit_uri: edit/main/.specweave/docs/public/
+
+# PUBLIC documentation only (.specweave/docs/public/)
+# Internal docs (.specweave/docs/internal/) are NOT published
+docs_dir: .specweave/docs/public
 
 theme:
   name: material
@@ -45,52 +49,40 @@ theme:
   favicon: assets/favicon.png
 
 nav:
-  - Home:
-    - Welcome: index.md
-    - Features: home/features.md
-    - Why SpecWeave: home/why-specweave.md
-    - Comparisons: home/comparisons.md
-
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Quick Start: getting-started/quickstart.md
-    - Configuration: getting-started/configuration.md
-    - Your First Feature: getting-started/first-feature.md
-
-  - Guides:
-    - Writing Specifications: guides/writing-specs.md
-    - Creating Skills: guides/creating-skills.md
-    - Feature Planning: guides/feature-planning.md
-    - Testing Strategy: guides/testing-strategy.md
-    - Brownfield Onboarding: guides/brownfield-onboarding.md
-    - Context Manifests: guides/context-manifests.md
-
-  - Reference:
-    - CLI Commands: reference/cli-commands.md
-    - Skills API: reference/skills-api.md
-    - Context Manifests: reference/context-manifests.md
-    - Configuration: reference/configuration.md
-    - Hooks: reference/hooks.md
+  - Overview:
+    - Welcome: overview/intro.md
+    - Features: overview/features.md
+    - Why SpecWeave: overview/why-specweave.md
+    - Getting Started: overview/quickstart.md
 
   - Architecture:
     - Overview: architecture/overview.md
-    - Skills System: architecture/skills-system.md
-    - Context Loading: architecture/context-loading.md
-    - Auto-Role Routing: architecture/auto-role-routing.md
+    - System Design: architecture/system-design.md
+    - Component Diagram: architecture/components.md
 
-  - Principles: principles.md
+  - API:
+    - Introduction: api/index.md
+    - Authentication: api/authentication.md
+    - CLI Commands: api/cli-commands.md
+    - Skills API: api/skills-api.md
+    - OpenAPI Specification: api/openapi.yaml
 
-  - Decisions:
-    - Index: decisions/index.md
+  - Guides:
+    - Installation: guides/installation.md
+    - Quick Start: guides/quickstart.md
+    - Creating Skills: guides/creating-skills.md
+    - Writing PRDs: guides/writing-prds.md
+    - Feature Planning: guides/feature-planning.md
+    - Testing Strategy: guides/testing-strategy.md
 
-  - Community:
-    - Contributing: community/contributing.md
-    - Code of Conduct: community/code-of-conduct.md
-    - Roadmap: ../features/roadmap.md
+  - FAQ:
+    - General: faq/general.md
+    - Technical: faq/technical.md
+    - Troubleshooting: faq/troubleshooting.md
 
-  - Changelog:
-    - Releases: changelog/releases.md
-    - 2025-01: changelog/2025-01.md
+# NOTE: Internal documentation (.specweave/docs/internal/) is NOT published
+# It contains: Strategy (PRDs), Architecture (HLD/ADR/RFC), Delivery, Operations, Governance
+# Access internal docs directly in the repository at .specweave/docs/internal/
 
 plugins:
   - search:
@@ -125,11 +117,7 @@ extra:
     provider: mike
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/yourusername/specweave
-    - icon: fontawesome/brands/youtube
-      link: https://youtube.com/@specweave
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/specweave
+      link: https://github.com/anton-abyzov/specweave
 
   analytics:
     provider: google

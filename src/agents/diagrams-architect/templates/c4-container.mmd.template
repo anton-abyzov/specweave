@@ -1,0 +1,77 @@
+```mermaid
+C4Container
+  title Container Diagram for {SYSTEM_NAME}
+
+  %% Human Actors
+  Person(user1, "{Actor Name}", "{Actor Description}")
+
+  %% System Boundary
+  Container_Boundary(system, "{SYSTEM_NAME}") {
+    %% Web/Mobile Apps
+    Container(web_app, "{App Name}", "{Technology}", "{App Description}")
+
+    %% Backend Services
+    Container(api, "{Service Name}", "{Technology}", "{Service Description}")
+
+    %% Databases
+    ContainerDb(database, "{DB Name}", "{Technology}", "{DB Description}")
+
+    %% Caches/Queues
+    ContainerDb(cache, "{Cache Name}", "{Technology}", "{Cache Description}")
+  }
+
+  %% External Systems
+  System_Ext(external1, "{External System}", "{Description}")
+
+  %% Relationships
+  Rel(user1, web_app, "{Interaction}", "{Protocol}")
+  Rel(web_app, api, "{Interaction}", "{Protocol}")
+  Rel(api, database, "{Interaction}", "{Protocol}")
+  Rel(api, cache, "{Interaction}", "{Protocol}")
+  Rel(api, external1, "{Interaction}", "{Protocol}")
+```
+
+## C4 Level 2: Container Diagram Template
+
+### Purpose
+Show high-level components (apps, services, databases) and tech stack.
+
+### When to Use
+- System architecture overview
+- Tech stack decisions
+- Component responsibilities
+
+### Instructions
+
+1. **Replace Placeholders**:
+   - `{SYSTEM_NAME}` - Your system name
+   - `{App Name}` - Web app, mobile app, etc.
+   - `{Technology}` - Next.js, React Native, Node.js, PostgreSQL, etc.
+   - `{Service Name}` - API Gateway, Auth Service, Payment Service
+   - `{DB Name}` - User Database, Orders Database
+   - `{Cache Name}` - Redis, Memcached
+   - `{Protocol}` - HTTPS/REST, SQL, gRPC, Redis protocol
+
+2. **Add More Containers**:
+   ```
+   Container(auth_service, "Auth Service", "Node.js", "Handles authentication")
+   Container(payment_service, "Payment Service", "Node.js", "Processes payments")
+   ContainerDb(redis, "Cache", "Redis", "Session storage")
+   ```
+
+3. **Group Related Containers** with boundaries:
+   ```
+   Container_Boundary(backend, "Backend Services") {
+     Container(api, "API Gateway", "Node.js", "Routes requests")
+     Container(auth, "Auth Service", "Node.js", "Authentication")
+   }
+   ```
+
+### Best Practices
+- Show technology choices (Next.js, PostgreSQL, Redis)
+- Indicate protocols (HTTPS, SQL, gRPC)
+- Group by logical boundaries
+- Limit to 10-15 containers
+
+### Example
+See: `.specweave/docs/internal/architecture/diagrams/system-container.mmd`

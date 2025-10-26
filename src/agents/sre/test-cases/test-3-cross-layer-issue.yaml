@@ -1,0 +1,164 @@
+---
+name: "Cross-Layer Diagnosis - Cascade Failure"
+description: "Tests if SRE agent can diagnose issues spanning multiple layers (UI → Backend → Database)"
+priority: "P1"
+expected_duration: "10-15 minutes"
+
+input:
+  prompt: "Multiple services failing, cascade detected. Frontend timing out, API slow, database connections maxed out."
+  context:
+    - "Frontend: Timeout errors after 30 seconds"
+    - "API: Response time 25+ seconds"
+    - "Database: Connection pool 100/100 (exhausted)"
+    - "Users affected: All users"
+    - "Severity: SEV1 (complete outage)"
+    - "Started: 10 minutes ago"
+
+expected_output:
+  type: "cross_layer_diagnosis"
+  format: "structured"
+
+  # Required sections
+  required_sections:
+    - "triage"
+    - "cascade_analysis"
+    - "root_cause"
+    - "immediate_mitigation"
+    - "prevention"
+
+  # Triage
+  triage:
+    severity: "SEV1"
+    incident_type: "Cascade failure"
+    affected_layers:
+      - "Frontend"
+      - "Backend API"
+      - "Database"
+    users_impacted: "All users (100%)"
+
+  # Cascade analysis
+  cascade_analysis:
+    # Expected cascade flow
+    cascade_flow:
+      - layer: "Database"
+        issue: "Connection pool exhausted"
+        timestamp: "T+0 (root cause)"
+
+      - layer: "Backend API"
+        issue: "Waiting for database connections"
+        timestamp: "T+5 min"
+        cause: "Database connections unavailable"
+
+      - layer: "Frontend"
+        issue: "API timeouts"
+        timestamp: "T+10 min"
+        cause: "Backend taking >30s to respond"
+
+    # Root identification
+    root_layer: "Database"
+    root_cause: "Connection pool exhaustion due to connection leak"
+
+  # Expected diagnostic process
+  diagnostic_process:
+    step_1:
+      action: "Identify initial failure point"
+      method: "Check leaf dependencies first (Database, Cache, Queue)"
+      finding: "Database connection pool at 100/100"
+
+    step_2:
+      action: "Trace failure propagation"
+      method: "Check logs for timeline"
+      finding: |
+        14:00:00 - Database: Connection pool full
+        14:05:00 - API: Timeout errors (waiting for DB)
+        14:10:00 - Frontend: API unavailable
+
+    step_3:
+      action: "Determine cascade depth"
+      finding: "3 layers affected (Database → API → Frontend)"
+
+  # Immediate mitigation
+  immediate_mitigation:
+    priority_1:
+      action: "Stop the cascade from spreading"
+      options:
+        - "Enable circuit breaker (if available)"
+        - "Rate limit requests to database"
+        - "Shed non-critical load"
+
+    priority_2:
+      action: "Fix root cause"
+      options:
+        - "Kill idle database connections"
+        - "Restart application to release connections"
+        - "Increase connection pool size (temporary)"
+
+  # Prevention (long-term)
+  prevention:
+    architectural_improvements:
+      - "Circuit breakers on all external calls"
+      - "Timeouts on all network operations"
+      - "Bulkheads (isolate critical paths)"
+      - "Rate limiting (protect downstream)"
+      - "Graceful degradation"
+
+# Validation criteria
+validation:
+  - "Identifies cascade pattern (not isolated failure)"
+  - "Traces cascade from root to leaves"
+  - "Identifies database as root cause (not symptoms)"
+  - "Proposes immediate actions to stop cascade"
+  - "Proposes prevention strategies"
+  - "Mentions circuit breakers, timeouts, or bulkheads"
+
+# Success criteria
+success_criteria:
+  - "Root cause correctly identified as database connection pool exhaustion"
+  - "Cascade flow documented with timestamps"
+  - "Immediate mitigation focuses on stopping cascade FIRST"
+  - "Mentions circuit breaker or similar resilience pattern"
+  - "Distinguishes between root cause (database) and symptoms (API, frontend)"
+  - "Prevention strategies include architectural improvements"
+
+# Failure indicators
+failure_indicators:
+  - "Treats as 3 separate issues (doesn't recognize cascade)"
+  - "Fixes symptoms first (frontend, API) instead of root cause"
+  - "No mention of cascade prevention patterns"
+  - "Only suggests scaling up (doesn't address root cause)"
+  - "No timeline analysis (doesn't trace propagation)"
+  - "Suggests restarting all services (brute force, not surgical)"
+
+# Related playbooks
+related_playbooks:
+  - "playbooks/09-cascade-failure.md"
+  - "playbooks/02-database-deadlock.md"
+  - "playbooks/04-slow-api-response.md"
+
+# Expected collaboration
+expected_collaboration:
+  - skill: "developer"
+    reason: "Fix connection leak in code"
+    handoff: "After immediate mitigation"
+
+  - skill: "architect"
+    reason: "Implement circuit breakers and resilience patterns"
+    handoff: "For long-term prevention"
+
+# Notes
+notes: |
+  This test validates the SRE agent's ability to:
+  1. Recognize cascade failures (not isolated issues)
+  2. Trace failure propagation across layers
+  3. Identify root cause vs symptoms
+  4. Prioritize stopping cascade before fixing root cause
+  5. Propose architectural improvements (circuit breakers, timeouts)
+
+  Key insights the agent should demonstrate:
+  - Cascades propagate from leaf dependencies (database) to dependents (API → frontend)
+  - Fix root cause (database connection leak), not symptoms (API timeout)
+  - Stop cascade FIRST (circuit breaker, rate limit), then fix root
+  - Prevention requires architectural changes (not just monitoring)
+
+  This is a more complex scenario that tests the agent's understanding of
+  distributed system failures and resilience patterns.
