@@ -131,7 +131,7 @@ if [ -d "$SPECWEAVE_ROOT/src/agents" ]; then
 
       # Check if agent has AGENT.md (valid SpecWeave agent)
       if [ -f "$agent_dir/AGENT.md" ]; then
-        echo -e "      Copying $agent_name..." >&2
+        echo -e "      Copying $agent_name..."
         # Temporarily disable set -e to capture cp errors
         set +e
         cp_output=$(cp -r "$agent_dir" .claude/agents/ 2>&1)
@@ -139,11 +139,11 @@ if [ -d "$SPECWEAVE_ROOT/src/agents" ]; then
         set -e
 
         if [ $cp_exit_code -ne 0 ]; then
-          echo -e "   ${RED}❌ Failed to copy agent: $agent_name${NC}" >&2
-          echo -e "   ${RED}   Source: $agent_dir${NC}" >&2
-          echo -e "   ${RED}   Destination: .claude/agents/${NC}" >&2
-          echo -e "   ${RED}   Exit code: $cp_exit_code${NC}" >&2
-          echo -e "   ${RED}   Error output: $cp_output${NC}" >&2
+          echo -e "   ${RED}❌ Failed to copy agent: $agent_name${NC}"
+          echo -e "   ${RED}   Source: $agent_dir${NC}"
+          echo -e "   ${RED}   Destination: .claude/agents/${NC}"
+          echo -e "   ${RED}   Exit code: $cp_exit_code${NC}"
+          echo -e "   ${RED}   Error output: $cp_output${NC}"
           exit 1
         fi
         ((agent_count++))
