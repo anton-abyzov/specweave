@@ -55,8 +55,18 @@ info "Installing to: $TEST_DIR"
 # Verify repo root exists and has install.sh
 test -f "$REPO_ROOT/install.sh" || fail "Install script not found at $REPO_ROOT/install.sh"
 
+# Check if src/agents exists
+if [ ! -d "$REPO_ROOT/src/agents" ]; then
+  fail "src/agents directory not found at $REPO_ROOT/src/agents"
+fi
+
 # Run install script to set up .specweave structure
-bash "$REPO_ROOT/install.sh" "$TEST_DIR" || fail "Install script failed"
+info "Running: bash $REPO_ROOT/install.sh $TEST_DIR"
+if ! bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1; then
+  echo "Install script output:"
+  bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1 || true
+  fail "Install script failed"
+fi
 
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave installed"
