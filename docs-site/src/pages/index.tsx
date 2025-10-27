@@ -96,8 +96,8 @@ function FeaturesSection(): ReactNode {
           />
           <FeatureHighlight
             icon="🤖"
-            title="14 AI Agents"
-            description="PM, Architect, DevOps, QA, Security—specialized agents for every role."
+            title="20+ AI Agents"
+            description="PM, Architect, DevOps, QA, Security, and more—always growing. Add your own custom agents."
           />
           <FeatureHighlight
             icon="🧪"
