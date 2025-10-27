@@ -311,7 +311,7 @@ If user approves:
 
    Once tasks.md is ready:
    - Type "start implementation" to begin Task T001
-   - Or review tasks first with: cat .specweave/increments/003-event-booking-saas/tasks.md
+   - Or review tasks first with: cat .specweave/increments/0003-event-booking-saas/tasks.md
 ```
 
 If user requests changes:

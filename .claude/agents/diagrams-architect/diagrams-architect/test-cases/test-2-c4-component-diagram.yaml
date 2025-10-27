@@ -1,0 +1,118 @@
+---
+name: "Create C4 Component Diagram (Level 3 - LLD)"
+description: "Tests if diagrams-architect can create a valid C4 Component diagram showing internal structure of a service (LOW-LEVEL DESIGN)"
+input:
+  prompt: "Create a C4 Component diagram for the Auth Service"
+  context:
+    service_name: "Auth Service"
+    components:
+      - name: "AuthController"
+        type: "Express Router"
+        description: "Handles HTTP requests for authentication"
+
+      - name: "AuthService"
+        type: "TypeScript Class"
+        description: "Business logic for authentication"
+
+      - name: "UserRepository"
+        type: "TypeScript Class"
+        description: "Data access for users"
+
+      - name: "JWTHandler"
+        type: "jsonwebtoken library"
+        description: "Generates and validates JWT tokens"
+
+      - name: "PasswordHasher"
+        type: "bcrypt library"
+        description: "Hashes and verifies passwords"
+
+    database:
+      name: "User Table"
+      type: "PostgreSQL"
+      description: "Stores user credentials"
+
+expected_output:
+  type: "diagram_created"
+  file_location: ".specweave/docs/internal/architecture/diagrams/auth/component-auth-service.mmd"
+  diagram_type: "C4Component"
+  document_type: "LLD"  # This is Low-Level Design (C4 Level 3)
+  contains:
+    - "C4Component"
+    - "title Component Diagram for Auth Service"
+    - "Container_Boundary(auth_service"
+    - 'Component(auth_controller, "AuthController", "Express Router"'
+    - 'Component(auth_service_logic, "AuthService", "TypeScript Class"'
+    - 'Component(user_repository, "UserRepository", "TypeScript Class"'
+    - 'Component(jwt_handler, "JWTHandler", "jsonwebtoken library"'
+    - 'Component(password_hasher, "PasswordHasher", "bcrypt library"'
+    - 'ComponentDb(user_db, "User Table", "PostgreSQL"'
+    - "Rel(auth_controller, auth_service_logic"
+    - "Rel(auth_service_logic, user_repository"
+    - "Rel(auth_service_logic, jwt_handler"
+    - "Rel(auth_service_logic, password_hasher"
+    - "Rel(user_repository, user_db"
+
+  syntax_valid: true
+  mermaid_renderable: true
+
+validation:
+  - "Uses C4Component syntax"
+  - "DOES NOT start with 'mermaid' keyword (common error)"
+  - "Starts directly with 'C4Component'"
+  - "Has title with service name"
+  - "Uses Container_Boundary for service boundary"
+  - "Shows components (controllers, services, repositories)"
+  - "Shows utilities (JWT, password hashing)"
+  - "Shows database tables (ComponentDb)"
+  - "Has relationships between components"
+  - "Indicates technologies (TypeScript, Express, bcrypt)"
+  - "Follows Controller-Service-Repository pattern"
+
+success_criteria:
+  - "File created in correct location (architecture/diagrams/{module}/)"
+  - "Valid Mermaid C4Component syntax"
+  - "Follows C4 Level 3 conventions"
+  - "Shows internal service structure"
+  - "This is LLD (Low-Level Design)"
+  - "Renderable in Mermaid viewer"
+
+c4_level_3_requirements:
+  - "Internal structure of a container/service"
+  - "Shows modules, classes, components"
+  - "Design patterns visible (MVC, Repository pattern)"
+  - "Technologies and libraries specified"
+  - "Method calls indicated in relationships"
+
+design_patterns_shown:
+  - "Controller-Service-Repository"
+  - "Dependency Injection (implicit in relationships)"
+  - "Data Access Layer (Repository)"
+
+best_practices_applied:
+  - "One diagram per service"
+  - "Clear separation of concerns (Controller, Service, Repository)"
+  - "Technology stack visible"
+  - "Limited to 10-15 components (not overcrowded)"
+
+file_naming:
+  pattern: "component-{service-name}.mmd"
+  examples:
+    - "component-auth-service.mmd"
+    - "component-payment-service.mmd"
+    - "component-order-service.mmd"
+
+relationship_to_hld_lld:
+  HLD: "C4 Level 1 (Context), C4 Level 2 (Container)"
+  LLD: "C4 Level 3 (Component) ← THIS DIAGRAM"
+  CODE: "C4 Level 4 (Class diagrams) - Optional"
+
+edge_cases:
+  - scenario: "Service with many components (>15)"
+    solution: "Break into logical submodules with separate diagrams"
+
+  - scenario: "Service using multiple design patterns"
+    solution: "Show primary pattern, document others in notes"
+
+  - scenario: "Microservice with multiple databases"
+    solution: "Show all databases, use clear naming"
+---

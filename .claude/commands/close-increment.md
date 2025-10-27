@@ -116,7 +116,7 @@ Your choice? [A/B/C/D]:
 ```
 Creating increment 002-enhancements...
 
-→ Creating .specweave/increments/002-enhancements/
+→ Creating .specweave/increments/0002-enhancements/
 → Creating spec.md with transferred tasks
 → Creating tasks.md with 6 tasks
 → Marking tasks in 001 as [T] Transferred
@@ -170,7 +170,7 @@ transfer_date: 2025-10-26
 
 ### Step 5: Generate Closure Report
 
-**File**: `.specweave/increments/001-core-framework/reports/closure-report.md`
+**File**: `.specweave/increments/0001-core-framework/reports/closure-report.md`
 
 ```markdown
 # Increment Closure Report
@@ -266,7 +266,7 @@ Summary:
 → Completion: 88% (44/50 tasks)
 → P1 completion: 100% (30/30) ✅
 → Leftovers transferred: 6 tasks → 002-enhancements
-→ Closure report: .specweave/increments/001-core-framework/reports/closure-report.md
+→ Closure report: .specweave/increments/0001-core-framework/reports/closure-report.md
 → Status: closed
 → WIP freed: 2/2 → 1/2
 
@@ -336,7 +336,7 @@ Proceeding...
 
 ## Related Documentation
 
-- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Complete lifecycle design
+- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/0001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Complete lifecycle design
 - [CLAUDE.md](../../CLAUDE.md#increment-lifecycle-management) - Lifecycle management guide
 
 ---

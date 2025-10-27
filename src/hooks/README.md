@@ -249,4 +249,4 @@ Planned hooks:
 
 **For more information**, see:
 - [Autonomous Workflow](../../ai-execution-files/reports/SPECWEAVE-AUTONOMOUS-WORKFLOW.md)
-- [Increment 002: Role-Based Agents](../../.specweave/increments/002-role-based-agents/)
+- [Increment 0002: Role-Based Agents](../../.specweave/increments/0002-role-based-agents/)

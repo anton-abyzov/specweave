@@ -130,7 +130,7 @@ Next steps:
 ## Related Documentation
 
 - [CLAUDE.md](../../CLAUDE.md#increment-lifecycle-management) - Lifecycle guide
-- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Lifecycle design
+- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/0001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Lifecycle design
 
 ---
 

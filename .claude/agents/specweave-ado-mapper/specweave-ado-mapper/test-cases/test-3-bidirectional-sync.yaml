@@ -1,0 +1,155 @@
+---
+name: "Bidirectional Sync with ADO"
+description: "Tests bidirectional sync between SpecWeave and Azure DevOps with conflict resolution"
+input:
+  prompt: "Sync increment 0001 with Azure DevOps"
+
+  initial_state:
+    specweave:
+      frontmatter:
+        increment_id: "0001"
+        title: "User Authentication"
+        status: "in-progress"
+        priority: "P1"
+        ado:
+          epic_id: "12345"
+          area_path: "MyProject\\TeamA"
+          iteration: "Sprint 24"
+          last_sync: "2025-10-26T10:00:00Z"
+
+    ado_epic:
+      id: 12345
+      title: "User Auth with OAuth"  # Changed in ADO
+      state: "Active"
+      area_path: "MyProject\\TeamB"  # Changed in ADO
+      iteration: "Sprint 25"  # Changed in ADO
+      last_updated: "2025-10-26T11:00:00Z"
+
+  changes_since_last_sync:
+    specweave:
+      - field: "status"
+        old: "in-progress"
+        new: "completed"
+        timestamp: "2025-10-26T12:00:00Z"
+
+      - field: "task_checkbox"
+        task: "Create login API endpoint"
+        old: "[ ]"
+        new: "[x]"
+        timestamp: "2025-10-26T11:30:00Z"
+
+    ado:
+      - field: "title"
+        old: "User Authentication"
+        new: "User Auth with OAuth"
+        timestamp: "2025-10-26T11:00:00Z"
+
+      - field: "area_path"
+        old: "MyProject\\TeamA"
+        new: "MyProject\\TeamB"
+        timestamp: "2025-10-26T11:05:00Z"
+
+      - field: "iteration"
+        old: "Sprint 24"
+        new: "Sprint 25"
+        timestamp: "2025-10-26T11:10:00Z"
+
+expected_output:
+  conflict_detection:
+    conflicts_found: 1
+    conflicts:
+      - type: "title_changed_ado"
+        specweave: "User Authentication"
+        ado: "User Auth with OAuth"
+        resolution_required: true
+
+  auto_resolvable:
+    - change: "area_path_changed_ado"
+      resolution: "Update SpecWeave (organizational change)"
+    - change: "iteration_changed_ado"
+      resolution: "Update SpecWeave (sprint change)"
+    - change: "task_completed_specweave"
+      resolution: "Update ADO Task state"
+
+  user_interaction:
+    prompt: |
+      ⚠️  Sync Conflict:
+
+      Title changed in ADO:
+        SpecWeave: "User Authentication"
+        ADO: "User Auth with OAuth"
+
+      Choose: [SpecWeave] [ADO] [Manual]
+    user_selection: "ADO"
+
+  changes_applied:
+    specweave_to_ado:
+      - target: "ADO Task 12350"
+        field: "state"
+        old: "New"
+        new: "Closed"
+
+      - target: "ADO Epic 12345"
+        field: "state"
+        old: "Active"
+        new: "Closed"
+
+    ado_to_specweave:
+      - target: "spec.md frontmatter"
+        field: "title"
+        old: "User Authentication"
+        new: "User Auth with OAuth"
+
+      - target: "spec.md frontmatter"
+        field: "ado.area_path"
+        old: "MyProject\\TeamA"
+        new: "MyProject\\TeamB"
+
+      - target: "spec.md frontmatter"
+        field: "ado.iteration"
+        old: "Sprint 24"
+        new: "Sprint 25"
+
+  summary:
+    message: |
+      ✅ Synced with Azure DevOps!
+
+      Direction: Bidirectional
+      Changes Applied:
+        - SpecWeave → ADO: 2 updates
+          • Task 12350: New → Closed
+          • Epic 12345: Active → Closed
+        - ADO → SpecWeave: 3 updates
+          • Title: "User Authentication" → "User Auth with OAuth"
+          • Area Path: MyProject\TeamA → MyProject\TeamB
+          • Iteration: Sprint 24 → Sprint 25
+      Conflicts Resolved: 1 (user: Keep ADO title)
+      Last Sync: 2025-10-26T14:30:00Z
+
+validation:
+  - "ADO-specific fields synced (Area Path, Iteration)"
+  - "Title conflict detected and resolved"
+  - "Area Path change auto-synced (organizational)"
+  - "Iteration change auto-synced (sprint change)"
+  - "Task completion synced to ADO"
+  - "Epic state synced to ADO"
+
+success_criteria:
+  - "All changes synced correctly"
+  - "ADO organizational changes reflected"
+  - "Conflict resolved explicitly"
+  - "No data loss"
+
+ado_specific_sync_rules:
+  area_path:
+    rule: "Always sync from ADO → SpecWeave (organizational decision)"
+    reason: "Area Paths managed by ADO admins"
+
+  iteration:
+    rule: "Always sync from ADO → SpecWeave (sprint planning)"
+    reason: "Iterations managed by ADO admins"
+
+  title:
+    rule: "Ask user on conflict"
+    reason: "Content decision requires user input"
+---

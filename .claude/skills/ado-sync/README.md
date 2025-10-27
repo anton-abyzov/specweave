@@ -152,7 +152,7 @@ ado_sync:
 
 ```
 User: Creates increment in SpecWeave
-  .specweave/increments/002-payment/
+  .specweave/increments/0002-payment/
     spec.md (with structure: ado)
     tasks.md
 
@@ -189,7 +189,7 @@ User: Updates ADO work item status to "Active"
 ado-sync:
   Detects change to ADO-789
   Finds linked increment: 002-payment
-  Updates: .specweave/increments/002-payment/spec.md
+  Updates: .specweave/increments/0002-payment/spec.md
     status: planned → in-progress
 ```
 
@@ -209,7 +209,7 @@ User: Changes ADO-789 to "Closed" in Azure DevOps
 ↓ ADO service hook triggers
 
 ado-sync updates SpecWeave:
-  .specweave/increments/002-payment/spec.md
+  .specweave/increments/0002-payment/spec.md
     status: in-progress → completed
 ```
 

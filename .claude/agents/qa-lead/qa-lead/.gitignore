@@ -1,0 +1,3 @@
+test-results/
+*.log
+.DS_Store

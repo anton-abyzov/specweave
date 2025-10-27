@@ -1,0 +1,154 @@
+---
+name: "Export Increment to JIRA Epic"
+description: "Tests if specweave-jira-mapper can export a SpecWeave increment to JIRA as Epic + Stories + Subtasks"
+input:
+  prompt: "Export increment 0001-user-authentication to JIRA"
+  files:
+    - path: ".specweave/increments/0001-user-authentication/spec.md"
+      content: |
+        ---
+        increment_id: "0001"
+        title: "User Authentication"
+        description: "Implement user login and registration"
+        status: "planned"
+        priority: "P1"
+        created_at: "2025-10-20T10:00:00Z"
+        ---
+
+        # User Authentication
+
+        ## User Stories
+
+        ### US1-001: User can log in
+
+        **As a** registered user
+        **I want to** log in with email and password
+        **So that** I can access my account
+
+        **Acceptance Criteria**:
+        - [ ] TC-0001: Valid credentials redirect to dashboard
+        - [ ] TC-0002: Invalid password shows error
+
+        ### US1-002: User can register
+
+        **As a** new user
+        **I want to** register with email
+        **So that** I can create an account
+
+        **Acceptance Criteria**:
+        - [ ] TC-0003: Registration form validates email
+        - [ ] TC-0004: Duplicate email shows error
+
+    - path: ".specweave/increments/0001-user-authentication/tasks.md"
+      content: |
+        # Tasks: User Authentication
+
+        ## User Story: US1-001
+
+        - [ ] Create login API endpoint
+        - [ ] Implement password validation
+        - [ ] Create login UI
+
+        ## User Story: US1-002
+
+        - [ ] Create registration API endpoint
+        - [ ] Implement email uniqueness check
+        - [ ] Create registration UI
+
+  context:
+    jira_url: "https://jira.example.com"
+    jira_project: "AUTH"
+
+expected_output:
+  type: "jira_issues_created"
+  epic:
+    title: "[Increment 0001] User Authentication"
+    description_contains:
+      - "Implement user login and registration"
+      - "Specification:"
+    labels:
+      - "specweave"
+      - "priority:P1"
+      - "status:planned"
+    priority: "Highest"
+    status: "To Do"
+    custom_fields:
+      specweave_increment_id: "0001-user-authentication"
+
+  stories:
+    - title: "User can log in"
+      epic_link_set: true
+      description_contains:
+        - "**As a** registered user"
+        - "**I want to** log in with email and password"
+        - "**So that** I can access my account"
+        - "TC-0001: Valid credentials redirect to dashboard"
+        - "TC-0002: Invalid password shows error"
+      labels:
+        - "specweave"
+        - "user-story"
+      custom_fields:
+        user_story_id: "US1-001"
+        test_case_ids: "TC-0001, TC-0002"
+
+    - title: "User can register"
+      epic_link_set: true
+      description_contains:
+        - "**As a** new user"
+        - "**I want to** register with email"
+        - "**So that** I can create an account"
+        - "TC-0003: Registration form validates email"
+        - "TC-0004: Duplicate email shows error"
+      labels:
+        - "specweave"
+        - "user-story"
+      custom_fields:
+        user_story_id: "US1-002"
+        test_case_ids: "TC-0003, TC-0004"
+
+  subtasks:
+    count: 6
+    examples:
+      - title: "Create login API endpoint"
+        parent_story: "User can log in"
+        labels: ["specweave", "task"]
+      - title: "Create registration API endpoint"
+        parent_story: "User can register"
+        labels: ["specweave", "task"]
+
+  frontmatter_updated:
+    file: ".specweave/increments/0001-user-authentication/spec.md"
+    contains:
+      - "jira:"
+      - "epic_key:"
+      - "epic_url:"
+      - "stories:"
+      - "last_sync:"
+      - "sync_direction: \"export\""
+
+validation:
+  - "Epic created with correct title format [Increment ###]"
+  - "All user stories converted to JIRA Stories"
+  - "All tasks converted to JIRA Subtasks"
+  - "Epic Link set for all Stories"
+  - "Parent link set for all Subtasks"
+  - "Priority mapped correctly (P1 → Highest)"
+  - "Status mapped correctly (planned → To Do)"
+  - "Custom fields populated (SpecWeave Increment ID, User Story ID, Test Case IDs)"
+  - "Increment frontmatter updated with JIRA keys and URLs"
+  - "Traceability maintained (bidirectional references)"
+
+success_criteria:
+  - "Epic exists in JIRA with correct structure"
+  - "All Stories linked to Epic"
+  - "All Subtasks linked to Stories"
+  - "Frontmatter contains JIRA metadata"
+  - "User can navigate from SpecWeave to JIRA (URLs stored)"
+  - "User can navigate from JIRA to SpecWeave (custom fields)"
+
+edge_cases:
+  - "Increment without tasks.md (should only create Epic + Stories)"
+  - "User story without acceptance criteria (should still create Story)"
+  - "JIRA API rate limit (should retry with exponential backoff)"
+  - "Authentication failure (should provide clear error message)"
+---

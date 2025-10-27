@@ -1,19 +1,49 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
+announcement:
+  label: Announcement
+  permalink: /announcement
+  description: Official SpecWeave announcements and updates
 
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
+spec-driven:
+  label: Spec-Driven Development
+  permalink: /spec-driven
+  description: Articles about spec-driven development methodology
 
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
+ai-development:
+  label: AI Development
+  permalink: /ai-development
+  description: AI-assisted software development insights
 
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description
+claude-code:
+  label: Claude Code
+  permalink: /claude-code
+  description: Claude Code integration and usage
+
+tutorial:
+  label: Tutorial
+  permalink: /tutorial
+  description: Step-by-step tutorials and guides
+
+best-practices:
+  label: Best Practices
+  permalink: /best-practices
+  description: Development best practices with SpecWeave
+
+architecture:
+  label: Architecture
+  permalink: /architecture
+  description: System architecture and design patterns
+
+testing:
+  label: Testing
+  permalink: /testing
+  description: Testing strategies and approaches
+
+deployment:
+  label: Deployment
+  permalink: /deployment
+  description: Deployment and infrastructure topics
+
+integration:
+  label: Integration
+  permalink: /integration
+  description: Third-party integrations (JIRA, GitHub, ADO, Figma)

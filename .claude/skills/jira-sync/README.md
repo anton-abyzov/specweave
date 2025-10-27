@@ -150,7 +150,7 @@ jira_sync:
 
 ```
 User: Creates increment in SpecWeave
-  .specweave/increments/002-payment/
+  .specweave/increments/0002-payment/
     spec.md (with structure: jira)
     tasks.md
 
@@ -178,7 +178,7 @@ User: Updates JIRA issue status to "In Progress"
 jira-sync:
   Detects change to PROJ-124
   Finds linked increment: 002-payment
-  Updates: .specweave/increments/002-payment/spec.md
+  Updates: .specweave/increments/0002-payment/spec.md
     status: planned → in-progress
 ```
 
@@ -198,7 +198,7 @@ User: Changes PROJ-124 to "Done" in JIRA
 ↓ JIRA webhook triggers
 
 jira-sync updates SpecWeave:
-  .specweave/increments/002-payment/spec.md
+  .specweave/increments/0002-payment/spec.md
     status: in-progress → completed
 ```
 

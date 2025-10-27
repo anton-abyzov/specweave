@@ -583,7 +583,7 @@ internal/
 
 ## Related Documentation
 
-- [DOCUMENTATION-GENERATION-ANALYSIS.md](../../.specweave/increments/001-core-framework/reports/DOCUMENTATION-GENERATION-ANALYSIS.md) - Complete analysis
+- [DOCUMENTATION-GENERATION-ANALYSIS.md](../../.specweave/increments/0001-core-framework/reports/DOCUMENTATION-GENERATION-ANALYSIS.md) - Complete analysis
 - [CLAUDE.md](../../CLAUDE.md) - Source of truth for framework
 - [mkdocs.yml](../../mkdocs.yml) - Documentation site configuration
 

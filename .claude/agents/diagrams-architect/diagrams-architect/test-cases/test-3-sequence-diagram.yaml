@@ -1,0 +1,150 @@
+---
+name: "Create Sequence Diagram for API Flow"
+description: "Tests if diagrams-architect can create a valid sequence diagram showing interaction flow between components"
+input:
+  prompt: "Create a sequence diagram for the user login flow"
+  context:
+    flow_name: "Login Flow"
+    participants:
+      - "User"
+      - "Web App"
+      - "API Gateway"
+      - "Auth Service"
+      - "Database"
+      - "Cache (Redis)"
+
+    steps:
+      - actor: "User"
+        action: "Enters credentials"
+        target: "Web App"
+
+      - actor: "Web App"
+        action: "POST /api/auth/login"
+        target: "API Gateway"
+        protocol: "HTTPS"
+
+      - actor: "API Gateway"
+        action: "authenticate(email, password)"
+        target: "Auth Service"
+
+      - actor: "Auth Service"
+        action: "SELECT * FROM users WHERE email = ?"
+        target: "Database"
+        note: "Query time: ~50ms"
+
+      - actor: "Auth Service"
+        action: "Verify password (bcrypt)"
+        note: "~100ms"
+
+      - actor: "Auth Service"
+        action: "Store session (TTL: 24h)"
+        target: "Cache"
+
+      - actor: "Auth Service"
+        action: "Return JWT token"
+        target: "API Gateway"
+        note: "Token generation: ~10ms"
+
+      - actor: "API Gateway"
+        action: "200 OK {token, user}"
+        target: "Web App"
+
+      - actor: "Web App"
+        action: "Redirect to dashboard"
+        target: "User"
+
+expected_output:
+  type: "diagram_created"
+  file_location: ".specweave/docs/internal/architecture/diagrams/auth/flows/login-flow.mmd"
+  diagram_type: "sequenceDiagram"
+  contains:
+    - "sequenceDiagram"
+    - "participant User"
+    - "participant Web"
+    - "participant API"
+    - "participant AuthService"
+    - "participant Database"
+    - "participant Cache"
+    - "User->>Web:"
+    - "Web->>API: POST /api/auth/login"
+    - "API->>AuthService: authenticate(email, password)"
+    - "AuthService->>Database: SELECT * FROM users"
+    - "Note over Database: Query time: ~50ms"
+    - "Database-->>AuthService:"
+    - "AuthService->>AuthService: Verify password"
+    - "Note over AuthService:"
+    - "AuthService->>Cache: Store session"
+    - "AuthService-->>API: JWT token"
+    - "API-->>Web: 200 OK"
+    - "Web-->>User: Redirect"
+
+  syntax_valid: true
+  mermaid_renderable: true
+  has_timing_annotations: true
+  has_notes: true
+
+validation:
+  - "Uses sequenceDiagram syntax"
+  - "DOES start with 'sequenceDiagram' keyword (unlike C4 diagrams)"
+  - "Standard Mermaid diagram format (not C4)"
+  - "Has all participants"
+  - "Shows synchronous calls (->>) and responses (-->>) "
+  - "Has timing annotations (Note over)"
+  - "Shows performance metrics (~50ms, ~100ms)"
+  - "Clear action labels (POST /api/login, authenticate())"
+  - "Limited to reasonable steps (~10-15)"
+
+success_criteria:
+  - "File created in correct location (diagrams/{module}/flows/)"
+  - "Valid Mermaid sequence diagram syntax"
+  - "Shows complete flow from start to end"
+  - "Includes performance notes"
+  - "Renderable in Mermaid viewer"
+
+best_practices_applied:
+  - "Timing annotations for performance-critical steps"
+  - "Clear HTTP methods and endpoints"
+  - "Function/method names in calls"
+  - "Synchronous vs async clear (->>, -->>) "
+  - "Notes for important details"
+
+additional_features:
+  conditionals:
+    syntax: |
+      alt Successful authentication
+        Service-->>API: JWT token
+      else Failed authentication
+        Service-->>API: Error: Invalid credentials
+      end
+
+  loops:
+    syntax: |
+      loop Retry up to 3 times
+        API->>PaymentService: Charge card
+      end
+
+  grouping:
+    syntax: |
+      rect rgb(200, 220, 240)
+        Note over API,Service: Authentication phase
+        API->>Service: authenticate()
+      end
+
+file_naming:
+  pattern: "{flow-name}.mmd"
+  examples:
+    - "login-flow.mmd"
+    - "checkout-flow.mmd"
+    - "registration-flow.mmd"
+    - "password-reset-flow.mmd"
+
+edge_cases:
+  - scenario: "Very long flow (>20 steps)"
+    solution: "Break into sub-flows (authentication phase, validation phase, etc.)"
+
+  - scenario: "Flow with multiple error cases"
+    solution: "Use alt/else blocks to show branches"
+
+  - scenario: "Async operations"
+    solution: "Use notes to indicate async, or separate diagram for async flow"
+---

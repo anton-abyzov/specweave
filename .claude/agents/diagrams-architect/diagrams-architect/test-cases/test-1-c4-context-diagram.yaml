@@ -1,0 +1,75 @@
+---
+name: "Create C4 Context Diagram (Level 1)"
+description: "Tests if diagrams-architect can create a valid C4 Context diagram showing system boundaries and external actors"
+input:
+  prompt: "Create a C4 Context diagram for an E-Commerce platform"
+  context:
+    system_name: "E-Commerce Platform"
+    description: "Online shopping platform for customers to buy products"
+    actors:
+      - name: "Customer"
+        description: "Buys products, manages account"
+      - name: "Administrator"
+        description: "Manages products, orders, inventory"
+    external_systems:
+      - name: "Stripe"
+        description: "Payment processing"
+      - name: "SendGrid"
+        description: "Transactional emails"
+      - name: "Google Analytics"
+        description: "Usage tracking"
+
+expected_output:
+  type: "diagram_created"
+  file_location: ".specweave/docs/internal/architecture/diagrams/system-context.mmd"
+  diagram_type: "C4Context"
+  contains:
+    - "C4Context"
+    - "title System Context for E-Commerce Platform"
+    - 'Person(customer, "Customer", "Buys products, manages account")'
+    - 'Person(admin, "Administrator", "Manages products, orders, inventory")'
+    - 'System(ecommerce, "E-Commerce Platform"'
+    - 'System_Ext(stripe, "Stripe", "Payment processing")'
+    - 'System_Ext(sendgrid, "SendGrid", "Transactional emails")'
+    - 'System_Ext(analytics, "Google Analytics", "Usage tracking")'
+    - "Rel(customer, ecommerce"
+    - "Rel(admin, ecommerce"
+    - "Rel(ecommerce, stripe"
+    - "Rel(ecommerce, sendgrid"
+    - "Rel(ecommerce, analytics"
+
+  syntax_valid: true
+  mermaid_renderable: true
+
+validation:
+  - "Uses C4Context syntax"
+  - "DOES NOT start with 'mermaid' keyword (common error)"
+  - "Starts directly with 'C4Context'"
+  - "Has title"
+  - "Shows human actors (Person)"
+  - "Shows main system (System)"
+  - "Shows external systems (System_Ext)"
+  - "Has relationships (Rel)"
+  - "Business language (no technical details)"
+  - "Limited to ~10 elements (not overcrowded)"
+
+success_criteria:
+  - "File created at correct location"
+  - "Valid Mermaid syntax"
+  - "Follows C4 Level 1 conventions"
+  - "Shows system boundaries clearly"
+  - "Renderable in Mermaid viewer"
+
+best_practices_applied:
+  - "High-level view (WHAT, not HOW)"
+  - "Clear boundaries (internal vs external)"
+  - "Business language"
+  - "Not too detailed"
+
+edge_cases:
+  - scenario: "System with many external integrations"
+    solution: "Group similar systems or create multiple context diagrams"
+
+  - scenario: "Multiple user roles"
+    solution: "Show primary roles only, mention others in description"
+---

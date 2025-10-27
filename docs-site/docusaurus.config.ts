@@ -208,8 +208,8 @@ const config: Config = {
       id: 'announcement-bar',
       content:
         '⭐️ If you like SpecWeave, give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/anton-abyzov/specweave">GitHub</a>! ⭐️',
-      backgroundColor: '#fafbfc',
-      textColor: '#091E42',
+      backgroundColor: '#ede9fe',
+      textColor: '#5b21b6',
       isCloseable: true,
     },
   } satisfies Preset.ThemeConfig,

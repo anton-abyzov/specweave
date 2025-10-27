@@ -87,7 +87,7 @@ B) Reopen 001 (if justified)
 **Implementation**:
 - Check if manifest file exists before parsing
 - Return helpful error message with file path
-- Log warning to .specweave/increments/001-core-framework/logs/errors.log
+- Log warning to .specweave/increments/0001-core-framework/logs/errors.log
 
 **Acceptance Criteria**:
 - [ ] Handles missing manifest gracefully
@@ -121,7 +121,7 @@ Summary:
 → Total tasks: 51 (was 50)
 → Completion rate: 86% (was 88%)
 
-File: .specweave/increments/001-core-framework/tasks.md
+File: .specweave/increments/0001-core-framework/tasks.md
 ```
 
 ---
@@ -167,7 +167,7 @@ File: .specweave/increments/001-core-framework/tasks.md
 ## Related Documentation
 
 - [CLAUDE.md](../../CLAUDE.md#adding-tasks-to-current-increment) - Task addition guide
-- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Lifecycle design
+- [INCREMENT-LIFECYCLE-DESIGN.md](../../.specweave/increments/0001-core-framework/reports/INCREMENT-LIFECYCLE-DESIGN.md) - Lifecycle design
 
 ---
 
