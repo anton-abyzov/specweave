@@ -39,17 +39,21 @@ cd "$TEST_DIR"
 # Step 1: Install SpecWeave
 info "Step 1: Installing SpecWeave from local source..."
 
-# Get the repository root (2 levels up from tests/smoke/)
-REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-
-# Use local SpecWeave installation
+# Get the repository root
 if [ -n "$GITHUB_WORKSPACE" ]; then
   # Running in GitHub Actions - use workspace
   REPO_ROOT="$GITHUB_WORKSPACE"
+else
+  # Running locally - get path from script location (2 levels up from tests/smoke/)
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
 
 info "Using SpecWeave from: $REPO_ROOT"
 info "Installing to: $TEST_DIR"
+
+# Verify repo root exists and has install.sh
+test -f "$REPO_ROOT/install.sh" || fail "Install script not found at $REPO_ROOT/install.sh"
 
 # Run install script to set up .specweave structure
 bash "$REPO_ROOT/install.sh" "$TEST_DIR" || fail "Install script failed"
