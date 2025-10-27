@@ -4,7 +4,7 @@ name: Deploy Documentation to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [develop]
     paths:
       - 'docs-site/**'
       - '.specweave/docs/public/**'
