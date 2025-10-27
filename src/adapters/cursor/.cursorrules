@@ -1,0 +1,325 @@
+# SpecWeave Configuration for Cursor
+
+**Project Framework**: SpecWeave (Spec-Driven Development)
+**Adapter**: Cursor (Semi-Automation)
+
+---
+
+## Core Philosophy
+
+**Anthropic Sets Standards** (MCP, Skills, Agents) that provide superior results. This file teaches you how to **BEHAVE LIKE** you have these capabilities in Cursor.
+
+---
+
+## Understanding SpecWeave Concepts
+
+### What is a Skill?
+**In Claude Code**: Auto-activating capability (.claude/skills/)
+**In Cursor**: Read workflow instructions and follow them manually
+
+### What is an Agent?
+**In Claude Code**: Specialized role with separate context window
+**In Cursor**: Adopt role's perspective and responsibilities
+
+### What is a Hook?
+**In Claude Code**: Auto-executes on events (e.g., docs update after task)
+**In Cursor**: Manual - user must request updates
+
+---
+
+## Critical Workflow: Creating Features
+
+### When user requests a feature (e.g., "create increment for user auth"):
+
+**Step 1: Check for existing increment**
+```bash
+ls .specweave/increments/
+```
+
+**Step 2: If increment doesn't exist, create structure**
+```bash
+# Auto-increment number
+mkdir -p .specweave/increments/####-feature-name/
+```
+
+**Step 3: Create spec.md (ACT AS PM AGENT)**
+
+**PM Agent Role**:
+- Focus on WHAT and WHY (not HOW)
+- Technology-agnostic requirements
+- User stories (US-001, US-002, ...)
+- Acceptance criteria (TC-0001, TC-0002, ...)
+- Success criteria
+
+**Template**:
+```markdown
+---
+increment: ####-feature-name
+title: "Feature Title"
+priority: P1
+status: planned
+---
+
+# Increment ####: Feature Name
+
+## Overview
+[Problem statement and solution]
+
+## User Stories
+
+### US-001: User Story Title
+**As a** [role]
+**I want to** [action]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] **TC-0001**: [testable condition]
+- [ ] **TC-0002**: [testable condition]
+```
+
+**Step 4: Create plan.md (ACT AS ARCHITECT AGENT)**
+
+**Architect Agent Role**:
+- Focus on HOW (technical implementation)
+- Technology-specific details
+- Component design, data models, APIs
+- Reference ADRs (Architecture Decision Records)
+
+**Template**:
+```markdown
+# Technical Plan: Feature Name
+
+## Architecture
+
+### Components
+[List components/services]
+
+### Data Model
+[Database schema, entities]
+
+### API Contracts
+[Endpoints, request/response formats]
+
+## Implementation Strategy
+[Step-by-step approach]
+
+## ADRs Referenced
+- ADR-0001: [decision title]
+```
+
+**Step 5: Create tasks.md**
+
+**Format**:
+```markdown
+---
+increment: ####-feature-name
+total_tasks: 10
+completed_tasks: 0
+---
+
+# Implementation Tasks
+
+## Phase 1
+### T001: Task description
+- [ ] Subtask 1
+- [ ] Subtask 2
+
+[Checkboxes for task tracking]
+```
+
+**Step 6: Create context-manifest.yaml (CRITICAL FOR TOKEN SAVINGS)**
+
+**Purpose**: Load ONLY relevant files (70%+ token reduction)
+
+**Format**:
+```yaml
+---
+spec_sections:
+  - .specweave/docs/internal/strategy/{module}/spec.md
+documentation:
+  - .specweave/docs/internal/architecture/{module}/design.md
+max_context_tokens: 10000
+---
+```
+
+---
+
+## Context Loading (70%+ Token Reduction)
+
+**CRITICAL RULE**: Always read `context-manifest.yaml` FIRST!
+
+### When user says "implement this feature":
+
+1. **Read context-manifest.yaml** in increment folder
+2. **ONLY load files listed in manifest**
+3. **DO NOT load entire .specweave/docs/ folder**
+
+**Why?**
+- Spec may be 500+ pages total
+- Manifest lists only relevant 50 pages
+- Saves 70%+ tokens
+- Faster, more accurate responses
+
+---
+
+## Simulating Skills
+
+### feature-planner Skill (Creating Features)
+**When**: User says "create increment" or "plan feature"
+**Do**:
+1. Read .specweave/config.yaml
+2. Auto-increment number
+3. Create spec.md (act as PM)
+4. Create plan.md (act as Architect)
+5. Create tasks.md
+6. Create context-manifest.yaml
+
+### context-loader Skill (Loading Context)
+**When**: User says "load context" or starting implementation
+**Do**:
+1. Find context-manifest.yaml
+2. Load ONLY files listed there
+3. Confirm to user: "Loaded X files (Y tokens)"
+
+### skill-router Skill (Routing Requests)
+**When**: User asks ambiguous question
+**Do**:
+1. Determine if it's:
+   - Feature request → use feature-planner
+   - Documentation question → load docs
+   - Implementation → load context + implement
+2. Route to appropriate workflow
+
+---
+
+## Simulating Agents
+
+### PM Agent
+**When to adopt**: Creating specs, requirements, user stories
+**Responsibilities**:
+- Define WHAT and WHY (not HOW)
+- Technology-agnostic
+- User stories with acceptance criteria
+- Success criteria and KPIs
+
+**Example**:
+User: "Act as PM and create spec for payments"
+→ Adopt PM perspective, focus on business requirements
+
+### Architect Agent
+**When to adopt**: Creating technical plans, system design
+**Responsibilities**:
+- Define HOW (technical implementation)
+- Component design, data models
+- API contracts, integrations
+- Reference ADRs
+
+**Example**:
+User: "Act as Architect and design payment system"
+→ Adopt Architect perspective, focus on technical design
+
+### DevOps Agent
+**When to adopt**: Infrastructure, deployment, CI/CD
+**Responsibilities**:
+- Infrastructure as Code (Terraform, etc.)
+- Deployment strategy
+- Monitoring, logging
+- Cost optimization
+
+### QA Lead Agent
+**When to adopt**: Test strategy, test cases
+**Responsibilities**:
+- Test coverage matrix
+- E2E, unit, integration tests
+- Test case IDs (map TC-0001 to tests)
+
+---
+
+## @ Context Shortcuts
+
+When user types `@increments`, `@docs`, `@strategy`, `@tests`:
+
+### @increments
+**Load**:
+- Current increment's spec.md
+- Current increment's plan.md
+- Current increment's tasks.md
+- Current increment's context-manifest.yaml
+
+### @docs
+**Load**:
+- .specweave/docs/internal/architecture/
+- Focus on system design, ADRs
+
+### @strategy
+**Load**:
+- .specweave/docs/internal/strategy/
+- Focus on business requirements, PRDs
+
+### @tests
+**Load**:
+- .specweave/increments/*/tests.md
+- tests/ directory
+
+---
+
+## Composer Multi-File Editing
+
+When user says "update spec and plan to add OAuth2":
+1. Use Composer (Cmd+I)
+2. Edit both files simultaneously
+3. Maintain consistency between them
+
+---
+
+## Increment Lifecycle
+
+### Status Progression
+```
+planned → in-progress → completed → closed
+```
+
+### When user says "start increment":
+1. Update spec.md frontmatter: `status: in-progress`
+2. Check WIP limit (max 2 in-progress)
+
+### When user says "complete increment":
+1. Verify all P1 tasks done
+2. Update spec.md: `status: completed`
+3. Generate completion report
+
+---
+
+## Important Reminders
+
+1. ✅ **Always read context-manifest.yaml first**
+2. ✅ **Load only files listed in manifest** (saves 70%+ tokens)
+3. ✅ **Adopt role when acting as agent** (PM, Architect, DevOps, etc.)
+4. ✅ **Technology-agnostic in spec.md** (WHAT/WHY only)
+5. ✅ **Technology-specific in plan.md** (HOW with details)
+6. ✅ **Use checkboxes in tasks.md** for task tracking
+7. ✅ **Reference SPECWEAVE.md** for complete guide
+
+---
+
+## Limitations (vs Claude Code)
+
+❌ **No auto-activation** - You must explicitly ask for workflows
+❌ **No separate context windows** - All context shared
+❌ **No hooks** - Manual doc updates required
+
+✅ **But still powerful with Composer + @ shortcuts!**
+
+---
+
+## Quick Reference
+
+**Create feature**: "Create increment for [feature name]"
+**Load context**: "@increments" or read context-manifest.yaml
+**Act as role**: "Act as PM and create spec"
+**Multi-file edit**: Use Composer (Cmd+I)
+**Check structure**: "List increments" or `ls .specweave/increments/`
+
+---
+
+**For complete documentation, see SPECWEAVE.md**

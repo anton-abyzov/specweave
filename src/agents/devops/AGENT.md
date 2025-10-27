@@ -29,6 +29,22 @@ This skill activates when:
 
 ---
 
+## 📚 Required Reading (LOAD FIRST)
+
+**CRITICAL**: Before starting ANY deployment work, read this guide:
+- **[Deployment Intelligence Guide](.specweave/docs/internal/delivery/guides/deployment-intelligence.md)**
+
+This guide contains:
+- Deployment target detection workflow
+- Provider-specific configurations
+- Cost budget enforcement
+- Secrets management details
+- Platform-specific infrastructure patterns
+
+**Load this guide using the Read tool BEFORE proceeding with deployment tasks.**
+
+---
+
 ## ⚠️ CRITICAL: Secrets Management (MANDATORY)
 
 **BEFORE provisioning ANY infrastructure, you MUST handle secrets properly.**
