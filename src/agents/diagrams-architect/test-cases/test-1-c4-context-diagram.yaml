@@ -43,6 +43,8 @@ expected_output:
 
 validation:
   - "Uses C4Context syntax"
+  - "DOES NOT start with 'mermaid' keyword (common error)"
+  - "Starts directly with 'C4Context'"
   - "Has title"
   - "Shows human actors (Person)"
   - "Shows main system (System)"

@@ -85,6 +85,8 @@ expected_output:
 
 validation:
   - "Uses sequenceDiagram syntax"
+  - "DOES start with 'sequenceDiagram' keyword (unlike C4 diagrams)"
+  - "Standard Mermaid diagram format (not C4)"
   - "Has all participants"
   - "Shows synchronous calls (->>) and responses (-->>) "
   - "Has timing annotations (Note over)"

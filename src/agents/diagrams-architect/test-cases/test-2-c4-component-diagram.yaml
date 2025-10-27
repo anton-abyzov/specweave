@@ -57,6 +57,8 @@ expected_output:
 
 validation:
   - "Uses C4Component syntax"
+  - "DOES NOT start with 'mermaid' keyword (common error)"
+  - "Starts directly with 'C4Component'"
   - "Has title with service name"
   - "Uses Container_Boundary for service boundary"
   - "Shows components (controllers, services, repositories)"
