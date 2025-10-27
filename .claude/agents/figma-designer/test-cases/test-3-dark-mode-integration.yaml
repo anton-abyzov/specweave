@@ -1,0 +1,26 @@
+---
+name: "Dark Mode Support"
+description: "Test creation of light/dark theme variables"
+input:
+  prompt: "Design a dashboard with dark mode toggle"
+  features:
+    - "dark_mode"
+expected_output:
+  type: "figma_file_with_themes"
+  variables:
+    - "color/background/light"
+    - "color/background/dark"
+    - "color/text/light"
+    - "color/text/dark"
+  components_with_variants:
+    - "Dashboard/Light"
+    - "Dashboard/Dark"
+validation:
+  - "Light theme color contrast: 4.5:1"
+  - "Dark theme color contrast: 4.5:1"
+  - "Theme toggle component exists"
+success_criteria:
+  - "Both themes accessible"
+  - "Smooth theme switching"
+  - "Variables correctly mapped"
+---

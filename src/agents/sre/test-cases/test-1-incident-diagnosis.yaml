@@ -1,0 +1,125 @@
+---
+name: "Incident Diagnosis - Slow API Response"
+description: "Tests if SRE agent can diagnose slow API response and identify root cause"
+priority: "P1"
+expected_duration: "5-10 minutes"
+
+input:
+  prompt: "Users reporting dashboard is slow, taking 10 seconds to load"
+  context:
+    - "API endpoint: /api/dashboard"
+    - "Normal response time: <200ms"
+    - "Current response time: ~10 seconds"
+    - "Users affected: All users"
+    - "Started: ~2 hours ago"
+
+expected_output:
+  type: "diagnosis"
+  format: "structured"
+
+  # Required sections in output
+  required_sections:
+    - "triage"
+    - "multi_layer_diagnosis"
+    - "root_cause"
+    - "mitigation_plan"
+
+  # Expected triage
+  triage:
+    severity: "SEV2"
+    affected: ["Dashboard UI", "Backend API"]
+    users_impacted: "All users"
+    business_impact: "Reduced engagement"
+
+  # Expected diagnostic layers checked
+  diagnostic_layers:
+    - layer: "UI/Frontend"
+      checks:
+        - "Bundle size"
+        - "Render performance"
+        - "Network requests"
+      expected_finding: "API calls taking >5 seconds"
+
+    - layer: "Backend/API"
+      checks:
+        - "API response time"
+        - "Error rate"
+        - "CPU/Memory usage"
+      expected_finding: "API response time 8-10 seconds"
+
+    - layer: "Database"
+      checks:
+        - "Query time"
+        - "Slow query log"
+        - "EXPLAIN ANALYZE"
+      expected_finding: "Sequential scan on users table (10M rows)"
+
+  # Expected root cause
+  root_cause:
+    contains:
+      - "Missing database index"
+      - "users.last_login_at"
+      - "Sequential scan"
+      - "10,000,000 rows"
+
+  # Expected mitigation plan
+  mitigation_plan:
+    immediate:
+      - action: "Add database index"
+        command: "CREATE INDEX CONCURRENTLY"
+        impact: "Query time 7.8s → 50ms"
+        risk: "Low"
+        eta: "2 minutes"
+
+    short_term:
+      - action: "Cache dashboard data"
+        impact: "Reduce DB load by 90%"
+
+    long_term:
+      - action: "Audit all queries for missing indexes"
+      - action: "Add monitoring alert"
+      - action: "Create runbook"
+
+# Validation criteria
+validation:
+  - "Triage completed within 2 minutes"
+  - "Multi-layer diagnosis performed (UI → Backend → Database)"
+  - "Root cause correctly identified (missing index)"
+  - "Mitigation plan has 3 horizons (immediate/short/long)"
+  - "Immediate mitigation is safe and effective"
+  - "Risk assessment included for each mitigation action"
+
+# Success criteria
+success_criteria:
+  - "Severity correctly classified as SEV2"
+  - "Database identified as bottleneck (not UI or network)"
+  - "Missing index proposed as immediate fix"
+  - "EXPLAIN ANALYZE or similar diagnostic mentioned"
+  - "Mitigation plan is actionable"
+  - "Time estimates provided (ETA)"
+
+# Failure indicators
+failure_indicators:
+  - "Incorrect layer identified as root cause (e.g., UI instead of database)"
+  - "No specific mitigation proposed"
+  - "Mitigation plan too generic"
+  - "No risk assessment"
+  - "No time estimates"
+  - "Suggests restarting service as primary fix (not addressing root cause)"
+
+# Related playbooks
+related_playbooks:
+  - "playbooks/04-slow-api-response.md"
+
+# Notes
+notes: |
+  This test validates the SRE agent's ability to:
+  1. Perform systematic multi-layer diagnosis
+  2. Identify database performance issues
+  3. Propose specific, actionable fixes
+  4. Create comprehensive mitigation plans
+  5. Assess risks and provide time estimates
+
+  The agent should NOT just suggest restarting services or scaling up.
+  It should identify the ACTUAL root cause (missing index) and propose
+  a permanent fix.

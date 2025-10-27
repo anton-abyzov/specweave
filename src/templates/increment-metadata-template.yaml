@@ -1,0 +1,138 @@
+# Increment Metadata Template
+# Location: features/{increment-number}-{feature-name}/metadata.yaml
+# Purpose: Track increment metadata, external tool IDs, and sync status
+
+---
+# Increment identification
+increment: 0001  # Sequential number (0001, 0002, etc.)
+name: feature-name  # Short kebab-case name
+title: "Feature Title"  # Human-readable title
+description: "Brief description of what this feature does"
+
+# Status tracking
+status: planned  # planned | in_progress | completed | on_hold | cancelled
+priority: P2     # P1 (critical) | P2 (high) | P3 (medium) | P4 (low)
+
+# External tool IDs (bi-directional sync)
+external_ids:
+  # Jira integration
+  jira:
+    project: PROJ  # Jira project key
+    epic: PROJ-123  # Epic ID
+    epic_url: https://company.atlassian.net/browse/PROJ-123
+    stories:
+      - PROJ-124  # Story IDs related to this increment
+      - PROJ-125
+    sync_enabled: true
+    last_sync: 2025-01-20T10:30:00Z  # ISO 8601 timestamp
+    sync_status: success  # success | failed | conflict | not_configured
+
+  # Azure DevOps integration
+  ado:
+    project: MyProject  # ADO project name
+    epic: 456789  # Epic work item ID
+    epic_url: https://dev.azure.com/company/MyProject/_workitems/edit/456789
+    features:
+      - 456790  # Feature work item IDs
+      - 456791
+    sync_enabled: false
+    last_sync: null
+    sync_status: null
+
+  # GitHub Projects integration
+  github:
+    repo: company/repo  # GitHub repository
+    milestone: 5  # Milestone number
+    milestone_url: https://github.com/company/repo/milestone/5
+    issues:
+      - 123  # Issue numbers
+      - 124
+    sync_enabled: false
+    last_sync: null
+    sync_status: null
+
+# Related documentation (references to five pillars)
+docs:
+  # Strategy
+  prd: docs/internal/strategy/prd-feature-name.md
+
+  # Architecture
+  hld: docs/internal/architecture/hld-feature-name.md
+  adrs:
+    - docs/internal/architecture/adr/0001-decision-title.md
+    - docs/internal/architecture/adr/0002-another-decision.md
+  rfcs:
+    - docs/internal/architecture/rfc/0001-api-design.md
+
+  # Operations
+  runbooks:
+    - docs/internal/operations/runbook-service-name.md
+
+  # Delivery
+  test_strategy: features/0001-feature-name/tests.md
+
+# Team and ownership
+team: backend-team  # Team responsible for this increment
+owner: "@john-doe"  # Primary owner (GitHub handle)
+reviewers:
+  - "@architect"
+  - "@tech-lead"
+  - "@security-lead"
+
+# Dates (ISO 8601 timestamps)
+created: 2025-01-15T09:00:00Z  # When increment was created
+started: 2025-01-16T10:00:00Z  # When work began
+completed: null  # When increment was completed (null if not done)
+updated: 2025-01-20T15:30:00Z  # Last updated
+
+# Milestones
+milestones:
+  - name: PRD Complete
+    date: 2025-01-16
+    status: completed  # planned | in_progress | completed | skipped
+  - name: HLD Complete
+    date: 2025-01-18
+    status: completed
+  - name: ADRs Complete
+    date: 2025-01-19
+    status: completed
+  - name: RFC Complete
+    date: 2025-01-20
+    status: in_progress
+  - name: Implementation Complete
+    date: 2025-02-01
+    status: planned
+  - name: Testing Complete
+    date: 2025-02-05
+    status: planned
+  - name: Production Deployment
+    date: 2025-02-10
+    status: planned
+
+# Tags (for filtering, searching)
+tags:
+  - backend
+  - authentication
+  - security
+  - api
+
+# Dependencies (other increments this depends on)
+dependencies:
+  requires:
+    - 0000-foundation  # Must be completed before this increment
+  blocks:
+    - 0003-advanced-auth  # This increment blocks these increments
+
+# Metrics (optional, for tracking)
+metrics:
+  estimated_effort_hours: 80
+  actual_effort_hours: 95
+  lines_of_code: 2500
+  test_coverage_percent: 85
+  num_files_changed: 45
+
+# Notes (optional, free-form)
+notes: |
+  This increment implements OAuth 2.0 authentication using Auth0 as the provider.
+  Special attention needed for security review before production deployment.
+---

@@ -1,0 +1,34 @@
+---
+name: "No Activation in Non-SpecWeave Projects"
+description: "Tests that specweave-detector does NOT activate in regular projects without .specweave/"
+input:
+  prompt: "User opens Claude Code in a regular Node.js project"
+  files:
+    - "package.json"
+    - "src/"
+    - "README.md"
+  context:
+    cwd: "/path/to/regular-project"
+    files_present:
+      - "package.json"
+      - "src/"
+    files_missing:
+      - ".specweave/"
+      - ".specweave/config.yaml"
+expected_output:
+  type: "no_activation"
+  activates: false
+  reason: "No .specweave/ directory found"
+  actions: []
+  contains: []
+validation:
+  - "Does NOT activate in non-SpecWeave projects"
+  - "No false positives"
+  - "No unnecessary warnings"
+  - "Does not interfere with normal Claude Code operation"
+success_criteria:
+  - "Zero false positives"
+  - "Only activates when .specweave/ present"
+  - "Silent when not applicable"
+  - "No performance impact on non-SpecWeave projects"
+---

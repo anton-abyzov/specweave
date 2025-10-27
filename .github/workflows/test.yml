@@ -1,0 +1,125 @@
+name: Test & Validate
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check test coverage
+        run: npm run test:coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+        with:
+          file: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+
+  validate-skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate skill structure
+        run: npm run validate:skills
+
+      - name: Check skill tests exist
+        run: |
+          for skill in src/skills/*/; do
+            if [ ! -d "$skill/test-cases" ]; then
+              echo "ERROR: Missing test-cases in $skill"
+              exit 1
+            fi
+            test_count=$(find "$skill/test-cases" -name "*.yaml" | wc -l)
+            if [ $test_count -lt 3 ]; then
+              echo "ERROR: $skill has less than 3 test cases"
+              exit 1
+            fi
+          done
+
+  validate-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check required directories
+        run: |
+          required_dirs=("src/skills" "docs" "features" "specs" ".specweave")
+          for dir in "${required_dirs[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "ERROR: Missing required directory: $dir"
+              exit 1
+            fi
+          done
+
+      - name: Validate principles.md exists
+        run: |
+          if [ ! -f "docs/principles.md" ]; then
+            echo "ERROR: docs/principles.md not found"
+            exit 1
+          fi
+
+      - name: Check feature structure
+        run: |
+          for feature in features/[0-9][0-9][0-9]-*/; do
+            required_files=("spec.md" "plan.md" "tasks.md" "tests.md" "context-manifest.yaml")
+            for file in "${required_files[@]}"; do
+              if [ ! -f "$feature/$file" ]; then
+                echo "ERROR: Missing $file in $feature"
+                exit 1
+              fi
+            done
+          done
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check markdown formatting
+        run: npm run lint:md

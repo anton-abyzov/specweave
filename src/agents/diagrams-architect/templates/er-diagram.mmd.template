@@ -1,0 +1,115 @@
+```mermaid
+erDiagram
+  %% Relationships (define first)
+  ENTITY1 ||--o{ ENTITY2 : "relationship name"
+  ENTITY2 }o--|| ENTITY3 : "relationship name"
+
+  %% Entity Definitions
+  ENTITY1 {
+    uuid id PK "Primary key"
+    string field1 "Description"
+    int field2 "Description"
+    timestamp created_at "Creation timestamp"
+  }
+
+  ENTITY2 {
+    uuid id PK
+    uuid entity1_id FK "Foreign key to ENTITY1"
+    string field1 UK "Unique field"
+    decimal field2 "Description"
+  }
+
+  ENTITY3 {
+    uuid id PK
+    string name
+  }
+```
+
+## Entity-Relationship Diagram Template
+
+### Purpose
+Show data models with relationships between entities.
+
+### When to Use
+- Database schema design
+- Data modeling
+- Understanding relationships
+
+### File Location
+```
+.specweave/docs/internal/architecture/diagrams/{module}/data-model.mmd
+```
+
+### Instructions
+
+1. **Replace Placeholders**:
+   - `ENTITY1`, `ENTITY2` - Table/entity names (UPPERCASE by convention)
+   - `field1`, `field2` - Column names
+   - Data types: `uuid`, `string`, `int`, `decimal`, `timestamp`, `boolean`, `text`
+   - Keys: `PK` (primary key), `FK` (foreign key), `UK` (unique key)
+
+2. **Relationship Cardinality**:
+   ```
+   ||--||  One to one
+   ||--o{  One to many
+   }o--||  Many to one
+   }o--o{  Many to many
+   ```
+
+3. **Examples**:
+   ```
+   USER ||--o{ ORDER : "places"        # User places many Orders
+   ORDER ||--|{ ORDER_ITEM : "contains"  # Order contains many Items
+   PRODUCT }o--|| CATEGORY : "belongs to" # Products belong to Category
+   ```
+
+4. **Add More Entities**:
+   ```
+   PAYMENT {
+     uuid id PK
+     uuid order_id FK
+     string stripe_payment_id UK
+     decimal amount
+     string status
+     timestamp created_at
+   }
+
+   ORDER ||--o| PAYMENT : "has"
+   ```
+
+### Best Practices
+- **Show all relationships** - Don't omit important connections
+- **Annotate keys** - PK, FK, UK
+- **Use meaningful names** - Not just id, name, value
+- **Add descriptions** - Explain complex fields
+- **Use standard data types** - uuid, string, int, decimal, timestamp
+- **Group related entities** - Keep related tables together
+
+### Naming Convention
+Save as: `data-model.mmd`
+
+One data model per module:
+```
+.specweave/docs/internal/architecture/diagrams/auth/data-model.mmd
+.specweave/docs/internal/architecture/diagrams/orders/data-model.mmd
+.specweave/docs/internal/architecture/diagrams/payments/data-model.mmd
+```
+
+### Common Patterns
+
+**One-to-Many**:
+```
+USER ||--o{ POST : "authors"
+```
+
+**Many-to-Many** (via junction table):
+```
+USER }o--o{ ROLE : "has"
+USER ||--o{ USER_ROLE : "through"
+ROLE ||--o{ USER_ROLE : "through"
+```
+
+**Self-referencing**:
+```
+CATEGORY }o--o| CATEGORY : "parent-child"
+```

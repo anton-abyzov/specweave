@@ -1,0 +1,210 @@
+---
+name: "Import JIRA Epic to Increment"
+description: "Tests if specweave-jira-mapper can import a JIRA Epic with Stories and Subtasks as a SpecWeave increment"
+input:
+  prompt: "Import JIRA epic PROJ-100"
+  jira_epic:
+    key: "PROJ-100"
+    title: "Payment Integration"
+    description: "Integrate Stripe for payment processing"
+    priority: "Highest"
+    status: "To Do"
+    labels: ["payments", "backend"]
+    created: "2025-10-21T14:00:00Z"
+
+  jira_stories:
+    - key: "PROJ-101"
+      title: "Setup Stripe account"
+      epic_link: "PROJ-100"
+      description: |
+        **As a** developer
+        **I want to** setup Stripe account
+        **So that** we can process payments
+
+        **Acceptance Criteria**:
+        - [ ] Stripe account created
+        - [ ] API keys generated and stored securely
+      labels: ["specweave", "backend"]
+
+    - key: "PROJ-105"
+      title: "Implement payment endpoint"
+      epic_link: "PROJ-100"
+      description: |
+        **As a** customer
+        **I want to** make payments with credit card
+        **So that** I can purchase products
+
+        **Acceptance Criteria**:
+        - [ ] Valid card charges successfully
+        - [ ] Invalid card returns error message
+      labels: ["specweave", "backend"]
+
+  jira_subtasks:
+    - key: "PROJ-102"
+      title: "Create Stripe account"
+      parent: "PROJ-101"
+      status: "To Do"
+
+    - key: "PROJ-103"
+      title: "Generate API keys"
+      parent: "PROJ-101"
+      status: "To Do"
+
+    - key: "PROJ-104"
+      title: "Store keys in environment variables"
+      parent: "PROJ-101"
+      status: "To Do"
+
+    - key: "PROJ-106"
+      title: "Create POST /api/payments endpoint"
+      parent: "PROJ-105"
+      status: "To Do"
+
+    - key: "PROJ-107"
+      title: "Integrate Stripe SDK"
+      parent: "PROJ-105"
+      status: "To Do"
+
+    - key: "PROJ-108"
+      title: "Add error handling"
+      parent: "PROJ-105"
+      status: "To Do"
+
+  context:
+    jira_url: "https://jira.company.com"
+    existing_increments: ["0001-user-authentication", "0002-brownfield-tools"]
+
+expected_output:
+  type: "increment_created"
+  increment:
+    id: "0003"  # Auto-numbered (next available)
+    folder: ".specweave/increments/0003-payment-integration/"
+    files:
+      - path: "spec.md"
+        frontmatter:
+          increment_id: "0003"
+          title: "Payment Integration"
+          description: "Integrate Stripe for payment processing"
+          status: "planned"
+          priority: "P1"
+          created_at: "2025-10-21T14:00:00Z"
+          jira:
+            epic_key: "PROJ-100"
+            epic_url: "https://jira.company.com/browse/PROJ-100"
+            stories:
+              - key: "PROJ-101"
+                user_story_id: "US3-001"
+              - key: "PROJ-105"
+                user_story_id: "US3-002"
+            imported_at: "2025-10-26T14:00:00Z"
+            sync_direction: "import"
+        content_contains:
+          - "# Payment Integration"
+          - "## User Stories"
+          - "### US3-001: Setup Stripe account"
+          - "**As a** developer"
+          - "**I want to** setup Stripe account"
+          - "**So that** we can process payments"
+          - "TC-0001: Stripe account created"
+          - "TC-0002: API keys generated and stored securely"
+          - "### US3-002: Implement payment endpoint"
+          - "**As a** customer"
+          - "TC-0003: Valid card charges successfully"
+          - "TC-0004: Invalid card returns error message"
+          - "**JIRA Story**: [PROJ-101]"
+          - "**JIRA Story**: [PROJ-105]"
+
+      - path: "tasks.md"
+        content_contains:
+          - "# Tasks: Payment Integration"
+          - "## User Story: US3-001 - Setup Stripe account"
+          - "- [ ] Create Stripe account (JIRA: PROJ-102)"
+          - "- [ ] Generate API keys (JIRA: PROJ-103)"
+          - "- [ ] Store keys in environment variables (JIRA: PROJ-104)"
+          - "## User Story: US3-002 - Implement payment endpoint"
+          - "- [ ] Create POST /api/payments endpoint (JIRA: PROJ-106)"
+          - "- [ ] Integrate Stripe SDK (JIRA: PROJ-107)"
+          - "- [ ] Add error handling (JIRA: PROJ-108)"
+
+      - path: "context-manifest.yaml"
+        content_contains:
+          - "spec_sections: []"
+          - "documentation: []"
+          - "max_context_tokens: 10000"
+          - "priority: high"
+
+      - path: "logs/jira-import.log"
+        content_contains:
+          - "Starting JIRA import for Epic PROJ-100"
+          - "Fetched Epic: Payment Integration"
+          - "Found 2 Stories"
+          - "Found 6 Subtasks"
+          - "Auto-numbered increment: 0003"
+          - "SUCCESS: Import completed"
+
+  jira_updated:
+    epic_custom_field:
+      specweave_increment_id: "0003-payment-integration"
+
+validation:
+  - "Increment auto-numbered correctly (0003, not 0001 or 0002)"
+  - "spec.md created with valid YAML frontmatter"
+  - "User stories extracted from JIRA Stories"
+  - "Acceptance criteria parsed from Story descriptions"
+  - "Test case IDs generated (TC-0001, TC-0002, etc.)"
+  - "User story IDs generated (US3-001, US3-002)"
+  - "tasks.md created with all Subtasks"
+  - "JIRA keys preserved in tasks (e.g., JIRA: PROJ-102)"
+  - "context-manifest.yaml created with defaults"
+  - "Import log created with detailed steps"
+  - "JIRA Epic updated with SpecWeave Increment ID"
+  - "Bidirectional traceability maintained"
+
+success_criteria:
+  - "Increment folder exists with all required files"
+  - "spec.md contains all user stories with acceptance criteria"
+  - "tasks.md contains all subtasks grouped by user story"
+  - "JIRA metadata stored in frontmatter"
+  - "User can navigate from JIRA to SpecWeave (Epic custom field)"
+  - "User can navigate from SpecWeave to JIRA (frontmatter URLs)"
+
+edge_cases:
+  - "Epic without Stories (should create increment with empty spec)"
+  - "Story without Subtasks (should create increment without tasks)"
+  - "Story description not in 'As a/I want/So that' format (should extract as-is)"
+  - "Acceptance criteria not in checkbox format (should add checkboxes)"
+  - "Custom JIRA status (should ask user for mapping)"
+  - "JIRA API timeout (should retry and provide clear error)"
+
+parsing_examples:
+  acceptance_criteria:
+    input: |
+      Acceptance Criteria:
+      - Stripe account created
+      - API keys generated
+    output: |
+      - [ ] TC-0001: Stripe account created
+      - [ ] TC-0002: API keys generated
+
+  user_story_format:
+    input: |
+      **As a** developer
+      **I want to** setup Stripe
+      **So that** we can process payments
+    output: |
+      ### US3-001: Setup Stripe account
+
+      **As a** developer
+      **I want to** setup Stripe
+      **So that** we can process payments
+
+  non_standard_format:
+    input: |
+      Setup Stripe account and configure API keys
+    output: |
+      ### US3-001: Setup Stripe account
+
+      Setup Stripe account and configure API keys
+
+      (Note: Story description not in standard format - imported as-is)
+---

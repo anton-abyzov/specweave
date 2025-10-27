@@ -1,0 +1,29 @@
+---
+name: "Storybook Setup and Validation"
+description: "Test complete Storybook setup with design system showcase"
+input:
+  figma_url: "https://figma.com/file/ABC123"
+  framework: "react"
+expected_output:
+  type: "storybook_setup"
+  files:
+    - ".storybook/main.ts"
+    - ".storybook/preview.ts"
+    - "stories/DesignSystem.stories.tsx"
+    - "src/components/*/*.stories.tsx"
+  stories:
+    - "Design System/Colors"
+    - "Design System/Typography"
+    - "Atoms/Button"
+    - "Molecules/FormField"
+validation:
+  - "Storybook runs without errors"
+  - "All components have stories"
+  - "Design system showcase complete"
+  - "a11y addon enabled"
+success_criteria:
+  - "npm run storybook succeeds"
+  - "All stories render correctly"
+  - "No accessibility violations"
+  - "Visual regression baseline created"
+---

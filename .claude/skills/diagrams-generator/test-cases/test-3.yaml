@@ -1,0 +1,8 @@
+---
+name: "Save to Correct Location"
+description: "Tests if diagrams are saved to correct paths (HLD vs LLD)"
+input:
+  prompt: "Create component diagram for Payment Service"
+expected_output:
+  file_location: ".specweave/docs/internal/architecture/diagrams/payments/component-payment-service.mmd"
+---

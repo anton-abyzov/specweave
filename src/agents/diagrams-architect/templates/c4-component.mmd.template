@@ -1,0 +1,106 @@
+```mermaid
+C4Component
+  title Component Diagram for {SERVICE_NAME}
+
+  %% Container Boundary (the service we're zooming into)
+  Container_Boundary(service, "{SERVICE_NAME}") {
+    %% Controllers (handle HTTP/gRPC requests)
+    Component(controller, "{Controller Name}", "{Technology}", "{Description}")
+
+    %% Services (business logic)
+    Component(service_logic, "{Service Name}", "{Technology}", "{Description}")
+
+    %% Repositories (data access)
+    Component(repository, "{Repository Name}", "{Technology}", "{Description}")
+
+    %% Utilities/Helpers
+    Component(utility, "{Utility Name}", "{Library/Technology}", "{Description}")
+
+    %% Database Tables (if relevant at this level)
+    ComponentDb(table, "{Table Name}", "{Database}", "{Description}")
+  }
+
+  %% Relationships (method calls, data flow)
+  Rel(controller, service_logic, "{Method Call}", "{Language}")
+  Rel(service_logic, repository, "{Method Call}", "{Language}")
+  Rel(service_logic, utility, "{Method Call}", "{Language}")
+  Rel(repository, table, "Reads/writes", "SQL")
+```
+
+## C4 Level 3: Component Diagram Template (LLD - NEW)
+
+### Purpose
+Show internal structure of a container/service (modules, classes, components).
+
+### When to Use
+- Detailed service design (LLD)
+- Before implementation
+- Understanding module responsibilities
+
+### File Location
+```
+.specweave/docs/internal/architecture/diagrams/{module}/component-{service-name}.mmd
+```
+
+### Instructions
+
+1. **Replace Placeholders**:
+   - `{SERVICE_NAME}` - Auth Service, Payment Service, Order Service
+   - `{Controller Name}` - AuthController, PaymentController
+   - `{Technology}` - Express Router, TypeScript Class, Python Module
+   - `{Service Name}` - AuthService, PaymentService (business logic)
+   - `{Repository Name}` - UserRepository, OrderRepository (data access)
+   - `{Utility Name}` - JWTHandler, PasswordHasher, EmailSender
+   - `{Library/Technology}` - jsonwebtoken, bcrypt, nodemailer
+   - `{Table Name}` - users, orders, payments
+   - `{Method Call}` - authenticate(), createOrder(), processPayment()
+   - `{Language}` - TypeScript, Python, Java
+
+2. **Add More Components**:
+   ```
+   Component(validator, "Input Validator", "class-validator", "Validates DTOs")
+   Component(logger, "Logger", "winston", "Application logging")
+   Component(cache, "Cache Manager", "Redis Client", "Caches frequently accessed data")
+   ```
+
+3. **Show Design Patterns**:
+   ```
+   %% Controller → Service → Repository pattern
+   Rel(auth_controller, auth_service, "Calls business logic")
+   Rel(auth_service, user_repository, "Queries data")
+   ```
+
+### Best Practices
+- **One diagram per service** - Don't mix services
+- **Show design patterns** - MVC, Controller-Service-Repository, etc.
+- **Indicate technologies** - TypeScript classes, Express routers, libraries
+- **Use clear method names** - authenticate(), createOrder(), not execute()
+- **Limit to 10-15 components** - More = break into submodules
+
+### Naming Convention
+Save as: `component-{service-name}.mmd`
+
+Examples:
+- `component-auth-service.mmd`
+- `component-payment-service.mmd`
+- `component-order-service.mmd`
+
+### Example
+```
+.specweave/docs/internal/architecture/diagrams/auth/component-auth-service.mmd
+.specweave/docs/internal/architecture/diagrams/payments/component-payment-service.mmd
+```
+
+---
+
+## Relationship to HLD/LLD
+
+| Document Type | C4 Levels | SpecWeave Location |
+|---------------|-----------|-------------------|
+| **HLD** (High-Level Design) | C4-1 (Context), C4-2 (Container) | `.specweave/docs/internal/architecture/diagrams/` |
+| **LLD** (Low-Level Design) | C4-3 (Component) | `.specweave/docs/internal/architecture/diagrams/{module}/` |
+| **Code** | C4-4 (Class diagrams) | Optional, generated from code |
+
+---
+
+This template is **NEW** to SpecWeave and fills the gap for Low-Level Design (LLD) documentation.

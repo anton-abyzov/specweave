@@ -1,0 +1,126 @@
+name: Feature Request
+description: Request a new feature (auto-generates increment structure with SpecWeave)
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+
+        This template helps you request a new feature. If GitHub Actions is enabled, SpecWeave will:
+        - ✅ Auto-generate complete increment structure (spec/plan/tasks/tests)
+        - ✅ Create branch and draft PR
+        - ✅ Post comment with next steps
+
+  - type: input
+    id: feature_name
+    attributes:
+      label: Feature Name
+      description: Short, descriptive name for this feature
+      placeholder: "e.g., User Authentication, Dark Mode, Payment Integration"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        As a [type of user]
+        I want [goal]
+        So that [benefit]
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How should this feature work?
+      placeholder: |
+        Describe the desired functionality:
+        - What should happen?
+        - How should users interact with it?
+        - Any specific requirements?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know when this feature is complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - P1 - Critical (blocks development)
+        - P2 - Important (key feature)
+        - P3 - Nice to have (enhancement)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which module/area does this affect?
+      options:
+        - Authentication
+        - Payments
+        - User Management
+        - API
+        - UI/UX
+        - Infrastructure
+        - Documentation
+        - Other
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: requirements
+    attributes:
+      label: Additional Requirements
+      options:
+        - label: Requires database changes
+        - label: Requires API changes
+        - label: Requires UI changes
+        - label: Requires third-party integration
+        - label: Security-sensitive
+        - label: Performance-critical
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Any other information that might be helpful
+      placeholder: |
+        - Related issues
+        - Screenshots/mockups
+        - External references
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+
+        **After submitting**:
+        - If GitHub Actions is enabled, SpecWeave will analyze this issue
+        - Feature structure will be auto-generated
+        - You'll receive a comment with a link to the draft PR
+        - Review the generated structure and make any adjustments
+
+        **See**: [GitHub Actions Setup Guide](.specweave/docs/guides/github-action-setup.md)

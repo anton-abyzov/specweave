@@ -1,0 +1,632 @@
+# {PROJECT_NAME} - Development Guide
+
+**THIS FILE (CLAUDE.md) IS YOUR COMPLETE DEVELOPMENT GUIDE**
+
+This project uses **SpecWeave** - a specification-first AI development framework where **specifications and documentation are the SOURCE OF TRUTH**. Code is the expression of these specifications.
+
+---
+
+## SpecWeave Auto-Routing (CRITICAL)
+
+**MANDATORY BEHAVIOR**: This project has SpecWeave installed (`.specweave/` directory exists).
+
+### Auto-Detection & Routing Rules
+
+1. **ALWAYS check for SpecWeave FIRST** before responding to ANY user request
+2. **ROUTE ALL development-related questions** through `specweave-detector` skill
+3. **EVEN GENERIC questions** may need SpecWeave context (e.g., "Analyze BTC/USD" → suggest creating trading analysis feature)
+
+### Detection Logic
+
+```javascript
+if (directoryExists('.specweave/config.yaml')) {
+  // SpecWeave is installed
+  // Route through specweave-detector for ALL development requests
+  activateSpecWeaveMode();
+}
+```
+
+### Routing Examples
+
+| User Request | Detection | Action |
+|-------------|-----------|--------|
+| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Analyze BTC/USD prices" | Could be feature request | ✅ Route to `specweave-detector` → Suggest: "Create BTC analysis feature?" |
+| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Fix bug in login" | Development request | ✅ Route to `specweave-detector` → Load context → Implement |
+| "What's for lunch?" | Non-development | ❌ Respond normally (out of domain) |
+
+### Activation Behavior
+
+**When SpecWeave is detected**:
+- ✅ Show indicator: `🔷 SpecWeave Active`
+- ✅ Route development requests automatically
+- ✅ Load context via `context-loader` when needed
+- ✅ Use appropriate agents (PM, Architect, DevOps, etc.)
+- ✅ Adapt to detected tech stack (TypeScript, Python, Go, etc.)
+
+**Rule**: When in doubt, route through SpecWeave. Let `specweave-detector` decide if it's a valid development request.
+
+---
+
+## Project Philosophy
+
+**SpecWeave** enables spec-driven development with these principles:
+
+1. **Specification Before Implementation** - Define WHAT and WHY before HOW
+2. **Living Documentation** - Specs evolve with code, never diverge
+3. **Test-Validated Features** - Every feature proven through automated tests
+4. **Framework-Agnostic** - Adapts to YOUR tech stack (detected automatically)
+5. **Context Precision** - Load only relevant specs (70%+ token reduction)
+6. **Auto-Role Routing** - Skills detect and route to appropriate expertise
+7. **Regression Prevention** - Document existing code before modification
+8. **Autonomous Implementation** - Minimize interruption, maximize flow
+
+---
+
+## Tech Stack
+
+**IMPORTANT**: SpecWeave is **framework-agnostic** and adapts to YOUR chosen tech stack.
+
+### Detected Tech Stack
+
+**Project Type**: {MONOREPO_OR_SINGLE}
+
+{#IF_SINGLE_STACK}
+```yaml
+# Single-stack project
+language: {DETECTED_LANGUAGE}      # e.g., typescript, python, go, rust, java
+framework: {DETECTED_FRAMEWORK}    # e.g., nextjs, django, fastapi, spring-boot, gin
+database: {SPECIFIED_DATABASE}     # e.g., postgresql, mysql, mongodb, sqlite
+platform: {SPECIFIED_PLATFORM}     # e.g., hetzner, aws, vercel, self-hosted
+```
+{#ENDIF}
+
+{#IF_MONOREPO}
+```yaml
+# Monorepo with multiple services
+monorepo: true
+
+services:
+  {SERVICE_1_NAME}:
+    path: {SERVICE_1_PATH}/          # e.g., client/, apps/web/
+    language: {SERVICE_1_LANGUAGE}   # e.g., typescript
+    framework: {SERVICE_1_FRAMEWORK} # e.g., nextjs, react
+    platform: {SERVICE_1_PLATFORM}   # e.g., vercel
+
+  {SERVICE_2_NAME}:
+    path: {SERVICE_2_PATH}/          # e.g., server/, apps/api/
+    language: {SERVICE_2_LANGUAGE}   # e.g., python
+    framework: {SERVICE_2_FRAMEWORK} # e.g., fastapi, django
+    database: {SERVICE_2_DATABASE}   # e.g., postgresql
+    platform: {SERVICE_2_PLATFORM}   # e.g., hetzner
+
+  {SERVICE_3_NAME}:
+    path: {SERVICE_3_PATH}/          # e.g., ml/, packages/analytics/
+    language: {SERVICE_3_LANGUAGE}   # e.g., python
+    framework: {SERVICE_3_FRAMEWORK} # e.g., tensorflow, pytorch
+    database: {SERVICE_3_DATABASE}   # e.g., mongodb
+    platform: {SERVICE_3_PLATFORM}   # e.g., aws-sagemaker
+```
+{#ENDIF}
+
+### Tech Stack Detection
+
+SpecWeave detects your stack from:
+
+**Single-Stack Projects**:
+1. **`.specweave/config.yaml`** (highest priority)
+2. **Project root files**:
+   - `package.json` → TypeScript/JavaScript
+   - `requirements.txt` / `pyproject.toml` → Python
+   - `go.mod` → Go
+   - `Cargo.toml` → Rust
+   - `pom.xml` / `build.gradle` → Java
+   - `*.csproj` → C#/.NET
+3. **Ask user** if detection fails
+
+**Monorepo Projects**:
+1. **`.specweave/config.yaml`** with `monorepo: true` and `services:` map
+2. **Auto-detection**:
+   - Scan subdirectories (`client/`, `server/`, `apps/`, `packages/`)
+   - Detect stack per service (each has own package.json, requirements.txt, etc.)
+   - Common patterns:
+     - `client/` or `apps/web/` → Frontend (TypeScript/React/Next.js)
+     - `server/` or `apps/api/` → Backend (Python/FastAPI, Node.js/Express)
+     - `ml/` or `packages/analytics/` → ML/Analytics (Python/TensorFlow)
+     - `mobile/` or `apps/mobile/` → Mobile (React Native, Flutter)
+3. **Service-aware agents**: Agents receive BOTH full monorepo context AND specific service stack when working on files
+
+**Agent Behavior**:
+- **Single-stack**: All agents use the same tech stack
+- **Monorepo**: Agents adapt based on file path being modified
+  - Working on `client/src/components/` → Use TypeScript/Next.js stack
+  - Working on `server/app/routes.py` → Use Python/FastAPI stack
+  - Working on `ml/models/` → Use Python/TensorFlow stack
+
+---
+
+## Project Structure
+
+### Increment-Centric Organization
+
+**CRITICAL**: ALL work is organized by increments in `.specweave/increments/{increment-id}/`
+
+**Single-Stack Project**:
+```
+{PROJECT_NAME}/
+├── .specweave/
+│   ├── config.yaml              # Project configuration
+│   ├── docs/                    # Documentation (5-pillar structure)
+│   │   ├── internal/            # Internal docs (NOT published)
+│   │   │   ├── strategy/        # Business specs (WHAT, WHY)
+│   │   │   ├── architecture/    # Technical design (HOW)
+│   │   │   ├── delivery/        # Roadmap, releases
+│   │   │   ├── operations/      # Runbooks, SLOs
+│   │   │   └── governance/      # Security, compliance
+│   │   └── public/              # Published docs (users/customers)
+│   │       ├── overview/
+│   │       ├── guides/
+│   │       ├── api/
+│   │       └── changelog/
+│   ├── increments/              # ALL work organized by increments
+│   │   ├── 0001-feature-name/
+│   │   │   ├── spec.md          # Specification (WHAT, WHY)
+│   │   │   ├── tasks.md         # Implementation tasks (HOW)
+│   │   │   ├── logs/            # ✅ Increment-specific logs
+│   │   │   ├── scripts/         # ✅ Increment-specific scripts
+│   │   │   └── reports/         # ✅ Increment-specific reports
+│   │   └── 0002-another-feature/
+│   └── cache/                   # Context cache (gitignored)
+│
+├── src/                         # Your source code (framework-specific)
+│   └── ...
+│
+├── tests/                       # Your tests (framework-specific)
+│   └── ...
+│
+├── CLAUDE.md                    # This file (development guide)
+├── README.md                    # Project README
+└── package.json                 # Or requirements.txt, go.mod, etc.
+```
+
+**Monorepo Project** (multiple services):
+```
+{PROJECT_NAME}/
+├── .specweave/
+│   ├── config.yaml              # Monorepo configuration (monorepo.enabled: true)
+│   ├── docs/                    # Shared documentation
+│   │   ├── internal/
+│   │   │   ├── strategy/
+│   │   │   │   ├── shared/      # Shared business requirements
+│   │   │   │   ├── client/      # Frontend-specific requirements
+│   │   │   │   ├── server/      # Backend-specific requirements
+│   │   │   │   └── ml/          # ML-specific requirements
+│   │   │   └── architecture/
+│   │   │       ├── shared/      # System-wide architecture
+│   │   │       ├── client/      # Frontend architecture
+│   │   │       ├── server/      # Backend architecture
+│   │   │       └── ml/          # ML architecture
+│   │   └── public/
+│   ├── increments/              # Cross-service increments
+│   │   ├── 0001-user-auth/      # May touch client + server
+│   │   │   ├── spec.md
+│   │   │   ├── tasks.md         # Tasks specify service (client/, server/)
+│   │   │   ├── logs/
+│   │   │   ├── scripts/
+│   │   │   └── reports/
+│   │   └── 0002-ml-pipeline/    # ML-specific increment
+│   └── cache/
+│
+├── client/                      # Frontend service (TypeScript/Next.js)
+│   ├── package.json
+│   ├── src/
+│   └── tests/
+│
+├── server/                      # Backend service (Python/FastAPI)
+│   ├── requirements.txt
+│   ├── app/
+│   └── tests/
+│
+├── ml/                          # ML service (Python/TensorFlow)
+│   ├── requirements.txt
+│   ├── models/
+│   └── tests/
+│
+├── CLAUDE.md                    # This file (monorepo development guide)
+└── README.md                    # Project README
+```
+
+**Root Folder Rules**:
+- ✅ **ONLY** CLAUDE.md added by SpecWeave
+- ✅ User's existing files unchanged (README, package.json, src/, etc.)
+- ❌ **NO** logs, reports, or temp files in root
+- ❌ **ALL** supporting files go in `.specweave/increments/{increment-id}/`
+
+**Monorepo Rules**:
+- ✅ Each service (client/, server/, ml/) has its own tech stack
+- ✅ Agents adapt based on file path being modified
+- ✅ Increments can touch multiple services (tasks.md specifies which)
+- ✅ Documentation organized by service when service-specific
+- ✅ Shared docs in `.specweave/docs/internal/{pillar}/shared/`
+
+---
+
+## Development Workflow
+
+### Creating New Features (/create-increment)
+
+1. **Describe what you want**:
+   ```
+   /create-increment "user authentication with OAuth"
+   ```
+
+2. **Tech Stack Detection**:
+   - SpecWeave detects YOUR stack (TypeScript/NextJS, Python/Django, Go/Gin, etc.)
+   - Or asks if detection fails: "What language/framework are you using?"
+
+3. **Clarifying Questions**:
+   - Target users/scale?
+   - Budget constraints?
+   - Deployment platform?
+   - Authentication method? (Google, GitHub, email magic links?)
+
+4. **Strategic Analysis** (Agents run in parallel):
+   - **PM Agent** → pm-analysis.md (product strategy)
+   - **Architect Agent** → architecture.md, ADRs (using YOUR tech stack)
+   - **DevOps Agent** → infrastructure.md (platform-specific)
+   - **Security Agent** → security.md (framework-specific security)
+   - **QA Agent** → test-strategy.md (framework-specific tests)
+
+5. **Review Strategic Docs**:
+   ```
+   /review-docs
+   ```
+   - Review all strategic outputs
+   - Approve or request changes
+
+6. **Implementation**:
+   - spec.md created (user stories, acceptance tests)
+   - tasks.md created (framework-specific tasks with YOUR language code)
+   - Implementation proceeds autonomously using YOUR detected stack
+
+7. **Sync to GitHub** (optional):
+   ```
+   /sync-github
+   ```
+
+### During Implementation
+
+- **Autonomous mode**: Minimal interruption, batched questions
+- **Sound notifications**:
+  - Glass.aiff: Task completed
+  - Ping.aiff: Human input required
+- **Doc updates**: If architecture changes, stop and get approval first
+
+---
+
+## Slash Commands
+
+### /create-increment
+
+Create new feature/increment (framework-agnostic).
+
+**Usage**:
+```bash
+/create-increment "feature description"
+/create-increment "user authentication" --priority=P1
+/create-increment "payments" --brownfield  # Modify existing code
+```
+
+**What it does**:
+1. Auto-increments number (scans `.specweave/increments/`)
+2. Detects YOUR tech stack
+3. Runs strategic agents (PM, Architect, DevOps, Security, QA)
+4. Creates spec.md and tasks.md using YOUR framework
+
+### /review-docs
+
+Review strategic documentation before implementation.
+
+**Usage**:
+```bash
+/review-docs              # Review current increment
+/review-docs --increment=003
+```
+
+**What it does**:
+1. Reads all strategic docs
+2. Compares to actual implementation
+3. Identifies gaps, outdated docs, tech debt
+
+### /sync-github
+
+Sync increment to GitHub issues.
+
+**Usage**:
+```bash
+/sync-github              # Sync current increment
+```
+
+---
+
+## Agents vs Skills
+
+**SpecWeave uses TWO concepts from Claude Code**:
+
+### Agents (.claude/agents/)
+
+**Agents** are pre-configured AI personalities with separate context windows.
+
+**Strategic Agents** (planning):
+- `pm` - Product Manager (requirements, user stories, roadmap)
+- `architect` - System Architect (design, ADRs, component architecture)
+- `devops` - DevOps Engineer (infrastructure, deployment, CI/CD)
+- `sre` - Site Reliability Engineer (monitoring, incidents)
+- `security` - Security Engineer (threat modeling, penetration testing)
+- `qa-lead` - QA Lead (test strategy, test cases)
+
+**Implementation Agents** (coding):
+- `frontend` - Frontend Developer (React, UI/UX)
+- `nextjs` - Next.js Specialist (if TypeScript/NextJS detected)
+- `nodejs-backend` - Node.js Backend (if TypeScript detected)
+- `python-backend` - Python Backend (if Python detected)
+- `dotnet-backend` - .NET Backend (if C# detected)
+
+**Agents adapt to YOUR detected tech stack!**
+
+### Skills (.claude/skills/)
+
+**Skills** are lightweight capabilities that extend functionality.
+
+**Core Skills**:
+- `specweave-detector` - Auto-detect SpecWeave projects
+- `feature-planner` - Plan features with context awareness
+- `skill-router` - Route requests to appropriate skills/agents
+- `context-loader` - Load specs selectively (70%+ token reduction)
+- `role-orchestrator` - Orchestrate multi-agent workflows
+
+**Infrastructure Skills**:
+- `hetzner-provisioner` - Provision Hetzner cloud infrastructure
+- `cost-optimizer` - Optimize infrastructure costs
+
+**Integration Skills**:
+- `github-sync` - Sync with GitHub
+- `jira-sync` - Sync with JIRA
+- `ado-sync` - Sync with Azure DevOps
+
+---
+
+## Testing Strategy (4 Levels)
+
+SpecWeave has **FOUR distinct levels** of test cases with full traceability:
+
+### Level 1: Specification Acceptance Criteria (WHAT)
+
+**Location**: `.specweave/docs/internal/strategy/{module}/{feature}-spec.md`
+
+**Format**: Markdown with test case IDs (TC-0001)
+
+**Example**:
+```markdown
+### User Story: US1-001 - User Login
+
+**Acceptance Criteria**:
+- [ ] **TC-0001**: Valid credentials → redirect to dashboard
+- [ ] **TC-0002**: Invalid password → error message shown
+- [ ] **TC-0003**: Empty email → validation error
+```
+
+### Level 2: Feature Test Strategy (HOW to validate)
+
+**Location**: `.specweave/increments/{increment-id}/test-strategy.md`
+
+**Format**: Test coverage matrix
+
+**Example**:
+```markdown
+| TC ID | Test Type | Location | Priority |
+|-------|-----------|----------|----------|
+| TC-0001 | E2E | tests/e2e/login.spec.ts | P1 |
+| TC-0002 | E2E | tests/e2e/login.spec.ts | P1 |
+```
+
+### Level 3: Skill Test Cases (VALIDATE skills work)
+
+**Location**: `.claude/skills/{skill-name}/test-cases/`
+
+**Format**: YAML files (minimum 3 per skill)
+
+### Level 4: Code Tests (AUTOMATE validation)
+
+**Location**: `tests/`
+
+**Format**: Framework-specific tests
+
+**Examples**:
+- TypeScript/NextJS: Playwright (E2E), Jest (unit)
+- Python/Django: pytest (E2E, unit), Django tests
+- Go/Gin: go test (unit), testify (assertions)
+- Java/Spring: JUnit (unit), Spring Boot Test (integration)
+
+**Requirements**:
+- E2E tests **MANDATORY** when UI exists
+- 80%+ coverage for critical paths
+- Reference TC-0001 IDs in test names
+
+---
+
+## Documentation Philosophy (5-Pillar Structure)
+
+**SpecWeave supports TWO valid documentation approaches**:
+
+### Approach 1: Comprehensive Upfront (Enterprise/Production)
+- Create 500-600+ page specs BEFORE implementation
+- Complete architecture documented upfront
+- All ADRs documented in advance
+- Best for: Enterprise, regulated industries, large teams
+
+### Approach 2: Incremental/Evolutionary (Startup/Iterative)
+- Start with high-level overview (10-20 pages)
+- Build documentation AS YOU GO (like Microsoft)
+- Add modules/specs as features are planned
+- Best for: Startups, MVPs, small teams
+
+**Both approaches fully supported!**
+
+### 5-Pillar Documentation Structure
+
+**Internal** (NOT published):
+1. **Strategy** (`.specweave/docs/internal/strategy/`) - PRDs, vision, OKRs
+2. **Architecture** (`.specweave/docs/internal/architecture/`) - HLDs, system design, ADRs
+3. **Delivery** (`.specweave/docs/internal/delivery/`) - Roadmap, release plans, CI/CD
+4. **Operations** (`.specweave/docs/internal/operations/`) - Runbooks, SLOs, monitoring
+5. **Governance** (`.specweave/docs/internal/governance/`) - Security policies, compliance
+
+**Public** (PUBLISHED):
+6. **Public Docs** (`.specweave/docs/public/`) - User guides, API docs, changelog
+
+---
+
+## File Organization Rules
+
+### Increment-Centric Organization (MANDATORY)
+
+**CRITICAL**: ALL supporting files belong to an INCREMENT.
+
+**Example Increment Structure**:
+```
+.specweave/increments/0001-user-authentication/
+├── spec.md                   # Specification (WHAT, WHY)
+├── tasks.md                  # Implementation plan (HOW)
+├── logs/                     # ✅ All logs for this increment
+│   ├── execution.log
+│   ├── errors.log
+│   └── ai-session.log
+├── scripts/                  # ✅ All scripts for this increment
+│   ├── validation/
+│   ├── migration/
+│   └── setup/
+└── reports/                  # ✅ All reports for this increment
+    ├── completion.md
+    ├── test-results.md
+    └── performance.md
+```
+
+**Benefits**:
+- Complete traceability (all files for one feature in one place)
+- Easy cleanup (delete increment folder when no longer needed)
+- Clear context (logs/scripts/reports tied to specific feature)
+
+---
+
+## Brownfield Projects
+
+**SpecWeave is brownfield-ready** - safely modify existing codebases.
+
+### Brownfield Workflow
+
+**Before modifying ANY existing code**:
+
+1. ✅ **Documentation exists**
+   - Specs for current behavior in `.specweave/docs/internal/strategy/{module}/existing/`
+   - Architecture documented in `.specweave/docs/internal/architecture/`
+
+2. ✅ **Tests exist**
+   - E2E tests for critical paths
+   - User has reviewed and approved tests
+
+3. ✅ **Context manifest prepared**
+   - Identifies all related specs
+   - Includes architecture docs
+
+4. ✅ **Impact analysis completed**
+   - Dependency graph generated
+   - Affected modules identified
+
+5. ✅ **Approval obtained**
+
+Only after all checks pass → proceed with implementation.
+
+**Skills**:
+- `brownfield-analyzer` - Analyze existing code, generate specs
+- `brownfield-onboarder` - Merge existing CLAUDE.md content
+
+---
+
+## Living Documentation
+
+Documentation auto-updates via hooks:
+
+**Auto-Updated**:
+- CLAUDE.md (when project structure changes)
+- `.specweave/docs/public/api/` (when APIs change)
+- `.specweave/docs/public/changelog/` (when features completed)
+
+**Manual** (preserved):
+- User-written guides
+- Strategy docs
+- Architecture overviews
+
+---
+
+## Approval Gates
+
+Get user approval for:
+1. **Strategic documentation** (before implementation)
+2. **Architecture changes** during implementation
+3. **Cost increases**
+4. **Major scope changes**
+
+---
+
+## Cost Optimization
+
+**Platform comparison** (SpecWeave auto-recommends based on scale):
+
+| Use Case | Platform | Monthly Cost |
+|----------|----------|--------------|
+| Small (<1k users) | Hetzner CX11 | $11-12 |
+| Medium (1k-10k) | Hetzner CX21 | $18-27 |
+| Global audience | Vercel | $60+ |
+| Enterprise | AWS | $100+ |
+
+**Default**: Cost-optimizer skill compares and recommends cheapest option.
+
+---
+
+## Best Practices
+
+1. **Spec first, code second** - Never write code before specs
+2. **Document the WHY** - Explain decisions, not just what was built
+3. **Framework-agnostic** - Don't assume tech stack, detect it
+4. **Autonomous mode** - Minimize interruptions, batch questions
+5. **Truth-telling tests** - E2E tests must report real pass/fail
+6. **Incremental delivery** - Ship complete, tested increments
+7. **Cost-conscious** - Recommend budget-friendly options
+
+---
+
+## When Things Change
+
+If during implementation you realize docs need updating:
+
+1. **STOP** implementation
+2. **Notify** user: "Architecture needs update because..."
+3. **Wait** for approval
+4. **Update** docs (architecture.md, ADRs, etc.)
+5. **Update** tasks.md if needed
+6. **Resume** implementation
+
+---
+
+## Resources
+
+- **SpecWeave Docs**: [https://specweave.dev](https://specweave.dev)
+- **GitHub**: [https://github.com/specweave/specweave](https://github.com/specweave/specweave)
+- **Internal Docs**: `.specweave/docs/` (generated during first increment)
+
+---
+
+**Last Updated**: Auto-updated via post-task-completion hook
+**SpecWeave Version**: {SPECWEAVE_VERSION}

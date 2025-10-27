@@ -1,0 +1,50 @@
+---
+name: "Nested Skill Orchestration"
+description: "Tests skill-router's ability to handle one skill calling another skill"
+input:
+  prompt: "Implement the user authentication feature"
+  context:
+    available_skills:
+      - "developer"
+      - "context-loader"
+      - "spec-author"
+    current_skill: "developer"
+  workflow:
+    - step: 1
+      skill: "developer"
+      action: "Needs to load context from specification"
+      calls: "context-loader"
+    - step: 2
+      skill: "context-loader"
+      action: "Load authentication spec"
+      returns_to: "developer"
+    - step: 3
+      skill: "developer"
+      action: "Implement based on loaded context"
+expected_output:
+  type: "nested_routing"
+  primary_skill: "developer"
+  sub_skills:
+    - "context-loader"
+  orchestration:
+    - "developer activates"
+    - "developer calls context-loader"
+    - "context-loader loads spec"
+    - "context returns to developer"
+    - "developer implements"
+  contains:
+    - "Orchestrating skills: developer -> context-loader"
+    - "Context loaded successfully"
+    - "Returning to developer"
+validation:
+  - "Primary skill (developer) activated correctly"
+  - "Sub-skill (context-loader) called when needed"
+  - "Context passed between skills"
+  - "Control returns to primary skill"
+  - "Workflow completes successfully"
+success_criteria:
+  - "Nested skill calls work"
+  - "Context preserved across skills"
+  - "No infinite loops"
+  - "Proper error handling in chain"
+---

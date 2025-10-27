@@ -1,0 +1,37 @@
+---
+name: "Detection with Missing Configuration"
+description: "Tests edge case where .specweave/ exists but config.yaml is missing or invalid"
+input:
+  prompt: "User opens Claude Code in directory with incomplete SpecWeave setup"
+  files:
+    - ".specweave/"  # directory exists but empty
+  context:
+    cwd: "/path/to/incomplete-project"
+    files_present:
+      - ".specweave/"
+    files_missing:
+      - ".specweave/config.yaml"
+expected_output:
+  type: "error_handling"
+  activates: true
+  reason: "Detected .specweave/ but missing config"
+  actions:
+    - "Warn user about missing config.yaml"
+    - "Offer to initialize SpecWeave project"
+    - "Provide sample config.yaml"
+  contains:
+    - "SpecWeave directory detected"
+    - "Missing config.yaml"
+    - "Initialize project?"
+validation:
+  - "Detects incomplete setup"
+  - "Provides helpful error message"
+  - "Offers initialization option"
+  - "Does not crash or fail silently"
+  - "Suggests next steps"
+success_criteria:
+  - "Graceful error handling"
+  - "User-friendly error message"
+  - "Actionable recommendations"
+  - "No silent failures"
+---

@@ -1,0 +1,558 @@
+# SpecWeave Standard - Production-Ready Workflow
+#
+# This workflow provides comprehensive spec-driven development automation
+# for production teams. Includes all core SpecWeave validations.
+#
+# Increments:
+# - Intelligent issue triage (auto-label, prioritize, assign)
+# - Auto feature planning with complete structure generation
+# - Spec-aware PR reviews with context loading
+# - Brownfield protection (blocks modifications without docs)
+# - Test coverage validation (TC-0001 traceability)
+# - Auto-documentation updates on merge
+#
+# Setup:
+# 1. Add ANTHROPIC_API_KEY to repository secrets
+# 2. Configure .specweave/config.yaml with team settings
+# 3. (Optional) Add JIRA_TOKEN, SLACK_WEBHOOK for integrations
+#
+# See: .specweave/docs/guides/github-action-setup.md
+
+name: SpecWeave Standard
+
+on:
+  issues:
+    types: [opened, labeled]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - main
+      - develop
+      - .specweave/increments/**
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  checks: write
+
+jobs:
+  # ============================================================================
+  # Intelligent Issue Triage
+  # ============================================================================
+  # Auto-labels, prioritizes, and assigns new issues
+  # Uses SpecWeave context to determine type and area
+  # ============================================================================
+
+  triage-issue:
+    name: Intelligent Issue Triage
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Analyze and Triage Issue
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            SpecWeave project - Perform intelligent issue triage.
+
+            **Task**: Analyze issue and apply appropriate labels, priority, assignment
+
+            **Context**:
+            - Issue #${{ github.event.issue.number }}: "${{ github.event.issue.title }}"
+            - Author: @${{ github.event.issue.user.login }}
+            - Load .specweave/config.yaml for team structure
+            - Load .specweave/increments/README.md and .specweave/increments/roadmap.md for context
+
+            **Analysis Steps**:
+
+            1. **Determine Issue Type**
+               - `feature`: New functionality request
+               - `bug`: Something isn't working
+               - `enhancement`: Improvement to existing feature
+               - `docs`: Documentation update needed
+               - `infrastructure`: DevOps, CI/CD, tooling
+               - `question`: User question or clarification
+
+            2. **Determine Priority**
+               - `P1` (Critical): Blocks development, security issue, data loss
+               - `P2` (Important): Affects key features, impacts users
+               - `P3` (Nice-to-have): Improvements, optimizations
+
+            3. **Identify Affected Area**
+               Based on docs/internal/strategy/ and .specweave/increments/:
+               - Which module? (e.g., `area:auth`, `area:payments`)
+               - Which feature? (reference feature-###)
+
+            4. **Estimate Effort**
+               - `effort:small` (< 1 day)
+               - `effort:medium` (2-3 days)
+               - `effort:large` (> 3 days)
+
+            5. **Apply Labels via GitHub API**
+               Use GITHUB_TOKEN to apply determined labels
+
+            6. **Assign to Team Member** (if configured in .specweave/config.yaml)
+               - Based on area expertise
+               - Check CODEOWNERS file if exists
+
+            7. **Post Triage Comment**
+               ```markdown
+               ## 🤖 Auto-Triage Analysis
+
+               **Type**: [feature|bug|etc]
+               **Priority**: [P1|P2|P3]
+               **Area**: [module name]
+               **Effort**: [S|M|L]
+
+               **Analysis**: [Brief explanation of triage decisions]
+
+               **Recommendation**: [Next steps]
+
+               ---
+               💡 Reply with `/plan-feature` to auto-generate feature structure
+               ```
+
+            **Important**:
+            - Use skill-router to determine best approach
+            - Be helpful and educational
+            - Provide clear next steps
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 8000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Auto Increment Planning
+  # ============================================================================
+
+  plan-feature:
+    name: Auto Increment Planning
+    if: github.event_name == 'issues' && github.event.label.name == 'feature'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Increment Structure
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            SpecWeave: Generate complete feature structure from issue.
+
+            **Context**: Issue #${{ github.event.issue.number }}
+
+            **Use feature-planner skill** to create:
+            1. .specweave/increments/0001-feature-name/ (auto-numbered)
+            2. spec.md, plan.md, tasks.md, tests.md, context-manifest.yaml
+            3. Branch: increment/0001-feature-name
+            4. Draft PR with checklist
+            5. Issue comment with PR link
+
+            Load specifications/overview.md for context.
+            Follow CLAUDE.md conventions.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 12000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Spec Validation
+  # ============================================================================
+  # Validates PR against specifications
+  # Checks spec existence, alignment, test coverage
+  # ============================================================================
+
+  validate-spec:
+    name: Spec Validation
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Against Specs
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            SpecWeave spec validation for PR #${{ github.event.pull_request.number }}.
+
+            **Validation Checklist**:
+
+            1. **Spec Existence**
+               - Increment has spec.md
+               - Spec references in context-manifest.yaml exist
+
+            2. **Spec Alignment**
+               - Code changes match spec requirements
+               - No scope creep (changes outside spec)
+
+            3. **Test Coverage (TC-0001 Traceability)**
+               - Spec has acceptance criteria with TC-0001 IDs
+               - tests.md has coverage matrix
+               - Test files reference TC-0001 in names/descriptions
+
+            4. **ADRs for Architecture Changes**
+               - If architecture changed, ADR exists in .specweave/docs/decisions/
+               - ADR number referenced in spec/plan
+
+            5. **Skills Validation** (if src/skills/ modified)
+               - SKILL.md has YAML frontmatter
+               - test-cases/ has ≥3 YAML files
+               - Test cases are well-formed
+
+            **Use context-loader skill** for efficient spec loading.
+
+            **Post comprehensive review** with ✅/⚠️/❌ status.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Brownfield Protection
+  # ============================================================================
+  # Detects modifications to existing code
+  # BLOCKS PR if documentation/tests missing
+  # ============================================================================
+
+  brownfield-check:
+    name: Brownfield Protection
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Brownfield Modifications
+        id: detect
+        run: |
+          # Get list of modified files (not new files)
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+
+          # Find files that existed before and are now modified
+          MODIFIED_EXISTING=$(git diff --name-only --diff-filter=M $BASE_SHA $HEAD_SHA | grep "^src/" || true)
+
+          if [ -n "$MODIFIED_EXISTING" ]; then
+            echo "brownfield=true" >> $GITHUB_OUTPUT
+            echo "Modified existing files:"
+            echo "$MODIFIED_EXISTING"
+          else
+            echo "brownfield=false" >> $GITHUB_OUTPUT
+            echo "No brownfield modifications detected"
+          fi
+
+      - name: Brownfield Analysis
+        if: steps.detect.outputs.brownfield == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            🚨 Brownfield modification detected in SpecWeave project.
+
+            **CRITICAL**: SpecWeave enforces documentation-before-modification.
+
+            **Task**: Verify documentation exists for modified code
+
+            **Modified Files**: Check git diff output above
+
+            **Validation Steps**:
+
+            1. **Identify Modified Modules**
+               - Which existing files were changed?
+               - Which modules/features do they belong to?
+
+            2. **Check for Documentation**
+               For each modified module:
+               - ✅ Spec exists in docs/internal/strategy/{module}/
+               - ✅ Architecture doc exists in .specweave/docs/architecture/
+               - ✅ Current behavior is documented
+
+            3. **Check for Tests**
+               - ✅ Tests exist for current behavior
+               - ✅ Tests are comprehensive (cover critical paths)
+               - ✅ Tests pass on base branch
+
+            4. **Decision**:
+
+               **If documentation EXISTS**:
+               - ✅ Proceed with review
+               - Validate changes align with existing docs
+               - Check if docs need updates
+
+               **If documentation MISSING**:
+               - ❌ BLOCK PR with detailed requirements
+               - Post comment with step-by-step remediation:
+
+               ```markdown
+               ## 🚨 Brownfield Modification Blocked
+
+               This PR modifies existing code without documentation.
+
+               ### Modified Files
+               [List files and modules]
+
+               ### Missing Documentation
+               - ❌ [List missing specs]
+               - ❌ [List missing tests]
+
+               ### Required Actions
+
+               Before this PR can proceed:
+
+               1. **Document Current Behavior**
+                  - Create spec: `docs/internal/strategy/{module}/existing-behavior.md`
+                  - Document: What the code currently does and why
+
+               2. **Create Regression Tests**
+                  - Add tests for current behavior
+                  - Ensure tests pass on base branch
+                  - Get user review/approval of tests
+
+               3. **Update Architecture Docs** (if needed)
+                  - Update: `.specweave/docs/architecture/{module}.md`
+
+               ### Need Help?
+               Reply with `@claude help brownfield` for guided documentation.
+
+               ---
+               **SpecWeave Brownfield Protection** | [Learn More](.specweave/docs/guides/brownfield-protection.md)
+               ```
+
+            **Use brownfield-analyzer skill** if available.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 16000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Test Coverage Validation
+  # ============================================================================
+  # Ensures test coverage and TC-0001 traceability
+  # ============================================================================
+
+  validate-coverage:
+    name: Test Coverage Validation
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests with Coverage
+        run: npm test -- --coverage --json --outputFile=coverage/test-results.json
+        continue-on-error: true
+
+      - name: Analyze Test Coverage
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            Test coverage validation for SpecWeave PR.
+
+            **Task**: Validate comprehensive test coverage and traceability
+
+            **Checks**:
+
+            1. **TC-0001 Traceability**
+               - Load feature's spec.md (acceptance criteria)
+               - Load feature's tests.md (coverage matrix)
+               - Verify: Every TC-0001 in spec has test reference
+               - Verify: Every test references TC-0001 in name
+
+            2. **Skill Tests** (if src/skills/ modified)
+               - Check src/skills/{skill-name}/test-cases/
+               - Ensure ≥3 YAML test files exist
+               - Validate YAML format (name, input, expected_output)
+
+            3. **E2E Tests** (if UI changes detected)
+               - If files changed in: components/, pages/, app/
+               - Require: Playwright tests in tests/e2e/
+               - Validate: Tests cover changed components
+
+            4. **Coverage Metrics**
+               - Load coverage/test-results.json
+               - Check: >80% coverage for critical paths
+               - Check: No untested code in changed files
+
+            **Post Coverage Report**:
+
+            ```markdown
+            ## Test Coverage Report
+
+            ### ✅ TC-0001 Traceability
+            [Show mapping of TC-0001 to tests]
+
+            ### Skill Tests
+            [List skills and test count]
+
+            ### E2E Coverage
+            [UI changes and corresponding tests]
+
+            ### Coverage Metrics
+            - Overall: XX%
+            - Changed Files: XX%
+            - Critical Paths: XX%
+
+            ### Required Actions
+            [List missing tests or low coverage areas]
+
+            **Status**: [✅ Passed | ⚠️ Review | ❌ Blocked]
+            ```
+
+            **Block PR if**:
+            - TC-0001 not traceable
+            - Skills have <3 tests
+            - E2E tests missing for UI
+            - Coverage <80% on changed files
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 14000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================================================
+  # Auto-Update Documentation
+  # ============================================================================
+
+  update-docs:
+    name: Auto-Update Documentation
+    if: |
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Documentation
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            SpecWeave documentation auto-update.
+
+            **Compare**: HEAD~1 vs HEAD to identify changes
+
+            **Update**:
+            - CLAUDE.md (if structure changed)
+            - .specweave/docs/api/ (if API changed)
+            - .specweave/docs/changelog/ (always)
+
+            **Use docs-updater skill** if available.
+
+            **Preserve** manual content (guides, tutorials).
+
+            **Commit**: "docs: auto-update after merge"
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 12000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Documentation
+        run: |
+          git config user.name "SpecWeave Bot"
+          git config user.email "specweave@users.noreply.github.com"
+
+          if [[ -n $(git status -s) ]]; then
+            git add .specweave/docs/ CLAUDE.md
+            git commit -m "docs: auto-update after merge" || true
+            git push origin ${{ github.ref_name }} || true
+          fi
+
+  # ============================================================================
+  # External Integrations (Optional)
+  # ============================================================================
+  # Syncs with JIRA, Slack, etc. if configured
+  # ============================================================================
+
+  external-sync:
+    name: External Integrations
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Sync with External Systems
+        if: vars.ENABLE_EXTERNAL_SYNC == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: |
+            SpecWeave external integrations sync.
+
+            **Check .specweave/config.yaml** for enabled integrations:
+            - JIRA sync (if jira: enabled)
+            - Slack notifications (if slack: enabled)
+            - Azure DevOps sync (if ado: enabled)
+
+            **Use appropriate skills**:
+            - jira-sync skill
+            - slack-notifier skill
+            - ado-sync skill
+
+            **Actions**:
+            - Update issue status
+            - Post notifications
+            - Sync feature progress
+
+            Only run if integrations configured.
+
+          claude_args: |
+            --model sonnet
+            --max-tokens 8000
+
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
