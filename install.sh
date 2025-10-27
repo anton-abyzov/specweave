@@ -134,7 +134,7 @@ if [ -d "$SPECWEAVE_ROOT/src/agents" ]; then
         echo -e "      Copying $agent_name..." >&2
         # Temporarily disable set -e to capture cp errors
         set +e
-        cp -r "$agent_dir" .claude/agents/ 2>&1
+        cp_output=$(cp -r "$agent_dir" .claude/agents/ 2>&1)
         cp_exit_code=$?
         set -e
 
@@ -143,6 +143,7 @@ if [ -d "$SPECWEAVE_ROOT/src/agents" ]; then
           echo -e "   ${RED}   Source: $agent_dir${NC}" >&2
           echo -e "   ${RED}   Destination: .claude/agents/${NC}" >&2
           echo -e "   ${RED}   Exit code: $cp_exit_code${NC}" >&2
+          echo -e "   ${RED}   Error output: $cp_output${NC}" >&2
           exit 1
         fi
         ((agent_count++))
