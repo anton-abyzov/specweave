@@ -62,11 +62,11 @@ fi
 
 # Run install script to set up .specweave structure
 info "Running: bash $REPO_ROOT/install.sh $TEST_DIR"
-if ! bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1; then
+INSTALL_OUTPUT=$(bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1) || {
   echo "Install script output:"
-  bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1 || true
+  echo "$INSTALL_OUTPUT"
   fail "Install script failed"
-fi
+}
 
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave installed"
