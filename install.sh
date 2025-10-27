@@ -131,7 +131,13 @@ if [ -d "$SPECWEAVE_ROOT/src/agents" ]; then
 
       # Check if agent has AGENT.md (valid SpecWeave agent)
       if [ -f "$agent_dir/AGENT.md" ]; then
-        cp -r "$agent_dir" .claude/agents/
+        echo -e "      Copying $agent_name..." >&2
+        if ! cp -r "$agent_dir" .claude/agents/ 2>&1; then
+          echo -e "   ${RED}❌ Failed to copy agent: $agent_name${NC}" >&2
+          echo -e "   ${RED}   Source: $agent_dir${NC}" >&2
+          echo -e "   ${RED}   Destination: .claude/agents/${NC}" >&2
+          exit 1
+        fi
         ((agent_count++))
       fi
     fi
