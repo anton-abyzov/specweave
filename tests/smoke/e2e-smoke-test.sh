@@ -37,18 +37,24 @@ mkdir -p "$TEST_DIR"
 cd "$TEST_DIR"
 
 # Step 1: Install SpecWeave
-info "Step 1: Installing SpecWeave..."
-npx specweave init 2>/dev/null || {
-  # Fallback: if npx doesn't work, try local installation
-  cp -r "$(dirname "$0")/../../" ./specweave-source
-  cd specweave-source
-  npm install
-  npm link
-  cd "$TEST_DIR"
-  specweave init
-}
+info "Step 1: Installing SpecWeave from local source..."
 
-test -d .specweave || fail ".specweave directory not created"
+# Get the repository root (2 levels up from tests/smoke/)
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
+# Use local SpecWeave installation
+if [ -n "$GITHUB_WORKSPACE" ]; then
+  # Running in GitHub Actions - use workspace
+  REPO_ROOT="$GITHUB_WORKSPACE"
+fi
+
+info "Using SpecWeave from: $REPO_ROOT"
+info "Installing to: $TEST_DIR"
+
+# Run install script to set up .specweave structure
+bash "$REPO_ROOT/install.sh" "$TEST_DIR" || fail "Install script failed"
+
+test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave installed"
 
 # Step 2: Create project from complex prompt
