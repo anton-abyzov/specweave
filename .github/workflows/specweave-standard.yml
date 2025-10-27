@@ -20,16 +20,20 @@
 
 name: SpecWeave Standard
 
+# TEMPORARILY DISABLED - requires SpecWeave CLI to be published to npm
+# Re-enable when npx specweave is available
+
 on:
-  issues:
-    types: [opened, labeled]
-  pull_request:
-    types: [opened, synchronize, reopened]
-  push:
-    branches:
-      - main
-      - develop
-      - .specweave/increments/**
+  workflow_dispatch:  # Manual trigger only for now
+  # issues:
+  #   types: [opened, labeled]
+  # pull_request:
+  #   types: [opened, synchronize, reopened]
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #     - .specweave/increments/**
 
 permissions:
   contents: write

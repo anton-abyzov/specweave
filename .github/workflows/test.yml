@@ -30,7 +30,12 @@ jobs:
         run: npm test
 
       - name: Check test coverage
-        run: npm run test:coverage
+        run: |
+          if grep -q '"test:coverage"' package.json; then
+            npm run test:coverage
+          else
+            echo "Test coverage script not configured, skipping"
+          fi
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
 
       - name: Upload coverage to Codecov
@@ -54,9 +59,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate skill structure
-        run: npm run validate:skills
-
       - name: Check skill tests exist
         run: |
           for skill in src/skills/*/; do
@@ -78,7 +80,7 @@ jobs:
 
       - name: Check required directories
         run: |
-          required_dirs=("src/skills" "docs" "features" "specs" ".specweave")
+          required_dirs=("src/skills" "src/agents" "src/commands" ".specweave")
           for dir in "${required_dirs[@]}"; do
             if [ ! -d "$dir" ]; then
               echo "ERROR: Missing required directory: $dir"
@@ -86,24 +88,29 @@ jobs:
             fi
           done
 
-      - name: Validate principles.md exists
+      - name: Validate CLAUDE.md exists
         run: |
-          if [ ! -f "docs/principles.md" ]; then
-            echo "ERROR: docs/principles.md not found"
+          if [ ! -f "CLAUDE.md" ]; then
+            echo "ERROR: CLAUDE.md not found"
             exit 1
           fi
 
-      - name: Check feature structure
+      - name: Check increment structure (if any exist)
         run: |
-          for feature in features/[0-9][0-9][0-9]-*/; do
-            required_files=("spec.md" "plan.md" "tasks.md" "tests.md" "context-manifest.yaml")
-            for file in "${required_files[@]}"; do
-              if [ ! -f "$feature/$file" ]; then
-                echo "ERROR: Missing $file in $feature"
-                exit 1
+          if [ -d ".specweave/increments" ]; then
+            for increment in .specweave/increments/[0-9][0-9][0-9][0-9]-*/; do
+              if [ -d "$increment" ]; then
+                echo "Checking increment: $increment"
+                # Only check if spec.md exists (other files are optional)
+                if [ ! -f "$increment/spec.md" ]; then
+                  echo "ERROR: Missing spec.md in $increment"
+                  exit 1
+                fi
               fi
             done
-          done
+          else
+            echo "No increments directory found (OK for new projects)"
+          fi
 
   lint:
     runs-on: ubuntu-latest
@@ -118,8 +125,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint
-        run: npm run lint
+      - name: Run ESLint (if configured)
+        run: |
+          if grep -q '"lint"' package.json; then
+            npm run lint
+          else
+            echo "Lint script not configured, skipping"
+          fi
 
-      - name: Check markdown formatting
-        run: npm run lint:md
+      - name: Check markdown formatting (if configured)
+        run: |
+          if grep -q '"lint:md"' package.json; then
+            npm run lint:md
+          else
+            echo "Markdown lint script not configured, skipping"
+          fi

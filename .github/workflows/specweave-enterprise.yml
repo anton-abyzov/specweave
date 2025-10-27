@@ -22,21 +22,25 @@
 
 name: SpecWeave Enterprise
 
+# TEMPORARILY DISABLED - requires SpecWeave CLI to be published to npm
+# Re-enable when npx specweave is available
+
 on:
-  issues:
-    types: [opened, labeled, assigned]
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-  pull_request_review:
-    types: [submitted]
-  push:
-    branches:
-      - main
-      - develop
-      - release/**
-  schedule:
-    # Run security scan daily at 2 AM UTC
-    - cron: '0 2 * * *'
+  workflow_dispatch:  # Manual trigger only for now
+  # issues:
+  #   types: [opened, labeled, assigned]
+  # pull_request:
+  #   types: [opened, synchronize, reopened, ready_for_review]
+  # pull_request_review:
+  #   types: [submitted]
+  # push:
+  #   branches:
+  #     - main
+  #     - develop
+  #     - release/**
+  # schedule:
+  #   # Run security scan daily at 2 AM UTC
+  #   - cron: '0 2 * * *'
 
 permissions:
   contents: write

@@ -17,15 +17,19 @@
 
 name: SpecWeave Starter
 
+# TEMPORARILY DISABLED - requires SpecWeave CLI to be published to npm
+# Re-enable when npx specweave is available
+
 on:
-  issues:
-    types: [labeled]
-  pull_request:
-    types: [opened, synchronize]
-  push:
-    branches:
-      - main
-      - .specweave/increments/**
+  workflow_dispatch:  # Manual trigger only for now
+  # issues:
+  #   types: [labeled]
+  # pull_request:
+  #   types: [opened, synchronize]
+  # push:
+  #   branches:
+  #     - main
+  #     - .specweave/increments/**
 
 permissions:
   contents: write
