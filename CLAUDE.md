@@ -197,25 +197,70 @@ ai:
 
 ### Installation Commands
 
-**Initialize New Project**:
+**Initialize New Project** (Selective Installation - Recommended):
 ```bash
-# Option 1: Using /create-project slash command
-/create-project
+# Option 1: Using /create-project slash command (auto-detects tech stack)
+/create-project --type python --framework fastapi
 
-# Option 2: Using specweave CLI (future)
+# Option 2: Using specweave CLI (auto-detects or asks)
 npx specweave init
+
+# Result: ONLY installs relevant agents/skills for Python + FastAPI
+# - Strategic agents: pm, architect, security, qa-lead, devops, docs-writer
+# - Implementation agents: python-backend
+# - Core skills: specweave-detector, skill-router, context-loader, feature-planner
+# - Total: 7 agents + 4 skills (vs 19 agents + 24 skills!)
 ```
 
-**Install SpecWeave Skills**:
+**Install SpecWeave Components**:
+
+**For User Projects** (Selective - Recommended):
 ```bash
-# Install all core skills
-npx specweave install --all
+# Auto-detect tech stack and install relevant only
+npx specweave install --detect
 
-# Install specific skill
-npx specweave install feature-planner --local
+# Install specific component
+npx specweave install python-backend --local
+npx specweave install hetzner-provisioner --local
+
+# List available components
+npx specweave list                    # All available
+npx specweave list --installed        # Currently installed
+
+# Remove unnecessary components (cleanup)
+npx specweave audit                   # See what can be removed
+npx specweave cleanup --auto          # Remove based on tech stack
 ```
 
-**Note**: Hooks are installed automatically (copied for Windows compatibility) by `/create-project` or `specweave init`.
+**For Framework Development** (Install ALL):
+```bash
+# Install ALL components to .claude/ (for framework development/testing only)
+npm run install:all         # All agents + skills + commands
+npm run install:all:global  # Install to ~/.claude/ (global)
+
+# Install specific types
+npm run install:agents         # All agents only
+npm run install:skills         # All skills only
+npm run install:agents:global  # All agents to ~/.claude/agents/
+npm run install:skills:global  # All skills to ~/.claude/skills/
+```
+
+**What install scripts do**:
+- Copy components from `src/` to `.claude/` (selective or all)
+- Verify AGENT.md / SKILL.md frontmatter
+- Create symlinks for hooks
+- Skip CLAUDE.md (never replaced)
+- Preserve user customizations
+- Track installed components in `.specweave/installed-components.yaml`
+
+**Token Savings**:
+- Selective installation: 7 agents (1,050 tokens) vs 19 agents (2,850 tokens)
+- **60% token reduction on agents!**
+- Faster context loading, better performance
+
+**Note**: Hooks are installed automatically (symlinks to `src/hooks/`) by install scripts.
+
+**See**: "Agents/Skills Factory Pattern" section for complete details.
 
 ---
 
@@ -859,6 +904,227 @@ src/skills/new-skill/          # YES! Create here first
 
 ---
 
+## Agents/Skills Factory Pattern (CRITICAL)
+
+**PROBLEM**: Loading ALL 19 agents into EVERY project wastes ~2,100 tokens (71% of agent context)!
+
+**SOLUTION**: SpecWeave = **Factory with all components ready**. User projects = **Selective installation based on tech stack**.
+
+### The Problem: Context Bloat
+
+**Current Context Usage** (observed in projects):
+```
+Custom agents: 2.6k tokens (19 agents loaded)
+Memory files: 25.9k tokens
+Total: 158k/200k (79%)
+```
+
+**Example Waste**:
+- Python API project needs: `pm`, `architect`, `python-backend`, `devops`, `qa-lead` (5 agents)
+- But loads ALL: `nextjs`, `nodejs-backend`, `dotnet-backend`, `frontend`, `figma-designer`, `figma-implementer`, etc. (19 agents)
+- **Waste**: 14 unnecessary agents × 150 tokens = **2,100 tokens (71% waste!)**
+
+### The Solution: Selective Installation
+
+**SpecWeave Framework** (`src/`):
+- **Factory**: ALL 20 agents + 24 skills ready
+- **Source of truth**: Version controlled in git
+- **Not loaded**: Framework components exist but NOT installed to user projects
+
+**User Project** (`.claude/`):
+- **Selective installation**: ONLY install what's needed based on tech stack
+- **On-demand**: Add more agents/skills as project evolves
+- **Token savings**: 71% reduction on agents (2,600 → 750 tokens)
+
+### How It Works
+
+#### 1. Initial Project Setup (`/create-project`)
+
+**Detect tech stack** → **Install ONLY relevant components**
+
+```bash
+# User runs
+/create-project --type python --framework fastapi
+
+# SpecWeave detects:
+- Language: Python
+- Framework: FastAPI
+- Needs: API backend, no frontend, no design
+
+# SpecWeave installs ONLY:
+.claude/agents/
+  ├── pm/                    ← Strategic (always)
+  ├── architect/             ← Strategic (always)
+  ├── security/              ← Strategic (always)
+  ├── qa-lead/               ← Strategic (always)
+  ├── devops/                ← Strategic (always)
+  ├── python-backend/        ← Implementation (Python detected)
+  └── docs-writer/           ← Documentation (always)
+
+# Result: 7 agents × 150 tokens = 1,050 tokens (vs 2,600!)
+# Token savings: 60% reduction
+
+# SpecWeave DOES NOT install:
+- nextjs/ (not needed - Python project)
+- nodejs-backend/ (not needed - Python project)
+- dotnet-backend/ (not needed - .NET project)
+- frontend/ (not needed - API-only, no UI)
+- figma-designer/ (not needed - no design phase)
+- figma-implementer/ (not needed - no Figma conversion)
+```
+
+#### 2. Dynamic Installation When Needed
+
+**User adds new requirement** → **Install agent/skill on-demand**
+
+```bash
+# User says: "Add Figma designs for dashboard"
+# SpecWeave detects: Need figma-designer and figma-implementer agents
+
+# SpecWeave installs on-demand:
+npx specweave install figma-designer --local
+npx specweave install figma-implementer --local
+
+# Updates .specweave/installed-components.yaml
+# Now .claude/agents/ has 9 agents (added 2)
+```
+
+#### 3. Tech Stack-Specific Installation Matrix
+
+| Tech Stack | Always Install | Stack-Specific | Total Agents |
+|------------|----------------|----------------|--------------|
+| **Python API** | pm, architect, security, qa-lead, devops, docs-writer (6) | python-backend (1) | **7 agents** |
+| **Next.js Full-Stack** | pm, architect, security, qa-lead, devops, docs-writer (6) | nextjs, frontend (2) | **8 agents** |
+| **Node.js API** | pm, architect, security, qa-lead, devops, docs-writer (6) | nodejs-backend (1) | **7 agents** |
+| **.NET Enterprise** | pm, architect, security, qa-lead, devops, docs-writer, sre (7) | dotnet-backend (1) | **8 agents** |
+| **Full Design + Code** | pm, architect, security, qa-lead, devops, docs-writer (6) | nextjs, frontend, figma-designer, figma-implementer (4) | **10 agents** |
+
+**Token savings across stacks**:
+- Python API: 1,050 tokens (60% reduction)
+- Next.js Full-Stack: 1,200 tokens (54% reduction)
+- .NET Enterprise: 1,200 tokens (54% reduction)
+
+#### 4. Installation Manifest Tracking
+
+**Track what's installed** (`.specweave/installed-components.yaml`):
+
+```yaml
+---
+installed_at: 2025-10-26T10:00:00Z
+last_updated: 2025-10-26T15:30:00Z
+
+tech_stack:
+  language: python
+  framework: fastapi
+  frontend: none
+  database: postgresql
+  deployment: hetzner
+
+agents:
+  - pm
+  - architect
+  - security
+  - qa-lead
+  - devops
+  - python-backend
+  - docs-writer
+
+skills:
+  - specweave-detector
+  - skill-router
+  - context-loader
+  - feature-planner
+  - hetzner-provisioner
+  - brownfield-analyzer
+
+# Available for installation (in framework, not installed yet)
+available_agents:
+  - nextjs
+  - nodejs-backend
+  - dotnet-backend
+  - frontend
+  - figma-designer
+  - figma-implementer
+  - sre
+  - tech-lead
+  - performance
+
+available_skills:
+  - stripe-integrator
+  - calendar-system
+  - notification-system
+  - jira-sync
+  - github-sync
+  - ado-sync
+  - figma-mcp-connector
+  - design-system-architect
+  - figma-to-code
+---
+```
+
+### Installation Commands (Updated)
+
+#### For SpecWeave Framework Development
+
+```bash
+# Install ALL components to .claude/ (for framework development/testing)
+npm run install:all         # All agents + skills
+
+# Install specific types
+npm run install:agents      # All agents only
+npm run install:skills      # All skills only
+```
+
+#### For User Projects
+
+```bash
+# Selective installation (recommended)
+npx specweave install --detect       # Auto-detect tech stack, install relevant only
+npx specweave install --type python  # Install Python-specific agents/skills
+
+# Install specific component
+npx specweave install pm --local              # Install PM agent
+npx specweave install python-backend --local  # Install Python backend agent
+npx specweave install hetzner-provisioner --local  # Install Hetzner skill
+
+# Install to global (~/.claude/)
+npx specweave install pm --global             # Available to all projects
+
+# List available components
+npx specweave list                    # Show all available agents/skills
+npx specweave list --installed        # Show currently installed components
+```
+
+### Benefits
+
+1. **Token savings**: 54-71% reduction on agents (2,600 → 750-1,200 tokens)
+2. **Faster context loading**: Only load what's needed
+3. **Clearer project structure**: See exactly which expertise is available
+4. **On-demand installation**: Add agents as project evolves
+5. **No bloat**: Python projects don't load Next.js agents
+6. **Better performance**: Smaller context = faster AI responses
+
+### Migration Path
+
+**Existing projects** with all agents installed:
+
+```bash
+# Audit current installation
+npx specweave audit
+
+# Output:
+# Currently installed: 19 agents, 24 skills
+# Recommended for Python API: 7 agents, 6 skills
+# Potential savings: 12 agents (1,800 tokens)
+
+# Remove unnecessary agents
+npx specweave cleanup --auto   # Remove based on tech stack
+# or
+npx specweave cleanup --interactive  # Choose what to remove
+```
+
+---
+
 ## File Organization Rules
 
 ### Source Code vs Supporting Files
@@ -1271,6 +1537,308 @@ auto_refresh: false
 - Run existing tests before changes
 - Implement new feature
 - Verify existing tests still pass
+
+---
+
+### Git Workflow for New Increments
+
+**CRITICAL**: When creating new increments (features/enhancements), ALWAYS create a feature branch FIRST.
+
+#### Branch Naming Convention
+
+```
+features/{increment-id}-{short-name}
+```
+
+**Examples**:
+- `features/001-core-framework`
+- `features/002-diagram-agents`
+- `features/003-jira-integration`
+- `features/004-brownfield-tools`
+
+#### Workflow
+
+**Step 1: Create increment folder**
+```bash
+# Auto-numbered folder in .specweave/increments/
+mkdir -p .specweave/increments/0002-diagram-agents
+```
+
+**Step 2: Create feature branch**
+```bash
+# ALWAYS create branch BEFORE starting work
+git checkout develop  # or main, depending on project
+git pull origin develop
+git checkout -b features/002-diagram-agents
+git push -u origin features/002-diagram-agents
+```
+
+**Step 3: Work on increment**
+- Create spec.md, tasks.md, tests.md
+- Implement in src/ (agents, skills, etc.)
+- Update CLAUDE.md if needed
+- Add tests (minimum 3 per component)
+
+**Step 4: Commit regularly**
+```bash
+# Commit with descriptive messages
+git add .
+git commit -m "feat: create diagrams-architect agent"
+git commit -m "feat: create diagrams-generator skill"
+git commit -m "test: add test cases for diagram agents"
+git commit -m "docs: update CLAUDE.md with diagram agent instructions"
+
+# Push to feature branch
+git push origin features/002-diagram-agents
+```
+
+**Step 5: Create PR when complete**
+```bash
+# Use gh CLI or GitHub web UI
+gh pr create --title "Increment 0002: Diagram Architect Agent" \
+             --body "See .specweave/increments/0002-diagram-agents/spec.md" \
+             --base develop \
+             --head features/002-diagram-agents
+```
+
+**Step 6: Merge to develop**
+```bash
+# After PR approval
+git checkout develop
+git pull origin develop
+git merge features/002-diagram-agents
+git push origin develop
+```
+
+**Step 7: Clean up (optional)**
+```bash
+# Delete feature branch after merge
+git branch -d features/002-diagram-agents
+git push origin --delete features/002-diagram-agents
+```
+
+#### Branch Strategy
+
+**Main branches**:
+- `main` / `master` - Production-ready code
+- `develop` - Integration branch for features
+
+**Feature branches**:
+- `features/{id}-{name}` - One branch per increment
+- Branch from: `develop`
+- Merge to: `develop`
+- Delete after merge: Optional
+
+**Important rules**:
+1. ✅ ALWAYS create feature branch before starting work
+2. ✅ ONE branch per increment (not per task)
+3. ✅ Branch from `develop` (or `main` if no develop)
+4. ✅ Create PR when increment is complete
+5. ✅ Merge only after review/approval
+6. ❌ NEVER commit directly to `develop` or `main`
+7. ❌ NEVER work on multiple increments in same branch
+
+#### Example: Complete Workflow
+
+```bash
+# 1. Create increment structure
+mkdir -p .specweave/increments/0003-jira-integration
+cd .specweave/increments/0003-jira-integration
+# Create spec.md, tasks.md, tests.md
+
+# 2. Create feature branch
+git checkout develop
+git pull origin develop
+git checkout -b features/003-jira-integration
+
+# 3. Implement
+# Create agents/skills in src/
+# Add tests
+# Update docs
+
+# 4. Commit regularly
+git add .
+git commit -m "feat: create specweave-jira-mapper agent"
+git push origin features/003-jira-integration
+
+# 5. When complete, create PR
+gh pr create --base develop --head features/003-jira-integration
+
+# 6. After PR approved and merged
+git checkout develop
+git pull origin develop
+git branch -d features/003-jira-integration
+```
+
+---
+
+### Secrets Management
+
+**CRITICAL**: SpecWeave agents are smart about requesting secrets (API tokens, credentials) only when needed for blocking operations.
+
+#### When Agents Request Secrets
+
+**Blocking operations that require secrets**:
+- Infrastructure provisioning (Hetzner, AWS, Azure, GCP, DigitalOcean, Railway, Vercel)
+- External API integrations (JIRA, GitHub, ADO, Figma)
+- Database connections (production databases)
+- CI/CD pipeline configuration
+- Cloud storage setup
+
+**Non-blocking operations** (no secrets needed):
+- Documentation creation
+- Code generation (local files)
+- Test writing
+- Architecture planning
+
+#### Secrets Workflow
+
+**Step 1: Detection**
+```bash
+# Agent checks if secret exists
+if [ -z "$HETZNER_API_TOKEN" ]; then
+  # Token NOT found - STOP and prompt user
+fi
+```
+
+**Step 2: User-Friendly Prompt**
+```
+🔐 **Secrets Required for Deployment**
+
+I need your Hetzner API token to provision infrastructure.
+
+**How to get it**:
+1. Go to: https://console.hetzner.cloud/
+2. Navigate to: Security → API Tokens
+3. Click "Generate API Token"
+4. Give it Read & Write permissions
+5. Copy the token immediately (you can't see it again!)
+
+**Where I'll save it**:
+- File: .env (gitignored, secure)
+- Format: HETZNER_API_TOKEN=your-token-here
+
+**Security**:
+✅ .env is in .gitignore (never committed to git)
+✅ Token is 64 characters, alphanumeric
+✅ Stored locally only (not in source code)
+
+Please paste your Hetzner API token:
+```
+
+**Step 3: Validation**
+```bash
+# Validate token format
+if [[ ! "$HETZNER_API_TOKEN" =~ ^[a-zA-Z0-9]{64}$ ]]; then
+  echo "⚠️  Warning: Token format unexpected"
+  echo "Expected: 64 alphanumeric characters"
+  echo "Got: ${#HETZNER_API_TOKEN} characters"
+fi
+```
+
+**Step 4: Secure Storage**
+```bash
+# Save to .env (gitignored)
+echo "HETZNER_API_TOKEN=$HETZNER_API_TOKEN" >> .env
+
+# Ensure .env is gitignored
+if ! grep -q "^\\.env$" .gitignore; then
+  echo ".env" >> .gitignore
+fi
+
+# Create .env.example for team
+cat > .env.example << 'EOF'
+# Hetzner Cloud API Token
+# Get from: https://console.hetzner.cloud/ → Security → API Tokens
+HETZNER_API_TOKEN=your-hetzner-token-here
+EOF
+```
+
+**Step 5: Use in Code**
+```hcl
+# terraform/variables.tf
+variable "hetzner_token" {
+  description = "Hetzner Cloud API Token"
+  type        = string
+  sensitive   = true
+}
+
+# terraform/provider.tf
+provider "hcloud" {
+  token = var.hetzner_token
+}
+
+# Run Terraform with environment variable
+# export TF_VAR_hetzner_token=$HETZNER_API_TOKEN
+# terraform apply
+```
+
+#### Platform-Specific Secrets
+
+| Platform | Secret Name | Format | Where to Get |
+|----------|-------------|--------|--------------|
+| **Hetzner** | `HETZNER_API_TOKEN` | 64 alphanumeric | https://console.hetzner.cloud/ → Security → API Tokens |
+| **AWS** | `AWS_ACCESS_KEY_ID`<br>`AWS_SECRET_ACCESS_KEY` | 20 chars<br>40 chars | IAM Console → Users → Security Credentials |
+| **Railway** | `RAILWAY_TOKEN` | 32+ alphanumeric | https://railway.app/account/tokens |
+| **Vercel** | `VERCEL_TOKEN` | Variable length | https://vercel.com/account/tokens |
+| **Azure** | `AZURE_CLIENT_ID`<br>`AZURE_CLIENT_SECRET`<br>`AZURE_TENANT_ID` | UUIDs<br>Variable<br>UUID | Azure Portal → App Registrations |
+| **GCP** | `GOOGLE_APPLICATION_CREDENTIALS` | JSON file path | GCP Console → IAM → Service Accounts |
+| **DigitalOcean** | `DIGITALOCEAN_TOKEN` | 64 alphanumeric | https://cloud.digitalocean.com/account/api/tokens |
+| **GitHub** | `GITHUB_TOKEN` | `ghp_*` (40 chars) | https://github.com/settings/tokens |
+| **JIRA** | `JIRA_API_TOKEN`<br>`JIRA_EMAIL` | Variable<br>Email | https://id.atlassian.com/manage-profile/security/api-tokens |
+| **ADO** | `AZURE_DEVOPS_PAT` | 52 chars (base64) | Azure DevOps → User Settings → Personal Access Tokens |
+
+#### Security Best Practices
+
+**DO** ✅:
+- Store secrets in `.env` file (gitignored)
+- Create `.env.example` with placeholders for team
+- Validate token format before using
+- Use environment variables in code (not hardcoded)
+- Rotate tokens regularly (every 90 days)
+- Use production secrets managers (Doppler, AWS Secrets Manager, 1Password, Vault)
+
+**DON'T** ❌:
+- Commit secrets to git (EVER!)
+- Hardcode tokens in source code
+- Share tokens via email/Slack
+- Use production tokens in development
+- Log secrets to console/files
+- Store secrets in CI/CD config files (use encrypted secrets)
+
+#### Production Secrets Management
+
+For production deployments, use dedicated secrets managers:
+
+**Options**:
+1. **Doppler** (https://doppler.com) - Multi-environment, team access control
+2. **AWS Secrets Manager** - AWS-native, automatic rotation
+3. **1Password** - Developer-friendly, CLI integration
+4. **HashiCorp Vault** - Enterprise-grade, self-hosted
+
+**Why not .env in production?**
+- ❌ No access control (anyone with file access can read)
+- ❌ No audit trail (who accessed what, when?)
+- ❌ No automatic rotation
+- ❌ No encryption at rest
+- ✅ Use secrets managers for production
+
+#### Agents with Secrets Management
+
+**Agents that handle secrets**:
+- `devops` - Infrastructure provisioning, deployment
+- `security` - Secrets scanning, vulnerability assessment
+- Integration agents - External API connections (JIRA, GitHub, ADO)
+
+**Skills that handle secrets**:
+- `hetzner-provisioner` - Hetzner Cloud API token
+- `github-sync` - GitHub personal access token
+- `jira-sync` - JIRA API token + email
+- `ado-sync` - Azure DevOps personal access token
+
+**Related Documentation**:
+- [src/agents/devops/AGENT.md](src/agents/devops/AGENT.md) - Complete secrets management workflow
+- [src/skills/hetzner-provisioner/SKILL.md](src/skills/hetzner-provisioner/SKILL.md) - Hetzner token handling
 
 ---
 
@@ -1849,13 +2417,20 @@ Your responsibilities:
 ...
 ```
 
-**Installation**:
+**Installation** (Selective vs All):
 ```bash
-npm run install:agents         # Install to .claude/agents/ (project)
-npm run install:agents:global  # Install to ~/.claude/agents/ (global)
+# User Projects (Selective - Recommended)
+npx specweave install pm --local              # Install specific agent
+npx specweave install --detect                # Auto-detect and install relevant
+
+# Framework Development (Install ALL for testing)
+npm run install:agents         # Install ALL agents to .claude/agents/
+npm run install:agents:global  # Install ALL agents to ~/.claude/agents/
 ```
 
-**Current Agents** (in `src/agents/`):
+**IMPORTANT**: User projects should use **selective installation** to avoid context bloat (see "Agents/Skills Factory Pattern" section).
+
+**All Available Agents** (in `src/agents/` - factory):
 - `pm/` - Product Manager
 - `architect/` - System Architect
 - `devops/` - DevOps Engineer
@@ -1911,19 +2486,21 @@ allowed-tools: Read, Write, Edit  # Optional: restrict tools
 This skill helps you plan features...
 ```
 
-**Installation**:
+**Installation** (Selective vs All):
 ```bash
-npm run install:skills         # Install to .claude/skills/ (project)
-npm run install:skills:global  # Install to ~/.claude/skills/ (global)
+# User Projects (Selective - Recommended)
+npx specweave install context-loader --local      # Install specific skill
+npx specweave install --detect                    # Auto-detect and install relevant
+
+# Framework Development (Install ALL for testing)
+npm run install:skills         # Install ALL skills to .claude/skills/
+npm run install:skills:global  # Install ALL skills to ~/.claude/skills/
+npm run install:all            # Install ALL agents + skills
 ```
 
-**Install Everything**:
-```bash
-npm run install:all         # Install agents + skills (project)
-npm run install:all:global  # Install agents + skills (global)
-```
+**IMPORTANT**: User projects should use **selective installation** to avoid loading unnecessary skills (see "Agents/Skills Factory Pattern" section).
 
-**Current Skills** (in `src/skills/`):
+**All Available Skills** (in `src/skills/` - factory):
 - `specweave-detector/` - Auto-detect SpecWeave projects
 - `feature-planner/` - Plan features with context manifests
 - `skill-router/` - Route requests intelligently

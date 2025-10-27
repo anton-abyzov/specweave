@@ -1,0 +1,69 @@
+name: Deploy Documentation to GitHub Pages
+
+# NO SECRETS REQUIRED! GitHub Pages uses automatic GITHUB_TOKEN
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - '.specweave/docs/public/**'
+      - '.github/workflows/deploy-docs.yml'
+
+  # Allow manual deployment from Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'docs-site/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd docs-site
+          npm ci
+
+      - name: Build documentation
+        run: |
+          cd docs-site
+          npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs-site/build'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

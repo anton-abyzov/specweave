@@ -27,6 +27,284 @@ This skill activates when:
 - Task in tasks.md specifies: `**Agent**: devops-agent`
 - Infrastructure-related keywords detected
 
+---
+
+## ⚠️ CRITICAL: Secrets Management (MANDATORY)
+
+**BEFORE provisioning ANY infrastructure, you MUST handle secrets properly.**
+
+### Secrets Detection & Handling Workflow
+
+**Step 1: Detect Required Secrets**
+
+When you're about to provision infrastructure, identify which secrets you need:
+
+| Platform | Required Secrets | Where to Get |
+|----------|-----------------|--------------|
+| **Hetzner** | `HETZNER_API_TOKEN` | https://console.hetzner.cloud/ → API Tokens |
+| **AWS** | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | AWS IAM → Users → Security Credentials |
+| **Railway** | `RAILWAY_TOKEN` | https://railway.app/account/tokens |
+| **Vercel** | `VERCEL_TOKEN` | https://vercel.com/account/tokens |
+| **DigitalOcean** | `DIGITALOCEAN_TOKEN` | https://cloud.digitalocean.com/account/api/tokens |
+| **Azure** | `AZURE_SUBSCRIPTION_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` | Azure Portal → App Registrations |
+| **GCP** | `GOOGLE_APPLICATION_CREDENTIALS` (path to JSON) | GCP Console → IAM → Service Accounts |
+
+**Step 2: Check If Secrets Exist**
+
+```bash
+# Check .env file
+if [ -f .env ]; then
+  source .env
+fi
+
+# Check if secret exists
+if [ -z "$HETZNER_API_TOKEN" ]; then
+  # Secret NOT found - need to prompt user
+fi
+```
+
+**Step 3: Prompt User for Secrets (If Not Found)**
+
+**STOP execution** and show this message:
+
+```
+🔐 **Secrets Required for Deployment**
+
+I need your Hetzner API token to provision infrastructure.
+
+**How to get it**:
+1. Go to: https://console.hetzner.cloud/
+2. Navigate to: Security → API Tokens
+3. Click "Generate API Token"
+4. Give it Read & Write permissions
+5. Copy the token
+
+**Where I'll save it**:
+- File: .env (gitignored, secure)
+- Format: HETZNER_API_TOKEN=your-token-here
+
+**Security**:
+✅ .env is in .gitignore (never committed)
+✅ Token encrypted in transit
+✅ Only stored locally on your machine
+❌ NEVER hardcoded in source files
+
+Please paste your Hetzner API token:
+```
+
+**Step 4: Validate Secret Format**
+
+```bash
+# Basic validation (Hetzner tokens are typically 64 chars)
+if [[ ! "$HETZNER_API_TOKEN" =~ ^[a-zA-Z0-9]{64}$ ]]; then
+  echo "⚠️  Warning: Token format doesn't match expected pattern"
+  echo "Expected: 64 alphanumeric characters"
+  echo "Got: ${#HETZNER_API_TOKEN} characters"
+  echo ""
+  echo "Continue anyway? (yes/no)"
+fi
+```
+
+**Step 5: Save to .env (Gitignored)**
+
+```bash
+# Create or append to .env
+echo "HETZNER_API_TOKEN=$HETZNER_API_TOKEN" >> .env
+
+# Ensure .env is in .gitignore
+if ! grep -q "^\.env$" .gitignore; then
+  echo ".env" >> .gitignore
+fi
+
+# Set restrictive permissions (Unix/Mac)
+chmod 600 .env
+
+echo "✅ Token saved securely to .env (gitignored)"
+```
+
+**Step 6: Create .env.example (For Team)**
+
+```bash
+# Create template without actual secrets
+cat > .env.example << 'EOF'
+# Hetzner Cloud API Token
+# Get from: https://console.hetzner.cloud/ → Security → API Tokens
+HETZNER_API_TOKEN=your-hetzner-token-here
+
+# Database Connection
+# Example: postgresql://user:password@host:5432/database
+DATABASE_URL=postgresql://user:password@localhost:5432/myapp
+EOF
+
+echo "✅ Created .env.example for team (commit this file)"
+```
+
+**Step 7: Use Secrets Securely**
+
+```hcl
+# infrastructure/terraform/variables.tf
+variable "hetzner_token" {
+  description = "Hetzner Cloud API Token"
+  type        = string
+  sensitive   = true  # Terraform won't log this
+}
+
+# infrastructure/terraform/provider.tf
+provider "hcloud" {
+  token = var.hetzner_token  # Read from environment
+}
+
+# Run Terraform with environment variable
+# TF_VAR_hetzner_token=$HETZNER_API_TOKEN terraform apply
+```
+
+**Step 8: Never Log Secrets**
+
+```bash
+# ❌ BAD - Logs secret
+echo "Using token: $HETZNER_API_TOKEN"
+
+# ✅ GOOD - Hides secret
+echo "Using token: ${HETZNER_API_TOKEN:0:8}...${HETZNER_API_TOKEN: -8}"
+# Output: "Using token: abc12345...xyz98765"
+```
+
+---
+
+### Security Best Practices (MANDATORY)
+
+**DO** ✅:
+- ✅ Store secrets in `.env` (gitignored)
+- ✅ Use environment variables in code
+- ✅ Commit `.env.example` with placeholders
+- ✅ Set restrictive file permissions (`chmod 600 .env`)
+- ✅ Validate secret format before using
+- ✅ Use secrets manager in production (AWS Secrets Manager, Doppler, 1Password)
+- ✅ Rotate secrets regularly (every 90 days)
+- ✅ Use separate secrets for dev/staging/prod
+
+**DON'T** ❌:
+- ❌ NEVER commit `.env` to git
+- ❌ NEVER hardcode secrets in source files
+- ❌ NEVER log secrets (even partially)
+- ❌ NEVER share secrets via email/Slack
+- ❌ NEVER use production secrets in development
+- ❌ NEVER store secrets in CI/CD logs
+
+---
+
+### Multi-Platform Secrets Example
+
+```bash
+# .env (gitignored)
+# Hetzner
+HETZNER_API_TOKEN=abc123...
+
+# AWS
+AWS_ACCESS_KEY_ID=AKIA...
+AWS_SECRET_ACCESS_KEY=xyz789...
+AWS_REGION=us-east-1
+
+# Railway
+RAILWAY_TOKEN=def456...
+
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/db
+
+# Monitoring
+DATADOG_API_KEY=ghi789...
+
+# Email
+SENDGRID_API_KEY=jkl012...
+```
+
+```bash
+# .env.example (COMMITTED - no real secrets)
+# Hetzner Cloud API Token
+# Get from: https://console.hetzner.cloud/ → Security → API Tokens
+HETZNER_API_TOKEN=your-hetzner-token-here
+
+# AWS Credentials
+# Get from: AWS IAM → Users → Security Credentials
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
+AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
+AWS_REGION=us-east-1
+
+# Railway Token
+# Get from: https://railway.app/account/tokens
+RAILWAY_TOKEN=your-railway-token-here
+
+# Database Connection String
+DATABASE_URL=postgresql://user:password@localhost:5432/myapp
+
+# Datadog API Key (optional)
+DATADOG_API_KEY=your-datadog-api-key
+
+# SendGrid API Key (optional)
+SENDGRID_API_KEY=your-sendgrid-api-key
+```
+
+---
+
+### Error Handling
+
+**If secret is invalid**:
+```
+❌ Error: Failed to authenticate with Hetzner API
+
+Possible causes:
+1. Invalid API token
+2. Token doesn't have required permissions (need Read & Write)
+3. Token expired or revoked
+
+Please verify your token at: https://console.hetzner.cloud/
+
+To update token:
+1. Get a new token from Hetzner Cloud Console
+2. Update .env file: HETZNER_API_TOKEN=new-token
+3. Try again
+```
+
+**If secret is missing in production**:
+```
+❌ Error: HETZNER_API_TOKEN not found in environment
+
+In production, secrets should be in:
+- Environment variables (Railway, Vercel)
+- Secrets manager (AWS Secrets Manager, Doppler)
+- CI/CD secrets (GitHub Secrets, GitLab CI Variables)
+
+DO NOT use .env files in production!
+```
+
+---
+
+### Production Secrets (Teams)
+
+**For team projects**, recommend secrets manager:
+
+| Service | Use Case | Cost |
+|---------|----------|------|
+| **Doppler** | Centralized secrets, team sync | Free tier available |
+| **AWS Secrets Manager** | AWS-native, automatic rotation | $0.40/secret/month |
+| **1Password** | Developer-friendly, CLI support | $7.99/user/month |
+| **HashiCorp Vault** | Enterprise, self-hosted | Free (open source) |
+
+**Setup example (Doppler)**:
+```bash
+# Install Doppler CLI
+curl -Ls https://cli.doppler.com/install.sh | sh
+
+# Login and setup
+doppler login
+doppler setup
+
+# Run with Doppler secrets
+doppler run -- terraform apply
+```
+
+---
+
 ## Capabilities
 
 ### 1. Infrastructure as Code (IaC)

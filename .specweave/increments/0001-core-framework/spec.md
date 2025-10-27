@@ -2,10 +2,21 @@
 increment: 001-core-framework
 title: "SpecWeave - Spec-Driven Development Framework"
 priority: P1
-status: in-progress
+status: closed
 created: 2025-01-25
 updated: 2025-10-26
+started: 2025-02-01
+completed: 2025-10-26
+closed: 2025-10-26
 structure: user-stories
+
+# Completion tracking
+total_tasks: 17
+completed_tasks: 17
+completion_rate: 100
+
+# WIP tracking
+wip_slot: 1               # Freed - was 1/2, now 0/2
 ---
 
 # SpecWeave Core Framework

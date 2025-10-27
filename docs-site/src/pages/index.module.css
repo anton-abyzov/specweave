@@ -1,0 +1,279 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ *
+ * Inspired by react-native.dev design
+ */
+
+/* Hero Section */
+.heroBanner {
+  padding: 6rem 2rem 4rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroContent {
+  max-width: 800px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.heroTitle {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: white;
+  line-height: 1.2;
+}
+
+.heroSubtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.heroCode {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.codeBlock {
+  background: #1e1e1e;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+
+.codeHeader {
+  background: #2d2d2d;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #3d3d3d;
+}
+
+.codeTitle {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.codePre {
+  margin: 0;
+  padding: 1.5rem;
+  background: #1e1e1e;
+  overflow-x: auto;
+}
+
+.codePre code {
+  color: #d4d4d4;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* Features Section */
+.featuresSection {
+  padding: 5rem 2rem;
+  background: #f9fafb;
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.sectionHeader h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.sectionHeader p {
+  font-size: 1.25rem;
+  color: #64748b;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #1e293b;
+}
+
+.feature p {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+/* Comparison Section */
+.comparisonSection {
+  padding: 5rem 2rem;
+  background: white;
+}
+
+.comparison {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.comparisonColumn {
+  padding: 2rem;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 2px solid #e2e8f0;
+}
+
+.comparisonColumn h3 {
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.comparisonColumn ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.comparisonColumn li {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+.comparisonColumn li:last-child {
+  border-bottom: none;
+}
+
+.comparisonResult {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.ctaContent {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.ctaContent h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.ctaContent p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .heroBanner {
+    padding: 4rem 1.5rem 3rem;
+  }
+
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.25rem;
+  }
+
+  .featuresSection,
+  .comparisonSection,
+  .ctaSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .sectionHeader h2,
+  .ctaContent h2 {
+    font-size: 2rem;
+  }
+
+  .comparison {
+    grid-template-columns: 1fr;
+  }
+
+  .comparisonColumn {
+    min-width: auto;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.1rem;
+  }
+
+  .buttons,
+  .ctaButtons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+}

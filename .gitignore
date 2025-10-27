@@ -21,10 +21,20 @@ __pycache__/
 # MkDocs build output
 site/
 
-# Environment
+# Environment variables and secrets (CRITICAL - NEVER COMMIT!)
 .env
 .env.local
 .env.*.local
+.env.production
+.env.test
+*.key
+*.pem
+*.p12
+secrets.json
+credentials.json
+*_credentials.json
+*_secret.json
+api_keys.json
 
 # SpecWeave generated files
 .specweave/cache/

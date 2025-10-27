@@ -71,6 +71,148 @@ sync:
 
 ---
 
+## ⚠️ CRITICAL: Secrets Required (MANDATORY CHECK)
+
+**BEFORE attempting GitHub sync, CHECK for GitHub token.**
+
+### Step 1: Check If Token Exists
+
+```bash
+# Check .env file
+if [ -f .env ] && grep -q "GITHUB_TOKEN" .env; then
+  echo "✅ GitHub token found"
+else
+  # Token NOT found - STOP and prompt user
+fi
+```
+
+### Step 2: If Token Missing, STOP and Show This Message
+
+```
+🔐 **GitHub Personal Access Token Required**
+
+I need your GitHub Personal Access Token to sync with GitHub.
+
+**How to get it**:
+1. Go to: https://github.com/settings/tokens
+2. Click "Generate new token" → "Generate new token (classic)"
+3. Give it a name (e.g., "specweave-sync")
+4. Select scopes:
+   ✅ **repo** (Full control of private repositories)
+   ✅ **read:org** (Read org and team membership, read org projects)
+   ✅ **workflow** (Update GitHub Action workflows)
+5. Click "Generate token"
+6. **Copy the token immediately** (you can't see it again!)
+
+**Where I'll save it**:
+- File: `.env` (gitignored, secure)
+- Format: `GITHUB_TOKEN=ghp_your-token-here`
+
+**Security**:
+✅ .env is in .gitignore (never committed to git)
+✅ Token format: `ghp_` followed by 40 alphanumeric characters
+✅ Stored locally only (not in source code)
+
+Please paste your GitHub Personal Access Token:
+```
+
+### Step 3: Validate Token Format
+
+```bash
+# GitHub tokens start with ghp_ and are 40 chars after prefix
+if [[ ! "$GITHUB_TOKEN" =~ ^ghp_[a-zA-Z0-9]{40}$ ]]; then
+  echo "⚠️  Warning: Token format unexpected"
+  echo "Expected: ghp_ followed by 40 alphanumeric characters"
+  echo "Got: ${#GITHUB_TOKEN} total characters"
+  echo ""
+  echo "This might not be a valid GitHub Personal Access Token."
+  echo "Continue anyway? (yes/no)"
+fi
+```
+
+### Step 4: Save Token Securely
+
+```bash
+# Save to .env
+echo "GITHUB_TOKEN=$GITHUB_TOKEN" >> .env
+
+# Ensure .env is gitignored
+if ! grep -q "^\\.env$" .gitignore; then
+  echo ".env" >> .gitignore
+fi
+
+# Create .env.example for team
+cat > .env.example << 'EOF'
+# GitHub Personal Access Token
+# Get from: https://github.com/settings/tokens
+# Scopes: repo, read:org, workflow
+GITHUB_TOKEN=ghp_your-github-token-here
+EOF
+
+echo "✅ Token saved to .env (gitignored)"
+echo "✅ Created .env.example for team (commit this)"
+```
+
+### Step 5: Use Token in Sync
+
+```bash
+# Export for GitHub CLI or API calls
+export GITHUB_TOKEN=$(grep GITHUB_TOKEN .env | cut -d '=' -f2)
+
+# Use in GitHub API calls
+curl -H "Authorization: token $GITHUB_TOKEN" \
+     https://api.github.com/repos/owner/repo/issues
+```
+
+### Step 6: Never Log Secrets
+
+```bash
+# ❌ WRONG - Logs secret
+echo "Using token: $GITHUB_TOKEN"
+
+# ✅ CORRECT - Masks secret
+echo "Using GitHub token (token present: ✅)"
+```
+
+### Step 7: Error Handling
+
+```bash
+# If API call fails with 401 Unauthorized
+if [ $? -eq 401 ]; then
+  echo "❌ GitHub token invalid or expired"
+  echo ""
+  echo "Possible causes:"
+  echo "1. Token expired (GitHub tokens can expire)"
+  echo "2. Token revoked"
+  echo "3. Insufficient scopes (need: repo, read:org)"
+  echo ""
+  echo "Please generate a new token:"
+  echo "https://github.com/settings/tokens"
+fi
+```
+
+### Step 8: Production Recommendations
+
+**For production deployments, use GitHub Apps** instead of Personal Access Tokens:
+
+**Why GitHub Apps?**
+- ✅ Fine-grained permissions (repository-level)
+- ✅ Higher rate limits (5000 vs 60 per hour)
+- ✅ Organization-scoped (not tied to individual user)
+- ✅ Automatic token rotation
+- ✅ Audit trail in GitHub UI
+
+**How to create GitHub App**:
+1. Go to: https://github.com/settings/apps
+2. Click "New GitHub App"
+3. Configure:
+   - Name: "SpecWeave Sync"
+   - Permissions: Issues (Read & Write), Projects (Read & Write)
+   - Install to your organization
+4. Use GitHub App authentication instead of PAT
+
+---
+
 ## Sync Commands
 
 ```bash
