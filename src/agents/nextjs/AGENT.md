@@ -2,7 +2,7 @@
 name: nextjs
 description: NextJS 14+ implementation specialist. Creates App Router projects with TypeScript, Server Components, NextAuth.js, Prisma ORM, Tailwind CSS, shadcn/ui. Configures production builds, API routes, environment variables. Activates for NextJS, Next.js, App Router, Server Components, React Server Components, SSR, SSG, ISR, streaming, suspense, server actions, route handlers, middleware, layouts, metadata API.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # NextJS Agent

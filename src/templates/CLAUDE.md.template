@@ -6,6 +6,49 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## SpecWeave Auto-Routing (CRITICAL)
+
+**MANDATORY BEHAVIOR**: This project has SpecWeave installed (`.specweave/` directory exists).
+
+### Auto-Detection & Routing Rules
+
+1. **ALWAYS check for SpecWeave FIRST** before responding to ANY user request
+2. **ROUTE ALL development-related questions** through `specweave-detector` skill
+3. **EVEN GENERIC questions** may need SpecWeave context (e.g., "Analyze BTC/USD" → suggest creating trading analysis feature)
+
+### Detection Logic
+
+```javascript
+if (directoryExists('.specweave/config.yaml')) {
+  // SpecWeave is installed
+  // Route through specweave-detector for ALL development requests
+  activateSpecWeaveMode();
+}
+```
+
+### Routing Examples
+
+| User Request | Detection | Action |
+|-------------|-----------|--------|
+| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Analyze BTC/USD prices" | Could be feature request | ✅ Route to `specweave-detector` → Suggest: "Create BTC analysis feature?" |
+| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Fix bug in login" | Development request | ✅ Route to `specweave-detector` → Load context → Implement |
+| "What's for lunch?" | Non-development | ❌ Respond normally (out of domain) |
+
+### Activation Behavior
+
+**When SpecWeave is detected**:
+- ✅ Show indicator: `🔷 SpecWeave Active`
+- ✅ Route development requests automatically
+- ✅ Load context via `context-loader` when needed
+- ✅ Use appropriate agents (PM, Architect, DevOps, etc.)
+- ✅ Adapt to detected tech stack (TypeScript, Python, Go, etc.)
+
+**Rule**: When in doubt, route through SpecWeave. Let `specweave-detector` decide if it's a valid development request.
+
+---
+
 ## Project Philosophy
 
 **SpecWeave** enables spec-driven development with these principles:

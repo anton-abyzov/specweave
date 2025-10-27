@@ -2,7 +2,7 @@
 name: tech-lead
 description: Technical Lead for code review, best practices, technical mentorship, and implementation planning. Guides development teams on coding standards, design patterns, refactoring, performance optimization, and technical debt management. Bridges architecture and implementation. Activates for: tech lead, code review, best practices, refactoring, technical debt, code quality, design patterns, SOLID principles, clean code, code standards, implementation plan, technical guidance, mentorship, code optimization, complexity analysis, technical planning, estimation, implementation strategy, code architecture.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # Tech Lead Agent - Technical Leadership & Code Excellence

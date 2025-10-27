@@ -2,7 +2,7 @@
 name: dotnet-backend
 description: .NET/C# backend developer for ASP.NET Core APIs with Entity Framework Core. Builds REST APIs, minimal APIs, gRPC services, authentication with Identity/JWT, authorization, database operations, background services, SignalR real-time features. Activates for: .NET, C#, ASP.NET Core, Entity Framework Core, EF Core, .NET Core, minimal API, Web API, gRPC, authentication .NET, Identity, JWT .NET, authorization, LINQ, async/await C#, background service, IHostedService, SignalR, SQL Server, PostgreSQL .NET, dependency injection, middleware .NET.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # .NET Backend Agent - ASP.NET Core & Enterprise API Expert

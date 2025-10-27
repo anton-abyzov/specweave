@@ -2,7 +2,7 @@
 name: performance
 description: Performance engineering expert for optimization, profiling, benchmarking, and scalability. Analyzes performance bottlenecks, optimizes database queries, improves frontend performance, reduces bundle size, implements caching strategies, optimizes algorithms, and ensures system scalability. Activates for: performance, optimization, slow, latency, profiling, benchmark, scalability, caching, Redis cache, CDN, bundle size, code splitting, lazy loading, database optimization, query optimization, N+1 problem, indexing, algorithm complexity, Big O, memory leak, CPU usage, load testing, stress testing, performance metrics, Core Web Vitals, LCP, FID, CLS, TTFB.
 tools: Read, Bash, Grep
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # Performance Agent - Optimization & Scalability Expert

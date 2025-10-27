@@ -12,6 +12,49 @@ This file contains everything you need to develop with SpecWeave:
 
 ---
 
+## SpecWeave Auto-Routing (CRITICAL)
+
+**MANDATORY BEHAVIOR**: This project has SpecWeave installed (`.specweave/` directory exists).
+
+### Auto-Detection & Routing Rules
+
+1. **ALWAYS check for SpecWeave FIRST** before responding to ANY user request
+2. **ROUTE ALL development-related questions** through `specweave-detector` skill
+3. **EVEN GENERIC questions** may need SpecWeave context (e.g., "Analyze BTC/USD" → suggest creating trading analysis feature)
+
+### Detection Logic
+
+```javascript
+if (directoryExists('.specweave/config.yaml')) {
+  // SpecWeave is installed
+  // Route through specweave-detector for ALL development requests
+  activateSpecWeaveMode();
+}
+```
+
+### Routing Examples
+
+| User Request | Detection | Action |
+|-------------|-----------|--------|
+| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Analyze BTC/USD prices" | Could be feature request | ✅ Route to `specweave-detector` → Suggest: "Create BTC analysis feature?" |
+| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Fix bug in login" | Development request | ✅ Route to `specweave-detector` → Load context → Implement |
+| "What's for lunch?" | Non-development | ❌ Respond normally (out of domain) |
+
+### Activation Behavior
+
+**When SpecWeave is detected**:
+- ✅ Show indicator: `🔷 SpecWeave Active`
+- ✅ Route development requests automatically
+- ✅ Load context via `context-loader` when needed
+- ✅ Use appropriate agents (PM, Architect, DevOps, etc.)
+- ✅ Adapt to detected tech stack (TypeScript, Python, Go, etc.)
+
+**Rule**: When in doubt, route through SpecWeave. Let `specweave-detector` decide if it's a valid development request.
+
+---
+
 ## Project Philosophy
 
 **SpecWeave** is a specification-first AI development framework where **specifications and documentation are the SOURCE OF TRUTH**. Code is the expression of these specifications in a particular language.
@@ -889,28 +932,43 @@ your-project/                       # YOUR project using SpecWeave
 │   │   ├── context-index.json
 │   │   └── spec-embeddings/
 │   │
-│   ├── docs/                       # Project documentation (HOW - built gradually or upfront)
+│   ├── docs/                       # Project documentation (5-pillar structure)
 │   │   ├── README.md               # Documentation index
-│   │   ├── architecture/           # System design
-│   │   │   ├── overview.md
-│   │   │   ├── system-design.md
-│   │   │   └── deployment/
-│   │   ├── decisions/              # Architecture Decision Records (ADRs)
-│   │   │   ├── README.md
-│   │   │   ├── 001-tech-stack.md
-│   │   │   └── 002-database-choice.md
-│   │   ├── guides/                 # How-to guides
-│   │   └── changelog/              # Release notes
+│   │   ├── internal/               # Internal docs (NOT published)
+│   │   │   ├── strategy/           # Business specs (WHAT, WHY) - PM creates
+│   │   │   │   └── authentication/ # Module-specific strategy
+│   │   │   │       ├── overview.md          # Product vision, problem, users
+│   │   │   │       ├── requirements.md      # Complete FR/NFR (technology-agnostic)
+│   │   │   │       ├── user-stories.md      # All user stories (US1, US2...)
+│   │   │   │       └── success-criteria.md  # KPIs, metrics
+│   │   │   ├── architecture/       # Technical design (HOW) - Architect creates
+│   │   │   │   ├── system-design.md         # Overall architecture (C4 Level 1-2)
+│   │   │   │   ├── adr/                     # Architecture Decision Records
+│   │   │   │   │   ├── 0001-auth-method.md
+│   │   │   │   │   └── 0002-database-choice.md
+│   │   │   │   ├── diagrams/                # Mermaid C4 diagrams
+│   │   │   │   │   └── authentication/
+│   │   │   │   │       ├── system-context.mmd    # C4 Level 1
+│   │   │   │   │       └── system-container.mmd  # C4 Level 2
+│   │   │   │   └── data-models/             # ERDs, schemas
+│   │   │   │       └── auth-schema.sql
+│   │   │   ├── delivery/           # Roadmap, releases, guides
+│   │   │   ├── operations/         # Runbooks, SLOs, monitoring
+│   │   │   └── governance/         # Security, compliance
+│   │   └── public/                 # Published docs (users/customers)
+│   │       ├── overview/
+│   │       ├── guides/
+│   │       ├── api/
+│   │       └── changelog/
 │   │
 │   ├── increments/                 # ALL work organized by increments (auto-numbered)
-│   │   ├── README.md               # Features index
+│   │   ├── README.md               # Increments index
 │   │   ├── roadmap.md              # Project roadmap
 │   │   └── 0001-user-authentication/  # Example increment
-│   │       ├── spec.md             # Feature specification (WHAT, WHY)
-│   │       ├── plan.md             # Implementation plan (HOW)
-│   │       ├── tasks.md            # Executable tasks checklist
-│   │       ├── tests.md            # Test strategy and coverage
-│   │       ├── context-manifest.yaml  # What context to load
+│   │       ├── spec.md             # Summary (WHAT, WHY) - references strategy docs (< 250 lines)
+│   │       ├── plan.md             # Summary (HOW) - references architecture docs + ADRs (< 500 lines)
+│   │       ├── tasks.md            # Implementation steps (generated from plan.md)
+│   │       ├── tests.md            # Test strategy (references spec.md acceptance criteria)
 │   │       ├── logs/               # ✅ Increment-specific logs
 │   │       │   ├── execution.log   # Execution history
 │   │       │   ├── errors.log      # Error tracking

@@ -2,7 +2,7 @@
 name: specweave-jira-mapper
 description: Expert in bidirectional conversion between SpecWeave increments and JIRA epics/stories/subtasks. Handles export (increment → JIRA), import (JIRA → increment), and bidirectional sync with conflict resolution. Activates for JIRA sync, issue creation, import from JIRA.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # SpecWeave-JIRA Mapper Agent

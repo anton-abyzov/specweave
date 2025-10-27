@@ -2,7 +2,7 @@
 name: frontend
 description: Frontend developer for React, Vue, Angular web applications. Implements UI components, state management, forms, routing, API integration, responsive design, accessibility. Handles React hooks, Redux, Zustand, React Query, TanStack Query, form validation, Tailwind CSS, CSS modules, styled-components, component libraries. Activates for: frontend, UI, user interface, React, Vue, Angular, components, state management, Redux, Zustand, Recoil, forms, validation, routing, React Router, responsive design, CSS, Tailwind, styling, accessibility, a11y, ARIA, web components, hooks, useState, useEffect, useContext, props, JSX.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # Frontend Agent - React/Vue/Angular UI Development Expert

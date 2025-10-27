@@ -34,6 +34,113 @@ This skill activates automatically when users say:
 - "Help me structure [feature]"
 - "Break down this feature: ..."
 
+---
+
+## ⚠️ CRITICAL: Living Documentation Workflow
+
+**MANDATORY**: Feature planner must orchestrate **BOTH** living docs and increment files.
+
+### Correct Workflow (MUST FOLLOW)
+
+```
+User: "I want to build real-time price tracking"
+    ↓
+feature-planner skill
+    ↓
+STEP 1: Scan existing docs
+├─ Read .specweave/docs/internal/strategy/ (existing requirements)
+├─ Read .specweave/docs/internal/architecture/adr/ (existing decisions)
+└─ Pass existing context to agents
+    ↓
+STEP 2: Invoke PM Agent
+├─ PM creates .specweave/docs/internal/strategy/crypto-trading/
+│   ├── overview.md (product vision, problem, users)
+│   ├── requirements.md (FR-001, NFR-001, technology-agnostic)
+│   ├── user-stories.md (US1, US2, US3...)
+│   └── success-criteria.md (KPIs, metrics)
+└─ PM creates .specweave/increments/0001-*/spec.md (summary, references strategy docs)
+    ↓
+STEP 3: Invoke Architect Agent
+├─ Architect READS strategy docs from PM
+├─ Architect creates .specweave/docs/internal/architecture/
+│   ├── system-design.md (overall architecture)
+│   ├── adr/0001-websocket-vs-polling.md (decision record)
+│   ├── adr/0002-database-choice.md (PostgreSQL vs MongoDB)
+│   ├── adr/0003-deployment-platform.md (Railway vs Hetzner)
+│   └── diagrams/crypto-trading/ (Mermaid C4 diagrams)
+└─ Architect creates .specweave/increments/0001-*/plan.md (summary, references architecture docs)
+    ↓
+STEP 4: Validate Living Docs
+├─ Check .specweave/docs/internal/strategy/{module}/ is NOT empty
+├─ Check .specweave/docs/internal/architecture/adr/ has ADRs
+├─ Check increment spec.md REFERENCES (not duplicates) strategy docs
+└─ Check increment plan.md REFERENCES (not duplicates) architecture docs
+    ↓
+✅ SUCCESS: Living docs updated, increment created
+```
+
+### What Gets Created
+
+#### Living Docs (Source of Truth) ✅
+```
+.specweave/docs/
+├── internal/
+│   ├── strategy/
+│   │   └── {module}/                    # ← PM Agent creates this
+│   │       ├── overview.md               # Product vision, problem statement
+│   │       ├── requirements.md           # Complete FR/NFR (technology-agnostic)
+│   │       ├── user-stories.md           # All user stories (US1, US2, ...)
+│   │       └── success-criteria.md       # KPIs, business metrics
+│   │
+│   └── architecture/
+│       ├── system-design.md              # ← Architect updates this
+│       ├── adr/                          # ← Architect creates ADRs
+│       │   ├── ####-websocket-vs-polling.md
+│       │   ├── ####-database-choice.md
+│       │   └── ####-deployment-platform.md
+│       ├── diagrams/                     # ← Architect creates diagrams
+│       │   └── {module}/
+│       │       ├── system-context.mmd    # C4 Level 1
+│       │       └── system-container.mmd  # C4 Level 2
+│       └── data-models/
+│           └── {module}-schema.sql
+```
+
+#### Increment Files (Summary) ✅
+```
+.specweave/increments/0001-feature-name/
+├── spec.md                 # ← PM Agent (< 250 lines, references strategy docs)
+├── plan.md                 # ← Architect Agent (< 500 lines, references architecture docs)
+├── tasks.md                # ← Tech Lead Agent (generated later)
+├── tests.md                # ← QA Agent (generated later)
+└── context-manifest.yaml   # ← feature-planner creates
+```
+
+---
+
+### Validation Rules (MANDATORY)
+
+Before completing feature planning, verify:
+
+**Living Docs Created**:
+- [ ] `.specweave/docs/internal/strategy/{module}/requirements.md` exists
+- [ ] `.specweave/docs/internal/architecture/adr/` has ≥3 ADRs
+- [ ] `requirements.md` is technology-agnostic (no PostgreSQL, WebSocket, etc.)
+- [ ] ADRs follow template (Context, Decision, Alternatives, Consequences)
+
+**Increment Files Reference Living Docs**:
+- [ ] `spec.md` has links to `../../docs/internal/strategy/{module}/`
+- [ ] `plan.md` has links to `../../docs/internal/architecture/adr/`
+- [ ] `spec.md` is < 250 lines (summary only)
+- [ ] `plan.md` is < 500 lines (summary only)
+
+**Agents Followed Process**:
+- [ ] PM Agent scanned existing strategy docs before creating new ones
+- [ ] Architect Agent read PM's strategy docs before creating architecture
+- [ ] Architect created ADRs for ALL technical decisions
+
+---
+
 ## Feature Planning Process
 
 ### Step 1: Analyze Feature Description

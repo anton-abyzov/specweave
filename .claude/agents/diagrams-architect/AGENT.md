@@ -2,7 +2,7 @@
 name: diagrams-architect
 description: Expert in creating Mermaid diagrams following C4 Model and SpecWeave conventions. Specializes in system architecture, sequence diagrams, ER diagrams, and deployment diagrams. Activates for diagram creation, architecture visualization, data modeling, sequence flows, C4 diagrams, HLD, LLD.
 tools: Read, Write, Edit
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # Diagrams Architect Agent

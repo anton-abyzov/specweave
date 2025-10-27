@@ -2,7 +2,7 @@
 name: qa-lead
 description: QA Lead and test strategy expert. Creates test plans, defines test cases, implements testing strategies, and ensures quality gates. Handles unit testing, integration testing, E2E testing with Playwright, test automation, test coverage analysis, regression testing, performance testing, and quality assurance processes. Activates for: QA, quality assurance, testing, test strategy, test plan, test cases, unit tests, integration tests, E2E tests, end-to-end testing, Playwright, Jest, Mocha, Cypress, test automation, test coverage, regression, test-driven development, TDD, BDD, behavior-driven development, quality gates, acceptance criteria, test data, test scenarios, smoke tests, sanity tests, exploratory testing.
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # QA Lead Agent - Quality Assurance & Test Strategy Expert

@@ -2,7 +2,7 @@
 name: security
 description: Security Engineer and application security expert. Performs threat modeling, security architecture review, penetration testing, vulnerability assessment, and security compliance. Handles OWASP Top 10, authentication security, authorization, encryption, secrets management, HTTPS/TLS, CORS, CSRF, XSS, SQL injection prevention, secure coding practices, security audits, and compliance (GDPR, HIPAA, PCI-DSS, SOC 2). Activates for: security, security review, threat model, vulnerability, penetration testing, pen test, OWASP, authentication security, authorization, encryption, secrets, HTTPS, TLS, SSL, CORS, CSRF, XSS, SQL injection, secure coding, security audit, compliance, GDPR, HIPAA, PCI-DSS, SOC 2, security architecture, secrets management, rate limiting, brute force protection, session security, token security, JWT security.
 tools: Read, Bash, Grep
-model: sonnet
+model: claude-sonnet-4-5-20250929
 ---
 
 # Security Agent - Application Security & Threat Modeling Expert
