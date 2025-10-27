@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "description": "Spec-Driven Development framework with AI-powered autonomous agents for building SaaS applications",
   "main": "dist/index.js",
   "bin": {
@@ -20,7 +20,12 @@
     "install:all": "bash bin/install-all.sh",
     "install:agents:global": "bash bin/install-agents.sh --global",
     "install:skills:global": "bash bin/install-skills.sh --global",
-    "install:all:global": "bash bin/install-all.sh --global"
+    "install:all:global": "bash bin/install-all.sh --global",
+    "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
+    "docs:public": "cd docs-site && npm start",
+    "docs:internal": "mkdocs serve -f mkdocs-internal.yml",
+    "docs:build:public": "cd docs-site && npm run build",
+    "docs:build:internal": "mkdocs build -f mkdocs-internal.yml"
   },
   "keywords": [
     "specweave",
@@ -55,25 +60,29 @@
     "src/skills",
     "src/agents",
     "src/hooks",
+    "src/adapters",
     "README.md",
+    "SPECWEAVE.md",
+    "CLAUDE.md",
     "LICENSE"
   ],
   "dependencies": {
-    "commander": "^11.1.0",
-    "inquirer": "^9.2.12",
     "chalk": "^5.3.0",
-    "ora": "^7.0.1",
+    "commander": "^11.1.0",
     "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.12",
+    "ora": "^7.0.1",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/inquirer": "^9.0.7",
+    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@playwright/test": "^1.40.0",
     "@types/fs-extra": "^11.0.4",
-    "typescript": "^5.3.0",
-    "jest": "^29.7.0",
+    "@types/inquirer": "^9.0.7",
     "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.0",
+    "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
-    "@playwright/test": "^1.40.0"
+    "typescript": "^5.3.0"
   }
 }

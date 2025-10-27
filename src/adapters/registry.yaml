@@ -1,0 +1,126 @@
+---
+# SpecWeave Adapter Registry
+#
+# Lists all available adapters for multi-tool support.
+# CLI reads this file to show available adapters.
+
+version: 1
+last_updated: 2025-10-27
+
+adapters:
+  - name: claude
+    description: "Claude Code adapter - Full automation with skills, agents, hooks"
+    automation_level: full
+    status: active
+    directory: claude
+    features:
+      - Skills auto-activate (specweave-detector, skill-router, etc.)
+      - Agents coordinate (PM, Architect, DevOps, QA, Security)
+      - Hooks auto-update docs (post-task-completion, etc.)
+      - Slash commands (/create-increment, /review-docs, etc.)
+      - Best experience, most features
+    requirements:
+      - Claude Code CLI installed
+      - Node.js >= 18.0.0
+    market_share: 10%
+    priority: P1
+
+  - name: cursor
+    description: "Cursor adapter - Semi-automation with .cursorrules and @ shortcuts"
+    automation_level: semi
+    status: active
+    directory: cursor
+    features:
+      - .cursorrules with SpecWeave workflow instructions
+      - @ context shortcuts (@increments, @docs, @strategy)
+      - Composer multi-file editing support
+      - Good experience, semi-automated
+    requirements:
+      - Cursor editor installed
+      - Node.js >= 18.0.0
+    market_share: 30%
+    priority: P1
+
+  - name: copilot
+    description: "GitHub Copilot adapter - Basic automation with workspace instructions"
+    automation_level: basic
+    status: active
+    directory: copilot
+    features:
+      - .github/copilot/instructions.md workspace guidance
+      - Copilot reads context manifests for suggestions
+      - Works with built-in Copilot features only
+      - Decent experience, basic automation
+    requirements:
+      - GitHub Copilot extension (VS Code)
+      - Node.js >= 18.0.0
+    market_share: 40%
+    priority: P1
+
+  - name: generic
+    description: "Generic adapter - Manual workflow for ANY AI tool (ChatGPT, Gemini, etc.)"
+    automation_level: manual
+    status: active
+    directory: generic
+    features:
+      - SPECWEAVE.md with step-by-step manual instructions
+      - Works with ANY AI (ChatGPT, Gemini, Claude web, etc.)
+      - No automation, user guides AI through workflow
+      - Basic experience, maximum compatibility (100%)
+    requirements:
+      - Node.js >= 18.0.0 (for CLI init only)
+      - Any AI tool (web or local)
+    market_share: 20%
+    priority: P1
+
+# Future adapters (P2/P3)
+future_adapters:
+  - name: windsurf
+    description: "Windsurf adapter (if requested by community)"
+    automation_level: semi
+    status: planned
+    priority: P2
+
+  - name: gemini
+    description: "Google Gemini adapter (if requested by community)"
+    automation_level: basic
+    status: planned
+    priority: P3
+
+# Adapter capabilities comparison
+capabilities:
+  skills:
+    claude: full
+    cursor: partial
+    copilot: none
+    generic: none
+
+  agents:
+    claude: full
+    cursor: manual
+    copilot: manual
+    generic: manual
+
+  hooks:
+    claude: full
+    cursor: none
+    copilot: none
+    generic: none
+
+  slash_commands:
+    claude: native
+    cursor: via_cursorrules
+    copilot: via_instructions
+    generic: via_markdown_guide
+
+  context_manifests:
+    claude: auto_load
+    cursor: manual_reference
+    copilot: manual_reference
+    generic: manual_copy_paste
+
+# Target market coverage
+market_coverage:
+  claude_only: 10%
+  with_all_adapters: 100%
+  goal: "Make SpecWeave accessible to ALL developers"
