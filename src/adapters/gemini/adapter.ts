@@ -95,8 +95,7 @@ export class GeminiAdapter extends AdapterBase {
 
     const content = await generator.generate({
       projectName: options.projectName,
-      projectPath: options.projectPath,
-      adapterName: this.name
+      projectPath: options.projectPath
     });
 
     await fs.writeFile(targetPath, content);

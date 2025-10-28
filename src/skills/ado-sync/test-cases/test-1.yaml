@@ -1,9 +1,0 @@
----
-name: "Detect ADO Sync Request"
-description: "Tests if ado-sync skill activates for Azure DevOps sync"
-input:
-  prompt: "Sync increment 0001 to Azure DevOps"
-expected_output:
-  skill_activated: true
-  agent_invoked: "specweave-ado-mapper"
----

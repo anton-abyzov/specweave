@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.9-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.9)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.2.0)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -127,9 +127,9 @@ cd my-app
 
 # Open Claude Code and use slash commands:
 
-User: /inc "Next.js authentication with email and OAuth"
+User: /specweave inc "Next.js authentication with email and OAuth"
     ↓
-SpecWeave: 🔷 SpecWeave Active (/increment)
+SpecWeave: 🔷 SpecWeave Active (/specweave-increment)
 
            🚀 Creating increment 0001-user-authentication...
            📝 Using nextjs skill (already installed!)
@@ -155,7 +155,7 @@ SpecWeave: 🤖 Implementing based on specifications
 ✅ Tests: tests/auth/
 ✅ Docs: Updated automatically
 
-User: /done 0001  # Close increment with slash command
+User: /specweave done 0001  # Close increment with slash command
 ✅ Increment 0001 closed successfully
 ```
 
@@ -163,20 +163,21 @@ User: /done 0001  # Close increment with slash command
 1. `specweave init` → Detects your AI tool and configures appropriately
    - **Claude Code**: Native components installed (10 agents + 35+ skills)
    - **Other tools**: Universal AGENTS.md adapter generated
-2. **Use `/inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
+2. **Use `/specweave inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
    - PM creates specs + plan + auto-generates tasks
    - **Smart**: Auto-closes previous increment if PM gates pass
-3. **Use `/build` or `/build 0001`** → Execute implementation (hooks after EVERY task in Claude)
+3. **Use `/specweave build` or `/specweave build 0001`** → Execute implementation (hooks after EVERY task in Claude)
    - **Smart**: Auto-resumes from next incomplete task
-4. **Use `/progress`** → Check status, task completion %, next action
-5. **Use `/validate 0001`** → Optional quality check (LLM-as-judge)
-6. Repeat: `/inc "next feature"` → Auto-closes if ready, creates next increment
+4. **Use `/specweave progress`** → Check status, task completion %, next action
+5. **Use `/specweave validate 0001`** → Optional quality check (LLM-as-judge)
+6. Repeat: `/specweave inc "next"` → Auto-closes if ready, creates next increment
 
 **Why smart workflow?**
-- ✅ No manual `/done` needed (auto-closes on next `/inc`)
-- ✅ No task tracking needed (`/build` auto-resumes)
-- ✅ `/progress` shows exactly where you are
+- ✅ No manual `/specweave done` needed (auto-closes on next `/specweave inc`)
+- ✅ No task tracking needed (`/specweave build` auto-resumes)
+- ✅ `/specweave progress` shows exactly where you are
 - ✅ Natural flow: finish → start next
+- ✅ Namespaced commands avoid collisions in brownfield projects
 
 ---
 
@@ -386,15 +387,16 @@ SpecWeave implements **4 Levels of Testing**:
    - Test coverage matrix
    - Maps TC-0001 to implementations
 
-3. **Level 3: Component Tests** (src/)
-   - Agent test cases: `src/agents/{name}/test-cases/`
-   - Skill test cases: `src/skills/{name}/test-cases/`
+3. **Level 3: Component Tests** (tests/)
+   - Integration tests: `tests/integration/{integration-name}/`
+   - Skill tests: `tests/specs/{skill-name}/`
    - **Minimum 3 tests per component** (MANDATORY)
+   - **Centralized location** for better organization and CI/CD
 
 4. **Level 4: Automated Tests** (tests/)
    - Unit tests (Jest)
-   - Integration tests
-   - E2E tests (Playwright) when UI exists
+   - Integration tests (Jira, GitHub, ADO sync)
+   - E2E tests (Playwright) for UI/CLI validation
 
 **See [CLAUDE.md#testing-philosophy](CLAUDE.md#testing-philosophy)** for complete testing guide.
 

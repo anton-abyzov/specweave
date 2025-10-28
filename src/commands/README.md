@@ -2,34 +2,46 @@
 
 This directory contains all slash commands for SpecWeave.
 
-## Available Commands (v0.1.9)
+## Available Commands (v0.2.0)
+
+**IMPORTANT**: All SpecWeave commands are now namespaced with `specweave-` prefix to avoid collisions in brownfield projects.
 
 ### Core Workflow Commands (Smart Workflow)
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/increment` | `/inc` | Plan increment (PM-led, auto-closes previous if ready) |
-| `/build` | - | Execute tasks (smart resume, hooks after every task) |
-| `/progress` | - | Show status (task %, PM gates, next action) |
-| `/validate` | - | Validate quality (rule-based + optional LLM judge) |
-| `/done` | - | Close explicitly (optional, `/inc` auto-closes) |
+| Command | Shorthand via /specweave | Description |
+|---------|--------------------------|-------------|
+| `/specweave-increment` | `/specweave inc` | Plan increment (PM-led, auto-closes previous if ready) |
+| `/specweave-inc` | `/specweave inc` | Alias for /specweave-increment |
+| `/specweave-build` | `/specweave build` | Execute tasks (smart resume, hooks after every task) |
+| `/specweave-next` | `/specweave next` | Smart transition (close + suggest next) |
+| `/specweave-progress` | `/specweave progress` | Show status (task %, PM gates, next action) |
+| `/specweave-validate` | `/specweave validate` | Validate quality (rule-based + optional LLM judge) |
+| `/specweave-done` | `/specweave done` | Close explicitly (optional, /inc auto-closes) |
 
 ### Supporting Commands
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/list-increments` | - | List all increments with status and WIP tracking |
-| `/review-docs` | - | Review strategic docs vs implementation |
-| `/sync-github` | - | Sync increment to GitHub issues with subtasks |
+| Command | Shorthand via /specweave | Description |
+|---------|--------------------------|-------------|
+| `/specweave-list-increments` | `/specweave list-increments` | List all increments with status and WIP tracking |
+| `/specweave-review-docs` | `/specweave review-docs` | Review strategic docs vs implementation |
+| `/specweave-sync-github` | `/specweave sync-github` | Sync increment to GitHub issues with granular control |
+| `/specweave-sync-jira` | `/specweave sync-jira` | Sync increment to Jira epics/stories with granular control |
+| `/specweave-create-project` | `/specweave create-project` | Bootstrap SpecWeave in new/existing project |
 
-## Smart Workflow Features (v0.1.9)
+### Master Router Command
+
+| Command | Description |
+|---------|-------------|
+| `/specweave` | Master router for all subcommands (use `/specweave <subcommand>`) |
+
+## Smart Workflow Features (v0.2.0)
 
 **What makes the workflow "smart"?**
 
-1. ✅ **Auto-resume**: `/build` automatically finds next incomplete task (no manual tracking)
-2. ✅ **Auto-close**: `/inc` auto-closes previous increment if PM gates pass (seamless)
-3. ✅ **Suggest-not-force**: `/inc` presents options if previous incomplete (user control)
-4. ✅ **Progress visibility**: `/progress` shows exactly where you are anytime
+1. ✅ **Auto-resume**: `/specweave build` automatically finds next incomplete task (no manual tracking)
+2. ✅ **Auto-close**: `/specweave inc` auto-closes previous increment if PM gates pass (seamless)
+3. ✅ **Suggest-not-force**: `/specweave inc` presents options if previous incomplete (user control)
+4. ✅ **Progress visibility**: `/specweave progress` shows exactly where you are anytime
 5. ✅ **Natural flow**: finish → start next without administrative overhead
 
 ## Typical Workflow
@@ -37,53 +49,54 @@ This directory contains all slash commands for SpecWeave.
 **Natural append-only workflow** (0001 → 0002 → 0003):
 
 ```bash
-# 1. Initialize project (CLI, before Claude session)
+# 1. Initialize project (CLI, before any AI session)
 npx specweave init my-saas
 
 # 2. Plan your first increment (PM-led planning)
-/inc "AI-powered customer support chatbot"
+/specweave inc "AI-powered customer support chatbot"
 # PM creates: spec.md + plan.md + tasks.md (auto-generated!) + tests.md
 
 # 3. Build it (smart resume)
-/build
+/specweave build
 # Auto-resumes from next incomplete task
 # Hooks run after EVERY task completion
 
 # 4. Check progress anytime
-/progress
+/specweave progress
 # Shows: 5/12 tasks (42%), next: T006, PM gates status
 
 # 5. Continue building
-/build
+/specweave build
 # Picks up where you left off automatically
 
 # 6. Start next feature (auto-closes previous!)
-/inc "real-time chat dashboard"
+/specweave inc "real-time chat dashboard"
 # Smart check:
 #   If 0001 complete (PM gates pass) → Auto-close, create 0002
 #   If 0001 incomplete → Present options (never forces)
 
 # 7. Keep building
-/build
+/specweave build
 # Auto-finds active increment 0002
 
-# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
+# Repeat: /specweave inc → /specweave build → /specweave progress → ...
 ```
 
-## Why Only ONE Alias?
+## Namespaced Commands (Brownfield Safety)
 
-**Design decision**: Minimize cognitive overhead.
+**Design decision**: All commands prefixed with `specweave-` for collision avoidance.
 
-- ✅ `/inc` is the ONLY alias (most frequently used command)
-- ✅ Other commands use full names for clarity
-- ✅ Simpler mental model: one alias to remember
+- ✅ No conflicts with existing project commands
+- ✅ Clear ownership (framework vs. project commands)
+- ✅ Use master router `/specweave` for convenience
+- ✅ Brownfield projects can adopt SpecWeave without risk
 
 **Most used workflow**:
 ```bash
-/inc "feature"  # ← Alias for speed
-/build          # ← Full name (already short)
-/progress       # ← Full name (already short)
-/inc "next"     # ← Alias for speed
+/specweave inc "feature"     # ← Create new increment
+/specweave build             # ← Execute tasks
+/specweave progress          # ← Check status
+/specweave next              # ← Smart transition to next work
 ```
 
 ## Command Design Philosophy

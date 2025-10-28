@@ -46,6 +46,31 @@
 - Team features (shared context, approval workflows)
 - Compliance packs (SOC 2, HIPAA, GDPR templates)
 
+### Backlog & Research Items
+
+**🔬 Community Integration Research**
+- **Subagents Library**: Evaluate [awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) for extending existing agents
+  - Goal: Identify high-value subagents that complement current agent roster
+  - Consider: Database specialists, API integrators, documentation generators
+  - Effort: 2-3 weeks research + integration
+
+- **Official Skills Repository**: Review [anthropics/skills](https://github.com/anthropics/skills) for reusable components
+  - Goal: Adopt official patterns and best practices
+  - Priority: Official Anthropic skills may have better maintenance/compatibility
+  - Effort: 1-2 weeks evaluation
+
+- **Community Skills Catalog**: Explore [awesome-claude-skills](https://github.com/travisvn/awesome-claude-skills) for domain-specific expertise
+  - Goal: Identify specialized skills (e.g., blockchain, ML, mobile dev)
+  - Strategy: Create adapter layer for non-SpecWeave skills
+  - Effort: 2-4 weeks (depends on skill complexity)
+
+**🚀 /build Command Enhancement**
+- **Parallel Task Execution**: Implement wave-based parallel execution for large increments (40+ tasks)
+  - Expected speedup: 40-60% for multi-file, independent tasks
+  - Dependencies: Smart dependency graph analysis, consolidated hooks
+  - Risk: Medium (file conflicts, race conditions)
+  - Effort: 3-4 weeks
+
 ## Release Cadence
 
 - **Major** (X.0.0): Quarterly (new features, breaking changes)

@@ -1,0 +1,141 @@
+# SpecWeave Project Configuration
+#
+# This file allows you to customize SpecWeave's behavior for your project.
+# Copy to .specweave/config.yaml and adjust to your needs.
+
+# Project Structure Configuration
+# SpecWeave auto-detects your project structure, but you can override it here.
+project_structure:
+  # Source system: jira, ado, github, or manual
+  source: jira
+
+  # Hierarchy level: flat, single_parent, two_level, or three_level
+  # - flat: No hierarchy (GitHub issues, flat lists)
+  # - single_parent: Milestone → Issues OR Feature → Stories
+  # - two_level: Epic → Stories → Sub-tasks (Jira) OR Feature → User Stories → Tasks (ADO)
+  # - three_level: Initiative → Epic → Feature → Stories (enterprise)
+  hierarchy_level: two_level
+
+  # Work item types at each level
+  work_item_types:
+    # top_level: Initiative    # Optional: Only for three_level hierarchy
+    parent_level: Epic          # Epic (Jira), Feature (ADO), Milestone (GitHub)
+    item_level: Story           # Story (Jira), User Story (ADO), Issue (GitHub)
+    sub_item_level: Sub-task    # Sub-task (Jira), Task (ADO)
+
+  # Grouping strategy for RFC organization
+  # Options: by_type, by_parent, by_priority, by_label, flat, custom
+  grouping_strategy: by_type
+
+  # Custom field names (optional, for non-standard configurations)
+  # epic_field_name: customfield_10014        # Jira Epic Link field
+  # feature_field_name: System.Parent         # ADO Feature field
+  # milestone_field_name: milestone           # GitHub Milestone field
+
+# Sync Configuration
+sync:
+  # Automatic sync on file changes
+  auto_sync: false
+
+  # Bidirectional sync strategy
+  # Options: jira_wins, specweave_wins, latest_wins, ask
+  conflict_resolution: latest_wins
+
+  # Sync interval (in minutes, 0 = manual only)
+  sync_interval: 0
+
+# RFC Generation
+rfc:
+  # Auto-generate RFC when creating increment
+  auto_generate: true
+
+  # RFC template to use (default, minimal, or custom path)
+  template: default
+
+  # Include alternatives section
+  include_alternatives: true
+
+# Context Loading
+context:
+  # Maximum context tokens to load
+  max_tokens: 10000
+
+  # Auto-refresh context on file changes
+  auto_refresh: false
+
+# Quality Gates
+quality:
+  # Run quality checks on increment validation
+  enable_quality_judge: false
+
+  # Minimum quality score (0-100)
+  min_quality_score: 70
+
+# Examples for different project types:
+
+# === EXAMPLE 1: Standard Jira Project ===
+# project_structure:
+#   source: jira
+#   hierarchy_level: two_level
+#   work_item_types:
+#     parent_level: Epic
+#     item_level: Story
+#     sub_item_level: Sub-task
+#   grouping_strategy: by_type
+
+# === EXAMPLE 2: Azure DevOps with Features ===
+# project_structure:
+#   source: ado
+#   hierarchy_level: two_level
+#   work_item_types:
+#     parent_level: Feature
+#     item_level: User Story
+#     sub_item_level: Task
+#   grouping_strategy: by_type
+
+# === EXAMPLE 3: GitHub Issues (Flat) ===
+# project_structure:
+#   source: github
+#   hierarchy_level: flat
+#   work_item_types:
+#     item_level: Issue
+#   grouping_strategy: by_label
+
+# === EXAMPLE 4: GitHub with Milestones ===
+# project_structure:
+#   source: github
+#   hierarchy_level: single_parent
+#   work_item_types:
+#     parent_level: Milestone
+#     item_level: Issue
+#   grouping_strategy: by_parent
+
+# === EXAMPLE 5: Enterprise Jira (3-level) ===
+# project_structure:
+#   source: jira
+#   hierarchy_level: three_level
+#   work_item_types:
+#     top_level: Initiative
+#     parent_level: Epic
+#     item_level: Story
+#     sub_item_level: Sub-task
+#   grouping_strategy: by_parent
+
+# === EXAMPLE 6: ADO without Features (Flat Stories) ===
+# project_structure:
+#   source: ado
+#   hierarchy_level: single_parent
+#   work_item_types:
+#     item_level: User Story
+#     sub_item_level: Task
+#   grouping_strategy: by_type
+
+# === EXAMPLE 7: Custom Manual Structure ===
+# project_structure:
+#   source: manual
+#   hierarchy_level: two_level
+#   work_item_types:
+#     parent_level: Module
+#     item_level: Requirement
+#     sub_item_level: Implementation Task
+#   grouping_strategy: by_parent

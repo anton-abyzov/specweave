@@ -1,11 +1,14 @@
 /**
  * CLAUDE.md Generator
  *
- * Generates CLAUDE.md quick reference for Claude Code users.
+ * Generates CLAUDE.md - the PRIMARY instruction file for Claude Code.
  *
- * IMPORTANT: Claude Code is NOT an adapter - it's the NATIVE/BASELINE implementation.
- * Skills, agents, hooks, and slash commands work OUT-OF-THE-BOX with Claude Code.
- * This generator simply creates a quick reference that lists what's actually installed,
+ * CRITICAL:
+ * - Claude Code ONLY reads CLAUDE.md (NOT AGENTS.md)
+ * - This is the native/baseline implementation (skills, agents, hooks, slash commands)
+ * - Claude Code is NOT an adapter - it's the gold standard that others try to approximate
+ *
+ * This generator creates a quick reference that lists what's actually installed,
  * so when we add new agents/skills, CLAUDE.md stays in sync automatically.
  */
 

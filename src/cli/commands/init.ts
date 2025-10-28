@@ -207,8 +207,9 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
     fs.writeFileSync(path.join(targetDir, 'README.md'), readme);
   }
 
-  // Generate CLAUDE.md dynamically (stays in sync with actual agents/skills)
-  // Claude Code is NATIVE - this is the quick reference for the gold standard experience
+  // Generate CLAUDE.md - PRIMARY instruction file for Claude Code
+  // CRITICAL: Claude Code ONLY reads CLAUDE.md (NOT AGENTS.md!)
+  // This is the native/baseline experience - skills, agents, hooks, slash commands
   const skillsDir = path.join(__dirname, '../../../src/skills');
   const agentsDir = path.join(__dirname, '../../../src/agents');
   const commandsDir = path.join(__dirname, '../../../src/commands');
@@ -222,13 +223,16 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
 
   fs.writeFileSync(path.join(targetDir, 'CLAUDE.md'), claudeMd);
 
-  // Generate AGENTS.md - universal file that works with ALL AI tools
-  // Tells each tool how to work with SpecWeave (Claude, Cursor, Gemini, Codex, Copilot, Generic)
+  // Generate AGENTS.md - Universal file for ALL OTHER AI tools
+  // Following agents.md standard: https://agents.md/
+  // Used by: Cursor, Gemini CLI, Codex, GitHub Copilot, and ANY non-Claude tool
+  // NOTE: Claude Code does NOT read this file - it only reads CLAUDE.md above
+  // Replaces: .cursorrules, instructions.md, and other tool-specific files
   const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
   const agentsMd = await agentsGen.generate({
     projectName,
     projectPath: targetDir,
-    adapterName: 'claude' // Default to claude, adapters will regenerate with their name
+    templatePath: path.join(templatesDir, 'AGENTS.md.template')
   });
 
   fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd);

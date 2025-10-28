@@ -1,0 +1,335 @@
+# {PROJECT_NAME}
+
+**Framework**: SpecWeave - Specification-First Development
+**Standard**: This file follows [agents.md](https://agents.md/) for universal AI compatibility
+
+---
+
+## Project Overview
+
+This is a **SpecWeave project** where specifications and documentation are the source of truth.
+
+### Core Principle
+**Specification Before Implementation** - Define WHAT and WHY before HOW
+
+### Key Concepts
+- **Increments**: Feature units with spec.md (WHAT/WHY), plan.md (HOW), tasks.md (checklist)
+- **Context Manifests**: Load only relevant files (70%+ token reduction)
+- **Living Documentation**: Specs evolve with code, never diverge
+- **Role-Based Development**: PM defines requirements, Architect designs, DevOps deploys
+
+---
+
+## Project Structure
+
+```
+.specweave/
+├── increments/              # Feature increments (auto-numbered)
+│   └── 0001-feature-name/
+│       ├── spec.md          # WHAT & WHY (business requirements)
+│       ├── plan.md          # HOW (technical implementation)
+│       ├── tasks.md         # Implementation checklist
+│       ├── tests.md         # Test strategy
+│       ├── context-manifest.yaml  # Selective loading (token savings!)
+│       ├── logs/            # Execution logs, errors
+│       ├── scripts/         # Helper scripts
+│       └── reports/         # Analysis, completion reports
+├── docs/internal/
+│   ├── strategy/            # Business specs (WHAT, WHY)
+│   ├── architecture/        # Technical design (HOW)
+│   ├── delivery/            # Roadmap, CI/CD, guides
+│   ├── operations/          # Runbooks, SLOs
+│   └── governance/          # Security, compliance
+└── config.yaml              # Project configuration
+
+.claude/                     # Claude Code components (if using Claude)
+├── agents/                  # Specialized roles (PM, Architect, DevOps, etc.)
+├── skills/                  # Capabilities (increment-planner, context-loader, etc.)
+└── commands/                # Slash commands (/inc, /build, /done)
+```
+
+**CRITICAL**: Always read `context-manifest.yaml` first! Only load files listed there.
+
+---
+
+## Available Agents (Specialized Roles)
+
+SpecWeave uses role-based development. When working on tasks, adopt the appropriate role:
+
+{AGENTS_SECTION}
+
+### How to Use Agents
+
+**In Claude Code** (automatic):
+- Agents activate automatically when needed
+- Separate context windows for each role
+
+**In other tools** (manual):
+- Read the agent file: `.claude/agents/{agent-name}/AGENT.md`
+- Adopt that role's perspective and responsibilities
+- Example: "Adopting PM role to create spec.md..."
+
+---
+
+## Available Skills (Specialized Capabilities)
+
+SpecWeave has specialized capabilities for different tasks:
+
+{SKILLS_SECTION}
+
+### How to Use Skills
+
+**In Claude Code** (automatic):
+- Skills activate based on keywords in your request
+- No manual invocation needed
+
+**In other tools** (manual):
+- Read the skill file: `.claude/skills/{skill-name}/SKILL.md`
+- Follow the workflow described in that file
+- Example: "Following increment-planner skill workflow..."
+
+---
+
+## Common Workflows
+
+### Creating a Feature Increment
+
+**Step 1: Create Increment Folder**
+```bash
+mkdir -p .specweave/increments/0001-feature-name
+cd .specweave/increments/0001-feature-name
+```
+
+**Step 2: Create spec.md (Adopt PM Role)**
+- Focus on WHAT and WHY (not HOW)
+- Technology-agnostic requirements
+- User stories with acceptance criteria
+
+Template:
+```markdown
+---
+increment: 0001-feature-name
+title: "Feature Title"
+priority: P1
+status: planned
+---
+
+# Increment 0001: Feature Name
+
+## Overview
+[Problem statement and solution]
+
+## User Stories
+
+### US-001: User Story Title
+**As a** [role]
+**I want to** [action]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] TC-0001: [testable condition]
+- [ ] TC-0002: [testable condition]
+```
+
+**Step 3: Create plan.md (Adopt Architect Role)**
+- Focus on HOW (technical implementation)
+- Technology-specific details
+- Component design, data models, APIs
+
+Template:
+```markdown
+# Technical Plan: Feature Name
+
+## Architecture
+[Component design]
+
+## Data Model
+[Database schema]
+
+## API Contracts
+[Endpoints, request/response]
+
+## Implementation Strategy
+[Step-by-step approach]
+```
+
+**Step 4: Create tasks.md**
+```markdown
+---
+increment: 0001-feature-name
+total_tasks: 10
+completed_tasks: 0
+---
+
+# Implementation Tasks
+
+- [ ] T001: Task description
+- [ ] T002: Task description
+```
+
+**Step 5: Create context-manifest.yaml (CRITICAL)**
+```yaml
+spec_sections:
+  - .specweave/docs/internal/strategy/relevant-spec.md
+documentation:
+  - .specweave/docs/internal/architecture/relevant-design.md
+max_context_tokens: 10000
+```
+
+### Context Loading (70%+ Token Savings)
+
+**CRITICAL RULE**: Always read `context-manifest.yaml` first!
+
+**Why?**
+- Full specs: 500+ pages (50k tokens) ❌
+- Manifest files: 50 pages (5k tokens) ✅
+- **Savings: 90% = 45k tokens saved!**
+
+**How:**
+1. Navigate to increment folder
+2. Read `context-manifest.yaml`
+3. Load ONLY files listed in manifest
+4. Do NOT load entire `.specweave/docs/` folder
+
+### Working with Slash Commands (Claude Code)
+
+If using Claude Code, these slash commands are available:
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/inc` | Create new increment | `/inc "user authentication"` |
+| `/build` | Execute implementation | `/build` |
+| `/progress` | Check status | `/progress` |
+| `/done` | Close increment | `/done 0001` |
+| `/validate` | Validate quality | `/validate 0001 --quality` |
+| `/sync-github` | Sync to GitHub | `/sync-github` |
+
+---
+
+## Build & Test Commands
+
+```bash
+# Install dependencies
+npm install
+
+# Build project
+npm run build
+
+# Run tests
+npm test
+
+# Run E2E tests (if applicable)
+npm run test:e2e
+
+# Type check
+npm run type-check
+
+# Lint
+npm run lint
+```
+
+---
+
+## Code Style Guidelines
+
+### Specification Files
+
+**spec.md** (Technology-Agnostic):
+- Focus on WHAT and WHY, not HOW
+- Use user stories (US-001, US-002, ...)
+- Use acceptance criteria (TC-0001, TC-0002, ...)
+- No technology-specific details
+
+**plan.md** (Technology-Specific):
+- Focus on HOW to implement
+- Include component designs, data models, APIs
+- Reference ADRs (Architecture Decision Records)
+- Technology stack details
+
+### Code Organization
+
+**ALL supporting files belong to an increment:**
+- Logs → `.specweave/increments/{id}/logs/`
+- Scripts → `.specweave/increments/{id}/scripts/`
+- Reports → `.specweave/increments/{id}/reports/`
+- NEVER create supporting files in project root
+
+**Benefits:**
+- Complete traceability (know which increment created which files)
+- Easy cleanup (delete increment folder = delete all related files)
+- Clear context (all files for a feature in one place)
+
+---
+
+## Testing Strategy
+
+**Four Levels of Test Cases**:
+
+1. **Specification** (`.specweave/docs/internal/strategy/`) - TC-0001 acceptance criteria
+2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage matrix
+3. **Skill** (`src/skills/{name}/test-cases/`) - YAML test cases (if creating skills)
+4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
+
+**Requirements:**
+- E2E tests (Playwright/Cypress) when UI exists
+- >80% coverage for critical paths
+- Tests MUST tell the truth (no false positives)
+
+---
+
+## Security Considerations
+
+- Never commit secrets (use `.env` files, gitignored)
+- Follow principle of least privilege
+- Review security implications in ADRs
+- Use the `security` agent role for security reviews
+
+---
+
+## Finding the Right Agent or Skill
+
+When you encounter a new task:
+
+**Finding Skills:**
+1. Check this file (Available Skills section above)
+2. Browse: `ls .claude/skills/`
+3. Read: `.claude/skills/{skill-name}/SKILL.md`
+4. Follow the workflow
+
+**Finding Agents:**
+1. Check this file (Available Agents section above)
+2. Browse: `ls .claude/agents/`
+3. Read: `.claude/agents/{agent-name}/AGENT.md`
+4. Adopt the role
+
+**Pro Tips:**
+- Skills are capabilities (what you CAN do)
+- Agents are roles (who you BECOME to do it)
+- When stuck, ask: "Which SpecWeave skill or agent helps with [task]?"
+
+---
+
+## Important Reminders
+
+1. ✅ **Always read context-manifest.yaml first** (70%+ token savings)
+2. ✅ **Load only files listed in manifest** (not entire docs folder)
+3. ✅ **Adopt role when acting as agent** (PM, Architect, DevOps, etc.)
+4. ✅ **Technology-agnostic in spec.md** (WHAT/WHY only)
+5. ✅ **Technology-specific in plan.md** (HOW with details)
+6. ✅ **Use checkboxes in tasks.md** for tracking
+7. ✅ **All supporting files in increment folders** (never in root)
+
+---
+
+## Documentation
+
+- **CLAUDE.md**: Quick reference for Claude Code users
+- **SPECWEAVE.md**: Complete framework documentation (if exists)
+- **spec-weave.com**: Official website
+- **.specweave/docs/**: Project-specific documentation
+
+---
+
+**Generated by SpecWeave** - Specification-first AI development framework
+**Compatible with**: Claude Code, Cursor, Gemini CLI, Codex, GitHub Copilot, and more
+**Last Updated**: {TIMESTAMP}

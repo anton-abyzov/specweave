@@ -4,14 +4,28 @@ SpecWeave provides a comprehensive suite of tools and workflows for building pro
 
 ## 🎯 Specification-First Development
 
-### Living Documentation
-- **Source of Truth**: Specifications drive implementation
-- **Auto-Update**: Hooks automatically update docs after task completion
-- **Never Diverge**: Code and specs stay synchronized
-- **Modular Organization**: Scale from 10 pages to 1000+ pages
+### Append-Only Snapshots + Living Documentation
 
-### 5-Pillar Documentation Structure
+**SpecWeave's Core Power**: Maintains both historical audit trails and current documentation simultaneously.
 
+**The Innovation**: Unlike traditional documentation that gets outdated or loses historical context, SpecWeave gives you BOTH:
+
+#### 📸 Append-Only Increment Snapshots (Historical Context)
+```
+.specweave/increments/
+├── 0001-user-authentication/
+│   ├── spec.md              # What was planned
+│   ├── plan.md              # How it was built
+│   ├── tasks.md             # What was done
+│   ├── tests.md             # How it was validated
+│   └── logs/                # Execution history
+├── 0002-oauth-integration/  # Extends/modifies 0001
+└── 0003-password-reset/     # Related feature
+```
+
+**Never modified after completion** - Complete audit trail of every feature built.
+
+#### 📄 Living Up-to-Date Documentation (Current State)
 ```
 .specweave/docs/
 ├── internal/
@@ -22,6 +36,36 @@ SpecWeave provides a comprehensive suite of tools and workflows for building pro
 │   └── governance/    # Security, compliance
 └── public/            # Customer-facing documentation
 ```
+
+**Auto-updated after each task** - Always reflects current code state.
+
+### Why This Matters
+
+| Problem | Traditional Approach | SpecWeave Solution |
+|---------|---------------------|-------------------|
+| **"Why did we do it this way?"** | Context lost, tribal knowledge | Read historical increment snapshots |
+| **"What's the current architecture?"** | Docs outdated | Living docs auto-updated |
+| **"What changed in this feature?"** | Git commits only | Complete increment snapshot with spec, plan, tests |
+| **"Prove compliance"** | Reconstruct from memory | Complete audit trail in increments |
+| **"Onboard new developer"** | Days of reading code | Read current docs + historical increments |
+
+### Real-World Benefits
+
+- **Compliance-Ready**: SOC 2, HIPAA, FDA audits have complete paper trail
+- **Context Recovery**: Understand decisions made 6 months ago
+- **Impact Analysis**: See all related changes by searching increments
+- **Rollback Intelligence**: Know exactly what to revert
+- **Knowledge Transfer**: No tribal knowledge silos
+- **Debugging**: Trace feature evolution across increments
+
+**Think of it as "Git for Specifications"**:
+- Increments = commits (immutable snapshots)
+- Living docs = working directory (current state)
+- Both essential, both version controlled
+
+### 5-Pillar Documentation Structure
+
+Living documentation organized by purpose:
 
 ## 🧠 Context Precision (70%+ Token Reduction)
 

@@ -20,16 +20,48 @@ SpecWeave enforces specification-first development:
 Specification → Architecture → Implementation → Testing
 \`\`\`
 
-### 2. Living Documentation
+### 2. Append-Only Snapshots + Living Documentation
 
-**Specs evolve with code, never diverge.**
+**Historical audit trails + current state = complete context.**
 
-Documentation is not a one-time artifact—it's a living system that grows with your codebase.
+**SpecWeave's revolutionary approach**: Most documentation systems force you to choose between historical context (version control) or current documentation (wikis). SpecWeave gives you BOTH simultaneously.
 
-- **Auto-update**: Claude hooks update docs after task completion
-- **Version controlled**: All specs in git
-- **Backwards links**: Every doc references related docs
-- **Context manifests**: Declare what specs are needed
+#### The Dual-Documentation System
+
+**Append-Only Increments** (Never Modified)
+- Each increment is an immutable snapshot of a feature
+- Contains: spec, plan, tasks, tests, logs, reports
+- Provides complete audit trail and historical context
+- Like Git commits for specifications
+
+**Living Documentation** (Always Current)
+- Auto-updated by Claude hooks after each task
+- Reflects actual code state
+- Organized by purpose (strategy, architecture, operations)
+- Single source of truth for current system
+
+#### Why Both Are Essential
+
+| Need | Source | Example |
+|------|--------|---------|
+| "Why was this built?" | Increment snapshot | `.specweave/increments/0001-feature/spec.md` |
+| "What's the current state?" | Living docs | `.specweave/docs/internal/strategy/feature.md` |
+| "How did it evolve?" | All related increments | Search increments 0001, 0005, 0012 |
+| "Compliance proof?" | Increment audit trail | Complete snapshots with timestamps |
+
+#### Key Properties
+
+- **Append-only increments**: Never modified after completion (like event sourcing)
+- **Auto-updated docs**: Hooks maintain current state automatically
+- **Version controlled**: Both stored in Git
+- **Searchable**: Find historical context or current state
+- **Audit-ready**: Complete paper trail for compliance (SOC 2, HIPAA, FDA)
+- **Context recovery**: Understand decisions from months/years ago
+
+**Think of it as "Git for Specifications"**:
+- Increments = commits (snapshots in time)
+- Living docs = working directory (current state)
+- Both essential for different purposes
 
 ### 3. Context Precision
 
