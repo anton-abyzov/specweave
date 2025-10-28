@@ -11,6 +11,68 @@ description: Intelligently onboards brownfield projects by merging existing CLAU
 
 **Philosophy**: Keep CLAUDE.md as a concise guide, distribute detailed content to appropriate SpecWeave folders.
 
+**Modes**: Supports both Quick Start (incremental) and Comprehensive (upfront) approaches 🆕
+
+---
+
+## Two-Mode Support 🆕
+
+The brownfield-onboarder works differently based on the chosen documentation path:
+
+### Quick Start Mode (Incremental)
+**Philosophy**: Merge only essential context, defer detailed docs to per-increment
+
+**What to merge immediately**:
+- ✅ Core architecture overview (high-level)
+- ✅ Tech stack and infrastructure
+- ✅ Critical patterns (auth, payment, security)
+- ✅ Team conventions and workflows
+- ✅ Project summary and domain context
+
+**What to defer** (document per increment):
+- ⏸️ Detailed business rules (extract when modifying that code)
+- ⏸️ Module-specific documentation (extract when working on that module)
+- ⏸️ API-level documentation (extract when touching those APIs)
+- ⏸️ Code examples (extract as needed)
+
+**Result**: Minimal upfront merge (30-60 minutes), detailed docs grow incrementally
+
+### Comprehensive Mode (Upfront)
+**Philosophy**: Merge everything upfront for complete context
+
+**What to merge**:
+- ✅ All architecture documentation
+- ✅ All business rules
+- ✅ All module-specific docs
+- ✅ All API documentation
+- ✅ All conventions and patterns
+- ✅ All code examples
+
+**Result**: Complete merge (1-3 hours), full context available immediately
+
+### Mode Selection
+
+**Auto-detection**:
+```typescript
+// Check .specweave/config.yaml for mode
+const mode = config.brownfield?.mode || 'auto';
+
+if (mode === 'auto') {
+  // Use complexity from brownfield-analyzer
+  const complexity = await readComplexityAssessment();
+  mode = complexity.recommendedPath === 'Quick Start' ? 'incremental' : 'comprehensive';
+}
+```
+
+**User can override**:
+```bash
+# Force Quick Start mode
+brownfield-onboarder --mode quick-start
+
+# Force Comprehensive mode
+brownfield-onboarder --mode comprehensive
+```
+
 ---
 
 ## The Problem
@@ -89,7 +151,7 @@ interface ParsedCLAUDEmd {
 - **API Design**: "API", "endpoint", "REST", "GraphQL", "authentication", "authorization"
 - **Deployment**: "deploy", "CI/CD", "environment", "production", "staging"
 
-### Step 2: Classify Content
+### Step 2: Classify Content (Mode-Aware) 🆕
 
 **For each section, determine**:
 
@@ -102,9 +164,46 @@ interface ParsedCLAUDEmd {
    - If >80% similar, skip (already covered)
    - If <80% similar, extract unique content
 
-3. **Target Destination**
+3. **Essential or Detailed?** 🆕
+   - Essential: Core architecture, critical patterns, tech stack, team workflows
+   - Detailed: Module-specific rules, detailed APIs, code examples
+
+4. **Mode-Based Decision** 🆕
+   - **Quick Start Mode**: Merge essential only, defer detailed
+   - **Comprehensive Mode**: Merge everything
+
+5. **Target Destination**
    - Determine best SpecWeave folder for this content
    - See "Content Distribution Rules" below
+
+**Classification Matrix** 🆕:
+
+| Content Type | Essential? | Quick Start Action | Comprehensive Action |
+|--------------|-----------|-------------------|---------------------|
+| Core Architecture | ✅ Yes | Merge immediately | Merge immediately |
+| Tech Stack | ✅ Yes | Merge immediately | Merge immediately |
+| Critical Patterns (auth, payment) | ✅ Yes | Merge immediately | Merge immediately |
+| Team Conventions | ✅ Yes | Merge immediately | Merge immediately |
+| Project Summary | ✅ Yes | Merge immediately | Merge immediately |
+| Detailed Business Rules | ❌ No | **Defer to increment** | Merge immediately |
+| Module Documentation | ❌ No | **Defer to increment** | Merge immediately |
+| API-Level Docs | ❌ No | **Defer to increment** | Merge immediately |
+| Code Examples | ❌ No | **Defer to increment** | Merge immediately |
+
+**Example (Quick Start)**:
+```
+Analyzing CLAUDE.md backup (Quick Start mode)...
+
+Found sections:
+  ✅ Core Architecture (merge now)
+  ✅ Tech Stack (merge now)
+  ✅ Auth Pattern (merge now - critical)
+  ⏸️ Payment Business Rules (defer - extract when working on payments)
+  ⏸️ User Module API (defer - extract when modifying user code)
+  ⏸️ Code Examples (defer - extract as needed)
+
+Merging 3 sections immediately, deferring 3 for incremental extraction.
+```
 
 ### Step 3: Content Distribution Rules
 
@@ -436,14 +535,128 @@ Proceed with merge? (y/n)
 
 ## Output: Merge Report
 
-**After merge, generate report**:
+**After merge, generate mode-specific report**:
+
+### Quick Start Mode Report 🆕
 
 ```markdown
-# CLAUDE.md Merge Report
+# CLAUDE.md Merge Report - Quick Start Mode
 
 **Date**: 2025-10-26
 **Backup File**: .claude/backups/CLAUDE-backup-20251026-143022.md
-**Merge Status**: ✅ Complete
+**Merge Status**: ✅ Complete (Essential content only)
+**Mode**: Quick Start (Incremental Documentation)
+
+---
+
+## Files Created (Essential Only)
+
+1. ✅ `.specweave/docs/architecture/core-architecture.md` (120 lines)
+2. ✅ `.specweave/docs/architecture/tech-stack.md` (80 lines)
+3. ✅ `.specweave/docs/architecture/critical-patterns.md` (100 lines)
+4. ✅ `.specweave/docs/guides/project-conventions.md` (90 lines)
+5. ✅ `.specweave/docs/guides/deployment.md` (70 lines)
+
+**Total**: 5 files, 460 lines (essential content)
+
+---
+
+## CLAUDE.md Updated
+
+**Added**: 10 lines (project summary + links)
+
+**Location**: Lines 850-860
+
+---
+
+## Content Distribution (Quick Start)
+
+| Content Type | Lines | Status | Destination |
+|--------------|-------|--------|-------------|
+| Core Architecture | 120 | ✅ Merged | .specweave/docs/architecture/ |
+| Tech Stack | 80 | ✅ Merged | .specweave/docs/architecture/ |
+| Critical Patterns | 100 | ✅ Merged | .specweave/docs/architecture/ |
+| Conventions | 90 | ✅ Merged | .specweave/docs/guides/ |
+| Deployment | 70 | ✅ Merged | .specweave/docs/guides/ |
+| **CLAUDE.md** | **10** | ✅ **Updated** | **Root** |
+| **Subtotal Merged** | **470** | | |
+| | | | |
+| Domain Model (detailed) | 450 | ⏸️ Deferred | Extract when working on appointments |
+| Business Rules (detailed) | 280 | ⏸️ Deferred | Extract when working on payments |
+| User Module API | 150 | ⏸️ Deferred | Extract when modifying user code |
+| Code Examples | 200 | ⏸️ Deferred | Extract as needed per increment |
+| **Subtotal Deferred** | **1,080** | | **Document incrementally** |
+
+**Result**: 470 lines merged now, 1,080 lines to extract per increment
+
+**Benefit**: Start in 30-60 minutes, not 1-3 hours
+
+---
+
+## Deferred Content (Extract Per Increment)
+
+The following content remains in the backup and will be extracted when you work on related features:
+
+### 📦 Domain Documentation
+- `appointments/domain-model.md` (450 lines)
+  → Extract when creating increment for appointments feature
+
+### 📋 Business Rules
+- `payments/business-rules.md` (280 lines)
+  → Extract when creating increment for payment modifications
+
+### 🔌 API Documentation
+- `users/api-endpoints.md` (150 lines)
+  → Extract when creating increment for user service changes
+
+### 💻 Code Examples
+- Various code snippets (200 lines)
+  → Extract as needed
+
+**How to extract later**:
+```bash
+# When starting increment for appointments
+/inc "Refactor appointment booking"
+
+# In spec.md, reference:
+# "See backup: .claude/backups/CLAUDE-backup-*.md (appointments section)"
+
+# Or ask:
+# "Extract appointment documentation from CLAUDE.md backup"
+```
+
+---
+
+## Skipped Content
+
+- Generic React patterns (25 lines) - Already covered in SpecWeave
+- Standard git workflow (15 lines) - Common knowledge
+- TypeScript basics (40 lines) - Not project-specific
+
+**Total skipped**: 80 lines (generic content)
+
+---
+
+## Next Steps
+
+1. ✅ Review merged essential docs (30 min)
+2. ✅ Start first increment (immediate)
+3. ⏸️ Extract detailed docs as you work on features
+
+**Time saved**: ~2 hours (vs comprehensive upfront)
+
+---
+```
+
+### Comprehensive Mode Report
+
+```markdown
+# CLAUDE.md Merge Report - Comprehensive Mode
+
+**Date**: 2025-10-26
+**Backup File**: .claude/backups/CLAUDE-backup-20251026-143022.md
+**Merge Status**: ✅ Complete (All content)
+**Mode**: Comprehensive (Upfront Documentation)
 
 ---
 

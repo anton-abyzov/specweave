@@ -36,10 +36,8 @@ SpecWeave follows the **spec-kit approach**: You MUST use slash commands explici
 | `/done` | `/done` | Close explicitly (optional, /inc auto-closes) | `/done 0001` |
 
 **Supporting Commands**:
-- `/create-project` - Initialize SpecWeave project
 - `/list-increments` - List all increments
 - `/review-docs` - Review docs vs code
-- `/generate-docs` - Generate doc site
 - `/sync-github` - Sync to GitHub
 
 **Smart Workflow Features**:
@@ -246,8 +244,10 @@ npx specweave list --installed      # See what's installed
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/create-project` | Bootstrap new SpecWeave project | `/create-project --type python` |
 | `/list-increments` | List all increments with status | `/list-increments` |
+| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=003` |
+| `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
+
 **All commands are framework-agnostic** (adapt to detected tech stack)
 
 **See**: [Command Reference](.claude/commands/) for all available commands

@@ -1,155 +1,145 @@
 # SpecWeave Slash Commands
 
-This directory contains all slash commands for SpecWeave, including both full commands and short aliases.
+This directory contains all slash commands for SpecWeave.
 
-## Command Aliases
+## Available Commands (v0.1.9)
 
-SpecWeave provides short aliases for frequently used commands to speed up your workflow:
+### Core Workflow Commands (Smart Workflow)
 
-| Full Command | Alias | Description |
-|--------------|-------|-------------|
-| `/create-project` | `/init` | Initialize new SpecWeave project |
-| `/create-increment` | `/pi` | Plan Product Increment (create new increment) |
-| `/start-increment` | `/si` | Start working on increment |
-| `/add-tasks` | `/at` | Add tasks to increment |
-| `/validate-increment` | `/vi` | Validate increment quality |
-| `/close-increment` | `/done` | Close completed increment |
-| `/list-increments` | `/ls` | List all increments |
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `/increment` | `/inc` | Plan increment (PM-led, auto-closes previous if ready) |
+| `/build` | - | Execute tasks (smart resume, hooks after every task) |
+| `/progress` | - | Show status (task %, PM gates, next action) |
+| `/validate` | - | Validate quality (rule-based + optional LLM judge) |
+| `/done` | - | Close explicitly (optional, `/inc` auto-closes) |
 
-## Usage
+### Supporting Commands
 
-### Full Commands (Explicit)
+| Command | Alias | Description |
+|---------|-------|-------------|
+| `/list-increments` | - | List all increments with status and WIP tracking |
+| `/review-docs` | - | Review strategic docs vs implementation |
+| `/sync-github` | - | Sync increment to GitHub issues with subtasks |
 
-Use full commands when:
-- ✅ Writing scripts or automation
-- ✅ Documentation and tutorials
-- ✅ Sharing commands with team members
-- ✅ Clarity is more important than speed
+## Smart Workflow Features (v0.1.9)
 
-**Example**:
-```bash
-/create-increment "User authentication with OAuth"
-/validate-increment 0001 --quality
-/close-increment 0001
-```
+**What makes the workflow "smart"?**
 
-### Aliases (Quick)
-
-Use aliases when:
-- ✅ Active development (speed matters)
-- ✅ Iterative workflow (creating/validating frequently)
-- ✅ Command-line muscle memory
-- ✅ Personal productivity
-
-**Example**:
-```bash
-/ci "User authentication with OAuth"
-/vi 0001 --quality
-/done 0001
-```
+1. ✅ **Auto-resume**: `/build` automatically finds next incomplete task (no manual tracking)
+2. ✅ **Auto-close**: `/inc` auto-closes previous increment if PM gates pass (seamless)
+3. ✅ **Suggest-not-force**: `/inc` presents options if previous incomplete (user control)
+4. ✅ **Progress visibility**: `/progress` shows exactly where you are anytime
+5. ✅ **Natural flow**: finish → start next without administrative overhead
 
 ## Typical Workflow
 
-**Using aliases for speed**:
+**Natural append-only workflow** (0001 → 0002 → 0003):
+
 ```bash
-# 1. Initialize project
-/init my-saas
+# 1. Initialize project (CLI, before Claude session)
+npx specweave init my-saas
 
-# 2. Plan Product Increment (PI = Product Increment in Agile)
-/pi "User authentication"
+# 2. Plan your first increment (PM-led planning)
+/inc "AI-powered customer support chatbot"
+# PM creates: spec.md + plan.md + tasks.md (auto-generated!) + tests.md
 
-# 3. Start working
-/si 0001
+# 3. Build it (smart resume)
+/build
+# Auto-resumes from next incomplete task
+# Hooks run after EVERY task completion
 
-# 4. Add tasks as needed
-/at 0001 "Implement login endpoint"
-/at 0001 "Add password validation"
+# 4. Check progress anytime
+/progress
+# Shows: 5/12 tasks (42%), next: T006, PM gates status
 
-# 5. Check progress
-/ls --status=in-progress
+# 5. Continue building
+/build
+# Picks up where you left off automatically
 
-# 6. Validate before closing
-/vi 0001 --quality
+# 6. Start next feature (auto-closes previous!)
+/inc "real-time chat dashboard"
+# Smart check:
+#   If 0001 complete (PM gates pass) → Auto-close, create 0002
+#   If 0001 incomplete → Present options (never forces)
 
-# 7. Close when done
-/done 0001
+# 7. Keep building
+/build
+# Auto-finds active increment 0002
+
+# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
 ```
 
-**Using full commands for clarity**:
+## Why Only ONE Alias?
+
+**Design decision**: Minimize cognitive overhead.
+
+- ✅ `/inc` is the ONLY alias (most frequently used command)
+- ✅ Other commands use full names for clarity
+- ✅ Simpler mental model: one alias to remember
+
+**Most used workflow**:
 ```bash
-# Same workflow with explicit commands
-/create-project my-saas
-/create-increment "User authentication"
-/start-increment 0001
-/add-tasks 0001 "Implement login endpoint"
-/list-increments --status=in-progress
-/validate-increment 0001 --quality
-/close-increment 0001
+/inc "feature"  # ← Alias for speed
+/build          # ← Full name (already short)
+/progress       # ← Full name (already short)
+/inc "next"     # ← Alias for speed
 ```
 
-## All Available Commands
+## Command Design Philosophy
 
-### Core Workflow Commands
+### 1. Natural Flow Without Overhead
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/create-project` | `/init` | Bootstrap new SpecWeave project with auto-detection |
-| `/create-increment` | `/pi` | Plan Product Increment with PM/Architect/QA planning |
-| `/start-increment` | `/si` | Start working on an increment (load context, create branch) |
-| `/add-tasks` | `/at` | Add tasks to existing increment |
-| `/validate-increment` | `/vi` | Validate increment (120 rules + optional LLM quality judge) |
-| `/close-increment` | `/done` | Close increment with leftover task handling |
-| `/list-increments` | `/ls` | List all increments with status and progress |
+**Problem with traditional workflows**:
+- Manual task tracking ("which task am I on?")
+- Manual closure ("do I need to close this?")
+- Administrative overhead ("update project board")
 
-### Documentation & Review Commands
+**SpecWeave solution**:
+- `/build` auto-resumes (no tracking needed)
+- `/inc` auto-closes if ready (no manual /done needed)
+- `/progress` shows status anytime (no board updates)
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/review-docs` | - | Review strategic docs vs implementation |
-| `/generate-docs` | - | Generate documentation site (Docusaurus/MkDocs) |
+### 2. Suggest, Never Force
 
-### Integration Commands
+**Critical principle**: User always in control.
 
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `/sync-github` | - | Sync increment to GitHub issues with subtasks |
+**Example**: When starting new increment while previous incomplete:
+```
+/inc "new feature"
 
-## Alias Design Philosophy
+📊 Checking previous increment 0001-authentication...
+   Status: in-progress
+   PM Gates: ❌ 2 P1 tasks remaining
 
-**Why separate files instead of symlinks?**
+❌ Cannot auto-close 0001 (incomplete)
 
-1. **Cross-platform compatibility** - Works on Windows, macOS, Linux, cloud IDEs
-2. **Clear documentation** - Each alias explains what it references
-3. **Consistent user experience** - Both commands work identically
-4. **Easy maintenance** - Update main command, aliases stay in sync via reference
+Options:
+  A) Complete 0001 first (recommended)
+     → Finish remaining work before starting new
 
-**Trade-off**: Slight content duplication, but improved UX and compatibility.
+  B) Move incomplete tasks to 0002
+     → Transfer T006, T007 to new increment
+     → Close 0001 as "completed with deferrals"
 
-## Creating Custom Aliases
+  C) Cancel new increment
+     → Stay on 0001, continue working
+     → Retry /inc when ready
 
-You can create your own project-specific aliases:
-
-**1. Create `.claude/commands/custom-alias.md`**:
-```markdown
----
-description: Your custom command description
----
-
-# Custom Alias
-
-This is a shorthand for `/some-long-command`.
-
-<!-- Paste full command content or reference it -->
+Your choice? _
 ```
 
-**2. Use it**:
-```bash
-/custom-alias
-```
+**Never**: "Auto-closed 0001 with incomplete work" (surprising, loses context)
+
+### 3. Progressive Disclosure
+
+**Only show complexity when needed**:
+- ✅ Happy path: `/inc` → Auto-close, create new (1 step)
+- ⚠️ Issues found: Show options, explain, let user decide
 
 ## Installation
 
-Aliases are automatically installed when you:
+Commands are automatically installed when you:
 - Run `specweave init` (new projects)
 - Install SpecWeave as dependency (`npm install specweave --save-dev`)
 
@@ -158,16 +148,37 @@ For manual installation:
 npm run install:commands
 ```
 
+## Creating Custom Commands
+
+You can create project-specific commands:
+
+**1. Create `.claude/commands/custom.md`**:
+```markdown
+---
+name: custom
+description: Your custom command description
+---
+
+# Custom Command
+
+[Your command implementation]
+```
+
+**2. Use it**:
+```bash
+/custom
+```
+
 ## Documentation
 
-- **Command Reference**: See `.claude/commands/` for all available commands
-- **CLAUDE.md**: Quick reference table with all commands and aliases
+- **Command Reference**: See `.claude/commands/` for all command implementations
+- **CLAUDE.md**: Quick reference table with all commands
 - **Official Docs**: https://spec-weave.com/docs/commands
 
 ---
 
-**💡 Pro Tip**: Learn the aliases - they'll save you hundreds of keystrokes per day!
+**💡 Pro Tip**: Master the smart workflow - natural append-only progression!
 
-**Most used**: `/pi`, `/si`, `/vi`, `/done`, `/ls`
+**Core cycle**: `/inc` (plan) → `/build` (implement) → `/progress` (check) → `/inc` (next)
 
-**PI** = Product Increment (standard Agile/Scrum terminology)
+**One alias to rule them all**: `/inc` (short for `/increment`)

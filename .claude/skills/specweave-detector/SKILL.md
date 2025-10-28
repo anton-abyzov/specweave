@@ -1,393 +1,343 @@
 ---
 name: specweave-detector
-description: Documentation skill that explains SpecWeave slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /pi (Plan Product Increment) or /create-increment to start. Other commands /si (start), /at (add tasks), /vi (validate), /done (close), /ls (list). All commands listed in .claude/commands/. Keywords slash commands, /pi, /create-increment, /si, /vi, /done, /ls, /init, specweave commands.
+description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/build), auto-close (/inc), progress tracking (/progress). Commands /inc, /build, /progress, /validate, /done, /list-increments, /review-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /inc, /increment, /build, /progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
 ---
 
-# SpecWeave - Slash Command Reference
+# SpecWeave v0.1.9 - Smart Workflow Slash Commands
 
-**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS ONLY** - no auto-activation, no proactive detection, no intent-based routing.
+**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS ONLY** - no auto-activation, no proactive detection!
 
-## How SpecWeave Works
+## How SpecWeave Works (v0.1.9)
 
-SpecWeave follows the **spec-kit approach**: You MUST use slash commands explicitly.
+**To use SpecWeave**: Type `/inc "Feature description"` to start
 
-**To use SpecWeave**: Type a slash command (e.g., `/pi "Feature description"`)
+**Smart workflow features**:
+- ✅ Auto-resume (`/build` finds next incomplete task)
+- ✅ Auto-close (`/inc` closes previous if PM gates pass)
+- ✅ Progress tracking (`/progress` shows status anytime)
+- ✅ Natural flow (finish → start next, no overhead)
 
-## Available Slash Commands
+## Available Slash Commands (v0.1.9)
 
-### Quick Reference Table
+### Core Workflow Commands
 
-| Alias | Full Command | Purpose | Example |
-|-------|--------------|---------|---------|
-| `/init` | `/create-project` | Initialize SpecWeave project | `/init my-saas` |
-| `/pi` | `/create-increment` | **Plan Product Increment** | `/pi "User auth"` |
-| `/ci` | `/create-increment` | Alternative to `/pi` | `/ci "Payment"` |
-| `/si` | `/start-increment` | Start working on increment | `/si 0001` |
-| `/at` | `/add-tasks` | Add tasks to increment | `/at 0001 "Add tests"` |
-| `/vi` | `/validate-increment` | Validate increment quality | `/vi 0001 --quality` |
-| `/done` | `/close-increment` | Close increment | `/done 0001` |
-| `/ls` | `/list-increments` | List all increments | `/ls` |
+| Command | Alias | Description | Example |
+|---------|-------|-------------|---------|
+| `/increment` | `/inc` | **Plan Increment** (PM-led, auto-closes previous) | `/inc "User auth"` |
+| `/build` | - | **Execute tasks** (smart resume, hooks after every task) | `/build` |
+| `/progress` | - | **Show status** (task %, PM gates, next action) | `/progress` |
+| `/validate` | - | **Validate quality** (rule-based + optional LLM judge) | `/validate 0001 --quality` |
+| `/done` | - | **Close explicitly** (optional, `/inc` auto-closes) | `/done 0001` |
 
-### Command Details
+### Supporting Commands
 
-#### `/pi` or `/create-increment` - Plan Product Increment
+| Command | Description | Example |
+|---------|-------------|---------|
+| `/list-increments` | List all increments with status | `/list-increments` |
+| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=003` |
+| `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
 
-**Most important command!** Creates a new increment with specifications.
+## Why Only ONE Alias?
 
-```bash
-# Short form (recommended)
-/pi "User authentication with JWT and RBAC"
+**Design decision**: `/inc` is the ONLY alias (most frequently used command).
 
-# Full form
-/create-increment "User authentication with JWT and RBAC"
-```
-
-**What happens**:
-1. Creates `.specweave/increments/000X-feature-name/` folder
-2. PM agent generates `spec.md` (requirements, user stories)
-3. Architect agent generates `plan.md` (architecture, design)
-4. QA Lead generates `tests.md` (test strategy)
-5. Creates `tasks.md` (implementation checklist)
-
-#### `/si` or `/start-increment` - Start Working
-
-Marks an increment as "in-progress".
-
-```bash
-/si 0001
-```
-
-#### `/at` or `/add-tasks` - Add Tasks
-
-Add additional tasks to an increment.
-
-```bash
-/at 0001 "Add password reset functionality"
-/at 0001 "Add email verification"
-```
-
-#### `/vi` or `/validate-increment` - Validate Quality
-
-Run validation checks on an increment.
-
-```bash
-# Rule-based validation only
-/vi 0001
-
-# With AI quality assessment
-/vi 0001 --quality
-```
-
-#### `/done` or `/close-increment` - Close Increment
-
-Mark increment as completed.
-
-```bash
-/done 0001
-```
-
-#### `/ls` or `/list-increments` - List All
-
-Show all increments with status.
-
-```bash
-/ls
-```
-
-### Why Slash Commands?
-
-**Problem**: Auto-activation doesn't work reliably in Claude Code.
-
-**Solution**: Explicit slash commands (like spec-kit) ensure SpecWeave ALWAYS activates when you want it.
-
-**Benefits**:
-- ✅ **100% reliable** - Always works, no guessing
-- ✅ **Clear intent** - You know exactly when SpecWeave is active
-- ✅ **Fast** - Short aliases like `/pi` save keystrokes
-- ✅ **Memorable** - Domain-specific names (PI = Product Increment from Agile/SAFe)
+- ✅ Minimizes cognitive overhead (one alias to remember)
+- ✅ Other commands use full names for clarity
+- ✅ Simpler mental model
 
 ## Typical Workflow
 
-### 1. Initialize Project
+**Natural append-only workflow** (0001 → 0002 → 0003):
 
 ```bash
+# 1. Initialize project (CLI, before Claude session)
 npx specweave init my-saas
-cd my-saas
+
+# 2. Plan your first increment (PM-led)
+/inc "AI-powered customer support chatbot"
+# PM creates: spec.md + plan.md + tasks.md (auto!) + tests.md
+
+# 3. Build it (smart resume)
+/build
+# Auto-resumes from next incomplete task
+# Hooks run after EVERY task
+
+# 4. Check progress anytime
+/progress
+# Shows: 5/12 tasks (42%), next: T006, PM gates status
+
+# 5. Continue building
+/build
+# Picks up where you left off
+
+# 6. Start next feature (auto-closes previous!)
+/inc "real-time chat dashboard"
+# Smart check:
+#   PM gates pass → Auto-close 0001, create 0002
+#   PM gates fail → Present options (never forces)
+
+# 7. Keep building
+/build
+# Auto-finds active increment 0002
+
+# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
 ```
 
-**Creates**:
-- `.specweave/` - Framework configuration
-- `.claude/agents/` - 10 pre-installed agents
-- `.claude/skills/` - 35+ pre-installed skills
-- `.claude/commands/` - 10 slash commands
-- `CLAUDE.md` - Development guide
+## Command Details
 
-### 2. Plan Your First Increment
+### `/inc` or `/increment` - Plan Increment
+
+**Most important command!** PM-led planning with auto-close intelligence.
 
 ```bash
-# Use short alias (recommended)
-/pi "User authentication with JWT and RBAC"
+# Short form (recommended)
+/inc "User authentication with JWT and RBAC"
+
+# Full form
+/increment "User authentication with JWT and RBAC"
 ```
 
-**Creates**:
-```
-.specweave/increments/0001-user-authentication/
-├── spec.md           # Requirements (PM agent)
-├── plan.md           # Architecture (Architect agent)
-├── tasks.md          # Implementation steps
-├── tests.md          # Test strategy (QA Lead agent)
-└── context-manifest.yaml  # Context loading config
-```
+**What happens**:
+1. **Smart Check Previous**: If increment in-progress:
+   - PM gates pass → Auto-close previous, create new (seamless)
+   - PM gates fail → Present options (complete first / move tasks / cancel)
+2. **PM-Led Planning**: PM Agent analyzes requirements
+3. **Creates**: spec.md (WHAT & WHY), plan.md (HOW)
+4. **Auto-generates**: tasks.md (from plan), tests.md (test strategy)
+5. **Ready to build**: Status set to "planned"
 
-### 3. Validate & Start
+### `/build` - Execute Tasks (Smart Resume)
+
+**Smart resume**: Automatically finds next incomplete task.
 
 ```bash
-# Validate quality
-/vi 0001 --quality
+# Auto-finds active increment, resumes from next task
+/build
 
-# Start working
-/si 0001
+# Or specify increment explicitly
+/build 0001
 ```
 
-### 4. Add More Tasks (As Needed)
+**What happens**:
+1. Finds active increment (or uses specified ID)
+2. Parses tasks.md, finds first incomplete task
+3. Shows resume context (task T006, description, priority)
+4. Executes task implementation
+5. **Runs hooks after EVERY task completion** (docs update, validation)
+6. Repeats for next task when you run `/build` again
+
+**No manual tracking needed!** Just keep running `/build`.
+
+### `/progress` - Show Status
+
+**Progress visibility**: See exactly where you are anytime.
 
 ```bash
-# As you discover new work
-/at 0001 "Add password reset flow"
-/at 0001 "Add 2FA support"
+/progress
+
+# Auto-finds active increment, shows:
+# - Task completion % (P1 weighted higher)
+# - PM gates preview (tasks, tests, docs)
+# - Next action guidance
+# - Time tracking & stuck task warnings
 ```
 
-### 5. Close When Done
+### `/validate` - Validate Quality
+
+**Two-level validation**: Rule-based (120 checks) + optional AI quality judge.
+
+```bash
+# Rule-based validation only
+/validate 0001
+
+# With AI quality assessment (LLM-as-judge)
+/validate 0001 --quality
+
+# Export suggestions to tasks.md
+/validate 0001 --quality --export
+
+# Auto-fix issues (experimental)
+/validate 0001 --quality --fix
+```
+
+### `/done` - Close Explicitly
+
+**Optional command**: Use when you need explicit closure (usually `/inc` handles this).
 
 ```bash
 /done 0001
+
+# System validates:
+# - All P1 tasks completed
+# - All tests passing
+# - Documentation updated
+#
+# Offers leftover transfer options for P2/P3 tasks
 ```
 
-## Example Sessions
+**When to use**:
+- Explicit closure before long break
+- Force closure without starting new increment
+- Generate closure report only
 
-### Example 1: Real Estate Platform
+**Usually NOT needed**: `/inc` auto-closes previous increment if PM gates pass.
+
+### `/list-increments` - List All
+
+**WIP tracking**: View all increments with status and completion.
 
 ```bash
-# Initialize
-$ npx specweave init real-estate-app
-$ cd real-estate-app
+# All increments
+/list-increments
 
-# Plan increment with slash command
-$ /pi "Real estate listing platform with search, images, admin dashboard. Node.js/Express, PostgreSQL, JWT auth"
+# Filter by status
+/list-increments --status in-progress
 
-🔷 SpecWeave Active (/create-increment)
+# Filter by priority
+/list-increments --priority P1
 
-📝 Using increment-planner skill...
-🤖 PM agent creating requirements...
-🏗️  Architect agent designing system...
-🛡️  Security agent reviewing authentication...
+# Show task breakdown
+/list-increments --verbose
 
-✅ Increment created: .specweave/increments/0001-real-estate-platform/
-   - spec.md (Requirements & user stories)
-   - plan.md (Architecture & design)
-   - tasks.md (Implementation checklist)
-   - tests.md (Test strategy)
-
-# Validate
-$ /vi 0001 --quality
-✅ Quality score: 87/100 (GOOD)
-
-# Start working
-$ /si 0001
-✅ Increment 0001 status → in-progress
-
-# Implement (regular Claude conversation, no slash commands needed here)
-User: "Let's implement the backend API for listings"
-Claude: [implements based on plan.md and tasks.md]
-
-# Close when done
-$ /done 0001
-✅ Increment 0001 closed successfully
+# Only WIP increments
+/list-increments --wip-only
 ```
 
-### Example 2: Next.js Authentication
+## Smart Workflow Features
 
-```bash
-# Short alias for speed
-$ /pi "Next.js authentication with JWT, OAuth, RBAC"
+### 1. Auto-Resume (No Manual Tracking)
 
-🔷 SpecWeave Active (/create-increment)
+**Problem**: Traditional workflows require manual tracking ("which task am I on?")
 
-📝 Using increment-planner + nextjs skill...
-🤖 PM agent creating requirements...
-🏗️  Architect agent designing Next.js App Router flow...
-🔒 Security agent reviewing auth patterns...
+**Solution**: `/build` automatically finds next incomplete task.
 
-✅ Increment 0002-nextjs-authentication created
+```
+/build
 
-# Add forgotten tasks later
-$ /at 0002 "Add password reset flow"
-$ /at 0002 "Add 2FA with TOTP"
-✅ Added 2 tasks to increment 0002
+📋 Resuming increment 0001-authentication
+   Next: T006 - Implement JWT token validation
+   Priority: P1
+   Estimate: 2 hours
+   Context: After T005 (token generation)
 
-# List all increments
-$ /ls
-
-Increments:
-  0001 real-estate-platform    [completed]  ✅
-  0002 nextjs-authentication   [in-progress] 🚧
+Starting task T006...
 ```
 
-### Example 3: Multi-Increment Project
+### 2. Auto-Close (Seamless Flow)
 
-```bash
-# Create multiple increments
-$ /pi "User authentication"
-✅ Increment 0001 created
+**Problem**: Manual closure overhead ("do I need to close this?")
 
-$ /pi "Real estate listings with search"
-✅ Increment 0002 created
+**Solution**: `/inc` auto-closes previous if PM gates pass.
 
-$ /pi "Admin dashboard"
-✅ Increment 0003 created
+**Happy path** (auto-close):
+```
+/inc "payment processing"
 
-# Work on them in order
-$ /si 0001
-$ [implement authentication]
-$ /done 0001
+📊 Checking previous increment 0001-authentication...
+   PM Gates: ✅ All P1 complete, tests pass, docs updated
 
-$ /si 0002
-$ [implement listings]
-$ /done 0002
-
-$ /si 0003
-$ [implement admin]
-$ /done 0003
-
-# Review what's been done
-$ /ls
-
-Increments:
-  0001 user-authentication         [completed]  ✅
-  0002 real-estate-listings        [completed]  ✅
-  0003 admin-dashboard             [completed]  ✅
+✅ Auto-closing 0001 (seamless)
+Creating 0002-payment-processing...
 ```
 
-## Pre-Installed Components
+**Issues found** (present options):
+```
+/inc "payment processing"
 
-After `specweave init`, ALL components are in `.claude/`:
+📊 Checking previous increment 0001-authentication...
+   PM Gates: ❌ 2 P1 tasks remaining
 
-**10 Agents** (all ready to use):
-- `pm` - Product Manager (requirements, user stories)
-- `architect` - System Architect (design, ADRs)
-- `security` - Security Engineer (threat modeling)
-- `qa-lead` - QA Lead (test strategy)
-- `devops` - DevOps Engineer (deployment)
-- `tech-lead` - Technical Lead (code review)
-- `sre` - SRE (incident response)
-- `docs-writer` - Documentation writer
-- `performance` - Performance optimization
-- `diagrams-architect` - Diagram generation (C4 Model)
+❌ Cannot auto-close 0001 (incomplete)
 
-**35+ Skills** (all ready to use):
-- Framework skills: `nextjs`, `nodejs-backend`, `python-backend`, `dotnet-backend`, `frontend`
-- Integration skills: `jira-sync`, `ado-sync`, `github-sync`
-- Utility skills: `diagrams-generator`, `figma-implementer`, `hetzner-provisioner`
-- Quality skills: `increment-quality-judge`, `context-optimizer`
-- ... and 25+ more!
+Options:
+  A) Complete 0001 first (recommended)
+  B) Move incomplete tasks to 0002
+  C) Cancel new increment
 
-## FAQ
-
-### Q: Why don't I see ⏺ Skill(...) in the console?
-
-**A**: SpecWeave skills don't activate proactively. You MUST use slash commands.
-
-**Correct**: `/pi "Feature description"` → ⏺ Skill(increment-planner)
-
-**Incorrect**: "Build a feature" → No skill activation
-
-### Q: When do I use slash commands vs regular conversation?
-
-**Slash commands for SpecWeave operations**:
-- Creating increments: `/pi`
-- Managing increments: `/si`, `/done`, `/ls`
-- Adding tasks: `/at`
-- Validation: `/vi`
-
-**Regular conversation for implementation**:
-- Asking Claude to implement code
-- Discussing architecture
-- Debugging issues
-- Reviewing code
-
-**Example**:
-```bash
-# Use slash command to plan
-$ /pi "Payment processing with Stripe"
-✅ Increment 0003 created
-
-# Then regular conversation to implement
-User: "Let's implement the Stripe integration from plan.md"
-Claude: [implements based on specifications]
+Your choice? _
 ```
 
-### Q: What if I forget to use a slash command?
+### 3. Suggest, Never Force
 
-**A**: Claude will implement directly without SpecWeave structure. Your project won't have:
-- ❌ No increment folder
-- ❌ No spec.md (requirements)
-- ❌ No plan.md (architecture)
-- ❌ No tests.md (test strategy)
-- ❌ No traceability
+**Critical principle**: User always in control.
 
-**Solution**: Use `/pi` first, THEN implement.
+- ✅ Present options when issues found
+- ✅ Explain consequences clearly
+- ✅ Let user decide
+- ❌ NEVER surprise user with forced closure
 
-### Q: Can I still use SpecWeave if I already started implementing?
+### 4. Progress Visibility
 
-**A**: Yes! Use brownfield workflow:
+**Problem**: Status unclear ("how much is done?")
 
-```bash
-# Create increment retroactively
-$ /pi "Document existing authentication implementation"
+**Solution**: `/progress` shows status anytime.
 
-# Claude will analyze existing code and create specs
-✅ Increment 0001 created with retroactive documentation
+```
+/progress
+
+📊 Increment 0001-authentication
+
+Status: in-progress
+Progress: 42% (5/12 tasks) ⏳
+
+Task Breakdown:
+  P1: 60% (3/5) ⏳
+  P2: 33% (2/6)
+  P3: 0% (0/1)
+
+PM Gates Preview:
+  ✅ All P1 tasks: 60% (not ready)
+  ⏳ Tests passing: Running...
+  ✅ Docs updated: Yes
+
+Next Action: Complete T006 (P1, 2h)
+Time on increment: 3 days
 ```
 
-## Testing
+## Why Slash Commands?
 
-### TC-001: Slash Command Creates Increment
-- Given: User types `/pi "User authentication"`
-- When: Slash command executes
-- Then: increment-planner skill activates
-- And: Creates `.specweave/increments/0001-user-authentication/`
-- And: spec.md, plan.md, tasks.md, tests.md generated
+**Problem**: Auto-activation doesn't work reliably in Claude Code.
 
-### TC-002: No Slash Command = No Activation
-- Given: User types "Build user authentication"
-- When: Claude processes request
-- Then: No SpecWeave skills activate
-- And: Claude implements directly (no specs generated)
+**SpecWeave solution**: EXPLICIT slash commands for 100% reliability.
 
-### TC-003: List Increments
-- Given: Multiple increments exist
-- When: User types `/ls`
-- Then: Shows all increments with status
-- And: Shows completion status (completed, in-progress, planned)
+**Benefits**:
+- ✅ 100% reliable activation (no guessing)
+- ✅ Clear user intent (explicit action)
+- ✅ Consistent behavior (no surprises)
+- ✅ Easy to learn (visible in .claude/commands/)
+
+## How to Get Help
+
+**Within Claude Code**:
+```
+User: "How do I use SpecWeave?"
+→ Claude shows this documentation
+```
+
+**Available commands**:
+```
+User: "What SpecWeave commands are available?"
+→ Claude lists all slash commands
+```
+
+**Command syntax**:
+```
+User: "How do I create a new increment?"
+→ Claude explains /inc command with examples
+```
+
+## Documentation
+
+- **Command Reference**: See `.claude/commands/` for all command implementations
+- **Quick Reference**: See `CLAUDE.md` for quick reference table
+- **Official Docs**: https://spec-weave.com/docs/commands
 
 ---
 
-## Summary
+**💡 Pro Tip**: Master the smart workflow cycle!
 
-**SpecWeave uses EXPLICIT SLASH COMMANDS** - no auto-activation!
+**Core cycle**: `/inc` (plan) → `/build` (implement) → `/progress` (check) → `/inc` (next)
 
-**Essential commands**:
-- `/pi` - Plan Product Increment (most important!)
-- `/si` - Start increment
-- `/done` - Close increment
-- `/ls` - List increments
+**Key insight**: Natural flow without overhead. Focus on building, not project management.
 
-**Workflow**:
-1. Init: `npx specweave init`
-2. Plan: `/pi "Feature"`
-3. Validate: `/vi 0001 --quality`
-4. Start: `/si 0001`
-5. Implement: Regular conversation
-6. Close: `/done 0001`
-
-**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+**One alias to remember**: `/inc` (short for `/increment`)

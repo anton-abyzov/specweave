@@ -105,10 +105,23 @@ Behavior:
 - `src/commands/increment.md` - Suggest-not-force closure
 - Synced to `.claude/commands/`
 
+**Removed Commands** (Simplified):
+- `/create-project` - Removed (use `specweave init` CLI instead)
+- `/generate-docs` - Removed (moved to CLI for rare operations)
+
+**Reason**: Simplification and better tool separation:
+- `specweave init` is a CLI command, should remain in CLI (not slash command)
+- `/generate-docs` is a rare operation (initial setup only), better as CLI or npm script
+- Result: 9 clean slash commands (6 core + 3 supporting)
+
 **Documentation**:
 - `package.json` - Updated description
 - `README.md` - New workflow examples
-- `CLAUDE.md` - Smart workflow documentation
+- `CLAUDE.md` - Smart workflow documentation, command removals
+- `SPECWEAVE.md` - Updated command tables
+- `src/commands/README.md` - Complete rewrite for v0.1.9 smart workflow
+- `src/skills/specweave-detector/SKILL.md` - Complete rewrite for v0.1.9
+- `.specweave/docs/internal/delivery/guides/increment-lifecycle.md` - Added comprehensive backlog management section with 4 workflow examples
 - `src/templates/CLAUDE.md.template` - User project template
 
 ### Migration from 0.1.8

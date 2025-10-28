@@ -149,6 +149,268 @@ spec.md (YAML: status: closed)
 
 ---
 
+## Backlog Management
+
+### What is the Backlog?
+
+The `_backlog` folder (`.specweave/increments/_backlog/`) is where you **capture ideas before full planning**.
+
+**Purpose**:
+- ✅ Capture feature ideas quickly without blocking current work
+- ✅ Store ideas when WIP limit is reached
+- ✅ Allow PM-led analysis before committing to full increment
+- ✅ Keep increment folder clean (only planned/active work)
+
+**Location**: `.specweave/increments/_backlog/####-feature-name.md`
+
+### Backlog Item Structure
+
+**Simple markdown file** with basic information:
+
+```markdown
+# Feature Name - Backlog Item
+
+**Status**: backlog
+**Priority**: P1/P2/P3
+**Estimate**: Days/weeks
+**Created**: YYYY-MM-DD
+
+## Overview
+
+[1-3 paragraphs describing the idea]
+
+## Key Components
+
+[Bullet points of main parts]
+
+## User Value
+
+**Problem**: [What problem does this solve?]
+
+**Solution**: [High-level solution approach]
+
+## Dependencies
+
+**Blocked By**: [Other increments that must complete first]
+
+**Requires**: [External resources, tools, services]
+
+## When to Prioritize
+
+**Start this increment when**:
+1. [Condition 1]
+2. [Condition 2]
+3. [Condition 3]
+
+**Estimated Impact**: HIGH/MEDIUM/LOW
+
+## Next Steps
+
+When ready to start:
+1. Close current in-progress increments (free WIP slot)
+2. Run `/inc "Feature Name"` to promote to full increment
+3. PM Agent will create complete spec.md + plan.md + tasks.md
+```
+
+### Workflow Diagram: Backlog → Increment
+
+```
+User Idea
+    ↓
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Question: Can we start immediately?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    ↓                           ↓
+YES (WIP < limit)          NO (WIP at limit)
+    ↓                           ↓
+/inc "feature"         Add to backlog
+    ↓                           ↓
+PM creates           Save as markdown:
+full increment       _backlog/####-name.md
+    ↓                           ↓
+Start work           [Wait for WIP slot]
+                                ↓
+                    When ready (WIP freed)
+                                ↓
+                    Promote to increment:
+                    /inc "feature name"
+                                ↓
+                    PM creates full increment
+                                ↓
+                    Start work
+```
+
+### Example Workflows
+
+#### Example 1: Add Idea to Backlog (WIP at Limit)
+
+**User request**:
+```
+User: "I have an idea for Figma workflow enhancement, but I know
+we're working on core enhancements right now."
+```
+
+**Claude response**:
+```
+📊 Checking WIP status...
+   Current WIP: 2/2 (at limit)
+   Active: 0001-core-framework, 0002-core-enhancements
+
+✅ Good instinct! Since WIP is at limit, let's capture this in backlog.
+
+Creating backlog item: _backlog/0003-figma-workflow-enhancement.md
+
+I'll document:
+- Overview (problem statement, solution approach)
+- Key components (what needs to be built)
+- User value (why this matters)
+- Dependencies (what blocks this)
+- When to prioritize (conditions for starting)
+
+[Creates file]
+
+✅ Backlog item created!
+
+When ready to start:
+1. Close 0001 or 0002 to free WIP slot
+2. Run: /inc "Figma workflow enhancement"
+3. I'll promote backlog item to full increment
+```
+
+#### Example 2: Promote Backlog Item to Increment
+
+**User request**:
+```
+User: "Increment 0001 is done. Let's work on that Figma enhancement
+we discussed."
+```
+
+**Claude response**:
+```
+🔍 Found backlog item: _backlog/0003-figma-workflow-enhancement.md
+
+📊 Checking WIP status...
+   Current WIP: 1/2 (slot available!)
+
+✅ Ready to promote! Starting PM-led planning...
+
+Loading backlog item...
+→ Reading context from _backlog/0003-figma-workflow-enhancement.md
+→ Problem statement ✓
+→ Solution approach ✓
+→ Key components ✓
+
+Activating PM Agent for complete planning...
+
+PM Agent: Analyzing Figma workflow requirements...
+→ Market research complete
+→ Creating spec.md (WHAT & WHY)
+→ Architect creating plan.md (HOW)
+→ Auto-generating tasks.md from plan
+→ Creating tests.md (test strategy)
+
+✅ Increment 0003-figma-workflow-enhancement created!
+
+Created:
+  ✅ spec.md (12 user stories, 34 requirements)
+  ✅ plan.md (5 phases, architecture diagrams)
+  ✅ tasks.md (23 tasks, auto-generated)
+  ✅ tests.md (test coverage matrix)
+
+Status: planned → Ready to start!
+
+Next: /build to begin implementation
+```
+
+#### Example 3: List Backlog Items
+
+**User request**:
+```
+User: "What ideas do we have in the backlog?"
+```
+
+**Claude response**:
+```
+📋 Backlog Items (.specweave/increments/_backlog/)
+
+1. 0003-figma-workflow-enhancement.md [P2]
+   → Complete Figma design-to-code workflow
+   → Estimate: 3-4 days
+   → Dependencies: None
+   → Impact: HIGH
+
+2. 0004-github-sync-improvements.md [P3]
+   → Bidirectional GitHub sync with subtasks
+   → Estimate: 2 days
+   → Dependencies: None
+   → Impact: MEDIUM
+
+Total: 2 backlog items
+
+To promote: /inc "feature name"
+```
+
+#### Example 4: Quick Add to Backlog (User Prompt)
+
+**User request**:
+```
+User: "Add 'Advanced analytics dashboard' to backlog for later"
+```
+
+**Claude response**:
+```
+✅ Adding to backlog...
+
+Creating: _backlog/0005-analytics-dashboard.md
+
+Quick template:
+- Overview: Advanced analytics dashboard
+- Priority: P3 (nice-to-have)
+- Estimate: TBD (needs PM analysis)
+- Status: backlog
+- Created: 2025-10-28
+
+💡 When ready to plan fully, run:
+   /inc "Advanced analytics dashboard"
+
+This will promote to full increment with PM-led analysis.
+```
+
+### Best Practices
+
+**✅ DO**:
+- Add ideas to backlog when WIP limit reached
+- Keep backlog items simple (1-page markdown)
+- Update priorities as business needs change
+- Review backlog regularly (weekly/bi-weekly)
+- Promote backlog items with `/inc "name"` for full PM planning
+
+**❌ DON'T**:
+- Create full increments while at WIP limit (forces closure)
+- Over-plan backlog items (PM does this during promotion)
+- Let backlog grow indefinitely (prune stale ideas)
+- Skip backlog when WIP available (go direct to `/inc`)
+
+### Backlog Lifecycle
+
+```
+Idea captured
+    ↓
+Saved in _backlog/
+    ↓
+[Wait for WIP slot]
+    ↓
+User promotes: /inc "name"
+    ↓
+PM Agent analyzes
+    ↓
+Full increment created
+    ↓
+_backlog/ file archived (kept for history)
+```
+
+---
+
 ## WIP Limits
 
 ### Purpose
