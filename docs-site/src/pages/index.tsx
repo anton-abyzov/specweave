@@ -41,21 +41,27 @@ function HomepageHeader() {
               <code>{`# Initialize new project
 npx specweave init my-app
 
-# Use SLASH COMMANDS to activate SpecWeave
-/pi "user authentication"
-# PI = Plan Product Increment (Agile terminology)
+# Plan your first feature (smart workflow!)
+/inc "AI-powered customer support chatbot"
+# PM-led: market research → spec → plan → auto-generate tasks
 
 # SpecWeave creates:
 ✅ spec.md (requirements)
 ✅ plan.md (architecture + C4 diagrams)
-✅ tasks.md (implementation steps)
+✅ tasks.md (auto-generated from plan!)
 ✅ tests.md (test strategy)
 
-# Then implement with regular conversation
-"Implement authentication backend"
+# Build it (smart resume)
+/build
+# Auto-resumes from next incomplete task
 
-# Close when done
-/done 0001`}</code>
+# Check progress anytime
+/progress
+# Shows: 5/12 tasks (42%), next: T006
+
+# Start next feature (auto-closes previous!)
+/inc "real-time chat dashboard"
+# Seamless flow: finish → start next`}</code>
             </pre>
           </div>
         </div>
@@ -98,8 +104,8 @@ function FeaturesSection(): ReactNode {
           />
           <FeatureHighlight
             icon="⚡"
-            title="Slash Commands"
-            description="100% reliable activation. Use /pi to plan, /done to close. Explicit is better than implicit."
+            title="Smart Workflow"
+            description="Auto-resume, auto-close, progress tracking. /inc, /build, /progress. Natural flow without overhead."
           />
           <FeatureHighlight
             icon="🤖"
@@ -149,15 +155,15 @@ function ComparisonSection(): ReactNode {
           <div className={styles.comparisonColumn}>
             <h3>✅ With SpecWeave</h3>
             <ul>
-              <li>Type <code>/pi "feature"</code> (slash command)</li>
-              <li>SpecWeave creates spec + plan + tests</li>
-              <li>Implement with regular conversation</li>
-              <li>Tests validate automatically</li>
-              <li>Docs update via hooks</li>
-              <li>Type <code>/done 0001</code> when complete</li>
+              <li>Type <code>/inc "feature"</code> (smart workflow)</li>
+              <li>SpecWeave creates spec + plan + auto-generates tasks</li>
+              <li>Type <code>/build</code> (auto-resumes from next task)</li>
+              <li>Type <code>/progress</code> anytime (see status)</li>
+              <li>Tests validate automatically, docs update via hooks</li>
+              <li>Type <code>/inc "next"</code> (auto-closes if ready)</li>
             </ul>
             <p className={styles.comparisonResult}>
-              <strong>Result:</strong> 100% reliable. Production-ready software with full traceability.
+              <strong>Result:</strong> Natural flow without overhead. Production-ready software with full traceability.
             </p>
           </div>
         </div>
