@@ -64,7 +64,7 @@
   - Strategy: Create adapter layer for non-SpecWeave skills
   - Effort: 2-4 weeks (depends on skill complexity)
 
-**🚀 /build Command Enhancement**
+**🚀 /do Command Enhancement**
 - **Parallel Task Execution**: Implement wave-based parallel execution for large increments (40+ tasks)
   - Expected speedup: 40-60% for multi-file, independent tasks
   - Dependencies: Smart dependency graph analysis, consolidated hooks

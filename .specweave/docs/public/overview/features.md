@@ -298,9 +298,9 @@ Logs and notifies when AI needs clarification.
 
 Framework-agnostic commands:
 
-- `/create-project` - Initialize new SpecWeave project
+- `specweave init` - Initialize new SpecWeave project
 - `/create-increment` - Create new feature/increment
-- `/review-docs` - Review specs vs implementation
+- `/sync-docs` - Review specs vs implementation
 - `/sync-github` - Sync to GitHub issues
 
 All commands adapt to detected tech stack.

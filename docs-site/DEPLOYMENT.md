@@ -19,7 +19,7 @@ Cloudflare Pages
     ↓ (build)
 npm run build
     ↓ (output)
-docs-site/build/
+docs-site/do/
     ↓ (deploy)
 https://spec-weave.com
 \`\`\`
@@ -50,7 +50,7 @@ https://spec-weave.com
 **Build settings**:
 - **Framework preset**: Docusaurus
 - **Build command**: `cd docs-site && npm install && npm run build`
-- **Build output directory**: `docs-site/build`
+- **Build output directory**: `docs-site/do`
 - **Root directory**: `/` (leave empty, we use cd in build command)
 
 **Environment variables**: None needed for public docs
@@ -196,7 +196,7 @@ npm run lint
 1. Developer pushes to `main` (or merges PR)
 2. Cloudflare Pages detects push via webhook
 3. Cloudflare runs build command
-4. Builds to `docs-site/build/`
+4. Builds to `docs-site/do/`
 5. Deploys to https://spec-weave.com
 6. Deployment completes in ~2 minutes
 

@@ -22,7 +22,7 @@ This file contains quick reference for developing with SpecWeave:
 
 | Your Tool | Adapter | Workflow |
 |-----------|---------|----------|
-| **Claude Code** | Full automation | Use slash commands as documented below (`/inc`, `/build`, etc.) |
+| **Claude Code** | Full automation | Use slash commands as documented below (`/inc`, `/do`, etc.) |
 | **Cursor** | Semi-automation | Read `.cursorrules` for how to simulate skills/agents |
 | **GitHub Copilot** | Basic automation | Copilot reads workspace instructions automatically |
 | **Other (ChatGPT, Gemini, etc.)** | Manual | Follow `SPECWEAVE-MANUAL.md` step-by-step guide |
@@ -50,20 +50,20 @@ SpecWeave follows the **spec-kit approach**: You MUST use slash commands explici
 | Alias | Full Command | Purpose | Example |
 |-------|--------------|---------|---------|
 | `/inc` | `/increment` | **Plan Increment** (PM-led, auto-closes previous) | `/inc "User auth"` |
-| - | `/build` | Execute (smart resume, hooks after every task) | `/build` or `/build 0001` |
+| - | `/do` | Execute (smart resume, hooks after every task) | `/do` or `/do 0001` |
 | - | `/progress` | **Show status** (task %, PM gates, next action) | `/progress` |
 | - | `/validate` | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
 | `/done` | `/done` | Close explicitly (optional, /inc auto-closes) | `/done 0001` |
 
 **Supporting Commands**:
 - `/list-increments` - List all increments
-- `/review-docs` - Review docs vs code
+- `/sync-docs` - Review docs vs code
 - `/sync-github` - Sync to GitHub
 
 **Smart Workflow Features**:
 - ✅ `/inc` suggests options if previous incomplete (never forces closure)
 - ✅ `/inc` auto-closes previous only if PM gates pass (seamless happy path)
-- ✅ `/build` auto-resumes from next incomplete task
+- ✅ `/do` auto-resumes from next incomplete task
 - ✅ `/progress` shows exactly where you are
 - ✅ `/done` is optional (use when explicit closure needed)
 - ✅ Natural flow: finish → start next (with user control)
@@ -82,7 +82,7 @@ npx specweave init my-saas
 #    spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
 # 4. Build it (smart resume, hooks after EVERY task)
-/build
+/do
 # Auto-resumes from next incomplete task
 # No need to track which task you're on!
 
@@ -91,7 +91,7 @@ npx specweave init my-saas
 # Shows: 5/12 tasks (42%), next: T006, PM gates status
 
 # 6. Continue building
-/build
+/do
 # Picks up where you left off
 
 # 7. Validate quality (optional)
@@ -103,14 +103,14 @@ npx specweave init my-saas
 # No manual /done needed!
 
 # 9. Keep building
-/build
+/do
 # Auto-finds active increment 0002
 
-# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
+# Repeat: /inc → /do → /progress → /inc (auto-closes) → /do...
 ```
 
 **Key Insight**: Natural flow without administrative overhead!
-- No manual tracking (`/build` auto-resumes)
+- No manual tracking (`/do` auto-resumes)
 - No manual closure (`/inc` auto-closes if ready)
 - Check progress anytime (`/progress`)
 - Focus on building, not project management
@@ -294,14 +294,14 @@ npx specweave list --installed      # See what's installed
 | Command | Alias | Purpose | Example |
 |---------|-------|---------|---------|
 | `/increment` | `/inc` | Plan Increment (PM-led, auto-closes previous if ready) | `/inc "user authentication"` |
-| `/build` | - | Execute (smart resume from next incomplete task) | `/build` or `/build 0001` |
+| `/do` | - | Execute (smart resume from next incomplete task) | `/do` or `/do 0001` |
 | `/progress` | - | Show status (task %, PM gates, next action) | `/progress` |
 | `/validate` | - | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
 | `/done` | - | Close explicitly (optional, /inc auto-closes) | `/done 0001` |
 
 **Smart Features**:
 - `/inc` suggests options if previous incomplete, auto-closes if PM gates pass
-- `/build` auto-resumes from next incomplete task (no task ID needed)
+- `/do` auto-resumes from next incomplete task (no task ID needed)
 - `/progress` auto-finds active increment (no ID needed)
 - `/done` optional in happy path (use for explicit closure only)
 
@@ -310,7 +310,7 @@ npx specweave list --installed      # See what's installed
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/list-increments` | List all increments with status | `/list-increments` |
-| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=003` |
+| `/sync-docs` | Review strategic docs vs code | `/sync-docs --increment=003` |
 | `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
 
 **All commands are framework-agnostic** (adapt to detected tech stack)
@@ -408,7 +408,7 @@ backlog → planned → in-progress → completed → closed
 **Commands**:
 ```bash
 /inc "feature name"                    # Plan increment (PM-led, auto-generates tasks)
-/build 0001                            # Execute implementation (hooks after EVERY task)
+/do 0001                            # Execute implementation (hooks after EVERY task)
 /validate 0001 --quality               # Validate quality (optional)
 /done 0001                             # Close increment (PM validates 3 gates)
 ```
@@ -794,12 +794,12 @@ npx specweave init my-project
 
 # Typical workflow (append-only increments: 0001 → 0002 → 0003)
 1. /inc "feature" → PM creates specs + plan + auto-generates tasks
-2. /build 0001 → Execute implementation (hooks after EVERY task)
+2. /do 0001 → Execute implementation (hooks after EVERY task)
 3. /validate 0001 --quality → Optional quality check
 4. /done 0001 → PM validates 3 gates (tasks ✅ + tests ✅ + docs ✅)
 ```
 
-**Remember**: Type `/inc` first to plan, THEN `/build` to implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+**Remember**: Type `/inc` first to plan, THEN `/do` to implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
 
 **Need help?**: Type `/inc` to see examples, or ask about specific workflows.
 

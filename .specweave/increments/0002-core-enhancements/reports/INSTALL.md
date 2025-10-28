@@ -771,9 +771,9 @@ code .
 
 # Expected:
 # ✓ Shows SpecWeave slash commands
-# ✓ /create-project
+# ✓ specweave init
 # ✓ /create-increment
-# ✓ /review-docs
+# ✓ /sync-docs
 # ✓ /sync-github
 ```
 

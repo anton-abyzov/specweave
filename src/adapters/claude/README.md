@@ -63,9 +63,9 @@ This adapter represents the **gold standard** - all other adapters attempt to ap
 | Command | Purpose |
 |---------|---------|
 | `/create-increment` | Create new feature increment |
-| `/review-docs` | Review strategic documentation |
+| `/sync-docs` | Review strategic documentation |
 | `/sync-github` | Sync to GitHub issues |
-| `/create-project` | Bootstrap new project |
+| `specweave init` | Bootstrap new project |
 
 **Plus more commands** (see `.claude/commands/`)
 
@@ -107,7 +107,7 @@ npm run install:agents
 │   └── ...
 ├── commands/               # Slash commands
 │   ├── create-increment.md
-│   ├── review-docs.md
+│   ├── sync-docs.md
 │   └── ...
 └── hooks/                  # Auto-update mechanisms
     ├── post-task-completion.sh
@@ -135,10 +135,10 @@ npm run install:agents
 
 ### Example 2: Review Documentation
 
-**User**: `/review-docs`
+**User**: `/sync-docs`
 
 **What Happens** (Automatic):
-1. ✅ Slash command loads `.claude/commands/review-docs.md`
+1. ✅ Slash command loads `.claude/commands/sync-docs.md`
 2. ✅ Reviews strategic docs (.specweave/docs/internal/strategy/)
 3. ✅ Compares against actual implementation
 4. ✅ Identifies gaps (undocumented features, outdated docs, tech debt)

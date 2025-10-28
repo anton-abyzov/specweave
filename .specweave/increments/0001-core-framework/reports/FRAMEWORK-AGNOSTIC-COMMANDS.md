@@ -28,7 +28,7 @@ estimated_cost: $12/month
 "Create an event booking SaaS with NextJS on Hetzner"
 ```
 
-**review-docs.md**:
+**sync-docs.md**:
 ```
 Tech Stack:
   Frontend: NextJS 14 (App Router)
@@ -166,7 +166,7 @@ SpecWeave will:
 - Create implementation tasks (using YOUR detected tech stack)
 ```
 
-### 6. Updated review-docs.md
+### 6. Updated sync-docs.md
 
 **Before**:
 ```
@@ -203,12 +203,12 @@ Example for Go/Gin:
    - Added variety of examples (TypeScript, Python, Go)
    - Updated output example to use placeholders
 
-2. **src/templates/commands/create-project.md** ✅
+2. **src/templates/commandsspecweave init.md** ✅
    - Updated "Getting Started" examples (removed hardcoded NextJS/Hetzner)
    - Emphasized tech stack detection
    - Added variety of example prompts
 
-3. **src/templates/commands/review-docs.md** ✅
+3. **src/templates/commands/sync-docs.md** ✅
    - Updated architecture section with placeholders
    - Added examples for TypeScript, Python, Go
    - Updated ADRs to show framework-specific examples

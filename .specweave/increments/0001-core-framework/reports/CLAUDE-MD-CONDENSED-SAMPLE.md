@@ -45,7 +45,7 @@ For detailed documentation, see `.specweave/docs/`
 **Initialize New Project** (Selective Installation):
 ```bash
 # Option 1: Using slash command (auto-detects tech stack)
-/create-project --type python --framework fastapi
+specweave init --type python --framework fastapi
 
 # Option 2: Using CLI (auto-detects or asks)
 npx specweave init
@@ -65,7 +65,7 @@ npx specweave init
 
 ### Greenfield Projects
 
-1. **Initialize SpecWeave**: `/create-project` (detects YOUR tech stack)
+1. **Initialize SpecWeave**: `specweave init` (detects YOUR tech stack)
 2. **Create specifications**: `.specweave/docs/internal/strategy/` (technology-agnostic WHAT/WHY)
 3. **Design architecture**: `.specweave/docs/internal/architecture/` (technical HOW with ADRs)
 4. **Plan features**: `/create-increment "feature description"`
@@ -220,9 +220,9 @@ npx specweave init
 
 | Command | Description |
 |---------|-------------|
-| `/create-project` | Bootstrap new SpecWeave project (framework-agnostic) |
+| `specweave init` | Bootstrap new SpecWeave project (framework-agnostic) |
 | `/create-increment` | Create new feature/increment (auto-numbered) |
-| `/review-docs` | Review strategic docs before implementation |
+| `/sync-docs` | Review strategic docs before implementation |
 | `/sync-github` | Sync increment to GitHub issues |
 
 **See**: [Slash Commands Reference](.specweave/docs/public/api/slash-commands.md)

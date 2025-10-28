@@ -42,7 +42,7 @@ framework: {DETECTED_FRAMEWORK}    # e.g., nextjs, django, fastapi, spring-boot,
 - `/create-increment` usage
 - Tech stack detection logic
 - Strategic agents workflow
-- `/review-docs` and `/sync-github`
+- `/sync-docs` and `/sync-github`
 
 #### Agents vs Skills Architecture
 - Strategic agents (PM, Architect, DevOps, Security, QA)
@@ -328,7 +328,7 @@ autonomous:
 
 ## Template Placeholders
 
-Templates use these placeholders (replaced during `/create-project`):
+Templates use these placeholders (replaced during `specweave init`):
 
 | Placeholder | Example Value | Description |
 |-------------|---------------|-------------|
@@ -433,7 +433,7 @@ The user was correct - templates were outdated. Now:
 3. **.gitignore.template** - Covers all languages, increment-centric structure
 4. **config.yaml** - Complete configuration with tech stack detection
 
-Users will now get a **comprehensive, framework-agnostic setup** when they run `/create-project`.
+Users will now get a **comprehensive, framework-agnostic setup** when they run `specweave init`.
 
 ---
 

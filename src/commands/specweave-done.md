@@ -501,7 +501,7 @@ Usage: /done <increment-id>
 
 Increment must be "in-progress" before closing.
 
-Run: /build 0001 to start implementation first.
+Run: /do 0001 to start implementation first.
 ```
 
 ### Major Blockers Found
@@ -531,7 +531,7 @@ Check progress: /list-increments
 ## Related Commands
 
 - `/increment`: Plan new increment
-- `/build`: Execute implementation
+- `/do`: Execute implementation
 - `/validate`: Validate quality before closing
 - `/list-increments`: List all increments with status
 

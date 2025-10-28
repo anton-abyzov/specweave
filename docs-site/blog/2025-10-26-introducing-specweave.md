@@ -37,9 +37,9 @@ Traditional development with AI assistants suffers from:
 ### 1. Framework-Agnostic Commands
 
 ```bash
-/create-project --type python --framework fastapi
+specweave init --type python --framework fastapi
 /create-increment "user authentication"
-/review-docs --increment 003
+/sync-docs --increment 003
 ```
 
 Commands detect your tech stack and adapt automatically.
@@ -105,7 +105,7 @@ SpecWeave works with ANY language/framework:
 npx specweave init
 
 # Create your first project
-/create-project --type python --framework fastapi
+specweave init --type python --framework fastapi
 
 # Start building
 /create-increment "user authentication"

@@ -64,7 +64,7 @@ Same features work for both:
 
 ## Implementation
 
-`/create-project` asks:
+`specweave init` asks:
 ```
 Documentation approach?
 A) Comprehensive (500+ pages upfront)

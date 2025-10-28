@@ -1,6 +1,6 @@
 ---
 name: specweave
-description: SpecWeave master command - routes to increment lifecycle subcommands (inc, build, next, done, progress, validate, sync-github, sync-docs, create-project). Namespaced to avoid collisions in brownfield projects.
+description: SpecWeave master command - routes to increment lifecycle subcommands (inc, build, next, done, progress, validate, sync-github, sync-jira). Namespaced to avoid collisions in brownfield projects.
 ---
 
 # SpecWeave Master Command
@@ -26,19 +26,18 @@ This master command routes to SpecWeave increment lifecycle subcommands.
 | Subcommand | Description | Example |
 |------------|-------------|---------|
 | **inc** | Create new increment (PM-led) | `/specweave inc "User auth"` |
-| **build** | Execute tasks (auto-resumes) | `/specweave build` or `/specweave build 0001` |
+| **build** | Execute tasks (auto-resumes) | `/specweave do` or `/specweave do 0001` |
 | **next** | Smart transition (close + suggest) | `/specweave next` |
 | **done** | Manual closure with PM validation | `/specweave done 0001` |
 | **progress** | Check status and next action | `/specweave progress` |
 | **validate** | Validate increment quality | `/specweave validate 0001` |
 
-### Project Setup
+### Integrations
 
 | Subcommand | Description | Example |
 |------------|-------------|---------|
-| **create-project** | Bootstrap SpecWeave in new/existing project | `/specweave create-project` |
 | **sync-github** | Sync increment to GitHub issues | `/specweave sync-github 0001` |
-| **sync-docs** | Sync documentation (review/update) | `/specweave sync-docs` or `/specweave sync-docs update 0001` |
+| **sync-jira** | Sync increment to Jira epics/stories | `/specweave sync-jira import SCRUM-123` |
 
 ---
 
@@ -55,15 +54,13 @@ This master command routes to SpecWeave increment lifecycle subcommands.
 ```yaml
 subcommands:
   inc: .claude/commands/specweave-inc.md
-  build: .claude/commands/specweave-build.md
+  build: .claude/commands/specweave-do.md
   next: .claude/commands/specweave-next.md
   done: .claude/commands/specweave-done.md
   progress: .claude/commands/specweave-progress.md
   validate: .claude/commands/specweave-validate.md
-  create-project: .claude/commands/specweave-create-project.md
   sync-github: .claude/commands/specweave-sync-github.md
-  sync-docs: .claude/commands/specweave-sync-docs.md
-  review-docs: .claude/commands/specweave-review-docs.md  # DEPRECATED: use sync-docs
+  sync-jira: .claude/commands/specweave-sync-jira.md
 ```
 
 ---
@@ -82,7 +79,7 @@ Parse: subcommand = "inc"
 ### Step 2: Validate Subcommand
 
 ```
-Known subcommands: [inc, build, next, done, progress, validate, create-project, sync-github, sync-docs, review-docs]
+Known subcommands: [inc, build, next, done, progress, validate, sync-github, sync-jira]
 
 If subcommand in known_subcommands:
     Route to corresponding command
@@ -119,14 +116,14 @@ Execute: /specweave-inc "User authentication"
 
 **Input**:
 ```bash
-/specweave build
+/specweave do
 ```
 
 **Routing**:
 ```
 Parse: subcommand = "build", args = []
-Route to: .claude/commands/specweave-build.md
-Execute: /specweave-build (auto-finds active increment)
+Route to: .claude/commands/specweave-do.md
+Execute: /specweave-do (auto-finds active increment)
 ```
 
 ### Example 3: Smart Transition
@@ -164,7 +161,7 @@ Available subcommands:
     validate     - Validate quality
 
   Project Setup:
-    create-project  - Bootstrap SpecWeave
+    # Project initialization: use `specweave init` CLI command
     sync-github     - Sync to GitHub
     sync-docs       - Sync documentation (review/update)
 
@@ -188,15 +185,14 @@ function handleSpecweaveCommand(rawInput) {
   // Routing table
   const routes = {
     'inc': 'specweave-inc.md',
-    'build': 'specweave-build.md',
+    'do': 'specweave-do.md',
     'next': 'specweave-next.md',
     'done': 'specweave-done.md',
     'progress': 'specweave-progress.md',
     'validate': 'specweave-validate.md',
-    'create-project': 'specweave-create-project.md',
+    # 'create-project' removed - use specweave init CLI
     'sync-github': 'specweave-sync-github.md',
-    'sync-docs': 'specweave-sync-docs.md',
-    'review-docs': 'specweave-review-docs.md'  // DEPRECATED: redirects to sync-docs
+    'sync-docs': 'specweave-sync-docs.md'
   };
 
   // Validate subcommand
@@ -219,10 +215,10 @@ function handleSpecweaveCommand(rawInput) {
 **Without namespacing**:
 ```
 User's project:
-  .claude/commands/build.md    (their own build command)
+  .claude/commands/do.md    (their own build command)
 
 SpecWeave installation:
-  .claude/commands/build.md    (SpecWeave's build)
+  .claude/commands/do.md    (SpecWeave's build)
 
 Result: ❌ COLLISION - User's command overwritten!
 ```
@@ -230,10 +226,10 @@ Result: ❌ COLLISION - User's command overwritten!
 **With namespacing**:
 ```
 User's project:
-  .claude/commands/build.md    (their own build command)
+  .claude/commands/do.md    (their own build command)
 
 SpecWeave installation:
-  .claude/commands/specweave-build.md    (SpecWeave's build)
+  .claude/commands/specweave-do.md    (SpecWeave's build)
   .claude/commands/specweave.md          (master router)
 
 Result: ✅ NO COLLISION - Both coexist!
@@ -259,14 +255,14 @@ For convenience, you can create aliases for shorter commands:
 # ~/.zshrc or ~/.bashrc
 alias sw='/specweave'           # /specweave → sw
 alias swinc='sw inc'             # /specweave inc → swinc
-alias swbuild='sw build'         # /specweave build → swbuild
+alias swbuild='sw build'         # /specweave do → swbuild
 alias swnext='sw next'           # /specweave next → swnext
 ```
 
 **Usage**:
 ```bash
 sw inc "User auth"        # Instead of /specweave inc
-swbuild                   # Instead of /specweave build
+swbuild                   # Instead of /specweave do
 swnext                    # Instead of /specweave next
 ```
 
@@ -276,7 +272,7 @@ swnext                    # Instead of /specweave next
 # .claude/config.yaml
 command_aliases:
   /inc: /specweave inc
-  /build: /specweave build
+  /do: /specweave do
   /next: /specweave next
   /done: /specweave done
   /progress: /specweave progress
@@ -285,7 +281,7 @@ command_aliases:
 **Usage**:
 ```bash
 /inc "User auth"      # Automatically routes to /specweave inc
-/build                # Automatically routes to /specweave build
+/do                # Automatically routes to /specweave do
 /next                 # Automatically routes to /specweave next
 ```
 
@@ -299,7 +295,7 @@ command_aliases:
 
 ```bash
 # No existing .claude/ directory
-/specweave create-project
+# Use: specweave init my-project (CLI command)
 
 Result:
   ✅ Creates .claude/commands/specweave*.md
@@ -310,8 +306,8 @@ Result:
 ### Existing Project (Brownfield)
 
 ```bash
-# Existing .claude/commands/build.md (user's)
-/specweave create-project
+# Existing .claude/commands/do.md (user's)
+# Use: specweave init my-project (CLI command)
 
 Behavior:
   1. Detects existing .claude/ directory
@@ -332,7 +328,7 @@ Behavior:
 .claude/
 ├── commands/
 │   ├── build.md                    (user's original - preserved)
-│   ├── specweave-build.md          (SpecWeave's - new)
+│   ├── specweave-do.md          (SpecWeave's - new)
 │   ├── specweave-inc.md            (SpecWeave's - new)
 │   └── specweave.md                (master router - new)
 ├── commands.backup-1698765432/     (timestamped backup)
@@ -352,15 +348,14 @@ If you have code/docs referencing old commands:
 ```bash
 # Old → New
 /inc              → /specweave inc
-/build            → /specweave build
+/do               → /specweave do
 /next             → /specweave next
 /done             → /specweave done
 /progress         → /specweave progress
 /validate         → /specweave validate
-/create-project   → /specweave create-project
+/create-project   → # Use: specweave init my-project (CLI command)
 /sync-github      → /specweave sync-github
 /sync-docs        → /specweave sync-docs
-/review-docs      → /specweave sync-docs  # DEPRECATED
 ```
 
 ### Automated Migration Script
@@ -374,7 +369,7 @@ echo "Migrating SpecWeave commands to namespaced versions..."
 # Find all markdown files
 find .specweave -type f -name "*.md" -exec sed -i '' \
   -e 's|`/inc |`/specweave inc |g' \
-  -e 's|`/build|`/specweave build|g' \
+  -e 's|`/do|`/specweave do|g' \
   -e 's|`/next|`/specweave next|g' \
   -e 's|`/done|`/specweave done|g' \
   -e 's|`/progress|`/specweave progress|g' \
@@ -403,20 +398,20 @@ Usage: /specweave <subcommand> [arguments]
 
 Increment Lifecycle:
   inc "feature"      - Create new increment (PM-led planning)
-  build [id]         - Execute tasks (auto-resumes from last incomplete)
+  do [id]            - Execute tasks (auto-resumes from last incomplete)
   next               - Smart transition (validate, close, suggest next)
   done <id>          - Manual closure with PM validation
   progress [id]      - Check status, completion %, and next action
   validate <id>      - Validate increment quality
 
 Project Setup:
-  create-project     - Bootstrap SpecWeave in new/existing project
+  # Use: specweave init (CLI command)
   sync-github <id>   - Sync increment to GitHub issues
   sync-docs [mode] [id] - Sync documentation (review/update)
 
 Examples:
   /specweave inc "User authentication"
-  /specweave build
+  /specweave do
   /specweave next
   /specweave done 0001
   /specweave progress

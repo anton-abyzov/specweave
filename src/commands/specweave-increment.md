@@ -74,7 +74,7 @@ You are helping the user create a new SpecWeave increment with automatic closure
 
    Options:
    A. Complete 0001 first (recommended)
-      → Run `/build 0001` to finish remaining tasks
+      → Run `/do 0001` to finish remaining tasks
 
    B. Force close 0001 and defer tasks to 0002
       → Transfer T006, T007 to new increment
@@ -148,7 +148,7 @@ You are helping the user create a new SpecWeave increment with automatic closure
 ### Step 7: Present strategic docs for review
 
 - Show summary of all strategic outputs
-- Ask: "Review docs with /review-docs or approve to continue?"
+- Ask: "Review docs with /sync-docs or approve to continue?"
 - Wait for user approval
 
 ### Step 8: Create spec.md (based on strategic docs)
@@ -206,7 +206,7 @@ You are helping the user create a new SpecWeave increment with automatic closure
        ⏱️  Estimated effort: 3-4 weeks
 
        Next steps:
-       1. Review docs: /review-docs
+       1. Review docs: /sync-docs
        2. Start implementation: Begin with Task T001 in tasks.md
        3. Sync to GitHub: /sync-github
     ```
@@ -307,7 +307,7 @@ If user says "autonomous mode" or "full automation":
 
 ## Error Handling:
 
-- If `.specweave/` not found: "Error: Not a SpecWeave project. Run /create-project first."
+- If `.specweave/` not found: "Error: Not a SpecWeave project. Run specweave init first."
 - If user description too vague: Ask more clarifying questions
 - If strategic agents not available: "Warning: Some agents missing. Continue with basic spec?"
 

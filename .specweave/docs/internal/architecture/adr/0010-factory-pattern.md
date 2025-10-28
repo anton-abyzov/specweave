@@ -32,9 +32,9 @@ Example waste:
 
 ### Installation Flow
 
-**Initial Setup** (`/create-project`):
+**Initial Setup** (`specweave init`):
 ```bash
-/create-project --type python --framework fastapi
+specweave init --type python --framework fastapi
 
 # Detects: Python + FastAPI
 # Installs ONLY:

@@ -9,7 +9,7 @@
 ### When to Ask About Deployment
 
 **DO ask** ✅:
-- `/create-project` if user mentions "production", "hosting", "deploy", "cloud"
+- `specweave init` if user mentions "production", "hosting", "deploy", "cloud"
 - `/create-increment` when feature requires infrastructure (API, DB, storage)
 - User explicitly requests: "deploy", "production setup", "infrastructure"
 - DevOps agent is invoked

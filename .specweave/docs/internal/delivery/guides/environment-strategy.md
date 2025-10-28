@@ -13,7 +13,7 @@
 ## When to Ask About Environments
 
 **DO ask** ✅:
-- `/create-project` if user mentions "staging", "production", "environments", "pipeline"
+- `specweave init` if user mentions "staging", "production", "environments", "pipeline"
 - User explicitly requests: "set up staging", "add QA environment", "deployment pipeline"
 - DevOps agent is invoked for infrastructure setup
 - Feature requires environment-specific configuration (feature flags, A/B testing, etc.)

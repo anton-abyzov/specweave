@@ -1,6 +1,6 @@
 ---
 name: specweave-detector
-description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/build), auto-close (/inc), progress tracking (/progress). Commands /inc, /specweave-build, /specweave-progress, /validate, /done, /list-increments, /review-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /specweave-inc, /specweave-increment, /specweave-build, /specweave-progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
+description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/do), auto-close (/inc), progress tracking (/progress). Commands /inc, /specweave-do, /specweave-progress, /validate, /done, /list-increments, /sync-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /specweave-inc, /specweave-increment, /specweave-do, /specweave-progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
 ---
 
 # SpecWeave v0.1.9 - Smart Workflow Slash Commands
@@ -12,7 +12,7 @@ description: Documentation skill that explains SpecWeave v0.1.9 smart workflow s
 **To use SpecWeave**: Type `/inc "Feature description"` to start
 
 **Smart workflow features**:
-- ✅ Auto-resume (`/build` finds next incomplete task)
+- ✅ Auto-resume (`/do` finds next incomplete task)
 - ✅ Auto-close (`/inc` closes previous if PM gates pass)
 - ✅ Progress tracking (`/progress` shows status anytime)
 - ✅ Natural flow (finish → start next, no overhead)
@@ -24,7 +24,7 @@ description: Documentation skill that explains SpecWeave v0.1.9 smart workflow s
 | Command | Alias | Description | Example |
 |---------|-------|-------------|---------|
 | `/increment` | `/inc` | **Plan Increment** (PM-led, auto-closes previous) | `/inc "User auth"` |
-| `/build` | - | **Execute tasks** (smart resume, hooks after every task) | `/build` |
+| `/do` | - | **Execute tasks** (smart resume, hooks after every task) | `/do` |
 | `/progress` | - | **Show status** (task %, PM gates, next action) | `/progress` |
 | `/validate` | - | **Validate quality** (rule-based + optional LLM judge) | `/validate 0001 --quality` |
 | `/done` | - | **Close explicitly** (optional, `/inc` auto-closes) | `/done 0001` |
@@ -34,7 +34,7 @@ description: Documentation skill that explains SpecWeave v0.1.9 smart workflow s
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/list-increments` | List all increments with status | `/list-increments` |
-| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=003` |
+| `/sync-docs` | Review strategic docs vs code | `/sync-docs --increment=003` |
 | `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
 
 ## Why Only ONE Alias?
@@ -58,7 +58,7 @@ npx specweave init my-saas
 # PM creates: spec.md + plan.md + tasks.md (auto!) + tests.md
 
 # 3. Build it (smart resume)
-/build
+/do
 # Auto-resumes from next incomplete task
 # Hooks run after EVERY task
 
@@ -67,7 +67,7 @@ npx specweave init my-saas
 # Shows: 5/12 tasks (42%), next: T006, PM gates status
 
 # 5. Continue building
-/build
+/do
 # Picks up where you left off
 
 # 6. Start next feature (auto-closes previous!)
@@ -77,10 +77,10 @@ npx specweave init my-saas
 #   PM gates fail → Present options (never forces)
 
 # 7. Keep building
-/build
+/do
 # Auto-finds active increment 0002
 
-# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
+# Repeat: /inc → /do → /progress → /inc (auto-closes) → /do...
 ```
 
 ## Command Details
@@ -106,16 +106,16 @@ npx specweave init my-saas
 4. **Auto-generates**: tasks.md (from plan), tests.md (test strategy)
 5. **Ready to build**: Status set to "planned"
 
-### `/build` - Execute Tasks (Smart Resume)
+### `/do` - Execute Tasks (Smart Resume)
 
 **Smart resume**: Automatically finds next incomplete task.
 
 ```bash
 # Auto-finds active increment, resumes from next task
-/build
+/do
 
 # Or specify increment explicitly
-/build 0001
+/do 0001
 ```
 
 **What happens**:
@@ -124,9 +124,9 @@ npx specweave init my-saas
 3. Shows resume context (task T006, description, priority)
 4. Executes task implementation
 5. **Runs hooks after EVERY task completion** (docs update, validation)
-6. Repeats for next task when you run `/build` again
+6. Repeats for next task when you run `/do` again
 
-**No manual tracking needed!** Just keep running `/build`.
+**No manual tracking needed!** Just keep running `/do`.
 
 ### `/progress` - Show Status
 
@@ -209,10 +209,10 @@ npx specweave init my-saas
 
 **Problem**: Traditional workflows require manual tracking ("which task am I on?")
 
-**Solution**: `/build` automatically finds next incomplete task.
+**Solution**: `/do` automatically finds next incomplete task.
 
 ```
-/build
+/do
 
 📋 Resuming increment 0001-authentication
    Next: T006 - Implement JWT token validation
@@ -336,7 +336,7 @@ User: "How do I create a new increment?"
 
 **💡 Pro Tip**: Master the smart workflow cycle!
 
-**Core cycle**: `/inc` (plan) → `/build` (implement) → `/progress` (check) → `/inc` (next)
+**Core cycle**: `/inc` (plan) → `/do` (implement) → `/progress` (check) → `/inc` (next)
 
 **Key insight**: Natural flow without overhead. Focus on building, not project management.
 

@@ -53,7 +53,7 @@ Runs the full `/increment` command, which:
    - QA defines test strategy
    - DevOps plans infrastructure
 4. **User review checkpoint**
-5. **Ready to build**: `/build 0001`
+5. **Ready to build**: `/do 0001`
 
 ---
 
@@ -67,7 +67,7 @@ Runs the full `/increment` command, which:
 #    spec.md, plan.md, tasks.md, tests.md
 
 # 3. Build it
-/build 0001
+/do 0001
 
 # 4. Validate quality (optional)
 /validate 0001 --quality
@@ -78,7 +78,7 @@ Runs the full `/increment` command, which:
 
 ---
 
-**💡 Pro Tip**: `/inc` is the ONLY aliased command. Use full names for others (`/specweave build`, `/specweave validate`, `/specweave done`) to keep the workflow clear and explicit.
+**💡 Pro Tip**: `/inc` is the ONLY aliased command. Use full names for others (`/specweave do`, `/specweave validate`, `/specweave done`) to keep the workflow clear and explicit.
 
 ---
 

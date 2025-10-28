@@ -22,10 +22,10 @@ SpecWeave now uses **mandatory namespacing** with the `specweave-` prefix for al
 **Before namespacing**:
 ```
 User's project:
-  .claude/commands/build.md       (user's custom build)
+  .claude/commands/do.md       (user's custom build)
 
 SpecWeave installation:
-  .claude/commands/build.md       (SpecWeave's build)
+  .claude/commands/do.md       (SpecWeave's build)
 
 Result: ❌ COLLISION
   - User's file overwritten
@@ -36,8 +36,8 @@ Result: ❌ COLLISION
 
 **Real-world scenarios**:
 1. **Development team with custom commands**
-   - Team has `/build`, `/test`, `/deploy` commands
-   - SpecWeave wants `/build` too
+   - Team has `/do`, `/test`, `/deploy` commands
+   - SpecWeave wants `/do` too
    - Result: Team's workflow breaks
 
 2. **Consultancy managing multiple clients**
@@ -69,21 +69,21 @@ Result: ❌ COLLISION
 | Old (Collision Risk) | New (Collision Safe) |
 |---------------------|---------------------|
 | `/inc` | `/specweave inc` |
-| `/build` | `/specweave build` |
+| `/do` | `/specweave do` |
 | `/next` | `/specweave next` |
 | `/done` | `/specweave done` |
 | `/progress` | `/specweave progress` |
 | `/validate` | `/specweave validate` |
-| `/create-project` | `/specweave create-project` |
+| `specweave init` | `/specweave create-project` |
 | `/sync-github` | `/specweave sync-github` |
-| `/review-docs` | `/specweave review-docs` |
+| `/sync-docs` | `/specweave sync-docs` |
 
 **File naming**:
 ```
 .claude/commands/
 ├── specweave.md                 (master router)
 ├── specweave-inc.md             (namespaced)
-├── specweave-build.md           (namespaced)
+├── specweave-do.md           (namespaced)
 ├── specweave-next.md            (namespaced)
 └── ... (all with specweave- prefix)
 ```
@@ -91,7 +91,7 @@ Result: ❌ COLLISION
 **Frontmatter**:
 ```yaml
 ---
-name: specweave-build    # ← Must match filename
+name: specweave-do    # ← Must match filename
 description: Execute increment implementation
 ---
 ```
@@ -102,14 +102,14 @@ description: Execute increment implementation
 
 **Why master router?**
 - ✅ Single namespace collision (`specweave` only)
-- ✅ Clearer syntax (`/specweave build` is self-documenting)
+- ✅ Clearer syntax (`/specweave do` is self-documenting)
 - ✅ Easier to remember (one prefix, many subcommands)
 - ✅ Consistent with industry patterns (`git`, `docker`, etc.)
 
 **Routing table**:
 ```yaml
 /specweave inc          → .claude/commands/specweave-inc.md
-/specweave build        → .claude/commands/specweave-build.md
+/specweave do        → .claude/commands/specweave-do.md
 /specweave next         → .claude/commands/specweave-next.md
 /specweave done         → .claude/commands/specweave-done.md
 /specweave progress     → .claude/commands/specweave-progress.md
@@ -333,7 +333,7 @@ echo "✅ SpecWeave removed, user files preserved"
 
 ```bash
 # Restore one user file from backup
-cp .claude/commands.backup-1698765432/build.md .claude/commands/
+cp .claude/commands.backup-1698765432/do.md .claude/commands/
 
 echo "✅ Restored build.md from backup"
 ```
@@ -356,7 +356,7 @@ echo "✅ Restored build.md from backup"
 # → ✅ Created increment 0001
 
 # Step 3: Build
-/specweave build
+/specweave do
 # → ✅ Building...
 ```
 
@@ -377,12 +377,12 @@ echo "✅ Restored build.md from backup"
 # Step 2: Verify coexistence
 ls .claude/commands/
 # → build.md               (yours)
-# → specweave-build.md     (SpecWeave)
+# → specweave-do.md     (SpecWeave)
 # → Both exist!
 
 # Step 3: Use both
-/build                      # Your custom command
-/specweave build            # SpecWeave command
+/do                      # Your custom command
+/specweave do            # SpecWeave command
 # → Both work!
 ```
 
@@ -400,7 +400,7 @@ ls .claude/commands/
 # Find and replace in all files
 find .specweave -type f -name "*.md" -exec sed -i '' \
   -e 's|`/inc |`/specweave inc |g' \
-  -e 's|`/build|`/specweave build|g' \
+  -e 's|`/do|`/specweave do|g' \
   -e 's|`/next|`/specweave next|g' \
   -e 's|`/done|`/specweave done|g' \
   -e 's|`/progress|`/specweave progress|g' \
@@ -427,7 +427,7 @@ commands:
   # Uncomment to enable aliases
   aliases:
     /inc: /specweave inc
-    /build: /specweave build
+    /do: /specweave do
     /next: /specweave next
     /done: /specweave done
     /progress: /specweave progress
@@ -436,7 +436,7 @@ commands:
 **After enabling**:
 ```bash
 /inc "User auth"       # → routes to /specweave inc
-/build                 # → routes to /specweave build
+/do                 # → routes to /specweave do
 ```
 
 **⚠️ Warning**: Only enable if you're SURE there are no conflicts!
@@ -455,7 +455,7 @@ commands:
 | **Docker** | Namespace | `docker run`, `docker ps` |
 | **Kubectl** | Namespace | `kubectl get`, `kubectl apply` |
 | **NPM** | Namespace | `npm install`, `npm run` |
-| **SpecWeave** | Namespace | `/specweave inc`, `/specweave build` |
+| **SpecWeave** | Namespace | `/specweave inc`, `/specweave do` |
 
 **Consistency**: SpecWeave follows established patterns.
 
@@ -469,7 +469,7 @@ npm install -g specweave
 
 # Commands available globally
 specweave inc "User auth"
-specweave build
+specweave do
 ```
 
 **Why rejected**:
@@ -568,10 +568,10 @@ assert_file_not_exists ".claude/commands/specweave-*.md"  # Removed
 #### TC5: Command Routing
 ```bash
 # Setup: Installed project
-/specweave build
+/specweave do
 
 # Verify:
-assert_command_routed_to "specweave-build.md"
+assert_command_routed_to "specweave-do.md"
 assert_command_executed
 ```
 
@@ -636,7 +636,7 @@ fi
 
 Output:
   Found 3 commands similar to SpecWeave:
-  - build.md → Similar to specweave-build.md
+  - build.md → Similar to specweave-do.md
   - inc.md → Similar to specweave-inc.md
   - deploy.md → No SpecWeave equivalent
 

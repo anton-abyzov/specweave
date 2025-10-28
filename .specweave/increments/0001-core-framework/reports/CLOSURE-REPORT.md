@@ -113,9 +113,9 @@
 
 #### Slash Commands (4/4 Complete)
 
-1. ✅ `/create-project` - Initialize SpecWeave projects
+1. ✅ `specweave init` - Initialize SpecWeave projects
 2. ✅ `/create-increment` - Create features
-3. ✅ `/review-docs` - Review documentation
+3. ✅ `/sync-docs` - Review documentation
 4. ✅ `/sync-github` - Sync to GitHub
 
 #### Claude Hooks (4/4 Complete)

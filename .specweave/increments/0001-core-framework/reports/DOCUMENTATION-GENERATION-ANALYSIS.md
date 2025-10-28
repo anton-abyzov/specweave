@@ -87,7 +87,7 @@
 - `TEST-CASE-STRATEGY.md` - Testing strategy
 
 **Slash Commands** (7 total):
-- `/create-project`, `/create-increment`, `/review-docs`, `/sync-github`
+- `specweave init`, `/create-increment`, `/sync-docs`, `/sync-github`
 - `/close-increment`, `/add-tasks`, `/start-increment`, `/list-increments` (NEW)
 
 **Agents** (20 in src/agents/):

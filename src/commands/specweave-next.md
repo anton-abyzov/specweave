@@ -183,7 +183,7 @@ B. Force close and defer incomplete tasks
 
 C. Stay on current increment
    → Continue working on 0001
-   → Run `/specweave build 0001` to resume
+   → Run `/specweave do 0001` to resume
 
 What would you like to do? [A/B/C]
 ```
@@ -222,8 +222,8 @@ What would you like to do? [A/B/C]
    Recommendation: Start 0002-payment-processing (P1, ready to go)
 
    Actions:
-   A. Start 0002 now → Run `/specweave build 0002`
-   B. Start 0003 instead → Run `/specweave build 0003`
+   A. Start 0002 now → Run `/specweave do 0002`
+   B. Start 0003 instead → Run `/specweave do 0003`
    C. Create new increment → Run `/specweave inc "feature name"`
 
    What would you like to do? [A/B/C]
@@ -238,7 +238,7 @@ What would you like to do? [A/B/C]
 
    Recommendation: Continue 0002-payment-processing
 
-   Next Action: Run `/specweave build 0002` to resume
+   Next Action: Run `/specweave do 0002` to resume
 
    💡 Tip: Run `/progress 0002` to see current status
    ```
@@ -306,7 +306,7 @@ Found 1 planned increment:
 
 Recommendation: Start 0002-payment-processing
 
-Next Action: Run `/specweave build 0002` to begin
+Next Action: Run `/specweave do 0002` to begin
 
 💡 Tip: Review spec first with `cat .specweave/increments/0002-payment-processing/spec.md`
 ```
@@ -348,7 +348,7 @@ What would you like to do? [A/B/C] _
 ```
 ✅ Good choice! Let's finish 0001 properly.
 
-Next Action: Run `/specweave build 0001` to resume at T010
+Next Action: Run `/specweave do 0001` to resume at T010
 
 💡 Tip: `/specweave progress` shows your current status anytime
 ```
@@ -432,14 +432,14 @@ Your choice? [A/B/C] _
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
 | `/specweave inc "feature"` | Create NEW increment with specific feature | Starting fresh work |
-| `/specweave build` | Execute tasks in increment | Implementing planned work |
+| `/specweave do` | Execute tasks in increment | Implementing planned work |
 | `/specweave progress` | Check status (no action) | Quick status check |
 | `/done` | Explicitly close increment | Manual closure with validation |
 | `/next` ⭐ | **Smart transition** (close + suggest next) | **Natural workflow continuation** |
 
 **Why `/next` is special**:
 - ✅ Combines validation + closure + suggestion in one command
-- ✅ No need to remember `/done` then `/inc` or `/specweave build`
+- ✅ No need to remember `/done` then `/inc` or `/specweave do`
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
@@ -459,7 +459,7 @@ Your choice? [A/B/C] _
 ## Related Commands
 
 - `/inc` - Create new increment (PM-led planning)
-- `/specweave build` - Execute tasks (auto-resumes)
+- `/specweave do` - Execute tasks (auto-resumes)
 - `/specweave progress` - Check status
 - `/done` - Manual closure with PM validation
 - `/list-increments` - View all increments

@@ -381,14 +381,14 @@ auto_refresh: false
 **So that** I catch documentation drift and missing features
 
 **Acceptance Criteria**:
-- [ ] **TC-108**: User runs `/review-docs` → Review initiated
+- [ ] **TC-108**: User runs `/sync-docs` → Review initiated
 - [ ] **TC-109**: Detects project tech stack (NEVER assumes Next.js/React)
 - [ ] **TC-110**: Compares docs to actual code (can fetch from GitHub/GitLab)
 - [ ] **TC-111**: Identifies: undocumented features, outdated docs, tech debt, missing tests
 - [ ] **TC-112**: Presents comprehensive gap analysis
 - [ ] **TC-113**: Framework-agnostic output (shows DETECTED tech stack)
 
-**Slash Command**: `/review-docs`
+**Slash Command**: `/sync-docs`
 
 ## Framework Components
 
@@ -467,7 +467,7 @@ auto_refresh: false
 
 All commands adapt to ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.):
 
-1. **`/create-project`** - Initialize new SpecWeave project
+1. **`specweave init`** - Initialize new SpecWeave project
    - Arguments: `--name`, `--type`, `--framework`, `--docs`, `--location`
    - Detects/asks for tech stack
    - Creates framework-specific structure
@@ -481,7 +481,7 @@ All commands adapt to ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.):
    - Creates spec.md, tasks.md, tests.md
    - Framework-specific implementation
 
-3. **`/review-docs`** - Review strategic documentation
+3. **`/sync-docs`** - Review strategic documentation
    - Arguments: `--increment`, `--repo`, `--repo-url`, `--folder`
    - Detects tech stack (NEVER assumes)
    - Compares docs to code
@@ -678,7 +678,7 @@ npm run install:all:global     # Global
 ### Phase 5: Automation (Completed)
 - ✅ Claude hooks integration (post-task, pre-implementation, human-input)
 - ✅ `docs-updater` skill
-- ✅ Slash commands (create-project, create-increment, review-docs, sync-github)
+- ✅ Slash commands (create-project, create-increment, sync-docs, sync-github)
 
 ### Phase 6: Testing & Validation (In Progress)
 - ⏳ Complete all agent test cases (20 agents × 3 tests = 60 tests)

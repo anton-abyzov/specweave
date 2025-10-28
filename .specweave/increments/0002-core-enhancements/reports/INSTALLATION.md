@@ -104,7 +104,7 @@ cd my-project
 
 ```bash
 # In Claude Code, run:
-/create-project
+specweave init
 
 # Follow prompts to create project structure
 ```

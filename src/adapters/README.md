@@ -69,7 +69,7 @@ interface IAdapter {
 **Files Installed**:
 - `.claude/skills/` - Auto-activating skills (specweave-detector, skill-router, etc.)
 - `.claude/agents/` - Specialized agents (PM, Architect, DevOps, QA, Security)
-- `.claude/commands/` - Slash commands (/create-increment, /review-docs, etc.)
+- `.claude/commands/` - Slash commands (/create-increment, /sync-docs, etc.)
 - `.claude/hooks/` - Auto-update hooks (post-task-completion, etc.)
 
 **Features**:

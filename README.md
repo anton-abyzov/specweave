@@ -166,7 +166,7 @@ User: /specweave done 0001  # Close increment with slash command
 2. **Use `/specweave inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
    - PM creates specs + plan + auto-generates tasks
    - **Smart**: Auto-closes previous increment if PM gates pass
-3. **Use `/specweave build` or `/specweave build 0001`** → Execute implementation (hooks after EVERY task in Claude)
+3. **Use `/specweave do` or `/specweave do 0001`** → Execute implementation (hooks after EVERY task in Claude)
    - **Smart**: Auto-resumes from next incomplete task
 4. **Use `/specweave progress`** → Check status, task completion %, next action
 5. **Use `/specweave validate 0001`** → Optional quality check (LLM-as-judge)
@@ -174,7 +174,7 @@ User: /specweave done 0001  # Close increment with slash command
 
 **Why smart workflow?**
 - ✅ No manual `/specweave done` needed (auto-closes on next `/specweave inc`)
-- ✅ No task tracking needed (`/specweave build` auto-resumes)
+- ✅ No task tracking needed (`/specweave do` auto-resumes)
 - ✅ `/specweave progress` shows exactly where you are
 - ✅ Natural flow: finish → start next
 - ✅ Namespaced commands avoid collisions in brownfield projects
@@ -332,8 +332,8 @@ specweave/
 # Smart: Auto-closes previous increment if PM gates pass
 
 # 3. Build it (smart resume, hooks after EVERY task)
-/build
-# Or: /build 0001
+/do
+# Or: /do 0001
 # Smart: Auto-resumes from next incomplete task
 # Hooks automatically update CLAUDE.md, README.md, CHANGELOG.md
 
@@ -596,7 +596,7 @@ cd my-saas
 
 # Open Claude Code and type slash commands:
 /inc "User authentication with JWT"
-/build
+/do
 /progress
 ```
 

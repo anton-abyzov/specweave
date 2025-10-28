@@ -31,7 +31,7 @@ This caused confusion and duplicate folders.
 But **12+ command/skill files** had examples using 3-digit format:
 - `src/commands/close-increment.md` → `001-core-framework`
 - `src/commands/add-tasks.md` → `001-core-framework`
-- `src/commands/review-docs.md` → `003-event-booking-saas`
+- `src/commands/sync-docs.md` → `003-event-booking-saas`
 - `src/skills/jira-sync/README.md` → `002-payment`
 - `src/skills/ado-sync/README.md` → `002-payment`
 - And 7 more files...
@@ -79,7 +79,7 @@ rmdir .specweave/increments/001-core-framework
 **Commands** (5 files):
 - ✅ `src/commands/close-increment.md` - Fixed all `001-`, `002-` → `0001-`, `0002-`
 - ✅ `src/commands/add-tasks.md` - Fixed all `001-` → `0001-`
-- ✅ `src/commands/review-docs.md` - Fixed `003-` → `0003-`
+- ✅ `src/commands/sync-docs.md` - Fixed `003-` → `0003-`
 - ✅ `src/commands/start-increment.md` - Fixed `001-` → `0001-`
 - ✅ `src/commands/generate-docs.md` - Fixed `001-` → `0001-`
 

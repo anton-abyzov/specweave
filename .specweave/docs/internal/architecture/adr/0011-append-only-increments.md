@@ -204,7 +204,7 @@ Think of SpecWeave as "Git for Specifications":
 1. Create increment: /increment payment-system
 2. PM, Architect, QA plan feature
    └── Generate: spec.md, plan.md, tasks.md, tests.md
-3. Build: /build
+3. Build: /do
    └── Execute tasks, capture logs
 4. Completion hooks trigger:
    ├── Increment frozen (append-only)

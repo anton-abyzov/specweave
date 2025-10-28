@@ -22,7 +22,7 @@ GitHub Actions Workflow
     ↓ (build)
 npm run build (in docs-site/)
     ↓ (artifact)
-docs-site/build/ directory
+docs-site/do/ directory
     ↓ (deploy)
 GitHub Pages
     ↓ (serve)

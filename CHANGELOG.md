@@ -19,19 +19,19 @@ All commands now use `specweave-` prefix for brownfield project safety. Use mast
 ```bash
 # Old (v0.1.x)
 /inc "feature"
-/build
+/do
 /progress
 /done 0001
 
 # New (v0.2.0)
 /specweave inc "feature"     # Via master router (recommended)
-/specweave build
+/specweave do
 /specweave progress
 /specweave done 0001
 
 # Or use full command names:
 /specweave-inc "feature"
-/specweave-build
+/specweave-do
 /specweave-progress
 /specweave-done 0001
 ```
@@ -56,7 +56,7 @@ All commands now use `specweave-` prefix for brownfield project safety. Use mast
 Update your command references:
 ```bash
 /inc              → /specweave inc
-/build            → /specweave build
+/do            → /specweave do
 /next             → /specweave next
 /done             → /specweave done
 /progress         → /specweave progress
@@ -68,8 +68,8 @@ Update your command references:
 
 ## [0.1.9] - 2025-10-28
 
-> **Note**: v0.1.9 and earlier entries use the old command format (e.g., `/inc`, `/build`).
-> As of v0.2.0, all commands use `specweave-` prefix (e.g., `/specweave inc`, `/specweave build`).
+> **Note**: v0.1.9 and earlier entries use the old command format (e.g., `/inc`, `/do`).
+> As of v0.2.0, all commands use `specweave-` prefix (e.g., `/specweave inc`, `/specweave do`).
 
 ### 🎯 **Smart Workflow: Auto-Resume, Auto-Close, Progress Tracking**
 
@@ -89,10 +89,10 @@ Features:
 - Time tracking & stuck task warnings
 - Auto-finds active increment (no ID needed)
 
-**2. SMART: `/build` Auto-Resume**:
+**2. SMART: `/do` Auto-Resume**:
 ```bash
-/build     # Auto-resumes from next incomplete task
-/build 0001  # Or specify increment explicitly
+/do     # Auto-resumes from next incomplete task
+/do 0001  # Or specify increment explicitly
 ```
 
 Features:
@@ -115,7 +115,7 @@ Behavior:
 - **NEVER forces closure** - user always in control
 
 **4. Updated npm Description**:
-> "Replace vibe coding with spec-driven development. Smart workflow: /inc auto-closes previous, /build auto-resumes, /progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com"
+> "Replace vibe coding with spec-driven development. Smart workflow: /inc auto-closes previous, /do auto-resumes, /progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com"
 
 ### New Workflow (Natural & Efficient)
 
@@ -125,7 +125,7 @@ Behavior:
 # PM-led: market research → spec → plan → auto-generate tasks
 
 # 2. Build it (smart resume)
-/build
+/do
 # Auto-starts from next incomplete task
 
 # 3. Check progress anytime
@@ -133,7 +133,7 @@ Behavior:
 # Shows: 5/12 tasks (42%), next: T006, PM gates status
 
 # 4. Continue building
-/build
+/do
 # Picks up where you left off
 
 # 5. Start next feature (smart closure)
@@ -142,15 +142,15 @@ Behavior:
 # If 0001 incomplete → Suggests options (never forces!)
 
 # 6. Keep building
-/build
+/do
 # Auto-finds active increment 0002
 
-# Repeat: /inc → /build → /progress → /inc...
+# Repeat: /inc → /do → /progress → /inc...
 ```
 
 ### Benefits
 
-✅ **No manual tracking** - `/build` auto-resumes from next task
+✅ **No manual tracking** - `/do` auto-resumes from next task
 ✅ **No forced closure** - `/inc` suggests options, user decides
 ✅ **Progress visibility** - `/progress` shows exactly where you are
 ✅ **Natural flow** - finish → start next (with user control)
@@ -163,7 +163,7 @@ Behavior:
 - `src/commands/progress.md` + `.claude/commands/progress.md`
 
 **Updated Commands**:
-- `src/commands/build.md` - Smart resume logic
+- `src/commands/do.md` - Smart resume logic
 - `src/commands/increment.md` - Suggest-not-force closure
 - Synced to `.claude/commands/`
 
@@ -191,14 +191,14 @@ Behavior:
 **No breaking changes** - all old commands still work!
 
 New features are additive:
-- `/build 0001` still works (just try `/build` for smart resume)
+- `/do 0001` still works (just try `/do` for smart resume)
 - `/done 0001` still works (just use `/inc` for auto-close)
 - New `/progress` command available
 
 Try it:
 1. Update: `npm update -g specweave`
 2. Use `/progress` to see current status
-3. Use `/build` without ID for smart resume
+3. Use `/do` without ID for smart resume
 4. Use `/inc` for smart closure suggestions
 
 ---
@@ -222,7 +222,7 @@ Try it:
 ```bash
 # Old (0.1.7)              # New (0.1.8)
 /create-increment    →     /increment
-/start-increment     →     /build
+/start-increment     →     /do
 /validate-increment  →     /validate
 /close-increment     →     /done (unchanged)
 ```
@@ -244,7 +244,7 @@ Try it:
 - Manual task additions still supported
 
 **4. Post-Task Completion Hooks**:
-- `/build` now runs hooks **after EVERY task**
+- `/do` now runs hooks **after EVERY task**
 - Auto-updates: `CLAUDE.md`, `README.md`, `CHANGELOG.md`
 - Documentation stays in sync automatically
 
@@ -266,7 +266,7 @@ Try it:
 # spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
 # 3. Build it (hooks run after EVERY task)
-/build 0001
+/do 0001
 
 # 4. Validate quality (optional)
 /validate 0001 --quality
@@ -288,7 +288,7 @@ Try it:
 
 **Commands** (renamed and rewritten):
 - `.claude/commands/increment.md` (renamed from `create-increment.md`)
-- `.claude/commands/build.md` (renamed from `start-increment.md`)
+- `.claude/commands/do.md` (renamed from `start-increment.md`)
 - `.claude/commands/validate.md` (renamed from `validate-increment.md`)
 - `.claude/commands/inc.md` (NEW - only alias)
 - `.claude/commands/done.md` (rewritten with 3-gate validation)
@@ -315,7 +315,7 @@ If you have existing projects:
 2. Re-install components: `npm run install:skills && npm run install:agents`
 3. **Start using new commands**:
    - Use `/inc` instead of `/pi`
-   - Use `/build` instead of `/si`
+   - Use `/do` instead of `/si`
    - Use `/validate` instead of `/vi`
    - Use `/done` (unchanged)
 
@@ -323,7 +323,7 @@ If you have existing projects:
 
 ⚠️ **BREAKING CHANGE**: Old command aliases removed. Use new commands:
 - `/pi` → `/inc` or `/increment`
-- `/si` → `/build`
+- `/si` → `/do`
 - `/vi` → `/validate`
 - Other commands use full names only
 

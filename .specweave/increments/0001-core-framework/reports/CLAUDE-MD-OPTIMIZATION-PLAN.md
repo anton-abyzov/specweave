@@ -124,7 +124,7 @@ CLAUDE.md (Index Card)
 | Command | Description |
 |---------|-------------|
 | /create-increment | Create new feature/increment |
-| /review-docs | Review strategic docs |
+| /sync-docs | Review strategic docs |
 | /sync-github | Sync to GitHub issues |
 
 **See**: [Slash Commands Reference](.specweave/docs/public/api/slash-commands.md)

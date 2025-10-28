@@ -225,7 +225,7 @@ Options:
 ```
 
 5. **Wait for user response**:
-   - If "approve" → Say: "✅ Strategic documentation approved. Ready to proceed with `/build` command."
+   - If "approve" → Say: "✅ Strategic documentation approved. Ready to proceed with `/do` command."
    - If "changes" → Ask: "What would you like to change? (architecture/features/security/infrastructure/other)"
    - If "questions" → Ask: "What questions do you have?"
    - If "regenerate" → Ask: "Which section should I regenerate?"

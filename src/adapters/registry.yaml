@@ -18,7 +18,7 @@ adapters:
       - Skills auto-activate (specweave-detector, skill-router, etc.)
       - Agents coordinate (PM, Architect, DevOps, QA, Security)
       - Hooks auto-update docs (post-task-completion, etc.)
-      - Slash commands (/create-increment, /review-docs, etc.)
+      - Slash commands (/create-increment, /sync-docs, etc.)
       - Best experience, most features - THE BASELINE!
     requirements:
       - Claude Code CLI installed

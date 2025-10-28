@@ -70,7 +70,7 @@ Open http://localhost:3000 to see your site locally.
 4. **Build settings**:
    - Framework preset: **Docusaurus**
    - Build command: `cd docs-site && npm install && npm run build`
-   - Build output directory: `docs-site/build`
+   - Build output directory: `docs-site/do`
    - Root directory: `/` (leave empty)
 5. Click **Save and Deploy**
 
@@ -270,7 +270,7 @@ Common issues:
 
 1. Check build logs in Cloudflare Dashboard
 2. Verify build command: `cd docs-site && npm install && npm run build`
-3. Verify output directory: `docs-site/build`
+3. Verify output directory: `docs-site/do`
 4. Test build locally first
 
 ### Links Not Working

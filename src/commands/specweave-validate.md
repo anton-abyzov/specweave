@@ -781,7 +781,7 @@ validation:
 ## Related Commands
 
 - `/create-increment`: Create new increment (auto-validates on creation)
-- `/review-docs`: Review strategic documentation before implementation
+- `/sync-docs`: Review strategic documentation before implementation
 - `/close-increment`: Close increment (validates before closing)
 - `/sync-github`: Sync to GitHub (validates before sync)
 

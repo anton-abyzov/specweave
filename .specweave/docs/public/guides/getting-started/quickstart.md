@@ -15,7 +15,7 @@ Install SpecWeave into any project in 30 seconds and start autonomous developmen
 ## What You Get
 
 ✅ **SpecWeave Skills** - Autonomous development agents (8 complete skills, more coming)
-✅ **Slash Commands** - `/create-project` (more coming)
+✅ **Slash Commands** - `specweave init` (more coming)
 ✅ **Automation Hooks** - Auto-update docs, validate quality (4 hooks)
 ✅ **Complete Framework** - Minimal installation, skills create structure as needed
 ✅ **Development Guide** - `CLAUDE.md` with everything you need
@@ -153,9 +153,9 @@ Skills work together without manual intervention:
 ## Available Slash Commands
 
 ```bash
-/create-project <stack> <domain> <platform>  # Create complete SaaS project
+specweave init <stack> <domain> <platform>  # Create complete SaaS project
 /create-increment <number> <name>            # Create new increment
-/review-docs                                 # Review documentation
+/sync-docs                                 # Review documentation
 /sync-github                                 # Sync with GitHub
 ```
 

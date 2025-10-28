@@ -238,7 +238,7 @@ Create new feature/increment (framework-agnostic).
 | Command | Description |
 |---------|-------------|
 | /create-increment | Create new feature/increment (framework-agnostic) |
-| /review-docs | Review strategic docs before implementation |
+| /sync-docs | Review strategic docs before implementation |
 | /sync-github | Sync increment to GitHub issues |
 
 **See**: [Slash Commands Reference](.specweave/docs/public/api/slash-commands.md)

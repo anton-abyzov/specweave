@@ -78,9 +78,9 @@ PM Gates Preview:
 └─ Gate 3 (Docs): CLAUDE.md ✅, README.md ⏳
 
 Last Activity: 5 minutes ago
-Next Action: Run `/build 0001` to resume at T004
+Next Action: Run `/do 0001` to resume at T004
 
-💡 Tip: `/build` auto-resumes from last incomplete task!
+💡 Tip: `/do` auto-resumes from last incomplete task!
 ```
 
 ### No Active Work
@@ -116,7 +116,7 @@ Active Increments:
 
 Recommendation: Focus on completing 0002 before starting new work.
 
-Next Action: Run `/build 0002` to continue payment-flow
+Next Action: Run `/do 0002` to continue payment-flow
 ```
 
 ### Stuck/Inactive Increment
@@ -140,7 +140,7 @@ Task Progress: 4/12 completed (33%)
 └─ 6 more tasks...
 
 Next Action:
-1. Run `/build 0001` to retry T005
+1. Run `/do 0001` to retry T005
 2. Or manually review T005 for blockers
 3. Or skip T005 and defer to next increment
 
@@ -201,9 +201,9 @@ if [[ $in_progress_count -eq 0 ]]; then
     echo "Run \`/inc\` to start new feature"
 elif [[ $in_progress_count -gt 1 ]]; then
     echo "⚠️ Multiple increments active. Focus on completing one."
-    echo "Run \`/build $oldest_increment\`"
+    echo "Run \`/do $oldest_increment\`"
 elif [[ $next_task != "" ]]; then
-    echo "Run \`/build $increment_id\` to resume at $next_task"
+    echo "Run \`/do $increment_id\` to resume at $next_task"
 else
     echo "All tasks complete! Run \`/done $increment_id\` to close."
 fi
@@ -228,9 +228,9 @@ Use `/progress` when you:
 /progress
 
 # Shows: "Active: 0002-payments, Task 5/10 (50%)"
-# Shows: "Next: /build 0002 to resume at T006"
+# Shows: "Next: /do 0002 to resume at T006"
 
-/build 0002
+/do 0002
 # Auto-resumes from T006
 ```
 
@@ -239,7 +239,7 @@ Use `/progress` when you:
 ## Pro Tips
 
 1. **No increment ID needed** - `/progress` automatically finds active increment
-2. **Smart resume** - `/build` picks up where you left off (no task ID needed)
+2. **Smart resume** - `/do` picks up where you left off (no task ID needed)
 3. **WIP limits** - Keep 1-2 increments active max for focus
 4. **Completion %** - P1 tasks weighted higher (they're critical path)
 5. **Time tracking** - Warns if tasks are stuck (>2 hours inactive)
@@ -249,7 +249,7 @@ Use `/progress` when you:
 ## Related Commands
 
 - `/inc` - Start new increment (auto-closes previous if ready)
-- `/build` - Execute tasks (auto-resumes from next incomplete)
+- `/do` - Execute tasks (auto-resumes from next incomplete)
 - `/validate` - Run quality checks (optional)
 - `/done` - Explicitly close increment (optional if `/inc` auto-closes)
 

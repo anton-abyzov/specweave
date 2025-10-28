@@ -12,7 +12,7 @@ This directory contains all slash commands for SpecWeave.
 |---------|--------------------------|-------------|
 | `/specweave-increment` | `/specweave inc` | Plan increment (PM-led, auto-closes previous if ready) |
 | `/specweave-inc` | `/specweave inc` | Alias for /specweave-increment |
-| `/specweave-build` | `/specweave build` | Execute tasks (smart resume, hooks after every task) |
+| `/specweave-do` | `/specweave do` | Execute work (smart resume, hooks after every task) |
 | `/specweave-next` | `/specweave next` | Smart transition (close + suggest next) |
 | `/specweave-progress` | `/specweave progress` | Show status (task %, PM gates, next action) |
 | `/specweave-validate` | `/specweave validate` | Validate quality (rule-based + optional LLM judge) |
@@ -23,10 +23,9 @@ This directory contains all slash commands for SpecWeave.
 | Command | Shorthand via /specweave | Description |
 |---------|--------------------------|-------------|
 | `/specweave-list-increments` | `/specweave list-increments` | List all increments with status and WIP tracking |
-| `/specweave-review-docs` | `/specweave review-docs` | Review strategic docs vs implementation |
+| `/specweave-sync-docs` | `/specweave sync-docs` | Review strategic docs vs implementation |
 | `/specweave-sync-github` | `/specweave sync-github` | Sync increment to GitHub issues with granular control |
 | `/specweave-sync-jira` | `/specweave sync-jira` | Sync increment to Jira epics/stories with granular control |
-| `/specweave-create-project` | `/specweave create-project` | Bootstrap SpecWeave in new/existing project |
 
 ### Master Router Command
 
@@ -38,7 +37,7 @@ This directory contains all slash commands for SpecWeave.
 
 **What makes the workflow "smart"?**
 
-1. ✅ **Auto-resume**: `/specweave build` automatically finds next incomplete task (no manual tracking)
+1. ✅ **Auto-resume**: `/specweave do` automatically finds next incomplete task (no manual tracking)
 2. ✅ **Auto-close**: `/specweave inc` auto-closes previous increment if PM gates pass (seamless)
 3. ✅ **Suggest-not-force**: `/specweave inc` presents options if previous incomplete (user control)
 4. ✅ **Progress visibility**: `/specweave progress` shows exactly where you are anytime
@@ -57,7 +56,7 @@ npx specweave init my-saas
 # PM creates: spec.md + plan.md + tasks.md (auto-generated!) + tests.md
 
 # 3. Build it (smart resume)
-/specweave build
+/specweave do
 # Auto-resumes from next incomplete task
 # Hooks run after EVERY task completion
 
@@ -66,7 +65,7 @@ npx specweave init my-saas
 # Shows: 5/12 tasks (42%), next: T006, PM gates status
 
 # 5. Continue building
-/specweave build
+/specweave do
 # Picks up where you left off automatically
 
 # 6. Start next feature (auto-closes previous!)
@@ -76,10 +75,10 @@ npx specweave init my-saas
 #   If 0001 incomplete → Present options (never forces)
 
 # 7. Keep building
-/specweave build
+/specweave do
 # Auto-finds active increment 0002
 
-# Repeat: /specweave inc → /specweave build → /specweave progress → ...
+# Repeat: /specweave inc → /specweave do → /specweave progress → ...
 ```
 
 ## Namespaced Commands (Brownfield Safety)
@@ -94,7 +93,7 @@ npx specweave init my-saas
 **Most used workflow**:
 ```bash
 /specweave inc "feature"     # ← Create new increment
-/specweave build             # ← Execute tasks
+/specweave do             # ← Execute work
 /specweave progress          # ← Check status
 /specweave next              # ← Smart transition to next work
 ```
@@ -109,7 +108,7 @@ npx specweave init my-saas
 - Administrative overhead ("update project board")
 
 **SpecWeave solution**:
-- `/build` auto-resumes (no tracking needed)
+- `/do` auto-resumes (no tracking needed)
 - `/inc` auto-closes if ready (no manual /done needed)
 - `/progress` shows status anytime (no board updates)
 
@@ -192,6 +191,6 @@ description: Your custom command description
 
 **💡 Pro Tip**: Master the smart workflow - natural append-only progression!
 
-**Core cycle**: `/inc` (plan) → `/build` (implement) → `/progress` (check) → `/inc` (next)
+**Core cycle**: `/inc` (plan) → `/do` (implement) → `/progress` (check) → `/inc` (next)
 
 **One alias to rule them all**: `/inc` (short for `/increment`)

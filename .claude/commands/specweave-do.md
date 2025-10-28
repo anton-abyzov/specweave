@@ -1,11 +1,11 @@
 ---
-name: specweave-build
+name: specweave-do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
 ---
 
-# Build Increment
+# Do Increment
 
-**Implementation Execution**: Following spec.md and plan.md to build the increment.
+**Implementation Execution**: Following spec.md and plan.md to execute the increment work.
 
 You are helping the user implement a SpecWeave increment by executing tasks from tasks.md with automatic documentation updates after EVERY task completion.
 
@@ -13,10 +13,10 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ```bash
 # Auto-resumes from last incomplete task
-/build <increment-id>
+/do <increment-id>
 
 # Or let it find active increment automatically
-/build
+/do
 ```
 
 ## Arguments
@@ -57,7 +57,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    • tasks.md (42 tasks, estimated 3-4 weeks)
    • tests.md (12 test cases, 85% coverage)
 
-🎯 Ready to build!
+🎯 Ready to execute!
 ```
 
 ### Step 2: Smart Resume - Find Next Incomplete Task
@@ -148,7 +148,7 @@ TASK T001: Create User model (PostgreSQL)
    • Description: Create User model with Prisma
    • Acceptance: Model has id, email, passwordHash, createdAt fields
 
-🔨 Implementing...
+🔨 Executing...
    ✓ Created src/models/User.ts
    ✓ Added Prisma schema definition
    ✓ Generated migration file
@@ -334,10 +334,10 @@ Documentation drift: 0% (perfect sync)
 
 ## Examples
 
-### Example 1: Build Complete Increment
+### Example 1: Execute Complete Increment
 
 ```bash
-/build 0001
+/do 0001
 ```
 
 **Output**:
@@ -346,7 +346,7 @@ Documentation drift: 0% (perfect sync)
 
 ✅ Context loaded (spec.md, plan.md, tasks.md, tests.md)
 
-🔨 Starting implementation (42 tasks)...
+🔨 Starting execution (42 tasks)...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Task T001: Create User model
@@ -360,17 +360,17 @@ Task T001: Create User model
 Next: /validate 0001 --quality
 ```
 
-### Example 2: Build with Blocker
+### Example 2: Execute with Blocker
 
 ```bash
-/build 0002
+/do 0002
 ```
 
 **Output**:
 ```
 📂 Loading increment 0002-payment-processing...
 
-🔨 Implementing tasks...
+🔨 Executing tasks...
 
 Task T005: Integrate Stripe payment
 ⚠️ Blocker: Stripe API key not in .env
@@ -383,10 +383,10 @@ Options:
 Your choice? [A/B/C]: _
 ```
 
-### Example 3: Build with Test Failure
+### Example 3: Execute with Test Failure
 
 ```bash
-/build 0003
+/do 0003
 ```
 
 **Output**:
@@ -423,14 +423,14 @@ Available increments:
   • 0002-core-enhancements (planned)
   • 0003-payment-processing (in-progress)
 
-Usage: /build <increment-id>
+Usage: /do <increment-id>
 ```
 
 ### Increment Not Planned
 ```
-❌ Error: Cannot build increment 0001 (status: backlog)
+❌ Error: Cannot execute increment 0001 (status: backlog)
 
-Increment must be "planned" before building.
+Increment must be "planned" before execution.
 
 Run: /increment "User authentication" to plan this increment first.
 ```
@@ -453,7 +453,7 @@ Options:
 ## Related Commands
 
 - `/increment`: Plan increment (creates spec.md, plan.md, tasks.md)
-- `/validate`: Validate quality before building
+- `/validate`: Validate quality before executing
 - `/specweave done`: Close increment (PM validates completion)
 - `/list-increments`: List all increments with status
 
@@ -469,6 +469,20 @@ Options:
 
 ---
 
-**Important**: This command is designed for continuous execution. It's normal to run `/build` and let it execute multiple tasks sequentially with documentation updates after each one.
+## Why "/do" instead of "/do"?
 
-**Best Practice**: Always run `/specweave validate 0001 --quality` after building to ensure quality before closing with `/specweave done`.
+**Universal applicability**: SpecWeave isn't just for software engineering!
+
+- Software projects: Writing code, tests, documentation
+- Writing projects: Chapters, articles, research papers
+- Design projects: Mockups, prototypes, design systems
+- Business projects: Reports, analyses, presentations
+- Creative projects: Scripts, storyboards, content
+
+"/do" works for any domain - it's about **executing the planned work**, whatever that work may be.
+
+---
+
+**Important**: This command is designed for continuous execution. It's normal to run `/do` and let it execute multiple tasks sequentially with documentation updates after each one.
+
+**Best Practice**: Always run `/validate 0001 --quality` after execution to ensure quality before closing with `/done`.

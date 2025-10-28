@@ -33,7 +33,7 @@ Without `/next`, the workflow requires multiple manual steps:
 /done 0001            # Manually close
                       # (PM validates, might fail)
 /list-increments      # See what's next
-/build 0002           # Start next increment
+/do 0002           # Start next increment
 # or
 /inc "new feature"    # Create new increment
 ```
@@ -209,7 +209,7 @@ What would you like to do? [A/B/C]
    → Shows completion %, next task, PM gates preview
 
 # 3. Execute tasks
-/build
+/do
    → Auto-resumes from last incomplete task
    → Runs hooks after each task
 
@@ -230,7 +230,7 @@ What would you like to do? [A/B/C]
 | Command | Use Case | Example |
 |---------|----------|---------|
 | `/inc` | Start new feature (explicit) | `/inc "Payment processing"` |
-| `/build` | Execute tasks | `/build` (auto-resumes) |
+| `/do` | Execute tasks | `/do` (auto-resumes) |
 | `/progress` | Quick status check | `/progress` |
 | `/next` ⭐ | **Workflow transition** | `/next` (done, what's next?) |
 | `/done` | Manual closure | `/done 0001` |
@@ -238,7 +238,7 @@ What would you like to do? [A/B/C]
 **Mental Model**:
 - `/inc` = "I want to build **this**"
 - `/next` = "I'm done, what's **next**?"
-- `/build` = "Let me **work**"
+- `/do` = "Let me **work**"
 - `/progress` = "Where **am I**?"
 - `/done` = "I want to **close this**"
 
@@ -289,7 +289,7 @@ description: Smart increment transition - auto-close current if ready, intellige
 2. Validates PM gates: ✅✅✅ (all pass)
 3. Auto-closes 0001
 4. Finds 0002 in backlog (planned)
-5. Suggests: "Run `/build 0002` to start"
+5. Suggests: "Run `/do 0002` to start"
 
 **Result**: Seamless transition, zero friction
 
@@ -429,7 +429,7 @@ describe('/next command', () => {
 ## Smart Workflow Commands
 
 - `/inc "feature"` - Create new increment (PM-led planning)
-- `/build` - Execute tasks (auto-resumes)
+- `/do` - Execute tasks (auto-resumes)
 - `/progress` - Check status
 - `/next` - **Smart transition** (close current, suggest next)
 - `/done` - Manual closure with validation

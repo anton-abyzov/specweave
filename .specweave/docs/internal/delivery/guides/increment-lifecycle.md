@@ -319,7 +319,7 @@ Created:
 
 Status: planned → Ready to start!
 
-Next: /build to begin implementation
+Next: /do to begin implementation
 ```
 
 #### Example 3: List Backlog Items
