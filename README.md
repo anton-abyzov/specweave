@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.8-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.8)
+[![Version](https://img.shields.io/badge/version-0.1.9-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.9)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -147,15 +147,21 @@ User: /done 0001  # Close increment with slash command
 ✅ Increment 0001 closed successfully
 ```
 
-**How it works** (append-only increment workflow: 0001 → 0002 → 0003):
+**How it works** (smart append-only workflow: 0001 → 0002 → 0003):
 1. `specweave init` → ALL components pre-installed (10 agents + 35+ skills)
 2. **Use `/inc "feature"`** → PM creates specs + plan + auto-generates tasks
-3. **Use `/build 0001`** → Execute implementation (hooks after EVERY task)
-4. **Use `/validate 0001`** → Optional quality check (LLM-as-judge)
-5. **Use `/done 0001`** → PM validates 3 gates (tasks ✅ + tests ✅ + docs ✅)
-6. All components ready - no waiting, no installation
+   - **Smart**: Auto-closes previous increment if PM gates pass
+3. **Use `/build` or `/build 0001`** → Execute implementation (hooks after EVERY task)
+   - **Smart**: Auto-resumes from next incomplete task
+4. **Use `/progress`** → Check status, task completion %, next action
+5. **Use `/validate 0001`** → Optional quality check (LLM-as-judge)
+6. Repeat: `/inc "next feature"` → Auto-closes if ready, creates next increment
 
-**Why slash commands?** Auto-activation doesn't work reliably - slash commands ensure SpecWeave ALWAYS activates when you want it.
+**Why smart workflow?**
+- ✅ No manual `/done` needed (auto-closes on next `/inc`)
+- ✅ No task tracking needed (`/build` auto-resumes)
+- ✅ `/progress` shows exactly where you are
+- ✅ Natural flow: finish → start next
 
 ---
 
@@ -297,28 +303,33 @@ specweave/
 # Option A: Comprehensive (Enterprise) - 500-600+ pages upfront
 # Option B: Incremental (Startup) - Build as you go
 
-# 2. Plan increment with slash command (PM-led process)
+# 2. Plan increment (PM-led, auto-closes previous if ready)
 /inc "user authentication"
 # Alias for /increment
 # PM-led: Market research → spec.md → plan.md → auto-generate tasks.md
-# Creates: spec.md, plan.md, tasks.md (auto-generated!), tests.md
+# Smart: Auto-closes previous increment if PM gates pass
 
-# 3. Build it (hooks run after EVERY task)
-/build 0001
-# Executes tasks sequentially
+# 3. Build it (smart resume, hooks after EVERY task)
+/build
+# Or: /build 0001
+# Smart: Auto-resumes from next incomplete task
 # Hooks automatically update CLAUDE.md, README.md, CHANGELOG.md
 
-# 4. Validate quality (optional)
+# 4. Check progress anytime
+/progress
+# Shows: task completion %, PM gates status, next action
+# No increment ID needed - finds active increment automatically
+
+# 5. Validate quality (optional)
 /validate 0001 --quality
 # LLM-as-judge quality assessment
 
-# 5. Close increment (PM validates 3 gates)
-/done 0001
-# Gate 1: Tasks completed (P1 required)
-# Gate 2: Tests passing (>80% coverage)
-# Gate 3: Documentation updated
+# 6. Start next feature (auto-closes previous)
+/inc "payment processing"
+# Auto-closes 0001 if gates pass, creates 0002
+# No manual /done needed!
 
-# 6. Sync with tools (optional)
+# 7. Sync with tools (optional)
 /sync-github  # Sync to GitHub issues
 ```
 

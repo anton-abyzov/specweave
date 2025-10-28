@@ -7,6 +7,127 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.9] - 2025-10-28
+
+### 🎯 **Smart Workflow: Auto-Resume, Auto-Close, Progress Tracking**
+
+**Major UX improvement**: Eliminated manual tracking and closure with intelligent automation that **suggests, never forces**.
+
+### What Changed
+
+**1. NEW: `/progress` Command**:
+```bash
+/progress  # Shows task completion %, PM gates, next action
+```
+
+Features:
+- Task completion percentage (P1 tasks weighted higher)
+- PM gate preview (tasks, tests, docs status)
+- Next action guidance
+- Time tracking & stuck task warnings
+- Auto-finds active increment (no ID needed)
+
+**2. SMART: `/build` Auto-Resume**:
+```bash
+/build     # Auto-resumes from next incomplete task
+/build 0001  # Or specify increment explicitly
+```
+
+Features:
+- Automatically finds next incomplete task
+- No manual tracking needed
+- Shows resume context (completed vs remaining)
+- Seamless continuation after breaks
+
+**3. SMART: `/inc` Suggest-Not-Force Closure**:
+```bash
+/inc "next feature"  # Smart check of previous increment
+```
+
+Behavior:
+- **If previous complete** (PM gates pass) → Auto-close, create new (seamless)
+- **If previous incomplete** → Present options:
+  - Option A: Complete first (recommended)
+  - Option B: Move tasks to new increment
+  - Option C: Cancel, stay on current
+- **NEVER forces closure** - user always in control
+
+**4. Updated npm Description**:
+> "Replace vibe coding with spec-driven development. Smart workflow: /inc auto-closes previous, /build auto-resumes, /progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com"
+
+### New Workflow (Natural & Efficient)
+
+```bash
+# 1. Plan first increment
+/inc "user authentication"
+# PM-led: market research → spec → plan → auto-generate tasks
+
+# 2. Build it (smart resume)
+/build
+# Auto-starts from next incomplete task
+
+# 3. Check progress anytime
+/progress
+# Shows: 5/12 tasks (42%), next: T006, PM gates status
+
+# 4. Continue building
+/build
+# Picks up where you left off
+
+# 5. Start next feature (smart closure)
+/inc "payment processing"
+# If 0001 complete → Auto-closes, creates 0002
+# If 0001 incomplete → Suggests options (never forces!)
+
+# 6. Keep building
+/build
+# Auto-finds active increment 0002
+
+# Repeat: /inc → /build → /progress → /inc...
+```
+
+### Benefits
+
+✅ **No manual tracking** - `/build` auto-resumes from next task
+✅ **No forced closure** - `/inc` suggests options, user decides
+✅ **Progress visibility** - `/progress` shows exactly where you are
+✅ **Natural flow** - finish → start next (with user control)
+✅ **Seamless happy path** - auto-close when PM gates pass
+✅ **User control** - always asked, never surprised
+
+### Files Updated
+
+**New Commands**:
+- `src/commands/progress.md` + `.claude/commands/progress.md`
+
+**Updated Commands**:
+- `src/commands/build.md` - Smart resume logic
+- `src/commands/increment.md` - Suggest-not-force closure
+- Synced to `.claude/commands/`
+
+**Documentation**:
+- `package.json` - Updated description
+- `README.md` - New workflow examples
+- `CLAUDE.md` - Smart workflow documentation
+- `src/templates/CLAUDE.md.template` - User project template
+
+### Migration from 0.1.8
+
+**No breaking changes** - all old commands still work!
+
+New features are additive:
+- `/build 0001` still works (just try `/build` for smart resume)
+- `/done 0001` still works (just use `/inc` for auto-close)
+- New `/progress` command available
+
+Try it:
+1. Update: `npm update -g specweave`
+2. Use `/progress` to see current status
+3. Use `/build` without ID for smart resume
+4. Use `/inc` for smart closure suggestions
+
+---
+
 ## [0.1.8] - 2025-10-28
 
 ### 🎯 **Command Simplification: 4-Command Append-Only Workflow**

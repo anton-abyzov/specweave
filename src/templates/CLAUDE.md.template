@@ -12,16 +12,17 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive detection.
 
-**How to use**:
-1. ✅ **Use `/pi "feature description"`** to create a new increment (Plan Product Increment)
-2. ✅ **Use `/si 0001`** to start working on an increment
-3. ✅ **Use `/done 0001`** to close an increment
-4. ✅ **Regular conversation** for implementation after planning
+**Smart Workflow** (Natural & Efficient):
+1. ✅ **`/inc "feature description"`** - Plan increment (PM-led, auto-closes previous if ready)
+2. ✅ **`/build`** - Execute tasks (smart resume, hooks after EVERY task)
+3. ✅ **`/progress`** - Check status (task %, PM gates, next action)
+4. ✅ **Repeat**: `/inc "next"` → auto-closes previous if done
 
-**Why slash commands?**
-- Auto-activation doesn't work reliably in Claude Code
-- Explicit commands ensure SpecWeave ALWAYS activates when you want it
-- Short aliases (`/pi`, `/si`, `/done`) save keystrokes
+**Why smart workflow?**
+- No manual tracking (`/build` auto-resumes from next incomplete task)
+- No manual closure (`/inc` suggests options if previous incomplete)
+- Check progress anytime (`/progress`)
+- Natural flow: finish → start next
 
 **See**: Full command list below in "Quick Commands" section
 

@@ -1,20 +1,104 @@
 ---
-name: create-increment
-description: Create a new SpecWeave increment interactively with spec.md and tasks.md
+name: increment
+description: Plan new Product Increment - PM-led process (market research, spec, plan, auto-generate tasks). Auto-closes previous increment if PM gates pass.
 ---
 
-# Create New Increment
+# Plan Product Increment
 
-You are helping the user create a new SpecWeave increment.
+**PM-Led Workflow**: From market research to ready-to-build increment.
+
+You are helping the user create a new SpecWeave increment with automatic closure of previous increment if ready.
 
 ## Steps:
 
-1. **Find next increment number**:
-   - Scan `.specweave/increments/` directory
-   - Find highest number (e.g., 002)
-   - Next increment: 003
+### Step 0: Smart Check Previous Increment (if applicable)
 
-2. **Detect tech stack** (CRITICAL - framework-agnostic):
+**🎯 CRITICAL: Suggest, don't force** - help user make informed decision!
+
+1. **Check for in-progress increments**:
+   ```bash
+   # Find increments with status: in-progress
+   grep -r "status: in-progress" .specweave/increments/*/spec.md
+   ```
+
+2. **If previous increment found, validate PM gates**:
+   - **Gate 1**: All P1 tasks completed?
+   - **Gate 2**: Tests passing (>80% coverage)?
+   - **Gate 3**: Documentation updated (CLAUDE.md, README.md)?
+
+3. **Decision matrix** (NEVER force, ALWAYS suggest):
+   ```
+   All gates ✅ → Auto-close previous, create new (seamless)
+
+   Any gate ❌ → STOP and present options (user decides):
+      Option A: Complete 0001 first (recommended)
+         → Finish remaining work before starting new
+
+      Option B: Move incomplete tasks to 0002
+         → Transfer T006, T007 to new increment
+         → Close 0001 as "completed with deferrals"
+
+      Option C: Cancel new increment
+         → Stay on 0001, continue working
+         → User will retry /inc when ready
+   ```
+
+**CRITICAL**: NEVER auto-close with incomplete work! Always give user control.
+
+4. **Auto-close output** (if gates pass):
+   ```
+   📊 Previous Increment Check
+
+   Found: 0001-user-authentication (in-progress)
+
+   PM Gate Validation:
+   ├─ Gate 1 (Tasks): 8/8 P1 completed ✅
+   ├─ Gate 2 (Tests): 5/5 passing (85% coverage) ✅
+   └─ Gate 3 (Docs): CLAUDE.md ✅, README.md ✅
+
+   ✅ Auto-closing increment 0001...
+
+   Proceeding with new increment 0002...
+   ```
+
+5. **Prompt output** (if gates fail):
+   ```
+   ⚠️ Previous Increment Incomplete
+
+   Found: 0001-user-authentication (in-progress)
+
+   PM Gate Validation:
+   ├─ Gate 1 (Tasks): 6/8 P1 completed ❌ (2 P1 tasks remaining)
+   ├─ Gate 2 (Tests): 3/5 passing (60% coverage) ❌
+   └─ Gate 3 (Docs): CLAUDE.md ✅, README.md ⏳
+
+   Options:
+   A. Complete 0001 first (recommended)
+      → Run `/build 0001` to finish remaining tasks
+
+   B. Force close 0001 and defer tasks to 0002
+      → Transfer T006, T007 to new increment
+
+   C. Cancel and stay on 0001
+      → Continue working on authentication
+
+   What would you like to do? (A/B/C)
+   ```
+
+**Why suggest, not force?**
+- ✅ User stays in control (no surprises)
+- ✅ Natural flow in happy path (auto-close if ready)
+- ✅ Clear options when incomplete (complete, defer, or cancel)
+- ✅ Enforces quality awareness (can't ignore incomplete work)
+- ✅ No manual `/done` needed when gates pass
+
+### Step 1: Find next increment number
+
+- Scan `.specweave/increments/` directory
+- Find highest number (e.g., 002)
+- Next increment: 003
+
+### Step 2: Detect tech stack (CRITICAL - framework-agnostic)
    - Check `.specweave/config.yaml` for tech_stack configuration
    - If not found, detect from project files:
      - `package.json` → TypeScript/JavaScript
@@ -27,42 +111,47 @@ You are helping the user create a new SpecWeave increment.
    - If detection fails, ask user: "What language/framework are you using?"
    - Store detected tech stack for later use
 
-3. **Ask user for details**:
-   - "What would you like to build?" (get high-level description)
-   - "What's the short name?" (e.g., "user-authentication" for increment 003-user-authentication)
-   - "Priority? (P1/P2/P3)" (default: P1)
+### Step 3: Ask user for details
 
-4. **Activate role-orchestrator**:
-   - Analyze user's description
-   - Determine which strategic agents are needed:
-     - pm-agent (product strategy)?
-     - architect-agent (system design)?
-     - devops-agent (infrastructure)?
-     - security-agent (security review)?
-     - qa-lead-agent (testing strategy)?
+- "What would you like to build?" (get high-level description)
+- "What's the short name?" (e.g., "user-authentication" for increment 003-user-authentication)
+- "Priority? (P1/P2/P3)" (default: P1)
 
-5. **Ask clarifying questions** (if needed):
-   - Target users/scale?
-   - Technology preferences? (if not detected)
-   - Budget constraints?
-   - Deployment platform?
-   - Payment processing needed?
-   - Authentication method?
+### Step 4: Activate role-orchestrator
 
-6. **Run strategic agents** (with user approval):
-   - **Pass detected tech stack to ALL agents** (CRITICAL!)
-   - PM agent creates pm-analysis.md
-   - Architect agent creates architecture.md, ADRs (using detected tech stack)
-   - DevOps agent creates infrastructure.md (platform-specific)
-   - Security agent creates security.md (framework-specific security)
-   - QA agent creates test-strategy.md (framework-specific tests)
+- Analyze user's description
+- Determine which strategic agents are needed:
+  - pm-agent (product strategy)?
+  - architect-agent (system design)?
+  - devops-agent (infrastructure)?
+  - security-agent (security review)?
+  - qa-lead-agent (testing strategy)?
 
-7. **Present strategic docs for review**:
-   - Show summary of all strategic outputs
-   - Ask: "Review docs with /review-docs or approve to continue?"
-   - Wait for user approval
+### Step 5: Ask clarifying questions (if needed)
 
-8. **Create spec.md** (based on strategic docs):
+- Target users/scale?
+- Technology preferences? (if not detected)
+- Budget constraints?
+- Deployment platform?
+- Payment processing needed?
+- Authentication method?
+
+### Step 6: Run strategic agents (with user approval)
+
+- **Pass detected tech stack to ALL agents** (CRITICAL!)
+- PM agent creates pm-analysis.md
+- Architect agent creates architecture.md, ADRs (using detected tech stack)
+- DevOps agent creates infrastructure.md (platform-specific)
+- Security agent creates security.md (framework-specific security)
+- QA agent creates test-strategy.md (framework-specific tests)
+
+### Step 7: Present strategic docs for review
+
+- Show summary of all strategic outputs
+- Ask: "Review docs with /review-docs or approve to continue?"
+- Wait for user approval
+
+### Step 8: Create spec.md (based on strategic docs)
    - Frontmatter with increment number, title, priority, status, dependencies
    - **Include detected tech stack in frontmatter** (see format below)
    - Overview section
@@ -73,23 +162,27 @@ You are helping the user create a new SpecWeave increment.
    - Success criteria
    - Dependencies
 
-9. **Create tasks.md** (task-builder skill):
-   - Analyze all strategic docs
-   - Break down into phases (framework-specific)
-   - Create tasks with:
-     - Agent references (use framework-specific agents if available)
-     - File paths (framework-specific paths: src/ for TS, app/ for Django, etc.)
-     - Implementation snippets (framework-specific code)
-     - Acceptance criteria
-     - Documentation updates
+### Step 9: Create tasks.md (task-builder skill)
 
-10. **Save increment**:
-    - Create `.specweave/increments/####-name/`
-    - Save spec.md
-    - Save tasks.md
-    - Save strategic docs (pm-analysis.md, architecture.md, etc.)
+**🎯 CRITICAL: Auto-generate tasks from plan.md**
 
-11. **Output to user**:
+- Analyze all strategic docs
+- Break down into phases (framework-specific)
+- Create tasks with:
+  - Agent references (use framework-specific agents if available)
+  - File paths (framework-specific paths: src/ for TS, app/ for Django, etc.)
+  - Implementation snippets (framework-specific code)
+  - Acceptance criteria
+  - Documentation updates
+
+### Step 10: Save increment
+
+- Create `.specweave/increments/####-name/`
+- Save spec.md
+- Save tasks.md (auto-generated!)
+- Save strategic docs (pm-analysis.md, architecture.md, etc.)
+
+### Step 11: Output to user
     ```
     ✅ Created increment 0003-user-authentication
 

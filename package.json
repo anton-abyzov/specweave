@@ -1,7 +1,7 @@
 {
   "name": "specweave",
-  "version": "0.1.8",
-  "description": "Replace vibe coding with spec-driven development. 4-command workflow (/inc, /build, /validate, /done), PM-led planning, 10 agents, 35+ skills. Visit spec-weave.com",
+  "version": "0.1.9",
+  "description": "Replace vibe coding with spec-driven development. Smart workflow: /inc auto-closes previous, /build auto-resumes, /progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com",
   "main": "dist/index.js",
   "bin": {
     "specweave": "./bin/specweave.js"

@@ -25,14 +25,15 @@ SpecWeave follows the **spec-kit approach**: You MUST use slash commands explici
 
 ### Quick Command Reference
 
-**Core Workflow** (4 commands):
+**Core Workflow** (Smart Commands):
 
 | Alias | Full Command | Purpose | Example |
 |-------|--------------|---------|---------|
-| `/inc` | `/increment` | **Plan Product Increment** (PM-led) | `/inc "User auth"` |
-| - | `/build` | Execute implementation (hooks after every task) | `/build 0001` |
+| `/inc` | `/increment` | **Plan Increment** (PM-led, auto-closes previous) | `/inc "User auth"` |
+| - | `/build` | Execute (smart resume, hooks after every task) | `/build` or `/build 0001` |
+| - | `/progress` | **Show status** (task %, PM gates, next action) | `/progress` |
 | - | `/validate` | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
-| - | `/done` | Close increment (PM validates 3 gates) | `/done 0001` |
+| `/done` | `/done` | Close explicitly (optional, /inc auto-closes) | `/done 0001` |
 
 **Supporting Commands**:
 - `/create-project` - Initialize SpecWeave project
@@ -41,36 +42,60 @@ SpecWeave follows the **spec-kit approach**: You MUST use slash commands explici
 - `/generate-docs` - Generate doc site
 - `/sync-github` - Sync to GitHub
 
-**Why ONE Alias (/inc)?**
-- ✅ `/inc` is THE most used command (every new feature starts here)
-- ✅ Append-only increment workflow: 0001 → 0002 → 0003 → ...
-- ✅ Other commands used once per increment (no aliases needed)
-- ✅ Clear and explicit workflow
+**Smart Workflow Features**:
+- ✅ `/inc` suggests options if previous incomplete (never forces closure)
+- ✅ `/inc` auto-closes previous only if PM gates pass (seamless happy path)
+- ✅ `/build` auto-resumes from next incomplete task
+- ✅ `/progress` shows exactly where you are
+- ✅ `/done` is optional (use when explicit closure needed)
+- ✅ Natural flow: finish → start next (with user control)
 
-### Typical Workflow
+### Typical Workflow (Smart & Natural)
 
 ```bash
 # 1. Initialize project
 npx specweave init my-saas
 
-# 2. Plan your first increment (use /inc - the ONLY alias!)
+# 2. Plan your first increment
 /inc "User authentication with JWT and RBAC"
+# PM-led: market research → spec → plan → auto-generate tasks
 
 # 3. Review generated docs
 #    spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
-# 4. Build it (hooks run after EVERY task)
-/build 0001
+# 4. Build it (smart resume, hooks after EVERY task)
+/build
+# Auto-resumes from next incomplete task
+# No need to track which task you're on!
 
-# 5. Validate quality (optional)
+# 5. Check progress anytime
+/progress
+# Shows: 5/12 tasks (42%), next: T006, PM gates status
+
+# 6. Continue building
+/build
+# Picks up where you left off
+
+# 7. Validate quality (optional)
 /validate 0001 --quality
 
-# 6. Close when done (PM validates: tasks ✅ + tests ✅ + docs ✅)
-/done 0001
-
-# 7. Repeat for next feature
+# 8. Start next feature (auto-closes previous!)
 /inc "Payment processing"
+# Smart: Auto-closes 0001 if PM gates pass
+# No manual /done needed!
+
+# 9. Keep building
+/build
+# Auto-finds active increment 0002
+
+# Repeat: /inc → /build → /progress → /inc (auto-closes) → /build...
 ```
+
+**Key Insight**: Natural flow without administrative overhead!
+- No manual tracking (`/build` auto-resumes)
+- No manual closure (`/inc` auto-closes if ready)
+- Check progress anytime (`/progress`)
+- Focus on building, not project management
 
 **Remember**: Type `/inc` first, THEN build! Otherwise you lose all SpecWeave benefits (specs, architecture, auto-generated tasks, test strategy).
 
@@ -201,14 +226,21 @@ npx specweave list --installed      # See what's installed
 
 **CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
 
-### Core Workflow (4 Commands)
+### Core Workflow (Smart Commands)
 
 | Command | Alias | Purpose | Example |
 |---------|-------|---------|---------|
-| `/increment` | `/inc` | Plan Product Increment (PM-led, auto-generates tasks) | `/inc "user authentication"` |
-| `/build` | - | Execute implementation (hooks after EVERY task) | `/build 0001` |
+| `/increment` | `/inc` | Plan Increment (PM-led, auto-closes previous if ready) | `/inc "user authentication"` |
+| `/build` | - | Execute (smart resume from next incomplete task) | `/build` or `/build 0001` |
+| `/progress` | - | Show status (task %, PM gates, next action) | `/progress` |
 | `/validate` | - | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
-| `/done` | - | Close increment (PM validates 3 gates: tasks, tests, docs) | `/done 0001` |
+| `/done` | - | Close explicitly (optional, /inc auto-closes) | `/done 0001` |
+
+**Smart Features**:
+- `/inc` suggests options if previous incomplete, auto-closes if PM gates pass
+- `/build` auto-resumes from next incomplete task (no task ID needed)
+- `/progress` auto-finds active increment (no ID needed)
+- `/done` optional in happy path (use for explicit closure only)
 
 ### Supporting Commands
 

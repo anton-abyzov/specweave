@@ -12,12 +12,18 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 ## Usage
 
 ```bash
+# Auto-resumes from last incomplete task
 /build <increment-id>
+
+# Or let it find active increment automatically
+/build
 ```
 
 ## Arguments
 
-- `<increment-id>`: Required. Increment ID (e.g., "001", "0001", "1", "0042")
+- `<increment-id>`: Optional. Increment ID (e.g., "001", "0001", "1", "0042")
+  - If omitted, finds the active in-progress increment automatically
+  - **Smart resume**: Automatically starts from next incomplete task
 
 ---
 
@@ -54,9 +60,42 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 🎯 Ready to build!
 ```
 
-### Step 2: Update Status to In-Progress
+### Step 2: Smart Resume - Find Next Incomplete Task
 
-Update `spec.md` frontmatter:
+**🎯 CRITICAL: Auto-resume functionality** - no need to remember which task you were on!
+
+1. **Parse tasks.md**:
+   - Scan all tasks in order
+   - Check completion status (`[x]` = complete, `[ ]` = incomplete)
+   - Find first incomplete task
+
+2. **Determine starting point**:
+   - If all tasks complete → Show completion message
+   - If tasks incomplete → Resume from first incomplete task
+   - If no tasks started → Start from T001
+
+3. **Show resume context**:
+   ```
+   📊 Resume Context:
+
+   Completed: 3/12 tasks (25%)
+   ├─ [✅] T001: Setup auth module (P1)
+   ├─ [✅] T002: Create user model (P1)
+   ├─ [✅] T003: Implement JWT tokens (P1)
+   └─ [⏳] T004: Add password hashing (P1) ← RESUMING HERE
+
+   Remaining: 9 tasks (estimated 2 weeks)
+   ```
+
+**Why smart resume?**
+- ✅ No manual tracking needed
+- ✅ Seamlessly continue after breaks
+- ✅ Prevents duplicate work
+- ✅ Shows progress at a glance
+
+### Step 3: Update Status to In-Progress (if needed)
+
+If status is "planned", update `spec.md` frontmatter:
 
 ```yaml
 ---
@@ -66,7 +105,9 @@ started: 2025-10-28      # ← Start date
 ---
 ```
 
-### Step 3: Execute Tasks Sequentially
+If already "in-progress", keep existing metadata.
+
+### Step 4: Execute Tasks Sequentially
 
 **For each task in tasks.md**:
 
