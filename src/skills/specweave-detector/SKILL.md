@@ -136,11 +136,11 @@ User: "I want to add payment processing"
 # 1. specweave-detector intercepts request
 # 2. Parses request: "add feature" + "payment processing"
 # 3. Routes to: increment-planner skill
-# 4. increment-planner creates Feature 002
+# 4. increment-planner creates Increment 0002
 # 5. Returns result to user
 
 # User sees:
-✅ Feature created: 002-payment-processing
+✅ Increment created: .specweave/increments/0002-payment-processing/
 ```
 
 ## Request Parsing & Routing
@@ -162,11 +162,11 @@ User: "I want to add payment processing"
 **Example**: "Create and implement a new payment feature"
 
 **Request Breakdown**:
-1. Create feature → `increment-planner`
-2. Implement code → Load context via `context-loader`
-3. Implement code → `developer`
-4. Generate tests → `qa-engineer`
-5. Update docs → `docs-updater`
+1. Create increment → `increment-planner`
+2. Load context → `context-loader`
+3. Implement code → Coordinate with appropriate agents/skills
+4. Generate tests → Use QA Lead agent
+5. Update docs → Use Docs Writer agent
 
 **Execution Flow**:
 ```
@@ -176,17 +176,17 @@ specweave-detector parses: CREATE + IMPLEMENT + FEATURE + PAYMENT
     ↓
 Orchestrate nested skills:
     ↓
-increment-planner: Create 003-payment-processing/
+increment-planner: Create .specweave/increments/0003-payment-processing/
     ↓
-context-loader: Load specs/modules/payments/**
+context-loader: Load .specweave/docs/internal/strategy/payments/**
     ↓
-developer: Implement based on tasks.md
+Implementation: Use nodejs-backend skill + security agent
     ↓
-qa-engineer: Generate test cases
+Testing: Use QA Lead agent (generate E2E tests)
     ↓
-docs-updater: Update README, docs/
+Documentation: Update .specweave/docs/internal/architecture/
     ↓
-Result: "✅ Feature 003 implemented and documented"
+Result: "✅ Increment 0003 implemented and documented"
 ```
 
 ### Ambiguous Request
@@ -211,14 +211,14 @@ skill-router asks:
 
 ### Automatic Context Loading
 
-When a user is working on a feature:
+When a user is working on an increment:
 
 ```javascript
-// Detect active work
-const activeIssue = detectActiveIssue(); // work/issues/###-xxx/
+// Detect active increment
+const activeIncrement = detectActiveIncrement(); // .specweave/increments/####-xxx/
 
-if (activeIssue) {
-  const manifest = loadManifest(`${activeIssue}/context-manifest.yaml`);
+if (activeIncrement) {
+  const manifest = loadManifest(`${activeIncrement}/context-manifest.yaml`);
   const context = await contextLoader.load(manifest);
   // Context now available for all skills
 }
@@ -228,10 +228,10 @@ if (activeIssue) {
 
 When multiple contexts are relevant:
 
-1. **Active work item** (in `work/issues/`)
-2. **Current feature** (referenced in git branch)
+1. **Active increment** (in `.specweave/increments/####-xxx/`)
+2. **Current branch** (git branch name features/###-xxx)
 3. **User-specified** context
-4. **Global** context (specs/overview.md, principles.md)
+4. **Global** context (.specweave/docs/internal/strategy/overview.md, principles.md)
 
 ## Skill Orchestration
 
@@ -271,17 +271,17 @@ Each step waits for previous to complete
 If a skill fails:
 
 ```
-User: "Implement feature 005"
+User: "Implement increment 0005"
     ↓
-specweave-detector: Route to developer
+specweave-detector: Route to implementation
     ↓
-developer: ERROR - Feature 005 not found
+ERROR: Increment 0005 not found
     ↓
 specweave-detector: Catch error, suggest:
-"Feature 005 doesn't exist. Would you like to:
-1. Create it first (increment-planner)
-2. List existing features
-3. Implement a different feature"
+"Increment 0005 doesn't exist. Would you like to:
+1. Create it first (/create-increment)
+2. List existing increments (/list-increments)
+3. Implement a different increment"
 ```
 
 ## Configuration Awareness
@@ -295,14 +295,17 @@ principles:
   context_precision: true         # Use context manifests
   routing_accuracy_target: 0.90   # Accuracy threshold
 
-skills:
-  install_location: "local"       # Where skills are installed
-  auto_install: true              # Auto-install missing skills
+# All components pre-installed in 0.1.5+ (no auto_install setting needed)
+# Agents and skills are in .claude/ folder, ready to use
 
 integrations:
   github:
     enabled: true
-    sync_issues: true             # Sync features ↔ GitHub issues
+    sync_issues: true             # Sync increments ↔ GitHub issues
+  jira:
+    enabled: false
+  ado:
+    enabled: false
 ```
 
 When `auto_role_routing: false`, this skill still activates but prompts user for explicit skill selection.
@@ -321,21 +324,35 @@ This helps users know SpecWeave framework is orchestrating their request.
 
 ## Skill Discovery
 
-List available skills:
+List available skills (all pre-installed):
 
 ```bash
 User: "What can SpecWeave do?"
     ↓
-specweave-detector: List installed skills
+specweave-detector: List all pre-installed skills
 
-SpecWeave Skills:
+SpecWeave Framework Skills (35+, all ready):
 ✅ increment-planner - Plan implementation features
 ✅ context-loader - Selective specification loading
 ✅ skill-router - Route ambiguous intents
-📦 spec-author - Create specifications (install with: npx specweave install spec-author)
-📦 architect - System design (install with: npx specweave install architect)
+✅ nodejs-backend - Node.js/Express/NestJS backend
+✅ python-backend - Python/FastAPI/Django backend
+✅ nextjs - Next.js App Router specialist
+✅ frontend - React/Vue/Angular frontend
+✅ diagrams-generator - C4 Model diagrams
+✅ github-sync - GitHub integration
+✅ jira-sync - JIRA integration
+... and 25+ more!
 
-Custom Skills:
+SpecWeave Agents (10, all ready):
+✅ pm - Product Manager (requirements, user stories)
+✅ architect - System Architect (design, ADRs)
+✅ security - Security Engineer (threat modeling)
+✅ qa-lead - QA Lead (test strategy)
+✅ devops - DevOps Engineer (deployment)
+... and 5+ more!
+
+Custom Skills (user-created):
 ✅ newrelic-monitor - New Relic integration
 ✅ cqrs-implementer - CQRS pattern implementation
 ```
@@ -352,38 +369,38 @@ Custom Skills:
 
 2. Route to increment-planner:
    Input: "Real-time chat feature"
-   Output: features/004-realtime-chat/
+   Output: .specweave/increments/0004-realtime-chat/
            - spec.md (5 user stories)
            - plan.md (WebSocket architecture)
            - tasks.md (78 tasks)
            - tests.md (20 test cases)
 
 3. Detect next request: User likely wants to implement
-   Prompt: "Feature 004 created. Would you like to:
+   Prompt: "Increment 0004 created. Would you like to:
            1. Review the plan
            2. Start implementation
-           3. Load context for this feature"
+           3. Load context for this increment"
 
 4. User chooses 2 (Start implementation)
 
 5. Route to context-loader:
-   Load: features/004-realtime-chat/context-manifest.yaml
+   Load: .specweave/increments/0004-realtime-chat/context-manifest.yaml
    Output: Loaded specs/modules/realtime/**, architecture/websockets.md
 
-6. Route to developer:
-   Input: features/004-realtime-chat/tasks.md
+6. Route to implementation:
+   Input: .specweave/increments/0004-realtime-chat/tasks.md
    Context: Loaded specs
    Output: Implement Phase 1 (Setup WebSocket server)
 
-7. After implementation, route to qa-engineer:
-   Input: features/004-realtime-chat/tests.md
-   Output: Generate test suite
+7. After implementation, coordinate testing:
+   Input: .specweave/increments/0004-realtime-chat/tests.md
+   Output: Generate test suite (E2E with Playwright)
 
-8. Finally, route to docs-updater:
-   Update: docs/reference/api.md (add WebSocket endpoints)
+8. Finally, update documentation:
+   Update: .specweave/docs/internal/architecture/api.md (add WebSocket endpoints)
 
 9. Return to user:
-   ✅ Feature 004 implemented, tested, and documented
+   ✅ Increment 0004 implemented, tested, and documented
 ```
 
 ## Best Practices
@@ -408,11 +425,11 @@ For multi-step operations, confirm before proceeding:
 You want to "create and implement a payment feature".
 
 This will:
-1. Create Feature 003 (increment-planner)
-2. Load relevant specs (context-loader)
-3. Implement code (developer)
-4. Generate tests (qa-engineer)
-5. Update documentation (docs-updater)
+1. Create Increment 0003 (increment-planner skill)
+2. Load relevant specs (context-loader skill)
+3. Implement code (nodejs-backend skill + security agent)
+4. Generate tests (QA Lead agent)
+5. Update documentation (Docs Writer agent)
 
 Estimated time: 15-30 minutes
 
@@ -471,12 +488,12 @@ if (specweaveDetectorActive()) {
 - Given: User says "Plan a feature for authentication"
 - When: specweave-detector parses request
 - Then: Routes to increment-planner
-- And: increment-planner creates Feature 00X
+- And: increment-planner creates Increment 000X (.specweave/increments/000X-authentication/)
 
 ### TC-003: Route Complex Request
 - Given: User says "Create and implement payment feature"
 - When: specweave-detector parses request
-- Then: Orchestrates: increment-planner → context-loader → developer → qa-engineer → docs-updater
+- Then: Orchestrates: increment-planner → context-loader → implementation (with agents) → testing → documentation
 - And: All steps complete successfully
 
 ### TC-004: Handle Ambiguous Request
