@@ -35,20 +35,27 @@ function HomepageHeader() {
         <div className={styles.heroCode}>
           <div className={styles.codeBlock}>
             <div className={styles.codeHeader}>
-              <span className={styles.codeTitle}>Create a new SpecWeave project</span>
+              <span className={styles.codeTitle}>Slash Commands - 100% Reliable Activation</span>
             </div>
             <pre className={styles.codePre}>
               <code>{`# Initialize new project
-/create-project
+npx specweave init my-app
 
-# Create your first feature
-/create-increment "user authentication"
+# Use SLASH COMMANDS to activate SpecWeave
+/pi "user authentication"
+# PI = Plan Product Increment (Agile terminology)
 
-# AI generates complete spec + architecture + tests
-✅ Specification created
-✅ Architecture designed (C4 diagrams)
-✅ Test strategy defined
-✅ Ready to implement!`}</code>
+# SpecWeave creates:
+✅ spec.md (requirements)
+✅ plan.md (architecture + C4 diagrams)
+✅ tasks.md (implementation steps)
+✅ tests.md (test strategy)
+
+# Then implement with regular conversation
+"Implement authentication backend"
+
+# Close when done
+/done 0001`}</code>
             </pre>
           </div>
         </div>
@@ -90,14 +97,14 @@ function FeaturesSection(): ReactNode {
             description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows."
           />
           <FeatureHighlight
-            icon="🧠"
-            title="70% Token Reduction"
-            description="Context precision with selective loading. Load only what's needed, save on AI costs."
+            icon="⚡"
+            title="Slash Commands"
+            description="100% reliable activation. Use /pi to plan, /done to close. Explicit is better than implicit."
           />
           <FeatureHighlight
             icon="🤖"
-            title="20+ AI Agents"
-            description="PM, Architect, DevOps, QA, Security, and more—always growing. Add your own custom agents."
+            title="10 AI Agents + 35+ Skills"
+            description="PM, Architect, DevOps, QA, Security. All pre-installed and ready to use."
           />
           <FeatureHighlight
             icon="🧪"
@@ -129,28 +136,28 @@ function ComparisonSection(): ReactNode {
             <h3>❌ Without SpecWeave</h3>
             <ul>
               <li>Tell AI: "Build me a feature"</li>
-              <li>AI generates code</li>
-              <li>Test manually</li>
-              <li>Fix bugs as they appear</li>
+              <li>AI might not activate correctly</li>
+              <li>Code generated without specs</li>
+              <li>Test manually, fix bugs</li>
               <li>(Maybe) document later</li>
               <li>Repeat for next feature</li>
             </ul>
             <p className={styles.comparisonResult}>
-              <strong>Result:</strong> No docs = regression risk. No specs = unclear requirements.
+              <strong>Result:</strong> No docs = regression risk. No specs = unclear requirements. Unreliable activation.
             </p>
           </div>
           <div className={styles.comparisonColumn}>
             <h3>✅ With SpecWeave</h3>
             <ul>
-              <li>Create specification (WHAT, WHY)</li>
-              <li>Design architecture (HOW)</li>
-              <li>AI generates implementation</li>
+              <li>Type <code>/pi "feature"</code> (slash command)</li>
+              <li>SpecWeave creates spec + plan + tests</li>
+              <li>Implement with regular conversation</li>
               <li>Tests validate automatically</li>
               <li>Docs update via hooks</li>
-              <li>Deploy with confidence</li>
+              <li>Type <code>/done 0001</code> when complete</li>
             </ul>
             <p className={styles.comparisonResult}>
-              <strong>Result:</strong> Production-ready software with full traceability.
+              <strong>Result:</strong> 100% reliable. Production-ready software with full traceability.
             </p>
           </div>
         </div>

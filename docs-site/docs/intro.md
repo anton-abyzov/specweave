@@ -10,12 +10,12 @@ SpecWeave is a specification-first AI development framework where specifications
 
 ## Why SpecWeave?
 
-- **70-80% Token Reduction** - Context precision with selective loading
-- **9 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, Docs, Performance
-- **30+ Skills** - Technology stacks, integrations, utilities
-- **120 Validation Rules** - Automated quality gates
-- **Framework-Agnostic** - Works with ANY language/framework
-- **Living Documentation** - Specs evolve with code, never diverge
+- **⚡ Slash Commands** - 100% reliable activation (explicit is better than implicit)
+- **🤖 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security, and more (all pre-installed!)
+- **📝 Specification-First** - Define WHAT and WHY before HOW
+- **🧪 4-Level Testing** - Spec → Feature → Skill → Automated tests
+- **🌐 Framework-Agnostic** - Works with ANY language/framework
+- **📦 Pre-Installed** - Everything ready immediately after init
 
 ## 🚀 Quickstart
 
@@ -40,48 +40,51 @@ This creates the `.specweave/` structure with:
 
 ### 3. Start Building
 
-#### **For Claude Code Users** (Slash Commands)
+**IMPORTANT**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
+
+#### **Slash Commands (100% Reliable)**
 
 ```bash
-# Create your first feature
-/create-increment "user authentication with email and OAuth"
+# Create your first feature (use slash command!)
+/pi "user authentication with email and OAuth"
+# PI = Plan Product Increment (Agile terminology)
 
-# Review the generated specs
-/review-docs
+# SpecWeave creates:
+✅ .specweave/increments/0001-user-authentication/
+   ├── spec.md (requirements from PM agent)
+   ├── plan.md (architecture from Architect agent)
+   ├── tasks.md (implementation steps)
+   ├── tests.md (test strategy from QA Lead agent)
+   └── context-manifest.yaml (selective loading)
 
-# Start implementation
-/start-increment 0001
+# Start working on the increment
+/si 0001
 
-# Validate increment quality
-/validate-increment 0001
+# Implement with regular conversation (no slash command needed)
+"Implement the authentication backend based on plan.md"
+
+# Validate quality
+/vi 0001 --quality
+
+# Close when done
+/done 0001
 ```
 
-**Available Slash Commands**:
-- `/create-increment` - Create new feature with specs
-- `/start-increment` - Begin working on a feature
-- `/review-docs` - Review strategic docs vs code
-- `/validate-increment` - Run 120 validation rules
+**Available Slash Commands** (with short aliases):
+- `/pi` or `/create-increment` - **Plan Product Increment** (most important!)
+- `/si` or `/start-increment` - Start working on increment
+- `/at` or `/add-tasks` - Add tasks to increment
+- `/vi` or `/validate-increment` - Run validation + quality check
+- `/done` or `/close-increment` - Close increment
+- `/ls` or `/list-increments` - List all increments
 - `/sync-github` - Sync increment to GitHub issues
 
-#### **For Other AI Tools** (Natural Language)
+**Why slash commands?**
+- ✅ **100% reliable** - Always works, no guessing
+- ✅ **Clear intent** - You know exactly when SpecWeave is active
+- ✅ **Fast** - Short aliases like `/pi` save keystrokes
 
-Tell your AI assistant what you want to build:
-
-```
-"Create authentication feature with email and OAuth"
-    ↓
-✅ Increment: .specweave/increments/0001-user-authentication/
-   ├── spec.md (WHAT & WHY)
-   ├── plan.md (HOW)
-   ├── tasks.md (Implementation checklist)
-   └── context-manifest.yaml (70%+ token reduction)
-```
-
-The AI will automatically:
-1. Route to appropriate agents (PM → Architect → Implementation)
-2. Generate specifications following SpecWeave conventions
-3. Create validated, tested implementation
-4. Maintain living documentation
+**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
 
 ## What You Get
 
@@ -136,11 +139,11 @@ your-project/
 
 | Feature | SpecWeave | spec-kit |
 |---------|-----------|----------|
-| **Context Management** | ✅ 70-80% reduction | ❌ Loads all |
-| **Multi-Agent** | ✅ 9 agents | ❌ Commands only |
+| **Slash Commands** | ✅ `/pi`, `/si`, `/done` | ✅ Similar approach |
+| **Multi-Agent** | ✅ 10 agents | ❌ Commands only |
+| **Pre-Installed** | ✅ All ready | ❌ Manual setup |
 | **Quality Gates** | ✅ 120 rules | ❌ Manual |
 | **Auto-numbering** | ✅ 0001-9999 | ❌ Manual |
-| **Multi-tool Support** | ✅ Claude/Cursor/Copilot | ❌ Claude only |
 
 ### vs **BMAD-METHOD**
 
@@ -154,4 +157,9 @@ your-project/
 
 ---
 
-**Get Started Now**: `npm install -g specweave && specweave init`
+**Get Started Now**:
+```bash
+npm install -g specweave && specweave init my-project
+cd my-project
+# Then use slash commands: /pi "your first feature"
+```
