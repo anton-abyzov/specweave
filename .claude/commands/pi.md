@@ -1,10 +1,12 @@
 ---
-description: 🔥 Shorthand for /create-increment - Create new increment (Alias)
+description: 🔥 Shorthand for /create-increment - Plan Product Increment (Alias)
 ---
 
-# Create Increment (Short Alias)
+# Plan Product Increment (Short Alias)
 
 **⚡ Quick Alias**: This is a shorthand command for `/create-increment`.
+
+**PI = Product Increment** - Standard Agile terminology for a planned unit of work.
 
 Use this when you want to quickly create a new SpecWeave increment without typing the full command name.
 
@@ -21,14 +23,14 @@ This alias provides the exact same functionality as the full command.
 ## Usage
 
 ```bash
-/ci "Feature name"
+/pi "Feature name"
 ```
 
 **Example**:
 ```bash
-/ci "User authentication"
-/ci "Payment processing"
-/ci "Admin dashboard"
+/pi "User authentication"
+/pi "Payment processing"
+/pi "Admin dashboard"
 ```
 
 ---
@@ -60,4 +62,4 @@ This alias provides the exact same functionality as the full command.
 
 ---
 
-**💡 Tip**: Use `/ci` for speed, `/create-increment` for clarity in scripts.
+**💡 Tip**: Use `/pi` for speed (PI = Product Increment in Agile), `/create-increment` for clarity in scripts.

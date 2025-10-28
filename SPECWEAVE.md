@@ -179,20 +179,23 @@ npx specweave list --installed      # See what's installed
 
 ## Quick Reference: Slash Commands
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `/create-project` | Bootstrap new SpecWeave project | `/create-project --type python` |
-| `/create-increment` | Create new feature/increment | `/create-increment "user auth"` |
-| `/start-increment` | Start working on an increment | `/start-increment 0001` |
-| `/add-tasks` | Add tasks to existing increment | `/add-tasks 0001 "implement login"` |
-| `/validate-increment` | Validate with rule-based + optional AI quality | `/validate-increment 0001 --quality` |
-| `/close-increment` | Close increment with leftover transfer | `/close-increment 0001` |
-| `/list-increments` | List all increments with status | `/list-increments` |
-| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=0003` |
-| `/generate-docs` | Generate documentation site | `/generate-docs` |
-| `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
+| Command | Alias | Purpose | Example |
+|---------|-------|---------|---------|
+| `/create-project` | `/init` | Bootstrap new SpecWeave project | `/init my-saas --type python` |
+| `/create-increment` | `/pi` | Plan Product Increment (create new increment) | `/pi "user authentication"` |
+| `/start-increment` | `/si` | Start working on an increment | `/si 0001` |
+| `/add-tasks` | `/at` | Add tasks to existing increment | `/at 0001 "implement login"` |
+| `/validate-increment` | `/vi` | Validate with rule-based + optional AI quality | `/vi 0001 --quality` |
+| `/close-increment` | `/done` | Close increment with leftover transfer | `/done 0001` |
+| `/list-increments` | `/ls` | List all increments with status | `/ls --status=in-progress` |
+| `/review-docs` | - | Review strategic docs vs code | `/review-docs --increment=0003` |
+| `/generate-docs` | - | Generate documentation site | `/generate-docs` |
+| `/sync-github` | - | Sync increment to GitHub issues | `/sync-github` |
 
 **All commands are framework-agnostic** (adapt to detected tech stack)
+
+**💡 Pro Tip**: Use short aliases (`/pi`, `/vi`, `/si`, `/done`, `/ls`, `/at`, `/init`) for speed during active development!
+- **PI** = Product Increment (standard Agile terminology)
 
 **See**: [Command Reference](.claude/commands/) for all available commands
 

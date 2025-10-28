@@ -9,7 +9,7 @@ SpecWeave provides short aliases for frequently used commands to speed up your w
 | Full Command | Alias | Description |
 |--------------|-------|-------------|
 | `/create-project` | `/init` | Initialize new SpecWeave project |
-| `/create-increment` | `/ci` | Create new increment |
+| `/create-increment` | `/pi` | Plan Product Increment (create new increment) |
 | `/start-increment` | `/si` | Start working on increment |
 | `/add-tasks` | `/at` | Add tasks to increment |
 | `/validate-increment` | `/vi` | Validate increment quality |
@@ -55,8 +55,8 @@ Use aliases when:
 # 1. Initialize project
 /init my-saas
 
-# 2. Create first increment
-/ci "User authentication"
+# 2. Plan Product Increment (PI = Product Increment in Agile)
+/pi "User authentication"
 
 # 3. Start working
 /si 0001
@@ -94,7 +94,7 @@ Use aliases when:
 | Command | Alias | Description |
 |---------|-------|-------------|
 | `/create-project` | `/init` | Bootstrap new SpecWeave project with auto-detection |
-| `/create-increment` | `/ci` | Create new increment with PM/Architect/QA planning |
+| `/create-increment` | `/pi` | Plan Product Increment with PM/Architect/QA planning |
 | `/start-increment` | `/si` | Start working on an increment (load context, create branch) |
 | `/add-tasks` | `/at` | Add tasks to existing increment |
 | `/validate-increment` | `/vi` | Validate increment (120 rules + optional LLM quality judge) |
@@ -168,4 +168,6 @@ npm run install:commands
 
 **💡 Pro Tip**: Learn the aliases - they'll save you hundreds of keystrokes per day!
 
-**Most used**: `/ci`, `/si`, `/vi`, `/done`, `/ls`
+**Most used**: `/pi`, `/si`, `/vi`, `/done`, `/ls`
+
+**PI** = Product Increment (standard Agile/Scrum terminology)
