@@ -28,10 +28,14 @@
 
 ## ✨ Key Features
 
-- 🔧 **Multi-Tool Support (NEW!)** - Works with Claude, Cursor, Copilot, and ANY AI (100% market coverage)
-- 🤖 **10 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, and more (all pre-installed!)
-- 🎯 **35+ AI Skills** - Technology stacks, integrations, utilities (all pre-installed!)
-- 📦 **Auto-Detection** - Automatically detects your AI tool and installs the right adapter
+- 🔧 **Multi-Tool Support (NEW!)** - Works with Claude (native), Cursor, Gemini CLI, Codex, Copilot, and ANY AI (100% market coverage)
+- 🤖 **10 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, and more
+  - **Claude Code**: Native agents pre-installed in `.claude/agents/`
+  - **Other tools**: Accessible via universal AGENTS.md adapter
+- 🎯 **35+ AI Skills** - Technology stacks, integrations, utilities
+  - **Claude Code**: Native skills pre-installed in `.claude/skills/`
+  - **Other tools**: Documented in universal AGENTS.md adapter
+- 📦 **Auto-Detection** - Automatically detects your AI tool and configures appropriately
 - 🧪 **4-Level Testing** - Specification → Feature → Component → Automated tests
 - 📝 **Living Documentation** - Auto-updates via hooks (Claude Code) or manual workflows (other tools)
 - 🎨 **Diagram Generation** - C4 Model diagrams (Context, Container, Component)
@@ -102,7 +106,9 @@ specweave --version                # Show version
 specweave --help                   # Show help
 ```
 
-**Note**: All 10 agents and 35+ skills are copied to your project during `init` - ready to use immediately!
+**Note**:
+- **Claude Code**: All 10 agents and 35+ skills installed natively in `.claude/` - ready to use immediately!
+- **Other tools**: Universal AGENTS.md adapter generated - works with Cursor, Gemini CLI, Codex, Copilot, and ANY AI!
 
 ---
 
@@ -111,14 +117,15 @@ specweave --help                   # Show help
 **CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
 
 ```bash
-# Initialize project - ALL components pre-installed!
+# Initialize project (Claude Code native installation)
 npx specweave init my-app
 cd my-app
 
-# Everything ready immediately:
+# For Claude Code - everything native and ready immediately:
 # ✅ 10 agents in .claude/agents/
 # ✅ 35+ skills in .claude/skills/
 # ✅ 10 slash commands in .claude/commands/
+# (Other tools get AGENTS.md adapter instead)
 
 # Open Claude Code and use slash commands:
 
@@ -155,10 +162,13 @@ User: /done 0001  # Close increment with slash command
 ```
 
 **How it works** (smart append-only workflow: 0001 → 0002 → 0003):
-1. `specweave init` → ALL components pre-installed (10 agents + 35+ skills)
-2. **Use `/inc "feature"`** → PM creates specs + plan + auto-generates tasks
+1. `specweave init` → Detects your AI tool and configures appropriately
+   - **Claude Code**: Native components installed (10 agents + 35+ skills)
+   - **Other tools**: Universal AGENTS.md adapter generated
+2. **Use `/inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
+   - PM creates specs + plan + auto-generates tasks
    - **Smart**: Auto-closes previous increment if PM gates pass
-3. **Use `/build` or `/build 0001`** → Execute implementation (hooks after EVERY task)
+3. **Use `/build` or `/build 0001`** → Execute implementation (hooks after EVERY task in Claude)
    - **Smart**: Auto-resumes from next incomplete task
 4. **Use `/progress`** → Check status, task completion %, next action
 5. **Use `/validate 0001`** → Optional quality check (LLM-as-judge)
@@ -172,7 +182,7 @@ User: /done 0001  # Close increment with slash command
 
 ---
 
-## 🤖 Agents (10 Total - All Pre-Installed!)
+## 🤖 Agents (10 Total)
 
 SpecWeave includes **10 specialized AI agents** that work with slash commands and during implementation:
 
@@ -189,11 +199,13 @@ SpecWeave includes **10 specialized AI agents** that work with slash commands an
 | **performance** | Performance Engineer - optimization | Performance issues, profiling |
 | **diagrams-architect** | Diagram Expert - C4 Model, Mermaid | Creating diagrams (via diagrams-generator skill) |
 
-**All agents pre-installed** in `.claude/agents/` after `specweave init` - ready to use immediately!
+**Agent Access**:
+- **Claude Code**: All agents pre-installed natively in `.claude/agents/` - ready to use immediately!
+- **Other tools**: Agents documented in universal AGENTS.md - reference roles manually
 
 ---
 
-## 🎯 Skills (35+ Total - All Pre-Installed!)
+## 🎯 Skills (35+ Total)
 
 SpecWeave includes **35+ AI skills** that work with slash commands:
 
@@ -229,7 +241,11 @@ SpecWeave includes **35+ AI skills** that work with slash commands:
 - **brownfield-analyzer** - Analyze existing codebases
 - **brownfield-onboarder** - Merge existing documentation
 
-**And many more!** All skills pre-installed in `.claude/skills/` after `specweave init`.
+**And many more!**
+
+**Skill Access**:
+- **Claude Code**: All skills pre-installed natively in `.claude/skills/` - ready to use immediately!
+- **Other tools**: Skills documented in universal AGENTS.md - reference capabilities manually
 
 **See**: [Complete skill list](https://spec-weave.com/docs/skills) on spec-weave.com
 
@@ -544,6 +560,10 @@ npm test
 
 **SpecWeave now works with ANY AI coding tool!** Auto-detects Claude, Cursor, Gemini CLI, Codex, Copilot, or Generic.
 
+**Architecture**:
+- **Claude Code** = Native/Baseline (no adapter needed - full automation)
+- **All other tools** = Adapters that approximate Claude's native capabilities
+
 ```bash
 # List available adapters
 npx specweave adapters
@@ -552,24 +572,27 @@ npx specweave adapters
 npx specweave init my-saas           # Automatically detects and configures
 
 # Or explicitly choose:
-npx specweave init my-saas --adapter claude    # Full automation
-npx specweave init my-saas --adapter cursor    # Semi-automation
-npx specweave init my-saas --adapter gemini    # Semi-automation (1M context!)
-npx specweave init my-saas --adapter codex     # Semi-automation (GPT-5-Codex)
-npx specweave init my-saas --adapter copilot   # Basic automation
-npx specweave init my-saas --adapter generic   # Manual (ANY AI)
+npx specweave init my-saas --adapter claude    # Native (no adapter!)
+npx specweave init my-saas --adapter cursor    # Adapter (semi-automation)
+npx specweave init my-saas --adapter gemini    # Adapter (semi-automation, 1M context!)
+npx specweave init my-saas --adapter codex     # Adapter (semi-automation, GPT-5-Codex)
+npx specweave init my-saas --adapter copilot   # Adapter (basic automation)
+npx specweave init my-saas --adapter generic   # Adapter (manual, ANY AI)
 ```
 
-### For Claude Code (Full Automation)
+### For Claude Code (Native - Full Automation)
+
+**Claude is the BASELINE** - no adapter needed! Native skills, agents, hooks work out of the box.
 
 ```bash
 npx specweave init my-saas
 cd my-saas
 
-# Everything ready:
+# Native components installed:
 # ✅ 10 agents in .claude/agents/
 # ✅ 35+ skills in .claude/skills/
 # ✅ 10 slash commands in .claude/commands/
+# ✅ Hooks for auto-updates
 
 # Open Claude Code and type slash commands:
 /inc "User authentication with JWT"
@@ -577,49 +600,61 @@ cd my-saas
 /progress
 ```
 
-### For Cursor (Semi-Automation)
+### For Gemini CLI / Codex / Cursor (Adapter - Semi-Automation)
+
+**Uses universal AGENTS.md** that works across all tools (follows [agents.md](https://agents.md/) standard).
 
 ```bash
-npx specweave init my-project --adapter cursor
+npx specweave init my-project --adapter gemini  # or codex, cursor
 cd my-project
 
-# Created files:
-# ✅ .cursorrules (workflow instructions)
-# ✅ .cursor/context/ (@ shortcuts)
+# Adapter creates:
+# ✅ AGENTS.md (universal instructions - works with ALL tools!)
+# ✅ Tool-specific folder (.gemini/, .codex/, .cursor/)
 
-# Open in Cursor and say:
-# "Create increment for user authentication"
-# Cursor reads .cursorrules and guides you
-# Use @ shortcuts: @increments, @docs, @strategy
+# Example with Gemini CLI:
+gemini "Read AGENTS.md and create increment for user authentication"
+
+# Example with Codex:
+codex "Read AGENTS.md and create increment for payments"
+
+# Example with Cursor:
+# Open in Cursor, say: "Read AGENTS.md and create increment for auth"
 ```
 
-### For GitHub Copilot (Basic Automation)
+### For GitHub Copilot (Adapter - Basic Automation)
+
+**Uses universal AGENTS.md** for workspace instructions.
 
 ```bash
 npx specweave init my-project --adapter copilot
 cd my-project
 
-# Created files:
-# ✅ .github/copilot/instructions.md
+# Adapter creates:
+# ✅ AGENTS.md (universal instructions)
+# ✅ .github/copilot/ (Copilot-specific config)
 
 # Open in VS Code with Copilot:
-# Copilot reads workspace instructions automatically
-# Create increment folders, Copilot suggests content
+# Copilot reads AGENTS.md automatically
+# Start creating increment folders and files
 ```
 
-### For ANY Other AI (ChatGPT, Gemini, etc.)
+### For ANY Other AI (Adapter - Manual)
+
+**Uses universal AGENTS.md** that works with ChatGPT, Claude web, Gemini web, etc.
 
 ```bash
 npx specweave init my-project --adapter generic
 cd my-project
 
-# Created files:
-# ✅ SPECWEAVE-MANUAL.md (step-by-step guide)
+# Adapter creates:
+# ✅ AGENTS.md (universal instructions)
+# ✅ SPECWEAVE.md (detailed manual workflow)
 
 # Follow manual workflow:
-# 1. Read SPECWEAVE-MANUAL.md
-# 2. Copy templates to your AI (ChatGPT, Claude web, etc.)
-# 3. Follow step-by-step instructions
+# 1. Read AGENTS.md in your AI tool (ChatGPT, Claude web, etc.)
+# 2. Say: "Create increment for user authentication following SpecWeave"
+# 3. Copy generated content to files
 ```
 
 ### For Existing Projects

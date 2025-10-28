@@ -9,7 +9,6 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as YAML from 'yaml';
 import { IAdapter } from './adapter-interface';
-import { ClaudeAdapter } from './claude/adapter';
 import { CursorAdapter } from './cursor/adapter';
 import { CopilotAdapter } from './copilot/adapter';
 import { GeminiAdapter } from './gemini/adapter';
@@ -43,9 +42,12 @@ export class AdapterLoader {
 
   /**
    * Initialize all adapters
+   *
+   * NOTE: Claude Code is NOT an adapter - it's the native/default experience!
+   * Adapters only exist for tools that need to APPROXIMATE Claude's native capabilities.
    */
   private initializeAdapters(): void {
-    this.adapters.set('claude', new ClaudeAdapter());
+    // Note: No ClaudeAdapter - Claude is the baseline, not an adaptation!
     this.adapters.set('cursor', new CursorAdapter());
     this.adapters.set('copilot', new CopilotAdapter());
     this.adapters.set('gemini', new GeminiAdapter());
@@ -91,20 +93,26 @@ export class AdapterLoader {
    * Auto-detect which tool is being used
    *
    * Detection priority (based on market share and probability):
-   * 1. Claude Code (if .claude/ exists or claude CLI found)
+   * 1. Claude Code (if .claude/ exists or claude CLI found) - NATIVE, no adapter needed
    * 2. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
    * 3. Gemini CLI (if gemini CLI found)
    * 4. Codex (if codex CLI found)
    * 5. Copilot (if .github/copilot/ exists)
    * 6. Generic (fallback - always returns true)
    *
-   * @returns Promise<string> Detected adapter name
+   * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
   async detectTool(): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
 
-    // Try detection in priority order
-    const detectionOrder = ['claude', 'cursor', 'gemini', 'codex', 'copilot', 'generic'];
+    // Check for Claude first (native, no adapter)
+    if (await this.commandExists('claude') || await this.fileExists('.claude')) {
+      console.log(`✅ Detected: Claude Code (native - full automation)`);
+      return 'claude';
+    }
+
+    // Check other tools (need adapters)
+    const detectionOrder = ['cursor', 'gemini', 'codex', 'copilot', 'generic'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -120,6 +128,31 @@ export class AdapterLoader {
     // Fallback to generic (should never reach here since generic always returns true)
     console.log('ℹ️  Using generic adapter (manual workflow)');
     return 'generic';
+  }
+
+  /**
+   * Helper: Check if a command exists in PATH
+   */
+  private async commandExists(command: string): Promise<boolean> {
+    try {
+      const { execSync } = require('child_process');
+      execSync(`which ${command}`, { stdio: 'ignore' });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Helper: Check if a file exists
+   */
+  private async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   /**
@@ -151,11 +184,25 @@ export class AdapterLoader {
   async listAdapters(): Promise<void> {
     const registry = await this.loadRegistry();
 
-    console.log('\n📋 Available SpecWeave Adapters:\n');
+    console.log('\n📋 SpecWeave Tool Support:\n');
     console.log('━'.repeat(70));
     console.log('');
 
+    // Show Claude first (baseline, not an adapter)
+    const claudeInfo = registry.adapters.find(a => a.name === 'claude');
+    if (claudeInfo) {
+      console.log(`🚀 CLAUDE CODE (Baseline - No Adapter Needed)`);
+      console.log(`   ${claudeInfo.description}`);
+      console.log(`   Native: skills, agents, hooks, slash commands | Market: ${claudeInfo.market_share}`);
+      console.log('');
+    }
+
+    console.log('📦 Adapters (For Other Tools):\n');
+
+    // Show other adapters
     for (const adapterInfo of registry.adapters) {
+      if (adapterInfo.name === 'claude') continue; // Skip Claude, already shown
+
       const adapter = this.adapters.get(adapterInfo.name);
       if (!adapter) continue;
 
@@ -167,7 +214,9 @@ export class AdapterLoader {
 
     console.log('━'.repeat(70));
     console.log('\nTotal Market Coverage: 100%');
-    console.log('SpecWeave works with ANY AI coding tool!\n');
+    console.log('SpecWeave works with ANY AI coding tool!');
+    console.log('\n💡 Claude Code = Native experience (no adapter)');
+    console.log('   Other tools = Adapters approximate Claude\'s capabilities\n');
   }
 
   /**

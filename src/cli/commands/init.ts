@@ -62,45 +62,35 @@ export async function initCommand(
   const spinner = ora('Creating SpecWeave project...').start();
 
   try {
-    // 3. Initialize adapter system
+    // 3. Detect or select tool
     const adapterLoader = new AdapterLoader();
-    let adapter: IAdapter;
+    let toolName: string;
 
     if (options.adapter) {
-      // User explicitly chose an adapter
-      spinner.text = `Using ${options.adapter} adapter...`;
-      adapter = await adapterLoader.getRecommendedAdapter(options.adapter);
+      // User explicitly chose a tool
+      toolName = options.adapter;
+      spinner.text = `Using ${toolName}...`;
     } else {
       // Auto-detect tool
       spinner.stop();
-      const detectedAdapter = await adapterLoader.detectTool();
-      spinner.start(`Detected ${detectedAdapter} - using ${detectedAdapter} adapter...`);
-      adapter = await adapterLoader.getRecommendedAdapter(detectedAdapter);
+      toolName = await adapterLoader.detectTool();
+      spinner.start(`Detected ${toolName}...`);
     }
 
-    // 4. Check requirements
-    await adapterLoader.checkRequirements(adapter.name);
-
-    // 5. Create directory structure
+    // 4. Create directory structure (same for all)
     createDirectoryStructure(targetDir);
     spinner.text = 'Directory structure created...';
 
-    // 6. Copy base templates (config, README, CLAUDE.md)
+    // 5. Copy base templates (config, README, CLAUDE.md - same for all)
     const templatesDir = path.join(__dirname, '../../../src/templates');
     copyTemplates(templatesDir, targetDir, projectName!);
     spinner.text = 'Base templates copied...';
 
-    // 7. Install adapter-specific files
-    spinner.text = `Installing ${adapter.name} adapter...`;
-    await adapter.install({
-      projectPath: targetDir,
-      projectName: projectName!,
-      techStack: options.techStack ? { language: options.techStack } : undefined,
-      docsApproach: 'incremental'
-    });
+    // 6. Install based on tool
+    if (toolName === 'claude') {
+      // DEFAULT: Native Claude Code installation (no adapter needed!)
+      spinner.text = 'Installing Claude Code components...';
 
-    // 8. For Claude adapter, also copy skills, agents, commands
-    if (adapter.name === 'claude') {
       const commandsDir = path.join(__dirname, '../../../src/commands');
       copyCommands(commandsDir, path.join(targetDir, '.claude/commands'));
       spinner.text = 'Slash commands installed...';
@@ -112,6 +102,26 @@ export async function initCommand(
       const skillsDir = path.join(__dirname, '../../../src/skills');
       copySkills(skillsDir, path.join(targetDir, '.claude/skills'));
       spinner.text = 'Skills installed...';
+
+      console.log('\n✨ Claude Code native installation complete!');
+      console.log('   ✅ Native skills, agents, hooks work out of the box');
+    } else {
+      // Use adapter for non-Claude tools
+      spinner.text = `Installing ${toolName} adapter...`;
+
+      const adapter = adapterLoader.getAdapter(toolName);
+      if (!adapter) {
+        throw new Error(`Adapter not found: ${toolName}`);
+      }
+
+      await adapterLoader.checkRequirements(toolName);
+
+      await adapter.install({
+        projectPath: targetDir,
+        projectName: projectName!,
+        techStack: options.techStack ? { language: options.techStack } : undefined,
+        docsApproach: 'incremental'
+      });
     }
 
     // 9. Initialize git
@@ -133,15 +143,20 @@ export async function initCommand(
 
     spinner.succeed('SpecWeave project created successfully!');
 
-    // 11. Show adapter-specific next steps
-    await adapter.postInstall({
-      projectPath: targetDir,
-      projectName: projectName!,
-      techStack: options.techStack ? { language: options.techStack } : undefined,
-      docsApproach: 'incremental'
-    });
+    // 11. Show tool-specific next steps
+    if (toolName !== 'claude') {
+      const adapter = adapterLoader.getAdapter(toolName);
+      if (adapter) {
+        await adapter.postInstall({
+          projectPath: targetDir,
+          projectName: projectName!,
+          techStack: options.techStack ? { language: options.techStack } : undefined,
+          docsApproach: 'incremental'
+        });
+      }
+    }
 
-    showNextSteps(projectName!, adapter.name);
+    showNextSteps(projectName!, toolName);
   } catch (error) {
     spinner.fail('Failed to create project');
     console.error(chalk.red('\nError:'), error);

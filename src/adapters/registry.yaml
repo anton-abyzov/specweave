@@ -9,21 +9,23 @@ last_updated: 2025-10-27
 
 adapters:
   - name: claude
-    description: "Claude Code adapter - Full automation with skills, agents, hooks"
+    description: "Claude Code - NATIVE/BASELINE (no adapter needed!). Full automation with skills, agents, hooks"
     automation_level: full
-    status: active
+    status: native
     directory: claude
     features:
+      - Native skills, agents, hooks (no approximation needed)
       - Skills auto-activate (specweave-detector, skill-router, etc.)
       - Agents coordinate (PM, Architect, DevOps, QA, Security)
       - Hooks auto-update docs (post-task-completion, etc.)
       - Slash commands (/create-increment, /review-docs, etc.)
-      - Best experience, most features
+      - Best experience, most features - THE BASELINE!
     requirements:
       - Claude Code CLI installed
       - Node.js >= 18.0.0
     market_share: 10%
-    priority: P1
+    priority: P0
+    note: "Claude is the native experience - adapters exist to approximate these capabilities for other tools"
 
   - name: cursor
     description: "Cursor adapter - Semi-automation with .cursorrules and @ shortcuts"
