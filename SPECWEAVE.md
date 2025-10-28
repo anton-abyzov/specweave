@@ -93,25 +93,64 @@ Both approaches use the same framework, tools, and 5-pillar documentation struct
 
 **MANDATORY**: ALL AI-generated supporting files MUST go into increment folders - NEVER in project root!
 
-**✅ ALLOWED in Root**:
-- `CLAUDE.md` (ONLY file SpecWeave adds to user's project)
-- User's existing files (unchanged)
+### Allowed Files in Root (ONLY THESE!)
+
+**✅ ALLOWED**:
+- `README.md` - Standard project readme
+- `CHANGELOG.md` - Version history (standard)
+- `CLAUDE.md` - SpecWeave development guide (symlink to SPECWEAVE.md)
+- `SPECWEAVE.md` - Main SpecWeave documentation
+- Standard config files: `package.json`, `tsconfig.json`, `.gitignore`, etc.
 
 **❌ NEVER Create in Root**:
-- Logs → `.specweave/increments/{id}/logs/`
-- Scripts → `.specweave/increments/{id}/scripts/`
-- Reports → `.specweave/increments/{id}/reports/`
+- ❌ Installation guides (INSTALL.md, INSTALLATION.md) → `.specweave/docs/internal/delivery/guides/`
+- ❌ Deployment docs (DEPLOYMENT-*.md) → `.specweave/increments/{id}/reports/`
+- ❌ Release checklists (RELEASE-*.md) → `.specweave/increments/{id}/reports/`
+- ❌ Logs → `.specweave/increments/{id}/logs/`
+- ❌ Scripts → `.specweave/increments/{id}/scripts/`
+- ❌ Reports → `.specweave/increments/{id}/reports/`
+- ❌ Any other markdown files
 
-**Example**:
+### Where to Put Files
+
+| File Type | Location | Example |
+|-----------|----------|---------|
+| **Increment-specific reports** | `.specweave/increments/{id}/reports/` | `0001-core-framework/reports/deployment-ready.md` |
+| **Increment logs** | `.specweave/increments/{id}/logs/` | `0001-core-framework/logs/execution.log` |
+| **Increment scripts** | `.specweave/increments/{id}/scripts/` | `0001-core-framework/scripts/setup.sh` |
+| **General guides** | `.specweave/docs/internal/delivery/guides/` | `installation.md`, `deployment.md` |
+| **Architecture docs** | `.specweave/docs/internal/architecture/` | `design-patterns.md` |
+| **Strategy docs** | `.specweave/docs/internal/strategy/` | `product-vision.md` |
+
+### Validation
+
+**Before committing**, always validate:
+```bash
+npm run validate:root
+```
+
+This checks that only approved files exist in root. If violations found, move files to appropriate locations.
+
+### Example
+
 ```
 ❌ WRONG:                          ✅ CORRECT:
 project-root/                      .specweave/increments/0001-auth/
 ├── analysis.md                    ├── reports/analysis.md
 ├── script.py                      ├── scripts/script.py
-└── errors.log                     └── logs/errors.log
+├── errors.log                     └── logs/errors.log
+├── INSTALL.md
+└── DEPLOYMENT-READY.md            .specweave/docs/internal/delivery/guides/
+                                   └── installation.md
 ```
 
-**Benefits**: Complete traceability, easy cleanup, clear context, no root clutter
+### Benefits
+
+✅ **Complete traceability** - Know which increment created what
+✅ **Easy cleanup** - Delete increment folder removes all artifacts
+✅ **Clear context** - Supporting files grouped with their increment
+✅ **No root clutter** - Professional, clean project structure
+✅ **Automated validation** - Script catches violations before commit
 
 ---
 

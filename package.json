@@ -26,7 +26,9 @@
     "docs:public": "npm run generate:all-diagrams && cd docs-site && npm start",
     "docs:internal": "mkdocs serve -f mkdocs-internal.yml",
     "docs:build:public": "npm run generate:all-diagrams && cd docs-site && npm run build",
-    "docs:build:internal": "mkdocs build -f mkdocs-internal.yml"
+    "docs:build:internal": "mkdocs build -f mkdocs-internal.yml",
+    "validate:root": "bash scripts/validate-root-clean.sh",
+    "precommit": "npm run validate:root"
   },
   "keywords": [
     "specweave",
