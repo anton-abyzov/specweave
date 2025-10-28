@@ -115,17 +115,18 @@ cd my-app
 
 # Open Claude Code and use slash commands:
 
-User: /pi "Next.js authentication with email and OAuth"
+User: /inc "Next.js authentication with email and OAuth"
     ↓
-SpecWeave: 🔷 SpecWeave Active (/create-increment)
+SpecWeave: 🔷 SpecWeave Active (/increment)
 
            🚀 Creating increment 0001-user-authentication...
            📝 Using nextjs skill (already installed!)
            🤖 PM agent creating requirements...
            🏗️  Architect agent designing system...
+           📋 Auto-generating tasks from plan...
 
 ✅ Increment created: .specweave/increments/0001-user-authentication/
-✅ Files: spec.md, plan.md, tasks.md, tests.md
+✅ Files: spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
 User: "Create C4 context diagram for authentication"  # Regular conversation for implementation
     ↓
@@ -146,12 +147,13 @@ User: /done 0001  # Close increment with slash command
 ✅ Increment 0001 closed successfully
 ```
 
-**How it works**:
+**How it works** (append-only increment workflow: 0001 → 0002 → 0003):
 1. `specweave init` → ALL components pre-installed (10 agents + 35+ skills)
-2. **Use `/pi "feature"`** → Creates increment with specs (spec.md, plan.md, tasks.md, tests.md)
-3. **Regular conversation** → Implement code based on specifications
-4. **Use `/done 0001`** → Close increment when complete
-5. All components ready - no waiting, no installation
+2. **Use `/inc "feature"`** → PM creates specs + plan + auto-generates tasks
+3. **Use `/build 0001`** → Execute implementation (hooks after EVERY task)
+4. **Use `/validate 0001`** → Optional quality check (LLM-as-judge)
+5. **Use `/done 0001`** → PM validates 3 gates (tasks ✅ + tests ✅ + docs ✅)
+6. All components ready - no waiting, no installation
 
 **Why slash commands?** Auto-activation doesn't work reliably - slash commands ensure SpecWeave ALWAYS activates when you want it.
 
@@ -184,7 +186,7 @@ SpecWeave includes **35+ AI skills** that work with slash commands:
 
 ### Core Framework Skills
 - **specweave-detector** - Slash command documentation
-- **increment-planner** - Plan features via `/pi` command
+- **increment-planner** - Plan features via `/inc` or `/increment` command
 - **skill-router** - Route requests to appropriate skills
 - **context-loader** - Load relevant specifications
 - **role-orchestrator** - Coordinate multiple agents
@@ -295,21 +297,26 @@ specweave/
 # Option A: Comprehensive (Enterprise) - 500-600+ pages upfront
 # Option B: Incremental (Startup) - Build as you go
 
-# 2. Create increment with slash command
-/pi "user authentication"
-# Short alias for /create-increment
-# SpecWeave orchestrates: PM → Architect → QA agents
-# Creates: spec.md, plan.md, tasks.md, tests.md
+# 2. Plan increment with slash command (PM-led process)
+/inc "user authentication"
+# Alias for /increment
+# PM-led: Market research → spec.md → plan.md → auto-generate tasks.md
+# Creates: spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
-# 3. Implement with regular conversation (no slash command needed)
-"Implement user authentication based on plan.md"
-# Claude implements based on specifications
+# 3. Build it (hooks run after EVERY task)
+/build 0001
+# Executes tasks sequentially
+# Hooks automatically update CLAUDE.md, README.md, CHANGELOG.md
 
-# 4. Generate diagrams (regular conversation)
-"Create C4 context diagram for authentication"
+# 4. Validate quality (optional)
+/validate 0001 --quality
+# LLM-as-judge quality assessment
 
-# 5. Close increment with slash command
+# 5. Close increment (PM validates 3 gates)
 /done 0001
+# Gate 1: Tasks completed (P1 required)
+# Gate 2: Tests passing (>80% coverage)
+# Gate 3: Documentation updated
 
 # 6. Sync with tools (optional)
 /sync-github  # Sync to GitHub issues

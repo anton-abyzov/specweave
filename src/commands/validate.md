@@ -1,5 +1,5 @@
 ---
-name: validate-increment
+name: validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
 ---
 

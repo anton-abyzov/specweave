@@ -1,11 +1,13 @@
 ---
-name: create-increment
-description: Create a new SpecWeave increment interactively with spec.md and tasks.md
+name: increment
+description: Plan new Product Increment - PM-led process (market research, spec, plan, auto-generate tasks)
 ---
 
-# Create New Increment
+# Plan Product Increment
 
-You are helping the user create a new SpecWeave increment.
+**PM-Led Workflow**: From market research to ready-to-build increment.
+
+You are helping the user plan a new SpecWeave increment with complete specifications.
 
 ## Steps:
 

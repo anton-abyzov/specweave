@@ -7,6 +7,132 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.8] - 2025-10-28
+
+### 🎯 **Command Simplification: 4-Command Append-Only Workflow**
+
+**Major UX improvement**: Simplified command structure from 18+ commands to **4 core commands** for a clear append-only increment workflow.
+
+### Why This Change?
+
+**Problem**: Too many commands with multiple aliases created confusion and cognitive overhead.
+
+**Solution**: Streamlined to 4 essential commands that mirror the natural feature development lifecycle:
+1. **Plan** → 2. **Build** → 3. **Validate** → 4. **Done**
+
+### What Changed
+
+**1. Command Renaming (Clear and Descriptive)**:
+```bash
+# Old (0.1.7)              # New (0.1.8)
+/create-increment    →     /increment
+/start-increment     →     /build
+/validate-increment  →     /validate
+/close-increment     →     /done (unchanged)
+```
+
+**2. Removed ALL Short Aliases (Except ONE)**:
+```bash
+# Removed aliases:
+❌ /pi, /si, /vi, /at, /ls, /init
+
+# ONE alias remains (most frequently used):
+✅ /inc → /increment
+```
+
+**Rationale**: `/inc` is used constantly (every new feature), other commands used once per increment.
+
+**3. PM-Led Planning Process**:
+- `/increment` now emphasizes **PM-led workflow**
+- Auto-generates `tasks.md` from `plan.md`
+- Manual task additions still supported
+
+**4. Post-Task Completion Hooks**:
+- `/build` now runs hooks **after EVERY task**
+- Auto-updates: `CLAUDE.md`, `README.md`, `CHANGELOG.md`
+- Documentation stays in sync automatically
+
+**5. PM 3-Gate Validation**:
+- `/done` now requires PM validation before closing:
+  - **Gate 1**: Tasks completed (P1 required)
+  - **Gate 2**: Tests passing (>80% coverage)
+  - **Gate 3**: Documentation updated
+- PM provides detailed feedback if gates fail
+
+### New Workflow (Append-Only Increments: 0001 → 0002 → 0003)
+
+```bash
+# 1. Plan increment (use /inc - the ONLY alias!)
+/inc "User authentication with JWT"
+# PM-led: Market research → spec.md → plan.md → auto-generate tasks.md
+
+# 2. Review generated docs
+# spec.md, plan.md, tasks.md (auto-generated!), tests.md
+
+# 3. Build it (hooks run after EVERY task)
+/build 0001
+
+# 4. Validate quality (optional)
+/validate 0001 --quality
+
+# 5. Close when done (PM validates 3 gates)
+/done 0001
+```
+
+### Benefits
+
+✅ **Simpler** - 4 commands instead of 18+
+✅ **Clearer** - Descriptive names, no cryptic abbreviations (except `/inc`)
+✅ **Explicit** - One alias only, full names for everything else
+✅ **Append-only** - Natural workflow progression (0001 → 0002 → 0003)
+✅ **Validated** - PM ensures quality before closure
+✅ **Auto-documented** - Hooks update docs after every task
+
+### Files Updated
+
+**Commands** (renamed and rewritten):
+- `.claude/commands/increment.md` (renamed from `create-increment.md`)
+- `.claude/commands/build.md` (renamed from `start-increment.md`)
+- `.claude/commands/validate.md` (renamed from `validate-increment.md`)
+- `.claude/commands/inc.md` (NEW - only alias)
+- `.claude/commands/done.md` (rewritten with 3-gate validation)
+
+**Commands removed**:
+- `pi.md`, `si.md`, `vi.md`, `at.md`, `ls.md`, `init.md` (aliases removed)
+- `add-tasks.md` (tasks now auto-generated)
+- `close-increment.md` (done.md is primary)
+
+**Agents**:
+- `src/agents/pm/AGENT.md` - Added comprehensive 3-gate validation logic
+
+**Documentation**:
+- `CLAUDE.md` - Updated with new command structure
+- `README.md` - Updated workflow examples
+- `CHANGELOG.md` - This file
+
+### Migration from 0.1.7
+
+**No breaking changes** to existing increments or project structure.
+
+If you have existing projects:
+1. Update to 0.1.8: `npm update -g specweave`
+2. Re-install components: `npm run install:skills && npm run install:agents`
+3. **Start using new commands**:
+   - Use `/inc` instead of `/pi`
+   - Use `/build` instead of `/si`
+   - Use `/validate` instead of `/vi`
+   - Use `/done` (unchanged)
+
+### User Impact
+
+⚠️ **BREAKING CHANGE**: Old command aliases removed. Use new commands:
+- `/pi` → `/inc` or `/increment`
+- `/si` → `/build`
+- `/vi` → `/validate`
+- Other commands use full names only
+
+---
+
 ## [0.1.7] - 2025-10-28
 
 ### 🔄 **CRITICAL: Slash Commands Only (Architectural Pivot)**

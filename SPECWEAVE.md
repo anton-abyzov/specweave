@@ -21,25 +21,31 @@ This file contains quick reference for developing with SpecWeave:
 
 SpecWeave follows the **spec-kit approach**: You MUST use slash commands explicitly.
 
-**To use SpecWeave**: Type a slash command (e.g., `/pi "Feature description"`)
+**To use SpecWeave**: Type a slash command (e.g., `/inc "Feature description"`)
 
 ### Quick Command Reference
 
+**Core Workflow** (4 commands):
+
 | Alias | Full Command | Purpose | Example |
 |-------|--------------|---------|---------|
-| `/init` | `/create-project` | Initialize SpecWeave project | `/init my-saas` |
-| `/pi` | `/create-increment` | **Plan Product Increment** | `/pi "User auth"` |
-| `/si` | `/start-increment` | Start working on increment | `/si 0001` |
-| `/at` | `/add-tasks` | Add tasks to increment | `/at 0001 "Add tests"` |
-| `/vi` | `/validate-increment` | Validate increment quality | `/vi 0001 --quality` |
-| `/done` | `/close-increment` | Close increment | `/done 0001` |
-| `/ls` | `/list-increments` | List all increments | `/ls` |
+| `/inc` | `/increment` | **Plan Product Increment** (PM-led) | `/inc "User auth"` |
+| - | `/build` | Execute implementation (hooks after every task) | `/build 0001` |
+| - | `/validate` | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
+| - | `/done` | Close increment (PM validates 3 gates) | `/done 0001` |
 
-**Why Slash Commands?**
-- ✅ **100% reliable** - Always works, no guessing
-- ✅ **Clear intent** - You know exactly when SpecWeave is active
-- ✅ **Fast** - Short aliases like `/pi` save keystrokes
-- ✅ **Memorable** - Domain-specific names (PI = Product Increment from Agile/SAFe)
+**Supporting Commands**:
+- `/create-project` - Initialize SpecWeave project
+- `/list-increments` - List all increments
+- `/review-docs` - Review docs vs code
+- `/generate-docs` - Generate doc site
+- `/sync-github` - Sync to GitHub
+
+**Why ONE Alias (/inc)?**
+- ✅ `/inc` is THE most used command (every new feature starts here)
+- ✅ Append-only increment workflow: 0001 → 0002 → 0003 → ...
+- ✅ Other commands used once per increment (no aliases needed)
+- ✅ Clear and explicit workflow
 
 ### Typical Workflow
 
@@ -47,24 +53,26 @@ SpecWeave follows the **spec-kit approach**: You MUST use slash commands explici
 # 1. Initialize project
 npx specweave init my-saas
 
-# 2. Plan your first increment (use slash command!)
-/pi "User authentication with JWT and RBAC"
+# 2. Plan your first increment (use /inc - the ONLY alias!)
+/inc "User authentication with JWT and RBAC"
 
-# 3. Validate
-/vi 0001 --quality
+# 3. Review generated docs
+#    spec.md, plan.md, tasks.md (auto-generated!), tests.md
 
-# 4. Start working
-/si 0001
+# 4. Build it (hooks run after EVERY task)
+/build 0001
 
-# 5. Implement (regular conversation, no slash commands needed here)
-User: "Let's implement the backend API"
-Claude: [implements based on plan.md and tasks.md]
+# 5. Validate quality (optional)
+/validate 0001 --quality
 
-# 6. Close when done
+# 6. Close when done (PM validates: tasks ✅ + tests ✅ + docs ✅)
 /done 0001
+
+# 7. Repeat for next feature
+/inc "Payment processing"
 ```
 
-**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+**Remember**: Type `/inc` first, THEN build! Otherwise you lose all SpecWeave benefits (specs, architecture, auto-generated tasks, test strategy).
 
 ---
 
@@ -193,24 +201,22 @@ npx specweave list --installed      # See what's installed
 
 **CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
 
+### Core Workflow (4 Commands)
+
 | Command | Alias | Purpose | Example |
 |---------|-------|---------|---------|
-| `/create-project` | `/init` | Bootstrap new SpecWeave project | `/init my-saas --type python` |
-| `/create-increment` | `/pi` | **Plan Product Increment** (create new feature) | `/pi "user authentication"` |
-| `/start-increment` | `/si` | Start working on an increment | `/si 0001` |
-| `/add-tasks` | `/at` | Add tasks to existing increment | `/at 0001 "implement login"` |
-| `/validate-increment` | `/vi` | Validate with rule-based + optional AI quality | `/vi 0001 --quality` |
-| `/close-increment` | `/done` | Close increment with leftover transfer | `/done 0001` |
-| `/list-increments` | `/ls` | List all increments with status | `/ls --status=in-progress` |
-| `/review-docs` | - | Review strategic docs vs code | `/review-docs --increment=0003` |
-| `/generate-docs` | - | Generate documentation site | `/generate-docs` |
-| `/sync-github` | - | Sync increment to GitHub issues | `/sync-github` |
+| `/increment` | `/inc` | Plan Product Increment (PM-led, auto-generates tasks) | `/inc "user authentication"` |
+| `/build` | - | Execute implementation (hooks after EVERY task) | `/build 0001` |
+| `/validate` | - | Validate quality (optional LLM judge) | `/validate 0001 --quality` |
+| `/done` | - | Close increment (PM validates 3 gates: tasks, tests, docs) | `/done 0001` |
 
+### Supporting Commands
+
+| Command | Purpose | Example |
+|---------|---------|---------|
+| `/create-project` | Bootstrap new SpecWeave project | `/create-project --type python` |
+| `/list-increments` | List all increments with status | `/list-increments` |
 **All commands are framework-agnostic** (adapt to detected tech stack)
-
-**💡 Pro Tip**: Use short aliases (`/pi`, `/vi`, `/si`, `/done`, `/ls`, `/at`, `/init`) for speed during active development!
-- **PI** = Product Increment (standard Agile terminology)
-- **Why explicit?** Auto-activation doesn't work reliably - slash commands ensure SpecWeave ALWAYS activates
 
 **See**: [Command Reference](.claude/commands/) for all available commands
 
@@ -246,7 +252,7 @@ npx specweave list --installed      # See what's installed
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
 | `specweave-detector` | Slash command documentation | User asks about SpecWeave commands |
-| `increment-planner` | Plan features with context | `/pi` or `/create-increment` command |
+| `increment-planner` | Plan features with context | `/inc` or `/increment` command |
 | `skill-router` | Route to appropriate skills | Ambiguous requests |
 | `context-loader` | Load context selectively | Working on increments |
 | `diagrams-generator` | Coordinate diagram creation | "create diagram", "draw diagram", C4, sequence, ER |
@@ -302,17 +308,12 @@ backlog → planned → in-progress → completed → closed
 
 **Naming Convention**: 4-digit format (0001-9999), e.g., `0001-feature-name`, `0042-user-auth`, `0123-payment-flow`
 
-**Commands** (MUST USE SLASH COMMANDS!):
+**Commands**:
 ```bash
-# Use short aliases (recommended)
-/pi "feature name"                    # Create new increment (auto-numbered, e.g., 0003-feature-name)
-/at 0001 "task description"           # Add tasks to existing
-/done 0001                             # Close with leftover transfer
-
-# Or full commands
-/create-increment "feature name"      # Same as /pi
-/add-tasks 0001 "task description"    # Same as /at
-/close-increment 0001                 # Same as /done
+/inc "feature name"                    # Plan increment (PM-led, auto-generates tasks)
+/build 0001                            # Execute implementation (hooks after EVERY task)
+/validate 0001 --quality               # Validate quality (optional)
+/done 0001                             # Close increment (PM validates 3 gates)
 ```
 
 **See**: [Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md) for complete lifecycle management
@@ -685,24 +686,25 @@ Attempt 2/3: Refining with feedback...
 
 **Quick Start**:
 
-**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type `/pi` to activate!
+**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type `/inc` to activate!
 
 ```bash
 # Initialize project
 npx specweave init my-project
 
-# Create your first feature (use slash command!)
-/pi "feature description"
+# Plan your first increment (use slash command!)
+/inc "feature description"
 
-# Typical workflow
-1. /pi "feature" → SpecWeave creates specs
-2. Regular conversation → Claude implements code
-3. /done 0001 → Close increment
+# Typical workflow (append-only increments: 0001 → 0002 → 0003)
+1. /inc "feature" → PM creates specs + plan + auto-generates tasks
+2. /build 0001 → Execute implementation (hooks after EVERY task)
+3. /validate 0001 --quality → Optional quality check
+4. /done 0001 → PM validates 3 gates (tasks ✅ + tests ✅ + docs ✅)
 ```
 
-**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+**Remember**: Type `/inc` first to plan, THEN `/build` to implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
 
-**Need help?**: Type `/pi` to see examples, or ask about specific workflows.
+**Need help?**: Type `/inc` to see examples, or ask about specific workflows.
 
 **SpecWeave Documentation**: https://spec-weave.com
 
