@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.6-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.6)
+[![Version](https://img.shields.io/badge/version-0.1.7-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.7)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
