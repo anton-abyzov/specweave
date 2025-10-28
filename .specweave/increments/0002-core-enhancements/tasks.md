@@ -1,9 +1,9 @@
 # Tasks for 0002-core-enhancements
 
-**Status**: Planned
+**Status**: In Progress
 **Total Tasks**: 15
-**Completed**: 0
-**Progress**: 0%
+**Completed**: 11
+**Progress**: 73%
 
 **Note**: This increment focuses on enhancing the core framework. Primary focus is diagram generation agents, but may expand to include other core improvements as needed.
 
@@ -23,7 +23,7 @@
 ### T001: Create diagrams-architect agent structure
 **Priority**: P1
 **Estimated**: 1 hour
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Create `src/agents/diagrams-architect/` directory
@@ -46,7 +46,7 @@
 **Priority**: P1
 **Estimated**: 2 hours
 **Depends on**: T001
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **See**: [plan.md#agent-architecture](plan.md#agent-architecture) for complete agent specification
 
@@ -77,7 +77,7 @@
 **Priority**: P1
 **Estimated**: 2 hours
 **Depends on**: T001
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 Create Mermaid templates in `src/agents/diagrams-architect/templates/`:
@@ -100,7 +100,7 @@ Each template should:
 **Priority**: P1
 **Estimated**: 2 hours
 **Depends on**: T002
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **See**: [tests.md#agent-test-cases-diagrams-architect](tests.md#agent-test-cases-diagrams-architect) for complete test definitions
 
@@ -126,7 +126,7 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 ### T005: Create diagrams-generator skill structure
 **Priority**: P1
 **Estimated**: 1 hour
-**Status**: [ ] Pending
+**Status**: [x] Completed (pre-existing)
 
 **Implementation**:
 - Create `src/skills/diagrams-generator/` directory
@@ -145,7 +145,7 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 **Priority**: P1
 **Estimated**: 1.5 hours
 **Depends on**: T005
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Add YAML frontmatter (name, description, allowed-tools)
@@ -171,7 +171,7 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 **Priority**: P1
 **Estimated**: 1.5 hours
 **Depends on**: T006
-**Status**: [ ] Pending
+**Status**: [x] Completed (pre-existing)
 
 **See**: [tests.md#skill-test-cases-diagrams-generator](tests.md#skill-test-cases-diagrams-generator) for complete test definitions
 
@@ -219,7 +219,7 @@ Create YAML test cases in `src/skills/diagrams-generator/test-cases/`:
 **Priority**: P1
 **Estimated**: 1 hour
 **Depends on**: T004, T007
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 Update `CLAUDE.md` sections:
@@ -280,7 +280,7 @@ auto_refresh: false
 **Priority**: P1
 **Estimated**: 30 minutes
 **Depends on**: T004, T007
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Run `npm run install:agents` to verify diagrams-architect copies to `.claude/agents/`
@@ -347,7 +347,7 @@ npm run test:skills -- diagrams-generator
 ### T014: Create feature branch
 **Priority**: P1
 **Estimated**: 5 minutes
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Create feature branch from `develop`
