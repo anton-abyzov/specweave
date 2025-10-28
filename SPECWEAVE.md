@@ -206,6 +206,7 @@ npx specweave list --installed      # See what's installed
 |-------|---------|----------------|
 | `pm` | Product requirements, user stories | Planning features, requirements analysis |
 | `architect` | System design, ADRs, architecture | Technical design, architecture decisions |
+| `diagrams-architect` | Mermaid diagrams (C4, sequence, ER) | Creating diagrams (invoked by diagrams-generator skill) |
 | `security` | Threat modeling, security review | Security concerns, vulnerability assessment |
 | `qa-lead` | Test strategy, test cases | Testing, quality assurance |
 | `devops` | Infrastructure, deployment | Deployment, CI/CD, infrastructure |
@@ -230,6 +231,7 @@ npx specweave list --installed      # See what's installed
 | `increment-planner` | Plan features with context | Creating/planning features |
 | `skill-router` | Route to appropriate skills | Ambiguous requests |
 | `context-loader` | Load context selectively | Working on increments |
+| `diagrams-generator` | Coordinate diagram creation | "create diagram", "draw diagram", C4, sequence, ER |
 
 **Technology Skills** (Implementation knowledge):
 
@@ -242,7 +244,6 @@ npx specweave list --installed      # See what's installed
 | `frontend` | React/Vue/Angular frontend | React, Vue, Angular components |
 | `figma-implementer` | Figma to code conversion | Figma to code, implement design |
 | `figma-designer` | Figma design creation | Create Figma design, design system |
-| `diagrams-architect` | Mermaid/C4 diagrams | Create diagram, architecture diagram |
 
 **Integration Skills** (External tools):
 

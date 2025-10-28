@@ -67,20 +67,13 @@ export async function initCommand(
     copyTemplates(templatesDir, targetDir, projectName!);
     spinner.text = 'Templates copied...';
 
-    // 5. Copy skills
-    const skillsDir = path.join(__dirname, '../../../templates/skills');
-    copySkills(skillsDir, path.join(targetDir, 'src/skills'));
-    spinner.text = 'Skills installed...';
-
-    // 6. Copy hooks
-    const hooksDir = path.join(__dirname, '../../../templates/hooks');
-    copyHooks(hooksDir, targetDir);
-    spinner.text = 'Hooks installed...';
-
-    // 7. Copy commands
+    // 5. Copy commands (slash commands)
     const commandsDir = path.join(__dirname, '../../../templates/commands');
     copyCommands(commandsDir, path.join(targetDir, '.claude/commands'));
-    spinner.text = 'Commands installed...';
+    spinner.text = 'Slash commands installed...';
+
+    // NOTE: Skills and agents are NOT pre-installed
+    // They will be auto-installed on-demand based on user requests
 
     // 8. Initialize git
     try {
@@ -124,11 +117,9 @@ function createDirectoryStructure(targetDir: string): void {
     '.specweave/work',
     '.specweave/cache',
     '.specweave/logs',
-    'src/skills',
-    'src/hooks',
-    '.claude/hooks',
     '.claude/commands',
-    '.claude/skills',
+    '.claude/skills',      // Components auto-install here
+    '.claude/agents',      // Components auto-install here
   ];
 
   directories.forEach((dir) => {
@@ -166,31 +157,6 @@ function copyTemplates(templatesDir: string, targetDir: string, projectName: str
   }
 }
 
-function copySkills(skillsDir: string, targetSkillsDir: string): void {
-  if (fs.existsSync(skillsDir)) {
-    fs.copySync(skillsDir, targetSkillsDir);
-  }
-}
-
-function copyHooks(hooksDir: string, targetDir: string): void {
-  if (fs.existsSync(hooksDir)) {
-    // Copy to src/hooks/
-    fs.copySync(hooksDir, path.join(targetDir, 'src/hooks'));
-
-    // Copy to .claude/hooks/
-    fs.copySync(hooksDir, path.join(targetDir, '.claude/hooks'));
-
-    // Make hooks executable
-    const hookFiles = fs.readdirSync(path.join(targetDir, '.claude/hooks'));
-    hookFiles.forEach((file) => {
-      if (file.endsWith('.sh')) {
-        const hookPath = path.join(targetDir, '.claude/hooks', file);
-        fs.chmodSync(hookPath, '755');
-      }
-    });
-  }
-}
-
 function copyCommands(commandsDir: string, targetCommandsDir: string): void {
   if (fs.existsSync(commandsDir)) {
     fs.copySync(commandsDir, targetCommandsDir);
@@ -203,35 +169,48 @@ function showNextSteps(projectName: string): void {
   console.log('');
   console.log(chalk.cyan('📁 Project structure:'));
   console.log(`   ${projectName}/`);
-  console.log('   ├── .specweave/         # SpecWeave configuration and content');
-  console.log('   ├── src/skills/         # AI agent skills (17+ skills installed)');
-  console.log('   ├── src/hooks/          # Automation hooks');
-  console.log('   ├── .claude/            # Claude Code integration');
+  console.log('   ├── .specweave/         # SpecWeave configuration');
+  console.log('   ├── .claude/commands/   # Slash commands for Claude Code');
   console.log('   ├── README.md           # Project documentation');
   console.log('   └── CLAUDE.md           # Instructions for Claude');
+  console.log('');
+  console.log(chalk.yellow.bold('📦 Smart Component Installation'));
+  console.log('   Components (agents & skills) auto-install based on what you build!');
+  console.log('   No manual installation needed - just describe your project.');
   console.log('');
   console.log(chalk.cyan.bold('🎯 Next steps:'));
   console.log('');
   console.log(`   1. ${chalk.white(`cd ${projectName}`)}`);
   console.log('');
-  console.log(`   2. ${chalk.white('Describe what you want to build, for example:')}`);
-  console.log(`      ${chalk.gray('"Create an event booking SaaS with NextJS on Hetzner"')}`);
+  console.log(`   2. ${chalk.white('Install SpecWeave as dependency:')}`);
+  console.log(`      ${chalk.gray('npm install specweave --save-dev')}`);
   console.log('');
-  console.log(`   3. ${chalk.white('SpecWeave will:')}`);
-  console.log('      • Ask clarifying questions');
-  console.log('      • Create strategic analysis (PM, Architect, DevOps, QA)');
-  console.log('      • Generate comprehensive documentation');
-  console.log('      • Create implementation tasks');
-  console.log('      • Build autonomously');
+  console.log(`   3. ${chalk.white('Open Claude Code and describe your project:')}`);
+  console.log(`      ${chalk.gray('"Create Next.js authentication with OAuth"')}`);
+  console.log(`      ${chalk.gray('"Build FastAPI backend with PostgreSQL"')}`);
+  console.log(`      ${chalk.gray('"Create real estate SaaS with payment processing"')}`);
   console.log('');
-  console.log(`   4. ${chalk.white('Review strategic docs before implementation:')}`);
-  console.log(`      ${chalk.gray('/review-docs')}`);
+  console.log(`   4. ${chalk.white('SpecWeave automatically:')}`);
+  console.log('      • Detects tech stack from your request');
+  console.log('      • Installs needed components (nextjs, security, pm, etc.)');
+  console.log('      • Creates strategic analysis');
+  console.log('      • Generates specifications and tasks');
+  console.log('      • Builds implementation');
   console.log('');
-  console.log(`   5. ${chalk.white('Sync to GitHub (optional):')}`);
-  console.log(`      ${chalk.gray('/sync-github')}`);
+  console.log(chalk.cyan.bold('💡 Example workflow:'));
   console.log('');
-  console.log(chalk.green.bold('🚀 Ready to build!'));
+  console.log(`   User: ${chalk.gray('"Create Next.js authentication"')}`);
   console.log('');
-  console.log(chalk.gray('For more information: https://github.com/specweave/specweave'));
+  console.log(`   SpecWeave: ${chalk.green('🔷 SpecWeave Active')}`);
+  console.log(`              ${chalk.green('📦 Installing required components...')}`);
+  console.log(`              ${chalk.green('   ✅ Installed nextjs skill')}`);
+  console.log(`              ${chalk.green('   ✅ Installed security agent')}`);
+  console.log(`              ${chalk.green('   ✅ Installed pm agent')}`);
+  console.log(`              ${chalk.green('🚀 Creating increment 0001-authentication...')}`);
+  console.log('');
+  console.log(chalk.green.bold('🚀 Ready to build - no configuration needed!'));
+  console.log('');
+  console.log(chalk.gray('Documentation: https://spec-weave.com'));
+  console.log(chalk.gray('GitHub: https://github.com/anton-abyzov/specweave'));
   console.log('');
 }

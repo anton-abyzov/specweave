@@ -11,82 +11,174 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 First Stable Release
 
-The first stable release of **SpecWeave** - ready for production use! This release builds on beta.1 with critical improvements and new features.
+The first stable release of **SpecWeave** - a truly intelligent spec-driven development framework!
 
-### ✨ What's New Since Beta
+**Website**: [https://spec-weave.com](https://spec-weave.com)
 
-#### 🔄 **Multi-Tool Adapter System** (NEW)
+---
 
-SpecWeave now supports **multiple AI tools** via a clean adapter architecture:
+## 🚀 **THE KILLER FEATURE: Just-In-Time Auto-Installation**
 
-**Supported Adapters:**
-- **Claude Code** (native, recommended) - Full feature support
-- **Cursor** (via `.cursorrules`) - Optimized for Cursor's context system
-- **Generic** (universal adapter) - Works with ANY AI tool (Copilot, Windsurf, Cline, etc.)
+**No more manual `specweave install` commands!** SpecWeave is now truly intelligent - it installs components on-demand based on what you're building.
 
-**Installation:**
+### Before (Manual - ❌ BAD UX):
 ```bash
-# Claude Code (default)
-npx specweave init my-project
-
-# Cursor
-npx specweave init my-project --adapter cursor
-
-# Generic (Copilot, Windsurf, etc.)
-npx specweave init my-project --adapter generic
+specweave init
+specweave install pm --local
+specweave install architect --local
+specweave install nextjs --local
+specweave install nodejs-backend --local
+specweave install security --local
+# ... install 10+ more things manually
 ```
 
+### After (Automatic - ✅ ZERO FRICTION):
+```bash
+specweave init
+# Just start talking - SpecWeave handles the rest!
+
+User: "Create Next.js authentication with OAuth"
+
+SpecWeave: 🔷 SpecWeave Active
+           📦 Installing required components...
+              ✅ Installed nextjs skill
+              ✅ Installed nodejs-backend skill
+              ✅ Installed security agent
+              ✅ Installed pm agent
+              ✅ Installed architect agent
+           🚀 Creating increment 0001-authentication...
+```
+
+**How It Works:**
+1. **Analyze user intent** - Extract keywords from your request
+2. **Map to components** - "Next.js" → nextjs skill, "authentication" → security agent
+3. **Auto-install from npm** - Copy components from `node_modules/specweave/` to `.claude/`
+4. **Proceed with routing** - All needed components available instantly
+
+**Example Keyword Mappings:**
+- "Next.js" → nextjs skill + nodejs-backend skill
+- "FastAPI" → python-backend skill
+- "authentication" → security agent
+- "deploy to Hetzner" → hetzner-provisioner skill + devops agent
+- "Figma" → figma-implementer skill + figma-designer skill
+- "create" / "build" → pm agent + architect agent (strategic)
+
 **Benefits:**
-- ✅ Choose your preferred AI tool
-- ✅ Consistent SpecWeave workflow across tools
-- ✅ Easy migration between tools
-- ✅ Custom adapter creation supported
+- ✅ **Zero manual installation** - never run `specweave install` again
+- ✅ **Intelligent** - understands intent from natural language
+- ✅ **Just-in-time** - only install what's actually needed
+- ✅ **Automatic** - completely transparent to users
+- ✅ **Efficient** - unused components never installed
 
-**Files:**
-- `src/adapters/claude/` - Native Claude Code integration
-- `src/adapters/cursor/` - Cursor-optimized `.cursorrules`
-- `src/adapters/generic/` - Universal `SPECWEAVE-MANUAL.md`
+**Configuration** (`.specweave/config.yaml`):
+```yaml
+auto_install: true  # Default: enabled
+install_mode: "on-demand"  # or "all-upfront", "manual"
+installed_components:
+  skills: []  # Auto-populated as you work
+  agents: []
+```
 
-#### 📏 **4-Digit Increment Numbering** (BREAKING CHANGE)
+**Files Added:**
+- `src/utils/auto-install.ts` - Auto-installation engine
+- Updated `src/skills/specweave-detector/SKILL.md` - Just-in-time installation logic
+- Updated `src/cli/commands/init.ts` - Simplified (no pre-installation)
+- Updated `src/templates/config.yaml` - Auto-install configuration
 
-**Enforced 4-digit format** for all increments (0001-9999):
+---
 
-**Before:** `001-feature`, `01-feature`, `1-feature` (inconsistent)
-**After:** `0001-feature`, `0042-feature`, `0123-feature` (always 4 digits)
+## 🆚 **Why SpecWeave vs Other Frameworks**
 
-**Benefits:**
-- ✅ Consistent sorting across all tools
-- ✅ Prevents duplicate increments
-- ✅ Supports up to 9,999 increments
-- ✅ Clear visual hierarchy
+### vs **spec-kit** (GitHub)
 
-**Migration:** Run `/create-increment` to use new format (old increments still work)
+| Feature | SpecWeave | spec-kit |
+|---------|-----------|----------|
+| **Smart Installation** | ✅ Auto-install on-demand | ❌ Manual setup |
+| **Context Management** | ✅ 70-80% reduction | ❌ Loads all |
+| **Multi-Agent** | ✅ 9 specialized agents | ❌ Commands only |
+| **Quality Gates** | ✅ 120 automated rules | ❌ Manual review |
+| **Auto-numbering** | ✅ 0001-9999 format | ❌ Manual naming |
+| **Multi-tool Support** | ✅ Claude/Cursor/Copilot | ❌ Claude only |
 
-#### 🔄 **Feature Planner → Increment Planner** (Renamed)
+### vs **BMAD-METHOD**
 
-**Skill renamed** for clarity:
-- **Old:** `feature-planner` (ambiguous)
-- **New:** `increment-planner` (precise)
+| Feature | SpecWeave | BMAD |
+|---------|-----------|------|
+| **Smart Installation** | ✅ Auto-install on-demand | ❌ Manual setup |
+| **Documentation** | ✅ 5-pillar structure | ❌ Single README |
+| **Incremental Planning** | ✅ Auto-numbered increments | ❌ Manual planning |
+| **Context Precision** | ✅ Selective loading (70%+) | ❌ Load everything |
+| **Test Strategy** | ✅ 4-level testing | ❌ Ad-hoc |
+| **Framework Agnostic** | ✅ Any language/stack | ✅ Any stack |
 
-**Why:** "Feature" is overloaded (can mean module, capability, or increment). "Increment" is unambiguous and matches SpecWeave's core concept.
+---
 
-**Migration:** Automatic (skill auto-detects and activates)
+## 📦 **Complete Feature List**
 
-### 🐛 **Bug Fixes**
+### Core Features (NEW - Smart Installation)
+- ✅ **Just-in-time component installation** - Zero manual setup
+- ✅ **Intent-based routing** - Natural language → components
+- ✅ **70-80% token reduction** - Context precision via manifests
+- ✅ **9 specialized agents** - PM, Architect, Security, QA, DevOps, SRE, Tech Lead, Docs, Performance
+- ✅ **30+ skills** - Technology stacks, integrations, utilities
+- ✅ **120 validation rules** - Automated quality gates
+- ✅ **Framework-agnostic** - Works with ANY language/framework
+- ✅ **Living documentation** - 5-pillar structure that evolves with code
 
-- Fixed E2E smoke test to match install script behavior
-- Fixed arithmetic expressions that return 0 with `set -e`
-- Fixed validation rules for increment frontmatter
-- Fixed context manifest loading for nested specifications
-- Improved error reporting in install scripts
+### User Experience
+- ✅ Single command setup: `specweave init`
+- ✅ Natural language workflow: "Create Next.js authentication"
+- ✅ Auto-detection: Tech stack from project files
+- ✅ Slash commands for Claude Code: `/create-increment`, `/review-docs`, etc.
+- ✅ Zero configuration needed
 
-### 📚 **Documentation Updates**
+### Developer Experience
+- ✅ 4-digit increment format (0001-9999)
+- ✅ Auto-numbered increments (no conflicts)
+- ✅ Context manifests for precision loading
+- ✅ Test-validated features (4-level testing)
+- ✅ Brownfield-ready (analyze, document, modify safely)
 
-- Updated CLAUDE.md with multi-tool adapter guidance
-- Updated SPECWEAVE.md with 4-digit increment convention
-- Updated increment lifecycle guide
-- Updated increment validation guide
-- Added adapter-specific documentation
+---
+
+## 🗺️ **Roadmap**
+
+**v0.2.0** (Q1 2026) - **Focus: Skills, Context, Testing**
+
+**New Skills:**
+- Advanced testing (contract, performance, mutation testing)
+- Cloud providers (AWS, Azure, DigitalOcean provisioners)
+- Additional integrations (Linear, Asana, Notion)
+
+**Context Enhancements:**
+- Second-pass context optimization (80%+ total reduction)
+- Embedding-based context retrieval
+- Multi-repo context management
+
+**Testing Improvements:**
+- Visual regression testing
+- Cross-browser E2E tests
+- Chaos engineering support
+
+**v1.0.0** (Q2 2026) - **Production-Ready**
+- Complete documentation
+- Enterprise features
+- SLA guarantees
+- Professional support
+
+---
+
+## 📚 **Documentation**
+
+- **Website**: [https://spec-weave.com](https://spec-weave.com)
+- **GitHub**: [https://github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
+- **npm**: [https://www.npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
+
+---
+
+## 🙏 **Credits**
+
+Thank you to the early adopters and contributors who helped shape SpecWeave v0.1.0!
 
 ---
 

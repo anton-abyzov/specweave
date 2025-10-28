@@ -330,4 +330,22 @@ skills:
     - jira-sync                # If integrations.jira.enabled
     - ado-sync                 # If integrations.ado.enabled
 
+# Component auto-installation (CRITICAL!)
+# SpecWeave intelligently installs components based on user intent
+auto_install: true            # Enable just-in-time installation (recommended)
+
+# NPM package location for auto-installation
+npm_package_path: "node_modules/specweave"  # Auto-detected
+
+# Installed components (auto-updated as components are installed)
+installed_components:
+  skills: []                  # Auto-populated: [nextjs, nodejs-backend, security, ...]
+  agents: []                  # Auto-populated: [pm, architect, devops, ...]
+
+# Installation mode
+install_mode: "on-demand"     # on-demand (default), all-upfront, or manual
+  # on-demand: Install components as needed based on user requests
+  # all-upfront: Install all components at init (not recommended)
+  # manual: Disable auto-install (advanced users only)
+
 ---

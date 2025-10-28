@@ -1,0 +1,13 @@
+name: "Create FastAPI CRUD API"
+description: "Test creating FastAPI REST API with Pydantic models"
+user_input: "Create a FastAPI application for managing products"
+expected_behavior:
+  - Generates FastAPI app with CRUD endpoints
+  - Uses Pydantic models for validation
+  - Implements async route handlers
+  - Includes automatic OpenAPI documentation
+validation:
+  - Uses FastAPI() instance
+  - Implements @app.get, @app.post, @app.put, @app.delete decorators
+  - Uses Pydantic BaseModel for schemas
+  - Includes type hints and async def

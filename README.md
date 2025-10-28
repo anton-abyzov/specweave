@@ -88,14 +88,13 @@ specweave init my-saas
 
 ```bash
 specweave init [project]           # Create new project
-specweave install [component]      # Install agents/skills (--local or --global)
 specweave list                     # List all available components
-specweave list --installed         # Show installed components
+specweave list --installed         # Show auto-installed components
 specweave --version                # Show version
 specweave --help                   # Show help
 ```
 
-**Detailed installation**: See [INSTALL.md](INSTALL.md)
+**Note**: Components (agents & skills) auto-install on-demand - no manual installation needed!
 
 ---
 
@@ -104,9 +103,19 @@ specweave --help                   # Show help
 ```bash
 # SpecWeave auto-activates when .specweave/ detected
 
-User: "Create authentication feature with email and OAuth"
+User: "Create Next.js authentication with email and OAuth"
     ↓
-SpecWeave: (auto-routes to increment-planner)
+SpecWeave: 🔷 SpecWeave Active
+
+           📦 Installing required components...
+              ✅ Installed nextjs skill
+              ✅ Installed nodejs-backend skill
+              ✅ Installed security agent
+              ✅ Installed pm agent
+              ✅ Installed architect agent
+
+           🚀 Creating increment 0001-user-authentication...
+
 ✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
@@ -125,9 +134,10 @@ SpecWeave: (orchestrates PM → Architect → Backend → QA → Docs)
 
 **How it works**:
 1. `.specweave/` detected → `specweave-detector` activates automatically
-2. Request parsed → routed to appropriate skills
-3. Skills coordinate agents → artifacts generated
-4. Context loaded precisely → only relevant specs (70%+ reduction)
+2. **User intent analyzed** → required components auto-installed (just-in-time)
+3. Request parsed → routed to appropriate skills
+4. Skills coordinate agents → artifacts generated
+5. Context loaded precisely → only relevant specs (70%+ reduction)
 
 ---
 

@@ -1,0 +1,13 @@
+name: "Sync Status Updates Between Systems"
+description: "Test syncing task status between SpecWeave and JIRA"
+user_input: "Sync status updates for increment 0004-notifications"
+expected_behavior:
+  - Detects status changes in SpecWeave (tasks.md)
+  - Updates JIRA issue status accordingly
+  - Syncs JIRA status back to SpecWeave
+  - Handles workflow state mapping
+validation:
+  - Status mapping works correctly
+  - Bidirectional sync maintains consistency
+  - Workflow transitions respected
+  - Sync logs available

@@ -1,0 +1,13 @@
+name: "Implement Global State Management"
+description: "Test setting up Zustand for global state"
+user_input: "Add global state management for user authentication"
+expected_behavior:
+  - Creates Zustand store
+  - Implements actions and selectors
+  - Uses TypeScript for type safety
+  - Includes persistence if needed
+validation:
+  - Uses create from zustand
+  - Implements store interface
+  - Exports custom hooks
+  - Includes proper typing

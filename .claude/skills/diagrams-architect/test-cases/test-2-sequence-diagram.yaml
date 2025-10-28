@@ -1,0 +1,13 @@
+name: "Create Sequence Diagram"
+description: "Test creating a sequence diagram for API authentication flow"
+user_input: "Create a sequence diagram for OAuth 2.0 authentication flow"
+expected_behavior:
+  - Generates valid Mermaid sequence diagram
+  - Shows participants (client, auth server, resource server)
+  - Includes authentication steps in correct order
+  - Shows token exchange flow
+validation:
+  - Diagram starts with sequenceDiagram keyword
+  - Contains participant declarations
+  - Has sequential messages (->>, -->)
+  - Includes notes for clarity

@@ -1,0 +1,13 @@
+name: "Bidirectional Sync with Conflict Resolution"
+description: "Test syncing changes between SpecWeave and ADO"
+user_input: "Sync increment 0002-payment with ADO, handle conflicts"
+expected_behavior:
+  - Detects changes in both systems
+  - Shows conflicts for manual resolution
+  - Syncs approved changes bidirectionally
+  - Maintains traceability
+validation:
+  - Conflict detection works
+  - User can choose resolution strategy
+  - Sync maintains data integrity
+  - Audit log of sync operations

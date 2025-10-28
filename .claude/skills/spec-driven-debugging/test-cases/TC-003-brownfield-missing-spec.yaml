@@ -1,0 +1,366 @@
+---
+name: "Brownfield Bug with Missing Spec"
+description: "Debug legacy code with no documentation, requiring retroactive spec creation before fixing"
+skill: spec-driven-debugging
+priority: P2
+estimated_time: "30-40 minutes"
+
+input:
+  prompt: "Payment webhook is randomly failing with 'Invalid signature' error for some Stripe events"
+  context:
+    project_type: "Node.js + Express (brownfield, 2 years old)"
+    increment: null # No increment exists for this code
+    documentation: null # No spec.md or plan.md
+    files_exist:
+      - "src/webhooks/stripe.ts" # legacy code, no comments
+      - "src/services/payment-processor.ts"
+    error_pattern: "Intermittent - fails for ~20% of webhook events"
+    reproduction: "Inconsistent - seems related to event type"
+    legacy_context: "Original developer left, no documentation"
+
+expected_output:
+  phase_0_context_loading:
+    announcement: "This is brownfield code with no SpecWeave increment. I'll need to create retroactive documentation before debugging."
+
+    increment_search:
+      search_result: "No increment found for src/webhooks/stripe.ts"
+      strategy_docs: "No strategy docs for payment/webhooks"
+      architecture_docs: "No ADRs for webhook processing"
+
+    bug_classification: "Missing spec - undocumented legacy code"
+
+    retroactive_spec_needed: true
+    reason: "Cannot debug without understanding intended behavior"
+
+    approach: |
+      1. Analyze code to understand CURRENT behavior (as-is)
+      2. Create retroactive spec documenting intended behavior
+      3. THEN debug the discrepancy between spec and actual behavior
+
+  phase_1_root_cause:
+    step_1_understand_current_code:
+      file_analyzed: "src/webhooks/stripe.ts"
+      code_structure:
+        - "POST /webhooks/stripe endpoint"
+        - "Validates Stripe signature using stripe.webhooks.constructEvent()"
+        - "Routes different event types to handlers"
+        - "Event types: payment_intent.succeeded, charge.failed, customer.subscription.updated"
+
+      observations:
+        - "No comments or documentation"
+        - "Signature validation uses Stripe SDK method"
+        - "Different event types handled differently"
+        - "Some events logged, others not"
+        - "No tests found in codebase"
+
+    step_2_gather_business_context:
+      questions_to_ask_user:
+        - "What SHOULD happen when a payment webhook is received?"
+        - "Which event types are critical vs informational?"
+        - "What's the acceptable failure rate?"
+
+      user_answers:
+        - "All webhook events should be processed successfully"
+        - "payment_intent.succeeded is critical (confirms payment)"
+        - "charge.failed is critical (notifies user of failure)"
+        - "customer.subscription.updated is informational only"
+        - "Failure rate should be 0% (currently 20% failing)"
+
+    step_3_create_retroactive_spec:
+      action: "Create .specweave/increments/0012-webhook-processing/ with retroactive spec"
+      file: ".specweave/increments/0012-webhook-processing/spec.md"
+      content: |
+        # Webhook Processing (Retroactive Spec)
+
+        ## Purpose
+        Process Stripe webhook events to confirm payments and update order status.
+
+        ## Functional Requirements
+
+        ### FR-001: Signature Validation
+        All webhook events MUST validate Stripe signature to prevent spoofing.
+        - Use Stripe SDK: stripe.webhooks.constructEvent()
+        - Signature header: stripe-signature
+        - Webhook secret: STRIPE_WEBHOOK_SECRET env var
+
+        ### FR-002: Event Type Handling
+        System MUST handle these event types:
+        - payment_intent.succeeded → Mark order as paid
+        - charge.failed → Notify customer of payment failure
+        - customer.subscription.updated → Update subscription status
+
+        ### FR-003: Idempotency
+        Webhooks MAY be delivered multiple times (Stripe guarantee: at-least-once).
+        System MUST handle duplicate events gracefully (idempotency).
+
+        ## Non-Functional Requirements
+
+        ### NFR-001: Reliability
+        Success rate MUST be >99.9% (currently failing: need to fix)
+
+        ### NFR-002: Response Time
+        Webhook endpoint MUST respond within 5 seconds (Stripe timeout)
+
+        ## Acceptance Criteria
+        - TC-001: Valid webhook with correct signature → 200 OK
+        - TC-002: Invalid signature → 400 Bad Request
+        - TC-003: Duplicate event → Processed once, returns 200 OK
+        - TC-004: All critical event types processed correctly
+
+    retroactive_spec_created: true
+
+    step_4_now_debug_with_spec:
+      error_analysis:
+        message: "Invalid signature"
+        frequency: "20% of events"
+        pattern_observed: "Fails for customer.subscription.updated events mostly"
+
+      reproduction:
+        approach: "Examine Stripe webhook logs for failed events"
+        findings:
+          - "Failed events all have event type: customer.subscription.*"
+          - "Successful events are payment_intent.* and charge.*"
+          - "Signature validation fails BEFORE event type check"
+
+      spec_comparison:
+        spec_says: "FR-001: All events must validate signature using stripe.webhooks.constructEvent()"
+        actual_behavior: "customer.subscription.* events fail signature validation"
+        discrepancy: "Signature validation works for some events, not others"
+
+      data_flow_trace:
+        step_1: "Stripe sends POST to /webhooks/stripe"
+        step_2: "Express receives raw body"
+        step_3: "Code calls stripe.webhooks.constructEvent(body, signature, secret)"
+        step_4_success: "payment_intent.* events → signature valid ✓"
+        step_4_failure: "customer.subscription.* events → signature invalid ✗"
+
+      hypothesis_forming: "Something different about how subscription events are sent or received"
+
+  phase_2_pattern_analysis:
+    working_examples:
+      event_type: "payment_intent.succeeded"
+      body_format: "Raw JSON string"
+      content_type: "application/json"
+      signature_valid: true
+
+    broken_examples:
+      event_type: "customer.subscription.updated"
+      body_format: "Parsed JSON object (not raw string!)"
+      content_type: "application/json"
+      signature_valid: false
+
+    difference_identified:
+      issue: "Body parsing middleware is parsing SOME events but not others"
+      root_cause: "Express body parser middleware conditionally parsing based on Content-Type or event size"
+
+    code_inspection:
+      file: "src/server.ts"
+      middleware_config: |
+        app.use(express.json()); // Parses all JSON bodies
+        app.post('/webhooks/stripe', stripeWebhookHandler);
+
+      problem: |
+        Stripe signature validation requires RAW body (Buffer), not parsed JSON.
+        Express middleware is parsing body BEFORE webhook handler,
+        making signature validation impossible.
+
+        But why does it work for payment_intent.* events?
+        Hypothesis: Those events are smaller, parsed differently by Express?
+
+      investigation_deeper:
+        finding: |
+          Express json() middleware has a "verify" option that can be used
+          to access raw body before parsing. Current code doesn't use this.
+
+          Stripe documentation says: "You must pass the raw request body"
+          Current code passes parsed body → signature always fails
+          BUT: Why do some events succeed?
+
+        aha_moment: |
+          Checked Express middleware order:
+          1. app.use(express.json()) - parses ALL bodies
+          2. app.use('/api', apiRoutes) - other routes
+          3. app.post('/webhooks/stripe', stripeWebhookHandler) - webhook
+
+          Wait... there's ANOTHER middleware defined ABOVE:
+          app.use(express.raw({ type: 'application/json', limit: '5mb' }))
+
+          This raw middleware runs FIRST, but only for bodies <5mb.
+          Subscription events are >5mb (include full customer object),
+          so they get parsed by json() middleware instead!
+
+  phase_3_hypothesis:
+    hypothesis: "Express middleware parsing bodies >5mb as JSON instead of keeping raw Buffer, breaking Stripe signature validation"
+
+    classification: "Code bug + Config bug - middleware misconfiguration"
+
+    minimal_test:
+      approach: "Send test webhook with >5mb payload"
+      result: "Signature validation fails for large events, succeeds for small events"
+      confirmed: true
+
+  phase_4_implementation:
+    fix_level: "Code-level fix (middleware configuration)"
+
+    retroactive_spec_update:
+      file: ".specweave/increments/0012-webhook-processing/spec.md"
+      addition: |
+        ### FR-004: Raw Body Requirement
+        Webhook endpoint MUST receive raw request body (Buffer) for signature validation.
+        Middleware MUST NOT parse body before signature validation.
+
+    test_creation:
+      level: "Level 3: Code Tests (Integration)"
+      file: "tests/integration/webhooks.test.ts"
+      test_case: |
+        describe('Stripe Webhooks', () => {
+          it('should validate signature for small events (<5mb)', async () => {
+            const event = createTestEvent('payment_intent.succeeded', { size: '1kb' });
+            const signature = generateStripeSignature(event);
+
+            const response = await request(app)
+              .post('/webhooks/stripe')
+              .set('stripe-signature', signature)
+              .send(event);
+
+            expect(response.status).toBe(200);
+          });
+
+          it('should validate signature for large events (>5mb)', async () => {
+            const event = createTestEvent('customer.subscription.updated', { size: '6mb' });
+            const signature = generateStripeSignature(event);
+
+            const response = await request(app)
+              .post('/webhooks/stripe')
+              .set('stripe-signature', signature)
+              .send(event);
+
+            expect(response.status).toBe(200); // Currently fails
+          });
+        });
+
+      test_fails_before_fix: true
+
+    code_fix:
+      file: "src/server.ts"
+      before: |
+        app.use(express.raw({ type: 'application/json', limit: '5mb' })); // Only for small bodies
+        app.use(express.json()); // Parses large bodies as JSON
+        app.post('/webhooks/stripe', stripeWebhookHandler);
+
+      after: |
+        // Webhook route FIRST (before body parsing middleware)
+        app.post('/webhooks/stripe',
+          express.raw({ type: 'application/json', limit: '10mb' }), // Raw body for webhooks
+          stripeWebhookHandler
+        );
+
+        // Body parsing for other routes
+        app.use(express.json());
+
+    verification:
+      test_passes: true
+      production_test: "Sent test webhook with 6mb payload → signature valid ✓"
+      spec_aligned: true
+      failure_rate: "0% (was 20%)"
+
+    attempts_count: 1 # fixed after understanding the retroactive spec
+    ultrathink_needed: false # straightforward once spec was created
+
+  phase_5_documentation:
+    increment_updates:
+      - file: ".specweave/increments/0012-webhook-processing/spec.md"
+        change: "Created retroactive spec + added FR-004 for raw body requirement"
+
+      - file: ".specweave/increments/0012-webhook-processing/plan.md"
+        change: "Documented middleware configuration approach"
+
+      - file: ".specweave/increments/0012-webhook-processing/tests.md"
+        change: "Added TC-005 and TC-006 for signature validation with different payload sizes"
+
+    architecture_updates:
+      - file: ".specweave/docs/internal/architecture/adr/0013-webhook-middleware-order.md"
+        content: |
+          # ADR-0013: Webhook Endpoints Must Bypass Body Parsing
+
+          ## Context
+          Express body parsing middleware (json()) parses request bodies,
+          but Stripe signature validation requires raw Buffer.
+
+          ## Decision
+          Webhook routes defined BEFORE global body parsing middleware,
+          with route-specific express.raw() middleware.
+
+          ## Consequences
+          - Webhooks receive raw body for signature validation
+          - Other routes still get parsed JSON bodies
+          - Must remember this pattern for future webhook integrations
+
+    strategy_updates:
+      - file: ".specweave/docs/internal/strategy/payments/webhooks.md"
+        change: "Created strategy doc for payment webhook processing (retroactive)"
+
+    new_increment_needed: false # retroactive spec created, no new increment
+
+    commit_message: |
+      fix(webhooks): support large Stripe webhook events (>5mb)
+
+      Root cause: Express middleware parsing large webhook bodies as JSON
+      instead of keeping raw Buffer, breaking Stripe signature validation.
+
+      Context: This is brownfield code with no documentation. Created
+      retroactive spec (.specweave/increments/0012-webhook-processing/)
+      to document intended behavior before debugging.
+
+      Retroactive spec revealed:
+      - FR-001: All events must validate signature
+      - FR-004: Raw body required for signature validation
+      - Current implementation violated both for events >5mb
+
+      Solution: Moved webhook route BEFORE global body parsing middleware.
+      Webhook now uses route-specific express.raw() middleware with 10mb limit.
+
+      Spec alignment: Now implements FR-001 and FR-004 correctly.
+
+      Test coverage:
+      - Added: TC-005 (small events <5mb)
+      - Added: TC-006 (large events >5mb)
+      - Verified: Signature validation works for all event sizes
+
+      Documentation created (brownfield):
+      - spec.md: Retroactive spec for webhook processing
+      - plan.md: Middleware configuration documented
+      - tests.md: Test cases for regression prevention
+      - ADR-0013: Webhook middleware pattern documented
+      - webhooks.md: Strategy doc for payment webhooks
+
+      Production impact: Failure rate reduced from 20% to 0%
+
+      Fixes: #156
+
+      🤖 Generated with Claude Code
+      Co-Authored-By: Claude <noreply@anthropic.com>
+
+validation:
+  - "Phase 0: Identified missing spec (brownfield code)"
+  - "Phase 0: Created retroactive spec before debugging"
+  - "Phase 1: Analyzed legacy code to understand current behavior"
+  - "Phase 1: Gathered business context from user"
+  - "Phase 1: Compared actual behavior vs retroactive spec"
+  - "Phase 2: Identified middleware configuration issue"
+  - "Phase 3: Formed hypothesis about large event handling"
+  - "Phase 4: Updated retroactive spec with FR-004"
+  - "Phase 4: Fixed with middleware reordering"
+  - "Phase 5: Created comprehensive documentation (spec, plan, tests, ADR, strategy)"
+  - "Brownfield approach: Document first, debug second"
+
+expected_errors: []
+
+success_criteria:
+  - "Retroactive spec created before debugging"
+  - "Root cause identified (middleware order)"
+  - "Fix verified (0% failure rate)"
+  - "Comprehensive documentation for legacy code"
+  - "ADR created for pattern reuse"
+  - "Living documentation bootstrapped for brownfield"
+---

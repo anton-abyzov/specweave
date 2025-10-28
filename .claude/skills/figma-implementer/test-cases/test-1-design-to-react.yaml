@@ -1,0 +1,13 @@
+name: "Convert Figma Design to React Component"
+description: "Test converting a Figma component to production React code"
+user_input: "Convert this Figma button component to React with TypeScript"
+expected_behavior:
+  - Extracts design tokens (colors, spacing, typography)
+  - Generates React component with proper props
+  - Implements all variants from Figma
+  - Includes Tailwind CSS or CSS modules
+validation:
+  - Component matches Figma design pixel-perfect
+  - Props match Figma variants
+  - Uses design tokens correctly
+  - Includes TypeScript interfaces
