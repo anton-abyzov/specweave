@@ -484,7 +484,7 @@ Based on analysis, provide:
       - spec-kit has: Explicit dependencies, parallel markers, TDD structure
       - SpecWeave has: tasks.md but less structured
       - Impact: Medium (better task organization)
-      - Recommendation: Enhance `feature-planner` skill with dependency tracking
+      - Recommendation: Enhance `increment-planner` skill with dependency tracking
 
    5. **Template System**
       - Status: Not implemented in SpecWeave
@@ -607,7 +607,7 @@ Based on analysis, provide:
 **I will**:
 1. Explain spec-kit task breakdown (static knowledge)
 2. Show `/speckit.tasks` command and examples
-3. Compare to SpecWeave approach (read feature-planner skill if exists)
+3. Compare to SpecWeave approach (read increment-planner skill if exists)
 4. Highlight differences
 
 **Response**:
@@ -659,9 +659,9 @@ spec-kit's `/speckit.tasks` command generates intelligent task breakdowns:
 
 ## SpecWeave Approach (Current State)
 
-[Read and analyze src/skills/feature-planner/ and increments/*/tasks.md]
+[Read and analyze src/skills/increment-planner/ and increments/*/tasks.md]
 
-- **feature-planner skill**: Creates tasks.md in `.specweave/increments/`
+- **increment-planner skill**: Creates tasks.md in `.specweave/increments/`
 - **Structure**: Similar hierarchical organization
 - **Missing**: Explicit dependency notation (`[depends: ...]`)
 - **Missing**: Parallel markers (`[P]`)
@@ -724,7 +724,7 @@ spec-kit's `/speckit.tasks` command generates intelligent task breakdowns:
 5. ✅ Keep context awareness (SpecWeave strength)
 
 **Implementation:**
-- Update `feature-planner` skill to generate spec-kit-style dependencies
+- Update `increment-planner` skill to generate spec-kit-style dependencies
 - Add parallel detection logic (identify independent tasks)
 - Keep phase-based structure (SpecWeave's strength)
 ```
@@ -918,7 +918,7 @@ When performing gap analysis, I can read and analyze:
 **Implementation Status:**
 - "Does SpecWeave have constitutional governance?" → Read CLAUDE.md, compare to `/speckit.constitution`
 - "Is clarification workflow implemented?" → Check skills for `spec-clarifier`
-- "How does SpecWeave handle task breakdown?" → Read `feature-planner` skill
+- "How does SpecWeave handle task breakdown?" → Read `increment-planner` skill
 
 **Feature Comparison:**
 - "How does SpecWeave's task system compare to spec-kit?" → Compare tasks.md formats

@@ -65,7 +65,7 @@ spec-author → Creates specifications (WHAT/WHY)
     ↓
 architect → Designs architecture (HOW)
     ↓
-feature-planner → Creates implementation plan
+increment-planner → Creates implementation plan
     ↓
 nextjs-agent → Implements code
     ↓
@@ -204,7 +204,7 @@ integrations:
 ls -la .claude/skills/
 # Should see 8 SpecWeave skills (complete with SKILL.md):
 # - specweave-detector, skill-router, context-loader
-# - feature-planner, nextjs-agent, hetzner-provisioner
+# - increment-planner, nextjs-agent, hetzner-provisioner
 # - cost-optimizer, devops-agent
 ```
 

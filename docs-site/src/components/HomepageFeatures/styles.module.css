@@ -5,7 +5,56 @@
   width: 100%;
 }
 
+/* Organic, varied image styles - different sizes and shapes */
 .featureSvg {
-  height: 200px;
-  width: 200px;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
+  transition: all 0.3s ease;
+  object-fit: cover;
+}
+
+.featureSvg:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25);
+}
+
+/* Make center image (Software Engineering) larger and more prominent */
+.features .col:nth-child(2) .featureSvg {
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+}
+
+.features .col:nth-child(2) .featureSvg:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 25px 50px rgba(102, 126, 234, 0.3);
+}
+
+/* Subtle variation for left image (Real Estate) */
+.features .col:nth-child(1) .featureSvg {
+  border-radius: 12px 20px 12px 20px; /* Asymmetric corners */
+}
+
+/* Subtle variation for right image (Trading) */
+.features .col:nth-child(3) .featureSvg {
+  border-radius: 20px 12px 20px 12px; /* Asymmetric corners */
+}
+
+/* Optional: Add gradient overlay on hover */
+.featureSvg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.featureSvg:hover::after {
+  opacity: 1;
 }

@@ -1,0 +1,23 @@
+---
+name: "Token Structure Validation"
+description: "Test validation of design token structure"
+input:
+  tokens:
+    colors:
+      primary:
+        500: "#3b82f6"
+    typography:
+      heading1:
+        fontSize: "2.25rem"
+expected_output:
+  type: "validation_result"
+  valid: true
+  issues: []
+validation:
+  - "Naming convention followed"
+  - "All required categories present"
+  - "Values in correct format"
+success_criteria:
+  - "Validation passes"
+  - "No issues reported"
+---

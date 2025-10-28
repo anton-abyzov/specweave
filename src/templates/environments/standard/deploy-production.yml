@@ -1,0 +1,68 @@
+# GitHub Actions: Deploy to Production
+name: Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual trigger ONLY
+
+env:
+  ENVIRONMENT: production
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production  # Requires approval in GitHub
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Production
+        env:
+          HETZNER_TOKEN: ${{ secrets.PROD_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          cd infrastructure/production
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run smoke tests
+        run: |
+          # Hit production URL to verify deployment
+          curl -f https://myapp.com/health || exit 1
+
+      - name: Notify team
+        if: success()
+        run: |
+          echo "✅ Deployed to production successfully"
+          # Optional: Send Slack notification, page on-call, etc.
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed - initiating rollback"
+          # Add rollback logic here

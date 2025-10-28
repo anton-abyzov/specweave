@@ -148,7 +148,7 @@ User: "@po accept authentication feature"
 **SpecWeave Workflow (Auto-Routing):**
 ```
 User: "Plan user authentication feature"
-→ feature-planner activates automatically
+→ increment-planner activates automatically
 → Creates features/001-user-auth/
   - spec.md
   - plan.md
@@ -340,7 +340,7 @@ You can combine strengths of both:
 ```
 1. @pm creates PRD (BMAD)
 2. Convert PRD to SpecWeave specifications
-3. Use feature-planner to create implementation plan (SpecWeave)
+3. Use increment-planner to create implementation plan (SpecWeave)
 4. Load context via manifests (SpecWeave - 70% reduction)
 5. @dev implements (BMAD) using developer skill (SpecWeave)
 6. @qa *risk assesses (BMAD)

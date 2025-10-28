@@ -1,0 +1,61 @@
+# GitHub Actions: Deploy to Staging
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  ENVIRONMENT: staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging  # GitHub environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Staging
+        env:
+          HETZNER_TOKEN: ${{ secrets.STAGING_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          cd infrastructure/staging
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run smoke tests
+        run: |
+          # Hit staging URL to verify deployment
+          curl -f https://staging.myapp.com/health || exit 1
+
+      - name: Notify team
+        if: success()
+        run: echo "✅ Deployed to staging successfully"

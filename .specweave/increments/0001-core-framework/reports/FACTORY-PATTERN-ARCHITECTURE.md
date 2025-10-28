@@ -71,7 +71,7 @@ User Project (.claude/)
       ├── specweave-detector/
       ├── skill-router/
       ├── context-loader/
-      ├── feature-planner/
+      ├── increment-planner/
       ├── hetzner-provisioner/
       └── brownfield-analyzer/
 ```
@@ -85,7 +85,7 @@ User Project (.claude/)
 **Installed**:
 - **Strategic agents** (6): pm, architect, security, qa-lead, devops, docs-writer
 - **Implementation agents** (1): python-backend
-- **Core skills** (4): specweave-detector, skill-router, context-loader, feature-planner
+- **Core skills** (4): specweave-detector, skill-router, context-loader, increment-planner
 - **Total**: 7 agents + 4 skills
 
 **Token usage**: 1,050 tokens (agents) + 600 tokens (skills) = **1,650 tokens**
@@ -185,7 +185,7 @@ skills:
   - specweave-detector
   - skill-router
   - context-loader
-  - feature-planner
+  - increment-planner
   - hetzner-provisioner
   - brownfield-analyzer
 

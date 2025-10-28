@@ -69,7 +69,7 @@
 
 **Slide 11: Skills System**
 - specweave-detector (entry point)
-- feature-planner (creates plans)
+- increment-planner (creates plans)
 - context-loader (loads selectively)
 - developer (implements)
 - qa-engineer (validates)
@@ -197,7 +197,7 @@ max_context_tokens: 10000
 - Modular organization
 
 **Slide 49: Feature Planning**
-- feature-planner creates 001-user-authentication/
+- increment-planner creates 001-user-authentication/
 - spec.md, plan.md, tasks.md, context-manifest.yaml
 
 **Slide 50: Context Manifest**
@@ -249,7 +249,7 @@ max_context_tokens: 10000
 - Missing edge cases? Add tests now
 
 **Slide 62: Planning OAuth Feature**
-- feature-planner creates 015-google-oauth/
+- increment-planner creates 015-google-oauth/
 - Constraints from existing system preserved
 
 **Slide 63: Context Manifest (Brownfield)**

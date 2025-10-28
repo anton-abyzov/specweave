@@ -471,7 +471,7 @@ Expected response:
 User: "What SpecWeave skills are available?"
 
 Expected response:
-- Lists all 24 skills (specweave-detector, feature-planner, etc.)
+- Lists all 24 skills (specweave-detector, increment-planner, etc.)
 ```
 
 ### Verify Auto-Activation

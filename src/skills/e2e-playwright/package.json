@@ -1,0 +1,33 @@
+{
+  "name": "e2e-playwright-skill",
+  "version": "1.0.0",
+  "description": "End-to-end browser automation and testing skill for SpecWeave using Playwright",
+  "main": "execute.js",
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium",
+    "install-browsers": "npx playwright install",
+    "test": "node execute.js --version",
+    "clean": "rm -f /tmp/e2e-execution-*.js /tmp/e2e-test-*.js"
+  },
+  "keywords": [
+    "playwright",
+    "e2e",
+    "testing",
+    "browser-automation",
+    "specweave",
+    "claude-code",
+    "skill"
+  ],
+  "author": "SpecWeave",
+  "license": "MIT",
+  "dependencies": {
+    "playwright": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/specweave/specweave"
+  }
+}

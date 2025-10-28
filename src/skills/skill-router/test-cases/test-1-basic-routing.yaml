@@ -5,22 +5,22 @@ input:
   prompt: "Plan a new feature for user authentication"
   context:
     available_skills:
-      - "feature-planner"
+      - "increment-planner"
       - "spec-author"
       - "developer"
   user_intent: "plan feature"
 expected_output:
   type: "skill_routing"
-  routes_to: "feature-planner"
+  routes_to: "increment-planner"
   confidence: "high"
   reason: "User request contains 'plan' and 'feature' keywords"
   alternatives: []
   actions:
-    - "Activate feature-planner skill"
-    - "Pass user request to feature-planner"
+    - "Activate increment-planner skill"
+    - "Pass user request to increment-planner"
     - "Log routing decision"
 validation:
-  - "Routes to correct skill (feature-planner)"
+  - "Routes to correct skill (increment-planner)"
   - "Confidence level is high (>0.9)"
   - "No ambiguity detected"
   - "Logs routing decision"

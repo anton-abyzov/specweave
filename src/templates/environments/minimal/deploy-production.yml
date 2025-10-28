@@ -1,0 +1,52 @@
+# GitHub Actions: Deploy to Production
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Manual trigger
+
+env:
+  ENVIRONMENT: production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production  # GitHub environment (requires secrets)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Production
+        env:
+          HETZNER_TOKEN: ${{ secrets.PROD_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          # Example: Deploy using Terraform
+          cd infrastructure/production
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ Deployed to production successfully"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ Production deployment failed"

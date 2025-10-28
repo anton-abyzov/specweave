@@ -81,6 +81,7 @@
 > 3. **Skills-based architecture** - AI agents with specialized expertise
 > 4. **Brownfield-ready** - designed for real-world legacy code
 > 5. **Test-validated** - every feature proven through automation
+> 6. **🔄 Meta-capability** - Agents build agents, skills build skills, the framework builds itself
 >
 > Let's dive in."
 
@@ -182,7 +183,7 @@
 > SpecWeave extends Claude Code with specialized 'skills' - AI agents with expertise in specific domains:
 >
 > - `specweave-detector` - Recognizes SpecWeave projects, activates automatically
-> - `feature-planner` - Creates comprehensive implementation plans
+> - `increment-planner` - Creates comprehensive implementation plans
 > - `context-loader` - Loads only relevant specs via manifests
 > - `spec-author` - Writes and maintains specifications
 > - `developer` - Implements code following plans
@@ -288,7 +289,7 @@
 > **SpecWeave Approach:**
 > ```
 > User: 'Plan payment processing feature'
-> → feature-planner skill activates automatically
+> → increment-planner skill activates automatically
 > → Creates spec.md, plan.md, tasks.md, context-manifest.yaml
 > User: 'Implement the payment feature'
 > → developer skill loads relevant context via manifest
@@ -369,7 +370,7 @@
 > → Creates modular spec in specifications/modules/payments/
 > → Links to architecture docs
 > → Creates context manifest
-> → feature-planner can immediately use it for implementation
+> → increment-planner can immediately use it for implementation
 > ```
 >
 > SpecKit gives you templates. SpecWeave gives you an AI agent that understands your domain."
@@ -617,7 +618,7 @@
 > - `skill-router` - Routes requests to appropriate skills
 >
 > **Planning & Design:**
-> - `feature-planner` - Creates comprehensive implementation plans
+> - `increment-planner` - Creates comprehensive implementation plans
 > - `spec-author` - Writes/updates specifications
 > - `architect` - Designs architecture, creates ADRs
 >
@@ -649,7 +650,7 @@
 >
 > → specweave-detector: Detects SpecWeave project
 > → skill-router: Identifies need for feature planning
-> → feature-planner: Activates automatically
+> → increment-planner: Activates automatically
 >   → Analyzes request
 >   → Creates feature-###-user-auth/
 >   → Generates spec.md, plan.md, tasks.md
@@ -1016,7 +1017,7 @@
 
 **[ON SCREEN: Generated feature plan]**
 
-> "The `feature-planner` skill created:
+> "The `increment-planner` skill created:
 >
 > `features/001-user-authentication/`:
 > ```
@@ -1695,7 +1696,7 @@ npm run test:e2e
 
 **[ON SCREEN: Generated plan]**
 
-> "`feature-planner` creates:
+> "`increment-planner` creates:
 >
 > `features/015-google-oauth/spec.md`:
 > ```markdown
@@ -2282,6 +2283,222 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 >
 > These skills wrap MCP (Model Context Protocol) servers for bidirectional sync."
 
+### 🔄 Meta-Capability: Agents Build Agents (2:15:00-2:25:00)
+
+**[ON SCREEN: Meta-capability diagram - recursive chain]**
+
+> "**Advanced Feature 4: The Ultimate Power - Meta-Capability**
+>
+> This is where SpecWeave gets really powerful. The framework is **self-extending**:
+> - ✅ Agents build agents
+> - ✅ Skills build skills
+> - ✅ SpecWeave uses itself to build new SpecWeave features
+>
+> And YOU control every step."
+
+**[ON SCREEN: Three-layer architecture]**
+
+> "Let me show you the three layers:
+>
+> **Layer 1: SpecWeave Framework (The Factory)**
+> - 20 core agents (pm, architect, devops, etc.)
+> - 24 core skills (increment-planner, context-loader, etc.)
+> - The foundation
+>
+> **Layer 2: Your Project (Using SpecWeave)**
+> - Your increments (auth, payments, etc.)
+> - Your specifications
+> - Your production code
+>
+> **Layer 3: Custom Extensions (Agents Build Agents)**
+> - Custom agents for YOUR domain
+> - Custom skills for YOUR needs
+> - Tools that build MORE tools"
+
+**[DEMO: Creating Custom Agent]**
+
+**[ON SCREEN: Terminal]**
+
+> "Let's create a Stripe integration expert:
+>
+> ```
+> User: 'Create a custom agent that knows Stripe API,
+>        webhooks, subscriptions, and PCI compliance'
+> ```"
+
+**[ON SCREEN: SpecWeave architect agent activates]**
+
+> "Watch what happens:
+>
+> 1. SpecWeave's **architect agent** activates
+> 2. Designs the new agent structure
+> 3. Generates `.claude/agents/stripe-integration/AGENT.md`
+> 4. Asks YOU to review the prompt
+> 5. You approve or modify
+> 6. New agent is created!"
+
+**[ON SCREEN: Generated AGENT.md]**
+
+> "```yaml
+> ---
+> name: stripe-integration
+> description: Expert in Stripe API integration, webhooks,
+>              subscriptions, PCI compliance
+> tools: Read, Write, Edit, Bash
+> model: sonnet
+> ---
+>
+> You are a Stripe integration expert with deep knowledge of:
+> - Stripe API (Charges, Payment Intents, Subscriptions)
+> - Webhook handling and signature verification
+> - PCI compliance best practices
+> - Error handling for payment failures
+> - Idempotency keys for retry safety
+> - Testing with Stripe test mode
+>
+> When implementing Stripe integrations:
+> 1. Always use Payment Intents (not legacy Charges)
+> 2. Verify webhook signatures
+> 3. Handle all webhook events
+> 4. Use idempotency keys
+> 5. Follow PCI compliance guidelines
+> ...
+> ```
+>
+> Now when I ask 'Implement Stripe subscriptions', the `stripe-integration` agent handles it with EXPERT knowledge!"
+
+**[ON SCREEN: Real-world example]**
+
+> "**Real-World Impact:**
+>
+> **Before custom agent:**
+> - You read Stripe docs for 2 hours
+> - Write boilerplate code
+> - Miss edge cases
+> - Repeat for EVERY project
+>
+> **After custom agent:**
+> - Agent remembers everything
+> - Applies best practices automatically
+> - Handles edge cases
+> - Reusable across ALL your projects
+> - Share with your team (git commit)"
+
+**[ON SCREEN: SpecWeave building SpecWeave]**
+
+> "**The Ultimate Recursion: SpecWeave Builds Itself**
+>
+> Here's the mind-bending part. SpecWeave uses itself to add new features:
+>
+> ```
+> Increment: 003-figma-integration
+> ↓
+> pm agent: Creates requirements spec
+> ↓
+> architect agent: Designs architecture
+> ↓
+> docs-writer agent: Writes AGENT.md
+> ↓
+> Result: New figma-implementer agent added!
+> ↓
+> SpecWeave now has Figma capabilities (built by SpecWeave!)
+> ```
+>
+> **Pattern we observed**:
+> - ✅ Increment 001: Core framework (built manually)
+> - ✅ Increment 002+: Built using increment 001's agents
+> - ✅ Each increment adds new agents/skills
+> - ✅ New capabilities improve future development
+> - ✅ **Continuous self-improvement loop**"
+
+**[ON SCREEN: Benefits list]**
+
+> "**Why This Matters:**
+>
+> **1. Infinite Extensibility**
+> - Healthcare? Create `hipaa-compliance` agent
+> - Gaming? Create `game-balance` agent
+> - Finance? Create `sox-compliance` agent
+> - IoT? Create `mqtt-protocol` skill
+> - ANY domain, ANY niche
+>
+> **2. Domain Expertise On-Demand**
+> - Capture YOUR company's knowledge
+> - Codify YOUR best practices
+> - Enforce YOUR standards automatically
+>
+> **3. Continuous Learning**
+> ```
+> Discover better pattern
+>    ↓
+> Update custom agent
+>    ↓
+> All future work uses improvement
+>    ↓
+> Share with team (git commit)
+>    ↓
+> Team benefits immediately
+> ```
+>
+> **4. Zero Lock-In**
+> - You own custom agents (in `.claude/`)
+> - Version controlled
+> - Can modify SpecWeave agents (fork `src/`)
+> - Can remove SpecWeave entirely (specs remain)
+>
+> **5. You Control Everything**
+> ```
+> SpecWeave: 'I can create a custom agent. Review the prompt?'
+> You: [Reviews] 'Approved' or 'Modify error handling'
+>    ↓
+> No autonomous changes - you're always in control
+> ```"
+
+**[ON SCREEN: Healthcare SaaS example]**
+
+> "**Real Example: Healthcare SaaS**
+>
+> **Phase 1**: Core agents build foundation
+> ```
+> pm agent → HIPAA requirements
+> architect agent → Encryption design
+> python-backend agent → Implementation
+> ```
+>
+> **Phase 2**: Create custom healthcare agent
+> ```
+> User: 'Create HIPAA compliance agent'
+>    ↓
+> SpecWeave creates: hipaa-compliance agent
+>    ↓
+> Agent knows: PHI handling, audit trails, BAA requirements
+> ```
+>
+> **Phase 3**: Agent builds specialized tools
+> ```
+> hipaa-compliance agent → Creates: phi-scanner skill
+>    ↓
+> phi-scanner detects PHI in code/logs automatically
+>    ↓
+> Prevents HIPAA violations before deployment
+> ```
+>
+> **Result**: Healthcare SaaS with HIPAA expertise (built by SpecWeave!)"
+
+**[ON SCREEN: The factory builds factories]**
+
+> "**The Factory Builds Factories**
+>
+> SpecWeave is a factory that produces:
+> 1. ✅ Production applications (your SaaS, API, etc.)
+> 2. ✅ Custom agents (domain experts)
+> 3. ✅ Custom skills (specialized tools)
+> 4. ✅ New framework features (SpecWeave improvements)
+>
+> **And you're the architect of it all** - controlling what gets built, how it's built, and what feeds back to the framework.
+>
+> No other framework does this. This is SpecWeave's superpower."
+
 ---
 
 ## 8. Testing Demonstrations (15 min)
@@ -2296,7 +2513,7 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 >
 > **Test Structure:**
 > ```
-> src/skills/feature-planner/
+> src/skills/increment-planner/
 > ├── SKILL.md
 > ├── scripts/
 > ├── references/
@@ -2315,11 +2532,11 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 > "**Example Test Case:**
 >
 > ```yaml
-> # src/skills/feature-planner/test-cases/test-1-basic.yaml
+> # src/skills/increment-planner/test-cases/test-1-basic.yaml
 > ---
-> test_id: feature-planner-001
+> test_id: increment-planner-001
 > name: Basic Feature Planning
-> description: Test that feature-planner creates complete feature structure
+> description: Test that increment-planner creates complete feature structure
 >
 > setup:
 >   project_type: greenfield
@@ -2388,7 +2605,7 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 **[DEMO: Run skill test]**
 
 ```bash
-npm run test:skills -- feature-planner
+npm run test:skills -- increment-planner
 ```
 
 **[ON SCREEN: Test execution]**
@@ -2397,7 +2614,7 @@ npm run test:skills -- feature-planner
 >
 > `test-results/test-1-result.md`:
 > ```markdown
-> # Test Result: feature-planner-001
+> # Test Result: increment-planner-001
 >
 > **Status**: ✅ PASSED
 > **Duration**: 12.3s
@@ -2878,7 +3095,7 @@ npm run test:skills -- feature-planner
 > **First Steps:**
 > 1. Read CLAUDE.md in your project
 > 2. Create your first specification
-> 3. Plan a feature with feature-planner
+> 3. Plan a feature with increment-planner
 > 4. Implement with developer skill
 > 5. Validate with E2E tests"
 

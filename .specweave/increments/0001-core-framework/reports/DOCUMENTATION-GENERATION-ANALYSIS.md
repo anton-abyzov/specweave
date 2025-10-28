@@ -34,7 +34,7 @@
    - Integration: JIRA Mapper, ADO Mapper
 
 3. **24 Specialized Skills** (Shared context)
-   - Core: Detector, Router, Context Loader, Feature Planner, Role Orchestrator
+   - Core: Detector, Router, Context Loader, Increment Planner, Role Orchestrator
    - Infrastructure: Hetzner Provisioner, Cost Optimizer
    - Integrations: Stripe, Calendar, Notifications, JIRA, GitHub, ADO
    - Design: Figma MCP Connector, Design System Architect, Figma-to-Code

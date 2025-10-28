@@ -1,0 +1,126 @@
+---
+name: "Hetzner Provisioning with SSL (Let's Encrypt)"
+description: "Provision infrastructure with automatic SSL certificate setup using Let's Encrypt"
+skill: hetzner-provisioner
+priority: P1
+estimated_time: "15-20 minutes"
+
+input:
+  prompt: "Deploy my NextJS app on Hetzner with Postgres and SSL for my-saas.com"
+  requirements:
+    app_type: nextjs
+    instance_type: cx11
+    database: postgres
+    ssl: true
+    domain: "my-saas.com"
+    budget: "$15/month"
+
+expected_output:
+  terraform_files_generated:
+    - main.tf
+    - variables.tf
+    - outputs.tf
+    - cloud-init.yaml
+    - database.tf
+
+  terraform_resources:
+    - type: hcloud_server
+      name: app
+      server_type: cx11
+
+    - type: hcloud_database
+      name: postgres
+
+    - type: hcloud_firewall
+      name: app
+      rules:
+        - port: 80  # HTTP (redirects to HTTPS)
+        - port: 443  # HTTPS
+        - port: 22  # SSH
+
+  nginx_config_generated: true
+  nginx_config_path: "nginx/nginx.conf"
+
+  certbot_setup: true
+  certbot_commands:
+    - "certbot --nginx -d my-saas.com -d www.my-saas.com"
+    - "certbot renew --dry-run"  # Auto-renewal test
+
+  ssl_configuration:
+    provider: "Let's Encrypt"
+    auto_renewal: true
+    renewal_schedule: "Monthly via cron"
+    cert_path: "/etc/letsencrypt/live/my-saas.com/fullchain.pem"
+    key_path: "/etc/letsencrypt/live/my-saas.com/privkey.pem"
+
+  cloud_init_yaml:
+    packages:
+      - nginx
+      - certbot
+      - python3-certbot-nginx
+    runcmd:
+      - "systemctl enable nginx"
+      - "systemctl start nginx"
+
+  dns_configuration_guide: true
+  dns_records_required:
+    - type: A
+      name: "@"
+      value: "[SERVER_IP]"
+      ttl: 3600
+
+    - type: A
+      name: "www"
+      value: "[SERVER_IP]"
+      ttl: 3600
+
+  cost_estimate:
+    monthly: "$11.33"
+    breakdown:
+      - "CX11 instance: $5.83/month"
+      - "Managed Postgres (2GB): $5.00/month"
+      - "Storage (20GB): $0.50/month"
+      - "SSL (Let's Encrypt): Free"
+    total: "$11.33/month"
+    within_budget: true
+
+  deployment_guide:
+    prerequisites:
+      - "Domain registered (my-saas.com)"
+      - "DNS access to create A records"
+
+    steps:
+      - "1. Run terraform apply to provision infrastructure"
+      - "2. Note the server IP from terraform output"
+      - "3. Create DNS A records pointing to server IP"
+      - "4. Wait for DNS propagation (5-30 minutes)"
+      - "5. SSH into server and run certbot command"
+      - "6. Verify SSL: https://my-saas.com"
+
+    post_deployment:
+      - "SSL auto-renews via certbot cron job"
+      - "Force HTTPS redirect configured"
+      - "SSL certificate expires in 90 days, renews automatically"
+
+validation:
+  - "nginx.conf exists and contains SSL configuration"
+  - "certbot setup script exists"
+  - "cloud-init includes nginx and certbot packages"
+  - "DNS configuration guide provided"
+  - "HTTPS redirect configured (port 80 → 443)"
+  - "Cost remains under $15/month"
+
+expected_errors:
+  - possible: "DNS not propagated yet"
+    solution: "Wait for DNS propagation (check with dig my-saas.com)"
+
+  - possible: "Certbot fails - port 80 not accessible"
+    solution: "Check firewall rules allow port 80"
+
+success_criteria:
+  - "SSL certificate obtained successfully"
+  - "HTTPS working: https://my-saas.com"
+  - "HTTP redirects to HTTPS"
+  - "Auto-renewal configured"
+  - "All deployment steps documented"
+---

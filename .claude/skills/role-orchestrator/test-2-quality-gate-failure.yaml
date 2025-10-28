@@ -1,0 +1,73 @@
+---
+name: "Quality Gate Failure Handling"
+description: "Tests role-orchestrator's ability to handle quality gate failures and coordinate remediation"
+priority: P1
+test_type: integration
+
+input:
+  prompt: "Implement payment processing feature"
+  project_context:
+    type: "brownfield"
+    existing_code: "src/payments/"
+    test_coverage: "45%"  # Below 80% threshold
+
+simulated_scenario:
+  - phase: "implementation"
+    status: "completed"
+    test_coverage_actual: "67%"  # Below target of 80%
+
+  - phase: "qa_gate"
+    gate_type: "test_coverage"
+    target: "80%"
+    actual: "67%"
+    status: "failed"
+
+expected_behavior:
+  - gate_failure_detected: true
+  - orchestrator_response:
+      - pause_deployment: true
+      - invoke_agent: "qa-lead-agent"
+      - task: "Analyze test coverage gaps and create additional tests"
+
+  - qa_lead_analysis:
+      files_examined:
+        - "src/payments/payment-service.ts"
+        - "tests/unit/payment-service.test.ts"
+      gaps_identified:
+        - "Error handling not tested (15% of code)"
+        - "Edge cases missing (10%)"
+        - "Integration tests needed (8%)"
+
+  - orchestrator_next_steps:
+      - create_work_items:
+          - "work/issues/001-improve-test-coverage/"
+      - assign_to: "nodejs-backend"
+      - task: "Implement additional test cases"
+
+  - retry_after_fixes:
+      test_coverage_new: "84%"
+      gate_status: "passed"
+      proceed_to_next_phase: true
+
+expected_output:
+  gate_failure_handled: true
+  remediation_plan_created: true
+  work_items_created:
+    - "work/issues/001-improve-test-coverage/issue.md"
+  final_gate_status: "passed"
+  deployment_proceeded: true
+
+validation:
+  - "Gate failure detected immediately"
+  - "Orchestrator paused next phases"
+  - "QA Lead agent invoked for analysis"
+  - "Work items created for fixes"
+  - "After fixes, gate re-evaluated"
+  - "Gate passed, deployment proceeded"
+
+success_criteria:
+  - failure_detection: "immediate"
+  - remediation_invoked: true
+  - gate_retry_successful: true
+  - no_deployment_before_fix: true
+---

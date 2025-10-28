@@ -174,7 +174,7 @@ auto_refresh: false
 - [ ] **TC-042**: Generic output (shows DETECTED tech stack, not assumed)
 
 **Slash Command**: `/create-increment`
-**Skill**: `feature-planner`
+**Skill**: `increment-planner`
 
 ### US7: Strategic Analysis from Expert Agents (P1)
 
@@ -427,7 +427,7 @@ auto_refresh: false
 1. `specweave-detector` - Auto-detect SpecWeave projects (proactive)
 2. `skill-router` - Parse requests, route to skills/agents (>90% accuracy)
 3. `context-loader` - Load specs selectively via manifests (70%+ reduction)
-4. `feature-planner` - Plan features with context awareness
+4. `increment-planner` - Plan features with context awareness
 5. `role-orchestrator` - Orchestrate multi-agent workflows
 
 **Infrastructure** (P1):
@@ -665,7 +665,7 @@ npm run install:all:global     # Global
 ### Phase 3: Core Skills (Completed)
 - ✅ `skill-router` - Request routing
 - ✅ `context-loader` - Context manifests
-- ✅ `feature-planner` - Feature planning
+- ✅ `increment-planner` - Feature planning
 - ✅ Infrastructure skills (Hetzner, cost optimizer)
 - ✅ Integration skills (Stripe, calendar, notifications)
 

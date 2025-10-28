@@ -1,0 +1,67 @@
+# GitHub Actions: Deploy to Staging
+name: Deploy to Staging
+
+on:
+  workflow_dispatch:  # Manual trigger after QA approval
+  push:
+    branches: [staging]  # Or auto-deploy from staging branch
+
+env:
+  ENVIRONMENT: staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite
+        run: |
+          npm test
+          npm run test:integration
+          npm run test:e2e
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging  # Requires approval
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Staging
+        env:
+          HETZNER_TOKEN: ${{ secrets.STAGING_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+        run: |
+          cd infrastructure/staging
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://staging.myapp.com/health || exit 1
+
+      - name: Run performance tests
+        run: |
+          # Optional: Run load tests
+          npm run test:performance
+
+      - name: Notify team
+        if: success()
+        run: |
+          echo "✅ Deployed to staging - ready for final validation"

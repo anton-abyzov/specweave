@@ -38,31 +38,36 @@ program
 //     await incrementCommand(action, name, options);
 //   });
 
-// Install skills (TODO: Implement in future versions)
-// program
-//   .command('install <skill-name>')
-//   .description('Install a skill from src/skills/ to .claude/skills/')
-//   .option('-g, --global', 'Install globally to ~/.claude/skills/')
-//   .action(async (skillName, options) => {
-//     const { installCommand } = require('../dist/cli/commands/install');
-//     await installCommand(skillName, options);
-//   });
+// Install command - Install agents/skills
+program
+  .command('install [component-name]')
+  .description('Install agents/skills to .claude/ or ~/.claude/')
+  .option('-g, --global', 'Install globally to ~/.claude/')
+  .option('-l, --local', 'Install locally to .claude/ (default)')
+  .action(async (componentName, options) => {
+    const { installCommand } = require('../dist/cli/commands/install');
+    await installCommand(componentName, options);
+  });
 
-// Install hooks (TODO: Implement in future versions)
-// program
-//   .command('install-hooks')
-//   .description('Install hooks from src/hooks/ to .claude/hooks/')
-//   .action(async () => {
-//     const { installHooksCommand } = require('../dist/cli/commands/install-hooks');
-//     await installHooksCommand();
-//   });
+// List command - List available/installed components
+program
+  .command('list')
+  .description('List available and installed components')
+  .option('--installed', 'Show only installed components')
+  .action(async (options) => {
+    const { listCommand } = require('../dist/cli/commands/list');
+    await listCommand(options);
+  });
 
 // Help text
 program.on('--help', () => {
   console.log('');
   console.log('Examples:');
-  console.log('  $ specweave init my-saas');
-  console.log('  $ specweave init  # Prompts for project name');
+  console.log('  $ specweave init my-saas                    # Create new project');
+  console.log('  $ specweave install pm --local              # Install PM agent locally');
+  console.log('  $ specweave install --global                # Install all (interactive)');
+  console.log('  $ specweave list                            # List all available components');
+  console.log('  $ specweave list --installed                # Show installed components');
   console.log('');
   console.log('For more information, visit: https://github.com/specweave/specweave');
 });

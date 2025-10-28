@@ -256,7 +256,7 @@ max_context_tokens: 20000
 >
 > And the best part? This is all automatic. You don't manage cache, you don't optimize manifests.
 >
-> SpecWeave's `feature-planner` skill creates the manifest for you when you describe a feature. The `context-loader` handles the rest."
+> SpecWeave's `increment-planner` skill creates the manifest for you when you describe a feature. The `context-loader` handles the rest."
 
 ---
 

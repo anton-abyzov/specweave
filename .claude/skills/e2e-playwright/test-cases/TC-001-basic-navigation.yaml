@@ -1,0 +1,54 @@
+id: TC-001
+name: Basic Navigation Test
+description: Verify that the skill can navigate to a webpage and capture a screenshot
+priority: high
+category: functional
+
+preconditions:
+  - Playwright is installed
+  - Chromium browser is available
+  - Development server is running on localhost:3000
+
+test_steps:
+  - step: 1
+    action: Create test script that navigates to localhost:3000
+    expected: Test script is created in /tmp/
+
+  - step: 2
+    action: Execute test script via execute.js
+    expected: Browser launches and navigates to homepage
+
+  - step: 3
+    action: Capture full-page screenshot
+    expected: Screenshot is saved to /tmp/ with timestamp
+
+  - step: 4
+    action: Verify page title
+    expected: Page title is captured and logged to console
+
+  - step: 5
+    action: Close browser
+    expected: Browser closes cleanly without errors
+
+acceptance_criteria:
+  - Browser launches in visible mode (headless: false)
+  - Navigation completes successfully
+  - Screenshot file is created with correct naming pattern
+  - Console output shows execution steps
+  - No errors are thrown during execution
+
+test_data:
+  url: http://localhost:3000
+  expected_title: SpecWeave
+  screenshot_pattern: /tmp/homepage-*.png
+
+expected_results:
+  - Browser opens visibly
+  - Page loads within 10 seconds
+  - Screenshot file exists and is valid PNG
+  - Console shows "✅ Test passed" message
+  - Process exits with code 0
+
+notes: |
+  This is the most basic test case to verify core functionality.
+  All other tests depend on this working correctly.

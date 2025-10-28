@@ -417,7 +417,7 @@ ado-sync:
 ## Integration with Other Skills
 
 - **task-builder**: Reads ADO structure from spec.md
-- **feature-planner**: Can specify structure: ado
+- **increment-planner**: Can specify structure: ado
 
 ## Comparison: JIRA vs ADO
 

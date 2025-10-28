@@ -187,7 +187,7 @@ test.describe('SpecWeave E2E Smoke Test', () => {
   test('should install core skills correctly', async () => {
     const coreSkills = [
       'specweave-detector',
-      'feature-planner',
+      'increment-planner',
       'skill-router',
       'context-loader',
       'hetzner-provisioner',

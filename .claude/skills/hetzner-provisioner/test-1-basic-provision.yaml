@@ -1,0 +1,71 @@
+---
+name: "Basic Hetzner CX11 Provisioning"
+description: "Provision a basic CX11 instance with Docker for NextJS app deployment"
+skill: hetzner-provisioner
+priority: P1
+estimated_time: "5-10 minutes"
+
+input:
+  prompt: "Deploy my NextJS app on Hetzner as cheaply as possible"
+  requirements:
+    app_type: nextjs
+    instance_type: cx11
+    database: none
+    ssl: false
+    budget: "$10/month"
+
+expected_output:
+  terraform_files_generated:
+    - main.tf
+    - variables.tf
+    - outputs.tf
+    - cloud-init.yaml
+
+  terraform_resources:
+    - type: hcloud_server
+      name: app
+      server_type: cx11
+      image: ubuntu-22.04
+      location: nbg1
+
+    - type: hcloud_firewall
+      name: app
+      rules:
+        - port: 80
+        - port: 443
+        - port: 22
+
+  dockerfile_generated: true
+
+  github_actions_workflow: true
+
+  cost_estimate:
+    monthly: "$5.83"
+    breakdown:
+      - "CX11 instance: $5.83/month"
+      - "Storage (20GB): $0.50/month"
+    total: "$6.33/month"
+    within_budget: true
+
+  deployment_guide:
+    steps:
+      - "Set HETZNER_API_TOKEN in GitHub secrets"
+      - "Push code to GitHub"
+      - "GitHub Actions will deploy automatically"
+      - "Access app at http://[SERVER_IP]:3000"
+
+validation:
+  - "terraform validate passes without errors"
+  - "main.tf contains hcloud_server resource"
+  - "Dockerfile exists and is valid"
+  - "Cost estimate under $10/month"
+  - "GitHub Actions workflow file exists"
+
+expected_errors: []
+
+success_criteria:
+  - "All Terraform files generated"
+  - "Cost within budget"
+  - "Deployment guide provided"
+  - "No validation errors"
+---

@@ -1,0 +1,45 @@
+---
+name: "Load Specific Sections with Anchors"
+description: "Tests context-loader's ability to load only specific sections using markdown anchors"
+input:
+  prompt: "Load only the authentication flow section"
+  files:
+    - "features/003-auth-feature/context-manifest.yaml"
+  manifest_content:
+    spec_sections:
+      - "specifications/modules/auth/authentication.md#oauth-flow"
+      - "specifications/modules/auth/authentication.md#session-management"
+    documentation:
+      - ".specweave/docs/architecture/api-design.md#authentication-endpoints"
+    max_context_tokens: 3000
+    priority: high
+expected_output:
+  type: "section_loaded"
+  files_loaded:
+    - path: "specifications/modules/auth/authentication.md"
+      sections:
+        - "oauth-flow"
+        - "session-management"
+    - path: ".specweave/docs/architecture/api-design.md"
+      sections:
+        - "authentication-endpoints"
+  full_files_loaded: false
+  sections_only: true
+  tokens_used: 1500
+  within_budget: true
+  contains:
+    - "Loaded 2 sections from authentication.md"
+    - "Loaded 1 section from api-design.md"
+    - "Token usage: 1500/3000"
+validation:
+  - "Parses markdown anchor syntax (#section-name)"
+  - "Loads ONLY specified sections, not full files"
+  - "Correctly extracts section content"
+  - "Token usage significantly reduced vs full file"
+  - "Preserves section context (headings)"
+success_criteria:
+  - "Anchor parsing works"
+  - "Selective section loading works"
+  - "70%+ token reduction vs full file"
+  - "Section boundaries correct"
+---

@@ -69,7 +69,7 @@ graph TB
 - `hld-{system-name}.sequence-auth.mmd` - Authentication flow
 - `hld-{system-name}.entity.mmd` - Data model
 
-**See**: [Diagram Conventions](../../docs/DIAGRAM-CONVENTIONS.md) for best practices.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) for best practices.
 
 ## Data Model
 

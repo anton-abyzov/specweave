@@ -3,8 +3,8 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0--alpha-orange.svg)](https://github.com/specweave/specweave/releases)
-[![Status](https://img.shields.io/badge/status-alpha-orange.svg)]()
+[![Version](https://img.shields.io/badge/version-0.1.0--beta.1-blue.svg)](https://github.com/specweave/specweave/releases/tag/v0.1.0-beta.1)
+[![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 
 ---
 
@@ -42,29 +42,60 @@
 ### Prerequisites
 
 - **Node.js 18+** (`node --version`)
-- **npm 8+** (`npm --version`)
-- **Claude Code CLI** ([claude.ai](https://claude.ai))
+- **npm 9+** (`npm --version`)
+- **Claude Code** (Claude Sonnet 4.5 recommended)
 
-### Quick Start
+### Quick Install
+
+**Global installation (recommended):**
+
+```bash
+# Install via npm (when published)
+npm install -g specweave
+
+# Create your first project
+specweave init my-saas
+cd my-saas
+```
+
+**One-time usage (like npx):**
+
+```bash
+# No installation required
+npx specweave init my-saas
+cd my-saas
+```
+
+**Install from GitHub (current beta.1):**
 
 ```bash
 # Clone repository
 git clone https://github.com/specweave/specweave.git
 cd specweave
 
-# Install dependencies
+# Install dependencies and build
 npm install
-
-# Build TypeScript
 npm run build
 
-# Install agents, skills, and commands
-npm run install:all
+# Link globally (makes 'specweave' command available)
+npm link
 
-# Restart Claude Code to load components
+# Create project
+specweave init my-saas
 ```
 
-**Detailed installation**: See [INSTALLATION.md](INSTALLATION.md)
+### Available Commands
+
+```bash
+specweave init [project]           # Create new project
+specweave install [component]      # Install agents/skills (--local or --global)
+specweave list                     # List all available components
+specweave list --installed         # Show installed components
+specweave --version                # Show version
+specweave --help                   # Show help
+```
+
+**Detailed installation**: See [INSTALL.md](INSTALL.md)
 
 ---
 
@@ -75,7 +106,7 @@ npm run install:all
 
 User: "Create authentication feature with email and OAuth"
     ↓
-SpecWeave: (auto-routes to feature-planner)
+SpecWeave: (auto-routes to increment-planner)
 ✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
@@ -162,7 +193,7 @@ SpecWeave includes **24 AI skills** that coordinate agents and provide specializ
 ### Feature Planning
 | Skill | Purpose | Status |
 |-------|---------|--------|
-| **feature-planner** | Plan features with context awareness | ✅ Implemented |
+| **increment-planner** | Plan features with context awareness | ✅ Implemented |
 | **task-builder** | Break features into executable tasks | ✅ Implemented |
 | **docs-updater** | Auto-update documentation via hooks | ✅ Implemented |
 
@@ -412,7 +443,7 @@ SpecWeave includes **automated C4 diagram generation**:
 3. Agent generates Mermaid diagram following C4 Model
 4. Saves to correct location with proper naming
 
-**See [.specweave/docs/DIAGRAM-CONVENTIONS.md](.specweave/docs/DIAGRAM-CONVENTIONS.md)** for conventions.
+**See [Diagram Conventions](.specweave/docs/internal/delivery/guides/diagram-conventions.md)** for conventions.
 
 ---
 
@@ -455,7 +486,7 @@ sync:
 # - Tasks as checkable checklist
 ```
 
-**See [.specweave/docs/TOOL-CONCEPT-MAPPING.md](.specweave/docs/TOOL-CONCEPT-MAPPING.md)** for complete mappings.
+**See [Tool Concept Mapping](.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)** for complete mappings.
 
 ---
 
@@ -464,8 +495,8 @@ sync:
 - **[CLAUDE.md](CLAUDE.md)** - **START HERE** - Complete development guide (source of truth)
 - **[INSTALLATION.md](INSTALLATION.md)** - Detailed installation instructions
 - **[.specweave/docs/README.md](.specweave/docs/README.md)** - Documentation structure
-- **[.specweave/docs/DIAGRAM-CONVENTIONS.md](.specweave/docs/DIAGRAM-CONVENTIONS.md)** - C4 Model conventions
-- **[.specweave/docs/TOOL-CONCEPT-MAPPING.md](.specweave/docs/TOOL-CONCEPT-MAPPING.md)** - Tool mappings
+- **[Diagram Conventions](.specweave/docs/internal/delivery/guides/diagram-conventions.md)** - C4 Model conventions
+- **[Tool Concept Mapping](.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)** - Tool mappings
 - **[.specweave/increments/README.md](.specweave/increments/README.md)** - Increments guide
 
 ---
@@ -507,36 +538,47 @@ npm test
 
 ## 🏷️ Project Status
 
-**Version**: 0.1.0 (Alpha)
-**Status**: Active Development
+**Version**: 0.1.0-beta.1
+**Status**: Public Beta
 **License**: MIT
+**Release Date**: 2025-10-27
 
-### What Works Now
+### ✅ What Works (v0.1.0-beta.1)
 
-- ✅ 19 Agents fully implemented
-- ✅ 24 Skills fully implemented
-- ✅ Auto-detection and routing
-- ✅ Context manifests (70%+ reduction)
-- ✅ Diagram generation (C4 Model)
-- ✅ Install scripts (agents, skills, commands, hooks)
-- ✅ 4-level testing framework
-- ✅ JIRA/ADO/GitHub sync (agents created)
-- ✅ Brownfield analysis
+- ✅ **19 Agents** fully implemented with test cases
+- ✅ **24 Skills** fully implemented with test cases
+- ✅ **CLI Tool** - `specweave` command (`init`, `install`, `list`)
+- ✅ **Auto-detection** and intelligent routing (>90% accuracy)
+- ✅ **Context manifests** (70%+ token reduction)
+- ✅ **Diagram generation** (C4 Model with validation)
+- ✅ **Install scripts** (selective installation based on tech stack)
+- ✅ **4-level testing framework** (spec → feature → component → automated)
+- ✅ **JIRA/ADO/GitHub sync** agents
+- ✅ **Brownfield analyzer** (retroactive specs, regression prevention)
+- ✅ **Increment lifecycle** (5 stages, WIP limits, leftover transfer)
+- ✅ **Increment validation** (120 rules, auto-validation on save)
+- ✅ **Hooks system** (auto-update docs, validations)
+- ✅ **Documentation** (CHANGELOG.md, INSTALL.md, comprehensive guides)
 
-### In Progress
+### ⏳ In Progress (v0.1.0-beta.2)
 
-- ⏳ CLI commands (init implemented, others TODO)
-- ⏳ GitHub Actions integration
-- ⏳ Test infrastructure (runners for agent/skill tests)
-- ⏳ MkDocs documentation site
+- ⏳ NPM package publishing (beta.1 installable via GitHub only)
+- ⏳ Additional CLI commands (`audit`, `cleanup`)
+- ⏳ More project templates (currently: saas, api, fullstack)
+- ⏳ GitHub Actions CI/CD integration
+- ⏳ MkDocs documentation site deployment
 
-### Planned
+### 📅 Planned (v0.2.0+)
 
-- 📅 NPM package distribution
-- 📅 Homebrew formula
-- 📅 Windows Chocolatey package
+- 📅 Quality gates (inspired by BMAD `@qa *gate`)
+- 📅 Risk scoring (inspired by BMAD `@qa *risk`)
+- 📅 Clarification workflow (inspired by spec-kit `/speckit.clarify`)
+- 📅 Dependency tracking in tasks (inspired by spec-kit)
+- 📅 Agent-agnostic support (Copilot, Cursor, Gemini, etc.)
+- 📅 Web UI for planning phase
 - 📅 VS Code extension
-- 📅 Web UI for roadmap visualization
+- 📅 Homebrew formula
+- 📅 Test importer (import existing tests)
 
 ---
 

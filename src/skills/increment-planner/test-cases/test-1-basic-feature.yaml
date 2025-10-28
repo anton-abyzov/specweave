@@ -1,0 +1,27 @@
+---
+name: "Basic Feature Planning"
+description: "Tests if increment-planner can create a basic feature from a simple description"
+input:
+  prompt: "Plan a feature for user authentication with email and password"
+  files: []
+expected_output:
+  type: "files_generated"
+  files:
+    - "features/001-user-authentication/spec.md"
+    - "features/001-user-authentication/plan.md"
+    - "features/001-user-authentication/tasks.md"
+    - "features/001-user-authentication/tests.md"
+    - "features/001-user-authentication/context-manifest.yaml"
+  contains:
+    - "User authentication"
+    - "P1"
+    - "Acceptance Criteria"
+    - "Test-First"
+validation:
+  - "All files exist in correct directory"
+  - "spec.md is technology-agnostic"
+  - "plan.md contains technical decisions"
+  - "tasks.md has test-first sequencing"
+  - "tests.md covers P1 user stories"
+  - "context-manifest.yaml has token budget"
+---
