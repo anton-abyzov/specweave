@@ -10,12 +10,13 @@ SpecWeave is a specification-first AI development framework where specifications
 
 ## Why SpecWeave?
 
-- **⚡ Slash Commands** - 100% reliable activation (explicit is better than implicit)
-- **🤖 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security, and more (all pre-installed!)
-- **📝 Specification-First** - Define WHAT and WHY before HOW
-- **🧪 4-Level Testing** - Spec → Feature → Skill → Automated tests
-- **🌐 Framework-Agnostic** - Works with ANY language/framework
-- **📦 Pre-Installed** - Everything ready immediately after init
+- **🤖 Just Works** - Autonomous agents ask clarifying questions, review output, validate quality—minimal interaction required
+- **⚡ Smart Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
+- **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
+- **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
+- **🧪 Complete Testing** - 4-level strategy covering specs to integration tests (APIs, UIs, CLIs, libraries)
+- **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude, Cursor, Copilot, Gemini, ChatGPT)
+- **📚 Living Docs** - Specs auto-update after every operation and test—always in sync with code
 
 ## 🚀 Quickstart
 

@@ -6,6 +6,8 @@ import inquirer from 'inquirer';
 import { execSync } from 'child_process';
 import { AdapterLoader } from '../../adapters/adapter-loader';
 import { IAdapter } from '../../adapters/adapter-interface';
+import { ClaudeMdGenerator } from '../../adapters/claude-md-generator';
+import { AgentsMdGenerator } from '../../adapters/agents-md-generator';
 
 interface InitOptions {
   template?: string;
@@ -83,7 +85,7 @@ export async function initCommand(
 
     // 5. Copy base templates (config, README, CLAUDE.md - same for all)
     const templatesDir = path.join(__dirname, '../../../src/templates');
-    copyTemplates(templatesDir, targetDir, projectName!);
+    await copyTemplates(templatesDir, targetDir, projectName!);
     spinner.text = 'Base templates copied...';
 
     // 6. Install based on tool
@@ -188,7 +190,7 @@ function createDirectoryStructure(targetDir: string): void {
   });
 }
 
-function copyTemplates(templatesDir: string, targetDir: string, projectName: string): void {
+async function copyTemplates(templatesDir: string, targetDir: string, projectName: string): Promise<void> {
   // Copy config.yaml
   const configTemplate = path.join(templatesDir, 'config.yaml');
   if (fs.existsSync(configTemplate)) {
@@ -205,11 +207,31 @@ function copyTemplates(templatesDir: string, targetDir: string, projectName: str
     fs.writeFileSync(path.join(targetDir, 'README.md'), readme);
   }
 
-  // Copy CLAUDE.md
-  const claudeTemplate = path.join(templatesDir, 'CLAUDE.md.template');
-  if (fs.existsSync(claudeTemplate)) {
-    fs.copyFileSync(claudeTemplate, path.join(targetDir, 'CLAUDE.md'));
-  }
+  // Generate CLAUDE.md dynamically (stays in sync with actual agents/skills)
+  // Claude Code is NATIVE - this is the quick reference for the gold standard experience
+  const skillsDir = path.join(__dirname, '../../../src/skills');
+  const agentsDir = path.join(__dirname, '../../../src/agents');
+  const commandsDir = path.join(__dirname, '../../../src/commands');
+
+  const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
+  const claudeMd = await claudeGen.generate({
+    projectName,
+    projectPath: targetDir,
+    templatePath: path.join(templatesDir, 'CLAUDE.md.template')
+  });
+
+  fs.writeFileSync(path.join(targetDir, 'CLAUDE.md'), claudeMd);
+
+  // Generate AGENTS.md - universal file that works with ALL AI tools
+  // Tells each tool how to work with SpecWeave (Claude, Cursor, Gemini, Codex, Copilot, Generic)
+  const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
+  const agentsMd = await agentsGen.generate({
+    projectName,
+    projectPath: targetDir,
+    adapterName: 'claude' // Default to claude, adapters will regenerate with their name
+  });
+
+  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd);
 
   // Copy .gitignore
   const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');

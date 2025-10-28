@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'Spec-Driven Development Framework - Build Production Software with AI',
+  tagline: 'Autonomous AI Agents for Production Software - Just Works, Minimal Interaction',
   // Use SpecWeave logo as favicon (SVG for modern browsers)
   favicon: 'img/logo.svg',
 
@@ -174,7 +174,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} SpecWeave. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} SpecWeave.`,
     },
 
     // Prism syntax highlighting

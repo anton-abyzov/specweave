@@ -40,6 +40,7 @@ export class AgentsMdGenerator {
     let content = this.generateHeader(options);
     content += this.generateProjectOverview(options);
     content += this.generateSpecWeaveStructure();
+    content += this.generateLookupInstructions(); // NEW: Universal lookup guidance
     content += await this.generateSkillsSection(skills);
     content += await this.generateAgentsSection(agents);
     content += await this.generateWorkflowsSection();
@@ -80,6 +81,62 @@ Specification Before Implementation - Define WHAT and WHY before HOW
 - **Context Manifests**: Load only relevant files (70%+ token reduction)
 - **Living Documentation**: Specs evolve with code, never diverge
 - **Test-Validated**: Every feature proven through automated tests
+
+---
+
+`;
+  }
+
+  /**
+   * Generate lookup instructions for finding appropriate agents/skills
+   */
+  private generateLookupInstructions(): string {
+    return `## 🔍 Finding the Right Agent or Skill
+
+**IMPORTANT**: When you encounter a new task or problem, SpecWeave has many specialized capabilities to help you.
+
+### For Claude Code Users (Automatic)
+
+Skills and agents **auto-activate** - you don't need to manually look them up!
+- Skills activate based on keywords in your request
+- Agents are invoked automatically when needed
+- Just describe what you want to do naturally
+
+### For Other AI Tools (Manual Lookup)
+
+When you need help with a specific task:
+
+**Finding Skills:**
+1. **Check this file**: Scroll to "Available Capabilities (Skills)" section below
+2. **Browse skill files**: \`ls .claude/skills/\` to see all available skills
+3. **Read a skill**: Open \`.claude/skills/{skill-name}/SKILL.md\`
+4. **Follow the workflow**: Each skill has step-by-step instructions
+
+**Finding Agents:**
+1. **Check this file**: Scroll to "Available Roles (Agents)" section below
+2. **Browse agent files**: \`ls .claude/agents/\` to see all available agents
+3. **Read an agent**: Open \`.claude/agents/{agent-name}/AGENT.md\`
+4. **Adopt the role**: Follow the agent's guidelines and perspective
+
+**Pro Tips:**
+- When stuck, ask: "Which SpecWeave skill or agent can help me with [task]?"
+- Skills are capabilities (what you CAN do)
+- Agents are roles (who you BECOME to do it)
+- Both are living documentation that evolves with the project
+
+**Example Lookup Workflow:**
+\`\`\`bash
+# User asks: "How do I create a new feature increment?"
+
+# Step 1: Check for relevant skill
+$ ls .claude/skills/ | grep -i increment
+increment-planner/
+
+# Step 2: Read the skill
+$ cat .claude/skills/increment-planner/SKILL.md
+
+# Step 3: Follow the workflow in that file
+\`\`\`
 
 ---
 

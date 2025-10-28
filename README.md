@@ -28,20 +28,18 @@
 
 ## ✨ Key Features
 
-- 🔧 **Multi-Tool Support (NEW!)** - Works with Claude (native), Cursor, Gemini CLI, Codex, Copilot, and ANY AI (100% market coverage)
-- 🤖 **10 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, and more
-  - **Claude Code**: Native agents pre-installed in `.claude/agents/`
+- 🤖 **Autonomous & Smart** - Just works! Agents ask clarifying questions, review output, validate quality—minimal interaction required
+- ⚡ **Seamless Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
+- 🎯 **10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
+- 🔧 **Universal Support** - Works with Claude (native), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
+  - **Claude Code**: Native agents/skills pre-installed in `.claude/`
   - **Other tools**: Accessible via universal AGENTS.md adapter
-- 🎯 **35+ AI Skills** - Technology stacks, integrations, utilities
-  - **Claude Code**: Native skills pre-installed in `.claude/skills/`
-  - **Other tools**: Documented in universal AGENTS.md adapter
-- 📦 **Auto-Detection** - Automatically detects your AI tool and configures appropriately
-- 🧪 **4-Level Testing** - Specification → Feature → Component → Automated tests
-- 📝 **Living Documentation** - Auto-updates via hooks (Claude Code) or manual workflows (other tools)
-- 🎨 **Diagram Generation** - C4 Model diagrams (Context, Container, Component)
+- 🧪 **Complete Test Coverage** - 4-level strategy from specs to integration tests (APIs, UIs, CLIs, libraries)
+- 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
+- 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)
 - 🔄 **Tool Integration** - Sync with JIRA, Azure DevOps, GitHub
 - 🏢 **Brownfield Ready** - Analyze and document existing codebases
-- 🌐 **Framework Agnostic** - Works with TypeScript, Python, Go, Rust, Java, C#
+- 🌐 **Framework Agnostic** - Works with TypeScript, Python, Go, Rust, Java, C#—any tech stack
 
 ---
 

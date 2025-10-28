@@ -41,27 +41,27 @@ function HomepageHeader() {
               <code>{`# Initialize new project
 npx specweave init my-app
 
-# Plan your first feature (smart workflow!)
+# Plan your first feature
 /inc "AI-powered customer support chatbot"
-# PM-led: market research → spec → plan → auto-generate tasks
+# SpecWeave autonomously:
+# ✅ Asks clarifying questions (target users? integration needs?)
+# ✅ Creates spec.md, plan.md, tasks.md, tests.md
+# ✅ Reviews output with you before proceeding
 
-# SpecWeave creates:
-✅ spec.md (requirements)
-✅ plan.md (architecture + C4 diagrams)
-✅ tasks.md (auto-generated from plan!)
-✅ tests.md (test strategy)
-
-# Build it (smart resume)
+# Build it (just works!)
 /build
-# Auto-resumes from next incomplete task
+# SpecWeave autonomously:
+# ✅ Auto-resumes from next incomplete task
+# ✅ Asks for validation at key milestones
+# ✅ Updates docs and runs tests automatically
 
 # Check progress anytime
 /progress
 # Shows: 5/12 tasks (42%), next: T006
 
-# Start next feature (auto-closes previous!)
+# Start next feature (seamless!)
 /inc "real-time chat dashboard"
-# Seamless flow: finish → start next`}</code>
+# Auto-closes previous if all gates pass ✅`}</code>
             </pre>
           </div>
         </div>
@@ -94,7 +94,7 @@ function FeaturesSection(): ReactNode {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2">Why SpecWeave?</Heading>
-          <p>Build production software the right way—with specifications, tests, and AI assistance.</p>
+          <p>Build production software with autonomous AI agents that just work—minimal interaction, maximum productivity.</p>
         </div>
         <div className={styles.featuresGrid}>
           <FeatureHighlight
@@ -104,28 +104,28 @@ function FeaturesSection(): ReactNode {
           />
           <FeatureHighlight
             icon="⚡"
-            title="Smart Workflow"
-            description="Auto-resume, auto-close, progress tracking. /inc, /build, /progress. Natural flow without overhead."
+            title="Autonomous & Smart"
+            description="Just works—asks clarifying questions, reviews output, validates quality. Auto-resume, auto-close. Minimal interaction, maximum productivity."
           />
           <FeatureHighlight
             icon="🤖"
-            title="10 AI Agents + 35+ Skills"
-            description="PM, Architect, DevOps, QA, Security. All pre-installed and ready to use."
+            title="10 Agents + 35+ Skills"
+            description="PM, Architect, DevOps, QA, Security—work in parallel to minimize context usage. Easily extensible. Pre-installed and ready to use."
           />
           <FeatureHighlight
             icon="🧪"
-            title="Test-Validated"
-            description="4-level testing strategy with full traceability from specs to E2E tests."
+            title="Complete Test Coverage"
+            description="4-level testing strategy with full traceability—from specs to integration tests. Works for APIs, UIs, CLIs, and libraries."
           />
           <FeatureHighlight
             icon="🌐"
-            title="Framework-Agnostic"
-            description="Works with TypeScript, Python, Go, Rust, Java, C#—any tech stack."
+            title="Universal Support"
+            description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude, Cursor, Copilot, Gemini, ChatGPT)."
           />
           <FeatureHighlight
-            icon="🛡️"
-            title="Regression Prevention"
-            description="Document existing code before modification. No surprises, no regressions."
+            icon="📚"
+            title="Living Documentation"
+            description="Specs and docs auto-update after every operation and test. Always in sync with code—no drift, no surprises."
           />
         </div>
       </div>
@@ -142,28 +142,28 @@ function ComparisonSection(): ReactNode {
             <h3>❌ Without SpecWeave</h3>
             <ul>
               <li>Tell AI: "Build me a feature"</li>
-              <li>AI might not activate correctly</li>
-              <li>Code generated without specs</li>
-              <li>Test manually, fix bugs</li>
-              <li>(Maybe) document later</li>
-              <li>Repeat for next feature</li>
+              <li>Back-and-forth messages for every detail</li>
+              <li>Code generated without specs or architecture</li>
+              <li>Manually test, manually fix bugs</li>
+              <li>Docs drift or don't exist</li>
+              <li>Start over for next feature</li>
             </ul>
             <p className={styles.comparisonResult}>
-              <strong>Result:</strong> No docs = regression risk. No specs = unclear requirements. Unreliable activation.
+              <strong>Result:</strong> High cognitive load, constant context switching, no documentation = regression risk.
             </p>
           </div>
           <div className={styles.comparisonColumn}>
             <h3>✅ With SpecWeave</h3>
             <ul>
-              <li>Type <code>/inc "feature"</code> (smart workflow)</li>
-              <li>SpecWeave creates spec + plan + auto-generates tasks</li>
-              <li>Type <code>/build</code> (auto-resumes from next task)</li>
-              <li>Type <code>/progress</code> anytime (see status)</li>
-              <li>Tests validate automatically, docs update via hooks</li>
-              <li>Type <code>/inc "next"</code> (auto-closes if ready)</li>
+              <li>Type <code>/inc "feature"</code></li>
+              <li>Autonomous agents ask clarifying questions, create spec/plan/tasks, review with you</li>
+              <li>Type <code>/build</code></li>
+              <li>Agents work in parallel, auto-resume, validate at milestones, update docs continuously</li>
+              <li>Type <code>/progress</code> anytime to see status</li>
+              <li>Type <code>/inc "next"</code> to seamlessly move forward</li>
             </ul>
             <p className={styles.comparisonResult}>
-              <strong>Result:</strong> Natural flow without overhead. Production-ready software with full traceability.
+              <strong>Result:</strong> Minimal interaction, natural flow. Production-ready software with living documentation and full traceability.
             </p>
           </div>
         </div>
@@ -201,8 +201,8 @@ export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title="Spec-Driven Development Framework"
-      description="Build production software with AI assistance. Specification-first development with 70% token reduction, automated testing, and living documentation.">
+      title="Autonomous AI Development Framework"
+      description="Build production software with autonomous AI agents that just work. Minimal interaction, maximum productivity. Works with Claude, Cursor, Copilot, Gemini, and any AI tool.">
       <HomepageHeader />
       <main>
         <FeaturesSection />
