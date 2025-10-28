@@ -1,0 +1,45 @@
+C4Component
+  title {{SERVICE_NAME}} Component Diagram
+
+  Container(frontend, "{{FRONTEND_NAME}}", "{{FRONTEND_TECH}}", "Web application")
+
+  Container_Boundary(boundary, "{{SERVICE_NAME}}") {
+    Component(controller, "{{CONTROLLER_NAME}}", "{{CONTROLLER_TECH}}", "{{CONTROLLER_DESCRIPTION}}")
+    Component(service, "{{SERVICE_COMPONENT_NAME}}", "{{SERVICE_TECH}}", "{{SERVICE_DESCRIPTION}}")
+    Component(repository, "{{REPOSITORY_NAME}}", "{{REPOSITORY_TECH}}", "{{REPOSITORY_DESCRIPTION}}")
+    Component(validator, "{{VALIDATOR_NAME}}", "{{VALIDATOR_TECH}}", "{{VALIDATOR_DESCRIPTION}}")
+    ComponentDb(cache, "{{CACHE_NAME}}", "Redis", "{{CACHE_DESCRIPTION}}")
+  }
+
+  ContainerDb(database, "{{DATABASE_NAME}}", "{{DB_TECH}}", "Persistent storage")
+
+  %% External interactions
+  Rel(frontend, controller, "Makes API calls", "JSON/HTTPS")
+
+  %% Internal component flow
+  Rel(controller, validator, "Validates input")
+  Rel(controller, service, "Delegates business logic")
+  Rel(service, repository, "Queries data")
+  Rel(service, cache, "Caches results")
+  Rel(repository, database, "Reads/writes", "SQL")
+
+%% Template Variables:
+%% {{SERVICE_NAME}} - Name of the service/container
+%% {{FRONTEND_NAME}} - Frontend application name
+%% {{FRONTEND_TECH}} - Frontend technology
+%% {{CONTROLLER_NAME}} - API controller name (e.g., "AuthController")
+%% {{CONTROLLER_TECH}} - Controller tech (e.g., "Express Router")
+%% {{CONTROLLER_DESCRIPTION}} - What controller handles
+%% {{SERVICE_COMPONENT_NAME}} - Service layer name (e.g., "AuthService")
+%% {{SERVICE_TECH}} - Service technology (e.g., "TypeScript Class")
+%% {{SERVICE_DESCRIPTION}} - Business logic handled
+%% {{REPOSITORY_NAME}} - Data access layer name (e.g., "UserRepository")
+%% {{REPOSITORY_TECH}} - Repository tech (e.g., "Prisma ORM")
+%% {{REPOSITORY_DESCRIPTION}} - Data operations handled
+%% {{VALIDATOR_NAME}} - Validator name (e.g., "InputValidator")
+%% {{VALIDATOR_TECH}} - Validation tech (e.g., "Zod")
+%% {{VALIDATOR_DESCRIPTION}} - What is validated
+%% {{CACHE_NAME}} - Cache component name
+%% {{CACHE_DESCRIPTION}} - What is cached
+%% {{DATABASE_NAME}} - Database name
+%% {{DB_TECH}} - Database technology

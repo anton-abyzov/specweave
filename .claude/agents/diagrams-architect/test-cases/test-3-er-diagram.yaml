@@ -1,0 +1,182 @@
+---
+test_id: diagrams-architect-003
+test_name: ER Diagram Generation
+coverage:
+  - TC-B014 # Skill detects ER diagram request
+  - TC-B015 # Agent generates erDiagram syntax
+  - TC-B016 # Entities, attributes, relationships correctly defined
+  - TC-B017 # Primary/foreign keys marked
+  - TC-B018 # Saved to correct location
+  - TC-B019 # File named correctly
+priority: P1
+tags:
+  - er-diagram
+  - data-model
+  - database-schema
+---
+
+# Test Case: ER Diagram Generation
+
+## Scenario
+
+User requests an entity-relationship diagram to understand the authentication data model, including user, session, and token entities.
+
+## Input
+
+**User Request**: "Create ER diagram for user and session entities"
+
+**Context Provided** (optional):
+- USER table: id, email, password_hash, created_at
+- SESSION table: id, user_id, token, expires_at
+- REFRESH_TOKEN table: id, user_id, token, expires_at
+- PASSWORD_RESET table: id, user_id, token, expires_at
+
+## Expected Agent Behavior
+
+1. **Recognize diagram type**: ER diagram
+2. **Choose appropriate template**: `er-diagram-template.mmd`
+3. **Generate diagram** with:
+   - Entities: USER, SESSION, REFRESH_TOKEN, PASSWORD_RESET
+   - Relationships with cardinality (one-to-many, many-to-one)
+   - Primary keys (PK), foreign keys (FK), unique keys (UK)
+   - Field types and constraints
+   - Timestamps (created_at, updated_at)
+4. **Validate syntax**:
+   - Starts with `erDiagram` (uses `mermaid` keyword)
+   - Relationship cardinality correct (||--o{, }o--||, etc.)
+   - Field definitions include type and constraints
+   - Proper formatting
+5. **Specify file path**: `.specweave/docs/internal/architecture/diagrams/auth/data-model.mmd`
+6. **Provide validation instructions**
+
+## Expected Output
+
+**Diagram Content** (approximate):
+```
+erDiagram
+    USER ||--o{ SESSION : has
+    USER ||--o{ REFRESH_TOKEN : has
+    USER ||--o{ PASSWORD_RESET : requests
+
+    USER {
+        uuid id PK
+        string email UK
+        string password_hash
+        string first_name
+        string last_name
+        boolean email_verified
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    SESSION {
+        uuid id PK
+        uuid user_id FK
+        string token UK
+        timestamp expires_at
+        string ip_address
+        string user_agent
+        timestamp created_at
+    }
+
+    REFRESH_TOKEN {
+        uuid id PK
+        uuid user_id FK
+        string token UK
+        timestamp expires_at
+        boolean revoked
+        timestamp created_at
+    }
+
+    PASSWORD_RESET {
+        uuid id PK
+        uuid user_id FK
+        string token UK
+        timestamp expires_at
+        boolean used
+        timestamp created_at
+    }
+```
+
+**File Path**: `.specweave/docs/internal/architecture/diagrams/auth/data-model.mmd`
+
+**Validation Message**:
+```
+✅ Diagram created: .specweave/docs/internal/architecture/diagrams/auth/data-model.mmd
+
+📋 VALIDATION REQUIRED:
+1. Open the file in VS Code
+2. Verify the ER diagram renders correctly
+3. Confirm relationships and cardinality are accurate
+4. Check that all fields and constraints are visible
+```
+
+## Success Criteria
+
+- [ ] Diagram uses correct erDiagram syntax
+- [ ] Includes `mermaid` keyword
+- [ ] Entities named in UPPERCASE
+- [ ] Relationship cardinality correct (||--o{, }o--||, }o--o{)
+- [ ] All entities have id PK field
+- [ ] Foreign keys marked with FK
+- [ ] Unique constraints marked with UK
+- [ ] Field types specified (uuid, string, boolean, timestamp, etc.)
+- [ ] Timestamps (created_at, updated_at) included
+- [ ] Relationships have descriptive labels (has, belongs to, requests)
+- [ ] File path follows conventions (module subdirectory)
+- [ ] Validation instructions provided
+- [ ] Diagram would render correctly
+
+## Failure Scenarios
+
+**Scenario 1: Incorrect relationship cardinality**
+```
+USER ||--|| SESSION : has
+```
+❌ FAIL: User can have multiple sessions (should be one-to-many: ||--o{)
+
+**Scenario 2: Missing field constraints**
+```
+USER {
+    uuid id
+    string email
+}
+```
+❌ FAIL: Should mark id as PK, email as UK
+
+**Scenario 3: Missing foreign key relationships**
+```
+SESSION {
+    uuid id PK
+    uuid user_id
+}
+```
+❌ FAIL: user_id should be marked as FK
+
+**Scenario 4: Lowercase entity names**
+```
+user ||--o{ session : has
+```
+❌ FAIL: Entity names should be UPPERCASE convention
+
+**Scenario 5: Missing timestamps**
+```
+USER {
+    uuid id PK
+    string email UK
+}
+```
+❌ FAIL: Should include created_at, updated_at
+
+## Traceability
+
+**Covers User Stories**:
+- US-B003: Create ER Diagram
+
+**Covers Acceptance Criteria**:
+- TC-B014: Skill detects ER diagram request
+- TC-B015: Agent generates erDiagram syntax
+- TC-B016: Entities, attributes, relationships correctly defined
+- TC-B017: Primary/foreign keys marked
+- TC-B018: Diagram saved to correct location
+- TC-B019: File named `data-model.mmd` or `{module}-data-model.mmd`

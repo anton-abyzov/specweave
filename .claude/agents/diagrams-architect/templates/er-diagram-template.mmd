@@ -1,0 +1,64 @@
+erDiagram
+    {{ENTITY_1}} ||--o{ {{ENTITY_2}} : {{RELATIONSHIP_1}}
+    {{ENTITY_2}} }o--|| {{ENTITY_3}} : {{RELATIONSHIP_2}}
+    {{ENTITY_1}} ||--o{ {{ENTITY_3}} : {{RELATIONSHIP_3}}
+
+    {{ENTITY_1}} {
+        uuid id PK "Primary key"
+        string {{FIELD_1}} UK "Unique constraint"
+        string {{FIELD_2}} "Required field"
+        int {{FIELD_3}} "Numeric field"
+        boolean {{FIELD_4}} "Boolean flag"
+        timestamp created_at "Creation timestamp"
+        timestamp updated_at "Last update timestamp"
+    }
+
+    {{ENTITY_2}} {
+        uuid id PK
+        uuid {{FK_TO_ENTITY_1}} FK "Foreign key to {{ENTITY_1}}"
+        string {{FIELD_5}}
+        text {{FIELD_6}} "Long text field"
+        enum {{FIELD_7}} "Enum type"
+        decimal {{FIELD_8}} "Decimal number"
+        date {{FIELD_9}} "Date only"
+        timestamp created_at
+    }
+
+    {{ENTITY_3}} {
+        uuid id PK
+        uuid {{FK_TO_ENTITY_1}} FK
+        uuid {{FK_TO_ENTITY_2}} FK
+        json {{FIELD_10}} "JSON data"
+        timestamp {{FIELD_11}}
+        timestamp created_at
+        timestamp updated_at
+    }
+
+%% Template Variables:
+%% {{ENTITY_*}} - Entity/table names (UPPERCASE convention)
+%% {{RELATIONSHIP_*}} - Relationship descriptions (e.g., "has", "belongs to")
+%% {{FIELD_*}} - Field names (snake_case convention)
+%% {{FK_TO_*}} - Foreign key field names
+
+%% Relationship Cardinality:
+%% ||--|| : one to one
+%% ||--o{ : one to many
+%% }o--|| : many to one
+%% }o--o{ : many to many
+
+%% Field Constraints:
+%% PK : Primary Key
+%% FK : Foreign Key
+%% UK : Unique Key
+
+%% Common Field Types:
+%% - uuid, int, bigint, string, text
+%% - boolean, enum, json
+%% - decimal, float, money
+%% - date, time, timestamp, datetime
+
+%% Best Practices:
+%% - Always include id (PK), created_at, updated_at
+%% - Use uuid for distributed systems
+%% - Add field comments for clarity
+%% - Show foreign key relationships clearly
