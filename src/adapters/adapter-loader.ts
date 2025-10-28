@@ -12,6 +12,8 @@ import { IAdapter } from './adapter-interface';
 import { ClaudeAdapter } from './claude/adapter';
 import { CursorAdapter } from './cursor/adapter';
 import { CopilotAdapter } from './copilot/adapter';
+import { GeminiAdapter } from './gemini/adapter';
+import { CodexAdapter } from './codex/adapter';
 import { GenericAdapter } from './generic/adapter';
 
 export interface AdapterRegistry {
@@ -46,6 +48,8 @@ export class AdapterLoader {
     this.adapters.set('claude', new ClaudeAdapter());
     this.adapters.set('cursor', new CursorAdapter());
     this.adapters.set('copilot', new CopilotAdapter());
+    this.adapters.set('gemini', new GeminiAdapter());
+    this.adapters.set('codex', new CodexAdapter());
     this.adapters.set('generic', new GenericAdapter());
   }
 
@@ -89,8 +93,10 @@ export class AdapterLoader {
    * Detection priority (based on market share and probability):
    * 1. Claude Code (if .claude/ exists or claude CLI found)
    * 2. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
-   * 3. Copilot (if .github/copilot/ exists)
-   * 4. Generic (fallback - always returns true)
+   * 3. Gemini CLI (if gemini CLI found)
+   * 4. Codex (if codex CLI found)
+   * 5. Copilot (if .github/copilot/ exists)
+   * 6. Generic (fallback - always returns true)
    *
    * @returns Promise<string> Detected adapter name
    */
@@ -98,7 +104,7 @@ export class AdapterLoader {
     console.log('🔍 Detecting AI coding tool...\n');
 
     // Try detection in priority order
-    const detectionOrder = ['claude', 'cursor', 'copilot', 'generic'];
+    const detectionOrder = ['claude', 'cursor', 'gemini', 'codex', 'copilot', 'generic'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);

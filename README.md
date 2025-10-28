@@ -50,8 +50,10 @@
 - **Any AI coding tool**:
   - Claude Code (Claude Sonnet 4.5 - full automation)
   - Cursor (Claude Sonnet 3.7 / GPT-4 - semi-automation)
+  - Gemini CLI (Gemini 2.5 Pro, 1M context - semi-automation)
+  - Codex (GPT-5-Codex - semi-automation)
   - GitHub Copilot (OpenAI models - basic automation)
-  - Or ANY AI (ChatGPT, Gemini, etc. - manual workflow)
+  - Or ANY AI (ChatGPT web, Gemini web, Claude web, etc. - manual workflow)
 
 ### Quick Install
 
@@ -540,7 +542,7 @@ npm test
 
 ### 🎯 NEW: Multi-Tool Support!
 
-**SpecWeave now works with ANY AI coding tool!** Auto-detects Claude, Cursor, Copilot, or Generic.
+**SpecWeave now works with ANY AI coding tool!** Auto-detects Claude, Cursor, Gemini CLI, Codex, Copilot, or Generic.
 
 ```bash
 # List available adapters
@@ -552,6 +554,8 @@ npx specweave init my-saas           # Automatically detects and configures
 # Or explicitly choose:
 npx specweave init my-saas --adapter claude    # Full automation
 npx specweave init my-saas --adapter cursor    # Semi-automation
+npx specweave init my-saas --adapter gemini    # Semi-automation (1M context!)
+npx specweave init my-saas --adapter codex     # Semi-automation (GPT-5-Codex)
 npx specweave init my-saas --adapter copilot   # Basic automation
 npx specweave init my-saas --adapter generic   # Manual (ANY AI)
 ```

@@ -73,6 +73,41 @@ adapters:
     market_share: 20%
     priority: P1
 
+  - name: gemini
+    description: "Gemini CLI adapter - Semi-automation with AGENTS.md and agent mode"
+    automation_level: semi
+    status: active
+    directory: gemini
+    features:
+      - AGENTS.md universal instructions
+      - 1M token context window (5x larger than Claude!)
+      - Agent mode for multi-file tasks
+      - MCP (Model Context Protocol) support
+      - Free tier available (60 req/min, 1K req/day)
+      - Open source (Apache 2.0)
+    requirements:
+      - Gemini CLI installed
+      - Node.js >= 18.0.0
+    market_share: 10%
+    priority: P1
+
+  - name: codex
+    description: "OpenAI Codex adapter - Semi-automation with AGENTS.md and GPT-5-Codex"
+    automation_level: semi
+    status: active
+    directory: codex
+    features:
+      - AGENTS.md universal instructions
+      - GPT-5-Codex optimized for engineering
+      - Multiple access points (CLI + Web + IDE + GitHub + iOS)
+      - Task-based isolated execution
+      - File operations and test execution
+    requirements:
+      - ChatGPT Plus/Pro/Business/Enterprise
+      - Node.js >= 18.0.0
+    market_share: 20%
+    priority: P1
+
 # Future adapters (P2/P3)
 future_adapters:
   - name: windsurf
@@ -81,46 +116,70 @@ future_adapters:
     status: planned
     priority: P2
 
-  - name: gemini
-    description: "Google Gemini adapter (if requested by community)"
-    automation_level: basic
-    status: planned
-    priority: P3
-
 # Adapter capabilities comparison
 capabilities:
   skills:
     claude: full
-    cursor: partial
-    copilot: none
-    generic: none
+    cursor: via_agents_md
+    copilot: via_agents_md
+    gemini: via_agents_md
+    codex: via_agents_md
+    generic: via_agents_md
 
   agents:
     claude: full
-    cursor: manual
-    copilot: manual
-    generic: manual
+    cursor: via_agents_md
+    copilot: via_agents_md
+    gemini: via_agents_md
+    codex: via_agents_md
+    generic: via_agents_md
 
   hooks:
     claude: full
     cursor: none
     copilot: none
+    gemini: none
+    codex: none
     generic: none
 
-  slash_commands:
-    claude: native
-    cursor: via_cursorrules
-    copilot: via_instructions
-    generic: via_markdown_guide
+  instruction_file:
+    claude: .claude/skills + agents
+    cursor: AGENTS.md
+    copilot: AGENTS.md
+    gemini: AGENTS.md
+    codex: AGENTS.md
+    generic: AGENTS.md
 
   context_manifests:
     claude: auto_load
     cursor: manual_reference
     copilot: manual_reference
+    gemini: manual_reference
+    codex: manual_reference
     generic: manual_copy_paste
 
 # Target market coverage
 market_coverage:
-  claude_only: 10%
-  with_all_adapters: 100%
+  claude: 10%
+  cursor: 30%
+  copilot: 35%
+  gemini: 10%
+  codex: 20%
+  generic: 5%
+  total: 110% # Overlapping users
+  unique_coverage: 100%
   goal: "Make SpecWeave accessible to ALL developers"
+
+# Universal AGENTS.md
+universal_standard:
+  file: AGENTS.md
+  purpose: "Single source of truth for all adapters (except Claude which has native support)"
+  replaces:
+    - .cursorrules (Cursor)
+    - .github/copilot/instructions.md (Copilot)
+    - Multiple tool-specific files
+  benefits:
+    - Single file to maintain
+    - Works across ALL tools
+    - Auto-generated from actual skills/agents
+    - Follows agents.md standard
