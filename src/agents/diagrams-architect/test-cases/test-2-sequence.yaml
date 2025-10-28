@@ -1,0 +1,150 @@
+---
+test_id: diagrams-architect-002
+test_name: Sequence Diagram Generation
+coverage:
+  - TC-B008 # Skill detects sequence diagram request
+  - TC-B009 # Agent generates sequenceDiagram syntax
+  - TC-B010 # Participants clearly labeled
+  - TC-B011 # Flow accurately represents process
+  - TC-B012 # Saved to correct location
+  - TC-B013 # File named correctly
+priority: P1
+tags:
+  - sequence-diagram
+  - interaction-flow
+  - authentication
+---
+
+# Test Case: Sequence Diagram Generation
+
+## Scenario
+
+User requests a sequence diagram to understand the login authentication flow, including success and failure paths.
+
+## Input
+
+**User Request**: "Create sequence diagram for login flow"
+
+**Context Provided** (optional):
+- User submits credentials via browser
+- AuthService validates against database
+- Session created on success
+- Error message on failure
+
+## Expected Agent Behavior
+
+1. **Recognize diagram type**: Sequence diagram
+2. **Choose appropriate template**: `sequence-template.mmd`
+3. **Generate diagram** with:
+   - Participants: User, Browser, AuthService, Database, SessionStore
+   - Clear interaction sequence
+   - Success path (alt) and failure path (else)
+   - Activation boxes showing processing time
+   - Response arrows (dashed)
+4. **Validate syntax**:
+   - Starts with `sequenceDiagram` (uses `mermaid` keyword for non-C4)
+   - All participants defined
+   - Message arrows correct (->>, -->>)
+   - Alt/else blocks properly structured
+5. **Specify file path**: `.specweave/docs/internal/architecture/diagrams/auth/flows/login-flow.mmd`
+6. **Provide validation instructions**
+
+## Expected Output
+
+**Diagram Content** (approximate):
+```
+sequenceDiagram
+    participant User
+    participant Browser
+    participant AuthService
+    participant Database
+    participant SessionStore
+
+    User->>Browser: Enter credentials
+    Browser->>AuthService: POST /api/auth/login
+    activate AuthService
+
+    AuthService->>Database: Query user by email
+    Database-->>AuthService: User record
+
+    AuthService->>AuthService: Verify password (bcrypt)
+
+    alt Password valid
+        AuthService->>SessionStore: Create session
+        SessionStore-->>AuthService: Session ID
+        AuthService-->>Browser: 200 OK + Session cookie
+        Browser-->>User: Redirect to dashboard
+    else Password invalid
+        AuthService-->>Browser: 401 Unauthorized
+        Browser-->>User: Show error message
+    end
+
+    deactivate AuthService
+```
+
+**File Path**: `.specweave/docs/internal/architecture/diagrams/auth/flows/login-flow.mmd`
+
+**Validation Message**:
+```
+✅ Diagram created: .specweave/docs/internal/architecture/diagrams/auth/flows/login-flow.mmd
+
+📋 VALIDATION REQUIRED:
+1. Open the file in VS Code
+2. Verify the sequence diagram renders correctly
+3. Confirm all participants and messages are clear
+4. Verify success and failure paths are visible
+```
+
+## Success Criteria
+
+- [ ] Diagram uses correct sequenceDiagram syntax
+- [ ] Includes `mermaid` keyword (standard for non-C4 diagrams)
+- [ ] All participants clearly defined
+- [ ] Request arrows are solid (->>)
+- [ ] Response arrows are dashed (-->>)
+- [ ] Alt/else block shows conditional logic
+- [ ] Activate/deactivate shows processing time
+- [ ] File path follows conventions (module/flows/ subdirectory)
+- [ ] Validation instructions provided
+- [ ] Diagram would render correctly
+
+## Failure Scenarios
+
+**Scenario 1: Missing participant definition**
+```
+sequenceDiagram
+    User->>Browser: Enter credentials
+```
+❌ FAIL: Participants should be explicitly defined
+
+**Scenario 2: Wrong arrow types**
+```
+Browser-->>AuthService: POST /api/auth/login
+```
+❌ FAIL: Requests should use solid arrows (->>) not dashed
+
+**Scenario 3: Missing alt/else for conditional flow**
+```
+AuthService->>SessionStore: Create session
+AuthService-->>Browser: 401 Unauthorized
+```
+❌ FAIL: Should use alt/else to show conditional paths
+
+**Scenario 4: Incorrect file location**
+```
+File: .specweave/docs/internal/architecture/diagrams/login-flow.mmd
+```
+❌ FAIL: Should be in module-specific `flows/` subdirectory
+
+## Traceability
+
+**Covers User Stories**:
+- US-B002: Create Sequence Diagram
+
+**Covers Acceptance Criteria**:
+- TC-B008: Skill detects sequence diagram request
+- TC-B009: Agent generates sequenceDiagram syntax
+- TC-B010: Participants clearly labeled
+- TC-B011: Flow accurately represents login process
+- TC-B012: Diagram saved to correct location
+- TC-B013: File named `login-flow.sequence.mmd` or `login-flow.mmd`

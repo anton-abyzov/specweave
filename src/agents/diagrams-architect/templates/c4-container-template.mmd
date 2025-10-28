@@ -1,0 +1,48 @@
+C4Container
+  title {{SYSTEM_NAME}} Container Diagram
+
+  Person(user, "{{USER_TYPE}}", "{{USER_DESCRIPTION}}")
+
+  System_Boundary(boundary, "{{SYSTEM_NAME}}") {
+    Container(webapp, "{{WEB_APP_NAME}}", "{{WEB_TECH}}", "{{WEB_APP_DESCRIPTION}}")
+    Container(api, "{{API_NAME}}", "{{API_TECH}}", "{{API_DESCRIPTION}}")
+    Container(worker, "{{WORKER_NAME}}", "{{WORKER_TECH}}", "{{WORKER_DESCRIPTION}}")
+    ContainerDb(db, "{{DATABASE_NAME}}", "{{DB_TECH}}", "{{DATABASE_DESCRIPTION}}")
+    ContainerDb(cache, "{{CACHE_NAME}}", "Redis", "{{CACHE_DESCRIPTION}}")
+  }
+
+  System_Ext(external, "{{EXTERNAL_SYSTEM}}", "{{EXTERNAL_DESCRIPTION}}")
+
+  %% User interactions
+  Rel(user, webapp, "{{USER_WEB_INTERACTION}}", "HTTPS")
+
+  %% Internal relationships
+  Rel(webapp, api, "{{WEB_TO_API}}", "JSON/HTTPS")
+  Rel(api, db, "Reads/writes data", "SQL/TCP")
+  Rel(api, cache, "Caches data", "Redis Protocol")
+  Rel(api, worker, "Queues jobs", "Message Queue")
+  Rel(worker, db, "Reads/writes data", "SQL/TCP")
+
+  %% External integrations
+  Rel(api, external, "{{API_TO_EXTERNAL}}", "HTTPS")
+
+%% Template Variables:
+%% {{SYSTEM_NAME}} - Name of your system
+%% {{USER_TYPE}} - Type of user
+%% {{USER_DESCRIPTION}} - User description
+%% {{WEB_APP_NAME}} - Frontend application name
+%% {{WEB_TECH}} - Frontend tech stack (e.g., "React, TypeScript")
+%% {{WEB_APP_DESCRIPTION}} - What the frontend does
+%% {{API_NAME}} - Backend API name
+%% {{API_TECH}} - Backend tech stack (e.g., "Node.js, Express")
+%% {{API_DESCRIPTION}} - What the API does
+%% {{WORKER_NAME}} - Background worker name
+%% {{WORKER_TECH}} - Worker tech (e.g., "Node.js, Bull")
+%% {{WORKER_DESCRIPTION}} - What worker processes
+%% {{DATABASE_NAME}} - Database name
+%% {{DB_TECH}} - Database technology (e.g., "PostgreSQL", "MongoDB")
+%% {{DATABASE_DESCRIPTION}} - What data is stored
+%% {{CACHE_NAME}} - Cache name
+%% {{CACHE_DESCRIPTION}} - What is cached
+%% {{EXTERNAL_SYSTEM}} - External system name
+%% {{EXTERNAL_DESCRIPTION}} - External system description
