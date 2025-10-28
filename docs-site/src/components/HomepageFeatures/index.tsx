@@ -11,32 +11,35 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
-    image: require('@site/static/img/hero/easy-to-use.png').default,
+    title: 'Real Estate Operations',
+    image: require('@site/static/img/hero/real-estate.png').default,
     description: (
       <>
-        SpecWeave was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Manage property listings, client contracts, and documentation with
+        spec-driven workflows. From property details to closing documents,
+        keep everything organized and traceable.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    image: require('@site/static/img/hero/focus-on-what-matters.png').default,
+    title: 'Software Engineering',
+    image: require('@site/static/img/hero/software-engineering.png').default,
     description: (
       <>
-        SpecWeave lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Build production software with specifications as the source of truth.
+        Define WHAT and WHY before HOW. 70% token reduction, automated testing,
+        and living documentation for any tech stack.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    image: require('@site/static/img/hero/powered-by-react.png').default,
+    title: 'Trading & Finance',
+    image: require('@site/static/img/hero/trading.png').default,
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Document trading strategies, market analysis, and financial models with
+        precision. Track decisions, maintain compliance documentation, and ensure
+        audit-ready traceability.
       </>
     ),
   },

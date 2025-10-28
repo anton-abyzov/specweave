@@ -1,0 +1,98 @@
+---
+name: "Simple Product Development Orchestration"
+description: "Tests role-orchestrator's ability to coordinate agents for simple product development"
+priority: P1
+test_type: integration
+
+input:
+  prompt: "Build a simple todo application with React frontend and Node.js backend"
+  project_context:
+    type: "greenfield"
+    has_specs: false
+    has_architecture: false
+
+expected_behavior:
+  - orchestrator_activates: true
+  - complexity_analysis:
+      scope: "full-product"
+      agents_needed: ["pm-agent", "architect-agent", "nodejs-backend", "frontend-agent", "qa-lead-agent", "devops-agent"]
+      pattern: "sequential_with_gates"
+
+  - execution_phases:
+      - phase: 1
+        name: "Requirements"
+        agent: "pm-agent"
+        output_files:
+          - "specifications/modules/todo-app/overview.md"
+        gate: "user_approval"
+
+      - phase: 2
+        name: "Architecture"
+        agent: "architect-agent"
+        input_from: "pm-agent"
+        output_files:
+          - ".specweave/docs/architecture/todo-app-design.md"
+        gate: "tech_review"
+
+      - phase: 3
+        name: "Feature Planning"
+        agent: "feature-planner"
+        output_files:
+          - "features/001-todo-app/spec.md"
+          - "features/001-todo-app/plan.md"
+          - "features/001-todo-app/tasks.md"
+
+      - phase: 4
+        name: "Implementation"
+        agents: ["nodejs-backend", "frontend-agent"]
+        pattern: "parallel"
+        output_files:
+          - "src/backend/todo-service.ts"
+          - "src/frontend/TodoApp.tsx"
+
+      - phase: 5
+        name: "Testing"
+        agent: "qa-lead-agent"
+        output_files:
+          - "features/001-todo-app/tests.md"
+          - "tests/e2e/todo-app.spec.ts"
+        gate: "test_coverage_80%"
+
+      - phase: 6
+        name: "Deployment"
+        agent: "devops-agent"
+        output_files:
+          - ".github/workflows/deploy.yml"
+        gate: "deployment_approval"
+
+expected_output:
+  success: true
+  phases_completed: 6
+  gates_passed: 4
+  files_created:
+    - "specifications/modules/todo-app/overview.md"
+    - ".specweave/docs/architecture/todo-app-design.md"
+    - "features/001-todo-app/spec.md"
+    - "src/backend/todo-service.ts"
+    - "src/frontend/TodoApp.tsx"
+    - "tests/e2e/todo-app.spec.ts"
+
+  metrics:
+    total_agents_invoked: 6
+    parallel_executions: 1
+    sequential_phases: 5
+    quality_gates_passed: 4
+
+validation:
+  - "All 6 phases completed in correct order"
+  - "Parallel execution of backend and frontend worked"
+  - "All quality gates evaluated correctly"
+  - "Shared context maintained across agents"
+  - "Final output includes all expected files"
+
+success_criteria:
+  - orchestration_complete: true
+  - no_phase_failures: true
+  - all_gates_passed: true
+  - correct_agent_sequence: true
+---

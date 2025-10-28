@@ -33,8 +33,8 @@
 - [x] Verify CLAUDE.md is up-to-date
 - [x] Verify all internal docs exist:
   - [x] .specweave/docs/README.md
-  - [x] .specweave/docs/DIAGRAM-CONVENTIONS.md
-  - [x] .specweave/docs/TOOL-CONCEPT-MAPPING.md
+  - [x] .specweave/docs/internal/delivery/guides/diagram-conventions.md
+  - [x] .specweave/docs/internal/delivery/guides/tool-concept-mapping.md
   - [x] .specweave/increments/README.md
 
 ### Components Verification

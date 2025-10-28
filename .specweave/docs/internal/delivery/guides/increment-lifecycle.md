@@ -117,8 +117,8 @@ backlog → planned → in-progress → completed → closed
 
 | Status | Definition | Location | Criteria |
 |--------|------------|----------|----------|
-| **backlog** | Idea identified, not yet planned | `.specweave/increments/_backlog/####-name.md` | Basic idea documented |
-| **planned** | Spec created, ready to start | `.specweave/increments/####-name/` | spec.md + tasks.md created, dependencies identified |
+| **backlog** | Idea identified, not yet planned | `.specweave/increments/_backlog/0001-name.md` | Basic idea documented |
+| **planned** | Spec created, ready to start | `.specweave/increments/0001-name/` | spec.md + tasks.md created, dependencies identified |
 | **in-progress** | Active development | Same location | ≥1 task started, WIP limit not exceeded |
 | **completed** | All P1 tasks done, tests passing | Same location | All P1 tasks complete, tests pass, docs updated |
 | **closed** | Reviewed, archived, WIP freed | Same location | Closure report generated, leftovers transferred |

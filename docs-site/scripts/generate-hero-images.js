@@ -3,6 +3,11 @@
 /**
  * Generate hero images for SpecWeave Docusaurus homepage
  * Using Google Gemini 2.5 Flash Image (nano banana)
+ *
+ * NEW: Multi-industry approach showing SpecWeave versatility
+ * - Real Estate (left)
+ * - Software Engineering (center - main use case)
+ * - Trading/Finance (right)
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -32,43 +37,142 @@ const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' });
 
 /**
  * Image generation prompts with SpecWeave branding
+ * Multi-industry approach to show versatility
  */
 const IMAGE_PROMPTS = [
   {
-    name: 'easy-to-use',
-    prompt: `Create a modern, minimalist illustration for a technical documentation website.
-    Theme: "Easy to Use" - showing simplicity and quick setup.
-    Style: Flat design with geometric shapes, clean lines.
-    Colors: Use blue-purple gradient (#667eea to #764ba2).
-    Elements: Abstract representation of code/documentation with mountains/landscape in the background,
-    a friendly dinosaur character (like in the reference), simple geometric shapes (triangles, circles).
-    Mood: Welcoming, approachable, professional.
-    NO text in the image.
-    Aspect ratio: 16:9, suitable for web hero section.`,
+    name: 'real-estate',
+    prompt: `Create a realistic, photographic-style image of a real estate professional's workspace.
+
+    Industry: REAL ESTATE
+    Theme: Managing property listings, client documentation, contracts
+
+    Style: Realistic photograph or semi-realistic digital art
+    Lighting: Warm, natural office lighting with blue-purple accent (#667eea to #764ba2)
+
+    Main Subject (VARIED POSE - NOT just sitting at screen):
+    - Real estate agent/broker STANDING or LEANING over desk, reviewing documents
+    - Person interacting with tablet showing property listings
+    - Professional attire (business casual)
+    - Dynamic pose: perhaps on phone, pointing at screen, or consulting with off-screen client
+
+    Workspace Elements:
+    - Desk with property brochures, contract documents spread out
+    - Tablet or laptop showing PROPERTY MANAGEMENT SOFTWARE/DASHBOARD (clean UI, no branding)
+    - Screen shows successful property listings, analytics, client data
+    - Focus on SUCCESSFUL PRODUCT, not SpecWeave branding
+    - Office phone, coffee, property photos/brochures
+    - Background: modern real estate office with property photos on walls
+    - Warm, professional lighting
+
+    Industry-Specific Details:
+    - Property photos/brochures prominently displayed
+    - Professional real estate office atmosphere
+    - Person actively working, not just sitting
+
+    Composition: Dynamic real estate professional actively working
+    Mood: Professional, active, business-focused
+
+    IMPORTANT:
+    - MUST look realistic/photographic
+    - VARIED POSE - standing, leaning, or active (NOT just sitting at desk)
+    - NO SpecWeave logos or branding - show successful property management product
+    - Focus on professional results and active work
+    - Aspect ratio: 16:9`,
   },
   {
-    name: 'focus-on-what-matters',
-    prompt: `Create a modern, minimalist illustration for a technical documentation website.
-    Theme: "Focus on What Matters" - showing concentration on documentation while automation handles complexity.
-    Style: Flat design with geometric shapes, clean lines.
-    Colors: Use blue-purple gradient (#667eea to #764ba2).
-    Elements: A large screen/monitor showing abstract code or documentation structure,
-    a friendly dinosaur character focused on work, geometric trees/plants for balance.
-    Mood: Productive, organized, focused.
-    NO text in the image.
-    Aspect ratio: 16:9, suitable for web hero section.`,
+    name: 'software-engineering',
+    prompt: `Create a realistic, photographic-style image of a FEMALE software engineer's workspace.
+
+    Industry: SOFTWARE ENGINEERING (Center - Main SpecWeave use case)
+    Theme: Focused development, documentation, code architecture
+
+    Style: Realistic photograph or semi-realistic digital art
+    Lighting: Concentrated workspace lighting
+
+    Main Subject (CENTER - WOMAN - VARIED POSE):
+    - FEMALE software developer/engineer
+    - VARIED POSE: Perhaps STANDING at standing desk, PRESENTING to colleagues, or WALKING with laptop
+    - NOT just sitting at desk like the other images
+    - Casual tech attire (professional casual)
+    - Confident, engaged posture
+
+    Workspace Elements:
+    - Large monitor or laptop visible
+    - PRIMARY SCREEN: GitHub repository page showing github.com/anton-abyzov/specweave
+    - Screen displays: GitHub interface with SpecWeave repository, README visible, repository structure
+    - Make it look like actual GitHub page with dark/light theme
+    - Show repository with stars, forks, code structure visible
+    - Clean, modern tech workspace
+    - Optional: whiteboard with diagrams in background
+    - Coffee, notebooks, tech accessories
+    - Background: modern tech office, natural lighting
+
+    Industry-Specific Details:
+    - Terminal/code clearly visible on screen
+    - Tech workspace aesthetic (modern, minimal)
+    - Engineering-focused but dynamic environment
+
+    Composition: Female engineer in dynamic pose, modern tech workspace
+    Mood: Confident, professional, modern
+
+    IMPORTANT:
+    - MUST be FEMALE software engineer
+    - MUST show GitHub page: github.com/anton-abyzov/specweave repository
+    - VARIED POSE - standing, presenting, or active (NOT just sitting)
+    - GitHub interface should look realistic (dark or light theme)
+    - Show actual repository page with README, files, structure
+    - Professional but dynamic composition
+    - Aspect ratio: 16:9`,
   },
   {
-    name: 'powered-by-react',
-    prompt: `Create a modern, minimalist illustration for a technical documentation website.
-    Theme: "Powered by React" - showing extensibility and component-based architecture.
-    Style: Flat design with geometric shapes, clean lines.
-    Colors: Use blue-purple gradient (#667eea to #764ba2).
-    Elements: Abstract representation of modular components/building blocks,
-    a friendly dinosaur character working with UI elements, geometric shapes representing React components.
-    Mood: Modern, flexible, powerful.
-    NO text in the image.
-    Aspect ratio: 16:9, suitable for web hero section.`,
+    name: 'trading',
+    prompt: `Create a realistic, photographic-style image of a financial trader's workspace.
+
+    Industry: TRADING / FINANCE
+    Theme: Financial analysis, trading documentation, market research
+
+    Style: Realistic photograph or semi-realistic digital art
+    Lighting: Dynamic workspace with multiple screens, blue-purple accent (#667eea to #764ba2)
+
+    Main Subject (CENTER):
+    - Financial trader/analyst at trading desk
+    - Person viewed from side/back angle (SCREENS are the focus, not person's face)
+    - Business casual attire
+    - Actively monitoring screens, engaged posture
+
+    Workspace Elements:
+    - Multiple monitors (3-4 screens) showing ONLY financial data
+    - ALL SCREENS: ONLY show candlestick charts, line graphs, order books, market data tables
+    - Trading software interface with NUMBERS, CHARTS, DATA - absolutely NO icons, NO symbols, NO logos
+    - Professional trading dashboard showing: price charts, volume indicators, technical analysis
+    - Screens filled with financial information: stock tickers, crypto prices, forex data
+    - CRITICAL: NO circular logos, NO "SW" text, NO company branding anywhere on screens
+    - Just pure trading data visualization: green/red candles, moving averages, volume bars
+    - Desk with notebook, calculator, mobile phone, coffee
+    - LED accent lighting (blue-purple) on desk or behind monitors
+    - Background: trading floor or modern financial office atmosphere
+    - Professional, high-energy workspace
+
+    Industry-Specific Details:
+    - Financial charts/graphs visible on multiple screens
+    - Real-time market data (numbers changing)
+    - Professional financial workspace aesthetic
+    - Multiple screens showing DIFFERENT charts/markets (not all the same)
+
+    Composition: Trader at multi-monitor setup, view from side/back, focus on data-filled screens
+    Mood: Professional, dynamic, data-focused, high-energy
+
+    CRITICAL REQUIREMENTS:
+    - MUST look realistic/photographic
+    - Real trader/analyst at work
+    - SCREENS must show ONLY trading data (charts, numbers, graphs)
+    - ABSOLUTELY NO logos, icons, or symbols on any screen
+    - NO circular designs, NO "SW" text, NO branding elements
+    - If you can't avoid logos, show screens from back/side angle where content isn't visible
+    - Sitting pose is OK for this one (different from other two images)
+    - Blue-purple LED lighting accent
+    - Aspect ratio: 16:9`,
   },
 ];
 
@@ -124,7 +228,8 @@ async function generateImage(prompt, filename) {
 async function main() {
   console.log('🚀 SpecWeave Hero Image Generator');
   console.log('   Using: Gemini 2.5 Flash Image (nano banana)');
-  console.log('   Brand: Blue-purple gradient (#667eea → #764ba2)\n');
+  console.log('   Brand: Blue-purple gradient (#667eea → #764ba2)');
+  console.log('   Strategy: Multi-industry approach (Real Estate, Software, Trading)\n');
 
   // Create output directory
   try {
@@ -168,7 +273,7 @@ async function main() {
   if (successful > 0) {
     console.log('✅ Next steps:');
     console.log('   1. Review generated images in: static/img/hero/');
-    console.log('   2. Update src/pages/index.tsx with new image paths');
+    console.log('   2. Update src/components/HomepageFeatures/index.tsx');
     console.log('   3. Test in both light and dark modes');
     console.log('   4. Commit changes to git\n');
   }

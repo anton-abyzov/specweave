@@ -5,12 +5,28 @@ description: Creates comprehensive implementation plans for SpecWeave features. 
 
 # Feature Planner Skill
 
+## 📚 Required Reading (LOAD FIRST)
+
+**CRITICAL**: Before planning features, read this guide:
+- **[Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md)**
+
+This guide contains:
+- Complete increment structure (spec.md, plan.md, tasks.md, tests.md)
+- WIP limits and status progression
+- Task vs increment decision tree
+- Context manifest creation for 70%+ token reduction
+
+**Load this guide using the Read tool BEFORE creating feature plans.**
+
+---
+
 This skill creates comprehensive, well-structured implementation plans for SpecWeave features following the Spec-Driven Development methodology.
 
 ## Purpose
 
 The feature-planner skill automates the creation of feature implementation plans, ensuring:
-- Auto-numbered feature directories (`###-short-name`)
+- Auto-numbered feature directories (`0001-9999` 4-digit format)
+- Duplicate detection (prevents creating 0002 when 0002 already exists)
 - Complete feature artifacts (spec.md, plan.md, tasks.md, tests.md)
 - Proper context manifests for selective loading
 - Constitutional compliance
@@ -187,16 +203,22 @@ From feature description, create a short name following these rules:
 Determine the next feature number:
 
 1. **Scan Existing**:
-   - Read `features/` directory
-   - Extract all `###` prefixes
+   - Read `.specweave/increments/` directory
+   - Extract all `0001-9999` prefixes (4-digit format)
+   - Also check legacy `001-999` formats (3-digit) to prevent conflicts
    - Find highest number
 
 2. **Increment**:
    - Add 1 to highest number
-   - Zero-pad to 4 digits (e.g., 0001, 0002, ..., 0010, 0011)
+   - Zero-pad to 4 digits (e.g., 0001, 0002, ..., 0010, 0011, ..., 0999, 1000, ..., 9999)
 
-3. **Create Path**:
-   - Format: `.specweave/increments/####-short-name/`
+3. **Duplicate Detection**:
+   - Check if increment number already exists
+   - Throw error if duplicate found (prevents creating 0002 when 0002 exists)
+   - This prevents the naming conflict shown in the image where two 0002-* increments existed
+
+4. **Create Path**:
+   - Format: `.specweave/increments/0001-short-name/`
    - Example: `.specweave/increments/0003-stripe-payment-integration/`
 
 ### Step 4: Create Feature Structure
@@ -219,7 +241,7 @@ Generate the complete feature directory with all required files:
 **Structure**:
 ```yaml
 ---
-feature: ###-short-name
+feature: 0001-short-name
 title: "Human-Readable Feature Title"
 priority: P1 | P2 | P3
 status: planned
@@ -520,7 +542,7 @@ For brownfield modifications:
 **Structure**:
 ```yaml
 ---
-# Context Manifest for Feature: ###-short-name
+# Context Manifest for Feature: 0001-short-name
 
 # Specification sections to load
 spec_sections:
@@ -536,7 +558,7 @@ architecture:
 
 # Architecture Decision Records to reference
 adrs:
-  - adrs/###-[relevant-decision].md
+  - adrs/0001-[relevant-decision].md
 
 # Context budget (max tokens to load)
 max_context_tokens: 10000
@@ -549,7 +571,7 @@ auto_refresh: false
 
 # Related features
 related_features:
-  - ###-[other-feature]
+  - 0001-[other-feature]
 
 # Tags for search and categorization
 tags:
@@ -659,13 +681,13 @@ Before completing:
 - Format: `stripe-payment-integration`
 
 **Step 3**: Auto-number
-- Scan features/: 001, 002
-- Next: 003
-- Path: `features/003-stripe-payment-integration/`
+- Scan .specweave/increments/: 0001, 0002
+- Next: 0003
+- Path: `.specweave/increments/0003-stripe-payment-integration/`
 
 **Step 4**: Create structure
 ```
-features/003-stripe-payment-integration/
+.specweave/increments/0003-stripe-payment-integration/
 ├── spec.md
 ├── plan.md
 ├── tasks.md
@@ -773,9 +795,9 @@ priority: high
 
 **Output**:
 ```
-✅ Feature created: 003-stripe-payment-integration
+✅ Feature created: 0003-stripe-payment-integration
 
-Location: features/003-stripe-payment-integration/
+Location: .specweave/increments/0003-stripe-payment-integration/
 Files created:
 - spec.md
 - plan.md
@@ -786,7 +808,7 @@ Files created:
 Next steps:
 1. Review spec.md - verify user stories and acceptance criteria
 2. Approve plan.md - validate technical approach
-3. Start implementation: specweave implement 003
+3. Start implementation: specweave implement 0003
 ```
 
 ## Helper Scripts
@@ -805,7 +827,7 @@ const feature = await featurePlanner.createFeature({
   configPath: ".specweave/config.yaml"
 });
 
-console.log(`Created: features/${feature.number}-${feature.shortName}/`);
+console.log(`Created: .specweave/increments/${feature.number}-${feature.shortName}/`);
 ```
 
 ### `scripts/generate-short-name.js`
@@ -826,10 +848,10 @@ Determines next available feature number.
 
 **Usage**:
 ```javascript
-const { getNextNumber } = require('./next-feature-number.js');
+const { getNextFeatureNumber } = require('./feature-utils.js');
 
-const next = await getNextNumber("features/");
-// Returns: "003"
+const next = getNextFeatureNumber(".specweave/increments/");
+// Returns: "0003"
 ```
 
 ## Constitutional Compliance
@@ -851,13 +873,16 @@ This skill enforces:
 ## Troubleshooting
 
 ### Issue: Feature number conflict
-**Solution**: Re-scan features directory, git branches, and remote to find true highest number
+**Solution**: The `incrementNumberExists()` function now prevents this by checking for duplicate numbers before creating new increments. If you see this error, use `getNextFeatureNumber()` to get the next available number.
 
 ### Issue: Short name too long
 **Solution**: Use abbreviations for well-known terms (e.g., auth, api, db)
 
 ### Issue: Context manifest too broad
 **Solution**: Use section anchors (e.g., `#specific-section`) instead of full files
+
+### Issue: Legacy 3-digit increments (001, 002, 003)
+**Solution**: The utility now detects both 3-digit and 4-digit formats to prevent conflicts. New increments always use 4-digit format (0001-9999).
 
 ---
 

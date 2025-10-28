@@ -89,6 +89,32 @@ Both approaches use the same framework, tools, and 5-pillar documentation struct
 
 ---
 
+## 🚨 CRITICAL: File Organization (Keep Root Clean!)
+
+**MANDATORY**: ALL AI-generated supporting files MUST go into increment folders - NEVER in project root!
+
+**✅ ALLOWED in Root**:
+- `CLAUDE.md` (ONLY file SpecWeave adds to user's project)
+- User's existing files (unchanged)
+
+**❌ NEVER Create in Root**:
+- Logs → `.specweave/increments/{id}/logs/`
+- Scripts → `.specweave/increments/{id}/scripts/`
+- Reports → `.specweave/increments/{id}/reports/`
+
+**Example**:
+```
+❌ WRONG:                          ✅ CORRECT:
+project-root/                      .specweave/increments/0001-auth/
+├── analysis.md                    ├── reports/analysis.md
+├── script.py                      ├── scripts/script.py
+└── errors.log                     └── logs/errors.log
+```
+
+**Benefits**: Complete traceability, easy cleanup, clear context, no root clutter
+
+---
+
 ## Quick Reference: Directory Structure
 
 ```
@@ -110,9 +136,9 @@ your-project/
 │   │       ├── tasks.md            # Implementation checklist
 │   │       ├── tests.md            # Test strategy
 │   │       ├── context-manifest.yaml  # What to load (70%+ token reduction)
-│   │       ├── logs/               # Execution history
-│   │       ├── scripts/            # Automation helpers
-│   │       └── reports/            # Analysis documents
+│   │       ├── logs/               # ✅ Execution logs, errors, AI sessions
+│   │       ├── scripts/            # ✅ Helper scripts (migration, setup, validation)
+│   │       └── reports/            # ✅ Analysis, completion, performance reports
 │   └── tests/                      # Centralized test repository
 │
 ├── .claude/                        # Installed components
@@ -120,8 +146,8 @@ your-project/
 │   ├── skills/                     # Installed skills (selective)
 │   └── commands/                   # Slash commands
 │
-├── CLAUDE.md                       # This file
-└── src/                            # Your source code
+├── CLAUDE.md                       # This file (ONLY file we add)
+└── src/                            # Your source code (unchanged)
 ```
 
 **See**: [.specweave/docs/internal/delivery/guides/development-workflow.md](.specweave/docs/internal/delivery/guides/development-workflow.md) for complete development workflow
@@ -168,7 +194,7 @@ npx specweave list --installed      # See what's installed
 
 ## Quick Reference: Core Agents
 
-**Strategic Agents** (Always installed):
+**Core Agents** (Complex workflows, separate context):
 
 | Agent | Purpose | Activates When |
 |-------|---------|----------------|
@@ -177,18 +203,10 @@ npx specweave list --installed      # See what's installed
 | `security` | Threat modeling, security review | Security concerns, vulnerability assessment |
 | `qa-lead` | Test strategy, test cases | Testing, quality assurance |
 | `devops` | Infrastructure, deployment | Deployment, CI/CD, infrastructure |
+| `sre` | Incident response, troubleshooting | Production incidents, debugging |
+| `tech-lead` | Code review, best practices | Code review, refactoring |
 | `docs-writer` | Documentation creation | Writing docs, API documentation |
-
-**Implementation Agents** (Selective installation based on tech stack):
-
-| Agent | Purpose | Tech Stack |
-|-------|---------|------------|
-| `python-backend` | Python APIs (FastAPI, Django) | Python projects |
-| `nodejs-backend` | Node.js APIs (Express, NestJS) | Node.js projects |
-| `dotnet-backend` | .NET APIs (ASP.NET Core) | .NET projects |
-| `nextjs` | Next.js applications | Next.js projects |
-| `frontend` | React/Vue/Angular frontend | Frontend projects |
-| `figma-implementer` | Figma to code conversion | Design implementation |
+| `performance` | Performance optimization, profiling | Performance issues, optimization |
 
 **Invoke via**: `Task` tool with `subagent_type` parameter
 
@@ -198,7 +216,7 @@ npx specweave list --installed      # See what's installed
 
 ## Quick Reference: Core Skills
 
-**Framework Skills** (Always installed):
+**Framework Skills** (Core functionality):
 
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
@@ -207,7 +225,20 @@ npx specweave list --installed      # See what's installed
 | `skill-router` | Route to appropriate skills | Ambiguous requests |
 | `context-loader` | Load context selectively | Working on increments |
 
-**Integration Skills** (Optional):
+**Technology Skills** (Implementation knowledge):
+
+| Skill | Purpose | Activates When |
+|-------|---------|----------------|
+| `nextjs` | Next.js App Router, Server Components | NextJS, Next.js, App Router |
+| `nodejs-backend` | Node.js/Express/NestJS APIs | Node.js, Express, NestJS |
+| `python-backend` | FastAPI/Django APIs | Python backend, FastAPI, Django |
+| `dotnet-backend` | ASP.NET Core APIs | .NET, C#, ASP.NET Core |
+| `frontend` | React/Vue/Angular frontend | React, Vue, Angular components |
+| `figma-implementer` | Figma to code conversion | Figma to code, implement design |
+| `figma-designer` | Figma design creation | Create Figma design, design system |
+| `diagrams-architect` | Mermaid/C4 diagrams | Create diagram, architecture diagram |
+
+**Integration Skills** (External tools):
 
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
@@ -216,6 +247,15 @@ npx specweave list --installed      # See what's installed
 | `github-sync` | Sync with GitHub | GitHub integration |
 | `hetzner-provisioner` | Hetzner deployment | Deploying to Hetzner |
 | `cost-optimizer` | Infrastructure cost analysis | Cloud provider selection |
+| `specweave-jira-mapper` | SpecWeave ↔ JIRA mapping | JIRA sync, export to JIRA |
+| `specweave-ado-mapper` | SpecWeave ↔ ADO mapping | ADO sync, export to ADO |
+
+**Quality & Optimization Skills** (NEW):
+
+| Skill | Purpose | Activates When |
+|-------|---------|----------------|
+| `increment-quality-judge` | AI-powered quality assessment (LLM-as-judge) | Validate quality, quality check, assess spec |
+| `context-optimizer` | Second-pass context cleanup (80%+ reduction) | Optimize context, reduce tokens, smart context |
 
 **Skills activate automatically** based on description matching
 
@@ -235,11 +275,13 @@ backlog → planned → in-progress → completed → closed
 - User projects (solo): 1-2 in progress
 - User projects (team): 3-5 in progress
 
+**Naming Convention**: 4-digit format (0001-9999), e.g., `0001-feature-name`, `0042-user-auth`, `0123-payment-flow`
+
 **Commands**:
 ```bash
-/create-increment "feature name"    # Create new increment
-/add-tasks 001 "task description"   # Add tasks to existing
-/close-increment 001                # Close with leftover transfer
+/create-increment "feature name"      # Create new increment (auto-numbered, e.g., 0003-feature-name)
+/add-tasks 0001 "task description"    # Add tasks to existing
+/close-increment 0001                 # Close with leftover transfer
 ```
 
 **See**: [Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md) for complete lifecycle management
@@ -251,7 +293,7 @@ backlog → planned → in-progress → completed → closed
 **Four Levels of Test Cases**:
 
 1. **Specification** (`.specweave/docs/internal/strategy/`) - TC-0001 acceptance criteria
-2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage matrix
+2. **Feature** (`.specweave/increments/0001-feature-name/tests.md`) - Test coverage matrix
 3. **Skill** (`src/skills/{name}/test-cases/`) - 3+ YAML test cases (MANDATORY)
 4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
 
@@ -314,7 +356,7 @@ Agents ask about deployment ONLY when:
 3. **Quality** (31 rules) - Technology-agnostic, testable criteria
 4. **Traceability** (19 rules) - TC-0001 → tests.md coverage
 
-**Manual validation**: `/validate-increment ####`
+**Manual validation**: `/validate-increment 0001`
 
 **See**: [Increment Validation Guide](.specweave/docs/internal/delivery/guides/increment-validation.md) for complete validation workflow
 
@@ -332,7 +374,7 @@ Agents ask about deployment ONLY when:
 | [deployment-intelligence.md](.specweave/docs/internal/delivery/guides/deployment-intelligence.md) | Deployment target detection and infrastructure | `devops` agent |
 | [testing-strategy.md](.specweave/docs/internal/delivery/guides/testing-strategy.md) | Complete testing philosophy (4 levels) | `qa-lead` agent |
 | [test-import.md](.specweave/docs/internal/delivery/guides/test-import.md) | Importing existing tests | `test-importer` skill |
-| [diagram-conventions.md](.specweave/docs/internal/delivery/guides/diagram-conventions.md) | C4 diagrams and Mermaid syntax | `diagrams-architect` agent |
+| [diagram-conventions.md](.specweave/docs/internal/delivery/guides/diagram-conventions.md) | C4 diagrams and Mermaid syntax | `diagrams-architect` skill |
 | [diagram-svg-generation.md](.specweave/docs/internal/delivery/guides/diagram-svg-generation.md) | SVG generation for production docs | When building docs site |
 
 **Agents automatically load relevant guides when activated** - you don't need to manage this manually.
@@ -348,7 +390,10 @@ Agents ask about deployment ONLY when:
 | Distinct personality/role needed | Capability extension |
 | Tool restrictions by role | All tools acceptable |
 | Long-running tasks | Quick operations |
-| **Example**: Security audit | **Example**: Code formatter |
+| **Example**: Security audit, PM planning | **Example**: Next.js knowledge, diagram creation |
+
+**Agents** (9 total): PM, Architect, Security, QA Lead, DevOps, SRE, Tech Lead, Docs Writer, Performance
+**Skills** (30+ total): Technology stacks (Next.js, Node.js, Python, .NET, Frontend), Integrations (JIRA, ADO, GitHub), Utilities (diagrams, Figma, cost optimizer)
 
 **Agents**: Invoked via `Task` tool with `subagent_type`
 **Skills**: Activate automatically based on description
@@ -379,9 +424,12 @@ src/
 
 ## Naming Conventions
 
-**Features**: `####-short-descriptive-name` (e.g., `0001-skills-framework`)
+**Increments**: 4-digit format `0001-9999` (e.g., `0001-skills-framework`, `0042-user-auth`, `0123-payment-flow`)
+  - Always zero-padded to 4 digits
+  - Duplicate detection prevents conflicts
+  - Examples: `0001-core-framework`, `0002-multi-tool-support`, `0003-deployment-pipeline`
 **Modules**: `lowercase-kebab-case` (e.g., `payments/stripe/`)
-**ADRs**: `####-decision-title.md` (e.g., `0001-tech-stack.md`)
+**ADRs**: 4-digit format `0001-decision-title.md` (e.g., `0001-tech-stack.md`, `0042-database-choice.md`)
 **Test Cases**: `TC-0001`, `TC-0002` format for traceability
 
 ---
@@ -417,11 +465,11 @@ src/
 
 ## Git Workflow
 
-**Branch naming**: `features/{increment-id}-{short-name}`
+**Branch naming**: `features/{increment-id}-{short-name}` (use 4-digit format without leading zeros in branch name for brevity)
 
 **Workflow**:
 1. Create increment folder (`.specweave/increments/0002-name/`)
-2. Create feature branch (`git checkout -b features/002-name`)
+2. Create feature branch (`git checkout -b features/002-name` or `features/0002-name`)
 3. Implement in src/ (agents, skills, etc.)
 4. Commit regularly
 5. Create PR when complete
@@ -429,11 +477,15 @@ src/
 
 **NEVER commit directly to `develop` or `main`**
 
+**Note**: Branch names can use either `features/002-name` (3-digit for brevity) or `features/0002-name` (4-digit for consistency), but increment folders MUST always use 4-digit format.
+
 ---
 
-## Context Precision (70%+ Token Reduction)
+## Context Precision (80%+ Token Reduction)
 
-**Context Manifests** (`.specweave/increments/####/context-manifest.yaml`):
+### Pass 1: Context Loader (70% reduction)
+
+**Context Manifests** (`.specweave/increments/0001-feature-name/context-manifest.yaml`):
 
 ```yaml
 spec_sections:
@@ -444,12 +496,132 @@ documentation:
 max_context_tokens: 10000
 ```
 
-**Benefits**:
-- Precision loading (load exactly what's needed)
-- 70%+ token reduction vs loading full specs
-- Scales to enterprise (500+ page specs)
+**Result**: 150k tokens → 45k tokens (70% reduction)
 
-**Loaded by**: `context-loader` skill when working on increment
+### Pass 2: Context Optimizer (80%+ total reduction) 🆕
+
+**Smart cleanup based on user intent**:
+
+```typescript
+User: "Fix login bug in authentication"
+
+Analyzer detects:
+  • Task: Bug fix (narrow scope)
+  • Domain: Authentication
+  • Scope: Single endpoint
+
+Removes unneeded:
+  ❌ payment-spec.md (different domain)
+  ❌ PM agent (not needed for bug fix)
+  ❌ Frontend skills (backend task)
+
+Keeps relevant:
+  ✅ auth-spec.md (core domain)
+  ✅ nodejs-backend skill
+  ✅ Tech Lead agent
+
+Result: 45k → 27k tokens (additional 40% reduction)
+Total: 150k → 27k (82% total reduction)
+```
+
+**Benefits**:
+- Two-pass optimization (manifest + intent)
+- 80%+ total token reduction
+- Scales to enterprise (500-1000+ page specs)
+- Automatic, no manual intervention
+
+**Loaded by**: `context-loader` (Pass 1) + `context-optimizer` (Pass 2)
+
+---
+
+## Quality Assurance (LLM-as-Judge) 🆕
+
+**Optional AI-powered quality assessment** beyond rule-based validation:
+
+### Dual Validation System
+
+```bash
+/validate-increment 001
+
+✅ Rule-Based Validation: PASSED (120/120 checks)
+   ✓ Consistency (47/47)
+   ✓ Completeness (23/23)
+   ✓ Quality (31/31)
+   ✓ Traceability (19/19)
+
+🤔 Run AI Quality Assessment? [Y/n]: Y
+
+🔍 AI Quality Score: 87/100 (GOOD)
+
+Dimension Scores:
+  • Clarity:         92/100 ✓✓
+  • Testability:     78/100 ✓  (Needs improvement)
+  • Completeness:    90/100 ✓✓
+  • Feasibility:     88/100 ✓✓
+  • Maintainability: 85/100 ✓
+  • Edge Cases:      72/100 ⚠️  (Action needed)
+
+Issues Found: 2 major, 1 minor
+Suggestions: 3 high priority improvements
+```
+
+**Features**:
+- 6-dimension quality scoring (clarity, testability, completeness, etc.)
+- Actionable suggestions with examples
+- Export suggestions to tasks.md
+- Optional (prompt user, ~2k tokens per assessment)
+- Configurable thresholds
+
+**Configuration**: `.specweave/config.yaml` → `validation.quality_judge`
+
+**Provided by**: `increment-quality-judge` skill
+
+---
+
+## Auto-Refinement (Feedback Loops) 🆕
+
+**Automatic quality improvement** through iterative refinement:
+
+### How It Works
+
+```
+Agent generates output
+       ↓
+Validate (rule-based + LLM-judge)
+       ↓
+Score < threshold? ──No──→ ✅ Accept
+       ↓ Yes
+Generate feedback with issues
+       ↓
+Agent regenerates with feedback
+       ↓ (max 3 attempts)
+Score improved? ──→ ✅ Accept best result
+```
+
+### Example: PM Agent with Auto-Refinement
+
+```markdown
+Attempt 1/3: Generating requirements...
+  Validation: 0.72/1.00 ⚠️ (Below threshold)
+  Issues: Acceptance criteria not testable, missing rate limiting
+
+Attempt 2/3: Refining with feedback...
+  Validation: 0.85/1.00 ✅ (Above threshold)
+  Improvements: Testable criteria added, rate limiting specified
+
+✅ Final Result: Requirements validated (0.85/1.00)
+```
+
+**Features**:
+- Max 3 refinement attempts per agent
+- Stops when quality threshold met (0.80 default)
+- Applies to PM, Architect, QA Lead agents
+- Shows progress and improvements
+- Optional (can disable per agent)
+
+**Configuration**: `.specweave/config.yaml` → `role_orchestrator.feedback_loops`
+
+**Provided by**: `role-orchestrator` skill
 
 ---
 
@@ -460,15 +632,17 @@ max_context_tokens: 10000
 1. ✅ **Specifications are SOURCE OF TRUTH** - Code expresses specs
 2. ✅ **Framework-agnostic** - Works with ANY language/framework
 3. ✅ **Flexible documentation** - Comprehensive upfront OR incremental
-4. ✅ **Context precision** - 70%+ token reduction, scales 10-1000+ pages
+4. ✅ **Context precision** - 80%+ token reduction (two-pass optimization), scales 500-1000+ pages 🆕
 5. ✅ **Auto-role routing** - Skills detect expertise automatically
 6. ✅ **Deployment intelligence** - Asks about target before infrastructure
 7. ✅ **Test-validated** - 3+ tests per skill, E2E when UI exists
 8. ✅ **Living documentation** - Auto-update via Claude hooks
 9. ✅ **Brownfield-ready** - Analyze, document, then modify safely
 10. ✅ **Production-ready** - Supports enterprise scale
+11. ✅ **Quality assurance** - LLM-as-judge validation with 6-dimension scoring 🆕
+12. ✅ **Auto-refinement** - Feedback loops improve specs/designs automatically 🆕
 
-**This framework enables building software at ANY scale, with ANY tech stack, with confidence, clarity, and minimal context usage.**
+**This framework enables building software at ANY scale, with ANY tech stack, with confidence, clarity, minimal context usage, and automatic quality improvement.**
 
 ---
 

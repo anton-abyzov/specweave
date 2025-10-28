@@ -38,7 +38,9 @@ for agent in "$AGENTS_SRC"/*; do
     # Check if agent has AGENT.md or README.md
     if [ -f "$agent/AGENT.md" ] || [ -f "$agent/README.md" ]; then
       echo "  📦 Installing agent: $agent_name"
-      cp -r "$agent" "$AGENTS_DEST/$agent_name"
+      # Create destination directory and copy contents (not the folder itself)
+      mkdir -p "$AGENTS_DEST/$agent_name"
+      cp -r "$agent"/* "$AGENTS_DEST/$agent_name/"
       agent_count=$((agent_count + 1))
     else
       echo "  ⚠️  Skipping $agent_name (no AGENT.md or README.md)"

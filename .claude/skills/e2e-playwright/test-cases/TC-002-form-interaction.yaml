@@ -1,0 +1,64 @@
+id: TC-002
+name: Form Interaction Test
+description: Verify that the skill can interact with form elements using helper utilities
+priority: high
+category: functional
+
+preconditions:
+  - TC-001 passes
+  - Test page has a login form with email and password fields
+  - safeType and safeClick utilities are available
+
+test_steps:
+  - step: 1
+    action: Navigate to login page
+    expected: Login form is visible
+
+  - step: 2
+    action: Use safeType() to enter email address
+    expected: Email field is filled with test email
+
+  - step: 3
+    action: Use safeType() to enter password
+    expected: Password field is filled (masked)
+
+  - step: 4
+    action: Use safeClick() to submit form
+    expected: Form submission is triggered
+
+  - step: 5
+    action: Wait for navigation or success message
+    expected: User is redirected or sees success state
+
+  - step: 6
+    action: Capture screenshot of result
+    expected: Screenshot shows post-login state
+
+acceptance_criteria:
+  - safeType() handles focus and clearing automatically
+  - safeType() verifies text was entered correctly
+  - safeClick() waits for element to be visible
+  - Form submission completes without timeout
+  - Screenshots capture both pre and post submission states
+
+test_data:
+  email: test@example.com
+  password: testpassword123
+  login_url: http://localhost:3000/login
+  expected_redirect: /dashboard
+
+expected_results:
+  - Email field contains entered value
+  - Password field is masked
+  - Form submits successfully
+  - Navigation completes within 10 seconds
+  - Success state is reached
+
+error_scenarios:
+  - If email field not found: Error message with selector details
+  - If click times out: Retry up to 3 times
+  - If verification fails: Clear error about mismatch
+
+notes: |
+  Tests the core interaction utilities that make Playwright easier to use.
+  safeType() and safeClick() should handle common edge cases automatically.

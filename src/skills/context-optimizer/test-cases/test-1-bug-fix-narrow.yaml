@@ -1,0 +1,97 @@
+---
+name: "Bug Fix Optimization - Narrow Scope"
+description: "Optimize context for a focused bug fix in authentication"
+skill: context-optimizer
+priority: P1
+estimated_time: "1-2 minutes"
+
+input:
+  prompt: "Fix login bug where JWT expires too early"
+
+  loaded_context:
+    total_tokens: 45000
+    specs:
+      - name: "auth-spec.md"
+        tokens: 12000
+        domain: "auth"
+
+      - name: "payment-spec.md"
+        tokens: 9000
+        domain: "payment"
+
+      - name: "user-management-spec.md"
+        tokens: 7000
+        domain: "users"
+
+    agents:
+      - name: "pm-agent"
+        tokens: 2000
+
+      - name: "nodejs-backend"
+        tokens: 8000
+
+      - name: "frontend"
+        tokens: 5000
+
+      - name: "devops-agent"
+        tokens: 2000
+
+expected_output:
+  task_analysis:
+    task_type: "bug-fix"
+    domains: ["auth", "backend"]
+    scope: "narrow"
+    needs_full_context: false
+    confidence: 0.85-0.95
+
+  optimization_result:
+    tokens_before: 45000
+    tokens_after: 25000-28000
+    reduction_percentage: 38-44
+    total_reduction: 82  # From original 150k
+
+  removed_sections:
+    specs:
+      - "payment-spec.md (9000 tokens) - Unrelated domain"
+      - "user-management-spec.md (7000 tokens) - Unrelated domain"
+
+    agents:
+      - "pm-agent (2000 tokens) - Not needed for bug fix"
+      - "frontend (5000 tokens) - Backend bug"
+      - "devops-agent (2000 tokens) - Not deploying"
+
+  kept_sections:
+    specs:
+      - "auth-spec.md (12000 tokens) - Core domain"
+
+    agents:
+      - "nodejs-backend (8000 tokens) - Implementation"
+
+    additional:
+      - "architecture/security/jwt-handling.md (5000 tokens est.)"
+      - "Tech Lead agent (2000 tokens est.) - Code review"
+
+  rationale:
+    - "Bug fix requires only authentication domain knowledge"
+    - "Backend implementation skill sufficient"
+    - "PM agent not needed (requirements already defined)"
+    - "DevOps not needed (not deploying fix immediately)"
+
+validation:
+  - "Task type detected as 'bug-fix'"
+  - "Domains detected: auth, backend"
+  - "Scope: narrow"
+  - "Token reduction >= 35%"
+  - "Total reduction from original >= 80%"
+  - "All unrelated domains removed"
+  - "Core auth spec retained"
+  - "Backend implementation skill retained"
+  - "Confidence >= 0.85"
+
+success_criteria:
+  - "Correct task type identification"
+  - "Appropriate domain filtering"
+  - "Significant token reduction without losing needed context"
+  - "Clear rationale for removals"
+  - "High confidence in analysis"
+---

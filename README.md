@@ -443,7 +443,7 @@ SpecWeave includes **automated C4 diagram generation**:
 3. Agent generates Mermaid diagram following C4 Model
 4. Saves to correct location with proper naming
 
-**See [.specweave/docs/DIAGRAM-CONVENTIONS.md](.specweave/docs/DIAGRAM-CONVENTIONS.md)** for conventions.
+**See [Diagram Conventions](.specweave/docs/internal/delivery/guides/diagram-conventions.md)** for conventions.
 
 ---
 
@@ -486,7 +486,7 @@ sync:
 # - Tasks as checkable checklist
 ```
 
-**See [.specweave/docs/TOOL-CONCEPT-MAPPING.md](.specweave/docs/TOOL-CONCEPT-MAPPING.md)** for complete mappings.
+**See [Tool Concept Mapping](.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)** for complete mappings.
 
 ---
 
@@ -495,8 +495,8 @@ sync:
 - **[CLAUDE.md](CLAUDE.md)** - **START HERE** - Complete development guide (source of truth)
 - **[INSTALLATION.md](INSTALLATION.md)** - Detailed installation instructions
 - **[.specweave/docs/README.md](.specweave/docs/README.md)** - Documentation structure
-- **[.specweave/docs/DIAGRAM-CONVENTIONS.md](.specweave/docs/DIAGRAM-CONVENTIONS.md)** - C4 Model conventions
-- **[.specweave/docs/TOOL-CONCEPT-MAPPING.md](.specweave/docs/TOOL-CONCEPT-MAPPING.md)** - Tool mappings
+- **[Diagram Conventions](.specweave/docs/internal/delivery/guides/diagram-conventions.md)** - C4 Model conventions
+- **[Tool Concept Mapping](.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)** - Tool mappings
 - **[.specweave/increments/README.md](.specweave/increments/README.md)** - Increments guide
 
 ---

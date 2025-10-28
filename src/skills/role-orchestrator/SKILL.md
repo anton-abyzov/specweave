@@ -625,6 +625,302 @@ async function executeWithRetry(
 }
 ```
 
+### Feedback Loops with Auto-Refinement
+
+**NEW: Automatic quality improvement through iterative refinement**
+
+```typescript
+interface FeedbackLoopConfig {
+  enabled: boolean;
+  max_retries: 3;
+  stop_on_improvement: boolean;
+  quality_threshold: number;  // 0.0-1.0
+  require_user_approval: boolean;
+}
+
+interface RefinementResult {
+  attempt: number;
+  output: string;
+  score: number;
+  issues: Issue[];
+  improved: boolean;
+  final: boolean;
+}
+
+async function executeWithFeedback(
+  agent: string,
+  task: string,
+  validator: (output: string) => Promise<ValidationResult>,
+  config: FeedbackLoopConfig
+): Promise<RefinementResult> {
+
+  let bestResult = null;
+  let bestScore = 0;
+
+  for (let attempt = 1; attempt <= config.max_retries; attempt++) {
+    // Execute agent
+    const output = await invokeAgent(agent, task);
+
+    // Validate output
+    const validation = await validator(output);
+
+    // Track progress
+    console.log(`🔄 Refinement Attempt ${attempt}/${config.max_retries}`);
+    console.log(`   Score: ${validation.score.toFixed(2)} (Target: ${config.quality_threshold})`);
+
+    // Check if quality threshold met
+    if (validation.score >= config.quality_threshold) {
+      console.log(`✅ Quality threshold met (${validation.score.toFixed(2)} >= ${config.quality_threshold})`);
+      return {
+        attempt,
+        output,
+        score: validation.score,
+        issues: [],
+        improved: true,
+        final: true
+      };
+    }
+
+    // Track best result
+    if (validation.score > bestScore) {
+      bestScore = validation.score;
+      bestResult = { attempt, output, score: validation.score, issues: validation.issues };
+    }
+
+    // Check if should stop (improvement + stop_on_improvement flag)
+    if (config.stop_on_improvement && attempt > 1 && validation.score > bestScore) {
+      console.log(`⏸️  Stopping early (score improved: ${bestScore.toFixed(2)} → ${validation.score.toFixed(2)})`);
+      return {
+        ...bestResult,
+        improved: true,
+        final: true
+      };
+    }
+
+    // If not last attempt, prepare feedback for next iteration
+    if (attempt < config.max_retries) {
+      const feedback = generateFeedback(validation.issues);
+
+      // Update task with feedback
+      task = `${task}\n\n**Feedback from previous attempt (${validation.score.toFixed(2)}/1.00):**\n${feedback}`;
+
+      console.log(`   Issues found: ${validation.issues.length}`);
+      console.log(`   Retrying with feedback...`);
+    }
+  }
+
+  // Max retries reached, return best result
+  console.log(`⚠️  Max retries reached. Best score: ${bestScore.toFixed(2)}`);
+
+  return {
+    ...bestResult,
+    improved: bestScore > 0,
+    final: true
+  };
+}
+
+function generateFeedback(issues: Issue[]): string {
+  const feedback: string[] = [];
+
+  for (const issue of issues) {
+    feedback.push(`• ${issue.severity.toUpperCase()}: ${issue.description}`);
+    if (issue.location) {
+      feedback.push(`  Location: ${issue.location}`);
+    }
+    if (issue.suggestion) {
+      feedback.push(`  Suggestion: ${issue.suggestion}`);
+    }
+  }
+
+  return feedback.join('\n');
+}
+```
+
+### Feedback Loop Workflow
+
+```
+Agent generates output
+         ↓
+Validate output (rule-based + LLM-judge)
+         ↓
+Score < threshold? ──No──→ ✅ Accept output
+         ↓ Yes
+Extract issues and suggestions
+         ↓
+Generate feedback prompt
+         ↓
+Agent regenerates with feedback ──┐
+         ↓                         │
+Validate again                     │
+         ↓                         │
+Score improved? ──No──→ Retry ────┘ (max 3x)
+         ↓ Yes
+✅ Accept improved output
+```
+
+### Agent-Specific Feedback Integration
+
+**PM Agent (Requirements)**
+```typescript
+const pmValidator = async (spec: string) => {
+  // Rule-based checks
+  const ruleScore = await runRuleBasedValidation(spec);
+
+  // Optional: LLM-as-judge quality check
+  const qualityScore = await incrementQualityJudge.evaluate(spec);
+
+  return {
+    score: (ruleScore + qualityScore) / 2,
+    issues: [...ruleIssues, ...qualityIssues]
+  };
+};
+
+await executeWithFeedback(
+  'pm-agent',
+  'Define requirements for authentication',
+  pmValidator,
+  config
+);
+```
+
+**Architect Agent (Design)**
+```typescript
+const architectValidator = async (design: string) => {
+  return await incrementQualityJudge.evaluate(design, {
+    dimensions: ['feasibility', 'scalability', 'maintainability']
+  });
+};
+
+await executeWithFeedback(
+  'architect-agent',
+  'Design authentication system',
+  architectValidator,
+  config
+);
+```
+
+**QA Lead Agent (Test Strategy)**
+```typescript
+const qaValidator = async (testPlan: string) => {
+  // Check test coverage
+  const coverage = await analyzeTestCoverage(testPlan);
+
+  // Check testability
+  const testability = await incrementQualityJudge.evaluate(testPlan, {
+    dimensions: ['testability', 'completeness']
+  });
+
+  return {
+    score: coverage >= 0.80 ? testability.score : 0.60,
+    issues: testability.issues
+  };
+};
+
+await executeWithFeedback(
+  'qa-lead-agent',
+  'Create test strategy',
+  qaValidator,
+  config
+);
+```
+
+### Example: PM Agent with Feedback Loop
+
+```markdown
+🔷 SpecWeave Multi-Agent Orchestration Active
+
+**Task**: Create authentication feature
+**Agent**: PM Agent (Requirements)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Attempt 1/3**: Generating requirements...
+
+✅ PM Agent completed
+🔍 Validating output...
+
+Validation Results:
+  Rule-based: ✅ 47/47 passed
+  Quality Score: 0.72/1.00 ⚠️ (Needs improvement)
+
+Issues Found:
+  • MAJOR: Acceptance criteria not testable
+    Location: Section "Success Criteria"
+    Suggestion: Use measurable metrics (e.g., "Login completes in <2s")
+
+  • MINOR: Missing rate limiting specification
+    Location: Section "Security"
+    Suggestion: Specify brute-force protection (5 attempts, 15min lockout)
+
+Score: 0.72 < 0.80 (threshold)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 **Attempt 2/3**: Refining with feedback...
+
+✅ PM Agent completed (with feedback)
+🔍 Validating output...
+
+Validation Results:
+  Rule-based: ✅ 47/47 passed
+  Quality Score: 0.85/1.00 ✓ (Improved!)
+
+Issues Found:
+  • MINOR: Performance requirements could be more specific
+    Location: Section "Non-functional Requirements"
+    Suggestion: Add p95/p99 latency targets
+
+Score: 0.85 > 0.80 (threshold) ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ **Final Result**: Requirements validated (0.85/1.00)
+
+Improvements made:
+  ✓ Acceptance criteria now measurable
+  ✓ Rate limiting specified (5 attempts, 15min lockout)
+  ✓ Testable success metrics added
+
+Minor issues remaining (can be addressed later):
+  • Performance requirements (p95/p99 targets)
+
+Proceeding to architecture phase...
+```
+
+### Configuration for Feedback Loops
+
+```yaml
+# .specweave/config.yaml
+role_orchestrator:
+  enabled: true
+
+  # Feedback loop configuration
+  feedback_loops:
+    enabled: true              # Enable auto-refinement
+    max_retries: 3             # Max refinement attempts
+    stop_on_improvement: true  # Stop if score improves
+    require_user_approval: false  # Auto-refine without asking
+
+    # Quality thresholds per agent
+    thresholds:
+      pm_agent: 0.80           # Requirements quality
+      architect_agent: 0.80    # Design quality
+      qa_lead_agent: 0.75      # Test coverage + quality
+
+    # Which agents use feedback loops
+    agents:
+      - pm_agent
+      - architect_agent
+      - qa_lead_agent
+      # Not applicable for implementation agents
+
+    # Validation strategy
+    validation:
+      use_llm_judge: true      # Use increment-quality-judge
+      combine_with_rules: true # Combine with rule-based checks
+      judge_weight: 0.5        # 50% LLM judge, 50% rules
+```
+
 ### Gate Failure Handling
 
 ```typescript

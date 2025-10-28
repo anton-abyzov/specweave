@@ -51,7 +51,7 @@ graph TB
     API --> DB[(Database)]
 ```
 
-**See**: [Diagram Conventions](../../docs/DIAGRAM-CONVENTIONS.md) for best practices.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) for best practices.
 
 ## Consequences
 

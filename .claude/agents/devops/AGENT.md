@@ -29,6 +29,325 @@ This skill activates when:
 
 ---
 
+## 📚 Required Reading (LOAD FIRST)
+
+**CRITICAL**: Before starting ANY deployment work, read this guide:
+- **[Deployment Intelligence Guide](.specweave/docs/internal/delivery/guides/deployment-intelligence.md)**
+
+This guide contains:
+- Deployment target detection workflow
+- Provider-specific configurations
+- Cost budget enforcement
+- Secrets management details
+- Platform-specific infrastructure patterns
+
+**Load this guide using the Read tool BEFORE proceeding with deployment tasks.**
+
+---
+
+## 🌍 Environment Configuration (READ FIRST)
+
+**CRITICAL**: Before deploying ANY infrastructure, read the user's environment configuration from `.specweave/config.yaml`.
+
+### Environment Detection Workflow
+
+**Step 1: Check if Environment Config Exists**
+
+```bash
+# Check for environment configuration
+if [ -f .specweave/config.yaml ]; then
+  # Parse environment definitions
+  # Use yq or similar YAML parser
+fi
+```
+
+**Step 2: Read Environment Strategy**
+
+Load and parse `.specweave/config.yaml`:
+
+```yaml
+# Example config structure
+environments:
+  strategy: "standard"  # minimal | standard | progressive | enterprise
+  definitions:
+    - name: "development"
+      deployment:
+        type: "local"
+        target: "docker-compose"
+    - name: "staging"
+      deployment:
+        type: "cloud"
+        provider: "hetzner"
+        region: "eu-central"
+    - name: "production"
+      deployment:
+        type: "cloud"
+        provider: "hetzner"
+        region: "eu-central"
+      requires_approval: true
+```
+
+**Step 3: Determine Target Environment**
+
+When user requests deployment, identify which environment:
+
+| User Request | Target Environment | Action |
+|-------------|-------------------|--------|
+| "Deploy to staging" | `staging` from config | Use staging deployment config |
+| "Deploy to prod" | `production` from config | Use production deployment config |
+| "Deploy" (no target) | Ask user to specify | Show available environments |
+| "Set up infrastructure" | Ask for all envs | Create infra for all defined envs |
+
+**Step 4: Generate Environment-Specific Infrastructure**
+
+Based on environment config, generate appropriate IaC:
+
+```
+Environment: staging
+Provider: hetzner
+Region: eu-central
+
+→ Generate: infrastructure/terraform/staging/
+  - main.tf (Hetzner provider, eu-central region)
+  - variables.tf (staging-specific variables)
+  - outputs.tf
+```
+
+---
+
+### Environment-Aware Infrastructure Generation
+
+**Multi-Environment Structure**:
+
+```
+infrastructure/
+├── terraform/
+│   ├── modules/              # Reusable modules
+│   │   ├── vpc/
+│   │   ├── database/
+│   │   └── cache/
+│   ├── development/          # Local dev environment
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── docker-compose.yml
+│   ├── staging/              # Staging environment
+│   │   ├── main.tf           # Uses hetzner provider
+│   │   ├── variables.tf      # Staging config
+│   │   └── terraform.tfvars
+│   └── production/           # Production environment
+│       ├── main.tf           # Uses hetzner provider
+│       ├── variables.tf      # Production config
+│       └── terraform.tfvars
+```
+
+**Environment-Specific Terraform**:
+
+```hcl
+# infrastructure/terraform/staging/main.tf
+terraform {
+  required_version = ">= 1.0"
+
+  backend "s3" {
+    bucket = "myapp-terraform-state"
+    key    = "staging/terraform.tfstate"  # ← Environment-specific
+    region = "eu-central-1"
+  }
+}
+
+# Read environment config from SpecWeave
+locals {
+  environment = "staging"
+
+  # From .specweave/config.yaml environments.definitions[name=staging]
+  deployment_provider = "hetzner"
+  deployment_region   = "eu-central"
+  requires_approval   = false
+}
+
+# Use environment-specific provider
+provider "hcloud" {
+  token = var.hetzner_token
+}
+
+# Create staging infrastructure
+module "server" {
+  source = "../modules/server"
+
+  environment = local.environment
+  server_type = "cx11"  # Smaller for staging
+  location    = local.deployment_region
+}
+
+module "database" {
+  source = "../modules/database"
+
+  environment = local.environment
+  size        = "small"  # Smaller for staging
+  location    = local.deployment_region
+}
+```
+
+**Production (Different Config)**:
+
+```hcl
+# infrastructure/terraform/production/main.tf
+terraform {
+  required_version = ">= 1.0"
+
+  backend "s3" {
+    bucket = "myapp-terraform-state"
+    key    = "production/terraform.tfstate"  # ← Environment-specific
+    region = "eu-central-1"
+  }
+}
+
+locals {
+  environment = "production"
+
+  # From .specweave/config.yaml environments.definitions[name=production]
+  deployment_provider = "hetzner"
+  deployment_region   = "eu-central"
+  requires_approval   = true
+}
+
+provider "hcloud" {
+  token = var.hetzner_token
+}
+
+module "server" {
+  source = "../modules/server"
+
+  environment = local.environment
+  server_type = "cx31"  # Larger for production
+  location    = local.deployment_region
+}
+
+module "database" {
+  source = "../modules/database"
+
+  environment = local.environment
+  size        = "large"  # Larger for production
+  location    = local.deployment_region
+}
+```
+
+---
+
+### Environment-Specific CI/CD Pipelines
+
+**Generate separate workflows per environment**:
+
+```yaml
+# .github/workflows/deploy-staging.yml
+name: Deploy to Staging
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  ENVIRONMENT: staging  # ← From config.yaml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging  # GitHub environment protection
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Hetzner (Staging)
+        env:
+          HETZNER_TOKEN: ${{ secrets.STAGING_HETZNER_TOKEN }}
+        run: |
+          cd infrastructure/terraform/staging
+          terraform init
+          terraform apply -auto-approve
+```
+
+```yaml
+# .github/workflows/deploy-production.yml
+name: Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+env:
+  ENVIRONMENT: production  # ← From config.yaml
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production  # Requires approval (from config.yaml)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Hetzner (Production)
+        env:
+          HETZNER_TOKEN: ${{ secrets.PROD_HETZNER_TOKEN }}
+        run: |
+          cd infrastructure/terraform/production
+          terraform init
+          terraform apply -auto-approve
+```
+
+---
+
+### Asking About Environments
+
+**If environment config is missing or incomplete**:
+
+```
+🌍 **Environment Configuration**
+
+I see you want to deploy, but I need to know your environment setup first.
+
+Current environments in .specweave/config.yaml:
+- None found (config not set up)
+
+How many environments will you need?
+
+Options:
+A) Minimal (1 env: production only)
+   - Ship fast, add environments later
+   - Deploy directly to production
+   - Cost: Single deployment target
+
+B) Standard (3 envs: dev, staging, prod)
+   - Recommended for most projects
+   - Test in staging before production
+   - Cost: 2x deployment targets (staging + prod)
+
+C) Progressive (4-5 envs: dev, qa, staging, prod)
+   - For growing teams
+   - Dedicated QA environment
+   - Cost: 3-4x deployment targets
+
+D) Custom (you specify)
+   - Define your own environment pipeline
+```
+
+**After user responds**, update `.specweave/config.yaml` and proceed with infrastructure generation.
+
+---
+
+### Environment Strategy Guide
+
+**For complete environment configuration details**, load this guide:
+- **[Environment Strategy Guide](.specweave/docs/internal/delivery/guides/environment-strategy.md)**
+
+This guide contains:
+- Environment strategies (minimal, standard, progressive, enterprise)
+- Configuration schema and examples
+- Multi-environment patterns
+- Progressive enhancement (start small, grow later)
+- Environment-specific secrets management
+
+**Load this guide using the Read tool when working with multi-environment setups.**
+
+---
+
 ## ⚠️ CRITICAL: Secrets Management (MANDATORY)
 
 **BEFORE provisioning ANY infrastructure, you MUST handle secrets properly.**
@@ -190,6 +509,76 @@ echo "Using token: ${HETZNER_API_TOKEN:0:8}...${HETZNER_API_TOKEN: -8}"
 - ❌ NEVER share secrets via email/Slack
 - ❌ NEVER use production secrets in development
 - ❌ NEVER store secrets in CI/CD logs
+
+---
+
+### Multi-Environment Secrets Strategy
+
+**CRITICAL**: Each environment MUST have separate secrets. Never share secrets across environments.
+
+**Environment-Specific Secrets**:
+
+```bash
+# .env.development (gitignored)
+ENVIRONMENT=development
+DATABASE_URL=postgresql://localhost:5432/myapp_dev
+HETZNER_TOKEN=  # Not needed for local dev
+STRIPE_API_KEY=sk_test_...  # Test mode key
+
+# .env.staging (gitignored)
+ENVIRONMENT=staging
+DATABASE_URL=postgresql://staging-db:5432/myapp_staging
+HETZNER_TOKEN=staging_token_abc123...
+STRIPE_API_KEY=sk_test_...  # Test mode key
+
+# .env.production (gitignored)
+ENVIRONMENT=production
+DATABASE_URL=postgresql://prod-db:5432/myapp
+HETZNER_TOKEN=prod_token_xyz789...
+STRIPE_API_KEY=sk_live_...  # Live mode key ⚠️
+```
+
+**GitHub Secrets (Per Environment)**:
+
+When using GitHub Actions with multiple environments:
+
+```yaml
+# GitHub Repository Settings → Environments
+# Create environments: development, staging, production
+
+# Each environment has its own secrets:
+Secrets for 'development':
+  - DEV_HETZNER_TOKEN
+  - DEV_DATABASE_URL
+  - DEV_STRIPE_API_KEY
+
+Secrets for 'staging':
+  - STAGING_HETZNER_TOKEN
+  - STAGING_DATABASE_URL
+  - STAGING_STRIPE_API_KEY
+
+Secrets for 'production':
+  - PROD_HETZNER_TOKEN
+  - PROD_DATABASE_URL
+  - PROD_STRIPE_API_KEY
+```
+
+**In CI/CD workflow**:
+
+```yaml
+# .github/workflows/deploy-staging.yml
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging  # ← Links to GitHub environment
+
+    steps:
+      - name: Deploy to Staging
+        env:
+          # These come from staging environment secrets
+          HETZNER_TOKEN: ${{ secrets.STAGING_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+```
 
 ---
 

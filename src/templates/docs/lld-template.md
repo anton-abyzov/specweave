@@ -61,7 +61,7 @@ graph TB
 - `lld-{component-name}.sequence-login.mmd` - Login flow sequence
 - `lld-{component-name}.class.mmd` - Class diagram (if applicable)
 
-**See**: [Diagram Conventions](../../docs/DIAGRAM-CONVENTIONS.md) for C4 diagram best practices.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) for C4 diagram best practices.
 
 ## API / Interface Specification
 

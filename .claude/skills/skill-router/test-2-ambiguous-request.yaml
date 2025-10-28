@@ -1,0 +1,42 @@
+---
+name: "Ambiguous Request Handling"
+description: "Tests how skill-router handles requests that could match multiple skills"
+input:
+  prompt: "Create documentation for the API"
+  context:
+    available_skills:
+      - "spec-author"      # Could create API specification
+      - "architect"        # Could document API architecture
+      - "docs-updater"     # Could update API docs
+  user_intent: "create documentation"
+expected_output:
+  type: "clarification_required"
+  routes_to: null
+  confidence: "low"
+  reason: "Multiple skills match: spec-author, architect, docs-updater"
+  alternatives:
+    - skill: "spec-author"
+      match_score: 0.65
+      reason: "Can create API specifications"
+    - skill: "architect"
+      match_score: 0.60
+      reason: "Can document API architecture"
+    - skill: "docs-updater"
+      match_score: 0.55
+      reason: "Can update API documentation"
+  actions:
+    - "Ask user for clarification"
+    - "Present alternatives with descriptions"
+    - "Wait for user selection"
+validation:
+  - "Detects ambiguity (confidence <0.7)"
+  - "Lists all matching skills"
+  - "Provides match scores"
+  - "Asks user to clarify"
+  - "Does not make incorrect assumption"
+success_criteria:
+  - "Ambiguity detected"
+  - "User presented with options"
+  - "No forced routing when uncertain"
+  - "Helpful context for each option"
+---

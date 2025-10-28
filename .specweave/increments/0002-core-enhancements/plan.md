@@ -962,4 +962,4 @@ gh pr create --base develop --head features/002-core-enhancements
 - [tasks.md](tasks.md) - Executable tasks (derived from this plan)
 - [tests.md](tests.md) - Test strategy and test cases
 - [CLAUDE.md](../../../CLAUDE.md) - Development guide (will be updated)
-- [DIAGRAM-CONVENTIONS.md](../../docs/DIAGRAM-CONVENTIONS.md) - Current conventions (will be simplified)
+- [Diagram Conventions](../../docs/internal/delivery/guides/diagram-conventions-comprehensive.md) - Current conventions (will be simplified)

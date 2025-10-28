@@ -9,7 +9,7 @@ created: "2025-10-26"
 # Specification sections to load (technology-agnostic WHAT/WHY)
 spec_sections:
   # Current diagram conventions (to be migrated)
-  - path: ".specweave/docs/DIAGRAM-CONVENTIONS.md"
+  - path: ".specweave/docs/internal/delivery/guides/diagram-conventions-comprehensive.md"
     priority: high
     reason: "Source material for agent expertise"
     sections:
@@ -19,7 +19,7 @@ spec_sections:
       - "## Diagram Types and When to Use"
 
   # Tool concept mapping (reference only, NOT converted to agent)
-  - path: ".specweave/docs/TOOL-CONCEPT-MAPPING.md"
+  - path: ".specweave/docs/internal/delivery/guides/tool-concept-mapping.md"
     priority: low
     reason: "Related documentation for context"
 
@@ -101,7 +101,7 @@ cache:
   invalidate_on_change: true
   files_to_watch:
     - "CLAUDE.md"
-    - ".specweave/docs/DIAGRAM-CONVENTIONS.md"
+    - ".specweave/docs/internal/delivery/guides/diagram-conventions-comprehensive.md"
     - "src/agents/*/AGENT.md"
     - "src/skills/*/SKILL.md"
 
@@ -128,7 +128,7 @@ dependencies:
 validation:
   required_files:
     - "CLAUDE.md"
-    - ".specweave/docs/DIAGRAM-CONVENTIONS.md"
+    - ".specweave/docs/internal/delivery/guides/diagram-conventions.md"
     - "spec.md"
     - "plan.md"
     - "tasks.md"
@@ -151,10 +151,10 @@ outputs:
       type: "Coordinator"
 
   documentation:
-    - path: ".specweave/docs/DIAGRAM-CONVENTIONS.md"
+    - path: ".specweave/docs/internal/delivery/guides/diagram-conventions.md"
       change_type: "simplified"
-      before_lines: 574
-      after_lines: ~100
+      before_lines: 190
+      after_lines: ~190
 
     - path: "CLAUDE.md"
       change_type: "updated"

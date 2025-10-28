@@ -5,6 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'SpecWeave',
   tagline: 'Spec-Driven Development Framework - Build Production Software with AI',
+  // Use SpecWeave logo as favicon (SVG for modern browsers)
   favicon: 'img/logo.svg',
 
   future: {

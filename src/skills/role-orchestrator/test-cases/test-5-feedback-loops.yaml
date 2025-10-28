@@ -1,0 +1,149 @@
+---
+name: "Feedback Loops - PM Agent Auto-Refinement"
+description: "Test automatic quality improvement through iterative refinement with feedback"
+skill: role-orchestrator
+priority: P1
+estimated_time: "5-7 minutes"
+
+input:
+  user_request: "Create requirements for user authentication feature"
+
+  config:
+    feedback_loops:
+      enabled: true
+      max_retries: 3
+      stop_on_improvement: true
+      quality_threshold: 0.80
+
+    validation:
+      use_llm_judge: true
+      combine_with_rules: true
+      judge_weight: 0.5
+
+  agent: "pm-agent"
+  task: "Define requirements for user authentication"
+
+expected_output:
+  # Attempt 1: Initial generation (below threshold)
+  attempt_1:
+    output: "Initial requirements spec"
+    validation:
+      rule_based_score: 1.00  # All structural rules pass
+      llm_judge_score: 0.60-0.70
+      combined_score: 0.70-0.85
+      threshold: 0.80
+
+    issues_found:
+      - severity: "major"
+        description: "Acceptance criteria not testable"
+        location: "Success Criteria section"
+
+      - severity: "major"
+        description: "Security requirements too vague"
+        location: "Security section"
+
+      - severity: "minor"
+        description: "No rate limiting specified"
+        location: "Requirements"
+
+    below_threshold: true
+    triggers_refinement: true
+
+  # Attempt 2: Refinement with feedback
+  attempt_2:
+    feedback_provided: |
+      Issues from previous attempt:
+      • MAJOR: Acceptance criteria not testable
+        Location: Success Criteria section
+        Suggestion: Use measurable metrics (e.g., "Login completes in <2s")
+
+      • MAJOR: Security requirements too vague
+        Location: Security section
+        Suggestion: Specify encryption, hashing, rate limiting
+
+      • MINOR: No rate limiting specified
+        Location: Requirements
+        Suggestion: Add brute-force protection (5 attempts, 15min lockout)
+
+    output: "Improved requirements spec with feedback incorporated"
+    validation:
+      rule_based_score: 1.00
+      llm_judge_score: 0.80-0.90
+      combined_score: 0.85-0.95
+      threshold: 0.80
+
+    improvements:
+      - "Acceptance criteria now measurable with metrics"
+      - "Security requirements detailed (bcrypt, JWT, rate limiting)"
+      - "Rate limiting specified (5 attempts, 15min lockout)"
+
+    above_threshold: true
+    stops_refinement: true
+
+  final_result:
+    total_attempts: 2
+    final_score: 0.85-0.95
+    met_threshold: true
+    output_quality: "good"
+
+    remaining_issues:
+      count: 0-1
+      severity: "minor"
+      examples:
+        - "Performance requirements could be more specific (p95/p99 targets)"
+
+validation:
+  # Attempt 1 validation
+  - "Initial attempt produces output"
+  - "Rule-based validation passes (1.00)"
+  - "LLM judge score < 0.80"
+  - "Combined score may or may not be < 0.80 depending on weights"
+  - "At least 2 major issues found"
+  - "Triggers refinement"
+
+  # Attempt 2 validation
+  - "Feedback generated from issues"
+  - "PM agent receives feedback prompt"
+  - "Second attempt incorporates feedback"
+  - "LLM judge score improves (>= 0.80)"
+  - "Combined score >= 0.80"
+  - "Stops after reaching threshold"
+
+  # Overall validation
+  - "Total attempts <= 3"
+  - "Final score >= 0.80"
+  - "Quality improvement measurable"
+  - "Progress shown to user"
+
+success_criteria:
+  - "Feedback loop triggers on low quality"
+  - "Agent successfully incorporates feedback"
+  - "Quality score improves significantly"
+  - "Stops when threshold met (doesn't waste retries)"
+  - "User sees progress updates"
+  - "Final output meets quality standards"
+
+workflow_steps:
+  1. "PM agent generates initial requirements"
+  2. "Validate with rule-based + LLM-as-judge"
+  3. "Detect score below threshold (0.80)"
+  4. "Generate feedback from issues"
+  5. "Reinvoke PM agent with feedback"
+  6. "Validate improved output"
+  7. "Detect score above threshold"
+  8. "Stop refinement, return final output"
+
+edge_cases:
+  max_retries_reached:
+    description: "If quality doesn't improve after 3 attempts"
+    expected: "Return best attempt with warning"
+
+  stop_on_improvement:
+    description: "If score improves but doesn't reach threshold"
+    config: "stop_on_improvement: true"
+    expected: "Stop early if improvement detected"
+
+  first_attempt_passes:
+    description: "If initial attempt >= threshold"
+    expected: "No refinement needed, accept immediately"
+---
