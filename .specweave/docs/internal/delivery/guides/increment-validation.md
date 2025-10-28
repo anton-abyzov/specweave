@@ -147,31 +147,41 @@ Action required:
 4. Add security considerations section to plan.md
 5. Create ADR-0005 or remove reference (plan.md:89)
 
-Run `/validate-increment 0004` after fixes to re-validate.
+Validation runs automatically when you save documents. For manual quality assessment, ask Claude to "validate quality of increment 0004" to invoke the `increment-quality-judge` skill.
 ```
 
-### Manual Validation Commands
+### How Validation Works
 
-#### `/validate-increment ####`
+#### Automatic Validation (On Save)
 
-Manually trigger validation for specific increment:
+**Rule-based validation runs automatically** when you save increment documents:
+- Saves spec.md → Validates consistency, completeness, quality
+- Saves plan.md → Validates HOW aligns with WHAT
+- Saves tasks.md → Validates tasks match plan
+- Saves tests.md → Validates test coverage for acceptance criteria
 
-```bash
-/validate-increment 0002                    # Validate increment 0002
-/validate-increment 0002 --deep             # Force deep analysis (skip quick check)
-/validate-increment 0002 --report-only      # Show existing report, don't re-validate
+**No manual commands needed** - validation happens in the background.
+
+#### Manual Quality Assessment
+
+For deeper AI-powered quality assessment, **ask Claude**:
+
+```
+"Validate quality of increment 0002"
+"Quality check for increment 0004"
+"Assess spec quality for authentication feature"
 ```
 
-#### `/fix-increment ####`
+This invokes the `increment-quality-judge` skill, which evaluates:
+- Clarity of requirements
+- Testability of acceptance criteria
+- Completeness of edge cases
+- Feasibility of technical approach
+- Maintainability of design
+- Architecture soundness
 
-Guided workflow to fix validation issues:
-
-```bash
-/fix-increment 0004
-```
-
-**Workflow**:
-1. Load validation report
+**Workflow for Fixing Issues**:
+1. Review validation output (shown automatically on save)
 2. Present issues one by one (highest severity first)
 3. Suggest fixes for each issue
 4. Apply fixes with user approval

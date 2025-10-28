@@ -54,7 +54,7 @@ npx specweave init
 **What Gets Installed**:
 - Strategic agents: pm, architect, security, qa-lead, devops, docs-writer
 - Implementation agents: Based on YOUR tech stack (python-backend, nextjs, etc.)
-- Core skills: specweave-detector, skill-router, context-loader, feature-planner
+- Core skills: specweave-detector, skill-router, context-loader, increment-planner
 - Total: 7 agents + 4 skills (vs 19 agents + 24 skills if installing all!)
 
 **See**: [Installation Guide](.specweave/docs/public/guides/getting-started/installation.md) for complete setup

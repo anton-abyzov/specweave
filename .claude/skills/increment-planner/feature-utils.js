@@ -1,6 +1,6 @@
 /**
  * Feature Planning Utilities for SpecWeave
- * Supports feature-planner skill with auto-numbering and name generation
+ * Supports increment-planner skill with auto-numbering and name generation
  */
 
 const fs = require('fs');

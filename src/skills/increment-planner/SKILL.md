@@ -1,9 +1,9 @@
 ---
-name: feature-planner
-description: Creates comprehensive implementation plans for SpecWeave features. This skill should be used when planning new features, creating feature specifications, or organizing implementation work. Activates for: feature planning, implementation plan, create feature, plan feature, organize work, break down feature.
+name: increment-planner
+description: Creates comprehensive implementation plans for SpecWeave increments (aka features - both terms are interchangeable). This skill should be used when planning new increments/features, creating specifications, or organizing implementation work. Activates for: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature.
 ---
 
-# Feature Planner Skill
+# Increment Planner Skill
 
 ## 📚 Required Reading (LOAD FIRST)
 
@@ -24,7 +24,7 @@ This skill creates comprehensive, well-structured implementation plans for SpecW
 
 ## Purpose
 
-The feature-planner skill automates the creation of feature implementation plans, ensuring:
+The increment-planner skill automates the creation of feature implementation plans, ensuring:
 - Auto-numbered feature directories (`0001-9999` 4-digit format)
 - Duplicate detection (prevents creating 0002 when 0002 already exists)
 - Complete feature artifacts (spec.md, plan.md, tasks.md, tests.md)
@@ -61,7 +61,7 @@ This skill activates automatically when users say:
 ```
 User: "I want to build real-time price tracking"
     ↓
-feature-planner skill
+increment-planner skill
     ↓
 STEP 1: Scan existing docs
 ├─ Read .specweave/docs/internal/strategy/ (existing requirements)
@@ -129,7 +129,7 @@ STEP 4: Validate Living Docs
 ├── plan.md                 # ← Architect Agent (< 500 lines, references architecture docs)
 ├── tasks.md                # ← Tech Lead Agent (generated later)
 ├── tests.md                # ← QA Agent (generated later)
-└── context-manifest.yaml   # ← feature-planner creates
+└── context-manifest.yaml   # ← increment-planner creates
 ```
 
 ---

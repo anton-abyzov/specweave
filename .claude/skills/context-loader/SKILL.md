@@ -552,7 +552,7 @@ async function loadContextLazy(manifest: ContextManifest): Promise<ContextLoader
 ### 1. Called By
 
 - **specweave-detector**: Auto-load when feature/issue detected
-- **feature-planner**: Load context when creating new features
+- **increment-planner**: Load context when creating new features
 - **All implementation skills**: Load context before implementing
 - **Users**: Explicit "load context for feature 003"
 

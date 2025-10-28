@@ -100,13 +100,13 @@ import { test, expect } from '@playwright/test';
 
 test('TC-004: Install skill via CLI', async () => {
   // Given: SpecWeave CLI is available
-  const result = await exec('npx specweave install feature-planner --local');
+  const result = await exec('npx specweave install increment-planner --local');
 
   // Then: Skill installed successfully
   expect(result.exitCode).toBe(0);
 
   // Validate skill files copied
-  const skillPath = './.claude/skills/feature-planner/SKILL.md';
+  const skillPath = './.claude/skills/increment-planner/SKILL.md';
   const exists = await fs.pathExists(skillPath);
   expect(exists).toBe(true);
 });

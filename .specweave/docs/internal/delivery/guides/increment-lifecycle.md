@@ -88,7 +88,7 @@ This guide covers the complete lifecycle of SpecWeave increments, from creation 
 |------|---------|----------|--------------|
 | **spec.md** | WHAT & WHY (business requirements) | < 250 lines | PM Agent |
 | **plan.md** | HOW (technical design) | < 500 lines | Architect Agent |
-| **tasks.md** | Implementation checklist | Variable | Feature Planner |
+| **tasks.md** | Implementation checklist | Variable | Increment Planner |
 | **tests.md** | Test strategy & mapping | Variable | QA Lead Agent |
 | **context-manifest.yaml** | Context loading config | < 50 lines | Context Loader |
 

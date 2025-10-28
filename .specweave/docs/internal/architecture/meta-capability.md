@@ -30,7 +30,7 @@ Layer 1: SpecWeave improves itself
 
 **Components**:
 - **20 Core Agents** (pm, architect, devops, security, qa-lead, etc.)
-- **24 Core Skills** (feature-planner, context-loader, skill-router, etc.)
+- **24 Core Skills** (increment-planner, context-loader, skill-router, etc.)
 - **Framework Increments** (001-core-framework, 002-core-enhancements, etc.)
 
 **Meta-capability**: **SpecWeave uses itself to build new SpecWeave features!**
@@ -63,7 +63,7 @@ Result: SpecWeave now has diagram capabilities (built by SpecWeave!)
 ```
 User: "Create payment processing feature"
 ↓
-feature-planner skill: Plans increment
+increment-planner skill: Plans increment
 ↓
 pm agent: Creates requirements
 ↓

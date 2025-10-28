@@ -483,12 +483,12 @@ Check that you have:
 **In Claude Code**: Auto-activating capabilities
 **In Manual Workflow**: YOU follow skill workflows manually
 
-### Example: feature-planner Skill
+### Example: increment-planner Skill
 
 **Claude Code (automatic)**:
 ```
 User: "create increment for auth"
-→ feature-planner skill activates automatically
+→ increment-planner skill activates automatically
 → Creates spec, plan, tasks, manifest
 ```
 
@@ -502,7 +502,7 @@ You: Follow Step 4 (create tasks.md using AI)
 You: Follow Step 5 (create manifest manually)
 ```
 
-You manually execute the workflow that feature-planner does automatically!
+You manually execute the workflow that increment-planner does automatically!
 
 ---
 

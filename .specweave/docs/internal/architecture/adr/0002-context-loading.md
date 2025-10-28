@@ -67,7 +67,7 @@ priority: high
 
 ## Mitigation
 
-- `feature-planner` skill auto-generates manifests
+- `increment-planner` skill auto-generates manifests
 - Validation warnings if manifest outdated
 - Context refresh on user request
 

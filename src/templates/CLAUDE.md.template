@@ -233,7 +233,7 @@ backlog → planned → in-progress → completed → closed
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
 | `specweave-detector` | Auto-detect SpecWeave | Any request |
-| `feature-planner` | Plan features | Creating features |
+| `increment-planner` | Plan increments/features | Creating increments/features |
 | `context-loader` | Load context selectively | Working on increments |
 | `skill-router` | Route to appropriate skill | Ambiguous requests |
 

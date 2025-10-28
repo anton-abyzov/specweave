@@ -37,9 +37,9 @@ if (directoryExists('.specweave/config.yaml')) {
 
 | User Request | Detection | Action |
 |-------------|-----------|--------|
-| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `increment-planner` |
 | "Analyze BTC/USD prices" | Could be feature request | ✅ Route to `specweave-detector` → Suggest: "Create BTC analysis feature?" |
-| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `feature-planner` |
+| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `increment-planner` |
 | "Fix bug in login" | Development request | ✅ Route to `specweave-detector` → Load context → Implement |
 | "What's for lunch?" | Non-development | ❌ Respond normally (out of domain) |
 
@@ -183,7 +183,13 @@ npx specweave list --installed      # See what's installed
 |---------|---------|---------|
 | `/create-project` | Bootstrap new SpecWeave project | `/create-project --type python` |
 | `/create-increment` | Create new feature/increment | `/create-increment "user auth"` |
-| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=003` |
+| `/start-increment` | Start working on an increment | `/start-increment 0001` |
+| `/add-tasks` | Add tasks to existing increment | `/add-tasks 0001 "implement login"` |
+| `/validate-increment` | Validate with rule-based + optional AI quality | `/validate-increment 0001 --quality` |
+| `/close-increment` | Close increment with leftover transfer | `/close-increment 0001` |
+| `/list-increments` | List all increments with status | `/list-increments` |
+| `/review-docs` | Review strategic docs vs code | `/review-docs --increment=0003` |
+| `/generate-docs` | Generate documentation site | `/generate-docs` |
 | `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
 
 **All commands are framework-agnostic** (adapt to detected tech stack)
@@ -221,7 +227,7 @@ npx specweave list --installed      # See what's installed
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
 | `specweave-detector` | Auto-detect SpecWeave projects | Any request in SpecWeave project |
-| `feature-planner` | Plan features with context | Creating/planning features |
+| `increment-planner` | Plan features with context | Creating/planning features |
 | `skill-router` | Route to appropriate skills | Ambiguous requests |
 | `context-loader` | Load context selectively | Working on increments |
 
@@ -356,7 +362,7 @@ Agents ask about deployment ONLY when:
 3. **Quality** (31 rules) - Technology-agnostic, testable criteria
 4. **Traceability** (19 rules) - TC-0001 → tests.md coverage
 
-**Manual validation**: `/validate-increment 0001`
+**Validation happens automatically** when documents are saved. For manual quality assessment, ask Claude to "validate quality of increment 0001" to invoke the `increment-quality-judge` skill.
 
 **See**: [Increment Validation Guide](.specweave/docs/internal/delivery/guides/increment-validation.md) for complete validation workflow
 
@@ -368,7 +374,7 @@ Agents ask about deployment ONLY when:
 
 | Guide | Purpose | Loaded By |
 |-------|---------|-----------|
-| [increment-lifecycle.md](. specweave/docs/internal/delivery/guides/increment-lifecycle.md) | Complete increment lifecycle management | `feature-planner` |
+| [increment-lifecycle.md](. specweave/docs/internal/delivery/guides/increment-lifecycle.md) | Complete increment lifecycle management | `increment-planner` |
 | [increment-validation.md](.specweave/docs/internal/delivery/guides/increment-validation.md) | Validation workflow and rules | `increment-validator` |
 | [development-workflow.md](.specweave/docs/internal/delivery/guides/development-workflow.md) | Greenfield and brownfield workflows | When starting development |
 | [deployment-intelligence.md](.specweave/docs/internal/delivery/guides/deployment-intelligence.md) | Deployment target detection and infrastructure | `devops` agent |
@@ -534,24 +540,31 @@ Total: 150k → 27k (82% total reduction)
 
 ---
 
-## Quality Assurance (LLM-as-Judge) 🆕
+## Quality Assurance (AI-Powered Quality Judge)
 
 **Optional AI-powered quality assessment** beyond rule-based validation:
 
-### Dual Validation System
+### How to Use
 
-```bash
-/validate-increment 001
+**Activate the `increment-quality-judge` skill** by asking:
+- "Validate quality of increment 0001"
+- "Quality check for increment 0003"
+- "Assess spec quality for authentication feature"
+- "How good is the spec for increment 0002?"
 
-✅ Rule-Based Validation: PASSED (120/120 checks)
-   ✓ Consistency (47/47)
-   ✓ Completeness (23/23)
-   ✓ Quality (31/31)
-   ✓ Traceability (19/19)
+The skill will evaluate:
+- **Clarity**: Are requirements clear and unambiguous?
+- **Testability**: Can acceptance criteria be tested?
+- **Completeness**: Are edge cases covered?
+- **Feasibility**: Is the plan technically sound?
+- **Maintainability**: Is the design sustainable?
+- **Architecture**: Are design decisions justified?
 
-🤔 Run AI Quality Assessment? [Y/n]: Y
+**Example Output**:
+```
+🔍 Quality Assessment: Increment 0002-user-authentication
 
-🔍 AI Quality Score: 87/100 (GOOD)
+Overall Score: 87/100 (GOOD)
 
 Dimension Scores:
   • Clarity:         92/100 ✓✓
@@ -566,11 +579,10 @@ Suggestions: 3 high priority improvements
 ```
 
 **Features**:
-- 6-dimension quality scoring (clarity, testability, completeness, etc.)
+- 6-dimension quality scoring
 - Actionable suggestions with examples
-- Export suggestions to tasks.md
-- Optional (prompt user, ~2k tokens per assessment)
-- Configurable thresholds
+- LLM-as-Judge pattern for nuanced assessment
+- Complements rule-based validation
 
 **Configuration**: `.specweave/config.yaml` → `validation.quality_judge`
 

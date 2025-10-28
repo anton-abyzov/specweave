@@ -19,7 +19,7 @@ A skill is a specialized capability that activates automatically when relevant.
 **In Claude Code**: Skills are native (.claude/skills/)
 **In Cursor**: You simulate by reading relevant workflow instructions
 
-## feature-planner Skill
+## increment-planner Skill
 When user says "create increment":
 1. Read .specweave/config.yaml
 2. Auto-increment number
@@ -62,8 +62,8 @@ This is **meta-documentation** - teaching the AI how to behave!
 // Skills auto-activate
 User: "create increment for auth"
 → specweave-detector activates
-→ skill-router routes to feature-planner
-→ feature-planner creates increment
+→ skill-router routes to increment-planner
+→ increment-planner creates increment
 ```
 
 **Cursor (manual simulation)**:
@@ -72,7 +72,7 @@ User: "create increment for auth"
 User: "create increment for auth"
 → You read .cursorrules
 → Follow workflow: check config → create folders → create files
-→ Act like feature-planner by following those steps
+→ Act like increment-planner by following those steps
 ```
 
 ### Simulating Agents

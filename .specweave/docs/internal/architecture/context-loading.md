@@ -328,15 +328,15 @@ Reduction: (85,000 - 17,200) / 85,000 = 79.8%
 
 ### Scenario: User Says "Implement Stripe payment integration"
 
-**Step 1: Detection & Routing** (specweave-detector → feature-planner)
+**Step 1: Detection & Routing** (specweave-detector → increment-planner)
 ```
 specweave-detector: Detects .specweave/ directory
-→ Routes to feature-planner skill
+→ Routes to increment-planner skill
 ```
 
-**Step 2: Context Manifest Creation** (feature-planner)
+**Step 2: Context Manifest Creation** (increment-planner)
 ```
-feature-planner analyzes request:
+increment-planner analyzes request:
 - Identifies module: payments/stripe
 - Identifies dependencies: shared payment models, compliance
 - Creates context manifest with precise paths
@@ -470,7 +470,7 @@ auto_refresh: true  # Re-load when source files change
 1. Implement `context-loader` skill (TypeScript/Python)
 2. Add caching layer
 3. Create test cases (minimum 3)
-4. Integrate with `feature-planner`
+4. Integrate with `increment-planner`
 5. Add semantic search (v2.0)
 
 ---
@@ -479,7 +479,7 @@ auto_refresh: true  # Re-load when source files change
 
 - [CLAUDE.md](../../../CLAUDE.md#context-priming) - Overview
 - [Context-Loader Skill](../../../src/skills/context-loader/SKILL.md) - Implementation
-- [Feature-Planner Skill](../../../src/skills/feature-planner/SKILL.md) - Context manifest creation
+- [Increment-Planner Skill](../../../src/skills/increment-planner/SKILL.md) - Context manifest creation
 - [.specweave/docs/public/guides/context-priming.md](../../public/guides/context-priming.md) - User guide (YouTube script)
 
 ---

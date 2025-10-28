@@ -106,7 +106,7 @@ specweave --help                   # Show help
 
 User: "Create authentication feature with email and OAuth"
     ↓
-SpecWeave: (auto-routes to feature-planner)
+SpecWeave: (auto-routes to increment-planner)
 ✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
@@ -193,7 +193,7 @@ SpecWeave includes **24 AI skills** that coordinate agents and provide specializ
 ### Feature Planning
 | Skill | Purpose | Status |
 |-------|---------|--------|
-| **feature-planner** | Plan features with context awareness | ✅ Implemented |
+| **increment-planner** | Plan features with context awareness | ✅ Implemented |
 | **task-builder** | Break features into executable tasks | ✅ Implemented |
 | **docs-updater** | Auto-update documentation via hooks | ✅ Implemented |
 

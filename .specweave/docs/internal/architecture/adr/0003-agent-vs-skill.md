@@ -28,7 +28,7 @@ Question: When to use which?
 - Capability extensions
 - Shared context acceptable
 - Auto-activation based on keywords
-- Examples: feature-planner, context-loader, skill-router
+- Examples: increment-planner, context-loader, skill-router
 
 ## Agent Examples
 
@@ -54,9 +54,9 @@ await Task({
 ## Skill Examples
 
 ```yaml
-# src/skills/feature-planner/SKILL.md
+# src/skills/increment-planner/SKILL.md
 ---
-name: feature-planner
+name: increment-planner
 description: Plan features with context awareness...
 ---
 Plans features by loading context manifests...

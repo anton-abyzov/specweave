@@ -164,7 +164,7 @@ max_context_tokens: 10000
 
 ## Simulating Skills
 
-### feature-planner Skill (Creating Features)
+### increment-planner Skill (Creating Features)
 **When**: User says "create increment" or "plan feature"
 **Do**:
 1. Read .specweave/config.yaml
@@ -185,7 +185,7 @@ max_context_tokens: 10000
 **When**: User asks ambiguous question
 **Do**:
 1. Determine if it's:
-   - Feature request → use feature-planner
+   - Feature request → use increment-planner
    - Documentation question → load docs
    - Implementation → load context + implement
 2. Route to appropriate workflow

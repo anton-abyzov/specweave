@@ -397,7 +397,7 @@ integrations:
 
 **What it does**:
 1. Reads issue title and description
-2. Activates `feature-planner` skill
+2. Activates `increment-planner` skill
 3. Generates complete increment structure:
    - `.specweave/increments/00001-feature-name/spec.md`
    - `.specweave/increments/00001-feature-name/plan.md`
@@ -812,7 +812,7 @@ cat .specweave/docs/changelog/2025-10.md
 ### Issue: Skills not activating
 
 **Symptoms**:
-- Workflow runs but doesn't use feature-planner
+- Workflow runs but doesn't use increment-planner
 - Skills not detected
 
 **Solutions**:
@@ -828,10 +828,10 @@ cat .specweave/docs/changelog/2025-10.md
 2. **SKILL.md missing frontmatter**
    ```bash
    # Check skill format
-   head -10 .claude/skills/feature-planner/SKILL.md
+   head -10 .claude/skills/increment-planner/SKILL.md
    # Should see:
    # ---
-   # name: feature-planner
+   # name: increment-planner
    # description: ...
    # ---
    ```

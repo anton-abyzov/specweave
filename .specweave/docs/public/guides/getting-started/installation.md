@@ -152,7 +152,7 @@ Work autonomously using SpecWeave skills.
 2. `skill-router` routes to appropriate skills
 3. `spec-author` creates specifications
 4. `architect` designs architecture
-5. `feature-planner` creates implementation plans
+5. `increment-planner` creates implementation plans
 6. `developer` implements code
 7. `playwright-tester` creates E2E tests
 8. `qa-engineer` validates quality
@@ -203,7 +203,7 @@ ls -la .claude/skills/
 # - specweave-detector
 # - skill-router
 # - context-loader
-# - feature-planner
+# - increment-planner
 # - nextjs-agent
 # - hetzner-provisioner
 # - cost-optimizer

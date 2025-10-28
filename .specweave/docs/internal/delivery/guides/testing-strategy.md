@@ -131,7 +131,7 @@ src/skills/{skill-name}/
 - `src/skills/specweave-detector/test-cases/` ✅
 - `src/skills/skill-router/test-cases/` ✅
 - `src/skills/context-loader/test-cases/` ✅
-- `src/skills/feature-planner/test-cases/` ✅
+- `src/skills/increment-planner/test-cases/` ✅
 
 ---
 

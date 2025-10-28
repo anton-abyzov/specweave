@@ -62,7 +62,7 @@ references:
       reason: "Example ROLE agent with architecture expertise"
 
   skills:
-    - path: "src/skills/feature-planner/SKILL.md"
+    - path: "src/skills/increment-planner/SKILL.md"
       priority: medium
       reason: "Example skill format and structure"
 

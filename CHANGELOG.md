@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.0] - 2025-10-28
+
+### 🎉 First Stable Release
+
+The first stable release of **SpecWeave** - ready for production use! This release builds on beta.1 with critical improvements and new features.
+
+### ✨ What's New Since Beta
+
+#### 🔄 **Multi-Tool Adapter System** (NEW)
+
+SpecWeave now supports **multiple AI tools** via a clean adapter architecture:
+
+**Supported Adapters:**
+- **Claude Code** (native, recommended) - Full feature support
+- **Cursor** (via `.cursorrules`) - Optimized for Cursor's context system
+- **Generic** (universal adapter) - Works with ANY AI tool (Copilot, Windsurf, Cline, etc.)
+
+**Installation:**
+```bash
+# Claude Code (default)
+npx specweave init my-project
+
+# Cursor
+npx specweave init my-project --adapter cursor
+
+# Generic (Copilot, Windsurf, etc.)
+npx specweave init my-project --adapter generic
+```
+
+**Benefits:**
+- ✅ Choose your preferred AI tool
+- ✅ Consistent SpecWeave workflow across tools
+- ✅ Easy migration between tools
+- ✅ Custom adapter creation supported
+
+**Files:**
+- `src/adapters/claude/` - Native Claude Code integration
+- `src/adapters/cursor/` - Cursor-optimized `.cursorrules`
+- `src/adapters/generic/` - Universal `SPECWEAVE-MANUAL.md`
+
+#### 📏 **4-Digit Increment Numbering** (BREAKING CHANGE)
+
+**Enforced 4-digit format** for all increments (0001-9999):
+
+**Before:** `001-feature`, `01-feature`, `1-feature` (inconsistent)
+**After:** `0001-feature`, `0042-feature`, `0123-feature` (always 4 digits)
+
+**Benefits:**
+- ✅ Consistent sorting across all tools
+- ✅ Prevents duplicate increments
+- ✅ Supports up to 9,999 increments
+- ✅ Clear visual hierarchy
+
+**Migration:** Run `/create-increment` to use new format (old increments still work)
+
+#### 🔄 **Feature Planner → Increment Planner** (Renamed)
+
+**Skill renamed** for clarity:
+- **Old:** `feature-planner` (ambiguous)
+- **New:** `increment-planner` (precise)
+
+**Why:** "Feature" is overloaded (can mean module, capability, or increment). "Increment" is unambiguous and matches SpecWeave's core concept.
+
+**Migration:** Automatic (skill auto-detects and activates)
+
+### 🐛 **Bug Fixes**
+
+- Fixed E2E smoke test to match install script behavior
+- Fixed arithmetic expressions that return 0 with `set -e`
+- Fixed validation rules for increment frontmatter
+- Fixed context manifest loading for nested specifications
+- Improved error reporting in install scripts
+
+### 📚 **Documentation Updates**
+
+- Updated CLAUDE.md with multi-tool adapter guidance
+- Updated SPECWEAVE.md with 4-digit increment convention
+- Updated increment lifecycle guide
+- Updated increment validation guide
+- Added adapter-specific documentation
+
+---
+
 ## [0.1.0-beta.1] - 2025-10-27
 
 ### 🎉 Initial Beta Release
@@ -57,7 +140,7 @@ Each agent has:
 
 **Core Skills:**
 - `specweave-detector` - Auto-detect and activate SpecWeave projects
-- `feature-planner` - Plan features with context manifests (70%+ token reduction)
+- `increment-planner` - Plan features with context manifests (70%+ token reduction)
 - `skill-router` - Intelligent request routing (>90% accuracy)
 - `context-loader` - Selective specification loading (enterprise scalability)
 - `role-orchestrator` - Multi-agent workflow coordination
@@ -329,7 +412,7 @@ npx specweave init my-api --type python --framework fastapi
 # Installs ONLY:
 # - Strategic agents: pm, architect, security, qa-lead, devops, docs-writer (6)
 # - Implementation: python-backend (1)
-# - Core skills: specweave-detector, skill-router, context-loader, feature-planner (4)
+# - Core skills: specweave-detector, skill-router, context-loader, increment-planner (4)
 # Total: 7 agents + 4 skills (vs 19 agents + 24 skills!)
 # Token savings: 60%
 ```
@@ -624,4 +707,5 @@ We're building the future of spec-driven development together. Your feedback mak
 
 ---
 
+[0.1.0]: https://github.com/specweave/specweave/releases/tag/v0.1.0
 [0.1.0-beta.1]: https://github.com/specweave/specweave/releases/tag/v0.1.0-beta.1

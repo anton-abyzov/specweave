@@ -64,7 +64,7 @@ Created **8 detailed guides** in `.specweave/docs/internal/delivery/guides/`:
 | Guide | Lines | Purpose | Loaded By |
 |-------|-------|---------|-----------|
 | **deployment-intelligence.md** | 490 | Deployment target detection, infrastructure | `devops` agent |
-| **increment-lifecycle.md** | 528 | Complete increment management, WIP limits | `pm` agent, `feature-planner` skill |
+| **increment-lifecycle.md** | 528 | Complete increment management, WIP limits | `pm` agent, `increment-planner` skill |
 | **testing-strategy.md** | 351 | Testing philosophy (4 levels), coverage | `qa-lead` agent |
 | **increment-validation.md** | 265 | Validation workflow, 120 rules | `increment-validator` skill |
 | **development-workflow.md** | 237 | Greenfield/brownfield workflows | When starting development |
@@ -133,7 +133,7 @@ This guide contains:
 
 ### Skills Updated (1 total)
 
-1. **feature-planner** → Loads `increment-lifecycle.md`
+1. **increment-planner** → Loads `increment-lifecycle.md`
 
 ---
 
@@ -192,7 +192,7 @@ This guide contains:
 - [x] Extract 9 detailed guides to `.specweave/docs/internal/delivery/guides/`
 - [x] Create compressed CLAUDE.md (479 lines, 88% reduction)
 - [x] Update 4 key agents with guide references
-- [x] Update feature-planner skill with guide reference
+- [x] Update increment-planner skill with guide reference
 - [x] Optimize CLAUDE.md.template (306 lines, 52% reduction)
 - [x] Verify file reductions
 - [x] Create verification report (this document)

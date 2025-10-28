@@ -1,6 +1,6 @@
 ---
 name: "Basic Feature Planning"
-description: "Tests if feature-planner can create a basic feature from a simple description"
+description: "Tests if increment-planner can create a basic feature from a simple description"
 input:
   prompt: "Plan a feature for user authentication with email and password"
   files: []

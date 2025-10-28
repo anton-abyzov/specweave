@@ -107,7 +107,7 @@ These agents require **strategic reasoning** that we CANNOT risk with Haiku 4.5:
 3. ❌ **Security Agent** - Security decisions too critical
 4. ❌ **DevOps Agent** - Infrastructure cost/performance trade-offs
 5. ❌ **Implementation Agents** - Code quality is critical
-6. ❌ **Feature Planner Skill** - Orchestration logic, routing decisions
+6. ❌ **Increment Planner Skill** - Orchestration logic, routing decisions
 7. ❌ **Skill Router** - 90% → 81% routing accuracy would hurt UX
 
 **Rule**: If it requires **strategic decisions** or **critical expertise**, keep Sonnet 4.5.

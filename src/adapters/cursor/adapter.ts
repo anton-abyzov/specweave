@@ -150,7 +150,7 @@ that teach Cursor's AI how to BEHAVE LIKE it has these
 capabilities, even without native support.
 
 Example: .cursorrules says:
-"When user requests feature, act like 'feature-planner' skill:
+"When user requests feature, act like 'increment-planner' skill:
  1. Read context-manifest.yaml
  2. Load only files listed there
  3. Invoke PM role: Create spec.md
@@ -164,17 +164,17 @@ A skill is a specialized capability that activates when needed.
 In Claude Code: Skills are native (.claude/skills/)
 In Cursor: You simulate by reading relevant files
 
-Example: feature-planner skill
+Example: increment-planner skill
 
 Claude Code (automatic):
   User: "create increment for auth"
-  → feature-planner skill activates automatically
+  → increment-planner skill activates automatically
 
 Cursor (manual simulation):
   User: "create increment for auth"
   → You read .cursorrules
   → Follow workflow: read config → create spec → create plan
-  → Act like feature-planner by following those steps
+  → Act like increment-planner by following those steps
 
 HOW TO "IMPLEMENT" AGENTS IN CURSOR:
 

@@ -1,6 +1,6 @@
 /**
  * Feature Planning Utilities for SpecWeave
- * Supports feature-planner skill with auto-numbering and name generation
+ * Supports increment-planner skill with auto-numbering and name generation
  */
 
 const fs = require('fs');
@@ -53,17 +53,18 @@ function generateShortName(description) {
 
 /**
  * Get the next available feature number
- * @param {string} featuresDir - Path to features directory
- * @returns {string} Next feature number (zero-padded to 3 digits)
+ * @param {string} featuresDir - Path to features directory (default: '.specweave/increments')
+ * @returns {string} Next feature number (zero-padded to 4 digits: 0001-9999)
  */
-function getNextFeatureNumber(featuresDir = 'features') {
+function getNextFeatureNumber(featuresDir = '.specweave/increments') {
   let highest = 0;
 
   if (fs.existsSync(featuresDir)) {
     const entries = fs.readdirSync(featuresDir);
 
     entries.forEach(entry => {
-      const match = entry.match(/^(\d{3})-/);
+      // Match BOTH 3-digit (legacy) and 4-digit formats to prevent conflicts
+      const match = entry.match(/^(\d{3,4})-/);
       if (match) {
         const num = parseInt(match[1], 10);
         if (num > highest) {
@@ -74,7 +75,9 @@ function getNextFeatureNumber(featuresDir = 'features') {
   }
 
   const next = highest + 1;
-  return String(next).padStart(3, '0');
+
+  // Always return 4-digit format
+  return String(next).padStart(4, '0');
 }
 
 /**
@@ -83,7 +86,7 @@ function getNextFeatureNumber(featuresDir = 'features') {
  * @param {string} featuresDir - Path to features directory
  * @returns {boolean} True if exists
  */
-function featureExists(shortName, featuresDir = 'features') {
+function featureExists(shortName, featuresDir = '.specweave/increments') {
   if (!fs.existsSync(featuresDir)) {
     return false;
   }
@@ -93,14 +96,49 @@ function featureExists(shortName, featuresDir = 'features') {
 }
 
 /**
+ * Check if increment number already exists (prevents duplicates like 0002, 0002)
+ * @param {string} incrementNumber - Increment number to check (e.g., '0001')
+ * @param {string} featuresDir - Path to features directory
+ * @returns {boolean} True if number already exists
+ */
+function incrementNumberExists(incrementNumber, featuresDir = '.specweave/increments') {
+  if (!fs.existsSync(featuresDir)) {
+    return false;
+  }
+
+  const entries = fs.readdirSync(featuresDir);
+
+  // Normalize to 4-digit format for comparison
+  const normalizedNum = String(incrementNumber).padStart(4, '0');
+
+  return entries.some(entry => {
+    const match = entry.match(/^(\d{3,4})-/);
+    if (match) {
+      const entryNum = String(match[1]).padStart(4, '0');
+      return entryNum === normalizedNum;
+    }
+    return false;
+  });
+}
+
+/**
  * Create feature directory structure
- * @param {string} featureNumber - Feature number (e.g., '001')
+ * @param {string} featureNumber - Feature number (e.g., '0001')
  * @param {string} shortName - Feature short name
  * @param {string} featuresDir - Path to features directory
  * @returns {string} Full feature path
+ * @throws {Error} If increment number already exists
  */
-function createFeatureDirectory(featureNumber, shortName, featuresDir = 'features') {
-  const featurePath = path.join(featuresDir, `${featureNumber}-${shortName}`);
+function createFeatureDirectory(featureNumber, shortName, featuresDir = '.specweave/increments') {
+  // Normalize to 4-digit format
+  const normalizedNumber = String(featureNumber).padStart(4, '0');
+
+  // Check for duplicate increment number
+  if (incrementNumberExists(normalizedNumber, featuresDir)) {
+    throw new Error(`Increment number ${normalizedNumber} already exists! Use getNextFeatureNumber() to get the next available number.`);
+  }
+
+  const featurePath = path.join(featuresDir, `${normalizedNumber}-${shortName}`);
 
   if (!fs.existsSync(featuresDir)) {
     fs.mkdirSync(featuresDir, { recursive: true });
@@ -164,6 +202,7 @@ module.exports = {
   generateShortName,
   getNextFeatureNumber,
   featureExists,
+  incrementNumberExists,
   createFeatureDirectory,
   extractPriority,
   getCurrentDate,
@@ -193,7 +232,7 @@ if (require.main === module) {
       break;
 
     case 'next':
-      const dir = args[1] || 'features';
+      const dir = args[1] || '.specweave/increments';
       console.log(getNextFeatureNumber(dir));
       break;
 

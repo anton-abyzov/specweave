@@ -319,7 +319,7 @@ skills:
     - skill-router
     - role-orchestrator
     - context-loader
-    - feature-planner
+    - increment-planner
 
   infrastructure:
     - hetzner-provisioner      # If platform=hetzner

@@ -27,7 +27,7 @@ Every SpecWeave skill must have minimum 3 test cases:
 
 ```bash
 cd specweave
-ls src/skills/feature-planner/test-cases/
+ls src/skills/increment-planner/test-cases/
 ```
 
 **Show**:
@@ -44,9 +44,9 @@ test-cases/
 
 ```yaml
 ---
-test_id: feature-planner-001
+test_id: increment-planner-001
 name: Basic Feature Planning
-description: Test that feature-planner creates complete feature structure
+description: Test that increment-planner creates complete feature structure
 
 setup:
   project_type: greenfield
@@ -116,12 +116,12 @@ pass_criteria:
 
 **Command**:
 ```bash
-npm run test:skills -- feature-planner
+npm run test:skills -- increment-planner
 ```
 
 **Terminal Output** (show live):
 ```
-🧪 Running Skill Tests: feature-planner
+🧪 Running Skill Tests: increment-planner
 
 Test 1/3: Basic Feature Planning (test-1-basic.yaml)
   ⏳ Setting up test environment...
@@ -129,7 +129,7 @@ Test 1/3: Basic Feature Planning (test-1-basic.yaml)
 
   ⏳ Executing test...
   → User Request: "Plan a user authentication feature..."
-  → feature-planner skill activated
+  → increment-planner skill activated
   → Creating features/001-user-authentication/
 
   ⏳ Validating outputs...
@@ -166,7 +166,7 @@ Summary:
   ✅ 3/3 tests passed
   ⏱️  Total duration: 40.2s
 
-✅ feature-planner skill validation: PASSED
+✅ increment-planner skill validation: PASSED
 ```
 
 **Key Point**: Skill tests ensure skills work as designed before shipping.

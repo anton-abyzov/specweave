@@ -259,7 +259,7 @@ SpecWeave uses a **selective installation** approach to avoid context bloat.
 - Implementation: frontend, nextjs, nodejs-backend, python-backend, dotnet-backend, performance, sre
 
 **Skills** (17+ available):
-- Core: specweave-detector, feature-planner, skill-router, context-loader
+- Core: specweave-detector, increment-planner, skill-router, context-loader
 - Integration: jira-sync, ado-sync, github-sync, diagrams-generator
 - Infrastructure: hetzner-provisioner, cost-optimizer
 - Brownfield: brownfield-analyzer, brownfield-onboarder
@@ -284,7 +284,7 @@ specweave list
 # ✨ Skills:
 #    Available in SpecWeave: 17 skills
 #    • specweave-detector - Auto-detect SpecWeave projects
-#    • feature-planner - Plan features with context awareness
+#    • increment-planner - Plan features with context awareness
 #    ...
 ```
 
@@ -303,7 +303,7 @@ specweave list --installed
 #
 # ✨ Skills:
 #    ✓ specweave-detector
-#    ✓ feature-planner
+#    ✓ increment-planner
 #    ...
 ```
 
@@ -550,11 +550,11 @@ ls ~/.claude/agents/
 **3. Verify SKILL.md/AGENT.md format**
 ```bash
 # Must have YAML frontmatter
-cat .claude/skills/feature-planner/SKILL.md
+cat .claude/skills/increment-planner/SKILL.md
 
 # Should start with:
 # ---
-# name: feature-planner
+# name: increment-planner
 # description: ...
 # ---
 ```
@@ -626,7 +626,7 @@ specweave install
 **Approach 2: Selective upgrade**
 ```bash
 # Update specific component
-specweave install feature-planner --local
+specweave install increment-planner --local
 ```
 
 **Approach 3: Manual upgrade**

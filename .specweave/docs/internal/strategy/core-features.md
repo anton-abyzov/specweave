@@ -13,7 +13,7 @@
 - TC-004: Selective installation (not all skills loaded)
 
 **Acceptance Criteria**:
-- User asks "plan feature" → `feature-planner` activates
+- User asks "plan feature" → `increment-planner` activates
 - Skills have YAML frontmatter (name, description)
 - Test cases validate skill behavior
 - Token savings via selective loading
@@ -49,7 +49,7 @@
 
 **Acceptance Criteria**:
 - User asks "create security review" → routes to `security` agent
-- User asks "plan feature" → routes to `feature-planner` skill
+- User asks "plan feature" → routes to `increment-planner` skill
 - Ambiguous requests trigger `AskUserQuestion`
 - Routing accuracy measured and logged
 

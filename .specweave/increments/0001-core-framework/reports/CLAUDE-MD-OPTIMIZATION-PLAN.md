@@ -212,7 +212,7 @@ CLAUDE.md (Index Card)
 
 **Strategic Agents**: pm, architect, devops, security, qa-lead
 **Implementation Agents**: Adapt to YOUR tech stack (nextjs, python-backend, etc.)
-**Core Skills**: specweave-detector, feature-planner, skill-router, context-loader
+**Core Skills**: specweave-detector, increment-planner, skill-router, context-loader
 
 **Complete Lists**:
 - [Agents Reference](.specweave/docs/public/api/agents-reference.md) - All 14+ agents

@@ -68,7 +68,7 @@ jobs:
             - Load specifications/overview.md for context
 
             **Steps**:
-            1. Activate the `feature-planner` skill (it's installed in .claude/skills/)
+            1. Activate the `increment-planner` skill (it's installed in .claude/skills/)
             2. Analyze the issue description and title
             3. Determine the next increment number by scanning .specweave/increments/ directory
             4. Generate increment structure in .specweave/increments/0001-feature-name/:

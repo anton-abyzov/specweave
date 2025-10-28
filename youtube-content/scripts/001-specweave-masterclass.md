@@ -183,7 +183,7 @@
 > SpecWeave extends Claude Code with specialized 'skills' - AI agents with expertise in specific domains:
 >
 > - `specweave-detector` - Recognizes SpecWeave projects, activates automatically
-> - `feature-planner` - Creates comprehensive implementation plans
+> - `increment-planner` - Creates comprehensive implementation plans
 > - `context-loader` - Loads only relevant specs via manifests
 > - `spec-author` - Writes and maintains specifications
 > - `developer` - Implements code following plans
@@ -289,7 +289,7 @@
 > **SpecWeave Approach:**
 > ```
 > User: 'Plan payment processing feature'
-> → feature-planner skill activates automatically
+> → increment-planner skill activates automatically
 > → Creates spec.md, plan.md, tasks.md, context-manifest.yaml
 > User: 'Implement the payment feature'
 > → developer skill loads relevant context via manifest
@@ -370,7 +370,7 @@
 > → Creates modular spec in specifications/modules/payments/
 > → Links to architecture docs
 > → Creates context manifest
-> → feature-planner can immediately use it for implementation
+> → increment-planner can immediately use it for implementation
 > ```
 >
 > SpecKit gives you templates. SpecWeave gives you an AI agent that understands your domain."
@@ -618,7 +618,7 @@
 > - `skill-router` - Routes requests to appropriate skills
 >
 > **Planning & Design:**
-> - `feature-planner` - Creates comprehensive implementation plans
+> - `increment-planner` - Creates comprehensive implementation plans
 > - `spec-author` - Writes/updates specifications
 > - `architect` - Designs architecture, creates ADRs
 >
@@ -650,7 +650,7 @@
 >
 > → specweave-detector: Detects SpecWeave project
 > → skill-router: Identifies need for feature planning
-> → feature-planner: Activates automatically
+> → increment-planner: Activates automatically
 >   → Analyzes request
 >   → Creates feature-###-user-auth/
 >   → Generates spec.md, plan.md, tasks.md
@@ -1017,7 +1017,7 @@
 
 **[ON SCREEN: Generated feature plan]**
 
-> "The `feature-planner` skill created:
+> "The `increment-planner` skill created:
 >
 > `features/001-user-authentication/`:
 > ```
@@ -1696,7 +1696,7 @@ npm run test:e2e
 
 **[ON SCREEN: Generated plan]**
 
-> "`feature-planner` creates:
+> "`increment-planner` creates:
 >
 > `features/015-google-oauth/spec.md`:
 > ```markdown
@@ -2302,7 +2302,7 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 >
 > **Layer 1: SpecWeave Framework (The Factory)**
 > - 20 core agents (pm, architect, devops, etc.)
-> - 24 core skills (feature-planner, context-loader, etc.)
+> - 24 core skills (increment-planner, context-loader, etc.)
 > - The foundation
 >
 > **Layer 2: Your Project (Using SpecWeave)**
@@ -2513,7 +2513,7 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 >
 > **Test Structure:**
 > ```
-> src/skills/feature-planner/
+> src/skills/increment-planner/
 > ├── SKILL.md
 > ├── scripts/
 > ├── references/
@@ -2532,11 +2532,11 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 > "**Example Test Case:**
 >
 > ```yaml
-> # src/skills/feature-planner/test-cases/test-1-basic.yaml
+> # src/skills/increment-planner/test-cases/test-1-basic.yaml
 > ---
-> test_id: feature-planner-001
+> test_id: increment-planner-001
 > name: Basic Feature Planning
-> description: Test that feature-planner creates complete feature structure
+> description: Test that increment-planner creates complete feature structure
 >
 > setup:
 >   project_type: greenfield
@@ -2605,7 +2605,7 @@ npm run test:e2e -- tests/e2e/auth-regression.spec.ts
 **[DEMO: Run skill test]**
 
 ```bash
-npm run test:skills -- feature-planner
+npm run test:skills -- increment-planner
 ```
 
 **[ON SCREEN: Test execution]**
@@ -2614,7 +2614,7 @@ npm run test:skills -- feature-planner
 >
 > `test-results/test-1-result.md`:
 > ```markdown
-> # Test Result: feature-planner-001
+> # Test Result: increment-planner-001
 >
 > **Status**: ✅ PASSED
 > **Duration**: 12.3s
@@ -3095,7 +3095,7 @@ npm run test:skills -- feature-planner
 > **First Steps:**
 > 1. Read CLAUDE.md in your project
 > 2. Create your first specification
-> 3. Plan a feature with feature-planner
+> 3. Plan a feature with increment-planner
 > 4. Implement with developer skill
 > 5. Validate with E2E tests"
 

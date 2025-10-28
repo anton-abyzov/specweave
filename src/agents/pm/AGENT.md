@@ -543,9 +543,9 @@ measurement_plan:
 - Receives technical feasibility feedback
 - Collaborates on non-functional requirements
 
-**3. feature-planner**
+**3. increment-planner**
 - PM Agent defines WHAT and WHY
-- feature-planner creates implementation plan (HOW)
+- increment-planner creates implementation plan (HOW)
 
 **4. tech-lead-agent**
 - PM provides business context for technical decisions

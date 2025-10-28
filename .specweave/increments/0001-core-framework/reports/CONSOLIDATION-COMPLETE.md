@@ -181,7 +181,7 @@ src/skills/                          ✅ Source of truth (24 skills)
 ├── specweave-detector/
 ├── skill-router/
 ├── context-loader/
-├── feature-planner/
+├── increment-planner/
 ├── role-orchestrator/
 ├── hetzner-provisioner/
 ├── cost-optimizer/
