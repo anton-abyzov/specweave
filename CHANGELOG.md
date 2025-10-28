@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.6] - 2025-10-28
+
+### 🐛 **Bug Fixes: Complete 0.1.5 Migration**
+
+This release completes the migration to the pre-installation approach by fixing all remaining references to the old auto-installation logic.
+
+#### What's Fixed
+
+**1. `specweave-detector` skill - Major cleanup**:
+- ❌ Removed outdated auto-installation references (lines 36-175)
+- ❌ Removed "Just-In-Time Component Installation" section
+- ❌ Removed auto-installation component mapping
+- ❌ Removed installation commands: `npx specweave install spec-author`
+- ✅ Updated all examples to show pre-installed components
+- ✅ Enhanced YAML description with activation keywords
+- ✅ Updated Skill Discovery section (comprehensive pre-installed list)
+- ✅ Fixed all path references: `features/` → `.specweave/increments/`
+- ✅ Fixed all naming: "Feature 00X" → "Increment 000X"
+- ✅ Updated config example (removed `auto_install` setting)
+
+**2. README.md - npm package documentation**:
+- ✅ Updated version badge: `0.1.0-beta.1` → `0.1.5`
+- ✅ Added spec-weave.com website links throughout
+- ✅ Removed ALL auto-installation and dynamic loading references
+- ✅ Updated component counts: 19 agents → 10 agents, 24 skills → 35+ skills
+- ✅ Updated Quick Example to emphasize pre-installation
+- ✅ Removed entire "Context Precision (70%+ reduction)" section
+- ✅ Updated comparisons to BMAD-METHOD and spec-kit
+- ✅ Updated all GitHub URLs: `specweave/specweave` → `anton-abyzov/specweave`
+- ✅ Simplified documentation section with spec-weave.com links
+
+#### Why This Matters
+
+These fixes ensure **complete consistency** with the 0.1.5 pre-installation approach:
+- No confusing references to auto-installation
+- Accurate activation triggers for skills
+- Clear examples showing pre-installed components
+- Professional npm package documentation
+
+#### User Impact
+
+✅ **SpecWeave activation now works correctly** - `specweave-detector` has proper keywords
+✅ **npm package page is accurate** - shows correct features and approach
+✅ **No more confusion** - all documentation aligned with pre-installation
+
+---
+
 ## [0.1.5] - 2025-10-28
 
 ### 🔥 **MAJOR CHANGE: All Components Pre-Installed!**

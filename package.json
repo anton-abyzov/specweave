@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Spec-Driven Development framework with AI-powered autonomous agents for building SaaS applications",
   "main": "dist/index.js",
   "bin": {
