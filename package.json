@@ -44,12 +44,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/specweave/specweave.git"
+    "url": "https://github.com/anton-abyzov/specweave.git"
   },
   "bugs": {
-    "url": "https://github.com/specweave/specweave/issues"
+    "url": "https://github.com/anton-abyzov/specweave/issues"
   },
-  "homepage": "https://github.com/specweave/specweave#readme",
+  "homepage": "https://spec-weave.com",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -59,11 +59,13 @@
     "src/templates",
     "src/skills",
     "src/agents",
+    "src/commands",
     "src/hooks",
     "src/adapters",
     "README.md",
     "SPECWEAVE.md",
     "CLAUDE.md",
+    "INSTALL.md",
     "LICENSE"
   ],
   "dependencies": {

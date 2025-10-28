@@ -1,0 +1,73 @@
+# SpecWeave npm Package - Exclude Unnecessary Files
+# Goal: Keep package size minimal (500KB vs 20MB)
+
+# Documentation site (publish separately to spec-weave.com)
+docs-site/
+
+# Internal content (not for users)
+youtube-content/
+
+# Framework's own SpecWeave specs (meta-content)
+.specweave/
+
+# Test files (users don't need framework tests)
+tests/
+*.spec.ts
+*.test.ts
+*.spec.js
+*.test.js
+
+# Build and deployment scripts
+scripts/generate-*
+scripts/README.md
+
+# Internal checklists
+DEPLOYMENT-CHECKLIST-DIAGRAMS.md
+DEPLOYMENT-READY.md
+RELEASE-CHECKLIST.md
+
+# Documentation build configs
+mkdocs-internal.yml
+mkdocs.yml
+.mermaidrc.json
+
+# Development files
+.github/workflows/
+.git/
+.gitignore
+.gitattributes
+.DS_Store
+.vscode/
+.idea/
+
+# TypeScript source (publish compiled dist/ only)
+src/**/*.ts
+!src/**/*.md
+!src/**/*.yaml
+!src/**/*.json
+!src/**/*.sh
+tsconfig.json
+jest.config.js
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db
