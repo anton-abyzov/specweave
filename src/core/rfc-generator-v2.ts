@@ -1,19 +1,21 @@
 /**
- * RFC Generator - Flexible Structure Support
+ * RFC Generator V2 - Universal Flexible Structure Support
  *
- * Universal RFC generator that adapts to different project management structures:
+ * Modern, multi-platform RFC generator that adapts to any project management structure:
  * - Jira: Epic → Story → Sub-task
  * - Azure DevOps: Feature → User Story → Task
- * - GitHub: Milestone → Issue (or flat)
+ * - GitHub: Milestone → Issue (or flat issues)
  * - Custom: Any configurable hierarchy
  *
- * Supports flexible grouping strategies:
- * - by_type: Group by work item type (story, bug, task, issue, feature, etc.)
- * - by_parent: Group by parent (epic, feature, milestone)
- * - by_priority: Group by priority
- * - by_label: Group by labels/tags
- * - flat: No grouping
- * - custom: User-defined grouping function
+ * Key Features:
+ * - Flexible work item types (any string: story, bug, issue, feature, user story, etc.)
+ * - 6 grouping strategies: by_type, by_parent, by_priority, by_label, flat, custom
+ * - Parent-child relationships (Epic, Feature, Milestone)
+ * - Labels/tags support (GitHub-style)
+ * - Auto-detection via ProjectStructureDetector
+ * - Extensible metadata
+ *
+ * This is the official RFC generator (V1 deprecated).
  */
 
 import * as fs from 'fs';

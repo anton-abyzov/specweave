@@ -1,7 +1,7 @@
 flowchart TB
     Start([User Request]) --> Detect{".specweave/<br/>exists?"}
 
-    Detect -->|No| NewProject["/create-project"]
+    Detect -->|No| NewProject["specweave init<br/>(CLI)"]
     Detect -->|Yes| Router["skill-router<br/>Parse & Route"]
 
     %% New Project Initialization
@@ -30,7 +30,7 @@ flowchart TB
     end
 
     subgraph planning ["📋 Feature Planning (Multi-Agent)"]
-        Planning["/create-increment"] --> PMAgent["PM Agent<br/>spec.md + TC-0001"]
+        Planning["/specweave inc"] --> PMAgent["PM Agent<br/>spec.md + TC-0001"]
         PMAgent --> ArchAgent["Architect Agent<br/>plan.md + ADRs"]
         ArchAgent --> QAAgent["QA Agent<br/>tests.md + Coverage Matrix"]
         QAAgent --> SecAgent["Security Agent<br/>Threat Model"]

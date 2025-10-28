@@ -166,7 +166,7 @@ User: /specweave done 0001  # Close increment with slash command
 2. **Use `/specweave inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
    - PM creates specs + plan + auto-generates tasks
    - **Smart**: Auto-closes previous increment if PM gates pass
-3. **Use `/specweave do` or `/specweave do 0001`** → Execute implementation (hooks after EVERY task in Claude)
+3. **Use `/specweave build` or `/specweave build 0001`** → Execute implementation (hooks after EVERY task in Claude)
    - **Smart**: Auto-resumes from next incomplete task
 4. **Use `/specweave progress`** → Check status, task completion %, next action
 5. **Use `/specweave validate 0001`** → Optional quality check (LLM-as-judge)
@@ -174,7 +174,7 @@ User: /specweave done 0001  # Close increment with slash command
 
 **Why smart workflow?**
 - ✅ No manual `/specweave done` needed (auto-closes on next `/specweave inc`)
-- ✅ No task tracking needed (`/specweave do` auto-resumes)
+- ✅ No task tracking needed (`/specweave build` auto-resumes)
 - ✅ `/specweave progress` shows exactly where you are
 - ✅ Natural flow: finish → start next
 - ✅ Namespaced commands avoid collisions in brownfield projects
@@ -210,7 +210,7 @@ SpecWeave includes **35+ AI skills** that work with slash commands:
 
 ### Core Framework Skills
 - **specweave-detector** - Slash command documentation
-- **increment-planner** - Plan features via `/inc` or `/increment` command
+- **increment-planner** - Plan features via `/specweave inc` command
 - **skill-router** - Route requests to appropriate skills
 - **context-loader** - Load relevant specifications
 - **role-orchestrator** - Coordinate multiple agents
@@ -326,33 +326,33 @@ specweave/
 # Option B: Incremental (Startup) - Build as you go
 
 # 2. Plan increment (PM-led, auto-closes previous if ready)
-/inc "user authentication"
-# Alias for /increment
+/specweave inc "user authentication"
+# Alias: /specweave increment
 # PM-led: Market research → spec.md → plan.md → auto-generate tasks.md
 # Smart: Auto-closes previous increment if PM gates pass
 
 # 3. Build it (smart resume, hooks after EVERY task)
-/do
-# Or: /do 0001
+/specweave build
+# Or: /specweave build 0001
 # Smart: Auto-resumes from next incomplete task
 # Hooks automatically update CLAUDE.md, README.md, CHANGELOG.md
 
 # 4. Check progress anytime
-/progress
+/specweave progress
 # Shows: task completion %, PM gates status, next action
 # No increment ID needed - finds active increment automatically
 
 # 5. Validate quality (optional)
-/validate 0001 --quality
+/specweave validate 0001 --quality
 # LLM-as-judge quality assessment
 
 # 6. Start next feature (auto-closes previous)
-/inc "payment processing"
+/specweave inc "payment processing"
 # Auto-closes 0001 if gates pass, creates 0002
 # No manual /done needed!
 
 # 7. Sync with tools (optional)
-/sync-github  # Sync to GitHub issues
+/specweave sync-github  # Sync to GitHub issues
 ```
 
 ### For Brownfield Projects
@@ -595,9 +595,9 @@ cd my-saas
 # ✅ Hooks for auto-updates
 
 # Open Claude Code and type slash commands:
-/inc "User authentication with JWT"
-/do
-/progress
+/specweave inc "User authentication with JWT"
+/specweave build
+/specweave progress
 ```
 
 ### For Gemini CLI / Codex / Cursor (Adapter - Semi-Automation)

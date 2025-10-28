@@ -1,7 +1,7 @@
 flowchart TB
     Start([User Request]) --> Detect{".specweave/<br/>exists?"}
 
-    Detect -->|No| NewProject["/create-project"]
+    Detect -->|No| NewProject["specweave init<br/>(CLI)"]
     Detect -->|Yes| Router["skill-router<br/>Parse & Route"]
 
     %% New Project Initialization
@@ -32,7 +32,7 @@ flowchart TB
     end
 
     subgraph planning ["📋 Feature Planning (Multi-Agent + Feedback Loops)"]
-        Planning["/create-increment<br/>📁 .specweave/increments/0001-name/"] --> PMRound1["PM Agent (Round 1)<br/>Generate spec.md"]
+        Planning["/specweave inc<br/>📁 .specweave/increments/0001-name/"] --> PMRound1["PM Agent (Round 1)<br/>Generate spec.md"]
 
         PMRound1 --> PMValidate1["Validate Quality<br/>(LLM-as-Judge)"]
         PMValidate1 --> PMScore1{"Score ≥ 0.80?"}

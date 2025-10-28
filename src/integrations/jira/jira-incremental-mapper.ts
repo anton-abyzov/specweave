@@ -9,7 +9,7 @@
  */
 
 import { JiraClient, JiraIssue } from './jira-client';
-import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from '../../core/rfc-generator';
+import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from '../../core/rfc-generator-v2';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';

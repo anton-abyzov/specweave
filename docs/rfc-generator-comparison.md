@@ -149,22 +149,11 @@ interface FlexibleWorkItem {
 
 ## Migration Path
 
-### Step 1: Update jira-incremental-mapper.ts
+### Migration Complete ✅
 
-**Before (V1)**:
-```typescript
-import { RFCGenerator, WorkItem as RFCWorkItem, RFCContent } from '../../core/rfc-generator';
+**V1** has been removed. **V2 is now the official generator.**
 
-const generator = new RFCGenerator();
-await generator.generateRFC({
-  metadata: { ... },
-  stories: RFCWorkItem[],
-  bugs: RFCWorkItem[],
-  tasks: RFCWorkItem[]
-});
-```
-
-**After (V2)**:
+**Usage (V2)**:
 ```typescript
 import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from '../../core/rfc-generator-v2';
 
@@ -185,31 +174,24 @@ await generator.generateRFC({
 });
 ```
 
-### Step 2: Remove V1
-
-Delete `src/core/rfc-generator.ts` (the limited version)
-
 ---
 
-## Verdict
+## Final State ✅
 
-**V1 (rfc-generator.ts)**:
-- ❌ Jira-only
-- ❌ Fixed types
-- ❌ Hardcoded grouping
-- ❌ No parent support
-- ❌ Blocks ADO/GitHub integration
+**V1**: ❌ REMOVED (was Jira-only, limited)
 
-**V2 (rfc-generator-v2.ts)**:
-- ✅ Multi-platform (Jira, ADO, GitHub, Custom)
-- ✅ Flexible types (any string)
-- ✅ Multiple grouping strategies (6 options)
-- ✅ Parent-child relationships
+**V2 (`rfc-generator-v2.ts`)**: ✅ OFFICIAL
+- ✅ Multi-platform (Jira, Azure DevOps, GitHub, Custom)
+- ✅ Flexible types (any string: story, bug, issue, feature, user story, etc.)
+- ✅ 6 grouping strategies (by_type, by_parent, by_priority, by_label, flat, custom)
+- ✅ Parent-child relationships (Epic, Feature, Milestone)
+- ✅ Labels/tags support
+- ✅ Auto-detection via ProjectStructureDetector
 - ✅ Enables ADO/GitHub integration
-- ✅ Backward compatible with V1
 
-## Recommendation
+## Naming Convention
 
-**KEEP V2, REMOVE V1**
-
-V2 is the future-proof, universal solution. V1 is a Jira-specific prototype that should be deprecated.
+**V2** = Modern, flexible, official RFC generator
+- File: `src/core/rfc-generator-v2.ts`
+- Class: `FlexibleRFCGenerator`
+- Signifies: "This is the advanced, multi-platform version"

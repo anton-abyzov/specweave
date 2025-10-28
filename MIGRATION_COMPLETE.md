@@ -75,9 +75,13 @@ const githubIssue: FlexibleWorkItem = {
 ## Files Changed
 
 ### Created/Modified
-- ✅ `src/core/rfc-generator.ts` - Now the universal flexible generator
-- ✅ `src/integrations/jira/jira-incremental-mapper.ts` - Migrated to use FlexibleRFCGenerator
+- ✅ `src/core/rfc-generator-v2.ts` - The universal flexible generator (V2 is official)
+- ✅ `src/integrations/jira/jira-incremental-mapper.ts` - Uses FlexibleRFCGenerator from V2
 - ✅ `docs/rfc-generator-comparison.md` - Detailed analysis
+
+### Naming Convention
+- **V2** = Modern, flexible, multi-platform generator (official)
+- **V1** = Deprecated (removed) - was Jira-only, limited types
 
 ### Removed
 - ❌ Old V1 (limited Jira-only version)
@@ -107,7 +111,7 @@ Now you can:
 ## Example Usage
 
 ```typescript
-import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from './core/rfc-generator';
+import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from './core/rfc-generator-v2';
 
 const generator = new FlexibleRFCGenerator();
 
