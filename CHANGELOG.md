@@ -7,13 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.2] - 2025-10-28
+## [0.1.3] - 2025-10-28
+
+### 🐛 **CRITICAL BUG FIX: `specweave init` Now Works!**
+
+**⚠️ v0.1.2 had a critical bug** - `specweave init` created empty folders instead of copying templates!
+
+**Fixed in v0.1.3:**
+- ✅ `CLAUDE.md` is now properly copied from template
+- ✅ `.specweave/config.yaml` is now created with project configuration
+- ✅ Slash commands (`.claude/commands/*.md`) are now installed
+- ✅ `README.md`, `.gitignore` are now copied
+- ✅ All templates are populated with actual content
+
+**Root Cause:** Path resolution bug in `init.ts` - was looking for `templates/` at package root, but templates are published to `src/templates/`.
+
+**If you installed 0.1.2**, upgrade immediately:
+```bash
+npm update -g specweave
+specweave --version  # Should show 0.1.3
+```
+
+Then re-run `specweave init` in your project folder.
+
+---
+
+## [0.1.2] - 2025-10-28 (⚠️ BROKEN - Use v0.1.3 instead)
 
 ### 🚀 **CRITICAL UX FIX**
 
-**Use this version!** v0.1.0 was live for a few hours with manual installation - v0.1.2 fixes this with intelligent auto-installation.
+**⚠️ This version has a bug** - init creates empty folders. Use v0.1.3 instead!
 
-Same as v0.1.0 below, but with the killer feature actually working!
+Same as v0.1.0 below, but with the killer feature actually working (when init bug is fixed in 0.1.3)!
 
 ---
 
@@ -192,5 +217,6 @@ Thank you to the early adopters and contributors who helped shape SpecWeave v0.1
 
 ---
 
+[0.1.3]: https://github.com/specweave/specweave/releases/tag/v0.1.3
 [0.1.2]: https://github.com/specweave/specweave/releases/tag/v0.1.2
 [0.1.0]: https://github.com/specweave/specweave/releases/tag/v0.1.0

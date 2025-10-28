@@ -63,12 +63,12 @@ export async function initCommand(
     spinner.text = 'Directory structure created...';
 
     // 4. Copy templates
-    const templatesDir = path.join(__dirname, '../../../templates');
+    const templatesDir = path.join(__dirname, '../../../src/templates');
     copyTemplates(templatesDir, targetDir, projectName!);
     spinner.text = 'Templates copied...';
 
     // 5. Copy commands (slash commands)
-    const commandsDir = path.join(__dirname, '../../../templates/commands');
+    const commandsDir = path.join(__dirname, '../../../src/commands');
     copyCommands(commandsDir, path.join(targetDir, '.claude/commands'));
     spinner.text = 'Slash commands installed...';
 
