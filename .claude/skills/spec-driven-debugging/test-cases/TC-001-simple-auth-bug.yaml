@@ -1,0 +1,212 @@
+---
+name: "Simple Authentication Bug with Spec Alignment"
+description: "Debug a login failure where code doesn't match spec.md requirements"
+skill: spec-driven-debugging
+priority: P1
+estimated_time: "15-20 minutes"
+
+input:
+  prompt: "Login is failing with '401 Unauthorized' even with correct credentials"
+  context:
+    project_type: "Next.js 14 + TypeScript"
+    increment: ".specweave/increments/0001-user-authentication/"
+    files_exist:
+      - "spec.md"
+      - "plan.md"
+      - "tests.md"
+      - "src/app/api/auth/[...nextauth]/route.ts"
+      - "src/middleware.ts"
+    error_message: "401 Unauthorized - Invalid credentials"
+    reproduction: "Consistent - happens every login attempt"
+
+expected_output:
+  phase_0_context_loading:
+    announcement: "Let me load the SpecWeave context before investigating."
+
+    files_loaded:
+      - path: ".specweave/increments/0001-user-authentication/spec.md"
+        key_findings:
+          - "FR-001: Users must be able to login with email and password"
+          - "FR-002: Passwords must be hashed with bcrypt (minimum 10 salt rounds)"
+          - "FR-003: JWT tokens expire after 7 days"
+          - "Acceptance: TC-001: Valid credentials → successful login"
+
+      - path: ".specweave/increments/0001-user-authentication/plan.md"
+        key_findings:
+          - "NextAuth.js v5 with Credentials provider"
+          - "PostgreSQL adapter for session storage"
+          - "bcrypt for password hashing"
+
+      - path: ".specweave/increments/0001-user-authentication/tests.md"
+        key_findings:
+          - "TC-005: Login with valid credentials should return 200"
+          - "TC-006: Login with invalid credentials should return 401"
+
+    bug_classification: "Likely code bug - implementation doesn't match spec"
+
+  phase_1_root_cause:
+    error_analysis:
+      message: "401 Unauthorized - Invalid credentials"
+      stack_trace_relevant: false # not a crash, just wrong response
+      line_numbers: "src/app/api/auth/[...nextauth]/route.ts:45"
+
+    reproduction:
+      consistent: true
+      steps:
+        - "Navigate to /login"
+        - "Enter email: test@example.com, password: Test123!"
+        - "Click submit"
+        - "Observe: 401 error"
+
+    recent_changes:
+      git_diff_findings:
+        - "Recently updated password hashing from md5 to bcrypt"
+        - "Changed salt rounds from 8 to 12"
+
+    spec_comparison:
+      spec_says: "Passwords must be hashed with bcrypt (minimum 10 salt rounds)"
+      actual_behavior: "Login always fails with valid credentials"
+      discrepancy: "Code may not be comparing hashed passwords correctly"
+
+    multi_component_check:
+      frontend: "✓ Sends correct email/password"
+      api_route: "⚠️ Receives correct data but returns 401"
+      database: "✓ User exists in DB with bcrypt hash"
+
+    data_flow_trace:
+      - step: "Frontend sends {email, password} to /api/auth/signin"
+        status: "✓ Correct"
+      - step: "API route calls authorize() function"
+        status: "⚠️ Here's where it fails"
+      - step: "authorize() queries user from DB"
+        status: "✓ User found"
+      - step: "authorize() compares passwords"
+        status: "❌ Always returns false"
+
+    root_cause_hypothesis: "Password comparison logic is incorrect after bcrypt migration"
+
+  phase_2_pattern_analysis:
+    working_examples_found:
+      - file: "src/app/api/users/[id]/route.ts"
+        pattern: "Uses bcrypt.compare(plaintext, hash) correctly"
+        code: |
+          const isValid = await bcrypt.compare(password, user.password);
+
+    broken_code:
+      file: "src/app/api/auth/[...nextauth]/route.ts:45"
+      code: |
+        const isValid = await bcrypt.compare(user.password, password); // WRONG ORDER!
+
+    difference_identified:
+      issue: "Arguments to bcrypt.compare() are reversed"
+      working: "bcrypt.compare(plaintext, hash)"
+      broken: "bcrypt.compare(hash, plaintext)"
+      impact: "Always returns false because it's trying to hash the hash"
+
+  phase_3_hypothesis:
+    hypothesis: "bcrypt.compare() arguments are in wrong order (hash first instead of plaintext first)"
+
+    classification: "Code bug - implementation error, spec is correct"
+
+    minimal_test:
+      approach: "Swap arguments in bcrypt.compare() call"
+      change_size: "Single line change"
+      one_variable: true
+
+  phase_4_implementation:
+    fix_level: "Code-level fix"
+    reason: "Spec is clear and correct, code has logic error"
+
+    test_creation:
+      level: "Level 3: Code Tests (Integration test)"
+      file: "tests/integration/auth.test.ts"
+      test_case: |
+        describe('Authentication', () => {
+          it('should login successfully with valid credentials', async () => {
+            const response = await fetch('/api/auth/signin', {
+              method: 'POST',
+              body: JSON.stringify({
+                email: 'test@example.com',
+                password: 'Test123!'
+              })
+            });
+            expect(response.status).toBe(200);
+            expect(response.body.user).toBeDefined();
+          });
+        });
+
+      test_fails_before_fix: true
+
+    spec_update_needed: false # spec was correct
+
+    code_fix:
+      file: "src/app/api/auth/[...nextauth]/route.ts"
+      before: |
+        const isValid = await bcrypt.compare(user.password, password);
+      after: |
+        const isValid = await bcrypt.compare(password, user.password);
+
+    verification:
+      test_passes: true
+      other_tests_broken: false
+      issue_resolved: true
+      spec_aligned: true
+
+    attempts_count: 1 # fixed on first try
+    ultrathink_needed: false
+
+  phase_5_documentation:
+    increment_updates:
+      - file: ".specweave/increments/0001-user-authentication/tests.md"
+        change: "Added TC-007: Regression test for bcrypt argument order"
+
+    architecture_updates: [] # no architectural change
+
+    strategy_updates: [] # requirements unchanged
+
+    new_increment_needed: false # small fix, no new increment
+
+    commit_message: |
+      fix(auth): correct bcrypt.compare argument order
+
+      Root cause: Arguments to bcrypt.compare() were reversed after
+      bcrypt migration. Function signature is compare(plaintext, hash)
+      but code was calling compare(hash, plaintext).
+
+      Solution: Swapped arguments to match bcrypt API correctly.
+      Spec alignment: Code now implements FR-002 correctly.
+
+      Test coverage:
+      - Added: TC-007 regression test for password comparison
+      - Verified: All existing auth tests pass
+
+      Documentation updated:
+      - tests.md: Added TC-007 for regression prevention
+
+      Fixes: #42
+
+      🤖 Generated with Claude Code
+      Co-Authored-By: Claude <noreply@anthropic.com>
+
+validation:
+  - "Phase 0: Loaded spec.md, plan.md, tests.md"
+  - "Phase 0: Classified as code bug (not spec bug)"
+  - "Phase 1: Traced data flow to identify failing component"
+  - "Phase 1: Compared behavior vs spec (spec was correct)"
+  - "Phase 2: Found working example in codebase"
+  - "Phase 2: Identified argument order difference"
+  - "Phase 3: Formed single, specific hypothesis"
+  - "Phase 4: Created failing test before fix"
+  - "Phase 4: Fixed on first attempt (no ultrathink needed)"
+  - "Phase 5: Updated tests.md with new test case"
+  - "Phase 5: Committed with proper documentation"
+
+expected_errors: []
+
+success_criteria:
+  - "Root cause identified (argument order)"
+  - "Fix verified with test"
+  - "Spec alignment confirmed"
+  - "Living documentation updated"
+  - "Single attempt (efficient debugging)"
+---

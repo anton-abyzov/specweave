@@ -1,0 +1,13 @@
+name: "Implement Form with Validation"
+description: "Test creating a form with validation using React Hook Form"
+user_input: "Create a registration form with validation"
+expected_behavior:
+  - Uses react-hook-form for form management
+  - Implements Zod schema validation
+  - Includes error message display
+  - Handles form submission
+validation:
+  - Uses useForm hook
+  - Implements Zod schema with zodResolver
+  - Shows validation errors
+  - Includes submit handler

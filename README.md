@@ -2,9 +2,9 @@
 
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
-[![npm version](https://img.shields.io/npm/v/specweave.svg)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![npm downloads](https://img.shields.io/npm/dm/specweave.svg)](https://www.npmjs.com/package/specweave)
+[![Version](https://img.shields.io/badge/version-0.1.0--beta.1-blue.svg)](https://github.com/specweave/specweave/releases/tag/v0.1.0-beta.1)
+[![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 
 ---
 
@@ -88,93 +88,56 @@ specweave init my-saas
 
 ```bash
 specweave init [project]           # Create new project
-specweave install [component]      # Install agents/skills (--local or --global)
 specweave list                     # List all available components
-specweave list --installed         # Show installed components
+specweave list --installed         # Show auto-installed components
 specweave --version                # Show version
 specweave --help                   # Show help
 ```
 
-**Detailed installation**: See [INSTALL.md](INSTALL.md)
+**Note**: Components (agents & skills) auto-install on-demand - no manual installation needed!
 
 ---
 
-## 🚀 Quickstart
-
-### 1. Install SpecWeave
-
-```bash
-npm install -g specweave
-```
-
-### 2. Initialize Your Project
-
-```bash
-specweave init my-saas
-cd my-saas
-```
-
-**Choose your AI tool**:
-- **Claude Code** (recommended) - Full slash command support
-- **Cursor** - Optimized .cursorrules
-- **GitHub Copilot** - Copilot instructions
-- **Generic** - Manual workflow guide
-
-### 3. Start Building
-
-#### **For Claude Code Users** (Slash Commands)
-
-```bash
-# Create your first feature
-/create-increment "user authentication with email and OAuth"
-
-# Review the generated specs
-/review-docs
-
-# Start implementation
-/start-increment 0001
-
-# Sync to GitHub (optional)
-/sync-github
-
-# Validate your work
-/validate-increment 0001
-```
-
-**Available Slash Commands**:
-- `/create-increment` - Create new feature with specs
-- `/start-increment` - Begin working on a feature
-- `/review-docs` - Review strategic docs vs code
-- `/validate-increment` - Run 120 validation rules
-- `/sync-github` - Sync to GitHub Issues
-- `/close-increment` - Close feature with leftover transfer
-
-#### **For Other AI Tools** (Natural Language)
+## 🚀 Quick Example
 
 ```bash
 # SpecWeave auto-activates when .specweave/ detected
 
-"Create authentication feature with email and OAuth"
+User: "Create Next.js authentication with email and OAuth"
     ↓
-✅ Increment: .specweave/increments/0001-user-authentication/
+SpecWeave: 🔷 SpecWeave Active
+
+           📦 Installing required components...
+              ✅ Installed nextjs skill
+              ✅ Installed nodejs-backend skill
+              ✅ Installed security agent
+              ✅ Installed pm agent
+              ✅ Installed architect agent
+
+           🚀 Creating increment 0001-user-authentication...
+
+✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
-"Create C4 context diagram for authentication"
+User: "Create C4 context diagram for authentication"
     ↓
-✅ Diagram: .specweave/docs/internal/architecture/diagrams/auth.mmd
+SpecWeave: (coordinates diagrams-generator → diagrams-architect)
+✅ Diagram saved: .specweave/docs/internal/architecture/diagrams/auth.c4-context.mmd
 
-"Implement authentication with TypeScript"
+User: "Implement authentication"
     ↓
+SpecWeave: (orchestrates PM → Architect → Backend → QA → Docs)
 ✅ Code: src/auth/
 ✅ Tests: tests/auth/
 ✅ Docs: Updated automatically
 ```
 
 **How it works**:
-1. `.specweave/` detected → `specweave-detector` activates
-2. Request routed to appropriate skills
-3. Skills coordinate agents (PM, Architect, DevOps, QA)
-4. Context loaded precisely (70%+ token reduction)
+1. `.specweave/` detected → `specweave-detector` activates automatically
+2. **User intent analyzed** → required components auto-installed (just-in-time)
+3. Request parsed → routed to appropriate skills
+4. Skills coordinate agents → artifacts generated
+5. Context loaded precisely → only relevant specs (70%+ reduction)
 
 ---
 

@@ -1,0 +1,13 @@
+name: "Extract and Implement Design Tokens"
+description: "Test extracting design tokens from Figma and generating code"
+user_input: "Extract all design tokens from this Figma file"
+expected_behavior:
+  - Extracts colors, typography, spacing, shadows, borders
+  - Generates token files (JSON, CSS variables, or TypeScript)
+  - Creates Tailwind config if needed
+  - Maintains consistency with Figma
+validation:
+  - All token categories extracted
+  - Proper naming conventions
+  - Values match Figma exactly
+  - Tokens are importable and usable

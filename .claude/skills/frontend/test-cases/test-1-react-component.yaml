@@ -1,0 +1,13 @@
+name: "Create React Component with Hooks"
+description: "Test creating a React component using hooks"
+user_input: "Create a user profile component with state management"
+expected_behavior:
+  - Generates functional component with TypeScript
+  - Uses useState for local state
+  - Uses useEffect for side effects
+  - Implements proper prop types
+validation:
+  - Uses React.FC or function component syntax
+  - Includes TypeScript interfaces for props
+  - Implements useState hook
+  - Includes proper cleanup in useEffect

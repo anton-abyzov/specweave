@@ -1,0 +1,13 @@
+name: "Create Minimal API"
+description: "Test creating .NET 6+ minimal API endpoints"
+user_input: "Create a minimal API for user management"
+expected_behavior:
+  - Uses app.MapGet/MapPost/MapPut/MapDelete
+  - Implements endpoints in Program.cs
+  - Includes route parameters and query strings
+  - Uses dependency injection
+validation:
+  - No controller classes needed
+  - Uses lambda expressions for endpoints
+  - Implements proper HTTP verbs
+  - Includes validation and error handling

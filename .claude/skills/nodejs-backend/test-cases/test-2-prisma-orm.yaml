@@ -1,0 +1,13 @@
+name: "Implement Prisma ORM Integration"
+description: "Test setting up Prisma with PostgreSQL"
+user_input: "Add Prisma ORM to my Node.js project for user management"
+expected_behavior:
+  - Creates Prisma schema with User model
+  - Generates Prisma Client
+  - Implements database queries using Prisma
+  - Includes migrations setup
+validation:
+  - Has schema.prisma file
+  - Uses @prisma/client
+  - Implements proper typing
+  - Includes seed scripts

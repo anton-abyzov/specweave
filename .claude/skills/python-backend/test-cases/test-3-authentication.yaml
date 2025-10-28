@@ -1,0 +1,13 @@
+name: "Implement OAuth2 JWT Authentication"
+description: "Test adding OAuth2 JWT authentication to FastAPI"
+user_input: "Add OAuth2 password bearer authentication to my API"
+expected_behavior:
+  - Creates OAuth2PasswordBearer dependency
+  - Implements JWT token generation and validation
+  - Uses passlib for password hashing
+  - Protects routes with Depends(get_current_user)
+validation:
+  - Uses fastapi.security.OAuth2PasswordBearer
+  - Implements python-jose for JWT
+  - Uses passlib[bcrypt] for password hashing
+  - Includes login endpoint with OAuth2PasswordRequestForm

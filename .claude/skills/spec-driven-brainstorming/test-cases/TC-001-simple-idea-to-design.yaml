@@ -1,0 +1,148 @@
+---
+name: "Simple Idea to Validated Design"
+description: "Transform a simple rough idea into a validated design ready for increment creation"
+skill: spec-driven-brainstorming
+priority: P1
+estimated_time: "10-15 minutes"
+
+input:
+  prompt: "I want to add user authentication to my app"
+  context:
+    existing_project: true
+    tech_stack: "Next.js 14, TypeScript"
+    existing_files:
+      - "package.json"
+      - "src/app/page.tsx"
+      - "src/components/"
+    database: "PostgreSQL"
+
+expected_output:
+  phase_1_understanding:
+    questions_asked:
+      - "What's your primary authentication goal?" # user login, API keys, SSO
+      - "Who are the users?" # internal team, public, B2B customers
+      - "Any compliance requirements?" # GDPR, HIPAA, SOC2
+
+    gathered_requirements:
+      purpose: "Secure user login for public SaaS application"
+      constraints:
+        - "Must work with existing PostgreSQL database"
+        - "Budget-friendly (prefer open-source)"
+      success_criteria:
+        - "Users can register and login securely"
+        - "Session management across devices"
+        - "Password reset functionality"
+
+  phase_2_tech_stack:
+    detected_stack:
+      framework: "Next.js 14"
+      language: "TypeScript"
+      database: "PostgreSQL"
+
+    skills_activated:
+      - nextjs
+      - nodejs-backend
+
+    recommendation: "Use NextAuth.js v5 (Auth.js) - native Next.js integration"
+
+  phase_3_exploration:
+    approaches_proposed: 3
+
+    approach_1:
+      name: "NextAuth.js with Credentials Provider"
+      architecture: "Session-based with JWT"
+      trade_offs:
+        pros:
+          - "Simple setup, well-documented"
+          - "Built-in session management"
+        cons:
+          - "Basic features only"
+          - "Custom UI needed"
+      complexity: "Low"
+
+    approach_2:
+      name: "Clerk Integration"
+      architecture: "Third-party auth SaaS"
+      trade_offs:
+        pros:
+          - "Pre-built UI components"
+          - "Advanced features (MFA, social login)"
+        cons:
+          - "Monthly cost ($25+)"
+          - "Vendor lock-in"
+      complexity: "Very Low"
+
+    approach_3:
+      name: "Custom JWT + Refresh Tokens"
+      architecture: "Stateless authentication"
+      trade_offs:
+        pros:
+          - "Full control, no dependencies"
+          - "Scalable, stateless"
+        cons:
+          - "More code to maintain"
+          - "Security risks if done wrong"
+      complexity: "High"
+
+    user_selection: "Approach 1" # NextAuth.js
+
+  phase_4_design_validation:
+    sections_presented:
+      - title: "Architecture Overview"
+        content: "NextAuth.js integration with PostgreSQL adapter, session-based auth"
+        validated: true
+
+      - title: "Components"
+        content: "Auth API routes (/api/auth/*), session provider, protected middleware"
+        validated: true
+
+      - title: "Data Flow"
+        content: "Login → credentials check → session creation → JWT cookie → protected routes"
+        validated: true
+
+      - title: "Error Handling"
+        content: "Invalid credentials, session expiry, token refresh logic"
+        validated: true
+
+      - title: "Testing Strategy"
+        content: "Unit tests (auth logic), integration tests (API routes), E2E (Playwright login flow)"
+        validated: true
+
+    design_complete: true
+
+  phase_5_specweave_handoff:
+    handoff_type: "Full Increment Creation"
+    skill_invoked: "increment-planner"
+
+    expected_increment:
+      directory: ".specweave/increments/0001-user-authentication/"
+      files:
+        - "spec.md"
+        - "plan.md"
+        - "tasks.md"
+        - "tests.md"
+        - "context-manifest.yaml"
+
+    agents_invoked:
+      - "pm" # Creates strategy docs
+      - "architect" # Creates architecture docs
+      - "qa-lead" # Creates test strategy
+
+validation:
+  - "Phase 1: At least 3 understanding questions asked"
+  - "Phase 2: Tech stack detected from package.json"
+  - "Phase 3: Exactly 3 architectural approaches proposed"
+  - "Phase 4: Design presented in <300 word sections"
+  - "Phase 5: increment-planner skill invoked"
+  - "All phases completed in sequence"
+  - "AskUserQuestion tool used for structured choices"
+  - "Open-ended questions used for validation"
+
+expected_errors: []
+
+success_criteria:
+  - "Validated design produced"
+  - "Ready for increment creation"
+  - "User confirmed design alignment"
+  - "No skipped phases (unless explicitly revisited)"
+---

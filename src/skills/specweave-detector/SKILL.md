@@ -24,10 +24,156 @@ Act as the "factory of agents" that:
 if (fileExists('.specweave/config.yaml')) {
   activateSpecWeaveMode();
   loadConfiguration();
+
+  // AUTO-INSTALL MISSING COMPONENTS (NEW!)
+  await autoInstallComponents(userPrompt);
+
   parseUserIntent();
   routeToSkills();
 }
 ```
+
+## Just-In-Time Component Installation (CRITICAL!)
+
+**SpecWeave uses intelligent auto-installation** - components are installed on-demand based on user intent.
+
+### How It Works
+
+1. **User makes a request** (e.g., "Create Next.js authentication")
+2. **Analyze user intent** - Extract keywords (Next.js, authentication)
+3. **Map to required components**:
+   - "Next.js" → nextjs skill, nodejs-backend skill
+   - "authentication" → security agent
+   - "Create" → pm agent, architect agent
+4. **Check if components installed** in `.claude/skills/` and `.claude/agents/`
+5. **Auto-install missing components** from npm package (`node_modules/specweave/src/`)
+6. **Proceed with routing** - now all needed components are available
+
+### Keyword → Component Mapping
+
+```typescript
+// From src/utils/auto-install.ts
+const COMPONENT_MAPPING = {
+  // Framework detection
+  'next.js': { skills: ['nextjs', 'nodejs-backend'], agents: [] },
+  'react': { skills: ['frontend'], agents: [] },
+  'fastapi': { skills: ['python-backend'], agents: [] },
+  'django': { skills: ['python-backend'], agents: [] },
+  '.net': { skills: ['dotnet-backend'], agents: [] },
+
+  // Feature detection
+  'authentication': { skills: ['nodejs-backend'], agents: ['security'] },
+  'auth': { skills: [], agents: ['security'] },
+  'oauth': { skills: [], agents: ['security'] },
+  'payment': { skills: ['stripe-integrator'], agents: ['security'] },
+  'stripe': { skills: ['stripe-integrator'], agents: ['security'] },
+
+  // Infrastructure detection
+  'deploy': { skills: [], agents: ['devops'] },
+  'hetzner': { skills: ['hetzner-provisioner'], agents: ['devops'] },
+  'aws': { skills: [], agents: ['devops'] },
+
+  // Testing detection
+  'test': { skills: [], agents: ['qa-lead'] },
+  'e2e': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
+  'playwright': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
+
+  // Design detection
+  'figma': { skills: ['figma-implementer', 'figma-designer'], agents: [] },
+  'design system': { skills: ['design-system-architect'], agents: [] },
+
+  // Integration detection
+  'jira': { skills: ['jira-sync'], agents: [] },
+  'github': { skills: ['github-sync'], agents: [] },
+};
+
+// Always include strategic agents for new features
+if (prompt.includes('create') || prompt.includes('build')) {
+  agents.push('pm', 'architect');
+}
+```
+
+### Example User Experience
+
+**Example 1: Next.js Authentication**
+```
+User: "Create Next.js authentication with OAuth"
+
+🔷 SpecWeave Active
+
+📦 Installing required components...
+   ✅ Installed nextjs skill
+   ✅ Installed nodejs-backend skill
+   ✅ Installed security agent
+   ✅ Installed pm agent
+   ✅ Installed architect agent
+
+🚀 Creating increment 0001-nextjs-authentication...
+```
+
+**Example 2: Already Installed**
+```
+User: "Add another Next.js feature"
+
+🔷 SpecWeave Active
+   (Components already installed, proceeding...)
+
+🚀 Creating increment 0002-next-feature...
+```
+
+**Example 3: Python FastAPI**
+```
+User: "Create FastAPI backend with PostgreSQL"
+
+🔷 SpecWeave Active
+
+📦 Installing required components...
+   ✅ Installed python-backend skill
+   ✅ Installed pm agent
+   ✅ Installed architect agent
+
+🚀 Creating increment 0001-fastapi-backend...
+```
+
+### Configuration
+
+Auto-install can be disabled in `.specweave/config.yaml`:
+
+```yaml
+# .specweave/config.yaml
+auto_install: true  # Default: enabled
+
+# Tracked installed components (auto-updated)
+installed_components:
+  skills:
+    - nextjs
+    - nodejs-backend
+    - security
+  agents:
+    - pm
+    - architect
+    - security
+```
+
+Set `auto_install: false` to require manual installation (advanced users only).
+
+### Installation Process
+
+When auto-installing:
+
+1. **Find npm package**: Locate `node_modules/specweave/`
+2. **Copy component**: `src/skills/nextjs/` → `.claude/skills/nextjs/`
+3. **Verify**: Check component has SKILL.md or AGENT.md
+4. **Update config**: Add to `installed_components` list
+5. **Continue routing**: Component now available for use
+
+### Benefits
+
+- ✅ **Zero manual installation** - users never run `specweave install`
+- ✅ **Just-in-time** - only install what's actually needed
+- ✅ **Automatic** - completely transparent to users
+- ✅ **Intelligent** - understands intent from natural language
+- ✅ **Efficient** - unused components never installed
 
 ## Auto-Activation
 

@@ -11,126 +11,174 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 First Stable Release
 
-The first stable release of **SpecWeave** - a revolutionary spec-driven development framework that transforms how you build software with AI agents.
+The first stable release of **SpecWeave** - a truly intelligent spec-driven development framework!
 
-**Website**: https://spec-weave.com/
-
----
-
-### 🌟 What is SpecWeave?
-
-SpecWeave is where **specifications are the source of truth** and AI agents autonomously build production-ready applications. Think of it as the evolution beyond "vibe coding".
-
-**Core Philosophy:**
-- **Specification First** - Define WHAT and WHY before HOW
-- **Living Documentation** - Specs evolve with code, never diverge
-- **Context Precision** - 70-80%+ token reduction (scales to 1000+ pages)
-- **Test-Validated** - Every feature proven through automated tests
-- **Framework-Agnostic** - Works with ANY tech stack
+**Website**: [https://spec-weave.com](https://spec-weave.com)
 
 ---
 
-### ✨ Key Features
+## 🚀 **THE KILLER FEATURE: Just-In-Time Auto-Installation**
 
-#### 🔄 **Multi-Tool Adapter System**
+**No more manual `specweave install` commands!** SpecWeave is now truly intelligent - it installs components on-demand based on what you're building.
 
-Choose your preferred AI tool:
-
-**Supported Adapters:**
-- **Claude Code** (native, recommended) - Full feature support
-- **Cursor** (via `.cursorrules`) - Optimized for Cursor's context system
-- **Generic** (universal adapter) - Works with ANY AI tool (Copilot, Windsurf, Cline, etc.)
-
+### Before (Manual - ❌ BAD UX):
 ```bash
-npx specweave init my-project --adapter claude
-npx specweave init my-project --adapter cursor
-npx specweave init my-project --adapter generic
+specweave init
+specweave install pm --local
+specweave install architect --local
+specweave install nextjs --local
+specweave install nodejs-backend --local
+specweave install security --local
+# ... install 10+ more things manually
 ```
 
-**Why This Matters**: Use SpecWeave with ANY AI tool. Switch tools without rewriting workflows.
+### After (Automatic - ✅ ZERO FRICTION):
+```bash
+specweave init
+# Just start talking - SpecWeave handles the rest!
 
-#### 🤖 **Multi-Agent System** (9 Specialized Agents)
+User: "Create Next.js authentication with OAuth"
 
-**Strategic:** PM, Architect, Security, QA Lead, DevOps, Tech Lead, Docs Writer
-**Operational:** Performance, SRE
+SpecWeave: 🔷 SpecWeave Active
+           📦 Installing required components...
+              ✅ Installed nextjs skill
+              ✅ Installed nodejs-backend skill
+              ✅ Installed security agent
+              ✅ Installed pm agent
+              ✅ Installed architect agent
+           🚀 Creating increment 0001-authentication...
+```
 
-Each agent has **separate context windows** - prevents context pollution, maintains role expertise.
+**How It Works:**
+1. **Analyze user intent** - Extract keywords from your request
+2. **Map to components** - "Next.js" → nextjs skill, "authentication" → security agent
+3. **Auto-install from npm** - Copy components from `node_modules/specweave/` to `.claude/`
+4. **Proceed with routing** - All needed components available instantly
 
-#### ✨ **Skills Framework** (32+ Extensible Skills)
+**Example Keyword Mappings:**
+- "Next.js" → nextjs skill + nodejs-backend skill
+- "FastAPI" → python-backend skill
+- "authentication" → security agent
+- "deploy to Hetzner" → hetzner-provisioner skill + devops agent
+- "Figma" → figma-implementer skill + figma-designer skill
+- "create" / "build" → pm agent + architect agent (strategic)
 
-**Core:** specweave-detector, increment-planner, context-loader, context-optimizer, increment-quality-judge
-**Integration:** JIRA sync, ADO sync, GitHub sync
-**Infrastructure:** Hetzner provisioner, cost optimizer
-**Design:** Figma MCP connector, Figma-to-code
-**Brownfield:** Brownfield analyzer, brownfield onboarder
+**Benefits:**
+- ✅ **Zero manual installation** - never run `specweave install` again
+- ✅ **Intelligent** - understands intent from natural language
+- ✅ **Just-in-time** - only install what's actually needed
+- ✅ **Automatic** - completely transparent to users
+- ✅ **Efficient** - unused components never installed
 
-#### 📁 **Context Precision** (70-80%+ Token Reduction)
+**Configuration** (`.specweave/config.yaml`):
+```yaml
+auto_install: true  # Default: enabled
+install_mode: "on-demand"  # or "all-upfront", "manual"
+installed_components:
+  skills: []  # Auto-populated as you work
+  agents: []
+```
 
-Context manifests load only relevant sections:
-- **Pass 1**: Context loader (70% reduction via manifests)
-- **Pass 2**: Context optimizer (80%+ total reduction via intent analysis)
-
-**Result**: Scale from 10 to 1000+ page specs without context bloat.
-
-#### 🧪 **4-Level Testing Strategy**
-
-1. **Specification** - TC-0001 acceptance criteria (technology-agnostic)
-2. **Feature** - Test coverage matrix in `tests.md`
-3. **Skill** - Minimum 3 YAML test cases (MANDATORY)
-4. **Code** - E2E (Playwright), Unit, Integration tests
-
-#### 🏗️ **Brownfield Support**
-
-Safe modification workflow:
-1. Analyze existing code → retroactive specs
-2. Generate regression tests
-3. User reviews tests
-4. Implement with safety net
+**Files Added:**
+- `src/utils/auto-install.ts` - Auto-installation engine
+- Updated `src/skills/specweave-detector/SKILL.md` - Just-in-time installation logic
+- Updated `src/cli/commands/init.ts` - Simplified (no pre-installation)
+- Updated `src/templates/config.yaml` - Auto-install configuration
 
 ---
 
-### 🆚 SpecWeave vs Other Frameworks
+## 🆚 **Why SpecWeave vs Other Frameworks**
 
-#### vs **spec-kit** (GitHub)
+### vs **spec-kit** (GitHub)
 
 | Feature | SpecWeave | spec-kit |
 |---------|-----------|----------|
+| **Smart Installation** | ✅ Auto-install on-demand | ❌ Manual setup |
 | **Context Management** | ✅ 70-80% reduction | ❌ Loads all |
-| **Multi-Agent** | ✅ 9 agents | ❌ Commands only |
-| **Brownfield** | ✅ Analyzer | ⚠️ Manual |
-| **Testing** | ✅ 4 levels | ⚠️ TDD only |
-| **Skills** | ✅ 32+ extensible | ⚠️ Fixed |
-| **AI Tools** | ⚠️ Claude-focused | ✅ 14+ tools |
+| **Multi-Agent** | ✅ 9 specialized agents | ❌ Commands only |
+| **Quality Gates** | ✅ 120 automated rules | ❌ Manual review |
+| **Auto-numbering** | ✅ 0001-9999 format | ❌ Manual naming |
+| **Multi-tool Support** | ✅ Claude/Cursor/Copilot | ❌ Claude only |
 
-**SpecWeave Wins**: Context precision, enterprise scale, brownfield, automation
-**spec-kit Wins**: Agent-agnostic
-
-#### vs **BMAD-METHOD**
+### vs **BMAD-METHOD**
 
 | Feature | SpecWeave | BMAD |
 |---------|-----------|------|
-| **Context** | ✅ Manifests | ❌ Always-loaded |
-| **Brownfield** | ✅ Analyzer | ⚠️ Manual |
-| **Skills** | ✅ 32+ skills | ⚠️ Fixed |
-| **Workflow** | ✅ Continuous | ⚠️ Two-phase |
-| **Quality Gates** | ⚠️ v0.2.0 | ✅ @qa *gate |
-
-**SpecWeave Wins**: Context precision, brownfield, continuous workflow
-**BMAD Wins**: Formal QA gates (coming in v0.2.0!)
+| **Smart Installation** | ✅ Auto-install on-demand | ❌ Manual setup |
+| **Documentation** | ✅ 5-pillar structure | ❌ Single README |
+| **Incremental Planning** | ✅ Auto-numbered increments | ❌ Manual planning |
+| **Context Precision** | ✅ Selective loading (70%+) | ❌ Load everything |
+| **Test Strategy** | ✅ 4-level testing | ❌ Ad-hoc |
+| **Framework Agnostic** | ✅ Any language/stack | ✅ Any stack |
 
 ---
 
-### 🎯 Unique Benefits
+## 📦 **Complete Feature List**
 
-1. **Context Precision** - 70-80%+ token reduction
-2. **Enterprise Scale** - 1000+ page specs
-3. **Brownfield Ready** - Retroactive specs, regression prevention
-4. **Test-Validated** - 4-level testing
-5. **Framework-Agnostic** - ANY tech stack
-6. **Flexible Docs** - Comprehensive OR incremental
-7. **Auto-Routing** - >90% skill routing accuracy
-8. **Living Docs** - Hooks auto-update
-9. **Multi-Tool** - Claude, Cursor, Generic
+### Core Features (NEW - Smart Installation)
+- ✅ **Just-in-time component installation** - Zero manual setup
+- ✅ **Intent-based routing** - Natural language → components
+- ✅ **70-80% token reduction** - Context precision via manifests
+- ✅ **9 specialized agents** - PM, Architect, Security, QA, DevOps, SRE, Tech Lead, Docs, Performance
+- ✅ **30+ skills** - Technology stacks, integrations, utilities
+- ✅ **120 validation rules** - Automated quality gates
+- ✅ **Framework-agnostic** - Works with ANY language/framework
+- ✅ **Living documentation** - 5-pillar structure that evolves with code
+
+### User Experience
+- ✅ Single command setup: `specweave init`
+- ✅ Natural language workflow: "Create Next.js authentication"
+- ✅ Auto-detection: Tech stack from project files
+- ✅ Slash commands for Claude Code: `/create-increment`, `/review-docs`, etc.
+- ✅ Zero configuration needed
+
+### Developer Experience
+- ✅ 4-digit increment format (0001-9999)
+- ✅ Auto-numbered increments (no conflicts)
+- ✅ Context manifests for precision loading
+- ✅ Test-validated features (4-level testing)
+- ✅ Brownfield-ready (analyze, document, modify safely)
+
+---
+
+## 🗺️ **Roadmap**
+
+**v0.2.0** (Q1 2026) - **Focus: Skills, Context, Testing**
+
+**New Skills:**
+- Advanced testing (contract, performance, mutation testing)
+- Cloud providers (AWS, Azure, DigitalOcean provisioners)
+- Additional integrations (Linear, Asana, Notion)
+
+**Context Enhancements:**
+- Second-pass context optimization (80%+ total reduction)
+- Embedding-based context retrieval
+- Multi-repo context management
+
+**Testing Improvements:**
+- Visual regression testing
+- Cross-browser E2E tests
+- Chaos engineering support
+
+**v1.0.0** (Q2 2026) - **Production-Ready**
+- Complete documentation
+- Enterprise features
+- SLA guarantees
+- Professional support
+
+---
+
+## 📚 **Documentation**
+
+- **Website**: [https://spec-weave.com](https://spec-weave.com)
+- **GitHub**: [https://github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
+- **npm**: [https://www.npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
+
+---
+
+## 🙏 **Credits**
+
+Thank you to the early adopters and contributors who helped shape SpecWeave v0.1.0!
 
 ---
 
@@ -654,39 +702,36 @@ cd my-saas
 
 ---
 
-### 🗺️ **Roadmap**
+### 🗺️ **Roadmap** (Post-Beta)
 
-**v0.2.0** (Q1 2026) - **Focus: Skills, Context, Testing**
+**v0.1.0-beta.2** (Next Week):
+- Fix critical bugs from beta.1 feedback
+- Complete INSTALL.md guide
+- Add more project templates
+- Improve CLI error handling
+- Add `audit` and `cleanup` commands
 
-**New Skills:**
-- Advanced testing skills (contract testing, performance testing, mutation testing)
-- Cloud providers (AWS, Azure, DigitalOcean provisioners)
-- Design tools (Sketch, Penpot connectors)
-- Database migration tools (Prisma, TypeORM, Alembic)
-- Monitoring integrations (Datadog, New Relic, Sentry)
+**v0.2.0** (Q4 2025):
+- Quality gates (inspired by BMAD @qa *gate)
+- Risk scoring (inspired by BMAD @qa *risk)
+- Clarification workflow (inspired by spec-kit /speckit.clarify)
+- Dependency tracking in tasks (inspired by spec-kit)
+- Template system (optional)
+- Test importer (import existing tests)
 
-**Context Management Improvements:**
-- Third-pass optimization (90%+ token reduction)
-- Adaptive context loading (adjusts based on task type: bug fix vs feature vs refactor)
-- Context caching (repeated queries use cached specs)
-- Incremental context updates (only load changed sections)
-- Context impact analysis (show what will be loaded before loading)
+**v0.3.0** (Q1 2026):
+- Agent-agnostic support (Copilot, Cursor, Gemini, etc.)
+- Web UI for planning phase (inspired by BMAD)
+- Multi-language CLI (Python, Go, Rust support)
+- VS Code extension
+- GitHub App for automated sync
 
-**Testing Enhancements:**
-- Visual regression testing (Percy, Chromatic integration)
-- Chaos engineering integration (Gremlin, Chaos Monkey)
-- Test generation from specs (auto-create tests from TC-0001 criteria)
-- Contract testing (Pact integration for microservices)
-- Load testing skills (k6, Artillery, Locust)
-- Test importer (import existing tests to `.specweave/tests/`)
-
-**Inspired by BMAD:**
-- Quality gates (@qa *gate, @qa *risk)
-- Risk scoring system (structured assessment)
-
-**Inspired by spec-kit:**
-- Clarification workflow (/speckit.clarify)
-- Dependency tracking in tasks
+**v1.0.0** (Q2 2026):
+- Production-ready
+- Complete documentation
+- Full test coverage (>90%)
+- Performance optimizations
+- Enterprise features (SSO, audit trails, compliance)
 
 ---
 
@@ -710,19 +755,19 @@ MIT License - see LICENSE file
 
 ### 🔗 **Links**
 
-- **Website**: https://spec-weave.com/
-- **Repository**: https://github.com/anton-abyzov/specweave
-- **Issues**: https://github.com/anton-abyzov/specweave/issues
-- **Discussions**: https://github.com/anton-abyzov/specweave/discussions
+- **Repository**: https://github.com/specweave/specweave
+- **Issues**: https://github.com/specweave/specweave/issues
+- **Documentation**: https://specweave.github.io/specweave (coming soon)
+- **Discussions**: https://github.com/specweave/specweave/discussions
 
 ---
 
 ### 🐛 **Bug Reports & Feedback**
 
-This is the **first stable release** - we welcome feedback!
+This is a **beta release** - we expect bugs and welcome feedback!
 
 **How to report:**
-1. Check existing issues: https://github.com/anton-abyzov/specweave/issues
+1. Check existing issues: https://github.com/specweave/specweave/issues
 2. Create new issue with:
    - SpecWeave version (`specweave --version`)
    - Node.js version (`node --version`)
@@ -732,7 +777,7 @@ This is the **first stable release** - we welcome feedback!
    - Error messages (if any)
 
 **Feature requests:**
-- Open discussion: https://github.com/anton-abyzov/specweave/discussions
+- Open discussion: https://github.com/specweave/specweave/discussions
 - Tag with `enhancement`
 - Explain use case and benefits
 
@@ -740,12 +785,11 @@ This is the **first stable release** - we welcome feedback!
 
 ### 🚀 **What's Next?**
 
-1. **Visit the website**: https://spec-weave.com/
-2. **Install SpecWeave**: `npm install -g specweave`
-3. **Create your first project**: `specweave init my-saas`
-4. **Join the community**: https://github.com/anton-abyzov/specweave/discussions
-5. **Share your experience**: Write articles, create tutorials, build projects
-6. **Contribute**: PRs welcome! See CONTRIBUTING.md (coming soon)
+1. **Install SpecWeave**: `npm install -g specweave`
+2. **Create your first project**: `specweave init my-saas`
+3. **Join the community**: https://github.com/specweave/specweave/discussions
+4. **Share your experience**: Write articles, create tutorials, build projects
+5. **Contribute**: PRs welcome! See CONTRIBUTING.md (coming soon)
 
 ---
 

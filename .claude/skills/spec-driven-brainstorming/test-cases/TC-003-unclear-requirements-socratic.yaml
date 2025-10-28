@@ -1,0 +1,233 @@
+---
+name: "Unclear Requirements with Socratic Questioning"
+description: "Handle vague user input through Socratic questioning to clarify requirements before design"
+skill: spec-driven-brainstorming
+priority: P1
+estimated_time: "15-20 minutes"
+
+input:
+  prompt: "I want to build something with crypto prices"
+  context:
+    existing_project: true
+    tech_stack: "Unknown (needs detection)"
+    requirements_clarity: "Very Low"
+    user_goal_clarity: "Unclear"
+
+expected_output:
+  phase_1_understanding:
+    announcement: "I'm using spec-driven brainstorming to refine your idea. Let me understand what you're trying to achieve."
+
+    socratic_questioning_sequence:
+      question_1:
+        question: "What's your primary goal with crypto prices?"
+        tool_used: "AskUserQuestion"
+        options:
+          - "Real-time price tracking dashboard"
+          - "Price alerts and notifications"
+          - "Historical data analysis"
+          - "Automated trading bot"
+        user_answer: "Real-time price tracking dashboard"
+
+      question_2:
+        question: "Who will use this dashboard?"
+        tool_used: "Open-ended" # allowing freeform answer
+        user_answer: "Just me and maybe a few friends"
+
+      question_3:
+        question: "How many cryptocurrencies do you want to track?"
+        tool_used: "AskUserQuestion"
+        options:
+          - "Top 10 only (BTC, ETH, etc.)"
+          - "Top 100 cryptocurrencies"
+          - "Custom watchlist (user-selected)"
+          - "All available (1000+)"
+        user_answer: "Custom watchlist"
+
+      question_4:
+        question: "What's your update frequency requirement?"
+        tool_used: "AskUserQuestion"
+        options:
+          - "Real-time (every second, WebSocket)" # expensive
+          - "Near real-time (every 10-30 seconds, polling)" # balanced
+          - "Periodic (every few minutes, cron job)" # cheap
+        user_answer: "Near real-time (every 10-30 seconds)"
+
+      question_5:
+        question: "Any budget or hosting constraints?"
+        tool_used: "Open-ended"
+        user_answer: "Want to keep it cheap, maybe under $20/month"
+
+      question_6:
+        question: "Do you need historical price charts or just current prices?"
+        tool_used: "AskUserQuestion"
+        options:
+          - "Current prices only (simpler)"
+          - "Basic charts (1 day, 1 week, 1 month)" # medium complexity
+          - "Advanced charts with indicators (candlesticks, RSI, MACD)" # high complexity
+        user_answer: "Basic charts"
+
+    gathered_requirements:
+      purpose: "Personal crypto price dashboard with basic charts"
+      users: "Personal use (1-5 users)"
+      functional_requirements:
+        - "Track custom watchlist of cryptocurrencies"
+        - "Display current prices with 10-30 second updates"
+        - "Show basic charts (1 day, 1 week, 1 month)"
+      constraints:
+        - "Budget: $20/month or less"
+        - "Simple deployment (not enterprise-scale)"
+      success_criteria:
+        - "Dashboard loads in <2 seconds"
+        - "Prices update every 10-30 seconds"
+        - "Charts display historical data"
+        - "Add/remove cryptos from watchlist"
+
+    revisit_count: 1 # user revealed new constraint (budget) → re-clarified
+    flexibility_demonstrated: true # went back to refine budget impact
+
+  phase_2_tech_stack:
+    detection_attempt:
+      files_searched:
+        - "package.json"
+        - "requirements.txt"
+        - "*.csproj"
+      found: "package.json"
+
+    detected_stack:
+      framework: "Next.js 14"
+      language: "TypeScript"
+      database: null # needs to ask
+
+    database_question:
+      question: "Do you have a database set up, or should we use a lightweight option?"
+      tool_used: "AskUserQuestion"
+      options:
+        - "No database (store watchlist in localStorage)" # simplest, no backend needed
+        - "SQLite (lightweight, no hosting cost)" # simple, local file
+        - "PostgreSQL (more robust, requires hosting)" # production-ready, $5-10/month
+      user_answer: "SQLite"
+
+    skills_activated:
+      - "nextjs"
+      - "nodejs-backend"
+      - "frontend" # for React components
+
+  phase_3_exploration:
+    approaches_proposed: 3
+
+    approach_1:
+      name: "Server-Side Rendering (SSR) with API Polling"
+      architecture: "Next.js SSR fetches prices on each request"
+      trade_offs:
+        pros:
+          - "Simple implementation"
+          - "No WebSocket complexity"
+          - "Works on any hosting (Vercel free tier)"
+        cons:
+          - "Not truly real-time (page refresh needed)"
+          - "Higher API call volume (one per user request)"
+        cost: "$0 (Vercel free tier)"
+        complexity: "Low"
+
+    approach_2:
+      name: "Client-Side Polling with SWR"
+      architecture: "Next.js static + client polls API every 10 seconds"
+      trade_offs:
+        pros:
+          - "Near real-time without WebSockets"
+          - "SWR caching reduces API calls"
+          - "Static export possible"
+        cons:
+          - "More client-side logic"
+          - "Battery drain on mobile"
+        cost: "$0 (Vercel free tier or static hosting)"
+        complexity: "Low"
+
+    approach_3:
+      name: "Server-Sent Events (SSE) with Price Streaming"
+      architecture: "Backend streams price updates via SSE to clients"
+      trade_offs:
+        pros:
+          - "True push updates (no polling)"
+          - "Lower client battery usage"
+          - "More efficient than polling"
+        cons:
+          - "Requires long-lived server connections"
+          - "More complex backend"
+          - "Not supported on all hosting (Vercel has limits)"
+        cost: "$5-10/month (Railway or DigitalOcean)"
+        complexity: "Medium"
+
+    budget_impact_highlighted: true
+    user_selection: "Approach 2" # Client-side polling with SWR (fits budget)
+
+  phase_4_design_validation:
+    sections_presented:
+      - title: "Architecture Overview"
+        content: "Next.js 14 with App Router, client-side polling using SWR for price updates, SQLite for watchlist storage, CoinGecko API (free tier)"
+        validated: true
+
+      - title: "Components"
+        content: "Dashboard page (price grid), chart component (recharts), watchlist manager (add/remove), price API route (/api/prices)"
+        validated: true
+
+      - title: "Data Flow"
+        content: "User opens dashboard → SWR fetches /api/prices → Backend calls CoinGecko API → Cache for 10s → Return to client → Recharts renders → SWR auto-refetches every 10s"
+        validated: true
+
+      - title: "Error Handling"
+        content: "API rate limit → show cached data + warning, network failure → retry 3x with exponential backoff, invalid crypto symbol → show error state"
+        validated: true
+
+      - title: "Testing Strategy"
+        content: "Unit tests (price formatting), integration tests (API routes), E2E tests (Playwright: add crypto, view chart, polling works)"
+        validated: true
+
+      - title: "Performance & Cost"
+        content: "CoinGecko free tier: 50 calls/min (sufficient), Vercel free tier: unlimited deployments, estimated cost: $0/month"
+        validated: true
+
+    design_complete: true
+    budget_constraint_met: true
+
+  phase_5_specweave_handoff:
+    handoff_type: "Quick Increment (Fast Start)" # personal project, not enterprise
+
+    reason: "Personal project with clear, simple requirements - full documentation can be added incrementally"
+
+    expected_increment:
+      directory: ".specweave/increments/0001-crypto-dashboard/"
+      files:
+        - "spec.md" # WHAT & WHY (custom watchlist, near real-time, budget-conscious)
+        - "plan.md" # HOW (Next.js, SWR polling, SQLite, CoinGecko API)
+        - "tasks.md" # implementation checklist
+        - "tests.md" # E2E with Playwright (dashboard loads, prices update, chart renders)
+        - "context-manifest.yaml" # minimal context (nextjs, frontend skills)
+
+    agents_invoked:
+      - "pm" # minimal (personal project)
+      - "qa-lead" # E2E test strategy
+
+validation:
+  - "Phase 1: Socratic questioning sequence (at least 5 questions)"
+  - "Phase 1: Requirements gathered incrementally through dialogue"
+  - "Phase 1: Demonstrated flexibility (revisited earlier question when new constraint revealed)"
+  - "Phase 2: Tech stack detected from existing files"
+  - "Phase 2: Database option asked separately"
+  - "Phase 3: Budget impact explicitly highlighted in approaches"
+  - "Phase 3: Cost estimates provided for each approach"
+  - "Phase 4: Budget constraint validated in performance section"
+  - "Phase 5: Quick increment chosen (appropriate for personal project)"
+  - "AskUserQuestion used for structured choices"
+  - "Open-ended questions used for context gathering"
+  - "ONE question at a time in Phase 1"
+
+expected_errors: []
+
+success_criteria:
+  - "Vague input clarified through questioning"
+  - "Requirements extracted from dialogue"
+  - "Budget constraint met ($0/month vs $20/month budget)"
+  - "Appropriate handoff type chosen (quick vs full)"
+  - "Design ready for implementation"
+---

@@ -1,0 +1,13 @@
+name: "Implement JWT Authentication"
+description: "Test adding JWT authentication to Express API"
+user_input: "Add JWT authentication and authorization to my API"
+expected_behavior:
+  - Creates login/register endpoints
+  - Generates and validates JWT tokens
+  - Implements auth middleware
+  - Includes password hashing (bcrypt)
+validation:
+  - Uses jsonwebtoken package
+  - Implements bcrypt for password hashing
+  - Creates authentication middleware
+  - Protects routes with middleware
