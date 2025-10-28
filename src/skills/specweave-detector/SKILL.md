@@ -1,99 +1,69 @@
 ---
 name: specweave-detector
-description: Entry point for SpecWeave framework. Automatically activates when .specweave directory is detected in the project. Acts as a factory of agents, parsing user requests and routing to appropriate skills. Supports nested skill calls and context management. This skill should ALWAYS be loaded first in SpecWeave projects. Activates for ANY user request in a SpecWeave project (auto-detects .specweave/).
+description: MANDATORY entry point for SpecWeave framework. Activates when .specweave/ exists OR when user mentions "SpecWeave", "increment", "feature", "/create-increment". All 10 agents and 35+ skills are PRE-INSTALLED during init - no auto-installation needed. Routes requests to increment-planner, skill-router, or appropriate agents. Keywords SpecWeave, spec-driven, increment, feature, spec, plan, task, create feature, build feature, new increment.
 proactive: true
 ---
 
 # SpecWeave Detector & Entry Point
 
-This skill is the **automatic entry point** for all SpecWeave operations. When Claude Code detects a `.specweave/config.yaml` file, this skill activates and orchestrates the SpecWeave framework.
+This skill is the **MANDATORY entry point** for all SpecWeave operations. When Claude Code detects a `.specweave/config.yaml` file OR user mentions SpecWeave-related keywords, this skill MUST activate and orchestrate the framework.
 
 ## Purpose
 
 Act as the "factory of agents" that:
-1. Detects SpecWeave projects automatically
-2. Parses user requests
-3. Routes to appropriate skills
-4. Orchestrates nested skill calls
-5. Manages context loading
+1. **Detects SpecWeave projects automatically** (when .specweave/ exists)
+2. **Parses user requests** and determines intent
+3. **Routes to appropriate skills/agents** (all pre-installed!)
+4. **Orchestrates nested skill calls** for complex operations
+5. **Manages context loading** via context-loader skill
 
-## Detection Logic
+## Detection Logic (0.1.5 - Pre-Installation)
 
 ```javascript
 // Pseudo-code for detection
 if (fileExists('.specweave/config.yaml')) {
+  // ACTIVATE SPECWEAVE MODE
   activateSpecWeaveMode();
   loadConfiguration();
 
-  // AUTO-INSTALL MISSING COMPONENTS (NEW!)
-  await autoInstallComponents(userPrompt);
+  // ALL COMPONENTS ALREADY INSTALLED!
+  // ✅ 10 agents in .claude/agents/
+  // ✅ 35+ skills in .claude/skills/
+  // ✅ 10 commands in .claude/commands/
+
+  // NO AUTO-INSTALLATION NEEDED (pre-installed in 0.1.5)
 
   parseUserIntent();
   routeToSkills();
 }
 ```
 
-## Just-In-Time Component Installation (CRITICAL!)
+## Pre-Installed Components (0.1.5+)
 
-**SpecWeave uses intelligent auto-installation** - components are installed on-demand based on user intent.
+**IMPORTANT**: SpecWeave 0.1.5+ uses **pre-installation** instead of auto-installation.
 
-### How It Works
+After `specweave init`, ALL components are ready:
+- ✅ **10 agents**: PM, Architect, Security, QA Lead, DevOps, Tech Lead, SRE, Docs Writer, Performance, Diagrams Architect
+- ✅ **35+ skills**: Technology stacks, integrations, utilities
+- ✅ **10 slash commands**: /create-increment, /validate-increment, etc.
+
+**No installation wait time** - components activate immediately!
+
+### How It Works (0.1.5+)
 
 1. **User makes a request** (e.g., "Create Next.js authentication")
-2. **Analyze user intent** - Extract keywords (Next.js, authentication)
-3. **Map to required components**:
-   - "Next.js" → nextjs skill, nodejs-backend skill
-   - "authentication" → security agent
-   - "Create" → pm agent, architect agent
-4. **Check if components installed** in `.claude/skills/` and `.claude/agents/`
-5. **Auto-install missing components** from npm package (`node_modules/specweave/src/`)
-6. **Proceed with routing** - now all needed components are available
+2. **SpecWeave detector activates** (all components already installed!)
+3. **Analyze user intent**:
+   - "Create" → Route to increment-planner skill
+   - "Next.js" → Will use nextjs skill (already installed)
+   - "authentication" → Will involve security agent (already installed)
+4. **Route to increment-planner**:
+   - Creates increment folder
+   - Generates spec.md, plan.md, tasks.md, tests.md
+   - Coordinates with PM agent → Architect agent
+5. **Implementation ready** - All skills/agents available immediately
 
-### Keyword → Component Mapping
-
-```typescript
-// From src/utils/auto-install.ts
-const COMPONENT_MAPPING = {
-  // Framework detection
-  'next.js': { skills: ['nextjs', 'nodejs-backend'], agents: [] },
-  'react': { skills: ['frontend'], agents: [] },
-  'fastapi': { skills: ['python-backend'], agents: [] },
-  'django': { skills: ['python-backend'], agents: [] },
-  '.net': { skills: ['dotnet-backend'], agents: [] },
-
-  // Feature detection
-  'authentication': { skills: ['nodejs-backend'], agents: ['security'] },
-  'auth': { skills: [], agents: ['security'] },
-  'oauth': { skills: [], agents: ['security'] },
-  'payment': { skills: ['stripe-integrator'], agents: ['security'] },
-  'stripe': { skills: ['stripe-integrator'], agents: ['security'] },
-
-  // Infrastructure detection
-  'deploy': { skills: [], agents: ['devops'] },
-  'hetzner': { skills: ['hetzner-provisioner'], agents: ['devops'] },
-  'aws': { skills: [], agents: ['devops'] },
-
-  // Testing detection
-  'test': { skills: [], agents: ['qa-lead'] },
-  'e2e': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
-  'playwright': { skills: ['e2e-playwright'], agents: ['qa-lead'] },
-
-  // Design detection
-  'figma': { skills: ['figma-implementer', 'figma-designer'], agents: [] },
-  'design system': { skills: ['design-system-architect'], agents: [] },
-
-  // Integration detection
-  'jira': { skills: ['jira-sync'], agents: [] },
-  'github': { skills: ['github-sync'], agents: [] },
-};
-
-// Always include strategic agents for new features
-if (prompt.includes('create') || prompt.includes('build')) {
-  agents.push('pm', 'architect');
-}
-```
-
-### Example User Experience
+### Example User Experience (0.1.5+)
 
 **Example 1: Next.js Authentication**
 ```
@@ -101,24 +71,28 @@ User: "Create Next.js authentication with OAuth"
 
 🔷 SpecWeave Active
 
-📦 Installing required components...
-   ✅ Installed nextjs skill
-   ✅ Installed nodejs-backend skill
-   ✅ Installed security agent
-   ✅ Installed pm agent
-   ✅ Installed architect agent
-
 🚀 Creating increment 0001-nextjs-authentication...
+   📝 Using nextjs skill (already installed!)
+   🤖 PM agent creating requirements...
+   🏗️  Architect agent designing system...
+
+✅ Increment created: .specweave/increments/0001-nextjs-authentication/
+✅ Files: spec.md, plan.md, tasks.md, tests.md
 ```
 
-**Example 2: Already Installed**
+**Example 2: Real Estate Platform**
 ```
-User: "Add another Next.js feature"
+User: "Build a real estate listing platform with Node.js/Express"
 
 🔷 SpecWeave Active
-   (Components already installed, proceeding...)
 
-🚀 Creating increment 0002-next-feature...
+🚀 Creating increment 0001-real-estate-platform...
+   📝 Using nodejs-backend skill (already installed!)
+   🤖 PM agent creating requirements...
+   🏗️  Architect agent designing system...
+   🛡️  Security agent reviewing authentication...
+
+✅ Increment created with complete specifications
 ```
 
 **Example 3: Python FastAPI**
@@ -127,53 +101,21 @@ User: "Create FastAPI backend with PostgreSQL"
 
 🔷 SpecWeave Active
 
-📦 Installing required components...
-   ✅ Installed python-backend skill
-   ✅ Installed pm agent
-   ✅ Installed architect agent
-
 🚀 Creating increment 0001-fastapi-backend...
+   📝 Using python-backend skill (already installed!)
+   🤖 PM agent creating requirements...
+   🏗️  Architect agent designing system...
+
+✅ Increment created: .specweave/increments/0001-fastapi-backend/
 ```
 
-### Configuration
+### Benefits of Pre-Installation (0.1.5+)
 
-Auto-install can be disabled in `.specweave/config.yaml`:
-
-```yaml
-# .specweave/config.yaml
-auto_install: true  # Default: enabled
-
-# Tracked installed components (auto-updated)
-installed_components:
-  skills:
-    - nextjs
-    - nodejs-backend
-    - security
-  agents:
-    - pm
-    - architect
-    - security
-```
-
-Set `auto_install: false` to require manual installation (advanced users only).
-
-### Installation Process
-
-When auto-installing:
-
-1. **Find npm package**: Locate `node_modules/specweave/`
-2. **Copy component**: `src/skills/nextjs/` → `.claude/skills/nextjs/`
-3. **Verify**: Check component has SKILL.md or AGENT.md
-4. **Update config**: Add to `installed_components` list
-5. **Continue routing**: Component now available for use
-
-### Benefits
-
-- ✅ **Zero manual installation** - users never run `specweave install`
-- ✅ **Just-in-time** - only install what's actually needed
-- ✅ **Automatic** - completely transparent to users
-- ✅ **Intelligent** - understands intent from natural language
-- ✅ **Efficient** - unused components never installed
+- ✅ **Zero wait time** - all components ready immediately
+- ✅ **No installation confusion** - everything works out of the box
+- ✅ **Predictable** - same components every time
+- ✅ **Simple mental model** - init once, use forever
+- ✅ **Offline-friendly** - all components local after init
 
 ## Auto-Activation
 
