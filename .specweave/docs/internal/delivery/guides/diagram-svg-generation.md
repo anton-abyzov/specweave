@@ -1,8 +1,29 @@
 # Diagram SVG Generation Guide
 
-**Purpose**: Generate static SVG files from Mermaid diagrams for reliable rendering in Docusaurus
+**Purpose**: Automatically generate static SVG files from Mermaid diagrams for reliable rendering in Docusaurus
 
 **Created**: 2025-10-27
+**Updated**: 2025-10-28 (Added automated extraction workflow)
+
+---
+
+## 🚀 Quick Start - Fully Automated!
+
+**The entire workflow is now automated!** Simply write Mermaid diagrams in your markdown files and they'll automatically be converted to SVGs during build:
+
+```bash
+# Development (auto-generates diagrams + starts dev server)
+npm run docs:public
+
+# Production build (auto-generates diagrams + builds site)
+npm run docs:build:public
+```
+
+**That's it!** No manual steps needed. The system automatically:
+1. ✅ Extracts all `\`\`\`mermaid` code blocks from markdown
+2. ✅ Generates SVG files (light + dark themes)
+3. ✅ Replaces Mermaid blocks with SVG images at build time
+4. ✅ Supports dark mode with ThemedImage component
 
 ---
 
@@ -27,10 +48,101 @@
 
 ---
 
+## How It Works (Automated Workflow)
+
+### Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Write Markdown with Mermaid                              │
+│    .specweave/docs/public/overview/introduction.md          │
+│    ```mermaid                                               │
+│    graph TD                                                 │
+│        A --> B                                              │
+│    ```                                                      │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Run Build Command                                        │
+│    npm run docs:build:public                                │
+│    → Triggers: npm run generate:all-diagrams                │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 3. Extract Diagrams (scripts/extract-and-generate-diagrams.sh)│
+│    • Scans all .md files in .specweave/docs/public/        │
+│    • Finds ```mermaid code blocks                           │
+│    • Creates temp .mmd files                                │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 4. Generate SVGs (uses @mermaid-js/mermaid-cli)            │
+│    • Light theme: introduction.svg                          │
+│    • Dark theme: introduction-dark.svg                      │
+│    • Output: docs-site/static/diagrams/                    │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 5. Build Docusaurus (Remark Plugin Processes Markdown)     │
+│    Plugin: docs-site/plugins/remark-mermaid-to-svg.js      │
+│    • Finds ```mermaid blocks                                │
+│    • Replaces with <ThemedImage> component                 │
+│    • References /diagrams/introduction.svg                  │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│ 6. Final Output (docs-site/build/)                          │
+│    • HTML with <img> tags pointing to SVGs                  │
+│    • Fast loading, reliable rendering                       │
+│    • Dark mode support                                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Components
+
+| Component | Purpose | Location |
+|-----------|---------|----------|
+| **Extraction Script** | Extracts `\`\`\`mermaid` from markdown | `scripts/extract-and-generate-diagrams.sh` |
+| **Standalone Script** | Generates SVGs from `.mmd` files | `scripts/generate-diagram-svgs.sh` |
+| **Remark Plugin** | Replaces mermaid blocks with SVGs at build time | `docs-site/plugins/remark-mermaid-to-svg.js` |
+| **Mermaid Config** | Theme settings for consistent styling | `.mermaidrc.json` |
+
+---
+
 ## Quick Start
 
-### Generate All Diagrams
+### Option 1: Inline Diagrams (Recommended)
 
+Write Mermaid diagrams directly in your markdown:
+
+**File**: `.specweave/docs/public/overview/introduction.md`
+
+```markdown
+## Architecture
+
+```mermaid
+graph TD
+    A[User] --> B[Frontend]
+    B --> C[Backend]
+    C --> D[Database]
+\```
+```
+
+**That's it!** The diagram will automatically be converted to SVG during build.
+
+### Option 2: Standalone .mmd Files
+
+Create standalone diagram files:
+
+**File**: `.specweave/docs/internal/architecture/diagrams/my-diagram.mmd`
+
+```mermaid
+flowchart TB
+    Start([User Request]) --> Process[Process]
+    Process --> End([Complete])
+```
+
+Run:
 ```bash
 # Generate SVGs for all .mmd files
 npm run generate:diagrams
@@ -511,6 +623,47 @@ git diff .specweave/docs/internal/architecture/diagrams/my-diagram.svg
 
 ## Scripts Reference
 
+### npm run generate:all-diagrams (Recommended)
+
+**Location**: `scripts/extract-and-generate-diagrams.sh`
+
+**What it does**:
+1. Scans all `.md` files in `.specweave/docs/public/`
+2. Extracts all `\`\`\`mermaid` code blocks
+3. Generates SVG files (light + dark) for each diagram
+4. Outputs to `docs-site/static/diagrams/`
+5. Also runs `generate:diagrams` for standalone `.mmd` files
+
+**Usage**:
+```bash
+npm run generate:all-diagrams
+```
+
+**Output example**:
+```
+🎨 Extracting and Generating Diagrams from Markdown
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📁 Scanning markdown files in: .specweave/docs/public
+📦 Output directory: docs-site/static/diagrams
+
+Found 9 markdown file(s)
+
+📄 overview/introduction.md → diagram #1
+  ✓ Generated: /diagrams/introduction.svg (light)
+  ✓ Generated: /diagrams/introduction-dark.svg (dark)
+
+✅ Success! Generated 1 inline diagram(s) + standalone .mmd files
+
+Generated diagram files:
+  • /diagrams/introduction.svg (16K)
+  • /diagrams/introduction-dark.svg (16K)
+```
+
+**When to use**: Automatically runs during `npm run docs:public` and `npm run docs:build:public`. Manual use only needed if you want to regenerate diagrams without building.
+
+---
+
 ### npm run generate:diagrams
 
 **Location**: `scripts/generate-diagram-svgs.sh`
@@ -520,6 +673,13 @@ git diff .specweave/docs/internal/architecture/diagrams/my-diagram.svg
 2. Generates light theme SVG for each
 3. Generates dark theme SVG for each
 4. Reports success/failure
+
+**Usage**:
+```bash
+npm run generate:diagrams
+```
+
+**When to use**: For standalone `.mmd` files only. Use `generate:all-diagrams` for complete coverage.
 
 **Output**:
 ```
@@ -556,25 +716,78 @@ Generated files:
 
 ## Summary
 
-**Status**: ✅ Production-ready SVG generation workflow
+**Status**: ✅ Fully automated, production-ready SVG generation workflow
 
-**Commands**:
-```bash
-npm run generate:diagrams     # Generate all SVGs
-git add **/*.mmd **/*.svg      # Commit source + generated
+### Quick Reference
+
+| Task | Command | When |
+|------|---------|------|
+| **Start dev server** | `npm run docs:public` | Automatically generates diagrams |
+| **Build production** | `npm run docs:build:public` | Automatically generates diagrams |
+| **Regenerate all diagrams** | `npm run generate:all-diagrams` | Manual regeneration needed |
+| **Regenerate .mmd only** | `npm run generate:diagrams` | Standalone files only |
+
+### Workflow Summary
+
+```mermaid
+graph LR
+    A[Write Markdown] --> B[Add ```mermaid block]
+    B --> C[Run npm run docs:build:public]
+    C --> D[Auto-extract + generate SVGs]
+    D --> E[Auto-replace with images]
+    E --> F[Production build with SVGs]
 ```
 
-**Benefits**:
-- ✅ Reliable rendering across all browsers
-- ✅ Dark mode support
-- ✅ Faster page loads
-- ✅ Version controlled visuals
-- ✅ SSG-friendly
+### Key Features
 
-**Maintenance**: Run `npm run generate:diagrams` after editing any `.mmd` file
+- ✅ **100% Automated** - No manual steps required
+- ✅ **Inline Diagrams** - Write `\`\`\`mermaid` directly in markdown
+- ✅ **Standalone Files** - Support for `.mmd` files too
+- ✅ **Dark Mode** - Automatic light/dark theme generation
+- ✅ **Build-Time Processing** - Diagrams converted to SVGs at build
+- ✅ **Reliable Rendering** - SVGs work everywhere, no client-side issues
+- ✅ **Fast Loading** - No JavaScript parsing needed
+- ✅ **Version Controlled** - SVGs committed to git
+
+### Benefits
+
+| Aspect | Before (Client-Side) | After (SVG Generation) |
+|--------|---------------------|----------------------|
+| **Rendering** | Inconsistent across browsers | Consistent everywhere |
+| **Performance** | Slow (client-side parsing) | Fast (static images) |
+| **Reliability** | Can break with Mermaid.js updates | Always works |
+| **Dark Mode** | Manual implementation | Automatic |
+| **SEO** | Not indexed | Fully indexed |
+| **Accessibility** | Limited | Full alt text support |
+
+### Maintenance
+
+**No maintenance needed!** Diagrams are automatically regenerated on every build.
+
+**If you want to regenerate manually**:
+```bash
+npm run generate:all-diagrams
+```
+
+**Git workflow**:
+```bash
+# 1. Write diagram in markdown
+vim .specweave/docs/public/overview/features.md
+
+# 2. Build (auto-generates SVGs)
+npm run docs:build:public
+
+# 3. Commit (SVGs are in docs-site/static/diagrams/)
+git add .
+git commit -m "docs: add features diagram"
+```
 
 ---
 
 **Created**: 2025-10-27
-**Last Updated**: Auto-updated when diagrams change
+**Last Updated**: 2025-10-28 (Added automated extraction workflow)
 **Maintained By**: SpecWeave Documentation Team
+
+**Related Documentation**:
+- [Diagram Conventions Guide](./diagram-conventions.md)
+- [C4 Model Overview](../../../internal/architecture/diagrams/README.md)

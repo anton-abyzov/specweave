@@ -29,10 +29,11 @@ const config: Config = {
   },
 
   // Mermaid diagrams support
+  // We use SVG generation instead of client-side rendering for reliability
   markdown: {
-    mermaid: true,
+    mermaid: false, // Disabled in favor of SVG generation
   },
-  themes: ['@docusaurus/theme-mermaid'],
+  // themes: ['@docusaurus/theme-mermaid'], // Not needed with SVG approach
 
   presets: [
     [
@@ -46,6 +47,10 @@ const config: Config = {
           routeBasePath: 'docs',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
+          // Add remark plugin to replace mermaid blocks with SVGs
+          beforeDefaultRemarkPlugins: [
+            require('./plugins/remark-mermaid-to-svg'),
+          ],
         },
         blog: {
           showReadingTime: true,

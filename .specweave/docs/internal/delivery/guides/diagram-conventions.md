@@ -1,130 +1,87 @@
-## C4 Diagram Conventions
+## C4 Diagram Conventions - Quick Reference
 
 **CRITICAL**: SpecWeave adopts the **C4 Model** (Context, Container, Component, Code) for architecture diagrams.
 
-### C4 Model Mapping to SpecWeave
+**For detailed C4 knowledge and diagram creation**, see the **`diagrams-architect` agent** (`src/agents/diagrams-architect/AGENT.md`), which contains:
+- Complete C4 Model specification (4 levels)
+- Mermaid syntax mastery with examples
+- Diagram creation workflow
+- Validation rules and common pitfalls
+- Best practices
 
-| C4 Level | SpecWeave Equivalent | Status | Purpose | Location |
-|----------|----------------------|--------|---------|----------|
-| **C4-1: Context** | HLD Context Diagram | ✅ Defined | System boundaries, external actors | `.specweave/docs/internal/architecture/diagrams/` |
-| **C4-2: Container** | HLD Component Diagram | ✅ Defined | Applications, services, data stores | `.specweave/docs/internal/architecture/diagrams/` |
-| **C4-3: Component** | LLD Component Diagram | ✅ Defined (NEW) | Internal structure of a container | `.specweave/docs/internal/architecture/diagrams/{module}/` |
-| **C4-4: Code** | Source code + UML | ⚠️ Optional | Class diagrams, implementation details | Code comments or separate docs |
+This guide provides quick reference for **file conventions** and **tooling** only.
 
-### Design Decision
+---
 
-- **HLD (High-Level Design) = C4 Levels 1-2** (Context + Container)
-- **LLD (Low-Level Design) = C4 Level 3** (Component)
-- **Code-Level Documentation = C4 Level 4** (Optional, generated from code)
+### File Naming & Placement Conventions
 
-### C4 Level 1: Context Diagram (HLD)
-**Purpose**: System boundaries, external actors. **Location**: `.specweave/docs/internal/architecture/diagrams/system-context.mmd`. **Syntax**: `C4Context` with Person/System/System_Ext/Rel.
+**C4 Context (Level 1)**: `.specweave/docs/internal/architecture/diagrams/system-context.mmd`
 
-### C4 Level 2: Container Diagram (HLD)
-**Purpose**: Applications, services, databases. **Location**: `.specweave/docs/internal/architecture/diagrams/system-container.mmd`. **Syntax**: `C4Container` with Container/ContainerDb/Container_Boundary.
+**C4 Container (Level 2)**: `.specweave/docs/internal/architecture/diagrams/system-container.mmd`
 
-### C4 Level 3: Component Diagram (LLD)
-**Purpose**: Internal container structure (modules, classes). **Location**: `.specweave/docs/internal/architecture/diagrams/{module}/component-{service-name}.mmd`. **Syntax**: `C4Component` with Component/ComponentDb. **Naming**: `component-auth-service.mmd`, `component-payment-service.mmd`.
+**C4 Component (Level 3)**: `.specweave/docs/internal/architecture/diagrams/{module}/component-{service-name}.mmd`
+- Examples: `auth/component-auth-service.mmd`, `payment/component-payment-gateway.mmd`
 
-### C4 Level 4: Code Diagram (Optional)
-**Purpose**: Class diagrams. **Approach**: Generate from code using TypeDoc/JSDoc/Sphinx/Javadoc.
+**Sequence Diagrams**: `.specweave/docs/internal/architecture/diagrams/{module}/flows/{flow-name}.mmd`
+- Examples: `auth/flows/login-flow.mmd`, `payment/flows/checkout-flow.mmd`
 
-**If Manual Creation Required**: Use standard UML class diagrams with Mermaid `classDiagram`.
+**ER Diagrams**: `.specweave/docs/internal/architecture/diagrams/{module}/data-model.mmd`
+- Examples: `auth/data-model.mmd`, `order/data-model.mmd`
 
-### Other Diagram Types
+**Deployment Diagrams**: `.specweave/docs/internal/operations/diagrams/deployment-{environment}.mmd`
+- Examples: `deployment-production.mmd`, `deployment-staging.mmd`
 
-**Sequence**: Interaction flows → `.specweave/docs/internal/architecture/diagrams/{module}/flows/{flow-name}.mmd`
-**ER**: Data models → `.specweave/docs/internal/architecture/diagrams/{module}/data-model.mmd`
-**Deployment**: Infrastructure → `.specweave/docs/internal/operations/diagrams/deployment-{environment}.mmd`
+---
 
-### Diagram Agent & Skill
+### Usage Workflow
 
-**Agent**: `diagrams-architect` (`src/agents/diagrams-architect/`)
-- Expert in creating Mermaid diagrams following C4 conventions
-- Contains all diagram rules and best practices
-- Creates diagrams with correct syntax and placement
-
-**Skill**: `diagrams-generator` (`src/skills/diagrams-generator/`)
-- Detects diagram requests
-- Coordinates with `diagrams-architect` agent
-- Saves diagrams to correct locations
-
-**Usage**:
+**How to Create Diagrams**:
 ```
-User: "Create C4 context diagram"
+User: "Create C4 context diagram for authentication"
 → diagrams-generator skill activates
 → Invokes diagrams-architect agent
-→ Agent creates diagram following C4 Level 1 conventions
-→ Saves to .specweave/docs/internal/architecture/diagrams/system-context.mmd
+→ Agent creates diagram following C4 conventions
+→ Saves to correct location with validation instructions
 ```
 
-### CRITICAL: Mermaid C4 Syntax Rules
+**You don't need to know C4 syntax** - the agent handles everything. Just describe what you want to diagram.
+
+---
+
+### CRITICAL Syntax Rule (Must Know!)
 
 **DO NOT include the `mermaid` keyword in C4 diagrams!**
 
-#### WRONG (will not render):
+✅ **CORRECT** (C4 diagrams):
+```
+C4Context
+  title System Context Diagram
+```
+
+❌ **WRONG** (will not render):
 ```
 mermaid
 C4Context
   title System Context Diagram
 ```
 
-#### CORRECT (will render):
-```
-C4Context
-  title System Context Diagram
-```
+**Why**: C4 diagrams start DIRECTLY with `C4Context`, `C4Container`, `C4Component`, or `C4Deployment`.
 
-**Why**: Mermaid C4 diagrams start DIRECTLY with `C4Context`, `C4Container`, `C4Component`, or `C4Deployment`. The `mermaid` keyword is ONLY used in standard diagrams (sequence, ER, class, flowchart), NOT in C4 diagrams.
+The `mermaid` keyword is ONLY for standard diagrams: `sequenceDiagram`, `erDiagram`, `classDiagram`, `graph`, etc.
 
-### Diagram Validation (MANDATORY)
+---
 
-**Principle**: **If a diagram doesn't render, it doesn't exist.** Validation is not optional.
+### Validation (MANDATORY)
 
-#### Before Saving Any Diagram
+**Principle**: **If a diagram doesn't render, it doesn't exist.**
 
-1. ✅ **C4 diagrams**: Start with `C4Context`, `C4Container`, `C4Component`, or `C4Deployment` (NO `mermaid` keyword)
-2. ✅ **Other diagrams**: Start with `mermaid` keyword (sequenceDiagram, erDiagram, classDiagram, graph)
-3. ✅ **Syntax valid**: No missing quotes, parentheses, or braces
-4. ✅ **Indentation correct**: 2 spaces per level
-5. ✅ **File location correct**: HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
-
-#### After Creating Diagram (MANDATORY)
-
-Agent MUST instruct user to validate rendering:
-
-```
-✅ Diagram created: .specweave/docs/internal/architecture/diagrams/system-context.mmd
-
-📋 VALIDATION REQUIRED:
-1. Open the .mmd file in VS Code
-2. Install Mermaid Preview extension (if not already)
+**After creating any diagram**:
+1. Open the `.mmd` file in VS Code
+2. Install Mermaid Preview extension (if needed)
 3. Verify diagram renders correctly
-4. Report any syntax errors immediately
+4. Report syntax errors immediately
 
-If diagram fails to render, I will fix the syntax and regenerate.
-DO NOT mark task as complete until rendering is verified.
-```
-
-#### Common Syntax Errors
-
-| Error | Wrong | Correct |
-|-------|-------|---------|
-| **`mermaid` keyword in C4** | `mermaid`<br>`C4Context` | `C4Context` (start directly) |
-| **Missing quotes** | `Person(user, Customer User)` | `Person(user, "Customer User", "Description")` |
-| **Missing parentheses** | `Rel(user, system, "Uses"` | `Rel(user, system, "Uses")` |
-| **Incorrect indentation** | `title System Context` | `  title System Context` (2 spaces) |
-
-### Best Practices
-
-1. **Follow C4 hierarchy** - Context → Container → Component → Code
-2. **Keep diagrams focused** - One concept per diagram
-3. **Use consistent naming** - Follow file naming conventions
-4. **Place correctly** - HLD in `architecture/diagrams/`, LLD in `architecture/diagrams/{module}/`
-5. **Add annotations** - Performance notes, security considerations
-6. **Version control** - Track diagram changes with git
-7. **Link from docs** - Reference diagrams in architecture documents
-8. **Validate rendering** - ALWAYS verify diagram displays correctly before marking complete
+The `diagrams-architect` agent will always provide validation instructions with every diagram it creates.
 
 ### SVG Generation for Reliable Rendering
 
