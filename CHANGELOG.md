@@ -9,9 +9,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.6] - 2025-10-28
 
-### 🐛 **Bug Fixes: Complete 0.1.5 Migration**
+### ✨ **Command Aliases & Roadmap Improvements**
 
-This release completes the migration to the pre-installation approach by fixing all remaining references to the old auto-installation logic.
+Major UX improvement: Short, memorable command aliases based on Agile terminology.
+
+### 🚀 **NEW: Command Aliases**
+
+**Problem**: Typing `/create-increment` repeatedly during development is tedious.
+
+**Solution**: Short, domain-specific aliases!
+
+| Full Command | Alias | Meaning |
+|--------------|-------|---------|
+| `/create-project` | `/init` | Initialize project |
+| `/create-increment` | `/pi` | **Plan Product Increment** |
+| `/start-increment` | `/si` | Start increment |
+| `/add-tasks` | `/at` | Add tasks |
+| `/validate-increment` | `/vi` | Validate increment |
+| `/close-increment` | `/done` | Close increment |
+| `/list-increments` | `/ls` | List increments |
+
+**Why `/pi`?**
+- **PI = Product Increment** (standard Agile/Scrum terminology)
+- Aligns with PI Planning (Program Increment in SAFe framework)
+- Domain-specific and memorable
+- Avoids confusion with CI/CD
+
+**Typical workflow**:
+```bash
+/init my-saas              # Initialize
+/pi "User authentication"  # Plan Product Increment
+/si 0001                   # Start
+/at 0001 "Add tests"       # Add tasks
+/vi 0001 --quality         # Validate
+/done 0001                 # Close
+```
+
+**Benefits**:
+- 🚀 **50-70% fewer keystrokes** for common commands
+- 💪 **Memorable aliases** based on Agile terminology
+- 📖 **Full commands still work** for scripts and documentation
+
+### 📋 **Roadmap Policy Update**
+
+**NEW RULE: Never plan more than 1 version ahead!**
+
+**Why?**
+- ✅ Prevents over-commitment and disappointment
+- ✅ Allows flexibility based on user feedback
+- ✅ Focuses team on immediate next milestone
+- ✅ Avoids obsolete promises as product evolves
+
+**Updated Roadmap**:
+- ✅ **Current**: v0.1.6 (this release)
+- ✅ **Next**: v0.2.0 (Q2 2025) - Quality, Testing, Context
+- ❌ **Removed**: v0.3.0, v1.0.0, and all far-future versions
+
+**After v0.2.0 ships** → Define v0.3.0 (not before!)
+
+### 🐛 **Bug Fixes**
 
 #### What's Fixed
 
