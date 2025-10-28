@@ -11,82 +11,126 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🎉 First Stable Release
 
-The first stable release of **SpecWeave** - ready for production use! This release builds on beta.1 with critical improvements and new features.
+The first stable release of **SpecWeave** - a revolutionary spec-driven development framework that transforms how you build software with AI agents.
 
-### ✨ What's New Since Beta
+**Website**: https://spec-weave.com/
 
-#### 🔄 **Multi-Tool Adapter System** (NEW)
+---
 
-SpecWeave now supports **multiple AI tools** via a clean adapter architecture:
+### 🌟 What is SpecWeave?
+
+SpecWeave is where **specifications are the source of truth** and AI agents autonomously build production-ready applications. Think of it as the evolution beyond "vibe coding".
+
+**Core Philosophy:**
+- **Specification First** - Define WHAT and WHY before HOW
+- **Living Documentation** - Specs evolve with code, never diverge
+- **Context Precision** - 70-80%+ token reduction (scales to 1000+ pages)
+- **Test-Validated** - Every feature proven through automated tests
+- **Framework-Agnostic** - Works with ANY tech stack
+
+---
+
+### ✨ Key Features
+
+#### 🔄 **Multi-Tool Adapter System**
+
+Choose your preferred AI tool:
 
 **Supported Adapters:**
 - **Claude Code** (native, recommended) - Full feature support
 - **Cursor** (via `.cursorrules`) - Optimized for Cursor's context system
 - **Generic** (universal adapter) - Works with ANY AI tool (Copilot, Windsurf, Cline, etc.)
 
-**Installation:**
 ```bash
-# Claude Code (default)
-npx specweave init my-project
-
-# Cursor
+npx specweave init my-project --adapter claude
 npx specweave init my-project --adapter cursor
-
-# Generic (Copilot, Windsurf, etc.)
 npx specweave init my-project --adapter generic
 ```
 
-**Benefits:**
-- ✅ Choose your preferred AI tool
-- ✅ Consistent SpecWeave workflow across tools
-- ✅ Easy migration between tools
-- ✅ Custom adapter creation supported
+**Why This Matters**: Use SpecWeave with ANY AI tool. Switch tools without rewriting workflows.
 
-**Files:**
-- `src/adapters/claude/` - Native Claude Code integration
-- `src/adapters/cursor/` - Cursor-optimized `.cursorrules`
-- `src/adapters/generic/` - Universal `SPECWEAVE-MANUAL.md`
+#### 🤖 **Multi-Agent System** (9 Specialized Agents)
 
-#### 📏 **4-Digit Increment Numbering** (BREAKING CHANGE)
+**Strategic:** PM, Architect, Security, QA Lead, DevOps, Tech Lead, Docs Writer
+**Operational:** Performance, SRE
 
-**Enforced 4-digit format** for all increments (0001-9999):
+Each agent has **separate context windows** - prevents context pollution, maintains role expertise.
 
-**Before:** `001-feature`, `01-feature`, `1-feature` (inconsistent)
-**After:** `0001-feature`, `0042-feature`, `0123-feature` (always 4 digits)
+#### ✨ **Skills Framework** (32+ Extensible Skills)
 
-**Benefits:**
-- ✅ Consistent sorting across all tools
-- ✅ Prevents duplicate increments
-- ✅ Supports up to 9,999 increments
-- ✅ Clear visual hierarchy
+**Core:** specweave-detector, increment-planner, context-loader, context-optimizer, increment-quality-judge
+**Integration:** JIRA sync, ADO sync, GitHub sync
+**Infrastructure:** Hetzner provisioner, cost optimizer
+**Design:** Figma MCP connector, Figma-to-code
+**Brownfield:** Brownfield analyzer, brownfield onboarder
 
-**Migration:** Run `/create-increment` to use new format (old increments still work)
+#### 📁 **Context Precision** (70-80%+ Token Reduction)
 
-#### 🔄 **Feature Planner → Increment Planner** (Renamed)
+Context manifests load only relevant sections:
+- **Pass 1**: Context loader (70% reduction via manifests)
+- **Pass 2**: Context optimizer (80%+ total reduction via intent analysis)
 
-**Skill renamed** for clarity:
-- **Old:** `feature-planner` (ambiguous)
-- **New:** `increment-planner` (precise)
+**Result**: Scale from 10 to 1000+ page specs without context bloat.
 
-**Why:** "Feature" is overloaded (can mean module, capability, or increment). "Increment" is unambiguous and matches SpecWeave's core concept.
+#### 🧪 **4-Level Testing Strategy**
 
-**Migration:** Automatic (skill auto-detects and activates)
+1. **Specification** - TC-0001 acceptance criteria (technology-agnostic)
+2. **Feature** - Test coverage matrix in `tests.md`
+3. **Skill** - Minimum 3 YAML test cases (MANDATORY)
+4. **Code** - E2E (Playwright), Unit, Integration tests
 
-### 🐛 **Bug Fixes**
+#### 🏗️ **Brownfield Support**
 
-- Fixed E2E smoke test to match install script behavior
-- Fixed arithmetic expressions that return 0 with `set -e`
-- Fixed validation rules for increment frontmatter
-- Fixed context manifest loading for nested specifications
-- Improved error reporting in install scripts
+Safe modification workflow:
+1. Analyze existing code → retroactive specs
+2. Generate regression tests
+3. User reviews tests
+4. Implement with safety net
 
-### 📚 **Documentation Updates**
+---
 
-- Updated CLAUDE.md with multi-tool adapter guidance
-- Updated SPECWEAVE.md with 4-digit increment convention
-- Updated increment lifecycle guide
-- Updated increment validation guide
-- Added adapter-specific documentation
+### 🆚 SpecWeave vs Other Frameworks
+
+#### vs **spec-kit** (GitHub)
+
+| Feature | SpecWeave | spec-kit |
+|---------|-----------|----------|
+| **Context Management** | ✅ 70-80% reduction | ❌ Loads all |
+| **Multi-Agent** | ✅ 9 agents | ❌ Commands only |
+| **Brownfield** | ✅ Analyzer | ⚠️ Manual |
+| **Testing** | ✅ 4 levels | ⚠️ TDD only |
+| **Skills** | ✅ 32+ extensible | ⚠️ Fixed |
+| **AI Tools** | ⚠️ Claude-focused | ✅ 14+ tools |
+
+**SpecWeave Wins**: Context precision, enterprise scale, brownfield, automation
+**spec-kit Wins**: Agent-agnostic
+
+#### vs **BMAD-METHOD**
+
+| Feature | SpecWeave | BMAD |
+|---------|-----------|------|
+| **Context** | ✅ Manifests | ❌ Always-loaded |
+| **Brownfield** | ✅ Analyzer | ⚠️ Manual |
+| **Skills** | ✅ 32+ skills | ⚠️ Fixed |
+| **Workflow** | ✅ Continuous | ⚠️ Two-phase |
+| **Quality Gates** | ⚠️ v0.2.0 | ✅ @qa *gate |
+
+**SpecWeave Wins**: Context precision, brownfield, continuous workflow
+**BMAD Wins**: Formal QA gates (coming in v0.2.0!)
+
+---
+
+### 🎯 Unique Benefits
+
+1. **Context Precision** - 70-80%+ token reduction
+2. **Enterprise Scale** - 1000+ page specs
+3. **Brownfield Ready** - Retroactive specs, regression prevention
+4. **Test-Validated** - 4-level testing
+5. **Framework-Agnostic** - ANY tech stack
+6. **Flexible Docs** - Comprehensive OR incremental
+7. **Auto-Routing** - >90% skill routing accuracy
+8. **Living Docs** - Hooks auto-update
+9. **Multi-Tool** - Claude, Cursor, Generic
 
 ---
 
@@ -610,36 +654,56 @@ cd my-saas
 
 ---
 
-### 🗺️ **Roadmap** (Post-Beta)
+### 🗺️ **Roadmap**
 
-**v0.1.0-beta.2** (Next Week):
-- Fix critical bugs from beta.1 feedback
-- Complete INSTALL.md guide
-- Add more project templates
-- Improve CLI error handling
-- Add `audit` and `cleanup` commands
+**v0.2.0** (Q1 2026) - **Focus: Skills, Context, Testing**
 
-**v0.2.0** (Q4 2025):
-- Quality gates (inspired by BMAD @qa *gate)
-- Risk scoring (inspired by BMAD @qa *risk)
-- Clarification workflow (inspired by spec-kit /speckit.clarify)
-- Dependency tracking in tasks (inspired by spec-kit)
-- Template system (optional)
-- Test importer (import existing tests)
+**New Skills:**
+- Advanced testing skills (contract testing, performance testing, mutation testing)
+- Cloud providers (AWS, Azure, DigitalOcean provisioners)
+- Design tools (Sketch, Penpot connectors)
+- Database migration tools (Prisma, TypeORM, Alembic)
+- Monitoring integrations (Datadog, New Relic, Sentry)
 
-**v0.3.0** (Q1 2026):
-- Agent-agnostic support (Copilot, Cursor, Gemini, etc.)
-- Web UI for planning phase (inspired by BMAD)
-- Multi-language CLI (Python, Go, Rust support)
-- VS Code extension
+**Context Management Improvements:**
+- Third-pass optimization (90%+ token reduction)
+- Adaptive context loading (adjusts based on task type: bug fix vs feature vs refactor)
+- Context caching (repeated queries use cached specs)
+- Incremental context updates (only load changed sections)
+- Context impact analysis (show what will be loaded before loading)
+
+**Testing Enhancements:**
+- Visual regression testing (Percy, Chromatic integration)
+- Chaos engineering integration (Gremlin, Chaos Monkey)
+- Test generation from specs (auto-create tests from TC-0001 criteria)
+- Contract testing (Pact integration for microservices)
+- Load testing skills (k6, Artillery, Locust)
+- Test importer (import existing tests to `.specweave/tests/`)
+
+**Inspired by BMAD:**
+- Quality gates (@qa *gate, @qa *risk)
+- Risk scoring system (structured assessment)
+
+**Inspired by spec-kit:**
+- Clarification workflow (/speckit.clarify)
+- Dependency tracking in tasks
+
+**v0.3.0** (Q2 2026) - **Focus: Multi-Tool, Web UI**
+
+- Enhanced agent-agnostic support (more AI tools)
+- Web UI for planning phase (visual spec creation)
+- VS Code extension (inline SpecWeave commands)
 - GitHub App for automated sync
+- Real-time collaboration features
 
-**v1.0.0** (Q2 2026):
-- Production-ready
+**v1.0.0** (Q3 2026) - **Focus: Production-Ready**
+
 - Complete documentation
 - Full test coverage (>90%)
 - Performance optimizations
 - Enterprise features (SSO, audit trails, compliance)
+- SLA guarantees
+- Professional support options
 
 ---
 
@@ -663,19 +727,19 @@ MIT License - see LICENSE file
 
 ### 🔗 **Links**
 
-- **Repository**: https://github.com/specweave/specweave
-- **Issues**: https://github.com/specweave/specweave/issues
-- **Documentation**: https://specweave.github.io/specweave (coming soon)
-- **Discussions**: https://github.com/specweave/specweave/discussions
+- **Website**: https://spec-weave.com/
+- **Repository**: https://github.com/anton-abyzov/specweave
+- **Issues**: https://github.com/anton-abyzov/specweave/issues
+- **Discussions**: https://github.com/anton-abyzov/specweave/discussions
 
 ---
 
 ### 🐛 **Bug Reports & Feedback**
 
-This is a **beta release** - we expect bugs and welcome feedback!
+This is the **first stable release** - we welcome feedback!
 
 **How to report:**
-1. Check existing issues: https://github.com/specweave/specweave/issues
+1. Check existing issues: https://github.com/anton-abyzov/specweave/issues
 2. Create new issue with:
    - SpecWeave version (`specweave --version`)
    - Node.js version (`node --version`)
@@ -685,7 +749,7 @@ This is a **beta release** - we expect bugs and welcome feedback!
    - Error messages (if any)
 
 **Feature requests:**
-- Open discussion: https://github.com/specweave/specweave/discussions
+- Open discussion: https://github.com/anton-abyzov/specweave/discussions
 - Tag with `enhancement`
 - Explain use case and benefits
 
@@ -693,11 +757,12 @@ This is a **beta release** - we expect bugs and welcome feedback!
 
 ### 🚀 **What's Next?**
 
-1. **Install SpecWeave**: `npm install -g specweave`
-2. **Create your first project**: `specweave init my-saas`
-3. **Join the community**: https://github.com/specweave/specweave/discussions
-4. **Share your experience**: Write articles, create tutorials, build projects
-5. **Contribute**: PRs welcome! See CONTRIBUTING.md (coming soon)
+1. **Visit the website**: https://spec-weave.com/
+2. **Install SpecWeave**: `npm install -g specweave`
+3. **Create your first project**: `specweave init my-saas`
+4. **Join the community**: https://github.com/anton-abyzov/specweave/discussions
+5. **Share your experience**: Write articles, create tutorials, build projects
+6. **Contribute**: PRs welcome! See CONTRIBUTING.md (coming soon)
 
 ---
 
