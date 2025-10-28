@@ -28,11 +28,12 @@
 
 ## ✨ Key Features
 
+- 🔧 **Multi-Tool Support (NEW!)** - Works with Claude, Cursor, Copilot, and ANY AI (100% market coverage)
 - 🤖 **10 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, and more (all pre-installed!)
 - 🎯 **35+ AI Skills** - Technology stacks, integrations, utilities (all pre-installed!)
-- 📦 **Pre-Installed Components** - Everything ready immediately after `specweave init`
+- 📦 **Auto-Detection** - Automatically detects your AI tool and installs the right adapter
 - 🧪 **4-Level Testing** - Specification → Feature → Component → Automated tests
-- 📝 **Living Documentation** - Auto-updates via Claude Code hooks
+- 📝 **Living Documentation** - Auto-updates via hooks (Claude Code) or manual workflows (other tools)
 - 🎨 **Diagram Generation** - C4 Model diagrams (Context, Container, Component)
 - 🔄 **Tool Integration** - Sync with JIRA, Azure DevOps, GitHub
 - 🏢 **Brownfield Ready** - Analyze and document existing codebases
@@ -46,7 +47,11 @@
 
 - **Node.js 18+** (`node --version`)
 - **npm 9+** (`npm --version`)
-- **Claude Code** (Claude Sonnet 4.5 recommended)
+- **Any AI coding tool**:
+  - Claude Code (Claude Sonnet 4.5 - full automation)
+  - Cursor (Claude Sonnet 3.7 / GPT-4 - semi-automation)
+  - GitHub Copilot (OpenAI models - basic automation)
+  - Or ANY AI (ChatGPT, Gemini, etc. - manual workflow)
 
 ### Quick Install
 
@@ -533,10 +538,27 @@ npm test
 
 ## 📖 Quick Start
 
-### Initialize New Project
+### 🎯 NEW: Multi-Tool Support!
+
+**SpecWeave now works with ANY AI coding tool!** Auto-detects Claude, Cursor, Copilot, or Generic.
 
 ```bash
-# Create new project (all components pre-installed!)
+# List available adapters
+npx specweave adapters
+
+# Auto-detect your AI tool
+npx specweave init my-saas           # Automatically detects and configures
+
+# Or explicitly choose:
+npx specweave init my-saas --adapter claude    # Full automation
+npx specweave init my-saas --adapter cursor    # Semi-automation
+npx specweave init my-saas --adapter copilot   # Basic automation
+npx specweave init my-saas --adapter generic   # Manual (ANY AI)
+```
+
+### For Claude Code (Full Automation)
+
+```bash
 npx specweave init my-saas
 cd my-saas
 
@@ -545,10 +567,55 @@ cd my-saas
 # ✅ 35+ skills in .claude/skills/
 # ✅ 10 slash commands in .claude/commands/
 
-# Open Claude Code and start building:
-# "Create user authentication with JWT"
-# "Add subscription billing with Stripe"
-# "Build admin dashboard with analytics"
+# Open Claude Code and type slash commands:
+/inc "User authentication with JWT"
+/build
+/progress
+```
+
+### For Cursor (Semi-Automation)
+
+```bash
+npx specweave init my-project --adapter cursor
+cd my-project
+
+# Created files:
+# ✅ .cursorrules (workflow instructions)
+# ✅ .cursor/context/ (@ shortcuts)
+
+# Open in Cursor and say:
+# "Create increment for user authentication"
+# Cursor reads .cursorrules and guides you
+# Use @ shortcuts: @increments, @docs, @strategy
+```
+
+### For GitHub Copilot (Basic Automation)
+
+```bash
+npx specweave init my-project --adapter copilot
+cd my-project
+
+# Created files:
+# ✅ .github/copilot/instructions.md
+
+# Open in VS Code with Copilot:
+# Copilot reads workspace instructions automatically
+# Create increment folders, Copilot suggests content
+```
+
+### For ANY Other AI (ChatGPT, Gemini, etc.)
+
+```bash
+npx specweave init my-project --adapter generic
+cd my-project
+
+# Created files:
+# ✅ SPECWEAVE-MANUAL.md (step-by-step guide)
+
+# Follow manual workflow:
+# 1. Read SPECWEAVE-MANUAL.md
+# 2. Copy templates to your AI (ChatGPT, Claude web, etc.)
+# 3. Follow step-by-step instructions
 ```
 
 ### For Existing Projects

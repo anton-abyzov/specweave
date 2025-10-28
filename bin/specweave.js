@@ -23,6 +23,8 @@ program
   .command('init [project-name]')
   .description('Initialize a new SpecWeave project')
   .option('-t, --template <type>', 'Project template (saas, api, fullstack)', 'saas')
+  .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
+  .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
   .action(async (projectName, options) => {
     const { initCommand } = require('../dist/cli/commands/init');
     await initCommand(projectName, options);
@@ -59,17 +61,35 @@ program
     await listCommand(options);
   });
 
+// Adapters command - List available adapters
+program
+  .command('adapters')
+  .description('List available AI tool adapters')
+  .action(async () => {
+    const { AdapterLoader } = require('../dist/adapters/adapter-loader');
+    const loader = new AdapterLoader();
+    await loader.listAdapters();
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
   console.log('Examples:');
-  console.log('  $ specweave init my-saas                    # Create new project');
+  console.log('  $ specweave init my-saas                    # Create new project (auto-detect tool)');
+  console.log('  $ specweave init my-saas --adapter cursor   # Create project for Cursor');
+  console.log('  $ specweave adapters                        # List available AI tool adapters');
   console.log('  $ specweave install pm --local              # Install PM agent locally');
   console.log('  $ specweave install --global                # Install all (interactive)');
   console.log('  $ specweave list                            # List all available components');
   console.log('  $ specweave list --installed                # Show installed components');
   console.log('');
-  console.log('For more information, visit: https://github.com/specweave/specweave');
+  console.log('Supported AI Tools:');
+  console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
+  console.log('  - Cursor (semi-automation) - .cursorrules, @ shortcuts');
+  console.log('  - GitHub Copilot (basic) - Workspace instructions');
+  console.log('  - Generic (manual) - Works with ANY AI (ChatGPT, Gemini, etc.)');
+  console.log('');
+  console.log('For more information, visit: https://spec-weave.com');
 });
 
 // Parse arguments

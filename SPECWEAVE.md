@@ -2,18 +2,38 @@
 
 **THIS FILE IS YOUR QUICK REFERENCE GUIDE**
 
-**Note**: `CLAUDE.md` symlink exists for backward compatibility and points to this file.
+**Note**: `CLAUDE.md` exists in ALL SpecWeave projects as the SOURCE OF TRUTH, regardless of which AI tool you use.
 
 This file contains quick reference for developing with SpecWeave:
 - Core principles and project structure
 - Quick reference tables (agents, skills, commands)
 - Links to detailed guides (loaded on-demand by agents)
+- **NEW**: Multi-tool adapter system (works with Claude, Cursor, Copilot, and ANY AI!)
 
 **For detailed workflows**: See `.specweave/docs/internal/delivery/guides/`
 
+**For tool-specific instructions**: See adapter files (.cursorrules, .github/copilot/instructions.md, etc.)
+
 ---
 
-## Using SpecWeave with Slash Commands (CRITICAL)
+## 🎯 Which Adapter Are You Using?
+
+**SpecWeave works with ANY AI coding tool!** Execution differs by adapter:
+
+| Your Tool | Adapter | Workflow |
+|-----------|---------|----------|
+| **Claude Code** | Full automation | Use slash commands as documented below (`/inc`, `/build`, etc.) |
+| **Cursor** | Semi-automation | Read `.cursorrules` for how to simulate skills/agents |
+| **GitHub Copilot** | Basic automation | Copilot reads workspace instructions automatically |
+| **Other (ChatGPT, Gemini, etc.)** | Manual | Follow `SPECWEAVE-MANUAL.md` step-by-step guide |
+
+**This CLAUDE.md file is universal** - concepts apply to all tools, but execution methods differ.
+
+---
+
+## Using SpecWeave with Slash Commands (Claude Code)
+
+**NOTE**: These slash commands work natively ONLY in Claude Code. For other tools, see adapter-specific instructions.
 
 **IMPORTANT**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive detection!
 
@@ -197,15 +217,56 @@ your-project/
 
 ---
 
+## Multi-Tool Support (NEW!)
+
+**SpecWeave now works with ANY AI coding tool!**
+
+### Auto-Detection
+
+SpecWeave automatically detects your AI tool and installs the appropriate adapter:
+
+```bash
+npx specweave init my-project       # Auto-detects: Claude, Cursor, Copilot, or Generic
+```
+
+### Explicit Adapter Selection
+
+```bash
+npx specweave init my-project --adapter claude    # Full automation
+npx specweave init my-project --adapter cursor    # Semi-automation
+npx specweave init my-project --adapter copilot   # Basic automation
+npx specweave init my-project --adapter generic   # Manual (ANY AI tool)
+```
+
+### Adapter Comparison
+
+| Adapter | Automation | AI Tool | Features |
+|---------|------------|---------|----------|
+| **Claude** | Full | Claude Code | Native skills, agents, hooks, slash commands |
+| **Cursor** | Semi | Cursor | .cursorrules, @ shortcuts, Composer |
+| **Copilot** | Basic | GitHub Copilot | Workspace instructions, better suggestions |
+| **Generic** | Manual | ANY (ChatGPT, Gemini, etc.) | Step-by-step guide, 100% compatible |
+
+### List Available Adapters
+
+```bash
+npx specweave adapters              # Show all adapters with details
+```
+
+**Market Coverage**: 100% - works with Claude (10%), Cursor (30%), Copilot (40%), and ANY other tool (20%)!
+
+---
+
 ## Installation
 
 **Initialize New Project**:
 ```bash
-npx specweave init                  # Auto-detects tech stack
-npx specweave init --type python    # Specify tech stack
+npx specweave init                  # Auto-detects AI tool AND tech stack
+npx specweave init --adapter cursor # Use Cursor adapter explicitly
+npx specweave init --tech-stack python # Specify tech stack
 ```
 
-**Selective Installation** (Recommended for user projects):
+**Selective Installation** (For Claude Code):
 ```bash
 npx specweave install --detect      # Install only relevant agents/skills
 npx specweave install pm --local    # Install specific component
@@ -214,7 +275,11 @@ npx specweave list --installed      # See what's installed
 
 **Token Savings**: 60-71% reduction vs installing all components!
 
-**Required Model**: Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`)
+**Recommended Models**:
+- Claude Code: Claude Sonnet 4.5 (`claude-sonnet-4-5-20250929`)
+- Cursor: Claude Sonnet 3.7 or GPT-4
+- Copilot: GitHub Copilot (uses OpenAI models)
+- Generic: Any LLM (ChatGPT, Claude web, Gemini, etc.)
 
 **See**: [Installation Guide](#) for complete installation instructions
 

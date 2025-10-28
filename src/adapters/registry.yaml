@@ -32,7 +32,7 @@ adapters:
     directory: cursor
     features:
       - .cursorrules with SpecWeave workflow instructions
-      - @ context shortcuts (@increments, @docs, @strategy)
+      - "@ context shortcuts (@increments, @docs, @strategy)"
       - Composer multi-file editing support
       - Good experience, semi-automated
     requirements:
