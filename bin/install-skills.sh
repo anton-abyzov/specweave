@@ -38,7 +38,9 @@ for skill in "$SKILLS_SRC"/*; do
     # Check if skill has SKILL.md
     if [ -f "$skill/SKILL.md" ]; then
       echo "  🔧 Installing skill: $skill_name"
-      cp -r "$skill" "$SKILLS_DEST/$skill_name"
+      # Create destination directory and copy contents (not the folder itself)
+      mkdir -p "$SKILLS_DEST/$skill_name"
+      cp -r "$skill"/* "$SKILLS_DEST/$skill_name/"
       skill_count=$((skill_count + 1))
     else
       echo "  ⚠️  Skipping $skill_name (no SKILL.md)"

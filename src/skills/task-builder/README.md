@@ -14,7 +14,7 @@ Converts high-level spec.md (user stories, epics, capabilities) into detailed ta
 
 ## When It Activates
 
-- After feature-planner creates increment
+- After increment-planner creates increment
 - After spec.md is created
 - User says "create tasks for this feature"
 - User says "break down implementation"
@@ -71,7 +71,7 @@ export class StripeService {
 
 ## Integration
 
-- Called by: feature-planner (after spec.md created)
+- Called by: increment-planner (after spec.md created)
 - Calls: docs-updater (to update documentation)
 - Output: tasks.md in .specweave/increments/####-feature/
 

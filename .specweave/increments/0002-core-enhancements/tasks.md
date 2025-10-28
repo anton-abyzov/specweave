@@ -206,7 +206,7 @@ Create YAML test cases in `src/skills/diagrams-generator/test-cases/`:
 - Move to `diagrams-architect/AGENT.md` system prompt
 - Extract Mermaid syntax examples
 - Move to agent prompt or references/
-- Keep simplified reference in `.specweave/docs/DIAGRAM-CONVENTIONS.md`
+- Keep focused reference in `.specweave/docs/internal/delivery/guides/diagram-conventions.md`
 
 **Result**:
 - Agent has complete knowledge
@@ -259,7 +259,7 @@ Create `.specweave/increments/0002-diagram-agents/context-manifest.yaml`:
 ```yaml
 ---
 spec_sections:
-  - .specweave/docs/DIAGRAM-CONVENTIONS.md
+  - .specweave/docs/internal/delivery/guides/diagram-conventions-comprehensive.md
   - CLAUDE.md#agents-vs-skills-architecture
   - CLAUDE.md#c4-diagram-conventions
 

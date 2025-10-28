@@ -155,7 +155,7 @@ jobs:
 
             **Context**: Issue #${{ github.event.issue.number }}
 
-            **Use feature-planner skill** to create:
+            **Use increment-planner skill** to create:
             1. .specweave/increments/0001-feature-name/ (auto-numbered)
             2. spec.md, plan.md, tasks.md, tests.md, context-manifest.yaml
             3. Branch: increment/0001-feature-name

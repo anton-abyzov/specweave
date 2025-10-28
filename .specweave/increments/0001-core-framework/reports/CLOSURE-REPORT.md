@@ -75,7 +75,7 @@
 1. ✅ `specweave-detector` - Auto-detect projects
 2. ✅ `skill-router` - Request routing
 3. ✅ `context-loader` - Context manifests
-4. ✅ `feature-planner` - Feature planning
+4. ✅ `increment-planner` - Feature planning
 5. ✅ `role-orchestrator` - Multi-agent workflows
 
 **Infrastructure** (2/2):

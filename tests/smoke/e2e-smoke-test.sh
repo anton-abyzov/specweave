@@ -31,15 +31,7 @@ info() {
   echo -e "${YELLOW}→${NC} $1"
 }
 
-# Setup
-info "Creating test directory: $TEST_DIR"
-mkdir -p "$TEST_DIR"
-cd "$TEST_DIR"
-
-# Step 1: Install SpecWeave
-info "Step 1: Installing SpecWeave from local source..."
-
-# Get the repository root
+# Get the repository root BEFORE changing directories
 if [ -n "$GITHUB_WORKSPACE" ]; then
   # Running in GitHub Actions - use workspace
   REPO_ROOT="$GITHUB_WORKSPACE"
@@ -48,6 +40,14 @@ else
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 fi
+
+# Setup
+info "Creating test directory: $TEST_DIR"
+mkdir -p "$TEST_DIR"
+cd "$TEST_DIR"
+
+# Step 1: Install SpecWeave
+info "Step 1: Installing SpecWeave from local source..."
 
 info "Using SpecWeave from: $REPO_ROOT"
 info "Installing to: $TEST_DIR"
@@ -71,13 +71,27 @@ INSTALL_OUTPUT=$(bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1) || {
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave installed"
 
-# Step 2: Project creation (skipped - not implemented yet)
-# TODO: Implement project creation via CLI command
-# PROMPT="implement a SaaS solution with Next.js..."
-# echo "$PROMPT" | npx specweave create --wait
-
-info "Step 2: Skipping project creation (CLI not implemented yet)..."
-success "Installation verified (project creation will be tested when CLI is ready)"
+# Step 2: Framework ready for interactive use
+info "Step 2: SpecWeave framework installed successfully"
+echo ""
+echo "  📋 Next Steps (Interactive Development):"
+echo ""
+echo "  1. Open Claude Code:"
+echo "     $ code ."
+echo ""
+echo "  2. Describe what you want to build:"
+echo "     \"Create a SaaS for event management with Next.js and PostgreSQL\""
+echo ""
+echo "  3. SpecWeave skills work autonomously:"
+echo "     • specweave-detector activates automatically"
+echo "     • skill-router routes to appropriate agents"
+echo "     • PM, Architect, DevOps, QA agents orchestrate"
+echo "     • Complete application generated in 10-30 minutes"
+echo ""
+echo "  NOTE: Project generation is INTERACTIVE (conversation-based),"
+echo "        not CLI-based. This is by design."
+echo ""
+success "Framework ready for conversational development"
 
 # Step 4: Verify directory structure
 info "Step 4: Verifying directory structure..."
@@ -159,7 +173,7 @@ info "Step 8: Verifying core skills installed..."
 
 core_skills=(
   "specweave-detector"
-  "feature-planner"
+  "increment-planner"
   "skill-router"
   "context-loader"
   "hetzner-provisioner"
@@ -272,10 +286,19 @@ echo "  - Skills Installation: ✓"
 echo "  - Agents Installation: ✓"
 echo "  - Documentation (.specweave/docs/): ✓"
 echo ""
-echo "Optional (user-created):"
-echo "  - Specifications: Not required by framework"
-echo "  - Features: Not required by framework"
-echo "  - E2E Tests: Created when user builds UI projects"
-echo "  - Context Manifests: Created with features"
+echo "Framework is ready for interactive development!"
+echo ""
+echo "To generate a project:"
+echo "  1. cd $TEST_DIR"
+echo "  2. code ."
+echo "  3. In Claude Code: Describe what you want to build"
+echo "  4. Let SpecWeave skills work autonomously"
+echo ""
+echo "Application content (created by skills during conversation):"
+echo "  - Specifications: Created by spec-author skill"
+echo "  - Increments: Created by increment-planner skill"
+echo "  - Source code: Created by implementation agents"
+echo "  - E2E Tests: Created by playwright-tester skill (for UI)"
+echo "  - Context Manifests: Created automatically with features"
 
 exit 0

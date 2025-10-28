@@ -1,0 +1,110 @@
+site_name: SpecWeave Internal Docs
+site_description: Internal documentation for SpecWeave framework developers
+site_author: SpecWeave Core Team
+site_url: http://localhost:8001
+
+# INTERNAL documentation only (.specweave/docs/internal/)
+# This site runs locally for framework developers
+docs_dir: .specweave/docs/internal
+
+# Serve on different port than public docs
+dev_addr: 127.0.0.1:8001
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep-purple
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep-purple
+      accent: deep-purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.integrate
+
+  icon:
+    repo: fontawesome/brands/github
+
+  logo: ../../docs-site/static/img/logo.svg
+  favicon: ../../docs-site/static/img/logo.svg
+
+nav:
+  - Home: README.md
+  
+  - Strategy:
+    - Overview: strategy/index.md
+    # Add strategy docs as they're created
+    
+  - Architecture:
+    - Overview: architecture/index.md
+    # Add architecture docs as they're created
+    
+  - Delivery:
+    - Overview: delivery/index.md
+    # Add delivery docs as they're created
+    
+  - Operations:
+    - Overview: operations/index.md
+    # Add operations docs as they're created
+    
+  - Governance:
+    - Overview: governance/index.md
+    # Add governance docs as they're created
+
+plugins:
+  - search:
+      lang: en
+  - mermaid2
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - tables
+
+extra:
+  version:
+    provider: mike
+
+copyright: Copyright &copy; 2025 SpecWeave Contributors - Internal Documentation
+
+# Distinguish from public docs
+extra_css:
+  - stylesheets/internal.css

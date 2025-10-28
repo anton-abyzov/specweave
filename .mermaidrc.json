@@ -1,0 +1,71 @@
+{
+  "theme": "default",
+  "themeVariables": {
+    "primaryColor": "#e1f5ff",
+    "primaryTextColor": "#000",
+    "primaryBorderColor": "#0288d1",
+    "lineColor": "#666",
+    "secondaryColor": "#fff3e0",
+    "tertiaryColor": "#f3e5f5",
+    "background": "#fff",
+    "mainBkg": "#fff",
+    "secondBkg": "#f5f5f5",
+    "mainContrastColor": "#000",
+    "darkMode": false,
+    "fontFamily": "\"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+    "fontSize": "14px"
+  },
+  "flowchart": {
+    "htmlLabels": true,
+    "curve": "basis",
+    "padding": 15,
+    "nodeSpacing": 50,
+    "rankSpacing": 50,
+    "useMaxWidth": true,
+    "defaultRenderer": "dagre-wrapper"
+  },
+  "sequence": {
+    "diagramMarginX": 50,
+    "diagramMarginY": 10,
+    "actorMargin": 50,
+    "width": 150,
+    "height": 65,
+    "boxMargin": 10,
+    "boxTextMargin": 5,
+    "noteMargin": 10,
+    "messageMargin": 35,
+    "mirrorActors": true,
+    "useMaxWidth": true
+  },
+  "gantt": {
+    "titleTopMargin": 25,
+    "barHeight": 20,
+    "barGap": 4,
+    "topPadding": 50,
+    "leftPadding": 75,
+    "gridLineStartPadding": 35,
+    "fontSize": 11,
+    "fontFamily": "\"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+    "numberSectionStyles": 4,
+    "axisFormat": "%Y-%m-%d",
+    "useMaxWidth": true
+  },
+  "class": {
+    "useMaxWidth": true
+  },
+  "state": {
+    "useMaxWidth": true
+  },
+  "er": {
+    "useMaxWidth": true
+  },
+  "pie": {
+    "useMaxWidth": true
+  },
+  "git": {
+    "useMaxWidth": true
+  },
+  "C4Context": {
+    "useMaxWidth": true
+  }
+}

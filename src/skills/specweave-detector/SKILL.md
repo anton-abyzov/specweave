@@ -47,8 +47,8 @@ User: "I want to add payment processing"
 # Behind the scenes:
 # 1. specweave-detector intercepts request
 # 2. Parses request: "add feature" + "payment processing"
-# 3. Routes to: feature-planner skill
-# 4. feature-planner creates Feature 002
+# 3. Routes to: increment-planner skill
+# 4. increment-planner creates Feature 002
 # 5. Returns result to user
 
 # User sees:
@@ -61,7 +61,7 @@ User: "I want to add payment processing"
 
 | User Says | Request Type | Route To |
 |-----------|--------|----------|
-| "Plan a feature for..." | feature_planning | `feature-planner` |
+| "Plan a feature for..." | feature_planning | `increment-planner` |
 | "Load context for..." | context_loading | `context-loader` |
 | "Document this code..." | documentation | `docs-updater` |
 | "Create a spec for..." | specification | `spec-author` |
@@ -74,7 +74,7 @@ User: "I want to add payment processing"
 **Example**: "Create and implement a new payment feature"
 
 **Request Breakdown**:
-1. Create feature → `feature-planner`
+1. Create feature → `increment-planner`
 2. Implement code → Load context via `context-loader`
 3. Implement code → `developer`
 4. Generate tests → `qa-engineer`
@@ -88,7 +88,7 @@ specweave-detector parses: CREATE + IMPLEMENT + FEATURE + PAYMENT
     ↓
 Orchestrate nested skills:
     ↓
-feature-planner: Create 003-payment-processing/
+increment-planner: Create 003-payment-processing/
     ↓
 context-loader: Load specs/modules/payments/**
     ↓
@@ -171,7 +171,7 @@ Some skills must run sequentially:
 User: "Plan and implement feature 001"
     ↓
 Sequential execution:
-1. feature-planner: Create plan (MUST complete first)
+1. increment-planner: Create plan (MUST complete first)
 2. context-loader: Load relevant specs (uses plan output)
 3. developer: Implement (uses loaded context)
 
@@ -191,7 +191,7 @@ developer: ERROR - Feature 005 not found
     ↓
 specweave-detector: Catch error, suggest:
 "Feature 005 doesn't exist. Would you like to:
-1. Create it first (feature-planner)
+1. Create it first (increment-planner)
 2. List existing features
 3. Implement a different feature"
 ```
@@ -241,7 +241,7 @@ User: "What can SpecWeave do?"
 specweave-detector: List installed skills
 
 SpecWeave Skills:
-✅ feature-planner - Plan implementation features
+✅ increment-planner - Plan implementation features
 ✅ context-loader - Selective specification loading
 ✅ skill-router - Route ambiguous intents
 📦 spec-author - Create specifications (install with: npx specweave install spec-author)
@@ -262,7 +262,7 @@ Custom Skills:
 1. Parse Request: BUILD + FEATURE + REAL_TIME_CHAT
    Request: feature_creation + complex_feature
 
-2. Route to feature-planner:
+2. Route to increment-planner:
    Input: "Real-time chat feature"
    Output: features/004-realtime-chat/
            - spec.md (5 user stories)
@@ -307,9 +307,9 @@ Always inform user which skill is being activated:
 ```
 🔷 SpecWeave Active
 
-Routing to feature-planner skill to create your payment feature...
+Routing to increment-planner skill to create your payment feature...
 
-[feature-planner output]
+[increment-planner output]
 ```
 
 ### 2. Confirm Complex Operations
@@ -320,7 +320,7 @@ For multi-step operations, confirm before proceeding:
 You want to "create and implement a payment feature".
 
 This will:
-1. Create Feature 003 (feature-planner)
+1. Create Feature 003 (increment-planner)
 2. Load relevant specs (context-loader)
 3. Implement code (developer)
 4. Generate tests (qa-engineer)
@@ -352,7 +352,7 @@ Track routing decisions to improve accuracy:
 logRoutingDecision({
   userInput: "Add Stripe payments",
   parsedRequest: "feature_creation + payments",
-  routedTo: "feature-planner",
+  routedTo: "increment-planner",
   wasCorrect: true, // User feedback
   timestamp: Date.now()
 });
@@ -382,13 +382,13 @@ if (specweaveDetectorActive()) {
 ### TC-002: Route Simple Request
 - Given: User says "Plan a feature for authentication"
 - When: specweave-detector parses request
-- Then: Routes to feature-planner
-- And: feature-planner creates Feature 00X
+- Then: Routes to increment-planner
+- And: increment-planner creates Feature 00X
 
 ### TC-003: Route Complex Request
 - Given: User says "Create and implement payment feature"
 - When: specweave-detector parses request
-- Then: Orchestrates: feature-planner → context-loader → developer → qa-engineer → docs-updater
+- Then: Orchestrates: increment-planner → context-loader → developer → qa-engineer → docs-updater
 - And: All steps complete successfully
 
 ### TC-004: Handle Ambiguous Request

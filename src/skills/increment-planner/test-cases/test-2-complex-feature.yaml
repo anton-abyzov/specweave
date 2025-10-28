@@ -1,0 +1,30 @@
+---
+name: "Complex Feature with Multiple User Stories"
+description: "Tests feature planning for a complex feature with multiple priorities"
+input:
+  prompt: "Plan a feature for Stripe payment integration including subscriptions, one-time payments, and webhooks"
+  files: []
+expected_output:
+  type: "files_generated"
+  files:
+    - "features/002-stripe-payment-integration/spec.md"
+    - "features/002-stripe-payment-integration/plan.md"
+    - "features/002-stripe-payment-integration/tasks.md"
+    - "features/002-stripe-payment-integration/tests.md"
+    - "features/002-stripe-payment-integration/context-manifest.yaml"
+  contains:
+    - "US1"
+    - "US2"
+    - "US3"
+    - "P1"
+    - "P2"
+    - "Stripe"
+    - "subscriptions"
+    - "webhooks"
+validation:
+  - "Multiple user stories with different priorities"
+  - "P1/P2/P3 prioritization present"
+  - "tasks.md organized by user story"
+  - "tests.md has integration tests"
+  - "context-manifest.yaml references payment specs"
+---

@@ -1,0 +1,9 @@
+---
+name: "Detect Diagram Request"
+description: "Tests if diagrams-generator activates for diagram creation"
+input:
+  prompt: "Create C4 context diagram"
+expected_output:
+  skill_activated: true
+  agent_invoked: "diagrams-architect"
+---

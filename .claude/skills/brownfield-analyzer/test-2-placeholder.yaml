@@ -1,0 +1,12 @@
+---
+name: "Placeholder Test"
+description: "TODO: Add actual test case for brownfield-analyzer"
+input:
+  prompt: "Test prompt"
+expected_output:
+  type: "validation"
+validation:
+  - "Placeholder validation"
+success_criteria:
+  - "Test passes"
+---

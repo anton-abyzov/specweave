@@ -88,7 +88,7 @@ taskmaster/
 │   ├── commands/
 │   └── skills/
 │       ├── specweave-detector/
-│       ├── feature-planner/
+│       ├── increment-planner/
 │       ├── skill-router/
 │       ├── context-loader/
 │       ├── spec-author/
@@ -433,7 +433,7 @@ OAuth can be a separate feature.
 
 **Claude Response:**
 ```
-The feature-planner skill is creating an implementation plan...
+The increment-planner skill is creating an implementation plan...
 
 ✅ Created features/001-user-authentication/
 ✅ Created features/001-user-authentication/spec.md

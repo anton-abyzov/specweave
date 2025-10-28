@@ -1,0 +1,48 @@
+---
+name: "Basic Brownfield Analysis"
+description: "Tests if brownfield-analyzer can scan a simple project and classify documents"
+input:
+  prompt: "Analyze the project at /sample/project with docs/ and wiki/ folders"
+  files:
+    - path: "/sample/project/docs/requirements.md"
+      content: |
+        # Product Requirements
+        ## User Story
+        As a user, I want to log in so I can access my account.
+        ## Acceptance Criteria
+        - User can log in with email and password
+    - path: "/sample/project/docs/architecture.md"
+      content: |
+        # System Architecture
+        ## Components
+        - API Gateway
+        - Auth Service
+        - Database
+    - path: "/sample/project/wiki/runbook.md"
+      content: |
+        # API Server Runbook
+        ## Procedures
+        ### Restart Service
+        1. Stop service
+        2. Wait 30 seconds
+        3. Start service
+expected_output:
+  type: "analysis_report"
+  contains:
+    - "Brownfield Analysis Report"
+    - "PRD candidates: 1"
+    - "HLD candidates: 1"
+    - "Runbook candidates: 1"
+    - "docs/requirements.md → docs/internal/strategy/prd-"
+    - "docs/architecture.md → docs/internal/architecture/hld-"
+    - "wiki/runbook.md → docs/internal/operations/runbook-"
+validation:
+  - "Report generated successfully"
+  - "All 3 documents classified correctly"
+  - "Migration plan included"
+  - "Effort estimate provided"
+success_criteria:
+  - "Analysis report contains all sections"
+  - "Document classifications are correct"
+  - "Migration plan is actionable"
+---

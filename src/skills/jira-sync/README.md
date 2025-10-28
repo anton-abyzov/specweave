@@ -311,7 +311,7 @@ jira-sync:
 ## Integration with Other Skills
 
 - **task-builder**: Reads JIRA structure from spec.md
-- **feature-planner**: Can specify structure: jira
+- **increment-planner**: Can specify structure: jira
 
 ## Future Enhancements
 

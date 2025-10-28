@@ -135,6 +135,60 @@ agents:
   # Agents receive detected tech stack automatically
   pass_tech_stack: true
 
+# Role orchestrator configuration
+role_orchestrator:
+  enabled: true
+
+  # Orchestration strategy
+  default_pattern: sequential_with_gates  # or "parallel" or "adaptive"
+
+  # Quality gates
+  require_user_approval:
+    - architecture_decisions
+    - deployment_to_production
+
+  require_automated_approval:
+    - test_coverage: ">80%"
+    - security_scan: "no_critical"
+
+  # Feedback loop configuration (auto-refinement)
+  feedback_loops:
+    enabled: true              # Enable auto-refinement
+    max_retries: 3             # Max refinement attempts per agent
+    stop_on_improvement: true  # Stop if score improves significantly
+    require_user_approval: false  # Auto-refine without asking
+
+    # Quality thresholds per agent
+    thresholds:
+      pm_agent: 0.80           # Requirements quality
+      architect_agent: 0.80    # Design quality
+      qa_lead_agent: 0.75      # Test coverage + quality
+
+    # Which agents use feedback loops
+    agents:
+      - pm_agent
+      - architect_agent
+      - qa_lead_agent
+      # Not applicable for implementation agents (code is validated by tests)
+
+    # Validation strategy
+    validation:
+      use_llm_judge: true      # Use increment-quality-judge
+      combine_with_rules: true # Combine with rule-based checks
+      judge_weight: 0.5        # 50% LLM judge, 50% rules
+
+  # Agent preferences (for tech stack selection)
+  preferred_backend: nodejs-backend   # or python-backend, dotnet-backend
+  preferred_frontend: frontend        # or nextjs
+
+  # Timeouts
+  phase_timeout_minutes: 30
+  total_timeout_hours: 8
+
+  # Monitoring
+  progress_updates_interval: 5min
+  store_metrics: true
+
 # Testing (framework-agnostic)
 testing:
   e2e_required: true       # Mandatory E2E tests when UI exists
@@ -162,6 +216,64 @@ context:
   max_tokens: 10000           # Max tokens per context load
   auto_refresh: false         # Auto-refresh context when specs change
   cache_enabled: true         # Cache embeddings for faster loading
+
+# Context optimizer (second-pass optimization, 80%+ total reduction)
+context_optimizer:
+  enabled: true
+  auto_optimize: true         # Auto-run after context-loader
+  min_context_tokens: 20000   # Only optimize if context > 20k tokens
+  min_confidence: 0.75        # Skip if intent analysis confidence < 75%
+  show_removals: true         # Show what was removed
+  buffer_strategy: conservative  # conservative or aggressive
+
+  # Custom domains (project-specific)
+  custom_domains: []
+    # - "real-time-chat"
+    # - "analytics"
+    # - "reporting"
+
+  # Always keep (never remove)
+  always_keep:
+    - "architecture/README.md"
+    - "CLAUDE.md"
+
+# Validation configuration
+validation:
+  # Rule-based validation (120 rules, always enabled)
+  rule_based:
+    enabled: true
+    rules_count: 120
+
+  # LLM-as-judge quality assessment (optional, uses ~2k tokens)
+  quality_judge:
+    enabled: true             # Enable feature
+    auto_prompt: true         # Prompt user after rule-based validation
+    always_run: false         # Run automatically without prompting
+
+    # Scoring thresholds
+    thresholds:
+      excellent: 90           # ✓✓ (90-100)
+      good: 80                # ✓  (80-89)
+      acceptable: 70          # ~  (70-79)
+      needs_work: 0           # ⚠️ (0-69)
+
+    # Which dimensions to evaluate
+    dimensions:
+      clarity: true
+      testability: true
+      completeness: true
+      feasibility: true
+      maintainability: true
+      edge_cases: true
+
+    # Token budget
+    max_tokens: 2000          # Limit for quality check
+
+    # Auto-export suggestions
+    export_to_tasks: true     # Add suggestions to tasks.md
+
+    # Confidence threshold
+    min_confidence: 0.80      # Show warning if lower
 
 # Integrations (framework-agnostic)
 integrations:
@@ -207,7 +319,7 @@ skills:
     - skill-router
     - role-orchestrator
     - context-loader
-    - feature-planner
+    - increment-planner
 
   infrastructure:
     - hetzner-provisioner      # If platform=hetzner

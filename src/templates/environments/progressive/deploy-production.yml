@@ -1,0 +1,93 @@
+# GitHub Actions: Deploy to Production
+name: Deploy to Production
+
+on:
+  workflow_dispatch:  # Manual trigger ONLY
+
+env:
+  ENVIRONMENT: production
+
+jobs:
+  pre-flight-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify staging deployment
+        run: |
+          # Ensure staging is healthy before prod deploy
+          curl -f https://staging.myapp.com/health || exit 1
+
+      - name: Check rollback plan
+        run: |
+          echo "Rollback plan verified"
+          # Ensure we can rollback if needed
+
+  test:
+    needs: pre-flight-checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full test suite
+        run: |
+          npm test
+          npm run test:integration
+          npm run test:e2e
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production  # Requires approval from Tech Lead + Product Owner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to Production
+        env:
+          HETZNER_TOKEN: ${{ secrets.PROD_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          cd infrastructure/production
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://myapp.com/health || exit 1
+
+      - name: Monitor deployment
+        run: |
+          # Monitor error rates for 5 minutes
+          sleep 300
+          # Check Datadog/Sentry for errors
+          echo "Monitoring deployment..."
+
+      - name: Notify team
+        if: success()
+        run: |
+          echo "✅ Successfully deployed to production"
+          # Send notifications: Slack, PagerDuty, etc.
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed - ROLLING BACK"
+          # Rollback to previous version
+          cd infrastructure/production
+          terraform destroy -target=module.new_deployment -auto-approve

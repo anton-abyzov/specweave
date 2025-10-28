@@ -1,0 +1,95 @@
+---
+name: "Basic Quality Assessment - Good Spec"
+description: "Evaluate a well-written specification with clear acceptance criteria"
+skill: increment-quality-judge
+priority: P1
+estimated_time: "2-3 minutes"
+
+input:
+  prompt: "Assess the quality of the authentication spec"
+  spec_content: |
+    # Authentication Feature
+
+    ## Overview
+    Implement JWT-based authentication with refresh tokens for secure user access.
+
+    ## Acceptance Criteria
+    - AC-001: User can log in with email/password, receiving JWT token within 2 seconds
+    - AC-002: JWT token expires after 1 hour, requires refresh
+    - AC-003: Failed login attempts (>5) lock account for 15 minutes
+    - AC-004: Password must be 8+ characters with uppercase, lowercase, number, special char
+
+    ## Security
+    - Passwords hashed with bcrypt (cost factor: 12)
+    - JWTs signed with RS256 (private key rotation every 90 days)
+    - Rate limiting: 5 login attempts per 15 minutes per IP
+
+    ## Performance
+    - Login latency: p95 < 500ms, p99 < 1000ms
+    - Concurrent logins: Support 100 logins/second
+
+    ## Error Handling
+    - Invalid credentials: Return 401 with error code AUTH_001
+    - Account locked: Return 403 with error code AUTH_002
+    - Rate limit exceeded: Return 429 with retry-after header
+
+expected_output:
+  overall_score: 0.85-0.95
+  score_range: "excellent"  # 85-100
+
+  dimension_scores:
+    clarity:
+      min: 0.90
+      rationale: "Clear problem statement, well-defined objectives"
+
+    testability:
+      min: 0.90
+      rationale: "All acceptance criteria measurable with specific metrics"
+
+    completeness:
+      min: 0.85
+      rationale: "Functional and non-functional requirements covered"
+
+    feasibility:
+      min: 0.85
+      rationale: "Realistic timeline and technical constraints"
+
+    maintainability:
+      min: 0.80
+      rationale: "Good structure, some room for modularity improvement"
+
+    edge_cases:
+      min: 0.85
+      rationale: "Error scenarios and rate limiting specified"
+
+  issues_found:
+    count: 0-2
+    severity_breakdown:
+      critical: 0
+      major: 0
+      minor: 0-2
+
+  suggestions:
+    count: 0-3
+    priority_breakdown:
+      high: 0-1
+      medium: 0-2
+      low: 0-1
+
+  confidence: 0.85-0.95
+
+validation:
+  - "Overall score >= 0.85"
+  - "Clarity dimension >= 0.90"
+  - "Testability dimension >= 0.90"
+  - "No critical or major issues"
+  - "Confidence >= 0.85"
+  - "All 6 dimensions evaluated"
+
+success_criteria:
+  - "Score reflects high-quality specification"
+  - "Detailed dimension breakdown provided"
+  - "Minimal or no issues found"
+  - "High confidence in assessment"
+  - "Clear rationale for each dimension"
+---

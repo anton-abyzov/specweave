@@ -13,7 +13,34 @@ You are helping the user bootstrap a new project with SpecWeave.
    - "What's your project name?" (e.g., "my-saas")
    - "Where to create it?" (default: current directory)
 
-2. **Create project directory structure**:
+2. **Ask about environment strategy** (for deployment planning):
+
+Use the `AskUserQuestion` tool to gather environment strategy:
+
+```
+Question 1: "How many environments will your project need?"
+Header: "Environments"
+MultiSelect: false
+
+Options:
+A) Minimal (1 env: production only)
+   Description: Ship fast, add environments later. Deploy directly to production. Good for MVPs and quick prototypes.
+
+B) Standard (3 envs: dev, staging, prod)
+   Description: Recommended for most projects. Test in staging before production. Balanced approach.
+
+C) Progressive (4-5 envs: dev, qa, staging, prod)
+   Description: For growing teams. Dedicated QA and testing environments. More validation gates.
+
+D) Not sure yet
+   Description: Skip environment configuration for now. You can configure this later when you're ready to deploy.
+```
+
+**Based on user's answer**, populate the `environments` section in config.yaml (see step 5 below).
+
+**If user chooses "Not sure yet"**, leave environment config commented out with examples.
+
+3. **Create project directory structure**:
 
 ```
 my-saas/
@@ -76,6 +103,8 @@ chmod +x .claude/hooks/*.sh
 
 5. **Create `.specweave/config.yaml`**:
 
+**If user chose "Minimal" environment strategy**:
+
 ```yaml
 ---
 # SpecWeave Configuration
@@ -83,6 +112,17 @@ project:
   name: my-saas
   version: 0.1.0
   created: 2025-10-26
+
+# Environment Configuration
+environments:
+  strategy: "minimal"
+  definitions:
+    - name: "production"
+      purpose: "Live application"
+      deployment:
+        type: "cloud"
+        provider: ""  # Will ask when user requests deployment
+        region: ""
 
 # Hooks configuration
 hooks:
@@ -131,6 +171,138 @@ integrations:
     enabled: false
   ado:
     enabled: false
+---
+```
+
+**If user chose "Standard" environment strategy**:
+
+```yaml
+---
+# SpecWeave Configuration
+project:
+  name: my-saas
+  version: 0.1.0
+  created: 2025-10-26
+
+# Environment Configuration
+environments:
+  strategy: "standard"
+  definitions:
+    - name: "development"
+      purpose: "Local development and testing"
+      deployment:
+        type: "local"
+        target: "docker-compose"
+
+    - name: "staging"
+      purpose: "Pre-production validation"
+      deployment:
+        type: "cloud"
+        provider: ""  # Will ask when user requests deployment
+        region: ""
+      promotion_from: "development"
+
+    - name: "production"
+      purpose: "Live user traffic"
+      deployment:
+        type: "cloud"
+        provider: ""  # Will ask when user requests deployment
+        region: ""
+      promotion_from: "staging"
+      requires_approval: true
+
+# (rest of config same as above)
+---
+```
+
+**If user chose "Progressive" environment strategy**:
+
+```yaml
+---
+# SpecWeave Configuration
+project:
+  name: my-saas
+  version: 0.1.0
+  created: 2025-10-26
+
+# Environment Configuration
+environments:
+  strategy: "progressive"
+  definitions:
+    - name: "development"
+      purpose: "Local development"
+      deployment:
+        type: "local"
+        target: "docker-compose"
+
+    - name: "qa"
+      purpose: "QA team testing"
+      deployment:
+        type: "cloud"
+        provider: ""
+        region: ""
+      promotion_from: "development"
+
+    - name: "staging"
+      purpose: "Pre-production (mirrors prod)"
+      deployment:
+        type: "cloud"
+        provider: ""
+        region: ""
+      promotion_from: "qa"
+
+    - name: "production"
+      purpose: "Live users"
+      deployment:
+        type: "cloud"
+        provider: ""
+        region: ""
+      promotion_from: "staging"
+      requires_approval: true
+
+# (rest of config same as above)
+---
+```
+
+**If user chose "Not sure yet"**:
+
+```yaml
+---
+# SpecWeave Configuration
+project:
+  name: my-saas
+  version: 0.1.0
+  created: 2025-10-26
+
+# Environment Configuration (commented - configure when ready to deploy)
+# Uncomment and configure when you're ready to deploy
+# See: .specweave/docs/internal/delivery/guides/environment-strategy.md
+#
+# environments:
+#   strategy: "standard"  # minimal | standard | progressive | enterprise
+#   definitions:
+#     - name: "development"
+#       purpose: "Local development"
+#       deployment:
+#         type: "local"
+#         target: "docker-compose"
+#
+#     - name: "staging"
+#       purpose: "Pre-production testing"
+#       deployment:
+#         type: "cloud"
+#         provider: "hetzner"  # hetzner | railway | vercel | aws
+#         region: "eu-central"
+#
+#     - name: "production"
+#       purpose: "Live traffic"
+#       deployment:
+#         type: "cloud"
+#         provider: "hetzner"
+#         region: "eu-central"
+#       requires_approval: true
+
+# (rest of config same as above)
 ---
 ```
 

@@ -60,7 +60,7 @@ npx specweave install --detect
 ### 3. Context Manifests
 
 ```yaml
-# .specweave/increments/001-auth/context-manifest.yaml
+# .specweave/increments/0001-auth/context-manifest.yaml
 spec_sections:
   - .specweave/docs/internal/strategy/auth/
 documentation:

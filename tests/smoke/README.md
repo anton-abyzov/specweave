@@ -1,87 +1,145 @@
 # SpecWeave E2E Smoke Tests
 
-Comprehensive smoke tests that validate SpecWeave's ability to generate complete, production-ready projects from natural language prompts.
+Validates SpecWeave framework installation and readiness for **interactive conversational development**.
 
 ## Purpose
 
-These smoke tests verify that SpecWeave can:
+These smoke tests verify that SpecWeave framework:
 
-1. **Install cleanly** in any environment
-2. **Generate complete projects** from natural language
-3. **Produce proper structure** (specs, features, code, tests)
-4. **Create working code** that builds and passes tests
-5. **Include all required components** (E2E tests, deployment config, integrations)
+1. **Installs cleanly** in any environment
+2. **Creates proper structure** (.specweave/, .claude/, config files)
+3. **Installs core skills** correctly (specweave-detector, skill-router, etc.)
+4. **Installs core agents** correctly (PM, Architect, DevOps, QA, etc.)
+5. **Is ready for interactive use** (conversation-based development)
+
+## ⚠️ IMPORTANT: SpecWeave Architecture
+
+**SpecWeave is a CONVERSATIONAL framework, not a CLI code generator.**
+
+**How it works:**
+1. **Install** framework → `npx specweave init` or `./install.sh`
+2. **Open** Claude Code → `code .`
+3. **Describe** what you want → Natural language conversation
+4. **Skills work autonomously** → specweave-detector routes to agents
+5. **Complete project generated** → 10-30 minutes
+
+**What smoke test validates:**
+✅ **Step 1 (Installation)** - Framework installs correctly
+❌ **Steps 2-5 (Conversation)** - Requires interactive Claude Code session
+
+**Why Steps 2-5 aren't tested:**
+- No CLI command for project generation (by design)
+- Works through Claude Code conversations
+- Cannot be automated via bash scripts
+- Tested through actual usage
 
 ## Test Levels
 
-### Level 1: Installation Smoke Test (30 seconds)
+### Level 1: Framework Installation Test (5 seconds) ✅ AUTOMATED
 
-**Purpose**: Verify basic installation
+**Purpose**: Verify SpecWeave framework installation
 
 **What it tests**:
-- Clean folder → `npx specweave init` → Verify structure
+- Clean folder → `./install.sh` → Verify structure
 - `.specweave/` folder created
-- Core skills installed
-- Core agents installed
+- Core skills installed (specweave-detector, skill-router, context-loader, etc.)
+- Core agents installed (PM, Architect, DevOps, QA, etc.)
 - Config file valid
+- CLAUDE.md created
+- Hooks installed and executable
 
-**Run**: Part of `e2e-smoke-test.sh`
+**Run**: `./tests/smoke/e2e-smoke-test.sh` ✅ **PASSES**
+
+**Duration**: ~5 seconds
 
 ---
 
-### Level 2: Simple Project Smoke Test (2 minutes)
+### Level 2: Interactive Project Generation (10-30 minutes) ❌ MANUAL ONLY
 
-**Purpose**: Verify basic project generation
+**Purpose**: Validate project generation through conversation
 
 **What it tests**:
-- Initialize SpecWeave
-- Simple prompt: "Create a todo app with Next.js"
-- Verify basic structure (specs, features, src, tests)
-- Verify builds and runs
+- Framework detects .specweave/ automatically
+- specweave-detector activates proactively
+- skill-router routes requests correctly
+- Agents orchestrate autonomously
+- Complete project generated
+- Tests exist and pass
+- Build succeeds
 
-**Run**: `./tests/smoke/simple-smoke-test.sh` (TODO)
+**Run**: **Manual testing only** (requires Claude Code conversation)
+
+**Process**:
+1. `cd` to installed project
+2. `code .` (open Claude Code)
+3. Describe project: "Create event booking SaaS with Next.js..."
+4. Wait 10-30 minutes
+5. Verify generated project
+
+**Why not automated**: SpecWeave works through Claude Code conversations, not CLI commands
 
 ---
 
-### Level 3: Complex Project Smoke Test (5-10 minutes)
+### Level 3: Manual Acceptance Test (30 minutes) 👤 MANUAL
 
-**Purpose**: Validate complete SaaS generation (production-ready)
+**Purpose**: End-to-end validation with real usage
 
 **What it tests**:
-- Complex prompt with multiple integrations
-- Example: Event management SaaS with Next.js, Stripe, Hetzner deployment
-- Comprehensive validation (see below)
+- Installation → Configuration → Development → Testing → Deployment
+- Real user workflow
+- UX and documentation quality
+- Generated code quality
 
-**Run**: `./tests/smoke/e2e-smoke-test.sh`
+**Run**: See [Manual Testing Guide](#manual-testing-guide) below
 
 ---
 
-## What We Validate
+## What We Validate (Automated Smoke Test)
 
-### Structure Validation
+### ✅ Framework Installation (Automated)
 
-✅ **Required Directories** (Framework components):
+**Required Directories:**
 - `.specweave/` - Framework configuration
 - `.specweave/docs/` - Framework documentation
-- `.specweave/increments/` - Incremental changes (starts with init, then 0001, 0002, etc.)
-- `.claude/skills/` - Installed skills
-- `.claude/agents/` - Installed agents
+- `.specweave/increments/` - Incremental development folder
+- `.claude/skills/` - Installed skills (8+ skills)
+- `.claude/agents/` - Installed agents (14+ agents)
+- `.claude/hooks/` - Automation hooks
+- `.claude/commands/` - Slash commands
 
-✅ **Required Files** (Framework components):
-- `CLAUDE.md` - Development guide
-- `README.md` - Project documentation
-- `.specweave/config.yaml` - Configuration
+**Required Files:**
+- `CLAUDE.md` - Development guide (from template)
+- `.gitignore` - Standard ignores
+- `.specweave/config.yaml` - Framework configuration
 
-📝 **Optional Directories** (User-created content):
-- `specifications/` - Business requirements (created by users)
-- `features/` - Implementation plans (created by users)
-- `src/` - Source code (created by users)
-- `tests/` - Test suite (created by users)
-- `tests/e2e/` - E2E tests (created for UI projects)
+**Skills Installed:**
+- `specweave-detector` - Auto-detection and routing
+- `skill-router` - Request routing
+- `context-loader` - Context management
+- `increment-planner` - Feature planning
+- `hetzner-provisioner` - Deployment (Hetzner)
+- And more...
 
-📝 **Optional Files** (User-created content):
-- `package.json` - Dependencies and scripts (created by users)
-- `specifications/overview.md` - System overview (created by users)
+**Agents Installed:**
+- `pm` - Product Manager
+- `architect` - System Architect
+- `devops` - DevOps Engineer
+- `qa-lead` - QA Lead
+- `nextjs` - Next.js Specialist
+- And more...
+
+---
+
+### 📝 Application Content (Created During Conversation)
+
+**NOT validated by automated smoke test** (created during interactive Claude Code session):
+
+- `specifications/` - Created by spec-author skill
+- `src/` or `app/` - Created by implementation agents
+- `tests/` - Created by testing agents
+- `package.json` - Created during project setup
+- `prisma/` or database schemas - Created as needed
+- Deployment configs - Created by DevOps agent
 
 ---
 
@@ -114,7 +172,7 @@ These smoke tests verify that SpecWeave can:
 
 ✅ **Skills installed correctly**:
 - `specweave-detector` - Auto-detection
-- `feature-planner` - Feature planning
+- `increment-planner` - Feature planning
 - `skill-router` - Request routing
 - `context-loader` - Context management
 - `hetzner-provisioner` - Deployment (for Hetzner scenarios)
@@ -476,17 +534,146 @@ GitHub Actions workflow includes performance benchmarking:
 
 ---
 
-## Future Enhancements
+## Manual Testing Guide
 
-- [ ] Add more test scenarios (GraphQL API, mobile app, etc.)
-- [ ] Visual regression testing (Percy, Chromatic)
-- [ ] Performance profiling (Lighthouse, WebPageTest)
-- [ ] Security scanning (OWASP ZAP, Snyk)
-- [ ] Accessibility testing (axe-core, Pa11y)
-- [ ] Load testing (k6, Artillery)
-- [ ] Multi-cloud deployment testing (AWS, GCP, Azure)
+Since SpecWeave is conversation-based, comprehensive testing requires manual interaction with Claude Code.
+
+### Quick Manual Smoke Test (15 minutes)
+
+**Prerequisites:**
+- SpecWeave repository cloned
+- Node.js 18+ installed
+- Claude Code installed
+
+**Steps:**
+
+1. **Install Framework**
+   ```bash
+   ./install.sh /tmp/specweave-manual-test-$(date +%s)
+   cd /tmp/specweave-manual-test-*
+   ```
+
+2. **Verify Installation**
+   ```bash
+   # Check structure
+   ls -la .specweave/
+   ls -la .claude/skills/
+   ls -la .claude/agents/
+   cat CLAUDE.md | head -20
+   ```
+
+3. **Open Claude Code**
+   ```bash
+   code .
+   ```
+
+4. **Test Conversation (in Claude Code)**
+
+   **Prompt:**
+   ```
+   Create a simple todo app with Next.js 14.
+
+   Requirements:
+   - Add, edit, delete todos
+   - Local storage persistence
+   - Minimal UI
+
+   Work autonomously using SpecWeave skills.
+   Generate proper structure and tests.
+   ```
+
+5. **Wait and Observe**
+   - Watch skills activate automatically
+   - Observe specweave-detector routing
+   - See agents orchestrate
+   - Duration: ~10 minutes
+
+6. **Verify Results**
+   ```bash
+   # Check generated structure
+   ls -la .specweave/increments/
+
+   # Check if code was generated
+   ls -la app/ 2>/dev/null || ls -la src/ 2>/dev/null
+
+   # Check if tests exist
+   ls -la tests/ 2>/dev/null
+
+   # Try to build
+   npm install
+   npm run build
+
+   # Try to test
+   npm test
+   ```
+
+7. **Success Criteria**
+   - ✅ Skills activated automatically
+   - ✅ Increments created in .specweave/increments/
+   - ✅ Application code generated
+   - ✅ Tests created
+   - ✅ `npm run build` succeeds
+   - ✅ `npm test` passes
+
+### Extended Manual Test (30 minutes)
+
+Use the same process but with a more complex prompt:
+
+```
+Create an event management SaaS with Next.js 14 and PostgreSQL.
+
+Features:
+- Calendar view for event booking
+- User authentication (email + OAuth)
+- Payment processing with Stripe
+- Admin dashboard
+- Deploy to Hetzner Cloud
+
+Requirements:
+- Work autonomously using SpecWeave skills
+- Generate proper Playwright E2E tests
+- Create complete working application
+- Include deployment configuration
+```
+
+**Additional verification:**
+- ✅ Multiple increments created
+- ✅ Database schema exists (Prisma)
+- ✅ Stripe integration code present
+- ✅ Hetzner deployment config (Terraform/Pulumi)
+- ✅ E2E tests exist and pass
+- ✅ Complete authentication flow
 
 ---
 
-**Last Updated**: 2025-01-26
+## Architecture Documentation
+
+For complete architecture details, see:
+- [CLAUDE.md](../../CLAUDE.md) - Complete development guide
+- [SpecWeave Architecture](../../.specweave/docs/internal/architecture/) - System design
+- [Skills Documentation](../../src/skills/) - Individual skill specs
+
+---
+
+## Future Enhancements
+
+**Automated Testing:**
+- [ ] GitHub Actions workflow for manual test scheduling
+- [ ] Test result reporting to GitHub Issues
+- [ ] Performance benchmarking of conversation workflow
+
+**Manual Testing:**
+- [ ] Test scenarios library (GraphQL API, mobile app, etc.)
+- [ ] Checklist templates for manual testing
+- [ ] Video recordings of successful tests
+
+**Quality Assurance:**
+- [ ] Visual regression testing (Percy, Chromatic) for generated UIs
+- [ ] Security scanning (OWASP ZAP, Snyk) for generated code
+- [ ] Accessibility testing (axe-core, Pa11y) for generated UIs
+- [ ] Load testing (k6, Artillery) for generated APIs
+
+---
+
+**Last Updated**: 2025-10-27
 **Maintained By**: SpecWeave Team

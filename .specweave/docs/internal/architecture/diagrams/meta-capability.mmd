@@ -1,0 +1,57 @@
+graph TB
+    subgraph "Layer 1: SpecWeave Framework (The Factory)"
+        SW[SpecWeave Core]
+        SW_Agents["20 Core Agents<br/>(pm, architect, devops, etc.)"]
+        SW_Skills["24 Core Skills<br/>(increment-planner, context-loader, etc.)"]
+        SW_Increments["Framework Increments<br/>(001-core-framework)"]
+
+        SW --> SW_Agents
+        SW --> SW_Skills
+        SW --> SW_Increments
+    end
+
+    subgraph "Layer 2: User Projects (Using SpecWeave)"
+        UP[User Project]
+        UP_Increments["User Increments<br/>(auth, payments, calendar, etc.)"]
+        UP_Specs["Specifications<br/>(WHAT/WHY)"]
+        UP_Code["Production Code<br/>(Implementation)"]
+
+        UP --> UP_Increments
+        UP_Increments --> UP_Specs
+        UP_Specs --> UP_Code
+    end
+
+    subgraph "Layer 3: Custom Extensions (Agents Build Agents)"
+        Custom_Agents["Custom Agents<br/>(stripe-integration, company-api, etc.)"]
+        Custom_Skills["Custom Skills<br/>(domain-validator, custom-linter, etc.)"]
+        Custom_Tools["Custom Tools<br/>(generators, validators, etc.)"]
+
+        Custom_Agents -.->|"used by"| UP_Increments
+        Custom_Skills -.->|"used by"| UP_Increments
+        Custom_Tools -.->|"used by"| UP_Code
+    end
+
+    %% Meta-capability arrows (the recursive magic)
+    SW_Agents -->|"can create"| Custom_Agents
+    SW_Skills -->|"can create"| Custom_Skills
+    SW_Agents -->|"build"| UP_Specs
+    SW_Agents -->|"implement"| UP_Code
+    SW -->|"uses itself to build"| SW_Increments
+
+    %% User control
+    User[👤 User in Control]
+    User -->|"controls"| SW
+    User -->|"controls"| UP
+    User -->|"controls"| Custom_Agents
+    User -->|"controls"| Custom_Skills
+
+    %% Styling
+    classDef framework fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
+    classDef userProject fill:#fff4e1,stroke:#ff9900,stroke-width:2px
+    classDef custom fill:#f0e1ff,stroke:#9900ff,stroke-width:2px
+    classDef meta fill:#e1ffe1,stroke:#00cc66,stroke-width:3px
+
+    class SW,SW_Agents,SW_Skills,SW_Increments framework
+    class UP,UP_Increments,UP_Specs,UP_Code userProject
+    class Custom_Agents,Custom_Skills,Custom_Tools custom
+    class User meta

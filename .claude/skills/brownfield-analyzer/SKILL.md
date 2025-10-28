@@ -513,7 +513,7 @@ brownfield:
 ## Related Documentation
 
 - [BROWNFIELD-INTEGRATION-STRATEGY.md](../../../docs/internal/delivery/BROWNFIELD-INTEGRATION-STRATEGY.md)
-- [TOOL-CONCEPT-MAPPING.md](../../../docs/TOOL-CONCEPT-MAPPING.md)
+- [Tool Concept Mapping](../../../docs/internal/delivery/guides/tool-concept-mapping.md)
 - [increment-metadata-template.yaml](../../../templates/increment-metadata-template.yaml)
 
 ---

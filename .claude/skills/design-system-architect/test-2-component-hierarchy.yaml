@@ -1,0 +1,24 @@
+---
+name: "Component Hierarchy Validation"
+description: "Test validation of Atomic Design hierarchy"
+input:
+  components:
+    atoms:
+      - "Button"
+      - "Input"
+    molecules:
+      - "FormField"
+    organisms:
+      - "Navigation"
+expected_output:
+  type: "validation_result"
+  valid: true
+  hierarchy_correct: true
+validation:
+  - "Atoms are smallest components"
+  - "Molecules compose atoms"
+  - "Organisms compose molecules/atoms"
+success_criteria:
+  - "Hierarchy follows Atomic Design"
+  - "No circular dependencies"
+---

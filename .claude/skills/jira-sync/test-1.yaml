@@ -1,0 +1,9 @@
+---
+name: "Detect JIRA Sync Request"
+description: "Tests if jira-sync skill activates when user requests JIRA sync"
+input:
+  prompt: "Sync increment 0001 to JIRA"
+expected_output:
+  skill_activated: true
+  agent_invoked: "specweave-jira-mapper"
+---

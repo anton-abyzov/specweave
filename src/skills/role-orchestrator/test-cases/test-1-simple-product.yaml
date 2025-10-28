@@ -36,7 +36,7 @@ expected_behavior:
 
       - phase: 3
         name: "Feature Planning"
-        agent: "feature-planner"
+        agent: "increment-planner"
         output_files:
           - "features/001-todo-app/spec.md"
           - "features/001-todo-app/plan.md"

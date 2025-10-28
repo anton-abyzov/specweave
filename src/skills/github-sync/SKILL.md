@@ -248,5 +248,5 @@ SpecWeave Release Plan: docs/internal/delivery/release-v1.0.md
 
 ## Related Documentation
 
-- [TOOL-CONCEPT-MAPPING.md](../../../docs/TOOL-CONCEPT-MAPPING.md)
+- [Tool Concept Mapping](../../../docs/internal/delivery/guides/tool-concept-mapping.md)
 - [jira-sync/SKILL.md](../jira-sync/SKILL.md) - Similar sync pattern

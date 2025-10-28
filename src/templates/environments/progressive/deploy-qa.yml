@@ -1,0 +1,62 @@
+# GitHub Actions: Deploy to QA
+name: Deploy to QA
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  ENVIRONMENT: qa
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: qa  # GitHub environment
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to QA
+        env:
+          HETZNER_TOKEN: ${{ secrets.QA_HETZNER_TOKEN }}
+          DATABASE_URL: ${{ secrets.QA_DATABASE_URL }}
+        run: |
+          cd infrastructure/qa
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://qa.myapp.com/health || exit 1
+
+      - name: Notify QA team
+        if: success()
+        run: |
+          echo "✅ Deployed to QA - ready for testing"
+          # Send Slack notification to QA channel

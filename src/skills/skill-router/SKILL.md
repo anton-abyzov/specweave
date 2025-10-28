@@ -53,7 +53,7 @@ interface UserIntent {
 const skillMap = {
   // Core planning and specification
   'create + spec': 'spec-author',
-  'create + plan': 'feature-planner',
+  'create + plan': 'increment-planner',
   'create + architecture': 'architect-agent',
 
   // Implementation
@@ -153,7 +153,7 @@ skill-router analyzes:
   Complexity: moderate
   Confidence: 0.95
     ↓
-Route to: feature-planner (direct)
+Route to: increment-planner (direct)
     ↓
 No clarification needed
 ```
@@ -173,14 +173,14 @@ Needs clarification
     ↓
 Present options:
   1. spec-author (create spec)
-  2. feature-planner (plan feature)
+  2. increment-planner (plan feature)
   3. architect-agent (design architecture)
   4. nodejs-backend (implement)
   5. security-agent (PCI compliance)
     ↓
 User selects: 2
     ↓
-Route to: feature-planner
+Route to: increment-planner
 ```
 
 ### Multi-Skill Routing (Complex Request)
@@ -257,8 +257,8 @@ When multiple skills could handle a request, use priority:
 
 | Context | Priority Order |
 |---------|---------------|
-| **New Product/Feature** | pm-agent → architect-agent → feature-planner → implementation |
-| **Brownfield Modification** | brownfield-analyzer → feature-planner → implementation |
+| **New Product/Feature** | pm-agent → architect-agent → increment-planner → implementation |
+| **Brownfield Modification** | brownfield-analyzer → increment-planner → implementation |
 | **Bug Fix** | tech-lead-agent → implementation → qa-engineer |
 | **Performance Issue** | performance-agent → tech-lead-agent → implementation |
 | **Security Issue** | security-agent → implementation → qa-engineer |
@@ -322,7 +322,7 @@ Clarification:
   "I see you want to integrate Stripe for subscriptions.
 
   Would you like to:
-  1. Plan the integration (feature-planner)
+  1. Plan the integration (increment-planner)
   2. Design the architecture (architect-agent)
   3. Start implementation (nodejs-backend)
 
@@ -330,7 +330,7 @@ Clarification:
 
 User: "Yes, plan it first"
 
-Route to: feature-planner
+Route to: increment-planner
 ```
 
 ### Example 2: Performance Optimization
@@ -431,7 +431,7 @@ If 5+ consecutive routings have confidence < 0.50:
 - Given: "Create a plan for Stripe payment integration"
 - When: skill-router parses request
 - Then: Confidence > 0.90
-- And: Routes to feature-planner without clarification
+- And: Routes to increment-planner without clarification
 
 **TC-002: Low Confidence Clarification**
 - Given: "Help with auth"
@@ -456,9 +456,9 @@ If 5+ consecutive routings have confidence < 0.50:
 
 **TC-005: Learning from Feedback**
 - Given: User rejects routing 3 times for "help with payments"
-- When: User always selects "feature-planner"
+- When: User always selects "increment-planner"
 - Then: Pattern learned
-- And: Future "help with payments" routes to feature-planner
+- And: Future "help with payments" routes to increment-planner
 - And: Confidence increases
 
 ## Resources
