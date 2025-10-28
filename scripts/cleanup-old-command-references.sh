@@ -24,9 +24,6 @@ replace_in_files() {
 # Replace command references in markdown files
 echo "📝 Updating command references in .md files..."
 
-# /create-project removed - use specweave init CLI
-# (no replacement needed, should be removed or replaced with CLI command)
-
 # /inc → /specweave inc (be careful with /inc)
 replace_in_files '`/inc "' '`/specweave inc "' "*.md"
 replace_in_files '`/inc' '`/specweave inc' "*.md"

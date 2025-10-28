@@ -190,7 +190,6 @@ function handleSpecweaveCommand(rawInput) {
     'done': 'specweave-done.md',
     'progress': 'specweave-progress.md',
     'validate': 'specweave-validate.md',
-    # 'create-project' removed - use specweave init CLI
     'sync-github': 'specweave-sync-github.md',
     'sync-docs': 'specweave-sync-docs.md'
   };
@@ -353,7 +352,6 @@ If you have code/docs referencing old commands:
 /done             → /specweave done
 /progress         → /specweave progress
 /validate         → /specweave validate
-/create-project   → # Use: specweave init my-project (CLI command)
 /sync-github      → /specweave sync-github
 /sync-docs        → /specweave sync-docs
 ```

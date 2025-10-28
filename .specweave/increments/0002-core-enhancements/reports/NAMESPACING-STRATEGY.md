@@ -74,7 +74,6 @@ Result: ❌ COLLISION
 | `/done` | `/specweave done` |
 | `/progress` | `/specweave progress` |
 | `/validate` | `/specweave validate` |
-| `specweave init` | `/specweave create-project` |
 | `/sync-github` | `/specweave sync-github` |
 | `/sync-docs` | `/specweave sync-docs` |
 
@@ -264,7 +263,6 @@ done
 **Usage**:
 ```bash
 # Automatic (detects project type)
-/specweave create-project
 
 # Manual
 bash scripts/install-brownfield.sh
@@ -348,7 +346,6 @@ echo "✅ Restored build.md from backup"
 
 ```bash
 # Step 1: Install
-/specweave create-project
 # → ✅ Installed in 5 seconds
 
 # Step 2: Start work
@@ -368,7 +365,6 @@ echo "✅ Restored build.md from backup"
 
 ```bash
 # Step 1: Install
-/specweave create-project
 # → ⚠️  Brownfield detected
 # → 📦 Backing up your files...
 # → ✅ Installed without conflicts
@@ -524,7 +520,6 @@ Choose: _
 #### TC1: Greenfield Installation
 ```bash
 # Setup: Empty project (no .claude/)
-/specweave create-project
 
 # Verify:
 assert_dir_exists ".claude/commands"
@@ -535,7 +530,6 @@ assert_file_exists ".specweave/config.yaml"
 #### TC2: Brownfield Installation (No Conflicts)
 ```bash
 # Setup: Project with .claude/commands/custom.md
-/specweave create-project
 
 # Verify:
 assert_file_exists ".claude/commands/custom.md"           # Preserved
@@ -546,7 +540,6 @@ assert_dir_exists ".claude/commands.backup-*"             # Backup created
 #### TC3: Brownfield Installation (Name Collision)
 ```bash
 # Setup: Project with .claude/commands/specweave-inc.md (user's)
-/specweave create-project
 
 # Verify:
 assert_file_exists ".claude/commands.backup-*/specweave-inc.md"  # Backed up
@@ -672,7 +665,6 @@ conflicts: []
 
 2. **Installation**:
    - Added `scripts/install-brownfield.sh`
-   - Added `.claude/commands/specweave-create-project.md`
 
 3. **Documentation**:
    - This file (NAMESPACING-STRATEGY.md)

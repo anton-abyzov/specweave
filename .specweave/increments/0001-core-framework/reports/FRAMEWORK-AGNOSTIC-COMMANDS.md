@@ -23,7 +23,6 @@ platform: hetzner
 estimated_cost: $12/month
 ```
 
-**create-project.md**:
 ```
 "Create an event booking SaaS with NextJS on Hetzner"
 ```
@@ -147,7 +146,6 @@ infrastructure.md ({platform} deployment)
 security.md ({framework}-specific security)
 ```
 
-### 5. Updated create-project.md
 
 **Before**:
 ```

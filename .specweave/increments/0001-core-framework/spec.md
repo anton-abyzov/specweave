@@ -678,7 +678,6 @@ npm run install:all:global     # Global
 ### Phase 5: Automation (Completed)
 - ✅ Claude hooks integration (post-task, pre-implementation, human-input)
 - ✅ `docs-updater` skill
-- ✅ Slash commands (create-project, create-increment, sync-docs, sync-github)
 
 ### Phase 6: Testing & Validation (In Progress)
 - ⏳ Complete all agent test cases (20 agents × 3 tests = 60 tests)

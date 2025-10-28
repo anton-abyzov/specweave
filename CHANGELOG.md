@@ -168,7 +168,6 @@ Behavior:
 - Synced to `.claude/commands/`
 
 **Removed Commands** (Simplified):
-- `/create-project` - Removed (use `specweave init` CLI instead)
 - `/generate-docs` - Removed (moved to CLI for rare operations)
 
 **Reason**: Simplification and better tool separation:
@@ -444,7 +443,6 @@ Major UX improvement: Short, memorable command aliases based on Agile terminolog
 
 | Full Command | Alias | Meaning |
 |--------------|-------|---------|
-| `/create-project` | `/init` | Initialize project |
 | `/create-increment` | `/pi` | **Plan Product Increment** |
 | `/start-increment` | `/si` | Start increment |
 | `/add-tasks` | `/at` | Add tasks |

@@ -190,7 +190,6 @@ function handleSpecweaveCommand(rawInput) {
     'done': 'specweave-done.md',
     'progress': 'specweave-progress.md',
     'validate': 'specweave-validate.md',
-    # 'create-project' removed - use specweave init CLI
     'sync-github': 'specweave-sync-github.md',
     'sync-docs': 'specweave-sync-docs.md'
   };

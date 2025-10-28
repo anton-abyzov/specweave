@@ -443,7 +443,6 @@ ls -la .claude/skills/ | wc -l
 
 # 4. Check commands installed
 ls -la .claude/commands/
-# Should see: create-project.md, create-increment.md, etc.
 
 # 5. Check hooks
 ls -la .claude/hooks/
