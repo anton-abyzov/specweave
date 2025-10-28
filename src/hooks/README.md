@@ -93,10 +93,10 @@ This creates symlinks:
 ### Method 2: Copy (For New Projects)
 ```bash
 # When creating new project
-npx specweave create-project my-project
+npx specweave init my-project
 ```
 
-This copies `src/hooks/` → `my-project/src/hooks/` → `my-project/.claude/hooks/`
+This copies `src/hooks/` → `my-project/.claude/hooks/`
 
 **Benefit**: New project gets its own copy of hooks (can customize if needed)
 
