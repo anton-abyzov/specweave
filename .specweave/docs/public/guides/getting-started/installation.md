@@ -222,7 +222,7 @@ chmod +x .claude/hooks/*.sh
 
 ```bash
 ls -la .claude/commands/
-# Should see: create-project.md, create-increment.md, etc.
+# Should see: specweave-inc.md, specweave-do.md, specweave-validate.md, etc.
 ```
 
 ---

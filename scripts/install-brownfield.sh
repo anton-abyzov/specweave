@@ -223,7 +223,7 @@ commands:
   # Optional: Create aliases (uncomment to enable)
   # aliases:
   #   /inc: /specweave inc
-  #   /build: /specweave build
+  #   /do: /specweave build
   #   /next: /specweave next
 
 installation:

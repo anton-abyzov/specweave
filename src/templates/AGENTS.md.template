@@ -45,7 +45,7 @@ This is a **SpecWeave project** where specifications and documentation are the s
 .claude/                     # Claude Code components (if using Claude)
 ├── agents/                  # Specialized roles (PM, Architect, DevOps, etc.)
 ├── skills/                  # Capabilities (increment-planner, context-loader, etc.)
-└── commands/                # Slash commands (/inc, /build, /done)
+└── commands/                # Slash commands (/inc, /do, /done)
 ```
 
 **CRITICAL**: Always read `context-manifest.yaml` first! Only load files listed there.
@@ -198,7 +198,7 @@ If using Claude Code, these slash commands are available:
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/inc` | Create new increment | `/inc "user authentication"` |
-| `/build` | Execute implementation | `/build` |
+| `/do` | Execute implementation | `/do` |
 | `/progress` | Check status | `/progress` |
 | `/done` | Close increment | `/done 0001` |
 | `/validate` | Validate quality | `/validate 0001 --quality` |

@@ -48,8 +48,8 @@ npx specweave init my-app
 # ✅ Creates spec.md, plan.md, tasks.md, tests.md
 # ✅ Reviews output with you before proceeding
 
-# Build it (just works!)
-/build
+# Execute it (just works!)
+/do
 # SpecWeave autonomously:
 # ✅ Auto-resumes from next incomplete task
 # ✅ Asks for validation at key milestones
@@ -157,7 +157,7 @@ function ComparisonSection(): ReactNode {
             <ul>
               <li>Type <code>/inc "feature"</code></li>
               <li>Autonomous agents ask clarifying questions, create spec/plan/tasks, review with you</li>
-              <li>Type <code>/build</code></li>
+              <li>Type <code>/do</code></li>
               <li>Agents work in parallel, auto-resume, validate at milestones, update docs continuously</li>
               <li>Type <code>/progress</code> anytime to see status</li>
               <li>Type <code>/inc "next"</code> to seamlessly move forward</li>

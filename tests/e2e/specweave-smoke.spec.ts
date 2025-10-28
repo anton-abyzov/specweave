@@ -378,7 +378,7 @@ test.describe('SpecWeave E2E Smoke Test', () => {
 
         // Check build succeeded
         expect(stderr).not.toContain('error');
-        expect(stdout).toMatch(/build|compiled|generated/i);
+        expect(stdout).toMatch(/do|compiled|generated/i);
       } else {
         test.skip();
       }

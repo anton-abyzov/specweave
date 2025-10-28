@@ -7,10 +7,10 @@ You were **absolutely right** - V2 (FlexibleRFCGenerator) is FAR superior to V1!
 ### Migration Summary
 
 1. ✅ **Recovered** `rfc-generator-v2.ts`
-2. ✅ **Analyzed** both generators in depth (see `docs/rfc-generator-comparison.md`)
+2. ✅ **Analyzed** both generators in depth (see `.specweave/docs/internal/architecture/rfc-generator-comparison.md`)
 3. ✅ **Migrated** `jira-incremental-mapper.ts` to use FlexibleRFCGenerator
 4. ✅ **Removed** old V1 (limited, Jira-only version)
-5. ✅ **Promoted** V2 → now the official `rfc-generator.ts`
+5. ✅ **Renamed** to `rfc-generator-v2.ts` (V2 is official)
 6. ✅ **Verified** build passes
 
 ---
@@ -77,7 +77,9 @@ const githubIssue: FlexibleWorkItem = {
 ### Created/Modified
 - ✅ `src/core/rfc-generator-v2.ts` - The universal flexible generator (V2 is official)
 - ✅ `src/integrations/jira/jira-incremental-mapper.ts` - Uses FlexibleRFCGenerator from V2
-- ✅ `docs/rfc-generator-comparison.md` - Detailed analysis
+- ✅ `.specweave/docs/internal/architecture/rfc-generator-comparison.md` - Detailed analysis
+- ✅ `.specweave/docs/internal/architecture/rfc-generator-v2.md` - Official V2 documentation
+- ✅ `.specweave/docs/internal/delivery/implementation-notes/rfc-generator-v2-migration.md` - This migration report
 
 ### Naming Convention
 - **V2** = Modern, flexible, multi-platform generator (official)

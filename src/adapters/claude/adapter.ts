@@ -131,7 +131,7 @@ WHAT THIS PROVIDES:
 
 - Skills (Auto-Activating): specweave-detector, skill-router, context-loader, increment-planner
 - Agents (Specialized Roles): PM, Architect, DevOps, QA, Security, and 14 more
-- Slash Commands: /create-increment, /review-docs, /sync-github, /create-project
+- Slash Commands: /specweave inc, /specweave do, /specweave validate, /specweave sync-github
 - Hooks (Auto-Update): post-task-completion, pre-implementation, docs-changed
 
 WHY CLAUDE CODE IS BEST:

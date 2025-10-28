@@ -14,12 +14,12 @@ SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive de
 
 **Smart Workflow** (Natural & Efficient):
 1. ✅ **`/inc "feature description"`** - Plan increment (PM-led, auto-closes previous if ready)
-2. ✅ **`/build`** - Execute tasks (smart resume, hooks after EVERY task)
+2. ✅ **`/do`** - Execute tasks (smart resume, hooks after EVERY task)
 3. ✅ **`/progress`** - Check status (task %, PM gates, next action)
 4. ✅ **Repeat**: `/inc "next"` → auto-closes previous if done
 
 **Why smart workflow?**
-- No manual tracking (`/build` auto-resumes from next incomplete task)
+- No manual tracking (`/do` auto-resumes from next incomplete task)
 - No manual closure (`/inc` suggests options if previous incomplete)
 - Check progress anytime (`/progress`)
 - Natural flow: finish → start next

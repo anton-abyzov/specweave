@@ -124,7 +124,7 @@ done
 success "All required files exist"
 
 # Note: README.md and package.json are NOT created by install script
-# They should be created by user or by /create-project command (TODO)
+# They should be created by user or via specweave init CLI command
 
 # Step 6: Verify specifications content (optional - user may create)
 info "Step 6: Verifying specifications (optional)..."

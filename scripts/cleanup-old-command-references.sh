@@ -16,7 +16,7 @@ replace_in_files() {
     find . -type f -name "$file_pattern" \
         ! -path "*/node_modules/*" \
         ! -path "*/dist/*" \
-        ! -path "*/build/*" \
+        ! -path "*/do/*" \
         ! -path "*/.git/*" \
         -exec sed -i '' "s|$pattern|$replacement|g" {} +
 }
@@ -24,17 +24,16 @@ replace_in_files() {
 # Replace command references in markdown files
 echo "📝 Updating command references in .md files..."
 
-# /create-project → /specweave create-project (in command examples)
-replace_in_files '`/create-project' '`/specweave create-project' "*.md"
-replace_in_files '\`\/create-project' '\`\/specweave create-project' "*.md"
+# /create-project removed - use specweave init CLI
+# (no replacement needed, should be removed or replaced with CLI command)
 
 # /inc → /specweave inc (be careful with /inc)
 replace_in_files '`/inc "' '`/specweave inc "' "*.md"
 replace_in_files '`/inc' '`/specweave inc' "*.md"
 
-# /build → /specweave build (excluding npm/docker build)
-replace_in_files '`/build`' '`/specweave build`' "*.md"
-replace_in_files '`/build ' '`/specweave build ' "*.md"
+# /do → /specweave build (excluding npm/docker build)
+replace_in_files '`/do`' '`/specweave build`' "*.md"
+replace_in_files '`/do ' '`/specweave build ' "*.md"
 
 # /done → /specweave done
 replace_in_files '`/done' '`/specweave done' "*.md"
@@ -64,7 +63,7 @@ replace_in_files '`/list-increments' '`/specweave list-increments' "*.md"
 echo "📝 Updating command references in bash code blocks..."
 
 replace_in_files '^/inc ' '/specweave inc ' "*.md"
-replace_in_files '^/build$' '/specweave build' "*.md"
+replace_in_files '^/do$' '/specweave build' "*.md"
 replace_in_files '^/done ' '/specweave done ' "*.md"
 replace_in_files '^/progress$' '/specweave progress' "*.md"
 replace_in_files '^/validate ' '/specweave validate ' "*.md"
