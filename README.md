@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.7-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.7)
+[![Version](https://img.shields.io/badge/version-0.1.8-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.8)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -487,19 +487,19 @@ npm test
 
 ## 🏷️ Project Status
 
-**Version**: 0.1.6
+**Version**: 0.1.8
 **Status**: Public Beta
 **License**: MIT
 **Release Date**: 2025-10-28
 **Website**: [spec-weave.com](https://spec-weave.com)
 
-### ✅ What Works (v0.1.6)
+### ✅ What Works (v0.1.8)
 
 - ✅ **10 Agents** fully implemented and pre-installed
 - ✅ **35+ Skills** fully implemented and pre-installed
 - ✅ **CLI Tool** - `specweave init` with complete component copying
 - ✅ **Ready Out of the Box** - All components installed during init
-- ✅ **Auto-detection** and intelligent routing (fixed in 0.1.6!)
+- ✅ **Command simplification** - 4-command workflow (0.1.8)
 - ✅ **Diagram generation** (C4 Model with validation)
 - ✅ **4-level testing framework** (spec → feature → component → automated)
 - ✅ **JIRA/ADO/GitHub sync** integration
