@@ -105,21 +105,21 @@ export async function initCommand(
 
 function createDirectoryStructure(targetDir: string): void {
   const directories = [
+    // Core increment structure
     '.specweave/increments',
-    '.specweave/docs/api',
-    '.specweave/docs/architecture',
-    '.specweave/docs/decisions',
-    '.specweave/docs/guides',
-    '.specweave/docs/features',
-    '.specweave/tests/baseline',
-    '.specweave/tests/regression',
-    '.specweave/tests/features',
-    '.specweave/work',
-    '.specweave/cache',
-    '.specweave/logs',
+
+    // 5-pillar documentation structure
+    '.specweave/docs/internal/strategy',      // Business specs (WHAT, WHY)
+    '.specweave/docs/internal/architecture',  // Technical design (HOW)
+    '.specweave/docs/internal/delivery',      // Roadmap, CI/CD, guides
+    '.specweave/docs/internal/operations',    // Runbooks, SLOs
+    '.specweave/docs/internal/governance',    // Security, compliance
+    '.specweave/docs/public',                 // Published documentation
+
+    // Claude Code integration (components auto-install here)
     '.claude/commands',
-    '.claude/skills',      // Components auto-install here
-    '.claude/agents',      // Components auto-install here
+    '.claude/agents',
+    '.claude/skills',
   ];
 
   directories.forEach((dir) => {

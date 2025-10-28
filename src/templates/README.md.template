@@ -1,240 +1,72 @@
 # {{PROJECT_NAME}}
 
-> Created with [SpecWeave](https://github.com/specweave/specweave) - Spec-Driven Development Framework
+**A SpecWeave project** - where specifications drive development.
 
-## What is this?
+## 🚀 Quick Start
 
-This project uses SpecWeave for autonomous development:
-- **Framework-agnostic**: Works with ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.)
-- **Intent-driven**: Describe what you want, SpecWeave builds it using YOUR stack
-- **Documentation-first**: Comprehensive docs generated before code
-- **Role-based agents**: PM, Architect, QA, DevOps agents work together
-- **Autonomous implementation**: Full features built with minimal intervention
-- **Cost-optimized**: Deploys to most cost-effective platform (Hetzner, AWS, Vercel, etc.)
+Your project is initialized! Now describe what you want to build.
 
-## Getting Started
+### Next Steps
 
-### 1. Describe What You Want to Build
+1. **Open Claude Code** (the AI assistant you're using)
 
-Simply describe your product vision (framework-agnostic):
+2. **Describe your project** in natural language:
 
 ```
-"Create an event booking SaaS for barbers and sports facilities"
-"Build a task management API with real-time collaboration"
-"Create an e-commerce platform with payment processing"
+"Build a real estate listing platform with search, images, and admin dashboard"
+"Create a task management API with authentication"
+"Build an e-commerce platform with Stripe payments"
 ```
 
-### 2. SpecWeave Will:
+3. **SpecWeave will automatically**:
+   - Detect your tech stack (or ask you to choose)
+   - Install needed agents & skills on-demand
+   - Create strategic documentation
+   - Generate specifications
+   - Build the implementation
+   - Write tests
 
-1. **Detect or ask for your tech stack**:
-   - Language: TypeScript, Python, Go, Rust, Java, etc.
-   - Framework: NextJS, Django, FastAPI, Spring Boot, Gin, etc.
-   - Database: PostgreSQL, MySQL, MongoDB, SQLite, etc.
-   - Platform: Hetzner ($12/mo), AWS ($25/mo), Vercel ($20/mo), etc.
+That's it! No manual configuration needed.
 
-2. **Ask clarifying questions**:
-   - Payment processing needed?
-   - Expected users?
-   - Budget for hosting?
+---
 
-3. **Create strategic analysis** (using YOUR detected stack):
-   - PM agent → Product strategy & user personas
-   - Architect agent → System design & ADRs (framework-specific)
-   - DevOps agent → Infrastructure plan (platform-specific)
-   - Security agent → Auth & data protection (framework-specific)
-   - QA agent → Test strategy (framework-specific tests)
-
-4. **Generate comprehensive documentation**:
-   - Product documentation in `.specweave/docs/`
-   - Architecture diagrams & decisions (using YOUR stack)
-   - All files contain WHAT + WHY + HOW
-
-5. **Create implementation tasks**:
-   - Detailed tasks with agent references (using YOUR stack)
-   - File paths and code snippets (in YOUR language)
-   - Acceptance criteria (framework-specific)
-
-6. **Build autonomously**:
-   - Implements all features using YOUR detected tech stack
-   - Asks for approval when needed
-   - Suggests doc updates during implementation
-
-### 3. Review & Approve
-
-Before implementation starts:
-
-```
-/review-docs
-```
-
-This shows:
-- Product strategy
-- System architecture
-- Infrastructure plan & costs
-- Security approach
-- Test strategy
-
-### 4. Deploy
-
-SpecWeave deploys to the most cost-effective platform for YOUR needs:
-- **Hetzner Cloud**: $11-27/month (best for cost-sensitive projects)
-- **Vercel**: $20/month (best for global edge, NextJS apps)
-- **AWS**: $25-100+/month (best for enterprise, specific services)
-- **Self-hosted**: Variable (best for full control)
-
-## Project Structure
+## 📁 Project Structure
 
 ```
 {{PROJECT_NAME}}/
-├── .specweave/
-│   ├── increments/        # Product increments (user stories, tasks)
-│   ├── docs/              # Generated documentation
-│   ├── tests/             # SpecWeave-generated tests
-│   └── config.yaml        # Configuration
-├── src/
-│   ├── skills/            # AI agent skills (17+ installed)
-│   └── hooks/             # Automation hooks
+├── .specweave/             # SpecWeave framework
+│   ├── config.yaml         # Project configuration
+│   ├── increments/         # Features (auto-created as you build)
+│   ├── docs/               # Documentation (generated)
+│   └── tests/              # Tests (generated)
 ├── .claude/
-│   ├── hooks/             # Claude Code hooks
-│   ├── commands/          # Manual commands
-│   └── skills/            # Installed skills
-└── CLAUDE.md              # Instructions for Claude
+│   ├── commands/           # Slash commands (/create-increment, etc.)
+│   ├── agents/             # AI agents (auto-installed on-demand)
+│   └── skills/             # AI skills (auto-installed on-demand)
+├── CLAUDE.md               # Instructions for Claude
+└── README.md               # This file
 ```
 
-## Commands
+**Note**: Agents and skills are NOT pre-installed. They install automatically when you describe your project!
 
-### Claude Code Commands
+---
 
-Use these in Claude Code CLI:
+## 🎯 What is SpecWeave?
 
-- `/create-increment "Feature name"` - Create new increment
-- `/review-docs` - Review strategic documentation
-- `/sync-github` - Sync to GitHub issues
+SpecWeave is a spec-driven development framework where:
+- **Specifications are the source of truth** (code follows specs)
+- **AI agents work autonomously** (PM, Architect, Security, QA, DevOps)
+- **Components auto-install on-demand** (no manual setup)
+- **Works with ANY tech stack** (TypeScript, Python, Go, Rust, etc.)
 
-### Terminal Commands
+---
 
-```bash
-# Create new increment
-npx specweave increment create "Add payment processing"
+## 📚 Learn More
 
-# Install a skill
-npx specweave install hetzner-provisioner
+- **Documentation**: https://spec-weave.com
+- **GitHub**: https://github.com/anton-abyzov/specweave
+- **Examples**: See `.specweave/docs/` after you describe your project
 
-# Install hooks
-npx specweave install-hooks
-```
+---
 
-## Examples
-
-### Example 1: Event Booking SaaS (TypeScript/NextJS)
-
-**Input**:
-```
-"Create event booking SaaS for barbers and sports facilities"
-```
-
-**Detected stack**: TypeScript, NextJS, PostgreSQL, Hetzner
-
-**Output**:
-- NextJS 14 app with App Router
-- Postgres database with Prisma
-- Calendar/booking system
-- Stripe payments
-- Email/SMS notifications
-- Deployed on Hetzner for $12/month
-- Complete documentation
-
-**Time**: Autonomous (with periodic approvals)
-
-### Example 2: Task Management API (Python/FastAPI)
-
-**Input**:
-```
-"Build a task management API with real-time collaboration"
-```
-
-**Detected stack**: Python, FastAPI, PostgreSQL, AWS
-
-**Output**:
-- FastAPI backend with WebSocket support
-- PostgreSQL with SQLAlchemy
-- Real-time task updates
-- User authentication (JWT)
-- Deployed on AWS for $27/month
-- Complete documentation
-
-**Time**: Autonomous (with periodic approvals)
-
-### Example 3: E-commerce Platform (Go/Gin)
-
-**Input**:
-```
-"Create an e-commerce platform with payment processing"
-```
-
-**Detected stack**: Go, Gin, PostgreSQL, Hetzner
-
-**Output**:
-- Gin API with microservices architecture
-- PostgreSQL with GORM
-- Product catalog, cart, checkout
-- Stripe integration
-- Deployed on Hetzner for $18/month
-- Complete documentation
-
-**Time**: Autonomous (with periodic approvals)
-
-## Available Skills
-
-### Infrastructure
-- `hetzner-provisioner` - Deploy to Hetzner Cloud ($10-15/mo)
-- `cost-optimizer` - Compare platforms & recommend cheapest
-
-### Frontend
-- `nextjs-agent` - NextJS 14 with App Router, TypeScript
-- `tailwind-designer` - Tailwind CSS styling
-
-### Backend
-- `nodejs-backend` - Node.js implementation
-- `python-backend` - Python implementation
-- `prisma-schema-builder` - Database schema with Prisma
-
-### Domain-Specific
-- `stripe-integrator` - Payment processing
-- `calendar-system` - Booking/scheduling
-- `notification-system` - Email & SMS
-- `auth-implementer` - Authentication (NextAuth, Clerk)
-
-### Strategic
-- `pm-agent` - Product strategy
-- `architect-agent` - System design
-- `qa-lead-agent` - Test strategy
-- `devops-agent` - Infrastructure planning
-- `security-agent` - Security review
-
-See `src/skills/` for complete list.
-
-## Configuration
-
-Edit `.specweave/config.yaml`:
-
-```yaml
-cost:
-  max_monthly_budget: 100  # USD
-  preferred_platform: hetzner
-
-testing:
-  e2e_required: true
-  coverage_target: 80
-```
-
-## Learn More
-
-- [SpecWeave Documentation](https://github.com/specweave/specweave)
-- [Example Projects](https://github.com/specweave/examples)
-- [Community](https://github.com/specweave/specweave/discussions)
-
-## License
-
-This project: [Your License]
-SpecWeave: MIT License
+**Ready to build?** Just send your prompt to Claude! 🚀

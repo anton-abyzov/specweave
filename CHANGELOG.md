@@ -7,6 +7,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.4] - 2025-10-28
+
+### 🎯 **MAJOR UX IMPROVEMENTS: Clean Project Structure**
+
+**Three critical improvements for a cleaner, simpler init experience:**
+
+---
+
+#### 1. 📝 Minimal README (70% smaller)
+
+**Problem**: v0.1.3 generated a massive 241-line README listing all 17+ skills that weren't installed yet!
+
+**Fixed:**
+- ✅ README reduced from 241 lines → 72 lines (70% smaller!)
+- ✅ Removed premature skill listings
+- ✅ Simple message: "Describe your project, components auto-install"
+- ✅ Clear next steps without overwhelming details
+- ✅ No confusing references to non-existent components
+
+**Philosophy**: README should be **minimal at init**, then grow as your project grows.
+
+---
+
+#### 2. 🗂️ Proper 5-Pillar Documentation Structure
+
+**Problem**: v0.1.3 created flat docs structure with wrong folders.
+
+**Before (WRONG)**:
+```
+.specweave/docs/
+├── api/
+├── architecture/
+├── decisions/
+├── guides/
+└── features/
+```
+
+**After (CORRECT)**:
+```
+.specweave/docs/
+├── internal/
+│   ├── strategy/      # Business specs (WHAT, WHY)
+│   ├── architecture/  # Technical design (HOW)
+│   ├── delivery/      # Roadmap, CI/CD, guides
+│   ├── operations/    # Runbooks, SLOs
+│   └── governance/    # Security, compliance
+└── public/            # Published documentation
+```
+
+---
+
+#### 3. 🧹 Removed Unused Folders
+
+**Problem**: v0.1.3 created legacy folders that SpecWeave doesn't use.
+
+**Removed**:
+- ❌ `.specweave/tests/*` (tests go in increment folders)
+- ❌ `.specweave/work/` (not used)
+- ❌ `.specweave/cache/` (not used)
+- ❌ `.specweave/logs/` (logs go in increment folders)
+
+**Result**: Clean, minimal folder structure with only what's needed!
+
+---
+
+### Summary: What You Get After `specweave init`
+
+**Minimal, clean structure**:
+```
+your-project/
+├── .specweave/
+│   ├── config.yaml
+│   ├── increments/              # Empty (created as you build)
+│   └── docs/internal/           # 5-pillar structure
+│       ├── strategy/
+│       ├── architecture/
+│       ├── delivery/
+│       ├── operations/
+│       └── governance/
+├── .claude/
+│   ├── commands/                # 10 slash commands installed
+│   ├── agents/                  # Empty (auto-install on-demand)
+│   └── skills/                  # Empty (auto-install on-demand)
+├── CLAUDE.md                    # 12KB instructions
+├── README.md                    # 72 lines (minimal)
+└── .gitignore
+```
+
+**No clutter. No overwhelming info. Just describe your project and go!** 🚀
+
+---
+
 ## [0.1.3] - 2025-10-28
 
 ### 🐛 **CRITICAL BUG FIX: `specweave init` Now Works!**
@@ -217,6 +309,7 @@ Thank you to the early adopters and contributors who helped shape SpecWeave v0.1
 
 ---
 
+[0.1.4]: https://github.com/specweave/specweave/releases/tag/v0.1.4
 [0.1.3]: https://github.com/specweave/specweave/releases/tag/v0.1.3
 [0.1.2]: https://github.com/specweave/specweave/releases/tag/v0.1.2
 [0.1.0]: https://github.com/specweave/specweave/releases/tag/v0.1.0
