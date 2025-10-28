@@ -7,7 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.0] - 2025-10-28
+
+### ⚠️ **BREAKING CHANGE: Command Namespacing**
+
+All commands now use `specweave-` prefix for brownfield project safety. Use master router `/specweave` for convenience.
+
+### What Changed
+
+**1. Command Namespacing**:
+```bash
+# Old (v0.1.x)
+/inc "feature"
+/build
+/progress
+/done 0001
+
+# New (v0.2.0)
+/specweave inc "feature"     # Via master router (recommended)
+/specweave build
+/specweave progress
+/specweave done 0001
+
+# Or use full command names:
+/specweave-inc "feature"
+/specweave-build
+/specweave-progress
+/specweave-done 0001
+```
+
+**Why?**
+- ✅ No collisions in brownfield projects
+- ✅ Clear ownership (framework vs. project commands)
+- ✅ Safe adoption in any existing codebase
+
+**2. Enhanced Sync Integrations**:
+- NEW: `/specweave-sync-jira` with granular control (add items, cherry-pick)
+- UPDATED: `/specweave-sync-github` now matches Jira (granular operations)
+- Both support bidirectional sync and status tracking
+
+**3. Test Structure Reorganization**:
+- Moved all test-cases to centralized `tests/` folder
+- New structure: `tests/specs/{skill}/` and `tests/integration/{integration}/`
+- Better CI/CD integration
+
+### Migration from 0.1.9
+
+Update your command references:
+```bash
+/inc              → /specweave inc
+/build            → /specweave build
+/next             → /specweave next
+/done             → /specweave done
+/progress         → /specweave progress
+/validate         → /specweave validate
+/sync-github      → /specweave sync-github
+```
+
+---
+
 ## [0.1.9] - 2025-10-28
+
+> **Note**: v0.1.9 and earlier entries use the old command format (e.g., `/inc`, `/build`).
+> As of v0.2.0, all commands use `specweave-` prefix (e.g., `/specweave inc`, `/specweave build`).
 
 ### 🎯 **Smart Workflow: Auto-Resume, Auto-Close, Progress Tracking**
 

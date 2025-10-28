@@ -736,7 +736,7 @@ Avoid technical jargon with stakeholders. Focus on:
 
 ## 🔥 CRITICAL: Increment Closure Validation (/done Command)
 
-**MANDATORY BEHAVIOR**: When invoked via `/done` command, PM Agent acts as the **final quality gate** before increment closure.
+**MANDATORY BEHAVIOR**: When invoked via `/specweave done` command, PM Agent acts as the **final quality gate** before increment closure.
 
 ### Role: Product Owner / Release Manager
 
@@ -751,7 +751,7 @@ You are the final approver for increment closure. Your job is to ensure:
 
 ### Validation Workflow
 
-When user runs `/done <increment-id>`, follow these steps:
+When user runs `/specweave done <increment-id>`, follow these steps:
 
 #### Step 1: Load Increment Context
 

@@ -183,7 +183,7 @@ B. Force close and defer incomplete tasks
 
 C. Stay on current increment
    → Continue working on 0001
-   → Run `/build 0001` to resume
+   → Run `/specweave build 0001` to resume
 
 What would you like to do? [A/B/C]
 ```
@@ -222,9 +222,9 @@ What would you like to do? [A/B/C]
    Recommendation: Start 0002-payment-processing (P1, ready to go)
 
    Actions:
-   A. Start 0002 now → Run `/build 0002`
-   B. Start 0003 instead → Run `/build 0003`
-   C. Create new increment → Run `/inc "feature name"`
+   A. Start 0002 now → Run `/specweave build 0002`
+   B. Start 0003 instead → Run `/specweave build 0003`
+   C. Create new increment → Run `/specweave inc "feature name"`
 
    What would you like to do? [A/B/C]
    ```
@@ -238,7 +238,7 @@ What would you like to do? [A/B/C]
 
    Recommendation: Continue 0002-payment-processing
 
-   Next Action: Run `/build 0002` to resume
+   Next Action: Run `/specweave build 0002` to resume
 
    💡 Tip: Run `/progress 0002` to see current status
    ```
@@ -253,8 +253,8 @@ What would you like to do? [A/B/C]
    Time to plan your next feature!
 
    Options:
-   A. Create new increment → Run `/inc "feature description"`
-      Example: /inc "Admin dashboard"
+   A. Create new increment → Run `/specweave inc "feature description"`
+      Example: /specweave inc "Admin dashboard"
 
    B. Check existing ideas → Look in .specweave/increments/_backlog/
       If you have ideas saved, promote them with /inc
@@ -306,7 +306,7 @@ Found 1 planned increment:
 
 Recommendation: Start 0002-payment-processing
 
-Next Action: Run `/build 0002` to begin
+Next Action: Run `/specweave build 0002` to begin
 
 💡 Tip: Review spec first with `cat .specweave/increments/0002-payment-processing/spec.md`
 ```
@@ -348,9 +348,9 @@ What would you like to do? [A/B/C] _
 ```
 ✅ Good choice! Let's finish 0001 properly.
 
-Next Action: Run `/build 0001` to resume at T010
+Next Action: Run `/specweave build 0001` to resume at T010
 
-💡 Tip: `/progress` shows your current status anytime
+💡 Tip: `/specweave progress` shows your current status anytime
 ```
 
 ### Example 3: No Active Work (Clean Start)
@@ -380,12 +380,12 @@ No planned increments found. Time to plan new work!
 
 Options:
 1. Create new increment:
-   → Run `/inc "feature description"`
-   → Example: /inc "Admin dashboard"
+   → Run `/specweave inc "feature description"`
+   → Example: /specweave inc "Admin dashboard"
 
 2. Check backlog for ideas:
    → Look in .specweave/increments/_backlog/
-   → Promote with `/inc "feature name"`
+   → Promote with `/specweave inc "feature name"`
 
 3. Review roadmap:
    → See .specweave/docs/internal/strategy/roadmap.md
@@ -431,15 +431,15 @@ Your choice? [A/B/C] _
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/inc "feature"` | Create NEW increment with specific feature | Starting fresh work |
-| `/build` | Execute tasks in increment | Implementing planned work |
-| `/progress` | Check status (no action) | Quick status check |
+| `/specweave inc "feature"` | Create NEW increment with specific feature | Starting fresh work |
+| `/specweave build` | Execute tasks in increment | Implementing planned work |
+| `/specweave progress` | Check status (no action) | Quick status check |
 | `/done` | Explicitly close increment | Manual closure with validation |
 | `/next` ⭐ | **Smart transition** (close + suggest next) | **Natural workflow continuation** |
 
 **Why `/next` is special**:
 - ✅ Combines validation + closure + suggestion in one command
-- ✅ No need to remember `/done` then `/inc` or `/build`
+- ✅ No need to remember `/done` then `/inc` or `/specweave build`
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
@@ -452,15 +452,15 @@ Your choice? [A/B/C] _
 2. **Trust the PM validation** - If gates fail, there's unfinished work
 3. **Follow recommendations** - Backlog items are already planned
 4. **Keep WIP limit in mind** - Don't force multiple increments
-5. **Use `/progress` for status** - `/next` is for transitions
+5. **Use `/specweave progress` for status** - `/next` is for transitions
 
 ---
 
 ## Related Commands
 
 - `/inc` - Create new increment (PM-led planning)
-- `/build` - Execute tasks (auto-resumes)
-- `/progress` - Check status
+- `/specweave build` - Execute tasks (auto-resumes)
+- `/specweave progress` - Check status
 - `/done` - Manual closure with PM validation
 - `/list-increments` - View all increments
 

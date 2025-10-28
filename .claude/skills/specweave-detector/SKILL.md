@@ -1,6 +1,6 @@
 ---
 name: specweave-detector
-description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/build), auto-close (/inc), progress tracking (/progress). Commands /inc, /build, /progress, /validate, /done, /list-increments, /review-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /inc, /increment, /build, /progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
+description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/build), auto-close (/inc), progress tracking (/progress). Commands /inc, /specweave-build, /specweave-progress, /validate, /done, /list-increments, /review-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /specweave-inc, /specweave-increment, /specweave-build, /specweave-progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
 ---
 
 # SpecWeave v0.1.9 - Smart Workflow Slash Commands

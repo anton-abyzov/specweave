@@ -454,7 +454,7 @@ Options:
 
 - `/increment`: Plan increment (creates spec.md, plan.md, tasks.md)
 - `/validate`: Validate quality before building
-- `/done`: Close increment (PM validates completion)
+- `/specweave done`: Close increment (PM validates completion)
 - `/list-increments`: List all increments with status
 
 ---
@@ -471,4 +471,4 @@ Options:
 
 **Important**: This command is designed for continuous execution. It's normal to run `/build` and let it execute multiple tasks sequentially with documentation updates after each one.
 
-**Best Practice**: Always run `/validate 0001 --quality` after building to ensure quality before closing with `/done`.
+**Best Practice**: Always run `/specweave validate 0001 --quality` after building to ensure quality before closing with `/specweave done`.

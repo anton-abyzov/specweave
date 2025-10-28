@@ -9,7 +9,7 @@
  */
 
 import { JiraClient, JiraIssue } from './jira-client';
-import { RFCGenerator, WorkItem as RFCWorkItem, RFCContent } from '../../core/rfc-generator';
+import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from '../../core/rfc-generator';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
@@ -40,12 +40,12 @@ export interface IncrementWorkItems {
 export class JiraIncrementalMapper {
   private client: JiraClient;
   private projectRoot: string;
-  private rfcGenerator: RFCGenerator;
+  private rfcGenerator: FlexibleRFCGenerator;
 
   constructor(client: JiraClient, projectRoot: string = process.cwd()) {
     this.client = client;
     this.projectRoot = projectRoot;
-    this.rfcGenerator = new RFCGenerator(projectRoot);
+    this.rfcGenerator = new FlexibleRFCGenerator(projectRoot);
   }
 
   /**
@@ -442,39 +442,57 @@ export class JiraIncrementalMapper {
     title: string,
     workItems: IncrementWorkItems
   ): Promise<void> {
-    // Convert WorkItem to RFCWorkItem format
-    const stories: RFCWorkItem[] = workItems.stories.map(item => ({
-      type: 'story',
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      priority: item.priority,
-      source_key: item.jira_key,
-      source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`
-    }));
+    // Convert WorkItem to FlexibleWorkItem format (V2)
+    const flexibleWorkItems: FlexibleWorkItem[] = [
+      ...workItems.stories.map(item => ({
+        type: 'story',
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        source_key: item.jira_key,
+        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        parent: item.parent_epic ? {
+          type: 'Epic',
+          key: item.parent_epic.key,
+          title: item.parent_epic.title
+        } : undefined,
+        labels: item.labels
+      })),
+      ...workItems.bugs.map(item => ({
+        type: 'bug',
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        source_key: item.jira_key,
+        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        parent: item.parent_epic ? {
+          type: 'Epic',
+          key: item.parent_epic.key,
+          title: item.parent_epic.title
+        } : undefined,
+        labels: item.labels
+      })),
+      ...workItems.tasks.map(item => ({
+        type: 'task',
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        priority: item.priority,
+        source_key: item.jira_key,
+        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        parent: item.parent_epic ? {
+          type: 'Epic',
+          key: item.parent_epic.key,
+          title: item.parent_epic.title
+        } : undefined,
+        labels: item.labels
+      }))
+    ];
 
-    const bugs: RFCWorkItem[] = workItems.bugs.map(item => ({
-      type: 'bug',
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      priority: item.priority,
-      source_key: item.jira_key,
-      source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`
-    }));
-
-    const tasks: RFCWorkItem[] = workItems.tasks.map(item => ({
-      type: 'task',
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      priority: item.priority,
-      source_key: item.jira_key,
-      source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`
-    }));
-
-    // Prepare RFC content
-    const rfcContent: RFCContent = {
+    // Prepare RFC content for V2
+    const rfcContent: FlexibleRFCContent = {
       metadata: {
         incrementId,
         title,
@@ -485,14 +503,12 @@ export class JiraIncrementalMapper {
       sourceMetadata: {
         source_type: 'jira'
       },
-      summary: `This increment addresses ${stories.length} user stories, ${bugs.length} bugs, and ${tasks.length} technical tasks.`,
+      summary: `This increment addresses ${workItems.stories.length} user stories, ${workItems.bugs.length} bugs, and ${workItems.tasks.length} technical tasks.`,
       motivation: `Implementation plan for ${title}.`,
-      stories,
-      bugs,
-      tasks
+      workItems: flexibleWorkItems  // V2 uses single array, auto-groups by strategy
     };
 
-    // Generate RFC using centralized generator
+    // Generate RFC using flexible generator (V2)
     await this.rfcGenerator.generateRFC(rfcContent);
   }
 

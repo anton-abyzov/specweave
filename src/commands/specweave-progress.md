@@ -95,7 +95,7 @@ Recent Increments:
 ├─ 0002-user-profile (completed) - 2 days ago
 └─ 0001-auth (closed) - 3 days ago
 
-Next Action: Run `/inc "feature description"` to start new work
+Next Action: Run `/specweave inc "feature description"` to start new work
 
 💡 Tip: `/inc` is your starting point for all new features
 ```

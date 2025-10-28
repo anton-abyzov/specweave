@@ -1,6 +1,6 @@
 ---
 name: specweave
-description: SpecWeave master command - routes to increment lifecycle subcommands (inc, build, next, done, progress, validate, sync-github, review-docs, create-project). Namespaced to avoid collisions in brownfield projects.
+description: SpecWeave master command - routes to increment lifecycle subcommands (inc, build, next, done, progress, validate, sync-github, sync-docs, create-project). Namespaced to avoid collisions in brownfield projects.
 ---
 
 # SpecWeave Master Command
@@ -38,7 +38,7 @@ This master command routes to SpecWeave increment lifecycle subcommands.
 |------------|-------------|---------|
 | **create-project** | Bootstrap SpecWeave in new/existing project | `/specweave create-project` |
 | **sync-github** | Sync increment to GitHub issues | `/specweave sync-github 0001` |
-| **review-docs** | Review strategic documentation | `/specweave review-docs` |
+| **sync-docs** | Sync documentation (review/update) | `/specweave sync-docs` or `/specweave sync-docs update 0001` |
 
 ---
 
@@ -62,7 +62,8 @@ subcommands:
   validate: .claude/commands/specweave-validate.md
   create-project: .claude/commands/specweave-create-project.md
   sync-github: .claude/commands/specweave-sync-github.md
-  review-docs: .claude/commands/specweave-review-docs.md
+  sync-docs: .claude/commands/specweave-sync-docs.md
+  review-docs: .claude/commands/specweave-review-docs.md  # DEPRECATED: use sync-docs
 ```
 
 ---
@@ -81,7 +82,7 @@ Parse: subcommand = "inc"
 ### Step 2: Validate Subcommand
 
 ```
-Known subcommands: [inc, build, next, done, progress, validate, create-project, sync-github, review-docs]
+Known subcommands: [inc, build, next, done, progress, validate, create-project, sync-github, sync-docs, review-docs]
 
 If subcommand in known_subcommands:
     Route to corresponding command
@@ -165,7 +166,7 @@ Available subcommands:
   Project Setup:
     create-project  - Bootstrap SpecWeave
     sync-github     - Sync to GitHub
-    review-docs     - Review docs
+    sync-docs       - Sync documentation (review/update)
 
 Usage: /specweave <subcommand> [arguments]
 Example: /specweave inc "User authentication"
@@ -194,7 +195,8 @@ function handleSpecweaveCommand(rawInput) {
     'validate': 'specweave-validate.md',
     'create-project': 'specweave-create-project.md',
     'sync-github': 'specweave-sync-github.md',
-    'review-docs': 'specweave-review-docs.md'
+    'sync-docs': 'specweave-sync-docs.md',
+    'review-docs': 'specweave-review-docs.md'  // DEPRECATED: redirects to sync-docs
   };
 
   // Validate subcommand
@@ -357,7 +359,8 @@ If you have code/docs referencing old commands:
 /validate         → /specweave validate
 /create-project   → /specweave create-project
 /sync-github      → /specweave sync-github
-/review-docs      → /specweave review-docs
+/sync-docs        → /specweave sync-docs
+/review-docs      → /specweave sync-docs  # DEPRECATED
 ```
 
 ### Automated Migration Script
@@ -409,7 +412,7 @@ Increment Lifecycle:
 Project Setup:
   create-project     - Bootstrap SpecWeave in new/existing project
   sync-github <id>   - Sync increment to GitHub issues
-  review-docs        - Review strategic documentation
+  sync-docs [mode] [id] - Sync documentation (review/update)
 
 Examples:
   /specweave inc "User authentication"

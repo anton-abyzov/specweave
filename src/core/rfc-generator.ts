@@ -1,23 +1,46 @@
 /**
- * RFC Generator
+ * RFC Generator - Flexible Structure Support
  *
- * Generates RFC documents with proper structure based on source system (Jira, ADO, GitHub).
- * Adapts to project type and organizes work items appropriately.
+ * Universal RFC generator that adapts to different project management structures:
+ * - Jira: Epic → Story → Sub-task
+ * - Azure DevOps: Feature → User Story → Task
+ * - GitHub: Milestone → Issue (or flat)
+ * - Custom: Any configurable hierarchy
+ *
+ * Supports flexible grouping strategies:
+ * - by_type: Group by work item type (story, bug, task, issue, feature, etc.)
+ * - by_parent: Group by parent (epic, feature, milestone)
+ * - by_priority: Group by priority
+ * - by_label: Group by labels/tags
+ * - flat: No grouping
+ * - custom: User-defined grouping function
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { ProjectStructure, ProjectStructureDetector } from './project-structure-detector';
 
 export type RFCSource = 'jira' | 'ado' | 'github' | 'manual';
 
-export interface WorkItem {
-  type: 'story' | 'bug' | 'task' | 'epic';
+/**
+ * Flexible work item that can represent any type
+ */
+export interface FlexibleWorkItem {
+  type: string;  // story, bug, task, issue, feature, etc.
   id: string;
   title: string;
   description?: string;
   priority?: string;
-  source_key?: string;  // e.g., JIRA-123, 12345 (ADO), #123 (GitHub)
+  source_key?: string;
   source_url?: string;
+  parent?: {
+    type: string;  // epic, feature, milestone, etc.
+    key: string;
+    title: string;
+    url?: string;
+  };
+  labels?: string[];
+  metadata?: Record<string, any>;
 }
 
 export interface RFCMetadata {
@@ -30,95 +53,108 @@ export interface RFCMetadata {
 
 export interface RFCSourceMetadata {
   source_type: RFCSource;
-  epic_key?: string;      // For Jira
-  epic_url?: string;
-  work_item_id?: string;  // For ADO
-  work_item_url?: string;
-  issue_number?: string;  // For GitHub
-  issue_url?: string;
-  pull_request?: string;
+  // Parent work item (Epic, Feature, Milestone, etc.)
+  parent_type?: string;    // 'Epic', 'Feature', 'Milestone'
+  parent_key?: string;
+  parent_url?: string;
+  parent_title?: string;
+  // Additional metadata
   repository?: string;
+  project?: string;
+  board?: string;
 }
 
-export interface RFCContent {
+export interface FlexibleRFCContent {
   metadata: RFCMetadata;
   sourceMetadata?: RFCSourceMetadata;
   summary: string;
   motivation: string;
-  stories: WorkItem[];
-  bugs: WorkItem[];
-  tasks: WorkItem[];
+  workItems: FlexibleWorkItem[];
   alternatives?: string;
+  projectStructure?: ProjectStructure;  // Auto-detected or provided
 }
 
-export class RFCGenerator {
+/**
+ * Grouped work items for display
+ */
+interface GroupedWorkItems {
+  groupName: string;
+  displayName: string;
+  items: FlexibleWorkItem[];
+  metadata?: Record<string, any>;
+}
+
+export class FlexibleRFCGenerator {
   private projectRoot: string;
+  private structureDetector: ProjectStructureDetector;
 
   constructor(projectRoot: string = process.cwd()) {
     this.projectRoot = projectRoot;
+    this.structureDetector = new ProjectStructureDetector(projectRoot);
   }
 
   /**
-   * Generate RFC document
+   * Generate RFC document with flexible structure support
    */
-  public async generateRFC(content: RFCContent): Promise<string> {
+  public async generateRFC(content: FlexibleRFCContent): Promise<string> {
     const rfcFolder = path.join(this.projectRoot, '.specweave', 'docs', 'rfcs');
     this.ensureDir(rfcFolder);
+
+    // Auto-detect project structure if not provided
+    const structure = content.projectStructure || await this.structureDetector.detectStructure();
 
     const rfcFileName = this.generateRFCFileName(content.metadata);
     const rfcPath = path.join(rfcFolder, rfcFileName);
 
-    const rfcContent = this.buildRFCContent(content);
+    const rfcContent = this.buildRFCContent(content, structure);
     fs.writeFileSync(rfcPath, rfcContent, 'utf-8');
 
     return rfcPath;
   }
 
   /**
-   * Build RFC content with proper structure
+   * Build RFC content with structure-aware formatting
    */
-  private buildRFCContent(content: RFCContent): string {
-    const { metadata, sourceMetadata, summary, motivation, stories, bugs, tasks, alternatives } = content;
-
-    let rfc = this.generateHeader(metadata, sourceMetadata);
-    rfc += this.generateSummary(summary);
-    rfc += this.generateMotivation(motivation);
-    rfc += this.generateDetailedDesign(stories, bugs, tasks, sourceMetadata);
-    rfc += this.generateAlternatives(alternatives);
-    rfc += this.generateImplementationPlan(metadata.incrementId);
+  private buildRFCContent(content: FlexibleRFCContent, structure: ProjectStructure): string {
+    let rfc = this.generateHeader(content.metadata, content.sourceMetadata, structure);
+    rfc += this.generateSummary(content.summary);
+    rfc += this.generateMotivation(content.motivation);
+    rfc += this.generateDetailedDesign(content.workItems, structure, content.sourceMetadata);
+    rfc += this.generateAlternatives(content.alternatives);
+    rfc += this.generateImplementationPlan(content.metadata.incrementId);
 
     return rfc;
   }
 
   /**
-   * Generate RFC header with metadata
+   * Generate header with source-specific metadata
    */
-  private generateHeader(metadata: RFCMetadata, sourceMetadata?: RFCSourceMetadata): string {
+  private generateHeader(
+    metadata: RFCMetadata,
+    sourceMetadata?: RFCSourceMetadata,
+    structure?: ProjectStructure
+  ): string {
     let header = `# RFC ${metadata.incrementId}: ${metadata.title}\n\n`;
     header += `**Status**: ${this.capitalizeFirst(metadata.status)}\n`;
     header += `**Created**: ${metadata.created}\n`;
 
-    // Add source-specific metadata
-    if (sourceMetadata) {
-      switch (sourceMetadata.source_type) {
-        case 'jira':
-          if (sourceMetadata.epic_key && sourceMetadata.epic_url) {
-            header += `**Jira Epic**: [${sourceMetadata.epic_key}](${sourceMetadata.epic_url})\n`;
-          }
-          break;
-        case 'ado':
-          if (sourceMetadata.work_item_id && sourceMetadata.work_item_url) {
-            header += `**ADO Work Item**: [#${sourceMetadata.work_item_id}](${sourceMetadata.work_item_url})\n`;
-          }
-          break;
-        case 'github':
-          if (sourceMetadata.issue_number && sourceMetadata.issue_url) {
-            header += `**GitHub Issue**: [#${sourceMetadata.issue_number}](${sourceMetadata.issue_url})\n`;
-          }
-          if (sourceMetadata.repository) {
-            header += `**Repository**: ${sourceMetadata.repository}\n`;
-          }
-          break;
+    if (sourceMetadata && structure) {
+      // Show parent work item link (Epic, Feature, Milestone, etc.)
+      if (sourceMetadata.parent_key && sourceMetadata.parent_url) {
+        const parentType = sourceMetadata.parent_type || structure.workItemTypes.parentLevel || 'Parent';
+        header += `**${parentType}**: [${sourceMetadata.parent_key}](${sourceMetadata.parent_url})`;
+        if (sourceMetadata.parent_title) {
+          header += ` - ${sourceMetadata.parent_title}`;
+        }
+        header += '\n';
+      }
+
+      // Add repository/project context
+      if (sourceMetadata.repository) {
+        header += `**Repository**: ${sourceMetadata.repository}\n`;
+      }
+      if (sourceMetadata.project) {
+        header += `**Project**: ${sourceMetadata.project}\n`;
       }
     }
 
@@ -141,67 +177,290 @@ export class RFCGenerator {
   }
 
   /**
-   * Generate Detailed Design section with work items grouped by type
+   * Generate Detailed Design with flexible grouping
    */
   private generateDetailedDesign(
-    stories: WorkItem[],
-    bugs: WorkItem[],
-    tasks: WorkItem[],
+    workItems: FlexibleWorkItem[],
+    structure: ProjectStructure,
     sourceMetadata?: RFCSourceMetadata
   ): string {
     let design = `## Detailed Design\n\n`;
 
-    // User Stories
-    if (stories.length > 0) {
-      design += `### User Stories\n\n`;
-      stories.forEach((story, index) => {
-        design += `#### ${index + 1}. ${story.title}\n\n`;
-        if (story.description) {
-          design += `${story.description}\n\n`;
-        }
-        if (story.source_key && story.source_url) {
-          design += `**${this.getSourceLabel(sourceMetadata)}**: [${story.source_key}](${story.source_url})\n\n`;
-        }
-      });
-    }
+    // Group work items according to strategy
+    const grouped = this.groupWorkItems(workItems, structure);
 
-    // Bug Fixes
-    if (bugs.length > 0) {
-      design += `### Bug Fixes\n\n`;
-      bugs.forEach((bug, index) => {
-        design += `#### ${index + 1}. ${bug.title}\n\n`;
-        if (bug.description) {
-          design += `${bug.description}\n\n`;
-        }
-        if (bug.priority) {
-          design += `**Priority**: ${bug.priority}`;
-        }
-        if (bug.source_key && bug.source_url) {
-          design += ` | **${this.getSourceLabel(sourceMetadata)}**: [${bug.source_key}](${bug.source_url})`;
-        }
-        design += '\n\n';
-      });
-    }
+    // Generate sections for each group
+    grouped.forEach(group => {
+      design += `### ${group.displayName}\n\n`;
 
-    // Technical Tasks
-    if (tasks.length > 0) {
-      design += `### Technical Tasks\n\n`;
-      tasks.forEach((task, index) => {
-        design += `#### ${index + 1}. ${task.title}\n\n`;
-        if (task.description) {
-          design += `${task.description}\n\n`;
+      group.items.forEach((item, index) => {
+        design += `#### ${index + 1}. ${item.title}\n\n`;
+
+        if (item.description) {
+          design += `${item.description}\n\n`;
         }
-        if (task.source_key && task.source_url) {
-          design += `**${this.getSourceLabel(sourceMetadata)}**: [${task.source_key}](${task.source_url})\n\n`;
+
+        // Add metadata line
+        const metadataItems: string[] = [];
+
+        if (item.priority) {
+          metadataItems.push(`**Priority**: ${item.priority}`);
+        }
+
+        if (item.parent && structure.groupingStrategy !== 'by_parent') {
+          metadataItems.push(`**${item.parent.type}**: ${item.parent.title}`);
+        }
+
+        if (item.source_key && item.source_url) {
+          const sourceLabel = this.getSourceLabel(sourceMetadata?.source_type);
+          metadataItems.push(`**${sourceLabel}**: [${item.source_key}](${item.source_url})`);
+        }
+
+        if (item.labels && item.labels.length > 0) {
+          metadataItems.push(`**Labels**: ${item.labels.join(', ')}`);
+        }
+
+        if (metadataItems.length > 0) {
+          design += metadataItems.join(' | ') + '\n\n';
         }
       });
-    }
+    });
 
     return design;
   }
 
   /**
-   * Generate Alternatives Considered section
+   * Group work items according to project structure
+   */
+  private groupWorkItems(
+    items: FlexibleWorkItem[],
+    structure: ProjectStructure
+  ): GroupedWorkItems[] {
+    switch (structure.groupingStrategy) {
+      case 'by_type':
+        return this.groupByType(items, structure);
+
+      case 'by_parent':
+        return this.groupByParent(items, structure);
+
+      case 'by_priority':
+        return this.groupByPriority(items);
+
+      case 'by_label':
+        return this.groupByLabel(items);
+
+      case 'flat':
+        return [{
+          groupName: 'all',
+          displayName: 'Work Items',
+          items
+        }];
+
+      case 'custom':
+        if (structure.customGrouping) {
+          const customGroups = structure.customGrouping(items);
+          return Object.entries(customGroups).map(([name, groupItems]) => ({
+            groupName: name,
+            displayName: this.formatGroupName(name),
+            items: groupItems
+          }));
+        }
+        return this.groupByType(items, structure);
+
+      default:
+        return this.groupByType(items, structure);
+    }
+  }
+
+  /**
+   * Group by work item type (story, bug, task, issue, etc.)
+   */
+  private groupByType(items: FlexibleWorkItem[], structure: ProjectStructure): GroupedWorkItems[] {
+    const typeMap = new Map<string, FlexibleWorkItem[]>();
+
+    items.forEach(item => {
+      const type = item.type.toLowerCase();
+      if (!typeMap.has(type)) {
+        typeMap.set(type, []);
+      }
+      typeMap.get(type)!.push(item);
+    });
+
+    // Define display order and names
+    const typeDisplayNames: Record<string, string> = {
+      story: 'User Stories',
+      'user story': 'User Stories',
+      bug: 'Bug Fixes',
+      task: 'Technical Tasks',
+      issue: 'Issues',
+      feature: 'Features',
+      epic: 'Epics',
+      subtask: 'Sub-tasks',
+      'sub-task': 'Sub-tasks'
+    };
+
+    const typeOrder = ['story', 'user story', 'feature', 'bug', 'task', 'issue', 'subtask', 'sub-task'];
+
+    const groups: GroupedWorkItems[] = [];
+
+    // Add groups in order
+    typeOrder.forEach(type => {
+      if (typeMap.has(type)) {
+        groups.push({
+          groupName: type,
+          displayName: typeDisplayNames[type] || this.formatGroupName(type),
+          items: typeMap.get(type)!
+        });
+        typeMap.delete(type);
+      }
+    });
+
+    // Add remaining types not in predefined order
+    typeMap.forEach((groupItems, type) => {
+      groups.push({
+        groupName: type,
+        displayName: this.formatGroupName(type),
+        items: groupItems
+      });
+    });
+
+    return groups;
+  }
+
+  /**
+   * Group by parent (Epic, Feature, Milestone, etc.)
+   */
+  private groupByParent(items: FlexibleWorkItem[], structure: ProjectStructure): GroupedWorkItems[] {
+    const parentMap = new Map<string, FlexibleWorkItem[]>();
+    const noParent: FlexibleWorkItem[] = [];
+
+    items.forEach(item => {
+      if (item.parent) {
+        const parentKey = item.parent.key;
+        if (!parentMap.has(parentKey)) {
+          parentMap.set(parentKey, []);
+        }
+        parentMap.get(parentKey)!.push(item);
+      } else {
+        noParent.push(item);
+      }
+    });
+
+    const groups: GroupedWorkItems[] = [];
+
+    // Add parent groups
+    parentMap.forEach((groupItems, parentKey) => {
+      const firstItem = groupItems[0];
+      const parentType = firstItem.parent?.type || structure.workItemTypes.parentLevel || 'Parent';
+      const parentTitle = firstItem.parent?.title || parentKey;
+
+      groups.push({
+        groupName: parentKey,
+        displayName: `${parentType}: ${parentTitle}`,
+        items: groupItems,
+        metadata: {
+          parentKey,
+          parentType,
+          parentUrl: firstItem.parent?.url
+        }
+      });
+    });
+
+    // Add ungrouped items
+    if (noParent.length > 0) {
+      groups.push({
+        groupName: 'ungrouped',
+        displayName: 'Other Work Items',
+        items: noParent
+      });
+    }
+
+    return groups;
+  }
+
+  /**
+   * Group by priority
+   */
+  private groupByPriority(items: FlexibleWorkItem[]): GroupedWorkItems[] {
+    const priorityMap = new Map<string, FlexibleWorkItem[]>();
+
+    items.forEach(item => {
+      const priority = item.priority || 'None';
+      if (!priorityMap.has(priority)) {
+        priorityMap.set(priority, []);
+      }
+      priorityMap.get(priority)!.push(item);
+    });
+
+    const priorityOrder = ['P1', 'P2', 'P3', 'High', 'Medium', 'Low', 'None'];
+    const groups: GroupedWorkItems[] = [];
+
+    priorityOrder.forEach(priority => {
+      if (priorityMap.has(priority)) {
+        groups.push({
+          groupName: priority,
+          displayName: `Priority: ${priority}`,
+          items: priorityMap.get(priority)!
+        });
+        priorityMap.delete(priority);
+      }
+    });
+
+    // Add remaining priorities
+    priorityMap.forEach((groupItems, priority) => {
+      groups.push({
+        groupName: priority,
+        displayName: `Priority: ${priority}`,
+        items: groupItems
+      });
+    });
+
+    return groups;
+  }
+
+  /**
+   * Group by labels
+   */
+  private groupByLabel(items: FlexibleWorkItem[]): GroupedWorkItems[] {
+    const labelMap = new Map<string, FlexibleWorkItem[]>();
+    const noLabels: FlexibleWorkItem[] = [];
+
+    items.forEach(item => {
+      if (item.labels && item.labels.length > 0) {
+        item.labels.forEach(label => {
+          if (!labelMap.has(label)) {
+            labelMap.set(label, []);
+          }
+          labelMap.get(label)!.push(item);
+        });
+      } else {
+        noLabels.push(item);
+      }
+    });
+
+    const groups: GroupedWorkItems[] = [];
+
+    labelMap.forEach((groupItems, label) => {
+      groups.push({
+        groupName: label,
+        displayName: `Label: ${label}`,
+        items: groupItems
+      });
+    });
+
+    if (noLabels.length > 0) {
+      groups.push({
+        groupName: 'unlabeled',
+        displayName: 'Unlabeled Items',
+        items: noLabels
+      });
+    }
+
+    return groups;
+  }
+
+  /**
+   * Generate Alternatives section
    */
   private generateAlternatives(alternatives?: string): string {
     let alt = `## Alternatives Considered\n\n`;
@@ -229,21 +488,25 @@ export class RFCGenerator {
   }
 
   /**
-   * Get source label based on source type
+   * Get source label
    */
-  private getSourceLabel(sourceMetadata?: RFCSourceMetadata): string {
-    if (!sourceMetadata) return 'Source';
-
-    switch (sourceMetadata.source_type) {
-      case 'jira':
-        return 'Jira';
-      case 'ado':
-        return 'ADO';
-      case 'github':
-        return 'GitHub';
-      default:
-        return 'Source';
+  private getSourceLabel(sourceType?: RFCSource): string {
+    switch (sourceType) {
+      case 'jira': return 'Jira';
+      case 'ado': return 'ADO';
+      case 'github': return 'GitHub';
+      default: return 'Source';
     }
+  }
+
+  /**
+   * Format group name for display
+   */
+  private formatGroupName(name: string): string {
+    return name
+      .split(/[-_\s]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   /**
@@ -254,7 +517,7 @@ export class RFCGenerator {
   }
 
   /**
-   * Slugify string for file names
+   * Slugify string
    */
   private slugify(text: string): string {
     return text
