@@ -142,10 +142,10 @@ project-root/
 │   │       └── reports/         # ✅ Analysis, reports
 │   └── tests/                   # Centralized test repository
 │
-├── .claude/                     # Installed agents/skills
-│   ├── agents/                  # Selective installation
-│   ├── skills/                  # Selective installation
-│   └── commands/                # Slash commands
+├── .claude/                     # Pre-installed components
+│   ├── agents/                  # 10 agents ready to use
+│   ├── skills/                  # 35+ skills ready to use
+│   └── commands/                # 10 slash commands
 │
 ├── CLAUDE.md                    # This file (ONLY file we add)
 └── src/                         # Your source code (unchanged)
@@ -197,7 +197,7 @@ backlog → planned → in-progress → completed → closed
 
 ## Agents (Activate Automatically)
 
-**Strategic Agents** (installed for all projects):
+**Strategic Agents** (pre-installed & ready to use):
 
 | Agent | Purpose | Activates When |
 |-------|---------|----------------|
@@ -206,23 +206,14 @@ backlog → planned → in-progress → completed → closed
 | `security` | Threat modeling | Security review |
 | `qa-lead` | Test strategy | Testing |
 | `devops` | Infrastructure, deployment | Deployment needed |
+| `tech-lead` | Code review | Code review |
+| `sre` | Incident response | Troubleshooting |
+| `docs-writer` | Documentation | Writing docs |
+| `performance` | Performance optimization | Optimization needed |
 
-**Implementation Agents** (installed based on your tech stack):
+**All 10 agents are pre-installed** - Claude uses the right one based on your request!
 
-{#IF_PYTHON}
-- `python-backend` - Python APIs (FastAPI, Django)
-{#ENDIF}
-{#IF_NODEJS}
-- `nodejs-backend` - Node.js APIs (Express, NestJS)
-{#ENDIF}
-{#IF_NEXTJS}
-- `nextjs` - Next.js applications
-{#ENDIF}
-{#IF_FRONTEND}
-- `frontend` - React/Vue/Angular frontend
-{#ENDIF}
-
-**See**: `.claude/agents/` for all installed agents
+**See**: `.claude/agents/` for complete list
 
 ---
 
@@ -237,13 +228,25 @@ backlog → planned → in-progress → completed → closed
 | `context-loader` | Load context selectively | Working on increments |
 | `skill-router` | Route to appropriate skill | Ambiguous requests |
 
-**Integration Skills** (optional, install when needed):
+**Technology Skills** (all pre-installed):
 
-| Skill | Purpose | Install Command |
-|-------|---------|-----------------|
-| `jira-sync` | Sync with JIRA | `npx specweave install jira-sync` |
-| `github-sync` | Sync with GitHub | `npx specweave install github-sync` |
-| `hetzner-provisioner` | Deploy to Hetzner | `npx specweave install hetzner-provisioner` |
+| Skill | Purpose | Activates When |
+|-------|---------|----------------|
+| `nodejs-backend` | Node.js/Express/NestJS | Node.js backend requests |
+| `python-backend` | Python/FastAPI/Django | Python backend requests |
+| `nextjs` | Next.js App Router | Next.js requests |
+| `frontend` | React/Vue/Angular | Frontend requests |
+| `dotnet-backend` | ASP.NET Core | .NET requests |
+
+**Integration Skills** (all pre-installed):
+
+| Skill | Purpose | Activates When |
+|-------|---------|----------------|
+| `jira-sync` | Sync with JIRA | JIRA integration needed |
+| `github-sync` | Sync with GitHub | GitHub integration needed |
+| `hetzner-provisioner` | Deploy to Hetzner | Hetzner deployment needed |
+
+**See**: `.claude/skills/` for complete list of 35+ skills!
 
 ---
 

@@ -20,13 +20,13 @@ Your project is initialized! Now describe what you want to build.
 
 3. **SpecWeave will automatically**:
    - Detect your tech stack (or ask you to choose)
-   - Install needed agents & skills on-demand
+   - Use the right agents & skills (all pre-installed!)
    - Create strategic documentation
    - Generate specifications
    - Build the implementation
    - Write tests
 
-That's it! No manual configuration needed.
+That's it! All components ready - just describe what you want!
 
 ---
 
@@ -40,14 +40,14 @@ That's it! No manual configuration needed.
 │   ├── docs/               # Documentation (generated)
 │   └── tests/              # Tests (generated)
 ├── .claude/
-│   ├── commands/           # Slash commands (/create-increment, etc.)
-│   ├── agents/             # AI agents (auto-installed on-demand)
-│   └── skills/             # AI skills (auto-installed on-demand)
+│   ├── commands/           # Slash commands (10 installed)
+│   ├── agents/             # AI agents (9 installed & ready)
+│   └── skills/             # AI skills (30+ installed & ready)
 ├── CLAUDE.md               # Instructions for Claude
 └── README.md               # This file
 ```
 
-**Note**: Agents and skills are NOT pre-installed. They install automatically when you describe your project!
+**Note**: All agents and skills are pre-installed and ready to use!
 
 ---
 
@@ -56,7 +56,7 @@ That's it! No manual configuration needed.
 SpecWeave is a spec-driven development framework where:
 - **Specifications are the source of truth** (code follows specs)
 - **AI agents work autonomously** (PM, Architect, Security, QA, DevOps)
-- **Components auto-install on-demand** (no manual setup)
+- **All components pre-installed** (10 agents + 35+ skills ready!)
 - **Works with ANY tech stack** (TypeScript, Python, Go, Rust, etc.)
 
 ---
