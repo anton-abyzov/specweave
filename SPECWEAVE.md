@@ -13,46 +13,58 @@ This file contains quick reference for developing with SpecWeave:
 
 ---
 
-## SpecWeave Auto-Routing (CRITICAL)
+## Using SpecWeave with Slash Commands (CRITICAL)
 
-**MANDATORY BEHAVIOR**: This project has SpecWeave installed (`.specweave/` directory exists).
+**IMPORTANT**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive detection!
 
-### Auto-Detection & Routing Rules
+### How SpecWeave Works
 
-1. **ALWAYS check for SpecWeave FIRST** before responding to ANY user request
-2. **ROUTE ALL development-related questions** through `specweave-detector` skill
-3. **EVEN GENERIC questions** may need SpecWeave context (e.g., "Analyze BTC/USD" → suggest creating trading analysis feature)
+SpecWeave follows the **spec-kit approach**: You MUST use slash commands explicitly.
 
-### Detection Logic
+**To use SpecWeave**: Type a slash command (e.g., `/pi "Feature description"`)
 
-```javascript
-if (directoryExists('.specweave/config.yaml')) {
-  // SpecWeave is installed
-  // Route through specweave-detector for ALL development requests
-  activateSpecWeaveMode();
-}
+### Quick Command Reference
+
+| Alias | Full Command | Purpose | Example |
+|-------|--------------|---------|---------|
+| `/init` | `/create-project` | Initialize SpecWeave project | `/init my-saas` |
+| `/pi` | `/create-increment` | **Plan Product Increment** | `/pi "User auth"` |
+| `/si` | `/start-increment` | Start working on increment | `/si 0001` |
+| `/at` | `/add-tasks` | Add tasks to increment | `/at 0001 "Add tests"` |
+| `/vi` | `/validate-increment` | Validate increment quality | `/vi 0001 --quality` |
+| `/done` | `/close-increment` | Close increment | `/done 0001` |
+| `/ls` | `/list-increments` | List all increments | `/ls` |
+
+**Why Slash Commands?**
+- ✅ **100% reliable** - Always works, no guessing
+- ✅ **Clear intent** - You know exactly when SpecWeave is active
+- ✅ **Fast** - Short aliases like `/pi` save keystrokes
+- ✅ **Memorable** - Domain-specific names (PI = Product Increment from Agile/SAFe)
+
+### Typical Workflow
+
+```bash
+# 1. Initialize project
+npx specweave init my-saas
+
+# 2. Plan your first increment (use slash command!)
+/pi "User authentication with JWT and RBAC"
+
+# 3. Validate
+/vi 0001 --quality
+
+# 4. Start working
+/si 0001
+
+# 5. Implement (regular conversation, no slash commands needed here)
+User: "Let's implement the backend API"
+Claude: [implements based on plan.md and tasks.md]
+
+# 6. Close when done
+/done 0001
 ```
 
-### Routing Examples
-
-| User Request | Detection | Action |
-|-------------|-----------|--------|
-| "Create authentication" | Development request | ✅ Route to `specweave-detector` → `increment-planner` |
-| "Analyze BTC/USD prices" | Could be feature request | ✅ Route to `specweave-detector` → Suggest: "Create BTC analysis feature?" |
-| "Add payment processing" | Development request | ✅ Route to `specweave-detector` → `increment-planner` |
-| "Fix bug in login" | Development request | ✅ Route to `specweave-detector` → Load context → Implement |
-| "What's for lunch?" | Non-development | ❌ Respond normally (out of domain) |
-
-### Activation Behavior
-
-**When SpecWeave is detected**:
-- ✅ Show indicator: `🔷 SpecWeave Active`
-- ✅ Route development requests automatically
-- ✅ Load context via `context-loader` when needed
-- ✅ Use appropriate agents (PM, Architect, DevOps, etc.)
-- ✅ Adapt to detected tech stack (TypeScript, Python, Go, etc.)
-
-**Rule**: When in doubt, route through SpecWeave. Let `specweave-detector` decide if it's a valid development request.
+**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
 
 ---
 
@@ -177,12 +189,14 @@ npx specweave list --installed      # See what's installed
 
 ---
 
-## Quick Reference: Slash Commands
+## Quick Reference: Slash Commands (MUST USE!)
+
+**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
 
 | Command | Alias | Purpose | Example |
 |---------|-------|---------|---------|
 | `/create-project` | `/init` | Bootstrap new SpecWeave project | `/init my-saas --type python` |
-| `/create-increment` | `/pi` | Plan Product Increment (create new increment) | `/pi "user authentication"` |
+| `/create-increment` | `/pi` | **Plan Product Increment** (create new feature) | `/pi "user authentication"` |
 | `/start-increment` | `/si` | Start working on an increment | `/si 0001` |
 | `/add-tasks` | `/at` | Add tasks to existing increment | `/at 0001 "implement login"` |
 | `/validate-increment` | `/vi` | Validate with rule-based + optional AI quality | `/vi 0001 --quality` |
@@ -196,6 +210,7 @@ npx specweave list --installed      # See what's installed
 
 **💡 Pro Tip**: Use short aliases (`/pi`, `/vi`, `/si`, `/done`, `/ls`, `/at`, `/init`) for speed during active development!
 - **PI** = Product Increment (standard Agile terminology)
+- **Why explicit?** Auto-activation doesn't work reliably - slash commands ensure SpecWeave ALWAYS activates
 
 **See**: [Command Reference](.claude/commands/) for all available commands
 
@@ -230,8 +245,8 @@ npx specweave list --installed      # See what's installed
 
 | Skill | Purpose | Activates When |
 |-------|---------|----------------|
-| `specweave-detector` | Auto-detect SpecWeave projects | Any request in SpecWeave project |
-| `increment-planner` | Plan features with context | Creating/planning features |
+| `specweave-detector` | Slash command documentation | User asks about SpecWeave commands |
+| `increment-planner` | Plan features with context | `/pi` or `/create-increment` command |
 | `skill-router` | Route to appropriate skills | Ambiguous requests |
 | `context-loader` | Load context selectively | Working on increments |
 | `diagrams-generator` | Coordinate diagram creation | "create diagram", "draw diagram", C4, sequence, ER |
@@ -287,11 +302,17 @@ backlog → planned → in-progress → completed → closed
 
 **Naming Convention**: 4-digit format (0001-9999), e.g., `0001-feature-name`, `0042-user-auth`, `0123-payment-flow`
 
-**Commands**:
+**Commands** (MUST USE SLASH COMMANDS!):
 ```bash
-/create-increment "feature name"      # Create new increment (auto-numbered, e.g., 0003-feature-name)
-/add-tasks 0001 "task description"    # Add tasks to existing
-/close-increment 0001                 # Close with leftover transfer
+# Use short aliases (recommended)
+/pi "feature name"                    # Create new increment (auto-numbered, e.g., 0003-feature-name)
+/at 0001 "task description"           # Add tasks to existing
+/done 0001                             # Close with leftover transfer
+
+# Or full commands
+/create-increment "feature name"      # Same as /pi
+/add-tasks 0001 "task description"    # Same as /at
+/close-increment 0001                 # Same as /done
 ```
 
 **See**: [Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md) for complete lifecycle management
@@ -662,8 +683,27 @@ Attempt 2/3: Refining with feedback...
 
 ---
 
-**Quick Start**: Run `/create-project` to initialize a new SpecWeave project
+**Quick Start**:
 
-**Need help?**: Ask Claude to load the relevant guide from `.specweave/docs/internal/delivery/guides/`
+**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type `/pi` to activate!
+
+```bash
+# Initialize project
+npx specweave init my-project
+
+# Create your first feature (use slash command!)
+/pi "feature description"
+
+# Typical workflow
+1. /pi "feature" → SpecWeave creates specs
+2. Regular conversation → Claude implements code
+3. /done 0001 → Close increment
+```
+
+**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+
+**Need help?**: Type `/pi` to see examples, or ask about specific workflows.
+
+**SpecWeave Documentation**: https://spec-weave.com
 
 **Last Updated**: Auto-updated via `post-task-completion` hook

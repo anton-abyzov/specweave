@@ -7,6 +7,107 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.7] - 2025-10-28
+
+### 🔄 **CRITICAL: Slash Commands Only (Architectural Pivot)**
+
+**Major UX change**: SpecWeave now uses **EXPLICIT SLASH COMMANDS** instead of auto-activation.
+
+### Why This Change?
+
+**Problem discovered**: Auto-activation/proactive detection doesn't work reliably in Claude Code. Users reported that SpecWeave wasn't activating when expected, causing confusion and broken workflows.
+
+**Solution**: Explicit slash commands (like spec-kit approach) ensure SpecWeave ALWAYS activates when you want it.
+
+### What Changed
+
+**1. Slash Command Workflow (NEW!)**:
+```bash
+# Old approach (0.1.6 and earlier) - DIDN'T WORK:
+User: "Create authentication feature"
+❌ SpecWeave might not activate
+
+# New approach (0.1.7+) - ALWAYS WORKS:
+User: /pi "Create authentication feature"
+✅ SpecWeave ALWAYS activates
+```
+
+**2. Updated `specweave-detector` skill**:
+- ❌ Removed `proactive: true` flag
+- ❌ Removed auto-activation logic
+- ❌ Removed intent-based routing
+- ✅ Changed to documentation skill
+- ✅ Explains slash commands clearly
+- ✅ Updated description with all command keywords
+
+**3. Updated ALL documentation**:
+- ✅ `CLAUDE.md` template - Slash commands first approach
+- ✅ `SPECWEAVE.md` - Document slash commands
+- ✅ `README.md` - Show slash command workflow
+- ✅ `specweave-detector` skill - Complete rewrite
+
+**4. Command aliases remain unchanged**:
+- `/pi` = `/create-increment` (Plan Product Increment)
+- `/si` = `/start-increment`
+- `/at` = `/add-tasks`
+- `/vi` = `/validate-increment`
+- `/done` = `/close-increment`
+- `/ls` = `/list-increments`
+
+### Typical Workflow (Updated)
+
+```bash
+# 1. Initialize project
+npx specweave init my-saas
+
+# 2. Plan increment (MUST use slash command!)
+/pi "User authentication with JWT and RBAC"
+
+# SpecWeave creates:
+# ✅ spec.md (requirements)
+# ✅ plan.md (architecture)
+# ✅ tasks.md (implementation steps)
+# ✅ tests.md (test strategy)
+
+# 3. Implement (regular conversation, no slash command)
+User: "Implement the authentication backend"
+Claude: [implements based on plan.md]
+
+# 4. Close increment (slash command)
+/done 0001
+```
+
+### Benefits
+
+✅ **100% reliable** - Always works, no guessing
+✅ **Clear intent** - You know exactly when SpecWeave is active
+✅ **Fast** - Short aliases like `/pi` save keystrokes
+✅ **Memorable** - Domain-specific names (PI = Product Increment from Agile/SAFe)
+✅ **No confusion** - Explicit is better than implicit
+
+### Migration from 0.1.6
+
+**No breaking changes to project structure** - only activation mechanism changed.
+
+If you have existing projects:
+1. Update to 0.1.7: `npm update -g specweave`
+2. Re-install components: `npm run install:skills`
+3. **Start using slash commands**: Type `/pi "feature"` instead of "Create feature"
+
+### User Impact
+
+⚠️ **BREAKING CHANGE**: You MUST now use slash commands to activate SpecWeave.
+
+**Before (0.1.6 - DIDN'T WORK)**:
+- "Create authentication" → ❌ Might not activate
+
+**After (0.1.7 - ALWAYS WORKS)**:
+- `/pi "authentication"` → ✅ Always activates
+
+**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
+
+---
+
 ## [0.1.6] - 2025-10-28
 
 ### ✨ **Command Aliases & Roadmap Improvements**

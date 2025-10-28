@@ -101,6 +101,8 @@ specweave --help                   # Show help
 
 ## 🚀 Quick Example
 
+**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
+
 ```bash
 # Initialize project - ALL components pre-installed!
 npx specweave init my-app
@@ -111,11 +113,11 @@ cd my-app
 # ✅ 35+ skills in .claude/skills/
 # ✅ 10 slash commands in .claude/commands/
 
-# Open Claude Code and start building:
+# Open Claude Code and use slash commands:
 
-User: "Create Next.js authentication with email and OAuth"
+User: /pi "Next.js authentication with email and OAuth"
     ↓
-SpecWeave: 🔷 SpecWeave Active
+SpecWeave: 🔷 SpecWeave Active (/create-increment)
 
            🚀 Creating increment 0001-user-authentication...
            📝 Using nextjs skill (already installed!)
@@ -125,34 +127,39 @@ SpecWeave: 🔷 SpecWeave Active
 ✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
-User: "Create C4 context diagram for authentication"
+User: "Create C4 context diagram for authentication"  # Regular conversation for implementation
     ↓
 SpecWeave: 🎨 Using diagrams-generator skill
            🤖 Coordinating with diagrams-architect agent
 
 ✅ Diagram saved: .specweave/docs/internal/architecture/diagrams/auth.c4-context.mmd
 
-User: "Implement authentication"
+User: "Implement authentication based on plan.md"  # Regular conversation
     ↓
-SpecWeave: 🤖 Orchestrating: PM → Architect → Backend → QA → Docs
+SpecWeave: 🤖 Implementing based on specifications
 
 ✅ Code: src/auth/
 ✅ Tests: tests/auth/
 ✅ Docs: Updated automatically
+
+User: /done 0001  # Close increment with slash command
+✅ Increment 0001 closed successfully
 ```
 
 **How it works**:
 1. `specweave init` → ALL components pre-installed (10 agents + 35+ skills)
-2. `.specweave/` detected → `specweave-detector` activates automatically
-3. User request parsed → routed to appropriate pre-installed skills
-4. Skills coordinate agents → artifacts generated
+2. **Use `/pi "feature"`** → Creates increment with specs (spec.md, plan.md, tasks.md, tests.md)
+3. **Regular conversation** → Implement code based on specifications
+4. **Use `/done 0001`** → Close increment when complete
 5. All components ready - no waiting, no installation
+
+**Why slash commands?** Auto-activation doesn't work reliably - slash commands ensure SpecWeave ALWAYS activates when you want it.
 
 ---
 
 ## 🤖 Agents (10 Total - All Pre-Installed!)
 
-SpecWeave includes **10 specialized AI agents** that activate automatically based on your request:
+SpecWeave includes **10 specialized AI agents** that work with slash commands and during implementation:
 
 | Agent | Role | When It Activates |
 |-------|------|-------------------|
@@ -173,11 +180,11 @@ SpecWeave includes **10 specialized AI agents** that activate automatically base
 
 ## 🎯 Skills (35+ Total - All Pre-Installed!)
 
-SpecWeave includes **35+ AI skills** that activate automatically based on your request:
+SpecWeave includes **35+ AI skills** that work with slash commands:
 
 ### Core Framework Skills
-- **specweave-detector** - Auto-detect SpecWeave projects
-- **increment-planner** - Plan features and create specifications
+- **specweave-detector** - Slash command documentation
+- **increment-planner** - Plan features via `/pi` command
 - **skill-router** - Route requests to appropriate skills
 - **context-loader** - Load relevant specifications
 - **role-orchestrator** - Coordinate multiple agents
@@ -281,22 +288,30 @@ specweave/
 
 ### For Greenfield Projects
 
+**IMPORTANT**: Use slash commands to activate SpecWeave!
+
 ```bash
 # 1. Create specifications (optional: comprehensive upfront or incremental)
 # Option A: Comprehensive (Enterprise) - 500-600+ pages upfront
 # Option B: Incremental (Startup) - Build as you go
 
-# 2. Create increment
-/create-increment "user authentication"
+# 2. Create increment with slash command
+/pi "user authentication"
+# Short alias for /create-increment
+# SpecWeave orchestrates: PM → Architect → QA agents
+# Creates: spec.md, plan.md, tasks.md, tests.md
 
-# 3. Implement with auto-role routing
-"Implement user authentication"
-# SpecWeave orchestrates: PM → Architect → Backend → QA → Docs
+# 3. Implement with regular conversation (no slash command needed)
+"Implement user authentication based on plan.md"
+# Claude implements based on specifications
 
-# 4. Generate diagrams
+# 4. Generate diagrams (regular conversation)
 "Create C4 context diagram for authentication"
 
-# 5. Sync with tools (optional)
+# 5. Close increment with slash command
+/done 0001
+
+# 6. Sync with tools (optional)
 /sync-github  # Sync to GitHub issues
 ```
 
