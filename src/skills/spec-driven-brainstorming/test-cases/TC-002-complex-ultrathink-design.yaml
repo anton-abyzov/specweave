@@ -1,0 +1,190 @@
+---
+name: "Complex Problem with Ultrathink Mode"
+description: "Handle a complex distributed systems problem using ultrathink for deep reasoning"
+skill: spec-driven-brainstorming
+priority: P2
+estimated_time: "20-30 minutes"
+
+input:
+  prompt: "I need a distributed task queue with exactly-once delivery guarantees for processing financial transactions"
+  context:
+    existing_project: false
+    complexity: "High"
+    domain: "Financial systems"
+    requirements:
+      - "Exactly-once delivery semantics"
+      - "High throughput (10K+ tasks/sec)"
+      - "Audit trail for compliance"
+      - "Fault tolerance and disaster recovery"
+
+expected_output:
+  phase_1_understanding:
+    questions_asked:
+      - "What types of financial transactions?" # payments, transfers, reconciliation
+      - "What's your scale and peak load?" # concurrent tasks, daily volume
+      - "Compliance requirements?" # SOC2, PCI-DSS, audit logs
+      - "Acceptable latency?" # real-time vs batch processing
+      - "Budget constraints?" # cloud costs, team size
+
+    gathered_requirements:
+      purpose: "Process payment transactions with guaranteed exactly-once delivery"
+      constraints:
+        - "Must maintain audit trail for 7 years"
+        - "Compliance: PCI-DSS, SOC2"
+        - "Peak load: 10K tasks/sec"
+        - "Latency: <500ms p99"
+      success_criteria:
+        - "Zero duplicate transactions"
+        - "99.99% uptime SLA"
+        - "Complete audit trail"
+
+  phase_2_tech_stack:
+    detected_stack: null # greenfield
+
+    stack_question_asked: true
+
+    options_presented:
+      - "Go + PostgreSQL" # strong concurrency, SQL for audit
+      - "Node.js + Redis + PostgreSQL" # JavaScript ecosystem, Redis for queue
+      - "Python + Celery + RabbitMQ + PostgreSQL" # mature queue system
+
+    user_selection: "Go + PostgreSQL"
+
+  phase_3_exploration:
+    ultrathink_suggested: true
+    ultrathink_reason: "Complex distributed systems problem with many trade-offs around consistency, fault tolerance, and exactly-once semantics"
+
+    thinking_tokens_used: 31999 # full ultrathink budget
+
+    approaches_proposed: 3
+
+    approach_1:
+      name: "Event Sourcing with Outbox Pattern"
+      architecture: "Write events to DB, background processor publishes to queue"
+      trade_offs:
+        pros:
+          - "Exactly-once delivery via DB transactions"
+          - "Complete audit trail built-in"
+          - "Easy to replay events"
+        cons:
+          - "Higher latency (dual writes)"
+          - "Complex event schema evolution"
+        consistency: "Strong (ACID transactions)"
+        complexity: "High"
+        cost: "Medium (DB I/O intensive)"
+
+    approach_2:
+      name: "Idempotent Task Queue with Distributed Locks"
+      architecture: "Redis queue + PostgreSQL state tracking + distributed locks"
+      trade_offs:
+        pros:
+          - "Lower latency (in-memory queue)"
+          - "Horizontal scaling easier"
+        cons:
+          - "Requires careful lock management"
+          - "Risk of phantom duplicate if lock expires"
+        consistency: "Eventual (with idempotency keys)"
+        complexity: "Very High"
+        cost: "High (Redis cluster + PostgreSQL)"
+
+    approach_3:
+      name: "Transactional Outbox with Change Data Capture (CDC)"
+      architecture: "Write to DB, CDC streams changes to queue"
+      trade_offs:
+        pros:
+          - "Best of both worlds: ACID + async processing"
+          - "At-least-once delivery, idempotent consumers for exactly-once effect"
+          - "Built-in audit trail"
+        cons:
+          - "Requires CDC infrastructure (Debezium, Kafka Connect)"
+          - "Operational complexity"
+        consistency: "Strong write, eventual propagation"
+        complexity: "High (infrastructure)"
+        cost: "High (Kafka/CDC infrastructure)"
+
+    user_selection: "Approach 1" # Event Sourcing with Outbox
+
+    edge_cases_analyzed:
+      - "Database connection failure during transaction"
+      - "Task processor crashes mid-processing"
+      - "Network partition between queue and DB"
+      - "Clock skew in distributed environment"
+      - "Idempotency key collision"
+
+  phase_4_design_validation:
+    sections_presented:
+      - title: "Architecture Overview (Ultrathink Analysis)"
+        content: "Event sourcing + outbox pattern ensures exactly-once via DB transactions. Analyzed 5 edge cases for consistency guarantees."
+        validated: true
+
+      - title: "Components (with Fault Tolerance)"
+        content: "Event store (PostgreSQL), outbox processor (Go workers), task queue (Redis Streams), dead letter queue for failures"
+        validated: true
+
+      - title: "Data Flow (Transactional Guarantees)"
+        content: "Transaction starts → Write event to event_store → Write to outbox → Commit (ACID) → Background worker polls outbox → Publishes to queue → Marks processed"
+        validated: true
+
+      - title: "Exactly-Once Semantics (Implementation)"
+        content: "Idempotency keys (UUID v4), transaction boundaries, at-least-once delivery + idempotent consumers = exactly-once effect"
+        validated: true
+
+      - title: "Error Handling & Recovery"
+        content: "Retry with exponential backoff, dead letter queue after 3 retries, circuit breaker, health checks"
+        validated: true
+
+      - title: "Audit Trail & Compliance"
+        content: "Event sourcing provides complete history, immutable event log, 7-year retention in cold storage (S3 Glacier)"
+        validated: true
+
+      - title: "Testing Strategy (Chaos Engineering)"
+        content: "Unit tests (logic), integration tests (DB transactions), E2E tests (full flow), chaos tests (network failures, DB crashes)"
+        validated: true
+
+      - title: "Performance & Scale Analysis"
+        content: "Throughput: 10K tasks/sec achievable with 5 workers, latency: p99 <500ms, bottleneck: DB writes (optimize with batching)"
+        validated: true
+
+    design_complete: true
+    complexity_justified: true
+
+  phase_5_specweave_handoff:
+    handoff_type: "Full Increment Creation with Architecture Focus"
+    skill_invoked: "increment-planner"
+
+    expected_increment:
+      directory: ".specweave/increments/0001-distributed-task-queue/"
+      files:
+        - "spec.md" # references strategy/distributed-systems/
+        - "plan.md" # references architecture/distributed-systems/
+        - "tasks.md"
+        - "tests.md" # includes chaos engineering tests
+        - "context-manifest.yaml"
+
+    agents_invoked:
+      - "pm" # Financial transaction requirements
+      - "architect" # Distributed systems design + ADRs
+      - "security" # PCI-DSS, audit compliance
+      - "qa-lead" # Chaos engineering test strategy
+
+validation:
+  - "Phase 1: Domain-specific questions asked (financial, compliance)"
+  - "Phase 2: Tech stack selection with 3 options"
+  - "Phase 3: Ultrathink mode suggested and used"
+  - "Phase 3: Edge cases explicitly analyzed"
+  - "Phase 3: Consistency models compared (strong vs eventual)"
+  - "Phase 4: Design sections include fault tolerance and recovery"
+  - "Phase 4: Performance analysis with specific numbers"
+  - "Phase 5: Security agent invoked due to compliance needs"
+  - "Exactly-once semantics clearly explained"
+
+expected_errors: []
+
+success_criteria:
+  - "Ultrathink mode activated for complex reasoning"
+  - "Edge cases thoroughly analyzed"
+  - "Consistency guarantees proven"
+  - "Compliance requirements addressed"
+  - "Performance targets validated"
+  - "Ready for production-grade implementation"
+---

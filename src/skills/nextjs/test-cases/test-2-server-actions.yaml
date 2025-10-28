@@ -1,0 +1,13 @@
+name: "Implement Server Actions"
+description: "Test creating server actions for form handling"
+user_input: "Create a contact form using server actions"
+expected_behavior:
+  - Creates server action with 'use server' directive
+  - Implements form submission handler
+  - Uses FormData for input
+  - Includes validation with Zod
+validation:
+  - Uses 'use server' at top of action file
+  - Accepts FormData parameter
+  - Returns appropriate response
+  - Implements revalidatePath or redirect

@@ -1,0 +1,13 @@
+name: "Export SpecWeave Increment to JIRA"
+description: "Test exporting a SpecWeave increment to JIRA Epic/Stories/Subtasks"
+user_input: "Export increment 0003-dashboard to JIRA"
+expected_behavior:
+  - Creates JIRA Epic from increment spec
+  - Creates Stories from main sections
+  - Creates Subtasks from tasks
+  - Maps test cases to JIRA Test issues
+validation:
+  - Epic summary matches increment name
+  - Stories have proper descriptions
+  - Subtasks linked to Stories
+  - JIRA keys stored in SpecWeave

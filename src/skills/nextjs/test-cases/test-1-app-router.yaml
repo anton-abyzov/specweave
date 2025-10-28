@@ -1,0 +1,13 @@
+name: "Create Next.js App Router Page"
+description: "Test creating a page using Next.js 14+ App Router"
+user_input: "Create a products listing page using App Router"
+expected_behavior:
+  - Creates app/products/page.tsx
+  - Uses Server Components by default
+  - Implements async data fetching
+  - Includes proper metadata export
+validation:
+  - File located in app directory
+  - Uses default export function
+  - Implements async component if needed
+  - Exports metadata object

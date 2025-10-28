@@ -1,0 +1,13 @@
+name: "Create Storybook Stories for Figma Components"
+description: "Test generating Storybook stories from Figma components"
+user_input: "Create Storybook stories for my button component from Figma"
+expected_behavior:
+  - Generates .stories.tsx file
+  - Creates stories for each variant
+  - Includes controls for interactive props
+  - Matches Figma design exactly
+validation:
+  - Stories show all variants
+  - Controls allow testing different states
+  - Visual regression tests possible
+  - Documentation includes usage examples

@@ -1,0 +1,13 @@
+name: "Create C4 Context Diagram"
+description: "Test creating a C4 Level 1 context diagram for a system"
+user_input: "Create a C4 context diagram for an e-commerce platform"
+expected_behavior:
+  - Generates valid Mermaid C4Context diagram
+  - Includes system boundary
+  - Shows external actors (users, external systems)
+  - Shows relationships and dependencies
+validation:
+  - Diagram starts with C4Context keyword
+  - Contains Person/System elements
+  - Includes Boundary definition
+  - Has BiRel or Rel relationship arrows

@@ -688,23 +688,6 @@ cd my-saas
 - Clarification workflow (/speckit.clarify)
 - Dependency tracking in tasks
 
-**v0.3.0** (Q2 2026) - **Focus: Multi-Tool, Web UI**
-
-- Enhanced agent-agnostic support (more AI tools)
-- Web UI for planning phase (visual spec creation)
-- VS Code extension (inline SpecWeave commands)
-- GitHub App for automated sync
-- Real-time collaboration features
-
-**v1.0.0** (Q3 2026) - **Focus: Production-Ready**
-
-- Complete documentation
-- Full test coverage (>90%)
-- Performance optimizations
-- Enterprise features (SSO, audit trails, compliance)
-- SLA guarantees
-- Professional support options
-
 ---
 
 ### 🙏 **Acknowledgments**

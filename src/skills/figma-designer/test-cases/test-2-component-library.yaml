@@ -1,0 +1,13 @@
+name: "Build Component Library"
+description: "Test creating reusable UI components using atomic design"
+user_input: "Create a button component library with all variants"
+expected_behavior:
+  - Creates button component with variants (primary, secondary, ghost)
+  - Implements states (default, hover, active, disabled)
+  - Uses auto-layout for responsive sizing
+  - Includes icon support
+validation:
+  - Component uses variants
+  - States implemented as component properties
+  - Uses auto-layout
+  - Properly linked to design tokens
