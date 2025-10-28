@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.1.0] - 2025-10-28
+## [0.1.1] - 2025-10-28
+
+### 🚀 **CRITICAL UX FIX**
+
+**Use this version!** v0.1.0 was live for a few hours with manual installation - v0.1.1 fixes this with intelligent auto-installation.
+
+Same as v0.1.0 below, but with the killer feature actually working!
+
+---
+
+## [0.1.0] - 2025-10-28 (⚠️ Use v0.1.1 instead)
 
 ### 🎉 First Stable Release
 
