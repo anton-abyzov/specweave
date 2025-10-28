@@ -143,28 +143,32 @@ installed_components:
 
 ## 🗺️ **Roadmap**
 
-**v0.2.0** (Q1 2026) - **Focus: Skills, Context, Testing**
+**🚨 RULE: Never plan more than 1 version ahead!**
+- Only show CURRENT + NEXT version
+- Prevents over-commitment
+- Allows flexibility based on feedback
 
-**New Skills:**
-- Advanced testing (contract, performance, mutation testing)
-- Cloud providers (AWS, Azure, DigitalOcean provisioners)
-- Additional integrations (Linear, Asana, Notion)
+---
+
+**v0.2.0** (Q2 2025) - **Focus: Quality, Testing, Context**
+
+**Quality & Testing:**
+- Auto-refinement with feedback loops
+- LLM-as-judge quality assessment
+- Automated test runner for skills/agents
+- Visual regression testing
 
 **Context Enhancements:**
 - Second-pass context optimization (80%+ total reduction)
 - Embedding-based context retrieval
 - Multi-repo context management
 
-**Testing Improvements:**
-- Visual regression testing
-- Cross-browser E2E tests
-- Chaos engineering support
+**New Skills:**
+- Advanced testing (contract, performance, mutation)
+- Cloud providers (AWS, Azure, DigitalOcean)
+- Additional integrations (Linear, Asana, Notion)
 
-**v1.0.0** (Q2 2026) - **Production-Ready**
-- Complete documentation
-- Enterprise features
-- SLA guarantees
-- Professional support
+**Note**: Features may change based on user feedback and priorities.
 
 ---
 
@@ -711,27 +715,18 @@ cd my-saas
 - Improve CLI error handling
 - Add `audit` and `cleanup` commands
 
-**v0.2.0** (Q4 2025):
+**v0.2.0** (Q2 2025):
 - Quality gates (inspired by BMAD @qa *gate)
 - Risk scoring (inspired by BMAD @qa *risk)
+- Auto-refinement with feedback loops
+- LLM-as-judge quality assessment
 - Clarification workflow (inspired by spec-kit /speckit.clarify)
 - Dependency tracking in tasks (inspired by spec-kit)
 - Template system (optional)
 - Test importer (import existing tests)
+- Automated test runner for skills/agents
 
-**v0.3.0** (Q1 2026):
-- Agent-agnostic support (Copilot, Cursor, Gemini, etc.)
-- Web UI for planning phase (inspired by BMAD)
-- Multi-language CLI (Python, Go, Rust support)
-- VS Code extension
-- GitHub App for automated sync
-
-**v1.0.0** (Q2 2026):
-- Production-ready
-- Complete documentation
-- Full test coverage (>90%)
-- Performance optimizations
-- Enterprise features (SSO, audit trails, compliance)
+**Note**: Only v0.2.0 is planned. Future versions will be defined after v0.2.0 ships based on user feedback.
 
 ---
 
