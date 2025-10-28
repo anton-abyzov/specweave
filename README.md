@@ -3,14 +3,18 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.1.0--beta.1-blue.svg)](https://github.com/specweave/specweave/releases/tag/v0.1.0-beta.1)
+[![Version](https://img.shields.io/badge/version-0.1.5-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.1.5)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
+[![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
 ---
 
 ## Overview
 
-**SpecWeave** is an AI development framework that replaces "vibe coding" with **specification-first development**. Built on the principle that **specifications are the source of truth**, SpecWeave enables building software from solo projects to enterprise systems with confidence, precision, and 70%+ context reduction.
+**SpecWeave** is an AI development framework that replaces "vibe coding" with **specification-first development**. Built on the principle that **specifications are the source of truth**, SpecWeave enables building software from solo projects to enterprise systems with confidence and precision.
+
+**🌐 Website**: [spec-weave.com](https://spec-weave.com)
+**📦 npm**: [npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
 
 ### 🎯 Core Philosophy
 
@@ -18,16 +22,15 @@
 2. **Living Documentation** - Specs evolve with code, never diverge
 3. **Regression Prevention** - Document before modifying existing code
 4. **Test-Validated Features** - Every feature proven through automated tests
-5. **Context Precision** - Load only relevant specs (70%+ token reduction)
-6. **Auto-Role Routing** - Skills detect and delegate automatically
+5. **Ready Out of the Box** - All components pre-installed, no setup needed
 
 ---
 
 ## ✨ Key Features
 
-- 🤖 **19 Specialized Agents** - PM, Architect, DevOps, QA, Security, Backend, Frontend, and more
-- 🎯 **24 AI Skills** - Auto-detection, routing, context loading, orchestration
-- 📊 **Context Manifests** - 70%+ token reduction by loading only relevant specs
+- 🤖 **10 Specialized Agents** - PM, Architect, DevOps, QA, Security, SRE, Tech Lead, and more (all pre-installed!)
+- 🎯 **35+ AI Skills** - Technology stacks, integrations, utilities (all pre-installed!)
+- 📦 **Pre-Installed Components** - Everything ready immediately after `specweave init`
 - 🧪 **4-Level Testing** - Specification → Feature → Component → Automated tests
 - 📝 **Living Documentation** - Auto-updates via Claude Code hooks
 - 🎨 **Diagram Generation** - C4 Model diagrams (Context, Container, Component)
@@ -87,172 +90,126 @@ specweave init my-saas
 ### Available Commands
 
 ```bash
-specweave init [project]           # Create new project
-specweave list                     # List all available components
-specweave list --installed         # Show auto-installed components
+specweave init [project]           # Create new project with ALL components
 specweave --version                # Show version
 specweave --help                   # Show help
 ```
 
-**Note**: Components (agents & skills) auto-install on-demand - no manual installation needed!
+**Note**: All 10 agents and 35+ skills are copied to your project during `init` - ready to use immediately!
 
 ---
 
 ## 🚀 Quick Example
 
 ```bash
-# SpecWeave auto-activates when .specweave/ detected
+# Initialize project - ALL components pre-installed!
+npx specweave init my-app
+cd my-app
+
+# Everything ready immediately:
+# ✅ 10 agents in .claude/agents/
+# ✅ 35+ skills in .claude/skills/
+# ✅ 10 slash commands in .claude/commands/
+
+# Open Claude Code and start building:
 
 User: "Create Next.js authentication with email and OAuth"
     ↓
 SpecWeave: 🔷 SpecWeave Active
 
-           📦 Installing required components...
-              ✅ Installed nextjs skill
-              ✅ Installed nodejs-backend skill
-              ✅ Installed security agent
-              ✅ Installed pm agent
-              ✅ Installed architect agent
-
            🚀 Creating increment 0001-user-authentication...
+           📝 Using nextjs skill (already installed!)
+           🤖 PM agent creating requirements...
+           🏗️  Architect agent designing system...
 
 ✅ Increment created: .specweave/increments/0001-user-authentication/
 ✅ Files: spec.md, plan.md, tasks.md, tests.md
 
 User: "Create C4 context diagram for authentication"
     ↓
-SpecWeave: (coordinates diagrams-generator → diagrams-architect)
+SpecWeave: 🎨 Using diagrams-generator skill
+           🤖 Coordinating with diagrams-architect agent
+
 ✅ Diagram saved: .specweave/docs/internal/architecture/diagrams/auth.c4-context.mmd
 
 User: "Implement authentication"
     ↓
-SpecWeave: (orchestrates PM → Architect → Backend → QA → Docs)
+SpecWeave: 🤖 Orchestrating: PM → Architect → Backend → QA → Docs
+
 ✅ Code: src/auth/
 ✅ Tests: tests/auth/
 ✅ Docs: Updated automatically
 ```
 
 **How it works**:
-1. `.specweave/` detected → `specweave-detector` activates automatically
-2. **User intent analyzed** → required components auto-installed (just-in-time)
-3. Request parsed → routed to appropriate skills
+1. `specweave init` → ALL components pre-installed (10 agents + 35+ skills)
+2. `.specweave/` detected → `specweave-detector` activates automatically
+3. User request parsed → routed to appropriate pre-installed skills
 4. Skills coordinate agents → artifacts generated
-5. Context loaded precisely → only relevant specs (70%+ reduction)
+5. All components ready - no waiting, no installation
 
 ---
 
-## 🤖 Agents (19 Total)
+## 🤖 Agents (10 Total - All Pre-Installed!)
 
-SpecWeave includes **19 specialized AI agents** that provide domain expertise:
+SpecWeave includes **10 specialized AI agents** that activate automatically based on your request:
 
-### Strategic Layer
-| Agent | Role | Status |
-|-------|------|--------|
-| **pm** | Product Manager - requirements, user stories, roadmap | ✅ Implemented |
-| **architect** | System Architect - design, ADRs, technology decisions | ✅ Implemented |
-| **tech-lead** | Technical Lead - code review, best practices | ✅ Implemented |
+| Agent | Role | When It Activates |
+|-------|------|-------------------|
+| **pm** | Product Manager - requirements, user stories | Planning features, creating increments |
+| **architect** | System Architect - design, ADRs, decisions | Technical design, architecture |
+| **security** | Security Engineer - threat modeling, OWASP | Security review, vulnerability assessment |
+| **qa-lead** | QA Lead - test strategy, quality gates | Testing, quality assurance |
+| **devops** | DevOps Engineer - CI/CD, infrastructure | Deployment, infrastructure needs |
+| **tech-lead** | Technical Lead - code review, best practices | Code review, refactoring |
+| **sre** | SRE - incident response, monitoring | Production incidents, troubleshooting |
+| **docs-writer** | Technical Writer - documentation | Writing docs, API documentation |
+| **performance** | Performance Engineer - optimization | Performance issues, profiling |
+| **diagrams-architect** | Diagram Expert - C4 Model, Mermaid | Creating diagrams (via diagrams-generator skill) |
 
-### Implementation Layer
-| Agent | Role | Status |
-|-------|------|--------|
-| **nodejs-backend** | Node.js/TypeScript backend development | ✅ Implemented |
-| **python-backend** | Python/FastAPI backend development | ✅ Implemented |
-| **dotnet-backend** | C#/.NET/ASP.NET Core development | ✅ Implemented |
-| **frontend** | React/Vue frontend development | ✅ Implemented |
-| **nextjs** | Next.js App Router specialist | ✅ Implemented |
-
-### Quality & Operations
-| Agent | Role | Status |
-|-------|------|--------|
-| **qa-lead** | QA Lead - test strategy, test cases, quality gates | ✅ Implemented |
-| **security** | Security Engineer - threat modeling, OWASP, compliance | ✅ Implemented |
-| **devops** | DevOps - CI/CD, infrastructure, deployment | ✅ Implemented |
-| **sre** | SRE - monitoring, incidents, reliability | ✅ Implemented |
-| **performance** | Performance Engineer - profiling, optimization | ✅ Implemented |
-
-### Documentation & Design
-| Agent | Role | Status |
-|-------|------|--------|
-| **docs-writer** | Technical Writer - API docs, guides, tutorials | ✅ Implemented |
-| **diagrams-architect** | Diagram generation - C4 Model, Mermaid, architecture | ✅ Implemented |
-| **figma-designer** | Figma designer - design systems, UI/UX | ✅ Implemented |
-| **figma-implementer** | Figma to code - React/Angular components | ✅ Implemented |
-
-### Integration
-| Agent | Role | Status |
-|-------|------|--------|
-| **specweave-jira-mapper** | JIRA ↔ SpecWeave bidirectional sync | ✅ Implemented |
-| **specweave-ado-mapper** | Azure DevOps ↔ SpecWeave bidirectional sync | ✅ Implemented |
-
-**All agents** have AGENT.md with YAML frontmatter and 3+ test cases.
+**All agents pre-installed** in `.claude/agents/` after `specweave init` - ready to use immediately!
 
 ---
 
-## 🎯 Skills (24 Total)
+## 🎯 Skills (35+ Total - All Pre-Installed!)
 
-SpecWeave includes **24 AI skills** that coordinate agents and provide specialized capabilities:
+SpecWeave includes **35+ AI skills** that activate automatically based on your request:
 
-### Core Orchestration
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **specweave-detector** | Auto-detect SpecWeave projects (proactive entry point) | ✅ Implemented |
-| **skill-router** | Route requests to appropriate skills/agents (>90% accuracy) | ✅ Implemented |
-| **context-loader** | Load specs selectively (70%+ token reduction) | ✅ Implemented |
-| **role-orchestrator** | Multi-agent coordinator (factory of agents) | ✅ Implemented |
+### Core Framework Skills
+- **specweave-detector** - Auto-detect SpecWeave projects
+- **increment-planner** - Plan features and create specifications
+- **skill-router** - Route requests to appropriate skills
+- **context-loader** - Load relevant specifications
+- **role-orchestrator** - Coordinate multiple agents
 
-### Feature Planning
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **increment-planner** | Plan features with context awareness | ✅ Implemented |
-| **task-builder** | Break features into executable tasks | ✅ Implemented |
-| **docs-updater** | Auto-update documentation via hooks | ✅ Implemented |
+### Technology Stack Skills
+- **nextjs** - Next.js App Router, Server Components
+- **nodejs-backend** - Node.js, Express, NestJS APIs
+- **python-backend** - FastAPI, Django APIs
+- **dotnet-backend** - ASP.NET Core APIs
+- **frontend** - React, Vue, Angular components
 
-### Brownfield Tools
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **brownfield-analyzer** | Analyze existing codebases | ✅ Implemented |
-| **brownfield-onboarder** | Merge existing CLAUDE.md intelligently | ✅ Implemented |
+### Integration Skills
+- **jira-sync** - Sync with JIRA issues
+- **ado-sync** - Sync with Azure DevOps
+- **github-sync** - Sync with GitHub issues
 
-### Integration
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **jira-sync** | Sync with JIRA (coordinates with specweave-jira-mapper) | ✅ Implemented |
-| **ado-sync** | Sync with Azure DevOps (coordinates with specweave-ado-mapper) | ✅ Implemented |
-| **github-sync** | Sync with GitHub issues | ✅ Implemented |
+### Design & Diagram Skills
+- **diagrams-generator** - Generate C4 diagrams
+- **figma-designer** - Create Figma designs
+- **figma-implementer** - Convert Figma to code
 
-### Infrastructure
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **hetzner-provisioner** | Provision Hetzner Cloud infrastructure | ✅ Implemented |
-| **cost-optimizer** | Optimize cloud infrastructure costs | ✅ Implemented |
+### Infrastructure Skills
+- **hetzner-provisioner** - Deploy to Hetzner Cloud
+- **cost-optimizer** - Optimize cloud costs
 
-### Diagram & Design
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **diagrams-generator** | Generate C4 diagrams (coordinates with diagrams-architect) | ✅ Implemented |
-| **design-system-architect** | Design system creation (Atomic Design) | ✅ Implemented |
-| **figma-mcp-connector** | Connect to Figma MCP servers | ✅ Implemented |
-| **figma-to-code** | Convert Figma designs to code | ✅ Implemented |
+### Brownfield Skills
+- **brownfield-analyzer** - Analyze existing codebases
+- **brownfield-onboarder** - Merge existing documentation
 
-### Product Features
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **calendar-system** | Calendar and scheduling features | ✅ Implemented |
-| **notification-system** | Email, push, SMS, in-app notifications | ✅ Implemented |
-| **stripe-integrator** | Stripe payment integration | ✅ Implemented |
+**And many more!** All skills pre-installed in `.claude/skills/` after `specweave init`.
 
-### Framework Comparison
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **bmad-method-expert** | BMAD-METHOD comparison and gap analysis | ✅ Implemented |
-| **spec-kit-expert** | spec-kit comparison and gap analysis | ✅ Implemented |
-
-### Meta
-| Skill | Purpose | Status |
-|-------|---------|--------|
-| **skill-creator** | Guide for creating new skills | ✅ Implemented |
-
-**All skills** have SKILL.md with YAML frontmatter and 3+ test cases.
+**See**: [Complete skill list](https://spec-weave.com/docs/skills) on spec-weave.com
 
 ---
 
@@ -299,11 +256,10 @@ specweave/
 │   ├── hooks/                   # Claude Code hooks
 │   └── templates/               # Project templates
 │
-├── .claude/                     # Installed components (gitignored)
-│   ├── agents/                  # Installed from src/agents/
-│   ├── skills/                  # Installed from src/skills/
-│   ├── commands/                # Installed from src/commands/
-│   └── hooks/                   # Symlinks to src/hooks/
+├── .claude/                     # Pre-installed components (user projects)
+│   ├── agents/                  # 10 agents (copied during init)
+│   ├── skills/                  # 35+ skills (copied during init)
+│   └── commands/                # 10 slash commands (copied during init)
 │
 ├── tests/                       # Framework tests
 │   ├── unit/
@@ -390,38 +346,6 @@ SpecWeave implements **4 Levels of Testing**:
 
 ---
 
-## 📊 Context Precision (70%+ Reduction)
-
-SpecWeave uses **context manifests** to load only relevant specifications:
-
-**Without context manifests** (traditional):
-- Load entire spec/ folder
-- 100,000+ tokens
-- Slow, expensive, context pollution
-
-**With context manifests** (SpecWeave):
-- Load only relevant sections
-- 10,000-30,000 tokens
-- **70%+ reduction**
-- Fast, efficient, focused
-
-**Example**:
-```yaml
-# .specweave/increments/0001-auth/context-manifest.yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/authentication-spec.md
-  - .specweave/docs/internal/strategy/auth/authorization-spec.md
-
-documentation:
-  - .specweave/docs/internal/architecture/auth-hld.md
-  - CLAUDE.md#authentication
-
-max_context_tokens: 10000
-```
-
-**See [CLAUDE.md#context-precision](CLAUDE.md#scalable-directory-structure)** for details.
-
----
 
 ## 🎨 Diagram Generation
 
@@ -502,24 +426,22 @@ sync:
 
 ## 📚 Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** - **START HERE** - Complete development guide (source of truth)
-- **[INSTALLATION.md](INSTALLATION.md)** - Detailed installation instructions
-- **[.specweave/docs/README.md](.specweave/docs/README.md)** - Documentation structure
-- **[Diagram Conventions](.specweave/docs/internal/delivery/guides/diagram-conventions.md)** - C4 Model conventions
-- **[Tool Concept Mapping](.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)** - Tool mappings
-- **[.specweave/increments/README.md](.specweave/increments/README.md)** - Increments guide
+- **[spec-weave.com](https://spec-weave.com)** - **START HERE** - Complete documentation website
+- **[npm Package](https://www.npmjs.com/package/specweave)** - Installation and quick start
+- **[GitHub](https://github.com/anton-abyzov/specweave)** - Source code and examples
+- **[CLAUDE.md](CLAUDE.md)** - Complete development guide (created after `specweave init`)
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+We welcome contributions!
 
 ### Development Setup
 
 ```bash
 # Clone repository
-git clone https://github.com/specweave/specweave.git
+git clone https://github.com/anton-abyzov/specweave.git
 cd specweave
 
 # Install dependencies
@@ -528,19 +450,14 @@ npm install
 # Build TypeScript
 npm run build
 
-# Install components
-npm run install:all
-
 # Run tests
 npm test
-
-# Restart Claude Code
 ```
 
 **To contribute**:
 1. Fork repository
-2. Create feature branch: `git checkout -b features/001-new-feature`
-3. Follow [CLAUDE.md](CLAUDE.md) conventions
+2. Create feature branch: `git checkout -b features/002-new-feature`
+3. Follow SpecWeave conventions (see CLAUDE.md after init)
 4. Add 3+ test cases (MANDATORY)
 5. Create PR to `develop` branch
 
@@ -548,75 +465,72 @@ npm test
 
 ## 🏷️ Project Status
 
-**Version**: 0.1.0-beta.1
+**Version**: 0.1.5
 **Status**: Public Beta
 **License**: MIT
-**Release Date**: 2025-10-27
+**Release Date**: 2025-10-28
+**Website**: [spec-weave.com](https://spec-weave.com)
 
-### ✅ What Works (v0.1.0-beta.1)
+### ✅ What Works (v0.1.5)
 
-- ✅ **19 Agents** fully implemented with test cases
-- ✅ **24 Skills** fully implemented with test cases
-- ✅ **CLI Tool** - `specweave` command (`init`, `install`, `list`)
-- ✅ **Auto-detection** and intelligent routing (>90% accuracy)
-- ✅ **Context manifests** (70%+ token reduction)
+- ✅ **10 Agents** fully implemented and pre-installed
+- ✅ **35+ Skills** fully implemented and pre-installed
+- ✅ **CLI Tool** - `specweave init` with complete component copying
+- ✅ **Ready Out of the Box** - All components installed during init
+- ✅ **Auto-detection** and intelligent routing
 - ✅ **Diagram generation** (C4 Model with validation)
-- ✅ **Install scripts** (selective installation based on tech stack)
 - ✅ **4-level testing framework** (spec → feature → component → automated)
-- ✅ **JIRA/ADO/GitHub sync** agents
+- ✅ **JIRA/ADO/GitHub sync** integration
 - ✅ **Brownfield analyzer** (retroactive specs, regression prevention)
 - ✅ **Increment lifecycle** (5 stages, WIP limits, leftover transfer)
 - ✅ **Increment validation** (120 rules, auto-validation on save)
 - ✅ **Hooks system** (auto-update docs, validations)
-- ✅ **Documentation** (CHANGELOG.md, INSTALL.md, comprehensive guides)
-
-### ⏳ In Progress (v0.1.0-beta.2)
-
-- ⏳ NPM package publishing (beta.1 installable via GitHub only)
-- ⏳ Additional CLI commands (`audit`, `cleanup`)
-- ⏳ More project templates (currently: saas, api, fullstack)
-- ⏳ GitHub Actions CI/CD integration
-- ⏳ MkDocs documentation site deployment
+- ✅ **Living Documentation** - Auto-updated via Claude Code hooks
+- ✅ **npm Package** - Published and ready to use
 
 ### 📅 Planned (v0.2.0+)
 
-- 📅 Quality gates (inspired by BMAD `@qa *gate`)
-- 📅 Risk scoring (inspired by BMAD `@qa *risk`)
-- 📅 Clarification workflow (inspired by spec-kit `/speckit.clarify`)
-- 📅 Dependency tracking in tasks (inspired by spec-kit)
-- 📅 Agent-agnostic support (Copilot, Cursor, Gemini, etc.)
+- 📅 Quality gates and risk scoring
 - 📅 Web UI for planning phase
 - 📅 VS Code extension
 - 📅 Homebrew formula
-- 📅 Test importer (import existing tests)
+- 📅 Additional project templates
 
 ---
 
-## 📖 Example Projects
+## 📖 Quick Start
 
-### SaaS Application
+### Initialize New Project
 
 ```bash
-git clone https://github.com/specweave/specweave.git my-saas
+# Create new project (all components pre-installed!)
+npx specweave init my-saas
 cd my-saas
-npm install && npm run install:all
 
-# Create features
-/create-increment "user authentication"
-/create-increment "subscription billing"
-/create-increment "admin dashboard"
+# Everything ready:
+# ✅ 10 agents in .claude/agents/
+# ✅ 35+ skills in .claude/skills/
+# ✅ 10 slash commands in .claude/commands/
 
-# Implement
-"Implement all increments"
+# Open Claude Code and start building:
+# "Create user authentication with JWT"
+# "Add subscription billing with Stripe"
+# "Build admin dashboard with analytics"
 ```
 
-### API Service
+### For Existing Projects
 
 ```bash
-# Similar setup, different increments
-/create-increment "REST API with OpenAPI"
-/create-increment "GraphQL endpoint"
-/create-increment "WebSocket real-time features"
+# Add SpecWeave to existing project
+cd my-existing-project
+npx specweave init .
+
+# Analyze existing code
+# "Analyze my authentication module"
+# SpecWeave creates retroactive specifications
+
+# Safe to modify
+# "Add OAuth to authentication"
 ```
 
 ---
@@ -630,7 +544,7 @@ npm install && npm run install:all
 | **Documentation** | Outdated, ignored | Living, auto-updated |
 | **Specifications** | Optional, vague | Source of truth, precise |
 | **Testing** | Manual, incomplete | 4-level, validated |
-| **Context** | Full codebase loaded | 70%+ reduction |
+| **Components** | Manual setup | Pre-installed (10 agents + 35+ skills) |
 | **Regression** | Frequent breaks | Prevention-first |
 | **Onboarding** | Weeks | Hours (specs explain everything) |
 | **Brownfield** | Risky | Safe (document first) |
@@ -638,29 +552,34 @@ npm install && npm run install:all
 ### vs Other Frameworks
 
 **vs spec-kit** (GitHub):
-- ✅ SpecWeave: Auto-role routing, context precision
-- ✅ SpecWeave: Living documentation via hooks
-- ✅ SpecWeave: Brownfield analysis
-- ✅ SpecWeave: 19 agents + 24 skills
+- ✅ SpecWeave: **Pre-installed agents** (10) and skills (35+) - spec-kit requires manual setup
+- ✅ SpecWeave: **Living documentation** via Claude Code hooks - auto-updates on changes
+- ✅ SpecWeave: **Brownfield analysis** - retroactive spec generation for existing code
+- ✅ SpecWeave: **Tool integration** - JIRA, ADO, GitHub bidirectional sync
 
 **vs BMAD-METHOD**:
-- ✅ SpecWeave: Context manifests (70%+ reduction)
-- ✅ SpecWeave: 5-pillar documentation
-- ✅ SpecWeave: Tool integration (JIRA/ADO/GitHub)
-- ✅ SpecWeave: Diagram generation
+- ✅ SpecWeave: **5-pillar documentation** - strategy, architecture, delivery, operations, governance
+- ✅ SpecWeave: **Pre-installed components** - 10 agents + 35+ skills ready immediately
+- ✅ SpecWeave: **Framework agnostic** - TypeScript, Python, Go, Rust, Java, C#
+- ✅ SpecWeave: **Diagram generation** - C4 Model diagrams with validation
+- ✅ SpecWeave: **Tool integration** - JIRA/ADO/GitHub sync built-in
 
-**See skills**:
-- `bmad-method-expert` - Dynamic gap analysis vs BMAD
-- `spec-kit-expert` - Dynamic gap analysis vs spec-kit
+**Both frameworks**:
+- ✅ Specification-first development
+- ✅ Automated testing
+- ✅ Quality gates and validation
+
+**Learn more**: See `bmad-method-expert` and `spec-kit-expert` skills for detailed comparisons
 
 ---
 
 ## 📞 Support & Community
 
-- **GitHub**: [github.com/specweave/specweave](https://github.com/specweave/specweave)
-- **Issues**: [github.com/specweave/specweave/issues](https://github.com/specweave/specweave/issues)
-- **Discussions**: [github.com/specweave/specweave/discussions](https://github.com/specweave/specweave/discussions)
-- **Documentation**: [CLAUDE.md](CLAUDE.md)
+- **Website**: [spec-weave.com](https://spec-weave.com)
+- **npm Package**: [npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
+- **GitHub**: [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
+- **Issues**: [github.com/anton-abyzov/specweave/issues](https://github.com/anton-abyzov/specweave/issues)
+- **Documentation**: See [CLAUDE.md](CLAUDE.md) after running `specweave init`
 
 ---
 
@@ -682,4 +601,4 @@ SpecWeave is inspired by and learns from:
 
 **SpecWeave** - Replace vibe coding with spec-driven development.
 
-**Get started**: See [INSTALLATION.md](INSTALLATION.md) | [CLAUDE.md](CLAUDE.md)
+**Get started**: [spec-weave.com](https://spec-weave.com) | [npm install](https://www.npmjs.com/package/specweave) | [GitHub](https://github.com/anton-abyzov/specweave)
