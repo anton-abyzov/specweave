@@ -1,15 +1,57 @@
 # SpecWeave Installation
 
+Comprehensive installation guide for all scenarios.
+
+## Prerequisites
+
+Before installing SpecWeave, ensure you have:
+
+**Required:**
+- Node.js 18+ - Check with `node --version`
+- npm 9+ - Check with `npm --version`
+
+**Recommended:**
+- Claude Code (best experience)
+- Git for version control
+
 ## Installation Methods
 
-### Method 1: npx (Recommended)
+### Method 1: Global Install (Recommended)
 
-No installation required - always uses latest version:
+Install once, use everywhere:
 
 ```bash
-# New project
-npx specweave init my-app
-cd my-app
+# Install globally
+npm install -g specweave
+
+# Verify installation
+specweave --version
+
+# Create new project
+specweave init my-project
+cd my-project
+```
+
+**Pros:**
+- ✅ Command always available (`specweave` command)
+- ✅ Faster subsequent runs (no download)
+- ✅ Works offline after first install
+- ✅ Consistent version across projects
+
+**Cons:**
+- ❌ Requires admin/root on some systems
+- ❌ Manual updates needed: `npm update -g specweave`
+
+**Best for:** Regular SpecWeave users, developers working on multiple projects
+
+### Method 2: npx (No Install)
+
+Run without installing:
+
+```bash
+# New project (always uses latest version)
+npx specweave init my-project
+cd my-project
 
 # Existing project
 cd my-existing-project
@@ -18,77 +60,90 @@ npx specweave init .
 
 **Pros:**
 - ✅ No global installation needed
-- ✅ Always latest version
+- ✅ Always uses latest version
 - ✅ No permission issues
-- ✅ Fastest way to start
-
-### Method 2: Global Install
-
-Install once, use everywhere:
-
-```bash
-# Install globally
-npm install -g specweave
-
-# Create projects
-specweave init my-app
-cd my-app
-```
-
-**Pros:**
-- ✅ Command always available
-- ✅ Faster subsequent runs
+- ✅ Perfect for CI/CD
 
 **Cons:**
-- ❌ Requires root/admin on some systems
-- ❌ Version conflicts across projects
-- ❌ Manual updates needed
+- ❌ Slower (downloads each time)
+- ❌ Requires internet connection
 
-### Method 3: From GitHub (Development)
+**Best for:** First-time users, CI/CD pipelines, testing latest version
 
-For contributors or testing latest unreleased features:
+### Method 3: From Source (Contributors)
+
+For contributors or testing unreleased features:
 
 ```bash
 # Clone repository
 git clone https://github.com/anton-abyzov/specweave.git
 cd specweave
 
-# Install dependencies and build
+# Install dependencies
 npm install
+
+# Build TypeScript
 npm run build
 
 # Link globally
 npm link
 
+# Verify
+specweave --version
+
 # Create project
-specweave init my-app
+specweave init my-project
 ```
+
+**Best for:** Contributors, debugging, custom modifications
 
 ## What Gets Installed
 
-### For Claude Code (Native)
+### Directory Structure
+
+After running `specweave init`, you get:
 
 ```
 your-project/
-├── .claude/                  # Claude Code integration
+├── .claude/                  # Claude Code integration (if detected)
 │   ├── agents/               # 10 specialized agents
-│   │   ├── pm/
-│   │   ├── architect/
-│   │   ├── devops/
-│   │   ├── qa-lead/
-│   │   └── ... (6 more)
+│   │   ├── pm/               # Product Manager
+│   │   ├── architect/        # System Architect
+│   │   ├── devops/           # DevOps Engineer
+│   │   ├── qa-lead/          # QA Lead
+│   │   ├── security/         # Security Engineer
+│   │   ├── tech-lead/        # Tech Lead
+│   │   ├── sre/              # Site Reliability Engineer
+│   │   ├── docs-writer/      # Technical Writer
+│   │   ├── performance/      # Performance Engineer
+│   │   └── diagrams-architect/  # Diagram Specialist
 │   ├── skills/               # 35+ development skills
 │   │   ├── increment-planner/
 │   │   ├── context-loader/
+│   │   ├── nodejs-backend/
 │   │   ├── nextjs/
-│   │   └── ... (32+ more)
+│   │   ├── python-backend/
+│   │   ├── frontend/
+│   │   ├── e2e-playwright/
+│   │   ├── jira-sync/
+│   │   ├── github-sync/
+│   │   ├── hetzner-provisioner/
+│   │   └── ... (27+ more)
 │   ├── commands/             # 10 slash commands
 │   │   ├── specweave.inc.md
 │   │   ├── specweave.do.md
 │   │   ├── specweave.progress.md
-│   │   └── ... (7 more)
+│   │   ├── specweave.done.md
+│   │   ├── specweave.validate.md
+│   │   ├── specweave.sync-github.md
+│   │   ├── specweave.sync-jira.md
+│   │   ├── specweave.sync-docs.md
+│   │   └── ... (more)
 │   └── hooks/                # Automation hooks
-│       └── post-task-completion.sh
+│       ├── post-task-completion.sh
+│       ├── docs-changed.sh
+│       ├── pre-implementation.sh
+│       └── human-input-required.sh
 │
 ├── .specweave/               # SpecWeave framework
 │   ├── increments/           # Auto-numbered features
@@ -96,47 +151,63 @@ your-project/
 │   │   ├── roadmap.md
 │   │   └── 0001-feature/     # Created by workflow
 │   ├── docs/                 # Living documentation
-│   │   ├── internal/         # Architecture, ADRs, RFCs
+│   │   ├── internal/
+│   │   │   ├── strategy/     # PRDs, market research
+│   │   │   ├── architecture/ # HLDs, ADRs, C4 diagrams
+│   │   │   ├── delivery/     # Roadmap, CI/CD
+│   │   │   ├── operations/   # Runbooks, SLOs
+│   │   │   └── governance/   # Security, compliance
 │   │   └── public/           # Published docs
 │   ├── tests/                # Centralized test repository
 │   ├── config.yaml           # Configuration
 │   └── logs/                 # Execution logs
 │
 ├── CLAUDE.md                 # Complete development guide
+├── AGENTS.md                 # Universal adapter (for non-Claude tools)
 └── .gitignore                # Standard ignores
 ```
 
-### For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT, etc.)
+### For Claude Code (Native)
 
-```
-your-project/
-├── AGENTS.md                 # Universal adapter (works with ANY AI)
-├── .specweave/               # Same framework structure
-├── CLAUDE.md                 # Same development guide
-├── .cursorrules              # For Cursor (if detected)
-├── .github/copilot/          # For Copilot (if detected)
-└── .gitignore
-```
+Gets **full native integration**:
+- ✅ 10 agents in `.claude/agents/`
+- ✅ 35+ skills in `.claude/skills/`
+- ✅ 10 slash commands in `.claude/commands/`
+- ✅ Automation hooks in `.claude/hooks/`
 
-**Note:** Only Claude Code gets native agents/skills in `.claude/`. Other tools use the universal AGENTS.md adapter.
+### For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT)
 
-## Installation Details
+Gets **universal adapter**:
+- ✅ `AGENTS.md` - Works with ANY AI tool
+- ✅ `.cursorrules` - For Cursor (if detected)
+- ✅ `.github/copilot/` - For Copilot (if detected)
+- ✅ Same `.specweave/` structure
+- ✅ Same `CLAUDE.md` guide
+
+**Note:** Only Claude Code gets native agents/skills. Other tools use the universal AGENTS.md adapter with manual workflow.
+
+## Scenario-Specific Installation
 
 ### New Project (Greenfield)
 
 ```bash
-npx specweave init my-app
+# Method 1: Create new directory
+npx specweave init my-project
+cd my-project
+
+# Method 2: Create directory first
+mkdir my-project && cd my-project
+npx specweave init .
 ```
 
 **What happens:**
-1. Creates `my-app/` directory
+1. Creates project directory (if needed)
 2. Detects your AI tool (Claude, Cursor, Copilot, etc.)
-3. Installs appropriate components:
-   - Claude Code → Native agents/skills in `.claude/`
-   - Other tools → AGENTS.md adapter
+3. Installs appropriate components
 4. Creates `.specweave/` structure
-5. Generates `CLAUDE.md` guide
+5. Generates `CLAUDE.md` and `AGENTS.md`
 6. Sets up `.gitignore`
+7. Initializes git repository (if git is available)
 
 ### Existing Project (Brownfield)
 
@@ -146,10 +217,11 @@ npx specweave init .
 ```
 
 **What happens:**
-1. Detects existing files and prompts for confirmation
-2. ✅ Preserves your existing code and git history
-3. Adds SpecWeave structure without touching your code
-4. Uses directory name as project name (or prompts if invalid)
+1. Detects existing files
+2. Prompts for confirmation if directory is not empty
+3. ✅ Preserves your existing code and git history
+4. Adds SpecWeave structure without touching your code
+5. Uses directory name as project name (or prompts if invalid)
 
 **Safe Operations:**
 - ✅ Never modifies existing source code
@@ -157,9 +229,65 @@ npx specweave init .
 - ✅ Keeps your git history intact
 - ✅ All SpecWeave work isolated in `.specweave/`
 
+### Multiple Projects
+
+Install SpecWeave to multiple projects:
+
+```bash
+# Install to several projects
+npx specweave init project-a
+npx specweave init project-b
+npx specweave init project-c
+
+# Or using a loop
+for project in project-a project-b project-c; do
+  npx specweave init $project
+done
+```
+
+Each project gets its own independent SpecWeave installation.
+
+## Verification
+
+After installation, verify everything is set up correctly:
+
+```bash
+cd your-project
+
+# Verify SpecWeave structure
+ls -la .specweave/          # Should have increments/, docs/, config.yaml
+cat .specweave/config.yaml  # Should show configuration
+cat CLAUDE.md               # Should exist
+cat .gitignore              # Should exist
+
+# For Claude Code users
+ls -la .claude/agents/      # Should have 10 agents
+ls -la .claude/skills/      # Should have 35+ skills
+ls -la .claude/commands/    # Should have 10 commands
+ls -la .claude/hooks/       # Should have hooks
+
+# For other AI tool users
+cat AGENTS.md               # Should exist
+
+# Test a command (Claude Code only)
+# Open Claude Code and type: /specweave.progress
+```
+
+### Verification Checklist
+
+- [ ] `.specweave/` directory exists
+- [ ] `.specweave/config.yaml` is present
+- [ ] `CLAUDE.md` exists
+- [ ] `.gitignore` includes SpecWeave ignores
+- [ ] Git repository initialized (if git available)
+- [ ] For Claude Code: `.claude/agents/` has 10 folders
+- [ ] For Claude Code: `.claude/skills/` has 35+ folders
+- [ ] For Claude Code: `.claude/commands/` has command files
+- [ ] For other tools: `AGENTS.md` exists
+
 ## Configuration
 
-After installation, optionally edit `.specweave/config.yaml`:
+After installation, optionally customize `.specweave/config.yaml`:
 
 ```yaml
 project:
@@ -190,79 +318,73 @@ integrations:
     project: ""
 ```
 
-## Verification
+**Configuration options:**
 
-After installation, verify everything is set up:
+- `project.type` - "greenfield" or "brownfield"
+- `hooks.enabled` - Enable automation hooks
+- `testing.e2e_playwright_mandatory_for_ui` - Enforce E2E tests
+- `testing.min_coverage` - Minimum test coverage (default: 80%)
+- `integrations.*` - Enable JIRA, GitHub, Azure DevOps sync
+
+## Upgrading
+
+### Global Installation
+
+```bash
+# Check current version
+specweave --version
+
+# Upgrade to latest
+npm update -g specweave
+
+# Or reinstall
+npm install -g specweave@latest
+
+# Verify new version
+specweave --version
+```
+
+### npx (Always Latest)
+
+npx automatically uses the latest version, no upgrade needed.
+
+### Reinstall Project
+
+If you need to reinstall SpecWeave in a project:
 
 ```bash
 cd your-project
 
-# For Claude Code
-ls -la .claude/agents/      # Should have 10 agents
-ls -la .claude/skills/      # Should have 35+ skills
-ls -la .claude/commands/    # Should have 10 commands
-ls -la .claude/hooks/       # Should have hooks
+# Backup your .specweave/ if needed
+cp -r .specweave .specweave.backup
 
-# For other tools
-cat AGENTS.md               # Should exist
+# Reinstall (will prompt for confirmation)
+specweave init . --force
 
-# For all tools
-ls -la .specweave/          # Should have increments/, docs/, config.yaml
-cat CLAUDE.md               # Should exist
-cat .gitignore              # Should exist
+# Or with npm
+npx specweave init . --force
 ```
-
-## Multiple Projects
-
-Install SpecWeave to multiple projects:
-
-```bash
-# Install to several projects
-npx specweave init project-a
-npx specweave init project-b
-npx specweave init project-c
-
-# Or using a loop
-for project in project-a project-b project-c; do
-  npx specweave init ~/Projects/$project
-done
-```
-
-Each project gets its own independent SpecWeave installation.
 
 ## Uninstallation
 
-To remove SpecWeave from a project:
+### Remove from Project
 
 ```bash
 cd your-project
 
 # Remove SpecWeave files
-rm -rf .claude .specweave CLAUDE.md
+rm -rf .claude .specweave CLAUDE.md AGENTS.md
 
 # Your application code remains untouched!
 ```
 
 **Note:** Your source code is never modified by SpecWeave, so uninstallation is safe and clean.
 
-## Requirements
+### Uninstall Global Package
 
-**Minimum:**
-- Node.js 18+ (`node --version`)
-- npm 9+ (`npm --version`)
-- Any AI coding tool:
-  - Claude Code (recommended)
-  - Cursor
-  - GitHub Copilot
-  - Gemini CLI
-  - Codex
-  - ChatGPT (web)
-  - Claude (web)
-  - Or ANY other AI tool
-
-**Recommended:**
-- Claude Code with Claude Sonnet 4.5 (best experience)
-- Git for version control
+```bash
+npm uninstall -g specweave
+```
 
 ## Troubleshooting
 
@@ -272,18 +394,26 @@ rm -rf .claude .specweave CLAUDE.md
 # Update npm
 npm install -g npm@latest
 
-# Verify
+# Verify npx
 npx --version
 ```
 
 ### Permission denied (global install)
 
+**Option 1: Use npx instead (recommended)**
 ```bash
-# Option 1: Use npx instead (recommended)
 npx specweave init my-app
+```
 
-# Option 2: Fix npm permissions
+**Option 2: Fix npm permissions**
+```bash
 # See: https://docs.npmjs.com/resolving-eacces-permissions-errors
+
+# Quick fix (macOS/Linux):
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 ### Skills not activating (Claude Code)
@@ -291,9 +421,12 @@ npx specweave init my-app
 ```bash
 # Verify installation
 ls -la .claude/skills/
-
 # Should see 35+ skills with SKILL.md files
-# If missing, reinstall:
+
+# Check a specific skill
+cat .claude/skills/increment-planner/SKILL.md
+
+# If missing, reinstall
 npx specweave init . --force
 ```
 
@@ -302,9 +435,12 @@ npx specweave init . --force
 ```bash
 # Verify commands
 ls -la .claude/commands/
-
 # Should see: specweave.inc.md, specweave.do.md, etc.
-# If missing, reinstall:
+
+# Check a specific command
+cat .claude/commands/specweave.inc.md
+
+# If missing, reinstall
 npx specweave init . --force
 ```
 
@@ -314,28 +450,131 @@ npx specweave init . --force
 # Make hooks executable
 chmod +x .claude/hooks/*.sh
 
-# Verify
+# Verify permissions
 ls -la .claude/hooks/
 # Should show -rwxr-xr-x permissions
+
+# Test hook manually
+./.claude/hooks/post-task-completion.sh
 ```
+
+### Node.js version too old
+
+```bash
+# Check version
+node --version
+
+# If < 18, upgrade using nvm (recommended)
+# Install nvm: https://github.com/nvm-sh/nvm
+nvm install 18
+nvm use 18
+
+# Or upgrade Node.js directly
+# See: https://nodejs.org/
+```
+
+### npm version too old
+
+```bash
+# Check version
+npm --version
+
+# Upgrade npm
+npm install -g npm@latest
+
+# Verify
+npm --version
+```
+
+### Installation hangs or times out
+
+```bash
+# Clear npm cache
+npm cache clean --force
+
+# Try again with verbose logging
+npm install -g specweave --verbose
+
+# Or use npx instead
+npx specweave init my-project
+```
+
+### .gitignore not created
+
+```bash
+# Manually create .gitignore
+cat > .gitignore << 'EOF'
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# SpecWeave logs
+.specweave/logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+EOF
+```
+
+## Platform-Specific Notes
+
+### macOS
+
+- ✅ Full support, all features work
+- ✅ Hooks include notification sounds (Glass.aiff)
+- ✅ Recommended platform for development
+
+### Linux
+
+- ✅ Full support, all features work
+- ⚠️ Notification sounds may not work (requires audio system)
+- ✅ Perfect for CI/CD and servers
+
+### Windows
+
+- ✅ Full support with v0.3.3+
+- ✅ UNC paths supported (e.g., `\\Mac\Home\...`)
+- ✅ Network drives supported
+- ⚠️ Hooks may require WSL or Git Bash
+- ⚠️ Notification sounds not supported
+
+### WSL (Windows Subsystem for Linux)
+
+- ✅ Full support, recommended for Windows users
+- ✅ All Linux features available
+- ✅ Better compatibility than native Windows
 
 ## Next Steps
 
-After installation:
+After successful installation:
 
-1. ✅ Read the [Quickstart Guide](quickstart.md)
+1. ✅ Read the [Quick Start Guide](quickstart.md)
 2. ✅ Review `CLAUDE.md` in your project
-3. ✅ Start your first increment: `/specweave.inc "feature"`
-4. ✅ Execute tasks: `/specweave.do`
+3. ✅ Explore [Core Concepts](../../overview/introduction.md)
+4. ✅ Start your first increment
 
 ## Support
 
+Need help? We've got you covered:
+
+- **Quick Start:** [Quickstart Guide](quickstart.md)
 - **Issues:** [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
 - **Documentation:** [spec-weave.com](https://spec-weave.com)
+- **npm Package:** [npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
 
 ---
 
 **SpecWeave** - Spec-Driven Development Framework
 
-🚀 **Install now:** `npx specweave init my-app`
+🚀 **Install now:** `npm install -g specweave`

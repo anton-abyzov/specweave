@@ -1,209 +1,71 @@
 # SpecWeave Quick Start
 
-Get started with SpecWeave in under 5 minutes.
+Get started with SpecWeave in 30 seconds.
 
-## Installation
+## Install SpecWeave into any project in 30 seconds and start autonomous development.
 
-### New Project (Greenfield)
-
-```bash
-# Initialize new project (recommended)
-npx specweave init my-app
-cd my-app
-```
-
-### Existing Project (Brownfield) - The Hardest Problem Made Easy
-
-**Why brownfield is the most complicated:**
-
-- ❌ Existing codebase with zero or outdated documentation
-
-- ❌ Tribal knowledge scattered across the team
-
-- ❌ Risk of breaking production with every change
-
-- ❌ Need to merge existing docs, wikis, Confluence pages
-
-- ❌ Complex architecture never properly documented
-
-**SpecWeave makes it safe and structured:**
+### One-Command Installation
 
 ```bash
-# Add SpecWeave to existing project
-cd my-existing-project
-npx specweave init .
+# Install globally (recommended)
+npm install -g specweave
 
-# Step 1: Merge existing documentation (if any)
-"Read brownfield-onboarder skill and merge my docs/ and wiki/"
-# Intelligently consolidates existing docs into SpecWeave structure
-
-# Step 2: Analyze and document existing code
-"Analyze my authentication module and create comprehensive documentation"
-# Generates specs, HLDs, ADRs, C4 diagrams retroactively
-
-# Step 3: Create baseline tests
-"Create tests for current auth behavior"
-# Regression prevention - capture current behavior before changes
-
-# Step 4: Now safe to modify
-"Add OAuth 2.0 to authentication"
-# SpecWeave maintains living docs as you evolve the code
+# Initialize your project
+mkdir my-project && cd my-project
+specweave init .
 ```
 
-**Result:** Your undocumented legacy codebase now has:
-
-- ✅ Complete specifications (WHAT/WHY)
-
-- ✅ Architecture documentation (HLDs, ADRs, diagrams)
-
-- ✅ Living documentation that auto-updates
-
-- ✅ Regression prevention with baseline tests
-
-- ✅ Compliance-ready audit trail
+**Or use npx (no install needed):**
+```bash
+npx specweave init my-project
+cd my-project
+```
 
 That's it! SpecWeave is installed and ready.
 
 ## What You Get
 
-After `npx specweave init`, your project has:
+✅ **SpecWeave Skills** - Autonomous development agents (8 complete skills, more coming)
+✅ **Slash Commands** - `/create-project` (more coming)
+✅ **Automation Hooks** - Auto-update docs, validate quality (4 hooks)
+✅ **Complete Framework** - Minimal installation, skills create structure as needed
+✅ **Development Guide** - `CLAUDE.md` with everything you need
 
-**For Claude Code (Native):**
-- ✅ 10 agents in `.claude/agents/` - PM, Architect, DevOps, QA, Security, etc.
-- ✅ 35+ skills in `.claude/skills/` - Autonomous development capabilities
-- ✅ 10 slash commands in `.claude/commands/` - `/specweave.inc`, `/specweave.do`, etc.
-- ✅ Automation hooks - Auto-update docs, validate quality
+## Ultra-Simple Usage
 
-**For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT, etc.):**
-- ✅ `AGENTS.md` - Universal adapter that works with ANY AI tool
-- ✅ Tool-specific configs - `.cursorrules`, `.github/copilot/`, etc.
+**Open in Claude Code and describe your project**:
 
-**For All Tools:**
-- ✅ `.specweave/` - Framework structure (increments, docs, config)
-- ✅ `CLAUDE.md` - Complete development guide
-
-## Quick Example
-
-**IMPORTANT:** Use **slash commands** to activate SpecWeave!
-
-```bash
-# Initialize project
-npx specweave init my-app
-cd my-app
-
-# Open in Claude Code and use slash commands:
-
-User: /specweave.inc "Next.js authentication with email and OAuth"
-    ↓
-SpecWeave: 🔷 SpecWeave Active
-           🤖 PM agent creating requirements...
+```
+User: "Build a real estate listing platform with Next.js, Prisma, and Hetzner deployment"
+     ↓
+SpecWeave: 🤖 PM agent analyzing requirements...
            🏗️ Architect agent designing system...
-           📋 Auto-generating tasks from plan...
+           🚀 DevOps agent planning infrastructure...
 
-✅ Increment created: .specweave/increments/0001-user-authentication/
-✅ Files: spec.md, plan.md, tasks.md, tests.md
+✅ Created: PRD, HLD, Implementation Plan, Hetzner IaC
+✅ Ready to implement!
 
-User: /specweave.do
-    ↓
-SpecWeave: 🤖 Implementing based on specifications
-           ✅ Auto-resumes from next incomplete task
-           ✅ Validates at key milestones
-           ✅ Updates docs continuously
+User: "Implement the backend API"
+     ↓
+SpecWeave: 🤖 Implementing based on specifications...
+           ✅ Creates database schema
+           ✅ Generates API endpoints
+           ✅ Writes tests
+           ✅ Updates documentation
 
 ✅ Implementation complete!
-
-User: /specweave.progress
-    ↓
-SpecWeave: 📊 Progress: 12/12 tasks (100%)
-           ✅ All PM gates passed
-           💡 Ready to close or continue
-
-User: /specweave.inc "payment processing"
-    ↓
-SpecWeave: ✅ Auto-closed 0001 (gates passed)
-           🚀 Created 0002-payment-processing
 ```
 
-## Core Workflow
+## What Happens Autonomously
 
-SpecWeave uses a **smart append-only workflow**: 0001 → 0002 → 0003
-
-### 1. Plan Feature (PM-Led)
-
-```bash
-/specweave.inc "feature description"
-# or: /specweave.increment
-```
-
-**What happens:**
-- PM agent asks clarifying questions
-- Creates spec.md (WHAT/WHY)
-- Creates plan.md (HOW)
-- Auto-generates tasks.md
-- Reviews with you before proceeding
-- **Smart:** Auto-closes previous increment if gates pass
-
-### 2. Execute Tasks
-
-```bash
-/specweave.do
-# or: /specweave.do 0001
-```
-
-**What happens:**
-- **Smart:** Auto-resumes from next incomplete task
-- Implements based on specifications
-- Runs hooks after EVERY task
-- Updates CLAUDE.md, README.md, CHANGELOG.md automatically
-- Asks for validation at key milestones
-
-### 3. Check Progress
-
-```bash
-/specweave.progress
-```
-
-**Shows:**
-- Task completion % (e.g., 5/12 tasks = 42%)
-- PM gates status
-- Next action to take
-- Auto-finds active increment
-
-### 4. Start Next Feature
-
-```bash
-/specweave.inc "next feature"
-```
-
-**Smart workflow:**
-- Auto-closes previous if gates pass
-- Creates next increment
-- No manual `/specweave.done` needed!
-
-## Available Commands
-
-**Core Commands:**
-```bash
-/specweave.inc "feature"      # Plan increment (PM-led)
-/specweave.do                 # Execute tasks (smart resume)
-/specweave.progress           # Check status
-/specweave.validate 0001      # Optional quality check
-/specweave.done 0001          # Manual close (rarely needed)
-```
-
-**Integration Commands:**
-```bash
-/specweave.sync-github        # Sync to GitHub issues
-/specweave.sync-jira          # Sync to JIRA (via /sync-jira)
-/sync-docs                    # Sync documentation
-```
-
-**Aliases (shorter syntax):**
-```bash
-/specweave inc = /specweave.inc
-/specweave do = /specweave.do
-/do = /specweave.do
-```
+1. **Market Research** - PM agent researches your domain
+2. **Requirements** - Creates comprehensive PRD
+3. **Architecture** - Architect designs HLD with C4 diagrams
+4. **Planning** - Generates step-by-step implementation plan
+5. **Deployment** - DevOps agent creates Terraform/Pulumi IaC
+6. **Implementation** - Agents build according to specs
+7. **Testing** - QA agent creates test strategy
+8. **Documentation** - Auto-updates as code evolves
 
 ## Key Features
 
@@ -211,50 +73,70 @@ SpecWeave uses a **smart append-only workflow**: 0001 → 0002 → 0003
 - Minimal interaction required
 - Agents ask clarifying questions
 - Review output before proceeding
-- Auto-resume, auto-close, auto-update
+- Validate quality at each milestone
 
-### 2. Multi-Tool Support
-- **Claude Code:** Native (best experience)
-- **Cursor, Copilot, Gemini CLI, Codex:** Semi-automation via AGENTS.md
-- **ChatGPT, Claude web, Gemini web:** Manual workflow via AGENTS.md
-- **100% market coverage**
+### 2. Context Precision (70% Token Reduction)
+- Progressive disclosure: skills load only when relevant
+- Sub-agent parallelization: work in isolated contexts
+- Smart incremental loading: fetch only needed specs
 
-### 3. Living Documentation
+### 3. E2E Testing (MANDATORY for UI)
+- Playwright tests for all UI features
+- Minimum 3 tests per component
+- Tests must tell the truth (no false positives)
+- 80%+ coverage on critical paths
+
+### 4. Living Documentation
 - Specs auto-update after every operation
 - Always in sync with code
 - No drift, no surprises
+- Compliance-ready (HIPAA, SOC 2, FDA)
 
-### 4. Complete Test Coverage
-- 4-level testing strategy
-- E2E tests MANDATORY for UI (Playwright)
-- Minimum 3 tests per component
-
-### 5. Brownfield Excellence (Most Complicated Solved)
-
-- 🏢 **The hardest problem in software**: Undocumented legacy codebases
-
-- 📄 **Intelligent doc merging**: Consolidate wikis, Confluence, existing docs
-
-- 🏗️ **Retroactive architecture**: Generate HLDs, ADRs, C4 diagrams for existing code
-
-- 📚 **Living documentation**: Auto-updates as code evolves (never gets stale)
-
-- 🌱 **Structure evolution**: Documentation grows with your codebase
-
-- 🛡️ **Regression prevention**: Baseline tests before any modifications
-
-- ✅ **Compliance-ready**: Complete audit trail for HIPAA, SOC 2, FDA
+### 5. Brownfield Support
+- Intelligently onboard existing projects
+- Merge existing documentation
+- Generate retroactive architecture docs
+- Baseline tests before modifications
 
 ## Requirements
 
 **Minimum:**
 - Node.js 18+ (`node --version`)
 - npm 9+ (`npm --version`)
-- Any AI coding tool (Claude, Cursor, Copilot, Gemini, ChatGPT, etc.)
+- Claude Code (recommended) or any AI tool
 
 **Recommended:**
-- Claude Code (Claude Sonnet 4.5) - Full automation
+- Claude Code with Claude Sonnet 4.5 (best experience)
 - Git - Version control
+
+## Example: Event Management SaaS
+
+```bash
+# Install SpecWeave
+npm install -g specweave
+
+# Create project
+mkdir eventmgmt && cd eventmgmt
+specweave init .
+
+# Open in Claude Code and describe:
+"Build an event management SaaS with Next.js 14 App Router,
+Prisma, NextAuth.js, Stripe payments, deployed on Hetzner Cloud"
+
+# SpecWeave autonomously creates:
+✅ PRD with market research
+✅ HLD with C4 diagrams
+✅ Database schema (Prisma)
+✅ Authentication system (NextAuth.js)
+✅ Payment integration (Stripe)
+✅ Infrastructure code (Terraform for Hetzner)
+✅ Deployment pipeline (GitHub Actions)
+✅ Comprehensive tests (Playwright E2E + Jest)
+✅ Living documentation (auto-updates)
+
+# Just say: "Implement the MVP"
+# SpecWeave builds the entire application!
+```
 
 ## Configuration
 
@@ -284,39 +166,32 @@ integrations:
 
 ## Next Steps
 
-1. ✅ Install SpecWeave: `npx specweave init my-app`
-2. ✅ Read `CLAUDE.md` in your project
-3. ✅ Use `/specweave.inc "feature"` to plan first increment
-4. ✅ Use `/specweave.do` to execute
-5. ✅ Deploy! 🚀
+1. ✅ Read the [Installation Guide](installation.md) for detailed setup options
+2. ✅ Review `CLAUDE.md` in your project
+3. ✅ Explore [Key Features](../../overview/features.md)
+4. ✅ Check out [Example Projects](../examples/)
 
 ## Troubleshooting
 
 ### Skills not activating?
 
-**For Claude Code:**
+**Check installation:**
 ```bash
 ls -la .claude/skills/
 # Should see 35+ SpecWeave skills with SKILL.md
 ```
 
-**For other tools:**
+**If missing:**
 ```bash
-cat AGENTS.md
-# Should see universal adapter instructions
+specweave init . --force  # Reinstall
 ```
 
 ### Commands not found?
 
-**For Claude Code:**
 ```bash
 ls -la .claude/commands/
 # Should see: specweave.inc.md, specweave.do.md, etc.
 ```
-
-**For other tools:**
-- Read AGENTS.md for manual workflow
-- Use natural language: "Create increment for authentication"
 
 ### Hooks not running?
 
@@ -340,4 +215,4 @@ chmod +x .claude/hooks/*.sh
 
 **SpecWeave** - Replace vibe coding with spec-driven development.
 
-🚀 **Get started:** `npx specweave init my-app`
+🚀 **Get started:** `npm install -g specweave && specweave init my-project`
