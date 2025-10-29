@@ -1,6 +1,9 @@
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
+import { getDirname } from '../../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 interface ListOptions {
   installed?: boolean;

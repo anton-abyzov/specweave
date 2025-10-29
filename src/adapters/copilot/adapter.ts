@@ -8,9 +8,9 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import { AdapterBase } from '../adapter-base';
-import { AdapterOptions, AdapterFile } from '../adapter-interface';
+import fs from 'fs-extra';
+import { AdapterBase } from '../adapter-base.js';
+import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 
 export class CopilotAdapter extends AdapterBase {
   name = 'copilot';

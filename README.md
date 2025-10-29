@@ -38,7 +38,7 @@
 - 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
 - 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)
 - 🔄 **Tool Integration** - Sync with JIRA, Azure DevOps, GitHub
-- 🏢 **Brownfield Ready** - Analyze and document existing codebases
+- 🏢 **Brownfield Excellence** - The hardest problem solved: merge with existing docs, create complex architecture (ADRs, HLDs, RFCs), maintain living documentation, safe regression prevention
 - 🌐 **Framework Agnostic** - Works with TypeScript, Python, Go, Rust, Java, C#—any tech stack
 
 ---

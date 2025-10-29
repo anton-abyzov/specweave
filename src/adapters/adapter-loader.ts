@@ -5,15 +5,19 @@
  * Enables SpecWeave to work with ANY AI coding tool.
  */
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
 import * as YAML from 'yaml';
-import { IAdapter } from './adapter-interface';
-import { CursorAdapter } from './cursor/adapter';
-import { CopilotAdapter } from './copilot/adapter';
-import { GeminiAdapter } from './gemini/adapter';
-import { CodexAdapter } from './codex/adapter';
-import { GenericAdapter } from './generic/adapter';
+import { execSync } from 'child_process';
+import { IAdapter } from './adapter-interface.js';
+import { CursorAdapter } from './cursor/adapter.js';
+import { CopilotAdapter } from './copilot/adapter.js';
+import { GeminiAdapter } from './gemini/adapter.js';
+import { CodexAdapter } from './codex/adapter.js';
+import { GenericAdapter } from './generic/adapter.js';
+import { getDirname } from '../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 export interface AdapterRegistry {
   version: number;
@@ -135,7 +139,6 @@ export class AdapterLoader {
    */
   private async commandExists(command: string): Promise<boolean> {
     try {
-      const { execSync } = require('child_process');
       execSync(`which ${command}`, { stdio: 'ignore' });
       return true;
     } catch (error) {

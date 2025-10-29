@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] - 2025-10-29
+
+### ⚠️ **BREAKING CHANGE: ESM Migration**
+
+SpecWeave has migrated from CommonJS to ES Modules (ESM) for better compatibility with modern Node.js ecosystem.
+
+### What Changed
+
+**1. ES Modules (ESM)**:
+- ✅ Full ESM support - uses `import`/`export` instead of `require()`
+- ✅ Compatible with latest dependencies (chalk@5.3.0, inquirer@9.2.12, ora@7.0.1)
+- ✅ Fixes Windows ERR_REQUIRE_ESM error
+- ✅ Better tree-shaking and smaller bundles
+- ✅ Future-proof for Node.js 18+ ecosystem
+
+**2. Technical Changes**:
+- `package.json`: Added `"type": "module"`
+- `tsconfig.json`: Changed `"module": "ES2020"` and `"moduleResolution": "bundler"`
+- All imports now require `.js` extension: `from './file.js'`
+- `__dirname` and `__filename` handled via `getDirname(import.meta.url)`
+- New utility: `src/utils/esm-helpers.ts` for ESM compatibility
+
+**3. Breaking Changes**:
+- ❌ No longer compatible with CommonJS-only projects
+- ❌ Requires Node.js 18+ with native ESM support
+- ✅ All CLI commands remain the same (no user-facing changes)
+- ✅ Install scripts work identically
+
+**Migration Impact**:
+```bash
+# Users: No changes needed
+npm install -g specweave@0.3.0
+specweave init my-project  # Works exactly the same
+
+# Contributors: Update imports
+import { foo } from './bar.js'  # Must include .js extension
+```
+
+**Why This Change?**:
+- Modern npm packages (chalk, inquirer, ora) are ESM-only
+- Windows compatibility (ERR_REQUIRE_ESM fix)
+- Better ecosystem alignment with Node.js 18+
+- Enables tree-shaking and performance optimizations
+
+---
+
 ## [0.2.0] - 2025-10-28
 
 ### ⚠️ **BREAKING CHANGE: Command Namespacing**

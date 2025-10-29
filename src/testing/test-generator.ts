@@ -197,15 +197,15 @@ export class TestGenerator {
 
     if (hasApiTests) {
       if (credentials.includes('jira')) {
-        header += `import { JiraClient } from '../../src/integrations/jira/jira-client';\n`;
+        header += `import { JiraClient } from '../../src/integrations/jira/jira-client.js';\n`;
       }
       if (credentials.includes('ado')) {
-        header += `import { AdoClient } from '../../src/integrations/ado/ado-client';\n`;
+        header += `import { AdoClient } from '../../src/integrations/ado/ado-client.js';\n`;
       }
       if (credentials.includes('github')) {
-        header += `// import { GitHubClient } from '../../src/integrations/github/github-client';\n`;
+        header += `// import { GitHubClient } from '../../src/integrations/github/github-client.js';\n`;
       }
-      header += `import { credentialsManager } from '../../src/core/credentials-manager';\n`;
+      header += `import { credentialsManager } from '../../src/core/credentials-manager.js';\n`;
     }
 
     header += `import * as fs from 'fs';\n`;

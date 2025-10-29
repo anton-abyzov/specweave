@@ -1,346 +1,341 @@
 # SpecWeave Installation
 
-## Quick Start
+## Installation Methods
 
-### Install SpecWeave to Any Project
+### Method 1: npx (Recommended)
 
-```bash
-./install.sh /path/to/your/project
-```
-
-### Example: Event Management SaaS
+No installation required - always uses latest version:
 
 ```bash
-# Install
-./install.sh /Users/antonabyzov/Projects/TestLab/specweave-event-mgmt
+# New project
+npx specweave init my-app
+cd my-app
 
-# Navigate
-cd /Users/antonabyzov/Projects/TestLab/specweave-event-mgmt
-
-# Open in Claude Code
-code .
+# Existing project
+cd my-existing-project
+npx specweave init .
 ```
 
-**In Claude Code:**
-```
-Create a SaaS for event management with calendar booking for my soccer facility.
-Tech stack: Next.js 14 + PostgreSQL
-Work autonomously using SpecWeave skills.
+**Pros:**
+- ✅ No global installation needed
+- ✅ Always latest version
+- ✅ No permission issues
+- ✅ Fastest way to start
+
+### Method 2: Global Install
+
+Install once, use everywhere:
+
+```bash
+# Install globally
+npm install -g specweave
+
+# Create projects
+specweave init my-app
+cd my-app
 ```
 
-**Wait 10-30 minutes → Complete SaaS ready! 🚀**
+**Pros:**
+- ✅ Command always available
+- ✅ Faster subsequent runs
 
----
+**Cons:**
+- ❌ Requires root/admin on some systems
+- ❌ Version conflicts across projects
+- ❌ Manual updates needed
+
+### Method 3: From GitHub (Development)
+
+For contributors or testing latest unreleased features:
+
+```bash
+# Clone repository
+git clone https://github.com/anton-abyzov/specweave.git
+cd specweave
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Link globally
+npm link
+
+# Create project
+specweave init my-app
+```
 
 ## What Gets Installed
 
-### Ultra-Minimal Installation
+### For Claude Code (Native)
 
 ```
 your-project/
-├── .claude/              ✅ Claude Code integration
-│   ├── skills/           ✅ SpecWeave skills (8 complete, more in development)
-│   ├── commands/         ✅ Slash commands (1 complete, more in development)
-│   └── hooks/            ✅ Automation hooks (4 hooks)
-├── .specweave/           ✅ SpecWeave framework (ALL work lives here)
-│   ├── increments/       ✅ Development increments
-│   └── docs/             ✅ Living documentation (auto-updated)
-├── CLAUDE.md             ✅ Complete development guide
-└── .gitignore            ✅ Standard ignores
+├── .claude/                  # Claude Code integration
+│   ├── agents/               # 10 specialized agents
+│   │   ├── pm/
+│   │   ├── architect/
+│   │   ├── devops/
+│   │   ├── qa-lead/
+│   │   └── ... (6 more)
+│   ├── skills/               # 35+ development skills
+│   │   ├── increment-planner/
+│   │   ├── context-loader/
+│   │   ├── nextjs/
+│   │   └── ... (32+ more)
+│   ├── commands/             # 10 slash commands
+│   │   ├── specweave.inc.md
+│   │   ├── specweave.do.md
+│   │   ├── specweave.progress.md
+│   │   └── ... (7 more)
+│   └── hooks/                # Automation hooks
+│       └── post-task-completion.sh
+│
+├── .specweave/               # SpecWeave framework
+│   ├── increments/           # Auto-numbered features
+│   │   ├── README.md
+│   │   ├── roadmap.md
+│   │   └── 0001-feature/     # Created by workflow
+│   ├── docs/                 # Living documentation
+│   │   ├── internal/         # Architecture, ADRs, RFCs
+│   │   └── public/           # Published docs
+│   ├── tests/                # Centralized test repository
+│   ├── config.yaml           # Configuration
+│   └── logs/                 # Execution logs
+│
+├── CLAUDE.md                 # Complete development guide
+└── .gitignore                # Standard ignores
 ```
 
-### Your Application Code (Created by Skills)
+### For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT, etc.)
 
 ```
-Skills create your application structure:
-├── app/                  ⚛️  Next.js app (or your framework)
-├── components/           🎨 React components
-├── lib/                  🔧 Utilities
-├── prisma/               🗄️  Database schema
-├── public/               📁 Static files
-└── ... (framework-specific folders)
+your-project/
+├── AGENTS.md                 # Universal adapter (works with ANY AI)
+├── .specweave/               # Same framework structure
+├── CLAUDE.md                 # Same development guide
+├── .cursorrules              # For Cursor (if detected)
+├── .github/copilot/          # For Copilot (if detected)
+└── .gitignore
 ```
 
----
-
-## Philosophy
-
-### Start Minimal → Skills Create Structure
-
-**Before (Cluttered):**
-- Installed all folders upfront
-- User confused by empty folders
-- Unclear what's needed
-
-**Now (Clean):**
-- Install only framework essentials
-- Skills create structure as needed
-- User sees only what's relevant
-- All work happens in `.specweave/increments/`
-
----
-
-## What Does NOT Get Copied
-
-❌ **SpecWeave Internal Files:**
-- `ai-execution-files/` (SpecWeave internal only - NOT used in projects)
-- `src/` (SpecWeave source code)
-- Development `.claude/` (may have non-SpecWeave skills)
-- Any SpecWeave project folders
-
-✅ **You Get Instead:**
-- Clean, minimal installation
-- Skills that create YOUR application code
-- ALL work managed in `.specweave/`
-- Framework that scales from solo to enterprise
-
----
+**Note:** Only Claude Code gets native agents/skills in `.claude/`. Other tools use the universal AGENTS.md adapter.
 
 ## Installation Details
 
-### What the Script Does
-
-1. ✅ Copies `.claude/` (skills, commands, hooks)
-3. ✅ Copies `CLAUDE.md` development guide
-4. ✅ Creates `.specweave/` directory structure
-5. ✅ Creates empty `ai-execution-files/` for your use
-6. ✅ Creates `.gitignore`
-7. ✅ Makes hooks executable
-
-### What the Script Does NOT Do
-
-❌ Does NOT copy SpecWeave's internal files (`ai-execution-files/`)
-❌ Does NOT create ANY project folders
-❌ Does NOT pollute your project with empty directories
-
-**Why?** ALL SpecWeave work happens in `.specweave/`. Your application code is created by skills as needed.
-
----
-
-## After Installation
-
-### 1. Edit Configuration
+### New Project (Greenfield)
 
 ```bash
-cd your-project
-vim .specweave/config.yaml
+npx specweave init my-app
 ```
 
-Update:
-- `project.name`
-- `project.description`
-- Integration settings (JIRA, GitHub, ADO)
+**What happens:**
+1. Creates `my-app/` directory
+2. Detects your AI tool (Claude, Cursor, Copilot, etc.)
+3. Installs appropriate components:
+   - Claude Code → Native agents/skills in `.claude/`
+   - Other tools → AGENTS.md adapter
+4. Creates `.specweave/` structure
+5. Generates `CLAUDE.md` guide
+6. Sets up `.gitignore`
 
-### 2. Start Development
+### Existing Project (Brownfield)
 
-Open in Claude Code and give a high-level request:
-
+```bash
+cd my-existing-project
+npx specweave init .
 ```
-Create a [type] application for [domain].
 
-Tech stack: [framework] + [database]
-Features: [list]
+**What happens:**
+1. Detects existing files and prompts for confirmation
+2. ✅ Preserves your existing code and git history
+3. Adds SpecWeave structure without touching your code
+4. Uses directory name as project name (or prompts if invalid)
 
-Work autonomously using SpecWeave skills.
+**Safe Operations:**
+- ✅ Never modifies existing source code
+- ✅ Never overwrites existing files (asks first)
+- ✅ Keeps your git history intact
+- ✅ All SpecWeave work isolated in `.specweave/`
+
+## Configuration
+
+After installation, optionally edit `.specweave/config.yaml`:
+
+```yaml
+project:
+  name: "your-project"
+  type: "greenfield"  # or "brownfield"
+
+hooks:
+  enabled: true
+  post_task_completion:
+    enabled: true
+    notification_sound: true  # macOS notification
+
+testing:
+  e2e_playwright_mandatory_for_ui: true
+  min_coverage: 80
+
+integrations:
+  jira:
+    enabled: false
+    url: ""
+    project_key: ""
+  github:
+    enabled: false
+    repository: ""
+  azure_devops:
+    enabled: false
+    organization: ""
+    project: ""
 ```
-
-### 3. Skills Work Autonomously
-
-1. `specweave-detector` activates (proactive)
-2. `skill-router` routes to appropriate skills
-3. `spec-author` creates specifications
-4. `architect` designs architecture
-5. `increment-planner` creates implementation plans
-6. `developer` implements code
-7. `playwright-tester` creates E2E tests
-8. `qa-engineer` validates quality
-9. `docs-updater` updates documentation
-
-### 4. Review & Deploy
-
-- Review generated code
-- Customize as needed
-- Run tests
-- Deploy! 🚀
-
----
 
 ## Verification
 
-After installation, verify:
+After installation, verify everything is set up:
 
 ```bash
 cd your-project
 
-# Check installed components
-ls -la .claude/skills/      # Should have 8 SpecWeave skills
-ls -la .claude/commands/    # Should have slash commands
-ls -la .claude/hooks/       # Should have 4 executable hooks
-cat .specweave/config.yaml  # Should exist
+# For Claude Code
+ls -la .claude/agents/      # Should have 10 agents
+ls -la .claude/skills/      # Should have 35+ skills
+ls -la .claude/commands/    # Should have 10 commands
+ls -la .claude/hooks/       # Should have hooks
+
+# For other tools
+cat AGENTS.md               # Should exist
+
+# For all tools
+ls -la .specweave/          # Should have increments/, docs/, config.yaml
 cat CLAUDE.md               # Should exist
-
-# Verify clean installation
-test ! -d ai-execution-files && echo "✅ No ai-execution-files/ folder"
-test ! -d specifications && echo "✅ No specifications/ folder"
-test ! -d features && echo "✅ No features/ folder"
-test ! -d tests && echo "✅ No tests/ folder"
-test ! -d work && echo "✅ No work/ folder"
-
-# Should only see: .claude/, .specweave/, CLAUDE.md, .gitignore
+cat .gitignore              # Should exist
 ```
 
----
+## Multiple Projects
 
-## Troubleshooting
-
-### Skills not activating?
+Install SpecWeave to multiple projects:
 
 ```bash
-ls -la .claude/skills/
-# Should see 8 SpecWeave skills (complete with SKILL.md):
-# - specweave-detector
-# - skill-router
-# - context-loader
-# - increment-planner
-# - nextjs-agent
-# - hetzner-provisioner
-# - cost-optimizer
-# - devops-agent
-# Note: More skills in development, will be added as completed
-```
+# Install to several projects
+npx specweave init project-a
+npx specweave init project-b
+npx specweave init project-c
 
-### Hooks not running?
-
-```bash
-ls -la .claude/hooks/
-chmod +x .claude/hooks/*.sh
-```
-
-### Commands not found?
-
-```bash
-ls -la .claude/commands/
-# Should see: specweave.inc.md, specweave.do.md, specweave.validate.md, etc.
-```
-
----
-
-## Advanced Usage
-
-### Install to Multiple Projects
-
-```bash
+# Or using a loop
 for project in project-a project-b project-c; do
-  ./install.sh ~/Projects/$project
+  npx specweave init ~/Projects/$project
 done
 ```
 
-### Install to Current Directory
+Each project gets its own independent SpecWeave installation.
+
+## Uninstallation
+
+To remove SpecWeave from a project:
 
 ```bash
-./install.sh .
+cd your-project
+
+# Remove SpecWeave files
+rm -rf .claude .specweave CLAUDE.md
+
+# Your application code remains untouched!
 ```
 
-### Dry Run (Test Without Installing)
+**Note:** Your source code is never modified by SpecWeave, so uninstallation is safe and clean.
+
+## Requirements
+
+**Minimum:**
+- Node.js 18+ (`node --version`)
+- npm 9+ (`npm --version`)
+- Any AI coding tool:
+  - Claude Code (recommended)
+  - Cursor
+  - GitHub Copilot
+  - Gemini CLI
+  - Codex
+  - ChatGPT (web)
+  - Claude (web)
+  - Or ANY other AI tool
+
+**Recommended:**
+- Claude Code with Claude Sonnet 4.5 (best experience)
+- Git for version control
+
+## Troubleshooting
+
+### npx not found
 
 ```bash
-# Test the script
-./install.sh /tmp/test-install
-ls -la /tmp/test-install
-rm -rf /tmp/test-install
+# Update npm
+npm install -g npm@latest
+
+# Verify
+npx --version
 ```
 
----
-
-## Related Documentation
-
-- [quickstart.md](quickstart.md) - Quick start guide
-- [CLAUDE.md](../../../CLAUDE.md) - Complete development guide (installed with framework)
-- **INSTALLATION-SUMMARY.md** - Complete summary of installation system (if exists)
-- **ai-execution-files/README.md** - Internal vs. user usage explanation (SpecWeave repo only)
-- **ai-execution-files/examples/event-mgmt-saas-setup.md** - Complete example (SpecWeave repo only)
-
----
-
-## Examples
-
-### Example 1: Event Management SaaS
+### Permission denied (global install)
 
 ```bash
-./install.sh ~/Projects/event-management
-cd ~/Projects/event-management
-code .
+# Option 1: Use npx instead (recommended)
+npx specweave init my-app
+
+# Option 2: Fix npm permissions
+# See: https://docs.npmjs.com/resolving-eacces-permissions-errors
 ```
 
-In Claude Code:
-```
-Create a SaaS for event management with calendar booking.
-Tech stack: Next.js 14 + PostgreSQL
-Features: Calendar, events, auth, payments, admin
-Work autonomously.
-```
-
-### Example 2: E-Commerce Platform
+### Skills not activating (Claude Code)
 
 ```bash
-./install.sh ~/Projects/ecommerce
-cd ~/Projects/ecommerce
-code .
+# Verify installation
+ls -la .claude/skills/
+
+# Should see 35+ skills with SKILL.md files
+# If missing, reinstall:
+npx specweave init . --force
 ```
 
-In Claude Code:
-```
-Create an e-commerce platform.
-Tech stack: Next.js 14 + PostgreSQL + Stripe
-Features: Products, cart, checkout, orders, admin
-Work autonomously.
-```
-
-### Example 3: CRM System
+### Commands not found (Claude Code)
 
 ```bash
-./install.sh ~/Projects/crm
-cd ~/Projects/crm
-code .
+# Verify commands
+ls -la .claude/commands/
+
+# Should see: specweave.inc.md, specweave.do.md, etc.
+# If missing, reinstall:
+npx specweave init . --force
 ```
 
-In Claude Code:
+### Hooks not running
+
+```bash
+# Make hooks executable
+chmod +x .claude/hooks/*.sh
+
+# Verify
+ls -la .claude/hooks/
+# Should show -rwxr-xr-x permissions
 ```
-Create a CRM system.
-Tech stack: Next.js 14 + PostgreSQL
-Features: Contacts, companies, deals, pipeline, reports
-Work autonomously.
-```
 
----
+## Next Steps
 
-## Success Metrics
+After installation:
 
-After installation + autonomous development:
-
-✅ **Time to MVP:** 2-3 hours (vs. 6-8 weeks traditional)
-✅ **Code Quality:** Production-ready
-✅ **Test Coverage:** >80% with E2E tests
-✅ **Documentation:** Auto-updated and complete
-✅ **Deployment:** Ready to deploy with included configs
-
----
+1. ✅ Read the [Quickstart Guide](quickstart.md)
+2. ✅ Review `CLAUDE.md` in your project
+3. ✅ Start your first increment: `/specweave.inc "feature"`
+4. ✅ Execute tasks: `/specweave.do`
 
 ## Support
 
-- **GitHub:** [anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
 - **Issues:** [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
-- **Documentation:** `.specweave/docs/` (after installation)
-
----
-
-## License
-
-MIT License - See [LICENSE](LICENSE)
+- **Discussions:** [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
+- **Documentation:** [spec-weave.com](https://spec-weave.com)
 
 ---
 
 **SpecWeave** - Spec-Driven Development Framework
-*Build software 50-100x faster with autonomous AI agents*
 
-🚀 **Install now:** `./install.sh /path/to/your/project`
+🚀 **Install now:** `npx specweave init my-app`

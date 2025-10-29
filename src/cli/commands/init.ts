@@ -1,13 +1,16 @@
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
-import { AdapterLoader } from '../../adapters/adapter-loader';
-import { IAdapter } from '../../adapters/adapter-interface';
-import { ClaudeMdGenerator } from '../../adapters/claude-md-generator';
-import { AgentsMdGenerator } from '../../adapters/agents-md-generator';
+import { AdapterLoader } from '../../adapters/adapter-loader.js';
+import { IAdapter } from '../../adapters/adapter-interface.js';
+import { ClaudeMdGenerator } from '../../adapters/claude-md-generator.js';
+import { AgentsMdGenerator } from '../../adapters/agents-md-generator.js';
+import { getDirname } from '../../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 interface InitOptions {
   template?: string;

@@ -12,7 +12,7 @@
  * - Get sprint/iteration information
  */
 
-import { credentialsManager, AdoCredentials } from '../../core/credentials-manager';
+import { credentialsManager, AdoCredentials } from '../../core/credentials-manager.js';
 
 export interface AdoWorkItem {
   id: number;

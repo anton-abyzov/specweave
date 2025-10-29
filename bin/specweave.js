@@ -7,16 +7,26 @@
  * Provides commands for initializing projects, creating increments, and managing skills.
  */
 
-const { Command } = require('commander');
-const chalk = require('chalk');
-const package = require('../package.json');
+import { Command } from 'commander';
+import chalk from 'chalk';
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// ESM equivalents for __dirname and __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// For importing package.json (need createRequire in ESM)
+const require = createRequire(import.meta.url);
+const packageJson = require('../package.json');
 
 const program = new Command();
 
 program
   .name('specweave')
   .description('Spec-Driven Development framework with AI-powered autonomous agents')
-  .version(package.version);
+  .version(packageJson.version);
 
 // Init command - Create new SpecWeave project
 program
@@ -26,7 +36,7 @@ program
   .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
   .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
   .action(async (projectName, options) => {
-    const { initCommand } = require('../dist/cli/commands/init');
+    const { initCommand } = await import('../dist/cli/commands/init.js');
     await initCommand(projectName, options);
   });
 
@@ -47,7 +57,7 @@ program
   .option('-g, --global', 'Install globally to ~/.claude/')
   .option('-l, --local', 'Install locally to .claude/ (default)')
   .action(async (componentName, options) => {
-    const { installCommand } = require('../dist/cli/commands/install');
+    const { installCommand } = await import('../dist/cli/commands/install.js');
     await installCommand(componentName, options);
   });
 
@@ -57,7 +67,7 @@ program
   .description('List available and installed components')
   .option('--installed', 'Show only installed components')
   .action(async (options) => {
-    const { listCommand } = require('../dist/cli/commands/list');
+    const { listCommand } = await import('../dist/cli/commands/list.js');
     await listCommand(options);
   });
 
@@ -66,7 +76,7 @@ program
   .command('adapters')
   .description('List available AI tool adapters')
   .action(async () => {
-    const { AdapterLoader } = require('../dist/adapters/adapter-loader');
+    const { AdapterLoader } = await import('../dist/adapters/adapter-loader.js');
     const loader = new AdapterLoader();
     await loader.listAdapters();
   });

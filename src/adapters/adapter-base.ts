@@ -5,15 +5,19 @@
  * Concrete adapters extend this class and implement tool-specific logic.
  */
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
+import { execSync } from 'child_process';
 import {
   IAdapter,
   AdapterOptions,
   RequirementsResult,
   AdapterFile,
   AutomationLevel
-} from './adapter-interface';
+} from './adapter-interface.js';
+import { getDirname } from '../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 export abstract class AdapterBase implements IAdapter {
   abstract name: string;
@@ -49,7 +53,6 @@ export abstract class AdapterBase implements IAdapter {
 
     // Check Git
     try {
-      const { execSync } = require('child_process');
       execSync('git --version', { stdio: 'ignore' });
     } catch (error) {
       result.warnings.push('Git not found - version control features may not work');

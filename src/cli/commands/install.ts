@@ -1,8 +1,12 @@
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
+import { getDirname } from '../../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 interface InstallOptions {
   global?: boolean;
@@ -16,7 +20,7 @@ export async function installCommand(
   console.log(chalk.blue.bold('\n📦 SpecWeave Component Installation\n'));
 
   const isGlobal = options.global || false;
-  const targetBase = isGlobal ? path.join(require('os').homedir(), '.claude') : '.claude';
+  const targetBase = isGlobal ? path.join(os.homedir(), '.claude') : '.claude';
 
   // Detect component type
   const agentsDir = path.join(__dirname, '../../../src/agents');

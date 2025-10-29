@@ -13,10 +13,13 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import { AdapterBase } from '../adapter-base';
-import { AdapterOptions, AdapterFile } from '../adapter-interface';
-import { AgentsMdGenerator } from '../agents-md-generator';
+import fs from 'fs-extra';
+import { AdapterBase } from '../adapter-base.js';
+import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
+import { AgentsMdGenerator } from '../agents-md-generator.js';
+import { getDirname } from '../../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 export class CodexAdapter extends AdapterBase {
   name = 'codex';

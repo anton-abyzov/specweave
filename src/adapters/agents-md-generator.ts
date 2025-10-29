@@ -14,9 +14,12 @@
  * - Any other tool-specific configuration files
  */
 
-import { DocGenerator } from './doc-generator';
+import { DocGenerator } from './doc-generator.js';
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
+import { getDirname } from '../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 export interface AgentsMdOptions {
   projectName: string;

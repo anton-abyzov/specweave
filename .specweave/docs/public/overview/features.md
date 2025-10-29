@@ -298,10 +298,21 @@ Logs and notifies when AI needs clarification.
 
 Framework-agnostic commands:
 
-- `specweave init` - Initialize new SpecWeave project
-- `/create-increment` - Create new feature/increment
+**Core Commands:**
+- `/specweave.inc "feature"` - Plan new increment (PM-led)
+- `/specweave.do` - Execute tasks (smart resume)
+- `/specweave.progress` - Check status and completion
+- `/specweave.validate 0001` - Optional quality assessment
+- `/specweave.done 0001` - Manual close (rarely needed)
+
+**Integration Commands:**
+- `/specweave.sync-github` - Sync to GitHub issues
 - `/sync-docs` - Review specs vs implementation
-- `/sync-github` - Sync to GitHub issues
+
+**Aliases (shorter syntax):**
+- `/specweave inc` = `/specweave.inc`
+- `/specweave do` = `/specweave.do`
+- `/do` = `/specweave.do`
 
 All commands adapt to detected tech stack.
 

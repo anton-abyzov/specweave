@@ -5,9 +5,12 @@
  * for use in adapter instruction files (.cursorrules, instructions.md, etc.)
  */
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
 import * as YAML from 'yaml';
+import { getDirname } from '../utils/esm-helpers.js';
+
+const __dirname = getDirname(import.meta.url);
 
 interface SkillMetadata {
   name: string;
