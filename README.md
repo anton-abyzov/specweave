@@ -355,21 +355,97 @@ specweave/
 /specweave sync-github  # Sync to GitHub issues
 ```
 
-### For Brownfield Projects
+### For Brownfield Projects (The Hardest Challenge)
+
+**Why brownfield is the most complicated:**
+
+- ❌ Existing codebase with no documentation
+
+- ❌ Tribal knowledge scattered across the team
+
+- ❌ Risk of breaking production systems
+
+- ❌ Need to merge with existing docs/wikis
+
+- ❌ Complex architecture that needs retroactive documentation
+
+**SpecWeave solves all of this:**
 
 ```bash
-# 1. Analyze existing code
-"Analyze my authentication module"
+# 1. Initialize in existing project
+cd my-existing-project
+npx specweave init .
 
-# 2. Generate specs from code
-# SpecWeave creates retroactive specifications
+# 2. Merge existing documentation
+"Read brownfield-onboarder skill and merge my existing docs/"
 
-# 3. Create baseline tests
-"Create tests for current behavior"
+# SpecWeave intelligently merges existing documentation:
+#   ✅ Extracts project-specific knowledge from docs, wikis, CLAUDE.md backups
+#   ✅ Distributes content to appropriate SpecWeave folders
+#   ✅ Preserves historical context and team conventions
+#   ✅ No bloat - smart content organization
 
-# 4. Now safe to modify
-"Add OAuth to authentication"
+# 3. Analyze and document existing code
+"Analyze my authentication module and create comprehensive documentation"
+
+# SpecWeave creates retroactive specifications:
+#   ✅ Generates specs (WHAT/WHY) from existing code
+#   ✅ Creates architecture diagrams (HLDs, C4 Context/Container/Component)
+#   ✅ Documents decision rationale (ADRs)
+#   ✅ Maps dependencies and integration points
+#   ✅ Creates RFCs for understood patterns
+
+# 4. Create complex architecture documentation
+"Create complete architecture documentation for the auth system"
+
+# SpecWeave generates:
+#   📋 High-Level Design (HLD) documents
+#   📋 Architecture Decision Records (ADRs) for key choices
+#   📋 C4 Context diagrams (system boundaries)
+#   📋 C4 Container diagrams (services, databases)
+#   📋 C4 Component diagrams (internal structure)
+#   📋 Sequence diagrams (flows)
+#   📋 ER diagrams (data models)
+
+# 5. Establish baseline tests (regression prevention)
+"Create comprehensive tests for current auth behavior"
+
+#   🧪 Creates baseline test suite to prevent regression
+
+# 6. Set up living documentation
+
+# From now on, all changes auto-update documentation:
+#   📚 Specs stay in sync with code
+#   📚 ADRs updated from Proposed → Accepted
+#   📚 Architecture diagrams reflect current state
+#   📚 No documentation drift ever again
+
+# 7. Now safe to modify and evolve
+"Add OAuth 2.0 to authentication system"
+
+# SpecWeave automatically:
+#   🚀 Updates existing specs with new requirements
+#   🚀 Extends architecture docs (ADRs, HLDs)
+#   🚀 Updates diagrams automatically
+#   🚀 Maintains living documentation
+#   🚀 Prevents regression with baseline tests
 ```
+
+**The SpecWeave Brownfield Advantage:**
+
+- ✅ **Merge existing docs** - Intelligently consolidates wikis, docs, legacy CLAUDE.md files
+
+- ✅ **Create complex architecture** - HLDs, ADRs, RFCs, C4 diagrams for existing systems
+
+- ✅ **Living documentation** - Auto-updates after every change (via hooks)
+
+- ✅ **Structure evolution** - Documentation grows with your codebase
+
+- ✅ **Regression prevention** - Baseline tests before any modifications
+
+- ✅ **Compliance-ready** - Complete audit trail for regulated industries
+
+- ✅ **Knowledge preservation** - No more tribal knowledge or context loss
 
 **See [CLAUDE.md#development-workflow](CLAUDE.md#development-workflow)** for complete guide.
 
@@ -684,7 +760,9 @@ npx specweave init .
 | **Components** | Manual setup | Pre-installed (10 agents + 35+ skills) |
 | **Regression** | Frequent breaks | Prevention-first |
 | **Onboarding** | Weeks | Hours (specs explain everything) |
-| **Brownfield** | Risky | Safe (document first) |
+| **Brownfield** | Risky, undocumented | Safe, documented, living architecture (most complicated solved) |
+| **Architecture** | Scattered tribal knowledge | HLDs, ADRs, C4 diagrams auto-updated |
+| **Doc Maintenance** | Manual, becomes stale | Auto-updated via hooks, always current |
 
 ### vs Other Frameworks
 

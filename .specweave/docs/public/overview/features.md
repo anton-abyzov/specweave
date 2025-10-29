@@ -242,23 +242,259 @@ Prevent context-switching:
 - Issues ↔ RFCs/Tasks
 - Checkable subtasks
 
-## 🛡️ Regression Prevention
+## 🏢 Brownfield Excellence (The Hardest Problem Solved)
 
-### Brownfield Safety
+### Why Brownfield is Most Complicated
 
-Before modifying existing code:
-1. ✅ Analyze current implementation
-2. ✅ Generate retroactive documentation
-3. ✅ Create baseline tests
-4. ✅ User reviews and approves
-5. ✅ Implement modifications safely
+Brownfield projects are the **ultimate challenge** in software development:
 
-### Impact Analysis
+- ❌ Existing codebase with **zero or outdated documentation**
 
-- Dependency graph generation
-- Affected modules identification
-- Regression risk assessment
-- User approval required
+- ❌ **Tribal knowledge** scattered across team members
+
+- ❌ **Risk of breaking production** with every change
+
+- ❌ Need to **merge with existing docs, wikis, Confluence pages**
+
+- ❌ **Complex architecture** that was never properly documented
+
+- ❌ **Living documentation** that stays current as code evolves
+
+**Most frameworks give up here. SpecWeave excels.**
+
+### Intelligent Documentation Merging
+
+SpecWeave's **brownfield-onboarder** skill intelligently consolidates existing documentation:
+
+```bash
+"Read brownfield-onboarder skill and merge my existing docs/"
+```
+
+**What it does:**
+
+- 📄 **Extracts knowledge** from existing docs, wikis, Confluence, legacy CLAUDE.md
+
+- 🧠 **Preserves context** - historical decisions, team conventions, domain knowledge
+
+- 📁 **Distributes intelligently** - routes content to appropriate SpecWeave folders
+  - Strategy docs → `.specweave/docs/internal/strategy/`
+  - Architecture → `.specweave/docs/internal/architecture/`
+  - Operations → `.specweave/docs/internal/operations/`
+
+- 🎯 **No bloat** - smart organization without polluting CLAUDE.md
+
+### Retroactive Architecture Documentation
+
+Create comprehensive architecture for **existing systems** without disrupting production:
+
+```bash
+"Analyze authentication module and create complete architecture docs"
+```
+
+**SpecWeave generates:**
+
+#### High-Level Design (HLD)
+
+- System architecture overview
+
+- Component relationships
+
+- Data flow diagrams
+
+- Integration points
+
+#### Architecture Decision Records (ADRs)
+
+- **ADR-0001**: Why we chose JWT over sessions
+
+- **ADR-0002**: OAuth 2.0 provider selection rationale
+
+- **ADR-0003**: Token refresh strategy
+
+- Status: Accepted (for existing patterns) or Proposed (for changes)
+
+#### C4 Model Diagrams
+
+- **C4-1 Context**: System boundaries, external actors
+
+- **C4-2 Container**: Services, databases, APIs
+
+- **C4-3 Component**: Internal module structure
+
+- **Sequence Diagrams**: Login flow, token refresh, logout
+
+- **ER Diagrams**: User, Session, Token data models
+
+**Example:**
+```bash
+"Create complete architecture documentation for auth system"
+# Generates:
+# - .specweave/docs/internal/architecture/hld-authentication.md
+# - .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
+# - .specweave/docs/internal/architecture/adr/0002-oauth-provider.md
+# - .specweave/docs/internal/architecture/diagrams/auth-context.c4.mmd
+# - .specweave/docs/internal/architecture/diagrams/auth-container.c4.mmd
+# - .specweave/docs/internal/architecture/diagrams/auth-component.c4.mmd
+# - .specweave/docs/internal/architecture/diagrams/login-sequence.mmd
+```
+
+### Living Documentation That Never Gets Stale
+
+The **killer feature** for brownfield: documentation that **auto-updates** as code evolves.
+
+**How it works:**
+
+1. **Initial Documentation** - SpecWeave creates complete specs, HLDs, ADRs, diagrams
+
+2. **Code Changes** - You modify code using `/specweave.do`
+
+3. **Auto-Update** - Hooks automatically update:
+   - Specifications reflect new requirements
+   - ADRs move from Proposed → Accepted
+   - Architecture diagrams update with new components
+   - HLDs reflect current system state
+   - RFCs document new patterns
+
+4. **Always Current** - Documentation never drifts from code
+
+**Technologies:**
+
+- **Claude Hooks** - Post-task-completion hook runs after every task
+
+- **Living Docs Sync** - `/sync-docs update` propagates changes
+
+- **Version Control** - All docs in Git, full history preserved
+
+### Structure Evolution and Maintenance
+
+As your brownfield project grows, SpecWeave **grows the documentation structure**:
+
+**Scenario: Adding new payment module**
+```bash
+/specweave.inc "payment processing module"
+```
+
+**SpecWeave automatically:**
+
+1. Creates new strategy docs: `.specweave/docs/internal/strategy/payments/`
+
+2. Generates architecture docs with ADRs
+
+3. Links to existing auth system (dependency tracking)
+
+4. Updates system-level HLD to include payment module
+
+5. Adds payment module to C4 Container diagram
+
+6. Creates RFCs for new patterns
+
+7. Maintains incremental history in `.specweave/increments/`
+
+**Result:** Your documentation structure **organically evolves** with your codebase.
+
+### Regression Prevention (Safety First)
+
+Before modifying **any existing code**, SpecWeave enforces safety:
+
+1. ✅ **Analyze current implementation**
+   - Reads existing code
+   - Maps dependencies
+   - Identifies integration points
+
+2. ✅ **Generate retroactive specifications**
+   - Documents current behavior (WHAT/WHY)
+   - Creates architecture docs (HOW)
+   - Maps data flows
+
+3. ✅ **Create baseline tests**
+   - Captures current behavior in tests
+   - Prevents accidental regression
+   - Serves as living documentation
+
+4. ✅ **Impact analysis**
+   - Dependency graph generation
+   - Affected modules identification
+   - Risk assessment
+
+5. ✅ **User review and approval**
+   - You review generated docs
+   - Approve changes before implementation
+
+6. ✅ **Safe implementation**
+   - Modify code with confidence
+   - Baseline tests catch regressions
+   - Living docs stay current
+
+### Real-World Brownfield Scenario
+
+**Before SpecWeave:**
+```
+Existing Project Problems:
+❌ 50K+ lines of code, zero documentation
+❌ Original developers left, tribal knowledge lost
+❌ Need to add OAuth, terrified of breaking login
+❌ Scattered docs in Confluence, wikis, old READMEs
+❌ Architecture decisions unknown
+❌ Every change risks production
+```
+
+**After SpecWeave:**
+```bash
+# Day 1: Initialize and merge
+npx specweave init .
+"Merge existing Confluence docs and wiki pages"
+# ✅ All knowledge consolidated in SpecWeave structure
+
+# Day 2: Document existing auth
+"Analyze authentication module and create full documentation"
+# ✅ HLDs, ADRs, C4 diagrams generated
+# ✅ Current implementation fully documented
+
+# Day 3: Create baseline tests
+"Create comprehensive tests for current auth behavior"
+# ✅ Regression prevention in place
+
+# Day 4: Add OAuth safely
+/specweave.inc "Add OAuth 2.0 support"
+/specweave.do
+# ✅ OAuth added with:
+#    - Updated specs and ADRs
+#    - Extended architecture diagrams
+#    - Baseline tests prevent regression
+#    - Living docs auto-updated
+
+# Day 5 onward: Maintain forever
+# ✅ Every change auto-updates documentation
+# ✅ Architecture diagrams always current
+# ✅ ADRs reflect actual decisions
+# ✅ No documentation drift ever
+```
+
+### Compliance and Audit Trail
+
+Brownfield + SpecWeave = **Compliance-Ready**
+
+**Perfect for regulated industries:**
+
+- 🏥 **Healthcare (HIPAA)** - Complete audit trail, document all changes
+
+- 🏦 **Finance (SOC 2, PCI-DSS)** - Prove compliance with specifications
+
+- 🏛️ **Government (FedRAMP)** - Architecture documentation required
+
+- 💊 **Pharmaceutical (FDA)** - Validation documentation mandatory
+
+**What you get:**
+
+- ✅ Complete change history (increments never deleted)
+
+- ✅ Decision rationale (ADRs for all choices)
+
+- ✅ Test validation (4-level testing strategy)
+
+- ✅ Living documentation (always current)
+
+- ✅ Traceability (specs → code → tests)
 
 ## 🎨 Documentation Approaches
 

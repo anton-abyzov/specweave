@@ -165,7 +165,7 @@ export async function initCommand(
     spinner.text = 'Directory structure created...';
 
     // 5. Copy base templates (config, README, CLAUDE.md - same for all)
-    const templatesDir = path.join(__dirname, '../../../src/templates');
+    const templatesDir = findSourceDir('templates');
     await copyTemplates(templatesDir, targetDir, finalProjectName);
     spinner.text = 'Base templates copied...';
 
@@ -174,16 +174,13 @@ export async function initCommand(
       // DEFAULT: Native Claude Code installation (no adapter needed!)
       spinner.text = 'Installing Claude Code components...';
 
-      const commandsDir = path.join(__dirname, '../../../src/commands');
-      copyCommands(commandsDir, path.join(targetDir, '.claude/commands'));
+      copyCommands('', path.join(targetDir, '.claude/commands'));
       spinner.text = 'Slash commands installed...';
 
-      const agentsDir = path.join(__dirname, '../../../src/agents');
-      copyAgents(agentsDir, path.join(targetDir, '.claude/agents'));
+      copyAgents('', path.join(targetDir, '.claude/agents'));
       spinner.text = 'Agents installed...';
 
-      const skillsDir = path.join(__dirname, '../../../src/skills');
-      copySkills(skillsDir, path.join(targetDir, '.claude/skills'));
+      copySkills('', path.join(targetDir, '.claude/skills'));
       spinner.text = 'Skills installed...';
 
       console.log('\n✨ Claude Code native installation complete!');
@@ -288,9 +285,9 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   // Generate CLAUDE.md - PRIMARY instruction file for Claude Code
   // CRITICAL: Claude Code ONLY reads CLAUDE.md (NOT AGENTS.md!)
   // This is the native/baseline experience - skills, agents, hooks, slash commands
-  const skillsDir = path.join(__dirname, '../../../src/skills');
-  const agentsDir = path.join(__dirname, '../../../src/agents');
-  const commandsDir = path.join(__dirname, '../../../src/commands');
+  const skillsDir = findSourceDir('skills');
+  const agentsDir = findSourceDir('agents');
+  const commandsDir = findSourceDir('commands');
 
   const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
   const claudeMd = await claudeGen.generate({
@@ -322,21 +319,78 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   }
 }
 
+/**
+ * Find the source directory, trying multiple possible locations
+ * Handles both development and installed package scenarios
+ */
+function findSourceDir(relativePath: string): string {
+  // Try multiple possible locations
+  const possiblePaths = [
+    // Development: dist/cli/commands -> src/
+    path.join(__dirname, '../../..', relativePath),
+    // Installed: node_modules/specweave/dist/cli/commands -> node_modules/specweave/src/
+    path.join(__dirname, '../../../src', relativePath),
+    // Alternative: go up from dist/ to package root, then to src/
+    path.join(__dirname, '../../..', 'src', relativePath),
+    // Absolute from package root (for global installs)
+    path.resolve(__dirname, '../../../src', relativePath),
+  ];
+
+  for (const testPath of possiblePaths) {
+    if (fs.existsSync(testPath)) {
+      return testPath;
+    }
+  }
+
+  // If nothing found, return the first path and let the caller handle the error
+  return possiblePaths[0];
+}
+
 function copyCommands(commandsDir: string, targetCommandsDir: string): void {
-  if (fs.existsSync(commandsDir)) {
-    fs.copySync(commandsDir, targetCommandsDir);
+  const sourceDir = findSourceDir('commands');
+
+  if (!fs.existsSync(sourceDir)) {
+    console.warn(chalk.yellow(`\n⚠️  Warning: Source commands directory not found at: ${sourceDir}`));
+    console.warn(chalk.yellow(`   Tried: ${commandsDir}`));
+    return;
+  }
+
+  try {
+    fs.copySync(sourceDir, targetCommandsDir);
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error copying commands: ${error.message}`));
   }
 }
 
 function copyAgents(agentsDir: string, targetAgentsDir: string): void {
-  if (fs.existsSync(agentsDir)) {
-    fs.copySync(agentsDir, targetAgentsDir);
+  const sourceDir = findSourceDir('agents');
+
+  if (!fs.existsSync(sourceDir)) {
+    console.warn(chalk.yellow(`\n⚠️  Warning: Source agents directory not found at: ${sourceDir}`));
+    console.warn(chalk.yellow(`   Tried: ${agentsDir}`));
+    return;
+  }
+
+  try {
+    fs.copySync(sourceDir, targetAgentsDir);
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error copying agents: ${error.message}`));
   }
 }
 
 function copySkills(skillsDir: string, targetSkillsDir: string): void {
-  if (fs.existsSync(skillsDir)) {
-    fs.copySync(skillsDir, targetSkillsDir);
+  const sourceDir = findSourceDir('skills');
+
+  if (!fs.existsSync(sourceDir)) {
+    console.warn(chalk.yellow(`\n⚠️  Warning: Source skills directory not found at: ${sourceDir}`));
+    console.warn(chalk.yellow(`   Tried: ${skillsDir}`));
+    return;
+  }
+
+  try {
+    fs.copySync(sourceDir, targetSkillsDir);
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error copying skills: ${error.message}`));
   }
 }
 

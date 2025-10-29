@@ -12,13 +12,55 @@ npx specweave init my-app
 cd my-app
 ```
 
-### Existing Project (Brownfield)
+### Existing Project (Brownfield) - The Hardest Problem Made Easy
+
+**Why brownfield is the most complicated:**
+
+- ❌ Existing codebase with zero or outdated documentation
+
+- ❌ Tribal knowledge scattered across the team
+
+- ❌ Risk of breaking production with every change
+
+- ❌ Need to merge existing docs, wikis, Confluence pages
+
+- ❌ Complex architecture never properly documented
+
+**SpecWeave makes it safe and structured:**
 
 ```bash
 # Add SpecWeave to existing project
 cd my-existing-project
 npx specweave init .
+
+# Step 1: Merge existing documentation (if any)
+"Read brownfield-onboarder skill and merge my docs/ and wiki/"
+# Intelligently consolidates existing docs into SpecWeave structure
+
+# Step 2: Analyze and document existing code
+"Analyze my authentication module and create comprehensive documentation"
+# Generates specs, HLDs, ADRs, C4 diagrams retroactively
+
+# Step 3: Create baseline tests
+"Create tests for current auth behavior"
+# Regression prevention - capture current behavior before changes
+
+# Step 4: Now safe to modify
+"Add OAuth 2.0 to authentication"
+# SpecWeave maintains living docs as you evolve the code
 ```
+
+**Result:** Your undocumented legacy codebase now has:
+
+- ✅ Complete specifications (WHAT/WHY)
+
+- ✅ Architecture documentation (HLDs, ADRs, diagrams)
+
+- ✅ Living documentation that auto-updates
+
+- ✅ Regression prevention with baseline tests
+
+- ✅ Compliance-ready audit trail
 
 That's it! SpecWeave is installed and ready.
 
@@ -187,10 +229,21 @@ SpecWeave uses a **smart append-only workflow**: 0001 → 0002 → 0003
 - E2E tests MANDATORY for UI (Playwright)
 - Minimum 3 tests per component
 
-### 5. Brownfield Support
-- Analyze existing codebases
-- Generate retroactive specs
-- Safe modification with regression prevention
+### 5. Brownfield Excellence (Most Complicated Solved)
+
+- 🏢 **The hardest problem in software**: Undocumented legacy codebases
+
+- 📄 **Intelligent doc merging**: Consolidate wikis, Confluence, existing docs
+
+- 🏗️ **Retroactive architecture**: Generate HLDs, ADRs, C4 diagrams for existing code
+
+- 📚 **Living documentation**: Auto-updates as code evolves (never gets stale)
+
+- 🌱 **Structure evolution**: Documentation grows with your codebase
+
+- 🛡️ **Regression prevention**: Baseline tests before any modifications
+
+- ✅ **Compliance-ready**: Complete audit trail for HIPAA, SOC 2, FDA
 
 ## Requirements
 

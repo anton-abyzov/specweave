@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.1] - 2025-10-29
+
+### 🐛 Hotfix: Path Resolution on Windows
+
+**Critical Fix**: Fixed path resolution issue that caused empty folders on Windows after `specweave init`.
+
+### What Changed
+
+**1. Path Resolution Fix**:
+- ✅ Added `findSourceDir()` helper that tries multiple path locations
+- ✅ Handles both development and installed package scenarios
+- ✅ Works correctly on Windows with global npm installs
+- ✅ Added error messages if source files can't be found
+
+**2. Technical Changes**:
+- Fixed `copyCommands()`, `copyAgents()`, `copySkills()` to use smart path resolution
+- Added fallback paths for different installation scenarios
+- Better error handling with user-friendly warnings
+
+**3. What This Fixes**:
+- ❌ **v0.3.0 Issue**: Empty `.claude/commands`, `.claude/agents`, `.claude/skills` folders on Windows
+- ✅ **v0.3.1 Fix**: All files now copy correctly on Windows, macOS, and Linux
+
+### Migration from v0.3.0
+
+If you installed v0.3.0 and have empty folders:
+```bash
+# Upgrade to v0.3.1
+npm install -g specweave@0.3.1
+
+# Re-run init (will overwrite)
+cd your-project
+specweave init .
+```
+
+---
+
 ## [0.3.0] - 2025-10-29
 
 ### ⚠️ **BREAKING CHANGE: ESM Migration**

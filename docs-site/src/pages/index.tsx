@@ -127,6 +127,11 @@ function FeaturesSection(): ReactNode {
             title="Living Documentation"
             description="Specs and docs auto-update after every operation and test. Always in sync with code—no drift, no surprises."
           />
+          <FeatureHighlight
+            icon="🏢"
+            title="Brownfield Excellence"
+            description="The hardest problem solved: merge existing docs, create complex architecture (ADRs, HLDs, C4 diagrams), maintain living documentation. Perfect for legacy codebases."
+          />
         </div>
       </div>
     </section>
