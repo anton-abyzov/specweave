@@ -320,18 +320,71 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
 }
 
 /**
+ * Find the package root by walking up the directory tree looking for package.json
+ * This works reliably on all platforms including Windows with UNC paths
+ */
+function findPackageRoot(startDir: string): string | null {
+  let currentDir = startDir;
+  const root = path.parse(currentDir).root;
+
+  while (currentDir !== root) {
+    const packageJsonPath = path.join(currentDir, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        // Verify this is the specweave package
+        if (packageJson.name === 'specweave') {
+          return currentDir;
+        }
+      } catch (error) {
+        // Not a valid package.json, continue searching
+      }
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) break; // Reached root
+    currentDir = parentDir;
+  }
+
+  return null;
+}
+
+/**
  * Find the source directory, trying multiple possible locations
  * Handles both development and installed package scenarios
+ * Windows-compatible with proper path normalization
  */
 function findSourceDir(relativePath: string): string {
-  // Try multiple possible locations
+  // First, try to find package root by walking up from __dirname
+  const packageRoot = findPackageRoot(__dirname);
+
+  if (packageRoot) {
+    // Try src/ directory first (for npm installs that include src/)
+    const srcPath = path.normalize(path.join(packageRoot, 'src', relativePath));
+    if (fs.existsSync(srcPath)) {
+      return srcPath;
+    }
+
+    // Try dist/ directory (for development where src might not be in dist)
+    const distPath = path.normalize(path.join(packageRoot, 'dist', relativePath));
+    if (fs.existsSync(distPath)) {
+      return distPath;
+    }
+
+    // Try directly in package root (legacy)
+    const rootPath = path.normalize(path.join(packageRoot, relativePath));
+    if (fs.existsSync(rootPath)) {
+      return rootPath;
+    }
+  }
+
+  // Fallback: Try multiple possible locations relative to __dirname
   const possiblePaths = [
     // Development: dist/cli/commands -> src/
-    path.join(__dirname, '../../..', relativePath),
+    path.normalize(path.join(__dirname, '../../..', relativePath)),
     // Installed: node_modules/specweave/dist/cli/commands -> node_modules/specweave/src/
-    path.join(__dirname, '../../../src', relativePath),
+    path.normalize(path.join(__dirname, '../../../src', relativePath)),
     // Alternative: go up from dist/ to package root, then to src/
-    path.join(__dirname, '../../..', 'src', relativePath),
+    path.normalize(path.join(__dirname, '../../..', 'src', relativePath)),
     // Absolute from package root (for global installs)
     path.resolve(__dirname, '../../../src', relativePath),
   ];
@@ -350,15 +403,23 @@ function copyCommands(commandsDir: string, targetCommandsDir: string): void {
   const sourceDir = findSourceDir('commands');
 
   if (!fs.existsSync(sourceDir)) {
-    console.warn(chalk.yellow(`\n⚠️  Warning: Source commands directory not found at: ${sourceDir}`));
-    console.warn(chalk.yellow(`   Tried: ${commandsDir}`));
-    return;
+    console.error(chalk.red(`\n❌ Error: Source commands directory not found`));
+    console.error(chalk.red(`   Expected at: ${sourceDir}`));
+    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    const packageRoot = findPackageRoot(__dirname);
+    if (packageRoot) {
+      console.error(chalk.red(`   Package root: ${packageRoot}`));
+    } else {
+      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+    }
+    throw new Error('Failed to locate source commands directory. This may be a Windows path resolution issue.');
   }
 
   try {
     fs.copySync(sourceDir, targetCommandsDir);
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying commands: ${error.message}`));
+    throw error;
   }
 }
 
@@ -366,15 +427,23 @@ function copyAgents(agentsDir: string, targetAgentsDir: string): void {
   const sourceDir = findSourceDir('agents');
 
   if (!fs.existsSync(sourceDir)) {
-    console.warn(chalk.yellow(`\n⚠️  Warning: Source agents directory not found at: ${sourceDir}`));
-    console.warn(chalk.yellow(`   Tried: ${agentsDir}`));
-    return;
+    console.error(chalk.red(`\n❌ Error: Source agents directory not found`));
+    console.error(chalk.red(`   Expected at: ${sourceDir}`));
+    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    const packageRoot = findPackageRoot(__dirname);
+    if (packageRoot) {
+      console.error(chalk.red(`   Package root: ${packageRoot}`));
+    } else {
+      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+    }
+    throw new Error('Failed to locate source agents directory. This may be a Windows path resolution issue.');
   }
 
   try {
     fs.copySync(sourceDir, targetAgentsDir);
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying agents: ${error.message}`));
+    throw error;
   }
 }
 
@@ -382,15 +451,23 @@ function copySkills(skillsDir: string, targetSkillsDir: string): void {
   const sourceDir = findSourceDir('skills');
 
   if (!fs.existsSync(sourceDir)) {
-    console.warn(chalk.yellow(`\n⚠️  Warning: Source skills directory not found at: ${sourceDir}`));
-    console.warn(chalk.yellow(`   Tried: ${skillsDir}`));
-    return;
+    console.error(chalk.red(`\n❌ Error: Source skills directory not found`));
+    console.error(chalk.red(`   Expected at: ${sourceDir}`));
+    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    const packageRoot = findPackageRoot(__dirname);
+    if (packageRoot) {
+      console.error(chalk.red(`   Package root: ${packageRoot}`));
+    } else {
+      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+    }
+    throw new Error('Failed to locate source skills directory. This may be a Windows path resolution issue.');
   }
 
   try {
     fs.copySync(sourceDir, targetSkillsDir);
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying skills: ${error.message}`));
+    throw error;
   }
 }
 

@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.2] - 2025-10-29
+
+### 🐛 Critical Fix: Windows Path Resolution with UNC Paths
+
+**Major Fix**: Completely rewrote path resolution logic to handle Windows, UNC paths (\\Mac\...), and all edge cases.
+
+### What Changed
+
+**1. Robust Package Root Detection**:
+- ✅ New `findPackageRoot()` function walks up directory tree to find package.json
+- ✅ Verifies package.json contains `"name": "specweave"` to avoid false positives
+- ✅ Works with UNC paths, network drives, symbolic links, and all path formats
+- ✅ Platform-agnostic (Windows, macOS, Linux, WSL)
+
+**2. Enhanced Path Resolution**:
+- ✅ Uses `path.normalize()` on all paths for Windows compatibility
+- ✅ Tries src/ directory first (npm installs include src/)
+- ✅ Falls back to dist/ and root for legacy scenarios
+- ✅ Multiple fallback strategies for reliability
+
+**3. Better Error Reporting**:
+- ✅ Shows `__dirname`, expected path, and package root when errors occur
+- ✅ Throws errors instead of silent failures (copy functions now fail fast)
+- ✅ Clear error messages for debugging Windows issues
+
+**4. What This Fixes**:
+- ❌ **v0.3.1 Issue**: Still failed on Windows with UNC paths (\\Mac\Home\...)
+- ❌ **v0.3.0-0.3.1**: Empty `.claude/` folders on Windows after `specweave init`
+- ✅ **v0.3.2 Fix**: Complete rewrite handles all path scenarios including UNC
+
+### Technical Details
+
+**Before (v0.3.1)**:
+```typescript
+// Only tried relative paths, failed with UNC paths
+path.join(__dirname, '../../..', relativePath)
+```
+
+**After (v0.3.2)**:
+```typescript
+// Walks up to find package.json, works everywhere
+findPackageRoot(__dirname) → verifies name === 'specweave' → finds src/
+```
+
+### Migration from v0.3.0 or v0.3.1
+
+If you have empty `.claude/` folders:
+```bash
+# Upgrade to v0.3.2
+npm install -g specweave@0.3.2
+
+# Re-run init (will overwrite)
+cd your-project
+specweave init .
+```
+
+**Windows Users**: This version specifically fixes issues with:
+- UNC paths (\\\\Mac\\Home\\...)
+- Network drives (Z:\\projects\\...)
+- Global npm installs (%APPDATA%\\npm\\...)
+- All Windows path formats
+
+---
+
 ## [0.3.1] - 2025-10-29
 
 ### 🐛 Hotfix: Path Resolution on Windows
