@@ -40,7 +40,6 @@ This is a **SpecWeave project** where specifications and documentation are the s
 │   ├── delivery/            # Roadmap, CI/CD, guides
 │   ├── operations/          # Runbooks, SLOs
 │   └── governance/          # Security, compliance
-└── config.yaml              # Project configuration
 
 .claude/                     # Claude Code components (if using Claude)
 ├── agents/                  # Specialized roles (PM, Architect, DevOps, etc.)

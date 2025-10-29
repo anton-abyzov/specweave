@@ -7,7 +7,6 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import * as yaml from 'yaml';
 
 /**
  * Keyword → Component Mapping
@@ -170,6 +169,9 @@ async function installComponent(
 
 /**
  * Auto-install missing components based on user intent
+ *
+ * Auto-install is ALWAYS enabled by default.
+ * Set environment variable SPECWEAVE_AUTO_INSTALL=false to disable.
  */
 export async function autoInstallComponents(
   prompt: string,
@@ -177,13 +179,9 @@ export async function autoInstallComponents(
 ): Promise<{ installed: { skills: string[], agents: string[] }, skipped: { skills: string[], agents: string[] } }> {
   const { verbose = true } = options;
 
-  // Check if auto-install is enabled
-  const configPath = path.join(process.cwd(), '.specweave', 'config.yaml');
-  if (fs.existsSync(configPath)) {
-    const config = yaml.parse(fs.readFileSync(configPath, 'utf-8'));
-    if (config.auto_install === false) {
-      return { installed: { skills: [], agents: [] }, skipped: { skills: [], agents: [] } };
-    }
+  // Check if auto-install is disabled via environment variable
+  if (process.env.SPECWEAVE_AUTO_INSTALL === 'false') {
+    return { installed: { skills: [], agents: [] }, skipped: { skills: [], agents: [] } };
   }
 
   // Analyze user intent
@@ -223,45 +221,11 @@ export async function autoInstallComponents(
     }
   }
 
-  // Update config with installed components
-  if (installed.skills.length > 0 || installed.agents.length > 0) {
-    await updateInstalledComponents(installed);
-  }
-
   if (verbose && (installed.skills.length > 0 || installed.agents.length > 0)) {
     console.log('');
   }
 
   return { installed, skipped };
-}
-
-/**
- * Update .specweave/config.yaml with installed components
- */
-async function updateInstalledComponents(installed: { skills: string[], agents: string[] }): Promise<void> {
-  const configPath = path.join(process.cwd(), '.specweave', 'config.yaml');
-
-  if (!fs.existsSync(configPath)) {
-    return;
-  }
-
-  const config = yaml.parse(fs.readFileSync(configPath, 'utf-8'));
-
-  // Initialize installed_components if not exists
-  if (!config.installed_components) {
-    config.installed_components = { skills: [], agents: [] };
-  }
-
-  // Add new components
-  config.installed_components.skills = [
-    ...new Set([...(config.installed_components.skills || []), ...installed.skills])
-  ];
-  config.installed_components.agents = [
-    ...new Set([...(config.installed_components.agents || []), ...installed.agents])
-  ];
-
-  // Write back
-  await fs.writeFile(configPath, yaml.stringify(config), 'utf-8');
 }
 
 /**

@@ -18,8 +18,10 @@ build/
 *.pyc
 __pycache__/
 
-# MkDocs build output
+# Documentation build output
 site/
+docs-site/build/
+docs-site/.docusaurus/
 
 # Environment variables and secrets (CRITICAL - NEVER COMMIT!)
 .env

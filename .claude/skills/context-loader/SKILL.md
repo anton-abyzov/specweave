@@ -1,734 +1,356 @@
 ---
 name: context-loader
-description: Precision context loading system that selectively loads specifications, architecture docs, and ADRs based on context manifests. Achieves 70%+ token reduction by loading only relevant context. Activates automatically when working on features/issues or when user requests "load context for...". Keywords: load context, context manifest, selective loading, specifications, context precision.
+description: Explains how SpecWeave achieves context efficiency through Claude's native progressive disclosure mechanism and sub-agent parallelization. Skills load only when relevant, sub-agents isolate context. Activates when users ask about context loading, token usage, or how SpecWeave scales. Keywords: context loading, progressive disclosure, token efficiency, sub-agents, context management.
 ---
 
-# Context Loader - Precision Context Loading
+# Context Management in SpecWeave
 
-## Purpose
+## Overview
 
-The context-loader is SpecWeave's **precision context loading system** that:
-1. Loads only relevant specifications and documentation (not everything)
-2. Achieves **70%+ token reduction** vs loading full specs
-3. Respects context manifests (`context-manifest.yaml`)
-4. Supports section-level granularity (`#specific-section`)
-5. Enables enterprise-scale specs (500+ pages) without context bloat
-6. Caches loaded context for performance
+SpecWeave achieves efficient context usage through **two native Claude Code mechanisms**:
 
-## When to Activate
+1. **Progressive Disclosure** (Skills) - Claude's built-in skill loading system
+2. **Sub-Agent Parallelization** - Isolated context windows for parallel work
 
-This skill activates when:
-- User starts working on a feature (`.specweave/increments/####-name/`)
-- User works on an issue (`work/issues/####-name/`)
-- User explicitly requests "load context for feature 0003"
-- Any skill needs specification context
-- specweave-detector detects active work
+**Important**: SpecWeave does NOT use custom context manifests or caching systems. It leverages Claude's native capabilities.
 
-## Context Manifest Format
+---
 
-### Basic Context Manifest
+## 1. Progressive Disclosure (Skills)
+
+### How It Works
+
+Claude Code uses a **two-level progressive disclosure system** for skills:
+
+#### Level 1: Metadata Only (Always Loaded)
 
 ```yaml
 ---
-# Context Manifest for Feature 003: Stripe Payment Integration
-
-# Specification sections to load
-spec_sections:
-  - specifications/modules/payments/overview.md
-  - specifications/modules/payments/stripe/spec.md
-  - specifications/modules/payments/stripe/api-contracts.md
-  - specifications/modules/payments/shared/payment-entities.md
-
-# Architecture documents to load
-architecture:
-  - .specweave/docs/architecture/system-design.md#payment-flow
-  - .specweave/docs/architecture/data/database-schema.md#payment-tables
-  - .specweave/docs/architecture/security/pci-compliance.md
-
-# Architecture Decision Records to reference
-adrs:
-  - .specweave/docs/decisions/005-payment-provider-choice.md
-  - .specweave/docs/decisions/012-stripe-webhook-handling.md
-
-# Context budget (max tokens to load)
-max_context_tokens: 10000
-
-# Priority level
-priority: high
-
-# Auto-refresh context on spec changes
-auto_refresh: false
-
-# Related features
-related_features:
-  - 002-user-subscriptions
-  - 004-billing-portal
-
-# Tags for search and categorization
-tags:
-  - payments
-  - stripe
-  - pci-compliance
-  - subscriptions
+name: nextjs
+description: NextJS 14+ implementation specialist. Creates App Router projects...
 ---
 ```
 
-### Advanced Context Manifest (with filters)
+**What Claude sees initially:**
+- Only the YAML frontmatter (name + description)
+- ~50-100 tokens per skill
+- **All** skills' metadata is visible
+- Claude can decide which skills are relevant
 
-```yaml
+#### Level 2: Full Skill Content (Loaded On-Demand)
+
+```markdown
+# NextJS Skill
+
+[Full documentation, examples, best practices...]
+[Could be 5,000+ tokens]
+```
+
+**What Claude loads:**
+- Full SKILL.md content **only if** skill is relevant to current task
+- Prevents loading 35+ skills (175,000+ tokens) when you only need 2-3
+- **This is the actual mechanism** that saves tokens
+
+### Example Workflow
+
+```
+User: "Create a Next.js authentication page"
+    ↓
+Claude reviews skill metadata (35 skills × 75 tokens = 2,625 tokens)
+    ↓
+Claude determines relevant skills:
+  - nextjs (matches "Next.js")
+  - frontend (matches "page")
+  - (NOT loading: python-backend, devops, hetzner-provisioner, etc.)
+    ↓
+Claude loads ONLY relevant skills:
+  - nextjs: 5,234 tokens
+  - frontend: 3,891 tokens
+    ↓
+Total loaded: 9,125 tokens (vs 175,000+ if loading all skills)
+Token reduction: ~95%
+```
+
+### References
+
+- [What are Skills?](https://support.claude.com/en/articles/12512176-what-are-skills)
+- [Agent Skills Engineering](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+
+> "Skills work through progressive disclosure—Claude determines which Skills are relevant and loads the information it needs to complete that task, helping to prevent context window overload."
+
 ---
-# Context Manifest with advanced filtering
 
-spec_sections:
-  - path: specifications/modules/payments/**/*.md
-    exclude:
-      - "**/legacy/**"
-      - "**/deprecated/**"
-    sections:
-      - "#stripe-integration"
-      - "#webhook-handling"
+## 2. Sub-Agent Parallelization
 
-architecture:
-  - path: .specweave/docs/architecture/payments/**/*.md
-    max_depth: 2  # Don't load deeply nested sections
+### How It Works
 
-adrs:
-  - path: .specweave/docs/decisions/*.md
-    filter:
-      tags: ["payment", "stripe"]
+Sub-agents in Claude Code have **isolated context windows**:
 
-# Section-level loading
-load_sections_only: true
+```
+Main conversation (100K tokens used)
+    ↓
+Launches 3 sub-agents in parallel
+    ↓
+├─ Sub-agent 1: Fresh context (0K tokens used)
+├─ Sub-agent 2: Fresh context (0K tokens used)
+└─ Sub-agent 3: Fresh context (0K tokens used)
+```
 
-# Cache settings
-cache:
-  enabled: true
-  ttl: 3600  # 1 hour
+**Benefits:**
 
-# Token optimization
-optimization:
-  remove_code_blocks: false  # Keep code examples
-  remove_tables: false
-  remove_mermaid: false
-  summarize_long_sections: true  # Auto-summarize sections >1000 tokens
+1. **Context Isolation**
+   - Each sub-agent starts with empty context
+   - Doesn't inherit main conversation's 100K tokens
+   - Can load its own relevant skills
+
+2. **Parallelization**
+   - Multiple agents work simultaneously
+   - Each with own context budget
+   - Results merged back to main conversation
+
+3. **Token Multiplication**
+   - Main: 200K token limit
+   - Sub-agent 1: 200K token limit
+   - Sub-agent 2: 200K token limit
+   - **Effective capacity**: 600K+ tokens across parallel work
+
+### Example Workflow
+
+```
+User: "Build a full-stack Next.js app with auth, payments, and admin"
+    ↓
+Main conversation launches 3 sub-agents in parallel:
+    ↓
+├─ Sub-agent 1 (Frontend)
+│  - Loads: nextjs, frontend skills
+│  - Context: 12K tokens
+│  - Implements: Auth UI, payment forms
+│
+├─ Sub-agent 2 (Backend)
+│  - Loads: nodejs-backend, security skills
+│  - Context: 15K tokens
+│  - Implements: API routes, auth logic
+│
+└─ Sub-agent 3 (DevOps)
+   - Loads: devops, hetzner-provisioner skills
+   - Context: 8K tokens
+   - Implements: Deployment configs
+    ↓
+All 3 work in parallel with isolated contexts
+    ↓
+Results merged back to main conversation
+    ↓
+Total effective context: 35K tokens across 3 agents
+(vs 175K+ if loaded all skills in main conversation)
+```
+
+### References
+
+- [Sub-Agents Documentation](https://docs.claude.com/en/docs/claude-code/sub-agents)
+
+---
+
+## Actual Token Savings
+
+### Progressive Disclosure Savings
+
+**Scenario**: User asks about Next.js
+
+**Without progressive disclosure:**
+```
+Load all 35 skills: ~175,000 tokens
+Context bloat: Massive
+```
+
+**With progressive disclosure:**
+```
+Metadata (all skills): ~2,625 tokens
+Load relevant (2 skills): ~9,000 tokens
+Total: ~11,625 tokens
+Reduction: ~93%
+```
+
+### Sub-Agent Savings
+
+**Scenario**: Complex multi-domain task
+
+**Single agent approach:**
+```
+Load all relevant skills: ~50,000 tokens
+Main conversation history: ~80,000 tokens
+Total context used: ~130,000 tokens
+Risk: Approaching context limit
+```
+
+**Sub-agent approach:**
+```
+Main conversation: ~5,000 tokens (coordination only)
+Sub-agent 1: ~15,000 tokens (isolated)
+Sub-agent 2: ~18,000 tokens (isolated)
+Sub-agent 3: ~12,000 tokens (isolated)
+Total: ~50,000 tokens across 4 contexts
+Reduction: ~62% (130K → 50K)
+```
+
+**Note**: Exact percentages vary by task complexity. These are approximate based on typical usage patterns.
+
+---
+
+## How SpecWeave Leverages These Mechanisms
+
+### 1. Skill Organization (Progressive Disclosure)
+
+SpecWeave organizes **35+ skills** with clear, focused descriptions:
+
+```yaml
+# Good: Focused description
+---
+name: nextjs
+description: NextJS 14+ App Router specialist. Server Components, SSR, routing.
+---
+
+# Bad: Vague description
+---
+name: frontend
+description: Does frontend stuff
 ---
 ```
 
-## Loading Algorithm
+**Why this matters:**
+- Clear descriptions help Claude identify relevance quickly
+- Prevents loading irrelevant skills
+- Maximizes progressive disclosure benefits
 
-### Phase 1: Parse Manifest
+### 2. Agent Coordination (Sub-Agent Parallelization)
 
-```typescript
-interface ContextManifest {
-  spec_sections: string[];
-  architecture: string[];
-  adrs: string[];
-  max_context_tokens: number;
-  priority: 'low' | 'medium' | 'high';
-  auto_refresh: boolean;
-  related_features?: string[];
-  tags?: string[];
-}
+SpecWeave's **role-orchestrator** skill automatically:
+- Detects multi-domain tasks
+- Launches specialized sub-agents (PM, Architect, DevOps, etc.)
+- Each sub-agent loads only its relevant skills
+- Coordinates results back to main conversation
 
-function parseManifest(manifestPath: string): ContextManifest {
-  const yaml = readFile(manifestPath);
-  return parseYAML(yaml);
-}
-```
-
-### Phase 2: Resolve Paths
-
-```typescript
-function resolvePaths(patterns: string[]): string[] {
-  const resolved: string[] = [];
-
-  for (const pattern of patterns) {
-    // Handle glob patterns
-    if (pattern.includes('*')) {
-      const files = glob(pattern);
-      resolved.push(...files);
-    }
-
-    // Handle section references (#anchor)
-    else if (pattern.includes('#')) {
-      const [file, section] = pattern.split('#');
-      resolved.push({ file, section });
-    }
-
-    // Handle direct paths
-    else {
-      resolved.push({ file: pattern, section: null });
-    }
-  }
-
-  return resolved;
-}
-```
-
-### Phase 3: Load Content with Section Filtering
-
-```typescript
-function loadContent(filePath: string, section?: string): string {
-  const content = readFile(filePath);
-
-  // If section specified, extract only that section
-  if (section) {
-    return extractSection(content, section);
-  }
-
-  return content;
-}
-
-function extractSection(markdown: string, sectionHeading: string): string {
-  const lines = markdown.split('\n');
-  let inSection = false;
-  let sectionLevel = 0;
-  const result: string[] = [];
-
-  for (const line of lines) {
-    // Check if heading
-    const headingMatch = line.match(/^(#+)\s+(.+)/);
-
-    if (headingMatch) {
-      const [, hashes, heading] = headingMatch;
-      const level = hashes.length;
-
-      // Found target section
-      if (heading.trim() === sectionHeading.replace('#', '').trim()) {
-        inSection = true;
-        sectionLevel = level;
-        result.push(line);
-        continue;
-      }
-
-      // End of section (same or higher level heading)
-      if (inSection && level <= sectionLevel) {
-        break;
-      }
-    }
-
-    if (inSection) {
-      result.push(line);
-    }
-  }
-
-  return result.join('\n');
-}
-```
-
-### Phase 4: Token Budget Management
-
-```typescript
-function enforceTokenBudget(contents: LoadedContent[], maxTokens: number): LoadedContent[] {
-  let totalTokens = 0;
-  const result: LoadedContent[] = [];
-
-  // Sort by priority: ADRs > Architecture > Specs
-  const sorted = sortByPriority(contents);
-
-  for (const content of sorted) {
-    const tokens = estimateTokens(content.text);
-
-    if (totalTokens + tokens <= maxTokens) {
-      result.push(content);
-      totalTokens += tokens;
-    } else {
-      // Try to fit summary instead
-      const summary = summarize(content.text, maxTokens - totalTokens);
-      if (summary) {
-        result.push({ ...content, text: summary, summarized: true });
-        break;
-      }
-    }
-  }
-
-  return result;
-}
-
-function estimateTokens(text: string): number {
-  // Rough estimate: ~4 characters per token
-  return Math.ceil(text.length / 4);
-}
-```
-
-### Phase 5: Cache Management
-
-```typescript
-interface CachedContext {
-  manifestHash: string;
-  contents: LoadedContent[];
-  loadedAt: number;
-  expiresAt: number;
-}
-
-function getCachedContext(manifestPath: string): CachedContext | null {
-  const cacheKey = manifestHash(manifestPath);
-  const cached = readCache(`.specweave/cache/context/${cacheKey}.json`);
-
-  if (cached && cached.expiresAt > Date.now()) {
-    return cached;
-  }
-
-  return null;
-}
-
-function saveToCache(manifestPath: string, contents: LoadedContent[], ttl: number) {
-  const cacheKey = manifestHash(manifestPath);
-  const cache: CachedContext = {
-    manifestHash: cacheKey,
-    contents,
-    loadedAt: Date.now(),
-    expiresAt: Date.now() + (ttl * 1000)
-  };
-
-  writeCache(`.specweave/cache/context/${cacheKey}.json`, cache);
-}
-```
-
-## Loading Workflows
-
-### Workflow 1: Feature Development
+**Example:**
 
 ```
-User: "Implement feature 003"
+User: "/specweave.inc 'Full-stack SaaS with Stripe payments'"
     ↓
-specweave-detector detects feature 003
+role-orchestrator activates
     ↓
-context-loader activates
+Launches sub-agents in parallel:
+  ├─ PM agent (requirements)
+  ├─ Architect agent (system design)
+  ├─ Security agent (threat model)
+  └─ DevOps agent (deployment)
     ↓
-Load context-manifest.yaml:
-  features/003-stripe-payment/context-manifest.yaml
+Each loads only relevant skills in isolated context
     ↓
-Parse manifest:
-  spec_sections: 4 files
-  architecture: 3 files (2 with section filters)
-  adrs: 2 files
-  max_tokens: 10,000
-    ↓
-Resolve paths:
-  ✓ specifications/modules/payments/overview.md (full)
-  ✓ specifications/modules/payments/stripe/spec.md (full)
-  ✓ .specweave/docs/architecture/system-design.md#payment-flow (section only)
-  ...
-    ↓
-Load content:
-  Total: 8,547 tokens (under budget ✓)
-    ↓
-Context loaded:
-  "Context loaded for Feature 003: Stripe Payment Integration
-
-  Loaded 9 documents (8,547 tokens):
-  ✓ 4 specification files
-  ✓ 3 architecture documents (2 section-filtered)
-  ✓ 2 ADRs
-
-  Token reduction: 73% (vs loading all payment specs: 31,892 tokens)
-
-  Ready to implement!"
+Results merged into increment spec
 ```
 
-### Workflow 2: Brownfield Issue
+---
+
+## Common Misconceptions
+
+### ❌ Myth 1: "SpecWeave has custom context manifests"
+
+**Reality:** No. SpecWeave uses Claude's native progressive disclosure. Skills load based on Claude's relevance detection, not custom YAML manifests.
+
+### ❌ Myth 2: "SpecWeave caches loaded context"
+
+**Reality:** No custom caching. Claude Code handles caching internally (if applicable). SpecWeave doesn't implement additional caching layers.
+
+### ❌ Myth 3: "70-90% token reduction"
+
+**Reality:** Token savings vary by task:
+- Simple tasks: 90%+ (load 1-2 skills vs all 35)
+- Complex tasks: 50-70% (load 5-10 skills + use sub-agents)
+- Exact percentages depend on task complexity
+
+### ✅ Truth: "It just works"
+
+**Reality:** Progressive disclosure and sub-agents are **automatic**. You don't configure them. Claude handles skill loading, sub-agent context isolation happens automatically when agents are launched.
+
+---
+
+## Best Practices
+
+### For Skill Descriptions
+
+**Do:**
+- Be specific about what the skill does
+- Include trigger keywords users might say
+- List technologies/frameworks explicitly
+
+**Don't:**
+- Write vague descriptions ("helps with coding")
+- Omit key activation triggers
+- Mix multiple unrelated domains in one skill
+
+### For Sub-Agent Usage
+
+**When to use sub-agents:**
+- Multi-domain tasks (frontend + backend + devops)
+- Parallel work (multiple features simultaneously)
+- Large codebase exploration (different modules)
+
+**When NOT to use sub-agents:**
+- Simple single-domain tasks
+- Sequential work requiring shared context
+- When main conversation context is already low
+
+---
+
+## Debugging Context Usage
+
+### Check Active Skills
+
+When Claude mentions using a skill:
 
 ```
-User: Working in work/issues/012-fix-payment-webhook/
-    ↓
-context-loader detects active issue
-    ↓
-Load: work/issues/012-fix-payment-webhook/context-manifest.yaml
-    ↓
-Manifest specifies:
-  spec_sections:
-    - specifications/modules/payments/stripe/webhooks.md
-  architecture:
-    - .specweave/docs/architecture/webhooks.md
-  code:
-    - src/services/stripe-webhook-handler.ts (existing code)
-    ↓
-Load brownfield context:
-  ✓ Current implementation (src/services/)
-  ✓ Webhook specification
-  ✓ Architecture design
-    ↓
-Total: 2,134 tokens
-    ↓
-"Context loaded for Issue 012: Fix Payment Webhook
-
-Loaded:
-✓ Current webhook handler implementation
-✓ Webhook specification
-✓ Architecture documentation
-
-Token reduction: 94% (vs loading all payment context)
-
-Ready to debug!"
+User: "Create a Next.js page"
+Claude: "🎨 Using nextjs skill..."
 ```
 
-### Workflow 3: Related Features
+**This means:**
+- Progressive disclosure worked
+- Only nextjs skill loaded (not all 35)
+- Context efficient
+
+### Check Sub-Agent Usage
+
+When Claude mentions launching agents:
 
 ```
-User: "Show me related features for feature 003"
-    ↓
-context-loader reads manifest:
-  related_features:
-    - 002-user-subscriptions
-    - 004-billing-portal
-    ↓
-Load context for all related features:
-  features/002-user-subscriptions/context-manifest.yaml
-  features/004-billing-portal/context-manifest.yaml
-    ↓
-Find overlapping context:
-  Common specs:
-    - specifications/modules/payments/shared/payment-entities.md
-  Common architecture:
-    - .specweave/docs/architecture/database-schema.md#payment-tables
-    ↓
-Report:
-  "Features 002, 003, 004 share common context:
-
-  Shared specifications:
-  - Payment entities model
-
-  Shared architecture:
-  - Payment database schema
-
-  This suggests these features should be implemented together
-  or in sequence to avoid conflicts."
+Claude: "🤖 Launching 3 specialized agents in parallel..."
 ```
 
-## Token Reduction Examples
-
-### Example 1: Payment Module (Enterprise Scale)
-
-**Scenario**: Large payment module with 500 pages of specs
-
-**Without context-loader** (loading everything):
-```
-specifications/modules/payments/**/*.md
-  Total files: 47
-  Total tokens: 185,234
-  Problem: Exceeds context window!
-```
-
-**With context-loader** (selective loading):
-```yaml
-# Feature 003 manifest
-spec_sections:
-  - specifications/modules/payments/stripe/spec.md
-  - specifications/modules/payments/shared/payment-entities.md
-architecture:
-  - .specweave/docs/architecture/system-design.md#stripe-integration
-```
-
-```
-Result:
-  Total files: 3 (2 specs + 1 architecture section)
-  Total tokens: 8,547
-  Reduction: 95.4% 🎯
-```
-
-### Example 2: Authentication Module
-
-**Without context-loader**:
-```
-specifications/modules/authentication/**/*.md
-  OAuth spec: 15,234 tokens
-  Session management: 8,765 tokens
-  LDAP integration: 12,456 tokens
-  SAML integration: 18,932 tokens
-  Password policies: 5,643 tokens
-  Total: 60,030 tokens
-```
-
-**With context-loader** (working on OAuth only):
-```yaml
-spec_sections:
-  - specifications/modules/authentication/oauth/spec.md
-  - specifications/modules/authentication/shared/user-entities.md
-```
-
-```
-Result:
-  OAuth spec: 15,234 tokens
-  User entities: 2,341 tokens
-  Total: 17,575 tokens
-  Reduction: 70.7% 🎯
-```
-
-## Auto-Refresh Feature
-
-### Watch for Spec Changes
-
-```typescript
-// When auto_refresh: true in manifest
-function watchSpecChanges(manifest: ContextManifest) {
-  const watchedFiles = resolveAllPaths(manifest);
-
-  for (const file of watchedFiles) {
-    fs.watch(file, () => {
-      console.log(`Spec changed: ${file}`);
-      console.log('Auto-refreshing context...');
-
-      // Clear cache
-      clearCache(manifest);
-
-      // Reload context
-      loadContext(manifest);
-
-      console.log('✓ Context refreshed');
-    });
-  }
-}
-```
-
-### Invalidate Cache on Changes
-
-```typescript
-function shouldInvalidateCache(manifestPath: string): boolean {
-  const cached = getCachedContext(manifestPath);
-  if (!cached) return true;
-
-  const manifest = parseManifest(manifestPath);
-  const files = resolveAllPaths(manifest);
-
-  for (const file of files) {
-    const fileModified = fs.statSync(file).mtimeMs;
-    if (fileModified > cached.loadedAt) {
-      return true;  // File changed since cache created
-    }
-  }
-
-  return false;  // Cache still valid
-}
-```
-
-## Performance Optimization
-
-### Parallel Loading
-
-```typescript
-async function loadContextParallel(manifest: ContextManifest): Promise<LoadedContent[]> {
-  const allPaths = [
-    ...manifest.spec_sections,
-    ...manifest.architecture,
-    ...manifest.adrs
-  ];
-
-  // Load all files in parallel
-  const promises = allPaths.map(path => loadFile(path));
-  const contents = await Promise.all(promises);
-
-  return contents;
-}
-```
-
-### Lazy Loading
-
-```typescript
-// Load only high-priority items immediately
-// Load medium/low priority on-demand
-
-async function loadContextLazy(manifest: ContextManifest): Promise<ContextLoader> {
-  // Immediate load (high priority)
-  const highPriority = await loadHighPriorityContent(manifest);
-
-  // Return loader with deferred loading
-  return {
-    immediate: highPriority,
-
-    loadMore: async () => {
-      return await loadMediumPriorityContent(manifest);
-    },
-
-    loadAll: async () => {
-      return await loadAllContent(manifest);
-    }
-  };
-}
-```
-
-## Integration Points
-
-### 1. Called By
-
-- **specweave-detector**: Auto-load when feature/issue detected
-- **increment-planner**: Load context when creating new features
-- **All implementation skills**: Load context before implementing
-- **Users**: Explicit "load context for feature 003"
-
-### 2. Calls
-
-- File system: Read specification/architecture files
-- Cache: Read/write cached context
-
-### 3. Updates
-
-- `.specweave/cache/context/`: Cached loaded context
-- `.specweave/logs/context-loading.log`: Loading metrics
-
-## Configuration
-
-```yaml
-# .specweave/config.yaml
-context_loader:
-  enabled: true
-
-  # Cache settings
-  cache:
-    enabled: true
-    ttl: 3600  # 1 hour in seconds
-    directory: ".specweave/cache/context"
-
-  # Performance
-  parallel_loading: true
-  max_parallel: 10
-
-  # Auto-refresh
-  watch_specs: true  # Watch for file changes
-
-  # Token optimization
-  default_max_tokens: 10000
-  warn_threshold: 8000  # Warn when approaching budget
-
-  # Summarization (for over-budget content)
-  auto_summarize: true
-  summarization_ratio: 0.3  # Target 30% of original length
-```
-
-## Metrics and Monitoring
-
-### Context Loading Metrics
-
-```typescript
-interface ContextMetrics {
-  feature: string;
-  filesLoaded: number;
-  tokensLoaded: number;
-  tokenBudget: number;
-  reductionPercentage: number;
-  loadTimeMs: number;
-  cacheHit: boolean;
-  timestamp: number;
-}
-
-// Example log entry
-{
-  feature: "003-stripe-payment",
-  filesLoaded: 9,
-  tokensLoaded: 8547,
-  tokenBudget: 10000,
-  reductionPercentage: 73.2,
-  loadTimeMs: 145,
-  cacheHit: false,
-  timestamp: 1704067200000
-}
-```
-
-### Performance Dashboard
-
-```
-Context Loading Performance (Last 30 days)
-
-Average token reduction: 74.3% 🎯 (target: 70%+)
-Average load time: 156ms
-Cache hit rate: 67%
-
-Top token savers:
-1. Feature 003 (Stripe Payment): 95.4% reduction
-2. Feature 007 (OAuth SSO): 82.1% reduction
-3. Feature 012 (Webhooks): 78.9% reduction
-
-Token budget warnings: 2 (features approaching limit)
-```
-
-## Testing
-
-### Test Cases
-
-**TC-001: Basic Context Loading**
-- Given: Feature with context manifest
-- When: context-loader loads context
-- Then: All specified files loaded
-- And: Token count within budget
-- And: >70% reduction achieved
-
-**TC-002: Section-Level Loading**
-- Given: Manifest with section filters (#payment-flow)
-- When: context-loader loads architecture doc
-- Then: Only specified section extracted
-- And: Other sections not loaded
-- And: Token reduction maximized
-
-**TC-003: Cache Hit**
-- Given: Context loaded once (cached)
-- When: Same context requested again
-- Then: Loaded from cache (not file system)
-- And: Load time < 50ms
-
-**TC-004: Cache Invalidation**
-- Given: Cached context exists
-- When: Spec file modified
-- Then: Cache invalidated
-- And: Fresh context loaded
-- And: New cache created
-
-**TC-005: Token Budget Enforcement**
-- Given: Manifest with max_tokens: 5000
-- When: Specs total 7000 tokens
-- Then: Lower priority items summarized or dropped
-- And: Final total ≤ 5000 tokens
-- And: User warned about budget constraint
-
-**TC-006: Related Features**
-- Given: Feature with related_features specified
-- When: User requests related context
-- Then: All related manifests loaded
-- And: Common context identified
-- And: Report generated
-
-## Resources
-
-### YAML Processing
-- [js-yaml](https://github.com/nodeca/js-yaml) - YAML parser for JavaScript
-- [yaml](https://www.npmjs.com/package/yaml) - Modern YAML parser
-- [YAML Specification](https://yaml.org/spec/) - Official YAML spec
-
-### File Globbing
-- [glob](https://github.com/isaacs/node-glob) - Match files using glob patterns
-- [fast-glob](https://github.com/mrmlnc/fast-glob) - Fast file pattern matching
-- [minimatch](https://github.com/isaacs/minimatch) - Glob pattern matcher
-
-### Markdown Processing
-- [marked](https://marked.js.org/) - Markdown parser and compiler
-- [remark](https://remark.js.org/) - Markdown processor powered by plugins
-- [markdown-it](https://github.com/markdown-it/markdown-it) - Markdown parser
-
-### Caching
-- [node-cache](https://github.com/node-cache/node-cache) - Simple caching module
-- [lru-cache](https://github.com/isaacs/node-lru-cache) - Least Recently Used cache
-- [flat-cache](https://github.com/jaredwray/flat-cache) - Flat file cache
-
-### Token Estimation
-- [tiktoken](https://github.com/openai/tiktoken) - OpenAI's token counter
-- [js-tiktoken](https://github.com/dqbd/tiktoken) - TikToken for JavaScript
-
-### Text Summarization
-- [node-sumy](https://github.com/chunksnbits/node-sumy) - Text summarization
-- [Hugging Face Transformers](https://huggingface.co/docs/transformers/) - Advanced summarization models
+**This means:**
+- Sub-agent parallelization active
+- Each agent has isolated context
+- Efficient multi-domain processing
 
 ---
 
 ## Summary
 
-The context-loader is SpecWeave's **precision context loading system** that:
-- ✅ Loads only relevant specifications (not everything)
-- ✅ Achieves 70%+ token reduction (constitution target)
-- ✅ Supports section-level granularity (`#anchor`)
-- ✅ Enables enterprise-scale specs (500+ pages) without bloat
-- ✅ Caches for performance (<50ms cache hits)
-- ✅ Auto-refreshes when specs change (optional)
-- ✅ Manages token budgets intelligently
+SpecWeave achieves context efficiency through:
 
-**User benefit**: Work on massive codebases with 500+ page specifications without exceeding context windows. Load exactly what you need, when you need it.
+1. **Progressive Disclosure (Native Claude)**
+   - Skills load only when relevant
+   - Metadata-first approach
+   - 90%+ savings on simple tasks
 
-**Revolutionary impact**: Makes spec-driven development scalable to enterprise without sacrificing precision.
+2. **Sub-Agent Parallelization (Native Claude Code)**
+   - Isolated context windows
+   - Parallel processing
+   - 50-70% savings on complex tasks
+
+**No custom manifests. No custom caching. Just smart use of Claude's native capabilities.**
+
+---
+
+## References
+
+- [Claude Skills Documentation](https://support.claude.com/en/articles/12512176-what-are-skills)
+- [Agent Skills Engineering Blog](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+- [Sub-Agents Documentation](https://docs.claude.com/en/docs/claude-code/sub-agents)

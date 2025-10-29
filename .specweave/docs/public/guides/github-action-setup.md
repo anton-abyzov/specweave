@@ -786,7 +786,7 @@ cat .specweave/docs/changelog/2025-10.md
 **Causes & Solutions**:
 
 1. **Using wrong model**
-   - Check: .specweave/config.yaml → ai.model
+   - Settings auto-detected
    - Fix: Use Sonnet (not Opus)
 
 2. **Too many tokens per run**
@@ -856,15 +856,7 @@ cat .specweave/docs/changelog/2025-10.md
    - Then brownfield protection passes
 
 2. **Disable for specific paths**
-   ```yaml
-   # .specweave/config.yaml
-   brownfield:
-     enabled: true
-     exclude_paths:
-       - "docs/**"
-       - "tests/**"
-       - "*.md"
-   ```
+   
 
 3. **Temporarily disable** (not recommended)
    ```yaml

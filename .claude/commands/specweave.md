@@ -53,14 +53,14 @@ This master command routes to SpecWeave increment lifecycle subcommands.
 
 ```yaml
 subcommands:
-  inc: .claude/commands/specweave-inc.md
-  build: .claude/commands/specweave-do.md
-  next: .claude/commands/specweave-next.md
-  done: .claude/commands/specweave-done.md
-  progress: .claude/commands/specweave-progress.md
-  validate: .claude/commands/specweave-validate.md
-  sync-github: .claude/commands/specweave-sync-github.md
-  sync-jira: .claude/commands/specweave-sync-jira.md
+  inc: .claude/commands/specweave.inc.md
+  build: .claude/commands/specweave.do.md
+  next: .claude/commands/specweave.next.md
+  done: .claude/commands/specweave.done.md
+  progress: .claude/commands/specweave.progress.md
+  validate: .claude/commands/specweave.validate.md
+  sync-github: .claude/commands/specweave.sync-github.md
+  sync-jira: .claude/commands/specweave.sync-jira.md
 ```
 
 ---
@@ -90,7 +90,7 @@ Else:
 ### Step 3: Route to Command
 
 ```
-Read file: .claude/commands/specweave-inc.md
+Read file: .claude/commands/specweave.inc.md
 Execute: Command content with arguments
 ```
 
@@ -108,8 +108,8 @@ Execute: Command content with arguments
 **Routing**:
 ```
 Parse: subcommand = "inc", args = ["User authentication"]
-Route to: .claude/commands/specweave-inc.md
-Execute: /specweave-inc "User authentication"
+Route to: .claude/commands/specweave.inc.md
+Execute: /specweave.inc "User authentication"
 ```
 
 ### Example 2: Build Current Increment
@@ -122,8 +122,8 @@ Execute: /specweave-inc "User authentication"
 **Routing**:
 ```
 Parse: subcommand = "build", args = []
-Route to: .claude/commands/specweave-do.md
-Execute: /specweave-do (auto-finds active increment)
+Route to: .claude/commands/specweave.do.md
+Execute: /specweave.do (auto-finds active increment)
 ```
 
 ### Example 3: Smart Transition
@@ -136,8 +136,8 @@ Execute: /specweave-do (auto-finds active increment)
 **Routing**:
 ```
 Parse: subcommand = "next", args = []
-Route to: .claude/commands/specweave-next.md
-Execute: /specweave-next (validates, closes, suggests)
+Route to: .claude/commands/specweave.next.md
+Execute: /specweave.next (validates, closes, suggests)
 ```
 
 ### Example 4: Invalid Subcommand
@@ -184,14 +184,14 @@ function handleSpecweaveCommand(rawInput) {
 
   // Routing table
   const routes = {
-    'inc': 'specweave-inc.md',
-    'do': 'specweave-do.md',
-    'next': 'specweave-next.md',
-    'done': 'specweave-done.md',
-    'progress': 'specweave-progress.md',
-    'validate': 'specweave-validate.md',
-    'sync-github': 'specweave-sync-github.md',
-    'sync-docs': 'specweave-sync-docs.md'
+    'inc': 'specweave.inc.md',
+    'do': 'specweave.do.md',
+    'next': 'specweave.next.md',
+    'done': 'specweave.done.md',
+    'progress': 'specweave.progress.md',
+    'validate': 'specweave.validate.md',
+    'sync-github': 'specweave.sync-github.md',
+    'sync-docs': 'specweave.sync-docs.md'
   };
 
   // Validate subcommand
@@ -228,7 +228,7 @@ User's project:
   .claude/commands/do.md    (their own build command)
 
 SpecWeave installation:
-  .claude/commands/specweave-do.md    (SpecWeave's build)
+  .claude/commands/specweave.do.md    (SpecWeave's build)
   .claude/commands/specweave.md          (master router)
 
 Result: ✅ NO COLLISION - Both coexist!
@@ -237,10 +237,10 @@ Result: ✅ NO COLLISION - Both coexist!
 ### Benefits
 
 1. **No collisions** - SpecWeave commands never overwrite user commands
-2. **Clear ownership** - `specweave-*` prefix shows it's framework command
+2. **Clear ownership** - `specweave.*` notation shows it's framework command
 3. **Easy identification** - `/specweave` clearly indicates SpecWeave action
 4. **Brownfield safe** - Can install in any existing project
-5. **Uninstall clean** - Remove `specweave-*` files, user's files intact
+5. **Uninstall clean** - Remove `specweave.*` files, user's files intact
 
 ---
 
@@ -327,8 +327,8 @@ Behavior:
 .claude/
 ├── commands/
 │   ├── build.md                    (user's original - preserved)
-│   ├── specweave-do.md          (SpecWeave's - new)
-│   ├── specweave-inc.md            (SpecWeave's - new)
+│   ├── specweave.do.md          (SpecWeave's - new)
+│   ├── specweave.inc.md            (SpecWeave's - new)
 │   └── specweave.md                (master router - new)
 ├── commands.backup-1698765432/     (timestamped backup)
 │   └── build.md                    (original backup)

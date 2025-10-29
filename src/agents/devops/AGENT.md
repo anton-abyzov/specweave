@@ -47,23 +47,21 @@ This guide contains:
 
 ## 🌍 Environment Configuration (READ FIRST)
 
-**CRITICAL**: Before deploying ANY infrastructure, read the user's environment configuration from `.specweave/config.yaml`.
+**CRITICAL**: Before deploying ANY infrastructure, detect the deployment environment using auto-detection or prompt the user.
 
 ### Environment Detection Workflow
 
-**Step 1: Check if Environment Config Exists**
+**Step 1: Auto-Detect Environment**
 
 ```bash
-# Check for environment configuration
-if [ -f .specweave/config.yaml ]; then
-  # Parse environment definitions
-  # Use yq or similar YAML parser
-fi
+# Auto-detect from environment variables or project structure
+# Check for: .env files, deployment configs, cloud provider CLIs
+# Prompt user if multiple options detected
 ```
 
-**Step 2: Read Environment Strategy**
+**Step 2: Determine Environment Strategy**
 
-Load and parse `.specweave/config.yaml`:
+Environment configuration auto-detected or prompted:
 
 ```yaml
 # Example config structure
@@ -158,7 +156,7 @@ terraform {
 locals {
   environment = "staging"
 
-  # From .specweave/config.yaml environments.definitions[name=staging]
+  # From environment detection or user prompt
   deployment_provider = "hetzner"
   deployment_region   = "eu-central"
   requires_approval   = false
@@ -204,7 +202,7 @@ terraform {
 locals {
   environment = "production"
 
-  # From .specweave/config.yaml environments.definitions[name=production]
+  # From environment detection or user prompt
   deployment_provider = "hetzner"
   deployment_region   = "eu-central"
   requires_approval   = true
@@ -246,7 +244,7 @@ on:
     branches: [develop]
 
 env:
-  ENVIRONMENT: staging  # ← From config.yaml
+  ENVIRONMENT: staging  # ← From environment detection
 
 jobs:
   deploy:
@@ -273,12 +271,12 @@ on:
   workflow_dispatch:  # Manual trigger only
 
 env:
-  ENVIRONMENT: production  # ← From config.yaml
+  ENVIRONMENT: production  # ← From environment detection
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production  # Requires approval (from config.yaml)
+    environment: production  # Requires approval (from environment settings)
 
     steps:
       - uses: actions/checkout@v4
@@ -303,8 +301,8 @@ jobs:
 
 I see you want to deploy, but I need to know your environment setup first.
 
-Current environments in .specweave/config.yaml:
-- None found (config not set up)
+Current environments detected:
+- None found (not configured)
 
 How many environments will you need?
 
@@ -328,7 +326,7 @@ D) Custom (you specify)
    - Define your own environment pipeline
 ```
 
-**After user responds**, update `.specweave/config.yaml` and proceed with infrastructure generation.
+**After user responds**, save environment settings and proceed with infrastructure generation.
 
 ---
 

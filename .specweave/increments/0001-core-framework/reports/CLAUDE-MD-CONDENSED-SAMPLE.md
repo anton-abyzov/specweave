@@ -163,7 +163,7 @@ npx specweave init
 **CRITICAL**: Agents MUST ask about deployment target before generating infrastructure code.
 
 - ✅ Ask only when relevant (not day 1 of prototyping)
-- ✅ Check `.specweave/config.yaml` first
+- ✅ Settings auto-detected
 - ✅ Progressive disclosure (local vs cloud → provider selection → cost optimization)
 
 **See**: [Deployment Guide](.specweave/docs/internal/delivery/guides/deployment-guide.md)
@@ -206,8 +206,6 @@ npx specweave init
 ## Quick Reference
 
 ### Tech Stack Detection Priority
-
-1. **`.specweave/config.yaml`** (highest priority)
 2. **`package.json`** → TypeScript/JavaScript
 3. **`requirements.txt`** or **`pyproject.toml`** → Python
 4. **`go.mod`** → Go

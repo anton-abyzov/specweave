@@ -95,13 +95,7 @@ As a user, I want to subscribe to a monthly plan...
 ## Authentication
 
 **Personal Access Token (PAT)**:
-```yaml
-# .specweave/config.yaml
-ado_sync:
-  url: "https://dev.azure.com/your-org"
-  project: "YourProject"
-  pat: "${ADO_PAT}"  # From environment variable
-```
+
 
 **OAuth 2.0** (for apps):
 ```yaml
@@ -115,36 +109,7 @@ ado_sync:
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-ado_sync:
-  enabled: false
 
-  # ADO instance
-  url: "https://dev.azure.com/your-org"
-  project: "YourProject"
-
-  # Authentication (use environment variables!)
-  pat: "${ADO_PAT}"
-
-  # Sync settings
-  sync_direction: "bidirectional"  # export | import | bidirectional
-  sync_interval: 300  # seconds (5 minutes)
-
-  # What to sync
-  sync_status: true
-  sync_comments: true
-  sync_assignees: true
-  sync_attachments: false
-
-  # Work item mapping
-  area_path: "Platform"  # Default area path
-  iteration_path: null  # Auto-detect from current sprint
-
-  # Webhooks (for real-time sync)
-  webhook_enabled: true
-  webhook_secret: "${ADO_WEBHOOK_SECRET}"
-```
 
 ## Workflow
 

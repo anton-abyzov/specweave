@@ -593,9 +593,8 @@ If you prefer full upfront documentation:
 3. Link increments to related docs (PRD, HLD, ADR, RFC)
 
 ### Phase 5: External Tool Sync ({X} hours)
-1. Configure `.specweave/config.yaml` with Jira/ADO credentials
-2. Run initial sync to link Epics → Increments
-3. Verify all Epics are mapped
+1. Run sync command to link Epics → Increments (credentials auto-detected or prompted)
+2. Verify all Epics are mapped
 
 ### Phase 6: Verification (30 minutes)
 1. Run `specweave verify`
@@ -627,7 +626,7 @@ If you prefer full upfront documentation:
    ```bash
    specweave migrate --plan analysis-report.md --execute
    ```
-5. **Enable sync** - Configure Jira/ADO sync in `.specweave/config.yaml`
+5. **Enable sync** - Run sync commands for Jira/ADO integration
 
 ---
 
@@ -863,7 +862,7 @@ Your project is now using SpecWeave's PRD/HLD/RFC/Runbook pattern.
 
 Next steps:
 1. Review migrated documents
-2. Run: mkdocs serve (to view documentation)
+2. Run: npm run docs:dev (to view documentation)
 3. Configure ongoing sync: specweave sync --daemon
 ```
 
@@ -892,7 +891,7 @@ for (file of files) {
 
 ## Configuration
 
-**User can configure** scan patterns in `.specweave/config.yaml`:
+**Default scan patterns** are built-in. Advanced users can customize by creating `.specweave/brownfield-config.yaml`:
 
 ```yaml
 brownfield:

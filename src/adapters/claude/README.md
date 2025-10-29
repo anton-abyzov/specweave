@@ -206,15 +206,7 @@ Agents have separate context windows to prevent pollution of main conversation.
 
 Hooks run automatically on events:
 
-```yaml
-# .specweave/config.yaml
-hooks:
-  post_task_completion:
-    enabled: true
-    actions:
-      - update_documentation
-      - update_claude_md
-```
+
 
 When task completes → hook fires → docs auto-update.
 

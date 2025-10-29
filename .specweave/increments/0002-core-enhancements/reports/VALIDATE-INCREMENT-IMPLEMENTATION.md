@@ -120,7 +120,7 @@ Choice: _
 ```
 
 **If user selects "A" (Always)**:
-- Updates `.specweave/config.yaml`
+- SpecWeave uses auto-detection
 - Sets `validation.quality_judge.always_run: true`
 - Future validations run quality automatically
 

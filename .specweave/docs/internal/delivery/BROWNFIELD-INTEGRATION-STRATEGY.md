@@ -341,55 +341,7 @@ specweave sync --increment 0001 --tool jira --direction push
 ```
 
 **Automatic Sync** (via hooks):
-```yaml
-# .specweave/config.yaml
----
-sync:
-  enabled: true
-  tools:
-    - jira
-    - ado
-    - github
 
-  jira:
-    url: https://company.atlassian.net
-    project: PROJ
-    auth:
-      type: api_token
-      token_env: JIRA_API_TOKEN
-      email_env: JIRA_EMAIL
-    sync_interval: 15m  # Sync every 15 minutes
-    mappings:
-      epic: increment
-      story: prd_or_rfc
-      task: task
-      bug: incident
-
-  ado:
-    url: https://dev.azure.com/company/MyProject
-    project: MyProject
-    auth:
-      type: pat
-      token_env: ADO_PAT
-    sync_interval: 15m
-    mappings:
-      epic: increment
-      feature: prd_or_rfc
-      user_story: prd_or_rfc
-      task: task
-      bug: incident
-
-  github:
-    repo: company/repo
-    auth:
-      type: token
-      token_env: GITHUB_TOKEN
-    sync_interval: 15m
-    mappings:
-      milestone: release_plan
-      issue: task_or_rfc
----
-```
 
 ### Sync Logic
 

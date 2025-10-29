@@ -83,7 +83,7 @@ npm install
 npm run install:all
 
 # 5. Customize for your project
-# Edit .specweave/config.yaml
+# Initialize your project
 # Update package.json (name, description, etc.)
 # Update CLAUDE.md with project-specific info
 
@@ -302,7 +302,7 @@ npm run install:all
 
 #### 2. Configure Project
 
-**Edit `.specweave/config.yaml`**:
+**Initialize your project
 ```yaml
 project:
   name: "my-saas-app"  # Your project name
@@ -604,13 +604,7 @@ cp .claude/backups/CLAUDE-backup-*.md CLAUDE.md
    ```
 
 2. **Verify config**
-   ```yaml
-   # .specweave/config.yaml
-   hooks:
-     enabled: true
-     post_task_completion:
-       enabled: true
-   ```
+   
 
 3. **Check hook permissions**
    ```bash

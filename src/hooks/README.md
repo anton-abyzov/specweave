@@ -18,15 +18,20 @@ Hooks automate workflows and provide feedback during development:
 ## Available Hooks
 
 ### 1. `post-task-completion.sh`
-**Triggers**: After ANY task is marked complete
+**Triggers**: After ANY task is marked complete (via TodoWrite tool)
 
 **Actions**:
-1. Plays completion sound (Glass.aiff on macOS, equivalent on Linux/Windows)
-2. Triggers `docs-updater` skill (if exists)
-3. Checks if CLAUDE.md needs update
-4. Logs task completion
+1. Plays completion sound **synchronously** (Glass.aiff on macOS, equivalent on Linux/Windows)
+2. Outputs JSON with systemMessage reminder to update docs
+3. Logs task completion
 
 **Sound**: Glass.aiff (or system equivalent)
+
+**Important**: Hooks cannot invoke slash commands or skills. The hook only:
+- Plays sound to notify user
+- Shows reminder message
+- Claude must manually update CLAUDE.md/README.md inline after each task
+- Living docs sync (via `/sync-docs`) happens after ALL tasks complete
 
 ---
 
@@ -114,30 +119,15 @@ chmod +x .claude/hooks/*.sh
 
 ## Configuration
 
-Hooks respect `.specweave/config.yaml`:
+Hooks are enabled by default. To customize behavior, hooks can check environment variables or use auto-detection.
 
-```yaml
----
-hooks:
-  enabled: true
+### Default Behavior
+- Sound notifications enabled (platform-specific)
+- Auto-update docs after task completion
+- Regression checks for brownfield projects
 
-  # Sound notifications
-  sounds:
-    enabled: true
-    completion: /System/Library/Sounds/Glass.aiff  # macOS
-    input_required: /System/Library/Sounds/Ping.aiff
-
-  # Auto-update docs
-  docs_updater:
-    enabled: true
-    auto_commit: false  # If true, auto-commit doc changes
-
-  # Regression checks
-  regression:
-    enabled: true
-    require_baseline_tests: false  # If true, block if no baseline tests
----
-```
+### Customization
+Hooks use auto-detection for platform-specific features (macOS/Linux/Windows sound files).
 
 ---
 

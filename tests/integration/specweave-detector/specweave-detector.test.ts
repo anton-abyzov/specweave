@@ -67,13 +67,13 @@ class SpecweaveDetectorTest {
   }
 
   private async test2_detectionWithMissingConfiguration(): Promise<void> {
-    const testName = 'Test 2: Detection with Missing Configuration';
+    const testName = 'Test 2: Detection with No Increments';
     console.log(`\n🧪 ${testName}`);
     const start = Date.now();
 
     try {
       // Generic test
-      console.log('   Description: Tests edge case where .specweave/ exists but config.yaml is missing or invalid');
+      console.log('   Description: Tests edge case where .specweave/ exists but no increments have been created yet');
       // TODO: Implement test logic
       
       this.results.push({

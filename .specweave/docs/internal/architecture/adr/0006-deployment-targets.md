@@ -17,7 +17,7 @@ Challenge: Balance between local development and production deployment.
 **Detection Flow**:
 ```
 User mentions deployment keywords?
-  → Check .specweave/config.yaml
+  → Settings auto-detected
     → deployment.target defined?
       → NO: Ask deployment questions
         → Save to config

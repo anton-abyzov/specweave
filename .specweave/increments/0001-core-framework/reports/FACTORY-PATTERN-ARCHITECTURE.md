@@ -333,7 +333,6 @@ npx specweave list --installed
 ### Tech Stack Detection
 
 **Priority**:
-1. Read `.specweave/config.yaml` (explicit configuration)
 2. Detect from project files:
    - `package.json` + `next.config.js` → Next.js
    - `requirements.txt` + `fastapi` → Python + FastAPI

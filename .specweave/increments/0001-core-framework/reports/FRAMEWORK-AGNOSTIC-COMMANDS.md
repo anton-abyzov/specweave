@@ -51,7 +51,7 @@ Tech Stack:
 **Added Step 2**:
 ```markdown
 2. **Detect tech stack** (CRITICAL - framework-agnostic):
-   - Check `.specweave/config.yaml` for tech_stack configuration
+   - Settings auto-detected
    - If not found, detect from project files:
      - `package.json` → TypeScript/JavaScript
      - `requirements.txt` or `pyproject.toml` → Python
@@ -230,8 +230,6 @@ grep -n "detected-language\|detected-framework" .claude/commands/create-incremen
 ## Detection Logic (How It Works)
 
 ### Priority Order
-
-1. **`.specweave/config.yaml`** (highest priority)
    ```yaml
    tech_stack:
      language: "python"

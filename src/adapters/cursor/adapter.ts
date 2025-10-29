@@ -2,10 +2,10 @@
  * Cursor Adapter
  *
  * Semi-automation adapter for Cursor editor.
- * Provides workflow instructions via .cursorrules and @ context shortcuts.
+ * Provides @ context shortcuts for quick context injection.
  *
- * Since Cursor doesn't natively support Claude Code's skills/agents/hooks,
- * this adapter teaches Cursor HOW TO BEHAVE LIKE it has these capabilities.
+ * Cursor automatically reads AGENTS.md (universal standard) for workflow instructions.
+ * This adapter only installs Cursor-specific features (@ shortcuts).
  */
 
 import * as path from 'path';
@@ -15,7 +15,7 @@ import { AdapterOptions, AdapterFile } from '../adapter-interface';
 
 export class CursorAdapter extends AdapterBase {
   name = 'cursor';
-  description = 'Cursor adapter - Semi-automation with .cursorrules and @ context shortcuts';
+  description = 'Cursor adapter - Semi-automation with AGENTS.md and @ context shortcuts';
   automationLevel = 'semi' as const;
 
   /**
@@ -24,26 +24,22 @@ export class CursorAdapter extends AdapterBase {
    * Checks for:
    * - cursor command in PATH
    * - .cursor/ directory exists
-   * - .cursorrules file exists
    */
   async detect(): Promise<boolean> {
     const hasCursorCLI = await this.commandExists('cursor');
     const hasCursorDir = await this.fileExists('.cursor');
-    const hasCursorRules = await this.fileExists('.cursorrules');
 
-    return hasCursorCLI || hasCursorDir || hasCursorRules;
+    return hasCursorCLI || hasCursorDir;
   }
 
   /**
    * Get files to install for Cursor adapter
+   *
+   * Note: Cursor automatically reads AGENTS.md (universal standard).
+   * This adapter only installs Cursor-specific @ context shortcuts.
    */
   getFiles(): AdapterFile[] {
     return [
-      {
-        sourcePath: '.cursorrules',
-        targetPath: '.cursorrules',
-        description: 'Cursor workflow instructions (how to act like skills/agents)'
-      },
       {
         sourcePath: '.cursor/context/increments-context.md',
         targetPath: '.cursor/context/increments-context.md',
@@ -88,8 +84,7 @@ export class CursorAdapter extends AdapterBase {
 
     console.log('\n✨ Cursor adapter installed!');
     console.log('\n📋 Files created:');
-    console.log('   - .cursorrules (workflow instructions)');
-    console.log('   - .cursor/context/ (@ shortcuts)');
+    console.log('   - .cursor/context/ (@ shortcuts for quick context injection)');
   }
 
   /**
@@ -112,11 +107,13 @@ Your project is now configured for Cursor with SEMI-automation!
 
 WHAT THIS PROVIDES:
 
-- .cursorrules (Workflow Instructions)
-  - Teaches Cursor HOW to act like Claude Code skills/agents
-  - Step-by-step workflow for creating increments
-  - Context loading strategy (70%+ token savings)
-  - Increment lifecycle management
+- AGENTS.md (Universal Standard)
+  - Cursor automatically reads this file
+  - Contains all workflow instructions
+  - Defines agent roles (PM, Architect, etc.)
+  - Defines skill capabilities (increment-planner, context-loader, etc.)
+  - Project structure and templates
+  - Following agents.md standard (https://agents.md/)
 
 - @ Context Shortcuts (Quick Access)
   - @increments - Load current increment files
@@ -134,72 +131,30 @@ Claude Code (Full Automation):
 - Native skills (auto-activate)
 - Native agents (separate context windows)
 - Native hooks (auto-update docs)
-- Slash commands (/create-increment)
+- Slash commands (/inc, /do, /done)
 
 Cursor (Semi-Automation - This Adapter):
-- Simulated skills (via .cursorrules instructions)
-- Simulated agents (manual role invocation)
+- Reads AGENTS.md for workflow instructions
+- Manual role adoption (say "act as PM")
 - No hooks (manual doc updates)
-- Simulated commands (via workflow instructions)
+- Manual workflows (follow AGENTS.md steps)
 
-HOW WE BRIDGE THE GAP:
+HOW CURSOR USES AGENTS.MD:
 
-Anthropic's standards (skills, agents, MCP) provide superior
-results. For Cursor, we provide "implementation guides"
-that teach Cursor's AI how to BEHAVE LIKE it has these
-capabilities, even without native support.
+Cursor automatically reads AGENTS.md to understand:
+1. Project structure (.specweave/ folders)
+2. How to create increments (spec.md, plan.md, tasks.md)
+3. Agent roles (PM defines WHAT/WHY, Architect designs HOW)
+4. Skill workflows (increment-planner, context-loader, etc.)
+5. Context manifests (70%+ token savings)
+6. Templates and examples
 
-Example: .cursorrules says:
-"When user requests feature, act like 'increment-planner' skill:
- 1. Read context-manifest.yaml
- 2. Load only files listed there
- 3. Invoke PM role: Create spec.md
- 4. Invoke Architect role: Create plan.md"
-
-HOW TO "IMPLEMENT" SKILLS IN CURSOR:
-
-What is a SpecWeave Skill?
-A skill is a specialized capability that activates when needed.
-
-In Claude Code: Skills are native (.claude/skills/)
-In Cursor: You simulate by reading relevant files
-
-Example: increment-planner skill
-
-Claude Code (automatic):
-  User: "create increment for auth"
-  → increment-planner skill activates automatically
-
-Cursor (manual simulation):
-  User: "create increment for auth"
-  → You read .cursorrules
-  → Follow workflow: read config → create spec → create plan
-  → Act like increment-planner by following those steps
-
-HOW TO "IMPLEMENT" AGENTS IN CURSOR:
-
-What is a SpecWeave Agent?
-An agent is a specialized role (PM, Architect, DevOps, etc.)
-with separate context window.
-
-In Claude Code: Agents have separate context windows
-In Cursor: You adopt the role's perspective
-
-Example: PM agent
-
-Claude Code (automatic):
-  Task({ subagent_type: "pm", prompt: "create spec" })
-  → PM agent with separate context window
-
-Cursor (manual simulation):
-  User: "act as PM agent and create spec"
-  → You adopt PM perspective:
-    - Focus on WHAT and WHY (not HOW)
-    - Technology-agnostic requirements
-    - User stories and acceptance criteria
-  → Create spec.md following PM role
-
-Pro Tip: .cursorrules defines each role's responsibilities
+When you say "create increment for auth":
+→ Cursor reads AGENTS.md
+→ Follows the workflow described there
+→ Creates spec.md (adopting PM role)
+→ Creates plan.md (adopting Architect role)
+→ Creates tasks.md
 
 QUICK START:
 
@@ -209,10 +164,10 @@ QUICK START:
    "Create increment for user authentication"
 
    Cursor will:
-   - Read .cursorrules for workflow
+   - Read AGENTS.md for workflow
    - Ask clarifying questions
-   - Create spec.md (acting as PM)
-   - Create plan.md (acting as Architect)
+   - Create spec.md (acting as PM from AGENTS.md)
+   - Create plan.md (acting as Architect from AGENTS.md)
    - Create tasks.md
 
 3. Use @ shortcuts for context:
@@ -227,7 +182,7 @@ CONTEXT LOADING (70%+ Token Savings):
 
 CRITICAL: Always read context-manifest.yaml first!
 
-.cursorrules teaches Cursor:
+AGENTS.md teaches Cursor:
 1. Look for .specweave/increments/####/context-manifest.yaml
 2. ONLY load files listed in manifest
 3. Don't load all specs (wastes tokens)
@@ -252,17 +207,16 @@ But still VERY good experience with Composer + @ shortcuts!
 
 DOCUMENTATION:
 
-- SPECWEAVE.md: Complete development guide
-- .cursorrules: Workflow instructions (READ THIS!)
+- AGENTS.md: Universal workflow instructions (Cursor reads this!)
 - .cursor/README.md: Cursor-specific documentation
 - .specweave/docs/: Project documentation
 
 You're ready to build with SpecWeave on Cursor!
 
-Pro tip: Say "act as [role]" to simulate agents:
-- "act as PM and create spec"
-- "act as Architect and design system"
-- "act as DevOps and create infrastructure"
+Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
+- "act as PM and create spec" (AGENTS.md defines PM role)
+- "act as Architect and design system" (AGENTS.md defines Architect role)
+- "act as DevOps and create infrastructure" (AGENTS.md defines DevOps role)
     `;
   }
 }

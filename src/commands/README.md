@@ -4,28 +4,28 @@ This directory contains all slash commands for SpecWeave.
 
 ## Available Commands (v0.2.0)
 
-**IMPORTANT**: All SpecWeave commands are now namespaced with `specweave-` prefix to avoid collisions in brownfield projects.
+**IMPORTANT**: All SpecWeave commands are now namespaced with `specweave.` notation to avoid collisions in brownfield projects.
 
 ### Core Workflow Commands (Smart Workflow)
 
 | Command | Shorthand via /specweave | Description |
 |---------|--------------------------|-------------|
-| `/specweave-increment` | `/specweave inc` | Plan increment (PM-led, auto-closes previous if ready) |
-| `/specweave-inc` | `/specweave inc` | Alias for /specweave-increment |
-| `/specweave-do` | `/specweave do` | Execute work (smart resume, hooks after every task) |
-| `/specweave-next` | `/specweave next` | Smart transition (close + suggest next) |
-| `/specweave-progress` | `/specweave progress` | Show status (task %, PM gates, next action) |
-| `/specweave-validate` | `/specweave validate` | Validate quality (rule-based + optional LLM judge) |
-| `/specweave-done` | `/specweave done` | Close explicitly (optional, /inc auto-closes) |
+| `/specweave.increment` | `/specweave inc` | Plan increment (PM-led, auto-closes previous if ready) |
+| `/specweave.inc` | `/specweave inc` | Alias for /specweave.increment |
+| `/specweave.do` | `/specweave do` | Execute work (smart resume, hooks after every task) |
+| `/specweave.next` | `/specweave next` | Smart transition (close + suggest next) |
+| `/specweave.progress` | `/specweave progress` | Show status (task %, PM gates, next action) |
+| `/specweave.validate` | `/specweave validate` | Validate quality (rule-based + optional LLM judge) |
+| `/specweave.done` | `/specweave done` | Close explicitly (optional, /inc auto-closes) |
 
 ### Supporting Commands
 
 | Command | Shorthand via /specweave | Description |
 |---------|--------------------------|-------------|
-| `/specweave-list-increments` | `/specweave list-increments` | List all increments with status and WIP tracking |
-| `/specweave-sync-docs` | `/specweave sync-docs` | Review strategic docs vs implementation |
-| `/specweave-sync-github` | `/specweave sync-github` | Sync increment to GitHub issues with granular control |
-| `/specweave-sync-jira` | `/specweave sync-jira` | Sync increment to Jira epics/stories with granular control |
+| `/specweave.list-increments` | `/specweave list-increments` | List all increments with status and WIP tracking |
+| `/specweave.sync-docs` | `/specweave sync-docs` | Review strategic docs vs implementation |
+| `/specweave.sync-github` | `/specweave sync-github` | Sync increment to GitHub issues with granular control |
+| `/specweave.sync-jira` | `/specweave sync-jira` | Sync increment to Jira epics/stories with granular control |
 
 ### Master Router Command
 
@@ -83,7 +83,7 @@ npx specweave init my-saas
 
 ## Namespaced Commands (Brownfield Safety)
 
-**Design decision**: All commands prefixed with `specweave-` for collision avoidance.
+**Design decision**: All commands use `specweave.` notation for collision avoidance.
 
 - ✅ No conflicts with existing project commands
 - ✅ Clear ownership (framework vs. project commands)

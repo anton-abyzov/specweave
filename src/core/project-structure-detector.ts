@@ -4,13 +4,13 @@
  * Automatically detects project management structure from:
  * - Existing increments and work items
  * - Source system metadata (Jira, ADO, GitHub)
- * - Configuration files
+ * - Environment variables
  *
  * Supports various hierarchies:
  * - Jira: Epic → Story → Sub-task
  * - ADO: Epic → Feature → User Story → Task
  * - GitHub: Milestone → Issue (or flat Issues)
- * - Custom: Configurable levels
+ * - Custom: Detected from patterns
  */
 
 import * as fs from 'fs';
@@ -75,52 +75,18 @@ export interface DetectedStructure {
 
 export class ProjectStructureDetector {
   private projectRoot: string;
-  private configPath: string;
 
   constructor(projectRoot: string = process.cwd()) {
     this.projectRoot = projectRoot;
-    this.configPath = path.join(projectRoot, '.specweave', 'config.yaml');
   }
 
   /**
-   * Detect project structure with auto-detection and config override
+   * Detect project structure with pure auto-detection
    */
   public async detectStructure(): Promise<ProjectStructure> {
-    // 1. Check for explicit configuration
-    const configStructure = this.loadConfigStructure();
-    if (configStructure) {
-      return configStructure;
-    }
-
-    // 2. Auto-detect from existing increments
+    // Auto-detect from existing increments
     const detected = await this.autoDetectStructure();
-
-    // 3. Save detected structure for future use
-    await this.saveDetectedStructure(detected.structure);
-
     return detected.structure;
-  }
-
-  /**
-   * Load structure from configuration file
-   */
-  private loadConfigStructure(): ProjectStructure | null {
-    try {
-      if (!fs.existsSync(this.configPath)) {
-        return null;
-      }
-
-      const config: any = yaml.load(fs.readFileSync(this.configPath, 'utf-8'));
-
-      if (!config.project_structure) {
-        return null;
-      }
-
-      return this.parseConfigStructure(config.project_structure);
-    } catch (error) {
-      console.warn('Failed to load config structure:', error);
-      return null;
-    }
   }
 
   /**
@@ -387,59 +353,6 @@ export class ProjectStructureDetector {
       evidence: ['Using default structure based on environment'],
       sampleIncrements: []
     };
-  }
-
-  /**
-   * Parse structure from config
-   */
-  private parseConfigStructure(config: any): ProjectStructure {
-    return {
-      source: config.source || 'manual',
-      hierarchyLevel: config.hierarchy_level || 'two_level',
-      workItemTypes: {
-        topLevel: config.work_item_types?.top_level,
-        parentLevel: config.work_item_types?.parent_level,
-        itemLevel: config.work_item_types?.item_level || 'Story',
-        subItemLevel: config.work_item_types?.sub_item_level
-      },
-      groupingStrategy: config.grouping_strategy || 'by_type',
-      epicFieldName: config.epic_field_name,
-      featureFieldName: config.feature_field_name,
-      milestoneFieldName: config.milestone_field_name
-    };
-  }
-
-  /**
-   * Save detected structure to config
-   */
-  private async saveDetectedStructure(structure: ProjectStructure): Promise<void> {
-    const configDir = path.dirname(this.configPath);
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-
-    let config: any = {};
-    if (fs.existsSync(this.configPath)) {
-      config = yaml.load(fs.readFileSync(this.configPath, 'utf-8')) || {};
-    }
-
-    config.project_structure = {
-      source: structure.source,
-      hierarchy_level: structure.hierarchyLevel,
-      work_item_types: {
-        top_level: structure.workItemTypes.topLevel,
-        parent_level: structure.workItemTypes.parentLevel,
-        item_level: structure.workItemTypes.itemLevel,
-        sub_item_level: structure.workItemTypes.subItemLevel
-      },
-      grouping_strategy: structure.groupingStrategy,
-      epic_field_name: structure.epicFieldName,
-      feature_field_name: structure.featureFieldName,
-      milestone_field_name: structure.milestoneFieldName,
-      detected_at: new Date().toISOString()
-    };
-
-    fs.writeFileSync(this.configPath, yaml.dump(config), 'utf-8');
   }
 
   /**

@@ -77,13 +77,7 @@ export class StripeService {
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-task_builder:
-  structure: "auto-detect"  # user-stories | jira | ado
-  detail_level: "high"      # Include code snippets
-  agent_references: true    # Specify which agent for each task
-```
+
 
 ---
 

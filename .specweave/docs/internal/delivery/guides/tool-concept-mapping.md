@@ -350,11 +350,7 @@ Jira Sprint 2 (Jan 15-28) → Release v1.1 (Target: Jan 28)
    ```
 
 2. **Auto-Resolve (configured)**:
-   ```yaml
-   # .specweave/config.yaml
-   sync:
-     conflict_resolution: pull  # Use Jira version
-   ```
+   
 
 3. **Log Conflict**:
    ```json

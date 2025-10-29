@@ -623,28 +623,7 @@ Output:
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-pm_agent:
-  enabled: true
 
-  # Prioritization framework
-  default_framework: "RICE"  # RICE, MoSCoW, Kano
-
-  # User story format
-  story_format: "agile"  # agile, gherkin, custom
-
-  # Estimation scale
-  estimation: "fibonacci"  # fibonacci, t-shirt, hours
-
-  # Output locations
-  specifications_dir: "specifications/modules/"
-  roadmap_file: "features/roadmap.md"
-
-  # Stakeholder communication
-  business_language: true  # Use non-technical language
-  include_roi: true        # Always calculate ROI
-```
 
 ## Testing
 
@@ -977,35 +956,7 @@ Create new increment for extra scope? [Y/n]
 
 ### Configuration
 
-```yaml
-# .specweave/config.yaml
-increment_closure:
-  pm_validation:
-    enabled: true           # MUST be true
-    strict_mode: true       # Require all 3 gates
 
-  gates:
-    tasks:
-      require_p1_complete: true
-      require_p2_complete: false
-      allow_scope_transfer: true
-
-    tests:
-      require_all_passing: true
-      min_coverage: 80
-      allow_skipped: false
-
-    documentation:
-      require_claude_md: true
-      require_readme: true
-      require_changelog: true
-      allow_inline_only: false
-
-  scope_creep:
-    detect: true
-    max_additional_tasks: 10
-    auto_transfer: true
-```
 
 ---
 

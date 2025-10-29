@@ -160,30 +160,7 @@ const roleRules = {
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-role_orchestrator:
-  enabled: true
 
-  # Model selection per role
-  # Available models: claude-sonnet-4-5-20250929, claude-haiku-4-5-20251001
-  # Use Sonnet for strategic/complex work, Haiku for speed/cost optimization
-  models:
-    pm: "claude-sonnet-4-5-20250929"          # Strategic decisions
-    architect: "claude-sonnet-4-5-20250929"   # Architecture design
-    security: "claude-sonnet-4-5-20250929"    # Security analysis
-    qa_lead: "claude-sonnet-4-5-20250929"     # Test strategy
-    devops: "claude-sonnet-4-5-20250929"      # Infrastructure
-    tech_lead: "claude-sonnet-4-5-20250929"   # Technical guidance
-    backend: "claude-haiku-4-5-20251001"      # Fast code generation
-    frontend: "claude-haiku-4-5-20251001"     # Fast code generation
-
-  # Auto-detect roles or ask user
-  auto_detect: true
-
-  # Ask user confirmation before running expensive roles
-  confirm_expensive_roles: true
-```
 
 ## Future Enhancements
 

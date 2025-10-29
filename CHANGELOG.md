@@ -11,9 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ⚠️ **BREAKING CHANGE: Command Namespacing**
 
-All commands now use `specweave-` prefix for brownfield project safety. Use master router `/specweave` for convenience.
+All commands now use `specweave.` notation for brownfield project safety. Use master router `/specweave` for convenience.
 
 ### What Changed
+
+**NEW: Current Directory Initialization (`specweave init .`)**:
+- ✅ Initialize SpecWeave in existing/current directory (brownfield support)
+- ✅ Safety checks: warns if directory contains files, requires confirmation
+- ✅ Preserves existing git repository (skips `git init` if `.git` exists)
+- ✅ Auto-detects project name from directory name
+- ✅ Prompts for valid project name if directory name contains invalid characters
+- ✅ Industry-standard pattern matching `git init .`, `npm init .`, etc.
+
+```bash
+# Greenfield: Create subdirectory (original behavior)
+specweave init my-saas
+cd my-saas
+
+# Brownfield: Initialize in current directory (NEW!)
+cd my-existing-project
+specweave init .
+# Prompts: "Current directory contains 47 files. Initialize SpecWeave here? (y/N)"
+```
 
 **1. Command Namespacing**:
 ```bash
@@ -30,10 +49,10 @@ All commands now use `specweave-` prefix for brownfield project safety. Use mast
 /specweave done 0001
 
 # Or use full command names:
-/specweave-inc "feature"
-/specweave-do
-/specweave-progress
-/specweave-done 0001
+/specweave.inc "feature"
+/specweave.do
+/specweave.progress
+/specweave.done 0001
 ```
 
 **Why?**
@@ -42,8 +61,8 @@ All commands now use `specweave-` prefix for brownfield project safety. Use mast
 - ✅ Safe adoption in any existing codebase
 
 **2. Enhanced Sync Integrations**:
-- NEW: `/specweave-sync-jira` with granular control (add items, cherry-pick)
-- UPDATED: `/specweave-sync-github` now matches Jira (granular operations)
+- NEW: `/specweave.sync-jira` with granular control (add items, cherry-pick)
+- UPDATED: `/specweave.sync-github` now matches Jira (granular operations)
 - Both support bidirectional sync and status tracking
 
 **3. Test Structure Reorganization**:
@@ -69,7 +88,7 @@ Update your command references:
 ## [0.1.9] - 2025-10-28
 
 > **Note**: v0.1.9 and earlier entries use the old command format (e.g., `/inc`, `/do`).
-> As of v0.2.0, all commands use `specweave-` prefix (e.g., `/specweave inc`, `/specweave do`).
+> As of v0.2.0, all commands use `specweave.` notation (e.g., `/specweave.inc`, `/specweave.do`).
 
 ### 🎯 **Smart Workflow: Auto-Resume, Auto-Close, Progress Tracking**
 
@@ -600,7 +619,6 @@ But these trade-offs are acceptable for the dramatically improved UX!
 ```
 your-project/
 ├── .specweave/
-│   ├── config.yaml
 │   ├── increments/              # Empty (created as you build)
 │   └── docs/internal/           # 5-pillar structure
 │       ├── strategy/

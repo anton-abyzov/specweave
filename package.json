@@ -30,10 +30,8 @@
     "install:skills:global": "bash bin/install-skills.sh --global",
     "install:all:global": "bash bin/install-all.sh --global",
     "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
-    "docs:public": "cd docs-site && npm start",
-    "docs:internal": "mkdocs serve -f mkdocs-internal.yml",
-    "docs:build:public": "cd docs-site && npm run build",
-    "docs:build:internal": "mkdocs build -f mkdocs-internal.yml"
+    "docs:dev": "cd docs-site && npm start",
+    "docs:build": "cd docs-site && npm run build"
   },
   "keywords": [
     "specweave",

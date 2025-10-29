@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-SpecWeave now uses **mandatory namespacing** with the `specweave-` prefix for all commands, skills, hooks, and configuration to prevent collisions in brownfield projects.
+SpecWeave now uses **mandatory namespacing** with the `specweave.` notation for all commands to prevent collisions in brownfield projects.
 
 **Core Principle**: Never overwrite user's existing files.
 
@@ -64,7 +64,7 @@ Result: ❌ COLLISION
 
 ### 1. Command Namespacing
 
-**All commands prefixed with `specweave-`**:
+**All commands use `specweave.` notation**:
 
 | Old (Collision Risk) | New (Collision Safe) |
 |---------------------|---------------------|
@@ -81,16 +81,16 @@ Result: ❌ COLLISION
 ```
 .claude/commands/
 ├── specweave.md                 (master router)
-├── specweave-inc.md             (namespaced)
-├── specweave-do.md           (namespaced)
-├── specweave-next.md            (namespaced)
-└── ... (all with specweave- prefix)
+├── specweave.inc.md             (namespaced)
+├── specweave.do.md           (namespaced)
+├── specweave.next.md            (namespaced)
+└── ... (all with specweave. notation)
 ```
 
 **Frontmatter**:
 ```yaml
 ---
-name: specweave-do    # ← Must match filename
+name: specweave.do    # ← Must match filename
 description: Execute increment implementation
 ---
 ```
@@ -107,11 +107,11 @@ description: Execute increment implementation
 
 **Routing table**:
 ```yaml
-/specweave inc          → .claude/commands/specweave-inc.md
-/specweave do        → .claude/commands/specweave-do.md
-/specweave next         → .claude/commands/specweave-next.md
-/specweave done         → .claude/commands/specweave-done.md
-/specweave progress     → .claude/commands/specweave-progress.md
+/specweave inc          → .claude/commands/specweave.inc.md
+/specweave do        → .claude/commands/specweave.do.md
+/specweave next         → .claude/commands/specweave.next.md
+/specweave done         → .claude/commands/specweave.done.md
+/specweave progress     → .claude/commands/specweave.progress.md
 ```
 
 **Error handling**:
@@ -123,7 +123,7 @@ description: Execute increment implementation
 
 ### 3. Skills Namespacing
 
-**All skills use `specweave-` prefix in their name**:
+**Skills use descriptive names** (detector, context-loader, etc.):
 
 ```
 ~/.claude/skills/
@@ -132,7 +132,7 @@ description: Execute increment implementation
 │       name: specweave-detector
 ├── context-loader/              (namespaced in SKILL.md)
 │   └── SKILL.md
-│       name: specweave-context-loader
+│       name: context-loader
 └── user-custom-skill/           (user's - preserved)
     └── SKILL.md
         name: user-custom-skill
@@ -174,7 +174,6 @@ description: Entry point for SpecWeave framework
 
 ```
 .specweave/
-├── config.yaml          (SpecWeave configuration)
 ├── increments/          (SpecWeave data)
 └── docs/                (SpecWeave documentation)
 
@@ -237,7 +236,7 @@ mkdir -p .specweave/{increments,docs}
 cp $SPECWEAVE_ROOT/.specweave/config.yaml .specweave/
 ```
 
-**Key insight**: Only `specweave-*` files installed = No collisions
+**Key insight**: Only `specweave.*` files installed = No collisions
 
 #### Phase 4: Merge (Brownfield Only)
 
@@ -373,7 +372,7 @@ echo "✅ Restored build.md from backup"
 # Step 2: Verify coexistence
 ls .claude/commands/
 # → build.md               (yours)
-# → specweave-do.md     (SpecWeave)
+# → specweave.do.md     (SpecWeave)
 # → Both exist!
 
 # Step 3: Use both
@@ -523,7 +522,7 @@ Choose: _
 
 # Verify:
 assert_dir_exists ".claude/commands"
-assert_file_exists ".claude/commands/specweave-inc.md"
+assert_file_exists ".claude/commands/specweave.inc.md"
 assert_file_exists ".specweave/config.yaml"
 ```
 
@@ -533,18 +532,18 @@ assert_file_exists ".specweave/config.yaml"
 
 # Verify:
 assert_file_exists ".claude/commands/custom.md"           # Preserved
-assert_file_exists ".claude/commands/specweave-inc.md"   # Installed
+assert_file_exists ".claude/commands/specweave.inc.md"   # Installed
 assert_dir_exists ".claude/commands.backup-*"             # Backup created
 ```
 
 #### TC3: Brownfield Installation (Name Collision)
 ```bash
-# Setup: Project with .claude/commands/specweave-inc.md (user's)
+# Setup: Project with .claude/commands/specweave.inc.md (user's)
 
 # Verify:
-assert_file_exists ".claude/commands.backup-*/specweave-inc.md"  # Backed up
-assert_file_exists ".claude/commands/specweave-inc.md"           # Overwritten
-report_conflict "specweave-inc.md"                               # Reported
+assert_file_exists ".claude/commands.backup-*/specweave.inc.md"  # Backed up
+assert_file_exists ".claude/commands/specweave.inc.md"           # Overwritten
+report_conflict "specweave.inc.md"                               # Reported
 ```
 
 #### TC4: Rollback
@@ -564,7 +563,7 @@ assert_file_not_exists ".claude/commands/specweave-*.md"  # Removed
 /specweave do
 
 # Verify:
-assert_command_routed_to "specweave-do.md"
+assert_command_routed_to "specweave.do.md"
 assert_command_executed
 ```
 
@@ -629,8 +628,8 @@ fi
 
 Output:
   Found 3 commands similar to SpecWeave:
-  - build.md → Similar to specweave-do.md
-  - inc.md → Similar to specweave-inc.md
+  - build.md → Similar to specweave.do.md
+  - inc.md → Similar to specweave.inc.md
   - deploy.md → No SpecWeave equivalent
 
   Suggest:

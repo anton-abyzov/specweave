@@ -295,8 +295,8 @@ success_criteria:
 1. **Follow 5-pillar structure** (see `.specweave/docs/README.md`)
 2. **Use templates** if available
 3. **Add backwards links** to related docs
-4. **Update mkdocs.yml** if adding new files
-5. **Test locally**: `mkdocs serve`
+4. **Update sidebar** if adding new files (see `docs-site/sidebars.ts`)
+5. **Test locally**: `npm run docs:dev`
 
 ### Code Style
 
@@ -404,17 +404,17 @@ See [.specweave/docs/README.md](../.specweave/docs/README.md) for complete 5-pil
 ### Building Documentation
 
 ```bash
-# Install MkDocs
-pip install mkdocs mkdocs-material
+# Install dependencies
+cd docs-site && npm install
 
-# Serve locally
-mkdocs serve
+# Serve locally (development mode with hot-reload)
+npm run docs:dev
 
-# Build
-mkdocs build
+# Build (production build)
+npm run docs:build
 
-# Deploy (maintainers only)
-mkdocs gh-deploy
+# Deploy (maintainers only - via GitHub Actions)
+# Automatically deployed to Vercel/GitHub Pages on push
 ```
 
 ---

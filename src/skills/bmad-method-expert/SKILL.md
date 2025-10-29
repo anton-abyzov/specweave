@@ -219,7 +219,6 @@ When you request gap analysis, I will:
 ```bash
 # Project structure
 - CLAUDE.md (complete guide)
-- .specweave/config.yaml (configuration)
 - features/ (implemented features)
 - src/skills/ (available skills)
 - specifications/ (spec organization)
@@ -290,7 +289,7 @@ Based on analysis, provide:
    - Check features/ for implemented capabilities
    - Read src/skills/ for available skills
    - Review CLAUDE.md for documented features
-   - Check .specweave/config.yaml for configuration
+   - Settings auto-detected
    ```
 
 2. Compare to BMAD knowledge:
@@ -530,7 +529,6 @@ When performing gap analysis, I can read and analyze:
 ```bash
 # Core configuration
 ✅ CLAUDE.md                          # Complete guide
-✅ .specweave/config.yaml            # Configuration
 ✅ README.md                         # Project overview
 
 # Features

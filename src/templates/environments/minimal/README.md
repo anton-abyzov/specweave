@@ -40,7 +40,6 @@ your-project/
 
 ```bash
 # When ready to add staging:
-# 1. Update .specweave/config.yaml to "standard" strategy
 # 2. DevOps agent will generate staging infrastructure
 # 3. Update CI/CD workflows for multi-environment
 ```

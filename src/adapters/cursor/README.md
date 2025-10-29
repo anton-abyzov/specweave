@@ -21,7 +21,6 @@ A skill is a specialized capability that activates automatically when relevant.
 
 ## increment-planner Skill
 When user says "create increment":
-1. Read .specweave/config.yaml
 2. Auto-increment number
 3. Create spec.md (act as PM role)
 4. Create plan.md (act as Architect role)
@@ -126,7 +125,6 @@ npx specweave init my-project --adapter cursor
 **User**: "Create increment for user authentication"
 
 **Cursor** (following .cursorrules):
-1. ✅ Read .specweave/config.yaml
 2. ✅ Find next increment number (0003)
 3. ✅ Create folder: `.specweave/increments/0003-user-authentication/`
 4. ✅ Act as PM: Create spec.md (WHAT/WHY, user stories, acceptance criteria)

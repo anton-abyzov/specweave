@@ -37,21 +37,7 @@
 - Solo developers shipping fast
 
 **Configuration**:
-```yaml
-# .specweave/config.yaml
-project:
-  name: "my-mvp"
-  type: "nodejs"
 
-environments:
-  strategy: "minimal"
-  definitions:
-    - name: "production"
-      purpose: "Live application"
-      deployment:
-        type: "cloud"
-        provider: "vercel"  # or railway, hetzner
-```
 
 **Characteristics**:
 - Deploy directly to production
@@ -70,44 +56,7 @@ environments:
 - Most user projects
 
 **Configuration**:
-```yaml
-# .specweave/config.yaml
-environments:
-  strategy: "standard"
-  definitions:
-    - name: "development"
-      purpose: "Local development and testing"
-      deployment:
-        type: "local"
-        target: "docker-compose"
-      config:
-        database: "postgres-local"
-        cache: "redis-local"
 
-    - name: "staging"
-      purpose: "Pre-production validation"
-      deployment:
-        type: "cloud"
-        provider: "hetzner"
-        region: "eu-central"
-      promotion_from: "development"
-      config:
-        database: "postgres-staging"
-        cache: "redis-staging"
-
-    - name: "production"
-      purpose: "Live user traffic"
-      deployment:
-        type: "cloud"
-        provider: "hetzner"
-        region: "eu-central"
-      promotion_from: "staging"
-      requires_approval: true
-      config:
-        database: "postgres-prod"
-        cache: "redis-prod"
-        cdn: "cloudflare"
-```
 
 **Characteristics**:
 - Development → Staging → Production pipeline
@@ -320,7 +269,6 @@ deployment:
 **When user requests**: "Deploy to staging"
 
 **Agent behavior**:
-1. Read `.specweave/config.yaml`
 2. Find `staging` environment definition
 3. Check `deployment.type` and `deployment.provider`
 4. Generate appropriate infrastructure code:
@@ -523,7 +471,6 @@ environments:
 ```
 user-project/
 ├── .specweave/
-│   ├── config.yaml                     # ← Environment definitions
 │   └── docs/internal/delivery/
 │       └── environments.md             # ← This strategy doc
 │

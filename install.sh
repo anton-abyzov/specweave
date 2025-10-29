@@ -70,7 +70,7 @@ if [ -z "$TARGET_DIR" ]; then
   echo "  ✅ SpecWeave skills from src/skills/ → .claude/skills/"
   echo "  ✅ Slash commands from src/commands/ → .claude/commands/"
   echo "  ✅ Automation hooks from src/hooks/ → .claude/hooks/"
-  echo "  ✅ Configuration (.specweave/config.yaml)"
+  echo "  ✅ SpecWeave directory structure (.specweave/)"
   echo "  ✅ Development guide (CLAUDE.md)"
   echo "  ✅ GitHub Actions workflows (if --enable-github-actions)"
   echo ""
@@ -270,10 +270,6 @@ if [ "$ENABLE_GITHUB_ACTIONS" = true ]; then
     echo -e "   ${BLUE}ℹ️  GitHub Actions Setup Required:${NC}"
     echo -e "      1. Add ANTHROPIC_API_KEY to repository secrets"
     echo -e "      2. See: .specweave/docs/public/guides/github-action-setup.md"
-    echo -e "      3. Update .specweave/config.yaml:"
-    echo -e "         github_actions:"
-    echo -e "           enabled: true"
-    echo -e "           tier: $WORKFLOW_TIER"
   else
     echo -e "   ${YELLOW}⚠️  Workflow file not found: $WORKFLOW_FILE${NC}"
   fi
@@ -302,14 +298,7 @@ mkdir -p .specweave/docs/internal/{strategy,architecture/{adr,rfc},delivery,oper
 # Public Documentation (Customer-facing - PUBLISHED)
 mkdir -p .specweave/docs/public/{overview,api,guides,faq,changelog}
 
-# Copy config.yaml template
-if [ -f "$SPECWEAVE_ROOT/.specweave/config.yaml" ]; then
-  echo -e "   ${GREEN}→${NC} Copying config.yaml template..."
-  cp "$SPECWEAVE_ROOT/.specweave/config.yaml" .specweave/
-  echo -e "   ${GREEN}✅${NC} Configuration template installed"
-else
-  echo -e "   ${YELLOW}⚠️  No config.yaml found in source${NC}"
-fi
+echo -e "   ${GREEN}✅${NC} Directory structure created"
 
 # Copy documentation template READMEs (5-Pillar Structure)
 if [ -d "$SPECWEAVE_ROOT/.specweave/docs" ]; then
@@ -477,7 +466,7 @@ echo -e "  ${GREEN}✅${NC} AI Agents             (.claude/agents/) - 14 special
 echo -e "  ${GREEN}✅${NC} Claude Code Skills    (.claude/skills/) - 15+ capabilities"
 echo -e "  ${GREEN}✅${NC} Slash Commands        (.claude/commands/)"
 echo -e "  ${GREEN}✅${NC} Automation Hooks      (.claude/hooks/)"
-echo -e "  ${GREEN}✅${NC} Configuration         (.specweave/config.yaml)"
+echo -e "  ${GREEN}✅${NC} Directory Structure   (.specweave/)"
 if [ "$SKIP_CLAUDE_MD" = true ]; then
   echo -e "  ${YELLOW}⏭️${NC}  Development Guide     (CLAUDE.md) - Preserved (not replaced)"
 else
@@ -496,7 +485,7 @@ echo ""
 echo -e "${BLUE}Next Steps:${NC}"
 echo ""
 echo -e "  1. ${YELLOW}cd $TARGET_DIR${NC}"
-echo -e "  2. ${YELLOW}# Edit .specweave/config.yaml with your project details${NC}"
+echo -e "  2. ${YELLOW}# Initialize your project (npm init, etc.)${NC}"
 
 # Check if CLAUDE.md backup was created
 if [ -f ".claude/backups/CLAUDE-backup-"*.md 2>/dev/null ]; then
@@ -528,7 +517,6 @@ echo -e "  │   ├── skills/           ${GREEN}← SpecWeave autonomous AI
 echo -e "  │   ├── commands/         ${GREEN}← Slash commands${NC}"
 echo -e "  │   └── hooks/            ${GREEN}← Automation hooks${NC}"
 echo -e "  ├── .specweave/           ${GREEN}← SpecWeave framework (all work lives here)${NC}"
-echo -e "  │   ├── config.yaml       ${GREEN}← Configuration${NC}"
 echo -e "  │   ├── increments/       ${GREEN}← Development increments${NC}"
 echo -e "  │   └── docs/             ${GREEN}← Living documentation (auto-updated)${NC}"
 echo -e "  └── CLAUDE.md             ${GREEN}← Complete development guide${NC}"

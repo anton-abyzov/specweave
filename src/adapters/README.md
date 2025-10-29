@@ -12,7 +12,6 @@ SpecWeave adapters enable the framework to work with **ANY AI coding tool**, not
 SpecWeave
 ├── Core (Tool-Agnostic)
 │   └── .specweave/              # Plain Markdown + YAML
-│       ├── config.yaml
 │       ├── increments/
 │       └── docs/
 │

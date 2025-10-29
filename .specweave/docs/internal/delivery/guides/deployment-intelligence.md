@@ -27,7 +27,7 @@ User request
     ↓
 Contains deployment keywords? ("deploy", "production", "hosting", "cloud")
     ↓ YES
-Check .specweave/config.yaml
+Settings auto-detected
     ↓
 deployment.target defined?
     ↓ NO
@@ -241,7 +241,6 @@ resource "aws_rds_instance" "main" {
 ### Integration with Secrets Management
 
 **Secrets are requested ONLY when**:
-1. ✅ Deployment target is configured (`.specweave/config.yaml`)
 2. ✅ Infrastructure code is generated
 3. ✅ User explicitly says "deploy now" or "apply infrastructure"
 
@@ -318,7 +317,6 @@ C) Cancel deployment
 **CRITICAL**: SpecWeave agents are smart about requesting secrets (API tokens, credentials) only when needed for blocking operations.
 
 **Prerequisites**: Secrets are ONLY requested AFTER:
-1. ✅ Deployment target is configured in `.specweave/config.yaml` (see [Deployment Target Intelligence](#deployment-target-intelligence))
 2. ✅ Infrastructure code is generated
 3. ✅ User explicitly says "deploy now" or "apply infrastructure"
 

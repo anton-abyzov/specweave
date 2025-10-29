@@ -496,7 +496,7 @@ If you have existing increments with old structure:
 
 If you change from Jira to GitHub:
 
-1. Update `.specweave/config.yaml`:
+1. SpecWeave uses auto-detection
    ```yaml
    project_structure:
      source: github

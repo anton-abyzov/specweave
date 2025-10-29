@@ -24,11 +24,7 @@ SpecWeave is framework-agnostic - it generates infrastructure for ANY platform:
 
 ### Local Development
 
-```yaml
-# .specweave/config.yaml
-deployment:
-  target: local
-```
+
 
 **Generated**: `docker-compose.yml`
 

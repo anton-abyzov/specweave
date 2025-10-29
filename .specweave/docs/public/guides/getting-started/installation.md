@@ -43,7 +43,6 @@ your-project/
 │   ├── commands/         ✅ Slash commands (1 complete, more in development)
 │   └── hooks/            ✅ Automation hooks (4 hooks)
 ├── .specweave/           ✅ SpecWeave framework (ALL work lives here)
-│   ├── config.yaml       ✅ Configuration
 │   ├── increments/       ✅ Development increments
 │   └── docs/             ✅ Living documentation (auto-updated)
 ├── CLAUDE.md             ✅ Complete development guide
@@ -102,7 +101,6 @@ Skills create your application structure:
 ### What the Script Does
 
 1. ✅ Copies `.claude/` (skills, commands, hooks)
-2. ✅ Copies `.specweave/config.yaml` template
 3. ✅ Copies `CLAUDE.md` development guide
 4. ✅ Creates `.specweave/` directory structure
 5. ✅ Creates empty `ai-execution-files/` for your use
@@ -222,7 +220,7 @@ chmod +x .claude/hooks/*.sh
 
 ```bash
 ls -la .claude/commands/
-# Should see: specweave-inc.md, specweave-do.md, specweave-validate.md, etc.
+# Should see: specweave.inc.md, specweave.do.md, specweave.validate.md, etc.
 ```
 
 ---

@@ -1,76 +1,67 @@
-# {PROJECT_NAME} - Development Guide
+# {PROJECT_NAME} - SpecWeave Quick Reference
 
-**THIS FILE IS YOUR QUICK REFERENCE FOR WORKING WITH THIS PROJECT**
-
-This project uses **SpecWeave** - a specification-first AI development framework where specifications and documentation are the SOURCE OF TRUTH.
+This project uses **SpecWeave** - a specification-first AI development framework where specs and docs are the SOURCE OF TRUTH.
 
 ---
 
-## 🔷 Using SpecWeave with Slash Commands
+## SpecWeave Workflow (Use These Commands!)
 
-**CRITICAL**: This project uses SpecWeave - **USE SLASH COMMANDS to activate the framework!**
+**How SpecWeave works**:
 
-SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive detection.
+```
+/specweave.inc "feature" → /specweave.do → /specweave.progress → /specweave.done → repeat
+```
 
-**Smart Workflow** (Natural & Efficient):
-1. ✅ **`/inc "feature description"`** - Plan increment (PM-led, auto-closes previous if ready)
-2. ✅ **`/do`** - Execute tasks (smart resume, hooks after EVERY task)
-3. ✅ **`/progress`** - Check status (task %, PM gates, next action)
-4. ✅ **Repeat**: `/inc "next"` → auto-closes previous if done
+**1. Plan Feature** → `/specweave.inc "user authentication"`
+   - Creates spec.md (WHAT/WHY), plan.md (HOW), tasks.md, tests.md
+   - PM-led process with architect/security/QA review
+   - **Use when**: Starting any new feature or increment
 
-**Why smart workflow?**
-- No manual tracking (`/do` auto-resumes from next incomplete task)
-- No manual closure (`/inc` suggests options if previous incomplete)
-- Check progress anytime (`/progress`)
-- Natural flow: finish → start next
+**2. Execute Tasks** → `/specweave.do` or `/specweave.do 0001`
+   - Smart resume (picks up where you left off)
+   - Runs hooks after EVERY task completion
+   - **Use when**: Ready to implement planned work
 
-**See**: Full command list below in "Quick Commands" section
+**3. Check Progress** → `/specweave.progress`
+   - Shows task completion %, next action
+   - **Use when**: Want to see status
 
----
+**4. Validate Quality** → `/specweave.validate 0001` or `/specweave.validate 0001 --quality`
+   - Rule-based validation (120 checks)
+   - Optional AI quality assessment
+   - **Use when**: Verify increment quality before completion
 
-## Tech Stack
+**5. Close Increment** → `/specweave.done 0001`
+   - Validates all tasks complete
+   - **Use when**: Feature is finished
 
-**Project Type**: {MONOREPO_OR_SINGLE}
+**6. Sync to External** → `/specweave.sync-github` or `/specweave.sync-jira`
+   - Exports to GitHub issues or Jira
+   - **Use when**: Need to sync with project management tools
 
-{#IF_SINGLE_STACK}
-**Detected Stack**:
-- **Language**: {DETECTED_LANGUAGE} (e.g., TypeScript, Python, Go)
-- **Framework**: {DETECTED_FRAMEWORK} (e.g., Next.js, FastAPI, Django)
-- **Database**: {SPECIFIED_DATABASE} (e.g., PostgreSQL, MongoDB)
-- **Platform**: {SPECIFIED_PLATFORM} (e.g., Hetzner, AWS, Vercel)
-{#ENDIF}
-
-{#IF_MONOREPO}
-**Services**:
-- **{SERVICE_1_NAME}**: {SERVICE_1_LANGUAGE} + {SERVICE_1_FRAMEWORK} ({SERVICE_1_PATH}/)
-- **{SERVICE_2_NAME}**: {SERVICE_2_LANGUAGE} + {SERVICE_2_FRAMEWORK} ({SERVICE_2_PATH}/)
-{#ENDIF}
-
-**Config**: See `.specweave/config.yaml` for complete configuration
+**All other functionality (agents, skills) activates automatically based on context.**
 
 ---
 
 ## 🚨 CRITICAL: File Organization Rules
 
-**MANDATORY**: Keep project root CLEAN. ALL AI-generated supporting files MUST go into increment folders.
+**Keep project root CLEAN!** All AI-generated files MUST go into increment folders.
 
 ### What Goes Where
 
-**✅ ALLOWED in Project Root**:
-- `CLAUDE.md` (this file - ONLY file we add)
-- User's existing files (package.json, src/, etc. - unchanged)
-- Standard config files (.env, .gitignore, tsconfig.json, etc.)
+**✅ ALLOWED in Root**:
+- `CLAUDE.md` (this file)
+- Your existing project files (package.json, src/, etc.)
+- Standard config files (.env, .gitignore, tsconfig.json)
 
-**❌ NEVER Create in Root** (use increment folders instead):
-- Logs → `.specweave/increments/{increment-id}/logs/`
-- Scripts → `.specweave/increments/{increment-id}/scripts/`
-- Reports → `.specweave/increments/{increment-id}/reports/`
-- Analysis files → `.specweave/increments/{increment-id}/reports/`
-- Temporary files → `.specweave/increments/{increment-id}/logs/`
+**❌ NEVER Create in Root** (use increment folders):
+- Reports → `.specweave/increments/0001-feature-name/reports/`
+- Scripts → `.specweave/increments/0001-feature-name/scripts/`
+- Logs → `.specweave/increments/0001-feature-name/logs/`
+- Analysis files → `.specweave/increments/0001-feature-name/reports/`
+- Temp files → `.specweave/increments/0001-feature-name/logs/`
 
-### Increment-Centric Organization
-
-**ALL work belongs to an INCREMENT**:
+### Increment Structure
 
 ```
 .specweave/increments/0001-user-auth/
@@ -78,34 +69,17 @@ SpecWeave uses **EXPLICIT SLASH COMMANDS** - no auto-activation, no proactive de
 ├── plan.md                      # HOW
 ├── tasks.md                     # Implementation steps
 ├── tests.md                     # Test strategy
-├── context-manifest.yaml        # Selective loading
+├── context-manifest.yaml        # Selective context loading
 ├── logs/                        # ✅ Execution logs, errors, AI sessions
-│   ├── execution.log
-│   ├── errors.log
-│   └── ai-session.log
-├── scripts/                     # ✅ Helper scripts (migration, setup, validation)
-│   ├── migration.sql
-│   ├── setup.sh
-│   └── validation.py
-└── reports/                     # ✅ Analysis, completion, performance reports
-    ├── completion.md
-    ├── test-results.md
-    └── performance.md
+├── scripts/                     # ✅ Helper scripts, migrations, setup
+└── reports/                     # ✅ Analysis, completion, performance
 ```
 
-**Benefits**:
+**Why?**
 - ✅ Complete traceability (know which increment created which files)
 - ✅ Easy cleanup (delete increment folder = delete all related files)
 - ✅ Clear context (all files for a feature in one place)
-- ✅ No root clutter (project root stays clean)
-
-### Enforcement
-
-**When AI generates files**:
-
-1. **Identify current increment**: Which feature are you working on?
-2. **Create in increment folder**: `.specweave/increments/{id}/{type}/`
-3. **Never in root**: NEVER create supporting files in project root
+- ✅ No root clutter
 
 **Example**:
 ```
@@ -117,10 +91,32 @@ project-root/
 
 ✅ CORRECT:
 .specweave/increments/0001-user-auth/
-├── reports/analysis-report.md  # YES! Organized
-├── scripts/migration-script.py # YES! Organized
-└── logs/execution.log          # YES! Organized
+├── reports/analysis-report.md
+├── scripts/migration-script.py
+└── logs/execution.log
 ```
+
+---
+
+## Tech Stack
+
+**Project Type**: {MONOREPO_OR_SINGLE}
+
+{#IF_SINGLE_STACK}
+**Stack**:
+- Language: {DETECTED_LANGUAGE}
+- Framework: {DETECTED_FRAMEWORK}
+- Database: {SPECIFIED_DATABASE}
+- Platform: {SPECIFIED_PLATFORM}
+{#ENDIF}
+
+{#IF_MONOREPO}
+**Services**:
+- {SERVICE_1_NAME}: {SERVICE_1_LANGUAGE} + {SERVICE_1_FRAMEWORK} ({SERVICE_1_PATH}/)
+- {SERVICE_2_NAME}: {SERVICE_2_LANGUAGE} + {SERVICE_2_FRAMEWORK} ({SERVICE_2_PATH}/)
+{#ENDIF}
+
+Config: Auto-detected from project files
 
 ---
 
@@ -128,9 +124,8 @@ project-root/
 
 ```
 {PROJECT_NAME}/
-├── .specweave/                  # SpecWeave framework
-│   ├── config.yaml              # Project configuration
-│   ├── docs/                    # 5-pillar documentation
+├── .specweave/
+│   ├── docs/                    # Strategic documentation
 │   │   ├── internal/
 │   │   │   ├── strategy/        # Business specs (WHAT, WHY)
 │   │   │   ├── architecture/    # Technical design (HOW)
@@ -140,141 +135,23 @@ project-root/
 │   │   └── public/              # Published docs
 │   ├── increments/              # Features (auto-numbered)
 │   │   └── 0001-feature-name/
-│   │       ├── spec.md          # WHAT & WHY
-│   │       ├── plan.md          # HOW
-│   │       ├── tasks.md         # Implementation steps
-│   │       ├── tests.md         # Test strategy
-│   │       ├── context-manifest.yaml  # Selective loading
-│   │       ├── logs/            # ✅ Execution logs, errors
-│   │       ├── scripts/         # ✅ Helper scripts
-│   │       └── reports/         # ✅ Analysis, reports
+│   │       ├── spec.md
+│   │       ├── plan.md
+│   │       ├── tasks.md
+│   │       ├── tests.md
+│   │       ├── logs/            # ✅ Put logs here
+│   │       ├── scripts/         # ✅ Put scripts here
+│   │       └── reports/         # ✅ Put reports here
 │   └── tests/                   # Centralized test repository
 │
 ├── .claude/                     # Pre-installed components
-│   ├── agents/                  # 10 agents ready to use
-│   ├── skills/                  # 35+ skills ready to use
-│   └── commands/                # 10 slash commands
+│   ├── agents/                  # 10 agents (auto-activate)
+│   ├── skills/                  # 35+ skills (auto-activate)
+│   └── commands/                # Slash commands
 │
-├── CLAUDE.md                    # This file (ONLY file we add)
-└── src/                         # Your source code (unchanged)
+├── CLAUDE.md                    # This file
+└── src/                         # Your source code
 ```
-
----
-
-## Quick Commands (SLASH COMMANDS - Use These!)
-
-**IMPORTANT**: SpecWeave uses **EXPLICIT SLASH COMMANDS**. Type these commands to activate the framework.
-
-| Command | Alias | Purpose | Example |
-|---------|-------|---------|---------|
-| `/create-increment` | `/pi` | **Plan Product Increment** (create new feature) | `/pi "user auth"` |
-| `/start-increment` | `/si` | Start working on increment | `/si 0001` |
-| `/add-tasks` | `/at` | Add tasks to increment | `/at 0001 "add tests"` |
-| `/validate-increment` | `/vi` | Validate increment quality | `/vi 0001 --quality` |
-| `/close-increment` | `/done` | Close increment | `/done 0001` |
-| `/list-increments` | `/ls` | List all increments | `/ls` |
-| `/review-docs` | - | Review docs vs code | `/review-docs --increment=003` |
-| `/sync-github` | - | Sync to GitHub issues | `/sync-github` |
-
-**💡 Pro Tip**: Use short aliases (`/pi`, `/si`, `/done`) for speed!
-- **PI** = Product Increment (standard Agile terminology)
-
-**All commands adapt to your tech stack automatically**
-
----
-
-## Working with Increments
-
-### Create New Feature (ALWAYS use slash command!)
-
-**CRITICAL**: Use `/pi` (or `/create-increment`) to create new features:
-
-```bash
-# Short form (recommended)
-/pi "feature description"
-
-# Full form
-/create-increment "feature description"
-```
-
-**This creates**:
-- Auto-numbered folder (`.specweave/increments/000X-name/`)
-- spec.md (WHAT & WHY - PM agent)
-- plan.md (HOW - Architect agent)
-- tasks.md (Implementation steps)
-- tests.md (Test strategy - QA Lead agent)
-- context-manifest.yaml (Selective loading)
-
-**Workflow**:
-1. Use `/pi "feature"` to plan → SpecWeave creates specs
-2. Then regular conversation to implement → Claude implements code
-
-### Status Progression
-
-```
-backlog → planned → in-progress → completed → closed
-```
-
-### WIP Limits
-
-- **Solo developer**: 1-2 increments in progress
-- **Small team (2-5)**: 2-3 increments in progress
-- **Large team (10+)**: 3-5 increments in progress
-
----
-
-## Agents (Activate Automatically)
-
-**Strategic Agents** (pre-installed & ready to use):
-
-| Agent | Purpose | Activates When |
-|-------|---------|----------------|
-| `pm` | Requirements, user stories | Planning features |
-| `architect` | System design, ADRs | Technical design |
-| `security` | Threat modeling | Security review |
-| `qa-lead` | Test strategy | Testing |
-| `devops` | Infrastructure, deployment | Deployment needed |
-| `tech-lead` | Code review | Code review |
-| `sre` | Incident response | Troubleshooting |
-| `docs-writer` | Documentation | Writing docs |
-| `performance` | Performance optimization | Optimization needed |
-
-**All 10 agents are pre-installed** - Claude uses the right one based on your request!
-
-**See**: `.claude/agents/` for complete list
-
----
-
-## Skills (Activate Automatically)
-
-**Framework Skills** (always available):
-
-| Skill | Purpose | Activates When |
-|-------|---------|----------------|
-| `specweave-detector` | Slash command documentation | User asks about SpecWeave commands |
-| `increment-planner` | Plan increments/features | `/pi` or `/create-increment` command |
-| `context-loader` | Load context selectively | Working on increments |
-| `skill-router` | Route to appropriate skill | Ambiguous requests |
-
-**Technology Skills** (all pre-installed):
-
-| Skill | Purpose | Activates When |
-|-------|---------|----------------|
-| `nodejs-backend` | Node.js/Express/NestJS | Node.js backend requests |
-| `python-backend` | Python/FastAPI/Django | Python backend requests |
-| `nextjs` | Next.js App Router | Next.js requests |
-| `frontend` | React/Vue/Angular | Frontend requests |
-| `dotnet-backend` | ASP.NET Core | .NET requests |
-
-**Integration Skills** (all pre-installed):
-
-| Skill | Purpose | Activates When |
-|-------|---------|----------------|
-| `jira-sync` | Sync with JIRA | JIRA integration needed |
-| `github-sync` | Sync with GitHub | GitHub integration needed |
-| `hetzner-provisioner` | Deploy to Hetzner | Hetzner deployment needed |
-
-**See**: `.claude/skills/` for complete list of 35+ skills!
 
 ---
 
@@ -286,107 +163,65 @@ backlog → planned → in-progress → completed → closed
 ### Comprehensive Upfront Approach
 - Create complete specifications before coding (500-600+ pages)
 - All ADRs documented in advance
-- Full architecture and API contracts upfront
 - Best for: Enterprise, regulated industries, large teams
 {#ENDIF}
 
 {#IF_INCREMENTAL}
 ### Incremental/Evolutionary Approach
 - Start with overview (10-20 pages)
-- Build documentation as you go (like Microsoft)
-- Add modules/specs as features are planned
-- Best for: Startups, MVPs, small teams, evolving requirements
+- Build documentation as you go
+- Best for: Startups, MVPs, small teams
 {#ENDIF}
-
-**Both approaches use the same framework and 5-pillar structure.**
 
 ---
 
 ## Testing
 
-**Four Levels of Test Cases**:
-
-1. **Specification** (`.specweave/docs/internal/strategy/`) - TC-0001 acceptance criteria
-2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage matrix
-3. **Skill** (`src/skills/{name}/test-cases/`) - 3+ YAML test cases
+**Four Levels**:
+1. **Specification** (`.specweave/docs/internal/strategy/`) - Acceptance criteria
+2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage
+3. **Skill** (`src/skills/{name}/test-cases/`) - YAML test cases
 4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
 
 **Requirements**:
-- ✅ E2E tests (Playwright/Cypress/etc.) when UI exists
-- ✅ >80% coverage for critical paths
-- ✅ Tests MUST tell the truth (no false positives)
-
-**See**: [Testing Strategy Guide](.specweave/docs/internal/delivery/guides/testing-strategy.md)
+- E2E tests when UI exists
+- >80% coverage for critical paths
+- Tests MUST tell the truth
 
 ---
 
-## Deployment
+## Quick Reference Card
 
-**Deployment Target**: {DEPLOYMENT_TARGET}
+### When to Use Each Command
 
-{#IF_HETZNER}
-**Platform**: Hetzner Cloud (cheapest option)
-**Configuration**: See `.specweave/config.yaml`
-**Secrets**: `.env` (gitignored)
-{#ENDIF}
+| User Says | Use Command | What It Does |
+|-----------|-------------|--------------|
+| "Let's build [feature]" | `/inc "[feature]"` | Plan new increment |
+| "Start implementing" | `/do` | Execute tasks (smart resume) |
+| "What's the status?" | `/progress` | Show task completion % |
+| "Is this ready?" | `/validate 0001` | Validate increment quality |
+| "We're done" | `/done 0001` | Close increment |
+| "Sync to GitHub" | `/sync-github` | Export to GitHub issues |
+| "Sync to Jira" | `/sync-jira` | Export to Jira |
 
-{#IF_AWS}
-**Platform**: AWS (enterprise)
-**Configuration**: See `.specweave/config.yaml`
-**Secrets**: AWS IAM credentials in `.env` (gitignored)
-{#ENDIF}
+### Command Aliases
 
-{#IF_VERCEL}
-**Platform**: Vercel (best for Next.js)
-**Configuration**: See `.specweave/config.yaml`
-**Secrets**: Vercel token in `.env` (gitignored)
-{#ENDIF}
-
-{#IF_LOCAL}
-**Platform**: Local development (Docker Compose)
-**Configuration**: See `docker-compose.yml`
-{#ENDIF}
-
-**See**: [Deployment Guide](.specweave/docs/internal/delivery/guides/deployment-intelligence.md)
+- `/inc` = `/specweave inc` = `/specweave.inc`
+- `/do` = `/specweave do` = `/specweave.do`
+- `/validate` = `/specweave validate` = `/specweave.validate`
+- `/done` = `/specweave done` = `/specweave.done`
+- `/progress` = `/specweave progress` = `/specweave.progress`
 
 ---
 
-## Detailed Guides
+## Key SpecWeave Principles
 
-**For complete workflows, agents load guides from** `.specweave/docs/internal/delivery/guides/`:
-
-| Guide | Purpose |
-|-------|---------|
-| [increment-lifecycle.md](.specweave/docs/internal/delivery/guides/increment-lifecycle.md) | Complete increment management |
-| [development-workflow.md](.specweave/docs/internal/delivery/guides/development-workflow.md) | Greenfield and brownfield workflows |
-| [testing-strategy.md](.specweave/docs/internal/delivery/guides/testing-strategy.md) | Testing philosophy (4 levels) |
-| [deployment-intelligence.md](.specweave/docs/internal/delivery/guides/deployment-intelligence.md) | Deployment target detection |
-| [diagram-conventions.md](.specweave/docs/internal/delivery/guides/diagram-conventions.md) | C4 diagrams and Mermaid |
-
-**Agents automatically load relevant guides when needed** - you don't manage this manually.
-
----
-
-## Context Precision (70%+ Token Reduction)
-
-**How it works**: Each increment has a `context-manifest.yaml` that specifies ONLY the specs/docs needed for that feature.
-
-**Example**:
-```yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/spec.md
-documentation:
-  - .specweave/docs/internal/architecture/auth-design.md
-  - .specweave/docs/internal/architecture/adr/0003-auth-method.md
-max_context_tokens: 10000
-```
-
-**Benefits**:
-- Load exactly what's needed (not everything)
-- 70%+ token reduction vs loading full specs
-- Scales to enterprise (500+ page specs)
-
-**Loaded by**: `context-loader` skill when working on increment
+1. **Specification-First**: Always start with `/inc` to create specs before coding
+2. **Documentation = Source of Truth**: Specs guide implementation, not the reverse
+3. **Incremental**: Work in small, measurable increments
+4. **Validated**: Every increment validated before closure
+5. **Traceable**: All work traces back to specs and requirements
+6. **Clean Organization**: All supporting files in increment folders, never root
 
 ---
 
@@ -398,27 +233,25 @@ max_context_tokens: 10000
 
 ---
 
-## Quick Start
-
-**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type `/pi` to activate!
+## Getting Started
 
 **Create your first feature**:
 ```bash
-# Use short alias (recommended)
-/pi "your feature description"
-
-# Or full command
-/create-increment "your feature description"
+/inc "your feature description"
 ```
 
 **Typical Workflow**:
-1. `/pi "feature"` → SpecWeave creates specs (spec.md, plan.md, tasks.md)
-2. Regular conversation → Claude implements the code
-3. `/done 0001` → Close increment when complete
+1. `/inc "feature"` → SpecWeave creates specs
+2. Review specs (spec.md, plan.md, tasks.md)
+3. `/do` → Claude implements the code
+4. `/progress` → Check status anytime
+5. `/validate 0001` → Validate quality (optional)
+6. `/done 0001` → Close when complete
 
-**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits.
-
-**Need help?**: Type `/pi` to see examples, or ask about specific workflows.
+**Remember**:
+- Type `/inc` first, THEN implement
+- Keep root clean (use increment folders)
+- All agents/skills activate automatically
 
 **SpecWeave Documentation**: https://spec-weave.com
 

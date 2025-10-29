@@ -22,7 +22,7 @@ documentation:
     operations: "docs/internal/operations/"     # Runbooks, SLOs (the "how we run")
     governance: "docs/internal/governance/"     # Security, compliance (the "guardrails")
 
-  # Public documentation (PUBLISHED via MkDocs)
+  # Public documentation (PUBLISHED via Docusaurus)
   public:
     root: "docs/public/"
     overview: "docs/public/overview/"
@@ -97,28 +97,30 @@ skills:
   min_tests_per_skill: 3
   installation_command: "npx specweave install"
 
-# Claude Hooks (Auto-Update Mechanism)
+# Claude Hooks (Sound Notifications + Reminders)
+# IMPORTANT: Hooks can only run bash commands, NOT invoke slash commands or skills
+# See: .claude/hooks.json for PostToolUse hook configuration
 hooks:
   enabled: true
   post_task_completion:
     enabled: true
-    notification_sound: true     # Play sound when task completes (before docs update)
-    actions:
-      - play_notification_sound  # Audible notification (macOS: afplay, Linux: paplay, Windows: powershell)
-      - update_documentation
-      - update_claude_md           # MUST update CLAUDE.md when structure changes
-      - update_youtube_content     # Auto-update YouTube scripts/materials
-      - update_changelog
-      - commit_doc_changes
-    message: "docs: auto-update after task completion"
-    youtube_content:
-      enabled: true
-      watch_paths:
-        - "youtube-content/scripts/"
-        - "youtube-content/demos/"
-        - "youtube-content/comparisons/"
-        - "youtube-content/slides/"
-      auto_commit: true
+    notification_sound: true     # Play sound when task completes
+    # What the hook ACTUALLY does (via .claude/hooks/post-task-completion.sh):
+    # 1. Play completion sound synchronously (Glass.aiff on macOS)
+    # 2. Output JSON systemMessage reminder
+    # 3. Log to .specweave/logs/tasks.log
+
+    # What Claude MUST do manually after each task (hooks cannot do this):
+    manual_actions:
+      - update_claude_md           # Update CLAUDE.md when structure changes (inline edits)
+      - update_readme              # Update README.md for user-facing changes (inline edits)
+      - update_changelog           # Update CHANGELOG.md for API changes (inline edits)
+
+    # Living docs sync (happens AFTER all tasks, not after each task):
+    # - Run /sync-docs update after /do completes
+    # - Updates .specweave/docs/ with implementation learnings
+    # - Updates ADRs from Proposed → Accepted
+    # - May prompt for conflict resolution
   pre_implementation:
     enabled: true
     actions:

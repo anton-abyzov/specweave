@@ -93,7 +93,6 @@ This creates the `.specweave/` structure with:
 ```
 your-project/
 ├── .specweave/                     # Framework internals
-│   ├── config.yaml                 # Project configuration
 │   ├── docs/                       # 5-pillar documentation
 │   │   ├── internal/
 │   │   │   ├── strategy/           # Business specs (WHAT, WHY)

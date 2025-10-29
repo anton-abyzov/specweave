@@ -497,8 +497,7 @@ Proceed with merge? (y/n)
 ## Next Steps
 
 1. ✅ Review generated files in `.specweave/docs/` and `specifications/`
-2. ✅ Update `.specweave/config.yaml` with project details
-3. ✅ Run `mkdocs serve` to preview documentation
+3. ✅ Run `npm run docs:dev` to preview documentation
 4. ✅ Create features from specifications: `specweave plan-feature {name}`
 
 ---
@@ -580,7 +579,7 @@ Report saved: ai-logs/reports/CLAUDE-MERGE-REPORT-20251026.md
 
 Your project knowledge is now integrated! 🎉
 
-Next: Review files and run `mkdocs serve` to preview.
+Next: Review files and run `npm run docs:dev` to preview.
 ```
 
 ---

@@ -54,7 +54,7 @@ The brownfield-onboarder works differently based on the chosen documentation pat
 
 **Auto-detection**:
 ```typescript
-// Check .specweave/config.yaml for mode
+// Settings auto-detected
 const mode = config.brownfield?.mode || 'auto';
 
 if (mode === 'auto') {
@@ -710,8 +710,8 @@ The following content remains in the backup and will be extracted when you work 
 ## Next Steps
 
 1. ✅ Review generated files in `.specweave/docs/` and `specifications/`
-2. ✅ Update `.specweave/config.yaml` with project details
-3. ✅ Run `mkdocs serve` to preview documentation
+2. ✅ SpecWeave uses auto-detection
+3. ✅ Run `npm run docs:dev` to preview documentation
 4. ✅ Create features from specifications: `specweave plan-feature {name}`
 
 ---
@@ -793,7 +793,7 @@ Report saved: ai-logs/reports/CLAUDE-MERGE-REPORT-20251026.md
 
 Your project knowledge is now integrated! 🎉
 
-Next: Review files and run `mkdocs serve` to preview.
+Next: Review files and run `npm run docs:dev` to preview.
 ```
 
 ---

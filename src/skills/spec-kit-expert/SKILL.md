@@ -356,7 +356,6 @@ When you request gap analysis, I will:
 ```bash
 # Project structure
 - CLAUDE.md (complete guide)
-- .specweave/config.yaml (configuration)
 - .specweave/increments/ (implemented features)
 - src/skills/ (available skills)
 - src/agents/ (available agents)
@@ -436,7 +435,7 @@ Based on analysis, provide:
    - Read src/skills/ for available skills
    - Read src/agents/ for available agents
    - Review CLAUDE.md for documented features
-   - Check .specweave/config.yaml for configuration
+   - Settings auto-detected
    - Analyze .claude/hooks/ for automation
    ```
 
@@ -885,7 +884,6 @@ When performing gap analysis, I can read and analyze:
 ```bash
 # Core configuration
 ✅ CLAUDE.md                          # Complete guide
-✅ .specweave/config.yaml            # Configuration
 ✅ README.md                         # Project overview
 
 # Features (increments)

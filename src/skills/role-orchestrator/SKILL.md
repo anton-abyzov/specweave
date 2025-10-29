@@ -889,37 +889,7 @@ Proceeding to architecture phase...
 
 ### Configuration for Feedback Loops
 
-```yaml
-# .specweave/config.yaml
-role_orchestrator:
-  enabled: true
 
-  # Feedback loop configuration
-  feedback_loops:
-    enabled: true              # Enable auto-refinement
-    max_retries: 3             # Max refinement attempts
-    stop_on_improvement: true  # Stop if score improves
-    require_user_approval: false  # Auto-refine without asking
-
-    # Quality thresholds per agent
-    thresholds:
-      pm_agent: 0.80           # Requirements quality
-      architect_agent: 0.80    # Design quality
-      qa_lead_agent: 0.75      # Test coverage + quality
-
-    # Which agents use feedback loops
-    agents:
-      - pm_agent
-      - architect_agent
-      - qa_lead_agent
-      # Not applicable for implementation agents
-
-    # Validation strategy
-    validation:
-      use_llm_judge: true      # Use increment-quality-judge
-      combine_with_rules: true # Combine with rule-based checks
-      judge_weight: 0.5        # 50% LLM judge, 50% rules
-```
 
 ### Gate Failure Handling
 
@@ -1044,35 +1014,7 @@ async function invokeSkill(skillName: string, task: string, context: any) {
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-role_orchestrator:
-  enabled: true
 
-  # Orchestration strategy
-  default_pattern: "sequential_with_gates"  # or "parallel" or "adaptive"
-
-  # Quality gates
-  require_user_approval:
-    - architecture_decisions
-    - deployment_to_production
-
-  require_automated_approval:
-    - test_coverage: ">80%"
-    - security_scan: "no_critical"
-
-  # Agent preferences
-  preferred_backend: "nodejs-backend"  # or python-backend, dotnet-backend
-  preferred_frontend: "frontend-agent"
-
-  # Timeouts
-  phase_timeout_minutes: 30
-  total_timeout_hours: 8
-
-  # Monitoring
-  progress_updates_interval: "5min"
-  store_metrics: true
-```
 
 ## Testing
 

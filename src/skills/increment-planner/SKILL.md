@@ -68,27 +68,73 @@ STEP 1: Scan existing docs
 ├─ Read .specweave/docs/internal/architecture/adr/ (existing decisions)
 └─ Pass existing context to agents
     ↓
-STEP 2: Invoke PM Agent
-├─ PM creates .specweave/docs/internal/strategy/crypto-trading/
-│   ├── overview.md (product vision, problem, users)
-│   ├── requirements.md (FR-001, NFR-001, technology-agnostic)
-│   ├── user-stories.md (US1, US2, US3...)
-│   └── success-criteria.md (KPIs, metrics)
-└─ PM creates .specweave/increments/0001-*/spec.md (summary, references strategy docs)
+STEP 2: Invoke PM Agent (🚨 MANDATORY - USE TASK TOOL)
+
+YOU MUST USE THE TASK TOOL - DO NOT SKIP:
+
+Task(
+  subagent_type: "pm",
+  description: "PM product strategy",
+  prompt: "Create product strategy for: [user feature description]
+
+  Context from existing docs: [summary of strategy docs from Step 1]
+
+  You MUST create BOTH living docs AND increment files:
+
+  1. Living docs (source of truth):
+     - Create .specweave/docs/internal/strategy/{module-name}/
+       * overview.md (product vision, problem, users)
+       * requirements.md (FR-001, NFR-001, technology-agnostic)
+       * user-stories.md (US1, US2, US3...)
+       * success-criteria.md (KPIs, metrics)
+
+  2. Increment file:
+     - Create .specweave/increments/{number}-{name}/spec.md
+     - Keep spec.md < 250 lines (summary only)
+     - MUST reference living docs
+     - Include links to ../../docs/internal/strategy/{module}/
+
+  Tech stack: [detected tech stack]"
+)
+
+Wait for PM agent to complete!
     ↓
-STEP 3: Invoke Architect Agent
-├─ Architect READS strategy docs from PM
-├─ Architect creates .specweave/docs/internal/architecture/
-│   ├── system-design.md (overall architecture)
-│   ├── adr/0001-websocket-vs-polling.md (decision record)
-│   ├── adr/0002-database-choice.md (PostgreSQL vs MongoDB)
-│   ├── adr/0003-deployment-platform.md (Railway vs Hetzner)
-│   └── diagrams/crypto-trading/ (Mermaid C4 diagrams)
-└─ Architect creates .specweave/increments/0001-*/plan.md (summary, references architecture docs)
+STEP 3: Invoke Architect Agent (🚨 MANDATORY - USE TASK TOOL)
+
+YOU MUST USE THE TASK TOOL - DO NOT SKIP:
+
+Task(
+  subagent_type: "architect",
+  description: "Architect technical design",
+  prompt: "Create technical architecture for: [user feature description]
+
+  FIRST, read PM's strategy docs from .specweave/docs/internal/strategy/{module}/
+
+  You MUST create BOTH living docs AND increment files:
+
+  1. Living docs (source of truth):
+     - Update .specweave/docs/internal/architecture/system-design.md
+     - Create .specweave/docs/internal/architecture/adr/ (at least 3 ADRs):
+       * ####-websocket-vs-polling.md
+       * ####-database-choice.md
+       * ####-deployment-platform.md
+     - Create diagrams/{module}/ (Mermaid C4 diagrams)
+     - Create data-models/{module}-schema.sql
+
+  2. Increment file:
+     - Create .specweave/increments/{number}-{name}/plan.md
+     - Keep plan.md < 500 lines (summary only)
+     - MUST reference living docs
+     - Include links to ../../docs/internal/architecture/adr/
+
+  Tech stack: [detected tech stack]"
+)
+
+Wait for Architect agent to complete!
     ↓
 STEP 4: Validate Living Docs
 ├─ Check .specweave/docs/internal/strategy/{module}/ is NOT empty
-├─ Check .specweave/docs/internal/architecture/adr/ has ADRs
+├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
 ├─ Check increment spec.md REFERENCES (not duplicates) strategy docs
 └─ Check increment plan.md REFERENCES (not duplicates) architecture docs
     ↓
@@ -824,7 +870,7 @@ const featurePlanner = require('./create-feature.js');
 const feature = await featurePlanner.createFeature({
   description: "Add Stripe payment integration",
   priority: "P1",
-  configPath: ".specweave/config.yaml"
+  # Configuration auto-detected
 });
 
 console.log(`Created: .specweave/increments/${feature.number}-${feature.shortName}/`);

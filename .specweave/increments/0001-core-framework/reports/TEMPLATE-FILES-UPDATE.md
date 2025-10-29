@@ -208,7 +208,6 @@ tech_stack:
   detection:
     enabled: true
     sources:
-      - .specweave/config.yaml  # This file (highest priority)
       - package.json            # TypeScript/JavaScript
       - requirements.txt        # Python
       - go.mod                  # Go
@@ -391,10 +390,8 @@ wc -l src/templates/CLAUDE.md.template src/templates/README.md.template
 ### 2. ✅ Framework-Agnostic Templates
 - README shows examples for TypeScript, Python, Go
 - .gitignore covers all major languages
-- config.yaml supports all frameworks
 
 ### 3. ✅ Complete Configuration
-- config.yaml has ALL SpecWeave settings
 - Tech stack detection built-in
 - Platform auto-selection (cost-optimizer)
 - Testing frameworks per language

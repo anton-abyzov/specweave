@@ -99,7 +99,8 @@ specweave init my-saas
 ### Available Commands
 
 ```bash
-specweave init [project]           # Create new project with ALL components
+specweave init [project]           # Create new project in subdirectory
+specweave init .                   # Initialize in current directory (brownfield)
 specweave --version                # Show version
 specweave --help                   # Show help
 ```
@@ -129,7 +130,7 @@ cd my-app
 
 User: /specweave inc "Next.js authentication with email and OAuth"
     ↓
-SpecWeave: 🔷 SpecWeave Active (/specweave-increment)
+SpecWeave: 🔷 SpecWeave Active (/specweave.increment)
 
            🚀 Creating increment 0001-user-authentication...
            📝 Using nextjs skill (already installed!)
@@ -255,7 +256,6 @@ SpecWeave includes **35+ AI skills** that work with slash commands:
 ```
 specweave/
 ├── .specweave/                  # Framework configuration
-│   ├── config.yaml              # Project configuration
 │   ├── cache/                   # Performance cache
 │   ├── docs/                    # 5-pillar documentation structure
 │   │   ├── README.md
@@ -267,7 +267,7 @@ specweave/
 │   │   │   ├── delivery/        # Roadmap, release plans
 │   │   │   ├── operations/      # Runbooks, SLOs, monitoring
 │   │   │   └── governance/      # Security, compliance
-│   │   └── public/              # Published docs (MkDocs)
+│   │   └── public/              # Published docs (Docusaurus)
 │   │       ├── overview/
 │   │       ├── guides/
 │   │       ├── api/
@@ -441,29 +441,21 @@ SpecWeave includes **automated C4 diagram generation**:
 
 ### JIRA Integration
 
-```yaml
-# .specweave/config.yaml
-sync:
-  jira:
-    enabled: true
-    url: "https://company.atlassian.net"
-    project: "PROJ"
-```
-
 ```bash
 # Sync increment to JIRA
 /sync-jira --increment 0001
 
 # Maps: Increment → Epic, Tasks → Stories
+# Configuration auto-detected from environment or prompts
 ```
 
 ### Azure DevOps Integration
 
-```yaml
-sync:
-  ado:
-    enabled: true
-    url: "https://dev.azure.com/company/MyProject"
+```bash
+# Sync increment to Azure DevOps
+/sync-ado --increment 0001
+
+# Configuration auto-detected from environment or prompts
 ```
 
 ### GitHub Integration
@@ -660,11 +652,17 @@ cd my-project
 ### For Existing Projects
 
 ```bash
-# Add SpecWeave to existing project
+# Add SpecWeave to existing project (brownfield)
 cd my-existing-project
 npx specweave init .
 
-# Analyze existing code
+# SpecWeave initializes in current directory:
+# ✅ Detects existing files and prompts for confirmation
+# ✅ Preserves your existing code and git history
+# ✅ Adds .specweave/ and .claude/ directories
+# ✅ Uses directory name as project name (or prompts if invalid)
+
+# Now analyze existing code
 # "Analyze my authentication module"
 # SpecWeave creates retroactive specifications
 

@@ -87,7 +87,6 @@ your-project/
 │   ├── commands/             ← Slash commands (1 complete, more coming)
 │   └── hooks/                ← Automation hooks (4 hooks)
 ├── .specweave/               ← SpecWeave framework (ALL work lives here)
-│   ├── config.yaml           ← Configuration
 │   ├── increments/           ← Development increments
 │   └── docs/                 ← Living documentation (auto-updated)
 └── CLAUDE.md                 ← Complete development guide
@@ -161,7 +160,7 @@ specweave init <stack> <domain> <platform>  # Create complete SaaS project
 
 ## Configuration
 
-Edit `.specweave/config.yaml`:
+Initialize your project
 
 ```yaml
 project:

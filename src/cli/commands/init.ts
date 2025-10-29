@@ -21,44 +21,122 @@ export async function initCommand(
 ): Promise<void> {
   console.log(chalk.blue.bold('\n🚀 SpecWeave Initialization\n'));
 
-  // 1. Get project name if not provided
-  if (!projectName) {
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'projectName',
-        message: 'Project name:',
-        default: 'my-saas',
-        validate: (input: string) => {
-          if (/^[a-z0-9-]+$/.test(input)) return true;
-          return 'Project name must be lowercase letters, numbers, and hyphens only';
+  let targetDir: string;
+  let finalProjectName: string;
+  let usedDotNotation = false;
+
+  // Handle "." for current directory initialization
+  if (projectName === '.') {
+    usedDotNotation = true;
+    targetDir = process.cwd();
+    const dirName = path.basename(targetDir);
+
+    // Validate directory name is suitable for project name
+    if (!/^[a-z0-9-]+$/.test(dirName)) {
+      console.log(chalk.yellow(`\n⚠️  Current directory name '${dirName}' contains invalid characters.`));
+      const suggestedName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+      const { name } = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'name',
+          message: 'Project name (for templates):',
+          default: suggestedName,
+          validate: (input: string) => {
+            if (/^[a-z0-9-]+$/.test(input)) return true;
+            return 'Project name must be lowercase letters, numbers, and hyphens only';
+          },
         },
-      },
-    ]);
-    projectName = answers.projectName;
-  }
-
-  const targetDir = path.resolve(process.cwd(), projectName!);
-
-  // 2. Check if directory exists
-  if (fs.existsSync(targetDir)) {
-    const { overwrite } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'overwrite',
-        message: `Directory ${projectName} already exists. Overwrite?`,
-        default: false,
-      },
-    ]);
-
-    if (!overwrite) {
-      console.log(chalk.yellow('❌ Initialization cancelled'));
-      process.exit(0);
+      ]);
+      finalProjectName = name;
+    } else {
+      finalProjectName = dirName;
     }
 
-    fs.emptyDirSync(targetDir);
+    // Safety: Warn if directory is not empty
+    const allFiles = fs.readdirSync(targetDir);
+    const existingFiles = allFiles.filter(f => !f.startsWith('.')); // Ignore hidden files
+
+    if (existingFiles.length > 0) {
+      console.log(chalk.yellow(`\n⚠️  Current directory contains ${existingFiles.length} file${existingFiles.length === 1 ? '' : 's'}.`));
+      const { confirm } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirm',
+          message: 'Initialize SpecWeave in current directory?',
+          default: false,
+        },
+      ]);
+
+      if (!confirm) {
+        console.log(chalk.yellow('❌ Initialization cancelled'));
+        process.exit(0);
+      }
+    }
+
+    // Check if .specweave already exists
+    if (fs.existsSync(path.join(targetDir, '.specweave'))) {
+      const { overwrite } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'overwrite',
+          message: '.specweave directory already exists. Overwrite?',
+          default: false,
+        },
+      ]);
+
+      if (!overwrite) {
+        console.log(chalk.yellow('❌ Initialization cancelled'));
+        process.exit(0);
+      }
+
+      fs.removeSync(path.join(targetDir, '.specweave'));
+      if (fs.existsSync(path.join(targetDir, '.claude'))) {
+        fs.removeSync(path.join(targetDir, '.claude'));
+      }
+    }
   } else {
-    fs.mkdirSync(targetDir, { recursive: true });
+    // Original behavior: create subdirectory
+    // 1. Get project name if not provided
+    if (!projectName) {
+      const answers = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'projectName',
+          message: 'Project name:',
+          default: 'my-saas',
+          validate: (input: string) => {
+            if (/^[a-z0-9-]+$/.test(input)) return true;
+            return 'Project name must be lowercase letters, numbers, and hyphens only';
+          },
+        },
+      ]);
+      projectName = answers.projectName;
+    }
+
+    targetDir = path.resolve(process.cwd(), projectName!);
+    finalProjectName = projectName!;
+
+    // 2. Check if directory exists
+    if (fs.existsSync(targetDir)) {
+      const { overwrite } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'overwrite',
+          message: `Directory ${projectName} already exists. Overwrite?`,
+          default: false,
+        },
+      ]);
+
+      if (!overwrite) {
+        console.log(chalk.yellow('❌ Initialization cancelled'));
+        process.exit(0);
+      }
+
+      fs.emptyDirSync(targetDir);
+    } else {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
   }
 
   const spinner = ora('Creating SpecWeave project...').start();
@@ -85,7 +163,7 @@ export async function initCommand(
 
     // 5. Copy base templates (config, README, CLAUDE.md - same for all)
     const templatesDir = path.join(__dirname, '../../../src/templates');
-    await copyTemplates(templatesDir, targetDir, projectName!);
+    await copyTemplates(templatesDir, targetDir, finalProjectName);
     spinner.text = 'Base templates copied...';
 
     // 6. Install based on tool
@@ -120,27 +198,32 @@ export async function initCommand(
 
       await adapter.install({
         projectPath: targetDir,
-        projectName: projectName!,
+        projectName: finalProjectName,
         techStack: options.techStack ? { language: options.techStack } : undefined,
         docsApproach: 'incremental'
       });
     }
 
-    // 9. Initialize git
-    try {
-      execSync('git init', { cwd: targetDir, stdio: 'ignore' });
-      spinner.text = 'Git repository initialized...';
-    } catch (error) {
-      spinner.warn('Git initialization skipped (git not found)');
-    }
+    // 9. Initialize git (skip if .git already exists)
+    const gitDir = path.join(targetDir, '.git');
+    if (!fs.existsSync(gitDir)) {
+      try {
+        execSync('git init', { cwd: targetDir, stdio: 'ignore' });
+        spinner.text = 'Git repository initialized...';
+      } catch (error) {
+        spinner.warn('Git initialization skipped (git not found)');
+      }
 
-    // 10. Create initial commit
-    try {
-      execSync('git add .', { cwd: targetDir, stdio: 'ignore' });
-      execSync('git commit -m "Initial commit with SpecWeave"', { cwd: targetDir, stdio: 'ignore' });
-      spinner.text = 'Initial commit created...';
-    } catch (error) {
-      // Git commit might fail if no user configured, that's ok
+      // 10. Create initial commit
+      try {
+        execSync('git add .', { cwd: targetDir, stdio: 'ignore' });
+        execSync('git commit -m "Initial commit with SpecWeave"', { cwd: targetDir, stdio: 'ignore' });
+        spinner.text = 'Initial commit created...';
+      } catch (error) {
+        // Git commit might fail if no user configured, that's ok
+      }
+    } else {
+      spinner.text = 'Using existing Git repository...';
     }
 
     spinner.succeed('SpecWeave project created successfully!');
@@ -151,14 +234,14 @@ export async function initCommand(
       if (adapter) {
         await adapter.postInstall({
           projectPath: targetDir,
-          projectName: projectName!,
+          projectName: finalProjectName,
           techStack: options.techStack ? { language: options.techStack } : undefined,
           docsApproach: 'incremental'
         });
       }
     }
 
-    showNextSteps(projectName!, toolName);
+    showNextSteps(finalProjectName, toolName, usedDotNotation);
   } catch (error) {
     spinner.fail('Failed to create project');
     console.error(chalk.red('\nError:'), error);
@@ -191,14 +274,6 @@ function createDirectoryStructure(targetDir: string): void {
 }
 
 async function copyTemplates(templatesDir: string, targetDir: string, projectName: string): Promise<void> {
-  // Copy config.yaml
-  const configTemplate = path.join(templatesDir, 'config.yaml');
-  if (fs.existsSync(configTemplate)) {
-    let config = fs.readFileSync(configTemplate, 'utf-8');
-    config = config.replace('{{PROJECT_NAME}}', projectName);
-    fs.writeFileSync(path.join(targetDir, '.specweave/config.yaml'), config);
-  }
-
   // Copy README.md
   const readmeTemplate = path.join(templatesDir, 'README.md.template');
   if (fs.existsSync(readmeTemplate)) {
@@ -262,42 +337,49 @@ function copySkills(skillsDir: string, targetSkillsDir: string): void {
   }
 }
 
-function showNextSteps(projectName: string, adapterName: string): void {
+function showNextSteps(projectName: string, adapterName: string, usedDotNotation: boolean = false): void {
   console.log('');
   console.log(chalk.cyan.bold('🎯 Next steps:'));
   console.log('');
-  console.log(`   1. ${chalk.white(`cd ${projectName}`)}`);
-  console.log('');
+
+  let stepNumber = 1;
+
+  // Only show "cd" step if we created a subdirectory
+  if (!usedDotNotation) {
+    console.log(`   ${stepNumber}. ${chalk.white(`cd ${projectName}`)}`);
+    console.log('');
+    stepNumber++;
+  }
 
   // Adapter-specific instructions
   if (adapterName === 'claude') {
-    console.log(`   2. ${chalk.white('Open Claude Code and describe your project:')}`);
+    console.log(`   ${stepNumber}. ${chalk.white('Open Claude Code and describe your project:')}`);
     console.log(`      ${chalk.gray('"Build a real estate listing platform"')}`);
     console.log('');
-    console.log(`   3. ${chalk.white('SpecWeave will:')}`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white('SpecWeave will:')}`);
     console.log('      • Auto-activate skills and agents');
     console.log('      • Create specifications');
     console.log('      • Build implementation');
   } else if (adapterName === 'cursor') {
-    console.log(`   2. ${chalk.white('Open project in Cursor')}`);
+    console.log(`   ${stepNumber}. ${chalk.white('Open project in Cursor')}`);
     console.log('');
-    console.log(`   3. ${chalk.white('Say: "Create increment for [your feature]"')}`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white('Say: "Create increment for [your feature]"')}`);
     console.log(`      Cursor will read .cursorrules and guide you`);
     console.log('');
-    console.log(`   4. ${chalk.white('Use @ shortcuts:')}`);
+    console.log(`   ${stepNumber + 2}. ${chalk.white('Use @ shortcuts:')}`);
     console.log(`      @increments, @docs, @strategy, @tests`);
   } else if (adapterName === 'copilot') {
-    console.log(`   2. ${chalk.white('Open project in VS Code with Copilot')}`);
+    console.log(`   ${stepNumber}. ${chalk.white('Open project in VS Code with Copilot')}`);
     console.log('');
-    console.log(`   3. ${chalk.white('Copilot will read workspace instructions automatically')}`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white('Copilot will read workspace instructions automatically')}`);
     console.log(`      Start creating increment folders and files`);
     console.log('');
-    console.log(`   4. ${chalk.white('Use Copilot Chat for guidance:')}`);
+    console.log(`   ${stepNumber + 2}. ${chalk.white('Use Copilot Chat for guidance:')}`);
     console.log(`      "How do I create a spec.md?"`);
   } else if (adapterName === 'generic') {
-    console.log(`   2. ${chalk.white('Read SPECWEAVE-MANUAL.md')}`);
+    console.log(`   ${stepNumber}. ${chalk.white('Read SPECWEAVE-MANUAL.md')}`);
     console.log('');
-    console.log(`   3. ${chalk.white('Follow step-by-step instructions')}`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white('Follow step-by-step instructions')}`);
     console.log(`      Works with ANY AI tool (ChatGPT, Claude web, Gemini)`);
   }
 

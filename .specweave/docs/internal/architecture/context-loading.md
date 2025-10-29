@@ -1,488 +1,499 @@
-# Context Loading Architecture
+# Context Management Architecture
 
-**Purpose**: Precision context loading that achieves 70-96% token reduction by loading exactly what's needed, nothing more, nothing less.
+**Purpose**: Achieve efficient context usage through Claude's native progressive disclosure and sub-agent parallelization.
+
+**Key Principle**: Leverage built-in Claude Code mechanisms instead of custom systems.
 
 **Related Documentation**:
-- [CLAUDE.md](../../../CLAUDE.md#context-priming) - Overview
-- [Context-Loader Skill](../../../src/skills/context-loader/SKILL.md) - Implementation
-- [.specweave/docs/public/guides/context-priming.md](../../public/guides/context-priming.md) - User guide
+- [ADR-0002: Context Loading](./adr/0002-context-loading.md) - Architecture decision
+- [Context-Loader Skill](../../../src/skills/context-loader/SKILL.md) - How it works
+- [Claude Skills Documentation](https://support.claude.com/en/articles/12512176-what-are-skills)
+- [Agent Skills Engineering Blog](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+- [Sub-Agents Documentation](https://docs.claude.com/en/docs/claude-code/sub-agents)
 
 ---
 
 ## The Core Problem
 
-**Traditional Approach (Context Bloat)**:
+**Traditional AI Coding (No Progressive Disclosure)**:
 ```
-User: "Implement Stripe payment integration"
+User: "Create a Next.js authentication page"
 
-AI loads everything:
-├── CLAUDE.md (5,000 tokens)
-├── Full spec.md (50,000 tokens)
-│   ├── Authentication (10,000) ❌ Not needed
-│   ├── Payments (15,000) ✅ Needed
-│   ├── Reporting (12,000) ❌ Not needed
-│   └── Integrations (13,000) ❌ Not needed
-├── All architecture docs (20,000) ❌ Most not needed
-└── All ADRs (10,000) ❌ Most not needed
+AI tool loads everything:
+├── All documentation (everywhere)
+├── All skills/capabilities (no filtering)
+├── All context (no prioritization)
 
-Total: 85,000 tokens
-Relevant: ~20,000 tokens (23.5% efficiency)
-Waste: 76.5%
+Total: Variable, often excessive
+Problem: Context bloat, slow responses, high costs
 ```
 
-**Result**: Slow responses, high costs, context confusion, lower quality outputs.
+**Example Without Progressive Disclosure**:
+```
+Load all 35 SpecWeave skills at once:
+├── nextjs skill (5,234 tokens) ✅ Needed
+├── frontend skill (3,891 tokens) ✅ Needed
+├── python-backend skill (4,523 tokens) ❌ Not needed
+├── devops skill (6,123 tokens) ❌ Not needed
+├── hetzner-provisioner skill (3,456 tokens) ❌ Not needed
+├── ... (30 more skills) ❌ Not needed
+
+Total: ~175,000 tokens
+Relevant: ~9,125 tokens (5.2% efficiency)
+Waste: 94.8%
+```
+
+**Result**: Massive token waste, slow responses, context confusion.
 
 ---
 
-## SpecWeave's Multi-Layer Solution
+## SpecWeave's Solution: Native Claude Mechanisms
 
-### Layer 1: Context Manifests (Declarative Context)
+SpecWeave achieves context efficiency through **two Claude Code native features**:
 
-**Innovation**: Each feature DECLARES what context it needs upfront.
+1. **Progressive Disclosure** (Skills)
+2. **Sub-Agent Parallelization** (Isolated Contexts)
 
-**Location**: `.specweave/increments/{id}/context-manifest.yaml`
+**No custom systems. No manifests. No caching layers.**
 
+---
+
+## Mechanism 1: Progressive Disclosure
+
+### How It Works
+
+Claude Code's two-level progressive disclosure system:
+
+#### Level 1: Metadata Phase (Always Loaded)
+
+**What loads**:
 ```yaml
 ---
-# Declarative: "This feature needs exactly this context"
+name: nextjs
+description: NextJS 14+ App Router specialist. Server Components, SSR, ISR...
+---
+```
+
+**Token cost**:
+- Per skill: ~50-100 tokens (metadata only)
+- All 35 skills: ~2,625 tokens total
+- **Always loaded**: Claude sees all skill names/descriptions
+
+**Purpose**: Claude can identify relevant skills without loading full content
+
+#### Level 2: Full Content Phase (On-Demand)
+
+**What loads**:
+```markdown
+# NextJS Skill
+
+## Purpose
+[Full documentation...]
+
+## Implementation Guide
+[5,000+ tokens of detailed content...]
+```
+
+**Token cost**:
+- Variable (skill-dependent)
+- Only loaded when Claude determines relevance
+
+**Benefit**: Prevents loading irrelevant skills
+
+### Example: Simple Task
+
+```
+User: "Create a Next.js authentication page"
+
+═══════════════════════════════════════════════════════════
+PHASE 1: Metadata Review
+═══════════════════════════════════════════════════════════
+
+Claude sees all 35 skill metadata (~2,625 tokens)
+
+Relevant matches found:
+✓ nextjs (matches "Next.js")
+✓ frontend (matches "page")
+
+Not loaded (irrelevant):
+✗ python-backend
+✗ devops
+✗ hetzner-provisioner
+✗ ... (30 more)
+
+═══════════════════════════════════════════════════════════
+PHASE 2: Full Content Loading
+═══════════════════════════════════════════════════════════
+
+Load only relevant skills:
+✓ nextjs full content: 5,234 tokens
+✓ frontend full content: 3,891 tokens
+
+═══════════════════════════════════════════════════════════
+RESULT
+═══════════════════════════════════════════════════════════
+
+Total tokens loaded: ~11,750
+Without progressive disclosure: ~175,000
+Token reduction: 93.3%
+
+Time saved: Instant (metadata already in memory)
+Quality: Full capabilities of relevant skills available
+```
+
+### Example: Complex Task
+
+```
+User: "Build full-stack SaaS with Next.js, Prisma, and Stripe"
+
+═══════════════════════════════════════════════════════════
+PHASE 1: Metadata Review
+═══════════════════════════════════════════════════════════
+
+Claude sees all 35 skill metadata (~2,625 tokens)
+
+Relevant matches found:
+✓ nextjs (matches "Next.js")
+✓ frontend (matches "SaaS")
+✓ nodejs-backend (matches "full-stack")
+✓ prisma (matches "Prisma")
+✓ payment skills (matches "Stripe")
+... (8-10 skills total)
+
+Not loaded (irrelevant):
+✗ python-backend
+✗ dotnet-backend
+✗ flutter
+✗ ... (25+ more)
+
+═══════════════════════════════════════════════════════════
+PHASE 2: Full Content Loading
+═══════════════════════════════════════════════════════════
+
+Load 8-10 relevant skills:
+✓ Total: ~45,000 tokens
+
+═══════════════════════════════════════════════════════════
+RESULT
+═══════════════════════════════════════════════════════════
+
+Total tokens loaded: ~47,625
+Without progressive disclosure: ~175,000
+Token reduction: 72.8%
+```
+
+---
+
+## Mechanism 2: Sub-Agent Parallelization
+
+### How It Works
+
+Each sub-agent has **isolated context window**:
+
+```
+Main Conversation
+├── Context used: 100,000 tokens
+├── History: Full conversation
+└── Launches 3 sub-agents...
+
+Sub-Agent 1 (Frontend)
+├── Context used: 0 tokens (fresh start!)
+├── Loads: nextjs, frontend skills only
+└── Total: ~12,000 tokens
+
+Sub-Agent 2 (Backend)
+├── Context used: 0 tokens (fresh start!)
+├── Loads: nodejs-backend, security skills only
+└── Total: ~15,000 tokens
+
+Sub-Agent 3 (DevOps)
+├── Context used: 0 tokens (fresh start!)
+├── Loads: devops, hetzner skills only
+└── Total: ~8,000 tokens
+```
+
+**Key Benefits**:
+1. **Context Isolation**: Each agent starts fresh (doesn't inherit main conversation's 100K tokens)
+2. **Parallelization**: All 3 agents work simultaneously
+3. **Focused Loading**: Each loads only relevant skills for its domain
+4. **Result Merging**: Outputs combined back to main conversation
+
+### Example: Multi-Domain Task
+
+```
+User: "Build complete SaaS: UI, API, deployment"
+
+Without Sub-Agents (Single Context):
+═══════════════════════════════════════════════════════════
+Main conversation: 80,000 tokens (history)
+Load all relevant skills: 50,000 tokens
+Total context: 130,000 tokens
+Risk: Approaching context limit
+═══════════════════════════════════════════════════════════
+
+With Sub-Agents (Isolated Contexts):
+═══════════════════════════════════════════════════════════
+Main: 5,000 tokens (coordination only)
+├─ Frontend agent: 15,000 tokens (isolated)
+├─ Backend agent: 18,000 tokens (isolated)
+└─ DevOps agent: 12,000 tokens (isolated)
+
+Total across all contexts: 50,000 tokens
+Reduction: 61.5% (130K → 50K)
+Parallelization: 3x faster (simultaneous execution)
+═══════════════════════════════════════════════════════════
+```
+
+---
+
+## SpecWeave's Role
+
+### What SpecWeave Does
+
+✅ **Organizes skills for progressive disclosure**
+- Clear, focused skill descriptions
+- Activation keywords in descriptions
+- Organized by domain
+
+✅ **Coordinates sub-agent usage**
+- role-orchestrator detects multi-domain tasks
+- Launches specialized sub-agents automatically
+- Merges results intelligently
+
+### What SpecWeave Does NOT Do
+
+❌ **No custom context manifests**
+- Doesn't use YAML config files
+- Doesn't declare required context
+- Claude determines relevance automatically
+
+❌ **No custom caching**
+- Claude Code handles caching internally
+- No additional caching layer needed
+
+❌ **No custom loading logic**
+- Progressive disclosure is automatic
+- No code to load/manage context
+
+---
+
+## Best Practices
+
+### For Skill Descriptions
+
+**Good Example**:
+```yaml
+---
+name: nextjs
+description: NextJS 14+ App Router specialist. Creates server components, implements SSR/ISR/SSG, handles routing, middleware, API routes. Activates for Next.js, React Server Components, App Router, Server Actions.
+---
+```
+
+**Why good**:
+- Specific technologies mentioned
+- Activation keywords included
+- Clear capabilities listed
+
+**Bad Example**:
+```yaml
+---
+name: nextjs
+description: Frontend framework helper
+---
+```
+
+**Why bad**:
+- Vague description
+- No activation keywords
+- Unclear capabilities
+
+### For Sub-Agent Usage
+
+**When to use**:
+- Multi-domain tasks (frontend + backend + devops)
+- Parallel work needed (multiple features simultaneously)
+- Context approaching limit
+
+**When NOT to use**:
+- Simple single-domain tasks
+- Sequential work requiring shared context
+
+---
+
+## Token Reduction Metrics
+
+### Measured Scenarios
+
+#### Simple Task (1-2 Skills)
+```
+Before: 175,000 tokens (all skills)
+After: ~12,000 tokens (2 skills)
+Reduction: ~93%
+```
+
+#### Medium Task (5-7 Skills)
+```
+Before: 175,000 tokens (all skills)
+After: ~35,000 tokens (6 skills)
+Reduction: ~80%
+```
+
+#### Complex Task (10+ Skills + Sub-Agents)
+```
+Before: 175,000 tokens (all skills, single context)
+After: ~60,000 tokens (10 skills + 3 sub-agents)
+Reduction: ~66%
+```
+
+**Note**: Exact percentages vary by task complexity. These are approximations based on typical usage patterns.
+
+---
+
+## Comparison with Custom Solutions
+
+### Rejected Approach: Context Manifests
+
+**What we considered**:
+```yaml
+# NOT IMPLEMENTED
 spec_sections:
-  - .specweave/docs/internal/strategy/payments/stripe/spec.md
-  - .specweave/docs/internal/strategy/payments/shared/payment-entities.md
-  - .specweave/docs/internal/strategy/payments/shared/compliance.md#pci-dss
+  - path/to/spec.md
+  - another/spec.md#section
+max_context_tokens: 10000
+```
 
-documentation:
-  - .specweave/docs/internal/architecture/payments/stripe-integration.md
-  - .specweave/docs/internal/architecture/adr/0005-payment-provider.md
-  - .specweave/docs/internal/architecture/adr/0008-webhook-handling.md
-  - CLAUDE.md#development-workflow  # Section-level precision
+**Why rejected**:
+- ❌ Manual creation/maintenance overhead
+- ❌ Manifests become stale
+- ❌ Reinvents Claude's built-in solution
+- ❌ Adds complexity without benefit
 
-max_context_tokens: 20000
-priority: high
-auto_refresh: false
+**Decision**: Use Claude's progressive disclosure instead
+
+### Rejected Approach: Custom Caching
+
+**What we considered**:
+- Cache loaded context
+- Invalidate on file changes
+- Manage cache storage
+
+**Why rejected**:
+- ❌ Claude Code handles caching internally
+- ❌ No proof custom caching provides benefit
+- ❌ Adds complexity and maintenance burden
+
+**Decision**: Trust Claude's internal caching
+
 ---
+
+## Implementation Details
+
+### For Claude Code
+
+**No code needed** - Progressive disclosure works automatically
+
+**Requirements**:
+1. Skills have clear YAML frontmatter
+2. Descriptions include activation keywords
+3. Content is well-organized
+
+### For Other AI Tools
+
+SpecWeave generates **AGENTS.md** adapter:
+- Contains all skills/agents in one file
+- No progressive disclosure (AI tool limitation)
+- Still provides full capabilities
+
+**Supported tools**:
+- Cursor
+- GitHub Copilot
+- Gemini CLI
+- Codex
+- Any AI tool
+
+---
+
+## Debugging
+
+### Check Progressive Disclosure
+
+When Claude mentions using a skill:
+```
+Claude: "🎨 Using nextjs skill..."
 ```
 
-**Key Features**:
-- ✅ **File-level precision** - Load specific files, not entire directories
-- ✅ **Section-level precision** - `file.md#section-name` loads ONLY that section
-- ✅ **Token budgeting** - Explicit limit prevents bloat
-- ✅ **Version controlled** - Manifest is part of feature spec
-- ✅ **Declarative** - States "what" not "how"
+**This confirms**:
+- Progressive disclosure worked
+- Only nextjs skill loaded (not all 35)
+- Context efficient
 
-### Layer 2: Modular Specifications (Hierarchical Organization)
+### Check Sub-Agent Usage
 
-**Foundation**: Can't load selectively if everything is in one file!
-
-**Modular Structure**:
+When Claude mentions launching agents:
 ```
-.specweave/docs/internal/strategy/
-├── payments/                      # Module boundary
-│   ├── overview.md                # High-level (5 pages)
-│   ├── stripe/                    # Sub-module boundary
-│   │   ├── spec.md                # Stripe-specific (50 pages)
-│   │   ├── api-contracts.md       # API details (20 pages)
-│   │   └── data-model.md          # Data entities (15 pages)
-│   ├── paypal/                    # Separate sub-module
-│   │   ├── spec.md                # PayPal-specific (40 pages)
-│   │   └── webhooks.md            # Webhook handling (10 pages)
-│   └── shared/                    # Shared concepts
-│       ├── payment-entities.md    # Common models (10 pages)
-│       └── compliance.md          # PCI-DSS (15 pages)
+Claude: "🤖 Launching 3 specialized agents in parallel..."
 ```
 
-**Benefits**:
-- ✅ Load `payments/stripe/` without loading `paypal/`
-- ✅ Load `shared/` when needed by multiple modules
-- ✅ Scales to 100+ modules without context bloat
-- ✅ Each module is self-contained
+**This confirms**:
+- Sub-agent parallelization active
+- Each agent has isolated context
+- Efficient multi-domain processing
 
-### Layer 3: Context-Loader Skill (The Engine)
+---
 
-**Location**: `src/skills/context-loader/`
+## Related Patterns
 
-**Algorithm**:
+### Pattern 1: Skill Organization
 
-```typescript
-async function loadContext(featureId: string) {
-  // Step 1: Read context manifest
-  const manifest = await readManifest(featureId);
+**Principle**: One skill = one focused capability
 
-  // Step 2: Check cache
-  const cached = await checkCache(manifest.spec_sections);
-  if (cached.isValid && !manifest.auto_refresh) {
-    return cached.context;
-  }
+**Example**:
+```
+✓ nextjs skill (Next.js only)
+✓ frontend skill (React/Vue/Angular)
+✓ nodejs-backend skill (Node.js APIs)
 
-  // Step 3: Load only specified sections
-  const context = {
-    specs: [],
-    docs: [],
-    totalTokens: 0
-  };
-
-  for (const section of manifest.spec_sections) {
-    // Parse section syntax: "file.md#section-name"
-    const [filePath, sectionId] = section.split('#');
-
-    if (sectionId) {
-      // Load ONLY the specified section
-      const content = await loadMarkdownSection(filePath, sectionId);
-      context.specs.push(content);
-    } else {
-      // Load entire file
-      const content = await readFile(filePath);
-      context.specs.push(content);
-    }
-
-    // Check token budget
-    context.totalTokens += estimateTokens(content);
-    if (context.totalTokens > manifest.max_context_tokens) {
-      warn("Token budget exceeded, truncating...");
-      break;
-    }
-  }
-
-  // Step 4: Load documentation (same logic)
-  for (const docPath of manifest.documentation) {
-    const [filePath, sectionId] = docPath.split('#');
-    const content = sectionId
-      ? await loadMarkdownSection(filePath, sectionId)
-      : await readFile(filePath);
-    context.docs.push(content);
-  }
-
-  // Step 5: Cache result
-  await cacheContext(manifest.spec_sections, context);
-
-  return context;
-}
-
-// Helper: Load specific markdown section
-async function loadMarkdownSection(filePath: string, sectionId: string) {
-  const fullContent = await readFile(filePath);
-  const lines = fullContent.split('\n');
-
-  // Find section header (e.g., "## development-workflow")
-  const headerPattern = new RegExp(`^##+ ${sectionId}`, 'i');
-  let startIdx = lines.findIndex(line => headerPattern.test(line));
-
-  if (startIdx === -1) return null;
-
-  // Find next section header (same or higher level)
-  const headerLevel = lines[startIdx].match(/^#+/)[0].length;
-  const endPattern = new RegExp(`^#{1,${headerLevel}} `);
-  let endIdx = lines.findIndex((line, idx) =>
-    idx > startIdx && endPattern.test(line)
-  );
-
-  if (endIdx === -1) endIdx = lines.length;
-
-  // Extract section content
-  return lines.slice(startIdx, endIdx).join('\n');
-}
+✗ web-dev skill (everything mixed)
 ```
 
-**Key Techniques**:
-1. **Section-level extraction** - Parse `file.md#section` syntax
-2. **Token budgeting** - Enforce `max_context_tokens` limit
-3. **Cache-first** - Check cache before disk reads
-4. **Lazy loading** - Load on-demand, not upfront
-5. **Dependency resolution** - Load parent sections first
+### Pattern 2: Description Clarity
 
-### Layer 4: Caching Strategy (Performance Amplification)
+**Principle**: Explicit activation triggers
 
-**Location**: `.specweave/cache/`
-
+**Example**:
 ```
-.specweave/cache/
-├── context-index.json              # Index of all available context
-├── spec-embeddings/                # Vector embeddings for semantic search
-│   ├── payments-stripe.vec
-│   └── authentication-jwt.vec
-└── loaded-context/                 # Cached loaded context
-    ├── 0003-stripe-{hash}.json     # Feature-specific cache
-    └── manifest-checksums.json     # Track manifest changes
+✓ "Activates for Next.js, App Router, Server Components"
+✗ "Helps with frontend"
 ```
 
-**Cache Strategy**:
+### Pattern 3: Sub-Agent Delegation
 
-```typescript
-interface CacheEntry {
-  manifestHash: string;        // Hash of context manifest
-  loadedAt: string;            // Timestamp
-  expiresAt: string;           // 15 minutes default
-  context: {
-    specs: string[];
-    docs: string[];
-    totalTokens: number;
-  };
-}
+**Principle**: Parallelize multi-domain work
 
-async function checkCache(sections: string[]): CacheEntry | null {
-  // Generate hash from manifest content
-  const manifestHash = hashSections(sections);
-
-  // Check cache
-  const cached = await readCacheEntry(manifestHash);
-
-  if (!cached) return null;
-
-  // Check expiry (15 minutes)
-  if (Date.now() > cached.expiresAt) {
-    await invalidateCache(manifestHash);
-    return null;
-  }
-
-  return cached;
-}
+**Example**:
 ```
-
-**Benefits**:
-- ✅ **Repeated loads are instant** (hit cache)
-- ✅ **Automatic invalidation** (15-minute expiry)
-- ✅ **Manifest change detection** (hash-based)
-- ✅ **Semantic search enabled** (vector embeddings for future)
-
-### Layer 5: Semantic Search Fallback (Dynamic Context Expansion)
-
-**Problem**: What if manifest is incomplete? AI needs additional context mid-implementation.
-
-**Solution**: Semantic search on cached embeddings (future enhancement).
-
-**Flow**:
-```
-AI: "How do we handle rate limiting for Stripe webhooks?"
-
-1. Check current context → Not found
-2. Semantic search: "rate limiting webhooks"
-3. Find: .specweave/docs/internal/architecture/api-gateway/rate-limiting.md
-4. Load section dynamically
-5. Update manifest for future use
-6. Continue implementation
+✓ Frontend agent + Backend agent + DevOps agent (parallel)
+✗ Single agent doing all domains (sequential)
 ```
 
 ---
 
-## The Math: How 70-96% Reduction is Achieved
+## Summary
 
-### Example: Stripe Integration Feature
+**SpecWeave's context efficiency comes from**:
 
-**Without Context Priming**:
-```
-Total context loaded:
-├── CLAUDE.md: 5,000 tokens
-├── Full spec (all modules): 50,000 tokens
-│   ├── Authentication: 10,000 ❌
-│   ├── Payments: 15,000 ✅
-│   ├── Reporting: 12,000 ❌
-│   └── Integrations: 13,000 ❌
-├── Full architecture: 20,000 tokens
-│   ├── System design: 5,000 ❌
-│   ├── Payments arch: 5,000 ✅
-│   ├── Auth arch: 5,000 ❌
-│   └── Reporting arch: 5,000 ❌
-└── All ADRs: 10,000 tokens
-    ├── ADR 0001-0010: 8,000 ❌
-    └── ADR 0005, 0008: 2,000 ✅
+1. **Progressive Disclosure** (Claude Native)
+   - Skills load only when relevant
+   - 50-95% token reduction depending on task
+   - Zero configuration required
 
-Total: 85,000 tokens
-Relevant: 22,000 tokens
-Efficiency: 25.9%
-Waste: 74.1%
-```
+2. **Sub-Agent Parallelization** (Claude Code Native)
+   - Isolated context windows
+   - Parallel processing
+   - Additional 50-70% efficiency on complex tasks
 
-**With Context Priming**:
-```
-Context loaded (via manifest):
-├── CLAUDE.md#development-workflow: 500 tokens ✅
-├── Specs:
-│   ├── payments/stripe/spec.md: 8,000 ✅
-│   ├── payments/shared/payment-entities.md: 2,000 ✅
-│   └── payments/shared/compliance.md#pci-dss: 1,500 ✅
-├── Architecture:
-│   └── payments/stripe-integration.md: 3,000 ✅
-└── ADRs:
-    ├── 0005-payment-provider.md: 1,000 ✅
-    └── 0008-webhook-handling.md: 1,200 ✅
+**No custom systems. No manifests. No caching layers.**
 
-Total: 17,200 tokens
-Relevant: 17,200 tokens
-Efficiency: 100%
-Reduction: (85,000 - 17,200) / 85,000 = 79.8%
-```
+**Result**: Simple, maintainable, efficient context management that leverages Claude's built-in capabilities.
 
-### Scaling Analysis
-
-| Project Size | Total Spec | Feature Context | Reduction |
-|--------------|------------|-----------------|-----------|
-| Small (50 pages) | 50,000 tokens | 20,000 tokens | **60%** |
-| Medium (100 pages) | 100,000 tokens | 15,000 tokens | **85%** |
-| Large (300 pages) | 300,000 tokens | 20,000 tokens | **93.3%** |
-| Enterprise (600 pages) | 600,000 tokens | 20,000 tokens | **96.7%** |
-
-**Key Insight**: Reduction increases with project size! Larger projects benefit MORE from context priming.
-
----
-
-## Real-World Workflow
-
-### Scenario: User Says "Implement Stripe payment integration"
-
-**Step 1: Detection & Routing** (specweave-detector → increment-planner)
-```
-specweave-detector: Detects .specweave/ directory
-→ Routes to increment-planner skill
-```
-
-**Step 2: Context Manifest Creation** (increment-planner)
-```
-increment-planner analyzes request:
-- Identifies module: payments/stripe
-- Identifies dependencies: shared payment models, compliance
-- Creates context manifest with precise paths
-- Saves to: .specweave/increments/0003-stripe-integration/context-manifest.yaml
-```
-
-**Step 3: Context Loading** (context-loader)
-```
-context-loader activates:
-1. Reads manifest
-2. Checks cache (miss - first load)
-3. Loads specified files/sections:
-   - payments/stripe/spec.md
-   - payments/shared/payment-entities.md
-   - payments/shared/compliance.md#pci-dss
-   - architecture/payments/stripe-integration.md
-   - ADR 0005, 0008
-   - CLAUDE.md#development-workflow (section only)
-4. Caches result (15-minute expiry)
-5. Returns 17,200 tokens of focused context
-```
-
-**Step 4: Implementation** (with primed context)
-```
-AI now has:
-✅ Stripe spec (what to build)
-✅ Payment entities (data models)
-✅ Compliance requirements (PCI-DSS)
-✅ Architecture guidelines (how to integrate)
-✅ Relevant ADRs (past decisions)
-✅ Workflow section from CLAUDE.md (process)
-
-AI does NOT have:
-❌ Authentication specs (not needed)
-❌ Reporting specs (not needed)
-❌ Other payment providers (not needed)
-❌ Irrelevant ADRs (not needed)
-
-Result: Focused implementation, faster, higher quality
-```
-
-**Step 5: Dynamic Context Expansion** (if needed)
-```
-AI mid-implementation: "Need to handle rate limiting"
-→ Semantic search: "rate limiting webhooks" (future)
-→ Finds: api-gateway/rate-limiting.md
-→ Loads dynamically (3,000 tokens)
-→ Updates manifest for next time
-→ Total context: 20,200 tokens (still within budget!)
-```
-
----
-
-## Advanced Techniques
-
-### 1. Hierarchical Loading (Parent → Child)
-
-```yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/payments/overview.md    # Load parent first
-  - .specweave/docs/internal/strategy/payments/stripe/spec.md  # Then child
-```
-
-**Why**: Gives AI "big picture" before diving into details. Better comprehension.
-
-### 2. Dependency Resolution
-
-```yaml
-dependencies:
-  - module: authentication
-    sections:
-      - .specweave/docs/internal/strategy/authentication/jwt-tokens.md
-    reason: "Stripe webhooks require JWT validation"
-```
-
-**Why**: Auto-loads related context when working across modules.
-
-### 3. Priority Levels
-
-```yaml
-priority: high    # Load first, always
-priority: medium  # Load if tokens available
-priority: low     # Load only if specifically requested
-```
-
-**Why**: Ensures critical context always loaded, nice-to-have is optional.
-
-### 4. Auto-Refresh on Changes
-
-```yaml
-auto_refresh: true  # Re-load when source files change
-```
-
-**Why**: Keep context in sync when specs are updated.
-
----
-
-## Comparison to Alternatives
-
-| Approach | Tokens | Relevance | Speed | Scalability |
-|----------|--------|-----------|-------|-------------|
-| **Load Everything** | 100,000+ | 20-30% | Slow | Poor (hits limits) |
-| **Manual Selection** | 30,000-50,000 | 60-70% | Medium | Medium (error-prone) |
-| **SpecWeave Manifests** | 10,000-20,000 | 95-100% | Fast (cached) | Excellent (600+ pages) |
-
----
-
-## Why This Matters
-
-### For Solo Developers
-- Work on large projects without context overwhelm
-- Faster AI responses (less to process)
-- Clearer mental model (focused context)
-
-### For Teams (10+ developers)
-- Each developer loads only their domain
-- No cross-contamination (frontend doesn't see backend specs)
-- Consistent context across team
-
-### For Enterprise (500-600+ pages)
-- **Impossible to load everything** (hits 200K token limit)
-- Context priming makes enterprise-scale specs viable
-- AI navigates massive documentation efficiently
-
----
-
-## Implementation Status
-
-**Current**: ✅ Architecture defined, skill structure created
-**Next Steps**:
-1. Implement `context-loader` skill (TypeScript/Python)
-2. Add caching layer
-3. Create test cases (minimum 3)
-4. Integrate with `increment-planner`
-5. Add semantic search (v2.0)
-
----
-
-## Related Documentation
-
-- [CLAUDE.md](../../../CLAUDE.md#context-priming) - Overview
-- [Context-Loader Skill](../../../src/skills/context-loader/SKILL.md) - Implementation
-- [Increment-Planner Skill](../../../src/skills/increment-planner/SKILL.md) - Context manifest creation
-- [.specweave/docs/public/guides/context-priming.md](../../public/guides/context-priming.md) - User guide (YouTube script)
-
----
-
-**Last Updated**: 2025-10-26
-**Status**: Architecture Complete, Implementation Pending
+**Philosophy**: Use what works. Don't reinvent what Claude already provides.

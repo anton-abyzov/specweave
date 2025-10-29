@@ -183,7 +183,6 @@ project-root/                      .specweave/increments/0001-auth/
 ```
 your-project/
 ├── .specweave/                     # Framework internals
-│   ├── config.yaml                 # Project configuration
 │   ├── docs/                       # 5-pillar documentation
 │   │   ├── internal/
 │   │   │   ├── strategy/           # Business specs (WHAT, WHY)

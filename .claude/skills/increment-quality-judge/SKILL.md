@@ -238,42 +238,7 @@ Choice: _
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-validation:
-  quality_judge:
-    # Enable/disable feature
-    enabled: true
 
-    # When to run
-    auto_prompt: true        # Prompt after rule-based validation
-    always_run: false        # Run without prompting
-
-    # Scoring thresholds
-    thresholds:
-      excellent: 90          # ✓✓ (95-100)
-      good: 80               # ✓  (80-94)
-      acceptable: 70         # ~  (70-79)
-      needs_work: 0          # ⚠️ (0-69)
-
-    # Which dimensions to evaluate
-    dimensions:
-      clarity: true
-      testability: true
-      completeness: true
-      feasibility: true
-      maintainability: true
-      edge_cases: true
-
-    # Token budget
-    max_tokens: 2000         # Limit for quality check
-
-    # Auto-export suggestions
-    export_to_tasks: true    # Add suggestions to tasks.md
-
-    # Confidence threshold
-    min_confidence: 0.80     # Show warning if lower
-```
 
 ## Usage Examples
 

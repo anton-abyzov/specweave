@@ -78,24 +78,25 @@ touch docs/public/faq/index.md
 
 ## Publishing
 
-Public documentation is published using **MkDocs** (configured in `mkdocs.yml`).
+Public documentation is published using **Docusaurus** (configured in `docs-site/docusaurus.config.ts`).
 
 ```bash
-# Serve locally
-mkdocs serve
+# Serve locally (development mode with hot-reload)
+npm run docs:dev
 
-# Build static site
-mkdocs build
+# Build static site (production)
+npm run docs:build
 
-# Deploy to GitHub Pages
-mkdocs gh-deploy
+# Deploy to GitHub Pages/Vercel
+# Automated via GitHub Actions on push
 ```
 
-The `mkdocs.yml` configuration should:
-- **Include** all `docs/public/` content
-- **Exclude** all `docs/internal/` content (or have separate builds)
+The Docusaurus configuration:
+- **Serves** all `docs/public/` content as public-facing documentation
+- **Can optionally serve** `docs/internal/` content based on configuration
+- **Auto-deploys** on push to main branch
 
 ## Related Documentation
 
-- [Internal Documentation](../internal/README.md) - Internal playbook (NOT published)
-- [MkDocs Configuration](../../mkdocs.yml)
+- [Internal Documentation](../internal/README.md) - Internal playbook
+- [Docusaurus Configuration](../../docs-site/docusaurus.config.ts)

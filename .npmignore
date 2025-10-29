@@ -27,9 +27,8 @@ DEPLOYMENT-READY.md
 RELEASE-CHECKLIST.md
 
 # Documentation build configs
-mkdocs-internal.yml
-mkdocs.yml
 .mermaidrc.json
+docs-site/
 
 # Development files
 .github/workflows/

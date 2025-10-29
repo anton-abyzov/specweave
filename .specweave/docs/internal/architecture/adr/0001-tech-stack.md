@@ -23,7 +23,7 @@ SpecWeave needs a technology stack that is:
 - **CLI Framework**: Commander.js
 - **Package Manager**: npm
 - **Testing**: Jest + Playwright
-- **Documentation**: Docusaurus (public) + MkDocs (internal)
+- **Documentation**: Docusaurus (all docs - public & internal)
 
 **User Projects**: Framework-agnostic
 - Supports TypeScript, Python, Go, Rust, Java, C#

@@ -60,30 +60,31 @@ This is your customer-facing documentation. Includes simplified diagrams, featur
 
 ## Publishing
 
-Documentation is rendered using **MkDocs** (configured in `mkdocs.yml`).
+Documentation is rendered using **Docusaurus** (configured in `docs-site/docusaurus.config.ts`).
 
 ```bash
-# Serve locally
-mkdocs serve
+# Serve locally (development mode with hot-reload)
+npm run docs:dev
 
-# Build static site
-mkdocs build
+# Build static site (production)
+npm run docs:build
 
-# Deploy to GitHub Pages
-mkdocs gh-deploy
+# Deploy to GitHub Pages/Vercel
+# Automated via GitHub Actions on push
 ```
 
-## MkDocs Configuration
+## Docusaurus Configuration
 
-- **Internal docs**: Can be excluded from public build (see `mkdocs.yml`)
-- **Public docs**: Automatically published to GitHub Pages
-- **Search**: Enabled with tags in front-matter
-- **Theme**: Material for MkDocs (recommended)
+- **Internal + Public docs**: Single site serving both `.specweave/docs/internal/` and `.specweave/docs/public/`
+- **Auto-deployment**: Automatically deployed via GitHub Actions
+- **Search**: Algolia integration (or local search fallback)
+- **Mermaid diagrams**: Native SVG rendering with hot-reload
+- **Versioning**: Built-in version management
 
 ## Related Documentation
 
 - [CLAUDE.md](../CLAUDE.md) - Complete development guide
-- [mkdocs.yml](../mkdocs.yml) - MkDocs configuration
+- [docs-site/docusaurus.config.ts](../../docs-site/docusaurus.config.ts) - Docusaurus configuration
 - [internal/strategy/README.md](internal/strategy/README.md) - Strategy documentation index
 - [internal/architecture/README.md](internal/architecture/README.md) - Architecture documentation index
 - [public/overview/README.md](public/overview/README.md) - Public documentation index

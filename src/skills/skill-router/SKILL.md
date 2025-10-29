@@ -285,25 +285,7 @@ When multiple skills could handle a request, use priority:
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-skill_router:
-  enabled: true
 
-  # Accuracy target (constitution requirement)
-  accuracy_target: 0.90
-
-  # Clarification threshold
-  clarification_threshold: 0.90  # Ask when confidence < 0.90
-
-  # Learning
-  collect_feedback: true
-  feedback_file: ".specweave/cache/routing-feedback.json"
-
-  # Routing preferences
-  prefer_multi_skill: false  # For complex requests, prefer orchestrator
-  auto_route_high_confidence: true  # Route immediately if confidence > 0.90
-```
 
 ## Examples
 

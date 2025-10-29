@@ -91,15 +91,7 @@ As a user, I want to subscribe to a monthly plan...
 ## Authentication
 
 **JIRA Cloud**:
-```yaml
-# .specweave/config.yaml
-jira_sync:
-  type: "cloud"
-  url: "https://your-org.atlassian.net"
-  email: "user@example.com"
-  api_token: "${JIRA_API_TOKEN}"  # From environment variable
-  project_key: "PROJ"
-```
+
 
 **JIRA Server/Data Center**:
 ```yaml
@@ -113,36 +105,7 @@ jira_sync:
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-jira_sync:
-  enabled: false
 
-  # JIRA instance
-  url: "https://your-org.atlassian.net"
-  project_key: "PROJ"
-
-  # Authentication (use environment variables!)
-  email: "${JIRA_EMAIL}"
-  api_token: "${JIRA_API_TOKEN}"
-
-  # Sync settings
-  sync_direction: "bidirectional"  # export | import | bidirectional
-  sync_interval: 300  # seconds (5 minutes)
-
-  # What to sync
-  sync_status: true
-  sync_comments: true
-  sync_assignees: true
-  sync_attachments: false
-
-  # Issue mapping
-  epic_label: "epic"  # Custom field or label for epics
-
-  # Webhooks (for real-time sync)
-  webhook_enabled: true
-  webhook_secret: "${JIRA_WEBHOOK_SECRET}"
-```
 
 ## Workflow
 

@@ -904,7 +904,7 @@ npm run start
 - [Docusaurus Official Docs](https://docusaurus.io/docs) - Complete Docusaurus documentation
 - [Mermaid Diagrams](https://mermaid.js.org/intro/) - Mermaid diagram syntax
 - [C4 Model](https://c4model.com/) - C4 architecture diagrams
-- [CLAUDE.md](../../CLAUDE.md#specweave-documentation-maintenance) - Documentation maintenance section
+- [CLAUDE.md](../../CLAUDE.md) - Documentation maintenance section
 
 ---
 

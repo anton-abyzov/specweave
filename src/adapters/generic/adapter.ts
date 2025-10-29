@@ -1,8 +1,8 @@
 /**
  * Generic Adapter
  *
- * Manual workflow adapter that works with ANY AI tool.
- * Provides step-by-step instructions for using SpecWeave without tool-specific features.
+ * Universal adapter that works with ANY AI tool.
+ * All AI tools can read AGENTS.md (universal standard) for workflow instructions.
  *
  * This adapter ensures 100% compatibility - works with ChatGPT web, Claude web,
  * Gemini, or literally ANY AI that can read markdown and follow instructions.
@@ -15,7 +15,7 @@ import { AdapterOptions, AdapterFile } from '../adapter-interface';
 
 export class GenericAdapter extends AdapterBase {
   name = 'generic';
-  description = 'Generic adapter - Manual workflow for ANY AI tool (ChatGPT, Gemini, etc.)';
+  description = 'Generic adapter - AGENTS.md works with ANY AI tool (ChatGPT, Gemini, etc.)';
   automationLevel = 'manual' as const;
 
   /**
@@ -31,34 +31,22 @@ export class GenericAdapter extends AdapterBase {
 
   /**
    * Get files to install for Generic adapter
+   *
+   * Note: Any AI tool can read AGENTS.md (universal standard).
+   * No additional files needed.
    */
   getFiles(): AdapterFile[] {
-    return [
-      {
-        sourcePath: 'SPECWEAVE-MANUAL.md',
-        targetPath: 'SPECWEAVE-MANUAL.md',
-        description: 'Complete manual workflow guide for ANY AI tool'
-      },
-      {
-        sourcePath: 'README.md',
-        targetPath: '.specweave/adapters/generic/README.md',
-        description: 'Generic adapter documentation'
-      }
-    ];
+    return [];
   }
 
   /**
    * Install Generic adapter
    */
   async install(options: AdapterOptions): Promise<void> {
-    console.log('\n📦 Installing Generic Adapter (Manual Workflow)\n');
+    console.log('\n📦 Configuring for Universal AI Tool Compatibility\n');
 
-    // Generic adapter is simple - just copy manual guide
-    await super.install(options);
-
-    console.log('\n✨ Generic adapter installed!');
-    console.log('\n📋 Files created:');
-    console.log('   - SPECWEAVE-MANUAL.md (complete manual workflow guide)');
+    // No files to install - any AI can read AGENTS.md
+    console.log('✅ AGENTS.md works with any AI tool (ChatGPT, Gemini, Claude web, etc.)');
   }
 
   /**
@@ -74,35 +62,49 @@ export class GenericAdapter extends AdapterBase {
   getInstructions(): string {
     return `
 ================================================================
-        Generic Adapter - Manual Workflow
+        Generic Adapter - Universal Compatibility
 ================================================================
 
 Your project is now configured for ANY AI tool!
 
 WHAT THIS PROVIDES:
 
-- SPECWEAVE-MANUAL.md (Complete Manual Guide)
-  - Step-by-step instructions for creating increments
-  - Templates you can copy-paste to any AI
-  - Workflow guidance (no tool dependencies)
-  - Works with LITERALLY any AI
+- AGENTS.md (Universal Standard)
+  - Any AI tool can read this file
+  - Contains all workflow instructions
+  - Project structure and templates
+  - Following agents.md standard (https://agents.md/)
 
 - 100% Compatibility
   - ChatGPT (web), Claude (web), Gemini
-  - Any AI that can read text
+  - Any AI that can read markdown
+
+HOW TO USE AGENTS.MD WITH ANY AI:
+
+Method 1: Copy-Paste Workflow (ChatGPT web, Claude web, etc.)
+1. Open AGENTS.md in your browser/editor
+2. Copy relevant section (e.g., "Creating a Feature Increment")
+3. Paste into AI chat (ChatGPT, Claude web, Gemini, etc.)
+4. Ask AI to follow the instructions
+5. AI generates content (spec.md, plan.md, etc.)
+6. Copy AI's response, save to files
+
+Method 2: File System Access (AI with file access)
+1. AI automatically reads AGENTS.md
+2. Ask: "Create increment for user authentication"
+3. AI follows AGENTS.md workflow
+4. AI creates files directly
 
 UNDERSTANDING "MANUAL":
 
 Manual = You Orchestrate, AI Executes
 
 Example workflow:
-1. You read SPECWEAVE-MANUAL.md (Step 1: Create Folder)
-2. You run: mkdir -p .specweave/increments/0001-auth
-3. You read Step 2: Create spec.md
-4. You copy template from manual, paste to AI (ChatGPT)
-5. AI generates spec.md content
-6. You copy AI's response, save to spec.md file
-7. Repeat for plan.md, tasks.md, etc.
+1. Read AGENTS.md section "Creating a Feature Increment"
+2. Copy instructions to ChatGPT
+3. ChatGPT generates spec.md content
+4. Save content to .specweave/increments/0001-auth/spec.md
+5. Repeat for plan.md, tasks.md
 
 Manual does not mean harder - just means YOU control each step (no automation).
 Benefit: Works with ANY AI tool!
@@ -110,13 +112,13 @@ Benefit: Works with ANY AI tool!
 COMPARISON:
 
 Claude Code (Full): "create increment" -> Done in 30 seconds (auto)
-Cursor (Semi): "create increment" -> Done in 5 minutes (.cursorrules)
-Copilot (Basic): Create files manually, Copilot suggests content
-Generic (Manual): Follow SPECWEAVE-MANUAL.md step-by-step (30-60 min)
+Cursor (Semi): "create increment" -> Done in 5 minutes (reads AGENTS.md)
+Copilot (Basic): Reads AGENTS.md, suggests content as you type
+Generic (Manual): Copy AGENTS.md instructions to any AI (10-30 min)
 
 Trade-off: Speed vs Compatibility
-- Claude Code: Fast, but only works with Claude Code
-- Generic: Slower, but works with EVERY AI tool!
+- Claude Code: Fast, but requires Claude Code CLI
+- Generic: Slower, but works with EVERY AI tool (even web-based)!
 
 WHEN TO USE:
 
@@ -127,33 +129,35 @@ Use Generic adapter if:
 - Simple projects where automation isn't critical
 
 Consider alternatives if:
-- You want automation -> Use Claude Code (full) or Cursor (semi)
-- You have file system access -> Use Copilot at minimum
+- You want automation -> Use Claude Code (full)
+- You have CLI access -> Use Cursor (semi) or Copilot (basic)
 - Large projects -> Manual workflow becomes tedious
 
 QUICK START:
 
-1. Open SPECWEAVE-MANUAL.md
-   Read the complete manual workflow guide
+1. Open AGENTS.md
+   Read the "Common Workflows" section
 
-2. Follow step-by-step for your first feature
-   - Step 1: Create increment folder
-   - Step 2: Create spec.md (copy template, paste to AI, save)
-   - Step 3: Create plan.md (copy template, paste to AI, save)
-   - Step 4: Create tasks.md (copy template, paste to AI, save)
+2. Copy workflow to your AI tool:
+   - "Creating a Feature Increment" section
+   - Paste into ChatGPT/Claude/Gemini
 
-3. Use any AI tool you prefer
+3. Follow AI's guidance:
+   - AI generates spec.md content (copy & save)
+   - AI generates plan.md content (copy & save)
+   - AI generates tasks.md content (copy & save)
+
+4. Use any AI tool you prefer:
    ChatGPT, Claude web, Gemini, Perplexity, etc.
 
 DOCUMENTATION:
 
-- SPECWEAVE-MANUAL.md: Complete step-by-step guide (READ THIS FIRST!)
-- SPECWEAVE.md: Complete technical documentation
+- AGENTS.md: Universal workflow instructions (works with any AI!)
 - .specweave/docs/: Project documentation
 
 You're ready to build with SpecWeave using ANY AI tool!
 
-Remember: Generic = Manual = Copy-paste workflow, but 100% compatible!
+Remember: AGENTS.md is the universal standard - it works everywhere!
     `;
   }
 }

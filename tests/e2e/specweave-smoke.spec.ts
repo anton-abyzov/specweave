@@ -46,18 +46,7 @@ test.describe('SpecWeave E2E Smoke Test', () => {
       .catch(() => false);
     expect(specweaveDirExists).toBe(true);
 
-    // Verify config file
-    const configPath = path.join(testDir, '.specweave/config.yaml');
-    const configExists = await fs.access(configPath)
-      .then(() => true)
-      .catch(() => false);
-    expect(configExists).toBe(true);
-
-    // Verify config content
-    const configContent = await fs.readFile(configPath, 'utf-8');
-    const config = parseYaml(configContent);
-    expect(config).toHaveProperty('ai');
-    expect(config.ai.model).toBe('claude-sonnet-4-5-20250929');
+    // Note: config.yaml has been removed - SpecWeave uses pure auto-detection
   });
 
   test('should scaffold SaaS project from natural language prompt', async () => {
@@ -116,7 +105,6 @@ test.describe('SpecWeave E2E Smoke Test', () => {
       'CLAUDE.md',
       'README.md',
       'package.json',
-      '.specweave/config.yaml',
       '.gitignore',
     ];
 

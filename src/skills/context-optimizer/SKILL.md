@@ -354,37 +354,7 @@ You can now work on payment features with optimized context.
 
 ## Configuration
 
-```yaml
-# .specweave/config.yaml
-context_optimizer:
-  enabled: true
 
-  # Auto-run after context-loader
-  auto_optimize: true
-
-  # Minimum context size to trigger optimization
-  min_context_tokens: 20000
-
-  # Confidence threshold (skip if uncertain)
-  min_confidence: 0.75
-
-  # Show what was removed
-  show_removals: true
-
-  # Keep buffer (don't remove if close to needed)
-  buffer_strategy: "conservative"  # or "aggressive"
-
-  # Domain detection
-  custom_domains:
-    - "real-time-chat"
-    - "analytics"
-    - "reporting"
-
-  # Always keep (never remove)
-  always_keep:
-    - "architecture/README.md"
-    - "CLAUDE.md"
-```
 
 ## Integration with Context Loader
 
