@@ -7,6 +7,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.3] - 2025-10-29
+
+### 🐛 Critical Fix: Template Path Resolution on Windows
+
+**Major Fix**: Fixed template file resolution in `AgentsMdGenerator` and `ClaudeMdGenerator` to work on Windows with UNC paths and all installation scenarios.
+
+### What Changed
+
+**1. Template Path Resolution in Generators**:
+- ✅ Added `findPackageRoot()` and `findTemplateFile()` to both generators
+- ✅ Fallback logic now correctly finds templates in `src/templates/`
+- ✅ Works with Windows UNC paths, network drives, and global npm installs
+- ✅ Better error messages showing all attempted paths
+
+**2. Enhanced copyTemplates() Function**:
+- ✅ Validates templates directory exists before using it
+- ✅ Automatic fallback to `packageRoot/src/templates` if initial path fails
+- ✅ Uses `path.normalize()` for Windows backslash handling
+- ✅ Only passes templatePath to generators if file actually exists
+
+**3. What This Fixes**:
+- ❌ **v0.3.2 Issue**: Empty `.claude/` folders even after path resolution fix
+- ❌ **Root Cause**: Templates not found during CLAUDE.md/AGENTS.md generation
+- ❌ **Symptom**: `Error: AGENTS.md template not found at: C:\Users\...\dist\templates\AGENTS.md.template`
+- ✅ **v0.3.3 Fix**: Template resolution works everywhere, files copy correctly
+
+### Technical Details
+
+**Before (v0.3.2)**:
+```typescript
+// Generators used wrong fallback path
+const templatePath = options.templatePath ||
+  path.join(__dirname, '../templates/AGENTS.md.template');
+// __dirname = dist/adapters/ → looks in dist/templates/ (doesn't exist!)
+```
+
+**After (v0.3.3)**:
+```typescript
+// Generators use package root detection
+const foundPath = findTemplateFile('AGENTS.md.template');
+// Walks up to find package.json, then tries src/templates/ ✅
+```
+
+### Migration from v0.3.0, v0.3.1, or v0.3.2
+
+If you have empty `.claude/` folders:
+```bash
+# Upgrade to v0.3.3
+npm install -g specweave@0.3.3
+
+# Re-run init (will overwrite)
+cd your-project
+specweave init .
+```
+
+**Windows Users**: This version completes the Windows support:
+- ✅ UNC paths (\\\\Mac\\Home\\...) - v0.3.2
+- ✅ Template resolution - v0.3.3 (this version)
+- ✅ Skills, agents, commands copy - v0.3.3
+- ✅ All Windows path formats work
+
+---
+
 ## [0.3.2] - 2025-10-29
 
 ### 🐛 Critical Fix: Windows Path Resolution with UNC Paths

@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Replace vibe coding with spec-driven development. Smart workflow: /specweave inc auto-closes previous, /specweave build auto-resumes, /specweave progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com",
   "type": "module",
   "main": "dist/index.js",

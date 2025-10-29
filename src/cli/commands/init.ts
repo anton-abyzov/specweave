@@ -274,6 +274,27 @@ function createDirectoryStructure(targetDir: string): void {
 }
 
 async function copyTemplates(templatesDir: string, targetDir: string, projectName: string): Promise<void> {
+  // Verify templates directory exists
+  if (!fs.existsSync(templatesDir)) {
+    console.error(chalk.red(`\n❌ Error: Templates directory not found at: ${templatesDir}`));
+    const packageRoot = findPackageRoot(__dirname);
+    if (packageRoot) {
+      console.error(chalk.red(`   Package root: ${packageRoot}`));
+      console.error(chalk.red(`   Trying alternate locations...`));
+
+      // Try src/templates as fallback
+      const altPath = path.join(packageRoot, 'src', 'templates');
+      if (fs.existsSync(altPath)) {
+        console.error(chalk.yellow(`   ✓ Found templates at: ${altPath}`));
+        templatesDir = altPath;
+      } else {
+        throw new Error('Failed to locate templates directory');
+      }
+    } else {
+      throw new Error('Failed to locate templates directory and package root');
+    }
+  }
+
   // Copy README.md
   const readmeTemplate = path.join(templatesDir, 'README.md.template');
   if (fs.existsSync(readmeTemplate)) {
@@ -289,11 +310,12 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   const agentsDir = findSourceDir('agents');
   const commandsDir = findSourceDir('commands');
 
+  const claudeMdTemplatePath = path.normalize(path.join(templatesDir, 'CLAUDE.md.template'));
   const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
   const claudeMd = await claudeGen.generate({
     projectName,
     projectPath: targetDir,
-    templatePath: path.join(templatesDir, 'CLAUDE.md.template')
+    templatePath: fs.existsSync(claudeMdTemplatePath) ? claudeMdTemplatePath : undefined
   });
 
   fs.writeFileSync(path.join(targetDir, 'CLAUDE.md'), claudeMd);
@@ -303,11 +325,12 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   // Used by: Cursor, Gemini CLI, Codex, GitHub Copilot, and ANY non-Claude tool
   // NOTE: Claude Code does NOT read this file - it only reads CLAUDE.md above
   // Replaces: .cursorrules, instructions.md, and other tool-specific files
+  const agentsMdTemplatePath = path.normalize(path.join(templatesDir, 'AGENTS.md.template'));
   const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
   const agentsMd = await agentsGen.generate({
     projectName,
     projectPath: targetDir,
-    templatePath: path.join(templatesDir, 'AGENTS.md.template')
+    templatePath: fs.existsSync(agentsMdTemplatePath) ? agentsMdTemplatePath : undefined
   });
 
   fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd);
