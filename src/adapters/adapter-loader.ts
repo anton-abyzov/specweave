@@ -97,26 +97,20 @@ export class AdapterLoader {
    * Auto-detect which tool is being used
    *
    * Detection priority (based on market share and probability):
-   * 1. Claude Code (if .claude/ exists or claude CLI found) - NATIVE, no adapter needed
+   * 1. Claude Code (DEFAULT - best experience, native support)
    * 2. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
    * 3. Gemini CLI (if gemini CLI found)
    * 4. Codex (if codex CLI found)
    * 5. Copilot (if .github/copilot/ exists)
-   * 6. Generic (fallback - always returns true)
+   * 6. Generic (only if explicitly requested via --adapter generic)
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
   async detectTool(): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
 
-    // Check for Claude first (native, no adapter)
-    if (await this.commandExists('claude') || await this.fileExists('.claude')) {
-      console.log(`✅ Detected: Claude Code (native - full automation)`);
-      return 'claude';
-    }
-
-    // Check other tools (need adapters)
-    const detectionOrder = ['cursor', 'gemini', 'codex', 'copilot', 'generic'];
+    // Check other tools first (if they have specific indicators)
+    const detectionOrder = ['cursor', 'gemini', 'codex', 'copilot'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -129,17 +123,21 @@ export class AdapterLoader {
       }
     }
 
-    // Fallback to generic (should never reach here since generic always returns true)
-    console.log('ℹ️  Using generic adapter (manual workflow)');
-    return 'generic';
+    // Default to Claude Code (best experience, native support)
+    // Users can override with --adapter flag if they want a different tool
+    console.log(`✅ Detected: claude (native - full automation)`);
+    return 'claude';
   }
 
   /**
    * Helper: Check if a command exists in PATH
+   * Cross-platform: uses 'where' on Windows, 'which' on Unix
    */
   private async commandExists(command: string): Promise<boolean> {
     try {
-      execSync(`which ${command}`, { stdio: 'ignore' });
+      const isWindows = process.platform === 'win32';
+      const checkCommand = isWindows ? 'where' : 'which';
+      execSync(`${checkCommand} ${command}`, { stdio: 'ignore' });
       return true;
     } catch (error) {
       return false;

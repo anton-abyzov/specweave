@@ -174,14 +174,32 @@ export async function initCommand(
       // DEFAULT: Native Claude Code installation (no adapter needed!)
       spinner.text = 'Installing Claude Code components...';
 
-      copyCommands('', path.join(targetDir, '.claude/commands'));
-      spinner.text = 'Slash commands installed...';
+      try {
+        copyCommands('', path.join(targetDir, '.claude/commands'));
+        spinner.text = 'Slash commands installed...';
+      } catch (error: any) {
+        spinner.fail('Failed to copy commands');
+        console.error(chalk.red(`\n❌ Commands copy failed: ${error.message}`));
+        throw error;
+      }
 
-      copyAgents('', path.join(targetDir, '.claude/agents'));
-      spinner.text = 'Agents installed...';
+      try {
+        copyAgents('', path.join(targetDir, '.claude/agents'));
+        spinner.text = 'Agents installed...';
+      } catch (error: any) {
+        spinner.fail('Failed to copy agents');
+        console.error(chalk.red(`\n❌ Agents copy failed: ${error.message}`));
+        throw error;
+      }
 
-      copySkills('', path.join(targetDir, '.claude/skills'));
-      spinner.text = 'Skills installed...';
+      try {
+        copySkills('', path.join(targetDir, '.claude/skills'));
+        spinner.text = 'Skills installed...';
+      } catch (error: any) {
+        spinner.fail('Failed to copy skills');
+        console.error(chalk.red(`\n❌ Skills copy failed: ${error.message}`));
+        throw error;
+      }
 
       console.log('\n✨ Claude Code native installation complete!');
       console.log('   ✅ Native skills, agents, hooks work out of the box');
@@ -352,6 +370,7 @@ function findPackageRoot(startDir: string): string | null {
 
   while (currentDir !== root) {
     const packageJsonPath = path.join(currentDir, 'package.json');
+
     if (fs.existsSync(packageJsonPath)) {
       try {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
@@ -363,6 +382,7 @@ function findPackageRoot(startDir: string): string | null {
         // Not a valid package.json, continue searching
       }
     }
+
     const parentDir = path.dirname(currentDir);
     if (parentDir === currentDir) break; // Reached root
     currentDir = parentDir;
@@ -438,10 +458,36 @@ function copyCommands(commandsDir: string, targetCommandsDir: string): void {
     throw new Error('Failed to locate source commands directory. This may be a Windows path resolution issue.');
   }
 
+  // Validate source directory contains files
+  const sourceFiles = fs.readdirSync(sourceDir).filter(f => f.endsWith('.md'));
+  if (sourceFiles.length === 0) {
+    console.error(chalk.red(`\n❌ Error: Source commands directory is empty`));
+    console.error(chalk.red(`   Directory: ${sourceDir}`));
+    console.error(chalk.red(`   This indicates a package installation issue.`));
+    throw new Error('Source commands directory exists but contains no .md files');
+  }
+
   try {
-    fs.copySync(sourceDir, targetCommandsDir);
+    // Ensure target directory exists
+    fs.ensureDirSync(targetCommandsDir);
+
+    // Copy all files from source to target
+    fs.copySync(sourceDir, targetCommandsDir, {
+      overwrite: true,
+      errorOnExist: false
+    });
+
+    // Validate files were copied
+    const copiedFiles = fs.readdirSync(targetCommandsDir).filter(f => f.endsWith('.md'));
+    if (copiedFiles.length === 0) {
+      throw new Error(`Copy completed but no files found in target directory: ${targetCommandsDir}`);
+    }
+
+    console.log(chalk.gray(`   ✓ Copied ${copiedFiles.length} command files`));
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying commands: ${error.message}`));
+    console.error(chalk.red(`   Source: ${sourceDir}`));
+    console.error(chalk.red(`   Target: ${targetCommandsDir}`));
     throw error;
   }
 }
@@ -462,10 +508,40 @@ function copyAgents(agentsDir: string, targetAgentsDir: string): void {
     throw new Error('Failed to locate source agents directory. This may be a Windows path resolution issue.');
   }
 
+  // Validate source directory contains subdirectories with AGENT.md files
+  const agentDirs = fs.readdirSync(sourceDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory());
+
+  if (agentDirs.length === 0) {
+    console.error(chalk.red(`\n❌ Error: Source agents directory is empty`));
+    console.error(chalk.red(`   Directory: ${sourceDir}`));
+    console.error(chalk.red(`   This indicates a package installation issue.`));
+    throw new Error('Source agents directory exists but contains no agent subdirectories');
+  }
+
   try {
-    fs.copySync(sourceDir, targetAgentsDir);
+    // Ensure target directory exists
+    fs.ensureDirSync(targetAgentsDir);
+
+    // Copy all directories from source to target
+    fs.copySync(sourceDir, targetAgentsDir, {
+      overwrite: true,
+      errorOnExist: false
+    });
+
+    // Validate subdirectories were copied
+    const copiedDirs = fs.readdirSync(targetAgentsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory());
+
+    if (copiedDirs.length === 0) {
+      throw new Error(`Copy completed but no agent directories found in target: ${targetAgentsDir}`);
+    }
+
+    console.log(chalk.gray(`   ✓ Copied ${copiedDirs.length} agent directories`));
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying agents: ${error.message}`));
+    console.error(chalk.red(`   Source: ${sourceDir}`));
+    console.error(chalk.red(`   Target: ${targetAgentsDir}`));
     throw error;
   }
 }
@@ -486,10 +562,40 @@ function copySkills(skillsDir: string, targetSkillsDir: string): void {
     throw new Error('Failed to locate source skills directory. This may be a Windows path resolution issue.');
   }
 
+  // Validate source directory contains subdirectories with SKILL.md files
+  const skillDirs = fs.readdirSync(sourceDir, { withFileTypes: true })
+    .filter(dirent => dirent.isDirectory());
+
+  if (skillDirs.length === 0) {
+    console.error(chalk.red(`\n❌ Error: Source skills directory is empty`));
+    console.error(chalk.red(`   Directory: ${sourceDir}`));
+    console.error(chalk.red(`   This indicates a package installation issue.`));
+    throw new Error('Source skills directory exists but contains no skill subdirectories');
+  }
+
   try {
-    fs.copySync(sourceDir, targetSkillsDir);
+    // Ensure target directory exists
+    fs.ensureDirSync(targetSkillsDir);
+
+    // Copy all directories from source to target
+    fs.copySync(sourceDir, targetSkillsDir, {
+      overwrite: true,
+      errorOnExist: false
+    });
+
+    // Validate subdirectories were copied
+    const copiedDirs = fs.readdirSync(targetSkillsDir, { withFileTypes: true })
+      .filter(dirent => dirent.isDirectory());
+
+    if (copiedDirs.length === 0) {
+      throw new Error(`Copy completed but no skill directories found in target: ${targetSkillsDir}`);
+    }
+
+    console.log(chalk.gray(`   ✓ Copied ${copiedDirs.length} skill directories`));
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error copying skills: ${error.message}`));
+    console.error(chalk.red(`   Source: ${sourceDir}`));
+    console.error(chalk.red(`   Target: ${targetSkillsDir}`));
     throw error;
   }
 }
