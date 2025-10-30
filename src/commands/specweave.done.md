@@ -548,36 +548,10 @@ Check progress: /list-increments
 
 ## Configuration
 
-**File**: `.specweave/config.yaml`
-
-```yaml
-increment_closure:
-  pm_validation:
-    enabled: true           # ← MUST be true
-    strict_mode: true       # Require all 3 gates to pass
-
-  gates:
-    tasks:
-      require_p1_complete: true
-      require_p2_complete: false  # P2 can be deferred
-      allow_scope_transfer: true
-
-    tests:
-      require_all_passing: true
-      min_coverage: 80           # 80% coverage required
-      allow_skipped: false
-
-    documentation:
-      require_claude_md: true
-      require_readme: true
-      require_changelog: true    # For public APIs
-      allow_inline_only: false
-
-  scope_creep:
-    detect: true
-    max_additional_tasks: 10   # Warn if >10 tasks added
-    auto_transfer: true        # Auto-transfer to next increment
-```
+All PM validation settings use sensible defaults:
+- Tasks: P1 required, P2 can be deferred
+- Tests: All tests must pass, 80% coverage required
+- Documentation: CLAUDE.md, README.md, and CHANGELOG.md must be updated
 
 ---
 
