@@ -258,6 +258,28 @@ All AI-generated files MUST go into increment folders:
 - ✅ Clear context (all files for a feature in one place)
 - ✅ No root clutter
 
+### Runtime Artifacts (NOT Source Controlled)
+
+**Logs and ephemeral files** should NEVER be committed:
+
+```
+❌ NEVER COMMIT:
+.specweave/logs/                        # Framework runtime logs
+.specweave/logs/last-hook-fire          # Hook execution timestamps
+.specweave/increments/*/logs/           # Increment execution logs
+.specweave/cache/                       # Temporary cache
+*.tmp                                   # Temporary files
+```
+
+**Why?**
+- ✅ Logs are execution artifacts, not source code
+- ✅ They change on every run (noise in git history)
+- ✅ They cause unnecessary merge conflicts
+- ✅ They bloat the repository over time
+- ✅ They're developer-specific, not shared state
+
+**Enforcement**: `.gitignore` excludes these patterns automatically.
+
 ---
 
 ## Development Workflow

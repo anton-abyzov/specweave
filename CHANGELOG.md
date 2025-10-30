@@ -30,6 +30,52 @@ Removed the `.specweave/config.yaml` file that was never actually used by the co
 
 **Philosophy**: SpecWeave follows "convention over configuration" - sensible defaults, auto-detection, and CLI flags instead of config files.
 
+**chore: exclude .specweave/logs/ from version control**
+
+Runtime logs like last-hook-fire are ephemeral execution artifacts that should not be tracked in git. This aligns with the existing pattern of ignoring increment logs and cache directories.
+
+**What Changed**:
+- Added `.specweave/logs/` to `.gitignore`
+- Removed `.specweave/logs/last-hook-fire` from git tracking
+- Documented runtime artifacts policy in CLAUDE.md
+
+**Why This Matters**:
+- Logs are execution artifacts, not source code
+- They change on every run (noise in git history)
+- They cause unnecessary merge conflicts
+- They block operations like `--teleport`
+
+---
+
+## [0.3.11] - 2025-10-30
+
+### 🐛 Bug Fixes
+
+**fix: docusaurus list rendering in quickstart guide**
+
+Fixed markdown list formatting that caused checkmark items to render on one line
+instead of separate lines in the Docusaurus quickstart guide.
+
+**What Changed**:
+- Added proper markdown list syntax (`-` prefix) to "What You Get" section
+- Now renders as proper `<ul>` with `<li>` items instead of inline text
+- Each item appears on its own line as intended
+
+**Files Updated**:
+- `.specweave/docs/public/guides/getting-started/quickstart.md`
+
+**Before** (all on one line):
+```
+✅ SpecWeave Skills ... ✅ Slash Commands ... ✅ Automation Hooks ...
+```
+
+**After** (each on separate line):
+```
+- ✅ SpecWeave Skills ...
+- ✅ Slash Commands ...
+- ✅ Automation Hooks ...
+```
+
 ---
 
 ## [0.3.10] - 2025-10-30
