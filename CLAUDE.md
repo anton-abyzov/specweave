@@ -1,7 +1,7 @@
 # SpecWeave - Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
-**Version**: 0.2.0
+**Version**: 0.3.7 (Windows fix + Competitive advantages documented)
 **Type**: Open Source NPM Package (TypeScript CLI)
 **Repository**: https://github.com/anton-abyzov/specweave
 **Website**: https://spec-weave.com
@@ -13,9 +13,10 @@ Users receive a different CLAUDE.md via the template system.
 
 ## Quick Start for Contributors
 
-**Current Work**: Increment 0002 - Core Framework Enhancements (73% complete)
+**Current Work**: Increment 0002 - Core Framework Enhancements (complete - testing phase)
 **Active Branch**: `develop` → merges to `features/001-core-feature`
-**Current Focus**: Diagram agents, command refactoring, context loading improvements
+**Latest**: v0.3.7 - Fixed Windows installation (defaults to claude instead of generic)
+**Next**: v0.4.0 - Hook debouncing, improved detection, GitHub release automation
 
 **Typical Workflow**:
 ```bash

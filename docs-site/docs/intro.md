@@ -15,8 +15,9 @@ SpecWeave is a specification-first AI development framework where specifications
 - **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
 - **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
 - **🧪 Complete Testing** - 4-level strategy covering specs to integration tests (APIs, UIs, CLIs, libraries)
-- **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude, Cursor, Copilot, Gemini, ChatGPT)
+- **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude Code by default, Cursor, Copilot, Gemini, ChatGPT)
 - **📚 Living Docs** - Specs auto-update after every operation and test—always in sync with code
+- **🚀 Intent-Based Commands** - Natural language works too! Say "create auth feature" → auto-invokes `/pi "auth"` (optional slash commands for explicit control)
 
 ## 🚀 Quickstart
 
@@ -30,14 +31,17 @@ npm install -g specweave
 
 ```bash
 mkdir my-project && cd my-project
-specweave init
+specweave init .
 ```
+
+**Note**: SpecWeave automatically detects and configures for **Claude Code** (default), providing the best experience with native skills, agents, and slash commands. For other tools (Cursor, Copilot, etc.), use `specweave init . --adapter <tool>`.
 
 This creates the `.specweave/` structure with:
 - 5-pillar documentation framework
 - Increment-based feature planning
 - Context manifests for precision loading
 - Test strategy templates
+- `.claude/` directory (Claude Code only - populated with 35+ skills, 10 agents, 14 commands)
 
 ### 3. Start Building
 

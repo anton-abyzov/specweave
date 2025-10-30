@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.2.0)
+[![Version](https://img.shields.io/badge/version-0.3.7-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.3.7)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -31,9 +31,9 @@
 - 🤖 **Autonomous & Smart** - Just works! Agents ask clarifying questions, review output, validate quality—minimal interaction required
 - ⚡ **Seamless Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
 - 🎯 **10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
-- 🔧 **Universal Support** - Works with Claude (native), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
-  - **Claude Code**: Native agents/skills pre-installed in `.claude/`
-  - **Other tools**: Accessible via universal AGENTS.md adapter
+- 🔧 **Universal Support** - Works with Claude Code (default), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
+  - **Claude Code** (default): Native agents/skills pre-installed in `.claude/` - best experience!
+  - **Other tools**: Accessible via adapters (Cursor, Copilot) or universal AGENTS.md
 - 🧪 **Complete Test Coverage** - 4-level strategy from specs to integration tests (APIs, UIs, CLIs, libraries)
 - 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
 - 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)

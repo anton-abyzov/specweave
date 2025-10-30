@@ -211,16 +211,49 @@ cp -r node_modules/specweave/src/skills/* .claude/skills/
 
 ## Proposed Solutions
 
-### Solution 1: Add `--adapter` Flag (Best for User Control) ⭐
+### ✅ IMPLEMENTED: Default to Claude (Simplest and Best) ⭐⭐⭐
 
-**Change**: Add CLI option for explicit adapter selection
+**What We Actually Did**: Changed `detectTool()` to default to `'claude'` instead of `'generic'`
 
 **Implementation**:
+```typescript
+// src/adapters/adapter-loader.ts:109-130
+async detectTool(): Promise<string> {
+  // Check for specific tools first
+  for (const adapterName of ['cursor', 'gemini', 'codex', 'copilot']) {
+    if (await adapter.detect()) {
+      return adapterName;
+    }
+  }
+
+  // Default to Claude Code (best experience)
+  return 'claude';  // ← Changed from 'generic'
+}
+```
+
+**Result**: `specweave init .` now defaults to claude on ALL platforms!
+
+**Why This is Perfect**:
+- ✅ Zero code complexity (1 line change!)
+- ✅ Zero user intervention needed
+- ✅ Works on Windows, macOS, Linux
+- ✅ No flags to remember
+- ✅ Just works out of the box
+
+**Status**: ✅ Shipped in v0.3.7
+
+---
+
+### Solution 1: Add `--adapter` Flag (User Control) ⚠️ Already Existed!
+
+**Note**: The `--adapter` flag **already existed** in the code! We didn't need to implement it.
+
+**How to Use** (if you want to override):
 ```bash
 # User explicitly chooses adapter
-specweave init . --adapter claude
-specweave init . --adapter cursor
-specweave init . --adapter generic
+specweave init . --adapter claude   # Default anyway
+specweave init . --adapter cursor   # For Cursor users
+specweave init . --adapter generic  # For ChatGPT web, etc.
 ```
 
 **Code Changes**:
