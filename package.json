@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "Replace vibe coding with spec-driven development. Smart workflow: /specweave inc auto-closes previous, /specweave build auto-resumes, /specweave progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com",
   "type": "module",
   "main": "dist/index.js",
@@ -23,6 +23,7 @@
     "generate:tests:skill": "ts-node scripts/generate-tests.ts",
     "test:all:generated": "bash scripts/run-all-tests.sh",
     "test:all": "npm test && npm run test:smoke && npm run test:integration",
+    "generate:skills-index": "ts-node src/utils/generate-skills-index.ts",
     "prepublishOnly": "npm run build",
     "install:agents": "bash bin/install-agents.sh",
     "install:skills": "bash bin/install-skills.sh",
