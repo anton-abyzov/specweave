@@ -134,13 +134,26 @@ max_context_tokens: 10000
 ❌ **No workflow automation** - Must create folders/files manually
 ❌ **No skills/agents** - Can't simulate roles like Cursor
 ❌ **No commands** - No slash commands or @ shortcuts
-❌ **No hooks** - Can't auto-update docs
+❌ **No hooks** - Can't auto-update docs (see workaround below)
 ⚠️ **Completely manual workflow** - Just better code suggestions
 
 ✅ **But still helpful for**:
 - Code completion following SpecWeave patterns
 - Suggesting file structures
 - Copilot Chat Q&A about project
+
+### Documentation Update Workaround
+
+Since GitHub Copilot doesn't have hooks, you MUST manually update documentation after every task.
+
+**See the comprehensive guide in AGENTS.md** (section: "Documentation Updates - CRITICAL FOR NON-CLAUDE TOOLS")
+
+**Quick checklist after completing any task**:
+1. Update `.specweave/increments/{id}/tasks.md` (mark tasks complete)
+2. Update `.specweave/docs/internal/architecture/` (HLD/LLD/ADRs)
+3. Update `.specweave/docs/internal/strategy/` (PRDs if requirements changed)
+4. Update `README.md` (user-facing changes)
+5. Update `CHANGELOG.md` (version history)
 
 ## When to Use This Adapter
 

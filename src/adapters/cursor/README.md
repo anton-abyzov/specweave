@@ -206,10 +206,23 @@ documentation:
 
 ❌ **No auto-activation** - Must explicitly request workflows
 ❌ **No separate context windows** - All context shared
-❌ **No hooks** - Can't auto-update docs on events
+❌ **No hooks** - Can't auto-update docs on events (see workaround below)
 ⚠️ **Manual role adoption** - Must say "act as PM"
 
 ✅ **But Composer + @ shortcuts provide great UX!**
+
+### Documentation Update Workaround
+
+Since Cursor doesn't have hooks, you MUST manually update documentation after every task.
+
+**See the comprehensive guide in AGENTS.md** (section: "Documentation Updates - CRITICAL FOR NON-CLAUDE TOOLS")
+
+**Quick checklist after completing any task**:
+1. Update `.specweave/increments/{id}/tasks.md` (mark tasks complete)
+2. Update `.specweave/docs/internal/architecture/` (HLD/LLD/ADRs)
+3. Update `.specweave/docs/internal/strategy/` (PRDs if requirements changed)
+4. Update `README.md` (user-facing changes)
+5. Update `CHANGELOG.md` (version history)
 
 ## Tips & Tricks
 

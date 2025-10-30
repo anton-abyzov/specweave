@@ -7,6 +7,135 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.8] - 2025-10-30
+
+### 🔴 CRITICAL: Documentation Update Instructions for Non-Claude Tools
+
+**Issue**: GitHub Copilot, Cursor, and other non-Claude tools don't have automatic hooks to remind agents to update documentation. This causes living docs to diverge from implementation, breaking SpecWeave's core philosophy.
+
+**Solution**: Added comprehensive documentation update instructions to AGENTS.md template that explicitly tell AI agents to manually update documentation after every task.
+
+### What Changed
+
+**Files Modified**:
+1. `src/templates/AGENTS.md.template` - Added new section "📝 Documentation Updates (CRITICAL FOR NON-CLAUDE TOOLS)"
+2. `src/adapters/copilot/README.md` - Added documentation update workaround
+3. `src/adapters/cursor/README.md` - Added documentation update workaround
+
+### New AGENTS.md Section (230+ lines)
+
+Added comprehensive guide covering:
+
+**1. Living Docs Updates** (`.specweave/docs/`):
+- Strategy docs (PRDs, user stories, requirements)
+- Architecture docs (HLD, LLD, ADRs)
+- Delivery docs (deployment guides, CI/CD)
+- Operations docs (runbooks, monitoring)
+
+**2. Increment Documentation**:
+- Update `plan.md` with implementation notes
+- Mark tasks complete in `tasks.md`
+- Create completion reports
+
+**3. Project Documentation**:
+- Update CLAUDE.md/AGENTS.md when structure changes
+- Update README.md for user-facing changes
+- Update CHANGELOG.md for version history
+
+**4. Code Documentation**:
+- Add JSDoc/TSDoc comments
+- Explain "why" not just "what"
+
+**5. When to Update Checklist**:
+- ✅ Complete a task → Update increment tasks.md
+- ✅ Implement a feature → Update living docs
+- ✅ Make architecture decision → Create/update ADR
+- ✅ Change project structure → Update AGENTS.md
+- ✅ Add user-facing feature → Update README.md
+- ✅ Fix a bug → Update CHANGELOG.md
+- ✅ Change API → Update API documentation
+- ✅ Modify deployment → Update deployment guide
+
+**6. Example Workflow**:
+```markdown
+# After completing "Implement user authentication" task:
+
+1. Update living docs:
+   - Add implementation notes to plan.md
+
+2. Update architecture:
+   - Add authentication component diagram to HLD
+
+3. Create ADR:
+   - Document JWT authentication decision
+
+4. Update README:
+   - Add authentication usage example
+
+5. Update CHANGELOG:
+   - Document new features
+
+6. Mark task complete:
+   - Update tasks.md checkboxes
+```
+
+### Important Reminders Updated
+
+Added to "Important Reminders" section:
+```
+8. 🔴 UPDATE DOCUMENTATION AFTER EVERY TASK (see "Documentation Updates" section above - CRITICAL for non-Claude tools!)
+```
+
+### Why This Matters
+
+**Without documentation updates**:
+- ❌ Specs diverge from implementation (specs become useless)
+- ❌ Team members don't know what changed
+- ❌ Future AI sessions have outdated context
+- ❌ SpecWeave's core principle (living documentation) breaks down
+
+**With documentation updates**:
+- ✅ Specs stay synchronized with code
+- ✅ Clear audit trail of changes
+- ✅ AI agents have accurate context
+- ✅ Team members stay informed
+- ✅ SpecWeave philosophy is maintained
+
+### Tools Affected
+
+**Tools that NEED these manual instructions**:
+- GitHub Copilot (all versions)
+- Cursor
+- Windsurf
+- Gemini CLI
+- Generic AI tools (ChatGPT, Claude web, etc.)
+
+**Tools that DON'T need this** (have automatic hooks):
+- Claude Code (has PostToolUse hooks that auto-remind)
+
+### User Impact
+
+**Before v0.3.8** (GitHub Copilot/Cursor users):
+```
+Agent completes task → ❌ Forgets to update docs
+Result: .specweave/docs/ stays empty or outdated
+```
+
+**After v0.3.8** (Same users):
+```
+Agent completes task → ✅ Reads AGENTS.md instructions
+                      → ✅ Updates plan.md, tasks.md, HLD, ADRs
+                      → ✅ Updates README.md, CHANGELOG.md
+Result: Living docs stay synchronized with code!
+```
+
+### Related Changes
+
+- Updated adapter READMEs to reference AGENTS.md documentation section
+- Added quick checklists to copilot/README.md and cursor/README.md
+
+---
+
 ## [0.3.7] - 2025-10-29
 
 ### 🎯 THE REAL FIX: Default to Claude Adapter

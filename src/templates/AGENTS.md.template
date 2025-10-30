@@ -276,6 +276,152 @@ npm run lint
 
 ---
 
+## 📝 Documentation Updates (CRITICAL FOR NON-CLAUDE TOOLS)
+
+**IMPORTANT**: Claude Code has automatic hooks that remind you to update documentation. **GitHub Copilot, Cursor, and other tools DO NOT have these hooks!**
+
+### You MUST Manually Update Documentation After Every Task
+
+When you complete ANY task (implementation, bug fix, refactoring), you MUST update:
+
+#### 1. Living Docs (.specweave/docs/)
+
+After implementing features, update strategic documentation:
+
+**Strategy Docs** (`.specweave/docs/internal/strategy/`):
+- Update PRDs when requirements change
+- Add new user stories if scope expanded
+- Document discovered requirements
+
+**Architecture Docs** (`.specweave/docs/internal/architecture/`):
+- Update HLD (high-level design) when architecture changes
+- Update LLD (low-level design) when components change
+- Update ADRs from "Proposed" → "Accepted" after implementation
+- Add new ADRs for significant decisions made during implementation
+
+**Delivery Docs** (`.specweave/docs/internal/delivery/`):
+- Update deployment guides after infrastructure changes
+- Update CI/CD docs after pipeline modifications
+
+**Operations Docs** (`.specweave/docs/internal/operations/`):
+- Update runbooks after operational changes
+- Update monitoring/alerting docs
+
+#### 2. Increment Documentation
+
+**Always update these files in `.specweave/increments/{increment-id}/`**:
+
+```bash
+# Update implementation status
+vim .specweave/increments/0001-feature/plan.md
+# Add: "## Implementation Notes" section with learnings
+
+# Update task checklist
+vim .specweave/increments/0001-feature/tasks.md
+# Mark completed: - [x] T001: Task description
+
+# Document completion
+vim .specweave/increments/0001-feature/reports/completion-report.md
+# Add: Summary of what was implemented, challenges, solutions
+```
+
+#### 3. Project Documentation
+
+**CLAUDE.md or AGENTS.md** (this file):
+- Update when project structure changes
+- Add new workflows or commands
+- Update "Current Work" section
+
+**README.md** (user-facing):
+- Update when features are added
+- Update installation instructions if changed
+- Update usage examples
+
+**CHANGELOG.md** (version history):
+- Add entries for all user-facing changes
+- Format: `## [version] - date` with bullet points
+
+#### 4. Code Documentation
+
+**Inline comments**:
+- Add JSDoc/TSDoc for new functions
+- Update existing comments if behavior changes
+- Explain "why" not just "what"
+
+### When to Update (Checklist)
+
+After you:
+- ✅ Complete a task → Update increment tasks.md
+- ✅ Implement a feature → Update living docs (architecture, strategy)
+- ✅ Make architecture decision → Create or update ADR
+- ✅ Change project structure → Update CLAUDE.md/AGENTS.md
+- ✅ Add user-facing feature → Update README.md
+- ✅ Fix a bug → Update CHANGELOG.md
+- ✅ Change API → Update API documentation
+- ✅ Modify deployment → Update deployment guide
+
+### Example Workflow (GitHub Copilot/Cursor Users)
+
+```markdown
+# After completing "Implement user authentication" task:
+
+1. Update living docs:
+   echo "## Implementation Notes
+   - Used JWT for stateless authentication
+   - Password hashing with bcrypt
+   - Session timeout: 24 hours
+   " >> .specweave/increments/0001-auth/plan.md
+
+2. Update architecture:
+   vim .specweave/docs/internal/architecture/hld-system.md
+   # Add authentication component diagram
+
+3. Create ADR:
+   vim .specweave/docs/internal/architecture/adr-003-jwt-authentication.md
+
+4. Update README:
+   vim README.md
+   # Add authentication usage example
+
+5. Update CHANGELOG:
+   echo "### Added
+   - User authentication with JWT
+   - Password reset flow
+   " >> CHANGELOG.md
+
+6. Mark task complete:
+   vim .specweave/increments/0001-auth/tasks.md
+   # Change [ ] to [x] for completed tasks
+```
+
+### Why This Matters
+
+**Without documentation updates**:
+- ❌ Specs diverge from implementation (specs become useless)
+- ❌ Team members don't know what changed
+- ❌ Future AI sessions have outdated context
+- ❌ SpecWeave's core principle (living documentation) breaks down
+
+**With documentation updates**:
+- ✅ Specs stay synchronized with code
+- ✅ Clear audit trail of changes
+- ✅ AI agents have accurate context
+- ✅ Team members stay informed
+- ✅ SpecWeave philosophy is maintained
+
+### Tools That Need Manual Updates
+
+These tools **DO NOT** have automatic documentation hooks:
+- GitHub Copilot (all versions)
+- Cursor
+- Windsurf
+- Gemini CLI
+- Generic AI tools (ChatGPT, Claude web, etc.)
+
+Only **Claude Code** has automatic hooks that remind you to update docs.
+
+---
+
 ## Security Considerations
 
 - Never commit secrets (use `.env` files, gitignored)
@@ -317,6 +463,7 @@ When you encounter a new task:
 5. ✅ **Technology-specific in plan.md** (HOW with details)
 6. ✅ **Use checkboxes in tasks.md** for tracking
 7. ✅ **All supporting files in increment folders** (never in root)
+8. 🔴 **UPDATE DOCUMENTATION AFTER EVERY TASK** (see "Documentation Updates" section above - CRITICAL for non-Claude tools!)
 
 ---
 
