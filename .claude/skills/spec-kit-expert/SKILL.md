@@ -435,7 +435,7 @@ Based on analysis, provide:
    - Read src/skills/ for available skills
    - Read src/agents/ for available agents
    - Review CLAUDE.md for documented features
-   - Settings auto-detected for configuration
+   - Settings auto-detected
    - Analyze .claude/hooks/ for automation
    ```
 

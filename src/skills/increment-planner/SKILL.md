@@ -426,7 +426,12 @@ created: YYYY-MM-DD
 
 ### Step 7: Generate tasks.md
 
-**Purpose**: Break down implementation into executable steps.
+**Purpose**: Break down implementation into executable steps with intelligent model selection.
+
+**CRITICAL**: Use the model detection utility to assign optimal models to tasks:
+```typescript
+import { detectModelForTask, formatModelHint } from '../utils/model-selection';
+```
 
 **Structure**:
 ```markdown
@@ -439,27 +444,28 @@ created: YYYY-MM-DD
 - `[US#]`: User story reference
 - `[ ]`: Not started
 - `[x]`: Completed
+- Model hints: ⚡ haiku (fast), 🧠 sonnet (thinking), 💎 opus (critical)
 
 ## Phase 1: Setup and Foundation
 
-- [ ] [T001] [P] Initialize project structure
-- [ ] [T002] [P] Setup testing framework
-- [ ] [T003] Install dependencies
+- [ ] [T001] [P] ⚡ haiku - Initialize project structure
+- [ ] [T002] [P] ⚡ haiku - Setup testing framework
+- [ ] [T003] ⚡ haiku - Install dependencies
 
 ## Phase 2: Core Implementation
 
 ### US1: [User Story Title] (P1)
 
-- [ ] [T004] Write test for [component]
-- [ ] [T005] Implement [component] in src/path/file.ts
-- [ ] [T006] [P] Create [another component]
-- [ ] [T007] Integrate components
-- [ ] [T008] Verify US1 acceptance criteria
+- [ ] [T004] ⚡ haiku - Write test for [component]
+- [ ] [T005] ⚡ haiku - Implement [component] in src/path/file.ts
+- [ ] [T006] [P] ⚡ haiku - Create [another component]
+- [ ] [T007] 🧠 sonnet - Integrate components (requires decision-making)
+- [ ] [T008] ⚡ haiku - Verify US1 acceptance criteria
 
 ### US2: [User Story Title] (P2)
 
-- [ ] [T009] Write test for [feature]
-- [ ] [T010] Implement [feature]
+- [ ] [T009] ⚡ haiku - Write test for [feature]
+- [ ] [T010] 🧠 sonnet - Implement [feature] (complex logic)
 ...
 
 ## Phase 3: Testing and Validation
@@ -488,6 +494,30 @@ T051 depends on T050 (integration must pass first)
 - Exact file paths specified
 - Parallelizable tasks marked `[P]`
 - Dependencies explicitly stated
+- **Model hints for cost optimization**: Each task labeled with optimal model
+  - ⚡ haiku: Clear instructions, mechanical work (3x faster, 20x cheaper)
+  - 🧠 sonnet: Complex decisions, creative problem-solving
+  - 💎 opus: Critical architecture (rare, use sparingly)
+
+**Model Selection Guidelines**:
+1. **Use Haiku (⚡) when**:
+   - Task has specific file path (e.g., `src/components/LoginForm.tsx`)
+   - Acceptance criteria are detailed (3+ specific points)
+   - Implementation approach is defined in plan.md
+   - Simple CRUD operations, configuration, setup tasks
+
+2. **Use Sonnet (🧠) when**:
+   - Task requires architecture decisions
+   - Multiple valid approaches exist
+   - Integration between components
+   - Complex business logic
+   - Error handling strategies
+
+3. **Use Opus (💎) when**:
+   - Critical system architecture
+   - Security-critical decisions
+   - Performance-critical algorithms
+   - Novel problem-solving required
 
 ### Step 8: Generate tests.md
 

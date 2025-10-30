@@ -70,6 +70,127 @@ SpecWeave uses role-based development. When working on tasks, adopt the appropri
 
 ---
 
+## 🎯 CRITICAL: Skills Are Your Expert Manuals (Read First!)
+
+**MANDATORY**: Before starting ANY implementation task, check for relevant skills.
+
+### What Are Skills?
+
+Skills are **specialized expert manuals** that contain:
+- Proven workflows for specific tasks
+- SpecWeave conventions and best practices
+- Required files to read and tools to use
+- Step-by-step instructions
+- Examples and test cases
+
+**There are 34+ skills available** organized into categories:
+- **Framework Core**: increment-planner, context-loader, context-optimizer
+- **External Integrations**: jira-sync, ado-sync, github-sync
+- **Architecture & Design**: diagrams-architect, design-system-architect
+- **Development**: frontend, nodejs-backend, python-backend, nextjs, dotnet-backend
+- **Quality & Testing**: increment-quality-judge, e2e-playwright
+- **Infrastructure**: hetzner-provisioner, cost-optimizer
+- **Documentation**: docusaurus, figma-to-code, figma-designer
+- **Orchestration**: role-orchestrator, skill-router, spec-driven-brainstorming
+
+### Progressive Disclosure Pattern (How to Use Skills)
+
+**STEP 1: Discovery (Always Start Here)**
+
+Before starting ANY task, read the skills index:
+
+```bash
+cat .claude/skills/SKILLS-INDEX.md
+```
+
+This single file contains ALL available skills with their activation keywords. **This is your first stop for every task.**
+
+**STEP 2: Matching**
+
+Look for skills whose "Activates for" keywords match your current task:
+
+| Your Task | Relevant Skill | Keywords |
+|-----------|---------------|----------|
+| "Plan a new feature for user auth" | `increment-planner` | "feature planning", "create increment" |
+| "Sync this to JIRA" | `jira-sync` | "JIRA sync", "create JIRA issue" |
+| "Create architecture diagram" | `diagrams-architect` | "architecture diagram", "C4 diagram" |
+| "Implement React component" | `frontend` | "React", "components", "UI" |
+| "Deploy to cloud" | `hetzner-provisioner` or `cost-optimizer` | "deploy", "hosting", "infrastructure" |
+| "Quality check" | `increment-quality-judge` | "validate quality", "quality check" |
+| "E2E test" | `e2e-playwright` | "E2E test", "browser automation" |
+| "Generate docs site" | `docusaurus` | "documentation site", "docs" |
+
+**STEP 3: Load Full Skill**
+
+Once you've identified 1-3 relevant skills, load their full documentation:
+
+```bash
+cat .claude/skills/{skill-name}/SKILL.md
+```
+
+**STEP 4: Execute Workflow**
+
+Follow the skill's instructions precisely:
+- Read required files listed in skill
+- Use recommended tools
+- Follow step-by-step workflow
+- Apply SpecWeave best practices
+
+### Why This Matters (Token Savings + Quality)
+
+**Scenario**: User asks to plan a new feature
+
+**Without skills** (bad):
+```
+❌ Read entire .specweave/docs/ folder (50k tokens)
+❌ Guess at SpecWeave conventions
+❌ Create inconsistent increment structure
+❌ Miss context-manifest.yaml (no token savings)
+❌ Reinvent workflow from scratch
+Result: High token cost, inconsistent output
+```
+
+**With skills** (good):
+```
+✅ Read SKILLS-INDEX.md (2k tokens)
+✅ Match "plan feature" → increment-planner skill
+✅ Load increment-planner SKILL.md (3k tokens)
+✅ Follow proven workflow with templates
+✅ Create proper context-manifest.yaml (70% token savings)
+Result: 5k tokens vs 50k = 90% savings + higher quality
+```
+
+### Skills vs Agents (What's the Difference?)
+
+**Skills = Capabilities (WHAT you can do)**
+- increment-planner: Creates feature plans
+- jira-sync: Syncs with external tools
+- diagrams-architect: Creates diagrams
+- **Use skills for workflows and procedures**
+
+**Agents = Roles (WHO you become)**
+- PM: Product manager perspective
+- Architect: Technical design perspective
+- DevOps: Infrastructure perspective
+- **Use agents when you need to adopt a specific role/perspective**
+
+### For Non-Claude Code Users
+
+**GitHub Copilot, Cursor, Windsurf, etc.:**
+
+Since these tools don't have native skill support, you MUST:
+
+1. **At session start**: Always read `SKILLS-INDEX.md` first
+2. **Before each task**: Check if relevant skills exist
+3. **During execution**: Follow skill workflows precisely
+4. **When stuck**: Re-read the relevant SKILL.md
+
+**Treat this as mandatory**, not optional. Skills are the difference between:
+- Inconsistent ad-hoc work ❌
+- Professional SpecWeave-compliant output ✅
+
+---
+
 ## Available Skills (Specialized Capabilities)
 
 SpecWeave has specialized capabilities for different tasks:
@@ -81,10 +202,14 @@ SpecWeave has specialized capabilities for different tasks:
 **In Claude Code** (automatic):
 - Skills activate based on keywords in your request
 - No manual invocation needed
+- Claude reads SKILLS-INDEX.md at startup
+- Full SKILL.md loaded when relevant
 
 **In other tools** (manual):
-- Read the skill file: `.claude/skills/{skill-name}/SKILL.md`
-- Follow the workflow described in that file
+- Read `.claude/skills/SKILLS-INDEX.md` first (mandatory)
+- Match task to activation keywords
+- Load full skill: `.claude/skills/{skill-name}/SKILL.md`
+- Follow the workflow precisely
 - Example: "Following increment-planner skill workflow..."
 
 ---

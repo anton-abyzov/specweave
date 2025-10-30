@@ -9,6 +9,7 @@ import { IAdapter } from '../../adapters/adapter-interface.js';
 import { ClaudeMdGenerator } from '../../adapters/claude-md-generator.js';
 import { AgentsMdGenerator } from '../../adapters/agents-md-generator.js';
 import { getDirname } from '../../utils/esm-helpers.js';
+import { generateSkillsIndex } from '../../utils/generate-skills-index.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -199,6 +200,23 @@ export async function initCommand(
         spinner.fail('Failed to copy skills');
         console.error(chalk.red(`\n❌ Skills copy failed: ${error.message}`));
         throw error;
+      }
+
+      try {
+        spinner.text = 'Generating skills index...';
+        // Generate skills index and copy to target
+        const sourceIndexPath = path.join(__dirname, '../../../src/skills/SKILLS-INDEX.md');
+        await generateSkillsIndex(sourceIndexPath);
+
+        // Copy index to target .claude/skills/
+        const targetIndexPath = path.join(targetDir, '.claude/skills/SKILLS-INDEX.md');
+        fs.copySync(sourceIndexPath, targetIndexPath);
+
+        spinner.text = 'Skills index generated...';
+      } catch (error: any) {
+        // Non-critical error - don't fail installation
+        console.warn(chalk.yellow(`\n⚠️  Warning: Could not generate skills index: ${error.message}`));
+        console.warn(chalk.yellow('   Skills will still work, but manual indexing may be needed.'));
       }
 
       console.log('\n✨ Claude Code native installation complete!');

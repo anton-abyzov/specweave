@@ -289,7 +289,7 @@ Based on analysis, provide:
    - Check features/ for implemented capabilities
    - Read src/skills/ for available skills
    - Review CLAUDE.md for documented features
-   - Settings auto-detected for configuration
+   - Settings auto-detected
    ```
 
 2. Compare to BMAD knowledge:

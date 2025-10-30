@@ -31,6 +31,35 @@ This is **meta-documentation** - teaching the AI how to behave!
 
 ## What This Adapter Provides
 
+### 🔍 Progressive Disclosure (NEW in v0.3.8)
+
+SpecWeave now includes **SKILLS-INDEX.md** - enabling Cursor to efficiently discover and use all 35+ skills!
+
+**How it works**:
+1. Read `.claude/skills/SKILLS-INDEX.md` (referenced in AGENTS.md)
+2. Match task to activation keywords (e.g., "feature planning" → increment-planner)
+3. Load specific SKILL.md when relevant
+4. Follow proven workflows
+
+**Benefits**:
+- ✅ **90% token savings** (5k vs 50k tokens - load only what you need)
+- ✅ **Full skill access** - All 35+ skills now efficiently accessible!
+- ✅ **Consistent output** - Follow SpecWeave best practices every time
+
+**Example**:
+```markdown
+# From AGENTS.md, Cursor learns about:
+.claude/skills/SKILLS-INDEX.md  # Single-file skill reference
+
+# When user asks: "Plan a new feature for auth"
+# 1. Read SKILLS-INDEX.md → Find "increment-planner" (matches "feature planning")
+# 2. Load .claude/skills/increment-planner/SKILL.md
+# 3. Follow the increment planning workflow
+# Result: Proper spec.md, plan.md, tasks.md creation
+```
+
+**Note**: While Claude Code activates skills automatically, Cursor simulates this by following the progressive disclosure pattern documented in AGENTS.md.
+
 ### .cursorrules (Workflow Instructions)
 - **What**: Complete workflow guide for SpecWeave
 - **How**: Teaches Cursor to act like skills/agents

@@ -36,25 +36,7 @@ description: Bi-directional synchronization between GitHub and SpecWeave. Maps G
 
 ## Configuration
 
-**.specweave/config.yaml**:
-```yaml
-sync:
-  github:
-    enabled: true
-    repo: company/repo
-    auth:
-      type: token
-      token_env: GITHUB_TOKEN
-    sync_interval: 15m
-    webhooks:
-      enabled: true
-      secret_env: GITHUB_WEBHOOK_SECRET
-    mappings:
-      milestone: release_plan
-      issue_feature: rfc  # Issues labeled "feature"
-      issue_bug: incident  # Issues labeled "bug"
-      issue_task: task     # Issues labeled "task"
-```
+GitHub sync uses auto-detection - no configuration file needed. Repository and credentials are detected from environment variables or prompted when needed.
 
 ---
 

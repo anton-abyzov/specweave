@@ -18,8 +18,35 @@ Unlike Claude Code (native skills/agents/commands) and Cursor (simulated via .cu
 - Workspace instructions (.github/copilot/instructions.md)
 - Better code suggestions based on project context
 - Copilot Chat for Q&A
+- **Progressive disclosure via SKILLS-INDEX.md** (NEW in v0.3.8) - Access all 35+ skills!
 
 ## What This Adapter Provides
+
+### 🔍 Progressive Disclosure (NEW)
+
+SpecWeave now includes **SKILLS-INDEX.md** - enabling GitHub Copilot to discover and use all 35+ skills!
+
+**How it works**:
+1. Read `.claude/skills/SKILLS-INDEX.md` (referenced in AGENTS.md)
+2. Match task to activation keywords
+3. Load specific SKILL.md when relevant
+4. Follow proven workflows
+
+**Benefits**:
+- ✅ **90% token savings** (5k vs 50k tokens)
+- ✅ **Full skill access** - All 35+ skills now available to Copilot!
+- ✅ **Consistent output** - Follow SpecWeave best practices
+
+**Example**:
+```markdown
+# From AGENTS.md, you learn about:
+.claude/skills/SKILLS-INDEX.md  # Single-file skill reference
+
+# When user asks: "Plan a new feature"
+# 1. Read SKILLS-INDEX.md → Find "increment-planner" skill
+# 2. Load .claude/skills/increment-planner/SKILL.md
+# 3. Follow the increment planning workflow
+```
 
 ### .github/copilot/instructions.md
 - **What**: Workspace guidance that Copilot reads automatically

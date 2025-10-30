@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.3.7-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.3.7)
+[![Version](https://img.shields.io/badge/version-0.3.8-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.3.8)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -31,9 +31,10 @@
 - 🤖 **Autonomous & Smart** - Just works! Agents ask clarifying questions, review output, validate quality—minimal interaction required
 - ⚡ **Seamless Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
 - 🎯 **10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
+- 🔍 **Progressive Disclosure** (NEW) - Skills indexed for 90% token savings. SKILLS-INDEX.md provides single-file discovery across ALL AI tools!
 - 🔧 **Universal Support** - Works with Claude Code (default), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
   - **Claude Code** (default): Native agents/skills pre-installed in `.claude/` - best experience!
-  - **Other tools**: Accessible via adapters (Cursor, Copilot) or universal AGENTS.md
+  - **Other tools**: Progressive disclosure via SKILLS-INDEX.md and AGENTS.md - full skill access!
 - 🧪 **Complete Test Coverage** - 4-level strategy from specs to integration tests (APIs, UIs, CLIs, libraries)
 - 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
 - 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)
@@ -243,9 +244,24 @@ SpecWeave includes **35+ AI skills** that work with slash commands:
 
 **And many more!**
 
+### 🔍 Progressive Disclosure (NEW in v0.3.8)
+
+SpecWeave now includes **SKILLS-INDEX.md** - a single-file reference for all 35+ skills with activation keywords and usage examples.
+
+**How it works**:
+1. **Discovery**: Read `.claude/skills/SKILLS-INDEX.md` (1 file vs 35 files = 97% faster)
+2. **Matching**: Find skills by activation keywords (e.g., "feature planning" → increment-planner)
+3. **Loading**: Load full SKILL.md only when relevant
+4. **Execution**: Follow proven workflows
+
+**Benefits**:
+- ✅ **90% token savings** - Load only what you need (5k vs 50k tokens)
+- ✅ **Universal compatibility** - Works with ALL AI tools (Copilot, Cursor, etc.)
+- ✅ **Consistent output** - Follow SpecWeave best practices every time
+
 **Skill Access**:
-- **Claude Code**: All skills pre-installed natively in `.claude/skills/` - ready to use immediately!
-- **Other tools**: Skills documented in universal AGENTS.md - reference capabilities manually
+- **Claude Code**: All skills pre-installed natively in `.claude/skills/` + SKILLS-INDEX.md - ready to use immediately!
+- **Other tools**: Progressive disclosure via SKILLS-INDEX.md in AGENTS.md - universal compatibility!
 
 **See**: [Complete skill list](https://spec-weave.com/docs/skills) on spec-weave.com
 

@@ -13,6 +13,7 @@ SpecWeave is a specification-first AI development framework where specifications
 - **🤖 Just Works** - Autonomous agents ask clarifying questions, review output, validate quality—minimal interaction required
 - **⚡ Smart Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
 - **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
+- **🔍 Progressive Disclosure** (NEW) - Skills indexed for 90% token savings via SKILLS-INDEX.md. Works with ALL AI tools!
 - **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
 - **🧪 Complete Testing** - 4-level strategy covering specs to integration tests (APIs, UIs, CLIs, libraries)
 - **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude Code by default, Cursor, Copilot, Gemini, ChatGPT)
@@ -41,7 +42,7 @@ This creates the `.specweave/` structure with:
 - Increment-based feature planning
 - Context manifests for precision loading
 - Test strategy templates
-- `.claude/` directory (Claude Code only - populated with 35+ skills, 10 agents, 14 commands)
+- `.claude/` directory (Claude Code only - populated with 35+ skills, SKILLS-INDEX.md, 10 agents, 14 commands)
 
 ### 3. Start Building
 

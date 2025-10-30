@@ -17,6 +17,11 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 # Or let it find active increment automatically
 /do
+
+# Override model selection for all tasks (advanced)
+/do <increment-id> --model haiku
+/do <increment-id> --model sonnet
+/do <increment-id> --model opus
 ```
 
 ## Arguments
@@ -24,6 +29,12 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 - `<increment-id>`: Optional. Increment ID (e.g., "001", "0001", "1", "0042")
   - If omitted, finds the active in-progress increment automatically
   - **Smart resume**: Automatically starts from next incomplete task
+
+- `--model <tier>`: Optional. Override model selection for all tasks
+  - `haiku`: Fast, cheap execution (3x faster, 20x cheaper than Sonnet)
+  - `sonnet`: Balanced quality and speed (default for complex tasks)
+  - `opus`: Maximum quality (rare, use only for critical decisions)
+  - If omitted, uses model hints from tasks.md (recommended)
 
 ---
 
@@ -67,6 +78,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 1. **Parse tasks.md**:
    - Scan all tasks in order
    - Check completion status (`[x]` = complete, `[ ]` = incomplete)
+   - **Extract model hints** (⚡ haiku, 🧠 sonnet, 💎 opus)
    - Find first incomplete task
 
 2. **Determine starting point**:
@@ -74,17 +86,18 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    - If tasks incomplete → Resume from first incomplete task
    - If no tasks started → Start from T001
 
-3. **Show resume context**:
+3. **Show resume context with model optimization**:
    ```
    📊 Resume Context:
 
    Completed: 3/12 tasks (25%)
-   ├─ [✅] T001: Setup auth module (P1)
-   ├─ [✅] T002: Create user model (P1)
-   ├─ [✅] T003: Implement JWT tokens (P1)
-   └─ [⏳] T004: Add password hashing (P1) ← RESUMING HERE
+   ├─ [✅] T001: ⚡ haiku - Setup auth module (P1) [saved $0.04]
+   ├─ [✅] T002: ⚡ haiku - Create user model (P1) [saved $0.04]
+   ├─ [✅] T003: 🧠 sonnet - Implement JWT tokens (P1)
+   └─ [⏳] T004: ⚡ haiku - Add password hashing (P1) ← RESUMING HERE
 
    Remaining: 9 tasks (estimated 2 weeks)
+   Cost savings so far: $0.08 (67% cheaper than all-Sonnet)
    ```
 
 **Why smart resume?**
@@ -92,6 +105,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 - ✅ Seamlessly continue after breaks
 - ✅ Prevents duplicate work
 - ✅ Shows progress at a glance
+- ✅ **Cost optimization through smart model selection**
 
 ### Step 3: Update Status to In-Progress (if needed)
 
@@ -113,16 +127,23 @@ If already "in-progress", keep existing metadata.
 
 1. **Read task details**:
    - Task ID (T001, T002, etc.)
+   - **Model hint** (⚡ haiku, 🧠 sonnet, 💎 opus)
    - Description
    - Acceptance criteria
    - File paths affected
    - Implementation notes
 
-2. **Execute task**:
+2. **Select execution model**:
+   - **Use model from task hint** (recommended, optimizes cost/speed)
+   - OR use `--model` override if specified by user
+   - Show selected model and reasoning
+
+3. **Execute task**:
    - Follow plan.md architecture
    - Implement using detected tech stack
    - Write clean, maintainable code
    - Add inline documentation
+   - **Track cost savings** when using Haiku
 
 3. **Mark task complete** in tasks.md:
    - Change `[ ]` → `[x]`
@@ -164,16 +185,18 @@ TASK T001: Create User model (PostgreSQL)
 
 📋 Task details:
    • File: src/models/User.ts
+   • Model: ⚡ haiku (clear instructions, specific file path)
    • Description: Create User model with Prisma
    • Acceptance: Model has id, email, passwordHash, createdAt fields
 
-🔨 Executing...
+⚡ Executing with Haiku (3x faster, ~$0.0025 vs $0.05 Sonnet)...
    ✓ Created src/models/User.ts
    ✓ Added Prisma schema definition
    ✓ Generated migration file
    ✓ Added inline documentation
 
 ✅ Task T001 completed
+💰 Cost savings: $0.0475 (95% cheaper than Sonnet)
 
 🔊 [Glass.aiff plays automatically via hook]
 🔔 Task completed! Remember to update documentation...
@@ -185,7 +208,7 @@ TASK T001: Create User model (PostgreSQL)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Progress: 1/42 tasks (2%) | Estimated remaining: 3.9 weeks
+Progress: 1/42 tasks (2%) | Cost savings so far: $0.05 | Estimated remaining: 3.9 weeks
 
 Moving to next task...
 ```
