@@ -92,15 +92,18 @@ When installing SpecWeave into an existing project:
 ```
 Project-specific content → SpecWeave folders:
 
-Domain knowledge        → specifications/modules/{domain}/
-Project conventions     → .specweave/docs/guides/project-conventions.md
-Team workflows          → .specweave/docs/guides/team-workflows.md
-Architecture details    → .specweave/docs/architecture/existing-system.md
-Business rules          → specifications/modules/business-rules/
-Technology stack        → .specweave/docs/architecture/tech-stack.md
-Deployment process      → .specweave/docs/guides/deployment.md
-API conventions         → .specweave/docs/guides/api-conventions.md
-Code style              → .specweave/docs/guides/code-style.md
+# Internal Documentation (strategic, team-only)
+Architecture details    → .specweave/docs/internal/architecture/existing-system.md
+Technology stack        → .specweave/docs/internal/architecture/tech-stack.md
+Business rules          → .specweave/docs/internal/strategy/business-rules.md
+Team workflows          → .specweave/docs/internal/processes/team-workflows.md
+Deployment process      → .specweave/docs/internal/processes/deployment.md
+Domain knowledge        → .specweave/increments/{####-name}/domain/{domain}.md
+
+# Public Documentation (user-facing, can be published)
+Project conventions     → .specweave/docs/public/guides/project-conventions.md
+API conventions         → .specweave/docs/public/guides/api-conventions.md
+Code style              → .specweave/docs/public/guides/code-style.md
 ```
 
 **Only add to CLAUDE.md**: High-level project summary (1-2 paragraphs max)
@@ -252,13 +255,13 @@ We use a microservices architecture:
 - Database (PostgreSQL) - shared across services
 ```
 
-**Destination**: `..specweave/docs/architecture/existing-system.md`
+**Destination**: `.specweave/docs/internal/architecture/existing-system.md`
 
 **CLAUDE.md addition**:
 ```markdown
 ## Project-Specific Architecture
 
-See [Existing System Architecture](.specweave/docs/architecture/existing-system.md) for complete microservices architecture.
+See [Existing System Architecture](.specweave/docs/internal/architecture/existing-system.md) for complete microservices architecture.
 ```
 
 ---
@@ -278,7 +281,7 @@ See [Existing System Architecture](.specweave/docs/architecture/existing-system.
 - React components: `{Name}Component.tsx` suffix
 ```
 
-**Destination**: `.specweave/docs/guides/project-conventions.md`
+**Destination**: `.specweave/docs/public/guides/project-conventions.md`
 
 **CLAUDE.md addition**: None (standard conventions, no need to clutter CLAUDE.md)
 
@@ -301,13 +304,13 @@ See [Existing System Architecture](.specweave/docs/architecture/existing-system.
 6. Rollback via GitHub Actions if needed
 ```
 
-**Destination**: `.specweave/docs/guides/deployment.md`
+**Destination**: `.specweave/docs/internal/processes/deployment.md`
 
 **CLAUDE.md addition**:
 ```markdown
 ## Deployment
 
-See [Deployment Guide](.specweave/docs/guides/deployment.md).
+See [Deployment Guide](.specweave/docs/internal/processes/deployment.md).
 ```
 
 ---
@@ -328,7 +331,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 - Insurance verification required before booking
 ```
 
-**Destination**: `specifications/modules/appointments/business-rules.md`
+**Destination**: `.specweave/docs/internal/strategy/appointments/business-rules.md`
 
 **CLAUDE.md addition**: None (specifications are source of truth)
 
@@ -352,7 +355,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 - Monitoring: Grafana, Prometheus
 ```
 
-**Destination**: `.specweave/docs/architecture/tech-stack.md`
+**Destination**: `.specweave/docs/internal/architecture/tech-stack.md`
 
 **CLAUDE.md addition**:
 ```markdown
@@ -360,7 +363,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 
 Next.js 14 + Node.js 20 + PostgreSQL 16 + Hetzner Cloud
 
-See [Tech Stack Details](.specweave/docs/architecture/tech-stack.md).
+See [Tech Stack Details](.specweave/docs/internal/architecture/tech-stack.md).
 ```
 
 ---
@@ -382,7 +385,7 @@ All APIs follow REST conventions:
 - Versioning: /api/v1, /api/v2
 ```
 
-**Destination**: `.specweave/docs/guides/api-conventions.md`
+**Destination**: `.specweave/docs/public/guides/api-conventions.md`
 
 **CLAUDE.md addition**: None (guide covers it)
 
@@ -418,7 +421,7 @@ function useCustomAuth() {
 }
 ```
 
-**Action**: Extract to `.specweave/docs/guides/authentication.md` (project-specific pattern)
+**Action**: Extract to `.specweave/docs/public/guides/authentication.md` (project-specific pattern)
 
 ---
 
@@ -435,12 +438,12 @@ function useCustomAuth() {
 **Domain**: Healthcare, Patient Management, Provider Scheduling
 
 ### Quick Links
-- [Domain Model](specifications/modules/appointments/domain-model.md)
-- [Existing System Architecture](.specweave/docs/architecture/existing-system.md)
-- [Tech Stack](.specweave/docs/architecture/tech-stack.md)
-- [Business Rules](specifications/modules/appointments/business-rules.md)
-- [Deployment Guide](.specweave/docs/guides/deployment.md)
-- [Project Conventions](.specweave/docs/guides/project-conventions.md)
+- [Domain Model](.specweave/increments/####-name/domain/appointments/domain-model.md)
+- [Existing System Architecture](.specweave/docs/internal/architecture/existing-system.md)
+- [Tech Stack](.specweave/docs/internal/architecture/tech-stack.md)
+- [Business Rules](.specweave/docs/internal/strategy/appointments/business-rules.md)
+- [Deployment Guide](.specweave/docs/internal/processes/deployment.md)
+- [Project Conventions](.specweave/docs/public/guides/project-conventions.md)
 
 **Note**: All project-specific details are in linked documents. This keeps CLAUDE.md concise.
 
@@ -505,22 +508,22 @@ if (exists("specifications/modules/appointments/domain-model.md")) {
 I found the following project-specific content in your backup CLAUDE.md:
 
 📦 Domain Model (Healthcare Appointments)
-   → specifications/modules/appointments/domain-model.md
+   → .specweave/increments/####-name/domain/appointments/domain-model.md
 
 🏗️ Microservices Architecture
-   → .specweave/docs/architecture/existing-system.md
+   → .specweave/docs/internal/architecture/existing-system.md
 
 🛠️ Tech Stack (Next.js + Node.js + PostgreSQL)
-   → .specweave/docs/architecture/tech-stack.md
+   → .specweave/docs/internal/architecture/tech-stack.md
 
 📋 Business Rules (Booking policies)
-   → specifications/modules/appointments/business-rules.md
+   → .specweave/docs/internal/strategy/appointments/business-rules.md
 
 🔧 Project Conventions (Naming, code style)
-   → .specweave/docs/guides/project-conventions.md
+   → .specweave/docs/public/guides/project-conventions.md
 
 🚀 Deployment Process (CI/CD workflow)
-   → .specweave/docs/guides/deployment.md
+   → .specweave/docs/internal/processes/deployment.md
 
 📝 CLAUDE.md Update
    → Add 12-line project summary with links
@@ -551,11 +554,11 @@ Proceed with merge? (y/n)
 
 ## Files Created (Essential Only)
 
-1. ✅ `.specweave/docs/architecture/core-architecture.md` (120 lines)
-2. ✅ `.specweave/docs/architecture/tech-stack.md` (80 lines)
-3. ✅ `.specweave/docs/architecture/critical-patterns.md` (100 lines)
-4. ✅ `.specweave/docs/guides/project-conventions.md` (90 lines)
-5. ✅ `.specweave/docs/guides/deployment.md` (70 lines)
+1. ✅ `.specweave/docs/internal/architecture/core-architecture.md` (120 lines)
+2. ✅ `.specweave/docs/internal/architecture/tech-stack.md` (80 lines)
+3. ✅ `.specweave/docs/internal/architecture/critical-patterns.md` (100 lines)
+4. ✅ `.specweave/docs/public/guides/project-conventions.md` (90 lines)
+5. ✅ `.specweave/docs/internal/processes/deployment.md` (70 lines)
 
 **Total**: 5 files, 460 lines (essential content)
 
@@ -573,11 +576,11 @@ Proceed with merge? (y/n)
 
 | Content Type | Lines | Status | Destination |
 |--------------|-------|--------|-------------|
-| Core Architecture | 120 | ✅ Merged | .specweave/docs/architecture/ |
-| Tech Stack | 80 | ✅ Merged | .specweave/docs/architecture/ |
-| Critical Patterns | 100 | ✅ Merged | .specweave/docs/architecture/ |
-| Conventions | 90 | ✅ Merged | .specweave/docs/guides/ |
-| Deployment | 70 | ✅ Merged | .specweave/docs/guides/ |
+| Core Architecture | 120 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Tech Stack | 80 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Critical Patterns | 100 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Conventions | 90 | ✅ Merged | .specweave/docs/public/guides/ |
+| Deployment | 70 | ✅ Merged | .specweave/docs/internal/processes/ |
 | **CLAUDE.md** | **10** | ✅ **Updated** | **Root** |
 | **Subtotal Merged** | **470** | | |
 | | | | |
@@ -662,12 +665,12 @@ The following content remains in the backup and will be extracted when you work 
 
 ## Files Created
 
-1. ✅ `specifications/modules/appointments/domain-model.md` (450 lines)
-2. ✅ `.specweave/docs/architecture/existing-system.md` (320 lines)
-3. ✅ `.specweave/docs/architecture/tech-stack.md` (180 lines)
-4. ✅ `specifications/modules/appointments/business-rules.md` (280 lines)
-5. ✅ `.specweave/docs/guides/project-conventions.md` (200 lines)
-6. ✅ `.specweave/docs/guides/deployment.md` (150 lines)
+1. ✅ `.specweave/increments/####-name/domain/appointments/domain-model.md` (450 lines)
+2. ✅ `.specweave/docs/internal/architecture/existing-system.md` (320 lines)
+3. ✅ `.specweave/docs/internal/architecture/tech-stack.md` (180 lines)
+4. ✅ `.specweave/docs/internal/strategy/appointments/business-rules.md` (280 lines)
+5. ✅ `.specweave/docs/public/guides/project-conventions.md` (200 lines)
+6. ✅ `.specweave/docs/internal/processes/deployment.md` (150 lines)
 
 **Total**: 6 files, 1,580 lines
 
@@ -685,12 +688,12 @@ The following content remains in the backup and will be extracted when you work 
 
 | Content Type | Lines | Destination |
 |--------------|-------|-------------|
-| Domain Model | 450 | specifications/ |
-| Architecture | 320 | .specweave/docs/architecture/ |
-| Tech Stack | 180 | .specweave/docs/architecture/ |
-| Business Rules | 280 | specifications/ |
-| Conventions | 200 | .specweave/docs/guides/ |
-| Deployment | 150 | .specweave/docs/guides/ |
+| Domain Model | 450 | .specweave/increments/####-name/domain/ |
+| Architecture | 320 | .specweave/docs/internal/architecture/ |
+| Tech Stack | 180 | .specweave/docs/internal/architecture/ |
+| Business Rules | 280 | .specweave/docs/internal/strategy/ |
+| Conventions | 200 | .specweave/docs/public/guides/ |
+| Deployment | 150 | .specweave/docs/internal/processes/ |
 | **CLAUDE.md** | **12** | **Root** |
 
 **Result**: 99.2% of content distributed to appropriate folders, not bloating CLAUDE.md
@@ -709,7 +712,7 @@ The following content remains in the backup and will be extracted when you work 
 
 ## Next Steps
 
-1. ✅ Review generated files in `.specweave/docs/` and `specifications/`
+1. ✅ Review generated files in `.specweave/docs/internal/` and `.specweave/docs/public/`
 2. ✅ SpecWeave uses auto-detection
 3. ✅ Run `npm run docs:dev` to preview documentation
 4. ✅ Create features from specifications: `specweave plan-feature {name}`
@@ -779,12 +782,12 @@ Proceed with merge? (y/n)
 ✅ Merge complete!
 
 Created:
-1. specifications/modules/appointments/domain-model.md
-2. .specweave/docs/architecture/existing-system.md
-3. .specweave/docs/architecture/tech-stack.md
-4. specifications/modules/appointments/business-rules.md
-5. .specweave/docs/guides/project-conventions.md
-6. .specweave/docs/guides/deployment.md
+1. .specweave/increments/####-name/domain/appointments/domain-model.md
+2. .specweave/docs/internal/architecture/existing-system.md
+3. .specweave/docs/internal/architecture/tech-stack.md
+4. .specweave/docs/internal/strategy/appointments/business-rules.md
+5. .specweave/docs/public/guides/project-conventions.md
+6. .specweave/docs/internal/processes/deployment.md
 
 Updated:
 - CLAUDE.md (added 12-line project summary)

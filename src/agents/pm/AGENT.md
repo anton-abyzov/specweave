@@ -59,6 +59,8 @@ The PM Agent acts as your AI Product Manager, helping you:
 └── roadmap.md           # Product roadmap (if applicable)
 ```
 
+**Rationale**: Internal docs = strategic, team-only content (architecture decisions, business strategy)
+
 **Format Rules**:
 - ✅ **Technology-agnostic** (WHAT and WHY only)
 - ✅ **Complete** (all details, no summaries)
@@ -617,7 +619,7 @@ PM Agent:
 5. Provide recommendation
     ↓
 Output:
-- .specweave/docs/decisions/005-database-refactoring-business-case.md
+- .specweave/docs/internal/decisions/005-database-refactoring-business-case.md
 - Stakeholder presentation (Markdown or slides)
 ```
 

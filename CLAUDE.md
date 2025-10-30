@@ -13,10 +13,10 @@ Users receive a different CLAUDE.md via the template system.
 
 ## Quick Start for Contributors
 
-**Current Work**: Increment 0002 - Core Framework Enhancements (complete - testing phase)
+**Current Work**: Increment 0003 - Intelligent Model Selection (just created - ready to implement)
 **Active Branch**: `develop` → merges to `features/001-core-feature`
 **Latest**: v0.3.7 - Fixed Windows installation (defaults to claude instead of generic)
-**Next**: v0.4.0 - Hook debouncing, improved detection, GitHub release automation
+**Next**: v0.4.0 - Intelligent cost optimization with Haiku 4.5 + Sonnet 4.5
 
 **Typical Workflow**:
 ```bash
@@ -31,6 +31,49 @@ npm run build && npm test
 # 4. Commit with hooks (auto-validates)
 git add . && git commit -m "feat: description"
 ```
+
+---
+
+## Increment Naming Convention
+
+**CRITICAL**: All increments MUST use descriptive names, not just numbers.
+
+**Format**: `####-descriptive-kebab-case-name`
+
+**Examples**:
+- ✅ `0001-core-framework`
+- ✅ `0002-core-enhancements`
+- ✅ `0003-intelligent-model-selection`
+- ❌ `0003` (too generic, rejected)
+- ❌ `0004` (no description, rejected)
+
+**Rationale**:
+- **Clear intent at a glance** - "0003-intelligent-model-selection" tells you exactly what it does
+- **Easy to reference** - "the model selection increment" vs "increment 3"
+- **Better git history** - Commit messages naturally include feature name
+- **Searchable by feature** - `git log --grep="model-selection"` works
+- **Self-documenting** - Increment folders are readable without opening files
+
+**When Creating Increments**:
+```bash
+# ❌ Wrong
+/specweave.inc "0004"
+
+# ✅ Correct
+/specweave.inc "0004-cost-optimization"
+/specweave.inc "0005-github-sync-enhancements"
+```
+
+**Enforcement**:
+- `/specweave.inc` command validates naming (rejects bare numbers)
+- Code review requirement (descriptive names mandatory)
+- This document serves as the source of truth
+
+**Quick Reference**:
+- `####` = Zero-padded 4-digit number (0001, 0002, 0003, ...)
+- `-descriptive-name` = Kebab-case description (lowercase, hyphens)
+- Max 50 chars total (for readability)
+- No special characters except hyphens
 
 ---
 
@@ -321,37 +364,54 @@ npm test
 
 ---
 
-## Current Work (Increment 0002)
+## Current Work (Increment 0003)
+
+**Increment**: 0003-intelligent-model-selection
+**Title**: Intelligent Model Selection - Automatic Cost Optimization
+**Status**: Planned (just created, ready to implement)
+**Priority**: P1
+**Started**: 2025-10-30
+
+**Summary**:
+Implement automatic cost optimization by intelligently routing work to Sonnet 4.5 (planning/analysis) vs Haiku 4.5 (execution), following Anthropic's official guidance. Expected 60-70% cost savings.
+
+**Key Features**:
+- ✅ Spec.md created (8 user stories, complete product requirements)
+- ✅ Plan.md created (comprehensive technical architecture)
+- ✅ Tasks.md created (22 implementation tasks)
+- ✅ Tests.md created (100+ test cases, quality validation)
+
+**Three-Layer System**:
+1. **Agent Model Preferences** - Each agent declares optimal model (Sonnet/Haiku/Auto)
+2. **Phase Detection** - Analyze user intent to detect planning vs execution
+3. **Cost Tracking** - Real-time cost visibility with savings calculations
+
+**Files to Focus On**:
+- `.specweave/increments/0003-intelligent-model-selection/spec.md`
+- `.specweave/increments/0003-intelligent-model-selection/plan.md`
+- `.specweave/increments/0003-intelligent-model-selection/tasks.md`
+- `.specweave/increments/0003-intelligent-model-selection/tests.md`
+
+**Next Steps**:
+1. Execute Task T-001: Create type definitions
+2. Execute Task T-002: Create pricing constants
+3. Execute Task T-003: Implement AgentModelManager
+4. Continue through all 22 tasks
+
+---
+
+## Previous Work (Increment 0002)
 
 **Increment**: 0002-core-enhancements
 **Title**: Core Framework Enhancements - Multi-Tool Support & Diagram Agents
-**Status**: In Progress (73% complete, 11/15 tasks done)
+**Status**: Completed (testing phase)
 **Priority**: P1
 **Started**: 2025-10-27
 
-**Two Parts**:
-
-### Part A: Multi-Tool Compatibility (Deferred)
-- Make SpecWeave work with Cursor, Copilot, Windsurf, etc.
-- Adapter pattern implementation
-- Inspired by spec-kit and BMAD-METHOD
-
-### Part B: Diagram Generation Agents (73% Complete)
-- ✅ Context C4 diagrams
-- ✅ Container C4 diagrams
-- ✅ Component C4 diagrams
-- ✅ Sequence diagrams
-- ✅ ER diagrams
-- ⏳ Deployment diagrams (in progress)
-
-**Files to Focus On**:
-- `.specweave/increments/0002-core-enhancements/spec.md`
-- `.specweave/increments/0002-core-enhancements/plan.md`
-- `.specweave/increments/0002-core-enhancements/tasks.md`
-
-**Recent Changes**:
-- ✅ Migrated commands from `specweave-xxx` to `specweave.xxx` (dot notation)
-- ✅ Fixed context documentation (removed non-existent features)
+**Key Achievements**:
+- ✅ Migrated commands to dot notation (`specweave.xxx`)
+- ✅ Diagram generation agents (C4, Sequence, ER)
+- ✅ Fixed context documentation
 - ✅ Corrected ADR-0002 (context loading architecture)
 
 ---
@@ -510,7 +570,8 @@ npm run install:all
 # Internal docs (architecture, ADRs, RFCs)
 vim .specweave/docs/internal/architecture/hld-system.md
 
-# Public docs (user guides)
+# Public docs (user-facing guides, can be published)
+vim .specweave/docs/public/guides/user-guide.md
 vim docs-site/docs/guides/getting-started.md
 
 # Build docs site
@@ -585,7 +646,8 @@ cd docs-site && npm run build
 - Source of truth: `src/`
 - Installed: `.claude/`
 - Increments: `.specweave/increments/`
-- Docs: `.specweave/docs/` and `docs-site/`
+- Internal Docs (strategy, architecture): `.specweave/docs/internal/`
+- Public Docs (user guides): `.specweave/docs/public/` and `docs-site/`
 - Tests: `tests/`
 
 ---

@@ -11,6 +11,68 @@ description: Intelligently onboards brownfield projects by merging existing CLAU
 
 **Philosophy**: Keep CLAUDE.md as a concise guide, distribute detailed content to appropriate SpecWeave folders.
 
+**Modes**: Supports both Quick Start (incremental) and Comprehensive (upfront) approaches 🆕
+
+---
+
+## Two-Mode Support 🆕
+
+The brownfield-onboarder works differently based on the chosen documentation path:
+
+### Quick Start Mode (Incremental)
+**Philosophy**: Merge only essential context, defer detailed docs to per-increment
+
+**What to merge immediately**:
+- ✅ Core architecture overview (high-level)
+- ✅ Tech stack and infrastructure
+- ✅ Critical patterns (auth, payment, security)
+- ✅ Team conventions and workflows
+- ✅ Project summary and domain context
+
+**What to defer** (document per increment):
+- ⏸️ Detailed business rules (extract when modifying that code)
+- ⏸️ Module-specific documentation (extract when working on that module)
+- ⏸️ API-level documentation (extract when touching those APIs)
+- ⏸️ Code examples (extract as needed)
+
+**Result**: Minimal upfront merge (30-60 minutes), detailed docs grow incrementally
+
+### Comprehensive Mode (Upfront)
+**Philosophy**: Merge everything upfront for complete context
+
+**What to merge**:
+- ✅ All architecture documentation
+- ✅ All business rules
+- ✅ All module-specific docs
+- ✅ All API documentation
+- ✅ All conventions and patterns
+- ✅ All code examples
+
+**Result**: Complete merge (1-3 hours), full context available immediately
+
+### Mode Selection
+
+**Auto-detection**:
+```typescript
+// Settings auto-detected
+const mode = config.brownfield?.mode || 'auto';
+
+if (mode === 'auto') {
+  // Use complexity from brownfield-analyzer
+  const complexity = await readComplexityAssessment();
+  mode = complexity.recommendedPath === 'Quick Start' ? 'incremental' : 'comprehensive';
+}
+```
+
+**User can override**:
+```bash
+# Force Quick Start mode
+brownfield-onboarder --mode quick-start
+
+# Force Comprehensive mode
+brownfield-onboarder --mode comprehensive
+```
+
 ---
 
 ## The Problem
@@ -30,15 +92,18 @@ When installing SpecWeave into an existing project:
 ```
 Project-specific content → SpecWeave folders:
 
-Domain knowledge        → specifications/modules/{domain}/
-Project conventions     → .specweave/docs/guides/project-conventions.md
-Team workflows          → .specweave/docs/guides/team-workflows.md
-Architecture details    → .specweave/docs/architecture/existing-system.md
-Business rules          → specifications/modules/business-rules/
-Technology stack        → .specweave/docs/architecture/tech-stack.md
-Deployment process      → .specweave/docs/guides/deployment.md
-API conventions         → .specweave/docs/guides/api-conventions.md
-Code style              → .specweave/docs/guides/code-style.md
+# Internal Documentation (strategic, team-only)
+Architecture details    → .specweave/docs/internal/architecture/existing-system.md
+Technology stack        → .specweave/docs/internal/architecture/tech-stack.md
+Business rules          → .specweave/docs/internal/strategy/business-rules.md
+Team workflows          → .specweave/docs/internal/processes/team-workflows.md
+Deployment process      → .specweave/docs/internal/processes/deployment.md
+Domain knowledge        → .specweave/increments/{####-name}/domain/{domain}.md
+
+# Public Documentation (user-facing, can be published)
+Project conventions     → .specweave/docs/public/guides/project-conventions.md
+API conventions         → .specweave/docs/public/guides/api-conventions.md
+Code style              → .specweave/docs/public/guides/code-style.md
 ```
 
 **Only add to CLAUDE.md**: High-level project summary (1-2 paragraphs max)
@@ -89,7 +154,7 @@ interface ParsedCLAUDEmd {
 - **API Design**: "API", "endpoint", "REST", "GraphQL", "authentication", "authorization"
 - **Deployment**: "deploy", "CI/CD", "environment", "production", "staging"
 
-### Step 2: Classify Content
+### Step 2: Classify Content (Mode-Aware) 🆕
 
 **For each section, determine**:
 
@@ -102,9 +167,46 @@ interface ParsedCLAUDEmd {
    - If >80% similar, skip (already covered)
    - If <80% similar, extract unique content
 
-3. **Target Destination**
+3. **Essential or Detailed?** 🆕
+   - Essential: Core architecture, critical patterns, tech stack, team workflows
+   - Detailed: Module-specific rules, detailed APIs, code examples
+
+4. **Mode-Based Decision** 🆕
+   - **Quick Start Mode**: Merge essential only, defer detailed
+   - **Comprehensive Mode**: Merge everything
+
+5. **Target Destination**
    - Determine best SpecWeave folder for this content
    - See "Content Distribution Rules" below
+
+**Classification Matrix** 🆕:
+
+| Content Type | Essential? | Quick Start Action | Comprehensive Action |
+|--------------|-----------|-------------------|---------------------|
+| Core Architecture | ✅ Yes | Merge immediately | Merge immediately |
+| Tech Stack | ✅ Yes | Merge immediately | Merge immediately |
+| Critical Patterns (auth, payment) | ✅ Yes | Merge immediately | Merge immediately |
+| Team Conventions | ✅ Yes | Merge immediately | Merge immediately |
+| Project Summary | ✅ Yes | Merge immediately | Merge immediately |
+| Detailed Business Rules | ❌ No | **Defer to increment** | Merge immediately |
+| Module Documentation | ❌ No | **Defer to increment** | Merge immediately |
+| API-Level Docs | ❌ No | **Defer to increment** | Merge immediately |
+| Code Examples | ❌ No | **Defer to increment** | Merge immediately |
+
+**Example (Quick Start)**:
+```
+Analyzing CLAUDE.md backup (Quick Start mode)...
+
+Found sections:
+  ✅ Core Architecture (merge now)
+  ✅ Tech Stack (merge now)
+  ✅ Auth Pattern (merge now - critical)
+  ⏸️ Payment Business Rules (defer - extract when working on payments)
+  ⏸️ User Module API (defer - extract when modifying user code)
+  ⏸️ Code Examples (defer - extract as needed)
+
+Merging 3 sections immediately, deferring 3 for incremental extraction.
+```
 
 ### Step 3: Content Distribution Rules
 
@@ -153,13 +255,13 @@ We use a microservices architecture:
 - Database (PostgreSQL) - shared across services
 ```
 
-**Destination**: `..specweave/docs/architecture/existing-system.md`
+**Destination**: `.specweave/docs/internal/architecture/existing-system.md`
 
 **CLAUDE.md addition**:
 ```markdown
 ## Project-Specific Architecture
 
-See [Existing System Architecture](.specweave/docs/architecture/existing-system.md) for complete microservices architecture.
+See [Existing System Architecture](.specweave/docs/internal/architecture/existing-system.md) for complete microservices architecture.
 ```
 
 ---
@@ -179,7 +281,7 @@ See [Existing System Architecture](.specweave/docs/architecture/existing-system.
 - React components: `{Name}Component.tsx` suffix
 ```
 
-**Destination**: `.specweave/docs/guides/project-conventions.md`
+**Destination**: `.specweave/docs/public/guides/project-conventions.md`
 
 **CLAUDE.md addition**: None (standard conventions, no need to clutter CLAUDE.md)
 
@@ -202,13 +304,13 @@ See [Existing System Architecture](.specweave/docs/architecture/existing-system.
 6. Rollback via GitHub Actions if needed
 ```
 
-**Destination**: `.specweave/docs/guides/deployment.md`
+**Destination**: `.specweave/docs/internal/processes/deployment.md`
 
 **CLAUDE.md addition**:
 ```markdown
 ## Deployment
 
-See [Deployment Guide](.specweave/docs/guides/deployment.md).
+See [Deployment Guide](.specweave/docs/internal/processes/deployment.md).
 ```
 
 ---
@@ -229,7 +331,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 - Insurance verification required before booking
 ```
 
-**Destination**: `specifications/modules/appointments/business-rules.md`
+**Destination**: `.specweave/docs/internal/strategy/appointments/business-rules.md`
 
 **CLAUDE.md addition**: None (specifications are source of truth)
 
@@ -253,7 +355,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 - Monitoring: Grafana, Prometheus
 ```
 
-**Destination**: `.specweave/docs/architecture/tech-stack.md`
+**Destination**: `.specweave/docs/internal/architecture/tech-stack.md`
 
 **CLAUDE.md addition**:
 ```markdown
@@ -261,7 +363,7 @@ See [Deployment Guide](.specweave/docs/guides/deployment.md).
 
 Next.js 14 + Node.js 20 + PostgreSQL 16 + Hetzner Cloud
 
-See [Tech Stack Details](.specweave/docs/architecture/tech-stack.md).
+See [Tech Stack Details](.specweave/docs/internal/architecture/tech-stack.md).
 ```
 
 ---
@@ -283,7 +385,7 @@ All APIs follow REST conventions:
 - Versioning: /api/v1, /api/v2
 ```
 
-**Destination**: `.specweave/docs/guides/api-conventions.md`
+**Destination**: `.specweave/docs/public/guides/api-conventions.md`
 
 **CLAUDE.md addition**: None (guide covers it)
 
@@ -319,7 +421,7 @@ function useCustomAuth() {
 }
 ```
 
-**Action**: Extract to `.specweave/docs/guides/authentication.md` (project-specific pattern)
+**Action**: Extract to `.specweave/docs/public/guides/authentication.md` (project-specific pattern)
 
 ---
 
@@ -336,12 +438,12 @@ function useCustomAuth() {
 **Domain**: Healthcare, Patient Management, Provider Scheduling
 
 ### Quick Links
-- [Domain Model](specifications/modules/appointments/domain-model.md)
-- [Existing System Architecture](.specweave/docs/architecture/existing-system.md)
-- [Tech Stack](.specweave/docs/architecture/tech-stack.md)
-- [Business Rules](specifications/modules/appointments/business-rules.md)
-- [Deployment Guide](.specweave/docs/guides/deployment.md)
-- [Project Conventions](.specweave/docs/guides/project-conventions.md)
+- [Domain Model](.specweave/increments/####-name/domain/appointments/domain-model.md)
+- [Existing System Architecture](.specweave/docs/internal/architecture/existing-system.md)
+- [Tech Stack](.specweave/docs/internal/architecture/tech-stack.md)
+- [Business Rules](.specweave/docs/internal/strategy/appointments/business-rules.md)
+- [Deployment Guide](.specweave/docs/internal/processes/deployment.md)
+- [Project Conventions](.specweave/docs/public/guides/project-conventions.md)
 
 **Note**: All project-specific details are in linked documents. This keeps CLAUDE.md concise.
 
@@ -406,22 +508,22 @@ if (exists("specifications/modules/appointments/domain-model.md")) {
 I found the following project-specific content in your backup CLAUDE.md:
 
 📦 Domain Model (Healthcare Appointments)
-   → specifications/modules/appointments/domain-model.md
+   → .specweave/increments/####-name/domain/appointments/domain-model.md
 
 🏗️ Microservices Architecture
-   → .specweave/docs/architecture/existing-system.md
+   → .specweave/docs/internal/architecture/existing-system.md
 
 🛠️ Tech Stack (Next.js + Node.js + PostgreSQL)
-   → .specweave/docs/architecture/tech-stack.md
+   → .specweave/docs/internal/architecture/tech-stack.md
 
 📋 Business Rules (Booking policies)
-   → specifications/modules/appointments/business-rules.md
+   → .specweave/docs/internal/strategy/appointments/business-rules.md
 
 🔧 Project Conventions (Naming, code style)
-   → .specweave/docs/guides/project-conventions.md
+   → .specweave/docs/public/guides/project-conventions.md
 
 🚀 Deployment Process (CI/CD workflow)
-   → .specweave/docs/guides/deployment.md
+   → .specweave/docs/internal/processes/deployment.md
 
 📝 CLAUDE.md Update
    → Add 12-line project summary with links
@@ -436,25 +538,139 @@ Proceed with merge? (y/n)
 
 ## Output: Merge Report
 
-**After merge, generate report**:
+**After merge, generate mode-specific report**:
+
+### Quick Start Mode Report 🆕
 
 ```markdown
-# CLAUDE.md Merge Report
+# CLAUDE.md Merge Report - Quick Start Mode
 
 **Date**: 2025-10-26
 **Backup File**: .claude/backups/CLAUDE-backup-20251026-143022.md
-**Merge Status**: ✅ Complete
+**Merge Status**: ✅ Complete (Essential content only)
+**Mode**: Quick Start (Incremental Documentation)
+
+---
+
+## Files Created (Essential Only)
+
+1. ✅ `.specweave/docs/internal/architecture/core-architecture.md` (120 lines)
+2. ✅ `.specweave/docs/internal/architecture/tech-stack.md` (80 lines)
+3. ✅ `.specweave/docs/internal/architecture/critical-patterns.md` (100 lines)
+4. ✅ `.specweave/docs/public/guides/project-conventions.md` (90 lines)
+5. ✅ `.specweave/docs/internal/processes/deployment.md` (70 lines)
+
+**Total**: 5 files, 460 lines (essential content)
+
+---
+
+## CLAUDE.md Updated
+
+**Added**: 10 lines (project summary + links)
+
+**Location**: Lines 850-860
+
+---
+
+## Content Distribution (Quick Start)
+
+| Content Type | Lines | Status | Destination |
+|--------------|-------|--------|-------------|
+| Core Architecture | 120 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Tech Stack | 80 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Critical Patterns | 100 | ✅ Merged | .specweave/docs/internal/architecture/ |
+| Conventions | 90 | ✅ Merged | .specweave/docs/public/guides/ |
+| Deployment | 70 | ✅ Merged | .specweave/docs/internal/processes/ |
+| **CLAUDE.md** | **10** | ✅ **Updated** | **Root** |
+| **Subtotal Merged** | **470** | | |
+| | | | |
+| Domain Model (detailed) | 450 | ⏸️ Deferred | Extract when working on appointments |
+| Business Rules (detailed) | 280 | ⏸️ Deferred | Extract when working on payments |
+| User Module API | 150 | ⏸️ Deferred | Extract when modifying user code |
+| Code Examples | 200 | ⏸️ Deferred | Extract as needed per increment |
+| **Subtotal Deferred** | **1,080** | | **Document incrementally** |
+
+**Result**: 470 lines merged now, 1,080 lines to extract per increment
+
+**Benefit**: Start in 30-60 minutes, not 1-3 hours
+
+---
+
+## Deferred Content (Extract Per Increment)
+
+The following content remains in the backup and will be extracted when you work on related features:
+
+### 📦 Domain Documentation
+- `appointments/domain-model.md` (450 lines)
+  → Extract when creating increment for appointments feature
+
+### 📋 Business Rules
+- `payments/business-rules.md` (280 lines)
+  → Extract when creating increment for payment modifications
+
+### 🔌 API Documentation
+- `users/api-endpoints.md` (150 lines)
+  → Extract when creating increment for user service changes
+
+### 💻 Code Examples
+- Various code snippets (200 lines)
+  → Extract as needed
+
+**How to extract later**:
+```bash
+# When starting increment for appointments
+/inc "Refactor appointment booking"
+
+# In spec.md, reference:
+# "See backup: .claude/backups/CLAUDE-backup-*.md (appointments section)"
+
+# Or ask:
+# "Extract appointment documentation from CLAUDE.md backup"
+```
+
+---
+
+## Skipped Content
+
+- Generic React patterns (25 lines) - Already covered in SpecWeave
+- Standard git workflow (15 lines) - Common knowledge
+- TypeScript basics (40 lines) - Not project-specific
+
+**Total skipped**: 80 lines (generic content)
+
+---
+
+## Next Steps
+
+1. ✅ Review merged essential docs (30 min)
+2. ✅ Start first increment (immediate)
+3. ⏸️ Extract detailed docs as you work on features
+
+**Time saved**: ~2 hours (vs comprehensive upfront)
+
+---
+```
+
+### Comprehensive Mode Report
+
+```markdown
+# CLAUDE.md Merge Report - Comprehensive Mode
+
+**Date**: 2025-10-26
+**Backup File**: .claude/backups/CLAUDE-backup-20251026-143022.md
+**Merge Status**: ✅ Complete (All content)
+**Mode**: Comprehensive (Upfront Documentation)
 
 ---
 
 ## Files Created
 
-1. ✅ `specifications/modules/appointments/domain-model.md` (450 lines)
-2. ✅ `.specweave/docs/architecture/existing-system.md` (320 lines)
-3. ✅ `.specweave/docs/architecture/tech-stack.md` (180 lines)
-4. ✅ `specifications/modules/appointments/business-rules.md` (280 lines)
-5. ✅ `.specweave/docs/guides/project-conventions.md` (200 lines)
-6. ✅ `.specweave/docs/guides/deployment.md` (150 lines)
+1. ✅ `.specweave/increments/####-name/domain/appointments/domain-model.md` (450 lines)
+2. ✅ `.specweave/docs/internal/architecture/existing-system.md` (320 lines)
+3. ✅ `.specweave/docs/internal/architecture/tech-stack.md` (180 lines)
+4. ✅ `.specweave/docs/internal/strategy/appointments/business-rules.md` (280 lines)
+5. ✅ `.specweave/docs/public/guides/project-conventions.md` (200 lines)
+6. ✅ `.specweave/docs/internal/processes/deployment.md` (150 lines)
 
 **Total**: 6 files, 1,580 lines
 
@@ -472,12 +688,12 @@ Proceed with merge? (y/n)
 
 | Content Type | Lines | Destination |
 |--------------|-------|-------------|
-| Domain Model | 450 | specifications/ |
-| Architecture | 320 | .specweave/docs/architecture/ |
-| Tech Stack | 180 | .specweave/docs/architecture/ |
-| Business Rules | 280 | specifications/ |
-| Conventions | 200 | .specweave/docs/guides/ |
-| Deployment | 150 | .specweave/docs/guides/ |
+| Domain Model | 450 | .specweave/increments/####-name/domain/ |
+| Architecture | 320 | .specweave/docs/internal/architecture/ |
+| Tech Stack | 180 | .specweave/docs/internal/architecture/ |
+| Business Rules | 280 | .specweave/docs/internal/strategy/ |
+| Conventions | 200 | .specweave/docs/public/guides/ |
+| Deployment | 150 | .specweave/docs/internal/processes/ |
 | **CLAUDE.md** | **12** | **Root** |
 
 **Result**: 99.2% of content distributed to appropriate folders, not bloating CLAUDE.md
@@ -496,7 +712,8 @@ Proceed with merge? (y/n)
 
 ## Next Steps
 
-1. ✅ Review generated files in `.specweave/docs/` and `specifications/`
+1. ✅ Review generated files in `.specweave/docs/internal/` and `.specweave/docs/public/`
+2. ✅ SpecWeave uses auto-detection
 3. ✅ Run `npm run docs:dev` to preview documentation
 4. ✅ Create features from specifications: `specweave plan-feature {name}`
 
@@ -565,12 +782,12 @@ Proceed with merge? (y/n)
 ✅ Merge complete!
 
 Created:
-1. specifications/modules/appointments/domain-model.md
-2. .specweave/docs/architecture/existing-system.md
-3. .specweave/docs/architecture/tech-stack.md
-4. specifications/modules/appointments/business-rules.md
-5. .specweave/docs/guides/project-conventions.md
-6. .specweave/docs/guides/deployment.md
+1. .specweave/increments/####-name/domain/appointments/domain-model.md
+2. .specweave/docs/internal/architecture/existing-system.md
+3. .specweave/docs/internal/architecture/tech-stack.md
+4. .specweave/docs/internal/strategy/appointments/business-rules.md
+5. .specweave/docs/public/guides/project-conventions.md
+6. .specweave/docs/internal/processes/deployment.md
 
 Updated:
 - CLAUDE.md (added 12-line project summary)
