@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### 🧹 Maintenance
+
+**chore: remove unused config.yaml - embrace zero-config philosophy**
+
+Removed the `.specweave/config.yaml` file that was never actually used by the codebase:
+- ✅ No code reads config.yaml (pure auto-detection)
+- ✅ Already removed from all documentation in increment 0002
+- ✅ Credentials live in `.env` (standard approach)
+- ✅ Project structure auto-detected from files
+- ✅ All settings use sensible defaults
+
+**Breaking Change**: None - file was unused, so no actual breakage
+
+**Files Updated**:
+- Removed `.specweave/config.yaml` (480 lines)
+- Updated `CLAUDE.md` (removed from structure diagrams)
+- Updated `src/commands/specweave.*.md` (simplified configuration sections)
+- Updated `src/skills/increment-quality-judge/SKILL.md` (use --quality flag)
+
+**Philosophy**: SpecWeave follows "convention over configuration" - sensible defaults, auto-detection, and CLI flags instead of config files.
+
+---
+
 ## [0.3.10] - 2025-10-30
 
 ### ✨ Features

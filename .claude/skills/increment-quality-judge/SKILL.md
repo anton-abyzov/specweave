@@ -260,17 +260,10 @@ Suggestions: 3 high priority
 [Full report shown above]
 ```
 
-### Example 2: Always-On Mode
-
-```yaml
-# config.yaml
-validation:
-  quality_judge:
-    always_run: true
-```
+### Example 2: Auto-Run Mode
 
 ```bash
-User: "Validate increment 001"
+User: "Validate increment 001 --quality"
 
 increment-quality-judge:
 ✅ Rule-based: 120/120 passed
@@ -439,9 +432,9 @@ Show detailed report
 **When:** User selects "Export to tasks"
 **Then:** 3 tasks added to tasks.md with priority labels
 
-### TC-005: Always-On Mode
-**Given:** config.yaml has always_run: true
-**When:** User requests validation ("validate quality of increment 001")
+### TC-005: Auto-Run Mode
+**Given:** User provides --quality flag
+**When:** User requests validation ("validate increment 001 --quality")
 **Then:** Quality check runs automatically without prompt
 
 ## Best Practices

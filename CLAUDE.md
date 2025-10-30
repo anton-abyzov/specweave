@@ -101,7 +101,7 @@ src/                            ← SOURCE OF TRUTH (version controlled)
 .specweave/                     ← FRAMEWORK DATA (always present)
 ├── increments/                 ← Feature development
 ├── docs/                       ← Strategic documentation
-└── config.yaml                 ← Configuration
+└── logs/                       ← Logs and execution history
 ```
 
 **Rules**:
@@ -191,7 +191,6 @@ specweave/
 │   ├── docs/
 │   │   ├── internal/           # Strategic docs
 │   │   └── public/             # Published docs
-│   ├── config.yaml             # SpecWeave's config
 │   └── logs/
 │
 ├── tests/
