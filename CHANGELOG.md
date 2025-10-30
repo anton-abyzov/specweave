@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.11] - 2025-10-30
+
+### 🐛 Bug Fixes
+
+**fix: docusaurus list rendering in quickstart guide**
+
+Fixed markdown list formatting that caused checkmark items to render on one line
+instead of separate lines in the Docusaurus quickstart guide.
+
+**What Changed**:
+- Added proper markdown list syntax (`-` prefix) to "What You Get" section
+- Now renders as proper `<ul>` with `<li>` items instead of inline text
+- Each item appears on its own line as intended
+
+**Files Updated**:
+- `.specweave/docs/public/guides/getting-started/quickstart.md`
+
+**Before** (all on one line):
+```
+✅ SpecWeave Skills ... ✅ Slash Commands ... ✅ Automation Hooks ...
+```
+
+**After** (each on separate line):
+```
+- ✅ SpecWeave Skills ...
+- ✅ Slash Commands ...
+- ✅ Automation Hooks ...
+```
+
+---
+
 ## [0.3.10] - 2025-10-30
 
 ### ✨ Features
