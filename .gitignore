@@ -41,6 +41,7 @@ api_keys.json
 # SpecWeave generated files
 .specweave/cache/
 .specweave/feedback/
+.specweave/logs/
 
 # Increment logs (inside each increment folder)
 .specweave/increments/*/logs/

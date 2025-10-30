@@ -25,11 +25,11 @@ That's it! SpecWeave is installed and ready.
 
 ## What You Get
 
-✅ **SpecWeave Skills** - Autonomous development agents (8 complete skills, more coming)
-✅ **Slash Commands** - `/create-project` (more coming)
-✅ **Automation Hooks** - Auto-update docs, validate quality (4 hooks)
-✅ **Complete Framework** - Minimal installation, skills create structure as needed
-✅ **Development Guide** - `CLAUDE.md` with everything you need
+- ✅ **SpecWeave Skills** - Autonomous development agents (8 complete skills, more coming)
+- ✅ **Slash Commands** - `/create-project` (more coming)
+- ✅ **Automation Hooks** - Auto-update docs, validate quality (4 hooks)
+- ✅ **Complete Framework** - Minimal installation, skills create structure as needed
+- ✅ **Development Guide** - `CLAUDE.md` with everything you need
 
 ## Ultra-Simple Usage
 
