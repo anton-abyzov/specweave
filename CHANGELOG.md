@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### 🧹 Maintenance
+
+**chore: remove unused config.yaml - embrace zero-config philosophy**
+
+Removed the `.specweave/config.yaml` file that was never actually used by the codebase:
+- ✅ No code reads config.yaml (pure auto-detection)
+- ✅ Already removed from all documentation in increment 0002
+- ✅ Credentials live in `.env` (standard approach)
+- ✅ Project structure auto-detected from files
+- ✅ All settings use sensible defaults
+
+**Breaking Change**: None - file was unused, so no actual breakage
+
+**Files Updated**:
+- Removed `.specweave/config.yaml` (480 lines)
+- Updated `CLAUDE.md` (removed from structure diagrams)
+- Updated `src/commands/specweave.*.md` (simplified configuration sections)
+- Updated `src/skills/increment-quality-judge/SKILL.md` (use --quality flag)
+
+**Philosophy**: SpecWeave follows "convention over configuration" - sensible defaults, auto-detection, and CLI flags instead of config files.
+
+**chore: exclude .specweave/logs/ from version control**
+
+Runtime logs like last-hook-fire are ephemeral execution artifacts that should not be tracked in git. This aligns with the existing pattern of ignoring increment logs and cache directories.
+
+**What Changed**:
+- Added `.specweave/logs/` to `.gitignore`
+- Removed `.specweave/logs/last-hook-fire` from git tracking
+- Documented runtime artifacts policy in CLAUDE.md
+
+**Why This Matters**:
+- Logs are execution artifacts, not source code
+- They change on every run (noise in git history)
+- They cause unnecessary merge conflicts
+- They block operations like `--teleport`
+
+---
+
 ## [0.3.11] - 2025-10-30
 
 ### 🐛 Bug Fixes

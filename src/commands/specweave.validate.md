@@ -22,7 +22,6 @@ You are helping the user validate a SpecWeave increment with optional AI-powered
 - `--quality`: Run AI quality assessment (LLM-as-judge, ~2k tokens, 1-2 minutes)
 - `--export`: Export AI suggestions to tasks.md automatically
 - `--fix`: Auto-fix HIGH priority issues (experimental, requires confirmation)
-- `--always`: Save quality assessment as default in config.yaml
 
 ## Workflow
 
@@ -132,8 +131,7 @@ Action required:
 **Check in this order**:
 
 1. **If `--quality` flag provided**: Run quality assessment (skip prompt)
-2. **Else if `config.yaml` has `validation.quality_judge.always_run: true`**: Run quality assessment (skip prompt)
-3. **Else**: Prompt user
+2. **Else**: Prompt user
 
 **Prompt format** (if needed):
 ```
@@ -730,53 +728,7 @@ fi
 
 ## Configuration
 
-**File**: `.specweave/config.yaml`
-
-```yaml
-validation:
-  enabled: true
-  auto_validate: true
-  severity_threshold: warning
-
-  # Quality judge settings
-  quality_judge:
-    enabled: true
-    always_run: false       # Set to true with --always flag
-    auto_prompt: true       # Prompt user if always_run is false
-    thresholds:
-      excellent: 90
-      good: 80
-      acceptable: 70
-      needs_work: 0
-    dimensions:
-      clarity: true
-      testability: true
-      completeness: true
-      feasibility: true
-      maintainability: true
-      edge_cases: true
-    max_tokens: 2000
-    export_to_tasks: false  # Set to true to auto-export suggestions
-
-  # Auto-fix settings
-  auto_fix:
-    enabled: true
-    require_confirmation: true  # Always ask before applying fixes
-    max_fixes_per_run: 5        # Limit fixes to avoid large changes
-
-  # Report settings
-  reports:
-    save_to: "reports/validation-report.md"
-    format: markdown
-    include_line_numbers: true
-    include_suggestions: true
-    include_history: true
-
-  # Hooks
-  hooks:
-    post_document_save: true
-    pre_implementation: true
-```
+All validation settings use sensible defaults. Quality assessment is prompted each time unless `--quality` flag is used.
 
 ## Related Commands
 

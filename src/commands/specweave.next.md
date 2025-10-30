@@ -468,27 +468,11 @@ Your choice? [A/B/C] _
 
 ## Configuration
 
-**File**: `.specweave/config.yaml`
-
-```yaml
-workflow:
-  auto_close:
-    enabled: true              # Enable auto-close in /next
-    strict_mode: true          # Require all 3 gates to pass
-    suggest_next: true         # Suggest next work after closure
-
-  pm_validation:
-    gates:
-      tasks:
-        require_p1_complete: true
-        require_p2_complete: false  # P2 can be deferred
-      tests:
-        require_all_passing: true
-        min_coverage: 80
-      documentation:
-        require_claude_md: true
-        require_readme: true
-```
+Auto-close uses sensible defaults:
+- PM validation gates must pass (tasks, tests, docs)
+- P1 tasks required, P2 can be deferred
+- Tests must pass with 80% coverage
+- Documentation must be updated
 
 ---
 
