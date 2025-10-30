@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.10] - 2025-10-30
+
+### ✨ Features
+
+**feat: add increment 0003 - intelligent model selection**
+
+Major new feature for automatic cost optimization through intelligent model routing:
+- **Expected savings: 60-70%** on AI costs
+- Route planning/analysis work to Sonnet 4.5 (quality)
+- Route execution work to Haiku 4.5 (cost efficiency)
+
+**Increment Contents**:
+- `spec.md`: 8 user stories with complete product requirements
+- `plan.md`: 3-layer architecture (agent preferences + phase detection + cost tracking)
+- `tasks.md`: 22 implementation tasks with detailed acceptance criteria
+- `tests.md`: 100+ test cases covering all scenarios and edge cases
+
+**Supporting Code**:
+- `src/utils/model-selection.ts`: Core model selection logic
+- `src/utils/generate-skills-index.ts`: Skills index generator utility
+- `src/skills/SKILLS-INDEX.md`: Complete skills index (35+ skills)
+- `.specweave/docs/public/guides/model-selection.md`: User-facing guide
+
+**Status**: Planned (ready for implementation via `/specweave.do`)
+
+### 📝 Documentation
+
+**docs: add increment 0002 implementation reports**
+
+Added detailed implementation summaries and analysis reports:
+- `IMPLEMENTATION-SUMMARY-PROGRESSIVE-DISCLOSURE.md`: Context loading corrections
+- `MODEL-SELECTION-EXAMPLE.md`: Example implementation reference
+- `ULTRATHINKING-PERFORMANCE-MODEL-SELECTION.md`: Performance optimization analysis
+- `ULTRATHINKING-PROGRESSIVE-DISCLOSURE.md`: Progressive disclosure mechanism
+
+### 🧹 Maintenance
+
+**chore: remove bare-numbered increments**
+
+Enforced naming convention by removing old increments 0003, 0004, 0005 that used
+bare numbers. All increments now require descriptive names (####-descriptive-kebab-case).
+
+**chore: sync source changes and updates from v0.3.8**
+
+Synced accumulated changes from v0.3.8 development:
+- Adapter documentation updates (Copilot, Cursor)
+- CLI improvements (Windows fix, claude adapter default)
+- Enhanced planning workflow
+- Documentation update guide (230+ lines in AGENTS.md.template)
+- Auto-synced .claude/ files from src/
+- brownfield-analyzer enhanced (448+ new lines)
+
+---
+
 ## [0.3.9] - 2025-10-30
 
 ### Documentation
