@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.13] - 2025-10-31
+
+### ✨ Features
+
+**feat: proactive intent detection - auto-route product descriptions to increment planning**
+
+SpecWeave now automatically detects when you're describing a product/project and guides you through increment planning - no need to remember to type `/inc`!
+
+**What Changed**:
+- ✅ **New skill: project-kickstarter** - Generic pattern-based detection system
+  - Detects 6 signals: project name, features list, tech stack, timeline, problem statement, business model
+  - Confidence-based routing (high: auto-route, medium: clarify then route, low: don't activate)
+  - SpecWeave context bonus: +2 confidence when in .specweave/ folder
+  - Generic and reusable (not hardcoded for specific products)
+- ✅ **Updated specweave-detector** - Now mentions proactive detection (v0.3.8+ behavior)
+- ✅ **Broadened skill keywords** - increment-planner, spec-driven-brainstorming, skill-router now catch natural language
+- ✅ **CLAUDE.md.template updated** - Documents automatic intent detection with examples
+- ✅ **4 test cases** - High confidence, medium confidence, low confidence, opt-out scenarios
+
+**How It Works**:
+```
+User: "Project: RosterSync - Team scheduling SaaS
+Core features: roster management, availability calendar, scheduling
+Tech stack: .NET 8, Next.js 14+, PostgreSQL
+MVP: 2-3 weeks"
+
+SpecWeave detects: ✅ Name ✅ Features ✅ Tech ✅ Timeline ✅ Context (.specweave/)
+→ Auto-routes to /specweave.inc (no manual command needed!)
+```
+
+**Opt-Out Options**:
+- "Just brainstorm first" → Uses spec-driven-brainstorming
+- "Don't plan yet" → Regular conversation
+- User stays in control (opt-out anytime)
+
+**Files Added**:
+- `src/skills/project-kickstarter/SKILL.md`
+- `src/skills/project-kickstarter/test-cases/test-1-high-confidence-full-product.yaml`
+- `src/skills/project-kickstarter/test-cases/test-2-medium-confidence-partial.yaml`
+- `src/skills/project-kickstarter/test-cases/test-3-low-confidence-technical-question.yaml`
+- `src/skills/project-kickstarter/test-cases/test-4-opt-out-explicit.yaml`
+
+**Files Updated**:
+- `src/skills/specweave-detector/SKILL.md` - Added proactive detection documentation
+- `src/skills/increment-planner/SKILL.md` - Broadened activation keywords
+- `src/skills/spec-driven-brainstorming/SKILL.md` - Broadened activation keywords
+- `src/skills/skill-router/SKILL.md` - Added proactive routing capability
+- `src/templates/CLAUDE.md.template` - Added "Automatic Intent Detection" section
+
+**User Experience**:
+- **Before**: User had to remember to type `/inc` when describing a product
+- **After**: SpecWeave detects product descriptions and guides automatically
+- **Both ways work**: Automatic detection + explicit `/inc` command both supported
+
+**Solves**: "I described my product but SpecWeave didn't help me plan it" problem
+
+---
+
 ## [0.3.12] - 2025-10-30
 
 ### 🧹 Maintenance

@@ -1,0 +1,34 @@
+name: Low Confidence - Technical Question (Should Not Activate)
+description: Technical questions should NOT trigger project-kickstarter
+context:
+  working_directory: /project-with-specweave
+  specweave_initialized: true
+  specweave_directory_exists: true
+
+user_input: |
+  What do you think about using PostgreSQL vs MongoDB for this project?
+
+expected_signals:
+  project_name: false
+  features_count: 0
+  tech_stack_mentioned: true # PostgreSQL, MongoDB
+  timeline_mentioned: false
+  problem_statement: false
+  business_model: false
+
+expected_confidence: low
+expected_adjusted_confidence: 50% # 1 signal + 2 SpecWeave bonus = 3/6
+expected_action: do_not_activate
+expected_command: none
+
+assistant_should:
+  - Answer the technical question
+  - Provide database comparison
+  - NOT assume this is a project description
+  - NOT route to increment planning
+
+assistant_should_not:
+  - Activate project-kickstarter
+  - Ask about project details
+  - Invoke /specweave.inc
+  - Treat as product description
