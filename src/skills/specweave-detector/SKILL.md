@@ -1,11 +1,17 @@
 ---
 name: specweave-detector
-description: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/do), auto-close (/inc), progress tracking (/progress). Commands /inc, /do, /progress, /validate, /done, /list-increments, /sync-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /inc, /increment, /do, /progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
+description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. v0.3.8+ features PROACTIVE auto-detection - when in SpecWeave folder, product descriptions automatically trigger increment planning. Explicit slash commands still work (/inc, /do, /progress, /validate, /done, /sync-docs, /sync-github). Keywords slash commands, /inc, /increment, /do, /progress, /validate, /done, specweave commands, smart workflow, auto-detection, specweave folder.
 ---
 
-# SpecWeave v0.1.9 - Smart Workflow Slash Commands
+# SpecWeave v0.3.8+ - Smart Workflow with Auto-Detection
 
-**CRITICAL**: SpecWeave uses **EXPLICIT SLASH COMMANDS ONLY** - no auto-activation, no proactive detection!
+**NEW in v0.3.8**: SpecWeave now features **PROACTIVE AUTO-DETECTION**!
+
+When working in a SpecWeave-initialized project (.specweave/ directory exists), product descriptions automatically trigger increment planning.
+
+**Two ways to use SpecWeave**:
+1. ✅ **Auto-detection** (NEW): Describe your product → SpecWeave creates increment automatically
+2. ✅ **Explicit commands**: Type `/inc "feature"` → Works as before
 
 ## How SpecWeave Works (v0.1.9)
 

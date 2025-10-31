@@ -43,6 +43,65 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## 🧠 Automatic Intent Detection (NEW in v0.3.8+)
+
+**SpecWeave now detects when you're describing a product/project and automatically helps you plan it!**
+
+### How It Works
+
+When working in a SpecWeave-initialized project (`.specweave/` exists), SpecWeave recognizes product descriptions by detecting these patterns:
+
+**Signals that trigger auto-detection:**
+1. ✅ **Project Name/Description** - "Project: RosterSync", "I want to build X"
+2. ✅ **Features List** - Bullet points or numbered list of features (3+ items)
+3. ✅ **Tech Stack** - Languages, frameworks, databases mentioned
+4. ✅ **Timeline/Scope** - "MVP", "2 weeks", "Phase 1", "Quick build"
+5. ✅ **Problem Statement** - "For teams...", "Helps users...", "Solves..."
+6. ✅ **Business Model** - "Freemium", "$X/mo", "B2B", "Consumer"
+
+**Confidence Levels:**
+- **High (5-6 signals + SpecWeave folder)**: Auto-route to `/specweave.inc` immediately
+- **Medium (3-4 signals + SpecWeave folder)**: Ask 1-2 clarifying questions, then route
+- **Low (<3 signals)**: Regular conversation (no auto-routing)
+
+### Example: Automatic Detection
+
+```
+You: Project: RosterSync - Team scheduling SaaS
+Core features:
+- Team roster management
+- Availability calendar
+- Event scheduling with notifications
+- Lineup builder
+Tech stack: .NET 8, Next.js 14+, PostgreSQL
+MVP: 2-3 weeks
+Monetization: Freemium ($10/mo)
+
+SpecWeave detects: ✅ Name ✅ Features ✅ Tech ✅ Timeline ✅ Problem ✅ Business
+→ Automatically recognizes this as a product description
+→ Guides you through increment planning
+→ Invokes /specweave.inc automatically
+
+No need to remember to type /inc!
+```
+
+### Opt-Out Options
+
+You can override automatic routing with explicit instructions:
+- **"Just brainstorm first"** → Uses spec-driven-brainstorming instead
+- **"Don't plan yet"** → Regular conversation
+- **"Quick discussion"** → No automatic routing
+- **"Let's explore ideas first"** → Exploratory mode
+
+### Two Ways to Use SpecWeave
+
+1. ✅ **Automatic** (NEW): Describe your product → SpecWeave detects it → Plans automatically
+2. ✅ **Explicit** (Classic): Type `/inc "feature"` → Works as before
+
+Both approaches work perfectly - use whichever feels more natural!
+
+---
+
 ## 🚨 CRITICAL: File Organization Rules
 
 **Keep project root CLEAN!** All AI-generated files MUST go into increment folders.
