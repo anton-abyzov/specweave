@@ -5,6 +5,8 @@
  * Enables SpecWeave to work with ANY AI coding tool (Claude, Cursor, Copilot, etc.)
  */
 
+import type { Plugin } from '../core/types/plugin.js';
+
 export interface AdapterOptions {
   projectPath: string;
   projectName: string;
@@ -117,4 +119,48 @@ export interface IAdapter {
    * @returns string Markdown-formatted instructions
    */
   getInstructions(): string;
+
+  /**
+   * Check if this adapter supports plugins
+   *
+   * Returns true if the adapter can install and compile plugins
+   * (Claude native, Cursor AGENTS.md, Copilot instructions.md)
+   * Returns false for generic/manual adapters
+   *
+   * @returns boolean True if plugins are supported
+   */
+  supportsPlugins(): boolean;
+
+  /**
+   * Compile and install a plugin for this adapter
+   *
+   * Transforms plugin content (skills/agents/commands) to tool-specific format:
+   * - Claude: Copy to .claude/skills/, .claude/agents/, .claude/commands/
+   * - Cursor: Compile to AGENTS.md + team commands JSON
+   * - Copilot: Compile to .github/copilot/instructions.md
+   * - Generic: Generate manual copy-paste instructions
+   *
+   * @param plugin Plugin to compile and install
+   * @returns Promise<void>
+   */
+  compilePlugin(plugin: Plugin): Promise<void>;
+
+  /**
+   * Unload (disable) a plugin for this adapter
+   *
+   * Removes plugin-specific files and restores previous state
+   *
+   * @param pluginName Name of plugin to unload
+   * @returns Promise<void>
+   */
+  unloadPlugin(pluginName: string): Promise<void>;
+
+  /**
+   * Get plugin installation status
+   *
+   * Returns information about which plugins are currently installed
+   *
+   * @returns Promise<string[]> Array of installed plugin names
+   */
+  getInstalledPlugins(): Promise<string[]>;
 }

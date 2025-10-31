@@ -48,6 +48,12 @@ api_keys.json
 .specweave/increments/*/scripts/*.tmp
 .specweave/increments/*/reports/*.tmp
 
+# Plugin system (v0.4.0+)
+# Note: src/plugins/ IS source code and should be committed (SpecWeave repo)
+# Only installed plugins in user projects are ignored
+.specweave/plugins/installed/
+.specweave/plugins/cache/
+
 # Claude Code (backups are intentionally committed for history)
 # .claude/backups/ - NOT ignored, preserve project history
 
@@ -57,6 +63,17 @@ test-results/
 *.test-result.md
 src/skills/**/test-results/
 src/agents/**/test-results/
+
+# Playwright test results
+playwright-report/
+.playwright/
+
+# ML Pipeline Test Artifacts (videos are too large for git)
+.specweave/test-runs/ml-pipeline*/*/videos/*.mp4
+.specweave/test-runs/ml-pipeline*/*/videos/*.webm
+.specweave/test-runs/ml-pipeline*/*/videos/*.mkv
+.specweave/test-runs/ml-pipeline*/*/videos/*.avi
+.specweave/test-runs/ml-pipeline*/*/detections_output.mp4
 
 # OS
 .DS_Store
