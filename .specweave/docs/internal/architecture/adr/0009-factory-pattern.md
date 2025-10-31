@@ -1,4 +1,4 @@
-# ADR-0010: Agents/Skills Factory Pattern
+# ADR-0009: Agents/Skills Factory Pattern
 
 **Status**: Accepted  
 **Date**: 2025-10-26  

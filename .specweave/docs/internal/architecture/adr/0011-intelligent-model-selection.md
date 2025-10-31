@@ -1,4 +1,4 @@
-# ADR-0012: Intelligent Model Selection
+# ADR-0011: Intelligent Model Selection
 
 **Status**: Accepted
 **Date**: 2025-10-31
@@ -405,8 +405,8 @@ try {
 
 - [Increment 0003 Spec](../../increments/0003-intelligent-model-selection/spec.md)
 - [Increment 0003 Plan](../../increments/0003-intelligent-model-selection/plan.md)
-- [ADR-0013: Cost Tracking System](0013-cost-tracking.md)
-- [ADR-0014: Phase Detection Algorithm](0014-phase-detection.md)
+- [ADR-0011: Cost Tracking System](0012-cost-tracking.md)
+- [ADR-0011: Phase Detection Algorithm](0013-phase-detection.md)
 
 ## References
 

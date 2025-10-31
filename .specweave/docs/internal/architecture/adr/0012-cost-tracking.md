@@ -1,9 +1,9 @@
-# ADR-0013: Cost Tracking System
+# ADR-0011: Cost Tracking System
 
 **Status**: Accepted
 **Date**: 2025-10-31
 **Deciders**: Core Team
-**Related**: Increment 0003-intelligent-model-selection, ADR-0012
+**Related**: Increment 0003-intelligent-model-selection, ADR-0011
 
 ## Context
 
@@ -500,8 +500,8 @@ describe('CostTracker', () => {
 
 ## Related Documents
 
-- [ADR-0012: Intelligent Model Selection](0012-intelligent-model-selection.md)
-- [ADR-0014: Phase Detection Algorithm](0014-phase-detection.md)
+- [ADR-0011: Intelligent Model Selection](0011-intelligent-model-selection.md)
+- [ADR-0011: Phase Detection Algorithm](0013-phase-detection.md)
 - [Increment 0003 Plan](../../increments/0003-intelligent-model-selection/plan.md)
 
 ## References
