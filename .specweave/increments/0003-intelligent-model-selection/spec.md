@@ -16,23 +16,33 @@ tags:
   - anthropic
   - haiku-4.5
   - sonnet-4.5
+  - research-driven
+  - model-versioning
+  - quality-optimization
 estimated_savings: 60-70%
+user_stories: 11
 ---
 
 # Intelligent Model Selection - Automatic Cost Optimization
 
 ## Problem Statement
 
-**Current State**: SpecWeave uses Claude Sonnet 4.5 for all operations, resulting in high costs for simple implementation tasks. Users must manually specify `model: "haiku"` to optimize costs.
+**Current State**: SpecWeave uses Claude Sonnet for all operations, resulting in high costs for simple implementation tasks. Users must manually specify `model: "haiku"` to optimize costs.
 
 **User Pain Points**:
-- High AI costs for repetitive implementation work ($0.80 per feature)
-- No visibility into where costs are incurred
-- Manual model selection requires deep knowledge of capabilities
-- No guidance on when to use Haiku vs Sonnet
-- Missing opportunity to leverage Anthropic's official cost optimization pattern
+- ❌ Using outdated Sonnet 3.5 instead of latest Sonnet 4.5 (quality regression)
+- ❌ High AI costs for repetitive implementation work ($0.80 per feature)
+- ❌ No visibility into where costs are incurred
+- ❌ Manual model selection requires deep knowledge of capabilities
+- ❌ No guidance on when to use Haiku vs Sonnet
+- ❌ No pre-implementation research (building wrong things)
+- ❌ Quality validation too slow/expensive (3 rounds Sonnet)
+- ❌ Missing Anthropic's official cost optimization pattern
 
-**Market Context**: Anthropic officially recommends using **Sonnet 4.5 for planning** and **Haiku 4.5 for execution** (90% performance, 1/3 cost, 2x speed).
+**Market Context**:
+- Anthropic officially recommends **Sonnet 4.5 for planning** and **Haiku 4.5 for execution** (90% performance, 1/3 cost, 2x speed)
+- Research-first development prevents wasted implementation work
+- Model version policy ensures users always get latest quality/performance
 
 ## Solution Overview
 
@@ -40,22 +50,42 @@ estimated_savings: 60-70%
 
 ### Core Capabilities
 
-1. **Automatic Model Selection**
+1. **Model Version Policy (NEW - CRITICAL)**
+   - ✅ Always use **Sonnet 4.5** (latest) - NEVER Sonnet 3.5
+   - ✅ Always use **Haiku 4.5** (latest) - NEVER Haiku 3.0
+   - Simple naming: `sonnet`/`haiku`/`opus` → latest versions
+   - Automatic upgrades when Anthropic releases new models
+   - No manual configuration needed
+
+2. **Research Phase (NEW - GAME CHANGER)**
+   - Optional market research before spec generation
+   - Uses Haiku 4.5 (15 min, ~$0.02 - cheap!)
+   - Prevents wasted work on saturated markets
+   - Informs better specs (research-driven vs guesswork)
+   - Enables "research-only" mode (validate ideas without coding)
+
+3. **Automatic Model Selection**
    - System intelligently chooses Sonnet (planning) vs Haiku (execution)
    - Based on agent type, work phase, and task complexity
    - No user intervention required
 
-2. **Cost Visibility**
+4. **Cost Visibility**
    - Real-time cost tracking per increment, agent, and phase
    - Savings calculations vs baseline (all-Sonnet)
    - ROI reporting for AI investments
 
-3. **Multi-Phase Orchestration**
+5. **Multi-Phase Orchestration**
    - Complex tasks auto-split: Sonnet plans → Haiku executes → Sonnet validates
    - Transparent phase transitions
    - Quality gates between phases
 
-4. **User Control**
+6. **Quality Validation Optimization (NEW)**
+   - Validation uses Haiku 4.5 (not Sonnet)
+   - 2 rounds default (down from 3)
+   - 67% time savings, 73% cost savings
+   - Strict mode available for critical specs
+
+7. **User Control**
    - Three modes: Auto (default), Balanced (approval), Manual
    - Override capability for any task
    - Configurable cost policies
@@ -212,6 +242,99 @@ estimated_savings: 60-70%
 
 ---
 
+### US-009: Research Phase Before Spec Generation
+**As a** product owner
+**I want** optional market research before spec generation
+**So that** I validate ideas before investing time in detailed specs
+
+**Acceptance Criteria**:
+- [ ] `/specweave.inc` prompts: "Run research first? [Y/n]" (default: Yes)
+- [ ] Research uses Haiku 4.5 (cheap, fast, 15 min)
+- [ ] Research covers: market analysis, competitors, user needs, competitive gaps
+- [ ] Research output saved to `increment/research.md`
+- [ ] PM agent reads `research.md` when generating spec.md
+- [ ] Cost estimate shown: "Research: 15 min, ~$0.02"
+- [ ] User can skip research for known problems (internal tools, technical debt)
+- [ ] Research results presented with proceed/pivot/cancel options
+
+**Research Output Includes**:
+- Competitive landscape (5-10 competitors with strengths/weaknesses)
+- Market size and growth trends
+- User pain points (validated)
+- Gaps in existing solutions
+- Opportunity assessment
+
+**Why This Matters**:
+- Prevents wasted work on saturated markets
+- Informs better specs (research-driven vs guesswork)
+- Reduces spec iteration rounds (better inputs = better outputs)
+- Enables "research-only" mode (validate ideas without implementation)
+
+**Priority**: P1 - Changes the entire increment workflow
+
+---
+
+### US-010: Model Version Policy (Always Latest)
+**As a** system architect
+**I want** model references to always point to the latest versions
+**So that** users automatically benefit from quality/performance improvements
+
+**Acceptance Criteria**:
+- [ ] ❌ NEVER use Sonnet 3.5 - ALWAYS use Sonnet 4.5
+- [ ] ❌ NEVER use Haiku 3.0 - ALWAYS use Haiku 4.5
+- [ ] Simple naming: `sonnet` = latest Sonnet (currently 4.5)
+- [ ] Simple naming: `haiku` = latest Haiku (currently 4.5)
+- [ ] Simple naming: `opus` = latest Opus (when available)
+- [ ] Model IDs in code reference constants (easy to update)
+- [ ] Documentation clarifies: "sonnet" means "current best Sonnet model"
+- [ ] Version changelog tracks which Anthropic models map to our tiers
+
+**Model Mapping** (as of 2025-10-31):
+```typescript
+const MODELS = {
+  sonnet: 'claude-sonnet-4-5-20250929',    // CURRENT BEST
+  haiku: 'claude-4-5-haiku-20250110',      // CURRENT BEST
+  opus: 'claude-opus-4-0-...',             // When released
+}
+```
+
+**Update Policy**:
+- When Anthropic releases Sonnet 4.6 → update MODELS.sonnet
+- When Anthropic releases Haiku 5.0 → update MODELS.haiku
+- Users get upgrade automatically (no config changes needed)
+
+**Priority**: P1 - Critical for quality
+
+---
+
+### US-011: Quality Validation Optimization
+**As a** user running quality validation (optional feature)
+**I want** validation to be fast and cheap
+**So that** I can iterate on specs quickly without high costs
+
+**Acceptance Criteria**:
+- [ ] Quality validation uses Haiku 4.5 (not Sonnet)
+- [ ] Validation rounds reduced from 3 to 2 (default)
+- [ ] `--strict` flag enables 3-round Sonnet validation (for critical specs)
+- [ ] Cost/time estimate shown before running: "~1 min, ~$0.04"
+- [ ] Quality judge skill updated to use Haiku for LLM-as-Judge
+- [ ] PM agent refinement rounds use Haiku (not Sonnet)
+- [ ] Only initial spec generation uses Sonnet
+
+**Performance Gains**:
+- Current (3 rounds Sonnet): ~3-4 min, ~$0.15
+- Optimized (2 rounds Haiku): ~1 min, ~$0.04
+- **Savings: 67% time, 73% cost**
+
+**Quality Maintained**:
+- Haiku 4.5 is 90% as capable as Sonnet for judgment tasks
+- Validation is pass/fail (doesn't require deep reasoning)
+- Strict mode available for critical specs (healthcare, finance)
+
+**Priority**: P2 - Enhances existing optional feature
+
+---
+
 ## Non-Functional Requirements
 
 ### Performance
@@ -241,11 +364,16 @@ estimated_savings: 60-70%
 - **90% accuracy** for Haiku vs Sonnet on execution tasks
 - **95% phase detection** accuracy
 - **0 breaking changes** to existing workflows
+- **100% model references** use Sonnet 4.5 / Haiku 4.5 (NEVER 3.x)
+- **50% of users** opt for research phase before spec generation
+- **67% time savings** on quality validation (when used)
 
 ### Qualitative Metrics
 - Users report significant cost savings
 - Positive feedback on cost transparency
 - No complaints about degraded quality from Haiku
+- Users appreciate research preventing wasted work
+- Faster iteration cycles (research → informed spec → less rework)
 
 ### Adoption Metrics
 - 80% of users keep default (auto mode)
