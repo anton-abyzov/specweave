@@ -1,4 +1,4 @@
-# ADR-0011: Append-Only Increments + Living Documentation
+# ADR-0010: Append-Only Increments + Living Documentation
 
 **Status**: Accepted
 **Date**: 2025-01-28

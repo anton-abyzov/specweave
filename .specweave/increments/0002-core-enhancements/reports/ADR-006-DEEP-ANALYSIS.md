@@ -740,7 +740,7 @@ Add to CI:
 
 ### Critical Questions (Decide Now)
 1. **config.yaml**: Keep, remove, or replace with environment variables?
-2. **ADR-006**: Rewrite in place or create new ADR-0012?
+2. **ADR-006**: Rewrite in place or create new ADR-0011?
 3. **ADR-010**: Remove entirely or rewrite with correct data?
 4. **Terminology**: Adopt proposed standard or different phrasing?
 5. **Factory pattern**: Still valuable for UX/clarity despite no token savings?
