@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.3.8-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.3.8)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.4.0)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -30,15 +30,19 @@
 
 - 🤖 **Autonomous & Smart** - Just works! Agents ask clarifying questions, review output, validate quality—minimal interaction required
 - ⚡ **Seamless Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
-- 🎯 **10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
-- 🔍 **Progressive Disclosure** (NEW) - Skills indexed for 90% token savings. SKILLS-INDEX.md provides single-file discovery across ALL AI tools!
+- 🔌 **Plugin Architecture** (NEW in v0.4.0) - Modular design with 75%+ context reduction! Core framework (12K tokens) + opt-in plugins only when needed
+  - Core: 3 agents + 8 skills (always loaded)
+  - Plugins: GitHub sync, tech stacks, domain expertise (load on demand)
+  - **Context efficiency**: 50K → 12K tokens for basic projects!
+- 🎯 **Extensible & Scalable** - 10+ agents and 40+ skills via plugins. PM, Architect, DevOps, QA, Security work in parallel
 - 🔧 **Universal Support** - Works with Claude Code (default), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
-  - **Claude Code** (default): Native agents/skills pre-installed in `.claude/` - best experience!
-  - **Other tools**: Progressive disclosure via SKILLS-INDEX.md and AGENTS.md - full skill access!
+  - **Claude Code** (default): Native plugin support with auto-activation - best experience!
+  - **Cursor/Copilot**: Plugin compilation to AGENTS.md - semi-automation
+  - **Other tools**: AGENTS.md for manual workflows - full capability access!
 - 🧪 **Complete Test Coverage** - 4-level strategy from specs to integration tests (APIs, UIs, CLIs, libraries)
 - 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
 - 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)
-- 🔄 **Tool Integration** - Sync with JIRA, Azure DevOps, GitHub
+- 🔄 **Tool Integration** - GitHub, JIRA, Azure DevOps sync (via plugins)
 - 🏢 **Brownfield Excellence** - The hardest problem solved: merge with existing docs, create complex architecture (ADRs, HLDs, RFCs), maintain living documentation, safe regression prevention
 - 🌐 **Framework Agnostic** - Works with TypeScript, Python, Go, Rust, Java, C#—any tech stack
 
@@ -107,8 +111,9 @@ specweave --help                   # Show help
 ```
 
 **Note**:
-- **Claude Code**: All 10 agents and 35+ skills installed natively in `.claude/` - ready to use immediately!
+- **Claude Code**: Core framework (3 agents + 8 skills) installed natively in `.claude/` + plugins auto-detected and suggested!
 - **Other tools**: Universal AGENTS.md adapter generated - works with Cursor, Gemini CLI, Codex, Copilot, and ANY AI!
+- **Plugins**: Auto-detected based on your project (GitHub, tech stacks, domain expertise) - enable as needed!
 
 ---
 
@@ -121,10 +126,11 @@ specweave --help                   # Show help
 npx specweave init my-app
 cd my-app
 
-# For Claude Code - everything native and ready immediately:
-# ✅ 10 agents in .claude/agents/
-# ✅ 35+ skills in .claude/skills/
-# ✅ 10 slash commands in .claude/commands/
+# For Claude Code - core framework native and ready immediately:
+# ✅ 3 core agents in .claude/agents/ (PM, Architect, Tech Lead)
+# ✅ 8 core skills in .claude/skills/ (increment lifecycle, living docs)
+# ✅ 7 slash commands in .claude/commands/
+# ✅ Plugins auto-detected and suggested based on project
 # (Other tools get AGENTS.md adapter instead)
 
 # Open Claude Code and use slash commands:
@@ -163,10 +169,11 @@ User: /specweave done 0001  # Close increment with slash command
 
 **How it works** (smart append-only workflow: 0001 → 0002 → 0003):
 1. `specweave init` → Detects your AI tool and configures appropriately
-   - **Claude Code**: Native components installed (10 agents + 35+ skills)
-   - **Other tools**: Universal AGENTS.md adapter generated
+   - **Claude Code**: Core framework installed + plugins auto-detected and suggested
+   - **Other tools**: Universal AGENTS.md adapter generated with enabled plugins
 2. **Use `/specweave inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
    - PM creates specs + plan + auto-generates tasks
+   - **Smart**: Auto-detects needed plugins from feature description
    - **Smart**: Auto-closes previous increment if PM gates pass
 3. **Use `/specweave do` or `/specweave do 0001`** → Execute implementation (hooks after EVERY task in Claude)
    - **Smart**: Auto-resumes from next incomplete task
@@ -183,70 +190,105 @@ User: /specweave done 0001  # Close increment with slash command
 
 ---
 
-## 🤖 Agents (10 Total)
+## 🤖 Agents
 
-SpecWeave includes **10 specialized AI agents** that work with slash commands and during implementation:
+SpecWeave uses a **modular agent system** - core agents (always available) + plugin agents (opt-in):
+
+### Core Agents (Always Available)
 
 | Agent | Role | When It Activates |
 |-------|------|-------------------|
 | **pm** | Product Manager - requirements, user stories | Planning features, creating increments |
 | **architect** | System Architect - design, ADRs, decisions | Technical design, architecture |
-| **security** | Security Engineer - threat modeling, OWASP | Security review, vulnerability assessment |
-| **qa-lead** | QA Lead - test strategy, quality gates | Testing, quality assurance |
-| **devops** | DevOps Engineer - CI/CD, infrastructure | Deployment, infrastructure needs |
 | **tech-lead** | Technical Lead - code review, best practices | Code review, refactoring |
-| **sre** | SRE - incident response, monitoring | Production incidents, troubleshooting |
-| **docs-writer** | Technical Writer - documentation | Writing docs, API documentation |
-| **performance** | Performance Engineer - optimization | Performance issues, profiling |
-| **diagrams-architect** | Diagram Expert - C4 Model, Mermaid | Creating diagrams (via diagrams-generator skill) |
+
+### Plugin Agents (Available via Plugins)
+
+| Agent | Plugin | Role | When It Activates |
+|-------|--------|------|-------------------|
+| **github-manager** | specweave-github | GitHub CLI specialist | GitHub operations, issue sync |
+| **security** | specweave-security | Security Engineer - threat modeling | Security review, vulnerabilities |
+| **qa-lead** | specweave-qa | QA Lead - test strategy | Testing, quality assurance |
+| **devops** | specweave-kubernetes | DevOps Engineer - K8s, infrastructure | Deployment, infrastructure |
+| **sre** | specweave-observability | SRE - incident response, monitoring | Production incidents |
+| **docs-writer** | specweave-docs | Technical Writer - documentation | Writing docs, API docs |
+| **performance** | specweave-performance | Performance Engineer - optimization | Performance issues |
+| **diagrams-architect** | specweave-diagrams | Diagram Expert - C4 Model, Mermaid | Creating diagrams |
 
 **Agent Access**:
-- **Claude Code**: All agents pre-installed natively in `.claude/agents/` - ready to use immediately!
-- **Other tools**: Agents documented in universal AGENTS.md - reference roles manually
+- **Claude Code**: Core agents pre-installed in `.claude/agents/`, plugin agents load on demand!
+- **Other tools**: Agents compiled to AGENTS.md - reference roles manually
 
 ---
 
-## 🎯 Skills (35+ Total)
+## 🎯 Skills
 
-SpecWeave includes **35+ AI skills** that work with slash commands:
+SpecWeave uses a **modular skill system** - core skills (always available) + plugin skills (opt-in):
 
-### Core Framework Skills
-- **specweave-detector** - Slash command documentation
+### Core Skills (Always Available)
+
+**Increment Lifecycle:**
 - **increment-planner** - Plan features via `/specweave inc` command
-- **skill-router** - Route requests to appropriate skills
-- **context-loader** - Load relevant specifications
-- **role-orchestrator** - Coordinate multiple agents
+- **rfc-generator** - Generate RFCs and technical proposals
+- **context-loader** - Explains progressive disclosure and context efficiency
+- **context-optimizer** - Second-pass context optimization (80%+ token reduction)
 
-### Technology Stack Skills
-- **nextjs** - Next.js App Router, Server Components
-- **nodejs-backend** - Node.js, Express, NestJS APIs
-- **python-backend** - FastAPI, Django APIs
-- **dotnet-backend** - ASP.NET Core APIs
-- **frontend** - React, Vue, Angular components
+**Project Management:**
+- **project-kickstarter** - Initialize new projects from descriptions
+- **increment-quality-judge** - AI-powered quality assessment
 
-### Integration Skills
-- **jira-sync** - Sync with JIRA issues
-- **ado-sync** - Sync with Azure DevOps
-- **github-sync** - Sync with GitHub issues
-
-### Design & Diagram Skills
-- **diagrams-generator** - Generate C4 diagrams
-- **figma-designer** - Create Figma designs
-- **figma-implementer** - Convert Figma to code
-
-### Infrastructure Skills
-- **hetzner-provisioner** - Deploy to Hetzner Cloud
-- **cost-optimizer** - Optimize cloud costs
-
-### Brownfield Skills
+**Brownfield Support:**
 - **brownfield-analyzer** - Analyze existing codebases
 - **brownfield-onboarder** - Merge existing documentation
 
-**And many more!**
+### Plugin Skills (40+ Available via Plugins)
 
-### 🔍 Progressive Disclosure (NEW in v0.3.8)
+**GitHub Integration (specweave-github):**
+- **github-sync** - Bidirectional increment ↔ issue sync
+- **github-issue-tracker** - Task-level progress tracking
 
-SpecWeave now includes **SKILLS-INDEX.md** - a single-file reference for all 35+ skills with activation keywords and usage examples.
+**Technology Stacks:**
+- **nextjs** - Next.js App Router, Server Components (specweave-frontend-stack)
+- **nodejs-backend** - Node.js, Express, NestJS APIs (specweave-backend-stack)
+- **python-backend** - FastAPI, Django APIs (specweave-backend-stack)
+- **dotnet-backend** - ASP.NET Core APIs (specweave-backend-stack)
+- **frontend** - React, Vue, Angular components (specweave-frontend-stack)
+
+**Infrastructure:**
+- **hetzner-provisioner** - Deploy to Hetzner Cloud (specweave-cloud)
+- **cost-optimizer** - Optimize cloud costs (specweave-cloud)
+- **k8s-deployer** - Kubernetes deployment (specweave-kubernetes)
+
+**Integrations:**
+- **jira-sync** - Sync with JIRA issues (specweave-jira)
+- **ado-sync** - Sync with Azure DevOps (specweave-ado)
+
+**Design & Diagrams:**
+- **diagrams-generator** - Generate C4 diagrams (specweave-diagrams)
+- **figma-designer** - Create Figma designs (specweave-figma)
+- **figma-implementer** - Convert Figma to code (specweave-figma)
+
+**And 30+ more specialized skills!**
+
+### 🔌 Plugin System (NEW in v0.4.0)
+
+SpecWeave v0.4.0 introduces **intelligent plugin detection**:
+
+1. **Auto-Detection** - Plugins suggested based on:
+   - Package.json dependencies (React → frontend-stack)
+   - Directory structure (kubernetes/ → kubernetes)
+   - Git remote (github.com → github)
+   - Environment variables (GITHUB_TOKEN → github)
+
+2. **Context Efficiency** - Load only what you need:
+   - Basic project: **12K tokens** (core only)
+   - React app: **16K tokens** (core + frontend-stack + github)
+   - Backend API: **15K tokens** (core + backend-stack + github)
+
+3. **Multi-Tool Support** - Works across all platforms:
+   - **Claude Code**: Native plugin loading
+   - **Cursor/Copilot**: AGENTS.md compilation
+   - **Generic**: Manual workflows
 
 **How it works**:
 1. **Discovery**: Read `.claude/skills/SKILLS-INDEX.md` (1 file vs 35 files = 97% faster)

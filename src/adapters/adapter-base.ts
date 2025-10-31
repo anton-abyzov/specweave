@@ -16,6 +16,7 @@ import {
   AutomationLevel
 } from './adapter-interface.js';
 import { getDirname } from '../utils/esm-helpers.js';
+import type { Plugin } from '../core/types/plugin.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -145,5 +146,37 @@ export abstract class AdapterBase implements IAdapter {
     }
 
     return content;
+  }
+
+  /**
+   * Check if this adapter supports plugins
+   * Default: No plugin support (override in concrete adapters)
+   */
+  supportsPlugins(): boolean {
+    return false;
+  }
+
+  /**
+   * Compile and install a plugin
+   * Default: Throw error (override in concrete adapters that support plugins)
+   */
+  async compilePlugin(plugin: Plugin): Promise<void> {
+    throw new Error(`Plugin support not implemented for ${this.name} adapter`);
+  }
+
+  /**
+   * Unload a plugin
+   * Default: Throw error (override in concrete adapters that support plugins)
+   */
+  async unloadPlugin(pluginName: string): Promise<void> {
+    throw new Error(`Plugin support not implemented for ${this.name} adapter`);
+  }
+
+  /**
+   * Get installed plugins
+   * Default: Return empty array (override in concrete adapters that support plugins)
+   */
+  async getInstalledPlugins(): Promise<string[]> {
+    return [];
   }
 }

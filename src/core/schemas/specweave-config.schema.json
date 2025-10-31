@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://spec-weave.com/schemas/specweave-config.json",
+  "title": "SpecWeave Configuration",
+  "description": "Schema for .specweave/config.yaml configuration file",
+  "type": "object",
+  "properties": {
+    "plugins": {
+      "type": "object",
+      "description": "Plugin configuration",
+      "properties": {
+        "enabled": {
+          "type": "array",
+          "description": "List of enabled plugin names",
+          "items": {
+            "type": "string",
+            "pattern": "^specweave-[a-z0-9-]+$"
+          },
+          "uniqueItems": true,
+          "examples": [
+            ["specweave-github", "specweave-frontend-stack"]
+          ]
+        },
+        "settings": {
+          "type": "object",
+          "description": "Plugin-specific settings",
+          "patternProperties": {
+            "^specweave-[a-z0-9-]+$": {
+              "type": "object",
+              "description": "Settings for a specific plugin"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": ["enabled"],
+      "additionalProperties": false
+    },
+    "project": {
+      "type": "object",
+      "description": "Project metadata",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Project name",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "version": {
+          "type": "string",
+          "description": "Project version (semver)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9.-]+)?(\\+[a-z0-9.-]+)?$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description",
+          "maxLength": 1024
+        }
+      },
+      "additionalProperties": true
+    },
+    "adapters": {
+      "type": "object",
+      "description": "Adapter configuration",
+      "properties": {
+        "default": {
+          "type": "string",
+          "description": "Default adapter to use",
+          "enum": ["claude", "cursor", "copilot", "generic"]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "examples": [
+    {
+      "plugins": {
+        "enabled": [
+          "specweave-github"
+        ],
+        "settings": {
+          "specweave-github": {
+            "repo": "owner/repo",
+            "auto_create_issue": true,
+            "auto_update_progress": true,
+            "auto_close_issue": true,
+            "sync_frequency": "every-task",
+            "default_labels": [
+              "specweave",
+              "increment"
+            ],
+            "milestone": "v1.0.0"
+          }
+        }
+      },
+      "project": {
+        "name": "my-project",
+        "version": "1.0.0",
+        "description": "My SpecWeave project"
+      },
+      "adapters": {
+        "default": "claude"
+      }
+    },
+    {
+      "plugins": {
+        "enabled": [
+          "specweave-github",
+          "specweave-frontend-stack",
+          "specweave-backend-stack"
+        ],
+        "settings": {
+          "specweave-github": {
+            "repo": "myorg/myapp",
+            "auto_create_issue": true,
+            "sync_frequency": "every-task"
+          },
+          "specweave-frontend-stack": {
+            "framework": "react",
+            "typescript": true,
+            "styling": "tailwind"
+          },
+          "specweave-backend-stack": {
+            "language": "typescript",
+            "framework": "express",
+            "database": "postgresql"
+          }
+        }
+      },
+      "project": {
+        "name": "full-stack-app",
+        "version": "0.1.0"
+      }
+    }
+  ]
+}

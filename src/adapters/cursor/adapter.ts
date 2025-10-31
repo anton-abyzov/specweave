@@ -12,6 +12,7 @@ import * as path from 'path';
 import fs from 'fs-extra';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
+import type { Plugin } from '../../core/types/plugin.js';
 
 export class CursorAdapter extends AdapterBase {
   name = 'cursor';
@@ -218,5 +219,174 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
 - "act as Architect and design system" (AGENTS.md defines Architect role)
 - "act as DevOps and create infrastructure" (AGENTS.md defines DevOps role)
     `;
+  }
+
+  /**
+   * Check if Cursor adapter supports plugins
+   *
+   * Cursor has plugin support via AGENTS.md compilation
+   *
+   * @returns boolean True for Cursor
+   */
+  supportsPlugins(): boolean {
+    return true;
+  }
+
+  /**
+   * Compile and install a plugin for Cursor
+   *
+   * Cursor uses AGENTS.md compilation:
+   * - Append skills to AGENTS.md
+   * - Append agents to AGENTS.md
+   * - Append commands to team commands JSON
+   *
+   * @param plugin Plugin to install
+   */
+  async compilePlugin(plugin: Plugin): Promise<void> {
+    const projectPath = process.cwd();
+    const agentsMdPath = path.join(projectPath, 'AGENTS.md');
+
+    console.log(`\n📦 Compiling plugin for Cursor: ${plugin.manifest.name}`);
+
+    // Ensure AGENTS.md exists
+    if (!(await fs.pathExists(agentsMdPath))) {
+      throw new Error('AGENTS.md not found. Run specweave init first.');
+    }
+
+    // Read current AGENTS.md
+    let agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
+
+    // Check if plugin already compiled
+    const pluginMarker = `<!-- Plugin: ${plugin.manifest.name} -->`;
+    if (agentsMd.includes(pluginMarker)) {
+      console.log(`   ℹ️  Plugin ${plugin.manifest.name} already compiled to AGENTS.md`);
+      return;
+    }
+
+    // Generate plugin section for AGENTS.md
+    let pluginSection = `\n\n${pluginMarker}\n\n`;
+    pluginSection += `# Plugin: ${plugin.manifest.name}\n\n`;
+    pluginSection += `${plugin.manifest.description}\n\n`;
+
+    // Add skills
+    if (plugin.skills.length > 0) {
+      pluginSection += `## Skills\n\n`;
+      for (const skill of plugin.skills) {
+        const skillContent = await fs.readFile(path.join(skill.path, 'SKILL.md'), 'utf-8');
+        // Remove frontmatter for AGENTS.md
+        const contentWithoutFrontmatter = skillContent.replace(/^---\n[\s\S]+?\n---\n/, '');
+        pluginSection += `### ${skill.name}\n\n`;
+        pluginSection += `${contentWithoutFrontmatter}\n\n`;
+      }
+    }
+
+    // Add agents
+    if (plugin.agents.length > 0) {
+      pluginSection += `## Agents\n\n`;
+      for (const agent of plugin.agents) {
+        const agentContent = await fs.readFile(path.join(agent.path, 'AGENT.md'), 'utf-8');
+        pluginSection += `### ${agent.name}\n\n`;
+        pluginSection += `${agentContent}\n\n`;
+      }
+    }
+
+    // Add commands
+    if (plugin.commands.length > 0) {
+      pluginSection += `## Commands\n\n`;
+      for (const command of plugin.commands) {
+        const commandContent = await fs.readFile(command.path, 'utf-8');
+        // Remove frontmatter
+        const contentWithoutFrontmatter = commandContent.replace(/^---\n[\s\S]+?\n---\n/, '');
+        pluginSection += `### /${command.name}\n\n`;
+        pluginSection += `${contentWithoutFrontmatter}\n\n`;
+      }
+    }
+
+    pluginSection += `<!-- End Plugin: ${plugin.manifest.name} -->\n`;
+
+    // Append to AGENTS.md
+    agentsMd += pluginSection;
+    await fs.writeFile(agentsMdPath, agentsMd, 'utf-8');
+
+    console.log(`   ✓ Compiled to AGENTS.md`);
+    console.log(`   ✓ ${plugin.skills.length} skills added`);
+    console.log(`   ✓ ${plugin.agents.length} agents added`);
+    console.log(`   ✓ ${plugin.commands.length} commands added`);
+
+    console.log(`\n✅ Plugin ${plugin.manifest.name} compiled for Cursor!`);
+  }
+
+  /**
+   * Unload a plugin from Cursor
+   *
+   * Removes plugin section from AGENTS.md
+   *
+   * @param pluginName Name of plugin to unload
+   */
+  async unloadPlugin(pluginName: string): Promise<void> {
+    const projectPath = process.cwd();
+    const agentsMdPath = path.join(projectPath, 'AGENTS.md');
+
+    console.log(`\n🗑️  Unloading plugin from Cursor: ${pluginName}`);
+
+    if (!(await fs.pathExists(agentsMdPath))) {
+      console.warn(`⚠️  AGENTS.md not found`);
+      return;
+    }
+
+    // Read AGENTS.md
+    let agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
+
+    // Find plugin section
+    const startMarker = `<!-- Plugin: ${pluginName} -->`;
+    const endMarker = `<!-- End Plugin: ${pluginName} -->`;
+
+    const startIndex = agentsMd.indexOf(startMarker);
+    if (startIndex === -1) {
+      console.warn(`⚠️  Plugin ${pluginName} not found in AGENTS.md`);
+      return;
+    }
+
+    const endIndex = agentsMd.indexOf(endMarker, startIndex);
+    if (endIndex === -1) {
+      console.warn(`⚠️  Plugin ${pluginName} section malformed in AGENTS.md`);
+      return;
+    }
+
+    // Remove plugin section
+    agentsMd = agentsMd.slice(0, startIndex) + agentsMd.slice(endIndex + endMarker.length);
+
+    // Write back
+    await fs.writeFile(agentsMdPath, agentsMd, 'utf-8');
+
+    console.log(`   ✓ Removed from AGENTS.md`);
+    console.log(`\n✅ Plugin ${pluginName} unloaded!`);
+  }
+
+  /**
+   * Get list of installed plugins for Cursor
+   *
+   * Parses AGENTS.md for plugin markers
+   *
+   * @returns Array of installed plugin names
+   */
+  async getInstalledPlugins(): Promise<string[]> {
+    const projectPath = process.cwd();
+    const agentsMdPath = path.join(projectPath, 'AGENTS.md');
+
+    if (!(await fs.pathExists(agentsMdPath))) {
+      return [];
+    }
+
+    const agentsMd = await fs.readFile(agentsMdPath, 'utf-8');
+    const pluginMarkerRegex = /<!-- Plugin: (specweave-[a-z0-9-]+) -->/g;
+    const matches = agentsMd.matchAll(pluginMarkerRegex);
+
+    const plugins: string[] = [];
+    for (const match of matches) {
+      plugins.push(match[1]);
+    }
+
+    return plugins;
   }
 }
