@@ -226,7 +226,7 @@ When creating GitHub issues from increments, use this format:
 [From spec.md]
 
 ---
-*Created by SpecWeave - [Learn more](https://github.com/specweave/specweave)*
+*Created by SpecWeave - [Learn more](https://github.com/anton-abyzov/specweave)*
 ```
 
 ## Bidirectional Sync

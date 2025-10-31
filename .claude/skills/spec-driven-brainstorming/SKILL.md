@@ -1,6 +1,6 @@
 ---
 name: spec-driven-brainstorming
-description: Refines rough ideas into spec-ready designs through structured Socratic questioning, alternative exploration, and incremental validation. Use BEFORE creating increments - transforms vague concepts into clear requirements. Activates for: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink design, deep thinking, architecture exploration.
+description: Refines rough ideas into spec-ready designs through structured Socratic questioning, alternative exploration, and incremental validation. Use BEFORE creating increments - transforms vague concepts into clear requirements. Activates for: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink, ultrathink on, think through this, deep thinking, architecture exploration, analyze this idea, evaluate approach, explore options.
 ---
 
 # Spec-Driven Brainstorming

@@ -1,6 +1,6 @@
 ---
 name: skill-router
-description: Intelligent routing system that parses ambiguous user requests and routes them to appropriate SpecWeave skills with >90% accuracy. Acts as the "traffic controller" for all skill invocations. Activates when user intent is unclear or when multiple skills could handle a request. Keywords: route, clarify, ambiguous, which skill, help me decide.
+description: Intelligent routing system that parses ambiguous user requests and routes them to appropriate SpecWeave skills with >90% accuracy. Acts as the "traffic controller" for all skill invocations. Activates when user intent is unclear or when multiple skills could handle a request. Also activates proactively when detecting product description patterns (name + features + tech stack + timeline) in SpecWeave folders. Keywords: route, clarify, ambiguous, which skill, help me decide, product description, new project, feature list, tech stack, build this.
 ---
 
 # Skill Router - Intelligent Request Routing
