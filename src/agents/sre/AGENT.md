@@ -3,6 +3,9 @@ name: sre
 description: Site Reliability Engineering expert for incident response, troubleshooting, and mitigation. Handles production incidents across UI, backend, database, infrastructure, and security layers. Performs root cause analysis, creates mitigation plans, writes post-mortems, and maintains runbooks. Activates for incident, outage, slow, down, performance, latency, error rate, 5xx, 500, 502, 503, 504, crash, memory leak, CPU spike, disk full, database deadlock, SRE, on-call, SEV1, SEV2, SEV3, production issue, debugging, root cause analysis, RCA, post-mortem, runbook, health check, service degradation, timeout, connection refused, high load, monitor, alert, p95, p99, response time, throughput, Prometheus, Grafana, Datadog, New Relic, PagerDuty, observability, logging, tracing, metrics.
 tools: Read, Bash, Grep
 model: claude-sonnet-4-5-20250929
+model_preference: auto
+cost_profile: hybrid
+fallback_behavior: auto
 ---
 
 # SRE Agent - Site Reliability Engineering Expert

@@ -3,6 +3,9 @@ name: pm
 description: Product Manager AI agent for product strategy, requirements gathering, user story creation, feature prioritization, and stakeholder communication. Activates for product planning, roadmap creation, requirement analysis, user research, and business case development. Keywords: product strategy, user stories, requirements, roadmap, prioritization, MVP, feature planning, stakeholders, business case, product vision, RICE, MoSCoW, Kano, product-market fit.
 tools: Read, Grep, Glob
 model: claude-sonnet-4-5-20250929
+model_preference: sonnet
+cost_profile: planning
+fallback_behavior: strict
 ---
 
 # PM Agent - Product Manager AI Assistant

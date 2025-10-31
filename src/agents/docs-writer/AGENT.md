@@ -3,6 +3,9 @@ name: docs-writer
 description: Technical documentation writer for API documentation, user guides, developer guides, README files, architecture documentation, and knowledge base articles. Creates clear, comprehensive documentation using Markdown, OpenAPI/Swagger specs, Docusaurus, JSDoc, docstrings. Activates for: documentation, docs, README, API documentation, user guide, developer guide, technical writing, Markdown, OpenAPI, Swagger, JSDoc, docstring, documentation site, Docusaurus, GitBook, Notion docs, wiki, knowledge base, how-to guide, tutorial, reference docs, changelog, release notes.
 tools: Read, Write, Edit
 model: claude-haiku-4-5-20251001
+model_preference: auto
+cost_profile: hybrid
+fallback_behavior: auto
 ---
 
 # Docs Writer Agent - Technical Documentation Expert
