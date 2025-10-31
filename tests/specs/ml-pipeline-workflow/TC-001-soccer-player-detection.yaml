@@ -1,0 +1,185 @@
+# Test Case 001: Soccer Player Detection Pipeline
+# Complete MLOps workflow for computer vision model
+
+id: TC-001
+name: Soccer Player Detection Pipeline
+skill: ml-pipeline-workflow
+priority: P0
+type: integration
+estimated_duration: 30s
+
+description: |
+  End-to-end MLOps pipeline that trains a simple computer vision model
+  to detect soccer players in video frames. Tests the complete workflow:
+  data ingestion → validation → training → validation → deployment.
+
+scenario:
+  use_case: Soccer Player Statistics Analytics
+  problem: Track player movements and generate game statistics
+  solution: YOLOv8-based detection model with MLOps automation
+  tech_stack:
+    - Python 3.9+
+    - PyTorch (CPU)
+    - OpenCV
+    - Ultralytics YOLO
+    - MLflow (optional)
+
+test_data:
+  description: Toy dataset for fast testing
+  dataset_size: 10 frames
+  annotations: YOLO format (bounding boxes)
+  split:
+    train: 8 frames
+    validation: 2 frames
+  expected_accuracy: ">75% (toy dataset)"
+
+pipeline_stages:
+  - name: data_ingestion
+    description: Load soccer video frames and annotations
+    input: Video frames (JPEG) + YOLO annotations (TXT)
+    output: Structured dataset with train/val split
+    validation: Check file existence and format
+
+  - name: data_validation
+    description: Validate data quality
+    checks:
+      - Frame dimensions consistent
+      - Annotations in valid YOLO format
+      - No missing bounding boxes
+      - Class labels within range
+    output: Validation report
+
+  - name: feature_engineering
+    description: Prepare data for training
+    operations:
+      - Resize frames to 640x640
+      - Normalize pixel values
+      - Augment training data (flip, rotate)
+    output: Preprocessed dataset
+
+  - name: model_training
+    description: Train YOLOv8 nano model
+    config:
+      model: yolov8n.pt (pretrained)
+      epochs: 3  # Fast training for tests
+      batch_size: 2
+      img_size: 640
+      device: cpu
+    output: Trained model weights
+
+  - name: model_validation
+    description: Validate model performance
+    metrics:
+      - mAP@0.5 (mean Average Precision)
+      - Precision
+      - Recall
+    threshold: mAP > 0.75 (toy dataset)
+    output: Metrics report
+
+  - name: model_deployment
+    description: Export model for production
+    formats:
+      - PyTorch (.pt)
+      - ONNX (.onnx) - for cross-platform
+    output: Packaged model artifacts
+
+  - name: inference_test
+    description: Test model inference
+    test_images: 2 validation frames
+    expected:
+      - Predictions complete in <500ms per frame
+      - Bounding boxes detected
+      - Confidence scores >0.5
+    output: Inference results
+
+test_steps:
+  - step: 1
+    action: Check Python dependencies
+    expected: Python 3.9+, PyTorch, OpenCV installed
+    on_fail: Skip test with clear message
+
+  - step: 2
+    action: Create test dataset
+    details: |
+      - Generate 10 synthetic soccer frames (or use pre-saved)
+      - Create YOLO annotations (player class = 0)
+      - Split into train (8) / val (2)
+    expected: Dataset directory created with correct structure
+
+  - step: 3
+    action: Run data validation
+    expected: All frames pass quality checks
+
+  - step: 4
+    action: Prepare data for training
+    expected: Preprocessed dataset ready
+
+  - step: 5
+    action: Train YOLOv8 model
+    details: |
+      - Use yolov8n.pt (nano) for speed
+      - Train for 3 epochs only
+      - CPU mode (no GPU required)
+    expected: Model trains successfully, weights saved
+
+  - step: 6
+    action: Validate model accuracy
+    expected: mAP@0.5 > 0.75 on validation set
+
+  - step: 7
+    action: Export model to ONNX
+    expected: ONNX file created and loadable
+
+  - step: 8
+    action: Test inference
+    details: Run model on 2 validation frames
+    expected: |
+      - Predictions complete
+      - Bounding boxes detected
+      - Latency <500ms per frame
+
+  - step: 9
+    action: Generate MLOps report
+    expected: |
+      - Training metrics logged
+      - Validation results saved
+      - Model artifacts packaged
+
+success_criteria:
+  - All pipeline stages complete without errors
+  - Model achieves mAP > 0.75
+  - Inference latency < 500ms per frame
+  - ONNX export successful
+
+failure_conditions:
+  - Missing dependencies (Python, PyTorch)
+  - Data validation fails
+  - Training fails to converge
+  - Model accuracy below threshold
+  - ONNX export fails
+
+test_artifacts:
+  generated:
+    - .specweave/test-runs/ml-pipeline/dataset/
+    - .specweave/test-runs/ml-pipeline/runs/train/
+    - .specweave/test-runs/ml-pipeline/models/best.pt
+    - .specweave/test-runs/ml-pipeline/models/best.onnx
+    - test-results/ml-pipeline-workflow-{timestamp}.json
+  preserved: true  # Keep for inspection
+  cleanup_after: false  # Manual cleanup
+
+notes: |
+  - This test uses a toy dataset for speed (30s total)
+  - For production pipelines, use real datasets and more epochs
+  - YOLOv8 nano is used for fast testing
+  - CPU-only mode (no GPU required for CI/CD)
+  - Test can run offline if dataset is cached
+
+related_skills:
+  - hyperparameter-tuning
+  - experiment-tracking-setup
+  - model-deployment-patterns
+
+author: SpecWeave Test Suite
+created: 2025-10-31
+updated: 2025-10-31

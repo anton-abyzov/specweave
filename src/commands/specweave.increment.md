@@ -117,7 +117,51 @@ You are helping the user create a new SpecWeave increment with automatic closure
 - "What's the short name?" (e.g., "user-authentication" for increment 003-user-authentication)
 - "Priority? (P1/P2/P3)" (default: P1)
 
-### Step 4: Activate Increment Planning Workflow
+### Step 4: Detect Suggested Plugins (T-019 - Plugin Auto-Detection)
+
+**🔌 NEW IN v0.4.0**: Auto-detect plugins based on increment description
+
+Before planning, analyze the feature description for plugin keywords and suggest relevant plugins:
+
+```bash
+# Example feature descriptions and their plugin suggestions:
+"Deploy to Kubernetes" → kubernetes plugin
+"Add Stripe payments" → payment-processing plugin
+"Create React dashboard" → frontend-stack plugin
+"Build FastAPI backend" → backend-stack plugin
+"Sync with GitHub issues" → github plugin
+"Integrate with Jira" → jira plugin
+```
+
+**Detection Logic**:
+1. Extract keywords from feature description
+2. Match against plugin triggers (from manifest.json)
+3. Check if plugin already enabled
+4. Suggest new plugins only
+
+**Output Format**:
+```
+💡 Plugin Detection
+
+Analyzing feature: "Add authentication with NextJS and Stripe"
+
+Suggested plugins:
+✅ frontend-stack (NextJS detected)
+✅ payment-processing (Stripe detected)
+
+Would you like to enable these plugins? (Y/n)
+```
+
+**If user confirms**:
+- Enable plugins via PluginManager
+- Plugins become available for increment planning
+- Skills/agents from plugins can be used immediately
+
+**If user declines**:
+- Continue without plugins
+- User can enable later: `specweave plugin enable <name>`
+
+### Step 5: Activate Increment Planning Workflow
 
 **🚨 CRITICAL - YOU MUST USE THE SKILL TOOL:**
 
@@ -149,7 +193,7 @@ The increment-planner skill will:
 - ✅ Quality gates enforced
 - ❌ Direct file writing bypasses entire workflow
 
-### Step 5: Skill Tool Invocation (MANDATORY)
+### Step 6: Skill Tool Invocation (MANDATORY)
 
 **BEFORE PROCEEDING, USE THE SKILL TOOL:**
 
@@ -158,9 +202,9 @@ You must literally call the Skill tool like this:
 Skill(command: "increment-planner")
 ```
 
-Wait for the skill to complete. Do NOT continue to Step 6 until the increment-planner skill returns.
+Wait for the skill to complete. Do NOT continue to Step 7 until the increment-planner skill returns.
 
-### Step 6: Alternative Approach (ONLY IF SKILL FAILS)
+### Step 7: Alternative Approach (ONLY IF SKILL FAILS)
 
 **Only use this if Skill tool is unavailable or fails:**
 

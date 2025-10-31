@@ -273,7 +273,60 @@ export async function initCommand(
 
     spinner.succeed('SpecWeave project created successfully!');
 
-    // 11. Show tool-specific next steps
+    // 11. Auto-detect and suggest plugins (T-018)
+    console.log('');
+    const pluginSpinner = ora('Detecting plugins...').start();
+    try {
+      const { PluginDetector } = await import('../../core/plugin-detector.js');
+      const { PluginManager } = await import('../../core/plugin-manager.js');
+
+      const detector = new PluginDetector();
+      const detectionResults = await detector.detectFromProject(targetDir);
+      const suggestedPlugins = detectionResults.map(r => r.pluginName);
+
+      pluginSpinner.succeed(`Detected ${suggestedPlugins.length} suggested plugins`);
+
+      if (suggestedPlugins.length > 0) {
+        console.log(chalk.cyan('\n💡 Suggested Plugins:'));
+        for (const pluginName of suggestedPlugins) {
+          console.log(`   • ${chalk.white(pluginName)}`);
+        }
+
+        const { enablePlugins } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'enablePlugins',
+            message: 'Enable suggested plugins now?',
+            default: true
+          }
+        ]);
+
+        if (enablePlugins) {
+          const adapter = adapterLoader.getAdapter(toolName);
+          if (!adapter) {
+            throw new Error(`Adapter not found for tool: ${toolName}`);
+          }
+
+          const manager = new PluginManager(targetDir);
+
+          const enableSpinner = ora('Enabling plugins...').start();
+          for (const pluginName of suggestedPlugins) {
+            try {
+              await manager.loadPlugin(pluginName, adapter, { skipDependencies: false });
+              enableSpinner.text = `Enabled ${pluginName}`;
+            } catch (error) {
+              enableSpinner.warn(`Failed to enable ${pluginName}: ${error instanceof Error ? error.message : error}`);
+            }
+          }
+          enableSpinner.succeed('Plugins enabled');
+        }
+      }
+    } catch (error) {
+      pluginSpinner.warn('Plugin detection skipped');
+      console.log(chalk.gray(`   You can enable plugins later with: specweave plugin enable <name>`));
+    }
+
+    // 12. Show tool-specific next steps
     if (toolName !== 'claude') {
       const adapter = adapterLoader.getAdapter(toolName);
       if (adapter) {
