@@ -203,6 +203,15 @@ export async function initCommand(
       }
 
       try {
+        copyHooks('', path.join(targetDir, '.claude/hooks'));
+        spinner.text = 'Hooks installed...';
+      } catch (error: any) {
+        spinner.fail('Failed to copy hooks');
+        console.error(chalk.red(`\n❌ Hooks copy failed: ${error.message}`));
+        throw error;
+      }
+
+      try {
         spinner.text = 'Generating skills index...';
         // Generate skills index and copy to target
         const sourceIndexPath = path.join(__dirname, '../../../src/skills/SKILLS-INDEX.md');
@@ -302,6 +311,7 @@ function createDirectoryStructure(targetDir: string): void {
     '.claude/commands',
     '.claude/agents',
     '.claude/skills',
+    '.claude/hooks',
   ];
 
   directories.forEach((dir) => {
@@ -614,6 +624,58 @@ function copySkills(skillsDir: string, targetSkillsDir: string): void {
     console.error(chalk.red(`\n❌ Error copying skills: ${error.message}`));
     console.error(chalk.red(`   Source: ${sourceDir}`));
     console.error(chalk.red(`   Target: ${targetSkillsDir}`));
+    throw error;
+  }
+}
+
+function copyHooks(hooksDir: string, targetHooksDir: string): void {
+  const sourceDir = findSourceDir('hooks');
+
+  if (!fs.existsSync(sourceDir)) {
+    console.error(chalk.red(`\n❌ Error: Source hooks directory not found`));
+    console.error(chalk.red(`   Expected at: ${sourceDir}`));
+    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    const packageRoot = findPackageRoot(__dirname);
+    if (packageRoot) {
+      console.error(chalk.red(`   Package root: ${packageRoot}`));
+    } else {
+      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+    }
+    throw new Error('Failed to locate source hooks directory. This may be a Windows path resolution issue.');
+  }
+
+  // Validate source directory contains hook files
+  const hookFiles = fs.readdirSync(sourceDir).filter(f => f.endsWith('.sh') || f === 'README.md');
+
+  if (hookFiles.length === 0) {
+    console.error(chalk.red(`\n❌ Error: Source hooks directory is empty`));
+    console.error(chalk.red(`   Directory: ${sourceDir}`));
+    console.error(chalk.red(`   This indicates a package installation issue.`));
+    throw new Error('Source hooks directory exists but contains no hook files');
+  }
+
+  try {
+    // Ensure target directory exists
+    fs.ensureDirSync(targetHooksDir);
+
+    // Copy all files from source to target
+    fs.copySync(sourceDir, targetHooksDir, {
+      overwrite: true,
+      errorOnExist: false
+    });
+
+    // Validate files were copied
+    const copiedFiles = fs.readdirSync(targetHooksDir).filter(f => f.endsWith('.sh') || f === 'README.md');
+
+    if (copiedFiles.length === 0) {
+      throw new Error(`Copy completed but no hook files found in target: ${targetHooksDir}`);
+    }
+
+    console.log(chalk.gray(`   ✓ Copied ${copiedFiles.length} hook files`));
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error copying hooks: ${error.message}`));
+    console.error(chalk.red(`   Source: ${sourceDir}`));
+    console.error(chalk.red(`   Target: ${targetHooksDir}`));
     throw error;
   }
 }

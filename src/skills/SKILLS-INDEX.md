@@ -2,9 +2,9 @@
 
 **Purpose**: Quick reference for all available skills. Read this file BEFORE starting any task.
 
-**Last Updated**: 2025-10-30T18:08:45.324Z (auto-generated, do not edit manually)
+**Last Updated**: 2025-10-31T06:36:02.949Z (auto-generated, do not edit manually)
 
-**Total Skills**: 34
+**Total Skills**: 35
 
 ---
 
@@ -57,9 +57,9 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### increment-planner
 
-**Description**: Creates comprehensive implementation plans for SpecWeave increments (aka features - both terms are interchangeable). This skill should be used when planning new increments/features, creating specifications, or organizing implementation work. Activates for: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature.
+**Description**: Creates comprehensive implementation plans for SpecWeave increments (aka features - both terms are interchangeable). This skill should be used when planning new increments/features, creating specifications, or organizing implementation work. Activates for: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature, new product, build project, MVP, SaaS, app development, product description, tech stack planning, feature list.
 
-**Activates for**: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature
+**Activates for**: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature, new product, build project, MVP, SaaS, app development, product description, tech stack planning, feature list
 
 **Location**: `.claude/skills/increment-planner/SKILL.md`
 
@@ -93,7 +93,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### specweave-detector
 
-**Description**: Documentation skill that explains SpecWeave v0.1.9 smart workflow slash commands. SpecWeave uses EXPLICIT slash commands only - no auto-activation! Use /inc (Plan Increment) or /increment to start. Smart features auto-resume (/do), auto-close (/inc), progress tracking (/progress). Commands /inc, /do, /progress, /validate, /done, /list-increments, /sync-docs, /sync-github. All commands listed in .claude/commands/. Keywords slash commands, /inc, /increment, /do, /progress, /validate, /done, specweave commands, smart workflow, v0.1.9.
+**Description**: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. v0.3.8+ features PROACTIVE auto-detection - when in SpecWeave folder, product descriptions automatically trigger increment planning. Explicit slash commands still work (/inc, /do, /progress, /validate, /done, /sync-docs, /sync-github). Keywords slash commands, /inc, /increment, /do, /progress, /validate, /done, specweave commands, smart workflow, auto-detection, specweave folder.
 
 **Location**: `.claude/skills/specweave-detector/SKILL.md`
 
@@ -120,7 +120,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### skill-router
 
-**Description**: Intelligent routing system that parses ambiguous user requests and routes them to appropriate SpecWeave skills with >90% accuracy. Acts as the "traffic controller" for all skill invocations. Activates when user intent is unclear or when multiple skills could handle a request. Keywords: route, clarify, ambiguous, which skill, help me decide.
+**Description**: Intelligent routing system that parses ambiguous user requests and routes them to appropriate SpecWeave skills with >90% accuracy. Acts as the "traffic controller" for all skill invocations. Activates when user intent is unclear or when multiple skills could handle a request. Also activates proactively when detecting product description patterns (name + features + tech stack + timeline) in SpecWeave folders. Keywords: route, clarify, ambiguous, which skill, help me decide, product description, new project, feature list, tech stack, build this.
 
 **Location**: `.claude/skills/skill-router/SKILL.md`
 
@@ -196,9 +196,9 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### spec-driven-brainstorming
 
-**Description**: Refines rough ideas into spec-ready designs through structured Socratic questioning, alternative exploration, and incremental validation. Use BEFORE creating increments - transforms vague concepts into clear requirements. Activates for: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink design, deep thinking, architecture exploration.
+**Description**: Refines rough ideas into spec-ready designs through structured Socratic questioning, alternative exploration, and incremental validation. Use BEFORE creating increments - transforms vague concepts into clear requirements. Activates for: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink, ultrathink on, think through this, deep thinking, architecture exploration, analyze this idea, evaluate approach, explore options.
 
-**Activates for**: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink design, deep thinking, architecture exploration
+**Activates for**: brainstorm, explore idea, refine concept, design thinking, what should I build, help me think through, ultrathink, ultrathink on, think through this, deep thinking, architecture exploration, analyze this idea, evaluate approach, explore options
 
 **Location**: `.claude/skills/spec-driven-brainstorming/SKILL.md`
 
@@ -355,6 +355,14 @@ Step 4: Execute → Follow the increment planning workflow
 
 ---
 
+#### project-kickstarter
+
+**Description**: Proactively detects product/project descriptions and guides users through SpecWeave increment planning. Activates when user provides product name, features, tech stack, timeline, or problem description. Keywords: project, product, SaaS, app, MVP, build, new project, features, tech stack, core functionality, monetization, timeline, I want to build, let's build, quick build, core features.
+
+**Location**: `.claude/skills/project-kickstarter/SKILL.md`
+
+---
+
 #### spec-kit-expert
 
 **Description**: SPEC-KIT Subject Matter Expert for dynamic gap analysis. Deeply understands spec-kit framework and performs on-demand comparison analysis against current SpecWeave state. Analyzes actual code, features, and specs to generate fresh comparison reports. Activates for "compare to spec-kit", "spec-kit vs SpecWeave", "gap analysis", "what does spec-kit have", "benefits comparison", "should I use spec-kit or SpecWeave", "spec-kit features", "how does spec-kit handle X", "GitHub spec-kit".
@@ -419,8 +427,8 @@ Step 4: Execute → Follow the increment planning workflow
 This index simulates Claude Code's native progressive disclosure:
 - Claude pre-loads skill metadata at startup (name + description)
 - Other tools read this index file for same benefit
-- Single file read replaces 34 individual file scans
-- Token savings: ~97% (1 file vs 34 files)
+- Single file read replaces 35 individual file scans
+- Token savings: ~97% (1 file vs 35 files)
 
 **How to use in your AI tool**:
 1. Load this file at session start
