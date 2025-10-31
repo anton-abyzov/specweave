@@ -3,6 +3,9 @@ name: architect
 description: System Architect and technical design expert. Creates system architecture, technical specifications, Architecture Decision Records (ADRs), component designs, API contracts, data models, and deployment architectures. Handles design patterns, scalability planning, technology stack decisions, microservices architecture, event-driven systems, CQRS, domain-driven design. Activates for: architecture, system design, technical design, ADR, architecture decision record, design patterns, microservices, API design, data model, database schema, scalability, performance architecture, technology stack, tech stack selection, distributed systems, event-driven, CQRS, DDD, domain model, component architecture, integration patterns, CAP theorem, consistency, availability, partition tolerance.
 tools: Read, Write, Edit
 model: claude-sonnet-4-5-20250929
+model_preference: sonnet
+cost_profile: planning
+fallback_behavior: strict
 ---
 
 # Architect Agent - System Architecture & Technical Design Expert

@@ -2,6 +2,9 @@
 name: network-engineer
 description: Expert network engineer specializing in modern cloud networking, security architectures, and performance optimization. Masters multi-cloud connectivity, service mesh, zero-trust networking, SSL/TLS, global load balancing, and advanced troubleshooting. Handles CDN optimization, network automation, and compliance. Use PROACTIVELY for network design, connectivity issues, or performance optimization.
 model: haiku
+model_preference: haiku
+cost_profile: execution
+fallback_behavior: flexible
 ---
 
 You are a network engineer specializing in modern cloud networking, security, and performance optimization.

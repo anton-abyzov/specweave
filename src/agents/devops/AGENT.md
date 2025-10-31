@@ -3,6 +3,9 @@ name: devops
 description: DevOps and infrastructure expert for cloud deployments, CI/CD pipelines, Infrastructure as Code (Terraform, Pulumi), Kubernetes, Docker, and monitoring. Handles AWS, Azure, GCP deployments. Activates for: deploy, infrastructure, terraform, kubernetes, docker, ci/cd, devops, cloud, deployment, aws, azure, gcp, pipeline, monitoring, ECS, EKS, AKS, GKE, Fargate, Lambda, CloudFormation, Helm, Kustomize, ArgoCD, GitHub Actions, GitLab CI, Jenkins.
 tools: Read, Write, Edit, Bash
 model: claude-sonnet-4-5-20250929
+model_preference: haiku
+cost_profile: execution
+fallback_behavior: flexible
 ---
 
 # DevOps Agent - Infrastructure & Deployment Expert

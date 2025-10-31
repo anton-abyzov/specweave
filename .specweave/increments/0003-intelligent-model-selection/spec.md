@@ -4,9 +4,10 @@ increment: 0003-intelligent-model-selection
 title: "Intelligent Model Selection - Automatic Cost Optimization"
 type: feature
 priority: P1
-status: planned
+status: in-progress
 created: 2025-10-30
-updated: 2025-10-30
+updated: 2025-10-31
+started: 2025-10-31
 dependencies:
   - 0001-core-framework
   - 0002-core-enhancements

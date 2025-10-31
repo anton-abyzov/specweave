@@ -2,6 +2,9 @@
 name: payment-integration
 description: Integrate Stripe, PayPal, and payment processors. Handles checkout flows, subscriptions, webhooks, and PCI compliance. Use PROACTIVELY when implementing payments, billing, or subscription features.
 model: haiku
+model_preference: haiku
+cost_profile: execution
+fallback_behavior: flexible
 ---
 
 You are a payment integration specialist focused on secure, reliable payment processing.

@@ -1,7 +1,7 @@
 # SpecWeave - Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
-**Version**: 0.3.7 (Windows fix + Competitive advantages documented)
+**Version**: 0.4.0-dev (Plugin Integration: K8s, ML, Observability, Payment, TDD)
 **Type**: Open Source NPM Package (TypeScript CLI)
 **Repository**: https://github.com/anton-abyzov/specweave
 **Website**: https://spec-weave.com
@@ -74,6 +74,22 @@ git add . && git commit -m "feat: description"
 - `-descriptive-name` = Kebab-case description (lowercase, hyphens)
 - Max 50 chars total (for readability)
 - No special characters except hyphens
+
+---
+
+## Project Scale (v0.4.0)
+
+**After Plugin Integration**:
+- **Skills**: 44 (31 core + 13 new from external plugins)
+- **Agents**: 20 (10 core + 10 new specialized agents)
+- **Commands**: 18 (/specweave.* commands)
+
+**New Capabilities**:
+- ☸️ Kubernetes Operations (4 skills, 1 agent)
+- 🤖 Machine Learning Ops (1 skill, 3 agents, 1 command)
+- 📊 Observability & Monitoring (4 skills, 4 agents, 2 commands)
+- 💳 Payment Processing (4 skills, 1 agent)
+- 🧪 TDD Workflows (1 skill, 1 agent, 4 commands)
 
 ---
 
