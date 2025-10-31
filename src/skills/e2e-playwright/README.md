@@ -490,7 +490,7 @@ MIT License - See LICENSE file for details
 
 - **Documentation**: See SKILL.md for complete API reference
 - **Issues**: Report bugs or request features via GitHub issues
-- **SpecWeave**: See [SpecWeave documentation](https://github.com/specweave/specweave) for framework details
+- **SpecWeave**: See [SpecWeave documentation](https://github.com/anton-abyzov/specweave) for framework details
 
 ## Version History
 

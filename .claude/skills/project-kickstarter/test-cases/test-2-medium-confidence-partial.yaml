@@ -1,0 +1,34 @@
+name: Medium Confidence - Partial Information
+description: Partial product description should trigger clarifying questions then routing
+context:
+  working_directory: /project-with-specweave
+  specweave_initialized: true
+  specweave_directory_exists: true
+
+user_input: |
+  I want to build a task management system with real-time collaboration.
+  Tech stack: React and Node.js
+
+expected_signals:
+  project_name: task management system
+  features_count: 1 # only "real-time collaboration" mentioned
+  tech_stack_mentioned: true
+  timeline_mentioned: false
+  problem_statement: false
+  business_model: false
+
+expected_confidence: medium
+expected_adjusted_confidence: 83% # 3 signals + 2 SpecWeave bonus = 5/6
+expected_action: auto_route_to_increment_planning # still high enough with bonus
+expected_command: /specweave.inc
+
+assistant_should:
+  - Recognize the intent to build something
+  - Note the tech stack is clear
+  - May ask 1-2 clarifying questions about features/timeline
+  - Route to /specweave.inc or spec-driven-brainstorming
+
+assistant_should_not:
+  - Treat as general conversation
+  - Ask excessive clarifying questions (max 1-2)
+  - Wait for explicit command

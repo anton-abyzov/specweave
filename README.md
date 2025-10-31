@@ -83,7 +83,7 @@ cd my-saas
 
 ```bash
 # Clone repository
-git clone https://github.com/specweave/specweave.git
+git clone https://github.com/anton-abyzov/specweave.git
 cd specweave
 
 # Install dependencies and build

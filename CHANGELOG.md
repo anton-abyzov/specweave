@@ -1722,4 +1722,4 @@ specweave init --skip-existing
 
 ---
 
-[0.1.5]: https://github.com/specweave/specweave/releases/tag/v0.1.5
+[0.1.5]: https://github.com/anton-abyzov/specweave/releases/tag/v0.1.5

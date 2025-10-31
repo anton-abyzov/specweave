@@ -39,7 +39,7 @@ git clone https://github.com/YOUR_USERNAME/specweave.git
 cd specweave
 
 # Add upstream remote
-git remote add upstream https://github.com/specweave/specweave.git
+git remote add upstream https://github.com/anton-abyzov/specweave.git
 ```
 
 ### Install SpecWeave
@@ -457,8 +457,8 @@ By contributing to SpecWeave, you agree that your contributions will be licensed
 
 If you have questions about contributing, please:
 1. Check [CLAUDE.md](../CLAUDE.md) for development guide
-2. Search [GitHub Discussions](https://github.com/specweave/specweave/discussions)
-3. Create a [new discussion](https://github.com/specweave/specweave/discussions/new)
+2. Search [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
+3. Create a [new discussion](https://github.com/anton-abyzov/specweave/discussions/new)
 4. Tag maintainers in your issue/PR
 
 ---

@@ -142,7 +142,7 @@ SpecWeave works with:
 ## 📚 Learn More
 
 - **Documentation**: https://spec-weave.com
-- **GitHub**: https://github.com/specweave/specweave
+- **GitHub**: https://github.com/anton-abyzov/specweave
 - **Quick Reference**: See `CLAUDE.md` in your project
 - **Examples**: Check `.specweave/docs/` after creating your first increment
 
