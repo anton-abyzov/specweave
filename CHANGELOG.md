@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-10-31
+
+### ✨ Major Feature: Intelligent Model Selection & Cost Optimization
+
+**Save 60-70% on AI costs with automatic Sonnet 4.5 vs Haiku 4.5 routing**
+
+SpecWeave now intelligently routes work to the most cost-effective model:
+- **Sonnet 4.5** ($3/$15 per 1M tokens) for planning and strategic work
+- **Haiku 4.5** ($1/$5 per 1M tokens) for execution and implementation
+
+**What Changed**:
+
+#### Core Intelligence (Increment 0003)
+- ✅ **Three-layer model selection system**
+  - Layer 1: Agent preferences (20 agents classified: 7 Sonnet, 10 Haiku, 3 Auto)
+  - Layer 2: Phase detection (multi-signal algorithm, >95% target accuracy)
+  - Layer 3: Model selector (combines all signals with safe defaults)
+- ✅ **Real-time cost tracking**
+  - Per-session tracking with token usage
+  - Aggregate reports by increment/agent/model
+  - Savings calculation vs all-Sonnet baseline
+  - Export to JSON/CSV
+- ✅ **New command: `/specweave.costs`**
+  - ASCII dashboard with cost breakdown
+  - View all increments or specific increment
+  - Export options for analysis
+
+#### Documentation
+- ✅ **3 Architecture Decision Records (ADRs)**
+  - ADR-0011: Intelligent Model Selection (472 lines)
+  - ADR-0012: Cost Tracking System (641 lines)
+  - ADR-0013: Phase Detection Algorithm (711 lines)
+- ✅ **3 User guides**
+  - Cost Optimization Guide (482 lines)
+  - Model Selection Guide (technical deep dive)
+  - Cost Tracking Reference (API docs)
+- ✅ **ADR renumbering** - Fixed gap (0008 was missing), sequential numbering restored
+
+#### Files Added
+**Core**:
+- `src/types/model-selection.ts` - Core type definitions
+- `src/types/cost-tracking.ts` - Cost tracking types
+- `src/core/agent-model-manager.ts` - Agent preference loader
+- `src/core/phase-detector.ts` - Multi-signal phase detection
+- `src/core/model-selector.ts` - Decision engine
+- `src/core/cost-tracker.ts` - Cost tracking service
+- `src/utils/pricing-constants.ts` - Anthropic pricing
+- `src/utils/cost-reporter.ts` - Report generation
+- `src/commands/specweave.costs.md` - Cost dashboard command
+
+**Documentation**:
+- `.specweave/docs/internal/architecture/adr/0011-intelligent-model-selection.md`
+- `.specweave/docs/internal/architecture/adr/0012-cost-tracking.md`
+- `.specweave/docs/internal/architecture/adr/0013-phase-detection.md`
+- `.specweave/docs/public/guides/cost-optimization.md`
+- `.specweave/docs/public/guides/model-selection.md`
+- `.specweave/docs/public/reference/cost-tracking.md`
+
+**20 agents updated** with model preferences:
+- `pm`, `architect`, `security`, `performance`, `database-optimizer`, `kubernetes-architect`, `data-scientist` → Sonnet (planning)
+- `devops`, `qa-lead`, `tech-lead`, `frontend`, `nodejs-backend`, `python-backend`, `dotnet-backend`, `network-engineer`, `observability-engineer`, `payment-integration` → Haiku (execution)
+- `diagrams-architect`, `docs-writer`, `sre` → Auto (hybrid)
+
+#### Model Version Policy
+- ✅ ALWAYS use latest model versions (4.5, not 3.5)
+- ✅ `sonnet` → claude-sonnet-4-5-20250929
+- ✅ `haiku` → claude-4-5-haiku-20250110
+
+#### Expected Impact
+- 💰 **60-70% cost reduction** vs all-Sonnet baseline
+- ⚡ **2x faster execution** (Haiku is faster than Sonnet)
+- 🎯 **Zero quality degradation** (Sonnet for all complex work)
+- 📊 **Real-time cost visibility** with `/specweave.costs`
+
+**Upgrade Notes**:
+- No breaking changes
+- Works automatically (zero configuration)
+- Manual override available via `--model` flag
+- Cost data stored locally: `.specweave/logs/costs.json`
+
+---
+
 ## [0.3.13] - 2025-10-31
 
 ### ✨ Features
