@@ -68,17 +68,16 @@ export function getModelPricing(model: 'sonnet' | 'haiku' | 'opus') {
  * @param actualModel - Model actually used
  * @param inputTokens - Input tokens
  * @param outputTokens - Output tokens
- * @returns Savings object with amount and percentage
+ * @returns Savings amount in dollars (positive = saved money)
  */
 export function calculateSavings(
   actualModel: 'sonnet' | 'haiku' | 'opus',
   inputTokens: number,
   outputTokens: number
-): { savedAmount: number; savedPercent: number } {
+): number {
   const actualCost = calculateCost(actualModel, inputTokens, outputTokens);
   const baselineCost = calculateCost('sonnet', inputTokens, outputTokens);
   const savedAmount = baselineCost - actualCost;
-  const savedPercent = baselineCost > 0 ? (savedAmount / baselineCost) * 100 : 0;
 
-  return { savedAmount, savedPercent };
+  return savedAmount;
 }
