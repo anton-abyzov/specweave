@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.1] - 2025-10-31
+
+### 🔧 Fixed
+- **Smart sound notifications** - Hook now only plays completion sound when ALL tasks are done, not after every individual task
+  - Parses todo state from Claude Code's JSON stdin
+  - Uses `jq` for precise parsing (with `grep` fallback)
+  - Logs debug info to `.specweave/logs/hooks-debug.log`
+  - Different messages for partial vs complete: "✅ Task completed. More tasks remaining" vs "🎉 ALL TASKS COMPLETED!"
+
+### 📝 Changed
+- Updated `src/hooks/post-task-completion.sh` with intelligent completion detection
+- Hook now reads stdin to temporary file for analysis before playing sound
+
+---
+
 ## [0.4.0] - 2025-10-31
 
 ### ✨ Major Feature: Intelligent Model Selection & Cost Optimization
