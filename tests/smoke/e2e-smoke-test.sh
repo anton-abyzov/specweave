@@ -191,8 +191,8 @@ info "Step 9: Verifying core agents installed..."
 core_agents=(
   "pm"
   "architect"
-  "nextjs"
   "devops"
+  "tech-lead"
 )
 
 for agent in "${core_agents[@]}"; do
