@@ -1,0 +1,139 @@
+flowchart TB
+    Start([User Request]) --> Detect{".specweave/<br/>exists?"}
+
+    Detect -->|No| NewProject["specweave init<br/>(CLI)"]
+    Detect -->|Yes| Router["skill-router<br/>Parse & Route"]
+
+    %% New Project Initialization
+    subgraph init ["🆕 Project Initialization"]
+        NewProject --> AskTech{"Ask:<br/>Tech Stack?"}
+        AskTech --> DetectTech["Detect: package.json,<br/>requirements.txt,<br/>go.mod, etc."]
+        DetectTech --> AskDocs{"Ask:<br/>Docs Approach?"}
+        AskDocs --> SelectInstall["Selective Installation<br/>(ONLY relevant agents)"]
+        SelectInstall --> CreateStructure["Create .specweave/<br/>structure"]
+        CreateStructure --> InitDone["✅ Project Ready"]
+    end
+
+    %% Feature Planning
+    Router --> CheckBrownfield{"Existing<br/>code?"}
+
+    CheckBrownfield -->|Yes| Brownfield
+    CheckBrownfield -->|No| Planning
+
+    subgraph brownfield ["🔧 Brownfield Path"]
+        Brownfield["brownfield-analyzer"] --> MergeClaude{"Old CLAUDE.md<br/>exists?"}
+        MergeClaude -->|Yes| MergeOnboard["brownfield-onboarder<br/>Merge to .specweave/docs/"]
+        MergeClaude -->|No| DocCurrent["Document Current<br/>Behavior"]
+        MergeOnboard --> DocCurrent
+        DocCurrent --> BaselineTests["Create Baseline<br/>E2E Tests"]
+        BaselineTests --> Planning
+    end
+
+    subgraph planning ["📋 Feature Planning (Multi-Agent)"]
+        Planning["/specweave inc"] --> PMAgent["PM Agent<br/>spec.md + TC-0001"]
+        PMAgent --> ArchAgent["Architect Agent<br/>plan.md + ADRs"]
+        ArchAgent --> QAAgent["QA Agent<br/>tests.md + Coverage Matrix"]
+        QAAgent --> SecAgent["Security Agent<br/>Threat Model"]
+        SecAgent --> CheckInfra{"Infrastructure<br/>needed?"}
+        CheckInfra -->|Yes| AskDeploy{"Ask:<br/>Deployment Target?"}
+        CheckInfra -->|No| ContextManifest
+        AskDeploy --> DevOpsAgent["DevOps Agent<br/>Infrastructure Design"]
+        DevOpsAgent --> ContextManifest["Create<br/>context-manifest.yaml"]
+        ContextManifest --> PlanDone["✅ Increment Planned"]
+    end
+
+    %% Validation
+    PlanDone --> Validation
+
+    subgraph validation ["✅ Increment Validation"]
+        Validation["increment-validator skill<br/>Quick Check (5-10s)"] --> ValidCheck{"Issues<br/>found?"}
+        ValidCheck -->|No| ValidPass["✅ Validation Passed"]
+        ValidCheck -->|Yes| DeepValidation["increment-validator agent<br/>Deep Analysis (30-60s)"]
+        DeepValidation --> GenReport["Generate<br/>validation-report.md"]
+        GenReport --> AskFix{"Ask:<br/>Fix Now?"}
+        AskFix -->|Yes| FixIssues["Fix Issues<br/>(guided workflow)"]
+        AskFix -->|No| WarnUser["⚠️ Warn User:<br/>Review Report"]
+        FixIssues --> Validation
+        WarnUser --> ValidPass
+    end
+
+    %% Implementation
+    ValidPass --> Implementation
+
+    subgraph implementation ["💻 Implementation Phase"]
+        Implementation["Start Implementation"] --> LoadContext["context-loader<br/>Load ONLY relevant docs<br/>(70%+ token reduction)"]
+        LoadContext --> ImplAgent["Implementation Agent<br/>(nodejs-backend,<br/>python-backend, etc.<br/>based on tech stack)"]
+        ImplAgent --> UserQ{"User Input<br/>Needed?"}
+        UserQ -->|Yes| AskUser["AskUserQuestion<br/>(at critical decisions)"]
+        UserQ -->|No| CodeGen
+        AskUser --> CodeGen["Generate Code"]
+        CodeGen --> UICheck{"UI<br/>exists?"}
+        UICheck -->|Yes| E2ETests["E2E Tests<br/>(Playwright MANDATORY)"]
+        UICheck -->|No| UnitTests["Unit/Integration<br/>Tests"]
+        E2ETests --> TestAll
+        UnitTests --> TestAll["Run All Tests"]
+        TestAll --> TestPass{"Tests<br/>Pass?"}
+        TestPass -->|No| FixCode["Fix Code"]
+        TestPass -->|Yes| ImplDone["✅ Implementation Done"]
+        FixCode --> TestAll
+    end
+
+    %% Acceptance Criteria Validation
+    ImplDone --> AcceptanceVal
+
+    subgraph acceptance ["🎯 Acceptance Criteria Validation"]
+        AcceptanceVal["Validate TC-0001 IDs"] --> MapTests["Map spec.md TC-0001<br/>→ tests.md<br/>→ actual tests"]
+        MapTests --> CheckCoverage{"All TC-0001<br/>covered?"}
+        CheckCoverage -->|No| WarnMissing["⚠️ Warn:<br/>Missing Coverage"]
+        CheckCoverage -->|Yes| AccDone["✅ Acceptance Validated"]
+        WarnMissing --> AccDone
+    end
+
+    %% Documentation Updates
+    AccDone --> Docs
+
+    subgraph docs ["📚 Documentation Updates"]
+        Docs["post-task-completion hook"] --> DocsUpdater["docs-updater skill"]
+        DocsUpdater --> UpdateClaude["Update CLAUDE.md<br/>(if structure changed)"]
+        UpdateClaude --> UpdateAPI["Update API Reference<br/>(if commands changed)"]
+        UpdateAPI --> UpdateChangelog["Update Changelog<br/>(feature completed)"]
+        UpdateChangelog --> DocsDone["✅ Docs Updated"]
+    end
+
+    %% Deployment (Optional)
+    DocsDone --> DeployCheck{"Ready to<br/>deploy?"}
+
+    DeployCheck -->|No| Done
+    DeployCheck -->|Yes| Deploy
+
+    subgraph deploy ["🚀 Deployment (Optional)"]
+        Deploy["Check config.yaml"] --> ConfigExists{"deployment.target<br/>configured?"}
+        ConfigExists -->|No| AskDeployTarget{"Ask:<br/>Local or Cloud?"}
+        ConfigExists -->|Yes| GenInfra
+        AskDeployTarget --> CostOpt{"User<br/>Unsure?"}
+        CostOpt -->|Yes| CostOptSkill["cost-optimizer<br/>Show Comparison"]
+        CostOpt -->|No| SaveConfig
+        CostOptSkill --> SaveConfig["Save to<br/>config.yaml"]
+        SaveConfig --> GenInfra["Generate Infrastructure<br/>(Terraform/Pulumi)"]
+        GenInfra --> AskSecrets{"Ready to<br/>provision?"}
+        AskSecrets -->|Yes| Secrets["Request Secrets<br/>(API tokens)"]
+        AskSecrets -->|No| DeployDone
+        Secrets --> Provision["Provision Infrastructure"]
+        Provision --> DeployDone["✅ Deployed"]
+    end
+
+    DeployDone --> Done
+    Done([✅ Workflow Complete])
+
+    %% Styling
+    classDef agentStyle fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
+    classDef skillStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef decisionStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef successStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef warnStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+
+    class PMAgent,ArchAgent,QAAgent,SecAgent,DevOpsAgent,ImplAgent agentStyle
+    class Router,Validation,LoadContext,DocsUpdater,CostOptSkill skillStyle
+    class AskTech,AskDocs,CheckBrownfield,CheckInfra,AskDeploy,ValidCheck,UserQ,UICheck,TestPass,CheckCoverage,DeployCheck,ConfigExists,CostOpt,AskSecrets decisionStyle
+    class ValidPass,PlanDone,ImplDone,AccDone,DocsDone,DeployDone,Done,InitDone successStyle
+    class WarnUser,WarnMissing warnStyle
