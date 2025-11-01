@@ -319,6 +319,74 @@ $ /specweave.done
 
 ---
 
+### US-014: RFC Folder Consolidation
+
+**As a** SpecWeave contributor
+**I want** RFCs in a consistent, well-organized location
+**So that** architectural documentation is easy to find and maintain
+
+**Acceptance Criteria**:
+- ✅ All RFCs in `.specweave/docs/internal/architecture/rfc/`
+- ✅ Old location (`.specweave/docs/rfcs/`) removed
+- ✅ All code references updated (jira-mapper.ts already correct)
+- ✅ RFC index (README.md) created with lifecycle and template
+- ✅ CLAUDE.md documents full RFC structure
+- ✅ Clean git status (no untracked RFC files)
+
+**Rationale**:
+- RFCs are internal strategic docs (not user-facing)
+- Co-located with ADRs and diagrams (architectural artifacts)
+- Matches JIRA mapper expectations
+- Clearer hierarchy than flat `docs/rfcs/` folder
+
+**Tasks**: N/A (completed prior to Phase 1)
+
+---
+
+### US-015: GitHub-First Task-Level Synchronization
+
+**As a** SpecWeave team member
+**I want** each task to sync as a separate GitHub issue
+**So that** we can assign tasks individually, track progress granularly, and use GitHub Projects effectively
+
+**Acceptance Criteria**:
+- ✅ tasks.md enhanced with GitHub Issue, Assignee, Subtasks, Dependencies, Blocks fields
+- ✅ `/specweave.github.sync-tasks` command creates GitHub issues per task
+- ✅ Each task = 1 GitHub issue (linked to epic)
+- ✅ Subtasks represented as checkboxes in issue body
+- ✅ Dependencies linked via GitHub issue links (blocks/depends-on)
+- ✅ `/specweave.do` closes task issue and updates epic on completion
+- ✅ Subtask completion syncs to GitHub checkboxes
+- ✅ Rate limiting handled gracefully (batch with delays)
+- ✅ ADR-0007 documents GitHub-first architecture decision
+- ✅ Public guide explains GitHub integration for users
+
+**User Workflow**:
+```bash
+# 1. Create increment
+/specweave.inc "0005-user-authentication"
+
+# 2. Sync tasks to GitHub (creates epic + task issues)
+/specweave.github.sync-tasks 0005
+# Creates: Milestone v0.5.0, Epic #100, Task Issues #101-#115
+
+# 3. Assign tasks in GitHub
+# Team members assign themselves to issues
+
+# 4. Work on tasks
+/specweave.do
+# Closes GitHub issue #101, updates epic #100 progress
+
+# 5. Team tracks progress in GitHub Projects
+# Kanban board shows task cards, dependencies, assignees
+```
+
+**Tasks**: T-024-C through T-024-H (Phase 2.5)
+
+**Priority**: P0 (SpecWeave dogfoods this!)
+
+---
+
 ## Success Metrics
 
 ### Performance Metrics

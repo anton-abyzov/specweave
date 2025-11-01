@@ -1,0 +1,221 @@
+flowchart TB
+    Start([User Request]) --> Detect{".specweave/<br/>exists?"}
+
+    Detect -->|No| NewProject["specweave init<br/>(CLI)"]
+    Detect -->|Yes| Router["skill-router<br/>Parse & Route"]
+
+    %% New Project Initialization
+    subgraph init ["🆕 Project Initialization"]
+        NewProject --> AskTech{"Ask:<br/>Tech Stack?"}
+        AskTech --> DetectTech["Detect: package.json,<br/>requirements.txt,<br/>go.mod, etc."]
+        DetectTech --> AskDocs{"Ask:<br/>Docs Approach?"}
+        AskDocs --> SelectInstall["Selective Installation<br/>(ONLY relevant agents)<br/>📁 .claude/agents/<br/>📁 .claude/skills/"]
+        SelectInstall --> CreateStructure["Create .specweave/<br/>structure<br/>📁 .specweave/docs/<br/>📁 .specweave/increments/<br/>📁 .specweave/tests/"]
+        CreateStructure --> InitDone["✅ Project Ready"]
+        InitDone --> FirstIncrement["🔄 Ready for first increment"]
+        FirstIncrement --> Planning
+    end
+
+    %% Feature Planning
+    Router --> CheckBrownfield{"Existing<br/>code?"}
+
+    CheckBrownfield -->|Yes| Brownfield
+    CheckBrownfield -->|No| Planning
+
+    subgraph brownfield ["🔧 Brownfield Path"]
+        Brownfield["brownfield-analyzer<br/>📊 Scan codebase"] --> MergeClaude{"Old CLAUDE.md<br/>exists?"}
+        MergeClaude -->|Yes| MergeOnboard["brownfield-onboarder<br/>Merge to .specweave/docs/<br/>📁 Extract domain knowledge"]
+        MergeClaude -->|No| DocCurrent["Document Current<br/>Behavior<br/>📝 Retroactive specs"]
+        MergeOnboard --> DocCurrent
+        DocCurrent --> BaselineTests["Create Baseline<br/>E2E Tests<br/>✅ Regression protection"]
+        BaselineTests --> Planning
+    end
+
+    subgraph planning ["📋 Feature Planning (Multi-Agent + Feedback Loops)"]
+        Planning["/specweave inc<br/>📁 .specweave/increments/0001-name/"] --> PMRound1["PM Agent (Round 1)<br/>Generate spec.md"]
+
+        PMRound1 --> PMValidate1["Validate Quality<br/>(LLM-as-Judge)"]
+        PMValidate1 --> PMScore1{"Score ≥ 0.80?"}
+        PMScore1 -->|No, Attempt 1/3| PMRefine1["🔄 Refine with feedback"]
+        PMScore1 -->|No, Attempt 2/3| PMRefine2["🔄 Refine with feedback"]
+        PMScore1 -->|No, Attempt 3/3| PMBestResult["Use best result"]
+        PMScore1 -->|Yes| PMDone["✅ spec.md + TC-0001<br/>📁 increments/0001-name/spec.md"]
+
+        PMRefine1 --> PMRound2["PM Agent (Round 2)"]
+        PMRefine2 --> PMRound3["PM Agent (Round 3)"]
+        PMRound2 --> PMValidate2["Validate Quality"]
+        PMRound3 --> PMValidate3["Validate Quality"]
+        PMValidate2 --> PMScore2{"Score ≥ 0.80?"}
+        PMValidate3 --> PMBestResult
+        PMScore2 -->|Yes| PMDone
+        PMScore2 -->|No| PMRefine2
+        PMBestResult --> PMDone
+
+        PMDone --> ArchRound1["Architect Agent (Round 1)<br/>Generate plan.md + ADRs"]
+
+        ArchRound1 --> ArchValidate1["Validate Quality<br/>(LLM-as-Judge)"]
+        ArchValidate1 --> ArchScore1{"Score ≥ 0.80?"}
+        ArchScore1 -->|No, Attempt 1/3| ArchRefine1["🔄 Refine with feedback"]
+        ArchScore1 -->|No, Attempt 2/3| ArchRefine2["🔄 Refine with feedback"]
+        ArchScore1 -->|No, Attempt 3/3| ArchBestResult["Use best result"]
+        ArchScore1 -->|Yes| ArchDone["✅ plan.md + ADRs<br/>📁 increments/0001-name/plan.md<br/>📁 docs/internal/architecture/adr/0001-*.md"]
+
+        ArchRefine1 --> ArchRound2["Architect Agent (Round 2)"]
+        ArchRefine2 --> ArchRound3["Architect Agent (Round 3)"]
+        ArchRound2 --> ArchValidate2["Validate Quality"]
+        ArchRound3 --> ArchValidate3["Validate Quality"]
+        ArchValidate2 --> ArchScore2{"Score ≥ 0.80?"}
+        ArchValidate3 --> ArchBestResult
+        ArchScore2 -->|Yes| ArchDone
+        ArchScore2 -->|No| ArchRefine2
+        ArchBestResult --> ArchDone
+
+        ArchDone --> QARound1["QA Agent (Round 1)<br/>Generate tests.md"]
+
+        QARound1 --> QAValidate1["Validate Quality<br/>(LLM-as-Judge)"]
+        QAValidate1 --> QAScore1{"Score ≥ 0.80?"}
+        QAScore1 -->|No, Attempt 1/3| QARefine1["🔄 Refine with feedback"]
+        QAScore1 -->|No, Attempt 2/3| QARefine2["🔄 Refine with feedback"]
+        QAScore1 -->|No, Attempt 3/3| QABestResult["Use best result"]
+        QAScore1 -->|Yes| QADone["✅ tests.md + Coverage Matrix<br/>📁 increments/0001-name/tests.md"]
+
+        QARefine1 --> QARound2["QA Agent (Round 2)"]
+        QARefine2 --> QARound3["QA Agent (Round 3)"]
+        QARound2 --> QAValidate2["Validate Quality"]
+        QARound3 --> QAValidate3["Validate Quality"]
+        QAValidate2 --> QAScore2{"Score ≥ 0.80?"}
+        QAValidate3 --> QABestResult
+        QAScore2 -->|Yes| QADone
+        QAScore2 -->|No| QARefine2
+        QABestResult --> QADone
+
+        QADone --> SecAgent["Security Agent<br/>Threat Model<br/>📁 increments/0001-name/security.md"]
+
+        SecAgent --> CheckInfra{"Infrastructure<br/>needed?"}
+        CheckInfra -->|Yes| AskDeploy{"Ask:<br/>Deployment Target?"}
+        CheckInfra -->|No| ContextManifest
+        AskDeploy --> DevOpsAgent["DevOps Agent<br/>Infrastructure Design<br/>📁 increments/0001-name/infra/"]
+        DevOpsAgent --> ContextManifest["Create<br/>context-manifest.yaml<br/>📁 increments/0001-name/context-manifest.yaml"]
+        ContextManifest --> PlanDone["✅ Increment Planned"]
+    end
+
+    %% Validation (Rule-based + Optional Quality Judge)
+    PlanDone --> Validation
+
+    subgraph validation ["✅ Multi-Layer Validation"]
+        Validation["increment-validator skill<br/>Quick Check (5-10s)<br/>120 rules"] --> ValidCheck{"Issues<br/>found?"}
+        ValidCheck -->|No| AskQuality{"User wants<br/>quality check?"}
+        ValidCheck -->|Yes| DeepValidation["increment-validator agent<br/>Deep Analysis (30-60s)<br/>📁 PM/Arch/QA/Sec perspectives"]
+
+        DeepValidation --> GenReport["Generate<br/>validation-report.md<br/>📁 increments/0001-name/reports/validation-report.md"]
+        GenReport --> AskFix{"Ask:<br/>Fix Now?"}
+        AskFix -->|Yes| FixIssues["Fix Issues<br/>(guided workflow)"]
+        AskFix -->|No| WarnUser["⚠️ Warn User:<br/>Review Report"]
+        FixIssues --> Validation
+        WarnUser --> AskQuality
+
+        AskQuality -->|Yes| QualityJudge["increment-quality-judge<br/>LLM-as-Judge<br/>6-dimension scoring"]
+        AskQuality -->|No| ValidPass
+
+        QualityJudge --> QualityScore{"Score ≥ 87/100?"}
+        QualityScore -->|No| QualityReport["Generate quality-report.md<br/>📁 increments/0001-name/reports/quality-report.md<br/>📊 Clarity, Testability, Completeness,<br/>Feasibility, Maintainability, Architecture"]
+        QualityScore -->|Yes| QualityPass["✅ Quality Excellent"]
+        QualityReport --> AskImprove{"Ask:<br/>Improve Now?"}
+        AskImprove -->|Yes| ImproveSpec["Refine based on<br/>AI suggestions"]
+        AskImprove -->|No| QualityPass
+        ImproveSpec --> QualityJudge
+        QualityPass --> ValidPass["✅ Validation Passed"]
+    end
+
+    %% Implementation (2-Pass Context Optimization)
+    ValidPass --> Implementation
+
+    subgraph implementation ["💻 Implementation Phase (Context-Optimized)"]
+        Implementation["Start Implementation"] --> LoadContext["🔹 Pass 1: context-loader<br/>Load via manifest<br/>(70% token reduction)<br/>150k → 45k tokens"]
+
+        LoadContext --> OptimizeContext["🔹 Pass 2: context-optimizer<br/>Analyze user intent<br/>(80%+ total reduction)<br/>45k → 27k tokens<br/>📊 Remove unrelated specs/agents"]
+
+        OptimizeContext --> ImplAgent["Implementation Agent<br/>(nodejs-backend,<br/>python-backend, etc.<br/>based on tech stack)<br/>📁 src/"]
+
+        ImplAgent --> UserQ{"User Input<br/>Needed?"}
+        UserQ -->|Yes| AskUser["AskUserQuestion<br/>(at critical decisions)"]
+        UserQ -->|No| CodeGen
+        AskUser --> CodeGen["Generate Code<br/>📁 src/"]
+
+        CodeGen --> UICheck{"UI<br/>exists?"}
+        UICheck -->|Yes| E2ETests["E2E Tests<br/>(Playwright MANDATORY)<br/>📁 tests/e2e/"]
+        UICheck -->|No| UnitTests["Unit/Integration<br/>Tests<br/>📁 tests/unit/<br/>📁 tests/integration/"]
+
+        E2ETests --> TestAll
+        UnitTests --> TestAll["Run All Tests<br/>✅ Must tell truth<br/>(no false positives)"]
+
+        TestAll --> TestPass{"Tests<br/>Pass?"}
+        TestPass -->|No| FixCode["Fix Code<br/>📝 Update src/"]
+        TestPass -->|Yes| ImplDone["✅ Implementation Done"]
+        FixCode --> TestAll
+    end
+
+    %% Acceptance Criteria Validation
+    ImplDone --> AcceptanceVal
+
+    subgraph acceptance ["🎯 Acceptance Criteria Validation"]
+        AcceptanceVal["Validate TC-0001 IDs"] --> MapTests["Map spec.md TC-0001<br/>→ tests.md<br/>→ actual tests<br/>📁 Traceability matrix"]
+        MapTests --> CheckCoverage{"All TC-0001<br/>covered?"}
+        CheckCoverage -->|No| WarnMissing["⚠️ Warn:<br/>Missing Coverage<br/>📁 Generate coverage-report.md"]
+        CheckCoverage -->|Yes| AccDone["✅ Acceptance Validated"]
+        WarnMissing --> AccDone
+    end
+
+    %% Documentation Updates (Auto via Hook)
+    AccDone --> Docs
+
+    subgraph docs ["📚 Documentation Updates (Auto)"]
+        Docs["post-task-completion hook<br/>🔔 Triggered automatically"] --> DocsUpdater["docs-updater skill<br/>📝 Analyze changes"]
+        DocsUpdater --> UpdateClaude["Update CLAUDE.md<br/>(if structure changed)<br/>📁 CLAUDE.md"]
+        UpdateClaude --> UpdateAPI["Update API Reference<br/>(if commands changed)<br/>📁 .specweave/docs/public/api/"]
+        UpdateAPI --> UpdateChangelog["Update Changelog<br/>(feature completed)<br/>📁 CHANGELOG.md"]
+        UpdateChangelog --> DocsDone["✅ Docs Updated"]
+    end
+
+    %% Deployment (Optional)
+    DocsDone --> DeployCheck{"Ready to<br/>deploy?"}
+
+    DeployCheck -->|No| Done
+    DeployCheck -->|Yes| Deploy
+
+    subgraph deploy ["🚀 Deployment (Optional)"]
+        Deploy["Check config.yaml<br/>📁 .specweave/config.yaml"] --> ConfigExists{"deployment.target<br/>configured?"}
+        ConfigExists -->|No| AskDeployTarget{"Ask:<br/>Local or Cloud?"}
+        ConfigExists -->|Yes| GenInfra
+        AskDeployTarget --> CostOpt{"User<br/>Unsure?"}
+        CostOpt -->|Yes| CostOptSkill["cost-optimizer<br/>Show Comparison<br/>📊 Hetzner vs AWS vs Vercel"]
+        CostOpt -->|No| SaveConfig
+        CostOptSkill --> SaveConfig["Save to<br/>config.yaml"]
+        SaveConfig --> GenInfra["Generate Infrastructure<br/>(Terraform/Pulumi)<br/>📁 increments/0001-name/infra/"]
+        GenInfra --> AskSecrets{"Ready to<br/>provision?"}
+        AskSecrets -->|Yes| Secrets["Request Secrets<br/>(API tokens)"]
+        AskSecrets -->|No| DeployDone
+        Secrets --> Provision["Provision Infrastructure<br/>🚀 Deploy to target"]
+        Provision --> DeployDone["✅ Deployed"]
+    end
+
+    DeployDone --> Done
+    Done([✅ Workflow Complete])
+    Done --> NextIncrement{"More features<br/>to build?"}
+    NextIncrement -->|Yes| Planning
+    NextIncrement -->|No| End([🎉 Project Complete])
+
+    %% Styling
+    classDef agentStyle fill:#e1f5ff,stroke:#0288d1,stroke-width:2px
+    classDef skillStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef decisionStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef successStyle fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef warnStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef loopStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:3px,stroke-dasharray: 5 5
+
+    class PMRound1,PMRound2,PMRound3,ArchRound1,ArchRound2,ArchRound3,QARound1,QARound2,QARound3,SecAgent,DevOpsAgent,ImplAgent agentStyle
+    class Router,Validation,LoadContext,OptimizeContext,DocsUpdater,CostOptSkill,QualityJudge skillStyle
+    class AskTech,AskDocs,CheckBrownfield,CheckInfra,AskDeploy,ValidCheck,AskQuality,QualityScore,AskImprove,UserQ,UICheck,TestPass,CheckCoverage,DeployCheck,ConfigExists,CostOpt,AskSecrets,NextIncrement,PMScore1,PMScore2,ArchScore1,ArchScore2,QAScore1,QAScore2 decisionStyle
+    class ValidPass,PlanDone,ImplDone,AccDone,DocsDone,DeployDone,Done,InitDone,PMDone,ArchDone,QADone,QualityPass successStyle
+    class WarnUser,WarnMissing warnStyle
+    class PMRefine1,PMRefine2,ArchRefine1,ArchRefine2,QARefine1,QARefine2,FirstIncrement loopStyle

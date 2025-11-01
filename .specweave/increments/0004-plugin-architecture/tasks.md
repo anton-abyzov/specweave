@@ -8,8 +8,8 @@
 
 ## Task Overview
 
-**Total Tasks**: 48
-**Estimated Duration**: 4 weeks
+**Total Tasks**: 54 (48 original + 6 GitHub-first enhancement)
+**Estimated Duration**: 4-5 weeks
 **Priority**: P0 (Foundation for v0.4.0)
 
 ---
@@ -1183,6 +1183,413 @@ Write manifest.json for kubernetes plugin.
 
 ---
 
+## Phase 2.5: GitHub-First Task-Level Sync (Week 2-3) - 6 tasks
+
+### T-024-C: Enhance tasks.md Schema for GitHub Sync
+**Priority**: P0
+**Estimate**: 2 hours
+**Status**: pending
+
+**Description**:
+Extend tasks.md template to support GitHub task-level sync fields.
+
+**Files to Modify**:
+- `src/templates/tasks.md.template`
+
+**New Fields to Add**:
+```markdown
+### T-XXX: Task Title
+**Priority**: P0
+**Estimate**: X hours
+**Status**: pending
+**GitHub Issue**: #NNN              # ✅ NEW: Link to GitHub issue
+**Assignee**: @username             # ✅ NEW: Team member responsible
+
+**Subtasks**:                        # ✅ NEW: Granular steps (optional)
+- [ ] S-XXX-01: Subtask description (Xmin)
+- [ ] S-XXX-02: Subtask description (Xmin)
+
+**Dependencies**:                    # ✅ NEW: Blocking tasks
+- T-001 (must complete first)
+- T-002 (must complete first)
+
+**Blocks**:                          # ✅ NEW: Tasks waiting on this
+- T-005 (waiting on this)
+```
+
+**Acceptance Criteria**:
+- ✅ Template updated with new fields
+- ✅ Fields optional (backward compatible)
+- ✅ Documentation explains usage
+- ✅ Example task included
+
+---
+
+### T-024-D: Update github-sync Skill for Task-Level Sync
+**Priority**: P0
+**Estimate**: 8 hours
+**Status**: pending
+
+**Description**:
+Enhance github-sync skill to create individual GitHub issues per task (not just per increment).
+
+**Files to Modify**:
+- `src/plugins/specweave-github/skills/github-sync/SKILL.md`
+- `src/plugins/specweave-github/lib/github-client.ts` (create if needed)
+
+**Implementation**:
+```typescript
+// NEW: Parse tasks.md and create issues per task
+export async function syncTasksToGitHub(incrementId: string) {
+  // 1. Parse tasks.md to extract all tasks
+  const tasks = parseTasksFile(incrementId);
+
+  // 2. Create GitHub Milestone (if not exists)
+  const milestone = await createOrGetMilestone(`v${version}`);
+
+  // 3. Create Epic Issue (increment-level)
+  const epic = await createEpicIssue({
+    title: `[INC-${incrementId}] ${title}`,
+    body: generateEpicBody(spec),
+    milestone,
+    labels: ['increment', priority]
+  });
+
+  // 4. Create Task Issues (one per task)
+  for (const task of tasks) {
+    const issue = await createTaskIssue({
+      title: `[${task.id}] ${task.title}`,
+      body: generateTaskBody(task),
+      milestone,
+      labels: ['task', task.phase, priority],
+      linkedIssues: [epic.number] // Link to epic
+    });
+
+    // 5. Update tasks.md with issue number
+    updateTaskWithGitHubIssue(incrementId, task.id, issue.number);
+  }
+
+  // 6. Store mapping in .github-sync.yaml
+  saveSyncMapping(incrementId, { epic, tasks: taskIssues });
+}
+```
+
+**Task Issue Template**:
+```markdown
+# [T-001] Create Plugin Type Definitions
+
+**Part of**: #42 (Increment 0004 - Plugin Architecture)
+**Priority**: P0
+**Estimate**: 2 hours
+**Phase**: Week 1 - Foundation
+
+## Description
+
+Create TypeScript interfaces and types for plugin system.
+
+## Subtasks
+
+- [ ] S-001-01: Define PluginManifest interface (30min)
+- [ ] S-001-02: Define Plugin interface (30min)
+- [ ] S-001-03: Define Skill, Agent, Command types (45min)
+- [ ] S-001-04: Add JSDoc documentation (15min)
+
+## Files to Create
+
+- `src/core/types/plugin.ts`
+
+## Acceptance Criteria
+
+- ✅ All interfaces defined
+- ✅ TypeScript compiles without errors
+- ✅ JSDoc on all exports
+- ✅ Unit tests pass
+
+## Dependencies
+
+None (foundation task)
+
+## Blocks
+
+- #45 (T-003: PluginLoader needs types)
+- #46 (T-004: PluginManager needs types)
+
+---
+🤖 Synced from SpecWeave increment `0004-plugin-architecture`
+- **Spec**: `.specweave/increments/0004-plugin-architecture/spec.md`
+- **Tasks**: `.specweave/increments/0004-plugin-architecture/tasks.md`
+```
+
+**Acceptance Criteria**:
+- ✅ Can create task issues from tasks.md
+- ✅ Each task gets individual GitHub issue
+- ✅ Subtasks represented as checkboxes
+- ✅ Dependencies linked via "Blocks #N"
+- ✅ Epic issue links all task issues
+- ✅ tasks.md updated with issue numbers
+- ✅ Integration tests pass
+
+---
+
+### T-024-E: Update github-issue-tracker for Subtask Sync
+**Priority**: P1
+**Estimate**: 4 hours
+**Status**: pending
+
+**Description**:
+Enhance github-issue-tracker skill to sync subtask checkboxes.
+
+**Files to Modify**:
+- `src/plugins/specweave-github/skills/github-issue-tracker/SKILL.md`
+
+**Implementation**:
+```typescript
+// When subtask completes, update GitHub issue checkbox
+export async function updateSubtaskStatus(
+  incrementId: string,
+  taskId: string,
+  subtaskId: string,
+  completed: boolean
+) {
+  // 1. Get GitHub issue number from tasks.md
+  const issueNumber = getGitHubIssue(incrementId, taskId);
+
+  // 2. Update issue body with checked checkbox
+  const body = await getIssueBody(issueNumber);
+  const updatedBody = updateCheckbox(body, subtaskId, completed);
+  await updateIssue(issueNumber, { body: updatedBody });
+
+  // 3. Post comment if all subtasks done
+  if (allSubtasksComplete(updatedBody)) {
+    await postComment(issueNumber, '✅ All subtasks completed!');
+  }
+}
+```
+
+**Acceptance Criteria**:
+- ✅ Subtask completion syncs to GitHub
+- ✅ Checkboxes update in real-time
+- ✅ Comment when all subtasks done
+- ✅ Integration tests pass
+
+---
+
+### T-024-F: Add /specweave.github.sync-tasks Command
+**Priority**: P0
+**Estimate**: 4 hours
+**Status**: pending
+
+**Description**:
+Create new slash command to sync tasks for an increment.
+
+**Files to Create**:
+- `src/plugins/specweave-github/commands/github-sync-tasks.md`
+
+**Command Content**:
+```markdown
+# Sync Tasks to GitHub
+
+**Purpose**: Create or update GitHub issues for all tasks in an increment.
+
+## Usage
+
+/specweave.github.sync-tasks <increment-id> [--force]
+
+## Examples
+
+# Initial sync (create issues)
+/specweave.github.sync-tasks 0004
+
+# Force re-sync (update existing issues)
+/specweave.github.sync-tasks 0004 --force
+
+## Workflow
+
+1. Parse tasks.md for increment
+2. Create Milestone (if needed)
+3. Create Epic Issue (increment)
+4. Create Task Issues (one per task)
+5. Update tasks.md with issue numbers
+6. Link dependencies (blocks/depends-on)
+7. Store mapping in .github-sync.yaml
+
+## Output
+
+```
+🔄 Syncing increment 0004-plugin-architecture to GitHub...
+
+✅ Milestone created: v0.4.0
+✅ Epic issue created: #42
+✅ Creating 48 task issues...
+   - #43: [T-001] Create plugin type definitions
+   - #44: [T-002] Create plugin manifest schema
+   ...
+   - #90: [T-048] Test marketplace installation
+
+✅ Updated tasks.md with issue numbers
+✅ Saved mapping to .github-sync.yaml
+
+🎯 GitHub sync complete!
+   Epic: https://github.com/owner/repo/issues/42
+   Tasks: #43-#90
+```
+
+## Options
+
+- `--force`: Overwrite existing issues (destructive!)
+- `--dry-run`: Show what would be created without creating
+
+## Error Handling
+
+- Rate limiting: Batch with delays (10 issues/minute)
+- Duplicate detection: Skip if issue already exists
+- Drift warning: Warn if manual GitHub changes detected
+```
+
+**Acceptance Criteria**:
+- ✅ Command creates all task issues
+- ✅ Updates tasks.md with issue numbers
+- ✅ Handles rate limits gracefully
+- ✅ --force flag works
+- ✅ E2E tests pass
+
+---
+
+### T-024-G: Update /specweave.do for GitHub Task Sync
+**Priority**: P0
+**Estimate**: 3 hours
+**Status**: pending
+
+**Description**:
+Integrate GitHub sync into task completion workflow.
+
+**Files to Modify**:
+- `src/commands/specweave-do.md`
+
+**Changes**:
+```markdown
+## Step 4: Update GitHub Issue (if enabled)
+
+After task completion, sync to GitHub:
+
+**If GitHub plugin enabled AND task has GitHub Issue**:
+1. Close task issue on GitHub
+2. Check off task in epic issue
+3. Post completion comment with stats:
+   ```markdown
+   ✅ **Task Completed**
+
+   **Files Modified**: X files (+Y/-Z lines)
+   **Tests**: All passing (N new tests)
+   **Duration**: Actual Xh (est. Yh)
+
+   **What Changed**:
+   - Brief summary of changes
+
+   **Next Task**: [T-XXX] Title
+
+   ---
+   Progress: X/Y tasks (Z%)
+   🤖 Posted by SpecWeave
+   ```
+4. Update epic progress: "7/48 tasks (15%)"
+5. Update labels (add 'in-progress' to epic if first task)
+```
+
+**Acceptance Criteria**:
+- ✅ Task completion closes GitHub issue
+- ✅ Epic updated with progress
+- ✅ Comment includes stats
+- ✅ Works without GitHub plugin (graceful)
+- ✅ Integration tests pass
+
+---
+
+### T-024-H: Create Architecture Documentation for GitHub-First
+**Priority**: P1
+**Estimate**: 3 hours
+**Status**: pending
+
+**Description**:
+Document GitHub-first architecture and usage.
+
+**Files to Create**:
+- `.specweave/docs/internal/architecture/adr/adr-0007-github-first-task-sync.md`
+- `.specweave/docs/public/guides/github-integration.md`
+
+**ADR-0007 Content**:
+```markdown
+# ADR-0007: GitHub-First Task-Level Synchronization
+
+**Status**: Accepted
+**Date**: 2025-11-01
+**Deciders**: SpecWeave Core Team
+
+## Context
+
+SpecWeave currently syncs increments to GitHub (1 increment = 1 issue).
+Teams need granular task-level tracking for:
+- Individual task assignment
+- Parallel work coordination
+- Focused discussions per task
+- GitHub Projects integration (Kanban boards)
+
+## Decision
+
+Implement **task-level GitHub sync**:
+- 1 Increment → 1 Epic Issue + 1 Milestone
+- 1 Task → 1 GitHub Issue (linked to epic)
+- Subtasks → Checkboxes in task issue body
+- Dependencies → GitHub issue links (blocks/depends-on)
+
+**GitHub is PRIMARY** (JIRA remains but is secondary for enterprise)
+
+## Rationale
+
+1. **SpecWeave Dogfoods GitHub**: github.com/anton-abyzov/specweave
+2. **Open Source Standard**: GitHub issues are ubiquitous
+3. **Better Collaboration**: Granular assignment, discussions
+4. **Native Integration**: GitHub Projects, Actions, webhooks
+5. **Simpler**: GitHub CLI (`gh`) vs JIRA REST API complexity
+
+## Consequences
+
+**Positive**:
+- ✅ Better team collaboration (task-level assignment)
+- ✅ Native GitHub workflow (no context switch)
+- ✅ Superior project management (Kanban, dependencies)
+- ✅ Open source friendly (public visibility)
+
+**Negative**:
+- ⚠️ Many issues per increment (48 for inc 0004)
+- ⚠️ GitHub rate limits (mitigated with batching)
+- ⚠️ Potential drift if manual edits
+
+**Neutral**:
+- 🔄 JIRA still supported (keep for enterprise)
+- 🔄 Can dual-sync (GitHub + JIRA simultaneously)
+
+## Implementation
+
+See tasks T-024-C through T-024-H in increment 0004.
+```
+
+**Public Guide Content**:
+- How GitHub sync works
+- Task-level vs increment-level sync
+- Setting up GitHub CLI
+- Syncing tasks command
+- Handling drift and conflicts
+- Best practices for teams
+
+**Acceptance Criteria**:
+- ✅ ADR-0007 created and accepted
+- ✅ Public guide comprehensive
+- ✅ Examples and screenshots
+- ✅ Reviewed by team
+
+---
+
 ### T-025-039: Migrate Priority Plugins (15 plugins)
 **Priority**: P0
 **Estimate**: 30 hours (2 hours per plugin)
@@ -1641,9 +2048,9 @@ graph TD
 - Days 1-2: Tasks T-013 to T-019 (CLI commands, integration)
 - Days 3-5: Tasks T-020 to T-022 (hooks)
 
-### Week 3: Plugin Migration & Docs
-- Days 1-3: Tasks T-023 to T-036 (migrate 12 plugins)
-- Days 4-5: Tasks T-037 to T-044 (documentation)
+### Week 3: GitHub Enhancement & Plugin Migration
+- Days 1-2: Tasks T-024-C to T-024-H (GitHub-first task sync)
+- Days 3-5: Tasks T-025 to T-036 (migrate plugins) + T-037 to T-044 (docs)
 
 ### Week 4: Marketplace & Testing
 - Days 1-2: Tasks T-045 to T-048 (marketplace)
@@ -1654,7 +2061,8 @@ graph TD
 ## Success Criteria
 
 **Must Have (v0.4.0 Release)**:
-- ✅ All 48 tasks completed
+- ✅ All 54 tasks completed (48 original + 6 GitHub-first)
+- ✅ GitHub task-level sync working
 - ✅ 12+ plugins created
 - ✅ All 4 adapters support plugins
 - ✅ CLI commands work
@@ -1671,6 +2079,7 @@ graph TD
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-10-31
-**Total Estimate**: 160 hours (4 weeks)
+**Version**: 1.1
+**Last Updated**: 2025-11-01
+**Total Estimate**: 184 hours (4-5 weeks)
+**Changes**: Added Phase 2.5 (T-024-C to T-024-H) for GitHub-first task-level sync (24 hours)
