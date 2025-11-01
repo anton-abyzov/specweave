@@ -172,6 +172,238 @@ Generic AI tools:
 
 ---
 
+## Root-Level .specweave/ Folder (MANDATORY)
+
+**CRITICAL ARCHITECTURE RULE**: SpecWeave ONLY supports root-level `.specweave/` folders. Nested `.specweave/` folders are NOT supported and MUST be prevented.
+
+### The Rule: ONE Source of Truth
+
+```
+✅ CORRECT - Root-level only:
+my-project/
+├── .specweave/              ← ONE source of truth
+│   ├── increments/
+│   ├── docs/
+│   └── logs/
+├── frontend/
+├── backend/
+└── infrastructure/
+
+❌ WRONG - Nested .specweave/ (NOT SUPPORTED):
+my-project/
+├── .specweave/              ← Root level
+│   └── ...
+├── backend/
+│   └── .specweave/          ← ❌ NESTED - PREVENTS THIS!
+└── frontend/
+    └── .specweave/          ← ❌ NESTED - PREVENTS THIS!
+```
+
+### Why Root-Level Only?
+
+**Single Source of Truth**:
+- ✅ One central location for all specs, increments, architecture
+- ✅ No duplication or fragmentation
+- ✅ Clear ownership and responsibility
+- ✅ Simplified living docs sync (one place to update)
+
+**Cross-Cutting Features**:
+- ✅ Increments often span multiple modules (frontend + backend + infra)
+- ✅ Architecture decisions (ADRs) apply system-wide
+- ✅ Strategy docs are project-level, not module-level
+- ✅ Living docs sync works best with one central location
+
+**Plugin Detection**:
+- ✅ Four-phase detection assumes one `.specweave/` folder
+- ✅ Auto-detection scans from root only
+- ✅ No ambiguity about where plugins are enabled
+
+**Prevents Chaos**:
+- ❌ Nested folders cause: Which is the source of truth?
+- ❌ Duplication: Same increment in multiple places?
+- ❌ Conflicts: Different modules with same increment numbers?
+- ❌ Complexity: Where do cross-cutting features live?
+
+### Multi-Repo Solution (For Huge Projects)
+
+**Problem**: "My project has 10+ repos (microservices, polyrepo architecture)"
+
+**Solution**: Create a **parent folder** with root-level `.specweave/`
+
+```
+my-big-project/              ← Create parent folder
+├── .specweave/              ← ONE source of truth for ALL repos
+│   ├── increments/
+│   │   ├── 0001-auth-service/
+│   │   ├── 0002-payment-service/
+│   │   ├── 0003-frontend-redesign/
+│   │   └── 0004-infrastructure-k8s/
+│   ├── docs/
+│   │   ├── internal/
+│   │   │   ├── strategy/    ← System-wide strategy
+│   │   │   ├── architecture/ ← Cross-service architecture
+│   │   │   └── ...
+│   │   └── public/
+│   └── logs/
+│
+├── auth-service/            ← Separate git repo
+│   ├── .git/
+│   ├── src/
+│   └── README.md
+│
+├── payment-service/         ← Separate git repo
+│   ├── .git/
+│   ├── src/
+│   └── README.md
+│
+├── frontend/                ← Separate git repo
+│   ├── .git/
+│   ├── src/
+│   └── README.md
+│
+└── infrastructure/          ← Separate git repo
+    ├── .git/
+    ├── k8s/
+    └── terraform/
+```
+
+**How to Set Up**:
+
+```bash
+# 1. Create parent folder
+mkdir my-big-project
+cd my-big-project
+
+# 2. Initialize SpecWeave at root
+npx specweave init .
+
+# 3. Clone your repos as subdirectories
+git clone https://github.com/myorg/auth-service.git
+git clone https://github.com/myorg/payment-service.git
+git clone https://github.com/myorg/frontend.git
+git clone https://github.com/myorg/infrastructure.git
+
+# 4. Work normally - SpecWeave sees all repos
+/specweave.inc "0001-unified-auth"
+# Creates: .specweave/increments/0001-unified-auth/
+# Can reference: auth-service/, frontend/, payment-service/
+```
+
+**Benefits**:
+- ✅ One `.specweave/` for entire system
+- ✅ Each repo maintains its own git history
+- ✅ Cross-service increments are natural
+- ✅ System-wide architecture in one place
+- ✅ Living docs cover all repos
+
+**Alternatively: Git Submodules** (Advanced):
+
+```bash
+# Parent repo with submodules
+my-big-project/
+├── .specweave/              ← Root level
+├── .gitmodules              ← Git submodule config
+├── auth-service/            ← Git submodule
+├── payment-service/         ← Git submodule
+└── frontend/                ← Git submodule
+
+# Initialize with submodules
+git submodule add https://github.com/myorg/auth-service.git
+git submodule add https://github.com/myorg/payment-service.git
+```
+
+### Microservices Pattern
+
+Even for microservices, root-level `.specweave/` makes sense:
+
+```
+microservices-project/
+├── .specweave/              ← ONE source of truth
+│   ├── increments/
+│   │   ├── 0001-add-service-mesh/      ← Cross-cutting
+│   │   ├── 0002-user-svc-v2/           ← Single service
+│   │   └── 0003-checkout-flow/         ← Multi-service
+│   ├── docs/
+│   │   ├── internal/
+│   │   │   ├── strategy/
+│   │   │   ├── architecture/
+│   │   │   │   ├── service-mesh.md     ← System-wide
+│   │   │   │   ├── api-contracts.md    ← Cross-service
+│   │   │   │   └── adr/
+│   │   │   │       └── 0001-service-mesh-choice.md
+│   │   │   └── ...
+│   │   └── public/
+│   └── logs/
+│
+├── services/
+│   ├── user-service/
+│   ├── order-service/
+│   ├── payment-service/
+│   └── notification-service/
+│
+├── infrastructure/
+│   ├── k8s/
+│   └── terraform/
+│
+└── shared/
+    └── api-contracts/
+```
+
+### Enforcement
+
+**Validation in `init.ts`**:
+
+```typescript
+// Check for parent .specweave/
+function detectNestedSpecweave(targetDir: string): string | null {
+  let currentDir = path.dirname(targetDir);
+  const root = path.parse(currentDir).root;
+
+  while (currentDir !== root) {
+    const specweavePath = path.join(currentDir, '.specweave');
+    if (fs.existsSync(specweavePath)) {
+      return currentDir; // Found parent .specweave/
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  return null;
+}
+
+// Prevent nested initialization
+const parentSpecweave = detectNestedSpecweave(targetDir);
+if (parentSpecweave) {
+  console.error('❌ Nested .specweave/ folders are not supported!');
+  console.error(`   Found parent .specweave/ at: ${parentSpecweave}`);
+  console.error(`   Use the parent folder for all increments.`);
+  process.exit(1);
+}
+```
+
+**Detection Rules**:
+- ❌ Prevent `specweave init` in subdirectories if parent `.specweave/` exists
+- ✅ Suggest using parent folder instead
+- ✅ Provide clear error messages with path to parent
+
+**Code Review**:
+- ❌ Reject PRs with nested `.specweave/` folders
+- ✅ Enforce via linting/validation scripts
+
+### Summary
+
+| Aspect | Root-Level Only | Nested (NOT Supported) |
+|--------|----------------|------------------------|
+| **Source of Truth** | ✅ One central location | ❌ Multiple conflicting sources |
+| **Cross-Cutting Features** | ✅ Natural | ❌ Complex coordination |
+| **Living Docs Sync** | ✅ Simple | ❌ Merge conflicts |
+| **Plugin Detection** | ✅ Works | ❌ Ambiguous |
+| **Multi-Repo** | ✅ Parent folder | ❌ Fragmented |
+| **Complexity** | ✅ Simple | ❌ High |
+
+**Bottom Line**: Root-level `.specweave/` only. For multi-repo projects, create a parent folder. No exceptions.
+
+---
+
 ## Project Scale (v0.4.0 - Plugin Architecture)
 
 ### Core Framework (Always Loaded)
@@ -411,8 +643,17 @@ specweave/
 │   │   │   └── reports/        # ✅ Analysis files
 │   │   └── _backlog/
 │   ├── docs/
-│   │   ├── internal/           # Strategic docs
-│   │   └── public/             # Published docs
+│   │   ├── internal/           # Strategic docs (NEVER published)
+│   │   │   ├── strategy/       # Business strategy, market analysis
+│   │   │   ├── architecture/   # Technical architecture
+│   │   │   │   ├── adr/        # Architecture Decision Records
+│   │   │   │   ├── rfc/        # ✅ Request for Comments (detailed specs)
+│   │   │   │   ├── diagrams/   # Mermaid + SVG
+│   │   │   │   └── hld-system.md # High-Level Design
+│   │   │   └── delivery/       # Implementation notes, runbooks
+│   │   └── public/             # User-facing docs (can publish)
+│   │       ├── guides/
+│   │       └── api/
 │   └── logs/
 │
 ├── tests/
@@ -590,10 +831,33 @@ npm test
 
 ### Hooks and Automation
 
-**Post-Task Completion Hook** (`.claude/hooks/post-task-completion.sh`):
-- ✅ Plays completion sound (Glass.aiff on macOS)
-- ✅ Outputs JSON systemMessage reminder
-- ✅ Logs to `.specweave/logs/tasks.log`
+**Post-Task Completion Hook v2.0** (`.claude/hooks/post-task-completion.sh`):
+
+**Smart Session-End Detection**:
+- ✅ Tracks inactivity gaps between TodoWrite calls
+- ✅ Only plays sound when session is TRULY ending (15s+ inactivity after all tasks complete)
+- ✅ Skips sound during rapid work (Claude creating multiple todo lists)
+- ✅ Enhanced logging with decision reasoning in `.specweave/logs/hooks-debug.log`
+- ✅ Debouncing prevents duplicate hook fires
+
+**How It Works**:
+```
+Problem: Claude creates multiple todo lists in one conversation
+- List 1: [A, B, C] → completes → sound plays ❌
+- List 2: [D, E] → completes 30s later → sound plays again ❌
+- User hears sounds while Claude is still working!
+
+Solution: Inactivity-based detection
+- 10:00:00 - Task done (gap: 5s) → skip sound
+- 10:00:05 - Task done (gap: 5s) → skip sound
+- 10:00:10 - All done (gap: 5s) → skip sound (rapid work)
+- ... (15+ seconds pass)
+- 10:01:00 - All done (gap: 50s) → PLAY SOUND! ✅ (session ending)
+```
+
+**Configuration** (`src/hooks/post-task-completion.sh`):
+- `INACTIVITY_THRESHOLD=15` - Seconds of inactivity to assume session ending (adjustable)
+- `DEBOUNCE_SECONDS=2` - Prevents duplicate hook fires
 
 **Manual Actions** (Claude MUST do after each task):
 - Update `CLAUDE.md` when structure changes
