@@ -40,14 +40,14 @@ jobs:
 
       - name: Check build output
         run: |
-          if [ ! -d "docs-site/do" ]; then
+          if [ ! -d "docs-site/build" ]; then
             echo "Build directory not found!"
             exit 1
           fi
           echo "Build directory size:"
-          du -sh docs-site/do
+          du -sh docs-site/build
           echo "Build contents:"
-          ls -la docs-site/do
+          ls -la docs-site/build
 
       - name: Upload build artifacts (for debugging)
         if: failure()
@@ -56,7 +56,7 @@ jobs:
           name: build-logs
           path: |
             docs-site/.docusaurus
-            docs-site/do
+            docs-site/build
 
   # Optional: Link checker (uncomment if needed)
   # link-check:
