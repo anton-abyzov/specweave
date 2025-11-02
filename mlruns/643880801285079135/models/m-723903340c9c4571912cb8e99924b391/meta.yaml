@@ -1,0 +1,10 @@
+artifact_location: file:///Users/antonabyzov/Projects/github/specweave/mlruns/643880801285079135/models/m-723903340c9c4571912cb8e99924b391/artifacts
+creation_timestamp: 1761969182161
+experiment_id: '643880801285079135'
+last_updated_timestamp: 1761969184469
+model_id: m-723903340c9c4571912cb8e99924b391
+model_type: null
+name: player_detector_small
+source_run_id: 6c7a2e50dc6e4ed791c4bfaa45df8848
+status: 2
+status_message: null

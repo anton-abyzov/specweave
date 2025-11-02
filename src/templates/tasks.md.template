@@ -1,0 +1,261 @@
+# Implementation Tasks: {{INCREMENT_TITLE}}
+
+**Increment**: {{INCREMENT_ID}}
+**Status**: Planning
+**Created**: {{CREATED_DATE}}
+
+---
+
+## Task Overview
+
+**Total Tasks**: {{TOTAL_TASKS}}
+**Estimated Duration**: {{ESTIMATED_DURATION}}
+**Priority**: {{PRIORITY}}
+
+---
+
+## Task Template
+
+Use this template for each task:
+
+```markdown
+### T-XXX: Task Title
+**Priority**: P0 | P1 | P2 | P3
+**Estimate**: X hours
+**Status**: pending | in_progress | completed | blocked
+**GitHub Issue**: #NNN (auto-populated after sync)
+**Assignee**: @username (optional)
+
+**Description**:
+Brief description of what this task accomplishes.
+
+**Subtasks** (optional):
+- [ ] S-XXX-01: Subtask description (Xmin)
+- [ ] S-XXX-02: Subtask description (Xmin)
+- [ ] S-XXX-03: Subtask description (Xmin)
+
+**Files to Create** (if applicable):
+- `path/to/new/file.ts`
+- `path/to/another/file.md`
+
+**Files to Modify** (if applicable):
+- `path/to/existing/file.ts`
+- `path/to/another/existing.md`
+
+**Implementation** (optional - code snippets, examples):
+```typescript
+// Example implementation
+export function exampleFunction() {
+  // Code here
+}
+```
+```
+
+**Acceptance Criteria**:
+- ✅ Criterion 1
+- ✅ Criterion 2
+- ✅ Criterion 3
+
+**Dependencies** (optional - tasks that must complete first):
+- T-001 (must complete first)
+- T-002 (must complete first)
+
+**Blocks** (optional - tasks waiting on this):
+- T-005 (waiting on this)
+- T-006 (waiting on this)
+
+---
+```
+
+---
+
+## Phase 1: Foundation (Week 1) - X tasks
+
+### T-001: Example Task
+**Priority**: P0
+**Estimate**: 2 hours
+**Status**: pending
+**GitHub Issue**: (will be populated after sync)
+**Assignee**: (assign in GitHub after sync)
+
+**Description**:
+This is an example task showing the enhanced template format with GitHub sync fields.
+
+**Subtasks**:
+- [ ] S-001-01: First subtask (30min)
+- [ ] S-001-02: Second subtask (45min)
+- [ ] S-001-03: Third subtask (30min)
+- [ ] S-001-04: Final polish (15min)
+
+**Files to Create**:
+- `src/example/new-file.ts`
+
+**Files to Modify**:
+- `src/example/existing-file.ts`
+
+**Implementation**:
+```typescript
+export interface ExampleInterface {
+  id: string;
+  name: string;
+}
+
+export class ExampleClass implements ExampleInterface {
+  constructor(public id: string, public name: string) {}
+}
+```
+
+**Acceptance Criteria**:
+- ✅ All interfaces defined
+- ✅ TypeScript compiles without errors
+- ✅ Unit tests pass
+- ✅ Documentation comments added
+
+**Dependencies**:
+None (foundation task)
+
+**Blocks**:
+- T-003 (needs types from this task)
+- T-004 (needs interfaces from this task)
+
+---
+
+## Task Dependencies
+
+```mermaid
+graph TD
+    T001[T-001: Example Task] --> T003[T-003: Dependent Task]
+    T001 --> T004[T-004: Another Dependent]
+    T002[T-002: Another Foundation] --> T003
+    T003 --> T005[T-005: Higher Level Task]
+```
+
+---
+
+## Testing Checklist
+
+**Unit Tests** (per component):
+- ✅ Component A
+- ✅ Component B
+- ✅ Component C
+
+**Integration Tests**:
+- ✅ Full workflow (end-to-end)
+- ✅ Error handling
+- ✅ Edge cases
+
+**E2E Tests** (if applicable):
+- ✅ User workflow A
+- ✅ User workflow B
+
+**Performance Tests** (if applicable):
+- ✅ Load testing
+- ✅ Stress testing
+
+---
+
+## Rollout Plan
+
+### Week 1: Foundation
+- Days 1-2: Tasks T-001 to T-003
+- Days 3-5: Tasks T-004 to T-006
+
+### Week 2: Core Implementation
+- Days 1-3: Tasks T-007 to T-010
+- Days 4-5: Tasks T-011 to T-012
+
+### Week 3: Integration & Testing
+- Days 1-2: Tasks T-013 to T-014
+- Days 3-5: Comprehensive testing and polish
+
+---
+
+## Success Criteria
+
+**Must Have**:
+- ✅ All tasks completed
+- ✅ All tests passing
+- ✅ Documentation updated
+- ✅ Code review approved
+
+**Nice to Have** (for next increment):
+- Future enhancement 1
+- Future enhancement 2
+
+---
+
+## GitHub Sync Instructions
+
+### Initial Sync
+
+After creating this tasks.md file, sync to GitHub:
+
+```bash
+# Sync all tasks to GitHub (creates epic + task issues)
+/specweave.github.sync-tasks {{INCREMENT_ID}}
+```
+
+This will:
+1. Create a GitHub Milestone (e.g., v0.4.0)
+2. Create an Epic Issue for the increment
+3. Create individual GitHub Issues for each task
+4. Link task issues to epic
+5. Update this file with GitHub issue numbers
+6. Store mapping in `.github-sync.yaml`
+
+### During Development
+
+As you work on tasks:
+- `/specweave.do` - Completes next task AND closes GitHub issue
+- Progress automatically syncs to epic issue
+- Subtasks sync as checkboxes in GitHub
+
+### Manual Operations
+
+```bash
+# Force re-sync (if drift detected)
+/specweave.github.sync-tasks {{INCREMENT_ID}} --force
+
+# Check sync status
+/specweave.github.status {{INCREMENT_ID}}
+
+# Manually create issue for specific task
+/specweave.github.create-issue {{INCREMENT_ID}} T-001
+```
+
+---
+
+## Field Reference
+
+### Required Fields
+- **Priority**: P0 (critical), P1 (high), P2 (medium), P3 (low)
+- **Estimate**: Hours or days (e.g., "2 hours", "3 days")
+- **Status**: pending, in_progress, completed, blocked
+- **Description**: What this task accomplishes
+- **Acceptance Criteria**: How we know it's done
+
+### Optional Fields (Enhanced for GitHub Sync)
+- **GitHub Issue**: Auto-populated after `/specweave.github.sync-tasks`
+- **Assignee**: GitHub username (assign in GitHub UI or via `@username`)
+- **Subtasks**: Granular steps (15-60min each, shown as checkboxes in GitHub)
+- **Dependencies**: Tasks that must complete first (linked in GitHub via "depends on")
+- **Blocks**: Tasks waiting on this one (linked in GitHub via "blocks")
+- **Files to Create/Modify**: Context for reviewers
+- **Implementation**: Code snippets, examples, pseudocode
+
+### Subtask Naming Convention
+- Format: `S-{TASK_ID}-{SUBTASK_NUM}: Description (time)`
+- Example: `S-001-01: Define interfaces (30min)`
+- Numbering: Zero-padded 2 digits (01, 02, 03, ...)
+
+### Task Status Lifecycle
+1. **pending** - Not started, in backlog
+2. **in_progress** - Currently being worked on
+3. **blocked** - Cannot proceed (dependency, blocker)
+4. **completed** - Done, tests passing, reviewed
+
+---
+
+**Version**: 1.0
+**Last Updated**: {{LAST_UPDATED}}
+**Total Estimate**: {{TOTAL_HOURS}} hours ({{TOTAL_WEEKS}} weeks)

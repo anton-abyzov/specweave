@@ -390,7 +390,7 @@ class JiraBidirectionalSyncTest {
       console.log(`   - Jira Epic: ${this.testEpicKey}`);
       console.log(`   - SpecWeave Increment: ${this.testIncrementId}`);
       console.log(`   - Increment folder: .specweave/increments/${this.testIncrementId}/`);
-      console.log(`   - RFC document: .specweave/docs/rfcs/rfc-${this.testIncrementId}-*.md`);
+      console.log(`   - RFC document: .specweave/docs/internal/architecture/rfc/rfc-${this.testIncrementId}-*.md`);
       console.log(`\n   Note: Test data preserved for inspection. Delete manually if needed.`);
 
       this.results.push({

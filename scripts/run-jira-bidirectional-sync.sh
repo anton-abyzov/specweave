@@ -41,5 +41,5 @@ echo "╚═══════════════════════�
 echo ""
 echo "📊 Check results in: test-results/"
 echo "📁 Check increment in: .specweave/increments/"
-echo "📄 Check RFC in: .specweave/docs/rfcs/"
+echo "📄 Check RFC in: .specweave/docs/internal/architecture/rfc/"
 echo ""

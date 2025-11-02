@@ -1,0 +1,36 @@
+flowchart LR
+    Start([User runs specweave.inc]) --> Gate{Decision Gate}
+
+    Gate --> Q1[How deep should we spec?]
+    Q1 --> Q1A[High-level:<br/>Fast, minimal detail]
+    Q1 --> Q1B[Detailed:<br/>Complete, thorough]
+
+    Gate --> Q2[Test-Driven Development?]
+    Q2 --> Q2A[Yes:<br/>Tests first, high confidence]
+    Q2 --> Q2B[No:<br/>Tests after, pragmatic]
+
+    Gate --> Q3[Test quality level?]
+    Q3 --> Q3A[Basic:<br/>Coverage targets, manual]
+    Q3 --> Q3B[AI Judge:<br/>Automated quality review]
+
+    Gate --> Q4[Living docs sync?]
+    Q4 --> Q4A[Auto:<br/>Hooks fire automatically]
+    Q4 --> Q4B[Manual:<br/>User controls timing]
+
+    Q1A --> Config[Configuration saved]
+    Q1B --> Config
+    Q2A --> Config
+    Q2B --> Config
+    Q3A --> Config
+    Q3B --> Config
+    Q4A --> Config
+    Q4B --> Config
+
+    Config --> Proceed([Proceed with spec generation])
+
+    %% HIGH CONTRAST STYLING
+    classDef question fill:#FFF4E6,stroke:#E65100,stroke-width:3px,color:#000000
+    classDef answer fill:#E3F2FD,stroke:#1565C0,stroke-width:3px,color:#000000
+
+    class Q1,Q2,Q3,Q4,Gate question
+    class Q1A,Q1B,Q2A,Q2B,Q3A,Q3B,Q4A,Q4B answer

@@ -16,7 +16,7 @@
 ### ✅ 2. Bidirectional Sync Mapper
 - **Jira Epic → SpecWeave Increment** with full metadata preservation
 - **SpecWeave Increment → Jira Epic** with story and task creation
-- **Automatic RFC document generation** in `.specweave/docs/rfcs/`
+- **Automatic RFC document generation** in `.specweave/docs/internal/architecture/rfc/`
 - **Context-aware manifest** generation
 - **Conflict detection and resolution** framework
 
@@ -35,7 +35,7 @@
   - ✅ `context-manifest.yaml` - Context configuration
 
 **RFC Documentation**:
-- File: `.specweave/docs/rfcs/rfc-0003-specweave-test-test-epic-for-sync.md`
+- File: `.specweave/docs/internal/architecture/rfc/rfc-0003-specweave-test-test-epic-for-sync.md`
 - Contains: Full RFC with Epic link, summary, motivation, design
 
 ---
@@ -157,7 +157,7 @@ npm run test:sync:jira
 3. ✅ Fetches all Sub-tasks for each Story
 4. ✅ Auto-numbers next increment (scans existing, adds 1)
 5. ✅ Creates increment folder with spec.md, tasks.md
-6. ✅ Generates RFC document in `.specweave/docs/rfcs/`
+6. ✅ Generates RFC document in `.specweave/docs/internal/architecture/rfc/`
 7. ✅ Generates context-manifest.yaml
 8. ✅ Links Epic → Increment (stores Jira metadata)
 
@@ -200,7 +200,7 @@ const result = await mapper.syncIncrement('0001');
 | Jira Concept | SpecWeave Concept | Location | Notes |
 |--------------|-------------------|----------|-------|
 | **Epic** | Increment | `.specweave/increments/{id}/` | Full folder structure |
-| **Epic** | RFC | `.specweave/docs/rfcs/rfc-{id}-{slug}.md` | Detailed design doc |
+| **Epic** | RFC | `.specweave/docs/internal/architecture/rfc/rfc-{id}-{slug}.md` | Detailed design doc |
 | **Story** | User Story | `spec.md` → `## User Stories` section | In spec.md content |
 | **Sub-task** | Task | `tasks.md` → checklist | Checkbox format |
 | **Priority: Highest** | Priority P1 | `spec.md` frontmatter | Critical |
@@ -278,7 +278,7 @@ npm run test:integration           # All integration tests
    - Auto-generate RFC documents
    - Link to Jira Epic
    - Structured format (Summary, Motivation, Design, Alternatives)
-   - Saved in `.specweave/docs/rfcs/`
+   - Saved in `.specweave/docs/internal/architecture/rfc/`
 
 4. **Test Suite**
    - 17 integration tests
@@ -298,7 +298,7 @@ npm run test:integration           # All integration tests
 
 ### Immediate (You Can Do This Now)
 1. ✅ **View created increment**: `cat .specweave/increments/0003/spec.md`
-2. ✅ **View RFC**: `cat .specweave/docs/rfcs/rfc-0003-*.md`
+2. ✅ **View RFC**: `cat .specweave/docs/internal/architecture/rfc/rfc-0003-*.md`
 3. ✅ **View Jira Epic**: https://antonabyzov.atlassian.net/browse/SCRUM-2
 4. ✅ **Run more tests**: `bash scripts/run-jira-test.sh`
 
@@ -372,14 +372,14 @@ npm run test:integration           # All integration tests
 **Real Proof**:
 - Your Jira: Epic `SCRUM-2` exists right now
 - Your SpecWeave: Increment `0003` with full structure
-- RFC: `.specweave/docs/rfcs/rfc-0003-*.md` generated
+- RFC: `.specweave/docs/internal/architecture/rfc/rfc-0003-*.md` generated
 
 **Test it yourself**:
 ```bash
 # View what was created
 ls -la .specweave/increments/0003/
 cat .specweave/increments/0003/spec.md
-cat .specweave/docs/rfcs/rfc-0003-*.md
+cat .specweave/docs/internal/architecture/rfc/rfc-0003-*.md
 
 # Check in Jira
 open https://antonabyzov.atlassian.net/browse/SCRUM-2

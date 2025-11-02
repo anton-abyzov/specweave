@@ -893,12 +893,15 @@ Is this feature...
 └─ Nice-to-have but not essential? → PLUGIN
 ```
 
-### Plugin Structure
+### Plugin Structure (Hybrid: Claude Native + SpecWeave Custom)
+
+**NEW in v0.4.1**: SpecWeave plugins support BOTH Claude Code native and SpecWeave custom formats!
 
 ```
 src/plugins/kubernetes/
 ├── .claude-plugin/
-│   └── manifest.json           # Metadata, auto-detection, triggers
+│   ├── plugin.json             # ✅ NEW: Claude Code native format
+│   └── manifest.json            # ✅ KEEP: SpecWeave custom format (richer metadata)
 ├── skills/
 │   ├── k8s-deployer/
 │   │   ├── SKILL.md
@@ -912,6 +915,13 @@ src/plugins/kubernetes/
 │   └── k8s-deploy.md
 └── README.md
 ```
+
+**Why Dual Manifests?**
+- `plugin.json` = Claude Code native support (enables `/plugin install` commands)
+- `manifest.json` = SpecWeave features (auto-detection, triggers, multi-tool compilation)
+- **Best of both worlds**: Claude users get native UX, other tools still work
+
+**See**: [ADR-0015: Hybrid Plugin System](/.specweave/docs/internal/architecture/adr/0015-hybrid-plugin-system.md)
 
 ### Plugin Manifest Example
 
@@ -942,8 +952,14 @@ src/plugins/kubernetes/
 
 ### How Adapters Handle Plugins
 
-**Claude Code** (Native):
-- Copies plugins to `.claude/skills/`, `.claude/agents/`, `.claude/commands/`
+**Claude Code** (Native + Hybrid):
+- **Option 1**: Native `/plugin install` commands (recommended if supported)
+  - Uses Claude Code marketplace
+  - `/plugin marketplace add specweave/marketplace`
+  - `/plugin install github@specweave`
+- **Option 2**: SpecWeave CLI (always works)
+  - `specweave plugin install github`
+  - Copies to `.claude/skills/`, `.claude/agents/`, `.claude/commands/`
 - Skills auto-activate based on context
 - Hooks fire automatically
 - Quality: ⭐⭐⭐⭐⭐ (100%)
@@ -990,12 +1006,23 @@ src/plugins/kubernetes/
 # 1. Create structure
 mkdir -p src/plugins/my-plugin/{.claude-plugin,skills,agents,commands}
 
-# 2. Create manifest
+# 2. Create BOTH manifests (hybrid approach)
+
+# 2a. SpecWeave manifest (richer metadata)
 cat > src/plugins/my-plugin/.claude-plugin/manifest.json << 'EOF'
 {
+  "$schema": "https://spec-weave.com/schemas/plugin-manifest.json",
   "name": "specweave-my-plugin",
   "version": "1.0.0",
   "description": "What it does",
+  "author": "Your Name",
+  "license": "MIT",
+  "specweave_core_version": ">=0.4.0",
+  "auto_detect": {
+    "files": ["pattern/"],
+    "packages": ["npm-package"],
+    "env_vars": ["ENV_VAR"]
+  },
   "provides": {
     "skills": ["skill-name"],
     "agents": ["agent-name"],
@@ -1005,11 +1032,27 @@ cat > src/plugins/my-plugin/.claude-plugin/manifest.json << 'EOF'
 }
 EOF
 
+# 2b. Claude Code native manifest (for /plugin commands)
+cat > src/plugins/my-plugin/.claude-plugin/plugin.json << 'EOF'
+{
+  "name": "specweave-my-plugin",
+  "description": "What it does",
+  "version": "1.0.0",
+  "author": {
+    "name": "Your Name"
+  }
+}
+EOF
+
 # 3. Add skills/agents/commands (same format as core)
 
-# 4. Test
-specweave plugin enable my-plugin
+# 4. Test both installation methods
+specweave plugin enable my-plugin              # SpecWeave CLI
+/plugin marketplace add ./marketplace          # Claude native (if supported)
+/plugin install my-plugin@marketplace
 ```
+
+**Important**: Always create BOTH manifests to support hybrid installation!
 
 ### Attribution for Borrowed Plugins
 
@@ -1041,50 +1084,76 @@ If you fork a community plugin (e.g., from wshobson/agents):
 - ✅ Link to upstream prominently
 - ✅ Contribute improvements back (if possible)
 
-### Marketplace Publication
+### Marketplace Publication (Hybrid Distribution)
 
-SpecWeave publishes plugins to **two places**:
+**NEW in v0.4.1**: SpecWeave plugins support **dual distribution**:
 
-1. **NPM Package** (primary):
+1. **NPM Package** (SpecWeave CLI):
    - Full SpecWeave framework with plugin system
    - `npm install -g specweave`
+   - `specweave plugin install github`
+   - Works with ALL tools (Claude, Cursor, Copilot, Generic)
 
-2. **Anthropic Marketplace** (secondary):
-   - Individual plugins for standalone use
+2. **Claude Code Marketplace** (Native `/plugin`):
+   - Individual plugins via marketplace
    - `/plugin marketplace add specweave/marketplace`
-   - Works without full framework
+   - `/plugin install github@specweave`
+   - Best UX for Claude Code users
 
-**Publishing a Plugin to Marketplace**:
+**Why Both?**
+- **SpecWeave CLI**: Multi-tool support (works everywhere)
+- **Claude Marketplace**: Native experience (best for Claude)
+- **Same plugin files**: Dual manifests enable both paths
+
+**Publishing a Plugin**:
 
 ```bash
-# 1. Copy plugin to marketplace repo
-cp -r src/plugins/kubernetes marketplace/plugins/
+# 1. Ensure dual manifests exist
+ls src/plugins/kubernetes/.claude-plugin/
+# → plugin.json (Claude native)
+# → manifest.json (SpecWeave custom)
 
-# 2. Update marketplace manifest
-# marketplace/.claude-plugin/marketplace.json
+# 2. Update marketplace/.claude-plugin/marketplace.json
+vim marketplace/.claude-plugin/marketplace.json
+# Add entry:
+# {
+#   "name": "specweave-kubernetes",
+#   "source": "../src/plugins/specweave-kubernetes",
+#   "description": "..."
+# }
 
-# 3. Tag release
-git tag kubernetes-v1.0.0
+# 3. Test BOTH installation paths
+specweave plugin install kubernetes                    # SpecWeave CLI
+/plugin marketplace add ./marketplace                  # Claude native
+/plugin install specweave-kubernetes@marketplace
+
+# 4. Tag and release
+git tag v0.4.1-kubernetes
 git push --tags
-
-# 4. Test installation
-/plugin marketplace add specweave/marketplace
-/plugin install kubernetes
 ```
+
+**Distribution Summary**:
+
+| Method | Command | Tools Supported | Quality |
+|--------|---------|-----------------|---------|
+| **SpecWeave CLI** | `specweave plugin install` | All (Claude, Cursor, Copilot, Generic) | ⭐⭐⭐⭐⭐ |
+| **Claude Native** | `/plugin install` | Claude Code only | ⭐⭐⭐⭐⭐ |
+
+**See**: [marketplace/README.md](/marketplace/README.md) for complete instructions
 
 ---
 
 ## Current Work (Increment 0004)
 
 **Increment**: 0004-plugin-architecture
-**Title**: Plugin Architecture - Modular, Context-Efficient, Multi-Tool Support
-**Status**: ✅ COMPLETE (Foundation + GitHub plugin)
+**Title**: Plugin Architecture - Modular, Context-Efficient, Multi-Tool Support + Hybrid Claude Native
+**Status**: ✅ COMPLETE (Foundation + GitHub plugin + Hybrid system)
 **Priority**: P0
 **Started**: 2025-10-31
 **Completed**: 2025-10-31
 
 **Summary**:
-Successfully implemented modular plugin architecture with 60-80% context reduction, multi-tool support (Claude/Cursor/Copilot/Generic), and production-ready GitHub plugin. Core framework is complete and extensible for future plugins.
+Successfully implemented modular plugin architecture with 60-80% context reduction, multi-tool support (Claude/Cursor/Copilot/Generic), and production-ready GitHub plugin. **NEW**: Added hybrid system supporting BOTH Claude Code native (`/plugin` commands) AND SpecWeave CLI - best of both worlds! Core framework is complete and extensible for future plugins.
 
 **Key Achievements**:
 - ✅ **Core Plugin System** (T-001 to T-007):
@@ -1106,6 +1175,14 @@ Successfully implemented modular plugin architecture with 60-80% context reducti
   - 4 commands: create-issue, sync, close-issue, status
   - Auto-detection: `.git/` + `github.com` remote + `GITHUB_TOKEN`
   - Production-ready manifest with proper dependencies
+
+- ✅ **Hybrid Plugin System** (T-023 to T-028) **NEW!**:
+  - ADR-0015: Hybrid plugin architecture decision
+  - Dual manifests: plugin.json (Claude native) + manifest.json (SpecWeave custom)
+  - Claude adapter: Native plugin detection + dual installation paths
+  - Marketplace structure: `marketplace/.claude-plugin/marketplace.json`
+  - Updated documentation: CLAUDE.md, marketplace/README.md
+  - Both installation methods work: `/plugin install` OR `specweave plugin install`
 
 - ✅ **Build & Configuration**:
   - TypeScript compilation successful (all errors resolved)

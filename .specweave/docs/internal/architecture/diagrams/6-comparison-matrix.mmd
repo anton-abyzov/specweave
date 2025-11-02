@@ -1,0 +1,45 @@
+flowchart TD
+    Start([Choose Your Approach]) --> Question{What's your situation?}
+
+    Question -->|Solo architect<br/>deep research| Solo[Use SpecWeave]
+    Question -->|Tiny team<br/>simple project| Team[Use SpecWeave]
+    Question -->|Team of 2-50<br/>full automation| Enterprise[Use SpecWeave]
+
+    Solo --> SoloMode[SpecWeave Researcher Mode<br/>Core + Research Plugins]
+    Team --> TeamMode[SpecWeave Minimal Mode<br/>Core Only - Fast Start]
+    Enterprise --> EnterpriseMode[SpecWeave Full Stack<br/>Core + All Plugins]
+
+    SoloMode --> SoloFeatures[✅ Deep research methodology BMAD-style<br/>✅ Comprehensive documentation<br/>✅ Quality gates enforced<br/>✅ Living docs automation<br/>✅ Multi-tool support]
+
+    TeamMode --> TeamFeatures[✅ Simple markdown templates<br/>✅ Zero lock-in<br/>✅ Fast to start<br/>✅ Automated living docs<br/>✅ Quality gates optional]
+
+    EnterpriseMode --> EnterpriseFeatures[✅ Automated living docs<br/>✅ Plugin system 60-80% context<br/>✅ Multi-tool support<br/>✅ Quality gates enforced<br/>✅ GitHub & Jira sync<br/>✅ Brownfield migration]
+
+    SoloFeatures --> Alternatives1{Why not alternatives?}
+    TeamFeatures --> Alternatives2{Why not alternatives?}
+    EnterpriseFeatures --> Alternatives3{Why not alternatives?}
+
+    Alternatives1 --> BMADLimits[BMAD Method<br/>❌ 100% manual work<br/>❌ No automation<br/>❌ No tool support<br/>❌ PhD thesis per feature]
+
+    Alternatives2 --> SpecKitLimits[SpecKit<br/>❌ Just scaffolding<br/>❌ No automation<br/>❌ No living docs<br/>❌ No enforcement]
+
+    Alternatives3 --> NoFramework[No Framework<br/>❌ Manual chaos<br/>❌ No structure<br/>❌ No consistency<br/>❌ No automation]
+
+    BMADLimits --> Decision([SpecWeave adapts to YOU])
+    SpecKitLimits --> Decision
+    NoFramework --> Decision
+
+    Decision --> End([Start with: npm install -g specweave])
+
+    %% HIGH CONTRAST STYLING
+    classDef specweave fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px,color:#000000
+    classDef mode fill:#E3F2FD,stroke:#1565C0,stroke-width:3px,color:#000000
+    classDef features fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#000000
+    classDef limits fill:#FCE4EC,stroke:#C2185B,stroke-width:2px,color:#000000
+    classDef decision fill:#FFF4E6,stroke:#E65100,stroke-width:3px,color:#000000
+
+    class Solo,Team,Enterprise specweave
+    class SoloMode,TeamMode,EnterpriseMode mode
+    class SoloFeatures,TeamFeatures,EnterpriseFeatures features
+    class BMADLimits,SpecKitLimits,NoFramework limits
+    class Decision decision

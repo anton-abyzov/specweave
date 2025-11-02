@@ -1,0 +1,63 @@
+flowchart TD
+    Start([SpecWeave Initialization]) --> Phase1
+
+    %% Phase 1: Init-Time
+    Phase1[Phase 1: Init-Time Detection]
+    Phase1 --> Init1[Trigger: specweave init]
+    Init1 --> Scan1[Scan project for indicators]
+    Scan1 --> Detect1[Check:<br/>package.json<br/>directory structure<br/>git config<br/>environment variables]
+    Detect1 --> Suggest1[Suggest relevant plugins]
+    Suggest1 --> User1{User decision}
+    User1 -->|Accept| Enable1[Enable plugins immediately]
+    User1 -->|Reject| Skip1[Continue with core only]
+
+    %% Phase 2: Pre-Spec
+    Enable1 --> Phase2
+    Skip1 --> Phase2
+    Phase2[Phase 2: Pre-Spec Detection]
+    Phase2 --> Init2[Trigger: specweave.inc]
+    Init2 --> Scan2[Analyze increment description]
+    Scan2 --> Detect2[Detect keywords in description]
+    Detect2 --> Match2{Matches plugin triggers?}
+    Match2 -->|Yes| Suggest2[Suggest before spec creation]
+    Match2 -->|No| NoSuggest2[Proceed to spec]
+    Suggest2 --> User2{User decision}
+    User2 -->|Accept| Enable2[Enable plugin before spec]
+    User2 -->|Reject| NoSuggest2
+
+    %% Phase 3: Pre-Task
+    Enable2 --> Phase3
+    NoSuggest2 --> Phase3
+    Phase3[Phase 3: Pre-Task Detection]
+    Phase3 --> Init3[Trigger: Before each task]
+    Init3 --> Scan3[Scan task description]
+    Scan3 --> Detect3[Check for plugin-relevant keywords]
+    Detect3 --> Match3{Matches plugin?}
+    Match3 -->|Yes| Suggest3[Non-blocking suggestion]
+    Match3 -->|No| NoSuggest3[Execute task]
+    Suggest3 --> Continue3[Developer can enable or ignore]
+    Continue3 --> NoSuggest3
+
+    %% Phase 4: Post-Increment
+    NoSuggest3 --> Phase4
+    Phase4[Phase 4: Post-Increment Detection]
+    Phase4 --> Init4[Trigger: specweave.done]
+    Init4 --> Scan4[Scan git diff]
+    Scan4 --> Detect4[Detect new dependencies added]
+    Detect4 --> Match4{New plugin-relevant deps?}
+    Match4 -->|Yes| Suggest4[Suggest for next increment]
+    Match4 -->|No| NoSuggest4[Complete]
+    Suggest4 --> User4{User decision}
+    User4 -->|Accept| Enable4[Enable for next increment]
+    User4 -->|Reject| NoSuggest4
+    Enable4 --> Complete
+    NoSuggest4 --> Complete([Complete])
+
+    %% HIGH CONTRAST STYLING
+    classDef phase fill:#F3E5F5,stroke:#6A1B9A,stroke-width:3px,color:#000000
+    classDef detect fill:#E3F2FD,stroke:#1565C0,stroke-width:3px,color:#000000
+    classDef decision fill:#FFF4E6,stroke:#E65100,stroke-width:3px,color:#000000
+
+    class Phase1,Phase2,Phase3,Phase4 phase
+    class Scan1,Detect1,Scan2,Detect2,Scan3,Detect3,Scan4,Detect4 detect
+    class User1,Match2,User2,Match3,Match4,User4 decision

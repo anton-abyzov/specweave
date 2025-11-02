@@ -143,10 +143,31 @@ export async function initCommand(
     }
   }
 
+  // 3. Check for nested .specweave/ (CRITICAL: prevent nested folders)
+  const parentSpecweave = detectNestedSpecweave(targetDir);
+  if (parentSpecweave) {
+    console.log('');
+    console.log(chalk.red.bold('❌ Nested .specweave/ folders are NOT supported!'));
+    console.log('');
+    console.log(chalk.yellow(`   Found parent .specweave/ at:`));
+    console.log(chalk.white(`   ${parentSpecweave}`));
+    console.log('');
+    console.log(chalk.cyan('   SpecWeave enforces a single source of truth:'));
+    console.log(chalk.gray('   • Use the parent folder for all increments'));
+    console.log(chalk.gray('   • Increments can span multiple subdirectories'));
+    console.log(chalk.gray('   • See CLAUDE.md section "Root-Level .specweave/ Folder"'));
+    console.log('');
+    console.log(chalk.cyan(`   To fix:`));
+    console.log(chalk.white(`   cd ${parentSpecweave}`));
+    console.log(chalk.white(`   /specweave.inc "your-feature"`));
+    console.log('');
+    process.exit(1);
+  }
+
   const spinner = ora('Creating SpecWeave project...').start();
 
   try {
-    // 3. Detect or select tool
+    // 4. Detect or select tool
     const adapterLoader = new AdapterLoader();
     let toolName: string;
 
@@ -439,6 +460,37 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   if (fs.existsSync(gitignoreTemplate)) {
     fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
   }
+}
+
+/**
+ * Detect if a parent directory contains a .specweave/ folder
+ * SpecWeave ONLY supports root-level .specweave/ folders
+ * Nested .specweave/ folders are NOT supported
+ *
+ * @param targetDir - Directory where user wants to initialize
+ * @returns Path to parent .specweave/ folder, or null if none found
+ */
+function detectNestedSpecweave(targetDir: string): string | null {
+  // Start from parent of target directory
+  let currentDir = path.dirname(path.resolve(targetDir));
+  const root = path.parse(currentDir).root;
+
+  // Walk up the directory tree
+  while (currentDir !== root) {
+    const specweavePath = path.join(currentDir, '.specweave');
+
+    // Check if .specweave/ exists at this level
+    if (fs.existsSync(specweavePath)) {
+      return currentDir; // Found parent .specweave/
+    }
+
+    // Move up one level
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) break; // Reached root
+    currentDir = parentDir;
+  }
+
+  return null; // No parent .specweave/ found
 }
 
 /**

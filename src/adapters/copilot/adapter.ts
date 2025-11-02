@@ -2,9 +2,9 @@
  * GitHub Copilot Adapter
  *
  * Basic automation adapter for GitHub Copilot.
- * Copilot automatically reads AGENTS.md (universal standard) for context and suggestions.
+ * Compiles SpecWeave plugins to AGENTS.md (universal standard) for context and suggestions.
  *
- * This adapter requires no additional files - Copilot reads AGENTS.md automatically.
+ * This adapter compiles skills, agents, and commands into AGENTS.md format.
  */
 
 import * as path from 'path';
@@ -12,6 +12,7 @@ import fs from 'fs-extra';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import type { Plugin } from '../../core/types/plugin.js';
+import { compileToAgentsMd, getSpecweaveInstallPath } from '../../utils/agents-md-compiler.js';
 
 export class CopilotAdapter extends AdapterBase {
   name = 'copilot';
@@ -47,8 +48,73 @@ export class CopilotAdapter extends AdapterBase {
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Configuring GitHub Copilot (Basic Automation)\n');
 
-    // No files to install - Copilot reads AGENTS.md automatically
-    console.log('✅ Copilot will automatically read AGENTS.md');
+    // 1. Create .specweave/ structure
+    const specweaveDir = path.join(options.projectPath, '.specweave');
+    await fs.ensureDir(specweaveDir);
+    await fs.ensureDir(path.join(specweaveDir, 'increments'));
+    await fs.ensureDir(path.join(specweaveDir, 'increments', '_backlog'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'strategy'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'adr'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'rfc'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'diagrams'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'delivery'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'public', 'guides'));
+    await fs.ensureDir(path.join(specweaveDir, 'logs'));
+
+    console.log('✅ Created .specweave/ structure');
+
+    // 2. Find SpecWeave installation
+    let specweavePath: string;
+    try {
+      specweavePath = getSpecweaveInstallPath();
+      console.log(`✅ Found SpecWeave installation at: ${specweavePath}`);
+    } catch (error) {
+      console.error('❌ Could not find SpecWeave installation');
+      console.error('   Make sure SpecWeave is installed: npm install -g specweave');
+      return;
+    }
+
+    // 3. Compile plugins to AGENTS.md
+    console.log('📝 Compiling plugins to AGENTS.md...');
+    const result = await compileToAgentsMd(specweavePath);
+
+    // 4. Write AGENTS.md
+    const agentsMdPath = path.join(options.projectPath, 'AGENTS.md');
+    await fs.writeFile(agentsMdPath, result.agentsMd, 'utf-8');
+
+    console.log('✅ Created AGENTS.md with:');
+    console.log(`   - ${result.skills.length} skills`);
+    console.log(`   - ${result.agents.length} agents`);
+    console.log(`   - ${result.commands.length} commands`);
+
+    // 5. Create .github/copilot/instructions.md (optional)
+    const copilotDir = path.join(options.projectPath, '.github', 'copilot');
+    await fs.ensureDir(copilotDir);
+
+    const instructionsContent = `# GitHub Copilot Instructions
+
+This project uses SpecWeave for spec-driven development.
+
+## Important Context
+
+- **AGENTS.md**: Complete workflow guide (read this first!)
+- **Structure**: All work happens in \`.specweave/increments/\`
+- **Workflow**: spec.md → plan.md → tasks.md → tests.md
+
+## When Suggesting Code
+
+- Follow patterns in AGENTS.md
+- Create files in increment folders, not project root
+- Reference existing specs and plans
+- Follow naming conventions (kebab-case for increments)
+
+See AGENTS.md for complete details.
+`;
+
+    await fs.writeFile(path.join(copilotDir, 'instructions.md'), instructionsContent, 'utf-8');
+    console.log('✅ Created .github/copilot/instructions.md');
+
+    console.log('\n✅ Copilot will automatically read AGENTS.md');
   }
 
   /**

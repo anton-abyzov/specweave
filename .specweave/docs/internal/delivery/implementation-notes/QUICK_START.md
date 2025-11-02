@@ -11,7 +11,7 @@ I autonomously implemented and **successfully tested** a complete bidirectional 
 **Proof it's working**:
 - ✅ Created Epic `SCRUM-2` in your Jira: https://antonabyzov.atlassian.net/browse/SCRUM-2
 - ✅ Imported it as Increment `0003` in SpecWeave
-- ✅ Generated RFC document: `.specweave/docs/rfcs/rfc-0003-*.md`
+- ✅ Generated RFC document: `.specweave/docs/internal/architecture/rfc/rfc-0003-*.md`
 - ✅ All test results saved: `test-results/jira-*.json`
 
 ---
@@ -23,7 +23,7 @@ I autonomously implemented and **successfully tested** a complete bidirectional 
 cat .specweave/increments/0003/spec.md
 
 # 2. View the RFC document
-cat .specweave/docs/rfcs/rfc-0003-specweave-test-test-epic-for-sync.md
+cat .specweave/docs/internal/architecture/rfc/rfc-0003-specweave-test-test-epic-for-sync.md
 
 # 3. Check the folder structure
 ls -la .specweave/increments/0003/
@@ -119,8 +119,10 @@ bash scripts/import-epic.sh SCRUM-1
 │       ├── tasks.md                    ← All sub-tasks as checklist
 │       └── context-manifest.yaml       ← Context configuration
 └── docs/
-    └── rfcs/
-        └── rfc-0004-your-feature.md    ← Detailed design doc
+    └── internal/
+        └── architecture/
+            └── rfc/
+                └── rfc-0004-your-feature.md    ← Detailed design doc
 ```
 
 ### spec.md Contains

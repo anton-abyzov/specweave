@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/antonabyzov/Projects/github/specweave/mlruns/643880801285079135/94dfecb5f4fe469795cfc1c2595ae37a/artifacts
+end_time: 1761969185772
+entry_point_name: ''
+experiment_id: '643880801285079135'
+lifecycle_stage: active
+run_id: 94dfecb5f4fe469795cfc1c2595ae37a
+run_name: medium_model_balanced
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761969184471
+status: 3
+tags: []
+user_id: antonabyzov

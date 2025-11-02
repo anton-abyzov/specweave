@@ -1,0 +1,38 @@
+sequenceDiagram
+    actor Dev as Developer
+    participant CLI as SpecWeave CLI
+    participant Hook as Post-Task Hook
+    participant Docs as Living Docs
+    participant Git as Git Repository
+
+    Dev->>CLI: Run specweave.do
+    CLI->>Dev: Execute Task T-001
+    Dev->>Dev: Write code and tests
+    Dev->>CLI: Mark task complete
+
+    activate Hook
+    CLI->>Hook: Fire post-task-completion.sh
+    Hook->>Hook: 1. Log completion
+    Hook->>Hook: 2. Play completion sound
+    Hook->>Hook: 3. Update progress
+    Hook->>Hook: 4. Check auto-sync config
+
+    alt Auto-sync enabled
+        Hook->>Docs: Update docs automatically
+        Docs->>Docs: Sync spec.md with code reality
+        Docs->>Docs: Update plan.md with learnings
+        Docs->>Docs: Update ADRs with decisions
+        Docs->>Hook: Docs updated successfully
+        Hook->>Dev: Docs synced automatically
+    else Manual sync
+        Hook->>Dev: Reminder: Run sync-docs when ready
+    end
+    deactivate Hook
+
+    Dev->>CLI: Continue to next task
+
+    Note over Dev,Git: After all tasks complete
+    Dev->>CLI: Run specweave.done
+    CLI->>Docs: Final sync: strategic docs
+    Docs->>Git: Commit updated docs
+    Git->>Dev: Increment complete
