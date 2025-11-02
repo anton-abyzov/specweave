@@ -8,8 +8,8 @@
  *
  * Syncs with:
  * - .specweave/increments/{id}/ - Increment folder
- * - .specweave/docs/rfcs/ - RFC documents for detailed specs
- * - .specweave/docs/decisions/ - Architecture decisions (ADRs)
+ * - .specweave/docs/internal/architecture/rfc/ - RFC documents for detailed specs
+ * - .specweave/docs/internal/architecture/adr/ - Architecture decisions (ADRs)
  */
 
 import { JiraClient, JiraIssue } from './jira-client';

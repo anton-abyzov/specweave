@@ -1,0 +1,169 @@
+flowchart TD
+    Start([Developer Starts New Work]) --> Type{Project Type?}
+
+    %% Greenfield Path
+    Type -->|Greenfield| Init[specweave init]
+    Init --> Phase1[Phase 1: Init-Time Detection]
+    Phase1 --> Scan1[Scan project structure]
+    Scan1 --> Check1{Found stack indicators?}
+    Check1 -->|Yes| Suggest1[Suggest plugins:<br/>React to frontend-stack<br/>K8s to kubernetes]
+    Check1 -->|No| CoreOnly[Load core framework only]
+    Suggest1 --> UserChoice1{User accepts?}
+    UserChoice1 -->|Yes| EnablePlugins1[Enable suggested plugins]
+    UserChoice1 -->|No| CoreOnly
+    EnablePlugins1 --> Ready
+    CoreOnly --> Ready
+
+    %% Brownfield Path
+    Type -->|Brownfield| BrownInit[specweave init --brownfield]
+    BrownInit --> BrownScan[Scan existing codebase]
+    BrownScan --> BrownAnalysis[Analyze:<br/>Docs, Tests, Issues, Git history]
+    BrownAnalysis --> MigrationPlan[Generate migration plan]
+    MigrationPlan --> Ready[Ready for increment]
+
+    %% Increment Planning
+    Ready --> IncStart[Run specweave.inc]
+    IncStart --> Phase2[Phase 2: Pre-Spec Detection]
+    Phase2 --> AnalyzeDesc[Analyze increment description]
+    AnalyzeDesc --> Check2{Keywords match plugins?}
+    Check2 -->|Yes| Suggest2[Suggest plugins based on keywords]
+    Check2 -->|No| NoPluginNeeded
+    Suggest2 --> UserChoice2{Enable plugin?}
+    UserChoice2 -->|Yes| EnablePlugins2[Enable plugins]
+    UserChoice2 -->|No| NoPluginNeeded[Continue without plugin]
+    EnablePlugins2 --> DecisionGate
+    NoPluginNeeded --> DecisionGate
+
+    %% Decision Gate
+    DecisionGate{User Decision Gate}
+    DecisionGate --> Q1[Q1: How deep should we spec?]
+    Q1 --> A1{User selects:}
+    A1 -->|High-level| DepthHigh[User stories only<br/>Minimal detail<br/>Fast iteration]
+    A1 -->|Detailed| DepthDetailed[Full acceptance criteria<br/>Edge cases<br/>Complete test scenarios]
+    DepthHigh --> Q2
+    DepthDetailed --> Q2
+
+    Q2[Q2: Test-Driven Development?]
+    Q2 --> A2{User selects:}
+    A2 -->|Yes TDD| TDDYes[Tests written first<br/>Red-Green-Refactor<br/>Higher confidence]
+    A2 -->|No TDD| TDDNo[Tests after code<br/>Faster iteration<br/>Pragmatic approach]
+    TDDYes --> Q3
+    TDDNo --> Q3
+
+    Q3[Q3: Test quality level?]
+    Q3 --> A3{User selects:}
+    A3 -->|Basic| QualBasic[Coverage targets<br/>Manual review<br/>Fast validation]
+    A3 -->|AI Judge| QualAI[AI quality assessment<br/>Edge case detection<br/>Architecture review]
+    QualBasic --> Q4
+    QualAI --> Q4
+
+    Q4[Q4: Living docs sync?]
+    Q4 --> A4{User selects:}
+    A4 -->|Auto| DocsAuto[Hooks fire after every task<br/>Docs auto-update<br/>Zero manual work]
+    A4 -->|Manual| DocsManual[User runs sync-docs<br/>More control<br/>Manual effort]
+    DocsAuto --> Research
+    DocsManual --> Research
+
+    %% Research Phase
+    Research[PM Agent: Research and Analysis]
+    Research --> ResearchSteps[Market analysis<br/>Competitive research<br/>User story extraction]
+    ResearchSteps --> SpecGen[Generate spec.md]
+    SpecGen --> SpecContent[spec.md contains:<br/>User stories<br/>Acceptance criteria<br/>Success metrics]
+
+    %% Planning Phase
+    SpecContent --> Plan[Architect Agent: Technical Planning]
+    Plan --> PlanSteps[Architecture design<br/>Tech stack selection<br/>Risk assessment]
+    PlanSteps --> PlanGen[Generate plan.md]
+    PlanGen --> PlanContent[plan.md contains:<br/>Architecture<br/>Implementation strategy<br/>Dependencies]
+
+    %% Task Breakdown
+    PlanContent --> Tasks[Tech Lead Agent: Task Breakdown]
+    Tasks --> TaskSteps[Break into tasks<br/>Estimate effort<br/>Identify risks]
+    TaskSteps --> TaskGen[Generate tasks.md]
+    TaskGen --> TaskContent[tasks.md contains:<br/>Task list<br/>Dependencies<br/>Acceptance criteria]
+
+    %% Test Planning
+    TaskContent --> Tests[QA Lead Agent: Test Planning]
+    Tests --> TestSteps[Define test scenarios<br/>Coverage requirements<br/>Quality gates]
+    TestSteps --> TestGen[Generate tests.md]
+    TestGen --> TestContent[tests.md contains:<br/>Test cases<br/>Coverage targets<br/>Quality criteria]
+
+    %% Validation Gate
+    TestContent --> ValidateCheck{Run validation?}
+    ValidateCheck -->|Yes| Validate[Run specweave.validate]
+    ValidateCheck -->|No| Ready2
+    Validate --> ValidationRules[Rule-based checks:<br/>Required fields present<br/>Tasks have criteria<br/>Tests cover requirements]
+    ValidationRules --> AIJudge{AI Judge enabled?}
+    AIJudge -->|Yes| AICheck[AI Quality Assessment:<br/>Spec clarity<br/>Edge case coverage<br/>Architecture soundness]
+    AIJudge -->|No| ValidationResult
+    AICheck --> ValidationResult{Validation passed?}
+    ValidationResult -->|Failed| FixIssues[Fix issues in specs]
+    ValidationResult -->|Passed| Ready2[Ready for execution]
+    FixIssues --> ValidateCheck
+
+    %% Execution Phase
+    Ready2 --> Execute[Run specweave.do]
+    Execute --> Phase3[Phase 3: Pre-Task Detection]
+    Phase3 --> CheckTask[Check next task description]
+    CheckTask --> TaskHints{Task mentions plugins?}
+    TaskHints -->|Yes| SuggestTaskPlugin[Non-blocking suggestion:<br/>Consider enabling plugin]
+    TaskHints -->|No| ExecTask
+    SuggestTaskPlugin --> ExecTask[Execute current task]
+
+    %% Task Execution Loop
+    ExecTask --> TaskWork[Developer works on task]
+    TaskWork --> TaskComplete{Task complete?}
+    TaskComplete -->|No| TaskWork
+    TaskComplete -->|Yes| PostHook[Post-task hook fires]
+
+    %% Post-Task Hook
+    PostHook --> HookActions[Hook performs:<br/>1. Log completion<br/>2. Play sound<br/>3. Update progress<br/>4. Sync docs if enabled]
+    HookActions --> DocsSync{Auto-sync enabled?}
+    DocsSync -->|Yes| UpdateDocs[Run sync-docs automatically]
+    DocsSync -->|No| SkipSync
+    UpdateDocs --> CheckMore
+    SkipSync[Manual sync later] --> CheckMore
+
+    CheckMore{More tasks?}
+    CheckMore -->|Yes| Execute
+    CheckMore -->|No| QualityGate
+
+    %% Quality Gate
+    QualityGate[Quality Gate Checks]
+    QualityGate --> GateChecks[Verify:<br/>All tasks complete<br/>All tests passing<br/>Docs synced]
+    GateChecks --> GatePass{All checks pass?}
+    GatePass -->|No| BlockClose[Cannot close increment]
+    GatePass -->|Yes| AllowClose[Can close increment]
+    BlockClose --> FixGate[Fix failing checks]
+    FixGate --> QualityGate
+
+    %% Increment Completion
+    AllowClose --> Close[Run specweave.done]
+    Close --> Phase4[Phase 4: Post-Increment Detection]
+    Phase4 --> GitDiff[Analyze git diff]
+    GitDiff --> NewDeps{New dependencies added?}
+    NewDeps -->|Yes| SuggestFuture[Suggest for next increment]
+    NewDeps -->|No| FinalSync
+    SuggestFuture --> FinalSync[Final living docs sync]
+
+    %% Final Sync
+    FinalSync --> UpdateStrategic[Update strategic docs:<br/>Architecture changes<br/>ADR updates<br/>Lessons learned]
+    UpdateStrategic --> Complete([Increment Complete])
+
+    %% Next Increment
+    Complete --> Next{Start next increment?}
+    Next -->|Yes| IncStart
+    Next -->|No| End([Done])
+
+    %% Styling - HIGH CONTRAST
+    classDef decision fill:#FFF4E6,stroke:#E65100,stroke-width:3px,color:#000000
+    classDef process fill:#E3F2FD,stroke:#1565C0,stroke-width:3px,color:#000000
+    classDef hook fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px,color:#000000
+    classDef plugin fill:#F3E5F5,stroke:#6A1B9A,stroke-width:3px,color:#000000
+    classDef quality fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
+
+    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,ValidateCheck,AIJudge,ValidationResult,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next decision
+    class Init,Execute,Close,Validate process
+    class Phase1,Phase2,Phase3,Phase4,PostHook hook
+    class Suggest1,EnablePlugins1,Suggest2,EnablePlugins2,SuggestTaskPlugin,SuggestFuture plugin
+    class QualityGate,GateChecks,ValidationRules,AICheck quality

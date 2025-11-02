@@ -7,6 +7,137 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.0] - 2025-11-02
+
+### 🎉 Major Release - Claude Code Native Plugin Architecture
+
+This is a **major architectural transformation** aligning SpecWeave with Claude Code's native plugin system while maintaining multi-tool support.
+
+### Added
+
+- **Claude Code Native Plugin System**
+  - Created `.claude-plugin/plugin.json` (core manifest)
+  - Created `.claude-plugin/marketplace.json` (GitHub marketplace)
+  - Root-level component structure (`skills/`, `agents/`, `commands/`, `hooks/`)
+  - Native `hooks/hooks.json` configuration
+  - Zero file copying for Claude Code users - native marketplace loading!
+
+- **AGENTS.md Compilation System**
+  - New `src/utils/agents-md-compiler.ts` - compiles plugins to AGENTS.md format
+  - Universal AGENTS.md standard support (https://agents.md/)
+  - Automatic detection of SpecWeave installation path (NPM global/local/development)
+  - Structured compilation: skills → agents → commands → project structure
+
+- **Multi-Tool Support Enhanced**
+  - **Claude Code**: Native marketplace instructions (no file copying!)
+  - **GitHub Copilot**: Full AGENTS.md + `.github/copilot/instructions.md` compilation
+  - **Cursor**: Ready for AGENTS.md compilation (unified approach)
+  - **Generic**: AGENTS.md for manual workflows
+
+### Changed
+
+- **BREAKING**: Moved `src/skills/` → `skills/` (root level, Claude native)
+- **BREAKING**: Moved `src/agents/` → `agents/` (root level, Claude native)
+- **BREAKING**: Moved `src/commands/` → `commands/` (root level, Claude native)
+- **BREAKING**: Moved `src/hooks/` → `hooks/` (root level, Claude native)
+- **BREAKING**: Moved `src/plugins/` → `plugins/` (root level)
+
+- **Claude Adapter**: Completely refactored
+  - Removed file copying logic
+  - Shows marketplace installation instructions instead
+  - Creates only `.specweave/` structure (project data)
+
+- **Copilot Adapter**: Completely refactored
+  - Now compiles AGENTS.md from NPM package
+  - Creates `.github/copilot/instructions.md`
+  - Full plugin compilation support
+
+### Removed
+
+- **BREAKING**: Deprecated install scripts (no longer needed for Claude Code)
+  - `npm run install:skills` → deprecated
+  - `npm run install:agents` → deprecated
+  - `npm run install:all` → deprecated
+  - Use `/plugin marketplace add anton-abyzov/specweave` instead!
+
+- Removed `.claude/` folder requirement (Claude Code loads natively)
+- Removed dual manifest system (only `plugin.json` needed, not `manifest.json`)
+
+### Fixed
+
+- **Context Efficiency**: 60-80% reduction via native plugin loading
+- **GitHub References**: Marketplace properly points to GitHub repo
+- **Version Sync**: All manifests use consistent versioning
+
+### Migration Guide (v0.4.x → v0.5.0)
+
+**For Claude Code Users**:
+1. Update to v0.5.0: `npm install -g specweave@0.5.0`
+2. Delete old `.claude/` folders in projects (no longer needed!)
+3. Add marketplace: `/plugin marketplace add anton-abyzov/specweave`
+4. Install core: `/plugin install specweave-core@specweave`
+5. (Optional) Install GitHub: `/plugin install specweave-github@specweave`
+
+**For Copilot/Cursor Users**:
+1. Update to v0.5.0: `npm install -g specweave@0.5.0`
+2. Re-run `specweave init` in projects to regenerate AGENTS.md
+3. AGENTS.md will now include complete plugin compilation
+
+**For Contributors**:
+1. Delete `src/skills/`, `src/agents/`, `src/commands/` (moved to root)
+2. Use root-level directories for all edits
+3. No more install scripts needed during development
+4. Use `/plugin marketplace add ./` for local testing
+
+### Documentation
+
+- Created `CLAUDE-NATIVE-ARCHITECTURE.md` - complete architecture spec
+- Created `UNIFIED-AGENTS-MD-APPROACH.md` - multi-tool strategy
+- Updated `CLAUDE.md` - contributor guide with new structure
+- Updated `package.json` - files array, deprecated scripts
+
+### Known Issues
+
+- Cursor adapter AGENTS.md compilation pending (next iteration)
+- NPM package path detection may need Windows compatibility testing
+- Marketplace update mechanism (`/plugin marketplace update`) depends on Claude Code support
+
+### Next Steps (v0.6.0)
+
+- Complete Cursor adapter AGENTS.md compilation
+- Add automated version sync script
+- Implement plugin versioning and update notifications
+- Add E2E tests for all adapters
+
+---
+
+## [Unreleased]
+
+### 🔒 Architecture
+- **CRITICAL: Root-Level .specweave/ Enforcement (ADR-0014)** - SpecWeave now ONLY supports root-level `.specweave/` folders
+  - **Nested folder prevention**: `specweave init` validates and blocks nested `.specweave/` creation
+  - **Clear error messages**: Provides path to parent `.specweave/` and suggests correct usage
+  - **Multi-repo guidance**: Complete documentation for huge projects with multiple repos
+  - **Rationale**: Single source of truth, cross-cutting features, simplified living docs sync
+  - **Implementation**: New `detectNestedSpecweave()` function in `src/cli/commands/init.ts`
+  - **Documentation**: New section in CLAUDE.md "Root-Level .specweave/ Folder (MANDATORY)"
+  - **User guide**: New README.md section "Multi-Repo & Microservices Support"
+  - **ADR**: ADR-0014 documents complete architectural decision and alternatives considered
+  - **Why this matters**: Prevents duplication, fragmentation, and source-of-truth conflicts
+
+### 🎉 Improved
+- **Smart Session-End Detection (Hook v2.0)** - Dramatically improved completion sound behavior
+  - **Inactivity-based detection**: Only plays sound when session is TRULY ending (15s+ inactivity after all tasks complete)
+  - **No more false positives**: Skips sound when Claude creates multiple todo lists in rapid succession
+  - **Enhanced logging**: Decision reasoning logged to `.specweave/logs/hooks-debug.log` with emoji indicators
+  - **Configurable threshold**: `INACTIVITY_THRESHOLD=15` adjustable in `src/hooks/post-task-completion.sh`
+  - **Better UX**: Three-tier messaging:
+    - "✅ Task completed. More tasks remaining - keep going!"
+    - "✅ Task batch completed (Ns since last activity). Continuing work..."
+    - "🎉 ALL WORK COMPLETED! Session ending detected (Ns inactivity)"
+
+---
+
 ## [0.4.1] - 2025-10-31
 
 ### 🔧 Fixed

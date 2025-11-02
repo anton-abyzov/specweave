@@ -1,0 +1,97 @@
+{
+  "name": "specweave",
+  "owner": {
+    "name": "Anton Abyzov",
+    "email": "anton@spec-weave.com"
+  },
+  "metadata": {
+    "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
+    "version": "0.5.0",
+    "homepage": "https://spec-weave.com",
+    "repository": "https://github.com/anton-abyzov/specweave",
+    "license": "MIT"
+  },
+  "plugins": [
+    {
+      "name": "specweave-core",
+      "description": "SpecWeave core framework - increment lifecycle, living docs, PM-led planning",
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave"
+      },
+      "version": "0.5.0",
+      "author": {
+        "name": "Anton Abyzov"
+      },
+      "keywords": [
+        "spec-driven",
+        "increments",
+        "living-docs",
+        "pm",
+        "architect",
+        "tech-lead"
+      ],
+      "components": {
+        "skills": [
+          "increment-planner",
+          "rfc-generator",
+          "context-loader",
+          "brownfield-analyzer",
+          "brownfield-onboarder",
+          "increment-quality-judge",
+          "context-optimizer",
+          "project-kickstarter"
+        ],
+        "agents": [
+          "pm",
+          "architect",
+          "tech-lead"
+        ],
+        "commands": [
+          "specweave.inc",
+          "specweave.do",
+          "specweave.next",
+          "specweave.done",
+          "specweave.progress",
+          "specweave.validate",
+          "sync-docs"
+        ]
+      }
+    },
+    {
+      "name": "specweave-github",
+      "description": "GitHub integration - bidirectional sync, issue tracking, task management",
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave",
+        "path": "plugins/specweave-github"
+      },
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov"
+      },
+      "keywords": [
+        "github",
+        "sync",
+        "issues",
+        "tasks",
+        "github-cli"
+      ],
+      "components": {
+        "skills": [
+          "github-sync",
+          "github-issue-tracker"
+        ],
+        "agents": [
+          "github-manager"
+        ],
+        "commands": [
+          "github-sync-tasks",
+          "github-create-issue",
+          "github-close-issue",
+          "github-status"
+        ]
+      }
+    }
+  ]
+}

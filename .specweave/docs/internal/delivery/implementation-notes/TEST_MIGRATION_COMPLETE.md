@@ -418,7 +418,7 @@ input:
 expected_output:
   files_created:
     - ".specweave/increments/0001/spec.md"
-    - ".specweave/docs/rfcs/rfc-0001-*.md"
+    - ".specweave/docs/internal/architecture/rfc/rfc-0001-*.md"
   result: "success"
 requires:
   credentials:
@@ -540,7 +540,7 @@ input:
 expected_output:
   files_created:
     - ".specweave/increments/0001/spec.md"
-    - ".specweave/docs/rfcs/rfc-0001-*.md"
+    - ".specweave/docs/internal/architecture/rfc/rfc-0001-*.md"
 requires:
   credentials:
     - jira

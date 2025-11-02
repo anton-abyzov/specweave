@@ -1,0 +1,22 @@
+artifact_path: file:///Users/antonabyzov/Projects/github/specweave/mlruns/643880801285079135/models/m-301077720680471b8e992d21c90acbb6/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.9.21
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.6.1
+mlflow_version: 3.1.4
+model_id: m-301077720680471b8e992d21c90acbb6
+model_size_bytes: 299836
+model_uuid: m-301077720680471b8e992d21c90acbb6
+prompts: null
+run_id: c00e2ef6ba694268af410baf9ce511db
+utc_time_created: '2025-11-01 03:53:05.854980'

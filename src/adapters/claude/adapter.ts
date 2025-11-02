@@ -39,56 +39,50 @@ export class ClaudeAdapter extends AdapterBase {
   /**
    * Get files to install for Claude adapter
    *
-   * Claude adapter installs:
-   * - Skills to .claude/skills/ (auto-activating capabilities)
-   * - Agents to .claude/agents/ (specialized roles)
-   * - Commands to .claude/commands/ (slash commands)
-   * - Hooks to .claude/hooks/ (auto-update mechanisms)
+   * Claude Code v0.5.0+ uses native plugin loading via marketplace.
+   * No file copying needed!
    */
   getFiles(): AdapterFile[] {
-    return [
-      {
-        sourcePath: 'README.md',
-        targetPath: '.claude/README.md',
-        description: 'Claude adapter documentation'
-      }
-      // Note: Skills, agents, commands, hooks are installed via npm scripts
-      // (install:skills, install:agents) - not copied here
-    ];
+    return []; // No files to copy - native loading!
   }
 
   /**
    * Install Claude adapter
    *
-   * Since SpecWeave was originally built for Claude Code, the "installation"
-   * is actually just ensuring the existing .claude/ structure is correct.
-   *
-   * Skills, agents, commands, hooks are installed separately via:
-   * - npm run install:skills
-   * - npm run install:agents
+   * Claude Code v0.5.0+ uses native plugin system with marketplace.
+   * Installation steps:
+   * 1. Create .specweave/ structure (project data)
+   * 2. Show marketplace installation instructions
+   * 3. User adds marketplace: /plugin marketplace add anton-abyzov/specweave
+   * 4. User installs plugins: /plugin install specweave-core@specweave
    */
   async install(options: AdapterOptions): Promise<void> {
-    console.log('\n📦 Installing Claude Code Adapter (Full Automation)\n');
+    console.log('\n📦 Installing Claude Code Adapter (Native Plugin System)\n');
 
-    // Ensure .claude directory exists
-    const claudeDir = path.join(options.projectPath, '.claude');
-    await fs.ensureDir(claudeDir);
+    // Create .specweave/ structure (project data only)
+    const specweaveDir = path.join(options.projectPath, '.specweave');
+    await fs.ensureDir(specweaveDir);
+    await fs.ensureDir(path.join(specweaveDir, 'increments'));
+    await fs.ensureDir(path.join(specweaveDir, 'increments', '_backlog'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'strategy'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'adr'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'rfc'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'architecture', 'diagrams'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'internal', 'delivery'));
+    await fs.ensureDir(path.join(specweaveDir, 'docs', 'public', 'guides'));
+    await fs.ensureDir(path.join(specweaveDir, 'logs'));
 
-    // Create subdirectories
-    await fs.ensureDir(path.join(claudeDir, 'skills'));
-    await fs.ensureDir(path.join(claudeDir, 'agents'));
-    await fs.ensureDir(path.join(claudeDir, 'commands'));
-    await fs.ensureDir(path.join(claudeDir, 'hooks'));
-
-    // Copy README
-    await super.install(options);
-
-    console.log('\n✨ Claude adapter structure created!');
-    console.log('\n📋 Next steps:');
-    console.log('   1. Install skills: npm run install:skills');
-    console.log('   2. Install agents: npm run install:agents');
-    console.log('   3. Skills will auto-activate when relevant');
-    console.log('   4. Use slash commands: /create-increment, /review-docs, etc.');
+    console.log('\n✅ Created .specweave/ structure');
+    console.log('\n📋 Next steps - Install SpecWeave plugins:');
+    console.log('\n  1️⃣  Add SpecWeave marketplace:');
+    console.log('     /plugin marketplace add anton-abyzov/specweave');
+    console.log('\n  2️⃣  Install SpecWeave core:');
+    console.log('     /plugin install specweave-core@specweave');
+    console.log('\n  3️⃣  (Optional) Install GitHub plugin:');
+    console.log('     /plugin install specweave-github@specweave');
+    console.log('\n  4️⃣  Start using SpecWeave:');
+    console.log('     /specweave.inc "create a todo app"');
+    console.log('\n💡 Tip: Plugins load natively - no file copying needed!');
   }
 
   /**
@@ -168,12 +162,86 @@ For complete documentation, see: .claude/README.md
   }
 
   /**
+   * Check if Claude Code native plugin system is available
+   *
+   * Detects if /plugin commands are supported in current Claude Code version
+   *
+   * @returns boolean True if native plugin commands available
+   */
+  async supportsNativePlugins(): Promise<boolean> {
+    // Check if .claude/plugins directory exists (indicates native plugin support)
+    const projectPath = process.cwd();
+    const nativePluginsDir = path.join(projectPath, '.claude', 'plugins');
+
+    if (await fs.pathExists(nativePluginsDir)) {
+      return true;
+    }
+
+    // Check if plugin.json format is present in any installed plugins
+    const claudeDir = path.join(projectPath, '.claude');
+    if (await fs.pathExists(claudeDir)) {
+      const entries = await fs.readdir(claudeDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const pluginJsonPath = path.join(claudeDir, entry.name, '.claude-plugin', 'plugin.json');
+          if (await fs.pathExists(pluginJsonPath)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get installation instructions based on available plugin system
+   *
+   * Returns instructions for either:
+   * - Native /plugin commands (if supported)
+   * - SpecWeave CLI fallback (always available)
+   *
+   * @param pluginName Name of plugin to install
+   * @returns Installation instructions
+   */
+  async getPluginInstallInstructions(pluginName: string): Promise<string> {
+    const hasNativePlugins = await this.supportsNativePlugins();
+
+    if (hasNativePlugins) {
+      return `
+Installation Options:
+
+Option 1 (Recommended): Native Claude Code
+  /plugin marketplace add specweave/marketplace
+  /plugin install ${pluginName}@specweave
+
+Option 2: SpecWeave CLI
+  specweave plugin install ${pluginName}
+
+Both methods install the same plugin - choose based on preference!
+      `.trim();
+    }
+
+    return `
+Installation:
+  specweave plugin install ${pluginName}
+
+Note: Native /plugin commands not detected in your Claude Code version.
+Using SpecWeave CLI for plugin management.
+    `.trim();
+  }
+
+  /**
    * Compile and install a plugin for Claude Code
    *
    * Claude uses native plugin installation:
    * - Copy skills to .claude/skills/{plugin-name}/{skill-name}/
    * - Copy agents to .claude/agents/{plugin-name}/{agent-name}/
    * - Copy commands to .claude/commands/
+   *
+   * Supports both:
+   * - Native /plugin install (if Claude Code supports it)
+   * - SpecWeave CLI fallback (always available)
    *
    * @param plugin Plugin to install
    */
@@ -182,6 +250,15 @@ For complete documentation, see: .claude/README.md
     const claudeDir = path.join(projectPath, '.claude');
 
     console.log(`\n📦 Installing plugin: ${plugin.manifest.name}`);
+
+    // Check for native plugin support
+    const hasNativePlugins = await this.supportsNativePlugins();
+    if (hasNativePlugins) {
+      console.log('   💡 Tip: You can also use native /plugin commands:');
+      console.log(`      /plugin marketplace add specweave/marketplace`);
+      console.log(`      /plugin install ${plugin.manifest.name.replace('specweave-', '')}@specweave`);
+      console.log('');
+    }
 
     // Ensure base directories exist
     await fs.ensureDir(path.join(claudeDir, 'skills'));

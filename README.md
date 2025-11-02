@@ -509,6 +509,113 @@ npx specweave init .
 
 ---
 
+## 🏗️ Multi-Repo & Microservices Support
+
+**CRITICAL**: SpecWeave supports ONLY **root-level** `.specweave/` folders. Nested folders are NOT supported.
+
+### For Huge Projects with Multiple Repos
+
+**Problem**: "I have 10+ repos (microservices, monorepo, polyrepo)"
+
+**Solution**: Create a **parent folder** with one `.specweave/` at the root
+
+```bash
+# 1. Create parent folder
+mkdir my-big-project
+cd my-big-project
+
+# 2. Initialize SpecWeave at root
+npx specweave init .
+
+# 3. Clone your repos as subdirectories
+git clone https://github.com/myorg/auth-service.git
+git clone https://github.com/myorg/payment-service.git
+git clone https://github.com/myorg/frontend.git
+git clone https://github.com/myorg/infrastructure.git
+```
+
+**Result**:
+```
+my-big-project/              ← Parent folder
+├── .specweave/              ← ONE source of truth
+│   ├── increments/
+│   │   ├── 0001-auth-service/
+│   │   ├── 0002-payment-service/
+│   │   ├── 0003-unified-auth/       ← Cross-repo increment!
+│   │   └── 0004-frontend-redesign/
+│   ├── docs/
+│   │   ├── internal/
+│   │   │   ├── strategy/            ← System-wide strategy
+│   │   │   ├── architecture/        ← Cross-service architecture
+│   │   │   └── ...
+│   │   └── public/
+│   └── logs/
+│
+├── auth-service/            ← Separate git repo
+│   ├── .git/
+│   └── src/
+│
+├── payment-service/         ← Separate git repo
+│   ├── .git/
+│   └── src/
+│
+├── frontend/                ← Separate git repo
+│   ├── .git/
+│   └── src/
+│
+└── infrastructure/          ← Separate git repo
+    ├── .git/
+    └── terraform/
+```
+
+### Why Root-Level Only?
+
+**Single Source of Truth**:
+- ✅ One central location for all specs and increments
+- ✅ No duplication or fragmentation
+- ✅ Cross-cutting features span multiple repos naturally
+- ✅ System-wide architecture in one place
+
+**Prevents Chaos**:
+- ❌ No nested `.specweave/` folders (causes conflicts)
+- ❌ No ambiguity about where specs live
+- ❌ No duplicate increment numbers across modules
+
+### Enforcement
+
+SpecWeave **prevents** nested initialization:
+
+```bash
+# ❌ This will FAIL if parent has .specweave/
+cd my-big-project/backend
+npx specweave init .
+
+# Error: Nested .specweave/ folders are NOT supported!
+#        Found parent .specweave/ at: /path/to/my-big-project
+#        Use the parent folder for all increments.
+```
+
+**Correct Approach**:
+```bash
+# ✅ Use parent folder
+cd my-big-project
+/specweave.inc "0001-backend-api-v2"
+# Creates: .specweave/increments/0001-backend-api-v2/
+# Can reference: backend/, frontend/, etc.
+```
+
+### Benefits
+
+- ✅ **One `.specweave/` for entire system** - Single source of truth
+- ✅ **Each repo maintains its own git history** - No monorepo migration needed
+- ✅ **Cross-service increments are natural** - Auth spans auth-service + frontend + API
+- ✅ **System-wide architecture** - ADRs, HLDs apply to all services
+- ✅ **Living docs cover all repos** - Documentation spans the entire system
+
+**See [CLAUDE.md#root-level-specweave-folder-mandatory](CLAUDE.md#root-level-specweave-folder-mandatory)** for complete architectural details.
+
+---
+
 ## 🧪 Testing Strategy
 
 SpecWeave implements **4 Levels of Testing**:

@@ -1,0 +1,10 @@
+artifact_location: file:///Users/antonabyzov/Projects/github/specweave/mlruns/643880801285079135/models/m-c4a9d1637ff84a51b0c6e8e28ed35379/artifacts
+creation_timestamp: 1761969187144
+experiment_id: '643880801285079135'
+last_updated_timestamp: 1761969188360
+model_id: m-c4a9d1637ff84a51b0c6e8e28ed35379
+model_type: null
+name: player_detector_overfit
+source_run_id: 1138dad83160401395b3a9664b8ec3b1
+status: 2
+status_message: null

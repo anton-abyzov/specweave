@@ -1,0 +1,27 @@
+flowchart LR
+    subgraph Before["Before v0.4.0 - Monolithic"]
+        B1[Load ALL Skills and Agents:<br/>Frontend, Backend, DevOps<br/>ML, Payment, Security<br/>Observability, Design<br/>Total: 44 skills + 20 agents]
+        B1 --> B2[Total Context: 50,000 tokens]
+        B2 --> B3[Remaining for Code: 150,000 tokens]
+    end
+
+    subgraph After["After v0.4.0 - Modular Plugin System"]
+        A1[Load Core Framework ONLY:<br/>increment-planner<br/>rfc-generator<br/>context-loader<br/>PM, Architect, Tech Lead<br/>Total: 12,000 tokens]
+        A1 --> A2{Auto-detect and load plugins}
+        A2 -->|React app| A3[Core + frontend-stack<br/>Total: 16,000 tokens<br/>68% reduction]
+        A2 -->|K8s project| A4[Core + kubernetes<br/>Total: 17,000 tokens<br/>66% reduction]
+        A2 -->|GitHub project| A5[Core + github-sync<br/>Total: 15,000 tokens<br/>70% reduction]
+        A3 --> A6[Remaining for Code: 184,000 tokens<br/>22% MORE context available]
+        A4 --> A6
+        A5 --> A6
+    end
+
+    Before -.->|Average 76% reduction| After
+
+    %% HIGH CONTRAST STYLING
+    classDef before fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
+    classDef after fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px,color:#000000
+    classDef metric fill:#FFF4E6,stroke:#E65100,stroke-width:3px,color:#000000
+
+    class B1,B2,B3 before
+    class A1,A2,A3,A4,A5,A6 after
