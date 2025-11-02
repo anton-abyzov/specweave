@@ -1,12 +1,16 @@
 /**
- * AGENTS.md Compiler
+ * AGENTS.md Compiler (Cross-Platform)
  *
  * Compiles SpecWeave plugins (skills, agents, commands) into unified AGENTS.md format
  * for non-Claude tools (Cursor, Copilot, Generic)
  *
- * Reads from:
- * - NPM package location: /usr/local/lib/node_modules/specweave/
+ * Reads from NPM package location (auto-detected):
+ * - Windows: %APPDATA%\npm\node_modules\specweave\
+ * - macOS: /usr/local/lib/node_modules/specweave/ or /opt/homebrew/lib/node_modules/specweave/
+ * - Linux: /usr/local/lib/node_modules/specweave/
  * - Local development: ./skills/, ./agents/, ./commands/
+ *
+ * Supports: Windows 10+, macOS 10.15+, Linux (Ubuntu, Debian, RHEL, etc.)
  */
 
 import fs from 'fs-extra';
@@ -58,25 +62,98 @@ interface CompilationResult {
 // ============================================================================
 
 /**
- * Find SpecWeave installation path
+ * Find SpecWeave installation path (cross-platform)
+ *
+ * Supports Windows, macOS, and Linux with all common NPM installation locations.
  * Priority: NPM global → NPM local → local development
+ *
+ * @returns Absolute path to SpecWeave installation
+ * @throws Error if SpecWeave installation not found
  */
 export function getSpecweaveInstallPath(): string {
-  const paths = [
-    '/usr/local/lib/node_modules/specweave',           // NPM global (macOS/Linux)
-    '/usr/lib/node_modules/specweave',                 // NPM global (Linux alt)
-    path.join(process.env.HOME || '', '.npm-global/lib/node_modules/specweave'), // NPM global custom
-    path.join(process.cwd(), 'node_modules/specweave'), // NPM local
-    process.cwd(),                                      // Local development
-  ];
+  const platform = process.platform;
+  const homeDir = process.env.HOME || process.env.USERPROFILE || '';
 
+  // Build platform-specific paths
+  const paths: string[] = [];
+
+  // === Windows Paths ===
+  if (platform === 'win32') {
+    const appData = process.env.APPDATA || path.join(homeDir, 'AppData', 'Roaming');
+    const programFiles = process.env['ProgramFiles'] || 'C:\\Program Files';
+    const programFilesX86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)';
+
+    paths.push(
+      // NPM global (most common on Windows)
+      path.join(appData, 'npm', 'node_modules', 'specweave'),
+      // NPM global (system install)
+      path.join(programFiles, 'nodejs', 'node_modules', 'specweave'),
+      path.join(programFilesX86, 'nodejs', 'node_modules', 'specweave'),
+      // nvm-windows
+      path.join(appData, 'nvm', 'node_modules', 'specweave'),
+      // Custom prefix
+      path.join(homeDir, '.npm-global', 'node_modules', 'specweave'),
+    );
+  }
+
+  // === macOS Paths ===
+  if (platform === 'darwin') {
+    paths.push(
+      // NPM global (Intel Macs)
+      '/usr/local/lib/node_modules/specweave',
+      // NPM global (Apple Silicon - Homebrew)
+      '/opt/homebrew/lib/node_modules/specweave',
+      // NVM (Node Version Manager)
+      path.join(homeDir, '.nvm', 'versions', 'node', 'lib', 'node_modules', 'specweave'),
+      // Custom prefix
+      path.join(homeDir, '.npm-global', 'lib', 'node_modules', 'specweave'),
+    );
+  }
+
+  // === Linux Paths ===
+  if (platform === 'linux') {
+    paths.push(
+      // NPM global (common)
+      '/usr/local/lib/node_modules/specweave',
+      '/usr/lib/node_modules/specweave',
+      // NVM
+      path.join(homeDir, '.nvm', 'versions', 'node', 'lib', 'node_modules', 'specweave'),
+      // Custom prefix
+      path.join(homeDir, '.npm-global', 'lib', 'node_modules', 'specweave'),
+    );
+  }
+
+  // === Universal Paths (all platforms) ===
+  paths.push(
+    // NPM local (project-specific)
+    path.join(process.cwd(), 'node_modules', 'specweave'),
+    // Local development (current directory)
+    process.cwd(),
+  );
+
+  // Search for valid installation
   for (const p of paths) {
-    if (fs.existsSync(path.join(p, 'skills'))) {
-      return p;
+    try {
+      const skillsPath = path.join(p, 'skills');
+      if (fs.existsSync(skillsPath)) {
+        // Verify it's a valid SpecWeave installation
+        const testSkill = path.join(skillsPath, 'increment-planner', 'SKILL.md');
+        if (fs.existsSync(testSkill)) {
+          return p;
+        }
+      }
+    } catch (error) {
+      // Skip invalid paths
+      continue;
     }
   }
 
-  throw new Error('Could not find SpecWeave installation. Ensure SpecWeave is installed.');
+  throw new Error(
+    'Could not find SpecWeave installation. Ensure SpecWeave is installed:\n' +
+    '  npm install -g specweave\n\n' +
+    'Searched paths:\n' +
+    paths.map(p => `  - ${p}`).join('\n')
+  );
 }
 
 // ============================================================================

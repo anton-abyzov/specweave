@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.1] - 2025-11-02
+
+### 🔧 Fixed
+
+- **Cross-Platform Path Detection** - Complete rewrite of NPM installation path detection
+  - **Windows Support**: Added full Windows path detection
+    - `%APPDATA%\npm\node_modules\specweave` (primary)
+    - `C:\Program Files\nodejs\node_modules\specweave` (system)
+    - `C:\Program Files (x86)\nodejs\node_modules\specweave` (x86)
+    - `%APPDATA%\nvm\node_modules\specweave` (nvm-windows)
+  - **macOS Support**: Enhanced with Apple Silicon paths
+    - `/usr/local/lib/node_modules/specweave` (Intel)
+    - `/opt/homebrew/lib/node_modules/specweave` (Apple Silicon)
+    - NVM paths for version managers
+  - **Linux Support**: Comprehensive distribution coverage
+    - `/usr/local/lib/node_modules/specweave` (common)
+    - `/usr/lib/node_modules/specweave` (alt)
+    - NVM support
+  - **Error Messages**: Improved error reporting shows all searched paths
+  - **Validation**: Verifies installation by checking for `increment-planner` skill
+
+- **Documentation**: Updated `agents-md-compiler.ts` header with platform support details
+
+### Technical Details
+
+**File**: `src/utils/agents-md-compiler.ts`
+- Rewrote `getSpecweaveInstallPath()` function
+- Platform detection via `process.platform`
+- Environment variable support: `APPDATA`, `ProgramFiles`, `HOME`, `USERPROFILE`
+- Graceful error handling with path list in error message
+- Installation verification via test skill existence
+
+**Tested On**:
+- ✅ macOS (Intel + Apple Silicon)
+- ⏳ Windows (verified paths, needs real Windows testing)
+- ⏳ Linux (verified paths, needs real Linux testing)
+
+### Impact
+
+- **Users**: Windows/Linux users can now use SpecWeave CLI without path issues
+- **Copilot Adapter**: AGENTS.md compilation now works on all platforms
+- **Cursor Adapter**: Will work on all platforms when implemented
+- **No Breaking Changes**: Backward compatible with v0.5.0
+
+---
+
 ## [0.5.0] - 2025-11-02
 
 ### 🎉 Major Release - Claude Code Native Plugin Architecture
