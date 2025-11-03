@@ -345,7 +345,84 @@ created: YYYY-MM-DD
 - Measurable acceptance criteria
 - Prioritized user stories (P1/P2/P3)
 
-### Step 6: Generate plan.md
+### Step 6: Detect Required Plugins (INTELLIGENT AUTO-LOADING)
+
+**Purpose**: Analyze spec content to identify required SpecWeave plugins and suggest installation.
+
+**Why This Matters**: SpecWeave's plugin system enables context efficiency (70%+ reduction) by loading only relevant capabilities. This step ensures users have the right tools before implementation begins.
+
+**Detection Algorithm**:
+
+1. **Scan spec.md for keywords**:
+   ```
+   Keywords → Plugin Mapping:
+   - "GitHub", "issue", "pull request", "PR" → specweave-github
+   - "Kubernetes", "K8s", "Helm", "kubectl" → specweave-kubernetes
+   - "Figma", "design system", "design tokens" → specweave-figma
+   - "Stripe", "PayPal", "billing", "subscriptions" → specweave-payments
+   - "React", "Next.js", "Vue", "Angular" → specweave-frontend
+   - "Express", "Fastify", "NestJS", "FastAPI" → specweave-backend
+   - "TensorFlow", "PyTorch", "ML", "training" → specweave-ml
+   - "Prometheus", "Grafana", "monitoring" → specweave-infrastructure
+   - "Playwright", "E2E", "browser tests" → specweave-testing
+   - "Mermaid", "C4", "diagrams", "architecture diagrams" → specweave-diagrams
+   ```
+
+2. **Check if plugins are already installed**:
+   - For Claude Code: Check if plugin available via `/plugin list --installed`
+   - Skip already-installed plugins
+
+3. **Suggest installation** (if plugins detected):
+   ```
+   🔌 This increment requires additional plugins:
+
+   Required:
+   • specweave-github - GitHub integration (detected: "sync tasks to GitHub issues")
+   • specweave-kubernetes - K8s deployment (detected: "deploy to production cluster")
+
+   Optional:
+   • specweave-diagrams - Architecture diagrams (helpful for "system architecture")
+
+   📦 Install plugins:
+   /plugin install specweave-github@specweave
+   /plugin install specweave-kubernetes@specweave
+   /plugin install specweave-diagrams@specweave
+
+   💡 Plugins will auto-activate during implementation!
+   ```
+
+4. **Wait for user to install** (don't block, but remind):
+   - If user proceeds without installing, remind them before task execution
+   - Skills from uninstalled plugins won't be available
+   - User can install later: plugins activate on next Claude Code session
+
+**When to Suggest**:
+- ✅ After spec.md generation (Step 5 complete)
+- ✅ Before plan.md generation (gives context for planning)
+- ❌ Don't block increment creation (plugins optional, not required)
+
+**Example Output**:
+
+```
+📝 Spec created: .specweave/increments/0007-github-sync/spec.md
+
+🔌 Plugin Detection:
+   Detected: "GitHub Issues", "bidirectional sync"
+   → Suggested: specweave-github
+
+   To install: /plugin install specweave-github@specweave
+   Or continue without it (can install later)
+
+Continue with plan.md generation? [Y/n]
+```
+
+**Integration with Existing Workflow**:
+- This is a **suggestion step**, not a blocking requirement
+- Increment creation continues regardless of plugin installation
+- Plugins can be installed any time (they auto-activate when needed)
+- This implements the "load on demand" philosophy
+
+### Step 7: Generate plan.md
 
 **Purpose**: Define HOW to implement the feature technically.
 
@@ -424,7 +501,7 @@ created: YYYY-MM-DD
 - Challenges and solutions identified
 - Constitutional compliance checked
 
-### Step 7: Generate tasks.md
+### Step 8: Generate tasks.md
 
 **Purpose**: Break down implementation into executable steps with intelligent model selection.
 
@@ -519,7 +596,7 @@ T051 depends on T050 (integration must pass first)
    - Performance-critical algorithms
    - Novel problem-solving required
 
-### Step 8: Generate tests.md
+### Step 9: Generate tests.md
 
 **Purpose**: Define comprehensive testing strategy and test cases.
 
@@ -611,7 +688,7 @@ For brownfield modifications:
 - Regression prevention for brownfield
 - Measurable success criteria
 
-### Step 9: Generate context-manifest.yaml
+### Step 10: Generate context-manifest.yaml
 
 **Purpose**: Declare exactly what specifications, architecture docs, and ADRs are needed for this feature.
 

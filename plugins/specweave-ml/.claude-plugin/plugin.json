@@ -3,9 +3,11 @@
   "version": "1.0.0",
   "description": "Complete ML/AI workflow integration for SpecWeave - from experiment tracking to production deployment. Includes 13 comprehensive skills covering the full ML lifecycle: pipeline orchestration, experiment tracking, model evaluation, explainability, deployment, feature engineering, AutoML, computer vision, NLP, time series forecasting, anomaly detection, data visualization, and model registry.",
   "author": {
-    "name": "SpecWeave",
-    "email": "[email protected]"
+    "name": "SpecWeave Team",
+    "email": "[email protected]",
+    "url": "https://spec-weave.com"
   },
+  "homepage": "https://spec-weave.com",
   "repository": "https://github.com/anton-abyzov/specweave",
   "license": "MIT",
   "keywords": [
@@ -32,8 +34,5 @@
     "prophet",
     "data-science",
     "specweave"
-  ],
-  "dependencies": {
-    "specweave": ">=0.6.0"
-  }
+  ]
 }

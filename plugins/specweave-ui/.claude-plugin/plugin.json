@@ -3,17 +3,13 @@
   "description": "Complete UI/UX development toolkit - Playwright E2E testing, Figma design integration, React/Vue/Angular development, design systems, Storybook component testing. Auto-activates for frontend projects.",
   "version": "1.0.0",
   "author": {
-    "name": "Anton Abyzov",
+    "name": "SpecWeave Team",
     "email": "anton@spec-weave.com",
     "url": "https://spec-weave.com"
   },
   "license": "MIT",
-  "homepage": "https://spec-weave.com/plugins/ui",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anton-abyzov/specweave.git",
-    "directory": "src/plugins/specweave-ui"
-  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
   "keywords": [
     "ui",
     "ux",
@@ -24,83 +20,7 @@
     "design-system",
     "e2e-testing",
     "storybook",
-    "frontend"
-  ],
-  "specweave": {
-    "core_version": ">=0.4.0",
-    "plugin_type": "domain",
-    "category": "ui-ux"
-  },
-  "provides": {
-    "skills": [
-      "e2e-playwright",
-      "figma-designer",
-      "figma-implementer",
-      "figma-mcp-connector",
-      "design-system-architect",
-      "frontend",
-      "nextjs"
-    ],
-    "agents": [
-      "ui-ux-specialist"
-    ],
-    "commands": [
-      "ui.test",
-      "ui.design",
-      "ui.implement"
-    ]
-  },
-  "auto_detect": {
-    "packages": [
-      "@playwright/test",
-      "playwright",
-      "figma",
-      "@figma/rest-api-types",
-      "react",
-      "react-dom",
-      "next",
-      "vue",
-      "@angular/core",
-      "@storybook/react",
-      "@storybook/vue",
-      "@storybook/angular"
-    ],
-    "files": [
-      "playwright.config.ts",
-      "playwright.config.js",
-      "figma.config.json",
-      ".storybook/",
-      "next.config.js",
-      "next.config.ts"
-    ],
-    "triggers": [
-      "playwright",
-      "e2e",
-      "end-to-end",
-      "figma",
-      "design",
-      "ui",
-      "ux",
-      "frontend",
-      "react",
-      "next",
-      "vue",
-      "angular",
-      "storybook",
-      "design system",
-      "component library"
-    ]
-  },
-  "dependencies": {
-    "mcp_servers": {
-      "browserbase": {
-        "optional": true,
-        "description": "Cloud browser automation for Playwright tests",
-        "env_vars": [
-          "BROWSERBASE_API_KEY",
-          "BROWSERBASE_PROJECT_ID"
-        ]
-      }
-    }
-  }
+    "frontend",
+    "specweave"
+  ]
 }

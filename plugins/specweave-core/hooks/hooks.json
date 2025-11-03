@@ -1,13 +1,15 @@
 {
-  "hooks": [
-    {
-      "name": "post-task-completion",
-      "description": "Fires after EVERY task completion via TodoWrite. Updates living docs, plays notification sound when session ends.",
-      "event": "tool:after",
-      "tool": "TodoWrite",
-      "script": "./post-task-completion.sh",
-      "blocking": false,
-      "enabled": true
-    }
-  ]
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh"
+          }
+        ]
+      }
+    ]
+  }
 }
