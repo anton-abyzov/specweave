@@ -1,0 +1,7 @@
+{
+  "fileNotFound": "❌ File not found: {path}",
+  "invalidConfig": "❌ Invalid configuration",
+  "networkError": "❌ Network error: {message}",
+  "permissionDenied": "❌ Permission denied",
+  "unknownError": "❌ An error occurred: {message}"
+}

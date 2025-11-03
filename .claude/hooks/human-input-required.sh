@@ -1,1 +1,0 @@
-../../src/hooks/human-input-required.sh

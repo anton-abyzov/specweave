@@ -13,6 +13,8 @@ import fs from 'fs-extra';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import type { Plugin } from '../../core/types/plugin.js';
+import { LanguageManager, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
+import type { SupportedLanguage } from '../../core/i18n/types.js';
 
 export class CursorAdapter extends AdapterBase {
   name = 'cursor';
@@ -233,12 +235,57 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
   }
 
   /**
+   * Read language configuration from project config
+   *
+   * @returns Language setting from config, defaults to 'en'
+   */
+  private async getLanguageConfig(): Promise<SupportedLanguage> {
+    const projectPath = process.cwd();
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+    if (!(await fs.pathExists(configPath))) {
+      return 'en'; // Default to English if no config
+    }
+
+    try {
+      const config = await fs.readJson(configPath);
+      return (config.language as SupportedLanguage) || 'en';
+    } catch (error) {
+      console.warn('⚠️  Could not read language from config, defaulting to English');
+      return 'en';
+    }
+  }
+
+  /**
+   * Inject system prompt for non-English languages
+   *
+   * Prepends language instruction to markdown content if language !== 'en'
+   *
+   * @param content Original markdown content
+   * @param language Target language
+   * @returns Modified content with system prompt (or unchanged if English)
+   */
+  private injectSystemPrompt(content: string, language: SupportedLanguage): string {
+    if (language === 'en') {
+      return content; // No changes for English - preserve default behavior
+    }
+
+    // Get system prompt for target language
+    const systemPrompt = getSystemPromptForLanguage(language);
+
+    // For AGENTS.md compilation, inject at the beginning of the content
+    return `${systemPrompt}\n\n${content}`;
+  }
+
+  /**
    * Compile and install a plugin for Cursor
    *
    * Cursor uses AGENTS.md compilation:
    * - Append skills to AGENTS.md
    * - Append agents to AGENTS.md
    * - Append commands to team commands JSON
+   *
+   * NEW: Injects system prompts for non-English languages
    *
    * @param plugin Plugin to install
    */
@@ -247,6 +294,12 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
     const agentsMdPath = path.join(projectPath, 'AGENTS.md');
 
     console.log(`\n📦 Compiling plugin for Cursor: ${plugin.manifest.name}`);
+
+    // Get language configuration for system prompt injection
+    const language = await this.getLanguageConfig();
+    if (language !== 'en') {
+      console.log(`   🌐 Language: ${language} (system prompts will be injected)`);
+    }
 
     // Ensure AGENTS.md exists
     if (!(await fs.pathExists(agentsMdPath))) {
@@ -275,8 +328,10 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
         const skillContent = await fs.readFile(path.join(skill.path, 'SKILL.md'), 'utf-8');
         // Remove frontmatter for AGENTS.md
         const contentWithoutFrontmatter = skillContent.replace(/^---\n[\s\S]+?\n---\n/, '');
+        // Inject system prompt if needed
+        const modifiedContent = this.injectSystemPrompt(contentWithoutFrontmatter, language);
         pluginSection += `### ${skill.name}\n\n`;
-        pluginSection += `${contentWithoutFrontmatter}\n\n`;
+        pluginSection += `${modifiedContent}\n\n`;
       }
     }
 
@@ -285,8 +340,10 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
       pluginSection += `## Agents\n\n`;
       for (const agent of plugin.agents) {
         const agentContent = await fs.readFile(path.join(agent.path, 'AGENT.md'), 'utf-8');
+        // Inject system prompt if needed
+        const modifiedContent = this.injectSystemPrompt(agentContent, language);
         pluginSection += `### ${agent.name}\n\n`;
-        pluginSection += `${agentContent}\n\n`;
+        pluginSection += `${modifiedContent}\n\n`;
       }
     }
 
@@ -297,8 +354,10 @@ Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
         const commandContent = await fs.readFile(command.path, 'utf-8');
         // Remove frontmatter
         const contentWithoutFrontmatter = commandContent.replace(/^---\n[\s\S]+?\n---\n/, '');
+        // Inject system prompt if needed
+        const modifiedContent = this.injectSystemPrompt(contentWithoutFrontmatter, language);
         pluginSection += `### /${command.name}\n\n`;
-        pluginSection += `${contentWithoutFrontmatter}\n\n`;
+        pluginSection += `${modifiedContent}\n\n`;
       }
     }
 

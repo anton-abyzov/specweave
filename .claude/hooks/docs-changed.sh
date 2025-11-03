@@ -1,1 +1,0 @@
-../../src/hooks/docs-changed.sh
