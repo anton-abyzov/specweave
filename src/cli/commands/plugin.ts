@@ -1,10 +1,21 @@
 /**
- * Plugin CLI Command
+ * Plugin CLI Command (DEPRECATED in v0.6.0)
  *
- * Provides commands for managing SpecWeave plugins:
- * - list: List available and enabled plugins
- * - enable: Enable a plugin
- * - disable: Disable a plugin
+ * ⚠️  DEPRECATION NOTICE:
+ * This command is deprecated. Use Claude Code's native plugin system instead:
+ * - `/plugin list specweave` - List available plugins
+ * - `/plugin install specweave-{name}@specweave` - Install a plugin
+ * - `/plugin uninstall specweave-{name}` - Uninstall a plugin
+ *
+ * SpecWeave now uses ONLY Claude Code's native plugin system (global install).
+ * No per-project plugin management is needed.
+ *
+ * This command will be removed in v0.7.0.
+ *
+ * Legacy functionality (for backwards compatibility):
+ * - list: List available plugins
+ * - enable: Enable a plugin (deprecated - use /plugin install)
+ * - disable: Disable a plugin (deprecated - use /plugin uninstall)
  * - info: Show detailed plugin information
  */
 
@@ -26,6 +37,11 @@ const __dirname = dirname(__filename);
  */
 export async function listPlugins(options: { enabled?: boolean; available?: boolean; language?: SupportedLanguage }): Promise<void> {
   const locale = getLocaleManager(options.language || 'en');
+
+  // Show deprecation warning
+  console.log(chalk.yellow(`\n⚠️  DEPRECATED: Use Claude Code's native plugin commands instead:`));
+  console.log(chalk.gray(`   /plugin list specweave`));
+  console.log(chalk.gray(`   /plugin install specweave-{name}@specweave\n`));
 
   try {
     console.log(chalk.blue(`\n${locale.t('cli', 'plugin.list.header')}\n`));

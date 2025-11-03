@@ -740,31 +740,31 @@ When plugins are installed:
    - 70%+ reduction vs. monolithic approach
    - Real-time: Simple React app = 16K tokens (was 50K in v0.3.7)
 
-### Manual Plugin Management (Advanced)
+### Manual Plugin Management
 
-For manual control (if auto-loading doesn't fit your workflow):
+All plugin management happens through Claude Code's native commands:
 
 ```bash
-# List all available plugins
-specweave plugin list
-
-# Enable specific plugin (SpecWeave's internal system)
-specweave plugin enable kubernetes
-
-# Disable plugin
-specweave plugin disable figma-ecosystem
-
-# Claude Code's native plugin system (preferred)
-/plugin install specweave-kubernetes@specweave
-/plugin uninstall specweave-kubernetes
+# List installed plugins
 /plugin list --installed
+
+# Install a specific plugin
+/plugin install specweave-kubernetes@specweave
+
+# Uninstall a plugin
+/plugin uninstall specweave-kubernetes
+
+# List all available plugins from marketplace
+/plugin list specweave
 ```
 
-**Key Insight**: SpecWeave has TWO plugin systems:
-1. **Claude Code Native** (preferred) - Uses `/plugin install`, auto-activates skills
-2. **SpecWeave Internal** (legacy) - Uses `specweave plugin enable`, copies files to `.claude/`
+**Key Insight**: SpecWeave uses **ONLY** Claude Code's native plugin system:
+- Plugins install globally via `/plugin install specweave-{name}@specweave`
+- Work across ALL projects (like VS Code extensions)
+- Auto-activate based on skills' description keywords
+- Managed by Claude Code (updates, uninstall, etc.)
 
-v0.6.0+ prioritizes Claude Code native plugins for better integration.
+No per-project installation needed!
 
 ---
 
