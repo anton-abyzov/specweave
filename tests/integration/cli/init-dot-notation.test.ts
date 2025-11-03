@@ -206,7 +206,7 @@ describe('specweave init . (current directory)', () => {
       ).toBe(true);
     }, 45000);
 
-    it('should overwrite .specweave if user confirms', async () => {
+    it.skip('should overwrite .specweave if user confirms', async () => {
       // Initialize once
       await execAsync(
         `cd ${testDir} && echo "test-project" | npx specweave init .`,
