@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.3] - 2025-11-03
+
+### 🔒 Security Fix (CRITICAL)
+- **Fixed command injection vulnerability** in `specweave init` auto-install
+  - Created secure `execFileNoThrow()` utility to prevent RCE attacks
+  - Replaced unsafe `execSync()` calls with safe argument arrays
+  - All command execution now injection-proof
+
+### ✅ Bug Fixes
+- **Windows compatibility restored** - Fixed shell handling that crashed on Windows (cmd.exe, PowerShell now work)
+- **Claude adapter error handling** - Added pre-flight CLI check with clear 3-option guidance when Claude CLI missing
+- **Non-Claude adapters fixed** - Core plugin now auto-installs for Cursor/Copilot (AGENTS.md properly populated)
+- **Git operations hardened** - All git commands use secure execution
+
+### 📦 What Changed
+- New utility: `src/utils/execFileNoThrow.ts` (cross-platform, secure command execution)
+- Enhanced `specweave init` with better error messages and diagnostics
+- Zero breaking changes - drop-in upgrade
+
+**Upgrade**: `npm update -g specweave`
+
+---
+
 ## [0.6.1] - 2025-11-03
 
 ### 🎯 BREAKING - Clean Command Format!
