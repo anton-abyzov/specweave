@@ -165,8 +165,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build SpecWeave
+        run: npm run build
+
+      - name: Make Smoke Test Executable
+        run: chmod +x tests/smoke/e2e-smoke-test.sh
 
       - name: Benchmark Generation Time
+        id: benchmark
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
