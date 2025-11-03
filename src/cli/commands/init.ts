@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
+import { execFileNoThrowSync, isCommandAvailableSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { IAdapter } from '../../adapters/adapter-interface.js';
 import { ClaudeMdGenerator } from '../../adapters/claude-md-generator.js';
@@ -290,25 +291,62 @@ export async function initCommand(
         techStack: options.techStack ? { language: options.techStack } : undefined,
         docsApproach: 'incremental'
       });
+
+      // 7. Install core plugin for non-Claude adapters
+      // CRITICAL: Cursor/Copilot/Generic need plugin files in project!
+      // Claude uses plugin system (global), but others need local files for AGENTS.md/instructions.md
+      try {
+        spinner.start('Installing SpecWeave core plugin...');
+
+        // Load core plugin from plugins/specweave/
+        const corePluginPath = findSourceDir('plugins/specweave');
+        const { PluginLoader } = await import('../../core/plugin-loader.js');
+        const loader = new PluginLoader();
+        const corePlugin = await loader.loadFromDirectory(corePluginPath);
+
+        // Compile for adapter (Cursor → AGENTS.md, Copilot → instructions.md, etc.)
+        if (adapter.supportsPlugins()) {
+          await adapter.compilePlugin(corePlugin);
+          spinner.succeed('SpecWeave core plugin installed');
+          console.log(chalk.green('   ✔ Skills, agents, commands added to project'));
+          console.log(chalk.gray(`   → ${corePlugin.skills.length} skills, ${corePlugin.agents.length} agents, ${corePlugin.commands.length} commands`));
+        } else {
+          spinner.warn('Adapter does not support plugins');
+          console.log(chalk.yellow('   → Core functionality may be limited'));
+        }
+      } catch (error) {
+        spinner.warn('Could not install core plugin');
+        console.log(chalk.yellow(`   ${error instanceof Error ? error.message : error}`));
+        console.log(chalk.gray('   → You can manually reference plugin files if needed'));
+      }
     }
 
     // 9. Initialize git (skip if .git already exists)
     const gitDir = path.join(targetDir, '.git');
     if (!fs.existsSync(gitDir)) {
-      try {
-        execSync('git init', { cwd: targetDir, stdio: 'ignore' });
+      // Use secure command execution for git commands
+      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir });
+      if (gitInitResult.success) {
         spinner.text = 'Git repository initialized...';
-      } catch (error) {
+      } else {
         spinner.warn('Git initialization skipped (git not found)');
       }
 
-      // 10. Create initial commit
-      try {
-        execSync('git add .', { cwd: targetDir, stdio: 'ignore' });
-        execSync('git commit -m "Initial commit with SpecWeave"', { cwd: targetDir, stdio: 'ignore' });
-        spinner.text = 'Initial commit created...';
-      } catch (error) {
-        // Git commit might fail if no user configured, that's ok
+      // 10. Create initial commit (if git init succeeded)
+      if (gitInitResult.success) {
+        const gitAddResult = execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir });
+        if (gitAddResult.success) {
+          const gitCommitResult = execFileNoThrowSync('git', [
+            'commit',
+            '-m',
+            'Initial commit with SpecWeave'
+          ], { cwd: targetDir });
+
+          if (gitCommitResult.success) {
+            spinner.text = 'Initial commit created...';
+          }
+          // Git commit might fail if no user configured - that's ok, no need to warn
+        }
       }
     } else {
       spinner.text = 'Using existing Git repository...';
@@ -395,43 +433,95 @@ export async function initCommand(
         console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.pluginAutoSetupFailed')}`));
       }
 
-      // 15. AUTO-INSTALL CORE PLUGIN via Claude CLI
-      // This is the game-changer: fully automated plugin installation!
-      try {
-        spinner.start('Installing SpecWeave core plugin...');
+      // 15. AUTO-INSTALL CORE PLUGIN via Claude CLI (Secure + Cross-Platform)
+      // Pre-flight check: Is Claude CLI available?
+      if (!isCommandAvailableSync('claude')) {
+        // Claude CLI NOT found → explain clearly with actionable options
+        spinner.warn('Claude CLI not found in PATH');
+        console.log('');
+        console.log(chalk.yellow.bold('⚠️  Claude Code CLI Required'));
+        console.log('');
+        console.log(chalk.white('SpecWeave needs Claude Code installed to auto-configure plugins.'));
+        console.log('');
+        console.log(chalk.cyan('Options:'));
+        console.log('');
+        console.log(chalk.white('1️⃣  Install Claude Code (Recommended):'));
+        console.log(chalk.gray('   → https://claude.com/code'));
+        console.log(chalk.gray('   → Once installed, re-run: specweave init'));
+        console.log('');
+        console.log(chalk.white('2️⃣  Manual Plugin Installation:'));
+        console.log(chalk.gray('   → Open project in Claude Code'));
+        console.log(chalk.gray('   → Run: /plugin install specweave@specweave'));
+        console.log('');
+        console.log(chalk.white('3️⃣  Use Different Adapter:'));
+        console.log(chalk.gray('   → specweave init --adapter cursor'));
+        console.log(chalk.gray('   → Works without Claude CLI (uses AGENTS.md)'));
+        console.log('');
+        autoInstallSucceeded = false;
+      } else {
+        // Claude CLI available → attempt secure auto-install
+        try {
+          spinner.start('Installing SpecWeave core plugin...');
 
-        // Step 1: Add marketplace (idempotent - fails gracefully if exists)
-        const marketplacePath = path.join(targetDir, '.claude-plugin');
-        if (fs.existsSync(path.join(marketplacePath, 'marketplace.json'))) {
-          try {
-            execSync(`claude plugin marketplace add "${targetDir}"`, {
-              stdio: 'pipe',  // Suppress output
-              encoding: 'utf-8',
-              shell: process.env.SHELL || '/bin/bash'  // Use user's shell (for functions/aliases)
-            });
-          } catch (e) {
+          // Step 1: Add marketplace (idempotent - safe if already exists)
+          const projectRoot = targetDir;
+          const marketplaceJsonPath = path.join(projectRoot, '.claude-plugin', 'marketplace.json');
+
+          if (fs.existsSync(marketplaceJsonPath)) {
+            // ✅ SECURE: Arguments in array (no shell interpolation, no injection risk)
+            const marketplaceResult = execFileNoThrowSync('claude', [
+              'plugin',
+              'marketplace',
+              'add',
+              projectRoot  // ✅ Safely escaped automatically
+            ]);
+
             // Marketplace add can fail if already exists - that's OK
+            if (!marketplaceResult.success && process.env.DEBUG) {
+              console.log(chalk.gray(`   Marketplace note: ${marketplaceResult.stderr}`));
+            }
           }
-        }
 
-        // Step 2: Install core plugin
-        execSync('claude plugin install specweave@specweave', {
-          stdio: 'pipe',
-          encoding: 'utf-8',
-          shell: process.env.SHELL || '/bin/bash'  // Use user's shell (for functions/aliases)
-        });
+          // Step 2: Install core plugin
+          // ✅ SECURE: No string interpolation, no shell, cross-platform
+          const installResult = execFileNoThrowSync('claude', [
+            'plugin',
+            'install',
+            'specweave@specweave'
+          ]);
 
-        autoInstallSucceeded = true;
-        spinner.succeed('SpecWeave core plugin installed automatically!');
-        console.log(chalk.green(`   ${locale.t('cli', 'init.success.pluginAutoInstall')}`));
-      } catch (error: any) {
-        // Installation failed - show manual instructions
-        spinner.warn('Could not auto-install core plugin');
-        if (process.env.DEBUG) {
-          console.log(chalk.gray(`   Error: ${error.message}`));
+          if (installResult.success) {
+            autoInstallSucceeded = true;
+            spinner.succeed('SpecWeave core plugin installed automatically!');
+            console.log(chalk.green('   ✔ Slash commands ready: /specweave:inc'));
+          } else {
+            throw new Error(installResult.stderr || installResult.stdout || 'Installation failed');
+          }
+        } catch (error: any) {
+          // Installation failed - provide helpful diagnostics
+          spinner.warn('Could not auto-install core plugin');
+          console.log('');
+
+          // Diagnose error and provide actionable hints
+          if (error.message.includes('not found') || error.message.includes('ENOENT')) {
+            console.log(chalk.yellow('   Reason: Claude CLI found but command failed'));
+            console.log(chalk.gray('   → Try manually: claude plugin install specweave@specweave'));
+          } else if (error.message.includes('EACCES') || error.message.includes('permission')) {
+            console.log(chalk.yellow('   Reason: Permission denied'));
+            console.log(chalk.gray('   → Check file permissions or run with appropriate access'));
+          } else if (error.message.includes('ECONNREFUSED') || error.message.includes('network')) {
+            console.log(chalk.yellow('   Reason: Network error'));
+            console.log(chalk.gray('   → Check internet connection and try again'));
+          } else if (process.env.DEBUG) {
+            console.log(chalk.gray(`   Error: ${error.message}`));
+          }
+
+          console.log('');
+          console.log(chalk.cyan('📦 Manual installation:'));
+          console.log(chalk.white('   /plugin install specweave@specweave'));
+          console.log('');
+          autoInstallSucceeded = false;
         }
-        console.log(chalk.yellow(`   ${locale.t('cli', 'init.warnings.pluginAutoInstallFailed')}`));
-        console.log(chalk.gray(`   ${locale.t('cli', 'init.info.manualInstallInstructions')}`));
       }
     }
 
