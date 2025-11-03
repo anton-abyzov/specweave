@@ -630,7 +630,7 @@ community-plugin/
 
 **Integration with SpecWeave**:
 - ✅ Uses same auto-detection (packages, files, env vars)
-- ✅ Works with `/specweave.do` workflow
+- ✅ Works with `/specweave:do` workflow
 - ✅ Integrates with increment lifecycle
 - ✅ Follows same conventions
 
@@ -654,7 +654,7 @@ specweave init
 
 **Phase 2: First Increment**
 ```bash
-/specweave.inc "Add E2E tests with Playwright"
+/specweave:inc "Add E2E tests with Playwright"
 
 # Analyzing description...
 # 🔍 Keywords: "E2E", "Playwright"
@@ -665,7 +665,7 @@ specweave init
 
 **Phase 3: Pre-Task**
 ```bash
-/specweave.do
+/specweave:do
 
 # Reading task T-005: "Create Playwright test suite"
 # 🔍 Detected: Playwright mentioned

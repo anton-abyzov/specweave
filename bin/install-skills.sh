@@ -7,7 +7,7 @@
 
 set -e
 
-SKILLS_SRC="src/skills"
+SKILLS_SRC="plugins/specweave-core/skills"
 SKILLS_DEST=".claude/skills"
 
 # Parse arguments

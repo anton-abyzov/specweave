@@ -10,7 +10,7 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue.
 ## Usage
 
 ```bash
-/specweave.github.sync <increment-id> [options]
+/specweave:github:sync <increment-id> [options]
 ```
 
 ## Arguments
@@ -30,22 +30,22 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue.
 
 ```bash
 # Basic sync (post progress comment)
-/specweave.github.sync 0004
+/specweave:github:sync 0004
 
 # Update task checklist
-/specweave.github.sync 0004 --tasks
+/specweave:github:sync 0004 --tasks
 
 # Full sync (comment + checklist + labels)
-/specweave.github.sync 0004 --tasks --labels
+/specweave:github:sync 0004 --tasks --labels
 
 # Force sync even if unchanged
-/specweave.github.sync 0004 --force
+/specweave:github:sync 0004 --force
 
 # Sync from GitHub to SpecWeave
-/specweave.github.sync 0004 --direction from-github
+/specweave:github:sync 0004 --direction from-github
 
 # Sync all increments
-/specweave.github.sync --all
+/specweave:github:sync --all
 ```
 
 ## What This Command Does
@@ -271,7 +271,7 @@ Enter choice (1-3):
 
 No issue found in .metadata.yaml
 
-Run /specweave.github.create-issue 0004 first.
+Run /specweave:github:create-issue 0004 first.
 ```
 
 **Issue not found**:
@@ -283,7 +283,7 @@ Possible causes:
 - Wrong repository
 - Access revoked
 
-Run /specweave.github.status 0004 to check state.
+Run /specweave:github:status 0004 to check state.
 ```
 
 **Rate limit exceeded**:
@@ -307,20 +307,20 @@ Check:
 2. GitHub status: https://githubstatus.com
 3. Firewall settings
 
-Retry: /specweave.github.sync 0004
+Retry: /specweave:github:sync 0004
 ```
 
 ## Related Commands
 
-- `/specweave.github.create-issue <increment-id>`: Create issue first
-- `/specweave.github.close-issue <increment-id>`: Close on completion
-- `/specweave.github.status <increment-id>`: Check sync status
+- `/specweave:github:create-issue <increment-id>`: Create issue first
+- `/specweave:github:close-issue <increment-id>`: Close on completion
+- `/specweave:github:status <increment-id>`: Check sync status
 
 ## Tips
 
 1. **Auto-Sync**: Enable `auto_update_progress: true` for automatic sync after each task
 
-2. **Manual Sync**: Disable auto-sync and run `/specweave.github.sync` manually when needed
+2. **Manual Sync**: Disable auto-sync and run `/specweave:github:sync` manually when needed
 
 3. **Sync All**: Use `--all` to sync all increments at once (useful for daily standup)
 
@@ -336,7 +336,7 @@ Run sync on a schedule (via cron or GitHub Actions):
 
 ```bash
 # Daily sync at 9 AM
-0 9 * * * cd /path/to/project && /specweave.github.sync --all
+0 9 * * * cd /path/to/project && /specweave:github:sync --all
 ```
 
 ### Webhook Integration
@@ -410,13 +410,13 @@ Sync only specific data:
 
 ```bash
 # Sync only comments (no checklist/labels)
-/specweave.github.sync 0004 --filter comments
+/specweave:github:sync 0004 --filter comments
 
 # Sync only labels
-/specweave.github.sync 0004 --filter labels
+/specweave:github:sync 0004 --filter labels
 
 # Sync everything except comments
-/specweave.github.sync 0004 --exclude comments
+/specweave:github:sync 0004 --exclude comments
 ```
 
 ### Batch Sync
@@ -425,18 +425,18 @@ Sync multiple increments efficiently:
 
 ```bash
 # Sync all in-progress increments
-/specweave.github.sync --status in_progress
+/specweave:github:sync --status in_progress
 
 # Sync all priority P0/P1
-/specweave.github.sync --priority P0,P1
+/specweave:github:sync --priority P0,P1
 
 # Sync increments modified today
-/specweave.github.sync --modified-since today
+/specweave:github:sync --modified-since today
 ```
 
 ---
 
-**Command**: `/specweave.github.sync`
+**Command**: `/specweave:github:sync`
 **Plugin**: specweave-github
 **Agent**: github-manager
 **Version**: 1.0.0

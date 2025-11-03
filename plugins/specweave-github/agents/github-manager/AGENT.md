@@ -306,7 +306,7 @@ tasks:
 
 ## Workflow Integration
 
-### Increment Creation (`/specweave.inc`)
+### Increment Creation (`/specweave:inc`)
 
 When a new increment is created:
 
@@ -344,7 +344,7 @@ When a new increment is created:
    https://github.com/owner/repo/issues/130
    ```
 
-### Task Completion (`/specweave.do`)
+### Task Completion (`/specweave:do`)
 
 After each task:
 
@@ -376,7 +376,7 @@ After each task:
    - Log comment ID
    - Update sync timestamp
 
-### Increment Completion (`/specweave.done`)
+### Increment Completion (`/specweave:done`)
 
 When increment is closed:
 
@@ -467,7 +467,7 @@ Possible causes:
 - Wrong repository
 - Access permissions
 
-Run /specweave.github.status 0004 to check sync state.
+Run /specweave:github:status 0004 to check sync state.
 ```
 
 ### Permission Denied
@@ -595,7 +595,7 @@ plugins:
 ## Example Session
 
 ```
-User: /specweave.github.create-issue 0004
+User: /specweave:github:create-issue 0004
 
 GitHub Manager Agent:
 📦 Creating GitHub issue for increment 0004...
@@ -639,7 +639,7 @@ You can now:
 
 - **github-sync skill**: High-level sync orchestration
 - **github-issue-tracker skill**: Task-level tracking
-- **Commands**: `/specweave.github.*` commands all use this agent
+- **Commands**: `/specweave:github:*` commands all use this agent
 
 ---
 

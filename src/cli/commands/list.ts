@@ -2,28 +2,32 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import { getDirname } from '../../utils/esm-helpers.js';
+import { getLocaleManager } from '../../core/i18n/locale-manager.js';
+import { SupportedLanguage } from '../../core/i18n/types.js';
 
 const __dirname = getDirname(import.meta.url);
 
 interface ListOptions {
   installed?: boolean;
+  language?: SupportedLanguage;
 }
 
 export async function listCommand(options: ListOptions = {}): Promise<void> {
+  const locale = getLocaleManager(options.language || 'en');
   const showOnlyInstalled = options.installed || false;
 
-  console.log(chalk.blue.bold('\n📋 SpecWeave Components\n'));
+  console.log(chalk.blue.bold(`\n${locale.t('cli', 'list.header')}\n`));
 
   if (showOnlyInstalled) {
-    await listInstalledComponents();
+    await listInstalledComponents(locale);
   } else {
-    await listAllComponents();
+    await listAllComponents(locale);
   }
 
   console.log('');
 }
 
-async function listAllComponents(): Promise<void> {
+async function listAllComponents(locale: any): Promise<void> {
   const agentsDir = path.join(__dirname, '../../../src/agents');
   const skillsDir = path.join(__dirname, '../../../src/skills');
 
@@ -31,12 +35,12 @@ async function listAllComponents(): Promise<void> {
   if (fs.existsSync(agentsDir)) {
     const agents = fs.readdirSync(agentsDir).filter(f => fs.statSync(path.join(agentsDir, f)).isDirectory());
 
-    console.log(chalk.cyan.bold('🤖 Agents:'));
-    console.log(chalk.gray(`   Available in SpecWeave: ${agents.length} agents\n`));
+    console.log(chalk.cyan.bold(locale.t('cli', 'list.agentsHeader')));
+    console.log(chalk.gray(`   ${locale.t('cli', 'list.availableFormat', { count: agents.length, type: locale.t('cli', 'list.agents') })}\n`));
 
     agents.forEach(agent => {
       const agentMd = path.join(agentsDir, agent, 'AGENT.md');
-      let description = 'No description';
+      let description = locale.t('cli', 'list.noDescription');
 
       if (fs.existsSync(agentMd)) {
         const content = fs.readFileSync(agentMd, 'utf-8');
@@ -50,7 +54,7 @@ async function listAllComponents(): Promise<void> {
       console.log(`     ${chalk.gray(description)}`);
     });
   } else {
-    console.log(chalk.yellow('⚠️  No agents found in src/agents/'));
+    console.log(chalk.yellow(locale.t('cli', 'list.noAgents')));
   }
 
   console.log('');
@@ -59,12 +63,12 @@ async function listAllComponents(): Promise<void> {
   if (fs.existsSync(skillsDir)) {
     const skills = fs.readdirSync(skillsDir).filter(f => fs.statSync(path.join(skillsDir, f)).isDirectory());
 
-    console.log(chalk.cyan.bold('✨ Skills:'));
-    console.log(chalk.gray(`   Available in SpecWeave: ${skills.length} skills\n`));
+    console.log(chalk.cyan.bold(locale.t('cli', 'list.skillsHeader')));
+    console.log(chalk.gray(`   ${locale.t('cli', 'list.availableFormat', { count: skills.length, type: locale.t('cli', 'list.skills') })}\n`));
 
     skills.forEach(skill => {
       const skillMd = path.join(skillsDir, skill, 'SKILL.md');
-      let description = 'No description';
+      let description = locale.t('cli', 'list.noDescription');
 
       if (fs.existsSync(skillMd)) {
         const content = fs.readFileSync(skillMd, 'utf-8');
@@ -78,15 +82,15 @@ async function listAllComponents(): Promise<void> {
       console.log(`     ${chalk.gray(description)}`);
     });
   } else {
-    console.log(chalk.yellow('⚠️  No skills found in src/skills/'));
+    console.log(chalk.yellow(locale.t('cli', 'list.noSkills')));
   }
 
   console.log('');
-  console.log(chalk.gray('Run `specweave list --installed` to see installed components'));
-  console.log(chalk.gray('Run `specweave install <name>` to install a specific component'));
+  console.log(chalk.gray(locale.t('cli', 'list.hintInstalled')));
+  console.log(chalk.gray(locale.t('cli', 'list.hintInstall')));
 }
 
-async function listInstalledComponents(): Promise<void> {
+async function listInstalledComponents(locale: any): Promise<void> {
   const localBase = '.claude';
   const globalBase = path.join(require('os').homedir(), '.claude');
 
@@ -95,26 +99,26 @@ async function listInstalledComponents(): Promise<void> {
   // Check local installation
   if (fs.existsSync(localBase)) {
     foundAny = true;
-    console.log(chalk.cyan.bold('📁 Local Installation (.claude/):\n'));
-    await listComponentsInDir(localBase);
+    console.log(chalk.cyan.bold(`${locale.t('cli', 'list.localInstallation')}\n`));
+    await listComponentsInDir(localBase, locale);
     console.log('');
   }
 
   // Check global installation
   if (fs.existsSync(globalBase)) {
     foundAny = true;
-    console.log(chalk.cyan.bold('🌍 Global Installation (~/.claude/):\n'));
-    await listComponentsInDir(globalBase);
+    console.log(chalk.cyan.bold(`${locale.t('cli', 'list.globalInstallation')}\n`));
+    await listComponentsInDir(globalBase, locale);
     console.log('');
   }
 
   if (!foundAny) {
-    console.log(chalk.yellow('⚠️  No components installed'));
-    console.log(chalk.gray('\nRun `specweave install` to install components'));
+    console.log(chalk.yellow(locale.t('cli', 'list.noComponentsInstalled')));
+    console.log(chalk.gray(`\n${locale.t('cli', 'list.installPrompt')}`));
   }
 }
 
-async function listComponentsInDir(baseDir: string): Promise<void> {
+async function listComponentsInDir(baseDir: string, locale: any): Promise<void> {
   const agentsDir = path.join(baseDir, 'agents');
   const skillsDir = path.join(baseDir, 'skills');
 
@@ -123,7 +127,7 @@ async function listComponentsInDir(baseDir: string): Promise<void> {
     const agents = fs.readdirSync(agentsDir).filter(f => fs.statSync(path.join(agentsDir, f)).isDirectory());
 
     if (agents.length > 0) {
-      console.log(chalk.cyan('🤖 Agents:'));
+      console.log(chalk.cyan(locale.t('cli', 'list.agentsHeader')));
       agents.forEach(agent => {
         console.log(`   ${chalk.green('✓')} ${chalk.white(agent)}`);
       });
@@ -136,7 +140,7 @@ async function listComponentsInDir(baseDir: string): Promise<void> {
     const skills = fs.readdirSync(skillsDir).filter(f => fs.statSync(path.join(skillsDir, f)).isDirectory());
 
     if (skills.length > 0) {
-      console.log(chalk.cyan('✨ Skills:'));
+      console.log(chalk.cyan(locale.t('cli', 'list.skillsHeader')));
       skills.forEach(skill => {
         console.log(`   ${chalk.green('✓')} ${chalk.white(skill)}`);
       });

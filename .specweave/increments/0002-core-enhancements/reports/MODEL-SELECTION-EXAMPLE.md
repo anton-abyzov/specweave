@@ -21,7 +21,7 @@
 - Guidelines for when to use each model
 - Auto-detection based on task characteristics
 
-### 3. Updated `/specweave.do` Command
+### 3. Updated `/specweave:do` Command
 
 ✅ **Enhanced** with model selection support:
 - Reads model hints from tasks.md
@@ -42,7 +42,7 @@
 
 ### Example 1: Task Generation with Model Hints
 
-**When you run** `/specweave.inc "Add payment processing"`:
+**When you run** `/specweave:inc "Add payment processing"`:
 
 ```markdown
 # Tasks: Payment Processing
@@ -82,7 +82,7 @@
 
 ### Example 2: Execution with Cost Tracking
 
-**When you run** `/specweave.do`:
+**When you run** `/specweave:do`:
 
 ```
 📂 Loading increment 0003-payment-processing...
@@ -148,7 +148,7 @@ Moving to next task...
 **When you know all tasks are simple**:
 
 ```bash
-/specweave.do 0003 --model haiku
+/specweave:do 0003 --model haiku
 ```
 
 **Output**:
@@ -373,7 +373,7 @@ Based on manual review of 50 generated tasks:
 
 ✅ **Updated**:
 - `increment-planner` skill - generates model hints
-- `/specweave.do` command - uses model hints, supports --model override
+- `/specweave:do` command - uses model hints, supports --model override
 - Tasks.md format - includes ⚡🧠💎 icons
 
 ✅ **Benefits**:

@@ -14,7 +14,7 @@ description: Task-level GitHub issue tracking for SpecWeave increments. Provides
 - Blocking issue tracking
 - Task-level comments and discussions
 
-**Integration**: Works with `github-sync` skill and `/specweave.github.*` commands
+**Integration**: Works with `github-sync` skill and `/specweave:github:*` commands
 
 ---
 
@@ -171,7 +171,7 @@ plugins:
 ### Check Task Status
 
 ```bash
-/specweave.github.status 0004
+/specweave:github:status 0004
 ```
 
 Output:
@@ -196,7 +196,7 @@ Week 1: Foundation
 ### Sync Task Checklist
 
 ```bash
-/specweave.github.sync 0004 --tasks
+/specweave:github:sync 0004 --tasks
 ```
 
 Updates GitHub issue checklist to match current increment progress.
@@ -204,7 +204,7 @@ Updates GitHub issue checklist to match current increment progress.
 ### Comment on Task
 
 ```bash
-/specweave.github.comment 0004 T-008 "Cursor adapter completed, moving to testing phase"
+/specweave:github:comment 0004 T-008 "Cursor adapter completed, moving to testing phase"
 ```
 
 Posts custom comment to GitHub issue for specific task.
@@ -308,7 +308,7 @@ tasks:
 Generate time reports:
 
 ```bash
-/specweave.github.time-report 0004
+/specweave:github:time-report 0004
 ```
 
 Output:
@@ -458,7 +458,7 @@ Warn when tasks are behind schedule:
 **Checklist not updating?**
 - Verify `update_checklist: true` in config
 - Check GitHub API permissions (repo write access)
-- Manually sync: `/specweave.github.sync 0004 --tasks`
+- Manually sync: `/specweave:github:sync 0004 --tasks`
 
 **Comments not posting?**
 - Check `post_task_comments: true`
@@ -468,7 +468,7 @@ Warn when tasks are behind schedule:
 **Time tracking inaccurate?**
 - Verify task timestamps in `.metadata.yaml`
 - Check for manual edits to metadata
-- Re-sync: `/specweave.github.sync 0004 --force`
+- Re-sync: `/specweave:github:sync 0004 --force`
 
 ---
 
@@ -488,7 +488,7 @@ Warn when tasks are behind schedule:
 
 - **github-sync**: High-level increment ↔ issue synchronization
 - **github-manager agent**: AI agent for GitHub operations
-- **Commands**: All `/specweave.github.*` commands
+- **Commands**: All `/specweave:github:*` commands
 
 ---
 

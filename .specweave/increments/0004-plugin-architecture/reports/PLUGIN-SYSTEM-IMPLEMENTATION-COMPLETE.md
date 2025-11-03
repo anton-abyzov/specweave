@@ -378,7 +378,7 @@ specweave init                # Auto-detects and installs plugins
 **Community Plugin Requirements**:
 - ✅ Uses same `.claude-plugin/` structure
 - ✅ Follows auto-detection conventions
-- ✅ Works with `/specweave.do` workflow
+- ✅ Works with `/specweave:do` workflow
 - ✅ Integrates with increment lifecycle
 
 ---

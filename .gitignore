@@ -18,6 +18,17 @@ build/
 *.pyc
 __pycache__/
 
+# NPM package artifacts (do NOT commit!)
+*.tgz
+*.tar.gz
+
+# ML model files (download on demand, do NOT commit!)
+*.pt
+*.pth
+*.onnx
+*.h5
+*.pkl
+
 # Documentation build output
 site/
 docs-site/build/
@@ -54,8 +65,12 @@ api_keys.json
 .specweave/plugins/installed/
 .specweave/plugins/cache/
 
-# Claude Code (backups are intentionally committed for history)
-# .claude/backups/ - NOT ignored, preserve project history
+# Claude Code development mode installation (ignored - generated)
+.claude/
+
+# BUT: Keep these team configuration files (source code)
+!.claude/settings.json
+!.claude-plugin/
 
 # Test results (generated, review before committing)
 test-results/
@@ -74,6 +89,9 @@ playwright-report/
 .specweave/test-runs/ml-pipeline*/*/videos/*.mkv
 .specweave/test-runs/ml-pipeline*/*/videos/*.avi
 .specweave/test-runs/ml-pipeline*/*/detections_output.mp4
+
+# ML Experiment Tracking (MLflow runtime data)
+mlruns/
 
 # OS
 .DS_Store

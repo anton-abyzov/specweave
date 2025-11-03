@@ -30,7 +30,7 @@ Implemented and **tested** GitHub-first task-level synchronization with critical
 **Next Increment Ready**:
 ```bash
 # Will work for increment 0005, 0006, etc.
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 ```
 
 ---
@@ -58,13 +58,13 @@ async createOrGetMilestone(
 **Example**:
 ```bash
 # 1-day sprint (aggressive)
-/specweave.github.sync-tasks 0005 --milestone-days 1
+/specweave:github:sync-tasks 0005 --milestone-days 1
 
 # 2-day sprint (default - SpecWeave velocity)
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 
 # 7-day sprint (traditional scrum, if needed)
-/specweave.github.sync-tasks 0005 --milestone-days 7
+/specweave:github:sync-tasks 0005 --milestone-days 7
 ```
 
 **Milestone Data**:
@@ -125,7 +125,7 @@ async createOrGetMilestone(
 **Why?**
 - Claude Code writes code 10-20x faster
 - SpecWeave organizes workflow (no thinking overhead)
-- `/specweave.do` auto-resumes (no setup time)
+- `/specweave:do` auto-resumes (no setup time)
 - Hooks auto-update docs (no manual sync)
 - Context-efficient (only load what's needed)
 
@@ -145,10 +145,10 @@ async createOrGetMilestone(
 3. **Configurable**: Override if needed
    ```bash
    # 1-day aggressive sprint
-   /specweave.github.sync-tasks 0005 --milestone-days 1
+   /specweave:github:sync-tasks 0005 --milestone-days 1
 
    # Skip rate limiting for speed
-   /specweave.github.sync-tasks 0005 --fast-mode
+   /specweave:github:sync-tasks 0005 --fast-mode
    ```
 
 **Estimation Field** (in issue body):
@@ -251,7 +251,7 @@ export interface GitHubSyncOptions {
 **Workaround** (manual):
 ```bash
 # 1. Sync tasks
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 
 # 2. Create project
 gh project create --name "SpecWeave v0.5.0"
@@ -374,16 +374,16 @@ number:   3
 **Ready to use immediately**:
 ```bash
 # Create increment
-/specweave.inc "0005-user-authentication"
+/specweave:inc "0005-user-authentication"
 
 # Sync to GitHub (1-day sprint)
-/specweave.github.sync-tasks 0005 --milestone-days 1
+/specweave:github:sync-tasks 0005 --milestone-days 1
 
 # Work on tasks (auto-syncs)
-/specweave.do
+/specweave:do
 
 # Close when done
-/specweave.done 0005
+/specweave:done 0005
 ```
 
 ### Future Enhancements (Optional)

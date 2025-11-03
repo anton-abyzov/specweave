@@ -199,7 +199,7 @@ Create YAML test cases in `src/skills/diagrams-generator/test-cases/`:
 **Priority**: P1
 **Estimated**: 1 hour
 **Depends on**: T002
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Extract C4 Model knowledge from DIAGRAM-CONVENTIONS.md
@@ -251,7 +251,7 @@ Update `CLAUDE.md` sections:
 **Priority**: P2
 **Estimated**: 30 minutes
 **Depends on**: T009
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 Create `.specweave/increments/0002-diagram-agents/context-manifest.yaml`:
@@ -300,7 +300,7 @@ ls -la .claude/skills/diagrams-generator/
 **Priority**: P1
 **Estimated**: 1 hour
 **Depends on**: T011
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Restart Claude Code to load new agent/skill
@@ -322,7 +322,7 @@ ls -la .claude/skills/diagrams-generator/
 **Priority**: P1
 **Estimated**: 1 hour
 **Depends on**: T012
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Run all agent test cases (3+)
@@ -370,7 +370,7 @@ git push -u origin features/002-diagram-agents
 **Priority**: P1
 **Estimated**: 30 minutes
 **Depends on**: T001-T013
-**Status**: [ ] Pending
+**Status**: [x] Completed
 
 **Implementation**:
 - Commit all changes with proper messages

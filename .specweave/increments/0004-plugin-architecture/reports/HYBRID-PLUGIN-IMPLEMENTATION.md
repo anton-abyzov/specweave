@@ -1,8 +1,21 @@
 # Hybrid Plugin System Implementation Report
 
-**Date**: 2025-10-31
+> **⚠️ CURRENT STATUS (2025-11-03): SUPERSEDED**
+>
+> **This report documents a hybrid implementation that was later simplified to Claude-only.**
+>
+> **Final Implementation**: SpecWeave uses **ONLY Claude Code's native plugin system** (plugin.json).
+> - ✅ Claude Code: Native plugin.json format only
+> - ❌ NO custom manifest.json (removed)
+> - ❌ NO hybrid dual-manifest approach (simplified)
+>
+> This document remains for historical reference.
+
+---
+
+**Date**: 2025-10-31 (Original), 2025-11-03 (Superseded)
 **Increment**: 0004-plugin-architecture
-**Enhancement**: Hybrid Claude Native + SpecWeave Custom Plugin Support
+**Enhancement**: ~~Hybrid Claude Native + SpecWeave Custom Plugin Support~~ (Simplified to Claude-only)
 
 ## Overview
 

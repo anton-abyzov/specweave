@@ -158,7 +158,7 @@ specweave plugin enable specweave-github
 
 ```bash
 # Plan a new increment
-/specweave.inc "0005-user-authentication"
+/specweave:inc "0005-user-authentication"
 
 # SpecWeave PM generates:
 # - spec.md (product requirements)
@@ -171,7 +171,7 @@ specweave plugin enable specweave-github
 
 ```bash
 # Sync all tasks to GitHub
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 ```
 
 **What happens**:
@@ -219,7 +219,7 @@ Creating issues 11-20 of 42...
 
 ```bash
 # Execute tasks (SpecWeave auto-syncs to GitHub)
-/specweave.do
+/specweave:do
 
 # For each completed task:
 # - Task issue automatically closed
@@ -239,7 +239,7 @@ Creating issues 11-20 of 42...
 **Locally**:
 ```bash
 # Check increment progress
-/specweave.progress
+/specweave:progress
 
 # Output:
 # 📊 Increment Progress: 0005-user-authentication
@@ -284,10 +284,10 @@ sequenceDiagram
     participant SpecWeave
     participant GitHub
 
-    User->>SpecWeave: /specweave.inc "0005-user-auth"
+    User->>SpecWeave: /specweave:inc "0005-user-auth"
     SpecWeave->>SpecWeave: Generate spec, plan, tasks
 
-    User->>SpecWeave: /specweave.github.sync-tasks 0005
+    User->>SpecWeave: /specweave:github:sync-tasks 0005
     SpecWeave->>GitHub: Create Milestone v0.5.0
     SpecWeave->>GitHub: Create Epic #42
     SpecWeave->>GitHub: Create Task #43 (T-001)
@@ -295,7 +295,7 @@ sequenceDiagram
     Note right of GitHub: ... 40 more tasks
     SpecWeave->>SpecWeave: Update tasks.md with issue numbers
 
-    User->>SpecWeave: /specweave.do
+    User->>SpecWeave: /specweave:do
     SpecWeave->>SpecWeave: Complete T-001
     SpecWeave->>GitHub: Close issue #43
     SpecWeave->>GitHub: Check off T-001 in epic #42
@@ -304,7 +304,7 @@ sequenceDiagram
 
     Note right of User: Repeat for all tasks...
 
-    User->>SpecWeave: /specweave.done 0005
+    User->>SpecWeave: /specweave:done 0005
     SpecWeave->>GitHub: Close epic #42
 ```
 
@@ -434,7 +434,7 @@ SpecWeave supports two sync strategies:
 
 **Command**:
 ```bash
-/specweave.github.sync 0005
+/specweave:github:sync 0005
 ```
 
 ### Task-Level Sync (Recommended)
@@ -459,7 +459,7 @@ SpecWeave supports two sync strategies:
 
 **Command**:
 ```bash
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 ```
 
 ### Comparison
@@ -479,13 +479,13 @@ SpecWeave supports two sync strategies:
 
 ## Sync Commands
 
-### `/specweave.github.sync-tasks`
+### `/specweave:github:sync-tasks`
 
 **Purpose**: Create or update GitHub issues for all tasks in an increment.
 
 **Usage**:
 ```bash
-/specweave.github.sync-tasks <increment-id> [options]
+/specweave:github:sync-tasks <increment-id> [options]
 ```
 
 **Arguments**:
@@ -501,36 +501,36 @@ SpecWeave supports two sync strategies:
 
 ```bash
 # Basic sync (recommended)
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 
 # Preview without creating (dry run)
-/specweave.github.sync-tasks 0005 --dry-run
+/specweave:github:sync-tasks 0005 --dry-run
 
 # Force re-sync (creates duplicates, use carefully!)
-/specweave.github.sync-tasks 0005 --force
+/specweave:github:sync-tasks 0005 --force
 
 # Slower sync for rate limit safety
-/specweave.github.sync-tasks 0005 --batch-size 5 --batch-delay 12000
+/specweave:github:sync-tasks 0005 --batch-size 5 --batch-delay 12000
 ```
 
 **When to use**:
-- ✅ After creating a new increment (`/specweave.inc`)
+- ✅ After creating a new increment (`/specweave:inc`)
 - ✅ When starting team collaboration on an increment
 - ✅ To create GitHub visibility for stakeholders
 - ❌ Not needed for solo work (optional)
 
-### `/specweave.github.create-issue`
+### `/specweave:github:create-issue`
 
 **Purpose**: Create a GitHub issue for a single task.
 
 **Usage**:
 ```bash
-/specweave.github.create-issue <increment-id> <task-id>
+/specweave:github:create-issue <increment-id> <task-id>
 ```
 
 **Example**:
 ```bash
-/specweave.github.create-issue 0005 T-001
+/specweave:github:create-issue 0005 T-001
 ```
 
 **When to use**:
@@ -538,37 +538,37 @@ SpecWeave supports two sync strategies:
 - ✅ Adding tasks after initial sync
 - ❌ Don't use for bulk sync (use `sync-tasks` instead)
 
-### `/specweave.github.close-issue`
+### `/specweave:github:close-issue`
 
 **Purpose**: Manually close a task's GitHub issue.
 
 **Usage**:
 ```bash
-/specweave.github.close-issue <increment-id> <task-id>
+/specweave:github:close-issue <increment-id> <task-id>
 ```
 
 **Example**:
 ```bash
-/specweave.github.close-issue 0005 T-001
+/specweave:github:close-issue 0005 T-001
 ```
 
 **When to use**:
 - ✅ Manual issue closure (if auto-close failed)
 - ✅ Closing tasks completed outside SpecWeave
-- ❌ Not needed normally (`/specweave.do` auto-closes)
+- ❌ Not needed normally (`/specweave:do` auto-closes)
 
-### `/specweave.github.status`
+### `/specweave:github:status`
 
 **Purpose**: Check GitHub sync status and detect drift.
 
 **Usage**:
 ```bash
-/specweave.github.status <increment-id>
+/specweave:github:status <increment-id>
 ```
 
 **Example**:
 ```bash
-/specweave.github.status 0005
+/specweave:github:status 0005
 ```
 
 **Output**:
@@ -598,11 +598,11 @@ Last sync: 2025-11-01 10:30:00
 
 ### During Development
 
-When you execute tasks via `/specweave.do`, GitHub sync happens automatically:
+When you execute tasks via `/specweave:do`, GitHub sync happens automatically:
 
 ```bash
 # Execute next task
-/specweave.do
+/specweave:do
 ```
 
 **What happens after each task completion**:
@@ -793,7 +793,7 @@ Drift occurs when GitHub issues are manually edited (outside SpecWeave), causing
 
 **Detect drift**:
 ```bash
-/specweave.github.status 0005
+/specweave:github:status 0005
 ```
 
 **Output**:
@@ -810,11 +810,11 @@ Drift occurs when GitHub issues are manually edited (outside SpecWeave), causing
 **Option 1: Manual fix** (recommended)
 - Review each drifted task
 - Update `tasks.md` or GitHub manually to align
-- Re-sync: `/specweave.github.sync-tasks 0005`
+- Re-sync: `/specweave:github:sync-tasks 0005`
 
 **Option 2: Force re-sync** (overwrites GitHub)
 ```bash
-/specweave.github.sync-tasks 0005 --force
+/specweave:github:sync-tasks 0005 --force
 ```
 ⚠️ WARNING: This creates duplicate issues! Use only if you understand the implications.
 
@@ -922,7 +922,7 @@ Follow prompts to authenticate.
 
 **1. Adjust batch settings** (slower sync):
 ```bash
-/specweave.github.sync-tasks 0005 --batch-size 5 --batch-delay 12000
+/specweave:github:sync-tasks 0005 --batch-size 5 --batch-delay 12000
 ```
 Creates 5 issues at a time with 12-second delays.
 
@@ -943,7 +943,7 @@ gh api rate_limit
 1. **Never use `--force` unless testing**
 2. **Check status first**:
    ```bash
-   /specweave.github.status 0005
+   /specweave:github:status 0005
    ```
 3. **Delete duplicates manually**:
    ```bash
@@ -969,7 +969,7 @@ gh api rate_limit
 3. **Validate markdown**: Use a linter or preview in editor
 4. **Re-generate tasks** (if too broken):
    ```bash
-   /specweave.inc 0005 --regenerate-tasks
+   /specweave:inc 0005 --regenerate-tasks
    ```
 
 ### Network Errors
@@ -993,17 +993,17 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. Create increment
-/specweave.inc "0005-user-auth"
+/specweave:inc "0005-user-auth"
 
 # 2. Skip GitHub sync (work locally)
 # OR sync at increment level:
-/specweave.github.sync 0005
+/specweave:github:sync 0005
 
 # 3. Execute tasks
-/specweave.do
+/specweave:do
 
 # 4. Sync when needed (e.g., for public visibility)
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 ```
 
 **Benefits**:
@@ -1018,17 +1018,17 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. PM creates increment
-/specweave.inc "0005-user-auth"
+/specweave:inc "0005-user-auth"
 
 # 2. Sync to GitHub immediately
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 
 # 3. Team assigns tasks in GitHub
 # - Alice: T-001, T-002, T-003
 # - Bob: T-004, T-005, T-006
 
 # 4. Developers work locally
-/specweave.do
+/specweave:do
 
 # 5. GitHub updates automatically on task completion
 ```
@@ -1045,10 +1045,10 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. PM creates increment
-/specweave.inc "0006-payment-processing"
+/specweave:inc "0006-payment-processing"
 
 # 2. Sync to GitHub
-/specweave.github.sync-tasks 0006
+/specweave:github:sync-tasks 0006
 
 # 3. PM creates GitHub Project (Kanban)
 gh project create --name "SpecWeave v0.6.0" --org my-org
@@ -1127,7 +1127,7 @@ Closes #43
 **When PR merges**:
 - GitHub auto-closes issue #43
 - SpecWeave detects closure
-- Marks task complete in next `/specweave.github.status` check
+- Marks task complete in next `/specweave:github:status` check
 
 **Best Practice**:
 ```markdown
@@ -1160,7 +1160,7 @@ Closes #43
 
 **A**: Yes! Just run:
 ```bash
-/specweave.github.sync-tasks 0001
+/specweave:github:sync-tasks 0001
 ```
 
 Even if the increment is old, SpecWeave will create issues for all tasks.
@@ -1169,7 +1169,7 @@ Even if the increment is old, SpecWeave will create issues for all tasks.
 
 **A**: SpecWeave detects drift:
 ```bash
-/specweave.github.status 0005
+/specweave:github:status 0005
 # Shows: T-001 closed in GitHub but pending in tasks.md
 ```
 
@@ -1185,7 +1185,7 @@ Update `tasks.md` manually to align, or re-sync.
 ### Q: What happens if GitHub is down?
 
 **A**: SpecWeave continues working locally:
-- `/specweave.do` executes tasks normally
+- `/specweave:do` executes tasks normally
 - GitHub sync queued for next successful connection
 - Work never blocked by GitHub availability
 
@@ -1197,7 +1197,7 @@ Update `tasks.md` manually to align, or re-sync.
 specweave plugin enable specweave-jira
 
 # Sync to JIRA
-/specweave.jira.sync-tasks 0005
+/specweave:jira:sync-tasks 0005
 ```
 
 But **GitHub is primary** (recommended for most projects).
@@ -1208,7 +1208,7 @@ But **GitHub is primary** (recommended for most projects).
 ```bash
 # Sync increments 0001-0005
 for i in {1..5}; do
-  /specweave.github.sync-tasks $(printf "%04d" $i)
+  /specweave:github:sync-tasks $(printf "%04d" $i)
 done
 ```
 
@@ -1230,10 +1230,10 @@ done
 ```bash
 # Add new task to tasks.md
 # Then sync just that task:
-/specweave.github.create-issue 0005 T-043
+/specweave:github:create-issue 0005 T-043
 
 # OR re-sync entire increment (safe, creates only new issues):
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 ```
 
 ### Q: Can I sync private repos?
@@ -1260,9 +1260,9 @@ SpecWeave uses GitHub CLI, so any GitHub instance supported by `gh` works.
 - ✅ Automatic sync (no manual updates)
 
 **Key Commands**:
-- `/specweave.github.sync-tasks 0005` - Sync all tasks
-- `/specweave.do` - Execute tasks (auto-syncs)
-- `/specweave.github.status 0005` - Check sync health
+- `/specweave:github:sync-tasks 0005` - Sync all tasks
+- `/specweave:do` - Execute tasks (auto-syncs)
+- `/specweave:github:status 0005` - Check sync health
 
 **Best Practices**:
 - Use task-level sync for teams

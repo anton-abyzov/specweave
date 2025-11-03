@@ -346,7 +346,7 @@ The **killer feature** for brownfield: documentation that **auto-updates** as co
 
 1. **Initial Documentation** - SpecWeave creates complete specs, HLDs, ADRs, diagrams
 
-2. **Code Changes** - You modify code using `/specweave.do`
+2. **Code Changes** - You modify code using `/specweave:do`
 
 3. **Auto-Update** - Hooks automatically update:
    - Specifications reflect new requirements
@@ -361,7 +361,7 @@ The **killer feature** for brownfield: documentation that **auto-updates** as co
 
 - **Claude Hooks** - Post-task-completion hook runs after every task
 
-- **Living Docs Sync** - `/sync-docs update` propagates changes
+- **Living Docs Sync** - `/specweave:sync-docs update` propagates changes
 
 - **Version Control** - All docs in Git, full history preserved
 
@@ -371,7 +371,7 @@ As your brownfield project grows, SpecWeave **grows the documentation structure*
 
 **Scenario: Adding new payment module**
 ```bash
-/specweave.inc "payment processing module"
+/specweave:inc "payment processing module"
 ```
 
 **SpecWeave automatically:**
@@ -455,8 +455,8 @@ npx specweave init .
 # ✅ Regression prevention in place
 
 # Day 4: Add OAuth safely
-/specweave.inc "Add OAuth 2.0 support"
-/specweave.do
+/specweave:inc "Add OAuth 2.0 support"
+/specweave:do
 # ✅ OAuth added with:
 #    - Updated specs and ADRs
 #    - Extended architecture diagrams
@@ -535,20 +535,20 @@ Logs and notifies when AI needs clarification.
 Framework-agnostic commands:
 
 **Core Commands:**
-- `/specweave.inc "feature"` - Plan new increment (PM-led)
-- `/specweave.do` - Execute tasks (smart resume)
-- `/specweave.progress` - Check status and completion
-- `/specweave.validate 0001` - Optional quality assessment
-- `/specweave.done 0001` - Manual close (rarely needed)
+- `/specweave:inc "feature"` - Plan new increment (PM-led)
+- `/specweave:do` - Execute tasks (smart resume)
+- `/specweave:progress` - Check status and completion
+- `/specweave:validate 0001` - Optional quality assessment
+- `/specweave:done 0001` - Manual close (rarely needed)
 
 **Integration Commands:**
-- `/specweave.sync-github` - Sync to GitHub issues
-- `/sync-docs` - Review specs vs implementation
+- `/specweave:sync-github` - Sync to GitHub issues
+- `/specweave:sync-docs` - Review specs vs implementation
 
 **Aliases (shorter syntax):**
-- `/specweave inc` = `/specweave.inc`
-- `/specweave do` = `/specweave.do`
-- `/do` = `/specweave.do`
+- `/specweave inc` = `/specweave:inc`
+- `/specweave do` = `/specweave:do`
+- `/do` = `/specweave:do`
 
 All commands adapt to detected tech stack.
 

@@ -1,0 +1,8 @@
+{
+  "name": "specweave-docs",
+  "description": "Documentation generation and spec-driven workflows. Includes Docusaurus site generation from SpecWeave structure, spec-driven brainstorming for feature ideation, and spec-driven debugging. Focus on living documentation and knowledge management.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team"
+  }
+}

@@ -1,7 +1,27 @@
 # ADR-0015: Hybrid Plugin System (Claude Code Native + SpecWeave Custom)
 
-**Status**: Accepted
-**Date**: 2025-10-31
+> **⚠️ CURRENT STATUS (2025-11-03): SUPERSEDED**
+>
+> **This ADR documents a hybrid approach that was initially proposed but later simplified.**
+>
+> **Final Implementation**: SpecWeave uses **ONLY Claude Code's native plugin system** (plugin.json).
+> - ✅ Claude Code: Native plugin.json format only
+> - ❌ NO custom manifest.json (removed)
+> - ❌ NO hybrid dual-manifest approach (simplified)
+> - ❌ NO SpecWeave custom plugin system (abandoned)
+>
+> **Rationale for Change**:
+> - Claude Code is the primary target tool (95%+ of users)
+> - Maintaining two manifest formats added unnecessary complexity
+> - Other tools (Cursor, Copilot, Generic) work via AGENTS.md compilation regardless
+> - Simplicity > flexibility for a feature that was rarely used
+>
+> This document remains for historical reference to understand the decision-making process.
+
+---
+
+**Status**: Superseded
+**Date**: 2025-10-31 (Original), 2025-11-03 (Superseded)
 **Context**: Increment 0004 - Plugin Architecture
 **Deciders**: Core Team
 **Technical Story**: Plugin distribution and multi-tool compatibility

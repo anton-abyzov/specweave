@@ -1,16 +1,16 @@
 /**
- * Plugin Loader
+ * Plugin Loader - Claude Code Native
  *
- * Reads plugin directories, validates manifests, and loads skills/agents/commands.
- * Provides plugin discovery and integrity checking.
+ * Reads plugin directories using Claude's official plugin.json format.
+ * Discovers components by scanning directory structure (not from manifest).
  *
  * @module core/plugin-loader
- * @version 0.4.0
+ * @version 0.6.1
+ * @see https://docs.claude.com/en/docs/claude-code/plugins
  */
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import Ajv from 'ajv';
 import type {
   Plugin,
   PluginManifest,
@@ -25,29 +25,21 @@ import {
   PluginNotFoundError
 } from './types/plugin.js';
 
-// Import JSON schema for validation
-import pluginManifestSchema from './schemas/plugin-manifest.schema.json';
-
 /**
- * PluginLoader - Loads and validates plugins from filesystem
+ * PluginLoader - Loads Claude Code plugins from filesystem
  */
 export class PluginLoader {
-  private ajv: Ajv;
-  private validateManifestSchema: any;
-
   constructor() {
-    // Initialize JSON schema validator
-    this.ajv = new Ajv({ allErrors: true });
-    this.validateManifestSchema = this.ajv.compile(pluginManifestSchema);
+    // No schema validation - Claude's plugin.json is minimal and straightforward
   }
 
   /**
-   * Load a plugin from directory
+   * Load a plugin from directory (Claude Code native)
    *
    * @param pluginPath - Absolute path to plugin directory
    * @returns Loaded plugin with all components
    * @throws PluginNotFoundError if directory doesn't exist
-   * @throws ManifestValidationError if manifest is invalid
+   * @throws ManifestValidationError if plugin.json is invalid
    */
   async loadFromDirectory(pluginPath: string): Promise<Plugin> {
     // Verify directory exists
@@ -55,14 +47,14 @@ export class PluginLoader {
       throw new PluginNotFoundError(path.basename(pluginPath));
     }
 
-    // Load and validate manifest
+    // Load Claude's plugin.json
     const manifest = await this.loadManifest(pluginPath);
 
-    // Load components
+    // Discover components by scanning directories (NOT from manifest)
     const [skills, agents, commands] = await Promise.all([
-      this.loadSkills(pluginPath, manifest.provides.skills),
-      this.loadAgents(pluginPath, manifest.provides.agents),
-      this.loadCommands(pluginPath, manifest.provides.commands)
+      this.discoverSkills(pluginPath),
+      this.discoverAgents(pluginPath),
+      this.discoverCommands(pluginPath)
     ]);
 
     return {
@@ -75,39 +67,39 @@ export class PluginLoader {
   }
 
   /**
-   * Load plugin manifest from .claude-plugin/manifest.json
+   * Load plugin manifest from .claude-plugin/plugin.json (Claude's official format)
    *
    * @param pluginPath - Path to plugin directory
-   * @returns Validated plugin manifest
-   * @throws ManifestValidationError if manifest is invalid
+   * @returns Plugin manifest
+   * @throws ManifestValidationError if plugin.json is invalid
    */
   async loadManifest(pluginPath: string): Promise<PluginManifest> {
-    const manifestPath = path.join(pluginPath, '.claude-plugin', 'manifest.json');
+    const pluginJsonPath = path.join(pluginPath, '.claude-plugin', 'plugin.json');
 
-    // Check if manifest exists
-    if (!(await fs.pathExists(manifestPath))) {
+    // Check if plugin.json exists
+    if (!(await fs.pathExists(pluginJsonPath))) {
       throw new ManifestValidationError(
-        `Manifest not found at ${manifestPath}`,
+        `plugin.json not found at ${pluginJsonPath}`,
         path.basename(pluginPath)
       );
     }
 
-    // Read and parse manifest
+    // Read and parse plugin.json
     let content: any;
     try {
-      content = await fs.readJSON(manifestPath);
+      content = await fs.readJSON(pluginJsonPath);
     } catch (error: any) {
       throw new ManifestValidationError(
-        `Invalid JSON in manifest: ${error.message}`,
+        `Invalid JSON in plugin.json: ${error.message}`,
         path.basename(pluginPath)
       );
     }
 
-    // Validate against schema
+    // Basic validation (required fields)
     const validation = this.validateManifest(content);
     if (!validation.valid) {
       throw new ManifestValidationError(
-        `Manifest validation failed:\n${validation.errors.join('\n')}`,
+        `plugin.json validation failed:\n${validation.errors.join('\n')}`,
         path.basename(pluginPath)
       );
     }
@@ -116,34 +108,152 @@ export class PluginLoader {
   }
 
   /**
-   * Validate manifest against JSON schema
+   * Validate plugin.json (simple validation, no JSON Schema)
    *
    * @param manifest - Manifest object to validate
    * @returns Validation result with errors/warnings
    */
   validateManifest(manifest: any): ValidationResult {
-    const valid = this.validateManifestSchema(manifest);
-
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    if (!valid && this.validateManifestSchema.errors) {
-      for (const error of this.validateManifestSchema.errors) {
-        errors.push(`${error.instancePath} ${error.message}`);
-      }
+    // Required fields (Claude's official schema)
+    if (!manifest.name) errors.push('Missing required field: name');
+    if (!manifest.description) errors.push('Missing required field: description');
+    if (!manifest.version) errors.push('Missing required field: version');
+    if (!manifest.author) errors.push('Missing required field: author');
+    if (manifest.author && !manifest.author.name) {
+      errors.push('Missing required field: author.name');
     }
 
-    // Additional semantic validation
+    // Warn about old SpecWeave fields
+    if (manifest.specweave_core_version) {
+      warnings.push('Deprecated field: specweave_core_version (no longer used)');
+    }
     if (manifest.provides) {
-      // Warn if no skills, agents, or commands provided
-      if (manifest.provides.skills.length === 0 &&
-          manifest.provides.agents.length === 0 &&
-          manifest.provides.commands.length === 0) {
-        warnings.push('Plugin provides no skills, agents, or commands');
+      warnings.push('Deprecated field: provides (components discovered by scanning)');
+    }
+    if (manifest.auto_detect) {
+      warnings.push('Deprecated field: auto_detect (no longer used)');
+    }
+    if (manifest.triggers) {
+      warnings.push('Deprecated field: triggers (use keywords instead)');
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings
+    };
+  }
+
+  /**
+   * Discover skills by scanning skills/ directory
+   *
+   * @param pluginPath - Path to plugin directory
+   * @returns Array of discovered skills
+   */
+  private async discoverSkills(pluginPath: string): Promise<Skill[]> {
+    const skillsDir = path.join(pluginPath, 'skills');
+    if (!(await fs.pathExists(skillsDir))) {
+      return [];
+    }
+
+    const skills: Skill[] = [];
+    const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const skillPath = path.join(skillsDir, entry.name);
+        const skillMdPath = path.join(skillPath, 'SKILL.md');
+
+        if (await fs.pathExists(skillMdPath)) {
+          const content = await fs.readFile(skillMdPath, 'utf-8');
+          const description = this.extractDescription(content);
+          const testCases = await this.loadTestCases(skillPath);
+
+          skills.push({
+            name: entry.name,
+            path: skillPath,
+            description,
+            testCases
+          });
+        }
       }
     }
 
-    return { valid, errors, warnings };
+    return skills;
+  }
+
+  /**
+   * Discover agents by scanning agents/ directory
+   *
+   * @param pluginPath - Path to plugin directory
+   * @returns Array of discovered agents
+   */
+  private async discoverAgents(pluginPath: string): Promise<Agent[]> {
+    const agentsDir = path.join(pluginPath, 'agents');
+    if (!(await fs.pathExists(agentsDir))) {
+      return [];
+    }
+
+    const agents: Agent[] = [];
+    const entries = await fs.readdir(agentsDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const agentPath = path.join(agentsDir, entry.name);
+        const agentMdPath = path.join(agentPath, 'AGENT.md');
+
+        if (await fs.pathExists(agentMdPath)) {
+          const content = await fs.readFile(agentMdPath, 'utf-8');
+          const capabilities = this.extractCapabilities(content);
+
+          agents.push({
+            name: entry.name,
+            path: agentPath,
+            systemPrompt: content,
+            capabilities
+          });
+        }
+      }
+    }
+
+    return agents;
+  }
+
+  /**
+   * Discover commands by scanning commands/ directory
+   *
+   * @param pluginPath - Path to plugin directory
+   * @returns Array of discovered commands
+   */
+  private async discoverCommands(pluginPath: string): Promise<Command[]> {
+    const commandsDir = path.join(pluginPath, 'commands');
+    if (!(await fs.pathExists(commandsDir))) {
+      return [];
+    }
+
+    const commands: Command[] = [];
+    const files = await fs.readdir(commandsDir);
+
+    for (const file of files) {
+      if (file.endsWith('.md')) {
+        const commandPath = path.join(commandsDir, file);
+        const content = await fs.readFile(commandPath, 'utf-8');
+        const name = path.basename(file, '.md');
+        const description = this.extractDescription(content);
+
+        commands.push({
+          name,
+          path: commandPath,
+          description,
+          prompt: content
+        });
+      }
+    }
+
+    return commands;
   }
 
   /**

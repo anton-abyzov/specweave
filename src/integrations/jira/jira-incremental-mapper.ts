@@ -584,8 +584,8 @@ export class JiraIncrementalMapper {
 
   private async generateContextManifest(incrementFolder: string): Promise<void> {
     const manifest = {
-      spec_sections: [],
-      documentation: [],
+      spec_sections: [] as string[],
+      documentation: [] as string[],
       max_context_tokens: 10000,
       priority: 'high',
       auto_refresh: false

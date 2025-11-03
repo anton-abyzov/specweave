@@ -56,7 +56,7 @@ SpecWeave now uses **pure auto-detection** with NO configuration file needed.
    - Updated "Enable sync - Configure...config.yaml" → "Run sync commands"
    - Changed "User can configure scan patterns in config.yaml" → "Default scan patterns built-in"
 
-7. **src/commands/specweave.increment.md**
+7. **src/commands/specweave:increment.md**
    - Changed "Tech stack DETECTED from config.yaml" → "AUTO-DETECTED from project files"
    - Updated detected_from example
 

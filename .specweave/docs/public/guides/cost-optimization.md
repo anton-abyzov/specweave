@@ -73,7 +73,7 @@ Every agent invocation is tracked:
 ### Quick Summary
 
 ```bash
-/specweave.costs
+/specweave:costs
 ```
 
 **Output**:
@@ -106,7 +106,7 @@ COST BY INCREMENT
 ### Increment-Specific Report
 
 ```bash
-/specweave.costs 0003
+/specweave:costs 0003
 ```
 
 **Output**:
@@ -209,13 +209,13 @@ Need Opus for complex reasoning? Use `--model`:
 
 ```bash
 # Force Opus for extremely complex task
-/specweave.do --model opus "Design distributed consensus algorithm"
+/specweave:do --model opus "Design distributed consensus algorithm"
 
 # Force Sonnet when uncertain
-/specweave.do --model sonnet "Implement feature X"
+/specweave:do --model sonnet "Implement feature X"
 
 # Force Haiku for simple task
-/specweave.do --model haiku "Generate test data"
+/specweave:do --model haiku "Generate test data"
 ```
 
 ### Per-Agent Override
@@ -237,7 +237,7 @@ Task tool: agent=diagrams-architect, model=haiku
 ### JSON Export (Machine-Readable)
 
 ```bash
-/specweave.costs 0003
+/specweave:costs 0003
 # Select: Export to JSON
 
 # Output: .specweave/increments/0003/reports/cost-analysis.json
@@ -252,7 +252,7 @@ Task tool: agent=diagrams-architect, model=haiku
 ### CSV Export (Spreadsheet-Friendly)
 
 ```bash
-/specweave.costs 0003
+/specweave:costs 0003
 # Select: Export to CSV
 
 # Output: .specweave/increments/0003/reports/cost-history.csv
@@ -272,27 +272,27 @@ Task tool: agent=diagrams-architect, model=haiku
 
 ❌ **Don't**: Force model for every task
 ```bash
-/specweave.do --model sonnet "implement X"  # Unnecessary
+/specweave:do --model sonnet "implement X"  # Unnecessary
 ```
 
 ✅ **Do**: Trust automatic selection
 ```bash
-/specweave.do "implement X"  # SpecWeave chooses Haiku
+/specweave:do "implement X"  # SpecWeave chooses Haiku
 ```
 
 ### 2. Monitor Costs Regularly
 
 ```bash
 # Check costs after each increment
-/specweave.done 0003
-/specweave.costs 0003
+/specweave:done 0003
+/specweave:costs 0003
 ```
 
 ### 3. Review Most Expensive Agents
 
 ```bash
 # Identify cost hotspots
-/specweave.costs
+/specweave:costs
 # Look at "Most Expensive" agent
 ```
 
@@ -301,14 +301,14 @@ Task tool: agent=diagrams-architect, model=haiku
 When iterating rapidly:
 ```bash
 # Initial implementation (auto-selects Haiku)
-/specweave.do "implement feature X"
+/specweave:do "implement feature X"
 
 # Refinements (also Haiku)
-/specweave.do "add error handling"
-/specweave.do "improve performance"
+/specweave:do "add error handling"
+/specweave:do "improve performance"
 
 # Final review (auto-selects Sonnet)
-/specweave.validate
+/specweave:validate
 ```
 
 ---
@@ -357,9 +357,9 @@ Since we store NO personal data:
 **Cause**: No tracked sessions yet
 
 **Solution**:
-1. Run `/specweave.do` to execute tasks
+1. Run `/specweave:do` to execute tasks
 2. Wait for agent completion
-3. Run `/specweave.costs` again
+3. Run `/specweave:costs` again
 
 ### Savings Seem Low
 
@@ -380,7 +380,7 @@ Since we store NO personal data:
 
 **Option 2**: Force Haiku for simple planning
 ```bash
-/specweave.inc --model haiku "simple feature"
+/specweave:inc --model haiku "simple feature"
 ```
 
 ---

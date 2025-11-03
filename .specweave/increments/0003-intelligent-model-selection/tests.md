@@ -92,9 +92,9 @@ tests/e2e/
 ```
 
 **Scenarios**:
-1. Planning workflow (`/specweave.inc` → Sonnet used)
-2. Execution workflow (`/specweave.do` → Haiku used)
-3. Cost dashboard (`/specweave.costs` → Report displayed)
+1. Planning workflow (`/specweave:inc` → Sonnet used)
+2. Execution workflow (`/specweave:do` → Haiku used)
+3. Cost dashboard (`/specweave:costs` → Report displayed)
 4. Auto-split workflow (brownfield-onboarder → 3 phases)
 5. Manual override (user forces Opus → Opus used)
 
@@ -182,9 +182,9 @@ tests/e2e/
 
 #### Command Hints (5 tests)
 
-**TC-002.51**: command="/specweave.inc" → planning (confidence > 0.8)
-**TC-002.52**: command="/specweave.do" → execution (confidence > 0.8)
-**TC-002.53**: command="/specweave.validate" → review (confidence > 0.8)
+**TC-002.51**: command="/specweave:inc" → planning (confidence > 0.8)
+**TC-002.52**: command="/specweave:do" → execution (confidence > 0.8)
+**TC-002.53**: command="/specweave:validate" → review (confidence > 0.8)
 **TC-002.54**: command="/do" → execution (confidence > 0.8)
 **TC-002.55**: command="/spec-driven-brainstorming" → planning (confidence > 0.8)
 
@@ -439,7 +439,7 @@ tests/e2e/
 **Scenario**: User creates new increment, Sonnet automatically used
 
 **Steps**:
-1. Run `/specweave.inc "New feature"`
+1. Run `/specweave:inc "New feature"`
 2. PM agent invoked
 3. Verify Sonnet used (check logs)
 4. Spec.md generated
@@ -457,7 +457,7 @@ tests/e2e/
 **Scenario**: User implements tasks, Haiku automatically used
 
 **Steps**:
-1. Run `/specweave.do`
+1. Run `/specweave:do`
 2. Frontend agent invoked for task
 3. Verify Haiku used (check logs)
 4. Code generated
@@ -476,7 +476,7 @@ tests/e2e/
 
 **Steps**:
 1. Complete increment with mixed Sonnet/Haiku usage
-2. Run `/specweave.costs`
+2. Run `/specweave:costs`
 3. Dashboard displayed
 4. Verify all metrics shown (totals, breakdown, savings)
 

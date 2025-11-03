@@ -59,7 +59,7 @@ Both SpecWeave and Kiro are spec-driven development frameworks designed for AI-a
 **Example Workflow**:
 ```bash
 # After implementing a feature
-/specweave.do  # Completes tasks
+/specweave:do  # Completes tasks
 
 # SpecWeave automatically:
 # 1. Detects what was implemented
@@ -109,7 +109,7 @@ Kiro: [executes create-increment command]
 User: I want to build user authentication with JWT tokens
 
 SpecWeave: [AI detects intent]
-          [Automatically invokes /specweave.inc "user-authentication"]
+          [Automatically invokes /specweave:inc "user-authentication"]
           [Creates spec.md, plan.md, tasks.md]
           [Generates test cases]
 
@@ -134,7 +134,7 @@ Kiro: [shows progress]
 User: How's the authentication feature going?
 
 SpecWeave: [AI detects intent to check progress]
-          [Automatically invokes /specweave.progress]
+          [Automatically invokes /specweave:progress]
 
           Authentication feature (0003-user-authentication):
           - Status: 60% complete (9/15 tasks done)
@@ -328,7 +328,7 @@ specweave init . --adapter generic
    ```
    User: I need OAuth authentication with Google and GitHub
 
-   SpecWeave: [Auto-invokes /specweave.inc]
+   SpecWeave: [Auto-invokes /specweave:inc]
               Created increment 0004-oauth with complete spec
    ```
 
@@ -336,7 +336,7 @@ specweave init . --adapter generic
    ```
    User: Let's implement this
 
-   SpecWeave: [Auto-invokes /specweave.do]
+   SpecWeave: [Auto-invokes /specweave:do]
               - Created OAuth routes
               - Added Google/GitHub strategies
               - Implemented token refresh
@@ -391,7 +391,7 @@ Kiro: [Shows blockers]
 User: How's the auth feature going?
      ↓
 SpecWeave: [AI detects intent]
-          [Auto-invokes /specweave.progress]
+          [Auto-invokes /specweave:progress]
 
           Auth Feature (0004-oauth):
           - Status: 80% complete (12/15 tasks)

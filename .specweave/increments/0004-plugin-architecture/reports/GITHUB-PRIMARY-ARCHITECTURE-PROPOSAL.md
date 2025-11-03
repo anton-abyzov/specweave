@@ -179,10 +179,10 @@ Epic Issue #42: [INC-0004] Plugin Architecture
 
 ### 3. Sync Workflow
 
-**A. Increment Creation** (`/specweave.inc`):
+**A. Increment Creation** (`/specweave:inc`):
 
 ```bash
-User: /specweave.inc "0004-plugin-architecture"
+User: /specweave:inc "0004-plugin-architecture"
 
 SpecWeave:
 1. Creates increment folder structure
@@ -205,10 +205,10 @@ SpecWeave:
 ✅ Created 1 epic + 48 task issues on GitHub
 ```
 
-**B. Task Execution** (`/specweave.do`):
+**B. Task Execution** (`/specweave:do`):
 
 ```bash
-User: /specweave.do
+User: /specweave:do
 
 SpecWeave:
 1. Finds next pending task: T-001
@@ -392,7 +392,7 @@ Add to `.specweave/increments/0004-plugin-architecture/spec.md`:
   - Per-task issue management
   - Dependency tracking (blocks/depends-on)
   - Assignee sync
-- [ ] Add new command: `/specweave.github.sync-tasks`
+- [ ] Add new command: `/specweave:github:sync-tasks`
   - Force re-sync all tasks for increment
   - Handle drift (manual GitHub changes)
 - [ ] Update tasks.md template:
@@ -455,7 +455,7 @@ Add to `.specweave/increments/0004-plugin-architecture/spec.md`:
 specweave migrate:v0.4.1
 
 # Re-sync existing increments (optional)
-/specweave.github.sync-tasks 0004 --create-issues
+/specweave:github:sync-tasks 0004 --create-issues
 ```
 
 **Scenario 2: Using JIRA** (enterprise):
@@ -464,7 +464,7 @@ specweave migrate:v0.4.1
 specweave plugin enable specweave-jira
 
 # Continue using JIRA sync
-/specweave.jira.sync 0004
+/specweave:jira.sync 0004
 ```
 
 **Scenario 3: Using Both** (rare):
@@ -485,11 +485,11 @@ git add .specweave/docs/internal/architecture/rfc/
 git commit -m "refactor(docs): consolidate RFCs to internal/architecture/rfc/"
 
 # 2. Re-sync increment 0004 with task-level issues
-/specweave.github.sync-tasks 0004 --create-issues
+/specweave:github:sync-tasks 0004 --create-issues
 # Creates issues #43-#90 on github.com/anton-abyzov/specweave
 
 # 3. Test workflow
-/specweave.do
+/specweave:do
 # Completes T-001, closes issue #43, updates epic #42
 
 # 4. Migrate JIRA to plugin
@@ -567,8 +567,8 @@ specweave plugin create specweave-jira
 
 **Mitigation**:
 - Periodic sync check (daily or on-demand)
-- `/specweave.github.status 0004` shows drift
-- `/specweave.github.sync-tasks 0004 --force` re-syncs
+- `/specweave:github:status 0004` shows drift
+- `/specweave:github:sync-tasks 0004 --force` re-syncs
 - Warning if drift detected: "Issue #43 closed in GitHub but task T-001 still pending locally"
 
 ### Risk 4: Too Many GitHub Issues

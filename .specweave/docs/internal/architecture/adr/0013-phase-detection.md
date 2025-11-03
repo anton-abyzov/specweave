@@ -119,14 +119,14 @@ analyzeKeywords(prompt: string): void {
 **Implementation**:
 ```typescript
 private readonly commandPhaseMap: Record<string, Phase> = {
-  '/specweave.inc': 'planning',
+  '/specweave:inc': 'planning',
   '/specweave': 'planning',
   '/increment': 'planning',
-  '/specweave.do': 'execution',
+  '/specweave:do': 'execution',
   '/do': 'execution',
-  '/specweave.validate': 'review',
+  '/specweave:validate': 'review',
   '/validate': 'review',
-  '/specweave.done': 'review',
+  '/specweave:done': 'review',
   '/spec-driven-brainstorming': 'planning',
 };
 
@@ -139,9 +139,9 @@ analyzeCommand(context: ExecutionContext): void {
 ```
 
 **Examples**:
-- `/specweave.inc` → planning (high confidence)
-- `/specweave.do` → execution (high confidence)
-- `/specweave.validate` → review (high confidence)
+- `/specweave:inc` → planning (high confidence)
+- `/specweave:do` → execution (high confidence)
+- `/specweave:validate` → review (high confidence)
 
 ### Signal 3: Context Analysis (20% Weight)
 
@@ -255,10 +255,10 @@ Result: {
 #### Example 2: High Confidence Execution
 
 ```typescript
-Input: "/specweave.do - implement cost tracker service"
+Input: "/specweave:do - implement cost tracker service"
 Signals:
   - Keywords: "implement" (execution)
-  - Command: "/specweave.do" → execution (3x boost)
+  - Command: "/specweave:do" → execution (3x boost)
   - Context: increment state = "in-progress", files modified = ["src/core/cost-tracker.ts"]
   - Hints: none
 
@@ -266,7 +266,7 @@ Scores: { planning: 0, execution: 5, review: 0 }
 Result: {
   phase: 'execution',
   confidence: 1.0,
-  reasoning: "execution phase (100% confidence, strong signals) - command '/specweave.do' indicates execution; execution keywords: implement; context: increment:in-progress, files:code-files"
+  reasoning: "execution phase (100% confidence, strong signals) - command '/specweave:do' indicates execution; execution keywords: implement; context: increment:in-progress, files:code-files"
 }
 → Use Haiku
 ```
@@ -379,8 +379,8 @@ phase = model.predict(vectorize(user_prompt))
 **Proposed**: Users explicitly specify phase in every command
 
 ```bash
-/specweave.do --phase execution "implement feature X"
-/specweave.inc --phase planning "design architecture"
+/specweave:do --phase execution "implement feature X"
+/specweave:inc --phase planning "design architecture"
 ```
 
 **Rejected Because:**
@@ -471,7 +471,7 @@ describe('PhaseDetector', () => {
     });
 
     test('detects planning commands', () => {
-      const result = detector.detect('do something', { command: '/specweave.inc' });
+      const result = detector.detect('do something', { command: '/specweave:inc' });
       expect(result.phase).toBe('planning');
       expect(result.confidence).toBeGreaterThan(0.9);
     });

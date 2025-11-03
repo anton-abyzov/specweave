@@ -3,7 +3,7 @@
 > **Spec-Driven Development Framework** - Where specifications and documentation are the source of truth
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.4.0)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://github.com/anton-abyzov/specweave/releases/tag/v0.6.0)
 [![Status](https://img.shields.io/badge/status-beta-blue.svg)]()
 [![Website](https://img.shields.io/badge/website-spec--weave.com-green.svg)](https://spec-weave.com)
 
@@ -35,12 +35,17 @@
   - Plugins: GitHub sync, tech stacks, domain expertise (load on demand)
   - **Context efficiency**: 50K → 12K tokens for basic projects!
 - 🎯 **Extensible & Scalable** - 10+ agents and 40+ skills via plugins. PM, Architect, DevOps, QA, Security work in parallel
-- 🔧 **Universal Support** - Works with Claude Code (default), Cursor, Gemini CLI, Codex, Copilot, and ANY AI tool (100% market coverage)
-  - **Claude Code** (default): Native plugin support with auto-activation - best experience!
-  - **Cursor/Copilot**: Plugin compilation to AGENTS.md - semi-automation
-  - **Other tools**: AGENTS.md for manual workflows - full capability access!
+- 🔧 **Claude Code Native** - Built specifically for Claude Code's native plugin marketplace
+  - **Claude Code**: Full native support with auto-activation, hooks, isolated agents
+  - **Other tools**: Legacy adapter system (may be removed in future versions)
 - 🧪 **Complete Test Coverage** - 4-level strategy from specs to integration tests (APIs, UIs, CLIs, libraries)
 - 📚 **Living Documentation** - Specs auto-update after every operation and test—always in sync with code
+- 🌍 **Multilingual Support** (NEW in v0.6.0) - Zero-cost LLM-native translation for 9 languages! Framework works in English, Russian, Spanish, Chinese, German, French, Japanese, Korean, and Portuguese
+  - **Zero external costs**: Uses current LLM session for translation (no API keys!)
+  - **Auto-translation**: Living docs auto-translate after every task
+  - **Smart preservation**: Framework terms (increment, spec.md) stay in English
+  - **CLI localization**: Commands and output in your language
+  - **translator skill**: Batch translation for entire projects
 - 🎨 **Visual Architecture** - C4 Model diagrams (Context, Container, Component)
 - 🔄 **Tool Integration** - GitHub, JIRA, Azure DevOps sync (via plugins)
 - 🏢 **Brownfield Excellence** - The hardest problem solved: merge with existing docs, create complex architecture (ADRs, HLDs, RFCs), maintain living documentation, safe regression prevention
@@ -54,13 +59,9 @@
 
 - **Node.js 18+** (`node --version`)
 - **npm 9+** (`npm --version`)
-- **Any AI coding tool**:
-  - Claude Code (Claude Sonnet 4.5 - full automation)
-  - Cursor (Claude Sonnet 3.7 / GPT-4 - semi-automation)
-  - Gemini CLI (Gemini 2.5 Pro, 1M context - semi-automation)
-  - Codex (GPT-5-Codex - semi-automation)
-  - GitHub Copilot (OpenAI models - basic automation)
-  - Or ANY AI (ChatGPT web, Gemini web, Claude web, etc. - manual workflow)
+- **Claude Code** - SpecWeave is designed specifically for Claude Code
+  - Claude Sonnet 4.5 or higher
+  - Native plugin support via `/plugin` commands
 
 ### Quick Install
 
@@ -111,9 +112,9 @@ specweave --help                   # Show help
 ```
 
 **Note**:
-- **Claude Code**: Core framework (3 agents + 8 skills) installed natively in `.claude/` + plugins auto-detected and suggested!
-- **Other tools**: Universal AGENTS.md adapter generated - works with Cursor, Gemini CLI, Codex, Copilot, and ANY AI!
-- **Plugins**: Auto-detected based on your project (GitHub, tech stacks, domain expertise) - enable as needed!
+- **Claude Code**: Core framework (3 agents + 9 skills) installed natively via Claude marketplace
+- **Plugins**: 17+ available plugins for tech stacks, integrations, and domain expertise
+- **Installation**: Via Claude Code's `/plugin` commands (see [Claude Code Plugin Docs](https://docs.claude.com/en/docs/claude-code/plugins))
 
 ---
 
@@ -137,7 +138,7 @@ cd my-app
 
 User: /specweave inc "Next.js authentication with email and OAuth"
     ↓
-SpecWeave: 🔷 SpecWeave Active (/specweave.increment)
+SpecWeave: 🔷 SpecWeave Active (/specweave:increment)
 
            🚀 Creating increment 0001-user-authentication...
            📝 Using nextjs skill (already installed!)
@@ -168,10 +169,8 @@ User: /specweave done 0001  # Close increment with slash command
 ```
 
 **How it works** (smart append-only workflow: 0001 → 0002 → 0003):
-1. `specweave init` → Detects your AI tool and configures appropriately
-   - **Claude Code**: Core framework installed + plugins auto-detected and suggested
-   - **Other tools**: Universal AGENTS.md adapter generated with enabled plugins
-2. **Use `/specweave inc "feature"`** (Claude) or "Read AGENTS.md and create increment" (other tools)
+1. `specweave init` → Installs SpecWeave core framework via Claude Code marketplace
+2. **Use `/specweave inc "feature"`** → PM creates specs + plan + auto-generates tasks
    - PM creates specs + plan + auto-generates tasks
    - **Smart**: Auto-detects needed plugins from feature description
    - **Smart**: Auto-closes previous increment if PM gates pass
@@ -216,8 +215,7 @@ SpecWeave uses a **modular agent system** - core agents (always available) + plu
 | **diagrams-architect** | specweave-diagrams | Diagram Expert - C4 Model, Mermaid | Creating diagrams |
 
 **Agent Access**:
-- **Claude Code**: Core agents pre-installed in `.claude/agents/`, plugin agents load on demand!
-- **Other tools**: Agents compiled to AGENTS.md - reference roles manually
+- **Claude Code**: Core agents available natively, plugin agents load via `/plugin install`
 
 ---
 
@@ -285,10 +283,10 @@ SpecWeave v0.4.0 introduces **intelligent plugin detection**:
    - React app: **16K tokens** (core + frontend-stack + github)
    - Backend API: **15K tokens** (core + backend-stack + github)
 
-3. **Multi-Tool Support** - Works across all platforms:
-   - **Claude Code**: Native plugin loading
-   - **Cursor/Copilot**: AGENTS.md compilation
-   - **Generic**: Manual workflows
+3. **Claude Code Native** - Built for Claude's plugin marketplace:
+   - **Native `/plugin` commands**: Install plugins directly
+   - **Auto-activation**: Skills activate based on context
+   - **Isolated agents**: True role separation
 
 **How it works**:
 1. **Discovery**: Read `.claude/skills/SKILLS-INDEX.md` (1 file vs 35 files = 97% faster)
@@ -297,13 +295,12 @@ SpecWeave v0.4.0 introduces **intelligent plugin detection**:
 4. **Execution**: Follow proven workflows
 
 **Benefits**:
-- ✅ **90% token savings** - Load only what you need (5k vs 50k tokens)
-- ✅ **Universal compatibility** - Works with ALL AI tools (Copilot, Cursor, etc.)
-- ✅ **Consistent output** - Follow SpecWeave best practices every time
+- ✅ **75%+ token savings** - Core framework 12K tokens (vs 50K in v0.3.7)
+- ✅ **Claude Code native** - Full integration with marketplace, hooks, agents
+- ✅ **Context efficient** - Load only needed plugins on demand
 
 **Skill Access**:
-- **Claude Code**: All skills pre-installed natively in `.claude/skills/` + SKILLS-INDEX.md - ready to use immediately!
-- **Other tools**: Progressive disclosure via SKILLS-INDEX.md in AGENTS.md - universal compatibility!
+- **Claude Code**: Core skills auto-activate based on context, plugin skills via `/plugin install`
 
 **See**: [Complete skill list](https://spec-weave.com/docs/skills) on spec-weave.com
 
@@ -344,12 +341,32 @@ specweave/
 │   │       └── reports/         # Analysis reports
 │   └── tests/                   # Centralized test repository
 │
-├── src/                         # Source code (framework)
-│   ├── agents/                  # 19 agents (SOURCE OF TRUTH)
-│   ├── skills/                  # 24 skills (SOURCE OF TRUTH)
-│   ├── commands/                # Slash commands
-│   ├── hooks/                   # Claude Code hooks
-│   └── templates/               # Project templates
+├── src/                         # Source code (TypeScript only)
+│   ├── core/                    # Core framework logic
+│   ├── cli/                     # CLI commands
+│   ├── adapters/                # Tool adapters (legacy)
+│   ├── templates/               # Project templates
+│   └── utils/                   # Utility functions
+│
+├── skills/                      # Core skills (root level)
+│   ├── rfc-generator/           # RFC generation
+│   ├── increment-planner/       # Increment planning
+│   └── ...                      # 8 core skills total
+│
+├── agents/                      # Core agents (root level)
+│   ├── pm/                      # Product Manager
+│   ├── architect/               # System Architect
+│   └── tech-lead/               # Technical Lead
+│
+├── commands/                    # Slash commands (root level)
+│   ├── specweave.inc.md
+│   ├── specweave.do.md
+│   └── ...
+│
+├── plugins/                     # Plugins (root level)
+│   ├── specweave-github/        # GitHub integration
+│   ├── specweave-figma/         # Figma design sync
+│   └── ...                      # 17 plugins total
 │
 ├── .claude/                     # Pre-installed components (user projects)
 │   ├── agents/                  # 10 agents (copied during init)
@@ -599,7 +616,7 @@ npx specweave init .
 ```bash
 # ✅ Use parent folder
 cd my-big-project
-/specweave.inc "0001-backend-api-v2"
+/specweave:inc "0001-backend-api-v2"
 # Creates: .specweave/increments/0001-backend-api-v2/
 # Can reference: backend/, frontend/, etc.
 ```
@@ -789,126 +806,53 @@ npm test
 
 ## 📖 Quick Start
 
-### 🎯 NEW: Multi-Tool Support!
-
-**SpecWeave now works with ANY AI coding tool!** Auto-detects Claude, Cursor, Gemini CLI, Codex, Copilot, or Generic.
-
-**Architecture**:
-- **Claude Code** = Native/Baseline (no adapter needed - full automation)
-- **All other tools** = Adapters that approximate Claude's native capabilities
+### For New Projects (Greenfield)
 
 ```bash
-# List available adapters
-npx specweave adapters
+# Install SpecWeave marketplace
+/plugin marketplace add anton-abyzov/specweave
 
-# Auto-detect your AI tool
-npx specweave init my-saas           # Automatically detects and configures
+# Browse and install core framework
+/plugin install specweave-core@specweave
 
-# Or explicitly choose:
-npx specweave init my-saas --adapter claude    # Native (no adapter!)
-npx specweave init my-saas --adapter cursor    # Adapter (semi-automation)
-npx specweave init my-saas --adapter gemini    # Adapter (semi-automation, 1M context!)
-npx specweave init my-saas --adapter codex     # Adapter (semi-automation, GPT-5-Codex)
-npx specweave init my-saas --adapter copilot   # Adapter (basic automation)
-npx specweave init my-saas --adapter generic   # Adapter (manual, ANY AI)
+# Optionally install plugins you need
+/plugin install github@specweave          # GitHub integration
+/plugin install frontend@specweave        # React, Next.js
+/plugin install backend@specweave         # Node.js, Python, .NET
 ```
 
-### For Claude Code (Native - Full Automation)
-
-**Claude is the BASELINE** - no adapter needed! Native skills, agents, hooks work out of the box.
+**Start building**:
 
 ```bash
-npx specweave init my-saas
-cd my-saas
+# Plan your first feature
+/specweave:inc "User authentication with JWT"
 
-# Native components installed:
-# ✅ 10 agents in .claude/agents/
-# ✅ 35+ skills in .claude/skills/
-# ✅ 10 slash commands in .claude/commands/
-# ✅ Hooks for auto-updates
+# Execute the implementation
+/specweave:do
 
-# Open Claude Code and type slash commands:
-/specweave inc "User authentication with JWT"
-/specweave do
-/specweave progress
+# Check progress
+/specweave:progress
+
+# Your increment is done automatically, start next feature
+/specweave:inc "Payment processing with Stripe"
 ```
 
-### For Gemini CLI / Codex / Cursor (Adapter - Semi-Automation)
-
-**Uses universal AGENTS.md** that works across all tools (follows [agents.md](https://agents.md/) standard).
+### For Existing Projects (Brownfield)
 
 ```bash
-npx specweave init my-project --adapter gemini  # or codex, cursor
-cd my-project
-
-# Adapter creates:
-# ✅ AGENTS.md (universal instructions - works with ALL tools!)
-# ✅ Tool-specific folder (.gemini/, .codex/, .cursor/)
-
-# Example with Gemini CLI:
-gemini "Read AGENTS.md and create increment for user authentication"
-
-# Example with Codex:
-codex "Read AGENTS.md and create increment for payments"
-
-# Example with Cursor:
-# Open in Cursor, say: "Read AGENTS.md and create increment for auth"
-```
-
-### For GitHub Copilot (Adapter - Basic Automation)
-
-**Uses universal AGENTS.md** for workspace instructions.
-
-```bash
-npx specweave init my-project --adapter copilot
-cd my-project
-
-# Adapter creates:
-# ✅ AGENTS.md (universal instructions)
-# ✅ .github/copilot/ (Copilot-specific config)
-
-# Open in VS Code with Copilot:
-# Copilot reads AGENTS.md automatically
-# Start creating increment folders and files
-```
-
-### For ANY Other AI (Adapter - Manual)
-
-**Uses universal AGENTS.md** that works with ChatGPT, Claude web, Gemini web, etc.
-
-```bash
-npx specweave init my-project --adapter generic
-cd my-project
-
-# Adapter creates:
-# ✅ AGENTS.md (universal instructions)
-# ✅ SPECWEAVE.md (detailed manual workflow)
-
-# Follow manual workflow:
-# 1. Read AGENTS.md in your AI tool (ChatGPT, Claude web, etc.)
-# 2. Say: "Create increment for user authentication following SpecWeave"
-# 3. Copy generated content to files
-```
-
-### For Existing Projects
-
-```bash
-# Add SpecWeave to existing project (brownfield)
+# Navigate to your existing project
 cd my-existing-project
-npx specweave init .
 
-# SpecWeave initializes in current directory:
-# ✅ Detects existing files and prompts for confirmation
-# ✅ Preserves your existing code and git history
-# ✅ Adds .specweave/ and .claude/ directories
-# ✅ Uses directory name as project name (or prompts if invalid)
+# Install SpecWeave marketplace and core
+/plugin marketplace add anton-abyzov/specweave
+/plugin install specweave-core@specweave
 
-# Now analyze existing code
-# "Analyze my authentication module"
-# SpecWeave creates retroactive specifications
+# Analyze existing code
+"Analyze my authentication module"
+# SpecWeave creates retroactive specifications and architecture docs
 
 # Safe to modify
-# "Add OAuth to authentication"
+/specweave:inc "Add OAuth to authentication"
 ```
 
 ---

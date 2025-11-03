@@ -18,7 +18,7 @@ description: Sync SpecWeave increment tasks to GitHub issues (task-level granula
 ## Usage
 
 ```bash
-/specweave.github.sync-tasks <increment-id> [options]
+/specweave:github:sync-tasks <increment-id> [options]
 ```
 
 ## Arguments
@@ -42,7 +42,7 @@ description: Sync SpecWeave increment tasks to GitHub issues (task-level granula
 ### Basic Sync (Recommended)
 
 ```bash
-/specweave.github.sync-tasks 0004
+/specweave:github:sync-tasks 0004
 ```
 
 **Output**:
@@ -82,7 +82,7 @@ Creating issues 11-20 of 54...
 ### Dry Run (Preview)
 
 ```bash
-/specweave.github.sync-tasks 0004 --dry-run
+/specweave:github:sync-tasks 0004 --dry-run
 ```
 
 Shows what would be created without actually creating anything.
@@ -90,7 +90,7 @@ Shows what would be created without actually creating anything.
 ### Force Re-Sync
 
 ```bash
-/specweave.github.sync-tasks 0004 --force
+/specweave:github:sync-tasks 0004 --force
 ```
 
 ⚠️ **WARNING**: This will create duplicate issues! Only use if you know what you're doing.
@@ -98,7 +98,7 @@ Shows what would be created without actually creating anything.
 ### Custom Rate Limiting
 
 ```bash
-/specweave.github.sync-tasks 0004 --batch-size 5 --batch-delay 10000
+/specweave:github:sync-tasks 0004 --batch-size 5 --batch-delay 10000
 ```
 
 Creates 5 issues at a time with 10 second delays (slower, safer for rate limits).
@@ -107,10 +107,10 @@ Creates 5 issues at a time with 10 second delays (slower, safer for rate limits)
 
 ```bash
 # 1-day sprint (aggressive AI velocity)
-/specweave.github.sync-tasks 0004 --milestone-days 1
+/specweave:github:sync-tasks 0004 --milestone-days 1
 
 # 7-day sprint (traditional scrum)
-/specweave.github.sync-tasks 0004 --milestone-days 7
+/specweave:github:sync-tasks 0004 --milestone-days 7
 ```
 
 **SpecWeave Default**: 2 days (assumes AI-assisted development)
@@ -119,7 +119,7 @@ Creates 5 issues at a time with 10 second delays (slower, safer for rate limits)
 ### Fast Mode (No Rate Limiting)
 
 ```bash
-/specweave.github.sync-tasks 0004 --fast-mode
+/specweave:github:sync-tasks 0004 --fast-mode
 ```
 
 Skips all delays between issue creation. **Auto-enabled** for increments < 10 tasks.
@@ -350,7 +350,7 @@ GitHub API has rate limits (5000 requests/hour for authenticated users).
 
 **Solution**: Wait or adjust batch settings:
 ```bash
-/specweave.github.sync-tasks 0004 --batch-size 5 --batch-delay 12000
+/specweave:github:sync-tasks 0004 --batch-size 5 --batch-delay 12000
 ```
 
 ### Duplicate Issues
@@ -389,14 +389,14 @@ If not authenticated:
 
 ```bash
 # 1. Create increment
-/specweave.inc "0005-user-authentication"
+/specweave:inc "0005-user-authentication"
 
 # PM agent generates: spec.md, plan.md, tasks.md, tests.md
 
 # 2. Review and approve
 
 # 3. Sync to GitHub
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 
 # Now team can see all tasks in GitHub!
 ```
@@ -404,8 +404,8 @@ If not authenticated:
 ### During Development
 
 ```bash
-# Tasks are completed via /specweave.do
-/specweave.do
+# Tasks are completed via /specweave:do
+/specweave:do
 
 # Automatically:
 # - Closes task GitHub issue
@@ -423,7 +423,7 @@ If not authenticated:
 - Track progress in GitHub Projects (Kanban)
 
 **In SpecWeave**:
-- Developer works locally with `/specweave.do`
+- Developer works locally with `/specweave:do`
 - Progress automatically syncs to GitHub
 - Team sees real-time updates
 
@@ -435,7 +435,7 @@ If not authenticated:
 
 Currently syncs all tasks. For selective sync, manually create issues:
 ```bash
-/specweave.github.create-issue 0004 T-001
+/specweave:github:create-issue 0004 T-001
 ```
 
 ### Multi-Repo Projects
@@ -506,23 +506,23 @@ git remote add origin git@github.com:owner/repo.git
 
 ## See Also
 
-- `/specweave.github.create-issue` - Create issue for single task
-- `/specweave.github.sync` - Sync increment metadata only
-- `/specweave.github.status` - Check sync status
-- `/specweave.github.close-issue` - Close task issue
+- `/specweave:github:create-issue` - Create issue for single task
+- `/specweave:github:sync` - Sync increment metadata only
+- `/specweave:github:status` - Check sync status
+- `/specweave:github:close-issue` - Close task issue
 
 ---
 
 **Pro Tip**: Run with `--dry-run` first to preview what will be created!
 
 ```bash
-/specweave.github.sync-tasks 0004 --dry-run
+/specweave:github:sync-tasks 0004 --dry-run
 ```
 
 Then run for real:
 
 ```bash
-/specweave.github.sync-tasks 0004
+/specweave:github:sync-tasks 0004
 ```
 
 ---

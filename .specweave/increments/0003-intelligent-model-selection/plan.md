@@ -122,9 +122,9 @@ class AgentModelManager {
    - Review: "review", "validate", "audit", "assess", "check", "verify"
 
 2. **Command Analysis** (30% weight)
-   - Planning: `/specweave.inc`, `/spec-driven-brainstorming`, `/increment-planner`
-   - Execution: `/specweave.do`, `/do`, task execution within increment
-   - Review: `/specweave.validate`, `/specweave.done`, quality checks
+   - Planning: `/specweave:inc`, `/spec-driven-brainstorming`, `/increment-planner`
+   - Execution: `/specweave:do`, `/do`, task execution within increment
+   - Review: `/specweave:validate`, `/specweave:done`, quality checks
 
 3. **Context Analysis** (20% weight)
    - Current increment state (planned → use Sonnet, in-progress → use Haiku)
@@ -479,7 +479,7 @@ class AutoSplitOrchestrator {
 
 ### 6. Cost Dashboard Command
 
-**Command**: `/specweave.costs [incrementId]`
+**Command**: `/specweave:costs [incrementId]`
 
 **Output Format**:
 ```
@@ -523,7 +523,7 @@ class AutoSplitOrchestrator {
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-**Implementation**: `src/commands/specweave.costs.md`
+**Implementation**: `src/commands/specweave:costs.md`
 
 Slash command triggers cost reporter utility:
 ```typescript
@@ -640,7 +640,7 @@ function loadAgent(agentName: string): AgentConfig {
 
 **Slash Commands Declare Phase**:
 ```yaml
-# src/commands/specweave.inc.md
+# src/commands/specweave:inc.md
 ---
 name: specweave.inc
 description: Plan new increment
@@ -650,7 +650,7 @@ phase: planning  # ← NEW FIELD (hint for model selector)
 
 **Command Execution**:
 ```typescript
-// When /specweave.inc is invoked
+// When /specweave:inc is invoked
 const command = loadCommand('specweave.inc');
 context.phase = command.phase || 'execution';  // hint for model selector
 ```
@@ -676,7 +676,7 @@ model_selection:
 ### Request Flow (Execution Path)
 
 ```
-1. User: "/specweave.do"
+1. User: "/specweave:do"
    ↓
 2. Command Loader: Load command config (phase: "execution")
    ↓
@@ -704,7 +704,7 @@ model_selection:
 ### Cost Query Flow
 
 ```
-1. User: "/specweave.costs 0003"
+1. User: "/specweave:costs 0003"
    ↓
 2. Cost Tracker: Load cost-analysis.json
    ↓
@@ -855,14 +855,14 @@ src/
 ### Integration Tests
 
 **End-to-End Workflows**:
-1. `/specweave.inc` (planning) → Should use Sonnet
-2. `/specweave.do` (execution) → Should use Haiku
-3. `/specweave.validate` (review) → Should use Sonnet
+1. `/specweave:inc` (planning) → Should use Sonnet
+2. `/specweave:do` (execution) → Should use Haiku
+3. `/specweave:validate` (review) → Should use Sonnet
 4. Manual override → Should respect user choice
 
 **Cost Tracking**:
 1. Execute increment → Cost report generated
-2. `/specweave.costs` → Dashboard displays correctly
+2. `/specweave:costs` → Dashboard displays correctly
 3. Multiple increments → Historical costs aggregate
 
 **Auto-Split Orchestration**:
@@ -949,7 +949,7 @@ src/
 
 **Tasks**:
 1. Implement cost reporter
-2. Create `/specweave.costs` command
+2. Create `/specweave:costs` command
 3. Design ASCII dashboard
 4. Export to JSON/CSV
 
@@ -1013,7 +1013,7 @@ src/
 
 **Usage Metrics**:
 - % users in auto mode (target: 80%+)
-- `/specweave.costs` usage (target: 50% of users)
+- `/specweave:costs` usage (target: 50% of users)
 - Manual overrides (target: <10%)
 
 **Business Metrics**:

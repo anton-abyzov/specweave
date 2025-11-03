@@ -1,0 +1,8 @@
+{
+  "name": "specweave-tooling",
+  "description": "SpecWeave skill development and orchestration tools. Create new skills with proper structure, test cases, and activation triggers. Includes skill router for intelligent skill activation based on context. Meta-tooling for extending SpecWeave.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team"
+  }
+}

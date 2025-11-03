@@ -247,7 +247,7 @@ AI: I'll create a comprehensive design system...
 
 ```bash
 # 1. Create increment
-/specweave.inc "Add user dashboard with charts"
+/specweave:inc "Add user dashboard with charts"
 
 # 2. SpecWeave detects UI work, auto-enables plugin
 # Installing: specweave-ui (Playwright + Figma + React + Design System)

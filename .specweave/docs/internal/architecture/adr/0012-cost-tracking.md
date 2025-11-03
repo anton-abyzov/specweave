@@ -58,7 +58,7 @@ How do we track costs with:
       "agent": "pm",
       "model": "sonnet",
       "increment": "0003",
-      "command": "/specweave.do",
+      "command": "/specweave:do",
       "startedAt": "2025-10-31T14:30:00.000Z",
       "endedAt": "2025-10-31T14:32:00.000Z",
       "tokenUsage": {
@@ -89,7 +89,7 @@ interface CostSession {
   agent: string;              // Agent name: "pm", "frontend", etc.
   model: Model;               // Model used: "sonnet" | "haiku" | "opus"
   increment?: string;         // Optional increment ID: "0003"
-  command?: string;           // Optional command: "/specweave.do"
+  command?: string;           // Optional command: "/specweave:do"
   startedAt: string;          // ISO 8601 timestamp
   endedAt?: string;           // ISO 8601 timestamp (optional, set on end)
   tokenUsage: TokenUsage;     // Token breakdown
@@ -258,7 +258,7 @@ async exportToCSV(incrementId: string, outputPath: string): Promise<void> {
 - Token counts (integers, no content)
 - Costs (calculated from public pricing)
 - Timestamps (when sessions ran)
-- Commands (slash commands like /specweave.do)
+- Commands (slash commands like /specweave:do)
 - Increment IDs (public, from project structure)
 
 ❌ **NEVER stored:**

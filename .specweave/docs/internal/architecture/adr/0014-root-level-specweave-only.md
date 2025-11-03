@@ -245,7 +245,7 @@ Clear, actionable error messages when nested initialization is attempted:
 
    To fix:
    cd /Users/user/my-big-project
-   /specweave.inc "your-feature"
+   /specweave:inc "your-feature"
 ```
 
 ## Consequences

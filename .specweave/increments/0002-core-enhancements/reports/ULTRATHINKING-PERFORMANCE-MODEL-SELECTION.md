@@ -8,8 +8,8 @@
 
 **KEY INSIGHT**: SpecWeave's architecture naturally separates "thinking" from "doing", enabling a **20x cost reduction** and **3x speed improvement** by using the right model for each phase.
 
-- **Planning phase** (`/specweave.inc`): Use Sonnet/Opus - heavy thinking required
-- **Execution phase** (`/specweave.do`): Use Haiku - detailed instructions already provided
+- **Planning phase** (`/specweave:inc`): Use Sonnet/Opus - heavy thinking required
+- **Execution phase** (`/specweave:do`): Use Haiku - detailed instructions already provided
 - **Result**: Professional-grade specs + lightning-fast implementation
 
 This aligns with Anthropic's own recommendations: use Haiku for tasks with detailed instructions.
@@ -18,10 +18,10 @@ This aligns with Anthropic's own recommendations: use Haiku for tasks with detai
 
 ## Current Flow Analysis
 
-### Phase 1: Planning (`/specweave.inc`) - HEAVY LIFTING
+### Phase 1: Planning (`/specweave:inc`) - HEAVY LIFTING
 
 ```
-User: /specweave.inc "Add user authentication"
+User: /specweave:inc "Add user authentication"
 
 SpecWeave Planning Phase:
 ├── 1. Market Research (Web searches, competitor analysis)
@@ -49,10 +49,10 @@ Cost: High (but infrequent - once per increment)
 - Senior Architect decisions
 - QA strategy planning
 
-### Phase 2: Execution (`/specweave.do`) - MECHANICAL WORK
+### Phase 2: Execution (`/specweave:do`) - MECHANICAL WORK
 
 ```
-User: /specweave.do
+User: /specweave:do
 
 SpecWeave Execution Phase (per task):
 ├── 1. Read spec.md (clear requirements)
@@ -289,16 +289,16 @@ function detectModelForTask(task: Task, spec: Spec): Model {
 
 ```bash
 # Auto-detect (default)
-/specweave.do
+/specweave:do
 
 # Force Haiku (user knows it's simple)
-/specweave.do --model haiku
+/specweave:do --model haiku
 
 # Force Sonnet (user knows it's complex)
-/specweave.do --model sonnet
+/specweave:do --model sonnet
 
 # Use Opus (rare, for critical decisions)
-/specweave.do --model opus
+/specweave:do --model opus
 ```
 
 **Pros**: Combines auto-detection with override
@@ -419,7 +419,7 @@ From Anthropic's documentation:
 
 1. **Add Model Hints to Task Generation**:
 ```typescript
-// During /specweave.inc planning
+// During /specweave:inc planning
 function generateTasks(spec: Spec, plan: Plan): Task[] {
   return plan.tasks.map(task => ({
     ...task,
@@ -430,7 +430,7 @@ function generateTasks(spec: Spec, plan: Plan): Task[] {
 
 2. **Support CLI Override**:
 ```bash
-/specweave.do --model haiku   # For power users
+/specweave:do --model haiku   # For power users
 ```
 
 3. **Document Strategy**:

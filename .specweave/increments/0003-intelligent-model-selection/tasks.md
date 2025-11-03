@@ -455,10 +455,10 @@ export class PhaseDetector {
   ];
 
   private readonly commandPhaseMap: Record<string, Phase> = {
-    '/specweave.inc': 'planning',
-    '/specweave.do': 'execution',
-    '/specweave.validate': 'review',
-    '/specweave.done': 'review',
+    '/specweave:inc': 'planning',
+    '/specweave:do': 'execution',
+    '/specweave:validate': 'review',
+    '/specweave:done': 'review',
     '/spec-driven-brainstorming': 'planning',
     '/do': 'execution',
   };
@@ -688,8 +688,8 @@ describe('PhaseDetector', () => {
       expect(result.phase).toBe('planning');
     });
 
-    test('detects "/specweave.inc" command', () => {
-      const result = detector.detect('Plan new feature', { command: '/specweave.inc' });
+    test('detects "/specweave:inc" command', () => {
+      const result = detector.detect('Plan new feature', { command: '/specweave:inc' });
       expect(result.phase).toBe('planning');
       expect(result.confidence).toBeGreaterThan(0.8);
     });
@@ -707,8 +707,8 @@ describe('PhaseDetector', () => {
       expect(result.phase).toBe('execution');
     });
 
-    test('detects "/specweave.do" command', () => {
-      const result = detector.detect('Build feature', { command: '/specweave.do' });
+    test('detects "/specweave:do" command', () => {
+      const result = detector.detect('Build feature', { command: '/specweave:do' });
       expect(result.phase).toBe('execution');
       expect(result.confidence).toBeGreaterThan(0.8);
     });
@@ -729,7 +729,7 @@ describe('PhaseDetector', () => {
   describe('Confidence scoring', () => {
     test('high confidence with multiple signals', () => {
       const result = detector.detect('Implement feature X', {
-        command: '/specweave.do',
+        command: '/specweave:do',
         incrementState: 'in-progress',
         filesModified: ['src/components/FeatureX.tsx']
       });
@@ -952,7 +952,7 @@ describe('ModelSelector', () => {
       const decision = selector.select(
         'Analyze system architecture and design database schema',
         'diagrams-architect',  // auto agent
-        { command: '/specweave.inc' }
+        { command: '/specweave:inc' }
       );
       expect(decision.model).toBe('sonnet');
       expect(decision.reason).toBe('phase_detection');
@@ -962,7 +962,7 @@ describe('ModelSelector', () => {
       const decision = selector.select(
         'Implement the login form component',
         'diagrams-architect',  // auto agent
-        { command: '/specweave.do' }
+        { command: '/specweave:do' }
       );
       expect(decision.model).toBe('haiku');
       expect(decision.reason).toBe('phase_detection');
@@ -1130,7 +1130,7 @@ export class CostReporter {
 
 ---
 
-### T-013: Create /specweave.costs Command
+### T-013: Create /specweave:costs Command
 
 **Priority**: P1
 **Estimated Time**: 1 hour
@@ -1141,7 +1141,7 @@ export class CostReporter {
 Create slash command to display cost dashboard.
 
 **Implementation**:
-Create `src/commands/specweave.costs.md`:
+Create `src/commands/specweave:costs.md`:
 ```yaml
 ---
 name: specweave.costs
@@ -1150,7 +1150,7 @@ description: Display AI cost dashboard for current or specified increment
 
 # Cost Dashboard Command
 
-You are being invoked via the `/specweave.costs [incrementId]` command.
+You are being invoked via the `/specweave:costs [incrementId]` command.
 
 ## Your Task
 
@@ -1182,7 +1182,7 @@ if (wantsExport) {
 ```
 
 **Acceptance Criteria**:
-- [x] Command invocable via `/specweave.costs`
+- [x] Command invocable via `/specweave:costs`
 - [x] Displays dashboard for current increment
 - [x] Accepts increment ID argument
 - [x] Offers JSON/CSV export
@@ -1554,7 +1554,7 @@ Create user-facing documentation for intelligent model selection.
 
 3. `.specweave/docs/public/reference/cost-tracking.md`
    - Cost report format
-   - `/specweave.costs` command reference
+   - `/specweave:costs` command reference
    - Exporting data
 
 **Acceptance Criteria**:
@@ -1601,7 +1601,7 @@ Add to `CLAUDE.md`:
 - Searchable by feature name
 
 **Enforcement**:
-- `/specweave.inc` command validates naming
+- `/specweave:inc` command validates naming
 - CI/CD checks reject non-descriptive names
 - Code review requirement
 ```
@@ -1640,8 +1640,8 @@ Add to `CLAUDE.md`:
 
 **Next Steps**:
 1. Execute tasks in order (or in parallel where dependencies allow)
-2. Use `/specweave.do` to track progress
-3. Run `/specweave.costs` after each increment to measure savings
+2. Use `/specweave:do` to track progress
+3. Run `/specweave:costs` after each increment to measure savings
 4. Update this file as tasks complete
 
 ---

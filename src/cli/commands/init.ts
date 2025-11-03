@@ -11,6 +11,7 @@ import { AgentsMdGenerator } from '../../adapters/agents-md-generator.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { generateSkillsIndex } from '../../utils/generate-skills-index.js';
 import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
+import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -31,16 +32,18 @@ export async function initCommand(
 
   // Validate language if provided
   if (options.language && !isLanguageSupported(language)) {
-    console.error(chalk.red(`\n❌ Invalid language: ${options.language}`));
-    console.error(chalk.yellow(`Supported languages: ${getSupportedLanguages().join(', ')}\n`));
+    const locale = getLocaleManager('en'); // Use English for error messages about invalid language
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.invalidLanguage', { language: options.language })}`));
+    console.error(chalk.yellow(`${locale.t('cli', 'init.errors.supportedLanguages', { languages: getSupportedLanguages().join(', ') })}\n`));
     process.exit(1);
   }
 
-  // Initialize LanguageManager
+  // Initialize LanguageManager and LocaleManager
   const i18n = new LanguageManager({ defaultLanguage: language as SupportedLanguage });
+  const locale = getLocaleManager(language as SupportedLanguage);
 
-  // Use English strings by default (i18n.t() returns English when language='en')
-  console.log(chalk.blue.bold('\n🚀 SpecWeave Initialization\n'));
+  // Display welcome message in user's language
+  console.log(chalk.blue.bold(`\n${locale.t('cli', 'init.welcome')}\n`));
 
   let targetDir: string;
   let finalProjectName: string;
@@ -54,7 +57,7 @@ export async function initCommand(
 
     // Validate directory name is suitable for project name
     if (!/^[a-z0-9-]+$/.test(dirName)) {
-      console.log(chalk.yellow(`\n⚠️  Current directory name '${dirName}' contains invalid characters.`));
+      console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.invalidDirName', { dirName })}`));
       const suggestedName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
       const { name } = await inquirer.prompt([
@@ -79,7 +82,7 @@ export async function initCommand(
     const existingFiles = allFiles.filter(f => !f.startsWith('.')); // Ignore hidden files
 
     if (existingFiles.length > 0) {
-      console.log(chalk.yellow(`\n⚠️  Current directory contains ${existingFiles.length} file${existingFiles.length === 1 ? '' : 's'}.`));
+      console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })}`));
       const { confirm } = await inquirer.prompt([
         {
           type: 'confirm',
@@ -90,7 +93,7 @@ export async function initCommand(
       ]);
 
       if (!confirm) {
-        console.log(chalk.yellow('❌ Initialization cancelled'));
+        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
         process.exit(0);
       }
     }
@@ -107,7 +110,7 @@ export async function initCommand(
       ]);
 
       if (!overwrite) {
-        console.log(chalk.yellow('❌ Initialization cancelled'));
+        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
         process.exit(0);
       }
 
@@ -150,7 +153,7 @@ export async function initCommand(
       ]);
 
       if (!overwrite) {
-        console.log(chalk.yellow('❌ Initialization cancelled'));
+        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
         process.exit(0);
       }
 
@@ -164,19 +167,19 @@ export async function initCommand(
   const parentSpecweave = detectNestedSpecweave(targetDir);
   if (parentSpecweave) {
     console.log('');
-    console.log(chalk.red.bold('❌ Nested .specweave/ folders are NOT supported!'));
+    console.log(chalk.red.bold(locale.t('cli', 'init.errors.nestedNotSupported')));
     console.log('');
-    console.log(chalk.yellow(`   Found parent .specweave/ at:`));
+    console.log(chalk.yellow(`   ${locale.t('cli', 'init.errors.parentFound')}`));
     console.log(chalk.white(`   ${parentSpecweave}`));
     console.log('');
-    console.log(chalk.cyan('   SpecWeave enforces a single source of truth:'));
-    console.log(chalk.gray('   • Use the parent folder for all increments'));
-    console.log(chalk.gray('   • Increments can span multiple subdirectories'));
-    console.log(chalk.gray('   • See CLAUDE.md section "Root-Level .specweave/ Folder"'));
+    console.log(chalk.cyan(`   ${locale.t('cli', 'init.info.nestedEnforcement')}`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet1')}`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet2')}`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet3')}`));
     console.log('');
-    console.log(chalk.cyan(`   To fix:`));
-    console.log(chalk.white(`   cd ${parentSpecweave}`));
-    console.log(chalk.white(`   /specweave.inc "your-feature"`));
+    console.log(chalk.cyan(`   ${locale.t('cli', 'init.info.nestedToFix')}`));
+    console.log(chalk.white(`   ${locale.t('cli', 'init.nestedCdCommand', { path: parentSpecweave })}`));
+    console.log(chalk.white(`   ${locale.t('cli', 'init.nestedIncCommand')}`));
     console.log('');
     process.exit(1);
   }
@@ -203,9 +206,28 @@ export async function initCommand(
     createDirectoryStructure(targetDir);
     spinner.text = 'Directory structure created...';
 
-    // 5. Copy base templates (config, README, CLAUDE.md - same for all)
+    // 5. Copy plugin marketplace (for Claude Code auto-registration)
+    if (toolName === 'claude') {
+      try {
+        const sourceMarketplace = findSourceDir('.claude-plugin');
+        const targetMarketplace = path.join(targetDir, '.claude-plugin');
+
+        if (fs.existsSync(sourceMarketplace)) {
+          fs.copySync(sourceMarketplace, targetMarketplace, {
+            overwrite: true,
+            errorOnExist: false
+          });
+          spinner.text = 'Plugin marketplace copied...';
+        }
+      } catch (error) {
+        // Non-critical - plugins can still be installed manually
+        console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.marketplaceCopyFailed')}`));
+      }
+    }
+
+    // 6. Copy base templates (config, README, CLAUDE.md - same for all)
     const templatesDir = findSourceDir('templates');
-    await copyTemplates(templatesDir, targetDir, finalProjectName);
+    await copyTemplates(templatesDir, targetDir, finalProjectName, language as SupportedLanguage);
     spinner.text = 'Base templates copied...';
 
     // 6. Install based on tool
@@ -218,7 +240,7 @@ export async function initCommand(
         spinner.text = 'Slash commands installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy commands');
-        console.error(chalk.red(`\n❌ Commands copy failed: ${error.message}`));
+        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.commandsCopyFailed', { error: error.message })}`));
         throw error;
       }
 
@@ -227,7 +249,7 @@ export async function initCommand(
         spinner.text = 'Agents installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy agents');
-        console.error(chalk.red(`\n❌ Agents copy failed: ${error.message}`));
+        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.agentsCopyFailed', { error: error.message })}`));
         throw error;
       }
 
@@ -236,16 +258,16 @@ export async function initCommand(
         spinner.text = 'Skills installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy skills');
-        console.error(chalk.red(`\n❌ Skills copy failed: ${error.message}`));
+        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.skillsCopyFailed', { error: error.message })}`));
         throw error;
       }
 
       try {
-        copyHooks('', path.join(targetDir, '.claude/hooks'));
+        copyHooks('', path.join(targetDir, '.claude/hooks'), language as SupportedLanguage);
         spinner.text = 'Hooks installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy hooks');
-        console.error(chalk.red(`\n❌ Hooks copy failed: ${error.message}`));
+        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.hooksCopyFailed', { error: error.message })}`));
         throw error;
       }
 
@@ -262,12 +284,12 @@ export async function initCommand(
         spinner.text = 'Skills index generated...';
       } catch (error: any) {
         // Non-critical error - don't fail installation
-        console.warn(chalk.yellow(`\n⚠️  Warning: Could not generate skills index: ${error.message}`));
-        console.warn(chalk.yellow('   Skills will still work, but manual indexing may be needed.'));
+        console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.skillsIndexWarning', { error: error.message })}`));
+        console.warn(chalk.yellow(`   ${locale.t('cli', 'init.warnings.skillsIndexNote')}`));
       }
 
-      console.log('\n✨ Claude Code native installation complete!');
-      console.log('   ✅ Native skills, agents, hooks work out of the box');
+      console.log(`\n${locale.t('cli', 'init.claudeNativeComplete')}`);
+      console.log(`   ${locale.t('cli', 'init.claudeNativeBenefits')}`);
     } else {
       // Use adapter for non-Claude tools
       spinner.text = `Installing ${toolName} adapter...`;
@@ -325,7 +347,7 @@ export async function initCommand(
       pluginSpinner.succeed(`Detected ${suggestedPlugins.length} suggested plugins`);
 
       if (suggestedPlugins.length > 0) {
-        console.log(chalk.cyan('\n💡 Suggested Plugins:'));
+        console.log(chalk.cyan(`\n${locale.t('cli', 'init.info.suggestedPlugins')}`));
         for (const pluginName of suggestedPlugins) {
           console.log(`   • ${chalk.white(pluginName)}`);
         }
@@ -361,7 +383,7 @@ export async function initCommand(
       }
     } catch (error) {
       pluginSpinner.warn('Plugin detection skipped');
-      console.log(chalk.gray(`   You can enable plugins later with: specweave plugin enable <name>`));
+      console.log(chalk.gray(`   ${locale.t('cli', 'init.pluginEnableLater')}`));
     }
 
     // 12. Show tool-specific next steps
@@ -380,10 +402,20 @@ export async function initCommand(
     // 13. Create config.json with language setting
     createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage);
 
-    showNextSteps(finalProjectName, toolName, usedDotNotation);
+    // 14. Setup Claude Code plugin auto-registration (if Claude detected)
+    if (toolName === 'claude') {
+      try {
+        setupClaudePluginAutoRegistration(targetDir, language as SupportedLanguage);
+      } catch (error) {
+        // Non-critical - show manual instructions in next steps
+        console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.pluginAutoSetupFailed')}`));
+      }
+    }
+
+    showNextSteps(finalProjectName, toolName, language as SupportedLanguage, usedDotNotation);
   } catch (error) {
     spinner.fail('Failed to create project');
-    console.error(chalk.red('\nError:'), error);
+    console.error(chalk.red(`\n${locale.t('cli', 'init.genericError')}`), error);
     process.exit(1);
   }
 }
@@ -413,19 +445,20 @@ function createDirectoryStructure(targetDir: string): void {
   });
 }
 
-async function copyTemplates(templatesDir: string, targetDir: string, projectName: string): Promise<void> {
+async function copyTemplates(templatesDir: string, targetDir: string, projectName: string, language: SupportedLanguage = 'en'): Promise<void> {
+  const locale = getLocaleManager(language);
   // Verify templates directory exists
   if (!fs.existsSync(templatesDir)) {
-    console.error(chalk.red(`\n❌ Error: Templates directory not found at: ${templatesDir}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.templatesNotFound', { path: templatesDir })}`));
     const packageRoot = findPackageRoot(__dirname);
     if (packageRoot) {
-      console.error(chalk.red(`   Package root: ${packageRoot}`));
-      console.error(chalk.red(`   Trying alternate locations...`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.packageRoot', { root: packageRoot })}`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.tryingAlternate')}`));
 
       // Try src/templates as fallback
       const altPath = path.join(packageRoot, 'src', 'templates');
       if (fs.existsSync(altPath)) {
-        console.error(chalk.yellow(`   ✓ Found templates at: ${altPath}`));
+        console.error(chalk.yellow(`   ${locale.t('cli', 'init.errors.foundTemplatesAt', { path: altPath })}`));
         templatesDir = altPath;
       } else {
         throw new Error('Failed to locate templates directory');
@@ -596,17 +629,18 @@ function findSourceDir(relativePath: string): string {
 }
 
 function copyCommands(commandsDir: string, targetCommandsDir: string, language: SupportedLanguage): void {
+  const locale = getLocaleManager(language);
   const sourceDir = findSourceDir('commands');
 
   if (!fs.existsSync(sourceDir)) {
-    console.error(chalk.red(`\n❌ Error: Source commands directory not found`));
-    console.error(chalk.red(`   Expected at: ${sourceDir}`));
-    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'commands' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.expectedAt', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.dirname', { path: __dirname })}`));
     const packageRoot = findPackageRoot(__dirname);
     if (packageRoot) {
-      console.error(chalk.red(`   Package root: ${packageRoot}`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.packageRoot', { root: packageRoot })}`));
     } else {
-      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.couldNotFindRoot')}`));
     }
     throw new Error('Failed to locate source commands directory. This may be a Windows path resolution issue.');
   }
@@ -614,9 +648,9 @@ function copyCommands(commandsDir: string, targetCommandsDir: string, language: 
   // Validate source directory contains files
   const sourceFiles = fs.readdirSync(sourceDir).filter(f => f.endsWith('.md'));
   if (sourceFiles.length === 0) {
-    console.error(chalk.red(`\n❌ Error: Source commands directory is empty`));
-    console.error(chalk.red(`   Directory: ${sourceDir}`));
-    console.error(chalk.red(`   This indicates a package installation issue.`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceEmpty', { type: 'commands' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.directory', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.installationIssue')}`));
     throw new Error('Source commands directory exists but contains no .md files');
   }
 
@@ -643,27 +677,28 @@ function copyCommands(commandsDir: string, targetCommandsDir: string, language: 
       throw new Error(`Copy completed but no files found in target directory: ${targetCommandsDir}`);
     }
 
-    console.log(chalk.gray(`   ✓ Copied ${copiedFiles.length} command files`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.copiedFiles', { count: copiedFiles.length })}`));
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ Error copying commands: ${error.message}`));
-    console.error(chalk.red(`   Source: ${sourceDir}`));
-    console.error(chalk.red(`   Target: ${targetCommandsDir}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.errorCopying', { type: 'commands', error: error.message })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.source', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.target', { path: targetCommandsDir })}`));
     throw error;
   }
 }
 
 function copyAgents(agentsDir: string, targetAgentsDir: string, language: SupportedLanguage): void {
+  const locale = getLocaleManager(language);
   const sourceDir = findSourceDir('agents');
 
   if (!fs.existsSync(sourceDir)) {
-    console.error(chalk.red(`\n❌ Error: Source agents directory not found`));
-    console.error(chalk.red(`   Expected at: ${sourceDir}`));
-    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'agents' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.expectedAt', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.dirname', { path: __dirname })}`));
     const packageRoot = findPackageRoot(__dirname);
     if (packageRoot) {
-      console.error(chalk.red(`   Package root: ${packageRoot}`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.packageRoot', { root: packageRoot })}`));
     } else {
-      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.couldNotFindRoot')}`));
     }
     throw new Error('Failed to locate source agents directory. This may be a Windows path resolution issue.');
   }
@@ -673,9 +708,9 @@ function copyAgents(agentsDir: string, targetAgentsDir: string, language: Suppor
     .filter(dirent => dirent.isDirectory());
 
   if (agentDirs.length === 0) {
-    console.error(chalk.red(`\n❌ Error: Source agents directory is empty`));
-    console.error(chalk.red(`   Directory: ${sourceDir}`));
-    console.error(chalk.red(`   This indicates a package installation issue.`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceEmpty', { type: 'agents' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.directory', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.installationIssue')}`));
     throw new Error('Source agents directory exists but contains no agent subdirectories');
   }
 
@@ -713,11 +748,11 @@ function copyAgents(agentsDir: string, targetAgentsDir: string, language: Suppor
       throw new Error(`Copy completed but no agent directories found in target: ${targetAgentsDir}`);
     }
 
-    console.log(chalk.gray(`   ✓ Copied ${copiedDirs.length} agent directories`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.copiedAgents', { count: copiedDirs.length })}`));
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ Error copying agents: ${error.message}`));
-    console.error(chalk.red(`   Source: ${sourceDir}`));
-    console.error(chalk.red(`   Target: ${targetAgentsDir}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.errorCopying', { type: 'agents', error: error.message })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.source', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.target', { path: targetAgentsDir })}`));
     throw error;
   }
 }
@@ -747,17 +782,18 @@ function injectSystemPromptForInit(content: string, language: SupportedLanguage)
 }
 
 function copySkills(skillsDir: string, targetSkillsDir: string, language: SupportedLanguage): void {
+  const locale = getLocaleManager(language);
   const sourceDir = findSourceDir('skills');
 
   if (!fs.existsSync(sourceDir)) {
-    console.error(chalk.red(`\n❌ Error: Source skills directory not found`));
-    console.error(chalk.red(`   Expected at: ${sourceDir}`));
-    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'skills' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.expectedAt', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.dirname', { path: __dirname })}`));
     const packageRoot = findPackageRoot(__dirname);
     if (packageRoot) {
-      console.error(chalk.red(`   Package root: ${packageRoot}`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.packageRoot', { root: packageRoot })}`));
     } else {
-      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.couldNotFindRoot')}`));
     }
     throw new Error('Failed to locate source skills directory. This may be a Windows path resolution issue.');
   }
@@ -767,9 +803,9 @@ function copySkills(skillsDir: string, targetSkillsDir: string, language: Suppor
     .filter(dirent => dirent.isDirectory());
 
   if (skillDirs.length === 0) {
-    console.error(chalk.red(`\n❌ Error: Source skills directory is empty`));
-    console.error(chalk.red(`   Directory: ${sourceDir}`));
-    console.error(chalk.red(`   This indicates a package installation issue.`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceEmpty', { type: 'skills' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.directory', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.installationIssue')}`));
     throw new Error('Source skills directory exists but contains no skill subdirectories');
   }
 
@@ -807,27 +843,28 @@ function copySkills(skillsDir: string, targetSkillsDir: string, language: Suppor
       throw new Error(`Copy completed but no skill directories found in target: ${targetSkillsDir}`);
     }
 
-    console.log(chalk.gray(`   ✓ Copied ${copiedDirs.length} skill directories`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.copiedSkills', { count: copiedDirs.length })}`));
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ Error copying skills: ${error.message}`));
-    console.error(chalk.red(`   Source: ${sourceDir}`));
-    console.error(chalk.red(`   Target: ${targetSkillsDir}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.errorCopying', { type: 'skills', error: error.message })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.source', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.target', { path: targetSkillsDir })}`));
     throw error;
   }
 }
 
-function copyHooks(hooksDir: string, targetHooksDir: string): void {
+function copyHooks(hooksDir: string, targetHooksDir: string, language: SupportedLanguage = 'en'): void {
+  const locale = getLocaleManager(language);
   const sourceDir = findSourceDir('hooks');
 
   if (!fs.existsSync(sourceDir)) {
-    console.error(chalk.red(`\n❌ Error: Source hooks directory not found`));
-    console.error(chalk.red(`   Expected at: ${sourceDir}`));
-    console.error(chalk.red(`   __dirname: ${__dirname}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'hooks' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.expectedAt', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.dirname', { path: __dirname })}`));
     const packageRoot = findPackageRoot(__dirname);
     if (packageRoot) {
-      console.error(chalk.red(`   Package root: ${packageRoot}`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.packageRoot', { root: packageRoot })}`));
     } else {
-      console.error(chalk.red(`   Could not find package root (looking for package.json with name="specweave")`));
+      console.error(chalk.red(`   ${locale.t('cli', 'init.errors.couldNotFindRoot')}`));
     }
     throw new Error('Failed to locate source hooks directory. This may be a Windows path resolution issue.');
   }
@@ -836,9 +873,9 @@ function copyHooks(hooksDir: string, targetHooksDir: string): void {
   const hookFiles = fs.readdirSync(sourceDir).filter(f => f.endsWith('.sh') || f === 'README.md');
 
   if (hookFiles.length === 0) {
-    console.error(chalk.red(`\n❌ Error: Source hooks directory is empty`));
-    console.error(chalk.red(`   Directory: ${sourceDir}`));
-    console.error(chalk.red(`   This indicates a package installation issue.`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceEmpty', { type: 'hooks' })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.directory', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.installationIssue')}`));
     throw new Error('Source hooks directory exists but contains no hook files');
   }
 
@@ -859,11 +896,11 @@ function copyHooks(hooksDir: string, targetHooksDir: string): void {
       throw new Error(`Copy completed but no hook files found in target: ${targetHooksDir}`);
     }
 
-    console.log(chalk.gray(`   ✓ Copied ${copiedFiles.length} hook files`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.copiedHooks', { count: copiedFiles.length })}`));
   } catch (error: any) {
-    console.error(chalk.red(`\n❌ Error copying hooks: ${error.message}`));
-    console.error(chalk.red(`   Source: ${sourceDir}`));
-    console.error(chalk.red(`   Target: ${targetHooksDir}`));
+    console.error(chalk.red(`\n${locale.t('cli', 'init.errors.errorCopying', { type: 'hooks', error: error.message })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.source', { path: sourceDir })}`));
+    console.error(chalk.red(`   ${locale.t('cli', 'init.errors.target', { path: targetHooksDir })}`));
     throw error;
   }
 }
@@ -904,56 +941,105 @@ function createConfigFile(
   fs.writeJsonSync(configPath, config, { spaces: 2 });
 }
 
-function showNextSteps(projectName: string, adapterName: string, usedDotNotation: boolean = false): void {
+/**
+ * Setup Claude Code automatic plugin registration
+ * Creates .claude/settings.json with extraKnownMarketplaces
+ * This triggers Claude's native auto-install when users trust the folder
+ */
+function setupClaudePluginAutoRegistration(targetDir: string, language: SupportedLanguage): void {
+  const locale = getLocaleManager(language);
+  const settingsPath = path.join(targetDir, '.claude', 'settings.json');
+
+  // Check if marketplace files exist
+  const marketplacePath = path.join(targetDir, '.claude-plugin', 'marketplace.json');
+  if (!fs.existsSync(marketplacePath)) {
+    console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.marketplaceNotFound')}`));
+    return;
+  }
+
+  // Create settings.json with marketplace registration
+  const settings = {
+    extraKnownMarketplaces: {
+      specweave: {
+        source: {
+          source: 'local',
+          path: './.claude-plugin'
+        }
+      }
+    }
+  };
+
+  try {
+    fs.writeJsonSync(settingsPath, settings, { spaces: 2 });
+    console.log(chalk.green(`\n✅ ${locale.t('cli', 'init.success.pluginAutoSetup')}`));
+    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.pluginAutoSetupDetails')}`));
+  } catch (error: any) {
+    throw new Error(`Failed to create .claude/settings.json: ${error.message}`);
+  }
+}
+
+function showNextSteps(projectName: string, adapterName: string, language: SupportedLanguage, usedDotNotation: boolean = false): void {
+  const locale = getLocaleManager(language);
+
   console.log('');
-  console.log(chalk.cyan.bold('🎯 Next steps:'));
+  console.log(chalk.cyan.bold(locale.t('cli', 'init.nextSteps.header')));
   console.log('');
 
   let stepNumber = 1;
 
   // Only show "cd" step if we created a subdirectory
   if (!usedDotNotation) {
-    console.log(`   ${stepNumber}. ${chalk.white(`cd ${projectName}`)}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.cd', { projectName }))}`);
     console.log('');
     stepNumber++;
   }
 
   // Adapter-specific instructions
   if (adapterName === 'claude') {
-    console.log(`   ${stepNumber}. ${chalk.white('Open Claude Code and describe your project:')}`);
-    console.log(`      ${chalk.gray('"Build a real estate listing platform"')}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step1'))}`);
     console.log('');
-    console.log(`   ${stepNumber + 1}. ${chalk.white('SpecWeave will:')}`);
-    console.log('      • Auto-activate skills and agents');
-    console.log('      • Create specifications');
-    console.log('      • Build implementation');
+
+    // CRITICAL STEP: Install core plugin (highlighted)
+    console.log(`   ${stepNumber + 1}. ${chalk.yellow.bold('⚠️  ' + locale.t('cli', 'init.nextSteps.claude.step2'))}`);
+    console.log(`      ${chalk.cyan.bold(locale.t('cli', 'init.nextSteps.claude.installCore'))}`);
+    console.log(`      ${chalk.gray('↑ Required for slash commands like /specweave:inc')}`);
+    console.log('');
+
+    console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step3'))}`);
+    console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installGitHub'))}`);
+    console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installFrontend'))}`);
+    console.log(`      ${chalk.gray('...or let SpecWeave suggest plugins automatically')}`);
+    console.log('');
+    console.log(`   ${stepNumber + 3}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step4'))}`);
+    console.log(`      ${chalk.cyan(locale.t('cli', 'init.nextSteps.claude.example'))}`);
+    console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.autoActivate'))}`);
   } else if (adapterName === 'cursor') {
-    console.log(`   ${stepNumber}. ${chalk.white('Open project in Cursor')}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.cursor.step1'))}`);
     console.log('');
-    console.log(`   ${stepNumber + 1}. ${chalk.white('Say: "Create increment for [your feature]"')}`);
-    console.log(`      Cursor will read .cursorrules and guide you`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white(locale.t('cli', 'init.nextSteps.cursor.step2'))}`);
+    console.log(`      ${locale.t('cli', 'init.nextSteps.cursor.guide')}`);
     console.log('');
-    console.log(`   ${stepNumber + 2}. ${chalk.white('Use @ shortcuts:')}`);
-    console.log(`      @increments, @docs, @strategy, @tests`);
+    console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.cursor.step3'))}`);
+    console.log(`      ${locale.t('cli', 'init.nextSteps.cursor.shortcuts')}`);
   } else if (adapterName === 'copilot') {
-    console.log(`   ${stepNumber}. ${chalk.white('Open project in VS Code with Copilot')}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step1'))}`);
     console.log('');
-    console.log(`   ${stepNumber + 1}. ${chalk.white('Copilot will read workspace instructions automatically')}`);
-    console.log(`      Start creating increment folders and files`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step2'))}`);
+    console.log(`      ${locale.t('cli', 'init.nextSteps.copilot.action')}`);
     console.log('');
-    console.log(`   ${stepNumber + 2}. ${chalk.white('Use Copilot Chat for guidance:')}`);
-    console.log(`      "How do I create a spec.md?"`);
+    console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step3'))}`);
+    console.log(`      ${locale.t('cli', 'init.nextSteps.copilot.example')}`);
   } else if (adapterName === 'generic') {
-    console.log(`   ${stepNumber}. ${chalk.white('Read SPECWEAVE-MANUAL.md')}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.generic.step1'))}`);
     console.log('');
-    console.log(`   ${stepNumber + 1}. ${chalk.white('Follow step-by-step instructions')}`);
-    console.log(`      Works with ANY AI tool (ChatGPT, Claude web, Gemini)`);
+    console.log(`   ${stepNumber + 1}. ${chalk.white(locale.t('cli', 'init.nextSteps.generic.step2'))}`);
+    console.log(`      ${locale.t('cli', 'init.nextSteps.generic.compatibility')}`);
   }
 
   console.log('');
-  console.log(chalk.green.bold('🚀 Ready to build with SpecWeave!'));
+  console.log(chalk.green.bold(locale.t('cli', 'init.nextSteps.footer')));
   console.log('');
-  console.log(chalk.gray('Documentation: https://spec-weave.com'));
-  console.log(chalk.gray('GitHub: https://github.com/anton-abyzov/specweave'));
+  console.log(chalk.gray(locale.t('cli', 'init.nextSteps.docsLink')));
+  console.log(chalk.gray(locale.t('cli', 'init.nextSteps.githubLink')));
   console.log('');
 }

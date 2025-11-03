@@ -20,7 +20,7 @@
 - [ ] Add local marketplace: `/plugin marketplace add ./`
 - [ ] Install core: `/plugin install specweave-core@specweave`
 - [ ] Verify skills auto-activate
-- [ ] Test `/specweave.inc "create a todo app"`
+- [ ] Test `/specweave:inc "create a todo app"`
 - [ ] Verify increment structure created
 
 ### Phase 3: GitHub Copilot Testing
@@ -130,7 +130,7 @@ specweave/
 - Claude loads from local path (real-time updates!)
 - Skills available: increment-planner, rfc-generator, context-loader, etc.
 - Agents available: pm, architect, tech-lead
-- Commands available: /specweave.inc, /specweave.do, etc.
+- Commands available: /specweave:inc, /specweave:do, etc.
 
 **Actual Outcome**: [PENDING - To be tested]
 
@@ -146,7 +146,7 @@ specweave/
 **Expected Outcome**:
 - increment-planner skill auto-activates
 - PM agent guides spec creation
-- Suggests using `/specweave.inc` command
+- Suggests using `/specweave:inc` command
 
 **Actual Outcome**: [PENDING - To be tested]
 
@@ -156,7 +156,7 @@ specweave/
 
 **Command**:
 ```bash
-/specweave.inc "create a simple todo app with task management"
+/specweave:inc "create a simple todo app with task management"
 ```
 
 **Expected Outcome**:
@@ -229,7 +229,7 @@ specweave init
 - [ ] File exists: `AGENTS.md`
 - [ ] Contains agent descriptions (PM, Architect, Tech Lead)
 - [ ] Contains skill descriptions (increment-planner, rfc-generator, etc.)
-- [ ] Contains command usage (/specweave.inc, /specweave.do, etc.)
+- [ ] Contains command usage (/specweave:inc, /specweave:do, etc.)
 - [ ] Contains project structure diagram
 - [ ] Contains workflow guide
 
@@ -248,7 +248,7 @@ Follow the workflow in AGENTS.md."
 **Expected Behavior**:
 - Copilot reads AGENTS.md
 - Suggests creating increment via SpecWeave workflow
-- May reference `/specweave.inc` command
+- May reference `/specweave:inc` command
 - May manually create spec.md structure
 
 **Actual Outcome**: [PENDING - To be tested]

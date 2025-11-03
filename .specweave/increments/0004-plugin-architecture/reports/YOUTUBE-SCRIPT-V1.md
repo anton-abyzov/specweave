@@ -201,14 +201,14 @@
 specweave init stock-portfolio-tracker
 # Auto-detects: React, Node.js, suggests plugins
 
-/specweave.inc "real-time stock portfolio with live price updates"
+/specweave:inc "real-time stock portfolio with live price updates"
 # Creates spec.md, plan.md, tasks.md, tests.md
 
-/specweave.do
+/specweave:do
 # Executes Task 1: Setup project structure
 # Hook fires → docs update
 
-/specweave.progress
+/specweave:progress
 # Shows: 15% complete, 3/20 tasks done
 ```
 
@@ -243,7 +243,7 @@ specweave init stock-portfolio-tracker
 ```bash
 specweave init blockchain-monitor
 
-/specweave.inc "blockchain transaction monitor with alerts"
+/specweave:inc "blockchain transaction monitor with alerts"
 # Decision point: "Enable TDD mode? (Y/n)"
 # User selects: Y
 
@@ -277,11 +277,11 @@ specweave init blockchain-monitor
 ```bash
 specweave init ai-task-manager
 
-/specweave.inc "AI task manager with smart scheduling"
+/specweave:inc "AI task manager with smart scheduling"
 # Decision: "Use AI Quality Judge for spec validation? (Y/n)"
 # User selects: Y
 
-/specweave.validate 0001
+/specweave:validate 0001
 # AI judge analyzes spec for clarity, testability, edge cases
 ```
 
@@ -316,7 +316,7 @@ specweave init ecommerce-backend
 # - Stripe in package.json → Suggests payment plugin
 # - Multiple services → Suggests microservices plugin
 
-/specweave.inc "microservices architecture for e-commerce"
+/specweave:inc "microservices architecture for e-commerce"
 # Spec includes: API contracts, data models, deployment architecture
 ```
 
@@ -353,7 +353,7 @@ specweave init devops-dashboard
 # - observability (Prometheus/Grafana)
 # - github-sync (Issue tracking)
 
-/specweave.do
+/specweave:do
 # Executes tasks with ALL plugin skills available
 ```
 
@@ -432,7 +432,7 @@ specweave init --brownfield
 
 **Commands shown**:
 ```bash
-/specweave.inc "brownfield-migration-tournament-system"
+/specweave:inc "brownfield-migration-tournament-system"
 
 # Creates increment with:
 # - spec.md: Extracted features from code analysis
@@ -449,14 +449,14 @@ specweave init --brownfield
 
 **Commands shown**:
 ```bash
-/specweave.inc "refactor-bracket-generation-with-spec"
+/specweave:inc "refactor-bracket-generation-with-spec"
 
 # Decision points:
 # - Extract existing logic as spec? Y
 # - Add missing test coverage? Y
 # - Enable TDD for refactor? Y
 
-/specweave.do
+/specweave:do
 # Task 1: Analyze existing code
 # Task 2: Write spec from behavior
 # Task 3: Write tests for current behavior
@@ -681,8 +681,8 @@ specweave init --brownfield
 
 1. **Terminal recordings** (clean, fast):
    - `specweave init` sequence
-   - `/specweave.inc` creating specs
-   - `/specweave.do` executing tasks
+   - `/specweave:inc` creating specs
+   - `/specweave:do` executing tasks
    - Hooks firing with completion sounds
 
 2. **IDE shots** (VS Code):
