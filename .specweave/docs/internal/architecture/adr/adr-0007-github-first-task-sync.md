@@ -83,14 +83,14 @@ GitHub Task Lists (Subtasks within issue)
 
 **GitHub is PRIMARY** (JIRA remains secondary for enterprise):
 
-1. **Initial Sync** (`/specweave.github.sync-tasks 0004`):
+1. **Initial Sync** (`/specweave:github:sync-tasks 0004`):
    - Create Milestone: `v0.4.0`
    - Create Epic Issue: `#42` (increment summary + task checklist)
    - Create 48 Task Issues: `#43-#90` (one per task, linked to epic)
    - Update `tasks.md` with issue numbers
    - Store mapping in `.github-sync.yaml`
 
-2. **During Development** (`/specweave.do`):
+2. **During Development** (`/specweave:do`):
    - Task completed → Close task issue (#43)
    - Check off task in epic (#42)
    - Post completion comment (stats, files changed, next task)
@@ -224,11 +224,11 @@ GitHub Task Lists (Subtasks within issue)
 - `subtask-sync.ts` - Sync subtask checkboxes to GitHub
 
 **Slash Command**:
-- `/specweave.github.sync-tasks` - Sync all tasks for increment
+- `/specweave:github:sync-tasks` - Sync all tasks for increment
 
 **Integration**:
-- `/specweave.do` - Close task issue on completion, update epic
-- `/specweave.done` - Close epic issue when increment completes
+- `/specweave:do` - Close task issue on completion, update epic
+- `/specweave:done` - Close epic issue when increment completes
 
 **Templates**:
 - `tasks.md.template` - Enhanced with GitHub Issue, Assignee, Dependencies fields
@@ -241,10 +241,10 @@ sequenceDiagram
     participant SpecWeave
     participant GitHub
 
-    User->>SpecWeave: /specweave.inc "0004-plugin-architecture"
+    User->>SpecWeave: /specweave:inc "0004-plugin-architecture"
     SpecWeave->>SpecWeave: Generate spec, plan, tasks
 
-    User->>SpecWeave: /specweave.github.sync-tasks 0004
+    User->>SpecWeave: /specweave:github:sync-tasks 0004
     SpecWeave->>GitHub: Create Milestone v0.4.0
     SpecWeave->>GitHub: Create Epic #42
     SpecWeave->>GitHub: Create Task #43 (T-001)
@@ -252,7 +252,7 @@ sequenceDiagram
     Note right of GitHub: ... 46 more tasks
     SpecWeave->>SpecWeave: Update tasks.md with issue numbers
 
-    User->>SpecWeave: /specweave.do
+    User->>SpecWeave: /specweave:do
     SpecWeave->>SpecWeave: Complete T-001
     SpecWeave->>GitHub: Close issue #43
     SpecWeave->>GitHub: Check off T-001 in epic #42
@@ -261,7 +261,7 @@ sequenceDiagram
 
     Note right of User: Repeat for all tasks...
 
-    User->>SpecWeave: /specweave.done 0004
+    User->>SpecWeave: /specweave:done 0004
     SpecWeave->>GitHub: Close epic #42
 ```
 
@@ -356,8 +356,8 @@ sequenceDiagram
 ### Risk 3: Manual GitHub Edits Cause Drift
 
 **Mitigation**:
-- Drift detection: `/specweave.github.status 0004`
-- Force re-sync: `/specweave.github.sync-tasks 0004 --force`
+- Drift detection: `/specweave:github:status 0004`
+- Force re-sync: `/specweave:github:sync-tasks 0004 --force`
 - Warning when drift detected
 - tasks.md remains source of truth
 

@@ -14,12 +14,14 @@ module.exports = {
     '!src/**/*.d.ts',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  // Map .js imports to .ts files for ES modules
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   // Exclude Playwright E2E tests from Jest (they run with Playwright)
-  // Temporarily exclude ALL integration tests and unit tests with errors until they're properly implemented
   testPathIgnorePatterns: [
     '/node_modules/',
     '/tests/e2e/',
-    '/tests/integration/',
     '/tests/unit/pricing-constants.test.ts',
     '/tests/unit/adapter-loader.test.ts',
     '/tests/unit/plugin-system/',

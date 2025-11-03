@@ -403,7 +403,7 @@ tdd-workflows/
 # Commands require renaming
 cp ml-pipeline.md specweave.ml-pipeline.md
 # Update internal references to use new command name
-sed -i 's//ml-pipeline//specweave.ml-pipeline/g' specweave.ml-pipeline.md
+sed -i 's//ml-pipeline//specweave:ml-pipeline/g' specweave.ml-pipeline.md
 
 # Skills and agents - direct copy
 cp -r helm-chart-scaffolding/ src/skills/
@@ -667,16 +667,16 @@ cp -r kubernetes-architect/ src/agents/
    cp -r /tmp/agents/plugins/machine-learning-ops/agents/* src/agents/
 
    # Copy command (with rename)
-   cp /tmp/agents/plugins/machine-learning-ops/commands/ml-pipeline.md src/commands/specweave.ml-pipeline.md
+   cp /tmp/agents/plugins/machine-learning-ops/commands/ml-pipeline.md src/commands/specweave:ml-pipeline.md
 
    # Update command references
-   sed -i '' 's//ml-pipeline//specweave.ml-pipeline/g' src/commands/specweave.ml-pipeline.md
+   sed -i '' 's//ml-pipeline//specweave:ml-pipeline/g' src/commands/specweave:ml-pipeline.md
 
    # Install
    npm run install:all
 
    # Test
-   # Run: /specweave.ml-pipeline "Build recommendation system for e-commerce"
+   # Run: /specweave:ml-pipeline "Build recommendation system for e-commerce"
    ```
 
 2. **Observability & Monitoring**:
@@ -688,18 +688,18 @@ cp -r kubernetes-architect/ src/agents/
    cp -r /tmp/agents/plugins/observability-monitoring/agents/* src/agents/
 
    # Copy commands (with rename)
-   cp /tmp/agents/plugins/observability-monitoring/commands/monitor-setup.md src/commands/specweave.monitor-setup.md
-   cp /tmp/agents/plugins/observability-monitoring/commands/slo-implement.md src/commands/specweave.slo-implement.md
+   cp /tmp/agents/plugins/observability-monitoring/commands/monitor-setup.md src/commands/specweave:monitor-setup.md
+   cp /tmp/agents/plugins/observability-monitoring/commands/slo-implement.md src/commands/specweave:slo-implement.md
 
    # Update references
-   sed -i '' 's//monitor-setup//specweave.monitor-setup/g' src/commands/specweave.monitor-setup.md
-   sed -i '' 's//slo-implement//specweave.slo-implement/g' src/commands/specweave.slo-implement.md
+   sed -i '' 's//monitor-setup//specweave:monitor-setup/g' src/commands/specweave:monitor-setup.md
+   sed -i '' 's//slo-implement//specweave:slo-implement/g' src/commands/specweave:slo-implement.md
 
    # Install
    npm run install:all
 
    # Test
-   # Run: /specweave.monitor-setup "Microservices architecture with 20 services"
+   # Run: /specweave:monitor-setup "Microservices architecture with 20 services"
    ```
 
 3. **Integration Testing**:
@@ -720,7 +720,7 @@ cp -r kubernetes-architect/ src/agents/
 - User guides
 
 **Success Metrics**:
-- /specweave.ml-pipeline successfully orchestrates multi-agent ML workflow
+- /specweave:ml-pipeline successfully orchestrates multi-agent ML workflow
 - Prometheus + Grafana setup generates working configuration
 - SLO implementation creates monitoring dashboards
 - Cross-plugin coordination works (K8s + ML, K8s + Observability)
@@ -740,17 +740,17 @@ cp -r kubernetes-architect/ src/agents/
 cp -r /tmp/agents/plugins/tdd-workflows/agents/tdd-orchestrator.md src/agents/tdd-orchestrator/AGENT.md
 
 # Copy commands (with rename)
-cp /tmp/agents/plugins/tdd-workflows/commands/tdd-cycle.md src/commands/specweave.tdd-cycle.md
-cp /tmp/agents/plugins/tdd-workflows/commands/tdd-red.md src/commands/specweave.tdd-red.md
-cp /tmp/agents/plugins/tdd-workflows/commands/tdd-green.md src/commands/specweave.tdd-green.md
-cp /tmp/agents/plugins/tdd-workflows/commands/tdd-refactor.md src/commands/specweave.tdd-refactor.md
+cp /tmp/agents/plugins/tdd-workflows/commands/tdd-cycle.md src/commands/specweave:tdd:cycle.md
+cp /tmp/agents/plugins/tdd-workflows/commands/tdd-red.md src/commands/specweave:tdd:red.md
+cp /tmp/agents/plugins/tdd-workflows/commands/tdd-green.md src/commands/specweave:tdd:green.md
+cp /tmp/agents/plugins/tdd-workflows/commands/tdd-refactor.md src/commands/specweave:tdd:refactor.md
 
 # Update references
-for file in src/commands/specweave.tdd-*.md; do
-    sed -i '' 's//tdd-cycle//specweave.tdd-cycle/g' "$file"
-    sed -i '' 's//tdd-red//specweave.tdd-red/g' "$file"
-    sed -i '' 's//tdd-green//specweave.tdd-green/g' "$file"
-    sed -i '' 's//tdd-refactor//specweave.tdd-refactor/g' "$file"
+for file in src/commands/specweave:tdd:*.md; do
+    sed -i '' 's//tdd-cycle//specweave:tdd:cycle/g' "$file"
+    sed -i '' 's//tdd-red//specweave:tdd:red/g' "$file"
+    sed -i '' 's//tdd-green//specweave:tdd:green/g' "$file"
+    sed -i '' 's//tdd-refactor//specweave:tdd:refactor/g' "$file"
 done
 ```
 
@@ -835,15 +835,15 @@ This skill provides TDD expertise and guides you through the red-green-refactor 
 
 ## Available Commands
 
-- `/specweave.tdd-cycle` - Complete TDD workflow (recommended)
-- `/specweave.tdd-red` - Generate failing tests
-- `/specweave.tdd-green` - Implement code to pass tests
-- `/specweave.tdd-refactor` - Refactor while keeping tests green
+- `/specweave:tdd:cycle` - Complete TDD workflow (recommended)
+- `/specweave:tdd:red` - Generate failing tests
+- `/specweave:tdd:green` - Implement code to pass tests
+- `/specweave:tdd:refactor` - Refactor while keeping tests green
 
 ## Quick Start
 
 "I want to implement user authentication with TDD"
-→ Will suggest running /specweave.tdd-cycle
+→ Will suggest running /specweave:tdd:cycle
 
 [Brief TDD principles, best practices, anti-patterns]
 EOF
@@ -869,7 +869,7 @@ EOF
 - TDD workflow documentation
 
 **Success Metrics**:
-- /specweave.tdd-cycle successfully orchestrates red-green-refactor
+- /specweave:tdd:cycle successfully orchestrates red-green-refactor
 - Individual commands work independently
 - Skill activates on TDD queries
 - Validation gates work (tests must fail in red phase, pass in green phase)
@@ -917,8 +917,8 @@ echo ""
 echo "🤖 Phase 2: Machine Learning Ops"
 cp -r "$PLUGIN_SOURCE/machine-learning-ops/skills/"* "$SRC_SKILLS/"
 cp -r "$PLUGIN_SOURCE/machine-learning-ops/agents/"* "$SRC_AGENTS/"
-cp "$PLUGIN_SOURCE/machine-learning-ops/commands/ml-pipeline.md" "$SRC_COMMANDS/specweave.ml-pipeline.md"
-sed -i '' 's//ml-pipeline//specweave.ml-pipeline/g' "$SRC_COMMANDS/specweave.ml-pipeline.md"
+cp "$PLUGIN_SOURCE/machine-learning-ops/commands/ml-pipeline.md" "$SRC_COMMANDS/specweave:ml-pipeline.md"
+sed -i '' 's//ml-pipeline//specweave:ml-pipeline/g' "$SRC_COMMANDS/specweave:ml-pipeline.md"
 echo "✅ Machine Learning Ops installed (1 skill, 3 agents, 1 command)"
 
 # Phase 2: Observability & Monitoring
@@ -926,10 +926,10 @@ echo ""
 echo "📊 Phase 2: Observability & Monitoring"
 cp -r "$PLUGIN_SOURCE/observability-monitoring/skills/"* "$SRC_SKILLS/"
 cp -r "$PLUGIN_SOURCE/observability-monitoring/agents/"* "$SRC_AGENTS/"
-cp "$PLUGIN_SOURCE/observability-monitoring/commands/monitor-setup.md" "$SRC_COMMANDS/specweave.monitor-setup.md"
-cp "$PLUGIN_SOURCE/observability-monitoring/commands/slo-implement.md" "$SRC_COMMANDS/specweave.slo-implement.md"
-sed -i '' 's//monitor-setup//specweave.monitor-setup/g' "$SRC_COMMANDS/specweave.monitor-setup.md"
-sed -i '' 's//slo-implement//specweave.slo-implement/g' "$SRC_COMMANDS/specweave.slo-implement.md"
+cp "$PLUGIN_SOURCE/observability-monitoring/commands/monitor-setup.md" "$SRC_COMMANDS/specweave:monitor-setup.md"
+cp "$PLUGIN_SOURCE/observability-monitoring/commands/slo-implement.md" "$SRC_COMMANDS/specweave:slo-implement.md"
+sed -i '' 's//monitor-setup//specweave:monitor-setup/g' "$SRC_COMMANDS/specweave:monitor-setup.md"
+sed -i '' 's//slo-implement//specweave:slo-implement/g' "$SRC_COMMANDS/specweave:slo-implement.md"
 echo "✅ Observability & Monitoring installed (4 skills, 4 agents, 2 commands)"
 
 # Phase 3: TDD Workflows
@@ -937,15 +937,15 @@ echo ""
 echo "🧪 Phase 3: TDD Workflows"
 mkdir -p "$SRC_AGENTS/tdd-orchestrator"
 cp "$PLUGIN_SOURCE/tdd-workflows/agents/tdd-orchestrator.md" "$SRC_AGENTS/tdd-orchestrator/AGENT.md"
-cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-cycle.md" "$SRC_COMMANDS/specweave.tdd-cycle.md"
-cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-red.md" "$SRC_COMMANDS/specweave.tdd-red.md"
-cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-green.md" "$SRC_COMMANDS/specweave.tdd-green.md"
-cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-refactor.md" "$SRC_COMMANDS/specweave.tdd-refactor.md"
-for file in "$SRC_COMMANDS"/specweave.tdd-*.md; do
-    sed -i '' 's//tdd-cycle//specweave.tdd-cycle/g' "$file"
-    sed -i '' 's//tdd-red//specweave.tdd-red/g' "$file"
-    sed -i '' 's//tdd-green//specweave.tdd-green/g' "$file"
-    sed -i '' 's//tdd-refactor//specweave.tdd-refactor/g' "$file"
+cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-cycle.md" "$SRC_COMMANDS/specweave:tdd:cycle.md"
+cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-red.md" "$SRC_COMMANDS/specweave:tdd:red.md"
+cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-green.md" "$SRC_COMMANDS/specweave:tdd:green.md"
+cp "$PLUGIN_SOURCE/tdd-workflows/commands/tdd-refactor.md" "$SRC_COMMANDS/specweave:tdd:refactor.md"
+for file in "$SRC_COMMANDS"/specweave:tdd:*.md; do
+    sed -i '' 's//tdd-cycle//specweave:tdd:cycle/g' "$file"
+    sed -i '' 's//tdd-red//specweave:tdd:red/g' "$file"
+    sed -i '' 's//tdd-green//specweave:tdd:green/g' "$file"
+    sed -i '' 's//tdd-refactor//specweave:tdd:refactor/g' "$file"
 done
 echo "✅ TDD Workflows installed (1 agent, 4 commands)"
 
@@ -966,8 +966,8 @@ echo ""
 echo "🧪 Next Steps:"
 echo "  1. Restart Claude Code"
 echo "  2. Test activation: 'How do I deploy to Kubernetes with GitOps?'"
-echo "  3. Test ML pipeline: '/specweave.ml-pipeline \"Build recommendation system\"'"
-echo "  4. Test TDD: '/specweave.tdd-cycle \"Implement user authentication\"'"
+echo "  3. Test ML pipeline: '/specweave:ml-pipeline \"Build recommendation system\"'"
+echo "  4. Test TDD: '/specweave:tdd:cycle \"Implement user authentication\"'"
 echo "  5. Update CHANGELOG.md"
 echo "  6. Update README.md"
 ```
@@ -1000,9 +1000,9 @@ test -f "src/agents/payment-integration/AGENT.md" && echo "✅ payment-integrati
 # Test 3: Commands exist with proper naming
 echo ""
 echo "Test 3: Verifying commands..."
-test -f "src/commands/specweave.ml-pipeline.md" && echo "✅ specweave.ml-pipeline" || echo "❌ specweave.ml-pipeline MISSING"
-test -f "src/commands/specweave.tdd-cycle.md" && echo "✅ specweave.tdd-cycle" || echo "❌ specweave.tdd-cycle MISSING"
-test -f "src/commands/specweave.monitor-setup.md" && echo "✅ specweave.monitor-setup" || echo "❌ specweave.monitor-setup MISSING"
+test -f "src/commands/specweave:ml-pipeline.md" && echo "✅ specweave.ml-pipeline" || echo "❌ specweave.ml-pipeline MISSING"
+test -f "src/commands/specweave:tdd:cycle.md" && echo "✅ specweave.tdd-cycle" || echo "❌ specweave.tdd-cycle MISSING"
+test -f "src/commands/specweave:monitor-setup.md" && echo "✅ specweave.monitor-setup" || echo "❌ specweave.monitor-setup MISSING"
 
 # Test 4: YAML frontmatter valid
 echo ""
@@ -1058,14 +1058,14 @@ echo "✅ Verification Complete"
 
 **New Coordination from Plugins**:
 
-1. **ML Pipeline Command** (`/specweave.ml-pipeline`):
+1. **ML Pipeline Command** (`/specweave:ml-pipeline`):
    ```
    data-engineer → data-scientist → ml-engineer → python-pro → mlops-engineer → kubernetes-architect → observability-engineer
    ```
    - **7-agent workflow** for complete ML system
    - **Handoffs**: Data → Features → Training → Code quality → Deployment → Infrastructure → Monitoring
 
-2. **TDD Cycle Command** (`/specweave.tdd-cycle`):
+2. **TDD Cycle Command** (`/specweave:tdd:cycle`):
    ```
    architect-review → test-automator → backend-architect → code-reviewer → test-automator (refactor)
    ```
@@ -1079,7 +1079,7 @@ echo "✅ Verification Complete"
 - 🔄 **Opportunity**: Use SpecWeave's PM gate system to validate ML pipeline phases
 
 **Recommendation**:
-- Integrate ML pipeline with `/specweave.do` workflow
+- Integrate ML pipeline with `/specweave:do` workflow
 - Add PM gates between ML pipeline phases (similar to increment validation)
 - Use TDD workflow as template for other spec-driven workflows (API-driven, Contract-driven)
 
@@ -1215,9 +1215,9 @@ success_criteria:
 
 **TDD Workflow**:
 ```yaml
-# src/commands/specweave.tdd-cycle.md (integration test)
+# src/commands/specweave:tdd:cycle.md (integration test)
 name: Full TDD Cycle
-command: /specweave.tdd-cycle "Implement email validation"
+command: /specweave:tdd:cycle "Implement email validation"
 expected_phases:
   - phase_1: "Test specification (acceptance criteria)"
   - phase_2: "RED - Failing tests written"

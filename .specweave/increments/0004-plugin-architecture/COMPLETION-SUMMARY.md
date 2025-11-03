@@ -1,5 +1,12 @@
 # Increment 0004: Plugin Architecture - COMPLETION SUMMARY
 
+> **⚠️ NOTE (2025-11-03): Manifest Format Updated**
+>
+> This completion summary originally documented a custom SpecWeave manifest.json format.
+> **Current implementation uses ONLY Claude Code's native plugin.json format.**
+>
+> The manifest examples below have been updated to reflect the current Claude-native format.
+
 **Status**: ✅ COMPLETE
 **Started**: 2025-10-31
 **Completed**: 2025-10-31
@@ -113,32 +120,26 @@ Successfully implemented a modular plugin architecture for SpecWeave, achieving 
 - `github-close-issue.md` - Close issues with completion summary
 - `github-status.md` - Show sync status and mappings
 
-**Manifest** (`.claude-plugin/manifest.json`):
+**Manifest** (`.claude-plugin/plugin.json`) - Claude Code Native Format:
 ```json
 {
   "name": "specweave-github",
   "version": "1.0.0",
-  "description": "GitHub integration for SpecWeave",
-  "specweave_core_version": ">=0.4.0",
-  "auto_detect": {
-    "files": [".git/"],
-    "git_remote": ["github.com"],
-    "env_vars": ["GITHUB_TOKEN"]
+  "description": "GitHub Issues integration for SpecWeave. Bidirectional sync between increments and GitHub issues. Keywords: github, gh, issue, pull request, pr",
+  "author": {
+    "name": "SpecWeave Team",
+    "email": "team@spec-weave.com"
   },
-  "provides": {
-    "skills": ["github-sync", "github-issue-tracker"],
-    "agents": ["github-manager"],
-    "commands": ["github-create-issue", "github-sync", "github-close-issue", "github-status"]
+  "homepage": "https://spec-weave.com/plugins/github",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anton-abyzov/specweave.git"
   },
-  "triggers": ["github", "gh", "issue", "pull request", "pr"]
+  "keywords": ["github", "issues", "sync", "integration"]
 }
 ```
 
-**Auto-Detection**:
-- Detects `.git/` directory
-- Checks git remote for `github.com`
-- Looks for `GITHUB_TOKEN` environment variable
-- Suggests enabling on first increment if criteria met
+**Note**: The plugin structure (skills/, agents/, commands/) is discovered by scanning directories, not listed in the manifest. This follows Claude Code's convention-over-configuration approach.
 
 ### 4. Configuration & Build
 
@@ -325,7 +326,7 @@ Successfully implemented a modular plugin architecture for SpecWeave, achieving 
 6. `src/core/plugin-detector.ts` - Auto-detection
 
 **GitHub Plugin**:
-7. `src/plugins/specweave-github/.claude-plugin/manifest.json`
+7. `src/plugins/specweave-github/.claude-plugin/plugin.json`
 8. `src/plugins/specweave-github/skills/github-sync/SKILL.md`
 9. `src/plugins/specweave-github/skills/github-issue-tracker/SKILL.md`
 10. `src/plugins/specweave-github/agents/github-manager/AGENT.md`

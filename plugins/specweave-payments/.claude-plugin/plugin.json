@@ -1,0 +1,8 @@
+{
+  "name": "specweave-payments",
+  "description": "Payment processing integration for Stripe, PayPal, and billing automation. Includes checkout flows, subscription lifecycle management, PCI DSS compliance guidance, and recurring billing. Focus on production-ready payment systems.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team"
+  }
+}

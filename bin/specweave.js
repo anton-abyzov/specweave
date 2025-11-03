@@ -35,6 +35,7 @@ program
   .option('-t, --template <type>', 'Project template (saas, api, fullstack)', 'saas')
   .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
   .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
+  .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)', 'en')
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/cli/commands/init.js');
     await initCommand(projectName, options);
@@ -99,6 +100,7 @@ program.on('--help', () => {
   console.log('Examples:');
   console.log('  $ specweave init my-saas                    # Create new project (auto-detect tool)');
   console.log('  $ specweave init my-saas --adapter cursor   # Create project for Cursor');
+  console.log('  $ specweave init my-saas --language ru      # Create project with Russian language');
   console.log('  $ specweave adapters                        # List available AI tool adapters');
   console.log('  $ specweave plugin list                     # List all plugins');
   console.log('  $ specweave plugin enable specweave-github  # Enable GitHub plugin');

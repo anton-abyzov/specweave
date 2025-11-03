@@ -636,14 +636,14 @@ src/
 
 **Tasks**:
 1. Implement init-time detection
-2. Implement first-increment detection (modify `/specweave.inc`)
+2. Implement first-increment detection (modify `/specweave:inc`)
 3. Create pre-task hook
 4. Create post-increment hook
 5. Integration tests
 
 **Deliverables**:
 - Auto-detect works during `specweave init`
-- `/specweave.inc` suggests plugins
+- `/specweave:inc` suggests plugins
 - Hooks suggest plugins at runtime
 
 ### Phase 5: Plugin Migration (Week 3)

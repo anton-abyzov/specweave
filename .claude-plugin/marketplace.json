@@ -1,96 +1,209 @@
 {
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "specweave",
+  "version": "0.6.0",
+  "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
   "owner": {
     "name": "Anton Abyzov",
     "email": "anton@spec-weave.com"
-  },
-  "metadata": {
-    "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
-    "version": "0.5.1",
-    "homepage": "https://spec-weave.com",
-    "repository": "https://github.com/anton-abyzov/specweave",
-    "license": "MIT"
   },
   "plugins": [
     {
       "name": "specweave-core",
       "description": "SpecWeave core framework - increment lifecycle, living docs, PM-led planning",
-      "source": {
-        "source": "github",
-        "repo": "anton-abyzov/specweave"
-      },
-      "version": "0.5.1",
+      "source": "./plugins/specweave-core",
+      "category": "development",
+      "version": "0.6.0",
       "author": {
-        "name": "Anton Abyzov"
-      },
-      "keywords": [
-        "spec-driven",
-        "increments",
-        "living-docs",
-        "pm",
-        "architect",
-        "tech-lead"
-      ],
-      "components": {
-        "skills": [
-          "increment-planner",
-          "rfc-generator",
-          "context-loader",
-          "brownfield-analyzer",
-          "brownfield-onboarder",
-          "increment-quality-judge",
-          "context-optimizer",
-          "project-kickstarter"
-        ],
-        "agents": [
-          "pm",
-          "architect",
-          "tech-lead"
-        ],
-        "commands": [
-          "specweave.inc",
-          "specweave.do",
-          "specweave.next",
-          "specweave.done",
-          "specweave.progress",
-          "specweave.validate",
-          "sync-docs"
-        ]
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
       }
     },
     {
       "name": "specweave-github",
       "description": "GitHub integration - bidirectional sync, issue tracking, task management",
-      "source": {
-        "source": "github",
-        "repo": "anton-abyzov/specweave",
-        "path": "plugins/specweave-github"
-      },
+      "source": "./plugins/specweave-github",
+      "category": "productivity",
       "version": "1.0.0",
       "author": {
-        "name": "Anton Abyzov"
-      },
-      "keywords": [
-        "github",
-        "sync",
-        "issues",
-        "tasks",
-        "github-cli"
-      ],
-      "components": {
-        "skills": [
-          "github-sync",
-          "github-issue-tracker"
-        ],
-        "agents": [
-          "github-manager"
-        ],
-        "commands": [
-          "github-sync-tasks",
-          "github-create-issue",
-          "github-close-issue",
-          "github-status"
-        ]
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-jira",
+      "description": "JIRA integration - bidirectional sync with epics/stories",
+      "source": "./plugins/specweave-jira",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-ado",
+      "description": "Azure DevOps integration - bidirectional sync with work items",
+      "source": "./plugins/specweave-ado",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-kubernetes",
+      "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps",
+      "source": "./plugins/specweave-kubernetes",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-infrastructure",
+      "description": "Cloud infrastructure - Hetzner, Prometheus, Grafana, monitoring",
+      "source": "./plugins/specweave-infrastructure",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-figma",
+      "description": "Figma design system - MCP integration, design tokens, code generation",
+      "source": "./plugins/specweave-figma",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-frontend",
+      "description": "Frontend development - React, Vue, Angular, Next.js, design systems",
+      "source": "./plugins/specweave-frontend",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-backend",
+      "description": "Backend development - Node.js, Python, .NET, REST APIs",
+      "source": "./plugins/specweave-backend",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-payments",
+      "description": "Payment processing - Stripe, PayPal, billing, PCI compliance",
+      "source": "./plugins/specweave-payments",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-ml",
+      "description": "Machine learning - ML pipelines, training, deployment",
+      "source": "./plugins/specweave-ml",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-testing",
+      "description": "Test execution infrastructure - Playwright E2E, browser automation, visual regression",
+      "source": "./plugins/specweave-testing",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-docs",
+      "description": "Documentation - Docusaurus generation, spec-driven workflows",
+      "source": "./plugins/specweave-docs",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-tooling",
+      "description": "SpecWeave tooling - skill creation, skill routing",
+      "source": "./plugins/specweave-tooling",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-alternatives",
+      "description": "Framework alternative experts - Compare SpecWeave with BMAD, spec-kit, openspec. Gap analysis and recommendations.",
+      "source": "./plugins/specweave-alternatives",
+      "category": "learning",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-ui",
+      "description": "UI components and design systems - Reusable component libraries",
+      "source": "./plugins/specweave-ui",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-cost-optimizer",
+      "description": "Cost optimization - cloud platform comparison, cost breakdown",
+      "source": "./plugins/specweave-cost-optimizer",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
+      "name": "specweave-diagrams",
+      "description": "Architecture diagrams - Mermaid, C4 Model, sequence, ER diagrams",
+      "source": "./plugins/specweave-diagrams",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
       }
     }
   ]

@@ -270,7 +270,7 @@ ls -la .claude/hooks/       # Should have hooks
 cat AGENTS.md               # Should exist
 
 # Test a command (Claude Code only)
-# Open Claude Code and type: /specweave.progress
+# Open Claude Code and type: /specweave:progress
 ```
 
 ### Verification Checklist
@@ -438,7 +438,7 @@ ls -la .claude/commands/
 # Should see: specweave.inc.md, specweave.do.md, etc.
 
 # Check a specific command
-cat .claude/commands/specweave.inc.md
+cat .claude/commands/specweave:inc.md
 
 # If missing, reinstall
 npx specweave init . --force

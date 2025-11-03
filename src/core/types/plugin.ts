@@ -1,87 +1,117 @@
 /**
  * Plugin System Type Definitions
  *
- * Defines interfaces and types for the SpecWeave plugin architecture.
- * Plugins are modular, domain-specific extensions that enhance SpecWeave's capabilities.
+ * Defines interfaces and types for Claude Code's native plugin architecture.
+ * Follows Claude's official plugin.json schema (Anthropic standards).
  *
  * @module core/types/plugin
- * @version 0.4.0
+ * @version 0.6.1
+ * @see https://docs.claude.com/en/docs/claude-code/plugins
  */
 
 /**
- * Plugin Manifest - Metadata describing a plugin
+ * Claude Plugin Manifest - Official plugin.json format
  *
- * Loaded from .claude-plugin/manifest.json in each plugin directory.
- * Follows JSON Schema defined in src/core/schemas/plugin-manifest.schema.json
+ * Loaded from .claude-plugin/plugin.json in each plugin directory.
+ * Follows Claude's official schema (NOT SpecWeave custom format).
+ *
+ * @see https://github.com/anthropics/claude-code/blob/main/.claude-plugin/marketplace.json
  */
 export interface PluginManifest {
-  /** Unique plugin name (must start with 'specweave-') */
+  /** Plugin name (e.g., "specweave-github") */
   name: string;
+
+  /** Human-readable description */
+  description: string;
 
   /** Semantic version (e.g., "1.0.0") */
   version: string;
 
-  /** Human-readable description (max 1024 chars) */
-  description: string;
+  /** Plugin author (required by Claude) */
+  author: {
+    /** Author name */
+    name: string;
 
-  /** Plugin author */
-  author?: string;
+    /** Author email (optional) */
+    email?: string;
 
-  /** License identifier (e.g., "MIT", "Apache-2.0") */
-  license?: string;
+    /** Author URL (optional) */
+    url?: string;
+  };
 
-  /** Required SpecWeave core version (e.g., ">=0.4.0") */
-  specweave_core_version: string;
+  /** Plugin homepage (optional) */
+  homepage?: string;
 
-  /** Plugin dependencies */
+  /** Repository info (optional) */
+  repository?: {
+    /** Repository type (e.g., "git") */
+    type: string;
+
+    /** Repository URL */
+    url: string;
+  };
+
+  /** Keywords for discoverability (optional) */
+  keywords?: string[];
+
+  /** Plugin dependencies (SpecWeave format - object with plugins array) */
   dependencies?: {
-    /** Other plugins this plugin requires */
+    /** List of required plugin names */
     plugins?: string[];
   };
 
-  /** Auto-detection rules for suggesting this plugin */
+  /** License information (SpecWeave extension) */
+  license?: string;
+
+  /** Required SpecWeave core version (SpecWeave extension) */
+  specweave_core_version?: string;
+
+  /** Components provided by plugin (SpecWeave extension) - arrays of component names */
+  provides?: {
+    /** List of skill names */
+    skills?: string[];
+    /** List of agent names */
+    agents?: string[];
+    /** List of command names */
+    commands?: string[];
+    /** List of hook names */
+    hooks?: string[];
+  };
+
+  /** Nested plugins or plugin list (SpecWeave extension) */
+  plugins?: string[];
+
+  /** Auto-detection rules (SpecWeave extension) */
   auto_detect?: {
-    /** File/directory patterns to detect (e.g., "kubernetes/", ".git/") */
+    /** File patterns to detect (e.g., ".git/config") */
     files?: string[];
-
-    /** NPM package dependencies to detect */
+    /** Package.json dependencies to check */
     packages?: string[];
-
-    /** Environment variables to detect */
+    /** Environment variables to check (was env_vars) */
+    env?: string[];
+    /** Legacy name for env */
     env_vars?: string[];
-
-    /** Git remote pattern (e.g., "github\\.com") */
+    /** Git remotes to check (e.g., "github.com") */
+    git_remotes?: string[];
+    /** Legacy name for git_remotes */
     git_remote_pattern?: string;
   };
 
-  /** What this plugin provides */
-  provides: {
-    /** Skill names provided by this plugin */
-    skills: string[];
-
-    /** Agent names provided by this plugin */
-    agents: string[];
-
-    /** Command names provided by this plugin */
-    commands: string[];
-  };
-
-  /** Keywords that trigger plugin suggestions in specs/tasks */
+  /** Plugin triggers (SpecWeave extension) */
   triggers?: string[];
 
-  /** Attribution for forked/borrowed plugins */
+  /** Credits and acknowledgments (SpecWeave extension) */
   credits?: {
-    /** Upstream source URL if forked */
-    based_on?: string | null;
-
-    /** Original author name */
+    /** Original author (was original_author) */
+    author?: string;
+    /** Legacy name for author */
     original_author?: string;
-
-    /** List of contributors */
+    /** Contributors */
     contributors?: string[];
-
-    /** Modifications made for SpecWeave */
-    modifications?: string[];
+    /** Inspiration or based on (was based_on) */
+    inspiration?: string;
+    /** Legacy name for inspiration */
+    based_on?: string;
   };
 }
 

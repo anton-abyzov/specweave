@@ -120,7 +120,7 @@
    - Model evaluation
 
 **Command**:
-- **/specweave.ml-pipeline** (292 lines)
+- **/specweave:ml-pipeline** (292 lines)
   - 7-agent orchestration for complete ML lifecycle
   - Data ingestion → Training → Serving → Monitoring
 
@@ -171,8 +171,8 @@
    - Schema design
 
 **Commands**:
-- **/specweave.monitor-setup** - Configure Prometheus + Grafana stack
-- **/specweave.slo-implement** - Create SLI/SLO/SLA definitions
+- **/specweave:monitor-setup** - Configure Prometheus + Grafana stack
+- **/specweave:slo-implement** - Create SLI/SLO/SLA definitions
 
 ---
 
@@ -187,10 +187,10 @@
   - Legacy code characterization
 
 **Commands**:
-1. **/specweave.tdd-cycle** (199 lines) - Full red→green→refactor orchestration
-2. **/specweave.tdd-red** (136 lines) - RED phase only (write failing test)
-3. **/specweave.tdd-green** - GREEN phase only (make test pass)
-4. **/specweave.tdd-refactor** - REFACTOR phase only (improve code)
+1. **/specweave:tdd:cycle** (199 lines) - Full red→green→refactor orchestration
+2. **/specweave:tdd:red** (136 lines) - RED phase only (write failing test)
+3. **/specweave:tdd:green** - GREEN phase only (make test pass)
+4. **/specweave:tdd:refactor** - REFACTOR phase only (improve code)
 
 **Discovery Skill** (NEW - Created by us):
 - **tdd-workflow** (300+ lines)

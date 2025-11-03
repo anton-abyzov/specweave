@@ -115,9 +115,9 @@ class PhaseDetector {
    - Review: validate, audit, check, test, debug
 
 2. **Commands (30%)**: Slash command mapping
-   - `/specweave.inc` → planning
-   - `/specweave.do` → execution
-   - `/specweave.validate` → review
+   - `/specweave:inc` → planning
+   - `/specweave:do` → execution
+   - `/specweave:validate` → review
 
 3. **Context (20%)**: Increment state + file types
    - backlog/planned → planning
@@ -225,7 +225,7 @@ savings = baselineCost - actualCost
 ```
 
 **Persistence**: `.specweave/logs/costs.json`
-**Command**: `/specweave.costs [incrementId]`
+**Command**: `/specweave:costs [incrementId]`
 **Formats**: ASCII dashboard, JSON, CSV
 
 ## Alternatives Considered
@@ -235,8 +235,8 @@ savings = baselineCost - actualCost
 **Proposed**: Users specify model for each task
 
 ```bash
-/specweave.do --model haiku
-/specweave.do --model sonnet
+/specweave:do --model haiku
+/specweave:do --model sonnet
 ```
 
 **Rejected Because:**
@@ -302,7 +302,7 @@ cost_mode: aggressive | balanced | quality
 2. **Zero Quality Degradation**: Sonnet used for all complex planning work
 3. **Transparency**: Every decision includes reasoning
 4. **User Control**: Override available via `--model` flag
-5. **Real-Time Visibility**: `/specweave.costs` shows savings immediately
+5. **Real-Time Visibility**: `/specweave:costs` shows savings immediately
 6. **Data-Driven**: Cost data enables continuous optimization
 7. **Future-Proof**: Easy to add new models (Opus 4.0 when released)
 
@@ -350,7 +350,7 @@ src/agents/*/AGENT.md        # 20 agents updated with preferences
 ```typescript
 // Task tool invocation
 const decision = modelSelector.select(userPrompt, agentName, {
-  command: '/specweave.do',
+  command: '/specweave:do',
   incrementState: 'in-progress'
 });
 
@@ -392,7 +392,7 @@ try {
 
 ```bash
 # Cost dashboard
-/specweave.costs 0003
+/specweave:costs 0003
 
 # Sample output:
 # Total Cost: $22.50

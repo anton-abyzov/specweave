@@ -335,11 +335,11 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 ## Available Commands
 
-### /specweave.inc
+### /specweave:inc
 
 **Purpose**: Plan new Product Increment - PM-led process
 
-**Usage**: `/specweave.inc "feature description"`
+**Usage**: `/specweave:inc "feature description"`
 
 **What it does**:
 - Auto-closes previous increment if ready
@@ -351,16 +351,16 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.inc "user authentication with OAuth"
+/specweave:inc "user authentication with OAuth"
 ```
 
 ---
 
-### /specweave.do
+### /specweave:do
 
 **Purpose**: Execute increment implementation following spec and plan
 
-**Usage**: `/specweave.do` (no arguments needed)
+**Usage**: `/specweave:do` (no arguments needed)
 
 **What it does**:
 - Smart resume (continues from last incomplete task)
@@ -371,16 +371,16 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.do
+/specweave:do
 ```
 
 ---
 
-### /specweave.next
+### /specweave:next
 
 **Purpose**: Smart increment transition - auto-close current if ready, suggest next work
 
-**Usage**: `/specweave.next`
+**Usage**: `/specweave:next`
 
 **What it does**:
 - Validates current increment completion
@@ -390,16 +390,16 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.next
+/specweave:next
 ```
 
 ---
 
-### /specweave.done
+### /specweave:done
 
 **Purpose**: Close increment with PM validation - checks tasks, tests, and docs
 
-**Usage**: `/specweave.done [increment-number]`
+**Usage**: `/specweave:done [increment-number]`
 
 **What it does**:
 - Validates all tasks completed
@@ -410,16 +410,16 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.done 0001
+/specweave:done 0001
 ```
 
 ---
 
-### /specweave.progress
+### /specweave:progress
 
 **Purpose**: Show current increment progress, task completion %, PM gate status
 
-**Usage**: `/specweave.progress`
+**Usage**: `/specweave:progress`
 
 **What it does**:
 - Shows current increment
@@ -429,16 +429,16 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.progress
+/specweave:progress
 ```
 
 ---
 
-### /specweave.validate
+### /specweave:validate
 
 **Purpose**: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
 
-**Usage**: `/specweave.validate [increment-number]`
+**Usage**: `/specweave:validate [increment-number]`
 
 **What it does**:
 - Rule-based validation (spec, plan, tasks, tests exist)
@@ -448,7 +448,7 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 
 **Example**:
 ```bash
-/specweave.validate 0001
+/specweave:validate 0001
 ```
 
 ---
@@ -512,7 +512,7 @@ This AGENTS.md file contains all necessary context. Your AI assistant will autom
 ### 1. Plan New Increment
 
 ```bash
-/specweave.inc "user authentication with OAuth"
+/specweave:inc "user authentication with OAuth"
 ```
 
 Creates:
@@ -536,7 +536,7 @@ Loads relevant ADRs, RFCs, architecture docs before starting work.
 ### 3. Execute Tasks
 
 ```bash
-/specweave.do
+/specweave:do
 ```
 
 - Executes tasks sequentially
@@ -548,7 +548,7 @@ Loads relevant ADRs, RFCs, architecture docs before starting work.
 ### 4. Check Progress
 
 ```bash
-/specweave.progress
+/specweave:progress
 ```
 
 Shows completion percentage and next action.
@@ -558,7 +558,7 @@ Shows completion percentage and next action.
 ### 5. Validate Increment
 
 ```bash
-/specweave.validate 0001
+/specweave:validate 0001
 ```
 
 Validates completeness before closing.
@@ -568,7 +568,7 @@ Validates completeness before closing.
 ### 6. Close Increment
 
 ```bash
-/specweave.done 0001
+/specweave:done 0001
 ```
 
 PM validation, updates status.
@@ -612,7 +612,7 @@ Syncs implementation learnings back to strategic docs.
 
 ### post-task-completion
 
-**Triggers**: After EVERY task completion in `/specweave.do`
+**Triggers**: After EVERY task completion in `/specweave:do`
 
 **Actions**:
 1. Updates living docs (`.specweave/docs/internal/delivery/implementation-notes/`)
@@ -627,11 +627,11 @@ Syncs implementation learnings back to strategic docs.
 ## Best Practices
 
 ### DO:
-- ✅ Always start with `/specweave.inc` for new features
+- ✅ Always start with `/specweave:inc` for new features
 - ✅ Review specs before implementation
 - ✅ Use `/sync-docs review` to load architecture context
-- ✅ Execute tasks via `/specweave.do` (hooks fire automatically)
-- ✅ Validate before closing: `/specweave.validate`
+- ✅ Execute tasks via `/specweave:do` (hooks fire automatically)
+- ✅ Validate before closing: `/specweave:validate`
 - ✅ Update living docs: `/sync-docs update`
 
 ### DON'T:

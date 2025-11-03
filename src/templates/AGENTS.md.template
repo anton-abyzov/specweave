@@ -45,9 +45,163 @@ This is a **SpecWeave project** where specifications and documentation are the s
 ├── agents/                  # Specialized roles (PM, Architect, DevOps, etc.)
 ├── skills/                  # Capabilities (increment-planner, context-loader, etc.)
 └── commands/                # Slash commands (/inc, /do, /done)
+
+plugins/                     # Optional plugins (extended capabilities)
+└── specweave-{name}/
+    ├── .claude-plugin/      # Plugin manifest (Claude native format)
+    │   └── plugin.json
+    ├── skills/              # Plugin-specific skills
+    ├── agents/              # Plugin-specific agents
+    └── commands/            # Plugin-specific commands
 ```
 
 **CRITICAL**: Always read `context-manifest.yaml` first! Only load files listed there.
+
+---
+
+## 🔌 Plugin Architecture (IMPORTANT FOR NON-CLAUDE TOOLS)
+
+### For Claude Code Users
+
+Plugins work automatically via marketplace:
+```bash
+/plugin install github@specweave
+```
+
+Skills, agents, and commands are immediately available. **Skip this section if using Claude Code.**
+
+### For Other Tools (Cursor, Copilot, ChatGPT, etc.)
+
+**⚠️ CRITICAL**: Claude Code has native plugin support. **Other tools DO NOT.**
+
+You MUST manually discover and load plugins at the start of each session:
+
+#### Step 1: Check for Plugins
+
+```bash
+# Check if project uses plugins
+ls plugins/
+
+# Example output:
+# specweave-github/
+# specweave-jira/
+```
+
+If `plugins/` folder exists, proceed to Step 2.
+
+#### Step 2: Load Plugin Components
+
+**For EACH plugin, load its components BEFORE starting work:**
+
+```bash
+# Example: Loading GitHub plugin
+
+# 1. Check plugin structure
+ls plugins/specweave-github/
+
+# 2. Load ALL plugin skills (like core skills)
+cat plugins/specweave-github/skills/github-sync/SKILL.md
+cat plugins/specweave-github/skills/github-issue-tracker/SKILL.md
+
+# 3. Load plugin agents (if any)
+cat plugins/specweave-github/agents/github-manager/AGENT.md
+
+# 4. Note available commands (load on-demand when user requests)
+ls plugins/specweave-github/commands/
+# github-create-issue.md, github-sync.md, github-status.md
+```
+
+#### Step 3: Make Plugin Capabilities Available
+
+Treat plugin components like core components:
+
+**Plugin Skills**:
+- Same activation pattern as core skills
+- Check "Activates for" keywords in SKILL.md
+- Follow workflow when relevant
+
+**Plugin Agents**:
+- Adopt role when needed (like core agents)
+- Example: "Adopting github-manager agent role..."
+
+**Plugin Commands**:
+- Load command file when user requests action
+- Example: User says "sync to GitHub" → Load `plugins/specweave-github/commands/github-sync.md`
+
+#### Step 4: Document Loaded Plugins
+
+At session start, note which plugins are active:
+
+```markdown
+# Session Context
+- Core skills: ✅ Loaded from .claude/skills/
+- Core agents: ✅ Loaded from .claude/agents/
+- Plugins detected:
+  - specweave-github: ✅ Loaded (2 skills, 1 agent, 4 commands)
+  - specweave-jira: ✅ Loaded (1 skill, 1 agent, 2 commands)
+```
+
+### Why Manual Loading Is Required
+
+**Claude Code**: Has native plugin marketplace, auto-loads plugins, manages dependencies.
+
+**Other Tools**: No plugin system, so you must:
+- ✅ Discover plugins in `plugins/` folder
+- ✅ Read plugin skills/agents/commands manually
+- ✅ Make them available in your context
+- ✅ Use them like core components
+
+**This is NOT optional** - plugins extend SpecWeave capabilities. Without loading them, you're missing critical functionality (GitHub sync, Jira integration, tech-specific skills, etc.).
+
+### Example: Session Start Routine (Non-Claude Tools)
+
+```bash
+# 1. Load core components
+cat .claude/skills/SKILLS-INDEX.md  # Core skills index
+cat AGENTS.md                        # This file
+
+# 2. Check for plugins
+if [ -d "plugins" ]; then
+  # 3. For each plugin, load components
+  for plugin in plugins/*/; do
+    echo "Loading plugin: $(basename $plugin)"
+
+    # Load all skills
+    find "$plugin/skills" -name "SKILL.md" -exec cat {} \;
+
+    # Load all agents
+    find "$plugin/agents" -name "AGENT.md" -exec cat {} \;
+
+    # Note available commands
+    ls "$plugin/commands/"
+  done
+fi
+
+# 4. Now ready to work with full SpecWeave capabilities
+```
+
+### Plugin Naming Convention
+
+Plugin commands use namespace pattern:
+
+**Core commands** (no namespace):
+- `/specweave:inc` → Core framework
+- `/specweave:do` → Core framework
+- `/specweave:progress` → Core framework
+
+**Plugin commands** (with namespace):
+- `/specweave:github:sync` → GitHub plugin
+- `/specweave:github:create-issue` → GitHub plugin
+- `/specweave:jira:sync` → Jira plugin
+- `/specweave:jira:create-ticket` → Jira plugin
+
+**In non-Claude tools**: Read the command file when user requests the action:
+```bash
+# User: "Sync this increment to GitHub"
+# You: Load and execute command
+cat plugins/specweave-github/commands/github-sync.md
+# Then follow the instructions in that file
+```
 
 ---
 
@@ -319,6 +473,7 @@ max_context_tokens: 10000
 
 If using Claude Code, these slash commands are available:
 
+**Core Commands** (always available):
 | Command | Purpose | Example |
 |---------|---------|---------|
 | `/inc` | Create new increment | `/inc "user authentication"` |
@@ -326,7 +481,21 @@ If using Claude Code, these slash commands are available:
 | `/progress` | Check status | `/progress` |
 | `/done` | Close increment | `/done 0001` |
 | `/validate` | Validate quality | `/validate 0001 --quality` |
-| `/sync-github` | Sync to GitHub | `/sync-github` |
+
+**Plugin Commands** (when plugin installed):
+| Command | Purpose | Plugin |
+|---------|---------|--------|
+| `/specweave:github:sync` | Sync to GitHub | specweave-github |
+| `/specweave:github:create-issue` | Create GitHub issue | specweave-github |
+| `/specweave:jira:sync` | Sync to Jira | specweave-jira |
+| `/specweave:jira:create-ticket` | Create Jira ticket | specweave-jira |
+
+**For non-Claude tools**: Read the command file when user requests the action:
+```bash
+# User: "Sync to GitHub"
+cat plugins/specweave-github/commands/github-sync.md
+# Then follow instructions in that file
+```
 
 ---
 

@@ -33,7 +33,7 @@ flowchart TD
     MigrationPlan --> Ready[Ready for increment]
 
     %% Increment Planning
-    Ready --> IncStart[/specweave.inc 'feature description']
+    Ready --> IncStart[/specweave:inc 'feature description']
     IncStart --> Phase2[Phase 2: Pre-Spec Detection]
     Phase2 --> AnalyzeDesc[Analyze increment description]
     AnalyzeDesc --> Check2{Keywords match plugins?}
@@ -101,7 +101,7 @@ flowchart TD
 
     %% Validation Gate
     TestContent --> ValidateCheck{Run validation?}
-    ValidateCheck -->|Yes| Validate[/specweave.validate]
+    ValidateCheck -->|Yes| Validate[/specweave:validate]
     ValidateCheck -->|No| Ready2
     Validate --> ValidationRules[Rule-based checks:<br/>- Required fields present<br/>- Tasks have criteria<br/>- Tests cover requirements]
     ValidationRules --> AIJudge{AI Judge enabled?}
@@ -113,7 +113,7 @@ flowchart TD
     FixIssues --> ValidateCheck
 
     %% Execution Phase
-    Ready2 --> Execute[/specweave.do]
+    Ready2 --> Execute[/specweave:do]
     Execute --> Phase3[Phase 3: Pre-Task Detection]
     Phase3 --> CheckTask[Check next task description]
     CheckTask --> TaskHints{Task mentions plugins?}
@@ -149,7 +149,7 @@ flowchart TD
     FixGate --> QualityGate
 
     %% Increment Completion
-    AllowClose --> Close[/specweave.done]
+    AllowClose --> Close[/specweave:done]
     Close --> Phase4[Phase 4: Post-Increment Detection]
     Phase4 --> GitDiff[Analyze git diff]
     GitDiff --> NewDeps{New dependencies added?}
@@ -186,7 +186,7 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Start([User runs /specweave.inc]) --> Gate{Decision Gate}
+    Start([User runs /specweave:inc]) --> Gate{Decision Gate}
 
     Gate --> Q1[How deep should we spec?]
     Q1 --> Q1A[High-level:<br/>Fast, minimal detail]
@@ -244,7 +244,7 @@ flowchart TD
     Enable1 --> Phase2
     Skip1 --> Phase2
     Phase2[Phase 2: Pre-Spec Detection]
-    Phase2 --> Init2[Trigger: /specweave.inc 'description']
+    Phase2 --> Init2[Trigger: /specweave:inc 'description']
     Init2 --> Scan2[Analyze increment description]
     Scan2 --> Detect2[Detect keywords:<br/>✓ 'deploy to Kubernetes'<br/>✓ 'Stripe payment'<br/>✓ 'React components']
     Detect2 --> Match2{Matches plugin triggers?}
@@ -270,7 +270,7 @@ flowchart TD
     %% Phase 4: Post-Increment
     NoSuggest3 --> Phase4
     Phase4[Phase 4: Post-Increment Detection]
-    Phase4 --> Init4[Trigger: /specweave.done]
+    Phase4 --> Init4[Trigger: /specweave:done]
     Init4 --> Scan4[Scan git diff]
     Scan4 --> Detect4[Detect new dependencies:<br/>✓ Added: stripe package<br/>✓ Added: @kubernetes/client<br/>✓ Added: playwright]
     Detect4 --> Match4{New plugin-relevant deps?}
@@ -339,7 +339,7 @@ sequenceDiagram
     participant Docs as Living Docs
     participant Git as Git Repository
 
-    Dev->>CLI: /specweave.do
+    Dev->>CLI: /specweave:do
     CLI->>Dev: Execute Task T-001
     Dev->>Dev: Write code, tests
     Dev->>CLI: Task complete
@@ -366,7 +366,7 @@ sequenceDiagram
     Dev->>CLI: Continue to next task
 
     Note over Dev,Git: After all tasks complete
-    Dev->>CLI: /specweave.done
+    Dev->>CLI: /specweave:done
     CLI->>Docs: Final sync: strategic docs
     Docs->>Git: Commit updated docs
     Git->>Dev: ✅ Increment complete

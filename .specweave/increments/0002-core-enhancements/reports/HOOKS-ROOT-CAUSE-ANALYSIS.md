@@ -374,7 +374,7 @@ Model: claude-sonnet-4-5-20250929
    # Exit Claude Code completely
    # Restart Claude Code
    # Open SpecWeave project
-   # Try: /specweave.do
+   # Try: /specweave:do
    # Check: .specweave/logs/hooks-debug.log
    ```
 

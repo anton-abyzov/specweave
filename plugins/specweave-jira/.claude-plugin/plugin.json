@@ -1,0 +1,8 @@
+{
+  "name": "specweave-jira",
+  "description": "JIRA integration for SpecWeave increments. Bidirectional sync between SpecWeave increments and JIRA epics/stories. Automatically creates JIRA issues from increments, tracks progress, and updates status.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team"
+  }
+}

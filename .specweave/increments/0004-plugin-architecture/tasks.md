@@ -884,7 +884,7 @@ async function init() {
 
 ---
 
-### T-019: Integrate Detector into `/specweave.inc`
+### T-019: Integrate Detector into `/specweave:inc`
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
@@ -893,7 +893,7 @@ async function init() {
 Add spec-based detection to increment planning.
 
 **Files to Modify**:
-- `src/commands/specweave.inc.md`
+- `src/commands/specweave:inc.md`
 
 **Changes**:
 ```markdown
@@ -911,7 +911,7 @@ Before creating spec.md, analyze the increment description for plugin keywords:
 5. Install plugins before planning
 
 **Example**:
-User: /specweave.inc "deploy API to Kubernetes"
+User: /specweave:inc "deploy API to Kubernetes"
 
 Claude:
 📦 This increment might benefit from:
@@ -1393,7 +1393,7 @@ export async function updateSubtaskStatus(
 
 ---
 
-### T-024-F: Add /specweave.github.sync-tasks Command
+### T-024-F: Add /specweave:github:sync-tasks Command
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
@@ -1412,15 +1412,15 @@ Create new slash command to sync tasks for an increment.
 
 ## Usage
 
-/specweave.github.sync-tasks <increment-id> [--force]
+/specweave:github:sync-tasks <increment-id> [--force]
 
 ## Examples
 
 # Initial sync (create issues)
-/specweave.github.sync-tasks 0004
+/specweave:github:sync-tasks 0004
 
 # Force re-sync (update existing issues)
-/specweave.github.sync-tasks 0004 --force
+/specweave:github:sync-tasks 0004 --force
 
 ## Workflow
 
@@ -1474,7 +1474,7 @@ Create new slash command to sync tasks for an increment.
 
 ---
 
-### T-024-G: Update /specweave.do for GitHub Task Sync
+### T-024-G: Update /specweave:do for GitHub Task Sync
 **Priority**: P0
 **Estimate**: 3 hours
 **Status**: pending

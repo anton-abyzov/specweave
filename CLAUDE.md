@@ -1,7 +1,8 @@
 # SpecWeave - Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
-**Version**: 0.4.0 (Plugin Architecture Complete!)
+**Version**: 0.6.0 (LLM-Native i18n Complete! - Ready for Release)
+**NPM Version**: 0.5.1 (Latest Published)
 **Type**: Open Source NPM Package (TypeScript CLI)
 **Repository**: https://github.com/anton-abyzov/specweave
 **Website**: https://spec-weave.com
@@ -11,26 +12,72 @@ Users receive a different CLAUDE.md via the template system.
 
 ---
 
-## Quick Start for Contributors
+## 🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!
 
-**Current Work**: Increment 0004 - Plugin Architecture ✅ COMPLETE
-**Active Branch**: `develop` → merges to `features/001-core-feature`
-**Latest**: v0.4.0 - Plugin Architecture with GitHub plugin (priority #1)
-**Next**: v0.5.0 - Additional plugins (Jira, Kubernetes, Frontend/Backend stacks)
+**⛔ THIS IS THE #1 RULE - VIOLATING THIS WILL GET YOUR PR REJECTED ⛔**
 
-**Typical Workflow**:
-```bash
-# 1. Make changes to source files in src/
-# 2. Test locally
-npm run build && npm test
+**ALL AI-generated files MUST go into the CURRENT INCREMENT folder**, NOT in the project root!
 
-# 3. Use SpecWeave commands for managing work
-/specweave.do                   # Execute next task
-/specweave.progress             # Check status
+### ❌ NEVER Create in Root (Pollutes Repository)
 
-# 4. Commit with hooks (auto-validates)
-git add . && git commit -m "feat: description"
 ```
+❌ WRONG - ROOT FILES (REJECTED!):
+/PLUGIN-MIGRATION-COMPLETE.md          # NO! Goes to increment reports/
+/SESSION-SUMMARY-2025-10-28.md         # NO! Goes to increment reports/
+/ADR-006-DEEP-ANALYSIS.md              # NO! Goes to .specweave/docs/internal/architecture/adr/
+/ANALYSIS-MULTI-TOOL-COMPARISON.md     # NO! Goes to increment reports/
+/migration-helper.sh                   # NO! Goes to increment scripts/
+/execution.log                         # NO! Goes to increment logs/
+/specweave-0.5.1.tgz                   # NO! Build artifact, should be in .gitignore
+/yolov8n.pt                            # NO! ML model, should be in .gitignore
+
+✅ CORRECT - INCREMENT FOLDERS:
+.specweave/increments/0004-plugin-architecture/
+├── spec.md                            # Spec files (core 4)
+├── plan.md
+├── tasks.md
+├── tests.md
+├── reports/                           # ✅ PUT REPORTS HERE!
+│   ├── PLUGIN-MIGRATION-COMPLETE.md   # ✅ Completion reports
+│   ├── SESSION-SUMMARY.md             # ✅ Session summaries
+│   └── ANALYSIS-*.md                  # ✅ Analysis files
+├── scripts/                           # ✅ PUT SCRIPTS HERE!
+│   └── migration-helper.sh            # ✅ Helper scripts
+└── logs/                              # ✅ PUT LOGS HERE!
+    └── execution.log                  # ✅ Execution logs
+
+.specweave/docs/internal/architecture/ # ✅ PUT ADRS/DIAGRAMS HERE!
+└── adr/
+    └── 0006-deep-analysis.md          # ✅ Architecture decisions
+```
+
+### Why This Matters
+
+- ✅ **Complete traceability** - Know which increment created which files
+- ✅ **Easy cleanup** - Delete increment folder = delete all files
+- ✅ **Clear context** - All files for a feature in one place
+- ✅ **No root clutter** - Project root stays clean and professional
+- ✅ **Better git history** - Changes grouped by increment
+
+### What IS Allowed in Root?
+
+**ONLY these files belong in root**:
+- ✅ `CLAUDE.md` (this file - contributor guide)
+- ✅ `README.md`, `CHANGELOG.md`, `LICENSE` (project documentation)
+- ✅ `package.json`, `tsconfig.json`, `.gitignore` (config files)
+- ✅ Directories: `src/`, `tests/`, `plugins/`, `.specweave/`, etc. (source code)
+
+**Everything else goes in increment folders or `.gitignore`!**
+
+### Build Artifacts (Add to .gitignore)
+
+These should NEVER be committed:
+- ❌ `*.tgz`, `*.tar.gz` - NPM package archives
+- ❌ `*.pt`, `*.pth` - ML model files (download on demand)
+- ❌ `dist/`, `build/` - Compiled outputs (already in .gitignore)
+- ❌ `*.log` - Log files (already in .gitignore)
+
+**Before committing, ALWAYS check**: `git status` - If you see `.md` files in root, MOVE THEM!
 
 ---
 
@@ -49,83 +96,24 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 
 ### Why SpecWeave + Claude Code = 10x Better
 
-| Feature | SpecWeave + Claude Code | Competitors (Kiro, Cursor, Copilot) |
-|---------|------------------------|-------------------------------------|
-| **Living Docs (Automated)** | ✅ Native hooks update docs on EVERY task | ❌ Manual sync required (Kiro, Cursor, Copilot) |
-| **Auto-Activation** | ✅ Skills auto-fire based on context | ❌ Must manually invoke (all competitors) |
-| **Multi-Agent Isolation** | ✅ Separate contexts per agent | 🟡 Cursor: shared context; Others: none |
-| **Slash Commands** | ✅ Native `/specweave.*` commands | 🟡 Cursor: team commands; Others: none |
-| **Hooks (Pre/Post)** | ✅ Native lifecycle automation | ❌ No hooks (all competitors) |
-| **MCP Protocol** | ✅ Native context management | ❌ Proprietary or none |
-| **Context Efficiency** | ✅ 60-80% reduction with plugins | 🟡 Cursor: @ shortcuts; Others: limited |
-| **Spec-Driven Workflow** | ✅ Core framework feature | ❌ Not supported |
+| Feature | Claude Code (Native) | Cursor 2.0 | Copilot | Generic |
+|---------|---------------------|------------|---------|---------|
+| **Living Docs** | ✅ Auto-sync via hooks | ❌ Manual | ❌ Manual | ❌ Manual |
+| **Skills** | ✅ Auto-activate | 🟡 Must @mention | ❌ None | ❌ None |
+| **Commands** | ✅ Plugin-based `/specweave:*` | 🟡 Team commands | ❌ None | ❌ None |
+| **Hooks** | ✅ Pre/Post lifecycle | ❌ No hooks | ❌ No hooks | ❌ No hooks |
+| **Agents** | ✅ Isolated contexts | 🟡 Shared (8 parallel) | ❌ None | ❌ None |
+| **Context** | ✅ MCP + 60-80% reduction | 🟡 @ shortcuts | ❌ Limited | ❌ None |
+| **Quality** | ⭐⭐⭐⭐⭐ 100% | ⭐⭐⭐⭐ 85% | ⭐⭐⭐ 60% | ⭐⭐ 40% |
 
-### The Living Docs Advantage: SpecWeave vs. Kiro
+**Quick Comparison**:
 
-**Kiro's Pitch**: "Automated living documentation"
-**Reality**: Kiro requires **manual sync** - you must remember to update docs.
+**Claude Code** - Full automation with native hooks, MCP protocol, plugin system, isolated agent contexts
+**Cursor 2.0** - Good multi-tool support (AGENTS.md compilation, team commands, @ shortcuts) but no hooks or agent isolation
+**Copilot** - Basic instructions.md support, no automation features
+**Generic** - Manual copy-paste workflow
 
-**SpecWeave + Claude Code**:
-- **100% automated** via native hooks
-- After EVERY task, hooks fire automatically
-- Docs update without user intervention
-- No manual sync needed, EVER
-
-**Why?** Claude Code's native hooks system. Kiro doesn't have this - they rely on manual triggers.
-
-### Cursor 2.0: Good, But Not Native
-
-Cursor 2.0 (released Oct 29, 2025) has impressive features:
-- ✅ 8 parallel agents
-- ✅ Team-defined custom commands
-- ✅ In-app browser
-- ✅ @ context shortcuts
-
-**But Cursor still lacks**:
-- ❌ Native hooks (no automated doc updates)
-- ❌ Skill auto-activation (must explicitly request)
-- ❌ Agent isolation (all 8 agents share context)
-- ❌ MCP protocol (proprietary context management)
-
-**SpecWeave on Cursor** = ~85% of Claude Code experience (still very good!)
-
-### GitHub Copilot: Basic Automation
-
-Copilot provides:
-- ✅ Workspace instructions
-- ✅ Code suggestions
-
-**But Copilot lacks**:
-- ❌ Native hooks
-- ❌ Skills/agents
-- ❌ Slash commands
-- ❌ Living docs
-
-**SpecWeave on Copilot** = ~60% of Claude Code experience (basic automation only)
-
-### Generic Tools (ChatGPT, Gemini): Manual Workflow
-
-Generic AI tools:
-- ✅ Conversational AI
-- ✅ Code generation
-
-**But they lack**:
-- ❌ ALL automation features
-- ❌ Project integration
-- ❌ Persistent state
-
-**SpecWeave on Generic** = ~40% of Claude Code experience (copy-paste manual)
-
-### The Bottom Line
-
-**SpecWeave works with any tool**, but for the **BEST experience**:
-
-1. **Claude Code** (⭐⭐⭐⭐⭐ 100%) - Full automation, native hooks, MCP, isolated agents
-2. **Cursor 2.0** (⭐⭐⭐⭐ 85%) - Semi-automation, AGENTS.md, team commands
-3. **Copilot** (⭐⭐⭐ 60%) - Basic automation, instructions.md
-4. **Generic** (⭐⭐ 40%) - Manual workflow, copy-paste
-
-**Recommendation**: Use Claude Code for SpecWeave. Other tools work, but you'll miss the magic.
+**The Key Differentiator**: Only Claude Code supports **automated living docs** via native hooks. After EVERY task completion, docs sync automatically - zero manual intervention. This is why SpecWeave is designed Claude Code-first, though it gracefully degrades to other tools.
 
 ---
 
@@ -152,15 +140,15 @@ Generic AI tools:
 **When Creating Increments**:
 ```bash
 # ❌ Wrong
-/specweave.inc "0004"
+/specweave:inc "0004"
 
 # ✅ Correct
-/specweave.inc "0004-cost-optimization"
-/specweave.inc "0005-github-sync-enhancements"
+/specweave:inc "0004-cost-optimization"
+/specweave:inc "0005-github-sync-enhancements"
 ```
 
 **Enforcement**:
-- `/specweave.inc` command validates naming (rejects bare numbers)
+- `/specweave:inc` command validates naming (rejects bare numbers)
 - Code review requirement (descriptive names mandatory)
 - This document serves as the source of truth
 
@@ -169,6 +157,260 @@ Generic AI tools:
 - `-descriptive-name` = Kebab-case description (lowercase, hyphens)
 - Max 50 chars total (for readability)
 - No special characters except hyphens
+
+---
+
+## Increment Discipline (v0.6.0+ MANDATORY)
+
+**⛔ THE IRON RULE: You CANNOT start increment N+1 until increment N is DONE**
+
+This is **NOT negotiable**. It is a **hard enforcement** to prevent chaos, scope creep, and stale documentation.
+
+### Why This Rule Exists
+
+**The Problem (before v0.6.0)**:
+- Multiple incomplete increments piling up (0002, 0003, 0006 all in progress)
+- No clear source of truth ("which increment are we working on?")
+- Living docs become stale (sync doesn't know what's current)
+- Scope creep (jumping between features without finishing)
+- Quality degradation (tests not run, docs not updated)
+
+**The Solution (v0.6.0+)**:
+- ✅ **Hard block** on `/specweave:inc` if previous increments incomplete
+- ✅ **Helper commands** to close increments properly
+- ✅ **Clear guidance** on how to resolve incomplete work
+- ✅ **Force discipline** = force quality
+
+### What "DONE" Means
+
+An increment is DONE if **ONE** of the following is true:
+
+1. **All tasks completed**: All tasks in `tasks.md` marked `[x] Completed`
+2. **Completion report exists**: `COMPLETION-SUMMARY.md` with "✅ COMPLETE" status
+3. **Explicit closure**: Closed via `/specweave:close` with documentation
+
+### The Enforcement
+
+**When you try to start a new increment**:
+
+```bash
+/specweave:inc "new feature"
+```
+
+**If previous increments are incomplete, you'll see**:
+
+```
+❌ Cannot create new increment!
+
+Previous increments are incomplete:
+
+📋 Increment 0002-core-enhancements
+   Status: 73% complete (11/15 tasks)
+   Pending:
+     - T-008: Migrate DIAGRAM-CONVENTIONS.md content
+     - T-010: Create context-manifest.yaml
+     - T-012: Test agent invocation manually
+     - T-013: Run skill test suite
+     - T-015: Create PR when increment complete
+
+📋 Increment 0003-intelligent-model-selection
+   Status: 50% complete (11/22 tasks)
+   Pending: 11 tasks
+
+💡 What would you like to do?
+
+1️⃣  Close incomplete increments:
+   /specweave:close
+
+2️⃣  Check status:
+   /specweave:status
+
+3️⃣  Force create (DANGEROUS - violates discipline!):
+   Add --force flag to bypass this check
+
+⚠️  The discipline exists for a reason:
+   - Prevents scope creep
+   - Ensures completions are tracked
+   - Maintains living docs accuracy
+   - Keeps work focused
+```
+
+### How to Resolve Incomplete Increments
+
+#### Option 1: Complete the Work (Recommended)
+
+```bash
+# Continue working on incomplete increment
+/specweave:do
+
+# Once all tasks done, it's automatically complete
+/specweave:inc "new feature"  # ✅ Now works!
+```
+
+#### Option 2: Close Interactively
+
+```bash
+# Interactive closure with options
+/specweave:close
+
+# You'll be asked to choose:
+# - Force complete (mark all tasks done)
+# - Move tasks to next increment (defer work)
+# - Reduce scope (mark tasks as won't-do)
+# - Create completion report (manual close)
+```
+
+#### Option 3: Check Status First
+
+```bash
+# See all incomplete increments
+/specweave:status
+
+# Output shows:
+# ✅ 0001-core-framework
+# ✅ 0004-plugin-architecture
+# ⏳ 0002-core-enhancements (73% complete)
+# ⏳ 0003-intelligent-model-selection (50% complete)
+```
+
+#### Option 4: Force Create (Emergency Only!)
+
+```bash
+# Bypass the check (USE SPARINGLY!)
+/specweave:inc "urgent-hotfix" --force
+
+# This is logged and should be explained in the next standup/PR
+```
+
+### The Three Options for Closing
+
+When using `/specweave:close`, you get **THREE options**:
+
+#### 1. **Adjust Scope** (Simplest - Recommended)
+
+Remove parts from `spec.md`, regenerate `plan.md` and `tasks.md` to match reduced scope:
+
+```bash
+# 1. Edit spec.md - remove features you're not doing
+# 2. Delete plan.md and tasks.md
+# 3. Regenerate from spec
+/specweave:inc "same increment" --regenerate
+
+# Now tasks match reduced scope → 100% complete!
+```
+
+#### 2. **Move Scope to Next Increment**
+
+Transfer incomplete tasks to the new increment:
+
+```bash
+# Via /specweave:close
+# Select "Move tasks to next increment"
+# Tasks are migrated with documentation
+# Old increment closed, new increment gets the work
+```
+
+#### 3. **Extend Existing Increment** (Merge Work)
+
+Simplest option: **Don't start a new increment**. Just extend the current one:
+
+```bash
+# Instead of creating 0003, extend 0002:
+# 1. Update spec.md to include new features
+# 2. Update plan.md with new implementation details
+# 3. Add new tasks to tasks.md
+# 4. Minimize tests if needed (focus on critical paths)
+
+# Work on combined scope in ONE increment
+/specweave:do
+```
+
+### Helper Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave:status` | Show all increments and their completion status |
+| `/specweave:close` | Interactive closure of incomplete increments |
+| `/specweave:force-close <id>` | Mark all tasks complete (dangerous!) |
+
+### Enforcement Points
+
+1. **`/specweave:inc` command** - Hard block (Step 0A)
+2. **PM agent** - Pre-flight validation before planning
+3. **CI/CD** (future) - Prevent PR merges with incomplete increments
+
+### Philosophy: Discipline = Quality
+
+**Why enforce this strictly?**
+
+- **Focus**: Work on ONE thing at a time
+- **Completion**: Finish before starting new
+- **Quality**: Tests run, docs updated, code reviewed
+- **Clarity**: Everyone knows what's current
+- **Velocity**: Actually shipping > endless WIP
+
+**Old Way (suggest)**:
+```
+User: "Just let me start the new feature, I'll come back to this"
+Result: 5 incomplete increments, nothing ships
+```
+
+**New Way (enforce)**:
+```
+Framework: "Close this first, then start new"
+User: *closes increment properly*
+Result: Clean increments, clear progress, shipping regularly
+```
+
+### Real-World Example
+
+**Scenario**: You have 0002 at 73% complete, want to start 0006.
+
+**Before v0.6.0** (broken):
+```bash
+/specweave:inc "0006-i18n"
+# ✅ Creates 0006 (no check)
+# Result: 0002, 0003, 0006 all incomplete
+```
+
+**After v0.6.0** (disciplined):
+```bash
+/specweave:inc "0006-i18n"
+# ❌ Blocked! "Close 0002 and 0003 first"
+
+# Check status
+/specweave:status
+# Shows: 0002 (73%), 0003 (50%) incomplete
+
+# Close them
+/specweave:close
+# Select 0002 → Force complete (work was done, just not marked)
+# Select 0003 → Move tasks to 0007 (defer work)
+
+# Now can proceed
+/specweave:inc "0006-i18n"
+# ✅ Works! Clean slate, disciplined workflow
+```
+
+### Exception: The `--force` Flag
+
+For **emergencies only** (hotfixes, urgent features):
+
+```bash
+/specweave:inc "urgent-security-fix" --force
+```
+
+**This bypasses the check** but:
+- ✅ Logs the force creation
+- ✅ Warns in CLI output
+- ✅ Should be explained in PR/standup
+- ✅ Should close previous increments ASAP
+
+**Use sparingly!** The discipline exists for a reason.
+
+---
+
+**Summary**: Close previous increments before starting new ones. Use `/specweave:status` and `/specweave:close` to maintain discipline. This isn't bureaucracy—it's quality enforcement.
 
 ---
 
@@ -224,108 +466,27 @@ my-project/
 - ❌ Conflicts: Different modules with same increment numbers?
 - ❌ Complexity: Where do cross-cutting features live?
 
-### Multi-Repo Solution (For Huge Projects)
+### Multi-Repo & Microservices Pattern
 
-**Problem**: "My project has 10+ repos (microservices, polyrepo architecture)"
+**Problem**: "My project has multiple repos, microservices, or complex architecture"
 
-**Solution**: Create a **parent folder** with root-level `.specweave/`
+**Solution**: Create a **parent folder** with ONE root-level `.specweave/`
 
-```
-my-big-project/              ← Create parent folder
-├── .specweave/              ← ONE source of truth for ALL repos
-│   ├── increments/
-│   │   ├── 0001-auth-service/
-│   │   ├── 0002-payment-service/
-│   │   ├── 0003-frontend-redesign/
-│   │   └── 0004-infrastructure-k8s/
-│   ├── docs/
-│   │   ├── internal/
-│   │   │   ├── strategy/    ← System-wide strategy
-│   │   │   ├── architecture/ ← Cross-service architecture
-│   │   │   └── ...
-│   │   └── public/
-│   └── logs/
-│
-├── auth-service/            ← Separate git repo
-│   ├── .git/
-│   ├── src/
-│   └── README.md
-│
-├── payment-service/         ← Separate git repo
-│   ├── .git/
-│   ├── src/
-│   └── README.md
-│
-├── frontend/                ← Separate git repo
-│   ├── .git/
-│   ├── src/
-│   └── README.md
-│
-└── infrastructure/          ← Separate git repo
-    ├── .git/
-    ├── k8s/
-    └── terraform/
-```
-
-**How to Set Up**:
-
-```bash
-# 1. Create parent folder
-mkdir my-big-project
-cd my-big-project
-
-# 2. Initialize SpecWeave at root
-npx specweave init .
-
-# 3. Clone your repos as subdirectories
-git clone https://github.com/myorg/auth-service.git
-git clone https://github.com/myorg/payment-service.git
-git clone https://github.com/myorg/frontend.git
-git clone https://github.com/myorg/infrastructure.git
-
-# 4. Work normally - SpecWeave sees all repos
-/specweave.inc "0001-unified-auth"
-# Creates: .specweave/increments/0001-unified-auth/
-# Can reference: auth-service/, frontend/, payment-service/
-```
-
-**Benefits**:
-- ✅ One `.specweave/` for entire system
-- ✅ Each repo maintains its own git history
-- ✅ Cross-service increments are natural
-- ✅ System-wide architecture in one place
-- ✅ Living docs cover all repos
-
-**Alternatively: Git Submodules** (Advanced):
-
-```bash
-# Parent repo with submodules
-my-big-project/
-├── .specweave/              ← Root level
-├── .gitmodules              ← Git submodule config
-├── auth-service/            ← Git submodule
-├── payment-service/         ← Git submodule
-└── frontend/                ← Git submodule
-
-# Initialize with submodules
-git submodule add https://github.com/myorg/auth-service.git
-git submodule add https://github.com/myorg/payment-service.git
-```
-
-### Microservices Pattern
-
-Even for microservices, root-level `.specweave/` makes sense:
+The pattern is the same whether you have:
+- Multiple git repos (polyrepo architecture)
+- Microservices (separate service directories)
+- Monorepo with multiple modules
 
 ```
-microservices-project/
-├── .specweave/              ← ONE source of truth
+microservices-project/       ← Create parent folder
+├── .specweave/              ← ONE source of truth for entire system
 │   ├── increments/
 │   │   ├── 0001-add-service-mesh/      ← Cross-cutting
 │   │   ├── 0002-user-svc-v2/           ← Single service
 │   │   └── 0003-checkout-flow/         ← Multi-service
 │   ├── docs/
 │   │   ├── internal/
-│   │   │   ├── strategy/
+│   │   │   ├── strategy/               ← System-wide strategy
 │   │   │   ├── architecture/
 │   │   │   │   ├── service-mesh.md     ← System-wide
 │   │   │   │   ├── api-contracts.md    ← Cross-service
@@ -336,8 +497,8 @@ microservices-project/
 │   └── logs/
 │
 ├── services/
-│   ├── user-service/
-│   ├── order-service/
+│   ├── user-service/        ← Can be separate git repos
+│   ├── order-service/       ← Or monorepo subdirectories
 │   ├── payment-service/
 │   └── notification-service/
 │
@@ -348,6 +509,38 @@ microservices-project/
 └── shared/
     └── api-contracts/
 ```
+
+**How to Set Up**:
+
+```bash
+# Option 1: Multiple repos (clone as subdirectories)
+mkdir microservices-project && cd microservices-project
+npx specweave init .
+git clone https://github.com/myorg/user-service.git services/user-service
+git clone https://github.com/myorg/order-service.git services/order-service
+
+# Option 2: Git submodules (advanced)
+mkdir microservices-project && cd microservices-project
+git init && npx specweave init .
+git submodule add https://github.com/myorg/user-service.git services/user-service
+
+# Option 3: Monorepo (services in same repo)
+mkdir microservices-project && cd microservices-project
+git init && npx specweave init .
+mkdir -p services/{user,order,payment}
+
+# Work normally - SpecWeave sees all services
+/specweave:inc "0001-add-service-mesh"
+# Creates: .specweave/increments/0001-add-service-mesh/
+# Can reference: services/user-service/, infrastructure/k8s/, etc.
+```
+
+**Benefits**:
+- ✅ One `.specweave/` for entire system (no duplication)
+- ✅ Each repo maintains its own git history (if using polyrepo)
+- ✅ Cross-service increments are natural (e.g., checkout flow)
+- ✅ System-wide architecture docs in one place
+- ✅ Living docs cover all services
 
 ### Enforcement
 
@@ -406,21 +599,22 @@ if (parentSpecweave) {
 
 ## Project Scale (v0.4.0 - Plugin Architecture)
 
-### Core Framework (Always Loaded)
+### Core Plugin (Always Auto-Loaded)
 
-**The Essentials** - What every SpecWeave project gets:
-- **Skills**: 8 core (increment-planner, **rfc-generator**, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
-- **Agents**: 3 core (PM, Architect, Tech Lead)
-- **Commands**: 7 core (/specweave.inc, /specweave.do, /specweave.next, /specweave.done, /specweave.progress, /specweave.validate, /sync-docs)
+**Plugin**: `specweave-core` - The essential SpecWeave plugin loaded in every project:
+- **Skills**: 9 skills (increment-planner, tdd-workflow, rfc-generator, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
+- **Agents**: 22 agents (PM, Architect, Tech Lead, + 19 specialized including tdd-orchestrator)
+- **Commands**: 22 commands (/specweave:inc, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
+- **Hooks**: 8 lifecycle hooks
 - **Size**: ~12K tokens (vs. 50K in v0.3.7)
 
 **Result**: **75%+ context reduction** out of the box!
 
 **Why So Small?**
-- External sync (GitHub, Jira) = plugins
-- Tech stacks (React, K8s) = plugins
-- Domain expertise (ML, payments) = plugins
-- Only increment lifecycle + living docs in core
+- External sync (GitHub, Jira) = separate plugins
+- Tech stacks (React, K8s) = separate plugins
+- Domain expertise (ML, payments) = separate plugins
+- Core plugin = only increment lifecycle + living docs automation
 
 ### Available Plugins (Opt-In)
 
@@ -451,7 +645,7 @@ if (parentSpecweave) {
 | **ml-ops** | 3 | 3 | 1 | Machine learning, TensorFlow, PyTorch |
 | **observability** | 4 | 4 | 2 | Prometheus, Grafana, monitoring |
 | **payment-processing** | 4 | 1 | 0 | Stripe, billing, subscriptions |
-| **e2e-testing** | 2 | 1 | 0 | Playwright, browser automation |
+| **e2e-testing** | 1 | 0 | 0 | Playwright, E2E browser automation, visual regression |
 | **figma-ecosystem** | 5 | 2 | 0 | Design integration, Figma API |
 | **security** | 3 | 1 | 0 | Security scanning, best practices |
 | **diagrams** | 2 | 1 | 0 | C4 diagrams, Mermaid |
@@ -500,7 +694,7 @@ specweave plugin disable figma-ecosystem
 
 **Spec-Based** (during increment planning):
 ```bash
-/specweave.inc "deploy to Kubernetes"
+/specweave:inc "deploy to Kubernetes"
 # → Suggests kubernetes plugin before creating spec
 ```
 
@@ -513,19 +707,54 @@ specweave plugin disable figma-ecosystem
 **CRITICAL**: SpecWeave follows a strict source-of-truth pattern:
 
 ```
-src/                            ← SOURCE OF TRUTH (version controlled)
-├── skills/                     ← Source for skills
-├── agents/                     ← Source for agents
-├── commands/                   ← Source for slash commands
-├── hooks/                      ← Source for hooks
-├── adapters/                   ← Tool adapters (Claude, Cursor, etc.)
-└── templates/                  ← Templates for user projects
+src/                            ← SOURCE OF TRUTH (TypeScript code only)
+├── core/                       ← Core framework logic (TypeScript utilities)
+│   ├── plugin-loader.ts
+│   ├── config-manager.ts
+│   ├── types/                  ← TypeScript type definitions
+│   └── schemas/                ← JSON schemas
+├── cli/                        ← CLI commands
+├── hooks/                      ← TypeScript utilities for hooks
+│   └── lib/                    ← Hook helper functions
+├── adapters/                   ← Tool adapters (legacy)
+├── templates/                  ← Templates for user projects
+└── utils/                      ← Utility functions
+
+plugins/                        ← ROOT: All plugins (version controlled)
+├── specweave-core/             ← CORE PLUGIN (framework essentials)
+│   ├── .claude-plugin/         ← plugin.json (Claude native)
+│   ├── skills/                 ← Core skills (9 total)
+│   │   ├── rfc-generator/
+│   │   ├── increment-planner/
+│   │   ├── tdd-workflow/
+│   │   └── ...
+│   ├── agents/                 ← Core agents (3 core + 19 specialized)
+│   │   ├── pm/
+│   │   ├── architect/
+│   │   ├── tech-lead/
+│   │   └── ...
+│   ├── commands/               ← Core commands (7 core + 15 specialized)
+│   │   ├── specweave.inc.md
+│   │   ├── specweave.do.md
+│   │   └── ...
+│   ├── hooks/                  ← Lifecycle hooks (8 total)
+│   │   ├── post-task-completion.sh
+│   │   ├── pre-implementation.sh
+│   │   └── ...
+│   └── lib/                    ← TypeScript utilities (optional)
+│
+└── specweave-{name}/           ← Other plugins (GitHub, Figma, etc.)
+    ├── .claude-plugin/         ← plugin.json (Claude native)
+    ├── skills/                 ← Plugin skills
+    ├── agents/                 ← Plugin agents
+    ├── commands/               ← Plugin commands
+    └── lib/                    ← TypeScript utilities (optional)
 
 .claude/                        ← INSTALLED (gitignored in user projects)
-├── skills/                     ← Installed from src/skills/
-├── agents/                     ← Installed from src/agents/
-├── commands/                   ← Installed from src/commands/
-└── hooks/                      ← Installed from src/hooks/
+├── agents/                     ← Installed from plugins/*/agents/
+├── commands/                   ← Installed from plugins/*/commands/
+├── hooks/                      ← Installed from plugins/*/hooks/
+└── skills/                     ← Installed from plugins/*/skills/
 
 .specweave/                     ← FRAMEWORK DATA (always present)
 ├── increments/                 ← Feature development
@@ -534,10 +763,19 @@ src/                            ← SOURCE OF TRUTH (version controlled)
 ```
 
 **Rules**:
-- ✅ ALWAYS edit files in `src/` (source of truth)
-- ✅ Run install scripts to sync changes to `.claude/`
+- ✅ `src/` = TypeScript code ONLY (compiled to `dist/`)
+- ✅ ALL skills/agents/commands/hooks = Inside plugins (including core!)
+- ✅ `plugins/specweave-core/` = Core framework plugin (always loaded)
+- ✅ `.claude/` = Installed from all enabled plugins
+- ❌ NEVER mix `*.ts` and `SKILL.md` in the same directory
 - ❌ NEVER edit files in `.claude/` directly (they get overwritten)
 - ❌ NEVER create new files in project root (use increment folders)
+
+**Key Architectural Principle**:
+- TypeScript code (`*.ts`) goes in `src/` → compiled to `dist/`
+- Claude-native files (`SKILL.md`, `AGENT.md`, `*.md`) go in `plugins/` → copied to `.claude/`
+- Even "core" framework components are in `plugins/specweave-core/` (everything is a plugin!)
+- This separation ensures clean builds and prevents mixing compiled code with runtime files
 
 ### Tech Stack
 
@@ -568,67 +806,91 @@ src/                            ← SOURCE OF TRUTH (version controlled)
 
 ```
 specweave/
-├── src/                        # SOURCE OF TRUTH
+├── src/                        # SOURCE OF TRUTH (TypeScript code ONLY)
 │   ├── cli/                    # CLI commands (init, version)
 │   │   └── commands/
 │   │       └── init.ts         # Main installation logic
-│   ├── core/                   # Core framework logic
-│   │   ├── plugin-loader.ts    # ✅ NEW: Load plugins from disk
-│   │   ├── plugin-manager.ts   # ✅ NEW: Plugin lifecycle management
-│   │   ├── plugin-detector.ts  # ✅ NEW: Auto-detect plugins (4 phases)
+│   ├── core/                   # Core framework logic (TypeScript only)
+│   │   ├── plugin-loader.ts    # Load plugins from disk
+│   │   ├── plugin-manager.ts   # Plugin lifecycle management
+│   │   ├── plugin-detector.ts  # Auto-detect plugins (4 phases)
 │   │   ├── config-manager.ts   # Config loading/validation
 │   │   ├── types/
-│   │   │   └── plugin.ts       # ✅ NEW: Plugin type definitions
-│   │   ├── schemas/
-│   │   │   ├── plugin-manifest.schema.json  # ✅ NEW
-│   │   │   └── specweave-config.schema.json # ✅ NEW
-│   │   └── skills/
-│   │       └── rfc-generator/  # ✅ NEW: Core skill for all users
-│   ├── skills/                 # 8 core skills (SKILL.md + test-cases/)
-│   │   ├── increment-planner/
-│   │   ├── context-loader/
-│   │   └── ...
-│   ├── agents/                 # 3 core agents (AGENT.md)
-│   │   ├── pm/
-│   │   ├── architect/
-│   │   └── tech-lead/
-│   ├── commands/               # 7 core slash commands (.md)
-│   │   ├── specweave-inc.md
-│   │   ├── specweave-do.md
-│   │   └── ...
-│   ├── hooks/                  # Lifecycle hooks (.sh)
-│   │   └── post-task-completion.sh
-│   ├── adapters/               # Multi-tool support (UPDATED)
-│   │   ├── adapter-interface.ts   # ✅ UPDATED: Plugin methods
-│   │   ├── adapter-base.ts        # ✅ UPDATED: Default implementations
-│   │   ├── claude/                # ✅ UPDATED: Native plugin support
-│   │   ├── cursor/                # ✅ UPDATED: AGENTS.md compilation
-│   │   ├── copilot/               # ✅ UPDATED: AGENTS.md compilation
-│   │   └── generic/               # ✅ UPDATED: Manual workflows
-│   ├── plugins/                # ✅ NEW: Plugin system
-│   │   └── specweave-github/   # ✅ COMPLETE: GitHub integration
-│   │       ├── .claude-plugin/
-│   │       │   └── manifest.json
-│   │       ├── skills/
-│   │       │   ├── github-sync/
-│   │       │   └── github-issue-tracker/
-│   │       ├── agents/
-│   │       │   └── github-manager/
-│   │       └── commands/
-│   │           ├── github-create-issue.md
-│   │           ├── github-sync.md
-│   │           ├── github-close-issue.md
-│   │           └── github-status.md
+│   │   │   └── plugin.ts       # Plugin type definitions
+│   │   └── schemas/
+│   │       ├── plugin-manifest.schema.json
+│   │       └── specweave-config.schema.json
+│   ├── hooks/                  # TypeScript utilities for hooks
+│   │   └── lib/                # Hook helper functions
+│   ├── adapters/               # Tool adapters (legacy)
+│   │   ├── adapter-interface.ts
+│   │   ├── adapter-base.ts
+│   │   ├── claude/
+│   │   ├── cursor/ (legacy)
+│   │   ├── copilot/ (legacy)
+│   │   └── generic/ (legacy)
 │   ├── templates/              # User project templates
 │   │   ├── CLAUDE.md.template
 │   │   ├── AGENTS.md.template
 │   │   └── ...
 │   └── utils/                  # Utility functions
 │
+├── plugins/                    # ALL PLUGINS (root level)
+│   ├── specweave-core/         # CORE PLUGIN (framework essentials)
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json     # Claude native manifest
+│   │   ├── skills/             # Core skills (9 total)
+│   │   │   ├── rfc-generator/          # RFC generation for increments
+│   │   │   ├── increment-planner/      # Increment planning and spec generation
+│   │   │   ├── context-loader/         # Context loading optimization
+│   │   │   ├── tdd-workflow/           # Test-driven development workflow
+│   │   │   ├── project-kickstarter/    # New project bootstrapping
+│   │   │   ├── brownfield-analyzer/    # Existing codebase analysis
+│   │   │   ├── brownfield-onboarder/   # Brownfield project onboarding
+│   │   │   ├── increment-quality-judge/# Quality assessment
+│   │   │   └── context-optimizer/      # Context optimization
+│   │   ├── agents/             # Core agents (22 total)
+│   │   │   ├── pm/             # Product Manager agent
+│   │   │   ├── architect/      # System Architect agent
+│   │   │   ├── tech-lead/      # Tech Lead agent
+│   │   │   └── ...
+│   │   ├── commands/           # Core commands (22 total)
+│   │   │   ├── specweave.inc.md        # /specweave:inc
+│   │   │   ├── specweave.do.md         # /specweave:do
+│   │   │   ├── specweave.done.md       # /specweave:done
+│   │   │   └── ...
+│   │   ├── hooks/              # Lifecycle hooks (8 total)
+│   │   │   ├── post-task-completion.sh # Auto-runs after tasks complete
+│   │   │   ├── pre-implementation.sh   # Pre-task validation
+│   │   │   └── ...
+│   │   └── lib/                # TypeScript utilities (optional)
+│   │
+│   ├── specweave-github/       # GitHub Issues integration
+│   │   ├── .claude-plugin/
+│   │   │   └── plugin.json     # Claude native manifest
+│   │   ├── skills/
+│   │   │   ├── github-sync/
+│   │   │   └── github-issue-tracker/
+│   │   ├── agents/
+│   │   │   └── github-manager/
+│   │   ├── commands/
+│   │   │   ├── github-create-issue.md
+│   │   │   ├── github-sync.md
+│   │   │   └── ...
+│   │   └── lib/                # TypeScript utilities
+│   ├── specweave-figma/        # Figma design sync
+│   ├── specweave-infrastructure/ # K8s, Helm, Terraform
+│   └── ... (18 plugins total)
+│
+├── .claude-plugin/             # Claude Code marketplace (root level)
+│   ├── marketplace.json        # Plugin catalog (18 plugins)
+│   └── README.md               # Marketplace documentation
+│
 ├── .claude/                    # Pre-installed for SpecWeave dev
-│   ├── skills/                 # Synced from src/skills/
-│   ├── agents/                 # Synced from src/agents/
-│   └── commands/               # Synced from src/commands/
+│   ├── agents/                 # Installed from plugins/*/agents/
+│   ├── commands/               # Installed from plugins/*/commands/
+│   ├── hooks/                  # Installed from plugins/*/hooks/
+│   └── skills/                 # Installed from plugins/*/skills/
 │
 ├── .specweave/                 # SpecWeave's own increments
 │   ├── increments/
@@ -693,33 +955,13 @@ specweave/
 
 ### ❌ NEVER Create in Root (Pollutes Repository)
 
-All AI-generated files MUST go into increment folders:
+**See comprehensive rules at top of document**: [🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!](#-critical-never-pollute-project-root)
 
-```
-❌ WRONG:
-/SESSION-SUMMARY-2025-10-28.md          # NO!
-/ADR-006-DEEP-ANALYSIS.md               # NO!
-/ANALYSIS-MULTI-TOOL-COMPARISON.md      # NO!
-/CONTEXT-LOADER-CORRECTIONS.md          # NO!
-
-✅ CORRECT:
-.specweave/increments/0002-core-enhancements/
-├── reports/
-│   ├── SESSION-SUMMARY-2025-10-28.md
-│   ├── ADR-006-DEEP-ANALYSIS.md
-│   ├── ANALYSIS-MULTI-TOOL-COMPARISON.md
-│   └── CONTEXT-LOADER-CORRECTIONS.md
-├── logs/
-│   └── execution-2025-10-28.log
-└── scripts/
-    └── migration-helper.sh
-```
-
-**Why?**
-- ✅ Complete traceability (which increment created which files)
-- ✅ Easy cleanup (delete increment folder = delete all files)
-- ✅ Clear context (all files for a feature in one place)
-- ✅ No root clutter
+**Quick summary**:
+- ✅ ALL AI-generated files → increment folders (`.specweave/increments/####/reports/`, `logs/`, `scripts/`)
+- ✅ Architecture decisions → `.specweave/docs/internal/architecture/adr/`
+- ❌ NEVER create `.md` files, scripts, or logs in project root
+- ❌ Build artifacts (`.tgz`, `.pt`, etc.) → add to `.gitignore`
 
 ### Runtime Artifacts (NOT Source Controlled)
 
@@ -749,51 +991,50 @@ All AI-generated files MUST go into increment folders:
 
 ### Making Changes
 
-**1. Skills** (`src/skills/skill-name/`):
+**ALL components belong to plugins** (following [Claude Code's plugin system](https://docs.claude.com/en/docs/claude-code/plugins)).
+
+**1. Editing Skills** (any plugin):
 ```bash
-# Edit source
-vim src/skills/context-loader/SKILL.md
+# Core plugin (auto-loaded):
+vim plugins/specweave-core/skills/rfc-generator/SKILL.md
 
-# Sync to .claude/
-npm run install:skills
+# Other plugins (opt-in):
+vim plugins/specweave-github/skills/github-sync/SKILL.md
 
-# Test
-/context-loader-test
+# Skills auto-activate based on description keywords
 ```
 
-**2. Agents** (`src/agents/agent-name/`):
+**2. Editing Agents** (any plugin):
 ```bash
-# Edit source
-vim src/agents/pm/AGENT.md
+# Core plugin (auto-loaded):
+vim plugins/specweave-core/agents/pm/AGENT.md
 
-# Sync to .claude/
-npm run install:agents
+# Other plugins (opt-in):
+vim plugins/specweave-github/agents/github-manager/AGENT.md
 
 # Test by invoking via Task tool
 ```
 
-**3. Commands** (`src/commands/command-name.md`):
+**3. Editing Commands** (any plugin):
 ```bash
-# Edit source
-vim src/commands/specweave.do.md
+# Core plugin (auto-loaded):
+vim plugins/specweave-core/commands/specweave.do.md
 
-# Sync to .claude/
-npm run install:all
+# Other plugins (opt-in):
+vim plugins/specweave-github/commands/github-sync.md
 
-# Test
-/specweave.do
+# Test via /command-name
 ```
 
-**4. Core Logic** (`src/core/`, `src/cli/`):
+**4. Creating New Plugins** (see "Plugins" section below for complete instructions)
+
+**5. Editing Framework Code** (`src/core/`, `src/cli/`):
 ```bash
-# Edit TypeScript
+# Edit TypeScript (config manager, plugin loader, etc.)
 vim src/core/config-manager.ts
 
-# Build
-npm run build
-
-# Test
-npm test
+# Build and test
+npm run build && npm test
 ```
 
 ### Testing Strategy
@@ -808,10 +1049,10 @@ npm test
    - Test coverage plans per increment
    - TC-XXXX test case IDs
 
-3. **Skill Tests** (`src/skills/{name}/test-cases/*.yaml`)
-   - YAML-based test cases
+3. **Skill Tests** (`tests/specs/{skill-name}/` or `tests/integration/{skill-name}/`)
+   - Test cases for skill functionality
    - Minimum 3 test cases per skill
-   - Run via: `npm run test:skill`
+   - Run via: `npm run test:integration`
 
 4. **Code Tests** (`tests/`)
    - **E2E (Playwright)**: MANDATORY for UI features
@@ -864,406 +1105,149 @@ Solution: Inactivity-based detection
 - Update `README.md` for user-facing changes
 - Update `CHANGELOG.md` for API changes
 
-**Living Docs Sync** (after `/specweave.do` completes):
-- Run `/sync-docs update`
+**Living Docs Sync** (after `/specweave:do` completes):
+- Run `/specweave:sync-docs update`
 - Updates `.specweave/docs/` with implementation learnings
 - Updates ADRs from Proposed → Accepted
 
 ---
 
-## Plugin Architecture (v0.4.0)
+## Plugins
 
-### Overview
+**SpecWeave is built 100% on [Claude Code's native plugin system](https://docs.claude.com/en/docs/claude-code/plugins)**.
 
-SpecWeave v0.4.0 introduces a **modular plugin system** that:
-- Reduces context usage by 60-80%
-- Enables community contributions
-- Maintains multi-tool support (Claude, Cursor, Copilot, Generic)
-- Preserves Claude Code's native advantages
+### Architecture: Everything is a Plugin
 
-### Core vs. Plugin Decision Tree
+**Critical Understanding**: SpecWeave doesn't have a "core framework" separate from plugins. Instead:
+
+```
+SpecWeave = Collection of Claude Code Plugins
+├── specweave-core (auto-loaded) ← The "framework" IS a plugin
+├── specweave-github (opt-in)
+├── specweave-figma (opt-in)
+└── ...all other plugins (opt-in)
+```
+
+**What this means**:
+- ✅ `specweave-core` is a Claude Code plugin (happens to auto-load)
+- ✅ All plugins follow identical structure (`.claude-plugin/plugin.json`, `skills/`, `agents/`, `commands/`)
+- ✅ Adding a skill = adding it to a plugin (always)
+- ❌ There are NO "core framework components" outside plugins
+
+**Why this matters**:
+- Uniform architecture (no special cases)
+- All plugins discoverable via Claude Code's plugin system
+- Easy to extend (just add another plugin)
+- Future-proof (follows Anthropic's standards)
+
+**Further reading**:
+- 📖 [Claude Code Plugin Docs](https://docs.claude.com/en/docs/claude-code/plugins)
+- 📖 [Plugin Reference](https://docs.claude.com/en/docs/claude-code/plugins-reference)
+- 📖 [Plugin Marketplaces](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces)
+
+### Available SpecWeave Plugins
+
+**Location**: `plugins/` (root level)
+
+**Discovery**:
+- Browse all plugins: `ls plugins/` or check [.claude-plugin/marketplace.json](/.claude-plugin/marketplace.json)
+- Live catalog: See `.claude-plugin/README.md` for current marketplace contents
+- Auto-detection during `specweave init` suggests relevant plugins
+
+**Plugin Structure** (all follow same pattern):
+```
+plugins/specweave-{name}/
+├── .claude-plugin/plugin.json  # Claude native manifest
+├── skills/                     # Auto-activating capabilities (SKILL.md files)
+├── agents/                     # Specialized AI agents (AGENT.md files)
+├── commands/                   # Slash commands (.md files)
+└── lib/                        # TypeScript utilities (optional)
+```
+
+**Key Plugins** (for reference):
+- `specweave-core` - Framework essentials (always loaded)
+- `specweave-github` - GitHub Issues integration
+- `specweave-{frontend|backend|infrastructure}` - Tech stack plugins
+
+**For complete list**: Check `plugins/` directory or marketplace.json
+
+### Plugin Decision Tree
+
+**Key Insight**: In Claude Code's plugin system, EVERYTHING is a plugin. The only question is: **Which plugin does this belong to?**
+
+**Decision**: Which plugin should contain this feature?
 
 ```
 Is this feature...
-├─ Used by EVERY project? → CORE
-├─ Specific to a tech stack (React, K8s, ML)? → PLUGIN
-├─ Part of increment lifecycle (spec, plan, tasks)? → CORE
-├─ Domain-specific expertise (DevOps, design, payments)? → PLUGIN
-├─ Automated via hooks (living docs)? → CORE
-└─ Nice-to-have but not essential? → PLUGIN
+├─ Used by EVERY project? → specweave-core (auto-loaded)
+│  Examples: increment-planner, rfc-generator, tdd-workflow, PM/Architect agents
+│
+├─ Part of increment lifecycle? → specweave-core (auto-loaded)
+│  Examples: /specweave:inc, /specweave:do, living docs hooks
+│
+├─ Tech stack specific? → New plugin: specweave-{stack}
+│  Examples: specweave-frontend (React, Next.js), specweave-kubernetes
+│
+├─ Domain expertise? → New plugin: specweave-{domain}
+│  Examples: specweave-ml (TensorFlow), specweave-payments (Stripe)
+│
+├─ External integration? → New plugin: specweave-{tool}
+│  Examples: specweave-github, specweave-jira, specweave-figma
+│
+└─ Optional enhancement? → New plugin: specweave-{feature}
+   Examples: specweave-diagrams, specweave-cost-optimizer
 ```
 
-### Plugin Structure (Hybrid: Claude Native + SpecWeave Custom)
-
-**NEW in v0.4.1**: SpecWeave plugins support BOTH Claude Code native and SpecWeave custom formats!
-
+**Plugin Structure** (all follow Claude Code's standard):
 ```
-src/plugins/kubernetes/
-├── .claude-plugin/
-│   ├── plugin.json             # ✅ NEW: Claude Code native format
-│   └── manifest.json            # ✅ KEEP: SpecWeave custom format (richer metadata)
-├── skills/
-│   ├── k8s-deployer/
-│   │   ├── SKILL.md
-│   │   └── test-cases/
-│   ├── helm-manager/
-│   └── k8s-troubleshooter/
-├── agents/
-│   └── devops/
-│       └── AGENT.md
-├── commands/
-│   └── k8s-deploy.md
-└── README.md
+plugins/specweave-{name}/
+├── .claude-plugin/plugin.json  # Required
+├── skills/                     # Optional
+├── agents/                     # Optional
+├── commands/                   # Optional
+└── hooks/                      # Optional
 ```
 
-**Why Dual Manifests?**
-- `plugin.json` = Claude Code native support (enables `/plugin install` commands)
-- `manifest.json` = SpecWeave features (auto-detection, triggers, multi-tool compilation)
-- **Best of both worlds**: Claude users get native UX, other tools still work
+**Result**: Core plugin stayed at ~12K tokens (75% smaller than v0.3.7!)
 
-**See**: [ADR-0015: Hybrid Plugin System](/.specweave/docs/internal/architecture/adr/0015-hybrid-plugin-system.md)
+### Adding a New Plugin (Contributors)
 
-### Plugin Manifest Example
-
-```json
-{
-  "name": "specweave-kubernetes",
-  "version": "1.0.0",
-  "description": "Kubernetes deployment and management",
-  "author": "SpecWeave Team",
-  "license": "MIT",
-  "specweave_core_version": ">=0.4.0",
-
-  "auto_detect": {
-    "files": ["kubernetes/", "k8s/", "helm/"],
-    "packages": ["@kubernetes/client-node"],
-    "env_vars": ["KUBECONFIG"]
-  },
-
-  "provides": {
-    "skills": ["k8s-deployer", "helm-manager", "k8s-troubleshooter"],
-    "agents": ["devops"],
-    "commands": ["specweave.k8s.deploy"]
-  },
-
-  "triggers": ["kubernetes", "k8s", "kubectl", "helm", "pod", "deployment"]
-}
-```
-
-### How Adapters Handle Plugins
-
-**Claude Code** (Native + Hybrid):
-- **Option 1**: Native `/plugin install` commands (recommended if supported)
-  - Uses Claude Code marketplace
-  - `/plugin marketplace add specweave/marketplace`
-  - `/plugin install github@specweave`
-- **Option 2**: SpecWeave CLI (always works)
-  - `specweave plugin install github`
-  - Copies to `.claude/skills/`, `.claude/agents/`, `.claude/commands/`
-- Skills auto-activate based on context
-- Hooks fire automatically
-- Quality: ⭐⭐⭐⭐⭐ (100%)
-
-**Cursor 2.0** (Compiled):
-- Appends plugin to `AGENTS.md`
-- Generates `cursor-team-commands.json` for dashboard
-- Creates `@<plugin-name>` context shortcuts
-- Quality: ⭐⭐⭐⭐ (85%)
-
-**Copilot** (Compiled):
-- Appends plugin to `.github/copilot/instructions.md`
-- Natural language instructions only
-- Quality: ⭐⭐⭐ (60%)
-
-**Generic** (Manual):
-- Appends plugin to `SPECWEAVE-MANUAL.md`
-- User copy-pastes relevant sections
-- Quality: ⭐⭐ (40%)
-
-### Four-Phase Plugin Detection
-
-1. **Init-Time** (during `specweave init`):
-   - Scans `package.json`, directories, env vars
-   - Suggests plugins: "Found React. Enable frontend-stack? (Y/n)"
-
-2. **First Increment** (during `/specweave.inc`):
-   - Analyzes increment description for keywords
-   - Suggests before creating spec: "This needs kubernetes plugin. Enable? (Y/n)"
-
-3. **Pre-Task** (before task execution):
-   - Hook scans task description
-   - Non-blocking suggestion: "This task mentions K8s. Consider enabling plugin."
-
-4. **Post-Increment** (after completion):
-   - Hook scans git diff for new dependencies
-   - Suggests for next increment: "Detected Stripe. Enable payment-processing plugin?"
-
-### Creating a New Plugin
-
-**For SpecWeave Contributors**:
-
+**Create New Plugin**:
 ```bash
-# 1. Create structure
-mkdir -p src/plugins/my-plugin/{.claude-plugin,skills,agents,commands}
+# 1. Create plugin structure
+mkdir -p plugins/specweave-myplugin/{.claude-plugin,skills,agents,commands,lib}
 
-# 2. Create BOTH manifests (hybrid approach)
-
-# 2a. SpecWeave manifest (richer metadata)
-cat > src/plugins/my-plugin/.claude-plugin/manifest.json << 'EOF'
+# 2. Create plugin.json (Claude native format)
+cat > plugins/specweave-myplugin/.claude-plugin/plugin.json << 'EOF'
 {
-  "$schema": "https://spec-weave.com/schemas/plugin-manifest.json",
-  "name": "specweave-my-plugin",
+  "name": "specweave-myplugin",
+  "description": "What it does and when to use it",
   "version": "1.0.0",
-  "description": "What it does",
-  "author": "Your Name",
-  "license": "MIT",
-  "specweave_core_version": ">=0.4.0",
-  "auto_detect": {
-    "files": ["pattern/"],
-    "packages": ["npm-package"],
-    "env_vars": ["ENV_VAR"]
-  },
-  "provides": {
-    "skills": ["skill-name"],
-    "agents": ["agent-name"],
-    "commands": ["command-name"]
-  },
-  "triggers": ["keyword1", "keyword2"]
+  "author": {"name": "Your Name"}
 }
 EOF
 
-# 2b. Claude Code native manifest (for /plugin commands)
-cat > src/plugins/my-plugin/.claude-plugin/plugin.json << 'EOF'
-{
-  "name": "specweave-my-plugin",
-  "description": "What it does",
-  "version": "1.0.0",
-  "author": {
-    "name": "Your Name"
-  }
-}
-EOF
+# 3. Add components (see Claude docs for format):
+# - skills/my-skill/SKILL.md
+# - agents/my-agent/AGENT.md
+# - commands/my-command.md
+# - lib/my-utility.ts (optional)
 
-# 3. Add skills/agents/commands (same format as core)
-
-# 4. Test both installation methods
-specweave plugin enable my-plugin              # SpecWeave CLI
-/plugin marketplace add ./marketplace          # Claude native (if supported)
-/plugin install my-plugin@marketplace
-```
-
-**Important**: Always create BOTH manifests to support hybrid installation!
-
-### Attribution for Borrowed Plugins
-
-If you fork a community plugin (e.g., from wshobson/agents):
-
-```json
-{
-  "name": "specweave-observability",
-  "version": "1.0.0",
-  "description": "Observability & monitoring for SpecWeave",
-
-  "credits": {
-    "based_on": "https://github.com/wshobson/agents/observability-monitoring",
-    "original_author": "Seth Hobson",
-    "license": "MIT",
-    "modifications": [
-      "Adapted for SpecWeave increment lifecycle",
-      "Added /sync-docs integration",
-      "SpecWeave naming conventions"
-    ]
-  }
-}
-```
-
-**Requirements**:
-- ✅ Clear attribution in manifest
-- ✅ Same or compatible open-source license
-- ✅ Document modifications made
-- ✅ Link to upstream prominently
-- ✅ Contribute improvements back (if possible)
-
-### Marketplace Publication (Hybrid Distribution)
-
-**NEW in v0.4.1**: SpecWeave plugins support **dual distribution**:
-
-1. **NPM Package** (SpecWeave CLI):
-   - Full SpecWeave framework with plugin system
-   - `npm install -g specweave`
-   - `specweave plugin install github`
-   - Works with ALL tools (Claude, Cursor, Copilot, Generic)
-
-2. **Claude Code Marketplace** (Native `/plugin`):
-   - Individual plugins via marketplace
-   - `/plugin marketplace add specweave/marketplace`
-   - `/plugin install github@specweave`
-   - Best UX for Claude Code users
-
-**Why Both?**
-- **SpecWeave CLI**: Multi-tool support (works everywhere)
-- **Claude Marketplace**: Native experience (best for Claude)
-- **Same plugin files**: Dual manifests enable both paths
-
-**Publishing a Plugin**:
-
-```bash
-# 1. Ensure dual manifests exist
-ls src/plugins/kubernetes/.claude-plugin/
-# → plugin.json (Claude native)
-# → manifest.json (SpecWeave custom)
-
-# 2. Update marketplace/.claude-plugin/marketplace.json
-vim marketplace/.claude-plugin/marketplace.json
+# 4. Add to marketplace
+vim .claude-plugin/marketplace.json
 # Add entry:
 # {
-#   "name": "specweave-kubernetes",
-#   "source": "../src/plugins/specweave-kubernetes",
-#   "description": "..."
+#   "name": "specweave-myplugin",
+#   "description": "What it does and when to use it",
+#   "source": "../plugins/specweave-myplugin"
 # }
 
-# 3. Test BOTH installation paths
-specweave plugin install kubernetes                    # SpecWeave CLI
-/plugin marketplace add ./marketplace                  # Claude native
-/plugin install specweave-kubernetes@marketplace
-
-# 4. Tag and release
-git tag v0.4.1-kubernetes
-git push --tags
+# 5. Test locally
+/plugin marketplace add ./.claude-plugin
+/plugin install myplugin@marketplace
 ```
 
-**Distribution Summary**:
-
-| Method | Command | Tools Supported | Quality |
-|--------|---------|-----------------|---------|
-| **SpecWeave CLI** | `specweave plugin install` | All (Claude, Cursor, Copilot, Generic) | ⭐⭐⭐⭐⭐ |
-| **Claude Native** | `/plugin install` | Claude Code only | ⭐⭐⭐⭐⭐ |
-
-**See**: [marketplace/README.md](/marketplace/README.md) for complete instructions
-
----
-
-## Current Work (Increment 0004)
-
-**Increment**: 0004-plugin-architecture
-**Title**: Plugin Architecture - Modular, Context-Efficient, Multi-Tool Support + Hybrid Claude Native
-**Status**: ✅ COMPLETE (Foundation + GitHub plugin + Hybrid system)
-**Priority**: P0
-**Started**: 2025-10-31
-**Completed**: 2025-10-31
-
-**Summary**:
-Successfully implemented modular plugin architecture with 60-80% context reduction, multi-tool support (Claude/Cursor/Copilot/Generic), and production-ready GitHub plugin. **NEW**: Added hybrid system supporting BOTH Claude Code native (`/plugin` commands) AND SpecWeave CLI - best of both worlds! Core framework is complete and extensible for future plugins.
-
-**Key Achievements**:
-- ✅ **Core Plugin System** (T-001 to T-007):
-  - Plugin type definitions (Plugin, PluginManifest, Skill, Agent, Command)
-  - JSON Schema validation (plugin-manifest.schema.json, specweave-config.schema.json)
-  - PluginLoader (manifest validation, component loading, integrity checks)
-  - PluginManager (lifecycle management, dependency resolution, config management)
-  - PluginDetector (4-phase detection: init/spec/task/git-diff)
-
-- ✅ **Multi-Tool Adapter Support** (T-008 to T-010):
-  - Claude adapter: Native `.claude/` installation
-  - Cursor adapter: AGENTS.md compilation with HTML markers
-  - Copilot adapter: AGENTS.md compilation with HTML markers
-  - Generic adapter: AGENTS.md for manual workflows
-
-- ✅ **GitHub Plugin** (T-013 to T-022):
-  - 2 skills: github-sync, github-issue-tracker
-  - 1 agent: github-manager (GitHub CLI specialist)
-  - 4 commands: create-issue, sync, close-issue, status
-  - Auto-detection: `.git/` + `github.com` remote + `GITHUB_TOKEN`
-  - Production-ready manifest with proper dependencies
-
-- ✅ **Hybrid Plugin System** (T-023 to T-028) **NEW!**:
-  - ADR-0015: Hybrid plugin architecture decision
-  - Dual manifests: plugin.json (Claude native) + manifest.json (SpecWeave custom)
-  - Claude adapter: Native plugin detection + dual installation paths
-  - Marketplace structure: `marketplace/.claude-plugin/marketplace.json`
-  - Updated documentation: CLAUDE.md, marketplace/README.md
-  - Both installation methods work: `/plugin install` OR `specweave plugin install`
-
-- ✅ **Build & Configuration**:
-  - TypeScript compilation successful (all errors resolved)
-  - Updated .gitignore for plugin caching
-  - Ajv dependency added for JSON Schema validation
-  - ESM module compatibility maintained
-
-**Context Reduction Achieved**:
-- Basic project: 50K → 12K tokens (76% reduction!)
-- React app: 50K → 16K tokens (68% reduction!)
-- Backend API: 50K → 15K tokens (70% reduction!)
-
-**Files Implemented**:
-- `src/core/types/plugin.ts` - Complete type system
-- `src/core/schemas/plugin-manifest.schema.json` - Manifest validation
-- `src/core/schemas/specweave-config.schema.json` - Config validation
-- `src/core/plugin-loader.ts` - Plugin loading & validation
-- `src/core/plugin-manager.ts` - Lifecycle & dependency management
-- `src/core/plugin-detector.ts` - Auto-detection system
-- `src/adapters/*/adapter.ts` - Multi-tool plugin compilation
-- `src/plugins/specweave-github/` - Complete GitHub plugin
-
-**Next Steps**:
-1. ✅ Foundation complete - ready for additional plugins!
-2. 🔮 Future plugins (separate increments):
-   - specweave-jira (JIRA integration)
-   - specweave-ado (Azure DevOps)
-   - specweave-frontend-stack (React/Vue/Angular)
-   - specweave-backend-stack (Node/Python/.NET)
-
----
-
-## Previous Work (Increment 0003)
-
-**Increment**: 0003-intelligent-model-selection
-**Title**: Intelligent Model Selection - Automatic Cost Optimization
-**Status**: Planned (just created, ready to implement)
-**Priority**: P1
-**Started**: 2025-10-30
-
-**Summary**:
-Implement automatic cost optimization by intelligently routing work to Sonnet 4.5 (planning/analysis) vs Haiku 4.5 (execution), following Anthropic's official guidance. Expected 60-70% cost savings.
-
-**Key Features**:
-- ✅ Spec.md created (8 user stories, complete product requirements)
-- ✅ Plan.md created (comprehensive technical architecture)
-- ✅ Tasks.md created (22 implementation tasks)
-- ✅ Tests.md created (100+ test cases, quality validation)
-
-**Three-Layer System**:
-1. **Agent Model Preferences** - Each agent declares optimal model (Sonnet/Haiku/Auto)
-2. **Phase Detection** - Analyze user intent to detect planning vs execution
-3. **Cost Tracking** - Real-time cost visibility with savings calculations
-
-**Files to Focus On**:
-- `.specweave/increments/0003-intelligent-model-selection/spec.md`
-- `.specweave/increments/0003-intelligent-model-selection/plan.md`
-- `.specweave/increments/0003-intelligent-model-selection/tasks.md`
-- `.specweave/increments/0003-intelligent-model-selection/tests.md`
-
-**Next Steps**:
-1. Execute Task T-001: Create type definitions
-2. Execute Task T-002: Create pricing constants
-3. Execute Task T-003: Implement AgentModelManager
-4. Continue through all 22 tasks
-
----
-
-## Previous Work (Increment 0002)
-
-**Increment**: 0002-core-enhancements
-**Title**: Core Framework Enhancements - Multi-Tool Support & Diagram Agents
-**Status**: Completed (testing phase)
-**Priority**: P1
-**Started**: 2025-10-27
-
-**Key Achievements**:
-- ✅ Migrated commands to dot notation (`specweave.xxx`)
-- ✅ Diagram generation agents (C4, Sequence, ER)
-- ✅ Fixed context documentation
-- ✅ Corrected ADR-0002 (context loading architecture)
+**See**: [.claude-plugin/README.md](/.claude-plugin/README.md) for marketplace documentation
 
 ---
 
@@ -1287,7 +1271,7 @@ Implement automatic cost optimization by intelligently routing work to Sonnet 4.
 
 ### 4. Incremental Development
 - Work in small, measurable increments
-- Use SpecWeave's own workflow (`/specweave.inc`, `/specweave.do`, etc.)
+- Use SpecWeave's own workflow (`/specweave:inc`, `/specweave:do`, etc.)
 - All work traces back to specs
 
 ### 5. Adapter-First Design
@@ -1326,94 +1310,44 @@ git push origin develop --tags
 
 ---
 
-## Adapter System
+## Adapter System (Legacy)
 
-SpecWeave supports multiple AI coding tools via adapters:
+**SpecWeave is Claude Code-first** - The framework is designed specifically for Claude Code's native capabilities.
 
-**Supported Tools**:
-- ✅ Claude Code (best-in-class, native support)
-- ✅ Cursor (via `.cursorrules` + Markdown commands)
-- ✅ GitHub Copilot (via `.github/copilot/instructions.md`)
-- ⏳ Generic (Markdown-only, for ChatGPT/Gemini/etc.)
-- 🔮 Windsurf (planned)
+**Primary Tool**:
+- ✅ **Claude Code** - Native support (slash commands, agents, skills, hooks, MCP)
 
-**Adapter Pattern**:
-```
-src/adapters/
-├── claude/               # Claude Code native (slash commands, agents)
-│   ├── adapter.ts
-│   └── README.md
-├── cursor/               # Cursor (.cursorrules)
-│   ├── adapter.ts
-│   └── README.md
-├── copilot/              # GitHub Copilot (instructions.md)
-│   ├── adapter.ts
-│   └── README.md
-└── generic/              # Generic Markdown (all others)
-    ├── adapter.ts
-    └── SPECWEAVE-MANUAL.md
-```
+**Legacy Multi-Tool Support** (may be removed):
+- ⚠️  Cursor (via `.cursorrules` + AGENTS.md compilation)
+- ⚠️  GitHub Copilot (via `.github/copilot/instructions.md`)
+- ⚠️  Generic (Markdown-only, for ChatGPT/Gemini/etc.)
 
-**Auto-Detection**:
-- Detects user's AI tool during `specweave init`
-- Installs appropriate adapter
-- Falls back to generic if unknown
+**Why Claude-First?**
+The adapter system was originally designed to support multiple tools, but this added significant complexity without meaningful benefit. Claude Code provides:
+- ✅ **Native plugin marketplace** - No compilation needed
+- ✅ **Auto-activating skills** - No manual @ mentions
+- ✅ **Isolated agent contexts** - True role separation
+- ✅ **Pre/post lifecycle hooks** - Automated living docs sync
+- ✅ **MCP protocol** - Industry standard for context management
+
+Other tools simply can't match these capabilities. The adapters remain in the codebase for now but are considered legacy and may be removed in a future version.
+
+**See**: "Why Claude Code is Best-in-Class" section above for detailed comparison
 
 ---
 
 ## Common Tasks
 
-### Add a New Skill
+### Adding Skills, Agents, or Commands
 
-```bash
-# 1. Create skill directory
-mkdir -p src/skills/my-new-skill/test-cases
+**All components go into plugins** (see "Plugins" section above for complete instructions).
 
-# 2. Create SKILL.md
-cat > src/skills/my-new-skill/SKILL.md << 'EOF'
----
-name: my-new-skill
-description: What it does and when to activate
----
+**Quick reference**:
+- **Core components**: `plugins/specweave-core/{skills|agents|commands|hooks}/`
+- **Plugin components**: `plugins/specweave-{name}/{skills|agents|commands}/`
+- **Tests**: `tests/integration/{component-name}/` or `tests/unit/`
 
-# My New Skill
-
-Content here...
-EOF
-
-# 3. Add test cases (minimum 3)
-vim src/skills/my-new-skill/test-cases/test-1-basic.yaml
-
-# 4. Install locally
-npm run install:skills
-
-# 5. Test
-# Ask Claude something that matches the skill's description
-```
-
-### Add a New Command
-
-```bash
-# 1. Create command file
-cat > src/commands/specweave.newcmd.md << 'EOF'
----
-name: newcmd
-description: Short description
----
-
-# New Command
-
-Prompt for Claude...
-EOF
-
-# 2. Install locally
-npm run install:all
-
-# 3. Test
-/specweave.newcmd
-
-# 4. Add to commands/README.md index
-```
+**For detailed instructions**: See "Adding a New Plugin (Contributors)" section above (line ~1250)
 
 ### Update Documentation
 
@@ -1479,12 +1413,12 @@ cd docs-site && npm run build
 ## Quick Reference
 
 **Commands (for SpecWeave development)**:
-- `/specweave.inc "feature"` - Plan new increment
-- `/specweave.do` - Execute tasks (smart resume)
-- `/specweave.progress` - Check status
-- `/specweave.validate 0002` - Validate increment
-- `/specweave.done 0002` - Close increment
-- `/sync-docs update` - Sync living docs
+- `/specweave:inc "feature"` - Plan new increment
+- `/specweave:do` - Execute tasks (smart resume)
+- `/specweave:progress` - Check status
+- `/specweave:validate 0002` - Validate increment
+- `/specweave:done 0002` - Close increment
+- `/specweave:sync-docs update` - Sync living docs
 
 **Build & Test**:
 - `npm run build` - Compile TypeScript

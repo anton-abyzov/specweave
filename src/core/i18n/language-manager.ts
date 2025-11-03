@@ -38,12 +38,14 @@ export class LanguageManager {
     this.config = {
       defaultLanguage: config?.defaultLanguage || 'en',
       enabledLanguages: config?.enabledLanguages || ['en'],
-      autoDetect: config?.autoDetect !== undefined ? config.autoDetect : true,
+      // If defaultLanguage is explicitly set, don't auto-detect (SIMPLIFIED)
+      autoDetect: config?.autoDetect !== undefined ? config.autoDetect : !config?.defaultLanguage,
       cache: config?.cache,
     };
 
-    // Set current language
-    if (this.config.autoDetect) {
+    // Set current language (SIMPLIFIED LOGIC)
+    // Priority: 1) Auto-detect if enabled, 2) Default language
+    if (this.config.autoDetect && !config?.defaultLanguage) {
       const detected = detectLanguageFromEnvironment();
       this.currentLanguage = detected.language;
     } else {

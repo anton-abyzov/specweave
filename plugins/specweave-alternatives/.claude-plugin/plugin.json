@@ -1,0 +1,8 @@
+{
+  "name": "specweave-alternatives",
+  "description": "Compare SpecWeave with BMAD, spec-kit, openspec, and other spec-driven frameworks. Get gap analysis, feature comparison, and strategic recommendations to choose the best framework for your needs.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team"
+  }
+}

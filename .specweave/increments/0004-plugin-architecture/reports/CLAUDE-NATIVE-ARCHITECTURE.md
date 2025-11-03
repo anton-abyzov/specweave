@@ -291,7 +291,7 @@ user-project/
 **Result**:
 - ✅ No file copying (native loading)
 - ✅ Skills auto-activate based on context
-- ✅ Commands available immediately: `/specweave.inc`, `/specweave.do`, etc.
+- ✅ Commands available immediately: `/specweave:inc`, `/specweave:do`, etc.
 - ✅ Hooks fire automatically on events
 - ✅ Native `/plugin` commands work: `/plugin list`, `/plugin disable`, etc.
 
@@ -504,7 +504,7 @@ cd specweave
 /plugin install specweave-github@specweave
 
 # 4. Start working
-/specweave.inc "0005-new-feature"
+/specweave:inc "0005-new-feature"
 ```
 
 **Workflow**:
@@ -516,7 +516,7 @@ vim skills/increment-planner/SKILL.md
 # Just restart Claude Code if needed
 
 # Test
-/specweave.inc "test feature"
+/specweave:inc "test feature"
 ```
 
 ---
@@ -652,7 +652,7 @@ rm -rf ~/.claude-code/marketplaces/specweave
 
 # Verify
 /help
-# Should show: /specweave.inc, /specweave.do, etc.
+# Should show: /specweave:inc, /specweave:do, etc.
 
 # Test skill activation
 # Ask: "I want to plan a new increment for user authentication"
@@ -707,7 +707,7 @@ vim skills/increment-planner/SKILL.md
 # Make a change
 
 # Test immediately (no reinstall!)
-/specweave.inc "test feature"
+/specweave:inc "test feature"
 # Should reflect changes
 
 # Verify real-time updates

@@ -123,7 +123,7 @@ Transform SpecWeave from a monolithic skill/agent bundle into a **modular plugin
 **So that** I get relevant help without manual setup
 
 **Acceptance Criteria**:
-- ✅ `/specweave.inc` analyzes increment description for keywords
+- ✅ `/specweave:inc` analyzes increment description for keywords
 - ✅ Suggests plugins before creating spec.md
 - ✅ Keywords cover common domains (auth, payments, K8s, ML, design)
 - ✅ User can enable plugins inline (no context switch)
@@ -239,10 +239,10 @@ Transform SpecWeave from a monolithic skill/agent bundle into a **modular plugin
 
 **Acceptance Criteria**:
 - ✅ GitHub plugin auto-detects `.git/` + GitHub remote during init
-- ✅ `/specweave.inc` optionally creates GitHub issue
-- ✅ `/specweave.do` posts task completion comments on issue
-- ✅ `/specweave.done` closes GitHub issue with spec summary
-- ✅ `/sync-docs` updates issue description when spec changes
+- ✅ `/specweave:inc` optionally creates GitHub issue
+- ✅ `/specweave:do` posts task completion comments on issue
+- ✅ `/specweave:done` closes GitHub issue with spec summary
+- ✅ `/specweave:sync-docs` updates issue description when spec changes
 - ✅ GitHub issue links back to increment folder
 - ✅ Works with GitHub CLI (`gh`)
 - ✅ Respects `.env` for `GITHUB_TOKEN`
@@ -256,22 +256,22 @@ $ specweave init
 > ✅ GitHub plugin enabled
 
 # 2. Create increment (create GitHub issue)
-$ /specweave.inc "user authentication"
+$ /specweave:inc "user authentication"
 > Create GitHub issue for this increment? (Y/n) y
 > ✅ Created issue #42: Feature: user-authentication
 > 🔗 https://github.com/anton-abyzov/specweave/issues/42
 
 # 3. Work on tasks (auto-comment on issue)
-$ /specweave.do
+$ /specweave:do
 > ✅ Task T-001 completed: Create login form
 > 💬 Commented on issue #42
 
-$ /specweave.do
+$ /specweave:do
 > ✅ Task T-002 completed: Add JWT authentication
 > 💬 Commented on issue #42
 
 # 4. Close increment (close GitHub issue)
-$ /specweave.done
+$ /specweave:done
 > All PM gates passed! ✅
 > Close GitHub issue #42? (Y/n) y
 > ✅ Issue #42 closed with spec summary
@@ -351,11 +351,11 @@ $ /specweave.done
 
 **Acceptance Criteria**:
 - ✅ tasks.md enhanced with GitHub Issue, Assignee, Subtasks, Dependencies, Blocks fields
-- ✅ `/specweave.github.sync-tasks` command creates GitHub issues per task
+- ✅ `/specweave:github:sync-tasks` command creates GitHub issues per task
 - ✅ Each task = 1 GitHub issue (linked to epic)
 - ✅ Subtasks represented as checkboxes in issue body
 - ✅ Dependencies linked via GitHub issue links (blocks/depends-on)
-- ✅ `/specweave.do` closes task issue and updates epic on completion
+- ✅ `/specweave:do` closes task issue and updates epic on completion
 - ✅ Subtask completion syncs to GitHub checkboxes
 - ✅ Rate limiting handled gracefully (batch with delays)
 - ✅ ADR-0007 documents GitHub-first architecture decision
@@ -364,17 +364,17 @@ $ /specweave.done
 **User Workflow**:
 ```bash
 # 1. Create increment
-/specweave.inc "0005-user-authentication"
+/specweave:inc "0005-user-authentication"
 
 # 2. Sync tasks to GitHub (creates epic + task issues)
-/specweave.github.sync-tasks 0005
+/specweave:github:sync-tasks 0005
 # Creates: Milestone v0.5.0, Epic #100, Task Issues #101-#115
 
 # 3. Assign tasks in GitHub
 # Team members assign themselves to issues
 
 # 4. Work on tasks
-/specweave.do
+/specweave:do
 # Closes GitHub issue #101, updates epic #100 progress
 
 # 5. Team tracks progress in GitHub Projects
@@ -595,13 +595,13 @@ Enable these plugins? (Y/n) y
    ✓ payment-processing plugin (4 skills, 1 agent)
 
 🎯 Setup complete! Create your first increment:
-   /specweave.inc "user authentication with Stripe billing"
+   /specweave:inc "user authentication with Stripe billing"
 ```
 
 ### Workflow 2: Spec-Based Plugin Suggestion
 
 ```bash
-User: /specweave.inc "deploy API to Kubernetes with monitoring"
+User: /specweave:inc "deploy API to Kubernetes with monitoring"
 
 Claude:
 📋 Planning increment: kubernetes-deployment-with-monitoring
@@ -695,7 +695,7 @@ Continue with Cursor setup? (Y/n) y
    1. Upload cursor-team-commands.json to your Cursor team dashboard
    2. Reload Cursor window (Cmd+Shift+P → Reload Window)
    3. Use @increments, @docs, @strategy for context
-   4. Manually run /sync-docs after completing tasks
+   4. Manually run /specweave:sync-docs after completing tasks
 
 📖 See .cursor/README.md for full instructions
 ```
@@ -723,7 +723,7 @@ Continue with Cursor setup? (Y/n) y
 - `specweave plugin search <keyword>` - Search marketplace
 - Rich descriptions in `specweave plugin list`
 - Documentation page: "Available Plugins" with use cases
-- Auto-suggestions during `/specweave.inc` (spec analysis)
+- Auto-suggestions during `/specweave:inc` (spec analysis)
 
 ### Risk 3: Cursor/Copilot Users Feel Second-Class
 
@@ -806,13 +806,13 @@ Continue with Cursor setup? (Y/n) y
 - tech-lead (Technical Lead)
 
 **Commands** (7):
-- /specweave.inc
-- /specweave.do
-- /specweave.next
-- /specweave.done
-- /specweave.progress
-- /specweave.validate
-- /sync-docs
+- /specweave:inc
+- /specweave:do
+- /specweave:next
+- /specweave:done
+- /specweave:progress
+- /specweave:validate
+- /specweave:sync-docs
 
 **PLUGINS (Opt-In)**:
 

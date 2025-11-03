@@ -241,9 +241,9 @@ describe('Init-Time Detection', () => {
 ```typescript
 describe('First Increment Detection', () => {
   it('should suggest plugins based on spec content', async () => {
-    // Mock /specweave.inc with K8s keywords
+    // Mock /specweave:inc with K8s keywords
     const output = await execClaudeCommand(
-      '/specweave.inc "deploy API to Kubernetes"'
+      '/specweave:inc "deploy API to Kubernetes"'
     );
 
     // Verify suggestion
@@ -419,7 +419,7 @@ test('new react project workflow', async ({ page }) => {
   expect(config.plugins.enabled).toContain('frontend-stack');
 
   // 4. Create increment
-  await execClaudeCommand('/specweave.inc "user authentication"');
+  await execClaudeCommand('/specweave:inc "user authentication"');
 
   // 5. Verify spec created with React context
   const spec = await fs.readFile('.specweave/increments/0001-user-authentication/spec.md', 'utf-8');

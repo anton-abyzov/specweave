@@ -4,12 +4,12 @@
 
 ---
 
-## /specweave.costs Command
+## /specweave:costs Command
 
 ### Syntax
 
 ```bash
-/specweave.costs [incrementId] [--export json|csv|both]
+/specweave:costs [incrementId] [--export json|csv|both]
 ```
 
 ### Parameters
@@ -21,19 +21,19 @@
 
 ```bash
 # View all increments
-/specweave.costs
+/specweave:costs
 
 # View specific increment
-/specweave.costs 0003
+/specweave:costs 0003
 
 # Export to JSON
-/specweave.costs 0003 --export json
+/specweave:costs 0003 --export json
 
 # Export to CSV
-/specweave.costs 0003 --export csv
+/specweave:costs 0003 --export csv
 
 # Export both formats
-/specweave.costs 0003 --export both
+/specweave:costs 0003 --export both
 ```
 
 ---
@@ -58,7 +58,7 @@
       "agent": "pm",
       "model": "sonnet",
       "increment": "0003",
-      "command": "/specweave.do",
+      "command": "/specweave:do",
       "startedAt": "2025-10-31T14:30:00.000Z",
       "endedAt": "2025-10-31T14:32:00.000Z",
       "tokenUsage": {
@@ -147,7 +147,7 @@ savings = baselineCost - actualCost
 **Columns**:
 ```csv
 Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,sonnet,/specweave.inc,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
+session_123,pm,sonnet,/specweave:inc,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
 ```
 
 ---
@@ -193,7 +193,7 @@ const tracker = new CostTracker({
 });
 
 // Start session
-const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave.inc');
+const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave:inc');
 
 // Record tokens
 tracker.recordTokens(5000, 2000, sessionId);

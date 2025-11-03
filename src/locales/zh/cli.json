@@ -1,0 +1,108 @@
+{
+  "init": {
+    "welcome": "🚀 SpecWeave Initialization",
+    "projectName": "Project name:",
+    "projectNamePrompt": "Project name (for templates):",
+    "projectNameDefault": "my-saas",
+    "detectingTool": "Detecting AI tool...",
+    "foundClaude": "✅ Found Claude Code",
+    "foundCursor": "✅ Found Cursor",
+    "foundCopilot": "✅ Found GitHub Copilot",
+    "noToolDetected": "No AI tool detected, using Generic adapter",
+    "complete": "✨ Initialization complete!",
+    "claudeNativeComplete": "✨ Claude Code native installation complete!",
+    "claudeNativeBenefits": "✅ Native skills, agents, hooks work out of the box",
+    "projectSuccess": "SpecWeave project created successfully!",
+    "readyToBuild": "🚀 Ready to build with SpecWeave!",
+    "errors": {
+      "invalidName": "Project name must contain only lowercase letters, numbers, and hyphens",
+      "alreadyExists": ".specweave directory already exists",
+      "cancelled": "❌ Initialization cancelled",
+      "invalidLanguage": "❌ Invalid language: {{language}}",
+      "supportedLanguages": "Supported languages: {{languages}}",
+      "nestedNotSupported": "❌ Nested .specweave/ folders are NOT supported!",
+      "parentFound": "Found parent .specweave/ at:",
+      "projectCreationFailed": "Failed to create project",
+      "commandsCopyFailed": "❌ Commands copy failed: {{error}}",
+      "agentsCopyFailed": "❌ Agents copy failed: {{error}}",
+      "skillsCopyFailed": "❌ Skills copy failed: {{error}}",
+      "hooksCopyFailed": "❌ Hooks copy failed: {{error}}"
+    },
+    "warnings": {
+      "invalidDirName": "⚠️  Current directory name '{{dirName}}' contains invalid characters.",
+      "directoryNotEmpty": "⚠️  Current directory contains {{count}} file{{plural}}.",
+      "skillsIndexWarning": "⚠️  Warning: Could not generate skills index: {{error}}",
+      "skillsIndexNote": "Skills will still work, but manual indexing may be needed."
+    },
+    "prompts": {
+      "confirmInitInCurrent": "Initialize SpecWeave in current directory?",
+      "overwriteSpecweave": ".specweave directory already exists. Overwrite?",
+      "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
+      "enablePlugins": "Enable suggested plugins now?"
+    },
+    "info": {
+      "nestedEnforcement": "SpecWeave enforces a single source of truth:",
+      "nestedBullet1": "• Use the parent folder for all increments",
+      "nestedBullet2": "• Increments can span multiple subdirectories",
+      "nestedBullet3": "• See CLAUDE.md section \"Root-Level .specweave/ Folder\"",
+      "nestedToFix": "To fix:",
+      "suggestedPlugins": "💡 Suggested Plugins:",
+      "copiedFiles": "✓ Copied {{count}} command files",
+      "copiedAgents": "✓ Copied {{count}} agent directories",
+      "copiedSkills": "✓ Copied {{count}} skill directories",
+      "copiedHooks": "✓ Copied {{count}} hook files"
+    },
+    "progress": {
+      "creatingProject": "Creating SpecWeave project...",
+      "detected": "Detected {{tool}}...",
+      "usingTool": "Using {{tool}}...",
+      "directoryCreated": "Directory structure created...",
+      "templatesCopied": "Base templates copied...",
+      "installingComponents": "Installing Claude Code components...",
+      "commandsInstalled": "Slash commands installed...",
+      "agentsInstalled": "Agents installed...",
+      "skillsInstalled": "Skills installed...",
+      "hooksInstalled": "Hooks installed...",
+      "generatingIndex": "Generating skills index...",
+      "indexGenerated": "Skills index generated...",
+      "installingAdapter": "Installing {{tool}} adapter...",
+      "projectSuccess": "SpecWeave project created successfully!",
+      "detectingPlugins": "Detecting plugins...",
+      "detectedPlugins": "Detected {{count}} suggested plugins",
+      "enablingPlugins": "Enabling plugins...",
+      "enabledPlugin": "Enabled {{plugin}}",
+      "pluginsEnabled": "Plugins enabled"
+    },
+    "nextSteps": {
+      "header": "🎯 Next steps:",
+      "cd": "cd {{projectName}}",
+      "footer": "🚀 Ready to build with SpecWeave!",
+      "docsLink": "Documentation: https://spec-weave.com",
+      "githubLink": "GitHub: https://github.com/anton-abyzov/specweave"
+    }
+  },
+  "increment": {
+    "creating": "📝 Creating increment: {name}",
+    "created": "✅ Increment {id} created successfully!",
+    "nextStepDo": "Next: Run /specweave.do to start implementation",
+    "errors": {
+      "incompleteFound": "Cannot create new increment! Previous increments incomplete"
+    }
+  },
+  "progress": {
+    "currentIncrement": "Current Increment: {id}",
+    "status": "Status: {status}",
+    "completion": "Completion: {percent}%"
+  },
+  "translate": {
+    "translating": "🌐 Translating content to {language}...",
+    "complete": "✅ Translation complete!"
+  },
+  "version": {
+    "current": "SpecWeave version: {version}"
+  },
+  "errors": {
+    "fileNotFound": "❌ File not found: {path}",
+    "invalidConfig": "❌ Invalid configuration: {error}"
+  }
+}

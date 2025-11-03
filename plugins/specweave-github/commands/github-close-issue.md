@@ -10,7 +10,7 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 ## Usage
 
 ```bash
-/specweave.github.close-issue <increment-id> [options]
+/specweave:github:close-issue <increment-id> [options]
 ```
 
 ## Arguments
@@ -28,16 +28,16 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 
 ```bash
 # Basic usage (auto-generates completion summary)
-/specweave.github.close-issue 0004
+/specweave:github:close-issue 0004
 
 # With custom comment
-/specweave.github.close-issue 0004 --comment "Merged to main, deploying to production"
+/specweave:github:close-issue 0004 --comment "Merged to main, deploying to production"
 
 # Force close (skip validation)
-/specweave.github.close-issue 0004 --force
+/specweave:github:close-issue 0004 --force
 
 # Reopen closed issue
-/specweave.github.close-issue 0004 --reopen
+/specweave:github:close-issue 0004 --reopen
 ```
 
 ## What This Command Does
@@ -45,7 +45,7 @@ Close the GitHub issue associated with a completed SpecWeave increment.
 1. **Validates Increment Completion**
    - All tasks completed (48/48)
    - All tests passing
-   - PM gates passed (from `/specweave.done`)
+   - PM gates passed (from `/specweave:done`)
    - Documentation updated
 
 2. **Generates Completion Summary**
@@ -205,19 +205,19 @@ Issues:
   - TC-127: E2E sync test
 
 ✗ PM Gates: Not run yet
-  - Run /specweave.done 0004 first
+  - Run /specweave:done 0004 first
 
 Fix these issues, then retry:
-  /specweave.github.close-issue 0004
+  /specweave:github:close-issue 0004
 
 Or force close (not recommended):
-  /specweave.github.close-issue 0004 --force
+  /specweave:github:close-issue 0004 --force
 ```
 
 ## Requirements
 
 - GitHub CLI (`gh`) installed and authenticated
-- Increment marked as complete (via `/specweave.done`)
+- Increment marked as complete (via `/specweave:done`)
 - Valid GitHub issue exists for increment
 
 ## Error Handling
@@ -229,10 +229,10 @@ Or force close (not recommended):
 Status: in_progress (should be: completed)
 
 Complete the increment first:
-  /specweave.done 0004
+  /specweave:done 0004
 
 Then close the issue:
-  /specweave.github.close-issue 0004
+  /specweave:github:close-issue 0004
 ```
 
 **Issue not found**:
@@ -242,7 +242,7 @@ Then close the issue:
 Check .metadata.yaml for issue number.
 
 Create issue first:
-  /specweave.github.create-issue 0004
+  /specweave:github:create-issue 0004
 ```
 
 **Issue already closed**:
@@ -266,15 +266,15 @@ Contact repository admin for access.
 
 ## Related Commands
 
-- `/specweave.done <increment-id>`: Mark increment complete (run this first)
-- `/specweave.github.sync <increment-id>`: Sync final progress before closing
-- `/specweave.github.status <increment-id>`: Check issue status
+- `/specweave:done <increment-id>`: Mark increment complete (run this first)
+- `/specweave:github:sync <increment-id>`: Sync final progress before closing
+- `/specweave:github:status <increment-id>`: Check issue status
 
 ## Tips
 
-1. **Auto-Close**: Enable `auto_close_issue: true` for automatic closing when running `/specweave.done`
+1. **Auto-Close**: Enable `auto_close_issue: true` for automatic closing when running `/specweave:done`
 
-2. **Final Sync**: Always run `/specweave.github.sync` before closing to ensure latest progress is posted
+2. **Final Sync**: Always run `/specweave:github:sync` before closing to ensure latest progress is posted
 
 3. **Validation**: Don't skip validation (`--force`) unless absolutely necessary - it ensures quality
 
@@ -383,11 +383,11 @@ Close multiple completed increments:
 
 ```bash
 # Close all completed increments
-/specweave.github.close-issue --status completed --all
+/specweave:github:close-issue --status completed --all
 
 # Close specific increments
 for i in 0004 0005 0006; do
-  /specweave.github.close-issue $i
+  /specweave:github:close-issue $i
 done
 ```
 
@@ -396,7 +396,7 @@ done
 Reopen issue with explanation:
 
 ```bash
-/specweave.github.close-issue 0004 --reopen \
+/specweave:github:close-issue 0004 --reopen \
   --comment "Reopening: Critical bug found in production (issue #140). Need to add rollback mechanism."
 ```
 
@@ -405,13 +405,13 @@ Reopen issue with explanation:
 Close and lock issue to prevent further comments:
 
 ```bash
-/specweave.github.close-issue 0004 --lock \
+/specweave:github:close-issue 0004 --lock \
   --lock-reason "resolved"  # or "off-topic", "spam", "too heated"
 ```
 
 ---
 
-**Command**: `/specweave.github.close-issue`
+**Command**: `/specweave:github:close-issue`
 **Plugin**: specweave-github
 **Agent**: github-manager
 **Version**: 1.0.0

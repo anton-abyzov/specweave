@@ -139,7 +139,7 @@ user_stories: 11
 **Acceptance Criteria**:
 - [ ] Real-time cost display during increment execution
 - [ ] Cost report per increment in `.specweave/increments/####/reports/cost-analysis.json`
-- [ ] Command `/specweave.costs` shows current and historical costs
+- [ ] Command `/specweave:costs` shows current and historical costs
 - [ ] Cost breakdown by: model, agent, phase, increment
 - [ ] Savings calculation vs all-Sonnet baseline
 
@@ -172,7 +172,7 @@ user_stories: 11
 - [ ] Detects planning phase from keywords: "plan", "design", "analyze", "architecture"
 - [ ] Detects execution phase from keywords: "implement", "build", "create", "write"
 - [ ] Detects review phase from keywords: "review", "validate", "audit", "assess"
-- [ ] Slash commands hint at phase: `/specweave.inc` = planning, `/specweave.do` = execution
+- [ ] Slash commands hint at phase: `/specweave:inc` = planning, `/specweave:do` = execution
 - [ ] Phase detection logged for transparency
 
 **Priority**: P1 - Smart automation
@@ -201,7 +201,7 @@ user_stories: 11
 **So that** I can justify AI tool investments and optimize spending
 
 **Acceptance Criteria**:
-- [ ] `/specweave.costs` command shows summary dashboard
+- [ ] `/specweave:costs` command shows summary dashboard
 - [ ] Dashboard displays: total spent, savings %, cost per increment
 - [ ] Historical trend chart (last 10 increments)
 - [ ] Cost comparison: Sonnet-only vs optimized
@@ -249,7 +249,7 @@ user_stories: 11
 **So that** I validate ideas before investing time in detailed specs
 
 **Acceptance Criteria**:
-- [ ] `/specweave.inc` prompts: "Run research first? [Y/n]" (default: Yes)
+- [ ] `/specweave:inc` prompts: "Run research first? [Y/n]" (default: Yes)
 - [ ] Research uses Haiku 4.5 (cheap, fast, 15 min)
 - [ ] Research covers: market analysis, competitors, user needs, competitive gaps
 - [ ] Research output saved to `increment/research.md`
@@ -378,7 +378,7 @@ const MODELS = {
 
 ### Adoption Metrics
 - 80% of users keep default (auto mode)
-- 50% of users check `/specweave.costs` regularly
+- 50% of users check `/specweave:costs` regularly
 - 90% of agents use model_preference field
 
 ## Out of Scope (Future Increments)

@@ -381,14 +381,14 @@ auto_refresh: false
 **So that** I catch documentation drift and missing features
 
 **Acceptance Criteria**:
-- [ ] **TC-108**: User runs `/sync-docs` → Review initiated
+- [ ] **TC-108**: User runs `/specweave:sync-docs` → Review initiated
 - [ ] **TC-109**: Detects project tech stack (NEVER assumes Next.js/React)
 - [ ] **TC-110**: Compares docs to actual code (can fetch from GitHub/GitLab)
 - [ ] **TC-111**: Identifies: undocumented features, outdated docs, tech debt, missing tests
 - [ ] **TC-112**: Presents comprehensive gap analysis
 - [ ] **TC-113**: Framework-agnostic output (shows DETECTED tech stack)
 
-**Slash Command**: `/sync-docs`
+**Slash Command**: `/specweave:sync-docs`
 
 ## Framework Components
 
@@ -481,7 +481,7 @@ All commands adapt to ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.):
    - Creates spec.md, tasks.md, tests.md
    - Framework-specific implementation
 
-3. **`/sync-docs`** - Review strategic documentation
+3. **`/specweave:sync-docs`** - Review strategic documentation
    - Arguments: `--increment`, `--repo`, `--repo-url`, `--folder`
    - Detects tech stack (NEVER assumes)
    - Compares docs to code

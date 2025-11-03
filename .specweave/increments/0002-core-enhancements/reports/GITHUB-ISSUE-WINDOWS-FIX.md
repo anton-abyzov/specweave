@@ -166,7 +166,7 @@ None - this is purely a bug fix that makes the default behavior correct.
 **Windows Users**: Please test v0.3.7 and confirm:
 1. `specweave init .` detects "claude" (not "generic")
 2. `.claude/commands`, `.claude/agents`, `.claude/skills` are populated
-3. Slash commands work (`/specweave.inc`, `/specweave.do`, etc.)
+3. Slash commands work (`/specweave:inc`, `/specweave:do`, etc.)
 
 **macOS/Linux Users**: Please test v0.3.7 and confirm:
 1. No regressions

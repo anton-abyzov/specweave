@@ -196,7 +196,7 @@ PS C:\Temp\specweave-final-test\.claude\agents> ls
 **What Breaks**:
 - ❌ Claude Code native features (skills, agents, slash commands) - 0 files installed
 - ❌ User expects SpecWeave to work out of the box
-- ❌ Documentation shows commands like `/specweave.inc` but they don't exist
+- ❌ Documentation shows commands like `/specweave:inc` but they don't exist
 - ❌ Confusing error messages (directories exist but are empty)
 
 **Workaround**:
@@ -645,7 +645,7 @@ test('generic adapter should install .claude files', async () => {
 
 1. **Skills don't activate**: Users report skills not working because SKILL.md files are missing
 2. **Agents not available**: Task tool fails because AGENT.md files are missing
-3. **Slash commands don't work**: `/specweave.inc` etc. return "command not found"
+3. **Slash commands don't work**: `/specweave:inc` etc. return "command not found"
 4. **Brownfield detection fails**: Brownfield analyzer skill missing
 
 ### Upstream Causes

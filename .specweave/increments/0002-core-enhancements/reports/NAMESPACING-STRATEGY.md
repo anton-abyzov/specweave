@@ -107,11 +107,11 @@ description: Execute increment implementation
 
 **Routing table**:
 ```yaml
-/specweave inc          → .claude/commands/specweave.inc.md
-/specweave do        → .claude/commands/specweave.do.md
-/specweave next         → .claude/commands/specweave.next.md
-/specweave done         → .claude/commands/specweave.done.md
-/specweave progress     → .claude/commands/specweave.progress.md
+/specweave inc          → .claude/commands/specweave:inc.md
+/specweave do        → .claude/commands/specweave:do.md
+/specweave next         → .claude/commands/specweave:next.md
+/specweave done         → .claude/commands/specweave:done.md
+/specweave progress     → .claude/commands/specweave:progress.md
 ```
 
 **Error handling**:
@@ -522,7 +522,7 @@ Choose: _
 
 # Verify:
 assert_dir_exists ".claude/commands"
-assert_file_exists ".claude/commands/specweave.inc.md"
+assert_file_exists ".claude/commands/specweave:inc.md"
 assert_file_exists ".specweave/config.yaml"
 ```
 
@@ -532,17 +532,17 @@ assert_file_exists ".specweave/config.yaml"
 
 # Verify:
 assert_file_exists ".claude/commands/custom.md"           # Preserved
-assert_file_exists ".claude/commands/specweave.inc.md"   # Installed
+assert_file_exists ".claude/commands/specweave:inc.md"   # Installed
 assert_dir_exists ".claude/commands.backup-*"             # Backup created
 ```
 
 #### TC3: Brownfield Installation (Name Collision)
 ```bash
-# Setup: Project with .claude/commands/specweave.inc.md (user's)
+# Setup: Project with .claude/commands/specweave:inc.md (user's)
 
 # Verify:
-assert_file_exists ".claude/commands.backup-*/specweave.inc.md"  # Backed up
-assert_file_exists ".claude/commands/specweave.inc.md"           # Overwritten
+assert_file_exists ".claude/commands.backup-*/specweave:inc.md"  # Backed up
+assert_file_exists ".claude/commands/specweave:inc.md"           # Overwritten
 report_conflict "specweave.inc.md"                               # Reported
 ```
 

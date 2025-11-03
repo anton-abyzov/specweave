@@ -260,7 +260,7 @@ Runs during `specweave init`:
 
 ### Phase 2: Spec-Based Detection
 
-Runs during `/specweave.inc`:
+Runs during `/specweave:inc`:
 - Analyzes increment description
 - Matches keywords against `triggers` field
 - Suggests before creating spec

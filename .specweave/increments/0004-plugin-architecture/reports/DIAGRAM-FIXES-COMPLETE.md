@@ -9,7 +9,7 @@
 ## Problems Identified
 
 ### 1. Syntax Errors
-- **Line 25 in 1-main-flow.mmd**: Used `/specweave.inc 'feature description'`
+- **Line 25 in 1-main-flow.mmd**: Used `/specweave:inc 'feature description'`
   - The `/` creates special parallelogram shape
   - Single quotes caused lexical errors
 - **Various files**: Special characters (`→`, quotes in text) broke Mermaid parser
@@ -26,7 +26,7 @@
 ### ✅ Syntax Fixes
 
 **Removed problematic characters**:
-- ✅ Changed `/specweave.inc 'feature description'` → `Run specweave.inc`
+- ✅ Changed `/specweave:inc 'feature description'` → `Run specweave:inc`
 - ✅ Replaced `→` arrows with `to` (e.g., `React → frontend-stack` → `React to frontend-stack`)
 - ✅ Removed single quotes in node text
 - ✅ Simplified text to avoid parser errors
@@ -61,7 +61,7 @@
 **Syntax Fixes**:
 - Line 9: `React → frontend` → `React to frontend`
 - Line 20: `Analyze:<br/>- Docs<br/>- Tests` → `Analyze:<br/>Docs, Tests, Issues, Git history`
-- Line 25: `/specweave.inc 'feature description'` → `Run specweave.inc`
+- Line 25: `/specweave:inc 'feature description'` → `Run specweave:inc`
 - Line 29: Removed special chars in text
 - Line 62: `Hooks fire after every task<br/>Docs auto-update` (simplified)
 
@@ -81,7 +81,7 @@ classDef quality fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
 ### 2. Decision Gate (`2-decision-gate.mmd`)
 
 **Syntax Fixes**:
-- Line 2: `/specweave.inc` → `specweave.inc`
+- Line 2: `/specweave:inc` → `specweave.inc`
 - No special characters in text
 
 **Styling**:
@@ -98,8 +98,8 @@ classDef answer fill:#E3F2FD,stroke:#1565C0,stroke-width:3px,color:#000000
 
 **Syntax Fixes**:
 - Line 8: Simplified detection criteria text
-- Line 18: `/specweave.inc` → `specweave.inc`
-- Line 44: `/specweave.done` → `specweave.done`
+- Line 18: `/specweave:inc` → `specweave.inc`
+- Line 44: `/specweave:done` → `specweave.done`
 
 **Styling**:
 ```mermaid
@@ -132,8 +132,8 @@ classDef after fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px,color:#000000
 ### 5. Living Docs Sync (`5-living-docs-sync.mmd`)
 
 **Syntax Fixes**:
-- Line 8: `/specweave.do` → `Run specweave.do`
-- Line 35: `/specweave.done` → `Run specweave.done`
+- Line 8: `/specweave:do` → `Run specweave.do`
+- Line 35: `/specweave:done` → `Run specweave.done`
 - Simplified all message text
 
 **Styling**:

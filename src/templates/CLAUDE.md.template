@@ -4,39 +4,83 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## 🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!
+
+**⛔ THIS IS THE #1 RULE - ALL AI-GENERATED FILES GO IN INCREMENT FOLDERS ⛔**
+
+### ❌ NEVER Create in Root
+
+```
+❌ WRONG - ROOT FILES (NOT ALLOWED!):
+/SESSION-SUMMARY.md                    # NO! Goes to increment reports/
+/ANALYSIS-REPORT.md                    # NO! Goes to increment reports/
+/migration-script.py                   # NO! Goes to increment scripts/
+/execution.log                         # NO! Goes to increment logs/
+/temp-data.json                        # NO! Goes to increment logs/
+
+✅ CORRECT - INCREMENT FOLDERS:
+.specweave/increments/0001-user-auth/
+├── spec.md                            # Core spec files
+├── plan.md
+├── tasks.md
+├── tests.md
+├── reports/                           # ✅ PUT REPORTS HERE!
+│   ├── SESSION-SUMMARY.md
+│   └── ANALYSIS-REPORT.md
+├── scripts/                           # ✅ PUT SCRIPTS HERE!
+│   └── migration-script.py
+└── logs/                              # ✅ PUT LOGS HERE!
+    ├── execution.log
+    └── temp-data.json
+```
+
+### What IS Allowed in Root?
+
+**ONLY these files**:
+- ✅ `CLAUDE.md` (this file)
+- ✅ Your project files (`src/`, `package.json`, etc.)
+- ✅ Standard config (`.env`, `.gitignore`, `tsconfig.json`)
+
+**Everything else → increment folders!**
+
+**Before asking me to commit, check**: `git status` - If you see unexpected `.md` files in root, STOP and move them!
+
+---
+
 ## SpecWeave Workflow (Use These Commands!)
 
 **How SpecWeave works**:
 
 ```
-/specweave.inc "feature" → /specweave.do → /specweave.progress → /specweave.done → repeat
+/specweave:inc "feature" → /specweave:do → /specweave:progress → /specweave:done → repeat
 ```
 
-**1. Plan Feature** → `/specweave.inc "user authentication"`
+**1. Plan Feature** → `/specweave:inc "user authentication"`
    - Creates spec.md (WHAT/WHY), plan.md (HOW), tasks.md, tests.md
    - PM-led process with architect/security/QA review
    - **Use when**: Starting any new feature or increment
 
-**2. Execute Tasks** → `/specweave.do` or `/specweave.do 0001`
+**2. Execute Tasks** → `/specweave:do` or `/specweave:do 0001`
    - Smart resume (picks up where you left off)
    - Runs hooks after EVERY task completion
    - **Use when**: Ready to implement planned work
 
-**3. Check Progress** → `/specweave.progress`
+**3. Check Progress** → `/specweave:progress`
    - Shows task completion %, next action
    - **Use when**: Want to see status
 
-**4. Validate Quality** → `/specweave.validate 0001` or `/specweave.validate 0001 --quality`
+**4. Validate Quality** → `/specweave:validate 0001` or `/specweave:validate 0001 --quality`
    - Rule-based validation (120 checks)
    - Optional AI quality assessment
    - **Use when**: Verify increment quality before completion
 
-**5. Close Increment** → `/specweave.done 0001`
+**5. Close Increment** → `/specweave:done 0001`
    - Validates all tasks complete
    - **Use when**: Feature is finished
 
-**6. Sync to External** → `/specweave.sync-github` or `/specweave.sync-jira`
-   - Exports to GitHub issues or Jira
+**6. Sync to External** (Plugin Commands):
+   - `/specweave:github:sync` - Export to GitHub issues (github plugin)
+   - `/specweave:jira:sync` - Export to Jira (jira plugin)
    - **Use when**: Need to sync with project management tools
 
 **All other functionality (agents, skills) activates automatically based on context.**
@@ -60,7 +104,7 @@ When working in a SpecWeave-initialized project (`.specweave/` exists), SpecWeav
 6. ✅ **Business Model** - "Freemium", "$X/mo", "B2B", "Consumer"
 
 **Confidence Levels:**
-- **High (5-6 signals + SpecWeave folder)**: Auto-route to `/specweave.inc` immediately
+- **High (5-6 signals + SpecWeave folder)**: Auto-route to `/specweave:inc` immediately
 - **Medium (3-4 signals + SpecWeave folder)**: Ask 1-2 clarifying questions, then route
 - **Low (<3 signals)**: Regular conversation (no auto-routing)
 
@@ -80,7 +124,7 @@ Monetization: Freemium ($10/mo)
 SpecWeave detects: ✅ Name ✅ Features ✅ Tech ✅ Timeline ✅ Problem ✅ Business
 → Automatically recognizes this as a product description
 → Guides you through increment planning
-→ Invokes /specweave.inc automatically
+→ Invokes /specweave:inc automatically
 
 No need to remember to type /inc!
 ```
@@ -204,13 +248,64 @@ Config: Auto-detected from project files
 │   └── tests/                   # Centralized test repository
 │
 ├── .claude/                     # Pre-installed components
-│   ├── agents/                  # 10 agents (auto-activate)
-│   ├── skills/                  # 35+ skills (auto-activate)
-│   └── commands/                # Slash commands
+│   ├── agents/                  # Core + plugin agents (auto-activate)
+│   ├── skills/                  # Core + plugin skills (auto-activate)
+│   └── commands/                # Core + plugin slash commands
 │
 ├── CLAUDE.md                    # This file
 └── src/                         # Your source code
 ```
+
+---
+
+## Plugin Architecture
+
+**SpecWeave uses Claude Code's native plugin system** for optional capabilities.
+
+### Core vs. Plugins
+
+**Core Framework** (always loaded):
+- 9 core skills (increment-planner, tdd-workflow, context-loader, etc.)
+- 3 core agents (PM, Architect, Tech Lead)
+- 7 core commands (`/specweave:inc`, `/specweave:do`, etc.)
+- ~12K tokens (lightweight!)
+
+**Plugins** (opt-in based on your stack):
+- Tech stacks: `specweave-frontend`, `specweave-backend`, `specweave-kubernetes`
+- Integrations: `specweave-github`, `specweave-jira`
+- Domains: `specweave-ml`, `specweave-payments`, `specweave-testing`
+
+### Using Plugin Commands
+
+**Core commands** (always available):
+```bash
+/specweave:inc "feature"    # or /inc
+/specweave:do               # or /do
+/specweave:progress         # or /progress
+```
+
+**Plugin commands** (when plugin installed):
+```bash
+# GitHub plugin:
+/specweave:github:sync          # Sync increments to GitHub issues
+/specweave:github:create-issue  # Create new issue
+/specweave:github:status        # Check sync status
+
+# Jira plugin:
+/specweave:jira:sync           # Sync to Jira
+/specweave:jira:create-ticket  # Create Jira ticket
+```
+
+**Plugin agents and skills activate automatically** based on your tech stack and context.
+
+### Installing Plugins
+
+Plugins are detected and suggested during `specweave init` based on:
+- Git remote (GitHub detected → suggest github plugin)
+- Tech stack (React detected → suggest frontend plugin)
+- Project files (K8s yamls → suggest kubernetes plugin)
+
+**Enabled plugins**: {ENABLED_PLUGINS}
 
 ---
 
@@ -220,9 +315,10 @@ Config: Auto-detected from project files
 
 {#IF_COMPREHENSIVE}
 ### Comprehensive Upfront Approach
-- Create complete specifications before coding (500-600+ pages)
+- Create complete specifications before coding (scope-appropriate detail)
 - All ADRs documented in advance
-- Best for: Enterprise, regulated industries, large teams
+- Best for: Enterprise, regulated industries, large teams, complex systems
+- Spec size scales with project complexity (10-500+ pages depending on scope)
 {#ENDIF}
 
 {#IF_INCREMENTAL}
@@ -238,8 +334,8 @@ Config: Auto-detected from project files
 
 **Four Levels**:
 1. **Specification** (`.specweave/docs/internal/strategy/`) - Acceptance criteria
-2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage
-3. **Skill** (`src/skills/{name}/test-cases/`) - YAML test cases
+2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage per increment
+3. **Integration** (`tests/integration/` or `tests/specs/`) - Component/module tests
 4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
 
 **Requirements**:
@@ -260,16 +356,18 @@ Config: Auto-detected from project files
 | "What's the status?" | `/progress` | Show task completion % |
 | "Is this ready?" | `/validate 0001` | Validate increment quality |
 | "We're done" | `/done 0001` | Close increment |
-| "Sync to GitHub" | `/sync-github` | Export to GitHub issues |
-| "Sync to Jira" | `/sync-jira` | Export to Jira |
+
+**Plugin Commands** (when installed):
+| "Sync to GitHub" | `/specweave:github:sync` | Export to GitHub issues |
+| "Sync to Jira" | `/specweave:jira:sync` | Export to Jira |
 
 ### Command Aliases
 
-- `/inc` = `/specweave inc` = `/specweave.inc`
-- `/do` = `/specweave do` = `/specweave.do`
-- `/validate` = `/specweave validate` = `/specweave.validate`
-- `/done` = `/specweave done` = `/specweave.done`
-- `/progress` = `/specweave progress` = `/specweave.progress`
+- `/inc` = `/specweave inc` = `/specweave:inc`
+- `/do` = `/specweave do` = `/specweave:do`
+- `/validate` = `/specweave validate` = `/specweave:validate`
+- `/done` = `/specweave done` = `/specweave:done`
+- `/progress` = `/specweave progress` = `/specweave:progress`
 
 ---
 

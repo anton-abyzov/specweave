@@ -120,7 +120,7 @@ Step 4: DONE (incomplete!)
 
 ### Changed Files
 
-1. **src/commands/specweave.increment.md** (lines 120-200)
+1. **src/commands/specweave:increment.md** (lines 120-200)
    - Added explicit "YOU MUST USE THE SKILL TOOL" instructions
    - Added Skill tool invocation syntax
    - Added fallback to Task tool if Skill unavailable
@@ -164,9 +164,9 @@ Wait for PM agent to complete!
 ## Files Changed
 
 ### Framework (Source)
-- `/Users/antonabyzov/Projects/github/specweave/src/commands/specweave.increment.md` ✅ Fixed
+- `/Users/antonabyzov/Projects/github/specweave/src/commands/specweave:increment.md` ✅ Fixed
 - `/Users/antonabyzov/Projects/github/specweave/src/skills/increment-planner/SKILL.md` ✅ Fixed
-- `/Users/antonabyzov/Projects/github/specweave/.claude/commands/specweave.increment.md` ✅ Synced
+- `/Users/antonabyzov/Projects/github/specweave/.claude/commands/specweave:increment.md` ✅ Synced
 - `/Users/antonabyzov/Projects/github/specweave/.claude/skills/increment-planner/SKILL.md` ✅ Synced
 
 ### Client Project (Deployed)

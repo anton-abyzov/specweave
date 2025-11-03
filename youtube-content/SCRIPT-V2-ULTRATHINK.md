@@ -297,7 +297,7 @@ You just press Enter. Done."
 
 "Moment two: You create an increment.
 
-[SCREEN: Terminal - /specweave.inc 'Add OAuth login']
+[SCREEN: Terminal - /specweave:inc 'Add OAuth login']
 [ANIMATE: Diagram #3 - Phase 2 highlights]
 
 Before even creating the spec, SpecWeave analyzes your description:
@@ -316,7 +316,7 @@ It's preparing the AI with the RIGHT knowledge BEFORE it starts planning."
 
 "Moment three: You're about to execute a task.
 
-[SCREEN: Terminal - /specweave.do]
+[SCREEN: Terminal - /specweave:do]
 [ANIMATE: Diagram #3 - Phase 3 highlights]
 
 Task description: 'Deploy to Kubernetes cluster with Helm'
@@ -477,13 +477,13 @@ $ Y
 > .specweave/ initialized
 > .claude/ configured
 >
-> Ready! Run /specweave.inc to plan your first increment.
+> Ready! Run /specweave:inc to plan your first increment.
 
 "Look at that. 18 skills loaded. Not 45. Just what we need."
 
 [11:30-13:00] PHASE 2 - PLANNING
 
-$ /specweave.inc "Add Stripe subscription billing with 3 tiers"
+$ /specweave:inc "Add Stripe subscription billing with 3 tiers"
 
 [OUTPUT - REAL Claude Code interaction]:
 > Creating increment 0001-stripe-subscription-billing...
@@ -508,7 +508,7 @@ $ /specweave.inc "Add Stripe subscription billing with 3 tiers"
 > ✓ tasks.md created (15 tasks)
 > ✓ tests.md created (42 test cases)
 >
-> Ready to execute! Run /specweave.do
+> Ready to execute! Run /specweave:do
 
 "15 tasks. 42 test cases. All generated in 30 seconds.
 With the RIGHT context (Stripe knowledge) because plugins loaded."
@@ -517,7 +517,7 @@ With the RIGHT context (Stripe knowledge) because plugins loaded."
 
 "I'm going to fast-forward through execution. But watch the hooks.
 
-[SCREEN: Time-lapse of /specweave.do]
+[SCREEN: Time-lapse of /specweave:do]
 [SHOW: After each task completes, hook fires]
 
 [OVERLAY TEXT as tasks complete]:
@@ -758,8 +758,8 @@ I recommend Option 1. Takes 30 seconds."
 
 Greenfield (new project):
 1. specweave init
-2. /specweave.inc 'your first feature'
-3. /specweave.do
+2. /specweave:inc 'your first feature'
+3. /specweave:do
 4. Watch the magic
 
 Brownfield (existing project):

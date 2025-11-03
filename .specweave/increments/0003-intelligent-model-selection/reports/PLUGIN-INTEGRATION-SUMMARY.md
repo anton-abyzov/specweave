@@ -31,16 +31,16 @@
 #### Phase 3: Machine Learning Ops 🤖
 - ✅ 1 skill: ml-pipeline-workflow
 - ✅ 3 agents: ml-engineer, mlops-engineer, data-scientist
-- ✅ 1 command: /specweave.ml-pipeline
+- ✅ 1 command: /specweave:ml-pipeline
 
 #### Phase 3: Observability & Monitoring 📊
 - ✅ 4 skills: prometheus-configuration, grafana-dashboards, distributed-tracing, slo-implementation
 - ✅ 4 agents: observability-engineer, performance-engineer, network-engineer, database-optimizer
-- ✅ 2 commands: /specweave.monitor-setup, /specweave.slo-implement
+- ✅ 2 commands: /specweave:monitor-setup, /specweave:slo-implement
 
 #### Phase 4: TDD Workflows 🧪
 - ✅ 1 agent: tdd-orchestrator (red-green-refactor master)
-- ✅ 4 commands: /specweave.tdd-cycle, /specweave.tdd-red, /specweave.tdd-green, /specweave.tdd-refactor
+- ✅ 4 commands: /specweave:tdd:cycle, /specweave:tdd:red, /specweave:tdd:green, /specweave:tdd:refactor
 - ✅ 1 discovery skill: tdd-workflow (asks user if they want TDD)
 
 ---
@@ -98,25 +98,25 @@
 ### Machine Learning Pipeline
 \`\`\`bash
 # Full ML pipeline
-/specweave.ml-pipeline "Customer churn prediction model"
+/specweave:ml-pipeline "Customer churn prediction model"
 → Orchestrates 7 agents for complete ML lifecycle
 \`\`\`
 
 ### Observability
 \`\`\`bash
 # Setup monitoring
-/specweave.monitor-setup
+/specweave:monitor-setup
 → Configures Prometheus + Grafana
 
 # Implement SLOs
-/specweave.slo-implement
+/specweave:slo-implement
 → Creates SLI/SLO/SLA definitions
 \`\`\`
 
 ### TDD Workflow
 \`\`\`bash
 # Full TDD cycle
-/specweave.tdd-cycle
+/specweave:tdd:cycle
 → Enforces red→green→refactor with gates
 
 # Or just ask

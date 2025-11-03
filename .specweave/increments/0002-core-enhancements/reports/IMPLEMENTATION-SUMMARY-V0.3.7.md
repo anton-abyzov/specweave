@@ -87,8 +87,8 @@ async detectTool(): Promise<string> {
    - AI understands natural language → invokes commands automatically
    - No need to memorize slash commands
    - Examples:
-     - "I want auth" → Auto-invokes `/specweave.inc "auth"`
-     - "How's it going?" → Auto-invokes `/specweave.progress`
+     - "I want auth" → Auto-invokes `/specweave:inc "auth"`
+     - "How's it going?" → Auto-invokes `/specweave:progress`
    - **Kiro**: Requires explicit commands (`/create-increment`, etc.)
 
 3. **Multi-Tool Support** ⭐⭐

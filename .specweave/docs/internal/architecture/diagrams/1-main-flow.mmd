@@ -1,35 +1,53 @@
+---
+title: SpecWeave Main Flow - Enhanced with Agent Roles
+---
+%%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '14px' } } }%%
+
 flowchart TD
+    %% Last Updated: 2025-11-03
+    %% Agent Roles: PM Agent, Architect Agent, Tech Lead Agent, QA Lead Agent, Quality Judge Agent
+    %% Brownfield: Brownfield Analyzer, Brownfield Onboarder
+    %% Plugins: Plugin Detector (4 phases), Plugin Manager
+    %% Automation: Living Docs Agent, Hook System, Developer
+    %% Mandatory: Spec → Plan → Tasks → Tests | Optional: Research, Validation
     Start([Developer Starts New Work]) --> Type{Project Type?}
 
     %% Greenfield Path
-    Type -->|Greenfield| Init[specweave init]
-    Init --> Phase1[Phase 1: Init-Time Detection]
-    Phase1 --> Scan1[Scan project structure]
+    Type -->|Greenfield| Init[Developer:<br/>specweave init]
+    Init --> Phase1[Phase 1: Init-Time Detection<br/>Plugin Detector]
+    Phase1 --> Scan1[Plugin Detector:<br/>Scan project structure]
     Scan1 --> Check1{Found stack indicators?}
-    Check1 -->|Yes| Suggest1[Suggest plugins:<br/>React to frontend-stack<br/>K8s to kubernetes]
+    Check1 -->|Yes| Suggest1[Plugin Detector:<br/>Suggest plugins<br/>React → frontend-stack<br/>K8s → kubernetes]
     Check1 -->|No| CoreOnly[Load core framework only]
     Suggest1 --> UserChoice1{User accepts?}
-    UserChoice1 -->|Yes| EnablePlugins1[Enable suggested plugins]
+    UserChoice1 -->|Yes| EnablePlugins1[Plugin Manager:<br/>Enable suggested plugins]
     UserChoice1 -->|No| CoreOnly
     EnablePlugins1 --> Ready
     CoreOnly --> Ready
 
     %% Brownfield Path
-    Type -->|Brownfield| BrownInit[specweave init --brownfield]
-    BrownInit --> BrownScan[Scan existing codebase]
-    BrownScan --> BrownAnalysis[Analyze:<br/>Docs, Tests, Issues, Git history]
-    BrownAnalysis --> MigrationPlan[Generate migration plan]
-    MigrationPlan --> Ready[Ready for increment]
+    Type -->|Brownfield| BrownInit[Developer:<br/>specweave init --brownfield]
+    BrownInit --> BrownScan[Brownfield Analyzer:<br/>Scan existing codebase<br/>Structure, files, patterns]
+    BrownScan --> BrownAnalysis[Brownfield Analyzer:<br/>Analyze tech stack, frameworks<br/>Docs, tests, dependencies]
+    BrownAnalysis --> ContextMap[Brownfield Analyzer:<br/>Create Project Context Map<br/>✓ Tech stack inventory<br/>✓ Feature awareness no prescription<br/>✓ Suggest relevant plugins<br/>✗ NO migration plan upfront!]
+    ContextMap --> SaveContext[Save context to<br/>.specweave/brownfield-context.json]
+    SaveContext --> Ready[Ready for increment]
+
+    %% Just-in-time migration note
+    Ready -.->|Migration happens per-increment,<br/>when user chooses what to work on| IncStart
 
     %% Increment Planning
-    Ready --> IncStart[Run specweave.inc]
-    IncStart --> Phase2[Phase 2: Pre-Spec Detection]
-    Phase2 --> AnalyzeDesc[Analyze increment description]
+    Ready --> IncStart[Developer:<br/>Run specweave.inc]
+    IncStart --> Phase2[Phase 2: Pre-Spec Detection<br/>Plugin Detector]
+    Phase2 --> CheckBrownfield{Brownfield context exists?}
+    CheckBrownfield -->|Yes| LoadContext[Brownfield Onboarder:<br/>Load brownfield context<br/>Auto-detect related existing code<br/>Offer to include in spec analysis]
+    CheckBrownfield -->|No| AnalyzeDesc
+    LoadContext --> AnalyzeDesc[Plugin Detector:<br/>Analyze increment description]
     AnalyzeDesc --> Check2{Keywords match plugins?}
-    Check2 -->|Yes| Suggest2[Suggest plugins based on keywords]
+    Check2 -->|Yes| Suggest2[Plugin Detector:<br/>Suggest plugins based on keywords]
     Check2 -->|No| NoPluginNeeded
     Suggest2 --> UserChoice2{Enable plugin?}
-    UserChoice2 -->|Yes| EnablePlugins2[Enable plugins]
+    UserChoice2 -->|Yes| EnablePlugins2[Plugin Manager:<br/>Enable plugins]
     UserChoice2 -->|No| NoPluginNeeded[Continue without plugin]
     EnablePlugins2 --> DecisionGate
     NoPluginNeeded --> DecisionGate
@@ -64,62 +82,64 @@ flowchart TD
     DocsAuto --> Research
     DocsManual --> Research
 
-    %% Research Phase
-    Research[PM Agent: Research and Analysis]
-    Research --> ResearchSteps[Market analysis<br/>Competitive research<br/>User story extraction]
-    ResearchSteps --> SpecGen[Generate spec.md]
+    %% Research Phase (OPTIONAL)
+    Research{Research needed?}
+    Research -->|Yes| DoResearch[PM Agent: Research and Analysis]
+    Research -->|No, skip research| SpecGen
+    DoResearch --> ResearchSteps[PM Agent performs:<br/>• Market analysis<br/>• Competitive research<br/>• User story extraction]
+    ResearchSteps --> SpecGen[PM Agent: Generate spec.md]
     SpecGen --> SpecContent[spec.md contains:<br/>User stories<br/>Acceptance criteria<br/>Success metrics]
 
-    %% Planning Phase
+    %% Planning Phase (MANDATORY)
     SpecContent --> Plan[Architect Agent: Technical Planning]
-    Plan --> PlanSteps[Architecture design<br/>Tech stack selection<br/>Risk assessment]
-    PlanSteps --> PlanGen[Generate plan.md]
+    Plan --> PlanSteps[Architect Agent performs:<br/>• Architecture design<br/>• Tech stack selection<br/>• Risk assessment]
+    PlanSteps --> PlanGen[Architect Agent: Generate plan.md]
     PlanGen --> PlanContent[plan.md contains:<br/>Architecture<br/>Implementation strategy<br/>Dependencies]
 
-    %% Task Breakdown
+    %% Task Breakdown (MANDATORY)
     PlanContent --> Tasks[Tech Lead Agent: Task Breakdown]
-    Tasks --> TaskSteps[Break into tasks<br/>Estimate effort<br/>Identify risks]
-    TaskSteps --> TaskGen[Generate tasks.md]
+    Tasks --> TaskSteps[Tech Lead Agent performs:<br/>• Break into tasks<br/>• Estimate effort<br/>• Identify risks]
+    TaskSteps --> TaskGen[Tech Lead Agent: Generate tasks.md]
     TaskGen --> TaskContent[tasks.md contains:<br/>Task list<br/>Dependencies<br/>Acceptance criteria]
 
-    %% Test Planning
+    %% Test Planning (MANDATORY)
     TaskContent --> Tests[QA Lead Agent: Test Planning]
-    Tests --> TestSteps[Define test scenarios<br/>Coverage requirements<br/>Quality gates]
-    TestSteps --> TestGen[Generate tests.md]
+    Tests --> TestSteps[QA Lead Agent performs:<br/>• Define test scenarios<br/>• Coverage requirements<br/>• Quality gates]
+    TestSteps --> TestGen[QA Lead Agent: Generate tests.md]
     TestGen --> TestContent[tests.md contains:<br/>Test cases<br/>Coverage targets<br/>Quality criteria]
 
-    %% Validation Gate
-    TestContent --> ValidateCheck{Run validation?}
-    ValidateCheck -->|Yes| Validate[Run specweave.validate]
-    ValidateCheck -->|No| Ready2
-    Validate --> ValidationRules[Rule-based checks:<br/>Required fields present<br/>Tasks have criteria<br/>Tests cover requirements]
+    %% Validation Gate (OPTIONAL)
+    TestContent --> ValidateCheck{Run validation?<br/>OPTIONAL}
+    ValidateCheck -->|Yes| Validate[Quality Judge Agent:<br/>Run specweave.validate]
+    ValidateCheck -->|No, skip validation| Ready2
+    Validate --> ValidationRules[Quality Judge performs:<br/>• Rule-based checks<br/>• Required fields present<br/>• Tasks have criteria<br/>• Tests cover requirements]
     ValidationRules --> AIJudge{AI Judge enabled?}
-    AIJudge -->|Yes| AICheck[AI Quality Assessment:<br/>Spec clarity<br/>Edge case coverage<br/>Architecture soundness]
+    AIJudge -->|Yes| AICheck[Quality Judge Agent:<br/>AI Quality Assessment<br/>• Spec clarity<br/>• Edge case coverage<br/>• Architecture soundness]
     AIJudge -->|No| ValidationResult
     AICheck --> ValidationResult{Validation passed?}
-    ValidationResult -->|Failed| FixIssues[Fix issues in specs]
+    ValidationResult -->|Failed| FixIssues[PM/Architect/Tech Lead:<br/>Fix issues in specs]
     ValidationResult -->|Passed| Ready2[Ready for execution]
     FixIssues --> ValidateCheck
 
     %% Execution Phase
-    Ready2 --> Execute[Run specweave.do]
-    Execute --> Phase3[Phase 3: Pre-Task Detection]
-    Phase3 --> CheckTask[Check next task description]
+    Ready2 --> Execute[Developer:<br/>Run specweave.do]
+    Execute --> Phase3[Phase 3: Pre-Task Detection<br/>Plugin Loader]
+    Phase3 --> CheckTask[Plugin Detector:<br/>Check next task description]
     CheckTask --> TaskHints{Task mentions plugins?}
-    TaskHints -->|Yes| SuggestTaskPlugin[Non-blocking suggestion:<br/>Consider enabling plugin]
+    TaskHints -->|Yes| SuggestTaskPlugin[Plugin Detector:<br/>Non-blocking suggestion<br/>Consider enabling plugin]
     TaskHints -->|No| ExecTask
-    SuggestTaskPlugin --> ExecTask[Execute current task]
+    SuggestTaskPlugin --> ExecTask[Developer:<br/>Execute current task]
 
     %% Task Execution Loop
-    ExecTask --> TaskWork[Developer works on task]
+    ExecTask --> TaskWork[Developer + AI:<br/>Write code, tests, docs]
     TaskWork --> TaskComplete{Task complete?}
     TaskComplete -->|No| TaskWork
-    TaskComplete -->|Yes| PostHook[Post-task hook fires]
+    TaskComplete -->|Yes| PostHook[Hook System:<br/>Post-task hook fires]
 
     %% Post-Task Hook
-    PostHook --> HookActions[Hook performs:<br/>1. Log completion<br/>2. Play sound<br/>3. Update progress<br/>4. Sync docs if enabled]
+    PostHook --> HookActions[Hook System performs:<br/>1. Log completion<br/>2. Play sound notification<br/>3. Update progress<br/>4. Sync docs if enabled]
     HookActions --> DocsSync{Auto-sync enabled?}
-    DocsSync -->|Yes| UpdateDocs[Run sync-docs automatically]
+    DocsSync -->|Yes| UpdateDocs[Living Docs Agent:<br/>Run sync-docs automatically]
     DocsSync -->|No| SkipSync
     UpdateDocs --> CheckMore
     SkipSync[Manual sync later] --> CheckMore
@@ -129,25 +149,25 @@ flowchart TD
     CheckMore -->|No| QualityGate
 
     %% Quality Gate
-    QualityGate[Quality Gate Checks]
-    QualityGate --> GateChecks[Verify:<br/>All tasks complete<br/>All tests passing<br/>Docs synced]
+    QualityGate[Tech Lead + QA Lead:<br/>Quality Gate Checks]
+    QualityGate --> GateChecks[Verify:<br/>• All tasks complete<br/>• All tests passing<br/>• Docs synced]
     GateChecks --> GatePass{All checks pass?}
     GatePass -->|No| BlockClose[Cannot close increment]
     GatePass -->|Yes| AllowClose[Can close increment]
-    BlockClose --> FixGate[Fix failing checks]
+    BlockClose --> FixGate[Developer:<br/>Fix failing checks]
     FixGate --> QualityGate
 
     %% Increment Completion
-    AllowClose --> Close[Run specweave.done]
-    Close --> Phase4[Phase 4: Post-Increment Detection]
-    Phase4 --> GitDiff[Analyze git diff]
+    AllowClose --> Close[Developer:<br/>Run specweave.done]
+    Close --> Phase4[Phase 4: Post-Increment Detection<br/>Plugin Detector]
+    Phase4 --> GitDiff[Plugin Detector:<br/>Analyze git diff]
     GitDiff --> NewDeps{New dependencies added?}
-    NewDeps -->|Yes| SuggestFuture[Suggest for next increment]
+    NewDeps -->|Yes| SuggestFuture[Plugin Detector:<br/>Suggest plugins for next increment]
     NewDeps -->|No| FinalSync
-    SuggestFuture --> FinalSync[Final living docs sync]
+    SuggestFuture --> FinalSync[Living Docs Agent:<br/>Final living docs sync]
 
     %% Final Sync
-    FinalSync --> UpdateStrategic[Update strategic docs:<br/>Architecture changes<br/>ADR updates<br/>Lessons learned]
+    FinalSync --> UpdateStrategic[Living Docs Agent updates:<br/>• Architecture changes<br/>• ADR updates<br/>• Lessons learned]
     UpdateStrategic --> Complete([Increment Complete])
 
     %% Next Increment
@@ -162,7 +182,7 @@ flowchart TD
     classDef plugin fill:#F3E5F5,stroke:#6A1B9A,stroke-width:3px,color:#000000
     classDef quality fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
 
-    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,ValidateCheck,AIJudge,ValidationResult,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next decision
+    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,Research,ValidateCheck,AIJudge,ValidationResult,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next,CheckBrownfield decision
     class Init,Execute,Close,Validate process
     class Phase1,Phase2,Phase3,Phase4,PostHook hook
     class Suggest1,EnablePlugins1,Suggest2,EnablePlugins2,SuggestTaskPlugin,SuggestFuture plugin

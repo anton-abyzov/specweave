@@ -14,7 +14,7 @@ description: Bidirectional synchronization between SpecWeave increments and GitH
 - Importing GitHub issues as increments
 - Manual sync operations
 
-**Integration**: Works with `/specweave.github.sync` command
+**Integration**: Works with `/specweave:github:sync` command
 
 ---
 
@@ -22,7 +22,7 @@ description: Bidirectional synchronization between SpecWeave increments and GitH
 
 ### 1. Increment → GitHub Issue (Export)
 
-**Trigger**: After `/specweave.inc` creates a new increment
+**Trigger**: After `/specweave:inc` creates a new increment
 
 **Actions**:
 1. Create GitHub issue with:
@@ -76,7 +76,7 @@ This issue tracks SpecWeave increment `0004-plugin-architecture`.
 
 ### 2. Progress Updates (Increment → Issue)
 
-**Trigger**: After each `/specweave.do` task completion
+**Trigger**: After each `/specweave:do` task completion
 
 **Actions**:
 1. Post comment to GitHub issue:
@@ -97,7 +97,7 @@ This issue tracks SpecWeave increment `0004-plugin-architecture`.
 
 ### 3. Increment Completion (Close Issue)
 
-**Trigger**: `/specweave.done` closes increment
+**Trigger**: `/specweave:done` closes increment
 
 **Actions**:
 1. Post final comment:
@@ -127,7 +127,7 @@ This issue tracks SpecWeave increment `0004-plugin-architecture`.
 
 **Use Case**: Import existing GitHub issues as SpecWeave increments
 
-**Command**: `/specweave.github.import <issue-number>`
+**Command**: `/specweave:github:import <issue-number>`
 
 **Actions**:
 1. Fetch issue via GitHub CLI:
@@ -207,7 +207,7 @@ gh auth status
 ### Create Issue from Increment
 
 ```bash
-/specweave.github.create-issue 0004
+/specweave:github:create-issue 0004
 ```
 
 Creates GitHub issue for increment 0004 if not already synced.
@@ -215,7 +215,7 @@ Creates GitHub issue for increment 0004 if not already synced.
 ### Sync Progress
 
 ```bash
-/specweave.github.sync 0004
+/specweave:github:sync 0004
 ```
 
 Posts current progress to GitHub issue.
@@ -223,7 +223,7 @@ Posts current progress to GitHub issue.
 ### Close Issue
 
 ```bash
-/specweave.github.close-issue 0004
+/specweave:github:close-issue 0004
 ```
 
 Closes GitHub issue for completed increment.
@@ -231,7 +231,7 @@ Closes GitHub issue for completed increment.
 ### Check Status
 
 ```bash
-/specweave.github.status 0004
+/specweave:github:status 0004
 ```
 
 Shows sync status (issue number, last sync time, progress %).
@@ -244,15 +244,15 @@ Shows sync status (issue number, last sync time, progress %).
 
 ```bash
 # 1. Create increment
-/specweave.inc "Add dark mode toggle"
+/specweave:inc "Add dark mode toggle"
 # → Auto-creates GitHub issue #125
 
 # 2. Implement tasks
-/specweave.do
+/specweave:do
 # → Auto-updates issue with progress after each task
 
 # 3. Complete increment
-/specweave.done 0005
+/specweave:done 0005
 # → Auto-closes GitHub issue #125
 ```
 
@@ -286,7 +286,7 @@ The increment is always the source of truth. GitHub issues are a mirror for visi
 2. Manual edits to issue body/title
 
 **Resolution**:
-- Run `/specweave.github.sync 0004 --force` to overwrite issue from increment
+- Run `/specweave:github:sync 0004 --force` to overwrite issue from increment
 - Or manually update increment metadata to match issue
 
 ---
@@ -309,7 +309,7 @@ The increment is always the source of truth. GitHub issues are a mirror for visi
 ## Example Session
 
 ```
-User: /specweave.inc "Implement user authentication"
+User: /specweave:inc "Implement user authentication"
 
 Claude:
 ✓ Created increment: 0005-user-authentication
@@ -325,7 +325,7 @@ Status: Open
 
 ---
 
-User: /specweave.do
+User: /specweave:do
 
 Claude:
 ✓ Completed: T-001 - Design auth flow
@@ -335,7 +335,7 @@ Claude:
 
 [After 15 tasks...]
 
-User: /specweave.done 0005
+User: /specweave:done 0005
 
 Claude:
 ✓ All PM gates passed
@@ -387,7 +387,7 @@ Increment complete! 🎉
 **Progress not updating?**
 - Check `auto_update_progress: true` in config
 - Verify hook execution: `.specweave/logs/hooks.log`
-- Manually sync: `/specweave.github.sync 0005`
+- Manually sync: `/specweave:github:sync 0005`
 
 ---
 
@@ -452,7 +452,7 @@ plugins:
 
 - **github-issue-tracker**: Track individual tasks as issue comments
 - **github-manager agent**: AI agent for GitHub operations
-- **Commands**: `/specweave.github.create-issue`, `/specweave.github.sync`, `/specweave.github.close-issue`
+- **Commands**: `/specweave:github:create-issue`, `/specweave:github:sync`, `/specweave:github:close-issue`
 
 ---
 

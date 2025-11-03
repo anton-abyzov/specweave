@@ -5,8 +5,8 @@
 **Files Updated**:
 - `.claude/hooks.json` (NEW)
 - `.claude/hooks/post-task-completion.sh` (UPDATED)
-- `src/commands/specweave.do.md` (UPDATED)
-- `src/commands/specweave.increment.md` (UPDATED)
+- `src/commands/specweave:do.md` (UPDATED)
+- `src/commands/specweave:increment.md` (UPDATED)
 - `.specweave/config.yaml` (UPDATED)
 - `src/hooks/README.md` (UPDATED)
 
@@ -345,9 +345,9 @@ actions:
 
 - `.claude/hooks.json` - Hook configuration
 - `.claude/hooks/post-task-completion.sh` - Hook script
-- `src/commands/specweave.do.md` - `/do` command with doc update workflow
-- `src/commands/specweave.increment.md` - `/increment` command with doc sync
-- `src/commands/specweave.sync-docs.md` - Documentation sync command
+- `src/commands/specweave:do.md` - `/do` command with doc update workflow
+- `src/commands/specweave:increment.md` - `/increment` command with doc sync
+- `src/commands/specweave:sync-docs.md` - Documentation sync command
 - `.specweave/config.yaml` - Configuration with hook clarification
 - `src/hooks/README.md` - Hook documentation
 
