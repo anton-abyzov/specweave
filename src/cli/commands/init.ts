@@ -232,61 +232,9 @@ export async function initCommand(
 
     // 6. Install based on tool
     if (toolName === 'claude') {
-      // DEFAULT: Native Claude Code installation (no adapter needed!)
-      spinner.text = 'Installing Claude Code components...';
-
-      try {
-        copyCommands('', path.join(targetDir, '.claude/commands'), language as SupportedLanguage);
-        spinner.text = 'Slash commands installed...';
-      } catch (error: any) {
-        spinner.fail('Failed to copy commands');
-        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.commandsCopyFailed', { error: error.message })}`));
-        throw error;
-      }
-
-      try {
-        copyAgents('', path.join(targetDir, '.claude/agents'), language as SupportedLanguage);
-        spinner.text = 'Agents installed...';
-      } catch (error: any) {
-        spinner.fail('Failed to copy agents');
-        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.agentsCopyFailed', { error: error.message })}`));
-        throw error;
-      }
-
-      try {
-        copySkills('', path.join(targetDir, '.claude/skills'), language as SupportedLanguage);
-        spinner.text = 'Skills installed...';
-      } catch (error: any) {
-        spinner.fail('Failed to copy skills');
-        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.skillsCopyFailed', { error: error.message })}`));
-        throw error;
-      }
-
-      try {
-        copyHooks('', path.join(targetDir, '.claude/hooks'), language as SupportedLanguage);
-        spinner.text = 'Hooks installed...';
-      } catch (error: any) {
-        spinner.fail('Failed to copy hooks');
-        console.error(chalk.red(`\n${locale.t('cli', 'init.errors.hooksCopyFailed', { error: error.message })}`));
-        throw error;
-      }
-
-      try {
-        spinner.text = 'Generating skills index...';
-        // Generate skills index and copy to target (root-level after v0.5.0)
-        const sourceIndexPath = path.join(__dirname, '../../../skills/SKILLS-INDEX.md');
-        await generateSkillsIndex(sourceIndexPath);
-
-        // Copy index to target .claude/skills/
-        const targetIndexPath = path.join(targetDir, '.claude/skills/SKILLS-INDEX.md');
-        fs.copySync(sourceIndexPath, targetIndexPath);
-
-        spinner.text = 'Skills index generated...';
-      } catch (error: any) {
-        // Non-critical error - don't fail installation
-        console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.skillsIndexWarning', { error: error.message })}`));
-        console.warn(chalk.yellow(`   ${locale.t('cli', 'init.warnings.skillsIndexNote')}`));
-      }
+      // DEFAULT: Native Claude Code plugins (installed globally via /plugin install)
+      // No per-project copying needed - plugins work across all projects!
+      spinner.text = 'Configuring for Claude Code...';
 
       console.log(`\n${locale.t('cli', 'init.claudeNativeComplete')}`);
       console.log(`   ${locale.t('cli', 'init.claudeNativeBenefits')}`);
@@ -409,6 +357,35 @@ export async function initCommand(
       } catch (error) {
         // Non-critical - show manual instructions in next steps
         console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.pluginAutoSetupFailed')}`));
+      }
+
+      // 15. AUTO-INSTALL CORE PLUGIN via Claude CLI
+      // This is the game-changer: fully automated plugin installation!
+      try {
+        spinner.start('Installing SpecWeave core plugin...');
+
+        // Step 1: Add marketplace (idempotent - fails gracefully if exists)
+        const marketplacePath = path.join(targetDir, '.claude-plugin');
+        if (fs.existsSync(path.join(marketplacePath, 'marketplace.json'))) {
+          execSync(`claude plugin marketplace add "${targetDir}"`, {
+            stdio: 'pipe',  // Suppress output
+            encoding: 'utf-8'
+          });
+        }
+
+        // Step 2: Install core plugin
+        execSync('claude plugin install specweave-core@specweave', {
+          stdio: 'pipe',
+          encoding: 'utf-8'
+        });
+
+        spinner.succeed('SpecWeave core plugin installed automatically!');
+        console.log(chalk.green(`   ${locale.t('cli', 'init.success.pluginAutoInstall')}`));
+      } catch (error: any) {
+        // Installation failed - show manual instructions
+        spinner.warn('Could not auto-install core plugin');
+        console.log(chalk.yellow(`   ${locale.t('cli', 'init.warnings.pluginAutoInstallFailed')}`));
+        console.log(chalk.gray(`   ${locale.t('cli', 'init.info.manualInstallInstructions')}`));
       }
     }
 
@@ -630,7 +607,8 @@ function findSourceDir(relativePath: string): string {
 
 function copyCommands(commandsDir: string, targetCommandsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  const sourceDir = findSourceDir('commands');
+  // v0.4.0+: Commands moved to plugins/specweave-core/commands/
+  const sourceDir = findSourceDir('plugins/specweave-core/commands');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'commands' })}`));
@@ -688,7 +666,8 @@ function copyCommands(commandsDir: string, targetCommandsDir: string, language: 
 
 function copyAgents(agentsDir: string, targetAgentsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  const sourceDir = findSourceDir('agents');
+  // v0.4.0+: Agents moved to plugins/specweave-core/agents/
+  const sourceDir = findSourceDir('plugins/specweave-core/agents');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'agents' })}`));
@@ -783,7 +762,8 @@ function injectSystemPromptForInit(content: string, language: SupportedLanguage)
 
 function copySkills(skillsDir: string, targetSkillsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  const sourceDir = findSourceDir('skills');
+  // v0.4.0+: Skills moved to plugins/specweave-core/skills/
+  const sourceDir = findSourceDir('plugins/specweave-core/skills');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'skills' })}`));
@@ -854,7 +834,8 @@ function copySkills(skillsDir: string, targetSkillsDir: string, language: Suppor
 
 function copyHooks(hooksDir: string, targetHooksDir: string, language: SupportedLanguage = 'en'): void {
   const locale = getLocaleManager(language);
-  const sourceDir = findSourceDir('hooks');
+  // v0.4.0+: Hooks moved to plugins/specweave-core/hooks/
+  const sourceDir = findSourceDir('plugins/specweave-core/hooks');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'hooks' })}`));

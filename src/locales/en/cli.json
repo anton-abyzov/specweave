@@ -53,7 +53,8 @@
       "skillsIndexNote": "Skills will still work, but manual indexing may be needed.",
       "marketplaceCopyFailed": "⚠️  Warning: Could not copy plugin marketplace",
       "marketplaceNotFound": "⚠️  Warning: Plugin marketplace not found",
-      "pluginAutoSetupFailed": "⚠️  Warning: Could not setup automatic plugin registration"
+      "pluginAutoSetupFailed": "⚠️  Warning: Could not setup automatic plugin registration",
+      "pluginAutoInstallFailed": "Automatic plugin installation failed (claude CLI not available)"
     },
     "prompts": {
       "confirmInitInCurrent": "Initialize SpecWeave in current directory?",
@@ -72,10 +73,12 @@
       "copiedAgents": "✓ Copied {{count}} agent directories",
       "copiedSkills": "✓ Copied {{count}} skill directories",
       "copiedHooks": "✓ Copied {{count}} hook files",
-      "pluginAutoSetupDetails": "Claude Code will auto-load SpecWeave marketplace when you trust this folder"
+      "pluginAutoSetupDetails": "Claude Code will auto-load SpecWeave marketplace when you trust this folder",
+      "manualInstallInstructions": "Run manually: /plugin install specweave-core@specweave"
     },
     "success": {
-      "pluginAutoSetup": "Plugin marketplace configured for automatic loading"
+      "pluginAutoSetup": "Plugin marketplace configured for automatic loading",
+      "pluginAutoInstall": "Slash commands available immediately (no restart needed!)"
     },
     "progress": {
       "creatingProject": "Creating SpecWeave project...",

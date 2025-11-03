@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### 🔴 CRITICAL - Fixed Claude Code Plugin Integration
+
+**Breaking Change**: Removed per-project plugin installation in favor of Claude Code native global plugins.
+
+#### Fixed
+- **Plugin Installation After v0.4.0 Migration**
+  - Fixed broken `specweave init` after v0.4.0 plugin architecture migration
+  - Root cause: Copy functions still referenced old `commands/`, `skills/`, `agents/` directories (deleted in v0.4.0)
+  - New location: `plugins/specweave-core/{commands,skills,agents,hooks}/`
+  - Result: Slash commands, skills, and agents were not being installed during init
+
+#### Changed
+- **Simplified to Claude Code Native Plugins ONLY**
+  - Removed per-project file copying (was incorrect approach)
+  - Plugins now install globally via `/plugin install specweave-core@specweave`
+  - Work across ALL projects (like VS Code extensions)
+  - No `.claude/` directory needed in user projects
+  - Marketplace auto-registered via `.claude/settings.json`
+
+#### Deprecated
+- **`specweave plugin` commands** (marked for removal in v0.7.0)
+  - `specweave plugin list` → Use `/plugin list specweave`
+  - `specweave plugin enable` → Use `/plugin install specweave-{name}@specweave`
+  - `specweave plugin disable` → Use `/plugin uninstall specweave-{name}`
+  - Reason: SpecWeave uses ONLY Claude Code's native plugin system
+
+#### Added
+- **Intelligent On-Demand Plugin Detection** (increment-planner skill)
+  - Step 6 in increment planning: Scans spec.md content for keywords
+  - Detects required plugins (GitHub, Kubernetes, Stripe, React, etc.)
+  - Suggests installation with `/plugin install` command
+  - Non-blocking: User can install now, later, or skip
+  - Maps 50+ keywords to 18 SpecWeave plugins
+
+#### Documentation
+- Updated CLAUDE.md to clarify ONE plugin system (Claude Code native)
+- Removed all references to "SpecWeave internal plugin system"
+- Added 3-phase plugin loading guide (Initialize → Planning → Implementation)
+- Enhanced `specweave init` output to highlight required core plugin installation
+
+#### Impact
+**Before this fix**: `specweave init` appeared to work but slash commands didn't appear (silent failure)
+
+**After this fix**:
+1. Run `specweave init` → Marketplace registered
+2. Run `/plugin install specweave-core@specweave` → Plugins install globally
+3. Slash commands work in ALL SpecWeave projects
+
+---
+
 ## [0.6.0] - 2025-11-03
 
 ### 🌍 Major Release - LLM-Native Internationalization
