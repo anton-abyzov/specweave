@@ -10,6 +10,8 @@ import { ClaudeMdGenerator } from '../../adapters/claude-md-generator.js';
 import { AgentsMdGenerator } from '../../adapters/agents-md-generator.js';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { generateSkillsIndex } from '../../utils/generate-skills-index.js';
+import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
+import { SupportedLanguage } from '../../core/i18n/types.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -17,12 +19,27 @@ interface InitOptions {
   template?: string;
   adapter?: string;  // 'claude', 'cursor', 'copilot', 'generic'
   techStack?: string;
+  language?: string;  // Language for i18n support
 }
 
 export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
+  // Validate and normalize language option
+  const language = options.language?.toLowerCase() || 'en';
+
+  // Validate language if provided
+  if (options.language && !isLanguageSupported(language)) {
+    console.error(chalk.red(`\n❌ Invalid language: ${options.language}`));
+    console.error(chalk.yellow(`Supported languages: ${getSupportedLanguages().join(', ')}\n`));
+    process.exit(1);
+  }
+
+  // Initialize LanguageManager
+  const i18n = new LanguageManager({ defaultLanguage: language as SupportedLanguage });
+
+  // Use English strings by default (i18n.t() returns English when language='en')
   console.log(chalk.blue.bold('\n🚀 SpecWeave Initialization\n'));
 
   let targetDir: string;
@@ -197,7 +214,7 @@ export async function initCommand(
       spinner.text = 'Installing Claude Code components...';
 
       try {
-        copyCommands('', path.join(targetDir, '.claude/commands'));
+        copyCommands('', path.join(targetDir, '.claude/commands'), language as SupportedLanguage);
         spinner.text = 'Slash commands installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy commands');
@@ -206,7 +223,7 @@ export async function initCommand(
       }
 
       try {
-        copyAgents('', path.join(targetDir, '.claude/agents'));
+        copyAgents('', path.join(targetDir, '.claude/agents'), language as SupportedLanguage);
         spinner.text = 'Agents installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy agents');
@@ -215,7 +232,7 @@ export async function initCommand(
       }
 
       try {
-        copySkills('', path.join(targetDir, '.claude/skills'));
+        copySkills('', path.join(targetDir, '.claude/skills'), language as SupportedLanguage);
         spinner.text = 'Skills installed...';
       } catch (error: any) {
         spinner.fail('Failed to copy skills');
@@ -234,8 +251,8 @@ export async function initCommand(
 
       try {
         spinner.text = 'Generating skills index...';
-        // Generate skills index and copy to target
-        const sourceIndexPath = path.join(__dirname, '../../../src/skills/SKILLS-INDEX.md');
+        // Generate skills index and copy to target (root-level after v0.5.0)
+        const sourceIndexPath = path.join(__dirname, '../../../skills/SKILLS-INDEX.md');
         await generateSkillsIndex(sourceIndexPath);
 
         // Copy index to target .claude/skills/
@@ -359,6 +376,9 @@ export async function initCommand(
         });
       }
     }
+
+    // 13. Create config.json with language setting
+    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage);
 
     showNextSteps(finalProjectName, toolName, usedDotNotation);
   } catch (error) {
@@ -575,7 +595,7 @@ function findSourceDir(relativePath: string): string {
   return possiblePaths[0];
 }
 
-function copyCommands(commandsDir: string, targetCommandsDir: string): void {
+function copyCommands(commandsDir: string, targetCommandsDir: string, language: SupportedLanguage): void {
   const sourceDir = findSourceDir('commands');
 
   if (!fs.existsSync(sourceDir)) {
@@ -604,11 +624,18 @@ function copyCommands(commandsDir: string, targetCommandsDir: string): void {
     // Ensure target directory exists
     fs.ensureDirSync(targetCommandsDir);
 
-    // Copy all files from source to target
-    fs.copySync(sourceDir, targetCommandsDir, {
-      overwrite: true,
-      errorOnExist: false
-    });
+    // Copy each command file and inject system prompts if needed
+    for (const file of sourceFiles) {
+      const sourcePath = path.join(sourceDir, file);
+      const targetPath = path.join(targetCommandsDir, file);
+
+      // Read, potentially inject, and write
+      const content = fs.readFileSync(sourcePath, 'utf-8');
+      const modifiedContent = language !== 'en'
+        ? injectSystemPromptForInit(content, language)
+        : content;
+      fs.writeFileSync(targetPath, modifiedContent, 'utf-8');
+    }
 
     // Validate files were copied
     const copiedFiles = fs.readdirSync(targetCommandsDir).filter(f => f.endsWith('.md'));
@@ -625,7 +652,7 @@ function copyCommands(commandsDir: string, targetCommandsDir: string): void {
   }
 }
 
-function copyAgents(agentsDir: string, targetAgentsDir: string): void {
+function copyAgents(agentsDir: string, targetAgentsDir: string, language: SupportedLanguage): void {
   const sourceDir = findSourceDir('agents');
 
   if (!fs.existsSync(sourceDir)) {
@@ -656,11 +683,27 @@ function copyAgents(agentsDir: string, targetAgentsDir: string): void {
     // Ensure target directory exists
     fs.ensureDirSync(targetAgentsDir);
 
-    // Copy all directories from source to target
-    fs.copySync(sourceDir, targetAgentsDir, {
-      overwrite: true,
-      errorOnExist: false
-    });
+    // Copy each agent directory and inject system prompts if needed
+    for (const agentDir of agentDirs) {
+      const sourcePath = path.join(sourceDir, agentDir.name);
+      const targetPath = path.join(targetAgentsDir, agentDir.name);
+
+      // Copy entire agent directory first
+      fs.copySync(sourcePath, targetPath, {
+        overwrite: true,
+        errorOnExist: false
+      });
+
+      // Then inject system prompt into AGENT.md if language !== 'en'
+      if (language !== 'en') {
+        const agentMdPath = path.join(targetPath, 'AGENT.md');
+        if (fs.existsSync(agentMdPath)) {
+          const content = fs.readFileSync(agentMdPath, 'utf-8');
+          const modifiedContent = injectSystemPromptForInit(content, language);
+          fs.writeFileSync(agentMdPath, modifiedContent, 'utf-8');
+        }
+      }
+    }
 
     // Validate subdirectories were copied
     const copiedDirs = fs.readdirSync(targetAgentsDir, { withFileTypes: true })
@@ -679,7 +722,31 @@ function copyAgents(agentsDir: string, targetAgentsDir: string): void {
   }
 }
 
-function copySkills(skillsDir: string, targetSkillsDir: string): void {
+/**
+ * Inject system prompt for non-English languages
+ */
+function injectSystemPromptForInit(content: string, language: SupportedLanguage): string {
+  if (language === 'en') {
+    return content; // No changes for English
+  }
+
+  const systemPrompt = getSystemPromptForLanguage(language);
+
+  // Inject after YAML frontmatter if present
+  if (content.startsWith('---')) {
+    const endOfFrontmatter = content.indexOf('---', 3);
+    if (endOfFrontmatter !== -1) {
+      const frontmatter = content.substring(0, endOfFrontmatter + 3);
+      const body = content.substring(endOfFrontmatter + 3);
+      return `${frontmatter}\n\n${systemPrompt}\n${body}`;
+    }
+  }
+
+  // No frontmatter - inject at the top
+  return `${systemPrompt}\n\n${content}`;
+}
+
+function copySkills(skillsDir: string, targetSkillsDir: string, language: SupportedLanguage): void {
   const sourceDir = findSourceDir('skills');
 
   if (!fs.existsSync(sourceDir)) {
@@ -710,11 +777,27 @@ function copySkills(skillsDir: string, targetSkillsDir: string): void {
     // Ensure target directory exists
     fs.ensureDirSync(targetSkillsDir);
 
-    // Copy all directories from source to target
-    fs.copySync(sourceDir, targetSkillsDir, {
-      overwrite: true,
-      errorOnExist: false
-    });
+    // Copy each skill directory and inject system prompts if needed
+    for (const skillDir of skillDirs) {
+      const sourcePath = path.join(sourceDir, skillDir.name);
+      const targetPath = path.join(targetSkillsDir, skillDir.name);
+
+      // Copy entire skill directory first
+      fs.copySync(sourcePath, targetPath, {
+        overwrite: true,
+        errorOnExist: false
+      });
+
+      // Then inject system prompt into SKILL.md if language !== 'en'
+      if (language !== 'en') {
+        const skillMdPath = path.join(targetPath, 'SKILL.md');
+        if (fs.existsSync(skillMdPath)) {
+          const content = fs.readFileSync(skillMdPath, 'utf-8');
+          const modifiedContent = injectSystemPromptForInit(content, language);
+          fs.writeFileSync(skillMdPath, modifiedContent, 'utf-8');
+        }
+      }
+    }
 
     // Validate subdirectories were copied
     const copiedDirs = fs.readdirSync(targetSkillsDir, { withFileTypes: true })
@@ -783,6 +866,42 @@ function copyHooks(hooksDir: string, targetHooksDir: string): void {
     console.error(chalk.red(`   Target: ${targetHooksDir}`));
     throw error;
   }
+}
+
+/**
+ * Create .specweave/config.json with project settings
+ */
+function createConfigFile(
+  targetDir: string,
+  projectName: string,
+  adapter: string,
+  language: SupportedLanguage
+): void {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+
+  const config = {
+    project: {
+      name: projectName,
+      version: '0.1.0',
+    },
+    adapters: {
+      default: adapter,
+    },
+    // Only include language if non-English
+    ...(language !== 'en' && {
+      language,
+      translation: {
+        method: 'in-session',
+        autoTranslateLivingDocs: false,
+        keepFrameworkTerms: true,
+        keepTechnicalTerms: true,
+        translateCodeComments: true,
+        translateVariableNames: false,
+      },
+    }),
+  };
+
+  fs.writeJsonSync(configPath, config, { spaces: 2 });
 }
 
 function showNextSteps(projectName: string, adapterName: string, usedDotNotation: boolean = false): void {

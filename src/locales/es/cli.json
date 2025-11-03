@@ -1,0 +1,41 @@
+{
+  "init": {
+    "welcome": "🚀 Inicialización de SpecWeave",
+    "projectName": "Nombre del proyecto:",
+    "detectingTool": "Detectando herramienta de IA...",
+    "foundClaude": "✅ Claude Code encontrado",
+    "foundCursor": "✅ Cursor encontrado",
+    "foundCopilot": "✅ GitHub Copilot encontrado",
+    "noToolDetected": "No se detectó herramienta de IA, usando adaptador Generic",
+    "complete": "✨ ¡Inicialización completa!",
+    "errors": {
+      "invalidName": "El nombre del proyecto debe contener solo letras minúsculas, números y guiones",
+      "alreadyExists": "El directorio .specweave ya existe",
+      "cancelled": "❌ Inicialización cancelada"
+    }
+  },
+  "increment": {
+    "creating": "📝 Creando increment: {name}",
+    "created": "✅ ¡Increment {id} creado exitosamente!",
+    "nextStepDo": "Siguiente: Ejecuta /specweave.do para comenzar la implementación",
+    "errors": {
+      "incompleteFound": "¡No se puede crear un nuevo increment! Increments anteriores incompletos"
+    }
+  },
+  "progress": {
+    "currentIncrement": "Increment Actual: {id}",
+    "status": "Estado: {status}",
+    "completion": "Completado: {percent}%"
+  },
+  "translate": {
+    "translating": "🌐 Traduciendo contenido a {language}...",
+    "complete": "✅ ¡Traducción completa!"
+  },
+  "version": {
+    "current": "Versión de SpecWeave: {version}"
+  },
+  "errors": {
+    "fileNotFound": "❌ Archivo no encontrado: {path}",
+    "invalidConfig": "❌ Configuración inválida: {error}"
+  }
+}

@@ -70,6 +70,50 @@
         }
       },
       "additionalProperties": true
+    },
+    "language": {
+      "type": "string",
+      "description": "Primary language for generated content and CLI",
+      "enum": ["en", "ru", "es", "zh", "de", "fr", "ja", "ko", "pt"],
+      "default": "en"
+    },
+    "translation": {
+      "type": "object",
+      "description": "Translation settings for multilingual support",
+      "properties": {
+        "method": {
+          "type": "string",
+          "description": "Translation method (always in-session for zero cost)",
+          "enum": ["in-session"],
+          "default": "in-session"
+        },
+        "autoTranslateLivingDocs": {
+          "type": "boolean",
+          "description": "Automatically translate living docs updates after task completion",
+          "default": false
+        },
+        "keepFrameworkTerms": {
+          "type": "boolean",
+          "description": "Keep framework terms (Increment, Living Docs, SpecWeave, ADR, RFC) in English",
+          "default": true
+        },
+        "keepTechnicalTerms": {
+          "type": "boolean",
+          "description": "Keep technical terms (Git, Docker, Kubernetes, npm, TypeScript) in English",
+          "default": true
+        },
+        "translateCodeComments": {
+          "type": "boolean",
+          "description": "Translate comments in generated code",
+          "default": true
+        },
+        "translateVariableNames": {
+          "type": "boolean",
+          "description": "Translate variable/function names (NOT RECOMMENDED)",
+          "default": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true,
@@ -131,6 +175,24 @@
       "project": {
         "name": "full-stack-app",
         "version": "0.1.0"
+      }
+    },
+    {
+      "language": "ru",
+      "translation": {
+        "method": "in-session",
+        "autoTranslateLivingDocs": true,
+        "keepFrameworkTerms": true,
+        "keepTechnicalTerms": true,
+        "translateCodeComments": true,
+        "translateVariableNames": false
+      },
+      "plugins": {
+        "enabled": ["specweave-translator"]
+      },
+      "project": {
+        "name": "russian-project",
+        "version": "1.0.0"
       }
     }
   ]

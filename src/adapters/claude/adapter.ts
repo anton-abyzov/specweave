@@ -13,6 +13,8 @@ import fs from 'fs-extra';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import type { Plugin } from '../../core/types/plugin.js';
+import { LanguageManager, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
+import type { SupportedLanguage, I18nConfig } from '../../core/i18n/types.js';
 
 export class ClaudeAdapter extends AdapterBase {
   name = 'claude';
@@ -232,6 +234,60 @@ Using SpecWeave CLI for plugin management.
   }
 
   /**
+   * Read language configuration from project config
+   *
+   * @returns Language setting from config, defaults to 'en'
+   */
+  private async getLanguageConfig(): Promise<SupportedLanguage> {
+    const projectPath = process.cwd();
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+    if (!(await fs.pathExists(configPath))) {
+      return 'en'; // Default to English if no config
+    }
+
+    try {
+      const config = await fs.readJson(configPath);
+      return (config.language as SupportedLanguage) || 'en';
+    } catch (error) {
+      console.warn('⚠️  Could not read language from config, defaulting to English');
+      return 'en';
+    }
+  }
+
+  /**
+   * Inject system prompt for non-English languages
+   *
+   * Prepends language instruction to markdown content if language !== 'en'
+   *
+   * @param content Original markdown content
+   * @param language Target language
+   * @returns Modified content with system prompt (or unchanged if English)
+   */
+  private injectSystemPrompt(content: string, language: SupportedLanguage): string {
+    if (language === 'en') {
+      return content; // No changes for English - preserve default behavior
+    }
+
+    // Get system prompt for target language
+    const systemPrompt = getSystemPromptForLanguage(language);
+
+    // Inject system prompt at the top (after YAML frontmatter if present)
+    if (content.startsWith('---')) {
+      // Has YAML frontmatter - inject after closing ---
+      const endOfFrontmatter = content.indexOf('---', 3);
+      if (endOfFrontmatter !== -1) {
+        const frontmatter = content.substring(0, endOfFrontmatter + 3);
+        const body = content.substring(endOfFrontmatter + 3);
+        return `${frontmatter}\n\n${systemPrompt}\n${body}`;
+      }
+    }
+
+    // No frontmatter - inject at the very top
+    return `${systemPrompt}\n\n${content}`;
+  }
+
+  /**
    * Compile and install a plugin for Claude Code
    *
    * Claude uses native plugin installation:
@@ -243,6 +299,8 @@ Using SpecWeave CLI for plugin management.
    * - Native /plugin install (if Claude Code supports it)
    * - SpecWeave CLI fallback (always available)
    *
+   * NEW: Injects system prompts for non-English languages
+   *
    * @param plugin Plugin to install
    */
   async compilePlugin(plugin: Plugin): Promise<void> {
@@ -250,6 +308,12 @@ Using SpecWeave CLI for plugin management.
     const claudeDir = path.join(projectPath, '.claude');
 
     console.log(`\n📦 Installing plugin: ${plugin.manifest.name}`);
+
+    // Get language configuration for system prompt injection
+    const language = await this.getLanguageConfig();
+    if (language !== 'en') {
+      console.log(`   🌐 Language: ${language} (system prompts will be injected)`);
+    }
 
     // Check for native plugin support
     const hasNativePlugins = await this.supportsNativePlugins();
@@ -270,10 +334,12 @@ Using SpecWeave CLI for plugin management.
       const targetPath = path.join(claudeDir, 'skills', skill.name);
       await fs.ensureDir(targetPath);
 
-      // Copy SKILL.md
+      // Copy SKILL.md (with language injection if needed)
       const skillMdPath = path.join(skill.path, 'SKILL.md');
       if (await fs.pathExists(skillMdPath)) {
-        await fs.copy(skillMdPath, path.join(targetPath, 'SKILL.md'));
+        const content = await fs.readFile(skillMdPath, 'utf-8');
+        const modifiedContent = this.injectSystemPrompt(content, language);
+        await fs.writeFile(path.join(targetPath, 'SKILL.md'), modifiedContent, 'utf-8');
       }
 
       // Copy test cases if they exist
@@ -290,10 +356,12 @@ Using SpecWeave CLI for plugin management.
       const targetPath = path.join(claudeDir, 'agents', agent.name);
       await fs.ensureDir(targetPath);
 
-      // Copy AGENT.md
+      // Copy AGENT.md (with language injection if needed)
       const agentMdPath = path.join(agent.path, 'AGENT.md');
       if (await fs.pathExists(agentMdPath)) {
-        await fs.copy(agentMdPath, path.join(targetPath, 'AGENT.md'));
+        const content = await fs.readFile(agentMdPath, 'utf-8');
+        const modifiedContent = this.injectSystemPrompt(content, language);
+        await fs.writeFile(path.join(targetPath, 'AGENT.md'), modifiedContent, 'utf-8');
       }
 
       console.log(`   ✓ Agent: ${agent.name}`);
@@ -306,7 +374,9 @@ Using SpecWeave CLI for plugin management.
       const targetPath = path.join(claudeDir, 'commands', fileName);
 
       if (await fs.pathExists(command.path)) {
-        await fs.copy(command.path, targetPath);
+        const content = await fs.readFile(command.path, 'utf-8');
+        const modifiedContent = this.injectSystemPrompt(content, language);
+        await fs.writeFile(targetPath, modifiedContent, 'utf-8');
       }
 
       console.log(`   ✓ Command: /${command.name}`);

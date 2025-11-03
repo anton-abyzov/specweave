@@ -413,8 +413,8 @@ This index simulates Claude Code's native progressive disclosure:
 export async function generateSkillsIndex(outputPath?: string): Promise<void> {
   console.log('🔍 Scanning skills...');
 
-  // Determine skills directory
-  const skillsDir = path.join(__dirname, '../../src/skills');
+  // Determine skills directory (root-level after v0.5.0 Claude native architecture)
+  const skillsDir = path.join(__dirname, '../../skills');
 
   if (!fs.existsSync(skillsDir)) {
     throw new Error(`Skills directory not found: ${skillsDir}`);
@@ -443,8 +443,8 @@ export async function generateSkillsIndex(outputPath?: string): Promise<void> {
   // Generate markdown
   const markdown = generateIndexMarkdown(skills);
 
-  // Determine output path
-  const defaultOutputPath = path.join(__dirname, '../../src/skills/SKILLS-INDEX.md');
+  // Determine output path (root-level after v0.5.0 Claude native architecture)
+  const defaultOutputPath = path.join(__dirname, '../../skills/SKILLS-INDEX.md');
   const finalOutputPath = outputPath || defaultOutputPath;
 
   // Write to file
