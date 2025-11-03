@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc && npm run copy:locales",
-    "copy:locales": "mkdir -p dist/locales && cp -r src/locales/* dist/locales/",
+    "copy:locales": "node scripts/copy-locales.js",
     "dev": "tsc --watch",
     "prepare": "npm run build",
     "test": "jest",
@@ -59,7 +59,7 @@
   },
   "homepage": "https://spec-weave.com",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "dist",

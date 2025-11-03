@@ -52,24 +52,26 @@ info "Step 1: Installing SpecWeave from local source..."
 info "Using SpecWeave from: $REPO_ROOT"
 info "Installing to: $TEST_DIR"
 
-# Verify repo root exists and has install.sh
-test -f "$REPO_ROOT/install.sh" || fail "Install script not found at $REPO_ROOT/install.sh"
+# Verify repo root has built dist/
+test -d "$REPO_ROOT/dist" || fail "dist/ directory not found. Run 'npm run build' first."
 
-# Check if src/agents exists
-if [ ! -d "$REPO_ROOT/src/agents" ]; then
-  fail "src/agents directory not found at $REPO_ROOT/src/agents"
+# Check if plugin architecture exists (v0.4.0+)
+if [ ! -d "$REPO_ROOT/plugins/specweave-core" ]; then
+  fail "plugins/specweave-core directory not found at $REPO_ROOT/plugins/specweave-core"
 fi
 
-# Run install script to set up .specweave structure
-info "Running: bash $REPO_ROOT/install.sh $TEST_DIR"
-INSTALL_OUTPUT=$(bash "$REPO_ROOT/install.sh" "$TEST_DIR" 2>&1) || {
-  echo "Install script output:"
-  echo "$INSTALL_OUTPUT"
-  fail "Install script failed"
+# Run specweave init (modern CLI approach)
+info "Running: node $REPO_ROOT/bin/specweave.js init ."
+cd "$TEST_DIR"
+# Provide default inputs: empty (current dir name), yes (confirm init in non-empty dir)
+NODE_OUTPUT=$(printf "\n\ny\n" | node "$REPO_ROOT/bin/specweave.js" init . 2>&1) || {
+  echo "CLI output:"
+  echo "$NODE_OUTPUT"
+  fail "specweave init failed"
 }
 
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
-success "SpecWeave installed"
+success "SpecWeave initialized"
 
 # Step 2: Framework ready for interactive use
 info "Step 2: SpecWeave framework installed successfully"
@@ -100,8 +102,7 @@ required_dirs=(
   ".specweave"
   ".specweave/docs"
   ".specweave/increments"
-  ".claude/skills"
-  ".claude/agents"
+  ".claude"
 )
 
 for dir in "${required_dirs[@]}"; do
@@ -115,7 +116,7 @@ info "Step 5: Verifying required files..."
 required_files=(
   "CLAUDE.md"
   ".gitignore"
-  ".specweave/config.yaml"
+  ".specweave/config.json"
 )
 
 for file in "${required_files[@]}"; do
@@ -168,38 +169,31 @@ else
   echo "  Features directory not created yet (optional for users)"
 fi
 
-# Step 8: Verify skills installed
-info "Step 8: Verifying core skills installed..."
+# Step 8: Verify plugin source exists (for Claude Code installation)
+info "Step 8: Verifying plugin architecture..."
 
-core_skills=(
-  "specweave-detector"
-  "increment-planner"
-  "skill-router"
-  "context-loader"
-  "hetzner-provisioner"
-)
+# Check that plugins exist in source (for /plugin install later)
+test -d "$REPO_ROOT/plugins/specweave-core/skills" || fail "Core plugin skills not found"
+test -d "$REPO_ROOT/plugins/specweave-core/agents" || fail "Core plugin agents not found"
+test -f "$REPO_ROOT/plugins/specweave-core/.claude-plugin/plugin.json" || fail "Core plugin manifest not found"
 
-for skill in "${core_skills[@]}"; do
-  test -d ".claude/skills/$skill" || fail "Skill not installed: $skill"
-  test -f ".claude/skills/$skill/SKILL.md" || fail "SKILL.md missing for: $skill"
-done
-success "Core skills installed correctly"
+success "Plugin architecture verified"
 
-# Step 9: Verify agents installed
-info "Step 9: Verifying core agents installed..."
+# Step 9: Note about Claude Code plugins
+info "Step 9: Plugin installation notes..."
 
-core_agents=(
-  "pm"
-  "architect"
-  "devops"
-  "tech-lead"
-)
-
-for agent in "${core_agents[@]}"; do
-  test -d ".claude/agents/$agent" || fail "Agent not installed: $agent"
-  test -f ".claude/agents/$agent/AGENT.md" || fail "AGENT.md missing for: $agent"
-done
-success "Core agents installed correctly"
+echo ""
+echo "  NOTE: Skills and agents are Claude Code plugins (v0.4.0+)"
+echo "  They install globally via:"
+echo "    /plugin marketplace add ./.claude-plugin"
+echo "    /plugin install specweave-core@specweave"
+echo ""
+echo "  This smoke test verifies:"
+echo "    ✓ .specweave/ structure created"
+echo "    ✓ Plugin source files exist"
+echo "    ✓ CLAUDE.md and config files present"
+echo ""
+success "Plugin architecture uses Claude Code native plugins"
 
 # Step 10: Verify E2E tests exist (optional - created by user for UI projects)
 info "Step 10: Verifying E2E tests (optional)..."
