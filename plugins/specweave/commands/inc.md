@@ -1,5 +1,5 @@
 ---
-name: specweave.inc
+name: inc
 description: Shorthand for /increment - Plan new Product Increment (PM-led process)
 ---
 

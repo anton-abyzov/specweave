@@ -103,7 +103,7 @@ specweave/
    {
      "plugins": [
        {
-         "name": "specweave-core",
+         "name": "specweave",
          "source": ".",
          "description": "Core SpecWeave framework"
        },
@@ -155,7 +155,7 @@ specweave/
 ### Phase 2: Update Marketplace
 1. Create marketplace `.claude-plugin/` folder
 2. Update marketplace.json with correct paths
-3. Add core framework as "specweave-core" plugin
+3. Add core framework as "specweave" plugin
 
 ### Phase 3: Remove Duplicates
 1. Delete `.claude/` from root
@@ -201,7 +201,7 @@ specweave/
 ```bash
 # In SpecWeave repo:
 claude plugin marketplace add ./marketplace
-claude plugin install specweave-core@specweave
+claude plugin install specweave@specweave
 claude plugin install specweave-github@specweave
 
 # Should work exactly like user installation

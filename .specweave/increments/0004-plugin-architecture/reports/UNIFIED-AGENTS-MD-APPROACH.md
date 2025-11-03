@@ -33,7 +33,7 @@ After reviewing https://agents.md/, it's clear that **AGENTS.md is the emerging 
 # Loads plugins natively (skills/, agents/, commands/)
 
 # User installs
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 ```
 
 **Files created**:
@@ -127,7 +127,7 @@ This project uses SpecWeave for spec-driven development. SpecWeave provides spec
 /plugin marketplace add anton-abyzov/specweave
 
 # Install core framework
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 
 # Install GitHub plugin (optional)
 /plugin install specweave-github@specweave
@@ -753,7 +753,7 @@ async install(targetDir: string) {
   console.log('  /plugin marketplace add anton-abyzov/specweave');
   console.log('');
   console.log('Install SpecWeave core:');
-  console.log('  /plugin install specweave-core@specweave');
+  console.log('  /plugin install specweave@specweave');
   console.log('');
   console.log('(Optional) Install GitHub plugin:');
   console.log('  /plugin install specweave-github@specweave');
@@ -855,7 +855,7 @@ async install(targetDir: string) {
   },
   "plugins": [
     {
-      "name": "specweave-core",
+      "name": "specweave",
       "description": "SpecWeave core framework",
       "source": {
         "source": "github",
@@ -880,7 +880,7 @@ async install(targetDir: string) {
 **How it works**:
 1. User runs: `/plugin marketplace add anton-abyzov/specweave`
 2. Claude fetches `marketplace.json` from GitHub
-3. User installs: `/plugin install specweave-core@specweave`
+3. User installs: `/plugin install specweave@specweave`
 4. Claude fetches **current snapshot** from GitHub `main` branch
 5. Plugins cached locally in `~/.claude-code/marketplaces/specweave/`
 
@@ -905,7 +905,7 @@ Keep plugin versions in sync with package.json:
 **.claude-plugin/plugin.json**:
 ```json
 {
-  "name": "specweave-core",
+  "name": "specweave",
   "version": "0.5.0"
 }
 ```
@@ -918,7 +918,7 @@ Keep plugin versions in sync with package.json:
   },
   "plugins": [
     {
-      "name": "specweave-core",
+      "name": "specweave",
       "version": "0.5.0"
     }
   ]

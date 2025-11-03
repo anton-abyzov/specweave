@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "specweave",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
   "owner": {
     "name": "Anton Abyzov",
@@ -9,11 +9,11 @@
   },
   "plugins": [
     {
-      "name": "specweave-core",
-      "description": "SpecWeave core framework - increment lifecycle, living docs, PM-led planning",
-      "source": "./plugins/specweave-core",
+      "name": "specweave",
+      "description": "SpecWeave framework - increment lifecycle, living docs, PM-led planning",
+      "source": "./plugins/specweave",
       "category": "development",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "author": {
         "name": "Anton Abyzov",
         "email": "anton@spec-weave.com"

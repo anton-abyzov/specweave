@@ -24,7 +24,7 @@ Design for SpecWeave's plugin ecosystem using **Claude Code's native plugin syst
 ### Option 1: Project-Level (Recommended for SpecWeave)
 ```
 .claude/plugins/
-├── specweave-core/           # Always loaded (increment lifecycle)
+├── specweave/           # Always loaded (increment lifecycle)
 ├── specweave-github/         # GitHub integration (priority #1)
 ├── specweave-ui/             # UI/UX comprehensive plugin
 ├── specweave-backend-node/   # Node.js backend stack
@@ -46,7 +46,7 @@ Design for SpecWeave's plugin ecosystem using **Claude Code's native plugin syst
 ### Option 2: Global Installation
 ```
 ~/.claude/plugins/
-├── specweave-core/
+├── specweave/
 ├── specweave-github/
 └── specweave-ui/
 ```
@@ -69,13 +69,13 @@ Design for SpecWeave's plugin ecosystem using **Claude Code's native plugin syst
 **SpecWeave Source** (for contributors):
 ```
 src/plugins/                  # Source of truth (version controlled)
-├── specweave-core/
+├── specweave/
 ├── specweave-github/
 ├── specweave-ui/
 └── ...
 
 .claude/plugins/              # Installed (gitignored)
-├── specweave-core/           # ← Installed from src/plugins/
+├── specweave/           # ← Installed from src/plugins/
 ├── specweave-github/
 └── ...
 ```
@@ -83,7 +83,7 @@ src/plugins/                  # Source of truth (version controlled)
 **User Projects** (via `specweave init`):
 ```
 .claude/plugins/              # Installed by SpecWeave CLI
-├── specweave-core/           # ← Copied from NPM package
+├── specweave/           # ← Copied from NPM package
 ├── specweave-github/
 └── ...
 ```
@@ -139,10 +139,10 @@ src/plugins/specweave-ui/
 
 ### Core Plugin (Always Loaded)
 
-**specweave-core** - Increment lifecycle management
+**specweave** - Increment lifecycle management
 ```json
 {
-  "name": "specweave-core",
+  "name": "specweave",
   "description": "Core SpecWeave framework - increment lifecycle, PM, context loading",
   "version": "0.4.0",
   "required": true,
@@ -421,7 +421,7 @@ src/plugins/specweave-ui/
 
 ```
 src/plugins/
-├── specweave-core/           # Core framework (always loaded)
+├── specweave/           # Core framework (always loaded)
 │   ├── .claude-plugin/
 │   │   ├── plugin.json
 │   │   └── README.md
@@ -532,7 +532,7 @@ git commit -m "feat(ui): Add Playwright skill"
 specweave init
 
 # Detected: React project
-# Installing: specweave-core, specweave-ui, specweave-github
+# Installing: specweave, specweave-ui, specweave-github
 
 # Manual enable/disable
 specweave plugin enable specweave-ml
@@ -564,7 +564,7 @@ cp -r node_modules/specweave/plugins/specweave-ui .claude/plugins/
 ```
 specweave/                    # NPM package root
 ├── plugins/                  # Pre-built plugins
-│   ├── specweave-core/
+│   ├── specweave/
 │   ├── specweave-ui/
 │   └── ...
 ├── bin/
@@ -706,7 +706,7 @@ src/
 ### New Structure (Modular)
 ```
 src/plugins/
-├── specweave-core/           # 12K tokens (always loaded)
+├── specweave/           # 12K tokens (always loaded)
 │   ├── increment-planner
 │   ├── pm, architect, tech-lead
 │   └── 7 core commands
@@ -733,7 +733,7 @@ src/plugins/
 ## Implementation Roadmap
 
 ### Phase 1: Core Plugin ✅ (DONE)
-- [x] Create `src/plugins/specweave-core/`
+- [x] Create `src/plugins/specweave/`
 - [x] Move increment lifecycle skills
 - [x] Move PM, Architect, Tech Lead agents
 - [x] Create plugin.json manifest

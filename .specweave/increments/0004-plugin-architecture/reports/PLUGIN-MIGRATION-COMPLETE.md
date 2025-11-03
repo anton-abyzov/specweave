@@ -12,9 +12,9 @@ Migrate SpecWeave from hybrid CLI+plugin architecture to **pure plugin architect
 
 ## ✅ What Was Done
 
-### 1. Created `specweave-core` Plugin
+### 1. Created `specweave` Plugin
 
-- **Location**: `plugins/specweave-core/`
+- **Location**: `plugins/specweave/`
 - **Purpose**: Core framework (increment lifecycle, living docs, TDD workflow)
 - **Contains**:
   - 15 core skills (increment-planner, rfc-generator, tdd-workflow, etc.)
@@ -51,11 +51,11 @@ All content now lives ONLY in `plugins/`.
 ### 4. Updated Marketplace Catalogs
 
 **Updated files**:
-- `.claude-plugin/marketplace.json` - Updated specweave-core path, added specweave-ui
-- `marketplace/marketplace.json` - Updated specweave-core path, added specweave-ui
+- `.claude-plugin/marketplace.json` - Updated specweave path, added specweave-ui
+- `marketplace/marketplace.json` - Updated specweave path, added specweave-ui
 
 **Total plugins**: 18
-- specweave-core (new!)
+- specweave (new!)
 - specweave-github
 - specweave-jira
 - specweave-ado
@@ -77,10 +77,10 @@ All content now lives ONLY in `plugins/`.
 ### 5. Updated Install Scripts
 
 Updated all install scripts to use new plugin structure:
-- `bin/install-skills.sh` - Now sources from `plugins/specweave-core/skills/`
-- `bin/install-agents.sh` - Now sources from `plugins/specweave-core/agents/`
-- `bin/install-commands.sh` - Now sources from `plugins/specweave-core/commands/`
-- `bin/install-hooks.sh` - Now sources from `plugins/specweave-core/hooks/`
+- `bin/install-skills.sh` - Now sources from `plugins/specweave/skills/`
+- `bin/install-agents.sh` - Now sources from `plugins/specweave/agents/`
+- `bin/install-commands.sh` - Now sources from `plugins/specweave/commands/`
+- `bin/install-hooks.sh` - Now sources from `plugins/specweave/hooks/`
 
 ---
 
@@ -113,7 +113,7 @@ specweave/
 ├── bin/             ← Install scripts (updated)
 ├── .claude-plugin/  ← Marketplace catalog
 └── plugins/         ← ALL plugins here!
-    ├── specweave-core/           ← Core framework (NEW!)
+    ├── specweave/           ← Core framework (NEW!)
     │   ├── .claude-plugin/
     │   ├── skills/               ← 15 core skills
     │   ├── agents/               ← 10 core agents
@@ -143,7 +143,7 @@ specweave/
 3. User optionally installs plugins
 
 **New** (Pure Plugins):
-1. User installs `specweave-core` plugin via Claude Code
+1. User installs `specweave` plugin via Claude Code
 2. User installs optional plugins (github, ml, etc.)
 3. Claude Code handles all distribution automatically
 
@@ -161,7 +161,7 @@ npm run install:skills
 **New**:
 ```bash
 # Edit plugin
-vim plugins/specweave-core/skills/increment-planner/SKILL.md
+vim plugins/specweave/skills/increment-planner/SKILL.md
 
 # Sync to .claude/ (same command, updated path)
 npm run install:skills
@@ -175,7 +175,7 @@ npm run install:skills
 
 1. ✅ Update `CLAUDE.md` to reflect new architecture
 2. ✅ Update `README.md` (user-facing docs)
-3. ✅ Test `specweave-core` plugin installation
+3. ✅ Test `specweave` plugin installation
 4. ⏳ Update `.gitignore` if needed
 5. ⏳ Update CI/CD pipelines (if any)
 
@@ -218,7 +218,7 @@ npm run install:skills
 - No more confusing root folders ✅
 - Everything in `plugins/` ✅
 - Claude Code native distribution ✅
-- 18 total plugins (including new `specweave-core`) ✅
+- 18 total plugins (including new `specweave`) ✅
 
 **Architecture Version**: v2.0 (Pure Plugin)
 **Migration**: COMPLETE

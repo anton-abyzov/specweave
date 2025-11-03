@@ -137,7 +137,7 @@ hooks/       (6 files)
 {
   "plugins": [
     {
-      "name": "specweave-core",
+      "name": "specweave",
       "source": "..",
       "description": "..."
     }

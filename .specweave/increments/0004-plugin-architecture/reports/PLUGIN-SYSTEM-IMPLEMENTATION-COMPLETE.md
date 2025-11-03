@@ -26,7 +26,7 @@ Designed and implemented SpecWeave's plugin architecture using **Claude Code's n
 - ✅ Marketplace-ready (Anthropic Plugin Marketplace + NPM)
 
 **Plugin Catalog** (15 planned):
-1. **specweave-core** (always loaded) - Increment lifecycle, PM, Architect
+1. **specweave** (always loaded) - Increment lifecycle, PM, Architect
 2. **specweave-github** (priority #1) - GitHub sync ✅ Exists
 3. **specweave-ui** - Playwright, Figma, React, Design System ✅ Created
 4. **specweave-backend-node** - Express, NestJS, Prisma
@@ -152,7 +152,7 @@ src/plugins/specweave-ui/
 **What It Does**:
 ```bash
 # Copies plugins from source to .claude/
-src/plugins/specweave-core/     → .claude/plugins/specweave-core/
+src/plugins/specweave/     → .claude/plugins/specweave/
 src/plugins/specweave-github/   → .claude/plugins/specweave-github/
 src/plugins/specweave-ui/       → .claude/plugins/specweave-ui/
 ```
@@ -304,20 +304,20 @@ All Skills Loaded: 50K tokens
 **Simple Project** (spec writing only):
 ```
 Core Only: 12K tokens (76% reduction!)
-└── specweave-core (increment lifecycle, PM, Architect)
+└── specweave (increment lifecycle, PM, Architect)
 ```
 
 **UI Project** (React + Playwright):
 ```
 Core + UI: 20K tokens (60% reduction!)
-├── specweave-core (12K)
+├── specweave (12K)
 └── specweave-ui (8K)
 ```
 
 **Full-Stack** (React + Node.js + Kubernetes):
 ```
 Core + UI + Backend + DevOps: 30K tokens (40% reduction!)
-├── specweave-core (12K)
+├── specweave (12K)
 ├── specweave-ui (8K)
 ├── specweave-backend-node (4K)
 └── specweave-devops (6K)
@@ -352,7 +352,7 @@ Core + UI + Backend + DevOps: 30K tokens (40% reduction!)
 ```
 specweave/                    # NPM package
 ├── plugins/                  # Pre-built plugins
-│   ├── specweave-core/
+│   ├── specweave/
 │   ├── specweave-ui/
 │   └── ...
 ├── bin/specweave.js          # CLI

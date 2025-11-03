@@ -59,7 +59,7 @@ But for marketplace.json, paths are relative to the marketplace file itself, not
 
 Initially suspected command files were wrong, but they're actually correct:
 
-**File**: `plugins/specweave-core/commands/specweave.do.md`
+**File**: `plugins/specweave/commands/specweave:do.md`
 ```yaml
 ---
 name: specweave.do  # Uses dots (this is correct!)
@@ -68,19 +68,19 @@ description: Execute implementation tasks
 ```
 
 ✅ **This is correct!** Claude Code:
-1. Reads plugin name from plugin.json: `"specweave-core"`
+1. Reads plugin name from plugin.json: `"specweave"`
 2. Reads command filename: `specweave.do.md` → removes `.md` → `specweave.do`
-3. Creates namespaced command: `/specweave-core:specweave.do`
+3. Creates namespaced command: `/specweave:specweave.do`
 
 **However**, there's a better naming convention:
 
 **Current**:
 - Filename: `specweave.do.md`
-- Command: `/specweave-core:specweave.do` (redundant "specweave" prefix)
+- Command: `/specweave:specweave.do` (redundant "specweave" prefix)
 
 **Recommended**:
 - Filename: `do.md`
-- Command: `/specweave-core:do` (cleaner!)
+- Command: `/specweave:do` (cleaner!)
 
 But the current format works, so this is **optional cleanup**, not a breaking issue.
 
@@ -159,7 +159,7 @@ Add marketplace with **absolute** or **relative** path:
 
 Then install plugins:
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install specweave-github@specweave
 ```
 
@@ -209,7 +209,7 @@ Document correct marketplace add command:
 /plugin marketplace list
 
 # Install:
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install specweave-github@specweave
 ```
 
@@ -218,12 +218,12 @@ Document correct marketplace add command:
 After fixes, typing `/specweave` should show:
 
 ```
-/specweave-core:inc          # Plan new increment
-/specweave-core:do           # Execute tasks
-/specweave-core:next         # Smart transition
-/specweave-core:done         # Close increment
-/specweave-core:progress     # Show progress
-/specweave-core:validate     # Validate increment
+/specweave:inc          # Plan new increment
+/specweave:do           # Execute tasks
+/specweave:next         # Smart transition
+/specweave:done         # Close increment
+/specweave:progress     # Show progress
+/specweave:validate     # Validate increment
 /specweave-github:sync       # Sync with GitHub
 /specweave-github:create-issue  # Create issue
 /specweave-github:close-issue   # Close issue
@@ -246,12 +246,12 @@ After fixes, typing `/specweave` should show:
    ```
 6. **Install core plugin**:
    ```bash
-   /plugin install specweave-core@specweave
+   /plugin install specweave@specweave
    ```
 7. **Test commands**:
    ```bash
-   /specweave-core:inc
-   /specweave-core:do
+   /specweave:inc
+   /specweave:do
    ```
 8. **Install GitHub plugin**:
    ```bash

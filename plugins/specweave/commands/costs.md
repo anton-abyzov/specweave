@@ -1,5 +1,5 @@
 ---
-name: specweave.costs
+name: costs
 description: Display AI cost dashboard for current or specified increment with real-time savings tracking
 ---
 

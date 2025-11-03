@@ -73,11 +73,11 @@ subcommands:
   sync-jira: .claude/commands/specweave:sync-jira.md
 
   # GitHub Plugin Commands
-  github.create-issue: .claude/commands/specweave.github.github-create-issue.md
-  github.sync: .claude/commands/specweave.github.github-sync.md
-  github.sync-tasks: .claude/commands/specweave.github.github-sync-tasks.md
-  github.close-issue: .claude/commands/specweave.github.github-close-issue.md
-  github.status: .claude/commands/specweave.github.github-status.md
+  github.create-issue: .claude/commands/specweave-github:github-create-issue.md
+  github.sync: .claude/commands/specweave-github:github-sync.md
+  github.sync-tasks: .claude/commands/specweave-github:github-sync-tasks.md
+  github.close-issue: .claude/commands/specweave-github:github-close-issue.md
+  github.status: .claude/commands/specweave-github:github-status.md
 ```
 
 ---
@@ -209,14 +209,14 @@ function handleSpecweaveCommand(rawInput) {
 
   // Routing table
   const routes = {
-    'inc': 'specweave.inc.md',
-    'do': 'specweave.do.md',
-    'next': 'specweave.next.md',
-    'done': 'specweave.done.md',
-    'progress': 'specweave.progress.md',
-    'validate': 'specweave.validate.md',
-    'sync-github': 'specweave.sync-github.md',
-    'sync-docs': 'specweave.sync-docs.md'
+    'inc': 'inc.md',
+    'do': 'do.md',
+    'next': 'next.md',
+    'done': 'done.md',
+    'progress': 'progress.md',
+    'validate': 'validate.md',
+    'sync-github': 'sync-github.md',
+    'sync-docs': 'sync-docs.md'
   };
 
   // Validate subcommand

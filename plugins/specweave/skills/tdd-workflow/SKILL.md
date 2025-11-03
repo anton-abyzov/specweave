@@ -369,7 +369,7 @@ tdd:
 
 **Not a replacement for**:
 - `tdd-orchestrator` agent (deep expertise)
-- `/specweave.tdd-*` commands (workflow enforcement)
+- `/specweave:tdd-*` commands (workflow enforcement)
 
 **Instead, it's the entry point** that helps users choose the right TDD tool for their context.
 

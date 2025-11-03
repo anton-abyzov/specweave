@@ -239,7 +239,7 @@ npm install -g specweave@0.5.0
 
 **Step 3**: Install Plugins
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install specweave-github@specweave  # Optional
 ```
 

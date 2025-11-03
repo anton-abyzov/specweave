@@ -320,7 +320,7 @@ git pull origin develop
 /plugin marketplace add ./.claude-plugin
 
 # 4. Install plugins
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install github@specweave
 ```
 

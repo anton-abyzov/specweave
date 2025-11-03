@@ -1,8 +1,6 @@
 # SpecWeave - Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
-**Version**: 0.6.0 (LLM-Native i18n Complete! - Ready for Release)
-**NPM Version**: 0.5.1 (Latest Published)
 **Type**: Open Source NPM Package (TypeScript CLI)
 **Repository**: https://github.com/anton-abyzov/specweave
 **Website**: https://spec-weave.com
@@ -601,7 +599,7 @@ if (parentSpecweave) {
 
 ### Core Plugin (Always Auto-Loaded)
 
-**Plugin**: `specweave-core` - The essential SpecWeave plugin loaded in every project:
+**Plugin**: `specweave` - The essential SpecWeave plugin loaded in every project:
 - **Skills**: 9 skills (increment-planner, tdd-workflow, rfc-generator, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
 - **Agents**: 22 agents (PM, Architect, Tech Lead, + 19 specialized including tdd-orchestrator)
 - **Commands**: 22 commands (/specweave:inc, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
@@ -682,7 +680,7 @@ if (parentSpecweave) {
 
 **SpecWeave's plugin system is designed to be intelligent and non-intrusive:**
 
-#### Phase 1: Initialize (One-Time Setup)
+#### Phase 1: Initialize (FULLY AUTOMATED!)
 
 When you run `specweave init`:
 
@@ -691,10 +689,12 @@ When you run `specweave init`:
    - Claude Code automatically discovers plugins
    - No manual `/plugin marketplace add` needed!
 
-2. ⚠️  **Core Plugin Installation (REQUIRED)**
-   - User MUST manually install: `/plugin install specweave-core@specweave`
-   - Highlighted in yellow bold in CLI output
-   - Required for slash commands (`/specweave:inc`, `/specweave:do`, etc.)
+2. ✅ **Core Plugin Auto-Installation** (NEW! v0.6.1+)
+   - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave@specweave`
+   - Works via CLI during init (uses user's shell to access `claude` command)
+   - Slash commands available IMMEDIATELY - no manual install!
+   - Success message: "✔ SpecWeave core plugin installed automatically!"
+   - Graceful fallback: If CLI unavailable, shows manual install instructions
 
 3. ℹ️  **Optional Plugins Suggested**
    - Based on project detection (Git, package.json, etc.)
@@ -789,7 +789,7 @@ src/                            ← SOURCE OF TRUTH (TypeScript code only)
 └── utils/                      ← Utility functions
 
 plugins/                        ← ROOT: All plugins (version controlled)
-├── specweave-core/             ← CORE PLUGIN (framework essentials)
+├── specweave/             ← CORE PLUGIN (framework essentials)
 │   ├── .claude-plugin/         ← plugin.json (Claude native)
 │   ├── skills/                 ← Core skills (9 total)
 │   │   ├── rfc-generator/
@@ -802,8 +802,8 @@ plugins/                        ← ROOT: All plugins (version controlled)
 │   │   ├── tech-lead/
 │   │   └── ...
 │   ├── commands/               ← Core commands (7 core + 15 specialized)
-│   │   ├── specweave.inc.md
-│   │   ├── specweave.do.md
+│   │   ├── inc.md
+│   │   ├── do.md
 │   │   └── ...
 │   ├── hooks/                  ← Lifecycle hooks (8 total)
 │   │   ├── post-task-completion.sh
@@ -833,7 +833,7 @@ plugins/                        ← ROOT: All plugins (version controlled)
 **Rules**:
 - ✅ `src/` = TypeScript code ONLY (compiled to `dist/`)
 - ✅ ALL skills/agents/commands/hooks = Inside plugins (including core!)
-- ✅ `plugins/specweave-core/` = Core framework plugin (always loaded)
+- ✅ `plugins/specweave/` = Core framework plugin (always loaded)
 - ✅ `.claude/` = Installed from all enabled plugins
 - ❌ NEVER mix `*.ts` and `SKILL.md` in the same directory
 - ❌ NEVER edit files in `.claude/` directly (they get overwritten)
@@ -842,7 +842,7 @@ plugins/                        ← ROOT: All plugins (version controlled)
 **Key Architectural Principle**:
 - TypeScript code (`*.ts`) goes in `src/` → compiled to `dist/`
 - Claude-native files (`SKILL.md`, `AGENT.md`, `*.md`) go in `plugins/` → copied to `.claude/`
-- Even "core" framework components are in `plugins/specweave-core/` (everything is a plugin!)
+- Even "core" framework components are in `plugins/specweave/` (everything is a plugin!)
 - This separation ensures clean builds and prevents mixing compiled code with runtime files
 
 ### Tech Stack
@@ -904,7 +904,7 @@ specweave/
 │   └── utils/                  # Utility functions
 │
 ├── plugins/                    # ALL PLUGINS (root level)
-│   ├── specweave-core/         # CORE PLUGIN (framework essentials)
+│   ├── specweave/         # CORE PLUGIN (framework essentials)
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json     # Claude native manifest
 │   │   ├── skills/             # Core skills (9 total)
@@ -923,9 +923,9 @@ specweave/
 │   │   │   ├── tech-lead/      # Tech Lead agent
 │   │   │   └── ...
 │   │   ├── commands/           # Core commands (22 total)
-│   │   │   ├── specweave.inc.md        # /specweave:inc
-│   │   │   ├── specweave.do.md         # /specweave:do
-│   │   │   ├── specweave.done.md       # /specweave:done
+│   │   │   ├── inc.md        # /specweave:inc
+│   │   │   ├── do.md         # /specweave:do
+│   │   │   ├── done.md       # /specweave:done
 │   │   │   └── ...
 │   │   ├── hooks/              # Lifecycle hooks (8 total)
 │   │   │   ├── post-task-completion.sh # Auto-runs after tasks complete
@@ -1064,7 +1064,7 @@ specweave/
 **1. Editing Skills** (any plugin):
 ```bash
 # Core plugin (auto-loaded):
-vim plugins/specweave-core/skills/rfc-generator/SKILL.md
+vim plugins/specweave/skills/rfc-generator/SKILL.md
 
 # Other plugins (opt-in):
 vim plugins/specweave-github/skills/github-sync/SKILL.md
@@ -1075,7 +1075,7 @@ vim plugins/specweave-github/skills/github-sync/SKILL.md
 **2. Editing Agents** (any plugin):
 ```bash
 # Core plugin (auto-loaded):
-vim plugins/specweave-core/agents/pm/AGENT.md
+vim plugins/specweave/agents/pm/AGENT.md
 
 # Other plugins (opt-in):
 vim plugins/specweave-github/agents/github-manager/AGENT.md
@@ -1086,7 +1086,7 @@ vim plugins/specweave-github/agents/github-manager/AGENT.md
 **3. Editing Commands** (any plugin):
 ```bash
 # Core plugin (auto-loaded):
-vim plugins/specweave-core/commands/specweave.do.md
+vim plugins/specweave/commands/do.md
 
 # Other plugins (opt-in):
 vim plugins/specweave-github/commands/github-sync.md
@@ -1190,14 +1190,14 @@ Solution: Inactivity-based detection
 
 ```
 SpecWeave = Collection of Claude Code Plugins
-├── specweave-core (auto-loaded) ← The "framework" IS a plugin
+├── specweave (auto-loaded) ← The "framework" IS a plugin
 ├── specweave-github (opt-in)
 ├── specweave-figma (opt-in)
 └── ...all other plugins (opt-in)
 ```
 
 **What this means**:
-- ✅ `specweave-core` is a Claude Code plugin (happens to auto-load)
+- ✅ `specweave` is a Claude Code plugin (happens to auto-load)
 - ✅ All plugins follow identical structure (`.claude-plugin/plugin.json`, `skills/`, `agents/`, `commands/`)
 - ✅ Adding a skill = adding it to a plugin (always)
 - ❌ There are NO "core framework components" outside plugins
@@ -1233,7 +1233,7 @@ plugins/specweave-{name}/
 ```
 
 **Key Plugins** (for reference):
-- `specweave-core` - Framework essentials (always loaded)
+- `specweave` - Framework essentials (always loaded)
 - `specweave-github` - GitHub Issues integration
 - `specweave-{frontend|backend|infrastructure}` - Tech stack plugins
 
@@ -1247,10 +1247,10 @@ plugins/specweave-{name}/
 
 ```
 Is this feature...
-├─ Used by EVERY project? → specweave-core (auto-loaded)
+├─ Used by EVERY project? → specweave (auto-loaded)
 │  Examples: increment-planner, rfc-generator, tdd-workflow, PM/Architect agents
 │
-├─ Part of increment lifecycle? → specweave-core (auto-loaded)
+├─ Part of increment lifecycle? → specweave (auto-loaded)
 │  Examples: /specweave:inc, /specweave:do, living docs hooks
 │
 ├─ Tech stack specific? → New plugin: specweave-{stack}
@@ -1411,7 +1411,7 @@ Other tools simply can't match these capabilities. The adapters remain in the co
 **All components go into plugins** (see "Plugins" section above for complete instructions).
 
 **Quick reference**:
-- **Core components**: `plugins/specweave-core/{skills|agents|commands|hooks}/`
+- **Core components**: `plugins/specweave/{skills|agents|commands|hooks}/`
 - **Plugin components**: `plugins/specweave-{name}/{skills|agents|commands}/`
 - **Tests**: `tests/integration/{component-name}/` or `tests/unit/`
 

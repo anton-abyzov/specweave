@@ -1,5 +1,5 @@
 ---
-name: specweave.do
+name: do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
 ---
 

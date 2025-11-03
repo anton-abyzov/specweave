@@ -62,6 +62,19 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "toolDetection": {
+      "header": "AI Tool Detection",
+      "detected": "Detected: {{tool}}",
+      "confirmPrompt": "Use {{tool}} for this project?",
+      "selectPrompt": "Which AI tool will you use?",
+      "recommended": "Recommended - Full automation",
+      "tools": {
+        "claude": "Claude Code",
+        "cursor": "Cursor",
+        "copilot": "GitHub Copilot",
+        "generic": "Other (ChatGPT, Gemini, etc.)"
+      }
+    },
     "info": {
       "nestedEnforcement": "SpecWeave enforces a single source of truth:",
       "nestedBullet1": "• Use the parent folder for all increments",

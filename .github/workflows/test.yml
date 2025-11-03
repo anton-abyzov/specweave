@@ -97,7 +97,7 @@ jobs:
 
       - name: Check required directories
         run: |
-          required_dirs=("plugins/specweave-core" "plugins/specweave-github" ".specweave" "src")
+          required_dirs=("plugins/specweave" "plugins/specweave-github" ".specweave" "src")
           for dir in "${required_dirs[@]}"; do
             if [ ! -d "$dir" ]; then
               echo "ERROR: Missing required directory: $dir"

@@ -55,7 +55,7 @@ cat > src/plugins/specweave-myplugin/.claude-plugin/manifest.json
   },
 
   "dependencies": {
-    "plugins": ["specweave-core-plugin"]
+    "plugins": ["specweave-plugin"]
   },
 
   "triggers": ["myplugin", "my plugin", "myplugin-feature"]

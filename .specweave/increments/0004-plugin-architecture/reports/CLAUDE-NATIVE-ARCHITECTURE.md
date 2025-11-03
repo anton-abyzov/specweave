@@ -206,7 +206,7 @@ user-project/
   },
   "plugins": [
     {
-      "name": "specweave-core",
+      "name": "specweave",
       "description": "SpecWeave core framework (increment lifecycle, living docs)",
       "source": "./",
       "version": "0.5.0",
@@ -243,7 +243,7 @@ user-project/
 
 ```json
 {
-  "name": "specweave-core",
+  "name": "specweave",
   "description": "SpecWeave core framework for spec-driven development",
   "version": "0.5.0",
   "author": {
@@ -279,7 +279,7 @@ user-project/
 
 **Step 2: Install Core**
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 ```
 
 **Step 3: Install Plugins (Optional)**
@@ -355,12 +355,12 @@ async install() {
 async install() {
   // For Claude Code: DO NOTHING!
   // User adds marketplace: /plugin marketplace add antonabyzov/specweave
-  // User installs: /plugin install specweave-core@specweave
+  // User installs: /plugin install specweave@specweave
   // Claude loads natively from marketplace
 
   console.log('Claude Code detected!');
   console.log('Add marketplace: /plugin marketplace add antonabyzov/specweave');
-  console.log('Install core: /plugin install specweave-core@specweave');
+  console.log('Install core: /plugin install specweave@specweave');
   console.log('Install GitHub: /plugin install specweave-github@specweave');
 }
 ```
@@ -479,7 +479,7 @@ cd ~/Projects/github/specweave
 
 **Install from local**:
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install specweave-github@specweave
 ```
 
@@ -500,7 +500,7 @@ cd specweave
 /plugin marketplace add ./
 
 # 3. Install core + plugins
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin install specweave-github@specweave
 
 # 4. Start working
@@ -564,7 +564,7 @@ rm -rf src/skills src/agents src/commands src/hooks
 // Add marketplace instructions
 async install() {
   console.log('Add marketplace: /plugin marketplace add antonabyzov/specweave');
-  console.log('Install: /plugin install specweave-core@specweave');
+  console.log('Install: /plugin install specweave@specweave');
 }
 ```
 
@@ -648,7 +648,7 @@ rm -rf ~/.claude-code/marketplaces/specweave
 # Should show: specweave (antonabyzov/specweave)
 
 # Install core
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 
 # Verify
 /help
@@ -700,7 +700,7 @@ cd ~/Projects/github/specweave
 /plugin marketplace add ./
 
 # Install core
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 
 # Edit a skill
 vim skills/increment-planner/SKILL.md

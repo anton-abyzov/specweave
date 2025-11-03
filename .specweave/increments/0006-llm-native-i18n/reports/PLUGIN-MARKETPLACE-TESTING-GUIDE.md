@@ -75,7 +75,7 @@ Marketplaces:
 ```
 
 **Expected output** (should include):
-- `specweave-core` - Core framework
+- `specweave` - Core framework
 - `specweave-github` - GitHub integration
 - `specweave-jira` - Jira integration
 - `specweave-kubernetes` - K8s deployment
@@ -84,23 +84,23 @@ Marketplaces:
 ### 5. Install Core Plugin
 
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 ```
 
 **Expected output**:
 ```
-Installing specweave-core from specweave marketplace...
-✅ Installed specweave-core v0.6.0
+Installing specweave from specweave marketplace...
+✅ Installed specweave v0.6.0
 
 Commands available:
-- /specweave-core:inc
-- /specweave-core:do
-- /specweave-core:next
-- /specweave-core:done
-- /specweave-core:progress
-- /specweave-core:validate
-- /specweave-core:status
-- /specweave-core:close-previous
+- /specweave:inc
+- /specweave:do
+- /specweave:next
+- /specweave:done
+- /specweave:progress
+- /specweave:validate
+- /specweave:status
+- /specweave:close-previous
 
 Skills available:
 - increment-planner
@@ -123,11 +123,11 @@ Agents available:
 
 ```bash
 # Test autocomplete
-# Type: /specweave-core:
+# Type: /specweave:
 # Should show all core commands in autocomplete dropdown
 
 # Test a command
-/specweave-core:status
+/specweave:status
 ```
 
 **Expected**: Command runs successfully, shows increment status
@@ -177,7 +177,7 @@ Type each prefix and verify autocomplete shows correct commands:
 
 | Prefix | Expected Commands |
 |--------|-------------------|
-| `/specweave-core:` | inc, do, next, done, progress, validate, status, close-previous |
+| `/specweave:` | inc, do, next, done, progress, validate, status, close-previous |
 | `/specweave-github:` | sync, create-issue, close-issue, status, sync-tasks |
 
 ### 10. Check Skills Activation
@@ -201,7 +201,7 @@ Use the Task tool to invoke plugin agents:
 ```bash
 # Test PM agent
 "Use the PM agent to analyze this product requirement"
-# Should invoke: pm agent from specweave-core
+# Should invoke: pm agent from specweave
 
 # Test GitHub manager agent
 "Use the GitHub manager to check repository status"
@@ -214,7 +214,7 @@ Use the Task tool to invoke plugin agents:
 
 ### Commands Not Appearing in Autocomplete
 
-**Symptom**: Typing `/specweave-core:` shows no commands
+**Symptom**: Typing `/specweave:` shows no commands
 
 **Fixes**:
 1. **Restart Claude Code**
@@ -224,13 +224,13 @@ Use the Task tool to invoke plugin agents:
 2. **Check plugin installation**:
    ```bash
    /plugin list
-   # Should show "specweave-core" as installed
+   # Should show "specweave" as installed
    ```
 
 3. **Reinstall plugin**:
    ```bash
-   /plugin uninstall specweave-core
-   /plugin install specweave-core@specweave
+   /plugin uninstall specweave
+   /plugin install specweave@specweave
    ```
 
 ### Marketplace Not Found
@@ -257,12 +257,12 @@ Use the Task tool to invoke plugin agents:
 
 ### Plugin Install Fails
 
-**Symptom**: `/plugin install specweave-core@specweave` fails
+**Symptom**: `/plugin install specweave@specweave` fails
 
 **Possible causes**:
 1. **Marketplace not added**: Run `/plugin marketplace add` first
 2. **Invalid plugin paths**: Check `marketplace.json` has correct `source` paths
-3. **Missing plugin.json**: Verify `plugins/specweave-core/.claude-plugin/plugin.json` exists
+3. **Missing plugin.json**: Verify `plugins/specweave/.claude-plugin/plugin.json` exists
 
 **Debug**:
 ```bash
@@ -270,15 +270,15 @@ Use the Task tool to invoke plugin agents:
 /plugin marketplace list
 
 # Check plugin exists in marketplace
-/plugin list | grep specweave-core
+/plugin list | grep specweave
 
 # Try installing from different marketplace
-/plugin install specweave-core@anthropic  # Official marketplace (won't work for SpecWeave)
+/plugin install specweave@anthropic  # Official marketplace (won't work for SpecWeave)
 ```
 
 ### Commands Show Wrong Namespace
 
-**Symptom**: Commands appear as `/specweave:inc` instead of `/specweave-core:inc`
+**Symptom**: Commands appear as `/specweave:inc` instead of `/specweave:inc`
 
 **Cause**: Old commands in `.claude/commands/` directory
 
@@ -306,15 +306,15 @@ rm -rf .claude/commands/specweave.*
 Use this checklist to confirm everything works:
 
 - [ ] Marketplace registered successfully (`/plugin marketplace list`)
-- [ ] Core plugin installed (`/plugin list` shows `specweave-core`)
-- [ ] Core commands autocomplete (`/specweave-core:` shows 8 commands)
-- [ ] Core commands execute (`/specweave-core:status` works)
+- [ ] Core plugin installed (`/plugin list` shows `specweave`)
+- [ ] Core commands autocomplete (`/specweave:` shows 8 commands)
+- [ ] Core commands execute (`/specweave:status` works)
 - [ ] GitHub plugin installed (`/plugin list` shows `specweave-github`)
 - [ ] GitHub commands autocomplete (`/specweave-github:` shows 5 commands)
 - [ ] GitHub commands execute (`/specweave-github:status` works)
 - [ ] Skills auto-activate (mention "increment planning" → skill activates)
 - [ ] Agents invocable (use Task tool → PM agent works)
-- [ ] No old commands conflict (no `/specweave.inc` in autocomplete)
+- [ ] No old commands conflict (no `/specweave:inc` in autocomplete)
 
 ---
 
@@ -323,19 +323,19 @@ Use this checklist to confirm everything works:
 After all tests pass, you should have:
 
 **Installed Plugins**:
-- `specweave-core@0.6.0` ← Core framework
+- `specweave@0.6.0` ← Core framework
 - `specweave-github@1.0.0` ← GitHub integration
 
 **Available Commands** (autocomplete with `/specweave`):
 ```
-/specweave-core:inc
-/specweave-core:do
-/specweave-core:next
-/specweave-core:done
-/specweave-core:progress
-/specweave-core:validate
-/specweave-core:status
-/specweave-core:close-previous
+/specweave:inc
+/specweave:do
+/specweave:next
+/specweave:done
+/specweave:progress
+/specweave:validate
+/specweave:status
+/specweave:close-previous
 /specweave-github:sync
 /specweave-github:create-issue
 /specweave-github:close-issue
@@ -366,8 +366,8 @@ Once testing is complete:
 
 2. **Use commands** in your workflow:
    ```bash
-   /specweave-core:inc "new feature"
-   /specweave-core:do
+   /specweave:inc "new feature"
+   /specweave:do
    /specweave-github:sync 0006
    ```
 

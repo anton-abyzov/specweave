@@ -20,7 +20,7 @@ The remaining test job failures are **pre-existing test infrastructure issues** 
 ### ✅ validate-structure (FIXED)
 **Status**: SUCCESS
 **What was broken**: Looking for old `src/skills`, `src/agents`, `src/commands` directories that no longer exist after v0.4.0 plugin architecture refactor
-**What we fixed**: Updated to check for `plugins/specweave-core` and `plugins/specweave-github` instead
+**What we fixed**: Updated to check for `plugins/specweave` and `plugins/specweave-github` instead
 **Result**: ✅ All required directories found
 
 ### ✅ validate-skills (FIXED)
@@ -117,7 +117,7 @@ The test failures are **NOT related to the plugin manifest or hooks fixes**. The
 
 ### 1. Plugin Manifests (4 files)
 **Files**:
-- `plugins/specweave-core/.claude-plugin/plugin.json`
+- `plugins/specweave/.claude-plugin/plugin.json`
 - `plugins/specweave-ml/.claude-plugin/plugin.json`
 - `plugins/specweave-ui/.claude-plugin/plugin.json`
 - `plugins/specweave-github/.claude-plugin/plugin.json`
@@ -129,7 +129,7 @@ The test failures are **NOT related to the plugin manifest or hooks fixes**. The
 - ✅ Added standard fields (license, keywords, homepage)
 
 ### 2. Hooks Configuration
-**File**: `plugins/specweave-core/hooks/hooks.json`
+**File**: `plugins/specweave/hooks/hooks.json`
 
 **Changes**:
 - ✅ Changed from array format `{"hooks": [...]}` to object with event types `{"hooks": {"PostToolUse": [...]}}`
@@ -196,11 +196,11 @@ User should now be able to:
 /plugin marketplace list
 # Should show "specweave" marketplace with 18 plugins
 
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 # Should install without validation errors
 
 /plugin list --installed
-# Should show specweave-core with NO errors
+# Should show specweave with NO errors
 ```
 
 ### Automated Testing
@@ -210,7 +210,7 @@ grep -E '"dependencies"|"repository".*\{' plugins/*/.claude-plugin/plugin.json
 # Should return nothing (all fixed)
 
 # Check hooks format:
-jq '.hooks | type' plugins/specweave-core/hooks/hooks.json
+jq '.hooks | type' plugins/specweave/hooks/hooks.json
 # Should return "object" (not "array")
 
 # Run validation jobs:
@@ -252,7 +252,7 @@ git push origin develop
 
 **Test failures**: Pre-existing test infrastructure issues, NOT related to plugin work. Can be addressed in separate increment if desired.
 
-**Next user action**: Test plugin installation with `/plugin install specweave-core@specweave` in Claude Code
+**Next user action**: Test plugin installation with `/plugin install specweave@specweave` in Claude Code
 
 ---
 

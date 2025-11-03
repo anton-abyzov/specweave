@@ -18,7 +18,7 @@
 
 ### Phase 2: Local Marketplace Testing (Current)
 - [ ] Add local marketplace: `/plugin marketplace add ./`
-- [ ] Install core: `/plugin install specweave-core@specweave`
+- [ ] Install core: `/plugin install specweave@specweave`
 - [ ] Verify skills auto-activate
 - [ ] Test `/specweave:inc "create a todo app"`
 - [ ] Verify increment structure created
@@ -113,7 +113,7 @@ specweave/
 **Expected Outcome**:
 - Claude Code adds local marketplace reference
 - Reads `.claude-plugin/marketplace.json`
-- Shows available plugins: specweave-core, specweave-github
+- Shows available plugins: specweave, specweave-github
 
 **Actual Outcome**: [PENDING - To be tested]
 
@@ -123,7 +123,7 @@ specweave/
 
 **Command**:
 ```bash
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 ```
 
 **Expected Outcome**:
