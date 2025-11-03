@@ -134,7 +134,7 @@ Let me start by examining your architecture specifications...
 ## Available SpecWeave Plugins
 
 ### Core (Always Available)
-- `specweave-core` - Framework essentials (increment lifecycle, PM/Architect/Tech Lead agents)
+- `specweave` - Framework essentials (increment lifecycle, PM/Architect/Tech Lead agents)
 
 ### Integrations
 - `specweave-github` - GitHub Issues sync

@@ -36,60 +36,28 @@ test.describe('specweave init - default claude adapter', () => {
     expect(output).not.toContain('generic (manual automation)');
   });
 
-  test('should create and populate .claude/commands directory', async () => {
-    // Verify .claude/commands exists
-    const commandsDir = path.join(TEST_DIR, '.claude/commands');
-    expect(await fs.pathExists(commandsDir)).toBe(true);
+  test('should create .claude/settings.json with marketplace config', async () => {
+    // Verify .claude/settings.json exists (marketplace registration)
+    const settingsPath = path.join(TEST_DIR, '.claude/settings.json');
+    expect(await fs.pathExists(settingsPath)).toBe(true);
 
-    // Verify it contains .md files
-    const files = await fs.readdir(commandsDir);
-    const mdFiles = files.filter(f => f.endsWith('.md'));
-
-    expect(mdFiles.length).toBeGreaterThan(10);
-    expect(mdFiles).toContain('specweave.do.md');
-    expect(mdFiles).toContain('specweave.inc.md');
-    expect(mdFiles).toContain('specweave.progress.md');
+    // Verify it contains marketplace config
+    const settings = await fs.readJson(settingsPath);
+    expect(settings.extraKnownMarketplaces).toBeDefined();
+    expect(settings.extraKnownMarketplaces.specweave).toBeDefined();
+    expect(settings.extraKnownMarketplaces.specweave.source).toContain('.claude-plugin');
   });
 
-  test('should create and populate .claude/agents directory', async () => {
-    // Verify .claude/agents exists
-    const agentsDir = path.join(TEST_DIR, '.claude/agents');
-    expect(await fs.pathExists(agentsDir)).toBe(true);
-
-    // Verify it contains agent subdirectories
-    const dirs = await fs.readdir(agentsDir, { withFileTypes: true });
-    const agentDirs = dirs.filter(d => d.isDirectory());
-
-    expect(agentDirs.length).toBeGreaterThan(8);
-    expect(agentDirs.some(d => d.name === 'pm')).toBe(true);
-    expect(agentDirs.some(d => d.name === 'architect')).toBe(true);
-    expect(agentDirs.some(d => d.name === 'devops')).toBe(true);
-
-    // Verify each agent has AGENT.md
-    for (const dir of agentDirs) {
-      const agentMdPath = path.join(agentsDir, dir.name, 'AGENT.md');
-      expect(await fs.pathExists(agentMdPath)).toBe(true);
-    }
+  test.skip('Plugin system: agents are NOT copied to .claude/ (installed globally)', async () => {
+    // NOTE: As of v0.4.0+, SpecWeave uses Claude Code's native plugin system
+    // Agents remain in plugins/specweave/agents/ and are installed globally
+    // This test is kept for reference but skipped
   });
 
-  test('should create and populate .claude/skills directory', async () => {
-    // Verify .claude/skills exists
-    const skillsDir = path.join(TEST_DIR, '.claude/skills');
-    expect(await fs.pathExists(skillsDir)).toBe(true);
-
-    // Verify it contains skill subdirectories
-    const dirs = await fs.readdir(skillsDir, { withFileTypes: true });
-    const skillDirs = dirs.filter(d => d.isDirectory());
-
-    expect(skillDirs.length).toBeGreaterThan(30);
-    expect(skillDirs.some(d => d.name === 'increment-planner')).toBe(true);
-    expect(skillDirs.some(d => d.name === 'context-loader')).toBe(true);
-
-    // Verify each skill has SKILL.md
-    for (const dir of skillDirs) {
-      const skillMdPath = path.join(skillsDir, dir.name, 'SKILL.md');
-      expect(await fs.pathExists(skillMdPath)).toBe(true);
-    }
+  test.skip('Plugin system: skills are NOT copied to .claude/ (installed globally)', async () => {
+    // NOTE: As of v0.4.0+, SpecWeave uses Claude Code's native plugin system
+    // Skills remain in plugins/specweave/skills/ and are installed globally
+    // This test is kept for reference but skipped
   });
 
   test('should create .specweave directory structure', async () => {

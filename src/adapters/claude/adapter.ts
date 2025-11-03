@@ -56,7 +56,7 @@ export class ClaudeAdapter extends AdapterBase {
    * 1. Create .specweave/ structure (project data)
    * 2. Show marketplace installation instructions
    * 3. User adds marketplace: /plugin marketplace add anton-abyzov/specweave
-   * 4. User installs plugins: /plugin install specweave-core@specweave
+   * 4. User installs plugins: /plugin install specweave@specweave
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Claude Code Adapter (Native Plugin System)\n');
@@ -79,7 +79,7 @@ export class ClaudeAdapter extends AdapterBase {
     console.log('\n  1️⃣  Add SpecWeave marketplace:');
     console.log('     /plugin marketplace add anton-abyzov/specweave');
     console.log('\n  2️⃣  Install SpecWeave core:');
-    console.log('     /plugin install specweave-core@specweave');
+    console.log('     /plugin install specweave@specweave');
     console.log('\n  3️⃣  (Optional) Install GitHub plugin:');
     console.log('     /plugin install specweave-github@specweave');
     console.log('\n  4️⃣  Start using SpecWeave:');

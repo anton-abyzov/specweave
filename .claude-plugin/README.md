@@ -14,7 +14,7 @@ When you clone this repo and **trust the folder** in Claude Code:
 2. The `.claude/settings.json` file **automatically registers** the marketplace
 3. Install the core plugin:
    ```
-   /plugin install specweave-core@specweave
+   /plugin install specweave@specweave
    ```
 4. **Restart Claude Code**
 5. Commands are now available: `/specweave:inc`, `/specweave:do`, etc.
@@ -43,7 +43,7 @@ If automatic setup doesn't work (or folder not trusted):
 # Should show "specweave" marketplace
 
 # 3. Install core plugin
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 
 # 4. (Optional) Install other plugins as needed
 /plugin install specweave-github@specweave
@@ -76,7 +76,7 @@ Type `/github:` to see GitHub commands (if installed):
 └── README.md             # This file
 
 plugins/                  # Individual plugin locations
-├── specweave-core/.claude-plugin/plugin.json       # Core plugin manifest
+├── specweave/.claude-plugin/plugin.json       # Core plugin manifest
 ├── specweave-github/.claude-plugin/plugin.json     # GitHub plugin manifest
 ├── specweave-figma/.claude-plugin/plugin.json      # Figma plugin manifest
 └── ... (18 plugins total, each with plugin.json)
@@ -119,11 +119,8 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - ✅ `source` - Relative path to plugin directory (e.g., `"../plugins/specweave-github"`)
 - ✅ `category` - Plugin category: `development`, `productivity`, `security`, or `learning`
 - ✅ `author.email` - Author email address (required by Claude's schema)
-- ❌ No separate `path` field (was in older SpecWeave format)
-- ❌ No `source: "local"` type indicator (was in older SpecWeave format)
-
-**Migration Note**: Prior to v0.6.1, SpecWeave used a custom marketplace schema with separate `source` and `path` fields. This has been updated to match Claude's official schema for compatibility.
-
+- ❌ No separate `path` field (follows Claude's schema)
+- ❌ No `source: "local"` type indicator (follows Claude's schema)
 
 ## How It Works
 
@@ -133,23 +130,23 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - No namespacing
 
 **With Plugin System** (new):
-- Commands: `/specweave-core:inc`, `/specweave-core:do`, `/specweave-github:sync`
+- Commands: `/specweave:inc`, `/specweave:do`, `/specweave-github:sync`
 - Plugin-namespaced via `.claude-plugin/`
 - Proper marketplace structure
-- Each plugin has its own namespace (e.g., `specweave-core`, `specweave-github`)
+- Each plugin has its own namespace (e.g., `specweave`, `specweave-github`)
 
 ## Available Plugins
 
-### 1. SpecWeave Core (`specweave-core`)
-**Commands** (invoked as `/specweave-core:command`):
+### 1. SpecWeave Core (`specweave`)
+**Commands** (invoked as `/specweave:command`):
 - `increment` - Plan new product increment
 - `do` - Execute implementation tasks
 - `next` - Smart increment transition
 - `done` - Close increment with validation
 - `progress` - Show increment progress
 - `validate` - Validate increment quality
-- `status` - Show all increments (NEW in v0.6.0)
-- `close-previous` - Close incomplete increments (NEW in v0.6.0)
+- `status` - Show all increments
+- `close-previous` - Close incomplete increments
 
 **Skills**:
 - `increment-planner` - PM-led planning workflow
@@ -209,8 +206,8 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 # Check installed plugins
 /plugin list
 
-# If specweave-core is missing, install it
-/plugin install specweave-core@specweave
+# If specweave is missing, install it
+/plugin install specweave@specweave
 
 # Restart Claude Code
 ```
@@ -222,8 +219,8 @@ ls .claude/commands/
 
 # Should show specweave.*.md files
 # If missing, reinstall plugin:
-/plugin uninstall specweave-core
-/plugin install specweave-core@specweave
+/plugin uninstall specweave
+/plugin install specweave@specweave
 
 # Then restart Claude Code
 ```
@@ -281,7 +278,7 @@ cd plugins/
 
 4. **Install specific plugin**:
    ```bash
-   /plugin install specweave-core@specweave
+   /plugin install specweave@specweave
    ```
 
 ### ".claude/settings.json not working"
@@ -307,16 +304,6 @@ git check-ignore .claude/settings.json
 git add -f .claude/settings.json
 git commit -m "feat: add Claude settings for auto-marketplace registration"
 ```
-
-## Version
-
-**Current**: v0.6.0 (Increment Discipline Enforcement)
-
-**Changelog**:
-- v0.6.0: Added `/specweave:status` and `/specweave:close-previous` commands
-- v0.5.1: Cross-platform path detection
-- v0.5.0: Plugin architecture foundation
-- v0.4.0: GitHub plugin
 
 ## Support
 

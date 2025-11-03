@@ -190,7 +190,7 @@ specweave init . --force  # Reinstall
 
 ```bash
 ls -la .claude/commands/
-# Should see: specweave.inc.md, specweave.do.md, etc.
+# Should see: inc.md, do.md, etc.
 ```
 
 ### Hooks not running?

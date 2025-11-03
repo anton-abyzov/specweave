@@ -192,14 +192,49 @@ export async function initCommand(
     let toolName: string;
 
     if (options.adapter) {
-      // User explicitly chose a tool
+      // User explicitly chose a tool via --adapter flag
       toolName = options.adapter;
       spinner.text = `Using ${toolName}...`;
     } else {
-      // Auto-detect tool
+      // Auto-detect tool, then ASK USER to confirm or choose different
       spinner.stop();
-      toolName = await adapterLoader.detectTool();
-      spinner.start(`Detected ${toolName}...`);
+      const detectedTool = await adapterLoader.detectTool();
+
+      console.log('');
+      console.log(chalk.cyan(`🔍 ${locale.t('cli', 'init.toolDetection.header')}`));
+      console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
+      console.log('');
+
+      const { confirmTool } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'confirmTool',
+          message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
+          default: true
+        }
+      ]);
+
+      if (confirmTool) {
+        toolName = detectedTool;
+      } else {
+        // Let user choose from available tools
+        const { selectedTool } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'selectedTool',
+            message: locale.t('cli', 'init.toolDetection.selectPrompt'),
+            choices: [
+              { name: `${locale.t('cli', 'init.toolDetection.tools.claude')} (${locale.t('cli', 'init.toolDetection.recommended')})`, value: 'claude' },
+              { name: locale.t('cli', 'init.toolDetection.tools.cursor'), value: 'cursor' },
+              { name: locale.t('cli', 'init.toolDetection.tools.copilot'), value: 'copilot' },
+              { name: locale.t('cli', 'init.toolDetection.tools.generic'), value: 'generic' }
+            ]
+          }
+        ]);
+        toolName = selectedTool;
+      }
+
+      spinner.start(`Using ${toolName}...`);
     }
 
     // 4. Create directory structure (same for all)
@@ -351,6 +386,7 @@ export async function initCommand(
     createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage);
 
     // 14. Setup Claude Code plugin auto-registration (if Claude detected)
+    let autoInstallSucceeded = false;
     if (toolName === 'claude') {
       try {
         setupClaudePluginAutoRegistration(targetDir, language as SupportedLanguage);
@@ -367,29 +403,39 @@ export async function initCommand(
         // Step 1: Add marketplace (idempotent - fails gracefully if exists)
         const marketplacePath = path.join(targetDir, '.claude-plugin');
         if (fs.existsSync(path.join(marketplacePath, 'marketplace.json'))) {
-          execSync(`claude plugin marketplace add "${targetDir}"`, {
-            stdio: 'pipe',  // Suppress output
-            encoding: 'utf-8'
-          });
+          try {
+            execSync(`claude plugin marketplace add "${targetDir}"`, {
+              stdio: 'pipe',  // Suppress output
+              encoding: 'utf-8',
+              shell: process.env.SHELL || '/bin/bash'  // Use user's shell (for functions/aliases)
+            });
+          } catch (e) {
+            // Marketplace add can fail if already exists - that's OK
+          }
         }
 
         // Step 2: Install core plugin
-        execSync('claude plugin install specweave-core@specweave', {
+        execSync('claude plugin install specweave@specweave', {
           stdio: 'pipe',
-          encoding: 'utf-8'
+          encoding: 'utf-8',
+          shell: process.env.SHELL || '/bin/bash'  // Use user's shell (for functions/aliases)
         });
 
+        autoInstallSucceeded = true;
         spinner.succeed('SpecWeave core plugin installed automatically!');
         console.log(chalk.green(`   ${locale.t('cli', 'init.success.pluginAutoInstall')}`));
       } catch (error: any) {
         // Installation failed - show manual instructions
         spinner.warn('Could not auto-install core plugin');
+        if (process.env.DEBUG) {
+          console.log(chalk.gray(`   Error: ${error.message}`));
+        }
         console.log(chalk.yellow(`   ${locale.t('cli', 'init.warnings.pluginAutoInstallFailed')}`));
         console.log(chalk.gray(`   ${locale.t('cli', 'init.info.manualInstallInstructions')}`));
       }
     }
 
-    showNextSteps(finalProjectName, toolName, language as SupportedLanguage, usedDotNotation);
+    showNextSteps(finalProjectName, toolName, language as SupportedLanguage, usedDotNotation, toolName === 'claude' ? autoInstallSucceeded : undefined);
   } catch (error) {
     spinner.fail('Failed to create project');
     console.error(chalk.red(`\n${locale.t('cli', 'init.genericError')}`), error);
@@ -607,8 +653,8 @@ function findSourceDir(relativePath: string): string {
 
 function copyCommands(commandsDir: string, targetCommandsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  // v0.4.0+: Commands moved to plugins/specweave-core/commands/
-  const sourceDir = findSourceDir('plugins/specweave-core/commands');
+  // v0.4.0+: Commands moved to plugins/specweave/commands/
+  const sourceDir = findSourceDir('plugins/specweave/commands');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'commands' })}`));
@@ -666,8 +712,8 @@ function copyCommands(commandsDir: string, targetCommandsDir: string, language: 
 
 function copyAgents(agentsDir: string, targetAgentsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  // v0.4.0+: Agents moved to plugins/specweave-core/agents/
-  const sourceDir = findSourceDir('plugins/specweave-core/agents');
+  // v0.4.0+: Agents moved to plugins/specweave/agents/
+  const sourceDir = findSourceDir('plugins/specweave/agents');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'agents' })}`));
@@ -762,8 +808,8 @@ function injectSystemPromptForInit(content: string, language: SupportedLanguage)
 
 function copySkills(skillsDir: string, targetSkillsDir: string, language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
-  // v0.4.0+: Skills moved to plugins/specweave-core/skills/
-  const sourceDir = findSourceDir('plugins/specweave-core/skills');
+  // v0.4.0+: Skills moved to plugins/specweave/skills/
+  const sourceDir = findSourceDir('plugins/specweave/skills');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'skills' })}`));
@@ -834,8 +880,8 @@ function copySkills(skillsDir: string, targetSkillsDir: string, language: Suppor
 
 function copyHooks(hooksDir: string, targetHooksDir: string, language: SupportedLanguage = 'en'): void {
   const locale = getLocaleManager(language);
-  // v0.4.0+: Hooks moved to plugins/specweave-core/hooks/
-  const sourceDir = findSourceDir('plugins/specweave-core/hooks');
+  // v0.4.0+: Hooks moved to plugins/specweave/hooks/
+  const sourceDir = findSourceDir('plugins/specweave/hooks');
 
   if (!fs.existsSync(sourceDir)) {
     console.error(chalk.red(`\n${locale.t('cli', 'init.errors.sourceNotFound', { type: 'hooks' })}`));
@@ -959,7 +1005,7 @@ function setupClaudePluginAutoRegistration(targetDir: string, language: Supporte
   }
 }
 
-function showNextSteps(projectName: string, adapterName: string, language: SupportedLanguage, usedDotNotation: boolean = false): void {
+function showNextSteps(projectName: string, adapterName: string, language: SupportedLanguage, usedDotNotation: boolean = false, pluginAutoInstalled: boolean = false): void {
   const locale = getLocaleManager(language);
 
   console.log('');
@@ -979,19 +1025,25 @@ function showNextSteps(projectName: string, adapterName: string, language: Suppo
   if (adapterName === 'claude') {
     console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step1'))}`);
     console.log('');
+    stepNumber++;
 
-    // CRITICAL STEP: Install core plugin (highlighted)
-    console.log(`   ${stepNumber + 1}. ${chalk.yellow.bold('⚠️  ' + locale.t('cli', 'init.nextSteps.claude.step2'))}`);
-    console.log(`      ${chalk.cyan.bold(locale.t('cli', 'init.nextSteps.claude.installCore'))}`);
-    console.log(`      ${chalk.gray('↑ Required for slash commands like /specweave:inc')}`);
-    console.log('');
+    // Only show manual install if auto-install failed
+    if (!pluginAutoInstalled) {
+      console.log(`   ${stepNumber}. ${chalk.yellow.bold('⚠️  ' + locale.t('cli', 'init.nextSteps.claude.step2'))}`);
+      console.log(`      ${chalk.cyan.bold(locale.t('cli', 'init.nextSteps.claude.installCore'))}`);
+      console.log(`      ${chalk.gray('↑ Required for slash commands like /specweave:inc')}`);
+      console.log('');
+      stepNumber++;
+    }
 
-    console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step3'))}`);
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step3'))}`);
     console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installGitHub'))}`);
     console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installFrontend'))}`);
     console.log(`      ${chalk.gray('...or let SpecWeave suggest plugins automatically')}`);
     console.log('');
-    console.log(`   ${stepNumber + 3}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step4'))}`);
+    stepNumber++;
+
+    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step4'))}`);
     console.log(`      ${chalk.cyan(locale.t('cli', 'init.nextSteps.claude.example'))}`);
     console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.autoActivate'))}`);
   } else if (adapterName === 'cursor') {

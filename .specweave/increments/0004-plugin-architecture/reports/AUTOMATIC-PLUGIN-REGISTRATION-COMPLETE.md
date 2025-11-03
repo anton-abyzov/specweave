@@ -107,7 +107,7 @@ $ specweave init my-project
    2. Open Claude Code in this directory
 
    3. Install SpecWeave core plugin (REQUIRED):
-      Run: /plugin install specweave-core@specweave
+      Run: /plugin install specweave@specweave
 
    4. Optional: Install additional plugins as needed:
       /plugin install specweave-github@specweave
@@ -122,7 +122,7 @@ $ specweave init my-project
 #### Tier 2: Dynamic Plugin Detection (ASSISTIVE)
 
 **How it works**:
-- New skill: `plugin-detector` (in `plugins/specweave-core/skills/`)
+- New skill: `plugin-detector` (in `plugins/specweave/skills/`)
 - Activates when users mention features requiring specific plugins
 - Provides clear installation instructions
 - Never blocks - always offers alternatives
@@ -161,7 +161,7 @@ Would you like me to guide you through the installation, or continue without Git
 - ...and 10+ more domains (see skill file for complete list)
 
 **Key Files Created**:
-- `plugins/specweave-core/skills/plugin-detector/SKILL.md` - Complete plugin detection logic
+- `plugins/specweave/skills/plugin-detector/SKILL.md` - Complete plugin detection logic
 
 #### Tier 3: Clear User Instructions (FALLBACK)
 
@@ -177,7 +177,7 @@ Would you like me to guide you through the installation, or continue without Git
 
 // New (explicit):
 "Install SpecWeave core plugin (REQUIRED):
- Run: /plugin install specweave-core@specweave"
+ Run: /plugin install specweave@specweave"
 ```
 
 ---
@@ -218,7 +218,7 @@ No shell scripts required - pure TypeScript/Node.js!
    - Updated `nextSteps.claude.*` with 4 steps
 
 ### New Files Created
-3. **plugins/specweave-core/skills/plugin-detector/SKILL.md** (~250 lines)
+3. **plugins/specweave/skills/plugin-detector/SKILL.md** (~250 lines)
    - Complete plugin detection logic
    - Trigger keywords for all 18 plugins
    - Example flows for common scenarios
@@ -234,7 +234,7 @@ User runs: specweave init my-project
 User opens Claude Code
 User must remember to:
   1. /plugin marketplace add /path/to/specweave/marketplace
-  2. /plugin install specweave-core@marketplace
+  2. /plugin install specweave@marketplace
   3. /plugin install specweave-github@marketplace (if needed)
   ...repeat for every plugin
 
@@ -248,10 +248,10 @@ User runs: specweave init my-project
 
 User opens Claude Code
 User sees clear instructions:
-  "Run: /plugin install specweave-core@specweave"
+  "Run: /plugin install specweave@specweave"
 
 User runs ONE command:
-  /plugin install specweave-core@specweave
+  /plugin install specweave@specweave
 
 Result: Core plugin installed, ready to use!
 

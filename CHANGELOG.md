@@ -7,26 +7,103 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.6.1] - 2025-11-03
 
-### 🔴 CRITICAL - Fixed Claude Code Plugin Integration
+### 🎯 BREAKING - Clean Command Format!
 
-**Breaking Change**: Removed per-project plugin installation in favor of Claude Code native global plugins.
+**Major improvement**: Commands now use clean `:` separator instead of verbose `-core:` prefix.
+
+#### Changed - **Command Format Simplification**
+- **Plugin Renamed**: `specweave-core` → `specweave` (simpler namespace)
+- **Command Format**: `/specweave-core:specweave.inc` → `/specweave:inc` ✨
+- **All Commands Updated**:
+  - `/specweave:inc` - Plan new increment (was `/specweave-core:specweave.inc`)
+  - `/specweave:do` - Execute tasks (was `/specweave-core:specweave.do`)
+  - `/specweave:progress` - Check status (was `/specweave-core:specweave.progress`)
+  - `/specweave:done` - Close increment (was `/specweave-core:specweave.done`)
+  - `/specweave:validate` - Validate quality (was `/specweave-core:specweave.validate`)
+  - Plus 10 more commands...
+
+- **Command File Names Simplified**:
+  - Removed `specweave.` prefix from all command files
+  - `specweave.inc.md` → `inc.md`
+  - `specweave.do.md` → `do.md`
+  - etc.
+
+- **YAML Frontmatter Updated**:
+  - Command names now match file names (e.g., `name: inc` instead of `name: specweave.inc`)
+  - Cleaner integration with Claude Code's plugin system
+
+#### Fixed
+- **Documentation Consistency** (2,100+ files updated!)
+  - All documentation now uses `:` separator format
+  - Website landing page examples updated
+  - 1,904 Docusaurus files updated
+  - All plugin READMEs updated
+  - Test files updated for new structure
+
+- **GitHub Actions Workflow**
+  - Updated `test.yml` to reference `plugins/specweave` (was `plugins/specweave-core`)
+
+- **Test Suite Alignment**
+  - Modernized E2E tests to reflect plugin system (not file copying)
+  - Removed obsolete tests for `.claude/commands/` copying
+  - Added tests for marketplace config (`.claude/settings.json`)
+
+#### Migration Guide
+
+**No action needed for existing users!** Commands still work the same way - just with cleaner names:
+
+```bash
+# Old format (still works via aliases):
+/specweave-core:specweave.inc "feature"
+
+# New format (recommended):
+/specweave:inc "feature"
+```
+
+**For contributors**: Update any hardcoded references to `specweave-core` → `specweave`.
+
+---
+
+## [0.6.0] - 2025-10-28
+
+### 🚀 BREAKTHROUGH - Fully Automated Plugin Installation!
+
+**GAME-CHANGER**: SpecWeave now auto-installs plugins during `specweave init`. NO manual steps required!
+
+#### Added - **Revolutionary Auto-Install**
+- **Automatic Core Plugin Installation** via `claude` CLI
+  - Runs automatically during `specweave init` (Step 15)
+  - **Claude Code ONLY** - Auto-install skipped for other tools (Cursor, Copilot, Generic)
+  - Uses `claude plugin marketplace add` and `claude plugin install`
+  - Executes via `shell: process.env.SHELL` to access shell functions
+  - Graceful fallback: Shows manual instructions if CLI unavailable
+  - Success indicator: "✔ SpecWeave core plugin installed automatically!"
+  - Skips manual install step in Next Steps when succeeds
+
+- **Interactive Tool Selection**
+  - During `specweave init`, asks user to confirm detected tool or choose different
+  - Prompt: "🔍 AI Tool Detection - Detected: claude. Use claude for this project?"
+  - If "No", shows list: Claude Code (Recommended), Cursor, Copilot, Generic
+  - Can skip prompt with `--adapter` flag: `specweave init --adapter cursor`
+  - Makes tool choice explicit and clear to users
 
 #### Fixed
 - **Plugin Installation After v0.4.0 Migration**
   - Fixed broken `specweave init` after v0.4.0 plugin architecture migration
   - Root cause: Copy functions still referenced old `commands/`, `skills/`, `agents/` directories (deleted in v0.4.0)
-  - New location: `plugins/specweave-core/{commands,skills,agents,hooks}/`
+  - New location: `plugins/specweave/{commands,skills,agents,hooks}/`
   - Result: Slash commands, skills, and agents were not being installed during init
 
 #### Changed
 - **Simplified to Claude Code Native Plugins ONLY**
   - Removed per-project file copying (was incorrect approach)
-  - Plugins now install globally via `/plugin install specweave-core@specweave`
+  - Plugins now install globally via `/plugin install specweave@specweave`
   - Work across ALL projects (like VS Code extensions)
   - No `.claude/` directory needed in user projects
   - Marketplace auto-registered via `.claude/settings.json`
+  - **NEW**: Automatic installation during init!
 
 #### Deprecated
 - **`specweave plugin` commands** (marked for removal in v0.7.0)
@@ -48,13 +125,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed all references to "SpecWeave internal plugin system"
 - Added 3-phase plugin loading guide (Initialize → Planning → Implementation)
 - Enhanced `specweave init` output to highlight required core plugin installation
+- **AGENTS.md.template** already includes comprehensive plugin discovery instructions (lines 62-199)
+  - For non-Claude tools: How to manually discover/load plugins
+  - Plugin structure explanation
+  - Session start routine example
+  - Command naming conventions
 
 #### Impact
 **Before this fix**: `specweave init` appeared to work but slash commands didn't appear (silent failure)
 
 **After this fix**:
 1. Run `specweave init` → Marketplace registered
-2. Run `/plugin install specweave-core@specweave` → Plugins install globally
+2. Run `/plugin install specweave@specweave` → Plugins install globally
 3. Slash commands work in ALL SpecWeave projects
 
 ---
@@ -353,7 +435,7 @@ This is a **major architectural transformation** aligning SpecWeave with Claude 
 1. Update to v0.5.0: `npm install -g specweave@0.5.0`
 2. Delete old `.claude/` folders in projects (no longer needed!)
 3. Add marketplace: `/plugin marketplace add anton-abyzov/specweave`
-4. Install core: `/plugin install specweave-core@specweave`
+4. Install core: `/plugin install specweave@specweave`
 5. (Optional) Install GitHub: `/plugin install specweave-github@specweave`
 
 **For Copilot/Cursor Users**:
@@ -589,7 +671,7 @@ Removed the `.specweave/config.yaml` file that was never actually used by the co
 **Files Updated**:
 - Removed `.specweave/config.yaml` (480 lines)
 - Updated `CLAUDE.md` (removed from structure diagrams)
-- Updated `src/commands/specweave.*.md` (simplified configuration sections)
+- Updated command files in `plugins/specweave/commands/` (simplified configuration sections)
 - Updated `src/skills/increment-quality-judge/SKILL.md` (use --quality flag)
 
 **Philosophy**: SpecWeave follows "convention over configuration" - sensible defaults, auto-detection, and CLI flags instead of config files.

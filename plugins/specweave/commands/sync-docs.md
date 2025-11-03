@@ -1,5 +1,5 @@
 ---
-name: specweave.sync-docs
+name: sync-docs
 description: Bidirectional documentation sync - review strategic docs before implementation OR update living docs from completed increments with conflict resolution
 ---
 

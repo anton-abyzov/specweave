@@ -109,7 +109,7 @@ Available plugins:
 **Modified**: `marketplace/marketplace.json` and `.claude-plugin/marketplace.json`
 
 **Changes**:
-- Added `specweave-core` plugin entry (source: `".."`)
+- Added `specweave` plugin entry (source: `".."`)
 - Fixed GitHub plugin path: `../plugins/specweave-github` (was `../src/plugins/`)
 - Both marketplace files now reference correct locations
 

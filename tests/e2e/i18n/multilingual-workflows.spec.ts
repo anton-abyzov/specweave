@@ -283,7 +283,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should create translate command', async () => {
-    const commandPath = path.join(process.cwd(), 'commands/specweave.translate.md');
+    const commandPath = path.join(process.cwd(), 'plugins/specweave/commands/translate.md');
 
     // Verify translate command exists
     expect(await fs.pathExists(commandPath)).toBe(true);
@@ -295,7 +295,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('name: translate');
 
     // Verify command syntax
-    expect(content).toContain('/specweave.translate');
+    expect(content).toContain('/specweave:translate');
     expect(content).toContain('target-language');
     expect(content).toContain('--scope');
   });

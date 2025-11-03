@@ -1,5 +1,5 @@
 ---
-name: specweave.next
+name: next
 description: Smart increment transition - auto-close current if ready, intelligently suggest next work (backlog or new feature)
 ---
 

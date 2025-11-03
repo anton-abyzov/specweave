@@ -1,7 +1,7 @@
 {
-  "name": "specweave-core",
-  "description": "Core SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), RFC generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
-  "version": "0.6.0",
+  "name": "specweave",
+  "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), RFC generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
+  "version": "0.6.1",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

@@ -1,5 +1,5 @@
 ---
-name: specweave.progress
+name: progress
 description: Show current increment progress, task completion %, PM gate status, and next action
 ---
 

@@ -130,11 +130,11 @@ your-project/
 │   │   ├── hetzner-provisioner/
 │   │   └── ... (27+ more)
 │   ├── commands/             # 10 slash commands
-│   │   ├── specweave.inc.md
-│   │   ├── specweave.do.md
-│   │   ├── specweave.progress.md
-│   │   ├── specweave.done.md
-│   │   ├── specweave.validate.md
+│   │   ├── inc.md
+│   │   ├── do.md
+│   │   ├── progress.md
+│   │   ├── done.md
+│   │   ├── validate.md
 │   │   ├── specweave.sync-github.md
 │   │   ├── specweave.sync-jira.md
 │   │   ├── specweave.sync-docs.md
@@ -435,7 +435,7 @@ npx specweave init . --force
 ```bash
 # Verify commands
 ls -la .claude/commands/
-# Should see: specweave.inc.md, specweave.do.md, etc.
+# Should see: inc.md, do.md, etc.
 
 # Check a specific command
 cat .claude/commands/specweave:inc.md

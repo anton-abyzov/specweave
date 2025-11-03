@@ -13,9 +13,9 @@ When running `/plugin list --installed`, Claude Code reported validation errors:
 ```
 Plugin Loading Errors:
 
-  ✘ specweave-core@specweave
-     Plugin specweave-core has an invalid manifest
-     file at plugins/specweave-core/.claude-plugin/plugin.json.
+  ✘ specweave@specweave
+     Plugin specweave has an invalid manifest
+     file at plugins/specweave/.claude-plugin/plugin.json.
 
      Validation errors:
      - repository: Expected string, received object
@@ -48,7 +48,7 @@ Plugin Loading Errors:
 ```
 
 **Affected Plugins**:
-- `specweave-core`
+- `specweave`
 - `specweave-ui`
 
 ### Issue 2: Dependencies Field (Not Recognized)
@@ -71,7 +71,7 @@ Plugin Loading Errors:
 ```
 
 **Affected Plugins**:
-- `specweave-core`
+- `specweave`
 - `specweave-ml`
 - `specweave-ui`
 
@@ -140,7 +140,7 @@ Based on [official documentation](https://docs.claude.com/en/docs/claude-code/pl
 
 ## Fixes Applied
 
-### 1. Fixed specweave-core
+### 1. Fixed specweave
 
 **Before**:
 ```json
@@ -243,7 +243,7 @@ Enhanced remaining 15 plugins with complete metadata:
 ```bash
 $ /plugin list --installed
 Plugin Loading Errors:
-  ✘ specweave-core@specweave
+  ✘ specweave@specweave
      Validation errors: repository: Expected string, received object
      : Unrecognized key(s) in object: 'dependencies'
 ```
@@ -262,7 +262,7 @@ $ grep -E '"dependencies"|"repository".*\{' plugins/*/.claude-plugin/plugin.json
 ## Files Changed
 
 ### Plugin Manifests (4 files modified):
-1. `plugins/specweave-core/.claude-plugin/plugin.json` - Fixed repository + removed dependencies
+1. `plugins/specweave/.claude-plugin/plugin.json` - Fixed repository + removed dependencies
 2. `plugins/specweave-github/.claude-plugin/plugin.json` - Enhanced metadata (done earlier)
 3. `plugins/specweave-ml/.claude-plugin/plugin.json` - Removed dependencies
 4. `plugins/specweave-ui/.claude-plugin/plugin.json` - Removed repository object + all custom fields
@@ -288,15 +288,15 @@ grep -E '"dependencies"|"repository".*\{' plugins/*/.claude-plugin/plugin.json
 
 # Should show "specweave" marketplace with 18 plugins
 
-/plugin install specweave-core@specweave
+/plugin install specweave@specweave
 /plugin list --installed
 
-# Should show specweave-core with NO errors
+# Should show specweave with NO errors
 ```
 
 ### 3. Test Plugin Functionality
 ```bash
-# After installing specweave-core:
+# After installing specweave:
 /specweave:inc "test feature"
 
 # Should work without errors
@@ -365,7 +365,7 @@ claude --debug  # Shows plugin loading details
 ✅ **All 18 plugins now have valid Claude-compliant plugin.json manifests**
 
 **Next Steps**:
-1. Test `/plugin install specweave-core@specweave` in Claude Code
+1. Test `/plugin install specweave@specweave` in Claude Code
 2. Verify all plugins load without errors
 3. Document plugin development guidelines to prevent future issues
 
