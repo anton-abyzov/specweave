@@ -7,10 +7,8 @@
     "url": "https://spec-weave.com"
   },
   "homepage": "https://spec-weave.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anton-abyzov/specweave"
-  },
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
   "keywords": [
     "specweave",
     "core",
@@ -20,6 +18,5 @@
     "pm",
     "architect",
     "living-docs"
-  ],
-  "dependencies": []
+  ]
 }

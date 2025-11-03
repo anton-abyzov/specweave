@@ -66,19 +66,22 @@ jobs:
           total_skills=0
           skills_with_tests=0
 
-          for skill in src/skills/*/; do
-            total_skills=$((total_skills + 1))
-            skill_name=$(basename "$skill")
+          # Check skills in all plugins
+          for skill in plugins/*/skills/*/; do
+            if [ -d "$skill" ]; then
+              total_skills=$((total_skills + 1))
+              skill_name=$(basename "$skill")
 
-            if [ ! -d "$skill/test-cases" ]; then
-              echo "⚠️  Missing test-cases in $skill_name"
-            else
-              test_count=$(find "$skill/test-cases" -name "*.yaml" 2>/dev/null | wc -l)
-              if [ $test_count -lt 3 ]; then
-                echo "⚠️  $skill_name has only $test_count test case(s) (minimum 3 recommended)"
+              if [ ! -d "$skill/test-cases" ]; then
+                echo "⚠️  Missing test-cases in $skill_name"
               else
-                echo "✓ $skill_name has $test_count test cases"
-                skills_with_tests=$((skills_with_tests + 1))
+                test_count=$(find "$skill/test-cases" -name "*.yaml" 2>/dev/null | wc -l)
+                if [ $test_count -lt 3 ]; then
+                  echo "⚠️  $skill_name has only $test_count test case(s) (minimum 3 recommended)"
+                else
+                  echo "✓ $skill_name has $test_count test cases"
+                  skills_with_tests=$((skills_with_tests + 1))
+                fi
               fi
             fi
           done
@@ -94,7 +97,7 @@ jobs:
 
       - name: Check required directories
         run: |
-          required_dirs=("src/skills" "src/agents" "src/commands" ".specweave")
+          required_dirs=("plugins/specweave-core" "plugins/specweave-github" ".specweave" "src")
           for dir in "${required_dirs[@]}"; do
             if [ ! -d "$dir" ]; then
               echo "ERROR: Missing required directory: $dir"

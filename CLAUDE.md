@@ -678,25 +678,93 @@ if (parentSpecweave) {
 - ML pipeline: Core + ml-ops + github ≈ **18K tokens** (64% reduction!)
 - SpecWeave itself: Core + github + diagrams ≈ **15K tokens** (70% reduction!)
 
-### How to Enable Plugins
+### How Plugins Are Loaded (Intelligent Auto-Loading)
 
-**Auto-Detection** (recommended):
-```bash
-specweave init  # Auto-detects and suggests plugins
-```
+**SpecWeave's plugin system is designed to be intelligent and non-intrusive:**
 
-**Manual**:
+#### Phase 1: Initialize (One-Time Setup)
+
+When you run `specweave init`:
+
+1. ✅ **Marketplace Auto-Registration**
+   - Creates `.claude/settings.json` with marketplace reference
+   - Claude Code automatically discovers plugins
+   - No manual `/plugin marketplace add` needed!
+
+2. ⚠️  **Core Plugin Installation (REQUIRED)**
+   - User MUST manually install: `/plugin install specweave-core@specweave`
+   - Highlighted in yellow bold in CLI output
+   - Required for slash commands (`/specweave:inc`, `/specweave:do`, etc.)
+
+3. ℹ️  **Optional Plugins Suggested**
+   - Based on project detection (Git, package.json, etc.)
+   - User can install now or later
+
+#### Phase 2: Increment Planning (On-Demand Loading)
+
+When you create increments (e.g., `/specweave:inc "Add Stripe billing"`):
+
+1. **Spec Analysis** (NEW! v0.6.0+)
+   - increment-planner skill scans spec.md content
+   - Detects keywords: "Stripe", "GitHub", "Kubernetes", "React", etc.
+   - Maps keywords → required plugins (see Step 6 in increment-planner/SKILL.md)
+
+2. **Plugin Suggestion** (Non-Blocking)
+   ```
+   🔌 This increment requires additional plugins:
+
+   Required:
+   • specweave-payments - Stripe integration (detected: "billing", "Stripe")
+
+   📦 Install: /plugin install specweave-payments@specweave
+
+   Or continue without it (can install later)
+   ```
+
+3. **User Decision**
+   - Install now → Plugin activates immediately (after Claude Code restart)
+   - Install later → Skills won't be available until plugin installed
+   - Skip → Increment creation continues (not blocked)
+
+#### Phase 3: Implementation (Auto-Activation)
+
+When plugins are installed:
+
+1. **Skills Auto-Activate**
+   - Based on description keywords (Claude Code native behavior)
+   - No manual invocation needed
+   - Example: Mention "GitHub" → github-sync skill activates
+
+2. **Context Efficiency**
+   - Only loaded plugins consume tokens
+   - 70%+ reduction vs. monolithic approach
+   - Real-time: Simple React app = 16K tokens (was 50K in v0.3.7)
+
+### Manual Plugin Management (Advanced)
+
+For manual control (if auto-loading doesn't fit your workflow):
+
 ```bash
-specweave plugin list           # See all available
+# List all available plugins
+specweave plugin list
+
+# Enable specific plugin (SpecWeave's internal system)
 specweave plugin enable kubernetes
+
+# Disable plugin
 specweave plugin disable figma-ecosystem
+
+# Claude Code's native plugin system (preferred)
+/plugin install specweave-kubernetes@specweave
+/plugin uninstall specweave-kubernetes
+/plugin list --installed
 ```
 
-**Spec-Based** (during increment planning):
-```bash
-/specweave:inc "deploy to Kubernetes"
-# → Suggests kubernetes plugin before creating spec
-```
+**Key Insight**: SpecWeave has TWO plugin systems:
+1. **Claude Code Native** (preferred) - Uses `/plugin install`, auto-activates skills
+2. **SpecWeave Internal** (legacy) - Uses `specweave plugin enable`, copies files to `.claude/`
+
+v0.6.0+ prioritizes Claude Code native plugins for better integration.
 
 ---
 
