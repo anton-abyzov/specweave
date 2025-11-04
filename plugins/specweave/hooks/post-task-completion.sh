@@ -244,17 +244,42 @@ if [ -n "$CURRENT_INCREMENT" ]; then
     if [ -n "$GITHUB_ISSUE" ] && command -v gh &> /dev/null; then
       echo "[$(date)] 🔄 Syncing to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
 
-      # Run GitHub sync command (non-blocking)
-      if command -v node &> /dev/null && [ -f "dist/commands/github-sync.js" ]; then
-        # Use --tasks flag to update issue description (not just comments)
-        node dist/commands/github-sync.js "$CURRENT_INCREMENT" --tasks 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-          echo "[$(date)] ⚠️  Failed to sync to GitHub (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        }
+      # Run GitHub sync - Update issue description AND post comment
+      # Read tasks.md to generate progress summary
+      TASKS_FILE=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
+
+      if [ -f "$TASKS_FILE" ]; then
+        # Parse tasks.md for progress
+        TOTAL_TASKS=$(grep -c "^## T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
+        COMPLETED_TASKS=$(grep -c "^- \[x\].*T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
+
+        if [ "$TOTAL_TASKS" -gt 0 ]; then
+          PROGRESS_PCT=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
+
+          echo "[$(date)] 📊 Progress: $COMPLETED_TASKS/$TOTAL_TASKS ($PROGRESS_PCT%)" >> "$DEBUG_LOG" 2>/dev/null || true
+
+          # Update issue description with progress
+          # Read current issue body, update progress section
+          ISSUE_BODY=$(gh issue view "$GITHUB_ISSUE" --json body -q .body 2>/dev/null || echo "")
+
+          if [ -n "$ISSUE_BODY" ]; then
+            # Generate updated progress section
+            PROGRESS_SECTION="## Progress\n\n**Status**: $COMPLETED_TASKS/$TOTAL_TASKS tasks completed ($PROGRESS_PCT%)\n**Last Updated**: $(date '+%Y-%m-%d %H:%M:%S')\n\n---\n🤖 Auto-synced by SpecWeave"
+
+            # Update issue body (replace Progress section)
+            # This is a simplified update - full implementation would parse and replace the Progress section
+            gh issue edit "$GITHUB_ISSUE" --body "${ISSUE_BODY}\n\n${PROGRESS_SECTION}" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+              echo "[$(date)] ⚠️  Failed to update issue description (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+            }
+          fi
+
+          # Post progress comment
+          gh issue comment "$GITHUB_ISSUE" --body "**Progress Update**: $COMPLETED_TASKS/$TOTAL_TASKS tasks ($PROGRESS_PCT%)\n\nIncrement: \`$CURRENT_INCREMENT\`\n\n---\n🤖 Auto-updated by SpecWeave" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+            echo "[$(date)] ⚠️  Failed to comment on GitHub issue (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+          }
+        fi
       else
-        # Fallback: Use gh CLI directly
-        gh issue comment "$GITHUB_ISSUE" --body "Progress update: Task completed in increment $CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-          echo "[$(date)] ⚠️  Failed to comment on GitHub issue (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        }
+        echo "[$(date)] ℹ️  tasks.md not found, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
       fi
     fi
 
