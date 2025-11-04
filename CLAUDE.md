@@ -136,11 +136,11 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 **When Creating Increments**:
 ```bash
 # ❌ Wrong
-/specweave:inc "0004"
+/specweave:increment "0004"
 
 # ✅ Correct
-/specweave:inc "0004-cost-optimization"
-/specweave:inc "0005-github-sync-enhancements"
+/specweave:increment "0004-cost-optimization"
+/specweave:increment "0005-github-sync-enhancements"
 ```
 
 **Enforcement**:
@@ -262,7 +262,7 @@ An increment is DONE if **ONE** of the following is true:
 **When you try to start a new increment**:
 
 ```bash
-/specweave:inc "new feature"
+/specweave:increment "new feature"
 ```
 
 **If previous increments are incomplete, you'll see**:
@@ -312,7 +312,7 @@ Previous increments are incomplete:
 /specweave:do
 
 # Once all tasks done, it's automatically complete
-/specweave:inc "new feature"  # ✅ Now works!
+/specweave:increment "new feature"  # ✅ Now works!
 ```
 
 #### Option 2: Close Interactively
@@ -345,7 +345,7 @@ Previous increments are incomplete:
 
 ```bash
 # Bypass the check (USE SPARINGLY!)
-/specweave:inc "urgent-hotfix" --force
+/specweave:increment "urgent-hotfix" --force
 
 # This is logged and should be explained in the next standup/PR
 ```
@@ -362,7 +362,7 @@ Remove parts from `spec.md`, regenerate `plan.md` and `tasks.md` to match reduce
 # 1. Edit spec.md - remove features you're not doing
 # 2. Delete plan.md and tasks.md
 # 3. Regenerate from spec
-/specweave:inc "same increment" --regenerate
+/specweave:increment "same increment" --regenerate
 
 # Now tasks match reduced scope → 100% complete!
 ```
@@ -436,14 +436,14 @@ Result: Clean increments, clear progress, shipping regularly
 
 **Old approach** (broken):
 ```bash
-/specweave:inc "0006-i18n"
+/specweave:increment "0006-i18n"
 # ✅ Creates 0006 (no check)
 # Result: 0002, 0003, 0006 all incomplete
 ```
 
 **Current approach** (disciplined):
 ```bash
-/specweave:inc "0006-i18n"
+/specweave:increment "0006-i18n"
 # ❌ Blocked! "Close 0002 and 0003 first"
 
 # Check status
@@ -456,7 +456,7 @@ Result: Clean increments, clear progress, shipping regularly
 # Select 0003 → Move tasks to 0007 (defer work)
 
 # Now can proceed
-/specweave:inc "0006-i18n"
+/specweave:increment "0006-i18n"
 # ✅ Works! Clean slate, disciplined workflow
 ```
 
@@ -465,7 +465,7 @@ Result: Clean increments, clear progress, shipping regularly
 For **emergencies only** (hotfixes, urgent features):
 
 ```bash
-/specweave:inc "urgent-security-fix" --force
+/specweave:increment "urgent-security-fix" --force
 ```
 
 **This bypasses the check** but:
@@ -506,7 +506,7 @@ For **emergencies only** (hotfixes, urgent features):
 **Step 1: Create increment** → PM agent generates spec.md with user stories and AC-IDs:
 
 ```bash
-/specweave:inc "Add user authentication"  # → generates spec.md with AC-US1-01, AC-US1-02, etc.
+/specweave:increment "Add user authentication"  # → generates spec.md with AC-US1-01, AC-US1-02, etc.
 ```
 
 **spec.md excerpt** (acceptance criteria with AC-IDs):
@@ -756,7 +756,7 @@ git init && npx specweave init .
 mkdir -p services/{user,order,payment}
 
 # Work normally - SpecWeave sees all services
-/specweave:inc "0001-add-service-mesh"
+/specweave:increment "0001-add-service-mesh"
 # Creates: .specweave/increments/0001-add-service-mesh/
 # Can reference: services/user-service/, infrastructure/k8s/, etc.
 ```
@@ -949,7 +949,7 @@ When you run `specweave init`:
 
 #### Phase 2: Increment Planning (On-Demand Loading)
 
-When you create increments (e.g., `/specweave:inc "Add Stripe billing"`):
+When you create increments (e.g., `/specweave:increment "Add Stripe billing"`):
 
 1. **Spec Analysis** (NEW! v0.6.0+)
    - increment-planner skill scans spec.md content
@@ -1391,89 +1391,82 @@ specweave/
 
 ### The Core Question: Why Two Locations?
 
-1. **Living Docs Specs**: `.specweave/docs/internal/specs/spec-####-name/spec.md` - **Permanent knowledge base**
-2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary implementation snapshot**
+1. **Living Docs Specs**: `.specweave/docs/internal/specs/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
+2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary, focused implementation snapshot**
+
+**Key Difference**: Specs use **3-digit numbers** (001, 002, 003) for **feature areas**, increments use **4-digit numbers** (0001, 0002, 0003) for **implementations**.
 
 ### The Answer: Permanent vs Temporary
 
-**Living Docs Specs = Permanent Knowledge Base**
+**Living Docs Specs = Permanent, Feature-Level Knowledge Base**
 
-- **Location**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
-- **Purpose**: COMPLETE, PERMANENT source of truth
+- **Location**: `.specweave/docs/internal/specs/spec-001-core-framework-architecture.md`
+- **Purpose**: COMPLETE, PERMANENT source of truth for entire feature area
 - **Lifecycle**: Created once, updated over time, NEVER deleted
-- **Scope**: Comprehensive (entire feature, 20 user stories)
+- **Scope**: Comprehensive feature area (e.g., "Core Framework", 10-50 user stories)
 - **Contains**:
-  - ✅ ALL user stories (US-001, US-002, ..., US-020)
-  - ✅ ALL acceptance criteria (AC-US1-01, AC-US1-02, ...)
-  - ✅ ALL functional requirements (FR-001, FR-002, ...)
+  - ✅ ALL user stories for the feature area (across multiple increments)
+  - ✅ ALL acceptance criteria for those user stories
+  - ✅ Implementation history (which increments implemented which parts)
   - ✅ Links to brownfield documentation (existing project docs)
-  - ✅ External PM tool links (Jira epic, ADO work item, GitHub milestone)
-  - ✅ Architecture decisions rationale
-  - ✅ Success criteria & metrics
+  - ✅ External PM tool links (GitHub Project, Jira Epic, ADO Feature)
+  - ✅ Architecture decisions rationale (ADRs)
+  - ✅ Success criteria & metrics for the feature area
 
-**Increment Specs = Implementation Snapshot**
+**Increment Specs = Temporary, Focused Implementation Snapshot**
 
-- **Location**: `.specweave/increments/0007-basic-login/spec.md`
-- **Purpose**: TEMPORARY implementation reference
+- **Location**: `.specweave/increments/0001-core-framework/spec.md`
+- **Purpose**: TEMPORARY implementation reference (what am I building THIS iteration?)
 - **Lifecycle**: Created per increment, can be deleted after completion
-- **Scope**: Focused subset (3 user stories for this increment only)
+- **Scope**: Focused subset (3-5 user stories for this increment only)
 - **Contains**:
-  - ✅ Reference to living docs: `"See: SPEC-0005-authentication"`
+  - ✅ Reference to living docs: `"See: SPEC-001-core-framework-architecture"`
   - ✅ Subset of user stories: `"Implements: US-001, US-002, US-003 only"`
-  - ✅ What's being implemented RIGHT NOW
-  - ✅ Out of scope: Lists what's NOT in this increment
+  - ✅ What's being implemented RIGHT NOW (this iteration)
+  - ✅ Out of scope: Lists what's NOT in this increment (deferred to future increments)
 
-### Real-World Example: Authentication Feature
+### Real-World Example: SpecWeave Core Framework
 
-**Living Docs Spec** (Permanent):
+**Living Docs Spec** (Permanent, Feature-Level):
 ```
-File: .specweave/docs/internal/specs/spec-0005-authentication/spec.md
+File: .specweave/docs/internal/specs/spec-001-core-framework-architecture.md
 
-# SPEC-0005: User Authentication System
-Complete authentication system with OAuth2, JWT, 2FA, session management
+# SPEC-001: Core Framework & Architecture
+Foundation framework with CLI, plugin system, cross-platform support
 
-## User Stories (20 total)
-- US-001: Basic Login (P1) ← Increment 0007
-- US-002: Password Reset (P1) ← Increment 0007
-- US-010: OAuth2 Integration (P2) ← Increment 0012
-- US-018: Two-Factor Authentication (P2) ← Increment 0018
-... (16 more stories)
+## Increments (Implementation History)
+- 0001-core-framework: MVP CLI, skills, agents (Complete)
+- 0002-core-enhancements: Context optimization, PM agent (Complete)
+- 0004-plugin-architecture: Claude native plugins (Complete)
+- 0005-cross-platform-cli: Windows/Mac/Linux support (Complete)
 
-## Brownfield Integration
-- See: /docs/legacy/auth-system-v1.md (current system)
+## User Stories (35 total across all 4 increments)
+- US-001: NPM installation (0001) ✅
+- US-003: Context optimization (0002) ✅
+- US-005: Plugin system (0004) ✅
+- US-007: Cross-platform CLI (0005) ✅
+... (31 more stories)
 
 ## External References
-- Jira: AUTH-123 (stakeholder epic)
+- GitHub Project: TBD (create for 1.0.0)
 ```
 
-**Increment 1: Basic Login** (Temporary):
+**Increment Spec** (Temporary, Implementation-Level):
 ```
-File: .specweave/increments/0007-basic-login/spec.md
+File: .specweave/increments/0001-core-framework/spec.md
 
-# Increment 0007: Basic Login
-**Implements**: SPEC-0005-authentication (US-001 to US-003 only)
-**Complete Specification**: See ../../docs/internal/specs/spec-0005-authentication/
+# Increment 0001: Core Framework MVP
+**Implements**: SPEC-001-core-framework-architecture (US-001 to US-002 only)
+**Complete Specification**: See ../../docs/internal/specs/spec-001-core-framework-architecture.md
 
-## What We're Implementing (This Increment)
-- US-001: Basic Login ✅
-- US-002: Password Reset ✅
-- US-003: Session Management ✅
+## What We're Implementing (This Increment Only)
+- US-001: NPM installation + CLI basics ✅
+- US-002: Plugin system foundation ✅
 
 ## Out of Scope (For This Increment)
-- ❌ OAuth2 integration (US-010) → Increment 0012
-- ❌ 2FA (US-018) → Increment 0018
-```
-
-**Increment 2: OAuth Integration** (Temporary):
-```
-File: .specweave/increments/0012-oauth-integration/spec.md
-
-# Increment 0012: OAuth2 Integration
-**Implements**: SPEC-0005-authentication (US-010 to US-012 only)
-**Complete Specification**: See ../../docs/internal/specs/spec-0005-authentication/
-
-## Dependencies
-- Requires: Increment 0007 (basic login infrastructure)
+- ❌ Context optimization (US-003) → Increment 0002
+- ❌ Claude native plugins (US-005) → Increment 0004
+- ❌ Cross-platform support (US-007) → Increment 0005
 ```
 
 ### Key Benefits
@@ -1524,47 +1517,47 @@ File: .specweave/increments/0012-oauth-integration/spec.md
 
 **Phase 1: Planning** (PM Agent)
 ```
-User: "I want to build authentication with OAuth and 2FA"
+User: "I want to build a plugin-based framework with CLI"
 PM Agent:
 1. Creates living docs spec:
-   → .specweave/docs/internal/specs/spec-0005-authentication/spec.md
-   → Contains ALL 20 user stories (comprehensive)
-   → Links to brownfield docs
-   → Linked to Jira epic AUTH-123
+   → .specweave/docs/internal/specs/spec-001-core-framework-architecture.md
+   → Contains ALL 35 user stories (comprehensive, feature-level)
+   → Links to GitHub Project (TBD)
+   → Maps to 4 increments (0001, 0002, 0004, 0005)
 ```
 
-**Phase 2: Increment 1** (Basic Login)
+**Phase 2: Increment 1** (Core MVP)
 ```
-User: "/specweave:inc 0007-basic-login"
+User: "/specweave:increment 0001-core-framework"
 PM Agent:
 1. Creates increment spec:
-   → .specweave/increments/0007-basic-login/spec.md
-   → References living docs: "See SPEC-0005"
-   → Contains ONLY US-001 to US-003 (focused)
+   → .specweave/increments/0001-core-framework/spec.md
+   → References living docs: "See SPEC-001"
+   → Contains ONLY US-001 to US-002 (focused, this iteration only)
 2. Implementation happens...
 3. Increment completes ✅
-4. Increment spec can be deleted (optional)
+4. Increment spec stays for history (or can be deleted)
 ```
 
-**Phase 3: Increment 2** (OAuth)
+**Phase 3: Increment 2** (Enhancements)
 ```
-User: "/specweave:inc 0012-oauth-integration"
+User: "/specweave:increment 0002-core-enhancements"
 PM Agent:
 1. Creates increment spec:
-   → .specweave/increments/0012-oauth-integration/spec.md
-   → References SAME living docs: "See SPEC-0005"
-   → Contains ONLY US-010 to US-012 (focused)
+   → .specweave/increments/0002-core-enhancements/spec.md
+   → References SAME living docs: "See SPEC-001"
+   → Contains ONLY US-003 to US-004 (focused, this iteration only)
 2. Implementation happens...
 3. Increment completes ✅
 ```
 
-**Phase 4: All Done!**
+**Phase 4: All Increments Done!**
 ```
-After ALL increments complete (0007, 0012, 0018):
-- ✅ Living docs spec REMAINS (.specweave/docs/internal/specs/spec-0005-authentication/)
-- ⏳ Increment specs can be deleted (optional)
-- ✅ Historical record preserved (living docs)
-- ✅ Jira epic AUTH-123 remains linked to living docs
+After ALL increments complete (0001, 0002, 0004, 0005):
+- ✅ Living docs spec REMAINS (permanent knowledge base)
+- ⏳ Increment specs can be deleted (optional cleanup)
+- ✅ Complete history preserved in spec-001
+- ✅ GitHub Project linked to SPEC-001 (not increments)
 ```
 
 ### Relationship
@@ -1572,10 +1565,16 @@ After ALL increments complete (0007, 0012, 0018):
 **One living docs spec → Many increment specs**
 
 ```
-spec-0005-authentication (Living Docs - Permanent)
-├── 0007-basic-login (Increment - Temporary)
-├── 0012-oauth-integration (Increment - Temporary)
-└── 0018-two-factor-auth (Increment - Temporary)
+SPEC-001: Core Framework & Architecture (Living Docs - Permanent, Feature-Level)
+├── 0001-core-framework (Increment - Temporary, Implementation-Level)
+├── 0002-core-enhancements (Increment - Temporary, Implementation-Level)
+├── 0004-plugin-architecture (Increment - Temporary, Implementation-Level)
+└── 0005-cross-platform-cli (Increment - Temporary, Implementation-Level)
+
+SPEC-002: Intelligent AI Capabilities (Living Docs - Permanent, Feature-Level)
+├── 0003-intelligent-model-selection (Increment - Temporary, Implementation-Level)
+├── 0007-smart-increment-discipline (Increment - Temporary, Implementation-Level)
+└── 0009-intelligent-reopen-logic (Increment - Temporary, Implementation-Level)
 ```
 
 ### Summary
@@ -1655,7 +1654,7 @@ Future: "Why was Story 5 removed?" → Check report, find exact reason with WHO 
 
 **1. Initialize Report** (automatic when increment created):
 ```bash
-/specweave:inc "User dashboard"
+/specweave:increment "User dashboard"
 # Creates: .specweave/increments/0008-user-dashboard/reports/COMPLETION-REPORT.md (v1.0)
 ```
 
@@ -1746,7 +1745,7 @@ Future: "Why was Story 5 removed?" → Check report, find exact reason with WHO 
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:inc "feature"` | Creates increment with initial completion report |
+| `/specweave:increment "feature"` | Creates increment with initial completion report |
 | `/specweave:update-scope` | Log scope change during increment |
 | `/specweave:done <id>` | Finalize report and mark increment complete |
 
@@ -1873,10 +1872,54 @@ Solution: Inactivity-based detection
 - Update `README.md` for user-facing changes
 - Update `CHANGELOG.md` for API changes
 
-**Living Docs Sync** (after `/specweave:do` completes):
-- Run `/specweave:sync-docs update`
-- Updates `.specweave/docs/` with implementation learnings
-- Updates ADRs from Proposed → Accepted
+**Living Docs Sync** (AUTOMATIC after task completion):
+
+**The Critical Problem**: `.specweave/docs/internal/specs/` is the **permanent source of truth** for ALL completed work across the entire enterprise. Without automatic sync, this documentation becomes stale and incomplete.
+
+**How It Works** (Automatic):
+1. **Hook Triggers**: After every task completion (TodoWrite), `post-task-completion.sh` fires
+2. **Sync Check**: Runs `dist/hooks/lib/sync-living-docs.js` to check if sync is needed
+3. **Automatic Sync**: If enabled in config, syncs increment specs to living docs
+4. **Result**: `.specweave/docs/internal/specs/spec-{id}.md` is always up-to-date
+
+**Configuration** (`.specweave/config.json`):
+```json
+{
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,        // ✅ MUST be true!
+      "sync_tasks_md": true,           // Updates tasks.md with completion status
+      "external_tracker_sync": true    // Syncs to GitHub/Jira/ADO
+    }
+  }
+}
+```
+
+**Manual Sync** (when automatic sync was disabled):
+```bash
+# Sync all completed increments to living docs
+/specweave:sync-docs update
+
+# Or copy manually (emergency only):
+cp .specweave/increments/0001-core-framework/spec.md \
+   .specweave/docs/internal/specs/spec-0001-core-framework.md
+```
+
+**Verify Sync**:
+```bash
+# Check all synced specs
+ls -1 .specweave/docs/internal/specs/spec-*.md
+
+# Should match number of completed increments
+ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
+```
+
+**Why This Matters**:
+- ✅ **Enterprise-level traceability**: Every increment's spec is permanently archived
+- ✅ **Cross-increment history**: See all work completed across the entire project
+- ✅ **Onboarding new developers**: Read specs to understand what was built and why
+- ✅ **Compliance & auditing**: Complete audit trail of all product decisions
+- ✅ **Living documentation**: Specs stay up-to-date without manual intervention
 
 ---
 
@@ -2184,7 +2227,7 @@ cd docs-site && npm run build
 
 ```bash
 # 1. User creates increment in Russian
-/specweave:inc "Добавить пользовательскую аутентификацию"
+/specweave:increment "Добавить пользовательскую аутентификацию"
 
 # 2. PM agent generates spec.md in Russian (natural, user-friendly)
 
@@ -2310,31 +2353,36 @@ npm test -- tests/unit/i18n/translation.test.ts
 
 **Commands (for SpecWeave development)**:
 
-*Convenient short forms (use daily)*:
-- `/inc "feature"` - Plan new increment
-- `/do` - Execute tasks (smart resume)
-- `/done 0002` - Close increment
-- `/validate 0002` - Validate increment
-- `/status` - Show increment status overview
-- `/pause 0002 --reason="..."` - Pause active increment (system command, used by SpecWeave)
-- `/resume 0002` - Resume paused increment (system command, used by SpecWeave)
-- `/abandon 0002 --reason="..."` - Abandon increment
-- `/validate-coverage` - Check test coverage
+**IMPORTANT**: All commands MUST use the `/specweave:*` namespace prefix to avoid conflicts with Claude Code's native commands.
 
-*Full namespace forms (explicit, avoids conflicts)*:
-- `/specweave:inc "feature"` - Plan new increment
+*Primary commands*:
+- `/specweave:increment "feature"` - Plan new increment
 - `/specweave:do` - Execute tasks (smart resume)
 - `/specweave:done 0002` - Close increment
 - `/specweave:validate 0002` - Validate increment
-- `/specweave:progress` - Check status
-- `/specweave:sync-docs update` - Sync living docs
-- `/specweave:status` - Show increment status with rich details
-- `/specweave:pause` - Pause active increment (system command, used by SpecWeave)
-- `/specweave:resume` - Resume paused increment (system command, used by SpecWeave)
-- `/specweave:abandon` - Abandon increment
-- `/specweave:validate-coverage` - Validate test coverage
+- `/specweave:qa 0002` - Quality assessment with risk scoring
+- `/specweave:status` - Show increment status overview
+- `/specweave:progress` - Check current increment progress
+- `/specweave:check-tests` - Validate test coverage (NEW format)
 
-**Both forms work identically** - use short forms for speed, namespace forms for clarity.
+*State management (mostly automatic)*:
+- `/specweave:pause 0002 --reason="..."` - Pause active increment
+- `/specweave:resume 0002` - Resume paused increment
+- `/specweave:abandon 0002 --reason="..."` - Abandon increment
+
+*Documentation sync*:
+- `/specweave:sync-docs update` - Sync living docs after implementation
+- `/specweave:sync-tasks` - Sync tasks with completion status
+
+*Other commands*:
+- `/specweave:costs` - Show AI cost dashboard
+- `/specweave:translate` - Translate content
+- `/specweave:update-scope` - Log scope changes
+- `/specweave:next` - Smart increment transition
+
+**NO SHORTCUTS**: Do NOT use shortcuts like `/inc`, `/do`, `/pause`, `/resume` etc. They conflict with Claude Code's native commands and will break functionality.
+
+**File naming**: All commands are `specweave-{name}.md` (e.g., `specweave-increment.md`)
 
 **Build & Test**:
 - `npm run build` - Compile TypeScript

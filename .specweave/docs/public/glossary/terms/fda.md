@@ -334,7 +334,7 @@ REQ-004: System shall display confidence score (0-100%)
   - Acceptance Criteria: Score based on AI model certainty
   - Traceability: US-003 → REQ-004
 
-REQ-005: System shall generate report in <10 seconds
+REQ-005: System shall generate report in &lt;10 seconds
   - Acceptance Criteria: Performance testing on reference hardware
   - Traceability: US-004 → REQ-005
 ```
@@ -379,7 +379,7 @@ Integration Tests:
     - Pass: 25/25 tests
 
 Performance Tests:
-  - test_inference_speed.py: Validates <10 second requirement
+  - test_inference_speed.py: Validates &lt;10 second requirement
     - Average: 6.2 seconds
     - 99th percentile: 8.9 seconds
     - Pass: ✅ (under 10 second requirement)
@@ -665,7 +665,7 @@ File: .specweave/increments/0045-pneumonia-detection/reports/COMPLETION-REPORT.m
 
 # Spec.md documents:
 # - What's changing (AI model retrained)
-# - Why (reduce false positives from 8.4% to <5%)
+# - Why (reduce false positives from 8.4% to &lt;5%)
 # - Risk assessment (low, improved accuracy)
 # - Approval (QA + Regulatory Affairs)
 

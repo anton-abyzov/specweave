@@ -72,7 +72,7 @@
 - Includes priorities (P1, P2, P3)
 - Documents Given/When/Then scenarios
 
-**See**: [.specweave/increments/0001-skills-framework/tests.md](.specweave/increments/0001-skills-framework/tests.md) for complete example
+**Note**: For increment-specific test examples, check the `tests.md` file in each increment folder (`.specweave/increments/####-name/tests.md`)
 
 ---
 
@@ -195,7 +195,7 @@ test('TC-0001: Valid Login Flow', async ({ page }) => {
 - E2E tests MUST tell the truth (no false positives)
 - Run in CI/CD pipeline
 
-**See**: [tests/README.md](tests/README.md) for complete testing guide
+**See**: `tests/README.md` in repository root for complete testing guide
 
 ---
 
@@ -343,9 +343,8 @@ npm run test:coverage      # Generate coverage report
 
 ### Related Documentation
 
-- [TEST-CASE-STRATEGY.md](.specweave/increments/0001-skills-framework/reports/TEST-CASE-STRATEGY.md) - Comprehensive test case strategy
-- [tests/README.md](tests/README.md) - Complete testing guide
-- [.specweave/increments/0001-skills-framework/tests.md](.specweave/increments/0001-skills-framework/tests.md) - Feature test strategy example
+- **tests/README.md** - Complete testing guide (see repository root)
+- **Increment Test Examples**: Check `.specweave/increments/####-name/tests.md` for real-world test strategies in each increment
 
 ---
 
