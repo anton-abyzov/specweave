@@ -63,12 +63,16 @@ fi
 # Run specweave init (modern CLI approach)
 info "Running: node $REPO_ROOT/bin/specweave.js init ."
 cd "$TEST_DIR"
-# Provide default inputs: empty (current dir name), yes (confirm init in non-empty dir)
-NODE_OUTPUT=$(printf "\n\ny\n" | node "$REPO_ROOT/bin/specweave.js" init . 2>&1) || {
+# Provide default inputs: empty (current dir name), yes (confirm init in non-empty dir), skip issue tracker
+NODE_OUTPUT=$(printf "\n\n\n\n" | node "$REPO_ROOT/bin/specweave.js" init . 2>&1) || {
   echo "CLI output:"
   echo "$NODE_OUTPUT"
   fail "specweave init failed"
 }
+
+# Debug: Show init output
+echo "Init output:"
+echo "$NODE_OUTPUT" | tail -20
 
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave initialized"
