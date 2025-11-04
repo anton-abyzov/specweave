@@ -159,18 +159,6 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
-    {
-      type: 'category',
-      label: 'Advanced Topics',
-      collapsed: true,
-      items: [
-        {
-          type: 'doc',
-          id: 'guides/github-action-setup',
-          label: 'GitHub Actions',
-        },
-      ],
-    },
   ],
 
   // API sidebar
