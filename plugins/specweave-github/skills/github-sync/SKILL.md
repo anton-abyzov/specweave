@@ -76,10 +76,16 @@ This issue tracks SpecWeave increment `0004-plugin-architecture`.
 
 ### 2. Progress Updates (Increment → Issue)
 
-**Trigger**: After each `/specweave:do` task completion
+**Trigger**: After each `/specweave:do` task completion (via post-task-completion hook)
 
 **Actions**:
-1. Post comment to GitHub issue:
+1. **Update issue description** (v0.7.0+):
+   - Updates task checklist in issue body
+   - Marks completed tasks with `[x]`
+   - Updates progress bars
+   - Keeps issue description synchronized
+
+2. Post comment to GitHub issue:
    ```markdown
    **Task Completed**: T-007 - Implement Claude plugin installer
 
@@ -90,10 +96,12 @@ This issue tracks SpecWeave increment `0004-plugin-architecture`.
    🤖 Auto-updated by SpecWeave
    ```
 
-2. Update issue labels:
+3. Update issue labels:
    - Add `in-progress` label when first task starts
    - Add `testing` label when implementation phase completes
    - Add `ready-for-review` label when all tasks done
+
+**Note**: As of v0.7.0+, the post-task-completion hook automatically uses `--tasks` flag to update both the issue description AND add comments. This ensures the main issue stays in sync with increment progress.
 
 ### 3. Increment Completion (Close Issue)
 
