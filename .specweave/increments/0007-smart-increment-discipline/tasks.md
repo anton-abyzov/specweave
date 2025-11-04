@@ -1,9 +1,9 @@
 # Tasks: Increment Management v2.0 (0007)
 
-**Status**: In Progress
+**Status**: Complete
 **Total Tasks**: 24
-**Completed**: 0
-**Progress**: 0%
+**Completed**: 24
+**Progress**: 100%
 **Timeline**: 20-28 hours (aggressive delivery)
 **Delivery**: v0.7.0 (all-in-one)
 
@@ -32,7 +32,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US2-01 (tasks with embedded tests)
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**: N/A (documentation task)
 
@@ -58,7 +58,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US2-01
 **Priority**: P2
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**: N/A (documentation task)
 
@@ -85,9 +85,9 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Test Plan**:
 - **Given** increment-planner skill invoked
 - **When** creating new increment
-- **Then** RFC spec.md is created as SOURCE OF TRUTH (living docs, permanent)
+- **Then** RFC spec.md is created as SOURCE OF TRUTH (living docs, permanent, evolves)
 - **And** strategy docs are optional and high-level only (NO detailed user stories)
-- **And** increment spec.md can duplicate RFC or reference it (temporary, that's OK)
+- **And** increment spec.md can duplicate RFC or reference it (frozen snapshot, that's OK)
 
 **Test Cases**:
 1. **Manual**: Create test increment (deferred to T-002b below)
@@ -126,6 +126,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Key Correction**:
 - ❌ WRONG: increment spec.md as source of truth
 - ✅ CORRECT: RFC spec.md as source of truth (living docs, permanent, can be linked to Jira/ADO/GitHub)
+- 📝 **Key Insight**: Both RFC and increment files are permanent:
+  - RFC = Living documentation (evolves as requirements change)
+  - Increment = Frozen snapshot (captures state at implementation time, never updated)
+  - This provides historical traceability: "What did we plan THEN?" vs "Where are we NOW?"
 
 ---
 
@@ -135,7 +139,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: Verify no duplication in newly created increments
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** duplication fix applied (T-002a)
@@ -173,7 +177,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US3-01 (agent reads spec/plan)
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** plugin directory structure exists
@@ -209,7 +213,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US3-02 (agent generates tasks with tests)
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** spec.md and plan.md as input
@@ -257,7 +261,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US3-02
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** template files created
@@ -285,7 +289,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US3-03 (agent creates bidirectional links)
 **Priority**: P1
 **Estimate**: 1-2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** real spec.md and plan.md from increment 0008 (create test increment)
@@ -324,7 +328,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US5-01 (command exists)
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** command file created
@@ -352,7 +356,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US5-02 (generates coverage report)
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increment with tasks.md (embedded tests)
@@ -400,7 +404,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US5-03
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increment with old format (tests.md exists)
@@ -437,7 +441,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US6-02 (invokes agent after Architect)
 **Priority**: P1
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increment-planner skill invoked
@@ -479,7 +483,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US6-03 (validates coverage)
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** tasks.md generated
@@ -509,7 +513,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US1-01 (PM generates AC-IDs)
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** PM Agent invoked
@@ -551,7 +555,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US7-01 (CLAUDE.md updated)
 **Priority**: P1
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**: N/A (documentation task)
 
@@ -582,7 +586,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US8-01 (metadata.json schema)
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** TypeScript types defined
@@ -621,7 +625,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US8-01
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** metadata utilities implemented
@@ -654,7 +658,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US8-01 (pause command)
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** active increment
@@ -698,7 +702,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US8-03 (resume command)
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** paused increment
@@ -734,7 +738,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US9-01 (abandon command)
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** active or paused increment
@@ -771,7 +775,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US10-03 (different limits per type)
 **Priority**: P1
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increment types defined
@@ -802,7 +806,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US11-01 (context switching warning)
 **Priority**: P1
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** user creates 2nd feature
@@ -841,7 +845,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US12-02 (status shows types, warnings)
 **Priority**: P1
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increments with different statuses/types
@@ -879,7 +883,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US8-01
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** old increments without metadata.json
@@ -909,7 +913,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: All
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** all features implemented
@@ -947,7 +951,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Acceptance Criteria**: AC-US7-01
 **Priority**: P1
 **Estimate**: 0.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**: N/A (documentation task)
 
