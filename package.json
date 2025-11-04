@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Replace vibe coding with spec-driven development. LLM-native i18n in 9 languages. Smart workflow: /specweave inc auto-closes previous, /specweave build auto-resumes, /specweave progress shows status. PM-led planning, 10 agents, 35+ skills. spec-weave.com",
   "type": "module",
   "main": "dist/index.js",

@@ -23,6 +23,7 @@
 |-----|-------|--------|-----------|---------|
 | [RFC-0003](rfc-0003-specweave-test-test-epic-for-sync.md) | Test Epic for Sync | Implemented | 0004 | 2025-10-30 |
 | [RFC-0005](rfc-0005-authentication-features.md) | Authentication Features | Draft | TBD | 2025-10-30 |
+| [RFC-0007](rfc-0007-smart-increment-discipline.md) | Smart Increment Discipline System | Draft | 0007 | 2025-11-03 |
 
 ---
 
