@@ -33,6 +33,11 @@ const sidebars: SidebarsConfig = {
           id: 'overview/philosophy',
           label: 'Philosophy',
         },
+        {
+          type: 'doc',
+          id: 'metrics',
+          label: '📊 DORA Metrics',
+        },
       ],
     },
     {

@@ -235,35 +235,7 @@ GitHub Task Lists (Subtasks within issue)
 
 ### Workflow
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant SpecWeave
-    participant GitHub
-
-    User->>SpecWeave: /specweave:inc "0004-plugin-architecture"
-    SpecWeave->>SpecWeave: Generate spec, plan, tasks
-
-    User->>SpecWeave: /specweave:github:sync-tasks 0004
-    SpecWeave->>GitHub: Create Milestone v0.4.0
-    SpecWeave->>GitHub: Create Epic #42
-    SpecWeave->>GitHub: Create Task #43 (T-001)
-    SpecWeave->>GitHub: Create Task #44 (T-002)
-    Note right of GitHub: ... 46 more tasks
-    SpecWeave->>SpecWeave: Update tasks.md with issue numbers
-
-    User->>SpecWeave: /specweave:do
-    SpecWeave->>SpecWeave: Complete T-001
-    SpecWeave->>GitHub: Close issue #43
-    SpecWeave->>GitHub: Check off T-001 in epic #42
-    SpecWeave->>GitHub: Post completion comment
-    SpecWeave->>GitHub: Update epic progress (1/48 = 2%)
-
-    Note right of User: Repeat for all tasks...
-
-    User->>SpecWeave: /specweave:done 0004
-    SpecWeave->>GitHub: Close epic #42
-```
+![architecture-adr-adr-0007-github-first-task-sync-0](../diagrams/architecture-adr-adr-0007-github-first-task-sync-0.svg)
 
 ---
 

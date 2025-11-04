@@ -393,7 +393,7 @@ You already have 2 active features:
 ## Success Criteria
 
 ### Metric 1: Reduced Force Usage
-- **Target**: <5% of increments use `--force` flag
+- **Target**: Less than 5% of increments use `--force` flag
 - **Current**: ~30% (estimated, based on bypass frequency)
 - **Measure**: Track `--force` usage in analytics
 
@@ -403,7 +403,7 @@ You already have 2 active features:
 - **Measure**: Completed / (Completed + Abandoned)
 
 ### Metric 3: Lower Context Switching
-- **Target**: <2 active increments per user on average
+- **Target**: Less than 2 active increments per user on average
 - **Current**: Unknown (no tracking)
 - **Measure**: Average active increments across all projects
 

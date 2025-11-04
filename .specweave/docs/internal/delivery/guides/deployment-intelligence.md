@@ -422,14 +422,14 @@ provider "hcloud" {
 | Platform | Secret Name | Format | Where to Get |
 |----------|-------------|--------|--------------|
 | **Hetzner** | `HETZNER_API_TOKEN` | 64 alphanumeric | https://console.hetzner.cloud/ → Security → API Tokens |
-| **AWS** | `AWS_ACCESS_KEY_ID`<br>`AWS_SECRET_ACCESS_KEY` | 20 chars<br>40 chars | IAM Console → Users → Security Credentials |
+| **AWS** | `AWS_ACCESS_KEY_ID`<br/>`AWS_SECRET_ACCESS_KEY` | 20 chars<br/>40 chars | IAM Console → Users → Security Credentials |
 | **Railway** | `RAILWAY_TOKEN` | 32+ alphanumeric | https://railway.app/account/tokens |
 | **Vercel** | `VERCEL_TOKEN` | Variable length | https://vercel.com/account/tokens |
-| **Azure** | `AZURE_CLIENT_ID`<br>`AZURE_CLIENT_SECRET`<br>`AZURE_TENANT_ID` | UUIDs<br>Variable<br>UUID | Azure Portal → App Registrations |
+| **Azure** | `AZURE_CLIENT_ID`<br/>`AZURE_CLIENT_SECRET`<br/>`AZURE_TENANT_ID` | UUIDs<br/>Variable<br/>UUID | Azure Portal → App Registrations |
 | **GCP** | `GOOGLE_APPLICATION_CREDENTIALS` | JSON file path | GCP Console → IAM → Service Accounts |
 | **DigitalOcean** | `DIGITALOCEAN_TOKEN` | 64 alphanumeric | https://cloud.digitalocean.com/account/api/tokens |
 | **GitHub** | `GITHUB_TOKEN` | `ghp_*` (40 chars) | https://github.com/settings/tokens |
-| **JIRA** | `JIRA_API_TOKEN`<br>`JIRA_EMAIL` | Variable<br>Email | https://id.atlassian.com/manage-profile/security/api-tokens |
+| **JIRA** | `JIRA_API_TOKEN`<br/>`JIRA_EMAIL` | Variable<br/>Email | https://id.atlassian.com/manage-profile/security/api-tokens |
 | **ADO** | `AZURE_DEVOPS_PAT` | 52 chars (base64) | Azure DevOps → User Settings → Personal Access Tokens |
 
 #### Security Best Practices

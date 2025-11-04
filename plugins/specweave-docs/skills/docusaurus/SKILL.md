@@ -61,6 +61,79 @@ Activate this skill when you need to:
 - "docusaurus from specweave"
 - "host documentation"
 - "static docs site"
+- "internal docs"
+- "engineering playbook"
+- "dual docs sites"
+
+## Dual Documentation Sites (SpecWeave)
+
+**SpecWeave supports TWO Docusaurus instances** for separating public and internal documentation:
+
+### 1. Public Docs (`docs-site/`)
+- **Purpose**: User-facing documentation
+- **Source**: `.specweave/docs/public/`
+- **Port**: 3013
+- **Deployment**: ✅ spec-weave.com (public)
+- **Search**: Algolia (recommended)
+- **Content**: Guides, API docs, tutorials, FAQ
+
+**Commands**:
+```bash
+# Start public docs
+npm run docs:public
+# OR
+cd docs-site && npm start
+
+# Access: http://localhost:3013
+```
+
+### 2. Internal Docs (`docs-site-internal/`)
+- **Purpose**: Engineering playbook (ADRs, HLD, strategy)
+- **Source**: `.specweave/docs/internal/`
+- **Port**: 3015
+- **Deployment**: ❌ NEVER deploy (local only)
+- **Search**: Local search plugin (no Algolia)
+- **Content**: Architecture, strategy, specs, delivery, operations, governance
+
+**Commands**:
+```bash
+# Start internal docs
+npm run docs:internal
+# OR
+cd docs-site-internal && npm start
+
+# Access: http://localhost:3015
+```
+
+### Running Both Simultaneously
+
+```bash
+# Terminal 1: Public docs
+npm run docs:public
+
+# Terminal 2: Internal docs
+npm run docs:internal
+
+# Access:
+# - Public: http://localhost:3013
+# - Internal: http://localhost:3015
+```
+
+**Key Differences**:
+
+| Aspect | Public Docs | Internal Docs |
+|--------|-------------|---------------|
+| **Directory** | `docs-site/` | `docs-site-internal/` |
+| **Source** | `.specweave/docs/public/` | `.specweave/docs/internal/` |
+| **Port** | 3013 | 3015 |
+| **Deployment** | ✅ Deployed | ❌ Local only |
+| **Search** | Algolia | Local plugin |
+| **Warning** | ❌ None | ✅ Red banner |
+| **Content** | User guides | Engineering docs |
+
+**Security**: Internal docs have NO deployment config (no `vercel.json`, `netlify.toml`, or GitHub Actions workflow). This prevents accidental public deployment.
+
+---
 
 ## Workflow
 

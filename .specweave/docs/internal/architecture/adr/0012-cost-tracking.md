@@ -35,8 +35,8 @@ How do we track costs with:
 
 **Non-Functional:**
 - Async writes (don't block agent execution)
-- Fast reads (<10ms for dashboard)
-- Small storage footprint (<1MB per increment)
+- Fast reads (less than 10ms for dashboard)
+- Small storage footprint (less than 1MB per increment)
 - No external dependencies (no database server)
 - Git-friendly (plain text, diffable)
 
@@ -78,7 +78,7 @@ How do we track costs with:
 - ✅ Human-readable (easy debugging)
 - ✅ Git-friendly (text-based, diffable)
 - ✅ Easy export (already JSON)
-- ✅ Fast enough (<10ms for typical file)
+- ✅ Fast enough (less than 10ms for typical file)
 
 ### Schema Design
 

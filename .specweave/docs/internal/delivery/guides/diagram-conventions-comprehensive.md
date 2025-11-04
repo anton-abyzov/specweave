@@ -161,13 +161,7 @@ overview.sanitized-c4-container.mmd        # Sanitized container view
 ```markdown
 ## System Context
 
-```mermaid
-graph LR
-    User((User)) -->|HTTPS| Web[Next.js Web App]
-    Web -->|API| API[API Gateway]
-    API -->|Svc1| Match[Match Service]
-    API -->|DB| DB[(Postgres)]
-```
+![delivery-guides-diagram-conventions-comprehensive-0](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-0.svg)
 ```
 
 **That's it—no images needed.** MkDocs renders the diagram at build time.
@@ -253,18 +247,7 @@ jobs:
 
 **Purpose**: Show the system boundary and external actors
 
-```mermaid
-graph TB
-    User((End User))
-    Admin((Administrator))
-    PaymentGateway[Payment Gateway<br/>Stripe]
-    EmailService[Email Service<br/>SendGrid]
-
-    User -->|HTTPS| System[E-Commerce Platform]
-    Admin -->|HTTPS| System
-    System -->|Process Payments| PaymentGateway
-    System -->|Send Emails| EmailService
-```
+![delivery-guides-diagram-conventions-comprehensive-1](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-1.svg)
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md`
 
@@ -276,23 +259,7 @@ graph TB
 
 **Purpose**: Show applications, services, and data stores
 
-```mermaid
-graph TB
-    Client[Client Application<br/>React SPA]
-    API[API Gateway<br/>Node.js/Express]
-    AuthService[Auth Service<br/>Node.js]
-    OrderService[Order Service<br/>Node.js]
-    DB[(Database<br/>PostgreSQL)]
-    Cache[(Cache<br/>Redis)]
-
-    Client -->|HTTPS/REST| API
-    API -->|Authenticate| AuthService
-    API -->|Process Orders| OrderService
-    AuthService --> DB
-    OrderService --> DB
-    AuthService --> Cache
-    OrderService --> Cache
-```
+![delivery-guides-diagram-conventions-comprehensive-2](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-2.svg)
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md`
 
@@ -304,28 +271,7 @@ graph TB
 
 **Purpose**: Show internal structure of Auth Service
 
-```mermaid
-graph TB
-    subgraph "Auth Service Container"
-        Controller[Auth Controller]
-        Service[Auth Service]
-        Validator[Input Validator]
-        TokenMgr[JWT Token Manager]
-        Repository[User Repository]
-        Cache[Cache Layer]
-
-        Controller -->|validate| Validator
-        Controller -->|authenticate| Service
-        Service -->|generate token| TokenMgr
-        Service -->|get user| Repository
-        Repository -->|check cache| Cache
-        Repository -->|query| DB[(User Database)]
-        Cache -->|miss| DB
-    end
-
-    Client[API Gateway] -->|HTTP Request| Controller
-    Controller -->|Response| Client
-```
+![delivery-guides-diagram-conventions-comprehensive-3](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-3.svg)
 
 **Referenced in**: `docs/internal/architecture/lld-auth-service.md`
 
@@ -333,20 +279,7 @@ graph TB
 
 **File**: `docs/internal/architecture/hld-system-overview.sequence-auth.mmd`
 
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API
-    participant Auth
-    participant DB
-
-    Client->>API: POST /login
-    API->>Auth: Validate credentials
-    Auth->>DB: Query user
-    DB-->>Auth: User data
-    Auth-->>API: JWT token
-    API-->>Client: 200 OK + token
-```
+![delivery-guides-diagram-conventions-comprehensive-4](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-4.svg)
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md` (Authentication section)
 
@@ -354,42 +287,7 @@ sequenceDiagram
 
 **File**: `docs/internal/architecture/hld-system-overview.entity.mmd`
 
-```mermaid
-erDiagram
-    USER ||--o{ ORDER : places
-    ORDER ||--|{ ORDER_ITEM : contains
-    ORDER_ITEM }|--|| PRODUCT : references
-
-    USER {
-        uuid id PK
-        string email
-        string name
-        timestamp created_at
-    }
-
-    ORDER {
-        uuid id PK
-        uuid user_id FK
-        decimal total
-        string status
-        timestamp created_at
-    }
-
-    ORDER_ITEM {
-        uuid id PK
-        uuid order_id FK
-        uuid product_id FK
-        int quantity
-        decimal price
-    }
-
-    PRODUCT {
-        uuid id PK
-        string name
-        decimal price
-        int stock
-    }
-```
+![delivery-guides-diagram-conventions-comprehensive-5](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-5.svg)
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md` (Data Model section)
 
@@ -399,13 +297,7 @@ erDiagram
 
 **Diagram**: `docs/internal/architecture/adr/0007-event-streaming.context.mmd`
 
-```mermaid
-graph LR
-    Service1[Service 1] -->|Publish| Kafka[Kafka]
-    Service2[Service 2] -->|Publish| Kafka
-    Kafka -->|Subscribe| Consumer1[Consumer 1]
-    Kafka -->|Subscribe| Consumer2[Consumer 2]
-```
+![delivery-guides-diagram-conventions-comprehensive-6](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-6.svg)
 
 **In the ADR**:
 ```markdown
@@ -415,13 +307,7 @@ We will use **Kafka** for event streaming between services.
 
 ### Architecture
 
-```mermaid
-graph LR
-    Service1[Service 1] -->|Publish| Kafka[Kafka]
-    Service2[Service 2] -->|Publish| Kafka
-    Kafka -->|Subscribe| Consumer1[Consumer 1]
-    Kafka -->|Subscribe| Consumer2[Consumer 2]
-```
+![delivery-guides-diagram-conventions-comprehensive-7](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-7.svg)
 ```
 
 ---
@@ -542,21 +428,10 @@ When creating public diagrams from internal ones:
 **Example**:
 
 **Internal** (`docs/internal/architecture/hld-system-overview.context.mmd`):
-```mermaid
-graph TB
-    Client[Client] --> API[API Gateway - 10.0.0.10]
-    API --> Auth[Auth Service - auth.internal.company.com]
-    API --> DB[(PostgreSQL 14 - db.internal.company.com:5432)]
-    Auth --> Vault[HashiCorp Vault - vault.internal.company.com]
-```
+![delivery-guides-diagram-conventions-comprehensive-8](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-8.svg)
 
 **Public** (`docs/public/architecture/overview.sanitized-context.mmd`):
-```mermaid
-graph TB
-    Client[Client] --> API[API Gateway]
-    API --> Auth[Authentication]
-    API --> DB[(Database)]
-```
+![delivery-guides-diagram-conventions-comprehensive-9](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-9.svg)
 
 ---
 

@@ -211,7 +211,7 @@ SpecWeave generates **AGENTS.md** adapter for tools without progressive disclosu
 
 - **Progressive disclosure**: Instant (metadata already loaded)
 - **Full skill load**: On-demand (only when needed)
-- **Sub-agent spawn**: <1s per agent
+- **Sub-agent spawn**: Less than 1s per agent
 
 ## Related
 

@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-04T20:23:49.085Z",
+  "timestamp": "2025-11-04T20:27:09.790Z",
   "metrics": {
     "deploymentFrequency": {
       "value": 8,
@@ -8,11 +8,11 @@
       "description": "High deployment frequency (weekly to daily)"
     },
     "leadTime": {
-      "value": 15.6,
+      "value": 16,
       "unit": "hours",
       "tier": "High",
       "p50": 5,
-      "p90": 58.5
+      "p90": 60
     },
     "changeFailureRate": {
       "value": 0,
