@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # resume
 
-Resume a paused or abandoned increment.
+System command used by SpecWeave to resume paused increments when blockages are resolved.
 
 ## Synopsis
 
@@ -12,18 +12,23 @@ Resume a paused or abandoned increment.
 specweave resume <increment-id> [options]
 ```
 
+:::warning System Command
+This is primarily a **system command** used by SpecWeave internally. SpecWeave **automatically resumes** work when it detects blockages are resolved. You typically don't need to call this manually.
+:::
+
 ## Description
 
-The `resume` command restarts work on a paused or abandoned increment. It validates WIP limits before resuming to ensure you don't exceed your focus capacity.
+The `resume` command restarts work on a paused or abandoned increment. SpecWeave calls this automatically when it detects dependencies are available.
 
-**Use resume when**:
-- ✅ Blockage resolved (API access granted, approval received)
-- ✅ Priorities shifted back (urgent work complete)
-- ✅ Decided to continue abandoned work
+**SpecWeave automatically resumes when**:
+- ✅ API keys/credentials become available
+- ✅ External services respond or approve
+- ✅ Build/test issues are fixed
+- ✅ Environmental dependencies are resolved
 
-:::tip WIP Limit Enforcement
-Resume command **enforces WIP limits**. If you're at your limit, pause another increment first or use `--force`.
-:::
+**Manual resume only for**:
+- Restarting explicitly abandoned work
+- Cases where SpecWeave hasn't detected resolution
 
 ## Options
 
@@ -49,24 +54,38 @@ Only bypass limits for emergencies (production down, critical deadline). Documen
 
 ## Examples
 
-### Example 1: Resume After Blockage Resolved
+### Example 1: Automatic Resume (Typical)
 
 ```bash
-# Earlier: paused due to blockage
-$ specweave pause 0007 --reason "Waiting for API keys"
+# Earlier: SpecWeave automatically paused due to missing API keys
+# (Work paused 2 days ago, waiting for IT ticket #1234)
 
-# API keys arrived
-$ specweave resume 0007
+# API keys arrive - SpecWeave detects this
+🤖 SpecWeave: Great news! Stripe API keys are now available
 
-# Output:
+   Shall I resume increment 0007-payment-integration? (y/n)
+
+$ y
+
+# SpecWeave automatically runs:
+# specweave resume 0007-payment-integration
+
 ▶️  Resuming increment 0007-payment-integration...
 
 ✅ Increment 0007-payment-integration resumed
 ▶️  Now counts as active
-📝 Was paused for: Waiting for API keys
+📝 Was paused for: Waiting for Stripe API keys (IT ticket #1234)
+▶️  Continuing from task T-005: Integrate Stripe payment flow
 
-💡 Continue work with: specweave do 0007-payment-integration
+# SpecWeave continues implementation automatically
 ```
+
+**What SpecWeave did**:
+- ✅ Monitored IT ticket and API key availability
+- ✅ Detected keys are now available
+- ✅ Asked for confirmation to resume
+- ✅ Automatically resumed work
+- ✅ Continued from exact point where paused
 
 ### Example 2: WIP Limit Prevents Resume
 
@@ -99,18 +118,28 @@ $ specweave resume 0007  # ✅ Works now
 $ specweave resume 0007 --force
 ```
 
-### Example 3: Resume Abandoned Work
+### Example 3: Manual Resume (Restart Abandoned Work)
 
 ```bash
 # Earlier: abandoned due to requirements change
 $ specweave abandon 0005 --reason "Requirements changed"
 
-# Later: requirements changed back
+# Later: requirements changed back, need to restart
 $ specweave resume 0005
+
+▶️  Resuming increment 0005...
 
 ✅ Increment 0005 resumed
 📝 Was abandoned for: Requirements changed
+▶️  Ready to continue implementation
+
+💡 Continue work with: specweave do
 ```
+
+**When to manually resume**:
+- Restarting explicitly abandoned work
+- Business decision to reprioritize
+- Cases where SpecWeave can't detect the business context
 
 ### Example 4: Resume with Force
 
@@ -361,15 +390,16 @@ $ specweave do  # Continue work
 ## Summary
 
 **Key Points**:
-- ✅ Resume paused or abandoned work
-- ✅ WIP limits enforced (use `--force` sparingly)
-- ✅ Preserved history (paused reason, timestamps)
-- ✅ Check status before resuming
+- ✅ **System command**: SpecWeave automatically resumes when blockages resolved
+- ✅ **Automatic detection**: Monitors dependencies, detects availability
+- ✅ **Manual use**: Only for restarting abandoned work or business decisions
+- ✅ **WIP limits enforced**: Can't exceed focus capacity
+- ✅ **Preserved history**: Full context of why paused and when resumed
 
-**Command**:
+**Command** (primarily used by SpecWeave):
 ```bash
 specweave resume <increment-id> [--force]
 ```
 
 **Philosophy**:
-> Resume when unblocked. Respect WIP limits. Document exceptions.
+> **SpecWeave monitors, detects, and resumes automatically. You focus on building.**

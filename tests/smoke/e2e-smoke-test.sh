@@ -56,8 +56,8 @@ info "Installing to: $TEST_DIR"
 test -d "$REPO_ROOT/dist" || fail "dist/ directory not found. Run 'npm run build' first."
 
 # Check if plugin architecture exists (v0.4.0+)
-if [ ! -d "$REPO_ROOT/plugins/specweave-core" ]; then
-  fail "plugins/specweave-core directory not found at $REPO_ROOT/plugins/specweave-core"
+if [ ! -d "$REPO_ROOT/plugins/specweave" ]; then
+  fail "plugins/specweave directory not found at $REPO_ROOT/plugins/specweave"
 fi
 
 # Run specweave init (modern CLI approach)
@@ -173,9 +173,9 @@ fi
 info "Step 8: Verifying plugin architecture..."
 
 # Check that plugins exist in source (for /plugin install later)
-test -d "$REPO_ROOT/plugins/specweave-core/skills" || fail "Core plugin skills not found"
-test -d "$REPO_ROOT/plugins/specweave-core/agents" || fail "Core plugin agents not found"
-test -f "$REPO_ROOT/plugins/specweave-core/.claude-plugin/plugin.json" || fail "Core plugin manifest not found"
+test -d "$REPO_ROOT/plugins/specweave/skills" || fail "Core plugin skills not found"
+test -d "$REPO_ROOT/plugins/specweave/agents" || fail "Core plugin agents not found"
+test -f "$REPO_ROOT/plugins/specweave/.claude-plugin/plugin.json" || fail "Core plugin manifest not found"
 
 success "Plugin architecture verified"
 
@@ -186,7 +186,7 @@ echo ""
 echo "  NOTE: Skills and agents are Claude Code plugins (v0.4.0+)"
 echo "  They install globally via:"
 echo "    /plugin marketplace add ./.claude-plugin"
-echo "    /plugin install specweave-core@specweave"
+echo "    /plugin install specweave@specweave"
 echo ""
 echo "  This smoke test verifies:"
 echo "    ✓ .specweave/ structure created"

@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # pause
 
-Pause an active increment when temporarily blocked.
+System command used by SpecWeave to pause increments when blocked.
 
 ## Synopsis
 
@@ -12,19 +12,23 @@ Pause an active increment when temporarily blocked.
 specweave pause <increment-id> [options]
 ```
 
+:::warning System Command
+This is primarily a **system command** used by SpecWeave internally. SpecWeave **automatically pauses** work when it detects blockages. You typically don't need to call this manually.
+:::
+
 ## Description
 
-The `pause` command temporarily suspends work on an active increment. This frees up your WIP (work-in-progress) limit slot while preserving all progress and context.
+The `pause` command temporarily suspends work on an active increment. SpecWeave calls this automatically when it detects you're blocked.
 
-**Use pause when**:
-- 🚧 Blocked by external dependency (API access, vendor response)
-- 👥 Waiting for stakeholder feedback
-- 🔄 Temporarily deprioritized (urgent work takes precedence)
-- 📝 Waiting for code review
+**SpecWeave automatically pauses when**:
+- 🚧 Missing dependencies (API keys, credentials, configuration)
+- 👥 Waiting for external approvals or responses
+- 🔄 Persistent compilation or test failures
+- 📝 You explicitly indicate "I'm blocked" or "waiting for..."
 
-:::tip Paused ≠ Active
-Paused increments **don't count** toward your WIP limit. This lets you start other work while waiting.
-:::
+**Manual pause only for**:
+- Business decisions (strategic pivot, deprioritization)
+- Cases where SpecWeave hasn't detected blockage
 
 ## Options
 
@@ -62,39 +66,58 @@ specweave pause 0007 --reason "Waiting for API keys (IT ticket #1234)" --force
 
 ## Examples
 
-### Example 1: External Dependency
+### Example 1: Automatic Pause (Typical)
 
 ```bash
-# Blocked by IT department
-specweave pause 0007-payment-integration \
-  --reason "Waiting for Stripe production API keys (IT ticket #1234)"
+# You're working on implementation
+$ specweave do
 
-# Output:
-⏸️  Pausing increment 0007-payment-integration...
+# SpecWeave detects missing Stripe API keys
+🤖 SpecWeave: I need Stripe production API keys to continue
 
-✅ Increment 0007-payment-integration paused
+   Options:
+   1. Provide keys now
+   2. Let me pause this work and file IT ticket
+   3. Skip this task
+
+# You choose option 2
+$ 2
+
+# SpecWeave automatically runs:
+# specweave pause 0007-payment-integration \
+#   --reason "Waiting for Stripe production API keys (IT ticket #1234)"
+
+✅ Increment 0007-payment-integration automatically paused
 📝 Reason: Waiting for Stripe production API keys (IT ticket #1234)
 ⏸️  No longer counts toward active limit
-
-💡 Resume with: specweave resume 0007-payment-integration
+💡 I've filed IT ticket #1234 for you
 ```
 
-**What happened**:
-- ✅ Increment status → `paused`
-- ✅ Metadata updated (reason, timestamp)
-- ✅ WIP limit freed (can start other work)
+**What SpecWeave did**:
+- ✅ Detected blockage automatically
+- ✅ Paused increment (status → `paused`)
+- ✅ Filed IT ticket for you
+- ✅ Freed WIP limit slot
+- ✅ Suggested next action
 
-### Example 2: Stakeholder Feedback
+### Example 2: Manual Pause (Business Decision)
 
 ```bash
-specweave pause 0005-ui-redesign \
-  --reason "Waiting for design team approval on mockups"
+# Strategic decision to deprioritize
+$ specweave pause 0005-ui-redesign \
+  --reason "Pausing UI redesign - focusing on backend performance per CEO directive"
+
+⏸️  Pausing increment 0005-ui-redesign...
+
+✅ Increment 0005-ui-redesign paused
+📝 Reason: Pausing UI redesign - focusing on backend performance per CEO directive
+⏸️  No longer counts toward active limit
 ```
 
-**Why pause instead of continuing?**
-- Can't proceed without feedback
-- Frees mental bandwidth
-- Documents blockage for standup/retrospectives
+**When to manually pause**:
+- Strategic business decisions
+- Explicit deprioritization from leadership
+- Cases where SpecWeave can't detect the business context
 
 ### Example 3: Temporary Deprioritization
 

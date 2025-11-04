@@ -4,11 +4,11 @@ sidebar_position: 1
 
 # Status Management
 
-Learn how to manage increment lifecycle with pause, resume, abandon, and status commands.
+Learn how SpecWeave intelligently manages increment lifecycle with automatic status detection and tracking.
 
 ## Overview
 
-SpecWeave enforces **disciplined work-in-progress (WIP) management** through explicit status tracking. Every increment has a clear status, and you can only work on **one increment at a time** by default.
+SpecWeave is an **intelligent development system** that automatically manages your work-in-progress (WIP). It detects when you're blocked, pauses work automatically, asks for what it needs, and resumes when ready - all without manual intervention.
 
 :::tip Default: ONE Active Increment
 SpecWeave defaults to **1 active increment** maximum. This isn't a limitation—it's a feature that enforces focus and prevents context switching.
@@ -25,9 +25,9 @@ Research shows that every context switch costs **15-30 minutes** of lost product
 - ❌ Technical debt accumulation
 - ❌ Developer burnout
 
-### The Solution: Explicit Status Tracking
+### The Solution: Intelligent Automation
 
-SpecWeave forces you to be **explicit** about what you're working on:
+SpecWeave **automatically detects and manages** your work status:
 
 ```bash
 # See exactly what's in progress
@@ -73,83 +73,111 @@ graph LR
 | **completed** | All tasks done, shipped | ❌ No |
 | **abandoned** | Work cancelled | ❌ No |
 
-## The Four Commands
+## Status Commands
 
-### Quick Reference
+### User Command
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| [`status`](./status.md) | Show all increments | Check overall progress |
-| [`pause`](./pause.md) | Pause active work | External dependency blocks you |
-| [`resume`](./resume.md) | Restart paused work | Dependency resolved |
-| [`abandon`](./abandon.md) | Cancel permanently | Requirements changed |
+| [`status`](./status.md) | Show all increments and progress | Check what SpecWeave is working on, view overall progress |
+
+### System Commands (Used by SpecWeave)
+
+| Command | Purpose | When SpecWeave Uses It |
+|---------|---------|------------------------|
+| `pause` | Pause active work | Automatically detects blockage (missing API keys, waiting for approval) |
+| `resume` | Restart paused work | Automatically resumes when blockage resolved |
+| `abandon` | Cancel permanently | You explicitly request to abandon obsolete work |
+
+:::tip Intelligent Automation
+SpecWeave **automatically** calls `pause` when it detects you're blocked and `resume` when ready. You don't manually call these commands - the system does it for you.
+:::
 
 ## Common Workflows
 
-### Workflow 1: Starting New Work When Something is Active
+### Workflow 1: Automatic Blockage Detection
 
 ```bash
-# 1. Check current status
-$ specweave status
-📈 Overall Progress: 2/8 complete
-▶️  Active (1): 0007-payment-integration
-
-# 2. Try to start new work
-$ specweave inc "0008-notification-system"
-❌ Cannot create new increment!
-   You have 1 active increment: 0007-payment-integration
-
-# 3. Options:
-# Option A: Finish current work (recommended)
+# Working on payment integration
 $ specweave do
-# ... complete remaining tasks ...
 
-# Option B: Pause current work
-$ specweave pause 0007 --reason "Blocked by Stripe API access"
-$ specweave inc "0008-notification-system"  # ✅ Now works
+# SpecWeave detects you need Stripe API keys
+🤖 SpecWeave: I need Stripe production API keys to continue
 
-# Option C: Abandon current work
-$ specweave abandon 0007 --reason "Requirements changed"
-$ specweave inc "0008-notification-system"  # ✅ Now works
-```
+   Options:
+   1. Provide API keys now
+   2. Pause this work (I'll ask IT department for you)
+   3. Skip this task for now
 
-### Workflow 2: Handling External Blockages
+# You choose option 2
+$ 2
 
-```bash
-# Scenario: Waiting for API keys from IT
-
-# 1. Pause increment with clear reason
-$ specweave pause 0007 --reason "Waiting for Stripe production API keys (IT ticket #1234)"
-
-✅ Increment 0007-payment-integration paused
-📝 Reason: Waiting for Stripe production API keys (IT ticket #1234)
+✅ Increment 0007-payment-integration automatically paused
+📝 Reason: Waiting for Stripe production API keys (IT ticket #1234 created)
 ⏸️  No longer counts toward active limit
 
-# 2. Work on something else
-$ specweave inc "0008-notification-system"  # ✅ Works (WIP limit freed)
+# SpecWeave suggests next action
+💡 You can now work on other increments while waiting
+   Would you like to start "0008-notification-system"? (y/n)
 
-# 3. When API keys arrive, resume
-$ specweave resume 0007
-✅ Increment 0007-payment-integration resumed
+# API keys arrive 2 days later - SpecWeave detects this
+🤖 SpecWeave: Great! Stripe API keys are available
+   Resuming increment 0007-payment-integration...
+
+✅ Automatically resumed
+▶️  Continuing from task T-005: Integrate Stripe payment flow
 ```
 
-### Workflow 3: Pivot Scenario
+### Workflow 2: Multi-Increment Intelligence
 
 ```bash
-# Scenario: Business decides to pivot from consumer to enterprise
-
-# 1. Check what's in progress
+# Check what SpecWeave is managing
 $ specweave status
-▶️  Active (1): 0005-social-features
-▶️  Active (1): 0006-consumer-onboarding
 
-# 2. Abandon obsolete work
+📊 Increment Status Overview
+
+▶️  Active (1):
+  ● 0007-payment-integration [feature] (60% complete, paused 2 days ago)
+     💡 Waiting for: Stripe API keys (IT ticket #1234)
+
+⏸️  Ready to Resume (1):
+  ⏸ 0008-notification-system [feature] (paused, waiting for backend API)
+
+✅ Completed (2):
+  ✓ 0000-setup, 0003-refactor
+
+# SpecWeave proactively checks external dependencies
+🤖 SpecWeave: Backend API for 0008 is now available!
+   Shall I resume 0008-notification-system? (y/n)
+
+$ y
+
+✅ Resuming 0008-notification-system
+▶️  Continuing implementation...
+```
+
+### Workflow 3: Explicit User Commands (When Needed)
+
+```bash
+# Sometimes YOU need to tell SpecWeave to abandon work
+# Example: Business pivot - features no longer relevant
+
+$ specweave status
+▶️  Active (2):
+     0005-social-features
+     0006-consumer-onboarding
+
+# You explicitly abandon obsolete work
 $ specweave abandon 0005 --reason "Pivot to enterprise, social features postponed"
 $ specweave abandon 0006 --reason "Pivot to enterprise, consumer features postponed"
 
-# 3. Start new direction
+✅ Increments abandoned
+
+# Start new direction
 $ specweave inc "0010-enterprise-sso"
-$ specweave do
+🤖 SpecWeave: Starting increment 0010-enterprise-sso
+   Planning phase... Architect reviewing requirements...
+   ✅ Ready to implement!
 ```
 
 ## Philosophy: One Thing at a Time
@@ -231,58 +259,67 @@ $ specweave resume 0005 --force
 The `--force` flag bypasses WIP limits. Use only for emergencies (production down, critical hotfix). Document why you used it in standup/PR.
 :::
 
+## How SpecWeave Detects Blockages
+
+SpecWeave intelligently detects when you're blocked and automatically pauses work:
+
+### Automatic Detection Signals
+
+- **Missing Dependencies**: API keys, credentials, configuration values
+- **External Services**: Waiting for third-party approvals, vendor responses
+- **Compilation Errors**: Persistent build failures indicating missing setup
+- **Test Failures**: Consistent test failures suggesting environmental issues
+- **User Indication**: You explicitly say "I'm blocked" or "waiting for..."
+
+### What SpecWeave Does
+
+1. **Detects blockage** → Analyzes error patterns and context
+2. **Pauses automatically** → Updates increment status to "paused"
+3. **Documents reason** → Records clear explanation of blockage
+4. **Suggests actions** → Proposes next steps (file IT ticket, ask stakeholder, etc.)
+5. **Monitors resolution** → Checks when blockage is resolved
+6. **Resumes automatically** → Continues work when dependencies available
+
 ## Best Practices
 
-### 1. Always Provide Reasons
+### 1. Trust the System
+
+SpecWeave is designed to manage status automatically. Trust its intelligence:
 
 ```bash
-# ❌ Bad (no reason)
-$ specweave pause 0007
+# ✅ Let SpecWeave detect blockages
+$ specweave do  # SpecWeave will pause if blocked
 
-# ✅ Good (clear reason)
-$ specweave pause 0007 --reason "Waiting for Stripe production API keys (IT ticket #1234)"
+# ❌ Don't manually pause unless business decision
+# (SpecWeave handles technical blockages)
 ```
 
-**Why**: Reasons provide context for:
-- Your future self (why did we stop?)
-- Your team (what's blocked?)
-- Retrospectives (what slowed us down?)
-
-### 2. Keep Paused Count Low
-
-If you have many paused increments, something is wrong:
+### 2. Use status Command Frequently
 
 ```bash
+# Check what SpecWeave is managing
 $ specweave status
-⏸️  Paused (5):  # ⚠️ Too many!
+
+# Shows:
+# - Active work
+# - Paused work (with reasons and duration)
+# - What's blocking you
+# - Suggested next actions
 ```
 
-**Action**: Review paused increments weekly. Either:
-- Resume them (blockage resolved)
-- Abandon them (no longer relevant)
-- Document long-term blockages clearly
+### 3. Only Manual Command: abandon
 
-### 3. Complete > Pause > Abandon
-
-**Decision tree**:
-1. **Can you finish it?** → Complete it (best option)
-2. **Temporarily blocked?** → Pause it
-3. **Permanently obsolete?** → Abandon it
-
-### 4. Use Status Frequently
+You only need to manually use `abandon` when:
+- ✅ **Requirements changed** (business decision)
+- ✅ **Feature no longer needed** (strategic pivot)
+- ✅ **Long-term postponement** (deprioritized for quarters)
 
 ```bash
-# Daily standup
-$ specweave status
-
-# Before starting work
-$ specweave status
-
-# Before ending day
-$ specweave status
+# Manual abandon (business decision)
+$ specweave abandon 0007 --reason "Pivot to enterprise, consumer features on hold"
 ```
 
-**Why**: Status command gives instant clarity on what's happening.
+**Everything else** (technical blockages, dependencies) → SpecWeave handles automatically
 
 ## Configuration
 
@@ -386,14 +423,13 @@ $ specweave resume 0003
 ## Summary
 
 **Key Takeaways**:
-- ✅ Default to 1 active increment (maximum focus)
-- ✅ Pause work when temporarily blocked
-- ✅ Abandon work when permanently obsolete
-- ✅ Use status command frequently (daily)
-- ✅ Always provide reasons for pause/abandon
-- ✅ Complete > Pause > Abandon
+- ✅ SpecWeave is an **intelligent system** that manages status automatically
+- ✅ **Automatic detection**: Pauses when blocked, resumes when ready
+- ✅ **You focus on building**: Let SpecWeave handle workflow management
+- ✅ **Manual command**: Only `abandon` for business decisions
+- ✅ **status command**: Use frequently to see what SpecWeave is managing
 
 **Philosophy**:
-> **Focus = Quality. Context switching = Chaos.**
+> **Intelligent automation = Maximum productivity. Manual workflow = Wasted time.**
 
-SpecWeave enforces discipline through explicit status management. The result: higher quality, faster shipping, better visibility.
+SpecWeave detects blockages, pauses automatically, asks for what it needs, and resumes when ready - all without manual intervention. The result: you stay in flow, SpecWeave handles the rest.

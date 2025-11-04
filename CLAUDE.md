@@ -31,9 +31,9 @@ Users receive a different CLAUDE.md via the template system.
 
 ✅ CORRECT - INCREMENT FOLDERS:
 .specweave/increments/0004-plugin-architecture/
-├── spec.md                            # Spec files (core 3 in v0.7.0+)
+├── spec.md                            # Spec files (core 3)
 ├── plan.md
-├── tasks.md                           # Tasks with embedded tests (v0.7.0+)
+├── tasks.md                           # Tasks with embedded tests
 ├── reports/                           # ✅ PUT REPORTS HERE!
 │   ├── PLUGIN-MIGRATION-COMPLETE.md   # ✅ Completion reports
 │   ├── SESSION-SUMMARY.md             # ✅ Session summaries
@@ -156,11 +156,11 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 
 ---
 
-## Increment Discipline (v0.7.0+ SIMPLIFIED)
+## Increment Discipline
 
 ### Core Philosophy: **ONE Active Increment = Maximum Focus**
 
-**v0.7.0 Changes**: Simplified from complex per-type limits to **focus-first architecture**:
+Simplified from complex per-type limits to **focus-first architecture**:
 - ✅ **Default**: 1 active increment (maximum productivity)
 - ✅ **Emergency ceiling**: 2 active max (hotfix/bug can interrupt)
 - ✅ **Hard cap**: Never >2 active (enforced)
@@ -193,7 +193,7 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 - **plan.md**: How to investigate? What tools? What hypothesis?
 - **tasks.md**: Investigation steps, fix implementation, verification tests
 
-### WIP Limits (v0.7.0+)
+### WIP Limits
 
 **Configuration** (`.specweave/config.json`):
 ```json
@@ -236,14 +236,14 @@ This is **NOT negotiable**. It is a **hard enforcement** to prevent chaos, scope
 
 ### Why This Rule Exists
 
-**The Problem (before v0.6.0)**:
+**The Problem**:
 - Multiple incomplete increments piling up (0002, 0003, 0006 all in progress)
 - No clear source of truth ("which increment are we working on?")
 - Living docs become stale (sync doesn't know what's current)
 - Scope creep (jumping between features without finishing)
 - Quality degradation (tests not run, docs not updated)
 
-**The Solution (v0.6.0+)**:
+**The Solution**:
 - ✅ **Hard block** on `/specweave:inc` if previous increments incomplete
 - ✅ **Helper commands** to close increments properly
 - ✅ **Clear guidance** on how to resolve incomplete work
@@ -434,14 +434,14 @@ Result: Clean increments, clear progress, shipping regularly
 
 **Scenario**: You have 0002 at 73% complete, want to start 0006.
 
-**Before v0.6.0** (broken):
+**Old approach** (broken):
 ```bash
 /specweave:inc "0006-i18n"
 # ✅ Creates 0006 (no check)
 # Result: 0002, 0003, 0006 all incomplete
 ```
 
-**After v0.6.0** (disciplined):
+**Current approach** (disciplined):
 ```bash
 /specweave:inc "0006-i18n"
 # ❌ Blocked! "Close 0002 and 0003 first"
@@ -482,19 +482,19 @@ For **emergencies only** (hotfixes, urgent features):
 
 ---
 
-## Test-Aware Planning (v0.7.0+)
+## Test-Aware Planning
 
 **MAJOR ARCHITECTURE CHANGE**: Tests are now embedded in tasks.md instead of separate tests.md file.
 
 ### Why the Change?
 
-**OLD Format** (pre-v0.7.0):
+**OLD Format**:
 - ❌ Separate tests.md file (duplication, sync issues)
 - ❌ Manual TC-ID management (TC-001, TC-002, etc.)
 - ❌ No BDD format (hard to understand test intent)
 - ❌ Tests disconnected from tasks (traceability gaps)
 
-**NEW Format** (v0.7.0+):
+**NEW Format**:
 - ✅ Tests embedded in tasks.md (single source of truth)
 - ✅ BDD format (Given/When/Then - clear intent)
 - ✅ AC-ID traceability (spec.md → tasks.md → tests)
@@ -611,7 +611,7 @@ npm test  # ✅ Still passes
 
 ### Migration from OLD Format
 
-**If you have increments with tests.md** (pre-v0.7.0):
+**If you have increments with tests.md**:
 
 ```bash
 # Option 1: Keep old format (works, but deprecated)
@@ -624,7 +624,7 @@ npm test  # ✅ Still passes
 # 4. Run /specweave:check-tests to validate
 ```
 
-**Note**: New increments (v0.7.0+) ONLY use tasks.md format. Backward compatibility removed per user feedback (greenfield product).
+**Note**: New increments ONLY use tasks.md format. Backward compatibility removed per user feedback (greenfield product).
 
 ### Quick Reference
 
@@ -823,7 +823,7 @@ if (parentSpecweave) {
 
 ---
 
-## Project Scale (v0.4.0 - Plugin Architecture)
+## Project Scale - Plugin Architecture
 
 ### Core Plugin (Always Auto-Loaded)
 
@@ -832,7 +832,7 @@ if (parentSpecweave) {
 - **Agents**: 22 agents (PM, Architect, Tech Lead, + 19 specialized including tdd-orchestrator)
 - **Commands**: 22 commands (/specweave:inc, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
 - **Hooks**: 8 lifecycle hooks
-- **Size**: ~12K tokens (vs. 50K in v0.3.7)
+- **Size**: ~12K tokens
 
 **Result**: **75%+ context reduction** out of the box!
 
@@ -844,7 +844,7 @@ if (parentSpecweave) {
 
 ### Available Plugins (Opt-In)
 
-**Implemented Plugins** (v0.4.0):
+**Implemented Plugins**:
 
 | Plugin | Skills | Agents | Commands | Status |
 |--------|--------|--------|----------|--------|
@@ -893,12 +893,12 @@ if (parentSpecweave) {
 
 ### Context Efficiency Examples
 
-**Before (v0.3.7)** - Monolithic:
+**Before** - Monolithic approach:
 - Simple React app: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
 - Backend API: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
 - ML pipeline: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
 
-**After (v0.4.0)** - Modular:
+**After** - Modular plugin architecture:
 - Simple React app: Core + frontend-stack + github ≈ **16K tokens** (68% reduction!)
 - Backend API: Core + nodejs-backend + github ≈ **15K tokens** (70% reduction!)
 - ML pipeline: Core + ml-ops + github ≈ **18K tokens** (64% reduction!)
@@ -912,7 +912,7 @@ if (parentSpecweave) {
 
 When you run `specweave init`:
 
-1. ✅ **GitHub Marketplace Registration** (v0.6.7+)
+1. ✅ **GitHub Marketplace Registration**
    - Creates `.claude/settings.json` with GitHub marketplace reference
    - **No local copying** - plugins fetched from GitHub on-demand
    - Settings.json structure:
@@ -932,7 +932,7 @@ When you run `specweave init`:
    - Claude Code automatically discovers plugins from GitHub
    - No manual `/plugin marketplace add` needed!
 
-2. ✅ **Core Plugin Auto-Installation** (v0.6.1+)
+2. ✅ **Core Plugin Auto-Installation**
    - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave@specweave`
    - Works via CLI during init (uses user's shell to access `claude` command)
    - Slash commands available IMMEDIATELY - no manual install!
@@ -943,7 +943,7 @@ When you run `specweave init`:
    - Based on project detection (Git, package.json, etc.)
    - User can install now or later
 
-**Key Architectural Change (v0.6.7)**:
+**Key Architectural Change**:
 - ❌ Old: Copied `.claude-plugin/` + `plugins/` to every project (~2MB bloat)
 - ✅ New: Reference GitHub marketplace (~2KB settings.json, always up-to-date)
 
@@ -1601,7 +1601,7 @@ spec-0005-authentication (Living Docs - Permanent)
 
 ---
 
-## Living Completion Reports (v0.7.0+)
+## Living Completion Reports
 
 ### The Problem with Traditional Reports
 
@@ -1840,7 +1840,7 @@ npm run build && npm test
 
 ### Hooks and Automation
 
-**Post-Task Completion Hook v2.0** (`.claude/hooks/post-task-completion.sh`):
+**Post-Task Completion Hook** (`.claude/hooks/post-task-completion.sh`):
 
 **Smart Session-End Detection**:
 - ✅ Tracks inactivity gaps between TodoWrite calls
@@ -2315,11 +2315,11 @@ npm test -- tests/unit/i18n/translation.test.ts
 - `/do` - Execute tasks (smart resume)
 - `/done 0002` - Close increment
 - `/validate 0002` - Validate increment
-- `/status` - Show increment status overview (v0.7.0+)
-- `/pause 0002 --reason="..."` - Pause active increment (v0.7.0+)
-- `/resume 0002` - Resume paused increment (v0.7.0+)
-- `/abandon 0002 --reason="..."` - Abandon increment (v0.7.0+)
-- `/validate-coverage` - Check test coverage (v0.7.0+)
+- `/status` - Show increment status overview
+- `/pause 0002 --reason="..."` - Pause active increment (system command, used by SpecWeave)
+- `/resume 0002` - Resume paused increment (system command, used by SpecWeave)
+- `/abandon 0002 --reason="..."` - Abandon increment
+- `/validate-coverage` - Check test coverage
 
 *Full namespace forms (explicit, avoids conflicts)*:
 - `/specweave:inc "feature"` - Plan new increment
@@ -2328,11 +2328,11 @@ npm test -- tests/unit/i18n/translation.test.ts
 - `/specweave:validate 0002` - Validate increment
 - `/specweave:progress` - Check status
 - `/specweave:sync-docs update` - Sync living docs
-- `/specweave:status` - Show increment status with rich details (v0.7.0+)
-- `/specweave:pause` - Pause active increment (v0.7.0+)
-- `/specweave:resume` - Resume paused increment (v0.7.0+)
-- `/specweave:abandon` - Abandon increment (v0.7.0+)
-- `/specweave:validate-coverage` - Validate test coverage (v0.7.0+)
+- `/specweave:status` - Show increment status with rich details
+- `/specweave:pause` - Pause active increment (system command, used by SpecWeave)
+- `/specweave:resume` - Resume paused increment (system command, used by SpecWeave)
+- `/specweave:abandon` - Abandon increment
+- `/specweave:validate-coverage` - Validate test coverage
 
 **Both forms work identically** - use short forms for speed, namespace forms for clarity.
 
@@ -2360,4 +2360,4 @@ npm test -- tests/unit/i18n/translation.test.ts
 5. Follow increment-based workflow
 
 **SpecWeave Documentation**: https://spec-weave.com
-**Last Updated**: 2025-11-04 (Increment 0007 - v0.7.0)
+**Last Updated**: 2025-11-04
