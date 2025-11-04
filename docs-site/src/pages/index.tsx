@@ -14,55 +14,85 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
         <div className={styles.heroContent}>
+          <div className={styles.heroTag}>
+            ⚡ Production-Ready AI Development
+          </div>
           <Heading as="h1" className={styles.heroTitle}>
-            {siteConfig.title}
+            Stop Fighting AI.<br/>
+            Start <span className={styles.heroHighlight}>Shipping</span>.
           </Heading>
-          <p className={styles.heroSubtitle}>{siteConfig.tagline}</p>
+          <p className={styles.heroSubtitle}>
+            SpecWeave gives you <strong>autonomous AI agents that just work</strong>—minimal interaction, maximum productivity.
+            Type one command, get production code with specs, tests, and living docs.
+          </p>
+          <div className={styles.heroStats}>
+            <div className={styles.stat}>
+              <div className={styles.statNumber}>70%+</div>
+              <div className={styles.statLabel}>Token Reduction</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statNumber}>10+</div>
+              <div className={styles.statLabel}>AI Agents</div>
+            </div>
+            <div className={styles.stat}>
+              <div className={styles.statNumber}>100%</div>
+              <div className={styles.statLabel}>Reliable Activation</div>
+            </div>
+          </div>
           <div className={styles.buttons}>
             <Link
               className="button button--primary button--lg"
               to="/docs/guides/getting-started/quickstart">
-              Get Started →
+              Get Started in 5 Minutes →
             </Link>
             <Link
               className="button button--outline button--lg"
-              to="/docs/overview/introduction">
-              Learn More
+              to="/docs/workflows/overview">
+              See How It Works
             </Link>
+          </div>
+          <div className={styles.heroNote}>
+            Works with <strong>any tech stack</strong> (TS, Python, Go, Rust, Java, C#) and <strong>any AI tool</strong> (Claude, Cursor, Copilot)
           </div>
         </div>
 
         <div className={styles.heroCode}>
           <div className={styles.codeBlock}>
             <div className={styles.codeHeader}>
-              <span className={styles.codeTitle}>Slash Commands - 100% Reliable Activation</span>
+              <span className={styles.codeTitle}>✨ The Magic of /do - Just Three Commands</span>
             </div>
             <pre className={styles.codePre}>
-              <code>{`# Initialize new project
-npx specweave init my-app
+              <code>{`# 1. Describe your feature (natural language)
+/specweave:inc "Add real-time chat with typing indicators"
 
-# Plan your first feature
-/specweave:inc "AI-powered customer support chatbot"
-# SpecWeave autonomously:
-# ✅ Asks clarifying questions (target users? integration needs?)
-# ✅ Creates spec.md, plan.md, tasks.md, tests.md
-# ✅ Reviews output with you before proceeding
+🤖 PM Agent asks: "Who will be chatting? Store messages? Scale?"
+✅ Creates: spec.md (user stories + AC-IDs)
+✅ Creates: plan.md (architecture + test strategy 88%)
+✅ Creates: tasks.md (8 tasks, 45 tests embedded)
+📊 Reviews: "3-5 days, 88% coverage. Proceed? (Y/n)"
 
-# Execute it (just works!)
+# 2. Type one command. That's it.
 /specweave:do
-# SpecWeave autonomously:
-# ✅ Auto-resumes from next incomplete task
-# ✅ Asks for validation at key milestones
-# ✅ Updates docs and runs tests automatically
 
-# Check progress anytime
+⚙️  Working on T-001: ChatService [TDD mode]
+    ✅ Tests created (5 tests)
+    ✅ Implementation complete
+    ✅ Coverage: 92% (target: 90%)
+    ✅ Docs auto-updated (hooks)
+
+⚙️  Working on T-002: MessageRepository...
+    [continues autonomously through all 8 tasks]
+
+# 3. Check status anytime
 /specweave:progress
-# Shows: 5/12 tasks (42%), next: T006
-
-# Start next feature (seamless!)
-/specweave:inc "real-time chat dashboard"
-# Auto-closes previous if all gates pass ✅`}</code>
+📊 Progress: 8/8 tasks (100%)
+✅ Coverage: 90% (target: 88%)
+✅ All tests passing
+🎉 Ready to ship!`}</code>
             </pre>
+          </div>
+          <div className={styles.codeCaption}>
+            <strong>That's it.</strong> No back-and-forth messages. No manual test writing. No doc updates. <strong>Just working software.</strong>
           </div>
         </div>
       </div>
