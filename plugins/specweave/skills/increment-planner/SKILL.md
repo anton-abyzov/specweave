@@ -183,7 +183,7 @@ Task(
 
 Wait for Architect agent to complete!
     ↓
-STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL) **NEW in v0.7.0**
+STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
 
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 

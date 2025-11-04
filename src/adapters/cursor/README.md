@@ -31,7 +31,7 @@ This is **meta-documentation** - teaching the AI how to behave!
 
 ## What This Adapter Provides
 
-### 🔍 Progressive Disclosure (NEW in v0.3.8)
+### 🔍 Progressive Disclosure
 
 SpecWeave now includes **SKILLS-INDEX.md** - enabling Cursor to efficiently discover and use all 35+ skills!
 
