@@ -11,6 +11,8 @@ on:
 jobs:
   calculate-metrics:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push metrics JSON
 
     steps:
       - name: Checkout code
