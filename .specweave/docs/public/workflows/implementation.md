@@ -89,7 +89,7 @@ Ready to implement? (Y/n)
 
 ### Step 2: Implement the Task
 
-**TDD approach** (optional but recommended):
+**[TDD](/docs/glossary/terms/tdd) approach** (optional but recommended):
 
 ```mermaid
 graph LR
@@ -466,7 +466,7 @@ Actual: 8 hours (race conditions, debouncing issues)
 
 ### ✅ DO
 
-1. **Follow TDD** (Red → Green → Refactor)
+1. **Follow [TDD](/docs/glossary/terms/tdd)** (Red → Green → Refactor)
 2. **Commit frequently** (after each task or logical unit)
 3. **Run tests before marking complete**
 4. **Update docs as you go** (hooks help, but review)
@@ -508,7 +508,7 @@ graph TB
 - ✅ Test suite runs (all pass)
 - ✅ Coverage target met (per task)
 - ✅ Linting passes (ESLint, Prettier)
-- ✅ Type checking (TypeScript)
+- ✅ Type checking ([TypeScript](/docs/glossary/terms/typescript))
 - ✅ Security scan (npm audit)
 
 ## Commit Strategy

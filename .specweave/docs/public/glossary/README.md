@@ -59,6 +59,7 @@ This glossary helps you:
 - **[Backend](./terms/backend)** - Server-side application logic
 - **[BDD (Behavior-Driven Development)](./terms/bdd)** - Testing approach using Given/When/Then
 - **[Branching Strategy](./terms/branching-strategy)** - Git workflow patterns
+- **[Brownfield Development](./terms/brownfield)** - Working with existing legacy codebases (SpecWeave specialty!)
 
 ### C
 - **[CI/CD (Continuous Integration/Continuous Deployment)](./terms/ci-cd)** - Automated build and deployment pipeline
@@ -82,6 +83,7 @@ This glossary helps you:
 - **[Git](./terms/git)** - Distributed version control system
 - **[GitHub Actions](./terms/github-actions)** - CI/CD automation platform
 - **[GraphQL](./terms/graphql)** - Query language for APIs
+- **[Greenfield Development](./terms/greenfield)** - Starting projects from scratch with no legacy constraints
 - **[gRPC](./terms/grpc)** - High-performance RPC framework
 
 ### H

@@ -437,11 +437,10 @@ When creating public diagrams from internal ones:
 
 ## Related Documentation
 
-- [docs/README.md](README.md) - Documentation structure
-- [docs/internal/architecture/README.md](internal/architecture/README.md) - Architecture documentation
-- [templates/docs/hld-template.md](../templates/docs/hld-template.md) - HLD template with diagram examples
-- [MkDocs Mermaid Plugin](https://github.com/fralau/mkdocs-mermaid2-plugin)
-- [Mermaid Documentation](https://mermaid.js.org/)
+- [Architecture Documentation](../../architecture/README.md) - How to use diagrams in architecture docs
+- **HLD Template** - High-Level Design template with diagram examples (see `src/templates/docs/hld-template.md` in repository)
+- [Diagram Legend](../../architecture/diagrams/diagram-legend.md) - Symbol reference guide
+- [Mermaid Documentation](https://mermaid.js.org/) - Official Mermaid syntax
 
 ---
 

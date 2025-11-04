@@ -1,6 +1,6 @@
 # Brownfield Workflow: Working with Existing Code
 
-Brownfield projects are the **ultimate challenge** in software development—existing code with missing or outdated documentation. SpecWeave makes brownfield work **safe and systematic**.
+[Brownfield](/docs/glossary/terms/brownfield) projects are the **ultimate challenge** in software development—existing code with missing or outdated documentation. SpecWeave makes [brownfield](/docs/glossary/terms/brownfield) work **safe and systematic**.
 
 ## The Brownfield Challenge
 
@@ -137,7 +137,7 @@ confluence-export/
 │   ├── api-endpoints.md             ← From docs/
 │   ├── diagrams/
 │   │   └── database-schema.png      ← Preserved
-│   └── adr/
+│   └── [ADR](/docs/glossary/terms/adr)/
 │       └── 0001-tech-stack.md       ← From Confluence
 ├── delivery/
 │   └── deployment-guide.md          ← From docs/
@@ -186,7 +186,7 @@ graph TB
 # Authentication System - High-Level Design
 
 ## Overview
-JWT-based authentication with bcrypt password hashing, session management, and OAuth2 integration (Google, GitHub).
+[JWT](/docs/glossary/terms/jwt)-based authentication with bcrypt password hashing, session management, and OAuth2 integration (Google, GitHub).
 
 ## Components
 

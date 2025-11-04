@@ -44,25 +44,63 @@ git remote add upstream https://github.com/anton-abyzov/specweave.git
 
 ### Install SpecWeave
 
+SpecWeave uses **Claude Code's native plugin system**. For contributors:
+
 ```bash
-# Install dependencies
+# 1. Install build dependencies
 npm install
 
-# Install SpecWeave agents/skills locally
-npm run install:all
+# 2. Add the local SpecWeave plugin marketplace
+# (In Claude Code, use slash commands - NOT shell commands)
+/plugin marketplace add ./.claude-plugin
 
-# Restart Claude Code to load new components
+# 3. Install the core SpecWeave plugin
+/plugin install specweave
+
+# 4. (Optional) Install additional plugins for testing
+/plugin install specweave-github
+
+# 5. Restart Claude Code to load plugins
+# (Use Claude Code menu: Code > Restart Claude Code)
 ```
+
+**Why no `npm run install:all`?** That script is deprecated. SpecWeave now uses Claude Code's native plugin system (see [plugin docs](https://docs.claude.com/en/docs/claude-code/plugins)).
 
 ### Verify Installation
 
 ```bash
+# Build the project
+npm run build
+
 # Run tests to verify everything works
 npm test
 
-# Check that agents/skills are installed
-ls .claude/agents/
-ls .claude/skills/
+# Verify plugins are installed
+/plugin
+# Select "Manage plugins" from the menu
+# Should see: specweave@specweave listed
+```
+
+### Troubleshooting Installation
+
+**Plugin not found in marketplace**
+
+If `/plugin install specweave` fails, make sure the local marketplace is added:
+
+```bash
+# Add marketplace
+/plugin marketplace add ./.claude-plugin
+
+# Verify marketplace was added
+/plugin
+# Select "Manage marketplaces" to see the local marketplace listed
+
+# Now install
+/plugin install specweave
+
+# Verify installation
+/plugin
+# Select "Manage plugins" - should see specweave@specweave listed
 ```
 
 ---
@@ -96,11 +134,18 @@ git checkout -b feature/your-feature-name
 
 Follow SpecWeave conventions (see [CLAUDE.md](../CLAUDE.md)):
 
-- **Agents** go in `src/agents/{name}/`
-- **Skills** go in `src/skills/{name}/`
-- **Commands** go in `src/commands/`
-- **Hooks** go in `src/hooks/`
-- **Templates** go in `src/templates/` (for user project root only)
+**Everything is a Plugin!** SpecWeave uses Claude Code's native plugin system:
+
+- **Core plugin** (always loaded): `plugins/specweave/`
+  - **Agents**: `plugins/specweave/agents/{name}/`
+  - **Skills**: `plugins/specweave/skills/{name}/`
+  - **Commands**: `plugins/specweave/commands/`
+  - **Hooks**: `plugins/specweave/hooks/`
+- **Other plugins** (opt-in): `plugins/specweave-{name}/`
+- **Framework code** (TypeScript): `src/core/`, `src/cli/`
+- **Templates** (user projects): `src/templates/`
+
+**Key principle**: `src/` = TypeScript code (compiled to `dist/`), `plugins/` = Claude-native files (loaded directly)
 
 ### 4. Test Your Changes
 
@@ -169,11 +214,11 @@ gh pr create --title "Your PR Title" --body "Description"
 
 #### Creating a New Agent
 
-**Location**: `src/agents/{agent-name}/`
+**Location**: `plugins/specweave/agents/{agent-name}/` (or `plugins/specweave-{plugin}/agents/`)
 
 **Structure**:
 ```
-src/agents/my-agent/
+plugins/specweave/agents/my-agent/
 ├── AGENT.md           # MANDATORY: System prompt with YAML frontmatter
 ├── templates/         # Templates for outputs
 ├── test-cases/        # MANDATORY: Minimum 3 test cases
@@ -206,11 +251,11 @@ Your responsibilities:
 
 #### Creating a New Skill
 
-**Location**: `src/skills/{skill-name}/`
+**Location**: `plugins/specweave/skills/{skill-name}/` (or `plugins/specweave-{plugin}/skills/`)
 
 **Structure**:
 ```
-src/skills/my-skill/
+plugins/specweave/skills/my-skill/
 ├── SKILL.md           # MANDATORY: Instructions with YAML frontmatter
 ├── test-cases/        # MANDATORY: Minimum 3 test cases
 │   ├── test-1.yaml
@@ -236,14 +281,26 @@ This skill helps you...
 
 ### Commands
 
-**Location**: `src/commands/{command-name}.md`
+**Location**: `plugins/specweave/commands/{command-name}.md` (or `plugins/specweave-{plugin}/commands/`)
 
-**Format**: Markdown file with command description and usage
+**Format**: Markdown file with YAML frontmatter and command description
+
+**Example**:
+```yaml
+---
+name: my-command
+description: What this command does
+---
+
+# Command Instructions
+
+This command...
+```
 
 **Must be**:
 - Framework-agnostic (adapts to ANY tech stack)
 - Generic (never assumes Next.js, React, etc.)
-- Tech stack detection via `.specweave/config.yaml` or project files
+- Tech stack detection via `.specweave/config.json` or project files
 
 ### Testing Requirements
 

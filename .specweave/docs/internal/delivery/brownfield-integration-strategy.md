@@ -696,12 +696,11 @@ specweave verify
 
 ## Related Documentation
 
-- [docs/internal/delivery/roadmap.md](roadmap.md) - Project roadmap
-- [features/README.md](../../features/README.md) - Features and increments
-- [.specweave/config.yaml](../../.specweave/config.yaml) - Configuration
-- [src/skills/brownfield-analyzer/SKILL.md](../../src/skills/brownfield-analyzer/SKILL.md)
-- [src/skills/jira-sync/SKILL.md](../../src/skills/jira-sync/SKILL.md)
-- [src/skills/ado-sync/SKILL.md](../../src/skills/ado-sync/SKILL.md)
+- [Project Roadmap](./roadmap.md) - Development roadmap and milestones
+- **SpecWeave Increments** - Completed increments and features (see `.specweave/increments/` in repository)
+- **Brownfield Analyzer Skill** - Auto-detects existing project structure (see `plugins/specweave/skills/brownfield-analyzer/SKILL.md` in repository)
+- **JIRA Sync Plugin** - JIRA integration (*planned*, see `plugins/specweave-jira/` in repository)
+- **ADO Sync Plugin** - Azure DevOps integration (*planned*, see `plugins/specweave-ado/` in repository)
 
 ---
 

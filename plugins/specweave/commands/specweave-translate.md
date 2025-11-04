@@ -304,7 +304,7 @@ If issues found, restore from git:
 ```yaml
 # Only translate description values, NOT keys
 ---
-name: increment-planner              # ← Keep as-is
+name: specweave-increment-planner              # ← Keep as-is
 description: Plans new increments    # ← Translate this
 allowed-tools: Read, Write, Edit     # ← Keep tools as-is
 ---

@@ -111,4 +111,4 @@ touch docs/internal/operations/disaster-recovery.md
 - [Architecture Documentation](../architecture/README.md) - Links to system design
 - [Delivery Documentation](../delivery/README.md) - Links to CI/CD, deployment
 - [Governance Documentation](../governance/README.md) - Links to compliance, security
-- [Runbook Template](../../../templates/docs/runbook-template.md)
+- **Runbook Template** - Template for creating runbooks (see `src/templates/docs/runbook-template.md` in repository)

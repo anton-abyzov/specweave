@@ -268,7 +268,7 @@ validation:
 
 ### Related Documentation
 
-- [INCREMENT-VALIDATION-DESIGN.md](.specweave/increments/0002-core-enhancements/reports/INCREMENT-VALIDATION-DESIGN.md) - Complete validation design
+- **INCREMENT-VALIDATION-DESIGN.md** - Complete validation design (see `.specweave/increments/0002-core-enhancements/reports/` in repository)
 - [Test Case Strategy](https://github.com/anthropics/claude-code/blob/main/docs/testing.md) - Testing philosophy
 
 ---

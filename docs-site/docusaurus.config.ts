@@ -100,6 +100,18 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
+          sidebarId: 'learnSidebar',
+          position: 'left',
+          label: 'Learn',
+        },
+        {
+          type: 'docSidebar',
+          sidebarId: 'glossarySidebar',
+          position: 'left',
+          label: 'Glossary',
+        },
+        {
+          type: 'docSidebar',
           sidebarId: 'apiSidebar',
           position: 'left',
           label: 'API',

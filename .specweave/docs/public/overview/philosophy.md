@@ -32,7 +32,7 @@ Specification → Architecture → Implementation → Testing
 - Each increment is an immutable snapshot of a feature
 - Contains: spec, plan, tasks, tests, logs, reports
 - Provides complete audit trail and historical context
-- Like Git commits for specifications
+- Like [Git](/docs/glossary/terms/git) commits for specifications
 
 **Living Documentation** (Always Current)
 - Auto-updated by Claude hooks after each task
@@ -53,9 +53,9 @@ Specification → Architecture → Implementation → Testing
 
 - **Append-only increments**: Never modified after completion (like event sourcing)
 - **Auto-updated docs**: Hooks maintain current state automatically
-- **Version controlled**: Both stored in Git
+- **Version controlled**: Both stored in [Git](/docs/glossary/terms/git)
 - **Searchable**: Find historical context or current state
-- **Audit-ready**: Complete paper trail for compliance (SOC 2, HIPAA, FDA)
+- **Audit-ready**: Complete paper trail for compliance ([SOC 2](/docs/glossary/terms/soc2), [HIPAA](/docs/glossary/terms/hipaa), [FDA](/docs/glossary/terms/fda))
 - **Context recovery**: Understand decisions from months/years ago
 
 **Think of it as "Git for Specifications"**:
@@ -81,7 +81,7 @@ Four levels of testing ensure quality:
 1. Specification acceptance criteria (AC-IDs like AC-US1-01)
 2. Feature test strategy (embedded in tasks.md, v0.7.0+)
 3. Skill test cases (YAML)
-4. Code tests (E2E, unit, integration)
+4. Code tests ([E2E](/docs/glossary/terms/e2e), unit, integration)
 
 **Truth-telling requirement**: E2E tests MUST tell the truth—no false positives.
 
@@ -89,7 +89,7 @@ Four levels of testing ensure quality:
 
 **Document existing code before modification.**
 
-Modifying brownfield code without documentation is dangerous. SpecWeave enforces:
+Modifying [brownfield](/docs/glossary/terms/brownfield) code without documentation is dangerous. SpecWeave enforces:
 
 1. Analyze current implementation
 2. Generate retroactive documentation
@@ -125,7 +125,7 @@ User: "Create payment integration"
 
 ### 8. Closed-Loop Validation
 
-**E2E tests must tell the truth (no false positives).**
+**[E2E](/docs/glossary/terms/e2e) tests must tell the truth (no false positives).**
 
 Test validation is not enough—tests must be **truthful**:
 
@@ -140,7 +140,7 @@ Test validation is not enough—tests must be **truthful**:
 
 **Human-readable, version-controllable, AI-friendly.**
 
-- Git-friendly (easy diffs)
+- [Git](/docs/glossary/terms/git)-friendly (easy diffs)
 - Tooling-agnostic (works anywhere)
 - Readable without rendering
 - AI can parse and generate
@@ -184,7 +184,7 @@ No manual numbering = no conflicts.
 **Works with ANY tech stack.**
 
 SpecWeave doesn't impose technology choices:
-- Detects your stack (TypeScript, Python, Go, etc.)
+- Detects your stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, etc.)
 - Adapts commands to your framework
 - Generates stack-specific examples
 - No vendor lock-in
@@ -243,7 +243,7 @@ SpecWeave supports TWO valid approaches:
 
 ## Workflow Philosophy
 
-### Greenfield Projects
+### [Greenfield](/docs/glossary/terms/[greenfield](/docs/glossary/terms/greenfield)) Projects
 
 1. Choose documentation approach (comprehensive or incremental)
 2. Create specifications (strategy docs)
@@ -252,7 +252,7 @@ SpecWeave supports TWO valid approaches:
 5. Implement with context precision
 6. Tests validate automatically
 
-### Brownfield Projects
+### [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Projects
 
 1. **Step 0**: Merge existing CLAUDE.md (if exists)
 2. **Step 1**: Analyze existing code
@@ -279,7 +279,7 @@ SpecWeave supports TWO valid approaches:
 3. **Context Precision**: Load only what's needed
 4. **Regression Prevention**: Document before modifying
 5. **Architecture Clarity**: ADRs for all major decisions
-6. **Truth-Telling Tests**: E2E tests must be honest
+6. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
 
 ## Success Metrics
 

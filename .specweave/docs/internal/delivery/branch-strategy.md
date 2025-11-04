@@ -348,7 +348,7 @@ git push origin --delete feature/0007-smart-discipline
 - [DORA Metrics](./dora-metrics.md) - Links to deployment frequency, lead time
 - [Code Review Standards](./code-review-standards.md) - PR review guidelines
 - [Release Process](./release-process.md) - Full release checklist
-- [CI/CD Pipeline](./ci-cd-pipeline.md) - Automated testing, deployment
+- **CI/CD Pipeline** - *Coming soon* - Automated testing, deployment strategy
 
 ---
 

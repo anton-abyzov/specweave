@@ -106,7 +106,7 @@ SpecWeave: 🤖 Implementing based on specifications...
 2. **Requirements** - Creates comprehensive PRD
 3. **Architecture** - Architect designs HLD with C4 diagrams
 4. **Planning** - Generates step-by-step implementation plan
-5. **Deployment** - DevOps agent creates Terraform/Pulumi IaC
+5. **Deployment** - DevOps agent creates [Terraform](/docs/glossary/terms/terraform)/Pulumi [IaC](/docs/glossary/terms/iac)
 6. **Implementation** - Agents build according to specs
 7. **Testing** - QA agent creates test strategy
 8. **Documentation** - Auto-updates as code evolves
@@ -124,7 +124,7 @@ SpecWeave: 🤖 Implementing based on specifications...
 - Sub-agent parallelization: work in isolated contexts
 - Smart incremental loading: fetch only needed specs
 
-### 3. E2E Testing (MANDATORY for UI)
+### 3. [E2E](/docs/glossary/terms/e2e) Testing (MANDATORY for UI)
 - Playwright tests for all UI features
 - Minimum 3 tests per component
 - Tests must tell the truth (no false positives)
@@ -134,9 +134,9 @@ SpecWeave: 🤖 Implementing based on specifications...
 - Specs auto-update after every operation
 - Always in sync with code
 - No drift, no surprises
-- Compliance-ready (HIPAA, SOC 2, FDA)
+- Compliance-ready ([HIPAA](/docs/glossary/terms/hipaa), [SOC 2](/docs/glossary/terms/soc2), [FDA](/docs/glossary/terms/fda))
 
-### 5. Brownfield Support
+### 5. [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Support
 - Intelligently onboard existing projects
 - Merge existing documentation
 - Generate retroactive architecture docs
@@ -145,13 +145,13 @@ SpecWeave: 🤖 Implementing based on specifications...
 ## Requirements
 
 **Minimum:**
-- Node.js 18+ (`node --version`)
+- [Node.js](/docs/glossary/terms/nodejs) 18+ (`node --version`)
 - npm 9+ (`npm --version`)
 - Claude Code (recommended) or any AI tool
 
 **Recommended:**
 - Claude Code with Claude Sonnet 4.5 (best experience)
-- Git - Version control
+- [Git](/docs/glossary/terms/git) - Version control
 
 ## Example: Event Management SaaS
 
