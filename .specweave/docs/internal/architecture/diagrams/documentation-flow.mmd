@@ -1,0 +1,60 @@
+graph TB
+    subgraph Strategy["📋 Strategy (Why)"]
+        PRD[PRD<br/>Product Requirements]
+        Vision[Vision Document]
+        OKR[OKRs]
+    end
+
+    subgraph Specs["📝 Specs (What)"]
+        Spec[Spec.md<br/>User Stories + AC]
+    end
+
+    subgraph Architecture["🏗️ Architecture (How - Design)"]
+        HLD[HLD<br/>High-Level Design]
+        ADR[ADR<br/>Architecture Decisions]
+        Diagrams[Diagrams<br/>C4, Sequence, etc.]
+    end
+
+    subgraph Delivery["🚀 Delivery (How - Build)"]
+        Plan[Plan.md<br/>Implementation Steps]
+        Tasks[Tasks.md<br/>Concrete Tasks]
+        Roadmap[Roadmap<br/>Timeline]
+    end
+
+    subgraph Operations["⚙️ Operations (How - Run)"]
+        Runbook[Runbooks<br/>Operational Procedures]
+        SLO[SLOs<br/>Performance Targets]
+    end
+
+    subgraph Governance["📜 Governance (Guardrails)"]
+        Security[Security Policy]
+        Standards[Coding Standards]
+        Compliance[Compliance]
+    end
+
+    PRD -->|defines| Spec
+    Vision -->|informs| PRD
+    OKR -->|measures| PRD
+
+    Spec -->|requires| HLD
+    Spec -->|requires| ADR
+    HLD -->|uses| Diagrams
+
+    ADR -->|guides| Plan
+    HLD -->|guides| Plan
+    Plan -->|breaks down| Tasks
+    Plan -->|schedules| Roadmap
+
+    Tasks -->|after deployment| Runbook
+    HLD -->|defines| SLO
+
+    Standards -->|enforces| Plan
+    Security -->|validates| ADR
+    Compliance -->|audits| PRD
+
+    style PRD fill:#e0c3fc
+    style Spec fill:#a0c4ff
+    style HLD fill:#ffd6a5
+    style Plan fill:#caffbf
+    style Runbook fill:#fdffb6
+    style Security fill:#ffadad

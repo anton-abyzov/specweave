@@ -2,6 +2,20 @@
 
 **Purpose**: Define the business rationale, vision, and success metrics for features and initiatives.
 
+## Documentation Flow
+
+Strategy docs are the **starting point** for all features. They flow through the system like this:
+
+![Documentation Flow](../architecture/diagrams/documentation-flow.svg)
+
+**Flow Explained**:
+1. **Strategy** - Define WHY we're building something (PRD, Vision, OKRs)
+2. **Specs** - Define WHAT we're building (User Stories, Acceptance Criteria)
+3. **Architecture** - Define HOW we design it (HLD, ADRs, Diagrams)
+4. **Delivery** - Define HOW we build it (Plan, Tasks, Roadmap)
+5. **Operations** - Define HOW we run it (Runbooks, SLOs)
+6. **Governance** - Define the guardrails (Security, Standards, Compliance)
+
 ## What Goes Here
 
 - **PRD (Product Requirements Document)** - Problem, target users, success metrics, scope

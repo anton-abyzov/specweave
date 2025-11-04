@@ -47,8 +47,9 @@ const config: Config = {
           // Point to internal docs
           path: '../.specweave/docs/internal',
           routeBasePath: 'docs',
-          showLastUpdateTime: true,
-          showLastUpdateAuthor: true,
+          // Disable last update info (shows simulated date in dev mode)
+          showLastUpdateTime: false,
+          showLastUpdateAuthor: false,
           // NO EDIT LINKS (internal only)
           editUrl: undefined,
         },

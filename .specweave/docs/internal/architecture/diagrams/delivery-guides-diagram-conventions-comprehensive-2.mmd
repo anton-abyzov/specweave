@@ -1,0 +1,15 @@
+graph TB
+    Client[Client Application<br/>React SPA]
+    API[API Gateway<br/>Node.js/Express]
+    AuthService[Auth Service<br/>Node.js]
+    OrderService[Order Service<br/>Node.js]
+    DB[(Database<br/>PostgreSQL)]
+    Cache[(Cache<br/>Redis)]
+
+    Client -->|HTTPS/REST| API
+    API -->|Authenticate| AuthService
+    API -->|Process Orders| OrderService
+    AuthService --> DB
+    OrderService --> DB
+    AuthService --> Cache
+    OrderService --> Cache
