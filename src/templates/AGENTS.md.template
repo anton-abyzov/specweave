@@ -402,6 +402,88 @@ Next steps:
 |---------|------|---------|--------|
 | `/github:sync` | `plugins/specweave-github/commands/github-sync.md` | Sync to GitHub | specweave-github |
 | `/github:create-issue` | `plugins/specweave-github/commands/github-create-issue.md` | Create GitHub issue | specweave-github |
+| `/sync-tasks` | `commands/sync-tasks.md` | Sync tasks.md status | specweave (core) |
+
+---
+
+### 🚨 CRITICAL: Task Completion Tracking
+
+**Problem**: Commands like `/progress`, `/validate`, `/done` rely on `tasks.md` status being accurate.
+If tasks.md shows "1/24 complete" but you've actually finished 24 tasks, everything breaks!
+
+**Solution**: Update `tasks.md` after EACH task completes.
+
+#### For Claude Code Users (Automatic ✅)
+
+**Good news**: This happens automatically via `post-task-completion.sh` hook!
+
+When you complete a task (mark todo as done), the hook:
+1. ✅ Detects completion
+2. ✅ Updates corresponding task in tasks.md
+3. ✅ Recalculates progress %
+4. ✅ Syncs to GitHub issue (if enabled)
+
+**You don't need to do anything manually!**
+
+#### For Other AI Tools (Manual ⚠️)
+
+**⚠️ IMPORTANT**: After completing EACH task, manually update tasks.md:
+
+**Step-by-Step**:
+
+```bash
+# Example: You just completed T-001
+
+# 1. Open tasks.md
+vim .specweave/increments/0007-feature-name/tasks.md
+
+# 2. Find the task you completed
+#### T-001: Implement authentication service
+
+# 3. Change status from pending to completed
+**Status**: [ ] pending
+# ↓ Change to ↓
+**Status**: [x] completed
+
+# 4. Update progress counters at the top
+**Completed**: 0  # ← Increment this (0 → 1)
+**Progress**: 0%  # ← Recalculate (1/24 = 4%)
+
+# 5. Save and commit
+git add .specweave/increments/0007-feature-name/tasks.md
+git commit -m "chore: mark T-001 as complete"
+```
+
+**Why This Matters**:
+- `/progress` shows accurate completion % ✅
+- `/validate` checks pass ✅
+- `/done` can close the increment ✅
+- Team knows real status ✅
+
+**Validation Check**:
+```bash
+# Verify tasks.md is in sync
+/sync-tasks --validate
+
+# If out of sync:
+/sync-tasks  # Auto-fix from GitHub or git history
+```
+
+**Quick Reference Card** (print and keep handy):
+
+```
+┌────────────────────────────────────────────────┐
+│  AFTER EACH TASK: Update tasks.md Status      │
+├────────────────────────────────────────────────┤
+│  1. Open: .specweave/increments/XXXX/tasks.md │
+│  2. Find: #### T-XXX                           │
+│  3. Change: [ ] pending → [x] completed        │
+│  4. Update: Completed count & Progress %       │
+│  5. Commit: git commit -m "chore: mark done"   │
+└────────────────────────────────────────────────┘
+```
+
+---
 
 ### Command Execution Pattern (Template)
 
