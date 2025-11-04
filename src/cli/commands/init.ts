@@ -242,9 +242,10 @@ export async function initCommand(
     createDirectoryStructure(targetDir);
     spinner.text = 'Directory structure created...';
 
-    // 5. Copy plugin marketplace (for Claude Code auto-registration)
+    // 5. Copy plugin marketplace and plugins (for Claude Code auto-registration)
     if (toolName === 'claude') {
       try {
+        // Copy marketplace metadata
         const sourceMarketplace = findSourceDir('.claude-plugin');
         const targetMarketplace = path.join(targetDir, '.claude-plugin');
 
@@ -255,8 +256,42 @@ export async function initCommand(
           });
           spinner.text = 'Plugin marketplace copied...';
         }
+
+        // Copy plugins folder (CRITICAL: marketplace.json references ./plugins/*)
+        const sourcePlugins = findSourceDir('plugins');
+        const targetPlugins = path.join(targetDir, 'plugins');
+
+        if (fs.existsSync(sourcePlugins)) {
+          spinner.text = 'Copying plugins...';
+
+          fs.copySync(sourcePlugins, targetPlugins, {
+            overwrite: true,
+            errorOnExist: false,
+            filter: (src: string) => {
+              // Skip .specweave folders inside plugins (development artifacts)
+              return !src.includes('/.specweave');
+            }
+          });
+
+          spinner.text = 'Plugins copied...';
+        } else {
+          // Non-fatal: plugins will be available after global npm install
+          if (process.env.DEBUG) {
+            spinner.warn(`Plugins not found at: ${sourcePlugins}`);
+            console.warn(chalk.yellow(`   Note: Plugins will be available after npm install`));
+          }
+        }
       } catch (error) {
-        // Non-critical - plugins can still be installed manually
+        // Log errors in debug mode for troubleshooting
+        if (process.env.DEBUG) {
+          spinner.stop();
+          console.error(chalk.red(`\n❌ Plugin copy error: ${error instanceof Error ? error.message : String(error)}`));
+          if (error instanceof Error && error.stack) {
+            console.error(chalk.gray(error.stack));
+          }
+          spinner.start();
+        }
+        // Non-critical - plugins can still be installed manually via /plugin install
         console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.marketplaceCopyFailed')}`));
       }
     }
@@ -700,22 +735,23 @@ function findSourceDir(relativePath: string): string {
   const packageRoot = findPackageRoot(__dirname);
 
   if (packageRoot) {
-    // Try src/ directory first (for npm installs that include src/)
+    // Try directly in package root FIRST (for plugins/, .claude-plugin/)
+    // This is critical because package.json includes these folders for npm publish
+    const rootPath = path.normalize(path.join(packageRoot, relativePath));
+    if (fs.existsSync(rootPath)) {
+      return rootPath;
+    }
+
+    // Try src/ directory (for templates/, utils/, etc.)
     const srcPath = path.normalize(path.join(packageRoot, 'src', relativePath));
     if (fs.existsSync(srcPath)) {
       return srcPath;
     }
 
-    // Try dist/ directory (for development where src might not be in dist)
+    // Try dist/ directory (fallback for compiled outputs)
     const distPath = path.normalize(path.join(packageRoot, 'dist', relativePath));
     if (fs.existsSync(distPath)) {
       return distPath;
-    }
-
-    // Try directly in package root (legacy)
-    const rootPath = path.normalize(path.join(packageRoot, relativePath));
-    if (fs.existsSync(rootPath)) {
-      return rootPath;
     }
   }
 
