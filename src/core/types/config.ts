@@ -25,8 +25,8 @@ export interface ProjectMetadata {
  * Adapter configuration
  */
 export interface AdapterConfig {
-  /** Default adapter to use (claude, cursor, copilot, generic) */
-  default?: 'claude' | 'cursor' | 'copilot' | 'generic';
+  /** Default adapter to use (claude, cursor, generic) */
+  default?: 'claude' | 'cursor' | 'generic';
 
   /** Additional adapter settings */
   [key: string]: any;

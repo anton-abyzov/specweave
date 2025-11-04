@@ -4,8 +4,8 @@
  * Universal adapter that works with ANY AI tool.
  * All AI tools can read AGENTS.md (universal standard) for workflow instructions.
  *
- * This adapter ensures 100% compatibility - works with ChatGPT web, Claude web,
- * Gemini, or literally ANY AI that can read markdown and follow instructions.
+ * This adapter ensures 100% compatibility - works with GitHub Copilot, ChatGPT web,
+ * Claude web, Gemini, or literally ANY AI that can read markdown and follow instructions.
  */
 
 import * as path from 'path';
@@ -18,7 +18,7 @@ import type { SupportedLanguage } from '../../core/i18n/types.js';
 
 export class GenericAdapter extends AdapterBase {
   name = 'generic';
-  description = 'Generic adapter - AGENTS.md works with ANY AI tool (ChatGPT, Gemini, etc.)';
+  description = 'Generic adapter - AGENTS.md works with ANY AI tool (Copilot, ChatGPT, Gemini, etc.)';
   automationLevel = 'manual' as const;
 
   /**
@@ -49,7 +49,7 @@ export class GenericAdapter extends AdapterBase {
     console.log('\n📦 Configuring for Universal AI Tool Compatibility\n');
 
     // No files to install - any AI can read AGENTS.md
-    console.log('✅ AGENTS.md works with any AI tool (ChatGPT, Gemini, Claude web, etc.)');
+    console.log('✅ AGENTS.md works with any AI tool (Copilot, ChatGPT, Gemini, Claude web, etc.)');
   }
 
   /**
@@ -72,19 +72,38 @@ Your project is now configured for ANY AI tool!
 
 WHAT THIS PROVIDES:
 
-- AGENTS.md (Universal Standard)
-  - Any AI tool can read this file
+- AGENTS.MD (Universal Standard)
+  - GitHub Copilot automatically reads this file
+  - ChatGPT, Gemini, Claude web can also use it
   - Contains all workflow instructions
   - Project structure and templates
   - Following agents.md standard (https://agents.md/)
 
 - 100% Compatibility
+  - GitHub Copilot (best experience with AGENTS.md)
   - ChatGPT (web), Claude (web), Gemini
   - Any AI that can read markdown
 
 HOW TO USE AGENTS.MD WITH ANY AI:
 
-Method 1: Copy-Paste Workflow (ChatGPT web, Claude web, etc.)
+Method 1: Command Discovery (GitHub Copilot - Recommended!)
+1. AI reads AGENTS.md automatically (Copilot scans project files)
+2. AGENTS.md contains "SpecWeave Commands" section with all 17 commands
+3. Ask: "create increment for payments" or "run /inc payments"
+4. AI reads plugins/specweave/commands/inc.md
+5. AI executes PM-led workflow (market research, spec.md, plan.md, tasks.md)
+6. Increment created - same result as Claude Code!
+
+Available commands AI can execute:
+- /inc "feature" - Plan new increment
+- /do - Execute implementation tasks
+- /done 0001 - Close increment
+- /validate 0001 - Quality validation
+- /progress - Check status
+- /sync-docs - Sync living documentation
+... and 11 more commands!
+
+Method 2: Copy-Paste Workflow (ChatGPT web, Claude web, etc.)
 1. Open AGENTS.md in your browser/editor
 2. Copy relevant section (e.g., "Creating a Feature Increment")
 3. Paste into AI chat (ChatGPT, Claude web, Gemini, etc.)
@@ -92,10 +111,10 @@ Method 1: Copy-Paste Workflow (ChatGPT web, Claude web, etc.)
 5. AI generates content (spec.md, plan.md, etc.)
 6. Copy AI's response, save to files
 
-Method 2: File System Access (AI with file access)
+Method 3: File System Access (AI with file access)
 1. AI automatically reads AGENTS.md
 2. Ask: "Create increment for user authentication"
-3. AI follows AGENTS.md workflow
+3. AI follows AGENTS.md workflow and command execution instructions
 4. AI creates files directly
 
 UNDERSTANDING "MANUAL":

@@ -28,7 +28,26 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Find project root by searching upward for .specweave/ directory
+# Works regardless of where hook is installed (source or .claude/hooks/)
+find_project_root() {
+  local dir="$1"
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/.specweave" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  # Fallback: try current directory
+  if [ -d "$(pwd)/.specweave" ]; then
+    pwd
+  else
+    echo "$(pwd)"
+  fi
+}
+
+PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
 # ============================================================================

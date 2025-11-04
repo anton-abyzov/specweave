@@ -16,31 +16,30 @@ SpecWeave
 │       └── docs/
 │
 └── Adapters (Optional)
-    ├── Claude                    # Full automation
+    ├── Claude                    # Full automation (native)
     │   ├── .claude/skills/
     │   ├── .claude/agents/
     │   └── .claude/hooks/
     │
-    ├── Cursor                    # Semi-automation
-    │   └── .cursorrules
+    ├── Cursor                    # Partial automation
+    │   ├── .cursorrules (legacy)
+    │   └── AGENTS.md
     │
-    ├── Copilot                   # Basic automation
-    │   └── .github/copilot/instructions.md
-    │
-    └── Generic                   # Manual workflow
-        └── SPECWEAVE.md
+    └── Generic                   # Limited features
+        └── AGENTS.md             # Works with Copilot, ChatGPT, Gemini
 ```
 
 ## Available Adapters
 
-| Adapter | Automation | Market Share | Status |
-|---------|------------|--------------|--------|
-| **Claude** | Full (skills, agents, hooks) | 10% | ✅ Active |
-| **Cursor** | Semi (.cursorrules, @ shortcuts) | 30% | ✅ Active |
-| **Copilot** | Basic (workspace instructions) | 40% | ✅ Active |
-| **Generic** | Manual (step-by-step guide) | 20% (other tools) | ✅ Active |
+| Adapter | Automation | Tools | Status |
+|---------|------------|-------|--------|
+| **Claude** | Full (skills, agents, hooks) | Claude Code | ✅ Active |
+| **Cursor** | Partial (AGENTS.md, team commands, less reliable) | Cursor | ✅ Active |
+| **Generic** | Limited (AGENTS.md, no hooks, manual workflow) | Copilot, ChatGPT, Gemini, etc. | ✅ Active |
 
 **Total Market Coverage**: 100% (works with ANY AI tool)
+
+**Note**: Claude Code is the only fully reliable option. Others have reduced features and reliability.
 
 ## Adapter Interface
 
@@ -110,47 +109,17 @@ Only load files listed in manifest.
 
 ---
 
-### 3. Copilot Adapter (Basic Automation)
+### 3. Generic Adapter (Limited Features)
 
 **Files Installed**:
-- `.github/copilot/instructions.md` - Workspace instructions for Copilot
+- `AGENTS.md` - Universal instruction file for all AI tools
 
 **Features**:
-- Workspace-level guidance read by Copilot
-- Context manifests referenced in instructions
-- Suggestions based on SpecWeave structure
-
-**Instruction File** (.github/copilot/instructions.md):
-```markdown
-# SpecWeave Workspace Instructions
-
-## Project Overview
-This project uses SpecWeave for spec-driven development.
-
-## Workflow: Creating Features
-1. Create increment folder: `.specweave/increments/####-short-name/`
-2. Create spec.md (WHAT and WHY)
-3. Create plan.md (HOW)
-4. Create tasks.md (Implementation)
-
-## Context Loading (CRITICAL)
-Always read context-manifest.yaml first!
-```
-
-**Detection**: Checks for GitHub Copilot extension in VS Code
-
----
-
-### 4. Generic Adapter (Manual Workflow)
-
-**Files Installed**:
-- `SPECWEAVE.md` - Complete step-by-step manual guide
-
-**Features**:
-- Works with ANY AI tool (ChatGPT web, Claude web, Gemini, etc.)
-- Clear manual workflow
-- Copy-paste instructions
-- 100% compatibility (no tool dependencies)
+- Works with Copilot, ChatGPT, Gemini, and ANY AI tool
+- AGENTS.md format (https://agents.md/)
+- No automation (manual workflow)
+- No hooks (manual living docs sync)
+- High context usage
 
 **Manual Guide** (SPECWEAVE.md):
 ```markdown
@@ -186,17 +155,13 @@ Copy files listed in `context-manifest.yaml` to your AI chat.
 - Cursor reads `.cursorrules` which contains workflow instructions
 - AI follows instructions step-by-step
 
-### GitHub Copilot (Instruction Files)
-- User types: "create increment for user auth"
-- Copilot reads `.github/copilot/instructions.md`
-- AI follows workspace instructions
+### Generic / Copilot / ChatGPT (AGENTS.md)
+- All tools read `AGENTS.md` (universal standard)
+- Copilot reads it automatically in VS Code
+- ChatGPT/Gemini: User copies sections to chat
+- Manual workflow with AI assistance
 
-### Generic (Manual Copy-Paste)
-- User reads `SPECWEAVE.md`
-- User copies relevant sections to AI chat
-- User guides AI through workflow manually
-
-**Pattern**: Each adapter uses **instruction files** appropriate to the tool's capabilities.
+**Pattern**: AGENTS.md is the universal instruction format. Only Claude Code uses native plugins (.claude/).
 
 ## Installation
 
@@ -209,8 +174,7 @@ npx specweave init my-project
 # Or specify adapter explicitly
 npx specweave init my-project --adapter claude
 npx specweave init my-project --adapter cursor
-npx specweave init my-project --adapter copilot
-npx specweave init my-project --adapter generic
+npx specweave init my-project --adapter generic  # For Copilot, ChatGPT, Gemini
 ```
 
 ### For Developers (Install All Adapters)

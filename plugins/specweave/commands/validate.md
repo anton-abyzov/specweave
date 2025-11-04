@@ -5,6 +5,8 @@ description: Validate SpecWeave increment with rule-based checks and optional AI
 
 # Validate Increment
 
+**⚡ Convenient Short Form**: Use `/validate` for quick access, or `/specweave:validate` for explicit namespace.
+
 You are helping the user validate a SpecWeave increment with optional AI-powered quality assessment.
 
 ## Usage

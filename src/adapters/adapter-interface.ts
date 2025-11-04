@@ -2,7 +2,7 @@
  * Adapter Interface for Multi-Tool Support
  *
  * Defines the contract that all SpecWeave adapters must implement.
- * Enables SpecWeave to work with ANY AI coding tool (Claude, Cursor, Copilot, etc.)
+ * Enables SpecWeave to work with ANY AI coding tool (Claude, Cursor, Copilot/ChatGPT/Gemini via generic, etc.)
  */
 
 import type { Plugin } from '../core/types/plugin.js';
@@ -34,11 +34,12 @@ export type AutomationLevel = 'full' | 'semi' | 'basic' | 'manual';
 /**
  * Base Adapter Interface
  *
- * All adapters (Claude, Cursor, Copilot, Generic) must implement this interface.
+ * All adapters (Cursor, Generic) must implement this interface.
+ * Note: Claude Code is NOT an adapter - it's the native baseline experience.
  */
 export interface IAdapter {
   /**
-   * Adapter name (e.g., 'claude', 'cursor', 'copilot', 'generic')
+   * Adapter name (e.g., 'cursor', 'generic')
    */
   name: string;
 
@@ -60,9 +61,8 @@ export interface IAdapter {
    * Detect if this adapter's tool is present in the environment
    *
    * Examples:
-   * - Claude: Check for Claude Code CLI
    * - Cursor: Check for .cursor/ directory or Cursor process
-   * - Copilot: Check for .github/copilot/ or Copilot extension
+   * - Generic: Always true (fallback for any tool)
    *
    * @returns Promise<boolean> True if tool detected
    */
@@ -90,7 +90,7 @@ export interface IAdapter {
   /**
    * Install this adapter to a project
    *
-   * Creates tool-specific files (e.g., .cursorrules, .github/copilot/instructions.md)
+   * Creates tool-specific files (e.g., .cursorrules for Cursor, AGENTS.md for all)
    * Installs relevant skills/agents if applicable
    *
    * @param options Installation options
@@ -124,8 +124,8 @@ export interface IAdapter {
    * Check if this adapter supports plugins
    *
    * Returns true if the adapter can install and compile plugins
-   * (Claude native, Cursor AGENTS.md, Copilot instructions.md)
-   * Returns false for generic/manual adapters
+   * (Cursor AGENTS.md compilation, Generic AGENTS.md)
+   * Returns false for manual-only adapters
    *
    * @returns boolean True if plugins are supported
    */
@@ -135,10 +135,10 @@ export interface IAdapter {
    * Compile and install a plugin for this adapter
    *
    * Transforms plugin content (skills/agents/commands) to tool-specific format:
-   * - Claude: Copy to .claude/skills/, .claude/agents/, .claude/commands/
    * - Cursor: Compile to AGENTS.md + team commands JSON
-   * - Copilot: Compile to .github/copilot/instructions.md
-   * - Generic: Generate manual copy-paste instructions
+   * - Generic: Compile to AGENTS.md for Copilot/ChatGPT/Gemini
+   *
+   * Note: Claude Code uses native plugin system (no compilation needed)
    *
    * @param plugin Plugin to compile and install
    * @returns Promise<void>

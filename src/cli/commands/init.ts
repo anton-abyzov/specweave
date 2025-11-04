@@ -19,7 +19,7 @@ const __dirname = getDirname(import.meta.url);
 
 interface InitOptions {
   template?: string;
-  adapter?: string;  // 'claude', 'cursor', 'copilot', 'generic'
+  adapter?: string;  // 'claude', 'cursor', 'generic'
   techStack?: string;
   language?: string;  // Language for i18n support
 }
@@ -225,10 +225,9 @@ export async function initCommand(
             name: 'selectedTool',
             message: locale.t('cli', 'init.toolDetection.selectPrompt'),
             choices: [
-              { name: `${locale.t('cli', 'init.toolDetection.tools.claude')} (${locale.t('cli', 'init.toolDetection.recommended')})`, value: 'claude' },
-              { name: locale.t('cli', 'init.toolDetection.tools.cursor'), value: 'cursor' },
-              { name: locale.t('cli', 'init.toolDetection.tools.copilot'), value: 'copilot' },
-              { name: locale.t('cli', 'init.toolDetection.tools.generic'), value: 'generic' }
+              { name: `Claude Code (Recommended - Full automation)`, value: 'claude' },
+              { name: 'Cursor (Partial - AGENTS.md compilation, team commands, less reliable)', value: 'cursor' },
+              { name: 'Other (Copilot, ChatGPT, Gemini - Limited: no hooks, manual workflow, high context usage)', value: 'generic' }
             ]
           }
         ]);
@@ -298,6 +297,47 @@ export async function initCommand(
         techStack: options.techStack ? { language: options.techStack } : undefined,
         docsApproach: 'incremental'
       });
+
+      // 6. Copy plugins/ folder for non-Claude adapters
+      // CRITICAL: Copilot/Cursor/Generic need local plugins/ folder!
+      // AGENTS.md instructs AI to read plugins/specweave/commands/*.md
+      // Without this folder, those commands don't exist in the project!
+      if (toolName !== 'claude') {
+        spinner.start('Copying plugins folder for command execution...');
+
+        try {
+          const specweavePackageRoot = findPackageRoot(__dirname);
+          if (specweavePackageRoot) {
+            const sourcePluginsDir = path.join(specweavePackageRoot, 'plugins');
+            const targetPluginsDir = path.join(targetDir, 'plugins');
+
+            if (fs.existsSync(sourcePluginsDir)) {
+              // Copy entire plugins/ folder from SpecWeave package to user project
+              fs.copySync(sourcePluginsDir, targetPluginsDir, {
+                overwrite: true,
+                filter: (src) => {
+                  // Exclude .DS_Store and other hidden files
+                  const basename = path.basename(src);
+                  return !basename.startsWith('.');
+                }
+              });
+
+              spinner.succeed('Plugins folder copied successfully');
+              console.log(chalk.green('   ✔ AI can now execute SpecWeave commands'));
+              console.log(chalk.gray('   → Copilot/Cursor will read plugins/specweave/commands/*.md'));
+            } else {
+              spinner.warn('Could not find plugins/ in SpecWeave package');
+              console.log(chalk.yellow('   → Command execution may not work without plugins/ folder'));
+            }
+          } else {
+            spinner.warn('Could not locate SpecWeave package');
+            console.log(chalk.yellow('   → Skipping plugins/ folder copy'));
+          }
+        } catch (error) {
+          spinner.warn('Could not copy plugins folder');
+          console.log(chalk.yellow(`   ${error instanceof Error ? error.message : error}`));
+        }
+      }
 
       // 7. Install core plugin for non-Claude adapters
       // CRITICAL: Cursor/Copilot/Generic need plugin files in project!
@@ -583,32 +623,25 @@ function createDirectoryStructure(targetDir: string, adapterName: string): void 
 
     // 5-pillar documentation structure
     '.specweave/docs/internal/strategy',      // Business specs (WHAT, WHY)
-    '.specweave/docs/internal/architecture',  // Technical design (HOW)
+    '.specweave/docs/internal/rfc',           // Request for Comments (proposals at all stages)
+    '.specweave/docs/internal/architecture',  // Technical design (HOW) - accepted designs
+    '.specweave/docs/internal/architecture/adr',      // Architecture Decision Records
+    '.specweave/docs/internal/architecture/diagrams', // Architecture diagrams
     '.specweave/docs/internal/delivery',      // Roadmap, CI/CD, guides
     '.specweave/docs/internal/operations',    // Runbooks, SLOs
     '.specweave/docs/internal/governance',    // Security, compliance
     '.specweave/docs/public',                 // Published documentation
   ];
 
-  // For non-Claude adapters: Create .claude subdirectories (for compiled plugin output)
-  // For Claude Code: Only .claude/ parent (for settings.json) - plugins load from plugins/
-  if (adapterName !== 'claude') {
-    directories.push(
-      '.claude/commands',
-      '.claude/agents',
-      '.claude/skills',
-      '.claude/hooks'
-    );
+  // For Claude Code ONLY: Create .claude/ folder (for settings.json)
+  // Non-Claude adapters: NO .claude/ folder (they use plugins/ folder directly)
+  if (adapterName === 'claude') {
+    directories.push('.claude');
   }
 
   directories.forEach((dir) => {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
   });
-
-  // For Claude Code: Create .claude/ parent folder (for settings.json)
-  if (adapterName === 'claude') {
-    fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
-  }
 }
 
 async function copyTemplates(templatesDir: string, targetDir: string, projectName: string, language: SupportedLanguage = 'en'): Promise<void> {
@@ -1194,14 +1227,6 @@ function showNextSteps(projectName: string, adapterName: string, language: Suppo
     console.log('');
     console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.cursor.step3'))}`);
     console.log(`      ${locale.t('cli', 'init.nextSteps.cursor.shortcuts')}`);
-  } else if (adapterName === 'copilot') {
-    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step1'))}`);
-    console.log('');
-    console.log(`   ${stepNumber + 1}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step2'))}`);
-    console.log(`      ${locale.t('cli', 'init.nextSteps.copilot.action')}`);
-    console.log('');
-    console.log(`   ${stepNumber + 2}. ${chalk.white(locale.t('cli', 'init.nextSteps.copilot.step3'))}`);
-    console.log(`      ${locale.t('cli', 'init.nextSteps.copilot.example')}`);
   } else if (adapterName === 'generic') {
     console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.generic.step1'))}`);
     console.log('');

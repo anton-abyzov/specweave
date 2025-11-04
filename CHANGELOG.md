@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### 🎯 **ARCHITECTURAL IMPROVEMENT** - GitHub Marketplace for Claude Code
+- **NEW: User projects now use GitHub remote marketplace** 🌐
+  - **The Change**: `settings.json` now references GitHub instead of local `.claude-plugin/`
+  - **Benefits**:
+    - ✅ **2MB saved per project** (no more copying `plugins/` folder)
+    - ✅ **Always up-to-date** (plugins fetched from GitHub, not frozen at install time)
+    - ✅ **Cleaner projects** (only settings.json, not entire plugin ecosystem)
+    - ✅ **Correct schema** (GitHub source object, not invalid local string)
+  - **Before**: Copied `.claude-plugin/` + `plugins/` to every user project (~2MB bloat)
+  - **After**: Reference GitHub marketplace in settings.json (~2KB)
+  - **Applies to**: Claude Code users only (non-Claude adapters still copy plugins for AGENTS.md)
+
+- **FIXED: VS Code type error in marketplace.json** ✅
+  - Removed invalid `$schema` reference (404 error)
+  - Cleaned up IDE warnings
+
+- **UPDATED: Documentation for marketplace architecture** 📚
+  - Added "Development vs Production Setup" section to CLAUDE.md
+  - Clarified: Development (local path) vs Production (GitHub remote)
+  - Explained when to use each marketplace configuration
+
+**Technical Details**:
+```json
+// User projects (production)
+{
+  "extraKnownMarketplaces": {
+    "specweave": {
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave",
+        "path": ".claude-plugin"
+      }
+    }
+  }
+}
+```
+
+### 🔥 **CRITICAL BUG FIXES** - Non-Claude Adapter Issues
+- **FIXED: Missing `plugins/` folder for Copilot/Cursor/Generic adapters** 🎯
+  - **The Problem**: AGENTS.md told AI to read `plugins/specweave/commands/*.md`, but folder didn't exist!
+  - **The Fix**: `plugins/` folder now copied from SpecWeave package to user projects
+  - **Result**: AI can now discover and execute ALL 17 SpecWeave commands
+  - Applies to: GitHub Copilot, Cursor, and all non-Claude adapters
+
+- **FIXED: Incorrect `.claude/` folder for non-Claude adapters** 🗂️
+  - **The Problem**: `.claude/` folder created for Copilot/Cursor (should only be for Claude Code)
+  - **The Fix**: `.claude/` folder now ONLY created for Claude adapter
+  - **Result**: Cleaner project structure, no confusing folders for non-Claude tools
+  - Applies to: GitHub Copilot, Cursor, and all non-Claude adapters
+
+### ✨ Enhanced - Command Discovery for Non-Claude Tools
+- **AGENTS.md now teaches AI tools how to execute SpecWeave commands** 🎯
+  - **New section**: "SpecWeave Commands (Executable Workflows)" with comprehensive execution guide
+  - **Command discovery**: Lists all 17 core commands (inc, do, done, validate, progress, sync-docs, etc.)
+  - **Step-by-step execution**: Shows how to read command .md files and execute workflows
+  - **Real examples**: Complete walkthrough of executing `/inc` command in GitHub Copilot
+  - **Command reference table**: Core, specialized, and plugin commands with examples
+  - **Session start checklist**: How to discover available commands at beginning of each session
+  - **Makes commands "pseudo-executable"**: Same SpecWeave automation in Copilot/Cursor as Claude Code
+  - **Solves major gap**: Non-Claude users can now access ALL command workflows, not just high-level instructions
+
+**Why This Matters**:
+- Before: Copilot users only got basic AGENTS.md context (no command execution)
+- After: Copilot users can execute ANY SpecWeave command by reading the .md file
+- Result: 90% of SpecWeave's automation now available in ALL tools (not just Claude Code)
+
+**Example**: User says "create increment for payments" in Copilot:
+1. AI reads `plugins/specweave/commands/inc.md` (NOW exists in project!)
+2. Executes PM-led workflow (market research, spec.md, plan.md, tasks.md)
+3. Creates increment 0002-payments with all files
+4. Same result as Claude Code's native `/inc` command!
+
+### 🏗️ Improved - Documentation Structure
+- **Restructured RFC folder location** 📁
+  - **Before**: `.specweave/docs/internal/architecture/rfc/` (nested under architecture)
+  - **After**: `.specweave/docs/internal/rfc/` (sibling to architecture at internal/ root)
+  - **Why**: RFC is a stage (proposal → review → decision), not a document type
+  - **Benefit**: Clearer separation between proposals (rfc/) and accepted designs (architecture/)
+  - Also added: `.specweave/docs/internal/architecture/adr/` and `.../diagrams/` subdirectories
+
+---
+
 ## [0.6.7] - 2025-11-03
 
 ### ✨ Bug Fixes - Proactive Marketplace Management (FINAL FIX!)

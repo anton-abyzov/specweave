@@ -78,7 +78,7 @@ Runs the full `/increment` command, which:
 
 ---
 
-**💡 Pro Tip**: `/inc` is the ONLY aliased command. Use full names for others (`/specweave do`, `/specweave validate`, `/specweave done`) to keep the workflow clear and explicit.
+**💡 Pro Tip**: Common commands have convenient short forms: `/inc`, `/do`, `/done`, `/validate`. For explicit namespacing or to avoid conflicts in brownfield projects, use `/specweave:inc`, `/specweave:do`, `/specweave:done`, `/specweave:validate`.
 
 ---
 

@@ -11,7 +11,6 @@ import * as YAML from 'yaml';
 import { execSync } from 'child_process';
 import { IAdapter } from './adapter-interface.js';
 import { CursorAdapter } from './cursor/adapter.js';
-import { CopilotAdapter } from './copilot/adapter.js';
 import { GeminiAdapter } from './gemini/adapter.js';
 import { CodexAdapter } from './codex/adapter.js';
 import { GenericAdapter } from './generic/adapter.js';
@@ -53,7 +52,6 @@ export class AdapterLoader {
   private initializeAdapters(): void {
     // Note: No ClaudeAdapter - Claude is the baseline, not an adaptation!
     this.adapters.set('cursor', new CursorAdapter());
-    this.adapters.set('copilot', new CopilotAdapter());
     this.adapters.set('gemini', new GeminiAdapter());
     this.adapters.set('codex', new CodexAdapter());
     this.adapters.set('generic', new GenericAdapter());
@@ -101,8 +99,7 @@ export class AdapterLoader {
    * 2. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
    * 3. Gemini CLI (if gemini CLI found)
    * 4. Codex (if codex CLI found)
-   * 5. Copilot (if .github/copilot/ exists)
-   * 6. Generic (only if explicitly requested via --adapter generic)
+   * 5. Generic (only if explicitly requested via --adapter generic)
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
@@ -110,7 +107,7 @@ export class AdapterLoader {
     console.log('🔍 Detecting AI coding tool...\n');
 
     // Check other tools first (if they have specific indicators)
-    const detectionOrder = ['cursor', 'gemini', 'codex', 'copilot'];
+    const detectionOrder = ['cursor', 'gemini', 'codex'];
 
     for (const adapterName of detectionOrder) {
       const adapter = this.adapters.get(adapterName);
@@ -241,7 +238,7 @@ export class AdapterLoader {
     if (explicitChoice) {
       const adapter = this.adapters.get(explicitChoice);
       if (!adapter) {
-        throw new Error(`Invalid adapter: ${explicitChoice}. Use 'claude', 'cursor', 'copilot', or 'generic'`);
+        throw new Error(`Invalid adapter: ${explicitChoice}. Use 'claude', 'cursor', or 'generic'`);
       }
       return adapter;
     }

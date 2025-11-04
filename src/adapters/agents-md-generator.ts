@@ -6,11 +6,11 @@
  *
  * IMPORTANT:
  * - Claude Code does NOT read this file - it only reads CLAUDE.md
- * - This file is for: Cursor, Gemini CLI, Codex, GitHub Copilot, and ANY other AI tool
+ * - This file is for: Cursor, GitHub Copilot, ChatGPT, Gemini, and ANY other AI tool
  *
  * This ONE file replaces:
- * - .cursorrules (Cursor)
- * - .github/copilot/instructions.md (Copilot)
+ * - .cursorrules (Cursor - legacy)
+ * - .github/copilot/instructions.md (Copilot - no longer needed, Copilot reads AGENTS.md)
  * - Any other tool-specific configuration files
  */
 
