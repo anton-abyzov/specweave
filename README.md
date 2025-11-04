@@ -4,10 +4,15 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/npm/v/specweave.svg)](https://www.npmjs.com/package/specweave)
+[![Build](https://img.shields.io/github/actions/workflow/status/anton-abyzov/specweave/test.yml?branch=develop&label=Tests)](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)
+[![E2E](https://img.shields.io/github/actions/workflow/status/anton-abyzov/specweave/e2e-smoke-test.yml?branch=develop&label=E2E)](https://github.com/anton-abyzov/specweave/actions/workflows/e2e-smoke-test.yml)
+[![Discord](https://img.shields.io/discord/1234567890?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
+[![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
+[![Docs](https://img.shields.io/badge/Docs-spec--weave.com-blue)](https://spec-weave.com)
 
 **Define WHAT and WHY before HOW. Specifications evolve with code, never diverge.**
 
-### Engineering Metrics (DORA)
+## 📊 Engineering Metrics (DORA)
 
 [![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://spec-weave.com/docs/metrics)
 [![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://spec-weave.com/docs/metrics)
@@ -15,6 +20,24 @@
 [![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://spec-weave.com/docs/metrics)
 
 [View detailed metrics dashboard →](https://spec-weave.com/docs/metrics)
+
+### 🔄 CI/CD Pipeline
+
+SpecWeave maintains high quality through automated workflows:
+
+| Workflow | Purpose | Runs |
+|----------|---------|------|
+| **[Tests](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)** | Unit & integration tests | Every commit |
+| **[E2E Smoke Tests](https://github.com/anton-abyzov/specweave/actions/workflows/e2e-smoke-test.yml)** | Browser-based testing (Playwright) | Every commit |
+| **[DORA Metrics](https://github.com/anton-abyzov/specweave/actions/workflows/dora-metrics.yml)** | Performance tracking | Daily 06:00 UTC |
+| **[Docs Build](https://github.com/anton-abyzov/specweave/actions/workflows/docs-build.yml)** | Documentation validation | PR & merge |
+| **[Deploy Docs](https://github.com/anton-abyzov/specweave/actions/workflows/deploy-docs.yml)** | Publish to spec-weave.com | Main branch |
+
+**Quality Gates:**
+- ✅ 80%+ test coverage required
+- ✅ All E2E tests must pass
+- ✅ No TypeScript errors
+- ✅ Linting checks pass
 
 ---
 
@@ -435,6 +458,23 @@ my-project/
 - 📦 **[npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)** - npm package
 - 🐙 **[GitHub](https://github.com/anton-abyzov/specweave)** - Source code
 - 📋 **CLAUDE.md** - Auto-created in your project after `specweave init`
+
+---
+
+## Community & Support
+
+**Join the Community:**
+
+- 💬 **[Discord Server](https://discord.gg/UYg4BGJ65V)** - Get help, share tips, discuss features
+- 🎥 **[YouTube Channel](https://www.youtube.com/@antonabyzov)** - Tutorials, demos, deep dives
+- 📖 **[Documentation](https://spec-weave.com)** - Complete guides and API reference
+- 🐛 **[GitHub Issues](https://github.com/anton-abyzov/specweave/issues)** - Bug reports and feature requests
+- 💡 **[GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)** - Q&A and community discussions
+
+**Need Help?**
+1. Check the [FAQ](https://spec-weave.com/docs/faq) first
+2. Ask in [Discord](https://discord.gg/UYg4BGJ65V) for quick answers
+3. Create a [GitHub Discussion](https://github.com/anton-abyzov/specweave/discussions) for detailed questions
 
 ---
 
