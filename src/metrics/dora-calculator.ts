@@ -120,7 +120,5 @@ async function main() {
   }
 }
 
-// Run if executed directly
-if (require.main === module) {
-  main();
-}
+// ESM module entry point (always run when executed)
+main();
