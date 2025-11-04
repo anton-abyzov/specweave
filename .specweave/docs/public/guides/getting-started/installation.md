@@ -285,6 +285,37 @@ cat AGENTS.md               # Should exist
 - [ ] For Claude Code: `.claude/commands/` has command files
 - [ ] For other tools: `AGENTS.md` exists
 
+### Test the Interactive Flow
+
+**Try the quick build workflow:**
+
+```bash
+# Open Claude Code in your project and type:
+"build a very simple web calculator app"
+
+# SpecWeave will guide you through:
+# 1. Approach selection (Quick build vs plan first)
+# 2. Feature selection (multi-select checkboxes)
+# 3. Tech stack choice (Vanilla, React, etc.)
+# 4. Review and submit
+
+# Your app will be built in ~2 minutes!
+```
+
+**Or use slash commands for full control:**
+
+```bash
+# In Claude Code:
+/specweave:inc "my first feature"
+
+# This creates:
+# ✅ .specweave/increments/0001-my-first-feature/
+#    ├── spec.md (requirements)
+#    ├── plan.md (architecture)
+#    ├── tasks.md (implementation steps)
+#    └── tests.md (test strategy)
+```
+
 ## Configuration
 
 After installation, optionally customize `.specweave/config.yaml`:

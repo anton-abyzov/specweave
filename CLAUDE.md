@@ -684,12 +684,27 @@ if (parentSpecweave) {
 
 When you run `specweave init`:
 
-1. ✅ **Marketplace Auto-Registration**
-   - Creates `.claude/settings.json` with marketplace reference
-   - Claude Code automatically discovers plugins
+1. ✅ **GitHub Marketplace Registration** (v0.6.7+)
+   - Creates `.claude/settings.json` with GitHub marketplace reference
+   - **No local copying** - plugins fetched from GitHub on-demand
+   - Settings.json structure:
+     ```json
+     {
+       "extraKnownMarketplaces": {
+         "specweave": {
+           "source": {
+             "source": "github",
+             "repo": "anton-abyzov/specweave",
+             "path": ".claude-plugin"
+           }
+         }
+       }
+     }
+     ```
+   - Claude Code automatically discovers plugins from GitHub
    - No manual `/plugin marketplace add` needed!
 
-2. ✅ **Core Plugin Auto-Installation** (NEW! v0.6.1+)
+2. ✅ **Core Plugin Auto-Installation** (v0.6.1+)
    - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave@specweave`
    - Works via CLI during init (uses user's shell to access `claude` command)
    - Slash commands available IMMEDIATELY - no manual install!
@@ -699,6 +714,10 @@ When you run `specweave init`:
 3. ℹ️  **Optional Plugins Suggested**
    - Based on project detection (Git, package.json, etc.)
    - User can install now or later
+
+**Key Architectural Change (v0.6.7)**:
+- ❌ Old: Copied `.claude-plugin/` + `plugins/` to every project (~2MB bloat)
+- ✅ New: Reference GitHub marketplace (~2KB settings.json, always up-to-date)
 
 #### Phase 2: Increment Planning (On-Demand Loading)
 
@@ -763,6 +782,69 @@ All plugin management happens through Claude Code's native commands:
 - Work across ALL projects (like VS Code extensions)
 - Auto-activate based on skills' description keywords
 - Managed by Claude Code (updates, uninstall, etc.)
+
+### Development vs Production Setup
+
+**Two different scenarios with different marketplace configurations:**
+
+#### SpecWeave Repo (Development)
+
+```
+specweave/  (GitHub repo - Contributors)
+├── .claude/
+│   └── settings.json              # Local path reference
+├── .claude-plugin/
+│   └── marketplace.json           # Marketplace definition
+└── plugins/
+    ├── specweave/                 # Core plugin SOURCE CODE
+    └── specweave-github/          # Plugin SOURCE CODE
+```
+
+**Settings.json for development** (.claude/settings.json):
+```json
+{
+  "extraKnownMarketplaces": {
+    "specweave": "../.claude-plugin"
+  }
+}
+```
+
+**OR use CLI** (recommended for contributors):
+```bash
+/plugin marketplace add ./.claude-plugin
+```
+
+#### User Projects (Production)
+
+```
+my-saas-app/  (User's project)
+├── .claude/
+│   └── settings.json              # GitHub remote reference
+├── .specweave/
+│   └── increments/
+└── src/
+```
+
+**Settings.json for users** (.claude/settings.json):
+```json
+{
+  "extraKnownMarketplaces": {
+    "specweave": {
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave",
+        "path": ".claude-plugin"
+      }
+    }
+  }
+}
+```
+
+**Key Differences**:
+- ✅ **Development**: Local `.claude-plugin/` and `plugins/` in repo (for editing)
+- ✅ **Production**: GitHub reference only (no local plugin copies)
+- ✅ **Development**: Use string path `"../​.claude-plugin"`
+- ✅ **Production**: Use GitHub object `{"source": "github", ...}`
 
 No per-project installation needed!
 

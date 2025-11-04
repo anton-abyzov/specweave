@@ -165,17 +165,62 @@ What if your project could say:
 
 That's SpecWeave v0.4.0.
 Let me show you how it works."
+
+[2:30-3:00] THE TWO WAYS TO START
+"Before we dive deep, let me show you how easy this is to use.
+
+SpecWeave gives you TWO ways to start:
+
+[SCREEN: Split screen - Quick Build on left, Spec-First on right]
+
+**Quick Build** (for small projects):
+Just describe what you want:
+
+[TERMINAL - left side]:
+> "build a very simple web calculator app"
+
+SpecWeave asks interactive questions:
+
+[ANIMATED PROMPTS appear]:
+1️⃣ Approach: Quick build OR plan first?
+2️⃣ Features: Multi-select checkboxes
+   ☑ Basic operations (+, -, ×, ÷)
+   ☑ Additional functions (%, √, backspace)
+   ☑ Keyboard support
+   ☑ Calculation history
+3️⃣ Tech Stack: Vanilla JS, React, or custom?
+4️⃣ Review & Submit
+
+[TEXT OVERLAY: "2 minutes from idea to working code"]
+
+**Spec-First** (for production):
+Professional planning with slash commands:
+
+[TERMINAL - right side]:
+> /specweave:inc "user authentication"
+
+PM, Architect, QA agents create:
+- spec.md (requirements)
+- plan.md (architecture)
+- tasks.md (implementation)
+- tests.md (test strategy)
+
+[TEXT OVERLAY: "Built for teams & complex features"]
+
+Choose your style. Both work perfectly."
 ```
 
 **Why This Section Works**:
 - Real pain (money, broken code)
 - Concrete examples (not abstract)
 - Emotional journey (frustration → hope)
+- Shows flexibility (quick vs thorough)
+- Interactive flow demonstrates ease of use
 - Sets up solution perfectly
 
 ---
 
-### Part 2: The Architecture (3:00-6:00)
+### Part 2: The Architecture (3:00-6:30)
 
 **Goal**: Explain the plugin system simply
 

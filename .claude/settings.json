@@ -1,7 +1,5 @@
 {
   "extraKnownMarketplaces": {
-    "specweave": {
-      "source": "../.claude-plugin"
-    }
+    "specweave": "../.claude-plugin"
   }
 }

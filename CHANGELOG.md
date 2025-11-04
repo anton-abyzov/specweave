@@ -7,14 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.7] - 2025-11-03
+
+### ✨ Bug Fixes - Proactive Marketplace Management (FINAL FIX!)
+- **FIXED: No more "already installed" errors!** 🎉
+  - **Proactive checking**: Marketplace checked BEFORE attempting to add
+  - **Automatic removal**: Old marketplace removed first (prevents CLI errors)
+  - **Clean re-addition**: Marketplace re-added from SpecWeave package
+  - **Zero confusing errors**: No red "✘ Failed to add marketplace" messages!
+  - **Clear updates**: "🔄 Updating..." → "✔ Updated successfully"
+- **Perfect UX**: Users see informative messages, not errors
+
+**What Changed**:
+- v0.6.6 was reactive (try add → handle error)
+- v0.6.7 is proactive (check first → remove if exists → add clean)
+
+**Upgrade**: `npm update -g specweave`
+
+---
+
 ## [0.6.6] - 2025-11-03
 
-### 🔄 Bug Fixes - Marketplace Auto-Update
+### 🔄 Bug Fixes - Marketplace Auto-Update (Partial Fix)
 - **Fixed marketplace "already installed" error** during `specweave init`
   - Automatically removes and re-adds marketplace when it already exists
   - Prevents stale path references from previous projects
   - Clear status messages show marketplace update process
 - **Improved user experience** with informative update messages
+- **Note**: v0.6.6 fixed the functionality but still showed CLI error messages (fixed in v0.6.7)
 
 **Upgrade**: `npm update -g specweave`
 
