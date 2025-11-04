@@ -16,7 +16,7 @@
 - **Integration Maps** - How systems communicate
 - **Security Architecture** - Security model, authentication, authorization
 
-**Note**: RFCs (Request for Comments) are now in a separate top-level folder: `../rfc/`
+**Note**: Specs (Specifications) are in a separate top-level folder: `../specs/`
 
 ## C4 Model Adoption
 
@@ -57,17 +57,17 @@ SpecWeave uses the **C4 model** for architecture documentation:
 
 ---
 
-## RFCs (Request for Comments)
+## Specs (Specifications)
 
-**Note**: RFCs have been moved to a separate top-level folder for better organization.
+**Note**: Specs are organized in a separate top-level folder for better organization.
 
-**Location**: `../rfc/`
+**Location**: `../specs/`
 
 **Purpose**: Detailed feature specifications with user stories, acceptance criteria, and implementation plans
 
-**When to Reference**: Link to RFCs from HLD/LLD when implementing features described in RFCs
+**When to Reference**: Link to specs from HLD/LLD when implementing features described in specs
 
-**See**: [RFC README](../rfc/README.md)
+**See**: [Specs README](../specs/README.md)
 
 ## Diagram Conventions ✨
 
@@ -211,9 +211,9 @@ graph TB
 
 **Format**: `0001-decision-title.md` (sequential numbering)
 
-### RFC (Request for Comments)
+### Specs (Specifications)
 
-**Template**: See `templates/docs/rfc-template.md`
+**Template**: See `templates/docs/spec-template.md`
 
 **Sections**:
 - **Summary** - One-sentence description
@@ -262,17 +262,18 @@ ls docs/internal/architecture/adr/ | grep -E '^[0-9]+' | tail -1
 cp templates/docs/adr-template.md docs/internal/architecture/adr/0001-decision-title.md
 ```
 
-### To create an RFC:
-**Note**: RFCs are now in `../rfc/` (top-level folder)
+### To create a Spec:
+**Note**: Specs are in `../specs/` (top-level folder)
 
 ```bash
 # Find next number
-ls docs/internal/rfc/ | grep -E '^rfc-[0-9]+' | tail -1
-# Create new RFC with next number
-cp templates/docs/rfc-template.md docs/internal/rfc/rfc-0001-feature-title.md
+ls docs/internal/specs/ | grep -E '^spec-[0-9]+' | tail -1
+# Create new spec with next number
+mkdir -p docs/internal/specs/spec-0001-feature-title
+cp templates/docs/spec-template.md docs/internal/specs/spec-0001-feature-title/spec.md
 ```
 
-**See**: [RFC README](../rfc/README.md) for complete RFC creation guide
+**See**: [Specs README](../specs/README.md) for complete spec creation guide
 
 ## Index of Architecture Documents
 
@@ -285,10 +286,10 @@ cp templates/docs/rfc-template.md docs/internal/rfc/rfc-0001-feature-title.md
 ### ADRs
 - (None yet - create your first ADR!)
 
-### RFCs
-**Note**: RFCs moved to `../rfc/` folder
+### Specs
+**Note**: Specs are in `../specs/` folder
 
-See [RFC Index](../rfc/README.md)
+See [Specs Index](../specs/README.md)
 
 ## Cross-Links
 
@@ -296,7 +297,7 @@ See [RFC Index](../rfc/README.md)
 ```
 PRD (Why/What) → HLD (How - System) → LLD (How - Component) → Code (Implementation)
                       ↓                     ↓
-                    ADR/RFC              ADR/RFC
+                   ADR/Spec             ADR/Spec
 ```
 
 **Cross-linking Rules**:
@@ -305,14 +306,14 @@ PRD (Why/What) → HLD (How - System) → LLD (How - Component) → Code (Implem
 - **LLD → HLD**: Every LLD should reference its parent HLD
 - **HLD → ADR**: Link to all relevant ADRs
 - **LLD → ADR**: Link to component-specific ADRs
-- **RFC → HLD/LLD**: RFCs should reference the HLD/LLD they modify
-- **ADR → HLD/LLD/RFC**: ADRs should be referenced from relevant docs
+- **Spec → HLD/LLD**: Specs should reference the HLD/LLD they modify
+- **ADR → HLD/LLD/Spec**: ADRs should be referenced from relevant docs
 
 ## Related Documentation
 
 - [Internal Docs Overview](../README.md) - Six core folders overview
 - [Strategy Documentation](../strategy/README.md) - Business case, PRDs
-- [RFC Documentation](../rfc/README.md) - Feature specifications (moved from architecture/)
+- [Specs Documentation](../specs/README.md) - Feature specifications
 - [Delivery Documentation](../delivery/README.md) - Build & release processes
 - [Operations Documentation](../operations/README.md) - Production runbooks
 - [Governance Documentation](../governance/README.md) - Security, compliance

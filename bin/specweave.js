@@ -134,6 +134,25 @@ program
     await statusCommand(options);
   });
 
+// QA command - Quality assessment
+program
+  .command('qa <increment-id>')
+  .description('Run quality assessment on an increment')
+  .option('--quick', 'Quick mode (default)')
+  .option('--pre', 'Pre-implementation check')
+  .option('--gate', 'Quality gate check (comprehensive)')
+  .option('--full', 'Full multi-agent mode (Phase 3)')
+  .option('--ci', 'CI mode (exit 1 on FAIL)')
+  .option('--no-ai', 'Skip AI assessment (rule-based only)')
+  .option('--silent', 'Minimal output')
+  .option('--export', 'Export blockers/concerns to tasks.md')
+  .option('-f, --force', 'Force run even if rule-based fails')
+  .option('-v, --verbose', 'Show recommendations')
+  .action(async (incrementId, options) => {
+    const { qaCommand } = await import('../dist/cli/commands/qa.js');
+    await qaCommand(incrementId, options);
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -155,6 +174,9 @@ program.on('--help', () => {
   console.log('  $ specweave pause 0007 --reason "blocked"   # Pause increment 0007');
   console.log('  $ specweave resume 0007                     # Resume increment 0007');
   console.log('  $ specweave abandon 0007 --reason "obsolete" # Abandon increment 0007');
+  console.log('  $ specweave qa 0008                         # Quick quality check');
+  console.log('  $ specweave qa 0008 --pre                   # Pre-implementation check');
+  console.log('  $ specweave qa 0008 --gate --export         # Quality gate + export to tasks');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

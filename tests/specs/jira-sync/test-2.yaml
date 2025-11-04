@@ -1,9 +1,0 @@
----
-name: "Coordinate with Agent"
-description: "Tests if jira-sync properly delegates to specweave-jira-mapper agent"
-input:
-  prompt: "Export increment 0001 to JIRA"
-expected_output:
-  agent_invoked: "specweave-jira-mapper"
-  parameters_passed: true
----

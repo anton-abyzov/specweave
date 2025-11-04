@@ -16,6 +16,7 @@
     "test:smoke": "bash tests/smoke/e2e-smoke-test.sh",
     "test:e2e": "playwright test tests/e2e/specweave-smoke.spec.ts",
     "test:integration": "npm run test:integration:ado && npm run test:integration:jira && npm run test:integration:ml",
+    "metrics:dora": "npx tsx src/metrics/dora-calculator.ts",
     "test:integration:ado": "npx tsx tests/integration/ado-sync/ado-sync.test.ts",
     "test:integration:jira": "npx tsx tests/integration/jira-sync/jira-sync.test.ts",
     "test:integration:ml": "npx tsx tests/integration/ml-pipeline-workflow/ml-pipeline-soccer-detection.test.ts",
@@ -32,6 +33,11 @@
     "prepublishOnly": "npm run build",
     "install:deprecated": "echo '⚠️  DEPRECATED: Install scripts no longer needed for Claude Code (native loading). For other tools, run: specweave init'",
     "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
+    "docs:public": "cd docs-site && npm start",
+    "docs:internal": "cd docs-site-internal && npm start",
+    "docs:build:public": "cd docs-site && npm run build",
+    "docs:build:internal": "cd docs-site-internal && npm run build",
+    "docs:install": "cd docs-site && npm install --legacy-peer-deps && cd ../docs-site-internal && npm install --legacy-peer-deps",
     "docs:dev": "cd docs-site && npm start",
     "docs:build": "cd docs-site && npm run build"
   },
@@ -80,6 +86,7 @@
   ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.20.0",
+    "@octokit/rest": "^22.0.1",
     "ajv": "^8.17.1",
     "chalk": "^5.3.0",
     "commander": "^14.0.2",
@@ -97,6 +104,7 @@
     "@types/jest": "^29.5.11",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.10.0",
+    "dotenv": "^17.2.3",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.0"

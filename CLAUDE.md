@@ -156,27 +156,79 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 
 ---
 
-## Increment Discipline (v0.6.0+ MANDATORY)
+## Increment Discipline (v0.7.0+ SIMPLIFIED)
+
+### Core Philosophy: **ONE Active Increment = Maximum Focus**
+
+**v0.7.0 Changes**: Simplified from complex per-type limits to **focus-first architecture**:
+- ✅ **Default**: 1 active increment (maximum productivity)
+- ✅ **Emergency ceiling**: 2 active max (hotfix/bug can interrupt)
+- ✅ **Hard cap**: Never >2 active (enforced)
+
+**Why 1?** Research shows:
+- 1 task = 100% productivity
+- 2 tasks = 20% slower (context switching cost)
+- 3+ tasks = 40% slower + more bugs
 
 ### What is an Increment?
 
 **An increment can be any type of work**, not just features. SpecWeave supports six increment types:
 
-| Type | Description | Use When | Limit | Examples |
-|------|-------------|----------|-------|----------|
-| **feature** | Standard feature development | Adding new functionality | Max 2 active | User authentication, payment integration, real-time chat |
-| **hotfix** | Critical production fixes | Production is broken | Unlimited | Security patch, critical bug causing downtime |
-| **bug** | Production bugs with SRE investigation | Bug requires root cause analysis | Unlimited | Memory leak investigation, performance degradation |
-| **change-request** | Stakeholder requests | Business requirements change | Max 2 active | UI redesign per stakeholder feedback, API contract changes |
-| **refactor** | Code improvement | Technical debt, code quality | Max 1 active | Extract service layer, migrate to TypeScript, improve test coverage |
-| **experiment** | POC/spike work | Exploring options, prototypes | Unlimited* | Evaluate GraphQL vs REST, test new library, architecture spike |
+| Type | Description | Use When | Can Interrupt? | Examples |
+|------|-------------|----------|----------------|----------|
+| **feature** | Standard feature development | Adding new functionality | No | User authentication, payment integration, real-time chat |
+| **hotfix** | Critical production fixes | Production is broken | ✅ Yes (emergency) | Security patch, critical bug causing downtime |
+| **bug** | Production bugs with SRE investigation | Bug requires root cause analysis | ✅ Yes (emergency) | Memory leak investigation, performance degradation |
+| **change-request** | Stakeholder requests | Business requirements change | No | UI redesign per stakeholder feedback, API contract changes |
+| **refactor** | Code improvement | Technical debt, code quality | No | Extract service layer, migrate to TypeScript, improve test coverage |
+| **experiment** | POC/spike work | Exploring options, prototypes | No* | Evaluate GraphQL vs REST, test new library, architecture spike |
 
-**Note**: Experiments auto-abandon after 14 days of inactivity (prevents accumulation of stale POCs).
+**Notes**:
+- **Experiments auto-abandon** after 14 days of inactivity (prevents accumulation of stale POCs)
+- **Types are for tracking**, not separate limits (git log shows hotfixes vs features)
+- **Single simple rule**: 1 active, allow 2 for emergencies only
 
 **Key Insight**: The increment structure (spec.md, plan.md, tasks.md) works for ALL types. A bug investigation still needs:
 - **spec.md**: What's broken? Why? What's the expected behavior?
 - **plan.md**: How to investigate? What tools? What hypothesis?
 - **tasks.md**: Investigation steps, fix implementation, verification tests
+
+### WIP Limits (v0.7.0+)
+
+**Configuration** (`.specweave/config.json`):
+```json
+{
+  "limits": {
+    "maxActiveIncrements": 1,  // Default: 1 active (focus)
+    "hardCap": 2,               // Emergency ceiling (never exceeded)
+    "allowEmergencyInterrupt": true, // hotfix/bug can interrupt
+    "typeBehaviors": {
+      "canInterrupt": ["hotfix", "bug"], // Emergency types
+      "autoAbandonDays": {
+        "experiment": 14  // Auto-abandon stale experiments
+      }
+    }
+  }
+}
+```
+
+**Enforcement**:
+- **0 active** → Create new (no warnings)
+- **1 active** → Warn about context switching (allow with confirmation)
+- **2 active** → HARD BLOCK (must complete or pause one first)
+
+**Exception**: Hotfix/bug can interrupt to start 2nd active (emergency only)
+
+**Multiple hotfixes?** Combine into ONE increment:
+```bash
+# ❌ Wrong: Multiple hotfix increments
+0009-sql-injection-fix
+0010-xss-vulnerability-fix
+0011-csrf-token-fix
+
+# ✅ Right: Combined hotfix increment
+0009-security-fixes (SQL + XSS + CSRF)
+```
 
 **⛔ THE IRON RULE: You CANNOT start increment N+1 until increment N is DONE**
 
@@ -776,7 +828,7 @@ if (parentSpecweave) {
 ### Core Plugin (Always Auto-Loaded)
 
 **Plugin**: `specweave` - The essential SpecWeave plugin loaded in every project:
-- **Skills**: 9 skills (increment-planner, tdd-workflow, rfc-generator, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
+- **Skills**: 9 skills (increment-planner, tdd-workflow, spec-generator, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
 - **Agents**: 22 agents (PM, Architect, Tech Lead, + 19 specialized including tdd-orchestrator)
 - **Commands**: 22 commands (/specweave:inc, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
 - **Hooks**: 8 lifecycle hooks
@@ -968,7 +1020,7 @@ All plugin management happens through Claude Code's native commands:
 ```
 specweave/  (GitHub repo - Contributors)
 ├── .claude/
-│   └── settings.json              # Local path reference
+│   └── settings.json              # Empty or minimal (no local paths supported)
 ├── .claude-plugin/
 │   └── marketplace.json           # Marketplace definition
 └── plugins/
@@ -976,19 +1028,19 @@ specweave/  (GitHub repo - Contributors)
     └── specweave-github/          # Plugin SOURCE CODE
 ```
 
-**Settings.json for development** (.claude/settings.json):
-```json
-{
-  "extraKnownMarketplaces": {
-    "specweave": "../.claude-plugin"
-  }
-}
+**Marketplace setup for development** (use CLI, NOT settings.json):
+
+Local paths are **NOT supported** in `extraKnownMarketplaces` in settings.json. Use CLI instead:
+
+```bash
+# Add local marketplace (only way for development)
+/plugin marketplace add ./.claude-plugin
+
+# Then install plugins
+/plugin install specweave@specweave
 ```
 
-**OR use CLI** (recommended for contributors):
-```bash
-/plugin marketplace add ./.claude-plugin
-```
+**Why CLI-only?** Claude Code's `extraKnownMarketplaces` in settings.json only supports remote sources (GitHub, Git). Local paths must be added via CLI commands.
 
 #### User Projects (Production)
 
@@ -1019,8 +1071,8 @@ my-saas-app/  (User's project)
 **Key Differences**:
 - ✅ **Development**: Local `.claude-plugin/` and `plugins/` in repo (for editing)
 - ✅ **Production**: GitHub reference only (no local plugin copies)
-- ✅ **Development**: Use string path `"../​.claude-plugin"`
-- ✅ **Production**: Use GitHub object `{"source": "github", ...}`
+- ✅ **Development**: Use CLI `/plugin marketplace add ./.claude-plugin` (settings.json cannot reference local paths)
+- ✅ **Production**: Use GitHub object in settings.json: `{"source": {"source": "github", ...}}`
 
 No per-project installation needed!
 
@@ -1050,7 +1102,7 @@ plugins/                        ← ROOT: All plugins (version controlled)
 ├── specweave/             ← CORE PLUGIN (framework essentials)
 │   ├── .claude-plugin/         ← plugin.json (Claude native)
 │   ├── skills/                 ← Core skills (9 total)
-│   │   ├── rfc-generator/
+│   │   ├── spec-generator/
 │   │   ├── increment-planner/
 │   │   ├── tdd-workflow/
 │   │   └── ...
@@ -1164,7 +1216,7 @@ specweave/
 │   │   ├── .claude-plugin/
 │   │   │   └── plugin.json     # Claude native manifest
 │   │   ├── skills/             # Core skills (9 total)
-│   │   │   ├── rfc-generator/          # RFC generation for increments
+│   │   │   ├── spec-generator/         # Specification generation for increments
 │   │   │   ├── increment-planner/      # Increment planning and spec generation
 │   │   │   ├── context-loader/         # Context loading optimization
 │   │   │   ├── tdd-workflow/           # Test-driven development workflow
@@ -1321,15 +1373,384 @@ specweave/
 | Folder | Purpose | Use When | Examples |
 |--------|---------|----------|----------|
 | **strategy/** | Business rationale (Why?) | Defining business case for features | `prd-user-auth.md` |
-| **rfc/** | Feature specifications (What?) | Detailed requirements with user stories | `rfc-0007-smart-discipline.md` |
+| **specs/** | Feature specifications (What?) | Detailed requirements with user stories | `spec-0007-smart-discipline.md` |
 | **architecture/** | Technical design (How?) | System architecture, decisions | `hld-system.md`, `adr/0001-postgres.md` |
 | **delivery/** | Build & release (How we build) | Git workflow, DORA metrics, CI/CD | `branch-strategy.md`, `dora-metrics.md` |
 | **operations/** | Production ops (How we run) | Runbooks, incidents, performance | `runbook-api.md`, `performance-tuning.md` |
 | **governance/** | Policies (Guardrails) | Security, compliance, coding standards | `security-policy.md`, `coding-standards.md` |
 
-**Document Flow**: `PRD → RFC → Architecture → Delivery → Operations`
+**Document Flow**: `PRD → Spec → Architecture → Delivery → Operations`
 
 **See**: [Internal Docs README](.specweave/docs/internal/README.md) for complete guidance
+
+---
+
+## Specs Architecture: Two Locations Explained
+
+**CRITICAL ARCHITECTURAL CONCEPT**: SpecWeave uses specs in TWO locations for different purposes. Understanding this distinction is essential.
+
+### The Core Question: Why Two Locations?
+
+1. **Living Docs Specs**: `.specweave/docs/internal/specs/spec-####-name/spec.md` - **Permanent knowledge base**
+2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary implementation snapshot**
+
+### The Answer: Permanent vs Temporary
+
+**Living Docs Specs = Permanent Knowledge Base**
+
+- **Location**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
+- **Purpose**: COMPLETE, PERMANENT source of truth
+- **Lifecycle**: Created once, updated over time, NEVER deleted
+- **Scope**: Comprehensive (entire feature, 20 user stories)
+- **Contains**:
+  - ✅ ALL user stories (US-001, US-002, ..., US-020)
+  - ✅ ALL acceptance criteria (AC-US1-01, AC-US1-02, ...)
+  - ✅ ALL functional requirements (FR-001, FR-002, ...)
+  - ✅ Links to brownfield documentation (existing project docs)
+  - ✅ External PM tool links (Jira epic, ADO work item, GitHub milestone)
+  - ✅ Architecture decisions rationale
+  - ✅ Success criteria & metrics
+
+**Increment Specs = Implementation Snapshot**
+
+- **Location**: `.specweave/increments/0007-basic-login/spec.md`
+- **Purpose**: TEMPORARY implementation reference
+- **Lifecycle**: Created per increment, can be deleted after completion
+- **Scope**: Focused subset (3 user stories for this increment only)
+- **Contains**:
+  - ✅ Reference to living docs: `"See: SPEC-0005-authentication"`
+  - ✅ Subset of user stories: `"Implements: US-001, US-002, US-003 only"`
+  - ✅ What's being implemented RIGHT NOW
+  - ✅ Out of scope: Lists what's NOT in this increment
+
+### Real-World Example: Authentication Feature
+
+**Living Docs Spec** (Permanent):
+```
+File: .specweave/docs/internal/specs/spec-0005-authentication/spec.md
+
+# SPEC-0005: User Authentication System
+Complete authentication system with OAuth2, JWT, 2FA, session management
+
+## User Stories (20 total)
+- US-001: Basic Login (P1) ← Increment 0007
+- US-002: Password Reset (P1) ← Increment 0007
+- US-010: OAuth2 Integration (P2) ← Increment 0012
+- US-018: Two-Factor Authentication (P2) ← Increment 0018
+... (16 more stories)
+
+## Brownfield Integration
+- See: /docs/legacy/auth-system-v1.md (current system)
+
+## External References
+- Jira: AUTH-123 (stakeholder epic)
+```
+
+**Increment 1: Basic Login** (Temporary):
+```
+File: .specweave/increments/0007-basic-login/spec.md
+
+# Increment 0007: Basic Login
+**Implements**: SPEC-0005-authentication (US-001 to US-003 only)
+**Complete Specification**: See ../../docs/internal/specs/spec-0005-authentication/
+
+## What We're Implementing (This Increment)
+- US-001: Basic Login ✅
+- US-002: Password Reset ✅
+- US-003: Session Management ✅
+
+## Out of Scope (For This Increment)
+- ❌ OAuth2 integration (US-010) → Increment 0012
+- ❌ 2FA (US-018) → Increment 0018
+```
+
+**Increment 2: OAuth Integration** (Temporary):
+```
+File: .specweave/increments/0012-oauth-integration/spec.md
+
+# Increment 0012: OAuth2 Integration
+**Implements**: SPEC-0005-authentication (US-010 to US-012 only)
+**Complete Specification**: See ../../docs/internal/specs/spec-0005-authentication/
+
+## Dependencies
+- Requires: Increment 0007 (basic login infrastructure)
+```
+
+### Key Benefits
+
+**Why This Architecture?**
+
+1. **Permanent Knowledge Base**: Living docs = long-term memory. Answer: "How did we build authentication?"
+2. **Focused Implementation**: Increment specs = short-term focus. Answer: "What am I building RIGHT NOW?"
+3. **Brownfield Integration**: Living docs link to existing project documentation, increment specs don't need this complexity
+4. **Clean After Completion**: Delete increment specs (optional), living docs remain as knowledge base
+5. **External PM Tool Integration**: Jira epic → Living docs spec (permanent link), increment specs don't need external links
+
+### When to Use Which?
+
+**Create Living Docs Spec When**:
+- ✅ Planning a major feature (authentication, payments, messaging)
+- ✅ Feature spans multiple increments (will take weeks/months)
+- ✅ Need brownfield integration (link to existing project docs)
+- ✅ Want permanent historical record (how did we build this?)
+- ✅ Need external PM tool link (Jira epic, ADO feature, GitHub milestone)
+
+**Create Increment Spec When**:
+- ✅ Starting implementation of one increment
+- ✅ Want quick reference (what am I building right now?)
+- ✅ Need focused scope (just 3 user stories, not 20)
+
+### Comparison Table
+
+| Aspect | Living Docs Specs | Increment Specs |
+|--------|------------------|----------------|
+| **Location** | `.specweave/docs/internal/specs/` | `.specweave/increments/####/` |
+| **Lifecycle** | ✅ Permanent (never deleted) | ⏳ Temporary (optional deletion) |
+| **Scope** | 📚 Complete feature (20 US) | 🎯 Focused subset (3 US) |
+| **Size** | 500+ lines (comprehensive) | 50-100 lines (focused) |
+| **Purpose** | Knowledge base + history | Implementation tracker |
+| **Coverage** | ALL user stories | SUBSET of user stories |
+| **Brownfield** | ✅ Links to existing docs | ❌ Rarely needed |
+| **External Links** | ✅ Jira, ADO, GitHub | ❌ Rarely needed |
+| **Multiple Increments** | ✅ One spec → many increments | ❌ One increment → one spec |
+| **After Completion** | ✅ Remains forever | ⚠️ Can be deleted |
+
+### Analogy: Wikipedia vs Sticky Notes
+
+- **Living Docs Specs** = 📚 Wikipedia Article (permanent, comprehensive, updated over time)
+- **Increment Specs** = 📝 Sticky Note Reminder (temporary, focused, disposable after done)
+
+### Typical Workflow
+
+**Phase 1: Planning** (PM Agent)
+```
+User: "I want to build authentication with OAuth and 2FA"
+PM Agent:
+1. Creates living docs spec:
+   → .specweave/docs/internal/specs/spec-0005-authentication/spec.md
+   → Contains ALL 20 user stories (comprehensive)
+   → Links to brownfield docs
+   → Linked to Jira epic AUTH-123
+```
+
+**Phase 2: Increment 1** (Basic Login)
+```
+User: "/specweave:inc 0007-basic-login"
+PM Agent:
+1. Creates increment spec:
+   → .specweave/increments/0007-basic-login/spec.md
+   → References living docs: "See SPEC-0005"
+   → Contains ONLY US-001 to US-003 (focused)
+2. Implementation happens...
+3. Increment completes ✅
+4. Increment spec can be deleted (optional)
+```
+
+**Phase 3: Increment 2** (OAuth)
+```
+User: "/specweave:inc 0012-oauth-integration"
+PM Agent:
+1. Creates increment spec:
+   → .specweave/increments/0012-oauth-integration/spec.md
+   → References SAME living docs: "See SPEC-0005"
+   → Contains ONLY US-010 to US-012 (focused)
+2. Implementation happens...
+3. Increment completes ✅
+```
+
+**Phase 4: All Done!**
+```
+After ALL increments complete (0007, 0012, 0018):
+- ✅ Living docs spec REMAINS (.specweave/docs/internal/specs/spec-0005-authentication/)
+- ⏳ Increment specs can be deleted (optional)
+- ✅ Historical record preserved (living docs)
+- ✅ Jira epic AUTH-123 remains linked to living docs
+```
+
+### Relationship
+
+**One living docs spec → Many increment specs**
+
+```
+spec-0005-authentication (Living Docs - Permanent)
+├── 0007-basic-login (Increment - Temporary)
+├── 0012-oauth-integration (Increment - Temporary)
+└── 0018-two-factor-auth (Increment - Temporary)
+```
+
+### Summary
+
+**Two Locations, Two Purposes**:
+
+1. **Living Docs Specs** (`.specweave/docs/internal/specs/`):
+   - ✅ Permanent knowledge base
+   - ✅ Complete feature specification
+   - ✅ Links to brownfield docs
+   - ✅ External PM tool integration
+   - ✅ Spans multiple increments
+
+2. **Increment Specs** (`.specweave/increments/####/`):
+   - ⏳ Temporary implementation tracker
+   - 🎯 Focused subset of work
+   - 📝 Quick reference: "What am I building?"
+   - 🗑️ Can be deleted after completion
+
+**Result**: Clean, focused implementation + permanent knowledge base
+
+**For comprehensive explanation**: See [SPECS-ARCHITECTURE-CLARIFICATION.md](.specweave/increments/0007-smart-increment-discipline/reports/SPECS-ARCHITECTURE-CLARIFICATION.md)
+
+---
+
+## Living Completion Reports (v0.7.0+)
+
+### The Problem with Traditional Reports
+
+**Traditional approach** (report written at the end):
+```
+Start increment: Plan 10 user stories
+During work: Scope changes 5 times (not documented)
+End increment: Write report "Completed 8/10 stories"
+Future: "Why was Story 5 removed?" → No one remembers!
+```
+
+**Problems**:
+- ❌ No audit trail for scope changes
+- ❌ Decision rationale lost
+- ❌ Difficult for onboarding/compliance
+- ❌ Can't learn from past iterations
+
+### Living Reports Solution
+
+**SpecWeave approach** (report updated in real-time):
+```
+Start: Initialize completion report (v1.0)
+During work:
+  - 2025-11-06: Added US6 (dark mode) → /update-scope → v1.1
+  - 2025-11-07: Deferred US3 (CSV export) → /update-scope → v1.2
+  - 2025-11-08: WebSockets → Polling pivot → /update-scope → v1.3
+End: Finalize report with complete scope evolution history
+Future: "Why was Story 5 removed?" → Check report, find exact reason with WHO approved and WHY!
+```
+
+**Benefits**:
+- ✅ Complete audit trail (every scope change documented)
+- ✅ Real-time context (captured when decision is fresh)
+- ✅ Regulatory compliance (explains deviations from plan)
+- ✅ Learning for future increments
+- ✅ Onboarding new team members (understand project history)
+
+### Report Structure
+
+**Location**: `.specweave/increments/{id}/reports/COMPLETION-REPORT.md`
+
+**Sections**:
+1. **Original Scope**: What was planned at increment start
+2. **Scope Evolution**: Living log of changes (updated during increment)
+3. **Final Delivery**: What was actually delivered
+4. **What Changed and Why**: Rationale for scope changes
+5. **Lessons Learned**: What we learned for next time
+6. **Metrics**: Velocity, scope creep, test coverage, defects
+
+### Workflow
+
+**1. Initialize Report** (automatic when increment created):
+```bash
+/specweave:inc "User dashboard"
+# Creates: .specweave/increments/0008-user-dashboard/reports/COMPLETION-REPORT.md (v1.0)
+```
+
+**2. Update During Work** (whenever scope changes):
+```bash
+# Quick log
+/specweave:update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
+
+# Or interactive
+/specweave:update-scope
+# Prompts:
+#   - What changed? (Added/Removed/Modified)
+#   - Why? (Business reason, technical blocker, etc.)
+#   - Impact? (+/- hours)
+#   - Who approved? (PM, stakeholder, etc.)
+#   - Documentation? (ADR, GitHub issue, etc.)
+```
+
+**3. Finalize at Completion** (via `/specweave:done`):
+```bash
+/specweave:done 0008
+# Validates report completeness
+# Prompts to fill any missing sections
+# Marks increment as complete
+```
+
+### Example Entry
+
+```markdown
+## Scope Evolution (Living Updates)
+
+### 2025-11-06: Added user story
+
+**Changed**: US6: Dark mode toggle
+**Reason**: Stakeholder request from CMO (high priority, blocks marketing launch)
+**Impact**: +16 hours
+**Decision**: PM + CMO
+**Documentation**: GitHub issue #45
+
+---
+
+### 2025-11-07: Removed/deferred user story
+
+**Changed**: US3: Data export to CSV
+**Reason**: Not critical for MVP, can be added later without breaking changes
+**Impact**: -8 hours (deferred to increment 0009)
+**Decision**: PM
+**Documentation**: None
+
+---
+
+### 2025-11-08: Technical pivot (architecture change)
+
+**Changed**: WebSockets → Long-polling
+**Reason**: WebSocket library had critical security vulnerability (CVE-2025-1234)
+**Impact**: -4 hours (simpler implementation)
+**Decision**: Architect + Security Lead
+**Documentation**: ADR-008: Why We Chose Polling Over WebSockets
+
+---
+```
+
+### When to Update
+
+✅ **DO update** when:
+- Adding new user story or task
+- Removing/deferring work
+- Modifying scope of existing story
+- Making architecture pivots (technical decisions)
+- Reducing/expanding scope
+- Blocking issues discovered
+
+❌ **DON'T update** for:
+- Bug fixes discovered during implementation (normal)
+- Minor implementation details
+- Code refactoring (unless scope-affecting)
+
+### Best Practices
+
+1. **Update in real-time**: Don't batch updates (capture context while fresh)
+2. **Be specific**: "Added US6: Dark mode" not "Added feature"
+3. **Include rationale**: Always answer WHY
+4. **Link to docs**: ADR, GitHub issue, Jira ticket
+5. **Track approvals**: Who made the decision
+6. **Quantify impact**: +/- hours for scope changes
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave:inc "feature"` | Creates increment with initial completion report |
+| `/specweave:update-scope` | Log scope change during increment |
+| `/specweave:done <id>` | Finalize report and mark increment complete |
+
+**See**: [update-scope.md](plugins/specweave/commands/update-scope.md) for detailed documentation
 
 ---
 
@@ -1342,7 +1763,7 @@ specweave/
 **1. Editing Skills** (any plugin):
 ```bash
 # Core plugin (auto-loaded):
-vim plugins/specweave/skills/rfc-generator/SKILL.md
+vim plugins/specweave/skills/spec-generator/SKILL.md
 
 # Other plugins (opt-in):
 vim plugins/specweave-github/skills/github-sync/SKILL.md
@@ -1391,13 +1812,14 @@ npm run build && npm test
    - Acceptance criteria in PRDs
    - Manual validation
 
-2. **Feature Tests** (`.specweave/increments/####/tests.md`)
-   - Test coverage plans per increment
-   - TC-XXXX test case IDs
+2. **Embedded Tests** (`.specweave/increments/####/tasks.md`)
+   - Test plans embedded in tasks (BDD format, v0.7.0+)
+   - AC-ID traceability (AC-US1-01, AC-US1-02, etc.)
 
-3. **Skill Tests** (`tests/specs/{skill-name}/` or `tests/integration/{skill-name}/`)
-   - Test cases for skill functionality
-   - Minimum 3 test cases per skill
+3. **Integration Tests** (`tests/integration/{skill-name}/`)
+   - Tests for plugin and skill functionality
+   - Tool sync (github, ado, jira)
+   - Brownfield detection and other integrations
    - Run via: `npm run test:integration`
 
 4. **Code Tests** (`tests/`)
@@ -1526,7 +1948,7 @@ plugins/specweave-{name}/
 ```
 Is this feature...
 ├─ Used by EVERY project? → specweave (auto-loaded)
-│  Examples: increment-planner, rfc-generator, tdd-workflow, PM/Architect agents
+│  Examples: increment-planner, spec-generator, tdd-workflow, PM/Architect agents
 │
 ├─ Part of increment lifecycle? → specweave (auto-loaded)
 │  Examples: /specweave:inc, /specweave:do, living docs hooks
@@ -1736,7 +2158,7 @@ Other tools simply can't match these capabilities. The adapters remain in the co
 - **Plugin components**: `plugins/specweave-{name}/{skills|agents|commands}/`
 - **Tests**: `tests/integration/{component-name}/` or `tests/unit/`
 
-**For detailed instructions**: See "Adding a New Plugin (Contributors)" section above (line ~1250)
+**For detailed instructions**: See "Adding a New Plugin (Contributors)" section above
 
 ### Update Documentation
 

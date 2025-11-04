@@ -18,19 +18,17 @@ Data → Validation → Training → Validation → Deployment → Inference
 
 ## Test Files
 
-### 1. Test Specifications (YAML)
-
-Located in: `tests/specs/ml-pipeline-workflow/`
-
-- **TC-001**: Complete soccer player detection pipeline (30s)
-- **TC-002**: Data validation failure handling (10s)
-- **TC-003**: MLflow model registry integration (20s)
-
-### 2. Integration Tests (TypeScript)
+### Integration Tests (TypeScript)
 
 Located in: `tests/integration/ml-pipeline-workflow/`
 
-- **ml-pipeline-soccer-detection.test.ts** - Main integration test (implements TC-001)
+- **ml-pipeline-soccer-detection.test.ts** - Complete soccer player detection pipeline (30s)
+- **ml-pipeline-real-video.test.ts** - Real-world video processing test
+
+**Test Coverage**:
+- TC-001: Complete soccer player detection pipeline
+- TC-002: Data validation failure handling
+- TC-003: MLflow model registry integration
 
 ---
 

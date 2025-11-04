@@ -1,245 +1,396 @@
 ---
 name: ado-sync
-description: Sync SpecWeave increments with Azure DevOps Epics/Features/User Stories. Activates for ADO sync, Azure DevOps sync, create ADO work item, import from ADO. Coordinates with specweave-ado-mapper agent.
-allowed-tools: Read, Write, Edit, Task, Bash
+description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items. Creates work items from increments, tracks progress via comments, updates increment status from work item state, and closes work items when increments complete. Activates for: Azure DevOps, ADO, work items, project management, sync to ADO, ADO integration, TFS integration.
 ---
 
-# ADO Sync Skill
+# Azure DevOps Sync Skill
 
-Coordinates Azure DevOps synchronization by delegating to `specweave-ado-mapper` agent.
+**Purpose**: Seamlessly sync SpecWeave increments with Azure DevOps work items for unified project tracking.
 
-## Responsibilities
-
-1. Detect sync requests (export, import, bidirectional)
-2. Validate prerequisites (ADO PAT, Area Path, Iteration)
-3. Invoke `specweave-ado-mapper` agent
-4. Handle errors gracefully
+**Capabilities**:
+- Create ADO work items from increments
+- Sync task progress → ADO comments  
+- Update increment status from ADO state
+- Close work items when increments complete
+- Support for Epics, Features, User Stories
 
 ---
 
-## ⚠️ CRITICAL: Secrets Required (MANDATORY CHECK)
+## When This Skill Activates
 
-**BEFORE attempting Azure DevOps sync, CHECK for ADO credentials.**
+**Keywords**: Azure DevOps, ADO, work items, sync to ADO, ADO integration, TFS, Visual Studio Team Services
 
-### Step 1: Check If Credentials Exist
+**Examples**:
+- "Sync this increment with Azure DevOps"
+- "Create ADO work item for this feature"
+- "Update work item #12345 with progress"
+- "Close ADO work item when done"
 
-```bash
-# Check .env file for required credentials
-if [ -f .env ] && grep -q "AZURE_DEVOPS_PAT" .env; then
-  echo "✅ Azure DevOps PAT found"
-else
-  # PAT NOT found - STOP and prompt user
-fi
-```
+---
 
-### Step 2: If Credentials Missing, STOP and Show This Message
+## Prerequisites
 
-```
-🔐 **Azure DevOps Personal Access Token (PAT) Required**
-
-I need your Azure DevOps Personal Access Token to sync with ADO.
-
-**How to get it**:
-1. Go to: https://dev.azure.com/{organization}/_usersSettings/tokens
-2. Or: User Settings (top right) → Personal Access Tokens
-3. Click "+ New Token"
-4. Give it a name (e.g., "specweave-sync")
-5. Set expiration (recommend: 90 days, then rotate)
-6. Select scopes:
-   ✅ **Work Items** (Read, Write, & Manage)
-   ✅ **Code** (Read) - if syncing commits/PRs
-   ✅ **Project and Team** (Read)
-7. Click "Create"
-8. **Copy the token immediately** (you can't see it again!)
-
-**Where I'll save it**:
-- File: `.env` (gitignored, secure)
-- Format:
-  ```
-  AZURE_DEVOPS_PAT=your-ado-pat-here-52-chars-base64
-  AZURE_DEVOPS_ORG=your-organization-name
-  AZURE_DEVOPS_PROJECT=your-project-name
-  ```
-
-**Security**:
-✅ .env is in .gitignore (never committed to git)
-✅ Token is 52 characters, base64-encoded
-✅ Stored locally only (not in source code)
-
-Please provide:
-1. Your Azure DevOps PAT:
-2. Your organization name (e.g., "mycompany"):
-3. Your project name (e.g., "MyProject"):
-```
-
-### Step 3: Validate Credentials Format
+### 1. ADO Plugin Installed
 
 ```bash
-# Validate PAT format (52 chars, base64)
-if [ ${#AZURE_DEVOPS_PAT} -ne 52 ]; then
-  echo "⚠️  Warning: PAT length unexpected"
-  echo "Expected: 52 characters (base64-encoded)"
-  echo "Got: ${#AZURE_DEVOPS_PAT} characters"
-  echo "This might not be a valid Azure DevOps PAT"
-fi
+# Check if installed
+/plugin list --installed | grep specweave-ado
 
-# Validate organization name (no special chars)
-if [[ ! "$AZURE_DEVOPS_ORG" =~ ^[a-zA-Z0-9-]+$ ]]; then
-  echo "⚠️  Warning: Organization name contains unexpected characters"
-  echo "Expected: alphanumeric and hyphens only"
-  echo "Got: $AZURE_DEVOPS_ORG"
-fi
-
-# Validate project name (no special chars except spaces)
-if [ -z "$AZURE_DEVOPS_PROJECT" ]; then
-  echo "❌ Error: Project name is empty"
-  exit 1
-fi
+# Install if needed
+/plugin install specweave-ado@specweave
 ```
 
-### Step 4: Save Credentials Securely
+### 2. Azure DevOps Personal Access Token (PAT)
 
+**Create PAT**:
+1. Go to https://dev.azure.com/{organization}/_usersSettings/tokens
+2. Click "New Token"
+3. Name: "SpecWeave Sync"
+4. Scopes: Work Items (Read & Write), Comments (Read & Write)
+5. Copy token → Set environment variable
+
+**Set Token**:
 ```bash
-# Save to .env
-cat >> .env << EOF
-AZURE_DEVOPS_PAT=$AZURE_DEVOPS_PAT
-AZURE_DEVOPS_ORG=$AZURE_DEVOPS_ORG
-AZURE_DEVOPS_PROJECT=$AZURE_DEVOPS_PROJECT
-EOF
-
-# Ensure .env is gitignored
-if ! grep -q "^\\.env$" .gitignore; then
-  echo ".env" >> .gitignore
-fi
-
-# Create .env.example for team
-cat > .env.example << 'EOF'
-# Azure DevOps Personal Access Token
-# Get from: https://dev.azure.com/{org}/_usersSettings/tokens
-# Scopes: Work Items (Read, Write, Manage), Code (Read), Project (Read)
-AZURE_DEVOPS_PAT=your-ado-pat-52-chars-base64
-AZURE_DEVOPS_ORG=your-organization-name
-AZURE_DEVOPS_PROJECT=your-project-name
-EOF
-
-echo "✅ Credentials saved to .env (gitignored)"
-echo "✅ Created .env.example for team (commit this)"
+export AZURE_DEVOPS_PAT="your-token-here"
 ```
 
-### Step 5: Use Credentials in Sync
+### 3. ADO Configuration
 
-```bash
-# Export for Azure DevOps API calls
-export AZURE_DEVOPS_PAT=$(grep AZURE_DEVOPS_PAT .env | cut -d '=' -f2)
-export AZURE_DEVOPS_ORG=$(grep AZURE_DEVOPS_ORG .env | cut -d '=' -f2)
-export AZURE_DEVOPS_PROJECT=$(grep AZURE_DEVOPS_PROJECT .env | cut -d '=' -f2)
-
-# Create Base64 Basic Auth header (PAT as username, empty password)
-AUTH=$(echo -n ":$AZURE_DEVOPS_PAT" | base64)
-
-# Use in Azure DevOps REST API calls
-curl -H "Authorization: Basic $AUTH" \
-     -H "Content-Type: application/json" \
-     https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT/_apis/wit/workitems/12345?api-version=7.0
-```
-
-### Step 6: Never Log Secrets
-
-```bash
-# ❌ WRONG - Logs secret
-echo "Using PAT: $AZURE_DEVOPS_PAT"
-
-# ✅ CORRECT - Masks secret
-echo "Using Azure DevOps credentials (PAT present: ✅, org: $AZURE_DEVOPS_ORG, project: $AZURE_DEVOPS_PROJECT)"
-```
-
-### Step 7: Error Handling
-
-```bash
-# If API call fails with 401 Unauthorized
-if [ $? -eq 401 ]; then
-  echo "❌ Azure DevOps PAT invalid or expired"
-  echo ""
-  echo "Possible causes:"
-  echo "1. PAT expired (check expiration date)"
-  echo "2. PAT revoked"
-  echo "3. Organization name incorrect (check: $AZURE_DEVOPS_ORG)"
-  echo "4. Insufficient scopes (need: Work Items Read/Write/Manage)"
-  echo ""
-  echo "Please verify or regenerate PAT:"
-  echo "https://dev.azure.com/$AZURE_DEVOPS_ORG/_usersSettings/tokens"
-fi
-
-# If API call fails with 403 Forbidden
-if [ $? -eq 403 ]; then
-  echo "❌ Azure DevOps permission denied"
-  echo ""
-  echo "Your account lacks permissions for this operation."
-  echo "Required permissions:"
-  echo "- View work items in this project"
-  echo "- Edit work items in this project"
-  echo "- Manage work item tags"
-  echo "- View project-level information"
-  echo ""
-  echo "Contact your Azure DevOps administrator."
-fi
-
-# If API call fails with 404 Not Found
-if [ $? -eq 404 ]; then
-  echo "❌ Azure DevOps project not found"
-  echo ""
-  echo "Check your configuration:"
-  echo "- Organization: $AZURE_DEVOPS_ORG"
-  echo "- Project: $AZURE_DEVOPS_PROJECT"
-  echo ""
-  echo "Verify the project exists:"
-  echo "https://dev.azure.com/$AZURE_DEVOPS_ORG/$AZURE_DEVOPS_PROJECT"
-fi
-```
-
-### Step 8: Production Recommendations
-
-**For production deployments, use Service Principals or Managed Identities**:
-
-**Why Service Principals?**
-- ✅ Not tied to individual user accounts
-- ✅ Can be scoped to specific projects/resources
-- ✅ Easier to rotate and manage
-- ✅ Better audit trail
-
-**How to set up Service Principal**:
-1. Go to: https://portal.azure.com/
-2. Navigate to: Azure Active Directory → App Registrations
-3. Create new registration
-4. Add to Azure DevOps organization
-5. Grant appropriate permissions
-6. Use client credentials flow instead of PAT
-
-**PAT Best Practices**:
-- ✅ Set expiration to 90 days maximum
-- ✅ Use minimum required scopes
-- ✅ Rotate regularly (set calendar reminder)
-- ✅ Revoke immediately when team member leaves
-- ✅ Create separate PATs for different purposes (dev, prod, CI/CD)
-
-**Alternative: Azure CLI**:
-```bash
-# Authenticate once with Azure CLI
-az login
-
-# Azure DevOps commands will use your Azure credentials
-az devops configure --defaults organization=https://dev.azure.com/$AZURE_DEVOPS_ORG project=$AZURE_DEVOPS_PROJECT
-
-# No PAT needed if Azure CLI is configured
-az boards work-item show --id 12345
+Add to `.specweave/config.json`:
+```json
+{
+  "externalPM": {
+    "tool": "ado",
+    "enabled": true,
+    "config": {
+      "organization": "myorg",
+      "project": "MyProject",
+      "workItemType": "Epic",
+      "areaPath": "MyProject\\Team A",
+      "syncOnTaskComplete": true
+    }
+  }
+}
 ```
 
 ---
 
-## Usage
+## Commands Available
 
-**Export**: `/sync-ado export 0001`
-**Import**: `/sync-ado import 12345`
-**Sync**: `/sync-ado sync 0001`
+### `/specweave-ado:create-workitem <increment-id>`
 
-All conversion logic is handled by the `specweave-ado-mapper` agent.
+**Purpose**: Create ADO work item from increment
+
+**Example**:
+```bash
+/specweave-ado:create-workitem 0005
+```
+
+**Result**:
+- Creates Epic/Feature/User Story in ADO
+- Links work item to increment (metadata)
+- Adds initial comment with spec summary
+- Sets tags: `specweave`, `increment-0005`
+
+---
+
+### `/specweave-ado:sync <increment-id>`
+
+**Purpose**: Sync increment progress with ADO work item
+
+**Example**:
+```bash
+/specweave-ado:sync 0005
+```
+
+**Result**:
+- Calculates task completion (%)
+- Updates work item description
+- Adds comment with progress update
+- Updates state (New → Active → Resolved)
+
+---
+
+### `/specweave-ado:close-workitem <increment-id>`
+
+**Purpose**: Close ADO work item when increment complete
+
+**Example**:
+```bash
+/specweave-ado:close-workitem 0005
+```
+
+**Result**:
+- Updates work item state → Closed
+- Adds completion comment with summary
+- Marks work item as resolved
+
+---
+
+### `/specweave-ado:status <increment-id>`
+
+**Purpose**: Check ADO sync status for increment
+
+**Example**:
+```bash
+/specweave-ado:status 0005
+```
+
+**Result**:
+```
+ADO Sync Status
+===============
+Increment: 0005-payment-integration
+Work Item: #12345
+URL: https://dev.azure.com/myorg/MyProject/_workitems/edit/12345
+State: Active
+Completion: 60% (6/10 tasks)
+Last Synced: 2025-11-04 10:30:00
+Sync Enabled: ✅
+```
+
+---
+
+## Automatic Sync
+
+### When Task Completes
+
+**Trigger**: Post-task-completion hook fires
+
+**Flow**:
+1. User marks task complete: `[x] T-005: Add payment tests`
+2. Hook detects ADO sync enabled
+3. Calculate new completion %
+4. Update ADO work item comment:
+   ```markdown
+   ## Progress Update
+   
+   **Increment**: 0005-payment-integration
+   **Status**: 60% complete (6/10 tasks)
+   
+   ### Recently Completed
+   - [x] T-005: Add payment tests
+   
+   ### Remaining
+   - [ ] T-007: Add refund functionality
+   - [ ] T-008: Implement subscriptions
+   - [ ] T-009: Add analytics
+   - [ ] T-010: Security audit
+   
+   ---
+   🤖 Auto-updated by SpecWeave
+   ```
+
+### When Increment Completes
+
+**Trigger**: `/specweave:done` command
+
+**Flow**:
+1. User runs `/specweave:done 0005`
+2. Validate all tasks complete
+3. Close ADO work item automatically
+4. Add completion comment with summary
+
+---
+
+## Work Item Types
+
+### Epic (Recommended)
+
+**Use When**: Large feature spanning multiple sprints
+
+**Mapping**:
+- SpecWeave increment → ADO Epic
+- Tasks → Epic description (checklist)
+- Progress → Epic comments
+
+---
+
+### Feature
+
+**Use When**: Medium-sized feature within a sprint
+
+**Mapping**:
+- SpecWeave increment → ADO Feature
+- Tasks → Feature description (checklist)
+- Progress → Feature comments
+
+---
+
+### User Story
+
+**Use When**: Small, single-sprint work
+
+**Mapping**:
+- SpecWeave increment → ADO User Story
+- Tasks → User Story description (checklist)
+- Progress → User Story comments
+
+---
+
+## Bidirectional Sync (Optional)
+
+**Enable**: Set `bidirectional: true` in config
+
+**Flow**: ADO → SpecWeave
+1. User updates work item state in ADO (Active → Resolved)
+2. SpecWeave detects change (polling or webhook)
+3. Updates increment status locally
+4. Notifies user: "Work item #12345 resolved → Increment 0005 marked complete"
+
+**Note**: Bidirectional sync requires webhook or polling setup
+
+---
+
+## Configuration Options
+
+**`.specweave/config.json`**:
+```json
+{
+  "externalPM": {
+    "tool": "ado",
+    "enabled": true,
+    "config": {
+      "organization": "myorg",
+      "project": "MyProject",
+      "personalAccessToken": "${AZURE_DEVOPS_PAT}",
+      "workItemType": "Epic",
+      "areaPath": "MyProject\\Team A",
+      "iterationPath": "MyProject\\Sprint 1",
+      "syncOnTaskComplete": true,
+      "syncOnIncrementComplete": true,
+      "createWorkItemsAutomatically": true,
+      "bidirectional": false,
+      "tags": ["specweave", "increment"],
+      "customFields": {
+        "incrementId": "Custom.IncrementId"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### Error: "Personal Access Token invalid"
+
+**Solution**:
+1. Verify token is set: `echo $AZURE_DEVOPS_PAT`
+2. Check token scopes: Work Items (Read & Write)
+3. Ensure token not expired
+4. Regenerate token if needed
+
+---
+
+### Error: "Work item not found"
+
+**Solution**:
+1. Check work item ID is correct
+2. Verify you have access to the project
+3. Ensure work item not deleted
+
+---
+
+### Error: "Organization or project not found"
+
+**Solution**:
+1. Verify organization name: https://dev.azure.com/{organization}
+2. Check project name (case-sensitive)
+3. Ensure you have access to the project
+
+---
+
+## API Rate Limits
+
+**Azure DevOps**:
+- Rate limit: 200 requests per minute per PAT
+- Burst limit: 5000 requests per hour
+- Recommendation: Enable rate limiting in config
+
+**Config**:
+```json
+{
+  "externalPM": {
+    "config": {
+      "rateLimiting": {
+        "enabled": true,
+        "maxRequestsPerMinute": 150
+      }
+    }
+  }
+}
+```
+
+---
+
+## Security Best Practices
+
+### DO:
+- ✅ Store PAT in environment variable (`AZURE_DEVOPS_PAT`)
+- ✅ Use `.env` file (gitignored)
+- ✅ Set minimum required scopes
+- ✅ Rotate PAT every 90 days
+
+### DON'T:
+- ❌ Commit PAT to git
+- ❌ Share PAT via Slack/email
+- ❌ Use PAT with excessive permissions
+- ❌ Log PAT to console/files
+
+---
+
+## Related Commands
+
+- `/specweave:inc` - Create increment (auto-creates ADO work item if enabled)
+- `/specweave:do` - Execute tasks (auto-syncs progress to ADO)
+- `/specweave:done` - Complete increment (auto-closes ADO work item)
+- `/specweave:status` - Show increment status (includes ADO sync status)
+
+---
+
+## Examples
+
+### Example 1: Create Increment with ADO Sync
+
+```bash
+# User
+"Create increment for payment integration"
+
+# SpecWeave (if ADO enabled)
+1. PM agent generates spec.md
+2. Auto-create ADO Epic #12345
+3. Link Epic to increment metadata
+4. Display: "Created increment 0005 → ADO Epic #12345"
+```
+
+### Example 2: Manual Sync
+
+```bash
+# User completed 3 tasks manually
+# Now sync to ADO
+
+/specweave-ado:sync 0005
+
+# Result: ADO Epic #12345 updated with 30% progress
+```
+
+### Example 3: Check Sync Status
+
+```bash
+/specweave-ado:status 0005
+
+# Output:
+# Work Item: #12345
+# URL: https://dev.azure.com/myorg/MyProject/_workitems/edit/12345
+# State: Active
+# Completion: 60%
+# Last Synced: 5 minutes ago
+```
+
+---
+
+**Status**: Ready to use
+**Version**: 0.1.0
+**Plugin**: specweave-ado@specweave

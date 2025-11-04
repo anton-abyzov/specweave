@@ -35,7 +35,7 @@
 2. Fill in all sections
 3. Create PR for review
 4. Tag stakeholders and product team
-5. Once approved, reference in HLD and RFC
+5. Once approved, reference in HLD and Spec
 
 ## Index of Strategy Documents
 
@@ -50,6 +50,6 @@
 
 ## Related Documentation
 
-- [Architecture Documentation](../architecture/README.md) - Links PRDs to HLD/ADR/RFC
+- [Architecture Documentation](../architecture/README.md) - Links PRDs to HLD/ADR/Spec
 - [Delivery Documentation](../delivery/README.md) - Links PRDs to roadmap
 - [PRD Template](../../../templates/docs/prd-template.md)

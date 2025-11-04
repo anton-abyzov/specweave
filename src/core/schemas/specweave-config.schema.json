@@ -79,49 +79,55 @@
     },
     "limits": {
       "type": "object",
-      "description": "Work-in-progress (WIP) limits for increment types",
+      "description": "Work-in-progress (WIP) limits - simplified to enforce focus (v0.7.0+)",
       "properties": {
-        "feature": {
-          "type": ["number", "null"],
-          "description": "Max active feature increments (null = unlimited)",
+        "maxActiveIncrements": {
+          "type": "number",
+          "description": "Maximum active increments at any time (default: 1 for maximum focus)",
           "minimum": 1,
-          "default": 2
-        },
-        "hotfix": {
-          "type": ["number", "null"],
-          "description": "Max active hotfix increments (null = unlimited)",
-          "minimum": 1,
-          "default": null
-        },
-        "bug": {
-          "type": ["number", "null"],
-          "description": "Max active bug increments (null = unlimited)",
-          "minimum": 1,
-          "default": null
-        },
-        "change-request": {
-          "type": ["number", "null"],
-          "description": "Max active change-request increments (null = unlimited)",
-          "minimum": 1,
-          "default": 2
-        },
-        "refactor": {
-          "type": ["number", "null"],
-          "description": "Max active refactor increments (null = unlimited)",
-          "minimum": 1,
+          "maximum": 3,
           "default": 1
         },
-        "experiment": {
-          "type": ["number", "null"],
-          "description": "Max active experiment increments (null = unlimited)",
-          "minimum": 1,
-          "default": null
-        },
-        "experimentAutoAbandonDays": {
+        "hardCap": {
           "type": "number",
-          "description": "Auto-abandon experiments after N days of inactivity",
+          "description": "Absolute maximum active increments, never exceeded (emergency ceiling)",
           "minimum": 1,
-          "default": 14
+          "maximum": 5,
+          "default": 2
+        },
+        "allowEmergencyInterrupt": {
+          "type": "boolean",
+          "description": "Allow 2nd active increment for hotfix/bug emergencies",
+          "default": true
+        },
+        "typeBehaviors": {
+          "type": "object",
+          "description": "Increment type-specific behaviors",
+          "properties": {
+            "canInterrupt": {
+              "type": "array",
+              "description": "Types that can interrupt existing work (emergency scenarios)",
+              "items": {
+                "type": "string",
+                "enum": ["hotfix", "bug"]
+              },
+              "default": ["hotfix", "bug"]
+            },
+            "autoAbandonDays": {
+              "type": "object",
+              "description": "Auto-abandon increments after N days of inactivity",
+              "properties": {
+                "experiment": {
+                  "type": "number",
+                  "description": "Days before experiment auto-abandons",
+                  "minimum": 1,
+                  "default": 14
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
         },
         "staleness": {
           "type": "object",
@@ -309,13 +315,15 @@
         "version": "2.0.0"
       },
       "limits": {
-        "feature": 5,
-        "hotfix": null,
-        "bug": null,
-        "change-request": 3,
-        "refactor": 2,
-        "experiment": 10,
-        "experimentAutoAbandonDays": 21,
+        "maxActiveIncrements": 1,
+        "hardCap": 2,
+        "allowEmergencyInterrupt": true,
+        "typeBehaviors": {
+          "canInterrupt": ["hotfix", "bug"],
+          "autoAbandonDays": {
+            "experiment": 21
+          }
+        },
         "staleness": {
           "paused": 14,
           "active": 60

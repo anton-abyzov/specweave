@@ -31,26 +31,28 @@
 
 ---
 
-### 2. RFC - The "What" (Detailed Requirements)
-**Location**: `rfc/`
+### 2. Specs - The "What" (Detailed Requirements)
+**Location**: `specs/`
 
 **Purpose**: Detailed technical specifications for features, integrations, and architectural changes
 
 **What Goes Here**:
 - Feature specifications (detailed user stories, acceptance criteria)
-- Integration proposals (GitHub, JIRA, etc.)
+- Integration proposals (GitHub, JIRA, Azure DevOps, etc.)
 - Breaking changes and migrations
 - Cross-cutting concerns
 
 **Document Types**:
-- RFC-XXXX: Feature specifications
+- SPEC-XXXX: Feature specifications
 - Must reference ADRs and diagrams when applicable
 
 **When to Use**: When planning complex features requiring team alignment
 
-**IMPORTANT**: RFCs serve as the project's historical record. Reading all RFCs should give a complete understanding of how the project evolved and its current scope.
+**IMPORTANT**: Specs serve as the project's historical record. Reading all specs should give a complete understanding of how the project evolved and its current scope.
 
-**See**: [rfc/README.md](rfc/README.md)
+**Terminology Note**: Renamed to "Specs" in v0.8.0 to align with SpecWeave brand and industry standard.
+
+**See**: [specs/README.md](specs/README.md)
 
 ---
 
@@ -199,11 +201,11 @@ last_reviewed: 2025-01-15
 
 ## Creating New Documents
 
-1. Choose the appropriate pillar (Strategy, Architecture, Delivery, Operations, Governance)
+1. Choose the appropriate pillar (Strategy, Specs, Architecture, Delivery, Operations, Governance)
 2. Use the appropriate template from `templates/docs/`
 3. Follow naming conventions:
    - ADR: `0001-decision-title.md`
-   - RFC: `0001-feature-title.md`
+   - Spec: `spec-0001-feature-title.md`
    - Others: `descriptive-name.md`
 4. Create PR for review
 5. Tag appropriate reviewers (see CODEOWNERS)
@@ -215,7 +217,7 @@ last_reviewed: 2025-01-15
 ```
 .specweave/docs/internal/
 ├── strategy/           # Business rationale, PRDs, vision
-├── rfc/                # Feature specifications (detailed requirements)
+├── specs/              # Feature specifications (detailed requirements)
 ├── architecture/       # Technical design (HLD, LLD, ADR, diagrams)
 │   ├── adr/            # Architecture Decision Records
 │   └── diagrams/       # Mermaid diagrams, SVGs
@@ -231,7 +233,7 @@ last_reviewed: 2025-01-15
 | What are you documenting? | Folder | Example |
 |---------------------------|--------|---------|
 | Business case for new feature | `strategy/` | `prd-user-authentication.md` |
-| Detailed feature spec with user stories | `rfc/` | `rfc-0007-smart-discipline.md` |
+| Detailed feature spec with user stories | `specs/` | `spec-0007-smart-discipline.md` |
 | System architecture diagram | `architecture/` | `hld-system-overview.md` |
 | Technical decision (why we chose X over Y) | `architecture/adr/` | `0001-use-postgres.md` |
 | Git workflow and branching rules | `delivery/` | `branch-strategy.md` |
@@ -248,14 +250,14 @@ last_reviewed: 2025-01-15
 ### Document Flow
 
 ```
-PRD → RFC → Architecture → Delivery → Operations
+PRD → Spec → Architecture → Delivery → Operations
  ↓      ↓         ↓            ↓          ↓
 Why  → What →    How   →     Build  →   Run
 ```
 
 **Example Flow**:
 1. **Strategy**: `prd-user-auth.md` - Why do we need authentication?
-2. **RFC**: `rfc-0005-authentication.md` - What exactly will we build? (user stories, acceptance criteria)
+2. **Specs**: `spec-0005-authentication.md` - What exactly will we build? (user stories, acceptance criteria)
 3. **Architecture**: `hld-auth-system.md` - How will it be designed?
 4. **Architecture/ADR**: `0012-use-oauth2.md` - Why OAuth2 over other methods?
 5. **Delivery**: `test-strategy-auth.md` - How will we test it?
@@ -264,13 +266,13 @@ Why  → What →    How   →     Build  →   Run
 
 ### Cross-Linking Rules
 
-- ✅ **RFC → ADR**: Link to relevant architecture decisions
-- ✅ **RFC → Diagrams**: Reference architecture diagrams
+- ✅ **Spec → ADR**: Link to relevant architecture decisions
+- ✅ **Spec → Diagrams**: Reference architecture diagrams
 - ✅ **HLD → ADR**: Link to decisions that shaped the design
 - ✅ **Runbook → HLD**: Link to system architecture
-- ✅ **Test Strategy → RFC**: Link to feature specs being tested
+- ✅ **Test Strategy → Spec**: Link to feature specs being tested
 
-**Example (in RFC)**:
+**Example (in Spec)**:
 ```markdown
 ## Architecture
 
@@ -284,7 +286,7 @@ See [ADR-0012: Use OAuth2](../architecture/adr/0012-use-oauth2.md) for authentic
 ## Related Documentation
 
 - [Strategy README](strategy/README.md) - Business case documentation
-- [RFC README](rfc/README.md) - Feature specifications
+- [Specs README](specs/README.md) - Feature specifications
 - [Architecture README](architecture/README.md) - Technical design
 - [Delivery README](delivery/README.md) - Build & release processes
 - [Operations README](operations/README.md) - Production operations

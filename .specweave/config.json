@@ -1,0 +1,51 @@
+{
+  "project": {
+    "name": "specweave",
+    "version": "0.7.0",
+    "description": "Spec-Driven Development Framework for Claude Code"
+  },
+  "adapters": {
+    "default": "claude"
+  },
+  "language": "en",
+  "plugins": {
+    "enabled": [
+      "specweave-github"
+    ],
+    "settings": {
+      "specweave-github": {
+        "repo": "anton-abyzov/specweave",
+        "auto_create_issue": true,
+        "auto_update_progress": true,
+        "auto_close_issue": true,
+        "sync_frequency": "every-task",
+        "default_labels": [
+          "specweave",
+          "increment"
+        ],
+        "milestone": "v0.7.0"
+      }
+    }
+  },
+  "limits": {
+    "maxActiveIncrements": 1,
+    "hardCap": 2,
+    "allowEmergencyInterrupt": true,
+    "typeBehaviors": {
+      "canInterrupt": [
+        "hotfix",
+        "bug"
+      ],
+      "autoAbandonDays": {
+        "experiment": 14
+      }
+    },
+    "staleness": {
+      "paused": 7,
+      "active": 30
+    }
+  },
+  "translation": {
+    "enabled": false
+  }
+}

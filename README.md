@@ -7,6 +7,15 @@
 
 **Define WHAT and WHY before HOW. Specifications evolve with code, never diverge.**
 
+### Engineering Metrics (DORA)
+
+[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://spec-weave.com/docs/metrics)
+
+[View detailed metrics dashboard →](https://spec-weave.com/docs/metrics)
+
 ---
 
 ## What is SpecWeave?
@@ -97,6 +106,8 @@ cd my-project
 /done 0001
 ```
 
+**New to SpecWeave?** Check out the [FAQ](https://spec-weave.com/docs/faq) for answers to common questions about specs architecture, living docs, and workflow.
+
 ### Status Management (NEW in v0.7.0)
 
 ```bash
@@ -184,6 +195,151 @@ Optional Plugins (install on demand):
 
 **4. Repeat** - Start next increment (auto-closes previous)
 
+**Visual Workflow**:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant PM as PM Agent
+    participant Architect
+    participant TestPlanner as Test-Aware Planner
+    participant Developer
+    participant Hooks
+
+    User->>PM: /specweave:inc "User Authentication"
+
+    Note over PM: Step 1: Analyze Feature
+    PM->>PM: Detect: Large feature (OAuth, 2FA)<br/>3+ increments likely
+
+    alt Major Feature Detected
+        PM->>User: 💡 Suggest: Create living docs spec?<br/>Reason: Large feature, brownfield links
+        User->>PM: Decision: Yes/No
+        opt User says YES
+            PM->>PM: Create living docs spec<br/>.specweave/docs/internal/specs/spec-0005-authentication/
+        end
+    end
+
+    Note over PM: Step 2: Create Increment Spec
+    PM->>PM: Create increment spec<br/>.specweave/increments/0007-basic-login/spec.md
+    PM->>PM: Generate user stories (US-001 to US-003)
+
+    PM->>Architect: Create technical plan
+    Architect->>Architect: Design architecture, components
+    Architect->>Architect: Create plan.md with test strategy
+
+    Architect->>TestPlanner: Generate tasks with embedded tests
+    TestPlanner->>TestPlanner: Create tasks.md (BDD format)
+
+    Note over Developer: Implementation Phase
+    Developer->>Developer: /specweave:do (implement T-001)
+    Developer->>Hooks: Task T-001 complete ✅
+
+    Hooks->>Hooks: post-task-completion hook fires
+    Hooks->>Hooks: Update living docs (ADRs, HLDs)
+    Hooks->>Hooks: Sync to PM tool (Jira, ADO)
+
+    Developer->>Developer: Continue with T-002, T-003...
+    Developer->>User: All tasks complete ✅
+
+    User->>PM: /specweave:done 0007
+    PM->>PM: Validate: All tasks done, tests passing
+    PM->>PM: Update living docs spec<br/>(mark US-001 to US-003 complete)
+    PM->>User: Increment 0007 complete ✅
+
+    style PM fill:#FFB6C1
+    style Architect fill:#87CEEB
+    style TestPlanner fill:#98FB98
+    style Hooks fill:#FFD700
+```
+
+**Key Enhancements** (NEW in v0.8.0):
+- 🤖 **PM Agent Validation**: Auto-suggests living docs spec for major features
+- 🔗 **Living Docs Integration**: Hooks auto-sync to permanent specs
+- 📋 **PM Tool Sync**: Auto-updates Jira/ADO/GitHub on task completion
+
+---
+
+## Specs Architecture: Two Locations
+
+**SpecWeave uses specs in TWO locations for different purposes:**
+
+### 1. Living Docs Specs (Permanent Knowledge Base)
+**Location**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
+
+- ✅ **Permanent** - Never deleted, serves as historical record
+- ✅ **Comprehensive** - ALL user stories (US-001 to US-020), complete feature scope
+- ✅ **Brownfield links** - References to existing project documentation
+- ✅ **External PM tools** - Linked to Jira epics, ADO features, GitHub milestones
+- ✅ **One spec → Many increments** - Large features span 3-10 increments
+
+**When to create**: Major features requiring permanent documentation, brownfield integration, or external PM tool tracking.
+
+### 2. Increment Specs (Implementation Snapshot)
+**Location**: `.specweave/increments/0007-basic-login/spec.md`
+
+- ⏳ **Temporary** - Can be deleted after increment completes
+- 🎯 **Focused** - Subset of user stories (US-001 to US-003) for THIS increment only
+- 📝 **Implementation guide** - "What am I building RIGHT NOW?"
+- 🔗 **References living docs** - Points to permanent spec for complete context
+
+**Always created**: Every increment gets its own spec.md (required).
+
+### Real-World Example
+
+**Large Feature: Authentication System**
+
+```
+Living Docs (Permanent):
+.specweave/docs/internal/specs/spec-0005-authentication/spec.md
+  → Contains ALL 20 user stories
+  → Links to existing legacy auth docs
+  → Linked to Jira epic AUTH-123
+
+Increment 1 (Temporary):
+.specweave/increments/0007-basic-login/spec.md
+  → Implements: US-001, US-002, US-003 only
+  → References: SPEC-0005-authentication
+
+Increment 2 (Temporary):
+.specweave/increments/0012-oauth/spec.md
+  → Implements: US-010, US-011, US-012 only
+  → References: SPEC-0005-authentication
+```
+
+**Result**: One permanent spec → Many temporary increment snapshots
+
+**Why this matters**: Living docs = permanent knowledge base. Increment specs = focused implementation guides. You get both historical record AND clear focus for current work.
+
+**Visual Representation**:
+
+```mermaid
+graph LR
+    LivingDocs[Living Docs Spec<br/>spec-0005-authentication<br/>📚 Permanent Knowledge Base]
+    Inc1[Increment 0007<br/>Basic Login<br/>📝 Temporary Snapshot]
+    Inc2[Increment 0012<br/>OAuth Integration<br/>📝 Temporary Snapshot]
+    Inc3[Increment 0018<br/>Two-Factor Auth<br/>📝 Temporary Snapshot]
+
+    LivingDocs -->|"References:<br/>US-001 to US-003"| Inc1
+    LivingDocs -->|"References:<br/>US-010 to US-012"| Inc2
+    LivingDocs -->|"References:<br/>US-018 to US-020"| Inc3
+
+    LivingDocs -.->|"Links to"| Brownfield[Existing Docs<br/>Legacy Auth System]
+    LivingDocs -.->|"Links to"| PMTool[Jira Epic AUTH-123<br/>ADO Work Item #456]
+
+    Inc1 -->|"Can delete<br/>after completion"| Trash1[🗑️]
+    Inc2 -->|"Can delete<br/>after completion"| Trash2[🗑️]
+    Inc3 -->|"Can delete<br/>after completion"| Trash3[🗑️]
+
+    style LivingDocs fill:#90EE90,stroke:#228B22,stroke-width:3px
+    style Inc1 fill:#FFE4B5,stroke:#FFA500,stroke-width:2px
+    style Inc2 fill:#FFE4B5,stroke:#FFA500,stroke-width:2px
+    style Inc3 fill:#FFE4B5,stroke:#FFA500,stroke-width:2px
+    style Brownfield fill:#E0E0E0,stroke:#808080
+    style PMTool fill:#E0E0E0,stroke:#808080
+```
+
+**Learn more**: See [FAQ - Specs Architecture](https://spec-weave.com/docs/faq#specs-architecture) for detailed explanations.
+
 ---
 
 ## For Brownfield Projects
@@ -214,7 +370,7 @@ specweave init .
 
 **Brownfield Excellence**:
 - ✅ Merge existing docs (wikis, legacy CLAUDE.md files)
-- ✅ Create complex architecture (ADRs, HLDs, RFCs, C4 diagrams)
+- ✅ Create complex architecture (ADRs, HLDs, Specs, C4 diagrams)
 - ✅ Living documentation from day one
 - ✅ Regression prevention via baseline tests
 - ✅ Knowledge preservation (no more tribal knowledge)
@@ -260,7 +416,7 @@ my-project/
 │   │   │   └── reports/     # Analysis, logs, scripts
 │   │   └── 0002-next-feature/
 │   ├── docs/
-│   │   ├── internal/        # Strategy, architecture, ADRs, RFCs
+│   │   ├── internal/        # Strategy, architecture, ADRs, Specs
 │   │   └── public/          # User-facing docs
 │   └── logs/
 │
@@ -275,6 +431,7 @@ my-project/
 ## Documentation
 
 - 📖 **[spec-weave.com](https://spec-weave.com)** - Complete documentation
+- ❓ **[FAQ - Specs Architecture](https://spec-weave.com/docs/faq)** - Common questions answered
 - 📦 **[npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)** - npm package
 - 🐙 **[GitHub](https://github.com/anton-abyzov/specweave)** - Source code
 - 📋 **CLAUDE.md** - Auto-created in your project after `specweave init`

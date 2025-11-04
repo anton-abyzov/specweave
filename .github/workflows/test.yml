@@ -29,6 +29,21 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          # GitHub token is auto-provided by Actions (no user input here - safe)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: Set to run real integration tests (creates/deletes test data)
+          # Note: These are repository secrets, not user-controlled input
+          RUN_INTEGRATION_TESTS: 'false'
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+          AZURE_DEVOPS_ORG: ${{ secrets.AZURE_DEVOPS_ORG }}
+          AZURE_DEVOPS_PROJECT: ${{ secrets.AZURE_DEVOPS_PROJECT }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_DOMAIN: ${{ secrets.JIRA_DOMAIN }}
+
       - name: Check test coverage
         run: |
           if grep -q '"test:coverage"' package.json; then

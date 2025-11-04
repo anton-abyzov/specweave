@@ -104,6 +104,12 @@ const config: Config = {
           position: 'left',
           label: 'API',
         },
+        {
+          type: 'docSidebar',
+          sidebarId: 'commandsSidebar',
+          position: 'left',
+          label: 'Commands',
+        },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           type: 'search',
@@ -132,6 +138,10 @@ const config: Config = {
             {
               label: 'Getting Started',
               to: '/docs/guides/getting-started/quickstart',
+            },
+            {
+              label: 'Commands',
+              to: '/docs/commands/status-management',
             },
             {
               label: 'API Reference',

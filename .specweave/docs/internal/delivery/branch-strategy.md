@@ -261,7 +261,7 @@ git push origin v0.6.1
 - ✅ `hotfix(payment): fix stripe webhook processing crash`
 - ✅ `refactor(core): extract plugin loader to separate module`
 - ✅ `test(e2e): add playwright test for increment creation`
-- ✅ `docs(rfc): update RFC-0007 with implementation notes`
+- ✅ `docs(spec): update spec-0007 with implementation notes`
 - ✅ `chore(deps): bump @anthropic-ai/sdk to 0.12.0`
 
 **Subject Rules**:

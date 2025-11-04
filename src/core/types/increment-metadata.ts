@@ -127,16 +127,16 @@ export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
  * Type-based limits
  * Maximum active increments per type
  *
- * SIMPLIFIED (v0.7.1): Default to 1 active increment for all types
+ * null = unlimited (no limit enforcement)
  * User can configure per-project in .specweave/config.json
  */
 export const TYPE_LIMITS: Record<IncrementType, number | null> = {
-  [IncrementType.HOTFIX]: 1,              // Simplified: 1 active (strict focus)
-  [IncrementType.FEATURE]: 1,             // Simplified: 1 active (strict focus)
-  [IncrementType.BUG]: 1,                 // Simplified: 1 active (strict focus)
-  [IncrementType.CHANGE_REQUEST]: 1,      // Simplified: 1 active (strict focus)
-  [IncrementType.REFACTOR]: 1,            // Simplified: 1 active (strict focus)
-  [IncrementType.EXPERIMENT]: 1           // Simplified: 1 active (strict focus)
+  [IncrementType.HOTFIX]: null,          // Unlimited (emergency work)
+  [IncrementType.FEATURE]: 2,            // Max 2 active (context switching cost)
+  [IncrementType.BUG]: null,             // Unlimited (production issues)
+  [IncrementType.CHANGE_REQUEST]: 2,     // Max 2 active (stakeholder-driven)
+  [IncrementType.REFACTOR]: 1,           // Max 1 active (needs focus)
+  [IncrementType.EXPERIMENT]: null       // Unlimited (exploratory work)
 };
 
 /**

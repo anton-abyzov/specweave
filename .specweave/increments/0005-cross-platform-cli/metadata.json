@@ -1,7 +1,9 @@
 {
   "id": "0005-cross-platform-cli",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-03T18:41:28.728Z",
-  "lastActivity": "2025-11-04T09:48:16.611Z"
+  "lastActivity": "2025-11-04T09:48:16.611Z",
+  "completedAt": "2025-11-03T00:00:00.000Z",
+  "completionNotes": "Completed in v0.5.1. spec.md already marked as COMPLETED. Cross-platform CLI functionality delivered."
 }

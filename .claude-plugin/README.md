@@ -150,7 +150,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 
 **Skills**:
 - `increment-planner` - PM-led planning workflow
-- `rfc-generator` - RFC creation
+- `spec-generator` - Specification creation
 - `context-loader` - Context management
 - `brownfield-analyzer` - Existing project analysis
 - `brownfield-onboarder` - Onboard existing docs

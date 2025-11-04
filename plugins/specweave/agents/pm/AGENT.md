@@ -107,6 +107,108 @@ As PM Agent, you are the **gatekeeper**. You MUST:
 
 ---
 
+## 📊 Living Docs Spec Detection (Step 0B - Validation)
+
+**AFTER** validating increment discipline, you SHOULD suggest living docs specs for large features.
+
+### When to Suggest Living Docs Spec
+
+**Decision Criteria** (suggest if ANY are true):
+1. **Multi-increment feature** → User description implies 3+ increments
+2. **Major module/product** → Keywords: "authentication system", "payment processing", "messaging platform"
+3. **PM tool mention** → User says "Jira epic", "ADO feature", "GitHub milestone"
+4. **Long timeline** → User says "3 months", "Q2 project", "multi-quarter"
+
+### Detection Pattern
+
+```typescript
+// Analyze user request for indicators
+const userRequest = getUserInput();
+
+const indicators = {
+  multiIncrement: /3\+ increments|multiple increments|span.*increments|phases/i.test(userRequest),
+  majorModule: /(auth.*system|payment.*process|messaging.*system|notification.*platform)/i.test(userRequest),
+  pmTool: /(jira.*epic|ado.*feature|github.*milestone)/i.test(userRequest),
+  longTimeline: /(3.*months|quarter|Q[1-4]|multi.*month)/i.test(userRequest)
+};
+
+const shouldSuggestLivingDocs = Object.values(indicators).some(v => v);
+
+if (shouldSuggestLivingDocs) {
+  console.log('💡 Large Feature Detected!');
+  console.log('');
+  console.log('This feature appears to span multiple increments or is a major module.');
+  console.log('');
+  console.log('📋 Recommendation: Create Living Docs Spec');
+  console.log('');
+  console.log('Benefits:');
+  console.log('  ✅ Permanent documentation (never deleted)');
+  console.log('  ✅ Links to PM tools (Jira epic, ADO feature, GitHub milestone)');
+  console.log('  ✅ Complete requirements in one place');
+  console.log('  ✅ Increment specs reference it (avoid duplication)');
+  console.log('');
+  console.log('Location: .specweave/docs/internal/specs/spec-####-{name}/spec.md');
+  console.log('');
+  console.log('💡 See FAQ: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature');
+  console.log('');
+
+  // Ask user if they want living docs spec
+  const createLivingDocs = await askUser('Create living docs spec? (Y/n)');
+
+  if (createLivingDocs !== 'n') {
+    // Proceed to create living docs spec (Step 1)
+  } else {
+    console.log('ℹ️  Creating increment spec only (can create living docs spec later if needed)');
+  }
+}
+```
+
+### Examples
+
+**Example 1: Multi-Increment Feature** (suggest living docs)
+```
+User: "I want to build authentication with basic login, OAuth, and 2FA"
+PM: 💡 This spans 3+ increments → Suggest living docs spec
+```
+
+**Example 2: Small Feature** (skip living docs)
+```
+User: "Add dark mode toggle"
+PM: ℹ️  Single increment → Only create increment spec
+```
+
+**Example 3: Major Module** (suggest living docs)
+```
+User: "Build payment processing system with Stripe"
+PM: 💡 Major module → Suggest living docs spec
+```
+
+**Example 4: PM Tool Integration** (suggest living docs)
+```
+User: "This is Jira epic AUTH-123 for authentication"
+PM: 💡 PM tool linked → Suggest living docs spec
+```
+
+### Decision Flowchart Reference
+
+**For users who want guidance**, show this flowchart from the FAQ:
+
+```mermaid
+graph TD
+    A[New Feature Request] --> B{Will this span<br/>3+ increments?}
+    B -->|Yes| C[Create Living Docs Spec<br/>.specweave/docs/internal/specs/]
+    B -->|No| D{Is this a major<br/>module/product?}
+    D -->|Yes| C
+    D -->|No| E[Only Create Increment Spec<br/>.specweave/increments/]
+
+    C --> F[Create increment spec<br/>that references living docs]
+    E --> G[Increment spec<br/>is standalone]
+```
+
+**FAQ Link**: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature
+
+---
+
 **Role**: Product Manager specialized in product strategy, requirements gathering, and feature prioritization.
 
 ## Purpose
@@ -122,15 +224,15 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ---
 
-## ⚠️ CRITICAL: Primary Output is RFC (Living Docs = Source of Truth!)
+## ⚠️ CRITICAL: Primary Output is Spec (Living Docs = Source of Truth!)
 
-**PRIMARY**: Create RFC spec.md (living docs - permanent source of truth)
+**PRIMARY**: Create Spec spec.md (living docs - permanent source of truth)
 **OPTIONAL**: Update strategy docs if needed (high-level business context only)
-**OPTIONAL**: Create increment spec.md (can duplicate RFC - temporary reference)
+**OPTIONAL**: Create increment spec.md (can duplicate Spec - temporary reference)
 
-### Output 1: RFC (Living Docs - Source of Truth, Permanent) ✅
+### Output 1: Spec (Living Docs - Source of Truth, Permanent) ✅
 
-**Location**: `.specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md`
+**Location**: `.specweave/docs/internal/specs/spec-{number}-{name}/spec.md`
 
 **Purpose**: Complete, detailed requirements specification - PERMANENT source of truth
 
@@ -143,13 +245,13 @@ The PM Agent acts as your AI Product Manager, helping you:
 **Format**:
 ```markdown
 ---
-rfc: {number}-{name}
+spec: {number}-{name}
 title: "Feature Title"
 status: proposed|accepted|implemented
 created: 2025-11-04
 ---
 
-# RFC-{number}: [Feature Name]
+# SPEC-{number}: [Feature Name]
 
 ## Overview
 
@@ -225,18 +327,18 @@ created: 2025-11-04
 ```
 
 **⛔ DO NOT CREATE**:
-- ❌ requirements.md (detailed FR/NFR go in RFC spec.md)
-- ❌ user-stories.md (detailed US-* go in RFC spec.md)
-- ❌ success-criteria.md (metrics go in RFC spec.md)
+- ❌ requirements.md (detailed FR/NFR go in Spec spec.md)
+- ❌ user-stories.md (detailed US-* go in Spec spec.md)
+- ❌ success-criteria.md (metrics go in Spec spec.md)
 
-**Rationale**: Strategy docs provide business context, but RFC is source of truth
+**Rationale**: Strategy docs provide business context, but Spec is source of truth
 
 **Format Rules**:
 - ✅ **High-level** (product vision, market opportunity)
 - ✅ **Strategic** (WHY this product exists, target market)
 - ✅ **Optional** (only create if new module/product)
-- ❌ **No detailed user stories** (those go in RFC spec.md)
-- ❌ **No requirements** (FR-001, NFR-001 go in RFC spec.md)
+- ❌ **No detailed user stories** (those go in Spec spec.md)
+- ❌ **No requirements** (FR-001, NFR-001 go in Spec spec.md)
 
 **Examples**:
 ```markdown
@@ -245,7 +347,7 @@ created: 2025-11-04
 "Market opportunity: 50M+ users need reliable weather data"
 "Competitive advantage: Hyper-local predictions vs. national forecasts"
 
-# ❌ WRONG (Detailed Requirements - these go in RFC spec.md)
+# ❌ WRONG (Detailed Requirements - these go in Spec spec.md)
 "US-001: As a user, I want to view current temperature..."
 "FR-001: System shall display temperature in Celsius/Fahrenheit"
 "NFR-001: Page load time < 2 seconds"
@@ -253,11 +355,11 @@ created: 2025-11-04
 
 ---
 
-### Output 3: Increment Spec (Optional - Can Duplicate RFC) ⚠️
+### Output 3: Increment Spec (Optional - Can Duplicate Spec) ⚠️
 
 **Location**: `.specweave/increments/{increment-id}/spec.md`
 
-**Purpose**: Temporary reference for implementation (CAN duplicate RFC spec.md - that's OK!)
+**Purpose**: Temporary reference for implementation (CAN duplicate Spec spec.md - that's OK!)
 
 **Format**:
 ```markdown
@@ -329,18 +431,18 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 
 **Two Options**:
 
-**Option A: Duplicate RFC** (for convenience during implementation):
+**Option A: Duplicate Spec** (for convenience during implementation):
 ```markdown
 # Feature: [Name]
 
-[Copy all content from RFC-{number}-{name}/spec.md here]
+[Copy all content from SPEC-{number}-{name}/spec.md here]
 ```
 
-**Option B: Reference RFC** (minimal approach):
+**Option B: Reference Spec** (minimal approach):
 ```markdown
 # Feature: [Name]
 
-**Complete Requirements**: See [RFC-{number}-{name}](../../docs/internal/rfc/rfc-{number}-{name}/spec.md)
+**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/spec-{number}-{name}/spec.md)
 
 **Quick Summary**:
 - US-001: View current weather
@@ -352,9 +454,9 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 
 **Key Points**:
 - This is TEMPORARY (may be deleted after increment completes)
-- RFC spec.md is the PERMANENT source of truth
+- Spec spec.md is the PERMANENT source of truth
 - Duplicating content is OK (convenience during implementation)
-- OR just reference RFC (minimal approach)
+- OR just reference Spec (minimal approach)
 - Technology-agnostic WHAT/WHY (no HOW)
 
 ---

@@ -1,6 +1,6 @@
 # Tool Concept Mapping - SpecWeave Integration
 
-**Purpose**: Map concepts from Jira, Azure DevOps (ADO), GitHub, and other tools to SpecWeave's PRD/HLD/RFC/Runbook pattern.
+**Purpose**: Map concepts from Jira, Azure DevOps (ADO), GitHub, and other tools to SpecWeave's PRD/HLD/Spec/Runbook pattern.
 
 ---
 
@@ -10,7 +10,7 @@
 |------|---------|-------------------|----------|-------|
 | **Jira** | Epic | **Increment** | `features/0001-feature-name/` | 1 Epic = 1 Increment |
 | **Jira** | Story (business) | **PRD** | `docs/internal/strategy/prd-{name}.md` | Business requirement stories |
-| **Jira** | Story (technical) | **RFC** | `docs/internal/architecture/rfc/0001-{name}.md` | Technical design stories |
+| **Jira** | Story (technical) | **Spec** | `docs/internal/specs/spec-0001-{name}/spec.md` | Technical design stories |
 | **Jira** | Task | **Task** | `features/0001-feature-name/tasks.md` | Executable tasks |
 | **Jira** | Subtask | **Subtask** | Same as Task | Sub-items in tasks.md |
 | **Jira** | Bug | **Incident** | `docs/internal/operations/incidents/{id}.md` | Operational issues |
@@ -20,8 +20,8 @@
 | **Jira** | Version | **Release** | `docs/internal/delivery/release-v1.0.md` | Release versions |
 | | | | | |
 | **Azure DevOps** | Epic | **Increment** | `features/0001-feature-name/` | 1 Epic = 1 Increment |
-| **Azure DevOps** | Feature | **PRD** or **RFC** | Strategy or Architecture | Depends on scope |
-| **Azure DevOps** | User Story | **PRD** or **RFC** | Strategy or Architecture | Same as Feature |
+| **Azure DevOps** | Feature | **PRD** or **Spec** | Strategy or Architecture | Depends on scope |
+| **Azure DevOps** | User Story | **PRD** or **Spec** | Strategy or Architecture | Same as Feature |
 | **Azure DevOps** | Task | **Task** | `features/0001-feature-name/tasks.md` | Executable tasks |
 | **Azure DevOps** | Bug | **Incident** | `docs/internal/operations/incidents/{id}.md` | Operational issues |
 | **Azure DevOps** | Sprint | **Release Plan** | `docs/internal/delivery/release-v1.0.md` | Sprint planning |
@@ -30,7 +30,7 @@
 | | | | | |
 | **GitHub** | Milestone | **Release Plan** | `docs/internal/delivery/release-v1.0.md` | Milestone = Release |
 | **GitHub** | Project | **Increment** or **Release** | Depends on scope | Board = Release or Increment |
-| **GitHub** | Issue (feature) | **RFC** | `docs/internal/architecture/rfc/0001-{name}.md` | Feature requests |
+| **GitHub** | Issue (feature) | **Spec** | `docs/internal/specs/spec-0001-{name}/spec.md` | Feature requests |
 | **GitHub** | Issue (bug) | **Incident** | `docs/internal/operations/incidents/{id}.md` | Bug reports |
 | **GitHub** | Issue (task) | **Task** | `features/0001-feature-name/tasks.md` | Tasks |
 | **GitHub** | Pull Request | **Implementation** | Code + increment link | PR linked to increment |
@@ -39,7 +39,7 @@
 | **Generic** | Product Roadmap | **Roadmap** | `docs/internal/delivery/roadmap.md` | Long-term planning |
 | **Generic** | Release Notes | **Changelog** | `docs/public/changelog/` or `docs/internal/delivery/` | What shipped |
 | **Generic** | Architecture Doc | **HLD** | `docs/internal/architecture/hld-{system}.md` | System design |
-| **Generic** | API Spec | **RFC** | `docs/internal/architecture/rfc/0001-api.md` | API design |
+| **Generic** | API Spec | **Spec** | `docs/internal/specs/spec-0001-api/spec.md` | API design |
 | **Generic** | Decision Log | **ADR** | `docs/internal/architecture/adr/0001-{decision}.md` | Architecture decisions |
 | **Generic** | Runbook | **Runbook** | `docs/internal/operations/runbook-{service}.md` | Operational procedures |
 | **Generic** | SLA/SLO | **SLO** | `docs/internal/operations/slo-{service}.md` | Service levels |
@@ -72,7 +72,7 @@ external_ids:
 
 ---
 
-### Rule 2: Stories → PRD or RFC (Context-Dependent)
+### Rule 2: Stories → PRD or Spec (Context-Dependent)
 
 **Decision Tree**:
 ```
@@ -81,7 +81,7 @@ Is the story primarily a business requirement?
 │   Example: "As a user, I want to log in with email so I can access my account"
 │
 └─ NO → Is it a technical design/API change?
-    ├─ YES → RFC (docs/internal/architecture/rfc/0001-{name}.md)
+    ├─ YES → Spec (docs/internal/specs/spec-0001-{name}/spec.md)
     │   Example: "Design OAuth 2.0 authentication API"
     │
     └─ NO → Is it an architecture decision?
@@ -99,11 +99,11 @@ external_ids:
   jira:
     stories:
       - PROJ-124  # Business story → PRD
-      - PROJ-125  # Technical story → RFC
+      - PROJ-125  # Technical story → Spec
 docs:
   prd: docs/internal/strategy/prd-user-authentication.md  # From PROJ-124
-  rfcs:
-    - docs/internal/architecture/rfc/0001-auth-api.md  # From PROJ-125
+  specs:
+    - docs/internal/specs/spec-0001-auth-api/spec.md  # From PROJ-125
 ```
 
 ---
@@ -282,7 +282,7 @@ Jira Sprint 2 (Jan 15-28) → Release v1.1 (Target: Jan 28)
 2. SpecWeave receives webhook
 3. SpecWeave analyzes story:
    - Is it business requirement? → Create PRD
-   - Is it technical design? → Create RFC
+   - Is it technical design? → Create Spec
 4. SpecWeave updates `metadata.yaml`:
    ```yaml
    external_ids:
@@ -401,7 +401,7 @@ ADR: docs/internal/architecture/adr/0001-use-oauth2.md
 ADR: docs/internal/architecture/adr/0002-use-auth0.md
   (Jira Story: PROJ-132)
   ↓
-RFC: docs/internal/architecture/rfc/0001-auth-api.md
+Spec: docs/internal/specs/spec-0001-auth-api/spec.md
   (Jira Story: PROJ-125)
   ↓
 Code: src/services/auth/
@@ -434,18 +434,18 @@ HLD: docs/internal/architecture/hld-user-authentication.md
 ADRs:
   - 0001-use-oauth2.md (Jira: PROJ-131)
   - 0002-use-auth0.md (Jira: PROJ-132)
-RFCs:
-  - 0001-auth-api.md (Jira: PROJ-125)
+Specs:
+  - spec-0001-auth-api/spec.md (Jira: PROJ-125)
 ```
 
 ---
 
 ## Related Documentation
 
-- [docs/internal/delivery/BROWNFIELD-INTEGRATION-STRATEGY.md](internal/delivery/BROWNFIELD-INTEGRATION-STRATEGY.md) - Complete brownfield integration guide
+- [docs/internal/delivery/brownfield-integration-strategy.md](../brownfield-integration-strategy.md) - Complete brownfield integration guide
 - [templates/increment-metadata-template.yaml](../templates/increment-metadata-template.yaml) - Metadata template
 - [.specweave/config.yaml](../.specweave/config.yaml) - Sync configuration
 
 ---
 
-**Summary**: This document provides complete mapping between Jira/ADO/GitHub concepts and SpecWeave's PRD/HLD/RFC/Runbook pattern, ensuring bi-directional sync and full traceability.
+**Summary**: This document provides complete mapping between Jira/ADO/GitHub concepts and SpecWeave's PRD/HLD/Spec/Runbook pattern, ensuring bi-directional sync and full traceability.

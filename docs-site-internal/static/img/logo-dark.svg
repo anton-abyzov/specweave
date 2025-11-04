@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gradient-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b9eff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a68bdb;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Weave pattern - interlaced threads (brighter for dark theme) -->
+  <g transform="translate(100, 100)">
+    <!-- Vertical threads -->
+    <path d="M -40,-60 Q -40,-20 -20,0 Q 0,20 0,60"
+          stroke="url(#gradient-dark)"
+          stroke-width="8"
+          fill="none"
+          stroke-linecap="round"/>
+
+    <path d="M -20,-60 Q -20,-30 0,-10 Q 20,10 20,60"
+          stroke="url(#gradient-dark)"
+          stroke-width="8"
+          fill="none"
+          stroke-linecap="round"
+          opacity="0.7"/>
+
+    <!-- Horizontal threads weaving through -->
+    <path d="M -60,-20 Q -20,-20 0,-10 Q 20,0 60,0"
+          stroke="url(#gradient-dark)"
+          stroke-width="8"
+          fill="none"
+          stroke-linecap="round"/>
+
+    <path d="M -60,20 Q -30,20 -10,10 Q 10,0 60,0"
+          stroke="url(#gradient-dark)"
+          stroke-width="8"
+          fill="none"
+          stroke-linecap="round"
+          opacity="0.7"/>
+
+    <!-- Diagonal accent threads -->
+    <path d="M -50,-50 Q -10,-10 30,30"
+          stroke="#8b9eff"
+          stroke-width="6"
+          fill="none"
+          stroke-linecap="round"
+          opacity="0.6"/>
+
+    <path d="M 50,-50 Q 10,-10 -30,30"
+          stroke="#a68bdb"
+          stroke-width="6"
+          fill="none"
+          stroke-linecap="round"
+          opacity="0.6"/>
+  </g>
+
+  <!-- Subtle circle frame (brighter for dark theme) -->
+  <circle cx="100" cy="100" r="85"
+          stroke="url(#gradient-dark)"
+          stroke-width="3"
+          fill="none"
+          opacity="0.4"/>
+</svg>

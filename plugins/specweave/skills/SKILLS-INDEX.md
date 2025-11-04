@@ -111,7 +111,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### brownfield-analyzer
 
-**Description**: Analyzes existing brownfield projects to map documentation structure to SpecWeave's PRD/HLD/RFC/Runbook pattern. Scans folders, classifies documents, detects external tools (Jira, ADO, GitHub), and generates migration plan. Activates for brownfield, existing project, migrate, analyze structure, legacy documentation.
+**Description**: Analyzes existing brownfield projects to map documentation structure to SpecWeave's PRD/HLD/Spec/Runbook pattern. Scans folders, classifies documents, detects external tools (Jira, ADO, GitHub), and generates migration plan. Activates for brownfield, existing project, migrate, analyze structure, legacy documentation.
 
 **Location**: `.claude/skills/brownfield-analyzer/SKILL.md`
 

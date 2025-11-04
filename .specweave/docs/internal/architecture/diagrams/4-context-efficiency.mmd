@@ -6,7 +6,7 @@ flowchart LR
     end
 
     subgraph After["After v0.4.0 - Modular Plugin System"]
-        A1[Load Core Framework ONLY:<br/>increment-planner<br/>rfc-generator<br/>context-loader<br/>PM, Architect, Tech Lead<br/>Total: 12,000 tokens]
+        A1[Load Core Framework ONLY:<br/>increment-planner<br/>spec-generator<br/>context-loader<br/>PM, Architect, Tech Lead<br/>Total: 12,000 tokens]
         A1 --> A2{Auto-detect and load plugins}
         A2 -->|React app| A3[Core + frontend-stack<br/>Total: 16,000 tokens<br/>68% reduction]
         A2 -->|K8s project| A4[Core + kubernetes<br/>Total: 17,000 tokens<br/>66% reduction]

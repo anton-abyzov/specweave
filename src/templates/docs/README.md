@@ -1,6 +1,6 @@
 # Document Templates
 
-This directory contains templates for all standard document types in the PRD/HLD/RFC/Runbook pattern.
+This directory contains templates for all standard document types in the PRD/HLD/Spec/Runbook pattern.
 
 ## Available Templates
 
@@ -27,15 +27,16 @@ This directory contains templates for all standard document types in the PRD/HLD
     cp templates/docs/adr-template.md docs/internal/architecture/adr/${NEXT}-decision-title.md
     ```
 
-- **`rfc-template.md`** - Request for Comments
+- **`spec-template.md`** - Specification (formerly RFC)
   - **Purpose**: Propose API designs, schema changes, major features
-  - **Location**: `docs/internal/architecture/rfc/0001-feature-title.md`
+  - **Location**: `docs/internal/specs/spec-0001-feature-title/spec.md`
   - **Format**: Sequential numbering (0001, 0002, etc.)
   - **Usage**:
     ```bash
     # Find next number
-    NEXT=$(printf "%04d" $(($(ls docs/internal/architecture/rfc/ | grep -E '^[0-9]{4}' | tail -1 | cut -d'-' -f1) + 1)))
-    cp templates/docs/rfc-template.md docs/internal/architecture/rfc/${NEXT}-feature-title.md
+    NEXT=$(printf "%04d" $(($(ls docs/internal/specs/ | grep -E '^spec-[0-9]{4}' | tail -1 | cut -d'-' -f2) + 1)))
+    mkdir -p docs/internal/specs/spec-${NEXT}-feature-title
+    cp templates/docs/spec-template.md docs/internal/specs/spec-${NEXT}-feature-title/spec.md
     ```
 
 ### Operations Documents
@@ -66,10 +67,11 @@ This directory contains templates for all standard document types in the PRD/HLD
    cp templates/docs/adr-template.md docs/internal/architecture/adr/${NEXT}-use-postgresql.md
    ```
 
-4. **Create RFC** (for API design):
+4. **Create Spec** (for API design):
    ```bash
-   NEXT=$(printf "%04d" $(($(ls docs/internal/architecture/rfc/ 2>/dev/null | grep -E '^[0-9]{4}' | tail -1 | cut -d'-' -f1 | sed 's/^0*//' || echo 0) + 1)))
-   cp templates/docs/rfc-template.md docs/internal/architecture/rfc/${NEXT}-booking-api.md
+   NEXT=$(printf "%04d" $(($(ls docs/internal/specs/ 2>/dev/null | grep -E '^spec-[0-9]{4}' | tail -1 | cut -d'-' -f2 | sed 's/^0*//' || echo 0) + 1)))
+   mkdir -p docs/internal/specs/spec-${NEXT}-booking-api
+   cp templates/docs/spec-template.md docs/internal/specs/spec-${NEXT}-booking-api/spec.md
    ```
 
 5. **Create Runbook** (Operations):
@@ -94,7 +96,7 @@ This directory contains templates for all standard document types in the PRD/HLD
 ### Cross-Link Documents
 - PRD → HLD (link from PRD to HLD)
 - HLD → ADR (link to all relevant ADRs)
-- RFC → HLD (link from RFC to HLD)
+- Spec → HLD (link from spec to HLD)
 - Runbook → HLD (link from runbook to architecture)
 
 ### Use Diagrams

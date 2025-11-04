@@ -1,6 +1,6 @@
 ---
 name: brownfield-analyzer
-description: Analyzes existing brownfield projects to map documentation structure to SpecWeave's PRD/HLD/RFC/Runbook pattern. Scans folders, classifies documents, detects external tools (Jira, ADO, GitHub), and creates project context map for just-in-time migration. Activates for brownfield, existing project, migrate, analyze structure, legacy documentation.
+description: Analyzes existing brownfield projects to map documentation structure to SpecWeave's PRD/HLD/Spec/Runbook pattern. Scans folders, classifies documents, detects external tools (Jira, ADO, GitHub), and creates project context map for just-in-time migration. Activates for brownfield, existing project, migrate, analyze structure, legacy documentation.
 ---
 
 # Brownfield Analyzer Skill
@@ -17,7 +17,7 @@ description: Analyzes existing brownfield projects to map documentation structur
 
 1. **Assess Project Complexity** - Estimate LOC, files, modules and recommend documentation path 🆕
 2. **Scan Project Structure** - Recursively scan folders for documentation
-3. **Classify Documents** - Identify PRD, HLD, ADR, RFC, Runbook candidates
+3. **Classify Documents** - Identify PRD, HLD, ADR, Spec, Runbook candidates
 4. **Detect External Tools** - Find Jira, ADO, GitHub project references
 5. **Analyze Diagrams** - Identify architecture diagrams (PNG, SVG, drawio)
 6. **Generate Migration Plan** - Create actionable migration plan with effort estimate
@@ -263,7 +263,7 @@ build/**
 
 **Output**: `0001-{decision}.md` → `docs/internal/architecture/adr/`
 
-#### RFC Candidates (API/Schema Design)
+#### Spec Candidates (API/Schema Design)
 **Indicators**:
 - Filenames: `*api*`, `*rfc*`, `*proposal*`, `*spec*`
 - Content keywords: "API design", "endpoint", "schema", "request/response", "OpenAPI"
@@ -529,7 +529,7 @@ If you prefer full upfront documentation:
 - `docs/decisions/microservices.md` → `docs/internal/architecture/adr/0002-microservices.md`
 - **Total**: {count} documents (will be numbered 0001-{count})
 
-### API Specifications (RFC candidates)
+### API Specifications (Spec candidates)
 - `api-specs/booking-api.yaml` → `docs/internal/architecture/rfc/0001-booking-api.md`
 - **Total**: {count} documents
 
@@ -604,7 +604,7 @@ If you prefer full upfront documentation:
 1. Migrate {count} PRD candidates → `docs/internal/strategy/`
 2. Migrate {count} HLD candidates → `docs/internal/architecture/`
 3. Migrate {count} ADR candidates → `docs/internal/architecture/adr/` (with numbering)
-4. Migrate {count} RFC candidates → `docs/internal/architecture/rfc/` (with numbering)
+4. Migrate {count} Spec candidates → `docs/internal/architecture/rfc/` (with numbering)
 5. Migrate {count} Runbook candidates → `docs/internal/operations/`
 6. Migrate {count} Governance docs → `docs/internal/governance/`
 
@@ -845,7 +845,7 @@ I've generated a comprehensive analysis report. Here's the summary:
 - PRD candidates: 3
 - HLD candidates: 2
 - ADR candidates: 8
-- RFC candidates: 3
+- Spec candidates: 3
 - Runbook candidates: 5
 - Governance: 2
 
@@ -876,7 +876,7 @@ Step 2: Migrating documents...
 ✅ Migrated 3 PRD candidates → docs/internal/strategy/
 ✅ Migrated 2 HLD candidates → docs/internal/architecture/
 ✅ Migrated 8 ADR candidates → docs/internal/architecture/adr/ (numbered 0001-0008)
-✅ Migrated 3 RFC candidates → docs/internal/architecture/rfc/ (numbered 0001-0003)
+✅ Migrated 3 Spec candidates → docs/internal/architecture/rfc/ (numbered 0001-0003)
 ✅ Migrated 5 Runbooks → docs/internal/operations/
 ✅ Migrated 2 Governance docs → docs/internal/governance/
 
@@ -900,7 +900,7 @@ Step 6: Verification...
 
 Migration complete! 🎉
 
-Your project is now using SpecWeave's PRD/HLD/RFC/Runbook pattern.
+Your project is now using SpecWeave's PRD/HLD/Spec/Runbook pattern.
 
 Next steps:
 1. Review migrated documents
@@ -925,7 +925,7 @@ glob("**/*.md", { exclude: ["node_modules/**", "dist/**"] })
 // Read and analyze each file
 for (file of files) {
   content = read(file)
-  classify(content)  // PRD, HLD, ADR, RFC, Runbook?
+  classify(content)  // PRD, HLD, ADR, Spec, Runbook?
 }
 ```
 

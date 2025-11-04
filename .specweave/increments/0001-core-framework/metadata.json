@@ -1,7 +1,9 @@
 {
   "id": "0001-core-framework",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-01-25T00:00:00.000Z",
-  "lastActivity": "2025-11-04T09:49:46.425Z"
+  "lastActivity": "2025-11-04T09:49:46.425Z",
+  "completedAt": "2025-10-27T00:00:00.000Z",
+  "completionNotes": "Framework foundation established. Multiple completion reports confirm work is done. No tasks.md (old increment format)."
 }

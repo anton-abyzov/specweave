@@ -43,11 +43,11 @@ This master command routes to SpecWeave increment lifecycle subcommands.
 
 | Subcommand | Description | Example |
 |------------|-------------|---------|
-| **github.create-issue** | Create GitHub issue from increment | `/specweave github.create-issue 0001` |
-| **github.sync** | Bidirectional sync with GitHub | `/specweave github.sync 0001` |
-| **github.sync-tasks** | Sync tasks as GitHub sub-issues | `/specweave github.sync-tasks 0001` |
-| **github.close-issue** | Close GitHub issue | `/specweave github.close-issue 0001` |
-| **github.status** | Show GitHub sync status | `/specweave github.status` |
+| **github:create-issue** | Create GitHub issue from increment | `/specweave-github:create-issue 0001` |
+| **github:sync** | Bidirectional sync with GitHub | `/specweave-github:sync 0001` |
+| **github:sync-tasks** | Sync tasks as GitHub sub-issues | `/specweave-github:sync-tasks 0001` |
+| **github:close-issue** | Close GitHub issue | `/specweave-github:close-issue 0001` |
+| **github:status** | Show GitHub sync status | `/specweave-github:status` |
 
 ---
 
@@ -73,11 +73,11 @@ subcommands:
   sync-jira: .claude/commands/specweave:sync-jira.md
 
   # GitHub Plugin Commands
-  github.create-issue: .claude/commands/specweave-github:github-create-issue.md
-  github.sync: .claude/commands/specweave-github:github-sync.md
-  github.sync-tasks: .claude/commands/specweave-github:github-sync-tasks.md
-  github.close-issue: .claude/commands/specweave-github:github-close-issue.md
-  github.status: .claude/commands/specweave-github:github-status.md
+  github:create-issue: .claude/commands/specweave-github:create-issue.md
+  github:sync: .claude/commands/specweave-github:sync.md
+  github:sync-tasks: .claude/commands/specweave-github:sync-tasks.md
+  github:close-issue: .claude/commands/specweave-github:close-issue.md
+  github:status: .claude/commands/specweave-github:status.md
 ```
 
 ---
@@ -183,15 +183,15 @@ Available subcommands:
     sync-docs       - Sync documentation (review/update)
 
   GitHub Plugin:
-    github.create-issue  - Create GitHub issue from increment
-    github.sync          - Bidirectional sync with GitHub
-    github.sync-tasks    - Sync tasks as GitHub sub-issues
-    github.close-issue   - Close GitHub issue
-    github.status        - Show GitHub sync status
+    github:create-issue  - Create GitHub issue from increment
+    github:sync          - Bidirectional sync with GitHub
+    github:sync-tasks    - Sync tasks as GitHub sub-issues
+    github:close-issue   - Close GitHub issue
+    github:status        - Show GitHub sync status
 
 Usage: /specweave <subcommand> [arguments]
 Example: /specweave inc "User authentication"
-Example: /specweave github.create-issue 0001
+Example: /specweave-github:create-issue 0001
 ```
 
 ---
@@ -433,11 +433,11 @@ Project Setup:
   sync-docs [mode] [id] - Sync documentation (review/update)
 
 GitHub Plugin:
-  github.create-issue <id>  - Create GitHub issue from increment
-  github.sync <id>          - Bidirectional sync with GitHub
-  github.sync-tasks <id>    - Sync tasks as GitHub sub-issues
-  github.close-issue <id>   - Close GitHub issue
-  github.status             - Show GitHub sync status
+  github:create-issue <id>  - Create GitHub issue from increment
+  github:sync <id>          - Bidirectional sync with GitHub
+  github:sync-tasks <id>    - Sync tasks as GitHub sub-issues
+  github:close-issue <id>   - Close GitHub issue
+  github:status             - Show GitHub sync status
 
 Examples:
   /specweave inc "User authentication"

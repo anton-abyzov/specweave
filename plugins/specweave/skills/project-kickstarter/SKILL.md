@@ -121,7 +121,80 @@ Once I have these details, I'll guide you through SpecWeave's increment planning
 **Low Confidence:**
 Don't activate. Let other skills handle it.
 
-### Step 4: Hand Off
+### Step 4: Detect External PM Tool (NEW v0.8.0)
+
+**Purpose**: Check if user has external project management tool (GitHub/Jira/ADO) and offer sync
+
+**Signals to Detect**:
+1. **Environment Variables**:
+   - `GITHUB_TOKEN` → GitHub Issues
+   - `JIRA_URL` or `JIRA_API_TOKEN` → Jira
+   - `AZURE_DEVOPS_PAT` → Azure DevOps
+
+2. **Git Remote**:
+   - Remote URL contains `github.com` → GitHub
+   - Remote URL contains `dev.azure.com` → Azure DevOps
+
+3. **Existing Config**:
+   - `.specweave/config.json` has `externalPM.tool` set
+
+4. **File Patterns**:
+   - `.github/` directory → GitHub
+   - Git commits contain `PROJ-123` → Jira
+   - Files mention ADO work item IDs `#12345` → ADO
+
+**When to Ask**:
+- **New project** (no `.specweave/config.json`): Always ask
+- **Existing project with no PM tool**: Ask once, save preference
+- **Existing project with PM tool**: Skip (already configured)
+
+**Interactive Prompt**:
+```
+Great! Before we create the increment, quick question:
+
+**Do you use an external project management tool?**
+
+Options:
+1. **GitHub Issues** (Recommended - detected GitHub repo)
+2. **Jira**
+3. **Azure DevOps**
+4. **None** (Just SpecWeave)
+
+I can automatically sync increment progress with your PM tool if configured.
+```
+
+**If User Selects GitHub/Jira/ADO**:
+1. Check if plugin installed (`/plugin list --installed | grep specweave-{tool}`)
+2. If not installed → Suggest: "Install {tool} plugin for sync?"
+3. If installed → Test connection (API key valid?)
+4. Save preference to `.specweave/config.json`
+5. Proceed with increment creation
+6. Auto-create external issue when increment created
+
+**If User Selects None**:
+1. Save preference: `externalPM.enabled: false`
+2. Proceed with increment creation (local only)
+
+**Example Flow**:
+```
+User: "Build SaaS app with user authentication"
+
+project-kickstarter:
+1. Detects: High confidence (project description)
+2. Checks: Git remote = github.com/myorg/myapp
+3. Detects: GITHUB_TOKEN environment variable set
+4. Asks: "Do you use GitHub Issues for project management?"
+5. User: "Yes"
+6. Checks: specweave-github plugin installed? Yes
+7. Tests: GitHub API connection? ✅ Success
+8. Saves: externalPM.tool = "github" to config
+9. Creates increment: /specweave:inc "User authentication"
+10. Auto-creates: GitHub Issue #42 linked to increment
+```
+
+---
+
+### Step 5: Hand Off
 
 Based on clarity of requirements:
 

@@ -257,7 +257,7 @@ If issues found, restore from git:
 - Commands: /specweave:inc, /specweave:do, /specweave:progress, /specweave:sync-docs
 - File paths: .specweave/, src/, .claude/, .cursor/, .github/
 - Technical terms: TypeScript, npm, git, API, CLI, REST, JSON, HTTP
-- SpecWeave keywords: living docs, context-manifest.yaml, PM gate, RFC
+- SpecWeave keywords: living docs, context-manifest.yaml, PM gate, Spec
 - Code blocks (entire blocks stay in English)
 - YAML frontmatter keys (only translate values if applicable)
 
@@ -279,7 +279,7 @@ If issues found, restore from git:
 - `living docs`
 - `PM gate`, `Architect`, `Tech Lead`
 - `context-manifest`
-- `RFC`, `ADR`, `PRD`, `HLD`, `LLD`
+- `Spec`, `ADR`, `PRD`, `HLD`, `LLD`
 
 **Why?** These are framework primitives - translating them would break tooling, scripts, and cross-project consistency.
 

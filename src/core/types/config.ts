@@ -9,29 +9,33 @@ import { PluginConfig } from './plugin.js';
 import { IncrementType } from './increment-metadata.js';
 
 /**
- * WIP Limits Configuration
+ * WIP Limits Configuration (v0.7.0+ Simplified)
+ *
+ * Philosophy: Default to 1 active increment (maximum focus)
+ * Allow 2 only for emergencies (hotfix interrupt)
+ * Never >2 (hard cap enforced)
  */
 export interface LimitsConfig {
-  /** Max active feature increments (null = unlimited) */
-  feature?: number | null;
+  /** Maximum active increments at any time (default: 1 for focus) */
+  maxActiveIncrements?: number;
 
-  /** Max active hotfix increments (null = unlimited) */
-  hotfix?: number | null;
+  /** Absolute maximum active increments, never exceeded (default: 2) */
+  hardCap?: number;
 
-  /** Max active bug increments (null = unlimited) */
-  bug?: number | null;
+  /** Allow 2nd active increment for hotfix/bug emergencies (default: true) */
+  allowEmergencyInterrupt?: boolean;
 
-  /** Max active change-request increments (null = unlimited) */
-  'change-request'?: number | null;
+  /** Increment type-specific behaviors */
+  typeBehaviors?: {
+    /** Types that can interrupt existing work (emergency scenarios) */
+    canInterrupt?: (IncrementType | string)[];
 
-  /** Max active refactor increments (null = unlimited) */
-  refactor?: number | null;
-
-  /** Max active experiment increments (null = unlimited) */
-  experiment?: number | null;
-
-  /** Auto-abandon experiments after N days of inactivity */
-  experimentAutoAbandonDays?: number;
+    /** Auto-abandon increments after N days of inactivity */
+    autoAbandonDays?: {
+      /** Days before experiment auto-abandons (default: 14) */
+      experiment?: number;
+    };
+  };
 
   /** Staleness warning thresholds */
   staleness?: {
@@ -111,16 +115,18 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     default: 'claude',
   },
   limits: {
-    feature: 1,                    // Simplified: 1 active increment (strict focus)
-    hotfix: 1,                     // Same limit for all types
-    bug: 1,
-    'change-request': 1,
-    refactor: 1,
-    experiment: 1,
-    experimentAutoAbandonDays: 14,
+    maxActiveIncrements: 1,        // v0.7.0+: 1 active increment (maximum focus)
+    hardCap: 2,                    // Emergency ceiling (never >2)
+    allowEmergencyInterrupt: true, // Allow hotfix/bug to interrupt
+    typeBehaviors: {
+      canInterrupt: [IncrementType.HOTFIX, IncrementType.BUG], // Only emergencies can interrupt
+      autoAbandonDays: {
+        experiment: 14,            // Auto-abandon stale experiments
+      },
+    },
     staleness: {
-      paused: 7,
-      active: 30,
+      paused: 7,                   // Warn if paused >7 days
+      active: 30,                  // Warn if active >30 days
     },
   },
 };
