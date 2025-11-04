@@ -1,34 +1,44 @@
 # SpecWeave
 
-> **Spec-Driven Development Framework for Claude Code** - Replace "vibe coding" with specifications as the source of truth
+> **Spec-Driven Development Framework for Claude Code**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
----
-
-## What is SpecWeave?
-
-**SpecWeave** is an AI development framework that makes specifications your source of truth. Built specifically for **Claude Code**, it replaces guesswork with precision through automated planning, living documentation, and regression prevention.
+[![Version](https://img.shields.io/npm/v/specweave.svg)](https://www.npmjs.com/package/specweave)
 
 **Define WHAT and WHY before HOW. Specifications evolve with code, never diverge.**
 
 ---
 
-## Why SpecWeave?
+## What is SpecWeave?
 
-Traditional development:
-- ❌ Documentation becomes outdated and ignored
-- ❌ "Vibe coding" - making it up as you go
-- ❌ Breaking existing code during changes
-- ❌ Tribal knowledge scattered across team
-- ❌ Weeks of onboarding new developers
+SpecWeave is an AI development framework that makes specifications your source of truth. Built for **Claude Code**, it replaces "vibe coding" with precision through automated planning, test-aware workflows, and living documentation.
 
-SpecWeave solves this:
-- ✅ **Living Documentation** - Auto-updates after every task via Claude Code hooks
-- ✅ **Specification-First** - Define requirements before implementation
-- ✅ **Regression Prevention** - Document existing code before modifications
-- ✅ **Intelligent Automation** - PM, Architect, and QA agents work autonomously
-- ✅ **Zero Setup** - Works out of the box with Claude Code's native plugin system
+## Key Features (v0.7.0)
+
+### 🧪 Test-Aware Planning
+- **Embedded test plans** in tasks (no separate tests.md)
+- **Bidirectional AC↔Task↔Test linking** for full traceability
+- **Coverage validation** ensures every critical path is tested
+- **BDD format** (Given/When/Then) for clarity
+
+### ⏸️ Smart Status Management
+- **Pause/Resume** increments when blocked or deprioritized
+- **Abandon** obsolete work (preserves history in `_abandoned/`)
+- **Status tracking** (active, paused, completed, abandoned)
+- **Six increment types**: feature, hotfix, bug (SRE investigation), change-request, refactor, experiment
+- **Type-based limits**: Hotfix/bug unlimited (urgent), features/change-requests max 2 (prevent context switching), refactor max 1 (focus)
+
+### 📚 Living Documentation
+- **Auto-updates** after every task via Claude Code hooks
+- **Strategy docs** separate from increment specs
+- **ADRs** for architecture decisions
+- **Never outdated** - syncs automatically
+
+### 🤖 Intelligent Agents
+- **PM Agent** - Requirements gathering, user stories
+- **Architect Agent** - Technical design, component breakdown
+- **test-aware-planner** - Generates tasks with embedded tests
+- **Quality Judge** - Validates increment completeness
 
 ---
 
@@ -57,73 +67,65 @@ cd my-project
 
 ## Quick Start
 
-**Two ways to start building:**
-
-### Option 1: Interactive Quick Build (Fastest)
-
-Open Claude Code and simply describe what you want to build:
-
 ```bash
-"build a very simple web calculator app"
-```
-
-**SpecWeave's intelligent assistant will guide you through:**
-
-1. **Approach** - Choose your workflow:
-   - Quick build - Just code it now
-   - SpecWeave increment - Plan first (recommended for larger features)
-
-2. **Features** - Multi-select what you need:
-   - ☑ Basic operations (+, -, ×, ÷)
-   - ☑ Additional functions (%, √, clear, backspace)
-   - ☑ Keyboard support
-   - ☑ Calculation history
-   - ☐ Type something custom...
-
-3. **Tech Stack** - Pick your tools:
-   - Vanilla HTML/CSS/JS
-   - React
-   - Your choice
-   - Type something custom...
-
-4. **Review** - Confirm and start building!
-
-**Result**: SpecWeave builds exactly what you need with the stack you chose.
-
-### Option 2: Specification-First Workflow (Best Practice)
-
-**Open Claude Code in your project and use slash commands:**
-
-```bash
-# 1. Plan your first feature (PM-led workflow)
-/specweave:inc "User authentication with JWT"
-
-# SpecWeave creates:
-# ✅ spec.md (WHAT & WHY)
-# ✅ plan.md (HOW - architecture)
-# ✅ tasks.md (auto-generated from plan!)
-# ✅ tests.md (test strategy)
+# 1. Plan increment (creates spec, plan, tasks with embedded tests)
+/inc "User authentication"  # or /specweave:inc
 
 # 2. Implement (auto-resumes from last task)
-/specweave:do
+/do                          # or /specweave:do
 
-# Hooks run after EVERY task:
-# ✅ Updates living docs automatically
-# ✅ Syncs architectural decisions
-# ✅ Maintains test coverage
+# 3. Blocked? Pause it
+/pause 0001 --reason="Waiting for API keys"
 
-# 3. Check progress anytime
-/specweave:progress
-# Shows: 73% complete (11/15 tasks), next action: "Implement login API"
+# 4. Resume when ready
+/resume 0001
 
-# 4. Start next feature (auto-closes previous)
-/specweave:inc "Payment processing with Stripe"
-# ✅ Auto-closes 0001 if complete
-# ✅ Creates 0002-payment-processing
-# ✅ Detects Stripe keyword → suggests specweave-payments plugin
+# 5. Check progress
+/status  # Shows active, paused, completed increments
+
+# 6. Complete increment
+/done 0001
 ```
 
-**That's it.** No manual documentation updates. No outdated specs. No regression.
+### Status Management (NEW in v0.7.0)
+
+```bash
+# Pause when blocked
+/pause 0002 --reason="Waiting for design approval"
+
+# Resume when unblocked
+/resume 0002
+
+# Abandon if obsolete
+/abandon 0003 --reason="Requirements changed"
+
+# Check status (rich output)
+/status
+
+📊 Increment Status Overview
+
+🔥 Active (1):
+  🔧 0001-auth [feature] (60% done, 2 days old)
+
+⏸️  Paused (1):
+  🔄 0002-payments [feature] (paused 3 days)
+     Reason: Waiting for Stripe API keys
+
+✅ Completed (2):
+  0000-setup, 0003-refactor
+```
+
+### Test Coverage (NEW in v0.7.0)
+
+```bash
+# Validate test coverage
+/validate-coverage
+
+📊 Coverage Report
+✅ AC Coverage: 90% (18/20 criteria)
+✅ Task Coverage: 85% (34/40 tasks)
+⚠️  Missing tests: T-015, T-023
+```
 
 ---
 

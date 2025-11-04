@@ -74,6 +74,97 @@ This increment combines TWO major enhancements delivered in ONE release:
 
 ---
 
+#### T-002a: Fix strategy/RFC duplication issue (CORRECTED APPROACH)
+
+**User Story**: US-BUGFIX (prevents duplicate user stories in strategy/ vs RFC)
+**Acceptance Criteria**: RFC is source of truth, strategy/ is high-level only, increment spec.md can duplicate RFC
+**Priority**: P1
+**Estimate**: 3 hours (COMPLETED - corrected after initial misunderstanding)
+**Status**: [x] completed
+
+**Test Plan**:
+- **Given** increment-planner skill invoked
+- **When** creating new increment
+- **Then** RFC spec.md is created as SOURCE OF TRUTH (living docs, permanent)
+- **And** strategy docs are optional and high-level only (NO detailed user stories)
+- **And** increment spec.md can duplicate RFC or reference it (temporary, that's OK)
+
+**Test Cases**:
+1. **Manual**: Create test increment (deferred to T-002b below)
+   - Run: `/specweave:inc "9995-test-no-duplication"`
+   - Check: `docs/internal/rfc/rfc-9995-test-no-duplication/spec.md` exists (SOURCE OF TRUTH)
+   - Check: No `docs/internal/strategy/test-no-duplication/user-stories.md`
+   - Check: `increments/9995-test-no-duplication/spec.md` can duplicate or reference RFC
+   - **Coverage**: 100%
+
+**Implementation** (COMPLETED after correction):
+1. âœ… Updated `plugins/specweave/skills/increment-planner/SKILL.md`
+   - Changed STEP 2 to create RFC as source of truth (permanent)
+   - Made strategy docs optional and high-level only
+   - Made increment spec.md optional (can duplicate RFC)
+   - Updated "What Gets Created" section (RFC first)
+   - Updated validation rules (RFC is mandatory, increment spec.md is optional)
+2. âœ… Updated `plugins/specweave/agents/pm/AGENT.md`
+   - Changed "Output 1" to RFC (living docs - source of truth)
+   - Made strategy docs "Output 2" (high-level only)
+   - Made increment spec.md "Output 3" (optional, can duplicate RFC)
+3. âœ… Updated `CLAUDE.md`
+   - Added RFC structure to directory tree
+   - Clarified strategy folder is optional and high-level only
+   - Added explicit comments: "those go in RFC spec.md"
+4. âœ… Created design documents:
+   - `.specweave/increments/0007-smart-increment-discipline/reports/DUPLICATION-FIX-DESIGN.md` (marked as INCORRECT)
+   - `.specweave/increments/0007-smart-increment-discipline/reports/CORRECTED-ARCHITECTURE.md` (correct solution)
+
+**Files Changed**:
+- `plugins/specweave/skills/increment-planner/SKILL.md`
+- `plugins/specweave/agents/pm/AGENT.md`
+- `CLAUDE.md`
+- `.specweave/increments/0007-smart-increment-discipline/reports/DUPLICATION-FIX-DESIGN.md` (marked incorrect)
+- `.specweave/increments/0007-smart-increment-discipline/reports/CORRECTED-ARCHITECTURE.md` (correct design)
+
+**Key Correction**:
+- âŒ WRONG: increment spec.md as source of truth
+- âœ… CORRECT: RFC spec.md as source of truth (living docs, permanent, can be linked to Jira/ADO/GitHub)
+
+---
+
+#### T-002b: Test duplication fix with new increment (PENDING USER TESTING)
+
+**User Story**: US-BUGFIX
+**Acceptance Criteria**: Verify no duplication in newly created increments
+**Priority**: P1
+**Estimate**: 0.5 hours
+**Status**: [ ] pending
+
+**Test Plan**:
+- **Given** duplication fix applied (T-002a)
+- **When** user creates a new increment after Claude Code restart
+- **Then** verify no duplicate files created
+- **And** spec.md contains complete requirements
+
+**Test Cases**:
+1. **Manual**: Create test increment 9995
+   - Run: `/specweave:inc "9995-test-no-duplication"`
+   - Check: No `docs/internal/strategy/test-no-duplication/user-stories.md`
+   - Check: No `docs/internal/strategy/test-no-duplication/requirements.md`
+   - Check: Only `docs/internal/strategy/test-no-duplication/overview.md` (high-level)
+   - Check: `increments/9995-test-no-duplication/spec.md` has full US-001+, FR-001+
+   - **Coverage**: 100%
+
+**Implementation**:
+1. RESTART Claude Code (required for plugin changes to take effect)
+2. Create test increment 9995
+3. Verify no duplication
+4. Mark task complete if validation passes
+
+**Notes**:
+- Requires Claude Code restart to load updated plugin files
+- User should test this after changes are committed
+- If duplication still occurs, review design document for additional fixes needed
+
+---
+
 ### Phase 1B: test-aware-planner Agent (4-6 hours)
 
 #### T-003: Create test-aware-planner agent structure
@@ -574,13 +665,13 @@ This increment combines TWO major enhancements delivered in ONE release:
 
 **Test Cases**:
 1. **Unit**: `tests/unit/commands/pause.test.ts`
-   - `testPauseActiveIncrement()`: Active ’ paused
+   - `testPauseActiveIncrement()`: Active ï¿½ paused
    - `testPauseInvalidStatus()`: Error if already paused
    - `testPauseRequiresReason()`: Error if no reason
    - **Coverage**: 90%
 
 2. **Integration**: `tests/integration/commands/pause-workflow.test.ts`
-   - `testFullPauseFlow()`: Pause ’ verify metadata ’ verify status
+   - `testFullPauseFlow()`: Pause ï¿½ verify metadata ï¿½ verify status
    - **Coverage**: 85%
 
 3. **Manual**: Test on increment 0007
@@ -618,7 +709,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 
 **Test Cases**:
 1. **Unit**: `tests/unit/commands/resume.test.ts`
-   - `testResumeIncrement()`: Paused ’ active
+   - `testResumeIncrement()`: Paused ï¿½ active
    - `testResumeStaleWarning()`: Warning if paused >7 days
    - **Coverage**: 85%
 
@@ -654,7 +745,7 @@ This increment combines TWO major enhancements delivered in ONE release:
 
 **Test Cases**:
 1. **Unit**: `tests/unit/commands/abandon.test.ts`
-   - `testAbandonIncrement()`: Status ’ abandoned
+   - `testAbandonIncrement()`: Status ï¿½ abandoned
    - `testAbandonMovesFolder()`: Folder moved to _abandoned/
    - **Coverage**: 90%
 

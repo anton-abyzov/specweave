@@ -81,11 +81,21 @@
       "type": "object",
       "description": "Translation settings for multilingual support",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable/disable translation system entirely",
+          "default": true
+        },
         "method": {
           "type": "string",
           "description": "Translation method (always in-session for zero cost)",
           "enum": ["in-session"],
           "default": "in-session"
+        },
+        "autoTranslateInternalDocs": {
+          "type": "boolean",
+          "description": "Automatically translate spec.md, plan.md, tasks.md to English after increment planning (post-generation translation)",
+          "default": true
         },
         "autoTranslateLivingDocs": {
           "type": "boolean",
@@ -111,6 +121,26 @@
           "type": "boolean",
           "description": "Translate variable/function names (NOT RECOMMENDED)",
           "default": false
+        },
+        "filesAlwaysInEnglish": {
+          "type": "array",
+          "description": "File patterns that must always be in English (glob patterns)",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "spec.md",
+            "plan.md",
+            "tasks.md",
+            "tests.md",
+            "docs/internal/**/*.md"
+          ]
+        },
+        "translationModel": {
+          "type": "string",
+          "description": "LLM model to use for translation",
+          "enum": ["haiku", "sonnet", "opus"],
+          "default": "haiku"
         }
       },
       "additionalProperties": false
@@ -180,15 +210,25 @@
     {
       "language": "ru",
       "translation": {
+        "enabled": true,
         "method": "in-session",
+        "autoTranslateInternalDocs": true,
         "autoTranslateLivingDocs": true,
         "keepFrameworkTerms": true,
         "keepTechnicalTerms": true,
         "translateCodeComments": true,
-        "translateVariableNames": false
+        "translateVariableNames": false,
+        "filesAlwaysInEnglish": [
+          "spec.md",
+          "plan.md",
+          "tasks.md",
+          "tests.md",
+          "docs/internal/**/*.md"
+        ],
+        "translationModel": "haiku"
       },
       "plugins": {
-        "enabled": ["specweave-translator"]
+        "enabled": []
       },
       "project": {
         "name": "russian-project",

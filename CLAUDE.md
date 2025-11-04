@@ -1533,9 +1533,11 @@ specweave/
 │   │   │   │   └── {module}/   # Created only for new products/modules
 │   │   │   │       ├── overview.md      # Product vision, market opportunity
 │   │   │   │       └── business-case.md # (optional) ROI, competitive analysis
-│   │   │   │   # ❌ NO user-stories.md (those go in increment spec.md)
-│   │   │   │   # ❌ NO requirements.md (those go in increment spec.md)
-│   │   │   ├── rfc/            # ✅ Request for Comments (proposals at all stages)
+│   │   │   │   # ❌ NO user-stories.md (those go in RFC spec.md)
+│   │   │   │   # ❌ NO requirements.md (those go in RFC spec.md)
+│   │   │   ├── rfc/            # ✅ Request for Comments (detailed requirements, SOURCE OF TRUTH)
+│   │   │   │   └── rfc-####-{name}/
+│   │   │   │       └── spec.md  # COMPLETE user stories, AC, FR/NFR (permanent)
 │   │   │   ├── architecture/   # Technical architecture (accepted designs)
 │   │   │   │   ├── adr/        # Architecture Decision Records
 │   │   │   │   ├── diagrams/   # Mermaid + SVG
@@ -2035,6 +2037,91 @@ vim docs-site/docs/guides/getting-started.md
 # Build docs site
 cd docs-site && npm run build
 ```
+
+### Translation Workflow (Multilingual Support)
+
+**SpecWeave supports multilingual development** via post-generation translation (Increment 0006).
+
+**Key Concept**: Users work in their native language (great UX), system auto-translates to English (maintainable docs).
+
+**Workflow**:
+
+```bash
+# 1. User creates increment in Russian
+/specweave:inc "Добавить пользовательскую аутентификацию"
+
+# 2. PM agent generates spec.md in Russian (natural, user-friendly)
+
+# 3. post-increment-planning hook fires automatically
+#    - Detects Russian content
+#    - Translates spec.md, plan.md, tasks.md to English (~$0.01 cost)
+#    - Files now in English (maintainable)
+
+# User sees:
+# ✅ Increment created
+# 🌐 Detected Russian content. Translating to English...
+#   📄 spec.md... ✅
+#   📄 plan.md... ✅
+#   📄 tasks.md... ✅
+# ✅ Translation complete! Cost: ~$0.01
+```
+
+**Configuration** (`.specweave/config.json`):
+
+```json
+{
+  "language": "ru",
+  "translation": {
+    "enabled": true,
+    "autoTranslateInternalDocs": true,
+    "autoTranslateLivingDocs": false,
+    "keepFrameworkTerms": true,
+    "keepTechnicalTerms": true,
+    "translationModel": "haiku"
+  }
+}
+```
+
+**Key Settings**:
+- `language`: Primary language (en, ru, es, zh, de, fr, ja, ko, pt)
+- `autoTranslateInternalDocs`: Auto-translate spec/plan/tasks to English (default: true)
+- `autoTranslateLivingDocs`: Auto-translate ADRs/HLDs after task completion (default: false)
+- `translationModel`: Model to use (haiku/sonnet/opus, default: haiku)
+
+**Supported Languages**:
+- English (en)
+- Russian (ru)
+- Spanish (es)
+- Chinese (zh)
+- German (de)
+- French (fr)
+- Japanese (ja)
+- Korean (ko)
+- Portuguese (pt)
+
+**Cost**: ~$0.01 per increment (3 files, Haiku model)
+
+**Implementation Details**:
+- Language detection: Heuristic-based (<1ms, zero cost)
+- Code preservation: Never translates code blocks, inline code, or links
+- Validation: Checks heading count, code block count, link count, YAML structure
+- See: `.specweave/increments/0006-llm-native-i18n/reports/IMPLEMENTATION-COMPLETE.md`
+
+**Testing Translation Utilities**:
+
+```bash
+# Run translation unit tests
+npm test -- tests/unit/i18n/translation.test.ts
+
+# Test result: 67/67 passing (100%)
+```
+
+**Files**:
+- Utilities: `src/utils/translation.ts` (673 lines, 11 languages)
+- CLI Script: `src/hooks/lib/translate-file.ts` (398 lines)
+- Hook: `plugins/specweave/hooks/post-increment-planning.sh` (307 lines)
+- Tests: `tests/unit/i18n/translation.test.ts` (705 lines, 67 tests)
+- Schema: `src/core/schemas/specweave-config.schema.json`
 
 ---
 

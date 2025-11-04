@@ -1,6 +1,6 @@
 ---
 name: increment-planner
-description: Creates comprehensive implementation plans for SpecWeave increments (aka features - both terms are interchangeable). This skill should be used when planning new increments/features, creating specifications, or organizing implementation work. Activates for: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature, new product, build project, MVP, SaaS, app development, product description, tech stack planning, feature list.
+description: Creates comprehensive implementation plans for ANY type of SpecWeave increment (feature, hotfix, bug, change-request, refactor, experiment). Supports all work types from features to bug investigations to POCs. Activates for: increment planning, feature planning, hotfix, bug investigation, root cause analysis, SRE investigation, change request, refactor, POC, prototype, spike work, experiment, implementation plan, create increment, organize work, break down work, new product, build project, MVP, SaaS, app development, tech stack planning, production issue, critical bug, stakeholder request.
 ---
 
 # Increment Planner Skill
@@ -25,32 +25,62 @@ This skill creates comprehensive, well-structured implementation plans for SpecW
 
 ## Purpose
 
-The increment-planner skill automates the creation of feature implementation plans, ensuring:
-- Auto-numbered feature directories (`0001-9999` 4-digit format)
+The increment-planner skill automates the creation of implementation plans for ANY type of work:
+- Auto-numbered increment directories (`0001-9999` 4-digit format)
 - Duplicate detection (prevents creating 0002 when 0002 already exists)
-- Complete feature artifacts (spec.md, plan.md, tasks.md with embedded tests)
+- Complete increment artifacts (spec.md, plan.md, tasks.md with embedded tests)
 - Proper context manifests for selective loading
 - Constitutional compliance
 - Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks with test plans)
 - **v0.7.0+**: Test-Aware Planning (bidirectional AC↔Task↔Test linking)
 
+## Increment Types (v0.7.0+)
+
+**Increments can be any type of work**, not just features. SpecWeave supports six types:
+
+| Type | Description | Use When | Limit |
+|------|-------------|----------|-------|
+| **feature** | Standard feature development | Adding new functionality | Max 2 active |
+| **hotfix** | Critical production fixes | Production is broken | Unlimited |
+| **bug** | Production bugs with SRE investigation | Bug requires root cause analysis | Unlimited |
+| **change-request** | Stakeholder requests | Business requirements change | Max 2 active |
+| **refactor** | Code improvement | Technical debt, code quality | Max 1 active |
+| **experiment** | POC/spike work | Exploring options, prototypes | Unlimited* |
+
+**Examples**:
+- **Feature**: "Add user authentication", "Implement payment processing"
+- **Hotfix**: "Fix critical security vulnerability CVE-2024-1234"
+- **Bug**: "Investigate memory leak in production API", "Performance degradation in checkout flow"
+- **Change Request**: "Redesign dashboard per stakeholder feedback"
+- **Refactor**: "Extract service layer from monolith", "Migrate to TypeScript"
+- **Experiment**: "Evaluate GraphQL vs REST", "Prototype real-time collaboration"
+
+**Key Insight**: The increment structure (spec.md, plan.md, tasks.md) works for ALL types. Even a bug investigation needs:
+- **spec.md**: What's broken? Expected vs actual behavior? Impact?
+- **plan.md**: Investigation approach, tools, hypothesis
+- **tasks.md**: Investigation steps, fix implementation, verification
+
 ## When to Use This Skill
 
 Use this skill when:
-- Creating a new feature from a description
-- Planning implementation for a user story
-- Organizing work for a complex task
-- Breaking down epics into executable features
-- Structuring brownfield modifications
+- **Features**: Creating new functionality from a description
+- **Hotfixes**: Planning urgent production fixes
+- **Bugs**: Structuring SRE investigations and root cause analysis
+- **Change Requests**: Organizing stakeholder-driven changes
+- **Refactors**: Planning code improvement work
+- **Experiments**: Structuring POCs and technical spikes
+- **Brownfield**: Structuring modifications to existing codebases
 
 ## Activation Triggers
 
 This skill activates automatically when users say:
-- "Plan a feature for..."
-- "Create implementation plan for..."
-- "I want to add [feature description]"
-- "Help me structure [feature]"
-- "Break down this feature: ..."
+- **Features**: "Plan a feature for...", "Create implementation plan for..."
+- **Hotfixes**: "Fix critical bug in production", "Emergency security patch"
+- **Bugs**: "Investigate memory leak", "Debug performance issue", "Root cause analysis for..."
+- **Change Requests**: "Stakeholder requested...", "Business wants to change..."
+- **Refactors**: "Refactor...", "Extract service layer", "Improve code quality"
+- **Experiments**: "Prototype...", "Evaluate...", "POC for...", "Spike work"
+- **General**: "Create increment for...", "Help me structure [work]", "Break down this work: ..."
 
 ---
 
@@ -81,22 +111,11 @@ Task(
 
   Context from existing docs: [summary of strategy docs from Step 1]
 
-  You MUST create increment spec.md (primary) AND optionally update strategy docs:
+  You MUST create RFC (living docs - source of truth) AND optionally create increment spec.md:
 
-  1. Strategy docs (optional, high-level only):
-     - IF this is a NEW module/product, create:
-       .specweave/docs/internal/strategy/{module-name}/
-       * overview.md (high-level product vision, market opportunity, personas)
-       * business-case.md (optional - ROI, competitive analysis)
-     - IMPORTANT:
-       * ❌ NO detailed user stories (those go in spec.md)
-       * ❌ NO detailed requirements (those go in spec.md)
-       * ❌ NO acceptance criteria (those go in spec.md)
-       * ✅ ONLY strategic, high-level business context
-
-  2. Increment spec.md (MANDATORY, source of truth):
-     - Create .specweave/increments/{number}-{name}/spec.md
-     - This is the COMPLETE requirements spec (not a summary!)
+  1. RFC (living docs - SOURCE OF TRUTH, permanent):
+     - Create .specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md
+     - This is the COMPLETE, PERMANENT source of truth
      - Include ALL of:
        * User stories (US-001, US-002, etc.) with full details
        * Acceptance criteria (AC-US1-01, etc.)
@@ -104,8 +123,27 @@ Task(
        * Non-functional requirements (NFR-001, etc.)
        * Success criteria (metrics, KPIs)
        * Test strategy
-     - Optionally reference strategy/overview.md for business context
+     - This RFC can be linked to Jira/ADO/GitHub Issues
+     - RFC persists even after increment completes
      - No line limit (be thorough, this is source of truth)
+
+  2. Strategy docs (optional, high-level ONLY):
+     - IF this is a NEW module/product, create:
+       .specweave/docs/internal/strategy/{module-name}/
+       * overview.md (high-level product vision, market opportunity, personas)
+       * business-case.md (optional - ROI, competitive analysis)
+     - IMPORTANT:
+       * ❌ NO detailed user stories (those go in RFC spec.md)
+       * ❌ NO detailed requirements (those go in RFC spec.md)
+       * ❌ NO acceptance criteria (those go in RFC spec.md)
+       * ✅ ONLY strategic, high-level business context
+
+  3. Increment spec.md (optional, can duplicate RFC):
+     - Create .specweave/increments/{number}-{name}/spec.md
+     - This CAN duplicate content from RFC spec.md (temporary reference - that's OK!)
+     - OR it can just reference the RFC: \"See RFC-{number}-{name} for complete requirements\"
+     - Increment spec.md may be deleted after increment completes
+     - RFC spec.md persists as permanent documentation
 
   Tech stack: [detected tech stack]"
 )
@@ -181,19 +219,30 @@ Task(
 
 Wait for test-aware-planner agent to complete!
     ↓
-STEP 5: Validate Increment Files
-├─ Check .specweave/increments/{number}-{name}/spec.md exists and is complete
-├─ Check spec.md contains ALL user stories, requirements, acceptance criteria (with AC-IDs)
+STEP 5: Validate Living Docs and Increment Files
+├─ Check .specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md exists (SOURCE OF TRUTH)
+├─ Check RFC spec.md contains ALL user stories, requirements, AC-IDs (with AC-IDs)
+├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
+├─ Check strategy docs (if created) are high-level only (no detailed user stories)
+├─ Check .specweave/increments/{number}-{name}/spec.md references or duplicates RFC
 ├─ Check .specweave/increments/{number}-{name}/plan.md references architecture docs
 ├─ Check .specweave/increments/{number}-{name}/tasks.md has embedded test plans
-├─ Check tasks.md covers ALL AC-IDs from spec.md
-├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
-└─ Check strategy docs (if created) are high-level only (no detailed user stories)
+└─ Check tasks.md covers ALL AC-IDs from RFC spec.md
     ↓
-✅ SUCCESS: Increment created with spec.md, plan.md, and tasks.md (with embedded tests)
+✅ SUCCESS: RFC created (permanent), increment created (temporary)
 ```
 
 ### What Gets Created
+
+#### RFC (Living Docs - Source of Truth) ✅
+```
+.specweave/docs/internal/rfc/
+└── rfc-{number}-{name}/             # ← PM Agent (MANDATORY)
+    └── spec.md                      # COMPLETE user stories, AC, requirements
+                                     # This is the PERMANENT source of truth
+                                     # Can be linked to Jira/ADO/GitHub Issues
+                                     # Persists after increment completes
+```
 
 #### Strategy Docs (Optional, High-Level) ⚠️
 ```
@@ -202,9 +251,9 @@ STEP 5: Validate Increment Files
     ├── overview.md                  # High-level product vision, market opportunity
     └── business-case.md             # (optional) ROI, competitive analysis
 
-❌ NO requirements.md (goes in spec.md)
-❌ NO user-stories.md (goes in spec.md)
-❌ NO success-criteria.md (goes in spec.md)
+❌ NO requirements.md (goes in RFC spec.md)
+❌ NO user-stories.md (goes in RFC spec.md)
+❌ NO success-criteria.md (goes in RFC spec.md)
 ```
 
 #### Architecture Docs (Living Documentation) ✅
@@ -223,11 +272,12 @@ STEP 5: Validate Increment Files
     └── {module}-schema.sql
 ```
 
-#### Increment Files (Source of Truth for Requirements) ✅
+#### Increment Files (Temporary Implementation Tracker) ✅
 ```
 .specweave/increments/0001-feature-name/
-├── spec.md                 # ← PM Agent (COMPLETE requirements, no line limit)
-│                           #    Contains: US-001+, AC-*, FR-*, NFR-*, success criteria
+├── spec.md                 # ← PM Agent (CAN duplicate RFC spec.md - temporary reference)
+│                           #    OR just reference: "See RFC-0001-feature-name"
+│                           #    May be deleted after increment completes
 ├── plan.md                 # ← Architect Agent (technical design, references ADRs)
 ├── tasks.md                # ← test-aware-planner Agent (tasks with embedded test plans)
 │                           #    v0.7.0+: Tests embedded in each task (BDD format)
@@ -237,30 +287,39 @@ STEP 5: Validate Increment Files
 
 **v0.7.0 Architecture Pivot**: tests.md eliminated, tests are now embedded directly in tasks.md
 
+**Key Difference**:
+- **RFC spec.md** = Permanent source of truth (persists after increment)
+- **Increment spec.md** = Temporary reference (can be deleted after increment)
+
 ---
 
 ### Validation Rules (MANDATORY)
 
 Before completing feature planning, verify:
 
+**RFC (Living Docs - Source of Truth, Mandatory)**:
+- [ ] `.specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md` exists
+- [ ] RFC spec.md contains ALL user stories (US-001, US-002, etc.) with full details
+- [ ] RFC spec.md contains ALL acceptance criteria (AC-US1-01, etc.)
+- [ ] RFC spec.md contains ALL requirements (FR-001, NFR-001, etc.)
+- [ ] RFC spec.md contains success criteria (metrics, KPIs)
+- [ ] RFC spec.md may reference `../../strategy/{module}/overview.md` for context
+- [ ] No line limit on RFC spec.md (be thorough - this is permanent!)
+
 **Strategy Docs (Optional)**:
 - [ ] If created, `.specweave/docs/internal/strategy/{module}/overview.md` is high-level only
-- [ ] No detailed user stories in strategy docs (US-001, etc.)
-- [ ] No detailed requirements in strategy docs (FR-001, NFR-001, etc.)
-- [ ] Strategy docs provide business context only
+- [ ] No detailed user stories in strategy docs (US-001, etc. - those go in RFC)
+- [ ] No detailed requirements in strategy docs (FR-001, NFR-001, etc. - those go in RFC)
+- [ ] Strategy docs provide business context only (market, opportunity, personas)
 
 **Architecture Docs (Mandatory)**:
 - [ ] `.specweave/docs/internal/architecture/adr/` has ≥3 ADRs
 - [ ] ADRs follow template (Context, Decision, Alternatives, Consequences)
 - [ ] Diagrams created for module (system-context, system-container)
 
-**Increment spec.md (Mandatory)**:
-- [ ] `spec.md` contains ALL user stories (US-001, US-002, etc.) with full details
-- [ ] `spec.md` contains ALL acceptance criteria (AC-US1-01, etc.)
-- [ ] `spec.md` contains ALL requirements (FR-001, NFR-001, etc.)
-- [ ] `spec.md` contains success criteria (metrics, KPIs)
-- [ ] `spec.md` may reference `../../docs/internal/strategy/{module}/overview.md` for context
-- [ ] No line limit on spec.md (be thorough!)
+**Increment spec.md (Optional - can duplicate RFC)**:
+- [ ] `spec.md` either duplicates RFC spec.md OR references it ("See RFC-{number}-{name}")
+- [ ] If duplicated, content matches RFC spec.md
 
 **Increment plan.md (Mandatory)**:
 - [ ] `plan.md` references architecture docs (`../../docs/internal/architecture/adr/`)
@@ -271,15 +330,16 @@ Before completing feature planning, verify:
 - [ ] Each testable task has Test Plan (Given/When/Then)
 - [ ] Each testable task has Test Cases (unit/integration/E2E)
 - [ ] Coverage targets specified (80-90% overall)
-- [ ] ALL AC-IDs from spec.md are covered by tasks
+- [ ] ALL AC-IDs from RFC spec.md are covered by tasks
 - [ ] Non-testable tasks have Validation section
 
 **Agents Followed Process**:
+- [ ] PM Agent created RFC spec.md as permanent source of truth
 - [ ] PM Agent scanned existing strategy docs before creating new ones
-- [ ] Architect Agent read PM's strategy docs before creating architecture
+- [ ] Architect Agent read RFC spec.md before creating architecture
 - [ ] Architect created ADRs for ALL technical decisions
-- [ ] test-aware-planner Agent read spec.md and plan.md before creating tasks.md
-- [ ] test-aware-planner covered ALL AC-IDs with tasks
+- [ ] test-aware-planner Agent read RFC spec.md and plan.md before creating tasks.md
+- [ ] test-aware-planner covered ALL AC-IDs from RFC with tasks
 
 ---
 

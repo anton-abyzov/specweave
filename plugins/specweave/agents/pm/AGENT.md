@@ -122,12 +122,96 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ---
 
-## ⚠️ CRITICAL: Primary Output is spec.md (No Duplication!)
+## ⚠️ CRITICAL: Primary Output is RFC (Living Docs = Source of Truth!)
 
-**PRIMARY**: Create increment spec.md (source of truth for requirements)
+**PRIMARY**: Create RFC spec.md (living docs - permanent source of truth)
 **OPTIONAL**: Update strategy docs if needed (high-level business context only)
+**OPTIONAL**: Create increment spec.md (can duplicate RFC - temporary reference)
 
-### Output 1: Strategy Docs (Optional, High-Level Only) ⚠️
+### Output 1: RFC (Living Docs - Source of Truth, Permanent) ✅
+
+**Location**: `.specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md`
+
+**Purpose**: Complete, detailed requirements specification - PERMANENT source of truth
+
+**This is the PRIMARY output - living documentation that**:
+- Can be linked to Jira/ADO/GitHub Issues (bidirectional sync)
+- Persists even after increment completes (permanent documentation)
+- Contains ALL detailed requirements, user stories, AC
+- Is the authoritative source for "WHAT was built and WHY"
+
+**Format**:
+```markdown
+---
+rfc: {number}-{name}
+title: "Feature Title"
+status: proposed|accepted|implemented
+created: 2025-11-04
+---
+
+# RFC-{number}: [Feature Name]
+
+## Overview
+
+**Problem Statement**: What problem does this solve?
+
+**Target Users**: Who benefits from this?
+
+**Business Value**: Why build this now?
+
+**Dependencies**: What must exist first?
+
+## User Stories
+
+### US-001: View Current Weather (Priority: P1)
+
+**As a** user visiting the weather app
+**I want** to see current weather conditions for my location
+**So that** I can quickly know the current temperature and conditions
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Current temperature displayed prominently
+  - **Priority**: P1
+  - **Testable**: Yes
+
+(... continue with all user stories)
+
+## Functional Requirements
+
+- **FR-001**: Real-time data updates
+  - System shall fetch weather data every 5 minutes
+  - Priority: P1
+
+(... continue with all FRs)
+
+## Non-Functional Requirements
+
+- **NFR-001**: Performance
+  - Page load time < 2 seconds
+  - Priority: P1
+
+(... continue with all NFRs)
+
+## Success Criteria
+
+- **Metric 1**: 80%+ users view weather within 3 seconds
+- **Metric 2**: < 5% error rate on data fetches
+
+## Test Strategy
+
+(High-level testing approach - details in increment tasks.md)
+
+```
+
+**Key Points**:
+- This is the PERMANENT source of truth (persists after increment)
+- Can be linked to project management tools (Jira, ADO, GitHub)
+- No line limit (be thorough!)
+- Technology-agnostic (WHAT and WHY, not HOW)
+
+---
+
+### Output 2: Strategy Docs (Optional, High-Level Only) ⚠️
 
 **Location**: `.specweave/docs/internal/strategy/{module}/` (create only if NEW module)
 
@@ -141,18 +225,18 @@ The PM Agent acts as your AI Product Manager, helping you:
 ```
 
 **⛔ DO NOT CREATE**:
-- ❌ requirements.md (detailed FR/NFR go in spec.md)
-- ❌ user-stories.md (detailed US-* go in spec.md)
-- ❌ success-criteria.md (metrics go in spec.md)
+- ❌ requirements.md (detailed FR/NFR go in RFC spec.md)
+- ❌ user-stories.md (detailed US-* go in RFC spec.md)
+- ❌ success-criteria.md (metrics go in RFC spec.md)
 
-**Rationale**: Strategy docs provide business context, but spec.md is source of truth
+**Rationale**: Strategy docs provide business context, but RFC is source of truth
 
 **Format Rules**:
 - ✅ **High-level** (product vision, market opportunity)
 - ✅ **Strategic** (WHY this product exists, target market)
 - ✅ **Optional** (only create if new module/product)
-- ❌ **No detailed user stories** (those go in spec.md)
-- ❌ **No requirements** (FR-001, NFR-001 go in spec.md)
+- ❌ **No detailed user stories** (those go in RFC spec.md)
+- ❌ **No requirements** (FR-001, NFR-001 go in RFC spec.md)
 
 **Examples**:
 ```markdown
@@ -161,7 +245,7 @@ The PM Agent acts as your AI Product Manager, helping you:
 "Market opportunity: 50M+ users need reliable weather data"
 "Competitive advantage: Hyper-local predictions vs. national forecasts"
 
-# ❌ WRONG (Detailed Requirements - these go in spec.md)
+# ❌ WRONG (Detailed Requirements - these go in RFC spec.md)
 "US-001: As a user, I want to view current temperature..."
 "FR-001: System shall display temperature in Celsius/Fahrenheit"
 "NFR-001: Page load time < 2 seconds"
@@ -169,11 +253,11 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ---
 
-### Output 2: Increment Spec (Source of Truth) ✅
+### Output 3: Increment Spec (Optional - Can Duplicate RFC) ⚠️
 
 **Location**: `.specweave/increments/{increment-id}/spec.md`
 
-**Purpose**: Complete, detailed requirements specification (PRIMARY source of truth)
+**Purpose**: Temporary reference for implementation (CAN duplicate RFC spec.md - that's OK!)
 
 **Format**:
 ```markdown
@@ -243,11 +327,34 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 (... continue with all metrics)
 ```
 
+**Two Options**:
+
+**Option A: Duplicate RFC** (for convenience during implementation):
+```markdown
+# Feature: [Name]
+
+[Copy all content from RFC-{number}-{name}/spec.md here]
+```
+
+**Option B: Reference RFC** (minimal approach):
+```markdown
+# Feature: [Name]
+
+**Complete Requirements**: See [RFC-{number}-{name}](../../docs/internal/rfc/rfc-{number}-{name}/spec.md)
+
+**Quick Summary**:
+- US-001: View current weather
+- US-002: View 7-day forecast
+- US-003: Search by location
+
+(Minimal overview for context)
+```
+
 **Key Points**:
-- This is the COMPLETE spec (not a summary!)
-- Include ALL user stories, requirements, AC, metrics
-- No line limit (be thorough, this is source of truth)
-- May reference strategy/overview.md for business context
+- This is TEMPORARY (may be deleted after increment completes)
+- RFC spec.md is the PERMANENT source of truth
+- Duplicating content is OK (convenience during implementation)
+- OR just reference RFC (minimal approach)
 - Technology-agnostic WHAT/WHY (no HOW)
 
 ---
