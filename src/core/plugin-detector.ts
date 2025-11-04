@@ -67,6 +67,7 @@ export class PluginDetector {
    * Phase 1: Init-time detection
    *
    * Detects plugins based on project structure during `specweave init`
+   * NOW uses the new plugin-detection.ts utility for comprehensive scanning
    *
    * @param projectPath - Path to project root
    * @returns Array of detection results with confidence scores
@@ -74,6 +75,34 @@ export class PluginDetector {
   async detectFromProject(projectPath: string): Promise<DetectionResult[]> {
     const results: DetectionResult[] = [];
 
+    // NEW: Use plugin-detection.ts utility for comprehensive scanning
+    try {
+      const { scanProjectStructure, detectPlugins } = await import('../utils/plugin-detection.js');
+
+      const signals = await scanProjectStructure(projectPath);
+      const detected = detectPlugins(signals);
+
+      // Convert to DetectionResult format
+      for (const plugin of detected) {
+        // Map confidence levels to scores
+        const confidenceMap = { high: 0.9, medium: 0.6, low: 0.3 };
+        const confidence = confidenceMap[plugin.confidence];
+
+        results.push({
+          pluginName: plugin.name,
+          confidence,
+          reason: plugin.reason,
+          trigger: plugin.signals.join(', '), // Join array into string
+        });
+      }
+
+      return results;
+    } catch (error) {
+      // Fallback to old detection method if new utility fails
+      console.warn('⚠️  New plugin detection failed, falling back to legacy method');
+    }
+
+    // LEGACY: Old detection method (fallback)
     // Ensure plugins are loaded
     if (this.availablePlugins.length === 0) {
       await this.loadAvailablePlugins();

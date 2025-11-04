@@ -94,6 +94,46 @@ program
     await pluginCommand(action, pluginName, options);
   });
 
+// Increment status commands
+program
+  .command('pause <increment-id>')
+  .description('Pause an active increment')
+  .option('-r, --reason <text>', 'Reason for pausing')
+  .option('-f, --force', 'Force pause (update reason if already paused)')
+  .action(async (incrementId, options) => {
+    const { pauseCommand } = await import('../dist/cli/commands/pause.js');
+    await pauseCommand(incrementId, options);
+  });
+
+program
+  .command('resume <increment-id>')
+  .description('Resume a paused or abandoned increment')
+  .option('-f, --force', 'Force resume (bypass WIP limit checks)')
+  .action(async (incrementId, options) => {
+    const { resumeCommand } = await import('../dist/cli/commands/resume.js');
+    await resumeCommand(incrementId, options);
+  });
+
+program
+  .command('abandon <increment-id>')
+  .description('Abandon an increment')
+  .option('-r, --reason <text>', 'Reason for abandoning')
+  .option('-f, --force', 'Force abandon (skip confirmation)')
+  .action(async (incrementId, options) => {
+    const { abandonCommand } = await import('../dist/cli/commands/abandon.js');
+    await abandonCommand(incrementId, options);
+  });
+
+program
+  .command('status')
+  .description('Show increment status overview')
+  .option('-v, --verbose', 'Show detailed information')
+  .option('-t, --type <type>', 'Filter by increment type (feature, hotfix, bug, etc.)')
+  .action(async (options) => {
+    const { statusCommand } = await import('../dist/cli/commands/status.js');
+    await statusCommand(options);
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -110,6 +150,11 @@ program.on('--help', () => {
   console.log('  $ specweave install --global                # Install all (interactive)');
   console.log('  $ specweave list                            # List all available components');
   console.log('  $ specweave list --installed                # Show installed components');
+  console.log('  $ specweave status                          # Show all increments status');
+  console.log('  $ specweave status --verbose                # Show detailed increment info');
+  console.log('  $ specweave pause 0007 --reason "blocked"   # Pause increment 0007');
+  console.log('  $ specweave resume 0007                     # Resume increment 0007');
+  console.log('  $ specweave abandon 0007 --reason "obsolete" # Abandon increment 0007');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
