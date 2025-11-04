@@ -1913,9 +1913,53 @@ vim .claude-plugin/marketplace.json
 
 ## Release Process
 
+### Versioning Strategy
+
+**IMPORTANT**: SpecWeave follows semantic versioning (semver), but version bumps are **MANUAL** and controlled:
+
+**The Rules**:
+- ✅ **Patch version** (0.7.X) - Increment ONLY when explicitly requested by maintainer
+- ✅ **Minor version** (0.X.0) - Increment ONLY when maintainer says to
+- ✅ **Major version** (X.0.0) - Increment ONLY when maintainer says to
+- ❌ **NEVER auto-increment** versions after each increment completion
+
+**Why Manual Control?**
+- Multiple increments may be part of the same release (e.g., 0.7.0 = increments 0006 + 0007 + 0008)
+- Version bumps signal user-facing releases, not internal development progress
+- Maintainer decides when features are ready to ship
+- Prevents version number inflation (e.g., jumping from 0.7.0 to 0.12.0 in one day)
+
+**When Completing Increments**:
+```bash
+# ❌ WRONG - Don't auto-bump version
+git commit -m "feat: complete increment 0008"
+npm version patch  # ❌ NO! Wait for maintainer approval
+
+# ✅ CORRECT - Just commit the work
+git commit -m "feat: complete increment 0008"
+# Version stays at 0.7.0 until maintainer says to bump
+```
+
+**When Maintainer Requests Version Bump**:
+```bash
+# Maintainer says: "Bump to 0.7.1"
+npm version patch  # ✅ Now bump
+npm publish        # ✅ And publish
+
+# Maintainer says: "Bump to 0.8.0"
+npm version minor  # ✅ New minor version
+npm publish
+```
+
+**Summary**: Complete increments → commit code → maintainer decides when to bump version and publish.
+
+---
+
+### NPM Publishing
+
 **NPM Publishing**:
 ```bash
-# 1. Update version
+# 1. Update version (ONLY when maintainer requests)
 npm version patch|minor|major
 
 # 2. Update CHANGELOG.md
