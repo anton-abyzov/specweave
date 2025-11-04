@@ -95,7 +95,7 @@ persistence, typing indicators, and read receipts.
 
 **Acceptance Criteria**:
 - [ ] **AC-US1-01**: Click "Chat" button opens chat window (P1, testable)
-- [ ] **AC-US1-02**: WebSocket connection established <2 seconds (P1, testable)
+- [ ] **AC-US1-02**: WebSocket connection established in under 2 seconds (P1, testable)
 - [ ] **AC-US1-03**: Online/offline status shown (P2, testable)
 
 ### US-002: Send and Receive Messages
@@ -104,7 +104,7 @@ persistence, typing indicators, and read receipts.
 **So that** I can communicate with support
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Messages delivered <200ms (P1, testable)
+- [ ] **AC-US2-01**: Messages delivered in under 200ms (P1, testable)
 - [ ] **AC-US2-02**: Messages persist in database (P1, testable)
 - [ ] **AC-US2-03**: Message history loads on reconnect (P2, testable)
 
@@ -215,7 +215,7 @@ interface Chat {
 - **AC-ID Traceability**: Map tests to acceptance criteria
 
 ### Key Test Scenarios
-1. Customer sends message → Support receives <200ms
+1. Customer sends message → Support receives in under 200ms
 2. WebSocket disconnect → Auto-reconnect → Load history
 3. Typing indicator → Shows for 3s → Clears automatically
 ```
@@ -249,7 +249,7 @@ coverage_target: 88%
 **Test Plan** (BDD format):
 - **Given** customer clicks "Chat" button
 - **When** ChatService.connect() called
-- **Then** WebSocket connection established <2s + online status shown
+- **Then** WebSocket connection established in under 2s + online status shown
 
 **Test Cases**:
 - Unit (`chat.test.ts`):
@@ -311,7 +311,7 @@ coverage_target: 88%
 **Test Plan**:
 - **Given** user typing in chat
 - **When** keypress event fired
-- **Then** typing indicator sent <100ms + clears after 3s
+- **Then** typing indicator sent in under 100ms + clears after 3s
 
 **Test Cases**:
 - Unit (`typing-indicator.test.ts`):
@@ -428,7 +428,7 @@ Would you like to:
 - Complete all P1 + P2 acceptance criteria
 - 95%+ test coverage
 - Comprehensive error handling
-- Performance testing (<200ms latency)
+- Performance testing (under 200ms latency)
 - Security audit (input validation, rate limiting)
 
 ## Quality Gates
