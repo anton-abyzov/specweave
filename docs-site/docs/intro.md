@@ -6,12 +6,17 @@ sidebar_position: 1
 
 **Spec-Driven Development Framework with AI-Powered Autonomous Agents**
 
-SpecWeave is a specification-first AI development framework where specifications and documentation are the SOURCE OF TRUTH. Code is the expression of these specifications.
+SpecWeave is a **disciplined development framework** that acts as your AI tutor, guiding you through structured, incremental software delivery. Specifications and documentation are the SOURCE OF TRUTH. Code is the expression of these specifications.
+
+**The Core Philosophy**: You can't build a stats chart feature when you haven't built the UI components yet. SpecWeave enforces natural dependencies, ensuring you build in the right order and complete each increment before moving forward.
+
+Think of it as **"structured coding with a tutor"** - SpecWeave understands your intent, guides you through the right steps, and helps you not miss anything.
 
 ## Why SpecWeave?
 
+- **🎯 Disciplined Progress** - Complete increment N before starting N+1. Natural dependencies enforced (foundation → features → advanced features). SpecWeave acts as your tutor preventing chaos.
 - **🤖 Just Works** - Autonomous agents ask clarifying questions, review output, validate quality—minimal interaction required
-- **⏸️ Smart Status Management** (v0.7.0) - Pause/resume/abandon increments! Real-world workflow support for hotfixes, blockers, and experiments
+- **⏸️ Smart Status Management** (v0.7.0) - Pause when blocked (API keys, design assets), resume when ready, abandon obsolete work. **Note**: Pause is for blocked work, NOT for working on multiple increments simultaneously.
 - **🧪 Test-Aware Planning** (v0.7.0) - Tests embedded in tasks (BDD format), bidirectional AC↔Task↔Test linking, 80%+ coverage validation
 - **⚡ Smart Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
 - **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
@@ -142,6 +147,20 @@ Simply describe what you want to build - SpecWeave guides you through:
 - **change-request** (stakeholder requests, max 2 active)
 - **refactor** (code improvement, max 1 active)
 - **experiment** (POCs/spikes, unlimited)
+
+**The Iron Rule: Complete Before Starting**
+
+⚠️ **You CANNOT start increment N+1 until increment N is DONE**. This is enforced by SpecWeave to maintain discipline.
+
+**Natural Build Order Example**:
+1. ✅ First: Build basic UI components (buttons, forms, layouts)
+2. ✅ Then: Build authentication system (uses UI components)
+3. ✅ Then: Build stats dashboard (uses auth + UI)
+4. ❌ WRONG: Start stats dashboard before UI exists
+
+**Big Increments Are OK**: The rule isn't about size - you can have substantial increments. The rule is about **completion**: finish what you start before moving to the next thing.
+
+**Pause/Resume is NOT for Parallel Work**: Use pause when you're **blocked** (waiting for API keys, design approval, etc.), not when you want to work on multiple things at once.
 
 **Why slash commands?**
 - ✅ **100% reliable** - Always works, no guessing

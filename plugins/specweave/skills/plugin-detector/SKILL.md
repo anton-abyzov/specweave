@@ -1,6 +1,6 @@
 ---
 name: plugin-detector
-description: Detects when SpecWeave plugins are needed and guides installation. Activates for GitHub sync, Kubernetes deployment, Figma integration, ML pipelines, payment processing, React/frontend development, backend APIs, and other domain-specific features requiring plugins.
+description: Detects when SpecWeave plugins are needed based on tech stack mentions. Activates for frontend (Next.js, React, Vue), backend (.NET, Node.js, Python), infrastructure (Docker, K8s), external tools (GitHub, JIRA), payments (Stripe), ML (TensorFlow), testing (Playwright), and design (Figma).
 ---
 
 # SpecWeave Plugin Detector
@@ -33,12 +33,86 @@ When you mention capabilities that require specific SpecWeave plugins:
 
 ## How I Help
 
+### Mode 1: Passive Tech Stack Detection (NEW!)
+
+When users mention tech stacks in ANY question (not just increments), I automatically:
+
+1. **Scan project structure** using `src/utils/plugin-detection.ts`:
+   - Check package.json dependencies
+   - Detect .NET (*.csproj), Python (requirements.txt), etc.
+   - Find Docker, Kubernetes, infrastructure files
+   - Identify framework-specific patterns
+
+2. **Detect missing plugins**:
+   - Compare detected tech stack vs installed plugins
+   - Group by confidence (high/medium/low)
+
+3. **Suggest proactively** (non-blocking):
+   ```
+   🔌 Plugin Recommendations
+
+   Based on your tech stack (Next.js + .NET + Docker), these plugins would help:
+
+   Recommended (high confidence):
+   • specweave-frontend - Next.js, React support
+   • specweave-backend - .NET 8 API patterns
+   • specweave-infrastructure - Docker, PostgreSQL
+
+   Install: /plugin install specweave-frontend@specweave
+   (or continue without - you can add later)
+   ```
+
+4. **Continue with user's request**: Don't block workflow!
+
+### Mode 2: Explicit Feature Requests (Original)
+
+When users explicitly request plugin features:
+
 1. **Detect missing plugin**: Check if the required plugin is installed
 2. **Provide installation command**: Give exact `/plugin install` command
 3. **Explain benefits**: List what the plugin provides (skills, agents, commands)
 4. **Continue once enabled**: Resume your task with plugin features available
 
 ## Plugin Detection Logic
+
+### Automatic Scanning (NEW!)
+
+Use the plugin detection utility to scan project structure:
+
+**Step 1: Scan project** (TypeScript example, adapt to Claude's capabilities):
+```typescript
+import { scanProjectStructure, detectPlugins } from '../../../../../src/utils/plugin-detection';
+
+// Scan current directory
+const cwd = process.cwd();
+const signals = await scanProjectStructure(cwd);
+const detected = detectPlugins(signals);
+
+// Group by confidence
+const highConfidence = detected.filter(p => p.confidence === 'high');
+const mediumConfidence = detected.filter(p => p.confidence === 'medium');
+```
+
+**Step 2: Check installed plugins**:
+```bash
+# Use Claude's plugin list
+/plugin list --installed
+```
+
+**Step 3: Find missing plugins**:
+- Compare detected plugins vs installed
+- Only suggest high/medium confidence
+- Skip if already installed
+
+**Step 4: Format suggestions**:
+```typescript
+import { formatDetectedPlugins, generateInstallCommands } from '../../../../../src/utils/plugin-detection';
+
+const output = formatDetectedPlugins(detected);
+const commands = generateInstallCommands(detected);
+```
+
+### Manual Detection (Original)
 
 I check for plugin installation by:
 - Looking for plugin-specific commands (e.g., `/specweave-github:sync`)
@@ -62,6 +136,45 @@ Would you like me to guide you through the installation?
 ```
 
 ## Example Flows
+
+### Example 0: Passive Tech Stack Detection (NEW!)
+
+**User**: "Design a spec-driven blueprint for a simple task-tracking web app. Tech stack: Next.js + .NET 8 (Web API) + PostgreSQL + Prisma ORM."
+
+**Me (plugin-detector activates automatically)**:
+```
+🔍 Scanning your project for tech stack...
+
+📦 Plugin Recommendations
+
+Based on your tech stack (Next.js + .NET 8 + PostgreSQL + Docker), these plugins would help:
+
+   Recommended (high confidence):
+   • specweave-frontend - Next.js + React patterns, component architecture
+     Signals: Next.js mentioned
+     Install: /plugin install specweave-frontend@specweave
+
+   • specweave-backend - .NET 8 Web API patterns, Entity Framework, REST APIs
+     Signals: .NET 8 Web API mentioned
+     Install: /plugin install specweave-backend@specweave
+
+   • specweave-infrastructure - Docker Compose, PostgreSQL schema, container orchestration
+     Signals: PostgreSQL, Docker mentioned (if docker-compose.yml exists)
+     Install: /plugin install specweave-infrastructure@specweave
+
+💡 Quick install all:
+   /plugin install specweave-frontend@specweave
+   /plugin install specweave-backend@specweave
+   /plugin install specweave-infrastructure@specweave
+
+📖 Or I can continue with the core plugin only (you can add plugins later)
+
+Would you like to:
+1️⃣  Install these plugins now (recommended for better architecture patterns)
+2️⃣  Continue without plugins (I'll do my best with core plugin only)
+```
+
+*User installs plugins, then I continue with their task using plugin-specific knowledge*
 
 ### Example 1: GitHub Integration
 
