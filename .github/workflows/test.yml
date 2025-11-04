@@ -15,7 +15,7 @@ jobs:
         node-version: [20.x]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -49,7 +49,7 @@ jobs:
   validate-skills:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -93,7 +93,7 @@ jobs:
   validate-structure:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check required directories
         run: |
@@ -132,7 +132,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
