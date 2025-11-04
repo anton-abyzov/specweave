@@ -81,7 +81,7 @@ Invoke the `increment-quality-judge-v2` skill to evaluate:
   4. Feasibility (13% weight)
   5. Maintainability (9% weight)
   6. Edge Cases (9% weight)
-  7. **Risk Assessment (11% weight)** - NEW in v0.8.0!
+  7. **Risk Assessment (11% weight)**
 
 **Risk Assessment** uses BMAD pattern:
 - Probability (0.0-1.0) × Impact (1-10) = Risk Score (0.0-10.0)

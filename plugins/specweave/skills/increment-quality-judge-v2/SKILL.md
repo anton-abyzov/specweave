@@ -6,7 +6,7 @@ allowed-tools: Read, Grep, Glob
 
 # Increment Quality Judge v2.0
 
-**NEW in v0.8.0**: Risk Assessment + Quality Gate Decisions
+Risk Assessment + Quality Gate Decisions
 
 AI-powered quality assessment with BMAD-pattern risk scoring and formal quality gate decisions (PASS/CONCERNS/FAIL).
 
