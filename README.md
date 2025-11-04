@@ -1,6 +1,6 @@
 # SpecWeave
 
-> **Spec-Driven Development Framework - Designed for Claude Code, works with other AI tools**
+> **AI made us fast. SpecWeave makes us sustainable.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build](https://img.shields.io/github/actions/workflow/status/anton-abyzov/specweave/test.yml?branch=develop&label=Tests)](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)
@@ -8,7 +8,88 @@
 [![Discord](https://img.shields.io/badge/Discord-Join_Server-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Subscribe-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
-**Define WHAT and WHY before HOW. Specifications evolve with code, never diverge.**
+---
+
+## The Problem Everyone Feels But Nobody Talks About
+
+Your AI coding assistant writes features in 30 minutes.
+
+You spend 3 days updating documentation.
+
+By day 4, the code has changed again.
+
+**The docs? Already wrong.**
+
+---
+
+## The Dirty Secret of AI Coding
+
+AI coding assistants made us:
+- ✅ **10x faster at shipping**
+- ❌ **100x worse at maintaining**
+
+We're all "vibe coding" now. Fast. Fun. Chaotic.
+
+No structure. No boundaries. No memory of why we built it this way.
+
+New developers? Lost in 1 hour.
+
+**This is not sustainable.**
+
+---
+
+## The Fortune 500 Gap
+
+Big companies don't have this problem.
+
+They have systems:
+- **PRDs** (Product Requirements) - What and why
+- **HLDs** (High-Level Design) - Architecture decisions
+- **ADRs** (Architecture Decision Records) - Why we chose X over Y
+- **Runbooks** (Operations) - How to actually run this
+- **Glossaries** (Terms) - What these acronyms mean
+
+Their docs stay updated because there's a team, a process, a **discipline**.
+
+But for solo developers and small teams?
+
+**Impossible to maintain manually.**
+
+---
+
+## What is SpecWeave?
+
+**Fortune 500 discipline. Zero overhead. AI-native.**
+
+SpecWeave is a spec-driven development framework that brings enterprise-grade processes to developers of any size—without the bureaucracy.
+
+It's not just a tool. **It's a movement.**
+
+> *"Dad, AI writes your code but you update docs MANUALLY?"*
+> — My 14-year-old daughter (who was absolutely right)
+
+**The new way:**
+- Living docs that ACTUALLY stay synced (automatically)
+- Complete knowledge system (PRDs, HLDs, ADRs, glossaries, runbooks)
+- Tests embedded in tasks (BDD format, full traceability)
+- Enterprise structure without enterprise overhead
+- **Vibe coding... but with boundaries**
+
+---
+
+## What Changes
+
+**BEFORE (Vibe Coding):**
+- "I think we used JWT tokens?"
+- "Why did we choose PostgreSQL again?"
+- "What does this acronym mean?"
+- New developer: **Lost in 1 hour**
+
+**AFTER (SpecWeave):**
+- Check ADR-003: JWT vs Session Tokens (we chose JWT, here's why)
+- Check HLD: Database section (Postgres for ACID compliance)
+- Check Glossary: All technical terms defined
+- New developer: **Productive in 1 hour**
 
 ---
 
@@ -25,17 +106,9 @@
 
 ## 📖 Full Documentation
 
-**For complete guides, tutorials, and API reference, visit:**
+**For complete guides, tutorials, and API reference:**
 
 ### **[spec-weave.com](https://spec-weave.com)**
-
----
-
-## What is SpecWeave?
-
-SpecWeave is a **disciplined development framework** that acts as your AI tutor, guiding you through structured, incremental software delivery. **Designed for Claude Code** (giving best results), it also works with other AI tools like Cursor, Copilot, and ChatGPT. It replaces "vibe coding" with a disciplined approach: complete one thing fully before starting the next.
-
-**The Core Philosophy**: You can't build a stats chart feature when you haven't built the UI components yet. SpecWeave enforces natural dependencies, ensuring you build in the right order and complete each increment before moving forward.
 
 ---
 
@@ -184,6 +257,6 @@ SpecWeave is inspired by:
 
 ---
 
-**SpecWeave** - Replace vibe coding with spec-driven development.
+**SpecWeave** - AI made us fast. SpecWeave makes us sustainable.
 
 **Get started**: `npm install -g specweave` → `specweave init my-project` → **[Read the Docs](https://spec-weave.com)**

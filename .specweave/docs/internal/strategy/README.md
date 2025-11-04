@@ -54,16 +54,44 @@ Strategy docs are the **starting point** for all features. They flow through the
 ## Index of Strategy Documents
 
 ### PRDs
-- (None yet - create your first PRD!)
+
+**To create a new PRD**, use the template:
+
+```bash
+# Copy template
+cp templates/docs/prd-template.md .specweave/docs/internal/strategy/prd-{feature}.md
+
+# Or use the command (future)
+/specweave:create-prd "Feature Name"
+```
+
+**Current PRDs:**
+- *Coming soon* - Convert existing increments to PRDs:
+  - Plugin Architecture (Increment 0004)
+  - GitHub Sync (specweave-github plugin)
+  - Intelligent Model Selection (Increment 0003)
 
 ### Vision Documents
-- (None yet)
+
+**Vision docs define long-term product direction** (3-12 months)
+
+**Current Vision Docs:**
+- [Product Vision](./product-vision.md) - SpecWeave's mission and core value proposition
+- [Core Features](./core-features.md) - Feature set and differentiation
 
 ### OKRs
-- (None yet)
+
+**OKRs track quarterly objectives** with measurable key results
+
+**To create OKRs:**
+- Use format: `okr-{year}-q{quarter}.md` (e.g., `okr-2025-q1.md`)
+- Track: Adoption metrics, performance KPIs, developer experience scores
+
+**Current OKRs:**
+- *Coming soon* - First OKRs will track: NPM downloads, GitHub stars, context reduction metrics
 
 ## Related Documentation
 
 - [Architecture Documentation](../architecture/README.md) - Links PRDs to HLD/ADR/Spec
 - [Delivery Documentation](../delivery/README.md) - Links PRDs to roadmap
-- [PRD Template](../../../templates/docs/prd-template.md)
+- **PRD Template** - Template for creating PRDs (see `src/templates/docs/prd-template.md` in repository)

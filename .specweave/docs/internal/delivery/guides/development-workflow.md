@@ -65,7 +65,7 @@
    - ✅ CLAUDE.md remains concise with quick links
    - ✅ All project knowledge preserved and organized
 
-**See**: [BROWNFIELD-CLAUDE-MERGE-STRATEGY.md](.specweave/increments/0002-brownfield-tools/reports/BROWNFIELD-CLAUDE-MERGE-STRATEGY.md) for complete strategy (when brownfield tools increment is implemented)
+**Note**: The brownfield onboarding strategy is implemented via the `brownfield-onboarder` skill in the `specweave` core plugin. See `plugins/specweave/skills/brownfield-onboarder/SKILL.md` for details.
 
 **Important**: This prevents losing valuable project context during SpecWeave installation.
 

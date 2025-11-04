@@ -367,8 +367,8 @@ GitHub Task Lists (Subtasks within issue)
 ## References
 
 - **Related ADRs**:
-  - [ADR-0002: Context Loading Architecture](adr-0002-context-loading-architecture.md)
-  - [ADR-0006: Plugin Architecture](adr-0006-plugin-architecture.md)
+  - [ADR-0002: Context Loading](./0002-context-loading.md) - Context management architecture
+  - [ADR-0015: Hybrid Plugin System](./0015-hybrid-plugin-system.md) - Plugin architecture design
 
 - **Implementation**:
   - Increment: [0004-plugin-architecture](../../increments/0004-plugin-architecture/)

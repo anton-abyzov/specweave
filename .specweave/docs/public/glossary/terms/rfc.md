@@ -365,7 +365,7 @@ Modularize SpecWeave into core framework + optional plugins, reducing context fr
 ## Success Metrics
 
 - 70%+ context reduction (50K → 15K tokens)
-- <30s plugin installation time
+- &lt;30s plugin installation time
 - Zero breaking changes for existing projects
 ```
 
@@ -393,7 +393,7 @@ Modularize SpecWeave into core framework + optional plugins, reducing context fr
 **Acceptance Criteria**:
 - AC-US1-01: Export button on dashboard (P1, testable)
 - AC-US1-02: CSV includes all fields (name, email, created_at) (P1, testable)
-- AC-US1-03: Download completes in <3s for 10K rows (P2, testable)
+- AC-US1-03: Download completes in &lt;3s for 10K rows (P2, testable)
 ```
 
 ### 3. Define Out of Scope
@@ -434,7 +434,7 @@ Phase 3: Full migration
 ✅ "85%+ user satisfaction score (post-launch survey)"
 
 ❌ "Fast performance"
-✅ "Page load <2s (95th percentile)"
+✅ "Page load &lt;2s (95th percentile)"
 
 ## Common Mistakes
 

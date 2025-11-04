@@ -6,18 +6,18 @@ sidebar_position: 1
 
 SpecWeave provides slash commands for every stage of your development workflow. This page covers the **main workflow commands** you'll use daily.
 
-:::tip Quick Reference
-All commands have convenient short forms (e.g., `/inc`) and explicit namespace forms (e.g., `/specweave:inc`). Use whichever you prefer!
+:::warning No Shortcuts
+All commands MUST use the `/specweave:*` namespace prefix. Shortcuts like `/specweave:increment`, `/specweave:do`, `/pause` conflict with Claude Code's native commands.
 :::
 
 ## The Core Workflow
 
 ```mermaid
 graph LR
-    A["/inc"] --> B["/do"]
-    B --> C["/validate or /qa"]
-    C --> D["/done"]
-    D --> E["/next"]
+    A["/specweave:increment"] --> B["/specweave:do"]
+    B --> C["/specweave:validate or /specweave:qa"]
+    C --> D["/specweave:done"]
+    D --> E["/specweave:next"]
     E --> A
 
     style A fill:#a8e6cf
@@ -29,13 +29,14 @@ graph LR
 
 ## 1. Planning Commands
 
-### `/inc` - Create New Increment
+### `/specweave:increment` - Create New Increment
 
 **Most frequently used command** - Start every new feature here.
 
 ```bash
-/inc "User authentication with JWT"
-/inc "Payment processing with Stripe"
+/specweave:increment "User authentication with JWT"
+/specweave:increment "Payment processing with Stripe"
+/specweave:increment "Real-time notifications"
 ```
 
 **What it does**:
@@ -47,16 +48,16 @@ graph LR
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
-[Full documentation →](./inc)
+[Full documentation →](./increment)
 
 ---
 
-### `/next` - Smart Increment Transition
+### `/specweave:next` - Smart Increment Transition
 
 Intelligently suggests what to work on next.
 
 ```bash
-/next
+/specweave:next
 ```
 
 **What it does**:
@@ -68,13 +69,13 @@ Intelligently suggests what to work on next.
 
 ## 2. Implementation Commands
 
-### `/do` - Execute Tasks
+### `/specweave:do` - Execute Tasks
 
 **Smart auto-resume** - Continue from where you left off.
 
 ```bash
-/do           # Auto-finds active increment
-/do 0007      # Specific increment
+/specweave:do           # Auto-finds active increment
+/specweave:do 0007      # Specific increment
 ```
 
 **What it does**:
@@ -115,14 +116,14 @@ Intelligently suggests what to work on next.
 
 ## 3. Quality Assurance Commands
 
-### `/validate` - Rule-Based Validation
+### `/specweave:validate` - Rule-Based Validation
 
 **120+ checks** - Fast, free validation.
 
 ```bash
-/validate 0007
-/validate 0007 --quality        # Include AI assessment
-/validate 0007 --export         # Export suggestions to tasks.md
+/specweave:validate 0007
+/specweave:validate 0007 --quality        # Include AI assessment
+/specweave:validate 0007 --export         # Export suggestions to tasks.md
 ```
 
 **What it validates**:
@@ -135,15 +136,15 @@ Intelligently suggests what to work on next.
 
 ---
 
-### `/qa` - Quality Assessment with Risk Scoring
+### `/specweave:qa` - Quality Assessment with Risk Scoring
 
 **Comprehensive quality gate** - AI-powered assessment with BMAD risk scoring.
 
 ```bash
-/qa 0007                    # Quick mode (default)
-/qa 0007 --pre             # Before starting work
-/qa 0007 --gate            # Before closing increment
-/qa 0007 --export          # Export blockers to tasks.md
+/specweave:qa 0007                    # Quick mode (default)
+/specweave:qa 0007 --pre             # Before starting work
+/specweave:qa 0007 --gate            # Before closing increment
+/specweave:qa 0007 --export          # Export blockers to tasks.md
 ```
 
 **7 Quality Dimensions**:
@@ -164,7 +165,7 @@ Intelligently suggests what to work on next.
 - CRITICAL (≥9.0) - Immediate action required
 - HIGH (6.0-8.9) - Address before release
 - MEDIUM (3.0-5.9) - Monitor
-- LOW (<3.0) - Acceptable
+- LOW (&lt;3.0) - Acceptable
 
 [Full documentation →](./qa)
 
@@ -186,17 +187,17 @@ Intelligently suggests what to work on next.
 
 ## 4. Completion Commands
 
-### `/done` - Close Increment
+### `/specweave:done` - Close Increment
 
 **PM validation before closing** - Ensures quality gates pass.
 
 ```bash
-/done 0007
+/specweave:done 0007
 ```
 
 **What it does**:
 - ✅ Validates all tasks complete
-- ✅ Runs `/qa --gate` (quality gate check)
+- ✅ Runs `/specweave:qa --gate` (quality gate check)
 - ✅ PM agent validates completion
 - ✅ Creates completion report
 - 🔗 Closes GitHub issues (if plugin enabled)
@@ -226,11 +227,11 @@ Intelligently suggests what to work on next.
 
 ## 5. Monitoring Commands
 
-### `/progress` - Check Increment Progress
+### `/specweave:progress` - Check Increment Progress
 
 ```bash
-/progress
-/progress 0007
+/specweave:progress
+/specweave:progress 0007
 ```
 
 **What it shows**:
@@ -242,12 +243,12 @@ Intelligently suggests what to work on next.
 
 ---
 
-### `/status` - View All Increments
+### `/specweave:status` - View All Increments
 
 **High-level overview** - See what SpecWeave is managing.
 
 ```bash
-/status
+/specweave:status
 ```
 
 **What it shows**:
@@ -337,16 +338,16 @@ For projects using TDD workflow:
 ## All Available Commands
 
 ### Core Workflow
-- `/inc` - Plan new increment ⭐ **Most used**
-- `/do` - Execute tasks ⭐ **Most used**
-- `/validate` - Rule-based validation ⭐ **Most used**
-- `/qa` - Quality assessment with risk scoring ⭐ **Most used**
-- `/done` - Close increment ⭐ **Most used**
-- `/next` - Smart increment transition
+- `/specweave:increment` (alias: `/specweave:increment`) - Plan new increment ⭐ **Most used**
+- `/specweave:do` - Execute tasks ⭐ **Most used**
+- `/specweave:validate` - Rule-based validation ⭐ **Most used**
+- `/specweave:qa` - Quality assessment with risk scoring ⭐ **Most used**
+- `/specweave:done` - Close increment ⭐ **Most used**
+- `/specweave:next` - Smart increment transition
 
 ### Monitoring
-- `/status` - View all increments
-- `/progress` - Check increment progress
+- `/specweave:status` - View all increments
+- `/specweave:progress` - Check increment progress
 - `/costs` - AI cost dashboard
 
 ### Quality Assurance
@@ -377,28 +378,31 @@ For projects using TDD workflow:
 
 ## Command Patterns
 
-### Short vs Namespace Forms
+### Command Forms and Aliases
 
-**Both forms work identically**:
+**SpecWeave provides three ways to invoke commands**:
 
 ```bash
-# Short forms (convenient for daily use)
-/inc "feature"
-/do
-/validate 0007
-/qa 0007
-
-# Namespace forms (explicit, avoids conflicts)
-/specweave:inc "feature"
-/specweave:do
+# 1. Full name (primary, clear)
+/specweave:increment "feature"
 /specweave:validate 0007
-/specweave:qa 0007
+
+# 2. Alias (convenience shorthand)
+/specweave:increment "feature"              # Alias for /increment
+
+# 3. Namespace (explicit, brownfield-safe)
+/specweave:increment "feature"
+/specweave:validate 0007
 ```
 
-**When to use namespace forms**:
-- ✅ Brownfield projects (avoid conflicts with existing commands)
-- ✅ Documentation (explicit and clear)
-- ✅ Scripts (no ambiguity)
+**When to use each form**:
+- ✅ **Full name** (`/specweave:increment`): Daily use, clear and explicit
+- ✅ **Alias** (`/specweave:increment`): Quick shortcuts for speed
+- ✅ **Namespace** (`/specweave:increment`): Brownfield projects, scripts, avoid conflicts
+
+**Available aliases**:
+- `/specweave:increment` → `/specweave:increment`
+- All other commands use full names
 
 ---
 
@@ -407,8 +411,9 @@ For projects using TDD workflow:
 ### Example 1: Standard Feature Development
 
 ```bash
-# 1. Plan
-/inc "User authentication"
+# 1. Plan (use full name or alias)
+/specweave:increment "User authentication"    # Full name (recommended)
+/specweave:increment "User authentication"          # Alias (shorthand)
 # → Creates: spec.md, plan.md, tasks.md
 
 # 2. Review (optional)
@@ -416,19 +421,19 @@ For projects using TDD workflow:
 # → Review strategic docs before starting
 
 # 3. Validate (optional)
-/qa 0007 --pre
+/specweave:qa 0007 --pre
 # → Pre-implementation quality check
 
 # 4. Implement
-/do 0007
+/specweave:do 0007
 # → Auto-resumes, hooks fire after each task
 
 # 5. Quality gate
-/qa 0007 --gate
+/specweave:qa 0007 --gate
 # → Comprehensive check before closing
 
 # 6. Close
-/done 0007
+/specweave:done 0007
 # → PM validates, closes GitHub issues
 
 # 7. Sync docs
@@ -436,7 +441,7 @@ For projects using TDD workflow:
 # → Update living docs with learnings
 
 # 8. Next
-/next
+/specweave:next
 # → Suggests next increment
 ```
 
@@ -446,23 +451,23 @@ For projects using TDD workflow:
 
 ```bash
 # 1. Check status
-/status
+/specweave:status
 # → See active increments
 
 # 2. Quick increment
-/inc "Critical SQL injection fix"
+/specweave:increment "Critical SQL injection fix"
 # → Fast planning
 
 # 3. Implement immediately
-/do 0008
+/specweave:do 0008
 # → Execute fix
 
 # 4. Validate
-/qa 0008 --gate
+/specweave:qa 0008 --gate
 # → Ensure quality
 
 # 5. Close and deploy
-/done 0008
+/specweave:done 0008
 ```
 
 ---
@@ -471,7 +476,7 @@ For projects using TDD workflow:
 
 ```bash
 # 1. Plan in Russian
-/inc "Добавить аутентификацию пользователя"
+/specweave:increment "Добавить аутентификацию пользователя"
 # → PM generates spec in Russian
 
 # 2. Auto-translate to English
@@ -479,7 +484,7 @@ For projects using TDD workflow:
 # → Spec, plan, tasks now in English
 
 # 3. Continue normally
-/do 0007
+/specweave:do 0007
 ```
 
 ---
@@ -499,22 +504,23 @@ For projects using TDD workflow:
 /github-close-issue 0007
 ```
 
-**Automatic sync**: When GitHub plugin enabled, `/do` and `/done` automatically sync to GitHub.
+**Automatic sync**: When GitHub plugin enabled, `/specweave:do` and `/specweave:done` automatically sync to GitHub.
 
 ---
 
 ## Best Practices
 
-### 1. Use Short Commands Daily
+### 1. Use Full Names or Aliases Daily
 
 ```bash
-# ✅ Quick and efficient
-/inc "feature"
-/do
-/qa 0007
+# ✅ Quick and clear
+/specweave:increment "feature"    # Full name (recommended)
+/specweave:increment "feature"          # Alias (shorthand)
+/specweave:do
+/specweave:qa 0007
 
-# ❌ Verbose (but works)
-/specweave:inc "feature"
+# ✅ Explicit namespace (brownfield-safe)
+/specweave:increment "feature"
 /specweave:do
 /specweave:qa 0007
 ```
@@ -525,13 +531,13 @@ For projects using TDD workflow:
 
 ```bash
 # During planning
-/qa 0007 --pre
+/specweave:qa 0007 --pre
 
 # During development (quick checks)
-/qa 0007
+/specweave:qa 0007
 
 # Before closing (comprehensive)
-/qa 0007 --gate
+/specweave:qa 0007 --gate
 ```
 
 ---
@@ -552,7 +558,7 @@ For projects using TDD workflow:
 
 ```bash
 # ✅ Let SpecWeave handle status
-/do  # System pauses automatically when blocked
+/specweave:do  # System pauses automatically when blocked
 
 # ❌ Don't manually manage status
 # (unless business decision)

@@ -1,15 +1,12 @@
 ---
-name: specweave:abandon
+name: abandon
 description: Abandon an incomplete increment (requirements changed, obsolete)
 usage: /specweave:abandon <increment-id> --reason="<reason>"
-aliases: [abandon]
 ---
 
 # Abandon Increment Command
 
 **Usage**: `/specweave:abandon <increment-id> --reason="<reason>"`
-
-**Shortcut**: `/abandon <increment-id> --reason="<reason>"`
 
 ⚠️  **THIS ACTION MOVES THE INCREMENT TO `_abandoned/` FOLDER**
 
