@@ -238,8 +238,8 @@ export async function initCommand(
       spinner.start(`Using ${toolName}...`);
     }
 
-    // 4. Create directory structure (same for all)
-    createDirectoryStructure(targetDir);
+    // 4. Create directory structure (adapter-specific)
+    createDirectoryStructure(targetDir, toolName);
     spinner.text = 'Directory structure created...';
 
     // 5. Copy plugin marketplace and plugins (for Claude Code auto-registration)
@@ -568,7 +568,7 @@ export async function initCommand(
   }
 }
 
-function createDirectoryStructure(targetDir: string): void {
+function createDirectoryStructure(targetDir: string, adapterName: string): void {
   const directories = [
     // Core increment structure
     '.specweave/increments',
@@ -580,17 +580,27 @@ function createDirectoryStructure(targetDir: string): void {
     '.specweave/docs/internal/operations',    // Runbooks, SLOs
     '.specweave/docs/internal/governance',    // Security, compliance
     '.specweave/docs/public',                 // Published documentation
-
-    // Claude Code integration (components auto-install here)
-    '.claude/commands',
-    '.claude/agents',
-    '.claude/skills',
-    '.claude/hooks',
   ];
+
+  // For non-Claude adapters: Create .claude subdirectories (for compiled plugin output)
+  // For Claude Code: Only .claude/ parent (for settings.json) - plugins load from plugins/
+  if (adapterName !== 'claude') {
+    directories.push(
+      '.claude/commands',
+      '.claude/agents',
+      '.claude/skills',
+      '.claude/hooks'
+    );
+  }
 
   directories.forEach((dir) => {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
   });
+
+  // For Claude Code: Create .claude/ parent folder (for settings.json)
+  if (adapterName === 'claude') {
+    fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
+  }
 }
 
 async function copyTemplates(templatesDir: string, targetDir: string, projectName: string, language: SupportedLanguage = 'en'): Promise<void> {
