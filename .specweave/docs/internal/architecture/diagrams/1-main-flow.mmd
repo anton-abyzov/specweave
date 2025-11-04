@@ -1,15 +1,16 @@
 ---
-title: SpecWeave Main Flow - Enhanced with Agent Roles
+title: SpecWeave Main Flow - v0.7.0 Test-Aware Planning + Smart Status Management
 ---
 %%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '14px' } } }%%
 
 flowchart TD
-    %% Last Updated: 2025-11-03
-    %% Agent Roles: PM Agent, Architect Agent, Tech Lead Agent, QA Lead Agent, Quality Judge Agent
+    %% Last Updated: 2025-11-04 (v0.7.0)
+    %% Agent Roles: PM Agent, Architect Agent, test-aware-planner Agent, Quality Judge Agent
     %% Brownfield: Brownfield Analyzer, Brownfield Onboarder
     %% Plugins: Plugin Detector (4 phases), Plugin Manager
     %% Automation: Living Docs Agent, Hook System, Developer
-    %% Mandatory: Spec → Plan → Tasks → Tests | Optional: Research, Validation
+    %% v0.7.0: Test-Aware Planning (tests in tasks.md), Smart Status Management (pause/resume/abandon)
+    %% Mandatory: Spec → Plan → Tasks (with embedded tests) | Optional: Research, Validation
     Start([Developer Starts New Work]) --> Type{Project Type?}
 
     %% Greenfield Path
@@ -96,20 +97,23 @@ flowchart TD
     PlanSteps --> PlanGen[Architect Agent: Generate plan.md]
     PlanGen --> PlanContent[plan.md contains:<br/>Architecture<br/>Implementation strategy<br/>Dependencies]
 
-    %% Task Breakdown (MANDATORY)
-    PlanContent --> Tasks[Tech Lead Agent: Task Breakdown]
-    Tasks --> TaskSteps[Tech Lead Agent performs:<br/>• Break into tasks<br/>• Estimate effort<br/>• Identify risks]
-    TaskSteps --> TaskGen[Tech Lead Agent: Generate tasks.md]
-    TaskGen --> TaskContent[tasks.md contains:<br/>Task list<br/>Dependencies<br/>Acceptance criteria]
+    %% Task Breakdown with Embedded Tests (MANDATORY - v0.7.0+)
+    PlanContent --> Tasks[test-aware-planner Agent:<br/>Task Breakdown + Test Plans]
+    Tasks --> TaskSteps[test-aware-planner performs:<br/>• Break into tasks<br/>• Embed test plan in each task<br/>• Bidirectional AC↔Task↔Test linking<br/>• BDD format (Given/When/Then)]
+    TaskSteps --> TaskGen[test-aware-planner Agent:<br/>Generate tasks.md with embedded tests]
+    TaskGen --> TaskContent[tasks.md contains:<br/>Task list with Test Plans embedded<br/>Dependencies<br/>Acceptance criteria<br/>Test files + Given/When/Then<br/>✅ 80%+ coverage target]
 
-    %% Test Planning (MANDATORY)
-    TaskContent --> Tests[QA Lead Agent: Test Planning]
-    Tests --> TestSteps[QA Lead Agent performs:<br/>• Define test scenarios<br/>• Coverage requirements<br/>• Quality gates]
-    TestSteps --> TestGen[QA Lead Agent: Generate tests.md]
-    TestGen --> TestContent[tests.md contains:<br/>Test cases<br/>Coverage targets<br/>Quality criteria]
+    %% Coverage Validation (OPTIONAL - v0.7.0+)
+    TaskContent --> CoverageCheck{Validate coverage?<br/>OPTIONAL v0.7.0+}
+    CoverageCheck -->|Yes| ValidateCoverage[Run /validate-coverage<br/>Check AC and task coverage]
+    CoverageCheck -->|No| ValidateCheck
+    ValidateCoverage --> CoverageResult{Coverage ≥80%?}
+    CoverageResult -->|No| FixCoverage[Add missing tests<br/>to tasks.md]
+    CoverageResult -->|Yes| ValidateCheck
+    FixCoverage --> CoverageCheck
 
     %% Validation Gate (OPTIONAL)
-    TestContent --> ValidateCheck{Run validation?<br/>OPTIONAL}
+    ValidateCheck{Run validation?<br/>OPTIONAL}
     ValidateCheck -->|Yes| Validate[Quality Judge Agent:<br/>Run specweave.validate]
     ValidateCheck -->|No, skip validation| Ready2
     Validate --> ValidationRules[Quality Judge performs:<br/>• Rule-based checks<br/>• Required fields present<br/>• Tasks have criteria<br/>• Tests cover requirements]
@@ -121,8 +125,18 @@ flowchart TD
     ValidationResult -->|Passed| Ready2[Ready for execution]
     FixIssues --> ValidateCheck
 
+    %% Status Check (v0.7.0+)
+    Ready2 --> StatusCheck[Run /status<br/>Check increment status]
+    StatusCheck --> StatusDisplay[Show active, paused increments<br/>Progress, warnings, staleness]
+    StatusDisplay --> StatusAction{Action needed?}
+    StatusAction -->|Resume paused| ResumeInc[Run /resume increment-id<br/>Unblock and continue]
+    StatusAction -->|Abandon obsolete| AbandonInc[Run /abandon increment-id<br/>Move to _abandoned/ folder]
+    StatusAction -->|Continue active| Execute
+    ResumeInc --> Execute
+    AbandonInc --> IncStart
+
     %% Execution Phase
-    Ready2 --> Execute[Developer:<br/>Run specweave.do]
+    Execute[Developer:<br/>Run specweave.do]
     Execute --> Phase3[Phase 3: Pre-Task Detection<br/>Plugin Loader]
     Phase3 --> CheckTask[Plugin Detector:<br/>Check next task description]
     CheckTask --> TaskHints{Task mentions plugins?}
@@ -130,10 +144,15 @@ flowchart TD
     TaskHints -->|No| ExecTask
     SuggestTaskPlugin --> ExecTask[Developer:<br/>Execute current task]
 
-    %% Task Execution Loop
+    %% Task Execution Loop (with pause option - v0.7.0+)
     ExecTask --> TaskWork[Developer + AI:<br/>Write code, tests, docs]
     TaskWork --> TaskComplete{Task complete?}
-    TaskComplete -->|No| TaskWork
+    TaskComplete -->|Blocked| PauseDecision{Pause increment?<br/>v0.7.0+}
+    PauseDecision -->|Yes| PauseInc[Run /pause increment-id<br/>--reason='Waiting for API keys']
+    PauseDecision -->|No| TaskWork
+    PauseInc --> PausedState[Increment paused<br/>Status tracking enabled<br/>Can resume later]
+    PausedState --> End
+    TaskComplete -->|No, continue| TaskWork
     TaskComplete -->|Yes| PostHook[Hook System:<br/>Post-task hook fires]
 
     %% Post-Task Hook
@@ -181,9 +200,11 @@ flowchart TD
     classDef hook fill:#E8F5E9,stroke:#2E7D32,stroke-width:3px,color:#000000
     classDef plugin fill:#F3E5F5,stroke:#6A1B9A,stroke-width:3px,color:#000000
     classDef quality fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
+    classDef status fill:#FFF9C4,stroke:#F57F17,stroke-width:3px,color:#000000
 
-    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,Research,ValidateCheck,AIJudge,ValidationResult,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next,CheckBrownfield decision
+    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,Research,CoverageCheck,CoverageResult,ValidateCheck,AIJudge,ValidationResult,StatusAction,PauseDecision,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next,CheckBrownfield decision
     class Init,Execute,Close,Validate process
     class Phase1,Phase2,Phase3,Phase4,PostHook hook
     class Suggest1,EnablePlugins1,Suggest2,EnablePlugins2,SuggestTaskPlugin,SuggestFuture plugin
-    class QualityGate,GateChecks,ValidationRules,AICheck quality
+    class QualityGate,GateChecks,ValidationRules,AICheck,ValidateCoverage,FixCoverage quality
+    class StatusCheck,StatusDisplay,ResumeInc,AbandonInc,PauseInc,PausedState status

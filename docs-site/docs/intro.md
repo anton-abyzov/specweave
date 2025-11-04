@@ -11,11 +11,12 @@ SpecWeave is a specification-first AI development framework where specifications
 ## Why SpecWeave?
 
 - **🤖 Just Works** - Autonomous agents ask clarifying questions, review output, validate quality—minimal interaction required
+- **⏸️ Smart Status Management** (v0.7.0) - Pause/resume/abandon increments! Real-world workflow support for hotfixes, blockers, and experiments
+- **🧪 Test-Aware Planning** (v0.7.0) - Tests embedded in tasks (BDD format), bidirectional AC↔Task↔Test linking, 80%+ coverage validation
 - **⚡ Smart Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
 - **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
 - **🔍 Progressive Disclosure** (NEW) - Skills indexed for 90% token savings via SKILLS-INDEX.md. Works with ALL AI tools!
 - **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
-- **🧪 Complete Testing** - 4-level strategy covering specs to integration tests (APIs, UIs, CLIs, libraries)
 - **🌍 Multilingual** - Work in ANY language (Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese)! LLM-native translation at zero cost.
 - **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude Code by default, Cursor, Copilot, Gemini, ChatGPT)
 - **📚 Living Docs** - Specs auto-update after every operation and test—always in sync with code
@@ -100,8 +101,7 @@ Simply describe what you want to build - SpecWeave guides you through:
 ✅ .specweave/increments/0001-user-authentication/
    ├── spec.md (requirements from PM agent)
    ├── plan.md (architecture from Architect agent)
-   ├── tasks.md (implementation steps)
-   ├── tests.md (test strategy from QA Lead agent)
+   ├── tasks.md (implementation steps + embedded test plans - v0.7.0)
    └── context-manifest.yaml (selective loading)
 
 # Start working on the increment
@@ -128,6 +128,21 @@ Simply describe what you want to build - SpecWeave guides you through:
 - `/ls` or `/list-increments` - List all increments
 - `/sync-github` - Sync increment to GitHub issues
 
+**Status Management** (v0.7.0+):
+- `/status` - Show increment status (active, paused, completed, abandoned)
+- `/pause <id> --reason="..."` - Pause blocked increment
+- `/resume <id>` - Resume paused increment
+- `/abandon <id> --reason="..."` - Abandon obsolete increment
+- `/validate-coverage` - Check test coverage (80%+ target)
+
+**Increment Types**: SpecWeave supports six types of work:
+- **feature** (standard development, max 2 active)
+- **hotfix** (critical production fixes, unlimited)
+- **bug** (SRE investigation, unlimited)
+- **change-request** (stakeholder requests, max 2 active)
+- **refactor** (code improvement, max 1 active)
+- **experiment** (POCs/spikes, unlimited)
+
 **Why slash commands?**
 - ✅ **100% reliable** - Always works, no guessing
 - ✅ **Clear intent** - You know exactly when SpecWeave is active
@@ -153,8 +168,7 @@ your-project/
 │   │   └── 0001-feature-name/
 │   │       ├── spec.md             # WHAT & WHY
 │   │       ├── plan.md             # HOW
-│   │       ├── tasks.md            # Implementation checklist
-│   │       ├── tests.md            # Test strategy
+│   │       ├── tasks.md            # Implementation + embedded tests (v0.7.0)
 │   │       └── context-manifest.yaml  # What to load
 │   └── tests/                      # Centralized test repository
 │
