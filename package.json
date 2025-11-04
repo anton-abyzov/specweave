@@ -86,7 +86,7 @@
     "fs-extra": "^11.2.0",
     "inquirer": "^9.2.12",
     "js-yaml": "^4.1.0",
-    "ora": "^7.0.1",
+    "ora": "^9.0.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
