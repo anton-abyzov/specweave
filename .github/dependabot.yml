@@ -1,0 +1,46 @@
+# Dependabot Configuration for SpecWeave
+# Automated dependency updates for security and maintenance
+# See: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # NPM dependencies (main package)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"  # Monday mornings (not too noisy)
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5  # Max concurrent PRs
+    labels:
+      - "dependencies"
+      - "automated"
+    # Group minor/patch updates to reduce PR noise
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Keep security updates separate (high priority)
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # GitHub Actions (workflow dependencies)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"  # Less frequent (actions change slowly)
+    labels:
+      - "dependencies"
+      - "ci/cd"
+      - "automated"
+    commit-message:
+      prefix: "chore(ci)"
