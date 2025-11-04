@@ -31,10 +31,9 @@ Users receive a different CLAUDE.md via the template system.
 
 ✅ CORRECT - INCREMENT FOLDERS:
 .specweave/increments/0004-plugin-architecture/
-├── spec.md                            # Spec files (core 4)
+├── spec.md                            # Spec files (core 3 in v0.7.0+)
 ├── plan.md
-├── tasks.md
-├── tests.md
+├── tasks.md                           # Tasks with embedded tests (v0.7.0+)
 ├── reports/                           # ✅ PUT REPORTS HERE!
 │   ├── PLUGIN-MIGRATION-COMPLETE.md   # ✅ Completion reports
 │   ├── SESSION-SUMMARY.md             # ✅ Session summaries
@@ -158,6 +157,26 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 ---
 
 ## Increment Discipline (v0.6.0+ MANDATORY)
+
+### What is an Increment?
+
+**An increment can be any type of work**, not just features. SpecWeave supports six increment types:
+
+| Type | Description | Use When | Limit | Examples |
+|------|-------------|----------|-------|----------|
+| **feature** | Standard feature development | Adding new functionality | Max 2 active | User authentication, payment integration, real-time chat |
+| **hotfix** | Critical production fixes | Production is broken | Unlimited | Security patch, critical bug causing downtime |
+| **bug** | Production bugs with SRE investigation | Bug requires root cause analysis | Unlimited | Memory leak investigation, performance degradation |
+| **change-request** | Stakeholder requests | Business requirements change | Max 2 active | UI redesign per stakeholder feedback, API contract changes |
+| **refactor** | Code improvement | Technical debt, code quality | Max 1 active | Extract service layer, migrate to TypeScript, improve test coverage |
+| **experiment** | POC/spike work | Exploring options, prototypes | Unlimited* | Evaluate GraphQL vs REST, test new library, architecture spike |
+
+**Note**: Experiments auto-abandon after 14 days of inactivity (prevents accumulation of stale POCs).
+
+**Key Insight**: The increment structure (spec.md, plan.md, tasks.md) works for ALL types. A bug investigation still needs:
+- **spec.md**: What's broken? Why? What's the expected behavior?
+- **plan.md**: How to investigate? What tools? What hypothesis?
+- **tasks.md**: Investigation steps, fix implementation, verification tests
 
 **⛔ THE IRON RULE: You CANNOT start increment N+1 until increment N is DONE**
 
@@ -408,6 +427,463 @@ For **emergencies only** (hotfixes, urgent features):
 ---
 
 **Summary**: Close previous increments before starting new ones. Use `/specweave:status` and `/specweave:close` to maintain discipline. This isn't bureaucracy—it's quality enforcement.
+
+---
+
+## Test-Aware Planning (v0.7.0+)
+
+**MAJOR ARCHITECTURE CHANGE**: Tests are now embedded in tasks.md instead of separate tests.md file.
+
+### Why the Change?
+
+**OLD Format** (pre-v0.7.0):
+- ❌ Separate tests.md file (duplication, sync issues)
+- ❌ Manual TC-ID management (TC-001, TC-002, etc.)
+- ❌ No BDD format (hard to understand test intent)
+- ❌ Tests disconnected from tasks (traceability gaps)
+
+**NEW Format** (v0.7.0+):
+- ✅ Tests embedded in tasks.md (single source of truth)
+- ✅ BDD format (Given/When/Then - clear intent)
+- ✅ AC-ID traceability (spec.md → tasks.md → tests)
+- ✅ Test-first workflow (TDD supported naturally)
+- ✅ Coverage targets per task (realistic 80-90%, not 100%)
+
+### Complete Workflow Example
+
+**Step 1: Create Increment with PM Agent**
+
+```bash
+/specweave:inc "Add user authentication"
+```
+
+**PM Agent creates** `.specweave/increments/0008-user-authentication/spec.md`:
+
+```markdown
+---
+increment: 0008-user-authentication
+created: 2025-11-04
+status: planning
+---
+
+# Increment 0008: User Authentication
+
+## User Stories
+
+### US1: Basic Login Flow
+
+**As a** user
+**I want to** log in with email and password
+**So that** I can access my account securely
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: User can log in with valid email and password
+  - **Priority**: P1
+  - **Testable**: Yes
+
+- [ ] **AC-US1-02**: Invalid credentials show clear error message
+  - **Priority**: P1
+  - **Testable**: Yes
+
+- [ ] **AC-US1-03**: After 5 failed attempts, account locked for 15 minutes
+  - **Priority**: P2
+  - **Testable**: Yes
+
+### US2: Session Management
+
+**As a** user
+**I want to** stay logged in for 7 days
+**So that** I don't have to re-enter credentials constantly
+
+**Acceptance Criteria**:
+- [ ] **AC-US2-01**: Session persists for 7 days with "Remember Me"
+  - **Priority**: P1
+  - **Testable**: Yes
+
+- [ ] **AC-US2-02**: User can log out and session is invalidated
+  - **Priority**: P1
+  - **Testable**: Yes
+```
+
+**Key Points**:
+- ✅ AC-IDs follow format: `AC-US{story}-{number}`
+- ✅ Each AC has priority (P1/P2/P3)
+- ✅ Each AC marked as testable or not
+- ✅ Clear acceptance criteria (not implementation details)
+
+---
+
+**Step 2: Architect Agent creates** `.specweave/increments/0008-user-authentication/plan.md`:
+
+```markdown
+## Technical Architecture
+
+### Components
+- **Authentication Service** (src/services/auth/)
+- **Session Manager** (src/services/session/)
+- **Login API** (src/api/auth/)
+
+### Test Strategy
+- **Unit Tests**: 85% coverage (service logic, validation)
+- **Integration Tests**: 80% coverage (API endpoints, database)
+- **E2E Tests**: 100% critical path (login flow, session persistence)
+```
+
+---
+
+**Step 3: test-aware-planner Agent creates** `.specweave/increments/0008-user-authentication/tasks.md`:
+
+```markdown
+---
+increment: 0008-user-authentication
+total_tasks: 5
+test_mode: TDD
+coverage_target: 85%
+---
+
+# Tasks for Increment 0008: User Authentication
+
+## T-001: Implement Authentication Service
+
+**Acceptance Criteria**: AC-US1-01, AC-US1-02, AC-US1-03
+
+**Description**: Create authentication service with login validation and rate limiting
+
+**Test Plan**:
+- **Given** a user with valid credentials in the database
+- **When** they attempt to log in with correct email and password
+- **Then** they receive a JWT token and are marked as authenticated
+- **And** their last login timestamp is updated
+
+**Test Cases**:
+1. **Unit**: `tests/unit/services/auth.test.ts`
+   - `testValidLogin()`: Valid credentials return JWT token
+   - `testInvalidPassword()`: Wrong password returns 401 error
+   - `testNonexistentUser()`: Unknown email returns 401 error
+   - `testRateLimiting()`: 6th failed attempt locks account for 15 minutes
+   - **Coverage Target**: 90% (critical security logic)
+
+2. **Integration**: `tests/integration/auth-flow.test.ts`
+   - `testLoginEndpoint()`: POST /api/auth/login with valid credentials
+   - `testLockedAccount()`: Locked account returns 423 error
+   - **Coverage Target**: 85%
+
+**Overall Coverage Target**: 87%
+
+**Implementation**:
+- [ ] Create `src/services/auth/AuthService.ts`
+- [ ] Implement password hashing (bcrypt)
+- [ ] Implement JWT token generation
+- [ ] Add rate limiting logic (Redis-backed)
+- [ ] Write unit tests (TDD: write tests first!)
+- [ ] Write integration tests
+
+**Dependencies**: None
+
+---
+
+## T-002: Implement Session Manager
+
+**Acceptance Criteria**: AC-US2-01, AC-US2-02
+
+**Description**: Session persistence with "Remember Me" functionality
+
+**Test Plan**:
+- **Given** a user with "Remember Me" checked
+- **When** they log in successfully
+- **Then** a session cookie is created with 7-day expiration
+- **And** the session is stored in Redis with TTL
+
+**Test Cases**:
+1. **Unit**: `tests/unit/services/session.test.ts`
+   - `testCreateSession()`: Session created with correct TTL
+   - `testRememberMe()`: 7-day expiration for Remember Me
+   - `testShortSession()`: 1-hour expiration without Remember Me
+   - `testLogout()`: Session invalidated on logout
+   - **Coverage Target**: 85%
+
+2. **Integration**: `tests/integration/session-persistence.test.ts`
+   - `testSessionPersistence()`: Session survives server restart
+   - `testExpiredSession()`: Expired session returns 401
+   - **Coverage Target**: 80%
+
+3. **E2E**: `tests/e2e/login.spec.ts`
+   - `testLoginWithRememberMe()`: Full flow from login to 7-day persistence
+   - **Coverage Target**: 100% (critical path)
+
+**Overall Coverage Target**: 85%
+
+**Implementation**:
+- [ ] Create `src/services/session/SessionManager.ts`
+- [ ] Integrate Redis for session storage
+- [ ] Implement session cookie logic
+- [ ] Add expiration handling
+- [ ] Write unit tests (TDD)
+- [ ] Write integration tests
+- [ ] Write E2E test
+
+**Dependencies**: T-001
+
+---
+
+## T-003: Create Login API Endpoint
+
+**Acceptance Criteria**: AC-US1-01, AC-US1-02
+
+**Description**: REST API endpoint for login
+
+**Test Plan**:
+- **Given** the authentication service is implemented
+- **When** a client sends POST /api/auth/login with credentials
+- **Then** the endpoint validates, authenticates, and returns a token
+
+**Test Cases**:
+1. **Integration**: `tests/integration/api/auth.test.ts`
+   - `testLoginSuccess()`: Valid login returns 200 + token
+   - `testLoginFailure()`: Invalid credentials return 401
+   - `testMissingFields()`: Missing email/password returns 400
+   - `testRateLimit()`: Excessive requests return 429
+   - **Coverage Target**: 85%
+
+2. **E2E**: `tests/e2e/login.spec.ts`
+   - `testLoginUI()`: Full UI login flow
+   - **Coverage Target**: 100% (critical path)
+
+**Overall Coverage Target**: 85%
+
+**Implementation**:
+- [ ] Create `src/api/auth/login.ts`
+- [ ] Add request validation (Joi/Zod)
+- [ ] Wire up AuthService
+- [ ] Add rate limiting middleware
+- [ ] Write integration tests
+- [ ] Write E2E test
+
+**Dependencies**: T-001, T-002
+
+---
+
+## T-004: Update Documentation
+
+**Acceptance Criteria**: None (non-functional)
+
+**Test Plan**: N/A (documentation task)
+
+**Validation**:
+- Manual review: API docs are clear and complete
+- Link checker: All links work
+- Build check: Docusaurus builds without errors
+
+**Implementation**:
+- [ ] Update API documentation (OpenAPI spec)
+- [ ] Add authentication flow diagram
+- [ ] Update user guide with login instructions
+- [ ] Add troubleshooting section
+
+**Dependencies**: T-001, T-002, T-003
+
+---
+
+## T-005: Security Audit
+
+**Acceptance Criteria**: AC-US1-03 (rate limiting)
+
+**Test Plan**:
+- **Given** the authentication system is complete
+- **When** a security audit is performed
+- **Then** no critical vulnerabilities are found
+
+**Test Cases**:
+1. **Unit**: `tests/unit/security/auth-security.test.ts`
+   - `testPasswordHashing()`: Passwords are hashed with bcrypt (min rounds: 12)
+   - `testJWTSigning()`: JWT tokens are signed with HS256
+   - `testRateLimitBypass()`: Rate limiting cannot be bypassed
+   - **Coverage Target**: 90%
+
+**Overall Coverage Target**: 90%
+
+**Implementation**:
+- [ ] Run OWASP ZAP scan
+- [ ] Review all TODOs and FIXMEs
+- [ ] Verify password hashing (bcrypt rounds ≥ 12)
+- [ ] Verify JWT signing (strong secret)
+- [ ] Write security tests
+
+**Dependencies**: T-001, T-002, T-003
+```
+
+**Key Points**:
+- ✅ Each task has Test Plan (Given/When/Then)
+- ✅ Each task has Test Cases (unit/integration/E2E)
+- ✅ Each test case has coverage target (realistic 80-90%)
+- ✅ Overall coverage target per task
+- ✅ Non-testable tasks use Validation section
+- ✅ AC-IDs are referenced in task descriptions
+- ✅ TDD workflow mode specified in frontmatter
+
+---
+
+**Step 4: Validate Test Coverage**
+
+```bash
+/specweave:check-tests 0008
+```
+
+**Output**:
+```
+📊 Test Status Report: 0008-user-authentication
+
+═══════════════════════════════════════════════════════════════
+
+Task Coverage Analysis:
+
+✅ T-001: Implement Authentication Service (6 test cases, 87% coverage)
+   - Unit: tests/unit/services/auth.test.ts
+     • testValidLogin() ✅ (passed)
+     • testInvalidPassword() ✅ (passed)
+     • testNonexistentUser() ✅ (passed)
+     • testRateLimiting() ✅ (passed)
+   - Integration: tests/integration/auth-flow.test.ts
+     • testLoginEndpoint() ✅ (passed)
+     • testLockedAccount() ✅ (passed)
+   Coverage: 87% ✅ (target: 87%)
+
+✅ T-002: Implement Session Manager (6 test cases, 85% coverage)
+   Coverage: 85% ✅ (target: 85%)
+
+⏳ T-003: Create Login API Endpoint (0 test cases, 0% coverage)
+   WARNING: Tests not yet implemented
+   Action: Write tests before implementing endpoint
+
+═══════════════════════════════════════════════════════════════
+
+Overall Coverage: 57% ⚠️  (target: 85%)
+
+Breakdown:
+- Testable tasks: 4/5 (80%)
+- Non-testable tasks: 1/5 (20%)
+- Average coverage (testable): 68% ⚠️
+- Tests passing: 12/12 (100%) ✅
+- Tests not implemented: 8/20 (40%) ⚠️
+
+═══════════════════════════════════════════════════════════════
+
+Acceptance Criteria Coverage:
+
+✅ AC-US1-01: Covered by T-001 (6 tests, 87% coverage)
+✅ AC-US1-02: Covered by T-001, T-003 (8 tests, 85% coverage)
+✅ AC-US1-03: Covered by T-001, T-005 (5 tests, 90% coverage)
+✅ AC-US2-01: Covered by T-002 (6 tests, 85% coverage)
+✅ AC-US2-02: Covered by T-002 (3 tests, 85% coverage)
+
+═══════════════════════════════════════════════════════════════
+
+🎯 Recommendations:
+
+Priority: P1 (blocking issues)
+1. Implement missing tests in T-003 (8 test cases needed)
+2. Increase overall coverage to ≥85%
+
+═══════════════════════════════════════════════════════════════
+
+Summary:
+- Status: ⚠️  NEEDS WORK (coverage below 85%, tests missing)
+- Next: Implement tests for T-003
+- Run: npm test (to re-run all tests)
+```
+
+### AC-ID Format Reference
+
+**Format**: `AC-US{story}-{number}`
+
+**Examples**:
+- `AC-US1-01` - User Story 1, Acceptance Criterion 1
+- `AC-US1-02` - User Story 1, Acceptance Criterion 2
+- `AC-US2-01` - User Story 2, Acceptance Criterion 1
+
+**Benefits**:
+- ✅ **Traceability**: spec.md (AC-IDs) → tasks.md (tasks) → tests (coverage)
+- ✅ **Communication**: "AC-US1-01 is failing" (clear reference)
+- ✅ **Quality**: /specweave:check-tests validates all AC-IDs are tested
+- ✅ **Coverage**: Track which acceptance criteria have test coverage
+
+### Agent Invocation (increment-planner skill)
+
+The `increment-planner` skill automatically invokes the `test-aware-planner` agent:
+
+```markdown
+STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
+
+Task(
+  subagent_type: "test-aware-planner",
+  description: "Generate tasks with embedded tests",
+  prompt: "Create tasks.md with embedded test plans for: [user feature description]
+
+  FIRST, read the increment files:
+  - .specweave/increments/0008-user-authentication/spec.md
+  - .specweave/increments/0008-user-authentication/plan.md
+
+  Generate tasks.md with:
+  - Test Plan (Given/When/Then in BDD format)
+  - Test Cases (unit/integration/E2E with file paths)
+  - Coverage Targets (80-90% overall)
+  - Implementation steps
+  - Ensure all AC-IDs from spec.md are covered"
+)
+```
+
+### TDD Workflow Mode
+
+When `test_mode: TDD` in tasks.md frontmatter:
+
+**Red → Green → Refactor**:
+1. **Red**: Write failing test first
+2. **Green**: Implement minimal code to pass test
+3. **Refactor**: Improve code while keeping tests green
+
+**Example**:
+```bash
+# 1. RED - Write failing test
+vim tests/unit/services/auth.test.ts
+npm test  # ❌ Fails (expected)
+
+# 2. GREEN - Implement feature
+vim src/services/auth/AuthService.ts
+npm test  # ✅ Passes
+
+# 3. REFACTOR - Improve code
+vim src/services/auth/AuthService.ts
+npm test  # ✅ Still passes
+```
+
+### Migration from OLD Format
+
+**If you have increments with tests.md** (pre-v0.7.0):
+
+```bash
+# Option 1: Keep old format (works, but deprecated)
+# No action needed - old increments continue to work
+
+# Option 2: Migrate to new format (recommended)
+# 1. Extract tests from tests.md
+# 2. Embed them in tasks.md for each task
+# 3. Delete tests.md
+# 4. Run /specweave:check-tests to validate
+```
+
+**Note**: New increments (v0.7.0+) ONLY use tasks.md format. Backward compatibility removed per user feedback (greenfield product).
+
+### Quick Reference
+
+| Aspect | OLD (tests.md) | NEW (tasks.md) |
+|--------|---------------|----------------|
+| **File** | Separate tests.md | Embedded in tasks.md |
+| **Format** | TC-IDs (TC-001) | Function names + BDD |
+| **Traceability** | Manual | Automatic (AC-IDs) |
+| **BDD** | No | Yes (Given/When/Then) |
+| **Sync Issues** | Yes (tasks ↔ tests) | No (single file) |
+| **Coverage** | Per test case | Per task + overall |
+| **TDD Support** | Limited | Native (test_mode: TDD) |
 
 ---
 
@@ -1046,15 +1522,19 @@ specweave/
 │   │   ├── 0002-core-enhancements/
 │   │   │   ├── spec.md
 │   │   │   ├── plan.md
-│   │   │   ├── tasks.md
-│   │   │   ├── tests.md
+│   │   │   ├── tasks.md        # Tasks with embedded tests (v0.7.0+)
 │   │   │   ├── logs/           # ✅ Session logs go here
 │   │   │   ├── scripts/        # ✅ Helper scripts
 │   │   │   └── reports/        # ✅ Analysis files
 │   │   └── _backlog/
 │   ├── docs/
 │   │   ├── internal/           # Strategic docs (NEVER published)
-│   │   │   ├── strategy/       # Business strategy, market analysis
+│   │   │   ├── strategy/       # High-level product vision, market analysis (OPTIONAL)
+│   │   │   │   └── {module}/   # Created only for new products/modules
+│   │   │   │       ├── overview.md      # Product vision, market opportunity
+│   │   │   │       └── business-case.md # (optional) ROI, competitive analysis
+│   │   │   │   # ❌ NO user-stories.md (those go in increment spec.md)
+│   │   │   │   # ❌ NO requirements.md (those go in increment spec.md)
 │   │   │   ├── rfc/            # ✅ Request for Comments (proposals at all stages)
 │   │   │   ├── architecture/   # Technical architecture (accepted designs)
 │   │   │   │   ├── adr/        # Architecture Decision Records
@@ -1568,6 +2048,11 @@ cd docs-site && npm run build
 - `/do` - Execute tasks (smart resume)
 - `/done 0002` - Close increment
 - `/validate 0002` - Validate increment
+- `/status` - Show increment status overview (v0.7.0+)
+- `/pause 0002 --reason="..."` - Pause active increment (v0.7.0+)
+- `/resume 0002` - Resume paused increment (v0.7.0+)
+- `/abandon 0002 --reason="..."` - Abandon increment (v0.7.0+)
+- `/validate-coverage` - Check test coverage (v0.7.0+)
 
 *Full namespace forms (explicit, avoids conflicts)*:
 - `/specweave:inc "feature"` - Plan new increment
@@ -1576,6 +2061,11 @@ cd docs-site && npm run build
 - `/specweave:validate 0002` - Validate increment
 - `/specweave:progress` - Check status
 - `/specweave:sync-docs update` - Sync living docs
+- `/specweave:status` - Show increment status with rich details (v0.7.0+)
+- `/specweave:pause` - Pause active increment (v0.7.0+)
+- `/specweave:resume` - Resume paused increment (v0.7.0+)
+- `/specweave:abandon` - Abandon increment (v0.7.0+)
+- `/specweave:validate-coverage` - Validate test coverage (v0.7.0+)
 
 **Both forms work identically** - use short forms for speed, namespace forms for clarity.
 
@@ -1604,4 +2094,4 @@ cd docs-site && npm run build
 5. Follow increment-based workflow
 
 **SpecWeave Documentation**: https://spec-weave.com
-**Last Updated**: 2025-10-28 (Increment 0002)
+**Last Updated**: 2025-11-04 (Increment 0007 - v0.7.0)
