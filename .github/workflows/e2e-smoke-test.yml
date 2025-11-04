@@ -2,9 +2,9 @@ name: SpecWeave E2E Smoke Test
 
 on:
   push:
-    branches: [main, features/*]
+    branches: [main, develop, features/*]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
