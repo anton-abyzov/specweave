@@ -51,6 +51,7 @@ That's it! All components ready - just use `/inc` to start!
 ```
 {{PROJECT_NAME}}/
 ├── .specweave/             # SpecWeave framework
+│   ├── config.json         # Project configuration
 │   ├── increments/         # Features (created via /inc)
 │   │   └── 0001-feature/
 │   │       ├── spec.md     # WHAT & WHY
