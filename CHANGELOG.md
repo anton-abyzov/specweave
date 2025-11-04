@@ -91,6 +91,217 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2025-11-04
+
+### 🎯 **MAJOR RELEASE** - Test-Aware Planning (Part 1 Complete)
+
+This release introduces test-aware planning, elevating SpecWeave from "spec-driven development" to "test-driven spec development" with embedded test plans and full AC-to-test traceability.
+
+**Status**: Part 1 (Test-Aware Planning) is ✅ COMPLETE. Part 2 (Smart Status Management) is deferred to v0.8.0.
+
+---
+
+### 🧪 **Part 1: Test-Aware Planning** - Tests as First-Class Citizens (✅ COMPLETE)
+
+**The Problem**: Tests treated as afterthoughts, separate tests.md gets out of sync, no clear traceability from requirements → tasks → tests.
+
+**The Solution**: Embed test plans directly in tasks.md with full bidirectional linking.
+
+#### Added
+- **Embedded Test Plans in tasks.md** 📝
+  - Test plans now part of task definitions (no separate tests.md)
+  - Each task includes Given/When/Then BDD format
+  - Test file paths + specific test functions
+  - Example:
+    ```markdown
+    ### T-001: Implement login API endpoint
+
+    **Test Plan**:
+    - **File**: `tests/unit/auth-service.test.ts`
+    - **Tests**:
+      - Given valid credentials → When login called → Then return JWT
+      - Given invalid email → When login called → Then reject with 401
+      - Given wrong password → When login called → Then reject with 401
+
+    **References**: AC-US1-01
+    ```
+
+- **Bidirectional AC↔Task↔Test Linking** 🔗
+  - Acceptance criteria reference test plans
+  - Tasks reference ACs
+  - Tests reference tasks
+  - Full traceability chain maintained
+  - PM Agent adds Tests/Tasks placeholders to AC-IDs
+
+- **Coverage Validation** ✅
+  - `/validate-coverage` command (namespace + shortcut)
+  - Calculates AC coverage (% of ACs with tests)
+  - Calculates task coverage (% of testable tasks with test plans)
+  - **Target**: 80-90% coverage (not 100% - diminishing returns)
+  - Identifies gaps and suggests fixes
+  - Integration with `/done` command (runs validation before completion)
+
+- **test-aware-planner Agent** 🤖
+  - Generates tasks with embedded test plans
+  - Ensures every testable task has test strategy
+  - Marks non-testable tasks (documentation, config, etc.)
+  - Uses BDD format for clarity
+  - Location: `plugins/specweave/agents/test-aware-planner/`
+  - Templates: 4 templates (task-testable, task-non-testable, tasks-frontmatter, README)
+  - Total: 1241 lines, 6 files
+
+- **increment-planner Skill Updated** 🔄
+  - Added STEP 4: Invoke test-aware-planner agent (mandatory)
+  - Updated workflow from 4 steps to 5 steps
+  - Added validation rules for tasks.md with embedded tests
+  - Invokes via Task tool with comprehensive prompt
+  - Location: `plugins/specweave/skills/increment-planner/SKILL.md`
+
+- **PM Agent Enhanced** 👔
+  - Added AC-ID format documentation (AC-US{story}-{number})
+  - Examples and full format reference
+  - Benefits explanation (traceability, test coverage, quality)
+  - Updated /done command to reference tasks.md instead of tests.md
+  - Location: `plugins/specweave/agents/pm/AGENT.md`
+
+- **CLAUDE.md Documentation** 📚
+  - Added comprehensive "Test-Aware Planning (v0.7.0+)" section
+  - Complete workflow example (PM → Architect → test-aware-planner)
+  - AC-ID format reference with examples
+  - Full tasks.md example with embedded tests
+  - /specweave:check-tests validation output example
+  - TDD workflow mode (Red → Green → Refactor)
+  - Migration guide from OLD format
+  - Quick reference comparison table (OLD vs NEW)
+  - Total: 497 new lines of documentation
+
+- **GitHub Sync Fixed** 🔄
+  - post-task-completion hook now updates issue description (not just comments)
+  - Parses tasks.md to calculate progress (completed/total tasks)
+  - Updates GitHub issue body with progress status
+  - Posts comments with detailed updates
+  - Direct bash implementation using gh CLI
+  - Location: `plugins/specweave/hooks/post-task-completion.sh`
+
+#### Changed
+- **Architecture Pivot**: tests.md eliminated from core files
+  - **Before**: spec.md + plan.md + tasks.md + tests.md (4 files)
+  - **After**: spec.md + plan.md + tasks.md (3 files, tests embedded)
+  - **Rationale**: Eliminates sync issues, tests closer to implementation
+  - **Backward Compatibility**: Removed (greenfield product, no legacy users)
+
+- **T-009 Skipped**: Backward compatibility not needed
+  - Decision: Product is greenfield (no legacy users)
+  - Result: Cleaner codebase, faster delivery
+  - Documented in empty commit (feat(0007): T-009 Skipped)
+
+#### Commits (Part 1)
+- `eae993c` - feat(0007): T-013 Complete - Update CLAUDE.md with v0.7.0 examples
+- `9f8460b` - feat(0007): T-012 Complete - Update PM Agent with AC-ID format
+- `b1d9e2a` - feat(0007): T-010 & T-011 Complete - Update increment-planner skill
+- `3f4c8d7` - feat(0007): T-009 Skipped - Backward compatibility not needed
+- (T-001 through T-008 from previous session - test-aware-planner agent)
+
+---
+
+### ⏸️ **Part 2: Smart Status Management** - DEFERRED TO v0.8.0
+
+**Status**: Planning and design complete (RFC-0007), implementation deferred to v0.8.0.
+
+**Rationale**:
+- Part 1 (Test-Aware Planning) delivered significant value
+- Part 2 implementation requires 12 additional tasks (T-014 through T-023)
+- Focus on shipping Part 1 first, then iterate
+
+**Planned for v0.8.0**:
+- Increment status tracking (active, paused, completed, abandoned)
+- Increment types with smart limits (hotfix, feature, bug, refactor, experiment)
+- `/pause`, `/resume`, `/abandon` commands
+- Enhanced `/status` command with progress and warnings
+- Metadata infrastructure (TypeScript schemas and utilities)
+- Staleness detection and auto-abandon warnings
+- "Iron Rule" relaxation with intelligent warnings
+
+**Documentation Complete**:
+- RFC-0007: Smart Increment Discipline System
+- INCREMENT-SIZING-PHILOSOPHY.md
+- All design work and planning done, ready for implementation
+
+---
+
+### 🐛 **Bug Fixes**
+
+#### Fixed
+- **GitHub Sync Hook** 🔄
+  - **Issue**: post-task-completion hook only posted comments, didn't update issue description
+  - **Root Cause**: Hook called non-existent `dist/commands/github-sync.js` script
+  - **Fix**: Implemented direct bash-based sync using gh CLI
+  - **Result**: Issue description now updates with progress (X/Y tasks, Z%)
+  - **Commits**: `795e241`, `d9a07fe`
+
+---
+
+### 📚 **Documentation Updates**
+
+#### Added
+- **CLAUDE.md Enhancements**
+  - 497 new lines of v0.7.0 documentation
+  - Complete test-aware planning workflow examples
+  - AC-ID format reference and examples
+  - Full tasks.md template with embedded tests
+  - TDD workflow guide
+  - Migration guide from OLD format
+  - Comparison tables (OLD vs NEW)
+
+- **RFC-0007**: Smart Increment Discipline System
+  - Complete proposal with 4-phase implementation
+  - Status-based tracking, type-based limits
+  - Dependency tracking (future)
+  - Comparison: Iron Rule vs Smart Discipline
+  - Location: `.specweave/docs/internal/rfc/`
+
+- **INCREMENT-SIZING-PHILOSOPHY.md**
+  - Scale-agnostic approach (2 hours to 90% of app)
+  - Increment Owner role (hybrid PM + Tech Lead)
+  - Mapping strategies (1:1, hierarchical, inverted)
+  - Decision framework with examples
+
+- **Command Documentation** (10 new .md files)
+  - Full documentation for all status management commands
+  - Usage examples, sample outputs
+  - Integration guides (e.g., /done runs /validate-coverage)
+
+#### Changed
+- **README.md**: Updated with v0.7.0 features (kept short)
+- **CLAUDE.md**: Updated Quick Reference with new commands
+- **PM Agent**: Added Tests/Tasks placeholders to AC-IDs
+
+---
+
+### 🎉 **Why This Matters**
+
+**Test-Aware Planning**:
+- ✅ Tests are no longer afterthoughts
+- ✅ Clear traceability from requirements → tests
+- ✅ Coverage validation prevents gaps
+- ✅ BDD format improves clarity
+- ✅ 80%+ coverage target is achievable and maintained
+
+**Smart Status Management**:
+- ✅ Supports real-world workflows (hotfixes, blockers)
+- ✅ Prevents context switching overload (warnings)
+- ✅ Tracks why work is paused/abandoned (knowledge preservation)
+- ✅ Staleness detection prevents forgotten work
+- ✅ Discipline without rigidity
+
+**Combined Impact**:
+- SpecWeave now guides the ENTIRE development lifecycle
+- From requirements → design → implementation → testing → completion
+- With intelligent warnings, not hard blocks
+- Tests and status are first-class citizens, not afterthoughts
+
+---
+
 ## [0.6.7] - 2025-11-03
 
 ### ✨ Bug Fixes - Proactive Marketplace Management (FINAL FIX!)
