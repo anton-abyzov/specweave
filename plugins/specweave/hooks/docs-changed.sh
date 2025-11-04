@@ -7,7 +7,26 @@
 
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Find project root by searching upward for .specweave/ directory
+# Works regardless of where hook is installed (source or .claude/hooks/)
+find_project_root() {
+  local dir="$1"
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/.specweave" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  # Fallback: try current directory
+  if [ -d "$(pwd)/.specweave" ]; then
+    pwd
+  else
+    echo "$(pwd)"
+  fi
+}
+
+PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 cd "$PROJECT_ROOT"
 
 # Colors
@@ -54,6 +73,7 @@ if [ -n "$DOC_CHANGES" ]; then
   esac
 
   # Log to hooks log
-  mkdir -p .specweave/logs
-  echo "[$(date)] Documentation changed: $DOC_CHANGES" >> .specweave/logs/hooks.log
+  LOGS_DIR=".specweave/logs"
+  mkdir -p "$LOGS_DIR"
+  echo "[$(date)] Documentation changed: $DOC_CHANGES" >> "$LOGS_DIR/hooks.log"
 fi

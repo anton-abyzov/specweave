@@ -94,22 +94,21 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 
 ### Why SpecWeave + Claude Code = 10x Better
 
-| Feature | Claude Code (Native) | Cursor 2.0 | Copilot | Generic |
-|---------|---------------------|------------|---------|---------|
-| **Living Docs** | ✅ Auto-sync via hooks | ❌ Manual | ❌ Manual | ❌ Manual |
-| **Skills** | ✅ Auto-activate | 🟡 Must @mention | ❌ None | ❌ None |
-| **Commands** | ✅ Plugin-based `/specweave:*` | 🟡 Team commands | ❌ None | ❌ None |
-| **Hooks** | ✅ Pre/Post lifecycle | ❌ No hooks | ❌ No hooks | ❌ No hooks |
-| **Agents** | ✅ Isolated contexts | 🟡 Shared (8 parallel) | ❌ None | ❌ None |
-| **Context** | ✅ MCP + 60-80% reduction | 🟡 @ shortcuts | ❌ Limited | ❌ None |
-| **Quality** | ⭐⭐⭐⭐⭐ 100% | ⭐⭐⭐⭐ 85% | ⭐⭐⭐ 60% | ⭐⭐ 40% |
+| Feature | Claude Code (Native) | Cursor 2.0 | Other (Copilot, ChatGPT, etc.) |
+|---------|---------------------|------------|-------------------------------|
+| **Living Docs** | ✅ Auto-sync via hooks | ❌ Manual | ❌ Manual |
+| **Skills** | ✅ Auto-activate | 🟡 Must @mention | ❌ None |
+| **Commands** | ✅ Plugin-based `/specweave:*` | 🟡 Team commands | ❌ None |
+| **Hooks** | ✅ Pre/Post lifecycle | ❌ No hooks | ❌ No hooks |
+| **Agents** | ✅ Isolated contexts | 🟡 Shared (8 parallel) | ❌ None |
+| **Context** | ✅ MCP + 60-80% reduction | 🟡 @ shortcuts | ❌ High usage |
+| **Quality** | ⭐⭐⭐⭐⭐ 100% Reliable | ⭐⭐⭐ 60% Less reliable | ⭐⭐ 40% Manual workflow |
 
 **Quick Comparison**:
 
-**Claude Code** - Full automation with native hooks, MCP protocol, plugin system, isolated agent contexts
-**Cursor 2.0** - Good multi-tool support (AGENTS.md compilation, team commands, @ shortcuts) but no hooks or agent isolation
-**Copilot** - Basic instructions.md support, no automation features
-**Generic** - Manual copy-paste workflow
+**Claude Code** - Full automation with native hooks, MCP protocol, plugin system, isolated agent contexts. **ONLY fully reliable option.**
+**Cursor 2.0** - Partial support (AGENTS.md compilation, team commands, @ shortcuts) but no hooks, no agent isolation, less reliable than Claude
+**Other (Copilot, ChatGPT, Gemini)** - Manual workflow, high context usage, AGENTS.md support but no automation, least reliable
 
 **The Key Differentiator**: Only Claude Code supports **automated living docs** via native hooks. After EVERY task completion, docs sync automatically - zero manual intervention. This is why SpecWeave is designed Claude Code-first, though it gracefully degrades to other tools.
 
@@ -977,7 +976,6 @@ specweave/
 │   │   ├── adapter-base.ts
 │   │   ├── claude/
 │   │   ├── cursor/ (legacy)
-│   │   ├── copilot/ (legacy)
 │   │   └── generic/ (legacy)
 │   ├── templates/              # User project templates
 │   │   ├── CLAUDE.md.template
@@ -1057,12 +1055,14 @@ specweave/
 │   ├── docs/
 │   │   ├── internal/           # Strategic docs (NEVER published)
 │   │   │   ├── strategy/       # Business strategy, market analysis
-│   │   │   ├── architecture/   # Technical architecture
+│   │   │   ├── rfc/            # ✅ Request for Comments (proposals at all stages)
+│   │   │   ├── architecture/   # Technical architecture (accepted designs)
 │   │   │   │   ├── adr/        # Architecture Decision Records
-│   │   │   │   ├── rfc/        # ✅ Request for Comments (detailed specs)
 │   │   │   │   ├── diagrams/   # Mermaid + SVG
 │   │   │   │   └── hld-system.md # High-Level Design
-│   │   │   └── delivery/       # Implementation notes, runbooks
+│   │   │   ├── delivery/       # Implementation notes, runbooks
+│   │   │   ├── operations/     # Runbooks, SLOs
+│   │   │   └── governance/     # Security, compliance
 │   │   └── public/             # User-facing docs (can publish)
 │   │       ├── guides/
 │   │       └── api/
@@ -1469,8 +1469,7 @@ git push origin develop --tags
 
 **Legacy Multi-Tool Support** (may be removed):
 - ⚠️  Cursor (via `.cursorrules` + AGENTS.md compilation)
-- ⚠️  GitHub Copilot (via `.github/copilot/instructions.md`)
-- ⚠️  Generic (Markdown-only, for ChatGPT/Gemini/etc.)
+- ⚠️  Generic (via AGENTS.md, for Copilot/ChatGPT/Gemini/etc.)
 
 **Why Claude-First?**
 The adapter system was originally designed to support multiple tools, but this added significant complexity without meaningful benefit. Claude Code provides:
@@ -1563,12 +1562,22 @@ cd docs-site && npm run build
 ## Quick Reference
 
 **Commands (for SpecWeave development)**:
+
+*Convenient short forms (use daily)*:
+- `/inc "feature"` - Plan new increment
+- `/do` - Execute tasks (smart resume)
+- `/done 0002` - Close increment
+- `/validate 0002` - Validate increment
+
+*Full namespace forms (explicit, avoids conflicts)*:
 - `/specweave:inc "feature"` - Plan new increment
 - `/specweave:do` - Execute tasks (smart resume)
-- `/specweave:progress` - Check status
-- `/specweave:validate 0002` - Validate increment
 - `/specweave:done 0002` - Close increment
+- `/specweave:validate 0002` - Validate increment
+- `/specweave:progress` - Check status
 - `/specweave:sync-docs update` - Sync living docs
+
+**Both forms work identically** - use short forms for speed, namespace forms for clarity.
 
 **Build & Test**:
 - `npm run build` - Compile TypeScript

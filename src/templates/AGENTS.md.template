@@ -205,6 +205,357 @@ cat plugins/specweave-github/commands/github-sync.md
 
 ---
 
+## 🚀 SpecWeave Commands (Executable Workflows)
+
+**⚡ CRITICAL FOR NON-CLAUDE TOOLS**: Commands are NOT automatic in GitHub Copilot, Cursor, or other tools. You MUST manually discover and execute them.
+
+### What Are Commands?
+
+Commands are **executable workflows** defined as `.md` files in `plugins/specweave/commands/`. Each file contains:
+- Command name (from filename, e.g., `inc.md` → `/inc`)
+- Complete workflow instructions
+- Parameters and usage examples
+- Step-by-step execution guide
+
+**Think of them as runnable scripts** - when user requests a command, you read the file and execute the workflow.
+
+### Command Discovery (MANDATORY!)
+
+**At the start of EVERY session**, discover available commands:
+
+```bash
+# List all core commands
+ls plugins/specweave/commands/
+
+# Common output:
+# inc.md          - Plan new increment (/inc "feature")
+# do.md           - Execute implementation (/do)
+# done.md         - Close increment (/done 0001)
+# validate.md     - Validate increment (/validate 0001)
+# progress.md     - Check status (/progress)
+# sync-docs.md    - Sync living docs (/sync-docs)
+# next.md         - Smart increment transition
+# costs.md        - Display AI cost dashboard
+# translate.md    - Translate content
+# tdd-*.md        - TDD workflow commands
+# ... (17 commands total)
+```
+
+**For plugin commands** (if plugins/ folder exists):
+
+```bash
+# List plugin commands
+ls plugins/specweave-github/commands/
+
+# Example output:
+# github-create-issue.md
+# github-sync.md
+# github-close-issue.md
+# github-status.md
+```
+
+### How to Execute Commands (Step-by-Step)
+
+**When user says**: "create new increment for user auth" or "run /inc user auth"
+
+**You should**:
+
+1. **Identify the command**:
+   - Keywords match: "create increment" → `inc.md`
+   - Explicit slash: "/inc" → `inc.md`
+   - Map request to command file
+
+2. **Read the command file**:
+   ```bash
+   cat plugins/specweave/commands/inc.md
+   ```
+
+3. **Parse the workflow**:
+   - Read YAML frontmatter for metadata
+   - Read markdown body for steps
+   - Note required parameters
+   - Understand expected output
+
+4. **Execute the workflow**:
+   - Follow instructions EXACTLY as written
+   - Use parameters from user request
+   - Reference related files (spec templates, etc.)
+   - Show progress as you work
+
+5. **Provide output**:
+   - Confirm completion
+   - Show created files
+   - Suggest next steps
+
+### Example: Executing /inc Command
+
+**User says**: "create new increment for user authentication"
+
+**Your workflow**:
+
+```bash
+# Step 1: Identify command
+# "create increment" → inc.md
+
+# Step 2: Read command file
+cat plugins/specweave/commands/inc.md
+```
+
+**After reading inc.md, you learn**:
+- This is PM-led increment planning
+- Requires: feature description
+- Creates: spec.md, plan.md, tasks.md, tests.md
+- Location: `.specweave/increments/####-feature-name/`
+
+**Step 3: Execute workflow from inc.md**:
+
+```markdown
+# You see these instructions in inc.md:
+
+1. **Detect tech stack** (TypeScript, Python, Go, etc.)
+2. **PM-led planning**:
+   - Market research
+   - Create spec.md (WHAT & WHY)
+   - Create plan.md (HOW)
+   - Auto-generate tasks.md from plan
+   - Create tests.md (test strategy)
+3. **Strategic agent review**:
+   - Architect designs system
+   - Security reviews threats
+   - QA defines test strategy
+4. **User review checkpoint**
+5. **Ready to build**
+```
+
+**Step 4: Execute those steps**:
+
+```
+📂 Creating increment 0001-user-authentication...
+
+🔍 Tech stack detected: TypeScript + Node.js + PostgreSQL
+
+👔 Adopting PM role to create spec.md...
+   ✓ Market research: Auth requirements
+   ✓ User stories: Login, Register, Password Reset
+   ✓ Acceptance criteria: TC-0001 to TC-0015
+   ✓ Created spec.md (WHAT & WHY, technology-agnostic)
+
+🏗️ Adopting Architect role to create plan.md...
+   ✓ Architecture: JWT + bcrypt + Prisma
+   ✓ API contracts: POST /auth/login, /auth/register
+   ✓ Data model: User table schema
+   ✓ Created plan.md (HOW, technology-specific)
+
+📋 Auto-generating tasks.md from plan.md...
+   ✓ Generated 42 tasks with model hints
+   ✓ Estimated: 3-4 weeks
+
+🧪 Creating tests.md (QA strategy)...
+   ✓ 12 test cases, 85% coverage target
+
+✅ Increment 0001-user-authentication ready!
+
+Next: /do 0001 (execute implementation)
+```
+
+**Step 5: Confirm completion**:
+
+```
+✅ Created increment 0001-user-authentication
+
+Files:
+  • .specweave/increments/0001-user-authentication/spec.md
+  • .specweave/increments/0001-user-authentication/plan.md
+  • .specweave/increments/0001-user-authentication/tasks.md
+  • .specweave/increments/0001-user-authentication/tests.md
+
+Next steps:
+  1. Review generated files
+  2. Run: /do 0001 (execute implementation)
+```
+
+### Core Command Reference
+
+**Most Common** (use these daily):
+
+| Command | File | Purpose | Example |
+|---------|------|---------|---------|
+| `/inc` | `inc.md` | Plan new increment | `/inc "user auth"` |
+| `/do` | `do.md` | Execute implementation | `/do 0001` |
+| `/done` | `done.md` | Close increment | `/done 0001` |
+| `/validate` | `validate.md` | Validate quality | `/validate 0001` |
+| `/progress` | `progress.md` | Check status | `/progress` |
+
+**Specialized** (use when needed):
+
+| Command | File | Purpose | Example |
+|---------|------|---------|---------|
+| `/sync-docs` | `sync-docs.md` | Sync living docs | `/sync-docs update` |
+| `/next` | `next.md` | Smart increment transition | `/next` |
+| `/costs` | `costs.md` | AI cost dashboard | `/costs 0001` |
+| `/translate` | `translate.md` | Translate content | `/translate ru` |
+| `/tdd-cycle` | `tdd-cycle.md` | TDD workflow | `/tdd-cycle` |
+
+**Plugin Commands** (when plugins installed):
+
+| Command | File | Purpose | Plugin |
+|---------|------|---------|--------|
+| `/github:sync` | `plugins/specweave-github/commands/github-sync.md` | Sync to GitHub | specweave-github |
+| `/github:create-issue` | `plugins/specweave-github/commands/github-create-issue.md` | Create GitHub issue | specweave-github |
+
+### Command Execution Pattern (Template)
+
+Use this pattern for ANY command execution:
+
+```bash
+# 1. User request
+# User: "sync to GitHub"
+
+# 2. Identify command
+# Keywords: "sync", "GitHub" → github-sync.md
+
+# 3. Read command file
+cat plugins/specweave-github/commands/github-sync.md
+
+# 4. Parse workflow
+# - Requires: increment ID, GitHub token
+# - Creates: GitHub issue
+# - Syncs: tasks, progress, labels
+
+# 5. Execute workflow
+# Follow steps in github-sync.md:
+#   - Load increment
+#   - Create/update GitHub issue
+#   - Sync task checklist
+#   - Add labels and milestone
+#   - Post comment with summary
+
+# 6. Confirm completion
+# "✅ Synced increment 0001 to GitHub issue #42"
+```
+
+### Why This Matters (Claude Code vs Other Tools)
+
+**Claude Code** (automatic):
+- Commands work via native slash syntax: `/inc "feature"`
+- No manual reading needed
+- Commands execute automatically
+
+**Other Tools** (manual):
+- ❌ No native command support
+- ✅ **Solution**: Read command .md file and execute workflow
+- Commands become "pseudo-executable" via this pattern
+- Same workflows, just manual discovery
+
+**GitHub Copilot Example**:
+
+```
+User: "create increment for payments"
+
+Copilot (you):
+1. Recognize command request: "create increment" → /inc
+2. Read: cat plugins/specweave/commands/inc.md
+3. Execute: Follow PM-led workflow from inc.md
+4. Create: spec.md, plan.md, tasks.md in .specweave/increments/0002-payments/
+5. Confirm: "✅ Increment 0002-payments created"
+
+User gets SAME result as Claude Code, just via manual execution!
+```
+
+### Command Discovery Checklist (Session Start)
+
+**MANDATORY for non-Claude tools**:
+
+```bash
+# 1. Discover core commands
+ls plugins/specweave/commands/
+# Note: 17 commands available (inc, do, done, validate, etc.)
+
+# 2. Check for plugin commands
+if [ -d "plugins/specweave-github" ]; then
+  ls plugins/specweave-github/commands/
+  # Note: 4 GitHub commands available
+fi
+
+# 3. Document available commands
+echo "Session Context:
+- Core commands: 17 available (inc, do, done, validate, ...)
+- Plugin commands: 4 GitHub commands (if plugin installed)
+- Command execution: Read .md file → Execute workflow
+"
+
+# 4. Ready to execute commands when requested
+```
+
+### Advanced: Batch Command Execution
+
+Some workflows require multiple commands:
+
+**Example**: Complete increment lifecycle
+
+```bash
+# User: "Plan, build, and close user auth feature"
+
+# Step 1: Execute /inc
+cat plugins/specweave/commands/inc.md
+# → Create spec.md, plan.md, tasks.md
+
+# Step 2: Execute /do
+cat plugins/specweave/commands/do.md
+# → Execute all 42 tasks
+
+# Step 3: Execute /validate
+cat plugins/specweave/commands/validate.md
+# → Quality checks
+
+# Step 4: Execute /done
+cat plugins/specweave/commands/done.md
+# → PM validation and closure
+```
+
+### Troubleshooting
+
+**Command file not found?**
+
+```bash
+# Check if command exists
+ls plugins/specweave/commands/ | grep inc
+# If not found, command doesn't exist
+
+# Check plugin commands
+ls plugins/specweave-*/commands/
+```
+
+**Command syntax unclear?**
+
+```bash
+# Read command README
+cat plugins/specweave/commands/README.md
+# Contains overview of all commands
+```
+
+**Command fails during execution?**
+
+- Re-read command file for missed steps
+- Check required files exist (spec.md, plan.md, etc.)
+- Verify parameters are correct
+- Check error messages for hints
+
+### Summary: Making Commands Work Without Claude Code
+
+**The Key Insight**: Commands are just markdown files with workflows!
+
+1. **Discover**: `ls plugins/specweave/commands/`
+2. **Read**: `cat plugins/specweave/commands/{command}.md`
+3. **Execute**: Follow the workflow in the file
+4. **Confirm**: Show completion and next steps
+
+**Result**: GitHub Copilot, Cursor, and other tools get the SAME SpecWeave command capabilities as Claude Code, just via manual execution instead of slash syntax.
+
+**This is CRITICAL** - without command execution, you're missing 90% of SpecWeave's automation!
+
+---
+
 ## Available Agents (Specialized Roles)
 
 SpecWeave uses role-based development. When working on tasks, adopt the appropriate role:

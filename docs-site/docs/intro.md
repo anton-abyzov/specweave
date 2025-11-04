@@ -16,6 +16,7 @@ SpecWeave is a specification-first AI development framework where specifications
 - **🔍 Progressive Disclosure** (NEW) - Skills indexed for 90% token savings via SKILLS-INDEX.md. Works with ALL AI tools!
 - **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
 - **🧪 Complete Testing** - 4-level strategy covering specs to integration tests (APIs, UIs, CLIs, libraries)
+- **🌍 Multilingual** - Work in ANY language (Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese)! LLM-native translation at zero cost.
 - **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude Code by default, Cursor, Copilot, Gemini, ChatGPT)
 - **📚 Living Docs** - Specs auto-update after every operation and test—always in sync with code
 - **🚀 Intent-Based Commands** - Natural language works too! Say "create auth feature" → auto-invokes `/pi "auth"` (optional slash commands for explicit control)
@@ -173,6 +174,7 @@ your-project/
 - **[Increment Lifecycle](./tutorial-basics/increment-lifecycle)** - Feature planning workflow
 - **[Context Precision](./tutorial-basics/context-precision)** - 70-80% token reduction
 - **[Validation](./tutorial-basics/validation)** - 120 automated quality rules
+- **[Multilingual Support](./tutorial-extras/multilingual-support)** - Work in ANY language with screenshots
 
 ## Resources
 

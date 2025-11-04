@@ -5,6 +5,8 @@ description: Close increment with PM validation - checks tasks, tests, and docs 
 
 # Close Increment (PM Validated)
 
+**⚡ Convenient Short Form**: Use `/done` for quick access, or `/specweave:done` for explicit namespace.
+
 **Product Manager-Led Closure**: PM validates tasks, tests, and docs before closing.
 
 You are acting as the Product Manager to validate increment completion before closure. You must check all 3 gates: tasks done, tests passing, and docs updated.
