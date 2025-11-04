@@ -179,41 +179,7 @@ Post-Implementation Documentation:
 
 ##### Decision Tree
 
-```mermaid
-graph TD
-    A[Run brownfield-analyzer] --> B{Project Complexity?}
-
-    B -->|Small<br/>&lt;10k LOC| C[Comprehensive Upfront]
-    B -->|Medium<br/>10k-50k LOC| D{User Preference?}
-    B -->|Large<br/>50k-200k LOC| E[Quick Start Recommended]
-    B -->|Very Large<br/>&gt;200k LOC| F[Quick Start Mandatory]
-
-    D -->|"I want full context"| C
-    D -->|"I want to start quickly"| E
-
-    C --> G[Full Documentation<br/>1-4 weeks]
-    E --> H[Core Concepts Only<br/>1-3 hours]
-    F --> H
-
-    G --> I[Start Increments<br/>Full Context Available]
-    H --> J[Start Increments<br/>Document as You Go]
-
-    J --> K[Each Increment:<br/>Document Before Modify]
-    K --> L[Implement with Tests]
-    L --> M[Update Documentation]
-    M --> N{More Increments?}
-    N -->|Yes| K
-    N -->|No| O[Complete]
-
-    I --> P[Implement with<br/>Regression Monitoring]
-    P --> O
-
-    style F fill:#ff9999
-    style E fill:#ffeb99
-    style C fill:#99ff99
-    style H fill:#99ccff
-    style K fill:#ff99cc
-```
+![delivery-guides-development-workflow-0](../../architecture/diagrams/delivery-guides-development-workflow-0.svg)
 
 ##### Incremental Documentation Pattern (Quick Start)
 
@@ -271,7 +237,7 @@ For each increment modifying existing code:
 - You're confident in test-driven approach
 
 **Use Comprehensive when**:
-- Project is small/medium (<50k LOC)
+- Project is small/medium (less than 50k LOC)
 - You have time for upfront analysis (1-4 weeks)
 - Multiple teams need shared context
 - Regulated industry (finance, healthcare, defense)

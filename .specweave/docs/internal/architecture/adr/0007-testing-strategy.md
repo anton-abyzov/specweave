@@ -116,7 +116,7 @@ Test-Driven Development available via `tdd-guide` skill but NOT enforced.
 ## Metrics
 
 **Coverage Target**: >80% for critical paths
-**Test Execution**: <5 minutes total
+**Test Execution**: Less than 5 minutes total
 **Flaky Tests**: 0%
 
 ## Related

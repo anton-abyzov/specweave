@@ -40,7 +40,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/anton-abyzov/specweave/tree/main/docs-site/',
+          editUrl: 'https://github.com/anton-abyzov/specweave/tree/develop/docs-site/',
           // Point to .specweave/docs/public/ as source
           path: '../.specweave/docs/public',
           routeBasePath: 'docs',
@@ -53,7 +53,7 @@ const config: Config = {
             type: ['rss', 'atom'],
             xslt: true,
           },
-          editUrl: 'https://github.com/anton-abyzov/specweave/tree/main/docs-site/',
+          editUrl: 'https://github.com/anton-abyzov/specweave/tree/develop/docs-site/',
           blogTitle: 'SpecWeave Blog',
           blogDescription: 'Spec-Driven Development insights, tutorials, and updates',
           postsPerPage: 10,

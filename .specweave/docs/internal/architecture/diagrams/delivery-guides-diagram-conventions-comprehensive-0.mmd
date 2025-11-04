@@ -1,0 +1,5 @@
+graph LR
+    User((User)) -->|HTTPS| Web[Next.js Web App]
+    Web -->|API| API[API Gateway]
+    API -->|Svc1| Match[Match Service]
+    API -->|DB| DB[(Postgres)]

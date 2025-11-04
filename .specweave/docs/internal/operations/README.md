@@ -39,7 +39,7 @@
 **Sections**:
 - **Service** - What service is this for?
 - **SLI** - What are we measuring? (latency, availability, throughput)
-- **SLO Target** - What's the goal? (99.9% uptime, p95 latency <200ms)
+- **SLO Target** - What's the goal? (99.9% uptime, p95 latency less than 200ms)
 - **Measurement** - How do we measure it?
 - **Alerting** - When to alert?
 

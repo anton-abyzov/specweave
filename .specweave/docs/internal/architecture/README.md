@@ -109,12 +109,7 @@ Keep each diagram next to the markdown page that explains it:
 ```markdown
 ## Architecture Overview
 
-```mermaid
-graph TB
-    Client[Client] --> API[API Gateway]
-    API --> Service[Service]
-    Service --> DB[(Database)]
-```
+![architecture-readme-0](diagrams/architecture-readme-0.svg)
 ```
 
 **Or reference SVG** (if pre-rendered):
@@ -196,7 +191,7 @@ graph TB
 **Not needed when**:
 - Simple CRUD services with minimal logic
 - Thin wrappers around external APIs
-- Single-responsibility components with <3 internal classes
+- Single-responsibility components with fewer than 3 internal classes
 
 ### ADR (Architecture Decision Record)
 

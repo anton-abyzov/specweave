@@ -64,11 +64,7 @@ npm run generate:diagrams
 
 **File**: `.specweave/docs/internal/architecture/diagrams/my-diagram.mmd`
 
-```mermaid
-flowchart TB
-    Start([User Request]) --> Process[Process]
-    Process --> End([Complete])
-```
+![delivery-guides-diagram-svg-generation-0](../../architecture/diagrams/delivery-guides-diagram-svg-generation-0.svg)
 
 **Important**: Use `.mmd` extension (NOT `.md`)
 

@@ -1,0 +1,5 @@
+graph TB
+    Client[Client] --> API[API Gateway - 10.0.0.10]
+    API --> Auth[Auth Service - auth.internal.company.com]
+    API --> DB[(PostgreSQL 14 - db.internal.company.com:5432)]
+    Auth --> Vault[HashiCorp Vault - vault.internal.company.com]

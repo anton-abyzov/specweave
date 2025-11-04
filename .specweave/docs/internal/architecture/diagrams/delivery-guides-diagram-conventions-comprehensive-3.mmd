@@ -1,0 +1,20 @@
+graph TB
+    subgraph "Auth Service Container"
+        Controller[Auth Controller]
+        Service[Auth Service]
+        Validator[Input Validator]
+        TokenMgr[JWT Token Manager]
+        Repository[User Repository]
+        Cache[Cache Layer]
+
+        Controller -->|validate| Validator
+        Controller -->|authenticate| Service
+        Service -->|generate token| TokenMgr
+        Service -->|get user| Repository
+        Repository -->|check cache| Cache
+        Repository -->|query| DB[(User Database)]
+        Cache -->|miss| DB
+    end
+
+    Client[API Gateway] -->|HTTP Request| Controller
+    Controller -->|Response| Client

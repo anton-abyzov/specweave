@@ -110,7 +110,7 @@ DO NOT mark task as complete until rendering is verified.
 
 | Error | Wrong | Correct |
 |-------|-------|---------|
-| **`mermaid` keyword in C4** | `mermaid`<br>`C4Context` | `C4Context` (start directly) |
+| **`mermaid` keyword in C4** | `mermaid`<br/>`C4Context` | `C4Context` (start directly) |
 | **Missing quotes** | `Person(user, Customer User)` | `Person(user, "Customer User", "Description")` |
 | **Missing parentheses** | `Rel(user, system, "Uses"` | `Rel(user, system, "Uses")` |
 | **Incorrect indentation** | `title System Context` | `  title System Context` (2 spaces) |

@@ -302,26 +302,7 @@ tags:
 
 ### Sync Flow
 
-```mermaid
-graph TB
-    Jira[Jira Epic PROJ-123]
-    ADO[ADO Epic 456789]
-    GitHub[GitHub Milestone 5]
-
-    SpecWeave[SpecWeave Increment 0001]
-    Metadata[metadata.yaml]
-
-    Jira <--> |Sync| SpecWeave
-    ADO <--> |Sync| SpecWeave
-    GitHub <--> |Sync| SpecWeave
-
-    SpecWeave --> Metadata
-
-    Metadata --> PRD[docs/internal/strategy/prd-*.md]
-    Metadata --> HLD[docs/internal/architecture/hld-*.md]
-    Metadata --> ADR[docs/internal/architecture/adr/0001-*.md]
-    Metadata --> Spec[docs/internal/specs/spec-0001-*/spec.md]
-```
+![delivery-brownfield-integration-strategy-0](../architecture/diagrams/delivery-brownfield-integration-strategy-0.svg)
 
 ### Sync Commands
 

@@ -330,7 +330,7 @@ npm run test:coverage      # Generate coverage report
 **Test Execution**:
 - P1 tests: Must pass before merge to main
 - P2 tests: Must pass before release
-- Performance: All tests complete in <5 minutes
+- Performance: All tests complete in less than 5 minutes
 - Reliability: 0% flaky tests
 
 **Quality Metrics**:

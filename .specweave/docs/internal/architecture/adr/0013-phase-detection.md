@@ -441,7 +441,7 @@ phase = model.predict(vectorize(user_prompt))
 - Log warning
 - Consider future tuning
 
-**Low Confidence Default**: <0.4
+**Low Confidence Default**: Less than 0.4
 - Default to Sonnet
 - Log for analysis
 
@@ -565,8 +565,8 @@ private readonly planningKeywords_fr = [
 ### Success Metrics
 
 1. **Accuracy**: >95% on test set ✅ (to be validated)
-2. **Latency**: <2ms per detection ✅ (0.8ms measured)
-3. **False Positive Rate**: <5% ⏳ (requires production data)
+2. **Latency**: Less than 2ms per detection ✅ (0.8ms measured)
+3. **False Positive Rate**: Less than 5% ⏳ (requires production data)
 4. **User Satisfaction**: No complaints about wrong model ⏳
 
 ### Test Dataset

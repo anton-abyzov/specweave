@@ -2,14 +2,23 @@
 
 **Purpose**: Define how we plan, build, and release features.
 
+## 🔑 Start Here (Brownfield Projects)
+
+If you're integrating SpecWeave into an **existing project**, start with:
+
+📘 **[Brownfield Integration Strategy](brownfield-integration-strategy.md)** - How to adopt SpecWeave in existing codebases
+
+Then review the key guides below ↓
+
 ## What Goes Here
 
+- **Brownfield Integration** - How to adopt SpecWeave in existing projects ← **Start here!**
+- **Branching Strategy** - Git workflow, trunk-based development
+- **Code Review Standards** - PR guidelines, review process
+- **DORA Metrics** - Engineering performance tracking
 - **Roadmap** - Feature timeline, priorities
-- **Release Plans** - Version planning, release notes
-- **Test Strategy** - Testing approach, coverage goals
-- **CI/CD Documentation** - Build pipelines, deployment processes
-- **Branching Strategy** - Git workflow, branch policies
-- **Environment Setup** - Dev, staging, prod configurations
+- **Release Process** - Version planning, release notes
+- **Guides** - Detailed how-to documentation
 
 ## Document Types
 
@@ -82,20 +91,54 @@ cp templates/docs/test-strategy-template.md docs/internal/delivery/test-strategy
 
 ## Index of Delivery Documents
 
-### Roadmap
-- (Create `roadmap.md`)
+### 🔑 Brownfield & Integration
+- **[Brownfield Integration Strategy](brownfield-integration-strategy.md)** - Adopting SpecWeave in existing projects
+  - ↔️ Related: [Architecture ADR-0008](../architecture/adr/0008-brownfield-support.md)
 
-### Release Plans
-- (None yet)
+### 🌿 Branching & Git
+- **[Branch Strategy](branch-strategy.md)** - Trunk-based development, Git workflow
+  - ↔️ Related: [Code Review Standards](code-review-standards.md), [Roadmap](roadmap.md)
 
-### Test Strategies
-- (None yet)
+### ✅ Code Review & Quality
+- **[Code Review Standards](code-review-standards.md)** - PR guidelines, review checklist
+  - ↔️ Related: [Branch Strategy](branch-strategy.md), [DORA Metrics](dora-metrics.md)
 
-### CI/CD Runbooks
-- (None yet)
+### 📊 Metrics & Performance
+- **[DORA Metrics](dora-metrics.md)** - Engineering performance tracking (Deployment Frequency, Lead Time, etc.)
+  - ↔️ Related: [Branch Strategy](branch-strategy.md), [Operations](../operations/README.md)
 
-## Related Documentation
+### 🗺️ Planning & Roadmap
+- **[Product Roadmap](roadmap.md)** - Feature planning, prioritization
+  - ↔️ Related: [Strategy PRDs](../strategy/README.md), [Release Process](release-process.md)
 
-- [Strategy Documentation](../strategy/README.md) - Links roadmap to PRDs
+### 🚀 Release Process
+- **[Release Process](release-process.md)** - How we ship versions
+  - ↔️ Related: [Branch Strategy](branch-strategy.md), [Roadmap](roadmap.md)
+
+### 📚 Detailed Guides (guides/)
+- **[Deployment Intelligence](guides/deployment-intelligence.md)** - Smart deployment target detection
+- **[Development Workflow](guides/development-workflow.md)** - Day-to-day development process
+- **[Diagram Conventions](guides/diagram-conventions.md)** - C4 diagram standards
+- **[Diagram SVG Generation](guides/diagram-svg-generation.md)** - Generating diagrams from Mermaid
+- **[Increment Lifecycle](guides/increment-lifecycle.md)** - How increments flow through the system
+- **[Increment Validation](guides/increment-validation.md)** - Validating increment completeness
+- **[Testing Strategy](guides/testing-strategy.md)** - Testing approach, coverage goals
+- **[Tool Concept Mapping](guides/tool-concept-mapping.md)** - Mapping tools to SpecWeave concepts
+
+## Related Documentation (Bidirectional Links)
+
+### 📋 From Strategy
+- [Strategy Documentation](../strategy/README.md) - Links roadmap to PRDs and business goals
+- Flow: PRD → Roadmap → Release Plans
+
+### 🏗️ From Architecture
 - [Architecture Documentation](../architecture/README.md) - Links releases to ADRs/Specs
+- Flow: ADRs → Branching Strategy → Code Review
+
+### ⚙️ From Operations
 - [Operations Documentation](../operations/README.md) - Links to operational runbooks
+- Flow: Release Process → Deployment → Runbooks
+
+### 📜 From Governance
+- [Governance Documentation](../governance/README.md) - Links to coding standards, security
+- Flow: Coding Standards → Code Review → Deployment
