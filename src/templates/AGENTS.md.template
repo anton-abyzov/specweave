@@ -1067,6 +1067,224 @@ Only **Claude Code** has automatic hooks that remind you to update docs.
 
 ---
 
+## 🔗 External Tracker Sync (CRITICAL FOR NON-CLAUDE TOOLS)
+
+**IMPORTANT**: Claude Code has automatic hooks that sync to external trackers (GitHub Issues, Jira, Azure DevOps) after each task completion. **GitHub Copilot, Cursor, and other tools DO NOT have these hooks!**
+
+### You MUST Manually Sync to External Trackers After Every Task
+
+When you complete ANY task, you MUST sync progress to external trackers if they are enabled for the project.
+
+#### Step 1: Detect Which Trackers Are Enabled
+
+Check the current increment's `metadata.json`:
+
+```bash
+# Find current increment (latest non-backlog increment)
+CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
+
+# Check metadata
+cat .specweave/increments/$CURRENT_INCREMENT/metadata.json
+```
+
+**Example metadata.json**:
+```json
+{
+  "id": "0007-smart-increment-discipline",
+  "title": "Increment Management v2.0",
+  "status": "active",
+  "github": {
+    "issue": 4,
+    "url": "https://github.com/anton-abyzov/specweave/issues/4"
+  },
+  "jira": {
+    "issue": "PROJ-123",
+    "url": "https://company.atlassian.net/browse/PROJ-123"
+  },
+  "ado": {
+    "item": 456,
+    "url": "https://dev.azure.com/org/project/_workitems/edit/456"
+  }
+}
+```
+
+#### Step 2: Sync to Each Enabled Tracker
+
+**For GitHub** (if `github.issue` exists):
+
+```bash
+# Get issue number
+GITHUB_ISSUE=$(jq -r '.github.issue' .specweave/increments/$CURRENT_INCREMENT/metadata.json)
+
+# Post progress comment
+gh issue comment "$GITHUB_ISSUE" --body "Progress update: Task T-XXX completed in increment $CURRENT_INCREMENT
+
+Details:
+- Task: [Task description]
+- Status: Completed
+- Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+Next: [Next task or completion status]
+"
+```
+
+**For Jira** (if `jira.issue` exists):
+
+```bash
+# Get issue key
+JIRA_ISSUE=$(jq -r '.jira.issue' .specweave/increments/$CURRENT_INCREMENT/metadata.json)
+
+# Add comment (requires jira CLI: https://github.com/ankitpokhrel/jira-cli)
+jira issue comment add "$JIRA_ISSUE" "Progress update: Task T-XXX completed
+
+Details:
+- Task: [Task description]
+- Status: Completed
+- Increment: $CURRENT_INCREMENT
+"
+
+# Update status if task is major milestone
+# jira issue move "$JIRA_ISSUE" "In Progress" / "Review" / "Done"
+```
+
+**For Azure DevOps** (if `ado.item` exists):
+
+```bash
+# Get work item ID
+ADO_ITEM=$(jq -r '.ado.item' .specweave/increments/$CURRENT_INCREMENT/metadata.json)
+
+# Add comment (requires az CLI: https://aka.ms/azure-cli)
+az boards work-item update --id "$ADO_ITEM" --discussion "Progress update: Task T-XXX completed
+
+Details:
+- Task: [Task description]
+- Status: Completed
+- Increment: $CURRENT_INCREMENT
+"
+```
+
+#### Step 3: When to Sync
+
+**After EVERY task completion**, sync to all enabled trackers:
+
+```bash
+# Example workflow after completing T-003:
+
+# 1. Mark task complete in tasks.md
+vim .specweave/increments/0007-feature/tasks.md
+# Change: - [ ] T003: Task → - [x] T003: Task ✅
+
+# 2. Update increment documentation (plan.md, etc.)
+# [See "Documentation Updates" section above]
+
+# 3. Sync to external trackers
+gh issue comment 4 --body "✅ T-003 Complete: Create test-aware-planner structure
+
+Directory structure created at plugins/specweave/agents/test-aware-planner/
+
+Next: T-004 - Write test-aware-planner AGENT.md prompt
+"
+
+# 4. Continue to next task
+```
+
+#### Step 4: Update Task Checklist in GitHub/Jira
+
+**For GitHub Issues with task checklists**:
+
+The issue body likely contains a task checklist:
+
+```markdown
+## Tasks
+- [x] T-001: Update plan.md
+- [x] T-002: Add auto-sync hook
+- [ ] T-003: Create test-aware-planner structure
+- [ ] T-004: Write AGENT.md prompt
+```
+
+**Update the checklist** after each task:
+
+```bash
+# Get current issue body
+gh issue view 4 --json body -q .body > issue-body.md
+
+# Edit the checklist (mark T-003 as done)
+vim issue-body.md
+# Change: - [ ] T-003 → - [x] T-003
+
+# Update issue
+gh issue edit 4 --body-file issue-body.md
+```
+
+**For Jira** (subtasks):
+
+If tasks are represented as subtasks:
+
+```bash
+# List subtasks
+jira issue list --parent PROJ-123
+
+# Update subtask status
+jira issue move PROJ-123-SUB1 "Done"
+```
+
+#### Step 5: Sync Increment Status Changes
+
+When increment status changes (active → paused → completed), sync that too:
+
+```bash
+# Example: Increment completed
+gh issue comment 4 --body "🎉 INCREMENT COMPLETED!
+
+All 24 tasks finished. Increment 0007-smart-increment-discipline is now complete.
+
+See completion report: .specweave/increments/0007-smart-increment-discipline/reports/COMPLETION-SUMMARY.md
+"
+
+# Close the issue
+gh issue close 4 --comment "Increment completed and merged to main branch."
+```
+
+### Why This Matters
+
+**Without external tracker sync**:
+- ❌ Stakeholders don't see progress
+- ❌ Team members work in isolation
+- ❌ No audit trail of work done
+- ❌ GitHub/Jira becomes stale and useless
+
+**With external tracker sync**:
+- ✅ Real-time visibility into progress
+- ✅ Team stays informed
+- ✅ Stakeholders can track without asking
+- ✅ Complete audit trail
+- ✅ GitHub/Jira remains the source of truth
+
+### Tools That Need Manual Sync
+
+These tools **DO NOT** have automatic external tracker sync:
+- GitHub Copilot (all versions)
+- Cursor
+- Windsurf
+- Gemini CLI
+- Generic AI tools (ChatGPT, Claude web, etc.)
+
+Only **Claude Code** has automatic hooks (via `post-task-completion.sh`) that sync to external trackers.
+
+### Summary Checklist (After Every Task)
+
+When you complete a task in non-Claude tools:
+
+1. ✅ Mark task complete in tasks.md
+2. ✅ Update living docs (see "Documentation Updates" section)
+3. ✅ **Sync to GitHub/Jira/ADO** (this section)
+4. ✅ Update RFC if applicable (if task implements architecture decision)
+5. ✅ Continue to next task
+
+**Remember**: In Claude Code, steps 3-4 happen automatically via hooks. In other tools, YOU must do them manually!
+
+---
+
 ## Security Considerations
 
 - Never commit secrets (use `.env` files, gitignored)
