@@ -31,9 +31,53 @@ That's it! SpecWeave is installed and ready.
 - ✅ **Complete Framework** - Minimal installation, skills create structure as needed
 - ✅ **Development Guide** - `CLAUDE.md` with everything you need
 
-## Ultra-Simple Usage
+## Two Ways to Start
 
-**Open in Claude Code and describe your project**:
+### Option 1: Interactive Quick Build (Fastest)
+
+**Perfect for:** Small projects, prototypes, learning SpecWeave
+
+Simply describe what you want to build:
+
+```
+"build a very simple web calculator app"
+```
+
+**SpecWeave's intelligent assistant guides you through:**
+
+1. **Approach** - Choose your workflow:
+   ```
+   ❯ Quick build - just code it now
+     SpecWeave increment - plan first
+     Type something...
+   ```
+
+2. **Features** - Multi-select what you need:
+   ```
+   ☑ Basic operations (+, -, ×, ÷)
+   ☑ Additional functions (%, √, clear, backspace)
+   ☑ Keyboard support
+   ☑ Calculation history
+   ☐ Type something custom...
+   ```
+
+3. **Tech Stack** - Pick your tools:
+   ```
+   ❯ Vanilla HTML/CSS/JS
+     React
+     Your choice
+     Type something...
+   ```
+
+4. **Review & Submit** - Confirm and start building!
+
+**Result:** 2 minutes from idea to working code
+
+### Option 2: Specification-First (Best Practice)
+
+**Perfect for:** Production features, team projects, complex systems
+
+Open in Claude Code and describe your project:
 
 ```
 User: "Build a real estate listing platform with Next.js, Prisma, and Hetzner deployment"

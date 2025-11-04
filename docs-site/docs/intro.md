@@ -46,9 +46,49 @@ This creates the `.specweave/` structure with:
 
 ### 3. Start Building
 
-**IMPORTANT**: SpecWeave uses **EXPLICIT SLASH COMMANDS** - type them to activate the framework!
+**Two ways to start:**
 
-#### **Slash Commands (100% Reliable)**
+#### **Option A: Interactive Quick Build** (Fastest)
+
+Simply describe what you want to build - SpecWeave guides you through:
+
+```bash
+"build a very simple web calculator app"
+```
+
+**SpecWeave's interactive assistant asks:**
+
+1. **Approach** - Choose your workflow:
+   ```
+   ❯ Quick build - just code it now
+     SpecWeave increment - plan first
+     Type something...
+   ```
+
+2. **Features** - Multi-select what you need:
+   ```
+   ☑ Basic operations (+, -, ×, ÷)
+   ☑ Additional functions (%, √, clear, backspace)
+   ☑ Keyboard support
+   ☑ Calculation history
+   ☐ Type something...
+   ```
+
+3. **Tech Stack** - Pick your tools:
+   ```
+   ❯ Vanilla HTML/CSS/JS
+     React
+     Your choice
+     Type something...
+   ```
+
+4. **Review & Submit** - Confirm your choices and start building!
+
+**Perfect for:** Small projects, quick prototypes, learning SpecWeave
+
+#### **Option B: Specification-First** (Best Practice)
+
+**EXPLICIT SLASH COMMANDS** for full control:
 
 ```bash
 # Create your first feature (use slash command!)
@@ -75,6 +115,8 @@ This creates the `.specweave/` structure with:
 # Close when done
 /done 0001
 ```
+
+**Perfect for:** Production features, team projects, complex systems
 
 **Available Slash Commands** (with short aliases):
 - `/pi` or `/create-increment` - **Plan Product Increment** (most important!)

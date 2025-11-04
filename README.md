@@ -57,6 +57,41 @@ cd my-project
 
 ## Quick Start
 
+**Two ways to start building:**
+
+### Option 1: Interactive Quick Build (Fastest)
+
+Open Claude Code and simply describe what you want to build:
+
+```bash
+"build a very simple web calculator app"
+```
+
+**SpecWeave's intelligent assistant will guide you through:**
+
+1. **Approach** - Choose your workflow:
+   - Quick build - Just code it now
+   - SpecWeave increment - Plan first (recommended for larger features)
+
+2. **Features** - Multi-select what you need:
+   - ☑ Basic operations (+, -, ×, ÷)
+   - ☑ Additional functions (%, √, clear, backspace)
+   - ☑ Keyboard support
+   - ☑ Calculation history
+   - ☐ Type something custom...
+
+3. **Tech Stack** - Pick your tools:
+   - Vanilla HTML/CSS/JS
+   - React
+   - Your choice
+   - Type something custom...
+
+4. **Review** - Confirm and start building!
+
+**Result**: SpecWeave builds exactly what you need with the stack you chose.
+
+### Option 2: Specification-First Workflow (Best Practice)
+
 **Open Claude Code in your project and use slash commands:**
 
 ```bash

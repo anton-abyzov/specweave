@@ -3092,12 +3092,29 @@ npm run test:skills -- increment-planner
 > - Examples: https://github.com/specweave/examples
 > - Community: https://discord.gg/specweave
 >
-> **First Steps:**
+> **Two Ways to Start:**
+>
+> **Option 1: Interactive Quick Build** (Perfect for learning or small projects)
+>
+> Simply describe what you want:
+> ```
+> "build a very simple web calculator app"
+> ```
+>
+> SpecWeave guides you through interactive prompts:
+> 1. **Approach** - Quick build OR plan first?
+> 2. **Features** - Multi-select what you need (checkboxes!)
+> 3. **Tech Stack** - Vanilla, React, or your choice
+> 4. **Review & Submit** - Confirm and start building
+>
+> **Option 2: Specification-First** (Production-ready approach)
 > 1. Read CLAUDE.md in your project
-> 2. Create your first specification
-> 3. Plan a feature with increment-planner
-> 4. Implement with developer skill
-> 5. Validate with E2E tests"
+> 2. Create increment: `/specweave:inc "feature name"`
+> 3. Review generated spec.md, plan.md, tasks.md
+> 4. Implement: `/specweave:do`
+> 5. Validate with E2E tests
+>
+> Both approaches use the same powerful multi-agent system under the hood!"
 
 ### Community & Support (2:43:30-2:44:30)
 

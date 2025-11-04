@@ -242,56 +242,28 @@ export async function initCommand(
     createDirectoryStructure(targetDir, toolName);
     spinner.text = 'Directory structure created...';
 
-    // 5. Copy plugin marketplace and plugins (for Claude Code auto-registration)
+    // 5. Configure GitHub marketplace for Claude Code
+    // ✅ NEW APPROACH: Claude Code fetches plugins from GitHub (no local copying!)
     if (toolName === 'claude') {
       try {
-        // Copy marketplace metadata
-        const sourceMarketplace = findSourceDir('.claude-plugin');
-        const targetMarketplace = path.join(targetDir, '.claude-plugin');
+        spinner.text = 'Configuring GitHub marketplace...';
 
-        if (fs.existsSync(sourceMarketplace)) {
-          fs.copySync(sourceMarketplace, targetMarketplace, {
-            overwrite: true,
-            errorOnExist: false
-          });
-          spinner.text = 'Plugin marketplace copied...';
-        }
+        // Settings.json will be created by setupClaudePluginAutoRegistration()
+        // No need to copy marketplace or plugins - everything is fetched from GitHub
 
-        // Copy plugins folder (CRITICAL: marketplace.json references ./plugins/*)
-        const sourcePlugins = findSourceDir('plugins');
-        const targetPlugins = path.join(targetDir, 'plugins');
-
-        if (fs.existsSync(sourcePlugins)) {
-          spinner.text = 'Copying plugins...';
-
-          fs.copySync(sourcePlugins, targetPlugins, {
-            overwrite: true,
-            errorOnExist: false,
-            filter: (src: string) => {
-              // Skip .specweave folders inside plugins (development artifacts)
-              return !src.includes('/.specweave');
-            }
-          });
-
-          spinner.text = 'Plugins copied...';
-        } else {
-          // Non-fatal: plugins will be available after global npm install
-          if (process.env.DEBUG) {
-            spinner.warn(`Plugins not found at: ${sourcePlugins}`);
-            console.warn(chalk.yellow(`   Note: Plugins will be available after npm install`));
-          }
-        }
+        spinner.succeed('GitHub marketplace configured');
+        console.log(chalk.gray(`   ✓ Marketplace: github.com/anton-abyzov/specweave/.claude-plugin`));
+        console.log(chalk.gray(`   ✓ Plugins fetch on-demand (no local copies = faster init)`));
       } catch (error) {
         // Log errors in debug mode for troubleshooting
         if (process.env.DEBUG) {
           spinner.stop();
-          console.error(chalk.red(`\n❌ Plugin copy error: ${error instanceof Error ? error.message : String(error)}`));
+          console.error(chalk.red(`\n❌ Marketplace setup error: ${error instanceof Error ? error.message : String(error)}`));
           if (error instanceof Error && error.stack) {
             console.error(chalk.gray(error.stack));
           }
           spinner.start();
         }
-        // Non-critical - plugins can still be installed manually via /plugin install
         console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.marketplaceCopyFailed')}`));
       }
     }
@@ -498,56 +470,58 @@ export async function initCommand(
         try {
           spinner.start('Installing SpecWeave core plugin...');
 
-          // Step 1: Ensure marketplace points to current project
-          const projectRoot = targetDir;
-          const marketplaceJsonPath = path.join(projectRoot, '.claude-plugin', 'marketplace.json');
+          // Step 1: PROACTIVE marketplace management - check if exists, remove if needed, then re-add
+          // ✅ This runs REGARDLESS of whether project has local .claude-plugin/
+          // ✅ Uses SpecWeave package's .claude-plugin folder as marketplace source
+          const listResult = execFileNoThrowSync('claude', [
+            'plugin',
+            'marketplace',
+            'list'
+          ]);
 
-          if (fs.existsSync(marketplaceJsonPath)) {
-            // Try to add marketplace
-            const marketplaceResult = execFileNoThrowSync('claude', [
+          const marketplaceExists = listResult.success &&
+            (listResult.stdout || '').toLowerCase().includes('specweave');
+
+          if (marketplaceExists) {
+            // Marketplace exists - remove it first (prevents "already installed" error)
+            spinner.stop();
+            console.log(chalk.blue('   🔄 Updating existing SpecWeave marketplace...'));
+
+            execFileNoThrowSync('claude', [
               'plugin',
               'marketplace',
-              'add',
-              projectRoot
+              'remove',
+              'specweave'
             ]);
 
-            // If marketplace already exists (from previous project), remove and re-add
-            if (!marketplaceResult.success) {
-              const errorMsg = (marketplaceResult.stderr || marketplaceResult.stdout || '').toLowerCase();
+            console.log(chalk.green('   ✔ Old marketplace removed'));
+          }
 
-              if (errorMsg.includes('already installed') || errorMsg.includes('already exists')) {
-                // Remove old marketplace (points to old project)
-                spinner.stop();
-                console.log(chalk.blue('   🔄 Marketplace already exists - updating...'));
+          // Step 1.5: Add marketplace from SpecWeave package installation
+          // ✅ Points to installed npm package's .claude-plugin folder
+          const specweavePackageRoot = findPackageRoot(__dirname);
+          if (specweavePackageRoot) {
+            const marketplacePath = path.join(specweavePackageRoot, '.claude-plugin');
 
-                const removeResult = execFileNoThrowSync('claude', [
-                  'plugin',
-                  'marketplace',
-                  'remove',
-                  'specweave'
-                ]);
+            if (fs.existsSync(marketplacePath)) {
+              const addResult = execFileNoThrowSync('claude', [
+                'plugin',
+                'marketplace',
+                'add',
+                specweavePackageRoot
+              ]);
 
-                // Add new marketplace (points to current project)
-                const retryResult = execFileNoThrowSync('claude', [
-                  'plugin',
-                  'marketplace',
-                  'add',
-                  projectRoot
-                ]);
-
-                if (retryResult.success) {
+              if (addResult.success) {
+                if (marketplaceExists) {
                   console.log(chalk.green('   ✔ Marketplace updated successfully'));
-                } else {
-                  console.warn(chalk.yellow(`   ⚠ Could not update marketplace: ${retryResult.stderr}`));
                 }
-
-                spinner.start('Installing SpecWeave core plugin...');
               } else {
-                // Other error - log it
-                console.warn(chalk.yellow(`\n   ⚠ Marketplace setup issue: ${marketplaceResult.stderr}`));
+                console.log(chalk.yellow('   ⚠️  Marketplace add via CLI failed, will use settings.json fallback'));
               }
             }
           }
+
+          spinner.start('Installing SpecWeave core plugin...');
 
           // Step 2: Install core plugin
           // ✅ SECURE: No string interpolation, no shell, cross-platform
@@ -1147,20 +1121,15 @@ function setupClaudePluginAutoRegistration(targetDir: string, language: Supporte
   const locale = getLocaleManager(language);
   const settingsPath = path.join(targetDir, '.claude', 'settings.json');
 
-  // Check if marketplace files exist
-  const marketplacePath = path.join(targetDir, '.claude-plugin', 'marketplace.json');
-  if (!fs.existsSync(marketplacePath)) {
-    console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.marketplaceNotFound')}`));
-    return;
-  }
-
-  // Create settings.json with marketplace registration
+  // Create settings.json with GitHub marketplace registration
+  // ✅ Claude Code fetches plugins from GitHub (no local marketplace files needed!)
   const settings = {
     extraKnownMarketplaces: {
       specweave: {
         source: {
-          source: 'local',
-          path: './.claude-plugin'
+          source: 'github',
+          repo: 'anton-abyzov/specweave',
+          path: '.claude-plugin'
         }
       }
     }
@@ -1169,7 +1138,8 @@ function setupClaudePluginAutoRegistration(targetDir: string, language: Supporte
   try {
     fs.writeJsonSync(settingsPath, settings, { spaces: 2 });
     console.log(chalk.green(`\n✅ ${locale.t('cli', 'init.success.pluginAutoSetup')}`));
-    console.log(chalk.gray(`   ${locale.t('cli', 'init.info.pluginAutoSetupDetails')}`));
+    console.log(chalk.gray(`   Marketplace: github.com/anton-abyzov/specweave/.claude-plugin`));
+    console.log(chalk.gray(`   Plugins will be fetched from GitHub (always up-to-date)`));
   } catch (error: any) {
     throw new Error(`Failed to create .claude/settings.json: ${error.message}`);
   }

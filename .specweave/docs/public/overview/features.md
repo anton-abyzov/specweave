@@ -2,6 +2,51 @@
 
 SpecWeave provides a comprehensive suite of tools and workflows for building production-grade software with AI assistance.
 
+## 🚀 Two Ways to Work (Flexibility for All Project Sizes)
+
+### Interactive Quick Build
+
+**Perfect for:** Small projects, prototypes, learning
+
+Simply describe what you want - SpecWeave guides you through interactive prompts:
+
+1. **Approach** - Quick build or spec-first planning
+2. **Features** - Multi-select checkboxes for capabilities
+3. **Tech Stack** - Choose your tools
+4. **Review & Submit** - Confirm and start building
+
+**Result:** 2 minutes from idea to working code
+
+**Example:**
+```
+"build a very simple web calculator app"
+→ Select features: ☑ Basic ops ☑ Keyboard ☑ History
+→ Choose stack: React
+→ Build! 🚀
+```
+
+### Specification-First Workflow
+
+**Perfect for:** Production features, team projects, complex systems
+
+Professional planning with slash commands and multi-agent coordination:
+
+```bash
+/specweave:inc "user authentication"
+# PM, Architect, QA agents create:
+# ✅ spec.md (requirements)
+# ✅ plan.md (architecture)
+# ✅ tasks.md (implementation)
+# ✅ tests.md (test strategy)
+
+/specweave:do
+# Implement with hooks auto-updating docs
+```
+
+**Both approaches** use the same powerful plugin system and multi-agent architecture under the hood!
+
+---
+
 ## 🎯 Specification-First Development
 
 ### Append-Only Snapshots + Living Documentation
