@@ -157,6 +157,160 @@ This step remains for auto-closing "in-progress" increments that ARE complete.
 - ✅ Enforces quality awareness (can't ignore incomplete work)
 - ✅ No manual `/done` needed when gates pass
 
+### Step 0C: Type-Based Limits & Context Switching Warnings (v0.7.0+)
+
+**NEW! Helps users avoid context switching and focus on one thing at a time.**
+
+After passing pre-flight checks (Step 0A, 0B), check type-based limits and warn about context switching.
+
+**Implementation**:
+```typescript
+import { checkIncrementLimits, getContextSwitchWarning } from '../core/increment/limits';
+
+// 1. Ask user for increment type (or detect from title)
+const incrementType = await promptForType(); // hotfix, feature, bug, etc.
+
+// 2. Check type-based limits
+const limitCheck = checkIncrementLimits(incrementType);
+
+if (limitCheck.exceeded) {
+  console.log(chalk.yellow.bold('\n⚠️  TYPE LIMIT REACHED\n'));
+  console.log(chalk.yellow(limitCheck.warning));
+
+  console.log(chalk.blue('\n💡 Suggested actions:\n'));
+  limitCheck.suggestions?.forEach(s => console.log(chalk.dim(`   • ${s}`)));
+
+  // Ask user if they want to continue anyway
+  const continueAnyway = await prompt({
+    type: 'confirm',
+    message: 'Continue anyway? (not recommended)',
+    default: false
+  });
+
+  if (!continueAnyway) {
+    console.log(chalk.green('\n✅ Good choice! Focus on completing current work first.\n'));
+    process.exit(0);
+  }
+
+  console.log(chalk.yellow('\n⚠️  Proceeding with limit exceeded...\n'));
+}
+
+// 3. Check context switching (for non-emergency work)
+const contextWarning = getContextSwitchWarning(incrementType);
+
+if (contextWarning.show) {
+  console.log(chalk.yellow.bold('\n⚠️  CONTEXT SWITCHING WARNING\n'));
+  console.log(chalk.yellow(contextWarning.message));
+
+  console.log(chalk.blue('\n💡 What would you like to do?\n'));
+  contextWarning.options.forEach((opt, i) => {
+    console.log(chalk.white(`${i + 1}. ${opt.label}`));
+    console.log(chalk.dim(`   ${opt.description}\n`));
+  });
+
+  const choice = await prompt({
+    type: 'list',
+    message: 'Choose an option:',
+    choices: contextWarning.options.map(o => o.value)
+  });
+
+  if (choice === 'continue') {
+    // User chose to finish current work first
+    console.log(chalk.green('\n✅ Smart choice! Finish current increment(s) first.\n'));
+    console.log(chalk.dim('Use /do to continue work\n'));
+    process.exit(0);
+  } else if (choice === 'pause') {
+    // User chose to pause current work
+    console.log(chalk.blue('\n⏸️  Pausing current increment(s)...\n'));
+    // Invoke /pause command for each active increment
+    const active = MetadataManager.getActive();
+    for (const inc of active) {
+      await pauseIncrement(inc.id, 'Paused to start new work');
+    }
+    console.log(chalk.green('✅ Paused. Proceeding with new increment...\n'));
+  } else {
+    // User chose to work in parallel (productivity cost)
+    console.log(chalk.yellow(`\n⚠️  Working in parallel (${contextWarning.productivityCost} slower)\n`));
+    console.log(chalk.dim('Research shows context switching reduces productivity significantly.\n'));
+  }
+}
+
+// Proceed to Step 1 (find next increment number)
+```
+
+**Example Output - Limit Exceeded**:
+```
+⚠️  TYPE LIMIT REACHED
+
+You have 2 active feature increment(s) (limit: 2)
+
+Active feature increments:
+  • 0005-authentication
+  • 0006-payment-processing
+
+Recommendation: Complete or pause one before starting another.
+Context switching reduces productivity by 20-40%.
+
+💡 Suggested actions:
+   • Complete active increment: /done <id>
+   • Pause active increment: /pause <id>
+   • Check status: /status
+   • Reduce scope: Break large feature into smaller increments
+
+Continue anyway? (not recommended) (y/N): n
+
+✅ Good choice! Focus on completing current work first.
+```
+
+**Example Output - Context Switching Warning**:
+```
+⚠️  CONTEXT SWITCHING WARNING
+
+You have 1 active increment(s)
+
+Active increments:
+  • 0005-authentication [feature]
+
+Starting new work will reduce productivity by 20% due to context switching.
+
+Research shows:
+• 2 concurrent tasks = 20% slower
+• 3+ concurrent tasks = 40% slower
+• Frequent switches = more bugs
+
+Recommended: Complete or pause active work first.
+
+💡 What would you like to do?
+
+1. Continue current work
+   Finish active increment(s) before starting new work (recommended)
+
+2. Pause current work
+   Pause active increment(s) to focus on new work
+
+3. Work in parallel
+   Start new increment (20% productivity cost)
+
+Choose an option: 1
+
+✅ Smart choice! Finish current increment(s) first.
+
+Use /do to continue work
+```
+
+**Type-Based Limits** (from `TYPE_LIMITS` in `increment-metadata.ts`):
+- **Hotfix**: Unlimited (critical production fixes)
+- **Bug**: Unlimited (production bugs need immediate attention)
+- **Feature**: Max 2 active (standard development)
+- **Change Request**: Max 2 active (stakeholder requests)
+- **Refactor**: Max 1 active (requires focus)
+- **Experiment**: Unlimited (POCs, spikes)
+
+**Bypassing Warnings** (not recommended):
+- Users can answer "yes" to continue anyway
+- Hotfixes and bugs bypass context switching warnings (emergency work)
+- Use sparingly - discipline exists for a reason!
+
 ### Step 1: Find next increment number
 
 - Scan `.specweave/increments/` directory
