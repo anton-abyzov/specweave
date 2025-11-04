@@ -263,7 +263,8 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
 
   try {
     // Get all increments
-    let increments = MetadataManager.getAll();
+    let allIncrements = MetadataManager.getAll();
+    let increments = allIncrements;
 
     // Filter by type if specified
     if (type) {
@@ -275,6 +276,15 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);
+
+    // Calculate overall progress
+    const totalIncrements = allIncrements.length;
+    const completedCount = allIncrements.filter(m => m.status === IncrementStatus.COMPLETED).length;
+    const overallProgress = totalIncrements > 0 ? Math.round((completedCount / totalIncrements) * 100) : 0;
+
+    // Show overall progress (prominent)
+    console.log(chalk.cyan.bold(`📈 Overall Progress: ${completedCount}/${totalIncrements} increments complete (${overallProgress}%)`));
+    console.log('');
 
     // Check limits
     const limitsInfo = checkLimits();
@@ -293,27 +303,30 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
       console.log('');
     }
 
-    // Show paused increments
+    // Show paused increments (ALWAYS show reason - critical info)
     if (paused.length > 0) {
       console.log(chalk.yellow.bold(`⏸️  Paused (${paused.length}):`));
       paused.forEach(m => {
         const extended = MetadataManager.getExtended(m.id);
         console.log(`  ${chalk.yellow('⏸')} ${m.id} [${m.type}]`);
+        console.log(chalk.gray(`     Reason: ${m.pausedReason || 'No reason provided'}`));
         if (verbose) {
-          console.log(chalk.gray(`     Reason: ${m.pausedReason}`));
           console.log(chalk.gray(`     Paused: ${extended.daysPaused} days ago`));
         }
       });
       console.log('');
     }
 
-    // Show WIP limits status
-    console.log(chalk.cyan.bold(`📈 WIP Limits:`));
-    Object.entries(limitsInfo).forEach(([type, info]) => {
-      const icon = info.count >= info.limit ? chalk.red('⚠️') : chalk.green('✅');
-      const status = info.limit === Infinity ? 'unlimited' : `${info.count}/${info.limit}`;
-      console.log(`  ${icon} ${type}: ${status}`);
-    });
+    // Show WIP limits status (simplified: just show total active vs limit)
+    const totalActive = active.length;
+    const overLimit = totalActive > 1;
+    const limitIcon = overLimit ? chalk.red('⚠️') : chalk.green('✅');
+
+    console.log(chalk.cyan.bold(`📈 WIP Limit:`));
+    console.log(`  ${limitIcon} Active increments: ${totalActive}/1 ${overLimit ? '(EXCEEDS LIMIT!)' : ''}`);
+    if (overLimit) {
+      console.log(chalk.yellow(`     💡 Run 'specweave pause <id>' to pause one before starting new work`));
+    }
     console.log('');
 
     // Show summary

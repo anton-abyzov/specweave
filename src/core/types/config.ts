@@ -111,12 +111,12 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     default: 'claude',
   },
   limits: {
-    feature: 2,
-    hotfix: null,
-    bug: null,
-    'change-request': 2,
+    feature: 1,                    // Simplified: 1 active increment (strict focus)
+    hotfix: 1,                     // Same limit for all types
+    bug: 1,
+    'change-request': 1,
     refactor: 1,
-    experiment: null,
+    experiment: 1,
     experimentAutoAbandonDays: 14,
     staleness: {
       paused: 7,
