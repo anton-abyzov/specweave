@@ -1,0 +1,4 @@
+# Test-Aware Planner Agent .gitignore
+*.log
+*.tmp
+.DS_Store
