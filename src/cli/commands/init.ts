@@ -498,22 +498,54 @@ export async function initCommand(
         try {
           spinner.start('Installing SpecWeave core plugin...');
 
-          // Step 1: Add marketplace (idempotent - safe if already exists)
+          // Step 1: Ensure marketplace points to current project
           const projectRoot = targetDir;
           const marketplaceJsonPath = path.join(projectRoot, '.claude-plugin', 'marketplace.json');
 
           if (fs.existsSync(marketplaceJsonPath)) {
-            // ✅ SECURE: Arguments in array (no shell interpolation, no injection risk)
+            // Try to add marketplace
             const marketplaceResult = execFileNoThrowSync('claude', [
               'plugin',
               'marketplace',
               'add',
-              projectRoot  // ✅ Safely escaped automatically
+              projectRoot
             ]);
 
-            // Marketplace add can fail if already exists - that's OK
-            if (!marketplaceResult.success && process.env.DEBUG) {
-              console.log(chalk.gray(`   Marketplace note: ${marketplaceResult.stderr}`));
+            // If marketplace already exists (from previous project), remove and re-add
+            if (!marketplaceResult.success) {
+              const errorMsg = (marketplaceResult.stderr || marketplaceResult.stdout || '').toLowerCase();
+
+              if (errorMsg.includes('already installed') || errorMsg.includes('already exists')) {
+                // Remove old marketplace (points to old project)
+                spinner.stop();
+                console.log(chalk.blue('   🔄 Marketplace already exists - updating...'));
+
+                const removeResult = execFileNoThrowSync('claude', [
+                  'plugin',
+                  'marketplace',
+                  'remove',
+                  'specweave'
+                ]);
+
+                // Add new marketplace (points to current project)
+                const retryResult = execFileNoThrowSync('claude', [
+                  'plugin',
+                  'marketplace',
+                  'add',
+                  projectRoot
+                ]);
+
+                if (retryResult.success) {
+                  console.log(chalk.green('   ✔ Marketplace updated successfully'));
+                } else {
+                  console.warn(chalk.yellow(`   ⚠ Could not update marketplace: ${retryResult.stderr}`));
+                }
+
+                spinner.start('Installing SpecWeave core plugin...');
+              } else {
+                // Other error - log it
+                console.warn(chalk.yellow(`\n   ⚠ Marketplace setup issue: ${marketplaceResult.stderr}`));
+              }
             }
           }
 
@@ -527,7 +559,9 @@ export async function initCommand(
 
           if (installResult.success) {
             autoInstallSucceeded = true;
-            spinner.succeed('SpecWeave core plugin installed automatically!');
+            spinner.succeed('SpecWeave plugin installed successfully!');
+            console.log(chalk.green('   ✔ Marketplace: ./claude-plugin → specweave'));
+            console.log(chalk.green('   ✔ Plugin: specweave@specweave'));
             console.log(chalk.green('   ✔ Slash commands ready: /specweave:inc'));
           } else {
             throw new Error(installResult.stderr || installResult.stdout || 'Installation failed');
