@@ -66,6 +66,7 @@
       "header": "AI Tool Detection",
       "detected": "Detected: {{tool}}",
       "confirmPrompt": "Use {{tool}} for this project?",
+      "ciAutoConfirm": "CI environment detected - auto-confirming {{tool}}",
       "selectPrompt": "Which AI tool will you use?",
       "recommended": "Recommended - Full automation",
       "tools": {

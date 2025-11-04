@@ -61,10 +61,10 @@ if [ ! -d "$REPO_ROOT/plugins/specweave" ]; then
 fi
 
 # Run specweave init (modern CLI approach)
-info "Running: node $REPO_ROOT/bin/specweave.js init . --adapter claude"
+info "Running: node $REPO_ROOT/bin/specweave.js init ."
 cd "$TEST_DIR"
-# Use --adapter flag to avoid interactive prompts in CI
-NODE_OUTPUT=$(node "$REPO_ROOT/bin/specweave.js" init . --adapter claude 2>&1) || {
+# CI detection will automatically skip interactive prompts
+NODE_OUTPUT=$(node "$REPO_ROOT/bin/specweave.js" init . 2>&1) || {
   echo "CLI output:"
   echo "$NODE_OUTPUT"
   fail "specweave init failed"
