@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.6] - 2025-11-03
+
+### 🔄 Bug Fixes - Marketplace Auto-Update
+- **Fixed marketplace "already installed" error** during `specweave init`
+  - Automatically removes and re-adds marketplace when it already exists
+  - Prevents stale path references from previous projects
+  - Clear status messages show marketplace update process
+- **Improved user experience** with informative update messages
+
+**Upgrade**: `npm update -g specweave`
+
+---
+
+## [0.6.5] - 2025-11-03
+
+### 🧹 Bug Fixes - Clean .claude Directory for Claude Adapter
+- **Removed unnecessary .claude subdirectories** for Claude Code adapter
+  - Claude adapter now creates only `.claude/` parent folder (for settings.json)
+  - Plugins load directly from `plugins/` folder (no subdirectories needed)
+  - Non-Claude adapters still create subdirectories for compiled output
+- **Cleaner project structure** - no empty folders
+
+**Upgrade**: `npm update -g specweave`
+
+---
+
+## [0.6.4] - 2025-11-03
+
+### 🔧 Bug Fixes - Plugin Loading on Remote Machines
+- **Fixed "Plugin directory not found" error** on remote machines
+  - All 18 plugins now copied to user projects during `specweave init`
+  - Modified `findSourceDir()` to check root folders FIRST (plugins/, .claude-plugin/)
+  - Works on any machine without needing access to original SpecWeave installation
+- **Updated .gitignore template** to exclude framework files (.claude-plugin/, plugins/)
+- **Improved plugin path resolution** for npm-installed packages
+
+**Upgrade**: `npm update -g specweave`
+
+---
+
 ## [0.6.3] - 2025-11-03
 
 ### 🔒 Security Fix (CRITICAL)
