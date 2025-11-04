@@ -244,34 +244,83 @@ if [ -n "$CURRENT_INCREMENT" ]; then
     if [ -n "$GITHUB_ISSUE" ] && command -v gh &> /dev/null; then
       echo "[$(date)] 🔄 Syncing to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
 
-      # Run GitHub sync - Update issue description AND post comment
-      # Read tasks.md to generate progress summary
+      # Run GitHub sync - Update CHECKBOXES in issue description
       TASKS_FILE=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
 
       if [ -f "$TASKS_FILE" ]; then
-        # Parse tasks.md for progress
+        echo "[$(date)] 📊 Syncing task checkboxes to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
+
+        # Get list of completed tasks from tasks.md
+        # Find all "## T-XXX:" headers where the task has "[x]" checkbox
+        COMPLETED_TASK_IDS=$(awk '
+          /^## T-[0-9]+:/ {
+            task_id = $2
+            gsub(/:/, "", task_id)
+            current_task = task_id
+            task_title = substr($0, index($0, $3))
+            next
+          }
+          /^- \[x\]/ && current_task != "" {
+            # Found a completed checkbox under a task
+            print current_task
+            current_task = ""
+          }
+        ' "$TASKS_FILE" 2>/dev/null)
+
+        echo "[$(date)] Completed tasks found: $COMPLETED_TASK_IDS" >> "$DEBUG_LOG" 2>/dev/null || true
+
+        # Read current issue body
+        ISSUE_BODY=$(gh issue view "$GITHUB_ISSUE" --json body -q .body 2>/dev/null || echo "")
+
+        if [ -n "$ISSUE_BODY" ]; then
+          # Create temporary file for updated body
+          TEMP_BODY=$(mktemp)
+          echo "$ISSUE_BODY" > "$TEMP_BODY"
+
+          # Update checkboxes for completed tasks
+          # Pattern: "- [ ] task-name" -> "- [x] task-name"
+          for task_id in $COMPLETED_TASK_IDS; do
+            # Update checkbox for this task ID
+            # Look for patterns like "[ ] T-013:" or "[ ] CLAUDE.md updates" etc.
+            sed -i.bak "s/- \[ \] \(.*${task_id}.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+            sed -i.bak "s/- \[ \] \(.*T-0*${task_id#T-}[: ].*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+
+            echo "[$(date)] Updated checkbox for task: $task_id" >> "$DEBUG_LOG" 2>/dev/null || true
+          done
+
+          # Also update based on task names (more reliable)
+          # Check for common patterns in issue body
+          if grep -q "test-aware-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
+            sed -i.bak "s/- \[ \] \(.*test-aware-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+          fi
+          if grep -q "PM.*increment-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
+            sed -i.bak "s/- \[ \] \(.*PM.*increment-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+            sed -i.bak "s/- \[ \] \(.*Enhanced PM.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+          fi
+          if grep -q "CLAUDE.md" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
+            sed -i.bak "s/- \[ \] \(.*CLAUDE\.md.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
+          fi
+
+          # Read updated body
+          UPDATED_BODY=$(cat "$TEMP_BODY")
+
+          # Update issue with new body
+          gh issue edit "$GITHUB_ISSUE" --body "$UPDATED_BODY" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+            echo "[$(date)] ⚠️  Failed to update issue description (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+          }
+
+          # Cleanup
+          rm -f "$TEMP_BODY" "$TEMP_BODY.bak"
+
+          echo "[$(date)] ✅ Issue description checkboxes updated" >> "$DEBUG_LOG" 2>/dev/null || true
+        fi
+
+        # Calculate progress for comment
         TOTAL_TASKS=$(grep -c "^## T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
-        COMPLETED_TASKS=$(grep -c "^- \[x\].*T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
+        COMPLETED_TASKS=$(echo "$COMPLETED_TASK_IDS" | wc -w | tr -d ' ')
 
         if [ "$TOTAL_TASKS" -gt 0 ]; then
           PROGRESS_PCT=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
-
-          echo "[$(date)] 📊 Progress: $COMPLETED_TASKS/$TOTAL_TASKS ($PROGRESS_PCT%)" >> "$DEBUG_LOG" 2>/dev/null || true
-
-          # Update issue description with progress
-          # Read current issue body, update progress section
-          ISSUE_BODY=$(gh issue view "$GITHUB_ISSUE" --json body -q .body 2>/dev/null || echo "")
-
-          if [ -n "$ISSUE_BODY" ]; then
-            # Generate updated progress section
-            PROGRESS_SECTION="## Progress\n\n**Status**: $COMPLETED_TASKS/$TOTAL_TASKS tasks completed ($PROGRESS_PCT%)\n**Last Updated**: $(date '+%Y-%m-%d %H:%M:%S')\n\n---\n🤖 Auto-synced by SpecWeave"
-
-            # Update issue body (replace Progress section)
-            # This is a simplified update - full implementation would parse and replace the Progress section
-            gh issue edit "$GITHUB_ISSUE" --body "${ISSUE_BODY}\n\n${PROGRESS_SECTION}" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-              echo "[$(date)] ⚠️  Failed to update issue description (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-            }
-          fi
 
           # Post progress comment
           gh issue comment "$GITHUB_ISSUE" --body "**Progress Update**: $COMPLETED_TASKS/$TOTAL_TASKS tasks ($PROGRESS_PCT%)\n\nIncrement: \`$CURRENT_INCREMENT\`\n\n---\n🤖 Auto-updated by SpecWeave" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
