@@ -1,0 +1,11 @@
+{
+  "id": "0007-smart-increment-discipline",
+  "title": "Increment Management v2.0",
+  "status": "active",
+  "github": {
+    "issue": 4,
+    "url": "https://github.com/anton-abyzov/specweave/issues/4"
+  },
+  "created": "2025-11-03T23:40:00Z",
+  "lastSync": "2025-11-04T00:00:00Z"
+}
