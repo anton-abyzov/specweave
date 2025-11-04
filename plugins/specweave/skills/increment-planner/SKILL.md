@@ -11,10 +11,11 @@ description: Creates comprehensive implementation plans for SpecWeave increments
 - **[Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md)**
 
 This guide contains:
-- Complete increment structure (spec.md, plan.md, tasks.md, tests.md)
+- Complete increment structure (spec.md, plan.md, tasks.md with embedded tests)
 - WIP limits and status progression
 - Task vs increment decision tree
 - Context manifest creation for 70%+ token reduction
+- **v0.7.0+**: Test-Aware Planning (tests embedded in tasks.md, no separate tests.md)
 
 **Load this guide using the Read tool BEFORE creating feature plans.**
 
@@ -27,10 +28,11 @@ This skill creates comprehensive, well-structured implementation plans for SpecW
 The increment-planner skill automates the creation of feature implementation plans, ensuring:
 - Auto-numbered feature directories (`0001-9999` 4-digit format)
 - Duplicate detection (prevents creating 0002 when 0002 already exists)
-- Complete feature artifacts (spec.md, plan.md, tasks.md, tests.md)
+- Complete feature artifacts (spec.md, plan.md, tasks.md with embedded tests)
 - Proper context manifests for selective loading
 - Constitutional compliance
-- Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks)
+- Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks with test plans)
+- **v0.7.0+**: Test-Aware Planning (bidirectional AC↔Task↔Test linking)
 
 ## When to Use This Skill
 
@@ -79,20 +81,31 @@ Task(
 
   Context from existing docs: [summary of strategy docs from Step 1]
 
-  You MUST create BOTH living docs AND increment files:
+  You MUST create increment spec.md (primary) AND optionally update strategy docs:
 
-  1. Living docs (source of truth):
-     - Create .specweave/docs/internal/strategy/{module-name}/
-       * overview.md (product vision, problem, users)
-       * requirements.md (FR-001, NFR-001, technology-agnostic)
-       * user-stories.md (US1, US2, US3...)
-       * success-criteria.md (KPIs, metrics)
+  1. Strategy docs (optional, high-level only):
+     - IF this is a NEW module/product, create:
+       .specweave/docs/internal/strategy/{module-name}/
+       * overview.md (high-level product vision, market opportunity, personas)
+       * business-case.md (optional - ROI, competitive analysis)
+     - IMPORTANT:
+       * ❌ NO detailed user stories (those go in spec.md)
+       * ❌ NO detailed requirements (those go in spec.md)
+       * ❌ NO acceptance criteria (those go in spec.md)
+       * ✅ ONLY strategic, high-level business context
 
-  2. Increment file:
+  2. Increment spec.md (MANDATORY, source of truth):
      - Create .specweave/increments/{number}-{name}/spec.md
-     - Keep spec.md < 250 lines (summary only)
-     - MUST reference living docs
-     - Include links to ../../docs/internal/strategy/{module}/
+     - This is the COMPLETE requirements spec (not a summary!)
+     - Include ALL of:
+       * User stories (US-001, US-002, etc.) with full details
+       * Acceptance criteria (AC-US1-01, etc.)
+       * Functional requirements (FR-001, etc.)
+       * Non-functional requirements (NFR-001, etc.)
+       * Success criteria (metrics, KPIs)
+       * Test strategy
+     - Optionally reference strategy/overview.md for business context
+     - No line limit (be thorough, this is source of truth)
 
   Tech stack: [detected tech stack]"
 )
@@ -132,51 +145,97 @@ Task(
 
 Wait for Architect agent to complete!
     ↓
-STEP 4: Validate Living Docs
-├─ Check .specweave/docs/internal/strategy/{module}/ is NOT empty
-├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
-├─ Check increment spec.md REFERENCES (not duplicates) strategy docs
-└─ Check increment plan.md REFERENCES (not duplicates) architecture docs
+STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL) **NEW in v0.7.0**
+
+YOU MUST USE THE TASK TOOL - DO NOT SKIP:
+
+Task(
+  subagent_type: "test-aware-planner",
+  description: "Generate tasks with embedded tests",
+  prompt: "Create tasks.md with embedded test plans for: [user feature description]
+
+  FIRST, read the increment files:
+  - .specweave/increments/{number}-{name}/spec.md (user stories with AC-IDs)
+  - .specweave/increments/{number}-{name}/plan.md (technical architecture)
+
+  You MUST create tasks.md with embedded test plans:
+
+  Generate .specweave/increments/{number}-{name}/tasks.md:
+  - Parse spec.md for user stories (US1, US2) and AC-IDs (AC-US1-01, etc.)
+  - Parse plan.md for technical architecture and test strategy
+  - Generate tasks with embedded test plans (NO separate tests.md)
+  - Each task includes:
+    * Test Plan (Given/When/Then in BDD format)
+    * Test Cases (unit/integration/E2E with file paths and function names)
+    * Coverage Targets (80-90% overall)
+    * Implementation steps
+    * TDD workflow (if test_mode: TDD)
+  - For non-testable tasks (docs, config): Use Validation section
+  - Ensure all AC-IDs from spec.md are covered
+
+  Follow the workflow in plugins/specweave/agents/test-aware-planner/AGENT.md
+  Use templates from plugins/specweave/agents/test-aware-planner/templates/
+
+  Tech stack: [detected tech stack]"
+)
+
+Wait for test-aware-planner agent to complete!
     ↓
-✅ SUCCESS: Living docs updated, increment created
+STEP 5: Validate Increment Files
+├─ Check .specweave/increments/{number}-{name}/spec.md exists and is complete
+├─ Check spec.md contains ALL user stories, requirements, acceptance criteria (with AC-IDs)
+├─ Check .specweave/increments/{number}-{name}/plan.md references architecture docs
+├─ Check .specweave/increments/{number}-{name}/tasks.md has embedded test plans
+├─ Check tasks.md covers ALL AC-IDs from spec.md
+├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
+└─ Check strategy docs (if created) are high-level only (no detailed user stories)
+    ↓
+✅ SUCCESS: Increment created with spec.md, plan.md, and tasks.md (with embedded tests)
 ```
 
 ### What Gets Created
 
-#### Living Docs (Source of Truth) ✅
+#### Strategy Docs (Optional, High-Level) ⚠️
 ```
-.specweave/docs/
-├── internal/
-│   ├── strategy/
-│   │   └── {module}/                    # ← PM Agent creates this
-│   │       ├── overview.md               # Product vision, problem statement
-│   │       ├── requirements.md           # Complete FR/NFR (technology-agnostic)
-│   │       ├── user-stories.md           # All user stories (US1, US2, ...)
-│   │       └── success-criteria.md       # KPIs, business metrics
-│   │
-│   └── architecture/
-│       ├── system-design.md              # ← Architect updates this
-│       ├── adr/                          # ← Architect creates ADRs
-│       │   ├── ####-websocket-vs-polling.md
-│       │   ├── ####-database-choice.md
-│       │   └── ####-deployment-platform.md
-│       ├── diagrams/                     # ← Architect creates diagrams
-│       │   └── {module}/
-│       │       ├── system-context.mmd    # C4 Level 1
-│       │       └── system-container.mmd  # C4 Level 2
-│       └── data-models/
-│           └── {module}-schema.sql
+.specweave/docs/internal/strategy/
+└── {module}/                        # ← PM Agent (only if NEW module)
+    ├── overview.md                  # High-level product vision, market opportunity
+    └── business-case.md             # (optional) ROI, competitive analysis
+
+❌ NO requirements.md (goes in spec.md)
+❌ NO user-stories.md (goes in spec.md)
+❌ NO success-criteria.md (goes in spec.md)
 ```
 
-#### Increment Files (Summary) ✅
+#### Architecture Docs (Living Documentation) ✅
+```
+.specweave/docs/internal/architecture/
+├── system-design.md              # ← Architect updates this
+├── adr/                          # ← Architect creates ADRs
+│   ├── ####-websocket-vs-polling.md
+│   ├── ####-database-choice.md
+│   └── ####-deployment-platform.md
+├── diagrams/                     # ← Architect creates diagrams
+│   └── {module}/
+│       ├── system-context.mmd    # C4 Level 1
+│       └── system-container.mmd  # C4 Level 2
+└── data-models/
+    └── {module}-schema.sql
+```
+
+#### Increment Files (Source of Truth for Requirements) ✅
 ```
 .specweave/increments/0001-feature-name/
-├── spec.md                 # ← PM Agent (< 250 lines, references strategy docs)
-├── plan.md                 # ← Architect Agent (< 500 lines, references architecture docs)
-├── tasks.md                # ← Tech Lead Agent (generated later)
-├── tests.md                # ← QA Agent (generated later)
+├── spec.md                 # ← PM Agent (COMPLETE requirements, no line limit)
+│                           #    Contains: US-001+, AC-*, FR-*, NFR-*, success criteria
+├── plan.md                 # ← Architect Agent (technical design, references ADRs)
+├── tasks.md                # ← test-aware-planner Agent (tasks with embedded test plans)
+│                           #    v0.7.0+: Tests embedded in each task (BDD format)
+│                           #    Each task includes: Test Plan, Given/When/Then, test files
 └── context-manifest.yaml   # ← increment-planner creates
 ```
+
+**v0.7.0 Architecture Pivot**: tests.md eliminated, tests are now embedded directly in tasks.md
 
 ---
 
@@ -184,22 +243,43 @@ STEP 4: Validate Living Docs
 
 Before completing feature planning, verify:
 
-**Living Docs Created**:
-- [ ] `.specweave/docs/internal/strategy/{module}/requirements.md` exists
-- [ ] `.specweave/docs/internal/architecture/adr/` has ≥3 ADRs
-- [ ] `requirements.md` is technology-agnostic (no PostgreSQL, WebSocket, etc.)
-- [ ] ADRs follow template (Context, Decision, Alternatives, Consequences)
+**Strategy Docs (Optional)**:
+- [ ] If created, `.specweave/docs/internal/strategy/{module}/overview.md` is high-level only
+- [ ] No detailed user stories in strategy docs (US-001, etc.)
+- [ ] No detailed requirements in strategy docs (FR-001, NFR-001, etc.)
+- [ ] Strategy docs provide business context only
 
-**Increment Files Reference Living Docs**:
-- [ ] `spec.md` has links to `../../docs/internal/strategy/{module}/`
-- [ ] `plan.md` has links to `../../docs/internal/architecture/adr/`
-- [ ] `spec.md` is < 250 lines (summary only)
-- [ ] `plan.md` is < 500 lines (summary only)
+**Architecture Docs (Mandatory)**:
+- [ ] `.specweave/docs/internal/architecture/adr/` has ≥3 ADRs
+- [ ] ADRs follow template (Context, Decision, Alternatives, Consequences)
+- [ ] Diagrams created for module (system-context, system-container)
+
+**Increment spec.md (Mandatory)**:
+- [ ] `spec.md` contains ALL user stories (US-001, US-002, etc.) with full details
+- [ ] `spec.md` contains ALL acceptance criteria (AC-US1-01, etc.)
+- [ ] `spec.md` contains ALL requirements (FR-001, NFR-001, etc.)
+- [ ] `spec.md` contains success criteria (metrics, KPIs)
+- [ ] `spec.md` may reference `../../docs/internal/strategy/{module}/overview.md` for context
+- [ ] No line limit on spec.md (be thorough!)
+
+**Increment plan.md (Mandatory)**:
+- [ ] `plan.md` references architecture docs (`../../docs/internal/architecture/adr/`)
+- [ ] `plan.md` contains technical implementation details
+
+**Increment tasks.md (Mandatory, v0.7.0+)**:
+- [ ] `tasks.md` contains tasks with embedded test plans (NO separate tests.md)
+- [ ] Each testable task has Test Plan (Given/When/Then)
+- [ ] Each testable task has Test Cases (unit/integration/E2E)
+- [ ] Coverage targets specified (80-90% overall)
+- [ ] ALL AC-IDs from spec.md are covered by tasks
+- [ ] Non-testable tasks have Validation section
 
 **Agents Followed Process**:
 - [ ] PM Agent scanned existing strategy docs before creating new ones
 - [ ] Architect Agent read PM's strategy docs before creating architecture
 - [ ] Architect created ADRs for ALL technical decisions
+- [ ] test-aware-planner Agent read spec.md and plan.md before creating tasks.md
+- [ ] test-aware-planner covered ALL AC-IDs with tasks
 
 ---
 
@@ -275,10 +355,11 @@ Generate the complete feature directory with all required files:
 .specweave/increments/####-short-name/
 ├── spec.md                 # Feature specification (WHAT and WHY)
 ├── plan.md                 # Implementation plan (HOW)
-├── tasks.md                # Executable tasks (STEPS)
-├── tests.md                # Test strategy and cases
+├── tasks.md                # Executable tasks (STEPS) with embedded test plans (v0.7.0+)
 └── context-manifest.yaml   # Context loading specification
 ```
+
+**v0.7.0 Change**: tests.md eliminated - tests are now embedded in each task in tasks.md
 
 ### Step 5: Generate spec.md
 
@@ -483,7 +564,7 @@ Continue with plan.md generation? [Y/n]
 ```
 
 ## Testing Strategy
-[High-level testing approach, see tests.md for details]
+[High-level testing approach - tests embedded in tasks.md (v0.7.0+)]
 
 ## Deployment Considerations
 [Infrastructure, environment, rollout]
@@ -596,97 +677,67 @@ T051 depends on T050 (integration must pass first)
    - Performance-critical algorithms
    - Novel problem-solving required
 
-### Step 9: Generate tests.md
+### Step 9: Embed Tests in tasks.md (v0.7.0+ Architecture)
 
-**Purpose**: Define comprehensive testing strategy and test cases.
+**Purpose**: Ensure every task includes comprehensive test plans directly in tasks.md.
 
-**Structure**:
+**v0.7.0 Architecture Pivot**: tests.md eliminated. Tests are now embedded in each task for:
+- ✅ Closer proximity to implementation (no sync issues)
+- ✅ Bidirectional AC↔Task↔Test linking
+- ✅ Test-first development (tests defined before implementation)
+- ✅ Clear traceability (each task knows its tests)
+
+**Task Structure with Embedded Tests**:
 ```markdown
-# Test Strategy: [Feature Title]
+### T-001: Implement login API endpoint
 
-## Test Philosophy
+**Description**: Create REST API endpoint for user authentication
 
-Follow SpecWeave Constitution Article III: Test-First Development
-- Tests written before implementation
-- Tests must fail initially (red-green-refactor)
-- Integration tests with real environments
+**References**: AC-US1-01, AC-US1-02
 
-## Test Categories
+**Implementation Details**:
+- Validate email format
+- Check password against bcrypt hash
+- Generate JWT token
+- Return 401 for invalid credentials
 
-### Unit Tests
-[Component-level tests]
+**Test Plan**:
+- **File**: `tests/unit/auth-service.test.ts`
+- **Tests**:
+  - **TC-001**: Valid credentials
+    - Given valid email and password
+    - When POST /api/auth/login
+    - Then return 200 with JWT token
+  - **TC-002**: Invalid email
+    - Given malformed email
+    - When POST /api/auth/login
+    - Then return 401 with error message
+  - **TC-003**: Wrong password
+    - Given correct email, wrong password
+    - When POST /api/auth/login
+    - Then return 401, no details leaked
 
-### Integration Tests
-[Module integration tests]
-
-### E2E Tests
-[End-to-end user flows]
-
-### Performance Tests
-[Load, stress, scalability tests]
-
-## Test Cases
-
-### TC-001: [Test Name]
-**Type**: Unit | Integration | E2E
-**Priority**: P1 | P2 | P3
-**User Story**: US1
-
-**Scenario**:
-- Given [precondition]
-- When [action]
-- Then [expected outcome]
-
-**Test Data**:
-[Sample inputs]
-
-**Expected Results**:
-[Specific, measurable outcomes]
-
-### TC-002: [Test Name]
-...
-
-## Test Coverage Targets
-
-- Unit test coverage: >80%
-- Integration test coverage: Critical paths
-- E2E coverage: All P1 user stories
-
-## Testing Tools
-
-- Unit: [Framework]
-- Integration: [Framework]
-- E2E: [Framework]
-
-## Test Environments
-
-- Local: [Setup]
-- CI/CD: [Pipeline]
-- Staging: [Environment]
-
-## Regression Testing
-
-For brownfield modifications:
-1. Document existing behavior
-2. Create tests for current functionality
-3. User validation of tests
-4. Implement changes
-5. Verify regression tests still pass
-
-## Success Criteria
-
-- [ ] All P1 tests passing
-- [ ] Coverage targets met
-- [ ] Performance tests pass
-- [ ] No regressions detected
+**Dependencies**: None
+**Estimated Effort**: 4 hours
+**Status**: [ ] Not Started
 ```
 
-**Key Principles**:
-- Test-first philosophy
-- Comprehensive coverage (unit, integration, E2E)
-- Clear test cases with Given-When-Then
-- Regression prevention for brownfield
-- Measurable success criteria
+**Key Features**:
+- **References**: Links to acceptance criteria (bidirectional traceability)
+- **Test Plan**: Specific test file and test functions
+- **BDD Format**: Given/When/Then for clarity
+- **Coverage**: Each testable task MUST have test plan
+
+**test-aware-planner Agent**:
+- Generates tasks.md with embedded tests
+- Ensures 80%+ coverage of testable tasks
+- Marks non-testable tasks (documentation, config)
+- Uses BDD format throughout
+
+**Validation**:
+- Use `/validate-coverage` to check AC and task coverage
+- Target: 80-90% coverage (not 100% - diminishing returns)
+- Integration with `/done` command (runs validation before completion)
 
 ### Step 10: Generate context-manifest.yaml
 
