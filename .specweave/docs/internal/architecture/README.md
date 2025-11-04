@@ -1,16 +1,22 @@
-# Architecture Documentation - The "What"
+# Architecture Documentation - The "How"
 
 **Purpose**: Define the system design, technical decisions, and data models.
+
+**Last Updated**: 2025-11-04
+
+---
 
 ## What Goes Here
 
 - **HLD (High-Level Design)** - System overview, component diagrams, data flow (C4 Levels 1-2)
 - **LLD (Low-Level Design)** - Detailed component design, internal structure (C4 Level 3)
 - **ADR (Architecture Decision Records)** - Technical decisions with rationale
-- **RFC (Request for Comments)** - API designs, schema proposals
+- **Diagrams** - Mermaid diagrams, SVGs (C4 context, container, component, sequence)
 - **Data Models** - Database schemas, entity relationships
 - **Integration Maps** - How systems communicate
 - **Security Architecture** - Security model, authentication, authorization
+
+**Note**: RFCs (Request for Comments) are now in a separate top-level folder: `../rfc/`
 
 ## C4 Model Adoption
 
@@ -36,14 +42,32 @@ SpecWeave uses the **C4 model** for architecture documentation:
 
 **Example**: `0001-adopt-nextjs.md`, `0002-use-prisma.md`
 
-### `/rfc/` - Request for Comments
-**Format**: `0001-feature-title.md`, `0002-feature-title.md`, etc.
+**See**: [adr/README.md](adr/README.md)
 
-**Purpose**: Propose API designs, schema changes, major features for review.
+### `/diagrams/` - Architecture Diagrams
+**Format**: `{page}.{type}.mmd` (Mermaid source), `{page}.{type}.svg` (rendered)
 
-**Template**: See `templates/docs/rfc-template.md`
+**Purpose**: Visual representation of architecture using C4 model diagrams
 
-**Example**: `0001-auth-api-design.md`, `0002-payment-webhook-schema.md`
+**Types**: `context`, `sequence`, `flow`, `entity`, `deployment`
+
+**Example**: `hld-system.context.mmd`, `auth-flow.sequence.mmd`
+
+**See**: [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md)
+
+---
+
+## RFCs (Request for Comments)
+
+**Note**: RFCs have been moved to a separate top-level folder for better organization.
+
+**Location**: `../rfc/`
+
+**Purpose**: Detailed feature specifications with user stories, acceptance criteria, and implementation plans
+
+**When to Reference**: Link to RFCs from HLD/LLD when implementing features described in RFCs
+
+**See**: [RFC README](../rfc/README.md)
 
 ## Diagram Conventions ✨
 
@@ -239,12 +263,16 @@ cp templates/docs/adr-template.md docs/internal/architecture/adr/0001-decision-t
 ```
 
 ### To create an RFC:
+**Note**: RFCs are now in `../rfc/` (top-level folder)
+
 ```bash
 # Find next number
-ls docs/internal/architecture/rfc/ | grep -E '^[0-9]+' | tail -1
+ls docs/internal/rfc/ | grep -E '^rfc-[0-9]+' | tail -1
 # Create new RFC with next number
-cp templates/docs/rfc-template.md docs/internal/architecture/rfc/0001-feature-title.md
+cp templates/docs/rfc-template.md docs/internal/rfc/rfc-0001-feature-title.md
 ```
+
+**See**: [RFC README](../rfc/README.md) for complete RFC creation guide
 
 ## Index of Architecture Documents
 
@@ -258,7 +286,9 @@ cp templates/docs/rfc-template.md docs/internal/architecture/rfc/0001-feature-ti
 - (None yet - create your first ADR!)
 
 ### RFCs
-- (None yet - create your first RFC!)
+**Note**: RFCs moved to `../rfc/` folder
+
+See [RFC Index](../rfc/README.md)
 
 ## Cross-Links
 
@@ -280,10 +310,13 @@ PRD (Why/What) → HLD (How - System) → LLD (How - Component) → Code (Implem
 
 ## Related Documentation
 
-- [Strategy Documentation](../strategy/README.md) - Links to PRDs
-- [Delivery Documentation](../delivery/README.md) - Links to roadmap, release plans
+- [Internal Docs Overview](../README.md) - Six core folders overview
+- [Strategy Documentation](../strategy/README.md) - Business case, PRDs
+- [RFC Documentation](../rfc/README.md) - Feature specifications (moved from architecture/)
+- [Delivery Documentation](../delivery/README.md) - Build & release processes
+- [Operations Documentation](../operations/README.md) - Production runbooks
+- [Governance Documentation](../governance/README.md) - Security, compliance
 - [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md) - C4 diagram conventions and naming
 - [HLD Template](../../../templates/docs/hld-template.md) - High-Level Design template
 - [LLD Template](../../../templates/docs/lld-template.md) - Low-Level Design template
 - [ADR Template](../../../templates/docs/adr-template.md) - Architecture Decision Record template
-- [RFC Template](../../../templates/docs/rfc-template.md) - Request for Comments template

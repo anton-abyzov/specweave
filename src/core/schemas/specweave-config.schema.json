@@ -77,6 +77,74 @@
       "enum": ["en", "ru", "es", "zh", "de", "fr", "ja", "ko", "pt"],
       "default": "en"
     },
+    "limits": {
+      "type": "object",
+      "description": "Work-in-progress (WIP) limits for increment types",
+      "properties": {
+        "feature": {
+          "type": ["number", "null"],
+          "description": "Max active feature increments (null = unlimited)",
+          "minimum": 1,
+          "default": 2
+        },
+        "hotfix": {
+          "type": ["number", "null"],
+          "description": "Max active hotfix increments (null = unlimited)",
+          "minimum": 1,
+          "default": null
+        },
+        "bug": {
+          "type": ["number", "null"],
+          "description": "Max active bug increments (null = unlimited)",
+          "minimum": 1,
+          "default": null
+        },
+        "change-request": {
+          "type": ["number", "null"],
+          "description": "Max active change-request increments (null = unlimited)",
+          "minimum": 1,
+          "default": 2
+        },
+        "refactor": {
+          "type": ["number", "null"],
+          "description": "Max active refactor increments (null = unlimited)",
+          "minimum": 1,
+          "default": 1
+        },
+        "experiment": {
+          "type": ["number", "null"],
+          "description": "Max active experiment increments (null = unlimited)",
+          "minimum": 1,
+          "default": null
+        },
+        "experimentAutoAbandonDays": {
+          "type": "number",
+          "description": "Auto-abandon experiments after N days of inactivity",
+          "minimum": 1,
+          "default": 14
+        },
+        "staleness": {
+          "type": "object",
+          "description": "Staleness warning thresholds (in days)",
+          "properties": {
+            "paused": {
+              "type": "number",
+              "description": "Warn if paused for more than N days",
+              "minimum": 1,
+              "default": 7
+            },
+            "active": {
+              "type": "number",
+              "description": "Warn if active for more than N days",
+              "minimum": 1,
+              "default": 30
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "translation": {
       "type": "object",
       "description": "Translation settings for multilingual support",
@@ -233,6 +301,30 @@
       "project": {
         "name": "russian-project",
         "version": "1.0.0"
+      }
+    },
+    {
+      "project": {
+        "name": "enterprise-project",
+        "version": "2.0.0"
+      },
+      "limits": {
+        "feature": 5,
+        "hotfix": null,
+        "bug": null,
+        "change-request": 3,
+        "refactor": 2,
+        "experiment": 10,
+        "experimentAutoAbandonDays": 21,
+        "staleness": {
+          "paused": 14,
+          "active": 60
+        }
+      },
+      "plugins": {
+        "enabled": [
+          "specweave-github"
+        ]
       }
     }
   ]
