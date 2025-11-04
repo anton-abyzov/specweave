@@ -1,36 +1,47 @@
-# ADR-0007: 4-Level Testing Strategy
+# ADR-0007: Test-Aware Planning Strategy (v0.7.0+)
 
-**Status**: Accepted  
-**Date**: 2025-01-21  
-**Deciders**: Core Team  
+**Status**: Accepted (Updated v0.7.0)
+**Date**: 2025-01-21 (Updated: 2025-11-04)
+**Deciders**: Core Team
 
 ## Context
 
 Need comprehensive testing that maintains traceability from business requirements to automated tests.
 
-Challenge: How to organize tests across different levels?
+Challenge: How to organize tests across different levels while avoiding duplication?
 
-## Decision
+## Decision (v0.7.0 Update)
 
-**4-Level Test Strategy** with full traceability
+**Embedded Test Strategy** with AC-ID traceability (tests in tasks.md, not separate tests.md)
 
 ### Level 1: Specification Acceptance Criteria (WHAT)
-**Location**: `.specweave/docs/internal/strategy/{module}/spec.md`
-**Format**: Markdown with TC-0001 IDs
+**Location**: `.specweave/docs/internal/specs/{module}/spec.md` OR `.specweave/increments/####/spec.md`
+**Format**: Markdown with AC-ID format (AC-US1-01, AC-US2-03)
 **Purpose**: Business validation
 
 ```markdown
-- [ ] **TC-0001**: Valid credentials → redirect to dashboard
-- [ ] **TC-0002**: Invalid password → error message shown
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Valid credentials → redirect to dashboard (P1, testable)
+- [ ] **AC-US1-02**: Invalid password → error message shown (P1, testable)
 ```
 
-### Level 2: Feature Test Strategy (HOW)
-**Location**: `.specweave/increments/####/tests.md`
-**Format**: Test coverage matrix
-**Purpose**: Map TC IDs to implementations
+### Level 2: Feature Test Strategy (HOW) - EMBEDDED IN TASKS.MD
+**Location**: `.specweave/increments/####/tasks.md`
+**Format**: BDD test plans embedded per task
+**Purpose**: Map AC-IDs to test implementations
 
 ```markdown
-| TC-0001 | Valid login | E2E | tests/e2e/login.spec.ts | P1 |
+## T-001: Implement Authentication Service
+
+**AC**: AC-US1-01, AC-US1-02
+
+**Test Plan** (BDD format):
+- **Given** user with valid credentials → **When** login → **Then** receive JWT token
+
+**Test Cases**:
+- Unit (auth.test.ts): validLogin, invalidPassword → 90% coverage
+- Integration (auth-flow.test.ts): loginEndpoint → 85% coverage
+- **Overall: 87% coverage**
 ```
 
 ### Level 3: Skill Test Cases (VALIDATE)
@@ -59,13 +70,16 @@ test('TC-0001: Valid Login Flow', async ({ page }) => {
 });
 ```
 
-## Traceability
+## Traceability (v0.7.0+)
 
-**TC-0001** appears at ALL levels:
-1. Spec → Acceptance criteria
-2. Feature → Test strategy
-3. Skill → Test case YAML  
-4. Code → E2E test
+**AC-IDs** (e.g., AC-US1-01) appear at ALL levels:
+1. Spec → Acceptance criteria (AC-US1-01, AC-US1-02)
+2. Tasks → Embedded test plans (references AC-IDs)
+3. Skill → Test case YAML
+4. Code → E2E test (references AC-IDs in test names)
+
+**Old Format (pre-v0.7.0)**: TC-0001 IDs in separate tests.md
+**New Format (v0.7.0+)**: AC-IDs in spec.md → embedded tests in tasks.md
 
 ## E2E Truth-Telling Requirement
 
@@ -80,16 +94,24 @@ Test-Driven Development available via `tdd-guide` skill but NOT enforced.
 
 ## Consequences
 
-### Positive
-- ✅ Complete traceability
+### Positive (v0.7.0 Improvements)
+- ✅ Complete traceability (AC-IDs from spec → tasks → code)
+- ✅ No duplication (tests in tasks.md, not separate file)
+- ✅ BDD format (Given/When/Then - clear intent)
+- ✅ Single source of truth (tasks.md)
+- ✅ Per-task coverage targets (realistic 80-90%)
 - ✅ Failed test → Business impact
-- ✅ 4 levels of validation
-- ✅ TC IDs link requirements → tests
 
 ### Negative
 - ❌ More complex than simple testing
-- ❌ Must maintain TC IDs
+- ❌ Must maintain AC-IDs
 - ❌ Requires discipline
+
+### Migration from tests.md
+**If you have increments with tests.md** (pre-v0.7.0):
+- Old increments continue to work (backward compatible)
+- New increments use tasks.md format only
+- Recommended: Migrate old increments by embedding tests into tasks.md
 
 ## Metrics
 

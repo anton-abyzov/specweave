@@ -67,16 +67,6 @@ export function checkIncrementLimits(type: IncrementType): LimitCheckResult {
   // Get limit for this type
   const limit = TYPE_LIMITS[type];
 
-  // If unlimited, no check needed
-  if (limit === null) {
-    return {
-      exceeded: false,
-      current: 0,
-      limit: null,
-      severity: 'info'
-    };
-  }
-
   // Get active increments of this type (not paused, not completed, not abandoned)
   const allIncrements = MetadataManager.getAll();
   const activeOfType = allIncrements.filter(
@@ -84,6 +74,17 @@ export function checkIncrementLimits(type: IncrementType): LimitCheckResult {
   );
 
   const current = activeOfType.length;
+
+  // If unlimited, no limit enforcement but still report current count
+  if (limit === null) {
+    return {
+      exceeded: false,
+      current,
+      limit: null,
+      severity: 'info'
+    };
+  }
+
   const exceeded = current >= limit;
 
   // Build result

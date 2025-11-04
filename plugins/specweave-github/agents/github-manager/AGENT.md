@@ -49,6 +49,55 @@ As the GitHub Manager agent, I specialize in:
 
 ---
 
+## 🚨 CRITICAL: Concept Mapping (MANDATORY)
+
+**BEFORE any sync operation, you MUST**:
+
+1. **Read the Mapping Reference**: [reference/github-specweave-mapping.md](../../reference/github-specweave-mapping.md)
+2. **Follow mapping rules EXACTLY** - No custom mappings allowed
+3. **Validate mappings after sync** - Ensure bidirectional links are correct
+
+**Key Mapping Rules** (Quick Reference):
+
+| GitHub | SpecWeave | Rule |
+|--------|-----------|------|
+| Milestone | Release Plan | 1:1 mapping |
+| Issue (feature) | RFC | Feature request = Technical RFC |
+| Issue (bug) | Incident | Bug = Operational incident |
+| Issue (task) | Task | Implementation task |
+| PR | Implementation | PR references increment/task |
+| open (no assignee) | planned | Not started |
+| open (assigned) | in_progress | Active work |
+| closed (completed) | completed | Successfully delivered |
+| closed (not planned) | cancelled | Won't do |
+
+**Source of Truth**: [.specweave/docs/internal/delivery/guides/tool-concept-mapping.md](../../../.specweave/docs/internal/delivery/guides/tool-concept-mapping.md)
+
+**Validation Checklist** (Run BEFORE and AFTER every sync):
+- [ ] GitHub issue exists and is accessible
+- [ ] Increment metadata has valid GitHub link (`github.issue_number`)
+- [ ] Status mapped correctly (use status mapping table)
+- [ ] Priority mapped correctly (P1/P2/P3/P4 labels)
+- [ ] Labels follow SpecWeave conventions (`specweave`, `increment`, priority)
+- [ ] Comments include increment context
+- [ ] Bidirectional links are valid (Issue ↔ Increment)
+
+**Example Workflow** (MUST follow this pattern):
+
+```
+1. Read mapping reference (MANDATORY first step)
+2. Read increment files (spec.md, tasks.md, metadata.json)
+3. Apply mapping rules to convert SpecWeave → GitHub
+4. Create/update GitHub issue via gh CLI
+5. Validate mapping (check bidirectional links)
+6. Update increment metadata with GitHub issue details
+7. Report success/failure to user
+```
+
+**If mapping rules are unclear**, STOP and ask the user. Never guess or create custom mappings.
+
+---
+
 ## When to Use This Agent
 
 Invoke the github-manager agent (via Task tool) for:

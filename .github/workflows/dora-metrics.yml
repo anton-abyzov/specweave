@@ -1,0 +1,84 @@
+name: DORA Metrics
+
+on:
+  # Run daily at 06:00 UTC
+  schedule:
+    - cron: '0 6 * * *'
+
+  # Allow manual triggers
+  workflow_dispatch:
+
+jobs:
+  calculate-metrics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Calculate DORA metrics
+        run: npm run metrics:dora
+        env:
+          # Safe: Using GitHub-provided secrets and metadata (not user input)
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Commit metrics JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metrics/dora-latest.json
+          git diff --staged --quiet || git commit -m "chore: update DORA metrics [skip ci]"
+          git push
+        continue-on-error: true
+
+      - name: Create error issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          # Safe: actions/github-script handles escaping automatically
+          # No user input used - only GitHub metadata
+          script: |
+            const title = 'DORA Metrics Workflow Failed';
+            const body = `
+              ## DORA Metrics Calculation Error
+
+              **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              **Timestamp**: ${new Date().toISOString()}
+              **Branch**: ${{ github.ref }}
+
+              ### Error Details
+
+              The DORA metrics calculation workflow failed. Please check the workflow logs for details.
+
+              ### Possible Causes
+
+              - GitHub API rate limit exceeded
+              - Invalid GITHUB_TOKEN
+              - Missing dependencies
+              - Calculation error in metrics code
+
+              ### Next Steps
+
+              1. Review workflow logs
+              2. Check GitHub API rate limits
+              3. Re-run workflow manually if transient error
+              4. Fix calculation code if persistent error
+            `;
+
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['dora-metrics-error', 'automated']
+            });

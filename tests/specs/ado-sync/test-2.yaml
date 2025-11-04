@@ -1,8 +1,0 @@
----
-name: "Ask for Area Path"
-description: "Tests if ado-sync asks for Area Path when exporting"
-input:
-  prompt: "Export to ADO"
-expected_output:
-  area_path_prompt: true
----

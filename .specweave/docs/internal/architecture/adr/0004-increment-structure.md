@@ -15,14 +15,13 @@ Need organized way to manage features/increments without:
 
 **Auto-Numbered Increments**: `####-descriptive-name`
 
-**Structure**:
+**Structure** (v0.7.0+):
 ```
 .specweave/increments/
 ├── 0001-core-framework/
 │   ├── spec.md              # WHAT & WHY (< 250 lines)
-│   ├── plan.md              # HOW (< 500 lines)
-│   ├── tasks.md             # Implementation steps
-│   ├── tests.md             # Test strategy
+│   ├── plan.md              # HOW + Test Strategy (< 500 lines)
+│   ├── tasks.md             # Implementation steps + Embedded tests (BDD)
 │   ├── context-manifest.yaml
 │   ├── logs/
 │   ├── scripts/
@@ -30,6 +29,8 @@ Need organized way to manage features/increments without:
 ├── 0002-diagram-agents/
 └── 0003-jira-integration/
 ```
+
+**Note**: Tests are now embedded in tasks.md (v0.7.0+) instead of separate tests.md file.
 
 **WIP Limits**:
 - Framework development: 2-3 in progress

@@ -34,10 +34,9 @@ Professional planning with slash commands and multi-agent coordination:
 ```bash
 /specweave:inc "user authentication"
 # PM, Architect, QA agents create:
-# ✅ spec.md (requirements)
-# ✅ plan.md (architecture)
-# ✅ tasks.md (implementation)
-# ✅ tests.md (test strategy)
+# ✅ spec.md (requirements with AC-IDs)
+# ✅ plan.md (architecture + test strategy)
+# ✅ tasks.md with embedded tests (v0.7.0+)
 
 /specweave:do
 # Implement with hooks auto-updating docs
@@ -59,10 +58,9 @@ Professional planning with slash commands and multi-agent coordination:
 ```
 .specweave/increments/
 ├── 0001-user-authentication/
-│   ├── spec.md              # What was planned
-│   ├── plan.md              # How it was built
-│   ├── tasks.md             # What was done
-│   ├── tests.md             # How it was validated
+│   ├── spec.md              # What was planned (AC-IDs)
+│   ├── plan.md              # How it was built + test strategy
+│   ├── tasks.md             # What was done + embedded tests (v0.7.0+)
 │   └── logs/                # Execution history
 ├── 0002-oauth-integration/  # Extends/modifies 0001
 └── 0003-password-reset/     # Related feature
@@ -168,15 +166,17 @@ User: "Create authentication system"
 
 ## 🧪 Test-Validated Development
 
-### 4-Level Testing Strategy
+### Test-Aware Planning (v0.7.0+)
 
-1. **Specification Acceptance Criteria** (TC-0001 format)
-   - Business-level test cases in specifications
+1. **Specification Acceptance Criteria** (AC-ID format: AC-US1-01)
+   - Business-level acceptance criteria in spec.md
    - Technology-agnostic validation
+   - Linked to user stories
 
-2. **Feature Test Strategy** (tests.md)
-   - Maps TC-0001 to implementations
-   - Defines test types (E2E, Unit, Integration)
+2. **Embedded Test Plans** (tasks.md)
+   - BDD format (Given/When/Then) per task
+   - Maps AC-IDs to test implementations
+   - Coverage targets (80-90% per task)
 
 3. **Skill Test Cases** (YAML-based)
    - Minimum 3 tests per skill
@@ -250,10 +250,9 @@ SpecWeave detects your tech stack from:
 \`\`\`
 .specweave/increments/
 ├── 0001-user-authentication/
-│   ├── spec.md              # What and Why
-│   ├── plan.md              # How
-│   ├── tasks.md             # Checklist
-│   ├── tests.md             # Test strategy
+│   ├── spec.md              # What and Why (with AC-IDs)
+│   ├── plan.md              # How (architecture + test strategy)
+│   ├── tasks.md             # Checklist + embedded tests (v0.7.0+)
 │   ├── logs/                # Execution logs
 │   ├── scripts/             # Helper scripts
 │   └── reports/             # Completion reports

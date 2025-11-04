@@ -316,7 +316,7 @@ Until hooks are fully automated, **YOU MUST**:
 ### Core vs. Plugin
 
 **Core Framework** (always loaded):
-- 8 core skills (increment-planner, rfc-generator, context-loader, etc.)
+- 8 core skills (increment-planner, spec-generator, context-loader, etc.)
 - 3 core agents (PM, Architect, Tech Lead)
 - 7 core commands (/specweave:inc, /specweave:do, etc.)
 
@@ -487,7 +487,7 @@ I activate when you ask about:
 - **PM agent** - Leading increment creation (auto-invoked by /specweave:inc)
 - **Architect agent** - Designing system architecture
 - **Tech Lead agent** - Code review, best practices
-- **rfc-generator** - Creating detailed technical RFCs
+- **spec-generator** - Creating detailed technical RFCs
 - **context-loader** - Explaining context efficiency
 - **diagrams-architect** - Creating C4/Mermaid diagrams
 

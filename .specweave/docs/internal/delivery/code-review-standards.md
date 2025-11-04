@@ -96,7 +96,7 @@ Brief description of what this PR does.
 ## Related
 - Closes #123
 - Increment: 0007-smart-discipline
-- RFC: RFC-0007
+- Spec: SPEC-0007
 
 ## Screenshots (if UI changes)
 [Add screenshots here]
