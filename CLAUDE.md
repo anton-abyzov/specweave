@@ -1228,23 +1228,16 @@ specweave/
 │   │   │   └── reports/        # ✅ Analysis files
 │   │   └── _backlog/
 │   ├── docs/
-│   │   ├── internal/           # Strategic docs (NEVER published)
-│   │   │   ├── strategy/       # High-level product vision, market analysis (OPTIONAL)
-│   │   │   │   └── {module}/   # Created only for new products/modules
-│   │   │   │       ├── overview.md      # Product vision, market opportunity
-│   │   │   │       └── business-case.md # (optional) ROI, competitive analysis
-│   │   │   │   # ❌ NO user-stories.md (those go in RFC spec.md)
-│   │   │   │   # ❌ NO requirements.md (those go in RFC spec.md)
-│   │   │   ├── rfc/            # ✅ Request for Comments (detailed requirements, SOURCE OF TRUTH)
-│   │   │   │   └── rfc-####-{name}/
-│   │   │   │       └── spec.md  # COMPLETE user stories, AC, FR/NFR (permanent)
-│   │   │   ├── architecture/   # Technical architecture (accepted designs)
-│   │   │   │   ├── adr/        # Architecture Decision Records
-│   │   │   │   ├── diagrams/   # Mermaid + SVG
-│   │   │   │   └── hld-system.md # High-Level Design
-│   │   │   ├── delivery/       # Implementation notes, runbooks
-│   │   │   ├── operations/     # Runbooks, SLOs
-│   │   │   └── governance/     # Security, compliance
+│   │   ├── internal/           # Strategic docs (NEVER published) - 6 core folders
+│   │   │   ├── strategy/       # Business rationale, vision, PRDs, OKRs
+│   │   │   ├── rfc/            # Feature specifications (detailed requirements, project history)
+│   │   │   │   └── rfc-####-{name}.md  # User stories, AC, implementation plans
+│   │   │   ├── architecture/   # Technical design (HLD, LLD, ADR, diagrams)
+│   │   │   │   ├── adr/        # Architecture Decision Records (why we chose X over Y)
+│   │   │   │   └── diagrams/   # Mermaid + SVG (C4 model diagrams)
+│   │   │   ├── delivery/       # Build & release processes (roadmap, DORA, branching)
+│   │   │   ├── operations/     # Production operations (runbooks, SLOs, incidents)
+│   │   │   └── governance/     # Policies (security, compliance, coding standards)
 │   │   └── public/             # User-facing docs (can publish)
 │   │       ├── guides/
 │   │       └── api/
@@ -1316,6 +1309,27 @@ specweave/
 - ✅ They're developer-specific, not shared state
 
 **Enforcement**: `.gitignore` excludes these patterns automatically.
+
+---
+
+## Internal Documentation Structure
+
+**Location**: `.specweave/docs/internal/` - Six core folders for engineering playbook
+
+**Quick Reference**:
+
+| Folder | Purpose | Use When | Examples |
+|--------|---------|----------|----------|
+| **strategy/** | Business rationale (Why?) | Defining business case for features | `prd-user-auth.md` |
+| **rfc/** | Feature specifications (What?) | Detailed requirements with user stories | `rfc-0007-smart-discipline.md` |
+| **architecture/** | Technical design (How?) | System architecture, decisions | `hld-system.md`, `adr/0001-postgres.md` |
+| **delivery/** | Build & release (How we build) | Git workflow, DORA metrics, CI/CD | `branch-strategy.md`, `dora-metrics.md` |
+| **operations/** | Production ops (How we run) | Runbooks, incidents, performance | `runbook-api.md`, `performance-tuning.md` |
+| **governance/** | Policies (Guardrails) | Security, compliance, coding standards | `security-policy.md`, `coding-standards.md` |
+
+**Document Flow**: `PRD → RFC → Architecture → Delivery → Operations`
+
+**See**: [Internal Docs README](.specweave/docs/internal/README.md) for complete guidance
 
 ---
 
