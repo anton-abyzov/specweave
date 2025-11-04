@@ -5,8 +5,8 @@
  * Part of increment 0007: Smart Status Management
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import fs from 'fs-extra';
+import path from 'path';
 import {
   IncrementMetadata,
   IncrementMetadataExtended,
@@ -16,7 +16,7 @@ import {
   isValidTransition,
   isStale,
   shouldAutoAbandon
-} from '../types/increment-metadata';
+} from '../types/increment-metadata.js';
 
 /**
  * Error thrown when metadata operations fail

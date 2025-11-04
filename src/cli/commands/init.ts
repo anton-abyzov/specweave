@@ -416,9 +416,40 @@ export async function initCommand(
 
       if (suggestedPlugins.length > 0) {
         console.log(chalk.cyan(`\n${locale.t('cli', 'init.info.suggestedPlugins')}`));
-        for (const pluginName of suggestedPlugins) {
-          console.log(`   • ${chalk.white(pluginName)}`);
+
+        // Group by confidence (high, medium, low)
+        const highConfidence = detectionResults.filter(r => r.confidence >= 0.7);
+        const mediumConfidence = detectionResults.filter(r => r.confidence >= 0.4 && r.confidence < 0.7);
+        const lowConfidence = detectionResults.filter(r => r.confidence < 0.4);
+
+        if (highConfidence.length > 0) {
+          console.log(chalk.white.bold('\n   Recommended (high confidence):'));
+          for (const result of highConfidence) {
+            console.log(`   ${chalk.green('•')} ${chalk.white(result.pluginName)} ${chalk.gray('- ' + result.reason)}`);
+            if (result.trigger && result.trigger.length > 0) {
+              console.log(`     ${chalk.gray('Signals: ' + result.trigger)}`);
+            }
+          }
         }
+
+        if (mediumConfidence.length > 0) {
+          console.log(chalk.white.bold('\n   Suggested (medium confidence):'));
+          for (const result of mediumConfidence) {
+            console.log(`   ${chalk.yellow('•')} ${chalk.white(result.pluginName)} ${chalk.gray('- ' + result.reason)}`);
+            if (result.trigger && result.trigger.length > 0) {
+              console.log(`     ${chalk.gray('Signals: ' + result.trigger)}`);
+            }
+          }
+        }
+
+        if (lowConfidence.length > 0) {
+          console.log(chalk.white.bold('\n   Optional (low confidence):'));
+          for (const result of lowConfidence) {
+            console.log(`   ${chalk.gray('•')} ${chalk.white(result.pluginName)} ${chalk.gray('- ' + result.reason)}`);
+          }
+        }
+
+        console.log(''); // Blank line before prompt
 
         const { enablePlugins } = await inquirer.prompt([
           {

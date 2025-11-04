@@ -1,7 +1,8 @@
 # RFC-0007: Smart Increment Discipline System
 
-**Status**: Draft
+**Status**: Implemented (v0.7.0)
 **Created**: 2025-11-03
+**Updated**: 2025-11-04
 **Author**: AI Development Team
 **Increment**: 0007-smart-increment-discipline
 
@@ -18,6 +19,8 @@
 - `/specweave:close` (interactive closure with 3 options)
 
 **Intention**: Prevent scope creep, maintain discipline, ensure completion
+
+**CRITICAL CLARIFICATION (v0.7.0)**: The Iron Rule REMAINS ENFORCED. This RFC adds status management (pause/resume/abandon) for handling blocked work WITHIN the sequential discipline, not for bypassing it.
 
 ### Real-World Friction Points
 

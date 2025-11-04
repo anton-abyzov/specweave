@@ -449,89 +449,26 @@ For **emergencies only** (hotfixes, urgent features):
 - ✅ Test-first workflow (TDD supported naturally)
 - ✅ Coverage targets per task (realistic 80-90%, not 100%)
 
-### Complete Workflow Example
+### Quick Workflow Example
 
-**Step 1: Create Increment with PM Agent**
+**Step 1: Create increment** → PM agent generates spec.md with user stories and AC-IDs:
 
 ```bash
-/specweave:inc "Add user authentication"
+/specweave:inc "Add user authentication"  # → generates spec.md with AC-US1-01, AC-US1-02, etc.
 ```
 
-**PM Agent creates** `.specweave/increments/0008-user-authentication/spec.md`:
-
-```markdown
----
-increment: 0008-user-authentication
-created: 2025-11-04
-status: planning
----
-
-# Increment 0008: User Authentication
-
-## User Stories
+**spec.md excerpt** (acceptance criteria with AC-IDs):
 
 ### US1: Basic Login Flow
-
-**As a** user
-**I want to** log in with email and password
-**So that** I can access my account securely
-
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: User can log in with valid email and password
-  - **Priority**: P1
-  - **Testable**: Yes
-
-- [ ] **AC-US1-02**: Invalid credentials show clear error message
-  - **Priority**: P1
-  - **Testable**: Yes
-
-- [ ] **AC-US1-03**: After 5 failed attempts, account locked for 15 minutes
-  - **Priority**: P2
-  - **Testable**: Yes
-
-### US2: Session Management
-
-**As a** user
-**I want to** stay logged in for 7 days
-**So that** I don't have to re-enter credentials constantly
-
-**Acceptance Criteria**:
-- [ ] **AC-US2-01**: Session persists for 7 days with "Remember Me"
-  - **Priority**: P1
-  - **Testable**: Yes
-
-- [ ] **AC-US2-02**: User can log out and session is invalidated
-  - **Priority**: P1
-  - **Testable**: Yes
+- [ ] **AC-US1-01**: User can log in with valid email/password (P1, testable)
+- [ ] **AC-US1-02**: Invalid credentials show error (P1, testable)
+- [ ] **AC-US1-03**: 5 failed attempts lock account 15min (P2, testable)
 ```
 
-**Key Points**:
-- ✅ AC-IDs follow format: `AC-US{story}-{number}`
-- ✅ Each AC has priority (P1/P2/P3)
-- ✅ Each AC marked as testable or not
-- ✅ Clear acceptance criteria (not implementation details)
+**Step 2: Architect creates plan.md** with architecture and test strategy (85% unit, 80% integration, 100% E2E critical path)
 
----
-
-**Step 2: Architect Agent creates** `.specweave/increments/0008-user-authentication/plan.md`:
-
-```markdown
-## Technical Architecture
-
-### Components
-- **Authentication Service** (src/services/auth/)
-- **Session Manager** (src/services/session/)
-- **Login API** (src/api/auth/)
-
-### Test Strategy
-- **Unit Tests**: 85% coverage (service logic, validation)
-- **Integration Tests**: 80% coverage (API endpoints, database)
-- **E2E Tests**: 100% critical path (login flow, session persistence)
-```
-
----
-
-**Step 3: test-aware-planner Agent creates** `.specweave/increments/0008-user-authentication/tasks.md`:
+**Step 3: test-aware-planner generates tasks.md** with embedded tests:
 
 ```markdown
 ---
@@ -543,269 +480,33 @@ coverage_target: 85%
 
 # Tasks for Increment 0008: User Authentication
 
-## T-001: Implement Authentication Service
+## T-001: Implement Authentication Service (FULL EXAMPLE)
 
-**Acceptance Criteria**: AC-US1-01, AC-US1-02, AC-US1-03
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
 
-**Description**: Create authentication service with login validation and rate limiting
-
-**Test Plan**:
-- **Given** a user with valid credentials in the database
-- **When** they attempt to log in with correct email and password
-- **Then** they receive a JWT token and are marked as authenticated
-- **And** their last login timestamp is updated
+**Test Plan** (BDD format):
+- **Given** user with valid credentials → **When** login → **Then** receive JWT token + timestamp update
 
 **Test Cases**:
-1. **Unit**: `tests/unit/services/auth.test.ts`
-   - `testValidLogin()`: Valid credentials return JWT token
-   - `testInvalidPassword()`: Wrong password returns 401 error
-   - `testNonexistentUser()`: Unknown email returns 401 error
-   - `testRateLimiting()`: 6th failed attempt locks account for 15 minutes
-   - **Coverage Target**: 90% (critical security logic)
+- Unit (`auth.test.ts`): validLogin, invalidPassword, nonexistentUser, rateLimiting → 90% coverage
+- Integration (`auth-flow.test.ts`): loginEndpoint, lockedAccount → 85% coverage
+- **Overall: 87% coverage**
 
-2. **Integration**: `tests/integration/auth-flow.test.ts`
-   - `testLoginEndpoint()`: POST /api/auth/login with valid credentials
-   - `testLockedAccount()`: Locked account returns 423 error
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 87%
-
-**Implementation**:
-- [ ] Create `src/services/auth/AuthService.ts`
-- [ ] Implement password hashing (bcrypt)
-- [ ] Implement JWT token generation
-- [ ] Add rate limiting logic (Redis-backed)
-- [ ] Write unit tests (TDD: write tests first!)
-- [ ] Write integration tests
-
-**Dependencies**: None
+**Implementation**: AuthService.ts, password hashing (bcrypt), JWT generation, rate limiting (Redis), TDD tests
 
 ---
 
-## T-002: Implement Session Manager
+## T-002 through T-005 (Abbreviated)
 
-**Acceptance Criteria**: AC-US2-01, AC-US2-02
-
-**Description**: Session persistence with "Remember Me" functionality
-
-**Test Plan**:
-- **Given** a user with "Remember Me" checked
-- **When** they log in successfully
-- **Then** a session cookie is created with 7-day expiration
-- **And** the session is stored in Redis with TTL
-
-**Test Cases**:
-1. **Unit**: `tests/unit/services/session.test.ts`
-   - `testCreateSession()`: Session created with correct TTL
-   - `testRememberMe()`: 7-day expiration for Remember Me
-   - `testShortSession()`: 1-hour expiration without Remember Me
-   - `testLogout()`: Session invalidated on logout
-   - **Coverage Target**: 85%
-
-2. **Integration**: `tests/integration/session-persistence.test.ts`
-   - `testSessionPersistence()`: Session survives server restart
-   - `testExpiredSession()`: Expired session returns 401
-   - **Coverage Target**: 80%
-
-3. **E2E**: `tests/e2e/login.spec.ts`
-   - `testLoginWithRememberMe()`: Full flow from login to 7-day persistence
-   - **Coverage Target**: 100% (critical path)
-
-**Overall Coverage Target**: 85%
-
-**Implementation**:
-- [ ] Create `src/services/session/SessionManager.ts`
-- [ ] Integrate Redis for session storage
-- [ ] Implement session cookie logic
-- [ ] Add expiration handling
-- [ ] Write unit tests (TDD)
-- [ ] Write integration tests
-- [ ] Write E2E test
-
-**Dependencies**: T-001
-
----
-
-## T-003: Create Login API Endpoint
-
-**Acceptance Criteria**: AC-US1-01, AC-US1-02
-
-**Description**: REST API endpoint for login
-
-**Test Plan**:
-- **Given** the authentication service is implemented
-- **When** a client sends POST /api/auth/login with credentials
-- **Then** the endpoint validates, authenticates, and returns a token
-
-**Test Cases**:
-1. **Integration**: `tests/integration/api/auth.test.ts`
-   - `testLoginSuccess()`: Valid login returns 200 + token
-   - `testLoginFailure()`: Invalid credentials return 401
-   - `testMissingFields()`: Missing email/password returns 400
-   - `testRateLimit()`: Excessive requests return 429
-   - **Coverage Target**: 85%
-
-2. **E2E**: `tests/e2e/login.spec.ts`
-   - `testLoginUI()`: Full UI login flow
-   - **Coverage Target**: 100% (critical path)
-
-**Overall Coverage Target**: 85%
-
-**Implementation**:
-- [ ] Create `src/api/auth/login.ts`
-- [ ] Add request validation (Joi/Zod)
-- [ ] Wire up AuthService
-- [ ] Add rate limiting middleware
-- [ ] Write integration tests
-- [ ] Write E2E test
-
-**Dependencies**: T-001, T-002
-
----
-
-## T-004: Update Documentation
-
-**Acceptance Criteria**: None (non-functional)
-
-**Test Plan**: N/A (documentation task)
-
-**Validation**:
-- Manual review: API docs are clear and complete
-- Link checker: All links work
-- Build check: Docusaurus builds without errors
-
-**Implementation**:
-- [ ] Update API documentation (OpenAPI spec)
-- [ ] Add authentication flow diagram
-- [ ] Update user guide with login instructions
-- [ ] Add troubleshooting section
-
-**Dependencies**: T-001, T-002, T-003
-
----
-
-## T-005: Security Audit
-
-**Acceptance Criteria**: AC-US1-03 (rate limiting)
-
-**Test Plan**:
-- **Given** the authentication system is complete
-- **When** a security audit is performed
-- **Then** no critical vulnerabilities are found
-
-**Test Cases**:
-1. **Unit**: `tests/unit/security/auth-security.test.ts`
-   - `testPasswordHashing()`: Passwords are hashed with bcrypt (min rounds: 12)
-   - `testJWTSigning()`: JWT tokens are signed with HS256
-   - `testRateLimitBypass()`: Rate limiting cannot be bypassed
-   - **Coverage Target**: 90%
-
-**Overall Coverage Target**: 90%
-
-**Implementation**:
-- [ ] Run OWASP ZAP scan
-- [ ] Review all TODOs and FIXMEs
-- [ ] Verify password hashing (bcrypt rounds ≥ 12)
-- [ ] Verify JWT signing (strong secret)
-- [ ] Write security tests
-
-**Dependencies**: T-001, T-002, T-003
+- **T-002**: Session Manager (AC-US2-01, AC-US2-02) - session persistence, "Remember Me", 85% coverage, deps: T-001
+- **T-003**: Login API Endpoint (AC-US1-01, AC-US1-02) - REST API, validation, rate limiting, 85% coverage, deps: T-001, T-002
+- **T-004**: Update Documentation - API docs, flow diagram, user guide (validation: manual review, link checker, build check)
+- **T-005**: Security Audit (AC-US1-03) - OWASP scan, password/JWT verification, 90% coverage, deps: T-001, T-002, T-003
 ```
 
-**Key Points**:
-- ✅ Each task has Test Plan (Given/When/Then)
-- ✅ Each task has Test Cases (unit/integration/E2E)
-- ✅ Each test case has coverage target (realistic 80-90%)
-- ✅ Overall coverage target per task
-- ✅ Non-testable tasks use Validation section
-- ✅ AC-IDs are referenced in task descriptions
-- ✅ TDD workflow mode specified in frontmatter
+**Step 4: Validate** → `/specweave:check-tests 0008` shows per-task coverage, AC-ID coverage, missing tests, recommendations
 
----
-
-**Step 4: Validate Test Coverage**
-
-```bash
-/specweave:check-tests 0008
-```
-
-**Output**:
-```
-📊 Test Status Report: 0008-user-authentication
-
-═══════════════════════════════════════════════════════════════
-
-Task Coverage Analysis:
-
-✅ T-001: Implement Authentication Service (6 test cases, 87% coverage)
-   - Unit: tests/unit/services/auth.test.ts
-     • testValidLogin() ✅ (passed)
-     • testInvalidPassword() ✅ (passed)
-     • testNonexistentUser() ✅ (passed)
-     • testRateLimiting() ✅ (passed)
-   - Integration: tests/integration/auth-flow.test.ts
-     • testLoginEndpoint() ✅ (passed)
-     • testLockedAccount() ✅ (passed)
-   Coverage: 87% ✅ (target: 87%)
-
-✅ T-002: Implement Session Manager (6 test cases, 85% coverage)
-   Coverage: 85% ✅ (target: 85%)
-
-⏳ T-003: Create Login API Endpoint (0 test cases, 0% coverage)
-   WARNING: Tests not yet implemented
-   Action: Write tests before implementing endpoint
-
-═══════════════════════════════════════════════════════════════
-
-Overall Coverage: 57% ⚠️  (target: 85%)
-
-Breakdown:
-- Testable tasks: 4/5 (80%)
-- Non-testable tasks: 1/5 (20%)
-- Average coverage (testable): 68% ⚠️
-- Tests passing: 12/12 (100%) ✅
-- Tests not implemented: 8/20 (40%) ⚠️
-
-═══════════════════════════════════════════════════════════════
-
-Acceptance Criteria Coverage:
-
-✅ AC-US1-01: Covered by T-001 (6 tests, 87% coverage)
-✅ AC-US1-02: Covered by T-001, T-003 (8 tests, 85% coverage)
-✅ AC-US1-03: Covered by T-001, T-005 (5 tests, 90% coverage)
-✅ AC-US2-01: Covered by T-002 (6 tests, 85% coverage)
-✅ AC-US2-02: Covered by T-002 (3 tests, 85% coverage)
-
-═══════════════════════════════════════════════════════════════
-
-🎯 Recommendations:
-
-Priority: P1 (blocking issues)
-1. Implement missing tests in T-003 (8 test cases needed)
-2. Increase overall coverage to ≥85%
-
-═══════════════════════════════════════════════════════════════
-
-Summary:
-- Status: ⚠️  NEEDS WORK (coverage below 85%, tests missing)
-- Next: Implement tests for T-003
-- Run: npm test (to re-run all tests)
-```
-
-### AC-ID Format Reference
-
-**Format**: `AC-US{story}-{number}`
-
-**Examples**:
-- `AC-US1-01` - User Story 1, Acceptance Criterion 1
-- `AC-US1-02` - User Story 1, Acceptance Criterion 2
-- `AC-US2-01` - User Story 2, Acceptance Criterion 1
-
-**Benefits**:
-- ✅ **Traceability**: spec.md (AC-IDs) → tasks.md (tasks) → tests (coverage)
-- ✅ **Communication**: "AC-US1-01 is failing" (clear reference)
-- ✅ **Quality**: /specweave:check-tests validates all AC-IDs are tested
-- ✅ **Coverage**: Track which acceptance criteria have test coverage
+**AC-ID Format**: `AC-US{story}-{number}` (e.g., AC-US1-01) enables traceability from spec.md → tasks.md → tests
 
 ### Agent Invocation (increment-planner skill)
 
@@ -1389,16 +1090,15 @@ plugins/                        ← ROOT: All plugins (version controlled)
 
 **Rules**:
 - ✅ `src/` = TypeScript code ONLY (compiled to `dist/`)
-- ✅ ALL skills/agents/commands/hooks = Inside plugins (including core!)
+- ✅ ALL skills/agents/commands/hooks = Inside `plugins/` (including core!)
 - ✅ `plugins/specweave/` = Core framework plugin (always loaded)
-- ✅ `.claude/` = Installed from all enabled plugins
+- ✅ `.claude/` = Plugin settings only (settings.json references marketplace)
 - ❌ NEVER mix `*.ts` and `SKILL.md` in the same directory
-- ❌ NEVER edit files in `.claude/` directly (they get overwritten)
 - ❌ NEVER create new files in project root (use increment folders)
 
 **Key Architectural Principle**:
 - TypeScript code (`*.ts`) goes in `src/` → compiled to `dist/`
-- Claude-native files (`SKILL.md`, `AGENT.md`, `*.md`) go in `plugins/` → copied to `.claude/`
+- Claude-native files (`SKILL.md`, `AGENT.md`, `*.md`) stay in `plugins/` → loaded directly by Claude Code
 - Even "core" framework components are in `plugins/specweave/` (everything is a plugin!)
 - This separation ensures clean builds and prevents mixing compiled code with runtime files
 
@@ -2128,16 +1828,16 @@ npm test -- tests/unit/i18n/translation.test.ts
 ## Troubleshooting
 
 **Skills not activating?**
-1. Check YAML frontmatter in `SKILL.md`
-2. Verify installation: `ls ~/.claude/skills/skill-name/`
+1. Check plugin is installed: `/plugin list --installed`
+2. Verify YAML frontmatter in `plugins/{plugin}/skills/{skill}/SKILL.md`
 3. Restart Claude Code
 4. Check description has clear trigger keywords
 
 **Commands not working?**
-1. Verify file in `.claude/commands/`
-2. Check YAML frontmatter
-3. Restart Claude Code
-4. Check command name matches file name
+1. Check plugin is installed: `/plugin list --installed`
+2. Verify command exists: `plugins/{plugin}/commands/{command}.md`
+3. Check YAML frontmatter
+4. Restart Claude Code
 
 **Tests failing?**
 1. Run `npm run build` first
@@ -2202,18 +1902,17 @@ npm test -- tests/unit/i18n/translation.test.ts
 
 **Build & Test**:
 - `npm run build` - Compile TypeScript
-- `npm test` - Run all unit tests
+- `npm test` - Run unit tests (includes skill tests in `tests/unit/`, `tests/integration/`)
 - `npm run test:e2e` - Run Playwright E2E tests
 - `npm run test:integration` - Run integration tests
-- `npm run install:all` - Sync src/ to .claude/
 
 **File Structure**:
-- Source of truth: `src/`
-- Installed: `.claude/`
+- Source of truth: `src/` (TypeScript) and `plugins/` (skills/agents/commands)
+- Plugin settings: `.claude/settings.json` (marketplace references)
 - Increments: `.specweave/increments/`
-- Internal Docs (strategy, architecture): `.specweave/docs/internal/`
-- Public Docs (user guides): `.specweave/docs/public/` and `docs-site/`
-- Tests: `tests/`
+- Internal Docs: `.specweave/docs/internal/` (strategy, architecture, ADRs)
+- Public Docs: `.specweave/docs/public/` and `docs-site/` (user guides, API docs)
+- Tests: `tests/` (unit, integration, E2E, skill tests)
 
 ---
 

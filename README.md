@@ -11,7 +11,11 @@
 
 ## What is SpecWeave?
 
-SpecWeave is an AI development framework that makes specifications your source of truth. Built for **Claude Code**, it replaces "vibe coding" with precision through automated planning, test-aware workflows, and living documentation.
+SpecWeave is a **disciplined development framework** that acts as your AI tutor, guiding you through structured, incremental software delivery. Built for **Claude Code**, it replaces "vibe coding" with a disciplined approach: complete one thing fully before starting the next.
+
+**The Core Philosophy**: You can't build a stats chart feature when you haven't built the UI components yet. SpecWeave enforces natural dependencies, ensuring you build in the right order and complete each increment before moving forward.
+
+Think of it as **"structured coding with a tutor"** - SpecWeave understands your intent, guides you through the right steps, and helps you not miss anything.
 
 ## Key Features (v0.7.0)
 
@@ -21,12 +25,18 @@ SpecWeave is an AI development framework that makes specifications your source o
 - **Coverage validation** ensures every critical path is tested
 - **BDD format** (Given/When/Then) for clarity
 
+### 🎯 The Iron Rule: Disciplined Progress
+- **Complete before starting**: Cannot start increment N+1 until N is DONE
+- **Natural dependencies**: Build UI before stats charts, foundation before features
+- **Big increments allowed**: Not forcing tiny steps - increments can be substantial
+- **SpecWeave enforces**: Acts as your tutor, preventing chaos and missed steps
+
 ### ⏸️ Smart Status Management
-- **Pause/Resume** increments when blocked or deprioritized
-- **Abandon** obsolete work (preserves history in `_abandoned/`)
+- **Pause when blocked**: Waiting for API keys, design assets, reviews
+- **Resume when ready**: Pick up where you left off with full context
+- **Abandon obsolete work**: Requirements changed, experiment failed
 - **Status tracking** (active, paused, completed, abandoned)
-- **Six increment types**: feature, hotfix, bug (SRE investigation), change-request, refactor, experiment
-- **Type-based limits**: Hotfix/bug unlimited (urgent), features/change-requests max 2 (prevent context switching), refactor max 1 (focus)
+- **NOT for parallel work**: Pause is for blocked work, not working on multiple things
 
 ### 📚 Living Documentation
 - **Auto-updates** after every task via Claude Code hooks
