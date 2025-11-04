@@ -1,0 +1,24 @@
+### T-{task_number}: {task_title}
+
+**User Story**: {user_story}
+**Acceptance Criteria**: {ac_ids}
+**Priority**: {priority}
+**Estimate**: {estimate} hours
+**Status**: [ ] pending
+
+**Test Plan**: N/A ({task_type} task)
+
+**Validation**:
+- {validation1}: {validation1_description}
+- {validation2}: {validation2_description}
+- {validation3}: {validation3_description}
+- {validation4}: {validation4_description} (add more as needed)
+
+**Implementation**:
+1. {step1}
+2. {step2}
+3. {step3}
+4. {step4}
+5. {step5}
+6. Run validation: {validation_command}
+7. Manual review: {review_criteria}

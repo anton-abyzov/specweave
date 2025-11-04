@@ -1,0 +1,11 @@
+---
+increment: {increment_id}
+total_tasks: {total_tasks}
+completed_tasks: 0
+test_mode: {test_mode}
+coverage_target: {coverage_target}%
+---
+
+# Implementation Tasks
+
+{tasks_content}

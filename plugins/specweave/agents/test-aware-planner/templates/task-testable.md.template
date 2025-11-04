@@ -1,0 +1,53 @@
+### T-{task_number}: {task_title}
+
+**User Story**: {user_story}
+**Acceptance Criteria**: {ac_ids}
+**Priority**: {priority}
+**Estimate**: {estimate} hours
+**Status**: [ ] pending
+
+**Test Plan**:
+- **Given** {given_condition}
+- **When** {when_action}
+- **Then** {then_outcome}
+- **And** {and_additional} (optional, remove if not needed)
+
+**Test Cases**:
+1. **Unit**: `{unit_test_path}`
+   - {testFunction1}(): {test1_description}
+   - {testFunction2}(): {test2_description}
+   - {testFunction3}(): {test3_description} (add more as needed)
+   - **Coverage Target**: {unit_coverage}%
+
+2. **Integration**: `{integration_test_path}`
+   - {testIntegration1}(): {integration1_description}
+   - {testIntegration2}(): {integration2_description} (add more as needed)
+   - **Coverage Target**: {integration_coverage}%
+
+3. **E2E**: `{e2e_test_path}` (optional, include only for user-facing features)
+   - {testE2E1}(): {e2e1_description}
+   - **Coverage Target**: 100% (critical path)
+
+**Overall Coverage Target**: {overall_coverage}%
+
+**Implementation**:
+1. {step1}
+2. {step2}
+3. {step3}
+4. {step4}
+5. {step5}
+6. Write unit tests ({unit_test_count} tests)
+7. Run unit tests: `{unit_test_command}` (should pass: {unit_test_count}/{unit_test_count})
+8. Write integration tests ({int_test_count} tests)
+9. Run integration tests: `{int_test_command}` (should pass: {int_test_count}/{int_test_count})
+10. (Optional) Write E2E tests ({e2e_test_count} tests)
+11. (Optional) Run E2E tests: `{e2e_test_command}` (should pass: {e2e_test_count}/{e2e_test_count})
+12. Verify coverage: `npm run coverage` (should be ≥{overall_coverage}%)
+
+**TDD Workflow** (if TDD mode enabled):
+1. 📝 Write all {total_test_count} tests above (should fail)
+2. ❌ Run tests: `npm test` (0/{total_test_count} passing)
+3. ✅ Implement {feature_name} (steps 1-{impl_step_count} from Implementation)
+4. 🟢 Run tests: `npm test` ({total_test_count}/{total_test_count} passing)
+5. ♻️ Refactor if needed (maintain green tests)
+6. ✅ Final check: Coverage ≥{overall_coverage}%
