@@ -12,6 +12,17 @@
 
 ---
 
+## 📊 Engineering Metrics (DORA)
+
+[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://spec-weave.com/docs/metrics)
+[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://spec-weave.com/docs/metrics)
+
+[View detailed metrics dashboard →](https://spec-weave.com/docs/metrics)
+
+---
+
 ## 📖 Full Documentation
 
 **For complete guides, tutorials, and API reference, visit:**
@@ -38,9 +49,9 @@ npm install -g specweave
 specweave init my-project
 cd my-project
 
-# Start building
+# Start building - SpecWeave guides you through the entire workflow
 /inc "User authentication"  # Plan increment
-/do                          # Implement tasks
+/do                          # Implement tasks (auto-pauses if blocked, auto-resumes when ready)
 /done 0001                   # Complete increment
 ```
 
@@ -56,8 +67,8 @@ Embedded test plans in every task with BDD format (Given/When/Then) for clarity
 ### 🎯 Disciplined Progress
 Cannot start increment N+1 until N is DONE - enforces completion before moving forward
 
-### ⏸️ Smart Status Management
-Pause when blocked, resume when ready, abandon obsolete work - all with full context
+### ⏸️ Intelligent Status Management
+Automatically detects when you're blocked (missing API keys, waiting for approval), pauses work with clear context, and resumes when ready - no manual intervention needed
 
 ### 📚 Living Documentation
 Auto-updates after every task via Claude Code hooks - never outdated
@@ -66,14 +77,6 @@ Auto-updates after every task via Claude Code hooks - never outdated
 PM Agent, Architect, test-aware-planner, Quality Judge - specialized AI agents guide you
 
 **[→ Explore All Features](https://spec-weave.com/docs/overview/features)**
-
----
-
-## 📊 Engineering Metrics
-
-SpecWeave tracks **DORA metrics** (Deployment Frequency, Lead Time, Change Failure Rate, MTTR) to measure engineering performance.
-
-**[→ View Live Dashboard](https://spec-weave.com/docs/metrics)**
 
 ---
 
