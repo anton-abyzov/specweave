@@ -1,8 +1,30 @@
 # Implementation Plan: Increment Management v2.0 (0007)
 
 **Feature**: 0007-smart-increment-discipline
-**Status**: Planning
+**Status**: Implementation
 **Created**: 2025-11-03
+**Updated**: 2025-11-04
+
+---
+
+## üö® ARCHITECTURE PIVOT (2025-11-04)
+
+**Decision**: Eliminate tests.md, embed test plans directly in tasks.md
+
+**See**: [ARCHITECTURE-PIVOT.md](./ARCHITECTURE-PIVOT.md) for full rationale
+
+**Impact on this plan**:
+- All references to "tests.md" should be read as "tasks.md (with embedded test plans)"
+- All references to "TC-IDs" should be read as "test function names"
+- test-aware-planner generates ONE file (tasks.md), not two
+- /specweave:check-tests reads embedded test plans from tasks.md
+
+**Key Changes**:
+- ‚úÖ No tests.md file
+- ‚úÖ Test plans embedded in tasks
+- ‚úÖ Simpler agent (one file generation)
+- ‚úÖ Timeline compressed (20-28 hours total, not weeks)
+- ‚úÖ Coverage target: 80-90% (realistic)
 
 ---
 
@@ -25,26 +47,26 @@ Both parts enhance the increment lifecycle - Part 1 improves PLANNING quality, P
 
 ```
 User: "/specweave:inc 'GitHub sync'"
-    ì
+    ÔøΩ
 increment-planner skill (ENHANCED)
-    ì
+    ÔøΩ
 STEP 1: Scan existing docs
-    ì
+    ÔøΩ
 STEP 2: PM Agent (ENHANCED - generates AC-IDs)
        Output: spec.md with AC-US1-01, AC-US1-02, etc.
-    ì
+    ÔøΩ
 STEP 3: Architect Agent
        Output: plan.md
-    ì
+    ÔøΩ
 STEP 4: test-aware-planner Agent (NEW!)
        Input: spec.md (AC-IDs), plan.md
        Output: tests.md (TC-IDs), tasks.md (with test refs)
        Creates bidirectional links
-    ì
+    ÔøΩ
 STEP 5: Validate Test-Task Coupling (NEW!)
        Checks: All tasks have tests, all tests have tasks
        Blocks if validation fails
-    ì
+    ÔøΩ
  Test-aware increment created
 ```
 
@@ -107,7 +129,7 @@ STEP 5: Validate Test-Task Coupling (NEW!)
 
 **File**: `plugins/specweave/agents/test-aware-planner/AGENT.md`
 
-**Purpose**: Generate tasks.md and tests.md TOGETHER with bidirectional linking
+**Purpose**: Generate tasks.md with embedded test plans (NO tests.md file!)
 
 **Agent Prompt Structure**:
 
@@ -132,7 +154,7 @@ You are a specialist in creating test-aware implementation plans. Your role is t
 - Extract implementation approach and file structure
 
 ### 2. Generate tests.md FIRST
-- Map each AC-ID í test cases (TC-IDs)
+- Map each AC-ID ÔøΩ test cases (TC-IDs)
 - Specify test types (unit, integration, E2E, manual)
 - Assign priorities (P1, P2, P3)
 - Use Given/When/Then format for clarity
@@ -195,11 +217,11 @@ You are a specialist in creating test-aware implementation plans. Your role is t
 **Status**: pending
 
 **TDD Workflow**:
-1. =› Write test first: TC-001 ({description})
+1. =ÔøΩ Write test first: TC-001 ({description})
    - File: tests/unit/module.test.ts
    - Expected: L Test fails ({reason})
 2.  Implement: src/module.ts
-3. =‚ Run test: `npm test module`
+3. =ÔøΩ Run test: `npm test module`
    - Expected:  Test passes
 4. {  Refactor if needed
 
@@ -229,8 +251,8 @@ tdd_mode:
   strict: true/false
 ```
 
-- If `enabled: true` í Include TDD Workflow section in tasks
-- If `enabled: false` í Omit TDD Workflow section
+- If `enabled: true` ÔøΩ Include TDD Workflow section in tasks
+- If `enabled: false` ÔøΩ Omit TDD Workflow section
 
 ## Example Output
 
@@ -275,7 +297,7 @@ tdd_mode:
 **tests.md** (UPDATED with bidirectional link):
 ```markdown
 ### TC-001: Load Plugin with Valid Manifest
-**Related Tasks**: T-001, T-003  ê FILLED!
+**Related Tasks**: T-001, T-003  ÔøΩ FILLED!
 ```
 
 ## Important Notes
@@ -322,7 +344,7 @@ Report validation status:
 **New Steps**:
 
 ```markdown
-STEP 4: Invoke test-aware-planner Agent (=® MANDATORY - USE TASK TOOL)
+STEP 4: Invoke test-aware-planner Agent (=ÔøΩ MANDATORY - USE TASK TOOL)
 
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
@@ -338,7 +360,7 @@ Task(
   TDD MODE: {check .specweave/config.yaml}
 
   You MUST:
-  1. Generate tests.md FIRST (map AC-IDs í TC-IDs)
+  1. Generate tests.md FIRST (map AC-IDs ÔøΩ TC-IDs)
   2. Generate tasks.md SECOND (reference TC-IDs)
   3. Update tests.md (fill Related Tasks)
   4. Validate 100% coverage
@@ -350,8 +372,8 @@ Task(
 )
 
 Wait for test-aware-planner agent to complete!
-    ì
-STEP 5: Validate Test-Task Coupling (=® MANDATORY)
+    ÔøΩ
+STEP 5: Validate Test-Task Coupling (=ÔøΩ MANDATORY)
 
 Check the following BEFORE completing increment planning:
 
@@ -369,9 +391,9 @@ Check the following BEFORE completing increment planning:
 
 **TDD Workflow** (if TDD mode enabled):
 - [ ] Each task has TDD workflow section
-- [ ] Workflow includes: write test í implement í run test í refactor
+- [ ] Workflow includes: write test ÔøΩ implement ÔøΩ run test ÔøΩ refactor
 
-If ANY validation fails í BLOCK increment creation í Show error
+If ANY validation fails ÔøΩ BLOCK increment creation ÔøΩ Show error
 ```
 
 ---
@@ -404,12 +426,12 @@ Validate test coverage for an increment.
 ## Output Example
 
 ```
-=  Test Coverage Report: 0007-smart-increment-discipline
+=ÔøΩ Test Coverage Report: 0007-smart-increment-discipline
 
 Task Coverage:
  T-001: Implement authentication (3 tests: TC-001, TC-002, TC-003)
  T-002: Create login form (2 tests: TC-004, TC-005)
-†  T-003: Add user dashboard (0 tests - is this testable?)
+ÔøΩ  T-003: Add user dashboard (0 tests - is this testable?)
  T-004: Update README.md (N/A - documentation)
 L T-005: Implement password reset (0 tests - MISSING!)
 
@@ -420,7 +442,7 @@ Acceptance Criteria Coverage:
  AC-US1-02: Covered by TC-003 (1 test)
 L AC-US1-03: No tests found! (MISSING)
 
-<Ø Recommendations:
+<ÔøΩ Recommendations:
 - Add tests for T-005 (password reset)
 - Add tests for AC-US1-03 (session expiry)
 - Mark T-003 as testable or not testable
@@ -449,7 +471,7 @@ export async function validateCoverage(incrementId: string): Promise<void> {
   }));
 
   // Generate report
-  console.log('=  Test Coverage Report:', incrementId);
+  console.log('=ÔøΩ Test Coverage Report:', incrementId);
   console.log('');
   console.log('Task Coverage:');
   tasksWithTests.forEach(t => console.log(` ${t.id}: ${t.title} (${t.testCoverage.length} tests)`));
@@ -488,9 +510,9 @@ tdd_mode:
 ```
 
 **Behavior**:
-- If `enabled: false` í Tasks have "Test Coverage" section only
-- If `enabled: true` í Tasks have "Test Coverage" + "TDD Workflow" sections
-- If `strict: true` í `/specweave:do` blocks if test file doesn't exist
+- If `enabled: false` ÔøΩ Tasks have "Test Coverage" section only
+- If `enabled: true` ÔøΩ Tasks have "Test Coverage" + "TDD Workflow" sections
+- If `strict: true` ÔøΩ `/specweave:do` blocks if test file doesn't exist
 
 ---
 
@@ -500,25 +522,25 @@ tdd_mode:
 ```
 plugins/specweave/
    agents/
-      test-aware-planner/         ê NEW!
+      test-aware-planner/         ÔøΩ NEW!
           AGENT.md
           templates/
              task-template.md
              test-template.md
-          test-cases/             ê 3+ tests required
+          test-cases/             ÔøΩ 3+ tests required
               test-1-basic.yaml
               test-2-tdd-mode.yaml
               test-3-validation.yaml
    commands/
-      validate-coverage.md        ê NEW!
+      validate-coverage.md        ÔøΩ NEW!
    skills/
        increment-planner/
-           SKILL.md                ê UPDATED (Step 4, Step 5)
+           SKILL.md                ÔøΩ UPDATED (Step 4, Step 5)
 
 src/commands/
-   validate-coverage.ts            ê NEW!
+   validate-coverage.ts            ÔøΩ NEW!
 
-.specweave/config.yaml               ê OPTIONAL (user project)
+.specweave/config.yaml               ÔøΩ OPTIONAL (user project)
 ```
 
 **Updated Files**:
@@ -526,7 +548,7 @@ src/commands/
 plugins/specweave/
    agents/
        pm/
-           AGENT.md                ê UPDATED (AC-ID generation)
+           AGENT.md                ÔøΩ UPDATED (AC-ID generation)
 ```
 
 ---
@@ -546,11 +568,11 @@ plugins/specweave/
 **Status**: pending | in_progress | completed
 
 **TDD Workflow** (if TDD mode enabled):
-1. =› Write test first: TC-XXX ({description})
+1. =ÔøΩ Write test first: TC-XXX ({description})
    - File: {test file path}
    - Expected: L Test fails ({reason})
 2.  Implement: {implementation file path}
-3. =‚ Run test: `{run command}`
+3. =ÔøΩ Run test: `{run command}`
    - Expected:  Test passes
 4. {  Refactor if needed
 
@@ -592,16 +614,16 @@ plugins/specweave/
 ```
 Increment Lifecycle (Enhanced):
 
-active í paused í resumed í active
-   ì        ì
+active ÔøΩ paused ÔøΩ resumed ÔøΩ active
+   ÔøΩ        ÔøΩ
 completed  abandoned
 
 Status Transitions:
-- /specweave:inc í active
-- /specweave:pause í paused
-- /specweave:resume í active
-- /specweave:done í completed
-- /specweave:abandon í abandoned
+- /specweave:inc ÔøΩ active
+- /specweave:pause ÔøΩ paused
+- /specweave:resume ÔøΩ active
+- /specweave:done ÔøΩ completed
+- /specweave:abandon ÔøΩ abandoned
 ```
 
 ---
@@ -626,7 +648,7 @@ Status Transitions:
    plan.md
    tasks.md
    tests.md
-   metadata.json  ê NEW!
+   metadata.json  ÔøΩ NEW!
 ```
 
 **metadata.json Schema**:
@@ -717,7 +739,7 @@ Pause an active increment.
 ## What It Does
 
 1. Updates metadata.json:
-   - status: "active" í "paused"
+   - status: "active" ÔøΩ "paused"
    - pausedReason: "<reason>"
    - pausedAt: "<timestamp>"
 2. Removes from active increment count
@@ -735,8 +757,8 @@ Pause an active increment.
 
 ## Warnings
 
-- Paused >7 days í staleness warning
-- Paused >30 days í recommend abandon
+- Paused >7 days ÔøΩ staleness warning
+- Paused >30 days ÔøΩ recommend abandon
 ```
 
 **Implementation**:
@@ -789,7 +811,7 @@ Resume a paused increment.
 ## What It Does
 
 1. Updates metadata.json:
-   - status: "paused" í "active"
+   - status: "paused" ÔøΩ "active"
    - pausedReason: cleared
    - pausedAt: cleared
 2. Adds to active increment count
@@ -818,7 +840,7 @@ export async function resumeIncrement(id: string): Promise<void> {
 
   console.log(` Increment ${id} resumed`);
   if (daysPaused > 7) {
-    console.log(`   †  Warning: Paused for ${daysPaused} days - context may be stale`);
+    console.log(`   ÔøΩ  Warning: Paused for ${daysPaused} days - context may be stale`);
   }
 }
 ```
@@ -850,7 +872,7 @@ Abandon an increment.
 ## What It Does
 
 1. Updates metadata.json:
-   - status: "active" | "paused" í "abandoned"
+   - status: "active" | "paused" ÔøΩ "abandoned"
    - abandonedReason: "<reason>"
    - abandonedAt: "<timestamp>"
 2. Moves increment folder to `_abandoned/`
@@ -902,16 +924,16 @@ export async function abandonIncrement(id: string, reason: string): Promise<void
 ```bash
 /specweave:inc "0007-refactoring" --type=refactor
 
-=· You have 1 active feature (0006-i18n: 50% done, 2 days old)
+=ÔøΩ You have 1 active feature (0006-i18n: 50% done, 2 days old)
 
 9  Refactor increments require high focus (limit: 1 active)
 
-=  Context Switching Cost: 20-40% productivity loss
+=ÔøΩ Context Switching Cost: 20-40% productivity loss
 
 Options:
-1„  Continue 0006 first (recommended)
-2„  Pause 0006 and start 0007
-3„  Start both in parallel (high overhead)
+1ÔøΩ  Continue 0006 first (recommended)
+2ÔøΩ  Pause 0006 and start 0007
+3ÔøΩ  Start both in parallel (high overhead)
 
 What would you like to do? [1/2/3]: _
 ```
@@ -959,13 +981,13 @@ export function checkIncrementLimits(newType: IncrementType): void {
 ```bash
 /specweave:status
 
-=  Active Increments (2):
-  =® 0005-payment-hotfix [hotfix] (90% done, 6 hours old)
+=ÔøΩ Active Increments (2):
+  =ÔøΩ 0005-payment-hotfix [hotfix] (90% done, 6 hours old)
      Assignee: alice@example.com
   =' 0006-i18n [feature] (50% done, 2 days old)
      Assignee: bob@example.com
 
-¯  Paused Increments (1):
+ÔøΩ  Paused Increments (1):
   = 0007-stripe [feature] (30% done, paused 3 days)
      Reason: Waiting for Stripe API keys
      Paused by: alice@example.com
@@ -976,11 +998,11 @@ export function checkIncrementLimits(newType: IncrementType): void {
   0003-intelligent-model-selection
   0004-plugin-architecture
 
-†  Warnings:
+ÔøΩ  Warnings:
   - 0007-stripe paused for 3 days (review or abandon?)
   - 2 active increments = 20-40% context switching cost
 
-=° Suggestions:
+=ÔøΩ Suggestions:
   - Complete 0005-payment-hotfix (high priority, almost done)
   - Resume or abandon 0007-stripe
 ```
@@ -999,34 +1021,34 @@ export function checkIncrementLimits(newType: IncrementType): void {
 **New Files**:
 ```
 plugins/specweave/commands/
-   pause.md          ê NEW!
-   resume.md         ê NEW!
-   abandon.md        ê NEW!
-   inc.md            ê UPDATED (type-based limits)
+   pause.md          ÔøΩ NEW!
+   resume.md         ÔøΩ NEW!
+   abandon.md        ÔøΩ NEW!
+   inc.md            ÔøΩ UPDATED (type-based limits)
 
 src/commands/
-   pause.ts          ê NEW!
-   resume.ts         ê NEW!
-   abandon.ts        ê NEW!
-   inc.ts            ê UPDATED
+   pause.ts          ÔøΩ NEW!
+   resume.ts         ÔøΩ NEW!
+   abandon.ts        ÔøΩ NEW!
+   inc.ts            ÔøΩ UPDATED
 
 src/core/
    types/
-      increment-status.ts  ê NEW! (IncrementStatus, IncrementType enums)
+      increment-status.ts  ÔøΩ NEW! (IncrementStatus, IncrementType enums)
    increment/
-       limits.ts     ê NEW! (type-based limit logic)
+       limits.ts     ÔøΩ NEW! (type-based limit logic)
 
 .specweave/increments/####/
-   metadata.json     ê NEW! (per increment)
+   metadata.json     ÔøΩ NEW! (per increment)
 ```
 
 **Updated Files**:
 ```
 plugins/specweave/commands/
-   status.md         ê UPDATED (show status, type, warnings)
+   status.md         ÔøΩ UPDATED (show status, type, warnings)
 
 src/commands/
-   status.ts         ê UPDATED (read metadata.json)
+   status.ts         ÔøΩ UPDATED (read metadata.json)
 ```
 
 ---
@@ -1064,7 +1086,7 @@ export async function migrateIncrementsToV070(): Promise<void> {
   }
 
   console.log('');
-  console.log('<â Migration complete!');
+  console.log('<ÔøΩ Migration complete!');
   console.log('   All increments now have metadata.json');
   console.log('   New commands available:');
   console.log('   - /specweave:pause <id> --reason="..."');
@@ -1088,7 +1110,7 @@ export async function migrateIncrementsToV070(): Promise<void> {
 - Bidirectional linking correctness
 
 **Integration Tests**:
-- increment-planner í PM Agent í test-aware-planner flow
+- increment-planner ÔøΩ PM Agent ÔøΩ test-aware-planner flow
 - Validation blocks incomplete coupling
 - /specweave:validate-coverage command works
 
