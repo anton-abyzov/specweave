@@ -14,8 +14,13 @@ function HomepageHeader() {
     <header className={clsx('hero', styles.heroBanner)}>
       <div className="container">
         <div className={styles.heroContent}>
-          <div className={styles.heroTag}>
-            ⚡ Production-Ready AI Development
+          <div className={styles.heroTags}>
+            <div className={styles.heroTag}>
+              ✨ 100% Free & Open Source Forever
+            </div>
+            <div className={styles.heroTag}>
+              ⚡ Production-Ready AI Development
+            </div>
           </div>
           <Heading as="h1" className={styles.heroTitle}>
             Stop Fighting AI.<br/>
@@ -23,7 +28,7 @@ function HomepageHeader() {
           </Heading>
           <p className={styles.heroSubtitle}>
             SpecWeave gives you <strong>autonomous AI agents that just work</strong>—minimal interaction, maximum productivity.
-            Type one command, get production code with specs, tests, and living docs.
+            Type one command, get production code with specs, tests, and living docs. <strong>Always free, always open-source.</strong>
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
@@ -213,7 +218,7 @@ function CTASection(): ReactNode {
       <div className="container">
         <div className={styles.ctaContent}>
           <Heading as="h2">Ready to Build Production Software?</Heading>
-          <p>Get started with SpecWeave in less than 5 minutes.</p>
+          <p>Get started with SpecWeave in less than 5 minutes. <strong>100% free, 100% open-source, forever.</strong></p>
           <div className={styles.ctaButtons}>
             <Link
               className="button button--primary button--lg"
@@ -223,7 +228,7 @@ function CTASection(): ReactNode {
             <Link
               className="button button--outline button--lg"
               to="https://github.com/anton-abyzov/specweave">
-              View on GitHub
+              View on GitHub ⭐
             </Link>
           </div>
         </div>

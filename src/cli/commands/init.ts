@@ -206,18 +206,33 @@ export async function initCommand(
       console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
       console.log('');
 
-      const { confirmTool } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirmTool',
-          message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
-          default: true
-        }
-      ]);
+      // Check if running in CI/non-interactive environment
+      const isCI = process.env.CI === 'true' ||
+                   process.env.GITHUB_ACTIONS === 'true' ||
+                   process.env.GITLAB_CI === 'true' ||
+                   process.env.CIRCLECI === 'true' ||
+                   !process.stdin.isTTY;
 
-      if (confirmTool) {
+      let confirmTool = true; // Default to yes
+
+      if (isCI) {
+        // In CI, automatically use detected tool without prompting
+        console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })}`));
         toolName = detectedTool;
       } else {
+        // Interactive mode - ask for confirmation
+        const response = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmTool',
+            message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
+            default: true
+          }
+        ]);
+        confirmTool = response.confirmTool;
+      }
+
+      if (!confirmTool) {
         // Let user choose from available tools
         const { selectedTool } = await inquirer.prompt([
           {
