@@ -1,16 +1,16 @@
 name: Documentation Build
 
+# This workflow validates documentation builds on pull requests only.
+# For pushes to develop, use deploy-docs.yml which builds AND deploys.
+# This eliminates redundant builds while maintaining PR validation.
+
 on:
   pull_request:
-    paths:
-      - 'docs-site/**'
-      - '.specweave/docs/public/**'
-      - '.github/workflows/docs-build.yml'
-  push:
     branches: [main, develop]
     paths:
       - 'docs-site/**'
       - '.specweave/docs/public/**'
+      - '.github/workflows/docs-build.yml'
 
 jobs:
   build:
