@@ -20,6 +20,19 @@
   text-align: center;
 }
 
+.heroTag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
 .heroTitle {
   font-size: 4rem;
   font-weight: 800;
@@ -28,11 +41,51 @@
   line-height: 1.2;
 }
 
+.heroHighlight {
+  background: linear-gradient(120deg, #ffd700 0%, #ffed4e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .heroSubtitle {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   margin-bottom: 2rem;
   opacity: 0.95;
   font-weight: 400;
+  line-height: 1.6;
+}
+
+.heroStats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+}
+
+.statNumber {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #ffd700;
+  margin-bottom: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.heroNote {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  opacity: 0.85;
 }
 
 .buttons {
@@ -78,6 +131,14 @@
   color: #d4d4d4;
   font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
   font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.codeCaption {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  opacity: 0.95;
   line-height: 1.6;
 }
 
@@ -235,7 +296,15 @@
   }
 
   .heroSubtitle {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
+  }
+
+  .heroStats {
+    gap: 2rem;
+  }
+
+  .statNumber {
+    font-size: 2rem;
   }
 
   .featuresSection,
@@ -259,12 +328,33 @@
 }
 
 @media screen and (max-width: 600px) {
+  .heroTag {
+    font-size: 0.8rem;
+    padding: 0.4rem 1.2rem;
+  }
+
   .heroTitle {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .heroSubtitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+
+  .heroStats {
+    gap: 1.5rem;
+  }
+
+  .statNumber {
+    font-size: 1.75rem;
+  }
+
+  .statLabel {
+    font-size: 0.8rem;
+  }
+
+  .heroNote {
+    font-size: 0.85rem;
   }
 
   .buttons,
@@ -275,5 +365,13 @@
 
   .featuresGrid {
     grid-template-columns: 1fr;
+  }
+
+  .codePre code {
+    font-size: 0.8rem;
+  }
+
+  .codeCaption {
+    font-size: 1rem;
   }
 }
