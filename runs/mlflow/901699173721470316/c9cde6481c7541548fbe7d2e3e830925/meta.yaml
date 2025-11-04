@@ -1,0 +1,14 @@
+artifact_uri: /Users/antonabyzov/Projects/github/specweave/runs/mlflow/901699173721470316/c9cde6481c7541548fbe7d2e3e830925/artifacts
+end_time: 1762281037445
+entry_point_name: ''
+experiment_id: '901699173721470316'
+lifecycle_stage: active
+run_id: c9cde6481c7541548fbe7d2e3e830925
+run_name: train
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762281032277
+status: 3
+tags: []
+user_id: antonabyzov

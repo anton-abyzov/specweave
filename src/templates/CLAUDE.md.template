@@ -330,6 +330,29 @@ Plugins are detected and suggested during `specweave init` based on:
 
 ---
 
+## Frequently Asked Questions
+
+**New to SpecWeave?** Check out the [FAQ](https://spec-weave.com/docs/faq) for answers to common questions:
+
+### Quick Answers
+- **Why specs in two locations?** Living Docs (permanent, complete feature) vs Increment Specs (temporary, current work)
+- **When do I need living docs spec?** Major features (3+ increments), brownfield integration, or external PM tools
+- **Can I delete increment specs?** YES, after completion. Living docs specs are NEVER deleted (permanent)
+- **Which spec is source of truth?** Living docs spec (when it exists), otherwise increment spec
+
+### Key Topics Covered
+- ✅ Two-spec architecture explained
+- ✅ When to create living docs specs
+- ✅ Increment spec lifecycle
+- ✅ Brownfield documentation linking
+- ✅ External PM tool integration (Jira, ADO, GitHub)
+- ✅ Small vs large feature decisions
+- ✅ Project structure and organization
+
+**[View Complete FAQ →](https://spec-weave.com/docs/faq)**
+
+---
+
 ## Testing
 
 **Four Levels**:

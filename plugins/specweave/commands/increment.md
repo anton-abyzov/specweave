@@ -157,145 +157,219 @@ This step remains for auto-closing "in-progress" increments that ARE complete.
 - ✅ Enforces quality awareness (can't ignore incomplete work)
 - ✅ No manual `/done` needed when gates pass
 
-### Step 0C: Type-Based Limits & Context Switching Warnings (v0.7.0+)
+### Step 0C: Simplified WIP Enforcement (v0.7.0+ Redesigned)
 
-**NEW! Helps users avoid context switching and focus on one thing at a time.**
+**NEW PHILOSOPHY: Default to 1 active increment (maximum focus), allow 2 only for emergencies.**
 
-After passing pre-flight checks (Step 0A, 0B), check type-based limits and warn about context switching.
+After passing pre-flight checks (Step 0A, 0B), enforce WIP limits based on simplified config.
 
 **Implementation**:
 ```typescript
-import { checkIncrementLimits, getContextSwitchWarning } from '../core/increment/limits';
+import { MetadataManager } from '../core/metadata-manager';
+import { ConfigManager } from '../core/config-manager';
+import { IncrementType } from '../core/types';
 
-// 1. Ask user for increment type (or detect from title)
-const incrementType = await promptForType(); // hotfix, feature, bug, etc.
+// 1. Load config (defaults: maxActiveIncrements=1, hardCap=2, allowEmergencyInterrupt=true)
+const config = ConfigManager.load();
+const limits = config.limits || {
+  maxActiveIncrements: 1,
+  hardCap: 2,
+  allowEmergencyInterrupt: true,
+  typeBehaviors: {
+    canInterrupt: ['hotfix', 'bug']
+  }
+};
 
-// 2. Check type-based limits
-const limitCheck = checkIncrementLimits(incrementType);
+// 2. Count active increments (NOT paused/completed/abandoned)
+const active = MetadataManager.getAllActive();
+const activeCount = active.length;
 
-if (limitCheck.exceeded) {
-  console.log(chalk.yellow.bold('\n⚠️  TYPE LIMIT REACHED\n'));
-  console.log(chalk.yellow(limitCheck.warning));
+// 3. Ask user for increment type (or detect from title)
+const incrementType = await promptForType(); // hotfix, feature, bug, change-request, refactor, experiment
 
-  console.log(chalk.blue('\n💡 Suggested actions:\n'));
-  limitCheck.suggestions?.forEach(s => console.log(chalk.dim(`   • ${s}`)));
+// 4. HARD CAP ENFORCEMENT (never >2 active)
+if (activeCount >= limits.hardCap) {
+  console.log(chalk.red.bold('\n❌ HARD CAP REACHED\n'));
+  console.log(chalk.red(`You have ${activeCount} active increments (absolute maximum: ${limits.hardCap})\n`));
 
-  // Ask user if they want to continue anyway
-  const continueAnyway = await prompt({
-    type: 'confirm',
-    message: 'Continue anyway? (not recommended)',
-    default: false
+  console.log(chalk.yellow('Active increments:'));
+  active.forEach(inc => {
+    console.log(chalk.dim(`  • ${inc.id} [${inc.type}]`));
   });
 
-  if (!continueAnyway) {
-    console.log(chalk.green('\n✅ Good choice! Focus on completing current work first.\n'));
-    process.exit(0);
-  }
+  console.log(chalk.blue('\n💡 You MUST complete or pause existing work first:\n'));
+  console.log(chalk.white('1️⃣  Complete an increment:'));
+  console.log(chalk.dim('   /done <id>\n'));
+  console.log(chalk.white('2️⃣  Pause an increment:'));
+  console.log(chalk.dim('   /pause <id> --reason="..."\n'));
+  console.log(chalk.white('3️⃣  Check status:'));
+  console.log(chalk.dim('   /status\n'));
 
-  console.log(chalk.yellow('\n⚠️  Proceeding with limit exceeded...\n'));
+  console.log(chalk.yellow('📝 Multiple hotfixes? Combine them into ONE increment!'));
+  console.log(chalk.dim('   Example: 0009-security-fixes (SQL + XSS + CSRF)\n'));
+
+  console.log(chalk.red.bold('⛔ This limit is enforced for your productivity.'));
+  console.log(chalk.dim('Research: 3+ concurrent tasks = 40% slower + more bugs\n'));
+
+  // NO force override at hard cap - absolute maximum
+  process.exit(1);
 }
 
-// 3. Check context switching (for non-emergency work)
-const contextWarning = getContextSwitchWarning(incrementType);
+// 5. SOFT ENFORCEMENT (activeCount >= maxActiveIncrements)
+if (activeCount >= limits.maxActiveIncrements) {
+  const canInterrupt = limits.typeBehaviors?.canInterrupt || ['hotfix', 'bug'];
+  const isEmergency = canInterrupt.includes(incrementType);
 
-if (contextWarning.show) {
-  console.log(chalk.yellow.bold('\n⚠️  CONTEXT SWITCHING WARNING\n'));
-  console.log(chalk.yellow(contextWarning.message));
+  if (isEmergency && limits.allowEmergencyInterrupt) {
+    // ✅ ALLOW - Emergency interrupt
+    console.log(chalk.yellow.bold('\n⚠️  EMERGENCY INTERRUPT\n'));
+    console.log(chalk.yellow(`Starting ${incrementType} increment (emergency exception allowed)\n`));
+    console.log(chalk.dim('You have 1 active increment. This will be your 2nd (emergency ceiling).\n'));
 
-  console.log(chalk.blue('\n💡 What would you like to do?\n'));
-  contextWarning.options.forEach((opt, i) => {
-    console.log(chalk.white(`${i + 1}. ${opt.label}`));
-    console.log(chalk.dim(`   ${opt.description}\n`));
-  });
+    console.log(chalk.blue('📋 Active increments:'));
+    active.forEach(inc => {
+      console.log(chalk.dim(`  • ${inc.id} [${inc.type}]`));
+    });
 
-  const choice = await prompt({
-    type: 'list',
-    message: 'Choose an option:',
-    choices: contextWarning.options.map(o => o.value)
-  });
+    console.log(chalk.yellow('\n💡 Recommendation: After emergency, complete or pause it before resuming normal work.\n'));
 
-  if (choice === 'continue') {
-    // User chose to finish current work first
-    console.log(chalk.green('\n✅ Smart choice! Finish current increment(s) first.\n'));
-    console.log(chalk.dim('Use /do to continue work\n'));
-    process.exit(0);
-  } else if (choice === 'pause') {
-    // User chose to pause current work
-    console.log(chalk.blue('\n⏸️  Pausing current increment(s)...\n'));
-    // Invoke /pause command for each active increment
-    const active = MetadataManager.getActive();
-    for (const inc of active) {
-      await pauseIncrement(inc.id, 'Paused to start new work');
-    }
-    console.log(chalk.green('✅ Paused. Proceeding with new increment...\n'));
+    // Continue to Step 1
   } else {
-    // User chose to work in parallel (productivity cost)
-    console.log(chalk.yellow(`\n⚠️  Working in parallel (${contextWarning.productivityCost} slower)\n`));
-    console.log(chalk.dim('Research shows context switching reduces productivity significantly.\n'));
+    // ❌ SOFT BLOCK - Warn and offer options
+    console.log(chalk.yellow.bold('\n⚠️  WIP LIMIT REACHED\n'));
+    console.log(chalk.yellow(`You have ${activeCount} active increment(s) (recommended limit: ${limits.maxActiveIncrements})\n`));
+
+    console.log(chalk.yellow('Active increments:'));
+    active.forEach(inc => {
+      console.log(chalk.dim(`  • ${inc.id} [${inc.type}]`));
+    });
+
+    console.log(chalk.dim('\n🧠 Focus Principle: ONE active increment = maximum productivity'));
+    console.log(chalk.dim('Starting a 2nd increment reduces focus and velocity.\n'));
+
+    console.log(chalk.blue('💡 What would you like to do?\n'));
+    console.log(chalk.white('1️⃣  Complete current work (recommended)'));
+    console.log(chalk.dim('   Finish active increment before starting new\n'));
+    console.log(chalk.white('2️⃣  Pause current work'));
+    console.log(chalk.dim('   Pause active increment to focus on new work\n'));
+    console.log(chalk.white('3️⃣  Start 2nd increment anyway'));
+    console.log(chalk.dim('   Accept productivity cost (20% slower)\n'));
+
+    const choice = await prompt({
+      type: 'list',
+      message: 'Choose an option:',
+      choices: [
+        { name: 'Complete current work', value: 'complete' },
+        { name: 'Pause current work', value: 'pause' },
+        { name: 'Start 2nd increment anyway', value: 'continue' }
+      ]
+    });
+
+    if (choice === 'complete') {
+      console.log(chalk.green('\n✅ Smart choice! Finish current work first.\n'));
+      console.log(chalk.dim('Use /do to continue work\n'));
+      process.exit(0);
+    } else if (choice === 'pause') {
+      console.log(chalk.blue('\n⏸️  Pausing current increment...\n'));
+      const pauseReason = await prompt({
+        type: 'input',
+        message: 'Reason for pausing:',
+        default: 'Paused to start new work'
+      });
+
+      for (const inc of active) {
+        await MetadataManager.pause(inc.id, pauseReason);
+        console.log(chalk.green(`✅ Paused ${inc.id}`));
+      }
+      console.log(chalk.green('\n✅ Proceeding with new increment...\n'));
+    } else {
+      // choice === 'continue'
+      console.log(chalk.yellow('\n⚠️  Starting 2nd increment (20% productivity cost)\n'));
+      console.log(chalk.dim('Research: Context switching reduces velocity significantly.\n'));
+    }
   }
+}
+
+// 6. If activeCount < maxActiveIncrements, no warnings - proceed directly
+if (activeCount === 0) {
+  console.log(chalk.green('✅ No active increments. Starting fresh!\n'));
 }
 
 // Proceed to Step 1 (find next increment number)
 ```
 
-**Example Output - Limit Exceeded**:
+**Example Output - Hard Cap (2 active)**:
 ```
-⚠️  TYPE LIMIT REACHED
+❌ HARD CAP REACHED
 
-You have 2 active feature increment(s) (limit: 2)
+You have 2 active increments (absolute maximum: 2)
 
-Active feature increments:
-  • 0005-authentication
-  • 0006-payment-processing
+Active increments:
+  • 0005-authentication [feature]
+  • 0006-security-hotfix [hotfix]
 
-Recommendation: Complete or pause one before starting another.
-Context switching reduces productivity by 20-40%.
+💡 You MUST complete or pause existing work first:
 
-💡 Suggested actions:
-   • Complete active increment: /done <id>
-   • Pause active increment: /pause <id>
-   • Check status: /status
-   • Reduce scope: Break large feature into smaller increments
+1️⃣  Complete an increment:
+   /done <id>
 
-Continue anyway? (not recommended) (y/N): n
+2️⃣  Pause an increment:
+   /pause <id> --reason="..."
 
-✅ Good choice! Focus on completing current work first.
+3️⃣  Check status:
+   /status
+
+📝 Multiple hotfixes? Combine them into ONE increment!
+   Example: 0009-security-fixes (SQL + XSS + CSRF)
+
+⛔ This limit is enforced for your productivity.
+Research: 3+ concurrent tasks = 40% slower + more bugs
 ```
 
-**Example Output - Context Switching Warning**:
+**Example Output - Soft Warning (1 active, starting 2nd)**:
 ```
-⚠️  CONTEXT SWITCHING WARNING
+⚠️  WIP LIMIT REACHED
 
-You have 1 active increment(s)
+You have 1 active increment(s) (recommended limit: 1)
 
 Active increments:
   • 0005-authentication [feature]
 
-Starting new work will reduce productivity by 20% due to context switching.
-
-Research shows:
-• 2 concurrent tasks = 20% slower
-• 3+ concurrent tasks = 40% slower
-• Frequent switches = more bugs
-
-Recommended: Complete or pause active work first.
+🧠 Focus Principle: ONE active increment = maximum productivity
+Starting a 2nd increment reduces focus and velocity.
 
 💡 What would you like to do?
 
-1. Continue current work
-   Finish active increment(s) before starting new work (recommended)
+1️⃣  Complete current work (recommended)
+   Finish active increment before starting new
 
-2. Pause current work
-   Pause active increment(s) to focus on new work
+2️⃣  Pause current work
+   Pause active increment to focus on new work
 
-3. Work in parallel
-   Start new increment (20% productivity cost)
+3️⃣  Start 2nd increment anyway
+   Accept productivity cost (20% slower)
 
 Choose an option: 1
 
-✅ Smart choice! Finish current increment(s) first.
+✅ Smart choice! Finish current work first.
 
 Use /do to continue work
+```
+
+**Example Output - Emergency Interrupt (hotfix)**:
+```
+⚠️  EMERGENCY INTERRUPT
+
+Starting hotfix increment (emergency exception allowed)
+
+You have 1 active increment. This will be your 2nd (emergency ceiling).
+
+📋 Active increments:
+  • 0005-authentication [feature]
+
+💡 Recommendation: After emergency, complete or pause it before resuming normal work.
+
+Proceeding with hotfix 0006...
 ```
 
 **Type-Based Limits** (from `TYPE_LIMITS` in `increment-metadata.ts`):
@@ -471,10 +545,9 @@ After the increment-planner skill completes, verify:
    - `.specweave/docs/internal/architecture/adr/` has ADRs
 
 2. **Increment files created:**
-   - `.specweave/increments/####-name/spec.md` (references strategy docs)
-   - `.specweave/increments/####-name/plan.md` (references architecture docs)
-   - `.specweave/increments/####-name/tasks.md` (auto-generated from plan)
-   - `.specweave/increments/####-name/tests.md` (test strategy)
+   - `.specweave/increments/####-name/spec.md` (references strategy docs, AC-IDs)
+   - `.specweave/increments/####-name/plan.md` (references architecture docs, test strategy)
+   - `.specweave/increments/####-name/tasks.md` (implementation + embedded tests in BDD format, v0.7.0+)
    - `.specweave/increments/####-name/context-manifest.yaml`
 
 3. **Hooks executed:**

@@ -1,8 +1,22 @@
 {
   "name": "specweave-ado",
-  "description": "Azure DevOps integration for SpecWeave increments. Bidirectional sync between SpecWeave increments and ADO work items (epics/features/user stories). Automatically creates work items, tracks progress, and updates status.",
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "description": "Azure DevOps integration for SpecWeave - sync increments with ADO work items, track progress, and manage project workflows",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anton-abyzov/specweave"
+  },
+  "keywords": [
+    "azure-devops",
+    "ado",
+    "project-management",
+    "work-items",
+    "sync",
+    "integration"
+  ],
+  "license": "MIT"
 }

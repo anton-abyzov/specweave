@@ -111,10 +111,10 @@ Task(
 
   Context from existing docs: [summary of strategy docs from Step 1]
 
-  You MUST create RFC (living docs - source of truth) AND optionally create increment spec.md:
+  You MUST create living Spec (living docs - source of truth) AND optionally create increment spec.md:
 
-  1. RFC (living docs - SOURCE OF TRUTH, permanent):
-     - Create .specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md
+  1. Spec (living docs - SOURCE OF TRUTH, permanent):
+     - Create .specweave/docs/internal/specs/spec-{number}-{name}/spec.md
      - This is the COMPLETE, PERMANENT source of truth
      - Include ALL of:
        * User stories (US-001, US-002, etc.) with full details
@@ -123,8 +123,8 @@ Task(
        * Non-functional requirements (NFR-001, etc.)
        * Success criteria (metrics, KPIs)
        * Test strategy
-     - This RFC can be linked to Jira/ADO/GitHub Issues
-     - RFC persists even after increment completes
+     - This spec can be linked to Jira/ADO/GitHub Issues
+     - Spec persists even after increment completes
      - No line limit (be thorough, this is source of truth)
 
   2. Strategy docs (optional, high-level ONLY):
@@ -133,17 +133,17 @@ Task(
        * overview.md (high-level product vision, market opportunity, personas)
        * business-case.md (optional - ROI, competitive analysis)
      - IMPORTANT:
-       * ❌ NO detailed user stories (those go in RFC spec.md)
-       * ❌ NO detailed requirements (those go in RFC spec.md)
-       * ❌ NO acceptance criteria (those go in RFC spec.md)
+       * ❌ NO detailed user stories (those go in living spec.md)
+       * ❌ NO detailed requirements (those go in living spec.md)
+       * ❌ NO acceptance criteria (those go in living spec.md)
        * ✅ ONLY strategic, high-level business context
 
-  3. Increment spec.md (optional, can duplicate RFC):
+  3. Increment spec.md (optional, can duplicate living spec):
      - Create .specweave/increments/{number}-{name}/spec.md
-     - This CAN duplicate content from RFC spec.md (temporary reference - that's OK!)
-     - OR it can just reference the RFC: \"See RFC-{number}-{name} for complete requirements\"
+     - This CAN duplicate content from living spec.md (temporary reference - that's OK!)
+     - OR it can just reference the spec: \"See SPEC-{number}-{name} for complete requirements\"
      - Increment spec.md may be deleted after increment completes
-     - RFC spec.md persists as permanent documentation
+     - Living spec.md persists as permanent documentation
 
   Tech stack: [detected tech stack]"
 )
@@ -220,24 +220,24 @@ Task(
 Wait for test-aware-planner agent to complete!
     ↓
 STEP 5: Validate Living Docs and Increment Files
-├─ Check .specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md exists (SOURCE OF TRUTH)
-├─ Check RFC spec.md contains ALL user stories, requirements, AC-IDs (with AC-IDs)
+├─ Check .specweave/docs/internal/specs/spec-{number}-{name}/spec.md exists (SOURCE OF TRUTH)
+├─ Check living spec.md contains ALL user stories, requirements, AC-IDs (with AC-IDs)
 ├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
 ├─ Check strategy docs (if created) are high-level only (no detailed user stories)
-├─ Check .specweave/increments/{number}-{name}/spec.md references or duplicates RFC
+├─ Check .specweave/increments/{number}-{name}/spec.md references or duplicates living spec
 ├─ Check .specweave/increments/{number}-{name}/plan.md references architecture docs
 ├─ Check .specweave/increments/{number}-{name}/tasks.md has embedded test plans
-└─ Check tasks.md covers ALL AC-IDs from RFC spec.md
+└─ Check tasks.md covers ALL AC-IDs from living spec.md
     ↓
-✅ SUCCESS: RFC created (permanent), increment created (temporary)
+✅ SUCCESS: Living spec created (permanent), increment created (temporary)
 ```
 
 ### What Gets Created
 
-#### RFC (Living Docs - Source of Truth) ✅
+#### Living Spec (Living Docs - Source of Truth) ✅
 ```
-.specweave/docs/internal/rfc/
-└── rfc-{number}-{name}/             # ← PM Agent (MANDATORY)
+.specweave/docs/internal/specs/
+└── spec-{number}-{name}/             # ← PM Agent (MANDATORY)
     └── spec.md                      # COMPLETE user stories, AC, requirements
                                      # This is the PERMANENT source of truth
                                      # Can be linked to Jira/ADO/GitHub Issues
@@ -251,9 +251,9 @@ STEP 5: Validate Living Docs and Increment Files
     ├── overview.md                  # High-level product vision, market opportunity
     └── business-case.md             # (optional) ROI, competitive analysis
 
-❌ NO requirements.md (goes in RFC spec.md)
-❌ NO user-stories.md (goes in RFC spec.md)
-❌ NO success-criteria.md (goes in RFC spec.md)
+❌ NO requirements.md (goes in living spec.md)
+❌ NO user-stories.md (goes in living spec.md)
+❌ NO success-criteria.md (goes in living spec.md)
 ```
 
 #### Architecture Docs (Living Documentation) ✅
@@ -275,8 +275,8 @@ STEP 5: Validate Living Docs and Increment Files
 #### Increment Files (Temporary Implementation Tracker) ✅
 ```
 .specweave/increments/0001-feature-name/
-├── spec.md                 # ← PM Agent (CAN duplicate RFC spec.md - temporary reference)
-│                           #    OR just reference: "See RFC-0001-feature-name"
+├── spec.md                 # ← PM Agent (CAN duplicate living spec.md - temporary reference)
+│                           #    OR just reference: "See SPEC-0001-feature-name"
 │                           #    May be deleted after increment completes
 ├── plan.md                 # ← Architect Agent (technical design, references ADRs)
 ├── tasks.md                # ← test-aware-planner Agent (tasks with embedded test plans)
@@ -288,7 +288,7 @@ STEP 5: Validate Living Docs and Increment Files
 **v0.7.0 Architecture Pivot**: tests.md eliminated, tests are now embedded directly in tasks.md
 
 **Key Difference**:
-- **RFC spec.md** = Permanent source of truth (persists after increment)
+- **Living spec.md** = Permanent source of truth (persists after increment)
 - **Increment spec.md** = Temporary reference (can be deleted after increment)
 
 ---
@@ -297,19 +297,19 @@ STEP 5: Validate Living Docs and Increment Files
 
 Before completing feature planning, verify:
 
-**RFC (Living Docs - Source of Truth, Mandatory)**:
-- [ ] `.specweave/docs/internal/rfc/rfc-{number}-{name}/spec.md` exists
-- [ ] RFC spec.md contains ALL user stories (US-001, US-002, etc.) with full details
-- [ ] RFC spec.md contains ALL acceptance criteria (AC-US1-01, etc.)
-- [ ] RFC spec.md contains ALL requirements (FR-001, NFR-001, etc.)
-- [ ] RFC spec.md contains success criteria (metrics, KPIs)
-- [ ] RFC spec.md may reference `../../strategy/{module}/overview.md` for context
-- [ ] No line limit on RFC spec.md (be thorough - this is permanent!)
+**Living Spec (Living Docs - Source of Truth, Mandatory)**:
+- [ ] `.specweave/docs/internal/specs/spec-{number}-{name}/spec.md` exists
+- [ ] Living spec.md contains ALL user stories (US-001, US-002, etc.) with full details
+- [ ] Living spec.md contains ALL acceptance criteria (AC-US1-01, etc.)
+- [ ] Living spec.md contains ALL requirements (FR-001, NFR-001, etc.)
+- [ ] Living spec.md contains success criteria (metrics, KPIs)
+- [ ] Living spec.md may reference `../../strategy/{module}/overview.md` for context
+- [ ] No line limit on living spec.md (be thorough - this is permanent!)
 
 **Strategy Docs (Optional)**:
 - [ ] If created, `.specweave/docs/internal/strategy/{module}/overview.md` is high-level only
-- [ ] No detailed user stories in strategy docs (US-001, etc. - those go in RFC)
-- [ ] No detailed requirements in strategy docs (FR-001, NFR-001, etc. - those go in RFC)
+- [ ] No detailed user stories in strategy docs (US-001, etc. - those go in Spec)
+- [ ] No detailed requirements in strategy docs (FR-001, NFR-001, etc. - those go in Spec)
 - [ ] Strategy docs provide business context only (market, opportunity, personas)
 
 **Architecture Docs (Mandatory)**:
@@ -317,9 +317,9 @@ Before completing feature planning, verify:
 - [ ] ADRs follow template (Context, Decision, Alternatives, Consequences)
 - [ ] Diagrams created for module (system-context, system-container)
 
-**Increment spec.md (Optional - can duplicate RFC)**:
-- [ ] `spec.md` either duplicates RFC spec.md OR references it ("See RFC-{number}-{name}")
-- [ ] If duplicated, content matches RFC spec.md
+**Increment spec.md (Optional - can duplicate living spec)**:
+- [ ] `spec.md` either duplicates living spec.md OR references it ("See SPEC-{number}-{name}")
+- [ ] If duplicated, content matches living spec.md
 
 **Increment plan.md (Mandatory)**:
 - [ ] `plan.md` references architecture docs (`../../docs/internal/architecture/adr/`)
@@ -330,16 +330,16 @@ Before completing feature planning, verify:
 - [ ] Each testable task has Test Plan (Given/When/Then)
 - [ ] Each testable task has Test Cases (unit/integration/E2E)
 - [ ] Coverage targets specified (80-90% overall)
-- [ ] ALL AC-IDs from RFC spec.md are covered by tasks
+- [ ] ALL AC-IDs from Spec spec.md are covered by tasks
 - [ ] Non-testable tasks have Validation section
 
 **Agents Followed Process**:
-- [ ] PM Agent created RFC spec.md as permanent source of truth
+- [ ] PM Agent created Spec spec.md as permanent source of truth
 - [ ] PM Agent scanned existing strategy docs before creating new ones
-- [ ] Architect Agent read RFC spec.md before creating architecture
+- [ ] Architect Agent read Spec spec.md before creating architecture
 - [ ] Architect created ADRs for ALL technical decisions
-- [ ] test-aware-planner Agent read RFC spec.md and plan.md before creating tasks.md
-- [ ] test-aware-planner covered ALL AC-IDs from RFC with tasks
+- [ ] test-aware-planner Agent read Spec spec.md and plan.md before creating tasks.md
+- [ ] test-aware-planner covered ALL AC-IDs from Spec with tasks
 
 ---
 
@@ -486,11 +486,13 @@ created: YYYY-MM-DD
 - Measurable acceptance criteria
 - Prioritized user stories (P1/P2/P3)
 
-### Step 6: Detect Required Plugins (INTELLIGENT AUTO-LOADING)
+### Step 6: Detect Required Plugins & Check PM Tool (INTELLIGENT AUTO-LOADING + PM SYNC)
 
-**Purpose**: Analyze spec content to identify required SpecWeave plugins and suggest installation.
+**Purpose**: Analyze spec content to identify required SpecWeave plugins AND check if external PM tool sync is configured.
 
-**Why This Matters**: SpecWeave's plugin system enables context efficiency (70%+ reduction) by loading only relevant capabilities. This step ensures users have the right tools before implementation begins.
+**Why This Matters**:
+1. SpecWeave's plugin system enables context efficiency (70%+ reduction) by loading only relevant capabilities
+2. PM tool integration enables automatic sync of increment progress to external systems (GitHub Issues, Jira, Azure DevOps)
 
 **Detection Algorithm**:
 
@@ -498,6 +500,8 @@ created: YYYY-MM-DD
    ```
    Keywords → Plugin Mapping:
    - "GitHub", "issue", "pull request", "PR" → specweave-github
+   - "Jira", "ticket", "epic" → specweave-jira
+   - "Azure DevOps", "ADO", "work item" → specweave-ado
    - "Kubernetes", "K8s", "Helm", "kubectl" → specweave-kubernetes
    - "Figma", "design system", "design tokens" → specweave-figma
    - "Stripe", "PayPal", "billing", "subscriptions" → specweave-payments
@@ -509,11 +513,19 @@ created: YYYY-MM-DD
    - "Mermaid", "C4", "diagrams", "architecture diagrams" → specweave-diagrams
    ```
 
-2. **Check if plugins are already installed**:
+2. **Check External PM Tool Configuration** (NEW v0.8.0):
+   - Read `.specweave/config.json`
+   - If `externalPM.enabled = true` and `externalPM.tool` is set:
+     - Check if corresponding plugin installed (specweave-github, specweave-jira, or specweave-ado)
+     - Prepare to auto-create external issue/work item after increment creation
+   - If `externalPM.enabled = false` or not configured:
+     - Skip PM tool sync (local-only mode)
+
+3. **Check if plugins are already installed**:
    - For Claude Code: Check if plugin available via `/plugin list --installed`
    - Skip already-installed plugins
 
-3. **Suggest installation** (if plugins detected):
+4. **Suggest installation** (if plugins detected):
    ```
    🔌 This increment requires additional plugins:
 
@@ -532,36 +544,102 @@ created: YYYY-MM-DD
    💡 Plugins will auto-activate during implementation!
    ```
 
-4. **Wait for user to install** (don't block, but remind):
+5. **Auto-Sync to PM Tool** (v0.8.0+):
+
+   **🚨 CRITICAL: SpecWeave Repo Dog-Food Requirement**:
+   - IF repo = "anton-abyzov/specweave"
+     - Read `.specweave/config.json`
+     - Check: `plugins.settings.specweave-github.repo = "anton-abyzov/specweave"`
+     - IF NOT configured → ❌ **HARD ERROR** (block increment creation):
+       ```
+       ❌ SpecWeave repo MUST use GitHub sync!
+
+       This is a "dog food" requirement (ADR-0007):
+       - SpecWeave demonstrates its own features
+       - GitHub Issues show public progress
+       - Community can track development
+
+       Fix: Create .specweave/config.json with GitHub settings
+       See: CLAUDE.md for config structure
+       ```
+     - IF configured → Continue to auto-sync (required)
+
+   **For All Other Repos** (normal behavior):
+   - **If PM tool configured and plugin installed**:
+     ```
+     🔗 External PM Tool Sync:
+        Tool: GitHub Issues
+        Auto-sync: Enabled
+
+     Creating GitHub issue for increment 0007-user-authentication...
+     ✅ GitHub Issue #42 created
+        URL: https://github.com/myorg/myapp/issues/42
+        Linked to: .specweave/increments/0007-user-authentication/metadata.json
+
+     Progress will sync automatically after each task completion!
+     ```
+   - **If PM tool configured but plugin NOT installed**:
+     ```
+     ⚠️  External PM Tool Configured: GitHub Issues
+        Plugin missing: specweave-github
+
+     To enable auto-sync: /plugin install specweave-github@specweave
+     Or continue without PM sync (local-only mode)
+     ```
+   - **If PM tool not configured**:
+     ```
+     ℹ️  No external PM tool configured (local-only mode)
+        To enable GitHub/Jira/ADO sync: Run project initialization or update config
+     ```
+
+6. **Wait for user to install** (don't block, but remind):
    - If user proceeds without installing, remind them before task execution
    - Skills from uninstalled plugins won't be available
    - User can install later: plugins activate on next Claude Code session
 
-**When to Suggest**:
+**When to Execute**:
 - ✅ After spec.md generation (Step 5 complete)
 - ✅ Before plan.md generation (gives context for planning)
+- ✅ After ALL increment files created (spec.md, plan.md, tasks.md)
 - ❌ Don't block increment creation (plugins optional, not required)
 
-**Example Output**:
+**Example Output (Full Flow)**:
 
 ```
-📝 Spec created: .specweave/increments/0007-github-sync/spec.md
+📝 Increment created: 0007-user-authentication
+
+Files:
+• spec.md (user stories, acceptance criteria)
+• plan.md (technical architecture)
+• tasks.md (implementation steps with embedded tests)
 
 🔌 Plugin Detection:
-   Detected: "GitHub Issues", "bidirectional sync"
-   → Suggested: specweave-github
+   Detected: "user authentication", "JWT tokens", "session management"
+   → No additional plugins required
 
-   To install: /plugin install specweave-github@specweave
-   Or continue without it (can install later)
+🔗 External PM Tool Sync:
+   Tool: GitHub Issues
+   Plugin: specweave-github ✅ Installed
 
-Continue with plan.md generation? [Y/n]
+   Creating GitHub issue...
+   ✅ Issue #42 created: "Increment 0007: User Authentication"
+      URL: https://github.com/myorg/myapp/issues/42
+
+   Auto-sync enabled:
+   • Progress updates posted after each task completion
+   • Issue closed automatically when increment done
+
+Next steps:
+1. Review spec.md - verify user stories
+2. Approve plan.md - validate architecture
+3. Start work: /specweave:do
 ```
 
 **Integration with Existing Workflow**:
-- This is a **suggestion step**, not a blocking requirement
-- Increment creation continues regardless of plugin installation
-- Plugins can be installed any time (they auto-activate when needed)
-- This implements the "load on demand" philosophy
+- Plugin detection is a **suggestion step** (not blocking)
+- PM tool sync is **automatic** if configured (zero manual intervention)
+- Increment creation continues regardless of PM tool status
+- This implements the "seamless integration" philosophy
 
 ### Step 7: Generate plan.md
 
@@ -857,13 +935,13 @@ Before completing:
 1. **Constitutional Compliance**:
    - Article V: Modular Scalability (proper structure)
    - Article VI: Separation of Concerns (spec vs plan vs tasks)
-   - Article IX: Testing Mandate (tests.md comprehensive)
+   - Article IX: Testing Mandate (tasks.md with embedded tests comprehensive)
 
 2. **Quality Checks**:
    - spec.md is technology-agnostic
-   - plan.md has sufficient technical detail
-   - tasks.md has exact file paths
-   - tests.md covers all P1 user stories
+   - plan.md has sufficient technical detail + test strategy
+   - tasks.md has exact file paths + embedded test plans (BDD format)
+   - tasks.md covers all P1 AC-IDs with test cases
    - context-manifest.yaml is precise
 
 3. **Update Features Index**:
@@ -949,14 +1027,13 @@ Before completing:
 - Next: 0003
 - Path: `.specweave/increments/0003-stripe-payment-integration/`
 
-**Step 4**: Create structure
+**Step 4**: Create structure (v0.7.0+)
 ```
 .specweave/increments/0003-stripe-payment-integration/
-├── spec.md
-├── plan.md
-├── tasks.md
-├── tests.md
-└── context-manifest.yaml
+├── spec.md                  # WHAT & WHY
+├── plan.md                  # HOW + test strategy
+├── tasks.md                 # Implementation + embedded tests (BDD)
+└── context-manifest.yaml    # Context loading config
 ```
 
 **Step 5**: Generate spec.md
@@ -1018,23 +1095,24 @@ Acceptance Criteria:
 ...
 ```
 
-**Step 8**: Generate tests.md
-```markdown
-# Test Strategy: Stripe Payment Integration
+**Step 8**: Invoke test-aware-planner Agent (v0.7.0+)
+```typescript
+// Use Task tool to invoke test-aware-planner agent
+Task({
+  subagent_type: "test-aware-planner",
+  description: "Generate tasks with embedded tests",
+  prompt: `Create tasks.md with embedded test plans for Stripe payment integration.
 
-## Test Cases
+  Read increment files:
+  - .specweave/increments/0003-stripe-payment-integration/spec.md
+  - .specweave/increments/0003-stripe-payment-integration/plan.md
 
-### TC-001: Successful Subscription Creation
-Type: Integration
-Priority: P1
-User Story: US1
-
-Scenario:
-- Given a valid customer and plan ID
-- When createSubscription() is called
-- Then subscription is created in Stripe
-- And webhook confirms activation
-...
+  Generate tasks.md with:
+  - BDD test plans (Given/When/Then) per task
+  - Test cases (unit/integration/E2E with file paths)
+  - Coverage targets (80-90% overall)
+  - AC-ID traceability from spec.md`
+});
 ```
 
 **Step 9**: Generate context-manifest.yaml
@@ -1051,10 +1129,10 @@ priority: high
 ```
 
 **Step 10**: Validate
-- ✅ spec.md is technology-agnostic
-- ✅ plan.md documents Stripe SDK choice
-- ✅ tasks.md follows test-first
-- ✅ tests.md covers all P1 stories
+- ✅ spec.md is technology-agnostic with AC-IDs
+- ✅ plan.md documents Stripe SDK choice + test strategy
+- ✅ tasks.md has embedded test plans (BDD format)
+- ✅ tasks.md covers all P1 AC-IDs with tests
 - ✅ Constitutional compliance verified
 
 **Output**:
@@ -1063,10 +1141,9 @@ priority: high
 
 Location: .specweave/increments/0003-stripe-payment-integration/
 Files created:
-- spec.md
-- plan.md
-- tasks.md
-- tests.md
+- spec.md (12 user stories, 34 AC-IDs)
+- plan.md (5 phases, architecture diagrams, test strategy)
+- tasks.md (23 tasks with embedded tests, 85% coverage target)
 - context-manifest.yaml
 
 Next steps:
@@ -1124,7 +1201,7 @@ This skill enforces:
 
 - **Article V**: Modular Scalability - Auto-numbered features prevent conflicts
 - **Article VI**: Separation of Concerns - spec vs plan vs tasks are distinct
-- **Article IX**: Skill Testing Mandate - tests.md ensures comprehensive testing
+- **Article IX**: Testing Mandate - tasks.md with embedded tests ensures comprehensive testing (v0.7.0+)
 
 ## Integration with Other Skills
 

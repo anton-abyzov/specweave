@@ -2299,7 +2299,8 @@ specweave init .
 
 **3. Test Structure Reorganization**:
 - Moved all test-cases to centralized `tests/` folder
-- New structure: `tests/specs/{skill}/` and `tests/integration/{integration}/`
+- Consolidated structure: `tests/integration/{skill}/` (single location)
+- Removed redundant `tests/specs/` directory
 - Better CI/CD integration
 
 ### Migration from 0.1.9

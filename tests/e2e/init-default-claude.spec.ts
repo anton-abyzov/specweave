@@ -41,11 +41,14 @@ test.describe('specweave init - default claude adapter', () => {
     const settingsPath = path.join(TEST_DIR, '.claude/settings.json');
     expect(await fs.pathExists(settingsPath)).toBe(true);
 
-    // Verify it contains marketplace config
+    // Verify it contains marketplace config with correct GitHub object format
     const settings = await fs.readJson(settingsPath);
     expect(settings.extraKnownMarketplaces).toBeDefined();
     expect(settings.extraKnownMarketplaces.specweave).toBeDefined();
-    expect(settings.extraKnownMarketplaces.specweave.source).toContain('.claude-plugin');
+    expect(settings.extraKnownMarketplaces.specweave.source).toBeDefined();
+    expect(settings.extraKnownMarketplaces.specweave.source.source).toBe('github');
+    expect(settings.extraKnownMarketplaces.specweave.source.repo).toBe('anton-abyzov/specweave');
+    expect(settings.extraKnownMarketplaces.specweave.source.path).toBe('.claude-plugin');
   });
 
   test.skip('Plugin system: agents are NOT copied to .claude/ (installed globally)', async () => {

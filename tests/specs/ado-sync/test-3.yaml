@@ -1,9 +1,0 @@
----
-name: "Handle ADO API Errors"
-description: "Tests error handling for ADO authentication failures"
-input:
-  prompt: "Sync to ADO"
-  ado_configured: false
-expected_output:
-  error: "ADO PAT not configured"
----

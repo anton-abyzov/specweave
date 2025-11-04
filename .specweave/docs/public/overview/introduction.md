@@ -81,7 +81,7 @@ Plan work in auto-numbered increments:
 │   ├── spec.md              # What and Why
 │   ├── plan.md              # How
 │   ├── tasks.md             # Checklist
-│   └── tests.md             # Test strategy
+│                            # Tests embedded in tasks.md (v0.7.0+)
 └── 0002-payment-processing/
     └── ...
 ```

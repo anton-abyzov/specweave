@@ -167,7 +167,9 @@ class FigmaDesignerTest {
 }
 
 // Run tests
-if (require.main === module) {
+// Run tests if called directly
+const isMainModule = process.argv[1] === new URL(import.meta.url).pathname;
+if (isMainModule) {
   const test = new FigmaDesignerTest();
   test.run().catch(error => {
     console.error('Test suite failed:', error);

@@ -547,7 +547,12 @@ print(json.dumps(metrics, indent=2))
         stdio: 'pipe'
       });
 
-      const metrics = JSON.parse(output);
+      // Extract JSON from output (filter out YOLO's additional output)
+      const jsonMatch = output.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error(`No JSON found in output: ${output}`);
+      }
+      const metrics = JSON.parse(jsonMatch[0]);
 
       console.log(`   📊 Validation Metrics:`);
       console.log(`      - mAP@0.5: ${(metrics.mAP50 * 100).toFixed(2)}%`);
@@ -679,7 +684,12 @@ print(json.dumps(results_data, indent=2))
         stdio: 'pipe'
       });
 
-      const inferenceResults = JSON.parse(output);
+      // Extract JSON from output (filter out YOLO's additional output)
+      const jsonMatch = output.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        throw new Error(`No JSON found in output: ${output}`);
+      }
+      const inferenceResults = JSON.parse(jsonMatch[0]);
 
       console.log(`   🔮 Inference Results:`);
       inferenceResults.forEach((result: any) => {
@@ -828,8 +838,9 @@ print(json.dumps(results_data, indent=2))
   }
 }
 
-// Run tests
-if (require.main === module) {
+// Run tests if called directly
+const isMainModule = process.argv[1] === new URL(import.meta.url).pathname;
+if (isMainModule) {
   const test = new MLPipelineSoccerDetectionTest();
   test.run().catch(error => {
     console.error('Test suite failed:', error);

@@ -97,5 +97,5 @@ cp templates/docs/test-strategy-template.md docs/internal/delivery/test-strategy
 ## Related Documentation
 
 - [Strategy Documentation](../strategy/README.md) - Links roadmap to PRDs
-- [Architecture Documentation](../architecture/README.md) - Links releases to ADRs/RFCs
+- [Architecture Documentation](../architecture/README.md) - Links releases to ADRs/Specs
 - [Operations Documentation](../operations/README.md) - Links to operational runbooks

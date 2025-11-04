@@ -1,9 +1,0 @@
----
-name: "Detect C4 Level 3 (LLD)"
-description: "Tests if diagrams-generator correctly identifies LLD component diagrams"
-input:
-  prompt: "Create component diagram for Auth Service"
-expected_output:
-  diagram_type: "C4Component"
-  document_type: "LLD"
----

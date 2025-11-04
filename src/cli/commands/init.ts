@@ -401,6 +401,23 @@ export async function initCommand(
 
     spinner.succeed('SpecWeave project created successfully!');
 
+    // 10.5 Issue Tracker Integration (NEW!)
+    // Ask user to configure GitHub/Jira/ADO integration
+    try {
+      const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+      await setupIssueTracker({
+        projectPath: targetDir,
+        language: language as SupportedLanguage,
+        maxRetries: 3
+      });
+    } catch (error: any) {
+      // Non-critical error - log but continue
+      if (process.env.DEBUG) {
+        console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+      }
+      console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
+    }
+
     // 11. Auto-detect and suggest plugins (T-018)
     console.log('');
     const pluginSpinner = ora('Detecting plugins...').start();

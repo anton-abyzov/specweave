@@ -4,7 +4,7 @@ This directory contains all slash commands for SpecWeave.
 
 ## Available Commands (v0.2.0)
 
-**IMPORTANT**: All SpecWeave commands are now namespaced with `specweave.` notation to avoid collisions in brownfield projects.
+**IMPORTANT**: All SpecWeave commands are now namespaced with `specweave:` notation to avoid collisions in brownfield projects.
 
 ### Core Workflow Commands (Smart Workflow)
 
@@ -83,7 +83,7 @@ npx specweave init my-saas
 
 ## Namespaced Commands (Brownfield Safety)
 
-**Design decision**: All commands use `specweave.` notation for collision avoidance.
+**Design decision**: All commands use `specweave:` notation for collision avoidance.
 
 - ✅ No conflicts with existing project commands
 - ✅ Clear ownership (framework vs. project commands)
