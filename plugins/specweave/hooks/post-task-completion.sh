@@ -225,6 +225,72 @@ if command -v node &> /dev/null; then
 fi
 
 # ============================================================================
+# SYNC TO EXTERNAL TRACKERS (NEW in v0.7.0 - GitHub/Jira/ADO)
+# ============================================================================
+
+if [ -n "$CURRENT_INCREMENT" ]; then
+  echo "[$(date)] 🔗 Checking external tracker sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+
+  # Check for metadata.json with GitHub/Jira issue link
+  METADATA_FILE=".specweave/increments/$CURRENT_INCREMENT/metadata.json"
+
+  if [ -f "$METADATA_FILE" ]; then
+    # Detect tracker type from metadata
+    GITHUB_ISSUE=$(jq -r '.github.issue // empty' "$METADATA_FILE" 2>/dev/null)
+    JIRA_ISSUE=$(jq -r '.jira.issue // empty' "$METADATA_FILE" 2>/dev/null)
+    ADO_ITEM=$(jq -r '.ado.item // empty' "$METADATA_FILE" 2>/dev/null)
+
+    # GitHub sync (if issue exists and gh CLI available)
+    if [ -n "$GITHUB_ISSUE" ] && command -v gh &> /dev/null; then
+      echo "[$(date)] 🔄 Syncing to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
+
+      # Run GitHub sync command (non-blocking)
+      if command -v node &> /dev/null && [ -f "dist/commands/github-sync.js" ]; then
+        node dist/commands/github-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to sync to GitHub (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      else
+        # Fallback: Use gh CLI directly
+        gh issue comment "$GITHUB_ISSUE" --body "Progress update: Task completed in increment $CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to comment on GitHub issue (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      fi
+    fi
+
+    # Jira sync (if issue exists)
+    if [ -n "$JIRA_ISSUE" ]; then
+      echo "[$(date)] 🔄 Syncing to Jira issue $JIRA_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
+
+      # Run Jira sync command (non-blocking)
+      if command -v node &> /dev/null && [ -f "dist/commands/jira-sync.js" ]; then
+        node dist/commands/jira-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to sync to Jira (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      fi
+    fi
+
+    # Azure DevOps sync (if work item exists)
+    if [ -n "$ADO_ITEM" ]; then
+      echo "[$(date)] 🔄 Syncing to Azure DevOps item $ADO_ITEM" >> "$DEBUG_LOG" 2>/dev/null || true
+
+      # Run ADO sync command (non-blocking)
+      if command -v node &> /dev/null && [ -f "dist/commands/ado-sync.js" ]; then
+        node dist/commands/ado-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to sync to Azure DevOps (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      fi
+    fi
+
+    # Log if no external tracker configured
+    if [ -z "$GITHUB_ISSUE" ] && [ -z "$JIRA_ISSUE" ] && [ -z "$ADO_ITEM" ]; then
+      echo "[$(date)] ℹ️  No external tracker configured for $CURRENT_INCREMENT (skipping sync)" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  else
+    echo "[$(date)] ℹ️  No metadata.json found for $CURRENT_INCREMENT (skipping tracker sync)" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
+fi
+
+# ============================================================================
 # PLAY SOUND (only if session is truly ending)
 # ============================================================================
 
