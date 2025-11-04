@@ -76,41 +76,67 @@ The iron rule conflates **two different goals**:
 
 ## Proposed Solution: Smart Discipline System
 
-### Philosophy Shift
+### Philosophy: Disciplined Tutor, Not Permissive Freedom
 
-**Old**: "The framework knows better than you" (prescriptive enforcement)
-**New**: "The framework helps you make informed decisions" (intelligent guidance)
+**Core Principle**: SpecWeave acts as your AI tutor enforcing disciplined, sequential development.
+
+**The Iron Rule REMAINS**: Cannot start increment N+1 until increment N is DONE.
+
+**What's New (v0.7.0)**: Better handling of blocked work WITHIN this discipline.
+
+### Natural Build Order
+
+**Example - Building a Dashboard Application**:
+1. ✅ **First**: Build basic UI components (buttons, forms, cards, layouts)
+2. ✅ **Then**: Build authentication (uses UI components)
+3. ✅ **Then**: Build data API (uses auth for security)
+4. ✅ **Finally**: Build stats dashboard (uses UI + auth + API)
+
+**Wrong Approach** ❌:
+- Starting stats dashboard when UI components don't exist
+- Building complex features before foundation is ready
+- "Vibe coding" without structure
+
+**SpecWeave enforces this**: You can't build features requiring components that don't exist yet.
 
 ### Core Principles
 
-1. **Replace blocks with warnings** - Show context, let user decide
-2. **Rich status tracking** - active/blocked/paused/completed/abandoned
-3. **Type-based rules** - Different rules for hotfix/feature/spike
-4. **Dependency tracking** - Explicit blocked-by/blocks relationships
-5. **Team-aware** - Support parallel streams with visibility
-6. **Cost transparency** - Show context-switching overhead metrics
+1. **Sequential completion** - Finish N before starting N+1 (ENFORCED)
+2. **Natural dependencies** - Foundation → Features → Advanced features
+3. **Rich status tracking** - active/paused/completed/abandoned (for blocked work)
+4. **Type-based limits** - Hotfix=unlimited, feature=2 max, refactor=1 max
+5. **Context-switching warnings** - Show 20-40% productivity cost
+6. **Pause for blocked work** - NOT for working on multiple things
 
 ---
 
 ## Detailed Design
 
-### 1. Status-Based Tracking (Not Binary)
+### 1. Status-Based Tracking (For Handling Blocked Work)
 
-Replace "done vs. not-done" with rich status model:
+Add rich status model while maintaining sequential discipline:
 
 ```yaml
 statuses:
-  active:      # Currently working on (limit: 1-2)
-  blocked:     # Waiting for external input (unlimited)
-  paused:      # Intentionally shelved (warn after 7 days)
-  completed:   # All tasks done
+  active:      # Currently working on (MUST complete before starting new)
+  paused:      # Temporarily blocked (waiting for API keys, design, etc.)
+  completed:   # All tasks done (can start next increment)
   abandoned:   # Won't finish (requires reason)
 ```
 
+**IMPORTANT**: Paused status is for BLOCKED work (waiting for external dependencies), NOT for working on multiple things simultaneously.
+
+**Use Cases for Pause**:
+- ✅ Waiting for API keys/credentials
+- ✅ Waiting for design assets/mockups
+- ✅ Waiting for code review/approval
+- ✅ Waiting for third-party integration
+- ❌ NOT for "working on multiple features at once"
+
 **Benefits**:
-- ✅ Clear intent ("blocked" vs "paused" vs "abandoned")
-- ✅ Different rules per status (blocked = OK to start new work)
-- ✅ Visibility into why work stopped
+- ✅ Clear intent ("why did work stop?")
+- ✅ Can start new increment when current is genuinely blocked
+- ✅ Visibility into blockers
 - ✅ Automatic staleness warnings (paused > 7 days)
 
 ### 2. Increment Types (Different Rules)
@@ -160,46 +186,64 @@ dependencies:
 - Suggest dependency links
 - Validate dependency graph (detect cycles)
 
-### 4. Revised `/specweave:inc` Logic
+### 4. Enhanced `/specweave:inc` Logic (v0.7.0)
 
-**Replace hard block with context-aware guidance**:
+**Iron Rule STILL ENFORCED, but with better context and type-based exceptions**:
 
 ```bash
 /specweave:inc "0012-add-search" --type=feature
 
 # System response:
-🟡 You have 1 active feature (0010-user-profiles: 60% done, 3 days)
+❌ Cannot create new increment!
 
-⚠️  Context switching reduces productivity by 20-40%.
+Previous increment 0010-user-profiles is incomplete:
+   Status: 60% complete (8/12 tasks done)
+   Age: 3 days old
+   Type: feature
 
-Options:
-1️⃣  Continue with 0010 first (/specweave:do)
-2️⃣  Pause 0010 and start 0012 (mark 0010 as paused)
-3️⃣  Start 0012 in parallel (2 active features - higher overhead)
+⚠️  The Iron Rule: Complete increment N before starting N+1
 
-What would you like to do? [1/2/3]
+💡 What would you like to do?
+
+1️⃣  Continue with 0010 (/specweave:do) - Recommended
+2️⃣  Pause 0010 (if blocked) then create 0012
+    /pause 0010 --reason="Waiting for API keys"
+3️⃣  Complete 0010 first (check remaining tasks)
+    /specweave:progress 0010
+4️⃣  Force create (EMERGENCY ONLY - requires justification)
+    /specweave:inc "0012-add-search" --force --reason="Production down"
+
+What would you like to do? [1/2/3/4]
 ```
 
-**Key Differences**:
-- ℹ️  **Information** instead of blocking
-- 📊 **Context** (how much done, how old)
-- 🎯 **Suggestions** (best practices)
-- 🚪 **User choice** (not forced)
+**Key Principles**:
+- ⛔ **Iron Rule enforced** (block, not warning)
+- 📊 **Context provided** (completion %, age, type)
+- 🎯 **Guidance offered** (best path forward)
+- 🚪 **Pause option** (for genuinely blocked work)
+- ⚠️  **Force requires reason** (auditable)
 
-### 5. Automatic Warnings (Not Blocks)
+### 5. Type-Based Limit Warnings (v0.7.0)
 
-**High context switching detected**:
+**Type limit exceeded (features)**:
 ```bash
-⚠️  You now have 3 active increments:
+⚠️  TYPE LIMIT REACHED
+
+You already have 2 active features:
    - 0010-user-profiles (60% done, 3 days old)
    - 0012-add-search (10% done, started today)
-   - 0013-refactor-db (5% done, started today)
 
-💡 Research shows: 3+ concurrent tasks = 40% productivity loss
+💡 Research shows: 2+ concurrent tasks = 20-30% productivity loss
 
-   Suggestion: Complete or pause one before continuing.
+   Recommended: Complete or pause one before starting another feature.
 
-   [Continue anyway] [Pause one increment]
+   Type limits:
+   ✅ hotfix: unlimited (critical fixes)
+   ⚠️  feature: 2 max (you're at limit)
+   ✅ refactor: 1 max
+   ✅ experiment: unlimited (time-boxed)
+
+   Continue anyway? (not recommended) [y/N]
 ```
 
 **Stale paused increment**:
@@ -332,16 +376,17 @@ What would you like to do? [1/2/3]
 
 ## Comparison: Old vs. New
 
-| Scenario | Old (Iron Rule) | New (Smart Discipline) |
+| Scenario | Old (v0.6.0) | New (v0.7.0 - Smart Discipline) |
 |----------|----------------|------------------------|
-| **Hotfix during feature** | Must use `--force` ❌ | Hotfix type auto-allowed ✅ |
-| **Blocked work** | Close or `--force` ❌ | Mark "blocked", start other work ✅ |
-| **Prerequisite discovery** | Close & re-open ❌ | Create dependency, pause original ✅ |
-| **Team parallel work** | Not supported ❌ | Multiple active allowed (with warnings) ✅ |
+| **Iron Rule** | Complete N before N+1 ✅ | **SAME** - Complete N before N+1 ✅ |
+| **Hotfix during feature** | Must use `--force` ❌ | Hotfix type unlimited (bypass limit) ✅ |
+| **Blocked work (waiting for API keys)** | Close or `--force` ❌ | Mark "paused", start other work when unblocked ✅ |
 | **Scope reduction** | Feels like failure ❌ | Normal part of discovery ✅ |
-| **Discipline enforcement** | Hard block (circumvented) ❌ | Visibility + warnings (internalized) ✅ |
-| **3+ active increments** | Prevented ❌ | Allowed with cost transparency ✅ |
-| **Experiments/spikes** | Same rules as features ❌ | Lightweight, time-boxed, auto-cleanup ✅ |
+| **Experiments/spikes** | Same rules as features ❌ | Unlimited (auto-abandon after 14 days) ✅ |
+| **Status tracking** | Binary (done/not done) ❌ | Rich (active/paused/completed/abandoned) ✅ |
+| **Type-based limits** | All same (generic) ❌ | Different per type (hotfix/feature/refactor) ✅ |
+| **Context switching warnings** | None ❌ | Show 20-40% productivity cost ✅ |
+| **Parallel work on multiple features** | Prevented ✅ | **SAME** - Prevented (Iron Rule enforced) ✅ |
 
 ---
 
@@ -537,6 +582,54 @@ What would you like to do? [1/2/3]
    - Pro (block): Prevents conflicts
    - Pro (allow): Enable collaboration
    - **Decision**: Phase 4, allow with warnings
+
+---
+
+## Summary: What v0.7.0 Actually Implemented
+
+### The Iron Rule REMAINS
+
+⛔ **You CANNOT start increment N+1 until increment N is DONE** (ENFORCED)
+
+This is NOT negotiable. The enforcement remains to maintain discipline and prevent chaos.
+
+### What Changed in v0.7.0
+
+#### 1. Status Management (For Blocked Work)
+- ✅ `/pause <id> --reason="..."` - Pause when genuinely blocked
+- ✅ `/resume <id>` - Resume when unblocked
+- ✅ `/abandon <id> --reason="..."` - Abandon obsolete work
+- ✅ Rich status tracking (active/paused/completed/abandoned)
+
+**Critical**: Pause is for BLOCKED work (waiting for API keys, design approval), NOT for working on multiple features simultaneously.
+
+#### 2. Type-Based Limits
+- ✅ **hotfix**: unlimited (critical production fixes)
+- ✅ **feature**: max 2 active (standard development)
+- ✅ **refactor**: max 1 active (high focus requirement)
+- ✅ **bug**: unlimited (SRE investigation)
+- ✅ **change-request**: max 2 active (stakeholder requests)
+- ✅ **experiment**: unlimited (auto-abandon after 14 days)
+
+#### 3. Context Switching Warnings
+- ✅ Show 20-40% productivity cost when at type limits
+- ✅ Display active increment status and age
+- ✅ Provide guidance on best path forward
+
+#### 4. Natural Build Order Enforcement
+- ✅ Foundation → Features → Advanced features
+- ✅ UI components → Authentication → Dashboard
+- ✅ Can't build stats charts before UI exists
+
+### Philosophy: Disciplined Tutor
+
+**SpecWeave is your AI tutor** enforcing structure and discipline:
+- 🎓 Guides you through natural dependency order
+- 🎓 Prevents "vibe coding" chaos
+- 🎓 Ensures completion before starting new work
+- 🎓 Helps you not miss critical steps
+
+**Big increments are OK**: The rule isn't about size - you can have substantial increments. The rule is about **completion**: finish what you start before moving to the next thing.
 
 ---
 
