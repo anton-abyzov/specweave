@@ -76,7 +76,7 @@ sequenceDiagram
 🔄 Resuming from: T-003 (TypingIndicatorManager)
 
 **AC**: AC-US3-01, AC-US3-02
-**Test Plan**: Given user typing → Indicator shown <100ms
+**Test Plan**: Given user typing → Indicator shown in under 100ms
 
 **Files to create:**
 - src/services/chat/TypingIndicatorManager.ts
@@ -544,7 +544,7 @@ $ /specweave:do
 📋 Increment: 0012-real-time-chat
 🔄 Next: T-003 (TypingIndicatorManager)
 
-**Test Plan**: Given user typing → Indicator shown <100ms → Clears after 3s
+**Test Plan**: Given user typing → Indicator shown in under 100ms → Clears after 3s
 
 Create tests first (TDD mode)? (Y/n): y
 

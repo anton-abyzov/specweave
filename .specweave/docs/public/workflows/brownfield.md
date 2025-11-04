@@ -267,7 +267,7 @@ JWT-based authentication with bcrypt password hashing, session management, and O
 
 ## Performance
 - Average login time: ~200ms
-- JWT validation: <10ms
+- JWT validation: under 10ms
 - Password hashing: ~100ms (intentionally slow)
 ```
 
