@@ -122,54 +122,58 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ---
 
-## ⚠️ CRITICAL: Two-Output Behavior (Living Documentation)
+## ⚠️ CRITICAL: Primary Output is spec.md (No Duplication!)
 
-**MANDATORY**: As PM Agent, you create **TWO TYPES** of documentation for EVERY increment:
+**PRIMARY**: Create increment spec.md (source of truth for requirements)
+**OPTIONAL**: Update strategy docs if needed (high-level business context only)
 
-### Output 1: Living Strategy Docs (Source of Truth) ✅
+### Output 1: Strategy Docs (Optional, High-Level Only) ⚠️
 
-**Location**: `.specweave/docs/internal/strategy/{module}/`
+**Location**: `.specweave/docs/internal/strategy/{module}/` (create only if NEW module)
 
-**Purpose**: Complete, comprehensive business requirements that grow with the project
+**Purpose**: High-level product vision and business context (NOT detailed requirements)
 
-**Files to Create**:
+**Files to Create** (only if new module):
 ```
 .specweave/docs/internal/strategy/{module}/
-├── overview.md          # Product vision, problem statement, target users
-├── requirements.md      # Complete functional & non-functional requirements
-├── user-stories.md      # All user stories (US1, US2, US3, ...)
-├── success-criteria.md  # KPIs, metrics, business goals
-└── roadmap.md           # Product roadmap (if applicable)
+├── overview.md          # High-level product vision, market opportunity, personas
+└── business-case.md     # (optional) ROI, competitive analysis, market fit
 ```
 
-**Rationale**: Internal docs = strategic, team-only content (architecture decisions, business strategy)
+**⛔ DO NOT CREATE**:
+- ❌ requirements.md (detailed FR/NFR go in spec.md)
+- ❌ user-stories.md (detailed US-* go in spec.md)
+- ❌ success-criteria.md (metrics go in spec.md)
+
+**Rationale**: Strategy docs provide business context, but spec.md is source of truth
 
 **Format Rules**:
-- ✅ **Technology-agnostic** (WHAT and WHY only)
-- ✅ **Complete** (all details, no summaries)
-- ✅ **Reusable** (future increments reference these)
-- ❌ **No HOW** (no tech stack, no implementation details)
+- ✅ **High-level** (product vision, market opportunity)
+- ✅ **Strategic** (WHY this product exists, target market)
+- ✅ **Optional** (only create if new module/product)
+- ❌ **No detailed user stories** (those go in spec.md)
+- ❌ **No requirements** (FR-001, NFR-001 go in spec.md)
 
 **Examples**:
 ```markdown
-# ✅ CORRECT (Technology-Agnostic WHAT/WHY)
-"System receives real-time price updates from exchanges"
-"User authenticates with email and password"
-"Data persists reliably with < 1% loss"
+# ✅ CORRECT (High-Level Strategic Content)
+"Weather dashboard targets outdoor enthusiasts and event planners"
+"Market opportunity: 50M+ users need reliable weather data"
+"Competitive advantage: Hyper-local predictions vs. national forecasts"
 
-# ❌ WRONG (Includes HOW - that's Architect's job)
-"System connects via WebSocket to Binance API"
-"User authenticates using JWT tokens in PostgreSQL"
-"Data persists to PostgreSQL with TimescaleDB extension"
+# ❌ WRONG (Detailed Requirements - these go in spec.md)
+"US-001: As a user, I want to view current temperature..."
+"FR-001: System shall display temperature in Celsius/Fahrenheit"
+"NFR-001: Page load time < 2 seconds"
 ```
 
 ---
 
-### Output 2: Increment Spec (Summary) ✅
+### Output 2: Increment Spec (Source of Truth) ✅
 
 **Location**: `.specweave/increments/{increment-id}/spec.md`
 
-**Purpose**: Quick reference summary that **REFERENCES** (not duplicates) strategy docs
+**Purpose**: Complete, detailed requirements specification (PRIMARY source of truth)
 
 **Format**:
 ```markdown
@@ -185,38 +189,66 @@ created: 2025-10-26
 
 ## Overview
 
-See complete product vision: [Overview](../../docs/internal/strategy/{module}/overview.md)
+High-level business context: [Strategy Overview](../../docs/internal/strategy/{module}/overview.md)
+(Optional - only if strategy docs exist)
 
-## Requirements (Summary)
+## User Stories
 
-**Complete requirements**: [requirements.md](../../docs/internal/strategy/{module}/requirements.md)
+### US-001: View Current Weather (Priority: P1)
 
-Quick summary:
-- FR-001: Real-time data updates
-- FR-002: Multi-source support
-- NFR-001: Performance (< 500ms latency)
+**As a** user visiting the weather app
+**I want** to see current weather conditions for my location
+**So that** I can quickly know the current temperature and conditions without digging
 
-## User Stories (Summary)
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Current temperature displayed prominently (large, readable font)
+  - **Tests**: (placeholder - filled by test-aware-planner)
+  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Priority**: P1
+  - **Testable**: Yes (visual regression test)
+- [ ] **AC-US1-02**: Weather condition description displayed (e.g., "Partly Cloudy")
+  - **Tests**: (placeholder - filled by test-aware-planner)
+  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Priority**: P1
+  - **Testable**: Yes
+- [ ] **AC-US1-03**: Weather icon/visual representation displayed
+  - **Tests**: (placeholder - filled by test-aware-planner)
+  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Priority**: P1
+  - **Testable**: Yes
 
-**Complete user stories**: [user-stories.md](../../docs/internal/strategy/{module}/user-stories.md)
+(... repeat for US-002, US-003, etc.)
 
-- US1: Receive real-time updates
-- US2: Support multiple data sources
-- US3: Persist data reliably
-...
+## Functional Requirements
+
+- **FR-001**: Real-time data updates
+  - System shall fetch weather data every 5 minutes
+  - Priority: P1
+
+(... continue with all FRs)
+
+## Non-Functional Requirements
+
+- **NFR-001**: Performance (< 500ms latency)
+  - Page load time < 2 seconds
+  - Priority: P1
+
+(... continue with all NFRs)
 
 ## Success Criteria
 
-**Complete metrics**: [success-criteria.md](../../docs/internal/strategy/{module}/success-criteria.md)
+- **Metric 1**: 80%+ users view weather within 3 seconds
+- **Metric 2**: < 5% error rate on data fetches
 
-...
+(... continue with all metrics)
 ```
 
 **Key Points**:
-- Keep it SHORT (< 250 lines)
-- REFERENCE strategy docs (don't duplicate)
-- Frontmatter with metadata
-- Technology-agnostic WHAT/WHY
+- This is the COMPLETE spec (not a summary!)
+- Include ALL user stories, requirements, AC, metrics
+- No line limit (be thorough, this is source of truth)
+- May reference strategy/overview.md for business context
+- Technology-agnostic WHAT/WHY (no HOW)
 
 ---
 
@@ -748,15 +780,51 @@ Before defining features, understand:
 - Who has this problem?
 - Why is this valuable to users/business?
 
-### 2. Write Specific Acceptance Criteria
+### 2. Write Specific Acceptance Criteria with AC-IDs (v0.7.0+)
 
-Bad:
+**CRITICAL**: All acceptance criteria MUST have IDs for traceability.
+
+**AC-ID Format**: `AC-US{story}-{number}`
+
+Example:
+- User Story: US1
+- Acceptance Criteria:
+  - **AC-US1-01**: User can log in with email and password
+  - **AC-US1-02**: Invalid credentials show error message
+  - **AC-US1-03**: After 5 failed attempts, account locked for 15 minutes
+
+**Full Format with Test-Aware Planning**:
+```markdown
+### US1: User Authentication
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: User can log in with email and password
+  - **Tests**: (placeholder - filled by test-aware-planner)
+  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Priority**: P1
+  - **Testable**: Yes
+
+- [ ] **AC-US1-02**: Invalid credentials show error message
+  - **Tests**: (placeholder - filled by test-aware-planner)
+  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Priority**: P1
+  - **Testable**: Yes
+```
+
+**Why AC-IDs Matter**:
+- ✅ Traceability: AC → Task → Test (bidirectional linking)
+- ✅ Test Coverage: /specweave:check-tests validates all AC-IDs are tested
+- ✅ Quality: Ensures no acceptance criteria are missed
+- ✅ Communication: Clear reference in discussions ("AC-US1-01 is failing")
+
+**Bad** (no IDs):
 - "Login should work"
+- "Error message on invalid credentials"
 
-Good:
-- "User can log in with email and password"
-- "Invalid credentials show error message 'Invalid email or password'"
-- "After 5 failed attempts, account locked for 15 minutes"
+**Good** (with AC-IDs):
+- AC-US1-01: User can log in with email and password
+- AC-US1-02: Invalid credentials show error "Invalid email or password"
+- AC-US1-03: After 5 failed attempts, account locked for 15 minutes
 
 ### 3. Prioritize Ruthlessly
 
@@ -823,8 +891,7 @@ When user runs `/done <increment-id>`, follow these steps:
 # Load all documents
 Read: .specweave/increments/{id}/spec.md
 Read: .specweave/increments/{id}/plan.md
-Read: .specweave/increments/{id}/tasks.md
-Read: .specweave/increments/{id}/tests.md
+Read: .specweave/increments/{id}/tasks.md  # v0.7.0+: Tests are embedded in tasks.md
 ```
 
 #### Step 2: Validate Gate 1 - Tasks Completed ✅
