@@ -246,7 +246,8 @@ if [ -n "$CURRENT_INCREMENT" ]; then
 
       # Run GitHub sync command (non-blocking)
       if command -v node &> /dev/null && [ -f "dist/commands/github-sync.js" ]; then
-        node dist/commands/github-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+        # Use --tasks flag to update issue description (not just comments)
+        node dist/commands/github-sync.js "$CURRENT_INCREMENT" --tasks 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
           echo "[$(date)] ⚠️  Failed to sync to GitHub (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
         }
       else
