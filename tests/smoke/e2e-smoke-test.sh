@@ -61,18 +61,19 @@ if [ ! -d "$REPO_ROOT/plugins/specweave" ]; then
 fi
 
 # Run specweave init (modern CLI approach)
-info "Running: node $REPO_ROOT/bin/specweave.js init ."
+info "Running: node $REPO_ROOT/bin/specweave.js init . --adapter claude"
 cd "$TEST_DIR"
-# Provide default inputs: empty (current dir name), yes (confirm init in non-empty dir), skip issue tracker
-NODE_OUTPUT=$(printf "\n\n\n\n" | node "$REPO_ROOT/bin/specweave.js" init . 2>&1) || {
+# Use --adapter flag to avoid interactive prompts in CI
+NODE_OUTPUT=$(node "$REPO_ROOT/bin/specweave.js" init . --adapter claude 2>&1) || {
   echo "CLI output:"
   echo "$NODE_OUTPUT"
   fail "specweave init failed"
 }
 
-# Debug: Show init output
-echo "Init output:"
-echo "$NODE_OUTPUT" | tail -20
+# Debug: Show init output (last 30 lines)
+echo "Init output (last 30 lines):"
+echo "$NODE_OUTPUT" | tail -30
+echo ""
 
 test -d "$TEST_DIR/.specweave" || fail ".specweave directory not created"
 success "SpecWeave initialized"
