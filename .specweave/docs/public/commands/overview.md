@@ -171,10 +171,10 @@ Intelligently suggests what to work on next.
 
 ---
 
-### `/validate-coverage` - Test Coverage Check
+### `/specweave:check-tests` - Test Coverage Check
 
 ```bash
-/validate-coverage 0007
+/specweave:check-tests 0007
 ```
 
 **What it checks**:
