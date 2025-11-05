@@ -39,9 +39,9 @@ Savings: $0.12 (67%)
 
 **Layer 1: Agent Preferences**
 Each agent knows its optimal model:
-- **Planning agents** → Sonnet (PM, Architect, Security)
-- **Execution agents** → Haiku (DevOps, Frontend, Backend)
-- **Hybrid agents** → Auto-detect (Diagrams, Docs, SRE)
+- **Planning agents** → Sonnet (PM, Architect, Security, QA Lead)
+- **Execution agents** → Haiku (Tech Lead, Docs Writer, Translator)
+- **Hybrid agents** → Auto-detect (Test-Aware Planner, TDD Orchestrator)
 
 **Layer 2: Phase Detection**
 Analyzes your prompt to detect:
