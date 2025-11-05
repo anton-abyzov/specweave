@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.7.1] - 2025-11-05
+
+### 🔥 **CRITICAL BUG FIX** - Init Command Broken for New Users
+
+**Fixed: `specweave init` failing with "Adapter not found: undefined"** 🎯
+
+- **The Bug**: When users ran `specweave init .` and confirmed the detected tool (answered "Yes"), the command failed with:
+  ```
+  Error: Adapter not found: undefined
+  ```
+- **Root Cause**: Tool detection worked correctly (detected "claude"), but when user answered "Yes" to confirm, `toolName` variable was never set, remaining `undefined`
+- **Impact**: **Completely broken for new users** - the simplest install workflow (`specweave init .`) didn't work
+- **Fix**: Added else block to set `toolName = detectedTool` when user confirms (src/cli/commands/init.ts:250-253)
+- **Tested**:
+  - ✅ CI mode (auto-confirm): `CI=true specweave init .`
+  - ✅ Interactive mode (Yes answer): User confirms detected tool
+  - ✅ Interactive mode (No answer): User manually selects tool
+
+**Files Changed**:
+- `src/cli/commands/init.ts` - Added 3 lines to fix toolName assignment
+
+**Urgency**: CRITICAL - This bug blocked ALL new users from the simplest workflow
+
+---
+
+## [0.7.0] - 2025-11-04
+
 ### 🎯 **ARCHITECTURAL IMPROVEMENT** - GitHub Marketplace for Claude Code
 - **NEW: User projects now use GitHub remote marketplace** 🌐
   - **The Change**: `settings.json` now references GitHub instead of local `.claude-plugin/`
