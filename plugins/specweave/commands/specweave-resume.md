@@ -28,7 +28,7 @@ Resume a paused increment when:
    - Clears `pausedReason` and `pausedAt`
    - Updates `lastActivity` timestamp
 4. **Displays** context (pause duration, last activity)
-5. **Suggests** next actions (/do to continue work)
+5. **Suggests** next actions (`/specweave:do` to continue work)
 
 ---
 
@@ -164,10 +164,10 @@ abandoned ──resume──> active (with confirmation)
 
 ## Automatic Suggestions
 
-When you run `/status`, stale paused increments trigger suggestions:
+When you run `/specweave:status`, stale paused increments trigger suggestions:
 
 ```bash
-/status
+/specweave:status
 
 ⏸️  Paused (2):
   🔄 0006-stripe [feature]
@@ -210,7 +210,7 @@ After resuming, the command shows helpful context:
 
 ---
 
-**Command**: `/specweave:resume` (or `/resume`)
+**Command**: `/specweave:resume`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

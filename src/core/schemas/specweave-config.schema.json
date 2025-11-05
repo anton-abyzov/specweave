@@ -218,6 +218,348 @@
         }
       },
       "additionalProperties": false
+    },
+    "multiProject": {
+      "type": "object",
+      "description": "Multi-project configuration for internal docs organization",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable multi-project mode (false = single project using projects/default/)",
+          "default": false
+        },
+        "activeProject": {
+          "type": "string",
+          "description": "Currently active project ID",
+          "pattern": "^[a-z0-9-]+$",
+          "default": "default"
+        },
+        "projects": {
+          "type": "array",
+          "description": "Available projects",
+          "items": {
+            "type": "object",
+            "description": "Project configuration",
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Unique project identifier (kebab-case)",
+                "pattern": "^[a-z0-9-]+$",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "name": {
+                "type": "string",
+                "description": "Project display name",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "description": {
+                "type": "string",
+                "description": "Project description",
+                "maxLength": 512
+              },
+              "techStack": {
+                "type": "array",
+                "description": "Technologies used in this project",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "team": {
+                "type": "string",
+                "description": "Team or organization name",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "contacts": {
+                "type": "object",
+                "description": "Project contacts",
+                "properties": {
+                  "lead": {
+                    "type": "string",
+                    "description": "Tech lead email",
+                    "format": "email"
+                  },
+                  "pm": {
+                    "type": "string",
+                    "description": "Product manager email",
+                    "format": "email"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "syncProfiles": {
+                "type": "array",
+                "description": "Linked sync profiles from sync.profiles (references profile IDs)",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              }
+            },
+            "required": ["id", "name", "description", "team"],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "brownfield": {
+      "type": "object",
+      "description": "Brownfield documentation import tracking",
+      "properties": {
+        "importHistory": {
+          "type": "array",
+          "description": "History of all brownfield imports",
+          "items": {
+            "type": "object",
+            "description": "Single import record",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Source type",
+                "enum": ["notion", "confluence", "wiki", "custom"]
+              },
+              "workspace": {
+                "type": "string",
+                "description": "Source workspace/space name"
+              },
+              "importedAt": {
+                "type": "string",
+                "description": "ISO 8601 timestamp of import",
+                "format": "date-time"
+              },
+              "project": {
+                "type": "string",
+                "description": "Target project ID",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "filesImported": {
+                "type": "number",
+                "description": "Total number of files imported",
+                "minimum": 0
+              },
+              "destination": {
+                "type": "string",
+                "description": "Destination path"
+              }
+            },
+            "required": ["source", "importedAt", "project", "filesImported", "destination"],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    },
+    "sync": {
+      "type": "object",
+      "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",
+      "properties": {
+        "activeProfile": {
+          "type": "string",
+          "description": "Default active sync profile"
+        },
+        "profiles": {
+          "type": "object",
+          "description": "All available sync profiles",
+          "patternProperties": {
+            "^[a-z0-9-]+$": {
+              "type": "object",
+              "description": "Sync profile configuration",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "description": "External provider type",
+                  "enum": ["github", "jira", "ado"]
+                },
+                "displayName": {
+                  "type": "string",
+                  "description": "Human-readable profile name",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Profile description",
+                  "maxLength": 512
+                },
+                "config": {
+                  "type": "object",
+                  "description": "Provider-specific configuration",
+                  "oneOf": [
+                    {
+                      "properties": {
+                        "owner": { "type": "string" },
+                        "repo": { "type": "string" }
+                      },
+                      "required": ["owner", "repo"]
+                    },
+                    {
+                      "properties": {
+                        "domain": { "type": "string" },
+                        "projectKey": { "type": "string" },
+                        "issueType": {
+                          "type": "string",
+                          "enum": ["Epic", "Story", "Task"]
+                        }
+                      },
+                      "required": ["domain", "projectKey"]
+                    },
+                    {
+                      "properties": {
+                        "organization": { "type": "string" },
+                        "project": { "type": "string" },
+                        "workItemType": {
+                          "type": "string",
+                          "enum": ["Epic", "Feature", "User Story"]
+                        },
+                        "areaPath": { "type": "string" },
+                        "iterationPath": { "type": "string" }
+                      },
+                      "required": ["organization", "project"]
+                    }
+                  ]
+                },
+                "timeRange": {
+                  "type": "object",
+                  "description": "Time range configuration",
+                  "properties": {
+                    "default": {
+                      "type": "string",
+                      "description": "Default time range",
+                      "enum": ["1W", "2W", "1M", "3M", "6M", "1Y", "ALL"],
+                      "default": "1M"
+                    },
+                    "max": {
+                      "type": "string",
+                      "description": "Maximum allowed time range",
+                      "enum": ["1W", "2W", "1M", "3M", "6M", "1Y", "ALL"],
+                      "default": "6M"
+                    }
+                  },
+                  "required": ["default", "max"]
+                },
+                "rateLimits": {
+                  "type": "object",
+                  "description": "Rate limiting configuration",
+                  "properties": {
+                    "maxItemsPerSync": {
+                      "type": "number",
+                      "description": "Maximum items to sync in one operation",
+                      "minimum": 1,
+                      "default": 500
+                    },
+                    "warnThreshold": {
+                      "type": "number",
+                      "description": "Warn when exceeding this threshold",
+                      "minimum": 1,
+                      "default": 100
+                    }
+                  }
+                },
+                "projectContext": {
+                  "type": "object",
+                  "description": "Project context for smart detection",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Project name"
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Project description"
+                    },
+                    "keywords": {
+                      "type": "array",
+                      "description": "Keywords for auto-detection",
+                      "items": { "type": "string" }
+                    },
+                    "team": {
+                      "type": "string",
+                      "description": "Team/organization name"
+                    }
+                  }
+                }
+              },
+              "required": ["provider", "displayName", "config", "timeRange"]
+            }
+          }
+        },
+        "projects": {
+          "type": "object",
+          "description": "Project contexts for organizing specs per project/team",
+          "patternProperties": {
+            "^[a-z0-9-]+$": {
+              "type": "object",
+              "description": "Project context",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique project identifier"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Project name"
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Project description"
+                },
+                "team": {
+                  "type": "string",
+                  "description": "Team/organization"
+                },
+                "keywords": {
+                  "type": "array",
+                  "description": "Keywords for auto-detection",
+                  "items": { "type": "string" }
+                },
+                "defaultSyncProfile": {
+                  "type": "string",
+                  "description": "Default sync profile for this project"
+                },
+                "specsFolder": {
+                  "type": "string",
+                  "description": "Project-specific specs folder path"
+                },
+                "increments": {
+                  "type": "array",
+                  "description": "Related increments",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["id", "name", "description", "keywords", "specsFolder"]
+            }
+          }
+        },
+        "settings": {
+          "type": "object",
+          "description": "Global sync settings",
+          "properties": {
+            "autoDetectProject": {
+              "type": "boolean",
+              "description": "Auto-detect project from increment description",
+              "default": true
+            },
+            "defaultTimeRange": {
+              "type": "string",
+              "description": "Default time range for new syncs",
+              "enum": ["1W", "2W", "1M", "3M", "6M", "1Y", "ALL"],
+              "default": "1M"
+            },
+            "rateLimitProtection": {
+              "type": "boolean",
+              "description": "Enable rate limit protection",
+              "default": true
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true,
@@ -333,6 +675,62 @@
         "enabled": [
           "specweave-github"
         ]
+      }
+    },
+    {
+      "project": {
+        "name": "multi-project-example",
+        "version": "1.0.0",
+        "description": "Multi-project enterprise setup"
+      },
+      "multiProject": {
+        "enabled": true,
+        "activeProject": "web-app",
+        "projects": [
+          {
+            "id": "web-app",
+            "name": "Web Application",
+            "description": "Customer-facing web application",
+            "techStack": ["React", "TypeScript", "Node.js", "PostgreSQL"],
+            "team": "Frontend Team",
+            "contacts": {
+              "lead": "lead@example.com",
+              "pm": "pm@example.com"
+            },
+            "syncProfiles": ["web-app-github"]
+          },
+          {
+            "id": "mobile-app",
+            "name": "Mobile Application",
+            "description": "iOS and Android mobile apps",
+            "techStack": ["React Native", "TypeScript", "Firebase"],
+            "team": "Mobile Team",
+            "syncProfiles": ["mobile-jira"]
+          },
+          {
+            "id": "platform-infra",
+            "name": "Platform Infrastructure",
+            "description": "DevOps and infrastructure management",
+            "techStack": ["Terraform", "Kubernetes", "Python"],
+            "team": "Platform Engineering",
+            "syncProfiles": ["platform-ado"]
+          }
+        ]
+      },
+      "brownfield": {
+        "importHistory": [
+          {
+            "source": "notion",
+            "workspace": "acme-corp",
+            "importedAt": "2025-11-06T10:30:00Z",
+            "project": "web-app",
+            "filesImported": 47,
+            "destination": ".specweave/docs/internal/projects/web-app/legacy/notion/"
+          }
+        ]
+      },
+      "plugins": {
+        "enabled": ["specweave-github"]
       }
     }
   ]

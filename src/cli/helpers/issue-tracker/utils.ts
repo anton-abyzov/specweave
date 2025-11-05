@@ -13,27 +13,29 @@ import type { IssueTracker, RateLimitError, RateLimitInfo } from './types.js';
 /**
  * Detect default tracker based on project structure
  *
- * @param projectPath - Path to project root
- * @returns Detected tracker or 'github' as default
+ * @param projectPath - Path to project root (ONLY checks this directory, not parents)
+ * @returns Object with tracker and whether it was actually detected
  */
-export function detectDefaultTracker(projectPath: string): IssueTracker {
-  // Check .git/config for remote URL
+export function detectDefaultTracker(projectPath: string): { tracker: IssueTracker; detected: boolean } {
+  // CRITICAL: Only check project directory, NOT parent directories
   const gitConfigPath = path.join(projectPath, '.git', 'config');
 
   if (fs.existsSync(gitConfigPath)) {
     try {
       const config = fs.readFileSync(gitConfigPath, 'utf-8');
 
-      if (config.includes('github.com')) return 'github';
-      if (config.includes('dev.azure.com') || config.includes('visualstudio.com')) return 'ado';
+      // Actually detected from .git/config
+      if (config.includes('github.com')) return { tracker: 'github', detected: true };
+      if (config.includes('dev.azure.com') || config.includes('visualstudio.com')) return { tracker: 'ado', detected: true };
       // Bitbucket not supported yet
-      if (config.includes('bitbucket.org')) return 'github'; // Fallback
+      if (config.includes('bitbucket.org')) return { tracker: 'github', detected: false }; // Fallback, not truly detected
     } catch (error) {
       // Ignore errors, use default
     }
   }
 
-  return 'github'; // Default to GitHub (most common)
+  // No .git/config found in project directory - return default (NOT detected)
+  return { tracker: 'github', detected: false };
 }
 
 /**

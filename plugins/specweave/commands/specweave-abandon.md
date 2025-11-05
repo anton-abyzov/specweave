@@ -308,7 +308,7 @@ Abandoned work is valuable!
 
 ---
 
-**Command**: `/specweave:abandon` (or `/abandon`)
+**Command**: `/specweave:abandon`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management
