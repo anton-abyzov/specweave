@@ -48,7 +48,9 @@ echo ""
 
 echo "📂 Test 2: Init Command"
 echo "------------------------"
-test_command "specweave init creates .specweave/" "node $OLDPWD/bin/specweave.js init --adapter=claude --language=en --non-interactive && test -d .specweave"
+# Set CI env var to trigger non-interactive mode
+export CI=true
+test_command "specweave init creates .specweave/" "node $OLDPWD/bin/specweave.js init . --adapter=claude --language=en && test -d .specweave"
 test_command ".specweave/config.json exists" "test -f .specweave/config.json"
 test_command ".specweave/increments/ exists" "test -d .specweave/increments"
 test_command ".specweave/docs/ exists" "test -d .specweave/docs"
