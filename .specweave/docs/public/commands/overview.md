@@ -15,16 +15,18 @@ All commands MUST use the `/specweave:*` namespace prefix. Shortcuts like `/spec
 ```mermaid
 graph LR
     A["/specweave:increment"] --> B["/specweave:do"]
-    B --> C["/specweave:validate or /specweave:qa"]
-    C --> D["/specweave:done"]
-    D --> E["/specweave:next"]
-    E --> A
+    B --> C["/specweave:progress"]
+    C --> D["/specweave:validate or /specweave:qa"]
+    D --> E["/specweave:done"]
+    E --> F["/specweave:sync-docs"]
+    F --> A
 
     style A fill:#a8e6cf
     style B fill:#ffd3b6
-    style C fill:#ffaaa5
-    style D fill:#ff8b94
-    style E fill:#a8e6cf
+    style C fill:#a3d5ff
+    style D fill:#ffaaa5
+    style E fill:#ff8b94
+    style F fill:#d4a5ff
 ```
 
 ## 1. Planning Commands
@@ -48,22 +50,7 @@ graph LR
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
-Full documentation →
-
----
-
-### `/specweave:next` - Smart Increment Transition
-
-Intelligently suggests what to work on next.
-
-```bash
-/specweave:next
-```
-
-**What it does**:
-- ✅ Auto-closes current increment if ready (PM gates check)
-- 💡 Suggests next work (backlog or new feature)
-- 📊 Shows progress and priorities
+<!-- TODO: Add dedicated increment command documentation -->
 
 ---
 
@@ -90,27 +77,7 @@ Intelligently suggests what to work on next.
 - **Automatic hooks**: Runs after EVERY task completion
 - **Living docs sync**: Updates `.specweave/docs/` after all tasks complete
 
-[Full documentation →](./do)
-
----
-
-### `/update-scope` - Update Increment Scope
-
-**Living completion reports** - Track scope changes in real-time.
-
-```bash
-/update-scope "Added dark mode toggle (stakeholder request, +16 hours)"
-```
-
-**What it does**:
-- 📝 Logs scope changes with rationale
-- ⏱️ Tracks time impact (+/- hours)
-- 👥 Documents who approved
-- 🔗 Links to ADRs, GitHub issues, etc.
-
-**Why it matters**: Complete audit trail for compliance, retrospectives, and knowledge transfer.
-
-[Full documentation →](./update-scope)
+<!-- TODO: Add dedicated do command documentation -->
 
 ---
 
@@ -132,7 +99,7 @@ Intelligently suggests what to work on next.
 - ✅ Quality (testable criteria, actionable tasks)
 - ✅ Traceability (AC-IDs, ADR references)
 
-[Full documentation →](./validate)
+<!-- TODO: Add dedicated validate command documentation -->
 
 ---
 
@@ -167,7 +134,7 @@ Intelligently suggests what to work on next.
 - MEDIUM (3.0-5.9) - Monitor
 - LOW (\<3.0) - Acceptable
 
-[Full documentation →](./qa)
+<!-- TODO: Add dedicated qa command documentation -->
 
 ---
 
@@ -202,17 +169,17 @@ Intelligently suggests what to work on next.
 - ✅ Creates completion report
 - 🔗 Closes GitHub issues (if plugin enabled)
 
-[Full documentation →](./done)
+<!-- TODO: Add dedicated done command documentation -->
 
 ---
 
-### `/sync-docs` - Synchronize Living Documentation
+### `/specweave:sync-docs` - Synchronize Living Documentation
 
 **Bidirectional sync** - Keep strategic docs and implementation in sync.
 
 ```bash
-/sync-docs review          # Before implementation (review strategic docs)
-/sync-docs update          # After implementation (update with learnings)
+/specweave:sync-docs review          # Before implementation (review strategic docs)
+/specweave:sync-docs update          # After implementation (update with learnings)
 ```
 
 **What it syncs**:
@@ -221,7 +188,7 @@ Intelligently suggests what to work on next.
 - 📖 [API](/docs/glossary/terms/api) documentation (contracts → endpoints)
 - 📋 Feature lists (planned → completed)
 
-[Full documentation →](./sync-docs)
+<!-- TODO: Add dedicated sync-docs command documentation -->
 
 ---
 
@@ -243,248 +210,58 @@ Intelligently suggests what to work on next.
 
 ---
 
-### `/specweave:status` - View All Increments
-
-**High-level overview** - See what SpecWeave is managing.
-
-```bash
-/specweave:status
-```
-
-**What it shows**:
-- ▶️  Active increments (what's in progress)
-- ⏸️  Paused increments (what's blocked)
-- ✅ Completed increments
-- 📈 WIP limits and progress
-
-[Full documentation →](./status)
-
----
-
-### `/costs` - AI Cost Dashboard
-
-**Real-time cost tracking** - See savings from intelligent model selection.
-
-```bash
-/costs              # Current increment
-/costs 0007         # Specific increment
-```
-
-**What it shows**:
-- 💰 Total cost (actual spend)
-- 📊 Savings (Haiku vs Sonnet)
-- 📈 Cost per task
-- 🎯 Cost efficiency (% cheaper than all-Sonnet)
-
----
-
-## 6. Supporting Commands
-
-### `/translate` - Multilingual Support
-
-**Zero-cost LLM-native translation** - Work in your language, maintain docs in English.
-
-```bash
-/translate spec.md ru en          # Russian → English
-```
-
-**Supported languages**: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
-
-**Smart features**:
-- ✅ Preserves code blocks, inline code, links
-- ✅ Keeps framework terms ([RFC](/docs/glossary/terms/rfc), ADR, increment)
-- ✅ Keeps technical terms ([Node.js](/docs/glossary/terms/nodejs), [REST](/docs/glossary/terms/rest), [GraphQL](/docs/glossary/terms/graphql))
-- ✅ Validates structure (heading count, code block count)
-
-[Full documentation →](./translate)
-
----
-
-## Status Management (System Commands)
-
-:::warning Mostly Automatic
-These commands are **primarily used by SpecWeave internally**. The system automatically detects blockages, pauses work, and resumes when ready. You rarely need to call these manually.
-:::
-
-### `/pause`, `/resume`, `/abandon`
-
-**SpecWeave automatically**:
-- ⏸️  **Pauses** when blocked (missing API keys, waiting for approvals)
-- ▶️  **Resumes** when blockage resolved (dependencies available)
-- 🚫 **Abandons** when you explicitly request it (business pivot)
-
-**Manual use cases**:
-- `/pause 0007 --reason "Pausing for hotfix"` - Business decision
-- `/resume 0007` - Restart abandoned work
-- `/abandon 0007 --reason "Requirements changed"` - Cancel permanently
-
-[Status Management Guide →](./status-management)
-
----
-
-## TDD Commands (Test-Driven Development)
-
-For projects using TDD workflow:
-
-```bash
-/tdd-red           # Write failing test
-/tdd-green         # Implement feature
-/tdd-refactor      # Improve code
-/tdd-cycle         # Full red-green-refactor cycle
-```
-
----
-
 ## All Available Commands
 
-### Core Workflow
-- `/specweave:increment` (alias: `/specweave:increment`) - Plan new increment ⭐ **Most used**
-- `/specweave:do` - Execute tasks ⭐ **Most used**
-- `/specweave:validate` - Rule-based validation ⭐ **Most used**
-- `/specweave:qa` - Quality assessment with risk scoring ⭐ **Most used**
-- `/specweave:done` - Close increment ⭐ **Most used**
-- `/specweave:next` - Smart increment transition
-
-### Monitoring
-- `/specweave:status` - View all increments
-- `/specweave:progress` - Check increment progress
-- `/costs` - AI cost dashboard
-
-### Quality Assurance
-- `/validate-coverage` - Test coverage check
-- `/check-tests` - Validate test structure
-
-### Documentation
-- `/sync-docs` - Synchronize living docs
-- `/update-scope` - Track scope changes
-- `/translate` - Multilingual support
-
-### Status Management (System)
-- `/pause` - Pause increment (mostly automatic)
-- `/resume` - Resume increment (mostly automatic)
-- `/abandon` - Cancel increment
-
-### TDD Workflow
-- `/tdd-red` - Write failing test
-- `/tdd-green` - Implement feature
-- `/tdd-refactor` - Improve code
-- `/tdd-cycle` - Full cycle
-
-### Utilities
-- `/list-increments` - List all increments
-- `/sync-tasks` - Sync tasks to external tools
+### Essential Workflow (Use These!)
+- `/specweave:increment` - Plan new increment ⭐ **START HERE**
+- `/specweave:do` - Execute tasks ⭐ **MAIN WORK**
+- `/specweave:progress` - Check status ⭐ **VISIBILITY**
+- `/specweave:validate` - Quick validation ⭐ **PRE-CHECK**
+- `/specweave:qa` - Quality assessment ⭐ **QUALITY GATE**
+- `/specweave:check-tests` - Test coverage check ⭐ **TEST VALIDATION**
+- `/specweave:done` - Close increment ⭐ **FINISH**
+- `/specweave:sync-docs` - Synchronize living docs ⭐ **KEEP DOCS CURRENT**
 
 ---
 
-## Command Patterns
-
-### Command Forms and Aliases
-
-**SpecWeave provides three ways to invoke commands**:
+## Workflow Example: Standard Feature Development
 
 ```bash
-# 1. Full name (primary, clear)
-/specweave:increment "feature"
-/specweave:validate 0007
-
-# 2. Alias (convenience shorthand)
-/specweave:increment "feature"              # Alias for /increment
-
-# 3. Namespace (explicit, brownfield-safe)
-/specweave:increment "feature"
-/specweave:validate 0007
-```
-
-**When to use each form**:
-- ✅ **Full name** (`/specweave:increment`): Daily use, clear and explicit
-- ✅ **Alias** (`/specweave:increment`): Quick shortcuts for speed
-- ✅ **Namespace** (`/specweave:increment`): Brownfield projects, scripts, avoid conflicts
-
-**Available aliases**:
-- `/specweave:increment` → `/specweave:increment`
-- All other commands use full names
-
----
-
-## Workflow Examples
-
-### Example 1: Standard Feature Development
-
-```bash
-# 1. Plan (use full name or alias)
-/specweave:increment "User authentication"    # Full name (recommended)
-/specweave:increment "User authentication"          # Alias (shorthand)
+# 1. Plan new feature
+/specweave:increment "User authentication"
 # → Creates: spec.md, plan.md, tasks.md
 
-# 2. Review (optional)
-/sync-docs review
+# 2. Review docs (optional)
+/specweave:sync-docs review
 # → Review strategic docs before starting
 
-# 3. Validate (optional)
+# 3. Pre-check quality (optional)
 /specweave:qa 0007 --pre
 # → Pre-implementation quality check
 
-# 4. Implement
+# 4. Implement tasks
 /specweave:do 0007
-# → Auto-resumes, hooks fire after each task
+# → Auto-resumes from last task, hooks fire after each completion
 
-# 5. Quality gate
+# 5. Check progress
+/specweave:progress 0007
+# → See completion status
+
+# 6. Validate quality
 /specweave:qa 0007 --gate
-# → Comprehensive check before closing
+# → Comprehensive quality gate check
 
-# 6. Close
+# 7. Check test coverage
+/specweave:check-tests 0007
+# → Validate all AC-IDs are tested
+
+# 8. Close increment
 /specweave:done 0007
-# → PM validates, closes GitHub issues
+# → PM validates and closes
 
-# 7. Sync docs
-/sync-docs update
-# → Update living docs with learnings
-
-# 8. Next
-/specweave:next
-# → Suggests next increment
-```
-
----
-
-### Example 2: Hotfix Workflow
-
-```bash
-# 1. Check status
-/specweave:status
-# → See active increments
-
-# 2. Quick increment
-/specweave:increment "Critical SQL injection fix"
-# → Fast planning
-
-# 3. Implement immediately
-/specweave:do 0008
-# → Execute fix
-
-# 4. Validate
-/specweave:qa 0008 --gate
-# → Ensure quality
-
-# 5. Close and deploy
-/specweave:done 0008
-```
-
----
-
-### Example 3: Multilingual Development
-
-```bash
-# 1. Plan in Russian
-/specweave:increment "Добавить аутентификацию пользователя"
-# → PM generates spec in Russian
-
-# 2. Auto-translate to English
-# (post-increment-planning hook fires automatically)
-# → Spec, plan, tasks now in English
-
-# 3. Continue normally
-/specweave:do 0007
+# 9. Update living docs
+/specweave:sync-docs update
+# → Sync learnings to strategic docs
 ```
 
 ---
@@ -510,58 +287,38 @@ For projects using TDD workflow:
 
 ## Best Practices
 
-### 1. Use Full Names or Aliases Daily
+### 1. Follow the Core Flow
 
-```bash
-# ✅ Quick and clear
-/specweave:increment "feature"    # Full name (recommended)
-/specweave:increment "feature"          # Alias (shorthand)
-/specweave:do
-/specweave:qa 0007
-
-# ✅ Explicit namespace (brownfield-safe)
-/specweave:increment "feature"
-/specweave:do
-/specweave:qa 0007
-```
-
----
+Always use the standard workflow for best results:
+1. `/specweave:increment` - Plan (START HERE)
+2. `/specweave:do` - Implement (MAIN WORK)
+3. `/specweave:progress` - Check status (VISIBILITY)
+4. `/specweave:qa` - Validate quality (QUALITY GATE)
+5. `/specweave:done` - Close (FINISH)
+6. `/specweave:sync-docs` - Update docs (KEEP CURRENT)
 
 ### 2. Validate Early and Often
 
 ```bash
-# During planning
+# Before starting work
 /specweave:qa 0007 --pre
 
-# During development (quick checks)
-/specweave:qa 0007
-
-# Before closing (comprehensive)
+# Before closing
 /specweave:qa 0007 --gate
 ```
 
----
-
-### 3. Track Scope Changes
+### 3. Check Test Coverage
 
 ```bash
-# ✅ Good - documented scope change
-/update-scope "Added dark mode (stakeholder request, +16h)"
-
-# ❌ Bad - undocumented scope creep
-# (just adding features without tracking)
+# Always validate tests before closing
+/specweave:check-tests 0007
 ```
 
----
-
-### 4. Trust the System
+### 4. Keep Living Docs Current
 
 ```bash
-# ✅ Let SpecWeave handle status
-/specweave:do  # System pauses automatically when blocked
-
-# ❌ Don't manually manage status
-# (unless business decision)
+# After completing increment
+/specweave:sync-docs update
 ```
 
 ---

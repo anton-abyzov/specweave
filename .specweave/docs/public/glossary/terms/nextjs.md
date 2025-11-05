@@ -43,12 +43,12 @@ graph TB
     G --> K[Optimized Build ✓]
     G --> L[Deploy to Vercel ✓]
 
-    style G fill:#000000
-    style H fill:#000000
-    style I fill:#000000
-    style J fill:#000000
-    style K fill:#000000
-    style L fill:#000000
+    style G fill:#7c3aed
+    style H fill:#8b5cf6
+    style I fill:#8b5cf6
+    style J fill:#8b5cf6
+    style K fill:#8b5cf6
+    style L fill:#8b5cf6
 ```
 
 ## How It Works
@@ -69,7 +69,7 @@ graph TB
     ISR --> ISRDesc[Rebuild pages on-demand]
     CSR --> CSRDesc[React SPA behavior]
 
-    style NextJS fill:#000000
+    style NextJS fill:#7c3aed
 ```
 
 ### Next.js Architecture
@@ -87,8 +87,8 @@ graph TB
     StaticFiles --> Browser
     SSR --> Browser
 
-    style EdgeFunc fill:#000000
-    style SSR fill:#000000
+    style EdgeFunc fill:#7c3aed
+    style SSR fill:#8b5cf6
 ```
 
 ## Core Features
@@ -455,8 +455,8 @@ graph TB
     F --> G[Test Performance]
     G --> H[/specweave:done]
 
-    style B fill:#000000
-    style C fill:#000000
+    style B fill:#7c3aed
+    style C fill:#8b5cf6
 ```
 
 ## Next.js vs Plain React

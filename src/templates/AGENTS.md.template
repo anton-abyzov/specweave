@@ -36,6 +36,7 @@ This is a **SpecWeave project** where specifications and documentation are the s
 │       └── reports/         # Analysis, completion reports
 ├── docs/internal/
 │   ├── strategy/            # Business specs (WHAT, WHY)
+│   ├── specs/               # Feature specifications (detailed requirements)
 │   ├── architecture/        # Technical design (HOW)
 │   ├── delivery/            # Roadmap, CI/CD, guides
 │   ├── operations/          # Runbooks, SLOs

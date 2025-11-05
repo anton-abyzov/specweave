@@ -6,6 +6,61 @@
 
 ---
 
+## ⚠️ CRITICAL: What Belongs in This Directory
+
+**ONLY Specification Files Allowed**:
+```
+.specweave/docs/internal/specs/
+├── README.md                                    ✅ This file
+├── spec-001-core-framework-architecture.md      ✅ Feature specs
+├── spec-002-intelligent-capabilities.md         ✅ Feature specs
+├── spec-NNN-feature-name.md                     ✅ Feature specs
+└── _archive_increment_copies/                   ✅ Archive folder
+```
+
+**NEVER Create These Here**:
+```
+❌ tests/                    → Use /tests/ in project root
+❌ tests/e2e/                → Use /tests/e2e/ in project root
+❌ tests/integration/        → Use /tests/integration/ in project root
+❌ .github/                  → Use /.github/ in project root
+❌ .github/workflows/        → Use /.github/workflows/ in project root
+❌ src/                      → Use /src/ in project root
+❌ scripts/                  → Use increment folders or /scripts/ in root
+❌ Any code files            → Use /src/ or increment folders
+```
+
+**If you need tests/workflows/code**:
+- Tests: `/tests/{e2e|integration|unit}/`
+- GitHub Workflows: `/.github/workflows/`
+- Scripts: `.specweave/increments/####/scripts/`
+- Source code: `/src/`
+
+**Other documents belong elsewhere**:
+```
+❌ retrospectives.md         → Use .specweave/increments/####/reports/ or .specweave/docs/internal/delivery/
+❌ scrum-notes.md            → Use .specweave/increments/####/reports/
+❌ meeting-minutes.md        → Use .specweave/increments/####/reports/
+❌ team-decisions.md         → Use .specweave/docs/internal/governance/
+❌ runbooks.md               → Use .specweave/docs/internal/operations/
+❌ architecture-diagrams/    → Use .specweave/docs/internal/architecture/diagrams/
+```
+
+**This directory is ONLY for**:
+✅ Feature specifications (spec-NNN-{name}.md)
+✅ README.md (this file)
+✅ _archive_increment_copies/ (historical archive)
+
+**Everything else goes to the appropriate internal docs folder**:
+- Strategy docs → `.specweave/docs/internal/strategy/`
+- Architecture → `.specweave/docs/internal/architecture/`
+- Delivery → `.specweave/docs/internal/delivery/`
+- Operations → `.specweave/docs/internal/operations/`
+- Governance → `.specweave/docs/internal/governance/`
+- Increment reports → `.specweave/increments/####/reports/`
+
+---
+
 ## The Architecture: Feature-Level Specs
 
 ### What is a Spec?

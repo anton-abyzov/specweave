@@ -133,3 +133,88 @@
   box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.4);
   transform: translateY(-1px);
 }
+
+/* Mermaid diagrams styling */
+/* Light mode - ensure good contrast */
+:root {
+  --mermaid-primary-color: #7c3aed;
+  --mermaid-primary-text-color: #ffffff;
+  --mermaid-primary-border-color: #6d28d9;
+  --mermaid-line-color: #6d28d9;
+  --mermaid-secondary-color: #a78bfa;
+  --mermaid-tertiary-color: #ddd6fe;
+  --mermaid-note-bg-color: #ede9fe;
+  --mermaid-note-border-color: #7c3aed;
+}
+
+/* Dark mode - ensure text is readable */
+[data-theme='dark'] {
+  --mermaid-primary-color: #8b5cf6;
+  --mermaid-primary-text-color: #1e1b4b;
+  --mermaid-primary-border-color: #a78bfa;
+  --mermaid-line-color: #a78bfa;
+  --mermaid-secondary-color: #c4b5fd;
+  --mermaid-tertiary-color: #ddd6fe;
+  --mermaid-note-bg-color: #312e81;
+  --mermaid-note-border-color: #a78bfa;
+}
+
+/* Mermaid container styling */
+.mermaid {
+  text-align: center;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: rgba(124, 58, 237, 0.02);
+}
+
+[data-theme='dark'] .mermaid {
+  background-color: rgba(167, 139, 250, 0.05);
+}
+
+/* Override mermaid default black backgrounds */
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+  fill: var(--mermaid-primary-color) !important;
+  stroke: var(--mermaid-primary-border-color) !important;
+}
+
+.mermaid .node .label {
+  color: var(--mermaid-primary-text-color) !important;
+}
+
+/* Ensure edge labels are visible */
+.mermaid .edgeLabel {
+  background-color: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+
+/* Flowchart styling */
+.mermaid .flowchart-link {
+  stroke: var(--mermaid-line-color) !important;
+}
+
+/* Class diagram styling */
+.mermaid .classGroup rect {
+  fill: var(--mermaid-secondary-color) !important;
+  stroke: var(--mermaid-primary-border-color) !important;
+}
+
+/* Sequence diagram styling */
+.mermaid .actor {
+  fill: var(--mermaid-primary-color) !important;
+  stroke: var(--mermaid-primary-border-color) !important;
+}
+
+.mermaid .messageLine0,
+.mermaid .messageLine1 {
+  stroke: var(--mermaid-line-color) !important;
+}
+
+/* State diagram styling */
+.mermaid .stateGroup rect {
+  fill: var(--mermaid-secondary-color) !important;
+  stroke: var(--mermaid-primary-border-color) !important;
+}

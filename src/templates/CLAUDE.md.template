@@ -231,6 +231,7 @@ Config: Auto-detected from project files
 │   ├── docs/                    # Strategic documentation
 │   │   ├── internal/
 │   │   │   ├── strategy/        # Business specs (WHAT, WHY)
+│   │   │   ├── specs/           # Feature specifications (detailed requirements)
 │   │   │   ├── architecture/    # Technical design (HOW)
 │   │   │   ├── delivery/        # Guides, roadmap, CI/CD
 │   │   │   ├── operations/      # Runbooks, monitoring

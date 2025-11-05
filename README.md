@@ -156,11 +156,49 @@ Work in 9 languages (Russian, Spanish, Chinese, German, French, Japanese, Korean
 
 ---
 
-## For Brownfield Projects
+## Enterprise Features
 
-Initialize SpecWeave in existing codebases to create retroactive specifications, architecture diagrams, and living documentation.
+### 🏢 Multi-Project Support (v0.8.0+)
 
-**[→ Brownfield Guide](https://spec-weave.com/docs/workflows/brownfield)**
+Organize documentation by team, repo, or microservice:
+
+- **Team-Based Organization**: Frontend, Backend, Mobile, Platform teams with separate documentation
+- **Microservices Architecture**: Each service gets its own specs, modules, and team playbooks
+- **Per-Project Sync**: Link projects to different GitHub repos, JIRA projects, or ADO boards
+- **Unified Architecture**: Single project = multi-project with 1 project (NO special cases!)
+
+**Five Documentation Types Per Project**:
+1. **specs/** - Living documentation specs (user stories, AC)
+2. **modules/** - Module/component documentation (architecture, APIs)
+3. **team/** - Team playbooks (onboarding, conventions, workflows)
+4. **architecture/** - Project-specific ADRs (optional)
+5. **legacy/** - Brownfield imports (temporary)
+
+**[→ Multi-Project Setup Guide](https://spec-weave.com/docs/guides/multi-project-setup)**
+
+### 📦 Brownfield Import
+
+Import existing documentation from external sources:
+
+- **Automatic Classification**: AI-powered keyword detection (85%+ accuracy)
+- **Supported Sources**: Notion, Confluence, GitHub Wiki, custom markdown folders
+- **Smart Organization**: Classifies into specs, modules, team docs, or legacy
+- **Migration Reports**: Complete audit trail with confidence scores and manual review checklist
+
+**Example**:
+```bash
+# Import Notion export to web-app project
+/specweave:import-docs ~/Downloads/notion-export --source=notion --project=web-app
+
+# Result:
+# ✅ Classified 127 files
+#    - 37 specs → projects/web-app/specs/
+#    - 18 modules → projects/web-app/modules/
+#    - 12 team docs → projects/web-app/team/
+#    - 60 legacy → projects/web-app/legacy/notion/
+```
+
+**[→ Brownfield Integration Guide](https://spec-weave.com/docs/workflows/brownfield)**
 
 ---
 

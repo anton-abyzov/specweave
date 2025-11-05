@@ -288,12 +288,12 @@ fi
 
 echo -e "${BLUE}⚙️  Installing .specweave/ configuration...${NC}"
 
-# Create .specweave directory structure (Enterprise 5-Pillar Architecture)
+# Create .specweave directory structure (Enterprise 6-Pillar Architecture)
 # NOTE: logs, scripts, reports live INSIDE each increment folder
 mkdir -p .specweave/{cache,increments,tests}
 
-# Internal Documentation (5 Pillars - NOT published)
-mkdir -p .specweave/docs/internal/{strategy,architecture/{adr,rfc},delivery,operations,governance}
+# Internal Documentation (6 Pillars - NOT published)
+mkdir -p .specweave/docs/internal/{strategy,specs,architecture/{adr,diagrams},delivery,operations,governance}
 
 # Public Documentation (Customer-facing - PUBLISHED)
 mkdir -p .specweave/docs/public/{overview,api,guides,faq,changelog}

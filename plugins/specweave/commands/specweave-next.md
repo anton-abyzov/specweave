@@ -431,15 +431,15 @@ Your choice? [A/B/C] _
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/specweave inc "feature"` | Create NEW increment with specific feature | Starting fresh work |
-| `/specweave do` | Execute tasks in increment | Implementing planned work |
-| `/specweave progress` | Check status (no action) | Quick status check |
-| `/done` | Explicitly close increment | Manual closure with validation |
-| `/next` ⭐ | **Smart transition** (close + suggest next) | **Natural workflow continuation** |
+| `/specweave:increment "feature"` | Create NEW increment with specific feature | Starting fresh work |
+| `/specweave:do` | Execute tasks in increment | Implementing planned work |
+| `/specweave:progress` | Check status (no action) | Quick status check |
+| `/specweave:done` | Explicitly close increment | Manual closure with validation |
+| `/specweave:next` ⭐ | **Smart transition** (close + suggest next) | **Natural workflow continuation** |
 
-**Why `/next` is special**:
+**Why `/specweave:next` is special**:
 - ✅ Combines validation + closure + suggestion in one command
-- ✅ No need to remember `/done` then `/inc` or `/specweave do`
+- ✅ No need to remember `/specweave:done` then `/specweave:increment` sequence
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
@@ -448,7 +448,7 @@ Your choice? [A/B/C] _
 
 ## Best Practices
 
-1. **Run `/next` when you feel done** - It validates completion and suggests next steps
+1. **Run `/specweave:next` when you feel done** - It validates completion and suggests next steps
 2. **Trust the PM validation** - If gates fail, there's unfinished work
 3. **Follow recommendations** - Backlog items are already planned
 4. **Keep WIP limit in mind** - Don't force multiple increments

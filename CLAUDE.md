@@ -1282,8 +1282,8 @@ specweave/
 │   ├── docs/
 │   │   ├── internal/           # Strategic docs (NEVER published) - 6 core folders
 │   │   │   ├── strategy/       # Business rationale, vision, PRDs, OKRs
-│   │   │   ├── rfc/            # Feature specifications (detailed requirements, project history)
-│   │   │   │   └── rfc-####-{name}.md  # User stories, AC, implementation plans
+│   │   │   ├── specs/          # Feature specifications (detailed requirements, project history)
+│   │   │   │   └── spec-###-{name}.md  # User stories, AC, implementation plans
 │   │   │   ├── architecture/   # Technical design (HLD, LLD, ADR, diagrams)
 │   │   │   │   ├── adr/        # Architecture Decision Records (why we chose X over Y)
 │   │   │   │   └── diagrams/   # Mermaid + SVG (C4 model diagrams)
@@ -1366,22 +1366,80 @@ specweave/
 
 ## Internal Documentation Structure
 
-**Location**: `.specweave/docs/internal/` - Six core folders for engineering playbook
+**Location**: `.specweave/docs/internal/` - Cross-project folders + multi-project organization
 
-**Quick Reference**:
+### Cross-Project Documentation (Top-Level)
+
+**Five cross-project folders** apply to the entire system:
 
 | Folder | Purpose | Use When | Examples |
 |--------|---------|----------|----------|
 | **strategy/** | Business rationale (Why?) | Defining business case for features | `prd-user-auth.md` |
-| **specs/** | Feature specifications (What?) | Detailed requirements with user stories | `spec-0007-smart-discipline.md` |
-| **architecture/** | Technical design (How?) | System architecture, decisions | `hld-system.md`, `adr/0001-postgres.md` |
+| **architecture/** | System-wide technical design | Architecture affecting all projects | `hld-system.md`, `adr/0001-postgres.md` |
 | **delivery/** | Build & release (How we build) | Git workflow, DORA metrics, CI/CD | `branch-strategy.md`, `dora-metrics.md` |
 | **operations/** | Production ops (How we run) | Runbooks, incidents, performance | `runbook-api.md`, `performance-tuning.md` |
 | **governance/** | Policies (Guardrails) | Security, compliance, coding standards | `security-policy.md`, `coding-standards.md` |
 
+### Multi-Project Organization (v0.8.0+)
+
+**NEW**: Projects folder for multi-team/multi-repo organizations
+
+```
+.specweave/docs/internal/
+├── strategy/              # Cross-project
+├── architecture/          # System-wide ADRs
+├── delivery/              # Cross-project
+├── operations/            # Cross-project
+├── governance/            # Cross-project
+│
+└── projects/              # 🆕 Multi-project support
+    ├── default/           # Default project (single-project mode)
+    │   ├── specs/         # Living docs specs (feature-level)
+    │   ├── modules/       # Module/component documentation
+    │   ├── team/          # Team playbooks (conventions, workflows)
+    │   ├── architecture/  # Project-specific ADRs
+    │   └── legacy/        # Brownfield imports
+    │
+    ├── web-app/           # Additional projects
+    ├── mobile-app/
+    └── platform-infra/
+```
+
+**Five Documentation Types Per Project**:
+
+1. **specs/** - Living documentation specs (user stories, acceptance criteria)
+   - Permanent, feature-level knowledge base
+   - ALL user stories for a feature area
+   - 3-digit numbers: `spec-001-user-auth.md`
+
+2. **modules/** - Module/component documentation
+   - Architecture, API contracts, integration guides
+   - Created when module >1000 lines or has security implications
+   - Example: `auth-module.md`, `payment-module.md`
+
+3. **team/** - Team playbooks
+   - Onboarding, conventions, workflows, contacts
+   - Team-specific processes and practices
+   - Example: `onboarding.md`, `conventions.md`, `workflows.md`
+
+4. **architecture/** - Project-specific ADRs (optional)
+   - Decisions affecting only this project
+   - Use top-level `architecture/` for system-wide decisions
+   - Example: `adr/0001-use-postgres.md`
+
+5. **legacy/** - Brownfield imports (temporary)
+   - Imported from Notion, Confluence, Wiki
+   - Migration report + classified files
+   - Clean up after migration complete
+
+**Key Architecture Principle**: Single project = multi-project with 1 project called "default" (NO special cases!)
+
 **Document Flow**: `PRD → Spec → Architecture → Delivery → Operations`
 
-**See**: [Internal Docs README](.specweave/docs/internal/README.md) for complete guidance
+**See**:
+- [Internal Docs README](.specweave/docs/internal/README.md) for complete guidance
+- [Multi-Project Setup Guide](.specweave/docs/public/guides/multi-project-setup.md) for usage
+- [ADR-0017](/.specweave/docs/internal/architecture/adr/0017-multi-project-internal-structure.md) for architecture decisions
 
 ---
 
@@ -1391,7 +1449,7 @@ specweave/
 
 ### The Core Question: Why Two Locations?
 
-1. **Living Docs Specs**: `.specweave/docs/internal/specs/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
+1. **Living Docs Specs**: `.specweave/docs/internal/projects/{project-id}/specs/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
 2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary, focused implementation snapshot**
 
 **Key Difference**: Specs use **3-digit numbers** (001, 002, 003) for **feature areas**, increments use **4-digit numbers** (0001, 0002, 0003) for **implementations**.
@@ -1400,7 +1458,7 @@ specweave/
 
 **Living Docs Specs = Permanent, Feature-Level Knowledge Base**
 
-- **Location**: `.specweave/docs/internal/specs/spec-001-core-framework-architecture.md`
+- **Location**: `.specweave/docs/internal/projects/default/specs/spec-001-core-framework-architecture.md` (single project) or `.specweave/docs/internal/projects/web-app/specs/spec-001-user-auth.md` (multi-project)
 - **Purpose**: COMPLETE, PERMANENT source of truth for entire feature area
 - **Lifecycle**: Created once, updated over time, NEVER deleted
 - **Scope**: Comprehensive feature area (e.g., "Core Framework", 10-50 user stories)
@@ -1429,7 +1487,7 @@ specweave/
 
 **Living Docs Spec** (Permanent, Feature-Level):
 ```
-File: .specweave/docs/internal/specs/spec-001-core-framework-architecture.md
+File: .specweave/docs/internal/projects/default/specs/spec-001-core-framework-architecture.md
 
 # SPEC-001: Core Framework & Architecture
 Foundation framework with CLI, plugin system, cross-platform support
@@ -1457,7 +1515,7 @@ File: .specweave/increments/0001-core-framework/spec.md
 
 # Increment 0001: Core Framework MVP
 **Implements**: SPEC-001-core-framework-architecture (US-001 to US-002 only)
-**Complete Specification**: See ../../docs/internal/specs/spec-001-core-framework-architecture.md
+**Complete Specification**: See ../../docs/internal/projects/default/specs/spec-001-core-framework-architecture.md
 
 ## What We're Implementing (This Increment Only)
 - US-001: NPM installation + CLI basics ✅
@@ -2059,6 +2117,244 @@ vim .claude-plugin/marketplace.json
 ```
 
 **See**: [.claude-plugin/README.md](/.claude-plugin/README.md) for marketplace documentation
+
+---
+
+## Multi-Project Sync Architecture
+
+**SpecWeave supports syncing increments to unlimited external repositories** (GitHub, JIRA, Azure DevOps) with intelligent rate limiting and time range filtering.
+
+### Core Concepts
+
+**3-Layer Architecture**:
+
+```
+Layer 1: Credentials (.env)
+├── GITHUB_TOKEN=...
+├── JIRA_API_TOKEN=...
+└── AZURE_DEVOPS_PAT=...
+
+Layer 2: Sync Profiles (config.json)
+├── specweave-dev (GitHub: anton-abyzov/specweave)
+├── client-mobile (GitHub: client-org/mobile-app)
+├── internal-jira (JIRA: company.atlassian.net/PROJ)
+└── ado-backend (ADO: myorg/backend-services)
+
+Layer 3: Per-Increment Metadata (metadata.json)
+└── 0004-plugin-architecture
+    ├── profile: specweave-dev
+    ├── issueNumber: 130
+    └── timeRange: 1M
+```
+
+### Sync Profiles
+
+**Profiles** define how to connect to external systems:
+
+```json
+{
+  "sync": {
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "displayName": "SpecWeave Development",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
+      }
+    }
+  }
+}
+```
+
+**Benefits**:
+- ✅ Unlimited profiles per provider (3+, 5+, 10+ repos)
+- ✅ Different increments sync to different repos
+- ✅ Team-based organization (Frontend → repo-A, Backend → repo-B)
+- ✅ Multi-client support (Client-A, Client-B, Client-C)
+
+### Project Contexts
+
+**Projects** organize work into logical groups:
+
+```json
+{
+  "sync": {
+    "projects": {
+      "specweave-core": {
+        "id": "specweave-core",
+        "name": "SpecWeave Core",
+        "description": "Core framework development",
+        "keywords": ["framework", "cli", "plugin"],
+        "team": "Core Team",
+        "defaultSyncProfile": "specweave-dev",
+        "specsFolder": ".specweave/docs/internal/specs/specweave-core",
+        "increments": ["0001-core-framework", "0002-core-enhancements"]
+      }
+    }
+  }
+}
+```
+
+**Smart Project Detection**:
+- Project name match: +10 points
+- Team name match: +5 points
+- Keyword match: +3 points per keyword
+- Auto-select if confidence > 0.7
+
+**Example**:
+```
+Increment: "Add React Native dark mode for mobile app"
+→ Detects project "mobile-app" (keywords: mobile, react-native)
+→ Uses profile "client-mobile" automatically
+→ Syncs to client-org/mobile-app repo
+```
+
+### Time Range Filtering
+
+**Problem**: Syncing ALL data takes 25+ minutes and hits rate limits.
+
+**Solution**: Time range presets filter data by creation date:
+
+| Preset | Duration | Items | API Calls | Duration | Impact |
+|--------|----------|-------|-----------|----------|--------|
+| **1W** | 1 week | ~50 | 75 | 30 sec | Low |
+| **1M** | 1 month | ~200 | 300 | 2 min | Medium (✅ Recommended) |
+| **3M** | 3 months | ~600 | 900 | 5 min | Medium |
+| **6M** | 6 months | ~1,200 | 1,800 | 10 min | High |
+| **ALL** | All time | ~5,000+ | 7,500+ | 30+ min | Critical (❌ Avoid) |
+
+**Usage**:
+```bash
+# Interactive (select time range)
+/specweave-github:sync 0004
+
+# Specify time range
+/specweave-github:sync 0004 --time-range 1M
+
+# Preview before executing
+/specweave-github:sync 0004 --dry-run
+```
+
+### Rate Limiting Protection
+
+**Pre-Flight Validation**:
+1. Estimate API calls based on time range
+2. Check current rate limit status (GitHub: 5000/hour, JIRA: 100/min, ADO: 200/5min)
+3. Calculate impact: low (<250 calls), medium (250-1000), high (1000-2500), critical (2500+)
+4. Warn or block if risky
+
+**Example: Critical Impact Blocked**:
+```
+❌ This sync may FAIL due to:
+
+Blockers:
+   • CRITICAL rate limit impact: 7,500 API calls exceeds safe threshold
+   • Not enough rate limit remaining (need 7,500, only 4,850 remaining)
+
+Recommendations:
+   1. Reduce time range to 1 month (~300 API calls, SAFE)
+   2. Wait for rate limit reset (25 minutes)
+   3. Split sync across multiple time periods
+```
+
+### File Organization
+
+**Specs organized by project**:
+```
+.specweave/docs/internal/specs/
+├── specweave-core/
+│   ├── spec-001-core-framework.md
+│   └── spec-002-plugin-architecture.md
+├── client-mobile/
+│   ├── spec-001-mvp.md
+│   └── spec-002-dark-mode.md
+└── internal-backend/
+    └── spec-001-api-v2.md
+```
+
+### Key Files
+
+**Core Infrastructure**:
+- `src/core/types/sync-profile.ts` - Type definitions (432 lines)
+- `src/core/sync/profile-manager.ts` - CRUD for profiles (463 lines)
+- `src/core/sync/rate-limiter.ts` - Rate limiting logic (365 lines)
+- `src/core/sync/project-context.ts` - Project management (379 lines)
+
+**Client Libraries** (Profile-Based):
+- `plugins/specweave-github/lib/github-client-v2.ts` - GitHub sync (466 lines)
+- `plugins/specweave-jira/lib/jira-client-v2.ts` - JIRA sync (520 lines)
+- `plugins/specweave-ado/lib/ado-client-v2.ts` - ADO sync (485 lines)
+
+**UX Components**:
+- `src/core/sync/time-range-selector.ts` - Interactive time range selection (295 lines)
+- `src/core/sync/profile-selector.ts` - Interactive profile selection (230 lines)
+
+**Migration**:
+- `src/cli/commands/migrate-to-profiles.ts` - Automatic migration from V1 (425 lines)
+
+### Common Commands
+
+```bash
+# Profile management
+/specweave:sync-profile create
+/specweave:sync-profile list
+/specweave:sync-profile get <id>
+/specweave:sync-profile update <id>
+/specweave:sync-profile delete <id>
+
+# Project management
+/specweave:project create
+/specweave:project list
+/specweave:project link <project-id> <increment-id>
+/specweave:project stats
+
+# Syncing (GitHub example)
+/specweave-github:sync <increment-id>
+/specweave-github:sync <increment-id> --profile <id>
+/specweave-github:sync <increment-id> --time-range 1M
+/specweave-github:sync <increment-id> --dry-run
+
+# Migration from V1
+specweave migrate-to-profiles
+```
+
+### Migration from V1 (Single Project)
+
+**Automatic**:
+```bash
+specweave migrate-to-profiles
+```
+
+**Output**:
+```
+✅ Created GitHub profile: default-github
+   Repository: anton-abyzov/specweave
+
+✅ Created default project context
+   Name: specweave
+   Default profile: default-github
+
+📊 Migration Summary:
+   Profiles created: 1
+   Projects created: 1
+```
+
+### Documentation
+
+**User Guide**: `.specweave/increments/0011-multi-project-sync/reports/USER-GUIDE-MULTI-PROJECT-SYNC.md`
+**ADR**: `.specweave/docs/internal/architecture/adr/0016-multi-project-external-sync.md`
+**Implementation Summary**: `.specweave/increments/0011-multi-project-sync/COMPLETE-IMPLEMENTATION.md`
+**Command Docs**: `plugins/specweave-github/commands/sync-v2.md`
 
 ---
 

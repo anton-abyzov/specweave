@@ -211,9 +211,9 @@ fi
 
 ---
 
-## When to Use `/progress`
+## When to Use `/specweave:progress`
 
-Use `/progress` when you:
+Use `/specweave:progress` when you:
 - ✅ Come back after a break and need context
 - ✅ Want to see overall completion status
 - ✅ Need to know which task to work on next

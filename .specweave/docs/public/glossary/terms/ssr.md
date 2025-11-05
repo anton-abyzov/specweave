@@ -480,8 +480,8 @@ graph TB
     G --> H[Optimize Performance]
     H --> I[/specweave:done]
 
-    style B fill:#000000
-    style C fill:#000000
+    style B fill:#7c3aed
+    style C fill:#8b5cf6
 ```
 
 ## SSR Performance Optimization

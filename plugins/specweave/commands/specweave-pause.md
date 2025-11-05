@@ -29,7 +29,7 @@ Pause an active increment when:
    - `pausedReason`: User-provided reason
    - `pausedAt`: Current timestamp
 4. **Displays** confirmation message
-5. **Suggests** next actions (/resume to continue)
+5. **Suggests** next actions (`/specweave:resume` to continue)
 
 ---
 
@@ -165,10 +165,10 @@ active ──pause──> paused
 
 ## Warning: Stale Paused Increments
 
-Increments paused for **7+ days** trigger warnings in `/status`:
+Increments paused for **7+ days** trigger warnings in `/specweave:status`:
 
 ```bash
-/status
+/specweave:status
 
 ⏸️  Paused (1):
   🔄 0007-stripe-integration [feature]
@@ -183,7 +183,7 @@ Increments paused for **7+ days** trigger warnings in `/status`:
 
 ---
 
-**Command**: `/specweave:pause` (or `/pause`)
+**Command**: `/specweave:pause`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

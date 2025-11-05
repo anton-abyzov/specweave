@@ -365,12 +365,12 @@ if (hasTestsMd) {
    ```bash
    # Implement T-001
    # Write tests
-   /check-tests  # Verify tests pass
+   /specweave:check-tests  # Verify tests pass
    ```
 
 2. **Before PR**: Ensure coverage meets targets
    ```bash
-   /check-tests 0007
+   /specweave:check-tests 0007
    # Fix any failing tests
    # Commit and push
    ```
@@ -385,7 +385,7 @@ if (hasTestsMd) {
 4. **PM Gate 2**: Part of increment closure
    ```bash
    /specweave:done 0007
-   # PM Agent runs /check-tests automatically
+   # PM Agent runs /specweave:check-tests automatically
    # Verifies >80% coverage before closure
    ```
 
