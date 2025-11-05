@@ -836,8 +836,8 @@ completion report: TEST-002 → PASS (87.2% sensitivity)
 ## Related Standards & Concepts
 
 **Related Glossary Terms**:
-- [HIPAA](./hipaa.md) - Healthcare data privacy (FDA devices must also comply with HIPAA if handling PHI)
-- [SOC 2](./soc2.md) - Security audit standard (helps with FDA's cybersecurity requirements)
+- [HIPAA](/docs/glossary/terms/hipaa) - Healthcare data privacy (FDA devices must also comply with HIPAA if handling PHI)
+- [SOC 2](/docs/glossary/terms/soc2) - Security audit standard (helps with FDA's cybersecurity requirements)
 - Testing - Verification and validation
 - Documentation - Design History File
 - Compliance - Regulatory adherence

@@ -243,7 +243,7 @@ SpecWeave supports TWO valid approaches:
 
 ## Workflow Philosophy
 
-### [Greenfield](/docs/glossary/terms/[greenfield](/docs/glossary/terms/greenfield)) Projects
+### [Greenfield](/docs/glossary/terms/greenfield) Projects
 
 1. Choose documentation approach (comprehensive or incremental)
 2. Create specifications (strategy docs)
@@ -252,7 +252,7 @@ SpecWeave supports TWO valid approaches:
 5. Implement with context precision
 6. Tests validate automatically
 
-### [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Projects
+### [Brownfield](/docs/glossary/terms/brownfield) Projects
 
 1. **Step 0**: Merge existing CLAUDE.md (if exists)
 2. **Step 1**: Analyze existing code

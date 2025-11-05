@@ -37,7 +37,7 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 - Best for: enterprise applications, large teams
 - When to use: need full framework, TypeScript required
 
-**[Vue.js](/docs/glossary/terms/vue)**
+**Vue.js**
 - Progressive JavaScript framework
 - Easier learning curve than React/Angular
 - Best for: smaller projects, rapid development
@@ -317,7 +317,7 @@ src/
 - Toast notifications (react-hot-toast)
 - Sound alerts (optional)
 
-## Test Plan (Embedded in tasks.md)
+## Test Plan (Embedded in tasks)
 
 **Given** authenticated user → **When** load dashboard → **Then** profile + activity displayed
 
@@ -428,18 +428,18 @@ test('user can view dashboard', async ({ page }) => {
 
 ## Related Categories
 
-- **[Architecture & Design](/docs/glossary/categories/architecture)** - UI architecture patterns
-- **[Testing & Quality](/docs/glossary/categories/testing)** - E2E testing strategies
-- **[Performance & Scalability](/docs/glossary/categories/performance)** - Frontend optimization
+- **[Architecture & Design](/docs/glossary/categories/architecture-category)** - UI architecture patterns
+- **[Testing & Quality](/docs/glossary/categories/testing-category)** - E2E testing strategies
+- **[Performance & Scalability](/docs/glossary/categories/performance-category)** - Frontend optimization
 
 ---
 
 ## Learn More
 
 ### Guides
-- [React Best Practices (coming soon)](/docs/learn/foundations/react)
-- [Next.js Full-Stack Development (coming soon)](/docs/learn/foundations/nextjs)
-- [State Management Patterns (coming soon)](/docs/learn/foundations/state-management)
+- React Best Practices (coming soon)
+- Next.js Full-Stack Development (coming soon)
+- State Management Patterns (coming soon)
 
 ### Books
 - "Learning React" by Alex Banks & Eve Porcello

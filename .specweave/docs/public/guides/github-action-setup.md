@@ -665,7 +665,7 @@ git branch -r | grep dark-mode
 
 **Steps**:
 1. Create branch: `test-validation`
-2. Make small change to existing file (e.g., README.md)
+2. Make small change to existing file (e.g., README)
 3. Commit and push
 4. Open PR
 
@@ -992,10 +992,10 @@ jobs:
 
 ## Related Documentation
 
-- [CLAUDE-CODE-ACTION-INTEGRATION.md](../../../ai-logs/reports/CLAUDE-CODE-ACTION-INTEGRATION.md) - Complete integration analysis
+- [CLAUDE-CODE-ACTION-INTEGRATION.md](../../../ai-logs/reports/CLAUDE-CODE-ACTION-INTEGRATION) - Complete integration analysis
 - [CLAUDE.md](../../../CLAUDE.md#agents-vs-skills-architecture) - SpecWeave development guide
 - [.specweave/config.yaml](../../config.yaml) - Configuration reference
-- [Troubleshooting Guide](./github-action-troubleshooting.md) - Common issues and solutions
+- [Troubleshooting Guide](/docs/glossary/terms/github-action-troubleshooting) - Common issues and solutions
 
 ---
 

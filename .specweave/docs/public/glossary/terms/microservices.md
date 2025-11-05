@@ -476,17 +476,17 @@ try {
 ## Related Terms
 
 - **[Monolith](/docs/glossary/terms/monolith)** - Alternative architecture (single application)
-- **[API Gateway](/docs/glossary/terms/api-gateway)** - Entry point for microservices
+- **API Gateway** - Entry point for microservices
 - **[REST](/docs/glossary/terms/rest)** - Common communication protocol
 - **[Kubernetes](/docs/glossary/terms/kubernetes)** - Container orchestration for microservices
 - **[Docker](/docs/glossary/terms/docker)** - Containerization for services
-- **[Backend](/docs/glossary/terms/backend)** - Microservices are backend architecture
+- **Backend** - Microservices are backend architecture
 
 ## Learn More
 
 - **[Microservices Patterns](https://microservices.io/patterns/)** - Martin Fowler's patterns
 - **[Building Microservices Book](https://www.oreilly.com/library/view/building-microservices-2nd/9781492034018/)** - Comprehensive guide
-- **[SpecWeave Microservices Guide](/docs/learn/architecture/microservices)** - Building microservices with SpecWeave
+- **SpecWeave Microservices Guide** - Building microservices with SpecWeave
 
 ---
 

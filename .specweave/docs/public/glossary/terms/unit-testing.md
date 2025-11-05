@@ -588,10 +588,10 @@ test('should increment counter', () => {
 
 ## Related Terms
 
-- [TDD (Test-Driven Development)](./tdd.md) - Write tests before code
-- [Integration Testing](./integration-testing.md) - Testing component interactions
-- [Test Coverage](./test-coverage.md) - Measuring code tested
-- [Mocking](./mocking.md) - Replacing dependencies in tests
+- [TDD (Test-Driven Development)](/docs/glossary/terms/tdd) - Write tests before code
+- [Integration Testing](/docs/glossary/terms/integration-testing) - Testing component interactions
+- [Test Coverage](/docs/glossary/terms/test-coverage) - Measuring code tested
+- Mocking - Replacing dependencies in tests
 
 ---
 

@@ -642,7 +642,7 @@ When you execute tasks via `/specweave:do`, GitHub sync happens automatically:
 
 ```
 📂 Loading increment 0005-user-authentication...
-✅ Context loaded (spec.md, plan.md, tasks.md, tests.md)
+✅ Context loaded (spec.md, plan.md, tasks.md, tests)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 TASK T-001: Create User model

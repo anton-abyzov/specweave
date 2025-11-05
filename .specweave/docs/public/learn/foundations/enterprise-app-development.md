@@ -497,9 +497,9 @@ Enterprise applications require diverse expertise across multiple roles:
 
 | Role | Responsibilities | Skills | SpecWeave Agent |
 |------|-----------------|--------|-----------------|
-| **Product Manager (PM)** | Define requirements, prioritize features, stakeholder communication | Business analysis, user research, roadmap planning | PM Agent (spec.md) |
-| **Software Architect** | Design system architecture, technology decisions, ADRs | System design, scalability, trade-off analysis | Architect Agent (plan.md) |
-| **Backend Developer** | Implement APIs, business logic, database design | Java, Python, Node.js, SQL, API design | Tech Lead Agent (tasks.md) |
+| **Product Manager (PM)** | Define requirements, prioritize features, stakeholder communication | Business analysis, user research, roadmap planning | PM Agent (spec) |
+| **Software Architect** | Design system architecture, technology decisions, ADRs | System design, scalability, trade-off analysis | Architect Agent (plan) |
+| **Backend Developer** | Implement APIs, business logic, database design | Java, Python, Node.js, SQL, API design | Tech Lead Agent (tasks) |
 | **Frontend Developer** | Build user interfaces, client-side logic | React, Angular, Vue, TypeScript, CSS | Frontend Agent (plugin) |
 | **DevOps Engineer** | CI/CD pipelines, infrastructure, deployment automation | Docker, Kubernetes, Terraform, AWS/Azure | DevOps Agent (plugin) |
 | **QA Engineer** | Test planning, automation, quality assurance | Selenium, Playwright, test frameworks | QA Agent (plugin) |
@@ -510,7 +510,7 @@ Enterprise applications require diverse expertise across multiple roles:
 **SpecWeave Connection**
 - Core agents (PM, Architect, Tech Lead) mirror real-world roles
 - Plugin agents extend to specialized domains (ML, payments, infrastructure)
-- Agents produce artifacts in standard formats (spec.md, plan.md, tasks.md)
+- Agents produce artifacts in standard formats (spec.md, plan.md, tasks)
 
 ## Common Enterprise Patterns
 
@@ -1113,7 +1113,7 @@ Result: Clear direction, no ambiguity, testable outcomes
 ```
 
 **Benefits**
-- Single source of truth (spec.md)
+- Single source of truth (spec)
 - Traceability (requirement → code → test)
 - Stakeholder alignment (everyone approves spec first)
 
@@ -1530,31 +1530,31 @@ Large app: Microservices (when team size >50 engineers)
 ### Explore Related Guides
 
 **Infrastructure & Operations**
-- [Infrastructure as Code (IaC) Fundamentals](/docs/learn/infrastructure/iac-fundamentals)
+- Infrastructure as Code (IaC) Fundamentals
   - Terraform, CloudFormation, Ansible
   - Immutable infrastructure
   - GitOps workflows
 
 **Backend Development**
-- [Backend Development Guide](/docs/learn/backend/backend-fundamentals)
+- Backend Development Guide
   - REST APIs, GraphQL
   - Database design (SQL vs NoSQL)
   - Authentication patterns
 
 **Frontend Development**
-- [Frontend Development Guide](/docs/learn/frontend/frontend-fundamentals)
+- Frontend Development Guide
   - React, Angular, Vue
   - State management (Redux, Zustand)
   - Performance optimization
 
 **DevOps & CI/CD**
-- [CI/CD Pipeline Design](/docs/learn/devops/cicd-fundamentals)
+- CI/CD Pipeline Design
   - GitHub Actions, GitLab CI, Jenkins
   - Automated testing strategies
   - Deployment strategies
 
 **Testing Strategies**
-- [Testing Pyramid in Practice](/docs/learn/testing/testing-fundamentals)
+- Testing Pyramid in Practice
   - Unit, integration, E2E tests
   - TDD and BDD workflows
   - Test coverage strategies
@@ -1565,12 +1565,12 @@ Deepen your understanding of key concepts:
 
 - [API (Application Programming Interface)](/docs/glossary/terms/api)
 - [Microservices Architecture](/docs/glossary/terms/microservices)
-- [CI/CD (Continuous Integration/Continuous Deployment)](/docs/glossary/terms/cicd)
+- CI/CD (Continuous Integration/Continuous Deployment)
 - [Infrastructure as Code (IaC)](/docs/glossary/terms/iac)
 - [Docker & Containerization](/docs/glossary/terms/docker)
 - [Kubernetes (K8s)](/docs/glossary/terms/kubernetes)
 - [Database (Relational vs NoSQL)](/docs/glossary/terms/database)
-- [Authentication & Authorization](/docs/glossary/terms/auth)
+- Authentication & Authorization
 
 ### SpecWeave in Action
 

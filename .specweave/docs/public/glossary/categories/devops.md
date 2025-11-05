@@ -24,7 +24,7 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 - Industry standard (used by 90%+ of developers)
 - SpecWeave requires Git for living docs sync
 
-**[GitHub](/docs/glossary/terms/github)**
+**GitHub**
 - Git hosting platform + collaboration tools
 - Features: pull requests, issues, actions, projects
 - SpecWeave plugin: `specweave-github` for issue sync
@@ -492,8 +492,8 @@ DevOps configuration documented in:
 
 ## Related Categories
 
-- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure)** - Deployment and scaling
-- **[Testing & Quality](/docs/glossary/categories/testing)** - CI/CD testing
+- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Deployment and scaling
+- **[Testing & Quality](/docs/glossary/categories/testing-category)** - CI/CD testing
 - **[Security & Compliance](/docs/glossary/categories/security)** - Secure pipelines
 
 ---
@@ -503,7 +503,7 @@ DevOps configuration documented in:
 ### Guides
 - [Development Workflow](/docs/delivery/guides/development-workflow)
 - [Branch Strategy](/docs/delivery/branch-strategy)
-- [CI/CD Best Practices (coming soon)](/docs/learn/foundations/ci-cd)
+- CI/CD Best Practices (coming soon)
 
 ### Books
 - "The DevOps Handbook" by Gene Kim

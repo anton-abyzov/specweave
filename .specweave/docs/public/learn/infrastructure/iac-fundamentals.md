@@ -2486,7 +2486,7 @@ terraform import aws_instance.example i-1234567890abcdef0
 - [ ] **AC-US4-01**: Auto-scaling maintains 2-10 instances based on CPU
 ```
 
-### Test Plan (Embedded in tasks.md)
+### Test Plan (Embedded in tasks)
 
 ```markdown
 ## T-001: Create VPC and Subnets with Terraform
@@ -2679,7 +2679,7 @@ Congratulations! You now understand Infrastructure as Code fundamentals.
 
 ### Kubernetes
 - [Kubernetes guide](/docs/glossary/terms/kubernetes) - Complete K8s reference
-- [Helm guide](/docs/glossary/terms/helm) - K8s package manager
+- Helm guide - K8s package manager
 - [Kubernetes Patterns](https://k8spatterns.io/) - Design patterns for K8s
 
 ### Docker
@@ -2694,9 +2694,9 @@ Congratulations! You now understand Infrastructure as Code fundamentals.
 
 ### Related Concepts
 - [Microservices Architecture](/docs/glossary/terms/microservices)
-- [Service Mesh](/docs/glossary/terms/service-mesh)
-- [Observability](/docs/glossary/terms/observability)
-- [Site Reliability Engineering (SRE)](/docs/glossary/terms/sre)
+- Service Mesh
+- Observability
+- Site Reliability Engineering (SRE)
 
 ### Hands-On Practice
 

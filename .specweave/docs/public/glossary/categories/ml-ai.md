@@ -18,7 +18,7 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 ### Machine Learning Fundamentals
 
-**[Machine Learning](/docs/glossary/terms/machine-learning)**
+**Machine Learning**
 - Systems that learn from data without explicit programming
 - Types: Supervised, Unsupervised, Reinforcement Learning
 - Use cases: recommendations, fraud detection, image recognition
@@ -556,18 +556,18 @@ When planning increments:
 
 ## Related Categories
 
-- **[Backend Development](/docs/glossary/categories/backend)** - AI-powered APIs
-- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure)** - ML infrastructure
-- **[Performance & Scalability](/docs/glossary/categories/performance)** - Model optimization
+- **[Backend Development](/docs/glossary/categories/backend-category)** - AI-powered APIs
+- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - ML infrastructure
+- **[Performance & Scalability](/docs/glossary/categories/performance-category)** - Model optimization
 
 ---
 
 ## Learn More
 
 ### Guides
-- [Building with Claude Code (coming soon)](/docs/learn/foundations/claude-code)
-- [Prompt Engineering Best Practices (coming soon)](/docs/learn/foundations/prompt-engineering)
-- [RAG Applications (coming soon)](/docs/learn/foundations/rag)
+- Building with Claude Code (coming soon)
+- Prompt Engineering Best Practices (coming soon)
+- RAG Applications (coming soon)
 
 ### Books
 - "Designing Machine Learning Systems" by Chip Huyen

@@ -3280,16 +3280,16 @@ After `/specweave:done`, sync docs automatically:
 **After mastering backend fundamentals:**
 
 1. **Related Guides**:
-   - [API Design Best Practices](.specweave/docs/public/learn/backend/api-design.md)
-   - [Database Design Guide](.specweave/docs/public/learn/backend/database-design.md)
-   - [Microservices Architecture](.specweave/docs/public/learn/backend/microservices.md)
+   - [API Design Best Practices](.specweave/docs/learn/backend/api-design)
+   - [Database Design Guide](.specweave/docs/learn/backend/database-design)
+   - [Microservices Architecture](.specweave/docs/learn/backend/microservices)
 
 2. **Glossary Terms**:
-   - [REST API](../glossary/terms/rest-api.md)
-   - [PostgreSQL](../glossary/terms/postgresql.md)
-   - [JWT](../glossary/terms/jwt.md)
-   - [Docker](../glossary/terms/docker.md)
-   - [CI/CD](../glossary/terms/ci-cd.md)
+   - [REST API](../glossary/terms/rest-api)
+   - [PostgreSQL](../glossary/terms/postgresql)
+   - [JWT](../glossary/terms/jwt)
+   - [Docker](../glossary/terms/docker)
+   - [CI/CD](../glossary/terms/ci-cd)
 
 3. **Hands-On Practice**:
    - Build a blog API (follow this guide)
@@ -3297,9 +3297,9 @@ After `/specweave:done`, sync docs automatically:
    - Deploy to production (Docker + AWS)
 
 4. **Advanced Topics**:
-   - [GraphQL API Development](.specweave/docs/public/learn/backend/graphql.md)
-   - [Serverless Architecture](.specweave/docs/public/learn/backend/serverless.md)
-   - [Event-Driven Systems](.specweave/docs/public/learn/backend/event-driven.md)
+   - [GraphQL API Development](.specweave/docs/learn/backend/graphql)
+   - [Serverless Architecture](.specweave/docs/learn/backend/serverless)
+   - [Event-Driven Systems](.specweave/docs/learn/backend/event-driven)
 
 ---
 

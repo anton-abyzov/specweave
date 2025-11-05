@@ -279,7 +279,7 @@ resource "aws_instance" "app" {
 - AC-004: All resources tagged with increment ID
 ```
 
-**Test Plan** (embedded in tasks.md):
+**Test Plan** (embedded in tasks):
 ```markdown
 ## T-001: Define VPC Infrastructure
 
@@ -448,11 +448,11 @@ resource "aws_db_instance" "production" {
 
 ## Related Concepts
 
-- [Kubernetes](./kubernetes.md) - Container orchestration platform
-- [Docker](./docker.md) - Container platform for packaging applications
-- [CI/CD](./ci-cd.md) - Automated deployment pipelines
-- [Infrastructure as Code](./iac.md) - Code-based infrastructure management
-- [GitOps](./gitops.md) - Git-based infrastructure management
+- [Kubernetes](/docs/glossary/terms/kubernetes) - Container orchestration platform
+- [Docker](/docs/glossary/terms/docker) - Container platform for packaging applications
+- [CI/CD](/docs/glossary/terms/ci-cd) - Automated deployment pipelines
+- [Infrastructure as Code](/docs/glossary/terms/iac) - Code-based infrastructure management
+- GitOps - Git-based infrastructure management
 
 ## Resources
 

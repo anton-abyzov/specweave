@@ -84,9 +84,9 @@ graph TB
 Clear path from requirements → implementation → tests:
 
 ```
-AC-US1-01 (spec.md)
+AC-US1-01 (spec)
    ↓
-T-001: AuthService (tasks.md)
+T-001: AuthService (tasks)
    ↓
 validLogin() test (tests/unit/auth.test.ts)
 ```
@@ -120,7 +120,7 @@ SpecWeave supports different work types:
 | **refactor** | Code improvement | No | Extract service layer, TypeScript migration |
 | **experiment** | POC/spike work | No | Evaluate libraries, architecture spike |
 
-**Note**: All types use the same structure (spec.md, plan.md, tasks.md). The type is just a label for tracking.
+**Note**: All types use the same structure (spec.md, plan.md, tasks). The type is just a label for tracking.
 
 ## Increment Lifecycle
 
@@ -255,4 +255,4 @@ Answer: Read living docs
 **Learn More:**
 - [Increment Planning Workflow](/docs/workflows/planning)
 - [Increment Discipline (WIP Limits)](/docs/guides/core-concepts/increment-discipline)
-- [Test-Aware Planning](/docs/guides/core-concepts/test-aware-planning)
+- Test-Aware Planning

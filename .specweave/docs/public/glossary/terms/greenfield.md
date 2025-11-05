@@ -1,7 +1,7 @@
 # Greenfield Development
 
 **Category**: Development Methodology
-**Related Terms**: [Brownfield](./brownfield.md), Technical Debt, Legacy Code, Architecture, Migration
+**Related Terms**: [Brownfield](/docs/glossary/terms/brownfield), Technical Debt, Legacy Code, Architecture, Migration
 
 ---
 
@@ -421,7 +421,7 @@ graph TB
 ### 1. Start with a Clear Vision
 
 ```markdown
-# Example: Product Vision (spec.md)
+# Example: Product Vision (spec)
 
 ## Problem Statement
 Teams struggle with project management tools that are too complex.
@@ -581,11 +581,11 @@ Use SpecWeave's living docs system:
 
 ## Related Documentation
 
-- [Brownfield Development](./brownfield.md) - Working with legacy codebases
-- [Technical Debt](./technical-debt.md) - Understanding and managing debt
-- [Architecture Decision Records](./adr.md) - Documenting decisions
-- [Migration Strategies](./migration.md) - Moving from brownfield to greenfield
-- [SpecWeave Project Kickstarter](../../guides/project-kickstarter.md) - Greenfield setup guide
+- [Brownfield Development](/docs/glossary/terms/brownfield) - Working with legacy codebases
+- Technical Debt - Understanding and managing debt
+- [Architecture Decision Records](/docs/glossary/terms/adr) - Documenting decisions
+- [Migration Strategies](/docs/glossary/terms/migration) - Moving from brownfield to greenfield
+- [SpecWeave Project Kickstarter](../../guides/project-kickstarter) - Greenfield setup guide
 
 ---
 

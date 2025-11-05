@@ -390,8 +390,8 @@ coverage_target: 88%
 
 Would you like to:
 1. Proceed with implementation (/specweave:do)
-2. Modify scope (edit spec.md)
-3. Adjust architecture (edit plan.md)
+2. Modify scope (edit spec)
+3. Adjust architecture (edit plan)
 4. Regenerate tasks (/specweave:inc --regenerate)
 ```
 
@@ -463,7 +463,7 @@ Would you like to:
 
 - **Startup/MVP**: Brief (1-2 pages, core user stories)
 - **Enterprise**: Detailed (10+ pages, all edge cases)
-- **[Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield))**: Context-heavy (link to existing docs)
+- **[Brownfield](/docs/glossary/terms/brownfield)**: Context-heavy (link to existing docs)
 
 **Rule of thumb**: Enough detail that any developer can understand requirements without asking questions.
 
@@ -511,14 +511,14 @@ rm .specweave/increments/0012-chat/tasks.md
 
 Before moving to implementation:
 
-### Specification (spec.md)
+### Specification (spec)
 - [ ] User stories written (US-001, US-002, ...)
 - [ ] Acceptance criteria with AC-IDs (AC-US1-01, ...)
 - [ ] Priorities assigned (P1, P2, P3)
 - [ ] Out of scope documented
 - [ ] Success criteria defined
 
-### Architecture (plan.md)
+### Architecture (plan)
 - [ ] Components designed
 - [ ] Tech stack chosen
 - [ ] C4 diagrams created
@@ -526,7 +526,7 @@ Before moving to implementation:
 - [ ] Test strategy documented (coverage targets)
 - [ ] Performance requirements specified
 
-### Tasks (tasks.md)
+### Tasks (tasks)
 - [ ] All AC-IDs mapped to tasks
 - [ ] Test plans embedded ([BDD](/docs/glossary/terms/bdd) format)
 - [ ] Coverage targets per task
@@ -548,7 +548,7 @@ Planning complete! Move to implementation:
 
 **Learn more:**
 - [Implementation Workflow](/docs/workflows/implementation)
-- [Test-Aware Planning](/docs/guides/core-concepts/test-aware-planning)
+- Test-Aware Planning
 - [Creating Great Specifications](/docs/guides/best-practices/specifications)
 
 ---
@@ -556,4 +556,4 @@ Planning complete! Move to implementation:
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
 - [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
-- [PM Agent](/docs/agents/pm)
+- PM Agent

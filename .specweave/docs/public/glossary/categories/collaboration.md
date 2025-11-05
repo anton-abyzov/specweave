@@ -18,7 +18,7 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Agile Methodologies
 
-**[Agile](/docs/glossary/terms/agile)**
+**Agile**
 - Iterative, incremental approach to software development
 - Values: individuals, working software, collaboration, responding to change
 - Frameworks: Scrum, Kanban, XP (Extreme Programming)
@@ -224,10 +224,10 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 - Sprint 1 → 0035-user-registration (US-001, US-002)
 - Sprint 2 → 0036-user-authentication (US-003, US-004)
 
-**User Story** (Jira) → **Acceptance Criteria** (spec.md)
+**User Story** (Jira) → **Acceptance Criteria** (spec)
 - US-001: User registration → AC-US1-01, AC-US1-02, AC-US1-03
 
-**Task** (Jira) → **Task** (tasks.md)
+**Task** (Jira) → **Task** (tasks)
 - Jira: "Create user model" → tasks.md: T-001
 
 ## User Stories (from Jira/GitHub)
@@ -388,7 +388,7 @@ Team collaboration documented in:
 # Increment = Sprint (SpecWeave's unit of work)
 
 **Duration**: Typically 1-2 weeks (flexible)
-**Planning**: /specweave:inc (generate spec.md, plan.md, tasks.md)
+**Planning**: /specweave:inc (generate spec.md, plan.md, tasks)
 **Execution**: /specweave:do (implement tasks)
 **Daily Updates**: /specweave:progress (check status)
 **Completion**: /specweave:done (close increment, generate report)
@@ -426,9 +426,9 @@ Team collaboration documented in:
 
 ## Related Categories
 
-- **[DevOps & Tools](/docs/glossary/categories/devops)** - Development workflows
-- **[Architecture & Design](/docs/glossary/categories/architecture)** - Technical decisions
-- **[Testing & Quality](/docs/glossary/categories/testing)** - Quality practices
+- **[DevOps & Tools](/docs/glossary/categories/devops-category)** - Development workflows
+- **[Architecture & Design](/docs/glossary/categories/architecture-category)** - Technical decisions
+- **[Testing & Quality](/docs/glossary/categories/testing-category)** - Quality practices
 
 ---
 

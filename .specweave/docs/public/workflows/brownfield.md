@@ -186,7 +186,7 @@ graph TB
 # Authentication System - High-Level Design
 
 ## Overview
-[JWT](/docs/glossary/terms/jwt)-based authentication with bcrypt password hashing, session management, and OAuth2 integration (Google, GitHub).
+JWT-based authentication with bcrypt password hashing, session management, and OAuth2 integration (Google, GitHub).
 
 ## Components
 
@@ -795,5 +795,5 @@ npx specweave init .
 
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
-- [Regression Prevention](/docs/guides/testing/regression-prevention)
+- Regression Prevention
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)

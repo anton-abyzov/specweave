@@ -1280,9 +1280,9 @@ await openai.chat.completions.create({ /* small prompt */ });
 ## Next Steps
 
 **Deepen Your Knowledge:**
-- [Backend Fundamentals](/docs/public/learn/backend/backend-fundamentals) - Build APIs for AI integration
-- [Frontend Fundamentals](/docs/public/learn/frontend/frontend-fundamentals) - Create UIs for AI features
-- [Testing Fundamentals](/docs/public/learn/testing/testing-fundamentals) - Test AI systems effectively
+- Backend Fundamentals - Build APIs for AI integration
+- Frontend Fundamentals - Create UIs for AI features
+- Testing Fundamentals - Test AI systems effectively
 
 **Hands-On Practice:**
 1. Build RAG system for your docs

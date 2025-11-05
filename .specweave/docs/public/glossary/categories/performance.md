@@ -18,7 +18,7 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Caching Strategies
 
-**[Caching](/docs/glossary/terms/caching)**
+**Caching**
 - Store frequently accessed data in fast storage
 - Levels: Browser, CDN, Application, Database
 - Types: In-memory (Redis), HTTP, Query result
@@ -488,9 +488,9 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 
 ## Related Categories
 
-- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure)** - Scaling infrastructure
-- **[Backend Development](/docs/glossary/categories/backend)** - API optimization
-- **[Testing & Quality](/docs/glossary/categories/testing)** - Performance testing
+- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Scaling infrastructure
+- **[Backend Development](/docs/glossary/categories/backend-category)** - API optimization
+- **[Testing & Quality](/docs/glossary/categories/testing-category)** - Performance testing
 
 ---
 
@@ -498,8 +498,8 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 
 ### Guides
 - [Performance Tuning](/docs/operations/performance-tuning)
-- [Caching Strategies (coming soon)](/docs/learn/foundations/caching)
-- [Database Optimization (coming soon)](/docs/learn/foundations/database-optimization)
+- Caching Strategies (coming soon)
+- Database Optimization (coming soon)
 
 ### Books
 - "High Performance Browser Networking" by Ilya Grigorik

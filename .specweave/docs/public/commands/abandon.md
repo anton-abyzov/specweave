@@ -534,10 +534,10 @@ ls .specweave/increments/_abandoned/
 
 ## See Also
 
-- [`pause`](./pause.md) - Temporarily pause work (reversible)
-- [`resume`](./resume.md) - Resume paused/abandoned work
-- [`status`](./status.md) - View all increment statuses
-- [Status Management Guide](./status-management.md) - Complete workflow guide
+- `pause` - Temporarily pause work (reversible)
+- `resume` - Resume paused/abandoned work
+- [`status`](/docs/glossary/terms/status) - View all increment statuses
+- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
 
 ## Summary
 

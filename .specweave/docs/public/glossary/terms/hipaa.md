@@ -441,8 +441,8 @@ File: .specweave/increments/0025-encryption-upgrade/spec.md
 ## Related Standards & Concepts
 
 **Related Glossary Terms**:
-- [SOC 2](./soc2.md) - Security audit standard (often paired with HIPAA)
-- [FDA](./fda.md) - Medical device regulations (software as medical device)
+- [SOC 2](/docs/glossary/terms/soc2) - Security audit standard (often paired with HIPAA)
+- [FDA](/docs/glossary/terms/fda) - Medical device regulations (software as medical device)
 - Encryption - Technical safeguard required by HIPAA
 - Authentication - Access control mechanism
 - Audit Logging - Tracking PHI access

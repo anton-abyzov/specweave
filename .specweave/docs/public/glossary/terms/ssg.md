@@ -789,13 +789,13 @@ export async function getStaticProps() {
 - **[SSR](/docs/glossary/terms/ssr)** - Server-side rendering (alternative)
 - **[SPA](/docs/glossary/terms/spa)** - Client-side rendering (alternative)
 - **[React](/docs/glossary/terms/react)** - Library SSG is built on
-- **[Docusaurus](/docs/glossary/terms/docusaurus)** - SSG for documentation
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **Docusaurus** - SSG for documentation
+- **Frontend** - Client-side development
 
 ## Learn More
 
 - **[Next.js SSG Guide](https://nextjs.org/docs/basic-features/data-fetching/get-static-props)** - Official docs
-- **[SSG Tutorial](/docs/learn/frontend/ssg-fundamentals)** - SpecWeave SSG guide
+- **SSG Tutorial** - SpecWeave SSG guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSG
 - **[Docusaurus Guide](https://docusaurus.io)** - Documentation SSG
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSG-specific features

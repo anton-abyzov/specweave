@@ -24,25 +24,25 @@ This glossary helps you:
 
 ### 2. Category-Based Navigation
 
-[**Browse by Category**](./index-by-category) - Explore related concepts together:
+[**Browse by Category**](/docs/glossary/glossary-by-category) - Explore related concepts together:
 
-- [Architecture & Design](./categories/architecture) - ADRs, RFCs, HLDs, design patterns
-- [Infrastructure & Operations](./categories/infrastructure) - IaC, K8s, Terraform, CI/CD
-- [Backend Development](./categories/backend) - APIs, Node.js, databases, microservices
-- [Frontend Development](./categories/frontend) - React, Next.js, Angular, state management
-- [Testing & Quality](./categories/testing) - E2E, TDD, BDD, test coverage
-- [DevOps & Tools](./categories/devops) - Git, CI/CD, containers, deployment
-- [Collaboration & Management](./categories/collaboration) - Agile, Jira, releases
+- [Architecture & Design](./categories/architecture-category) - ADRs, RFCs, HLDs, design patterns
+- [Infrastructure & Operations](./categories/infrastructure-category) - IaC, K8s, Terraform, CI/CD
+- [Backend Development](./categories/backend-category) - APIs, Node.js, databases, microservices
+- [Frontend Development](./categories/frontend-category) - React, Next.js, Angular, state management
+- [Testing & Quality](./categories/testing-category) - E2E, TDD, BDD, test coverage
+- [DevOps & Tools](./categories/devops-category) - Git, CI/CD, containers, deployment
+- [Collaboration & Management](./categories/collaboration-category) - Agile, Jira, releases
 
 ### 3. Learning Guides
 
 [**Learning Paths**](/docs/learn/) - Deep dives into key concepts:
 
-- [Enterprise App Development 101](/docs/learn/foundations/enterprise-app-development)
-- [Infrastructure & IaC Fundamentals](/docs/learn/infrastructure/iac-fundamentals)
-- [Backend Development Guide](/docs/learn/backend/backend-fundamentals)
-- [Frontend Development Guide](/docs/learn/frontend/frontend-fundamentals)
-- [Testing Strategies](/docs/learn/testing/testing-fundamentals)
+- Enterprise App Development 101
+- Infrastructure & IaC Fundamentals
+- Backend Development Guide
+- Frontend Development Guide
+- Testing Strategies
 
 ---
 
@@ -50,13 +50,13 @@ This glossary helps you:
 
 ### A
 - **[ADR (Architecture Decision Record)](./terms/adr)** - Document capturing architectural decisions
-- **[Agile](./terms/agile)** - Iterative software development methodology
+- **Agile** - Iterative software development methodology
 - **[Angular](./terms/angular)** - TypeScript-based frontend framework
 - **[API (Application Programming Interface)](./terms/api)** - Interface for software communication
-- **[API Gateway](./terms/api-gateway)** - Entry point for microservices
+- **API Gateway** - Entry point for microservices
 
 ### B
-- **[Backend](./terms/backend)** - Server-side application logic
+- **Backend** - Server-side application logic
 - **[BDD (Behavior-Driven Development)](./terms/bdd)** - Testing approach using Given/When/Then
 - **[Branching Strategy](./terms/branching-strategy)** - Git workflow patterns
 - **[Brownfield Development](./terms/brownfield)** - Working with existing legacy codebases (SpecWeave specialty!)
@@ -64,7 +64,7 @@ This glossary helps you:
 ### C
 - **[CI/CD (Continuous Integration/Continuous Deployment)](./terms/ci-cd)** - Automated build and deployment pipeline
 - **[Container](./terms/container)** - Lightweight, portable application package
-- **[Component Library](./terms/component-library)** - Reusable UI components
+- **Component Library** - Reusable UI components
 
 ### D
 - **[DDD (Domain-Driven Design)](./terms/ddd)** - Software design approach focused on business domain
@@ -73,10 +73,10 @@ This glossary helps you:
 ### E
 - **[E2E (End-to-End) Testing](./terms/e2e)** - Full application workflow testing
 - **[Epic](./terms/epic)** - Large user story spanning multiple sprints
-- **[Express](./terms/express)** - Minimal Node.js web framework
+- **Express** - Minimal Node.js web framework
 
 ### F
-- **[Frontend](./terms/frontend)** - Client-side user interface
+- **Frontend** - Client-side user interface
 - **[Function as a Service (FaaS)](./terms/faas)** - Serverless computing model
 
 ### G
@@ -84,10 +84,10 @@ This glossary helps you:
 - **[GitHub Actions](./terms/github-actions)** - CI/CD automation platform
 - **[GraphQL](./terms/graphql)** - Query language for APIs
 - **[Greenfield Development](./terms/greenfield)** - Starting projects from scratch with no legacy constraints
-- **[gRPC](./terms/grpc)** - High-performance RPC framework
+- **gRPC** - High-performance RPC framework
 
 ### H
-- **[HLD (High-Level Design)](./terms/hld)** - System architecture document
+- **HLD (High-Level Design)** - System architecture document
 - **[HTTPS](./terms/https)** - Secure HTTP protocol
 
 ### I
@@ -95,7 +95,7 @@ This glossary helps you:
 - **[Integration Testing](./terms/integration-testing)** - Testing component interactions
 
 ### J
-- **[JWT (JSON Web Token)](./terms/jwt)** - Authentication token standard
+- **JWT (JSON Web Token)** - Authentication token standard
 
 ### K
 - **[Kubernetes (K8s)](./terms/kubernetes)** - Container orchestration platform
@@ -116,11 +116,11 @@ This glossary helps you:
 
 ### O
 - **[OAuth2](./terms/oauth2)** - Authorization framework
-- **[Observability](./terms/observability)** - Understanding system internal state
+- **Observability** - Understanding system internal state
 - **[ORM (Object-Relational Mapping)](./terms/orm)** - Database abstraction layer
 
 ### P
-- **[Pull Request (PR)](./terms/pull-request)** - Proposed code changes
+- **Pull Request (PR)** - Proposed code changes
 - **[PostgreSQL](./terms/postgresql)** - Open-source relational database
 
 ### Q
@@ -149,7 +149,7 @@ This glossary helps you:
 - **[User Story](./terms/user-story)** - Feature description from user perspective
 
 ### V
-- **[Vue](./terms/vue)** - Progressive JavaScript framework
+- **Vue** - Progressive JavaScript framework
 
 ### W
 - **[WebSocket](./terms/websocket)** - Full-duplex communication protocol
@@ -168,6 +168,6 @@ Found a term that's missing or unclear? [Open an issue](https://github.com/anton
 
 ## Navigation
 
-- **[Browse by Category](./index-by-category)** - Explore related concepts
+- **[Browse by Category](/docs/glossary/glossary-by-category)** - Explore related concepts
 - **[Learning Guides](/docs/learn/)** - Deep dive into topics
 - **[FAQ](/docs/faq)** - Common questions

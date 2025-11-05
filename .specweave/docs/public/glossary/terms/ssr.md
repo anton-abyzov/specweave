@@ -717,13 +717,13 @@ export async function getServerSideProps({ req }) {
 - **[SSG](/docs/glossary/terms/ssg)** - Static site generation (alternative)
 - **[SPA](/docs/glossary/terms/spa)** - Client-side rendering (alternative)
 - **[React](/docs/glossary/terms/react)** - Library SSR is built on
-- **[SEO](/docs/glossary/terms/seo)** - Why SSR matters
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **SEO** - Why SSR matters
+- **Frontend** - Client-side development
 
 ## Learn More
 
 - **[Next.js SSR Guide](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props)** - Official docs
-- **[SSR Tutorial](/docs/learn/frontend/ssr-fundamentals)** - SpecWeave SSR guide
+- **SSR Tutorial** - SpecWeave SSR guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSR
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSR-specific features
 

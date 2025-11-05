@@ -178,17 +178,17 @@ Living Docs (Documentation)
 
 ## Related Categories
 
-- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure)** - Deployment, scaling, operations
-- **[Backend Development](/docs/glossary/categories/backend)** - Implementing architecture patterns
-- **[Frontend Development](/docs/glossary/categories/frontend)** - UI architecture patterns
+- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Deployment, scaling, operations
+- **[Backend Development](/docs/glossary/categories/backend-category)** - Implementing architecture patterns
+- **[Frontend Development](/docs/glossary/categories/frontend-category)** - UI architecture patterns
 
 ---
 
 ## Learn More
 
 ### Guides
-- [Enterprise Application Development](/docs/learn/foundations/enterprise-app-development) - Complete architecture guide
-- [Architecture Patterns (coming soon)](/docs/learn/foundations/architecture-patterns)
+- Enterprise Application Development - Complete architecture guide
+- Architecture Patterns (coming soon)
 
 ### Books
 - "Clean Architecture" by Robert C. Martin

@@ -228,9 +228,8 @@ await reporter.exportToCSV('0003', 'cost-history.csv');
 
 ## Related Documents
 
-- [Cost Optimization Guide](../guides/cost-optimization.md)
-- [Model Selection Guide](../guides/model-selection.md)
-- [ADR-0013: Cost Tracking System](../../internal/architecture/adr/0013-cost-tracking.md)
+- [Cost Optimization Guide](../guides/cost-optimization)
+- [Model Selection Guide](../guides/model-selection)
 
 ---
 

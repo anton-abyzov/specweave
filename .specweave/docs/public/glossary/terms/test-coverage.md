@@ -562,10 +562,10 @@ Overall             |   87.5  |   85.5   |   92.3  |   87.4  | 85%+   | ✅
 
 ## Related Terms
 
-- [Unit Testing](./unit-testing.md) - Testing individual functions
-- [Integration Testing](./integration-testing.md) - Testing component interactions
-- [TDD](./tdd.md) - Test-driven development
-- [Test Pyramid](./test-pyramid.md) - Testing strategy distribution
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Testing individual functions
+- [Integration Testing](/docs/glossary/terms/integration-testing) - Testing component interactions
+- [TDD](/docs/glossary/terms/tdd) - Test-driven development
+- [Test Pyramid](/docs/glossary/terms/test-pyramid) - Testing strategy distribution
 
 ---
 

@@ -268,13 +268,13 @@ Use fragments to avoid repeating field selections.
 - **[REST](/docs/glossary/terms/rest)** - Alternative API style
 - **[API](/docs/glossary/terms/api)** - GraphQL is one type of API
 - **[Node.js](/docs/glossary/terms/nodejs)** - Popular runtime for GraphQL servers
-- **[Backend](/docs/glossary/terms/backend)** - GraphQL is backend technology
+- **Backend** - GraphQL is backend technology
 
 ## Learn More
 
 - **[GraphQL Official Docs](https://graphql.org/)** - Official documentation
 - **[Apollo GraphQL](https://www.apollographql.com/)** - Popular GraphQL platform
-- **[SpecWeave GraphQL Guide](/docs/learn/backend/graphql-apis)** - Building GraphQL APIs with SpecWeave
+- **SpecWeave GraphQL Guide** - Building GraphQL APIs with SpecWeave
 
 ---
 

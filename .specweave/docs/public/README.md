@@ -98,5 +98,5 @@ The Docusaurus configuration:
 
 ## Related Documentation
 
-- [Internal Documentation](../internal/README.md) - Internal playbook
+- [Internal Documentation] - Internal playbook
 - [Docusaurus Configuration](../../docs-site/docusaurus.config.ts)
