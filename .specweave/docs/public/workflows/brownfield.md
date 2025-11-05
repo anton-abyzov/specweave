@@ -454,7 +454,7 @@ describe('Authentication Baseline (Current Behavior)', () => {
 **Now** you can safely plan changes:
 
 ```bash
-/specweave:inc "0015-add-2fa-to-authentication"
+/specweave:increment "0015-add-2fa-to-authentication"
 ```
 
 **PM agent asks brownfield-aware questions:**
@@ -600,7 +600,7 @@ graph TB
 "Create tests for current auth behavior"
 
 # 3. Plan changes
-/specweave:inc "0015-add-2fa"
+/specweave:increment "0015-add-2fa"
 
 # 4. Implement with safety net
 /specweave:do
@@ -620,12 +620,12 @@ graph TB
 ```bash
 # Month 1: Auth module
 "Document auth module"
-/specweave:inc "0015-modernize-auth"
+/specweave:increment "0015-modernize-auth"
 # Result: Auth modernized ✅
 
 # Month 2: Payment module
 "Document payment module"
-/specweave:inc "0018-modernize-payments"
+/specweave:increment "0018-modernize-payments"
 # Result: Payments modernized ✅
 
 # Month 3: Notifications
@@ -671,7 +671,7 @@ npm test
 ### Week 3: First Modification
 
 ```bash
-/specweave:inc "0001-add-apple-pay"
+/specweave:increment "0001-add-apple-pay"
 # PM agent considers existing payment module
 # Architect designs extension (not replacement)
 # Test-aware planner includes baseline + new tests

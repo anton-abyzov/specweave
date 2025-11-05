@@ -115,7 +115,7 @@ graph LR
 - plan.md (architecture, approach)
 - tasks.md (checklist, embedded tests)
 
-**Command**: `/specweave:inc "feature name"`
+**Command**: `/specweave:increment "feature name"`
 
 **[→ Full Planning Workflow](/docs/workflows/planning)**
 
@@ -219,7 +219,7 @@ graph LR
 
 | Phase | Command | What It Does |
 |-------|---------|--------------|
-| **Planning** | `/specweave:inc "feature"` | Creates spec, plan, tasks |
+| **Planning** | `/specweave:increment "feature"` | Creates spec, plan, tasks |
 | **Implementation** | `/specweave:do` | Executes tasks, auto-resumes |
 | **Progress Check** | `/specweave:progress` | Shows status, next task |
 | **Validation** | `/specweave:validate` | Quality checks |
@@ -445,7 +445,7 @@ Solution: Run /specweave:validate before /specweave:done
 
 ### Week 2: Planning
 ```bash
-/specweave:inc "0015-payment-processing"
+/specweave:increment "0015-payment-processing"
 # PM agent creates:
 # ✅ spec.md (5 user stories, 15 AC-IDs)
 # ✅ plan.md (Stripe architecture, test strategy)

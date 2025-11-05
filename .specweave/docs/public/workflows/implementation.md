@@ -407,7 +407,7 @@ While implementing ChatService, you discover:
 # 2b. If P2/P3 (nice-to-have):
 # Document in "Future Enhancements" section
 # Create new increment for next iteration
-/specweave:inc "0013-chat-admin-dashboard"
+/specweave:increment "0013-chat-admin-dashboard"
 ```
 
 ### Challenge 3: Blocked by Dependencies
