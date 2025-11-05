@@ -14,16 +14,16 @@ Your project is initialized! Now describe what you want to build.
 
 ```bash
 # Plan a new feature
-/inc "user authentication with JWT"
+/specweave:increment "user authentication with JWT"
 
 # Execute the implementation
-/do
+/specweave:do
 
 # Check progress
-/progress
+/specweave:progress
 
 # Close when done
-/done 0001
+/specweave:done 0001
 ```
 
 3. **Or describe your project** in natural language (works with slash command workflows):
@@ -42,7 +42,7 @@ Your project is initialized! Now describe what you want to build.
    - Guide implementation
    - Generate tests
 
-That's it! All components ready - just use `/inc` to start!
+That's it! All components ready - just use `/specweave:increment` to start!
 
 ---
 
@@ -52,7 +52,7 @@ That's it! All components ready - just use `/inc` to start!
 {{PROJECT_NAME}}/
 ├── .specweave/             # SpecWeave framework
 │   ├── config.json         # Project configuration
-│   ├── increments/         # Features (created via /inc)
+│   ├── increments/         # Features (created via /specweave:increment)
 │   │   └── 0001-feature/
 │   │       ├── spec.md     # WHAT & WHY
 │   │       ├── plan.md     # HOW
@@ -79,7 +79,7 @@ That's it! All components ready - just use `/inc` to start!
 
 SpecWeave is a specification-first development framework where:
 - **Specifications are the source of truth** (code follows specs, not reverse)
-- **Slash commands drive workflow** (`/inc` → `/do` → `/done`)
+- **Slash commands drive workflow** (`/specweave:increment` → `/specweave:do` → `/specweave:done`)
 - **AI agents work autonomously** (PM, Architect, Security, QA, DevOps)
 - **All components pre-installed** (10 agents + 35+ skills ready!)
 - **Works with ANY tech stack** (TypeScript, Python, Go, Rust, Java, .NET, etc.)
@@ -90,18 +90,18 @@ SpecWeave is a specification-first development framework where:
 ## 🔧 Core Workflow
 
 ```
-/inc "feature" → /do → /progress → /done → repeat
+/specweave:increment "feature" → /specweave:do → /specweave:progress → /specweave:done → repeat
 ```
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/inc "feature"` | Plan new increment | Starting new feature |
-| `/do` | Execute tasks | Ready to implement |
-| `/progress` | Check status | Want to see progress |
-| `/validate 0001` | Validate quality | Before completion |
-| `/done 0001` | Close increment | Feature finished |
-| `/sync-github` | Sync to GitHub | Export to issues |
-| `/sync-jira` | Sync to Jira | Export to Jira |
+| `/specweave:increment "feature"` | Plan new increment | Starting new feature |
+| `/specweave:do` | Execute tasks | Ready to implement |
+| `/specweave:progress` | Check status | Want to see progress |
+| `/specweave:validate 0001` | Validate quality | Before completion |
+| `/specweave:done 0001` | Close increment | Feature finished |
+| `/specweave:sync-github` | Sync to GitHub | Export to issues |
+| `/specweave:sync-jira` | Sync to Jira | Export to Jira |
 
 See `CLAUDE.md` for complete workflow guide.
 
@@ -153,7 +153,7 @@ SpecWeave works with:
 
 **Start with your first feature**:
 ```bash
-/inc "describe your feature here"
+/specweave:increment "describe your feature here"
 ```
 
 Or just describe what you want to build, and SpecWeave will guide you through the process! 🚀
