@@ -5,5 +5,10 @@
   "created": "2025-01-25T00:00:00.000Z",
   "lastActivity": "2025-11-04T09:49:46.425Z",
   "completedAt": "2025-10-27T00:00:00.000Z",
-  "completionNotes": "Framework foundation established. Multiple completion reports confirm work is done. No tasks.md (old increment format)."
+  "completionNotes": "Framework foundation established. Multiple completion reports confirm work is done. No tasks.md (old increment format).",
+  "github": {
+    "issue": 20,
+    "url": "https://github.com/anton-abyzov/specweave/issues/20",
+    "synced": "2025-11-05T02:40:00.000Z"
+  }
 }

@@ -5,5 +5,10 @@
   "created": "2025-11-03T18:41:28.728Z",
   "lastActivity": "2025-11-04T09:48:16.611Z",
   "completedAt": "2025-11-03T00:00:00.000Z",
-  "completionNotes": "Completed in v0.5.1. spec.md already marked as COMPLETED. Cross-platform CLI functionality delivered."
+  "completionNotes": "Completed in v0.5.1. spec.md already marked as COMPLETED. Cross-platform CLI functionality delivered.",
+  "github": {
+    "issue": 24,
+    "url": "https://github.com/anton-abyzov/specweave/issues/24",
+    "synced": "2025-11-05T02:41:00.000Z"
+  }
 }
