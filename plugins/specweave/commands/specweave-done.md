@@ -348,11 +348,11 @@ Action Plan:
   2. Complete T008 (JWT validation) - 3h
   3. Update CLAUDE.md - 30m
   4. Update README.md - 1h
-  5. Re-run /done 0001 for validation
+  5. Re-run /specweave:done 0001 for validation
 
 Increment remains: in-progress
 
-Try again after fixing blockers: /done 0001
+Try again after fixing blockers: /specweave:done 0001
 ```
 
 ### Step 4: Handle Incomplete Work
@@ -494,7 +494,7 @@ Available increments:
   • 0002-core-enhancements (in-progress)
   • 0003-payment-processing (planned)
 
-Usage: /done <increment-id>
+Usage: /specweave:done <increment-id>
 ```
 
 ### Increment Not In-Progress
@@ -503,7 +503,7 @@ Usage: /done <increment-id>
 
 Increment must be "in-progress" before closing.
 
-Run: /do 0001 to start implementation first.
+Run: /specweave:do 0001 to start implementation first.
 ```
 
 ### Major Blockers Found

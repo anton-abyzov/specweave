@@ -25,7 +25,7 @@ That's it! SpecWeave is installed and ready.
 
 ## What You Get
 
-- ✅ **SpecWeave Skills** - 17 auto-activating capabilities (planning, TDD, quality, translation, etc.)
+- ✅ **SpecWeave Skills** - 17 auto-activating capabilities (planning, [TDD](/docs/glossary/terms/tdd), quality, translation, etc.)
 - ✅ **AI Agents** - 11 specialized agents (PM, Architect, Tech Lead, QA, Security, etc.)
 - ✅ **Slash Commands** - 22 commands (`/specweave:increment`, `/specweave:do`, `/specweave:done`, etc.)
 - ✅ **Automation Hooks** - Auto-update docs, validate quality (8 lifecycle hooks)
@@ -175,8 +175,8 @@ Prisma, NextAuth.js, Stripe payments, deployed on Hetzner Cloud"
 ✅ Authentication system (NextAuth.js)
 ✅ Payment integration (Stripe)
 ✅ Infrastructure code (Terraform for Hetzner)
-✅ Deployment pipeline (GitHub Actions)
-✅ Comprehensive tests (Playwright E2E + Jest)
+✅ Deployment pipeline ([GitHub Actions](/docs/glossary/terms/github-actions))
+✅ Comprehensive tests ([Playwright](/docs/glossary/terms/playwright) [E2E](/docs/glossary/terms/e2e) + Jest)
 ✅ Living documentation (auto-updates)
 
 # Just say: "Implement the MVP"

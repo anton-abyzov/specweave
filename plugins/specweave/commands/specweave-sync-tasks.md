@@ -212,7 +212,7 @@ Progress recalculated:
 
 ✓ tasks.md synced successfully!
 
-Next: Run /progress to verify
+Next: Run /specweave:progress to verify
 ```
 
 ---
@@ -249,7 +249,7 @@ Next: Run /progress to verify
 - ✅ Syncs from git history (fallback)
 - ✅ Updates progress counters accurately
 - ✅ Commits changes with clear message
-- ✅ Integrates with /progress, /validate, /done
+- ✅ Integrates with /specweave:progress, /specweave:validate, /specweave:done
 
 ---
 

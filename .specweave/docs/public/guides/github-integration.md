@@ -107,9 +107,9 @@ gh auth status
 # Should show: ✓ Logged in to github.com as your-username
 ```
 
-### 3. Git Repository with GitHub Remote (Required)
+### 3. [Git](/docs/glossary/terms/git) Repository with GitHub Remote (Required)
 
-Your project must be a git repository with a GitHub remote:
+Your project must be a [git](/docs/glossary/terms/git) repository with a GitHub remote:
 
 ```bash
 # Check remote
@@ -135,7 +135,7 @@ You need **write access** to the repository to create issues and milestones.
 **Check permissions**:
 
 ```bash
-gh api repos/OWNER/REPO --jq '.permissions.push'
+gh [api](/docs/glossary/terms/api) repos/OWNER/REPO --jq '.permissions.push'
 # Should output: true
 ```
 
@@ -916,7 +916,7 @@ Follow prompts to authenticate.
 
 ### Rate Limiting
 
-**Problem**: GitHub API rate limit exceeded (5000 requests/hour).
+**Problem**: GitHub [API](/docs/glossary/terms/api) rate limit exceeded (5000 requests/hour).
 
 **Solution**:
 
@@ -1069,7 +1069,7 @@ gh project item-add --project "SpecWeave v0.6.0" --milestone v0.6.0
 - ✅ Visual Kanban board
 - ✅ Workload balancing (see who has how many tasks)
 - ✅ Burndown charts (track velocity)
-- ✅ Automated workflows (GitHub Actions)
+- ✅ Automated workflows ([GitHub Actions](/docs/glossary/terms/github-actions))
 
 ### GitHub Projects Setup
 
@@ -1105,7 +1105,7 @@ gh project item-add --project "SpecWeave v0.5.0" --milestone v0.5.0
 
 **Additional Labels** (recommended):
 - **Type**: `bug`, `enhancement`, `feature`, `refactor`
-- **Scope**: `frontend`, `backend`, `database`, `api`, `ui`
+- **Scope**: `frontend`, `backend`, `database`, `[api](/docs/glossary/terms/api)`, `ui`
 - **Status**: `blocked`, `needs-review`, `ready-to-merge`
 - **Effort**: `easy`, `medium`, `hard` (for contributors)
 

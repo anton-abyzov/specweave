@@ -257,7 +257,7 @@ What would you like to do? [A/B/C]
       Example: /specweave inc "Admin dashboard"
 
    B. Check existing ideas → Look in .specweave/increments/_backlog/
-      If you have ideas saved, promote them with /inc
+      If you have ideas saved, promote them with /specweave:increment
 
    C. Review roadmap → See .specweave/docs/internal/strategy/roadmap.md
 

@@ -527,7 +527,7 @@ See `/docs/auth-design.md` for existing system details.
 │   │   │       ├── overview.md            # High-level vision
 │   │   │       └── business-case.md       # ROI, market analysis
 │   │   ├── architecture/                  # Technical design (MANDATORY)
-│   │   │   ├── adr/                       # Architecture Decision Records
+│   │   │   ├── adr/                       # [Architecture Decision Records](/docs/glossary/terms/adr)
 │   │   │   └── diagrams/                  # System diagrams
 │   │   ├── delivery/                      # Build & release
 │   │   ├── operations/                    # Runbooks, SLOs

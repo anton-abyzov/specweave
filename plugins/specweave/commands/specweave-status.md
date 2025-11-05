@@ -74,9 +74,9 @@ Display comprehensive increment status overview:
   - Resume or abandon 0007 (stale)
 
 Commands:
-  /do              # Continue current work
-  /resume 0007     # Resume paused increment
-  /abandon 0007    # Abandon if obsolete
+  /specweave:do              # Continue current work
+  /specweave:resume 0007     # Resume paused increment
+  /specweave:abandon 0007    # Abandon if obsolete
 ```
 
 ### Filtered Views
@@ -201,8 +201,8 @@ Paused >7 days → warning:
      ⚠️  STALE! Review or abandon?
 
 💡 Actions:
-   /resume 0007  # If unblocked
-   /abandon 0007 # If no longer needed
+   /specweave:resume 0007  # If unblocked
+   /specweave:abandon 0007 # If no longer needed
 ```
 
 ### Long-Running Active Increments
@@ -244,7 +244,7 @@ Experiments inactive >14 days → warning:
      🚨 AUTO-ABANDON WARNING
 
 💡 Experiments auto-abandon after 14 days of inactivity
-   To prevent: Update via /do or /touch 0010
+   To prevent: Update via /specweave:do or /touch 0010
 ```
 
 ---
