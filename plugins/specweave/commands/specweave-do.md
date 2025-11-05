@@ -5,8 +5,6 @@ description: Execute increment implementation following spec and plan - hooks ru
 
 # Do Increment
 
-**⚡ Convenient Short Form**: Use `/do` for quick access, or `/specweave:do` for explicit namespace.
-
 **Implementation Execution**: Following spec.md and plan.md to execute the increment work.
 
 You are helping the user implement a SpecWeave increment by executing tasks from tasks.md with automatic documentation updates after EVERY task completion.
@@ -15,15 +13,15 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ```bash
 # Auto-resumes from last incomplete task
-/do <increment-id>
+/specweave:do <increment-id>
 
 # Or let it find active increment automatically
-/do
+/specweave:do
 
 # Override model selection for all tasks (advanced)
-/do <increment-id> --model haiku
-/do <increment-id> --model sonnet
-/do <increment-id> --model opus
+/specweave:do <increment-id> --model haiku
+/specweave:do <increment-id> --model sonnet
+/specweave:do <increment-id> --model opus
 ```
 
 ## Arguments

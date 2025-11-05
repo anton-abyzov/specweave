@@ -707,14 +707,14 @@ useEffect(() => {
 - **[Next.js](/docs/glossary/terms/nextjs)** - React framework with SSR/SSG
 - **[TypeScript](/docs/glossary/terms/typescript)** - Type-safe JavaScript (often used with React)
 - **[SPA](/docs/glossary/terms/spa)** - Single Page Application architecture
-- **[Component Library](/docs/glossary/terms/component-library)** - Reusable React components
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **Component Library** - Reusable React components
+- **Frontend** - Client-side development
 - **[State Management](/docs/glossary/terms/state-management)** - Redux, Zustand, etc.
 
 ## Learn More
 
 - **[React Official Docs](https://react.dev)** - Best learning resource
-- **[React Tutorial](/docs/learn/frontend/react-fundamentals)** - SpecWeave React guide
+- **React Tutorial** - SpecWeave React guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSR/SSG
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - React-specific SpecWeave features
 

@@ -411,9 +411,8 @@ Since we store NO personal data:
 
 ## Next Steps
 
-- [Model Selection Guide](./model-selection.md) - Deep dive into how model selection works
-- [Cost Tracking Reference](../reference/cost-tracking.md) - Technical details on cost tracking
-- [Intelligent Model Selection ADR](../../internal/architecture/adr/0011-intelligent-model-selection.md) - Architecture decision record
+- [Model Selection Guide](/docs/glossary/terms/model-selection) - Deep dive into how model selection works
+- [Cost Tracking Reference](../reference/cost-tracking) - Technical details on cost tracking
 
 ---
 

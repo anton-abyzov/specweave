@@ -42,7 +42,7 @@ graph TD
 3. **Context Precision** - Load only what's needed (70%+ token reduction)
 4. **Test-Validated Features** - Every feature proven through automated tests
 5. **Regression Prevention** - Document existing code before modification
-6. **Framework Agnostic** - Works with ANY tech stack (TypeScript, Python, Go, Rust, Java, etc.)
+6. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
 
 ## How It Works
 
@@ -105,7 +105,7 @@ Four levels of testing with full traceability:
 1. **Specification Acceptance Criteria** (TC-0001 format)
 2. **Feature Test Strategy** (maps TC-0001 to implementations)
 3. **Skill Test Cases** (YAML-based validation)
-4. **Code Tests** (E2E, integration, unit)
+4. **Code Tests** ([E2E](/docs/glossary/terms/e2e), integration, unit)
 
 ## Who Should Use SpecWeave?
 
@@ -115,18 +115,18 @@ Four levels of testing with full traceability:
 ✅ **Startups** needing scalable architecture from day one
 ✅ **Solo developers** building complex applications
 ✅ **Regulated industries** (healthcare, finance, government)
-✅ **Teams migrating brownfield codebases** to modern practices
+✅ **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
 
 ### Use Cases
 
-- **Greenfield projects**: Start with comprehensive specs (500-600+ pages for enterprise)
-- **Brownfield projects**: Document existing code before modification
+- **[Greenfield](/docs/glossary/terms/greenfield) projects**: Start with comprehensive specs (500-600+ pages for enterprise)
+- **[Brownfield](/docs/glossary/terms/brownfield) projects**: Document existing code before modification
 - **Iterative development**: Build documentation gradually (like Microsoft)
 - **Compliance-heavy**: Maintain audit trails and traceability
 
 ## Core Features
 
-- **Framework-agnostic**: Works with TypeScript, Python, Go, Rust, Java, C#, etc.
+- **Framework-agnostic**: Works with [TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, C#, etc.
 - **AI-powered agents**: PM, Architect, DevOps, QA, Security specialists
 - **Context precision**: 70%+ token reduction vs loading full specs
 - **Auto-role routing**: Skills detect expertise automatically

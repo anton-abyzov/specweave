@@ -85,7 +85,7 @@ Implementation: src/services/auth/AuthService.ts
 **HLDs Reflect Current State:**
 - Component diagrams updated with new services
 - Data flow diagrams show actual flows
-- API contracts match implemented endpoints
+- [API](/docs/glossary/terms/api) contracts match implemented endpoints
 
 ### 3. Diagrams Stay Current
 
@@ -222,9 +222,9 @@ Fires after **every task completion**:
 - ✅ Implementation status (Planned → Completed)
 - ✅ File references (where code lives)
 - ✅ Test coverage metrics
-- ✅ ADR status (Proposed → Accepted)
+- ✅ [ADR](/docs/glossary/terms/adr) status (Proposed → Accepted)
 - ✅ Component diagrams (new services added)
-- ✅ API documentation (endpoints, schemas)
+- ✅ [API](/docs/glossary/terms/api) documentation (endpoints, schemas)
 - ✅ Completion timestamps
 
 **Manual Reviews:**
@@ -266,7 +266,7 @@ Fires after **every task completion**:
 **With living docs:**
 - Open `.specweave/docs/internal/architecture/hld-system.md`
 - ✅ Current as of today
-- ✅ Git history shows evolution
+- ✅ [Git](/docs/glossary/terms/git) history shows evolution
 - ✅ Complete audit trail
 
 ### 4. Onboarding Speed
@@ -320,9 +320,9 @@ Fires after **every task completion**:
 ✅ File references
 ✅ Test coverage
 ✅ Completion dates
-✅ ADR status transitions
+✅ [ADR](/docs/glossary/terms/adr) status transitions
 ✅ Component additions
-✅ API endpoint documentation
+✅ [API](/docs/glossary/terms/api) endpoint documentation
 
 ### Manual (Your Review)
 

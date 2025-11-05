@@ -483,14 +483,31 @@ export async function initCommand(
 
         console.log(''); // Blank line before prompt
 
-        const { enablePlugins } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'enablePlugins',
-            message: 'Enable suggested plugins now?',
-            default: true
-          }
-        ]);
+        // Check if running in CI/non-interactive environment
+        const isCI = process.env.CI === 'true' ||
+                     process.env.GITHUB_ACTIONS === 'true' ||
+                     process.env.GITLAB_CI === 'true' ||
+                     process.env.CIRCLECI === 'true' ||
+                     !process.stdin.isTTY;
+
+        let enablePlugins = false; // Default to no in CI
+
+        if (isCI) {
+          // In CI, skip plugin enablement (can be done manually later)
+          console.log(chalk.gray(`   ${locale.t('cli', 'init.info.ciSkipPlugins')}`));
+          enablePlugins = false;
+        } else {
+          // Interactive mode - ask for confirmation
+          const response = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'enablePlugins',
+              message: 'Enable suggested plugins now?',
+              default: true
+            }
+          ]);
+          enablePlugins = response.enablePlugins;
+        }
 
         if (enablePlugins) {
           const adapter = adapterLoader.getAdapter(toolName);

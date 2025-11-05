@@ -88,20 +88,20 @@ Professional planning with slash commands and multi-agent coordination:
 |---------|---------------------|-------------------|
 | **"Why did we do it this way?"** | Context lost, tribal knowledge | Read historical increment snapshots |
 | **"What's the current architecture?"** | Docs outdated | Living docs auto-updated |
-| **"What changed in this feature?"** | Git commits only | Complete increment snapshot with spec, plan, tests |
+| **"What changed in this feature?"** | [Git](/docs/glossary/terms/git) commits only | Complete increment snapshot with spec, plan, tests |
 | **"Prove compliance"** | Reconstruct from memory | Complete audit trail in increments |
 | **"Onboard new developer"** | Days of reading code | Read current docs + historical increments |
 
 ### Real-World Benefits
 
-- **Compliance-Ready**: SOC 2, HIPAA, FDA audits have complete paper trail
+- **Compliance-Ready**: [SOC 2](/docs/glossary/terms/soc2), [HIPAA](/docs/glossary/terms/hipaa), [FDA](/docs/glossary/terms/fda) audits have complete paper trail
 - **Context Recovery**: Understand decisions made 6 months ago
 - **Impact Analysis**: See all related changes by searching increments
 - **Rollback Intelligence**: Know exactly what to revert
 - **Knowledge Transfer**: No tribal knowledge silos
 - **Debugging**: Trace feature evolution across increments
 
-**Think of it as "Git for Specifications"**:
+**Think of it as "[Git](/docs/glossary/terms/git) for Specifications"**:
 - Increments = commits (immutable snapshots)
 - Living docs = working directory (current state)
 - Both essential, both version controlled
@@ -139,14 +139,14 @@ max_context_tokens: 10000
 |-------|------|-----------|
 | **PM** | Product Manager | Requirements, user stories, roadmap |
 | **Architect** | System Architect | Design, ADRs, component architecture |
-| **DevOps** | DevOps Engineer | Infrastructure, deployment, CI/CD |
+| **DevOps** | DevOps Engineer | Infrastructure, deployment, [CI/CD](/docs/glossary/terms/ci-cd) |
 | **SRE** | Site Reliability Engineer | Monitoring, incidents, reliability |
 | **QA Lead** | Quality Assurance | Test strategy, test cases |
 | **Security** | Security Engineer | Threat modeling, penetration testing |
 | **Tech Lead** | Technical Lead | Code review, best practices |
-| **Frontend** | Frontend Developer | React, UI/UX implementation |
-| **Next.js** | Next.js Specialist | Next.js app development |
-| **Node.js Backend** | Backend Developer | API, services, backend logic |
+| **Frontend** | Frontend Developer | [React](/docs/glossary/terms/react), UI/UX implementation |
+| **[Next.js](/docs/glossary/terms/nextjs)** | [Next.js](/docs/glossary/terms/nextjs) Specialist | [Next.js](/docs/glossary/terms/nextjs) app development |
+| **[Node.js](/docs/glossary/terms/nodejs) Backend** | Backend Developer | [API](/docs/glossary/terms/api), services, backend logic |
 | **Python Backend** | Python Developer | FastAPI, Django, data services |
 | **.NET Backend** | .NET Developer | C#, ASP.NET Core, enterprise apps |
 | **Docs Writer** | Documentation Writer | Guides, references, tutorials |
@@ -173,8 +173,8 @@ User: "Create authentication system"
    - Technology-agnostic validation
    - Linked to user stories
 
-2. **Embedded Test Plans** (tasks.md)
-   - BDD format (Given/When/Then) per task
+2. **Embedded Test Plans** (tasks)
+   - [BDD](/docs/glossary/terms/bdd) format (Given/When/Then) per task
    - Maps AC-IDs to test implementations
    - Coverage targets (80-90% per task)
 
@@ -183,13 +183,13 @@ User: "Create authentication system"
    - Structured validation
 
 4. **Code Tests** (Automated)
-   - E2E with Playwright (MANDATORY for UI)
+   - [E2E](/docs/glossary/terms/e2e) with Playwright (MANDATORY for UI)
    - Unit and integration tests
    - >80% coverage for critical paths
 
 ### Truth-Telling Requirement
 
-E2E tests MUST tell the truth:
+[E2E](/docs/glossary/terms/e2e) tests MUST tell the truth:
 - ✅ If test passes → feature actually works
 - ✅ If test fails → exactly what failed
 - ❌ No false positives
@@ -215,7 +215,7 @@ C4Context
     Person(user, "Developer", "Uses SpecWeave to build software")
     System(specweave, "SpecWeave", "Spec-Driven Development Framework")
     System_Ext(claude, "Claude Code", "AI coding assistant")
-    System_Ext(github, "GitHub", "Version control and CI/CD")
+    System_Ext(github, "GitHub", "Version control and [CI/CD](/docs/glossary/terms/ci-cd)")
 
     Rel(user, specweave, "Uses")
     Rel(specweave, claude, "Invokes agents")
@@ -226,7 +226,7 @@ C4Context
 
 ### Supports ANY Tech Stack
 
-- **TypeScript/JavaScript**: Next.js, NestJS, Express, React
+- **[TypeScript](/docs/glossary/terms/typescript)/JavaScript**: [Next.js](/docs/glossary/terms/nextjs), NestJS, Express, [React](/docs/glossary/terms/react)
 - **Python**: FastAPI, Django, Flask
 - **Go**: Gin, Echo, Fiber
 - **Rust**: Actix, Rocket, Axum
@@ -236,7 +236,7 @@ C4Context
 ### Auto-Detection
 
 SpecWeave detects your tech stack from:
-- `package.json` → TypeScript/JavaScript
+- `package.json` → [TypeScript](/docs/glossary/terms/typescript)/JavaScript
 - `requirements.txt` / `pyproject.toml` → Python
 - `go.mod` → Go
 - `Cargo.toml` → Rust
@@ -286,9 +286,9 @@ Prevent context-switching:
 - Issues ↔ RFCs/Tasks
 - Checkable subtasks
 
-## 🏢 Brownfield Excellence (The Hardest Problem Solved)
+## 🏢 [Brownfield](/docs/glossary/terms/brownfield) Excellence (The Hardest Problem Solved)
 
-### Why Brownfield is Most Complicated
+### Why [Brownfield](/docs/glossary/terms/brownfield) is Most Complicated
 
 Brownfield projects are the **ultimate challenge** in software development:
 
@@ -308,7 +308,7 @@ Brownfield projects are the **ultimate challenge** in software development:
 
 ### Intelligent Documentation Merging
 
-SpecWeave's **brownfield-onboarder** skill intelligently consolidates existing documentation:
+SpecWeave's **[brownfield](/docs/glossary/terms/brownfield)-onboarder** skill intelligently consolidates existing documentation:
 
 ```bash
 "Read brownfield-onboarder skill and merge my existing docs/"
@@ -349,7 +349,7 @@ Create comprehensive architecture for **existing systems** without disrupting pr
 
 #### Architecture Decision Records (ADRs)
 
-- **ADR-0001**: Why we chose JWT over sessions
+- **[ADR](/docs/glossary/terms/adr)-0001**: Why we chose JWT over sessions
 
 - **ADR-0002**: OAuth 2.0 provider selection rationale
 
@@ -384,7 +384,7 @@ Create comprehensive architecture for **existing systems** without disrupting pr
 
 ### Living Documentation That Never Gets Stale
 
-The **killer feature** for brownfield: documentation that **auto-updates** as code evolves.
+The **killer feature** for [brownfield](/docs/glossary/terms/brownfield): documentation that **auto-updates** as code evolves.
 
 **How it works:**
 
@@ -407,11 +407,11 @@ The **killer feature** for brownfield: documentation that **auto-updates** as co
 
 - **Living Docs Sync** - `/specweave:sync-docs update` propagates changes
 
-- **Version Control** - All docs in Git, full history preserved
+- **Version Control** - All docs in [Git](/docs/glossary/terms/git), full history preserved
 
 ### Structure Evolution and Maintenance
 
-As your brownfield project grows, SpecWeave **grows the documentation structure**:
+As your [brownfield](/docs/glossary/terms/brownfield) project grows, SpecWeave **grows the documentation structure**:
 
 **Scenario: Adding new payment module**
 ```bash
@@ -469,7 +469,7 @@ Before modifying **any existing code**, SpecWeave enforces safety:
    - Baseline tests catch regressions
    - Living docs stay current
 
-### Real-World Brownfield Scenario
+### Real-World [Brownfield](/docs/glossary/terms/brownfield) Scenario
 
 **Before SpecWeave:**
 ```
@@ -516,17 +516,17 @@ npx specweave init .
 
 ### Compliance and Audit Trail
 
-Brownfield + SpecWeave = **Compliance-Ready**
+[Brownfield](/docs/glossary/terms/brownfield) + SpecWeave = **Compliance-Ready**
 
 **Perfect for regulated industries:**
 
-- 🏥 **Healthcare (HIPAA)** - Complete audit trail, document all changes
+- 🏥 **Healthcare ([HIPAA](/docs/glossary/terms/hipaa))** - Complete audit trail, document all changes
 
-- 🏦 **Finance (SOC 2, PCI-DSS)** - Prove compliance with specifications
+- 🏦 **Finance ([SOC 2](/docs/glossary/terms/soc2), PCI-DSS)** - Prove compliance with specifications
 
 - 🏛️ **Government (FedRAMP)** - Architecture documentation required
 
-- 💊 **Pharmaceutical (FDA)** - Validation documentation mandatory
+- 💊 **Pharmaceutical ([FDA](/docs/glossary/terms/fda))** - Validation documentation mandatory
 
 **What you get:**
 
@@ -545,7 +545,7 @@ Brownfield + SpecWeave = **Compliance-Ready**
 ### Comprehensive Upfront (Enterprise)
 - 500-600+ page specifications before coding
 - Full architecture and ADRs upfront
-- Complete API contracts
+- Complete [API](/docs/glossary/terms/api) contracts
 - Best for: Enterprise, regulated industries
 
 ### Incremental/Evolutionary (Startup)
@@ -562,7 +562,7 @@ Brownfield + SpecWeave = **Compliance-Ready**
 
 Automatically:
 - Updates CLAUDE.md when structure changes
-- Updates API/CLI reference
+- Updates [API](/docs/glossary/terms/api)/CLI reference
 - Updates changelog
 - Commits doc changes
 

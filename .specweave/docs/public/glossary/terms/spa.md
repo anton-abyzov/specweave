@@ -708,12 +708,12 @@ const About = lazy(() => import('./About'));
 - **[Next.js](/docs/glossary/terms/nextjs)** - React with SSR/SSG (hybrid approach)
 - **[SSR](/docs/glossary/terms/ssr)** - Server-side rendering (solves SPA SEO)
 - **[SSG](/docs/glossary/terms/ssg)** - Static site generation (alternative to SPA)
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **Frontend** - Client-side development
 
 ## Learn More
 
-- **[SPA Architecture Guide](/docs/learn/frontend/spa-architecture)** - Deep dive into SPAs
-- **[React Router Tutorial](/docs/learn/frontend/react-router)** - Client-side routing
+- **SPA Architecture Guide** - Deep dive into SPAs
+- **React Router Tutorial** - Client-side routing
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - Hybrid approach (SPA + SSR)
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SPA-specific features
 

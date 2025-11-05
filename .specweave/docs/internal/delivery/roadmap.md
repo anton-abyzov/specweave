@@ -79,5 +79,5 @@
 
 ## Related
 
-- [Release Process](release-process.md)
-- [CLAUDE.md](../../../CLAUDE.md)
+- [Release Process](./release-process.md) - Release and versioning process
+- **CLAUDE.md** - Quick reference guide for contributors (see repository root)

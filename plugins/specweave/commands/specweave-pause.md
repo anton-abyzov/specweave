@@ -1,15 +1,12 @@
 ---
-name: specweave:pause
+name: pause
 description: Pause an active increment (blocked by external dependency, deprioritized)
 usage: /specweave:pause <increment-id> --reason="<reason>"
-aliases: [pause]
 ---
 
 # Pause Increment Command
 
 **Usage**: `/specweave:pause <increment-id> --reason="<reason>"`
-
-**Shortcut**: `/pause <increment-id> --reason="<reason>"`
 
 ---
 

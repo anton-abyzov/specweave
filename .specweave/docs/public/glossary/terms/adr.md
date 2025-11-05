@@ -320,8 +320,8 @@ Every decision has consequences. Document them honestly:
 
 ```markdown
 ## Related ADRs
-- Supersedes [ADR-005](./0005-old-approach.md)
-- Related to [ADR-012](./0012-deployment.md)
+- Supersedes [ADR-005](/docs/glossary/terms/0005-old-approach)
+- Related to [ADR-012](/docs/glossary/terms/0012-deployment)
 ```
 
 ### 4. Keep It Concise
@@ -364,16 +364,15 @@ Write for future developers who weren't at the meeting:
 ## Related Terms
 
 - **[RFC (Request for Comments)](/docs/glossary/terms/rfc)** - Feature specification (WHAT), ADR is decision (WHY)
-- **[HLD (High-Level Design)](/docs/glossary/terms/hld)** - System architecture (HOW), ADR is rationale (WHY)
+- **HLD (High-Level Design)** - System architecture (HOW), ADR is rationale (WHY)
 - **[Architecture](/docs/glossary/categories/architecture)** - Category page
 - **[Living Documentation](/docs/guides/core-concepts/living-documentation)** - How docs stay current
 - **[Increment](/docs/guides/core-concepts/what-is-an-increment)** - SpecWeave's unit of work
 
 ## Learn More
 
-- **[Architecture Patterns Guide](/docs/learn/foundations/architecture-patterns)** - Common patterns and when to use ADRs
-- **[SpecWeave Internal Docs](./.specweave/docs/internal/architecture/)** - See ADRs in action
-- **[Why Documentation Matters](/docs/learn/foundations/why-documentation-matters)** - The value of preserved context
+- **Architecture Patterns Guide** - Common patterns and when to use ADRs
+- **Why Documentation Matters** - The value of preserved context
 
 ---
 

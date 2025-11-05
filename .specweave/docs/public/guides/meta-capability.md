@@ -513,12 +513,11 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 ## Related Documentation
 
 - [CLAUDE.md - Meta-Capability Section](../../../CLAUDE.md#meta-capability-the-self-extending-framework) - Development guide
-- [Internal Architecture Docs](../../internal/architecture/meta-capability.md) - Complete technical details
-- [Creating Custom Agents](./creating-custom-agents.md) - Step-by-step guide (coming soon)
-- [Creating Custom Skills](./creating-custom-skills.md) - Step-by-step guide (coming soon)
+- [Creating Custom Agents](/docs/glossary/terms/creating-custom-agents) - Step-by-step guide (coming soon)
+- [Creating Custom Skills](/docs/glossary/terms/creating-custom-skills) - Step-by-step guide (coming soon)
 
 ---
 
 **Ready to build factories that build factories?**
 
-👉 [Get Started with SpecWeave](./getting-started/quickstart.md)
+👉 [Get Started with SpecWeave](./getting-started/quickstart)

@@ -509,9 +509,9 @@ export let options = {
 ## Related Documentation
 
 - [DORA Metrics](../delivery/dora-metrics.md) - Lead time, deployment frequency
-- [Monitoring & Alerting](./monitoring-alerting.md) - Observability setup
-- [SLO Definitions](./slo-definitions.md) - Performance targets
-- [Incident Response](./incident-response.md) - Performance incident handling
+- **Monitoring & Alerting** - *Coming soon* - Observability and monitoring setup
+- **SLO Definitions** - *Coming soon* - Service level objectives and performance targets
+- **Incident Response** - *Coming soon* - Performance incident handling procedures
 
 ---
 
