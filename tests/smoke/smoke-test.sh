@@ -28,11 +28,11 @@ test_command() {
 
   if eval "$command" > /dev/null 2>&1; then
     echo -e "${GREEN}✓ PASS${NC}"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED + 1))
     return 0
   else
     echo -e "${RED}✗ FAIL${NC}"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED + 1))
     return 1
   fi
 }
