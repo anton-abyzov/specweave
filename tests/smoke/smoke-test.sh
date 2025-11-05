@@ -51,11 +51,12 @@ echo ""
 
 echo "📂 Test 2: CLI Binary"
 echo "------------------------"
-test_command "specweave CLI exists" "test -f $PROJECT_ROOT/bin/specweave.js"
-test_command "specweave --version works" "node $PROJECT_ROOT/bin/specweave.js --version"
-test_command "specweave --help works" "node $PROJECT_ROOT/bin/specweave.js --help"
-echo ""
-echo "Note: Full init testing is done by e2e-smoke-test.yml workflow"
+# Set CI env var to trigger non-interactive mode
+export CI=true
+test_command "specweave init creates .specweave/" "node $OLDPWD/bin/specweave.js init . --adapter=claude --language=en && test -d .specweave"
+test_command ".specweave/config.json exists" "test -f .specweave/config.json"
+test_command ".specweave/increments/ exists" "test -d .specweave/increments"
+test_command ".specweave/docs/ exists" "test -d .specweave/docs"
 echo ""
 
 echo "🔌 Test 3: Plugin Structure"
