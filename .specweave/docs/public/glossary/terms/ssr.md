@@ -471,7 +471,7 @@ my-ssr-app/
 
 ```mermaid
 graph TB
-    A[/specweave:inc "SSR Product Pages"] --> B[PM: Define Data Requirements]
+    A[/specweave:increment "SSR Product Pages"] --> B[PM: Define Data Requirements]
     B --> C[Architect: Design SSR Strategy]
     C --> D[/specweave:do]
     D --> E[Implement getServerSideProps]

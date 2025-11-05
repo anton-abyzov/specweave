@@ -227,7 +227,7 @@ spec:
 When creating infrastructure-related increments:
 
 ```bash
-/specweave:inc "Deploy API to Kubernetes"
+/specweave:increment "Deploy API to Kubernetes"
 ```
 
 The Architect agent:

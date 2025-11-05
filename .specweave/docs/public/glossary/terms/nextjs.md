@@ -447,7 +447,7 @@ my-nextjs-app/
 
 ```mermaid
 graph TB
-    A[/specweave:inc "Product Catalog"] --> B[PM: Choose Rendering Strategy]
+    A[/specweave:increment "Product Catalog"] --> B[PM: Choose Rendering Strategy]
     B --> C[Architect: Design SSG + ISR]
     C --> D[/specweave:do]
     D --> E[Implement Pages]
