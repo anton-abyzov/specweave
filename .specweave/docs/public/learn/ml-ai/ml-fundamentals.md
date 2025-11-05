@@ -49,7 +49,7 @@ This guide teaches you:
 graph LR
     Input[User Input:<br/>'What is'] --> Tokenize[Tokenization]
     Tokenize --> Tokens['What', 'is', '...']
-    Tokens --> Model[LLM Model<br/>GPT-4.5, Claude 4.5, etc.]
+    Tokens --> Model[LLM Model<br/>GPT-5, Claude 4.5, etc.]
     Model --> Predict[Predict Next Token]
     Predict --> Output['the', 'capital', 'of', 'France']
 
@@ -63,9 +63,9 @@ graph LR
    - "Artificial Intelligence" = 3 tokens
 
 2. **Context Window**: Maximum input length
-   - GPT-4.5 Turbo: 128K tokens (~96K words)
+   - GPT-5: 128K tokens (~96K words)
    - Claude Sonnet 4.5: 200K tokens (~150K words)
-   - Claude Haiku 3.5: 200K tokens (ultra-fast, simple tasks)
+   - Claude Haiku 4.5: 200K tokens (ultra-fast, simple tasks)
 
 3. **Temperature**: Randomness of output
    - 0.0 = Deterministic (same output every time)
@@ -105,7 +105,7 @@ const openai = new OpenAI({
 
 async function generateProductDescription(product) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4.5-turbo',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -226,7 +226,7 @@ const tools = [
 
 async function chatWithTools(userMessage) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4.5-turbo',
+    model: 'gpt-5',
     messages: [{ role: 'user', content: userMessage }],
     tools: tools,
     tool_choice: 'auto'
@@ -248,7 +248,7 @@ async function chatWithTools(userMessage) {
 
     // Send function result back to LLM
     const finalResponse = await openai.chat.completions.create({
-      model: 'gpt-4.5-turbo',
+      model: 'gpt-5',
       messages: [
         { role: 'user', content: userMessage },
         message, // Original assistant message with tool call
@@ -364,7 +364,7 @@ async function answerQuestion(question) {
 
   // Step 3: Generate answer using context
   const response = await openai.chat.completions.create({
-    model: 'gpt-4.5-turbo',
+    model: 'gpt-5',
     messages: [
       {
         role: 'system',
@@ -546,7 +546,7 @@ async function selfConsistentAnswer(question) {
   const answers = await Promise.all(
     Array(5).fill(null).map(() =>
       openai.chat.completions.create({
-        model: 'gpt-4.5-turbo',
+        model: 'gpt-5',
         messages: [{ role: 'user', content: question }],
         temperature: 0.8 // Higher temperature for variety
       })
@@ -565,16 +565,16 @@ async function selfConsistentAnswer(question) {
 | Model | Provider | Context | Strengths | Cost (per 1M tokens) |
 |-------|----------|---------|-----------|---------------------|
 | **Claude Sonnet 4.5** | Anthropic | 200K | Best coding, long context, research | $3 in / $15 out |
-| **GPT-4.5 Turbo** | OpenAI | 128K | General purpose, reasoning, creative | $10 in / $30 out |
-| **Claude Haiku 3.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $0.25 in / $1.25 out |
+| **GPT-5** | OpenAI | 128K | General purpose, reasoning, creative | $10 in / $30 out |
+| **Claude Haiku 4.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $0.25 in / $1.25 out |
 | **o1** | OpenAI | 128K | Complex reasoning, math, science | $15 in / $60 out |
 | **Llama 3.1 405B** | Meta | 128K | Open source, self-hosted | Free (compute costs) |
 
 ### When to Use Each Model
 
 **Claude Sonnet 4.5**: Best for coding, long documents, technical writing, research
-**GPT-4.5 Turbo**: Complex reasoning, creative content, general-purpose tasks
-**Claude Haiku 3.5**: Real-time chat, simple classifications, high-volume processing
+**GPT-5**: Complex reasoning, creative content, general-purpose tasks
+**Claude Haiku 4.5**: Real-time chat, simple classifications, high-volume processing
 **o1**: Advanced reasoning tasks, mathematical proofs, scientific analysis
 **Llama 3.1**: Privacy-sensitive data, no API costs, offline usage, customization
 
@@ -584,7 +584,7 @@ async function selfConsistentAnswer(question) {
 function selectModel(taskType, contextLength, budget) {
   // Ultra-cheap tasks
   if (budget === 'low' && taskType === 'simple') {
-    return 'claude-haiku-3-5'; // Ultra-fast and cheap
+    return 'claude-haiku-4-5'; // Ultra-fast and cheap
   }
 
   // Long context
@@ -599,7 +599,7 @@ function selectModel(taskType, contextLength, budget) {
 
   // Creative tasks
   if (taskType === 'creative') {
-    return 'gpt-4.5-turbo';
+    return 'gpt-5';
   }
 
   // Coding tasks
@@ -621,7 +621,7 @@ function selectModel(taskType, contextLength, budget) {
 ```javascript
 // No training required - just call API
 const response = await openai.chat.completions.create({
-  model: 'gpt-4.5-turbo',
+  model: 'gpt-5',
   messages: [{ role: 'user', content: 'Explain quantum computing' }]
 });
 ```
@@ -1070,9 +1070,9 @@ async function getCachedCompletion(prompt) {
 ```javascript
 // Try cheap model first, fallback to expensive if needed
 async function generateWithCascade(prompt) {
-  // Try Haiku first (cheap and fast)
+  // Try Haiku 4.5 first (cheap and fast)
   const cheapResponse = await anthropic.messages.create({
-    model: 'claude-haiku-3-5',
+    model: 'claude-haiku-4-5',
     messages: [{ role: 'user', content: prompt }]
   });
 
@@ -1100,7 +1100,7 @@ async function robustLLMCall(prompt, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await openai.chat.completions.create({
-        model: 'gpt-4.5-turbo',
+        model: 'gpt-5',
         messages: [{ role: 'user', content: prompt }],
         timeout: 30000 // 30 seconds
       });
@@ -1168,7 +1168,7 @@ const limiter = new Bottleneck({
 
 const rateLimitedCompletion = limiter.wrap(async (prompt) => {
   return await openai.chat.completions.create({
-    model: 'gpt-4.5-turbo',
+    model: 'gpt-5',
     messages: [{ role: 'user', content: prompt }]
   });
 });
@@ -1223,7 +1223,7 @@ SpecWeave increments document AI usage:
 **AI Integration**:
 - Model: Claude Sonnet 4.5 (200K context for large PRs)
 - Prompt: "Analyze this code for quality issues..."
-- Fallback: GPT-4.5 Turbo if Claude unavailable
+- Fallback: GPT-5 if Claude unavailable
 - Cost estimate: $0.50 per PR review
 - Caching: Cache identical file reviews for 24h
 
