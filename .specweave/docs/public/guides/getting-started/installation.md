@@ -106,44 +106,63 @@ After running `specweave init`, you get:
 ```
 your-project/
 ├── .claude/                  # Claude Code integration (if detected)
-│   ├── agents/               # 10 specialized agents
-│   │   ├── pm/               # Product Manager
+│   ├── settings.json         # Plugin marketplace reference (GitHub remote)
+│   ├── agents/               # 11 specialized agents (installed from plugins)
+│   │   ├── pm/               # Product Manager AI
 │   │   ├── architect/        # System Architect
-│   │   ├── devops/           # DevOps Engineer
+│   │   ├── tech-lead/        # Tech Lead
 │   │   ├── qa-lead/          # QA Lead
 │   │   ├── security/         # Security Engineer
-│   │   ├── tech-lead/        # Tech Lead
-│   │   ├── sre/              # Site Reliability Engineer
-│   │   ├── docs-writer/      # Technical Writer
 │   │   ├── performance/      # Performance Engineer
-│   │   └── diagrams-architect/  # Diagram Specialist
-│   ├── skills/               # 35+ development skills
+│   │   ├── docs-writer/      # Technical Documentation
+│   │   ├── tdd-orchestrator/ # TDD Master
+│   │   ├── test-aware-planner/ # Test Planning
+│   │   ├── translator/       # Multilingual Support
+│   │   └── code-reviewer.md  # Code Review (standalone file)
+│   ├── skills/               # 17 development skills (installed from plugins)
 │   │   ├── increment-planner/
+│   │   ├── spec-generator/
 │   │   ├── context-loader/
-│   │   ├── nodejs-backend/
-│   │   ├── nextjs/
-│   │   ├── python-backend/
-│   │   ├── frontend/
-│   │   ├── e2e-playwright/
-│   │   ├── jira-sync/
-│   │   ├── github-sync/
-│   │   ├── hetzner-provisioner/
-│   │   └── ... (27+ more)
-│   ├── commands/             # 10 slash commands
-│   │   ├── inc.md
-│   │   ├── do.md
-│   │   ├── progress.md
-│   │   ├── done.md
-│   │   ├── validate.md
-│   │   ├── specweave.sync-github.md
-│   │   ├── specweave.sync-jira.md
-│   │   ├── specweave.sync-docs.md
-│   │   └── ... (more)
-│   └── hooks/                # Automation hooks
+│   │   ├── tdd-workflow/
+│   │   ├── project-kickstarter/
+│   │   ├── brownfield-analyzer/
+│   │   ├── brownfield-onboarder/
+│   │   ├── increment-quality-judge/
+│   │   ├── increment-quality-judge-v2/
+│   │   ├── context-optimizer/
+│   │   ├── plugin-detector/
+│   │   ├── role-orchestrator/
+│   │   ├── specweave-detector/
+│   │   ├── specweave-framework/
+│   │   ├── task-builder/
+│   │   ├── translator/
+│   │   └── docs-updater/
+│   ├── commands/             # 22 slash commands (installed from plugins)
+│   │   ├── specweave-increment.md
+│   │   ├── specweave-do.md
+│   │   ├── specweave-progress.md
+│   │   ├── specweave-done.md
+│   │   ├── specweave-validate.md
+│   │   ├── specweave-qa.md
+│   │   ├── specweave-status.md
+│   │   ├── specweave-pause.md
+│   │   ├── specweave-resume.md
+│   │   ├── specweave-abandon.md
+│   │   ├── specweave-sync-docs.md
+│   │   ├── specweave-sync-tasks.md
+│   │   ├── specweave-check-tests.md
+│   │   ├── specweave-costs.md
+│   │   ├── specweave-translate.md
+│   │   ├── specweave-update-scope.md
+│   │   ├── specweave-next.md
+│   │   └── ... (5 more)
+│   └── hooks/                # 8 automation hooks (installed from plugins)
 │       ├── post-task-completion.sh
-│       ├── docs-changed.sh
 │       ├── pre-implementation.sh
-│       └── human-input-required.sh
+│       ├── post-implementation.sh
+│       ├── pre-increment-planning.sh
+│       ├── post-increment-planning.sh
+│       └── ... (3 more)
 │
 ├── .specweave/               # SpecWeave framework
 │   ├── increments/           # Auto-numbered features
@@ -170,10 +189,10 @@ your-project/
 ### For Claude Code (Native)
 
 Gets **full native integration**:
-- ✅ 10 agents in `.claude/agents/`
-- ✅ 35+ skills in `.claude/skills/`
-- ✅ 10 slash commands in `.claude/commands/`
-- ✅ Automation hooks in `.claude/hooks/`
+- ✅ 11 agents in `.claude/agents/`
+- ✅ 17 skills in `.claude/skills/`
+- ✅ 22 slash commands in `.claude/commands/`
+- ✅ 8 automation hooks in `.claude/hooks/`
 
 ### For Other AI Tools (Cursor, Copilot, Gemini, ChatGPT)
 
@@ -261,10 +280,10 @@ cat CLAUDE.md               # Should exist
 cat .gitignore              # Should exist
 
 # For Claude Code users
-ls -la .claude/agents/      # Should have 10 agents
-ls -la .claude/skills/      # Should have 35+ skills
-ls -la .claude/commands/    # Should have 10 commands
-ls -la .claude/hooks/       # Should have hooks
+ls -la .claude/agents/      # Should have 11 agents
+ls -la .claude/skills/      # Should have 17 skills
+ls -la .claude/commands/    # Should have 22 commands
+ls -la .claude/hooks/       # Should have 8 hooks
 
 # For other AI tool users
 cat AGENTS.md               # Should exist
@@ -280,9 +299,9 @@ cat AGENTS.md               # Should exist
 - [ ] `CLAUDE.md` exists
 - [ ] `.gitignore` includes SpecWeave ignores
 - [ ] Git repository initialized (if git available)
-- [ ] For Claude Code: `.claude/agents/` has 10 folders
-- [ ] For Claude Code: `.claude/skills/` has 35+ folders
-- [ ] For Claude Code: `.claude/commands/` has command files
+- [ ] For Claude Code: `.claude/agents/` has 11 agent folders
+- [ ] For Claude Code: `.claude/skills/` has 17 skill folders
+- [ ] For Claude Code: `.claude/commands/` has 22 command files
 - [ ] For other tools: `AGENTS.md` exists
 
 ### Test the Interactive Flow
@@ -306,14 +325,13 @@ cat AGENTS.md               # Should exist
 
 ```bash
 # In Claude Code:
-/specweave:inc "my first feature"
+/specweave:increment "my first feature"
 
 # This creates:
 # ✅ .specweave/increments/0001-my-first-feature/
 #    ├── spec.md (requirements)
 #    ├── plan.md (architecture)
-#    ├── tasks.md (implementation steps)
-#    └── tests.md (test strategy)
+#    └── tasks.md (implementation steps with embedded tests)
 ```
 
 ## Configuration
@@ -452,7 +470,7 @@ source ~/.bashrc
 ```bash
 # Verify installation
 ls -la .claude/skills/
-# Should see 35+ skills with SKILL.md files
+# Should see 17 skills with SKILL.md files
 
 # Check a specific skill
 cat .claude/skills/increment-planner/SKILL.md
@@ -466,10 +484,10 @@ npx specweave init . --force
 ```bash
 # Verify commands
 ls -la .claude/commands/
-# Should see: inc.md, do.md, etc.
+# Should see: specweave-increment.md, specweave-do.md, etc. (22 total)
 
 # Check a specific command
-cat .claude/commands/specweave:inc.md
+cat .claude/commands/specweave-increment.md
 
 # If missing, reinstall
 npx specweave init . --force
