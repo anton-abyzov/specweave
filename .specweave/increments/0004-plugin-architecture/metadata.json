@@ -5,5 +5,10 @@
   "created": "2025-11-03T18:41:28.759Z",
   "lastActivity": "2025-11-04T09:48:16.611Z",
   "completedAt": "2025-11-03T00:00:00.000Z",
-  "completionNotes": "Plugin architecture fully implemented. Multiple completion reports (v0.6.1 plugin rename, marketplace transformation, etc.). tasks.md marked as COMPLETED."
+  "completionNotes": "Plugin architecture fully implemented. Multiple completion reports (v0.6.1 plugin rename, marketplace transformation, etc.). tasks.md marked as COMPLETED.",
+  "github": {
+    "issue": 23,
+    "url": "https://github.com/anton-abyzov/specweave/issues/23",
+    "synced": "2025-11-05T02:41:00.000Z"
+  }
 }
