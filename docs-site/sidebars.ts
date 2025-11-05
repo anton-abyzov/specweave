@@ -167,22 +167,32 @@ const sidebars: SidebarsConfig = {
   // Commands sidebar
   commandsSidebar: [
     {
+      type: 'doc',
+      id: 'commands/overview',
+      label: '📖 Commands Overview',
+    },
+    {
       type: 'category',
-      label: 'Core Commands',
+      label: '🚀 Core Workflow',
       collapsed: false,
       items: [
         {
           type: 'doc',
-          id: 'commands/status-management',
-          label: 'Overview',
+          id: 'commands/overview',
+          label: 'All Commands',
         },
       ],
     },
     {
       type: 'category',
-      label: 'Status Management',
+      label: '📊 Status Management',
       collapsed: false,
       items: [
+        {
+          type: 'doc',
+          id: 'commands/status-management',
+          label: 'Status Commands',
+        },
         {
           type: 'doc',
           id: 'commands/status',
@@ -218,6 +228,11 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'learn/foundations/enterprise-app-development',
           label: 'Enterprise App Development',
+        },
+        {
+          type: 'doc',
+          id: 'learn/foundations/software-engineering-roles',
+          label: 'Software Engineering Roles',
         },
       ],
     },

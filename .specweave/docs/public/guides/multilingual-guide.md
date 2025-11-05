@@ -12,7 +12,6 @@ SpecWeave supports **9 languages** with **zero-cost LLM-native translation**. Th
 
 **Supported Languages**:
 - 🇬🇧 English (en) - Default
-- 🇷🇺 Russian (ru) - Русский
 - 🇪🇸 Spanish (es) - Español
 - 🇨🇳 Chinese (zh) - 中文
 - 🇩🇪 German (de) - Deutsch
@@ -20,6 +19,7 @@ SpecWeave supports **9 languages** with **zero-cost LLM-native translation**. Th
 - 🇯🇵 Japanese (ja) - 日本語
 - 🇰🇷 Korean (ko) - 한국어
 - 🇧🇷 Portuguese (pt) - Português
+- 🇷🇺 Russian (ru) - Русский
 
 ---
 
