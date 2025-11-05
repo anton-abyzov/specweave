@@ -25,9 +25,10 @@ That's it! SpecWeave is installed and ready.
 
 ## What You Get
 
-- ✅ **SpecWeave Skills** - Autonomous development agents (8 complete skills, more coming)
-- ✅ **Slash Commands** - `/create-project` (more coming)
-- ✅ **Automation Hooks** - Auto-update docs, validate quality (4 hooks)
+- ✅ **SpecWeave Skills** - 17 auto-activating capabilities (planning, TDD, quality, translation, etc.)
+- ✅ **AI Agents** - 11 specialized agents (PM, Architect, Tech Lead, QA, Security, etc.)
+- ✅ **Slash Commands** - 22 commands (`/specweave:increment`, `/specweave:do`, `/specweave:done`, etc.)
+- ✅ **Automation Hooks** - Auto-update docs, validate quality (8 lifecycle hooks)
 - ✅ **Complete Framework** - Minimal installation, skills create structure as needed
 - ✅ **Development Guide** - `CLAUDE.md` with everything you need
 
@@ -222,7 +223,7 @@ integrations:
 **Check installation:**
 ```bash
 ls -la .claude/skills/
-# Should see 35+ SpecWeave skills with SKILL.md
+# Should see 17 SpecWeave skills with SKILL.md
 ```
 
 **If missing:**
@@ -234,7 +235,7 @@ specweave init . --force  # Reinstall
 
 ```bash
 ls -la .claude/commands/
-# Should see: inc.md, do.md, etc.
+# Should see: specweave-increment.md, specweave-do.md, etc. (22 total)
 ```
 
 ### Hooks not running?
