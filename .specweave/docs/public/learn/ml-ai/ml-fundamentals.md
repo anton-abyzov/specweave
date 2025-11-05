@@ -1298,7 +1298,7 @@ await openai.chat.completions.create({ /* small prompt */ });
 5. Optimize token usage and costs
 
 **SpecWeave Integration:**
-- Create AI increment: `/specweave:inc "ai-code-review"`
+- Create AI increment: `/specweave:increment "ai-code-review"`
 - Document model selection in ADRs
 - Track AI costs in increment reports
 - Use BDD tests for AI behavior validation

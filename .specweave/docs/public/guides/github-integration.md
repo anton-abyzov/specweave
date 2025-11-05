@@ -158,7 +158,7 @@ specweave plugin enable specweave-github
 
 ```bash
 # Plan a new increment
-/specweave:inc "0005-user-authentication"
+/specweave:increment "0005-user-authentication"
 
 # SpecWeave PM generates:
 # - spec.md (product requirements)
@@ -284,7 +284,7 @@ sequenceDiagram
     participant SpecWeave
     participant GitHub
 
-    User->>SpecWeave: /specweave:inc "0005-user-auth"
+    User->>SpecWeave: /specweave:increment "0005-user-auth"
     SpecWeave->>SpecWeave: Generate spec, plan, tasks
 
     User->>SpecWeave: /specweave:github:sync-tasks 0005
@@ -969,7 +969,7 @@ gh api rate_limit
 3. **Validate markdown**: Use a linter or preview in editor
 4. **Re-generate tasks** (if too broken):
    ```bash
-   /specweave:inc 0005 --regenerate-tasks
+   /specweave:increment 0005 --regenerate-tasks
    ```
 
 ### Network Errors
@@ -993,7 +993,7 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. Create increment
-/specweave:inc "0005-user-auth"
+/specweave:increment "0005-user-auth"
 
 # 2. Skip GitHub sync (work locally)
 # OR sync at increment level:
@@ -1018,7 +1018,7 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. PM creates increment
-/specweave:inc "0005-user-auth"
+/specweave:increment "0005-user-auth"
 
 # 2. Sync to GitHub immediately
 /specweave:github:sync-tasks 0005
@@ -1045,7 +1045,7 @@ gh api rate_limit
 **Workflow**:
 ```bash
 # 1. PM creates increment
-/specweave:inc "0006-payment-processing"
+/specweave:increment "0006-payment-processing"
 
 # 2. Sync to GitHub
 /specweave:github:sync-tasks 0006
