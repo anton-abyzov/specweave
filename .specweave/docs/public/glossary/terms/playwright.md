@@ -609,10 +609,10 @@ test('see console logs', async ({ page }) => {
 
 ## Related Terms
 
-- [E2E Testing](./e2e-testing.md) - End-to-end testing methodology
-- [Integration Testing](./integration-testing.md) - Component interaction testing
-- [Test Pyramid](./test-pyramid.md) - Testing strategy distribution
-- [BDD](./bdd.md) - Behavior-driven development with Given-When-Then
+- E2E Testing - End-to-end testing methodology
+- [Integration Testing](/docs/glossary/terms/integration-testing) - Component interaction testing
+- [Test Pyramid](/docs/glossary/terms/test-pyramid) - Testing strategy distribution
+- [BDD](/docs/glossary/terms/bdd) - Behavior-driven development with Given-When-Then
 
 ---
 

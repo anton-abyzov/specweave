@@ -515,18 +515,18 @@ CREATE TABLE orders.orders (...);
 ## Related Terms
 
 - **[Microservices](/docs/glossary/terms/microservices)** - Alternative architecture
-- **[Backend](/docs/glossary/terms/backend)** - Monoliths are backend architecture
+- **Backend** - Monoliths are backend architecture
 - **[API](/docs/glossary/terms/api)** - Monoliths expose APIs
 - **[REST](/docs/glossary/terms/rest)** - Common API style for monoliths
 - **[Node.js](/docs/glossary/terms/nodejs)** - Popular runtime for Node.js monoliths
-- **[Modular Monolith](/docs/glossary/terms/modular-monolith)** - Hybrid approach
+- **Modular Monolith** - Hybrid approach
 
 ## Learn More
 
 - **[Monolith First](https://martinfowler.com/bliki/MonolithFirst.html)** - Martin Fowler's advice
 - **[Modular Monolith Architecture](https://www.kamilgrzybek.com/blog/posts/modular-monolith-primer)** - Best practices
 - **[The Majestic Monolith](https://m.signalvnoise.com/the-majestic-monolith/)** - DHH's defense of monoliths
-- **[SpecWeave Monolith Guide](/docs/learn/architecture/monolith-architecture)** - Building monoliths with SpecWeave
+- **SpecWeave Monolith Guide** - Building monoliths with SpecWeave
 
 ---
 

@@ -382,10 +382,10 @@ $ specweave do  # Continue work
 
 ## See Also
 
-- [`pause`](./pause.md) - Pause active work
-- [`abandon`](./abandon.md) - Cancel work permanently
-- [`status`](./status.md) - Check current status
-- [Status Management Guide](./status-management.md) - Complete workflow guide
+- `pause` - Pause active work
+- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
+- [`status`](/docs/glossary/terms/status) - Check current status
+- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
 
 ## Summary
 

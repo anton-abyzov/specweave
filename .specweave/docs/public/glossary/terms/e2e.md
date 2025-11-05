@@ -518,13 +518,12 @@ test.afterEach(async () => {
 - **[BDD (Behavior-Driven Development)](/docs/glossary/terms/bdd)** - Write tests in Given/When/Then format
 - **[Test Coverage](/docs/glossary/terms/test-coverage)** - Percentage of code tested
 - **[Playwright](/docs/glossary/terms/playwright)** - E2E testing framework for web apps
-- **[Cypress](/docs/glossary/terms/cypress)** - Alternative E2E testing framework
+- **Cypress** - Alternative E2E testing framework
 
 ## Learn More
 
-- **[E2E Testing Guide](/docs/learn/testing/e2e-testing)** - Comprehensive guide to E2E testing
+- **E2E Testing Guide** - Comprehensive guide to E2E testing
 - **[Playwright Documentation](https://playwright.dev/)** - Official Playwright docs
-- **[SpecWeave Testing Strategy](./.specweave/docs/internal/architecture/adr/0007-testing-strategy.md)** - How SpecWeave approaches testing
 
 ---
 

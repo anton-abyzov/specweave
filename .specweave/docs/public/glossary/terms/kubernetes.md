@@ -497,7 +497,7 @@ kubectl rollout undo deployment/api
 - AC-US3-01: HTTPS enabled with Let's Encrypt certificate
 ```
 
-**Test Plan** (embedded in tasks.md):
+**Test Plan** (embedded in tasks):
 ```markdown
 ## T-001: Create Kubernetes Manifests
 
@@ -715,12 +715,12 @@ kind load docker-image myapp:latest --name dev
 
 ## Related Concepts
 
-- [Docker](./docker.md) - Container platform (what K8s orchestrates)
-- [Terraform](./terraform.md) - IaC for K8s cluster provisioning
-- [Helm](./helm.md) - Package manager for Kubernetes
-- [CI/CD](./ci-cd.md) - Automated deployment to K8s
-- [Microservices](./microservices.md) - Architecture pattern K8s enables
-- [Service Mesh](./service-mesh.md) - Advanced networking for K8s
+- [Docker](/docs/glossary/terms/docker) - Container platform (what K8s orchestrates)
+- [Terraform](/docs/glossary/terms/terraform) - IaC for K8s cluster provisioning
+- Helm - Package manager for Kubernetes
+- [CI/CD](/docs/glossary/terms/ci-cd) - Automated deployment to K8s
+- [Microservices](/docs/glossary/terms/microservices) - Architecture pattern K8s enables
+- Service Mesh - Advanced networking for K8s
 
 ## Resources
 

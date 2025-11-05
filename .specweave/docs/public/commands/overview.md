@@ -41,14 +41,14 @@ graph LR
 
 **What it does**:
 - 🔍 Detects tech stack automatically
-- 📋 PM-led planning (market research, spec.md, plan.md)
+- 📋 PM-led planning (market research, spec.md, plan)
 - ✅ Auto-generates tasks.md from plan
 - 🧪 Creates test strategy
 - 👥 Strategic agent review (Architect, Security, QA, DevOps)
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
-[Full documentation →](./increment)
+Full documentation →
 
 ---
 
@@ -81,7 +81,7 @@ Intelligently suggests what to work on next.
 **What it does**:
 - 🎯 Resumes from last incomplete task
 - 🔊 Plays sound after each task (via hooks)
-- 📝 Updates docs inline (CLAUDE.md, README.md, CHANGELOG.md)
+- 📝 Updates docs inline (CLAUDE.md, README.md, CHANGELOG)
 - 🔗 Syncs to GitHub (if plugin enabled)
 - 🧪 Runs tests continuously
 
@@ -165,7 +165,7 @@ Intelligently suggests what to work on next.
 - CRITICAL (≥9.0) - Immediate action required
 - HIGH (6.0-8.9) - Address before release
 - MEDIUM (3.0-5.9) - Monitor
-- LOW (&lt;3.0) - Acceptable
+- LOW (\<3.0) - Acceptable
 
 [Full documentation →](./qa)
 

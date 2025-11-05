@@ -529,11 +529,11 @@ graph LR
 
 ## Related Terms
 
-- [Unit Testing](./unit-testing.md) - Base of the pyramid (70%)
-- [Integration Testing](./integration-testing.md) - Middle of the pyramid (20%)
-- [E2E Testing](./e2e-testing.md) - Top of the pyramid (10%)
-- [Test Coverage](./test-coverage.md) - Measuring code tested
-- [TDD](./tdd.md) - Test-driven development workflow
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Base of the pyramid (70%)
+- [Integration Testing](/docs/glossary/terms/integration-testing) - Middle of the pyramid (20%)
+- E2E Testing - Top of the pyramid (10%)
+- [Test Coverage](/docs/glossary/terms/test-coverage) - Measuring code tested
+- [TDD](/docs/glossary/terms/tdd) - Test-driven development workflow
 
 ---
 

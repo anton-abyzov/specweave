@@ -222,7 +222,7 @@ service UserService {
 - ❌ Not human-readable
 - ❌ More setup complexity
 
-**[Learn More: gRPC →](/docs/glossary/terms/grpc)**
+**Learn More: gRPC →**
 
 ## How SpecWeave Uses APIs
 
@@ -325,7 +325,7 @@ GET /users
 Headers: Authorization: Bearer eyJhbGc...
 ```
 
-**[Learn More: JWT →](/docs/glossary/terms/jwt)** | **[OAuth2 →](/docs/glossary/terms/oauth2)**
+**Learn More: JWT →** | **[OAuth2 →](/docs/glossary/terms/oauth2)**
 
 ### 3. Rate Limiting
 
@@ -416,15 +416,15 @@ Response: 429 Too Many Requests (when exceeded)
 
 - **[REST](/docs/glossary/terms/rest)** - API architectural style
 - **[GraphQL](/docs/glossary/terms/graphql)** - Query language for APIs
-- **[gRPC](/docs/glossary/terms/grpc)** - High-performance RPC
-- **[API Gateway](/docs/glossary/terms/api-gateway)** - Entry point for microservices
-- **[Backend](/docs/glossary/terms/backend)** - Server-side code that implements APIs
+- **gRPC** - High-performance RPC
+- **API Gateway** - Entry point for microservices
+- **Backend** - Server-side code that implements APIs
 - **[Microservices](/docs/glossary/terms/microservices)** - Architecture with many APIs
 
 ## Learn More
 
-- **[API Design Guide](/docs/learn/backend/api-design)** - Best practices for designing APIs
-- **[Backend Development](/docs/learn/backend/backend-fundamentals)** - Building APIs
+- **API Design Guide** - Best practices for designing APIs
+- **Backend Development** - Building APIs
 - **[SpecWeave API Integration](/docs/guides/github-integration)** - Using APIs with SpecWeave
 
 ---

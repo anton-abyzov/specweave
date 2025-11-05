@@ -574,10 +574,10 @@ test('should update user', async () => {
 
 ## Related Terms
 
-- [Unit Testing](./unit-testing.md) - Testing individual functions
-- [E2E Testing](./e2e-testing.md) - Testing complete user flows
-- [Test Pyramid](./test-pyramid.md) - Testing strategy distribution
-- [Mocking](./mocking.md) - Replacing dependencies
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Testing individual functions
+- E2E Testing - Testing complete user flows
+- [Test Pyramid](/docs/glossary/terms/test-pyramid) - Testing strategy distribution
+- Mocking - Replacing dependencies
 
 ---
 

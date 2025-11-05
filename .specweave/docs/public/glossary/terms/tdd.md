@@ -401,10 +401,10 @@ function hashSecret(secret: string): Promise<string> {
 
 ## Related Terms
 
-- [BDD (Behavior-Driven Development)](./bdd.md) - Testing from user behavior perspective
-- [Unit Testing](./unit-testing.md) - Testing individual functions
-- [E2E Testing](./e2e-testing.md) - Testing complete user flows
-- [Test Coverage](./test-coverage.md) - Measuring code tested
+- [BDD (Behavior-Driven Development)](/docs/glossary/terms/bdd) - Testing from user behavior perspective
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Testing individual functions
+- E2E Testing - Testing complete user flows
+- [Test Coverage](/docs/glossary/terms/test-coverage) - Measuring code tested
 
 ---
 

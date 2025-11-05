@@ -505,10 +505,10 @@ Scenario: Login button enables when form is valid
 
 ## Related Terms
 
-- [TDD (Test-Driven Development)](./tdd.md) - Write tests before code
-- [Unit Testing](./unit-testing.md) - Testing individual functions
-- [E2E Testing](./e2e-testing.md) - Testing complete user flows
-- [Acceptance Testing](./acceptance-testing.md) - Validating business requirements
+- [TDD (Test-Driven Development)](/docs/glossary/terms/tdd) - Write tests before code
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Testing individual functions
+- E2E Testing - Testing complete user flows
+- [Acceptance Testing](/docs/glossary/terms/acceptance-testing) - Validating business requirements
 
 ---
 
