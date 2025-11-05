@@ -374,29 +374,21 @@ Plugins are detected and suggested during `specweave init` based on:
 
 | User Says | Use Command | What It Does |
 |-----------|-------------|--------------|
-| "Let's build [feature]" | `/inc "[feature]"` | Plan new increment |
-| "Start implementing" | `/do` | Execute tasks (smart resume) |
-| "What's the status?" | `/progress` | Show task completion % |
-| "Is this ready?" | `/validate 0001` | Validate increment quality |
-| "We're done" | `/done 0001` | Close increment |
+| "Let's build [feature]" | `/specweave:increment "[feature]"` | Plan new increment |
+| "Start implementing" | `/specweave:do` | Execute tasks (smart resume) |
+| "What's the status?" | `/specweave:progress` | Show task completion % |
+| "Is this ready?" | `/specweave:validate 0001` | Validate increment quality |
+| "We're done" | `/specweave:done 0001` | Close increment |
 
 **Plugin Commands** (when installed):
 | "Sync to GitHub" | `/specweave:github:sync` | Export to GitHub issues |
 | "Sync to Jira" | `/specweave:jira:sync` | Export to Jira |
 
-### Command Aliases
-
-- `/inc` = `/specweave inc` = `/specweave:inc`
-- `/do` = `/specweave do` = `/specweave:do`
-- `/validate` = `/specweave validate` = `/specweave:validate`
-- `/done` = `/specweave done` = `/specweave:done`
-- `/progress` = `/specweave progress` = `/specweave:progress`
-
 ---
 
 ## Key SpecWeave Principles
 
-1. **Specification-First**: Always start with `/inc` to create specs before coding
+1. **Specification-First**: Always start with `/specweave:increment` to create specs before coding
 2. **Documentation = Source of Truth**: Specs guide implementation, not the reverse
 3. **Incremental**: Work in small, measurable increments
 4. **Validated**: Every increment validated before closure
@@ -417,19 +409,19 @@ Plugins are detected and suggested during `specweave init` based on:
 
 **Create your first feature**:
 ```bash
-/inc "your feature description"
+/specweave:increment "your feature description"
 ```
 
 **Typical Workflow**:
-1. `/inc "feature"` → SpecWeave creates specs
+1. `/specweave:increment "feature"` → SpecWeave creates specs
 2. Review specs (spec.md, plan.md, tasks.md)
-3. `/do` → Claude implements the code
-4. `/progress` → Check status anytime
-5. `/validate 0001` → Validate quality (optional)
-6. `/done 0001` → Close when complete
+3. `/specweave:do` → Claude implements the code
+4. `/specweave:progress` → Check status anytime
+5. `/specweave:validate 0001` → Validate quality (optional)
+6. `/specweave:done 0001` → Close when complete
 
 **Remember**:
-- Type `/inc` first, THEN implement
+- Type `/specweave:increment` first, THEN implement
 - Keep root clean (use increment folders)
 - All agents/skills activate automatically
 

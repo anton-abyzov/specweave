@@ -149,6 +149,9 @@ Auto-updates after every task via Claude Code hooks - never outdated
 ### 🤖 Intelligent Agents
 PM Agent, Architect, test-aware-planner, Quality Judge - specialized AI agents guide you
 
+### 🌍 Multilingual Support
+Work in 9 languages (Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese) with zero-cost LLM-native translation
+
 **[→ Explore All Features](https://spec-weave.com/docs/overview/features)**
 
 ---
@@ -176,6 +179,7 @@ Initialize SpecWeave in existing codebases to create retroactive specifications,
 **Advanced Topics:**
 - 📊 [DORA Metrics Dashboard](https://spec-weave.com/docs/metrics)
 - 🏢 [Brownfield Integration](https://spec-weave.com/docs/workflows/brownfield)
+- 🌍 [Multilingual Support](https://spec-weave.com/docs/tutorial-extras/multilingual-support)
 - 🔗 [GitHub Actions Setup](https://spec-weave.com/docs/guides/github-action-setup)
 
 ---
