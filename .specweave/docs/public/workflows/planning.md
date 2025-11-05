@@ -17,7 +17,7 @@ graph LR
 
 **Duration**: 15-60 minutes (automated)
 
-**Command**: `/specweave:inc "feature description"`
+**Command**: `/specweave:increment "feature description"`
 
 **Output**: Complete increment with spec.md, plan.md, tasks.md
 
@@ -28,7 +28,7 @@ graph LR
 Simply describe what you want to build:
 
 ```bash
-/specweave:inc "Add real-time chat with WebSocket support"
+/specweave:increment "Add real-time chat with WebSocket support"
 ```
 
 **What happens:**
@@ -392,7 +392,7 @@ Would you like to:
 1. Proceed with implementation (/specweave:do)
 2. Modify scope (edit spec)
 3. Adjust architecture (edit plan)
-4. Regenerate tasks (/specweave:inc --regenerate)
+4. Regenerate tasks (/specweave:increment --regenerate)
 ```
 
 **Options:**
@@ -504,7 +504,7 @@ rm .specweave/increments/0012-chat/plan.md
 rm .specweave/increments/0012-chat/tasks.md
 
 # 3. Regenerate with updated spec
-/specweave:inc "0012-real-time-chat" --regenerate
+/specweave:increment "0012-real-time-chat" --regenerate
 ```
 
 ## Planning Checklist
