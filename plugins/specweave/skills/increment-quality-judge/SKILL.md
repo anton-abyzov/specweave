@@ -25,7 +25,7 @@ Provide nuanced quality assessment of SpecWeave artifacts (spec.md, plan.md, tes
 
 **Triggered by:**
 - Natural language: "validate quality of increment 0001", "quality check", "assess spec"
-- Slash command: `/validate-increment 0001 --quality` (supports --export, --fix, --always flags)
+- Slash command: `/specweave:validate 0001 --quality` (supports --export, --fix, --always flags)
 - Manual invocation when reviewing docs
 
 ## What It Does
@@ -116,7 +116,7 @@ interface Suggestion {
 ### 3. Interactive Workflow
 
 ```bash
-/validate-increment 001
+/specweave:validate 001
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VALIDATION RESULTS: Increment 0001-authentication
@@ -352,7 +352,7 @@ if (confidence < 0.80) {
 ### Current: Rule-Based Only
 
 ```
-User: /validate-increment 001
+User: /specweave:validate-increment 001
 ↓
 Run 120 rule-based checks
 ↓
@@ -362,7 +362,7 @@ Show results: ✅ PASSED or ❌ FAILED
 ### With Quality Judge (Interactive)
 
 ```
-User: /validate-increment 001
+User: /specweave:validate-increment 001
 ↓
 Run 120 rule-based checks
 ↓
@@ -380,7 +380,7 @@ Prompt: "Export suggestions to tasks? [Y/n]"
 ### With Quality Judge (Always-On)
 
 ```
-User: /validate-increment 001
+User: /specweave:validate-increment 001
 ↓
 Run in parallel:
   • Rule-based checks (120 rules)

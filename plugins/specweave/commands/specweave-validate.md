@@ -28,7 +28,7 @@ You are helping the user validate a SpecWeave increment with optional AI-powered
 ### Step 1: Parse and Validate Arguments
 
 1. **Extract increment ID**:
-   - Parse from command: `/validate-increment 001` → "001"
+   - Parse from command: `/specweave:validate 001` → "001"
    - Normalize to 4-digit format: "0001"
    - Support formats: "1", "01", "001", "0001"
 
@@ -52,7 +52,7 @@ Available increments:
   • 0003-payment-processing
   • 0004-reporting-dashboard
 
-Usage: /validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Step 2: Run Rule-Based Validation (Always)
@@ -436,7 +436,7 @@ To disable:
   1. Initialize your project
   2. Set validation.quality_judge.always_run: false
 
-Or run: /validate-increment <id> (quality will run automatically)
+Or run: /specweave:validate-increment <id> (quality will run automatically)
 ```
 
 ### Step 8: Generate Validation Report
@@ -449,7 +449,7 @@ Or run: /validate-increment <id> (quality will run automatically)
 # Validation Report: Increment 0001-authentication
 
 Generated: 2025-10-28 14:32:15 UTC
-Command: /validate-increment 001 --quality
+Command: /specweave:validate-increment 001 --quality
 
 ## Executive Summary
 
@@ -552,7 +552,7 @@ Command: /validate-increment 001 --quality
 
 | Date | Rule-Based | Quality Score | Command |
 |------|------------|---------------|---------|
-| 2025-10-28 | 120/120 | 87/100 | /validate-increment 001 --quality |
+| 2025-10-28 | 120/120 | 87/100 | /specweave:validate-increment 001 --quality |
 | 2025-10-25 | 115/120 | N/A | Auto-validation on save |
 | 2025-10-24 | 110/120 | N/A | Auto-validation on save |
 
@@ -663,7 +663,7 @@ Available increments:
   • 0002-core-enhancements
   • 0003-payment-processing
 
-Usage: /validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Invalid Flags
@@ -676,7 +676,7 @@ Valid flags:
   --fix       Auto-fix issues (experimental)
   --always    Make quality assessment default
 
-Usage: /validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Quality Assessment Failed
@@ -686,7 +686,7 @@ Usage: /validate-increment <id> [--quality] [--export] [--fix] [--always]
 ✅ Rule-based validation completed successfully (120/120)
 
 You can:
-  1. Try again: /validate-increment 001 --quality
+  1. Try again: /specweave:validate-increment 001 --quality
   2. Continue with rule-based results
   3. Check logs: .specweave/increments/0001-name/logs/validation.log
 ```
@@ -707,7 +707,7 @@ Export suggestions to tasks? [Y/n]: _
 
 This command can be triggered by:
 
-1. **Manual execution**: `/validate-increment 001 --quality`
+1. **Manual execution**: `/specweave:validate 001 --quality`
 2. **Post-document-save hook**: Auto-runs rule-based validation
 3. **Pre-implementation hook**: Validates before starting tasks
 4. **CI/CD pipeline**: Automated validation in GitHub Actions
@@ -722,7 +722,7 @@ if [[ "$FILE" =~ spec\.md|plan\.md|tasks\.md|tests\.md ]]; then
   INCREMENT_ID=$(echo "$FILE" | grep -oP '(?<=increments/)\d{4}')
 
   # Run validation (rule-based only, no quality unless config says so)
-  /validate-increment "$INCREMENT_ID"
+  /specweave:validate-increment "$INCREMENT_ID"
 fi
 ```
 
@@ -747,6 +747,6 @@ All validation settings use sensible defaults. Quality assessment is prompted ea
 
 **Important**: This command works alongside intent-based validation. Users can say:
 - "Validate quality of increment 001" (intent-based)
-- `/validate-increment 001 --quality` (slash command)
+- `/specweave:validate 001 --quality` (slash command)
 
 Both routes activate the same validation logic for consistency.

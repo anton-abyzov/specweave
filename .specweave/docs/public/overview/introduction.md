@@ -67,7 +67,7 @@ Create comprehensive specifications in `.specweave/docs/internal/strategy/`:
 Design technical architecture in `.specweave/docs/internal/architecture/`:
 
 - System design (C4 diagrams)
-- Architecture Decision Records (ADRs)
+- [Architecture Decision Records (ADRs)](/docs/glossary/terms/adr)
 - Component diagrams
 - Data models
 
@@ -100,12 +100,12 @@ documentation:
 
 ### 5. Automated Testing
 
-Four levels of testing with full traceability:
+Four levels of testing with full traceability ([test pyramid](/docs/glossary/terms/test-pyramid)):
 
 1. **Specification Acceptance Criteria** (TC-0001 format)
 2. **Feature Test Strategy** (maps TC-0001 to implementations)
 3. **Skill Test Cases** (YAML-based validation)
-4. **Code Tests** ([E2E](/docs/glossary/terms/e2e), integration, unit)
+4. **Code Tests** ([E2E](/docs/glossary/terms/e2e), [integration](/docs/glossary/terms/integration-testing), [unit](/docs/glossary/terms/unit-testing))
 
 ## Who Should Use SpecWeave?
 
@@ -114,7 +114,7 @@ Four levels of testing with full traceability:
 ✅ **Enterprise teams** building production systems
 ✅ **Startups** needing scalable architecture from day one
 ✅ **Solo developers** building complex applications
-✅ **Regulated industries** (healthcare, finance, government)
+✅ **Regulated industries** ([healthcare - HIPAA](/docs/glossary/terms/hipaa), [finance - SOC 2](/docs/glossary/terms/soc2), government)
 ✅ **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
 
 ### Use Cases
@@ -127,12 +127,12 @@ Four levels of testing with full traceability:
 ## Core Features
 
 - **Framework-agnostic**: Works with [TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, C#, etc.
-- **AI-powered agents**: 11 specialized agents (PM, Architect, Tech Lead, QA, Security, Performance, TDD, etc.)
+- **AI-powered agents**: 11 specialized agents (PM, Architect, Tech Lead, QA, Security, Performance, [TDD](/docs/glossary/terms/tdd), etc.)
 - **Context precision**: 70%+ token reduction vs loading full specs
 - **Auto-role routing**: Skills detect expertise automatically
 - **Living documentation**: Auto-update via Claude hooks
 - **Mermaid diagrams**: C4 Model architecture diagrams
-- **External integrations**: JIRA, Azure DevOps, GitHub sync
+- **External integrations**: JIRA, Azure DevOps, [GitHub](/docs/glossary/terms/github-actions) sync
 - **Regression prevention**: Document before modifying existing code
 
 ## Getting Started

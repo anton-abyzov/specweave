@@ -264,7 +264,7 @@ Experiments (--type=experiment) auto-abandon after **14 days** of inactivity:
      Last activity: 15 days ago
 
 💡 Experiments auto-abandon after 14 days of inactivity
-   To prevent: Update lastActivity via /do or manual touch
+   To prevent: Update lastActivity via /specweave:do or manual touch
 ```
 
 ---

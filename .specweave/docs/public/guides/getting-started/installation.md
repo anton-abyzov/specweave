@@ -7,12 +7,12 @@ Comprehensive installation guide for all scenarios.
 Before installing SpecWeave, ensure you have:
 
 **Required:**
-- Node.js 18+ - Check with `node --version`
+- [Node.js](/docs/glossary/terms/nodejs) 18+ - Check with `node --version`
 - npm 9+ - Check with `npm --version`
 
 **Recommended:**
 - Claude Code (best experience)
-- Git for version control
+- [Git](/docs/glossary/terms/git) for version control
 
 ## Installation Methods
 
@@ -68,7 +68,7 @@ npx specweave init .
 - ❌ Slower (downloads each time)
 - ❌ Requires internet connection
 
-**Best for:** First-time users, CI/CD pipelines, testing latest version
+**Best for:** First-time users, [CI/CD](/docs/glossary/terms/ci-cd) pipelines, testing latest version
 
 ### Method 3: From Source (Contributors)
 
