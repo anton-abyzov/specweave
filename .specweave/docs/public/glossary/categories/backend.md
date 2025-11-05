@@ -347,7 +347,7 @@ Creates a new order.
 When creating backend increments:
 
 ```bash
-/specweave:inc "User Authentication API"
+/specweave:increment "User Authentication API"
 ```
 
 The Architect agent:

@@ -238,7 +238,7 @@ No specific command for ADRs. They're created manually during planning:
 
 ```bash
 # During increment planning
-/specweave:inc "Add payment processing"
+/specweave:increment "Add payment processing"
 
 # PM agent asks Architect to create ADRs for major decisions
 # Architect creates: .specweave/docs/internal/architecture/adr/0015-payment-gateway-choice.md

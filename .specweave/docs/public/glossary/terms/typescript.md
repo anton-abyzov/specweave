@@ -493,7 +493,7 @@ export interface Agent {
 
 ```mermaid
 graph TB
-    A[/specweave:inc "TypeScript Feature"] --> B[PM: Define Types]
+    A[/specweave:increment "TypeScript Feature"] --> B[PM: Define Types]
     B --> C[Architect: Design Interfaces]
     C --> D[/specweave:do]
     D --> E[Implement Types]

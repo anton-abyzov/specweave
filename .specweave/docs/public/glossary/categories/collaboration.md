@@ -338,7 +338,7 @@ Sprint (2 weeks)       → Increment (.specweave/increments/)
 User Story             → Acceptance Criteria (AC-US1-01)
 Task                   → Task (tasks.md: T-001)
 Backlog                → .specweave/increments/_backlog/
-Sprint Planning        → /specweave:inc (increment planning)
+Sprint Planning        → /specweave:increment (increment planning)
 Daily Standup          → /specweave:progress (status update)
 Sprint Review          → /specweave:done (completion report)
 Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
@@ -388,7 +388,7 @@ Team collaboration documented in:
 # Increment = Sprint (SpecWeave's unit of work)
 
 **Duration**: Typically 1-2 weeks (flexible)
-**Planning**: /specweave:inc (generate spec.md, plan.md, tasks)
+**Planning**: /specweave:increment (generate spec.md, plan.md, tasks)
 **Execution**: /specweave:do (implement tasks)
 **Daily Updates**: /specweave:progress (check status)
 **Completion**: /specweave:done (close increment, generate report)

@@ -229,7 +229,7 @@ npx specweave init . --brownfield
 # - Creates CLAUDE.md.backup (preserves manual changes)
 
 # Step 4: Start incremental migration
-/specweave:inc "0001-extract-cart-service"
+/specweave:increment "0001-extract-cart-service"
 
 # Strangler Fig pattern: Extract cart to new microservice
 # - New service in Node.js/TypeScript (greenfield)
@@ -298,7 +298,7 @@ legacy-api/
     └── integration/    # Some tests exist
 
 # Increment 1: Add GraphQL alongside REST
-/specweave:inc "0001-add-graphql-layer"
+/specweave:increment "0001-add-graphql-layer"
 
 # spec.md includes:
 # - REST endpoints remain unchanged (backward compatibility)
@@ -514,7 +514,7 @@ sequenceDiagram
 
     Note over Dev,New: Strangler Fig Pattern
 
-    Dev->>SW: /specweave:inc "Extract cart service"
+    Dev->>SW: /specweave:increment "Extract cart service"
     SW->>Dev: Generate spec.md (cart extraction)
 
     Dev->>New: Build new cart service (greenfield)
@@ -529,7 +529,7 @@ sequenceDiagram
     Legacy->>Legacy: GET /checkout (old endpoint)
     Note over Legacy: Old code still works
 
-    Dev->>SW: /specweave:inc "Migrate users to new cart"
+    Dev->>SW: /specweave:increment "Migrate users to new cart"
     SW->>Dev: Generate migration tasks
 
     Dev->>Legacy: Update frontend (use new API)
@@ -620,13 +620,13 @@ graph TB
 
 ```bash
 # Increment 1: Add API Gateway
-/specweave:inc "0001-add-api-gateway"
+/specweave:increment "0001-add-api-gateway"
 
 # Increment 2: Extract first service (cart)
-/specweave:inc "0002-extract-cart-service"
+/specweave:increment "0002-extract-cart-service"
 
 # Increment 3: Extract second service (users)
-/specweave:inc "0003-extract-user-service"
+/specweave:increment "0003-extract-user-service"
 
 # Continue until legacy monolith is fully replaced
 ```
@@ -672,7 +672,7 @@ function calculateShipping(cart: Cart): number {
 
 **SpecWeave Increment**:
 ```bash
-/specweave:inc "0005-shipping-calculation-v2"
+/specweave:increment "0005-shipping-calculation-v2"
 
 # spec.md includes:
 # - Feature flag strategy (10% rollout)
@@ -780,12 +780,12 @@ cp CLAUDE.md CLAUDE.md.backup
 
 ```bash
 # DON'T: Big bang rewrite
-/specweave:inc "0001-rewrite-entire-system" # ❌ Too risky!
+/specweave:increment "0001-rewrite-entire-system" # ❌ Too risky!
 
 # DO: Small increments
-/specweave:inc "0001-extract-cart-service"  # ✅ Low risk
-/specweave:inc "0002-add-tests-to-auth"     # ✅ Incremental
-/specweave:inc "0003-upgrade-node-version"  # ✅ Manageable
+/specweave:increment "0001-extract-cart-service"  # ✅ Low risk
+/specweave:increment "0002-add-tests-to-auth"     # ✅ Incremental
+/specweave:increment "0003-upgrade-node-version"  # ✅ Manageable
 ```
 
 ### 4. Test Heavily

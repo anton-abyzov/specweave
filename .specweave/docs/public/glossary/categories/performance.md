@@ -427,7 +427,7 @@ async function getUsersWithPosts() {
 When creating performance increments:
 
 ```bash
-/specweave:inc "API Performance Optimization"
+/specweave:increment "API Performance Optimization"
 ```
 
 The Architect agent:

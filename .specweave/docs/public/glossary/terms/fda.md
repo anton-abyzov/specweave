@@ -661,7 +661,7 @@ File: .specweave/increments/0045-pneumonia-detection/reports/COMPLETION-REPORT.m
 **SpecWeave Solution**: Every software update = new increment
 ```bash
 # Bug fix or enhancement = new increment
-/specweave:inc "Fix false positive in pneumonia detection (REQ-002 enhancement)"
+/specweave:increment "Fix false positive in pneumonia detection (REQ-002 enhancement)"
 
 # Spec.md documents:
 # - What's changing (AI model retrained)
@@ -788,7 +788,7 @@ completion report: TEST-002 → PASS (87.2% sensitivity)
 **SpecWeave Solution**: All changes = increments (automatic change control)
 ```bash
 # Bug fix = new increment with full documentation
-/specweave:inc "Fix: Reduce false positives in pneumonia detection"
+/specweave:increment "Fix: Reduce false positives in pneumonia detection"
 
 # Documents:
 # - What changed (AI model retrained)

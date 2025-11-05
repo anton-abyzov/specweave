@@ -543,7 +543,7 @@ my-angular-app/
 
 ```mermaid
 graph TB
-    A[/specweave:inc "User Module"] --> B[PM: Define Features]
+    A[/specweave:increment "User Module"] --> B[PM: Define Features]
     B --> C[Architect: Design Module Structure]
     C --> D[/specweave:do]
     D --> E[Generate Module/Components]
