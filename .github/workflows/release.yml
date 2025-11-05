@@ -1,0 +1,139 @@
+name: Release & Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.7.1, 0.8.0)'
+        required: true
+        type: string
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write # Required for npm provenance
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # Full history for changelog
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build project
+        run: npm run build
+
+      - name: Bump version
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.version_type }}
+        run: npm version "$VERSION_TYPE" --no-git-tag-version
+
+      - name: Extract version from package.json
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Version: $VERSION"
+
+      - name: Verify version matches input
+        env:
+          EXPECTED_VERSION: ${{ github.event.inputs.version }}
+          ACTUAL_VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          if [ "$EXPECTED_VERSION" != "$ACTUAL_VERSION" ]; then
+            echo "❌ Version mismatch! Expected: $EXPECTED_VERSION, Got: $ACTUAL_VERSION"
+            exit 1
+          fi
+          echo "✅ Version matches: $ACTUAL_VERSION"
+
+      - name: Extract release notes from CHANGELOG
+        id: changelog
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          # Extract release notes for this version from CHANGELOG.md
+          # This finds the section between ## [VERSION] and the next ## [
+          NOTES=$(awk "/## \[$VERSION\]/,/^## \[/" CHANGELOG.md | sed '1d;$d')
+
+          # Write to file for GitHub release
+          echo "$NOTES" > /tmp/release-notes.md
+
+          # Also output for debugging
+          echo "Release notes extracted for v$VERSION"
+          cat /tmp/release-notes.md
+
+      - name: Commit version bump
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $VERSION"
+
+      - name: Create and push git tag
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin develop
+          git push origin "v$VERSION"
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.package_version.outputs.version }}
+          release_name: v${{ steps.package_version.outputs.version }}
+          body_path: /tmp/release-notes.md
+          draft: false
+          prerelease: false
+
+      - name: Notify release success
+        if: success()
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          echo "✅ Successfully released v$VERSION"
+          echo "📦 NPM: https://www.npmjs.com/package/specweave/v/$VERSION"
+          echo "🐙 GitHub: https://github.com/anton-abyzov/specweave/releases/tag/v$VERSION"
+
+      - name: Notify release failure
+        if: failure()
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          echo "❌ Release failed for v$VERSION"
+          echo "Check logs above for details"
