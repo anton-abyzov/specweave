@@ -1,5 +1,5 @@
 ---
-name: sync
+name: specweave-ado:sync
 description: Sync SpecWeave increment progress with Azure DevOps work item
 ---
 

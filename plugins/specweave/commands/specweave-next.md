@@ -1,5 +1,5 @@
 ---
-name: next
+name: specweave:next
 description: Smart increment transition - auto-close current if ready, intelligently suggest next work (backlog or new feature)
 ---
 
@@ -12,7 +12,7 @@ You are helping the user complete their current increment and move to the next o
 ## Usage
 
 ```bash
-/next
+/specweave:next
 ```
 
 **No arguments needed** - the command intelligently handles the transition.
@@ -21,7 +21,7 @@ You are helping the user complete their current increment and move to the next o
 
 ## What This Does
 
-The `/next` command is your **workflow continuation** command. It:
+The `/specweave:next` command is your **workflow continuation** command. It:
 
 1. **Validates current increment** - Checks if work is complete
 2. **Auto-closes if ready** - PM validates and closes automatically
@@ -272,7 +272,7 @@ What would you like to do? [A/B/C]
 
 **User**:
 ```bash
-/next
+/specweave:next
 ```
 
 **Output**:
@@ -315,7 +315,7 @@ Next Action: Run `/specweave do 0002` to begin
 
 **User**:
 ```bash
-/next
+/specweave:next
 ```
 
 **Output**:
@@ -357,7 +357,7 @@ Next Action: Run `/specweave do 0001` to resume at T010
 
 **User**:
 ```bash
-/next
+/specweave:next
 ```
 
 **Output**:
@@ -397,7 +397,7 @@ Options:
 
 **User**:
 ```bash
-/next
+/specweave:next
 ```
 
 **Output**:

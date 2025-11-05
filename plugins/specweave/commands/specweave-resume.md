@@ -1,5 +1,5 @@
 ---
-name: resume
+name: specweave:resume
 description: Resume a paused increment
 usage: /specweave:resume <increment-id>
 ---
@@ -36,21 +36,21 @@ Resume a paused increment when:
 
 ### Resume after a few days
 ```bash
-/resume 0006
+/specweave:resume 0006
 
 ✅ Increment 0006 resumed
 ⏱️  Was paused for: 3 days, 4 hours
 💡 Last activity: Created translation pipeline
-📋 Continue with: /do
+📋 Continue with: /specweave:do
 ```
 
 ### Resume after a few hours
 ```bash
-/resume 0007
+/specweave:resume 0007
 
 ✅ Increment 0007 resumed
 ⏱️  Was paused for: 2 hours
-📋 Continue with: /do
+📋 Continue with: /specweave:do
 ```
 
 ---
@@ -59,15 +59,15 @@ Resume a paused increment when:
 
 ### Already Active
 ```bash
-/resume 0006
+/specweave:resume 0006
 
 ⚠️  Increment 0006 is already active
-   No action needed. Continue with: /do
+   No action needed. Continue with: /specweave:do
 ```
 
 ### Cannot Resume Completed
 ```bash
-/resume 0005
+/specweave:resume 0005
 
 ❌ Cannot resume increment 0005
    Status: completed
@@ -76,7 +76,7 @@ Resume a paused increment when:
 
 ### Resume Abandoned (Confirmation Required)
 ```bash
-/resume 0008
+/specweave:resume 0008
 
 ⚠️  Increment 0008 is abandoned
    Reason: Requirements changed
@@ -86,15 +86,15 @@ Resume a paused increment when:
 ✅ Increment 0008 resumed
 ⚠️  Note: Was abandoned 5 days ago
 💡 Review spec.md to ensure still relevant
-📋 Continue with: /do
+📋 Continue with: /specweave:do
 ```
 
 ### Increment Not Found
 ```bash
-/resume 9999
+/specweave:resume 9999
 
 ❌ Increment not found: 9999
-💡 Check paused increments: /status --paused
+💡 Check paused increments: /specweave:status --paused
 ```
 
 ---
@@ -188,7 +188,7 @@ When you run `/status`, stale paused increments trigger suggestions:
 After resuming, the command shows helpful context:
 
 ```bash
-/resume 0006
+/specweave:resume 0006
 
 ✅ Increment 0006 resumed
 
@@ -200,12 +200,12 @@ After resuming, the command shows helpful context:
 💡 Next steps:
    1. Review spec.md (requirements may have changed)
    2. Check dependencies (are API keys available?)
-   3. Continue with: /do
+   3. Continue with: /specweave:do
 
 📋 Quick commands:
-   /do           # Resume work
-   /progress     # See detailed progress
-   /validate     # Check increment health
+   /specweave:do           # Resume work
+   /specweave:progress     # See detailed progress
+   /specweave:validate     # Check increment health
 ```
 
 ---

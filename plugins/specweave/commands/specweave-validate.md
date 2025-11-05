@@ -1,18 +1,16 @@
 ---
-name: validate
+name: specweave:validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
 ---
 
 # Validate Increment
-
-**⚡ Convenient Short Form**: Use `/validate` for quick access, or `/specweave:validate` for explicit namespace.
 
 You are helping the user validate a SpecWeave increment with optional AI-powered quality assessment.
 
 ## Usage
 
 ```bash
-/validate-increment <increment-id> [--quality] [--export] [--fix] [--always]
+/specweave:validate <increment-id> [--quality] [--export] [--fix] [--always]
 ```
 
 ## Arguments
@@ -575,7 +573,7 @@ For details: .specweave/docs/internal/delivery/guides/increment-validation.md
 ### Example 1: Basic Validation (Rule-Based Only)
 
 ```bash
-/validate-increment 001
+/specweave:validate 001
 ```
 
 **Output**:
@@ -588,7 +586,7 @@ For details: .specweave/docs/internal/delivery/guides/increment-validation.md
 ### Example 2: Validation with Quality Assessment
 
 ```bash
-/validate-increment 001 --quality
+/specweave:validate 001 --quality
 ```
 
 **Output**:
@@ -605,7 +603,7 @@ Suggestions: 3 (2 high, 1 medium)
 ### Example 3: Validate and Export Suggestions
 
 ```bash
-/validate-increment 001 --quality --export
+/specweave:validate 001 --quality --export
 ```
 
 **Output**:
@@ -622,7 +620,7 @@ Suggestions: 3 (2 high, 1 medium)
 ### Example 4: Auto-Fix Issues
 
 ```bash
-/validate-increment 001 --quality --fix
+/specweave:validate 001 --quality --fix
 ```
 
 **Output**:
@@ -643,7 +641,7 @@ Re-validated: 92/100 (improvement: +5)
 ### Example 5: Make Quality Assessment Default
 
 ```bash
-/validate-increment 001 --always
+/specweave:validate 001 --always
 ```
 
 **Output**:

@@ -1,5 +1,5 @@
 ---
-name: status
+name: specweave-github:status
 description: Check GitHub sync status for SpecWeave increment. Shows issue number, sync state, progress, last update, and any sync issues. Useful for troubleshooting and monitoring.
 ---
 

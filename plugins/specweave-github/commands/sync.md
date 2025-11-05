@@ -1,5 +1,5 @@
 ---
-name: sync
+name: specweave-github:sync
 description: Synchronize SpecWeave increment with GitHub issue. Updates issue with current progress, task checklist, labels, and comments. Bidirectional sync available.
 ---
 

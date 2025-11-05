@@ -1,5 +1,5 @@
 ---
-name: increment
+name: specweave:increment
 description: Plan new Product Increment - PM-led process (market research, spec, plan, auto-generate tasks). Auto-closes previous increment if PM gates pass.
 ---
 

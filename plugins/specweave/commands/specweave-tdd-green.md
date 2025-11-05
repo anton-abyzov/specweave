@@ -1,3 +1,10 @@
+---
+name: specweave:tdd-green
+description: Implement minimal code to make failing tests pass in TDD green phase. Focuses on simplicity and making tests green without over-engineering.
+---
+
+# TDD Green Phase - Make Tests Pass
+
 Implement minimal code to make failing tests pass in TDD green phase:
 
 [Extended thinking: This tool uses the test-automator agent to implement the minimal code necessary to make tests pass. It focuses on simplicity, avoiding over-engineering while ensuring all tests become green.]

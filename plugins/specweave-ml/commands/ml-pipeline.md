@@ -1,5 +1,5 @@
 ---
-name: ml-pipeline
+name: specweave-ml:ml-pipeline
 description: Design and implement a complete ML pipeline with multi-agent MLOps orchestration
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: abandon
+name: specweave:abandon
 description: Abandon an incomplete increment (requirements changed, obsolete)
 usage: /specweave:abandon <increment-id> --reason="<reason>"
 ---
@@ -42,7 +42,7 @@ Abandon an increment when:
 
 ### Abandon with reason
 ```bash
-/abandon 0008 --reason="Requirements changed - feature no longer needed"
+/specweave:abandon 0008 --reason="Requirements changed - feature no longer needed"
 
 ⚠️  This will move increment 0008 to _abandoned/
    Reason: Requirements changed - feature no longer needed
@@ -59,7 +59,7 @@ Continue? [y/N]: y
 
 ### Abandon without reason (prompts)
 ```bash
-/abandon 0009
+/specweave:abandon 0009
 
 ❓ Why are you abandoning this increment?
    1. Requirements changed
@@ -85,7 +85,7 @@ Continue? [y/N]: y
 
 ### Cannot Abandon Completed
 ```bash
-/abandon 0005
+/specweave:abandon 0005
 
 ❌ Cannot abandon increment 0005
    Status: completed
@@ -96,7 +96,7 @@ Continue? [y/N]: y
 
 ### Already Abandoned
 ```bash
-/abandon 0008
+/specweave:abandon 0008
 
 ⚠️  Increment 0008 is already abandoned
    Location: .specweave/increments/_abandoned/0008-old-feature/
@@ -107,15 +107,15 @@ No action needed.
 
 ### Increment Not Found
 ```bash
-/abandon 9999
+/specweave:abandon 9999
 
 ❌ Increment not found: 9999
-💡 Check available increments: /status
+💡 Check available increments: /specweave:status
 ```
 
 ### Cancel Abandonment
 ```bash
-/abandon 0008 --reason="Not needed"
+/specweave:abandon 0008 --reason="Not needed"
 
 ⚠️  This will move increment 0008 to _abandoned/
    Reason: Not needed
@@ -209,7 +209,7 @@ mv .specweave/increments/_abandoned/0008-feature \
    .specweave/increments/0008-feature
 
 # 2. Resume via command
-/resume 0008
+/specweave:resume 0008
 
 ✅ Increment 0008 resumed
 ⚠️  Note: Was abandoned 10 days ago
@@ -221,10 +221,10 @@ mv .specweave/increments/_abandoned/0008-feature \
 
 ## Related Commands
 
-- `/pause <id>` - Pause increment (temporary, can resume)
-- `/resume <id>` - Resume paused or abandoned increment
-- `/status` - Show all increments (including abandoned count)
-- `/status --abandoned` - Show only abandoned increments
+- `/specweave:pause <id>` - Pause increment (temporary, can resume)
+- `/specweave:resume <id>` - Resume paused or abandoned increment
+- `/specweave:status` - Show all increments (including abandoned count)
+- `/specweave:status --abandoned` - Show only abandoned increments
 
 ---
 
@@ -255,7 +255,7 @@ Experiments (--type=experiment) auto-abandon after **14 days** of inactivity:
 # ... 15 days pass with no activity ...
 
 # Automatic abandonment
-/status
+/specweave:status
 
 📊 Auto-Abandoned (1):
   🧪 0010-graphql-experiment [experiment]
@@ -274,7 +274,7 @@ Experiments (--type=experiment) auto-abandon after **14 days** of inactivity:
 View abandonment statistics:
 
 ```bash
-/status
+/specweave:status
 
 ✅ Completed (4):
   0001-core-framework

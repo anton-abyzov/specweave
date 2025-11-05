@@ -1,5 +1,5 @@
 ---
-name: create-workitem
+name: specweave-ado:create-workitem
 description: Create Azure DevOps work item from SpecWeave increment
 ---
 

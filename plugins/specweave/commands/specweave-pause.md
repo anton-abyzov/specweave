@@ -1,5 +1,5 @@
 ---
-name: pause
+name: specweave:pause
 description: Pause an active increment (blocked by external dependency, deprioritized)
 usage: /specweave:pause <increment-id> --reason="<reason>"
 ---
@@ -37,17 +37,17 @@ Pause an active increment when:
 
 ### Pause with reason
 ```bash
-/pause 0006 --reason="Waiting for Stripe API keys"
+/specweave:pause 0006 --reason="Waiting for Stripe API keys"
 
 ✅ Increment 0006 paused
 📝 Reason: Waiting for Stripe API keys
 ⏸️  No longer counts toward active limit
-💡 Resume with: /resume 0006
+💡 Resume with: /specweave:resume 0006
 ```
 
 ### Pause without reason (prompts)
 ```bash
-/pause 0006
+/specweave:pause 0006
 
 ❓ Why are you pausing this increment?
    1. Blocked by external dependency
@@ -59,7 +59,7 @@ Pause an active increment when:
 
 ✅ Increment 0006 paused
 📝 Reason: Blocked by external dependency
-💡 Resume with: /resume 0006
+💡 Resume with: /specweave:resume 0006
 ```
 
 ---
@@ -68,7 +68,7 @@ Pause an active increment when:
 
 ### Already Paused
 ```bash
-/pause 0006 --reason="Different reason"
+/specweave:pause 0006 --reason="Different reason"
 
 ⚠️  Increment 0006 is already paused
    Previous reason: Waiting for Stripe API keys
@@ -82,7 +82,7 @@ Update reason? [Y/n]: y
 
 ### Cannot Pause Completed
 ```bash
-/pause 0005
+/specweave:pause 0005
 
 ❌ Cannot pause increment 0005
    Status: completed
@@ -91,19 +91,19 @@ Update reason? [Y/n]: y
 
 ### Cannot Pause Abandoned
 ```bash
-/pause 0008
+/specweave:pause 0008
 
 ❌ Cannot pause increment 0008
    Status: abandoned
-   Resume it first: /resume 0008
+   Resume it first: /specweave:resume 0008
 ```
 
 ### Increment Not Found
 ```bash
-/pause 9999
+/specweave:pause 9999
 
 ❌ Increment not found: 9999
-💡 Check available increments: /status
+💡 Check available increments: /specweave:status
 ```
 
 ---

@@ -1,5 +1,5 @@
 ---
-name: qa
+name: specweave:qa
 description: Run quality assessment on a SpecWeave increment with risk scoring and quality gate decisions
 ---
 
@@ -18,32 +18,32 @@ Run comprehensive quality assessment on an increment using:
 ## Usage
 
 ```bash
-/qa <increment-id> [options]
+/specweave:qa <increment-id> [options]
 ```
 
 ### Examples
 
 ```bash
 # Quick mode (default)
-/qa 0008
+/specweave:qa 0008
 
 # Pre-implementation check
-/qa 0008 --pre
+/specweave:qa 0008 --pre
 
 # Quality gate check (comprehensive)
-/qa 0008 --gate
+/specweave:qa 0008 --gate
 
 # Export blockers to tasks.md
-/qa 0008 --export
+/specweave:qa 0008 --export
 
 # CI mode (exit 1 on FAIL)
-/qa 0008 --ci
+/specweave:qa 0008 --ci
 
 # Skip AI assessment (rule-based only)
-/qa 0008 --no-ai
+/specweave:qa 0008 --no-ai
 
 # Force run even if rule-based fails
-/qa 0008 --force
+/specweave:qa 0008 --force
 ```
 
 ### Options

@@ -1,3 +1,10 @@
+---
+name: specweave:tdd-red
+description: Write comprehensive failing tests following TDD red phase principles. Generates failing tests that properly define expected behavior.
+---
+
+# TDD Red Phase - Write Failing Tests
+
 Write comprehensive failing tests following TDD red phase principles.
 
 [Extended thinking: Generates failing tests that properly define expected behavior using test-automator agent.]
