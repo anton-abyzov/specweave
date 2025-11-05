@@ -771,14 +771,14 @@ ngOnInit(): void {
 
 - **[React](/docs/glossary/terms/react)** - Alternative frontend library
 - **[TypeScript](/docs/glossary/terms/typescript)** - Required for Angular
-- **[RxJS](/docs/glossary/terms/rxjs)** - Reactive programming library
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **RxJS** - Reactive programming library
+- **Frontend** - Client-side development
 - **[SPA](/docs/glossary/terms/spa)** - Single page application
 
 ## Learn More
 
 - **[Angular Official Docs](https://angular.io/docs)** - Comprehensive documentation
-- **[Angular Tutorial](/docs/learn/frontend/angular-fundamentals)** - SpecWeave Angular guide
+- **Angular Tutorial** - SpecWeave Angular guide
 - **[TypeScript Guide](/docs/glossary/terms/typescript)** - Learn TypeScript first
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Angular-specific features
 

@@ -64,7 +64,7 @@ function HomepageHeader() {
         <div className={styles.heroCode}>
           <div className={styles.codeBlock}>
             <div className={styles.codeHeader}>
-              <span className={styles.codeTitle}>✨ The Magic of /do - Just Three Commands</span>
+              <span className={styles.codeTitle}>✨ The Magic of /do - Just Three Commands (one of thousands of use cases!)</span>
             </div>
             <pre className={styles.codePre}>
               <code>{`# 1. Describe your feature (natural language)
@@ -74,7 +74,7 @@ function HomepageHeader() {
 ✅ Creates: spec.md (user stories + AC-IDs)
 ✅ Creates: plan.md (architecture + test strategy 88%)
 ✅ Creates: tasks.md (8 tasks, 45 tests embedded)
-📊 Reviews: "3-5 days, 88% coverage. Proceed? (Y/n)"
+📊 Estimate: 4-6 hours deterministic work, 88% coverage. Proceed? (Y/n)
 
 # 2. Type one command. That's it.
 /specweave:do
@@ -97,7 +97,8 @@ function HomepageHeader() {
             </pre>
           </div>
           <div className={styles.codeCaption}>
-            <strong>That's it.</strong> No back-and-forth messages. No manual test writing. No doc updates. <strong>Just working software.</strong>
+            <strong>That's it.</strong> No back-and-forth messages. No manual test writing. No doc updates. <strong>Just working software.</strong><br/>
+            <em>This is just 1 of thousands of use cases—from microservices to ML pipelines to enterprise apps!</em>
           </div>
         </div>
       </div>
@@ -133,39 +134,44 @@ function FeaturesSection(): ReactNode {
         </div>
         <div className={styles.featuresGrid}>
           <FeatureHighlight
-            icon="📝"
-            title="Specification-First"
-            description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows."
+            icon="⚡"
+            title="Autonomous & Deterministic"
+            description="Spec-driven development ensures predictable, fast outcomes. Type one command, get production code in hours (not days). Auto-resume, auto-close. Minimal interaction, maximum velocity."
           />
           <FeatureHighlight
-            icon="⚡"
-            title="Autonomous & Smart"
-            description="Just works—asks clarifying questions, reviews output, validates quality. Auto-resume, auto-close. Minimal interaction, maximum productivity."
+            icon="📝"
+            title="Specification-First (Source of Truth)"
+            description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows. Complete traceability from requirements to tests."
           />
           <FeatureHighlight
             icon="🤖"
-            title="10 Agents + 35+ Skills"
-            description="PM, Architect, DevOps, QA, Security—work in parallel to minimize context usage. Easily extensible. Pre-installed and ready to use."
+            title="10+ Specialized AI Agents"
+            description="PM, Architect, DevOps, QA, Security—work in parallel to minimize context usage. Pre-installed, auto-activating, production-ready."
           />
           <FeatureHighlight
             icon="🧪"
-            title="Complete Test Coverage"
-            description="4-level testing strategy with full traceability—from specs to integration tests. Works for APIs, UIs, CLIs, and libraries."
-          />
-          <FeatureHighlight
-            icon="🌐"
-            title="Universal Support"
-            description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude, Cursor, Copilot, Gemini, ChatGPT)."
+            title="Test Coverage Built-In"
+            description="4-level testing strategy with full traceability—unit, integration, E2E, acceptance tests. Embedded in tasks.md. 85-90% coverage targets enforced."
           />
           <FeatureHighlight
             icon="📚"
-            title="Living Documentation"
-            description="Specs and docs auto-update after every operation and test. Always in sync with code—no drift, no surprises."
+            title="Living Documentation (Auto-Sync)"
+            description="Specs and docs auto-update after every task via hooks. Always in sync with code—no drift, no manual updates, no surprises."
           />
           <FeatureHighlight
             icon="🏢"
             title="Brownfield Excellence"
             description="The hardest problem solved: merge existing docs, create complex architecture (ADRs, HLDs, C4 diagrams), maintain living documentation. Perfect for legacy codebases."
+          />
+          <FeatureHighlight
+            icon="🌐"
+            title="Universal Support (Any Stack, Any AI)"
+            description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude Code, Cursor, Copilot, Gemini, ChatGPT)."
+          />
+          <FeatureHighlight
+            icon="🔌"
+            title="Plugin Architecture (70%+ Token Reduction)"
+            description="Modular plugins load only what you need. Core + GitHub + Frontend = 16K tokens (vs 50K monolithic). Built on Claude Code's native plugin system."
           />
         </div>
       </div>

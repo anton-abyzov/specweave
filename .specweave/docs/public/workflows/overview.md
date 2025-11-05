@@ -137,7 +137,7 @@ graph LR
 
 **Activities:**
 - Implement each task
-- Write tests (TDD optional)
+- Write tests ([TDD](/docs/glossary/terms/tdd) optional)
 - Update living docs
 - Review progress
 
@@ -227,7 +227,7 @@ graph LR
 
 ## Workflow Patterns
 
-### Pattern 1: Greenfield (New Project)
+### Pattern 1: [Greenfield](/docs/glossary/terms/greenfield) (New Project)
 
 ```mermaid
 graph TB
@@ -253,7 +253,7 @@ graph TB
 
 ---
 
-### Pattern 2: Brownfield (Existing Project)
+### Pattern 2: [Brownfield](/docs/glossary/terms/brownfield) (Existing Project)
 
 ```mermaid
 graph TB
@@ -309,8 +309,8 @@ graph TB
 
 | Workflow | Duration | Planning | Testing | Use When |
 |----------|----------|----------|---------|----------|
-| **Greenfield** | Weeks-Months | Comprehensive | Full TDD | New project |
-| **Brownfield** | Days-Weeks | Document first | Regression focus | Existing code |
+| **[Greenfield](/docs/glossary/terms/greenfield)** | Weeks-Months | Comprehensive | Full [TDD](/docs/glossary/terms/tdd) | New project |
+| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Document first | Regression focus | Existing code |
 | **Hotfix** | Hours-Days | Minimal | Critical paths | Production bug |
 | **Experiment** | Days | Lightweight | Basic | POC/spike |
 
@@ -493,4 +493,4 @@ Ready to dive deeper? Choose your path:
 **Learn More:**
 - [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
 - [Command Reference](/docs/commands/status-management)
-- [Best Practices](/docs/guides/best-practices)
+- Best Practices

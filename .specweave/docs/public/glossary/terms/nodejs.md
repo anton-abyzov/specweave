@@ -638,12 +638,12 @@ pm2 restart server
 
 ## Related Terms
 
-- **[Express](/docs/glossary/terms/express)** - Most popular Node.js web framework
+- **Express** - Most popular Node.js web framework
 - **[NestJS](/docs/glossary/terms/nestjs)** - Enterprise Node.js framework (TypeScript)
 - **[NPM](/docs/glossary/terms/npm)** - Node Package Manager
 - **[REST](/docs/glossary/terms/rest)** - API style often used with Node.js
 - **[GraphQL](/docs/glossary/terms/graphql)** - Query language often used with Node.js
-- **[Backend](/docs/glossary/terms/backend)** - Server-side development
+- **Backend** - Server-side development
 - **[API](/docs/glossary/terms/api)** - What Node.js apps often implement
 - **[Microservices](/docs/glossary/terms/microservices)** - Architecture often built with Node.js
 
@@ -653,7 +653,7 @@ pm2 restart server
 - **[Express.js Guide](https://expressjs.com/)** - Express.js framework
 - **[NestJS Documentation](https://nestjs.com/)** - NestJS framework
 - **[Node.js Best Practices](https://github.com/goldbergyoni/nodebestpractices)** - Community best practices
-- **[SpecWeave Backend Guide](/docs/learn/backend/backend-fundamentals)** - Backend development with SpecWeave
+- **SpecWeave Backend Guide** - Backend development with SpecWeave
 
 ---
 

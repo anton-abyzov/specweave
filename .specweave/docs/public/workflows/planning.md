@@ -161,8 +161,8 @@ C4Container
     Person(customer, "Customer", "Uses web app")
     Person(support, "Support Agent", "Responds to chats")
 
-    Container(webapp, "Web App", "React", "Chat UI")
-    Container(api, "API Server", "Node.js", "WebSocket + REST")
+    Container(webapp, "Web App", "[React](/docs/glossary/terms/react)", "Chat UI")
+    Container(api, "[API](/docs/glossary/terms/api) Server", "[Node.js](/docs/glossary/terms/nodejs)", "WebSocket + [REST](/docs/glossary/terms/rest)")
     Container(redis, "Redis", "Pub/Sub", "Real-time events")
     ContainerDb(db, "PostgreSQL", "Database", "Message storage")
 
@@ -226,7 +226,7 @@ interface Chat {
 - ✅ C4 diagrams (visual architecture)
 - ✅ Data models
 - ✅ **Test strategy** with coverage targets
-- ✅ Test approach (TDD, BDD, traceability)
+- ✅ Test approach ([TDD](/docs/glossary/terms/tdd), [BDD](/docs/glossary/terms/bdd), traceability)
 
 ### Step 4: Test-Aware Planner Generates Tasks
 
@@ -354,7 +354,7 @@ coverage_target: 88%
 ```
 
 **Key elements:**
-- ✅ BDD test plans (Given/When/Then)
+- ✅ [BDD](/docs/glossary/terms/bdd) test plans (Given/When/Then)
 - ✅ Embedded test cases per task
 - ✅ Coverage targets per task
 - ✅ AC-ID traceability
@@ -390,8 +390,8 @@ coverage_target: 88%
 
 Would you like to:
 1. Proceed with implementation (/specweave:do)
-2. Modify scope (edit spec.md)
-3. Adjust architecture (edit plan.md)
+2. Modify scope (edit spec)
+3. Adjust architecture (edit plan)
 4. Regenerate tasks (/specweave:inc --regenerate)
 ```
 
@@ -463,7 +463,7 @@ Would you like to:
 
 - **Startup/MVP**: Brief (1-2 pages, core user stories)
 - **Enterprise**: Detailed (10+ pages, all edge cases)
-- **Brownfield**: Context-heavy (link to existing docs)
+- **[Brownfield](/docs/glossary/terms/brownfield)**: Context-heavy (link to existing docs)
 
 **Rule of thumb**: Enough detail that any developer can understand requirements without asking questions.
 
@@ -477,7 +477,7 @@ Would you like to:
 
 **Max recommended**: 25 tasks. If more, split into multiple increments.
 
-### Q: Should I always use TDD?
+### Q: Should I always use [TDD](/docs/glossary/terms/tdd)?
 
 **A**: TDD is optional but recommended for:
 
@@ -511,14 +511,14 @@ rm .specweave/increments/0012-chat/tasks.md
 
 Before moving to implementation:
 
-### Specification (spec.md)
+### Specification (spec)
 - [ ] User stories written (US-001, US-002, ...)
 - [ ] Acceptance criteria with AC-IDs (AC-US1-01, ...)
 - [ ] Priorities assigned (P1, P2, P3)
 - [ ] Out of scope documented
 - [ ] Success criteria defined
 
-### Architecture (plan.md)
+### Architecture (plan)
 - [ ] Components designed
 - [ ] Tech stack chosen
 - [ ] C4 diagrams created
@@ -526,9 +526,9 @@ Before moving to implementation:
 - [ ] Test strategy documented (coverage targets)
 - [ ] Performance requirements specified
 
-### Tasks (tasks.md)
+### Tasks (tasks)
 - [ ] All AC-IDs mapped to tasks
-- [ ] Test plans embedded (BDD format)
+- [ ] Test plans embedded ([BDD](/docs/glossary/terms/bdd) format)
 - [ ] Coverage targets per task
 - [ ] Dependencies identified
 - [ ] Effort estimated
@@ -548,7 +548,7 @@ Planning complete! Move to implementation:
 
 **Learn more:**
 - [Implementation Workflow](/docs/workflows/implementation)
-- [Test-Aware Planning](/docs/guides/core-concepts/test-aware-planning)
+- Test-Aware Planning
 - [Creating Great Specifications](/docs/guides/best-practices/specifications)
 
 ---
@@ -556,4 +556,4 @@ Planning complete! Move to implementation:
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
 - [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
-- [PM Agent](/docs/agents/pm)
+- PM Agent

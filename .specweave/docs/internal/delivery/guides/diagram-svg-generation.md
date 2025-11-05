@@ -543,10 +543,10 @@ Generated files:
 
 ## Related Documentation
 
-- [Diagram Testing Strategy](../../001-core-framework/reports/DIAGRAM-TESTING-STRATEGY.md)
-- [C4 Diagram Conventions](../../../../CLAUDE.md#c4-diagram-conventions)
-- [Mermaid Documentation](https://mermaid.js.org/)
-- [Docusaurus Markdown Features](https://docusaurus.io/docs/markdown-features)
+- [Diagram Conventions](./diagram-conventions.md) - SpecWeave diagram standards
+- [Architecture Documentation](../../architecture/README.md) - Where diagrams are used
+- [Mermaid Documentation](https://mermaid.js.org/) - Diagram syntax reference
+- [Docusaurus Markdown Features](https://docusaurus.io/docs/markdown-features) - How diagrams render
 
 ---
 

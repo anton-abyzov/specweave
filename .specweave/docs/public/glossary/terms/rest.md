@@ -460,7 +460,7 @@ graph TB
 - ❌ Not human-readable
 - ❌ More complex setup
 
-**[Learn More: gRPC →](/docs/glossary/terms/grpc)**
+**Learn More: gRPC →**
 
 ## Best Practices
 
@@ -636,16 +636,16 @@ X-RateLimit-Remaining: 999
 
 - **[API](/docs/glossary/terms/api)** - REST is one type of API
 - **[GraphQL](/docs/glossary/terms/graphql)** - Alternative to REST
-- **[gRPC](/docs/glossary/terms/grpc)** - High-performance alternative
+- **gRPC** - High-performance alternative
 - **[Node.js](/docs/glossary/terms/nodejs)** - Popular runtime for REST APIs
-- **[Express](/docs/glossary/terms/express)** - Node.js framework for REST
-- **[Backend](/docs/glossary/terms/backend)** - REST APIs are backend code
+- **Express** - Node.js framework for REST
+- **Backend** - REST APIs are backend code
 - **[HTTP](/docs/glossary/terms/http)** - Protocol REST is built on
 - **[JSON](/docs/glossary/terms/json)** - Common REST response format
 
 ## Learn More
 
-- **[REST API Design Guide](/docs/learn/backend/rest-api-design)** - Best practices
+- **REST API Design Guide** - Best practices
 - **[Richardson Maturity Model](https://martinfowler.com/articles/richardsonMaturityModel.html)** - REST maturity levels
 - **[RESTful Web APIs Book](http://restfulwebapis.org/)** - Comprehensive guide
 - **[SpecWeave API Development](/docs/guides/api-development)** - Building REST APIs with SpecWeave
