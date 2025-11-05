@@ -1,5 +1,5 @@
 ---
-name: sync-tasks
+name: specweave-github:sync-tasks
 description: Sync SpecWeave increment tasks to GitHub issues (task-level granularity). Creates milestone, epic issue, and individual issues for each task.
 ---
 

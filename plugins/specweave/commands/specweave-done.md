@@ -1,5 +1,5 @@
 ---
-name: done
+name: specweave:done
 description: Close increment with PM validation - checks tasks, tests, and docs before closing
 ---
 
@@ -14,7 +14,7 @@ You are acting as the Product Manager to validate increment completion before cl
 ## Usage
 
 ```bash
-/done <increment-id>
+/specweave:done <increment-id>
 ```
 
 ## Arguments
@@ -397,7 +397,7 @@ Closing increment 0001-user-authentication...
 ### Example 1: Successful Closure
 
 ```bash
-/done 0001
+/specweave:done 0001
 ```
 
 **Output**:
@@ -410,13 +410,13 @@ PM Approval: ✅ APPROVED
 
 🎉 Increment 0001 closed successfully!
 
-Next: /increment "Next feature"
+Next: /specweave:increment "Next feature"
 ```
 
 ### Example 2: Blocked by Failing Tests
 
 ```bash
-/done 0002
+/specweave:done 0002
 ```
 
 **Output**:
@@ -437,7 +437,7 @@ Increment remains: in-progress
 ### Example 3: Blocked by Outdated Docs
 
 ```bash
-/done 0003
+/specweave:done 0003
 ```
 
 **Output**:
@@ -460,7 +460,7 @@ Increment remains: in-progress
 ### Example 4: Scope Creep - Transfer to Next Increment
 
 ```bash
-/done 0004
+/specweave:done 0004
 ```
 
 **Output**:

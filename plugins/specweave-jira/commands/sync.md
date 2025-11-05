@@ -1,5 +1,5 @@
 ---
-name: sync
+name: specweave-jira:sync
 description: Sync SpecWeave increments with JIRA epics/stories. Supports import, export, bidirectional sync, and granular item operations
 ---
 

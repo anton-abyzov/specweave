@@ -1,5 +1,5 @@
 ---
-name: slo-implement
+name: specweave-infrastructure:slo-implement
 description: Implement Service Level Objectives (SLOs) with reliability standards, SLIs, and error budget-based engineering practices
 ---
 

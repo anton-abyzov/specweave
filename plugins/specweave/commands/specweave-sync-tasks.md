@@ -1,5 +1,5 @@
 ---
-name: sync-tasks
+name: specweave:sync-tasks
 description: Sync tasks.md with actual completion status (GitHub issue or reality check)
 ---
 
@@ -219,24 +219,24 @@ Next: Run /progress to verify
 
 ## Integration with Other Commands
 
-### /progress
+### /specweave:progress
 ```bash
 # Check sync status before showing progress
-/sync-tasks --validate
+/specweave:sync-tasks --validate
 # If out of sync, warn user
 ```
 
-### /validate
+### /specweave:validate
 ```bash
 # Validate tasks.md is in sync
-/sync-tasks --validate
+/specweave:sync-tasks --validate
 # Fail validation if mismatch detected
 ```
 
-### /done
+### /specweave:done
 ```bash
 # Ensure tasks.md is current before closing
-/sync-tasks --auto
+/specweave:sync-tasks --auto
 # Auto-sync if needed, then proceed
 ```
 

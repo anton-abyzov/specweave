@@ -1,5 +1,5 @@
 ---
-name: do
+name: specweave:do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
 ---
 
@@ -445,7 +445,7 @@ After each task, Claude should manually update:
 ### Example 1: Execute Complete Increment
 
 ```bash
-/do 0001
+/specweave:do 0001
 ```
 
 **Output**:
@@ -465,13 +465,13 @@ Task T001: Create User model
 
 🎉 All tasks completed (42/42)
 
-Next: /validate 0001 --quality
+Next: /specweave:validate 0001 --quality
 ```
 
 ### Example 2: Execute with Blocker
 
 ```bash
-/do 0002
+/specweave:do 0002
 ```
 
 **Output**:
@@ -494,7 +494,7 @@ Your choice? [A/B/C]: _
 ### Example 3: Execute with Test Failure
 
 ```bash
-/do 0003
+/specweave:do 0003
 ```
 
 **Output**:

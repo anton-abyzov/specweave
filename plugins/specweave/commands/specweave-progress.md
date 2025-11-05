@@ -1,5 +1,5 @@
 ---
-name: progress
+name: specweave:progress
 description: Show current increment progress, task completion %, PM gate status, and next action
 ---
 
@@ -20,10 +20,10 @@ Shows:
 
 ```bash
 # Check current progress
-/progress
+/specweave:progress
 
 # Show progress for specific increment
-/progress 0001
+/specweave:progress 0001
 ```
 
 ---
@@ -225,12 +225,12 @@ Use `/progress` when you:
 **Typical workflow**:
 ```bash
 # Morning: Check what you were working on
-/progress
+/specweave:progress
 
 # Shows: "Active: 0002-payments, Task 5/10 (50%)"
-# Shows: "Next: /do 0002 to resume at T006"
+# Shows: "Next: /specweave:do 0002 to resume at T006"
 
-/do 0002
+/specweave:do 0002
 # Auto-resumes from T006
 ```
 
@@ -238,8 +238,8 @@ Use `/progress` when you:
 
 ## Pro Tips
 
-1. **No increment ID needed** - `/progress` automatically finds active increment
-2. **Smart resume** - `/do` picks up where you left off (no task ID needed)
+1. **No increment ID needed** - `/specweave:progress` automatically finds active increment
+2. **Smart resume** - `/specweave:do` picks up where you left off (no task ID needed)
 3. **WIP limits** - Keep 1-2 increments active max for focus
 4. **Completion %** - P1 tasks weighted higher (they're critical path)
 5. **Time tracking** - Warns if tasks are stuck (>2 hours inactive)

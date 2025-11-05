@@ -1,5 +1,5 @@
 ---
-name: update-scope
+name: specweave:update-scope
 description: Update living completion report with scope changes during increment execution
 ---
 
@@ -50,13 +50,13 @@ Future: "Why was Task 5 removed?" → Check report, find exact reason
 ### Quick Log
 
 ```bash
-/update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
+/specweave:update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
 ```
 
 ### Detailed Log
 
 ```bash
-/update-scope
+/specweave:update-scope
 # Interactive prompts:
 # - What changed? (Added/Removed/Modified user story)
 # - What specifically? (e.g., "US6: Dark mode toggle")
@@ -342,9 +342,9 @@ Always include:
 
 ## Related Commands
 
-- `/inc "feature"` - Creates increment with initial completion report
-- `/done <id>` - Finalizes report and marks increment complete
-- `/status` - Check which increment is active
+- `/specweave:increment "feature"` - Creates increment with initial completion report
+- `/specweave:done <id>` - Finalizes report and marks increment complete
+- `/specweave:status` - Check which increment is active
 
 ---
 

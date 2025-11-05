@@ -1,5 +1,5 @@
 ---
-name: check-tests
+name: specweave:check-tests
 description: Validate test coverage for increment tasks, check AC-ID coverage, report test status, and verify coverage targets (NEW format with embedded tests in tasks.md)
 ---
 
@@ -22,16 +22,16 @@ Shows:
 
 ```bash
 # Check tests for current increment
-/check-tests
+/specweave:check-tests
 
 # Check tests for specific increment
-/check-tests 0007
+/specweave:check-tests 0007
 
 # Detailed report with test case breakdown
-/check-tests 0007 --detailed
+/specweave:check-tests 0007 --detailed
 
 # AC-ID coverage report only
-/check-tests 0007 --ac-coverage
+/specweave:check-tests 0007 --ac-coverage
 ```
 
 ---
@@ -58,7 +58,7 @@ Shows:
 ## Output Example (NEW Format)
 
 ```bash
-/check-tests 0007
+/specweave:check-tests 0007
 
 📊 Test Status Report: 0007-smart-increment-discipline
 
@@ -138,7 +138,7 @@ Summary:
 ## Detailed Report (--detailed flag)
 
 ```bash
-/check-tests 0007 --detailed
+/specweave:check-tests 0007 --detailed
 
 [Shows expanded report with:]
 - Full test case breakdown per task
@@ -153,7 +153,7 @@ Summary:
 ## AC Coverage Report (--ac-coverage flag)
 
 ```bash
-/check-tests 0007 --ac-coverage
+/specweave:check-tests 0007 --ac-coverage
 
 ═══════════════════════════════════════════════════════════════
 
@@ -325,7 +325,7 @@ AC-US1-01 → Covered by T-001 ✅
 **If increment has tests.md** (pre-v0.7.0):
 
 ```bash
-/check-tests 0003  # Old format increment
+/specweave:check-tests 0003  # Old format increment
 
 ⚠️  OLD FORMAT DETECTED: tests.md exists
 
@@ -396,7 +396,7 @@ if (hasTestsMd) {
 For CI/CD integration:
 
 ```bash
-/check-tests 0007
+/specweave:check-tests 0007
 echo $?  # Exit code
 
 # Exit codes:
