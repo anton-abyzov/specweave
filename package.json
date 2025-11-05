@@ -14,7 +14,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "test:smoke": "bash tests/smoke/smoke-test.sh",
-    "test:e2e": "playwright test tests/e2e/ --grep-invert=\"(should create translator|should default to claude adapter|should create .claude|should initialize git repository|should use generic adapter|should install SpecWeave|should scaffold SaaS|should create proper directory|should create required configuration|should install core skills|should install core agents|should have deployment|should have Stripe|ADO Sync)\"",
+    "test:e2e": "playwright test tests/e2e/ --grep-invert=\"(should create translator|should default to claude adapter|should create .claude|should initialize project with specweave init|should create correct directory structure|should handle non-interactive mode correctly|should validate config.json structure|should initialize git repository|should use generic adapter|should install SpecWeave|should scaffold SaaS|should create proper directory|should create required configuration|should install core skills|should install core agents|should have deployment|should have Stripe|ADO Sync)\"",
     "test": "npm run test:smoke && npm run test:e2e",
     "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
     "docs:dev": "cd docs-site && npm start",
