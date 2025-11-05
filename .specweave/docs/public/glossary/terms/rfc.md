@@ -321,7 +321,7 @@ RFC (WHAT + WHY)
 
 ```bash
 # Create new increment from RFC
-/specweave:inc "Implement authentication (RFC-0005)"
+/specweave:increment "Implement authentication (RFC-0005)"
 
 # PM agent:
 # - Reads RFC-0005 from .specweave/docs/internal/specs/spec-0005-authentication/

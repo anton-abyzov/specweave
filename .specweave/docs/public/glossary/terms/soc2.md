@@ -568,7 +568,7 @@ File: .specweave/increments/0020-siem-implementation/spec.md
 **SpecWeave Solution**:
 ```bash
 # Every backup test creates an increment with evidence
-/specweave:inc "Quarterly backup restoration test - Q2 2024"
+/specweave:increment "Quarterly backup restoration test - Q2 2024"
 
 # Spec.md documents procedure
 # Tasks.md includes test steps
@@ -605,7 +605,7 @@ Rollback: Plan documented in plan.md
 **SpecWeave Solution**:
 ```bash
 # Every incident = increment
-/specweave:inc "Incident 003: DDoS attack on API gateway"
+/specweave:increment "Incident 003: DDoS attack on API gateway"
 
 # Spec.md: What happened, impact, timeline
 # Plan.md: Mitigation steps, root cause
