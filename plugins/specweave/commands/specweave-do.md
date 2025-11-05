@@ -367,8 +367,8 @@ This will:
 
 Next steps:
 1. Run full test suite: npm test
-2. Validate increment: /validate 0001 --quality
-3. Close increment: /done 0001 (PM validates before closing)
+2. Validate increment: /specweave:validate 0001 --quality
+3. Close increment: /specweave:done 0001 (PM validates before closing)
 ```
 
 ---
@@ -531,7 +531,7 @@ Available increments:
   • 0002-core-enhancements (planned)
   • 0003-payment-processing (in-progress)
 
-Usage: /do <increment-id>
+Usage: /specweave:do <increment-id>
 ```
 
 ### Increment Not Planned

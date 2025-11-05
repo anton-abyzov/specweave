@@ -1,4 +1,4 @@
-# Implementation Workflow: The /do Command
+# Implementation Workflow: The /specweave:do Command
 
 The implementation phase is where specs and plans become **working code**—with SpecWeave handling the tedious parts automatically.
 
@@ -23,7 +23,7 @@ graph LR
 
 **Magic**: Auto-resumes from next incomplete task, updates docs automatically, validates continuously
 
-## The /do Command: Just Works!
+## The /specweave:do Command: Just Works!
 
 ```bash
 /specweave:do

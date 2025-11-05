@@ -177,8 +177,8 @@ Increments paused for **7+ days** trigger warnings in `/status`:
      ⚠️  STALE! Review or abandon?
 
 💡 Actions:
-   /resume 0007  # If unblocked
-   /abandon 0007 # If no longer needed
+   /specweave:resume 0007  # If unblocked
+   /specweave:abandon 0007 # If no longer needed
 ```
 
 ---

@@ -33,6 +33,7 @@ The increment-planner skill automates the creation of implementation plans for A
 - Constitutional compliance
 - Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks with test plans)
 - **v0.7.0+**: Test-Aware Planning (bidirectional AC↔Task↔Test linking)
+- **v0.8.0+**: Multi-Project Support (specs organized by project/team)
 
 ## Increment Types (v0.7.0+)
 
@@ -84,6 +85,34 @@ This skill activates automatically when users say:
 
 ---
 
+## 🆕 Multi-Project Support (v0.8.0+)
+
+**Key Changes**:
+- Specs are now organized by project: `.specweave/docs/internal/projects/{project-id}/specs/`
+- Use `ProjectManager` (from `src/core/project-manager.ts`) to get correct paths
+- Single project uses `projects/default/` automatically (transparent)
+- Multi-project mode allows multiple teams/repos
+
+**Path Resolution**:
+```typescript
+import { ProjectManager } from '../../core/project-manager';
+
+const projectManager = new ProjectManager(projectRoot);
+const activeProject = projectManager.getActiveProject();
+
+// Get correct paths for active project
+const specsPath = projectManager.getSpecsPath();  // projects/{activeProject.id}/specs/
+const modulesPath = projectManager.getModulesPath();  // projects/{activeProject.id}/modules/
+const teamPath = projectManager.getTeamPath();  // projects/{activeProject.id}/team/
+```
+
+**In PM Agent Instructions**:
+- DO NOT hardcode `.specweave/docs/internal/specs/`
+- USE ProjectManager to get correct path for active project
+- Specs go to: `{projectManager.getSpecsPath()}/spec-{number}-{name}.md`
+
+---
+
 ## ⚠️ CRITICAL: Living Documentation Workflow
 
 **MANDATORY**: Feature planner must orchestrate **BOTH** living docs and increment files.
@@ -114,7 +143,9 @@ Task(
   You MUST create living Spec (living docs - source of truth) AND optionally create increment spec.md:
 
   1. Spec (living docs - SOURCE OF TRUTH, permanent):
-     - Create .specweave/docs/internal/specs/spec-{number}-{name}/spec.md
+     - IMPORTANT: Use ProjectManager to get correct path for active project
+     - Create at: {projectManager.getSpecsPath()}/spec-{number}-{name}.md
+       (This resolves to projects/{activeProject}/specs/ automatically)
      - This is the COMPLETE, PERMANENT source of truth
      - Include ALL of:
        * User stories (US-001, US-002, etc.) with full details
@@ -236,12 +267,17 @@ STEP 5: Validate Living Docs and Increment Files
 
 #### Living Spec (Living Docs - Source of Truth) ✅
 ```
-.specweave/docs/internal/specs/
-└── spec-{number}-{name}/             # ← PM Agent (MANDATORY)
-    └── spec.md                      # COMPLETE user stories, AC, requirements
+.specweave/docs/internal/projects/{project-id}/specs/  # ← Multi-project (v0.8.0+)
+└── spec-{number}-{name}.md          # ← PM Agent (MANDATORY)
+                                     # COMPLETE user stories, AC, requirements
                                      # This is the PERMANENT source of truth
                                      # Can be linked to Jira/ADO/GitHub Issues
                                      # Persists after increment completes
+
+# Examples:
+# Single project: projects/default/specs/spec-001-user-auth.md
+# Multi-project: projects/web-app/specs/spec-001-user-auth.md
+#                projects/mobile/specs/spec-001-push-notifications.md
 ```
 
 #### Strategy Docs (Optional, High-Level) ⚠️

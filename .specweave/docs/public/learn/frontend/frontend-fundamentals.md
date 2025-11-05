@@ -2,7 +2,7 @@
 id: frontend-fundamentals
 title: Frontend Development Fundamentals
 sidebar_label: Frontend Fundamentals
-description: Comprehensive guide to modern frontend development including React, Next.js, state management, styling, testing, and deployment strategies.
+description: Comprehensive guide to modern frontend development including [React](/docs/glossary/terms/react), [Next.js](/docs/glossary/terms/nextjs), state management, styling, testing, and deployment strategies.
 keywords: [frontend, react, nextjs, javascript, typescript, components, state management, css, responsive design, accessibility]
 ---
 
@@ -15,7 +15,7 @@ Frontend development is the practice of creating the client-side of web applicat
 - **User Interface (UI)**: Visual elements (buttons, forms, navigation)
 - **User Experience (UX)**: How users interact with the application
 - **Client-Side Logic**: JavaScript code that runs in the browser
-- **API Communication**: Fetching and sending data to backend services
+- **[API](/docs/glossary/terms/api) Communication**: Fetching and sending data to backend services
 - **State Management**: Tracking application data and user interactions
 - **Performance**: Ensuring fast load times and smooth interactions
 
@@ -312,11 +312,11 @@ const sum = numbers.reduce((acc, n) => acc + n, 0);
 
 ## Modern Frontend Frameworks
 
-### React
+### [React](/docs/glossary/terms/react)
 
-React is the most popular frontend library, created by Facebook. It's component-based and uses a virtual DOM for efficient updates.
+[React](/docs/glossary/terms/react) is the most popular frontend library, created by Facebook. It's component-based and uses a virtual DOM for efficient updates.
 
-#### Why React is Most Popular
+#### Why [React](/docs/glossary/terms/react) is Most Popular
 
 - **Component-Based**: Reusable UI building blocks
 - **Virtual DOM**: Fast updates without direct DOM manipulation
@@ -452,18 +452,18 @@ function Counter({ value, onIncrement }) {
 - **Props**: Data passed from parent to child (read-only, flows down)
 - **State**: Component's own data (mutable, managed internally)
 
-### Next.js
+### [Next.js](/docs/glossary/terms/nextjs)
 
-Next.js is a React framework that adds server-side rendering, static site generation, and more.
+[Next.js](/docs/glossary/terms/nextjs) is a [React](/docs/glossary/terms/react) framework that adds server-side rendering, static site generation, and more.
 
-#### Why Next.js?
+#### Why [Next.js](/docs/glossary/terms/nextjs)?
 
-- **SEO-Friendly**: Server-side rendering improves search engine indexing
+- **SEO-Friendly**: Server-side rendering ([SSR](/docs/glossary/terms/ssr)) improves search engine indexing
 - **Fast Initial Load**: Pre-rendered HTML arrives instantly
 - **File-Based Routing**: No need for React Router configuration
-- **API Routes**: Backend endpoints in the same codebase
+- **[API](/docs/glossary/terms/api) Routes**: Backend endpoints in the same codebase
 - **Image Optimization**: Automatic image resizing and lazy loading
-- **Built-in TypeScript Support**: Zero configuration needed
+- **Built-in [TypeScript](/docs/glossary/terms/typescript) Support**: Zero configuration needed
 
 #### Next.js Example
 

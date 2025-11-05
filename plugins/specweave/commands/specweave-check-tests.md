@@ -384,7 +384,7 @@ if (hasTestsMd) {
 
 4. **PM Gate 2**: Part of increment closure
    ```bash
-   /done 0007
+   /specweave:done 0007
    # PM Agent runs /check-tests automatically
    # Verifies >80% coverage before closure
    ```

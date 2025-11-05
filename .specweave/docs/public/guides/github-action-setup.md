@@ -26,8 +26,8 @@ SpecWeave GitHub Actions integration brings **automated spec-driven development*
 - ✅ **Auto-generates increment structures** from issues (spec/plan/tasks/tests)
 - ✅ **Validates PRs against specifications** (spec alignment, test coverage)
 - ✅ **Prevents regressions** (brownfield protection - requires docs before modifications)
-- ✅ **Auto-updates documentation** (CLAUDE.md, API docs, changelog)
-- ✅ **Enforces test coverage** (TC-0001 traceability, skill tests, E2E tests)
+- ✅ **Auto-updates documentation** (CLAUDE.md, [API](/docs/glossary/terms/api) docs, changelog)
+- ✅ **Enforces test coverage** (TC-0001 traceability, skill tests, [E2E](/docs/glossary/terms/e2e) tests)
 - ✅ **Scans for security** (vulnerabilities, code security, compliance)
 - ✅ **Detects performance regressions** (compare baseline vs PR)
 - ✅ **Syncs external systems** (JIRA, Slack, Azure DevOps)
@@ -442,7 +442,7 @@ Label: feature
    - ✅ Code aligns with spec
    - ✅ Test coverage (TC-0001 traceability)
    - ✅ Skills have ≥3 test cases
-   - ✅ ADRs for architecture changes
+   - ✅ [ADRs](/docs/glossary/terms/adr) for architecture changes
 4. Posts review comment with findings
 5. Approves, requests changes, or blocks
 
@@ -455,7 +455,7 @@ Label: feature
 ### ✅ Passed Checks
 - Spec exists: docs/internal/strategy/auth/oauth-spec.md
 - Test coverage: 100% (TC-0001 through TC-0010 covered)
-- ADR exists: .specweave/docs/decisions/005-oauth-strategy.md
+- [ADR](/docs/glossary/terms/adr) exists: .specweave/docs/decisions/005-oauth-strategy.md
 
 ### ⚠️ Warnings
 - Performance: New database queries (review indexing)
@@ -992,10 +992,9 @@ jobs:
 
 ## Related Documentation
 
-- [CLAUDE-CODE-ACTION-INTEGRATION.md](../../../ai-logs/reports/CLAUDE-CODE-ACTION-INTEGRATION) - Complete integration analysis
-- [CLAUDE.md](../../../CLAUDE.md#agents-vs-skills-architecture) - SpecWeave development guide
-- [.specweave/config.yaml](../../config.yaml) - Configuration reference
-- [Troubleshooting Guide](/docs/glossary/terms/github-action-troubleshooting) - Common issues and solutions
+- [CLAUDE.md](https://github.com/anton-abyzov/specweave/blob/develop/CLAUDE.md) - SpecWeave development guide
+- Configuration reference - See `.specweave/config.json` in your project
+- GitHub Actions workflows - See `.github/workflows/` in the SpecWeave repository
 
 ---
 

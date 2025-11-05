@@ -512,7 +512,8 @@ Ask SpecWeave → Create agent → Use forever → Agent improves over time
 
 ## Related Documentation
 
-- [CLAUDE.md - Meta-Capability Section](../../../CLAUDE.md#meta-capability-the-self-extending-framework) - Development guide
+- [CLAUDE.md](https://github.com/anton-abyzov/specweave/blob/develop/CLAUDE.md) - Development guide for contributors
+- [Plugin Development](https://docs.claude.com/en/docs/claude-code/plugins) - Claude Code plugin system documentation
 - [Creating Custom Agents](/docs/glossary/terms/creating-custom-agents) - Step-by-step guide (coming soon)
 - [Creating Custom Skills](/docs/glossary/terms/creating-custom-skills) - Step-by-step guide (coming soon)
 

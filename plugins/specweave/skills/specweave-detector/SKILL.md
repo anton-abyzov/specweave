@@ -1,6 +1,6 @@
 ---
 name: specweave-detector
-description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. v0.3.8+ features PROACTIVE auto-detection - when in SpecWeave folder, product descriptions automatically trigger increment planning. Explicit slash commands still work (/inc, /do, /progress, /validate, /done, /specweave:sync-docs, /sync-github). Keywords slash commands, /inc, /increment, /do, /progress, /validate, /done, specweave commands, smart workflow, auto-detection, specweave folder.
+description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. v0.3.8+ features PROACTIVE auto-detection - when in SpecWeave folder, product descriptions automatically trigger increment planning. Explicit slash commands still work (/inc, /specweave:do, /specweave:progress, /specweave:validate, /specweave:done, /specweave:sync-docs, /sync-github). Keywords slash commands, /specweave:increment, /increment, /specweave:do, /specweave:progress, /specweave:validate, /specweave:done, specweave commands, smart workflow, auto-detection, specweave folder.
 ---
 
 # SpecWeave - Smart Workflow with Auto-Detection
@@ -86,7 +86,7 @@ npx specweave init my-saas
 /do
 # Auto-finds active increment 0002
 
-# Repeat: /inc → /do → /progress → /inc (auto-closes) → /do...
+# Repeat: /specweave:increment → /specweave:do → /specweave:progress → /specweave:increment (auto-closes) → /specweave:do...
 ```
 
 ## Command Details
@@ -329,7 +329,7 @@ User: "What SpecWeave commands are available?"
 **Command syntax**:
 ```
 User: "How do I create a new increment?"
-→ Claude explains /inc command with examples
+→ Claude explains /specweave:increment command with examples
 ```
 
 ## Documentation

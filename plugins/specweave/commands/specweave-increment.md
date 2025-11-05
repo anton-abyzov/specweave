@@ -199,11 +199,11 @@ if (activeCount >= limits.hardCap) {
 
   console.log(chalk.blue('\n💡 You MUST complete or pause existing work first:\n'));
   console.log(chalk.white('1️⃣  Complete an increment:'));
-  console.log(chalk.dim('   /done <id>\n'));
+  console.log(chalk.dim('   /specweave:done <id>\n'));
   console.log(chalk.white('2️⃣  Pause an increment:'));
-  console.log(chalk.dim('   /pause <id> --reason="..."\n'));
+  console.log(chalk.dim('   /specweave:pause <id> --reason="..."\n'));
   console.log(chalk.white('3️⃣  Check status:'));
-  console.log(chalk.dim('   /status\n'));
+  console.log(chalk.dim('   /specweave:status\n'));
 
   console.log(chalk.yellow('📝 Multiple hotfixes? Combine them into ONE increment!'));
   console.log(chalk.dim('   Example: 0009-security-fixes (SQL + XSS + CSRF)\n'));
@@ -267,7 +267,7 @@ if (activeCount >= limits.maxActiveIncrements) {
 
     if (choice === 'complete') {
       console.log(chalk.green('\n✅ Smart choice! Finish current work first.\n'));
-      console.log(chalk.dim('Use /do to continue work\n'));
+      console.log(chalk.dim('Use /specweave:do to continue work\n'));
       process.exit(0);
     } else if (choice === 'pause') {
       console.log(chalk.blue('\n⏸️  Pausing current increment...\n'));
@@ -311,13 +311,13 @@ Active increments:
 💡 You MUST complete or pause existing work first:
 
 1️⃣  Complete an increment:
-   /done <id>
+   /specweave:done <id>
 
 2️⃣  Pause an increment:
-   /pause <id> --reason="..."
+   /specweave:pause <id> --reason="..."
 
 3️⃣  Check status:
-   /status
+   /specweave:status
 
 📝 Multiple hotfixes? Combine them into ONE increment!
    Example: 0009-security-fixes (SQL + XSS + CSRF)
@@ -353,7 +353,7 @@ Choose an option: 1
 
 ✅ Smart choice! Finish current work first.
 
-Use /do to continue work
+Use /specweave:do to continue work
 ```
 
 **Example Output - Emergency Interrupt (hotfix)**:
@@ -610,7 +610,7 @@ This will:
 
 Next steps:
 1. Review the increment plan and strategic docs
-2. Start implementation: /do 0003
+2. Start implementation: /specweave:do 0003
 3. (Optional) Sync to GitHub: /sync-github
     ```
 

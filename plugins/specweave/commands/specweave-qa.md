@@ -3,7 +3,7 @@ name: specweave:qa
 description: Run quality assessment on a SpecWeave increment with risk scoring and quality gate decisions
 ---
 
-# /qa - Quality Assessment Command
+# /specweave:qa - Quality Assessment Command
 
 **IMPORTANT**: You MUST invoke the CLI `specweave qa` command using the Bash tool. The slash command provides guidance and orchestration only.
 
@@ -242,4 +242,4 @@ When `--ci` flag used:
 ## Example Session
 
 ```
-User: /qa 0008
+User: /specweave:qa 0008

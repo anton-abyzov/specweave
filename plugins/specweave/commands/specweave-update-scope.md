@@ -80,7 +80,7 @@ const active = await MetadataManager.getActive();
 
 if (active.length === 0) {
   console.error('❌ No active increment found');
-  console.error('   Run /status to check increment status');
+  console.error('   Run /specweave:status to check increment status');
   process.exit(1);
 }
 
@@ -107,7 +107,7 @@ const reportPath = `.specweave/increments/${increment}/reports/COMPLETION-REPORT
 if (!fs.existsSync(reportPath)) {
   console.error('❌ Completion report not found');
   console.error(`   Expected: ${reportPath}`);
-  console.error('   Run /inc to create increment properly');
+  console.error('   Run /specweave:increment to create increment properly');
   process.exit(1);
 }
 

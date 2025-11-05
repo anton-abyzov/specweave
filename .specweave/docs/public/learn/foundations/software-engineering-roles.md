@@ -745,14 +745,14 @@ Acceptance Criteria IDs (AC-US1-01) enable traceability:
 3. Try `/specweave:increment "simple feature"` to see PM Agent in action
 
 **Intermediate**:
-1. Learn [Planning Workflow](../../workflows/planning.md) (PM + Architect + Tech Lead)
-2. Understand [Test-Aware Planning](../../guides/tdd-workflow.md) (TDD Orchestrator + Test-Aware Planner)
-3. Explore [Quality Gates](../../reference/quality-gates.md) (QA Lead + Security + Performance)
+1. **Planning Workflow** (coming soon) - PM + Architect + Tech Lead collaboration
+2. **Test-Aware Planning** (coming soon) - TDD Orchestrator + Test-Aware Planner workflow
+3. **Quality Gates** (coming soon) - QA Lead + Security + Performance validation
 
 **Advanced**:
-1. Study [Agent Orchestration](../../guides/agent-orchestration.md) (How agents collaborate)
+1. **Agent Orchestration** (coming soon) - How agents collaborate on complex features
 2. Learn [Living Documentation](../../guides/core-concepts/living-documentation.md) (Docs Writer + Sync)
-3. Read [Multilingual Workflow](../../guides/multilingual-guide.md) (Translator Agent)
+3. Read [Multilingual Workflow](../../guides/multilingual-guide.md) (Translator Agent for international teams)
 
 ---
 

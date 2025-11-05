@@ -247,7 +247,7 @@ Answer: Read living docs
 ## Next Steps
 
 - [Creating Your First Increment](/docs/workflows/planning)
-- [The /do Workflow](/docs/workflows/implementation)
+- [The /specweave:do Workflow](/docs/workflows/implementation)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---

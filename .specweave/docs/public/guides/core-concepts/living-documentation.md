@@ -464,7 +464,7 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 ## Next Steps
 
 - [Understanding Increments](/docs/guides/core-concepts/what-is-an-increment)
-- [The /do Workflow](/docs/workflows/implementation)
+- [The /specweave:do Workflow](/docs/workflows/implementation)
 - [Hook System](/docs/guides/advanced/hooks)
 
 ---

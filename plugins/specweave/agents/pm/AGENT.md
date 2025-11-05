@@ -147,7 +147,8 @@ if (shouldSuggestLivingDocs) {
   console.log('  ✅ Complete requirements in one place');
   console.log('  ✅ Increment specs reference it (avoid duplication)');
   console.log('');
-  console.log('Location: .specweave/docs/internal/specs/spec-####-{name}/spec.md');
+  console.log('Location: .specweave/docs/internal/specs/spec-####-{name}.md');
+  console.log('⚠️  CRITICAL: Specs are FILES, not directories!');
   console.log('');
   console.log('💡 See FAQ: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature');
   console.log('');
@@ -232,7 +233,9 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ### Output 1: Spec (Living Docs - Source of Truth, Permanent) ✅
 
-**Location**: `.specweave/docs/internal/specs/spec-{number}-{name}/spec.md`
+**Location**: `.specweave/docs/internal/specs/spec-{number}-{name}.md`
+
+**CRITICAL**: Specs are **FILES**, not directories! The spec file itself contains all content.
 
 **Purpose**: Complete, detailed requirements specification - PERMANENT source of truth
 
@@ -442,7 +445,7 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 ```markdown
 # Feature: [Name]
 
-**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/spec-{number}-{name}/spec.md)
+**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/spec-{number}-{name}.md)
 
 **Quick Summary**:
 - US-001: View current weather
@@ -1283,7 +1286,7 @@ Total estimated effort to fix: X hours
 Action Plan:
   1. [Step-by-step plan to address blockers]
   2. [...]
-  3. Re-run /done {id} for validation
+  3. Re-run /specweave:done {id} for validation
 
 Increment remains: in-progress
 ```

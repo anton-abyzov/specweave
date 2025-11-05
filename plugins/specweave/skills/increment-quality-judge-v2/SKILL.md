@@ -1,6 +1,6 @@
 ---
 name: increment-quality-judge-v2
-description: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /qa command.
+description: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /specweave:qa command.
 allowed-tools: Read, Grep, Glob
 ---
 
@@ -303,7 +303,7 @@ Would you like to:
 ### Quick Mode (Default)
 
 ```
-User: /qa 0001
+User: /specweave:qa 0001
 
 Step 1: Rule-based validation (120 checks) - FREE, FAST
 ├── If FAILED → Stop, show errors
@@ -320,7 +320,7 @@ Output: Enhanced report with risks and gate decision
 ### Pre-Implementation Mode
 
 ```
-User: /qa 0001 --pre
+User: /specweave:qa 0001 --pre
 
 Checks:
 ✅ Spec quality (clarity, testability, completeness)
@@ -334,7 +334,7 @@ Gate decision before implementation starts
 ### Quality Gate Mode
 
 ```
-User: /qa 0001 --gate
+User: /specweave:qa 0001 --gate
 
 Comprehensive checks:
 ✅ All pre-implementation checks
@@ -496,4 +496,4 @@ gate_decision = decide({
 
 **Version**: 2.0.0
 **Since**: v0.8.0
-**Related**: /qa command, QAOrchestrator agent (v0.9.0)
+**Related**: /specweave:qa command, QAOrchestrator agent (v0.9.0)

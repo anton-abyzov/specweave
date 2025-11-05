@@ -295,11 +295,11 @@ swnext                    # Instead of /specweave next
 ```yaml
 # .claude/config.yaml
 command_aliases:
-  /inc: /specweave inc
-  /do: /specweave do
-  /next: /specweave next
-  /done: /specweave done
-  /progress: /specweave progress
+  /specweave:increment: /specweave inc
+  /specweave:do: /specweave do
+  /specweave:next: /specweave next
+  /specweave:done: /specweave done
+  /specweave:progress: /specweave progress
 ```
 
 **Usage**:

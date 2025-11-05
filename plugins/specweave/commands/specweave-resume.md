@@ -173,7 +173,7 @@ When you run `/status`, stale paused increments trigger suggestions:
   🔄 0006-stripe [feature]
      Paused: 3 days ago
      Reason: Waiting for API keys
-     💡 Check if API keys arrived → /resume 0006
+     💡 Check if API keys arrived → /specweave:resume 0006
 
   🔄 0007-refactor [refactor]
      Paused: 10 days ago
