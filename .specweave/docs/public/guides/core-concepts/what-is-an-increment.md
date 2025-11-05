@@ -126,7 +126,7 @@ SpecWeave supports different work types:
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning: /specweave:inc "feature"
+    [*] --> Planning: /specweave:increment "feature"
     Planning --> Active: /specweave:do
     Active --> Active: Complete tasks
     Active --> Paused: /specweave:pause
