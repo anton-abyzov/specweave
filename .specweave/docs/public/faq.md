@@ -431,7 +431,7 @@ cd my-project
 specweave init
 
 # 3. Create your first increment
-/specweave:inc "Add user registration"
+/specweave:increment "Add user registration"
 
 # Result: spec.md, plan.md, tasks.md created
 # No living docs spec needed for first feature!
@@ -482,7 +482,7 @@ specweave init
 # Don't duplicate - link to existing documentation!
 
 # Step 3: Create increments for NEW work
-/specweave:inc "Enhance authentication"
+/specweave:increment "Enhance authentication"
 
 # Your existing docs remain unchanged
 # SpecWeave overlays on top
