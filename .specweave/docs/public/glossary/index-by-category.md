@@ -10,13 +10,13 @@ Explore technical terms organized by related concepts.
 
 ---
 
-## 🏗️ [Architecture & Design](./categories/architecture)
+## 🏗️ [Architecture & Design](./categories/architecture-category)
 
 Understanding how systems are structured and decisions are made.
 
 - [ADR (Architecture Decision Record)](./terms/adr) - Document capturing architectural decisions
 - [RFC (Request for Comments)](./terms/rfc) - Feature specification document
-- [HLD (High-Level Design)](./terms/hld) - System architecture document
+- HLD (High-Level Design) - System architecture document
 - [LLD (Low-Level Design)](./terms/lld) - Detailed implementation design
 - [DDD (Domain-Driven Design)](./terms/ddd) - Business-focused software design
 - [Microservices](./terms/microservices) - Independent service architecture
@@ -24,11 +24,11 @@ Understanding how systems are structured and decisions are made.
 - [Design Patterns](./terms/design-patterns) - Reusable solution templates
 - [SOLID Principles](./terms/solid) - Object-oriented design principles
 
-**[Learn More →](/docs/learn/foundations/architecture-patterns)**
+**Learn More →**
 
 ---
 
-## 🚀 [Infrastructure & Operations](./categories/infrastructure)
+## 🚀 [Infrastructure & Operations](./categories/infrastructure-category)
 
 Managing servers, deployments, and production systems.
 
@@ -39,57 +39,57 @@ Managing servers, deployments, and production systems.
 - [Container](./terms/container) - Portable application package
 - [CI/CD](./terms/ci-cd) - Automated build and deployment
 - [GitHub Actions](./terms/github-actions) - CI/CD automation
-- [Observability](./terms/observability) - System health monitoring
+- Observability - System health monitoring
 - [Load Balancing](./terms/load-balancing) - Traffic distribution
 - [SLI, SLO, SLA](./terms/sli-slo-sla) - Service level metrics
 
-**[Learn More →](/docs/learn/infrastructure/iac-fundamentals)**
+**Learn More →**
 
 ---
 
-## 🔌 [Backend Development](./categories/backend)
+## 🔌 [Backend Development](./categories/backend-category)
 
 Server-side logic, APIs, and databases.
 
-- [Backend](./terms/backend) - Server-side application
+- Backend - Server-side application
 - [API (Application Programming Interface)](./terms/api) - Software communication interface
 - [REST](./terms/rest) - API architectural style
 - [GraphQL](./terms/graphql) - Query language for APIs
-- [gRPC](./terms/grpc) - High-performance RPC framework
+- gRPC - High-performance RPC framework
 - [Node.js](./terms/nodejs) - JavaScript backend runtime
-- [Express](./terms/express) - Minimal Node.js framework
+- Express - Minimal Node.js framework
 - [NestJS](./terms/nestjs) - Progressive Node.js framework
-- [API Gateway](./terms/api-gateway) - Microservices entry point
+- API Gateway - Microservices entry point
 - [ORM (Object-Relational Mapping)](./terms/orm) - Database abstraction
 - [PostgreSQL](./terms/postgresql) - Relational database
 - [Message Queue](./terms/message-queue) - Async communication
 
-**[Learn More →](/docs/learn/backend/backend-fundamentals)**
+**Learn More →**
 
 ---
 
-## 🎨 [Frontend Development](./categories/frontend)
+## 🎨 [Frontend Development](./categories/frontend-category)
 
 User interfaces, frameworks, and client-side code.
 
-- [Frontend](./terms/frontend) - Client-side UI
+- Frontend - Client-side UI
 - [React](./terms/react) - UI library
 - [Next.js](./terms/nextjs) - React framework with SSR/SSG
 - [Angular](./terms/angular) - TypeScript frontend framework
-- [Vue](./terms/vue) - Progressive JavaScript framework
+- Vue - Progressive JavaScript framework
 - [TypeScript](./terms/typescript) - Typed JavaScript
 - [SPA (Single Page Application)](./terms/spa) - Client-rendered app
 - [SSR (Server-Side Rendering)](./terms/ssr) - Server-rendered pages
 - [SSG (Static Site Generation)](./terms/ssg) - Pre-built pages
 - [Redux](./terms/redux) - State management
-- [Component Library](./terms/component-library) - Reusable UI components
+- Component Library - Reusable UI components
 - [Design System](./terms/design-system) - UI/UX guidelines
 
-**[Learn More →](/docs/learn/frontend/frontend-fundamentals)**
+**Learn More →**
 
 ---
 
-## ✅ [Testing & Quality](./categories/testing)
+## ✅ [Testing & Quality](./categories/testing-category)
 
 Ensuring code quality through automated testing.
 
@@ -105,33 +105,33 @@ Ensuring code quality through automated testing.
 - [Playwright](./terms/playwright) - E2E testing framework
 - [Jest](./terms/jest) - JavaScript testing framework
 
-**[Learn More →](/docs/learn/testing/testing-fundamentals)**
+**Learn More →**
 
 ---
 
-## 🛠️ [DevOps & Tools](./categories/devops)
+## 🛠️ [DevOps & Tools](./categories/devops-category)
 
 Development workflows, version control, and automation.
 
 - [Git](./terms/git) - Version control system
-- [GitHub](./terms/github) - Git hosting platform
-- [Pull Request (PR)](./terms/pull-request) - Proposed code changes
+- GitHub - Git hosting platform
+- Pull Request (PR) - Proposed code changes
 - [Branching Strategy](./terms/branching-strategy) - Git workflow
 - [Code Review](./terms/code-review) - Peer review process
 - [Semantic Versioning (SemVer)](./terms/semver) - Version numbering
 - [Changelog](./terms/changelog) - Version history
-- [Container Registry](./terms/container-registry) - Image storage
+- Container Registry - Image storage
 - [Feature Flags](./terms/feature-flags) - Toggle features on/off
 
 **[Learn More →](/docs/workflows/overview)**
 
 ---
 
-## 👥 [Collaboration & Management](./categories/collaboration)
+## 👥 [Collaboration & Management](./categories/collaboration-category)
 
 Team workflows, project management, and agile practices.
 
-- [Agile](./terms/agile) - Iterative development methodology
+- Agile - Iterative development methodology
 - [Scrum](./terms/scrum) - Agile framework with sprints
 - [Sprint](./terms/sprint) - Fixed time-box (1-4 weeks)
 - [User Story](./terms/user-story) - Feature from user perspective
@@ -147,14 +147,14 @@ Team workflows, project management, and agile practices.
 
 ---
 
-## 🔒 [Security & Compliance](./categories/security)
+## 🔒 [Security & Compliance](./categories/security-category)
 
 Protecting applications and data.
 
 - [OWASP Top 10](./terms/owasp) - Common security vulnerabilities
 - [Authentication](./terms/authentication) - Verifying identity
 - [Authorization](./terms/authorization) - Access control
-- [JWT (JSON Web Token)](./terms/jwt) - Auth token standard
+- JWT (JSON Web Token) - Auth token standard
 - [OAuth2](./terms/oauth2) - Authorization framework
 - [HTTPS](./terms/https) - Secure HTTP
 - [XSS (Cross-Site Scripting)](./terms/xss) - Security vulnerability
@@ -164,11 +164,11 @@ Protecting applications and data.
 
 ---
 
-## ⚡ [Performance & Scalability](./categories/performance)
+## ⚡ [Performance & Scalability](./categories/performance-category)
 
 Optimizing speed and handling growth.
 
-- [Caching](./terms/caching) - Storing frequently used data
+- Caching - Storing frequently used data
 - [CDN (Content Delivery Network)](./terms/cdn) - Distributed content
 - [Horizontal Scaling](./terms/horizontal-scaling) - Adding more servers
 - [Vertical Scaling](./terms/vertical-scaling) - Bigger servers
@@ -177,7 +177,7 @@ Optimizing speed and handling growth.
 
 ---
 
-## 🤖 [ML/AI](./categories/ml-ai)
+## 🤖 [ML/AI](./categories/ml-ai-category)
 
 Machine learning and AI integration.
 
@@ -188,7 +188,7 @@ Machine learning and AI integration.
 - [TensorFlow](./terms/tensorflow) - ML framework
 - [PyTorch](./terms/pytorch) - ML framework
 
-**[Learn More →](/docs/learn/ml-ai/ml-fundamentals)**
+**Learn More →**
 
 ---
 

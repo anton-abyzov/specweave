@@ -1,7 +1,7 @@
 # Brownfield Development
 
 **Category**: Development Methodology
-**Related Terms**: [Greenfield](./greenfield.md), Legacy Code, Technical Debt, Refactoring, Migration
+**Related Terms**: [Greenfield](/docs/glossary/terms/greenfield), Legacy Code, Technical Debt, Refactoring, Migration
 
 ---
 
@@ -181,7 +181,7 @@ graph LR
    - Performance problems (users leaving)
    - Cost of maintaining exceeds rewrite cost
 
-**In these cases**: Consider [Greenfield](./greenfield.md) rewrite with proper planning.
+**In these cases**: Consider [Greenfield](/docs/glossary/terms/greenfield) rewrite with proper planning.
 
 ---
 
@@ -273,8 +273,8 @@ npx specweave init . --brownfield
 # - analysis-report.md (migration summary)
 
 # Developer now has:
-# - Complete architecture overview (.specweave/docs/internal/architecture/hld-system.md)
-# - All ADRs (.specweave/docs/internal/architecture/adr/0001-xxx.md)
+# - Complete architecture overview (.specweave/docs/internal/architecture/hld-system)
+# - All ADRs (.specweave/docs/internal/architecture/adr/0001-xxx)
 # - Operational runbooks (.specweave/docs/internal/operations/)
 # - Living documentation (stays in sync with code)
 ```
@@ -861,12 +861,12 @@ cp CLAUDE.md CLAUDE.md.backup
 
 ## Related Documentation
 
-- [Greenfield Development](./greenfield.md) - Starting projects from scratch
-- [Technical Debt](./technical-debt.md) - Understanding and managing debt
-- [Legacy Code](./legacy-code.md) - Working with old codebases
-- [Refactoring Strategies](./refactoring.md) - Improving existing code
-- [Migration Patterns](./migration.md) - Moving between architectures
-- [SpecWeave Brownfield Guide](../../guides/brownfield-integration.md) - Detailed brownfield setup
+- [Greenfield Development](/docs/glossary/terms/greenfield) - Starting projects from scratch
+- Technical Debt - Understanding and managing debt
+- [Legacy Code](/docs/glossary/terms/legacy-code) - Working with old codebases
+- [Refactoring Strategies](/docs/glossary/terms/refactoring) - Improving existing code
+- [Migration Patterns](/docs/glossary/terms/migration) - Moving between architectures
+- [SpecWeave Brownfield Guide](../../guides/brownfield-integration) - Detailed brownfield setup
 
 ---
 

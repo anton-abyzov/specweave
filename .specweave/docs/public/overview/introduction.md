@@ -119,8 +119,8 @@ Four levels of testing with full traceability:
 
 ### Use Cases
 
-- **[Greenfield](/docs/glossary/terms/[greenfield](/docs/glossary/terms/greenfield)) projects**: Start with comprehensive specs (500-600+ pages for enterprise)
-- **[Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) projects**: Document existing code before modification
+- **[Greenfield](/docs/glossary/terms/greenfield) projects**: Start with comprehensive specs (500-600+ pages for enterprise)
+- **[Brownfield](/docs/glossary/terms/brownfield) projects**: Document existing code before modification
 - **Iterative development**: Build documentation gradually (like Microsoft)
 - **Compliance-heavy**: Maintain audit trails and traceability
 

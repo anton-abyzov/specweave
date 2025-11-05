@@ -136,7 +136,7 @@ SpecWeave: 🤖 Implementing based on specifications...
 - No drift, no surprises
 - Compliance-ready ([HIPAA](/docs/glossary/terms/hipaa), [SOC 2](/docs/glossary/terms/soc2), [FDA](/docs/glossary/terms/fda))
 
-### 5. [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Support
+### 5. [Brownfield](/docs/glossary/terms/brownfield) Support
 - Intelligently onboard existing projects
 - Merge existing documentation
 - Generate retroactive architecture docs
@@ -210,9 +210,9 @@ integrations:
 
 ## Next Steps
 
-1. ✅ Read the [Installation Guide](installation.md) for detailed setup options
+1. ✅ Read the [Installation Guide](installation) for detailed setup options
 2. ✅ Review `CLAUDE.md` in your project
-3. ✅ Explore [Key Features](../../overview/features.md)
+3. ✅ Explore [Key Features](../../overview/features)
 4. ✅ Check out [Example Projects](../examples/)
 
 ## Troubleshooting

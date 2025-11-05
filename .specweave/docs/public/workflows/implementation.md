@@ -206,7 +206,7 @@ if (!chatId || !userId) {
 
 ```bash
 # Task automatically marked complete when:
-# 1. You signal completion (type "done" or mark in tasks.md)
+# 1. You signal completion (type "done" or mark in tasks)
 # 2. Tests pass
 # 3. Code committed
 
@@ -566,8 +566,8 @@ $ git add .
 $ git commit -m "feat(chat): implement typing indicator manager..."
 
 🔄 Post-task hook running...
-  ✅ Updated living docs (strategy/chat.md)
-  ✅ Updated architecture (hld-chat.md)
+  ✅ Updated living docs (strategy/chat)
+  ✅ Updated architecture (hld-chat)
   ✅ Regenerated diagrams (chat-components.mmd)
   ✅ Committed doc changes
 

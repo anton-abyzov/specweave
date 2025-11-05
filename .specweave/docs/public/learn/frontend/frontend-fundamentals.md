@@ -2183,14 +2183,12 @@ SpecWeave helps you build frontend applications with:
 
 ## Next Steps
 
-- [Backend Development Fundamentals](./backend-fundamentals.md) - Learn server-side development
-- [Testing Strategy Guide](../../internal/delivery/guides/testing-strategy.md) - Comprehensive testing approach
-- [Accessibility Best Practices](../glossary/terms/accessibility.md) - A11y deep dive
-- [Performance Optimization](../../internal/operations/performance-tuning.md) - Advanced performance techniques
-- [React](../glossary/terms/react.md) - React glossary term
-- [Next.js](../glossary/terms/nextjs.md) - Next.js glossary term
-- [TypeScript](../glossary/terms/typescript.md) - TypeScript glossary term
+- [Backend Development Fundamentals](/docs/glossary/terms/backend-fundamentals) - Learn server-side development
+- [Accessibility Best Practices](../glossary/terms/accessibility) - A11y deep dive
+- [React](../glossary/terms/react) - React glossary term
+- [Next.js](../glossary/terms/nextjs) - Next.js glossary term
+- [TypeScript](../glossary/terms/typescript) - TypeScript glossary term
 
 ---
 
-**Related Glossary Terms**: [React](../glossary/terms/react.md), [TypeScript](../glossary/terms/typescript.md), [Responsive Design](../glossary/terms/responsive-design.md), [Accessibility](../glossary/terms/accessibility.md), [API](../glossary/terms/api.md)
+**Related Glossary Terms**: [React](../glossary/terms/react), [TypeScript](../glossary/terms/typescript), [Responsive Design](../glossary/terms/responsive-design), [Accessibility](../glossary/terms/accessibility), [API](../glossary/terms/api)

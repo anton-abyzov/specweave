@@ -18,7 +18,7 @@ Backend development terms cover server-side logic, API design, database manageme
 
 ### API Design
 
-**[REST API](/docs/glossary/terms/rest-api)**
+**REST API**
 - Architectural style for web services
 - Uses HTTP methods (GET, POST, PUT, DELETE)
 - Stateless, cacheable, uniform interface
@@ -30,7 +30,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Single endpoint, strongly typed
 - When to use: complex data relationships, mobile apps
 
-**[API Gateway](/docs/glossary/terms/api-gateway)**
+**API Gateway**
 - Single entry point for all client requests
 - Handles: routing, authentication, rate limiting
 - Tools: Kong, AWS API Gateway, Nginx
@@ -44,7 +44,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Frameworks: Express, Fastify, NestJS
 - SpecWeave plugin: `specweave-nodejs-backend` (planned)
 
-**[Express.js](/docs/glossary/terms/express)**
+**Express.js**
 - Minimal Node.js web framework
 - Middleware-based architecture
 - Most popular Node.js framework
@@ -314,7 +314,7 @@ Creates a new order.
 - Integration: POST /api/orders endpoint
 - E2E: Full order flow (create, verify, cancel)
 
-## Test Plan (Embedded in tasks.md)
+## Test Plan (Embedded in tasks)
 
 **Given** user with valid cart → **When** POST /api/orders → **Then** order created + inventory updated
 
@@ -393,18 +393,18 @@ Backend increments include embedded tests:
 
 ## Related Categories
 
-- **[Architecture & Design](/docs/glossary/categories/architecture)** - System architecture patterns
-- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure)** - Deployment and scaling
-- **[Testing & Quality](/docs/glossary/categories/testing)** - API testing strategies
+- **[Architecture & Design](/docs/glossary/categories/architecture-category)** - System architecture patterns
+- **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Deployment and scaling
+- **[Testing & Quality](/docs/glossary/categories/testing-category)** - API testing strategies
 
 ---
 
 ## Learn More
 
 ### Guides
-- [REST API Design Best Practices (coming soon)](/docs/learn/foundations/rest-api)
-- [Database Schema Design (coming soon)](/docs/learn/foundations/database-design)
-- [Microservices Architecture (coming soon)](/docs/learn/foundations/microservices)
+- REST API Design Best Practices (coming soon)
+- Database Schema Design (coming soon)
+- Microservices Architecture (coming soon)
 
 ### Books
 - "Designing Data-Intensive Applications" by Martin Kleppmann

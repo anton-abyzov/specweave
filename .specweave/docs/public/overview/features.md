@@ -173,7 +173,7 @@ User: "Create authentication system"
    - Technology-agnostic validation
    - Linked to user stories
 
-2. **Embedded Test Plans** (tasks.md)
+2. **Embedded Test Plans** (tasks)
    - [BDD](/docs/glossary/terms/bdd) format (Given/When/Then) per task
    - Maps AC-IDs to test implementations
    - Coverage targets (80-90% per task)
@@ -286,9 +286,9 @@ Prevent context-switching:
 - Issues ↔ RFCs/Tasks
 - Checkable subtasks
 
-## 🏢 [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Excellence (The Hardest Problem Solved)
+## 🏢 [Brownfield](/docs/glossary/terms/brownfield) Excellence (The Hardest Problem Solved)
 
-### Why [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) is Most Complicated
+### Why [Brownfield](/docs/glossary/terms/brownfield) is Most Complicated
 
 Brownfield projects are the **ultimate challenge** in software development:
 
@@ -349,7 +349,7 @@ Create comprehensive architecture for **existing systems** without disrupting pr
 
 #### Architecture Decision Records (ADRs)
 
-- **[ADR](/docs/glossary/terms/adr)-0001**: Why we chose [JWT](/docs/glossary/terms/jwt) over sessions
+- **[ADR](/docs/glossary/terms/adr)-0001**: Why we chose JWT over sessions
 
 - **ADR-0002**: OAuth 2.0 provider selection rationale
 
@@ -469,7 +469,7 @@ Before modifying **any existing code**, SpecWeave enforces safety:
    - Baseline tests catch regressions
    - Living docs stay current
 
-### Real-World [Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) Scenario
+### Real-World [Brownfield](/docs/glossary/terms/brownfield) Scenario
 
 **Before SpecWeave:**
 ```
@@ -516,7 +516,7 @@ npx specweave init .
 
 ### Compliance and Audit Trail
 
-[Brownfield](/docs/glossary/terms/[brownfield](/docs/glossary/terms/brownfield)) + SpecWeave = **Compliance-Ready**
+[Brownfield](/docs/glossary/terms/brownfield) + SpecWeave = **Compliance-Ready**
 
 **Perfect for regulated industries:**
 

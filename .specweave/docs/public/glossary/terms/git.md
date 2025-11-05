@@ -751,11 +751,11 @@ git cherry-pick abc123
 
 ## Related Concepts
 
-- [GitHub Actions](./github-actions.md) - CI/CD automation with Git
-- [Pull Request](./pull-request.md) - Code review workflow
-- [CI/CD](./ci-cd.md) - Automated pipelines triggered by Git
-- [Branching Strategy](./branching-strategy.md) - Git workflow patterns
-- [Version Control](./version-control.md) - General VCS concepts
+- [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation with Git
+- Pull Request - Code review workflow
+- [CI/CD](/docs/glossary/terms/ci-cd) - Automated pipelines triggered by Git
+- [Branching Strategy](/docs/glossary/terms/branching-strategy) - Git workflow patterns
+- [Version Control](/docs/glossary/terms/version-control) - General VCS concepts
 
 ## Resources
 

@@ -623,7 +623,7 @@ steps:
 - AC-US4-01: Production requires manual approval
 ```
 
-**Test Plan** (embedded in tasks.md):
+**Test Plan** (embedded in tasks):
 ```markdown
 ## T-001: Create CI Workflow
 
@@ -734,12 +734,12 @@ After CI/CD setup, update docs:
 
 ## Related Concepts
 
-- [GitHub Actions](./github-actions.md) - GitHub's CI/CD platform
-- [Docker](./docker.md) - Container builds in pipelines
-- [Kubernetes](./kubernetes.md) - Deployment target
-- [Git](./git.md) - Version control triggering pipelines
-- [Testing](./testing.md) - Automated tests in CI
-- [DevOps](./devops.md) - CI/CD as DevOps practice
+- [GitHub Actions](/docs/glossary/terms/github-actions) - GitHub's CI/CD platform
+- [Docker](/docs/glossary/terms/docker) - Container builds in pipelines
+- [Kubernetes](/docs/glossary/terms/kubernetes) - Deployment target
+- [Git](/docs/glossary/terms/git) - Version control triggering pipelines
+- Testing - Automated tests in CI
+- [DevOps](/docs/glossary/terms/devops) - CI/CD as DevOps practice
 
 ## Resources
 

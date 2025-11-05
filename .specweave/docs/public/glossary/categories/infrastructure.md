@@ -60,7 +60,7 @@ Infrastructure and operations terms cover the deployment, scaling, monitoring, a
 
 ### Monitoring & Observability
 
-**[Observability](/docs/glossary/terms/observability)**
+**Observability**
 - Understanding system behavior from external outputs
 - Three pillars: logs, metrics, traces
 - Tools: Prometheus, Grafana, Datadog
@@ -277,8 +277,8 @@ Typical infrastructure increments in SpecWeave:
 
 ## Related Categories
 
-- **[Architecture & Design](/docs/glossary/categories/architecture)** - System design decisions
-- **[DevOps & Tools](/docs/glossary/categories/devops)** - Development workflows
+- **[Architecture & Design](/docs/glossary/categories/architecture-category)** - System design decisions
+- **[DevOps & Tools](/docs/glossary/categories/devops-category)** - Development workflows
 - **[Security & Compliance](/docs/glossary/categories/security)** - Production security
 
 ---
@@ -286,9 +286,9 @@ Typical infrastructure increments in SpecWeave:
 ## Learn More
 
 ### Guides
-- [Kubernetes Fundamentals (coming soon)](/docs/learn/foundations/kubernetes)
-- [Infrastructure as Code with Terraform (coming soon)](/docs/learn/foundations/terraform)
-- [CI/CD Best Practices (coming soon)](/docs/learn/foundations/ci-cd)
+- Kubernetes Fundamentals (coming soon)
+- Infrastructure as Code with Terraform (coming soon)
+- CI/CD Best Practices (coming soon)
 
 ### Books
 - "Kubernetes in Action" by Marko Lukša

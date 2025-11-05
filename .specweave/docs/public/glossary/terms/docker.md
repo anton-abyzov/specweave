@@ -516,7 +516,7 @@ FROM node:18.17.0-alpine3.18
 - AC-US3-01: Production image < 100 MB
 ```
 
-**Test Plan** (embedded in tasks.md):
+**Test Plan** (embedded in tasks):
 ```markdown
 ## T-001: Create Production Dockerfile
 
@@ -695,11 +695,11 @@ docker system prune -a --volumes
 
 ## Related Concepts
 
-- [Kubernetes](./kubernetes.md) - Container orchestration platform
-- [CI/CD](./ci-cd.md) - Automated Docker image builds
-- [Container Registry](./container-registry.md) - Docker image storage
-- [Microservices](./microservices.md) - Architecture Docker enables
-- [DevOps](./devops.md) - Docker in DevOps workflows
+- [Kubernetes](/docs/glossary/terms/kubernetes) - Container orchestration platform
+- [CI/CD](/docs/glossary/terms/ci-cd) - Automated Docker image builds
+- Container Registry - Docker image storage
+- [Microservices](/docs/glossary/terms/microservices) - Architecture Docker enables
+- [DevOps](/docs/glossary/terms/devops) - Docker in DevOps workflows
 
 ## Resources
 

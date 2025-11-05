@@ -44,7 +44,7 @@ Testing and quality terms cover the practices, tools, and methodologies for veri
 - Tools: Supertest, pytest, JUnit
 - Target: 80-85% coverage for integration points
 
-**[E2E Testing](/docs/glossary/terms/e2e-testing)**
+**E2E Testing**
 - Tests complete user flows
 - Browser automation, real scenarios
 - Tools: Playwright, Cypress, Selenium
@@ -421,9 +421,9 @@ Test strategy is documented in:
 
 ## Related Categories
 
-- **[DevOps & Tools](/docs/glossary/categories/devops)** - CI/CD integration
-- **[Backend Development](/docs/glossary/categories/backend)** - API testing
-- **[Frontend Development](/docs/glossary/categories/frontend)** - UI testing
+- **[DevOps & Tools](/docs/glossary/categories/devops-category)** - CI/CD integration
+- **[Backend Development](/docs/glossary/categories/backend-category)** - API testing
+- **[Frontend Development](/docs/glossary/categories/frontend-category)** - UI testing
 
 ---
 
@@ -431,8 +431,8 @@ Test strategy is documented in:
 
 ### Guides
 - [Testing Strategy (comprehensive)](/docs/delivery/guides/testing-strategy)
-- [TDD Workflow (coming soon)](/docs/learn/foundations/tdd)
-- [E2E Testing with Playwright (coming soon)](/docs/learn/foundations/playwright)
+- TDD Workflow (coming soon)
+- E2E Testing with Playwright (coming soon)
 
 ### Books
 - "Test-Driven Development: By Example" by Kent Beck

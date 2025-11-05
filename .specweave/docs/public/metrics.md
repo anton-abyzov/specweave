@@ -195,7 +195,7 @@ As a framework focused on **disciplined development**, SpecWeave practices what 
 
 - 📖 [DORA Research](https://dora.dev/) - Original research and methodologies
 - 📊 [Accelerate Book](https://itrevolution.com/product/accelerate/) - The science behind DORA metrics
-- 🔧 [SpecWeave Workflows](./workflows/overview.md) - How we maintain high performance
+- 🔧 [SpecWeave Workflows](./workflows/overview) - How we maintain high performance
 - 📈 [GitHub Actions](https://github.com/anton-abyzov/specweave/actions) - See our automation in action
 
 ---

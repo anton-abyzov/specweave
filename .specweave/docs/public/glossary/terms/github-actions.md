@@ -815,11 +815,11 @@ concurrency:
 
 ## Related Concepts
 
-- [CI/CD](./ci-cd.md) - Continuous integration and deployment
-- [Git](./git.md) - Version control system
-- [Docker](./docker.md) - Container builds in workflows
-- [Kubernetes](./kubernetes.md) - Deployment target
-- [GitHub](./github.md) - GitHub platform
+- [CI/CD](/docs/glossary/terms/ci-cd) - Continuous integration and deployment
+- [Git](/docs/glossary/terms/git) - Version control system
+- [Docker](/docs/glossary/terms/docker) - Container builds in workflows
+- [Kubernetes](/docs/glossary/terms/kubernetes) - Deployment target
+- GitHub - GitHub platform
 
 ## Resources
 
