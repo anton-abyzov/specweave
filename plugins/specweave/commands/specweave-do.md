@@ -540,7 +540,7 @@ Usage: /specweave:do <increment-id>
 
 Increment must be "planned" before execution.
 
-Run: /increment "User authentication" to plan this increment first.
+Run: /specweave:increment "User authentication" to plan this increment first.
 ```
 
 ### No Tasks to Execute
@@ -552,7 +552,7 @@ This usually means:
   2. Tasks.md is empty or missing
 
 Options:
-  1. Re-plan increment: /increment 0001 (regenerate tasks)
+  1. Re-plan increment: /specweave:increment 0001 (regenerate tasks)
   2. Add tasks manually: Edit .specweave/increments/0001-name/tasks.md
 ```
 
@@ -591,6 +591,6 @@ Options:
 
 ---
 
-**Important**: This command is designed for continuous execution. It's normal to run `/do` and let it execute multiple tasks sequentially with documentation updates after each one.
+**Important**: This command is designed for continuous execution. It's normal to run `/specweave:do` and let it execute multiple tasks sequentially with documentation updates after each one.
 
-**Best Practice**: Always run `/validate 0001 --quality` after execution to ensure quality before closing with `/done`.
+**Best Practice**: Always run `/specweave:validate 0001 --quality` after execution to ensure quality before closing with `/specweave:done`.

@@ -84,7 +84,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   console.log('');
 
   // Step 1: Ask which tracker to use
-  const defaultTracker = detectDefaultTracker(projectPath);
+  const detection = detectDefaultTracker(projectPath);
 
   const { tracker } = await inquirer.prompt([{
     type: 'list',
@@ -92,7 +92,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     message: 'Which issue tracker do you use?',
     choices: [
       {
-        name: `🐙 GitHub Issues ${defaultTracker === 'github' ? '(detected)' : ''}`,
+        name: `🐙 GitHub Issues ${detection.tracker === 'github' && detection.detected ? '(detected)' : ''}`,
         value: 'github'
       },
       {
@@ -100,7 +100,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         value: 'jira'
       },
       {
-        name: `🔷 Azure DevOps ${defaultTracker === 'ado' ? '(detected)' : ''}`,
+        name: `🔷 Azure DevOps ${detection.tracker === 'ado' && detection.detected ? '(detected)' : ''}`,
         value: 'ado'
       },
       {
@@ -108,7 +108,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         value: 'none'
       }
     ],
-    default: defaultTracker
+    default: detection.tracker
   }]);
 
   if (tracker === 'none') {

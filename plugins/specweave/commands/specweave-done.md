@@ -5,8 +5,6 @@ description: Close increment with PM validation - checks tasks, tests, and docs 
 
 # Close Increment (PM Validated)
 
-**⚡ Convenient Short Form**: Use `/done` for quick access, or `/specweave:done` for explicit namespace.
-
 **Product Manager-Led Closure**: PM validates tasks, tests, and docs before closing.
 
 You are acting as the Product Manager to validate increment completion before closure. You must check all 3 gates: tasks done, tests passing, and docs updated.
@@ -316,7 +314,7 @@ Closing increment 0001-user-authentication...
 Next steps:
   1. Create PR: git push && gh pr create
   2. Deploy to staging: npm run deploy:staging
-  3. Create new increment: /increment "Next feature"
+  3. Create new increment: /specweave:increment "Next feature"
 ```
 
 #### Scenario B: One or More Gates Fail ❌
@@ -559,7 +557,7 @@ All PM validation settings use sensible defaults:
 
 **Important**: This command represents PM validation and MUST NOT be bypassed. All 3 gates (tasks, tests, docs) must pass before increment can close.
 
-**Best Practice**: Always run `/validate 0001 --quality` before `/done 0001` to catch issues early.
+**Best Practice**: Always run `/specweave:validate 0001 --quality` before `/specweave:done 0001` to catch issues early.
 
 **PM Role**: The PM agent acts as the final quality gate, ensuring:
 - ✅ Business value delivered (tasks complete)

@@ -391,7 +391,7 @@ Recommendations:
 
 ---
 
-**Command**: `/specweave:status` (or `/status`)
+**Command**: `/specweave:status`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

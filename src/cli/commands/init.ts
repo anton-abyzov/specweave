@@ -704,10 +704,10 @@ function createDirectoryStructure(targetDir: string, adapterName: string): void 
     // Core increment structure
     '.specweave/increments',
 
-    // 5-pillar documentation structure
+    // 6-pillar documentation structure
     '.specweave/docs/internal/strategy',      // Business specs (WHAT, WHY)
-    '.specweave/docs/internal/rfc',           // Request for Comments (proposals at all stages)
-    '.specweave/docs/internal/architecture',  // Technical design (HOW) - accepted designs
+    '.specweave/docs/internal/specs',         // Feature specifications (detailed requirements)
+    '.specweave/docs/internal/architecture',  // Technical design (HOW)
     '.specweave/docs/internal/architecture/adr',      // Architecture Decision Records
     '.specweave/docs/internal/architecture/diagrams', // Architecture diagrams
     '.specweave/docs/internal/delivery',      // Roadmap, CI/CD, guides
