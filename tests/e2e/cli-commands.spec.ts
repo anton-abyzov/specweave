@@ -31,10 +31,13 @@ test.describe('SpecWeave CLI E2E Tests', () => {
   });
 
   test('should initialize project with specweave init', async () => {
-    // Run: specweave init --non-interactive
+    // Run: specweave init (CI mode via env var)
     const { stdout, stderr } = await execAsync(
-      `node "${specweaveBin}" init --adapter=claude --language=en --non-interactive`,
-      { cwd: testDir }
+      `node "${specweaveBin}" init --adapter=claude --language=en`,
+      {
+        cwd: testDir,
+        env: { ...process.env, CI: 'true' }
+      }
     );
 
     // Verify .specweave/ directory created
@@ -76,10 +79,13 @@ test.describe('SpecWeave CLI E2E Tests', () => {
   });
 
   test('should create correct directory structure', async () => {
-    // Initialize project
+    // Initialize project (CI mode via env var)
     await execAsync(
-      `node "${specweaveBin}" init --adapter=claude --language=en --non-interactive`,
-      { cwd: testDir }
+      `node "${specweaveBin}" init --adapter=claude --language=en`,
+      {
+        cwd: testDir,
+        env: { ...process.env, CI: 'true' }
+      }
     );
 
     const specweaveDir = path.join(testDir, '.specweave');
@@ -96,10 +102,13 @@ test.describe('SpecWeave CLI E2E Tests', () => {
   });
 
   test('should handle non-interactive mode correctly', async () => {
-    // Run with --non-interactive flag
+    // Run with CI env var (non-interactive mode)
     const { stdout, stderr } = await execAsync(
-      `node "${specweaveBin}" init --adapter=claude --language=en --non-interactive`,
-      { cwd: testDir }
+      `node "${specweaveBin}" init --adapter=claude --language=en`,
+      {
+        cwd: testDir,
+        env: { ...process.env, CI: 'true' }
+      }
     );
 
     // Should not hang waiting for input
@@ -111,10 +120,13 @@ test.describe('SpecWeave CLI E2E Tests', () => {
   });
 
   test('should validate config.json structure', async () => {
-    // Initialize project
+    // Initialize project (CI mode via env var)
     await execAsync(
-      `node "${specweaveBin}" init --adapter=claude --language=en --non-interactive`,
-      { cwd: testDir }
+      `node "${specweaveBin}" init --adapter=claude --language=en`,
+      {
+        cwd: testDir,
+        env: { ...process.env, CI: 'true' }
+      }
     );
 
     // Read config.json
