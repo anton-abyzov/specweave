@@ -127,7 +127,7 @@ Four levels of testing with full traceability:
 ## Core Features
 
 - **Framework-agnostic**: Works with [TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, C#, etc.
-- **AI-powered agents**: PM, Architect, DevOps, QA, Security specialists
+- **AI-powered agents**: 11 specialized agents (PM, Architect, Tech Lead, QA, Security, Performance, TDD, etc.)
 - **Context precision**: 70%+ token reduction vs loading full specs
 - **Auto-role routing**: Skills detect expertise automatically
 - **Living documentation**: Auto-update via Claude hooks

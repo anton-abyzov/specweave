@@ -32,7 +32,7 @@ Simply describe what you want - SpecWeave guides you through interactive prompts
 Professional planning with slash commands and multi-agent coordination:
 
 ```bash
-/specweave:inc "user authentication"
+/specweave:increment "user authentication"
 # PM, Architect, QA agents create:
 # ✅ spec.md (requirements with AC-IDs)
 # ✅ plan.md (architecture + test strategy)
@@ -133,24 +133,21 @@ max_context_tokens: 10000
 
 ## 🤖 AI Agents & Skills
 
-### 14 Core Agents
+### 11 Core Agents
 
 | Agent | Role | Expertise |
 |-------|------|-----------|
-| **PM** | Product Manager | Requirements, user stories, roadmap |
-| **Architect** | System Architect | Design, ADRs, component architecture |
-| **DevOps** | DevOps Engineer | Infrastructure, deployment, [CI/CD](/docs/glossary/terms/ci-cd) |
-| **SRE** | Site Reliability Engineer | Monitoring, incidents, reliability |
-| **QA Lead** | Quality Assurance | Test strategy, test cases |
-| **Security** | Security Engineer | Threat modeling, penetration testing |
-| **Tech Lead** | Technical Lead | Code review, best practices |
-| **Frontend** | Frontend Developer | [React](/docs/glossary/terms/react), UI/UX implementation |
-| **[Next.js](/docs/glossary/terms/nextjs)** | [Next.js](/docs/glossary/terms/nextjs) Specialist | [Next.js](/docs/glossary/terms/nextjs) app development |
-| **[Node.js](/docs/glossary/terms/nodejs) Backend** | Backend Developer | [API](/docs/glossary/terms/api), services, backend logic |
-| **Python Backend** | Python Developer | FastAPI, Django, data services |
-| **.NET Backend** | .NET Developer | C#, ASP.NET Core, enterprise apps |
-| **Docs Writer** | Documentation Writer | Guides, references, tutorials |
-| **Performance** | Performance Engineer | Optimization, profiling, scaling |
+| **PM** | Product Manager AI | Requirements, user stories, market research, roadmaps |
+| **Architect** | System Architect | Design, ADRs, component architecture, C4 diagrams |
+| **Tech Lead** | Technical Lead | Code review, best practices, technical guidance |
+| **QA Lead** | Quality Assurance | Test strategy, test cases, coverage validation |
+| **Security** | Security Engineer | Threat modeling, security scanning, vulnerability analysis |
+| **Performance** | Performance Engineer | Optimization, profiling, scalability analysis |
+| **Docs Writer** | Technical Writer | Documentation creation, guides, API references |
+| **TDD Orchestrator** | TDD Master | Red-Green-Refactor workflow, test-first development |
+| **Test-Aware Planner** | Test Planning Specialist | Test case generation, AC-ID mapping, coverage targets |
+| **Translator** | Multilingual Support | Content translation, i18n workflows |
+| **Code Reviewer** | Code Review Specialist | Quality gates, code analysis, review automation |
 
 ### Auto-Role Routing
 
@@ -160,7 +157,7 @@ Skills automatically detect expertise and route requests:
 User: "Create authentication system"
 → specweave-detector activates
 → Routes to increment-planner
-→ Invokes PM, Architect, DevOps agents
+→ Invokes PM, Architect, Tech Lead agents
 → Generates complete spec + architecture + plan
 \`\`\`
 
@@ -415,7 +412,7 @@ As your [brownfield](/docs/glossary/terms/brownfield) project grows, SpecWeave *
 
 **Scenario: Adding new payment module**
 ```bash
-/specweave:inc "payment processing module"
+/specweave:increment "payment processing module"
 ```
 
 **SpecWeave automatically:**
@@ -499,7 +496,7 @@ npx specweave init .
 # ✅ Regression prevention in place
 
 # Day 4: Add OAuth safely
-/specweave:inc "Add OAuth 2.0 support"
+/specweave:increment "Add OAuth 2.0 support"
 /specweave:do
 # ✅ OAuth added with:
 #    - Updated specs and ADRs
@@ -579,7 +576,7 @@ Logs and notifies when AI needs clarification.
 Framework-agnostic commands:
 
 **Core Commands:**
-- `/specweave:inc "feature"` - Plan new increment (PM-led)
+- `/specweave:increment "feature"` - Plan new increment (PM-led)
 - `/specweave:do` - Execute tasks (smart resume)
 - `/specweave:progress` - Check status and completion
 - `/specweave:validate 0001` - Optional quality assessment
