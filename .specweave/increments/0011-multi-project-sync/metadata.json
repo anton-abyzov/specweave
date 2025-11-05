@@ -1,0 +1,13 @@
+{
+  "id": "0011-multi-project-sync",
+  "status": "completed",
+  "type": "feature",
+  "created": "2025-11-05T01:00:00.000Z",
+  "lastActivity": "2025-11-05T01:53:00.000Z",
+  "completedAt": "2025-11-05T01:53:00.000Z",
+  "github": {
+    "issue": 18,
+    "url": "https://github.com/anton-abyzov/specweave/issues/18",
+    "synced": "2025-11-05T02:32:00.000Z"
+  }
+}

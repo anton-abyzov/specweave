@@ -5,5 +5,10 @@
   "created": "2025-10-26T00:00:00.000Z",
   "lastActivity": "2025-11-04T09:48:16.610Z",
   "completedAt": "2025-11-03T00:00:00.000Z",
-  "completionNotes": "All 15 tasks marked complete. Security & cross-platform fixes implemented (v0.6.2). See IMPLEMENTATION-COMPLETE.md report."
+  "completionNotes": "All 15 tasks marked complete. Security & cross-platform fixes implemented (v0.6.2). See IMPLEMENTATION-COMPLETE.md report.",
+  "github": {
+    "issue": 21,
+    "url": "https://github.com/anton-abyzov/specweave/issues/21",
+    "synced": "2025-11-05T02:40:00.000Z"
+  }
 }
