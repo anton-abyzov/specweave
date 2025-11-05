@@ -272,7 +272,7 @@ Acceptance Criteria:
 ```
 
 **SpecWeave Integration**
-- `/specweave:inc "Add wishlist feature"` creates `spec.md`
+- `/specweave:increment "Add wishlist feature"` creates `spec.md`
 - PM agent generates user stories with AC-IDs
 - Traceability from requirements to tests
 
@@ -1025,7 +1025,7 @@ POST   /refunds (admin only)
 **Phase 1: Planning**
 ```bash
 # PM creates increment
-/specweave:inc "Add wishlist feature"
+/specweave:increment "Add wishlist feature"
 
 # Generates spec.md with:
 # - User stories (US-001: Save items to wishlist)
@@ -1584,7 +1584,7 @@ Deepen your understanding of key concepts:
 
 2. **Create Your First Increment**
    ```bash
-   /specweave:inc "Add user authentication"
+   /specweave:increment "Add user authentication"
    ```
 
 3. **Follow the Workflow**

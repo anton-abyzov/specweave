@@ -85,7 +85,7 @@ User: "Build a real estate listing platform with Next.js, Prisma, and Hetzner de
      ↓
 SpecWeave: 🤖 PM agent analyzing requirements...
            🏗️ Architect agent designing system...
-           🚀 DevOps agent planning infrastructure...
+           🚀 Tech Lead planning implementation...
 
 ✅ Created: PRD, HLD, Implementation Plan, Hetzner IaC
 ✅ Ready to implement!
@@ -107,7 +107,7 @@ SpecWeave: 🤖 Implementing based on specifications...
 2. **Requirements** - Creates comprehensive PRD
 3. **Architecture** - Architect designs HLD with C4 diagrams
 4. **Planning** - Generates step-by-step implementation plan
-5. **Deployment** - DevOps agent creates [Terraform](/docs/glossary/terms/terraform)/Pulumi [IaC](/docs/glossary/terms/iac)
+5. **Deployment** - Architect creates [Terraform](/docs/glossary/terms/terraform)/Pulumi [IaC](/docs/glossary/terms/iac)
 6. **Implementation** - Agents build according to specs
 7. **Testing** - QA agent creates test strategy
 8. **Documentation** - Auto-updates as code evolves

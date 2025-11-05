@@ -280,7 +280,7 @@ specweave init my-app
 # Обнаружена Claude Code
 # ✨ Инициализация завершена!
 
-/specweave:inc "authentication"
+/specweave:increment "authentication"
 # 📝 Создание increment: authentication
 # ✅ Increment 0001 успешно создан!
 ```
@@ -322,7 +322,7 @@ specweave init my-app
 
 **CLI Output**:
 ```bash
-/specweave:inc "búsqueda de productos"
+/specweave:increment "búsqueda de productos"
 # 📝 Creando increment: búsqueda de productos
 # ✅ ¡Increment 0002 creado exitosamente!
 ```
