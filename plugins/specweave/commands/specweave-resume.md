@@ -1,15 +1,12 @@
 ---
-name: specweave:resume
+name: resume
 description: Resume a paused increment
 usage: /specweave:resume <increment-id>
-aliases: [resume]
 ---
 
 # Resume Increment Command
 
 **Usage**: `/specweave:resume <increment-id>`
-
-**Shortcut**: `/resume <increment-id>`
 
 ---
 

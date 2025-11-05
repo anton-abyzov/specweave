@@ -737,15 +737,15 @@ resource "aws_instance" "web" {
 - **[Terraform](/docs/glossary/terms/terraform)** - Most popular IaC tool (multi-cloud)
 - **[Kubernetes](/docs/glossary/terms/kubernetes)** - Container orchestration platform
 - **[Docker](/docs/glossary/terms/docker)** - Container runtime (infrastructure for apps)
-- **[CI/CD](/docs/glossary/terms/cicd)** - Automate infrastructure deployment
+- **CI/CD** - Automate infrastructure deployment
 - **[Cloud Computing](/docs/glossary/terms/cloud-computing)** - Where IaC manages resources
 - **[DevOps](/docs/glossary/terms/devops)** - IaC is core DevOps practice
 
 ## Learn More
 
-- **[IaC Best Practices Guide](/docs/learn/infrastructure/iac-best-practices)** - Deep dive into IaC patterns
-- **[Terraform Tutorial](/docs/learn/infrastructure/terraform-tutorial)** - Get started with Terraform
-- **[Kubernetes Guide](/docs/learn/infrastructure/kubernetes-guide)** - Container orchestration
+- **IaC Best Practices Guide** - Deep dive into IaC patterns
+- **Terraform Tutorial** - Get started with Terraform
+- **Kubernetes Guide** - Container orchestration
 
 ---
 

@@ -299,7 +299,7 @@ $ /do  # System pauses automatically when blocked
 - [`/pause`](./pause) - Pause increment (mostly automatic)
 - [`/resume`](./resume) - Resume increment (mostly automatic)
 - [`/abandon`](./abandon) - Cancel increment permanently
-- [`/progress`](./progress) - Detailed progress for specific increment
+- `/progress` - Detailed progress for specific increment
 - [`/next`](./next) - Smart suggestion for what's next
 
 ## Related Documentation

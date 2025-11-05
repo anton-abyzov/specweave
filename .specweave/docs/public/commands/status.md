@@ -598,10 +598,10 @@ $ specweave status
 
 ## See Also
 
-- [`pause`](./pause.md) - Pause active work
-- [`resume`](./resume.md) - Resume paused work
-- [`abandon`](./abandon.md) - Cancel work permanently
-- [Status Management Guide](./status-management.md) - Complete workflow guide
+- `pause` - Pause active work
+- `resume` - Resume paused work
+- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
+- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
 
 ## Summary
 

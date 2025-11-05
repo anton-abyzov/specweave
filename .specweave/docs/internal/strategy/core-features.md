@@ -127,5 +127,5 @@
 
 ## Related
 
-- [Product Vision](product-vision.md)
-- [Requirements Overview](requirements-overview.md)
+- [Product Vision](./product-vision.md) - Long-term product strategy and mission
+- [Strategy Overview](./README.md) - Complete strategy documentation

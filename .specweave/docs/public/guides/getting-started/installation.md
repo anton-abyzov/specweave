@@ -589,16 +589,16 @@ EOF
 
 After successful installation:
 
-1. ✅ Read the [Quick Start Guide](quickstart.md)
+1. ✅ Read the [Quick Start Guide](quickstart)
 2. ✅ Review `CLAUDE.md` in your project
-3. ✅ Explore [Core Concepts](../../overview/introduction.md)
+3. ✅ Explore [Core Concepts](../../overview/introduction)
 4. ✅ Start your first increment
 
 ## Support
 
 Need help? We've got you covered:
 
-- **Quick Start:** [Quickstart Guide](quickstart.md)
+- **Quick Start:** [Quickstart Guide](quickstart)
 - **Issues:** [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/anton-abyzov/specweave/discussions)
 - **Documentation:** [spec-weave.com](https://spec-weave.com)

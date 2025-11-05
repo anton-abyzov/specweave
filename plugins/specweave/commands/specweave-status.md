@@ -1,15 +1,12 @@
 ---
-name: specweave:status
+name: status
 description: Show increment status overview with rich details (active, paused, completed, abandoned)
 usage: /specweave:status [--active|--paused|--completed|--abandoned|--stale]
-aliases: [status]
 ---
 
 # Increment Status Command
 
 **Usage**: `/specweave:status [filter]`
-
-**Shortcut**: `/status [filter]`
 
 ---
 

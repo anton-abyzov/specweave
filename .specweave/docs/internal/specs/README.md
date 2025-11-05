@@ -1,83 +1,218 @@
-# Specifications (Specs)
+# Specifications (Living Docs)
 
-**Purpose**: Detailed technical specifications for features, integrations, and architectural changes.
+**Purpose**: PERMANENT, feature-level specifications that serve as the enterprise source of truth for all completed work.
 
-**When to Create a Spec**:
-- Complex feature requiring team alignment
-- External integrations (JIRA, GitHub, Azure DevOps, etc.)
-- Breaking changes or migrations
-- Cross-cutting concerns affecting multiple increments
-
-**Spec Lifecycle**:
-1. **Draft** - Proposal written, seeking feedback
-2. **Under Review** - Team reviewing, discussing
-3. **Accepted** - Approved for implementation
-4. **Implemented** - Code complete, linked to increment
-5. **Superseded** - Replaced by newer spec
+**Critical Understanding**: Specs are **NOT the same as increments**. Specs are **feature areas** (like epics), while increments are **implementation units**.
 
 ---
 
-## Active Specs
+## The Architecture: Feature-Level Specs
 
-| Spec | Title | Status | Increment | Created |
-|------|-------|--------|-----------|---------|
-| [SPEC-0003](spec-0003-specweave-test-test-epic-for-sync.md) | Test Epic for Sync | Implemented | 0004 | 2025-10-30 |
-| [SPEC-0005](spec-0005-authentication-features.md) | Authentication Features | Draft | TBD | 2025-10-30 |
-| [SPEC-0007](spec-0007-smart-increment-discipline.md) | Smart Increment Discipline System | Draft | 0007 | 2025-11-03 |
+### What is a Spec?
+
+A **spec** is a **comprehensive, permanent document** describing an entire feature area:
+- **Scope**: Complete feature (e.g., "Core Framework & Architecture")
+- **Lifecycle**: Created once, updated over time, NEVER deleted
+- **Contains**: ALL user stories for that feature area (20-50 stories)
+- **Links to**: Multiple increments that implement the feature
+- **Permanent**: Stays forever as knowledge base
+
+### What is an Increment?
+
+An **increment** is a **focused, temporary implementation snapshot**:
+- **Scope**: Subset of work (e.g., "3 user stories from authentication spec")
+- **Lifecycle**: Created per iteration, can be deleted after completion
+- **Contains**: Focused subset of user stories (3-5 stories)
+- **Links to**: ONE spec that it implements
+- **Temporary**: Can be deleted after completion (spec remains)
+
+### The Relationship
+
+**One spec → Many increments**
+
+```
+SPEC-001: Core Framework & Architecture (Permanent)
+├── 0001-core-framework (Temporary - MVP implementation)
+├── 0002-core-enhancements (Temporary - Context optimization)
+├── 0004-plugin-architecture (Temporary - Plugin system)
+└── 0005-cross-platform-cli (Temporary - Cross-platform support)
+
+SPEC-002: Intelligent AI Capabilities (Permanent)
+├── 0003-intelligent-model-selection (Temporary - Haiku/Sonnet)
+├── 0007-smart-increment-discipline (Temporary - WIP limits)
+└── 0009-intelligent-reopen-logic (Temporary - Smart reopening)
+```
 
 ---
 
-## Spec Template
+## Current Specs (As of 2025-11-04)
 
-Use this template when creating new specs:
+| Spec | Feature Area | Increments | Status | GitHub Project |
+|------|-------------|-----------|--------|----------------|
+| **[SPEC-001](spec-001-core-framework-architecture.md)** | Core Framework & Architecture | 0001, 0002, 0004, 0005 | 100% Complete | TBD |
+| **[SPEC-002](spec-002-intelligent-capabilities.md)** | Intelligent AI Capabilities | 0003, 0007, 0009 | 66% Complete | TBD |
+| **[SPEC-003](spec-003-developer-experience.md)** | Developer Experience & Education | 0006, 0008 | 100% Complete | TBD |
+| **[SPEC-004](spec-004-metrics-observability.md)** | Metrics & Observability | 0010 | 100% Complete | TBD |
+| **[SPEC-005](spec-005-stabilization-1.0.0.md)** | Stabilization & 1.0.0 Release | 0011-0014 | 0% (Planned) | [Create](https://github.com/anton-abyzov/specweave/projects/new) |
+
+---
+
+## When to Create a New Spec
+
+**Create a new spec when**:
+- ✅ Planning a major feature area (authentication, payments, messaging)
+- ✅ Feature will span multiple increments (weeks/months of work)
+- ✅ Need permanent historical record (how did we build this?)
+- ✅ Want to link to external PM tool (GitHub Project, Jira Epic)
+- ✅ Brownfield integration needed (link to existing project docs)
+
+**Don't create a spec for**:
+- ❌ Small features (1 increment, <1 week) - just use increment spec
+- ❌ Bug fixes or hotfixes - use increment spec only
+- ❌ Temporary experiments - use increment spec only
+
+---
+
+## Spec Structure (Standard Template)
 
 ```markdown
-# SPEC-XXXX: Title
+# SPEC-XXX: Feature Area Name
 
-**Status**: Draft | Under Review | Accepted | Implemented | Superseded
-**Created**: YYYY-MM-DD
-**Author**: Name
-**Increment**: XXXX-name (if applicable)
+**Feature Area**: One-line description
+**Status**: Planned | In Progress (X%) | Complete
+**GitHub Project**: Link or TBD
+**Priority**: P0 (Critical) | P1 (High) | P2 (Medium) | P3 (Low)
 
-## Problem Statement
+---
 
-What problem does this solve?
+## Overview
 
-## Proposed Solution
+High-level description of the feature area (2-3 paragraphs)
 
-How do we solve it?
+---
 
-## Alternatives Considered
+## Increments (Implementation History)
 
-What other options were explored?
+| Increment | Status | Completion | Notes |
+|-----------|--------|------------|-------|
+| 0001-xxx | ✅ Complete | 2025-10-15 | MVP implementation |
+| 0002-xxx | ⏳ In Progress | 60% done | Enhanced features |
+| 0003-xxx | 🔜 Planned | Not started | Future work |
 
-## Implementation Plan
+**Overall Progress**: X/Y increments complete (Z%)
 
-How will this be built?
+---
 
-## Success Criteria
+## User Stories & Acceptance Criteria
 
-How do we know it's working?
+### Epic 1: First Major Component
 
-## References
+**US-001**: As a [role], I want [feature] so that [benefit]
+- [x] **AC-001-01**: Acceptance criterion 1
+- [x] **AC-001-02**: Acceptance criterion 2
+- [ ] **AC-001-03**: Acceptance criterion 3 (pending)
 
-- Related ADRs
-- External docs
-- Related increments
+[Repeat for all user stories across all increments]
+
+---
+
+## Technical Architecture
+
+[Mermaid diagrams, tech stack, system design]
+
+---
+
+## Architecture Decisions (ADRs)
+
+| ADR | Decision | Rationale |
+|-----|----------|-----------|
+| ADR-001 | What we decided | Why we decided |
+
+---
+
+## Success Metrics
+
+| Metric | Target | Current | Status |
+|--------|--------|---------|--------|
+| Adoption rate | 50%+ | 12% | ⚠️ Below |
+
+---
+
+## Future Enhancements (After 1.0.0)
+
+[Planned improvements, P2/P3 work]
+
+---
+
+## Related Documentation
+
+- Links to ADRs, guides, etc.
+
+---
+
+**Last Updated**: YYYY-MM-DD
+**Owner**: Team Name
 ```
 
 ---
 
 ## Naming Convention
 
-**Format**: `spec-XXXX-descriptive-kebab-case-name.md`
+**Format**: `spec-NNN-descriptive-kebab-case-name.md`
 
 **Examples**:
-- ✅ `spec-0003-specweave-test-test-epic-for-sync.md`
-- ✅ `spec-0005-authentication-features.md`
-- ✅ `spec-0006-github-task-level-sync.md`
+- ✅ `spec-001-core-framework-architecture.md` (Feature area, not increment)
+- ✅ `spec-002-intelligent-capabilities.md` (Feature area, not increment)
+- ✅ `spec-005-stabilization-1.0.0.md` (Release milestone)
 
-**Numbering**: Sequential, zero-padded 4 digits (0001, 0002, 0003, ...)
+**Numbering**: Sequential 3-digit (001, 002, 003, ...) - NO leading zero padding to 4 digits
+
+**Key Difference from Increments**:
+- Specs: `spec-001-feature-name.md` (3-digit, feature-level)
+- Increments: `0001-implementation-name/` (4-digit, implementation-level)
+
+---
+
+## Living Documentation Principle
+
+**Specs are the permanent source of truth**:
+- ✅ **Never deleted** (even after all increments complete)
+- ✅ **Updated over time** (as implementation progresses)
+- ✅ **Complete history** (all user stories, not just current work)
+- ✅ **Enterprise-level** (onboarding, compliance, auditing)
+- ✅ **Linked to external tools** (GitHub Projects, Jira Epics)
+
+**Increments are temporary snapshots**:
+- ⏳ **Can be deleted** (after completion, optional)
+- ⏳ **Focused subset** (just the work for this iteration)
+- ⏳ **Implementation tracker** (what am I building RIGHT NOW?)
+- ⏳ **No external links** (GitHub Project links go in specs)
+
+---
+
+## Comparison: Spec vs Increment
+
+| Aspect | Spec (Living Docs) | Increment (Implementation) |
+|--------|-------------------|----------------------------|
+| **Location** | `.specweave/docs/internal/specs/` | `.specweave/increments/####/` |
+| **Lifecycle** | ✅ Permanent (never deleted) | ⏳ Temporary (optional deletion) |
+| **Scope** | 📚 Complete feature (20-50 US) | 🎯 Focused subset (3-5 US) |
+| **Size** | 500-2000 lines (comprehensive) | 50-200 lines (focused) |
+| **Purpose** | Knowledge base + history | Implementation tracker |
+| **Coverage** | ALL user stories for feature | SUBSET of user stories |
+| **Brownfield** | ✅ Links to existing docs | ❌ Rarely needed |
+| **External Links** | ✅ GitHub Project, Jira Epic | ❌ Rarely needed |
+| **Multiple Increments** | ✅ One spec → many increments | ❌ One increment → one spec |
+| **After Completion** | ✅ Remains forever | ⚠️ Can be deleted |
+
+---
+
+## Archive
+
+**Old Increment Copies** (incorrect 1:1 mapping):
+- Moved to `_archive_increment_copies/` on 2025-11-04
+- These were incorrectly created as 1:1 mappings (increment → spec)
+- Replaced with proper feature-level specs (spec-001 through spec-005)
 
 ---
 
@@ -85,11 +220,10 @@ How do we know it's working?
 
 - [Architecture Decision Records (ADRs)](../architecture/adr/README.md) - What we decided and why
 - [System Architecture Diagrams](../architecture/diagrams/README.md) - Visual architecture
-- [High-Level Design](../architecture/hld-system.md) - System overview and entry point
+- [Architecture Overview](../architecture/README.md) - System design and architecture
+- [Increments](../../increments/README.md) - Implementation units
 
 ---
-
-**Terminology Note**: Renamed to "Spec" (Specification) in v0.8.0 to align with SpecWeave brand and industry standard (Microsoft, Uber, Meta all use "spec").
 
 **Location**: `.specweave/docs/internal/specs/`
 **Last Updated**: 2025-11-04

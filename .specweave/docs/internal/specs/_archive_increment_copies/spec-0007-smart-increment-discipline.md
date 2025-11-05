@@ -636,9 +636,9 @@ This is NOT negotiable. The enforcement remains to maintain discipline and preve
 ## References
 
 ### Internal Documents
-- [ADR-0001: Increment-Based Development](../adr/0001-increment-based-development.md)
-- [High-Level Design: Increment Lifecycle](../hld-system.md#increment-lifecycle)
-- [CLAUDE.md: Increment Discipline](../../../../CLAUDE.md#increment-discipline-v060-mandatory)
+- [ADR-0004: Increment Structure](../architecture/adr/0004-increment-structure.md) - Increment architecture and design
+- [ADR-0010: Append-Only Increments](../architecture/adr/0010-append-only-increments.md) - Why increments are immutable
+- **CLAUDE.md: Increment Discipline** - Quick reference guide (see repository root → Increment Discipline section)
 
 ### External Research
 - [Context Switching Cost Study](https://www.apa.org/research/action/multitask) - American Psychological Association

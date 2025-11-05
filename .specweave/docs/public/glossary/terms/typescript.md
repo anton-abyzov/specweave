@@ -731,13 +731,13 @@ npx tsc --init
 - **[Angular](/docs/glossary/terms/angular)** - Requires TypeScript
 - **[Next.js](/docs/glossary/terms/nextjs)** - Excellent TypeScript support
 - **[Node.js](/docs/glossary/terms/nodejs)** - Can run TypeScript (with compilation)
-- **[Frontend](/docs/glossary/terms/frontend)** - TypeScript improves frontend development
+- **Frontend** - TypeScript improves frontend development
 
 ## Learn More
 
 - **[TypeScript Official Docs](https://www.typescriptlang.org/docs/)** - Comprehensive documentation
-- **[TypeScript Tutorial](/docs/learn/frontend/typescript-fundamentals)** - SpecWeave TypeScript guide
-- **[React + TypeScript](/docs/learn/frontend/react-typescript)** - Using TypeScript with React
+- **TypeScript Tutorial** - SpecWeave TypeScript guide
+- **React + TypeScript** - Using TypeScript with React
 - **[SpecWeave Source Code](https://github.com/anton-abyzov/specweave)** - Real-world TypeScript examples
 
 ---

@@ -56,14 +56,14 @@
 
 ## Competitive Advantage
 
-| Feature | SpecWeave | Cursor | GitHub Copilot | Alternatives |
-|---------|-----------|--------|----------------|--------------|
-| Spec-Driven | ✅ Core | ❌ | ❌ | ❌ |
-| Living Docs | ✅ Auto-update | ❌ | ❌ | ❌ |
-| Context Precision | ✅ 70% reduction | ❌ | ❌ | ❌ |
-| Auto-Role Routing | ✅ >90% | ❌ | ❌ | ❌ |
-| Brownfield Support | ✅ | Partial | ❌ | ❌ |
-| Multi-Platform Deploy | ✅ | ❌ | ❌ | ❌ |
+| Feature | SpecWeave | BMAD | SpecKit | OpenSpec | TaskMaster |
+|---------|-----------|------|---------|----------|------------|
+| Spec-Driven | ✅ Core | ✅ PRD-based | ✅ Templates | 🟡 Partial | ❌ |
+| Living Docs | ✅ Auto-update | ❌ Manual | ❌ Static | ❌ | ❌ |
+| Context Precision | ✅ 70% reduction | ❌ Full load | ❌ N/A | ❌ | ❌ |
+| Auto-Role Routing | ✅ >90% | ❌ Manual @roles | ❌ N/A | ❌ | ❌ |
+| Brownfield Support | ✅ Analyzer | 🟡 Limited | ❌ | ❌ | ❌ |
+| Multi-Platform Deploy | ✅ | ❌ | ❌ | ❌ | 🟡 Partial |
 
 ## Related
 

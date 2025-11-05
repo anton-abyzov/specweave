@@ -589,7 +589,7 @@ File: .specweave/increments/0020-siem-implementation/spec.md
 **SpecWeave Solution**: Every production change = increment
 ```yaml
 Increment: 0032-tls-upgrade
-Approval: CTO + Security Lead (documented in spec.md)
+Approval: CTO + Security Lead (documented in spec)
 Testing: Embedded tests in tasks.md (100% pass)
 Deployment: Completion report with deployment log
 Rollback: Plan documented in plan.md
@@ -681,8 +681,8 @@ ROI: 1,500% in Year 1
 ## Related Standards & Concepts
 
 **Related Glossary Terms**:
-- [HIPAA](./hipaa.md) - Healthcare data privacy (often requires SOC 2)
-- [FDA](./fda.md) - Medical device regulations
+- [HIPAA](/docs/glossary/terms/hipaa) - Healthcare data privacy (often requires SOC 2)
+- [FDA](/docs/glossary/terms/fda) - Medical device regulations
 - Encryption - Core SOC 2 Security control
 - Authentication - Access control requirement
 - Observability - System monitoring and logging

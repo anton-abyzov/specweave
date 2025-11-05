@@ -696,12 +696,12 @@ export async function getStaticProps() {
 - **[SSG](/docs/glossary/terms/ssg)** - Static site generation
 - **[SPA](/docs/glossary/terms/spa)** - Single page application
 - **[TypeScript](/docs/glossary/terms/typescript)** - Often used with Next.js
-- **[Frontend](/docs/glossary/terms/frontend)** - Client-side development
+- **Frontend** - Client-side development
 
 ## Learn More
 
 - **[Next.js Official Docs](https://nextjs.org/docs)** - Comprehensive documentation
-- **[Next.js Tutorial](/docs/learn/frontend/nextjs-fundamentals)** - SpecWeave Next.js guide
+- **Next.js Tutorial** - SpecWeave Next.js guide
 - **[React Guide](/docs/glossary/terms/react)** - Understanding React first
 - **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Next.js-specific features
 

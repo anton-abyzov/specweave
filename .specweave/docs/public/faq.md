@@ -125,7 +125,7 @@ graph TD
 
 **When to Skip Living Docs Spec** (just use increment spec):
 - ✅ Feature completes in 1 increment (add dark mode toggle)
-- ✅ Feature completes in 2 increments (refactor API client)
+- ✅ Feature completes in 2 increments (refactor [API](/docs/glossary/terms/api) client)
 - ✅ Bug fix, hotfix, experiment (temporary work)
 - ✅ Small enhancement (add CSV export button)
 
@@ -173,7 +173,7 @@ Day 60: Start increment 0012 (OAuth)
 **Why Delete Increment Specs?**
 - **Reduce clutter**: Keep increment folders minimal
 - **Focus on living docs**: One permanent spec vs many temporary ones
-- **Historical traceability**: Git history shows what was implemented when
+- **Historical traceability**: [Git](/docs/glossary/terms/git) history shows what was implemented when
 
 **Why Keep Increment Specs?**
 - **Historical snapshot**: What did we plan THEN vs where are we NOW?
@@ -184,7 +184,7 @@ Day 60: Start increment 0012 (OAuth)
 
 ---
 
-### What about brownfield projects (existing code)?
+### What about [brownfield](/docs/glossary/terms/brownfield) projects (existing code)?
 
 **Living Docs Specs integrate with existing project docs!**
 
@@ -208,7 +208,7 @@ your-existing-project/
             └── spec.md           ← "Enhancing existing system (see SPEC-0005)"
 ```
 
-**Living Docs Spec for Brownfield**:
+**Living Docs Spec for [Brownfield](/docs/glossary/terms/brownfield)**:
 
 ```markdown
 # SPEC-0005: Authentication Enhancements
@@ -233,7 +233,7 @@ This spec ENHANCES the existing system with:
 - Existing endpoints (backward compatible)
 ```
 
-**Benefits for Brownfield**:
+**Benefits for [Brownfield](/docs/glossary/terms/brownfield)**:
 - ✅ Living docs REFERENCE existing docs (don't duplicate)
 - ✅ Clear "what exists" vs "what we're adding"
 - ✅ Increment specs focus on NEW work only
@@ -344,7 +344,7 @@ graph LR
 - ✅ Auto-create GitHub Issues for increments
 - ✅ Auto-sync progress after each task
 - ✅ Auto-close issues when increments complete
-- ✅ See: [GitHub Sync Guide](./guides/github-sync.md)
+- ✅ See: [GitHub Sync Guide](./guides/github-sync)
 
 ---
 
@@ -370,7 +370,7 @@ monorepo/
         └── 0008-mobile-basic-login/
 ```
 
-**2. Microservices (Multiple Repos)**:
+**2. [Microservices](/docs/glossary/terms/[microservices](/docs/glossary/terms/microservices)) (Multiple Repos)**:
 ```
 parent-folder/                     ← Create parent folder
 ├── .specweave/                    ← One SpecWeave for entire system
@@ -453,7 +453,7 @@ specweave init
 - [ ] Feature is a major module (authentication, payments, messaging)
 - [ ] Need PM tool link (Jira epic, ADO feature, GitHub milestone)
 - [ ] Want permanent historical record (how did we build X?)
-- [ ] Brownfield: Enhancing major existing system
+- [ ] [Brownfield](/docs/glossary/terms/brownfield): Enhancing major existing system
 - [ ] Multiple teams working on different parts
 
 **Skip Living Docs Spec (use increment spec only) if ALL of these are true**:
@@ -469,7 +469,7 @@ specweave init
 
 ### Can I migrate existing specs to SpecWeave?
 
-**Yes! SpecWeave is brownfield-friendly.**
+**Yes! SpecWeave is [brownfield](/docs/glossary/terms/brownfield)-friendly.**
 
 **Migration Pattern**:
 
@@ -567,7 +567,7 @@ See `/docs/auth-design.md` for existing system details.
 | **Source of Truth** | Living docs + increment specs | Wiki (often stale) | PM tool (high-level only) | Code (no vision) |
 | **Permanent Record** | ✅ Yes (living docs) | ⚠️ If maintained | ❌ Issues closed = lost | ❌ Code changes = lost |
 | **Implementation Tracking** | ✅ Yes (increments) | ❌ Manual | ✅ Yes (issues) | ❌ No |
-| **Brownfield Friendly** | ✅ Yes (references existing) | ⚠️ Duplicate effort | ⚠️ Separate system | ✅ Yes |
+| **[Brownfield](/docs/glossary/terms/brownfield) Friendly** | ✅ Yes (references existing) | ⚠️ Duplicate effort | ⚠️ Separate system | ✅ Yes |
 | **PM Tool Integration** | ✅ Yes (links to Jira/ADO/GitHub) | ❌ Manual sync | ✅ Native | ❌ No |
 | **Test Integration** | ✅ Yes (tasks.md with embedded tests) | ❌ Separate test docs | ❌ No | ⚠️ Unit tests only |
 
@@ -587,16 +587,16 @@ See `/docs/auth-design.md` for existing system details.
 ## Still Have Questions?
 
 **Resources**:
-- **User Guide**: [Getting Started](./guides/getting-started.md)
-- **GitHub Sync**: [GitHub Integration](./guides/github-sync.md)
-- **Architecture**: [System Architecture](./architecture/overview.md)
+- **User Guide**: [Getting Started](./guides/getting-started)
+- **GitHub Sync**: [GitHub Integration](./guides/github-sync)
+- **Architecture**: [System Architecture](./architecture/overview)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
 - **Discord**: [Join Community](https://discord.gg/specweave) *(coming soon)*
 
 **Common Follow-Ups**:
-- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync.md)
-- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support.md)
-- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle.md)
+- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
+- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
+- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
 
 ---
 

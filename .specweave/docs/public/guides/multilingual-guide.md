@@ -48,7 +48,7 @@ Edit `.specweave/config.json`:
 |--------|------|---------|-------------|
 | `language` | string | "en" | Your preferred language (en, ru, es, zh, de, fr, ja, ko, pt) |
 | `translation.autoTranslateLivingDocs` | boolean | false | Auto-translate documentation after each task |
-| `translation.keepFrameworkTerms` | boolean | true | Keep SpecWeave terms in English (increment, spec.md, plan.md) |
+| `translation.keepFrameworkTerms` | boolean | true | Keep SpecWeave terms in English (increment, spec.md, plan) |
 | `translation.keepTechnicalTerms` | boolean | true | Keep technical terms in English (TypeScript, npm, Docker) |
 
 ### 2. Start Using SpecWeave in Your Language
@@ -153,7 +153,6 @@ function calculateTotal(items: Item[]): number {
 [2025-11-02 14:30:15] 🌐 Checking if living docs translation is needed for 0006-llm-native-i18n
 [2025-11-02 14:30:16] 📝 Auto-translating docs to ru...
 [2025-11-02 14:30:17] Found 3 changed file(s)
-[2025-11-02 14:30:18] ✓ Translated: .specweave/docs/internal/architecture/hld-i18n.md
 [2025-11-02 14:30:20] ✓ Translated: .specweave/docs/public/guides/user-guide.md
 [2025-11-02 14:30:22] ✓ Translated: .specweave/increments/0006-llm-native-i18n/spec.md
 [2025-11-02 14:30:23] ✅ Translation complete (3 files)
@@ -286,7 +285,7 @@ specweave init my-app
 # ✅ Increment 0001 успешно создан!
 ```
 
-**Translated Content** (spec.md):
+**Translated Content** (spec):
 ```markdown
 # Spec: Аутентификация пользователей
 
@@ -328,7 +327,7 @@ specweave init my-app
 # ✅ ¡Increment 0002 creado exitosamente!
 ```
 
-**Translated Content** (plan.md):
+**Translated Content** (plan):
 ```markdown
 # Plan: Búsqueda de Productos
 
@@ -360,7 +359,7 @@ Este increment implementa búsqueda full-text usando Elasticsearch...
 }
 ```
 
-**Translated Content** (tasks.md):
+**Translated Content** (tasks):
 ```markdown
 # Tasks: 支付集成
 
@@ -640,7 +639,7 @@ vim .specweave/config.json
 English is the default, so no system prompts are injected.
 
 **Step 3: Optional - Restore English Versions**
-If you have English originals (.md) alongside translations (.ru.md), you can remove translations:
+If you have English originals () alongside translations (.ru), you can remove translations:
 
 ```bash
 find .specweave/ -name "*.ru.md" -delete
@@ -657,7 +656,7 @@ find .specweave/ -name "*.es.md" -delete
 
 ### Q: Can I mix languages?
 
-**A**: Not recommended. Choose one primary language for your project. You can have translations in separate files (.spec.ru.md, .spec.es.md) if needed for multilingual teams.
+**A**: Not recommended. Choose one primary language for your project. You can have translations in separate files (.spec.ru.md, .spec.es) if needed for multilingual teams.
 
 ### Q: What if my language isn't supported?
 
@@ -694,8 +693,8 @@ For better organization, use separate commits for source changes vs. translation
 
 **Documentation**:
 - [SpecWeave Website](https://spec-weave.com)
-- [CLAUDE.md](../../CLAUDE.md) (contributor guide)
-- [README.md](../../../../README.md) (project overview)
+- [CLAUDE.md](../../CLAUDE) (contributor guide)
+- [README.md](../../../../README) (project overview)
 
 **Community**:
 - [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)

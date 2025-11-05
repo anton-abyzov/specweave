@@ -317,7 +317,7 @@ Reviewer: "I have concerns about scalability. Can we discuss this synchronously 
 
 - [Branching Strategy](./branch-strategy.md) - Git workflow
 - [Coding Standards](../governance/coding-standards.md) - Style guide
-- [Testing Strategy](./test-strategy.md) - Test coverage expectations
+- [Testing Strategy](./guides/testing-strategy.md) - Test coverage expectations
 - [DORA Metrics](./dora-metrics.md) - Lead time for changes
 
 ---
