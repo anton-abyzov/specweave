@@ -375,12 +375,12 @@ Since we store NO personal data:
 **Option 1**: Use more execution agents
 ```bash
 # Instead of architect (Sonnet)
-/do with agent=frontend  # Uses Haiku
+/specweave:do with agent=frontend  # Uses Haiku
 ```
 
 **Option 2**: Force Haiku for simple planning
 ```bash
-/specweave:inc --model haiku "simple feature"
+/specweave:increment --model haiku "simple feature"
 ```
 
 ---

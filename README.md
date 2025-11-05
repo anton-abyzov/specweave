@@ -123,9 +123,9 @@ specweave init my-project
 cd my-project
 
 # Start building - SpecWeave guides you through the entire workflow
-/inc "User authentication"  # Plan increment
-/do                          # Implement tasks (auto-pauses if blocked, auto-resumes when ready)
-/done 0001                   # Complete increment
+/specweave:increment "User authentication"  # Plan increment
+/specweave:do                               # Implement tasks (auto-pauses if blocked, auto-resumes when ready)
+/specweave:done 0001                        # Complete increment
 ```
 
 **New to SpecWeave?** → **[Getting Started Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)**
