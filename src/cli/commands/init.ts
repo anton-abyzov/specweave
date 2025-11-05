@@ -247,6 +247,9 @@ export async function initCommand(
           }
         ]);
         toolName = selectedTool;
+      } else {
+        // User confirmed detected tool
+        toolName = detectedTool;
       }
 
       spinner.start(`Using ${toolName}...`);
