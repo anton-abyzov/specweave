@@ -44,7 +44,7 @@ graph LR
 - 📋 PM-led planning (market research, spec.md, plan)
 - ✅ Auto-generates tasks.md from plan
 - 🧪 Creates test strategy
-- 👥 Strategic agent review (Architect, Security, QA, DevOps)
+- 👥 Strategic agent review (Architect, Security, QA, Tech Lead)
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
