@@ -64,6 +64,21 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   const { projectPath, language, maxRetries = 3 } = options;
   const locale = getLocaleManager(language);
 
+  // Check if running in CI/non-interactive environment
+  const isCI = process.env.CI === 'true' ||
+               process.env.GITHUB_ACTIONS === 'true' ||
+               process.env.GITLAB_CI === 'true' ||
+               process.env.CIRCLECI === 'true' ||
+               !process.stdin.isTTY;
+
+  if (isCI) {
+    // In CI, skip issue tracker setup (non-interactive)
+    console.log('');
+    console.log(chalk.gray('⏭️  CI environment detected - skipping issue tracker setup'));
+    console.log(chalk.gray('   You can configure later via /plugin install\n'));
+    return true;
+  }
+
   console.log('');
   console.log(chalk.cyan.bold('🎯 Issue Tracker Integration'));
   console.log('');
