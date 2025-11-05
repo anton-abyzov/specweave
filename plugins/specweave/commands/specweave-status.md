@@ -1,5 +1,5 @@
 ---
-name: status
+name: specweave:status
 description: Show increment status overview with rich details (active, paused, completed, abandoned)
 usage: /specweave:status [--active|--paused|--completed|--abandoned|--stale]
 ---
@@ -27,7 +27,7 @@ Display comprehensive increment status overview:
 ### Default (All Increments)
 
 ```bash
-/status
+/specweave:status
 
 📊 Increment Status Overview
 
@@ -83,21 +83,21 @@ Commands:
 
 ```bash
 # Active only
-/status --active
+/specweave:status --active
 
 🔥 Active Increments (2):
   🚨 0005-payment-hotfix [hotfix] (90% done, 6 hours)
   🔧 0006-i18n [feature] (50% done, 2 days)
 
 # Paused only
-/status --paused
+/specweave:status --paused
 
 ⏸️  Paused Increments (1):
   🔄 0007-stripe [feature] (paused 3 days)
      Reason: Waiting for API keys
 
 # Stale only (paused >7 days OR active >30 days)
-/status --stale
+/specweave:status --stale
 
 ⚠️  Stale Increments (2):
   🔄 0008-experiment [experiment] (paused 10 days)
@@ -256,7 +256,7 @@ Experiments inactive >14 days → warning:
 Show only active increments
 
 ```bash
-/status --active
+/specweave:status --active
 
 🔥 Active (2):
   🚨 0005-hotfix [hotfix] (90% done)
@@ -268,7 +268,7 @@ Show only active increments
 Show only paused increments
 
 ```bash
-/status --paused
+/specweave:status --paused
 
 ⏸️  Paused (2):
   🔄 0007-stripe [feature] (paused 3 days)
@@ -284,7 +284,7 @@ Show only paused increments
 Show only completed increments
 
 ```bash
-/status --completed
+/specweave:status --completed
 
 ✅ Completed (5):
   0001-core-framework (completed 30 days ago)
@@ -299,7 +299,7 @@ Show only completed increments
 Show only abandoned increments
 
 ```bash
-/status --abandoned
+/specweave:status --abandoned
 
 ❌ Abandoned (3):
   0008-old-approach (Requirements changed)
@@ -318,7 +318,7 @@ Show only abandoned increments
 Show only stale increments (paused >7 days OR active >30 days)
 
 ```bash
-/status --stale
+/specweave:status --stale
 
 ⚠️  Stale Increments (3):
   🔄 0007-stripe [feature] (paused 10 days)
@@ -365,7 +365,7 @@ Show only stale increments (paused >7 days OR active >30 days)
 Future enhancement (v0.8.0+):
 
 ```bash
-/status --analytics
+/specweave:status --analytics
 
 📊 Increment Analytics (Last 90 Days):
 

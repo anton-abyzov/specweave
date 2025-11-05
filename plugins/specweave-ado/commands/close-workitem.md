@@ -1,5 +1,5 @@
 ---
-name: close-workitem
+name: specweave-ado:close-workitem
 description: Close Azure DevOps work item when increment complete
 ---
 
