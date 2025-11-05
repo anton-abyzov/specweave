@@ -44,7 +44,7 @@ This is a **SpecWeave project** where specifications and documentation are the s
 .claude/                     # Claude Code components (if using Claude)
 ├── agents/                  # Specialized roles (PM, Architect, DevOps, etc.)
 ├── skills/                  # Capabilities (increment-planner, context-loader, etc.)
-└── commands/                # Slash commands (/inc, /do, /done)
+└── commands/                # Slash commands (/specweave:increment, /specweave:do, /specweave:done)
 
 plugins/                     # Optional plugins (extended capabilities)
 └── specweave-{name}/
@@ -212,7 +212,7 @@ cat plugins/specweave-github/commands/github-sync.md
 ### What Are Commands?
 
 Commands are **executable workflows** defined as `.md` files in `plugins/specweave/commands/`. Each file contains:
-- Command name (from filename, e.g., `inc.md` → `/inc`)
+- Command name (from filename, e.g., `specweave-increment.md` → `/specweave:increment`)
 - Complete workflow instructions
 - Parameters and usage examples
 - Step-by-step execution guide
@@ -228,15 +228,15 @@ Commands are **executable workflows** defined as `.md` files in `plugins/specwea
 ls plugins/specweave/commands/
 
 # Common output:
-# inc.md          - Plan new increment (/inc "feature")
-# do.md           - Execute implementation (/do)
-# done.md         - Close increment (/done 0001)
-# validate.md     - Validate increment (/validate 0001)
-# progress.md     - Check status (/progress)
-# sync-docs.md    - Sync living docs (/sync-docs)
-# next.md         - Smart increment transition
-# costs.md        - Display AI cost dashboard
-# translate.md    - Translate content
+# specweave-increment.md  - Plan new increment (/specweave:increment "feature")
+# specweave-do.md         - Execute implementation (/specweave:do)
+# specweave-done.md       - Close increment (/specweave:done 0001)
+# specweave-validate.md   - Validate increment (/specweave:validate 0001)
+# specweave-progress.md   - Check status (/specweave:progress)
+# specweave-sync-docs.md  - Sync living docs (/specweave:sync-docs)
+# specweave-next.md       - Smart increment transition (/specweave:next)
+# specweave-costs.md      - Display AI cost dashboard (/specweave:costs)
+# specweave-translate.md  - Translate content (/specweave:translate)
 # tdd-*.md        - TDD workflow commands
 # ... (17 commands total)
 ```
@@ -256,18 +256,18 @@ ls plugins/specweave-github/commands/
 
 ### How to Execute Commands (Step-by-Step)
 
-**When user says**: "create new increment for user auth" or "run /inc user auth"
+**When user says**: "create new increment for user auth" or "run /specweave:increment user auth"
 
 **You should**:
 
 1. **Identify the command**:
-   - Keywords match: "create increment" → `inc.md`
-   - Explicit slash: "/inc" → `inc.md`
+   - Keywords match: "create increment" → `specweave-increment.md`
+   - Explicit slash: "/specweave:increment" → `specweave-increment.md`
    - Map request to command file
 
 2. **Read the command file**:
    ```bash
-   cat plugins/specweave/commands/inc.md
+   cat plugins/specweave/commands/specweave-increment.md
    ```
 
 3. **Parse the workflow**:
@@ -287,7 +287,7 @@ ls plugins/specweave-github/commands/
    - Show created files
    - Suggest next steps
 
-### Example: Executing /inc Command
+### Example: Executing /specweave:increment Command
 
 **User says**: "create new increment for user authentication"
 
@@ -295,13 +295,13 @@ ls plugins/specweave-github/commands/
 
 ```bash
 # Step 1: Identify command
-# "create increment" → inc.md
+# "create increment" → specweave-increment.md
 
 # Step 2: Read command file
-cat plugins/specweave/commands/inc.md
+cat plugins/specweave/commands/specweave-increment.md
 ```
 
-**After reading inc.md, you learn**:
+**After reading specweave-increment.md, you learn**:
 - This is PM-led increment planning
 - Requires: feature description
 - Creates: spec.md, plan.md, tasks.md, tests.md
@@ -355,7 +355,7 @@ cat plugins/specweave/commands/inc.md
 
 ✅ Increment 0001-user-authentication ready!
 
-Next: /do 0001 (execute implementation)
+Next: /specweave:do (execute implementation)
 ```
 
 **Step 5: Confirm completion**:
@@ -371,7 +371,7 @@ Files:
 
 Next steps:
   1. Review generated files
-  2. Run: /do 0001 (execute implementation)
+  2. Run: /specweave:do (execute implementation)
 ```
 
 ### Core Command Reference
@@ -380,21 +380,21 @@ Next steps:
 
 | Command | File | Purpose | Example |
 |---------|------|---------|---------|
-| `/inc` | `inc.md` | Plan new increment | `/inc "user auth"` |
-| `/do` | `do.md` | Execute implementation | `/do 0001` |
-| `/done` | `done.md` | Close increment | `/done 0001` |
-| `/validate` | `validate.md` | Validate quality | `/validate 0001` |
-| `/progress` | `progress.md` | Check status | `/progress` |
+| `/specweave:increment` | `specweave-increment.md` | Plan new increment | `/specweave:increment "user auth"` |
+| `/specweave:do` | `specweave-do.md` | Execute implementation | `/specweave:do` |
+| `/specweave:done` | `specweave-done.md` | Close increment | `/specweave:done 0001` |
+| `/specweave:validate` | `specweave-validate.md` | Validate quality | `/specweave:validate 0001` |
+| `/specweave:progress` | `specweave-progress.md` | Check status | `/specweave:progress` |
 
 **Specialized** (use when needed):
 
 | Command | File | Purpose | Example |
 |---------|------|---------|---------|
-| `/sync-docs` | `sync-docs.md` | Sync living docs | `/sync-docs update` |
-| `/next` | `next.md` | Smart increment transition | `/next` |
-| `/costs` | `costs.md` | AI cost dashboard | `/costs 0001` |
-| `/translate` | `translate.md` | Translate content | `/translate ru` |
-| `/tdd-cycle` | `tdd-cycle.md` | TDD workflow | `/tdd-cycle` |
+| `/specweave:sync-docs` | `specweave-sync-docs.md` | Sync living docs | `/specweave:sync-docs update` |
+| `/specweave:next` | `specweave-next.md` | Smart increment transition | `/specweave:next` |
+| `/specweave:costs` | `specweave-costs.md` | AI cost dashboard | `/specweave:costs 0001` |
+| `/specweave:translate` | `specweave-translate.md` | Translate content | `/specweave:translate ru` |
+| `/specweave:tdd-cycle` | `specweave-tdd-cycle.md` | TDD workflow | `/specweave:tdd-cycle` |
 
 **Plugin Commands** (when plugins installed):
 

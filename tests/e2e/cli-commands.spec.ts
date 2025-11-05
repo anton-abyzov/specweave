@@ -7,6 +7,7 @@ import { test, expect } from '@playwright/test';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import os from 'os';
 
@@ -14,6 +15,7 @@ const execAsync = promisify(exec);
 
 test.describe('SpecWeave CLI E2E Tests', () => {
   let testDir: string;
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const specweaveBin = path.join(__dirname, '../../bin/specweave.js');
 
   test.beforeEach(async () => {

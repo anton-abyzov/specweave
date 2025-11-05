@@ -589,11 +589,6 @@ Framework-agnostic commands:
 - `/specweave:sync-github` - Sync to GitHub issues
 - `/specweave:sync-docs` - Review specs vs implementation
 
-**Aliases (shorter syntax):**
-- `/specweave inc` = `/specweave:inc`
-- `/specweave do` = `/specweave:do`
-- `/do` = `/specweave:do`
-
 All commands adapt to detected tech stack.
 
 ## 🚀 Coming Soon

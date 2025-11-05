@@ -124,21 +124,20 @@ Simply describe what you want to build - SpecWeave guides you through:
 
 **Perfect for:** Production features, team projects, complex systems
 
-**Available Slash Commands** (with short aliases):
-- `/pi` or `/create-increment` - **Plan Product Increment** (most important!)
-- `/si` or `/start-increment` - Start working on increment
-- `/at` or `/add-tasks` - Add tasks to increment
-- `/vi` or `/validate-increment` - Run validation + quality check
-- `/done` or `/close-increment` - Close increment
-- `/ls` or `/list-increments` - List all increments
-- `/sync-github` - Sync increment to GitHub issues
+**Available Slash Commands**:
+- `/specweave:increment` - **Plan Product Increment** (most important!)
+- `/specweave:do` - Execute implementation
+- `/specweave:validate` - Run validation + quality check
+- `/specweave:done` - Close increment
+- `/specweave:status` - Show increment status overview
+- `/specweave:progress` - Check current increment progress
+- `/specweave:sync-github` - Sync increment to GitHub issues
 
-**Status Management** (v0.7.0+):
-- `/status` - Show increment status (active, paused, completed, abandoned)
-- `/pause <id> --reason="..."` - Pause blocked increment
-- `/resume <id>` - Resume paused increment
-- `/abandon <id> --reason="..."` - Abandon obsolete increment
-- `/validate-coverage` - Check test coverage (80%+ target)
+**Status Management**:
+- `/specweave:pause <id> --reason="..."` - Pause blocked increment
+- `/specweave:resume <id>` - Resume paused increment
+- `/specweave:abandon <id> --reason="..."` - Abandon obsolete increment
+- `/specweave:check-tests` - Check test coverage (80%+ target)
 
 **Increment Types**: SpecWeave supports six types of work:
 - **feature** (standard development, max 2 active)
@@ -221,7 +220,7 @@ your-project/
 
 | Feature | SpecWeave | spec-kit |
 |---------|-----------|----------|
-| **Slash Commands** | ✅ `/pi`, `/si`, `/done` | ✅ Similar approach |
+| **Slash Commands** | ✅ `/specweave:increment`, `/specweave:do`, `/specweave:done` | ✅ Similar approach |
 | **Multi-Agent** | ✅ 10 agents | ❌ Commands only |
 | **Pre-Installed** | ✅ All ready | ❌ Manual setup |
 | **Quality Gates** | ✅ 120 rules | ❌ Manual |
@@ -243,5 +242,5 @@ your-project/
 ```bash
 npm install -g specweave && specweave init my-project
 cd my-project
-# Then use slash commands: /pi "your first feature"
+# Then use slash commands: /specweave:increment "your first feature"
 ```
