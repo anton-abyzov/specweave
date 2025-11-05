@@ -49,7 +49,7 @@ This guide teaches you:
 graph LR
     Input[User Input:<br/>'What is'] --> Tokenize[Tokenization]
     Tokenize --> Tokens['What', 'is', '...']
-    Tokens --> Model[LLM Model<br/>GPT-4, Claude, etc.]
+    Tokens --> Model[LLM Model<br/>GPT-4.5, Claude 4.5, etc.]
     Model --> Predict[Predict Next Token]
     Predict --> Output['the', 'capital', 'of', 'France']
 
@@ -63,8 +63,9 @@ graph LR
    - "Artificial Intelligence" = 3 tokens
 
 2. **Context Window**: Maximum input length
-   - GPT-4 Turbo: 128K tokens (~96K words)
-   - Claude Sonnet 4: 200K tokens (~150K words)
+   - GPT-4.5 Turbo: 128K tokens (~96K words)
+   - Claude Sonnet 4.5: 200K tokens (~150K words)
+   - Claude Haiku 3.5: 200K tokens (ultra-fast, simple tasks)
 
 3. **Temperature**: Randomness of output
    - 0.0 = Deterministic (same output every time)
@@ -104,7 +105,7 @@ const openai = new OpenAI({
 
 async function generateProductDescription(product) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: 'gpt-4.5-turbo',
     messages: [
       {
         role: 'system',
@@ -139,7 +140,7 @@ const anthropic = new Anthropic({
 
 async function analyzeCodeQuality(code) {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4',
+    model: 'claude-sonnet-4-5',
     max_tokens: 1024,
     messages: [
       {
@@ -225,7 +226,7 @@ const tools = [
 
 async function chatWithTools(userMessage) {
   const response = await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: 'gpt-4.5-turbo',
     messages: [{ role: 'user', content: userMessage }],
     tools: tools,
     tool_choice: 'auto'
@@ -247,7 +248,7 @@ async function chatWithTools(userMessage) {
 
     // Send function result back to LLM
     const finalResponse = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4.5-turbo',
       messages: [
         { role: 'user', content: userMessage },
         message, // Original assistant message with tool call
@@ -363,7 +364,7 @@ async function answerQuestion(question) {
 
   // Step 3: Generate answer using context
   const response = await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: 'gpt-4.5-turbo',
     messages: [
       {
         role: 'system',
@@ -545,7 +546,7 @@ async function selfConsistentAnswer(question) {
   const answers = await Promise.all(
     Array(5).fill(null).map(() =>
       openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4.5-turbo',
         messages: [{ role: 'user', content: question }],
         temperature: 0.8 // Higher temperature for variety
       })
@@ -563,19 +564,19 @@ async function selfConsistentAnswer(question) {
 
 | Model | Provider | Context | Strengths | Cost (per 1M tokens) |
 |-------|----------|---------|-----------|---------------------|
-| **GPT-4 Turbo** | OpenAI | 128K | General purpose, reasoning | $10 in / $30 out |
-| **GPT-3.5 Turbo** | OpenAI | 16K | Fast, cheap | $0.50 in / $1.50 out |
-| **Claude Sonnet 4** | Anthropic | 200K | Long context, coding | $3 in / $15 out |
-| **Claude Haiku** | Anthropic | 200K | Ultra-fast, cheap | $0.25 in / $1.25 out |
-| **Llama 3 70B** | Meta | 8K | Open source, self-hosted | Free (compute costs) |
+| **Claude Sonnet 4.5** | Anthropic | 200K | Best coding, long context, research | $3 in / $15 out |
+| **GPT-4.5 Turbo** | OpenAI | 128K | General purpose, reasoning, creative | $10 in / $30 out |
+| **Claude Haiku 3.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $0.25 in / $1.25 out |
+| **o1** | OpenAI | 128K | Complex reasoning, math, science | $15 in / $60 out |
+| **Llama 3.1 405B** | Meta | 128K | Open source, self-hosted | Free (compute costs) |
 
 ### When to Use Each Model
 
-**GPT-4 Turbo**: Complex reasoning, creative writing, code generation
-**GPT-3.5 Turbo**: Simple tasks, high throughput, cost-sensitive
-**Claude Sonnet**: Long documents, coding, research
-**Claude Haiku**: Real-time chat, simple classifications, high volume
-**Llama 3**: Privacy-sensitive data, no API costs, offline usage
+**Claude Sonnet 4.5**: Best for coding, long documents, technical writing, research
+**GPT-4.5 Turbo**: Complex reasoning, creative content, general-purpose tasks
+**Claude Haiku 3.5**: Real-time chat, simple classifications, high-volume processing
+**o1**: Advanced reasoning tasks, mathematical proofs, scientific analysis
+**Llama 3.1**: Privacy-sensitive data, no API costs, offline usage, customization
 
 ### Model Selection Strategy
 
@@ -583,26 +584,31 @@ async function selfConsistentAnswer(question) {
 function selectModel(taskType, contextLength, budget) {
   // Ultra-cheap tasks
   if (budget === 'low' && taskType === 'simple') {
-    return 'gpt-3.5-turbo'; // or Claude Haiku
+    return 'claude-haiku-3-5'; // Ultra-fast and cheap
   }
 
   // Long context
   if (contextLength > 100000) {
-    return 'claude-sonnet-4'; // 200K context
+    return 'claude-sonnet-4-5'; // 200K context
   }
 
   // Complex reasoning
-  if (taskType === 'complex' || taskType === 'creative') {
-    return 'gpt-4-turbo';
+  if (taskType === 'complex' || taskType === 'reasoning') {
+    return 'o1'; // Best for complex reasoning
+  }
+
+  // Creative tasks
+  if (taskType === 'creative') {
+    return 'gpt-4.5-turbo';
   }
 
   // Coding tasks
   if (taskType === 'code') {
-    return 'claude-sonnet-4'; // Excellent for code
+    return 'claude-sonnet-4-5'; // Best for code
   }
 
   // Default
-  return 'gpt-4-turbo';
+  return 'claude-sonnet-4-5';
 }
 ```
 
@@ -615,7 +621,7 @@ function selectModel(taskType, contextLength, budget) {
 ```javascript
 // No training required - just call API
 const response = await openai.chat.completions.create({
-  model: 'gpt-4',
+  model: 'gpt-4.5-turbo',
   messages: [{ role: 'user', content: 'Explain quantum computing' }]
 });
 ```
@@ -765,12 +771,12 @@ async function trainClassifier(trainData) {
 }
 
 // 3. Evaluation
-async function evaluateModel(model, testData) {
+async function evaluateModel(modelName, testData) {
   let correct = 0;
 
   for (const item of testData) {
     const response = await openai.chat.completions.create({
-      model: model,
+      model: modelName,
       messages: [
         { role: 'system', content: 'Classify support tickets into: billing, technical, or sales' },
         { role: 'user', content: item.text }
@@ -913,7 +919,7 @@ class BaseAgent {
     const userPrompt = this.buildUserPrompt(task);
 
     const response = await this.llm.chat.completions.create({
-      model: 'claude-sonnet-4',
+      model: 'claude-sonnet-4-5',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -1064,9 +1070,9 @@ async function getCachedCompletion(prompt) {
 ```javascript
 // Try cheap model first, fallback to expensive if needed
 async function generateWithCascade(prompt) {
-  // Try GPT-3.5 first
-  const cheapResponse = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
+  // Try Haiku first (cheap and fast)
+  const cheapResponse = await anthropic.messages.create({
+    model: 'claude-haiku-3-5',
     messages: [{ role: 'user', content: prompt }]
   });
 
@@ -1077,9 +1083,9 @@ async function generateWithCascade(prompt) {
     return cheapResponse; // Good enough!
   }
 
-  // Fallback to GPT-4
-  return await openai.chat.completions.create({
-    model: 'gpt-4',
+  // Fallback to Sonnet 4.5 (more capable)
+  return await anthropic.messages.create({
+    model: 'claude-sonnet-4-5',
     messages: [{ role: 'user', content: prompt }]
   });
 }
@@ -1094,7 +1100,7 @@ async function robustLLMCall(prompt, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4.5-turbo',
         messages: [{ role: 'user', content: prompt }],
         timeout: 30000 // 30 seconds
       });
@@ -1162,7 +1168,7 @@ const limiter = new Bottleneck({
 
 const rateLimitedCompletion = limiter.wrap(async (prompt) => {
   return await openai.chat.completions.create({
-    model: 'gpt-4',
+    model: 'gpt-4.5-turbo',
     messages: [{ role: 'user', content: prompt }]
   });
 });
@@ -1215,9 +1221,9 @@ SpecWeave increments document AI usage:
 - AC-US1-03: AI provides explanations for suggestions
 
 **AI Integration**:
-- Model: Claude Sonnet 4 (200K context for large PRs)
+- Model: Claude Sonnet 4.5 (200K context for large PRs)
 - Prompt: "Analyze this code for quality issues..."
-- Fallback: GPT-4 Turbo if Claude unavailable
+- Fallback: GPT-4.5 Turbo if Claude unavailable
 - Cost estimate: $0.50 per PR review
 - Caching: Cache identical file reviews for 24h
 
