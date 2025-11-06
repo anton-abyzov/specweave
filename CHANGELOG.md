@@ -11,6 +11,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.10] - 2025-11-06
+
+### 🐛 **BUG FIX** - Accurate Claude Code Detection
+
+**Fix: Show "✅ Detected: Claude Code" when CLI is actually installed**
+
+**Problem:**
+- Users with Claude CLI installed saw misleading message: "No specific tool detected"
+- Detection logic defaulted to Claude without checking if CLI exists in PATH
+- Confusing UX: User runs `claude --version` successfully, but SpecWeave says "not detected"
+- Issue reported on Windows, but affects all platforms
+
+**Root Cause:**
+- `adapter-loader.ts:detectTool()` never checked if `claude` command exists
+- Only checked for OTHER tools (cursor, gemini, codex)
+- Always defaulted to 'claude' without verification
+- Message showed "recommending Claude" even when already installed
+
+**Solution:**
+- Added proactive Claude CLI detection using `isCommandAvailable('claude')`
+- Maintained backward compatibility (checks other tools first)
+- Shows TWO different messages based on actual detection:
+  - ✅ Claude CLI found: "✅ Detected: Claude Code (native plugin system, full automation)"
+  - ❌ Claude CLI NOT found: "ℹ️  No specific tool detected - recommending Claude Code"
+- Cross-platform: Uses `where` (Windows) / `which` (Unix/macOS)
+
+**Edge Cases Handled:**
+- ✅ User has ONLY Claude → Shows "Detected: Claude Code"
+- ✅ User has BOTH Claude + Cursor → Detects Cursor (backward compatible!)
+- ✅ User has NO tools → Shows "Recommending Claude Code"
+- ✅ User has Claude but NO .cursorrules → Shows "Detected: Claude Code"
+
+**Impact:**
+- ✅ Accurate detection messages on all platforms (Windows, macOS, Linux)
+- ✅ Better UX: Positive confirmation when Claude is installed
+- ✅ Backward compatible: Multi-tool scenarios work as before
+- ✅ No breaking changes to return values or behavior
+
+**Files Modified:**
+- `src/adapters/adapter-loader.ts` - Added Claude CLI detection logic
+
+**Before:**
+```
+ℹ️  No specific tool detected - recommending Claude Code
+   Recommended: claude (no other tool detected)
+```
+
+**After:**
+```
+✅ Detected: Claude Code (native plugin system, full automation)
+   Found 'claude' command in PATH
+```
+
+---
+
 ## [0.8.8] - 2025-11-06
 
 ### 🔧 **CLARITY IMPROVEMENT** - Only Claude Code Needed, Not Claude Desktop
