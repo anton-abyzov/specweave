@@ -15,19 +15,61 @@ import { execSync } from 'child_process';
 
 const TEST_DIR = path.join(process.cwd(), 'tests/fixtures/e2e-i18n');
 
+// Retry configuration for file system operations
+const CLEANUP_RETRIES = 3;
+const CLEANUP_INITIAL_DELAY = 100; // ms
+
 test.describe('Multilingual Workflows E2E', () => {
   test.beforeAll(async () => {
-    // Cleanup any previous test artifacts
-    if (await fs.pathExists(TEST_DIR)) {
-      await fs.remove(TEST_DIR);
+    // Cleanup any previous test artifacts with exponential backoff
+    let retries = CLEANUP_RETRIES;
+    let delay = CLEANUP_INITIAL_DELAY;
+
+    while (retries > 0) {
+      try {
+        // fs-extra's remove is safe even if path doesn't exist
+        await fs.remove(TEST_DIR);
+        await fs.ensureDir(TEST_DIR);
+        break;
+      } catch (error) {
+        retries--;
+        const errorMsg = error instanceof Error ? error.message : String(error);
+
+        if (retries === 0) {
+          console.error(`Failed to cleanup test directory after ${CLEANUP_RETRIES} attempts:`, errorMsg);
+          throw error;
+        }
+
+        console.warn(`Cleanup attempt ${CLEANUP_RETRIES - retries}/${CLEANUP_RETRIES} failed: ${errorMsg}. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff: 100ms → 200ms → 400ms
+      }
     }
-    await fs.ensureDir(TEST_DIR);
   });
 
   test.afterAll(async () => {
-    // Cleanup test directory
-    if (await fs.pathExists(TEST_DIR)) {
-      await fs.remove(TEST_DIR);
+    // Cleanup test directory with exponential backoff (non-fatal)
+    let retries = CLEANUP_RETRIES;
+    let delay = CLEANUP_INITIAL_DELAY;
+
+    while (retries > 0) {
+      try {
+        await fs.remove(TEST_DIR);
+        break;
+      } catch (error) {
+        retries--;
+        const errorMsg = error instanceof Error ? error.message : String(error);
+
+        if (retries === 0) {
+          console.warn(`Failed to cleanup test directory after ${CLEANUP_RETRIES} attempts:`, errorMsg);
+          // Don't throw - cleanup failure shouldn't fail tests
+          break;
+        }
+
+        console.warn(`Cleanup attempt ${CLEANUP_RETRIES - retries}/${CLEANUP_RETRIES} failed: ${errorMsg}. Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay *= 2; // Exponential backoff
+      }
     }
   });
 
@@ -206,16 +248,19 @@ test.describe('Multilingual Workflows E2E', () => {
 
     // Create increment structure manually for testing
     const incrementDir = path.join(projectDir, '.specweave/increments/0001-test-feature');
-    await fs.ensureDir(incrementDir);
-    await fs.ensureDir(path.join(incrementDir, 'logs'));
-    await fs.ensureDir(path.join(incrementDir, 'reports'));
-    await fs.ensureDir(path.join(incrementDir, 'scripts'));
+    const logsDir = path.join(incrementDir, 'logs');
+    const reportsDir = path.join(incrementDir, 'reports');
+    const scriptsDir = path.join(incrementDir, 'scripts');
+
+    await fs.ensureDir(logsDir);
+    await fs.ensureDir(reportsDir);
+    await fs.ensureDir(scriptsDir);
 
     // Verify structure exists
     expect(await fs.pathExists(incrementDir)).toBe(true);
-    expect(await fs.pathExists(path.join(incrementDir, 'logs'))).toBe(true);
-    expect(await fs.pathExists(path.join(incrementDir, 'reports'))).toBe(true);
-    expect(await fs.pathExists(path.join(incrementDir, 'scripts'))).toBe(true);
+    expect(await fs.pathExists(logsDir)).toBe(true);
+    expect(await fs.pathExists(reportsDir)).toBe(true);
+    expect(await fs.pathExists(scriptsDir)).toBe(true);
   });
 
   test('should handle all 9 supported languages', async () => {
