@@ -299,7 +299,7 @@ async function installPlugin(tracker: IssueTracker, language: string): Promise<v
   if (!isClaudeCliAvailable()) {
     spinner.warn('Claude CLI not found');
     console.log(chalk.yellow('\n📦 Manual plugin installation required:'));
-    console.log(chalk.white(`   /plugin install specweave-${tracker}@specweave\n`));
+    console.log(chalk.white(`   /plugin install specweave-${tracker}\n`));
     return;
   }
 
@@ -311,7 +311,7 @@ async function installPlugin(tracker: IssueTracker, language: string): Promise<v
   } else {
     spinner.fail(`Could not auto-install plugin`);
     console.log(chalk.yellow('\n📦 Manual plugin installation:'));
-    console.log(chalk.white(`   /plugin install specweave-${tracker}@specweave\n`));
+    console.log(chalk.white(`   /plugin install specweave-${tracker}\n`));
   }
 }
 

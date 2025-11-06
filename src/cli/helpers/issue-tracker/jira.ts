@@ -315,5 +315,5 @@ export function showJiraSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.yellow('\n⏭️  Skipped Jira setup\n'));
   console.log(chalk.white('You can configure later:'));
   console.log(chalk.gray('  1. Add JIRA_API_TOKEN, JIRA_EMAIL, JIRA_DOMAIN to .env'));
-  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-jira@specweave\n'));
+  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-jira\n'));
 }

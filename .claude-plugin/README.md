@@ -14,7 +14,7 @@ When you clone this repo and **trust the folder** in Claude Code:
 2. The `.claude/settings.json` file **automatically registers** the marketplace
 3. Install the core plugin:
    ```
-   /plugin install specweave@specweave
+   /plugin install specweave
    ```
 4. **Restart Claude Code**
 5. Commands are now available: `/specweave:inc`, `/specweave:do`, etc.
@@ -43,10 +43,10 @@ If automatic setup doesn't work (or folder not trusted):
 # Should show "specweave" marketplace
 
 # 3. Install core plugin
-/plugin install specweave@specweave
+/plugin install specweave
 
 # 4. (Optional) Install other plugins as needed
-/plugin install specweave-github@specweave
+/plugin install specweave-github
 
 # 5. Restart Claude Code
 ```
@@ -207,7 +207,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 /plugin list
 
 # If specweave is missing, install it
-/plugin install specweave@specweave
+/plugin install specweave
 
 # Restart Claude Code
 ```
@@ -220,7 +220,7 @@ ls .claude/commands/
 # Should show specweave.*.md files
 # If missing, reinstall plugin:
 /plugin uninstall specweave
-/plugin install specweave@specweave
+/plugin install specweave
 
 # Then restart Claude Code
 ```
@@ -278,7 +278,7 @@ cd plugins/
 
 4. **Install specific plugin**:
    ```bash
-   /plugin install specweave@specweave
+   /plugin install specweave
    ```
 
 ### ".claude/settings.json not working"

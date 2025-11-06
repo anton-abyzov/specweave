@@ -294,7 +294,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should create translator skill files', async () => {
-    const skillPath = path.join(process.cwd(), 'skills/translator/SKILL.md');
+    const skillPath = path.join(process.cwd(), 'plugins/specweave/skills/translator/SKILL.md');
 
     // Verify translator skill exists
     expect(await fs.pathExists(skillPath)).toBe(true);
@@ -313,7 +313,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should create translator agent files', async () => {
-    const agentPath = path.join(process.cwd(), 'agents/translator/AGENT.md');
+    const agentPath = path.join(process.cwd(), 'plugins/specweave/agents/translator/AGENT.md');
 
     // Verify translator agent exists
     expect(await fs.pathExists(agentPath)).toBe(true);
@@ -328,7 +328,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should create translate command', async () => {
-    const commandPath = path.join(process.cwd(), 'plugins/specweave/commands/translate.md');
+    const commandPath = path.join(process.cwd(), 'plugins/specweave/commands/specweave-translate.md');
 
     // Verify translate command exists
     expect(await fs.pathExists(commandPath)).toBe(true);

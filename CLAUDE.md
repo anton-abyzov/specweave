@@ -933,7 +933,7 @@ When you run `specweave init`:
    - No manual `/plugin marketplace add` needed!
 
 2. ✅ **Core Plugin Auto-Installation**
-   - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave@specweave`
+   - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave`
    - Works via CLI during init (uses user's shell to access `claude` command)
    - Slash commands available IMMEDIATELY - no manual install!
    - Success message: "✔ SpecWeave core plugin installed automatically!"
@@ -963,7 +963,7 @@ When you create increments (e.g., `/specweave:increment "Add Stripe billing"`):
    Required:
    • specweave-payments - Stripe integration (detected: "billing", "Stripe")
 
-   📦 Install: /plugin install specweave-payments@specweave
+   📦 Install: /plugin install specweave-payments
 
    Or continue without it (can install later)
    ```
@@ -996,7 +996,7 @@ All plugin management happens through Claude Code's native commands:
 /plugin list --installed
 
 # Install a specific plugin
-/plugin install specweave-kubernetes@specweave
+/plugin install specweave-kubernetes
 
 # Uninstall a plugin
 /plugin uninstall specweave-kubernetes
@@ -1006,7 +1006,7 @@ All plugin management happens through Claude Code's native commands:
 ```
 
 **Key Insight**: SpecWeave uses **ONLY** Claude Code's native plugin system:
-- Plugins install globally via `/plugin install specweave-{name}@specweave`
+- Plugins install globally via `/plugin install specweave-{name}`
 - Work across ALL projects (like VS Code extensions)
 - Auto-activate based on skills' description keywords
 - Managed by Claude Code (updates, uninstall, etc.)
@@ -1037,7 +1037,7 @@ Local paths are **NOT supported** in `extraKnownMarketplaces` in settings.json. 
 /plugin marketplace add ./.claude-plugin
 
 # Then install plugins
-/plugin install specweave@specweave
+/plugin install specweave
 ```
 
 **Why CLI-only?** Claude Code's `extraKnownMarketplaces` in settings.json only supports remote sources (GitHub, Git). Local paths must be added via CLI commands.

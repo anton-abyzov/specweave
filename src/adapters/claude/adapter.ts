@@ -56,7 +56,7 @@ export class ClaudeAdapter extends AdapterBase {
    * 1. Create .specweave/ structure (project data)
    * 2. Show marketplace installation instructions
    * 3. User adds marketplace: /plugin marketplace add anton-abyzov/specweave
-   * 4. User installs plugins: /plugin install specweave@specweave
+   * 4. User installs plugins: /plugin install specweave
    */
   async install(options: AdapterOptions): Promise<void> {
     console.log('\n📦 Installing Claude Code Adapter (Native Plugin System)\n');
@@ -79,9 +79,9 @@ export class ClaudeAdapter extends AdapterBase {
     console.log('\n  1️⃣  Add SpecWeave marketplace:');
     console.log('     /plugin marketplace add anton-abyzov/specweave');
     console.log('\n  2️⃣  Install SpecWeave core:');
-    console.log('     /plugin install specweave@specweave');
+    console.log('     /plugin install specweave');
     console.log('\n  3️⃣  (Optional) Install GitHub plugin:');
-    console.log('     /plugin install specweave-github@specweave');
+    console.log('     /plugin install specweave-github');
     console.log('\n  4️⃣  Start using SpecWeave:');
     console.log('     /specweave.inc "create a todo app"');
     console.log('\n💡 Tip: Plugins load natively - no file copying needed!');
@@ -215,7 +215,7 @@ Installation Options:
 
 Option 1 (Recommended): Native Claude Code
   /plugin marketplace add specweave/marketplace
-  /plugin install ${pluginName}@specweave
+  /plugin install ${pluginName}
 
 Option 2: SpecWeave CLI
   specweave plugin install ${pluginName}
@@ -320,7 +320,7 @@ Using SpecWeave CLI for plugin management.
     if (hasNativePlugins) {
       console.log('   💡 Tip: You can also use native /plugin commands:');
       console.log(`      /plugin marketplace add specweave/marketplace`);
-      console.log(`      /plugin install ${plugin.manifest.name.replace('specweave-', '')}@specweave`);
+      console.log(`      /plugin install ${plugin.manifest.name.replace('specweave-', '')}`);
       console.log('');
     }
 
