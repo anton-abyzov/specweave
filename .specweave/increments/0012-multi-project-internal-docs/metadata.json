@@ -1,12 +1,21 @@
 {
   "id": "0012-multi-project-internal-docs",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-05T01:25:00.000Z",
-  "lastActivity": "2025-11-05T02:35:00.000Z",
+  "completed": "2025-11-05T18:45:00.000Z",
+  "lastActivity": "2025-11-05T18:45:00.000Z",
+  "pmApproval": true,
+  "gates": {
+    "tasks": "PASS",
+    "tests": "DEFERRED",
+    "documentation": "PASS"
+  },
   "github": {
     "issue": 19,
     "url": "https://github.com/anton-abyzov/specweave/issues/19",
-    "synced": "2025-11-05T02:35:00.000Z"
+    "synced": "2025-11-05T02:35:00.000Z",
+    "closedAt": "2025-11-05T18:50:00.000Z",
+    "closingCommentId": 3495212337
   }
 }

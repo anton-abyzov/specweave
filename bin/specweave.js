@@ -72,28 +72,6 @@ program
     await listCommand(options);
   });
 
-// Adapters command - List available adapters
-program
-  .command('adapters')
-  .description('List available AI tool adapters')
-  .action(async () => {
-    const { AdapterLoader } = await import('../dist/adapters/adapter-loader.js');
-    const loader = new AdapterLoader();
-    await loader.listAdapters();
-  });
-
-// Plugin commands - Manage plugins
-program
-  .command('plugin <action> [plugin-name]')
-  .description('Manage plugins (list, enable, disable, info)')
-  .option('--enabled', 'Show only enabled plugins (for list)')
-  .option('--available', 'Show only available plugins (for list)')
-  .option('--force', 'Force operation (for enable/disable)')
-  .action(async (action, pluginName, options) => {
-    const { pluginCommand } = await import('../dist/cli/commands/plugin.js');
-    await pluginCommand(action, pluginName, options);
-  });
-
 // Increment status commands
 program
   .command('pause <increment-id>')
@@ -160,11 +138,6 @@ program.on('--help', () => {
   console.log('  $ specweave init my-saas                    # Create new project (auto-detect tool)');
   console.log('  $ specweave init my-saas --adapter cursor   # Create project for Cursor');
   console.log('  $ specweave init my-saas --language ru      # Create project with Russian language');
-  console.log('  $ specweave adapters                        # List available AI tool adapters');
-  console.log('  $ specweave plugin list                     # List all plugins');
-  console.log('  $ specweave plugin enable specweave-github  # Enable GitHub plugin');
-  console.log('  $ specweave plugin disable specweave-github # Disable GitHub plugin');
-  console.log('  $ specweave plugin info specweave-github    # Show plugin details');
   console.log('  $ specweave install pm --local              # Install PM agent locally');
   console.log('  $ specweave install --global                # Install all (interactive)');
   console.log('  $ specweave list                            # List all available components');
