@@ -59,14 +59,19 @@ export async function execFileNoThrow(
     env?: NodeJS.ProcessEnv;
     timeout?: number;
     maxBuffer?: number;
+    shell?: boolean;
   } = {}
 ): Promise<ExecResult> {
   try {
+    // CRITICAL: On Windows, shell is needed for .cmd/.bat files
+    // Without shell, execFileAsync can't find 'claude.cmd' even if it's in PATH
+    const needsShell = process.platform === 'win32' && options.shell !== false;
+
     const { stdout, stderr } = await execFileAsync(command, args, {
       ...options,
       encoding: 'utf-8',
-      // Windows compatibility: execFile automatically finds .exe/.cmd/.bat
       windowsHide: true, // Don't show console window on Windows
+      shell: needsShell,
     });
 
     return {
@@ -110,13 +115,19 @@ export function execFileNoThrowSync(
     env?: NodeJS.ProcessEnv;
     timeout?: number;
     maxBuffer?: number;
+    shell?: boolean;
   } = {}
 ): ExecResult {
   try {
+    // CRITICAL: On Windows, shell is needed for .cmd/.bat files
+    // Without shell, execFileSync can't find 'claude.cmd' even if it's in PATH
+    const needsShell = process.platform === 'win32' && options.shell !== false;
+
     const stdout = execFileSync(command, args, {
       ...options,
       encoding: 'utf-8',
       windowsHide: true,
+      shell: needsShell,
     });
 
     return {

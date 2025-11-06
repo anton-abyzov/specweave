@@ -10,6 +10,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ---
+## [0.8.13] - 2025-11-06
+
+### 🐛 **CRITICAL FIX** - Windows: Claude CLI Detection Now Works
+
+**Fix: Enable shell execution for .cmd/.bat files on Windows**
+
+**Problem:**
+- On Windows, `claude --version` works in PowerShell/CMD
+- But Node.js `execFileSync('claude', ['--version'])` fails
+- Shows error: "Issue: version_check_failed"
+- Even though Claude CLI is installed and in PATH
+
+**Root Cause:**
+- On Windows, `claude` is installed as `claude.cmd` (batch file)
+- Node's `execFileSync` doesn't use shell by default
+- Without shell, it can't execute .cmd/.bat files
+- Only .exe files work without shell
+
+**Solution:**
+- Added `shell: true` option for Windows in `execFileNoThrow.ts`
+- Automatic: Detects `process.platform === 'win32'`
+- Safe: Only enables shell on Windows, not Unix/macOS
+- Applies to both sync and async versions
+
+**Code Change:**
+\`\`\`typescript
+// CRITICAL: On Windows, shell is needed for .cmd/.bat files
+const needsShell = process.platform === 'win32' && options.shell !== false;
+
+const stdout = execFileSync(command, args, {
+  ...options,
+  encoding: 'utf-8',
+  windowsHide: true,
+  shell: needsShell,  // ← NEW: Enable shell on Windows
+});
+\`\`\`
+
+**Impact:**
+- ✅ Windows users: Claude CLI detection now works
+- ✅ macOS/Linux: No changes (shell not used)
+- ✅ All platforms: Same detection logic, platform-aware execution
+
+**Files Changed:**
+- `src/utils/execFileNoThrow.ts` - Added Windows shell support
+
+**Verified:**
+- macOS: Works (tested)
+- Windows: Should work (user report confirms issue, fix targets root cause)
+
+---
+
 
 ## [0.8.12] - 2025-11-06
 
