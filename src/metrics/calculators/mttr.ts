@@ -5,9 +5,9 @@
  * Data source: GitHub Issues with labels "incident" or "production-bug"
  */
 
-import { Issue, MTTRMetric } from '../types';
-import { classifyMTTR } from '../utils/tier-classifier';
-import { calculatePercentile } from '../utils/percentile';
+import { Issue, MTTRMetric } from '../types.js';
+import { classifyMTTR } from '../utils/tier-classifier.js';
+import { calculatePercentile } from '../utils/percentile.js';
 
 /**
  * Calculate Mean Time to Recovery (MTTR)

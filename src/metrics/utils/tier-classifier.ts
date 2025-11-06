@@ -6,7 +6,7 @@
  * @see https://dora.dev/ - DORA Research
  */
 
-import { DORAType } from '../types';
+import { DORAType } from '../types.js';
 
 /**
  * Classify Deployment Frequency

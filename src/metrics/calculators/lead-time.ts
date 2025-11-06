@@ -5,9 +5,9 @@
  * Data source: Git commits + GitHub Releases API
  */
 
-import { Release, Commit, LeadTimeMetric } from '../types';
-import { classifyLeadTime } from '../utils/tier-classifier';
-import { calculatePercentile } from '../utils/percentile';
+import { Release, Commit, LeadTimeMetric } from '../types.js';
+import { classifyLeadTime } from '../utils/tier-classifier.js';
+import { calculatePercentile } from '../utils/percentile.js';
 
 /**
  * Calculate Lead Time for Changes
