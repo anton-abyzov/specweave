@@ -757,6 +757,12 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
   if (fs.existsSync(gitignoreTemplate)) {
     fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
   }
+
+  // Copy .gitattributes (forces LF line endings on all platforms, prevents Windows CRLF warnings)
+  const gitattributesTemplate = path.join(templatesDir, '.gitattributes.template');
+  if (fs.existsSync(gitattributesTemplate)) {
+    fs.copyFileSync(gitattributesTemplate, path.join(targetDir, '.gitattributes'));
+  }
 }
 
 /**
