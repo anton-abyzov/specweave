@@ -432,7 +432,7 @@ export async function initCommand(
     const gitDir = path.join(targetDir, '.git');
     if (!fs.existsSync(gitDir)) {
       // Use secure command execution for git commands
-      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir });
+      const gitInitResult = execFileNoThrowSync('git', ['init'], { cwd: targetDir, shell: false });
       if (gitInitResult.success) {
         spinner.text = 'Git repository initialized...';
       } else {
@@ -441,13 +441,13 @@ export async function initCommand(
 
       // 10. Create initial commit (if git init succeeded)
       if (gitInitResult.success) {
-        const gitAddResult = execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir });
+        const gitAddResult = execFileNoThrowSync('git', ['add', '.'], { cwd: targetDir, shell: false });
         if (gitAddResult.success) {
           const gitCommitResult = execFileNoThrowSync('git', [
             'commit',
             '-m',
             'Initial commit with SpecWeave'
-          ], { cwd: targetDir });
+          ], { cwd: targetDir, shell: false });
 
           if (gitCommitResult.success) {
             spinner.text = 'Initial commit created...';
