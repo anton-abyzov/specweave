@@ -300,7 +300,7 @@ export function showJiraSetupComplete(language: SupportedLanguage): void {
   console.log(chalk.white('Available commands:'));
   console.log(chalk.gray('  /specweave-jira:sync'));
   console.log(chalk.gray('  /specweave-jira:status\n'));
-  console.log(chalk.cyan('💡 Tip: Use /specweave:inc "feature" to create an increment'));
+  console.log(chalk.cyan('💡 Tip: Use /specweave:increment "feature" to create an increment'));
   console.log(chalk.gray('   It will automatically sync to Jira Issues!\n'));
 }
 

@@ -326,7 +326,7 @@ export function showGitHubSetupComplete(language: SupportedLanguage): void {
   console.log(chalk.gray('  /specweave-github:sync'));
   console.log(chalk.gray('  /specweave-github:close-issue'));
   console.log(chalk.gray('  /specweave-github:status\n'));
-  console.log(chalk.cyan('💡 Tip: Use /specweave:inc "feature" to create an increment'));
+  console.log(chalk.cyan('💡 Tip: Use /specweave:increment "feature" to create an increment'));
   console.log(chalk.gray('   It will automatically sync to GitHub Issues!\n'));
 }
 

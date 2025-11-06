@@ -52,10 +52,10 @@ This project uses **SpecWeave** - a specification-first AI development framework
 **How SpecWeave works**:
 
 ```
-/specweave:inc "feature" → /specweave:do → /specweave:progress → /specweave:done → repeat
+/specweave:increment "feature" → /specweave:do → /specweave:progress → /specweave:done → repeat
 ```
 
-**1. Plan Feature** → `/specweave:inc "user authentication"`
+**1. Plan Feature** → `/specweave:increment "user authentication"`
    - Creates spec.md (WHAT/WHY), plan.md (HOW), tasks.md, tests.md
    - PM-led process with architect/security/QA review
    - **Use when**: Starting any new feature or increment
@@ -104,7 +104,7 @@ When working in a SpecWeave-initialized project (`.specweave/` exists), SpecWeav
 6. ✅ **Business Model** - "Freemium", "$X/mo", "B2B", "Consumer"
 
 **Confidence Levels:**
-- **High (5-6 signals + SpecWeave folder)**: Auto-route to `/specweave:inc` immediately
+- **High (5-6 signals + SpecWeave folder)**: Auto-route to `/specweave:increment` immediately
 - **Medium (3-4 signals + SpecWeave folder)**: Ask 1-2 clarifying questions, then route
 - **Low (<3 signals)**: Regular conversation (no auto-routing)
 
@@ -124,9 +124,9 @@ Monetization: Freemium ($10/mo)
 SpecWeave detects: ✅ Name ✅ Features ✅ Tech ✅ Timeline ✅ Problem ✅ Business
 → Automatically recognizes this as a product description
 → Guides you through increment planning
-→ Invokes /specweave:inc automatically
+→ Invokes /specweave:increment automatically
 
-No need to remember to type /inc!
+No need to remember the full command!
 ```
 
 ### Opt-Out Options
@@ -140,7 +140,7 @@ You can override automatic routing with explicit instructions:
 ### Two Ways to Use SpecWeave
 
 1. ✅ **Automatic** (NEW): Describe your product → SpecWeave detects it → Plans automatically
-2. ✅ **Explicit** (Classic): Type `/inc "feature"` → Works as before
+2. ✅ **Explicit** (Classic): Type `/specweave:increment "feature"` → Works as before
 
 Both approaches work perfectly - use whichever feels more natural!
 
@@ -268,7 +268,7 @@ Config: Auto-detected from project files
 **Core Framework** (always loaded):
 - 9 core skills (increment-planner, tdd-workflow, context-loader, etc.)
 - 3 core agents (PM, Architect, Tech Lead)
-- 7 core commands (`/specweave:inc`, `/specweave:do`, etc.)
+- 7 core commands (`/specweave:increment`, `/specweave:do`, etc.)
 - ~12K tokens (lightweight!)
 
 **Plugins** (opt-in based on your stack):
@@ -280,9 +280,9 @@ Config: Auto-detected from project files
 
 **Core commands** (always available):
 ```bash
-/specweave:inc "feature"    # or /inc
-/specweave:do               # or /do
-/specweave:progress         # or /progress
+/specweave:increment "feature"
+/specweave:do
+/specweave:progress
 ```
 
 **Plugin commands** (when plugin installed):

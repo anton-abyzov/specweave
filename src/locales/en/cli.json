@@ -130,7 +130,7 @@
         "installGitHub": "/plugin install specweave-github",
         "installFrontend": "/plugin install specweave-frontend",
         "step4": "Start building:",
-        "example": "\"/specweave:inc 'user authentication'\"",
+        "example": "\"/specweave:increment 'user authentication'\"",
         "autoActivate": "Skills and agents auto-activate based on context"
       },
       "cursor": {

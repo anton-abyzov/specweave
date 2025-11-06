@@ -17,7 +17,7 @@ When you clone this repo and **trust the folder** in Claude Code:
    /plugin install specweave
    ```
 4. **Restart Claude Code**
-5. Commands are now available: `/specweave:inc`, `/specweave:do`, etc.
+5. Commands are now available: `/specweave:increment`, `/specweave:do`, etc.
 
 **How it works**: The `.claude/settings.json` file contains:
 ```json
@@ -54,7 +54,7 @@ If automatic setup doesn't work (or folder not trusted):
 ### Verify Installation
 
 After installing plugins, type `/specweave:` to see available commands:
-- `/specweave:inc` - Plan new increment (alias for /specweave:increment)
+- `/specweave:increment` - Plan new increment
 - `/specweave:do` - Execute tasks
 - `/specweave:next` - Smart transition
 - `/specweave:done` - Close increment
@@ -130,7 +130,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - No namespacing
 
 **With Plugin System** (new):
-- Commands: `/specweave:inc`, `/specweave:do`, `/specweave-github:sync`
+- Commands: `/specweave:increment`, `/specweave:do`, `/specweave-github:sync`
 - Plugin-namespaced via `.claude-plugin/`
 - Proper marketplace structure
 - Each plugin has its own namespace (e.g., `specweave`, `specweave-github`)
