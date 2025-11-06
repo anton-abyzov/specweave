@@ -632,7 +632,7 @@ export async function initCommand(
             spinner.succeed('SpecWeave plugin installed successfully!');
             console.log(chalk.green('   ✔ Marketplace: ./claude-plugin → specweave'));
             console.log(chalk.green('   ✔ Plugin: specweave'));
-            console.log(chalk.green('   ✔ Slash commands ready: /specweave:inc'));
+            console.log(chalk.green('   ✔ Slash commands ready: /specweave:increment'));
           } else {
             throw new Error(installResult.stderr || installResult.stdout || 'Installation failed');
           }
@@ -1270,7 +1270,7 @@ function showNextSteps(projectName: string, adapterName: string, language: Suppo
     if (!pluginAutoInstalled) {
       console.log(`   ${stepNumber}. ${chalk.yellow.bold('⚠️  ' + locale.t('cli', 'init.nextSteps.claude.step2'))}`);
       console.log(`      ${chalk.cyan.bold(locale.t('cli', 'init.nextSteps.claude.installCore'))}`);
-      console.log(`      ${chalk.gray('↑ Required for slash commands like /specweave:inc')}`);
+      console.log(`      ${chalk.gray('↑ Required for slash commands like /specweave:increment')}`);
       console.log('');
       stepNumber++;
     }

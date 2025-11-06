@@ -186,7 +186,7 @@ fi
 Plugin commands use namespace pattern:
 
 **Core commands** (no namespace):
-- `/specweave:inc` → Core framework
+- `/specweave:increment` → Core framework
 - `/specweave:do` → Core framework
 - `/specweave:progress` → Core framework
 
@@ -910,11 +910,11 @@ If using Claude Code, these slash commands are available:
 **Core Commands** (always available):
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/inc` | Create new increment | `/inc "user authentication"` |
-| `/do` | Execute implementation | `/do` |
-| `/progress` | Check status | `/progress` |
-| `/done` | Close increment | `/done 0001` |
-| `/validate` | Validate quality | `/validate 0001 --quality` |
+| `/specweave:increment` | Create new increment | `/specweave:increment "user authentication"` |
+| `/specweave:do` | Execute implementation | `/specweave:do` |
+| `/specweave:progress` | Check status | `/specweave:progress` |
+| `/specweave:done` | Close increment | `/specweave:done 0001` |
+| `/specweave:validate` | Validate quality | `/specweave:validate 0001 --quality` |
 
 **Plugin Commands** (when plugin installed):
 | Command | Purpose | Plugin |
