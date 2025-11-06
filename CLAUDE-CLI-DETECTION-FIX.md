@@ -133,6 +133,30 @@ if (claudeStatus.available) {
 
 ## What Users Will See Now
 
+### Windows-Specific Behavior ⚠️
+
+On Windows, you may see this message:
+```
+⚠️  Claude command found but not fully functional
+   Issue: unknown
+   Will still use Claude (may need manual plugin install)
+```
+
+**This is CORRECT behavior!** It means:
+- ✅ `where claude` found the command
+- ✅ `claude --version` runs
+- ❌ `claude plugin --help` doesn't work yet
+
+**What to do**:
+1. Continue with init (it will complete successfully)
+2. Open project in Claude Code IDE
+3. Run: `/plugin install specweave@specweave`
+4. Alternatively: Update Claude CLI with `npm update -g @anthropic-ai/claude-code`
+
+**Result**: No contradictory messages! The detection honestly reports what it found.
+
+---
+
 ### Scenario 1: Command Not Found
 ```
 ⚠️ Claude CLI not found in PATH
