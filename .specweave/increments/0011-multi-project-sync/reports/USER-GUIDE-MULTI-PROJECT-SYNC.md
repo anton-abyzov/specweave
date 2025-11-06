@@ -789,7 +789,7 @@ Synced: 45/187 items before error
 **Need Help?**
 - GitHub Issues: https://github.com/anton-abyzov/specweave/issues
 - Documentation: https://spec-weave.com
-- Slack command docs: `plugins/specweave-github/commands/sync-v2.md`
+- Slash command docs: `plugins/specweave-github/commands/specweave-github-sync.md`
 
 ---
 

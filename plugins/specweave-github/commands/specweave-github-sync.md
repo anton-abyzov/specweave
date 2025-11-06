@@ -1,13 +1,11 @@
 ---
-name: specweave-github:sync-v2
+name: specweave-github:sync
 description: Synchronize SpecWeave increment with GitHub issue (Multi-Project Support). Select profile, configure time range, and sync with rate limit protection.
 ---
 
 # Sync Increment with GitHub Issue (Multi-Project)
 
-**NEW in v2**: Multi-profile support, time range filtering, and rate limit protection.
-
-Synchronize the current state of a SpecWeave increment with its GitHub issue across multiple repositories.
+Synchronize the current state of a SpecWeave increment with its GitHub issue across multiple repositories. Supports multi-profile management, time range filtering, and rate limit protection.
 
 ## Usage
 
@@ -184,31 +182,16 @@ Last synced: just now
 Next sync: Use /specweave-github:sync 0004 when ready
 ```
 
-## Multi-Project Benefits
+## Key Features
 
-### Before (Single Project)
-
-```
-❌ Problems:
-- Only one GitHub repo per project
-- Can't sync increments to different repos
-- No rate limit protection
-- Slow syncs (fetching all data)
-```
-
-### After (Multi-Project)
-
-```
-✅ Benefits:
-- Unlimited GitHub repos (3+, 5+, 10+ profiles)
-- Different increments → different repos
+- **Multi-Profile Support**: Unlimited GitHub repos (3+, 5+, 10+ profiles)
+- **Flexible Syncing**: Different increments can sync to different repos
   - Increment 0001 → anton-abyzov/specweave
   - Increment 0002 → client-org/mobile-app
   - Increment 0003 → internal-org/infrastructure
-- Time range filtering (2 min vs 25+ min)
-- Rate limit protection (95%+ success rate)
-- Smart estimates before every sync
-```
+- **Time Range Filtering**: Fast syncs (2 min vs 25+ min)
+- **Rate Limit Protection**: 95%+ success rate with smart estimates
+- **Smart Estimates**: Preview impact before every sync
 
 ## Configuration
 
@@ -396,9 +379,9 @@ Retrying in 10 seconds...
 ✓ Connection restored! Resuming sync...
 ```
 
-## Migration from v1
+## First-Time Setup
 
-### Automatic Migration
+### Automatic Profile Creation
 
 Run migration script:
 
@@ -434,9 +417,9 @@ Next steps:
   3. Keep backup: .specweave/config.json.backup (until confirmed working)
 ```
 
-### Manual Migration
+### Manual Setup
 
-If automatic migration fails:
+If automatic profile creation fails:
 
 1. Create profile manually:
    ```bash
@@ -580,6 +563,6 @@ System will:
 
 **Command**: `/specweave-github:sync`
 **Plugin**: specweave-github
-**Version**: 2.0.0 (Multi-Project)
+**Version**: 1.0.0 (Multi-Project)
 **Last Updated**: 2025-11-05
 **Requires**: SpecWeave Core v0.8.0+

@@ -72,7 +72,7 @@ Successfully implemented **multi-project sync architecture** enabling unlimited 
 |------|-------|---------|
 | ADR-0016 | 1,200 | Architecture Decision Record for multi-project sync |
 | USER-GUIDE-MULTI-PROJECT-SYNC.md | 1,800 | Comprehensive user guide with examples |
-| sync-v2.md | 586 | Updated GitHub sync command documentation |
+| specweave-github-sync.md | 586 | GitHub sync command documentation |
 | CLAUDE.md (updated) | +238 | Multi-Project Sync Architecture section |
 
 **Coverage**:
@@ -396,7 +396,7 @@ specweave migrate-to-profiles
 **Documentation**:
 15. `.specweave/docs/internal/architecture/adr/0016-multi-project-external-sync.md` (1,200 lines)
 16. `.specweave/increments/0011-multi-project-sync/reports/USER-GUIDE-MULTI-PROJECT-SYNC.md` (1,800 lines)
-17. `plugins/specweave-github/commands/sync-v2.md` (586 lines)
+17. `plugins/specweave-github/commands/specweave-github-sync.md` (586 lines)
 18. This report (350+ lines)
 
 ### Files Updated (2 files)

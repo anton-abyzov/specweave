@@ -184,7 +184,7 @@ export class RateLimiter {
         '.resources.core',
       ]);
 
-      if (result.status !== 0) {
+      if (!result.success) {
         throw new Error(
           `GitHub CLI command failed: ${result.stderr || 'Unknown error'}`
         );
