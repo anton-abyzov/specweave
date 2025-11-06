@@ -355,6 +355,56 @@
       },
       "additionalProperties": false
     },
+    "documentation": {
+      "type": "object",
+      "description": "Documentation preview configuration (Docusaurus local server)",
+      "properties": {
+        "preview": {
+          "type": "object",
+          "description": "Local documentation preview settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable documentation preview feature",
+              "default": true
+            },
+            "autoInstall": {
+              "type": "boolean",
+              "description": "Automatically install Docusaurus when needed",
+              "default": true
+            },
+            "port": {
+              "type": "number",
+              "description": "Default port for dev server",
+              "minimum": 1024,
+              "maximum": 65535,
+              "default": 3000
+            },
+            "openBrowser": {
+              "type": "boolean",
+              "description": "Automatically open browser when server starts",
+              "default": true
+            },
+            "theme": {
+              "type": "string",
+              "description": "Documentation theme",
+              "enum": ["default", "classic", "dark"],
+              "default": "default"
+            },
+            "excludeFolders": {
+              "type": "array",
+              "description": "Folders to exclude from documentation",
+              "items": {
+                "type": "string"
+              },
+              "default": ["legacy", "node_modules"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "sync": {
       "type": "object",
       "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",
@@ -731,6 +781,26 @@
       },
       "plugins": {
         "enabled": ["specweave-github"]
+      }
+    },
+    {
+      "project": {
+        "name": "docs-preview-example",
+        "version": "1.0.0",
+        "description": "Project with documentation preview configured"
+      },
+      "documentation": {
+        "preview": {
+          "enabled": true,
+          "autoInstall": true,
+          "port": 3000,
+          "openBrowser": true,
+          "theme": "default",
+          "excludeFolders": ["legacy", "node_modules", "_backlog"]
+        }
+      },
+      "plugins": {
+        "enabled": ["specweave-github", "specweave-docs-preview"]
       }
     }
   ]
