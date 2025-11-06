@@ -1,0 +1,18 @@
+{
+  "id": "0013-v0.8.0-stabilization",
+  "status": "planning",
+  "type": "stabilization",
+  "created": "2025-11-06T00:00:00.000Z",
+  "lastActivity": "2025-11-06T00:00:00.000Z",
+  "pmApproval": true,
+  "gates": {
+    "tasks": "PENDING",
+    "tests": "PENDING",
+    "documentation": "PENDING"
+  },
+  "github": {
+    "issue": 26,
+    "url": "https://github.com/anton-abyzov/specweave/issues/26",
+    "synced": "2025-11-06T00:00:00.000Z"
+  }
+}
