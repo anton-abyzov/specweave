@@ -5,8 +5,8 @@
  * Data source: GitHub Issues with labels "incident" or "production-bug"
  */
 
-import { Release, Issue, ChangeFailureRateMetric } from '../types';
-import { classifyChangeFailureRate } from '../utils/tier-classifier';
+import { Release, Issue, ChangeFailureRateMetric } from '../types.js';
+import { classifyChangeFailureRate } from '../utils/tier-classifier.js';
 
 /**
  * Calculate Change Failure Rate

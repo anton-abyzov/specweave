@@ -8,12 +8,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { GitHubClient } from './github-client';
-import { calculateDeploymentFrequency } from './calculators/deployment-frequency';
-import { calculateLeadTime } from './calculators/lead-time';
-import { calculateChangeFailureRate } from './calculators/change-failure-rate';
-import { calculateMTTR } from './calculators/mttr';
-import { DORAMetrics, GitHubConfig } from './types';
+import { GitHubClient } from './github-client.js';
+import { calculateDeploymentFrequency } from './calculators/deployment-frequency.js';
+import { calculateLeadTime } from './calculators/lead-time.js';
+import { calculateChangeFailureRate } from './calculators/change-failure-rate.js';
+import { calculateMTTR } from './calculators/mttr.js';
+import { DORAMetrics, GitHubConfig } from './types.js';
 
 /**
  * Calculate all DORA metrics

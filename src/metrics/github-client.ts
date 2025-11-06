@@ -6,7 +6,7 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import { Release, Commit, Issue, GitHubConfig } from './types';
+import { Release, Commit, Issue, GitHubConfig } from './types.js';
 
 /**
  * Sleep utility for exponential backoff
