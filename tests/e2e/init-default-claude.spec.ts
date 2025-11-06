@@ -51,17 +51,7 @@ test.describe('specweave init - default claude adapter', () => {
     expect(settings.extraKnownMarketplaces.specweave.source.path).toBe('.claude-plugin');
   });
 
-  test.skip('Plugin system: agents are NOT copied to .claude/ (installed globally)', async () => {
-    // NOTE: As of v0.4.0+, SpecWeave uses Claude Code's native plugin system
-    // Agents remain in plugins/specweave/agents/ and are installed globally
-    // This test is kept for reference but skipped
-  });
 
-  test.skip('Plugin system: skills are NOT copied to .claude/ (installed globally)', async () => {
-    // NOTE: As of v0.4.0+, SpecWeave uses Claude Code's native plugin system
-    // Skills remain in plugins/specweave/skills/ and are installed globally
-    // This test is kept for reference but skipped
-  });
 
   test('should create .specweave directory structure', async () => {
     const specweaveDir = path.join(TEST_DIR, '.specweave');

@@ -14,7 +14,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
     "test:smoke": "bash tests/smoke/smoke-test.sh",
-    "test:e2e": "playwright test tests/e2e/ --grep-invert=\"(should create translator|should default to claude adapter|should create .claude|should initialize project with specweave init|should create correct directory structure|should handle non-interactive mode correctly|should validate config.json structure|should create .specweave directory structure|should create CLAUDE.md and AGENTS.md|should use claude adapter when explicitly requested|should create translate command|should initialize git repository|should use generic adapter|should install SpecWeave|should scaffold SaaS|should create proper directory|should create required configuration|should install core skills|should install core agents|should have deployment|should have Stripe|ADO Sync)\"",
+    "test:e2e": "playwright test tests/e2e/ --grep-invert=\"(should create .claude|should initialize project with specweave init|should create correct directory structure|should handle non-interactive mode correctly|should validate config.json structure|should create .specweave directory structure|should create CLAUDE.md and AGENTS.md|should initialize git repository|should install SpecWeave|should scaffold SaaS|should create proper directory|should create required configuration|should install core skills|should install core agents|should have deployment|should have Stripe|ADO Sync)\"",
     "test:integration": "echo 'Integration tests are temporarily disabled (excluded in jest.config.cjs line 31)' && exit 0",
     "test": "npm run test:smoke && npm run test:e2e",
     "metrics:dora": "node dist/metrics/dora-calculator.js",
