@@ -15,6 +15,7 @@ import { GeminiAdapter } from './gemini/adapter.js';
 import { CodexAdapter } from './codex/adapter.js';
 import { GenericAdapter } from './generic/adapter.js';
 import { getDirname } from '../utils/esm-helpers.js';
+import { isCommandAvailable } from '../utils/execFileNoThrow.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -94,19 +95,25 @@ export class AdapterLoader {
   /**
    * Auto-detect which tool is being used
    *
-   * Detection priority (based on market share and probability):
-   * 1. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
+   * Detection priority (maintains backward compatibility!):
+   * 1. Cursor (if cursor CLI or .cursor/ or .cursorrules exists) - active indicators
    * 2. Gemini CLI (if gemini CLI found)
    * 3. Codex (if codex CLI found)
-   * 4. Claude Code (DEFAULT - recommended if no other tool detected)
+   * 4. Claude Code:
+   *    - If claude CLI found in PATH: Shows "✅ Detected: Claude Code"
+   *    - If NOT found: Shows "ℹ️  No tool detected, recommending Claude Code"
    * 5. Generic (only if explicitly requested via --adapter generic)
+   *
+   * This ensures users with both Claude + Cursor get Cursor (if .cursorrules exists),
+   * while users with ONLY Claude get proper "detected" message instead of "not detected".
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
   async detectTool(): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
 
-    // Check other tools first (if they have specific indicators)
+    // Check other tools first (maintain backward compatibility!)
+    // If user has both Claude and Cursor, prefer the one with active indicators (.cursorrules, etc.)
     const detectionOrder = ['cursor', 'gemini', 'codex'];
 
     for (const adapterName of detectionOrder) {
@@ -120,10 +127,20 @@ export class AdapterLoader {
       }
     }
 
-    // Default to Claude Code (recommended, best experience)
-    // Note: Not actually "detected" - this is the recommended default
-    console.log(`ℹ️  No specific tool detected - recommending Claude Code (best experience)`);
-    console.log(`   💡 Use --adapter flag to specify a different tool if needed`);
+    // No other tool detected - check if Claude CLI is available
+    // ✅ FIX: Distinguish between "Claude detected" vs "Claude recommended"
+    const claudeAvailable = await isCommandAvailable('claude');
+
+    if (claudeAvailable) {
+      // Claude CLI is installed - show positive detection message
+      console.log(`✅ Detected: Claude Code (native plugin system, full automation)`);
+      console.log(`   Found 'claude' command in PATH`);
+    } else {
+      // Claude CLI NOT installed - recommend it
+      console.log(`ℹ️  No specific tool detected - recommending Claude Code (best experience)`);
+      console.log(`   💡 Use --adapter flag to specify a different tool if needed`);
+    }
+
     return 'claude';
   }
 
