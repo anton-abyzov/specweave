@@ -144,7 +144,7 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 ```
 
 **Enforcement**:
-- `/specweave:inc` command validates naming (rejects bare numbers)
+- `/specweave:increment` command validates naming (rejects bare numbers)
 - Code review requirement (descriptive names mandatory)
 - This document serves as the source of truth
 
@@ -244,7 +244,7 @@ This is **NOT negotiable**. It is a **hard enforcement** to prevent chaos, scope
 - Quality degradation (tests not run, docs not updated)
 
 **The Solution**:
-- ✅ **Hard block** on `/specweave:inc` if previous increments incomplete
+- ✅ **Hard block** on `/specweave:increment` if previous increments incomplete
 - ✅ **Helper commands** to close increments properly
 - ✅ **Clear guidance** on how to resolve incomplete work
 - ✅ **Force discipline** = force quality
@@ -403,7 +403,7 @@ Simplest option: **Don't start a new increment**. Just extend the current one:
 
 ### Enforcement Points
 
-1. **`/specweave:inc` command** - Hard block (Step 0A)
+1. **`/specweave:increment` command** - Hard block (Step 0A)
 2. **PM agent** - Pre-flight validation before planning
 3. **CI/CD** (future) - Prevent PR merges with incomplete increments
 
@@ -830,7 +830,7 @@ if (parentSpecweave) {
 **Plugin**: `specweave` - The essential SpecWeave plugin loaded in every project:
 - **Skills**: 9 skills (increment-planner, tdd-workflow, spec-generator, context-loader, project-kickstarter, brownfield-analyzer, brownfield-onboarder, increment-quality-judge, context-optimizer)
 - **Agents**: 22 agents (PM, Architect, Tech Lead, + 19 specialized including tdd-orchestrator)
-- **Commands**: 22 commands (/specweave:inc, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
+- **Commands**: 22 commands (/specweave:increment, /specweave:do, /specweave:next, /specweave:done, /specweave:progress, /specweave:validate, /specweave:sync-docs, + 15 specialized)
 - **Hooks**: 8 lifecycle hooks
 - **Size**: ~12K tokens
 
@@ -2052,7 +2052,7 @@ Is this feature...
 │  Examples: increment-planner, spec-generator, tdd-workflow, PM/Architect agents
 │
 ├─ Part of increment lifecycle? → specweave (auto-loaded)
-│  Examples: /specweave:inc, /specweave:do, living docs hooks
+│  Examples: /specweave:increment, /specweave:do, living docs hooks
 │
 ├─ Tech stack specific? → New plugin: specweave-{stack}
 │  Examples: specweave-frontend (React, Next.js), specweave-kubernetes
@@ -2378,7 +2378,7 @@ specweave migrate-to-profiles
 
 ### 4. Incremental Development
 - Work in small, measurable increments
-- Use SpecWeave's own workflow (`/specweave:inc`, `/specweave:do`, etc.)
+- Use SpecWeave's own workflow (`/specweave:increment`, `/specweave:do`, etc.)
 - All work traces back to specs
 
 ### 5. Adapter-First Design
