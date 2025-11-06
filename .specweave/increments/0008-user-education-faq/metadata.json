@@ -1,12 +1,13 @@
 {
   "id": "0008-user-education-faq",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-04T11:56:00.000Z",
-  "lastActivity": "2025-11-04T12:45:00.000Z",
+  "completed": "2025-11-04T19:10:00.000Z",
+  "lastActivity": "2025-11-04T19:10:00.000Z",
   "github": {
     "issue": 16,
     "url": "https://github.com/anton-abyzov/specweave/issues/16",
-    "synced": "2025-11-04T12:45:00.000Z"
+    "synced": "2025-11-05T12:00:00.000Z"
   }
 }

@@ -75,11 +75,11 @@ export class ProjectManager {
     }
 
     const project = config.multiProject.projects.find(
-      p => p.id === activeProjectId
+      (p: ProjectContext) => p.id === activeProjectId
     );
 
     if (!project) {
-      throw new Error(`Active project '${activeProjectId}' not found in config. Available projects: ${config.multiProject.projects.map(p => p.id).join(', ')}`);
+      throw new Error(`Active project '${activeProjectId}' not found in config. Available projects: ${config.multiProject.projects.map((p: ProjectContext) => p.id).join(', ')}`);
     }
 
     this.cachedProject = project;
@@ -205,9 +205,9 @@ export class ProjectManager {
       throw new Error('Multi-project mode not enabled. Run /specweave:init-multiproject first.');
     }
 
-    const project = config.multiProject.projects.find(p => p.id === projectId);
+    const project = config.multiProject.projects.find((p: ProjectContext) => p.id === projectId);
     if (!project) {
-      const availableProjects = config.multiProject.projects.map(p => p.id).join(', ');
+      const availableProjects = config.multiProject.projects.map((p: ProjectContext) => p.id).join(', ');
       throw new Error(`Project '${projectId}' not found. Available projects: ${availableProjects}`);
     }
 
@@ -267,7 +267,7 @@ export class ProjectManager {
     }
 
     // Check for duplicate ID
-    const existingProject = config.multiProject.projects.find(p => p.id === project.id);
+    const existingProject = config.multiProject.projects.find((p: ProjectContext) => p.id === project.id);
     if (existingProject) {
       throw new Error(`Project with ID '${project.id}' already exists`);
     }
@@ -308,7 +308,7 @@ export class ProjectManager {
       throw new Error('Cannot remove active project. Switch to another project first.');
     }
 
-    const projectIndex = config.multiProject.projects.findIndex(p => p.id === projectId);
+    const projectIndex = config.multiProject.projects.findIndex((p: ProjectContext) => p.id === projectId);
     if (projectIndex === -1) {
       throw new Error(`Project '${projectId}' not found`);
     }

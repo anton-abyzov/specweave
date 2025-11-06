@@ -2354,7 +2354,7 @@ specweave migrate-to-profiles
 **User Guide**: `.specweave/increments/0011-multi-project-sync/reports/USER-GUIDE-MULTI-PROJECT-SYNC.md`
 **ADR**: `.specweave/docs/internal/architecture/adr/0016-multi-project-external-sync.md`
 **Implementation Summary**: `.specweave/increments/0011-multi-project-sync/COMPLETE-IMPLEMENTATION.md`
-**Command Docs**: `plugins/specweave-github/commands/sync-v2.md`
+**Command Docs**: `plugins/specweave-github/commands/specweave-github-sync.md`
 
 ---
 

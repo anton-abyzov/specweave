@@ -9,6 +9,8 @@ description: Close increment with PM validation - checks tasks, tests, and docs 
 
 You are acting as the Product Manager to validate increment completion before closure. You must check all 3 gates: tasks done, tests passing, and docs updated.
 
+**NEW (v0.8.0+)**: Automatic GitHub issue reopening when validation fails. If PM gates fail and a GitHub issue exists for this increment, the system automatically reopens the issue with validation failure details. This ensures issues aren't prematurely closed when work is incomplete.
+
 ## Usage
 
 ```bash
@@ -349,6 +351,19 @@ Action Plan:
   5. Re-run /specweave:done 0001 for validation
 
 Increment remains: in-progress
+
+🔄 GitHub Issue Auto-Reopen (if exists):
+  Checking metadata for GitHub issue...
+  ✓ Found: GitHub issue #42
+  ✓ Reopening with validation failure details...
+  ✓ Issue #42 reopened with comment:
+    "❌ Validation failed - increment not ready for closure
+
+     Gate failures:
+     • Gate 1: 2 P1 tasks incomplete
+     • Gate 3: Documentation outdated
+
+     See PM validation report for details."
 
 Try again after fixing blockers: /specweave:done 0001
 ```

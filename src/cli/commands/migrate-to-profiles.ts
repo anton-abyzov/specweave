@@ -382,7 +382,7 @@ function createAdoProfile(config: {
     },
     timeRange: {
       default: '1M',
-      max: '12M',
+      max: '1Y',
     },
     rateLimits: {
       maxItemsPerSync: 500,
