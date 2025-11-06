@@ -11,6 +11,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.7] - 2025-11-06
+
+### 🔧 **CRITICAL FIX** - Correct Claude Code Installation Instructions
+
+**Fix: Claude Code is an NPM package, NOT Claude Desktop!**
+
+**Problem:**
+- Previous instructions sent users to download Claude Desktop (chat app)
+- Claude Desktop doesn't include the `claude` CLI command
+- Users were confused why `claude --version` didn't work after installing
+
+**Root Cause:**
+- Conflated two different products:
+  - **Claude Desktop** = Chat app (https://claude.com/download)
+  - **Claude Code** = IDE with CLI (npm package: `@anthropic-ai/claude-code`)
+
+**Solution:**
+- Updated installation instructions to use npm:
+  ```bash
+  npm install -g @anthropic-ai/claude-code
+  ```
+- Added Windows-specific troubleshooting:
+  - `--ignore-scripts` flag if install fails
+  - WSL recommendation for best experience
+- Clarified Claude Code is an npm package, not a desktop installer
+
+**Impact:**
+- ✅ Users can now actually install Claude Code CLI
+- ✅ Clear, working instructions for all platforms
+- ✅ No more confusion between Claude Desktop and Claude Code
+- ✅ Simpler installation process: Node.js → npm install → works!
+
+**Files Modified:**
+- `src/cli/commands/init.ts` - Corrected installation instructions
+
+---
+
 ## [0.8.6] - 2025-11-06
 
 ### 🔧 **UX IMPROVEMENT** - Simplified Claude Desktop Download Link
