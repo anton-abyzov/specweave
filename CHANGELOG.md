@@ -11,6 +11,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.6] - 2025-11-06
+
+### 🔧 **UX IMPROVEMENT** - Simplified Claude Desktop Download Link
+
+**Fix: Streamlined installation instructions with direct download link**
+
+**Changes:**
+- Simplified Claude Desktop download instructions in `specweave init` output
+- Changed from multi-step navigation ("Visit claude.ai → Sign in → Click Download")
+- Now shows direct link: `https://www.claude.com/download`
+- Reduces friction in CLI setup process
+
+**Impact:**
+- ✅ Faster onboarding - one click instead of multiple steps
+- ✅ Clearer instructions for new users
+- ✅ Improved user experience during initialization
+
+**Files Modified:**
+- `src/cli/commands/init.ts` - Updated download instructions (lines 521-522)
+
+---
+
+## [0.8.5] - 2025-11-06
+
+### 🏗️ **MAJOR CHANGE** - Removed Custom Plugin System
+
+**Breaking Change: Switched to Claude Code Native Plugins Only**
+
+**What Changed:**
+- Removed custom plugin system completely
+- Now uses ONLY Claude Code's native plugin system
+- All plugins follow Claude's `.claude-plugin/plugin.json` format
+- Skills, agents, commands, and hooks managed by Claude Code
+
+**Why:**
+- Anthropic sets the industry standards for AI coding tools
+- Native plugin system is more reliable and better maintained
+- Reduces SpecWeave's maintenance burden
+- Better user experience with Claude Code's built-in features
+
+**Migration:**
+- Users on Claude Code: No changes needed - continue using native plugins
+- Users on other tools: May see reduced functionality (expected tradeoff)
+
+**Files Removed:**
+- Custom plugin loader and compiler code
+
+---
+
 ## [0.8.4] - 2025-11-06
 
 ### 🔧 **BUG FIX** - Honest Tool Detection Messaging
