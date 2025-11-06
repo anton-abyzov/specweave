@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
+import { isClaudeCliAvailable as isClaudeCliAvailableDetector } from '../../../utils/claude-cli-detector.js';
 import type { IssueTracker, RateLimitError, RateLimitInfo } from './types.js';
 
 /**
@@ -55,15 +56,13 @@ export async function isGhCliAvailable(): Promise<boolean> {
 /**
  * Check if Claude CLI is available
  *
+ * Uses the robust detector from claude-cli-detector.ts
+ * This ensures consistent detection logic across the entire codebase.
+ *
  * @returns True if claude CLI is installed and in PATH
  */
 export function isClaudeCliAvailable(): boolean {
-  try {
-    const result = execFileNoThrowSync('claude', ['--version']);
-    return result.success;
-  } catch {
-    return false;
-  }
+  return isClaudeCliAvailableDetector();
 }
 
 /**

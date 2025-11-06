@@ -518,12 +518,28 @@ export async function initCommand(
         console.log(chalk.yellow.bold('⚠️  Claude Code CLI Issue Detected'));
         console.log('');
 
-        // Show detailed diagnostic info
+        // Show detailed diagnostic info with MORE context
         if (claudeStatus.commandExists) {
-          console.log(chalk.white('Claude command found in PATH, but:'));
-          console.log(chalk.gray(`   ${diagnostic}`));
+          console.log(chalk.white('Found command in PATH, but verification failed:'));
+          console.log('');
+          if (claudeStatus.commandPath) {
+            console.log(chalk.gray(`   Path: ${claudeStatus.commandPath}`));
+          }
+          if (claudeStatus.exitCode !== undefined) {
+            console.log(chalk.gray(`   Exit code: ${claudeStatus.exitCode}`));
+          }
+          console.log(chalk.gray(`   Issue: ${claudeStatus.error}`));
+          console.log('');
+
+          // Explain what this likely means
+          if (claudeStatus.error === 'version_check_failed') {
+            console.log(chalk.yellow('⚠️  This likely means:'));
+            console.log(chalk.gray('   • You have a DIFFERENT tool named "claude" in PATH'));
+            console.log(chalk.gray('   • It\'s not the Claude Code CLI from Anthropic'));
+            console.log(chalk.gray('   • The command exists but doesn\'t respond to --version'));
+          }
         } else {
-          console.log(chalk.white('Claude CLI not installed'));
+          console.log(chalk.white('Claude CLI not found in PATH'));
         }
         console.log('');
 
@@ -535,19 +551,21 @@ export async function initCommand(
         });
         console.log('');
 
-        // Add fallback options
-        console.log(chalk.cyan('Alternative Options:'));
-        console.log('');
-        console.log(chalk.white('1️⃣  Use Claude Code IDE (no CLI needed):'));
-        console.log(chalk.gray('   → Open this project in Claude Code'));
-        console.log(chalk.gray('   → Run: /plugin install specweave@specweave'));
-        console.log(chalk.gray('   → Works immediately, no npm installation!'));
-        console.log('');
-        console.log(chalk.white('2️⃣  Use Different AI Tool:'));
-        console.log(chalk.gray('   → Run: specweave init --adapter cursor'));
-        console.log(chalk.gray('   → Works without Claude CLI'));
-        console.log(chalk.gray('   → Less automation but no CLI dependency'));
-        console.log('');
+        // Only show alternatives if user is NOT using Claude already
+        if (claudeStatus.error === 'command_not_found') {
+          console.log(chalk.cyan('Alternative Options:'));
+          console.log('');
+          console.log(chalk.white('1️⃣  Use Claude Code IDE (no CLI needed):'));
+          console.log(chalk.gray('   → Open this project in Claude Code'));
+          console.log(chalk.gray('   → Run: /plugin install specweave@specweave'));
+          console.log(chalk.gray('   → Works immediately, no npm installation!'));
+          console.log('');
+          console.log(chalk.white('2️⃣  Use Different AI Tool:'));
+          console.log(chalk.gray('   → Run: specweave init --adapter cursor'));
+          console.log(chalk.gray('   → Works without Claude CLI'));
+          console.log(chalk.gray('   → Less automation but no CLI dependency'));
+          console.log('');
+        }
 
         autoInstallSucceeded = false;
       } else {
