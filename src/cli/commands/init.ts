@@ -5,6 +5,7 @@ import ora from 'ora';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync, isCommandAvailableSync } from '../../utils/execFileNoThrow.js';
+import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from '../../utils/claude-cli-detector.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { IAdapter } from '../../adapters/adapter-interface.js';
 import { ClaudeMdGenerator } from '../../adapters/claude-md-generator.js';
@@ -504,50 +505,50 @@ export async function initCommand(
       }
 
       // 15. AUTO-INSTALL CORE PLUGIN via Claude CLI (Secure + Cross-Platform)
-      // Pre-flight check: Is Claude CLI available?
-      if (!isCommandAvailableSync('claude')) {
-        // Claude CLI NOT found → explain clearly with actionable options
-        spinner.warn('Claude CLI not found in PATH');
+      // Pre-flight check: Is Claude CLI available? (ROBUST CHECK)
+      const claudeStatus = detectClaudeCli();
+
+      if (!claudeStatus.available) {
+        // Claude CLI NOT working → explain clearly with actionable diagnostics
+        const diagnostic = getClaudeCliDiagnostic(claudeStatus);
+        const suggestions = getClaudeCliSuggestions(claudeStatus);
+
+        spinner.warn(diagnostic);
         console.log('');
-        console.log(chalk.yellow.bold('⚠️  Claude Code CLI Required'));
+        console.log(chalk.yellow.bold('⚠️  Claude Code CLI Issue Detected'));
         console.log('');
-        console.log(chalk.white('SpecWeave needs Claude Code to auto-configure plugins.'));
-        console.log(chalk.gray('Install via npm: @anthropic-ai/claude-code'));
+
+        // Show detailed diagnostic info
+        if (claudeStatus.commandExists) {
+          console.log(chalk.white('Claude command found in PATH, but:'));
+          console.log(chalk.gray(`   ${diagnostic}`));
+        } else {
+          console.log(chalk.white('Claude CLI not installed'));
+        }
         console.log('');
-        console.log(chalk.yellow('💡 Note: Claude Code ≠ Claude Desktop (chat app)'));
-        console.log(chalk.gray('   Only Claude Code is needed for SpecWeave!'));
+
+        // Show actionable suggestions
+        console.log(chalk.cyan('💡 How to fix:'));
         console.log('');
-        console.log(chalk.cyan('Installation Steps:'));
+        suggestions.forEach(suggestion => {
+          console.log(chalk.gray(`   ${suggestion}`));
+        });
         console.log('');
-        console.log(chalk.white('1️⃣  Install Claude Code via npm:'));
+
+        // Add fallback options
+        console.log(chalk.cyan('Alternative Options:'));
         console.log('');
-        console.log(chalk.gray('   Step 1: Install Node.js (if not already installed)'));
-        console.log(chalk.cyan('           → Visit: https://nodejs.org'));
-        console.log('');
-        console.log(chalk.gray('   Step 2: Install Claude Code globally via npm'));
-        console.log(chalk.cyan('           → Run: npm install -g @anthropic-ai/claude-code'));
-        console.log('');
-        console.log(chalk.gray('   Step 3: Verify installation'));
-        console.log(chalk.cyan('           → Run: claude --version'));
-        console.log(chalk.gray('           → Should show version number'));
-        console.log('');
-        console.log(chalk.gray('   Step 4: Re-run initialization'));
-        console.log(chalk.cyan('           → specweave init'));
-        console.log('');
-        console.log(chalk.yellow('   ⚠️  Windows users: If npm install fails'));
-        console.log(chalk.gray('      → Try: npm install -g @anthropic-ai/claude-code --ignore-scripts'));
-        console.log(chalk.gray('      → Or use WSL (Windows Subsystem for Linux) for best experience'));
-        console.log('');
-        console.log(chalk.white('2️⃣  Alternative - Use Claude Code IDE:'));
-        console.log(chalk.gray('   → Open project in Claude Code'));
+        console.log(chalk.white('1️⃣  Use Claude Code IDE (no CLI needed):'));
+        console.log(chalk.gray('   → Open this project in Claude Code'));
         console.log(chalk.gray('   → Run: /plugin install specweave@specweave'));
-        console.log(chalk.gray('   → Works without npm installation!'));
+        console.log(chalk.gray('   → Works immediately, no npm installation!'));
         console.log('');
-        console.log(chalk.white('3️⃣  Use Different AI Tool:'));
+        console.log(chalk.white('2️⃣  Use Different AI Tool:'));
         console.log(chalk.gray('   → Run: specweave init --adapter cursor'));
-        console.log(chalk.gray('   → Works without Claude CLI (uses AGENTS.md instead)'));
+        console.log(chalk.gray('   → Works without Claude CLI'));
         console.log(chalk.gray('   → Less automation but no CLI dependency'));
         console.log('');
+
         autoInstallSucceeded = false;
       } else {
         // Claude CLI available → attempt secure auto-install

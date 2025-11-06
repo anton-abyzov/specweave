@@ -16,6 +16,7 @@ import { CodexAdapter } from './codex/adapter.js';
 import { GenericAdapter } from './generic/adapter.js';
 import { getDirname } from '../utils/esm-helpers.js';
 import { isCommandAvailable } from '../utils/execFileNoThrow.js';
+import { detectClaudeCli } from '../utils/claude-cli-detector.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -128,17 +129,25 @@ export class AdapterLoader {
     }
 
     // No other tool detected - check if Claude CLI is available
-    // ✅ FIX: Distinguish between "Claude detected" vs "Claude recommended"
-    const claudeAvailable = await isCommandAvailable('claude');
+    // ✅ ROBUST CHECK: Not just "command exists" but "can run plugin commands"
+    const claudeStatus = detectClaudeCli();
 
-    if (claudeAvailable) {
-      // Claude CLI is installed - show positive detection message
+    if (claudeStatus.available) {
+      // Claude CLI is fully functional - show positive detection message
       console.log(`✅ Detected: Claude Code (native plugin system, full automation)`);
       console.log(`   Found 'claude' command in PATH`);
+      console.log('');
+    } else if (claudeStatus.commandExists) {
+      // Claude command exists but plugin commands don't work
+      console.log(`⚠️  Claude command found but not fully functional`);
+      console.log(`   Issue: ${claudeStatus.error}`);
+      console.log(`   Will still use Claude (may need manual plugin install)`);
+      console.log('');
     } else {
       // Claude CLI NOT installed - recommend it
       console.log(`ℹ️  No specific tool detected - recommending Claude Code (best experience)`);
       console.log(`   💡 Use --adapter flag to specify a different tool if needed`);
+      console.log('');
     }
 
     return 'claude';
