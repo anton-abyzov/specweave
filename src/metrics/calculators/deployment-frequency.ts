@@ -5,8 +5,8 @@
  * Data source: GitHub Releases API
  */
 
-import { Release, DeploymentFrequencyMetric } from '../types';
-import { classifyDeploymentFrequency } from '../utils/tier-classifier';
+import { Release, DeploymentFrequencyMetric } from '../types.js';
+import { classifyDeploymentFrequency } from '../utils/tier-classifier.js';
 
 /**
  * Calculate Deployment Frequency from releases
