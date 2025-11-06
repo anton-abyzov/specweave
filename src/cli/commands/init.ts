@@ -519,9 +519,7 @@ export async function initCommand(
         console.log(chalk.white('1️⃣  Install Claude Desktop (Recommended):'));
         console.log('');
         console.log(chalk.gray('   Step 1: Download Claude Desktop'));
-        console.log(chalk.cyan('           → Visit: https://claude.ai'));
-        console.log(chalk.cyan('           → Sign in with your account'));
-        console.log(chalk.cyan('           → Click "Download" in the navigation'));
+        console.log(chalk.cyan('           → Visit: https://www.claude.com/download'));
         console.log('');
         console.log(chalk.gray('   Step 2: Install the app (includes CLI automatically)'));
         console.log(chalk.gray('           → macOS: Drag to Applications folder'));
