@@ -11,6 +11,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.12] - 2025-11-06
+
+### 🐛 **BUG FIX** - Enhanced Claude CLI Detection with Comprehensive Diagnostics
+
+**Fix: Detect conflicting `claude` commands and provide actionable diagnostics**
+
+**Problem:**
+- Users with different tool named `claude` in PATH saw vague error: "Issue: unknown"
+- When `claude --version` failed or produced no output, error messages were unhelpful
+- Multiple places in codebase had duplicate detection logic (inconsistent behavior)
+- No way to get verbose diagnostics for troubleshooting
+
+**Root Cause:**
+- Detection found `claude` in PATH but didn't verify it was actually Claude Code CLI
+- No diagnostic data captured (path, exit codes, stdout, stderr)
+- All unexpected failures classified as "unknown"
+- Duplicate `isClaudeCliAvailable()` implementations in different files
+
+**Solution:**
+- **Enhanced Detection** (`src/utils/claude-cli-detector.ts`):
+  - Captures full diagnostic context: command path, exit codes, stdout, stderr, platform
+  - New error type: `version_check_failed` (for when command exists but isn't Claude CLI)
+  - Increased timeout: 5s → 10s for slow systems
+  - DEBUG mode: Set `DEBUG=true` or `SPECWEAVE_DEBUG=true` for verbose output
+
+- **Consolidated Logic** (`src/cli/helpers/issue-tracker/utils.ts`):
+  - Removed duplicate implementation
+  - All detection now uses single source of truth
+
+- **Better Error Messages** (`src/cli/commands/init.ts`):
+  - Shows command path, exit code, error type
+  - Explains what the error likely means (e.g., "different tool named claude")
+  - Provides actionable troubleshooting steps
+  - Suggests enabling DEBUG mode for more details
+
+- **Test Script** (`test-cli-detection.js`):
+  - Standalone test for detection logic
+  - Works with DEBUG mode
+  - Easy to share for diagnostics
+
+**What Users See Now:**
+```
+⚠️  Claude Code CLI Issue Detected
+
+Found command in PATH, but verification failed:
+   Path: /usr/local/bin/claude
+   Exit code: 1
+   Issue: version_check_failed
+
+⚠️  This likely means:
+   • You have a DIFFERENT tool named "claude" in PATH
+   • It's not the Claude Code CLI from Anthropic
+   • The command exists but doesn't respond to --version
+
+💡 How to fix:
+   1. Check what 'claude' actually is: file "/usr/local/bin/claude"
+   2. Try running manually: claude --version
+   3. Enable debug mode: DEBUG=true specweave init .
+```
+
+**Impact:**
+- ✅ Specific error types instead of vague "unknown"
+- ✅ Full diagnostic context for troubleshooting
+- ✅ DEBUG mode for verbose output
+- ✅ Unified detection across entire codebase
+- ✅ Actionable suggestions for each error type
+- ✅ Test script for standalone verification
+
+**Files Changed:**
+- `src/utils/claude-cli-detector.ts` - Enhanced detection with diagnostics
+- `src/cli/helpers/issue-tracker/utils.ts` - Use central detector
+- `src/cli/commands/init.ts` - Better error messages
+- `test-cli-detection.js` (NEW) - Test script
+- `CLAUDE-CLI-DETECTION-IMPROVEMENTS.md` (NEW) - Comprehensive documentation
+
+---
+
 ## [0.8.10] - 2025-11-06
 
 ### 🐛 **BUG FIX** - Accurate Claude Code Detection
