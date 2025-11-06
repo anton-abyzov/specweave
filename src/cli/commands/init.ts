@@ -238,7 +238,13 @@ export async function initCommand(
 
       console.log('');
       console.log(chalk.cyan(`🔍 ${locale.t('cli', 'init.toolDetection.header')}`));
-      console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
+
+      // Show different message for Claude (recommended default) vs actually detected tools
+      if (detectedTool === 'claude') {
+        console.log(chalk.gray(`   Recommended: ${detectedTool} (no other tool detected)`));
+      } else {
+        console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
+      }
       console.log('');
 
       // Check if running in CI/non-interactive environment
