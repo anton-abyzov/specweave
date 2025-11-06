@@ -2513,6 +2513,112 @@ vim docs-site/docs/guides/getting-started.md
 cd docs-site && npm run build
 ```
 
+### Documentation Preview (specweave-docs-preview plugin)
+
+**Live preview of `.specweave/docs/` with Docusaurus** - Beautiful UI with hot reload, auto-generated sidebar, and Mermaid diagram support.
+
+**When to Use**:
+- ✅ After completing your first increment (auto-suggested)
+- ✅ Reviewing documentation in a beautiful UI instead of raw markdown
+- ✅ Sharing documentation with non-technical stakeholders
+- ✅ Preparing documentation for external publication
+
+**Installation** (auto-prompted after first increment):
+
+The `post-first-increment.sh` hook automatically prompts you after completing your first increment:
+
+```
+🎉 Congratulations! You completed your first increment!
+
+📚 Would you like to preview your documentation in a beautiful UI?
+
+Options:
+  1) Yes, install and launch now (recommended)
+  2) No thanks, I'll browse markdown files manually
+  3) Remind me later
+
+Your choice [1]:
+```
+
+**Manual Commands**:
+
+```bash
+# Launch preview (installs Docusaurus if needed)
+/specweave:docs preview
+
+# Specify port
+/specweave:docs preview --port 3001
+
+# Build static site for deployment
+/specweave:docs build
+
+# Output: .specweave/docs-site-internal/build/
+```
+
+**Features**:
+- ✅ **Auto-generated sidebar** from `.specweave/docs/internal/` folder structure
+- ✅ **Hot reload** - Edit markdown files and see changes instantly
+- ✅ **Mermaid diagrams** - Automatic rendering of diagrams
+- ✅ **Priority sorting** - Strategy → Specs → Architecture → Delivery → Operations → Governance
+- ✅ **Port auto-discovery** - Finds available port (3000-3010)
+- ✅ **Cross-platform** - Windows/macOS/Linux compatible
+
+**What Gets Indexed**:
+- `.specweave/docs/internal/strategy/` - Business rationale, PRDs
+- `.specweave/docs/internal/specs/` - Feature specifications
+- `.specweave/docs/internal/architecture/` - Technical design, ADRs
+- `.specweave/docs/internal/delivery/` - Build & release processes
+- `.specweave/docs/internal/operations/` - Runbooks, SLOs
+- `.specweave/docs/internal/governance/` - Policies, security
+
+**What Gets Excluded**:
+- ❌ `legacy/` folder (brownfield imports, temporary)
+- ❌ `node_modules/`, `.git/`
+- ❌ `.specweave/increments/` (implementation details, not strategic docs)
+
+**Configuration** (`.specweave/config.json`):
+
+```json
+{
+  "documentation": {
+    "preview": {
+      "enabled": true,
+      "autoInstall": true,
+      "port": 3000,
+      "openBrowser": true,
+      "theme": "default",
+      "excludeFolders": ["legacy", "node_modules"]
+    }
+  }
+}
+```
+
+**Requirements**:
+- Node.js 18+ (Docusaurus 3.0 requirement)
+- ~150 MB disk space for npm packages
+- ~30 seconds first-time install
+
+**Files Created** (gitignored):
+- `.specweave/docs-site-internal/` - Complete Docusaurus installation for internal docs
+  - `package.json` - Dependencies
+  - `docusaurus.config.js` - Configuration
+  - `sidebars.js` - Auto-generated sidebar
+  - `src/` - Landing page and custom CSS
+  - `node_modules/` - npm packages
+  - `build/` - Static site output (after build)
+
+**Note**: This is separate from `docs-site/` (public-facing docs at project root)
+
+**Implementation**:
+- Plugin: `plugins/specweave-docs-preview/`
+- TypeScript utilities: `src/utils/docs-preview/`
+- CLI commands: `src/cli/commands/docs-{preview,build,setup}.ts`
+- Hook: `plugins/specweave/hooks/post-first-increment.sh`
+
+**See Also**:
+- Plugin docs: `plugins/specweave-docs-preview/skills/docs-preview/SKILL.md`
+- Command docs: `plugins/specweave-docs-preview/commands/docs-preview.md`
+
 ### Translation Workflow (Multilingual Support)
 
 **SpecWeave supports multilingual development** via post-generation translation (Increment 0006).
