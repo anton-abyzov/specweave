@@ -11,6 +11,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import inquirer from 'inquirer';
 import { ConfigManager } from '../core/config-manager';
+import { SyncProfile } from '../core/types/sync-profile.js';
 
 /**
  * Auto-detect project ID from git remote URL
@@ -86,22 +87,31 @@ export function detectProjectIdFromSync(projectRoot: string): string | null {
 
     // Check sync profiles for project identifiers
     if (config.sync?.profiles) {
-      const profiles = Object.values(config.sync.profiles);
+      const profiles = Object.values(config.sync.profiles) as SyncProfile[];
 
       for (const profile of profiles) {
         // GitHub profile (extract repo name)
-        if (profile.provider === 'github' && profile.config?.repo) {
-          return profile.config.repo.toLowerCase();
+        if (profile.provider === 'github') {
+          const githubConfig = profile.config as any;
+          if (githubConfig?.repo) {
+            return githubConfig.repo.toLowerCase();
+          }
         }
 
         // JIRA profile (use project key)
-        if (profile.provider === 'jira' && profile.config?.projectKey) {
-          return profile.config.projectKey.toLowerCase();
+        if (profile.provider === 'jira') {
+          const jiraConfig = profile.config as any;
+          if (jiraConfig?.projectKey) {
+            return jiraConfig.projectKey.toLowerCase();
+          }
         }
 
         // Azure DevOps profile (use project name)
-        if (profile.provider === 'ado' && profile.config?.project) {
-          return profile.config.project.toLowerCase().replace(/\s+/g, '-');
+        if (profile.provider === 'ado') {
+          const adoConfig = profile.config as any;
+          if (adoConfig?.project) {
+            return adoConfig.project.toLowerCase().replace(/\s+/g, '-');
+          }
         }
       }
     }

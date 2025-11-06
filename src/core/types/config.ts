@@ -59,6 +59,12 @@ export interface ProjectMetadata {
 
   /** Project description */
   description?: string;
+
+  /** Technology stack */
+  techStack?: string[];
+
+  /** Team name */
+  team?: string;
 }
 
 /**
