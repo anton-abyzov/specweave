@@ -341,5 +341,5 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.yellow('\n⏭️  Skipped GitHub setup\n'));
   console.log(chalk.white('You can configure later:'));
   console.log(chalk.gray('  1. Add GH_TOKEN to .env file'));
-  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-github@specweave\n'));
+  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-github\n'));
 }

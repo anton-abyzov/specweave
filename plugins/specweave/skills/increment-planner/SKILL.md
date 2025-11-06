@@ -573,9 +573,9 @@ created: YYYY-MM-DD
    • specweave-diagrams - Architecture diagrams (helpful for "system architecture")
 
    📦 Install plugins:
-   /plugin install specweave-github@specweave
-   /plugin install specweave-kubernetes@specweave
-   /plugin install specweave-diagrams@specweave
+   /plugin install specweave-github
+   /plugin install specweave-kubernetes
+   /plugin install specweave-diagrams
 
    💡 Plugins will auto-activate during implementation!
    ```

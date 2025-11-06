@@ -557,7 +557,7 @@ export async function initCommand(
           console.log('');
           console.log(chalk.white('1️⃣  Use Claude Code IDE (no CLI needed):'));
           console.log(chalk.gray('   → Open this project in Claude Code'));
-          console.log(chalk.gray('   → Run: /plugin install specweave@specweave'));
+          console.log(chalk.gray('   → Run: /plugin install specweave'));
           console.log(chalk.gray('   → Works immediately, no npm installation!'));
           console.log('');
           console.log(chalk.white('2️⃣  Use Different AI Tool:'));
@@ -631,14 +631,14 @@ export async function initCommand(
           const installResult = execFileNoThrowSync('claude', [
             'plugin',
             'install',
-            'specweave@specweave'
+            'specweave'
           ]);
 
           if (installResult.success) {
             autoInstallSucceeded = true;
             spinner.succeed('SpecWeave plugin installed successfully!');
             console.log(chalk.green('   ✔ Marketplace: ./claude-plugin → specweave'));
-            console.log(chalk.green('   ✔ Plugin: specweave@specweave'));
+            console.log(chalk.green('   ✔ Plugin: specweave'));
             console.log(chalk.green('   ✔ Slash commands ready: /specweave:inc'));
           } else {
             throw new Error(installResult.stderr || installResult.stdout || 'Installation failed');
@@ -651,7 +651,7 @@ export async function initCommand(
           // Diagnose error and provide actionable hints
           if (error.message.includes('not found') || error.message.includes('ENOENT')) {
             console.log(chalk.yellow('   Reason: Claude CLI found but command failed'));
-            console.log(chalk.gray('   → Try manually: claude plugin install specweave@specweave'));
+            console.log(chalk.gray('   → Try manually: claude plugin install specweave'));
           } else if (error.message.includes('EACCES') || error.message.includes('permission')) {
             console.log(chalk.yellow('   Reason: Permission denied'));
             console.log(chalk.gray('   → Check file permissions or run with appropriate access'));

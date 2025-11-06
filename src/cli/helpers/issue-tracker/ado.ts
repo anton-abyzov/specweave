@@ -268,5 +268,5 @@ export function showAzureDevOpsSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.yellow('\n⏭️  Skipped Azure DevOps setup\n'));
   console.log(chalk.white('You can configure later:'));
   console.log(chalk.gray('  1. Add AZURE_DEVOPS_PAT, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT to .env'));
-  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-ado@specweave\n'));
+  console.log(chalk.gray('  2. Install plugin: /plugin install specweave-ado\n'));
 }
