@@ -600,28 +600,21 @@ export async function initCommand(
             console.log(chalk.green('   ✔ Old marketplace removed'));
           }
 
-          // Step 1.5: Add marketplace from SpecWeave package installation
-          // ✅ Points to installed npm package's .claude-plugin folder
-          const specweavePackageRoot = findPackageRoot(__dirname);
-          if (specweavePackageRoot) {
-            const marketplacePath = path.join(specweavePackageRoot, '.claude-plugin');
+          // Step 1.5: Add marketplace from GitHub
+          // ✅ Uses GitHub repo format (owner/repo) - works for all npm installs
+          const addResult = execFileNoThrowSync('claude', [
+            'plugin',
+            'marketplace',
+            'add',
+            'anton-abyzov/specweave'
+          ]);
 
-            if (fs.existsSync(marketplacePath)) {
-              const addResult = execFileNoThrowSync('claude', [
-                'plugin',
-                'marketplace',
-                'add',
-                specweavePackageRoot
-              ]);
-
-              if (addResult.success) {
-                if (marketplaceExists) {
-                  console.log(chalk.green('   ✔ Marketplace updated successfully'));
-                }
-              } else {
-                console.log(chalk.yellow('   ⚠️  Marketplace add via CLI failed, will use settings.json fallback'));
-              }
+          if (addResult.success) {
+            if (marketplaceExists) {
+              console.log(chalk.green('   ✔ Marketplace updated successfully'));
             }
+          } else {
+            console.log(chalk.yellow('   ⚠️  Marketplace add via CLI failed, will use settings.json fallback'));
           }
 
           spinner.start('Installing SpecWeave core plugin...');
@@ -664,7 +657,7 @@ export async function initCommand(
 
           console.log('');
           console.log(chalk.cyan('📦 Manual installation:'));
-          console.log(chalk.white('   /plugin install specweave@specweave'));
+          console.log(chalk.white('   /plugin install specweave'));
           console.log('');
           autoInstallSucceeded = false;
         }
