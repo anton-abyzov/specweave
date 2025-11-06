@@ -165,23 +165,58 @@ export async function initCommand(
   }
 
   // 3. Check for nested .specweave/ (CRITICAL: prevent nested folders)
-  const parentSpecweave = detectNestedSpecweave(targetDir);
-  if (parentSpecweave) {
+  const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
+  if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
     console.log('');
     console.log(chalk.red.bold(locale.t('cli', 'init.errors.nestedNotSupported')));
     console.log('');
-    console.log(chalk.yellow(`   ${locale.t('cli', 'init.errors.parentFound')}`));
-    console.log(chalk.white(`   ${parentSpecweave}`));
+
+    // Show all found .specweave/ folders
+    if (parentSpecweaveFolders.length === 1) {
+      console.log(chalk.yellow(`   ${locale.t('cli', 'init.errors.parentFound')}`));
+      console.log(chalk.white(`   ${parentSpecweaveFolders[0].path}`));
+    } else {
+      console.log(chalk.yellow(`   Found ${parentSpecweaveFolders.length} parent .specweave/ folders:`));
+      console.log('');
+
+      // Sort by depth (closest first)
+      const sortedFolders = [...parentSpecweaveFolders].sort((a, b) => a.depth - b.depth);
+
+      sortedFolders.forEach((folder, index) => {
+        const marker = index === 0 ? chalk.green('✓ CLOSEST') : chalk.gray(`  ${folder.depth} level${folder.depth > 1 ? 's' : ''} up`);
+        console.log(`   ${marker}: ${chalk.white(folder.path)}`);
+      });
+    }
+
     console.log('');
     console.log(chalk.cyan(`   ${locale.t('cli', 'init.info.nestedEnforcement')}`));
     console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet1')}`));
     console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet2')}`));
     console.log(chalk.gray(`   ${locale.t('cli', 'init.info.nestedBullet3')}`));
     console.log('');
+
+    // Suggest using the CLOSEST folder (most relevant)
+    const closestFolder = parentSpecweaveFolders.reduce((closest, current) =>
+      current.depth < closest.depth ? current : closest
+    );
+
     console.log(chalk.cyan(`   ${locale.t('cli', 'init.info.nestedToFix')}`));
-    console.log(chalk.white(`   ${locale.t('cli', 'init.nestedCdCommand', { path: parentSpecweave })}`));
+    console.log(chalk.green.bold(`   Recommended: Use the CLOSEST .specweave/ folder`));
+    console.log(chalk.white(`   ${locale.t('cli', 'init.nestedCdCommand', { path: closestFolder.path })}`));
     console.log(chalk.white(`   ${locale.t('cli', 'init.nestedIncCommand')}`));
     console.log('');
+
+    // Provide cleanup option if user has multiple unnecessary folders
+    if (parentSpecweaveFolders.length > 1) {
+      console.log(chalk.yellow.bold(`   💡 Tip: Multiple .specweave/ folders detected`));
+      console.log(chalk.gray(`   If some are unnecessary, consider removing them:`));
+      console.log('');
+      parentSpecweaveFolders.forEach(folder => {
+        console.log(chalk.gray(`   rm -rf "${folder.path}/.specweave"  # Remove if not needed`));
+      });
+      console.log('');
+    }
+
     process.exit(1);
   }
 
@@ -697,34 +732,38 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
 }
 
 /**
- * Detect if a parent directory contains a .specweave/ folder
+ * Detect ALL parent directories that contain .specweave/ folders
  * SpecWeave ONLY supports root-level .specweave/ folders
  * Nested .specweave/ folders are NOT supported
  *
  * @param targetDir - Directory where user wants to initialize
- * @returns Path to parent .specweave/ folder, or null if none found
+ * @returns Array of paths to parent .specweave/ folders with depth info, or null if none found
  */
-function detectNestedSpecweave(targetDir: string): string | null {
+function detectNestedSpecweave(targetDir: string): Array<{ path: string; depth: number }> | null {
+  const foundFolders: Array<{ path: string; depth: number }> = [];
+
   // Start from parent of target directory
   let currentDir = path.dirname(path.resolve(targetDir));
   const root = path.parse(currentDir).root;
+  let depth = 1;
 
-  // Walk up the directory tree
+  // Walk up the directory tree and find ALL .specweave/ folders
   while (currentDir !== root) {
     const specweavePath = path.join(currentDir, '.specweave');
 
     // Check if .specweave/ exists at this level
     if (fs.existsSync(specweavePath)) {
-      return currentDir; // Found parent .specweave/
+      foundFolders.push({ path: currentDir, depth });
     }
 
     // Move up one level
     const parentDir = path.dirname(currentDir);
     if (parentDir === currentDir) break; // Reached root
     currentDir = parentDir;
+    depth++;
   }
 
-  return null; // No parent .specweave/ found
+  return foundFolders.length > 0 ? foundFolders : null;
 }
 
 /**
