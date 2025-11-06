@@ -11,6 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.4] - 2025-11-06
+
+### 🔧 **BUG FIX** - Honest Tool Detection Messaging
+
+**Fix: Misleading "Detected: claude" message when Claude Code not installed**
+
+**Problem:**
+- `specweave init` showed "✅ Detected: claude" even when Claude Code wasn't installed
+- This was confusing - it wasn't actually detecting Claude, just defaulting to it as the recommended option
+- Users couldn't tell if Claude was found or just being suggested
+
+**Solution:**
+- Changed detection message to be honest: "ℹ️  No specific tool detected - recommending Claude Code (best experience)"
+- Added helpful hint: "💡 Use --adapter flag to specify a different tool if needed"
+- Init command now shows "Recommended: claude (no other tool detected)" instead of "Detected: claude"
+
+**Impact:**
+- ✅ Clear messaging when no tool is detected
+- ✅ Users understand Claude Code is the recommended default
+- ✅ No confusion about whether Claude was actually found
+- ✅ Better user experience for first-time setup
+
+**Technical Changes:**
+- `adapter-loader.ts`: Updated `detectTool()` method with honest default messaging
+- `init.ts`: Added conditional logic to differentiate "detected" vs "recommended" tools
+
+**Related Issues:** Closes [user feedback about confusing detection]
+
+---
+
 ## [0.8.3] - 2025-11-06
 
 ### 🔧 **BUG FIXES & IMPROVEMENTS**

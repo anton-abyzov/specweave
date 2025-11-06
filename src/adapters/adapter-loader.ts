@@ -95,10 +95,10 @@ export class AdapterLoader {
    * Auto-detect which tool is being used
    *
    * Detection priority (based on market share and probability):
-   * 1. Claude Code (DEFAULT - best experience, native support)
-   * 2. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
-   * 3. Gemini CLI (if gemini CLI found)
-   * 4. Codex (if codex CLI found)
+   * 1. Cursor (if cursor CLI or .cursor/ or .cursorrules exists)
+   * 2. Gemini CLI (if gemini CLI found)
+   * 3. Codex (if codex CLI found)
+   * 4. Claude Code (DEFAULT - recommended if no other tool detected)
    * 5. Generic (only if explicitly requested via --adapter generic)
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
@@ -120,9 +120,10 @@ export class AdapterLoader {
       }
     }
 
-    // Default to Claude Code (best experience, native support)
-    // Users can override with --adapter flag if they want a different tool
-    console.log(`✅ Detected: claude (native - full automation)`);
+    // Default to Claude Code (recommended, best experience)
+    // Note: Not actually "detected" - this is the recommended default
+    console.log(`ℹ️  No specific tool detected - recommending Claude Code (best experience)`);
+    console.log(`   💡 Use --adapter flag to specify a different tool if needed`);
     return 'claude';
   }
 
