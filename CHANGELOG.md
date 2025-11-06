@@ -11,6 +11,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.8] - 2025-11-06
+
+### 🔧 **CLARITY IMPROVEMENT** - Only Claude Code Needed, Not Claude Desktop
+
+**Clarification: SpecWeave only requires Claude Code (npm package)**
+
+**Problem:**
+- Users were confused whether they needed both Claude Code AND Claude Desktop
+- Instructions didn't explicitly state that Claude Desktop is NOT needed
+- Potential for users to install unnecessary software
+
+**Solution:**
+- Added prominent note: "💡 Note: Claude Code ≠ Claude Desktop (chat app)"
+- Emphasized: "Only Claude Code is needed for SpecWeave!"
+- Simplified option 2 wording to avoid confusion
+- Made it crystal clear: Claude Code (npm) is the ONLY requirement
+
+**Impact:**
+- ✅ No confusion about which product to install
+- ✅ Users don't waste time installing Claude Desktop
+- ✅ Clearer, more focused installation instructions
+- ✅ Single source of truth: npm install @anthropic-ai/claude-code
+
+**Files Modified:**
+- `src/cli/commands/init.ts` - Added clarification messaging
+
+---
+
 ## [0.8.7] - 2025-11-06
 
 ### 🔧 **CRITICAL FIX** - Correct Claude Code Installation Instructions
