@@ -107,10 +107,10 @@
       "claude": {
         "step1": "Откройте Claude Code в этой директории",
         "step2": "Установите основной плагин SpecWeave (ОБЯЗАТЕЛЬНО):",
-        "installCore": "Выполните: /plugin install specweave-core@specweave",
+        "installCore": "Выполните: /plugin install specweave",
         "step3": "Опционально: Установите дополнительные плагины по необходимости:",
-        "installGitHub": "/plugin install specweave-github@specweave",
-        "installFrontend": "/plugin install specweave-frontend@specweave",
+        "installGitHub": "/plugin install specweave-github",
+        "installFrontend": "/plugin install specweave-frontend",
         "step4": "Начните разработку:",
         "example": "\"/specweave:inc 'аутентификация пользователя'\"",
         "autoActivate": "Навыки и агенты активируются автоматически по контексту"

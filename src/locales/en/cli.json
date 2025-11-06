@@ -88,7 +88,7 @@
       "copiedSkills": "✓ Copied {{count}} skill directories",
       "copiedHooks": "✓ Copied {{count}} hook files",
       "pluginAutoSetupDetails": "Claude Code will auto-load SpecWeave marketplace when you trust this folder",
-      "manualInstallInstructions": "Run manually: /plugin install specweave-core@specweave",
+      "manualInstallInstructions": "Run manually: /plugin install specweave",
       "ciSkipPlugins": "CI environment detected - skipping plugin enablement (can configure manually later)"
     },
     "success": {
@@ -125,10 +125,10 @@
       "claude": {
         "step1": "Open Claude Code in this directory",
         "step2": "Install SpecWeave core plugin (REQUIRED):",
-        "installCore": "Run: /plugin install specweave-core@specweave",
+        "installCore": "Run: /plugin install specweave",
         "step3": "Optional: Install additional plugins as needed:",
-        "installGitHub": "/plugin install specweave-github@specweave",
-        "installFrontend": "/plugin install specweave-frontend@specweave",
+        "installGitHub": "/plugin install specweave-github",
+        "installFrontend": "/plugin install specweave-frontend",
         "step4": "Start building:",
         "example": "\"/specweave:inc 'user authentication'\"",
         "autoActivate": "Skills and agents auto-activate based on context"
