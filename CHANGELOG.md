@@ -11,6 +11,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.3] - 2025-11-06
+
+### 🔧 **BUG FIXES & IMPROVEMENTS**
+
+**Fixes**:
+
+- **Enhanced nested .specweave/ detection** (#26):
+  - Now shows ALL parent .specweave/ folders (not just immediate parent)
+  - Better guidance for monorepo/multi-service projects
+  - Clear visual hierarchy of nested folders
+
+- **Improved Claude Code download guidance** (#27):
+  - Added link to official download page (claude.ai/download)
+  - More helpful error messages when Claude Code not installed
+  - Better user experience for first-time setup
+
+- **DORA metrics calculator fixes**:
+  - Added .js extensions to ESM imports for proper Node.js module resolution
+  - Fixed CI failures in Test & Validate workflow
+  - Improved compatibility with strict ESM environments
+
+**No breaking changes** - This is a stability and user experience improvement release.
+
+---
+
 ## [0.8.2] - 2025-11-06
 
 ### 🧹 **CLEANUP RELEASE** - Plugin Detection System Removal
