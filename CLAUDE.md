@@ -2488,25 +2488,61 @@ npm publish
 
 ---
 
-### NPM Publishing
+### Release Process (Automated via GitHub Actions)
 
-**NPM Publishing**:
+**CRITICAL**: GitHub releases and NPM versions MUST ALWAYS be in sync!
+
+**Automated Release Workflow** (`.github/workflows/release.yml`):
+
+The release process is fully automated via GitHub Actions. To publish a new version:
+
+1. **Update CHANGELOG.md** first (manually):
+   ```bash
+   vim CHANGELOG.md
+   # Add new version section with release notes
+   # Commit: git commit -m "docs: update changelog for v0.8.19"
+   ```
+
+2. **Trigger GitHub Actions Workflow**:
+   - Go to: https://github.com/anton-abyzov/specweave/actions/workflows/release.yml
+   - Click "Run workflow"
+   - Select branch: `develop`
+   - Enter version: e.g., `0.8.19`
+   - Select version type: `patch`, `minor`, or `major`
+   - Click "Run workflow"
+
+3. **What the workflow does automatically**:
+   - ✅ Runs tests (`npm test`)
+   - ✅ Builds project (`npm run build`)
+   - ✅ Bumps version in `package.json`
+   - ✅ Verifies version matches input
+   - ✅ Extracts release notes from CHANGELOG.md
+   - ✅ Commits version bump
+   - ✅ Creates and pushes git tag (`v0.8.19`)
+   - ✅ **Publishes to NPM** (with provenance)
+   - ✅ **Creates GitHub Release** (with CHANGELOG notes)
+   - ✅ Notifies success/failure
+
+**Result**: NPM package and GitHub release are created together atomically.
+
+**Manual Release (Emergency Only)**:
 ```bash
-# 1. Update version (ONLY when maintainer requests)
+# Only if GitHub Actions is down or fails
+# 1. Update version
 npm version patch|minor|major
 
-# 2. Update CHANGELOG.md
-vim CHANGELOG.md
+# 2. Build and test
+npm run build && npm test && npm run test:e2e
 
-# 3. Build and test
-npm run build
-npm test
-npm run test:e2e
+# 3. Publish to NPM
+npm publish --provenance --access public
 
-# 4. Publish to NPM
-npm publish
+# 4. Create GitHub release
+gh release create v$(node -p "require('./package.json').version") \
+  --title "v$(node -p "require('./package.json').version")" \
+  --notes-file /tmp/release-notes.md
 
-# 5. Tag and push
+# 5. Push tags
 git push origin develop --tags
 ```
 
