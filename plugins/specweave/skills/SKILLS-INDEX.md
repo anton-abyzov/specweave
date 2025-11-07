@@ -77,7 +77,9 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### specweave-detector
 
-**Description**: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. v0.3.8+ features PROACTIVE auto-detection - when in SpecWeave folder, product descriptions automatically trigger increment planning. Explicit slash commands still work (/specweave:increment, /specweave:do, /specweave:progress, /specweave:validate, /specweave:done, /specweave:sync-docs, /sync-github). Keywords slash commands, specweave commands, smart workflow, auto-detection, specweave folder.
+**Description**: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. Explains available slash commands and workflow. Keywords slash commands, /specweave:increment, /increment, /specweave:do, /specweave:progress, /specweave:validate, /specweave:done, specweave commands, workflow help, specweave folder.
+
+**Note**: Auto-detection of product descriptions is handled by the `project-kickstarter` skill.
 
 **Location**: `.claude/skills/specweave-detector/SKILL.md`
 
