@@ -97,6 +97,8 @@ export async function promptAzureDevOpsCredentials(
   }
 
   // Collect credentials
+  // TODO: Use project selector (when TypeScript config fixed)
+  // For now, users can manually edit .env to add comma-separated projects
   const questions: any[] = [
     {
       type: 'input',
@@ -112,7 +114,7 @@ export async function promptAzureDevOpsCredentials(
     {
       type: 'input',
       name: 'project',
-      message: 'Project name:',
+      message: 'Project name (or comma-separated list):',
       validate: (input: string) => {
         if (!input || input.trim() === '') {
           return 'Project cannot be empty';
@@ -140,10 +142,14 @@ export async function promptAzureDevOpsCredentials(
 
   const answers = await inquirer.prompt(questions);
 
+  // Parse comma-separated projects
+  const projects = answers.project.split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+
   return {
     pat: answers.pat,
     org: answers.org,
-    project: answers.project
+    project: projects[0], // Use first project for backward compatibility
+    projects: projects.length > 1 ? projects : undefined
   };
 }
 
@@ -234,11 +240,19 @@ export async function validateAzureDevOpsConnection(
 export function getAzureDevOpsEnvVars(
   credentials: AzureDevOpsCredentials
 ): Array<{ key: string; value: string }> {
-  return [
+  const envVars = [
     { key: 'AZURE_DEVOPS_PAT', value: credentials.pat },
-    { key: 'AZURE_DEVOPS_ORG', value: credentials.org },
-    { key: 'AZURE_DEVOPS_PROJECT', value: credentials.project }
+    { key: 'AZURE_DEVOPS_ORG', value: credentials.org }
   ];
+
+  // Write projects as comma-separated if multiple, otherwise single
+  if (credentials.projects && credentials.projects.length > 1) {
+    envVars.push({ key: 'AZURE_DEVOPS_PROJECTS', value: credentials.projects.join(',') });
+  } else {
+    envVars.push({ key: 'AZURE_DEVOPS_PROJECT', value: credentials.project });
+  }
+
+  return envVars;
 }
 
 /**
