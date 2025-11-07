@@ -2,6 +2,7 @@
 .specweave/cache/
 .specweave/increments/*/logs/       # Gitignored, but structure preserved
 .specweave/increments/*/test-results/
+.specweave/docs-site-internal/      # Generated Docusaurus site for internal docs
 .claude-plugin/                     # Plugin marketplace (framework files)
 plugins/                            # Plugin implementations (framework files)
 

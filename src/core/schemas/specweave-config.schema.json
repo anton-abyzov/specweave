@@ -370,15 +370,15 @@
             },
             "autoInstall": {
               "type": "boolean",
-              "description": "Automatically install Docusaurus when needed",
-              "default": true
+              "description": "Automatically install Docusaurus dependencies (lazy install on first use recommended)",
+              "default": false
             },
             "port": {
               "type": "number",
-              "description": "Default port for dev server",
+              "description": "Default port for internal docs preview (3015 for internal, 3016 for public)",
               "minimum": 1024,
               "maximum": 65535,
-              "default": 3000
+              "default": 3015
             },
             "openBrowser": {
               "type": "boolean",
@@ -792,8 +792,8 @@
       "documentation": {
         "preview": {
           "enabled": true,
-          "autoInstall": true,
-          "port": 3000,
+          "autoInstall": false,
+          "port": 3015,
           "openBrowser": true,
           "theme": "default",
           "excludeFolders": ["legacy", "node_modules", "_backlog"]
