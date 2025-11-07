@@ -512,6 +512,28 @@ export class AdoClient {
   }
 
   /**
+   * Get all projects accessible to the user
+   */
+  public async getProjects(): Promise<any[]> {
+    const url = `https://dev.azure.com/${this.credentials.organization}/_apis/projects?api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`ADO API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return data.value || [];
+  }
+
+  /**
    * Test connection to Azure DevOps
    */
   public async testConnection(): Promise<boolean> {

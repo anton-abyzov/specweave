@@ -14,13 +14,16 @@ import * as path from 'path';
 export interface AdoCredentials {
   pat: string;
   organization: string;
-  project: string;
+  project: string;  // Single project (backward compatibility)
+  projects?: string[];  // Multiple projects (comma-separated)
 }
 
 export interface JiraCredentials {
   apiToken: string;
   email: string;
   domain: string;
+  project?: string;  // Single project (backward compatibility)
+  projects?: string[];  // Multiple projects (comma-separated)
 }
 
 export interface CredentialsConfig {
@@ -64,19 +67,38 @@ export class CredentialsManager {
 
     // Load ADO credentials
     if (process.env.AZURE_DEVOPS_PAT) {
+      const singleProject = process.env.AZURE_DEVOPS_PROJECT || '';
+      const multiProjects = process.env.AZURE_DEVOPS_PROJECTS || '';
+
+      // Parse comma-separated projects
+      const projects = multiProjects
+        ? multiProjects.split(',').map(p => p.trim()).filter(p => p.length > 0)
+        : (singleProject ? [singleProject] : []);
+
       this.credentials.ado = {
         pat: process.env.AZURE_DEVOPS_PAT,
         organization: process.env.AZURE_DEVOPS_ORG || '',
-        project: process.env.AZURE_DEVOPS_PROJECT || ''
+        project: singleProject || projects[0] || '',  // Use first project for backward compatibility
+        projects: projects.length > 0 ? projects : undefined
       };
     }
 
     // Load Jira credentials
     if (process.env.JIRA_API_TOKEN) {
+      const singleProject = process.env.JIRA_PROJECT || '';
+      const multiProjects = process.env.JIRA_PROJECTS || '';
+
+      // Parse comma-separated projects
+      const projects = multiProjects
+        ? multiProjects.split(',').map(p => p.trim()).filter(p => p.length > 0)
+        : (singleProject ? [singleProject] : []);
+
       this.credentials.jira = {
         apiToken: process.env.JIRA_API_TOKEN,
         email: process.env.JIRA_EMAIL || '',
-        domain: process.env.JIRA_DOMAIN || ''
+        domain: process.env.JIRA_DOMAIN || '',
+        project: singleProject || projects[0],
+        projects: projects.length > 0 ? projects : undefined
       };
     }
 
@@ -216,12 +238,19 @@ export class CredentialsManager {
       return 'ADO credentials: Not configured';
     }
 
-    return [
+    const lines = [
       'ADO credentials:',
       `  PAT: ${this.maskSecret(this.credentials.ado.pat)}`,
-      `  Organization: ${this.credentials.ado.organization}`,
-      `  Project: ${this.credentials.ado.project}`
-    ].join('\n');
+      `  Organization: ${this.credentials.ado.organization}`
+    ];
+
+    if (this.credentials.ado.projects && this.credentials.ado.projects.length > 1) {
+      lines.push(`  Projects (${this.credentials.ado.projects.length}): ${this.credentials.ado.projects.join(', ')}`);
+    } else {
+      lines.push(`  Project: ${this.credentials.ado.project}`);
+    }
+
+    return lines.join('\n');
   }
 
   /**
@@ -232,12 +261,20 @@ export class CredentialsManager {
       return 'Jira credentials: Not configured';
     }
 
-    return [
+    const lines = [
       'Jira credentials:',
       `  API Token: ${this.maskSecret(this.credentials.jira.apiToken)}`,
       `  Email: ${this.credentials.jira.email}`,
       `  Domain: ${this.credentials.jira.domain}`
-    ].join('\n');
+    ];
+
+    if (this.credentials.jira.projects && this.credentials.jira.projects.length > 1) {
+      lines.push(`  Projects (${this.credentials.jira.projects.length}): ${this.credentials.jira.projects.join(', ')}`);
+    } else if (this.credentials.jira.project) {
+      lines.push(`  Project: ${this.credentials.jira.project}`);
+    }
+
+    return lines.join('\n');
   }
 
   /**
@@ -278,13 +315,34 @@ export class CredentialsManager {
     if (config.ado) {
       existingVars.AZURE_DEVOPS_PAT = config.ado.pat;
       existingVars.AZURE_DEVOPS_ORG = config.ado.organization;
-      existingVars.AZURE_DEVOPS_PROJECT = config.ado.project;
+
+      // Write projects as comma-separated if multiple, otherwise single
+      if (config.ado.projects && config.ado.projects.length > 1) {
+        existingVars.AZURE_DEVOPS_PROJECTS = config.ado.projects.join(',');
+        // Remove singular form to avoid confusion
+        delete existingVars.AZURE_DEVOPS_PROJECT;
+      } else {
+        existingVars.AZURE_DEVOPS_PROJECT = config.ado.project;
+        // Remove plural form if only one project
+        delete existingVars.AZURE_DEVOPS_PROJECTS;
+      }
     }
 
     if (config.jira) {
       existingVars.JIRA_API_TOKEN = config.jira.apiToken;
       existingVars.JIRA_EMAIL = config.jira.email;
       existingVars.JIRA_DOMAIN = config.jira.domain;
+
+      // Write projects as comma-separated if multiple, otherwise single
+      if (config.jira.projects && config.jira.projects.length > 1) {
+        existingVars.JIRA_PROJECTS = config.jira.projects.join(',');
+        // Remove singular form to avoid confusion
+        delete existingVars.JIRA_PROJECT;
+      } else if (config.jira.project) {
+        existingVars.JIRA_PROJECT = config.jira.project;
+        // Remove plural form if only one project
+        delete existingVars.JIRA_PROJECTS;
+      }
     }
 
     // Write back to .env
@@ -330,13 +388,24 @@ export class CredentialsManager {
 # Scopes: Work Items (Read, Write, Manage), Code (Read), Project (Read)
 AZURE_DEVOPS_PAT=your-ado-pat-52-chars-base64
 AZURE_DEVOPS_ORG=your-organization-name
+
+# Single project (backward compatibility)
 AZURE_DEVOPS_PROJECT=your-project-name
+
+# OR multiple projects (comma-separated)
+# AZURE_DEVOPS_PROJECTS=project1,project2,project3
 
 # Jira API Token
 # Get from: https://id.atlassian.com/manage-profile/security/api-tokens
 JIRA_API_TOKEN=your-jira-api-token
 JIRA_EMAIL=your-email@example.com
 JIRA_DOMAIN=your-domain.atlassian.net
+
+# Single project (optional, for backward compatibility)
+# JIRA_PROJECT=your-project-key
+
+# OR multiple projects (comma-separated)
+# JIRA_PROJECTS=PROJ1,PROJ2,PROJ3
 `;
 
     fs.writeFileSync(examplePath, exampleContent, 'utf-8');

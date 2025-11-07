@@ -327,4 +327,32 @@ export class GitHubClient {
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  /**
+   * Get all repositories accessible to the user
+   * @param owner Optional: filter by specific owner/org (e.g., 'octocat', 'my-org')
+   * @param limit Maximum number of repos to fetch (default: 100, max: 1000)
+   */
+  static async getRepositories(owner?: string, limit: number = 100): Promise<Array<{owner: string, name: string, fullName: string}>> {
+    try {
+      const ownerFilter = owner ? `${owner}/` : '';
+      const cmd = `gh repo list ${ownerFilter} --limit ${limit} --json owner,name,nameWithOwner`;
+
+      const output = execSync(cmd, { encoding: 'utf-8' }).trim();
+
+      if (!output) {
+        return [];
+      }
+
+      const repos = JSON.parse(output);
+
+      return repos.map((repo: any) => ({
+        owner: repo.owner?.login || '',
+        name: repo.name,
+        fullName: repo.nameWithOwner
+      }));
+    } catch (error: any) {
+      throw new Error(`Failed to fetch repositories: ${error.message}`);
+    }
+  }
 }
