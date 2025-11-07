@@ -36,16 +36,19 @@ export async function translateLivingDocs(incrementId: string): Promise<void> {
 
     // 2. Check if translation is enabled
     if (!config.language || config.language === 'en') {
-      // English or no language set - skip translation
+      // Already English or no language set - skip translation
+      console.log('[translate-living-docs] Project language is English, skipping translation');
       return;
     }
 
     if (!config.translation?.autoTranslateLivingDocs) {
       // Auto-translation disabled
+      console.log('[translate-living-docs] Auto-translation disabled in config');
       return;
     }
 
-    console.log(`[translate-living-docs] Auto-translating docs to ${config.language}...`);
+    // Always translate TO English for maintainability (not to user's language!)
+    console.log(`[translate-living-docs] Auto-translating docs from ${config.language} to English...`);
 
     // 3. Detect changed documentation files
     const changedFiles = await detectChangedDocs();
@@ -57,11 +60,12 @@ export async function translateLivingDocs(incrementId: string): Promise<void> {
 
     console.log(`[translate-living-docs] Found ${changedFiles.length} changed file(s)`);
 
-    // 4. Translate each file
+    // 4. Translate each file TO English (always 'en', not config.language!)
     for (const file of changedFiles) {
       try {
-        await translateFile(file, config.language, config.translation);
-        console.log(`[translate-living-docs] ✓ Translated: ${file}`);
+        // Always translate TO English for maintainability
+        await translateFile(file, 'en', config.translation);
+        console.log(`[translate-living-docs] ✓ Translated: ${file} (${config.language} → en)`);
       } catch (error: any) {
         console.warn(`[translate-living-docs] ⚠️  Failed to translate ${file}: ${error.message}`);
         // Continue with other files
@@ -100,16 +104,20 @@ async function detectChangedDocs(): Promise<string[]> {
 }
 
 /**
- * Translate a single file
+ * Translate a single file FROM user's language TO English
  *
  * NOTE: This is a simplified implementation that creates a translation prompt.
  * In a real implementation with Claude Code, the translator skill would auto-activate
  * and handle the translation. For now, we'll add a marker comment to indicate
  * the file needs translation.
+ *
+ * @param filePath - File to translate
+ * @param targetLanguage - Target language (should always be 'en' for living docs)
+ * @param translationConfig - Translation settings
  */
 async function translateFile(
   filePath: string,
-  targetLanguage: string,
+  targetLanguage: string,  // Should always be 'en' for living docs
   translationConfig?: Config['translation']
 ): Promise<void> {
   // Read original content

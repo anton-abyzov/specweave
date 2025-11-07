@@ -2,8 +2,9 @@
 
 **Purpose**: Track DORA (DevOps Research and Assessment) metrics to measure engineering excellence and continuous improvement.
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-04 (Auto-updated by CI/CD)
 **Owner**: Engineering Leadership
+**Data Source**: `metrics/dora-latest.json` (updated on each release)
 
 ---
 
@@ -33,16 +34,26 @@ DORA metrics are four key metrics that indicate the performance of software deli
 
 ---
 
-## Current Performance (Example)
+## Current SpecWeave Performance (ACTUAL)
 
-| Metric | Current | Goal | Status |
-|--------|---------|------|--------|
-| **Deployment Frequency** | Weekly | Weekly | ✅ High |
-| **Lead Time for Changes** | 3 days | < 1 week | ✅ High |
-| **Change Failure Rate** | 12% | < 15% | ✅ Elite |
-| **Time to Restore Service** | 2 hours | < 1 day | ✅ High |
+**Last Calculated**: November 4, 2025 at 20:27 UTC
 
-**Overall Rating**: **High** (3/4 metrics at High or Elite)
+| Metric | Current Value | Tier | Goal | Status |
+|--------|--------------|------|------|--------|
+| **Deployment Frequency** | **8 deploys/month** | 🟢 **High** | Weekly-Monthly | ✅ Meets High |
+| **Lead Time for Changes** | **16 hours** (median: 5h, p90: 60h) | 🟢 **High** | < 1 week | ✅ Meets High |
+| **Change Failure Rate** | **0%** (0 failures / 8 releases) | 🟢 **Elite** | < 15% | ✅ Exceeds Elite |
+| **Time to Restore Service** | **0 minutes** | ⚪ **N/A** | < 1 day | ⚪ No incidents |
+
+**Overall Rating**: 🟢 **High** (3/3 measured metrics at High or Elite)
+
+**Key Insights**:
+- ✅ **Deployment cadence is healthy** - Releasing ~2x per week
+- ✅ **Lead time is excellent** - Median 5 hours from commit to production
+- ✅ **Zero failures** - All 8 releases succeeded without rollbacks
+- ℹ️ **MTTR N/A** - No production incidents in measurement period (good sign!)
+
+**Data Source**: Calculated from GitHub releases, commits, and CI/CD logs via automated workflow
 
 ---
 

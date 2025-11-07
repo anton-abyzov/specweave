@@ -1,203 +1,173 @@
-# Engineering Metrics (DORA)
+---
+sidebar_position: 10
+title: DORA Metrics Dashboard
+description: Live DORA metrics for SpecWeave development performance
+---
 
-SpecWeave tracks engineering performance using **DORA (DevOps Research and Assessment) metrics** - the industry-standard framework for measuring software delivery excellence.
+# 📊 DORA Metrics Dashboard
 
-## Real-Time Metrics Dashboard
+Real-time DevOps performance metrics for SpecWeave, updated daily.
 
-[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://spec-weave.com/docs/metrics)
-[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://spec-weave.com/docs/metrics)
-[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://spec-weave.com/docs/metrics)
-[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://spec-weave.com/docs/metrics)
+<div style={{marginBottom: '2rem'}}>
+  <a href="https://github.com/anton-abyzov/specweave/actions/workflows/dora-metrics.yml" target="_blank">
+    <img src="https://img.shields.io/github/actions/workflow/status/anton-abyzov/specweave/dora-metrics.yml?branch=develop&label=Metrics%20Calculation&style=for-the-badge" alt="Metrics Status" />
+  </a>
+</div>
 
-**Last Updated**: Updated daily at 06:00 UTC via automated workflow
+## Current Performance
+
+### 🚀 Deployment Frequency
+
+<div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deployment%20Frequency&suffix=/month&color=brightgreen&style=for-the-badge" alt="Deployment Frequency" />
+  <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.tier&label=Tier&color=blue&style=for-the-badge" alt="DF Tier" />
+  </span>
+</div>
+
+**What it measures:** How often we deploy to production
+**Industry benchmarks:**
+- 🏆 **Elite**: Multiple deploys per day (>365/year)
+- ⭐ **High**: Weekly to daily (52-365/year)
+- 📊 **Medium**: Monthly to weekly (12-52/year)
+- ⚠️ **Low**: Less than monthly (<12/year)
 
 ---
 
-## What are DORA Metrics?
+### ⚡ Lead Time for Changes
 
-DORA metrics are four key indicators that measure the **velocity** and **stability** of software delivery:
+<div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=%20hours&color=brightgreen&style=for-the-badge" alt="Lead Time" />
+  <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.tier&label=Tier&color=blue&style=for-the-badge" alt="LT Tier" />
+  </span>
+</div>
 
-### 1. Deployment Frequency
+**What it measures:** Time from commit to production
+**Industry benchmarks:**
+- 🏆 **Elite**: Less than 1 hour
+- ⭐ **High**: 1 day to 1 week
+- 📊 **Medium**: 1 week to 1 month
+- ⚠️ **Low**: More than 1 month
 
-**What it measures**: How often you deploy code to production
-
-**SpecWeave tracking**:
-- Counts successful deployments to production
-- Target: 1+ deployments per day (elite performance)
-
-**Why it matters**: High deployment frequency indicates:
-- ✅ Small, manageable changes
-- ✅ Fast feedback loops
-- ✅ Reduced risk per deployment
-- ✅ Quick value delivery to users
-
-### 2. Lead Time for Changes
-
-**What it measures**: Time from code commit to running in production
-
-**SpecWeave tracking**:
-- Measures: `production_deploy_time - first_commit_time`
-- Target: < 24 hours (elite performance)
-
-**Why it matters**: Short lead time indicates:
-- ✅ Efficient CI/CD pipeline
-- ✅ Minimal handoffs
-- ✅ Quick iteration cycles
-- ✅ Rapid response to customer needs
-
-### 3. Change Failure Rate
-
-**What it measures**: Percentage of deployments causing failures in production
-
-**SpecWeave tracking**:
-- Calculates: `(failed_deployments / total_deployments) * 100`
-- Target: < 15% (elite performance)
-
-**Why it matters**: Low failure rate indicates:
-- ✅ High code quality
-- ✅ Effective testing
-- ✅ Reliable deployment process
-- ✅ Stable production environment
-
-### 4. Mean Time to Recovery (MTTR)
-
-**What it measures**: Average time to restore service after failure
-
-**SpecWeave tracking**:
-- Measures: Time from incident detection to resolution
-- Target: < 1 hour (elite performance)
-
-**Why it matters**: Fast recovery indicates:
-- ✅ Effective monitoring
-- ✅ Quick incident response
-- ✅ Good rollback procedures
-- ✅ Resilient architecture
+**Percentiles:**
+- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.p50&label=P50&suffix=%20hours&color=lightgrey)
+- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.p90&label=P90&suffix=%20hours&color=lightgrey)
 
 ---
 
-## DORA Performance Levels
+### ✅ Change Failure Rate
 
-According to DORA research, teams are categorized into four performance levels:
+<div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen&style=for-the-badge" alt="CFR" />
+  <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.tier&label=Tier&color=blue&style=for-the-badge" alt="CFR Tier" />
+  </span>
+</div>
 
-| Metric | Elite | High | Medium | Low |
-|--------|-------|------|--------|-----|
-| **Deployment Frequency** | On-demand (multiple/day) | 1/week - 1/month | 1/month - 6 months | < 1/6 months |
-| **Lead Time** | < 1 hour | 1 day - 1 week | 1 week - 1 month | 1-6 months |
-| **Change Failure Rate** | 0-15% | 16-30% | 31-45% | 46-60% |
-| **MTTR** | < 1 hour | < 1 day | 1 day - 1 week | 1 week - 1 month |
+**What it measures:** Percentage of deployments that fail
+**Industry benchmarks:**
+- 🏆 **Elite**: 0-15%
+- ⭐ **High**: 16-30%
+- 📊 **Medium**: 31-45%
+- ⚠️ **Low**: More than 45%
 
-**SpecWeave's Goal**: Maintain **Elite** or **High** performance across all metrics
-
----
-
-## How SpecWeave Improves DORA Metrics
-
-SpecWeave is designed to naturally improve your DORA metrics through disciplined development:
-
-### Improving Deployment Frequency
-
-✅ **Incremental delivery** - Small, complete increments deploy faster
-✅ **Automated workflows** - CI/CD pipelines run on every commit
-✅ **Living docs automation** - Documentation never blocks deployment
-
-### Reducing Lead Time
-
-✅ **Structured planning** - Less rework = faster delivery
-✅ **Test-aware tasks** - Tests written with implementation (no separate QA phase)
-✅ **Auto-resume workflows** - Pick up where you left off instantly
-
-### Lowering Change Failure Rate
-
-✅ **Embedded test plans** - Every task has tests (BDD format)
-✅ **AC-ID traceability** - Requirements → Tasks → Tests linked
-✅ **Coverage validation** - Ensures critical paths tested
-
-### Faster MTTR
-
-✅ **Living documentation** - Up-to-date runbooks and architecture docs
-✅ **ADRs** - Architecture decisions documented for quick troubleshooting
-✅ **Increment isolation** - Easy to identify and rollback changes
+**Failed Releases:** ![Failed](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.failedReleases&label=Failed&color=red) / ![Total](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.totalReleases&label=Total&color=blue)
 
 ---
 
-## SpecWeave's Metrics Collection
+### 🔧 Mean Time to Recovery (MTTR)
 
-### Automated Workflow
+<div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=%20minutes&color=brightgreen&style=for-the-badge" alt="MTTR" />
+  <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.tier&label=Tier&color=blue&style=for-the-badge" alt="MTTR Tier" />
+  </span>
+</div>
 
-SpecWeave collects DORA metrics via GitHub Actions:
+**What it measures:** Time to recover from production incidents
+**Industry benchmarks:**
+- 🏆 **Elite**: Less than 1 hour
+- ⭐ **High**: 1 hour to 1 day
+- 📊 **Medium**: 1 day to 1 week
+- ⚠️ **Low**: More than 1 week
 
-```yaml
-name: DORA Metrics
-on:
-  schedule:
-    - cron: '0 6 * * *'  # Daily at 06:00 UTC
-  workflow_dispatch:     # Manual trigger
+**Percentiles:**
+- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.p50&label=P50&suffix=%20minutes&color=lightgrey)
+- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.p90&label=P90&suffix=%20minutes&color=lightgrey)
 
-jobs:
-  calculate-metrics:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Collect deployment data
-      - name: Calculate DORA metrics
-      - name: Generate JSON report
-      - name: Commit metrics to repo
+---
+
+## 📈 How It Works
+
+### Architecture
+
+```mermaid
+graph LR
+    A[GitHub API] --> B[DORA Calculator]
+    B --> C[metrics/dora-latest.json]
+    C --> D[Shields.io Badges]
+    D --> E[README.md]
+    C --> F[This Dashboard]
+    G[GitHub Actions] --> B
+    G -->|Daily 06:00 UTC| B
 ```
 
-**Output**: `metrics/dora-latest.json` (public, version controlled)
+### Data Sources
 
-### Metrics Calculation
+All metrics are calculated from GitHub data:
 
-**Deployment Frequency**:
-- Source: GitHub deployments API + production tags
-- Calculation: Count deployments in last 30 days
+1. **Deployment Frequency**: Counts GitHub Releases
+2. **Lead Time**: Measures commit → release time
+3. **Change Failure Rate**: Tracks issues labeled `incident` or `production-bug`
+4. **MTTR**: Measures incident creation → closure time
 
-**Lead Time**:
-- Source: Git commits + deployment timestamps
-- Calculation: Average time from first commit to deployment per increment
+### Zero Infrastructure
 
-**Change Failure Rate**:
-- Source: GitHub deployments (success/failure status) + rollback commits
-- Calculation: `(failed_deployments + rollbacks) / total_deployments * 100`
-
-**MTTR**:
-- Source: GitHub Issues with `incident` label
-- Calculation: Average time from issue creation to closure
+- **Cost**: $0/month (GitHub API free tier)
+- **Database**: None (GitHub is our database)
+- **Server**: None (GitHub Actions)
+- **Rate Limits**: 5000 API calls/hour (we use ~20/day)
 
 ---
 
-## Transparency Commitment
+## 🔄 Automation
 
-SpecWeave's DORA metrics are:
+Metrics update automatically:
 
-✅ **Public** - Visible to all users and contributors
-✅ **Automated** - No manual intervention, no gaming
-✅ **Version controlled** - Full history in Git
-✅ **Real-time** - Updated daily via CI/CD
+- **Schedule**: Daily at 06:00 UTC
+- **Workflow**: [`.github/workflows/dora-metrics.yml`](https://github.com/anton-abyzov/specweave/blob/develop/.github/workflows/dora-metrics.yml)
+- **Manual Trigger**: `gh workflow run dora-metrics.yml`
 
-**See metrics history**: [View JSON data](https://github.com/anton-abyzov/specweave/tree/develop/metrics)
-
----
-
-## Why DORA Metrics Matter for SpecWeave
-
-As a framework focused on **disciplined development**, SpecWeave practices what it preaches:
-
-1. **Small increments** → High deployment frequency
-2. **Structured workflow** → Short lead times
-3. **Test-driven planning** → Low change failure rate
-4. **Living docs** → Fast MTTR
-
-**The Result**: SpecWeave demonstrates that discipline leads to velocity AND stability.
+**Latest Update**: ![Last Update](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.timestamp&label=Last%20Update&color=lightgrey)
 
 ---
 
-## Learn More
+## 📚 Learn More
 
-- 📖 [DORA Research](https://dora.dev/) - Original research and methodologies
-- 📊 [Accelerate Book](https://itrevolution.com/product/accelerate/) - The science behind DORA metrics
-- 🔧 [SpecWeave Workflows](./workflows/overview) - How we maintain high performance
-- 📈 [GitHub Actions](https://github.com/anton-abyzov/specweave/actions) - See our automation in action
+### DORA Research
+
+The DORA (DevOps Research and Assessment) metrics are industry-standard KPIs for software delivery performance, backed by 6+ years of research.
+
+**Resources:**
+- [State of DevOps Report](https://cloud.google.com/devops/state-of-devops)
+- [Accelerate Book](https://itrevolution.com/book/accelerate/)
+- [Google Cloud DORA](https://cloud.google.com/blog/products/devops-sre/using-the-four-keys-to-measure-your-devops-performance)
+
+### Implementation
+
+**Code**: [`src/metrics/`](https://github.com/anton-abyzov/specweave/tree/develop/src/metrics)
+**Increment**: [`.specweave/increments/0010-dora-metrics-mvp/`](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0010-dora-metrics-mvp)
+**Architecture Decision**: [Why No Database](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/increments/0010-dora-metrics-mvp/reports/ARCHITECTURE-DECISION.md)
 
 ---
 
-**Bottom Line**: DORA metrics aren't just numbers - they're a reflection of how well your development process works. SpecWeave helps you achieve elite performance through disciplined, incremental delivery.
+## 🎯 Continuous Improvement
+
+Track our progress over time as we optimize SpecWeave's delivery performance:
+
+**Current Goals:**
+- 🚀 Deployment Frequency: High → Elite (8/month → 30/month)
+- ⚡ Lead Time: High → Elite (15.6h → <1h)
+- ✅ Change Failure Rate: Elite (maintain 0-15%)
+- 🔧 MTTR: Track once we have incidents (target: <1 hour)

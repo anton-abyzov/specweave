@@ -192,6 +192,83 @@ translate_file() {
 }
 
 # ============================================================================
+# LIVING DOCS TRANSLATION
+# ============================================================================
+
+translate_living_docs_specs() {
+  local increment_id="$1"
+
+  log_debug "Checking for newly created living docs specs for increment $increment_id..."
+
+  # Directories to check for living docs
+  local specs_dir="$SPECWEAVE_DIR/docs/internal/specs"
+  local strategy_dir="$SPECWEAVE_DIR/docs/internal/strategy"
+  local architecture_dir="$SPECWEAVE_DIR/docs/internal/architecture"
+
+  local translated_count=0
+  local total_checked=0
+
+  # Find living docs files created in last 5 minutes (recently created by PM agent)
+  # macOS and Linux compatible find command
+  for dir in "$specs_dir" "$strategy_dir" "$architecture_dir"; do
+    if [ ! -d "$dir" ]; then
+      log_debug "Directory does not exist: $dir"
+      continue
+    fi
+
+    # Find markdown files modified in last 5 minutes
+    # Using -mmin -5 (last 5 minutes) to catch files created during increment planning
+    local files=$(find "$dir" -type f -name "*.md" -mmin -5 2>/dev/null)
+
+    if [ -z "$files" ]; then
+      log_debug "No recently modified files in $dir"
+      continue
+    fi
+
+    while IFS= read -r file; do
+      # Skip empty lines
+      [ -z "$file" ] && continue
+
+      ((total_checked++))
+
+      # Skip legacy folder
+      if [[ "$file" == *"/legacy/"* ]]; then
+        log_debug "Skipping legacy file: $file"
+        continue
+      fi
+
+      # Detect language
+      local file_lang=$(detect_file_language "$file")
+
+      if [ "$file_lang" = "non-en" ]; then
+        local basename_file=$(basename "$file")
+        log_info "  📄 Living docs detected: $basename_file"
+
+        if translate_file "$file"; then
+          ((translated_count++))
+          log_debug "Successfully translated living docs: $file"
+        else
+          log_debug "Failed to translate living docs: $file"
+        fi
+      else
+        log_debug "File already in English: $file"
+      fi
+    done <<< "$files"
+  done
+
+  log_debug "Living docs check complete: $translated_count/$total_checked files translated"
+
+  if [ "$translated_count" -gt 0 ]; then
+    log_info ""
+    log_info "  ✅ Translated $translated_count living docs file(s) to English"
+  else
+    log_debug "No living docs files needed translation"
+  fi
+
+  return 0
+}
+
+# ============================================================================
 # MAIN LOGIC
 # ============================================================================
 
@@ -273,57 +350,59 @@ EOF
     fi
   fi
 
-  # 4. If no translation needed, exit early
-  if [ "$needs_translation" = "false" ] || [ ${#files_to_translate[@]} -eq 0 ]; then
-    log_info "✅ All increment files already in English, skipping translation"
-    cat <<EOF
-{
-  "continue": true,
-  "message": "All files already in English"
-}
-EOF
-    exit 0
-  fi
+  # 4. Translate increment files (if needed)
+  local increment_success_count=0
+  local increment_total_count=${#files_to_translate[@]}
 
-  # 5. Perform translation
-  log_info ""
-  log_info "🌐 Detected non-English content in increment $increment_id"
-  log_info "   Translating to English for maintainability..."
-  log_info ""
-
-  local success_count=0
-  local total_count=${#files_to_translate[@]}
-
-  for file in "${files_to_translate[@]}"; do
-    if translate_file "$file"; then
-      ((success_count++))
-    fi
-  done
-
-  # 6. Summary
-  log_info ""
-  if [ "$success_count" -eq "$total_count" ]; then
-    log_info "✅ Translation complete! All $total_count file(s) now in English"
-    log_info "   Cost: ~\$0.01 (using Haiku)"
+  if [ "$needs_translation" = "true" ] && [ ${#files_to_translate[@]} -gt 0 ]; then
+    # 5. Perform translation of increment files
+    log_info ""
+    log_info "🌐 Detected non-English content in increment $increment_id"
+    log_info "   Translating increment files to English..."
     log_info ""
 
-    cat <<EOF
-{
-  "continue": true,
-  "message": "Translated $total_count file(s) to English",
-  "files": $(printf '%s\n' "${files_to_translate[@]}" | jq -R . | jq -s .)
-}
-EOF
+    for file in "${files_to_translate[@]}"; do
+      if translate_file "$file"; then
+        ((increment_success_count++))
+      fi
+    done
+
+    log_info ""
+    if [ "$increment_success_count" -eq "$increment_total_count" ]; then
+      log_info "✅ Increment files translation complete! All $increment_total_count file(s) now in English"
+    else
+      log_error "Increment files translation completed with errors: $increment_success_count/$increment_total_count files translated"
+    fi
   else
-    log_error "Translation completed with errors: $success_count/$total_count files translated"
-    cat <<EOF
+    log_info "✅ All increment files already in English"
+  fi
+
+  # 6. Translate living docs specs (if any were created)
+  log_info ""
+  log_info "🌐 Checking living docs for translation..."
+
+  translate_living_docs_specs "$increment_id"
+
+  # 7. Final summary
+  log_info ""
+  local total_translated=$((increment_success_count))
+
+  if [ "$increment_total_count" -gt 0 ] || [ "$total_translated" -gt 0 ]; then
+    log_info "✅ Translation complete!"
+    log_info "   Increment files: $increment_success_count/$increment_total_count"
+    log_info "   Living docs: See above"
+    log_info "   Estimated cost: ~\$0.01-0.02 (using Haiku)"
+    log_info ""
+  fi
+
+  # Return success JSON
+  cat <<EOF
 {
   "continue": true,
-  "warning": "Translation partially failed: $success_count/$total_count files",
+  "message": "Translation complete (increment: $increment_success_count/$increment_total_count files)",
   "files": $(printf '%s\n' "${files_to_translate[@]}" | jq -R . | jq -s .)
 }
 EOF
-  fi
 
   log_debug "=== POST-INCREMENT-PLANNING HOOK END ==="
 }
