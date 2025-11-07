@@ -939,39 +939,58 @@ When you run `specweave init`:
    - Success message: "✔ SpecWeave core plugin installed automatically!"
    - Graceful fallback: If CLI unavailable, shows manual install instructions
 
-3. ℹ️  **Optional Plugins Suggested**
-   - Based on project detection (Git, package.json, etc.)
-   - User can install now or later
+3. ✅ **Issue Tracker Plugin Auto-Installation** (NEW! v0.8.18+)
+   - Detects GitHub/Jira/Azure DevOps from project structure
+   - Prompts for credentials (API tokens, PATs)
+   - **Automatically installs** corresponding plugin (specweave-github, specweave-jira, specweave-ado)
+   - Happens AFTER marketplace registration (ensures plugin installation succeeds)
+   - Shows detailed error messages if auto-install fails
+   - Example: Jira detected → credentials saved → `specweave-jira` plugin installed automatically
+
+4. ℹ️  **Optional Plugins Available**
+   - Suggested based on project type (frontend, backend, infrastructure)
+   - User can install later via `/plugin install specweave-{name}`
 
 **Key Architectural Change**:
 - ❌ Old: Copied `.claude-plugin/` + `plugins/` to every project (~2MB bloat)
 - ✅ New: Reference GitHub marketplace (~2KB settings.json, always up-to-date)
 
-#### Phase 2: Increment Planning (On-Demand Loading)
+#### Phase 2: Increment Planning (Intelligent Plugin Detection)
 
 When you create increments (e.g., `/specweave:increment "Add Stripe billing"`):
 
-1. **Spec Analysis** (NEW! v0.6.0+)
+1. **Spec Analysis** (v0.6.0+, Enhanced v0.8.18+)
    - increment-planner skill scans spec.md content
    - Detects keywords: "Stripe", "GitHub", "Kubernetes", "React", etc.
    - Maps keywords → required plugins (see Step 6 in increment-planner/SKILL.md)
 
-2. **Plugin Suggestion** (Non-Blocking)
+2. **🚨 AUTOMATIC Plugin Recommendation** (Enhanced v0.8.18+)
    ```
-   🔌 This increment requires additional plugins:
+   🔌 Detected plugin requirements from spec content:
 
-   Required:
-   • specweave-payments - Stripe integration (detected: "billing", "Stripe")
+   REQUIRED (will significantly improve implementation):
+   • specweave-payments - Stripe integration
+     Detected: "billing", "Stripe", "subscriptions"
+     Provides: Stripe expert agent, payment flow validation, webhook handling
+     → Without this: Manual Stripe integration, no validation
 
-   📦 Install: /plugin install specweave-payments
+   📦 Install recommended plugins:
+     /plugin install specweave-payments
 
-   Or continue without it (can install later)
+   💡 Benefits:
+     • Plugins provide specialized AI agents (Stripe expert, etc.)
+     • Skills auto-activate based on context (zero manual invocation)
+     • 70%+ context reduction (only load what you need)
+     • Best practices built-in (from real-world experience)
+
+   Would you like me to wait while you install these plugins? (Recommended)
+   Or shall I continue without them? (Limited capabilities)
    ```
 
 3. **User Decision**
-   - Install now → Plugin activates immediately (after Claude Code restart)
-   - Install later → Skills won't be available until plugin installed
-   - Skip → Increment creation continues (not blocked)
+   - Install now → Plugin activates immediately (skills available during implementation)
+   - Install later → Skills won't be available until plugin installed (can add mid-work)
+   - Skip → Increment creation continues (not blocked, but capabilities limited)
 
 #### Phase 3: Implementation (Auto-Activation)
 
@@ -986,6 +1005,43 @@ When plugins are installed:
    - Only loaded plugins consume tokens
    - 70%+ reduction vs. monolithic approach
    - Real-time: Simple React app = 16K tokens (was 50K in v0.3.7)
+
+#### Phase 4: First Increment Completion (Documentation Preview)
+
+After completing your first increment:
+
+1. **🎉 Post-First-Increment Hook** (NEW! v0.8.18+)
+   - Automatically triggers when first increment is marked complete
+   - Suggests docs-preview plugin for beautiful documentation UI
+   - Shows clear benefits and install command
+
+2. **Suggestion Format**:
+   ```
+   🎉 Congratulations! You completed your first increment!
+
+   📚 Preview your documentation in a beautiful UI?
+
+   The specweave-docs-preview plugin can generate a Docusaurus site from
+   your .specweave/docs/ folder with:
+
+      ✓ Auto-generated sidebar from folder structure
+      ✓ Hot reload (edit markdown, see changes instantly)
+      ✓ Mermaid diagram rendering
+      ✓ Priority sorting (Strategy → Specs → Architecture → ...)
+
+   📦 Install with:
+      /plugin install specweave-docs-preview
+
+   🚀 Then launch:
+      /specweave:docs preview
+   ```
+
+3. **Benefits**:
+   - Beautiful, searchable documentation site (Docusaurus 3.x)
+   - Live preview with hot reload (see changes in real-time)
+   - Auto-generated navigation from folder structure
+   - Mermaid diagrams rendered automatically
+   - Share docs with stakeholders (export static site)
 
 ### Manual Plugin Management
 
@@ -2113,7 +2169,7 @@ vim .claude-plugin/marketplace.json
 
 # 5. Test locally
 /plugin marketplace add ./.claude-plugin
-/plugin install myplugin@marketplace
+/plugin install specweave-myplugin
 ```
 
 **See**: [.claude-plugin/README.md](/.claude-plugin/README.md) for marketplace documentation

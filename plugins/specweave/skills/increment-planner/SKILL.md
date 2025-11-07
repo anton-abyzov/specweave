@@ -526,6 +526,8 @@ created: YYYY-MM-DD
 
 **Purpose**: Analyze spec content to identify required SpecWeave plugins AND check if external PM tool sync is configured.
 
+**⚠️ CRITICAL**: For ALL plugin installations, consult the `plugin-expert` skill for correct syntax. NEVER use `@marketplace` suffix!
+
 **Why This Matters**:
 1. SpecWeave's plugin system enables context efficiency (70%+ reduction) by loading only relevant capabilities
 2. PM tool integration enables automatic sync of increment progress to external systems (GitHub Issues, Jira, Azure DevOps)
@@ -561,24 +563,56 @@ created: YYYY-MM-DD
    - For Claude Code: Check if plugin available via `/plugin list --installed`
    - Skip already-installed plugins
 
-4. **Suggest installation** (if plugins detected):
+4. **🚨 AUTOMATIC PLUGIN INSTALLATION** (if plugins detected):
+
+   **IMPORTANT**: When you detect required plugins, you MUST:
+   - ✅ Proactively offer to install them (not just suggest)
+   - ✅ Explain WHY each plugin is needed (based on detected keywords)
+   - ✅ Show clear install commands
+   - ✅ Remind user that plugins provide expert AI agents and capabilities
+
+   **Output Format**:
    ```
-   🔌 This increment requires additional plugins:
+   🔌 Detected plugin requirements from spec content:
 
-   Required:
-   • specweave-github - GitHub integration (detected: "sync tasks to GitHub issues")
-   • specweave-kubernetes - K8s deployment (detected: "deploy to production cluster")
+   REQUIRED (will significantly improve implementation):
+   • specweave-github - GitHub Issues integration
+     Detected: "sync tasks to GitHub issues", "create pull requests"
+     Provides: GitHub sync, PR automation, issue tracking
+     → Without this: Manual GitHub sync required
 
-   Optional:
-   • specweave-diagrams - Architecture diagrams (helpful for "system architecture")
+   • specweave-kubernetes - Kubernetes deployment
+     Detected: "deploy to production cluster", "kubectl apply"
+     Provides: K8s expert agent, Helm chart generation, deployment validation
+     → Without this: Manual K8s configuration, no validation
 
-   📦 Install plugins:
-   /plugin install specweave-github
-   /plugin install specweave-kubernetes
-   /plugin install specweave-diagrams
+   OPTIONAL (helpful but not critical):
+   • specweave-diagrams - Architecture diagrams
+     Detected: "system architecture", "component diagram"
+     Provides: Mermaid + C4 diagram generation
+     → Without this: Manual diagram creation
 
-   💡 Plugins will auto-activate during implementation!
+   📦 Install recommended plugins:
+     /plugin install specweave-github
+     /plugin install specweave-kubernetes
+
+   📦 Install optional plugins:
+     /plugin install specweave-diagrams
+
+   💡 Benefits:
+     • Plugins provide specialized AI agents (GitHub expert, K8s expert, etc.)
+     • Skills auto-activate based on context (zero manual invocation)
+     • 70%+ context reduction (only load what you need)
+     • Best practices built-in (from real-world experience)
+
+   Would you like me to wait while you install these plugins? (Recommended)
+   Or shall I continue without them? (Limited capabilities)
    ```
+
+   **User Decision Points**:
+   - If user installs plugins → continue with full capabilities
+   - If user skips → continue but remind about limitations later
+   - NEVER block increment creation (plugins are enhancements, not requirements)
 
 5. **Auto-Sync to PM Tool** (v0.8.0+):
 
@@ -619,7 +653,7 @@ created: YYYY-MM-DD
      ⚠️  External PM Tool Configured: GitHub Issues
         Plugin missing: specweave-github
 
-     To enable auto-sync: /plugin install specweave-github@specweave
+     To enable auto-sync: /plugin install specweave-github
      Or continue without PM sync (local-only mode)
      ```
    - **If PM tool not configured**:

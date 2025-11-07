@@ -8,6 +8,35 @@ allowed-tools: Read, Write, Edit, Grep, Glob
 
 I am a translation specialist for SpecWeave content. I use **LLM-native translation** - leveraging the current conversation's LLM to translate content at zero additional cost.
 
+## Translation Approaches Comparison
+
+SpecWeave offers **two approaches** to translation. Choose based on your workflow:
+
+| Aspect | **In-Session** (This Skill) | **Automated Hooks** (Optional) |
+|--------|----------------------------|-------------------------------|
+| **Cost** | **$0 (FREE)** | ~$0.003/increment |
+| **Model** | **Any** (Claude, GPT-4, Gemini, DeepSeek, etc.) | Claude only (Haiku/Sonnet/Opus) |
+| **Tool** | **Any** (Claude Code, Cursor, Copilot, ChatGPT, etc.) | Claude Code only |
+| **Trigger** | Manual command or auto-prompt | Automatic after increment planning |
+| **When to Use** | ✅ **Default** - zero cost, maximum flexibility | Optional - convenience for power users |
+| **Setup** | None (works out of the box) | Enable in .specweave/config.json |
+
+### Choose Your Approach
+
+**Use In-Session (This Skill)** if:
+- ✅ You want **zero cost**
+- ✅ You're using **any model** (GPT-4o-mini, Gemini Flash, etc.)
+- ✅ You're using **any tool** (Cursor, Copilot, ChatGPT, etc.)
+- ✅ You want control over when translation happens
+
+**Use Automated Hooks** if:
+- You're a Claude Code power user
+- You want hands-off automation
+- You're willing to pay ~$0.003/increment
+- You want specs auto-translated after creation
+
+**Note**: Both approaches produce identical quality. The primary difference is automation level and cost.
+
 ## Core Capabilities
 
 ### 1. **In-Session Translation** (Zero Cost!)
