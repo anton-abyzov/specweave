@@ -10,6 +10,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ---
+
+## [0.8.18] - 2025-11-07
+
+### ✨ **Feature** - Documentation Preview Enabled by Default
+
+**Improved UX for Docusaurus documentation preview:**
+
+- ✅ **Enabled by default** with clear opt-out during `specweave init`
+- ✅ **Lazy install** - No dependencies installed until first use
+- ✅ **Port 3015** for internal docs (avoids port 3000 conflicts with React/Next.js/Vite)
+- ✅ **Port 3016** reserved for public docs preview
+- ✅ **Added to .gitignore** - `.specweave/docs-site-internal/` excluded from version control
+- ✅ **Future-proof** - Removed hardcoded "150 MB" size references
+
+**User Experience:**
+```bash
+# During init - prompt appears
+Enable documentation preview? (Y/n): Y
+✔ Documentation preview enabled
+→ Preview with: /specweave:docs preview
+
+# First use - dependencies install on-demand
+/specweave:docs preview
+🔧 Setting up Docusaurus preview...
+✅ Docusaurus ready!
+🌐 Documentation preview: http://localhost:3015
+```
+
+**Changed Files:**
+- `src/cli/commands/init.ts` - Added docs preview prompt during init
+- `src/core/schemas/specweave-config.schema.json` - Updated defaults (port 3015, autoInstall false)
+- `src/templates/.gitignore.template` - Added `.specweave/docs-site-internal/`
+
+---
 ## [0.8.13] - 2025-11-06
 
 ### 🐛 **CRITICAL FIX** - Windows: Claude CLI Detection Now Works
