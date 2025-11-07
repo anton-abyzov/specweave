@@ -105,4 +105,5 @@ temp/
 
 # DEPRECATED: ai-logs/ folder removed in favor of increment-centric organization
 # All logs, scripts, and reports now live in .specweave/increments/{increment-id}/
-# This keeps all increment-related files together for better traceability# Workflow trigger
+# This keeps all increment-related files together for better traceability
+# Workflow trigger - increment 0014 cleanup
