@@ -304,14 +304,20 @@ async function installPlugin(tracker: IssueTracker, language: string): Promise<v
   }
 
   // Install plugin
-  const success = installTrackerPlugin(tracker);
+  const result = installTrackerPlugin(tracker);
 
-  if (success) {
+  if (result.success) {
     spinner.succeed(`${getTrackerDisplayName(tracker)} plugin installed`);
   } else {
     spinner.fail(`Could not auto-install plugin`);
     console.log(chalk.yellow('\n📦 Manual plugin installation:'));
-    console.log(chalk.white(`   /plugin install specweave-${tracker}\n`));
+    console.log(chalk.white(`   /plugin install specweave-${tracker}`));
+
+    // Show error details in DEBUG mode
+    if (process.env.DEBUG && result.error) {
+      console.log(chalk.gray(`   Error: ${result.error}`));
+    }
+    console.log('');
   }
 }
 

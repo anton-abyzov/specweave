@@ -461,23 +461,6 @@ export async function initCommand(
 
     spinner.succeed('SpecWeave project created successfully!');
 
-    // 10.5 Issue Tracker Integration (NEW!)
-    // Ask user to configure GitHub/Jira/ADO integration
-    try {
-      const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
-      await setupIssueTracker({
-        projectPath: targetDir,
-        language: language as SupportedLanguage,
-        maxRetries: 3
-      });
-    } catch (error: any) {
-      // Non-critical error - log but continue
-      if (process.env.DEBUG) {
-        console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
-      }
-      console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
-    }
-
     // 11. Show tool-specific next steps
     if (toolName !== 'claude') {
       const adapter = adapterLoader.getAdapter(toolName);
@@ -661,6 +644,24 @@ export async function initCommand(
           console.log('');
           autoInstallSucceeded = false;
         }
+      }
+
+      // 10.5 Issue Tracker Integration (NEW!)
+      // CRITICAL: Must happen AFTER marketplace registration and core plugin install
+      // Otherwise plugin installation will fail (marketplace not found)
+      try {
+        const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+        await setupIssueTracker({
+          projectPath: targetDir,
+          language: language as SupportedLanguage,
+          maxRetries: 3
+        });
+      } catch (error: any) {
+        // Non-critical error - log but continue
+        if (process.env.DEBUG) {
+          console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+        }
+        console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
       }
     }
 

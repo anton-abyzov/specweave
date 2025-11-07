@@ -3,8 +3,18 @@ name: Test & Validate
 on:
   push:
     branches: [develop, main]
+    paths-ignore:
+      - 'docs-site/**'
+      - '.specweave/docs/public/**'
+      - '**.md'
+      - '.github/workflows/deploy-docs.yml'
   pull_request:
     branches: [develop, main]
+    paths-ignore:
+      - 'docs-site/**'
+      - '.specweave/docs/public/**'
+      - '**.md'
+      - '.github/workflows/deploy-docs.yml'
 
 jobs:
   test:

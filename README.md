@@ -149,10 +149,18 @@ Auto-updates after every task via Claude Code hooks - never outdated
 ### 🤖 Intelligent Agents
 PM Agent, Architect, test-aware-planner, Quality Judge - specialized AI agents guide you
 
-### 🌍 Multilingual Support
-Work in 9 languages (Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese) with zero-cost LLM-native translation
 
-**[→ Explore All Features](https://spec-weave.com/docs/overview/features)**
+### 🌍 Multilingual Support ($0 Cost!)
+
+Work in 11 languages with **FREE zero-cost translation**:
+
+- **Primary Approach**: In-session translation (FREE, works with any model)
+- **Optional Approach**: Automated hooks (convenience, ~$0.003/increment)
+- **11 Languages**: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese, Arabic, Hebrew
+- **Any Model**: Claude, GPT-4, Gemini, DeepSeek, and more
+- **Any Tool**: Claude Code, Cursor, Copilot, ChatGPT
+
+**Zero API costs** - uses your current conversation context for translation!
 
 ---
 

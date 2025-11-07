@@ -349,10 +349,10 @@ This project uses SpecWeave for spec-driven development. SpecWeave provides spec
 /plugin marketplace add anton-abyzov/specweave
 
 # Install core framework
-/plugin install specweave@specweave
+/plugin install specweave
 
 # Install GitHub plugin (optional)
-/plugin install specweave-github@specweave
+/plugin install specweave-github
 \`\`\`
 
 ### For Other Tools (Cursor, Copilot, etc.)
