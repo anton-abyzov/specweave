@@ -11,6 +11,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.21] - 2025-11-07
+
+### 🐛 **CRITICAL FIX** - Azure DevOps: Corrected to Team-Based Structure
+
+**Fixed conceptual error introduced in v0.8.20:**
+
+Azure DevOps hierarchy is:
+```
+Organization → Project (ONE) → Teams (multiple)
+```
+
+**NOT** `Organization → Projects (multiple)` as incorrectly implemented in v0.8.20.
+
+**Breaking Changes:**
+- ✅ `AZURE_DEVOPS_PROJECTS` → `AZURE_DEVOPS_TEAMS` (comma-separated teams)
+- ✅ `AZURE_DEVOPS_PROJECT` remains singular (one project per organization)
+- ✅ Credential parsing updated to handle teams instead of projects
+- ✅ Init workflow now prompts for teams, not multiple projects
+
+**Backward Compatibility:**
+- ✅ `AZURE_DEVOPS_TEAM` (singular) still supported
+- ✅ `AZURE_DEVOPS_TEAMS` (plural) for multiple teams
+
+**Unchanged (Correct Implementation):**
+- ✅ Jira: Multiple projects supported (correct)
+- ✅ GitHub: Multiple repositories supported (correct)
+
+**Example .env:**
+```bash
+# Azure DevOps (ONE project, multiple teams)
+AZURE_DEVOPS_ORG=myorg
+AZURE_DEVOPS_PROJECT=MyProject
+AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile
+AZURE_DEVOPS_PAT=your-pat-here
+
+# Jira (multiple projects - correct)
+JIRA_DOMAIN=mycompany.atlassian.net
+JIRA_PROJECTS=PROJ1,PROJ2,PROJ3
+
+# GitHub (multiple repos - correct)
+GITHUB_REPOS=owner/repo1,owner/repo2
+```
+
+**Changed Files:**
+- `src/cli/helpers/issue-tracker/ado.ts` - Updated prompts for teams
+- `src/cli/helpers/issue-tracker/types.ts` - Changed interface to team-based
+- `src/core/credentials-manager.ts` - Updated parsing/saving logic
+- `src/utils/env-multi-project-parser.ts` - Clarified ADO structure
+
+---
+
 ## [0.8.18] - 2025-11-07
 
 ### ✨ **Feature** - Documentation Preview Enabled by Default
