@@ -184,6 +184,50 @@ Organize documentation by team, repo, or microservice:
 
 **[→ Multi-Project Setup Guide](https://spec-weave.com/docs/guides/multi-project-setup)**
 
+### 🔗 Issue Tracker Integration (v0.9.0+)
+
+**Strategy-based team mapping** adapts to your organization's structure:
+
+#### **GitHub - 3 Strategies**
+
+1. **Repository-per-team** (Most Common)
+   ```bash
+   GITHUB_STRATEGY=repository-per-team
+   GITHUB_REPOS=frontend-app,backend-api,mobile-app
+   ```
+   Best for: Microservices, independent deployments
+
+2. **Team-based** (Monorepo)
+   ```bash
+   GITHUB_STRATEGY=team-based
+   GITHUB_REPO=main-product
+   GITHUB_TEAMS=frontend-team,backend-team
+   ```
+   Best for: Monorepos (Nx, Turborepo, Lerna)
+
+3. **Team-multi-repo** (Platform Teams)
+   ```bash
+   GITHUB_STRATEGY=team-multi-repo
+   GITHUB_TEAM_REPO_MAPPING='{"platform-team":["api-gateway","auth"]}'
+   ```
+   Best for: Platform teams owning multiple services
+
+#### **Jira - 3 Strategies**
+
+1. **Project-per-team** - Separate projects for each team
+2. **Component-based** - One project with components
+3. **Board-based** - One project with filtered boards
+
+#### **Azure DevOps - Team-Based**
+
+Fixed hierarchy: Organization → Project (ONE) → Teams (multiple)
+```bash
+AZURE_DEVOPS_PROJECT=MyProject
+AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile
+```
+
+**[→ Complete Integration Guide](https://spec-weave.com/docs/integrations/issue-trackers)**
+
 ### 📦 Brownfield Import
 
 Import existing documentation from external sources:
