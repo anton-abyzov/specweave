@@ -28,6 +28,7 @@ export interface GitHubCredentials {
   token: string;
   instanceType: GitHubInstanceType;
   apiEndpoint?: string; // Only for Enterprise
+  repos?: string[]; // Multiple repositories (optional)
 }
 
 /**
@@ -38,6 +39,7 @@ export interface JiraCredentials {
   email: string;
   domain: string;
   instanceType: JiraInstanceType;
+  projects?: string[]; // Multiple projects (optional)
 }
 
 /**
@@ -46,7 +48,8 @@ export interface JiraCredentials {
 export interface AzureDevOpsCredentials {
   pat: string;
   org: string;
-  project: string;
+  project: string; // Single project (backward compatibility)
+  projects?: string[]; // Multiple projects (optional)
 }
 
 /**
