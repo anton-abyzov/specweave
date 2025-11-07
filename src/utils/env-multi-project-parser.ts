@@ -2,11 +2,15 @@
  * Environment Multi-Project Parser
  *
  * Parses comma-separated project lists from .env:
- * - JIRA_PROJECT_KEYS=BACKEND,FRONTEND,MOBILE
- * - GITHUB_REPOS=owner/backend-api,owner/frontend-web
- * - AZURE_DEVOPS_PROJECTS=backend-api,frontend-web
+ * - JIRA_PROJECT_KEYS=BACKEND,FRONTEND,MOBILE (multiple projects)
+ * - GITHUB_REPOS=owner/backend-api,owner/frontend-web (multiple repos)
+ * - AZURE_DEVOPS_PROJECT=myproject (single project only)
+ * - AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile (multiple teams within project)
  *
- * Auto-creates sync profiles for each project.
+ * Auto-creates sync profiles for each project/repo.
+ *
+ * NOTE: Azure DevOps uses ONE project per organization with multiple teams.
+ * Multi-project support is for Jira and GitHub only.
  */
 
 import { SyncProfile } from '../core/types/sync-profile.js';
@@ -182,60 +186,49 @@ export function parseGitHubRepos(): GitHubRepoConfig[] {
 }
 
 /**
- * Parse Azure DevOps projects from .env
+ * Parse Azure DevOps project from .env
+ *
+ * NOTE: Azure DevOps supports ONE project per organization with multiple teams.
+ * For multi-team support, use AZURE_DEVOPS_TEAMS (comma-separated).
  *
  * Reads:
- * - AZURE_DEVOPS_PROJECTS (comma-separated)
- * - AZURE_DEVOPS_ORG (shared organization)
- * - AZURE_DEVOPS_PAT (shared credential)
+ * - AZURE_DEVOPS_PROJECT (single project, required)
+ * - AZURE_DEVOPS_ORG (organization)
+ * - AZURE_DEVOPS_PAT (credential)
+ * - AZURE_DEVOPS_TEAMS (comma-separated teams, optional)
  *
- * @returns Array of Azure DevOps project configurations
+ * @returns Array with single ADO project configuration
  *
  * @example
  * // .env:
- * // AZURE_DEVOPS_PROJECTS=backend-api,frontend-web
+ * // AZURE_DEVOPS_PROJECT=myproject
  * // AZURE_DEVOPS_ORG=easychamp
  * // AZURE_DEVOPS_PAT=xyz789
+ * // AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile
  *
  * parseAdoProjects()
  * // Returns: [
- * //   { organization: "easychamp", project: "backend-api", pat: "..." },
- * //   { organization: "easychamp", project: "frontend-web", pat: "..." }
+ * //   { organization: "easychamp", project: "myproject", pat: "..." }
  * // ]
  */
 export function parseAdoProjects(): AdoProjectConfig[] {
   const organization = process.env.AZURE_DEVOPS_ORG;
   const pat = process.env.AZURE_DEVOPS_PAT;
+  const project = process.env.AZURE_DEVOPS_PROJECT;
 
   // Missing credentials → return empty array
-  if (!organization || !pat) {
+  if (!organization || !pat || !project) {
     return [];
   }
 
-  // Try new format (AZURE_DEVOPS_PROJECTS - plural)
-  const projectsStr = process.env.AZURE_DEVOPS_PROJECTS;
-  if (projectsStr) {
-    const projects = parseCommaSeparated(projectsStr);
-    return projects.map((project) => ({
+  // ADO only supports ONE project per organization
+  return [
+    {
       organization,
-      project,
+      project: project.trim(),
       pat,
-    }));
-  }
-
-  // Fallback to legacy format (AZURE_DEVOPS_PROJECT - singular)
-  const legacyProject = process.env.AZURE_DEVOPS_PROJECT;
-  if (legacyProject) {
-    return [
-      {
-        organization,
-        project: legacyProject.trim(),
-        pat,
-      },
-    ];
-  }
-
-  return [];
+    },
+  ];
 }
 
 /**
@@ -337,6 +330,8 @@ export function createGitHubSyncProfile(config: GitHubRepoConfig): {
 
 /**
  * Create Azure DevOps sync profile from project configuration
+ *
+ * NOTE: Creates ONE profile per organization. Teams are managed within the project.
  */
 export function createAdoSyncProfile(config: AdoProjectConfig): {
   id: string;
@@ -349,7 +344,7 @@ export function createAdoSyncProfile(config: AdoProjectConfig): {
     profile: {
       provider: 'ado',
       displayName: `${config.organization}/${config.project}`,
-      description: `Auto-created from AZURE_DEVOPS_PROJECTS`,
+      description: `Auto-created from AZURE_DEVOPS_PROJECT (single project with teams)`,
       config: {
         organization: config.organization,
         project: config.project,

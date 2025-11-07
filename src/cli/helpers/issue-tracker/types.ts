@@ -48,8 +48,9 @@ export interface JiraCredentials {
 export interface AzureDevOpsCredentials {
   pat: string;
   org: string;
-  project: string; // Single project (backward compatibility)
-  projects?: string[]; // Multiple projects (optional)
+  project: string; // One project per organization (ADO standard)
+  team?: string; // Single team (backward compatibility)
+  teams?: string[]; // Multiple teams within project (optional)
 }
 
 /**
