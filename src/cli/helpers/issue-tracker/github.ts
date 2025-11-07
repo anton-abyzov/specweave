@@ -105,6 +105,32 @@ export async function promptGitHubCredentials(
 
   let apiEndpoint: string | undefined;
 
+  // Step 1.5: Ask about team organization strategy
+  console.log(chalk.cyan('\n📂 How is your GitHub organization structured?\n'));
+  const { strategy } = await inquirer.prompt([{
+    type: 'list',
+    name: 'strategy',
+    message: 'Select team mapping strategy:',
+    choices: [
+      {
+        name: 'Repository-per-team (most common)',
+        value: 'repository-per-team',
+        short: 'Repository-per-team'
+      },
+      {
+        name: 'Team-based (monorepo with team filtering)',
+        value: 'team-based',
+        short: 'Team-based'
+      },
+      {
+        name: 'Team-multi-repo (complex team-to-repo mapping)',
+        value: 'team-multi-repo',
+        short: 'Team-multi-repo'
+      }
+    ],
+    default: 'repository-per-team'
+  }]);
+
   // Step 2: If Enterprise, ask for API endpoint
   if (instanceType === 'enterprise') {
     console.log(chalk.gray('\nGitHub Enterprise requires a custom API endpoint.\n'));
@@ -212,10 +238,103 @@ export async function promptGitHubCredentials(
     token = manualToken;
   }
 
+  // Step 6: Collect strategy-specific information
+  let owner: string | undefined;
+  let repos: string[] | undefined;
+  let repo: string | undefined;
+  let teams: string[] | undefined;
+  let teamRepoMapping: Record<string, string[]> | undefined;
+
+  // Ask for owner first (needed for all strategies)
+  const { ownerInput } = await inquirer.prompt([{
+    type: 'input',
+    name: 'ownerInput',
+    message: 'GitHub organization/owner name:',
+    validate: (input: string) => {
+      if (!input || input.trim() === '') {
+        return 'Owner name is required';
+      }
+      return true;
+    }
+  }]);
+  owner = ownerInput;
+
+  if (strategy === 'repository-per-team') {
+    const { reposInput } = await inquirer.prompt([{
+      type: 'input',
+      name: 'reposInput',
+      message: 'Repository names (comma-separated, e.g., frontend-app,backend-api,mobile-app):',
+      validate: (input: string) => {
+        if (!input || input.trim() === '') {
+          return 'At least one repository is required';
+        }
+        return true;
+      }
+    }]);
+    repos = reposInput.split(',').map((r: string) => r.trim());
+  } else if (strategy === 'team-based') {
+    const strategyAnswers = await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'repoInput',
+        message: 'Repository name (monorepo):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'Repository name is required';
+          }
+          return true;
+        }
+      },
+      {
+        type: 'input',
+        name: 'teamsInput',
+        message: 'Team names (comma-separated, e.g., frontend-team,backend-team):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'At least one team is required';
+          }
+          return true;
+        }
+      }
+    ]);
+    repo = strategyAnswers.repoInput;
+    teams = strategyAnswers.teamsInput.split(',').map((t: string) => t.trim());
+  } else if (strategy === 'team-multi-repo') {
+    console.log(chalk.yellow('\n⚠️  Complex team-multi-repo strategy requires JSON mapping.'));
+    console.log(chalk.gray('   Example: {"platform-team":["api-gateway","auth-service"],"frontend-team":["web-app"]}\n'));
+
+    const { mappingInput } = await inquirer.prompt([{
+      type: 'input',
+      name: 'mappingInput',
+      message: 'Team-to-repo mapping (JSON format):',
+      validate: (input: string) => {
+        if (!input || input.trim() === '') {
+          return 'Mapping is required';
+        }
+        try {
+          const parsed = JSON.parse(input);
+          if (typeof parsed !== 'object') {
+            return 'Mapping must be a valid JSON object';
+          }
+          return true;
+        } catch (e) {
+          return 'Invalid JSON format';
+        }
+      }
+    }]);
+    teamRepoMapping = JSON.parse(mappingInput);
+  }
+
   return {
     token,
     instanceType: instanceType as GitHubInstanceType,
-    apiEndpoint
+    apiEndpoint,
+    strategy: strategy as any,
+    owner,
+    repos,
+    repo,
+    teams,
+    teamRepoMapping
   };
 }
 
@@ -303,6 +422,34 @@ export function getGitHubEnvVars(credentials: GitHubCredentials): Array<{ key: s
   const vars = [
     { key: 'GH_TOKEN', value: credentials.token }
   ];
+
+  // Add strategy if specified
+  if (credentials.strategy) {
+    vars.push({ key: 'GITHUB_STRATEGY', value: credentials.strategy });
+  }
+
+  // Add owner
+  if (credentials.owner) {
+    vars.push({ key: 'GITHUB_OWNER', value: credentials.owner });
+  }
+
+  // Strategy 1: Repository-per-team
+  if (credentials.strategy === 'repository-per-team' && credentials.repos) {
+    vars.push({ key: 'GITHUB_REPOS', value: credentials.repos.join(',') });
+  }
+  // Strategy 2: Team-based (monorepo)
+  else if (credentials.strategy === 'team-based') {
+    if (credentials.repo) {
+      vars.push({ key: 'GITHUB_REPO', value: credentials.repo });
+    }
+    if (credentials.teams) {
+      vars.push({ key: 'GITHUB_TEAMS', value: credentials.teams.join(',') });
+    }
+  }
+  // Strategy 3: Team-multi-repo (complex mapping)
+  else if (credentials.strategy === 'team-multi-repo' && credentials.teamRepoMapping) {
+    vars.push({ key: 'GITHUB_TEAM_REPO_MAPPING', value: JSON.stringify(credentials.teamRepoMapping) });
+  }
 
   // Add Enterprise-specific variables
   if (credentials.instanceType === 'enterprise' && credentials.apiEndpoint) {

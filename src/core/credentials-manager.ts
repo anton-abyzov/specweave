@@ -23,13 +23,27 @@ export interface JiraCredentials {
   apiToken: string;
   email: string;
   domain: string;
+  strategy?: 'project-per-team' | 'component-based' | 'board-based';
   project?: string;  // Single project (backward compatibility)
   projects?: string[];  // Multiple projects (comma-separated)
+  components?: string[];  // Components (component-based strategy)
+  boards?: string[];  // Board IDs (board-based strategy)
+}
+
+export interface GitHubCredentials {
+  token: string;
+  strategy?: 'repository-per-team' | 'team-based' | 'team-multi-repo';
+  owner?: string;
+  repos?: string[];  // Repositories (repository-per-team)
+  repo?: string;  // Single repository (team-based)
+  teams?: string[];  // Teams (team-based)
+  teamRepoMapping?: Record<string, string[]>;  // Team-to-repo mapping (team-multi-repo)
 }
 
 export interface CredentialsConfig {
   ado?: AdoCredentials;
   jira?: JiraCredentials;
+  github?: GitHubCredentials;
 }
 
 export class CredentialsManager {
@@ -88,20 +102,86 @@ export class CredentialsManager {
 
     // Load Jira credentials
     if (process.env.JIRA_API_TOKEN) {
+      const strategy = (process.env.JIRA_STRATEGY as any) || undefined;
       const singleProject = process.env.JIRA_PROJECT || '';
       const multiProjects = process.env.JIRA_PROJECTS || '';
+      const componentsStr = process.env.JIRA_COMPONENTS || '';
+      const boardsStr = process.env.JIRA_BOARDS || '';
 
-      // Parse comma-separated projects
+      // Parse comma-separated values
       const projects = multiProjects
         ? multiProjects.split(',').map(p => p.trim()).filter(p => p.length > 0)
         : (singleProject ? [singleProject] : []);
+
+      const components = componentsStr
+        ? componentsStr.split(',').map(c => c.trim()).filter(c => c.length > 0)
+        : [];
+
+      const boards = boardsStr
+        ? boardsStr.split(',').map(b => b.trim()).filter(b => b.length > 0)
+        : [];
 
       this.credentials.jira = {
         apiToken: process.env.JIRA_API_TOKEN,
         email: process.env.JIRA_EMAIL || '',
         domain: process.env.JIRA_DOMAIN || '',
-        project: singleProject || projects[0],
-        projects: projects.length > 0 ? projects : undefined
+        strategy,
+
+        // Strategy 1: Project-per-team
+        projects: projects.length > 0 ? projects : undefined,
+
+        // Strategy 2: Component-based
+        project: singleProject,
+        components: components.length > 0 ? components : undefined,
+
+        // Strategy 3: Board-based
+        boards: boards.length > 0 ? boards : undefined
+      };
+    }
+
+    // Load GitHub credentials
+    if (process.env.GH_TOKEN || process.env.GITHUB_TOKEN) {
+      const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || '';
+      const strategy = (process.env.GITHUB_STRATEGY as any) || undefined;
+      const owner = process.env.GITHUB_OWNER || '';
+      const reposStr = process.env.GITHUB_REPOS || '';
+      const singleRepo = process.env.GITHUB_REPO || '';
+      const teamsStr = process.env.GITHUB_TEAMS || '';
+      const teamRepoMappingStr = process.env.GITHUB_TEAM_REPO_MAPPING || '';
+
+      // Parse comma-separated values
+      const repos = reposStr
+        ? reposStr.split(',').map(r => r.trim()).filter(r => r.length > 0)
+        : [];
+
+      const teams = teamsStr
+        ? teamsStr.split(',').map(t => t.trim()).filter(t => t.length > 0)
+        : [];
+
+      // Parse JSON mapping
+      let teamRepoMapping: Record<string, string[]> | undefined;
+      if (teamRepoMappingStr) {
+        try {
+          teamRepoMapping = JSON.parse(teamRepoMappingStr);
+        } catch (e) {
+          console.error('Failed to parse GITHUB_TEAM_REPO_MAPPING:', e);
+        }
+      }
+
+      this.credentials.github = {
+        token,
+        strategy,
+        owner,
+
+        // Strategy 1: Repository-per-team
+        repos: repos.length > 0 ? repos : undefined,
+
+        // Strategy 2: Team-based
+        repo: singleRepo,
+        teams: teams.length > 0 ? teams : undefined,
+
+        // Strategy 3: Team-multi-repo
+        teamRepoMapping
       };
     }
 
@@ -338,15 +418,87 @@ export class CredentialsManager {
       existingVars.JIRA_EMAIL = config.jira.email;
       existingVars.JIRA_DOMAIN = config.jira.domain;
 
-      // Write projects as comma-separated if multiple, otherwise single
-      if (config.jira.projects && config.jira.projects.length > 1) {
+      // Write strategy if specified
+      if (config.jira.strategy) {
+        existingVars.JIRA_STRATEGY = config.jira.strategy;
+      }
+
+      // Strategy 1: Project-per-team (multiple projects)
+      if (config.jira.strategy === 'project-per-team' && config.jira.projects) {
         existingVars.JIRA_PROJECTS = config.jira.projects.join(',');
-        // Remove singular form to avoid confusion
+        delete existingVars.JIRA_PROJECT;
+        delete existingVars.JIRA_COMPONENTS;
+        delete existingVars.JIRA_BOARDS;
+      }
+      // Strategy 2: Component-based (one project, multiple components)
+      else if (config.jira.strategy === 'component-based') {
+        if (config.jira.project) {
+          existingVars.JIRA_PROJECT = config.jira.project;
+        }
+        if (config.jira.components) {
+          existingVars.JIRA_COMPONENTS = config.jira.components.join(',');
+        }
+        delete existingVars.JIRA_PROJECTS;
+        delete existingVars.JIRA_BOARDS;
+      }
+      // Strategy 3: Board-based (one project, board IDs)
+      else if (config.jira.strategy === 'board-based') {
+        if (config.jira.project) {
+          existingVars.JIRA_PROJECT = config.jira.project;
+        }
+        if (config.jira.boards) {
+          existingVars.JIRA_BOARDS = config.jira.boards.join(',');
+        }
+        delete existingVars.JIRA_PROJECTS;
+        delete existingVars.JIRA_COMPONENTS;
+      }
+      // Legacy: No strategy (backward compatibility)
+      else if (config.jira.projects && config.jira.projects.length > 1) {
+        existingVars.JIRA_PROJECTS = config.jira.projects.join(',');
         delete existingVars.JIRA_PROJECT;
       } else if (config.jira.project) {
         existingVars.JIRA_PROJECT = config.jira.project;
-        // Remove plural form if only one project
         delete existingVars.JIRA_PROJECTS;
+      }
+    }
+
+    if (config.github) {
+      existingVars.GH_TOKEN = config.github.token;
+
+      // Write strategy if specified
+      if (config.github.strategy) {
+        existingVars.GITHUB_STRATEGY = config.github.strategy;
+      }
+
+      // Write owner
+      if (config.github.owner) {
+        existingVars.GITHUB_OWNER = config.github.owner;
+      }
+
+      // Strategy 1: Repository-per-team
+      if (config.github.strategy === 'repository-per-team' && config.github.repos) {
+        existingVars.GITHUB_REPOS = config.github.repos.join(',');
+        delete existingVars.GITHUB_REPO;
+        delete existingVars.GITHUB_TEAMS;
+        delete existingVars.GITHUB_TEAM_REPO_MAPPING;
+      }
+      // Strategy 2: Team-based (monorepo)
+      else if (config.github.strategy === 'team-based') {
+        if (config.github.repo) {
+          existingVars.GITHUB_REPO = config.github.repo;
+        }
+        if (config.github.teams) {
+          existingVars.GITHUB_TEAMS = config.github.teams.join(',');
+        }
+        delete existingVars.GITHUB_REPOS;
+        delete existingVars.GITHUB_TEAM_REPO_MAPPING;
+      }
+      // Strategy 3: Team-multi-repo
+      else if (config.github.strategy === 'team-multi-repo' && config.github.teamRepoMapping) {
+        existingVars.GITHUB_TEAM_REPO_MAPPING = JSON.stringify(config.github.teamRepoMapping);
+        delete existingVars.GITHUB_REPOS;
+        delete existingVars.GITHUB_REPO;
+        delete existingVars.GITHUB_TEAMS;
       }
     }
 
