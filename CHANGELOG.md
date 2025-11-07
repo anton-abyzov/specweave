@@ -11,6 +11,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.1] - 2025-11-07
+
+### 🐛 Bug Fixes
+
+#### Fixed Duplicate Slash Command Invocation
+
+**Problem**: `/specweave:increment` was being invoked twice when users described a product/project, causing duplicate planning sessions and confusing output.
+
+**Root Cause**: Two skills (`project-kickstarter` and `specweave-detector`) both had "proactive auto-detection" logic that triggered increment planning:
+- `project-kickstarter` - Pattern-based detection with confidence scoring
+- `specweave-detector` - Simple auto-detection mention in description
+
+When users described a project (e.g., "Create a tournament scheduler with Next.js..."), both skills activated simultaneously and each invoked the slash command.
+
+**Fix**:
+- Removed auto-detection from `specweave-detector` skill
+- Kept only `project-kickstarter` as the single source for auto-detection
+- Updated `specweave-detector` description to clarify it provides workflow documentation only
+- Added clear note that auto-detection is handled by `project-kickstarter`
+
+**Impact**: Users will now see slash commands invoked only once, eliminating duplicate planning sessions and confusion.
+
+**Files Changed**:
+- `plugins/specweave/skills/specweave-detector/SKILL.md` - Removed conflicting auto-detection logic
+- `plugins/specweave/skills/SKILLS-INDEX.md` - Updated skill description
+- `CHANGELOG.md` - Documented bug fix
+
+---
+
 ## [0.9.0] - 2025-11-07
 
 ### ✨ **MAJOR FEATURE** - Strategy-Based Team Mapping for Jira and GitHub
