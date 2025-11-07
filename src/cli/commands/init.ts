@@ -474,8 +474,50 @@ export async function initCommand(
       }
     }
 
-    // 13. Create config.json with language setting
-    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage);
+    // 13. Documentation preview prompt (Claude Code only)
+    let enableDocsPreview = true; // Default: enabled
+    if (toolName === 'claude') {
+      try {
+        spinner.stop();
+        console.log('');
+        console.log(chalk.cyan('📚 Documentation Preview'));
+        console.log('');
+        console.log(chalk.white('   View your living documentation in a beautiful UI:'));
+        console.log(chalk.gray('   • Auto-generated sidebar from folder structure'));
+        console.log(chalk.gray('   • Hot reload (edit markdown, see changes instantly)'));
+        console.log(chalk.gray('   • Mermaid diagram rendering'));
+        console.log(chalk.gray('   • Installs dependencies on first use'));
+        console.log('');
+
+        const response = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'enableDocsPreview',
+            message: 'Enable documentation preview?',
+            default: true
+          }
+        ]);
+        enableDocsPreview = response.enableDocsPreview;
+
+        if (enableDocsPreview) {
+          console.log(chalk.green('   ✔ Documentation preview enabled'));
+          console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
+        } else {
+          console.log(chalk.gray('   → Skipped (can enable later in .specweave/config.json)'));
+        }
+        console.log('');
+
+        spinner.start();
+      } catch (error: any) {
+        // Non-critical - continue with default (enabled)
+        if (process.env.DEBUG) {
+          console.error(chalk.red(`\n❌ Docs preview prompt error: ${error.message}`));
+        }
+      }
+    }
+
+    // 14. Create config.json with language setting and docs preview
+    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, enableDocsPreview);
 
     // 14. Setup Claude Code plugin auto-registration (if Claude detected)
     let autoInstallSucceeded = false;
@@ -1183,7 +1225,8 @@ function createConfigFile(
   targetDir: string,
   projectName: string,
   adapter: string,
-  language: SupportedLanguage
+  language: SupportedLanguage,
+  enableDocsPreview: boolean = true
 ): void {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
@@ -1195,6 +1238,19 @@ function createConfigFile(
     adapters: {
       default: adapter,
     },
+    // Documentation preview settings (for Claude Code only)
+    ...(adapter === 'claude' && {
+      documentation: {
+        preview: {
+          enabled: enableDocsPreview,
+          autoInstall: false,      // Lazy install on first use
+          port: 3015,              // Internal docs (avoid port 3000 - used by React/Next.js/Vite)
+          openBrowser: true,
+          theme: 'default',
+          excludeFolders: ['legacy', 'node_modules']
+        }
+      }
+    }),
     // Only include language if non-English
     ...(language !== 'en' && {
       language,
