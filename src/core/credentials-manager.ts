@@ -14,8 +14,9 @@ import * as path from 'path';
 export interface AdoCredentials {
   pat: string;
   organization: string;
-  project: string;  // Single project (backward compatibility)
-  projects?: string[];  // Multiple projects (comma-separated)
+  project: string;  // One project (ADO standard)
+  team?: string;  // Single team (backward compatibility)
+  teams?: string[];  // Multiple teams within project (comma-separated)
 }
 
 export interface JiraCredentials {
@@ -67,19 +68,21 @@ export class CredentialsManager {
 
     // Load ADO credentials
     if (process.env.AZURE_DEVOPS_PAT) {
-      const singleProject = process.env.AZURE_DEVOPS_PROJECT || '';
-      const multiProjects = process.env.AZURE_DEVOPS_PROJECTS || '';
+      const project = process.env.AZURE_DEVOPS_PROJECT || '';
+      const singleTeam = process.env.AZURE_DEVOPS_TEAM || '';
+      const multiTeams = process.env.AZURE_DEVOPS_TEAMS || '';
 
-      // Parse comma-separated projects
-      const projects = multiProjects
-        ? multiProjects.split(',').map(p => p.trim()).filter(p => p.length > 0)
-        : (singleProject ? [singleProject] : []);
+      // Parse comma-separated teams
+      const teams = multiTeams
+        ? multiTeams.split(',').map(t => t.trim()).filter(t => t.length > 0)
+        : (singleTeam ? [singleTeam] : []);
 
       this.credentials.ado = {
         pat: process.env.AZURE_DEVOPS_PAT,
         organization: process.env.AZURE_DEVOPS_ORG || '',
-        project: singleProject || projects[0] || '',  // Use first project for backward compatibility
-        projects: projects.length > 0 ? projects : undefined
+        project: project,  // One project (ADO standard)
+        team: singleTeam || teams[0],  // Use first team for backward compatibility
+        teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
       };
     }
 
@@ -241,13 +244,14 @@ export class CredentialsManager {
     const lines = [
       'ADO credentials:',
       `  PAT: ${this.maskSecret(this.credentials.ado.pat)}`,
-      `  Organization: ${this.credentials.ado.organization}`
+      `  Organization: ${this.credentials.ado.organization}`,
+      `  Project: ${this.credentials.ado.project}`
     ];
 
-    if (this.credentials.ado.projects && this.credentials.ado.projects.length > 1) {
-      lines.push(`  Projects (${this.credentials.ado.projects.length}): ${this.credentials.ado.projects.join(', ')}`);
-    } else {
-      lines.push(`  Project: ${this.credentials.ado.project}`);
+    if (this.credentials.ado.teams && this.credentials.ado.teams.length > 1) {
+      lines.push(`  Teams (${this.credentials.ado.teams.length}): ${this.credentials.ado.teams.join(', ')}`);
+    } else if (this.credentials.ado.team) {
+      lines.push(`  Team: ${this.credentials.ado.team}`);
     }
 
     return lines.join('\n');
@@ -315,16 +319,17 @@ export class CredentialsManager {
     if (config.ado) {
       existingVars.AZURE_DEVOPS_PAT = config.ado.pat;
       existingVars.AZURE_DEVOPS_ORG = config.ado.organization;
+      existingVars.AZURE_DEVOPS_PROJECT = config.ado.project;  // Always singular (one project)
 
-      // Write projects as comma-separated if multiple, otherwise single
-      if (config.ado.projects && config.ado.projects.length > 1) {
-        existingVars.AZURE_DEVOPS_PROJECTS = config.ado.projects.join(',');
+      // Write teams as comma-separated if multiple, otherwise single
+      if (config.ado.teams && config.ado.teams.length > 1) {
+        existingVars.AZURE_DEVOPS_TEAMS = config.ado.teams.join(',');
         // Remove singular form to avoid confusion
-        delete existingVars.AZURE_DEVOPS_PROJECT;
-      } else {
-        existingVars.AZURE_DEVOPS_PROJECT = config.ado.project;
-        // Remove plural form if only one project
-        delete existingVars.AZURE_DEVOPS_PROJECTS;
+        delete existingVars.AZURE_DEVOPS_TEAM;
+      } else if (config.ado.team) {
+        existingVars.AZURE_DEVOPS_TEAM = config.ado.team;
+        // Remove plural form if only one team
+        delete existingVars.AZURE_DEVOPS_TEAMS;
       }
     }
 
@@ -388,12 +393,13 @@ export class CredentialsManager {
 # Scopes: Work Items (Read, Write, Manage), Code (Read), Project (Read)
 AZURE_DEVOPS_PAT=your-ado-pat-52-chars-base64
 AZURE_DEVOPS_ORG=your-organization-name
-
-# Single project (backward compatibility)
 AZURE_DEVOPS_PROJECT=your-project-name
 
-# OR multiple projects (comma-separated)
-# AZURE_DEVOPS_PROJECTS=project1,project2,project3
+# Single team (optional)
+# AZURE_DEVOPS_TEAM=your-team-name
+
+# OR multiple teams (comma-separated)
+# AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile
 
 # Jira API Token
 # Get from: https://id.atlassian.com/manage-profile/security/api-tokens

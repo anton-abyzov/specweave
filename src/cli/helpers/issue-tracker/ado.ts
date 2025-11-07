@@ -97,8 +97,6 @@ export async function promptAzureDevOpsCredentials(
   }
 
   // Collect credentials
-  // TODO: Use project selector (when TypeScript config fixed)
-  // For now, users can manually edit .env to add comma-separated projects
   const questions: any[] = [
     {
       type: 'input',
@@ -114,13 +112,19 @@ export async function promptAzureDevOpsCredentials(
     {
       type: 'input',
       name: 'project',
-      message: 'Project name (or comma-separated list):',
+      message: 'Project name:',
       validate: (input: string) => {
         if (!input || input.trim() === '') {
           return 'Project cannot be empty';
         }
         return true;
       }
+    },
+    {
+      type: 'input',
+      name: 'teams',
+      message: 'Team name(s) (optional, comma-separated):',
+      default: ''
     },
     {
       type: 'password',
@@ -142,14 +146,17 @@ export async function promptAzureDevOpsCredentials(
 
   const answers = await inquirer.prompt(questions);
 
-  // Parse comma-separated projects
-  const projects = answers.project.split(',').map((p: string) => p.trim()).filter((p: string) => p.length > 0);
+  // Parse comma-separated teams
+  const teams = answers.teams
+    ? answers.teams.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
+    : [];
 
   return {
     pat: answers.pat,
     org: answers.org,
-    project: projects[0], // Use first project for backward compatibility
-    projects: projects.length > 1 ? projects : undefined
+    project: answers.project,  // One project (ADO standard)
+    team: teams[0],  // Use first team for backward compatibility
+    teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
   };
 }
 
@@ -242,14 +249,15 @@ export function getAzureDevOpsEnvVars(
 ): Array<{ key: string; value: string }> {
   const envVars = [
     { key: 'AZURE_DEVOPS_PAT', value: credentials.pat },
-    { key: 'AZURE_DEVOPS_ORG', value: credentials.org }
+    { key: 'AZURE_DEVOPS_ORG', value: credentials.org },
+    { key: 'AZURE_DEVOPS_PROJECT', value: credentials.project }  // Always singular (one project)
   ];
 
-  // Write projects as comma-separated if multiple, otherwise single
-  if (credentials.projects && credentials.projects.length > 1) {
-    envVars.push({ key: 'AZURE_DEVOPS_PROJECTS', value: credentials.projects.join(',') });
-  } else {
-    envVars.push({ key: 'AZURE_DEVOPS_PROJECT', value: credentials.project });
+  // Write teams as comma-separated if multiple, otherwise single
+  if (credentials.teams && credentials.teams.length > 1) {
+    envVars.push({ key: 'AZURE_DEVOPS_TEAMS', value: credentials.teams.join(',') });
+  } else if (credentials.team) {
+    envVars.push({ key: 'AZURE_DEVOPS_TEAM', value: credentials.team });
   }
 
   return envVars;
