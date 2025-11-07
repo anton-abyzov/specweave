@@ -12,9 +12,9 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { ProfileManager } from '../../core/sync/profile-manager';
-import { ProjectContextManager } from '../../core/sync/project-context';
-import { SyncProfile } from '../../core/types/sync-profile';
+import { ProfileManager } from '../../core/sync/profile-manager.js';
+import { ProjectContextManager } from '../../core/sync/project-context.js';
+import { SyncProfile } from '../../core/types/sync-profile.js';
 
 // ============================================================================
 // Migration Script

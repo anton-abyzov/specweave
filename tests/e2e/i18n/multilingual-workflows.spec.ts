@@ -337,7 +337,7 @@ test.describe('Multilingual Workflows E2E', () => {
 
     // Verify YAML frontmatter
     expect(content).toContain('---');
-    expect(content).toContain('name: translate');
+    expect(content).toContain('name: specweave:translate');
 
     // Verify command syntax
     expect(content).toContain('/specweave:translate');

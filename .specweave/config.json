@@ -10,21 +10,47 @@
   "language": "en",
   "plugins": {
     "enabled": [
-      "specweave-github"
-    ],
-    "settings": {
-      "specweave-github": {
-        "repo": "anton-abyzov/specweave",
-        "auto_create_issue": true,
-        "auto_update_progress": true,
-        "auto_close_issue": true,
-        "sync_frequency": "every-task",
-        "default_labels": [
-          "specweave",
-          "increment"
-        ],
-        "milestone": "v0.7.0"
+      "specweave-github",
+      "specweave-jira"
+    ]
+  },
+  "sync": {
+    "activeProfile": "specweave-dev",
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "displayName": "SpecWeave Development",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
       }
+    },
+    "projects": {
+      "specweave-core": {
+        "id": "specweave-core",
+        "name": "SpecWeave Core Development",
+        "description": "Core framework and plugin system",
+        "keywords": ["framework", "cli", "plugin", "typescript"],
+        "team": "Core Team",
+        "defaultSyncProfile": "specweave-dev",
+        "specsFolder": ".specweave/docs/internal/projects/specweave-core"
+      }
+    },
+    "settings": {
+      "autoDetectProject": true,
+      "defaultTimeRange": "1M",
+      "rateLimitProtection": true,
+      "syncDirection": "bidirectional",
+      "conflictResolution": "prompt"
     }
   },
   "limits": {
