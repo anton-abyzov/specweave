@@ -1,3 +1,8 @@
+---
+sidebar_label: Issue Tracker Integration
+sidebar_position: 1
+---
+
 # Issue Tracker Integration
 
 SpecWeave integrates with Jira, GitHub Issues, and Azure DevOps to sync your increments with external project tracking tools.
