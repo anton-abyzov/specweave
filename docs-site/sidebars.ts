@@ -91,6 +91,22 @@ const sidebars: SidebarsConfig = {
     },
   ],
 
+  // Integrations sidebar
+  integrationsSidebar: [
+    {
+      type: 'category',
+      label: 'Issue Trackers',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'integrations/issue-trackers',
+          label: 'Overview',
+        },
+      ],
+    },
+  ],
+
   // Guides sidebar
   guidesSidebar: [
     {
