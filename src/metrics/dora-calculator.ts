@@ -13,15 +13,20 @@ import { calculateDeploymentFrequency } from './calculators/deployment-frequency
 import { calculateLeadTime } from './calculators/lead-time.js';
 import { calculateChangeFailureRate } from './calculators/change-failure-rate.js';
 import { calculateMTTR } from './calculators/mttr.js';
-import { DORAMetrics, GitHubConfig } from './types.js';
+import { generateMarkdownReport, writeReport } from './report-generator.js';
+import { DORAMetrics, GitHubConfig, Release, Issue } from './types.js';
 
 /**
  * Calculate all DORA metrics
  *
  * @param client - GitHub API client
- * @returns Complete DORA metrics
+ * @returns Complete DORA metrics with raw data
  */
-export async function calculateDORAMetrics(client: GitHubClient): Promise<DORAMetrics> {
+export async function calculateDORAMetrics(client: GitHubClient): Promise<{
+  metrics: DORAMetrics;
+  releases: Release[];
+  issues: Issue[];
+}> {
   // Query data from GitHub (last 30 days)
   const since = new Date();
   since.setDate(since.getDate() - 30);
@@ -53,7 +58,7 @@ export async function calculateDORAMetrics(client: GitHubClient): Promise<DORAMe
   const mttr = calculateMTTR(issues);
   console.log(`   ✓ MTTR: ${mttr.value} ${mttr.unit} (${mttr.tier})`);
 
-  return {
+  const metricsResult: DORAMetrics = {
     timestamp: new Date().toISOString(),
     metrics: {
       deploymentFrequency,
@@ -61,6 +66,12 @@ export async function calculateDORAMetrics(client: GitHubClient): Promise<DORAMe
       changeFailureRate,
       mttr,
     },
+  };
+
+  return {
+    metrics: metricsResult,
+    releases,
+    issues,
   };
 }
 
@@ -105,13 +116,21 @@ async function main() {
 
     // Calculate metrics
     const client = new GitHubClient(config);
-    const metrics = await calculateDORAMetrics(client);
+    const result = await calculateDORAMetrics(client);
 
-    // Write to file
-    const outputPath = path.join(process.cwd(), 'metrics', 'dora-latest.json');
-    writeMetricsJSON(metrics, outputPath);
+    // Write JSON file
+    const jsonOutputPath = path.join(process.cwd(), 'metrics', 'dora-latest.json');
+    writeMetricsJSON(result.metrics, jsonOutputPath);
+
+    // Generate and write markdown report
+    console.log('\n📝 Generating detailed report...');
+    const report = generateMarkdownReport(result.metrics, result.releases, result.issues);
+    const reportOutputPath = path.join(process.cwd(), 'metrics', 'dora-report.md');
+    writeReport(report, reportOutputPath);
 
     console.log('\n🎉 DORA metrics calculation complete!');
+    console.log(`   📊 JSON: ${jsonOutputPath}`);
+    console.log(`   📝 Report: ${reportOutputPath}`);
     process.exit(0);
   } catch (error) {
     console.error('\n❌ Error calculating DORA metrics:');

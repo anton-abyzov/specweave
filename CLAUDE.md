@@ -1981,6 +1981,35 @@ Solution: Inactivity-based detection
 - `INACTIVITY_THRESHOLD=15` - Seconds of inactivity to assume session ending (adjustable)
 - `DEBOUNCE_SECONDS=2` - Prevents duplicate hook fires
 
+**Pre-Tool-Use Hook** (`.claude/hooks/pre-tool-use.sh`):
+
+**Purpose**: Detect when Claude asks questions BEFORE task completion
+
+**The Problem**: The post-task-completion hook only fires after TodoWrite events. If Claude asks a question via AskUserQuestion WITHOUT completing any tasks first, no sound plays and the user doesn't know Claude is waiting for input.
+
+**The Solution**: The pre-tool-use hook fires BEFORE every tool call, allowing us to detect AskUserQuestion immediately.
+
+**How It Works**:
+```
+Scenario 1: Question after task completion
+- 10:00:00 - Task completed (TodoWrite) → post-task-completion hook fires
+- 10:00:15 - Inactivity threshold reached → SOUND! ✅
+
+Scenario 2: Question WITHOUT task completion (NEW!)
+- 10:00:00 - Claude calls AskUserQuestion → pre-tool-use hook fires
+- 10:00:00 - Detects tool_name="AskUserQuestion" → SOUND! ✅
+- User is notified IMMEDIATELY, not after 15s
+```
+
+**Key Features**:
+- ✅ Fires BEFORE any tool call (PreToolUse event)
+- ✅ Filters for AskUserQuestion specifically
+- ✅ Plays distinctive sound (Tink.aiff on macOS, dialog-question.oga on Linux)
+- ✅ Non-blocking and fast (<10ms overhead)
+- ✅ Complements post-task-completion hook (both work together)
+
+**Result**: Users are ALWAYS notified when Claude needs input, regardless of whether tasks have been completed or not.
+
 **Manual Actions** (Claude MUST do after each task):
 - Update `CLAUDE.md` when structure changes
 - Update `README.md` for user-facing changes
@@ -2713,9 +2742,16 @@ Your choice [1]:
 
 ### Translation Workflow (Multilingual Support)
 
-**SpecWeave supports multilingual development** via post-generation translation (Increment 0006).
+**SpecWeave supports multilingual development** via two-phase post-generation translation (Increment 0006).
 
 **Key Concept**: Users work in their native language (great UX), system auto-translates to English (maintainable docs).
+
+**Two-Phase Translation Architecture**:
+
+| Phase | Hook | What Gets Translated | When | Coverage |
+|-------|------|---------------------|------|----------|
+| **Phase 1** | post-increment-planning | Increment files + Living docs specs | After `/specweave:increment` | 80% of docs |
+| **Phase 2** | post-task-completion | ADRs, HLDs, diagrams | After each task completion | 20% of docs |
 
 **Workflow**:
 
@@ -2723,20 +2759,37 @@ Your choice [1]:
 # 1. User creates increment in Russian
 /specweave:increment "Добавить пользовательскую аутентификацию"
 
-# 2. PM agent generates spec.md in Russian (natural, user-friendly)
+# 2. PM agent generates spec.md, plan.md, tasks.md in Russian (natural, user-friendly)
 
-# 3. post-increment-planning hook fires automatically
-#    - Detects Russian content
-#    - Translates spec.md, plan.md, tasks.md to English (~$0.01 cost)
-#    - Files now in English (maintainable)
+# 3. post-increment-planning hook fires automatically (PHASE 1)
+#    Phase A: Translates increment files (spec.md, plan.md, tasks.md) to English
+#    Phase B: Translates living docs specs to English (NEW!)
+#             - .specweave/docs/internal/specs/spec-*.md
+#             - .specweave/docs/internal/strategy/**/*.md
+#    Cost: ~$0.02 total
 
 # User sees:
 # ✅ Increment created
-# 🌐 Detected Russian content. Translating to English...
+# 🌐 Detected Russian content. Translating increment files to English...
 #   📄 spec.md... ✅
 #   📄 plan.md... ✅
 #   📄 tasks.md... ✅
-# ✅ Translation complete! Cost: ~$0.01
+# 🌐 Checking living docs for translation...
+#   📄 Living docs detected: spec-0001-user-auth.md
+#   ✅ Translated 1 living docs file(s) to English
+# ✅ Translation complete!
+#    Increment files: 3/3
+#    Living docs: 1 file(s)
+#    Estimated cost: ~$0.01-0.02 (using Haiku)
+
+# 4. During implementation, architect creates ADRs in Russian
+
+# 5. post-task-completion hook fires after each task (PHASE 2)
+#    - Translates newly created ADRs to English
+#    - Translates HLDs/diagrams to English
+#    Cost: ~$0.01 per file
+
+# Result: ALL documentation in English (100% coverage)
 ```
 
 **Configuration** (`.specweave/config.json`):
@@ -2747,7 +2800,7 @@ Your choice [1]:
   "translation": {
     "enabled": true,
     "autoTranslateInternalDocs": true,
-    "autoTranslateLivingDocs": false,
+    "autoTranslateLivingDocs": true,
     "keepFrameworkTerms": true,
     "keepTechnicalTerms": true,
     "translationModel": "haiku"
@@ -2757,8 +2810,8 @@ Your choice [1]:
 
 **Key Settings**:
 - `language`: Primary language (en, ru, es, zh, de, fr, ja, ko, pt)
-- `autoTranslateInternalDocs`: Auto-translate spec/plan/tasks to English (default: true)
-- `autoTranslateLivingDocs`: Auto-translate ADRs/HLDs after task completion (default: false)
+- `autoTranslateInternalDocs`: Auto-translate increment files + living docs specs to English (default: true)
+- `autoTranslateLivingDocs`: Auto-translate ADRs/HLDs after task completion (default: true)
 - `translationModel`: Model to use (haiku/sonnet/opus, default: haiku)
 
 **Supported Languages**:
@@ -2772,7 +2825,9 @@ Your choice [1]:
 - Korean (ko)
 - Portuguese (pt)
 
-**Cost**: ~$0.01 per increment (3 files, Haiku model)
+**Cost**: ~$0.02 per increment (5-7 files, Haiku model)
+
+**Coverage**: 100% (no gaps! All living docs translated)
 
 **Implementation Details**:
 - Language detection: Heuristic-based (<1ms, zero cost)
@@ -2792,9 +2847,41 @@ npm test -- tests/unit/i18n/translation.test.ts
 **Files**:
 - Utilities: `src/utils/translation.ts` (673 lines, 11 languages)
 - CLI Script: `src/hooks/lib/translate-file.ts` (398 lines)
-- Hook: `plugins/specweave/hooks/post-increment-planning.sh` (307 lines)
+- Hook (Phase 1): `plugins/specweave/hooks/post-increment-planning.sh` (~420 lines)
+- Hook (Phase 2): `src/hooks/lib/translate-living-docs.ts` (217 lines)
 - Tests: `tests/unit/i18n/translation.test.ts` (705 lines, 67 tests)
+- E2E Tests: `tests/e2e/i18n/living-docs-translation.spec.ts` (6 test cases)
 - Schema: `src/core/schemas/specweave-config.schema.json`
+
+**Migrating Existing Non-English Living Docs**:
+
+For projects with existing non-English living docs, use the one-time migration script:
+
+```bash
+# One-time migration (translates all living docs to English)
+bash scripts/migrate-living-docs-to-english.sh
+
+# What it does:
+# - Scans .specweave/docs/internal/ for non-English files
+# - Translates each file to English (preserves code blocks, links, framework terms)
+# - Skips files already in English
+# - Non-blocking (continues even if some files fail)
+
+# Estimated time: 1-2 minutes per 100 files
+# Estimated cost: ~$0.01 per file (using Haiku)
+```
+
+**After migration**:
+```bash
+# Review translated files
+git diff .specweave/docs/internal/
+
+# Commit changes
+git add . && git commit -m "docs: translate living docs to English"
+
+# Future increments will auto-translate
+/specweave:increment "Добавить новую функцию"  # Auto-translates!
+```
 
 ---
 
