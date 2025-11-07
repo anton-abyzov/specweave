@@ -22,14 +22,41 @@ export type GitHubInstanceType = 'cloud' | 'enterprise';
 export type JiraInstanceType = 'cloud' | 'server';
 
 /**
+ * GitHub team mapping strategies
+ */
+export type GitHubStrategy =
+  | 'repository-per-team'        // Separate repositories for each team (most common)
+  | 'team-based'                 // Single repository with team filtering (monorepo)
+  | 'team-multi-repo';           // Complex team-to-repository mapping
+
+/**
  * GitHub credentials
  */
 export interface GitHubCredentials {
   token: string;
   instanceType: GitHubInstanceType;
-  apiEndpoint?: string; // Only for Enterprise
-  repos?: string[]; // Multiple repositories (optional)
+  apiEndpoint?: string;          // Only for Enterprise
+  strategy?: GitHubStrategy;     // Team mapping strategy (optional)
+  owner?: string;                // GitHub organization/owner
+
+  // Strategy 1: Repository-per-team (most common)
+  repos?: string[];              // Multiple repositories (e.g., ["frontend-app", "backend-api"])
+
+  // Strategy 2: Team-based (monorepo)
+  repo?: string;                 // Single repository (e.g., "main-product")
+  teams?: string[];              // Team names (e.g., ["frontend-team", "backend-team"])
+
+  // Strategy 3: Team-multi-repo (complex mapping)
+  teamRepoMapping?: Record<string, string[]>;  // e.g., {"platform-team": ["api-gateway", "auth-service"]}
 }
+
+/**
+ * Jira team mapping strategies
+ */
+export type JiraStrategy =
+  | 'project-per-team'           // Separate projects for each team
+  | 'component-based'            // One project with multiple components
+  | 'board-based';               // One project with filtered boards
 
 /**
  * Jira credentials
@@ -39,7 +66,17 @@ export interface JiraCredentials {
   email: string;
   domain: string;
   instanceType: JiraInstanceType;
-  projects?: string[]; // Multiple projects (optional)
+  strategy?: JiraStrategy;       // Team mapping strategy (optional)
+
+  // Strategy 1: Project-per-team
+  projects?: string[];           // Multiple projects (e.g., ["FRONTEND", "BACKEND", "MOBILE"])
+
+  // Strategy 2: Component-based
+  project?: string;              // Single project (e.g., "MAIN")
+  components?: string[];         // Multiple components (e.g., ["Frontend", "Backend"])
+
+  // Strategy 3: Board-based
+  boards?: string[];             // Board IDs (e.g., ["123", "456", "789"])
 }
 
 /**

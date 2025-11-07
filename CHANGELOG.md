@@ -11,6 +11,172 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2025-11-07
+
+### ✨ **MAJOR FEATURE** - Strategy-Based Team Mapping for Jira and GitHub
+
+**Comprehensive implementation of team organization strategies for Jira and GitHub:**
+
+Previously, SpecWeave supported basic multi-project/multi-repo configurations, but lacked flexibility for different organizational structures. Version 0.9.0 adds intelligent strategy-based mapping that adapts to your team's actual structure.
+
+#### **Jira Strategies (3 Options)**
+
+**Strategy 1: Project-per-team** (Separate projects for each team)
+```bash
+JIRA_STRATEGY=project-per-team
+JIRA_PROJECTS=FRONTEND,BACKEND,MOBILE,QA
+
+# Folder structure:
+.specweave/docs/specs/
+├── FRONTEND/
+├── BACKEND/
+├── MOBILE/
+└── QA/
+```
+
+**Strategy 2: Component-based** (One project, multiple components)
+```bash
+JIRA_STRATEGY=component-based
+JIRA_PROJECT=MAIN
+JIRA_COMPONENTS=Frontend,Backend,Mobile,QA
+
+# Folder structure:
+.specweave/docs/specs/
+├── Frontend/
+├── Backend/
+├── Mobile/
+└── QA/
+```
+
+**Strategy 3: Board-based** (One project, filtered boards)
+```bash
+JIRA_STRATEGY=board-based
+JIRA_PROJECT=MAIN
+JIRA_BOARDS=123,456,789
+
+# Folder structure (derived from board names):
+.specweave/docs/specs/
+├── Frontend-Board/
+├── Backend-Board/
+├── Mobile-Board/
+└── QA-Board/
+```
+
+#### **GitHub Strategies (3 Options)**
+
+**Strategy 1: Repository-per-team** (Most common)
+```bash
+GITHUB_STRATEGY=repository-per-team
+GITHUB_OWNER=myorg
+GITHUB_REPOS=frontend-app,backend-api,mobile-app,qa-tools
+
+# Folder structure:
+.specweave/docs/specs/
+├── frontend-app/
+├── backend-api/
+├── mobile-app/
+└── qa-tools/
+```
+
+**Strategy 2: Team-based** (Monorepo with team filtering)
+```bash
+GITHUB_STRATEGY=team-based
+GITHUB_OWNER=myorg
+GITHUB_REPO=main-product
+GITHUB_TEAMS=frontend-team,backend-team,mobile-team,qa-team
+
+# Folder structure:
+.specweave/docs/specs/
+├── frontend-team/
+├── backend-team/
+├── mobile-team/
+└── qa-team/
+```
+
+**Strategy 3: Team-multi-repo** (Complex team-to-repo mapping)
+```bash
+GITHUB_STRATEGY=team-multi-repo
+GITHUB_OWNER=myorg
+GITHUB_TEAM_REPO_MAPPING='{"platform-team":["api-gateway","auth-service"],"frontend-team":["web-app","mobile-app"]}'
+
+# Folder structure:
+.specweave/docs/specs/
+├── platform-team/
+│   ├── api-gateway/
+│   └── auth-service/
+└── frontend-team/
+    ├── web-app/
+    └── mobile-app/
+```
+
+#### **What Changed**
+
+**New Files:**
+- Enhanced credential interfaces with strategy fields in `types.ts`
+- Strategy-specific prompts in `jira.ts` and `github.ts`
+- Comprehensive environment variable parsing in `credentials-manager.ts`
+
+**Updated Files:**
+- `src/cli/helpers/issue-tracker/types.ts` - Added `JiraStrategy` and `GitHubStrategy` types
+- `src/cli/helpers/issue-tracker/jira.ts` - Added interactive strategy selection during init
+- `src/cli/helpers/issue-tracker/github.ts` - Added interactive strategy selection during init
+- `src/core/credentials-manager.ts` - Parse and save strategy-based credentials
+
+**Interactive Init Workflow:**
+```bash
+specweave init
+
+# Jira Setup:
+? Which Jira instance are you using? Jira Cloud (*.atlassian.net)
+? Select team mapping strategy:
+  ❯ Project-per-team (separate projects for each team)
+    Component-based (one project, multiple components)
+    Board-based (one project, filtered boards)
+? Project keys (comma-separated): FRONTEND,BACKEND,MOBILE
+
+# GitHub Setup:
+? Which GitHub instance are you using? GitHub.com (cloud)
+? Select team mapping strategy:
+  ❯ Repository-per-team (most common)
+    Team-based (monorepo with team filtering)
+    Team-multi-repo (complex team-to-repo mapping)
+? GitHub organization/owner name: myorg
+? Repository names (comma-separated): frontend-app,backend-api,mobile-app
+```
+
+#### **Backward Compatibility**
+
+✅ **Fully backward compatible:**
+- Legacy environment variables without strategy still work
+- Existing `.env` files continue to function
+- No migration required for existing projects
+
+**Example legacy format (still works):**
+```bash
+JIRA_PROJECT=MAIN      # Works (treated as no strategy)
+GITHUB_REPOS=repo1,repo2  # Works (treated as no strategy)
+```
+
+#### **Benefits**
+
+- ✅ **Flexibility** - Adapt to any organizational structure
+- ✅ **Clarity** - Explicit strategy selection during init
+- ✅ **Scalability** - Handle complex multi-team, multi-repo scenarios
+- ✅ **Best Practices** - Based on comprehensive comparison of ADO/Jira/GitHub patterns
+- ✅ **Enterprise-Ready** - Supports large organizations with complex structures
+
+#### **Azure DevOps (Unchanged)**
+
+Azure DevOps already has the correct structure from v0.8.21:
+```bash
+AZURE_DEVOPS_PROJECT=MyProject     # One project (correct)
+AZURE_DEVOPS_TEAMS=Frontend,Backend,Mobile  # Multiple teams (correct)
+```
+
+No changes needed for ADO users!
+
+---
+
 ## [0.8.21] - 2025-11-07
 
 ### 🐛 **CRITICAL FIX** - Azure DevOps: Corrected to Team-Based Structure

@@ -11,22 +11,80 @@
 
 export type SyncProvider = 'github' | 'jira' | 'ado';
 
+// Jira team organization strategies
+export type JiraStrategy = 'project-per-team' | 'shared-project-with-components';
+
 export interface GitHubConfig {
   owner: string;
   repo: string;
 }
 
+/**
+ * Jira Configuration (Multi-Team Support)
+ *
+ * Jira has NO explicit "Team" concept like ADO.
+ * Instead, teams are simulated using either:
+ * 1. Multiple Projects (one per team) - simpler, more projects
+ * 2. One Project with Components (team labels) - fewer projects, shared backlog
+ *
+ * Backward Compatibility:
+ * - Old config: { domain, projectKey } - single project mode
+ * - New config: { domain, strategy, projects/components } - multi-team mode
+ */
 export interface JiraConfig {
   domain: string;
-  projectKey: string;
   issueType?: 'Epic' | 'Story' | 'Task';
+
+  /**
+   * How teams are organized in Jira (optional for backward compatibility)
+   * - 'project-per-team': Each team has separate project (FRONTEND, BACKEND, QA)
+   * - 'shared-project-with-components': One project with components per team
+   * - undefined: Single project mode (backward compatible)
+   */
+  strategy?: JiraStrategy;
+
+  /**
+   * Strategy 1: Multiple projects (one per team)
+   * Example: ["FRONTEND", "BACKEND", "QA"]
+   * Creates folders: frontend/, backend/, qa/
+   */
+  projects?: string[];
+
+  /**
+   * Strategy 2: Shared project with components
+   * OR Legacy: Single project key
+   * Example: projectKey="PRODUCT", components=["Frontend", "Backend", "QA"]
+   * Creates folders: frontend/, backend/, qa/
+   */
+  projectKey?: string;
+  components?: string[];
 }
 
+/**
+ * Azure DevOps Configuration (Multi-Team Support)
+ *
+ * ADO has REAL Teams as explicit entities within a project.
+ * Multiple teams can exist in ONE project, each with own Area Path.
+ */
 export interface AdoConfig {
   organization: string;
   project: string;
   workItemType?: 'Epic' | 'Feature' | 'User Story';
-  areaPath?: string;
+
+  /**
+   * Teams within the project
+   * Example: ["League Scheduler Team", "Platform Engineering Team", "QA Team"]
+   * Creates folders: league-scheduler-team/, platform-engineering-team/, qa-team/
+   */
+  teams?: string[];
+
+  /**
+   * Explicit Area Paths per team (optional, auto-generated if not provided)
+   * Format: { "team-folder-name": "Project\\Team Name" }
+   * Example: { "platform-team": "League Scheduler\\Platform Engineering Team" }
+   */
+  areaPaths?: Record<string, string>;
+
   iterationPath?: string;
 }
 

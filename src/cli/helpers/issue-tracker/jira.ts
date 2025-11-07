@@ -100,6 +100,32 @@ export async function promptJiraCredentials(
     default: 'cloud'
   }]);
 
+  // Step 1.5: Ask about team organization strategy
+  console.log(chalk.cyan('\n📂 How are teams organized in Jira?\n'));
+  const { strategy } = await inquirer.prompt([{
+    type: 'list',
+    name: 'strategy',
+    message: 'Select team mapping strategy:',
+    choices: [
+      {
+        name: 'Project-per-team (separate projects for each team)',
+        value: 'project-per-team',
+        short: 'Project-per-team'
+      },
+      {
+        name: 'Component-based (one project, multiple components)',
+        value: 'component-based',
+        short: 'Component-based'
+      },
+      {
+        name: 'Board-based (one project, filtered boards)',
+        value: 'board-based',
+        short: 'Board-based'
+      }
+    ],
+    default: 'project-per-team'
+  }]);
+
   // Step 2: Show setup instructions
   console.log(chalk.cyan('\n📋 Quick Setup:'));
 
@@ -176,14 +202,114 @@ export async function promptJiraCredentials(
     }
   ];
 
+  // Strategy-specific questions
+  if (strategy === 'project-per-team') {
+    questions.push({
+      type: 'input',
+      name: 'projects',
+      message: 'Project keys (comma-separated, e.g., FRONTEND,BACKEND,MOBILE):',
+      validate: (input: string) => {
+        if (!input || input.trim() === '') {
+          return 'At least one project key is required';
+        }
+        // Validate project key format (uppercase letters, 2-10 chars)
+        const projects = input.split(',').map(p => p.trim());
+        for (const project of projects) {
+          if (!/^[A-Z0-9]{2,10}$/.test(project)) {
+            return `Invalid project key "${project}". Must be 2-10 uppercase letters/numbers.`;
+          }
+        }
+        return true;
+      }
+    });
+  } else if (strategy === 'component-based') {
+    questions.push(
+      {
+        type: 'input',
+        name: 'project',
+        message: 'Project key (e.g., MAIN):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'Project key is required';
+          }
+          if (!/^[A-Z0-9]{2,10}$/.test(input)) {
+            return 'Project key must be 2-10 uppercase letters/numbers';
+          }
+          return true;
+        }
+      },
+      {
+        type: 'input',
+        name: 'components',
+        message: 'Component names (comma-separated, e.g., Frontend,Backend,Mobile):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'At least one component is required';
+          }
+          return true;
+        }
+      }
+    );
+  } else if (strategy === 'board-based') {
+    questions.push(
+      {
+        type: 'input',
+        name: 'project',
+        message: 'Project key (e.g., MAIN):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'Project key is required';
+          }
+          if (!/^[A-Z0-9]{2,10}$/.test(input)) {
+            return 'Project key must be 2-10 uppercase letters/numbers';
+          }
+          return true;
+        }
+      },
+      {
+        type: 'input',
+        name: 'boards',
+        message: 'Board IDs (comma-separated, e.g., 123,456,789):',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'At least one board ID is required';
+          }
+          // Validate board IDs are numbers
+          const boards = input.split(',').map(b => b.trim());
+          for (const board of boards) {
+            if (!/^\d+$/.test(board)) {
+              return `Invalid board ID "${board}". Must be a number.`;
+            }
+          }
+          return true;
+        }
+      }
+    );
+  }
+
   const answers = await inquirer.prompt(questions);
 
-  return {
+  // Build credentials based on strategy
+  const credentials: JiraCredentials = {
     token: answers.token,
     email: answers.email,
     domain: answers.domain,
-    instanceType: instanceType as JiraInstanceType
+    instanceType: instanceType as JiraInstanceType,
+    strategy: strategy as any
   };
+
+  // Add strategy-specific fields
+  if (strategy === 'project-per-team') {
+    credentials.projects = answers.projects.split(',').map((p: string) => p.trim());
+  } else if (strategy === 'component-based') {
+    credentials.project = answers.project;
+    credentials.components = answers.components.split(',').map((c: string) => c.trim());
+  } else if (strategy === 'board-based') {
+    credentials.project = answers.project;
+    credentials.boards = answers.boards.split(',').map((b: string) => b.trim());
+  }
+
+  return credentials;
 }
 
 /**
@@ -279,6 +405,34 @@ export function getJiraEnvVars(credentials: JiraCredentials): Array<{ key: strin
     { key: 'JIRA_EMAIL', value: credentials.email },
     { key: 'JIRA_DOMAIN', value: credentials.domain }
   ];
+
+  // Add strategy if specified
+  if (credentials.strategy) {
+    vars.push({ key: 'JIRA_STRATEGY', value: credentials.strategy });
+  }
+
+  // Strategy 1: Project-per-team
+  if (credentials.strategy === 'project-per-team' && credentials.projects) {
+    vars.push({ key: 'JIRA_PROJECTS', value: credentials.projects.join(',') });
+  }
+  // Strategy 2: Component-based
+  else if (credentials.strategy === 'component-based') {
+    if (credentials.project) {
+      vars.push({ key: 'JIRA_PROJECT', value: credentials.project });
+    }
+    if (credentials.components) {
+      vars.push({ key: 'JIRA_COMPONENTS', value: credentials.components.join(',') });
+    }
+  }
+  // Strategy 3: Board-based
+  else if (credentials.strategy === 'board-based') {
+    if (credentials.project) {
+      vars.push({ key: 'JIRA_PROJECT', value: credentials.project });
+    }
+    if (credentials.boards) {
+      vars.push({ key: 'JIRA_BOARDS', value: credentials.boards.join(',') });
+    }
+  }
 
   // Add Server-specific variables if needed
   if (credentials.instanceType === 'server') {
