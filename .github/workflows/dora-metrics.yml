@@ -34,12 +34,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
-      - name: Commit metrics JSON
+      - name: Commit metrics files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add metrics/dora-latest.json
-          git diff --staged --quiet || git commit -m "chore: update DORA metrics [skip ci]"
+          git add metrics/dora-latest.json metrics/dora-report.md
+          git diff --staged --quiet || git commit -m "chore: update DORA metrics and report [skip ci]"
           git push
         continue-on-error: true
 

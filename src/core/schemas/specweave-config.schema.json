@@ -168,13 +168,13 @@
         },
         "autoTranslateInternalDocs": {
           "type": "boolean",
-          "description": "Automatically translate spec.md, plan.md, tasks.md to English after increment planning (post-generation translation)",
+          "description": "Automatically translate increment files (spec.md, plan.md, tasks.md) and living docs specs to English after increment planning (recommended: true)",
           "default": true
         },
         "autoTranslateLivingDocs": {
           "type": "boolean",
-          "description": "Automatically translate living docs updates after task completion",
-          "default": false
+          "description": "Automatically translate living docs to English after task completion (ADRs, HLDs, etc.)",
+          "default": true
         },
         "keepFrameworkTerms": {
           "type": "boolean",
