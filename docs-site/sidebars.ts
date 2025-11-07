@@ -320,6 +320,11 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
+          id: 'glossary/categories/specweave-category',
+          label: '🚀 SpecWeave Core',
+        },
+        {
+          type: 'doc',
           id: 'glossary/categories/architecture-category',
           label: '🏗️ Architecture & Design',
         },

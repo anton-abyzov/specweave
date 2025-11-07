@@ -3,8 +3,18 @@ name: SpecWeave E2E Smoke Test
 on:
   push:
     branches: [main, develop, features/*]
+    paths-ignore:
+      - 'docs-site/**'
+      - '.specweave/docs/public/**'
+      - '**.md'
+      - '.github/workflows/deploy-docs.yml'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - 'docs-site/**'
+      - '.specweave/docs/public/**'
+      - '**.md'
+      - '.github/workflows/deploy-docs.yml'
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'

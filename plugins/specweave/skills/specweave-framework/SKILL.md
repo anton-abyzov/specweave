@@ -367,8 +367,8 @@ SpecWeave plugins support **dual distribution**:
    - Works with ALL tools (Claude, Cursor, Copilot, Generic)
 
 2. **Claude Code Marketplace** (Native `/plugin`):
-   - `/plugin marketplace add specweave/marketplace`
-   - `/plugin install github@specweave`
+   - `/plugin marketplace add anton-abyzov/specweave`
+   - `/plugin install specweave-github`
    - Best UX for Claude Code users
 
 **Plugin Manifests** (both required):

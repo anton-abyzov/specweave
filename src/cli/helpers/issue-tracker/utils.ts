@@ -69,10 +69,10 @@ export function isClaudeCliAvailable(): boolean {
  * Install tracker plugin via Claude CLI
  *
  * @param tracker - Tracker type
- * @returns True if installation succeeded
+ * @returns Object with success status and optional error message
  */
-export function installTrackerPlugin(tracker: IssueTracker): boolean {
-  if (tracker === 'none') return true;
+export function installTrackerPlugin(tracker: IssueTracker): { success: boolean; error?: string } {
+  if (tracker === 'none') return { success: true };
 
   const pluginName = `specweave-${tracker}`;
 
@@ -80,12 +80,18 @@ export function installTrackerPlugin(tracker: IssueTracker): boolean {
     const result = execFileNoThrowSync('claude', [
       'plugin',
       'install',
-      `${pluginName}@specweave`
+      pluginName  // NO @marketplace suffix - Claude Code resolves from registered marketplaces
     ]);
 
-    return result.success;
-  } catch {
-    return false;
+    if (result.success) {
+      return { success: true };
+    } else {
+      // Return detailed error for debugging
+      const error = result.stderr || result.stdout || 'Unknown error';
+      return { success: false, error };
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to execute claude command' };
   }
 }
 
