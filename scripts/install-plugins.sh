@@ -53,7 +53,7 @@ install_plugin() {
 }
 
 # Install core plugin (always required)
-install_plugin "specweave-core"
+install_plugin "specweave"
 
 # Install GitHub plugin (priority #1)
 install_plugin "specweave-github"

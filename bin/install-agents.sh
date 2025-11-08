@@ -7,7 +7,7 @@
 
 set -e
 
-AGENTS_SRC="plugins/specweave-core/agents"
+AGENTS_SRC="plugins/specweave/agents"
 AGENTS_DEST=".claude/agents"
 
 # Parse arguments

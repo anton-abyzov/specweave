@@ -3,6 +3,18 @@
   "description": "Design-to-code workflow patterns for Figma (MCP-first). Requires Figma MCP server. Extracts design tokens, generates components (React/Angular/Vue/Svelte), scaffolds tests. Uses Atomic Design and TypeScript.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "figma",
+    "design",
+    "design-system",
+    "mcp",
+    "design-tokens",
+    "specweave"
+  ]
 }

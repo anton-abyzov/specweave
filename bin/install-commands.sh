@@ -5,7 +5,7 @@
 
 set -e
 
-COMMANDS_SRC="plugins/specweave-core/commands"
+COMMANDS_SRC="plugins/specweave/commands"
 COMMANDS_DEST=".claude/commands"
 
 echo "════════════════════════════════════════════════════════"

@@ -3,6 +3,18 @@
   "description": "Payment processing integration for Stripe, PayPal, and billing automation. Includes checkout flows, subscription lifecycle management, PCI DSS compliance guidance, and recurring billing. Focus on production-ready payment systems.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "payments",
+    "stripe",
+    "paypal",
+    "billing",
+    "pci-compliance",
+    "specweave"
+  ]
 }
