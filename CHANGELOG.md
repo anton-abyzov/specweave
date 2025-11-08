@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.3] - 2025-11-07
+
+### 🐛 Bug Fixes
+
+#### Plugin Path and Manifest Standardization
+
+**Fixed**:
+- Updated plugin installation scripts to use correct path (`plugins/specweave` instead of `plugins/specweave-core`)
+- Standardized plugin manifest format across all plugins:
+  - Changed `repository` from object format to string format
+  - Added `homepage` field for consistency
+- Added validation script (`scripts/validate-plugin-manifests.cjs`) to catch manifest issues early
+
+**Impact**: Plugin installation and marketplace registration now work correctly across all environments.
+
+**Files Changed**:
+- `bin/install-agents.sh`, `bin/install-commands.sh`, `bin/install-hooks.sh`, `bin/install-skills.sh`
+- All plugin manifests in `plugins/*/. claude-plugin/plugin.json`
+- Added `scripts/validate-plugin-manifests.cjs`
+
+---
+
 ## [0.9.1] - 2025-11-07
 
 ### 🐛 Bug Fixes
