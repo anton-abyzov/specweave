@@ -3,6 +3,18 @@
   "description": "Kubernetes deployment and management for SpecWeave projects. Generate K8s manifests, Helm charts, and GitOps workflows. Includes security policies (NetworkPolicy, RBAC) and best practices for production deployments.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "kubernetes",
+    "k8s",
+    "helm",
+    "deployment",
+    "gitops",
+    "specweave"
+  ]
 }

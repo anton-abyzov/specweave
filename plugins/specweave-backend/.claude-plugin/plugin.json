@@ -3,6 +3,19 @@
   "description": "Backend API development for Node.js, Python, and .NET stacks. Includes Express, NestJS, FastAPI, Django, Flask, ASP.NET Core, and Entity Framework Core. Focus on REST APIs, authentication, database operations, and background services.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "backend",
+    "nodejs",
+    "python",
+    "dotnet",
+    "rest-api",
+    "server",
+    "specweave"
+  ]
 }

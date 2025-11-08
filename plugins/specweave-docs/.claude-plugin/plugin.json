@@ -3,6 +3,17 @@
   "description": "Documentation generation and spec-driven workflows. Includes Docusaurus site generation from SpecWeave structure, spec-driven brainstorming for feature ideation, and spec-driven debugging. Focus on living documentation and knowledge management.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "documentation",
+    "docusaurus",
+    "specs",
+    "docs-generation",
+    "specweave"
+  ]
 }

@@ -3,6 +3,19 @@
   "description": "Cloud infrastructure provisioning and monitoring. Includes Hetzner Cloud provisioning, Prometheus/Grafana setup, distributed tracing (Jaeger/Tempo), and SLO implementation. Focus on cost-effective, production-ready infrastructure.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "infrastructure",
+    "cloud",
+    "hetzner",
+    "monitoring",
+    "prometheus",
+    "grafana",
+    "specweave"
+  ]
 }
