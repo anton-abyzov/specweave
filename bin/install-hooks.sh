@@ -7,7 +7,7 @@
 
 set -e
 
-HOOKS_SRC="plugins/specweave-core/hooks"
+HOOKS_SRC="plugins/specweave/hooks"
 HOOKS_DEST=".claude/hooks"
 
 # Parse arguments

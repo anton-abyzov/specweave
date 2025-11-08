@@ -3,6 +3,19 @@
   "description": "Compare SpecWeave with BMAD, spec-kit, openspec, and other spec-driven frameworks. Get gap analysis, feature comparison, and strategic recommendations to choose the best framework for your needs.",
   "version": "1.0.0",
   "author": {
-    "name": "SpecWeave Team"
-  }
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "alternatives",
+    "comparison",
+    "bmad",
+    "spec-kit",
+    "openspec",
+    "framework-comparison",
+    "specweave"
+  ]
 }
