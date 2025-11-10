@@ -681,10 +681,10 @@ my-project/
 - ✅ Strategy docs are project-level, not module-level
 - ✅ Living docs sync works best with one central location
 
-**Plugin Detection**:
-- ✅ Four-phase detection assumes one `.specweave/` folder
-- ✅ Auto-detection scans from root only
-- ✅ No ambiguity about where plugins are enabled
+**Plugin Installation**:
+- ✅ ALL plugins installed automatically during `specweave init`
+- ✅ No selective loading or detection needed
+- ✅ Full capabilities available immediately
 
 **Prevents Chaos**:
 - ❌ Nested folders cause: Which is the source of truth?
@@ -842,7 +842,7 @@ if (parentSpecweave) {
 - Domain expertise (ML, payments) = separate plugins
 - Core plugin = only increment lifecycle + living docs automation
 
-### Available Plugins (Opt-In)
+### Available Plugins (All Auto-Installed)
 
 **Implemented Plugins**:
 
@@ -891,20 +891,22 @@ if (parentSpecweave) {
 | **jira-sync** | 1 | 1 | 2 | JIRA project tracking |
 | **ado-sync** | 1 | 1 | 2 | Azure DevOps tracking |
 
-### Context Efficiency Examples
+### Context Efficiency
 
-**Before** - Monolithic approach:
-- Simple React app: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
-- Backend API: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
-- ML pipeline: Loads ALL 44 skills + 20 agents ≈ **50K tokens**
+**All plugins are installed, but only relevant skills activate based on context**. Claude Code's native skill system ensures:
+- Skills only activate when their description keywords match the conversation
+- Agents only load when explicitly invoked
+- Commands only appear when relevant
 
-**After** - Modular plugin architecture:
-- Simple React app: Core + frontend-stack + github ≈ **16K tokens** (68% reduction!)
-- Backend API: Core + nodejs-backend + github ≈ **15K tokens** (70% reduction!)
-- ML pipeline: Core + ml-ops + github ≈ **18K tokens** (64% reduction!)
-- SpecWeave itself: Core + github + diagrams ≈ **15K tokens** (70% reduction!)
+**Example**: Working on a React frontend:
+- ✅ `specweave-frontend` skills activate (React, Next.js, design systems)
+- ✅ `specweave-github` skills activate (if mentioning GitHub)
+- ❌ `specweave-ml` skills stay dormant (ML keywords not detected)
+- ❌ `specweave-payments` skills stay dormant (Stripe not mentioned)
 
-### How Plugins Are Loaded (Intelligent Auto-Loading)
+**Result**: Even with 19+ plugins installed, you only "pay" (in tokens) for what you're actively using in the conversation.
+
+### How Plugins Are Loaded (All Plugins Installed Upfront)
 
 **SpecWeave's plugin system is designed to be intelligent and non-intrusive:**
 
@@ -932,134 +934,43 @@ When you run `specweave init`:
    - Claude Code automatically discovers plugins from GitHub
    - No manual `/plugin marketplace add` needed!
 
-2. ✅ **Core Plugin Auto-Installation**
-   - Automatically runs: `claude plugin marketplace add` and `claude plugin install specweave`
+2. ✅ **ALL Plugins Auto-Installation** (Breaking Change: No Selective Loading!)
+   - Automatically installs ALL 19+ plugins from marketplace.json
    - Works via CLI during init (uses user's shell to access `claude` command)
-   - Slash commands available IMMEDIATELY - no manual install!
-   - Success message: "✔ SpecWeave core plugin installed automatically!"
+   - Installation process:
+     1. Removes existing marketplace (if present)
+     2. Re-adds marketplace from GitHub (always fresh)
+     3. Reads marketplace.json to get list of all plugins
+     4. Installs each plugin via `claude plugin install {name}`
+     5. Reports success/failure for each plugin
+   - All slash commands available IMMEDIATELY - no manual install needed!
+   - Success message: "✔ Installed: 19/19 plugins"
    - Graceful fallback: If CLI unavailable, shows manual install instructions
-
-3. ✅ **Issue Tracker Plugin Auto-Installation** (NEW! v0.8.18+)
-   - Detects GitHub/Jira/Azure DevOps from project structure
-   - Prompts for credentials (API tokens, PATs)
-   - **Automatically installs** corresponding plugin (specweave-github, specweave-jira, specweave-ado)
-   - Happens AFTER marketplace registration (ensures plugin installation succeeds)
-   - Shows detailed error messages if auto-install fails
-   - Example: Jira detected → credentials saved → `specweave-jira` plugin installed automatically
-
-4. ℹ️  **Optional Plugins Available**
-   - Suggested based on project type (frontend, backend, infrastructure)
-   - User can install later via `/plugin install specweave-{name}`
+   - **No selective loading**: Everything installed upfront for full capabilities
 
 **Key Architectural Change**:
 - ❌ Old: Copied `.claude-plugin/` + `plugins/` to every project (~2MB bloat)
 - ✅ New: Reference GitHub marketplace (~2KB settings.json, always up-to-date)
 
-#### Phase 2: Increment Planning (Intelligent Plugin Detection)
+#### Phase 2: Implementation (All Plugins Ready)
 
-When you create increments (e.g., `/specweave:increment "Add Stripe billing"`):
-
-1. **Spec Analysis** (v0.6.0+, Enhanced v0.8.18+)
-   - increment-planner skill scans spec.md content
-   - Detects keywords: "Stripe", "GitHub", "Kubernetes", "React", etc.
-   - Maps keywords → required plugins (see Step 6 in increment-planner/SKILL.md)
-
-2. **🚨 AUTOMATIC Plugin Recommendation** (Enhanced v0.8.18+)
-   ```
-   🔌 Detected plugin requirements from spec content:
-
-   REQUIRED (will significantly improve implementation):
-   • specweave-payments - Stripe integration
-     Detected: "billing", "Stripe", "subscriptions"
-     Provides: Stripe expert agent, payment flow validation, webhook handling
-     → Without this: Manual Stripe integration, no validation
-
-   📦 Install recommended plugins:
-     /plugin install specweave-payments
-
-   💡 Benefits:
-     • Plugins provide specialized AI agents (Stripe expert, etc.)
-     • Skills auto-activate based on context (zero manual invocation)
-     • 70%+ context reduction (only load what you need)
-     • Best practices built-in (from real-world experience)
-
-   Would you like me to wait while you install these plugins? (Recommended)
-   Or shall I continue without them? (Limited capabilities)
-   ```
-
-3. **User Decision**
-   - Install now → Plugin activates immediately (skills available during implementation)
-   - Install later → Skills won't be available until plugin installed (can add mid-work)
-   - Skip → Increment creation continues (not blocked, but capabilities limited)
-
-#### Phase 2.5: Just-in-Time Plugin Installation (NEW! v0.10.0+)
-
-**The Critical Gap**: Users request features that require plugins (e.g., "preview docs locally"), but those plugins aren't installed yet. Instead of failing silently or recommending manual installation, SpecWeave now **automatically installs plugins just-in-time**.
-
-**How it works** (via `plugin-installer` skill):
-
-1. **Automatic Detection**
-   - User requests a feature (e.g., "Show me the internal docs in a browser")
-   - `plugin-installer` skill detects keywords: "docs", "browser" → needs `specweave-docs-preview`
-   - Checks if plugin is installed: `/plugin list --installed`
-
-2. **Auto-Installation**
-   ```
-   🔌 Detected need for specweave-docs-preview plugin
-
-   📦 Installing specweave-docs-preview...
-      This plugin provides: Beautiful Docusaurus UI for browsing .specweave/docs/
-
-   ✅ Plugin installed successfully!
-      You can now:
-      • Browse documentation in beautiful UI
-      • Hot reload when editing markdown files
-      • Render Mermaid diagrams automatically
-
-   Proceeding to launch docs preview server...
-   ```
-
-3. **Seamless Execution**
-   - Plugin installed automatically (no manual intervention)
-   - Feature executes immediately
-   - User sees clear notification of what was installed and why
-
-**Supported Just-in-Time Plugins**:
-
-| User Keywords | Auto-Installed Plugin | Capabilities |
-|--------------|----------------------|--------------|
-| "preview docs", "documentation UI", "Docusaurus" | `specweave-docs-preview` | Beautiful docs UI, hot reload |
-| "React", "Next.js", "frontend", "UI component" | `specweave-frontend` | Frontend expert, design systems |
-| "K8s", "Kubernetes", "Helm", "deploy" | `specweave-kubernetes` | K8s expert, manifest generation |
-| "TensorFlow", "PyTorch", "ML model" | `specweave-ml` | ML pipelines, training, deployment |
-| "Stripe", "billing", "payment" | `specweave-payments` | Payment expert, Stripe integration |
-| "Playwright", "E2E testing", "browser automation" | `specweave-testing` | E2E testing infrastructure |
-| "Figma", "design tokens", "prototype" | `specweave-figma` | Design system integration |
-| "Mermaid", "C4 model", "architecture diagram" | `specweave-diagrams` | Diagram generation |
-
-**Key Benefits**:
-- ✅ **Zero friction**: No manual plugin installation needed
-- ✅ **Proactive**: Detects requirements automatically based on user request
-- ✅ **Clear UX**: Users understand what's being installed and why
-- ✅ **Fail-safe**: Handles installation errors gracefully with troubleshooting steps
-
-**See**: `plugins/specweave/skills/plugin-installer/SKILL.md` for complete keyword map and workflow
-
-#### Phase 3: Implementation (Auto-Activation)
-
-When plugins are installed:
+After `specweave init`, ALL plugins are already installed. No additional steps needed!
 
 1. **Skills Auto-Activate**
    - Based on description keywords (Claude Code native behavior)
    - No manual invocation needed
    - Example: Mention "GitHub" → github-sync skill activates
 
-2. **Context Efficiency**
-   - Only loaded plugins consume tokens
-   - 70%+ reduction vs. monolithic approach
-   - Real-time: Simple React app = 16K tokens (was 50K in v0.3.7)
+2. **All Capabilities Available**
+   - GitHub integration: `/specweave-github:sync`
+   - JIRA integration: `/specweave-jira:sync`
+   - Documentation preview: `/specweave:docs preview`
+   - Frontend tools: React, Next.js, design systems
+   - Backend tools: Node.js, Python, .NET
+   - Infrastructure: Kubernetes, Helm, monitoring
+   - ...and 19+ more plugins ready to use!
 
-#### Phase 4: First Increment Completion (Documentation Preview)
+#### Phase 3: First Increment Completion (Documentation Preview)
 
 After completing your first increment:
 
@@ -1096,29 +1007,27 @@ After completing your first increment:
    - Mermaid diagrams rendered automatically
    - Share docs with stakeholders (export static site)
 
-### Manual Plugin Management
+### Plugin Management
 
-All plugin management happens through Claude Code's native commands:
+**All 19+ plugins are automatically installed during `specweave init`**. You rarely need to manage plugins manually, but Claude Code's native commands are available if needed:
 
 ```bash
-# List installed plugins
+# List installed plugins (should show all 19+ SpecWeave plugins)
 /plugin list --installed
 
-# Install a specific plugin
-/plugin install specweave-kubernetes
-
-# Uninstall a plugin
+# Uninstall a plugin (not recommended - breaks functionality)
 /plugin uninstall specweave-kubernetes
 
-# List all available plugins from marketplace
-/plugin list specweave
+# Reinstall all plugins (if you uninstalled something by mistake)
+specweave init .  # Re-runs full installation
 ```
 
 **Key Insight**: SpecWeave uses **ONLY** Claude Code's native plugin system:
+- ALL plugins installed automatically during init (no manual selection)
 - Plugins install globally via `/plugin install specweave-{name}`
 - Work across ALL projects (like VS Code extensions)
 - Auto-activate based on skills' description keywords
-- Managed by Claude Code (updates, uninstall, etc.)
+- Managed by Claude Code (updates handled via `specweave init` re-run)
 
 ### Development vs Production Setup
 
@@ -2129,10 +2038,10 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
 
 ```
 SpecWeave = Collection of Claude Code Plugins
-├── specweave (auto-loaded) ← The "framework" IS a plugin
-├── specweave-github (opt-in)
-├── specweave-figma (opt-in)
-└── ...all other plugins (opt-in)
+├── specweave (auto-installed) ← The "framework" IS a plugin
+├── specweave-github (auto-installed)
+├── specweave-figma (auto-installed)
+└── ...all 19+ plugins (auto-installed)
 ```
 
 **What this means**:
@@ -2159,7 +2068,7 @@ SpecWeave = Collection of Claude Code Plugins
 **Discovery**:
 - Browse all plugins: `ls plugins/` or check [.claude-plugin/marketplace.json](/.claude-plugin/marketplace.json)
 - Live catalog: See `.claude-plugin/README.md` for current marketplace contents
-- Auto-detection during `specweave init` suggests relevant plugins
+- **All plugins automatically installed** during `specweave init` (no manual selection needed)
 
 **Plugin Structure** (all follow same pattern):
 ```
@@ -2171,8 +2080,8 @@ plugins/specweave-{name}/
 └── lib/                        # TypeScript utilities (optional)
 ```
 
-**Key Plugins** (for reference):
-- `specweave` - Framework essentials (always loaded)
+**Key Plugins** (for reference - all auto-installed):
+- `specweave` - Framework essentials
 - `specweave-github` - GitHub Issues integration
 - `specweave-{frontend|backend|infrastructure}` - Tech stack plugins
 

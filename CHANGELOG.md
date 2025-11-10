@@ -11,6 +11,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.0] - 2025-11-10
+
+### 🚨 **BREAKING CHANGE** - All Plugins Installed Automatically
+
+**Major architectural change**: SpecWeave now installs ALL 19+ plugins automatically during `specweave init`. No more selective loading or just-in-time plugin installation.
+
+#### Why This Change?
+
+**Problems with selective loading**:
+- Added complexity to workflow
+- Users had to wait for installations mid-work
+- Network issues could block work unexpectedly
+- Detection logic was fragile (keyword matching)
+- Inconsistent experience depending on what was detected
+
+**Benefits of installing everything upfront**:
+- ✅ All 19+ plugins ready immediately after init
+- ✅ No network dependencies during work
+- ✅ Simpler, more predictable user experience
+- ✅ Full capabilities available from day one
+- ✅ Takes ~30 seconds upfront, saves time later
+
+#### Changed
+
+- **Installation Process** (`src/cli/commands/init.ts`):
+  - Now reads `marketplace.json` to get list of ALL available plugins
+  - Installs each plugin via `claude plugin install {name}` in a loop
+  - Reports success/failure: "Installed: 19/19 plugins"
+  - Marketplace is forcibly refreshed on every init (remove + re-add)
+  - No more selective installation based on project type
+
+- **Plugin-Installer Skill** - **DEPRECATED**:
+  - Marked as deprecated in `plugins/specweave/skills/plugin-installer/SKILL.md`
+  - Skill will not activate (description updated to prevent activation)
+  - Remains in codebase for backward compatibility only
+  - No longer needed since all plugins installed upfront
+
+- **Increment-Planner Skill**:
+  - Removed 85+ lines of plugin detection logic from Step 6
+  - Simplified from "Detect Required Plugins & Check PM Tool" to "Check PM Tool Configuration"
+  - No more keyword scanning for plugin requirements
+  - No more plugin installation prompts during increment creation
+  - All plugins assumed to be already installed
+
+- **Documentation** (`CLAUDE.md`):
+  - Removed "Phase 2: Increment Planning (Intelligent Plugin Detection)" section (~60 lines)
+  - Removed "Phase 2.5: Just-in-Time Plugin Installation" section (~50 lines)
+  - Removed plugin detection keyword mapping table
+  - Simplified to "Phase 2: Implementation (All Plugins Ready)"
+  - Updated plugin installation section to describe install-all approach
+  - Updated next steps to show "All plugins are already installed!"
+
+#### Migration Guide
+
+**For new projects**: No action needed. Run `specweave init` and all plugins install automatically.
+
+**For existing projects**: Re-run `specweave init .` in your project root to get all plugins installed:
+```bash
+cd your-project
+specweave init .
+# Confirm overwrites when prompted
+# Result: All 19+ plugins installed globally via Claude CLI
+```
+
+**Note**: This is a **non-breaking change for end users** since plugins are installed globally. Existing increments and workflows continue to work unchanged.
+
+#### Impact
+
+| Aspect | Before (v0.10.1) | After (v0.11.0) |
+|--------|------------------|-----------------|
+| **Init time** | ~5 seconds | ~30 seconds (one-time) |
+| **Plugins installed** | Core + detected (2-5) | ALL 19+ plugins |
+| **User experience** | May need to install mid-work | Everything ready immediately |
+| **Network dependency** | During work (JIT install) | Only during init |
+| **Complexity** | High (detection logic) | Low (install all) |
+| **Reliability** | Detection can fail | Always consistent |
+
+---
+
 ## [0.10.1] - 2025-11-10
 
 ### 🐛 **CRITICAL BUG FIX** - Bidirectional Sync Now Default for All Providers
