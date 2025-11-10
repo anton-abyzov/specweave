@@ -47,8 +47,11 @@ Living documentation that updates automatically after every task.
 The same processes Fortune 500 uses. Without the team. Without the manual work.
 
 ✅ **Architecture decisions documented** - Pass audits, land enterprise deals
+
 ✅ **Onboarding automated** - New devs productive in 1 hour, not 1 week
+
 ✅ **Knowledge preserved** - Sell your startup, someone can actually run it
+
 ✅ **Standards enforced** - SOC2, ISO, compliance requirements met
 
 **AI speed + Enterprise reliability = You can finally scale.**
