@@ -914,29 +914,10 @@ if (parentSpecweave) {
 
 When you run `specweave init`:
 
-1. ✅ **GitHub Marketplace Registration**
-   - Creates `.claude/settings.json` with GitHub marketplace reference
-   - **No local copying** - plugins fetched from GitHub on-demand
-   - Settings.json structure:
-     ```json
-     {
-       "extraKnownMarketplaces": {
-         "specweave": {
-           "source": {
-             "source": "github",
-             "repo": "anton-abyzov/specweave",
-             "path": ".claude-plugin"
-           }
-         }
-       }
-     }
-     ```
-   - Claude Code automatically discovers plugins from GitHub
-   - No manual `/plugin marketplace add` needed!
-
-2. ✅ **ALL Plugins Auto-Installation** (Breaking Change: No Selective Loading!)
-   - Automatically installs ALL 19+ plugins from marketplace.json
-   - Works via CLI during init (uses user's shell to access `claude` command)
+1. ✅ **GitHub Marketplace Registration** (CLI-Only, GLOBAL)
+   - Registers marketplace via CLI: `claude plugin marketplace add anton-abyzov/specweave`
+   - **Marketplace is GLOBAL** - persists across ALL projects, not per-project
+   - **No `.claude/settings.json` created** - redundant because CLI registration is global
    - Installation process:
      1. Removes existing marketplace (if present)
      2. Re-adds marketplace from GitHub (always fresh)
@@ -950,7 +931,7 @@ When you run `specweave init`:
 
 **Key Architectural Change**:
 - ❌ Old: Copied `.claude-plugin/` + `plugins/` to every project (~2MB bloat)
-- ✅ New: Reference GitHub marketplace (~2KB settings.json, always up-to-date)
+- ✅ New: CLI-based GLOBAL marketplace registration (zero per-project files, always up-to-date)
 
 #### Phase 2: Implementation (All Plugins Ready)
 
@@ -1026,33 +1007,29 @@ Local paths are **NOT supported** in `extraKnownMarketplaces` in settings.json. 
 
 ```
 my-saas-app/  (User's project)
-├── .claude/
-│   └── settings.json              # GitHub remote reference
-├── .specweave/
+├── .specweave/                    # SpecWeave data ONLY
 │   └── increments/
 └── src/
 ```
 
-**Settings.json for users** (.claude/settings.json):
-```json
-{
-  "extraKnownMarketplaces": {
-    "specweave": {
-      "source": {
-        "source": "github",
-        "repo": "anton-abyzov/specweave",
-        "path": ".claude-plugin"
-      }
-    }
-  }
-}
+**NO `.claude/` folder created!** Marketplace registration is GLOBAL via CLI, not per-project.
+
+**Marketplace Registration** (via `specweave init`):
+```bash
+# Registers marketplace GLOBALLY (persists across all projects)
+claude plugin marketplace add anton-abyzov/specweave
+
+# Check registration (works from ANY project)
+claude plugin marketplace list
+# Output: ❯ specweave (Source: GitHub anton-abyzov/specweave)
 ```
 
 **Key Differences**:
 - ✅ **Development**: Local `.claude-plugin/` and `plugins/` in repo (for editing)
-- ✅ **Production**: GitHub reference only (no local plugin copies)
-- ✅ **Development**: Use CLI `/plugin marketplace add ./.claude-plugin` (settings.json cannot reference local paths)
-- ✅ **Production**: Use GitHub object in settings.json: `{"source": {"source": "github", ...}}`
+- ✅ **Production**: GLOBAL CLI registration (zero per-project files)
+- ✅ **Development**: Use CLI `/plugin marketplace add ./.claude-plugin`
+- ✅ **Production**: Use CLI `claude plugin marketplace add anton-abyzov/specweave`
+- ✅ **Both**: Marketplace persists across projects and IDE restarts
 
 No per-project installation needed!
 
@@ -1124,7 +1101,7 @@ plugins/                        ← ROOT: All plugins (version controlled)
 - ✅ `src/` = TypeScript code ONLY (compiled to `dist/`)
 - ✅ ALL skills/agents/commands/hooks = Inside `plugins/` (including core!)
 - ✅ `plugins/specweave/` = Core framework plugin (always loaded)
-- ✅ `.claude/` = Plugin settings only (settings.json references marketplace)
+- ✅ Marketplace = GLOBAL via CLI (no per-project `.claude/` folder)
 - ❌ NEVER mix `*.ts` and `SKILL.md` in the same directory
 - ❌ NEVER create new files in project root (use increment folders)
 
@@ -1930,22 +1907,18 @@ plugins/specweave/
 
 ### What `.claude/` Actually Contains
 
-**`.claude/settings.json`**: User/project settings (marketplace config, preferences)
-```json
-{
-  "extraKnownMarketplaces": {
-    "specweave": {
-      "source": {
-        "source": "github",
-        "repo": "anton-abyzov/specweave",
-        "path": ".claude-plugin"
-      }
-    }
-  }
-}
-```
+**NOTHING!** SpecWeave does NOT create `.claude/` folder in user projects.
 
-**NOT hook files!** The `.claude/hooks/` directory (if it exists) is ignored by Claude Code.
+**Why?**
+- Marketplace registration is GLOBAL via CLI (`claude plugin marketplace add`)
+- No per-project settings.json needed
+- No hook files (hooks come from plugins, not project)
+- Cleaner project structure
+
+**If you see `.claude/settings.json`** in your project:
+- It's from an older version of SpecWeave (<v0.14.0)
+- Safe to delete - marketplace is already registered globally
+- Won't affect functionality
 
 ### What `.specweave/config.json` Contains
 
@@ -1987,10 +1960,14 @@ Hooks READ this config to know:
 | **Hook scripts** | `plugins/specweave/hooks/*.sh` | Actual executable code |
 | **Hook config** | `plugins/specweave/hooks/hooks.json` | Registers hooks with Claude |
 | **Plugin manifest** | `plugins/specweave/.claude-plugin/plugin.json` | Points to hooks.json |
-| **Settings** | `.claude/settings.json` | Marketplace config (NOT hooks!) |
+| **Marketplace** | GLOBAL (via CLI) | Plugin discovery (NOT per-project!) |
 | **Behavior config** | `.specweave/config.json` | Hook behavior settings |
 
-**Bottom line**: Hooks are a **plugin feature**, not a project feature. They work via plugin installation, not file copying!
+**Bottom line**: Hooks are a **plugin feature**, not a project feature. They work via plugin installation (GLOBAL), not file copying!
+
+**For detailed hook documentation**, see:
+- **Plugin Hook Documentation**: `plugins/specweave/hooks/README.md` - How hooks work, configuration, testing
+- **Official Claude Code Docs**: https://code.claude.com/docs/en/hooks - Native hook system reference
 
 ---
 
@@ -3120,7 +3097,7 @@ git add . && git commit -m "docs: translate living docs to English"
 
 **File Structure**:
 - Source of truth: `src/` (TypeScript) and `plugins/` (skills/agents/commands)
-- Plugin settings: `.claude/settings.json` (marketplace references)
+- Marketplace: GLOBAL (via CLI, not per-project files)
 - Increments: `.specweave/increments/`
 - Internal Docs: `.specweave/docs/internal/` (strategy, architecture, ADRs)
 - Public Docs: `.specweave/docs/public/` and `docs-site/` (user guides, API docs)

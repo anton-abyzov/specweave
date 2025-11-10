@@ -117,124 +117,153 @@ Core hooks automate SpecWeave's fundamental workflows:
 
 ---
 
-## Installation
+## How Hooks Work (Claude Code Native)
 
-### Method 1: Symlink (Recommended for Development)
+**CRITICAL**: Hooks are **NOT copied** to `.claude/hooks/`. They stay in `plugins/specweave/hooks/` and Claude Code discovers them automatically.
+
+### Hook Discovery (Automatic)
+
+1. **Plugin Installation**: When you install the `specweave` plugin via `/plugin install specweave` (or automatically during `specweave init`)
+2. **Hook Registration**: Claude Code reads `plugins/specweave/.claude-plugin/plugin.json` which points to `hooks/hooks.json`
+3. **Hook Discovery**: Claude Code loads `plugins/specweave/hooks/hooks.json` which references hook scripts:
+   ```json
+   {
+     "hooks": {
+       "PostToolUse": [{
+         "matcher": "TodoWrite",
+         "hooks": [{
+           "type": "command",
+           "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh"
+         }]
+       }]
+     }
+   }
+   ```
+4. **Execution**: When `TodoWrite` fires, Claude Code executes `plugins/specweave/hooks/post-task-completion.sh` using the `${CLAUDE_PLUGIN_ROOT}` variable
+
+**Key Insight**: `${CLAUDE_PLUGIN_ROOT}` resolves to the installed plugin directory automatically. NO copying needed!
+
+### Installation (Automatic)
+
+Hooks are installed automatically when you:
+
 ```bash
-# From SpecWeave repository root
-npx specweave install-hooks --symlink
+# Option 1: Full project initialization
+specweave init my-project
+
+# Option 2: Plugin installation (if already initialized)
+/plugin install specweave
 ```
 
-This creates symlinks:
-```
-.claude/hooks/post-task-completion.sh → src/hooks/post-task-completion.sh
-.claude/hooks/human-input-required.sh → src/hooks/human-input-required.sh
-.claude/hooks/docs-changed.sh → src/hooks/docs-changed.sh
-.claude/hooks/pre-implementation.sh → src/hooks/pre-implementation.sh
-```
-
-**Benefit**: Changes to `src/hooks/` immediately reflected in `.claude/hooks/`
-
----
-
-### Method 2: Copy (For New Projects)
-```bash
-# When creating new project
-npx specweave init my-project
-```
-
-This copies `src/hooks/` → `my-project/.claude/hooks/`
-
-**Benefit**: New project gets its own copy of hooks (can customize if needed)
-
----
-
-### Manual Installation
-```bash
-# Copy hooks to .claude/hooks/
-mkdir -p .claude/hooks
-cp src/hooks/*.sh .claude/hooks/
-chmod +x .claude/hooks/*.sh
-```
+**Result**: Claude Code automatically discovers and registers hooks. Nothing to copy or configure manually!
 
 ---
 
 ## Configuration
 
-Hooks are enabled by default. To customize behavior, hooks can check environment variables or use auto-detection.
+Hooks are configured via `.specweave/config.json` (created automatically during `specweave init`):
 
-### Default Behavior
-- Sound notifications enabled (platform-specific)
-- Auto-update docs after task completion
-- Regression checks for brownfield projects
+```json
+{
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,        // Sync specs to living docs
+      "sync_tasks_md": true,           // Update tasks.md with completion status
+      "external_tracker_sync": true    // Sync to GitHub/Jira/ADO (if configured)
+    },
+    "post_increment_planning": {
+      "auto_create_issue": true        // Auto-create GitHub issue after planning
+    }
+  },
+  "sync": {
+    "enabled": true,
+    "activeProfile": "github-default",
+    "profiles": {
+      "github-default": {
+        "provider": "github",
+        "config": {
+          "owner": "your-org",
+          "repo": "your-repo"
+        }
+      }
+    }
+  }
+}
+```
 
-### Customization
-Hooks use auto-detection for platform-specific features (macOS/Linux/Windows sound files).
+### Hook Behavior
 
----
+**post-task-completion**:
+- `sync_living_docs: true` - Automatically syncs increment specs to `.specweave/docs/internal/specs/` after task completion
+- `sync_tasks_md: true` - Updates `tasks.md` with completion status from `TodoWrite` events
+- `external_tracker_sync: true` - Syncs progress to GitHub/Jira/ADO (requires sync profile configured)
 
-## Cross-Platform Support
+**post-increment-planning**:
+- `auto_create_issue: true` - Automatically creates GitHub issue after `/specweave:increment` completes
 
-### macOS
-- Uses `afplay` for sound
-- Sounds: Glass.aiff, Ping.aiff
+### Sound Notifications
 
-### Linux
-- Uses `paplay` or `aplay`
-- Sounds: system sounds in `/usr/share/sounds/`
-
-### Windows
-- Uses PowerShell `Media.SoundPlayer`
-- Sounds: `C:\Windows\Media\chimes.wav`, `notify.wav`
+Sound notifications work automatically (platform-specific):
+- **macOS**: Uses `afplay` (Glass.aiff, Ping.aiff)
+- **Linux**: Uses `paplay` or `aplay` (system sounds)
+- **Windows**: Uses PowerShell `Media.SoundPlayer` (chimes.wav, notify.wav)
 
 ---
 
 ## Disabling Hooks
 
-### Temporarily
-```bash
-# Disable all hooks
-export SPECWEAVE_HOOKS_DISABLED=1
+### Option 1: Configuration (Recommended)
+Edit `.specweave/config.json`:
+```json
+{
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": false,        // Disable living docs sync
+      "sync_tasks_md": false,           // Disable tasks.md updates
+      "external_tracker_sync": false    // Disable external sync
+    }
+  }
+}
 ```
 
-### Permanently
-Delete or rename `.claude/hooks/` directory:
+### Option 2: Uninstall Plugin (Nuclear)
 ```bash
-mv .claude/hooks .claude/hooks.disabled
+/plugin uninstall specweave
 ```
+**Warning**: This disables ALL SpecWeave functionality, not just hooks!
 
 ---
 
 ## Customizing Hooks
 
-Hooks are bash scripts, so you can customize them:
+Hooks are bash scripts in the plugin. To customize:
 
-1. Edit `src/hooks/post-task-completion.sh` (for example)
-2. If using symlinks, changes are immediately active
-3. If using copies, run `npx specweave install-hooks` again
+1. **For development** (SpecWeave repo contributors):
+   - Edit `plugins/specweave/hooks/post-task-completion.sh`
+   - Changes take effect immediately (hooks run from plugin directory)
+
+2. **For users** (project using SpecWeave):
+   - NOT RECOMMENDED - Hooks are plugin-managed
+   - Configure behavior via `.specweave/config.json` instead
 
 ---
 
 ## Testing Hooks
 
-### Test post-task-completion
+### Validate Hook Syntax
 ```bash
-./.claude/hooks/post-task-completion.sh
+# Test core hook
+bash -n plugins/specweave/hooks/post-task-completion.sh
+
+# Test plugin hooks (if using external sync)
+bash -n plugins/specweave-github/hooks/post-task-completion.sh
 ```
 
-Expected:
-- Sound plays
-- Console output shows actions
-- Log created in `.specweave/logs/tasks.log`
-
-### Test human-input-required
-```bash
-./.claude/hooks/human-input-required.sh "Test question"
-```
-
-Expected:
-- Ping sound plays
-- Log created in `.specweave/logs/hooks.log`
+### Test Integrated Workflow
+1. Create increment: `/specweave:increment "test feature"`
+2. Complete a task (via TodoWrite)
+3. Check logs: `tail -f .specweave/logs/hooks-debug.log`
+4. Verify hook execution in logs
 
 ---
 
