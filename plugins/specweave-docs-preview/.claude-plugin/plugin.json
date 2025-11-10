@@ -1,0 +1,21 @@
+{
+  "name": "specweave-docs-preview",
+  "description": "Interactive documentation preview with Docusaurus. Launch local dev server to view living documentation in beautiful UI with hot reload, auto-generated sidebar, and Mermaid diagrams. Build static sites for deployment.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "docusaurus",
+    "documentation",
+    "preview",
+    "docs-server",
+    "hot-reload",
+    "static-site",
+    "specweave"
+  ]
+}
