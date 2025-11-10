@@ -6,9 +6,31 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [0.13.0] - 2025-11-10
 
-### 🏗️ Architecture - Hooks System Refactoring
+### 🏗️ Architecture - Hooks System Refactoring + Prompt-Based Hooks
 
-**Major architectural improvement**: External tool sync logic has been moved from the core plugin to respective plugin hooks, following Claude Code's native plugin architecture.
+**Major architectural improvements**:
+1. External tool sync logic moved from core plugin to respective plugin hooks
+2. **NEW**: Prompt-based hooks for zero-token discipline validation
+
+#### ⭐ New: Prompt-Based Hook (`UserPromptSubmit`)
+
+**Feature**: `user-prompt-submit.sh` - Fires BEFORE user's command executes
+
+**Benefits**:
+- ✅ **Zero LLM tokens** - Discipline validation in shell script (no PM agent invocation needed)
+- ✅ **Instant blocking** - User gets feedback before Claude processes anything
+- ✅ **Context injection** - Active increment status added to every prompt automatically
+- ✅ **Better UX** - Proactive command suggestions for new users
+
+**Use Cases**:
+1. **Discipline Enforcement**: Blocks `/specweave:increment` if incomplete increments exist (saves tokens!)
+2. **Context Injection**: Shows "📍 Active Increment: 0017-sync-architecture-fix (73% complete)"
+3. **Command Suggestions**: Suggests SpecWeave commands when user mentions "add/create/implement"
+
+**Files Added**:
+- `plugins/specweave/hooks/user-prompt-submit.sh` (NEW - 145 lines)
+- Updated `plugins/specweave/hooks/hooks.json` (added UserPromptSubmit registration)
+- Updated `plugins/specweave/agents/pm/AGENT.md` (removed redundant discipline check)
 
 #### Changed
 
