@@ -316,86 +316,132 @@ export class JiraResourceValidator {
     };
 
     const env = this.loadEnv();
-    const projectKey = env.JIRA_PROJECT;
-    const boardsConfig = env.JIRA_BOARDS || '';
+    const strategy = env.JIRA_STRATEGY || 'project-per-team';
 
-    // 1. Validate project
-    console.log(chalk.gray(`Checking project: ${projectKey}...`));
-    const project = await this.checkProject(projectKey);
+    // Determine project key(s) based on strategy
+    let projectKeys: string[] = [];
 
-    if (!project) {
-      console.log(chalk.yellow(`⚠️  Project "${projectKey}" not found\n`));
-
-      // Fetch existing projects
-      const existingProjects = await this.fetchProjects();
-
-      // Prompt user
-      const { action } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'action',
-          message: 'What would you like to do?',
-          choices: [
-            { name: 'Select an existing project', value: 'select' },
-            { name: 'Create a new project', value: 'create' },
-            { name: 'Cancel', value: 'cancel' },
-          ],
-        },
-      ]);
-
-      if (action === 'cancel') {
+    if (strategy === 'project-per-team') {
+      // Multiple projects (JIRA_PROJECTS is comma-separated)
+      const projectsEnv = env.JIRA_PROJECTS || '';
+      if (!projectsEnv) {
+        console.log(chalk.red('❌ JIRA_PROJECTS not found in .env'));
         result.valid = false;
         return result;
       }
-
-      if (action === 'select') {
-        const { selectedProject } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedProject',
-            message: 'Select a project:',
-            choices: existingProjects.map((p) => ({
-              name: `${p.key} - ${p.name}`,
-              value: p.key,
-            })),
-          },
-        ]);
-
-        // Update .env
-        await this.updateEnv({ JIRA_PROJECT: selectedProject });
-        result.project = { exists: true, key: selectedProject };
-        result.envUpdated = true;
-      } else if (action === 'create') {
-        const { projectName } = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'projectName',
-            message: 'Enter project name:',
-            default: projectKey,
-          },
-        ]);
-
-        const newProject = await this.createProject(projectKey, projectName);
-        result.project = {
-          exists: true,
-          key: newProject.key,
-          id: newProject.id,
-          name: newProject.name,
-        };
-      }
+      projectKeys = projectsEnv.split(',').map(p => p.trim()).filter(p => p);
     } else {
-      console.log(chalk.green(`✅ Project "${projectKey}" exists\n`));
-      result.project = {
-        exists: true,
-        key: project.key,
-        id: project.id,
-        name: project.name,
-      };
+      // Single project (component-based or board-based)
+      const projectKey = env.JIRA_PROJECT;
+      if (!projectKey) {
+        console.log(chalk.red('❌ JIRA_PROJECT not found in .env'));
+        result.valid = false;
+        return result;
+      }
+      projectKeys = [projectKey];
     }
 
+    // 1. Validate project(s)
+    console.log(chalk.gray(`Strategy: ${strategy}`));
+    console.log(chalk.gray(`Checking project(s): ${projectKeys.join(', ')}...\n`));
+
+    for (const projectKey of projectKeys) {
+      const project = await this.checkProject(projectKey);
+
+      if (!project) {
+        console.log(chalk.yellow(`⚠️  Project "${projectKey}" not found\n`));
+
+        // Fetch existing projects
+        const existingProjects = await this.fetchProjects();
+
+        // Prompt user
+        const { action } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'action',
+            message: `What would you like to do for project "${projectKey}"?`,
+            choices: [
+              { name: 'Select an existing project', value: 'select' },
+              { name: 'Create a new project', value: 'create' },
+              { name: 'Skip this project', value: 'skip' },
+              { name: 'Cancel validation', value: 'cancel' },
+            ],
+          },
+        ]);
+
+        if (action === 'cancel') {
+          result.valid = false;
+          return result;
+        }
+
+        if (action === 'skip') {
+          console.log(chalk.yellow(`⏭️  Skipped project "${projectKey}"\n`));
+          continue;
+        }
+
+        if (action === 'select') {
+          const { selectedProject } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'selectedProject',
+              message: 'Select a project:',
+              choices: existingProjects.map((p) => ({
+                name: `${p.key} - ${p.name}`,
+                value: p.key,
+              })),
+            },
+          ]);
+
+          // Update .env (handle both single and multiple projects)
+          if (strategy === 'project-per-team') {
+            // Replace this project key in JIRA_PROJECTS
+            const updatedKeys = projectKeys.map(k => k === projectKey ? selectedProject : k);
+            await this.updateEnv({ JIRA_PROJECTS: updatedKeys.join(',') });
+          } else {
+            await this.updateEnv({ JIRA_PROJECT: selectedProject });
+          }
+          result.project = { exists: true, key: selectedProject };
+          result.envUpdated = true;
+          console.log(chalk.green(`✅ Project "${selectedProject}" selected\n`));
+        } else if (action === 'create') {
+          const { projectName } = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'projectName',
+              message: 'Enter project name:',
+              default: projectKey,
+            },
+          ]);
+
+          const newProject = await this.createProject(projectKey, projectName);
+          result.project = {
+            exists: true,
+            key: newProject.key,
+            id: newProject.id,
+            name: newProject.name,
+          };
+        }
+      } else {
+        console.log(chalk.green(`✅ Project "${projectKey}" exists`));
+        result.project = {
+          exists: true,
+          key: project.key,
+          id: project.id,
+          name: project.name,
+        };
+      }
+    }
+
+    console.log(); // Empty line after project validation
+
     // 2. Validate boards (smart per-board detection)
-    if (boardsConfig) {
+    // Boards only apply to board-based strategy
+    const boardsConfig = env.JIRA_BOARDS || '';
+    if (boardsConfig && strategy === 'board-based') {
       console.log(chalk.gray(`Checking boards: ${boardsConfig}...`));
+
+      // For board-based strategy, use the single project key
+      const projectKeyForBoards = projectKeys[0];
 
       const boardEntries = boardsConfig.split(',').map((b) => b.trim());
       const finalBoardIds: number[] = [];
@@ -422,7 +468,7 @@ export class JiraResourceValidator {
           console.log(chalk.blue(`  📦 Creating board: ${entry}...`));
 
           try {
-            const board = await this.createBoard(entry, projectKey);
+            const board = await this.createBoard(entry, projectKeyForBoards);
             console.log(chalk.green(`  ✅ Created: ${entry} (ID: ${board.id})`));
             result.boards.created.push({ name: entry, id: board.id });
             finalBoardIds.push(board.id);
