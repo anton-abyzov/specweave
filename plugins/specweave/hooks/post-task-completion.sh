@@ -184,7 +184,7 @@ if command -v node &> /dev/null; then
     echo "[$(date)] 📝 Updating tasks.md for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
     # Run task updater (non-blocking, best-effort)
-    node dist/hooks/lib/update-tasks-md.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+    node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-tasks-md.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
       echo "[$(date)] ⚠️  Failed to update tasks.md (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
     }
   else
@@ -203,7 +203,7 @@ if command -v node &> /dev/null; then
     echo "[$(date)] 📚 Checking living docs sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
     # Run living docs sync (non-blocking, best-effort)
-    node dist/hooks/lib/sync-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+    node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
       echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
     }
   fi
@@ -218,152 +218,31 @@ if command -v node &> /dev/null; then
     echo "[$(date)] 🌐 Checking if living docs translation is needed for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
     # Run living docs translation (non-blocking, best-effort)
-    node dist/hooks/lib/translate-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+    node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
       echo "[$(date)] ⚠️  Failed to translate living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
     }
   fi
 fi
 
 # ============================================================================
-# SYNC TO EXTERNAL TRACKERS (NEW in v0.7.0 - GitHub/Jira/ADO)
+# EXTERNAL TRACKER SYNC (REMOVED in v0.13.0 - Moved to Plugin Hooks)
 # ============================================================================
+#
+# External tool sync logic has been moved to respective plugin hooks:
+# - GitHub sync: plugins/specweave-github/hooks/post-task-completion.sh
+# - JIRA sync: plugins/specweave-jira/hooks/post-task-completion.sh
+# - Azure DevOps sync: plugins/specweave-ado/hooks/post-task-completion.sh
+#
+# When multiple plugins are installed, Claude Code fires all hooks in parallel.
+# This architecture provides:
+# - Clean separation of concerns (core vs. external tools)
+# - Optional plugins (GitHub sync only runs if specweave-github installed)
+# - Independent testing and maintenance
+# - No external tool dependencies in core plugin
+#
+# See: .specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md
 
-if [ -n "$CURRENT_INCREMENT" ]; then
-  echo "[$(date)] 🔗 Checking external tracker sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
-
-  # Check for metadata.json with GitHub/Jira issue link
-  METADATA_FILE=".specweave/increments/$CURRENT_INCREMENT/metadata.json"
-
-  if [ -f "$METADATA_FILE" ]; then
-    # Detect tracker type from metadata
-    GITHUB_ISSUE=$(jq -r '.github.issue // empty' "$METADATA_FILE" 2>/dev/null)
-    JIRA_ISSUE=$(jq -r '.jira.issue // empty' "$METADATA_FILE" 2>/dev/null)
-    ADO_ITEM=$(jq -r '.ado.item // empty' "$METADATA_FILE" 2>/dev/null)
-
-    # GitHub sync (if issue exists and gh CLI available)
-    if [ -n "$GITHUB_ISSUE" ] && command -v gh &> /dev/null; then
-      echo "[$(date)] 🔄 Syncing to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
-
-      # Run GitHub sync - Update CHECKBOXES in issue description
-      TASKS_FILE=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
-
-      if [ -f "$TASKS_FILE" ]; then
-        echo "[$(date)] 📊 Syncing task checkboxes to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
-
-        # Get list of completed tasks from tasks.md
-        # Find all "## T-XXX:" headers where the task has "[x]" checkbox
-        COMPLETED_TASK_IDS=$(awk '
-          /^## T-[0-9]+:/ {
-            task_id = $2
-            gsub(/:/, "", task_id)
-            current_task = task_id
-            task_title = substr($0, index($0, $3))
-            next
-          }
-          /^- \[x\]/ && current_task != "" {
-            # Found a completed checkbox under a task
-            print current_task
-            current_task = ""
-          }
-        ' "$TASKS_FILE" 2>/dev/null)
-
-        echo "[$(date)] Completed tasks found: $COMPLETED_TASK_IDS" >> "$DEBUG_LOG" 2>/dev/null || true
-
-        # Read current issue body
-        ISSUE_BODY=$(gh issue view "$GITHUB_ISSUE" --json body -q .body 2>/dev/null || echo "")
-
-        if [ -n "$ISSUE_BODY" ]; then
-          # Create temporary file for updated body
-          TEMP_BODY=$(mktemp)
-          echo "$ISSUE_BODY" > "$TEMP_BODY"
-
-          # Update checkboxes for completed tasks
-          # Pattern: "- [ ] task-name" -> "- [x] task-name"
-          for task_id in $COMPLETED_TASK_IDS; do
-            # Update checkbox for this task ID
-            # Look for patterns like "[ ] T-013:" or "[ ] CLAUDE.md updates" etc.
-            sed -i.bak "s/- \[ \] \(.*${task_id}.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-            sed -i.bak "s/- \[ \] \(.*T-0*${task_id#T-}[: ].*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-
-            echo "[$(date)] Updated checkbox for task: $task_id" >> "$DEBUG_LOG" 2>/dev/null || true
-          done
-
-          # Also update based on task names (more reliable)
-          # Check for common patterns in issue body
-          if grep -q "test-aware-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-            sed -i.bak "s/- \[ \] \(.*test-aware-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-          fi
-          if grep -q "PM.*increment-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-            sed -i.bak "s/- \[ \] \(.*PM.*increment-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-            sed -i.bak "s/- \[ \] \(.*Enhanced PM.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-          fi
-          if grep -q "CLAUDE.md" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-            sed -i.bak "s/- \[ \] \(.*CLAUDE\.md.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-          fi
-
-          # Read updated body
-          UPDATED_BODY=$(cat "$TEMP_BODY")
-
-          # Update issue with new body
-          gh issue edit "$GITHUB_ISSUE" --body "$UPDATED_BODY" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-            echo "[$(date)] ⚠️  Failed to update issue description (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-          }
-
-          # Cleanup
-          rm -f "$TEMP_BODY" "$TEMP_BODY.bak"
-
-          echo "[$(date)] ✅ Issue description checkboxes updated" >> "$DEBUG_LOG" 2>/dev/null || true
-        fi
-
-        # Calculate progress for comment
-        TOTAL_TASKS=$(grep -c "^## T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
-        COMPLETED_TASKS=$(echo "$COMPLETED_TASK_IDS" | wc -w | tr -d ' ')
-
-        if [ "$TOTAL_TASKS" -gt 0 ]; then
-          PROGRESS_PCT=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
-
-          # Post progress comment
-          gh issue comment "$GITHUB_ISSUE" --body "**Progress Update**: $COMPLETED_TASKS/$TOTAL_TASKS tasks ($PROGRESS_PCT%)\n\nIncrement: \`$CURRENT_INCREMENT\`\n\n---\n🤖 Auto-updated by SpecWeave" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-            echo "[$(date)] ⚠️  Failed to comment on GitHub issue (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-          }
-        fi
-      else
-        echo "[$(date)] ℹ️  tasks.md not found, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
-      fi
-    fi
-
-    # Jira sync (if issue exists)
-    if [ -n "$JIRA_ISSUE" ]; then
-      echo "[$(date)] 🔄 Syncing to Jira issue $JIRA_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
-
-      # Run Jira sync command (non-blocking)
-      if command -v node &> /dev/null && [ -f "dist/commands/jira-sync.js" ]; then
-        node dist/commands/jira-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-          echo "[$(date)] ⚠️  Failed to sync to Jira (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        }
-      fi
-    fi
-
-    # Azure DevOps sync (if work item exists)
-    if [ -n "$ADO_ITEM" ]; then
-      echo "[$(date)] 🔄 Syncing to Azure DevOps item $ADO_ITEM" >> "$DEBUG_LOG" 2>/dev/null || true
-
-      # Run ADO sync command (non-blocking)
-      if command -v node &> /dev/null && [ -f "dist/commands/ado-sync.js" ]; then
-        node dist/commands/ado-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-          echo "[$(date)] ⚠️  Failed to sync to Azure DevOps (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        }
-      fi
-    fi
-
-    # Log if no external tracker configured
-    if [ -z "$GITHUB_ISSUE" ] && [ -z "$JIRA_ISSUE" ] && [ -z "$ADO_ITEM" ]; then
-      echo "[$(date)] ℹ️  No external tracker configured for $CURRENT_INCREMENT (skipping sync)" >> "$DEBUG_LOG" 2>/dev/null || true
-    fi
-  else
-    echo "[$(date)] ℹ️  No metadata.json found for $CURRENT_INCREMENT (skipping tracker sync)" >> "$DEBUG_LOG" 2>/dev/null || true
-  fi
-fi
+echo "[$(date)] ℹ️  External tracker sync moved to plugin hooks (GitHub/JIRA/ADO)" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
 # SELF-REFLECTION (NEW in v0.12.0-beta - AI Self-Reflection System)
@@ -378,7 +257,7 @@ if command -v node &> /dev/null; then
 
     if [ -n "$LATEST_TASK" ]; then
       # Prepare reflection context (non-blocking, best-effort)
-      node dist/hooks/lib/prepare-reflection-context.js "$CURRENT_INCREMENT" "$LATEST_TASK" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+      node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js "$CURRENT_INCREMENT" "$LATEST_TASK" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
         echo "[$(date)] ⚠️  Failed to prepare reflection context (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
       }
     else
