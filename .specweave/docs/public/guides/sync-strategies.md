@@ -6,9 +6,32 @@
 
 ---
 
+## 🎯 IMPORTANT: SpecWeave's Source of Truth
+
+**Before we dive into sync strategies, understand this key principle**:
+
+```
+✅ CORRECT Architecture:
+.specweave/  ←→  GitHub Issues       (Local ↔ External)
+.specweave/  ←→  Jira Epics          (Local ↔ External)
+.specweave/  ←→  Azure DevOps Items  (Local ↔ External)
+
+❌ WRONG:
+GitHub  ←→  Jira                     (External ↔ External - NO!)
+```
+
+**Key Points**:
+- 📁 **`.specweave/` is your source of truth** (local, permanent, version-controlled)
+- 🪞 **External tools are MIRRORS** (GitHub, Jira, ADO sync FROM `.specweave/`)
+- ⚡ **Sync direction**: Local ↔ External (NOT External ↔ External)
+
+**Why this matters**: SpecWeave keeps your specs local and version-controlled. External tools reflect this truth, but they're NOT the source. If you lose access to Jira or GitHub, you still have `.specweave/`.
+
+---
+
 ## What Are Sync Strategies?
 
-When you connect SpecWeave to external tools (Jira, GitHub, Azure DevOps), you need to choose **HOW** your work is organized. SpecWeave supports three strategies:
+When you connect SpecWeave to external tools (Jira, GitHub, Azure DevOps), you need to choose **HOW** your work is organized in those tools. SpecWeave supports three strategies:
 
 ### 🎯 The Three Strategies (Choose ONE)
 

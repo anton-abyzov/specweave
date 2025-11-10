@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.2] - 2025-11-10
+
+### Fixed
+
+- **JIRA Setup Validation**:
+  - Fixed undefined project validation bug in JIRA setup
+  - Multi-project JIRA strategy now correctly validates all projects (JIRA_PROJECTS vs JIRA_PROJECT)
+  - Proper support for project-per-team, component-based, and board-based strategies
+  - Board validation now only runs for board-based strategy
+
+- **Framework Development Mode**:
+  - Added automatic detection of SpecWeave framework repository
+  - Skip issue tracker setup when running `specweave init` in framework repo
+  - Prevents pollution of framework repo with user credentials
+  - Clear separation between framework development and user project modes
+
+- **Configuration Architecture**:
+  - Removed invalid `SPECWEAVE_MODEL` from .env.example (model is per-agent/skill)
+  - Removed `SPECWEAVE_LANGUAGE` and `SPECWEAVE_AUTO_SYNC` from .env.example (belong in config.json)
+  - Added hooks.post_task_completion defaults to DEFAULT_CONFIG
+  - Living docs auto-sync now enabled by default (sync_living_docs: true)
+
+### Changed
+
+- **.env.example**:
+  - Now contains only external service credentials (GitHub, Jira, ADO tokens)
+  - Added clear documentation about config.json for framework settings
+  - Improved comments explaining credential vs. configuration separation
+
+---
+
 ## [0.12.1] - 2025-11-10
 
 ### Added

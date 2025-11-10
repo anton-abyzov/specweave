@@ -1,6 +1,6 @@
 ---
 name: ado-sync
-description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Creates work items from increments, tracks progress via comments, updates increment status from work item state, syncs changes in both directions automatically. Activates for: Azure DevOps, ADO, work items, project management, sync to ADO, ADO integration, TFS integration, bidirectional ADO sync.
+description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Activates ONLY when user asks questions about Azure DevOps integration or needs help configuring ADO sync. Does NOT activate for slash commands. For syncing, use /specweave-ado:sync command instead.
 ---
 
 # Azure DevOps Sync Skill
@@ -8,6 +8,8 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 **Purpose**: Seamlessly sync SpecWeave increments with Azure DevOps work items for unified project tracking.
 
 **Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
+
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about Azure DevOps sync. For actual syncing, users should use the `/specweave-ado:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 **Capabilities**:
 - Bidirectional sync: SpecWeave ↔ ADO (default)
@@ -22,12 +24,16 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 
 ## When This Skill Activates
 
-**Keywords**: Azure DevOps, ADO, work items, sync to ADO, ADO integration, TFS, Visual Studio Team Services
+✅ **Do activate when**:
+- User asks: "How do I set up Azure DevOps sync?"
+- User asks: "What ADO credentials do I need?"
+- User asks: "How does ADO integration work?"
+- User needs help configuring Azure DevOps integration
 
-**Examples**:
-- "Sync this increment with Azure DevOps"
-- "Create ADO work item for this feature"
-- "Update work item #12345 with progress"
+❌ **Do NOT activate when**:
+- User invokes `/specweave-ado:sync` command (command handles it)
+- Command is already running (avoid duplicate invocation)
+- Task completion hook is syncing (automatic process)
 - "Close ADO work item when done"
 
 ---
