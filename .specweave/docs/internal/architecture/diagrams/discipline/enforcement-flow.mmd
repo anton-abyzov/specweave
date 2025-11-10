@@ -1,0 +1,59 @@
+```mermaid
+graph TB
+    Start([User: /specweave:increment]) --> PreCheck{PM Agent<br/>Step 0}
+
+    PreCheck -->|Execute| CheckCmd[npx specweave<br/>check-discipline --json]
+
+    CheckCmd --> ParseOutput{Parse Output}
+
+    ParseOutput -->|Exit 0| Compliant[✅ Compliant<br/>All rules satisfied]
+    ParseOutput -->|Exit 1| Violations[❌ Violations<br/>Rules broken]
+    ParseOutput -->|Exit 2| Error[⚠️ System Error]
+
+    Compliant --> Planning[PM Agent<br/>Plans Increment]
+    Planning --> CreateSpec[Create spec.md<br/>plan.md, tasks.md]
+    CreateSpec --> PostHook[post-increment-planning<br/>hook fires]
+    PostHook --> GitHubIssue[Create GitHub Issue<br/>if enabled]
+
+    Violations --> ShowViolations[Show Violations<br/>to User]
+    ShowViolations --> Suggestions[Suggest Fixes:<br/>- /specweave:close<br/>- /specweave:do<br/>- /specweave:status]
+    Suggestions --> Block[❌ BLOCK Planning<br/>Exit Without Creating]
+
+    Error --> ShowError[Show Error<br/>to User]
+    ShowError --> Debug[Request Debug:<br/>- Check .specweave/<br/>- Check config.json<br/>- Check metadata.json]
+    Debug --> Block
+
+    Block --> End([End])
+
+    GitHubIssue --> Implementation[Implementation Work]
+    Implementation --> TaskComplete[Task Completed]
+    TaskComplete --> TaskHook[post-task-completion<br/>hook fires]
+    TaskHook --> SyncDocs[Sync Living Docs<br/>Update tasks.md]
+    SyncDocs --> UpdateGitHub[Update GitHub Issue<br/>with Progress]
+
+    UpdateGitHub --> MoreTasks{More Tasks?}
+    MoreTasks -->|Yes| Implementation
+    MoreTasks -->|No| Complete[Increment Complete]
+
+    Complete --> CompleteHook[post-increment-completion<br/>hook fires]
+    CompleteHook --> VerifyGitHub{GitHub Issue<br/>Linked?}
+
+    VerifyGitHub -->|Yes| CheckState{Issue State?}
+    VerifyGitHub -->|No| LogSkip[Log: No GitHub Issue]
+
+    CheckState -->|OPEN| CloseIssue[Close GitHub Issue<br/>with Summary]
+    CheckState -->|CLOSED| LogVerified[Log: Already Closed]
+
+    CloseIssue --> LogSuccess[Log: Closed Successfully]
+    LogVerified --> EndComplete
+    LogSuccess --> EndComplete
+    LogSkip --> EndComplete
+
+    EndComplete([Increment Closed<br/>✅ Complete])
+
+    style PreCheck fill:#fff3cd,stroke:#856404,stroke-width:2px
+    style Violations fill:#f8d7da,stroke:#721c24,stroke-width:2px
+    style Compliant fill:#d4edda,stroke:#155724,stroke-width:2px
+    style Block fill:#f8d7da,stroke:#721c24,stroke-width:2px
+    style EndComplete fill:#d4edda,stroke:#155724,stroke-width:2px
+```

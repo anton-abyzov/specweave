@@ -1,0 +1,62 @@
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as check-discipline CLI
+    participant Config as ConfigManager
+    participant Detector as IncrementStatusDetector
+    participant FS as File System
+    participant Validator as DisciplineChecker
+
+    User->>CLI: npx specweave check-discipline --json
+
+    Note over CLI: Phase 1: Load Configuration
+    CLI->>Config: load()
+    Config->>FS: Read .specweave/config.json
+    FS-->>Config: config data
+    Config-->>CLI: limits config
+
+    Note over CLI: Phase 2: Detect All Increments
+    CLI->>Detector: getAllIncrements()
+    Detector->>FS: List .specweave/increments/*
+    FS-->>Detector: increment IDs
+    Detector-->>CLI: [0001, 0002, 0003, ...]
+
+    Note over CLI: Phase 3: Load Increment Statuses
+    loop For each increment
+        CLI->>Detector: getStatus(incrementId)
+        Detector->>FS: Read metadata.json
+        Detector->>FS: Parse tasks.md
+        FS-->>Detector: status data
+        Detector-->>CLI: IncrementStatus
+    end
+
+    Note over CLI: Phase 4: Validate Discipline
+    CLI->>Validator: validate(statuses, limits)
+
+    Validator->>Validator: Check active count
+    alt Active count > hardCap
+        Validator-->>Validator: Add violation: "Active limit exceeded"
+    end
+
+    Validator->>Validator: Check incomplete work
+    alt Incomplete increments exist
+        Validator-->>Validator: Add violation: "Incomplete work"
+    end
+
+    Validator->>Validator: Check emergency types
+    alt 2 active without emergency
+        Validator-->>Validator: Add violation: "Emergency required"
+    end
+
+    Validator-->>CLI: ValidationResult
+
+    Note over CLI: Phase 5: Output Results
+
+    alt Violations found
+        CLI->>User: Exit code 1
+        CLI->>User: JSON: { compliant: false, violations: [...] }
+    else No violations
+        CLI->>User: Exit code 0
+        CLI->>User: JSON: { compliant: true }
+    end
+```

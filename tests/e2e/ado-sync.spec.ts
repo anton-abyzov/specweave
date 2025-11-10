@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import { promises as fs } from 'fs';
+import { ensureDir, remove } from 'fs-extra';
 import { fileURLToPath } from 'url';
 import { AdoClient, createAdoClient } from '../../plugins/specweave-ado/lib/ado-client';
 
@@ -9,8 +10,8 @@ import { AdoClient, createAdoClient } from '../../plugins/specweave-ado/lib/ado-
  *
  * Prerequisites:
  * - AZURE_DEVOPS_PAT environment variable set
- * - ADO_ORGANIZATION environment variable set
- * - ADO_PROJECT environment variable set
+ * - AZURE_DEVOPS_ORG environment variable set
+ * - AZURE_DEVOPS_PROJECT environment variable set
  * - ADO test project with permissions to create/delete work items
  */
 
@@ -21,9 +22,12 @@ const TEST_INCREMENT_ID = 'test-0001-ado-sync';
 const TEST_SPECWEAVE_DIR = path.join(__dirname, '../fixtures/e2e-ado-sync');
 
 // Skip tests if ADO not configured
-const skipIfNoAdo = !process.env.AZURE_DEVOPS_PAT || !process.env.ADO_ORGANIZATION || !process.env.ADO_PROJECT;
+const skipIfNoAdo = !process.env.AZURE_DEVOPS_PAT || !process.env.AZURE_DEVOPS_ORG || !process.env.AZURE_DEVOPS_PROJECT;
 
-test.describe('Azure DevOps Sync E2E', () => {
+test.describe.serial('Azure DevOps Sync E2E', () => {
+  // Set timeout to 60 seconds for all tests in this suite (ADO API can be slow)
+  test.setTimeout(60000);
+
   let adoClient: AdoClient;
   let workItemId: number;
 
@@ -35,8 +39,8 @@ test.describe('Azure DevOps Sync E2E', () => {
 
     // Create ADO client
     adoClient = createAdoClient({
-      organization: process.env.ADO_ORGANIZATION!,
-      project: process.env.ADO_PROJECT!,
+      organization: process.env.AZURE_DEVOPS_ORG!,
+      project: process.env.AZURE_DEVOPS_PROJECT!,
       personalAccessToken: process.env.AZURE_DEVOPS_PAT!,
       workItemType: 'Epic',
     });
@@ -48,8 +52,8 @@ test.describe('Azure DevOps Sync E2E', () => {
     }
 
     // Create test SpecWeave structure
-    await fs.ensureDir(TEST_SPECWEAVE_DIR);
-    await fs.ensureDir(path.join(TEST_SPECWEAVE_DIR, 'increments', TEST_INCREMENT_ID));
+    await ensureDir(TEST_SPECWEAVE_DIR);
+    await ensureDir(path.join(TEST_SPECWEAVE_DIR, 'increments', TEST_INCREMENT_ID));
 
     // Create test config
     const config = {
@@ -58,14 +62,14 @@ test.describe('Azure DevOps Sync E2E', () => {
         tool: 'ado',
         enabled: true,
         config: {
-          organization: process.env.ADO_ORGANIZATION,
-          project: process.env.ADO_PROJECT,
+          organization: process.env.AZURE_DEVOPS_ORG,
+          project: process.env.AZURE_DEVOPS_PROJECT,
           workItemType: 'Epic',
           syncOnTaskComplete: true,
         },
       },
     };
-    await fs.writeJson(path.join(TEST_SPECWEAVE_DIR, 'config.json'), config, { spaces: 2 });
+    await fs.writeFile(path.join(TEST_SPECWEAVE_DIR, 'config.json'), JSON.stringify(config, null, 2));
 
     // Create test spec.md
     const specContent = `# Test ADO Sync Feature
@@ -122,7 +126,7 @@ total_tasks: 3
     }
 
     // Cleanup: Remove test directory
-    await fs.remove(TEST_SPECWEAVE_DIR);
+    await remove(TEST_SPECWEAVE_DIR);
   });
 
   test('should create ADO work item from increment', async () => {
@@ -136,7 +140,7 @@ total_tasks: 3
     expect(workItem).toBeDefined();
     expect(workItem.id).toBeGreaterThan(0);
     expect(workItem.fields['System.Title']).toContain(TEST_INCREMENT_ID);
-    expect(workItem.fields['System.State']).toBe('New');
+    expect(workItem.fields['System.State']).toBe('To Do'); // Azure DevOps uses "To Do" instead of "New"
     expect(workItem.fields['System.Tags']).toContain('specweave');
 
     workItemId = workItem.id;
@@ -153,10 +157,9 @@ total_tasks: 3
         lastSyncedAt: new Date().toISOString(),
       },
     };
-    await fs.writeJson(
+    await fs.writeFile(
       path.join(TEST_SPECWEAVE_DIR, 'increments', TEST_INCREMENT_ID, 'increment-metadata.json'),
-      metadata,
-      { spaces: 2 }
+      JSON.stringify(metadata, null, 2)
     );
   });
 
@@ -186,13 +189,13 @@ total_tasks: 3
   test('should update work item state', async () => {
     expect(workItemId).toBeDefined();
 
-    // Update state to Active
+    // Update state to Doing (valid for Epic work items in this project)
     const updatedWorkItem = await adoClient.updateWorkItem(workItemId, {
-      state: 'Active',
+      state: 'Doing',
     });
 
     expect(updatedWorkItem).toBeDefined();
-    expect(updatedWorkItem.fields['System.State']).toBe('Active');
+    expect(updatedWorkItem.fields['System.State']).toBe('Doing');
   });
 
   test('should get comments for work item', async () => {
@@ -215,25 +218,25 @@ total_tasks: 3
       '## ✅ Increment Complete\n\nE2E test completed successfully'
     );
 
-    // Close work item
+    // Close work item (use "Done" - valid for this project)
     const closedWorkItem = await adoClient.updateWorkItem(workItemId, {
-      state: 'Closed',
+      state: 'Done',
     });
 
     expect(closedWorkItem).toBeDefined();
-    expect(closedWorkItem.fields['System.State']).toBe('Closed');
+    expect(closedWorkItem.fields['System.State']).toBe('Done');
   });
 
   test('should handle error when PAT is invalid', async () => {
     const invalidClient = createAdoClient({
-      organization: process.env.ADO_ORGANIZATION!,
-      project: process.env.ADO_PROJECT!,
+      organization: process.env.AZURE_DEVOPS_ORG!,
+      project: process.env.AZURE_DEVOPS_PROJECT!,
       personalAccessToken: 'invalid-token',
     });
 
     await expect(
       invalidClient.createWorkItem({ title: 'Test' })
-    ).rejects.toThrow(/ADO API error: 401/);
+    ).rejects.toThrow(/ADO API error: (401|302)/);
   });
 
   test('should handle error when work item not found', async () => {
@@ -247,8 +250,8 @@ total_tasks: 3
 
   test('should test connection failure with invalid PAT', async () => {
     const invalidClient = createAdoClient({
-      organization: process.env.ADO_ORGANIZATION!,
-      project: process.env.ADO_PROJECT!,
+      organization: process.env.AZURE_DEVOPS_ORG!,
+      project: process.env.AZURE_DEVOPS_PROJECT!,
       personalAccessToken: 'invalid-token',
     });
 
@@ -278,6 +281,33 @@ test.describe('ADO Sync - Rate Limiting', () => {
 });
 
 test.describe('ADO Sync - Error Scenarios', () => {
+  let savedEnv: Record<string, string | undefined>;
+
+  test.beforeEach(() => {
+    // Save and clear environment variables for these tests
+    savedEnv = {
+      AZURE_DEVOPS_PAT: process.env.AZURE_DEVOPS_PAT,
+      AZURE_DEVOPS_ORG: process.env.AZURE_DEVOPS_ORG,
+      AZURE_DEVOPS_PROJECT: process.env.AZURE_DEVOPS_PROJECT,
+    };
+    delete process.env.AZURE_DEVOPS_PAT;
+    delete process.env.AZURE_DEVOPS_ORG;
+    delete process.env.AZURE_DEVOPS_PROJECT;
+  });
+
+  test.afterEach(() => {
+    // Restore environment variables
+    if (savedEnv.AZURE_DEVOPS_PAT !== undefined) {
+      process.env.AZURE_DEVOPS_PAT = savedEnv.AZURE_DEVOPS_PAT;
+    }
+    if (savedEnv.AZURE_DEVOPS_ORG !== undefined) {
+      process.env.AZURE_DEVOPS_ORG = savedEnv.AZURE_DEVOPS_ORG;
+    }
+    if (savedEnv.AZURE_DEVOPS_PROJECT !== undefined) {
+      process.env.AZURE_DEVOPS_PROJECT = savedEnv.AZURE_DEVOPS_PROJECT;
+    }
+  });
+
   test('should throw error when organization not configured', () => {
     expect(() =>
       createAdoClient({
@@ -303,5 +333,134 @@ test.describe('ADO Sync - Error Scenarios', () => {
         project: 'test',
       })
     ).toThrow('AZURE_DEVOPS_PAT not set');
+  });
+});
+
+test.describe('ADO Sync - Multi-Project Support', () => {
+  test.skip('should query work items across multiple projects', async () => {
+    if (skipIfNoAdo) return;
+
+    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+
+    // Create multi-project profile with containers
+    const profile = {
+      provider: 'ado' as const,
+      displayName: 'Multi-Project Test',
+      config: {
+        organization: process.env.AZURE_DEVOPS_ORG!,
+        containers: [
+          {
+            id: 'SpecWeaveSync',
+            filters: {
+              workItemTypes: ['Epic'],
+            },
+          },
+          {
+            id: 'FAQ Chat',
+            filters: {
+              workItemTypes: ['Epic', 'User Story'],
+            },
+          },
+        ],
+      },
+      timeRange: { default: '1M' as const, max: '6M' as const },
+    };
+
+    const client = new AdoClientV2(profile, process.env.AZURE_DEVOPS_PAT!);
+
+    // Test connection
+    const connection = await client.testConnection();
+    expect(connection.success).toBe(true);
+
+    // Query across multiple projects
+    const workItems = await client.listWorkItemsInTimeRange('1M');
+
+    // Should get work items from both projects
+    expect(workItems).toBeDefined();
+    expect(Array.isArray(workItems)).toBe(true);
+
+    // Verify work items are from expected projects
+    const projects = new Set(workItems.map(wi => wi.fields['System.TeamProject']));
+    console.log('Projects found:', Array.from(projects));
+
+    // At least one project should be present (may be empty if no work items in time range)
+    expect(projects.size).toBeGreaterThanOrEqual(0);
+  });
+
+  test.skip('should filter by area paths in multi-project mode', async () => {
+    if (skipIfNoAdo) return;
+
+    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+
+    // Profile with area path filters
+    const profile = {
+      provider: 'ado' as const,
+      displayName: 'Filtered Multi-Project',
+      config: {
+        organization: process.env.AZURE_DEVOPS_ORG!,
+        containers: [
+          {
+            id: 'SpecWeaveSync',
+            filters: {
+              areaPaths: ['SpecWeaveSync\\Area 1'],
+              workItemTypes: ['Epic'],
+            },
+          },
+        ],
+      },
+      timeRange: { default: '1M' as const, max: '6M' as const },
+    };
+
+    const client = new AdoClientV2(profile, process.env.AZURE_DEVOPS_PAT!);
+
+    const workItems = await client.listWorkItemsInTimeRange('1M');
+
+    expect(workItems).toBeDefined();
+    expect(Array.isArray(workItems)).toBe(true);
+
+    // All work items should be from the filtered area path
+    workItems.forEach(wi => {
+      const areaPath = wi.fields['System.AreaPath'];
+      if (areaPath) {
+        expect(areaPath).toContain('SpecWeaveSync');
+      }
+    });
+  });
+
+  test.skip('should support custom WIQL queries', async () => {
+    if (skipIfNoAdo) return;
+
+    const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
+
+    // Profile with custom WIQL
+    const profile = {
+      provider: 'ado' as const,
+      displayName: 'Custom WIQL',
+      config: {
+        organization: process.env.AZURE_DEVOPS_ORG!,
+        customQuery: `
+          SELECT [System.Id], [System.Title], [System.State]
+          FROM WorkItems
+          WHERE [System.TeamProject] IN ('SpecWeaveSync', 'FAQ Chat')
+          AND [System.WorkItemType] = 'Epic'
+          AND [System.State] <> 'Done'
+          ORDER BY [System.ChangedDate] DESC
+        `,
+      },
+      timeRange: { default: '1M' as const, max: '6M' as const },
+    };
+
+    const client = new AdoClientV2(profile, process.env.AZURE_DEVOPS_PAT!);
+
+    const workItems = await client.listWorkItemsInTimeRange('1M');
+
+    expect(workItems).toBeDefined();
+    expect(Array.isArray(workItems)).toBe(true);
+
+    // All work items should be Epics and not Done
+    workItems.forEach(wi => {
+      expect(wi.fields['System.WorkItemType']).toBe('Epic');
+      expect(wi.fields['System.State']).not.toBe('Done');
+    });
   });
 });

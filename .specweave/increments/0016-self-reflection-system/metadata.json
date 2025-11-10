@@ -1,8 +1,9 @@
 {
   "id": "0016-self-reflection-system",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-10T07:37:06Z",
+  "completed": "2025-11-10T14:00:00Z",
   "github": {
     "issue": 30,
     "url": "https://github.com/anton-abyzov/specweave/issues/30",
