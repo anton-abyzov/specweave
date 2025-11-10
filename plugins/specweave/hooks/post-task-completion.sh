@@ -366,6 +366,32 @@ if [ -n "$CURRENT_INCREMENT" ]; then
 fi
 
 # ============================================================================
+# SELF-REFLECTION (NEW in v0.12.0-beta - AI Self-Reflection System)
+# ============================================================================
+
+if command -v node &> /dev/null; then
+  if [ -n "$CURRENT_INCREMENT" ] && [ "$ALL_COMPLETED" = "true" ]; then
+    echo "[$(date)] 🤔 Preparing self-reflection context for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+
+    # Detect latest completed task
+    LATEST_TASK=$(grep "^## T-[0-9]" ".specweave/increments/$CURRENT_INCREMENT/tasks.md" 2>/dev/null | tail -1 | awk '{print $2}' | sed 's/://')
+
+    if [ -n "$LATEST_TASK" ]; then
+      # Prepare reflection context (non-blocking, best-effort)
+      node dist/hooks/lib/prepare-reflection-context.js "$CURRENT_INCREMENT" "$LATEST_TASK" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+        echo "[$(date)] ⚠️  Failed to prepare reflection context (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      }
+    else
+      echo "[$(date)] ℹ️  No tasks found in tasks.md, skipping reflection" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  else
+    echo "[$(date)] ℹ️  Skipping reflection (tasks still pending or no increment)" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
+else
+  echo "[$(date)] ⚠️  Node.js not found, skipping reflection" >> "$DEBUG_LOG" 2>/dev/null || true
+fi
+
+# ============================================================================
 # PLAY SOUND (only if session is truly ending)
 # ============================================================================
 
