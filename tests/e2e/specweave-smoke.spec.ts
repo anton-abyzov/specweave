@@ -14,8 +14,16 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { parse as parseYaml } from 'yaml';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 const execAsync = promisify(exec);
+
+// Path to local CLI (use this instead of 'npx specweave')
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+const CLI_PATH = path.join(PROJECT_ROOT, 'bin/specweave.js');
 
 test.describe('SpecWeave E2E Smoke Test', () => {
   let testDir: string;
@@ -37,8 +45,8 @@ test.describe('SpecWeave E2E Smoke Test', () => {
   });
 
   test('should install SpecWeave in clean directory', async () => {
-    // Initialize SpecWeave
-    await execAsync('npx specweave init', { cwd: testDir });
+    // Initialize SpecWeave (using local CLI)
+    await execAsync(`node "${CLI_PATH}" init`, { cwd: testDir });
 
     // Verify .specweave directory exists
     const specweaveDirExists = await fs.access(path.join(testDir, '.specweave'))

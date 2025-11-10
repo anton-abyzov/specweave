@@ -1,18 +1,23 @@
 {
   "project": {
     "name": "specweave",
-    "version": "0.7.0",
-    "description": "Spec-Driven Development Framework for Claude Code"
+    "version": "0.1.0"
   },
   "adapters": {
     "default": "claude"
   },
-  "language": "en",
-  "plugins": {
-    "enabled": [
-      "specweave-github",
-      "specweave-jira"
-    ]
+  "documentation": {
+    "preview": {
+      "enabled": false,
+      "autoInstall": false,
+      "port": 3015,
+      "openBrowser": true,
+      "theme": "default",
+      "excludeFolders": [
+        "legacy",
+        "node_modules"
+      ]
+    }
   },
   "sync": {
     "activeProfile": "specweave-dev",
@@ -20,6 +25,8 @@
       "specweave-dev": {
         "provider": "github",
         "displayName": "SpecWeave Development",
+        "description": "GitHub sync for SpecWeave framework development",
+        "strategy": "simple",
         "config": {
           "owner": "anton-abyzov",
           "repo": "specweave"
@@ -34,48 +41,22 @@
         }
       }
     },
-    "projects": {
-      "specweave-core": {
-        "id": "specweave-core",
-        "name": "SpecWeave Core Development",
-        "description": "Core framework and plugin system",
-        "keywords": ["framework", "cli", "plugin", "typescript"],
-        "team": "Core Team",
-        "defaultSyncProfile": "specweave-dev",
-        "specsFolder": ".specweave/docs/internal/projects/specweave-core"
-      }
-    },
     "settings": {
       "autoDetectProject": true,
       "autoCreateIssue": true,
+      "syncDirection": "bidirectional",
       "defaultTimeRange": "1M",
       "rateLimitProtection": true,
-      "syncDirection": "bidirectional",
       "conflictResolution": "prompt"
     }
   },
-  "limits": {
-    "maxActiveIncrements": 1,
-    "hardCap": 2,
-    "allowEmergencyInterrupt": true,
-    "typeBehaviors": {
-      "canInterrupt": [
-        "hotfix",
-        "bug"
-      ],
-      "autoAbandonDays": {
-        "experiment": 14
-      }
-    },
-    "staleness": {
-      "paused": 7,
-      "active": 30
-    }
-  },
-  "translation": {
-    "enabled": false
-  },
   "hooks": {
+    "post_spec_update": {
+      "auto_sync": true
+    },
+    "post_user_story_complete": {
+      "auto_sync": true
+    },
     "post_task_completion": {
       "sync_living_docs": true,
       "sync_tasks_md": true,

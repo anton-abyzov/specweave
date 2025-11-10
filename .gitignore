@@ -94,6 +94,9 @@ playwright-report/
 # ML Experiment Tracking (MLflow runtime data)
 mlruns/
 
+# ML Training Runs (YOLO/Ultralytics default output)
+runs/
+
 # OS
 .DS_Store
 Thumbs.db

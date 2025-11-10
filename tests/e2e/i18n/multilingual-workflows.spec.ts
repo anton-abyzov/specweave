@@ -20,7 +20,12 @@ const CLEANUP_RETRIES = 3;
 const CLEANUP_INITIAL_DELAY = 100; // ms
 
 test.describe('Multilingual Workflows E2E', () => {
-  test.beforeAll(async () => {
+  let workerTestDir: string;
+
+  test.beforeAll(async ({ }, testInfo) => {
+    // Create unique directory for this worker to avoid parallel test conflicts
+    workerTestDir = path.join(TEST_DIR, `worker-${testInfo.workerIndex}`);
+
     // Cleanup any previous test artifacts with exponential backoff
     let retries = CLEANUP_RETRIES;
     let delay = CLEANUP_INITIAL_DELAY;
@@ -28,8 +33,8 @@ test.describe('Multilingual Workflows E2E', () => {
     while (retries > 0) {
       try {
         // fs-extra's remove is safe even if path doesn't exist
-        await fs.remove(TEST_DIR);
-        await fs.ensureDir(TEST_DIR);
+        await fs.remove(workerTestDir);
+        await fs.ensureDir(workerTestDir);
         break;
       } catch (error) {
         retries--;
@@ -54,7 +59,7 @@ test.describe('Multilingual Workflows E2E', () => {
 
     while (retries > 0) {
       try {
-        await fs.remove(TEST_DIR);
+        await fs.remove(workerTestDir);
         break;
       } catch (error) {
         retries--;
@@ -74,7 +79,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should initialize project with English (default)', async () => {
-    const projectDir = path.join(TEST_DIR, 'english-project');
+    const projectDir = path.join(workerTestDir, 'english-project');
     await fs.ensureDir(projectDir);
 
     // Create minimal config for English
@@ -103,7 +108,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should initialize project with Russian', async () => {
-    const projectDir = path.join(TEST_DIR, 'russian-project');
+    const projectDir = path.join(workerTestDir, 'russian-project');
     await fs.ensureDir(projectDir);
 
     const config = {
@@ -130,7 +135,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should initialize project with Spanish', async () => {
-    const projectDir = path.join(TEST_DIR, 'spanish-project');
+    const projectDir = path.join(workerTestDir, 'spanish-project');
     await fs.ensureDir(projectDir);
 
     const config = {
@@ -156,7 +161,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should switch language in existing project', async () => {
-    const projectDir = path.join(TEST_DIR, 'language-switch-project');
+    const projectDir = path.join(workerTestDir, 'language-switch-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
 
@@ -197,7 +202,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should preserve framework terms in config', async () => {
-    const projectDir = path.join(TEST_DIR, 'framework-terms-project');
+    const projectDir = path.join(workerTestDir, 'framework-terms-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
 
@@ -224,7 +229,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should create increment folder structure regardless of language', async () => {
-    const projectDir = path.join(TEST_DIR, 'increment-structure-project');
+    const projectDir = path.join(workerTestDir, 'increment-structure-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
 
@@ -267,7 +272,7 @@ test.describe('Multilingual Workflows E2E', () => {
     const languages = ['en', 'ru', 'es', 'zh', 'de', 'fr', 'ja', 'ko', 'pt'];
 
     for (const lang of languages) {
-      const projectDir = path.join(TEST_DIR, `${lang}-project`);
+      const projectDir = path.join(workerTestDir, `${lang}-project`);
       await fs.ensureDir(projectDir);
       await fs.ensureDir(path.join(projectDir, '.specweave'));
 
@@ -401,7 +406,7 @@ test.describe('Multilingual Workflows E2E', () => {
   });
 
   test('should support translation config toggles', async () => {
-    const projectDir = path.join(TEST_DIR, 'translation-toggles-project');
+    const projectDir = path.join(workerTestDir, 'translation-toggles-project');
     await fs.ensureDir(projectDir);
     await fs.ensureDir(path.join(projectDir, '.specweave'));
 

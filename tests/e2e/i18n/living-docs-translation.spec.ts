@@ -121,15 +121,20 @@ async function createMockChineseADR(projectDir: string): Promise<string> {
 }
 
 test.describe('Living Docs Translation E2E', () => {
-  test.beforeAll(async () => {
+  let workerTestDir: string;
+
+  test.beforeAll(async ({ }, testInfo) => {
+    // Create unique directory for this worker to avoid parallel test conflicts
+    workerTestDir = path.join(TEST_DIR, `worker-${testInfo.workerIndex}`);
+
     // Cleanup any previous test artifacts with exponential backoff
     let retries = CLEANUP_RETRIES;
     let delay = CLEANUP_INITIAL_DELAY;
 
     while (retries > 0) {
       try {
-        await fs.remove(TEST_DIR);
-        await fs.ensureDir(TEST_DIR);
+        await fs.remove(workerTestDir);
+        await fs.ensureDir(workerTestDir);
         break;
       } catch (error) {
         retries--;
@@ -154,7 +159,7 @@ test.describe('Living Docs Translation E2E', () => {
 
     while (retries > 0) {
       try {
-        await fs.remove(TEST_DIR);
+        await fs.remove(workerTestDir);
         break;
       } catch (error) {
         retries--;
@@ -187,7 +192,7 @@ test.describe('Living Docs Translation E2E', () => {
   });
 
   test('should translate living docs specs created by PM agent (Russian)', async () => {
-    const projectDir = path.join(TEST_DIR, 'russian-living-docs');
+    const projectDir = path.join(workerTestDir, 'russian-living-docs');
     await fs.ensureDir(projectDir);
 
     // 1. Create SpecWeave project structure
@@ -259,7 +264,7 @@ test.describe('Living Docs Translation E2E', () => {
   });
 
   test('should translate ADRs created during implementation (Chinese)', async () => {
-    const projectDir = path.join(TEST_DIR, 'chinese-adr');
+    const projectDir = path.join(workerTestDir, 'chinese-adr');
     await fs.ensureDir(projectDir);
 
     // 1. Create SpecWeave project structure
@@ -323,7 +328,7 @@ test.describe('Living Docs Translation E2E', () => {
   });
 
   test('should handle translation errors gracefully (non-blocking)', async () => {
-    const projectDir = path.join(TEST_DIR, 'translation-error-handling');
+    const projectDir = path.join(workerTestDir, 'translation-error-handling');
     await fs.ensureDir(projectDir);
 
     // 1. Create project structure
@@ -347,6 +352,10 @@ test.describe('Living Docs Translation E2E', () => {
 
     // 2. Create mock spec
     const specPath = await createMockRussianLivingDocsSpec(projectDir);
+
+    // Verify file was created successfully
+    const fileExistsAfterCreation = await fs.pathExists(specPath);
+    expect(fileExistsAfterCreation).toBe(true);
 
     // 3. Attempt translation with invalid target language (should fail gracefully)
     const translateScriptPath = path.join(process.cwd(), 'dist/hooks/lib/translate-file.js');
@@ -376,7 +385,7 @@ test.describe('Living Docs Translation E2E', () => {
   });
 
   test('should skip translation for files already in English', async () => {
-    const projectDir = path.join(TEST_DIR, 'english-skip-translation');
+    const projectDir = path.join(workerTestDir, 'english-skip-translation');
     await fs.ensureDir(projectDir);
 
     // 1. Create project structure
@@ -446,7 +455,7 @@ As a user, I want to use the system.
   });
 
   test('should translate multiple living docs files in batch', async () => {
-    const projectDir = path.join(TEST_DIR, 'batch-translation');
+    const projectDir = path.join(workerTestDir, 'batch-translation');
     await fs.ensureDir(projectDir);
 
     // 1. Create project structure

@@ -18,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const TEST_INCREMENT_ID = 'test-0001-ado-sync';
-const TEST_SPECWEAVE_DIR = path.join(__dirname, '..', '..', '.specweave-test-ado');
+const TEST_SPECWEAVE_DIR = path.join(__dirname, '../fixtures/e2e-ado-sync');
 
 // Skip tests if ADO not configured
 const skipIfNoAdo = !process.env.AZURE_DEVOPS_PAT || !process.env.ADO_ORGANIZATION || !process.env.ADO_PROJECT;
