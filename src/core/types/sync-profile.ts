@@ -11,81 +11,240 @@
 
 export type SyncProvider = 'github' | 'jira' | 'ado';
 
-// Jira team organization strategies
+/**
+ * Sync Strategy (v0.10.0+)
+ *
+ * Determines how work is organized and synced:
+ * - simple: One container (project/repo), no filtering (default, backward compatible)
+ * - filtered: Multiple containers + sub-organizations (boards/etc) + filters (NEW)
+ * - custom: Raw query (JQL/GraphQL/WIQL) for power users (NEW)
+ */
+export type SyncStrategy = 'simple' | 'filtered' | 'custom';
+
+// Jira team organization strategies (DEPRECATED: use SyncStrategy instead)
 export type JiraStrategy = 'project-per-team' | 'shared-project-with-components';
 
-export interface GitHubConfig {
-  owner: string;
-  repo: string;
+// ============================================================================
+// Hierarchical Sync Types (v0.10.0+)
+// ============================================================================
+
+/**
+ * Container filters (provider-specific)
+ *
+ * Filters applied to a specific container (project/repo) to narrow down synced items.
+ */
+export interface SyncContainerFilters {
+  // Common filters (all providers)
+  /** Include items with these labels */
+  includeLabels?: string[];
+
+  /** Exclude items with these labels */
+  excludeLabels?: string[];
+
+  /** Filter by assignees (email or ID) */
+  assignees?: string[];
+
+  /** Filter by status categories */
+  statusCategories?: string[];
+
+  // Jira-specific
+  /** Filter by components */
+  components?: string[];
+
+  /** Filter by sprints */
+  sprints?: string[];
+
+  /** Filter by issue types (Epic, Story, Task, Bug) */
+  issueTypes?: string[];
+
+  // GitHub-specific
+  /** Filter by milestones */
+  milestones?: string[];
+
+  /** Filter by states */
+  states?: ('open' | 'closed')[];
+
+  // ADO-specific
+  /** Filter by area paths */
+  areaPaths?: string[];
+
+  /** Filter by iteration paths */
+  iterationPaths?: string[];
+
+  /** Filter by work item types (Epic, Feature, User Story, Bug) */
+  workItemTypes?: string[];
 }
 
 /**
- * Jira Configuration (Multi-Team Support)
+ * Container definition (project, repo, etc.)
  *
- * Jira has NO explicit "Team" concept like ADO.
- * Instead, teams are simulated using either:
- * 1. Multiple Projects (one per team) - simpler, more projects
- * 2. One Project with Components (team labels) - fewer projects, shared backlog
+ * Represents a single container (Jira project, GitHub repo, ADO project) with optional sub-organizations.
+ */
+export interface SyncContainer {
+  /**
+   * Container ID
+   * - Jira: Project key (e.g., "PROJECT-A")
+   * - GitHub: Repository (e.g., "owner/repo-name")
+   * - ADO: Project name (e.g., "Platform")
+   */
+  id: string;
+
+  /**
+   * Sub-organizations within the container
+   * - Jira: Board names (e.g., ["Team Alpha Board", "Team Beta Board"])
+   * - GitHub: Project board titles (e.g., ["Frontend Board", "UI Components"])
+   * - ADO: Team board names (e.g., ["API Team Board"])
+   */
+  subOrganizations?: string[];
+
+  /**
+   * Filters applied to this container
+   */
+  filters?: SyncContainerFilters;
+}
+
+// ============================================================================
+// Provider-Specific Configuration Types
+// ============================================================================
+
+/**
+ * GitHub Configuration (Extended for Hierarchical Sync)
+ *
+ * - Simple strategy: owner + repo (backward compatible)
+ * - Filtered strategy: containers array with multiple repos
+ * - Custom strategy: customQuery (GitHub search syntax)
+ */
+export interface GitHubConfig {
+  // Simple strategy (backward compatible)
+  owner?: string;
+  repo?: string;
+
+  // Filtered strategy (v0.10.0+)
+  containers?: SyncContainer[];
+
+  // Custom strategy (v0.10.0+)
+  customQuery?: string;
+}
+
+/**
+ * Jira Configuration (Extended for Hierarchical Sync)
+ *
+ * Supports:
+ * - Simple strategy: Single project (projectKey) - backward compatible
+ * - Filtered strategy: Multiple projects + boards (containers) - NEW in v0.10.0
+ * - Custom strategy: Raw JQL query (customQuery) - NEW in v0.10.0
  *
  * Backward Compatibility:
- * - Old config: { domain, projectKey } - single project mode
- * - New config: { domain, strategy, projects/components } - multi-team mode
+ * - Old config: { domain, projectKey } - still works (simple strategy)
+ * - Old config: { domain, strategy, projects/components } - still works (deprecated, use filtered)
+ * - New config: { domain, containers: [{id, subOrganizations, filters}] } - hierarchical
  */
 export interface JiraConfig {
   domain: string;
   issueType?: 'Epic' | 'Story' | 'Task';
 
+  // === Backward Compatible Fields (DEPRECATED in v0.10.0) ===
+
   /**
-   * How teams are organized in Jira (optional for backward compatibility)
-   * - 'project-per-team': Each team has separate project (FRONTEND, BACKEND, QA)
-   * - 'shared-project-with-components': One project with components per team
-   * - undefined: Single project mode (backward compatible)
+   * @deprecated Use SyncStrategy instead (simple/filtered/custom)
+   * Old field: How teams are organized in Jira
    */
   strategy?: JiraStrategy;
 
   /**
+   * @deprecated Use containers array instead
    * Strategy 1: Multiple projects (one per team)
-   * Example: ["FRONTEND", "BACKEND", "QA"]
-   * Creates folders: frontend/, backend/, qa/
    */
   projects?: string[];
 
   /**
-   * Strategy 2: Shared project with components
-   * OR Legacy: Single project key
-   * Example: projectKey="PRODUCT", components=["Frontend", "Backend", "QA"]
-   * Creates folders: frontend/, backend/, qa/
+   * @deprecated Use containers array instead
+   * Strategy 2: Single project key OR shared project
    */
   projectKey?: string;
+
+  /**
+   * @deprecated Use filters in SyncContainer instead
+   * Components for filtering
+   */
   components?: string[];
+
+  // === NEW: Hierarchical Sync (v0.10.0+) ===
+
+  /**
+   * Filtered strategy: Multiple projects + boards
+   * Example: [
+   *   {id: "PROJECT-A", subOrganizations: ["Board 1", "Board 2"], filters: {...}},
+   *   {id: "PROJECT-B", subOrganizations: ["Board 3"]}
+   * ]
+   */
+  containers?: SyncContainer[];
+
+  /**
+   * Custom strategy: Raw JQL query
+   * Example: "project IN (PROJECT-A, PROJECT-B) AND labels IN (feature)"
+   */
+  customQuery?: string;
 }
 
 /**
- * Azure DevOps Configuration (Multi-Team Support)
+ * Azure DevOps Configuration (Extended for Hierarchical Sync)
  *
- * ADO has REAL Teams as explicit entities within a project.
- * Multiple teams can exist in ONE project, each with own Area Path.
+ * Supports:
+ * - Simple strategy: Single project (project) - backward compatible
+ * - Filtered strategy: Multiple projects + area paths (containers) - NEW in v0.10.0
+ * - Custom strategy: Raw WIQL query (customQuery) - NEW in v0.10.0
+ *
+ * Backward Compatibility:
+ * - Old config: { organization, project, teams, areaPaths } - still works
+ * - New config: { organization, containers: [{id, filters: {areaPaths}}] } - hierarchical
  */
 export interface AdoConfig {
   organization: string;
-  project: string;
-  workItemType?: 'Epic' | 'Feature' | 'User Story';
+
+  // === Backward Compatible Fields (DEPRECATED in v0.10.0) ===
 
   /**
+   * @deprecated Use containers array instead
+   * Single project name
+   */
+  project?: string;
+
+  /**
+   * @deprecated Use filters in SyncContainer instead
    * Teams within the project
-   * Example: ["League Scheduler Team", "Platform Engineering Team", "QA Team"]
-   * Creates folders: league-scheduler-team/, platform-engineering-team/, qa-team/
    */
   teams?: string[];
 
   /**
-   * Explicit Area Paths per team (optional, auto-generated if not provided)
-   * Format: { "team-folder-name": "Project\\Team Name" }
-   * Example: { "platform-team": "League Scheduler\\Platform Engineering Team" }
+   * @deprecated Use filters in SyncContainer instead
+   * Area paths per team
    */
   areaPaths?: Record<string, string>;
 
+  /**
+   * @deprecated Use filters in SyncContainer instead
+   */
   iterationPath?: string;
+
+  workItemType?: 'Epic' | 'Feature' | 'User Story';
+
+  // === NEW: Hierarchical Sync (v0.10.0+) ===
+
+  /**
+   * Filtered strategy: Multiple projects + area paths
+   * Example: [
+   *   {id: "Platform", filters: {areaPaths: ["Platform\\Core"], workItemTypes: ["User Story"]}},
+   *   {id: "Services", filters: {areaPaths: ["Services\\API"]}}
+   * ]
+   */
+  containers?: SyncContainer[];
+
+  /**
+   * Custom strategy: Raw WIQL query
+   * Example: "SELECT * FROM WorkItems WHERE [System.TeamProject] = 'Platform' AND [System.AreaPath] UNDER 'Platform\\Core'"
+   */
+  customQuery?: string;
 }
 
 export type ProviderConfig = GitHubConfig | JiraConfig | AdoConfig;
@@ -190,6 +349,16 @@ export interface SyncProfile {
 
   /** Optional description */
   description?: string;
+
+  /**
+   * Sync strategy (v0.10.0+)
+   * - simple: One container (default, backward compatible)
+   * - filtered: Multiple containers + boards (NEW)
+   * - custom: Raw query (NEW)
+   *
+   * If not specified, defaults to 'simple' for backward compatibility
+   */
+  strategy?: SyncStrategy;
 
   /** Provider-specific configuration */
   config: ProviderConfig;
@@ -352,4 +521,59 @@ export interface ProjectDetectionResult {
 
   /** Suggested sync profile */
   suggestedProfile?: string;
+}
+
+// ============================================================================
+// Type Guard Functions (v0.10.0+)
+// ============================================================================
+
+/**
+ * Check if profile uses simple strategy (one container, backward compatible)
+ */
+export function isSimpleStrategy(profile: SyncProfile): boolean {
+  // If strategy not specified, default to simple (backward compatibility)
+  if (!profile.strategy) return true;
+  return profile.strategy === 'simple';
+}
+
+/**
+ * Check if profile uses filtered strategy (multiple containers + boards)
+ */
+export function isFilteredStrategy(profile: SyncProfile): boolean {
+  return profile.strategy === 'filtered';
+}
+
+/**
+ * Check if profile uses custom strategy (raw query)
+ */
+export function isCustomStrategy(profile: SyncProfile): boolean {
+  return profile.strategy === 'custom';
+}
+
+/**
+ * Check if config has hierarchical containers (Jira)
+ */
+export function hasJiraContainers(config: JiraConfig): boolean {
+  return !!(config.containers && config.containers.length > 0);
+}
+
+/**
+ * Check if config has hierarchical containers (GitHub)
+ */
+export function hasGitHubContainers(config: GitHubConfig): boolean {
+  return !!(config.containers && config.containers.length > 0);
+}
+
+/**
+ * Check if config has hierarchical containers (ADO)
+ */
+export function hasAdoContainers(config: AdoConfig): boolean {
+  return !!(config.containers && config.containers.length > 0);
+}
+
+/**
+ * Get effective strategy (defaults to 'simple' if not specified)
+ */
+export function getEffectiveStrategy(profile: SyncProfile): SyncStrategy {
+  return profile.strategy || 'simple';
 }
