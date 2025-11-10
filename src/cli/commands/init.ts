@@ -73,6 +73,7 @@ export async function initCommand(
   let targetDir: string;
   let finalProjectName: string;
   let usedDotNotation = false;
+  let continueExisting = false; // Track if user chose to continue with existing project
 
   // Handle "." for current directory initialization
   if (projectName === '.') {
@@ -123,31 +124,80 @@ export async function initCommand(
       }
     }
 
-    // Check if .specweave already exists
+    // Check if .specweave already exists - SMART RE-INITIALIZATION
     if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-      console.log(chalk.yellow('\n.specweave/ directory already exists (previously initialized).'));
+      console.log(chalk.blue('\n📦 Existing SpecWeave project detected!'));
+      console.log(chalk.gray('   Found .specweave/ folder with your increments, docs, and configuration.\n'));
 
-      const { reinitialize } = await inquirer.prompt([
+      const { action } = await inquirer.prompt([
         {
-          type: 'confirm',
-          name: 'reinitialize',
-          message: 'Re-initialize SpecWeave? (will remove .specweave/ and .claude/ only, all other files preserved)',
-          default: false,
+          type: 'list',
+          name: 'action',
+          message: 'What would you like to do?',
+          choices: [
+            {
+              name: '✨ Continue working (keep all existing increments, docs, and history)',
+              value: 'continue',
+              short: 'Continue'
+            },
+            {
+              name: '🔄 Fresh start (delete .specweave/ and start from scratch)',
+              value: 'fresh',
+              short: 'Fresh start'
+            },
+            {
+              name: '❌ Cancel (exit without changes)',
+              value: 'cancel',
+              short: 'Cancel'
+            }
+          ],
+          default: 'continue'
         },
       ]);
 
-      if (!reinitialize) {
-        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+      if (action === 'cancel') {
+        console.log(chalk.yellow('\n⏸️  Initialization cancelled. No changes made.'));
         process.exit(0);
       }
 
-      fs.removeSync(path.join(targetDir, '.specweave'));
-      console.log(chalk.blue('   ♻️  Removed existing .specweave/'));
-      if (fs.existsSync(path.join(targetDir, '.claude'))) {
-        fs.removeSync(path.join(targetDir, '.claude'));
-        console.log(chalk.blue('   ♻️  Removed existing .claude/'));
+      if (action === 'fresh') {
+        console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
+        const { confirmFresh } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmFresh',
+            message: 'Are you sure you want to start fresh? (all .specweave/ content will be lost)',
+            default: false,
+          },
+        ]);
+
+        if (!confirmFresh) {
+          console.log(chalk.yellow('\n⏸️  Fresh start cancelled. No changes made.'));
+          process.exit(0);
+        }
+
+        // Delete .specweave/ and .claude/ for fresh start
+        fs.removeSync(path.join(targetDir, '.specweave'));
+        console.log(chalk.blue('   ♻️  Removed .specweave/ (fresh start)'));
+        if (fs.existsSync(path.join(targetDir, '.claude'))) {
+          fs.removeSync(path.join(targetDir, '.claude'));
+          console.log(chalk.blue('   ♻️  Removed .claude/ (will recreate with marketplace settings)'));
+        }
+        console.log(chalk.green('   ✅ Starting fresh - will create new .specweave/ structure\n'));
+      } else {
+        // Continue working - keep everything, just refresh config if needed
+        continueExisting = true;
+        console.log(chalk.green('\n✅ Continuing with existing project'));
+        console.log(chalk.gray('   → Keeping all increments, docs, and history'));
+        console.log(chalk.gray('   → Will refresh .claude/settings.json (marketplace registration)'));
+        console.log(chalk.gray('   → Config will be updated if needed\n'));
+
+        // Refresh .claude/settings.json (marketplace registration)
+        // This ensures marketplace is always up-to-date even when continuing
+        if (!fs.existsSync(path.join(targetDir, '.claude'))) {
+          fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
+        }
       }
-      console.log(chalk.green('   ✅ All other files preserved (brownfield-safe)\n'));
     }
   } else {
     // Original behavior: create subdirectory
@@ -182,36 +232,96 @@ export async function initCommand(
         console.log(chalk.yellow(`\nDirectory ${projectName} exists with ${existingFiles.length} file(s).`));
 
         if (hasSpecweave) {
-          console.log(chalk.yellow('Detected existing .specweave/ folder (already initialized).'));
-        }
+          // SMART RE-INITIALIZATION (same as current directory case)
+          console.log(chalk.blue('\n📦 Existing SpecWeave project detected!'));
+          console.log(chalk.gray('   Found .specweave/ folder with your increments, docs, and configuration.\n'));
 
-        const { initExisting } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'initExisting',
-            message: hasSpecweave
-              ? 'Re-initialize SpecWeave (will remove .specweave/ and .claude/ only)?'
-              : 'Initialize SpecWeave in existing directory (non-destructive)?',
-            default: false,
-          },
-        ]);
+          const { action } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'action',
+              message: 'What would you like to do?',
+              choices: [
+                {
+                  name: '✨ Continue working (keep all existing increments, docs, and history)',
+                  value: 'continue',
+                  short: 'Continue'
+                },
+                {
+                  name: '🔄 Fresh start (delete .specweave/ and start from scratch)',
+                  value: 'fresh',
+                  short: 'Fresh start'
+                },
+                {
+                  name: '❌ Cancel (exit without changes)',
+                  value: 'cancel',
+                  short: 'Cancel'
+                }
+              ],
+              default: 'continue'
+            },
+          ]);
 
-        if (!initExisting) {
-          console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-          process.exit(0);
-        }
+          if (action === 'cancel') {
+            console.log(chalk.yellow('\n⏸️  Initialization cancelled. No changes made.'));
+            process.exit(0);
+          }
 
-        // SMART CLEANUP: Only remove SpecWeave-specific folders (brownfield-safe!)
-        if (hasSpecweave) {
-          fs.removeSync(path.join(targetDir, '.specweave'));
-          console.log(chalk.blue('   ♻️  Removed existing .specweave/'));
-        }
-        if (fs.existsSync(path.join(targetDir, '.claude'))) {
-          fs.removeSync(path.join(targetDir, '.claude'));
-          console.log(chalk.blue('   ♻️  Removed existing .claude/'));
-        }
+          if (action === 'fresh') {
+            console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
+            const { confirmFresh } = await inquirer.prompt([
+              {
+                type: 'confirm',
+                name: 'confirmFresh',
+                message: 'Are you sure you want to start fresh? (all .specweave/ content will be lost)',
+                default: false,
+              },
+            ]);
 
-        // ✅ ALL OTHER FILES PRESERVED! (brownfield-safe)
+            if (!confirmFresh) {
+              console.log(chalk.yellow('\n⏸️  Fresh start cancelled. No changes made.'));
+              process.exit(0);
+            }
+
+            // Delete .specweave/ and .claude/ for fresh start
+            fs.removeSync(path.join(targetDir, '.specweave'));
+            console.log(chalk.blue('   ♻️  Removed .specweave/ (fresh start)'));
+            if (fs.existsSync(path.join(targetDir, '.claude'))) {
+              fs.removeSync(path.join(targetDir, '.claude'));
+              console.log(chalk.blue('   ♻️  Removed .claude/ (will recreate with marketplace settings)'));
+            }
+            console.log(chalk.green('   ✅ Starting fresh - will create new .specweave/ structure\n'));
+          } else {
+            // Continue working - keep everything, just refresh config if needed
+            continueExisting = true;
+            console.log(chalk.green('\n✅ Continuing with existing project'));
+            console.log(chalk.gray('   → Keeping all increments, docs, and history'));
+            console.log(chalk.gray('   → Will refresh .claude/settings.json (marketplace registration)'));
+            console.log(chalk.gray('   → Config will be updated if needed\n'));
+
+            // Refresh .claude/settings.json (marketplace registration)
+            if (!fs.existsSync(path.join(targetDir, '.claude'))) {
+              fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
+            }
+          }
+        } else {
+          // No .specweave/ folder, just brownfield directory with files
+          const { initExisting } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'initExisting',
+              message: 'Initialize SpecWeave in existing directory (non-destructive)?',
+              default: false,
+            },
+          ]);
+
+          if (!initExisting) {
+            console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+            process.exit(0);
+          }
+
+          console.log(chalk.green('   ✅ Initializing in existing directory (brownfield-safe)\n'));
+        }
       }
     } else {
       fs.mkdirSync(targetDir, { recursive: true });
@@ -351,8 +461,13 @@ export async function initCommand(
     }
 
     // 4. Create directory structure (adapter-specific)
-    createDirectoryStructure(targetDir, toolName);
-    spinner.text = 'Directory structure created...';
+    // Skip if continuing with existing project (directories already exist)
+    if (!continueExisting) {
+      createDirectoryStructure(targetDir, toolName);
+      spinner.text = 'Directory structure created...';
+    } else {
+      spinner.text = 'Using existing directory structure...';
+    }
 
     // 5. Configure GitHub marketplace for Claude Code
     // ✅ NEW APPROACH: Claude Code fetches plugins from GitHub (no local copying!)
@@ -381,9 +496,14 @@ export async function initCommand(
     }
 
     // 6. Copy base templates (config, README, CLAUDE.md - same for all)
-    const templatesDir = findSourceDir('templates');
-    await copyTemplates(templatesDir, targetDir, finalProjectName, language as SupportedLanguage);
-    spinner.text = 'Base templates copied...';
+    // Skip if continuing with existing project (files already exist)
+    if (!continueExisting) {
+      const templatesDir = findSourceDir('templates');
+      await copyTemplates(templatesDir, targetDir, finalProjectName, language as SupportedLanguage);
+      spinner.text = 'Base templates copied...';
+    } else {
+      spinner.text = 'Skipping template copying (using existing files)...';
+    }
 
     // 6. Install based on tool
     if (toolName === 'claude') {
