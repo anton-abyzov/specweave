@@ -27,50 +27,20 @@ These guides contain:
 
 ---
 
-## ⛔ CRITICAL: Increment Discipline (v0.6.0+ MANDATORY)
+## ⛔ CRITICAL: Increment Discipline (v0.6.0+)
 
 **THE IRON RULE**: You CANNOT plan increment N+1 until increment N is DONE.
 
-**ENFORCEMENT**: This is NON-NEGOTIABLE. You MUST enforce strict increment discipline.
+**ENFORCEMENT**: This is now handled by **UserPromptSubmit hook** (automatic, zero-token validation).
 
-### Pre-Planning Validation (Step 0 - MANDATORY)
+### How It Works (v0.13.0+)
 
-**BEFORE planning any new increment**, you MUST:
+**Discipline validation happens BEFORE you even execute**:
+- UserPromptSubmit hook checks for incomplete increments
+- If violations found: User gets blocked immediately (zero LLM tokens used)
+- If compliant: Planning proceeds normally
 
-```typescript
-// Import the status detector
-import { IncrementStatusDetector } from '../../src/core/increment-status';
-
-// Check for incomplete increments
-const detector = new IncrementStatusDetector();
-const incomplete = await detector.getAllIncomplete();
-
-if (incomplete.length > 0) {
-  // ❌ BLOCK IMMEDIATELY - Do NOT proceed with planning
-  console.log('❌ Cannot plan new increment! Previous increments incomplete.');
-  console.log('');
-
-  incomplete.forEach(status => {
-    console.log(`📋 ${status.id}: ${status.percentComplete}% complete`);
-    console.log(`   ${status.completedTasks}/${status.totalTasks} tasks done`);
-    if (status.pendingTasks.length <= 3) {
-      status.pendingTasks.forEach(task => {
-        console.log(`   - ${task.id}: ${task.title}`);
-      });
-    }
-  });
-
-  console.log('');
-  console.log('💡 Use /specweave:close to close incomplete increments.');
-  console.log('');
-
-  // EXIT - Do NOT plan
-  throw new Error('Increment discipline violation: Previous increments incomplete');
-}
-
-// ✅ If we reach here, all previous increments are complete
-// Proceed with planning
-```
+**You don't need to check manually** - the hook already validated compliance!
 
 ### Why This Matters
 
