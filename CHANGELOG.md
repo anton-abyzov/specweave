@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.11.2] - 2025-11-10
+## [0.11.1] - 2025-11-10
 
 ### Added
 
@@ -37,30 +37,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Plugin Validation**: Enhanced plugin validator skill with improved Claude Code plugin system compliance checks
 - **Configuration Schema**: Updated specweave-config.schema.json with reflection settings
 - **Skills Documentation**: Enhanced increment-planner, project-kickstarter, and spec-generator skills
 - **Increment Metadata**: Added metadata.json for increments 0014 and 0015
+- **Documentation**: Updated CLAUDE.md with latest plugin architecture details and Claude Code native plugin documentation links
+
+### Fixed
+
+- **Post-First-Increment Hook**: Minor improvements to hook execution logic
+- **Skills Index**: Updated SKILLS-INDEX.md with current plugin capabilities
 
 ### Documentation
 
 - Added duplicate skill loading analysis in public docs
 - Updated increment 0016 (self-reflection-system) with complete spec, plan, and tasks
 - GitHub auto-create implementation report
-
----
-
-## [0.11.1] - 2025-11-10
-
-### Changed
-
-- **Plugin Validation**: Enhanced plugin validator skill with improved Claude Code plugin system compliance checks
-- **Documentation**: Updated CLAUDE.md with latest plugin architecture details and Claude Code native plugin documentation links
-- **Schema**: Refined specweave-config.schema.json for better configuration validation
-
-### Fixed
-
-- **Post-First-Increment Hook**: Minor improvements to hook execution logic
-- **Skills Index**: Updated SKILLS-INDEX.md with current plugin capabilities
 
 ### Removed
 
