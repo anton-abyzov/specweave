@@ -269,17 +269,10 @@ export async function promptJiraCredentials(
       {
         type: 'input',
         name: 'boards',
-        message: 'Board IDs (comma-separated, e.g., 123,456,789):',
+        message: 'Board IDs or Names (comma-separated, e.g., "123,456" or "Frontend,Backend,Mobile"):',
         validate: (input: string) => {
           if (!input || input.trim() === '') {
-            return 'At least one board ID is required';
-          }
-          // Validate board IDs are numbers
-          const boards = input.split(',').map(b => b.trim());
-          for (const board of boards) {
-            if (!/^\d+$/.test(board)) {
-              return `Invalid board ID "${board}". Must be a number.`;
-            }
+            return 'At least one board is required';
           }
           return true;
         }

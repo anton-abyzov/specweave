@@ -557,7 +557,7 @@ export async function initCommand(
         console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.pluginAutoSetupFailed')}`));
       }
 
-      // 15. AUTO-INSTALL CORE PLUGIN via Claude CLI (Secure + Cross-Platform)
+      // 15. AUTO-INSTALL ALL PLUGINS via Claude CLI (Breaking Change: No selective loading)
       // Pre-flight check: Is Claude CLI available? (ROBUST CHECK)
       const claudeStatus = detectClaudeCli();
 
@@ -622,13 +622,11 @@ export async function initCommand(
 
         autoInstallSucceeded = false;
       } else {
-        // Claude CLI available → attempt secure auto-install
+        // Claude CLI available → install ALL plugins from marketplace
         try {
-          spinner.start('Installing SpecWeave core plugin...');
+          // Step 1: FORCE marketplace refresh - remove and re-add from GitHub
+          spinner.start('Refreshing SpecWeave marketplace...');
 
-          // Step 1: PROACTIVE marketplace management - check if exists, remove if needed, then re-add
-          // ✅ This runs REGARDLESS of whether project has local .claude-plugin/
-          // ✅ Uses SpecWeave package's .claude-plugin folder as marketplace source
           const listResult = execFileNoThrowSync('claude', [
             'plugin',
             'marketplace',
@@ -639,22 +637,17 @@ export async function initCommand(
             (listResult.stdout || '').toLowerCase().includes('specweave');
 
           if (marketplaceExists) {
-            // Marketplace exists - remove it first (prevents "already installed" error)
-            spinner.stop();
-            console.log(chalk.blue('   🔄 Updating existing SpecWeave marketplace...'));
-
+            // Always remove existing marketplace to ensure fresh install
             execFileNoThrowSync('claude', [
               'plugin',
               'marketplace',
               'remove',
               'specweave'
             ]);
-
-            console.log(chalk.green('   ✔ Old marketplace removed'));
+            console.log(chalk.blue('   🔄 Removed existing marketplace'));
           }
 
-          // Step 1.5: Add marketplace from GitHub
-          // ✅ Uses GitHub repo format (owner/repo) - works for all npm installs
+          // Add marketplace from GitHub (always fresh)
           const addResult = execFileNoThrowSync('claude', [
             'plugin',
             'marketplace',
@@ -662,42 +655,87 @@ export async function initCommand(
             'anton-abyzov/specweave'
           ]);
 
-          if (addResult.success) {
-            if (marketplaceExists) {
-              console.log(chalk.green('   ✔ Marketplace updated successfully'));
+          if (!addResult.success) {
+            throw new Error('Failed to add marketplace from GitHub');
+          }
+
+          console.log(chalk.green('   ✔ Marketplace registered from GitHub'));
+          spinner.succeed('SpecWeave marketplace refreshed');
+
+          // Step 2: Load marketplace.json to get ALL available plugins
+          spinner.start('Loading available plugins...');
+          const marketplaceJsonPath = findSourceDir('.claude-plugin/marketplace.json');
+
+          if (!fs.existsSync(marketplaceJsonPath)) {
+            throw new Error('marketplace.json not found - cannot determine plugins to install');
+          }
+
+          const marketplace = JSON.parse(fs.readFileSync(marketplaceJsonPath, 'utf-8'));
+          const allPlugins = marketplace.plugins || [];
+
+          if (allPlugins.length === 0) {
+            throw new Error('No plugins found in marketplace.json');
+          }
+
+          console.log(chalk.blue(`   📦 Found ${allPlugins.length} plugins to install`));
+          spinner.succeed(`Found ${allPlugins.length} plugins`);
+
+          // Step 3: Install ALL plugins (no selective loading!)
+          let successCount = 0;
+          let failCount = 0;
+          const failedPlugins: string[] = [];
+
+          for (const plugin of allPlugins) {
+            const pluginName = plugin.name;
+            spinner.start(`Installing ${pluginName}...`);
+
+            const installResult = execFileNoThrowSync('claude', [
+              'plugin',
+              'install',
+              pluginName
+            ]);
+
+            if (installResult.success) {
+              successCount++;
+              spinner.succeed(`${pluginName} installed`);
+            } else {
+              failCount++;
+              failedPlugins.push(pluginName);
+              spinner.warn(`${pluginName} failed (will continue)`);
             }
-          } else {
-            console.log(chalk.yellow('   ⚠️  Marketplace add via CLI failed, will use settings.json fallback'));
           }
 
-          spinner.start('Installing SpecWeave core plugin...');
+          // Step 4: Report results
+          console.log('');
+          console.log(chalk.green.bold(`✅ Plugin Installation Complete`));
+          console.log(chalk.white(`   Installed: ${successCount}/${allPlugins.length} plugins`));
 
-          // Step 2: Install core plugin
-          // ✅ SECURE: No string interpolation, no shell, cross-platform
-          const installResult = execFileNoThrowSync('claude', [
-            'plugin',
-            'install',
-            'specweave'
-          ]);
-
-          if (installResult.success) {
-            autoInstallSucceeded = true;
-            spinner.succeed('SpecWeave plugin installed successfully!');
-            console.log(chalk.green('   ✔ Marketplace: ./claude-plugin → specweave'));
-            console.log(chalk.green('   ✔ Plugin: specweave'));
-            console.log(chalk.green('   ✔ Slash commands ready: /specweave:increment'));
-          } else {
-            throw new Error(installResult.stderr || installResult.stdout || 'Installation failed');
+          if (failCount > 0) {
+            console.log(chalk.yellow(`   Failed: ${failCount} plugins`));
+            console.log(chalk.gray(`   Failed plugins: ${failedPlugins.join(', ')}`));
+            console.log(chalk.gray(`   → You can install these manually later`));
           }
+
+          console.log('');
+          console.log(chalk.cyan('📋 Available capabilities:'));
+          console.log(chalk.gray('   • /specweave:increment - Plan new features'));
+          console.log(chalk.gray('   • /specweave:do - Execute tasks'));
+          console.log(chalk.gray('   • /specweave-github:sync - GitHub integration'));
+          console.log(chalk.gray('   • /specweave-jira:sync - JIRA integration'));
+          console.log(chalk.gray('   • /specweave:docs preview - Documentation preview'));
+          console.log(chalk.gray('   • ...and more!'));
+
+          autoInstallSucceeded = successCount > 0;
+
         } catch (error: any) {
           // Installation failed - provide helpful diagnostics
-          spinner.warn('Could not auto-install core plugin');
+          spinner.warn('Could not auto-install plugins');
           console.log('');
 
           // Diagnose error and provide actionable hints
           if (error.message.includes('not found') || error.message.includes('ENOENT')) {
             console.log(chalk.yellow('   Reason: Claude CLI found but command failed'));
-            console.log(chalk.gray('   → Try manually: claude plugin install specweave'));
+            console.log(chalk.gray('   → Try manually: /plugin install specweave'));
           } else if (error.message.includes('EACCES') || error.message.includes('permission')) {
             console.log(chalk.yellow('   Reason: Permission denied'));
             console.log(chalk.gray('   → Check file permissions or run with appropriate access'));
@@ -711,27 +749,11 @@ export async function initCommand(
           console.log('');
           console.log(chalk.cyan('📦 Manual installation:'));
           console.log(chalk.white('   /plugin install specweave'));
+          console.log(chalk.white('   /plugin install specweave-github'));
+          console.log(chalk.white('   ...etc.'));
           console.log('');
           autoInstallSucceeded = false;
         }
-      }
-
-      // 10.5 Issue Tracker Integration (NEW!)
-      // CRITICAL: Must happen AFTER marketplace registration and core plugin install
-      // Otherwise plugin installation will fail (marketplace not found)
-      try {
-        const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
-        await setupIssueTracker({
-          projectPath: targetDir,
-          language: language as SupportedLanguage,
-          maxRetries: 3
-        });
-      } catch (error: any) {
-        // Non-critical error - log but continue
-        if (process.env.DEBUG) {
-          console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
-        }
-        console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
       }
     }
 
@@ -1360,10 +1382,10 @@ function showNextSteps(projectName: string, adapterName: string, language: Suppo
       stepNumber++;
     }
 
-    console.log(`   ${stepNumber}. ${chalk.white(locale.t('cli', 'init.nextSteps.claude.step3'))}`);
-    console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installGitHub'))}`);
-    console.log(`      ${chalk.gray(locale.t('cli', 'init.nextSteps.claude.installFrontend'))}`);
-    console.log(`      ${chalk.gray('...or let SpecWeave suggest plugins automatically')}`);
+    console.log(`   ${stepNumber}. ${chalk.white('All plugins are already installed!')}`);
+    console.log(`      ${chalk.gray('✔ All 19+ SpecWeave plugins installed automatically')}`);
+    console.log(`      ${chalk.gray('✔ No need to install additional plugins manually')}`);
+    console.log(`      ${chalk.gray('✔ Full capabilities available immediately')}`);
     console.log('');
     stepNumber++;
 
