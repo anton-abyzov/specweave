@@ -266,7 +266,8 @@ except Exception as e:
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
         stdio: 'inherit',  // Show download progress
-        timeout: 180000  // 3 minute timeout
+        timeout: 180000,  // 3 minute timeout
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Find downloaded video
@@ -358,7 +359,8 @@ print(f"✅ Extracted {frame_count} frames")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'inherit'
+        stdio: 'inherit',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       const extractedFrames = fs.readdirSync(this.framesDir).filter(f => f.endsWith('.jpg'));
@@ -476,7 +478,8 @@ print(f"   - Detections saved to: {detections_file}")
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
         stdio: 'inherit',
-        timeout: 60000
+        timeout: 60000,
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Read detections data
@@ -577,7 +580,8 @@ print(f"   Saved to: {output_dir}")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'inherit'
+        stdio: 'inherit',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       const visualizedFrames = fs.readdirSync(this.detectionsDir).filter(f => f.endsWith('.jpg'));
@@ -651,7 +655,8 @@ print(f"✅ Video created: {output_video}")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'inherit'
+        stdio: 'inherit',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       const videoPath = path.join(this.testRunDir, 'detections_output.mp4');
@@ -745,7 +750,8 @@ else:
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'inherit'
+        stdio: 'inherit',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       console.log(`   ℹ️  Pass detection is experimental and may need refinement`);

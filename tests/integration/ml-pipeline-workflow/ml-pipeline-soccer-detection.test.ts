@@ -281,7 +281,8 @@ print(f"Generated {frame_count} frames with annotations")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'pipe'
+        stdio: 'pipe',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Verify dataset
@@ -467,10 +468,12 @@ print(f"Model saved to: {results.save_dir}")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
 
       // Execute training (with timeout)
+      // Change to test run directory to prevent runs/ folder in project root
       execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
         stdio: 'pipe',
-        timeout: 60000  // 60 second timeout
+        timeout: 60000,  // 60 second timeout
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Verify model was saved
@@ -544,7 +547,8 @@ print(json.dumps(metrics, indent=2))
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       const output = execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'pipe'
+        stdio: 'pipe',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Extract JSON from output (filter out YOLO's additional output)
@@ -609,7 +613,8 @@ print(f"ONNX model exported to: {onnx_path}")
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       const output = execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'pipe'
+        stdio: 'pipe',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       console.log(`   ✅ Model exported to ONNX format`);
@@ -681,7 +686,8 @@ print(json.dumps(results_data, indent=2))
       const pythonCmd = this.pythonCheck.version?.includes('Python 3') ? 'python3' : 'python';
       const output = execSync(`${pythonCmd} "${scriptPath}"`, {
         encoding: 'utf-8',
-        stdio: 'pipe'
+        stdio: 'pipe',
+        cwd: this.testRunDir  // Run in test directory to contain runs/ folder
       });
 
       // Extract JSON from output (filter out YOLO's additional output)
