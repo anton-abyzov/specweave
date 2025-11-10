@@ -115,7 +115,7 @@ Let's start: [Ask 1 clarifying question if needed, otherwise proceed]"
 
 Once I have these details, I'll guide you through SpecWeave's increment planning process."
 
-[Wait for response, then route to increment-planner or spec-driven-brainstorming]
+[Wait for response, then route to the planning workflow]
 ```
 
 **Low Confidence:**
@@ -331,8 +331,8 @@ User message → specweave-detector (checks .specweave/ exists)
 **Calls:**
 - `specweave-detector` - Checks if .specweave/ directory exists (SpecWeave context)
 - `/specweave:inc` - For clear requirements (high confidence)
-- `spec-driven-brainstorming` - For unclear requirements (medium confidence)
-- `increment-planner` - Directly if enough detail provided
+- Spec-driven brainstorming - For unclear requirements (medium confidence)
+- Planning workflow - Directly if enough detail provided
 
 **Called By:**
 - Automatically when pattern detected in SpecWeave folder

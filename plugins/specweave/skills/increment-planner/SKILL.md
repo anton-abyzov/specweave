@@ -72,6 +72,14 @@ Use this skill when:
 - **Experiments**: Structuring POCs and technical spikes
 - **Brownfield**: Structuring modifications to existing codebases
 
+## When NOT to Use This Skill
+
+Do NOT activate if:
+- ❌ User is asking general questions about SpecWeave (use documentation instead)
+- ❌ Another skill (e.g., `project-kickstarter`) is already handling the request
+- ❌ User is already in an active increment planning workflow
+- ❌ Increment files (spec.md, plan.md, tasks.md) are currently being created
+
 ## Activation Triggers
 
 This skill activates automatically when users say:

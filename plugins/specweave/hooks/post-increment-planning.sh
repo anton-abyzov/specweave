@@ -269,6 +269,224 @@ translate_living_docs_specs() {
 }
 
 # ============================================================================
+# GITHUB ISSUE CREATION
+# ============================================================================
+
+create_github_issue() {
+  local increment_id="$1"
+  local increment_dir="$2"
+
+  local spec_file="$increment_dir/spec.md"
+  local tasks_file="$increment_dir/tasks.md"
+  local metadata_file="$increment_dir/metadata.json"
+
+  # Validate files exist
+  if [ ! -f "$spec_file" ]; then
+    log_error "spec.md not found in $increment_dir"
+    return 1
+  fi
+
+  if [ ! -f "$tasks_file" ]; then
+    log_error "tasks.md not found in $increment_dir"
+    return 1
+  fi
+
+  # Extract title from spec.md frontmatter
+  local title=$(awk '/^---$/,/^---$/ {if (/^title:/) {sub(/^title:[[:space:]]*"?/, ""); sub(/"?[[:space:]]*$/, ""); print; exit}}' "$spec_file")
+
+  if [ -z "$title" ]; then
+    # Fallback: extract from first heading
+    title=$(grep -m 1 '^# ' "$spec_file" | sed 's/^# //' | sed 's/Increment [0-9]*: //')
+  fi
+
+  if [ -z "$title" ]; then
+    title="$increment_id"
+  fi
+
+  # Extract quick overview from spec.md (try multiple sections)
+  local overview=$(awk '/## Quick Overview/,/^---$|^##/ {if (/## Quick Overview/) next; if (/^---$/ || /^##/) exit; print}' "$spec_file" | grep -v '^$' | head -5)
+
+  # Fallback: try Summary section
+  if [ -z "$overview" ]; then
+    overview=$(awk '/## Summary/,/^---$|^##/ {if (/## Summary/) next; if (/^---$/ || /^##/) exit; print}' "$spec_file" | grep -v '^$' | head -5)
+  fi
+
+  # Fallback: extract first paragraph after frontmatter
+  if [ -z "$overview" ]; then
+    overview=$(awk '/^---$/{count++; if(count==2){flag=1; next}} flag && /^[^#]/ && NF>0 {print; count2++; if(count2>=5) exit}' "$spec_file")
+  fi
+
+  # Final fallback: use a default message
+  if [ -z "$overview" ]; then
+    overview="See spec.md for details."
+  fi
+
+  # Extract total tasks count
+  local total_tasks=$(awk '/^total_tasks:/ {print $2; exit}' "$tasks_file")
+
+  # Fallback: count tasks if total_tasks not in frontmatter
+  if [ -z "$total_tasks" ] || [ "$total_tasks" = "0" ]; then
+    total_tasks=$(grep -c '^### T-[0-9]*:' "$tasks_file" 2>/dev/null || echo "0")
+  fi
+
+  # Generate task checklist from tasks.md
+  local task_list=$(awk '
+    /^### T-[0-9]+:/ {
+      task_id = $2
+      task_title = substr($0, index($0, $3))
+      in_task = 1
+      next
+    }
+    in_task && /^\*\*Status\*\*:/ {
+      if (/\[x\]/) {
+        print "- [x] " task_id " " task_title
+      } else {
+        print "- [ ] " task_id " " task_title
+      }
+      in_task = 0
+    }
+  ' "$tasks_file")
+
+  # Detect repository from git remote
+  local repo=$(git remote get-url origin 2>/dev/null | sed 's/.*github\.com[:/]\(.*\)\.git/\1/' | sed 's/.*github\.com[:/]\(.*\)/\1/')
+
+  if [ -z "$repo" ]; then
+    # Fallback to config
+    repo=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -o '"repo"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+  fi
+
+  if [ -z "$repo" ]; then
+    log_error "Could not detect GitHub repository"
+    return 1
+  fi
+
+  # Extract increment number from ID (e.g., "0016-self-reflection-system" -> "0016")
+  local inc_number=$(echo "$increment_id" | grep -o '^[0-9]*')
+
+  log_debug "Creating issue for repo: $repo"
+  log_debug "Title: [INC-$inc_number] $title"
+
+  # Generate issue body
+  local issue_body=$(cat <<EOF
+# [INC-$inc_number] $title
+
+**Status**: Planning → Implementation
+**Priority**: P1
+**Increment**: $increment_id
+
+## Summary
+
+$overview
+
+## Tasks
+
+Progress: 0/$total_tasks tasks (0%)
+
+$task_list
+
+## Links
+
+- **Spec**: [\`spec.md\`](../../tree/develop/.specweave/increments/$increment_id/spec.md)
+- **Plan**: [\`plan.md\`](../../tree/develop/.specweave/increments/$increment_id/plan.md)
+- **Tasks**: [\`tasks.md\`](../../tree/develop/.specweave/increments/$increment_id/tasks.md)
+
+---
+
+🤖 Auto-created by SpecWeave | Updates automatically on task completion
+EOF
+)
+
+  # Create temporary file for issue body
+  local temp_body=$(mktemp)
+  echo "$issue_body" > "$temp_body"
+
+  # Create GitHub issue
+  log_debug "Calling gh issue create..."
+
+  local gh_output=$(gh issue create \
+    --repo "$repo" \
+    --title "[INC-$inc_number] $title" \
+    --body-file "$temp_body" \
+    --label "specweave,increment" \
+    2>&1)
+
+  local gh_status=$?
+
+  # Clean up temp file
+  rm -f "$temp_body"
+
+  if [ $gh_status -ne 0 ]; then
+    log_error "gh issue create failed: $gh_output"
+    return 1
+  fi
+
+  # Extract issue number from output (format: "https://github.com/owner/repo/issues/123")
+  local issue_number=$(echo "$gh_output" | grep -o '/issues/[0-9]*' | grep -o '[0-9]*')
+  local issue_url=$(echo "$gh_output" | grep 'https://github.com')
+
+  if [ -z "$issue_number" ]; then
+    log_error "Could not extract issue number from gh output: $gh_output"
+    return 1
+  fi
+
+  if [ -z "$issue_url" ]; then
+    # Construct URL manually if extraction failed
+    issue_url="https://github.com/$repo/issues/$issue_number"
+  fi
+
+  log_info "  📝 Issue #$issue_number created"
+  log_info "  🔗 $issue_url"
+
+  # Create or update metadata.json
+  local current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  if [ -f "$metadata_file" ]; then
+    # Update existing metadata.json with github section
+    if command -v jq >/dev/null 2>&1; then
+      local temp_metadata=$(mktemp)
+      jq ". + {\"github\": {\"issue\": $issue_number, \"url\": \"$issue_url\", \"synced\": \"$current_timestamp\"}}" "$metadata_file" > "$temp_metadata"
+      mv "$temp_metadata" "$metadata_file"
+    else
+      # Fallback: manual JSON construction (less reliable)
+      log_debug "jq not found, using manual metadata update"
+      cat >> "$metadata_file" <<EOF_META
+{
+  "id": "$increment_id",
+  "status": "active",
+  "type": "feature",
+  "created": "$current_timestamp",
+  "github": {
+    "issue": $issue_number,
+    "url": "$issue_url",
+    "synced": "$current_timestamp"
+  }
+}
+EOF_META
+    fi
+  else
+    # Create new metadata.json
+    cat > "$metadata_file" <<EOF_META
+{
+  "id": "$increment_id",
+  "status": "active",
+  "type": "feature",
+  "created": "$current_timestamp",
+  "github": {
+    "issue": $issue_number,
+    "url": "$issue_url",
+    "synced": "$current_timestamp"
+  }
+}
+EOF_META
+  fi
+
+  log_info "  ✅ metadata.json updated"
+  log_debug "Metadata saved to $metadata_file"
+
+  return 0
+}
+
+# ============================================================================
 # MAIN LOGIC
 # ============================================================================
 
@@ -383,7 +601,49 @@ EOF
 
   translate_living_docs_specs "$increment_id"
 
-  # 7. Final summary
+  # 7. Auto-create GitHub issue (if configured)
+  log_info ""
+  log_info "🔗 Checking GitHub issue auto-creation..."
+
+  # Check if auto-create is enabled in config
+  local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+
+  if [ "$auto_create" = "true" ]; then
+    log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
+
+    # Check if gh CLI is available
+    if command -v gh &> /dev/null; then
+      log_info "  ✓ GitHub CLI found"
+
+      # Check if metadata.json already has GitHub issue
+      local metadata_file="$increment_dir/metadata.json"
+      local existing_issue=""
+
+      if [ -f "$metadata_file" ]; then
+        existing_issue=$(cat "$metadata_file" 2>/dev/null | grep -o '"issue"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' || echo "")
+      fi
+
+      if [ -n "$existing_issue" ]; then
+        log_info "  ℹ️  GitHub issue already exists: #$existing_issue"
+      else
+        log_info "  🚀 Creating GitHub issue for $increment_id..."
+
+        # Call the create_github_issue function (defined below)
+        if create_github_issue "$increment_id" "$increment_dir"; then
+          log_info "  ✅ GitHub issue created successfully!"
+        else
+          log_info "  ⚠️  Failed to create GitHub issue (non-blocking)"
+          log_debug "Issue creation failed, continuing..."
+        fi
+      fi
+    else
+      log_debug "GitHub CLI not found, skipping issue creation"
+    fi
+  else
+    log_debug "GitHub issue auto-create disabled in config"
+  fi
+
+  # 8. Final summary
   log_info ""
   local total_translated=$((increment_success_count))
 

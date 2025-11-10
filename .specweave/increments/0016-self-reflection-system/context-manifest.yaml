@@ -1,0 +1,78 @@
+---
+# Context Manifest for Increment 0016: AI Self-Reflection System
+# This manifest declares exactly what specifications and docs are needed
+# Enables 70%+ token reduction via selective loading
+
+# Specification sections to load
+spec_sections:
+  - .specweave/docs/internal/projects/default/specs/spec-016-self-reflection-system.md
+  - .specweave/docs/internal/delivery/guides/increment-lifecycle.md#hooks
+
+# Architecture documents to load
+architecture:
+  - .specweave/docs/internal/architecture/hooks-system.md
+  - .specweave/docs/internal/architecture/agent-system.md
+  - .specweave/docs/internal/architecture/configuration.md
+
+# Architecture Decision Records to reference
+adrs:
+  - .specweave/docs/internal/architecture/adr/0017-self-reflection-architecture.md
+  - .specweave/docs/internal/architecture/adr/0018-reflection-model-selection.md
+  - .specweave/docs/internal/architecture/adr/0019-reflection-storage-format.md
+
+# Context budget (max tokens to load)
+max_context_tokens: 15000
+
+# Priority level (affects load order)
+priority: high
+
+# Auto-refresh context on spec changes
+auto_refresh: true
+
+# Related features
+related_features:
+  - 0002-core-enhancements  # Hook system enhancements
+  - 0003-intelligent-model-selection  # Model selection logic
+  - 0014-proactive-plugin-validation  # Plugin system integration
+
+# Tags for search and categorization
+tags:
+  - reflection
+  - quality
+  - security
+  - testing
+  - ai-analysis
+  - hooks
+  - agents
+
+# Tech stack context
+tech_stack:
+  language: typescript
+  runtime: nodejs
+  framework: specweave-cli
+  ai_provider: anthropic
+  models:
+    - haiku  # Default ($0.008/task)
+    - sonnet  # Security-critical ($0.03/task)
+    - opus  # Deep analysis ($0.15/task)
+
+# External dependencies context
+external_dependencies:
+  - anthropic_api
+  - git
+  - nodejs_18_plus
+
+# Testing context
+testing:
+  unit_coverage_target: 85%
+  integration_coverage_target: 80%
+  e2e_critical_paths: true
+  test_mode: TDD
+
+# Implementation phases
+phases:
+  - phase_1_core_engine  # Weeks 1-2
+  - phase_2_analysis  # Weeks 3-4
+  - phase_3_ux  # Week 5
+  - phase_4_advanced  # Week 6
+---

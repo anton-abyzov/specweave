@@ -47,6 +47,7 @@
     },
     "settings": {
       "autoDetectProject": true,
+      "autoCreateIssue": true,
       "defaultTimeRange": "1M",
       "rateLimitProtection": true,
       "syncDirection": "bidirectional",
