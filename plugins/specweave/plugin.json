@@ -1,0 +1,22 @@
+{
+  "name": "specweave",
+  "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
+  "version": "0.8.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "specweave",
+    "core",
+    "increment-planning",
+    "specifications",
+    "tdd",
+    "pm",
+    "architect",
+    "living-docs"
+  ]
+}
