@@ -176,27 +176,18 @@ export async function initCommand(
           process.exit(0);
         }
 
-        // Delete .specweave/ and .claude/ for fresh start
+        // Delete .specweave/ for fresh start
         fs.removeSync(path.join(targetDir, '.specweave'));
         console.log(chalk.blue('   ♻️  Removed .specweave/ (fresh start)'));
-        if (fs.existsSync(path.join(targetDir, '.claude'))) {
-          fs.removeSync(path.join(targetDir, '.claude'));
-          console.log(chalk.blue('   ♻️  Removed .claude/ (will recreate with marketplace settings)'));
-        }
+        // NOTE: No need to delete .claude/ - marketplace is GLOBAL, not per-project
         console.log(chalk.green('   ✅ Starting fresh - will create new .specweave/ structure\n'));
       } else {
-        // Continue working - keep everything, just refresh config if needed
+        // Continue working - keep everything
         continueExisting = true;
         console.log(chalk.green('\n✅ Continuing with existing project'));
         console.log(chalk.gray('   → Keeping all increments, docs, and history'));
-        console.log(chalk.gray('   → Will refresh .claude/settings.json (marketplace registration)'));
         console.log(chalk.gray('   → Config will be updated if needed\n'));
-
-        // Refresh .claude/settings.json (marketplace registration)
-        // This ensures marketplace is always up-to-date even when continuing
-        if (!fs.existsSync(path.join(targetDir, '.claude'))) {
-          fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
-        }
+        // NOTE: No need to refresh .claude/settings.json - marketplace is GLOBAL via CLI
       }
     }
   } else {
@@ -283,26 +274,18 @@ export async function initCommand(
               process.exit(0);
             }
 
-            // Delete .specweave/ and .claude/ for fresh start
+            // Delete .specweave/ for fresh start
             fs.removeSync(path.join(targetDir, '.specweave'));
             console.log(chalk.blue('   ♻️  Removed .specweave/ (fresh start)'));
-            if (fs.existsSync(path.join(targetDir, '.claude'))) {
-              fs.removeSync(path.join(targetDir, '.claude'));
-              console.log(chalk.blue('   ♻️  Removed .claude/ (will recreate with marketplace settings)'));
-            }
+            // NOTE: No need to delete .claude/ - marketplace is GLOBAL, not per-project
             console.log(chalk.green('   ✅ Starting fresh - will create new .specweave/ structure\n'));
           } else {
-            // Continue working - keep everything, just refresh config if needed
+            // Continue working - keep everything
             continueExisting = true;
             console.log(chalk.green('\n✅ Continuing with existing project'));
             console.log(chalk.gray('   → Keeping all increments, docs, and history'));
-            console.log(chalk.gray('   → Will refresh .claude/settings.json (marketplace registration)'));
             console.log(chalk.gray('   → Config will be updated if needed\n'));
-
-            // Refresh .claude/settings.json (marketplace registration)
-            if (!fs.existsSync(path.join(targetDir, '.claude'))) {
-              fs.mkdirSync(path.join(targetDir, '.claude'), { recursive: true });
-            }
+            // NOTE: No need to refresh .claude/settings.json - marketplace is GLOBAL via CLI
           }
         } else {
           // No .specweave/ folder, just brownfield directory with files
@@ -674,17 +657,11 @@ export async function initCommand(
     // 13. Create config.json with language setting
     createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, false);
 
-    // 14. Setup Claude Code plugin auto-registration (if Claude detected)
+    // 14. AUTO-INSTALL ALL PLUGINS via Claude CLI (Breaking Change: No selective loading)
+    // NOTE: We do NOT create .claude/settings.json - marketplace registration via CLI is GLOBAL
+    // and persists across all projects. settings.json would be redundant.
     let autoInstallSucceeded = false;
     if (toolName === 'claude') {
-      try {
-        setupClaudePluginAutoRegistration(targetDir, language as SupportedLanguage);
-      } catch (error) {
-        // Non-critical - show manual instructions in next steps
-        console.warn(chalk.yellow(`\n${locale.t('cli', 'init.warnings.pluginAutoSetupFailed')}`));
-      }
-
-      // 15. AUTO-INSTALL ALL PLUGINS via Claude CLI (Breaking Change: No selective loading)
       // Pre-flight check: Is Claude CLI available? (ROBUST CHECK)
       const claudeStatus = detectClaudeCli();
 
@@ -982,11 +959,9 @@ function createDirectoryStructure(targetDir: string, adapterName: string): void 
     '.specweave/docs/public',                 // Published documentation
   ];
 
-  // For Claude Code ONLY: Create .claude/ folder (for settings.json)
-  // Non-Claude adapters: NO .claude/ folder (they use plugins/ folder directly)
-  if (adapterName === 'claude') {
-    directories.push('.claude');
-  }
+  // NOTE: We do NOT create .claude/ folder anymore!
+  // Marketplace registration is GLOBAL via CLI, not per-project.
+  // Non-Claude adapters still use plugins/ folder (copied separately)
 
   directories.forEach((dir) => {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
@@ -1239,37 +1214,17 @@ function createConfigFile(
 }
 
 /**
- * Setup Claude Code automatic plugin registration
- * Creates .claude/settings.json with extraKnownMarketplaces
- * This triggers Claude's native auto-install when users trust the folder
+ * REMOVED: setupClaudePluginAutoRegistration()
+ *
+ * Previously created .claude/settings.json with extraKnownMarketplaces,
+ * but this is redundant because:
+ *
+ * 1. CLI marketplace registration is GLOBAL (persists across all projects)
+ * 2. settings.json is per-project and unnecessary for our use case
+ * 3. We use `claude plugin marketplace add` which registers globally
+ *
+ * Removed in favor of pure CLI approach (lines 687-883)
  */
-function setupClaudePluginAutoRegistration(targetDir: string, language: SupportedLanguage): void {
-  const locale = getLocaleManager(language);
-  const settingsPath = path.join(targetDir, '.claude', 'settings.json');
-
-  // Create settings.json with GitHub marketplace registration
-  // ✅ Claude Code fetches plugins from GitHub (no local marketplace files needed!)
-  const settings = {
-    extraKnownMarketplaces: {
-      specweave: {
-        source: {
-          source: 'github',
-          repo: 'anton-abyzov/specweave',
-          path: '.claude-plugin'
-        }
-      }
-    }
-  };
-
-  try {
-    fs.writeJsonSync(settingsPath, settings, { spaces: 2 });
-    console.log(chalk.green(`\n✅ ${locale.t('cli', 'init.success.pluginAutoSetup')}`));
-    console.log(chalk.gray(`   Marketplace: github.com/anton-abyzov/specweave/.claude-plugin`));
-    console.log(chalk.gray(`   Plugins will be fetched from GitHub (always up-to-date)`));
-  } catch (error: any) {
-    throw new Error(`Failed to create .claude/settings.json: ${error.message}`);
-  }
-}
 
 function showNextSteps(projectName: string, adapterName: string, language: SupportedLanguage, usedDotNotation: boolean = false, pluginAutoInstalled: boolean = false): void {
   const locale = getLocaleManager(language);

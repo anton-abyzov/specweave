@@ -1,0 +1,65 @@
+{
+  "language": "en",
+  "translation": {
+    "languages": [
+      "en"
+    ],
+    "primary": "en",
+    "method": "auto",
+    "preserveFrameworkTerms": true
+  },
+  "adapters": {
+    "default": "claude"
+  },
+  "limits": {
+    "maxActiveIncrements": 1,
+    "hardCap": 2,
+    "allowEmergencyInterrupt": true,
+    "typeBehaviors": {
+      "canInterrupt": [
+        "hotfix",
+        "bug"
+      ],
+      "autoAbandonDays": {
+        "experiment": 14
+      }
+    },
+    "staleness": {
+      "paused": 7,
+      "active": 30
+    }
+  },
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,
+      "sync_tasks_md": true,
+      "external_tracker_sync": true
+    }
+  },
+  "multiProject": {
+    "enabled": false,
+    "activeProject": "default",
+    "projects": [
+      {
+        "id": "default",
+        "name": "Default Project",
+        "description": "Default project for testing",
+        "techStack": [],
+        "team": "Test Team"
+      }
+    ]
+  },
+  "brownfieldImports": [],
+  "brownfield": {
+    "importHistory": [
+      {
+        "source": "notion",
+        "workspace": "source-docs",
+        "importedAt": "2025-11-10T21:43:25.906Z",
+        "project": "default",
+        "filesImported": 7,
+        "destination": "/Users/antonabyzov/Projects/github/specweave/tests/fixtures/e2e-brownfield-import/test-3-1762811005805/.specweave/docs/internal/projects/default/legacy/notion"
+      }
+    ]
+  }
+}
