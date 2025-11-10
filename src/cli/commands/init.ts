@@ -396,68 +396,100 @@ export async function initCommand(
       toolName = options.adapter;
       spinner.text = `Using ${toolName}...`;
     } else {
-      // Auto-detect tool, then ASK USER to confirm or choose different
-      spinner.stop();
+      // SMART CHECK: If continuing existing project, read existing adapter from config
+      let existingAdapter: string | null = null;
+      if (continueExisting) {
+        const existingConfigPath = path.join(targetDir, '.specweave', 'config.json');
+        if (fs.existsSync(existingConfigPath)) {
+          try {
+            const existingConfig = fs.readJsonSync(existingConfigPath);
+            existingAdapter = existingConfig?.adapters?.default || null;
+          } catch (error) {
+            // Invalid config, will proceed with detection
+          }
+        }
+      }
+
+      // If existing adapter found and matches detected tool, skip prompt
       const detectedTool = await adapterLoader.detectTool();
 
-      console.log('');
-      console.log(chalk.cyan(`🔍 ${locale.t('cli', 'init.toolDetection.header')}`));
-
-      // Show different message for Claude (recommended default) vs actually detected tools
-      if (detectedTool === 'claude') {
-        console.log(chalk.gray(`   Recommended: ${detectedTool} (no other tool detected)`));
+      if (existingAdapter && existingAdapter === detectedTool) {
+        // Smart skip - existing config matches detected tool
+        spinner.stop();
+        console.log('');
+        console.log(chalk.green(`✅ Using existing adapter: ${existingAdapter}`));
+        console.log(chalk.gray(`   → Detected tool matches config, no changes needed\n`));
+        toolName = existingAdapter;
+        spinner.start(`Using ${toolName}...`);
       } else {
-        console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
+        // Show detection and prompt (either new project or adapter mismatch)
+        spinner.stop();
+        console.log('');
+        console.log(chalk.cyan(`🔍 ${locale.t('cli', 'init.toolDetection.header')}`));
+
+        // If existing adapter differs from detected tool, warn user
+        if (existingAdapter && existingAdapter !== detectedTool) {
+          console.log(chalk.yellow(`   ⚠️  Existing adapter: ${existingAdapter}`));
+          console.log(chalk.yellow(`   ⚠️  Detected tool: ${detectedTool}`));
+          console.log('');
+        }
+
+        // Show different message for Claude (recommended default) vs actually detected tools
+        if (detectedTool === 'claude') {
+          console.log(chalk.gray(`   Recommended: ${detectedTool} (no other tool detected)`));
+        } else {
+          console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.detected', { tool: detectedTool })}`));
+        }
+        console.log('');
+
+        // Check if running in CI/non-interactive environment
+        const isCI = process.env.CI === 'true' ||
+                     process.env.GITHUB_ACTIONS === 'true' ||
+                     process.env.GITLAB_CI === 'true' ||
+                     process.env.CIRCLECI === 'true' ||
+                     !process.stdin.isTTY;
+
+        let confirmTool = true; // Default to yes
+
+        if (isCI) {
+          // In CI, automatically use detected tool without prompting
+          console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })}`));
+          toolName = detectedTool;
+        } else {
+          // Interactive mode - ask for confirmation
+          const response = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirmTool',
+              message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
+              default: true
+            }
+          ]);
+          confirmTool = response.confirmTool;
+        }
+
+        if (!confirmTool) {
+          // Let user choose from available tools
+          const { selectedTool } = await inquirer.prompt([
+            {
+              type: 'list',
+              name: 'selectedTool',
+              message: locale.t('cli', 'init.toolDetection.selectPrompt'),
+              choices: [
+                { name: `Claude Code (Recommended - Full automation)`, value: 'claude' },
+                { name: 'Cursor (Partial - AGENTS.md compilation, team commands, less reliable)', value: 'cursor' },
+                { name: 'Other (Copilot, ChatGPT, Gemini - Limited: no hooks, manual workflow, high context usage)', value: 'generic' }
+              ]
+            }
+          ]);
+          toolName = selectedTool;
+        } else {
+          // User confirmed detected tool
+          toolName = detectedTool;
+        }
+
+        spinner.start(`Using ${toolName}...`);
       }
-      console.log('');
-
-      // Check if running in CI/non-interactive environment
-      const isCI = process.env.CI === 'true' ||
-                   process.env.GITHUB_ACTIONS === 'true' ||
-                   process.env.GITLAB_CI === 'true' ||
-                   process.env.CIRCLECI === 'true' ||
-                   !process.stdin.isTTY;
-
-      let confirmTool = true; // Default to yes
-
-      if (isCI) {
-        // In CI, automatically use detected tool without prompting
-        console.log(chalk.gray(`   ${locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })}`));
-        toolName = detectedTool;
-      } else {
-        // Interactive mode - ask for confirmation
-        const response = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirmTool',
-            message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
-            default: true
-          }
-        ]);
-        confirmTool = response.confirmTool;
-      }
-
-      if (!confirmTool) {
-        // Let user choose from available tools
-        const { selectedTool } = await inquirer.prompt([
-          {
-            type: 'list',
-            name: 'selectedTool',
-            message: locale.t('cli', 'init.toolDetection.selectPrompt'),
-            choices: [
-              { name: `Claude Code (Recommended - Full automation)`, value: 'claude' },
-              { name: 'Cursor (Partial - AGENTS.md compilation, team commands, less reliable)', value: 'cursor' },
-              { name: 'Other (Copilot, ChatGPT, Gemini - Limited: no hooks, manual workflow, high context usage)', value: 'generic' }
-            ]
-          }
-        ]);
-        toolName = selectedTool;
-      } else {
-        // User confirmed detected tool
-        toolName = detectedTool;
-      }
-
-      spinner.start(`Using ${toolName}...`);
     }
 
     // 4. Create directory structure (adapter-specific)
