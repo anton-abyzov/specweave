@@ -1,8 +1,9 @@
 {
   "id": "0015-hierarchical-external-sync",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-10T00:00:00Z",
+  "completed": "2025-11-10T12:40:00Z",
   "github": {
     "issue": 29,
     "url": "https://github.com/anton-abyzov/specweave/issues/29",

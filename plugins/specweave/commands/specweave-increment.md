@@ -99,54 +99,34 @@ EOF
 
 **THIS IS NOT NEGOTIABLE** - Enforce strict increment discipline!
 
-```typescript
-// Import increment status detector
-import { IncrementStatusDetector } from '../core/increment-status';
+```bash
+# Run discipline check (exit codes: 0=pass, 1=violations, 2=error)
+if ! specweave check-discipline; then
+  echo ""
+  echo "❌ Cannot create new increment! Discipline violations found."
+  echo ""
+  echo "💡 What would you like to do?"
+  echo ""
+  echo "1️⃣  Close incomplete increments:"
+  echo "   /specweave:done <id>"
+  echo ""
+  echo "2️⃣  Check status:"
+  echo "   specweave check-discipline --verbose"
+  echo ""
+  echo "3️⃣  Force create (DANGEROUS - violates discipline!):"
+  echo "   Add --force flag to bypass this check"
+  echo ""
+  echo "⚠️  The discipline exists for a reason:"
+  echo "   - Prevents scope creep"
+  echo "   - Ensures completions are tracked"
+  echo "   - Maintains living docs accuracy"
+  echo "   - Keeps work focused"
+  echo ""
+  exit 1
+fi
 
-// Check for incomplete increments
-const detector = new IncrementStatusDetector();
-const incomplete = await detector.getAllIncomplete();
-
-if (incomplete.length > 0) {
-  // ❌ BLOCK IMMEDIATELY - Show error and exit
-  console.log(chalk.red.bold('\n❌ Cannot create new increment!\n'));
-
-  console.log(chalk.yellow('Previous increments are incomplete:\n'));
-
-  incomplete.forEach(status => {
-    console.log(chalk.yellow(`📋 Increment ${status.id}`));
-    console.log(`   Status: ${status.percentComplete}% complete (${status.completedTasks}/${status.totalTasks} tasks)`);
-
-    if (status.pendingTasks.length <= 5) {
-      console.log('   Pending:');
-      status.pendingTasks.forEach(task => {
-        console.log(`     - ${task.id}: ${task.title}`);
-      });
-    } else {
-      console.log(`   Pending: ${status.pendingTasks.length} tasks`);
-    }
-    console.log('');
-  });
-
-  console.log(chalk.blue('💡 What would you like to do?\n'));
-  console.log(chalk.white('1️⃣  Close incomplete increments:'));
-  console.log(chalk.dim('   /specweave:close\n'));
-
-  console.log(chalk.white('2️⃣  Check status:'));
-  console.log(chalk.dim('   /specweave:status\n'));
-
-  console.log(chalk.white('3️⃣  Force create (DANGEROUS - violates discipline!):'));
-  console.log(chalk.dim('   Add --force flag to bypass this check\n'));
-
-  console.log(chalk.yellow.bold('⚠️  The discipline exists for a reason:'));
-  console.log(chalk.yellow('   - Prevents scope creep'));
-  console.log(chalk.yellow('   - Ensures completions are tracked'));
-  console.log(chalk.yellow('   - Maintains living docs accuracy'));
-  console.log(chalk.yellow('   - Keeps work focused\n'));
-
-  // Exit - do NOT proceed
-  process.exit(1);
-}
+# ✅ Discipline check passed - proceed with planning
+echo "✅ Discipline check passed"
 ```
 
 **Why This is Strict** (changed from v0.5.0):

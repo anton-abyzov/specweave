@@ -112,6 +112,18 @@ program
     await statusCommand(options);
   });
 
+// Check discipline command - Validate increment discipline
+program
+  .command('check-discipline')
+  .description('Validate increment discipline compliance (WIP limits, hard cap)')
+  .option('-v, --verbose', 'Show detailed increment information')
+  .option('--json', 'Output results as JSON')
+  .option('--project-root <path>', 'Project root directory', process.cwd())
+  .action(async (options) => {
+    const { checkDisciplineCommand } = await import('../dist/cli/commands/check-discipline.js');
+    await checkDisciplineCommand(options);
+  });
+
 // QA command - Quality assessment
 program
   .command('qa <increment-id>')

@@ -43,10 +43,12 @@ export async function runQA(
   console.log(chalk.gray(`Mode: ${mode.toUpperCase()}`));
   console.log(chalk.gray(`Timestamp: ${new Date().toISOString()}\n`));
 
-  // Validate increment exists
-  const incrementPath = path.join(process.cwd(), '.specweave', 'increments', incrementId);
-  if (!fs.existsSync(incrementPath)) {
-    throw new Error(`Increment ${incrementId} not found at ${incrementPath}`);
+  // Resolve increment path (find directory starting with 4-digit ID)
+  const incrementsDir = path.join(process.cwd(), '.specweave', 'increments');
+  const incrementPath = resolveIncrementPath(incrementsDir, incrementId);
+
+  if (!incrementPath) {
+    throw new Error(`Increment ${incrementId} not found in ${incrementsDir}`);
   }
 
   // Step 1: Rule-based validation (always first, always free)
@@ -286,6 +288,26 @@ async function runAIQualityAssessment(
     confidence: 0.8,
     risk_assessment: mockRisks,
   };
+}
+
+/**
+ * Resolve increment path from 4-digit ID
+ * Finds the full directory name (e.g., "0018-strict-increment-discipline-enforcement")
+ * given just the 4-digit prefix (e.g., "0018")
+ */
+function resolveIncrementPath(incrementsDir: string, incrementId: string): string | null {
+  if (!fs.existsSync(incrementsDir)) {
+    return null;
+  }
+
+  const entries = fs.readdirSync(incrementsDir);
+  const matchingDir = entries.find((entry: string) => {
+    const fullPath = path.join(incrementsDir, entry);
+    // Match directories starting with the 4-digit ID
+    return fs.statSync(fullPath).isDirectory() && entry.startsWith(incrementId);
+  });
+
+  return matchingDir ? path.join(incrementsDir, matchingDir) : null;
 }
 
 /**

@@ -1,0 +1,16 @@
+{
+  "multiProject": {
+    "enabled": false,
+    "activeProject": "default",
+    "projects": [
+      {
+        "id": "default",
+        "name": "Default Project",
+        "description": "Default project for testing",
+        "techStack": [],
+        "team": "Test Team"
+      }
+    ]
+  },
+  "brownfieldImports": []
+}

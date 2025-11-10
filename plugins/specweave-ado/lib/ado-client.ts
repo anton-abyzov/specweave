@@ -217,7 +217,7 @@ export class AdoClient {
    * @see https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/comments/add
    */
   async addComment(workItemId: number, text: string): Promise<WorkItemComment> {
-    const url = `${this.baseUrl}/_apis/wit/workitems/${workItemId}/comments?api-version=7.1`;
+    const url = `${this.baseUrl}/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`;
 
     const response = await this.request<WorkItemComment>('POST', url, { text });
 
@@ -226,11 +226,11 @@ export class AdoClient {
 
   /**
    * Get comments for work item
-   * 
+   *
    * @see https://learn.microsoft.com/en-us/rest/api/azure/devops/wit/comments/list
    */
   async getComments(workItemId: number): Promise<WorkItemComment[]> {
-    const url = `${this.baseUrl}/_apis/wit/workitems/${workItemId}/comments?api-version=7.1`;
+    const url = `${this.baseUrl}/_apis/wit/workitems/${workItemId}/comments?api-version=7.1-preview.3`;
 
     const response = await this.request<{ comments: WorkItemComment[] }>('GET', url);
 
@@ -261,8 +261,10 @@ export class AdoClient {
         headers: {
           'Authorization': this.authHeader,
           'Accept': 'application/json',
+          ...(body ? { 'Content-Type': 'application/json' } : {}),
           ...additionalHeaders,
         },
+        timeout: 30000, // 30 second timeout
       };
 
       const req = https.request(options, (res) => {
@@ -299,6 +301,11 @@ export class AdoClient {
         reject(new Error(`HTTP request failed: ${error.message}`));
       });
 
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error(`HTTP request timeout after 30 seconds`));
+      });
+
       if (body) {
         req.write(JSON.stringify(body));
       }
@@ -317,6 +324,15 @@ export class AdoClient {
       await this.request('GET', url);
       return true;
     } catch (error) {
+      // Enhanced error logging for debugging
+      if (error instanceof Error) {
+        console.error(`[ADO Client] Connection test failed:`, {
+          message: error.message,
+          organization: this.config.organization,
+          project: this.config.project,
+          baseUrl: this.baseUrl,
+        });
+      }
       return false;
     }
   }

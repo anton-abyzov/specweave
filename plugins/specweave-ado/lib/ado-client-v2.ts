@@ -13,6 +13,7 @@ import {
   SyncProfile,
   AdoConfig,
   TimeRangePreset,
+  SyncContainer,
 } from '../../../src/core/types/sync-profile';
 
 // ============================================================================
@@ -69,12 +70,17 @@ export interface UpdateWorkItemRequest {
 
 export class AdoClientV2 {
   private organization: string;
-  private project: string;
+  private project?: string; // Optional for multi-project mode
   private workItemType: string;
   private areaPath?: string;
   private iterationPath?: string;
   private baseUrl: string;
   private authHeader: string;
+
+  // Multi-project support
+  private containers?: SyncContainer[];
+  private customQuery?: string;
+  private isMultiProject: boolean;
 
   /**
    * Create ADO client from sync profile
@@ -86,12 +92,27 @@ export class AdoClientV2 {
 
     const config = profile.config as AdoConfig;
     this.organization = config.organization;
-    this.project = config.project;
     this.workItemType = config.workItemType || 'Epic';
-    this.areaPath = config.areaPath;
-    this.iterationPath = config.iterationPath;
 
-    this.baseUrl = `https://dev.azure.com/${this.organization}/${this.project}`;
+    // Detect mode: single-project vs multi-project
+    if (config.containers && config.containers.length > 0) {
+      // Multi-project mode
+      this.isMultiProject = true;
+      this.containers = config.containers;
+      this.baseUrl = `https://dev.azure.com/${this.organization}`;
+    } else if (config.customQuery) {
+      // Custom WIQL query mode
+      this.isMultiProject = true;
+      this.customQuery = config.customQuery;
+      this.baseUrl = `https://dev.azure.com/${this.organization}`;
+    } else {
+      // Single-project mode (backward compatible)
+      this.isMultiProject = false;
+      this.project = config.project;
+      this.areaPath = config.areaPath;
+      this.iterationPath = config.iterationPath;
+      this.baseUrl = `https://dev.azure.com/${this.organization}/${this.project}`;
+    }
 
     // Basic Auth: base64(":PAT")
     this.authHeader =
@@ -125,7 +146,13 @@ export class AdoClientV2 {
    */
   async testConnection(): Promise<{ success: boolean; error?: string }> {
     try {
-      await this.request('GET', `/_apis/projects/${this.project}?api-version=7.1`);
+      if (this.isMultiProject) {
+        // Test org-level access
+        await this.request('GET', `https://dev.azure.com/${this.organization}/_apis/projects?api-version=7.1`);
+      } else {
+        // Test project-level access
+        await this.request('GET', `/_apis/projects/${this.project}?api-version=7.1`);
+      }
       return { success: true };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -307,9 +334,12 @@ export class AdoClientV2 {
    * Execute WIQL query
    */
   async queryWorkItems(wiql: string): Promise<WorkItem[]> {
-    const url = `/_apis/wit/wiql?api-version=7.1`;
+    // For multi-project, use org-level API
+    const queryUrl = this.isMultiProject
+      ? `https://dev.azure.com/${this.organization}/_apis/wit/wiql?api-version=7.1`
+      : `/_apis/wit/wiql?api-version=7.1`;
 
-    const queryResult: WorkItemQueryResult = await this.request('POST', url, {
+    const queryResult: WorkItemQueryResult = await this.request('POST', queryUrl, {
       query: wiql,
     });
 
@@ -319,7 +349,11 @@ export class AdoClientV2 {
 
     // Get full work item details (batch request)
     const ids = queryResult.workItems.map((wi) => wi.id);
-    const batchUrl = `/_apis/wit/workitemsbatch?api-version=7.1`;
+
+    // For multi-project, use org-level batch API
+    const batchUrl = this.isMultiProject
+      ? `https://dev.azure.com/${this.organization}/_apis/wit/workitemsbatch?api-version=7.1`
+      : `/_apis/wit/workitemsbatch?api-version=7.1`;
 
     const workItems = await this.request('POST', batchUrl, {
       ids,
@@ -332,6 +366,9 @@ export class AdoClientV2 {
         'System.ChangedDate',
         'System.WorkItemType',
         'System.Tags',
+        'System.AreaPath',
+        'System.IterationPath',
+        'System.TeamProject',
       ],
     });
 
@@ -352,7 +389,17 @@ export class AdoClientV2 {
       customEnd
     );
 
-    // WIQL query for time range
+    // Use custom query if provided
+    if (this.customQuery) {
+      return this.queryWorkItems(this.customQuery);
+    }
+
+    // Multi-project mode with containers
+    if (this.isMultiProject && this.containers) {
+      return this.queryWorkItemsAcrossContainers(since, until);
+    }
+
+    // Single-project mode (backward compatible)
     const wiql = `
       SELECT [System.Id], [System.Title], [System.State], [System.CreatedDate]
       FROM WorkItems
@@ -363,6 +410,83 @@ export class AdoClientV2 {
     `;
 
     return this.queryWorkItems(wiql);
+  }
+
+  /**
+   * Query work items across multiple containers (multi-project)
+   */
+  private async queryWorkItemsAcrossContainers(
+    since: string,
+    until: string
+  ): Promise<WorkItem[]> {
+    if (!this.containers || this.containers.length === 0) {
+      return [];
+    }
+
+    const allWorkItems: WorkItem[] = [];
+
+    for (const container of this.containers) {
+      const wiql = this.buildContainerWIQL(container, since, until);
+
+      try {
+        const workItems = await this.queryWorkItems(wiql);
+        allWorkItems.push(...workItems);
+      } catch (error: any) {
+        console.error(`Failed to query container ${container.id}:`, error.message);
+        // Continue with other containers
+      }
+    }
+
+    return allWorkItems;
+  }
+
+  /**
+   * Build WIQL query for a specific container with filters
+   */
+  private buildContainerWIQL(
+    container: SyncContainer,
+    since: string,
+    until: string
+  ): string {
+    const conditions: string[] = [];
+
+    // Project filter
+    conditions.push(`[System.TeamProject] = '${container.id}'`);
+
+    // Time range
+    conditions.push(`[System.CreatedDate] >= '${since}'`);
+    conditions.push(`[System.CreatedDate] <= '${until}'`);
+
+    // Area paths filter
+    if (container.filters?.areaPaths && container.filters.areaPaths.length > 0) {
+      const areaPathConditions = container.filters.areaPaths
+        .map(ap => `[System.AreaPath] UNDER '${container.id}\\${ap}'`)
+        .join(' OR ');
+      conditions.push(`(${areaPathConditions})`);
+    }
+
+    // Work item types filter
+    if (container.filters?.workItemTypes && container.filters.workItemTypes.length > 0) {
+      const typeConditions = container.filters.workItemTypes
+        .map(type => `[System.WorkItemType] = '${type}'`)
+        .join(' OR ');
+      conditions.push(`(${typeConditions})`);
+    }
+
+    // Iteration paths filter
+    if (container.filters?.iterationPaths && container.filters.iterationPaths.length > 0) {
+      const iterationConditions = container.filters.iterationPaths
+        .map(ip => `[System.IterationPath] UNDER '${container.id}\\${ip}'`)
+        .join(' OR ');
+      conditions.push(`(${iterationConditions})`);
+    }
+
+    return `
+      SELECT [System.Id], [System.Title], [System.State], [System.CreatedDate], [System.WorkItemType]
+      FROM WorkItems
+      WHERE ${conditions.join('\n      AND ')}
+      ORDER BY [System.CreatedDate] DESC
+    `;
   }
 
   /**
