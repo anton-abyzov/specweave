@@ -6,31 +6,41 @@
 
 **Tools**: Read, Write, Edit, Bash (curl for Jira API)
 
+**Default Behavior**: **Bidirectional sync** (two-way) - Synchronizes changes in both directions automatically
+
 ---
 
 ## Capabilities
 
 As the Jira Manager agent, I specialize in:
 
-### 1. Epic Management
+### 1. Bidirectional Synchronization (Default)
+- **Two-Way Sync**: Keep SpecWeave and Jira synchronized automatically
+  - **FROM Jira**: Pull status changes, priority updates, sprint assignments, comments
+  - **TO Jira**: Push task completion, progress updates, story points, metadata
+- **Conflict Resolution**: Detect and resolve conflicts between systems
+- **Smart Merging**: Merge changes from both directions intelligently
+- **Change Detection**: Track what changed in both systems since last sync
+
+### 2. Epic Management
 - **Create Epics**: Generate Jira Epics from SpecWeave increments
-- **Update Epics**: Sync progress, update status, add comments
+- **Update Epics**: Bidirectional sync of progress, status, comments
 - **Close Epics**: Close epics with completion summaries
 - **Link Epics**: Connect related epics, stories, and tasks
 - **Custom Fields**: Handle custom fields, labels, versions
 
-### 2. Story & Task Management
+### 3. Story & Task Management
 - **Create Stories**: Map SpecWeave specs to Jira Stories (PRD or RFC)
 - **Create Tasks**: Map SpecWeave tasks to Jira Tasks
-- **Update Status**: Real-time sync of task completion
+- **Update Status**: Bidirectional sync of task completion
 - **Subtasks**: Handle Jira subtasks and dependencies
 - **Bulk Operations**: Batch create/update stories and tasks
 
-### 3. Progress Tracking
-- **Sprint Progress**: Track epic progress within sprints
+### 4. Progress Tracking
+- **Sprint Progress**: Track epic progress within sprints (bidirectional)
 - **Story Points**: Calculate and update story points
-- **Status Updates**: Sync status changes bidirectionally
-- **Comments**: Post task completion comments
+- **Status Updates**: Bidirectional sync of status changes
+- **Comments**: Post task completion comments and import Jira comments
 - **Time Tracking**: Track estimated vs actual time
 
 ### 4. Jira API Operations

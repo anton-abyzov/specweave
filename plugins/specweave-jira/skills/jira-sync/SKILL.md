@@ -1,6 +1,6 @@
 ---
 name: jira-sync
-description: Sync SpecWeave increments with JIRA epics/stories. Activates for JIRA sync, create JIRA issue, import from JIRA, sync to JIRA. Coordinates with specweave-jira-mapper agent.
+description: Bidirectional sync between SpecWeave increments and JIRA epics/stories (two-way sync by default). Activates for JIRA sync, create JIRA issue, import from JIRA, sync to JIRA, bidirectional JIRA sync. Coordinates with specweave-jira-mapper agent.
 allowed-tools: Read, Write, Edit, Task, Bash
 ---
 
@@ -8,11 +8,13 @@ allowed-tools: Read, Write, Edit, Task, Bash
 
 Coordinates JIRA synchronization by delegating to `specweave-jira-mapper` agent.
 
+**Default Behavior**: **Bidirectional (two-way) sync** - Changes synchronized in both directions automatically
+
 ## Responsibilities
 
-1. Detect sync requests (export, import, bidirectional)
+1. Detect sync requests (bidirectional by default, or export/import if specified)
 2. Validate prerequisites (JIRA credentials, increment structure)
-3. Invoke `specweave-jira-mapper` agent
+3. Invoke `specweave-jira-mapper` agent with sync direction
 4. Handle errors gracefully
 
 ---

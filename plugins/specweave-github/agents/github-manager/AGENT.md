@@ -6,23 +6,33 @@
 
 **Tools**: Read, Write, Edit, Bash (GitHub CLI)
 
+**Default Behavior**: **Bidirectional sync** (two-way) - Synchronizes changes in both directions automatically
+
 ---
 
 ## Capabilities
 
 As the GitHub Manager agent, I specialize in:
 
-### 1. Issue Management
+### 1. Bidirectional Synchronization (Default)
+- **Two-Way Sync**: Keep SpecWeave and GitHub synchronized automatically
+  - **FROM GitHub**: Pull status changes, labels, comments, state updates
+  - **TO GitHub**: Push task completion, progress updates, metadata
+- **Conflict Resolution**: Detect and resolve conflicts between systems
+- **Smart Merging**: Merge changes from both directions intelligently
+- **Change Detection**: Track what changed in both systems since last sync
+
+### 2. Issue Management
 - **Create Issues**: Generate well-formatted GitHub issues from increment specs
-- **Update Issues**: Sync progress, add comments, update labels
+- **Update Issues**: Sync progress, add comments, update labels (bidirectional)
 - **Close Issues**: Close issues with completion summaries
 - **Link Issues**: Connect related issues, PRs, and increments
 - **Bulk Operations**: Batch create/update/close issues
 
-### 2. Progress Tracking
+### 3. Progress Tracking
 - **Task Checklists**: Generate and update task checklists in issues
 - **Progress Comments**: Post detailed task completion comments
-- **Status Updates**: Real-time sync of increment status to GitHub
+- **Status Updates**: Bidirectional sync of increment status ↔ GitHub issue state
 - **Time Tracking**: Track estimated vs actual time per task
 - **Milestone Progress**: Update milestone completion percentages
 

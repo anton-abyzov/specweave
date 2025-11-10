@@ -11,6 +11,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.1] - 2025-11-10
+
+### 🐛 **CRITICAL BUG FIX** - Bidirectional Sync Now Default for All Providers
+
+**The Problem**: Sync commands for GitHub, Jira, and Azure DevOps were defaulting to one-way sync (SpecWeave → External Tool), causing data loss when changes were made in external tools. Users expected bidirectional sync by default but had to explicitly specify it.
+
+**The Solution**: Made **bidirectional (two-way) sync the default** for all three providers. Changes in either system are now synchronized automatically.
+
+#### Fixed
+
+- **GitHub Sync** (`/specweave-github:sync`):
+  - Changed default `--direction` from `to-github` to `bidirectional`
+  - Updated command documentation to clearly state bidirectional is default
+  - Added "Sync Direction" section explaining bidirectional, to-github, from-github options
+  - Updated workflow examples to show bidirectional behavior
+  - Updated github-manager agent to emphasize bidirectional as default behavior
+  - Updated github-sync skill description
+
+- **Jira Sync** (`/specweave-jira:sync`):
+  - Added explicit `--direction` flag (was implicit before)
+  - Set default to `bidirectional` (two-way sync)
+  - Updated command documentation with sync direction options
+  - Clarified that `import`, `export` are one-way, `sync` is bidirectional
+  - Updated jira-manager agent to emphasize bidirectional synchronization
+  - Updated jira-sync skill description
+
+- **Azure DevOps Sync** (`/specweave-ado:sync`):
+  - Added `--direction` flag (was missing entirely)
+  - Set default to `bidirectional` (two-way sync)
+  - Completely rewrote command documentation to show bidirectional behavior
+  - Added Phase 1 (Pull FROM ADO) and Phase 2 (Push TO ADO) documentation
+  - Updated ado-manager agent to emphasize bidirectional synchronization
+  - Updated ado-sync skill description
+
+#### Documentation Changes
+
+**Command Files**:
+- `plugins/specweave-github/commands/specweave-github-sync.md` - Added Sync Direction section, updated examples
+- `plugins/specweave-jira/commands/specweave-jira-sync.md` - Added direction options, updated all examples
+- `plugins/specweave-ado/commands/specweave-ado-sync.md` - Complete rewrite with bidirectional phases
+
+**Agent Files**:
+- `plugins/specweave-github/agents/github-manager/AGENT.md` - Added bidirectional as #1 capability
+- `plugins/specweave-jira/agents/jira-manager/AGENT.md` - Added bidirectional synchronization section
+- `plugins/specweave-ado/agents/ado-manager/AGENT.md` - Added default behavior statement
+
+**Skill Files**:
+- `plugins/specweave-github/skills/github-sync/SKILL.md` - Updated description to emphasize bidirectional default
+- `plugins/specweave-jira/skills/jira-sync/SKILL.md` - Updated description and responsibilities
+- `plugins/specweave-ado/skills/ado-sync/SKILL.md` - Updated description and capabilities
+
+#### Impact
+
+**Why This Matters**:
+- ✅ **No Data Loss**: Changes in external tools are now pulled back to SpecWeave automatically
+- ✅ **Better UX**: Users expect bidirectional sync by default (industry standard)
+- ✅ **Consistent Behavior**: All three providers now have identical default behavior
+- ✅ **Team Collaboration**: Team members can work in either tool seamlessly
+- ✅ **Backward Compatible**: Users can still specify one-way sync with `--direction` flag if needed
+
+**Breaking Change**: None - this is a bug fix that aligns with user expectations. Users who want one-way sync can use `--direction to-github|to-jira|to-ado` or `--direction from-github|from-jira|from-ado`.
+
+---
+
 ## [0.10.0] - 2025-11-09
 
 ### ✨ **NEW FEATURE** - Hierarchical External Sync (Multi-Project Support)

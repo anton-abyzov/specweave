@@ -23,6 +23,8 @@ context: |
 - API authentication and rate limiting
 - Error handling and retry strategies
 
+**Default Behavior**: **Bidirectional sync** (two-way) - Synchronizes changes in both directions automatically
+
 ---
 
 ## 🚨 CRITICAL: Concept Mapping (MANDATORY)
