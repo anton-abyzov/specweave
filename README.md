@@ -10,26 +10,48 @@
 
 ---
 
-## The Problem
+## If You Get Hit By A Bus
 
-AI coding assistants made us **10x faster at shipping**, but **100x worse at maintaining**.
+Your startup dies with you.
 
-Your AI writes features in 30 minutes. You spend 3 days updating docs. By day 4, the code changed again.
+Every architecture decision. Every API choice. Every "weird workaround because..."
 
-**The docs? Already wrong.**
+All in your head. Zero documentation.
+
+**AI made you 10x faster at digging your own grave.**
 
 ---
 
-## The Solution
+## Want to Scale? Get Enterprise-Ready.
 
-**Fortune 500 discipline. Zero overhead. AI-native.**
+You can't land Fortune 500 clients with tribal knowledge.
+You can't pass SOC2 audit with "ask Dave."
+You can't sell your startup when the codebase is a mystery.
 
-SpecWeave brings enterprise-grade processes (PRDs, HLDs, ADRs, runbooks) to developers of any size—without the bureaucracy.
+**The companies making REAL money?**
+- They have **PRDs** (Product Requirements)
+- They have **ADRs** (Architecture Decision Records)
+- They have **HLDs** (High-Level Design docs)
+- They have **runbooks** (How to actually run this)
 
-> *"Dad, AI writes your code but you update docs MANUALLY?"*
-> — My 14-year-old daughter (who was absolutely right)
+This isn't bureaucracy. **This is how you get paid.**
 
-**Living docs that ACTUALLY stay synced** - Automatically updated after every task. No manual intervention.
+But for solo devs and small teams? Impossible to maintain manually.
+
+---
+
+## SpecWeave: Enterprise Standards, Zero Overhead
+
+Living documentation that updates automatically after every task.
+
+The same processes Fortune 500 uses. Without the team. Without the manual work.
+
+✅ **Architecture decisions documented** - Pass audits, land enterprise deals
+✅ **Onboarding automated** - New devs productive in 1 hour, not 1 week
+✅ **Knowledge preserved** - Sell your startup, someone can actually run it
+✅ **Standards enforced** - SOC2, ISO, compliance requirements met
+
+**AI speed + Enterprise reliability = You can finally scale.**
 
 ---
 
