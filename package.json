@@ -22,7 +22,8 @@
     "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
     "docs:dev": "cd docs-site && npm start",
     "docs:build": "cd docs-site && npm run build",
-    "docs:install": "cd docs-site && npm install --legacy-peer-deps"
+    "docs:install": "cd docs-site && npm install --legacy-peer-deps",
+    "docs:internal": "cd docs-site-internal && npm start"
   },
   "keywords": [
     "specweave",

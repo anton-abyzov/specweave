@@ -405,6 +405,89 @@
       },
       "additionalProperties": false
     },
+    "reflection": {
+      "type": "object",
+      "description": "AI Self-Reflection System configuration (v0.12.0+)",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable/disable reflection system entirely",
+          "default": true
+        },
+        "mode": {
+          "type": "string",
+          "description": "Reflection execution mode",
+          "enum": ["auto", "manual", "disabled"],
+          "default": "auto"
+        },
+        "depth": {
+          "type": "string",
+          "description": "Analysis depth level",
+          "enum": ["quick", "standard", "deep"],
+          "default": "standard"
+        },
+        "model": {
+          "type": "string",
+          "description": "AI model for reflection analysis",
+          "enum": ["haiku", "sonnet", "opus"],
+          "default": "haiku"
+        },
+        "categories": {
+          "type": "object",
+          "description": "Enable/disable specific analysis categories",
+          "properties": {
+            "security": {
+              "type": "boolean",
+              "description": "Security vulnerability detection (OWASP Top 10)",
+              "default": true
+            },
+            "quality": {
+              "type": "boolean",
+              "description": "Code quality and best practices analysis",
+              "default": true
+            },
+            "testing": {
+              "type": "boolean",
+              "description": "Test coverage and quality analysis",
+              "default": true
+            },
+            "performance": {
+              "type": "boolean",
+              "description": "Performance issue detection",
+              "default": true
+            },
+            "technicalDebt": {
+              "type": "boolean",
+              "description": "Technical debt tracking",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "criticalThreshold": {
+          "type": "string",
+          "description": "Minimum severity to show terminal warnings",
+          "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+          "default": "MEDIUM"
+        },
+        "storeReflections": {
+          "type": "boolean",
+          "description": "Store reflections to log files",
+          "default": true
+        },
+        "autoCreateFollowUpTasks": {
+          "type": "boolean",
+          "description": "Automatically create tasks for critical issues",
+          "default": false
+        },
+        "soundNotifications": {
+          "type": "boolean",
+          "description": "Play sound for critical issues (optional)",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
     "sync": {
       "type": "object",
       "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",
