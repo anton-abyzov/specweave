@@ -1,5 +1,15 @@
 {
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "TodoWrite",
