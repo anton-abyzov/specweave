@@ -1,11 +1,13 @@
 ---
 name: github-sync
-description: Bidirectional synchronization between SpecWeave increments and GitHub Issues. Creates issues from increments, tracks progress via comments, updates increment status from issue state, and closes issues when increments complete. Activates for GitHub sync, issue creation, increment tracking, GitHub integration, issue management, sync to GitHub.
+description: Bidirectional synchronization between SpecWeave increments and GitHub Issues (two-way sync by default). Creates issues from increments, tracks progress via comments, updates increment status from issue state, syncs changes in both directions automatically. Activates for GitHub sync, issue creation, increment tracking, GitHub integration, issue management, sync to GitHub, bidirectional sync.
 ---
 
 # GitHub Sync - Bidirectional Increment ↔ Issue Synchronization
 
 **Purpose**: Seamlessly synchronize SpecWeave increments with GitHub Issues for team visibility and project management.
+
+**Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
 
 **When to Use**:
 - Creating new increments (auto-create GitHub issue)

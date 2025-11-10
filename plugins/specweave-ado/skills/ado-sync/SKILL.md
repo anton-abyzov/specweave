@@ -1,16 +1,20 @@
 ---
 name: ado-sync
-description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items. Creates work items from increments, tracks progress via comments, updates increment status from work item state, and closes work items when increments complete. Activates for: Azure DevOps, ADO, work items, project management, sync to ADO, ADO integration, TFS integration.
+description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Creates work items from increments, tracks progress via comments, updates increment status from work item state, syncs changes in both directions automatically. Activates for: Azure DevOps, ADO, work items, project management, sync to ADO, ADO integration, TFS integration, bidirectional ADO sync.
 ---
 
 # Azure DevOps Sync Skill
 
 **Purpose**: Seamlessly sync SpecWeave increments with Azure DevOps work items for unified project tracking.
 
+**Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
+
 **Capabilities**:
+- Bidirectional sync: SpecWeave ↔ ADO (default)
 - Create ADO work items from increments
-- Sync task progress → ADO comments  
-- Update increment status from ADO state
+- Sync task progress → ADO comments
+- Update increment status ← ADO state changes
+- Pull ADO comments and field updates → SpecWeave
 - Close work items when increments complete
 - Support for Epics, Features, User Stories
 

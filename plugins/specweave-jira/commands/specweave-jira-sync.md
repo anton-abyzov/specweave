@@ -11,39 +11,60 @@ You are a Jira synchronization expert. Help the user sync between Jira and SpecW
 
 ### Epic-Level Operations
 
-**1. Import Jira Epic as SpecWeave Increment**
+**1. Bidirectional Sync (Default - Recommended)**
 ```
-/specweave:sync-jira import SCRUM-123
+/specweave-jira:sync 0003                    # Two-way sync (default)
+/specweave-jira:sync 0003 --direction bidirectional  # Explicit
 ```
 
-**2. Sync existing linked Increment with Jira**
+**2. Import Jira Epic as SpecWeave Increment**
 ```
-/specweave:sync-jira sync 0003
+/specweave-jira:sync import SCRUM-123        # One-time pull
+/specweave-jira:sync SCRUM-123 --direction from-jira  # Same as import
 ```
 
 **3. Export SpecWeave Increment to Jira**
 ```
-/specweave:sync-jira export 0001
+/specweave-jira:sync export 0001             # One-time push
+/specweave-jira:sync 0001 --direction to-jira  # Same as export
 ```
+
+### Sync Direction Options
+
+**Default: `bidirectional`** (two-way sync - recommended)
+
+- `--direction bidirectional`: SpecWeave ↔ Jira (default)
+  - Pull changes FROM Jira (status, priority, comments)
+  - Push changes TO Jira (tasks, progress, metadata)
+
+- `--direction to-jira`: SpecWeave → Jira only
+  - Push increment progress to Jira
+  - Don't pull Jira changes back
+  - Same as `export` operation
+
+- `--direction from-jira`: Jira → SpecWeave only
+  - Pull Jira issue updates
+  - Don't push SpecWeave changes
+  - Same as `import` operation
 
 ### Granular Item Operations
 
 **4. Add specific Story/Bug/Task to existing Increment**
 ```
-/specweave:sync-jira add SCRUM-1 to 0003
-/specweave:sync-jira add SCRUM-1              # Adds to current increment
+/specweave-jira:sync add SCRUM-1 to 0003
+/specweave-jira:sync add SCRUM-1              # Adds to current increment
 ```
 
 **5. Create Increment from specific items (cherry-pick)**
 ```
-/specweave:sync-jira create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7
-/specweave:sync-jira create "Bug Fixes Sprint 1" from SCRUM-10 SCRUM-15 SCRUM-20
+/specweave-jira:sync create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7
+/specweave-jira:sync create "Bug Fixes Sprint 1" from SCRUM-10 SCRUM-15 SCRUM-20
 ```
 
 **6. Show sync status**
 ```
-/specweave:sync-jira status
-/specweave:sync-jira status 0003              # Status of specific increment
+/specweave-jira:sync status
+/specweave-jira:sync status 0003              # Status of specific increment
 ```
 
 ## Your Task
@@ -154,19 +175,39 @@ When the user runs this command:
   | Task  | SCRUM-7  | Setup provider  |
   ```
 
-### Example 5: Sync Existing Increment
-**User**: `/specweave:sync-jira sync 0003`
+### Example 5: Bidirectional Sync (Default)
+**User**: `/specweave-jira:sync 0003`
 **You**:
 - Read increment 0003
 - Find linked Jira items (from spec.md frontmatter.work_items)
 - Fetch current state from Jira
-- Detect changes (status, priority, description)
-- Show conflicts if any
-- Apply sync bidirectionally
-- Display: "✅ Synced 0003 | Updated: 2 items | SCRUM-1 → in-progress, SCRUM-10 → completed"
+
+**Detect changes (both directions)**:
+- FROM Jira: Status changes, priority updates, comments
+- FROM SpecWeave: Task completion, progress updates
+
+**Show bidirectional sync summary**:
+```
+✅ Bidirectional Sync Complete: 0003 ↔ Jira
+
+FROM Jira:
+  • SCRUM-1: Status changed to In Progress
+  • SCRUM-10: Priority raised to P1
+
+FROM SpecWeave:
+  • 3 tasks completed (T-005, T-006, T-007)
+  • Progress: 60% → 75%
+
+Conflicts: None
+```
+
+**Handle conflicts if any**:
+- Show both versions (Jira vs SpecWeave)
+- Ask user which to keep or how to merge
+- Apply resolution bidirectionally
 
 ### Example 6: Status Overview
-**User**: `/specweave:sync-jira status`
+**User**: `/specweave-jira:sync status`
 **You**:
 - Scan all increments for Jira metadata
 - Show table:
@@ -188,10 +229,12 @@ When the user runs this command:
 
 ## Related Commands
 
-- `/specweave:sync-github` - Sync to GitHub issues
+- `/specweave-github:sync` - Sync to GitHub issues (also bidirectional by default)
 - `/specweave:increment` - Create new increment
 - `/specweave:validate` - Validate increment quality
 
 ---
+
+**Bidirectional by Default**: All sync operations are two-way unless you explicitly specify `--direction to-jira` or `--direction from-jira`. This keeps both systems synchronized automatically.
 
 **Granular Control**: Unlike simple epic import/export, this command supports cherry-picking individual stories, bugs, and tasks for maximum flexibility.
