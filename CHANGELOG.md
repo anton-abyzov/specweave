@@ -11,6 +11,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.1] - 2025-11-10
+
+### Added
+
+- **GitHub Sync Enhancements**:
+  - Bidirectional GitHub sync for increment changes
+  - Automatic GitHub issue updates on increment status changes
+  - New CLI command `/specweave-github:sync-from` for syncing from GitHub to local
+  - Post-increment-change hooks for automatic GitHub sync
+  - Post-increment-status-change hooks for status updates
+  - Comprehensive unit tests for GitHub sync functionality
+
+### Changed
+
+- **Diagram Organization**:
+  - Moved ADR diagrams to proper location (`adr/diagrams/`)
+  - Cleaned up obsolete diagrams (decision gates, comparison matrices)
+  - Updated main flow diagram with latest architecture
+  - Removed deprecated convention diagrams (9 files)
+
+- **Increment Management**:
+  - Updated increment 0014 metadata to completed status (90% Phase 1 complete)
+  - Added completion reports for increment 0015
+  - Documented diagram cleanup process in increment 0015 reports
+
+- **Template Updates**:
+  - Updated AGENTS.md template with latest patterns and best practices
+  - Improved external resource validator error handling
+  - Enhanced living docs sync hook reliability
+
+### Fixed
+
+- **GitHub Issue Sync**: All completed increments now properly synced with closed GitHub issues
+- **Metadata Updates**: Increment status now correctly reflected in metadata.json files
+
+### Documentation
+
+- Added GITHUB-SYNC-IMPLEMENTATION-COMPLETE.md report
+- Added DIAGRAM-CLEANUP-SUMMARY.md report
+- Closed GitHub issue #28 (Increment 0014 - Proactive Plugin Validation)
+- Updated GitHub issue #29 (Increment 0015 - Hierarchical External Sync) with task completion status
+
+---
+
 ## [0.12.0] - 2025-11-10
 
 ### Added
