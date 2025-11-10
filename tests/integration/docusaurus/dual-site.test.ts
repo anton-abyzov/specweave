@@ -2,7 +2,7 @@
  * Integration tests for dual Docusaurus documentation sites
  *
  * Tests:
- * - Public docs site (port 3013)
+ * - Public docs site (port 3016)
  * - Internal docs site (port 3015)
  * - Both sites running simultaneously
  * - Correct content served from each source
@@ -17,7 +17,7 @@ import { promisify } from 'util';
 const sleep = promisify(setTimeout);
 
 // Test configuration
-const PUBLIC_DOCS_URL = 'http://localhost:3013';
+const PUBLIC_DOCS_URL = 'http://localhost:3016';
 const INTERNAL_DOCS_URL = 'http://localhost:3015';
 const STARTUP_WAIT = 30000; // 30 seconds for site startup
 const TEST_TIMEOUT = 120000; // 2 minutes per test
@@ -138,7 +138,7 @@ test.beforeAll(async () => {
   try {
     publicDocsProcess = await startDocsServer(
       './docs-site',
-      3013,
+      3016,
       'Public Docs'
     );
   } catch (error) {
@@ -185,7 +185,7 @@ test.afterAll(async () => {
 });
 
 // Tests
-test.describe('Public Docs Site (port 3013)', () => {
+test.describe('Public Docs Site (port 3016)', () => {
   test('should load homepage', async ({ page }) => {
     await page.goto(PUBLIC_DOCS_URL);
     await expect(page.locator('h1')).toContainText('SpecWeave');
@@ -289,7 +289,7 @@ test.describe('Dual Site Behavior', () => {
   });
 
   test('no port conflicts', async ({ page }) => {
-    // Public on 3013
+    // Public on 3016
     const publicResponse = await page.goto(PUBLIC_DOCS_URL);
     expect(publicResponse?.status()).toBe(200);
 
@@ -357,7 +357,7 @@ test.describe('Content Verification', () => {
 test.describe('Integration Test Summary', () => {
   test('all systems operational', async ({ page }) => {
     console.log('\n📊 Test Summary:\n');
-    console.log('✅ Public docs (port 3013): Running');
+    console.log('✅ Public docs (port 3016): Running');
     console.log('✅ Internal docs (port 3015): Running');
     console.log('✅ No port conflicts');
     console.log('✅ Correct content served');

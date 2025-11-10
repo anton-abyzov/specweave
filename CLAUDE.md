@@ -1988,6 +1988,137 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
 - ✅ **Compliance & auditing**: Complete audit trail of all product decisions
 - ✅ **Living documentation**: Specs stay up-to-date without manual intervention
 
+**Post-Increment-Planning Hook** (AUTOMATIC after `/specweave:increment`):
+
+**GitHub Issue Auto-Creation** (NEW in v0.8.20+):
+
+**The Critical Problem**: Without automatic GitHub issue creation, increments don't sync to GitHub automatically. This requires manual `/specweave-github:create-issue` calls, which are often forgotten.
+
+**The Solution**: The `post-increment-planning.sh` hook now auto-creates GitHub issues immediately after increment planning completes.
+
+**How It Works** (Automatic):
+1. **Hook Triggers**: After `/specweave:increment` completes planning (spec.md, plan.md, tasks.md created)
+2. **Auto-Create Check**: Checks if `config.sync.settings.autoCreateIssue` is enabled
+3. **GitHub CLI Available**: Verifies `gh` CLI is installed and authenticated
+4. **Issue Creation**:
+   - Extracts title from spec.md frontmatter (`title: "..."`)
+   - Extracts summary from "Quick Overview" section
+   - Generates task checklist from tasks.md (all tasks as GitHub checkboxes)
+   - Calls `gh issue create` with proper labels (`specweave`, `increment`)
+   - Parses output to get issue number
+5. **Metadata Update**: Creates/updates `.metadata.json` with GitHub issue number and URL
+6. **Result**: Increment is now linked to GitHub issue for bidirectional sync!
+
+**Configuration** (`.specweave/config.json`):
+```json
+{
+  "sync": {
+    "settings": {
+      "autoCreateIssue": true,  // ✅ Enable auto-creation!
+      "syncDirection": "bidirectional"
+    },
+    "activeProfile": "specweave-dev",
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        }
+      }
+    }
+  }
+}
+```
+
+**What Gets Created**:
+```markdown
+# [INC-0016] AI Self-Reflection System
+
+**Status**: Planning → Implementation
+**Priority**: P1
+**Increment**: 0016-self-reflection-system
+
+## Summary
+
+Add AI self-reflection capabilities inspired by Kimi model...
+
+## Tasks
+
+Progress: 0/30 tasks (0%)
+
+- [ ] T-001: Create Reflection Configuration Schema
+- [ ] T-002: Create Configuration Loader
+- [ ] T-003: Create Git Diff Analyzer
+... (all 30 tasks)
+
+## Links
+
+- **Spec**: `spec.md`
+- **Plan**: `plan.md`
+- **Tasks**: `tasks.md`
+
+---
+
+🤖 Auto-created by SpecWeave | Updates automatically on task completion
+```
+
+**Error Handling** (Robust):
+- ✅ **Missing files**: Graceful fallback if spec.md or tasks.md missing
+- ✅ **Title extraction**: Multiple fallbacks (frontmatter → heading → increment ID)
+- ✅ **Overview extraction**: Tries "Quick Overview", "Summary", or first paragraph
+- ✅ **Task count**: Extracts from frontmatter or counts tasks
+- ✅ **GitHub CLI failures**: Non-blocking (logs error, continues)
+- ✅ **Duplicate prevention**: Checks metadata.json for existing issue number
+- ✅ **Repository detection**: Auto-detects from git remote or config
+
+**Manual Override** (When Needed):
+```bash
+# Disable auto-create for one increment
+# Just don't set autoCreateIssue in config
+
+# Or create manually if auto-create failed
+/specweave-github:create-issue 0016
+
+# Check if issue was created
+cat .specweave/increments/0016-self-reflection-system/metadata.json
+# Should show: "github": {"issue": 30, "url": "..."}
+```
+
+**Why This Matters**:
+- ✅ **Zero manual work**: Issues auto-create on every increment
+- ✅ **Immediate tracking**: Increment linked to GitHub from start
+- ✅ **Bidirectional sync**: Task completion updates GitHub automatically
+- ✅ **Team visibility**: Stakeholders see progress in GitHub without asking
+- ✅ **Audit trail**: All increments tracked in one place
+- ✅ **DORA metrics**: Automatic deployment frequency tracking
+
+**Workflow Example**:
+```bash
+# 1. Create increment
+/specweave:increment "AI self-reflection system"
+
+# 2. Hook auto-fires:
+# 🔗 Checking GitHub issue auto-creation...
+#   📦 Auto-create enabled, checking for GitHub CLI...
+#   ✓ GitHub CLI found
+#   🚀 Creating GitHub issue for 0016-self-reflection-system...
+#   📝 Issue #30 created
+#   🔗 https://github.com/anton-abyzov/specweave/issues/30
+#   ✅ metadata.json updated
+
+# 3. Start work
+/specweave:do
+
+# 4. Complete tasks → GitHub updates automatically via post-task-completion hook!
+```
+
+**Requirements**:
+- GitHub CLI (`gh`) installed and authenticated (`gh auth login`)
+- Repository with GitHub remote configured
+- `autoCreateIssue: true` in config.json
+- Write permissions to repository
+
 ---
 
 ## Plugins

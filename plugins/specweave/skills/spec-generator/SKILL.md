@@ -350,9 +350,9 @@ spec_generator:
 
 ## Related Skills
 
-- **increment-planner**: Guides increment planning (uses Spec Generator internally)
-- **context-loader**: Loads relevant context for specification generation
-- **increment-quality-judge**: Validates generated specifications for completeness
+- **Planning workflow**: Guides increment planning (uses Spec Generator internally)
+- **Context loading**: Loads relevant context for specification generation
+- **Quality validation**: Validates generated specifications for completeness
 
 ---
 
