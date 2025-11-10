@@ -1,1 +1,11 @@
-{}
+{
+  "extraKnownMarketplaces": {
+    "specweave": {
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave",
+        "path": ".claude-plugin"
+      }
+    }
+  }
+}

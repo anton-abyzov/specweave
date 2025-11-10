@@ -16,10 +16,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 test.describe('Multi-Project Workflow (E2E)', () => {
-  const testDir = path.join(__dirname, '../../fixtures/e2e-multi-project');
-  const specweaveRoot = path.join(testDir, '.specweave');
+  let testDir: string;
+  let specweaveRoot: string;
 
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ }, testInfo) => {
+    // Create unique directory for each test
+    testDir = path.join(__dirname, '../../fixtures/e2e-multi-project', `test-${testInfo.workerIndex}-${Date.now()}`);
+    specweaveRoot = path.join(testDir, '.specweave');
+
+    // Clean up any existing test directory
+    await fs.remove(testDir);
+
+    // Create fresh directories
     await fs.ensureDir(testDir);
     await fs.ensureDir(specweaveRoot);
   });
