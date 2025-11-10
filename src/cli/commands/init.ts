@@ -474,78 +474,8 @@ export async function initCommand(
       }
     }
 
-    // 13. Documentation preview prompt (Claude Code only)
-    let enableDocsPreview = true; // Default: enabled
-    if (toolName === 'claude') {
-      try {
-        spinner.stop();
-        console.log('');
-        console.log(chalk.cyan('📚 Documentation Preview'));
-        console.log('');
-        console.log(chalk.white('   View your living documentation in a beautiful UI:'));
-        console.log(chalk.gray('   • Auto-generated sidebar from folder structure'));
-        console.log(chalk.gray('   • Hot reload (edit markdown, see changes instantly)'));
-        console.log(chalk.gray('   • Mermaid diagram rendering'));
-        console.log(chalk.gray('   • Installs dependencies on first use'));
-        console.log('');
-
-        const response = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'enableDocsPreview',
-            message: 'Enable documentation preview?',
-            default: true
-          }
-        ]);
-        enableDocsPreview = response.enableDocsPreview;
-
-        if (enableDocsPreview) {
-          console.log(chalk.green('   ✔ Documentation preview enabled'));
-
-          // 🚨 CRITICAL FIX: Actually install the docs-preview plugin!
-          // User said Yes → Install plugin immediately (like issue tracker setup)
-          if (detectClaudeCli()) {
-            console.log(chalk.gray('   → Installing specweave-docs-preview plugin...'));
-
-            try {
-              const result = execFileNoThrowSync('claude', [
-                'plugin',
-                'install',
-                'specweave-docs-preview'  // NO @marketplace suffix
-              ]);
-
-              if (result.success) {
-                console.log(chalk.green('   ✔ specweave-docs-preview plugin installed'));
-                console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
-              } else {
-                console.log(chalk.yellow('   ⚠️  Plugin install failed (can install later)'));
-                console.log(chalk.gray('   → Try manually: /plugin install specweave-docs-preview'));
-              }
-            } catch (error: any) {
-              console.log(chalk.yellow('   ⚠️  Plugin install failed (can install later)'));
-              console.log(chalk.gray('   → Try manually: /plugin install specweave-docs-preview'));
-            }
-          } else {
-            console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
-            console.log(chalk.yellow('   ⚠️  Claude CLI not detected - install plugin manually:'));
-            console.log(chalk.gray('   → /plugin install specweave-docs-preview'));
-          }
-        } else {
-          console.log(chalk.gray('   → Skipped (can enable later in .specweave/config.json)'));
-        }
-        console.log('');
-
-        spinner.start();
-      } catch (error: any) {
-        // Non-critical - continue with default (enabled)
-        if (process.env.DEBUG) {
-          console.error(chalk.red(`\n❌ Docs preview prompt error: ${error.message}`));
-        }
-      }
-    }
-
-    // 14. Create config.json with language setting and docs preview
-    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, enableDocsPreview);
+    // 13. Create config.json with language setting
+    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, false);
 
     // 14. Setup Claude Code plugin auto-registration (if Claude detected)
     let autoInstallSucceeded = false;
@@ -754,6 +684,25 @@ export async function initCommand(
           console.log('');
           autoInstallSucceeded = false;
         }
+      }
+
+      // 10.5 Issue Tracker Integration (CRITICAL!)
+      // MUST happen AFTER plugin installation is complete
+      // Asks user: Which tracker? (GitHub/Jira/ADO/None)
+      // Collects credentials and runs smart validation
+      try {
+        const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+        await setupIssueTracker({
+          projectPath: targetDir,
+          language: language as SupportedLanguage,
+          maxRetries: 3
+        });
+      } catch (error: any) {
+        // Non-critical error - log but continue
+        if (process.env.DEBUG) {
+          console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+        }
+        console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
       }
     }
 
