@@ -11,6 +11,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.1] - 2025-11-10
+
+### Changed
+
+- **Plugin Validation**: Enhanced plugin validator skill with improved Claude Code plugin system compliance checks
+- **Documentation**: Updated CLAUDE.md with latest plugin architecture details and Claude Code native plugin documentation links
+- **Schema**: Refined specweave-config.schema.json for better configuration validation
+
+### Fixed
+
+- **Post-First-Increment Hook**: Minor improvements to hook execution logic
+- **Skills Index**: Updated SKILLS-INDEX.md with current plugin capabilities
+
+### Removed
+
+- **Cleanup**: Removed backup file `translator/SKILL.md.bak` from repository
+
+---
+
 ## [0.11.0] - 2025-11-10
 
 ### 🚨 **BREAKING CHANGE** - All Plugins Installed Automatically
