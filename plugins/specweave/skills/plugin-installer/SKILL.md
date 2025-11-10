@@ -40,8 +40,6 @@ description: DEPRECATED - This skill is no longer needed. All plugins are now in
 
 | User Keywords | Required Plugin | Installation Command |
 |--------------|----------------|---------------------|
-| **Documentation Preview** |
-| "preview docs", "browse docs locally", "documentation UI", "Docusaurus server", "local docs preview" | `specweave-docs-preview` | `/plugin install specweave-docs-preview` |
 | **Frontend Development** |
 | "React", "Next.js", "Vue", "Angular", "frontend", "UI component", "design system", "Tailwind" | `specweave-frontend` | `/plugin install specweave-frontend` |
 | **Kubernetes/DevOps** |
@@ -77,10 +75,10 @@ When user mentions keywords from the map above, **IMMEDIATELY** check if the req
 
 **Example**:
 ```
-User: "Can you preview the internal docs locally?"
+User: "Can you help me build a React component?"
 
-Keywords detected: "preview", "docs", "locally"
-→ Required plugin: specweave-docs-preview
+Keywords detected: "React", "component"
+→ Required plugin: specweave-frontend
 ```
 
 ### Step 2: Check if Plugin is Installed
@@ -101,7 +99,7 @@ If the plugin is NOT installed:
 /plugin install <plugin-name>
 
 # Example:
-/plugin install specweave-docs-preview
+/plugin install specweave-frontend
 ```
 
 ### Step 4: Notify User (Clear and Friendly)
@@ -123,9 +121,9 @@ Proceeding with your request...
 **Example**:
 
 ```
-🔌 Detected need for specweave-docs-preview plugin
+🔌 Detected need for specweave-frontend plugin
 
-📦 Installing specweave-docs-preview...
+📦 Installing specweave-frontend...
    This plugin provides: Beautiful Docusaurus UI for browsing .specweave/docs/
 
 ✅ Plugin installed successfully!
@@ -145,25 +143,25 @@ Proceeding to launch docs preview server...
 
 ## Common Scenarios
 
-### Scenario 1: Documentation Preview
+### Scenario 1: React Component Development
 
-**User Request**: "Show me the internal docs in a nice UI"
+**User Request**: "Build a React component with TypeScript"
 
 **Workflow**:
 ```
-1. Detect keywords: "docs", "UI"
-   → Required: specweave-docs-preview
+1. Detect keywords: "React", "component", "TypeScript"
+   → Required: specweave-frontend
 
 2. Check installed: /plugin list --installed
    → Not found
 
-3. Install: /plugin install specweave-docs-preview
+3. Install: /plugin install specweave-frontend
 
 4. Notify user:
-   🔌 Installing specweave-docs-preview for beautiful docs UI...
+   🔌 Installing specweave-frontend for React development...
    ✅ Installed!
 
-5. Launch: /specweave:docs preview
+5. Create component using frontend skills
 ```
 
 ### Scenario 2: Kubernetes Deployment
@@ -280,16 +278,16 @@ When increment-planner detects plugin requirements (Step 6), it should:
 3. **Auto-install missing plugins** (via this skill)
 4. **Then proceed** with increment planning
 
-### Example: docs-preview skill (hypothetical)
+### Example: frontend skill (hypothetical)
 
 ```markdown
-# BEFORE using Docusaurus features:
+# BEFORE using React features:
 
-1. Check if specweave-docs-preview is installed
+1. Check if specweave-frontend is installed
    → If not: Invoke plugin-installer skill
-   → Auto-install specweave-docs-preview
+   → Auto-install specweave-frontend
 
-2. Then launch Docusaurus server
+2. Then proceed with component creation
 ```
 
 ---
@@ -311,7 +309,7 @@ When increment-planner detects plugin requirements (Step 6), it should:
 User: "Show me the internal documentation in a browser"
 
 Expected:
-1. Detects "documentation", "browser" → specweave-docs-preview
+1. Detects "React", "component" → specweave-frontend
 2. Checks installed
 3. Auto-installs if missing
 4. Launches preview
