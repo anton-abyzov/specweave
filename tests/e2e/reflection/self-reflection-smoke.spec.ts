@@ -7,6 +7,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
 import { createReflectionContext } from '../../../src/hooks/lib/run-self-reflection';
 import { buildReflectionPrompt } from '../../../src/hooks/lib/reflection-prompt-builder';
@@ -14,6 +15,10 @@ import { parseReflectionMarkdown } from '../../../src/hooks/lib/reflection-parse
 import { saveReflection, listReflections, readReflection } from '../../../src/hooks/lib/reflection-storage';
 import { prepareReflectionContext, hasReflectionContext, readReflectionContext, clearReflectionContext } from '../../../src/hooks/lib/prepare-reflection-context';
 import { ReflectionModel } from '../../../src/hooks/lib/types/reflection-types';
+
+// ESM compatibility: Get __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Self-Reflection System - Smoke Test', () => {
   const testDir = path.join(__dirname, '../../fixtures/reflection-smoke-test');
