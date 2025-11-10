@@ -170,9 +170,9 @@ translate_file() {
   # In production, this would invoke the LLM via Task tool
   # For now, we'll create a marker file to indicate translation is needed
 
-  if [ -f "$PROJECT_ROOT/dist/hooks/lib/translate-file.js" ]; then
+  if [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-file.js" ]; then
     # Production: Use compiled TypeScript
-    node "$PROJECT_ROOT/dist/hooks/lib/translate-file.js" "$file_path" --target-lang en --verbose 2>&1 | while read -r line; do
+    node "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-file.js" "$file_path" --target-lang en --verbose 2>&1 | while read -r line; do
       echo "     $line"
     done
 
