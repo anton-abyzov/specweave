@@ -10,6 +10,9 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 import type { IssueTracker, TrackerCredentials, SetupOptions } from './types.js';
 import { detectDefaultTracker, getTrackerDisplayName, installTrackerPlugin, isClaudeCliAvailable } from './utils.js';
 import {
@@ -180,6 +183,9 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5: Save credentials to .env
   await saveCredentials(projectPath, tracker, credentials);
 
+  // Step 5.1: Write sync config to .specweave/config.json
+  await writeSyncConfig(projectPath, tracker, credentials);
+
   // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
   if (tracker === 'jira') {
     await validateResources(tracker, credentials, projectPath);
@@ -335,6 +341,142 @@ async function saveCredentials(
   ensureEnvGitignored(projectPath);
 
   console.log(chalk.green('✓ Credentials saved to .env (gitignored)'));
+}
+
+/**
+ * Write sync config to .specweave/config.json
+ *
+ * This is CRITICAL for hooks to fire! Without this, the post-task-completion hook
+ * won't sync to GitHub/Jira/ADO.
+ */
+async function writeSyncConfig(
+  projectPath: string,
+  tracker: IssueTracker,
+  credentials: TrackerCredentials
+): Promise<void> {
+  const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+  // Read existing config or create new one
+  let config: any = {
+    project: {
+      name: path.basename(projectPath),
+      version: '0.1.0'
+    },
+    adapters: {
+      default: 'claude'
+    }
+  };
+
+  if (fs.existsSync(configPath)) {
+    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+  }
+
+  // Add hooks configuration (enables auto-sync!)
+  config.hooks = {
+    post_task_completion: {
+      sync_living_docs: true,
+      sync_tasks_md: true,
+      external_tracker_sync: true
+    },
+    post_increment_planning: {
+      auto_create_github_issue: tracker === 'github' // Only for GitHub
+    }
+  };
+
+  // Detect repository info
+  let owner = '';
+  let repo = '';
+  let domain = '';
+  let organization = '';
+  let project = '';
+
+  if (tracker === 'github') {
+    // Try to detect from git remote
+    try {
+      const remote = execSync('git remote get-url origin', {
+        cwd: projectPath,
+        encoding: 'utf-8',
+        stdio: 'pipe'
+      }).trim();
+
+      // Parse owner/repo from: https://github.com/owner/repo.git or git@github.com:owner/repo.git
+      const match = remote.match(/github\.com[:/]([^/]+)\/(.+?)(\.git)?$/);
+      if (match) {
+        owner = match[1];
+        repo = match[2];
+      }
+    } catch {
+      // Fallback to current directory name
+      repo = path.basename(projectPath);
+      owner = 'YOUR_GITHUB_USERNAME'; // User must update manually
+    }
+  } else if (tracker === 'jira') {
+    const jiraCreds = credentials as any;
+    domain = jiraCreds.domain || '';
+    project = jiraCreds.projectKey || '';
+  } else if (tracker === 'ado') {
+    const adoCreds = credentials as any;
+    organization = adoCreds.organization || '';
+    project = adoCreds.project || '';
+  }
+
+  // Add sync configuration
+  config.sync = {
+    enabled: true,
+    activeProfile: `${tracker}-default`,
+    settings: {
+      autoCreateIssue: true,
+      syncDirection: 'bidirectional'
+    },
+    profiles: {
+      [`${tracker}-default`]: tracker === 'github' ? {
+        provider: 'github',
+        displayName: 'GitHub Default',
+        config: {
+          owner,
+          repo
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        },
+        rateLimits: {
+          maxItemsPerSync: 500,
+          warnThreshold: 100
+        }
+      } : tracker === 'jira' ? {
+        provider: 'jira',
+        displayName: 'Jira Default',
+        config: {
+          domain,
+          projectKey: project
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        }
+      } : {
+        provider: 'ado',
+        displayName: 'Azure DevOps Default',
+        config: {
+          organization,
+          project
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        }
+      }
+    }
+  };
+
+  // Write config
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+
+  console.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
+  console.log(chalk.gray(`   Provider: ${tracker}`));
+  console.log(chalk.gray(`   Auto-sync: enabled`));
+  console.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
 }
 
 /**
