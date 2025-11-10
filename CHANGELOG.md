@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.3] - 2025-11-10
+
+### Fixed
+
+- **Brownfield-Safe Init** (CRITICAL):
+  - Fixed dangerous `fs.emptyDirSync()` behavior that deleted all files in existing directories
+  - `specweave init` now only removes `.specweave/` and `.claude/` folders (brownfield-safe)
+  - Preserves all user code, config files, and other files when initializing in existing projects
+  - Smart prompts: Different messages for "already initialized" vs "new init"
+  - Detects and warns about existing files before initialization
+  - Applies to both subdirectory creation (`specweave init my-project`) and current directory init (`specweave init .`)
+
+---
+
 ## [0.12.2] - 2025-11-10
 
 ### Fixed
