@@ -11,6 +11,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.4] - 2025-11-10
+
+### Added
+
+- **Smart Re-Initialization** (MAJOR UX IMPROVEMENT):
+  - When `.specweave/` folder exists, users now get 3 clear choices:
+    - ✨ **Continue working** (keep all increments, docs, and history) - RECOMMENDED
+    - 🔄 **Fresh start** (delete .specweave/ and start from scratch) - with double confirmation
+    - ❌ **Cancel** (exit without changes)
+  - Default choice is "Continue" (safest option)
+  - "Fresh start" requires explicit confirmation to prevent accidental data loss
+  - Applies to both `specweave init .` and `specweave init my-project`
+
+### Changed
+
+- **Continue Behavior**:
+  - When continuing, only refreshes `.claude/settings.json` (marketplace registration)
+  - Skips directory structure creation (already exists)
+  - Skips template copying (files already exist)
+  - Preserves all existing increments, docs, modules, and configuration
+  - Perfect for brownfield projects where users want to add SpecWeave on top of existing work
+
+- **`.claude/` Folder Purpose**:
+  - Clarified that `.claude/` folder is ONLY used for `settings.json` (marketplace registration)
+  - No longer polluted with agents/commands/skills (those are installed globally)
+  - Always refreshed to ensure marketplace is up-to-date
+
+### Fixed
+
+- Improved UX: No more confusing "Overwrite?" or "Re-initialize?" prompts
+- Clear intent with emoji indicators (✨ for continue, 🔄 for fresh start, ❌ for cancel)
+- Better safety: "Fresh start" now requires double confirmation
+
+---
+
 ## [0.12.3] - 2025-11-10
 
 ### Fixed
