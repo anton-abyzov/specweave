@@ -178,10 +178,6 @@ For contributors working on SpecWeave itself:
   - Install: `/plugin install specweave-diagrams`
   - Provides: Architecture diagram generation, C4 model support
 
-- **specweave-docs-preview** - Docusaurus documentation preview
-  - Install: `/plugin install specweave-docs-preview`
-  - Provides: Beautiful docs UI, hot reload, Mermaid rendering
-
 ---
 
 ## Common Mistakes to Avoid

@@ -222,13 +222,6 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'c#',
     'csharp',
   ],
-  'specweave-docs-preview': [
-    'documentation',
-    'docs',
-    'preview',
-    'docusaurus',
-    'publish',
-  ],
   'specweave-e2e-testing': [
     'playwright',
     'e2e',

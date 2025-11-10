@@ -92,7 +92,6 @@ This skill ensures that your SpecWeave environment is properly configured with a
 - **specweave-backend-nodejs**: nodejs, express, fastify, nestjs, backend
 - **specweave-backend-python**: python, fastapi, django, flask
 - **specweave-backend-dotnet**: dotnet, .net, aspnet, c#
-- **specweave-docs-preview**: documentation, docs, preview, docusaurus
 - **specweave-e2e-testing**: playwright, e2e, end-to-end, browser
 
 ## Usage Examples
