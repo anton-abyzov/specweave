@@ -151,6 +151,17 @@
       }
     },
     {
+      "name": "specweave-docs-preview",
+      "description": "Interactive documentation preview - Launch Docusaurus dev server with hot reload, auto-generated sidebar, Mermaid diagrams. Build static sites for deployment.",
+      "source": "./plugins/specweave-docs-preview",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
+    },
+    {
       "name": "specweave-tooling",
       "description": "SpecWeave tooling - skill creation, skill routing",
       "source": "./plugins/specweave-tooling",
