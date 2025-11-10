@@ -6,27 +6,27 @@
   "adapters": {
     "default": "claude"
   },
-  "documentation": {
-    "preview": {
-      "enabled": false,
-      "autoInstall": false,
-      "port": 3015,
-      "openBrowser": true,
-      "theme": "default",
-      "excludeFolders": [
-        "legacy",
-        "node_modules"
-      ]
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,
+      "sync_tasks_md": true,
+      "external_tracker_sync": true
+    },
+    "post_increment_planning": {
+      "auto_create_github_issue": true
     }
   },
   "sync": {
+    "enabled": true,
     "activeProfile": "specweave-dev",
+    "settings": {
+      "autoCreateIssue": true,
+      "syncDirection": "bidirectional"
+    },
     "profiles": {
       "specweave-dev": {
         "provider": "github",
         "displayName": "SpecWeave Development",
-        "description": "GitHub sync for SpecWeave framework development",
-        "strategy": "simple",
         "config": {
           "owner": "anton-abyzov",
           "repo": "specweave"
@@ -40,27 +40,19 @@
           "warnThreshold": 100
         }
       }
-    },
-    "settings": {
-      "autoDetectProject": true,
-      "autoCreateIssue": true,
-      "syncDirection": "bidirectional",
-      "defaultTimeRange": "1M",
-      "rateLimitProtection": true,
-      "conflictResolution": "prompt"
     }
   },
-  "hooks": {
-    "post_spec_update": {
-      "auto_sync": true
-    },
-    "post_user_story_complete": {
-      "auto_sync": true
-    },
-    "post_task_completion": {
-      "sync_living_docs": true,
-      "sync_tasks_md": true,
-      "external_tracker_sync": true
+  "documentation": {
+    "preview": {
+      "enabled": false,
+      "autoInstall": false,
+      "port": 3015,
+      "openBrowser": true,
+      "theme": "default",
+      "excludeFolders": [
+        "legacy",
+        "node_modules"
+      ]
     }
   }
 }

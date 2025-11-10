@@ -2,12 +2,153 @@
 
 All notable changes to SpecWeave will be documented in this file.
 
+---
+
+## [0.13.0] - 2025-11-10
+
+### 🏗️ Architecture - Hooks System Refactoring
+
+**Major architectural improvement**: External tool sync logic has been moved from the core plugin to respective plugin hooks, following Claude Code's native plugin architecture.
+
+#### Changed
+
+- **Core Hook Refactored** (`plugins/specweave/hooks/post-task-completion.sh`)
+  - Reduced from 452 lines to 330 lines (27% smaller)
+  - Removed all external tool sync logic (GitHub, JIRA, Azure DevOps)
+  - Now handles ONLY core concerns: sound, living docs, translation, self-reflection
+  - No external tool dependencies (no gh CLI, JIRA API, or ADO API required in core)
+
+- **GitHub Sync Moved to Plugin** (`plugins/specweave-github/hooks/post-task-completion.sh`)
+  - Extracted 107 lines of GitHub sync logic to dedicated plugin hook (241 lines total)
+  - Self-contained: checks preconditions, updates issue checkboxes, posts progress comments
+  - Optional: Only runs if `specweave-github` plugin installed
+
+- **JIRA Sync Moved to Plugin** (`plugins/specweave-jira/hooks/post-task-completion.sh`)
+  - Extracted 11 lines of JIRA sync logic to dedicated plugin hook (150 lines total)
+  - Self-contained: checks preconditions, calls JIRA sync script
+  - Optional: Only runs if `specweave-jira` plugin installed
+
+- **ADO Sync Moved to Plugin** (`plugins/specweave-ado/hooks/post-task-completion.sh`)
+  - Extracted 11 lines of Azure DevOps sync logic to dedicated plugin hook (150 lines total)
+  - Self-contained: checks preconditions, calls ADO sync script
+  - Optional: Only runs if `specweave-ado` plugin installed
+
+#### Added
+
+- **Hook Registration** (`hooks.json`)
+  - Each plugin now registers its own hooks via `hooks.json`
+  - Claude Code loads and executes all plugin hooks automatically
+  - Parallel execution: All hooks run concurrently (faster!)
+
+- **Plugin-Specific Logging**
+  - GitHub hook logs with `[GitHub]` prefix
+  - JIRA hook logs with `[JIRA]` prefix
+  - ADO hook logs with `[ADO]` prefix
+  - Easier debugging and troubleshooting
+
+- **Comprehensive Documentation**
+  - Architecture analysis: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md`
+  - Core plugin hooks README: `plugins/specweave/hooks/README.md` (updated)
+  - GitHub plugin hooks README: `plugins/specweave-github/hooks/README.md` (new)
+  - JIRA plugin hooks README: `plugins/specweave-jira/hooks/README.md` (new)
+  - ADO plugin hooks README: `plugins/specweave-ado/hooks/README.md` (new)
+  - Migration guide: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/MIGRATION-GUIDE-v0.13.0.md`
+  - Updated CLAUDE.md with hooks architecture section
+
+#### Benefits
+
+- ✅ **27% smaller core hook** (452 → 330 lines)
+- ✅ **100% decoupled** - Core plugin has zero external tool dependencies
+- ✅ **Optional plugins** - GitHub sync only runs if plugin installed
+- ✅ **Parallel execution** - All plugin hooks run concurrently (faster)
+- ✅ **Independent testing** - Test each hook in isolation (80% easier)
+- ✅ **Cleaner separation** - Core vs. external tool concerns
+- ✅ **Future-proof** - Follows Claude Code's native plugin architecture
+
+#### Migration
+
+**No breaking changes!** Existing projects continue to work without modification.
+
+**Recommended upgrade**:
+```bash
+# Re-run init to update hooks
+npx specweave@latest init .
+```
+
+See migration guide for detailed instructions: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/MIGRATION-GUIDE-v0.13.0.md`
+
+---
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
 ## [Unreleased]
+
+---
+
+## [0.12.8] - 2025-11-10
+
+### Fixed
+
+- **CRITICAL: GitHub/Jira/ADO Sync Not Working After Init** (Issue #29):
+  - `specweave init` now automatically creates sync configuration in `.specweave/config.json`
+  - Added `writeSyncConfig()` function that runs after credential setup
+  - Enables `post_task_completion` and `post_increment_planning` hooks
+  - Auto-detects GitHub repo from git remote
+  - Writes sync profiles with proper owner/repo/domain/organization
+  - **Result**: Living docs now sync to GitHub/Jira/ADO automatically after task completion!
+
+### Changed
+
+- **Hook Architecture Correction**: Removed unnecessary hook copying code (280 lines removed)
+  - Hooks stay in `plugins/specweave/hooks/` (NOT copied to `.claude/hooks/`)
+  - Claude Code discovers hooks automatically via `hooks.json` using `${CLAUDE_PLUGIN_ROOT}`
+  - Removed dead functions: `copyHooks()`, `copyCommands()`, `copyAgents()`, `copySkills()`, `injectSystemPromptForInit()`
+  - See `.specweave/increments/0015-hierarchical-external-sync/reports/HOOK-ARCHITECTURE-CORRECTION.md`
+- Plugin TypeScript files compiled with esbuild for faster builds
+- Build process now includes `build:plugins` step to transpile plugin .ts files
+
+### Technical
+
+- Added `tsconfig.plugins.json` for plugin compilation (later removed in favor of esbuild)
+- Created `scripts/copy-plugin-js.js` to transpile plugins with esbuild
+- Updated `package.json` build script to include plugin transpilation
+- Documented correct Claude Code hook architecture in `CLAUDE.md`
+
+---
+
+## [0.13.0] - 2025-11-10
+
+### Added
+
+- **Spec-Based External Sync** (Increment 0015):
+  - Revolutionary architecture: Sync specs (permanent) ↔ GitHub Projects/Jira Epics/ADO Features (not increments!)
+  - Specs are permanent source of truth, increments are temporary implementation vehicles
+  - PM-friendly: Stakeholders track FEATURES (spec-level), not implementation iterations
+  - Core implementation:
+    - Spec metadata system (`spec-metadata-manager.ts`, `spec-parser.ts`, 793 lines)
+    - GitHub spec sync (`github-spec-sync.ts`, 657 lines, bidirectional)
+    - Living docs auto-sync after task completion (`github-issue-updater.ts`, 434 lines)
+    - Increment change sync (`github-sync-increment-changes.ts`, 336 lines + hook)
+    - Status change sync (pause/resume/abandon)
+    - Architecture docs sync (ADRs/HLDs posted as comments)
+    - Conflict detection and resolution
+  - Three sync strategies documented (simple/filtered/custom)
+  - Manual configuration fully functional
+  - Pattern established for Jira/ADO to follow GitHub implementation
+
+### Changed
+
+- External sync target changed from increments to specs (architectural improvement)
+- GitHub sync now uses Projects (feature-level) instead of Issues (increment-level)
+
+### Documentation
+
+- Added comprehensive sync strategies guide (`docs-site/docs/guides/external-sync/sync-strategies.md`)
+- 11 internal completion reports documenting implementation
+- Architectural rationale documented in `ARCHITECTURE-CORRECTION-SPEC-SYNC.md`
 
 ---
 
