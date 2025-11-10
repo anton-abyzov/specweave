@@ -70,18 +70,10 @@ async function syncLivingDocs(incrementId: string): Promise<void> {
     console.log(`📄 Detected ${changedDocs.length} changed doc(s):`);
     changedDocs.forEach((doc) => console.log(`   - ${doc}`));
 
-    // 4. Invoke /sync-docs update command
-    // TODO: Implement actual sync command invocation
-    // For now, just log what would happen
+    // 4. Sync to GitHub if configured
+    await syncToGitHub(incrementId, changedDocs);
 
-    console.log('\n🔄 Syncing living docs...');
-    console.log('   (Actual sync command invocation to be implemented in future version)');
-    console.log('   Would invoke: /sync-docs update');
-
-    // Future implementation:
-    // await invokeSyncDocsCommand(incrementId);
-
-    console.log('✅ Living docs sync check complete\n');
+    console.log('✅ Living docs sync complete\n');
 
   } catch (error) {
     console.error('❌ Error syncing living docs:', error);
@@ -118,12 +110,61 @@ function detectChangedDocs(): string[] {
 }
 
 /**
- * Invoke /sync-docs update command
- * TODO: Implement actual command invocation
+ * Sync changed docs to GitHub
  */
-async function invokeSyncDocsCommand(incrementId: string): Promise<void> {
-  // This will be implemented in future version when /sync-docs command is ready
-  console.log(`   Invoking /sync-docs update for ${incrementId}`);
+async function syncToGitHub(incrementId: string, changedDocs: string[]): Promise<void> {
+  try {
+    console.log('\n🔄 Syncing to GitHub...');
+
+    // Dynamic import to avoid circular dependencies
+    const {
+      loadIncrementMetadata,
+      detectRepo,
+      collectLivingDocs,
+      updateIssueLivingDocs,
+      postArchitectureComment
+    } = await import('../../../specweave-github/lib/github-issue-updater.js');
+
+    // 1. Load metadata
+    const metadata = await loadIncrementMetadata(incrementId);
+    if (!metadata?.github?.issue) {
+      console.log('ℹ️  No GitHub issue linked, skipping GitHub sync');
+      return;
+    }
+
+    // 2. Detect repository
+    const repoInfo = await detectRepo();
+    if (!repoInfo) {
+      console.log('⚠️  Could not detect GitHub repository, skipping GitHub sync');
+      return;
+    }
+
+    const { owner, repo } = repoInfo;
+    const issueNumber = metadata.github.issue;
+
+    console.log(`   Syncing to ${owner}/${repo}#${issueNumber}`);
+
+    // 3. Collect all living docs
+    const livingDocs = await collectLivingDocs(incrementId);
+
+    // 4. Update issue with living docs section
+    if (livingDocs.specs.length > 0 || livingDocs.architecture.length > 0 || livingDocs.diagrams.length > 0) {
+      await updateIssueLivingDocs(issueNumber, livingDocs, owner, repo);
+    }
+
+    // 5. Post comments for newly created architecture docs
+    for (const docPath of changedDocs) {
+      if (docPath.includes('/architecture/')) {
+        await postArchitectureComment(issueNumber, docPath, owner, repo);
+      }
+    }
+
+    console.log('✅ GitHub sync complete');
+
+  } catch (error) {
+    console.error('❌ Error syncing to GitHub:', error);
+    console.error('   (Non-blocking - continuing...)');
+  }
 }
 
 // CLI entry point

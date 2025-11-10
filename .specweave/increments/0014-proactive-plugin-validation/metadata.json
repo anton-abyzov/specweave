@@ -1,22 +1,25 @@
 {
   "id": "0014-proactive-plugin-validation",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "priority": "P0",
   "created": "2025-11-10T00:00:00Z",
+  "completed": "2025-11-09T00:00:00Z",
   "github": {
     "issue": 28,
     "url": "https://github.com/anton-abyzov/specweave/issues/28",
-    "synced": "2025-11-10T00:00:00Z"
+    "synced": "2025-11-10T00:00:00Z",
+    "closed": "2025-11-10T00:00:00Z"
   },
   "tasks": {
     "total": 10,
-    "completed": 0,
-    "percentage": 0
+    "completed": 9,
+    "percentage": 90
   },
   "effort": {
     "estimated_hours": 26,
-    "actual_hours": 0
+    "actual_hours": 12
   },
-  "version_target": "0.9.4"
+  "version_target": "0.9.4",
+  "notes": "Phase 1 complete (90%). Phase 2 planned for v0.9.5 (remaining command integration + comprehensive tests)."
 }

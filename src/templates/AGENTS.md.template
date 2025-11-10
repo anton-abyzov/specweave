@@ -428,9 +428,19 @@ When you complete a task (mark todo as done), the hook:
 
 #### For Other AI Tools (Manual ⚠️)
 
-**⚠️ IMPORTANT**: After completing EACH task, manually update tasks.md:
+**⚠️ IMPORTANT**: After completing EACH task, run these slash commands to keep everything in sync:
 
-**Step-by-Step**:
+**Quick Commands** (copy-paste friendly):
+
+```bash
+# After completing a task, run these three commands:
+
+/specweave:sync-tasks                  # 1. Update tasks.md completion status
+/specweave:sync-docs update            # 2. Sync to living docs
+/specweave-github:sync <increment-id>  # 3. Sync to GitHub (replace <increment-id> with your increment, e.g., 0007)
+```
+
+**Alternative: Manual Update** (if slash commands unavailable):
 
 ```bash
 # Example: You just completed T-001
@@ -1356,15 +1366,51 @@ Only **Claude Code** has automatic hooks (via `post-task-completion.sh`) that sy
 
 ### Summary Checklist (After Every Task)
 
-When you complete a task in non-Claude tools:
+When you complete a task in non-Claude tools, **run these slash commands**:
 
-1. ✅ Mark task complete in tasks.md
-2. ✅ Update living docs (see "Documentation Updates" section)
-3. ✅ **Sync to GitHub/Jira/ADO** (this section)
-4. ✅ Update RFC if applicable (if task implements architecture decision)
-5. ✅ Continue to next task
+#### Quick Sync (After Each Task Completion)
 
-**Remember**: In Claude Code, steps 3-4 happen automatically via hooks. In other tools, YOU must do them manually!
+```bash
+# 1. Sync tasks.md with completion status
+/specweave:sync-tasks
+
+# 2. Update living docs from completed work
+/specweave:sync-docs update
+```
+
+#### External Tracker Sync (If Enabled)
+
+```bash
+# 3. Sync to external tracker (choose one based on your setup):
+
+# GitHub Issues:
+/specweave-github:sync <increment-id>
+
+# Jira:
+/specweave-jira:sync <increment-id>
+
+# Azure DevOps:
+/specweave-ado:sync <increment-id>
+```
+
+#### Example Full Workflow
+
+```bash
+# After completing a task in your current increment:
+
+# Step 1: Update tasks.md
+/specweave:sync-tasks
+
+# Step 2: Sync living docs
+/specweave:sync-docs update
+
+# Step 3: Sync to GitHub (if using GitHub tracking)
+/specweave-github:sync <increment-id>  # e.g., /specweave-github:sync 0016
+
+# Done! Continue to next task.
+```
+
+**Remember**: In Claude Code, all of this happens **automatically via hooks**. In other tools (Cursor, Copilot, ChatGPT), **YOU must run these commands manually** after each task!
 
 ---
 

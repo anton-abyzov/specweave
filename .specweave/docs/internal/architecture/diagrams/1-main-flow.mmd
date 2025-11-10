@@ -53,35 +53,9 @@ flowchart TD
     EnablePlugins2 --> DecisionGate
     NoPluginNeeded --> DecisionGate
 
-    %% Decision Gate
-    DecisionGate{User Decision Gate}
-    DecisionGate --> Q1[Q1: How deep should we spec?]
-    Q1 --> A1{User selects:}
-    A1 -->|High-level| DepthHigh[User stories only<br/>Minimal detail<br/>Fast iteration]
-    A1 -->|Detailed| DepthDetailed[Full acceptance criteria<br/>Edge cases<br/>Complete test scenarios]
-    DepthHigh --> Q2
-    DepthDetailed --> Q2
-
-    Q2[Q2: Test-Driven Development?]
-    Q2 --> A2{User selects:}
-    A2 -->|Yes TDD| TDDYes[Tests written first<br/>Red-Green-Refactor<br/>Higher confidence]
-    A2 -->|No TDD| TDDNo[Tests after code<br/>Faster iteration<br/>Pragmatic approach]
-    TDDYes --> Q3
-    TDDNo --> Q3
-
-    Q3[Q3: Test quality level?]
-    Q3 --> A3{User selects:}
-    A3 -->|Basic| QualBasic[Coverage targets<br/>Manual review<br/>Fast validation]
-    A3 -->|AI Judge| QualAI[AI quality assessment<br/>Edge case detection<br/>Architecture review]
-    QualBasic --> Q4
-    QualAI --> Q4
-
-    Q4[Q4: Living docs sync?]
-    Q4 --> A4{User selects:}
-    A4 -->|Auto| DocsAuto[Hooks fire after every task<br/>Docs auto-update<br/>Zero manual work]
-    A4 -->|Manual| DocsManual[User runs sync-docs<br/>More control<br/>Manual effort]
-    DocsAuto --> Research
-    DocsManual --> Research
+    %% Decision Gate (simplified - see docs for details)
+    DecisionGate[User Decision Gate:<br/>Spec depth, TDD mode,<br/>Test quality, Docs sync]
+    DecisionGate --> Research
 
     %% Research Phase (OPTIONAL)
     Research{Research needed?}
@@ -99,7 +73,7 @@ flowchart TD
 
     %% Task Breakdown with Embedded Tests (MANDATORY - v0.7.0+)
     PlanContent --> Tasks[test-aware-planner Agent:<br/>Task Breakdown + Test Plans]
-    Tasks --> TaskSteps[test-aware-planner performs:<br/>• Break into tasks<br/>• Embed test plan in each task<br/>• Bidirectional AC↔Task↔Test linking<br/>• BDD format (Given/When/Then)]
+    Tasks --> TaskSteps[test-aware-planner performs:<br/>• Break into tasks<br/>• Embed test plan in each task<br/>• Bidirectional AC-Task-Test linking<br/>• BDD format Given/When/Then]
     TaskSteps --> TaskGen[test-aware-planner Agent:<br/>Generate tasks.md with embedded tests]
     TaskGen --> TaskContent[tasks.md contains:<br/>Task list with Test Plans embedded<br/>Dependencies<br/>Acceptance criteria<br/>Test files + Given/When/Then<br/>✅ 80%+ coverage target]
 
@@ -202,7 +176,7 @@ flowchart TD
     classDef quality fill:#FCE4EC,stroke:#C2185B,stroke-width:3px,color:#000000
     classDef status fill:#FFF9C4,stroke:#F57F17,stroke-width:3px,color:#000000
 
-    class Type,Check1,UserChoice1,Check2,UserChoice2,DecisionGate,A1,A2,A3,A4,Research,CoverageCheck,CoverageResult,ValidateCheck,AIJudge,ValidationResult,StatusAction,PauseDecision,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next,CheckBrownfield decision
+    class Type,Check1,UserChoice1,Check2,UserChoice2,Research,CoverageCheck,CoverageResult,ValidateCheck,AIJudge,ValidationResult,StatusAction,PauseDecision,TaskComplete,DocsSync,CheckMore,GatePass,NewDeps,Next,CheckBrownfield decision
     class Init,Execute,Close,Validate process
     class Phase1,Phase2,Phase3,Phase4,PostHook hook
     class Suggest1,EnablePlugins1,Suggest2,EnablePlugins2,SuggestTaskPlugin,SuggestFuture plugin
