@@ -199,6 +199,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Clear guidance on success/failure scenarios
   - Non-blocking (can skip with flag, not recommended)
 
+- **Jira Resource Validator** (`src/utils/external-resource-validator.ts` - 457 lines)
+  - **Smart project validation**: Checks if Jira project exists, prompts user to select existing or create new
+  - **Per-board smart detection**: Handles ANY combination of IDs and names (key innovation!)
+    - **All IDs** (e.g., "1,2,3") → Validates boards exist
+    - **All names** (e.g., "Frontend,Backend,Mobile") → Creates boards, updates `.env` with IDs
+    - **Mixed** (e.g., "101,102,QA,Dashboard") → Validates 101,102, creates QA/Dashboard, updates `.env` with all IDs
+  - **No more all-or-nothing**: Each board checked individually, allowing incremental board additions
+  - **Interactive prompts**: User-friendly project selection using inquirer
+  - **Automatic .env updates**: Always contains board IDs after validation
+  - **Jira REST API v3**: Full integration for projects, boards, and filters
+  - **CLI Command**: `specweave validate-jira [--env <path>]`
+  - **Comprehensive documentation**: `plugins/specweave-jira/skills/jira-resource-validator/SKILL.md` (585+ lines, updated with mixed mode examples)
+
 - **Comprehensive Tests** (30+ unit tests created)
   - Marketplace detection tests (5 tests)
   - Keyword mapping tests (10 tests)
@@ -218,13 +231,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Cryptic errors from missing plugins** - Now shows clear guidance and auto-installs
 - **Environment migration friction** - Seamless setup across local/VM/Cloud IDE
 - **Manual plugin installation** - Fully automated (10-15 minutes → <5 seconds)
+- **Missing Jira projects/boards** - Smart validator creates missing resources and updates configuration
 
 #### Impact
 
 ✅ **Zero manual plugin installations** after this release
+✅ **Zero manual Jira setup** - Creates projects and boards automatically
 ✅ **<5 seconds validation overhead** per command (cached: <2s)
 ✅ **100% detection rate** for context plugins (2+ keyword threshold)
 ✅ **Seamless environment migration** (local → VM → Cloud IDE)
+✅ **Smart .env updates** - Board names automatically replaced with IDs
 
 **User Experience**:
 - **Before**: 10-15 minutes manual setup per new environment
@@ -629,7 +645,7 @@ const stdout = execFileSync(command, args, {
   - Provides actionable troubleshooting steps
   - Suggests enabling DEBUG mode for more details
 
-- **Test Script** (`test-cli-detection.js`):
+- **Test Script** (`tests/manual/test-cli-detection.js`):
   - Standalone test for detection logic
   - Works with DEBUG mode
   - Easy to share for diagnostics
@@ -666,7 +682,7 @@ Found command in PATH, but verification failed:
 - `src/utils/claude-cli-detector.ts` - Enhanced detection with diagnostics
 - `src/cli/helpers/issue-tracker/utils.ts` - Use central detector
 - `src/cli/commands/init.ts` - Better error messages
-- `test-cli-detection.js` (NEW) - Test script
+- `tests/manual/test-cli-detection.js` (NEW) - Test script
 - `CLAUDE-CLI-DETECTION-IMPROVEMENTS.md` (NEW) - Comprehensive documentation
 
 ---
