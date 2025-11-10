@@ -11,6 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.5] - 2025-11-10
+
+### Added
+
+- **Ultrasmart Adapter Detection** (ZERO FRICTION EXPERIENCE):
+  - When continuing with existing SpecWeave project, reads `adapters.default` from config
+  - If existing adapter matches detected tool → automatically uses it (no prompt!)
+  - Skips redundant "Use claude for this project?" question when config already says `claude`
+  - Only prompts if:
+    - New project (no config yet)
+    - Adapter mismatch (config says `cursor`, but `claude` detected)
+    - Config missing or invalid
+  - Significantly faster workflow for re-initialization
+
+### Changed
+
+- **Smart Adapter Resolution**:
+  - Shows clear message: `✅ Using existing adapter: claude`
+  - Adds context: `→ Detected tool matches config, no changes needed`
+  - If mismatch detected, warns user:
+    - `⚠️  Existing adapter: cursor`
+    - `⚠️  Detected tool: claude`
+    - Then prompts for confirmation
+
+### Fixed
+
+- No more redundant adapter selection prompts when continuing with existing project
+- Better user experience: respects existing project configuration
+
+---
+
 ## [0.12.4] - 2025-11-10
 
 ### Added
