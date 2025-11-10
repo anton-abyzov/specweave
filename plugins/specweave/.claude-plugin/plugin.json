@@ -18,5 +18,6 @@
     "pm",
     "architect",
     "living-docs"
-  ]
+  ],
+  "hooks": "hooks/hooks.json"
 }
