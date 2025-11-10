@@ -131,6 +131,23 @@ program
     await qaCommand(incrementId, options);
   });
 
+// Validate plugins command - Plugin validation
+program
+  .command('validate-plugins')
+  .description('Validate SpecWeave plugin installation')
+  .option('--auto-install', 'Auto-install missing components', false)
+  .option('--context <description>', 'Increment description for context detection')
+  .option('--dry-run', 'Show what would be installed without installing', false)
+  .option('-v, --verbose', 'Show detailed validation steps', false)
+  .action(async (options) => {
+    const { setupValidatePluginsCommand } = await import('../dist/cli/commands/validate-plugins.js');
+    // Create a temporary program for this command
+    const tempProgram = new Command();
+    setupValidatePluginsCommand(tempProgram);
+    // Execute the action directly
+    await import('../dist/cli/commands/validate-plugins.js').then(m => m.runValidation(options));
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -150,6 +167,9 @@ program.on('--help', () => {
   console.log('  $ specweave qa 0008                         # Quick quality check');
   console.log('  $ specweave qa 0008 --pre                   # Pre-implementation check');
   console.log('  $ specweave qa 0008 --gate --export         # Quality gate + export to tasks');
+  console.log('  $ specweave validate-plugins                # Validate plugin installation');
+  console.log('  $ specweave validate-plugins --auto-install # Auto-install missing plugins');
+  console.log('  $ specweave validate-plugins --dry-run      # Preview what would be installed');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

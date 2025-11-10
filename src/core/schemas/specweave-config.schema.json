@@ -437,42 +437,145 @@
                   "description": "Profile description",
                   "maxLength": 512
                 },
+                "strategy": {
+                  "type": "string",
+                  "description": "Sync strategy: simple (one container), filtered (multiple containers + boards), custom (raw query)",
+                  "enum": ["simple", "filtered", "custom"],
+                  "default": "simple"
+                },
                 "config": {
                   "type": "object",
-                  "description": "Provider-specific configuration",
-                  "oneOf": [
-                    {
-                      "properties": {
-                        "owner": { "type": "string" },
-                        "repo": { "type": "string" }
-                      },
-                      "required": ["owner", "repo"]
+                  "description": "Provider-specific configuration (backward compatible + hierarchical v0.10.0+)",
+                  "properties": {
+                    "owner": {
+                      "type": "string",
+                      "description": "GitHub owner (simple strategy)"
                     },
-                    {
-                      "properties": {
-                        "domain": { "type": "string" },
-                        "projectKey": { "type": "string" },
-                        "issueType": {
-                          "type": "string",
-                          "enum": ["Epic", "Story", "Task"]
-                        }
-                      },
-                      "required": ["domain", "projectKey"]
+                    "repo": {
+                      "type": "string",
+                      "description": "GitHub repo (simple strategy)"
                     },
-                    {
-                      "properties": {
-                        "organization": { "type": "string" },
-                        "project": { "type": "string" },
-                        "workItemType": {
-                          "type": "string",
-                          "enum": ["Epic", "Feature", "User Story"]
+                    "domain": {
+                      "type": "string",
+                      "description": "Jira domain (all strategies)"
+                    },
+                    "projectKey": {
+                      "type": "string",
+                      "description": "Jira project key (simple strategy, backward compatible)"
+                    },
+                    "issueType": {
+                      "type": "string",
+                      "enum": ["Epic", "Story", "Task"],
+                      "description": "Jira issue type"
+                    },
+                    "organization": {
+                      "type": "string",
+                      "description": "ADO organization (all strategies)"
+                    },
+                    "project": {
+                      "type": "string",
+                      "description": "ADO project (simple strategy, backward compatible)"
+                    },
+                    "workItemType": {
+                      "type": "string",
+                      "enum": ["Epic", "Feature", "User Story"],
+                      "description": "ADO work item type"
+                    },
+                    "containers": {
+                      "type": "array",
+                      "description": "Containers for filtered strategy (v0.10.0+)",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Container ID (Jira project key, GitHub repo, ADO project)",
+                            "minLength": 1
+                          },
+                          "subOrganizations": {
+                            "type": "array",
+                            "description": "Sub-organizations (boards, project boards, team boards)",
+                            "items": { "type": "string" }
+                          },
+                          "filters": {
+                            "type": "object",
+                            "description": "Filters applied to this container",
+                            "properties": {
+                              "includeLabels": {
+                                "type": "array",
+                                "items": { "type": "string" }
+                              },
+                              "excludeLabels": {
+                                "type": "array",
+                                "items": { "type": "string" }
+                              },
+                              "assignees": {
+                                "type": "array",
+                                "items": { "type": "string" }
+                              },
+                              "statusCategories": {
+                                "type": "array",
+                                "items": { "type": "string" }
+                              },
+                              "components": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Jira components"
+                              },
+                              "sprints": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Jira sprints"
+                              },
+                              "issueTypes": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "Jira issue types"
+                              },
+                              "milestones": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "GitHub milestones"
+                              },
+                              "states": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": ["open", "closed"]
+                                },
+                                "description": "GitHub states"
+                              },
+                              "areaPaths": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "ADO area paths"
+                              },
+                              "iterationPaths": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "ADO iteration paths"
+                              },
+                              "workItemTypes": {
+                                "type": "array",
+                                "items": { "type": "string" },
+                                "description": "ADO work item types"
+                              }
+                            },
+                            "additionalProperties": false
+                          }
                         },
-                        "areaPath": { "type": "string" },
-                        "iterationPath": { "type": "string" }
+                        "required": ["id"],
+                        "additionalProperties": false
                       },
-                      "required": ["organization", "project"]
+                      "minItems": 1
+                    },
+                    "customQuery": {
+                      "type": "string",
+                      "description": "Custom query for custom strategy (JQL/GraphQL/WIQL)",
+                      "minLength": 1
                     }
-                  ]
+                  },
+                  "additionalProperties": false
                 },
                 "timeRange": {
                   "type": "object",

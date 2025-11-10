@@ -484,22 +484,24 @@ For most users, these 8 commands cover 95% of workflows:
 
 ## Command Naming Convention
 
-**All commands use the `/specweave:*` namespace** to avoid conflicts with Claude Code's native commands.
+**All commands use the `/specweave:*` namespace** to avoid conflicts with Claude Code's native commands and other repositories.
 
-**NO SHORTCUTS**: Do NOT use shortcuts like `/inc`, `/do`, `/qa`, etc. They conflict with Claude Code and will break functionality.
+**NO SHORTCUTS**: Do NOT use shortcuts like `/inc`, `/do`, `/pause`, `/resume`, `/qa`, etc. They conflict with Claude Code and other tools and will break functionality.
 
-**Correct**:
+**Correct** (full namespace):
 ```bash
-/specweave:increment "feature"
-/specweave:do
-/specweave:qa 0008
+/specweave:increment "feature"     # ✅ Full namespace
+/specweave:do                       # ✅ Full namespace
+/specweave:qa 0008                  # ✅ Full namespace
+/specweave:pause 0008               # ✅ Full namespace
 ```
 
-**Incorrect**:
+**Incorrect** (shortcuts without namespace):
 ```bash
-/inc "feature"      # ❌ Conflicts with Claude Code
-/do                 # ❌ Conflicts with Claude Code
-/qa 0008            # ❌ Conflicts with Claude Code
+/inc "feature"      # ❌ Shortcut - conflicts with Claude Code and other repos
+/do                 # ❌ Shortcut - conflicts with Claude Code and other repos
+/qa 0008            # ❌ Shortcut - conflicts with Claude Code and other repos
+/pause 0008         # ❌ Shortcut - conflicts with Claude Code and other repos
 ```
 
 ---

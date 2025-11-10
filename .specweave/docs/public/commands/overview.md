@@ -7,7 +7,7 @@ sidebar_position: 1
 SpecWeave provides slash commands for every stage of your development workflow. This page covers the **main workflow commands** you'll use daily.
 
 :::warning No Shortcuts
-All commands MUST use the `/specweave:*` namespace prefix. Shortcuts like `/specweave:increment`, `/specweave:do`, `/pause` conflict with Claude Code's native commands.
+All commands MUST use the `/specweave:*` namespace prefix. Shortcuts like `/inc`, `/do`, `/pause`, `/resume` (without the namespace) conflict with Claude Code's native commands and other repositories.
 :::
 
 ## The Core Workflow
