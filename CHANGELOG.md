@@ -11,34 +11,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.6] - 2025-11-10
+
+### Changed
+
+- **Adapter Detection Always Asks User** (FIXED UX):
+  - Now ALWAYS prompts user to confirm or change adapter (even if matches config)
+  - Shows current adapter from config: `📋 Current adapter: claude`
+  - Indicates match status: `Detected tool matches current config`
+  - Warns if mismatch: `⚠️  Detected tool (cursor) differs from config`
+  - User retains full control over adapter choice on re-initialization
+  - **Important**: Reverts v0.12.5 auto-continue behavior that skipped user confirmation
+
+### Fixed
+
+- Removed auto-continue when adapter matches config (was too automatic)
+- User must explicitly confirm adapter choice on every re-initialization
+
+---
+
 ## [0.12.5] - 2025-11-10
 
 ### Added
 
-- **Ultrasmart Adapter Detection** (ZERO FRICTION EXPERIENCE):
-  - When continuing with existing SpecWeave project, reads `adapters.default` from config
-  - If existing adapter matches detected tool → automatically uses it (no prompt!)
-  - Skips redundant "Use claude for this project?" question when config already says `claude`
-  - Only prompts if:
-    - New project (no config yet)
-    - Adapter mismatch (config says `cursor`, but `claude` detected)
-    - Config missing or invalid
-  - Significantly faster workflow for re-initialization
+- **Smart Adapter Context Display**:
+  - When continuing with existing SpecWeave project, shows current adapter from config
+  - Displays match status between config and detected tool
+  - Clearer context for adapter selection decisions
 
 ### Changed
 
-- **Smart Adapter Resolution**:
-  - Shows clear message: `✅ Using existing adapter: claude`
-  - Adds context: `→ Detected tool matches config, no changes needed`
-  - If mismatch detected, warns user:
-    - `⚠️  Existing adapter: cursor`
-    - `⚠️  Detected tool: claude`
-    - Then prompts for confirmation
-
-### Fixed
-
-- No more redundant adapter selection prompts when continuing with existing project
-- Better user experience: respects existing project configuration
+- Improved adapter detection messaging with current config display
 
 ---
 
