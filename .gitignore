@@ -112,3 +112,6 @@ temp/
 # Workflow trigger - increment 0014 cleanup
 *.bak
 coverage/
+
+# Claude Code hooks (NOT needed - hooks live in plugins/)
+.claude/hooks/
