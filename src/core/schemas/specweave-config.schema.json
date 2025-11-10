@@ -903,7 +903,7 @@
         }
       },
       "plugins": {
-        "enabled": ["specweave-github", "specweave-docs-preview"]
+        "enabled": ["specweave-github", "specweave-frontend"]
       }
     }
   ]

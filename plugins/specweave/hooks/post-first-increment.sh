@@ -2,7 +2,7 @@
 # SpecWeave Post-First-Increment Hook
 #
 # Triggers after the first increment is completed
-# Suggests docs-preview plugin for internal documentation
+# Congratulates the user on completing their first increment
 #
 # NON-INTERACTIVE: Just shows a message (hooks run in background)
 
@@ -38,40 +38,22 @@ if [ "$COMPLETED_COUNT" -ne 1 ]; then
   exit 0
 fi
 
-# Check if docs-preview plugin is already installed
-PLUGIN_INSTALLED=false
-if command -v claude &> /dev/null; then
-  if claude plugin list --installed 2>/dev/null | grep -q "specweave-docs-preview"; then
-    PLUGIN_INSTALLED=true
-  fi
-fi
-
-# If already installed, skip suggestion
-if [ "$PLUGIN_INSTALLED" = true ]; then
-  exit 0
-fi
-
-# Show suggestion (non-interactive message)
+# Show congratulations message (non-interactive)
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🎉 Congratulations! You completed your first increment!"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-echo "📚 Preview your documentation in a beautiful UI?"
+echo "✅ Your increment has been documented in:"
+echo "   .specweave/increments/[increment-id]/"
 echo ""
-echo "The specweave-docs-preview plugin can generate a Docusaurus site from"
-echo "your .specweave/docs/ folder with:"
+echo "📚 View your documentation:"
+echo "   - Specs: .specweave/docs/internal/specs/"
+echo "   - Architecture: .specweave/docs/internal/architecture/"
 echo ""
-echo "   ✓ Auto-generated sidebar from folder structure"
-echo "   ✓ Hot reload (edit markdown, see changes instantly)"
-echo "   ✓ Mermaid diagram rendering"
-echo "   ✓ Priority sorting (Strategy → Specs → Architecture → ...)"
-echo ""
-echo "📦 Install with:"
-echo "   /plugin install specweave-docs-preview"
-echo ""
-echo "🚀 Then launch:"
-echo "   /specweave:docs preview"
+echo "🚀 Next steps:"
+echo "   - Review your increment: /specweave:status"
+echo "   - Start next increment: /specweave:increment \"feature name\""
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""

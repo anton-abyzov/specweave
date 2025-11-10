@@ -39,9 +39,9 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### plugin-installer
 
-**Description**: Proactive just-in-time plugin installation. Auto-detects when specialized plugins are needed (docs-preview, frontend, kubernetes, ML, payments, testing, etc.) and installs them automatically before use. Activates for preview docs, Docusaurus, React, Next.js, K8s, Kubernetes, Helm, TensorFlow, PyTorch, ML model, Stripe, billing, payment, Playwright, E2E testing, Figma, design system, ADO, Azure DevOps, infrastructure, Prometheus, Grafana, monitoring, Node.js, Python backend, REST API, cloud deployment, diagram, Mermaid, C4, architecture diagram.
+**Description**: Proactive just-in-time plugin installation. Auto-detects when specialized plugins are needed (frontend, kubernetes, ML, payments, testing, etc.) and installs them automatically before use. Activates for React, Next.js, K8s, Kubernetes, Helm, TensorFlow, PyTorch, ML model, Stripe, billing, payment, Playwright, E2E testing, Figma, design system, ADO, Azure DevOps, infrastructure, Prometheus, Grafana, monitoring, Node.js, Python backend, REST API, cloud deployment, diagram, Mermaid, C4, architecture diagram.
 
-**Activates for**: preview docs, documentation UI, Docusaurus, React, Next.js, frontend, UI component, K8s, Kubernetes, deploy, TensorFlow, ML model, Stripe, billing, E2E testing, Figma, diagram, architecture diagram
+**Activates for**: React, Next.js, frontend, UI component, K8s, Kubernetes, deploy, TensorFlow, ML model, Stripe, billing, E2E testing, Figma, diagram, architecture diagram
 
 **Location**: `.claude/skills/plugin-installer/SKILL.md`
 
