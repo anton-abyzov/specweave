@@ -26,32 +26,64 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue acr
 - `--comment`: Post progress comment (default)
 - `--labels`: Update issue labels based on status
 - `--force`: Force sync even if up-to-date
-- `--direction`: Sync direction (`to-github`, `from-github`, `bidirectional`)
+- `--direction`: Sync direction (`to-github`, `from-github`, `bidirectional` - **default: bidirectional**)
 - `--all`: Sync all active increments
 
 ### Safety Options
 - `--dry-run`: Preview changes without applying
 - `--skip-rate-check`: Skip rate limit validation (not recommended)
 
+## Sync Direction
+
+**Default: Bidirectional** (two-way sync)
+
+SpecWeave syncs changes in **both directions** by default:
+
+| Direction | What It Does | Use When |
+|-----------|-------------|----------|
+| **`bidirectional`** (default) | SpecWeave ↔ GitHub<br>• Pull changes FROM GitHub (status, labels, comments)<br>• Push changes TO GitHub (tasks, progress, metadata) | **Always** (recommended for keeping both systems in sync) |
+| `to-github` | SpecWeave → GitHub only<br>• Push increment progress to GitHub<br>• Don't pull GitHub changes back | Read-only GitHub usage, or when GitHub is downstream |
+| `from-github` | GitHub → SpecWeave only<br>• Pull GitHub issue updates<br>• Don't push SpecWeave changes | Importing GitHub issues, or when SpecWeave is downstream |
+
+**Why Bidirectional?**
+- ✅ Keep both systems synchronized automatically
+- ✅ GitHub status changes update SpecWeave (closed issue → completed increment)
+- ✅ SpecWeave task completion updates GitHub (task done → checklist updated)
+- ✅ Team members can work in either tool
+- ✅ No data loss from changes in either system
+
+**Override if needed:**
+```bash
+# Push only (one-way to GitHub)
+/specweave-github:sync 0004 --direction to-github
+
+# Pull only (one-way from GitHub)
+/specweave-github:sync 0004 --direction from-github
+```
+
 ## Examples
 
 ```bash
-# Interactive sync (select profile + time range)
+# Interactive bidirectional sync (default - two-way)
 /specweave-github:sync 0004
 
-# Use specific profile
+# Use specific profile (still bidirectional by default)
 /specweave-github:sync 0004 --profile specweave-dev
 
-# Specify time range
+# Specify time range (bidirectional)
 /specweave-github:sync 0004 --time-range 1M
 
-# Full sync with all options
+# Full bidirectional sync with all options
 /specweave-github:sync 0004 --profile main --time-range 1M --tasks --labels
+
+# One-way sync examples (override default)
+/specweave-github:sync 0004 --direction to-github     # Push only
+/specweave-github:sync 0004 --direction from-github   # Pull only
 
 # Dry run to preview changes
 /specweave-github:sync 0004 --dry-run
 
-# Force sync all increments
+# Force sync all increments (bidirectional)
 /specweave-github:sync --all --force
 ```
 
@@ -151,35 +183,52 @@ Continue with sync? [Y/n]:
 If confirmed, sync proceeds with progress updates:
 
 ```
-🔄 Syncing increment 0004 to GitHub...
+🔄 Bidirectional sync for increment 0004...
 
 ✓ Profile loaded: specweave-dev
 ✓ GitHub repository: anton-abyzov/specweave
 ✓ Rate limit check: PASSED (4,850/5,000 remaining)
+✓ Sync direction: bidirectional (two-way)
 
 Fetching increment state...
 ✓ Increment loaded: 0004-plugin-architecture
 ✓ GitHub issue: #130
 ✓ Last synced: 30 minutes ago
 
-Detecting changes...
+Detecting changes (both directions)...
+
+FROM GitHub:
+✓ Issue status changed: open → closed
+✓ Label added: ready-for-release
+✓ 2 new comments from team
+
+FROM SpecWeave:
 ✓ 3 new tasks completed (T-005, T-006, T-007)
 ✓ Progress: 4/48 → 7/48 (15%)
 ✓ Current task: T-008
 
-Syncing to GitHub...
+Syncing TO GitHub...
 ✓ Posted progress comment (ID: 1234567)
 ✓ Updated task checklist (7 tasks marked complete)
 ✓ Updated labels: +in-progress
 ✓ Metadata updated
 
+Syncing FROM GitHub...
+✓ Updated increment status: active → completed
+✓ Applied label: ready-for-release
+✓ Imported 2 team comments to increment notes
+
 Rate limit after sync: 4,570/5,000 (91% available)
 
-✅ Sync Complete!
+✅ Bidirectional Sync Complete!
+
+   SpecWeave ↔ GitHub synchronized
+   • Pushed: 3 task updates, progress comment
+   • Pulled: Status change, label, 2 comments
 
 GitHub Issue: https://github.com/anton-abyzov/specweave/issues/130
 Last synced: just now
-Next sync: Use /specweave-github:sync 0004 when ready
+Next sync: Automatic (hook-based) or manual when ready
 ```
 
 ## Key Features
