@@ -25,6 +25,29 @@ interface InitOptions {
   language?: string;  // Language for i18n support
 }
 
+/**
+ * Detect if we're in the SpecWeave framework repository itself
+ * (development mode vs. user project mode)
+ *
+ * @param targetDir - Directory to check
+ * @returns true if this is the SpecWeave framework repo
+ */
+async function isSpecWeaveFrameworkRepo(targetDir: string): Promise<boolean> {
+  try {
+    const packageJsonPath = path.join(targetDir, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) {
+      return false;
+    }
+
+    const packageJson = await fs.readJson(packageJsonPath);
+
+    // Check if this is the specweave package itself
+    return packageJson.name === 'specweave';
+  } catch (error) {
+    return false;
+  }
+}
+
 export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
@@ -690,19 +713,30 @@ export async function initCommand(
       // MUST happen AFTER plugin installation is complete
       // Asks user: Which tracker? (GitHub/Jira/ADO/None)
       // Collects credentials and runs smart validation
-      try {
-        const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
-        await setupIssueTracker({
-          projectPath: targetDir,
-          language: language as SupportedLanguage,
-          maxRetries: 3
-        });
-      } catch (error: any) {
-        // Non-critical error - log but continue
-        if (process.env.DEBUG) {
-          console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+      //
+      // IMPORTANT: Skip if we're in the SpecWeave framework repo itself
+      // (Framework development mode - uses GitHub Issues, not user's trackers)
+      const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
+
+      if (isFrameworkRepo) {
+        console.log(chalk.blue('\n🔍 Detected SpecWeave framework repository'));
+        console.log(chalk.gray('   Framework development mode enabled'));
+        console.log(chalk.gray('   Skipping issue tracker setup (framework uses GitHub Issues)\n'));
+      } else {
+        try {
+          const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+          await setupIssueTracker({
+            projectPath: targetDir,
+            language: language as SupportedLanguage,
+            maxRetries: 3
+          });
+        } catch (error: any) {
+          // Non-critical error - log but continue
+          if (process.env.DEBUG) {
+            console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+          }
+          console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
         }
-        console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
       }
     }
 

@@ -1,22 +1,27 @@
-# SpecWeave v2 Diagrams (v0.4.0 - Plugin Architecture)
+# SpecWeave Architecture Diagrams
 
-**Version**: 2.0
-**Date**: 2025-10-31
-**Architecture**: Plugin-based, modular, context-efficient
+**Version**: 3.0
+**Date**: 2025-11-10
+**Status**: Consolidated and streamlined
 
 ---
 
 ## Overview
 
-This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin architecture. Each diagram is independent and can be:
+This folder contains **7 essential Mermaid diagrams** for SpecWeave architecture. Each diagram is independent and can be:
 - Rendered individually as SVG
 - Referenced in documentation
 - Used in presentations
 - Combined for comprehensive explanations
 
+**Change Log**:
+- **v3.0 (2025-11-10)**: Major consolidation - removed redundant delivery guide diagrams, renamed brownfield workflow for clarity
+- **v2.0 (2025-10-31)**: Plugin architecture diagrams (v0.4.0)
+- **v1.0**: Initial diagram set
+
 ---
 
-## Diagrams
+## Essential Diagrams (7)
 
 ### 1. Main Flow (`1-main-flow.mmd`)
 
@@ -26,7 +31,9 @@ This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin
 - Greenfield vs brownfield paths
 - 4-phase plugin detection (integrated)
 - Decision gates (user control)
-- Multi-agent planning (PM, Architect, QA, Tech Lead)
+- Multi-agent planning (PM, Architect, test-aware-planner, Quality Judge)
+- Test-aware planning (v0.7.0+)
+- Smart status management (pause/resume/abandon)
 - Execution with hooks
 - Quality gates
 - Living docs sync
@@ -34,34 +41,15 @@ This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin
 **Use for**:
 - ✅ Complete workflow explanation (10 min)
 - ✅ Architecture documentation
-- ✅ YouTube video (section 8:00-11:00)
 - ✅ Technical onboarding
+- ✅ Understanding increment lifecycle
 
 **Complexity**: High (comprehensive)
+**Lines**: ~185
 
 ---
 
-### 2. Decision Gate (`2-decision-gate.mmd`)
-
-**Description**: User control points during increment planning
-
-**Shows**:
-- Q1: Spec depth (high-level vs detailed)
-- Q2: TDD mode (yes/no)
-- Q3: Test quality (basic vs AI judge)
-- Q4: Living docs sync (auto vs manual)
-
-**Use for**:
-- ✅ Show flexibility/user control (2 min)
-- ✅ YouTube video (section 9:30-9:45)
-- ✅ PM presentations
-- ✅ Feature documentation
-
-**Complexity**: Low (simple flow)
-
----
-
-### 3. 4-Phase Plugin Detection (`3-plugin-detection-4phase.mmd`)
+### 2. 4-Phase Plugin Detection (`3-plugin-detection-4phase.mmd`)
 
 **Description**: Intelligent plugin detection system across 4 lifecycle phases
 
@@ -73,17 +61,17 @@ This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin
 
 **Use for**:
 - ✅ Explain plugin intelligence (3 min)
-- ✅ YouTube video (section 10:15-10:30)
 - ✅ Architecture deep dive
 - ✅ Plugin developer docs
+- ✅ Context efficiency explanation
 
 **Complexity**: Medium (detailed phases)
 
 ---
 
-### 4. Context Efficiency (`4-context-efficiency.mmd`)
+### 3. Context Efficiency (`4-context-efficiency.mmd`)
 
-**Description**: Before/after comparison showing 76% context reduction
+**Description**: Before/after comparison showing 75%+ context reduction
 
 **Shows**:
 - **Before v0.4.0**: Monolithic (50K tokens, all skills/agents loaded)
@@ -92,16 +80,16 @@ This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin
 
 **Use for**:
 - ✅ Performance benefits (1 min)
-- ✅ YouTube video (section 10:45-11:00)
 - ✅ Marketing materials
 - ✅ Sales presentations
 - ✅ README.md
+- ✅ Value proposition
 
 **Complexity**: Low (side-by-side comparison)
 
 ---
 
-### 5. Living Docs Sync (`5-living-docs-sync.mmd`)
+### 4. Living Docs Sync (`5-living-docs-sync.mmd`)
 
 **Description**: Sequence diagram showing automated doc sync via hooks
 
@@ -113,71 +101,97 @@ This folder contains 6 modular Mermaid diagrams for SpecWeave v0.4.0 with plugin
 
 **Use for**:
 - ✅ Explain automation advantage (2 min)
-- ✅ YouTube video (section 11:00-11:15)
 - ✅ Hook documentation
 - ✅ Living docs concept
+- ✅ Differentiation from competitors
 
 **Complexity**: Low (linear sequence)
 
 ---
 
-### 6. Comparison Matrix (`6-comparison-matrix.mmd`)
+### 5. Documentation Flow (`documentation-flow.mmd`)
 
-**Description**: Decision tree comparing BMAD vs SpecKit vs SpecWeave
+**Description**: SpecWeave documentation hierarchy and relationships
 
 **Shows**:
-- **BMAD**: Research-heavy, manual, solo architect
-- **SpecKit**: Simple templates, no automation
-- **SpecWeave**: Automated, plugin-based, team-focused
-- Pros/cons for each
-- When to use what
+- 6 core documentation folders (Strategy, Specs, Architecture, Delivery, Operations, Governance)
+- Document flow: PRD → Spec → Architecture → Delivery → Operations
+- Cross-folder relationships
+- Governance guardrails
 
 **Use for**:
-- ✅ Positioning vs alternatives (2 min)
-- ✅ YouTube video (section 24:00-24:30)
-- ✅ Landing page
-- ✅ README.md
-- ✅ Decision-makers
+- ✅ Understanding doc organization (2 min)
+- ✅ Onboarding new contributors
+- ✅ Documentation structure explanation
+- ✅ Internal docs training
 
-**Complexity**: Low (decision tree)
+**Complexity**: Medium (hierarchy with relationships)
+**Lines**: ~61
+
+---
+
+### 6. Meta-Capability (`meta-capability.mmd`)
+
+**Description**: SpecWeave's recursive capability - agents building agents
+
+**Shows**:
+- Layer 1: SpecWeave Framework (20 core agents, 24 core skills)
+- Layer 2: User Projects (using SpecWeave for their own work)
+- Layer 3: Custom Extensions (agents build custom agents/skills)
+- Recursive relationships (framework uses itself to improve itself)
+
+**Use for**:
+- ✅ Explaining meta-capability concept (3 min)
+- ✅ Advanced architecture discussions
+- ✅ Philosophy/vision presentations
+- ✅ Differentiation ("SpecWeave builds SpecWeave")
+
+**Complexity**: Medium (layered architecture)
+**Lines**: ~58
+
+---
+
+### 7. Brownfield Onboarding Strategy (`brownfield-onboarding-strategy.mmd`)
+
+**Description**: Decision tree for onboarding existing codebases
+
+**Shows**:
+- Project size assessment (Small, Medium, Large, Very Large)
+- Two approaches:
+  - **Comprehensive Upfront**: Full documentation (1-4 weeks) for small projects
+  - **Quick Start**: Core concepts only (1-3 hours), document as you go for large projects
+- Incremental documentation workflow
+
+**Use for**:
+- ✅ Brownfield migration guidance (2 min)
+- ✅ Onboarding existing projects
+- ✅ Setting expectations for legacy codebases
+- ✅ Sales presentations (time-to-value)
+
+**Complexity**: Low (simple decision tree)
+**Lines**: ~34
 
 ---
 
 ## Usage Guide
 
-### For YouTube Video (28 min total)
-
-Use **all 6 diagrams** in this order:
-
-| Timestamp | Diagram | Duration | Purpose |
-|-----------|---------|----------|---------|
-| 8:00-8:30 | 1. Main Flow | 30 sec | Overview |
-| 9:30-9:45 | 2. Decision Gate | 15 sec | User control |
-| 10:15-10:30 | 3. Plugin Detection | 15 sec | Intelligence |
-| 10:45-11:00 | 4. Context Efficiency | 15 sec | Performance |
-| 11:00-11:15 | 5. Living Docs Sync | 15 sec | Automation |
-| 24:00-24:30 | 6. Comparison Matrix | 30 sec | Positioning |
-
-**Total diagram time**: ~2.5 minutes
-
----
-
 ### For Documentation Site
 
 Use **individual diagrams** based on page:
 
-- **Landing page**: #6 (Comparison Matrix) - Quick decision tree
-- **Architecture**: #1 (Main Flow) + #3 (Plugin Detection)
-- **Features**: #2 (Decision Gate) + #5 (Living Docs)
-- **Performance**: #4 (Context Efficiency)
+- **Landing page**: #3 (Context Efficiency) - Quick value prop
+- **Architecture**: #1 (Main Flow) + #2 (Plugin Detection)
+- **Features**: #4 (Living Docs) + #5 (Documentation Flow)
+- **Brownfield**: #7 (Brownfield Onboarding)
+- **Philosophy**: #6 (Meta-Capability)
 
 ---
 
 ### For README.md
 
 Use **1-2 diagrams**:
-- Quick intro: #6 (Comparison Matrix)
-- Architecture: #4 (Context Efficiency) - shows value prop
+- Quick intro: #3 (Context Efficiency) - shows value prop
+- Architecture: #1 (Main Flow) - complete overview
 
 ---
 
@@ -185,13 +199,14 @@ Use **1-2 diagrams**:
 
 **Technical audience** (engineers):
 - #1 (Main Flow) - Complete lifecycle
-- #3 (Plugin Detection) - How it works
-- #5 (Living Docs) - Automation
+- #2 (Plugin Detection) - How it works
+- #4 (Living Docs) - Automation
+- #6 (Meta-Capability) - Advanced concepts
 
 **Business audience** (PMs, leads):
-- #4 (Context Efficiency) - ROI/performance
-- #6 (Comparison Matrix) - Positioning
-- #2 (Decision Gate) - Flexibility
+- #3 (Context Efficiency) - ROI/performance
+- #7 (Brownfield Onboarding) - Migration strategy
+- #4 (Living Docs) - Automation value
 
 ---
 
@@ -199,27 +214,27 @@ Use **1-2 diagrams**:
 
 ```bash
 # From project root
-npm run generate:diagrams
+bash scripts/generate-diagram-svgs.sh
 
 # Or manually with Mermaid CLI
-npx @mermaid-js/mermaid-cli -i v2/1-main-flow.mmd -o v2/1-main-flow.svg
-npx @mermaid-js/mermaid-cli -i v2/2-decision-gate.mmd -o v2/2-decision-gate.svg
-# ... etc for all 6 diagrams
+npx @mermaid-js/mermaid-cli -i 1-main-flow.mmd -o 1-main-flow.svg
+npx @mermaid-js/mermaid-cli -i 3-plugin-detection-4phase.mmd -o 3-plugin-detection-4phase.svg
+# ... etc for all 7 diagrams
 ```
 
 ---
 
 ## File Naming Convention
 
-**Pattern**: `{number}-{name}.mmd`
+**Pattern**: `{number}-{name}.mmd` or `{descriptive-name}.mmd`
 
 **Examples**:
-- ✅ `1-main-flow.mmd` (descriptive, sortable)
-- ✅ `2-decision-gate.mmd`
-- ❌ `main.mmd` (not sortable)
+- ✅ `1-main-flow.mmd` (sortable, clear purpose)
+- ✅ `brownfield-onboarding-strategy.mmd` (self-documenting)
 - ❌ `flow.mmd` (ambiguous)
+- ❌ `diagram1.mmd` (not descriptive)
 
-**Numbers**: Correspond to recommended usage order (1 = most important)
+**Numbers**: Correspond to importance/usage order (1 = most critical)
 
 ---
 
@@ -228,7 +243,7 @@ npx @mermaid-js/mermaid-cli -i v2/2-decision-gate.mmd -o v2/2-decision-gate.svg
 ### Markdown
 
 ```markdown
-![Main Flow](./v2/1-main-flow.svg)
+![Main Flow](./1-main-flow.svg)
 ```
 
 ### MDX (with dark mode)
@@ -239,8 +254,8 @@ import ThemedImage from '@theme/ThemedImage';
 <ThemedImage
   alt="Main Flow"
   sources={{
-    light: './v2/1-main-flow.svg',
-    dark: './v2/1-main-flow-dark.svg',
+    light: './1-main-flow.svg',
+    dark: './1-main-flow-dark.svg',
   }}
 />
 ```
@@ -248,7 +263,7 @@ import ThemedImage from '@theme/ThemedImage';
 ### HTML
 
 ```html
-<img src="./v2/1-main-flow.svg" alt="SpecWeave Main Flow" />
+<img src="./1-main-flow.svg" alt="SpecWeave Main Flow" />
 ```
 
 ---
@@ -257,13 +272,13 @@ import ThemedImage from '@theme/ThemedImage';
 
 ### To Update a Diagram
 
-1. **Edit source**: `vim v2/1-main-flow.mmd`
+1. **Edit source**: `vim 1-main-flow.mmd`
 2. **Test rendering**: Use Mermaid Live Editor (https://mermaid.live/)
-3. **Generate SVG**: `npm run generate:diagrams`
+3. **Generate SVG**: `bash scripts/generate-diagram-svgs.sh`
 4. **Verify**: Open SVG in browser
 5. **Commit**:
    ```bash
-   git add v2/1-main-flow.mmd v2/1-main-flow.svg
+   git add 1-main-flow.mmd 1-main-flow.svg
    git commit -m "docs: update main flow diagram"
    ```
 
@@ -271,11 +286,11 @@ import ThemedImage from '@theme/ThemedImage';
 
 ### To Add a New Diagram
 
-1. **Create file**: `v2/7-new-diagram.mmd`
-2. **Follow naming**: `{number}-{descriptive-name}.mmd`
-3. **Document here**: Add section above
-4. **Generate SVG**: `npm run generate:diagrams`
-5. **Update parent README**: `.specweave/docs/internal/architecture/diagrams/README.md`
+1. **Create file**: `8-new-diagram.mmd` or `descriptive-name.mmd`
+2. **Follow naming**: `{number}-{descriptive-name}.mmd` or self-documenting name
+3. **Document here**: Add section above with description, usage, complexity
+4. **Generate SVG**: `bash scripts/generate-diagram-svgs.sh`
+5. **Test**: Verify rendering
 
 ---
 
@@ -285,24 +300,38 @@ import ThemedImage from '@theme/ThemedImage';
 
 | Element | Color | Purpose |
 |---------|-------|---------|
-| Decision nodes | `#FFE4B5` (Peach) | User choices |
-| Process nodes | `#B0E0E6` (Light Blue) | Automated processes |
-| Hook nodes | `#98FB98` (Light Green) | Automation triggers |
-| Plugin nodes | `#DDA0DD` (Plum) | Plugin-related |
-| Quality nodes | `#FFB6C1` (Pink) | Quality gates |
+| Decision nodes | `#FFF4E6` (Peach) | User choices, questions |
+| Process nodes | `#E3F2FD` (Light Blue) | Automated processes, actions |
+| Hook nodes | `#E8F5E9` (Light Green) | Automation triggers, lifecycle events |
+| Plugin nodes | `#F3E5F5` (Plum) | Plugin-related components |
+| Quality nodes | `#FCE4EC` (Pink) | Quality gates, validation |
+| Status nodes | `#FFF9C4` (Yellow) | Status checks, state management |
 
-**Why consistent**: Easier to understand across multiple diagrams
+**Why consistent**: Easier to understand across multiple diagrams, professional appearance
+
+---
+
+## Consolidation History (v3.0)
+
+**Removed (2024-11-10)**:
+- ❌ `delivery-branch-strategy-0.mmd` - Too simple (10 lines), basic git flow better explained in text
+- ❌ `delivery-guides-diagram-conventions-comprehensive-0.mmd` - Misleading (6 lines), trivial example, not comprehensive
+
+**Renamed (2024-11-10)**:
+- 🔄 `delivery-guides-development-workflow-0.mmd` → `brownfield-onboarding-strategy.mmd` - More accurate description of content
+
+**Result**: 9 diagrams → 7 essential diagrams (22% reduction, 100% accuracy improvement)
 
 ---
 
 ## Maintenance
 
 **Update frequency**:
-- Major releases (v0.5.0, v1.0.0): Review all diagrams
-- Minor releases (v0.4.1, v0.4.2): Update only if architecture changes
+- Major releases (v0.8.0, v1.0.0): Review all diagrams
+- Minor releases (v0.7.1, v0.7.2): Update only if architecture changes
 - Bug fixes: No diagram updates needed
 
-**Ownership**: Architecture team (diagrams-architect agent)
+**Ownership**: Architecture team
 
 **Review process**:
 1. Architecture changes → Update relevant diagrams
@@ -314,12 +343,12 @@ import ThemedImage from '@theme/ThemedImage';
 
 ## Related Documentation
 
-- [Main Diagrams README](../README.md) - Parent folder index
-- [Diagram Legend](../DIAGRAM-LEGEND.md) - Conventions & symbols
-- [SVG Generation Guide](../../delivery/guides/diagram-svg-generation.md) - Technical details
-- [C4 Conventions](../../../../CLAUDE.md#c4-diagram-conventions) - Architecture standards
+- [Architecture Overview](../) - Parent architecture folder
+- [Diagram Conventions](../../../../CLAUDE.md#diagram-conventions) - Mermaid style guide
+- [SVG Generation Script](../../../../scripts/generate-diagram-svgs.sh) - Automation
+- [ADRs](../adr/) - Architecture Decision Records
 
 ---
 
 **Maintained By**: SpecWeave Architecture Team
-**Last Updated**: 2025-10-31 (v0.4.0 diagram extraction)
+**Last Updated**: 2025-11-10 (v3.0 consolidation)
