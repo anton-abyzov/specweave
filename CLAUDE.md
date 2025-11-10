@@ -1877,7 +1877,124 @@ npm run build && npm test
 
 ### Hooks and Automation
 
-**Post-Task Completion Hook** (`.claude/hooks/post-task-completion.sh`):
+## 🎯 CRITICAL: How Claude Code Hooks Actually Work
+
+**Official Docs**: https://code.claude.com/docs/en/hooks
+
+### The Correct Architecture (Plugin-Based Hooks)
+
+**Hooks live in the PLUGIN, not in `.claude/hooks/`!**
+
+```
+plugins/specweave/
+├── .claude-plugin/
+│   └── plugin.json              ← "hooks": "hooks/hooks.json"
+├── hooks/
+│   ├── hooks.json               ← Hook configuration (references .sh files)
+│   ├── post-task-completion.sh  ← Stays here (NOT copied!)
+│   └── post-increment-planning.sh
+└── ...
+```
+
+**Key Facts**:
+1. ✅ **Hooks stay in plugins/** - They are NOT copied to `.claude/hooks/`
+2. ✅ **hooks.json references them** - Uses `${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh`
+3. ✅ **Automatic discovery** - Claude Code reads plugin's hooks.json at startup
+4. ✅ **Runtime merging** - Plugin hooks merge with user/project hooks automatically
+5. ❌ **`.claude/hooks/` is NOT used** - This directory is irrelevant to the hook system!
+
+### Hook Discovery Flow
+
+```
+1. Plugin installed:
+   /plugin install specweave
+
+2. Claude Code startup:
+   Reads: plugins/specweave/.claude-plugin/plugin.json
+   ↓
+   Discovers: "hooks": "hooks/hooks.json"
+   ↓
+   Loads: plugins/specweave/hooks/hooks.json
+   ↓
+   Registers: PostToolUse → TodoWrite → ${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh
+
+3. Hook execution:
+   TodoWrite completes
+   ↓
+   Claude Code executes: plugins/specweave/hooks/post-task-completion.sh
+   ↓
+   Hook runs!
+```
+
+**NO copying needed!** `${CLAUDE_PLUGIN_ROOT}` resolves to the plugin directory automatically.
+
+### What `.claude/` Actually Contains
+
+**`.claude/settings.json`**: User/project settings (marketplace config, preferences)
+```json
+{
+  "extraKnownMarketplaces": {
+    "specweave": {
+      "source": {
+        "source": "github",
+        "repo": "anton-abyzov/specweave",
+        "path": ".claude-plugin"
+      }
+    }
+  }
+}
+```
+
+**NOT hook files!** The `.claude/hooks/` directory (if it exists) is ignored by Claude Code.
+
+### What `.specweave/config.json` Contains
+
+**THIS is where hook behavior is configured**:
+```json
+{
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,        // ✅ Enables living docs sync
+      "sync_tasks_md": true,           // ✅ Updates tasks.md
+      "external_tracker_sync": true    // ✅ Syncs to GitHub/Jira/ADO
+    }
+  },
+  "sync": {
+    "enabled": true,
+    "activeProfile": "github-default",
+    "profiles": {
+      "github-default": {
+        "provider": "github",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        }
+      }
+    }
+  }
+}
+```
+
+Hooks READ this config to know:
+- Whether sync is enabled
+- Which provider to sync to (GitHub/Jira/ADO)
+- Owner/repo or domain/project info
+
+### Summary: What Makes Hooks Work
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| **Hook scripts** | `plugins/specweave/hooks/*.sh` | Actual executable code |
+| **Hook config** | `plugins/specweave/hooks/hooks.json` | Registers hooks with Claude |
+| **Plugin manifest** | `plugins/specweave/.claude-plugin/plugin.json` | Points to hooks.json |
+| **Settings** | `.claude/settings.json` | Marketplace config (NOT hooks!) |
+| **Behavior config** | `.specweave/config.json` | Hook behavior settings |
+
+**Bottom line**: Hooks are a **plugin feature**, not a project feature. They work via plugin installation, not file copying!
+
+---
+
+**Post-Task Completion Hook** (`plugins/specweave/hooks/post-task-completion.sh`):
 
 **Smart Session-End Detection**:
 - ✅ Tracks inactivity gaps between TodoWrite calls
@@ -1987,6 +2104,65 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
 - ✅ **Onboarding new developers**: Read specs to understand what was built and why
 - ✅ **Compliance & auditing**: Complete audit trail of all product decisions
 - ✅ **Living documentation**: Specs stay up-to-date without manual intervention
+
+---
+
+**🔧 HOOKS ARCHITECTURE CHANGES (v0.13.0)**
+
+**What Changed**: External tool sync logic (GitHub, JIRA, Azure DevOps) has been **moved from core plugin to respective plugin hooks** to follow Claude Code's native plugin architecture.
+
+**Before (v0.12.x)**:
+```
+Core hook: plugins/specweave/hooks/post-task-completion.sh (452 lines)
+├── Core concerns (sound, living docs, translation)
+├── GitHub sync (107 lines)    ← Embedded in core!
+├── JIRA sync (11 lines)        ← Embedded in core!
+└── Azure DevOps sync (11 lines) ← Embedded in core!
+```
+
+**After (v0.13.0+)**:
+```
+Core hook: plugins/specweave/hooks/post-task-completion.sh (330 lines)
+├── Core concerns ONLY (sound, living docs, translation, reflection)
+
+GitHub plugin: plugins/specweave-github/hooks/post-task-completion.sh (241 lines)
+├── GitHub API calls, issue updates, progress comments
+
+JIRA plugin: plugins/specweave-jira/hooks/post-task-completion.sh (150 lines)
+├── JIRA API calls, issue status updates
+
+ADO plugin: plugins/specweave-ado/hooks/post-task-completion.sh (150 lines)
+├── Azure DevOps API calls, work item updates
+```
+
+**Benefits**:
+- ✅ **27% smaller core hook** (452 → 330 lines)
+- ✅ **No external tool dependencies** in core plugin (no gh CLI, JIRA API, ADO API)
+- ✅ **Optional plugins** (GitHub sync only runs if `specweave-github` installed)
+- ✅ **Independent testing** (test each hook in isolation)
+- ✅ **Parallel execution** (Claude Code runs all hooks concurrently)
+
+**How Claude Code's Hook System Works**:
+1. Task completes → `TodoWrite` tool fires
+2. Claude Code triggers `PostToolUse` event
+3. **ALL registered plugin hooks fire in parallel**:
+   - Core hook: Sound + Living docs + Translation + Reflection
+   - GitHub hook: Update issue checkboxes (if installed)
+   - JIRA hook: Update issue status (if installed)
+   - ADO hook: Update work item (if installed)
+
+**Key Insight**: Each plugin registers its own hooks via `hooks.json`, enabling clean modularity and separation of concerns.
+
+**Migration**: No action needed! Existing increments with GitHub/JIRA/ADO links will continue to sync automatically.
+
+**Documentation**:
+- **Architecture Analysis**: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md`
+- **Core Plugin Hooks**: `plugins/specweave/hooks/README.md`
+- **GitHub Plugin Hooks**: `plugins/specweave-github/hooks/README.md`
+- **JIRA Plugin Hooks**: `plugins/specweave-jira/hooks/README.md`
+- **ADO Plugin Hooks**: `plugins/specweave-ado/hooks/README.md`
+
+---
 
 **Post-Increment-Planning Hook** (AUTOMATIC after `/specweave:increment`):
 

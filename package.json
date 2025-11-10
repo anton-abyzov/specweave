@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.12.7",
+  "version": "0.12.8",
   "description": "Spec-driven development framework for Claude Code. AI-native workflow with living documentation, intelligent agents, and multilingual support (9 languages). Enterprise-grade traceability with permanent specs and temporary increments.",
   "type": "module",
   "main": "dist/index.js",
@@ -8,8 +8,9 @@
     "specweave": "./bin/specweave.js"
   },
   "scripts": {
-    "build": "tsc && npm run copy:locales",
+    "build": "tsc && npm run copy:locales && npm run copy:plugins",
     "copy:locales": "node scripts/copy-locales.js",
+    "copy:plugins": "node scripts/copy-plugin-js.js",
     "dev": "tsc --watch",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build",
