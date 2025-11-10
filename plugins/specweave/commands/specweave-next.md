@@ -32,6 +32,53 @@ The `/specweave:next` command is your **workflow continuation** command. It:
 
 ## Workflow
 
+### Step 0: Plugin Validation (MANDATORY - ALWAYS FIRST! v0.9.4+)
+
+🚨 **CRITICAL**: Before ANY workflow transition, validate SpecWeave plugin installation.
+
+**Why This Matters**:
+- Ensures SpecWeave marketplace is registered in Claude Code
+- Ensures core `specweave` plugin is installed
+- Prevents workflow interruptions from missing dependencies
+- Enables seamless environment migration (local → VM → Cloud IDE)
+
+**Implementation**:
+
+Use the Bash tool to run:
+```bash
+npx specweave validate-plugins --auto-install
+```
+
+**Expected Output (Success)**:
+```
+✅ All plugins validated!
+   • Core plugin: installed (v0.9.4)
+```
+
+**Expected Output (Missing Components)**:
+```
+❌ Missing components detected:
+   • SpecWeave marketplace not registered
+   • Core plugin (specweave) not installed
+
+📦 Installing missing components...
+   ✅ Marketplace registered (.claude/settings.json)
+   ✅ Core plugin installed (specweave)
+
+🎉 Environment ready! Proceeding with workflow transition...
+```
+
+**What to Do After Validation**:
+
+1. ✅ **If validation passes**: Proceed to Step 1
+2. ⚠️ **If validation fails with errors**: Show error messages and STOP (do NOT proceed)
+3. 🔄 **If auto-install succeeded**: Proceed to Step 1
+4. ⚠️ **If auto-install failed**: Show manual instructions and STOP
+
+**DO NOT PROCEED** to Step 1 until plugin validation passes!
+
+---
+
 ### Step 1: Find Active Increment
 
 ```bash
