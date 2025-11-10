@@ -1,21 +1,36 @@
 ---
 name: plugin-installer
-description: Proactive just-in-time plugin installation. Auto-detects when specialized plugins are needed (docs-preview, frontend, kubernetes, ML, payments, testing, etc.) and installs them automatically before use. Activates for preview docs, Docusaurus, React, Next.js, K8s, Kubernetes, Helm, TensorFlow, PyTorch, ML model, Stripe, billing, payment, Playwright, E2E testing, Figma, design system, ADO, Azure DevOps, infrastructure, Prometheus, Grafana, monitoring, Node.js, Python backend, REST API, cloud deployment, diagram, Mermaid, C4, architecture diagram.
+description: DEPRECATED - This skill is no longer needed. All plugins are now installed automatically during specweave init. This skill remains for backward compatibility but should NOT activate.
 ---
 
-# Plugin Installer - Proactive Just-in-Time Plugin Installation
+# Plugin Installer - DEPRECATED
 
-**Purpose**: Automatically detect when specialized SpecWeave plugins are needed and install them just-in-time, BEFORE attempting to use their features.
+**Status**: ⚠️ **DEPRECATED** - Do not use this skill
 
-**When to Activate**: Whenever user requests functionality that requires a specific plugin (e.g., "preview docs", "deploy to K8s", "add React component", "train ML model", etc.)
+**Reason**: As of v0.11.0+, ALL SpecWeave plugins (19+) are automatically installed during `specweave init`. There is no need for just-in-time plugin installation anymore.
+
+**What Changed**:
+- ❌ Old: Selective plugin loading with just-in-time installation
+- ✅ New: All plugins installed upfront during init
+
+**If you see this skill activating**, it means you're using an old SpecWeave installation. Run `specweave init` again to get all plugins installed automatically.
 
 ---
 
-## 🚨 CRITICAL: The Plugin Installation Gap
+## For Contributors: Why This Was Deprecated
 
-**The Problem**: Users request features that require plugins (e.g., "preview docs locally"), but those plugins are NOT installed. Claude tries to use plugin features anyway, which fails silently or produces incomplete results.
+**The Problem with Just-in-Time Installation**:
+- Added complexity to the workflow
+- Users had to wait for installations mid-work
+- Network issues could block work unexpectedly
+- Detection logic was fragile (keyword matching)
 
-**The Solution**: This skill proactively detects plugin requirements, checks if plugins are installed, and auto-installs them BEFORE attempting to use their features.
+**The Solution - Install Everything Upfront**:
+- All 19+ plugins installed during `specweave init`
+- Takes ~30 seconds upfront but saves time later
+- All capabilities available immediately
+- No network dependencies during work
+- Simpler, more predictable user experience
 
 ---
 

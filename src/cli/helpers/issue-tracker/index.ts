@@ -180,6 +180,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5: Save credentials to .env
   await saveCredentials(projectPath, tracker, credentials);
 
+  // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
+  if (tracker === 'jira') {
+    await validateResources(tracker, credentials, projectPath);
+  }
+
   // Step 6: Install plugin
   await installPlugin(tracker, language);
 
@@ -244,6 +249,49 @@ async function validateConnection(
       return validateAzureDevOpsConnection(credentials as any, maxRetries);
     default:
       return { success: false, error: 'Unknown tracker' };
+  }
+}
+
+/**
+ * Validate resources (projects/boards) - Jira only
+ *
+ * Uses the smart validator to:
+ * - Check if projects exist, prompt to create if missing
+ * - Check if boards exist (IDs) or create them (names)
+ * - Update .env with actual board IDs
+ *
+ * @param tracker - Issue tracker type
+ * @param credentials - Tracker credentials
+ * @param projectPath - Path to project root
+ */
+async function validateResources(
+  tracker: IssueTracker,
+  credentials: TrackerCredentials,
+  projectPath: string
+): Promise<void> {
+  if (tracker !== 'jira') {
+    return; // Only Jira needs resource validation
+  }
+
+  try {
+    // Import the validator (dynamic import for ESM)
+    const { validateJiraResources } = await import('../../../utils/external-resource-validator.js');
+
+    console.log('');
+
+    // Run validation
+    const result = await validateJiraResources(`${projectPath}/.env`);
+
+    if (!result.valid) {
+      console.log(chalk.yellow('⚠️  Some resources could not be validated'));
+      console.log(chalk.gray('   You can run "specweave validate-jira" later to fix this\n'));
+    }
+  } catch (error: any) {
+    // Non-blocking - validation can happen later
+    if (process.env.DEBUG) {
+      console.log(chalk.gray(`\n   Resource validation skipped: ${error.message}`));
+    }
+    console.log(chalk.gray('   You can run "specweave validate-jira" later\n'));
   }
 }
 

@@ -522,99 +522,24 @@ created: YYYY-MM-DD
 - Measurable acceptance criteria
 - Prioritized user stories (P1/P2/P3)
 
-### Step 6: Detect Required Plugins & Check PM Tool (INTELLIGENT AUTO-LOADING + PM SYNC)
+### Step 6: Check PM Tool Configuration (PM SYNC)
 
-**Purpose**: Analyze spec content to identify required SpecWeave plugins AND check if external PM tool sync is configured.
+**Purpose**: Check if external PM tool sync is configured for automatic increment tracking.
 
-**⚠️ CRITICAL**: For ALL plugin installations, consult the `plugin-expert` skill for correct syntax. NEVER use `@marketplace` suffix!
+**Why This Matters**: PM tool integration enables automatic sync of increment progress to external systems (GitHub Issues, Jira, Azure DevOps).
 
-**Why This Matters**:
-1. SpecWeave's plugin system enables context efficiency (70%+ reduction) by loading only relevant capabilities
-2. PM tool integration enables automatic sync of increment progress to external systems (GitHub Issues, Jira, Azure DevOps)
+**⚠️ NOTE**: All SpecWeave plugins (19+) are already installed during `specweave init`. No plugin detection or installation needed!
 
-**Detection Algorithm**:
+**Check External PM Tool Configuration**:
 
-1. **Scan spec.md for keywords**:
-   ```
-   Keywords → Plugin Mapping:
-   - "GitHub", "issue", "pull request", "PR" → specweave-github
-   - "Jira", "ticket", "epic" → specweave-jira
-   - "Azure DevOps", "ADO", "work item" → specweave-ado
-   - "Kubernetes", "K8s", "Helm", "kubectl" → specweave-kubernetes
-   - "Figma", "design system", "design tokens" → specweave-figma
-   - "Stripe", "PayPal", "billing", "subscriptions" → specweave-payments
-   - "React", "Next.js", "Vue", "Angular" → specweave-frontend
-   - "Express", "Fastify", "NestJS", "FastAPI" → specweave-backend
-   - "TensorFlow", "PyTorch", "ML", "training" → specweave-ml
-   - "Prometheus", "Grafana", "monitoring" → specweave-infrastructure
-   - "Playwright", "E2E", "browser tests" → specweave-testing
-   - "Mermaid", "C4", "diagrams", "architecture diagrams" → specweave-diagrams
-   ```
-
-2. **Check External PM Tool Configuration** (NEW v0.8.0):
-   - Read `.specweave/config.json`
+1. **Read `.specweave/config.json`**:
    - If `externalPM.enabled = true` and `externalPM.tool` is set:
-     - Check if corresponding plugin installed (specweave-github, specweave-jira, or specweave-ado)
+     - Corresponding plugin is already installed (specweave-github, specweave-jira, or specweave-ado)
      - Prepare to auto-create external issue/work item after increment creation
    - If `externalPM.enabled = false` or not configured:
      - Skip PM tool sync (local-only mode)
 
-3. **Check if plugins are already installed**:
-   - For Claude Code: Check if plugin available via `/plugin list --installed`
-   - Skip already-installed plugins
-
-4. **🚨 AUTOMATIC PLUGIN INSTALLATION** (if plugins detected):
-
-   **IMPORTANT**: When you detect required plugins, you MUST:
-   - ✅ Proactively offer to install them (not just suggest)
-   - ✅ Explain WHY each plugin is needed (based on detected keywords)
-   - ✅ Show clear install commands
-   - ✅ Remind user that plugins provide expert AI agents and capabilities
-
-   **Output Format**:
-   ```
-   🔌 Detected plugin requirements from spec content:
-
-   REQUIRED (will significantly improve implementation):
-   • specweave-github - GitHub Issues integration
-     Detected: "sync tasks to GitHub issues", "create pull requests"
-     Provides: GitHub sync, PR automation, issue tracking
-     → Without this: Manual GitHub sync required
-
-   • specweave-kubernetes - Kubernetes deployment
-     Detected: "deploy to production cluster", "kubectl apply"
-     Provides: K8s expert agent, Helm chart generation, deployment validation
-     → Without this: Manual K8s configuration, no validation
-
-   OPTIONAL (helpful but not critical):
-   • specweave-diagrams - Architecture diagrams
-     Detected: "system architecture", "component diagram"
-     Provides: Mermaid + C4 diagram generation
-     → Without this: Manual diagram creation
-
-   📦 Install recommended plugins:
-     /plugin install specweave-github
-     /plugin install specweave-kubernetes
-
-   📦 Install optional plugins:
-     /plugin install specweave-diagrams
-
-   💡 Benefits:
-     • Plugins provide specialized AI agents (GitHub expert, K8s expert, etc.)
-     • Skills auto-activate based on context (zero manual invocation)
-     • 70%+ context reduction (only load what you need)
-     • Best practices built-in (from real-world experience)
-
-   Would you like me to wait while you install these plugins? (Recommended)
-   Or shall I continue without them? (Limited capabilities)
-   ```
-
-   **User Decision Points**:
-   - If user installs plugins → continue with full capabilities
-   - If user skips → continue but remind about limitations later
-   - NEVER block increment creation (plugins are enhancements, not requirements)
-
-5. **Auto-Sync to PM Tool** (v0.8.0+):
+2. **Auto-Sync to PM Tool** (v0.8.0+):
 
    **🚨 CRITICAL: SpecWeave Repo Dog-Food Requirement**:
    - IF repo = "anton-abyzov/specweave"
@@ -683,10 +608,6 @@ Files:
 • plan.md (technical architecture)
 • tasks.md (implementation steps with embedded tests)
 
-🔌 Plugin Detection:
-   Detected: "user authentication", "JWT tokens", "session management"
-   → No additional plugins required
-
 🔗 External PM Tool Sync:
    Tool: GitHub Issues
    Plugin: specweave-github ✅ Installed
@@ -706,7 +627,7 @@ Next steps:
 ```
 
 **Integration with Existing Workflow**:
-- Plugin detection is a **suggestion step** (not blocking)
+- All plugins are already installed during `specweave init` (no detection needed)
 - PM tool sync is **automatic** if configured (zero manual intervention)
 - Increment creation continues regardless of PM tool status
 - This implements the "seamless integration" philosophy
