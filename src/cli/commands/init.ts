@@ -168,21 +168,46 @@ export async function initCommand(
 
     // 2. Check if directory exists
     if (fs.existsSync(targetDir)) {
-      const { overwrite } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'overwrite',
-          message: `Directory ${projectName} already exists. Overwrite?`,
-          default: false,
-        },
-      ]);
+      // Brownfield-safe: Check what's in the directory
+      const allFiles = fs.readdirSync(targetDir);
+      const existingFiles = allFiles.filter(f => !f.startsWith('.')); // Ignore hidden files
+      const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
 
-      if (!overwrite) {
-        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-        process.exit(0);
+      if (existingFiles.length > 0 || hasSpecweave) {
+        console.log(chalk.yellow(`\nDirectory ${projectName} exists with ${existingFiles.length} file(s).`));
+
+        if (hasSpecweave) {
+          console.log(chalk.yellow('Detected existing .specweave/ folder (already initialized).'));
+        }
+
+        const { initExisting } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'initExisting',
+            message: hasSpecweave
+              ? 'Re-initialize SpecWeave (will remove .specweave/ and .claude/ only)?'
+              : 'Initialize SpecWeave in existing directory (non-destructive)?',
+            default: false,
+          },
+        ]);
+
+        if (!initExisting) {
+          console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+          process.exit(0);
+        }
+
+        // SMART CLEANUP: Only remove SpecWeave-specific folders (brownfield-safe!)
+        if (hasSpecweave) {
+          fs.removeSync(path.join(targetDir, '.specweave'));
+          console.log(chalk.blue('   ♻️  Removed existing .specweave/'));
+        }
+        if (fs.existsSync(path.join(targetDir, '.claude'))) {
+          fs.removeSync(path.join(targetDir, '.claude'));
+          console.log(chalk.blue('   ♻️  Removed existing .claude/'));
+        }
+
+        // ✅ ALL OTHER FILES PRESERVED! (brownfield-safe)
       }
-
-      fs.emptyDirSync(targetDir);
     } else {
       fs.mkdirSync(targetDir, { recursive: true });
     }
