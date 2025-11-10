@@ -4,6 +4,78 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.1] - 2025-11-10
+
+### 🐛 Bug Fixes - Jira Init Improvements
+
+**Fixed Jira `specweave init` integration issues**:
+
+#### Issue 1: Confusing Validation Messages
+
+**Problem**: Users thought SpecWeave was creating projects when seeing "✅ Project 'FRONTEND' exists"
+
+**Fix**: Changed validation message to be explicit:
+```
+✅ Validated: Project "FRONTEND" exists in Jira
+```
+
+**Impact**: Makes it crystal clear that SpecWeave is VALIDATING (not creating) projects via Jira API
+
+#### Issue 2: Wrong Config Structure for Project-Per-Team
+
+**Problem**: When using `project-per-team` strategy with multiple projects (e.g., FRONTEND,BACKEND,MOBILE), the config was generated incorrectly:
+
+```json
+// ❌ WRONG (Before)
+{
+  "sync": {
+    "profiles": {
+      "jira-default": {
+        "config": {
+          "domain": "company.atlassian.net",
+          "projectKey": ""  // Empty string!
+        }
+      }
+    }
+  }
+}
+```
+
+**Fix**: Now correctly generates array of projects:
+
+```json
+// ✅ CORRECT (After)
+{
+  "sync": {
+    "profiles": {
+      "jira-default": {
+        "config": {
+          "domain": "company.atlassian.net",
+          "projects": ["FRONTEND", "BACKEND", "MOBILE"]  // Array!
+        }
+      }
+    }
+  }
+}
+```
+
+**Root Cause**: Code was extracting `credentials.projectKey` (single value) instead of `credentials.projects` (array) for project-per-team strategy
+
+#### Files Modified
+
+- `src/utils/external-resource-validator.ts` - Improved validation message clarity
+- `src/cli/helpers/issue-tracker/index.ts` - Fixed project extraction and config generation for project-per-team strategy
+- `src/core/schemas/specweave-config.schema.json` - Added `projects` array field validation
+
+#### Impact
+
+✅ **Clearer UX**: Users understand validation is successful, not an error
+✅ **Correct Config**: Project-per-team strategy now generates valid config
+✅ **Jira Sync Works**: Hooks can now sync to multiple Jira projects correctly
+✅ **Backward Compatible**: Single-project strategies (component-based, board-based) unchanged
+
+---
+
 ## [0.13.0] - 2025-11-10
 
 ### 🏗️ Architecture - Hooks System Refactoring + Prompt-Based Hooks
