@@ -12,12 +12,34 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{js,ts}',
     '!src/**/*.d.ts',
+    '!src/**/index.ts',
   ],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  // Map .js imports to .ts files for ES modules
+  coverageThreshold: {
+    global: {
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
+    },
+    './tests/unit/**/*.ts': {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+    './tests/integration/**/*.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
+    '^@/(.*)$': '<rootDir>/src/$1',
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   // Exclude Playwright E2E tests from Jest (they run with Playwright)
   testPathIgnorePatterns: [
     '/node_modules/',
@@ -25,12 +47,10 @@ module.exports = {
     '/tests/unit/pricing-constants.test.ts',
     '/tests/unit/adapter-loader.test.ts',
     '/tests/unit/plugin-system/',
-    // Temporarily exclude ALL integration tests
-    // TODO: Implement test cases for these placeholder test files
-    // Note: CLI tests use npx which tests published version, not local build
-    '/tests/integration/',
     // Exclude tests with import.meta TypeScript issues
     'locale-manager.test.ts',
     'language-system.test.ts',
   ],
+  // Timeout for long-running tests
+  testTimeout: 10000,
 };

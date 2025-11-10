@@ -161,7 +161,7 @@ overview.sanitized-c4-container.mmd        # Sanitized container view
 ```markdown
 ## System Context
 
-![delivery-guides-diagram-conventions-comprehensive-0](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-0.svg)
+![Main Flow Diagram](../../architecture/diagrams/1-main-flow.svg)
 ```
 
 **That's it—no images needed.** MkDocs renders the diagram at build time.

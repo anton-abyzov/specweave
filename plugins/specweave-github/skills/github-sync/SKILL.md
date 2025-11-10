@@ -1,6 +1,6 @@
 ---
 name: github-sync
-description: Bidirectional synchronization between SpecWeave increments and GitHub Issues (two-way sync by default). Creates issues from increments, tracks progress via comments, updates increment status from issue state, syncs changes in both directions automatically. Activates for GitHub sync, issue creation, increment tracking, GitHub integration, issue management, sync to GitHub, bidirectional sync.
+description: Bidirectional synchronization between SpecWeave increments and GitHub Issues (two-way sync by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync command instead.
 ---
 
 # GitHub Sync - Bidirectional Increment ↔ Issue Synchronization
@@ -9,14 +9,22 @@ description: Bidirectional synchronization between SpecWeave increments and GitH
 
 **Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
 
-**When to Use**:
-- Creating new increments (auto-create GitHub issue)
-- Syncing increment progress to GitHub (comments with task completion %)
-- Closing increments (auto-close GitHub issue)
-- Importing GitHub issues as increments
-- Manual sync operations
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/specweave-github:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
-**Integration**: Works with `/specweave:github:sync` command
+## When to Activate
+
+✅ **Do activate when**:
+- User asks: "How do I set up GitHub sync?"
+- User asks: "What GitHub credentials do I need?"
+- User asks: "How does the GitHub integration work?"
+- User needs help configuring GitHub integration
+
+❌ **Do NOT activate when**:
+- User invokes `/specweave-github:sync` command (command handles it)
+- Command is already running (avoid duplicate invocation)
+- Task completion hook is syncing (automatic process)
+
+**Integration**: Works with `/specweave-github:sync` command
 
 ---
 

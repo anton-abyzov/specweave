@@ -2264,6 +2264,28 @@ vim .claude-plugin/marketplace.json
 
 **SpecWeave supports syncing increments to unlimited external repositories** (GitHub, JIRA, Azure DevOps) with intelligent rate limiting and time range filtering.
 
+### 🎯 CRITICAL: Source of Truth Architecture
+
+**The Hub is LOCAL**, not external!
+
+```
+✅ CORRECT Architecture:
+.specweave/docs/specs/  ↔  GitHub Issues       (Local ↔ External)
+.specweave/docs/specs/  ↔  Jira Epics          (Local ↔ External)
+.specweave/docs/specs/  ↔  Azure DevOps Items  (Local ↔ External)
+
+❌ WRONG (External-to-External):
+GitHub  ↔  Jira                                 (External ↔ External - NO!)
+GitHub PRs  ↔  Jira Features                    (External ↔ External - NO!)
+```
+
+**Key Principle**: `.specweave/` is the **permanent source of truth**. External tools (GitHub, Jira, ADO) are **MIRRORS** of this truth.
+
+**Sync Direction**:
+- **Bidirectional** (default): Local ↔ External (changes sync both ways)
+- **Export only**: Local → External (push changes from Local to External)
+- **Import only**: External → Local (pull changes from External to Local)
+
 ### Core Concepts
 
 **3-Layer Architecture**:

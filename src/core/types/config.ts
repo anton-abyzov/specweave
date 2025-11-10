@@ -135,4 +135,11 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
       active: 30,                  // Warn if active >30 days
     },
   },
+  hooks: {
+    post_task_completion: {
+      sync_living_docs: true,      // CRITICAL: Auto-sync living docs after every task
+      sync_tasks_md: true,         // Update tasks.md with completion status
+      external_tracker_sync: true, // Sync to GitHub/Jira/ADO automatically
+    },
+  },
 };

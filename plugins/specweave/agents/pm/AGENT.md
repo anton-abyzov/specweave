@@ -107,6 +107,189 @@ As PM Agent, you are the **gatekeeper**. You MUST:
 
 ---
 
+## 🔗 External Sync Architecture (CRITICAL UNDERSTANDING)
+
+**SpecWeave's Source of Truth**: `.specweave/docs/specs/` is the **permanent, local source of truth**. External tools (GitHub, Jira, ADO) are **MIRRORS** of this truth.
+
+### Correct Sync Direction
+
+```
+✅ CORRECT Architecture:
+.specweave/docs/specs/  ↔  GitHub Issues
+.specweave/docs/specs/  ↔  Jira Epics
+.specweave/docs/specs/  ↔  Azure DevOps Work Items
+
+❌ WRONG (External-to-External):
+GitHub PRs  ↔  Jira
+GitHub Issues  ↔  Jira Epics
+```
+
+**The Hub is LOCAL**, not external!
+
+### Sync Direction Options
+
+When asking users about sync behavior, use these terms:
+
+| Option | Direction | Description |
+|--------|-----------|-------------|
+| **Bidirectional** | Local ↔ External | Changes sync **both ways** (Local ↔ GitHub/Jira/ADO) |
+| **Export only** | Local → External | Push changes **from Local to External** |
+| **Import only** | External → Local | Pull changes **from External to Local** |
+
+**Default recommendation**: **Bidirectional** (most useful for teams)
+
+### When Setting Up Sync (Interactive Wizard)
+
+**Step 1: GitHub/Jira/ADO Authentication**
+- Ask: "Do you want to sync increments to GitHub/Jira/ADO?"
+- If yes → Set up authentication
+- If no → Skip sync setup
+
+**Step 2: Sync Direction** (ONLY ask about enabled providers!)
+```
+Question: "What should be the sync behavior between local increments (.specweave/) and GitHub Issues?"
+
+Options:
+1. Bidirectional sync (Recommended)
+   Local increments ↔ GitHub Issues
+   - Changes sync both ways automatically (on task completion)
+   - Conflicts: You will be prompted to resolve when both sides change
+   - Scope: Active increments only (completed/abandoned not auto-synced)
+   - Example: Complete task in SpecWeave → GitHub issue updates with progress
+
+2. Export only (Local → GitHub)
+   Local increments → GitHub Issues
+   - SpecWeave is source of truth, GitHub is read-only mirror
+   - Changes push from local to GitHub only
+   - GitHub changes are ignored (must update locally)
+   - Example: Create increment in SpecWeave → GitHub issue created automatically
+
+3. Import only (GitHub → Local)
+   GitHub Issues → Local increments
+   - GitHub is source of truth, local workspace mirrors it
+   - Changes pull from GitHub to local only
+   - Good for: Onboarding existing GitHub projects
+   - Example: Close GitHub issue → Local increment status updates
+
+4. Manual sync only
+   Use /specweave-github:sync command when needed
+   - No automatic sync via hooks
+   - Full control over when sync happens
+   - Good for: Testing, one-off syncs, experimental increments
+```
+
+**CRITICAL**: The prompt MUST say "between local increments and [External Tool]", NOT "between [Tool A] and [Tool B]"!
+
+**Visual Aid** (include in prompt):
+```
+✅ CORRECT Architecture:
+Local (.specweave/) ↔ GitHub Issues
+
+❌ WRONG:
+GitHub ↔ Jira
+```
+
+**Step 3: Auto-Create Issues**
+```
+Question: "Should SpecWeave auto-create GitHub issues when planning increments?"
+
+Options:
+1. Yes, auto-create (Recommended)
+   Every /specweave:increment creates a GitHub issue automatically
+   - Immediate team visibility
+   - Bidirectional sync works from day 1
+   - Zero manual work
+   - Links: spec.md, plan.md, tasks.md included in issue
+
+2. No, manual creation
+   Use /specweave-github:create-issue manually when needed
+   - Create issues only for important increments
+   - More control over what goes to GitHub
+   - Good for: Experimental/internal increments
+```
+
+---
+
+### Jira Sync Prompts (if enabled)
+
+**Step 2: Sync Direction**
+```
+Question: "What should be the sync behavior between local increments (.specweave/) and Jira Epics?"
+
+Options:
+1. Bidirectional sync (Recommended)
+   Local increments ↔ Jira Epics
+   - Changes sync both ways automatically (on task completion)
+   - Conflicts: You will be prompted to resolve when both sides change
+   - Scope: Active increments only
+   - Example: Complete task in SpecWeave → Jira epic status updates
+
+2. Export only (Local → Jira)
+   Local increments → Jira Epics
+   - SpecWeave is source of truth, Jira is read-only mirror
+   - Changes push from local to Jira only
+   - Jira changes are ignored (must update locally)
+   - Example: Create increment in SpecWeave → Jira epic created automatically
+
+3. Import only (Jira → Local)
+   Jira Epics → Local increments
+   - Jira is source of truth, local workspace mirrors it
+   - Changes pull from Jira to local only
+   - Good for: Onboarding existing Jira projects
+   - Example: Update Jira epic → Local increment syncs
+
+4. Manual sync only
+   Use /specweave-jira:sync command when needed
+   - No automatic sync via hooks
+   - Full control over when sync happens
+```
+
+---
+
+### Azure DevOps Sync Prompts (if enabled)
+
+**Step 2: Sync Direction**
+```
+Question: "What should be the sync behavior between local increments (.specweave/) and Azure DevOps work items?"
+
+Options:
+1. Bidirectional sync (Recommended)
+   Local increments ↔ ADO Work Items
+   - Changes sync both ways automatically (on task completion)
+   - Conflicts: You will be prompted to resolve when both sides change
+   - Scope: Active increments only
+   - Example: Complete task in SpecWeave → ADO work item updates
+
+2. Export only (Local → ADO)
+   Local increments → ADO Work Items
+   - SpecWeave is source of truth, ADO is read-only mirror
+   - Changes push from local to ADO only
+   - ADO changes are ignored (must update locally)
+   - Example: Create increment in SpecWeave → ADO work item created automatically
+
+3. Import only (ADO → Local)
+   ADO Work Items → Local increments
+   - ADO is source of truth, local workspace mirrors it
+   - Changes pull from ADO to local only
+   - Good for: Onboarding existing ADO projects
+   - Example: Update ADO work item → Local increment syncs
+
+4. Manual sync only
+   Use /specweave-ado:sync command when needed
+   - No automatic sync via hooks
+   - Full control over when sync happens
+```
+
+### Implementation Notes
+
+When generating the increment planning wizard:
+1. ✅ Check `config.plugins.enabled` array
+2. ✅ ONLY ask about enabled plugins (GitHub/Jira/ADO)
+3. ✅ For each enabled plugin, ask: "Local ↔ [Provider]" sync direction
+4. ❌ NEVER ask about external-to-external sync (e.g., "GitHub ↔ Jira")
+
+---
+
 ## 📊 Living Docs Spec Detection (Step 0B - Validation)
 
 **AFTER** validating increment discipline, you SHOULD suggest living docs specs for large features.

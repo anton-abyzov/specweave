@@ -108,3 +108,4 @@ temp/
 # This keeps all increment-related files together for better traceability
 # Workflow trigger - increment 0014 cleanup
 *.bak
+coverage/

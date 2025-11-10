@@ -158,7 +158,7 @@ export function clearReflectionContext(
 }
 
 // CLI entry point for hook integration
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const incrementId = process.argv[2];
   const taskId = process.argv[3];
 

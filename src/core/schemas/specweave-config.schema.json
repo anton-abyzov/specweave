@@ -781,6 +781,17 @@
               "description": "Auto-detect project from increment description",
               "default": true
             },
+            "autoCreateIssue": {
+              "type": "boolean",
+              "description": "Auto-create external issues (GitHub/Jira/ADO) when planning increments",
+              "default": false
+            },
+            "syncDirection": {
+              "type": "string",
+              "description": "Default sync direction between LOCAL (.specweave/) and EXTERNAL (GitHub/Jira/ADO). Options: 'bidirectional' (Local ↔ External, recommended), 'to-external' (Local → External only), 'from-external' (External → Local only)",
+              "enum": ["bidirectional", "to-external", "from-external"],
+              "default": "bidirectional"
+            },
             "defaultTimeRange": {
               "type": "string",
               "description": "Default time range for new syncs",
@@ -791,6 +802,12 @@
               "type": "boolean",
               "description": "Enable rate limit protection",
               "default": true
+            },
+            "conflictResolution": {
+              "type": "string",
+              "description": "How to resolve conflicts when both Local and External have changes. Options: 'prompt' (ask user), 'prefer-local' (Local wins), 'prefer-external' (External wins)",
+              "enum": ["prompt", "prefer-local", "prefer-external"],
+              "default": "prompt"
             }
           }
         }

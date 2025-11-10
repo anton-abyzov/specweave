@@ -56,7 +56,17 @@
 
 ## Workflow Diagram
 
-![delivery-branch-strategy-0](../architecture/diagrams/delivery-branch-strategy-0.svg)
+```mermaid
+graph LR
+    D[develop] -->|feature branch| F[feature/0007-x]
+    F -->|PR + merge| D
+    D -->|release branch| R[release/v0.7.0]
+    R -->|final testing| M[main]
+    R -->|merge back| D
+    M -->|hotfix| H[hotfix/0015-y]
+    H -->|merge| M
+    H -->|merge| D
+```
 
 ---
 

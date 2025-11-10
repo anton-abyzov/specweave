@@ -1,0 +1,225 @@
+/**
+ * Unit Tests: ProjectManager Path Resolution
+ *
+ * Tests path resolution methods for project-specific paths.
+ * Coverage Target: 95%
+ */
+
+import { ProjectManager } from '../../../src/core/project-manager';
+import { ConfigManager } from '../../../src/core/config-manager';
+import { benchmark } from '../../utils/benchmark';
+import * as path from 'path';
+
+// Mock ConfigManager
+jest.mock('../../../src/core/config-manager');
+jest.mock('fs-extra');
+
+// Mock auto-detect function
+jest.mock('../../../src/utils/project-detection', () => ({
+  autoDetectProjectIdSync: jest.fn(() => 'default'),
+  formatProjectName: jest.fn((id: string) => {
+    return id.split('-').map(word =>
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  })
+}));
+
+describe('ProjectManager - Path Resolution', () => {
+  let projectManager: ProjectManager;
+  let mockConfigManager: jest.Mocked<ConfigManager>;
+  const testRoot = '/test/project/root';
+
+  beforeEach(() => {
+    // Clear all mocks before each test
+    jest.clearAllMocks();
+
+    // Create ProjectManager instance
+    projectManager = new ProjectManager(testRoot);
+
+    // Get mocked ConfigManager instance
+    mockConfigManager = (projectManager as any).configManager as jest.Mocked<ConfigManager>;
+
+    // Default mock: single project mode
+    mockConfigManager.load.mockReturnValue({
+      multiProject: {
+        enabled: false,
+        activeProject: 'default',
+        projects: []
+      }
+    } as any);
+  });
+
+  describe('getProjectBasePath()', () => {
+    it('should return correct path for active project', () => {
+      const basePath = projectManager.getProjectBasePath();
+
+      expect(basePath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default')
+      );
+    });
+
+    it('should return correct path for specific project ID', () => {
+      // Mock multi-project mode
+      mockConfigManager.load.mockReturnValue({
+        multiProject: {
+          enabled: true,
+          activeProject: 'web-app',
+          projects: [
+            { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
+            { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
+          ]
+        }
+      } as any);
+
+      const basePath = projectManager.getProjectBasePath('mobile-app');
+
+      expect(basePath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/mobile-app')
+      );
+    });
+
+    it('should throw error for non-existent project', () => {
+      // Mock multi-project mode
+      mockConfigManager.load.mockReturnValue({
+        multiProject: {
+          enabled: true,
+          activeProject: 'web-app',
+          projects: [
+            { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' }
+          ]
+        }
+      } as any);
+
+      expect(() => {
+        projectManager.getProjectBasePath('non-existent');
+      }).toThrow("Project 'non-existent' not found");
+    });
+  });
+
+  describe('getSpecsPath()', () => {
+    it('should return correct specs path for active project', () => {
+      const specsPath = projectManager.getSpecsPath();
+
+      expect(specsPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/specs')
+      );
+    });
+
+    it('should append /specs to base path', () => {
+      const specsPath = projectManager.getSpecsPath();
+      const basePath = projectManager.getProjectBasePath();
+
+      expect(specsPath).toBe(path.join(basePath, 'specs'));
+    });
+  });
+
+  describe('getModulesPath()', () => {
+    it('should return correct modules path for active project', () => {
+      const modulesPath = projectManager.getModulesPath();
+
+      expect(modulesPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/modules')
+      );
+    });
+
+    it('should append /modules to base path', () => {
+      const modulesPath = projectManager.getModulesPath();
+      const basePath = projectManager.getProjectBasePath();
+
+      expect(modulesPath).toBe(path.join(basePath, 'modules'));
+    });
+  });
+
+  describe('getTeamPath()', () => {
+    it('should return correct team path for active project', () => {
+      const teamPath = projectManager.getTeamPath();
+
+      expect(teamPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/team')
+      );
+    });
+
+    it('should append /team to base path', () => {
+      const teamPath = projectManager.getTeamPath();
+      const basePath = projectManager.getProjectBasePath();
+
+      expect(teamPath).toBe(path.join(basePath, 'team'));
+    });
+  });
+
+  describe('getArchitecturePath()', () => {
+    it('should return correct architecture path for active project', () => {
+      const archPath = projectManager.getArchitecturePath();
+
+      expect(archPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/architecture')
+      );
+    });
+
+    it('should append /architecture to base path', () => {
+      const archPath = projectManager.getArchitecturePath();
+      const basePath = projectManager.getProjectBasePath();
+
+      expect(archPath).toBe(path.join(basePath, 'architecture'));
+    });
+  });
+
+  describe('getLegacyPath()', () => {
+    it('should return base legacy path without source', () => {
+      const legacyPath = projectManager.getLegacyPath();
+
+      expect(legacyPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/legacy')
+      );
+    });
+
+    it('should return legacy path with source type', () => {
+      const legacyPath = projectManager.getLegacyPath('notion');
+
+      expect(legacyPath).toBe(
+        path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/notion')
+      );
+    });
+
+    it('should support different source types', () => {
+      const notionPath = projectManager.getLegacyPath('notion');
+      const confluencePath = projectManager.getLegacyPath('confluence');
+      const wikiPath = projectManager.getLegacyPath('wiki');
+
+      expect(notionPath).toContain('/legacy/notion');
+      expect(confluencePath).toContain('/legacy/confluence');
+      expect(wikiPath).toContain('/legacy/wiki');
+    });
+  });
+
+  describe('Path Resolution Performance', () => {
+    it('should resolve paths in less than 1ms per call (avg)', async () => {
+      const result = await benchmark(() => {
+        projectManager.getProjectBasePath();
+        projectManager.getSpecsPath();
+        projectManager.getModulesPath();
+        projectManager.getTeamPath();
+        projectManager.getArchitecturePath();
+        projectManager.getLegacyPath();
+      }, 1000);
+
+      console.log(`Path resolution benchmark: ${result.avg.toFixed(3)}ms avg`);
+
+      // All 6 calls should complete in <1ms on average
+      expect(result.avg).toBeLessThan(1);
+    });
+
+    it('should handle 1000 consecutive calls efficiently', async () => {
+      const result = await benchmark(() => {
+        for (let i = 0; i < 1000; i++) {
+          projectManager.getProjectBasePath();
+        }
+      }, 10);
+
+      console.log(`1000 calls benchmark: ${result.avg.toFixed(3)}ms avg`);
+
+      // 1000 calls should complete in <10ms
+      expect(result.avg).toBeLessThan(10);
+    });
+  });
+});

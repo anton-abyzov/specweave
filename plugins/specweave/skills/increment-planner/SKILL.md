@@ -80,6 +80,23 @@ Do NOT activate if:
 - ❌ User is already in an active increment planning workflow
 - ❌ Increment files (spec.md, plan.md, tasks.md) are currently being created
 
+## 🔗 External Sync Architecture (CRITICAL)
+
+**Source of Truth**: `.specweave/docs/specs/` (LOCAL) is the permanent source of truth. External tools (GitHub, Jira, ADO) are **MIRRORS**.
+
+**Correct sync direction**:
+```
+✅ CORRECT:
+.specweave/  ↔  GitHub Issues    (Local ↔ External)
+.specweave/  ↔  Jira Epics       (Local ↔ External)
+.specweave/  ↔  ADO Work Items   (Local ↔ External)
+
+❌ WRONG:
+GitHub  ↔  Jira                  (External ↔ External - NO!)
+```
+
+**When invoking PM agent**: Ensure it understands sync is **Local ↔ External**, not External ↔ External!
+
 ## Activation Triggers
 
 This skill activates automatically when users say:
