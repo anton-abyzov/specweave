@@ -501,7 +501,35 @@ export async function initCommand(
 
         if (enableDocsPreview) {
           console.log(chalk.green('   ✔ Documentation preview enabled'));
-          console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
+
+          // 🚨 CRITICAL FIX: Actually install the docs-preview plugin!
+          // User said Yes → Install plugin immediately (like issue tracker setup)
+          if (detectClaudeCli()) {
+            console.log(chalk.gray('   → Installing specweave-docs-preview plugin...'));
+
+            try {
+              const result = execFileNoThrowSync('claude', [
+                'plugin',
+                'install',
+                'specweave-docs-preview'  // NO @marketplace suffix
+              ]);
+
+              if (result.success) {
+                console.log(chalk.green('   ✔ specweave-docs-preview plugin installed'));
+                console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
+              } else {
+                console.log(chalk.yellow('   ⚠️  Plugin install failed (can install later)'));
+                console.log(chalk.gray('   → Try manually: /plugin install specweave-docs-preview'));
+              }
+            } catch (error: any) {
+              console.log(chalk.yellow('   ⚠️  Plugin install failed (can install later)'));
+              console.log(chalk.gray('   → Try manually: /plugin install specweave-docs-preview'));
+            }
+          } else {
+            console.log(chalk.gray('   → Preview with: /specweave:docs preview'));
+            console.log(chalk.yellow('   ⚠️  Claude CLI not detected - install plugin manually:'));
+            console.log(chalk.gray('   → /plugin install specweave-docs-preview'));
+          }
         } else {
           console.log(chalk.gray('   → Skipped (can enable later in .specweave/config.json)'));
         }

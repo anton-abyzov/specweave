@@ -2,9 +2,9 @@
 
 **Purpose**: Quick reference for all available skills. Read this file BEFORE starting any task.
 
-**Last Updated**: 2025-11-03T04:18:05.042Z (auto-generated, do not edit manually)
+**Last Updated**: 2025-11-10 (manually updated to include plugin-installer and plugin-expert)
 
-**Total Skills**: 12
+**Total Skills**: 14
 
 ---
 
@@ -36,6 +36,26 @@ Step 4: Execute → Follow the increment planning workflow
 
 
 ### Framework Core
+
+#### plugin-installer
+
+**Description**: Proactive just-in-time plugin installation. Auto-detects when specialized plugins are needed (docs-preview, frontend, kubernetes, ML, payments, testing, etc.) and installs them automatically before use. Activates for preview docs, Docusaurus, React, Next.js, K8s, Kubernetes, Helm, TensorFlow, PyTorch, ML model, Stripe, billing, payment, Playwright, E2E testing, Figma, design system, ADO, Azure DevOps, infrastructure, Prometheus, Grafana, monitoring, Node.js, Python backend, REST API, cloud deployment, diagram, Mermaid, C4, architecture diagram.
+
+**Activates for**: preview docs, documentation UI, Docusaurus, React, Next.js, frontend, UI component, K8s, Kubernetes, deploy, TensorFlow, ML model, Stripe, billing, E2E testing, Figma, diagram, architecture diagram
+
+**Location**: `.claude/skills/plugin-installer/SKILL.md`
+
+---
+
+#### plugin-expert
+
+**Description**: Expert knowledge of Claude Code's plugin system, marketplace management, and installation commands. Activates for plugin installation, marketplace setup, plugin troubleshooting, plugin commands. Keywords plugin install, plugin marketplace, claude code plugins, plugin management, plugin errors, marketplace add, plugin list.
+
+**Activates for**: plugin installation, marketplace setup, plugin troubleshooting, plugin commands, plugin install, plugin marketplace
+
+**Location**: `.claude/skills/plugin-expert/SKILL.md`
+
+---
 
 #### context-loader
 
@@ -182,6 +202,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 | Your Task | Relevant Skill | Keywords |
 |-----------|---------------|----------|
+| "Preview internal docs" | `plugin-installer` | "preview docs", "Docusaurus", "documentation UI" |
 | "Plan a new feature" | `increment-planner` | "feature planning", "create increment" |
 | "Sync to JIRA" | `jira-sync` | "JIRA sync", "create JIRA issue" |
 | "Create diagram" | `diagrams-architect` | "architecture diagram", "C4 diagram" |

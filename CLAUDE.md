@@ -992,6 +992,59 @@ When you create increments (e.g., `/specweave:increment "Add Stripe billing"`):
    - Install later → Skills won't be available until plugin installed (can add mid-work)
    - Skip → Increment creation continues (not blocked, but capabilities limited)
 
+#### Phase 2.5: Just-in-Time Plugin Installation (NEW! v0.10.0+)
+
+**The Critical Gap**: Users request features that require plugins (e.g., "preview docs locally"), but those plugins aren't installed yet. Instead of failing silently or recommending manual installation, SpecWeave now **automatically installs plugins just-in-time**.
+
+**How it works** (via `plugin-installer` skill):
+
+1. **Automatic Detection**
+   - User requests a feature (e.g., "Show me the internal docs in a browser")
+   - `plugin-installer` skill detects keywords: "docs", "browser" → needs `specweave-docs-preview`
+   - Checks if plugin is installed: `/plugin list --installed`
+
+2. **Auto-Installation**
+   ```
+   🔌 Detected need for specweave-docs-preview plugin
+
+   📦 Installing specweave-docs-preview...
+      This plugin provides: Beautiful Docusaurus UI for browsing .specweave/docs/
+
+   ✅ Plugin installed successfully!
+      You can now:
+      • Browse documentation in beautiful UI
+      • Hot reload when editing markdown files
+      • Render Mermaid diagrams automatically
+
+   Proceeding to launch docs preview server...
+   ```
+
+3. **Seamless Execution**
+   - Plugin installed automatically (no manual intervention)
+   - Feature executes immediately
+   - User sees clear notification of what was installed and why
+
+**Supported Just-in-Time Plugins**:
+
+| User Keywords | Auto-Installed Plugin | Capabilities |
+|--------------|----------------------|--------------|
+| "preview docs", "documentation UI", "Docusaurus" | `specweave-docs-preview` | Beautiful docs UI, hot reload |
+| "React", "Next.js", "frontend", "UI component" | `specweave-frontend` | Frontend expert, design systems |
+| "K8s", "Kubernetes", "Helm", "deploy" | `specweave-kubernetes` | K8s expert, manifest generation |
+| "TensorFlow", "PyTorch", "ML model" | `specweave-ml` | ML pipelines, training, deployment |
+| "Stripe", "billing", "payment" | `specweave-payments` | Payment expert, Stripe integration |
+| "Playwright", "E2E testing", "browser automation" | `specweave-testing` | E2E testing infrastructure |
+| "Figma", "design tokens", "prototype" | `specweave-figma` | Design system integration |
+| "Mermaid", "C4 model", "architecture diagram" | `specweave-diagrams` | Diagram generation |
+
+**Key Benefits**:
+- ✅ **Zero friction**: No manual plugin installation needed
+- ✅ **Proactive**: Detects requirements automatically based on user request
+- ✅ **Clear UX**: Users understand what's being installed and why
+- ✅ **Fail-safe**: Handles installation errors gracefully with troubleshooting steps
+
+**See**: `plugins/specweave/skills/plugin-installer/SKILL.md` for complete keyword map and workflow
+
 #### Phase 3: Implementation (Auto-Activation)
 
 When plugins are installed:

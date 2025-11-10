@@ -148,6 +148,16 @@ program
     await import('../dist/cli/commands/validate-plugins.js').then(m => m.runValidation(options));
   });
 
+// Validate Jira command - Jira resource validation
+program
+  .command('validate-jira')
+  .description('Validate Jira configuration and create missing resources')
+  .option('--env <path>', 'Path to .env file', '.env')
+  .action(async (options) => {
+    const { runJiraValidation } = await import('../dist/cli/commands/validate-jira.js');
+    await runJiraValidation(options);
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -170,6 +180,8 @@ program.on('--help', () => {
   console.log('  $ specweave validate-plugins                # Validate plugin installation');
   console.log('  $ specweave validate-plugins --auto-install # Auto-install missing plugins');
   console.log('  $ specweave validate-plugins --dry-run      # Preview what would be installed');
+  console.log('  $ specweave validate-jira                   # Validate Jira configuration');
+  console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
