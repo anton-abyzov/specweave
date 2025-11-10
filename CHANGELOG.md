@@ -11,6 +11,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.2] - 2025-11-10
+
+### Added
+
+- **AI Self-Reflection System**: New reflective-reviewer agent for automated code quality analysis
+  - Git diff analyzer for detecting code changes
+  - Reflection config loader with model selection support
+  - Reflection parser for structured feedback extraction
+  - Reflection prompt builder with configurable templates
+  - Reflection storage system with JSON-based persistence
+  - Comprehensive unit tests for all reflection components
+- **Multi-Project Organization**: New projects/ folder structure for organizing specs by project
+  - Default project created automatically
+  - Supports unlimited projects for multi-team organizations
+  - Project-specific specs, modules, team docs, architecture, and legacy folders
+- **Architecture Documentation**:
+  - ADR-0017: Self-reflection architecture decisions
+  - ADR-0018: Reflection model selection strategy
+  - ADR-0019: Reflection storage format specification
+- **GitHub Auto-Create**: Post-increment-planning hook now auto-creates GitHub issues
+  - Automatic issue creation after increment planning
+  - Task checklist generation from tasks.md
+  - Metadata updates with issue number and URL
+
+### Changed
+
+- **Configuration Schema**: Updated specweave-config.schema.json with reflection settings
+- **Skills Documentation**: Enhanced increment-planner, project-kickstarter, and spec-generator skills
+- **Increment Metadata**: Added metadata.json for increments 0014 and 0015
+
+### Documentation
+
+- Added duplicate skill loading analysis in public docs
+- Updated increment 0016 (self-reflection-system) with complete spec, plan, and tasks
+- GitHub auto-create implementation report
+
+---
+
 ## [0.11.1] - 2025-11-10
 
 ### Changed
