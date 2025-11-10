@@ -125,24 +125,29 @@ export async function initCommand(
 
     // Check if .specweave already exists
     if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-      const { overwrite } = await inquirer.prompt([
+      console.log(chalk.yellow('\n.specweave/ directory already exists (previously initialized).'));
+
+      const { reinitialize } = await inquirer.prompt([
         {
           type: 'confirm',
-          name: 'overwrite',
-          message: '.specweave directory already exists. Overwrite?',
+          name: 'reinitialize',
+          message: 'Re-initialize SpecWeave? (will remove .specweave/ and .claude/ only, all other files preserved)',
           default: false,
         },
       ]);
 
-      if (!overwrite) {
+      if (!reinitialize) {
         console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
         process.exit(0);
       }
 
       fs.removeSync(path.join(targetDir, '.specweave'));
+      console.log(chalk.blue('   ♻️  Removed existing .specweave/'));
       if (fs.existsSync(path.join(targetDir, '.claude'))) {
         fs.removeSync(path.join(targetDir, '.claude'));
+        console.log(chalk.blue('   ♻️  Removed existing .claude/'));
       }
+      console.log(chalk.green('   ✅ All other files preserved (brownfield-safe)\n'));
     }
   } else {
     // Original behavior: create subdirectory
