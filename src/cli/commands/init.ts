@@ -888,29 +888,72 @@ export async function initCommand(
       // Asks user: Which tracker? (GitHub/Jira/ADO/None)
       // Collects credentials and runs smart validation
       //
-      // IMPORTANT: Skip if we're in the SpecWeave framework repo itself
-      // (Framework development mode - uses GitHub Issues, not user's trackers)
+      // NEW: Always run for ALL projects (including framework repo)
+      // Detects existing config and asks user if they want to change it
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
 
-      if (isFrameworkRepo) {
-        console.log(chalk.blue('\n🔍 Detected SpecWeave framework repository'));
-        console.log(chalk.gray('   Framework development mode enabled'));
-        console.log(chalk.gray('   Skipping issue tracker setup (framework uses GitHub Issues)\n'));
-      } else {
-        try {
-          const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+      try {
+        const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
+
+        // Check if sync config already exists
+        const configPath = path.join(targetDir, '.specweave', 'config.json');
+        let existingTracker: string | null = null;
+
+        if (fs.existsSync(configPath)) {
+          const config = await fs.readJson(configPath);
+          if (config.sync?.activeProfile && config.sync?.profiles) {
+            const activeProfile = config.sync.profiles[config.sync.activeProfile];
+            if (activeProfile?.provider) {
+              existingTracker = activeProfile.provider;
+            }
+          }
+        }
+
+        if (existingTracker) {
+          // Existing config detected - ask if user wants to reconfigure
+          console.log(chalk.blue('\n🔍 Existing Issue Tracker Configuration Detected'));
+          console.log(chalk.gray(`   Current: ${existingTracker.charAt(0).toUpperCase() + existingTracker.slice(1)}`));
+          console.log('');
+
+          const { reconfigure } = await inquirer.prompt([{
+            type: 'confirm',
+            name: 'reconfigure',
+            message: 'Do you want to reconfigure your issue tracker?',
+            default: false
+          }]);
+
+          if (!reconfigure) {
+            console.log(chalk.gray('   ✓ Keeping existing configuration\n'));
+          } else {
+            // User wants to reconfigure - run setup
+            await setupIssueTracker({
+              projectPath: targetDir,
+              language: language as SupportedLanguage,
+              maxRetries: 3,
+              isFrameworkRepo
+            });
+          }
+        } else {
+          // No existing config - run setup
+          if (isFrameworkRepo) {
+            console.log(chalk.blue('\n🔍 Detected SpecWeave framework repository'));
+            console.log(chalk.gray('   Recommended: Configure GitHub sync for automatic bidirectional sync'));
+            console.log('');
+          }
+
           await setupIssueTracker({
             projectPath: targetDir,
             language: language as SupportedLanguage,
-            maxRetries: 3
+            maxRetries: 3,
+            isFrameworkRepo
           });
-        } catch (error: any) {
-          // Non-critical error - log but continue
-          if (process.env.DEBUG) {
-            console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
-          }
-          console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
         }
+      } catch (error: any) {
+        // Non-critical error - log but continue
+        if (process.env.DEBUG) {
+          console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
+        }
+        console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
       }
     }
 

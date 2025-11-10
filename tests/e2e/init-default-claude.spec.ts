@@ -9,24 +9,36 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const TEST_DIR = path.join(process.cwd(), 'test-init-default-claude');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Path to local CLI (use this instead of global 'specweave' command)
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+const CLI_PATH = path.join(PROJECT_ROOT, 'bin/specweave.js');
 
 test.describe('specweave init - default claude adapter', () => {
-  test.beforeAll(async () => {
-    // Clean up test directory
+  let TEST_DIR: string;
+
+  test.beforeEach(async ({ }, testInfo) => {
+    // Create unique directory in fixtures (NOT project root!)
+    TEST_DIR = path.join(__dirname, '../fixtures/e2e-init-claude', `test-${testInfo.workerIndex}-${Date.now()}`);
+
+    // Clean up and create test directory
     await fs.remove(TEST_DIR);
     await fs.mkdir(TEST_DIR, { recursive: true });
   });
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     // Clean up test directory
     await fs.remove(TEST_DIR);
   });
 
   test('should default to claude adapter when no --adapter flag provided', async () => {
-    // Run init without --adapter flag
-    const output = execSync('specweave init .', {
+    // Run init without --adapter flag (using local CLI)
+    const output = execSync(`node "${CLI_PATH}" init .`, {
       cwd: TEST_DIR,
       encoding: 'utf-8'
     });
@@ -76,20 +88,28 @@ test.describe('specweave init - default claude adapter', () => {
 });
 
 test.describe('specweave init - explicit adapter flags', () => {
-  const GENERIC_TEST_DIR = path.join(process.cwd(), 'test-init-generic');
+  let GENERIC_TEST_DIR: string;
+  let CLAUDE_TEST_DIR: string;
 
-  test.beforeAll(async () => {
+  test.beforeEach(async ({ }, testInfo) => {
+    // Create unique directories in fixtures (NOT project root!)
+    GENERIC_TEST_DIR = path.join(__dirname, '../fixtures/e2e-init-generic', `test-${testInfo.workerIndex}-${Date.now()}`);
+    CLAUDE_TEST_DIR = path.join(__dirname, '../fixtures/e2e-init-explicit-claude', `test-${testInfo.workerIndex}-${Date.now()}`);
+
     await fs.remove(GENERIC_TEST_DIR);
+    await fs.remove(CLAUDE_TEST_DIR);
     await fs.mkdir(GENERIC_TEST_DIR, { recursive: true });
+    await fs.mkdir(CLAUDE_TEST_DIR, { recursive: true });
   });
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await fs.remove(GENERIC_TEST_DIR);
+    await fs.remove(CLAUDE_TEST_DIR);
   });
 
   test('should use generic adapter when explicitly requested', async () => {
-    // Run init with --adapter generic
-    const output = execSync('specweave init . --adapter generic', {
+    // Run init with --adapter generic (using local CLI)
+    const output = execSync(`node "${CLI_PATH}" init . --adapter generic`, {
       cwd: GENERIC_TEST_DIR,
       encoding: 'utf-8'
     });
@@ -100,13 +120,10 @@ test.describe('specweave init - explicit adapter flags', () => {
   });
 
   test('should use claude adapter when explicitly requested', async () => {
-    const CLAUDE_TEST_DIR = path.join(process.cwd(), 'test-init-explicit-claude');
+    // CLAUDE_TEST_DIR is now created in beforeEach (no more root pollution!)
 
-    await fs.remove(CLAUDE_TEST_DIR);
-    await fs.mkdir(CLAUDE_TEST_DIR, { recursive: true });
-
-    // Run init with --adapter claude
-    const output = execSync('specweave init . --adapter claude', {
+    // Run init with --adapter claude (using local CLI)
+    const output = execSync(`node "${CLI_PATH}" init . --adapter claude`, {
       cwd: CLAUDE_TEST_DIR,
       encoding: 'utf-8'
     });

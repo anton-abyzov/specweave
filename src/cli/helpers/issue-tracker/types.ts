@@ -122,6 +122,7 @@ export interface SetupOptions {
   projectPath: string;
   language: SupportedLanguage;
   maxRetries?: number; // Default: 3
+  isFrameworkRepo?: boolean; // True if this is the SpecWeave framework repo itself
 }
 
 /**
