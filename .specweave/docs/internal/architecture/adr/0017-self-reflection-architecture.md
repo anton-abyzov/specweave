@@ -196,15 +196,15 @@ export async function runReflection(incrementId: string): Promise<void> {
 ### Performance Characteristics
 
 **Target Metrics**:
-- **Execution Time**: <15s (quick mode), <30s (standard mode), <60s (deep mode)
-- **API Cost**: <$0.01 per task (Haiku), <$0.05 (Sonnet), <$0.15 (Opus)
+- **Execution Time**: \<15s (quick mode), \<30s (standard mode), \<60s (deep mode)
+- **API Cost**: \<$0.01 per task (Haiku), \<$0.05 (Sonnet), \<$0.15 (Opus)
 - **Success Rate**: >99.5% (reflection completes successfully)
 - **Failure Impact**: 0 seconds (non-blocking, graceful degradation)
 
 **Token Optimization**:
 - Send only modified files (not entire codebase)
-- Limit file size (<100KB per file)
-- Aggregate small changes (combine <10 line changes)
+- Limit file size (\<100KB per file)
+- Aggregate small changes (combine \<10 line changes)
 - Cache common patterns (reduce redundant analysis)
 
 ## Alternatives Considered
@@ -314,7 +314,7 @@ export async function runReflection(incrementId: string): Promise<void> {
 #### Risk 2: Agent Startup Overhead
 
 **Mitigation**:
-- Profile agent invocation time (target <5 seconds)
+- Profile agent invocation time (target \<5 seconds)
 - Consider caching agent context (if startup is slow)
 - Fallback to direct API call if agent unavailable
 

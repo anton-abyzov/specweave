@@ -235,7 +235,12 @@ GitHub Task Lists (Subtasks within issue)
 
 ### Workflow
 
-![architecture-adr-adr-0007-github-first-task-sync-0](../diagrams/architecture-adr-adr-0007-github-first-task-sync-0.svg)
+The GitHub task sync workflow is part of the main SpecWeave flow. See the [Main Flow diagram](../diagrams/1-main-flow.svg) which includes:
+- Increment planning with GitHub issue creation
+- Task completion with GitHub status updates
+- Bidirectional sync mechanisms
+
+For detailed GitHub-specific workflow, the task-level sync is integrated into the standard `/specweave:do` execution cycle.
 
 ---
 

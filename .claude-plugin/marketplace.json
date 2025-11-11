@@ -226,6 +226,17 @@
         "name": "Anton Abyzov",
         "email": "anton@spec-weave.com"
       }
+    },
+    {
+      "name": "specweave-mobile",
+      "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing, Metro bundler configuration",
+      "source": "./plugins/specweave-mobile",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
     }
   ]
 }

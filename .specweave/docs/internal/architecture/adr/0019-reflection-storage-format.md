@@ -20,7 +20,7 @@ Self-reflection results need to be stored persistently for historical analysis, 
 - **Machine-parsable**: Can extract structured data for trend analysis
 - **Portable**: Works across git, doesn't require database
 - **Git-friendly**: Diffs are meaningful, merge conflicts rare
-- **Compact**: Doesn't bloat repository (file sizes <50KB)
+- **Compact**: Doesn't bloat repository (file sizes \<50KB)
 
 ### Key Constraints
 
@@ -85,21 +85,17 @@ Self-reflection results need to be stored persistently for historical analysis, 
 
 ### ⚠️ Issues Identified
 
-**{CATEGORY} ({SEVERITY} Risk)**
-- ❌ **Issue**: {What's wrong}
-  - **File**: `{path}:{line}`
-  - **Impact**: {Why it matters}
-  - **Recommendation**: {How to fix}
+**[CATEGORY] ([SEVERITY] Risk)**
+- ❌ **Issue**: [What's wrong]
+  - **File**: `[path]:[line]`
+  - **Impact**: [Why it matters]
+  - **Recommendation**: [How to fix]
   - **Code**:
-    ```{lang}
-    {Problematic code snippet}
-    ```
+    [code block with problematic code]
   - **Fix**:
-    ```{lang}
-    {Corrected code snippet}
-    ```
+    [code block with corrected code]
 
-{Repeat for each issue}
+[Repeat for each issue]
 
 ---
 

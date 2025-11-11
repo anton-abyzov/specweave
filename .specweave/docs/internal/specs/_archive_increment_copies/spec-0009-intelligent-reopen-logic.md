@@ -524,7 +524,7 @@ export class IncrementSimilarity {
    }
    ```
 
-4. **If no match (similarity <70%)**: Continue with normal flow (Step 0, check incomplete)
+4. **If no match (similarity \<70%)**: Continue with normal flow (Step 0, check incomplete)
 
 ### Reopen Flow
 
@@ -722,11 +722,11 @@ if (metadata.reopenHistory && metadata.reopenHistory.length >= 3) {
 
 **Intelligence Accuracy**:
 - ✅ 90%+ of related work correctly detected (similarity >70%)
-- ✅ <5% false positives (unrelated work flagged as related)
-- ✅ <10% false negatives (related work not detected)
+- ✅ \<5% false positives (unrelated work flagged as related)
+- ✅ \<10% false negatives (related work not detected)
 
 **User Experience**:
-- ✅ Reopen decision takes <30 seconds (fast workflow)
+- ✅ Reopen decision takes \<30 seconds (fast workflow)
 - ✅ Users understand why match was suggested (clear reasoning)
 - ✅ 80%+ of users choose to reopen when suggested (trust the system)
 

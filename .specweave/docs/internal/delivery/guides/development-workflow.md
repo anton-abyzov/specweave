@@ -179,7 +179,7 @@ Post-Implementation Documentation:
 
 ##### Decision Tree
 
-![delivery-guides-development-workflow-0](../../architecture/diagrams/delivery-guides-development-workflow-0.svg)
+The complete development workflow is documented in the [Main Flow diagram](../../architecture/diagrams/1-main-flow.svg) which shows the full SpecWeave lifecycle including development, testing, and deployment phases.
 
 ##### Incremental Documentation Pattern (Quick Start)
 

@@ -235,7 +235,7 @@ Repository ID: [user must type]
 **Implementation**:
 - ✅ Simple algorithm (10 lines of code)
 - ✅ Easy to test (deterministic)
-- ✅ Fast (<1ms per generation)
+- ✅ Fast (\<1ms per generation)
 - ✅ No dependencies
 
 **Maintainability**:
@@ -460,7 +460,7 @@ describe('Repository ID Generation Flow', () => {
 
 ## Performance Characteristics
 
-- **Generation Time**: <1ms per repository
+- **Generation Time**: \<1ms per repository
 - **Memory**: O(n) where n = number of repos (small)
 - **Scalability**: Linear with number of repos (100+ repos = no issue)
 

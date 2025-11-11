@@ -152,7 +152,7 @@ graph TB
 | **Install success rate** | 95%+ | 98% | ✅ Exceeds |
 | **Context reduction** | 60%+ | 75% | ✅ Exceeds |
 | **Cross-platform support** | 100% | 100% | ✅ Meets |
-| **Plugin load time** | <200ms | 150ms | ✅ Exceeds |
+| **Plugin load time** | \<200ms | 150ms | ✅ Exceeds |
 
 ---
 

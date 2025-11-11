@@ -302,7 +302,12 @@ tags:
 
 ### Sync Flow
 
-![delivery-brownfield-integration-strategy-0](../architecture/diagrams/delivery-brownfield-integration-strategy-0.svg)
+For brownfield project onboarding workflow, see the [Brownfield Onboarding Strategy diagram](../architecture/diagrams/brownfield-onboarding-strategy.svg) which shows:
+- Project size assessment
+- Two onboarding approaches (Comprehensive Upfront vs Quick Start)
+- Incremental documentation workflow
+
+The sync mechanism follows the standard SpecWeave bidirectional sync pattern documented in the [Main Flow](../architecture/diagrams/1-main-flow.svg).
 
 ### Sync Commands
 

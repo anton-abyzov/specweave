@@ -179,7 +179,7 @@ description: Creates comprehensive implementation plans...
 - ✅ Haiku translates markdown updates
 - ✅ Translation preserves code blocks, links, formatting
 - ✅ Cost displayed in hook output
-- ✅ Translation completes in <3 seconds
+- ✅ Translation completes in \<3 seconds
 
 **Test Case**: TC-004-01 in tests.md
 
@@ -501,9 +501,9 @@ console.log(i18n.t('init.welcome'));
 
 ### NFR-001: Performance
 
-- **System Prompt Injection**: <1ms (just text prepending)
-- **Haiku Translation (batch)**: <5 seconds for 20K words
-- **Haiku Translation (living docs)**: <3 seconds for 500 words
+- **System Prompt Injection**: \<1ms (just text prepending)
+- **Haiku Translation (batch)**: \<5 seconds for 20K words
+- **Haiku Translation (living docs)**: \<3 seconds for 500 words
 - **CLI Startup**: No noticeable delay with locale loading
 
 ### NFR-002: Cost
@@ -522,7 +522,7 @@ console.log(i18n.t('init.welcome'));
 
 - **Zero ongoing translation work**: System prompts handle skills/agents
 - **Automatic updates**: Living docs auto-translate
-- **Add new language**: <1 hour (run Haiku batch script)
+- **Add new language**: \<1 hour (run Haiku batch script)
 
 ---
 
@@ -601,12 +601,12 @@ console.log(i18n.t('init.welcome'));
 
 ### Metric 3: Translation Quality
 
-**Target**: <5% user-reported translation issues
+**Target**: \<5% user-reported translation issues
 **Measure**: GitHub issues tagged with `i18n` or `translation`
 
 ### Metric 4: Performance
 
-**Target**: <3 seconds for living docs translation
+**Target**: \<3 seconds for living docs translation
 **Measure**: Hook execution time logs
 
 ---

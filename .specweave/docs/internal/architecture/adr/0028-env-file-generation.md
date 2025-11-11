@@ -636,11 +636,11 @@ SpecWeave automatically generates a `.env` file during setup:
 
 | Operation | Time | Impact |
 |-----------|------|--------|
-| Generate .env | <5ms | Negligible |
-| Write file | <10ms | Negligible |
-| Set permissions | <5ms | Negligible |
-| Update .gitignore | <10ms | Negligible |
-| Total | <30ms | Unnoticeable |
+| Generate .env | \<5ms | Negligible |
+| Write file | \<10ms | Negligible |
+| Set permissions | \<5ms | Negligible |
+| Update .gitignore | \<10ms | Negligible |
+| Total | \<30ms | Unnoticeable |
 
 ---
 

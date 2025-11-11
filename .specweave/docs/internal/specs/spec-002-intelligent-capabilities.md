@@ -104,7 +104,7 @@ graph TB
 ```
 
 **Complexity Heuristics**:
-- **Simple** (Haiku): file count <3, LOC <100, no architecture decisions
+- **Simple** (Haiku): file count \<3, LOC \<100, no architecture decisions
 - **Medium** (Sonnet): file count 3-10, LOC 100-500, some architecture
 - **Complex** (Opus): file count >10, LOC >500, major architecture
 
@@ -154,7 +154,7 @@ stateDiagram-v2
 | **Cost reduction** (Haiku usage) | 60%+ | 72% | ✅ Exceeds |
 | **Quality maintained** (Sonnet fallback) | 95%+ | 97% | ✅ Exceeds |
 | **WIP limit compliance** | 100% | 100% | ✅ Meets |
-| **Stale increment cleanup** | <5% stale | 2% | ✅ Exceeds |
+| **Stale increment cleanup** | \<5% stale | 2% | ✅ Exceeds |
 
 ---
 
