@@ -657,6 +657,17 @@
                       "type": "string",
                       "description": "GitHub repo (simple strategy)"
                     },
+                    "monorepoProjects": {
+                      "type": "array",
+                      "description": "Monorepo projects within the repository (optional)",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[a-z0-9-]+$"
+                      },
+                      "minItems": 1
+                    },
                     "domain": {
                       "type": "string",
                       "description": "Jira domain (all strategies)"

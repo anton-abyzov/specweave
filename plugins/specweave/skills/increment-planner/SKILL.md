@@ -149,12 +149,19 @@ User: "I want to build real-time price tracking"
     ↓
 increment-planner skill
     ↓
-STEP 1: Scan existing docs
+STEP 1: Determine increment number and check for duplicates
+├─ Use the Bash tool to run: node plugins/specweave/skills/increment-planner/scripts/feature-utils.js next
+├─ Get next available increment number (e.g., "0021")
+├─ Get short name from user description
+├─ Check if increment already exists using: node plugins/specweave/skills/increment-planner/scripts/feature-utils.js check-increment {number}
+└─ If duplicate found, STOP and tell user: "Increment {number} already exists! Please use the existing increment."
+    ↓
+STEP 2: Scan existing docs
 ├─ Read .specweave/docs/internal/strategy/ (existing requirements)
 ├─ Read .specweave/docs/internal/architecture/adr/ (existing decisions)
 └─ Pass existing context to agents
     ↓
-STEP 2: Invoke PM Agent (🚨 MANDATORY - USE TASK TOOL)
+STEP 3: Invoke PM Agent (🚨 MANDATORY - USE TASK TOOL)
 
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
@@ -206,7 +213,7 @@ Task(
 
 Wait for PM agent to complete!
     ↓
-STEP 3: Invoke Architect Agent (🚨 MANDATORY - USE TASK TOOL)
+STEP 4: Invoke Architect Agent (🚨 MANDATORY - USE TASK TOOL)
 
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
@@ -239,7 +246,7 @@ Task(
 
 Wait for Architect agent to complete!
     ↓
-STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
+STEP 5: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
 
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
@@ -275,7 +282,7 @@ Task(
 
 Wait for test-aware-planner agent to complete!
     ↓
-STEP 5: Validate Living Docs and Increment Files
+STEP 6: Validate Living Docs and Increment Files
 ├─ Check .specweave/docs/internal/specs/spec-{number}-{name}/spec.md exists (SOURCE OF TRUTH)
 ├─ Check living spec.md contains ALL user stories, requirements, AC-IDs (with AC-IDs)
 ├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
