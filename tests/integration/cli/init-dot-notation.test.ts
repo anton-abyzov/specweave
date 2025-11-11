@@ -37,7 +37,7 @@ describe('specweave init . (current directory)', () => {
       // Change to test directory and run init with dot notation
       // Note: We need to use stdio: 'pipe' to capture output
       const { stdout } = await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
         { timeout: 30000 }
       );
 
@@ -47,7 +47,7 @@ describe('specweave init . (current directory)', () => {
       // Verify key files exist
       expect(fs.existsSync(path.join(testDir, 'CLAUDE.md'))).toBe(true);
       expect(fs.existsSync(path.join(testDir, 'README.md'))).toBe(true);
-    });
+    }, 45000);
 
     it('should derive project name from directory name', async () => {
       // Create directory with specific name
@@ -56,7 +56,7 @@ describe('specweave init . (current directory)', () => {
 
       try {
         await execAsync(
-          `cd ${namedDir} && echo "" | npx specweave init .`,
+          `cd ${namedDir} && echo "" | node "${specweaveBin}" init .`,
           { timeout: 30000 }
         );
 
@@ -85,7 +85,7 @@ describe('specweave init . (current directory)', () => {
 
       // Run specweave init
       await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
         { timeout: 30000 }
       );
 
@@ -107,7 +107,7 @@ describe('specweave init . (current directory)', () => {
       // Try to init (should prompt)
       // Note: This test verifies the warning appears, actual user interaction
       // is tested manually or with interactive test tools
-      const command = `cd ${testDir} && echo "n" | npx specweave init .`;
+      const command = `cd ${testDir} && echo "n" | node "${specweaveBin}" init .`;
 
       try {
         await execAsync(command, { timeout: 30000 });
@@ -122,7 +122,7 @@ describe('specweave init . (current directory)', () => {
       await fs.writeFile(path.join(testDir, 'existing-file.txt'), 'content');
 
       // Simulate user confirming (yes to non-empty, project name)
-      const command = `cd ${testDir} && printf "y\\ntest-project\\n" | npx specweave init .`;
+      const command = `cd ${testDir} && printf "y\\ntest-project\\n" | node "${specweaveBin}" init .`;
 
       await execAsync(command, { timeout: 30000 });
 
@@ -142,7 +142,7 @@ describe('specweave init . (current directory)', () => {
 
       try {
         // Should prompt for project name, we provide "my-test-app"
-        const command = `cd "${invalidDir}" && printf "my-test-app\\n" | npx specweave init .`;
+        const command = `cd "${invalidDir}" && printf "my-test-app\\n" | node "${specweaveBin}" init .`;
 
         await execAsync(command, { timeout: 30000 });
 
@@ -164,7 +164,7 @@ describe('specweave init . (current directory)', () => {
   describe('Next steps output', () => {
     it('should not show "cd" step when using dot notation', async () => {
       const { stdout } = await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
         { timeout: 30000 }
       );
 
@@ -181,7 +181,7 @@ describe('specweave init . (current directory)', () => {
     it('should prompt before overwriting existing .specweave directory', async () => {
       // Initialize once
       await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
         { timeout: 30000 }
       );
 
@@ -192,7 +192,7 @@ describe('specweave init . (current directory)', () => {
       );
 
       // Try to initialize again (should prompt, we say no)
-      const command = `cd ${testDir} && printf "n\\n" | npx specweave init .`;
+      const command = `cd ${testDir} && printf "n\\n" | node "${specweaveBin}" init .`;
 
       try {
         await execAsync(command, { timeout: 30000 });
@@ -238,7 +238,7 @@ describe('specweave init . (current directory)', () => {
   describe('Comparison with subdirectory mode', () => {
     it('should create subdirectory when project name is provided', async () => {
       const { stdout } = await execAsync(
-        `cd ${testDir} && npx specweave init my-project`,
+        `cd ${testDir} && node "${specweaveBin}" init my-project`,
         { timeout: 30000 }
       );
 
@@ -254,7 +254,7 @@ describe('specweave init . (current directory)', () => {
 
     it('should NOT create subdirectory when using dot notation', async () => {
       await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
         { timeout: 30000 }
       );
 

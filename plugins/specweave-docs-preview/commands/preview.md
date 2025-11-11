@@ -7,6 +7,19 @@ description: Launch interactive documentation preview server with Docusaurus. Au
 
 Launch an interactive Docusaurus development server to preview your SpecWeave living documentation.
 
+## 🎨 Beautiful Docusaurus Experience
+
+**This command ALWAYS uses Docusaurus** - not basic file serving! You get:
+- ✅ Auto-generated navigation from folder structure
+- ✅ Search functionality (instant local search)
+- ✅ Beautiful theming (light/dark mode)
+- ✅ Mermaid diagram rendering
+- ✅ Hot reload (edit markdown, see changes instantly)
+- ✅ Professional typography and layout
+- ✅ Mobile responsive design
+
+**Never settle for basic markdown rendering when you can have this!**
+
 ## Your Task
 
 Execute the following workflow to launch the documentation preview server:
@@ -45,13 +58,25 @@ const docsConfig = config.documentation?.preview || {
 };
 ```
 
-### Step 3: Check if Documentation Preview is Enabled
+### Step 3: Check if Documentation Preview is Enabled (Auto-Enable if Needed)
 
 ```typescript
 if (!docsConfig.enabled) {
-  console.log('📚 Documentation preview is disabled in config.');
-  console.log('   To enable, set documentation.preview.enabled = true in .specweave/config.json');
-  process.exit(0);
+  console.log('📚 Documentation preview is currently disabled.');
+  console.log('   Enabling it now for beautiful Docusaurus experience...\n');
+
+  // Auto-enable the feature
+  config.documentation = config.documentation || {};
+  config.documentation.preview = {
+    ...docsConfig,
+    enabled: true,
+    autoInstall: true
+  };
+
+  // Save updated config
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf-8');
+
+  console.log('✅ Documentation preview enabled!\n');
 }
 ```
 

@@ -1,0 +1,13 @@
+{
+  "incrementId": "9999-status-line-test",
+  "incrementName": "status-line-test",
+  "totalTasks": 10,
+  "completedTasks": 5,
+  "percentage": 50,
+  "currentTask": {
+    "id": "T-006",
+    "title": "Sixth task"
+  },
+  "lastUpdate": "2025-11-11T05:46:20Z",
+  "lastModified": 1762839975
+}

@@ -49,8 +49,8 @@
   },
   "documentation": {
     "preview": {
-      "enabled": false,
-      "autoInstall": false,
+      "enabled": true,
+      "autoInstall": true,
       "port": 3015,
       "openBrowser": true,
       "theme": "default",

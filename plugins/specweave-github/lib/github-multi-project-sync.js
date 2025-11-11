@@ -1,0 +1,340 @@
+import { Octokit } from "@octokit/rest";
+import { getPrimaryProject } from "../../../src/utils/project-mapper.js";
+import { parseSpecFile } from "../../../src/utils/spec-splitter.js";
+class GitHubMultiProjectSync {
+  constructor(config) {
+    this.config = config;
+    this.octokit = new Octokit({ auth: config.token });
+  }
+  /**
+   * Sync spec to appropriate GitHub repos based on project mapping
+   *
+   * @param specPath Path to spec file
+   * @returns Array of sync results
+   */
+  async syncSpec(specPath) {
+    const results = [];
+    const parsedSpec = await parseSpecFile(specPath);
+    const isMasterNested = !!this.config.masterRepo && !!this.config.nestedRepos;
+    if (isMasterNested) {
+      results.push(...await this.syncMasterNested(parsedSpec));
+    } else if (this.config.repos) {
+      results.push(...await this.syncMultipleRepos(parsedSpec));
+    } else {
+      throw new Error("Invalid config: Must specify repos[] or masterRepo+nestedRepos[]");
+    }
+    return results;
+  }
+  /**
+   * Pattern 1: Sync to multiple repos (simple)
+   *
+   * Each project → separate repo
+   * - FE user stories → company/frontend-web
+   * - BE user stories → company/backend-api
+   * - MOBILE user stories → company/mobile-app
+   */
+  async syncMultipleRepos(parsedSpec) {
+    const results = [];
+    const projectStories = /* @__PURE__ */ new Map();
+    for (const userStory of parsedSpec.userStories) {
+      const primaryProject = getPrimaryProject(userStory);
+      if (primaryProject) {
+        const existing = projectStories.get(primaryProject.projectId) || [];
+        existing.push(userStory);
+        projectStories.set(primaryProject.projectId, existing);
+      } else {
+        console.warn(`\u26A0\uFE0F  No confident project match for ${userStory.id} - skipping`);
+      }
+    }
+    for (const [projectId, stories] of projectStories.entries()) {
+      const repo = this.findRepoForProject(projectId);
+      if (!repo) {
+        console.warn(`\u26A0\uFE0F  No GitHub repo configured for project ${projectId} - skipping`);
+        continue;
+      }
+      for (const story of stories) {
+        const result = await this.createOrUpdateIssue(repo, story, projectId);
+        results.push(result);
+      }
+    }
+    return results;
+  }
+  /**
+   * Pattern 2: Sync to master + nested repos (advanced)
+   *
+   * - Master repo (epic-level): High-level overview
+   * - Nested repos (task-level): Detailed implementation
+   *
+   * Example:
+   * Master (company/master-project):
+   *   Epic #10: User Authentication
+   *     → Links to: frontend-web#42, backend-api#15, mobile-app#8
+   *
+   * Nested (company/frontend-web):
+   *   Issue #42: Implement Login UI
+   *     Task 1: Create login component
+   *     Task 2: Add form validation
+   */
+  async syncMasterNested(parsedSpec) {
+    const results = [];
+    if (!this.config.masterRepo || !this.config.nestedRepos) {
+      throw new Error("Master+nested mode requires masterRepo and nestedRepos");
+    }
+    const epicResult = await this.createEpicInMasterRepo(parsedSpec);
+    results.push(epicResult);
+    const projectStories = /* @__PURE__ */ new Map();
+    for (const userStory of parsedSpec.userStories) {
+      const primaryProject = getPrimaryProject(userStory);
+      if (primaryProject) {
+        const existing = projectStories.get(primaryProject.projectId) || [];
+        existing.push(userStory);
+        projectStories.set(primaryProject.projectId, existing);
+      }
+    }
+    for (const [projectId, stories] of projectStories.entries()) {
+      const repo = this.findNestedRepoForProject(projectId);
+      if (!repo) {
+        console.warn(`\u26A0\uFE0F  No nested repo for project ${projectId} - skipping`);
+        continue;
+      }
+      for (const story of stories) {
+        const result = await this.createIssueInNestedRepo(repo, story, projectId, epicResult.issueNumber);
+        results.push(result);
+      }
+    }
+    if (this.config.crossLinking) {
+      await this.updateEpicWithLinks(epicResult.issueNumber, results.filter((r) => r.repo !== this.config.masterRepo));
+    }
+    return results;
+  }
+  /**
+   * Create epic issue in master repo
+   */
+  async createEpicInMasterRepo(parsedSpec) {
+    const title = `Epic: ${parsedSpec.metadata.title}`;
+    const body = `# ${parsedSpec.metadata.title}
+
+**Status**: ${parsedSpec.metadata.status}
+**Priority**: ${parsedSpec.metadata.priority}
+**Estimated Effort**: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+
+## Executive Summary
+
+${parsedSpec.executiveSummary}
+
+## User Stories (${parsedSpec.userStories.length} total)
+
+${parsedSpec.userStories.map((s, i) => `${i + 1}. ${s.id}: ${s.title}`).join("\n")}
+
+---
+
+\u{1F4CA} **This is a high-level epic** - detailed implementation tracked in nested repos
+\u{1F517} **Links to implementation issues** (will be added automatically)
+
+\u{1F916} Auto-generated by SpecWeave
+`;
+    const response = await this.octokit.issues.create({
+      owner: this.config.owner,
+      repo: this.config.masterRepo,
+      title,
+      body,
+      labels: ["epic", "specweave"]
+    });
+    return {
+      project: "MASTER",
+      repo: this.config.masterRepo,
+      issueNumber: response.data.number,
+      url: response.data.html_url,
+      action: "created"
+    };
+  }
+  /**
+   * Create issue in nested repo + link to epic
+   */
+  async createIssueInNestedRepo(repo, userStory, projectId, epicNumber) {
+    const title = `${userStory.id}: ${userStory.title}`;
+    let body = `# ${userStory.title}
+
+${userStory.description}
+
+## Acceptance Criteria
+
+${userStory.acceptanceCriteria.map((ac, i) => `- [ ] ${ac}`).join("\n")}
+`;
+    if (userStory.technicalContext) {
+      body += `
+## Technical Context
+
+${userStory.technicalContext}
+`;
+    }
+    if (this.config.crossLinking && epicNumber) {
+      body += `
+---
+
+\u{1F4CA} Part of Epic: ${this.config.owner}/${this.config.masterRepo}#${epicNumber}
+`;
+    }
+    body += `
+\u{1F916} Auto-generated by SpecWeave
+`;
+    const response = await this.octokit.issues.create({
+      owner: this.config.owner,
+      repo,
+      title,
+      body,
+      labels: ["story", "specweave", projectId.toLowerCase()]
+    });
+    return {
+      project: projectId,
+      repo,
+      issueNumber: response.data.number,
+      url: response.data.html_url,
+      action: "created"
+    };
+  }
+  /**
+   * Create or update issue (for simple multi-repo pattern)
+   */
+  async createOrUpdateIssue(repo, userStory, projectId) {
+    const title = `${userStory.id}: ${userStory.title}`;
+    const body = `# ${userStory.title}
+
+${userStory.description}
+
+## Acceptance Criteria
+
+${userStory.acceptanceCriteria.map((ac, i) => `- [ ] ${ac}`).join("\n")}
+
+${userStory.technicalContext ? `
+## Technical Context
+
+${userStory.technicalContext}
+` : ""}
+
+\u{1F916} Auto-generated by SpecWeave
+`;
+    const existingIssues = await this.octokit.issues.listForRepo({
+      owner: this.config.owner,
+      repo,
+      labels: "specweave",
+      state: "all"
+    });
+    const existing = existingIssues.data.find((issue) => issue.title === title);
+    if (existing) {
+      const response = await this.octokit.issues.update({
+        owner: this.config.owner,
+        repo,
+        issue_number: existing.number,
+        body
+      });
+      return {
+        project: projectId,
+        repo,
+        issueNumber: response.data.number,
+        url: response.data.html_url,
+        action: "updated"
+      };
+    } else {
+      const response = await this.octokit.issues.create({
+        owner: this.config.owner,
+        repo,
+        title,
+        body,
+        labels: ["specweave", projectId.toLowerCase()]
+      });
+      return {
+        project: projectId,
+        repo,
+        issueNumber: response.data.number,
+        url: response.data.html_url,
+        action: "created"
+      };
+    }
+  }
+  /**
+   * Update epic with links to nested issues
+   */
+  async updateEpicWithLinks(epicNumber, nestedResults) {
+    if (!this.config.masterRepo) return;
+    const linksSection = `
+
+## Implementation Issues
+
+${nestedResults.map((r) => `- ${r.project}: ${this.config.owner}/${r.repo}#${r.issueNumber} - ${r.url}`).join("\n")}
+`;
+    const epic = await this.octokit.issues.get({
+      owner: this.config.owner,
+      repo: this.config.masterRepo,
+      issue_number: epicNumber
+    });
+    const updatedBody = epic.data.body + linksSection;
+    await this.octokit.issues.update({
+      owner: this.config.owner,
+      repo: this.config.masterRepo,
+      issue_number: epicNumber,
+      body: updatedBody
+    });
+  }
+  /**
+   * Find GitHub repo for project ID
+   *
+   * Maps project IDs to repo names:
+   * - FE → frontend-web
+   * - BE → backend-api
+   * - MOBILE → mobile-app
+   */
+  findRepoForProject(projectId) {
+    if (!this.config.repos) return void 0;
+    let match = this.config.repos.find((repo) => repo.toLowerCase().includes(projectId.toLowerCase()));
+    if (!match) {
+      const fuzzyMap = {
+        FE: ["frontend", "web", "ui", "client"],
+        BE: ["backend", "api", "server"],
+        MOBILE: ["mobile", "app", "ios", "android"],
+        INFRA: ["infra", "infrastructure", "devops", "platform"]
+      };
+      const keywords = fuzzyMap[projectId] || [];
+      match = this.config.repos.find(
+        (repo) => keywords.some((keyword) => repo.toLowerCase().includes(keyword))
+      );
+    }
+    return match;
+  }
+  /**
+   * Find nested repo for project ID (same logic as findRepoForProject)
+   */
+  findNestedRepoForProject(projectId) {
+    if (!this.config.nestedRepos) return void 0;
+    const tempConfig = { ...this.config, repos: this.config.nestedRepos };
+    const tempSync = new GitHubMultiProjectSync(tempConfig);
+    return tempSync.findRepoForProject(projectId);
+  }
+}
+function formatSyncResults(results) {
+  const lines = [];
+  lines.push("\u{1F4CA} GitHub Multi-Project Sync Results:\n");
+  const byProject = /* @__PURE__ */ new Map();
+  for (const result of results) {
+    const existing = byProject.get(result.project) || [];
+    existing.push(result);
+    byProject.set(result.project, existing);
+  }
+  for (const [project, projectResults] of byProject.entries()) {
+    lines.push(`
+**${project}**:`);
+    for (const result of projectResults) {
+      const icon = result.action === "created" ? "\u2705" : result.action === "updated" ? "\u{1F504}" : "\u23ED\uFE0F";
+      lines.push(`  ${icon} ${result.repo}#${result.issueNumber} (${result.action})`);
+      lines.push(`     ${result.url}`);
+    }
+  }
+  lines.push(`
+\u2705 Total: ${results.length} issues synced
+`);
+  return lines.join("\n");
+}
+export {
+  GitHubMultiProjectSync,
+  formatSyncResults
+};
