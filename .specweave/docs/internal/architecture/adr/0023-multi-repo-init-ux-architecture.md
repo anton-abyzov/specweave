@@ -402,7 +402,7 @@ Update user documentation:
 **Technical Quality**:
 - Code coverage: 85%+ (target)
 - E2E test pass rate: 100% (target)
-- Performance: <500ms per operation (target)
+- Performance: \<500ms per operation (target)
 - State persistence reliability: 99.9% (target)
 
 ---

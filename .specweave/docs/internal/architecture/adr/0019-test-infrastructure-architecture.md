@@ -13,7 +13,7 @@ SpecWeave v0.8.0 includes major new features (multi-project support, brownfield 
 
 1. **Coverage Target**: 90% unit, 80% integration, 85% overall
 2. **Test Types**: Unit, integration, E2E (CLI commands)
-3. **Performance**: Test suite runs in <5 minutes
+3. **Performance**: Test suite runs in \<5 minutes
 4. **Zero Flakiness**: Deterministic tests (no random failures)
 5. **TDD-Friendly**: Easy to write tests before implementation
 6. **CI/CD Integration**: Automated test runs on every PR
@@ -304,7 +304,7 @@ export async function benchmark(
 - ✅ **Industry Standard**: Jest + Playwright are industry-standard tools
 - ✅ **TypeScript Support**: ts-jest provides excellent TypeScript integration
 - ✅ **Built-in Coverage**: No need for separate coverage tool
-- ✅ **Fast Execution**: Test suite runs in <5 minutes
+- ✅ **Fast Execution**: Test suite runs in \<5 minutes
 - ✅ **TDD-Friendly**: Easy to write tests before implementation
 - ✅ **CI/CD Ready**: Works with GitHub Actions, GitLab CI, etc.
 - ✅ **Deterministic**: Mocked dependencies ensure consistent results
@@ -472,7 +472,7 @@ import { benchmark } from '../utils/benchmark';
 import { ProjectManager } from '../../src/core/project-manager';
 
 describe('ProjectManager Performance', () => {
-  it('should resolve paths in <1ms', async () => {
+  it('should resolve paths in \<1ms', async () => {
     const pm = new ProjectManager('/test-root');
 
     const result = await benchmark(async () => {
@@ -480,7 +480,7 @@ describe('ProjectManager Performance', () => {
     }, 1000);
 
     console.log(`Avg time: ${result.avgTime.toFixed(2)}ms`);
-    expect(result.avgTime).toBeLessThan(1);  // <1ms target
+    expect(result.avgTime).toBeLessThan(1);  // \<1ms target
   });
 });
 ```
@@ -491,13 +491,13 @@ describe('ProjectManager Performance', () => {
 
 ## ProjectManager
 
-- `getSpecsPath()`: 0.12ms average (target: <1ms) ✅
-- `getProjectBasePath()`: 0.08ms average (target: <1ms) ✅
+- `getSpecsPath()`: 0.12ms average (target: \<1ms) ✅
+- `getProjectBasePath()`: 0.08ms average (target: \<1ms) ✅
 
 ## BrownfieldImporter
 
-- Import 50 files: 4.2s (target: <10s) ✅
-- Import 500 files: 87s (target: <120s) ✅
+- Import 50 files: 4.2s (target: \<10s) ✅
+- Import 500 files: 87s (target: \<120s) ✅
 ```
 
 ## CI/CD Integration

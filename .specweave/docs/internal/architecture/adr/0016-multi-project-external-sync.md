@@ -650,13 +650,13 @@ Your choice: [1]
    - ✅ Zero rate limit errors in normal usage
 
 2. **Performance**
-   - ✅ 1-month sync: <2 minutes (vs 25+ minutes for "ALL")
-   - ✅ Rate limit impact: <10% per sync
+   - ✅ 1-month sync: \<2 minutes (vs 25+ minutes for "ALL")
+   - ✅ Rate limit impact: \<10% per sync
    - ✅ 95% of syncs complete on first try
 
 3. **UX**
-   - ✅ <5 minutes to set up first profile
-   - ✅ <30 seconds to select profile for increment
+   - ✅ \<5 minutes to set up first profile
+   - ✅ \<30 seconds to select profile for increment
    - ✅ 100% of users understand time range implications
 
 ---

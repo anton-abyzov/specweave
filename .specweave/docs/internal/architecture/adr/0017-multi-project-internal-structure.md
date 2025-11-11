@@ -310,7 +310,7 @@ legacy/
 - **Specs** (37 files, 70%+ confidence): → projects/web-app/specs/
 - **Modules** (18 files, 70%+ confidence): → projects/web-app/modules/
 - **Team Docs** (12 files, 70%+ confidence): → projects/web-app/team/
-- **Legacy** (60 files, <70% confidence): → projects/web-app/legacy/notion/
+- **Legacy** (60 files, \<70% confidence): → projects/web-app/legacy/notion/
 
 ## Manual Review Checklist
 - [ ] Review low-confidence classifications in legacy/
@@ -485,7 +485,7 @@ class BrownfieldAnalyzer {
 - **Specs**: Contains user stories, acceptance criteria, requirements
 - **Modules**: Contains architecture, API contracts, integration guides
 - **Team Docs**: Contains onboarding, conventions, workflows
-- **Legacy**: Confidence <70% (requires manual review)
+- **Legacy**: Confidence \<70% (requires manual review)
 
 **Example**:
 ```
@@ -718,7 +718,7 @@ Each project can have its own sync profiles (GitHub repos, JIRA projects, ADO pr
 #   - Specs: 37 files (70%+ confidence)
 #   - Modules: 18 files (70%+ confidence)
 #   - Team docs: 12 files (70%+ confidence)
-#   - Legacy: 60 files (<70% confidence)
+#   - Legacy: 60 files (\<70% confidence)
 #
 # Importing to project: web-app
 #   ✅ Copied 37 specs → projects/web-app/specs/
@@ -792,7 +792,7 @@ return projectManager.getSpecsPath();  // Always projects/{id}/specs/
 
 **Workflow**:
 1. **High Confidence (70%+)**: Auto-place in specs/modules/team
-2. **Low Confidence (<70%)**: Place in legacy/ for manual review
+2. **Low Confidence (\<70%)**: Place in legacy/ for manual review
 3. **Migration Report**: Lists all classifications with reasoning
 4. **User Reviews**: Corrects any misclassifications
 
@@ -942,7 +942,7 @@ my-big-project/
 
 ### Performance
 
-- ✅ Migration completes in <5 seconds (typical project)
+- ✅ Migration completes in \<5 seconds (typical project)
 - ✅ Classification processes 100 files/second
 - ✅ No performance impact on increment creation
 
@@ -950,7 +950,7 @@ my-big-project/
 
 - ✅ Auto-migration is transparent (no user action needed)
 - ✅ Error messages are clear and actionable
-- ✅ Multi-project setup completes in <5 minutes
+- ✅ Multi-project setup completes in \<5 minutes
 
 ---
 

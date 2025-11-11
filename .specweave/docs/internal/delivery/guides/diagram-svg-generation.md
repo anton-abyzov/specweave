@@ -64,7 +64,7 @@ npm run generate:diagrams
 
 **File**: `.specweave/docs/internal/architecture/diagrams/my-diagram.mmd`
 
-![delivery-guides-diagram-svg-generation-0](../../architecture/diagrams/delivery-guides-diagram-svg-generation-0.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 
 **Important**: Use `.mmd` extension (NOT `.md`)
 
@@ -91,7 +91,7 @@ ls -lh .specweave/docs/internal/architecture/diagrams/my-diagram*.svg
 ```markdown
 ## System Architecture
 
-![System Architecture](../architecture/diagrams/specweave-workflow.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 ```
 
 **MDX** (with dark mode support):
@@ -191,7 +191,7 @@ npx mmdc -i path/to/diagram.mmd \
 
 **Markdown**:
 ```markdown
-![Workflow Diagram](../diagrams/specweave-workflow.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 ```
 
 **Benefits**:
@@ -432,7 +432,7 @@ git diff .specweave/docs/internal/architecture/diagrams/my-diagram.svg
 
 ```markdown
 # ✅ CORRECT (relative path)
-![Diagram](../diagrams/specweave-workflow.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 
 # ❌ WRONG (absolute path - breaks on different hosts)
 ![Diagram](/Users/me/specweave/diagrams/workflow.svg)
@@ -444,10 +444,10 @@ git diff .specweave/docs/internal/architecture/diagrams/my-diagram.svg
 
 ```markdown
 # ✅ CORRECT (accessible)
-![Complete SpecWeave workflow showing 8 phases](../diagrams/workflow.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 
 # ❌ WRONG (no alt text)
-![](../diagrams/workflow.svg)
+**Note**: SVG generation examples are available in the [architecture diagrams folder](../../architecture/diagrams/). Run `scripts/generate-diagram-svgs.sh` to generate SVGs from any `.mmd` file.
 ```
 
 ---
