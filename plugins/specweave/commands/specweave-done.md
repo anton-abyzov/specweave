@@ -312,8 +312,116 @@ Closing increment 0001-user-authentication...
   ✓ Updated backlog (4 P3 tasks moved)
 
 🎉 Increment 0001 closed successfully!
+```
 
-Next steps:
+### Step 4: Post-Closure Sync (AUTOMATIC)
+
+**CRITICAL**: After increment closes, automatically perform these syncs:
+
+#### A) Sync Living Docs to GitHub Project
+
+**Check configuration** (`.specweave/config.json`):
+```typescript
+// Check if GitHub sync is enabled
+const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project === true;
+```
+
+**If enabled**:
+1. **Find living docs spec**:
+   - Look for `.specweave/docs/internal/specs/spec-{id}*.md`
+   - Pattern 1: `spec-0001-user-authentication.md` (4-digit)
+   - Pattern 2: `spec-001-user-authentication.md` (3-digit)
+   - Check increment `spec.md` for reference
+
+2. **Sync to GitHub Project**:
+   ```bash
+   /specweave-github:sync-spec <spec-file>
+   ```
+
+3. **Report result**:
+   ```
+   🔗 Post-Closure Sync:
+      ✓ Found living docs: spec-0001-user-authentication.md
+      ✓ Syncing to GitHub Project...
+      ✓ GitHub Project updated successfully
+   ```
+
+**If spec not found**:
+```
+ℹ️ No living docs spec found (OK for bug/hotfix increments)
+```
+
+**If sync disabled**:
+```
+ℹ️ GitHub Project sync disabled in config
+```
+
+#### B) Close GitHub Issue (if exists)
+
+**Check metadata** (`.specweave/increments/0001/.metadata.json`):
+```json
+{
+  "github": {
+    "issue": 42,
+    "url": "https://github.com/org/repo/issues/42"
+  }
+}
+```
+
+**If issue exists AND config.hooks.post_increment_done.close_github_issue = true**:
+1. **Close issue via gh CLI**:
+   ```bash
+   gh issue close 42 --comment "✅ Increment 0001 completed and closed
+
+   All PM gates passed:
+   ✅ Gate 1: Tasks completed
+   ✅ Gate 2: Tests passing
+   ✅ Gate 3: Documentation updated
+
+   Duration: 14 days
+   Velocity: +50% faster than planned"
+   ```
+
+2. **Report result**:
+   ```
+   🐙 GitHub Issue:
+      ✓ Closed issue #42
+      ✓ Added completion summary
+   ```
+
+**If no issue**:
+```
+ℹ️ No GitHub issue linked to this increment
+```
+
+**Example Full Output**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎉 INCREMENT CLOSED SUCCESSFULLY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Increment: 0001-user-authentication
+Status: completed
+Duration: 14 days (vs 21 estimated)
+Velocity: +50% faster
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔗 POST-CLOSURE SYNC
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GitHub Project:
+  ✓ Found living docs: spec-0001-user-authentication.md
+  ✓ Syncing to GitHub Project...
+  ✓ GitHub Project updated successfully
+
+GitHub Issue:
+  ✓ Closed issue #42
+  ✓ Added completion summary
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
   1. Create PR: git push && gh pr create
   2. Deploy to staging: npm run deploy:staging
   3. Create new increment: /specweave:increment "Next feature"

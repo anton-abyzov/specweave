@@ -12,10 +12,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 - Removed invalid `PostSlashCommand` hook event from `specweave-github` plugin
 - Claude Code only supports: PreToolUse, PostToolUse, Notification, UserPromptSubmit, SessionStart, SessionEnd, Stop, SubagentStop, PreCompact
-- The `post-increment-done.sh` hook will not run automatically until proper integration is implemented
 - **Impact**: Resolves plugin loading errors that prevented `specweave-github` from initializing correctly
 
-**Breaking Change**: The automatic GitHub Project sync on `/specweave:done` is temporarily disabled. Users can manually sync using `/specweave-github:sync-spec` if needed.
+### 🔧 Architecture Improvement
+
+**Moved GitHub sync logic from hook to command**
+
+- GitHub Project sync and issue closing logic moved from `post-increment-done.sh` hook to `/specweave:done` command instructions
+- The `/specweave:done` command now includes explicit "Step 4: Post-Closure Sync (AUTOMATIC)" section
+- **Result**: Functionality fully preserved - sync still happens automatically after increment closure
+- **Why**: Claude Code doesn't support `PostSlashCommand` hook, so sync logic integrated into command instructions instead
+
+**What this means for users:**
+- ✅ GitHub Project sync still works automatically on `/specweave:done`
+- ✅ GitHub issue closing still works automatically on `/specweave:done`
+- ✅ No manual intervention needed - Claude reads command instructions and executes sync
+- ✅ Same behavior as before, just different implementation architecture
+
+**Technical Details:**
+- Hook-based approach: PostSlashCommand → post-increment-done.sh (INVALID, removed)
+- Command-based approach: /specweave:done markdown includes sync instructions (VALID, implemented)
 
 ---
 
