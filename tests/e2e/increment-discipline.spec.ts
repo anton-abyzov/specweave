@@ -10,6 +10,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('Increment Discipline Enforcement (E2E)', () => {
   let testDir: string;
