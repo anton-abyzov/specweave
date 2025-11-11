@@ -49,59 +49,13 @@ describe('ProjectManager - Path Resolution', () => {
     } as any);
   });
 
-  describe('getProjectBasePath()', () => {
-    it('should return correct path for active project', () => {
-      const basePath = projectManager.getProjectBasePath();
-
-      expect(basePath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default')
-      );
-    });
-
-    it('should return correct path for specific project ID', () => {
-      // Mock multi-project mode
-      mockConfigManager.load.mockReturnValue({
-        multiProject: {
-          enabled: true,
-          activeProject: 'web-app',
-          projects: [
-            { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
-            { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
-          ]
-        }
-      } as any);
-
-      const basePath = projectManager.getProjectBasePath('mobile-app');
-
-      expect(basePath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/mobile-app')
-      );
-    });
-
-    it('should throw error for non-existent project', () => {
-      // Mock multi-project mode
-      mockConfigManager.load.mockReturnValue({
-        multiProject: {
-          enabled: true,
-          activeProject: 'web-app',
-          projects: [
-            { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' }
-          ]
-        }
-      } as any);
-
-      expect(() => {
-        projectManager.getProjectBasePath('non-existent');
-      }).toThrow("Project 'non-existent' not found");
-    });
-  });
 
   describe('getSpecsPath()', () => {
     it('should return correct specs path for active project', () => {
       const specsPath = projectManager.getSpecsPath();
 
       expect(specsPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/specs')
+        path.join(testRoot, '.specweave/docs/internal/specs/default')
       );
     });
 
@@ -118,7 +72,7 @@ describe('ProjectManager - Path Resolution', () => {
       const modulesPath = projectManager.getModulesPath();
 
       expect(modulesPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/modules')
+        path.join(testRoot, '.specweave/docs/internal/modules/default')
       );
     });
 
@@ -135,7 +89,7 @@ describe('ProjectManager - Path Resolution', () => {
       const teamPath = projectManager.getTeamPath();
 
       expect(teamPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/team')
+        path.join(testRoot, '.specweave/docs/internal/team/default')
       );
     });
 
@@ -152,7 +106,7 @@ describe('ProjectManager - Path Resolution', () => {
       const archPath = projectManager.getArchitecturePath();
 
       expect(archPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/architecture')
+        path.join(testRoot, '.specweave/docs/internal/project-arch/default')
       );
     });
 
@@ -169,7 +123,7 @@ describe('ProjectManager - Path Resolution', () => {
       const legacyPath = projectManager.getLegacyPath();
 
       expect(legacyPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/legacy')
+        path.join(testRoot, '.specweave/docs/internal/legacy/default')
       );
     });
 
@@ -177,7 +131,7 @@ describe('ProjectManager - Path Resolution', () => {
       const legacyPath = projectManager.getLegacyPath('notion');
 
       expect(legacyPath).toBe(
-        path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/notion')
+        path.join(testRoot, '.specweave/docs/internal/legacy/default/notion')
       );
     });
 

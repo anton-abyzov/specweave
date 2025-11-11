@@ -16,8 +16,8 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup multi-project structure
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/web-app'));
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/mobile-app'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/web-app'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/mobile-app'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -74,8 +74,8 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
       });
 
       // Verify files went to correct project folders
-      const webSpecsPath = path.join(specweaveRoot, 'docs/internal/projects/web-app/specs');
-      const mobileSpecsPath = path.join(specweaveRoot, 'docs/internal/projects/mobile-app/specs');
+      const webSpecsPath = path.join(specweaveRoot, 'docs/internal/specs/web-app');
+      const mobileSpecsPath = path.join(specweaveRoot, 'docs/internal/specs/mobile-app');
 
       expect(await fs.pathExists(path.join(webSpecsPath, 'web-spec.md'))).toBe(true);
       expect(await fs.pathExists(path.join(mobileSpecsPath, 'mobile-spec.md'))).toBe(true);
@@ -85,8 +85,8 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
       expect(await fs.pathExists(path.join(mobileSpecsPath, 'web-spec.md'))).toBe(false);
 
       // Verify separate legacy folders
-      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/web-app/legacy/notion'))).toBe(true);
-      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/mobile-app/legacy/confluence'))).toBe(true);
+      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/legacy/web-app/notion'))).toBe(true);
+      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/legacy/mobile-app/confluence'))).toBe(true);
 
       // Verify import history tracks both imports
       const configManager = new ConfigManager(tmpDir);
@@ -111,7 +111,7 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -207,15 +207,15 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
       expect(report2.teamImported).toBe(3);
 
       // Verify all files imported
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
       const specFiles = await fs.readdir(specsPath);
       expect(specFiles.length).toBe(18); // 10 + 8
 
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
       const moduleFiles = await fs.readdir(modulesPath);
       expect(moduleFiles.length).toBe(9); // 5 + 4
 
-      const teamPath = path.join(specweaveRoot, 'docs/internal/projects/default/team');
+      const teamPath = path.join(specweaveRoot, 'docs/internal/team/default');
       const teamFiles = await fs.readdir(teamPath);
       expect(teamFiles.length).toBe(8); // 5 + 3
 
@@ -233,7 +233,7 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -297,9 +297,9 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
       });
 
       // Verify nested structures preserved independently
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
-      const teamPath = path.join(specweaveRoot, 'docs/internal/projects/default/team');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
+      const teamPath = path.join(specweaveRoot, 'docs/internal/team/default');
 
       expect(await fs.pathExists(path.join(specsPath, 'features/auth/login.md'))).toBe(true);
       expect(await fs.pathExists(path.join(specsPath, 'features/payment/checkout.md'))).toBe(true);
@@ -317,7 +317,7 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({

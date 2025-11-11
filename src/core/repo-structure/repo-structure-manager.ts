@@ -460,20 +460,35 @@ export class RepoStructureManager {
 
       // Auto-generate ID from repository name
       const baseId = generateRepoId(repoAnswers.name);
-      const { id, wasModified } = ensureUniqueId(baseId, usedIds);
+      const { id: suggestedId, wasModified } = ensureUniqueId(baseId, usedIds);
+
+      // Show generated ID as editable default (AC-US2-02)
+      const idMessage = wasModified
+        ? `Repository ID (internal identifier): ${chalk.yellow(`(auto-generated from "${baseId}", made unique)`)}`
+        : `Repository ID (internal identifier): ${chalk.gray('(auto-generated)')}`;
+
+      const { id } = await inquirer.prompt([{
+        type: 'input',
+        name: 'id',
+        message: idMessage,
+        default: suggestedId,
+        validate: (input: string) => {
+          // Validate format
+          const validation = validateRepoId(input);
+          if (!validation.valid) {
+            return validation.error || 'Invalid repository ID';
+          }
+
+          // Validate uniqueness
+          if (input !== suggestedId && usedIds.has(input)) {
+            return 'Repository ID must be unique';
+          }
+
+          return true;
+        }
+      }]);
+
       usedIds.add(id);
-
-      if (wasModified) {
-        console.log(chalk.yellow(`   ℹ Auto-generated unique ID: "${id}" (base: "${baseId}")`));
-      } else {
-        console.log(chalk.gray(`   ✓ Auto-generated ID: "${id}"`));
-      }
-
-      // Validate the ID
-      const validation = validateRepoId(id);
-      if (!validation.valid) {
-        throw new Error(`Generated invalid ID "${id}": ${validation.error}`);
-      }
 
       // Ask about visibility
       const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);

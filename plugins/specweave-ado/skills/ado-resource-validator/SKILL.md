@@ -326,28 +326,155 @@ Work items will be organized by area:
   • Analytics features → EnterpriseApp\Analytics
 ```
 
+## Implementation Details
+
+**Location**: `src/utils/external-resource-validator.ts`
+
+**Core Classes**:
+```typescript
+// Main validator class
+export class AzureDevOpsResourceValidator {
+  private pat: string;
+  private organization: string;
+  private envPath: string;
+
+  constructor(envPath: string = '.env') {
+    this.envPath = envPath;
+    const env = this.loadEnv();
+    this.pat = env.AZURE_DEVOPS_PAT || '';
+    this.organization = env.AZURE_DEVOPS_ORG || '';
+  }
+
+  // Main validation entry point
+  async validate(): Promise<AzureDevOpsValidationResult> {
+    const env = this.loadEnv();
+    const strategy = env.AZURE_DEVOPS_STRATEGY || 'project-per-team';
+
+    // Validate based on strategy
+    if (strategy === 'project-per-team') {
+      return this.validateMultipleProjects(projectNames);
+    } else if (strategy === 'area-path-based') {
+      return this.validateAreaPaths(projectName, areaPaths);
+    } else if (strategy === 'team-based') {
+      return this.validateTeams(projectName, teams);
+    }
+  }
+}
+
+// Public API function
+export async function validateAzureDevOpsResources(
+  envPath: string = '.env'
+): Promise<AzureDevOpsValidationResult> {
+  const validator = new AzureDevOpsResourceValidator(envPath);
+  return validator.validate();
+}
+```
+
+**Key Implementation Features**:
+
+1. **Async Project Creation** (ADO-specific):
+   ```typescript
+   // ADO creates projects asynchronously - need to poll for completion
+   async createProject(name: string): Promise<AzureDevOpsProject> {
+     const result = await this.callAzureDevOpsApi('projects?api-version=7.0', 'POST', body);
+
+     // Wait for project to be fully created (ADO async behavior)
+     await this.waitForProjectCreation(result.id);
+
+     return { id: result.id, name, description };
+   }
+
+   // Poll until project is in 'wellFormed' state
+   private async waitForProjectCreation(projectId: string): Promise<void> {
+     const maxAttempts = 30; // 30 seconds max wait
+     for (let i = 0; i < maxAttempts; i++) {
+       const project = await this.getProject(projectId);
+       if (project.state === 'wellFormed') {
+         return; // Project is ready!
+       }
+       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+     }
+     throw new Error('Project creation timeout');
+   }
+   ```
+
+2. **Interactive Prompts** (when resources missing):
+   ```typescript
+   const { action } = await inquirer.prompt([
+     {
+       type: 'list',
+       name: 'action',
+       message: `Project "${projectName}" not found. What would you like to do?`,
+       choices: [
+         { name: 'Create new project', value: 'create' },
+         { name: 'Select existing project', value: 'select' },
+         { name: 'Skip this project', value: 'skip' },
+         { name: 'Cancel', value: 'cancel' }
+       ]
+     }
+   ]);
+   ```
+
+3. **Automatic .env Updates**:
+   ```typescript
+   // After creating projects, update .env
+   updateEnv(key: string, value: string): void {
+     const envContent = fs.readFileSync(this.envPath, 'utf-8');
+     const updated = envContent.replace(
+       new RegExp(`^${key}=.*$`, 'm'),
+       `${key}=${value}`
+     );
+     fs.writeFileSync(this.envPath, updated);
+   }
+   ```
+
 ## CLI Command
+
+**Automatic validation** (during setup):
+```bash
+# Runs automatically during specweave init
+npx specweave init
+
+# Also runs automatically before sync
+/specweave-ado:sync 0014
+```
 
 **Manual validation**:
 ```bash
-# From TypeScript
-npx tsx src/utils/external-resource-validator.ts --provider=ado
-
-# Or via skill activation
+# Via skill activation
 "Can you validate my Azure DevOps configuration?"
+
+# Via TypeScript directly
+npx tsx -e "import { validateAzureDevOpsResources } from './dist/utils/external-resource-validator.js'; await validateAzureDevOpsResources();"
+
+# Via CLI (future command - planned)
+specweave validate-ado
 ```
 
 **Validation output**:
 ```typescript
+interface AzureDevOpsValidationResult {
+  valid: boolean;
+  strategy: 'project-per-team' | 'area-path-based' | 'team-based';
+  projects: Array<{
+    name: string;
+    id: string;
+    exists: boolean;
+  }>;
+  created: string[];      // Names of newly created resources
+  envUpdated: boolean;    // Whether .env was modified
+}
+
+// Example output:
 {
   valid: true,
   strategy: 'project-per-team',
   projects: [
     { name: 'WebApp', id: 'proj-001', exists: true },
-    { name: 'MobileApp', id: 'proj-002', exists: true },
-    { name: 'Platform', id: 'proj-003', exists: true }
+    { name: 'MobileApp', id: 'proj-002', exists: true, created: true },
+    { name: 'Platform', id: 'proj-003', exists: true, created: true }
   ],
-  created: [],
+  created: ['MobileApp', 'Platform'],
   envUpdated: false
 }
 ```
@@ -700,20 +827,54 @@ Based on strategy, the skill creates appropriate folder structure:
     └── spec-001-feature-c.md
 ```
 
+## Key Differences from JIRA
+
+**Azure DevOps vs JIRA Resource Creation**:
+
+| Aspect | Azure DevOps | JIRA |
+|--------|-------------|------|
+| **Project Creation** | Asynchronous (polling required) | Synchronous (immediate) |
+| **Creation Time** | 5-30 seconds | <1 second |
+| **Status Tracking** | Poll `state` field ('wellFormed') | No polling needed |
+| **API Complexity** | Higher (async handling) | Lower (sync operations) |
+| **Board Creation** | Auto-created with project | Requires separate API call |
+| **Process Templates** | Required (Agile, Scrum, CMMI) | Not applicable |
+
+**Why Async Matters**:
+
+When you create an ADO project, the API returns immediately with `state: 'new'`, but the project isn't usable yet. The validator polls every 1 second (max 30 attempts) until `state: 'wellFormed'`:
+
+```typescript
+// Create project (returns immediately)
+const project = await createProject('MobileApp'); // state: 'new'
+
+// Poll until ready
+await waitForProjectCreation(project.id); // Polls until state: 'wellFormed'
+
+// Now safe to use!
+console.log('✅ Project ready for work items');
+```
+
+**Impact on UX**:
+- JIRA: "✅ Project created" (instant)
+- ADO: "📦 Creating project... ⏳ Waiting for Azure DevOps to complete setup... ✅ Project ready!" (5-30s)
+
 ## Summary
 
 This skill ensures your Azure DevOps configuration is **always valid** by:
 
 1. ✅ **Validating projects** - Check if projects exist, prompt to select or create
 2. ✅ **Supporting multiple strategies** - Project-per-team, area-path-based, team-based
-3. ✅ **Auto-creating resources** - Projects, area paths, teams
+3. ✅ **Auto-creating resources** - Projects, area paths, teams (with async handling)
 4. ✅ **Organizing specs** - Create folder structure based on projects
 5. ✅ **Clear error messages** - Actionable guidance for all failures
+6. ✅ **Handles ADO async behavior** - Polls for project creation completion
 
-**Result**: Zero manual Azure DevOps setup - system handles everything!
+**Result**: Zero manual Azure DevOps setup - system handles everything, including ADO's async project creation!
 
 ---
 
-**Skill Version**: 1.0.0
+**Skill Version**: 1.1.0
 **Introduced**: SpecWeave v0.17.0
 **Last Updated**: 2025-11-11
+**Key Changes v1.1.0**: Added implementation details, async project creation handling, JIRA comparison

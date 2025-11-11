@@ -1375,54 +1375,73 @@ specweave/
 | **operations/** | Production ops (How we run) | Runbooks, incidents, performance | `runbook-api.md`, `performance-tuning.md` |
 | **governance/** | Policies (Guardrails) | Security, compliance, coding standards | `security-policy.md`, `coding-standards.md` |
 
-### Multi-Project Organization (v0.8.0+)
+### Multi-Project Organization (v0.8.0+, Flattened v0.16.11+)
 
-**NEW**: Projects folder for multi-team/multi-repo organizations
+**FLATTENED STRUCTURE** (v0.16.11): Simpler, cleaner paths with document-type-first organization
 
 ```
 .specweave/docs/internal/
-├── strategy/              # Cross-project
-├── architecture/          # System-wide ADRs
-├── delivery/              # Cross-project
-├── operations/            # Cross-project
-├── governance/            # Cross-project
+├── strategy/              # Cross-project (unchanged)
+├── architecture/          # System-wide ADRs (unchanged)
+├── delivery/              # Cross-project (unchanged)
+├── operations/            # Cross-project (unchanged)
+├── governance/            # Cross-project (unchanged)
 │
-└── projects/              # 🆕 Multi-project support
-    ├── default/           # Default project (single-project mode)
-    │   ├── specs/         # Living docs specs (feature-level)
-    │   ├── modules/       # Module/component documentation
-    │   ├── team/          # Team playbooks (conventions, workflows)
-    │   ├── architecture/  # Project-specific ADRs
-    │   └── legacy/        # Brownfield imports
-    │
-    ├── web-app/           # Additional projects
-    ├── mobile-app/
-    └── platform-infra/
+├── specs/                 # ✨ FLATTENED: Living docs specs
+│   ├── default/           # Default project (single-project mode)
+│   ├── backend/           # Backend project
+│   ├── frontend/          # Frontend project
+│   └── _parent/           # Parent repository (multi-repo setups)
+│
+├── modules/               # ✨ FLATTENED: Module documentation
+│   ├── default/
+│   ├── backend/
+│   └── frontend/
+│
+├── team/                  # ✨ FLATTENED: Team playbooks
+│   ├── default/
+│   ├── backend/
+│   └── frontend/
+│
+├── project-arch/          # ✨ RENAMED: Project-specific ADRs
+│   ├── backend/           # (Renamed to avoid conflict with top-level architecture/)
+│   └── frontend/
+│
+└── legacy/                # ✨ FLATTENED: Brownfield imports
+    ├── default/
+    └── backend/
 ```
+
+**Benefits of Flattened Structure**:
+- ✅ Simpler paths (no extra `projects/` nesting)
+- ✅ Consistent with cross-project folders (all at same level)
+- ✅ Clearer parent repo naming (`_parent` for multi-repo)
+- ✅ Easier GitHub sync (shorter paths)
+- ✅ Document-type-first organization (group by specs/, modules/, etc.)
 
 **Five Documentation Types Per Project**:
 
-1. **specs/** - Living documentation specs (user stories, acceptance criteria)
+1. **specs/{project-id}/** - Living documentation specs (user stories, acceptance criteria)
    - Permanent, feature-level knowledge base
    - ALL user stories for a feature area
    - 3-digit numbers: `spec-001-user-auth.md`
 
-2. **modules/** - Module/component documentation
+2. **modules/{project-id}/** - Module/component documentation
    - Architecture, API contracts, integration guides
    - Created when module >1000 lines or has security implications
    - Example: `auth-module.md`, `payment-module.md`
 
-3. **team/** - Team playbooks
+3. **team/{project-id}/** - Team playbooks
    - Onboarding, conventions, workflows, contacts
    - Team-specific processes and practices
    - Example: `onboarding.md`, `conventions.md`, `workflows.md`
 
-4. **architecture/** - Project-specific ADRs (optional)
+4. **project-arch/{project-id}/** - Project-specific ADRs (optional)
    - Decisions affecting only this project
    - Use top-level `architecture/` for system-wide decisions
    - Example: `adr/0001-use-postgres.md`
 
-5. **legacy/** - Brownfield imports (temporary)
+5. **legacy/{project-id}/** - Brownfield imports (temporary)
    - Imported from Notion, Confluence, Wiki
    - Migration report + classified files
    - Clean up after migration complete
@@ -1444,7 +1463,7 @@ specweave/
 
 ### The Core Question: Why Two Locations?
 
-1. **Living Docs Specs**: `.specweave/docs/internal/projects/{project-id}/specs/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
+1. **Living Docs Specs**: `.specweave/docs/internal/specs/{project-id}/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
 2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary, focused implementation snapshot**
 
 **Key Difference**: Specs use **3-digit numbers** (001, 002, 003) for **feature areas**, increments use **4-digit numbers** (0001, 0002, 0003) for **implementations**.
@@ -1453,7 +1472,7 @@ specweave/
 
 **Living Docs Specs = Permanent, Feature-Level Knowledge Base**
 
-- **Location**: `.specweave/docs/internal/projects/default/specs/spec-001-core-framework-architecture.md` (single project) or `.specweave/docs/internal/projects/web-app/specs/spec-001-user-auth.md` (multi-project)
+- **Location**: `.specweave/docs/internal/specs/default/spec-001-core-framework-architecture.md` (single project) or `.specweave/docs/internal/specs/web-app/spec-001-user-auth.md` (multi-project)
 - **Purpose**: COMPLETE, PERMANENT source of truth for entire feature area
 - **Lifecycle**: Created once, updated over time, NEVER deleted
 - **Scope**: Comprehensive feature area (e.g., "Core Framework", 10-50 user stories)
@@ -1482,7 +1501,7 @@ specweave/
 
 **Living Docs Spec** (Permanent, Feature-Level):
 ```
-File: .specweave/docs/internal/projects/default/specs/spec-001-core-framework-architecture.md
+File: .specweave/docs/internal/specs/default/spec-001-core-framework-architecture.md
 
 # SPEC-001: Core Framework & Architecture
 Foundation framework with CLI, plugin system, cross-platform support
