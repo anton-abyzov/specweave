@@ -215,6 +215,61 @@
       },
       "additionalProperties": false
     },
+    "statusLine": {
+      "type": "object",
+      "description": "Status line configuration for fast increment progress display",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable status line rendering",
+          "default": true
+        },
+        "maxCacheAge": {
+          "type": "number",
+          "description": "Maximum age of cache before forcing refresh (milliseconds)",
+          "default": 5000,
+          "minimum": 1000,
+          "maximum": 60000
+        },
+        "progressBarWidth": {
+          "type": "number",
+          "description": "Width of progress bar in characters",
+          "default": 8,
+          "minimum": 4,
+          "maximum": 20
+        },
+        "maxIncrementNameLength": {
+          "type": "number",
+          "description": "Maximum length for increment name display",
+          "default": 20,
+          "minimum": 10,
+          "maximum": 50
+        },
+        "maxTaskTitleLength": {
+          "type": "number",
+          "description": "Maximum length for task title display",
+          "default": 30,
+          "minimum": 15,
+          "maximum": 100
+        },
+        "showProgressBar": {
+          "type": "boolean",
+          "description": "Show visual progress bar",
+          "default": true
+        },
+        "showPercentage": {
+          "type": "boolean",
+          "description": "Show percentage completion",
+          "default": true
+        },
+        "showCurrentTask": {
+          "type": "boolean",
+          "description": "Show current task being worked on",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    },
     "translation": {
       "type": "object",
       "description": "Translation settings for multilingual support",

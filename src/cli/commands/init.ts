@@ -108,7 +108,7 @@ export async function initCommand(
     const allFiles = fs.readdirSync(targetDir);
     const existingFiles = allFiles.filter(f => !f.startsWith('.')); // Ignore hidden files
 
-    if (existingFiles.length > 0) {
+    if (existingFiles.length > 0 && !options.force) {
       console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })}`));
       const { confirm } = await inquirer.prompt([
         {

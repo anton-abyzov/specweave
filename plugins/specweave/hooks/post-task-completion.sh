@@ -289,6 +289,16 @@ play_sound() {
   esac
 }
 
+# ============================================================================
+# STATUS LINE UPDATE
+# ============================================================================
+# Update status line cache BEFORE playing sound (async, non-blocking)
+# Cache will be read by status line renderer for fast display (<1ms)
+
+echo "[$(date)] 📊 Updating status line cache" >> "$DEBUG_LOG" 2>/dev/null || true
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
 if [ "$SESSION_ENDING" = "true" ]; then
   echo "[$(date)] 🔔 Playing completion sound" >> "$DEBUG_LOG" 2>/dev/null || true
   play_sound
