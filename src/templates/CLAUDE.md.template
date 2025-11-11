@@ -87,6 +87,30 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## ⚠️ Increment Discipline (CRITICAL)
+
+### 🚨 INCREMENT NUMBERS MUST BE UNIQUE!
+
+**Duplicate numbers break everything** - sync, status line, git history.
+
+**Format**: `####-descriptive-name` (e.g., `0001-user-auth`)
+
+**Check before creating:**
+```bash
+ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort | tail -5
+```
+
+### 📁 Folder Structure (MANDATORY)
+
+**Only 3 files in root:** `spec.md`, `plan.md`, `tasks.md`
+
+**Everything else in subfolders:**
+- `reports/` - Analysis, summaries, session notes
+- `scripts/` - Helper scripts
+- `logs/` - Execution logs
+
+---
+
 ## 🔗 Automatic Syncing (Living Docs + External Tools)
 
 **SpecWeave automatically syncs your work** after EVERY task completion via hooks:
