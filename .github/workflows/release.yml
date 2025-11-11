@@ -102,11 +102,10 @@ jobs:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
           git tag "v$VERSION"
-          git push origin develop
           git push origin "v$VERSION"
 
       - name: Publish to npm
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public || npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
