@@ -59,12 +59,6 @@ describe('ProjectManager - Path Resolution', () => {
       );
     });
 
-    it('should append /specs to base path', () => {
-      const specsPath = projectManager.getSpecsPath();
-      const basePath = projectManager.getProjectBasePath();
-
-      expect(specsPath).toBe(path.join(basePath, 'specs'));
-    });
   });
 
   describe('getModulesPath()', () => {
@@ -74,13 +68,6 @@ describe('ProjectManager - Path Resolution', () => {
       expect(modulesPath).toBe(
         path.join(testRoot, '.specweave/docs/internal/modules/default')
       );
-    });
-
-    it('should append /modules to base path', () => {
-      const modulesPath = projectManager.getModulesPath();
-      const basePath = projectManager.getProjectBasePath();
-
-      expect(modulesPath).toBe(path.join(basePath, 'modules'));
     });
   });
 
@@ -92,29 +79,15 @@ describe('ProjectManager - Path Resolution', () => {
         path.join(testRoot, '.specweave/docs/internal/team/default')
       );
     });
-
-    it('should append /team to base path', () => {
-      const teamPath = projectManager.getTeamPath();
-      const basePath = projectManager.getProjectBasePath();
-
-      expect(teamPath).toBe(path.join(basePath, 'team'));
-    });
   });
 
-  describe('getArchitecturePath()', () => {
-    it('should return correct architecture path for active project', () => {
-      const archPath = projectManager.getArchitecturePath();
+  describe('getProjectArchitecturePath()', () => {
+    it('should return correct project architecture path for active project', () => {
+      const archPath = projectManager.getProjectArchitecturePath();
 
       expect(archPath).toBe(
         path.join(testRoot, '.specweave/docs/internal/project-arch/default')
       );
-    });
-
-    it('should append /architecture to base path', () => {
-      const archPath = projectManager.getArchitecturePath();
-      const basePath = projectManager.getProjectBasePath();
-
-      expect(archPath).toBe(path.join(basePath, 'architecture'));
     });
   });
 
