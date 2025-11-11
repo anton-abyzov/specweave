@@ -7,6 +7,35 @@ class GitHubMultiProjectSync {
     this.octokit = new Octokit({ auth: config.token });
   }
   /**
+   * Pre-flight validation: Verify all repos exist
+   *
+   * @throws Error if any repos are missing
+   */
+  async validateRepos() {
+    const reposToValidate = [];
+    if (this.config.repos) {
+      reposToValidate.push(...this.config.repos);
+    }
+    if (this.config.masterRepo) {
+      reposToValidate.push(this.config.masterRepo);
+    }
+    if (this.config.nestedRepos) {
+      reposToValidate.push(...this.config.nestedRepos);
+    }
+    if (reposToValidate.length === 0) {
+      throw new Error("No repositories configured for validation");
+    }
+    const missing = await validateGitHubRepos(this.config, reposToValidate);
+    if (missing.length > 0) {
+      throw new Error(
+        `\u274C Pre-flight check failed: Missing GitHub repositories:
+` + missing.map((r) => `  - ${this.config.owner}/${r}`).join("\n") + `
+
+Please verify repository names and access permissions.`
+      );
+    }
+  }
+  /**
    * Sync spec to appropriate GitHub repos based on project mapping
    *
    * @param specPath Path to spec file
@@ -14,6 +43,7 @@ class GitHubMultiProjectSync {
    */
   async syncSpec(specPath) {
     const results = [];
+    await this.validateRepos();
     const parsedSpec = await parseSpecFile(specPath);
     const isMasterNested = !!this.config.masterRepo && !!this.config.nestedRepos;
     if (isMasterNested) {
@@ -36,14 +66,18 @@ class GitHubMultiProjectSync {
   async syncMultipleRepos(parsedSpec) {
     const results = [];
     const projectStories = /* @__PURE__ */ new Map();
+    const mapperConfig = {
+      confidenceThreshold: this.config.confidenceThreshold
+    };
     for (const userStory of parsedSpec.userStories) {
-      const primaryProject = getPrimaryProject(userStory);
+      const primaryProject = getPrimaryProject(userStory, void 0, mapperConfig);
       if (primaryProject) {
         const existing = projectStories.get(primaryProject.projectId) || [];
         existing.push(userStory);
         projectStories.set(primaryProject.projectId, existing);
       } else {
-        console.warn(`\u26A0\uFE0F  No confident project match for ${userStory.id} - skipping`);
+        const threshold = this.config.confidenceThreshold ?? 0.3;
+        console.warn(`\u26A0\uFE0F  No confident project match for ${userStory.id} (< ${threshold * 100}% threshold) - skipping`);
       }
     }
     for (const [projectId, stories] of projectStories.entries()) {
@@ -83,8 +117,11 @@ class GitHubMultiProjectSync {
     const epicResult = await this.createEpicInMasterRepo(parsedSpec);
     results.push(epicResult);
     const projectStories = /* @__PURE__ */ new Map();
+    const mapperConfig = {
+      confidenceThreshold: this.config.confidenceThreshold
+    };
     for (const userStory of parsedSpec.userStories) {
-      const primaryProject = getPrimaryProject(userStory);
+      const primaryProject = getPrimaryProject(userStory, void 0, mapperConfig);
       if (primaryProject) {
         const existing = projectStories.get(primaryProject.projectId) || [];
         existing.push(userStory);
@@ -116,7 +153,7 @@ class GitHubMultiProjectSync {
 
 **Status**: ${parsedSpec.metadata.status}
 **Priority**: ${parsedSpec.metadata.priority}
-**Estimated Effort**: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+**Estimated Effort**: ${parsedSpec.metadata.estimatedEffort || "TBD"}
 
 ## Executive Summary
 
@@ -334,7 +371,23 @@ function formatSyncResults(results) {
 `);
   return lines.join("\n");
 }
+async function validateGitHubRepos(config, repoNames) {
+  const missing = [];
+  const octokit = new Octokit({ auth: config.token });
+  for (const repo of repoNames) {
+    try {
+      await octokit.repos.get({
+        owner: config.owner,
+        repo
+      });
+    } catch (error) {
+      missing.push(repo);
+    }
+  }
+  return missing;
+}
 export {
   GitHubMultiProjectSync,
-  formatSyncResults
+  formatSyncResults,
+  validateGitHubRepos
 };

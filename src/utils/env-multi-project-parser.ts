@@ -283,7 +283,6 @@ export function createJiraSyncProfile(config: JiraProjectConfig): {
       config: {
         domain: config.domain,
         projectKey: config.projectKey,
-        issueType: 'Epic',
       },
       timeRange: {
         default: '1M',
@@ -348,7 +347,6 @@ export function createAdoSyncProfile(config: AdoProjectConfig): {
       config: {
         organization: config.organization,
         project: config.project,
-        workItemType: 'Epic',
       },
       timeRange: {
         default: '1M',

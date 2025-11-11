@@ -31,6 +31,25 @@ export interface ProjectRule {
 }
 
 /**
+ * Project mapper configuration
+ */
+export interface ProjectMapperConfig {
+  /**
+   * Minimum confidence threshold (0.0-1.0) for primary project match
+   * Default: 0.3 (30%)
+   *
+   * Lower values (0.15-0.2) work better for business-focused specs
+   * Higher values (0.4-0.5) work better for tech-focused specs
+   */
+  confidenceThreshold?: number;
+
+  /**
+   * Custom project rules (overrides default rules)
+   */
+  customRules?: ProjectRule[];
+}
+
+/**
  * Default project mapping rules
  * These can be customized via .specweave/config.json
  */
@@ -223,16 +242,21 @@ export function mapUserStoryToProjects(
  *
  * @param userStory User story to analyze
  * @param projectRules Project mapping rules
+ * @param config Optional configuration (confidence threshold, custom rules)
  * @returns Primary project mapping or null if no confident match
  */
 export function getPrimaryProject(
   userStory: UserStory,
-  projectRules: ProjectRule[] = DEFAULT_PROJECT_RULES
+  projectRules: ProjectRule[] = DEFAULT_PROJECT_RULES,
+  config?: ProjectMapperConfig
 ): ProjectMapping | null {
-  const mappings = mapUserStoryToProjects(userStory, projectRules);
+  const rules = config?.customRules || projectRules;
+  const threshold = config?.confidenceThreshold ?? 0.3; // Default: 30%
 
-  // Require at least 30% confidence for primary project
-  return mappings.length > 0 && mappings[0].confidence >= 0.3
+  const mappings = mapUserStoryToProjects(userStory, rules);
+
+  // Require confidence >= threshold for primary project
+  return mappings.length > 0 && mappings[0].confidence >= threshold
     ? mappings[0]
     : null;
 }

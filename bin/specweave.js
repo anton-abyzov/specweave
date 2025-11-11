@@ -113,6 +113,69 @@ program
     await statusCommand(options);
   });
 
+// Status line command - Display current increment progress
+program
+  .command('status-line')
+  .description('Display current increment status line')
+  .option('--json', 'Output JSON format')
+  .option('--clear', 'Clear status line cache')
+  .option('--config <path>', 'Path to config file')
+  .action(async (options) => {
+    const { registerStatusLineCommand } = await import('../dist/cli/commands/status-line.js');
+    const tempProgram = new Command();
+    registerStatusLineCommand(tempProgram);
+    // Execute action manually since we need the temp program
+    const manager = await import('../dist/core/status-line/status-line-manager.js').then(m => m.StatusLineManager);
+    const StatusLineManager = manager;
+    const path = await import('path');
+    const fs = await import('fs');
+
+    const rootDir = process.cwd();
+    let config = {};
+
+    if (options.config) {
+      const configPath = path.resolve(options.config);
+      if (fs.existsSync(configPath)) {
+        const configContent = fs.readFileSync(configPath, 'utf8');
+        const fullConfig = JSON.parse(configContent);
+        config = fullConfig.statusLine || {};
+      }
+    } else {
+      const defaultConfigPath = path.join(rootDir, '.specweave/config.json');
+      if (fs.existsSync(defaultConfigPath)) {
+        const configContent = fs.readFileSync(defaultConfigPath, 'utf8');
+        const fullConfig = JSON.parse(configContent);
+        config = fullConfig.statusLine || {};
+      }
+    }
+
+    const statusManager = new StatusLineManager(rootDir, config);
+
+    if (options.clear) {
+      statusManager.clearCache();
+      console.log('✅ Status line cache cleared');
+      return;
+    }
+
+    if (options.json) {
+      const cache = statusManager.getCacheData();
+      if (!cache) {
+        console.log(JSON.stringify({ error: 'No active increment' }, null, 2));
+        process.exit(1);
+      }
+      console.log(JSON.stringify(cache, null, 2));
+      return;
+    }
+
+    const statusLine = statusManager.render();
+    if (!statusLine) {
+      console.log('No active increment');
+      process.exit(1);
+    }
+
+    console.log(statusLine);
+  });
+
 // Check discipline command - Validate increment discipline
 program
   .command('check-discipline')
@@ -184,6 +247,8 @@ program.on('--help', () => {
   console.log('  $ specweave list --installed                # Show installed components');
   console.log('  $ specweave status                          # Show all increments status');
   console.log('  $ specweave status --verbose                # Show detailed increment info');
+  console.log('  $ specweave status-line                     # Display current increment progress');
+  console.log('  $ specweave status-line --json              # Output progress as JSON');
   console.log('  $ specweave pause 0007 --reason "blocked"   # Pause increment 0007');
   console.log('  $ specweave resume 0007                     # Resume increment 0007');
   console.log('  $ specweave abandon 0007 --reason "obsolete" # Abandon increment 0007');

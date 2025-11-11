@@ -27,6 +27,7 @@ export interface GitHubMultiProjectConfig {
   masterRepoLevel?: 'epic';  // Master repo contains epics
   nestedRepoLevel?: 'story-task';  // Nested repos contain stories/tasks
   crossLinking?: boolean;  // Enable epic → issue links
+  confidenceThreshold?: number;  // Minimum confidence for project classification (default: 0.3)
 }
 
 export interface GitHubIssue {
@@ -59,6 +60,41 @@ export class GitHubMultiProjectSync {
   }
 
   /**
+   * Pre-flight validation: Verify all repos exist
+   *
+   * @throws Error if any repos are missing
+   */
+  async validateRepos(): Promise<void> {
+    const reposToValidate: string[] = [];
+
+    // Collect all repos to validate
+    if (this.config.repos) {
+      reposToValidate.push(...this.config.repos);
+    }
+    if (this.config.masterRepo) {
+      reposToValidate.push(this.config.masterRepo);
+    }
+    if (this.config.nestedRepos) {
+      reposToValidate.push(...this.config.nestedRepos);
+    }
+
+    if (reposToValidate.length === 0) {
+      throw new Error('No repositories configured for validation');
+    }
+
+    // Validate repos exist
+    const missing = await validateGitHubRepos(this.config, reposToValidate);
+
+    if (missing.length > 0) {
+      throw new Error(
+        `❌ Pre-flight check failed: Missing GitHub repositories:\n` +
+        missing.map(r => `  - ${this.config.owner}/${r}`).join('\n') +
+        `\n\nPlease verify repository names and access permissions.`
+      );
+    }
+  }
+
+  /**
    * Sync spec to appropriate GitHub repos based on project mapping
    *
    * @param specPath Path to spec file
@@ -66,6 +102,9 @@ export class GitHubMultiProjectSync {
    */
   async syncSpec(specPath: string): Promise<SyncResult[]> {
     const results: SyncResult[] = [];
+
+    // Pre-flight validation: Verify all repos exist
+    await this.validateRepos();
 
     // Parse spec
     const parsedSpec = await parseSpecFile(specPath);
@@ -100,8 +139,12 @@ export class GitHubMultiProjectSync {
     // Classify user stories by project
     const projectStories = new Map<string, UserStory[]>();
 
+    const mapperConfig = {
+      confidenceThreshold: this.config.confidenceThreshold
+    };
+
     for (const userStory of parsedSpec.userStories) {
-      const primaryProject = getPrimaryProject(userStory);
+      const primaryProject = getPrimaryProject(userStory, undefined, mapperConfig);
 
       if (primaryProject) {
         const existing = projectStories.get(primaryProject.projectId) || [];
@@ -109,7 +152,8 @@ export class GitHubMultiProjectSync {
         projectStories.set(primaryProject.projectId, existing);
       } else {
         // No confident match - skip or assign to default repo
-        console.warn(`⚠️  No confident project match for ${userStory.id} - skipping`);
+        const threshold = this.config.confidenceThreshold ?? 0.3;
+        console.warn(`⚠️  No confident project match for ${userStory.id} (< ${threshold * 100}% threshold) - skipping`);
       }
     }
 
@@ -162,8 +206,12 @@ export class GitHubMultiProjectSync {
     // Step 2: Classify user stories by project
     const projectStories = new Map<string, UserStory[]>();
 
+    const mapperConfig = {
+      confidenceThreshold: this.config.confidenceThreshold
+    };
+
     for (const userStory of parsedSpec.userStories) {
-      const primaryProject = getPrimaryProject(userStory);
+      const primaryProject = getPrimaryProject(userStory, undefined, mapperConfig);
 
       if (primaryProject) {
         const existing = projectStories.get(primaryProject.projectId) || [];
@@ -205,7 +253,7 @@ export class GitHubMultiProjectSync {
 
 **Status**: ${parsedSpec.metadata.status}
 **Priority**: ${parsedSpec.metadata.priority}
-**Estimated Effort**: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+**Estimated Effort**: ${parsedSpec.metadata.estimatedEffort || 'TBD'}
 
 ## Executive Summary
 
@@ -458,4 +506,32 @@ export function formatSyncResults(results: SyncResult[]): string {
   lines.push(`\n✅ Total: ${results.length} issues synced\n`);
 
   return lines.join('\n');
+}
+
+/**
+ * Validate GitHub repositories exist
+ *
+ * @param config GitHub configuration
+ * @param repoNames Array of repo names to validate
+ * @returns Validation results (missing repos)
+ */
+export async function validateGitHubRepos(
+  config: GitHubMultiProjectConfig,
+  repoNames: string[]
+): Promise<string[]> {
+  const missing: string[] = [];
+  const octokit = new Octokit({ auth: config.token });
+
+  for (const repo of repoNames) {
+    try {
+      await octokit.repos.get({
+        owner: config.owner,
+        repo
+      });
+    } catch (error) {
+      missing.push(repo);
+    }
+  }
+
+  return missing;
 }

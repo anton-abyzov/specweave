@@ -72,6 +72,28 @@ export class JiraMultiProjectSync {
   }
 
   /**
+   * Pre-flight validation: Verify all JIRA projects exist
+   *
+   * @throws Error if any projects are missing
+   */
+  async validateProjects(): Promise<void> {
+    if (!this.config.projects || this.config.projects.length === 0) {
+      throw new Error('No JIRA projects configured for validation');
+    }
+
+    // Validate projects exist
+    const missing = await validateJiraProjects(this.client, this.config.projects);
+
+    if (missing.length > 0) {
+      throw new Error(
+        `❌ Pre-flight check failed: Missing JIRA projects:\n` +
+        missing.map(p => `  - ${p} (${this.config.domain})`).join('\n') +
+        `\n\nPlease verify project keys and access permissions.`
+      );
+    }
+  }
+
+  /**
    * Sync spec to JIRA projects with intelligent mapping
    *
    * @param specPath Path to spec file
@@ -79,6 +101,9 @@ export class JiraMultiProjectSync {
    */
   async syncSpec(specPath: string): Promise<JiraSyncResult[]> {
     const results: JiraSyncResult[] = [];
+
+    // Pre-flight validation: Verify all projects exist
+    await this.validateProjects();
 
     // Parse spec
     const parsedSpec = await parseSpecFile(specPath);
@@ -100,16 +125,20 @@ export class JiraMultiProjectSync {
     for (const userStory of parsedSpec.userStories) {
       if (this.config.intelligentMapping !== false) {
         // Intelligent mapping (default)
-        const mappings = mapUserStoryToProjects(userStory);
+        const mapperConfig = {
+          confidenceThreshold: this.config.confidenceThreshold
+        };
+        const primary = getPrimaryProject(userStory, undefined, mapperConfig);
 
-        if (mappings.length > 0 && mappings[0].confidence >= 0.3) {
-          const primary = mappings[0];
+        if (primary) {
           const existing = projectStories.get(primary.projectId) || [];
           existing.push({ story: userStory, confidence: primary.confidence });
           projectStories.set(primary.projectId, existing);
         } else {
           // No confident match - assign to first project or skip
-          console.warn(`⚠️  Low confidence for ${userStory.id} (${(mappings[0]?.confidence || 0) * 100}%) - assigning to ${this.config.projects[0]}`);
+          const mappings = mapUserStoryToProjects(userStory);
+          const threshold = this.config.confidenceThreshold ?? 0.3;
+          console.warn(`⚠️  Low confidence for ${userStory.id} (${(mappings[0]?.confidence || 0) * 100}% < ${threshold * 100}% threshold) - assigning to ${this.config.projects[0]}`);
           const fallback = this.config.projects[0];
           const existing = projectStories.get(fallback) || [];
           existing.push({ story: userStory, confidence: mappings[0]?.confidence || 0 });
@@ -156,7 +185,7 @@ export class JiraMultiProjectSync {
 
 *Status*: ${parsedSpec.metadata.status}
 *Priority*: ${parsedSpec.metadata.priority}
-*Estimated Effort*: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+*Estimated Effort*: ${parsedSpec.metadata.estimatedEffort || 'TBD'}
 
 h3. Executive Summary
 
