@@ -6,7 +6,9 @@
  * - Single repository
  * - Multiple repositories (microservices/polyrepo)
  * - Monorepo (single repo, multiple projects)
+ * - Parent repository approach (for multi-repo)
  * - Auto-detection from git remotes
+ * - GitHub repository creation via API
  *
  * @module cli/helpers/issue-tracker/github-multi-repo
  */
@@ -14,6 +16,7 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
+import path from 'path';
 import {
   detectGitHubRemotes,
   detectPrimaryGitHubRemote,
@@ -24,6 +27,8 @@ import {
 } from '../../../utils/git-detector.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
+import { RepoStructureManager } from '../../../core/repo-structure/repo-structure-manager.js';
+import { getGitHubAuth } from '../../../utils/auth-helpers.js';
 
 /**
  * GitHub setup type options
@@ -55,13 +60,45 @@ export interface GitHubConfiguration {
 
 /**
  * Prompt for GitHub setup type
+ * Enhanced to integrate with RepoStructureManager for repository creation
  *
- * @returns Selected setup type
+ * @param projectPath - Path to project directory
+ * @param githubToken - Optional GitHub token for API calls
+ * @returns Selected setup type with configuration
  */
-export async function promptGitHubSetupType(): Promise<GitHubSetupType> {
+export async function promptGitHubSetupType(projectPath?: string, githubToken?: string): Promise<GitHubSetupType> {
   console.log(chalk.cyan('\n📂 Repository Configuration\n'));
   console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
 
+  // If we have projectPath and token, use RepoStructureManager for enhanced flow
+  if (projectPath && githubToken) {
+    const manager = new RepoStructureManager(projectPath, githubToken);
+    const config = await manager.promptStructure();
+
+    // Create repositories on GitHub if requested
+    if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
+      console.log(chalk.cyan('\n🚀 Creating GitHub Repositories\n'));
+      await manager.createGitHubRepositories(config);
+    }
+
+    // Initialize local repos
+    console.log(chalk.cyan('\n📁 Setting Up Local Repositories\n'));
+    await manager.initializeLocalRepos(config);
+
+    // Create SpecWeave structure
+    await manager.createSpecWeaveStructure(config);
+
+    // Map to legacy format for backward compatibility
+    if (config.architecture === 'single') {
+      return 'single';
+    } else if (config.architecture === 'monorepo') {
+      return 'monorepo';
+    } else {
+      return 'multiple';
+    }
+  }
+
+  // Fallback to legacy prompt if no projectPath/token
   const { setupType } = await inquirer.prompt([{
     type: 'list',
     name: 'setupType',

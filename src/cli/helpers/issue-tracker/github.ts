@@ -355,14 +355,17 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
  * Configure GitHub repositories
  *
  * This is called after credentials are validated to set up repository profiles
+ * Enhanced to support repository creation via GitHub API
  *
  * @param projectPath - Path to project directory
  * @param language - User's language
+ * @param githubToken - Optional GitHub token for repository creation
  * @returns Repository profiles
  */
 export async function configureGitHubRepositories(
   projectPath: string,
-  language: SupportedLanguage
+  language: SupportedLanguage,
+  githubToken?: string
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
   // Import the multi-repo module
   const {
@@ -374,7 +377,8 @@ export async function configureGitHubRepositories(
     autoDetectRepositories
   } = await import('./github-multi-repo.js');
 
-  const setupType = await promptGitHubSetupType();
+  // Pass projectPath and token for enhanced flow with repo creation
+  const setupType = await promptGitHubSetupType(projectPath, githubToken);
 
   switch (setupType) {
     case 'none':
