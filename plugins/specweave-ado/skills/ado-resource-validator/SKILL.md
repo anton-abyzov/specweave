@@ -1,6 +1,6 @@
 ---
 name: ado-resource-validator
-description: Validates Azure DevOps projects and resources exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. Supports multiple projects for project-per-team strategy, area paths for area-path-based strategy, and teams for team-based strategy. Activates for ado setup, ado validation, ado configuration, missing ado project, azure devops .env setup.
+description: Validates Azure DevOps projects and resources exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. Supports multiple projects for project-per-team strategy, area paths for area-path-based strategy, and teams for team-based strategy. NEW - Per-project configuration support - AZURE_DEVOPS_AREA_PATHS_{ProjectName} and AZURE_DEVOPS_TEAMS_{ProjectName} for hierarchical organization. Activates for ado setup, ado validation, ado configuration, missing ado project, azure devops .env setup, per-project area paths, per-project teams.
 allowed-tools: Read, Bash, Write, Edit
 ---
 
@@ -65,6 +65,32 @@ AZURE_DEVOPS_TEAMS=Alpha Team,Beta Team,Gamma Team
 ```
 → Validates MainProduct project exists
 → Creates teams if missing: Alpha Team, Beta Team, Gamma Team
+
+**NEW: Per-Project Configuration** (Advanced - Multiple Projects × Resources)
+```bash
+# Multiple projects with their own area paths and teams
+AZURE_DEVOPS_STRATEGY=project-per-team
+AZURE_DEVOPS_PROJECTS=Backend,Frontend,Mobile
+
+# Per-project area paths (hierarchical naming)
+AZURE_DEVOPS_AREA_PATHS_Backend=API,Database,Cache
+AZURE_DEVOPS_AREA_PATHS_Frontend=Web,Admin,Public
+AZURE_DEVOPS_AREA_PATHS_Mobile=iOS,Android,Shared
+
+# Per-project teams (optional)
+AZURE_DEVOPS_TEAMS_Backend=Alpha,Beta
+AZURE_DEVOPS_TEAMS_Frontend=Gamma
+```
+→ Validates 3 projects exist: Backend, Frontend, Mobile
+→ Creates area paths per project:
+  - Backend\API, Backend\Database, Backend\Cache
+  - Frontend\Web, Frontend\Admin, Frontend\Public
+  - Mobile\iOS, Mobile\Android, Mobile\Shared
+→ Creates teams per project:
+  - Backend: Alpha, Beta
+  - Frontend: Gamma
+
+**Naming Convention**: `{PROVIDER}_{RESOURCE_TYPE}_{PROJECT_NAME}`
 
 ## Validation Flow
 

@@ -37,5 +37,6 @@
   },
   "skills": "skills",
   "agents": "agents",
-  "commands": "commands"
+  "commands": "commands",
+  "hooks": "hooks/hooks.json"
 }

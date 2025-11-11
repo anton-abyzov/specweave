@@ -59,10 +59,13 @@ async function syncLivingDocs(incrementId: string): Promise<void> {
 
     console.log('✅ Living docs sync enabled');
 
-    // 3. Detect changed docs via git diff
+    // 3. Copy increment spec to living docs
+    const specCopied = await copyIncrementSpecToLivingDocs(incrementId);
+
+    // 4. Detect changed docs via git diff
     const changedDocs = detectChangedDocs();
 
-    if (changedDocs.length === 0) {
+    if (changedDocs.length === 0 && !specCopied) {
       console.log('ℹ️  No living docs changed (no git diff in .specweave/docs/)');
       return;
     }
@@ -78,6 +81,47 @@ async function syncLivingDocs(incrementId: string): Promise<void> {
   } catch (error) {
     console.error('❌ Error syncing living docs:', error);
     // Don't exit with error - this is best-effort
+  }
+}
+
+/**
+ * Copy increment spec to living docs
+ * Returns true if spec was copied, false if skipped
+ */
+async function copyIncrementSpecToLivingDocs(incrementId: string): Promise<boolean> {
+  try {
+    const incrementSpecPath = path.join(process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
+    const livingDocsPath = path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs', `spec-${incrementId}.md`);
+
+    // Check if increment spec exists
+    if (!fs.existsSync(incrementSpecPath)) {
+      console.log(`⚠️  Increment spec not found: ${incrementSpecPath}`);
+      return false;
+    }
+
+    // Check if living docs spec already exists and is identical
+    if (fs.existsSync(livingDocsPath)) {
+      const incrementContent = await fs.readFile(incrementSpecPath, 'utf-8');
+      const livingDocsContent = await fs.readFile(livingDocsPath, 'utf-8');
+
+      if (incrementContent === livingDocsContent) {
+        console.log(`ℹ️  Living docs spec already up-to-date: spec-${incrementId}.md`);
+        return false;
+      }
+    }
+
+    // Ensure target directory exists
+    await fs.ensureDir(path.dirname(livingDocsPath));
+
+    // Copy spec to living docs
+    await fs.copy(incrementSpecPath, livingDocsPath);
+
+    console.log(`✅ Copied increment spec to living docs: spec-${incrementId}.md`);
+    return true;
+
+  } catch (error) {
+    console.error(`❌ Error copying increment spec: ${error}`);
+    return false;
   }
 }
 
