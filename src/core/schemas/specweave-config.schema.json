@@ -546,6 +546,17 @@
                       "type": "string",
                       "description": "Jira project key (simple strategy, backward compatible)"
                     },
+                    "projects": {
+                      "type": "array",
+                      "description": "Jira project keys for project-per-team strategy (v0.8.19+)",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 10,
+                        "pattern": "^[A-Z0-9]+$"
+                      },
+                      "minItems": 1
+                    },
                     "issueType": {
                       "type": "string",
                       "enum": ["Epic", "Story", "Task"],
