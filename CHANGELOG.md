@@ -4,6 +4,53 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.6] - 2025-11-11
+
+### 🔧 **BUG FIX** - Init Test Failure & Non-Interactive Mode
+
+**Fixed: Integration test failure due to new interactive menu**
+
+#### The Problem
+
+The `specweave init` command was updated to show an interactive menu when `.specweave/` exists (Continue/Fresh/Cancel), but the integration test still expected the old yes/no prompt. This caused test failures in CI.
+
+**Impact**:
+- ❌ `init-dot-notation.test.ts` failing in CI
+- ❌ Test expected simple "y/n" but got 3-choice menu
+- ❌ No way to force fresh start non-interactively
+
+#### The Fix
+
+Added `--force` flag to `specweave init` for non-interactive fresh starts:
+
+```bash
+# Old way (interactive - doesn't work in CI)
+echo "y" | specweave init .
+
+# New way (non-interactive - works in CI)
+specweave init . --force
+```
+
+**Changes**:
+1. Added `-f, --force` option to init command
+2. Skip interactive prompts when force flag is set
+3. Automatically perform fresh start (remove existing `.specweave/`)
+4. Updated integration test to use `--force` flag
+
+**Files changed**:
+- `bin/specweave.js` - Added --force option
+- `src/cli/commands/init.ts` - Implemented force mode
+- `tests/integration/cli/init-dot-notation.test.ts` - Updated test to use --force
+
+#### What This Means
+
+- ✅ CI tests can now run init command non-interactively
+- ✅ Force mode useful for automated scripts and CI/CD
+- ✅ Interactive mode still available for manual use
+- ✅ All integration tests should pass
+
+---
+
 ## [0.13.5] - 2025-11-10
 
 ### 🔧 **CRITICAL BUG FIX** - Plugin Hooks Auto-Loading
