@@ -10,6 +10,17 @@
           }
         ]
       }
+    ],
+    "PostSlashCommand": [
+      {
+        "matcher": "specweave:specweave-done",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-increment-done.sh"
+          }
+        ]
+      }
     ]
   }
 }

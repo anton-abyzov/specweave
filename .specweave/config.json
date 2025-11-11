@@ -14,6 +14,11 @@
     },
     "post_increment_planning": {
       "auto_create_github_issue": true
+    },
+    "post_increment_done": {
+      "sync_to_github_project": true,
+      "close_github_issue": true,
+      "update_living_docs_first": true
     }
   },
   "sync": {
