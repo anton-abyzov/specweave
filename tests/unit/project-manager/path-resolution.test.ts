@@ -122,24 +122,23 @@ describe('ProjectManager - Path Resolution', () => {
   describe('Path Resolution Performance', () => {
     it('should resolve paths in less than 1ms per call (avg)', async () => {
       const result = await benchmark(() => {
-        projectManager.getProjectBasePath();
         projectManager.getSpecsPath();
         projectManager.getModulesPath();
         projectManager.getTeamPath();
-        projectManager.getArchitecturePath();
+        projectManager.getProjectArchitecturePath();
         projectManager.getLegacyPath();
       }, 1000);
 
       console.log(`Path resolution benchmark: ${result.avg.toFixed(3)}ms avg`);
 
-      // All 6 calls should complete in <1ms on average
+      // All 5 calls should complete in <1ms on average
       expect(result.avg).toBeLessThan(1);
     });
 
     it('should handle 1000 consecutive calls efficiently', async () => {
       const result = await benchmark(() => {
         for (let i = 0; i < 1000; i++) {
-          projectManager.getProjectBasePath();
+          projectManager.getSpecsPath();
         }
       }, 10);
 

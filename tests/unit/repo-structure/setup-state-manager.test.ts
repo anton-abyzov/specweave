@@ -34,14 +34,13 @@ describe('SetupStateManager', () => {
     it('should create new state file on first save', async () => {
       const state: SetupState = {
         version: '1.0',
-        architecture: 'polyrepo',
+        architecture: 'multi-repo',
         parentRepo: {
-          id: 'parent',
-          displayName: 'Parent Repository',
+          name: 'my-project-parent',
           owner: 'myorg',
-          repo: 'my-project-parent',
+          description: 'Parent Repository',
           visibility: 'private',
-          created: true,
+          createOnGitHub: true,
           url: 'https://github.com/myorg/my-project-parent'
         },
         repos: [],
@@ -158,14 +157,13 @@ describe('SetupStateManager', () => {
     it('should load and parse valid state file', async () => {
       const state: SetupState = {
         version: '1.0',
-        architecture: 'polyrepo',
+        architecture: 'multi-repo',
         parentRepo: {
-          id: 'parent',
-          displayName: 'Parent Repository',
+          name: 'my-project-parent',
           owner: 'myorg',
-          repo: 'my-project-parent',
+          description: 'Parent Repository',
           visibility: 'private',
-          created: true,
+          createOnGitHub: true,
           url: 'https://github.com/myorg/my-project-parent'
         },
         repos: [],
@@ -235,14 +233,13 @@ describe('SetupStateManager', () => {
     it('should detect incomplete setup with parent created', async () => {
       const state: SetupState = {
         version: '1.0',
-        architecture: 'polyrepo',
+        architecture: 'multi-repo',
         parentRepo: {
-          id: 'parent',
-          displayName: 'Parent Repository',
+          name: 'my-project-parent',
           owner: 'myorg',
-          repo: 'my-project-parent',
+          description: 'Parent Repository',
           visibility: 'private',
-          created: true,
+          createOnGitHub: true,
           url: 'https://github.com/myorg/my-project-parent'
         },
         repos: [
@@ -333,14 +330,13 @@ describe('SetupStateManager', () => {
     it('should continue from interrupted step', async () => {
       const state: SetupState = {
         version: '1.0',
-        architecture: 'polyrepo',
+        architecture: 'multi-repo',
         parentRepo: {
-          id: 'parent',
-          displayName: 'Parent Repository',
+          name: 'my-project-parent',
           owner: 'myorg',
-          repo: 'my-project-parent',
+          description: 'Parent Repository',
           visibility: 'private',
-          created: true,
+          createOnGitHub: true,
           url: 'https://github.com/myorg/my-project-parent'
         },
         repos: [

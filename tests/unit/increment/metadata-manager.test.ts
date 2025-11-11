@@ -89,6 +89,36 @@ describe('MetadataManager', () => {
       expect(fs.existsSync(testMetadataPath)).toBe(true);
     });
 
+    test('lazy initialization updates active increment state', () => {
+      // Import ActiveIncrementManager
+      const { ActiveIncrementManager } = require('../../../src/core/increment/active-increment-manager');
+
+      // Ensure metadata doesn't exist
+      expect(fs.existsSync(testMetadataPath)).toBe(false);
+
+      // Ensure state directory exists
+      const stateDir = path.join(testRootPath, '.specweave', 'state');
+      fs.ensureDirSync(stateDir);
+
+      // Read should trigger lazy initialization
+      const result = MetadataManager.read(testIncrementId);
+
+      // Should create default metadata with ACTIVE status
+      expect(result.id).toBe(testIncrementId);
+      expect(result.status).toBe(IncrementStatus.ACTIVE);
+
+      // **CRITICAL**: Should also update active-increment.json
+      const activeManager = new ActiveIncrementManager(testRootPath);
+      const activeIncrement = activeManager.getActive();
+      expect(activeIncrement).toBe(testIncrementId);
+
+      // Verify state file was created
+      const stateFile = path.join(stateDir, 'active-increment.json');
+      expect(fs.existsSync(stateFile)).toBe(true);
+      const stateContent = fs.readJsonSync(stateFile);
+      expect(stateContent.id).toBe(testIncrementId);
+    });
+
     test('throws MetadataError if increment directory not found', () => {
       // Remove increment directory
       fs.removeSync(testIncrementPath);
