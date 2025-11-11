@@ -744,7 +744,7 @@ describe('import-docs command', () => {
 
       mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockDestination = '/test/project/.specweave/docs/internal/projects/default/legacy/notion';
+      const mockDestination = '/test/project/.specweave/docs/internal/legacy/default/notion';
       const mockImportReport = {
         totalFiles: 10,
         specsImported: 3,

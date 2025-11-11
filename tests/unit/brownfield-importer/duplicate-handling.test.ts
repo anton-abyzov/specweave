@@ -16,7 +16,7 @@ describe('BrownfieldImporter - Duplicate Handling', () => {
     await withTempDir(async (tmpDir) => {
       // Create .specweave structure with default project
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       // Create config.json with default project
       const configPath = path.join(specweaveRoot, 'config.json');

@@ -19,7 +19,7 @@ describe('BrownfieldImporter - File Copying Logic', () => {
 
       // Create .specweave structure with default project
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       // Create config.json with default project
       const configPath = path.join(specweaveRoot, 'config.json');

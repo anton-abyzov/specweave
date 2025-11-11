@@ -1,0 +1,11 @@
+{
+  "increment": "0022-multi-repo-init-ux",
+  "type": "feature",
+  "status": "paused",
+  "created": "2025-11-11T15:07:00Z",
+  "pausedAt": "2025-11-11T17:40:00Z",
+  "pausedReason": "Pausing to implement higher-priority ADO/JIRA per-project configuration feature (area paths per project, boards per project). Will resume after completing increment 0023.",
+  "priority": "P1",
+  "tags": ["ux", "multi-repo", "initialization", "github"],
+  "lastUpdated": "2025-11-11T17:40:00Z"
+}

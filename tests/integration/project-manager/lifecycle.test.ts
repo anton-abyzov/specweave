@@ -18,7 +18,7 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
       // (Note: Single-project to multi-project migration requires enabled=true
       // in addProject implementation, which is currently set to false - a known limitation)
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -79,7 +79,7 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup multi-project config
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -141,8 +141,8 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup multi-project
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/backend'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/backend'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -197,7 +197,7 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup initial config
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -248,7 +248,7 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({

@@ -68,7 +68,7 @@ test.describe('Project Switching (E2E)', () => {
 
     // Create project directories
     for (const projectId of ['frontend', 'backend', 'mobile']) {
-      const projectPath = path.join(specweaveRoot, `docs/internal/projects/${projectId}`);
+      const projectPath = path.join(specweaveRoot, `docs/internal/specs/${projectId}`);
       await fs.ensureDir(path.join(projectPath, 'specs'));
       await fs.ensureDir(path.join(projectPath, 'modules'));
       await fs.ensureDir(path.join(projectPath, 'team'));
@@ -77,19 +77,19 @@ test.describe('Project Switching (E2E)', () => {
 
     // Add content to frontend project
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/frontend/specs/ui-components.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/frontend/ui-components.md'),
       '# UI Components\n\nReact component library...'
     );
 
     // Add content to backend project
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/backend/specs/api-endpoints.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/backend/api-endpoints.md'),
       '# API Endpoints\n\nREST API specification...'
     );
 
     // Add content to mobile project
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/mobile/specs/biometric-auth.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/mobile/biometric-auth.md'),
       '# Biometric Authentication\n\nFace ID and fingerprint...'
     );
   });

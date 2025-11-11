@@ -1,12 +1,13 @@
 /**
  * Spec Metadata Manager
  *
- * Manages spec.md files in .specweave/docs/internal/specs/
+ * Manages spec.md files in .specweave/docs/internal/specs/{project-id}/
  *
  * CRITICAL ARCHITECTURE:
  * - Specs are the SOURCE OF TRUTH for features
  * - Specs are PERMANENT (never deleted)
  * - External tools (GitHub/Jira/ADO) sync to specs, NOT increments
+ * - Uses FLATTENED structure (v0.16.11+): specs/{project-id}/ not projects/{project-id}/specs/
  *
  * @module spec-metadata-manager
  */
@@ -23,24 +24,20 @@ import {
   IncrementReference,
   SpecValidationResult
 } from '../types/spec-metadata.js';
+import { ProjectManager } from '../project-manager.js';
 
 export class SpecMetadataManager {
   private specsDir: string;
+  private projectManager: ProjectManager;
 
-  constructor(projectRoot: string = process.cwd()) {
-    // Support both old and new multi-project structure
-    const newPath = path.join(projectRoot, '.specweave/docs/internal/projects/default/specs');
-    const oldPath = path.join(projectRoot, '.specweave/docs/internal/specs');
+  constructor(projectRoot: string = process.cwd(), projectId?: string) {
+    this.projectManager = new ProjectManager(projectRoot);
 
-    if (fs.existsSync(newPath)) {
-      this.specsDir = newPath;
-    } else if (fs.existsSync(oldPath)) {
-      this.specsDir = oldPath;
-    } else {
-      // Create default structure
-      this.specsDir = newPath;
-      fs.ensureDirSync(this.specsDir);
-    }
+    // Use flattened structure via ProjectManager
+    this.specsDir = this.projectManager.getSpecsPath(projectId);
+
+    // Ensure directory exists
+    fs.ensureDirSync(this.specsDir);
   }
 
   /**

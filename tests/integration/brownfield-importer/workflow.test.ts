@@ -16,7 +16,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup project structure
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -86,10 +86,10 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
       expect(report.legacyImported).toBe(1);
 
       // Verify files copied to correct destinations
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
-      const teamPath = path.join(specweaveRoot, 'docs/internal/projects/default/team');
-      const legacyPath = path.join(specweaveRoot, 'docs/internal/projects/default/legacy/notion');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
+      const teamPath = path.join(specweaveRoot, 'docs/internal/team/default');
+      const legacyPath = path.join(specweaveRoot, 'docs/internal/legacy/default/notion');
 
       expect(await fs.pathExists(path.join(specsPath, 'user-auth-spec.md'))).toBe(true);
       expect(await fs.pathExists(path.join(specsPath, 'payment-flow.md'))).toBe(true);
@@ -98,7 +98,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
       expect(await fs.pathExists(path.join(legacyPath, 'meeting-notes.md'))).toBe(true);
 
       // Verify migration report created
-      const reportPath = path.join(specweaveRoot, 'docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(specweaveRoot, 'docs/internal/legacy/default/README.md');
       expect(await fs.pathExists(reportPath)).toBe(true);
 
       const reportContent = await fs.readFile(reportPath, 'utf-8');
@@ -127,7 +127,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -171,14 +171,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
       expect(report.legacyImported).toBe(0);
 
       // Verify files were NOT copied
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
 
       expect(await fs.pathExists(path.join(specsPath, 'spec.md'))).toBe(false);
       expect(await fs.pathExists(path.join(modulesPath, 'module.md'))).toBe(false);
 
       // Verify no migration report created (dry run)
-      const reportPath = path.join(specweaveRoot, 'docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(specweaveRoot, 'docs/internal/legacy/default/README.md');
       expect(await fs.pathExists(reportPath)).toBe(false);
     });
   });
@@ -187,7 +187,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -232,14 +232,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
       const report = await importer.import(options);
 
       // Verify structure preserved
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
 
       expect(await fs.pathExists(path.join(specsPath, 'product/features/checkout.md'))).toBe(true);
       expect(await fs.pathExists(path.join(modulesPath, 'engineering/architecture.md'))).toBe(true);
 
       // Verify report notes structure preservation
-      const reportPath = path.join(specweaveRoot, 'docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(specweaveRoot, 'docs/internal/legacy/default/README.md');
       const reportContent = await fs.readFile(reportPath, 'utf-8');
       expect(reportContent).toContain('✅ Original folder structure preserved');
     });
@@ -249,7 +249,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -293,15 +293,15 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
       });
 
       // Verify both imports completed
-      const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-      const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
+      const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+      const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
 
       expect(await fs.pathExists(path.join(specsPath, 'notion-spec.md'))).toBe(true);
       expect(await fs.pathExists(path.join(modulesPath, 'confluence-module.md'))).toBe(true);
 
       // Verify separate legacy folders
-      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/default/legacy/notion'))).toBe(true);
-      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/default/legacy/confluence'))).toBe(true);
+      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/legacy/default/notion'))).toBe(true);
+      expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/legacy/default/confluence'))).toBe(true);
 
       // Verify import history has 2 entries
       const configManager = new ConfigManager(tmpDir);
@@ -317,7 +317,7 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
     await withTempDir(async (tmpDir) => {
       // Setup with only default project
       const specweaveRoot = path.join(tmpDir, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({

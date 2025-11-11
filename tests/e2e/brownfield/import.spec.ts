@@ -191,10 +191,10 @@ Next meeting: Friday.
     });
 
     // Step 3: Verify files copied to correct destinations
-    const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-    const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
-    const teamPath = path.join(specweaveRoot, 'docs/internal/projects/default/team');
-    const legacyPath = path.join(specweaveRoot, 'docs/internal/projects/default/legacy/notion');
+    const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+    const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
+    const teamPath = path.join(specweaveRoot, 'docs/internal/team/default');
+    const legacyPath = path.join(specweaveRoot, 'docs/internal/legacy/default/notion');
 
     // Check spec files
     expect(await fs.pathExists(path.join(specsPath, 'auth-feature.md'))).toBe(true);
@@ -231,7 +231,7 @@ Next meeting: Friday.
     // Verify migration report created (at base legacy folder, not source subfolder)
     const reportPath = path.join(
       specweaveRoot,
-      'docs/internal/projects/default/legacy/README.md'
+      'docs/internal/legacy/default/README.md'
     );
 
     expect(await fs.pathExists(reportPath)).toBe(true);
@@ -306,7 +306,7 @@ Next meeting: Friday.
     expect(previewResult).toContain('Modules');
 
     // Verify NO files were copied
-    const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
+    const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
     expect(await fs.pathExists(path.join(specsPath, 'auth-feature.md'))).toBe(false);
   });
 
@@ -330,9 +330,9 @@ Next meeting: Friday.
 
     // Verify folder structure preserved WITHIN classification folders
     // Files still go to specs/, modules/, team/, but preserve internal structure
-    const specsPath = path.join(specweaveRoot, 'docs/internal/projects/default/specs');
-    const modulesPath = path.join(specweaveRoot, 'docs/internal/projects/default/modules');
-    const teamPath = path.join(specweaveRoot, 'docs/internal/projects/default/team');
+    const specsPath = path.join(specweaveRoot, 'docs/internal/specs/default');
+    const modulesPath = path.join(specweaveRoot, 'docs/internal/modules/default');
+    const teamPath = path.join(specweaveRoot, 'docs/internal/team/default');
 
     // Original structure from test fixture: specs/auth-feature.md → specs/specs/auth-feature.md
     // (preserveStructure appends the relative path from sourceDir)

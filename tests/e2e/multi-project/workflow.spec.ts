@@ -65,10 +65,10 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
 
     // Create project directories
-    const webSpecsPath = path.join(specweaveRoot, 'docs/internal/projects/web-app/specs');
-    const webModulesPath = path.join(specweaveRoot, 'docs/internal/projects/web-app/modules');
-    const mobileSpecsPath = path.join(specweaveRoot, 'docs/internal/projects/mobile-app/specs');
-    const mobileModulesPath = path.join(specweaveRoot, 'docs/internal/projects/mobile-app/modules');
+    const webSpecsPath = path.join(specweaveRoot, 'docs/internal/specs/web-app');
+    const webModulesPath = path.join(specweaveRoot, 'docs/internal/modules/web-app');
+    const mobileSpecsPath = path.join(specweaveRoot, 'docs/internal/specs/mobile-app');
+    const mobileModulesPath = path.join(specweaveRoot, 'docs/internal/modules/mobile-app');
 
     await fs.ensureDir(webSpecsPath);
     await fs.ensureDir(webModulesPath);
@@ -116,33 +116,33 @@ test.describe('Multi-Project Workflow (E2E)', () => {
 
     // Create all 4 project directories
     for (const project of config.multiProject.projects) {
-      const specsPath = path.join(specweaveRoot, `docs/internal/projects/${project.id}/specs`);
+      const specsPath = path.join(specweaveRoot, `docs/internal/specs/${project.id}`);
       await fs.ensureDir(specsPath);
     }
 
     // Add spec files for each project
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/client-ecommerce/specs/checkout.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/client-ecommerce/checkout.md'),
       '# Checkout Flow'
     );
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/client-saas/specs/analytics.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/client-saas/analytics.md'),
       '# Analytics Dashboard'
     );
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/client-mobile/specs/push-notifications.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/client-mobile/push-notifications.md'),
       '# Push Notifications'
     );
     await fs.writeFile(
-      path.join(specweaveRoot, 'docs/internal/projects/internal-tools/specs/deployment.md'),
+      path.join(specweaveRoot, 'docs/internal/specs/internal-tools/deployment.md'),
       '# Deployment Automation'
     );
 
     // Verify all 4 projects exist independently
-    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/client-ecommerce/specs/checkout.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/client-saas/specs/analytics.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/client-mobile/specs/push-notifications.md'))).toBe(true);
-    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/projects/internal-tools/specs/deployment.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/specs/client-ecommerce/checkout.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/specs/client-saas/analytics.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/specs/client-mobile/push-notifications.md'))).toBe(true);
+    expect(await fs.pathExists(path.join(specweaveRoot, 'docs/internal/specs/internal-tools/deployment.md'))).toBe(true);
 
     // Verify config tracks all 4 projects
     const savedConfig = JSON.parse(await fs.readFile(configPath, 'utf-8'));
@@ -170,8 +170,8 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
 
     // Create directories
-    const frontendSpecs = path.join(specweaveRoot, 'docs/internal/projects/frontend/specs');
-    const backendSpecs = path.join(specweaveRoot, 'docs/internal/projects/backend/specs');
+    const frontendSpecs = path.join(specweaveRoot, 'docs/internal/specs/frontend');
+    const backendSpecs = path.join(specweaveRoot, 'docs/internal/specs/backend');
 
     await fs.ensureDir(frontendSpecs);
     await fs.ensureDir(backendSpecs);
@@ -267,8 +267,8 @@ test.describe('Multi-Project Workflow (E2E)', () => {
     await fs.writeFile(configPath, JSON.stringify(config, null, 2));
 
     // Create legacy folders for each project
-    const webLegacy = path.join(specweaveRoot, 'docs/internal/projects/web-app/legacy/notion');
-    const mobileLegacy = path.join(specweaveRoot, 'docs/internal/projects/mobile-app/legacy/confluence');
+    const webLegacy = path.join(specweaveRoot, 'docs/internal/legacy/web-app/notion');
+    const mobileLegacy = path.join(specweaveRoot, 'docs/internal/legacy/mobile-app/confluence');
 
     await fs.ensureDir(webLegacy);
     await fs.ensureDir(mobileLegacy);
