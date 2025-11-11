@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.15.1] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+**Fixed: Plugin loading error in specweave-github**
+
+- Removed invalid `PostSlashCommand` hook event from `specweave-github` plugin
+- Claude Code only supports: PreToolUse, PostToolUse, Notification, UserPromptSubmit, SessionStart, SessionEnd, Stop, SubagentStop, PreCompact
+- The `post-increment-done.sh` hook will not run automatically until proper integration is implemented
+- **Impact**: Resolves plugin loading errors that prevented `specweave-github` from initializing correctly
+
+**Breaking Change**: The automatic GitHub Project sync on `/specweave:done` is temporarily disabled. Users can manually sync using `/specweave-github:sync-spec` if needed.
+
+---
+
 ## [0.14.0] - 2025-11-11
 
 ### ✨ **NEW FEATURE** - Ultra-Fast Status Line
