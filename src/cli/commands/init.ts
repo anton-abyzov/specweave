@@ -19,6 +19,11 @@ import { SupportedLanguage } from '../../core/i18n/types.js';
 
 const __dirname = getDirname(import.meta.url);
 
+// Import folder mapper for multi-project support
+import { getSpecsFoldersForProfile } from '../../core/sync/folder-mapper.js';
+import { readEnvFile, parseEnvFile } from '../../utils/env-file.js';
+import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
+
 interface InitOptions {
   template?: string;
   adapter?: string;  // 'claude', 'cursor', 'generic'
@@ -47,6 +52,130 @@ async function isSpecWeaveFrameworkRepo(targetDir: string): Promise<boolean> {
     return packageJson.name === 'specweave';
   } catch (error) {
     return false;
+  }
+}
+
+/**
+ * Create Multi-Project Folders based on Issue Tracker Configuration
+ *
+ * After issue tracker setup, this function:
+ * 1. Reads .env file to detect multi-project configuration (JIRA_PROJECTS, ADO_PROJECTS, etc.)
+ * 2. Reads config.json to get sync profiles
+ * 3. For each sync profile, creates project-specific folders
+ *
+ * Examples:
+ * - JIRA with JIRA_PROJECTS=FE,BE → Creates .specweave/docs/internal/projects/fe/ and /be/
+ * - ADO with ADO_PROJECTS=Frontend,Backend → Creates /frontend/ and /backend/
+ * - GitHub (single repo) → Creates /default/ folder
+ *
+ * @param targetDir - Project root directory
+ */
+async function createMultiProjectFolders(targetDir: string): Promise<void> {
+  const envPath = path.join(targetDir, '.env');
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+
+  // Skip if no .env or config.json
+  if (!fs.existsSync(envPath)) {
+    return; // No issue tracker configured
+  }
+
+  // Read and parse .env file
+  const envContent = readEnvFile(envPath);
+  const envVars = parseEnvFile(envContent);
+
+  // Detect multi-project configuration
+  const jiraProjects = envVars.JIRA_PROJECTS?.split(',').map((p: string) => p.trim()).filter(Boolean);
+  const adoProjects = envVars.ADO_PROJECTS?.split(',').map((p: string) => p.trim()).filter(Boolean);
+  const jiraStrategy = envVars.JIRA_STRATEGY;
+  const adoStrategy = envVars.ADO_STRATEGY;
+
+  // If no multi-project config, skip
+  if (!jiraProjects?.length && !adoProjects?.length) {
+    return;
+  }
+
+  // Create sync profile if not exists
+  let config: any = {};
+  if (fs.existsSync(configPath)) {
+    config = await fs.readJson(configPath);
+  }
+
+  // Initialize sync config if missing
+  if (!config.sync) {
+    config.sync = {
+      enabled: true,
+      profiles: {},
+      activeProfile: null,
+      settings: {
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      }
+    };
+  }
+
+  // Create JIRA sync profile from .env
+  if (jiraProjects?.length && jiraStrategy === 'project-per-team') {
+    const profileId = 'jira-default';
+
+    if (!config.sync.profiles[profileId]) {
+      const jiraProfile: SyncProfile = {
+        provider: 'jira',
+        displayName: 'Jira Default',
+        config: {
+          domain: envVars.JIRA_DOMAIN || '',
+          projects: jiraProjects // Multi-project support
+        } as JiraConfig,
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        },
+        rateLimits: {
+          maxItemsPerSync: 500,
+          warnThreshold: 100
+        }
+      };
+
+      config.sync.profiles[profileId] = jiraProfile;
+      config.sync.activeProfile = profileId;
+
+      // Save config
+      await fs.writeJson(configPath, config, { spaces: 2 });
+
+      console.log(chalk.blue('\n📁 Creating Multi-Project Folders'));
+      console.log(chalk.gray(`   Detected: ${jiraProjects.length} Jira projects (${jiraProjects.join(', ')})`));
+
+      // Create project-specific folders following v0.8.0+ architecture
+      // Structure: .specweave/docs/internal/projects/{project-id}/{specs,modules,team,architecture,legacy}
+      for (const projectKey of jiraProjects) {
+        const projectId = projectKey.toLowerCase(); // FE → fe, BE → be
+        const projectBasePath = path.join(targetDir, '.specweave', 'docs', 'internal', 'projects', projectId);
+
+        // Create full project structure
+        const projectSubfolders = [
+          path.join(projectBasePath, 'specs'),         // Living docs specs
+          path.join(projectBasePath, 'modules'),       // Module/component documentation
+          path.join(projectBasePath, 'team'),         // Team playbooks
+          path.join(projectBasePath, 'architecture'), // Project-specific ADRs
+          path.join(projectBasePath, 'legacy')        // Brownfield imports
+        ];
+
+        for (const subfolder of projectSubfolders) {
+          if (!fs.existsSync(subfolder)) {
+            fs.mkdirSync(subfolder, { recursive: true });
+          }
+        }
+
+        console.log(chalk.green(`   ✓ Created project: ${projectKey} → projects/${projectId}/`));
+      }
+
+      console.log('');
+    }
+  }
+
+  // ADO multi-project support (future)
+  if (adoProjects?.length && adoStrategy === 'project-per-team') {
+    // TODO: Implement ADO multi-project folder creation
+    // Similar logic to JIRA above
   }
 }
 
@@ -987,6 +1116,17 @@ export async function initCommand(
           console.error(chalk.red(`\n❌ Issue tracker setup error: ${error.message}`));
         }
         console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
+      }
+
+      // 10.6 Create Multi-Project Folders (JIRA/ADO/GitHub)
+      // After issue tracker setup, read .env and create project-specific folders
+      try {
+        await createMultiProjectFolders(targetDir);
+      } catch (error: any) {
+        // Non-critical - folders can be created manually later
+        if (process.env.DEBUG) {
+          console.error(chalk.yellow(`\n⚠️  Multi-project folder creation skipped: ${error.message}`));
+        }
       }
     }
 
