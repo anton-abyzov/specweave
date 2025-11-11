@@ -58,7 +58,7 @@ export class GitHubClientV2 {
   }> {
     // Check installation
     const versionCheck = await execFileNoThrow('gh', ['--version']);
-    if (versionCheck.status !== 0) {
+    if (versionCheck.exitCode !== 0) {
       return {
         installed: false,
         authenticated: false,
@@ -68,7 +68,7 @@ export class GitHubClientV2 {
 
     // Check authentication
     const authCheck = await execFileNoThrow('gh', ['auth', 'status']);
-    if (authCheck.status !== 0) {
+    if (authCheck.exitCode !== 0) {
       return {
         installed: true,
         authenticated: false,
@@ -89,7 +89,7 @@ export class GitHubClientV2 {
       'origin',
     ], { cwd });
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       return null;
     }
 
@@ -147,7 +147,7 @@ export class GitHubClientV2 {
 
     const result = await execFileNoThrow('gh', args);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
     }
 
@@ -167,7 +167,7 @@ export class GitHubClientV2 {
       `.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}`,
     ]);
 
-    if (result.status !== 0 || !result.stdout.trim()) {
+    if (result.exitCode !== 0 || !result.stdout.trim()) {
       return null;
     }
 
@@ -211,7 +211,7 @@ export class GitHubClientV2 {
     // Create issue (returns URL)
     const createResult = await execFileNoThrow('gh', args);
 
-    if (createResult.status !== 0) {
+    if (createResult.exitCode !== 0) {
       throw new Error(
         `Failed to create epic issue: ${createResult.stderr || createResult.stdout}`
       );
@@ -258,7 +258,7 @@ export class GitHubClientV2 {
       'number,title,body,state,url,labels,milestone',
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to get issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
@@ -286,7 +286,7 @@ export class GitHubClientV2 {
       newBody,
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to update issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
@@ -309,7 +309,7 @@ export class GitHubClientV2 {
       this.fullRepo,
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to close issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
@@ -330,7 +330,7 @@ export class GitHubClientV2 {
       comment,
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to add comment to issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
@@ -357,7 +357,7 @@ export class GitHubClientV2 {
 
     const result = await execFileNoThrow('gh', args);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to add labels to issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
@@ -391,7 +391,7 @@ export class GitHubClientV2 {
       '1000', // Max results
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to list issues: ${result.stderr || result.stdout}`
       );
@@ -477,7 +477,7 @@ export class GitHubClientV2 {
       '.rate | {remaining: .remaining, limit: .limit, reset: .reset}',
     ]);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       throw new Error(
         `Failed to check rate limit: ${result.stderr || result.stdout}`
       );

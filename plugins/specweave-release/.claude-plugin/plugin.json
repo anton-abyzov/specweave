@@ -1,0 +1,41 @@
+{
+  "name": "specweave-release",
+  "version": "1.0.0",
+  "description": "Comprehensive release management for single-repo, multi-repo, and monorepo architectures. Detects existing release strategies, aligns versions across repositories, manages Release Candidates (RC), and integrates with CI/CD workflows. Supports semantic versioning, coordinated releases, and brownfield strategy detection.",
+  "author": {
+    "name": "Anton Abyzov",
+    "url": "https://github.com/anton-abyzov"
+  },
+  "keywords": [
+    "release",
+    "versioning",
+    "semver",
+    "multi-repo",
+    "monorepo",
+    "release-candidate",
+    "rc",
+    "deployment",
+    "ci-cd",
+    "changelog",
+    "git-tags",
+    "npm-publish",
+    "version-alignment",
+    "coordinated-release",
+    "independent-release",
+    "brownfield-release"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anton-abyzov/specweave",
+    "directory": "plugins/specweave-release"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "specweave": ">=0.14.0"
+  },
+  "skills": "skills",
+  "agents": "agents",
+  "commands": "commands"
+}

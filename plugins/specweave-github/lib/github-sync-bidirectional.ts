@@ -117,7 +117,7 @@ async function fetchGitHubIssueState(
     'number,title,body,state,labels,assignees,milestone,updatedAt'
   ]);
 
-  if (issueResult.status !== 0) {
+  if (issueResult.exitCode !== 0) {
     throw new Error(`Failed to fetch issue: ${issueResult.stderr}`);
   }
 
@@ -132,7 +132,7 @@ async function fetchGitHubIssueState(
   ]);
 
   let comments: GitHubComment[] = [];
-  if (commentsResult.status === 0 && commentsResult.stdout.trim()) {
+  if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
     const commentLines = commentsResult.stdout.trim().split('\n');
     comments = commentLines.map(line => JSON.parse(line));
   }

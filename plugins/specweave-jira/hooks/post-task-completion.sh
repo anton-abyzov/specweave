@@ -140,6 +140,28 @@ node dist/commands/jira-sync.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" 
 echo "[$(date)] [JIRA] ✅ JIRA sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
+# SPEC COMMIT SYNC (NEW!)
+# ============================================================================
+
+echo "[$(date)] [JIRA] 🔗 Checking for spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+# Call TypeScript CLI to sync commits
+if command -v node &> /dev/null && [ -f "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" ]; then
+  echo "[$(date)] [JIRA] 🚀 Running spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+  node "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" \
+    --increment "$PROJECT_ROOT/.specweave/increments/$CURRENT_INCREMENT" \
+    --provider jira \
+    2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+      echo "[$(date)] [JIRA] ⚠️  Spec commit sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+    }
+
+  echo "[$(date)] [JIRA] ✅ Spec commit sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
+else
+  echo "[$(date)] [JIRA] ℹ️  Spec commit sync not available (node or script not found)" >> "$DEBUG_LOG" 2>/dev/null || true
+fi
+
+# ============================================================================
 # OUTPUT TO CLAUDE
 # ============================================================================
 

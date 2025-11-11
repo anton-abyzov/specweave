@@ -55,12 +55,14 @@ export interface UpdateWorkItemRequest {
 }
 export declare class AdoClientV2 {
     private organization;
-    private project;
-    private workItemType;
-    private areaPath?;
-    private iterationPath?;
+    private project?;
+    private projects?;
+    private workItemTypes?;
+    private areaPaths?;
     private baseUrl;
     private authHeader;
+    private customQuery?;
+    private isMultiProject;
     /**
      * Create ADO client from sync profile
      */
@@ -68,7 +70,7 @@ export declare class AdoClientV2 {
     /**
      * Create client from organization/project directly
      */
-    static fromProject(organization: string, project: string, personalAccessToken: string, workItemType?: string): AdoClientV2;
+    static fromProject(organization: string, project: string, personalAccessToken: string): AdoClientV2;
     /**
      * Test connection and authentication
      */
@@ -104,6 +106,14 @@ export declare class AdoClientV2 {
      * List work items within time range
      */
     listWorkItemsInTimeRange(timeRange: TimeRangePreset, customStart?: string, customEnd?: string): Promise<WorkItem[]>;
+    /**
+     * Query work items across multiple projects (multi-project mode)
+     */
+    private queryWorkItemsAcrossProjects;
+    /**
+     * Build WIQL query for a specific project
+     */
+    private buildProjectWIQL;
     /**
      * Calculate date range from preset
      */

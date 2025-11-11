@@ -215,6 +215,17 @@
         "name": "Anton Abyzov",
         "email": "anton@spec-weave.com"
       }
+    },
+    {
+      "name": "specweave-release",
+      "description": "Release management - version alignment, RC workflows, multi-repo coordination, semantic versioning",
+      "source": "./plugins/specweave-release",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton@spec-weave.com"
+      }
     }
   ]
 }
