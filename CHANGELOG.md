@@ -4,6 +4,84 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.0] - 2025-11-11
+
+### ✨ **NEW FEATURE** - Strict Increment Discipline Enforcement
+
+**Added: Active increment management with automatic validation**
+
+#### Core Changes
+
+- **ActiveIncrementManager**: New core class for managing active increment state
+  - Enforces 1-active-increment rule with hard validation
+  - Prevents starting new increments when one is already active
+  - Validates increment transitions (start → pause → resume → done)
+  - Thread-safe with file-based locking mechanism
+
+- **Enhanced MetadataManager**:
+  - Tracks active increment across the system
+  - Updates `active-increment.json` automatically
+  - Provides validation hooks for CLI commands
+
+- **User Prompt Submit Hook**:
+  - Pre-validates increment commands before execution
+  - Shows helpful error messages with clear next steps
+  - Prevents workflow violations early
+
+#### What This Means for Users
+
+✅ **Better Discipline**: Can't accidentally start multiple increments
+✅ **Clear Guidance**: System tells you exactly what to do when blocked
+✅ **Automatic Validation**: No manual checking needed
+✅ **Cleaner Workflow**: Focus on one increment at a time
+
+#### Technical Details
+
+**New Files**:
+- `src/core/increment/active-increment-manager.ts` - Core state management (348 lines)
+- `tests/unit/core/increment/active-increment-manager.test.ts` - Comprehensive unit tests
+- `tests/e2e/increment-discipline.spec.ts` - E2E validation tests
+
+**Enhanced Files**:
+- `src/core/increment/metadata-manager.ts` - Active increment tracking
+- `plugins/specweave/hooks/user-prompt-submit.sh` - Pre-command validation
+- `src/cli/commands/init.ts` - Initialization with active increment setup
+
+**State Management**:
+- `.specweave/state/active-increment.json` - Current active increment
+- `.specweave/state/status-line.json` - Real-time progress cache
+
+### 🧹 Cleanup & Refactoring
+
+**Increment Structure Cleanup**:
+- Moved all reports to proper `reports/` subfolders (increment discipline)
+- Removed test increments: `9999-github-sync-test`, `9999-status-line-test`
+- Cleaned up backlog items and figma enhancement analysis
+- Created completion summaries for increments 0017-0020
+
+**Status Line Improvements**:
+- Enhanced `update-status-line.sh` with better error handling
+- Improved cache invalidation logic
+- Better mtime-based freshness detection
+
+### 📚 Documentation
+
+- Updated increment lifecycle guide with strict discipline rules
+- Enhanced CLAUDE.md with latest increment conventions
+- Added comprehensive examples of proper increment structure
+
+### 🎯 Impact
+
+This release significantly improves the increment workflow by:
+1. Preventing common mistakes (multiple active increments)
+2. Providing clear guidance when blocked
+3. Enforcing best practices automatically
+4. Maintaining cleaner project structure
+
+**Upgrade Notes**: Existing projects will automatically adopt the new discipline on next `specweave init` or command execution.
+
+---
+
 ## [0.15.1] - 2025-11-11
 
 ### 🐛 Bug Fixes
