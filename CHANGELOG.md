@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.3] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### E2E Test Suite Critical Fixes
+- **Actually includes the e2e test fixes** (v0.16.2 was released without them)
+  - Previous release (v0.16.2) was tagged before the test fix commits were merged
+  - This release includes commits b93b785 and 20da859 with all test fixes
+  - All 4 failing smoke tests now pass
+  - Reduced skipped tests from 18 to 10 (44% reduction)
+  - CI/CD pipeline now fully functional
+
+### 📝 Notes
+- This is a corrective release to ensure all e2e test fixes are properly included
+- v0.16.2 was released prematurely without the test fixes due to workflow timing
+
+---
+
 ## [0.16.2] - 2025-11-11
 
 ### 🐛 Bug Fixes
