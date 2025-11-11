@@ -4,6 +4,56 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.4] - 2025-11-10
+
+### 🔧 **CRITICAL BUG FIX** - Plugin Loading
+
+**Fixed: All plugins failed to load due to invalid hooks path**
+
+#### The Problem
+
+All 4 SpecWeave plugins with hooks (specweave, specweave-github, specweave-jira, specweave-ado) failed to load with validation error:
+
+```
+Plugin has an invalid manifest file
+Validation errors: hooks: Invalid input: must start with "./"
+```
+
+**Impact**:
+- ❌ No SpecWeave skills, agents, or commands available
+- ❌ No slash commands working (`/specweave:increment`, etc.)
+- ❌ No hooks firing (living docs sync, task completion, etc.)
+- ❌ Framework completely non-functional
+
+#### The Fix
+
+Updated `hooks` field in plugin.json to use relative path with `./` prefix:
+
+```json
+// Before (❌ Invalid)
+"hooks": "hooks/hooks.json"
+
+// After (✅ Valid)
+"hooks": "./hooks/hooks.json"
+```
+
+**Files changed**:
+- `plugins/specweave/.claude-plugin/plugin.json`
+- `plugins/specweave-github/.claude-plugin/plugin.json`
+- `plugins/specweave-jira/.claude-plugin/plugin.json`
+- `plugins/specweave-ado/.claude-plugin/plugin.json`
+
+#### What This Means
+
+- ✅ All plugins now load correctly
+- ✅ Skills auto-activate as expected
+- ✅ Slash commands work (`/specweave:increment`, `/specweave:do`, etc.)
+- ✅ Hooks execute properly (living docs sync, task completion, etc.)
+
+**Reference**: [Claude Code Plugin Documentation](https://code.claude.com/docs/en/plugins)
+
+---
+
 ## [0.13.3] - 2025-11-10
 
 ### ✨ **ENHANCEMENTS** - Jira UX Improvements
