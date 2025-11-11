@@ -145,7 +145,7 @@ specweave-validate.md:name: specweave-validate
    ```bash
    # In SpecWeave repo directory
    /plugin marketplace add ./.claude-plugin
-   /plugin install specweave@specweave --force
+   /plugin install specweave --force
    ```
 
 2. **Restart Claude Code** (REQUIRED for command registration changes)

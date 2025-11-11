@@ -403,4 +403,4 @@ Sync Enabled: ✅
 
 **Status**: Ready to use
 **Version**: 0.1.0
-**Plugin**: specweave-ado@specweave
+**Plugin**: specweave-ado
