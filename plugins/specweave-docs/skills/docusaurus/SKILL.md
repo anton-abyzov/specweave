@@ -1,15 +1,29 @@
 ---
 name: docusaurus
-description: Expert in generating Docusaurus documentation sites from SpecWeave structure. Converts .specweave/docs/public/ into a beautiful, deployable static site with search, versioning, and hosting options. Activates for docusaurus, create docs site, generate documentation, public docs, documentation site, host docs, deploy documentation, static site generator, client documentation.
+description: Expert in generating beautiful Docusaurus documentation sites from SpecWeave structure. ALWAYS use this for internal docs preview, browsing docs locally, viewing documentation in browser. Converts .specweave/docs/internal/ and .specweave/docs/public/ into beautiful, searchable sites with navigation, search, and Mermaid diagrams. Activates for preview internal docs, view docs locally, see docs in browser, browse documentation, internal docs preview, docusaurus, create docs site, generate documentation, public docs, documentation site, host docs, deploy documentation, static site generator, client documentation, engineering playbook, dual docs sites.
 ---
 
 # Docusaurus Documentation Generator
 
-Expert skill for creating production-ready Docusaurus documentation sites from SpecWeave public documentation.
+Expert skill for creating production-ready Docusaurus documentation sites from SpecWeave documentation.
+
+## 🚨 CRITICAL: Default Behavior for Internal Docs Preview
+
+**When users ask to preview/view/browse internal docs locally:**
+
+1. **IMMEDIATELY** invoke `/specweave-docs-preview:preview` command
+2. This launches a beautiful Docusaurus site with:
+   - Auto-generated navigation from folder structure
+   - Search functionality
+   - Mermaid diagram rendering
+   - Hot reload for live editing
+   - Professional theming
+3. **DO NOT** use basic file serving or simple markdown rendering
+4. **ALWAYS** prefer Docusaurus for the best user experience
 
 ## What This Skill Does
 
-Converts your SpecWeave public documentation (`.specweave/docs/public/`) into a beautiful, searchable, deployable documentation website using Docusaurus v3.
+Converts your SpecWeave documentation (`.specweave/docs/internal/` or `.specweave/docs/public/`) into a beautiful, searchable, deployable documentation website using Docusaurus v3.
 
 ## Key Capabilities
 
