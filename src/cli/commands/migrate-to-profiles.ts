@@ -199,7 +199,7 @@ export async function migrateToProfiles(
 // Detection
 // ============================================================================
 
-async function detectOldConfiguration(
+export async function detectOldConfiguration(
   projectRoot: string
 ): Promise<OldConfiguration> {
   const envPath = path.join(projectRoot, '.env');
@@ -323,7 +323,7 @@ function parseEnv(content: string): Record<string, string> {
 // Profile Creation
 // ============================================================================
 
-function createGitHubProfile(config: { owner: string; repo: string }): SyncProfile {
+export function createGitHubProfile(config: { owner: string; repo: string }): SyncProfile {
   return {
     provider: 'github',
     displayName: `${config.owner}/${config.repo}`,
@@ -343,7 +343,7 @@ function createGitHubProfile(config: { owner: string; repo: string }): SyncProfi
   };
 }
 
-function createJiraProfile(config: {
+export function createJiraProfile(config: {
   domain: string;
   projectKey: string;
 }): SyncProfile {
@@ -366,7 +366,7 @@ function createJiraProfile(config: {
   };
 }
 
-function createAdoProfile(config: {
+export function createAdoProfile(config: {
   organization: string;
   project: string;
 }): SyncProfile {
@@ -393,7 +393,7 @@ function createAdoProfile(config: {
 // Backup & Cleanup
 // ============================================================================
 
-async function backupConfiguration(projectRoot: string): Promise<void> {
+export async function backupConfiguration(projectRoot: string): Promise<void> {
   const configPath = path.join(projectRoot, '.specweave', 'config.json');
   const backupPath = path.join(projectRoot, '.specweave', 'config.json.backup');
 
@@ -402,7 +402,7 @@ async function backupConfiguration(projectRoot: string): Promise<void> {
   }
 }
 
-async function cleanupOldConfig(projectRoot: string): Promise<void> {
+export async function cleanupOldConfig(projectRoot: string): Promise<void> {
   // Remove old provider-specific settings from config.json (if any existed)
   // For now, no cleanup needed since old config was in .env only
   // Keep .env variables for credentials (they're still needed)
@@ -426,7 +426,7 @@ export interface MigrationResult {
   errors: string[];
 }
 
-interface OldConfiguration {
+export interface OldConfiguration {
   detected: boolean;
   github?: {
     owner: string;
@@ -441,3 +441,6 @@ interface OldConfiguration {
     project: string;
   };
 }
+
+// Alias for tests
+export const cleanupOldConfiguration = cleanupOldConfig;
