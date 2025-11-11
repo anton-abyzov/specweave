@@ -5,7 +5,8 @@ increment: "0023-release-management-enhancements"
 type: "feature"
 priority: "P1"
 created: "2025-11-11"
-status: "planning"
+status: "completed"
+completed: "2025-11-11"
 ---
 
 # Increment 0023: Release Management Plugin Enhancements
