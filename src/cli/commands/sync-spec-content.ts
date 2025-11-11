@@ -96,7 +96,8 @@ async function syncGitHub(specPath: string, options: any) {
       created: 'Created',
       updated: 'Updated',
       'no-change': 'No changes',
-    }[result.action];
+      error: 'Error',
+    }[result.action] || 'Unknown';
 
     console.log(`✅ ${actionVerb} GitHub issue`);
     if (result.externalUrl) {
@@ -135,7 +136,8 @@ async function syncJira(specPath: string, options: any) {
       created: 'Created',
       updated: 'Updated',
       'no-change': 'No changes',
-    }[result.action];
+      error: 'Error',
+    }[result.action] || 'Unknown';
 
     console.log(`✅ ${actionVerb} JIRA epic`);
     if (result.externalUrl) {
@@ -186,7 +188,8 @@ async function syncAdo(specPath: string, options: any) {
       created: 'Created',
       updated: 'Updated',
       'no-change': 'No changes',
-    }[result.action];
+      error: 'Error',
+    }[result.action] || 'Unknown';
 
     console.log(`✅ ${actionVerb} ADO feature`);
     if (result.externalUrl) {
