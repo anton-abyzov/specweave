@@ -13,7 +13,7 @@
       "external_tracker_sync": true
     },
     "post_increment_planning": {
-      "auto_create_github_issue": true
+      "auto_create_github_issue": false
     },
     "post_increment_done": {
       "sync_to_github_project": true,

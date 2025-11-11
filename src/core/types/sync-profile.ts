@@ -12,239 +12,177 @@
 export type SyncProvider = 'github' | 'jira' | 'ado';
 
 /**
- * Sync Strategy (v0.10.0+)
+ * Sync Strategy (v0.13.0+ - Simplified Two-Tier Architecture)
  *
  * Determines how work is organized and synced:
- * - simple: One container (project/repo), no filtering (default, backward compatible)
- * - filtered: Multiple containers + sub-organizations (boards/etc) + filters (NEW)
- * - custom: Raw query (JQL/GraphQL/WIQL) for power users (NEW)
+ * - intelligent: Auto-maps user stories to projects based on content analysis (default, 90% of users)
+ *                Supports single project (backward compatible) OR multiple projects (auto-classify)
+ * - custom: Raw query (JQL/GraphQL/WIQL) for power users (advanced, 10% of users)
+ *
+ * REMOVED in v0.13.0:
+ * - filtered: Too complex (containers, sub-organizations, filters) → Use intelligent instead
+ * - simple: Now an alias for 'intelligent' (backward compatibility)
  */
-export type SyncStrategy = 'simple' | 'filtered' | 'custom';
-
-// Jira team organization strategies (DEPRECATED: use SyncStrategy instead)
-export type JiraStrategy = 'project-per-team' | 'shared-project-with-components';
-
-// ============================================================================
-// Hierarchical Sync Types (v0.10.0+)
-// ============================================================================
+export type SyncStrategy = 'intelligent' | 'custom';
 
 /**
- * Container filters (provider-specific)
- *
- * Filters applied to a specific container (project/repo) to narrow down synced items.
+ * Legacy sync strategy (backward compatibility)
+ * 'simple' maps to 'intelligent' automatically
  */
-export interface SyncContainerFilters {
-  // Common filters (all providers)
-  /** Include items with these labels */
-  includeLabels?: string[];
+export type LegacySyncStrategy = 'simple' | 'intelligent' | 'custom';
 
-  /** Exclude items with these labels */
-  excludeLabels?: string[];
-
-  /** Filter by assignees (email or ID) */
-  assignees?: string[];
-
-  /** Filter by status categories */
-  statusCategories?: string[];
-
-  // Jira-specific
-  /** Filter by components */
-  components?: string[];
-
-  /** Filter by sprints */
-  sprints?: string[];
-
-  /** Filter by issue types (Epic, Story, Task, Bug) */
-  issueTypes?: string[];
-
-  // GitHub-specific
-  /** Filter by milestones */
-  milestones?: string[];
-
-  /** Filter by states */
-  states?: ('open' | 'closed')[];
-
-  // ADO-specific
-  /** Filter by area paths */
-  areaPaths?: string[];
-
-  /** Filter by iteration paths */
-  iterationPaths?: string[];
-
-  /** Filter by work item types (Epic, Feature, User Story, Bug) */
-  workItemTypes?: string[];
-}
-
-/**
- * Container definition (project, repo, etc.)
- *
- * Represents a single container (Jira project, GitHub repo, ADO project) with optional sub-organizations.
- */
-export interface SyncContainer {
-  /**
-   * Container ID
-   * - Jira: Project key (e.g., "PROJECT-A")
-   * - GitHub: Repository (e.g., "owner/repo-name")
-   * - ADO: Project name (e.g., "Platform")
-   */
-  id: string;
-
-  /**
-   * Sub-organizations within the container
-   * - Jira: Board names (e.g., ["Team Alpha Board", "Team Beta Board"])
-   * - GitHub: Project board titles (e.g., ["Frontend Board", "UI Components"])
-   * - ADO: Team board names (e.g., ["API Team Board"])
-   */
-  subOrganizations?: string[];
-
-  /**
-   * Filters applied to this container
-   */
-  filters?: SyncContainerFilters;
-}
+// ============================================================================
+// REMOVED in v0.13.0: SyncContainerFilters and SyncContainer
+// ============================================================================
+//
+// The "filtered" strategy with containers, sub-organizations, and complex filters
+// has been removed in favor of the simpler two-tier architecture:
+// - Intelligent: Auto-mapping to multiple projects (simple list: ["FE", "BE", "MOBILE"])
+// - Custom: Raw queries for power users (JQL/GraphQL/WIQL)
+//
+// For users who need complex filtering, use the "custom" strategy with raw queries.
+// This provides the same flexibility without the complex configuration overhead.
+//
+// Migration guide: .specweave/increments/0020-multi-project-intelligent-sync/MIGRATION-GUIDE.md
+// ============================================================================
 
 // ============================================================================
 // Provider-Specific Configuration Types
 // ============================================================================
 
 /**
- * GitHub Configuration (Extended for Hierarchical Sync)
+ * GitHub Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
  *
- * - Simple strategy: owner + repo (backward compatible)
- * - Filtered strategy: containers array with multiple repos
- * - Custom strategy: customQuery (GitHub search syntax)
+ * Supports four patterns:
+ * 1. Single repo (backward compatible): owner + repo
+ * 2. Multiple repos (intelligent mapping): owner + repos[]
+ * 3. Master + nested repos (epic-level tracking): owner + masterRepo + repos[]
+ * 4. Custom query (power users): customQuery (GitHub search syntax)
+ *
+ * REMOVED in v0.13.0:
+ * - containers: Too complex → Use repos[] instead
  */
 export interface GitHubConfig {
-  // Simple strategy (backward compatible)
+  // Pattern 1 & 2 & 3: Owner (required for all patterns except custom)
   owner?: string;
+
+  // Pattern 1: Single repo (backward compatible - intelligent with 1 repo)
   repo?: string;
 
-  // Filtered strategy (v0.10.0+)
-  containers?: SyncContainer[];
+  // Pattern 2: Multiple repos (intelligent mapping)
+  // User stories auto-classified and synced to respective repos
+  repos?: string[];  // ['frontend-web', 'backend-api', 'mobile-app']
 
-  // Custom strategy (v0.10.0+)
-  customQuery?: string;
+  // Pattern 3: Master + nested repos (advanced)
+  // Master repo contains high-level epics, nested repos contain detailed tasks
+  masterRepo?: string;  // 'master-project' (epics)
+  // repos[] used for nested repos when masterRepo is set
+
+  // Settings for Pattern 3
+  masterRepoLevel?: 'epic';  // Master repo level (always epic)
+  nestedRepoLevel?: 'story-task';  // Nested repo level (stories and tasks)
+  crossLinking?: boolean;  // Enable epic → issue cross-links
+
+  // Intelligent mapping settings (Pattern 2 & 3)
+  confidenceThreshold?: number;  // Minimum confidence for project classification (default: 0.3)
+
+  // Pattern 4: Custom query (power users)
+  customQuery?: string;  // GitHub search syntax
 }
 
 /**
- * Jira Configuration (Extended for Hierarchical Sync)
+ * Jira Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
  *
- * Supports:
- * - Simple strategy: Single project (projectKey) - backward compatible
- * - Filtered strategy: Multiple projects + boards (containers) - NEW in v0.10.0
- * - Custom strategy: Raw JQL query (customQuery) - NEW in v0.10.0
+ * Supports three patterns:
+ * 1. Single project (backward compatible): domain + projectKey
+ * 2. Multiple projects (intelligent mapping): domain + projects[]
+ * 3. Custom query (power users): domain + customQuery (raw JQL)
+ *
+ * REMOVED in v0.13.0:
+ * - strategy (JiraStrategy): Deprecated → Use intelligent mapping instead
+ * - components: Too granular → Use projects[] or customQuery
+ * - containers: Too complex → Use projects[] instead
  *
  * Backward Compatibility:
- * - Old config: { domain, projectKey } - still works (simple strategy)
- * - Old config: { domain, strategy, projects/components } - still works (deprecated, use filtered)
- * - New config: { domain, containers: [{id, subOrganizations, filters}] } - hierarchical
+ * - Old config: { domain, projectKey } - still works (intelligent with 1 project)
+ * - Old config: { domain, projects } - still works (intelligent with N projects)
  */
 export interface JiraConfig {
   domain: string;
-  issueType?: 'Epic' | 'Story' | 'Task';
 
-  // === Backward Compatible Fields (DEPRECATED in v0.10.0) ===
-
-  /**
-   * @deprecated Use SyncStrategy instead (simple/filtered/custom)
-   * Old field: How teams are organized in Jira
-   */
-  strategy?: JiraStrategy;
-
-  /**
-   * @deprecated Use containers array instead
-   * Strategy 1: Multiple projects (one per team)
-   */
-  projects?: string[];
-
-  /**
-   * @deprecated Use containers array instead
-   * Strategy 2: Single project key OR shared project
-   */
+  // Pattern 1: Single project (backward compatible - intelligent with 1 project)
   projectKey?: string;
 
-  /**
-   * @deprecated Use filters in SyncContainer instead
-   * Components for filtering
-   */
-  components?: string[];
+  // Pattern 2: Multiple projects (intelligent mapping)
+  // User stories auto-classified and synced to respective projects
+  projects?: string[];  // ['FE', 'BE', 'MOBILE']
 
-  // === NEW: Hierarchical Sync (v0.10.0+) ===
+  // Settings for intelligent mapping
+  intelligentMapping?: boolean;  // Default: true (auto-classify user stories)
+  autoCreateEpics?: boolean;  // Default: true (create epic per project)
+  confidenceThreshold?: number;  // Default: 0.3 (30%), range: 0.0-1.0
 
-  /**
-   * Filtered strategy: Multiple projects + boards
-   * Example: [
-   *   {id: "PROJECT-A", subOrganizations: ["Board 1", "Board 2"], filters: {...}},
-   *   {id: "PROJECT-B", subOrganizations: ["Board 3"]}
-   * ]
-   */
-  containers?: SyncContainer[];
+  // Item type mapping (optional)
+  itemTypeMapping?: {
+    epic: string;    // Default: 'Epic'
+    story: string;   // Default: 'Story'
+    task: string;    // Default: 'Task'
+    subtask: string; // Default: 'Sub-task'
+  };
 
-  /**
-   * Custom strategy: Raw JQL query
-   * Example: "project IN (PROJECT-A, PROJECT-B) AND labels IN (feature)"
-   */
-  customQuery?: string;
+  // Pattern 3: Custom query (power users)
+  customQuery?: string;  // Raw JQL: "project IN (FE, BE) AND labels IN (sprint-42)"
 }
 
 /**
- * Azure DevOps Configuration (Extended for Hierarchical Sync)
+ * Azure DevOps Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
  *
- * Supports:
- * - Simple strategy: Single project (project) - backward compatible
- * - Filtered strategy: Multiple projects + area paths (containers) - NEW in v0.10.0
- * - Custom strategy: Raw WIQL query (customQuery) - NEW in v0.10.0
+ * Supports four patterns:
+ * 1. Single project (backward compatible): organization + project
+ * 2. Multiple projects (intelligent mapping): organization + projects[]
+ * 3. Single project + area paths (advanced): organization + project + areaPaths[]
+ * 4. Custom query (power users): organization + customQuery (raw WIQL)
+ *
+ * REMOVED in v0.13.0:
+ * - teams: Too granular → Use projects[] or areaPaths[]
+ * - areaPaths (Record<string, string>): Changed to string[] for simpler config
+ * - iterationPath: Use customQuery for complex filtering
+ * - containers: Too complex → Use projects[] or areaPaths[] instead
  *
  * Backward Compatibility:
- * - Old config: { organization, project, teams, areaPaths } - still works
- * - New config: { organization, containers: [{id, filters: {areaPaths}}] } - hierarchical
+ * - Old config: { organization, project } - still works (intelligent with 1 project)
+ * - Old config: { organization, project, teams } - deprecated, use areaPaths[] instead
  */
 export interface AdoConfig {
   organization: string;
 
-  // === Backward Compatible Fields (DEPRECATED in v0.10.0) ===
-
-  /**
-   * @deprecated Use containers array instead
-   * Single project name
-   */
+  // Pattern 1: Single project (backward compatible - intelligent with 1 project)
+  // Pattern 3: Single project + area paths (also uses this)
   project?: string;
 
-  /**
-   * @deprecated Use filters in SyncContainer instead
-   * Teams within the project
-   */
-  teams?: string[];
+  // Pattern 2: Multiple projects (intelligent mapping)
+  // User stories auto-classified and synced to respective projects
+  projects?: string[];  // ['FE-Project', 'BE-Project', 'MOBILE-Project']
 
-  /**
-   * @deprecated Use filters in SyncContainer instead
-   * Area paths per team
-   */
-  areaPaths?: Record<string, string>;
+  // Pattern 3: Area paths (advanced - single project with team-based area paths)
+  // Used when project is set (not projects[])
+  areaPaths?: string[];  // ['FE', 'BE', 'MOBILE']
 
-  /**
-   * @deprecated Use filters in SyncContainer instead
-   */
-  iterationPath?: string;
+  // Settings for intelligent mapping
+  intelligentMapping?: boolean;  // Default: true (auto-classify user stories)
+  autoCreateEpics?: boolean;  // Default: true (create epic per project)
+  confidenceThreshold?: number;  // Default: 0.3 (30%), range: 0.0-1.0
 
-  workItemType?: 'Epic' | 'Feature' | 'User Story';
+  // Work item type mapping (optional)
+  workItemTypes?: {
+    epic: string;    // Default: 'Epic'
+    feature: string; // Default: 'Feature'
+    story: string;   // Default: 'User Story'
+    task: string;    // Default: 'Task'
+  };
 
-  // === NEW: Hierarchical Sync (v0.10.0+) ===
-
-  /**
-   * Filtered strategy: Multiple projects + area paths
-   * Example: [
-   *   {id: "Platform", filters: {areaPaths: ["Platform\\Core"], workItemTypes: ["User Story"]}},
-   *   {id: "Services", filters: {areaPaths: ["Services\\API"]}}
-   * ]
-   */
-  containers?: SyncContainer[];
-
-  /**
-   * Custom strategy: Raw WIQL query
-   * Example: "SELECT * FROM WorkItems WHERE [System.TeamProject] = 'Platform' AND [System.AreaPath] UNDER 'Platform\\Core'"
-   */
-  customQuery?: string;
+  // Pattern 4: Custom query (power users)
+  customQuery?: string;  // Raw WIQL query
 }
 
 export type ProviderConfig = GitHubConfig | JiraConfig | AdoConfig;
@@ -524,23 +462,20 @@ export interface ProjectDetectionResult {
 }
 
 // ============================================================================
-// Type Guard Functions (v0.10.0+)
+// Type Guard Functions (v0.13.0+ - Simplified)
 // ============================================================================
 
 /**
- * Check if profile uses simple strategy (one container, backward compatible)
+ * Check if profile uses intelligent strategy (auto-mapping, default)
+ *
+ * Intelligent strategy supports:
+ * - Single project/repo (backward compatible)
+ * - Multiple projects/repos (auto-classification)
  */
-export function isSimpleStrategy(profile: SyncProfile): boolean {
-  // If strategy not specified, default to simple (backward compatibility)
+export function isIntelligentStrategy(profile: SyncProfile): boolean {
+  // If strategy not specified, default to intelligent (backward compatibility)
   if (!profile.strategy) return true;
-  return profile.strategy === 'simple';
-}
-
-/**
- * Check if profile uses filtered strategy (multiple containers + boards)
- */
-export function isFilteredStrategy(profile: SyncProfile): boolean {
-  return profile.strategy === 'filtered';
+  return profile.strategy === 'intelligent';
 }
 
 /**
@@ -551,29 +486,60 @@ export function isCustomStrategy(profile: SyncProfile): boolean {
 }
 
 /**
- * Check if config has hierarchical containers (Jira)
+ * Check if GitHub config uses multi-repo pattern
  */
-export function hasJiraContainers(config: JiraConfig): boolean {
-  return !!(config.containers && config.containers.length > 0);
+export function hasMultipleGitHubRepos(config: GitHubConfig): boolean {
+  return !!(config.repos && config.repos.length > 1);
 }
 
 /**
- * Check if config has hierarchical containers (GitHub)
+ * Check if GitHub config uses master+nested repos pattern
  */
-export function hasGitHubContainers(config: GitHubConfig): boolean {
-  return !!(config.containers && config.containers.length > 0);
+export function hasGitHubMasterNested(config: GitHubConfig): boolean {
+  return !!(config.masterRepo && config.repos && config.repos.length > 0);
 }
 
 /**
- * Check if config has hierarchical containers (ADO)
+ * Check if Jira config uses multi-project pattern
  */
-export function hasAdoContainers(config: AdoConfig): boolean {
-  return !!(config.containers && config.containers.length > 0);
+export function hasMultipleJiraProjects(config: JiraConfig): boolean {
+  return !!(config.projects && config.projects.length > 1);
 }
 
 /**
- * Get effective strategy (defaults to 'simple' if not specified)
+ * Check if ADO config uses multi-project pattern
+ */
+export function hasMultipleAdoProjects(config: AdoConfig): boolean {
+  return !!(config.projects && config.projects.length > 1);
+}
+
+/**
+ * Check if ADO config uses area path pattern (single project with area paths)
+ */
+export function hasAdoAreaPaths(config: AdoConfig): boolean {
+  return !!(config.project && config.areaPaths && config.areaPaths.length > 0);
+}
+
+/**
+ * Get effective strategy (defaults to 'intelligent' if not specified)
+ *
+ * Backward compatibility: 'simple' is treated as 'intelligent'
  */
 export function getEffectiveStrategy(profile: SyncProfile): SyncStrategy {
-  return profile.strategy || 'simple';
+  const strategy = profile.strategy as LegacySyncStrategy;
+
+  // Backward compatibility: 'simple' → 'intelligent'
+  if (strategy === 'simple' || !strategy) {
+    return 'intelligent';
+  }
+
+  return strategy as SyncStrategy;
+}
+
+/**
+ * DEPRECATED: Use isIntelligentStrategy() instead
+ * Kept for backward compatibility only
+ */
+export function isSimpleStrategy(profile: SyncProfile): boolean {
+  return isIntelligentStrategy(profile);
 }

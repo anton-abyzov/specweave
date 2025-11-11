@@ -31,41 +31,54 @@ export function getSpecsFoldersForProfile(profile: SyncProfile): string[] {
   if (profile.provider === 'ado') {
     const config = profile.config as AdoConfig;
 
-    if (config.teams && config.teams.length > 0) {
-      // Multiple teams → multiple folders
-      for (const team of config.teams) {
-        const folderName = slugify(team); // "Platform Engineering Team" → "platform-engineering-team"
+    // v0.13.0+ architecture
+    if (config.projects && config.projects.length > 0) {
+      // Multiple projects → multiple folders
+      for (const project of config.projects) {
+        const folderName = slugify(project);
+        folders.push(`.specweave/docs/internal/specs/${folderName}`);
+      }
+    } else if (config.areaPaths && config.areaPaths.length > 0) {
+      // Single project + area paths → multiple folders
+      for (const areaPath of config.areaPaths) {
+        const folderName = slugify(areaPath);
         folders.push(`.specweave/docs/internal/specs/${folderName}`);
       }
     } else {
-      // Single project, no teams specified → default folder
-      const folderName = slugify(config.project);
+      // Single project → default folder
+      const folderName = slugify(config.project || 'default');
       folders.push(`.specweave/docs/internal/specs/${folderName}`);
     }
   } else if (profile.provider === 'jira') {
     const config = profile.config as JiraConfig;
 
-    if (config.strategy === 'project-per-team') {
+    // v0.13.0+ architecture
+    if (config.projects && config.projects.length > 0) {
       // Multiple projects → multiple folders
-      for (const projectKey of config.projects || []) {
-        const folderName = slugify(projectKey); // "FRONTEND" → "frontend"
-        folders.push(`.specweave/docs/internal/specs/${folderName}`);
-      }
-    } else if (config.strategy === 'shared-project-with-components') {
-      // Components → multiple folders
-      for (const component of config.components || []) {
-        const folderName = slugify(component); // "Frontend" → "frontend"
+      for (const projectKey of config.projects) {
+        const folderName = slugify(projectKey);
         folders.push(`.specweave/docs/internal/specs/${folderName}`);
       }
     } else {
-      // Fallback: single project → single folder
+      // Single project → single folder
       const folderName = slugify(config.projectKey || 'default');
       folders.push(`.specweave/docs/internal/specs/${folderName}`);
     }
   } else if (profile.provider === 'github') {
     const config = profile.config as GitHubConfig;
-    const folderName = slugify(config.repo); // "specweave" → "specweave"
-    folders.push(`.specweave/docs/internal/specs/${folderName}`);
+
+    // v0.13.0+ architecture
+    if (config.repos && config.repos.length > 0) {
+      // Multiple repos → multiple folders
+      for (const repo of config.repos) {
+        const folderName = slugify(repo);
+        folders.push(`.specweave/docs/internal/specs/${folderName}`);
+      }
+    } else {
+      // Single repo → single folder
+      const folderName = slugify(config.repo || 'default');
+      folders.push(`.specweave/docs/internal/specs/${folderName}`);
+    }
   }
 
   return folders;
@@ -159,32 +172,59 @@ export function getTeamFromFolder(
 ): string | null {
   if (profile.provider === 'ado') {
     const config = profile.config as AdoConfig;
-    const teams = config.teams || [];
 
-    for (const team of teams) {
-      if (slugify(team) === folderName) {
-        return team;
+    // v0.13.0+: Check projects[]
+    const projects = config.projects || [];
+    for (const project of projects) {
+      if (slugify(project) === folderName) {
+        return project;
+      }
+    }
+
+    // v0.13.0+: Check areaPaths[]
+    const areaPaths = config.areaPaths || [];
+    for (const areaPath of areaPaths) {
+      if (slugify(areaPath) === folderName) {
+        return areaPath;
       }
     }
   } else if (profile.provider === 'jira') {
     const config = profile.config as JiraConfig;
 
-    if (config.strategy === 'project-per-team') {
-      const projects = config.projects || [];
-      for (const projectKey of projects) {
-        if (slugify(projectKey) === folderName) {
-          return projectKey;
-        }
+    // v0.13.0+: Check projects[]
+    const projects = config.projects || [];
+    for (const projectKey of projects) {
+      if (slugify(projectKey) === folderName) {
+        return projectKey;
       }
-    } else if (config.strategy === 'shared-project-with-components') {
-      const components = config.components || [];
-      for (const component of components) {
-        if (slugify(component) === folderName) {
-          return component;
-        }
+    }
+
+    // Fallback to projectKey
+    if (config.projectKey && slugify(config.projectKey) === folderName) {
+      return config.projectKey;
+    }
+  } else if (profile.provider === 'github') {
+    const config = profile.config as GitHubConfig;
+
+    // v0.13.0+: Check repos[]
+    const repos = config.repos || [];
+    for (const repo of repos) {
+      if (slugify(repo) === folderName) {
+        return repo;
       }
+    }
+
+    // Fallback to single repo
+    if (config.repo && slugify(config.repo) === folderName) {
+      return config.repo;
     }
   }
 
   return null;
 }
+
+// NOTE: The following was removed in v0.13.0+ migration:
+// - config.teams (ADO): Use projects[] or areaPaths[] instead
+// - config.strategy (Jira): Removed, use intelligent mapping
+// - config.components (Jira): Use projects[] instead
+// Please update any code that still references these fields.

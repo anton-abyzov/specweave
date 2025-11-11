@@ -17,6 +17,31 @@ class AdoMultiProjectSync {
     });
   }
   /**
+   * Pre-flight validation: Verify all ADO projects exist
+   *
+   * @throws Error if any projects are missing
+   */
+  async validateProjects() {
+    const projectsToValidate = [];
+    if (this.config.projects) {
+      projectsToValidate.push(...this.config.projects);
+    } else if (this.config.project) {
+      projectsToValidate.push(this.config.project);
+    }
+    if (projectsToValidate.length === 0) {
+      throw new Error("No ADO projects configured for validation");
+    }
+    const missing = await validateAdoProjects(this.config, projectsToValidate);
+    if (missing.length > 0) {
+      throw new Error(
+        `\u274C Pre-flight check failed: Missing Azure DevOps projects:
+` + missing.map((p) => `  - ${p} (${this.config.organization})`).join("\n") + `
+
+Please verify project names and access permissions.`
+      );
+    }
+  }
+  /**
    * Sync spec to ADO projects with intelligent mapping
    *
    * @param specPath Path to spec file
@@ -24,6 +49,7 @@ class AdoMultiProjectSync {
    */
   async syncSpec(specPath) {
     const results = [];
+    await this.validateProjects();
     const parsedSpec = await parseSpecFile(specPath);
     const isAreaPathBased = !!this.config.project && !!this.config.areaPaths;
     if (isAreaPathBased) {
@@ -56,9 +82,11 @@ class AdoMultiProjectSync {
     const projectStories = /* @__PURE__ */ new Map();
     for (const userStory of parsedSpec.userStories) {
       if (this.config.intelligentMapping !== false) {
-        const mappings = mapUserStoryToProjects(userStory);
-        if (mappings.length > 0 && mappings[0].confidence >= 0.3) {
-          const primary = mappings[0];
+        const mapperConfig = {
+          confidenceThreshold: this.config.confidenceThreshold
+        };
+        const primary = getPrimaryProject(userStory, void 0, mapperConfig);
+        if (primary) {
           const projectName = this.findProjectForId(primary.projectId);
           if (projectName) {
             const existing = projectStories.get(projectName) || [];
@@ -66,7 +94,9 @@ class AdoMultiProjectSync {
             projectStories.set(projectName, existing);
           }
         } else {
-          console.warn(`\u26A0\uFE0F  Low confidence for ${userStory.id} (${(mappings[0]?.confidence || 0) * 100}%) - assigning to ${this.config.projects[0]}`);
+          const mappings = mapUserStoryToProjects(userStory);
+          const threshold = this.config.confidenceThreshold ?? 0.3;
+          console.warn(`\u26A0\uFE0F  Low confidence for ${userStory.id} (${(mappings[0]?.confidence || 0) * 100}% < ${threshold * 100}% threshold) - assigning to ${this.config.projects[0]}`);
           const fallback = this.config.projects[0];
           const existing = projectStories.get(fallback) || [];
           existing.push({ story: userStory, confidence: mappings[0]?.confidence || 0 });
@@ -105,8 +135,11 @@ class AdoMultiProjectSync {
     const epicResult = await this.createEpicInRootArea(parsedSpec);
     results.push(epicResult);
     const areaPathStories = /* @__PURE__ */ new Map();
+    const mapperConfig = {
+      confidenceThreshold: this.config.confidenceThreshold
+    };
     for (const userStory of parsedSpec.userStories) {
-      const primaryProject = getPrimaryProject(userStory);
+      const primaryProject = getPrimaryProject(userStory, void 0, mapperConfig);
       if (primaryProject) {
         const areaPath = this.findAreaPathForProjectId(primaryProject.projectId);
         if (areaPath) {
@@ -133,7 +166,7 @@ class AdoMultiProjectSync {
 
 <strong>Status</strong>: ${parsedSpec.metadata.status}<br/>
 <strong>Priority</strong>: ${parsedSpec.metadata.priority}<br/>
-<strong>Estimated Effort</strong>: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+<strong>Estimated Effort</strong>: ${parsedSpec.metadata.estimatedEffort || "TBD"}
 
 <h3>Executive Summary</h3>
 
@@ -172,7 +205,7 @@ User stories will be added as child work items.
 
 <strong>Status</strong>: ${parsedSpec.metadata.status}<br/>
 <strong>Priority</strong>: ${parsedSpec.metadata.priority}<br/>
-<strong>Estimated Effort</strong>: ${parsedSpec.metadata.estimatedEffort || parsedSpec.metadata.estimated_effort}
+<strong>Estimated Effort</strong>: ${parsedSpec.metadata.estimatedEffort || "TBD"}
 
 <h3>Executive Summary</h3>
 
