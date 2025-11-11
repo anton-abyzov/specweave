@@ -33,6 +33,8 @@ test.describe.serial('Azure DevOps Sync E2E', () => {
 
   test.beforeAll(async () => {
     if (skipIfNoAdo) {
+      // Skip all ADO tests when environment variables are not configured
+      // This is expected behavior - ADO tests require Azure DevOps credentials
       test.skip();
       return;
     }
@@ -264,8 +266,9 @@ test.describe('ADO Sync - Rate Limiting', () => {
   test.skip('should handle rate limiting gracefully', async () => {
     if (skipIfNoAdo) return;
 
-    // This test is skipped by default to avoid hitting rate limits
-    // Uncomment to test rate limiting behavior
+    // INTENTIONALLY SKIPPED: This test would make 250+ API calls to trigger rate limits
+    // This is destructive to the ADO API quota and should only be run manually when needed
+    // To enable: Remove test.skip() and run with caution
 
     const adoClient = createAdoClient();
 
@@ -338,6 +341,9 @@ test.describe('ADO Sync - Error Scenarios', () => {
 
 test.describe('ADO Sync - Multi-Project Support', () => {
   test.skip('should query work items across multiple projects', async () => {
+    // INTENTIONALLY SKIPPED: Requires access to multiple ADO projects (SpecWeaveSync, FAQ Chat)
+    // These specific projects may not exist in test environments
+    // To enable: Ensure test projects exist and remove test.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
@@ -388,6 +394,9 @@ test.describe('ADO Sync - Multi-Project Support', () => {
   });
 
   test.skip('should filter by area paths in multi-project mode', async () => {
+    // INTENTIONALLY SKIPPED: Requires specific area paths (SpecWeaveSync\\Area 1) to exist
+    // These area paths are project-specific and may not exist in test environments
+    // To enable: Create required area paths and remove test.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
@@ -428,6 +437,9 @@ test.describe('ADO Sync - Multi-Project Support', () => {
   });
 
   test.skip('should support custom WIQL queries', async () => {
+    // INTENTIONALLY SKIPPED: Uses custom WIQL queries that depend on specific project structure
+    // Requires SpecWeaveSync and FAQ Chat projects with Epic work items
+    // To enable: Ensure test projects and work items exist, then remove test.skip()
     if (skipIfNoAdo) return;
 
     const { AdoClientV2 } = await import('../../plugins/specweave-ado/lib/ado-client-v2');
