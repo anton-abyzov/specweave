@@ -39,6 +39,14 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       },
     });
 
+    // Create dist directory and symlink to actual build output
+    // This allows the hook to find MetadataManager
+    await fs.mkdir(path.join(testDir, 'dist'), { recursive: true });
+    const sourceDistPath = path.join(__dirname, '../../dist');
+    if (await fs.pathExists(sourceDistPath)) {
+      await fs.copy(sourceDistPath, path.join(testDir, 'dist'));
+    }
+
     // Change to test directory
     process.chdir(testDir);
   });
@@ -106,11 +114,19 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       const hookPath = path.join(__dirname, '../../plugins/specweave/hooks/user-prompt-submit.sh');
       const input = JSON.stringify({ prompt });
 
-      const output = execSync(`echo '${input}' | bash ${hookPath}`, {
+      // Write input to a temp file to avoid shell escaping issues
+      const tempInput = path.join(testDir, 'hook-input.json');
+      await fs.writeFile(tempInput, input, 'utf-8');
+
+      // Execute hook with input from file
+      const output = execSync(`cat ${tempInput} | bash ${hookPath}`, {
         cwd: testDir,
         encoding: 'utf-8',
         env: { ...process.env, PATH: process.env.PATH },
       });
+
+      // Clean up temp file
+      await fs.remove(tempInput);
 
       return JSON.parse(output.trim());
     } catch (error: any) {

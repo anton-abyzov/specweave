@@ -3,8 +3,12 @@
  * Supports increment-planner skill with auto-numbering and name generation
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Stop words to filter from feature descriptions
@@ -198,7 +202,7 @@ function parseFeatureDescription(description) {
   };
 }
 
-module.exports = {
+export {
   generateShortName,
   getNextFeatureNumber,
   featureExists,
@@ -210,8 +214,8 @@ module.exports = {
   STOP_WORDS
 };
 
-// CLI usage
-if (require.main === module) {
+// CLI usage - check if this file is being run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
 
   if (args.length === 0) {
@@ -219,6 +223,7 @@ if (require.main === module) {
     console.log('  node feature-utils.js shortname "feature description"');
     console.log('  node feature-utils.js next [features-dir]');
     console.log('  node feature-utils.js parse "feature description"');
+    console.log('  node feature-utils.js check-increment <number> [features-dir]');
     process.exit(0);
   }
 
@@ -240,6 +245,22 @@ if (require.main === module) {
       if (args[1]) {
         const parsed = parseFeatureDescription(args[1]);
         console.log(JSON.stringify(parsed, null, 2));
+      }
+      break;
+
+    case 'check-increment':
+      if (args[1]) {
+        const incrementNumber = args[1];
+        const checkDir = args[2] || '.specweave/increments';
+        if (incrementNumberExists(incrementNumber, checkDir)) {
+          console.error(`ERROR: Increment ${incrementNumber} already exists!`);
+          process.exit(1);
+        } else {
+          console.log(`OK: Increment ${incrementNumber} is available`);
+        }
+      } else {
+        console.error('Error: Increment number required');
+        process.exit(1);
       }
       break;
 

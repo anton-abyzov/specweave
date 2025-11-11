@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.2] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### Duplicate Increment Prevention
+- **Fixed duplicate increment ID creation issue**
+  - Added explicit duplicate checking in increment-planner skill workflow
+  - Added new `check-increment` command to feature-utils.js CLI
+  - Converted feature-utils.js from CommonJS to ES module format
+  - Created comprehensive test suite for duplicate prevention
+  - Updated CLAUDE.md.template to emphasize unique increment IDs
+  - Merged existing duplicate 0020 increments into single increment
+
+#### Workflow Improvements
+- Enhanced increment-planner skill with STEP 1 for duplicate detection
+- Prevents creation of increments with duplicate IDs (e.g., two 0020-* increments)
+- Provides clear error messages when duplicate detected
+- Handles both 3-digit (legacy) and 4-digit increment formats
+
+---
+
 ## [0.16.1] - 2025-11-11
 
 ### 🐛 Bug Fixes

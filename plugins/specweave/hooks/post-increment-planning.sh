@@ -347,16 +347,52 @@ create_github_issue() {
     }
   ' "$tasks_file")
 
-  # Detect repository from git remote
-  local repo=$(git remote get-url origin 2>/dev/null | sed 's/.*github\.com[:/]\(.*\)\.git/\1/' | sed 's/.*github\.com[:/]\(.*\)/\1/')
+  # Detect repository from profile-based config
+  local repo=""
+  local owner=""
+  local repo_name=""
 
+  # First, check if increment has a specific githubProfile in metadata
+  local metadata_file="$2/metadata.json"
+  local profile_id=""
+
+  if [ -f "$metadata_file" ]; then
+    profile_id=$(cat "$metadata_file" 2>/dev/null | grep -o '"githubProfile"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    log_debug "Found githubProfile in metadata: $profile_id"
+  fi
+
+  # If no profile in metadata, use activeProfile from config
+  if [ -z "$profile_id" ]; then
+    profile_id=$(cat "$CONFIG_FILE" 2>/dev/null | grep -o '"activeProfile"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    log_debug "Using activeProfile from config: $profile_id"
+  fi
+
+  if [ -n "$profile_id" ]; then
+    # Extract owner and repo from the profile
+    local profile_section=$(cat "$CONFIG_FILE" 2>/dev/null | awk "/$profile_id/,/^[[:space:]]*\}/{print}")
+    owner=$(echo "$profile_section" | grep -o '"owner"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    repo_name=$(echo "$profile_section" | grep -o '"repo"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+
+    if [ -n "$owner" ] && [ -n "$repo_name" ]; then
+      repo="$owner/$repo_name"
+      log_debug "Using repo from profile: $repo"
+    fi
+  fi
+
+  # Fallback to git remote detection if no profile config found
   if [ -z "$repo" ]; then
-    # Fallback to config
+    repo=$(git remote get-url origin 2>/dev/null | sed 's/.*github\.com[:/]\(.*\)\.git/\1/' | sed 's/.*github\.com[:/]\(.*\)/\1/')
+    log_debug "Fallback to git remote: $repo"
+  fi
+
+  # Legacy fallback to old config format
+  if [ -z "$repo" ]; then
     repo=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -o '"repo"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    log_debug "Legacy fallback to old config: $repo"
   fi
 
   if [ -z "$repo" ]; then
-    log_error "Could not detect GitHub repository"
+    log_error "Could not detect GitHub repository from profile or git remote"
     return 1
   fi
 
@@ -444,7 +480,15 @@ EOF
     # Update existing metadata.json with github section
     if command -v jq >/dev/null 2>&1; then
       local temp_metadata=$(mktemp)
-      jq ". + {\"github\": {\"issue\": $issue_number, \"url\": \"$issue_url\", \"synced\": \"$current_timestamp\"}}" "$metadata_file" > "$temp_metadata"
+      local jq_update=". + {\"github\": {\"issue\": $issue_number, \"url\": \"$issue_url\", \"synced\": \"$current_timestamp\"}"
+
+      # Add profile ID if we have it
+      if [ -n "$profile_id" ]; then
+        jq_update="$jq_update, \"githubProfile\": \"$profile_id\""
+        jq_update=". + {\"github\": {\"issue\": $issue_number, \"url\": \"$issue_url\", \"synced\": \"$current_timestamp\"}, \"githubProfile\": \"$profile_id\"}"
+      fi
+
+      jq "$jq_update" "$metadata_file" > "$temp_metadata"
       mv "$temp_metadata" "$metadata_file"
     else
       # Fallback: manual JSON construction (less reliable)
@@ -455,6 +499,7 @@ EOF
   "status": "active",
   "type": "feature",
   "created": "$current_timestamp",
+  "githubProfile": "$profile_id",
   "github": {
     "issue": $issue_number,
     "url": "$issue_url",
