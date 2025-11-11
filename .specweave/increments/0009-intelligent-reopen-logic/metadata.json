@@ -1,14 +1,11 @@
 {
-  "id": "0009-intelligent-reopen-logic",
-  "status": "abandoned",
+  "increment": "0009-intelligent-reopen-logic",
   "type": "feature",
-  "created": "2025-11-04T13:30:00.000Z",
-  "abandoned": "2025-11-05T12:30:00.000Z",
-  "lastActivity": "2025-11-05T12:30:00.000Z",
-  "abandonReason": "Wrong requirements - over-engineered solution. Actual requirement was simple: auto-reopen GitHub issues when PM validation fails. This has been implemented directly in /specweave:done command (v0.8.0+). Complex similarity engine for detecting related increments was not needed.",
-  "github": {
-    "issue": 17,
-    "url": "https://github.com/anton-abyzov/specweave/issues/17",
-    "synced": "2025-11-05T12:30:00.000Z"
-  }
+  "status": "completed",
+  "created": "2025-11-04T00:00:00Z",
+  "completed": "2025-11-11T17:46:00Z",
+  "priority": "P0",
+  "scopeChange": "Deferred to future increment - not critical for MVP",
+  "tags": ["ai", "automation", "smart-detection"],
+  "lastUpdated": "2025-11-11T17:46:00Z"
 }
