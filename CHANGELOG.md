@@ -3030,7 +3030,7 @@ Elevates SpecWeave from "spec-driven development" to "test-driven spec developme
 #### Deprecated
 - **`specweave plugin` commands** (marked for removal in v0.7.0)
   - `specweave plugin list` → Use `/plugin list specweave`
-  - `specweave plugin enable` → Use `/plugin install specweave-{name}@specweave`
+  - `specweave plugin enable` → Use `/plugin install specweave-{name}`
   - `specweave plugin disable` → Use `/plugin uninstall specweave-{name}`
   - Reason: SpecWeave uses ONLY Claude Code's native plugin system
 
@@ -3357,8 +3357,8 @@ This is a **major architectural transformation** aligning SpecWeave with Claude 
 1. Update to v0.5.0: `npm install -g specweave@0.5.0`
 2. Delete old `.claude/` folders in projects (no longer needed!)
 3. Add marketplace: `/plugin marketplace add anton-abyzov/specweave`
-4. Install core: `/plugin install specweave@specweave`
-5. (Optional) Install GitHub: `/plugin install specweave-github@specweave`
+4. Install core: `/plugin install specweave`
+5. (Optional) Install GitHub: `/plugin install specweave-github`
 
 **For Copilot/Cursor Users**:
 1. Update to v0.5.0: `npm install -g specweave@0.5.0`

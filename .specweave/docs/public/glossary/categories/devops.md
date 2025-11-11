@@ -387,7 +387,7 @@ git commit -m "chore: initialize SpecWeave"
 
 ```bash
 # Install plugin
-/plugin install specweave-github@specweave
+/plugin install specweave-github
 
 # Create GitHub issue from increment
 /github-create-issue 0030 "CI/CD Pipeline Setup"

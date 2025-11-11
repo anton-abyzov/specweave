@@ -102,7 +102,7 @@ specweave plugin list
 /plugin marketplace add https://raw.githubusercontent.com/anton-abyzov/specweave/main/marketplace/.claude-plugin/marketplace.json
 
 # Install figma plugin
-/plugin install specweave-figma@specweave
+/plugin install specweave-figma
 
 # Verify
 /plugin list

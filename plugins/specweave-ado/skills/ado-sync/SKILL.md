@@ -47,7 +47,7 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 /plugin list --installed | grep specweave-ado
 
 # Install if needed
-/plugin install specweave-ado@specweave
+/plugin install specweave-ado
 ```
 
 ### 2. Azure DevOps Personal Access Token (PAT)

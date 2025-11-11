@@ -74,7 +74,7 @@ specweave init
 
 Users must manually:
 1. **Discover** which tracker plugin exists (`/plugin list specweave`)
-2. **Install** tracker plugin (`/plugin install specweave-github@specweave`)
+2. **Install** tracker plugin (`/plugin install specweave-github`)
 3. **Create** .env file (`touch .env`)
 4. **Research** which keys are needed (read plugin docs)
 5. **Get** API tokens (go to GitHub/Jira/ADO settings)
@@ -864,7 +864,7 @@ export { getGitHubAuth, getJiraAuth, getAzureDevOpsAuth } from '../tests/helpers
 You can configure later:
 1. Create .env file (see .env.example)
 2. Add your credentials
-3. Install plugin: /plugin install specweave-github@specweave
+3. Install plugin: /plugin install specweave-github
 ```
 
 ### Decision 5: How to Handle gh CLI vs Manual Token?
