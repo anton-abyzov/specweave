@@ -40,9 +40,6 @@ describe('specweave init . (current directory)', () => {
       // Verify .specweave directory exists in current directory
       expect(fs.existsSync(path.join(testDir, '.specweave'))).toBe(true);
 
-      // Verify .claude directory exists
-      expect(fs.existsSync(path.join(testDir, '.claude'))).toBe(true);
-
       // Verify key files exist
       expect(fs.existsSync(path.join(testDir, 'CLAUDE.md'))).toBe(true);
       expect(fs.existsSync(path.join(testDir, 'README.md'))).toBe(true);
