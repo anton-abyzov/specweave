@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import * as path from 'path';
+import os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
@@ -80,6 +81,30 @@ export async function initCommand(
   if (projectName === '.') {
     usedDotNotation = true;
     targetDir = process.cwd();
+
+    // CRITICAL SAFETY CHECK: Prevent initialization in home directory
+    const homeDir = os.homedir();
+    if (path.resolve(targetDir) === path.resolve(homeDir)) {
+      console.log('');
+      console.log(chalk.red.bold('❌ DANGEROUS: Cannot initialize SpecWeave in home directory!'));
+      console.log('');
+      console.log(chalk.yellow('   Your home directory contains ALL your projects.'));
+      console.log(chalk.yellow('   Initializing here would treat everything as one project.'));
+      console.log('');
+      console.log(chalk.cyan('💡 What to do instead:'));
+      console.log(chalk.white('   1. Create a project directory:'));
+      console.log(chalk.gray('      mkdir ~/Projects/my-project'));
+      console.log(chalk.white('   2. Navigate to it:'));
+      console.log(chalk.gray('      cd ~/Projects/my-project'));
+      console.log(chalk.white('   3. Initialize:'));
+      console.log(chalk.gray('      specweave init .'));
+      console.log('');
+      console.log(chalk.white('   Or use a project name:'));
+      console.log(chalk.gray('      specweave init my-project'));
+      console.log('');
+      process.exit(1);
+    }
+
     const dirName = path.basename(targetDir);
 
     // Validate directory name is suitable for project name
@@ -332,11 +357,28 @@ export async function initCommand(
     console.log(chalk.red.bold(locale.t('cli', 'init.errors.nestedNotSupported')));
     console.log('');
 
+    // Check if home directory has .specweave/ (special warning)
+    const homeDirFolder = parentSpecweaveFolders.find(f => f.isHomeDir);
+    if (homeDirFolder) {
+      console.log(chalk.red.bold('   ⚠️  CRITICAL: Found .specweave/ in HOME DIRECTORY!'));
+      console.log(chalk.yellow(`   ${homeDirFolder.path}`));
+      console.log('');
+      console.log(chalk.yellow('   This is ALMOST ALWAYS a mistake!'));
+      console.log(chalk.gray('   • Your home directory should NOT be a SpecWeave project'));
+      console.log(chalk.gray('   • This treats ALL your files as one giant project'));
+      console.log(chalk.gray('   • You likely ran "specweave init ." from home by accident'));
+      console.log('');
+      console.log(chalk.cyan.bold('   💡 Quick fix:'));
+      console.log(chalk.white(`   rm -rf "${homeDirFolder.path}/.specweave"`));
+      console.log(chalk.gray('   Then try your command again'));
+      console.log('');
+    }
+
     // Show all found .specweave/ folders
-    if (parentSpecweaveFolders.length === 1) {
+    if (parentSpecweaveFolders.length === 1 && !homeDirFolder) {
       console.log(chalk.yellow(`   ${locale.t('cli', 'init.errors.parentFound')}`));
       console.log(chalk.white(`   ${parentSpecweaveFolders[0].path}`));
-    } else {
+    } else if (!homeDirFolder) {
       console.log(chalk.yellow(`   Found ${parentSpecweaveFolders.length} parent .specweave/ folders:`));
       console.log('');
 
@@ -1066,8 +1108,9 @@ async function copyTemplates(templatesDir: string, targetDir: string, projectNam
  * @param targetDir - Directory where user wants to initialize
  * @returns Array of paths to parent .specweave/ folders with depth info, or null if none found
  */
-function detectNestedSpecweave(targetDir: string): Array<{ path: string; depth: number }> | null {
-  const foundFolders: Array<{ path: string; depth: number }> = [];
+function detectNestedSpecweave(targetDir: string): Array<{ path: string; depth: number; isHomeDir?: boolean }> | null {
+  const foundFolders: Array<{ path: string; depth: number; isHomeDir?: boolean }> = [];
+  const homeDir = os.homedir();
 
   // Start from parent of target directory
   let currentDir = path.dirname(path.resolve(targetDir));
@@ -1080,7 +1123,8 @@ function detectNestedSpecweave(targetDir: string): Array<{ path: string; depth: 
 
     // Check if .specweave/ exists at this level
     if (fs.existsSync(specweavePath)) {
-      foundFolders.push({ path: currentDir, depth });
+      const isHomeDir = path.resolve(currentDir) === path.resolve(homeDir);
+      foundFolders.push({ path: currentDir, depth, isHomeDir });
     }
 
     // Move up one level

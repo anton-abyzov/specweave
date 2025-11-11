@@ -55,6 +55,44 @@ Users receive a different CLAUDE.md via the template system.
 - ✅ **Clear context** - All files for a feature in one place
 - ✅ **No root clutter** - Project root stays clean and professional
 - ✅ **Better git history** - Changes grouped by increment
+- ✅ **Status line works correctly** - Parses tasks.md without confusion from extra .md files
+
+### ⚠️ CRITICAL: reports/ Folder is MANDATORY!
+
+**EVERY increment MUST have a reports/ subfolder for ALL analysis and summary files:**
+
+```bash
+# ✅ CORRECT Structure:
+.specweave/increments/0017-sync-fix/
+├── spec.md                         # Core: What we're building
+├── plan.md                         # Core: How we'll build it
+├── tasks.md                        # Core: Task checklist (REQUIRED for status line!)
+├── reports/                        # 📁 ALL reports and analysis go here!
+│   ├── STATUS-LINE-DEBUG.md        # ✅ Analysis files
+│   ├── TEST-REPORT-COMPLETE.md     # ✅ Test reports
+│   ├── IMPLEMENTATION-SUMMARY.md   # ✅ Implementation summaries
+│   ├── CODE-REVIEW-*.md            # ✅ Code review reports
+│   └── SESSION-SUMMARY-*.md        # ✅ Session notes
+├── scripts/                        # Optional: Helper scripts
+└── logs/                           # Optional: Execution logs
+
+# ❌ WRONG - Files in root will BREAK status line!
+.specweave/increments/0017-sync-fix/
+├── spec.md
+├── plan.md
+├── tasks.md
+├── TEST-REPORT-COMPLETE.md         # ❌ NO! Breaks status line parsing
+├── ANALYSIS-*.md                   # ❌ NO! Confuses file parsers
+└── SESSION-SUMMARY.md              # ❌ NO! Should be in reports/
+```
+
+**Why reports/ folder matters for status line**:
+- Status line parses `tasks.md` to count progress
+- Extra `.md` files in root can confuse the parser
+- Files MUST be in `reports/` subfolder for clean parsing
+- **Without proper structure → Status line shows nothing!**
+
+**Rule**: Only 3 core files allowed in increment root: `spec.md`, `plan.md`, `tasks.md`. Everything else → subfolders!
 
 ### What IS Allowed in Root?
 

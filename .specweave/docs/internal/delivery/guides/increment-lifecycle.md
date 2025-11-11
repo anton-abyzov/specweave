@@ -241,7 +241,7 @@ Start work           [Wait for WIP slot]
 
 **User request**:
 ```
-User: "I have an idea for Figma workflow enhancement, but I know
+User: "I have an idea for API integration enhancement, but I know
 we're working on core enhancements right now."
 ```
 
@@ -253,7 +253,7 @@ we're working on core enhancements right now."
 
 ✅ Good instinct! Since WIP is at limit, let's capture this in backlog.
 
-Creating backlog item: _backlog/0003-figma-workflow-enhancement.md
+Creating backlog item: _backlog/0003-api-integration-enhancement.md
 
 I'll document:
 - Overview (problem statement, solution approach)
@@ -268,7 +268,7 @@ I'll document:
 
 When ready to start:
 1. Close 0001 or 0002 to free WIP slot
-2. Run: /inc "Figma workflow enhancement"
+2. Run: /inc "API integration enhancement"
 3. I'll promote backlog item to full increment
 ```
 
@@ -276,13 +276,13 @@ When ready to start:
 
 **User request**:
 ```
-User: "Increment 0001 is done. Let's work on that Figma enhancement
+User: "Increment 0001 is done. Let's work on that API integration
 we discussed."
 ```
 
 **Claude response**:
 ```
-🔍 Found backlog item: _backlog/0003-figma-workflow-enhancement.md
+🔍 Found backlog item: _backlog/0003-api-integration-enhancement.md
 
 📊 Checking WIP status...
    Current WIP: 1/2 (slot available!)
@@ -290,20 +290,20 @@ we discussed."
 ✅ Ready to promote! Starting PM-led planning...
 
 Loading backlog item...
-→ Reading context from _backlog/0003-figma-workflow-enhancement.md
+→ Reading context from _backlog/0003-api-integration-enhancement.md
 → Problem statement ✓
 → Solution approach ✓
 → Key components ✓
 
 Activating PM Agent for complete planning...
 
-PM Agent: Analyzing Figma workflow requirements...
+PM Agent: Analyzing API integration requirements...
 → Market research complete
 → Creating spec.md (WHAT & WHY)
 → Architect creating plan.md (HOW + test strategy)
 → test-aware-planner generating tasks.md with embedded tests (v0.7.0+)
 
-✅ Increment 0003-figma-workflow-enhancement created!
+✅ Increment 0003-api-integration-enhancement created!
 
 Created:
   ✅ spec.md (12 user stories, 34 AC-IDs)
@@ -326,8 +326,8 @@ User: "What ideas do we have in the backlog?"
 ```
 📋 Backlog Items (.specweave/increments/_backlog/)
 
-1. 0003-figma-workflow-enhancement.md [P2]
-   → Complete Figma design-to-code workflow
+1. 0003-api-integration-enhancement.md [P2]
+   → Enhanced REST API with rate limiting and caching
    → Estimate: 3-4 days
    → Dependencies: None
    → Impact: HIGH
@@ -706,7 +706,7 @@ wip_slot: 1               # Which WIP slot (1, 2, or 3)
 # WIP: 1/2
 
 # Week 14: Can start another (independent work)
-/create-increment "Figma Integration"  # Creates 004
+/create-increment "Analytics Dashboard"  # Creates 004
 /start-increment 004
 # WIP: 2/2 (at limit)
 

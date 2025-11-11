@@ -1,11 +1,13 @@
 {
   "id": "0018-strict-increment-discipline-enforcement",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-10T14:05:00Z",
+  "completed": "2025-11-10T16:06:00Z",
   "github": {
     "issue": 32,
     "url": "https://github.com/anton-abyzov/specweave/issues/32",
-    "synced": "2025-11-10T14:05:00Z"
-  }
+    "synced": "2025-11-10T16:06:00Z"
+  },
+  "lastActivity": "2025-11-10T16:06:00Z"
 }

@@ -17,6 +17,7 @@ import {
   isStale,
   shouldAutoAbandon
 } from '../types/increment-metadata.js';
+import { ActiveIncrementManager } from './active-increment-manager.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -159,6 +160,8 @@ export class MetadataManager {
   /**
    * Update increment status
    * Validates transition and updates timestamps
+   *
+   * **CRITICAL**: Also updates active increment state automatically!
    */
   static updateStatus(
     incrementId: string,
@@ -193,6 +196,22 @@ export class MetadataManager {
     }
 
     this.write(incrementId, metadata);
+
+    // **CRITICAL**: Update active increment state
+    const activeManager = new ActiveIncrementManager();
+
+    if (newStatus === IncrementStatus.ACTIVE) {
+      // Increment became active → set as active
+      activeManager.setActive(incrementId);
+    } else if (
+      newStatus === IncrementStatus.COMPLETED ||
+      newStatus === IncrementStatus.PAUSED ||
+      newStatus === IncrementStatus.ABANDONED
+    ) {
+      // Increment no longer active → smart update (find next active or clear)
+      activeManager.smartUpdate();
+    }
+
     return metadata;
   }
 
