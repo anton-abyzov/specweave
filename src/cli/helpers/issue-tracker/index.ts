@@ -138,6 +138,32 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       const validationResult = await validateConnection(tracker, existing.credentials, maxRetries);
 
       if (validationResult.success) {
+        // Don't return early! We still need to configure repositories
+        // Save existing credentials to flow through normal path
+        const credentials = existing.credentials;
+
+        // Step 5.1: Configure repositories (GitHub only)
+        let repositoryProfiles = [];
+        let monorepoProjects = undefined;
+
+        if (tracker === 'github') {
+          // Import the configuration function
+          const { configureGitHubRepositories } = await import('./github.js');
+          // Pass the GitHub token for repository creation
+          const githubToken = (credentials as any).token;
+          const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+          repositoryProfiles = repoConfig.profiles;
+          monorepoProjects = repoConfig.monorepoProjects;
+        }
+
+        // Step 5.2: Write sync config to .specweave/config.json
+        await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
+
+        // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
+        if (tracker === 'jira') {
+          await validateResources(tracker, credentials, projectPath);
+        }
+
         // Install plugin
         await installPlugin(tracker, language);
         showSetupComplete(tracker, language);
