@@ -11,9 +11,9 @@
  */
 
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 
 // Mock GitHub API responses
 const mockGitHubAPI = {
