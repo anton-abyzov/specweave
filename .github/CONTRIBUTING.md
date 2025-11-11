@@ -78,7 +78,7 @@ npm test
 # Verify plugins are installed
 /plugin
 # Select "Manage plugins" from the menu
-# Should see: specweave@specweave listed
+# Should see: specweave listed
 ```
 
 ### Troubleshooting Installation
@@ -100,7 +100,7 @@ If `/plugin install specweave` fails, make sure the local marketplace is added:
 
 # Verify installation
 /plugin
-# Select "Manage plugins" - should see specweave@specweave listed
+# Select "Manage plugins" - should see specweave listed
 ```
 
 ---

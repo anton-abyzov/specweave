@@ -32,6 +32,7 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/',
     '/tests/e2e/',
+    '\\.skip\\.test\\.ts$', // Skip tests with .skip.test.ts extension
     '/tests/unit/pricing-constants.test.ts',
     '/tests/unit/adapter-loader.test.ts',
     '/tests/unit/plugin-system/',

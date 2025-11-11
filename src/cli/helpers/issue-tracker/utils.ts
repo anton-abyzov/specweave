@@ -66,15 +66,63 @@ export function isClaudeCliAvailable(): boolean {
 }
 
 /**
+ * Check if a Claude plugin is already installed
+ *
+ * @param pluginName - Name of the plugin to check
+ * @returns True if installed, false otherwise
+ */
+export function isPluginInstalled(pluginName: string): boolean {
+  try {
+    // Check the installed plugins file
+    const pluginsFilePath = path.join(
+      process.env.HOME || process.env.USERPROFILE || '',
+      '.claude',
+      'plugins',
+      'installed_plugins.json'
+    );
+
+    if (!fs.existsSync(pluginsFilePath)) {
+      return false;
+    }
+
+    const installedPlugins = JSON.parse(fs.readFileSync(pluginsFilePath, 'utf-8'));
+
+    if (!installedPlugins || !installedPlugins.plugins) {
+      return false;
+    }
+
+    // Check if plugin exists in the plugins object
+    // Plugins are stored as "pluginName@marketplaceName" keys
+    const pluginKeys = Object.keys(installedPlugins.plugins);
+    return pluginKeys.some(key => {
+      // Match either exact name or name@marketplace format
+      const [name] = key.split('@');
+      return name === pluginName;
+    });
+  } catch (error) {
+    // If reading file fails, assume plugin is not installed
+    return false;
+  }
+}
+
+/**
  * Install tracker plugin via Claude CLI
  *
  * @param tracker - Tracker type
  * @returns Object with success status and optional error message
  */
-export function installTrackerPlugin(tracker: IssueTracker): { success: boolean; error?: string } {
+export function installTrackerPlugin(tracker: IssueTracker): { success: boolean; error?: string; alreadyInstalled?: boolean } {
   if (tracker === 'none') return { success: true };
 
   const pluginName = `specweave-${tracker}`;
+
+  // Check if already installed first
+  if (isPluginInstalled(pluginName)) {
+    return {
+      success: true,
+      alreadyInstalled: true
+    };
+  }
 
   try {
     const result = execFileNoThrowSync('claude', [
@@ -86,6 +134,15 @@ export function installTrackerPlugin(tracker: IssueTracker): { success: boolean;
     if (result.success) {
       return { success: true };
     } else {
+      // Check if error is because plugin is already installed
+      const errorOutput = (result.stderr || result.stdout || '').toLowerCase();
+      if (errorOutput.includes('already installed')) {
+        return {
+          success: true,
+          alreadyInstalled: true
+        };
+      }
+
       // Return detailed error for debugging
       const error = result.stderr || result.stdout || 'Unknown error';
       return { success: false, error };

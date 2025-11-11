@@ -12,7 +12,7 @@
 **DO NOT** open public GitHub issues for security vulnerabilities.
 
 Instead:
-1. Email: security@specweave.com (or create private security advisory on GitHub)
+1. Email: anton.abyzov@gmail.com (or create private security advisory on GitHub)
 2. Include:
    - Description of vulnerability
    - Steps to reproduce

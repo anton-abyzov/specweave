@@ -75,7 +75,7 @@ describe('RateLimiter', () => {
       // JIRA has lower thresholds (25, 50, 75)
       expect(limiter.estimateSync('1W', 0.2).rateLimitImpact).toBe('low'); // ~15 calls
       expect(limiter.estimateSync('1W', 0.5).rateLimitImpact).toBe('medium'); // ~38 calls
-      expect(limiter.estimateSync('1M', 0.5).rateLimitImpact).toBe('high'); // ~150 calls
+      expect(limiter.estimateSync('1M', 0.5).rateLimitImpact).toBe('critical'); // ~150 calls (>= 75)
     });
 
     it('should calculate impact levels correctly for ADO', () => {
@@ -83,8 +83,8 @@ describe('RateLimiter', () => {
 
       // ADO has medium thresholds (50, 100, 150)
       expect(limiter.estimateSync('1W', 0.5).rateLimitImpact).toBe('low'); // ~38 calls
-      expect(limiter.estimateSync('1M', 0.5).rateLimitImpact).toBe('medium'); // ~150 calls
-      expect(limiter.estimateSync('3M', 0.5).rateLimitImpact).toBe('high'); // ~450 calls
+      expect(limiter.estimateSync('1M', 0.5).rateLimitImpact).toBe('critical'); // ~150 calls (>= 150)
+      expect(limiter.estimateSync('3M', 0.5).rateLimitImpact).toBe('critical'); // ~450 calls (>= 150)
     });
   });
 
