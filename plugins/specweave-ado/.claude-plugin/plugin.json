@@ -17,5 +17,5 @@
     "integration"
   ],
   "license": "MIT",
-  "hooks": "hooks/hooks.json"
+  "hooks": "./hooks/hooks.json"
 }
