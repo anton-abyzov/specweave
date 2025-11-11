@@ -161,8 +161,8 @@ C4Container
     Person(customer, "Customer", "Uses web app")
     Person(support, "Support Agent", "Responds to chats")
 
-    Container(webapp, "Web App", "[React](/docs/glossary/terms/react)", "Chat UI")
-    Container(api, "[API](/docs/glossary/terms/api) Server", "[Node.js](/docs/glossary/terms/nodejs)", "WebSocket + [REST](/docs/glossary/terms/rest)")
+    Container(webapp, "Web App", "React", "Chat UI")
+    Container(api, "API Server", "Node.js", "WebSocket + REST")
     Container(redis, "Redis", "Pub/Sub", "Real-time events")
     ContainerDb(db, "PostgreSQL", "Database", "Message storage")
 

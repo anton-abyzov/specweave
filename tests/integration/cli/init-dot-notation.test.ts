@@ -52,7 +52,7 @@ describe('specweave init . (current directory)', () => {
 
       try {
         await execAsync(
-          `cd ${namedDir} && npx specweave init . <<< ""`,
+          `cd ${namedDir} && echo "" | npx specweave init .`,
           { timeout: 30000 }
         );
 
