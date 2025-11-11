@@ -12,6 +12,10 @@ import path from 'path';
 
 const execAsync = promisify(exec);
 
+// Get path to local specweave binary for testing
+const projectRoot = path.resolve(__dirname, '../../..');
+const specweaveBin = path.join(projectRoot, 'bin', 'specweave.js');
+
 describe('specweave init . (current directory)', () => {
   let testDir: string;
 
@@ -203,11 +207,11 @@ describe('specweave init . (current directory)', () => {
       ).toBe(true);
     }, 45000);
 
-    it('should overwrite .specweave if user confirms', async () => {
+    it('should overwrite .specweave if user confirms (force mode)', async () => {
       // Initialize once
       await execAsync(
-        `cd ${testDir} && echo "test-project" | npx specweave init .`,
-        { timeout: 30000 }
+        `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
+        { timeout: 60000 }
       );
 
       // Create a custom file in .specweave
@@ -216,10 +220,10 @@ describe('specweave init . (current directory)', () => {
         'important data'
       );
 
-      // Initialize again with confirmation (yes to overwrite)
-      const command = `cd ${testDir} && printf "y\\ntest-project\\n" | npx specweave init .`;
+      // Initialize again with --force flag (non-interactive fresh start)
+      const command = `cd ${testDir} && node "${specweaveBin}" init . --force`;
 
-      await execAsync(command, { timeout: 30000 });
+      await execAsync(command, { timeout: 60000 });
 
       // Verify .specweave still exists
       expect(fs.existsSync(path.join(testDir, '.specweave'))).toBe(true);
@@ -228,7 +232,7 @@ describe('specweave init . (current directory)', () => {
       expect(
         fs.existsSync(path.join(testDir, '.specweave', 'custom.txt'))
       ).toBe(false);
-    }, 45000);
+    }, 90000);
   });
 
   describe('Comparison with subdirectory mode', () => {

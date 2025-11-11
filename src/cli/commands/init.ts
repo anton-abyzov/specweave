@@ -23,6 +23,7 @@ interface InitOptions {
   adapter?: string;  // 'claude', 'cursor', 'generic'
   techStack?: string;
   language?: string;  // Language for i18n support
+  force?: boolean;    // Force fresh start (non-interactive)
 }
 
 /**
@@ -129,31 +130,41 @@ export async function initCommand(
       console.log(chalk.blue('\n📦 Existing SpecWeave project detected!'));
       console.log(chalk.gray('   Found .specweave/ folder with your increments, docs, and configuration.\n'));
 
-      const { action } = await inquirer.prompt([
-        {
-          type: 'list',
-          name: 'action',
-          message: 'What would you like to do?',
-          choices: [
-            {
-              name: '✨ Continue working (keep all existing increments, docs, and history)',
-              value: 'continue',
-              short: 'Continue'
-            },
-            {
-              name: '🔄 Fresh start (delete .specweave/ and start from scratch)',
-              value: 'fresh',
-              short: 'Fresh start'
-            },
-            {
-              name: '❌ Cancel (exit without changes)',
-              value: 'cancel',
-              short: 'Cancel'
-            }
-          ],
-          default: 'continue'
-        },
-      ]);
+      let action: string;
+
+      if (options.force) {
+        // Force mode: Skip interactive prompt and do fresh start
+        action = 'fresh';
+        console.log(chalk.yellow('   🔄 Force mode: Performing fresh start (removing existing .specweave/)'));
+      } else {
+        // Interactive mode: Ask user what to do
+        const result = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'action',
+            message: 'What would you like to do?',
+            choices: [
+              {
+                name: '✨ Continue working (keep all existing increments, docs, and history)',
+                value: 'continue',
+                short: 'Continue'
+              },
+              {
+                name: '🔄 Fresh start (delete .specweave/ and start from scratch)',
+                value: 'fresh',
+                short: 'Fresh start'
+              },
+              {
+                name: '❌ Cancel (exit without changes)',
+                value: 'cancel',
+                short: 'Cancel'
+              }
+            ],
+            default: 'continue'
+          },
+        ]);
+        action = result.action;
+      }
 
       if (action === 'cancel') {
         console.log(chalk.yellow('\n⏸️  Initialization cancelled. No changes made.'));
@@ -161,19 +172,22 @@ export async function initCommand(
       }
 
       if (action === 'fresh') {
-        console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
-        const { confirmFresh } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirmFresh',
-            message: 'Are you sure you want to start fresh? (all .specweave/ content will be lost)',
-            default: false,
-          },
-        ]);
+        if (!options.force) {
+          // Interactive mode: Ask for confirmation
+          console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
+          const { confirmFresh } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirmFresh',
+              message: 'Are you sure you want to start fresh? (all .specweave/ content will be lost)',
+              default: false,
+            },
+          ]);
 
-        if (!confirmFresh) {
-          console.log(chalk.yellow('\n⏸️  Fresh start cancelled. No changes made.'));
-          process.exit(0);
+          if (!confirmFresh) {
+            console.log(chalk.yellow('\n⏸️  Fresh start cancelled. No changes made.'));
+            process.exit(0);
+          }
         }
 
         // Delete .specweave/ for fresh start
