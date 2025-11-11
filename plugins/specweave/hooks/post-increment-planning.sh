@@ -646,47 +646,33 @@ EOF
 
   translate_living_docs_specs "$increment_id"
 
-  # 7. Auto-create GitHub issue (if configured)
+  # 7. Increment-level GitHub sync (DISABLED - See architecture note below)
   log_info ""
-  log_info "🔗 Checking GitHub issue auto-creation..."
+  log_info "ℹ️  Increment-level GitHub sync disabled (by design)"
+  log_debug "Increments are INTERNAL work units, not synced to external tools"
+  log_debug "External sync happens at SPEC level (.specweave/docs/internal/specs/)"
+  log_debug "See: .specweave/increments/0025-per-project-resource-config/reports/CORRECT-SYNC-ARCHITECTURE.md"
 
-  # Check if auto-create is enabled in config
-  local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  # TODO: Implement spec-level sync instead
+  # Architecture:
+  #   - SPECS (.specweave/docs/internal/specs/) → GitHub Projects/JIRA Epics/ADO Features
+  #   - User Stories → GitHub Issues
+  #   - Increments → INTERNAL ONLY (no external sync)
+  #
+  # Commands to implement:
+  #   - /specweave-github:sync-spec spec-001
+  #   - /specweave-jira:sync-spec spec-001
+  #   - /specweave-ado:sync-spec spec-001
+  #
+  # See: plugins/specweave-github/commands/specweave-github-sync-spec.md
 
-  if [ "$auto_create" = "true" ]; then
-    log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
-
-    # Check if gh CLI is available
-    if command -v gh &> /dev/null; then
-      log_info "  ✓ GitHub CLI found"
-
-      # Check if metadata.json already has GitHub issue
-      local metadata_file="$increment_dir/metadata.json"
-      local existing_issue=""
-
-      if [ -f "$metadata_file" ]; then
-        existing_issue=$(cat "$metadata_file" 2>/dev/null | grep -o '"issue"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' || echo "")
-      fi
-
-      if [ -n "$existing_issue" ]; then
-        log_info "  ℹ️  GitHub issue already exists: #$existing_issue"
-      else
-        log_info "  🚀 Creating GitHub issue for $increment_id..."
-
-        # Call the create_github_issue function (defined below)
-        if create_github_issue "$increment_id" "$increment_dir"; then
-          log_info "  ✅ GitHub issue created successfully!"
-        else
-          log_info "  ⚠️  Failed to create GitHub issue (non-blocking)"
-          log_debug "Issue creation failed, continuing..."
-        fi
-      fi
-    else
-      log_debug "GitHub CLI not found, skipping issue creation"
-    fi
-  else
-    log_debug "GitHub issue auto-create disabled in config"
-  fi
+  # COMMENTED OUT: Increment-level GitHub issue creation (architecturally wrong)
+  # # Check if auto-create is enabled in config
+  # local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  #
+  # if [ "$auto_create" = "true" ]; then
+  #   ... (increment-level sync code removed)
+  # fi
 
   # 8. Sync spec content to external tools (if configured)
   log_info ""

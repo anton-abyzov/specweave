@@ -10,9 +10,9 @@
  */
 
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import * as os from 'os';
+import fs from 'fs-extra';
+import path from 'path';
+import os from 'os';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -33,7 +33,7 @@ test.describe('Increment Lifecycle (E2E)', () => {
     specweavePath = path.join(__dirname, '../../../bin/specweave.js');
 
     // Initialize SpecWeave in test directory
-    execSync(`node ${specweavePath} init ${testDir} --non-interactive`, {
+    execSync(`node ${specweavePath} init ${testDir} --force`, {
       encoding: 'utf-8',
       env: { ...process.env, FORCE_COLOR: '0' }
     });
@@ -281,6 +281,7 @@ Overall: 81%
   });
 
   test('should handle increment with failed tasks', async () => {
+    test.setTimeout(60000); // Increase timeout to 60s for slow initialization
     const incrementId = '0002-partial-feature';
     const tasksPath = path.join(testDir, '.specweave/increments', incrementId, 'tasks.md');
     const metadataPath = path.join(testDir, '.specweave/increments', incrementId, 'metadata.json');
