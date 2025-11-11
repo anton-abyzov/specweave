@@ -231,6 +231,28 @@ fi
 echo "[$(date)] [GitHub] ✅ GitHub sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
+# SPEC COMMIT SYNC (NEW!)
+# ============================================================================
+
+echo "[$(date)] [GitHub] 🔗 Checking for spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+# Call TypeScript CLI to sync commits
+if command -v node &> /dev/null && [ -f "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" ]; then
+  echo "[$(date)] [GitHub] 🚀 Running spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+  node "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" \
+    --increment "$PROJECT_ROOT/.specweave/increments/$CURRENT_INCREMENT" \
+    --provider github \
+    2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+      echo "[$(date)] [GitHub] ⚠️  Spec commit sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+    }
+
+  echo "[$(date)] [GitHub] ✅ Spec commit sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
+else
+  echo "[$(date)] [GitHub] ℹ️  Spec commit sync not available (node or script not found)" >> "$DEBUG_LOG" 2>/dev/null || true
+fi
+
+# ============================================================================
 # OUTPUT TO CLAUDE
 # ============================================================================
 

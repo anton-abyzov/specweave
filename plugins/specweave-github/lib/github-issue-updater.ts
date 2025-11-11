@@ -254,7 +254,7 @@ export async function detectRepo(): Promise<{ owner: string; repo: string } | nu
   try {
     const result = await execFileNoThrow('git', ['remote', 'get-url', 'origin']);
 
-    if (result.status !== 0) {
+    if (result.exitCode !== 0) {
       return null;
     }
 
@@ -298,7 +298,7 @@ async function getIssueBody(
     '.body'
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
   }
 
@@ -324,7 +324,7 @@ async function updateIssueBody(
     body
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${result.stderr}`);
   }
 }
@@ -348,7 +348,7 @@ async function postComment(
     comment
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);
   }
 }

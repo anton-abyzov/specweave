@@ -291,7 +291,7 @@ async function updateIssueTitle(
     title
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     console.warn(`⚠️  Could not update issue title: ${result.stderr}`);
   }
 }
@@ -318,7 +318,7 @@ async function updateIssueTaskChecklist(
     '.body'
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
   }
 
@@ -350,7 +350,7 @@ async function updateIssueTaskChecklist(
     updatedBody
   ]);
 
-  if (updateResult.status !== 0) {
+  if (updateResult.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${updateResult.stderr}`);
   }
 }
@@ -374,7 +374,7 @@ async function postComment(
     comment
   ]);
 
-  if (result.status !== 0) {
+  if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);
   }
 }
