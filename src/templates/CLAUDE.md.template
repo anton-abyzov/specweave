@@ -208,11 +208,10 @@ Both approaches work perfectly - use whichever feels more natural!
 ### Increment Structure
 
 ```
-.specweave/increments/0001-user-auth/
+.specweave/increments/0001-user-auth/   # ⚠️ ID must be unique!
 ├── spec.md                      # WHAT & WHY
 ├── plan.md                      # HOW
-├── tasks.md                     # Implementation steps
-├── tests.md                     # Test strategy
+├── tasks.md                     # Implementation steps with embedded tests
 ├── context-manifest.yaml        # Selective context loading
 ├── logs/                        # ✅ Execution logs, errors, AI sessions
 ├── scripts/                     # ✅ Helper scripts, migrations, setup
@@ -278,12 +277,11 @@ Config: Auto-detected from project files
 │   │   │   ├── operations/      # Runbooks, monitoring
 │   │   │   └── governance/      # Security, compliance
 │   │   └── public/              # Published docs
-│   ├── increments/              # Features (auto-numbered)
-│   │   └── 0001-feature-name/
-│   │       ├── spec.md
-│   │       ├── plan.md
-│   │       ├── tasks.md
-│   │       ├── tests.md
+│   ├── increments/              # Features (auto-numbered, UNIQUE IDs)
+│   │   └── 0001-feature-name/   # ⚠️ Each ID must be unique (0001-9999)
+│   │       ├── spec.md          # What we're building
+│   │       ├── plan.md          # How we'll build it
+│   │       ├── tasks.md         # Tasks with embedded tests
 │   │       ├── logs/            # ✅ Put logs here
 │   │       ├── scripts/         # ✅ Put scripts here
 │   │       └── reports/         # ✅ Put reports here
@@ -436,6 +434,7 @@ Plugins are detected and suggested during `specweave init` based on:
 4. **Validated**: Every increment validated before closure
 5. **Traceable**: All work traces back to specs and requirements
 6. **Clean Organization**: All supporting files in increment folders, never root
+7. **No Duplicate Increments**: Each increment must have a unique 4-digit ID (0001-9999)
 
 ---
 
