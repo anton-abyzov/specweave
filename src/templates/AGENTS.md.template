@@ -926,6 +926,48 @@ If using Claude Code, these slash commands are available:
 | `/specweave:done` | Close increment | `/specweave:done 0001` |
 | `/specweave:validate` | Validate quality | `/specweave:validate 0001 --quality` |
 
+### 🚨 MANDATORY: Increment Closure Workflow
+
+**For ALL tools (Claude Code + non-Claude)**:
+
+When closing an increment with `/specweave:done`, the following MUST happen to maintain source of truth integrity:
+
+```
+1. PM validates 3 gates (tasks, tests, docs)
+2. Increment marked as complete
+3. Living docs spec MUST be synced    ← MANDATORY!
+4. GitHub Project MUST be synced      ← MANDATORY!
+5. GitHub Issue closed (optional)
+```
+
+**For Claude Code** (automated via hooks):
+- ✅ Steps 3-5 happen AUTOMATICALLY via `post-increment-done` hook
+- No manual action needed!
+
+**For non-Claude tools** (manual workflow):
+
+After `/specweave:done 0001` completes, **YOU MUST manually run**:
+
+```bash
+# Step 1: Close increment (PM agent validates)
+/specweave:done 0001
+
+# Step 2: Sync living docs spec to GitHub Project (MANDATORY!)
+# Find the spec file first:
+SPEC_FILE=$(find .specweave/docs/internal/specs/ -name "spec-0001*.md" | head -1)
+
+# Then sync to GitHub Project:
+/specweave-github:sync-spec "$SPEC_FILE"
+
+# Step 3: Close GitHub Issue (optional)
+/specweave-github:close-issue 0001
+```
+
+**Why MANDATORY?**
+- Living docs specs (`.specweave/docs/internal/specs/`) = Permanent source of truth
+- GitHub Projects = External mirror of source of truth
+- Without sync, GitHub Projects become stale and unreliable!
+
 **Plugin Commands** (when plugin installed):
 | Command | Purpose | Plugin |
 |---------|---------|--------|

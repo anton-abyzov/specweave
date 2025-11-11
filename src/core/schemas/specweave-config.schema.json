@@ -151,6 +151,70 @@
       },
       "additionalProperties": false
     },
+    "hooks": {
+      "type": "object",
+      "description": "Hook configuration for lifecycle automation (Claude Code only)",
+      "properties": {
+        "post_task_completion": {
+          "type": "object",
+          "description": "Post-task completion hook settings",
+          "properties": {
+            "sync_living_docs": {
+              "type": "boolean",
+              "description": "Automatically sync increment specs to living docs after task completion",
+              "default": true
+            },
+            "sync_tasks_md": {
+              "type": "boolean",
+              "description": "Update tasks.md with completion status",
+              "default": true
+            },
+            "external_tracker_sync": {
+              "type": "boolean",
+              "description": "Sync to external tracker (GitHub Issues, Jira, ADO)",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "post_increment_planning": {
+          "type": "object",
+          "description": "Post-increment planning hook settings",
+          "properties": {
+            "auto_create_github_issue": {
+              "type": "boolean",
+              "description": "Automatically create GitHub issue after increment planning",
+              "default": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "post_increment_done": {
+          "type": "object",
+          "description": "Post-increment done hook settings (MANDATORY for GitHub Project sync)",
+          "properties": {
+            "sync_to_github_project": {
+              "type": "boolean",
+              "description": "MANDATORY: Automatically sync living docs spec to GitHub Project when increment closes (ensures source of truth integrity)",
+              "default": true
+            },
+            "close_github_issue": {
+              "type": "boolean",
+              "description": "Automatically close GitHub issue when increment closes",
+              "default": true
+            },
+            "update_living_docs_first": {
+              "type": "boolean",
+              "description": "Ensure living docs are synced before GitHub Project sync",
+              "default": true
+            }
+          },
+          "additionalProperties": false,
+          "required": ["sync_to_github_project"]
+        }
+      },
+      "additionalProperties": false
+    },
     "translation": {
       "type": "object",
       "description": "Translation settings for multilingual support",
