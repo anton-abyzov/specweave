@@ -4,6 +4,109 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.3] - 2025-11-10
+
+### ✨ **ENHANCEMENTS** - Jira UX Improvements
+
+**Better user experience when creating/validating Jira projects!**
+
+#### What's New
+
+**1. Direct Links to Jira Projects** 🔗
+
+After creating or validating projects, SpecWeave now prints direct links:
+
+```bash
+📦 Creating Jira project: FRONTEND (FITNESS TRACKER Frontend)...
+✅ Project created: FRONTEND
+🔗 View in Jira: https://antonabyzov.atlassian.net/jira/software/c/projects/FRONTEND
+```
+
+**2. Project IDs Stored in .env** 📝
+
+The `.env` file now includes project IDs in addition to keys:
+
+```bash
+# Before (v0.13.2):
+JIRA_PROJECTS=FRONTEND,BACKEND,MOBILE2
+
+# After (v0.13.3):
+JIRA_PROJECTS=FRONTEND,BACKEND,MOBILE2
+JIRA_PROJECT_IDS=10000,10001,10002  ← NEW!
+```
+
+**Why This Matters**:
+- ✅ **Quick access** - Click links to view projects immediately
+- ✅ **API efficiency** - Use IDs for faster API calls
+- ✅ **Better debugging** - Know exact project IDs for troubleshooting
+- ✅ **Advanced integrations** - Some Jira APIs require IDs, not keys
+
+#### What Changed
+
+**File**: `src/utils/external-resource-validator.ts`
+
+**1. Link printing** (lines 433, 454, 426):
+   - After creating project → Print link
+   - After validating project → Print link
+   - After selecting existing project → Print link
+
+**2. Project ID collection** (line 360):
+   - Track all validated/created projects in `allProjects` array
+   - Collect keys, IDs, and names
+
+**3. .env update** (lines 476-486):
+   - For multi-project (project-per-team): Write `JIRA_PROJECT_IDS`
+   - For single project: Write `JIRA_PROJECT_ID`
+   - Print confirmation message
+
+#### Example Output
+
+**Multi-project setup**:
+```bash
+specweave init my-project
+# Enter: FRONTEND,BACKEND,MOBILE2
+
+⚠️  Project "FRONTEND" not found
+✔ What would you like to do? Create a new project
+✔ Enter project name: FITNESS TRACKER Frontend
+📦 Creating Jira project: FRONTEND (FITNESS TRACKER Frontend)...
+✅ Project created: FRONTEND
+🔗 View in Jira: https://antonabyzov.atlassian.net/jira/software/c/projects/FRONTEND
+
+⚠️  Project "BACKEND" not found
+✔ What would you like to do? Create a new project
+✔ Enter project name: FITNESS Tracker Backend
+📦 Creating Jira project: BACKEND (FITNESS Tracker Backend)...
+✅ Project created: BACKEND
+🔗 View in Jira: https://antonabyzov.atlassian.net/jira/software/c/projects/BACKEND
+
+⚠️  Project "MOBILE2" not found
+✔ What would you like to do? Create a new project
+✔ Enter project name: FITNESS Tracker Mobile
+📦 Creating Jira project: MOBILE2 (FITNESS Tracker Mobile)...
+✅ Project created: MOBILE2
+🔗 View in Jira: https://antonabyzov.atlassian.net/jira/software/c/projects/MOBILE2
+
+✅ Updated .env with project IDs: 10000,10001,10002
+```
+
+**Resulting .env**:
+```bash
+JIRA_API_TOKEN=...
+JIRA_EMAIL=anton.abyzov@gmail.com
+JIRA_DOMAIN=antonabyzov.atlassian.net
+JIRA_STRATEGY=project-per-team
+JIRA_PROJECTS=FRONTEND,BACKEND,MOBILE2
+JIRA_PROJECT_IDS=10000,10001,10002  ← NEW!
+```
+
+### Files Changed
+
+- `src/utils/external-resource-validator.ts`: Added link printing and project ID storage
+- `CHANGELOG.md`: Updated with v0.13.3 release notes
+
+---
+
 ## [0.13.2] - 2025-11-10
 
 ### 🐛 **CRITICAL BUG FIX** - Jira Validation Always Passed
