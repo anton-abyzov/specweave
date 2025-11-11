@@ -1935,7 +1935,7 @@ plugins/specweave/
 2. ✅ **hooks.json references them** - Uses `${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh`
 3. ✅ **Automatic discovery** - Claude Code reads plugin's hooks.json at startup
 4. ✅ **Runtime merging** - Plugin hooks merge with user/project hooks automatically
-5. ❌ **`.claude/hooks/` is NOT used** - This directory is irrelevant to the hook system!
+5. ✅ **SpecWeave doesn't use `.claude/`** - Plugin hooks live in `plugins/`, but users CAN add custom hooks to `.claude/settings.json`
 
 ### Hook Discovery Flow
 
@@ -1964,15 +1964,20 @@ plugins/specweave/
 
 ### What `.claude/` Actually Contains
 
-**NOTHING!** SpecWeave does NOT create `.claude/` folder in user projects.
+**SpecWeave doesn't create it!** But users can create `.claude/settings.json` for custom hooks/settings.
 
-**Why?**
+**Why SpecWeave doesn't create `.claude/`:**
 - Marketplace registration is GLOBAL via CLI (`claude plugin marketplace add`)
-- No per-project settings.json needed
-- No hook files (hooks come from plugins, not project)
+- No per-project settings.json needed for SpecWeave
+- No hook files needed (hooks come from plugins, not project)
 - Cleaner project structure
 
-**If you see `.claude/settings.json`** in your project:
+**Valid uses of `.claude/` folder:**
+- ✅ User-defined custom hooks (`.claude/settings.json`)
+- ✅ Project-specific hook configurations
+- ✅ Local settings (`.claude/settings.local.json`)
+
+**If you see `.claude/settings.json`** created by SpecWeave in your project:
 - It's from an older version of SpecWeave (<v0.14.0)
 - Safe to delete - marketplace is already registered globally
 - Won't affect functionality

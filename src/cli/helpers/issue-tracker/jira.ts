@@ -463,4 +463,9 @@ export function showJiraSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.white('You can configure later:'));
   console.log(chalk.gray('  1. Add JIRA_API_TOKEN, JIRA_EMAIL, JIRA_DOMAIN to .env'));
   console.log(chalk.gray('  2. Install plugin: /plugin install specweave-jira\n'));
+  console.log(chalk.cyan('💡 Per-Project Configuration (Advanced):'));
+  console.log(chalk.gray('   JIRA_PROJECTS=BACKEND,FRONTEND,MOBILE'));
+  console.log(chalk.gray('   JIRA_BOARDS_BACKEND=123,456'));
+  console.log(chalk.gray('   JIRA_BOARDS_FRONTEND=789,012'));
+  console.log(chalk.gray('   JIRA_BOARDS_MOBILE=345,678,901\n'));
 }

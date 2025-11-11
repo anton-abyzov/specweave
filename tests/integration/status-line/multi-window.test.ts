@@ -242,6 +242,47 @@ total_tasks: 5
     });
   });
 
+  describe('Scenario 7: Lazy Metadata Initialization', () => {
+    it('should show status line after lazy metadata initialization', () => {
+      const { MetadataManager } = require('../../../src/core/increment/metadata-manager.js');
+
+      // Remove active increment state (simulate fresh increment without metadata)
+      const stateFile = path.join(tempDir, '.specweave/state/active-increment.json');
+      fs.unlinkSync(stateFile);
+
+      // Create increment directory (simulating increment created but no metadata yet)
+      // Note: incrementDir is already created in beforeEach
+
+      // Read increment (triggers lazy initialization with ActiveIncrementManager update)
+      // Change working directory to tempDir so MetadataManager can find the increment
+      const originalCwd = process.cwd();
+      process.chdir(tempDir);
+
+      try {
+        const metadata = MetadataManager.read('0017-test-increment');
+        expect(metadata.status).toBe('active');
+
+        // Verify active increment state was updated
+        const stateContent = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+        expect(stateContent.id).toBe('0017-test-increment');
+
+        // Run hook to update status line cache
+        runHookScript(tempDir);
+
+        // Status line should now render correctly
+        const manager = new StatusLineManager(tempDir);
+        const result = manager.render();
+
+        expect(result).not.toBeNull();
+        expect(result).toContain('test-increment');
+        expect(result).toContain('0/5'); // Initial progress
+      } finally {
+        // Restore working directory
+        process.chdir(originalCwd);
+      }
+    });
+  });
+
   // Helper functions
   function runHookScript(projectRoot: string): void {
     const hookScript = path.join(
