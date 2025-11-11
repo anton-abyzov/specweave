@@ -253,7 +253,7 @@ export class SetupStateManager {
     }
 
     // Check architecture type
-    if (!['single', 'polyrepo', 'monorepo'].includes(state.architecture)) {
+    if (!['single', 'multi-repo', 'parent', 'monorepo'].includes(state.architecture)) {
       return false;
     }
 
@@ -270,7 +270,38 @@ export class SetupStateManager {
     }
 
     // Validate parent repo if exists
-    if (state.parentRepo && !this.validateRepo(state.parentRepo)) {
+    if (state.parentRepo && !this.validateParentRepo(state.parentRepo)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Validate parent repo configuration
+   *
+   * @param parentRepo - Parent repo to validate
+   * @returns True if valid
+   */
+  private validateParentRepo(parentRepo: any): parentRepo is ParentRepoConfig {
+    if (!parentRepo || typeof parentRepo !== 'object') {
+      return false;
+    }
+
+    const required = ['name', 'owner', 'description', 'visibility', 'createOnGitHub'];
+    for (const field of required) {
+      if (!(field in parentRepo)) {
+        return false;
+      }
+    }
+
+    // Check visibility
+    if (!['private', 'public'].includes(parentRepo.visibility)) {
+      return false;
+    }
+
+    // Check createOnGitHub flag
+    if (typeof parentRepo.createOnGitHub !== 'boolean') {
       return false;
     }
 
