@@ -190,7 +190,9 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   if (tracker === 'github') {
     // Import the configuration function
     const { configureGitHubRepositories } = await import('./github.js');
-    const repoConfig = await configureGitHubRepositories(projectPath, language);
+    // Pass the GitHub token for repository creation
+    const githubToken = (credentials as any).token;
+    const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
     repositoryProfiles = repoConfig.profiles;
     monorepoProjects = repoConfig.monorepoProjects;
   }

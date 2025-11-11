@@ -4,6 +4,59 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.4] - 2025-11-11
+
+### ✨ New Features
+
+#### Enhanced GitHub Repository Management
+- **Comprehensive repository architecture support**
+  - Single repository, multi-repository, monorepo, and parent repository approaches
+  - Interactive repository structure selection during `specweave init`
+  - Automatic GitHub repository creation via API
+  - Parent repository approach for centralized .specweave management
+
+- **RepoStructureManager** - New core component for repository management
+  - Handles all repository architectures (single, multi-repo, monorepo, parent)
+  - Creates repositories on GitHub via API (supports both user and org accounts)
+  - Initializes local git repositories with proper structure
+  - Creates project-specific folders in `.specweave/docs/internal/projects/`
+
+- **Multi-project spec organization**
+  - Specs organized per project/repository
+  - Proper folder structure for each team/service
+  - Cross-project dependency tracking
+  - Task splitting across repositories
+
+- **GitHub Multi-Project Management**
+  - New skill: `github-multi-project` for organizing specs across repos
+  - New agent: `github-task-splitter` for intelligent task distribution
+  - Automatic task allocation based on technology indicators
+  - Cross-repository dependency management
+
+### 🔧 Improvements
+
+- **GitHub integration flow**
+  - Better UX for repository configuration
+  - Auto-detection of existing repositories
+  - Support for creating nested repos in parent folder approach
+  - Enhanced error handling for API operations
+
+- **Init command enhancements**
+  - Asks about repository structure upfront
+  - Offers to create repositories if they don't exist
+  - Configures proper folder structure based on architecture
+  - Better integration with issue tracker setup
+
+### 📝 Documentation
+
+- Added comprehensive documentation for:
+  - Repository architecture patterns
+  - Parent repository approach benefits
+  - Multi-project spec organization
+  - Task splitting strategies
+
+---
+
 ## [0.16.3] - 2025-11-11
 
 ### 🐛 Bug Fixes
