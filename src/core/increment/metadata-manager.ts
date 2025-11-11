@@ -80,6 +80,14 @@ export class MetadataManager {
       // Create default metadata
       const defaultMetadata = createDefaultMetadata(incrementId);
       this.write(incrementId, defaultMetadata);
+
+      // **CRITICAL**: Update active increment state if default status is ACTIVE
+      // This ensures that newly created increments are immediately tracked for status line
+      if (defaultMetadata.status === IncrementStatus.ACTIVE) {
+        const activeManager = new ActiveIncrementManager();
+        activeManager.setActive(incrementId);
+      }
+
       return defaultMetadata;
     }
 

@@ -291,4 +291,9 @@ export function showAzureDevOpsSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.white('You can configure later:'));
   console.log(chalk.gray('  1. Add AZURE_DEVOPS_PAT, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT to .env'));
   console.log(chalk.gray('  2. Install plugin: /plugin install specweave-ado\n'));
+  console.log(chalk.cyan('💡 Per-Project Configuration (Advanced):'));
+  console.log(chalk.gray('   AZURE_DEVOPS_PROJECTS=Backend,Frontend,Mobile'));
+  console.log(chalk.gray('   AZURE_DEVOPS_AREA_PATHS_Backend=API,Database,Cache'));
+  console.log(chalk.gray('   AZURE_DEVOPS_AREA_PATHS_Frontend=Web,Admin,Public'));
+  console.log(chalk.gray('   AZURE_DEVOPS_TEAMS_Backend=Alpha,Beta\n'));
 }

@@ -66,13 +66,13 @@ test.describe('Project Switching (E2E)', () => {
       }
     }, null, 2));
 
-    // Create project directories
+    // Create project directories (flattened structure v0.15.0+, ADR-0028)
     for (const projectId of ['frontend', 'backend', 'mobile']) {
-      const projectPath = path.join(specweaveRoot, `docs/internal/specs/${projectId}`);
-      await fs.ensureDir(path.join(projectPath, 'specs'));
-      await fs.ensureDir(path.join(projectPath, 'modules'));
-      await fs.ensureDir(path.join(projectPath, 'team'));
-      await fs.ensureDir(path.join(projectPath, 'legacy'));
+      // Flattened: specs/{projectId}/ not projects/{projectId}/specs/
+      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/specs/${projectId}`));
+      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/modules/${projectId}`));
+      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/team/${projectId}`));
+      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/legacy/${projectId}`));
     }
 
     // Add content to frontend project
@@ -125,16 +125,16 @@ test.describe('Project Switching (E2E)', () => {
     const { ProjectManager } = await import('../../../src/core/project-manager.js');
     const manager = new ProjectManager(testDir);
 
-    // Initial paths (frontend)
+    // Initial paths (frontend) - flattened structure (v0.15.0+, ADR-0028)
     const frontendSpecsPath = manager.getSpecsPath();
-    expect(frontendSpecsPath).toContain('projects/frontend/specs');
+    expect(frontendSpecsPath).toContain('specs/frontend');
 
     // Switch to mobile
     await manager.switchProject('mobile');
 
     // Verify new paths (mobile)
     const mobileSpecsPath = manager.getSpecsPath();
-    expect(mobileSpecsPath).toContain('projects/mobile/specs');
+    expect(mobileSpecsPath).toContain('specs/mobile');
     expect(mobileSpecsPath).not.toContain('frontend');
 
     // Verify file exists in mobile project

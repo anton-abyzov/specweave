@@ -35,6 +35,10 @@ export interface JiraBoard {
   id: number;
   name: string;
   type: string;
+  location?: {
+    projectKey?: string;
+    projectId?: string;
+  };
 }
 
 export interface JiraValidationResult {
@@ -254,10 +258,27 @@ export class JiraResourceValidator {
   async checkBoard(boardId: number): Promise<JiraBoard | null> {
     try {
       const board = await this.callJiraApi(`board/${boardId}`);
+
+      // Fetch board configuration to get project information
+      let location: { projectKey?: string; projectId?: string } | undefined;
+      try {
+        const config = await this.callJiraApi(`board/${boardId}/configuration`);
+        if (config.location) {
+          location = {
+            projectKey: config.location.projectKey,
+            projectId: config.location.projectId,
+          };
+        }
+      } catch (error) {
+        // Configuration fetch failed, board exists but we don't know which project
+        // This is OK for backward compatibility
+      }
+
       return {
         id: board.id,
         name: board.name,
         type: board.type,
+        location,
       };
     } catch (error) {
       return null;
@@ -355,6 +376,22 @@ export class JiraResourceValidator {
     // 1. Validate project(s)
     console.log(chalk.gray(`Strategy: ${strategy}`));
     console.log(chalk.gray(`Checking project(s): ${projectKeys.join(', ')}...\n`));
+
+    // NEW: Validate per-project var naming (detect orphaned configs)
+    const perProjectBoardVars = Object.keys(env).filter(
+      key => key.startsWith('JIRA_BOARDS_')
+    );
+
+    for (const varName of perProjectBoardVars) {
+      const projectFromVar = varName.split('JIRA_BOARDS_')[1];
+
+      if (!projectKeys.includes(projectFromVar)) {
+        console.log(chalk.yellow(`⚠️  Configuration warning: ${varName}`));
+        console.log(chalk.gray(`    Project "${projectFromVar}" not found in JIRA_PROJECTS`));
+        console.log(chalk.gray(`    Expected projects: ${projectKeys.join(', ')}`));
+        console.log(chalk.gray(`    This configuration will be ignored.\n`));
+      }
+    }
 
     // Track all validated/created projects (for multi-project IDs)
     const allProjects: Array<{ key: string; id: string; name: string }> = [];
@@ -509,71 +546,173 @@ export class JiraResourceValidator {
       console.log(chalk.green(`✅ Updated .env with project ID: ${allProjects[0].id}\n`));
     }
 
-    // 2. Validate boards (smart per-board detection)
-    // Boards only apply to board-based strategy
-    const boardsConfig = env.JIRA_BOARDS || '';
-    if (boardsConfig && strategy === 'board-based') {
-      console.log(chalk.gray(`Checking boards: ${boardsConfig}...`));
+    // 2. Validate boards (per-project OR legacy board-based strategy)
+    result.boards = { valid: true, existing: [], missing: [], created: [] };
 
-      // For board-based strategy, use the single project key
-      const projectKeyForBoards = projectKeys[0];
+    // NEW: Check for per-project boards (JIRA_BOARDS_{ProjectKey})
+    let hasPerProjectBoards = false;
+    for (const projectKey of projectKeys) {
+      const perProjectKey = `JIRA_BOARDS_${projectKey}`;
+      if (env[perProjectKey]) {
+        hasPerProjectBoards = true;
+        break;
+      }
+    }
 
-      const boardEntries = boardsConfig.split(',').map((b) => b.trim());
-      const finalBoardIds: number[] = [];
+    if (hasPerProjectBoards) {
+      // Per-project boards (NEW!)
+      console.log(chalk.gray(`Checking per-project boards...\n`));
 
-      for (const entry of boardEntries) {
-        const isNumeric = /^\d+$/.test(entry);
+      // Track board names to detect conflicts across projects
+      const boardNamesSeen = new Map<string, string>(); // name -> project
 
-        if (isNumeric) {
-          // Entry is a board ID - validate it exists
-          const boardId = parseInt(entry, 10);
-          const board = await this.checkBoard(boardId);
+      for (const projectKey of projectKeys) {
+        const perProjectKey = `JIRA_BOARDS_${projectKey}`;
+        const boardsConfig = env[perProjectKey];
 
-          if (board) {
-            console.log(chalk.green(`  ✅ Board ${boardId}: ${board.name} (exists)`));
-            result.boards.existing.push(board.id);
-            finalBoardIds.push(board.id);
-          } else {
-            console.log(chalk.yellow(`  ⚠️  Board ${boardId}: Not found`));
-            result.boards.missing.push(entry);
-            result.boards.valid = false;
-          }
-        } else {
-          // Entry is a board name - create it
-          console.log(chalk.blue(`  📦 Creating board: ${entry}...`));
+        if (boardsConfig) {
+          const boardEntries = boardsConfig.split(',').map((b) => b.trim()).filter(b => b);
 
-          try {
-            const board = await this.createBoard(entry, projectKeyForBoards);
-            console.log(chalk.green(`  ✅ Created: ${entry} (ID: ${board.id})`));
-            result.boards.created.push({ name: entry, id: board.id });
-            finalBoardIds.push(board.id);
-          } catch (error: any) {
-            console.log(chalk.red(`  ❌ Failed to create ${entry}: ${error.message}`));
-            result.boards.missing.push(entry);
-            result.boards.valid = false;
+          if (boardEntries.length > 0) {
+            console.log(chalk.gray(`  Project: ${projectKey} (${boardEntries.length} boards)`));
+
+            const finalBoardIds: number[] = [];
+
+            for (const entry of boardEntries) {
+              const isNumeric = /^\d+$/.test(entry);
+
+              if (isNumeric) {
+                // Entry is a board ID - validate it exists AND belongs to this project
+                const boardId = parseInt(entry, 10);
+                const board = await this.checkBoard(boardId);
+
+                if (board) {
+                  // NEW: Validate board belongs to the correct project
+                  if (board.location?.projectKey && board.location.projectKey !== projectKey) {
+                    console.log(chalk.yellow(`    ⚠️  Board ${boardId}: ${board.name} belongs to project ${board.location.projectKey}, not ${projectKey}`));
+                    console.log(chalk.gray(`       Expected: ${projectKey}, Found: ${board.location.projectKey}`));
+                    result.boards.missing.push(entry);
+                    result.boards.valid = false;
+                  } else {
+                    // Board exists and belongs to correct project (or project unknown - backward compat)
+                    if (board.location?.projectKey) {
+                      console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project: ${board.location.projectKey})`));
+                    } else {
+                      console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project verification skipped)`));
+                    }
+                    result.boards.existing.push(board.id);
+                    finalBoardIds.push(board.id);
+                  }
+                } else {
+                  console.log(chalk.yellow(`    ⚠️  Board ${boardId}: Not found`));
+                  result.boards.missing.push(entry);
+                  result.boards.valid = false;
+                }
+              } else {
+                // Entry is a board name - check for conflicts, then create it
+
+                // NEW: Detect board name conflicts across projects
+                if (boardNamesSeen.has(entry)) {
+                  const existingProject = boardNamesSeen.get(entry);
+                  console.log(chalk.yellow(`    ⚠️  Board name conflict: "${entry}" already used in project ${existingProject}`));
+                  console.log(chalk.gray(`       Tip: Use unique board names or append project suffix (e.g., "${entry}-${projectKey}")`));
+                  result.boards.missing.push(entry);
+                  result.boards.valid = false;
+                } else {
+                  console.log(chalk.blue(`    📦 Creating board: ${entry}...`));
+
+                  try {
+                    const board = await this.createBoard(entry, projectKey);
+                    console.log(chalk.green(`    ✅ Created: ${entry} (ID: ${board.id})`));
+                    result.boards.created.push({ name: entry, id: board.id });
+                    finalBoardIds.push(board.id);
+                    boardNamesSeen.set(entry, projectKey); // Track this board name
+                  } catch (error: any) {
+                    console.log(chalk.red(`    ❌ Failed to create ${entry}: ${error.message}`));
+                    result.boards.missing.push(entry);
+                    result.boards.valid = false;
+                  }
+                }
+              }
+            }
+
+            // Update .env with final board IDs for this project
+            if (finalBoardIds.length > 0) {
+              await this.updateEnv({ [perProjectKey]: finalBoardIds.join(',') });
+              result.envUpdated = true;
+              console.log(chalk.green(`    ✅ Updated ${perProjectKey}: ${finalBoardIds.join(',')}`));
+            }
           }
         }
       }
 
-      // Update .env if any boards were created
-      if (result.boards.created.length > 0) {
-        console.log(chalk.blue('\n📝 Updating .env with board IDs...'));
-        await this.updateEnv({ JIRA_BOARDS: finalBoardIds.join(',') });
-        result.boards.existing = finalBoardIds;
-        result.envUpdated = true;
-        console.log(chalk.green(`✅ Updated JIRA_BOARDS: ${finalBoardIds.join(',')}`));
-      }
-
-      // Summary
       console.log();
-      if (result.boards.missing.length > 0) {
-        console.log(
-          chalk.yellow(
-            `⚠️  Issues found: ${result.boards.missing.length} board(s)\n`
-          )
-        );
-      } else {
-        console.log(chalk.green(`✅ All boards validated/created successfully\n`));
+    } else {
+      // Legacy: Global boards (backward compatibility)
+      const boardsConfig = env.JIRA_BOARDS || '';
+      if (boardsConfig && strategy === 'board-based') {
+        console.log(chalk.gray(`Checking boards: ${boardsConfig}...`));
+
+        // For board-based strategy, use the single project key
+        const projectKeyForBoards = projectKeys[0];
+
+        const boardEntries = boardsConfig.split(',').map((b) => b.trim());
+        const finalBoardIds: number[] = [];
+
+        for (const entry of boardEntries) {
+          const isNumeric = /^\d+$/.test(entry);
+
+          if (isNumeric) {
+            // Entry is a board ID - validate it exists
+            const boardId = parseInt(entry, 10);
+            const board = await this.checkBoard(boardId);
+
+            if (board) {
+              console.log(chalk.green(`  ✅ Board ${boardId}: ${board.name} (exists)`));
+              result.boards.existing.push(board.id);
+              finalBoardIds.push(board.id);
+            } else {
+              console.log(chalk.yellow(`  ⚠️  Board ${boardId}: Not found`));
+              result.boards.missing.push(entry);
+              result.boards.valid = false;
+            }
+          } else {
+            // Entry is a board name - create it
+            console.log(chalk.blue(`  📦 Creating board: ${entry}...`));
+
+            try {
+              const board = await this.createBoard(entry, projectKeyForBoards);
+              console.log(chalk.green(`  ✅ Created: ${entry} (ID: ${board.id})`));
+              result.boards.created.push({ name: entry, id: board.id });
+              finalBoardIds.push(board.id);
+            } catch (error: any) {
+              console.log(chalk.red(`  ❌ Failed to create ${entry}: ${error.message}`));
+              result.boards.missing.push(entry);
+              result.boards.valid = false;
+            }
+          }
+        }
+
+        // Update .env if any boards were created
+        if (result.boards.created.length > 0) {
+          console.log(chalk.blue('\n📝 Updating .env with board IDs...'));
+          await this.updateEnv({ JIRA_BOARDS: finalBoardIds.join(',') });
+          result.boards.existing = finalBoardIds;
+          result.envUpdated = true;
+          console.log(chalk.green(`✅ Updated JIRA_BOARDS: ${finalBoardIds.join(',')}`));
+        }
+
+        // Summary
+        console.log();
+        if (result.boards.missing.length > 0) {
+          console.log(
+            chalk.yellow(
+              `⚠️  Issues found: ${result.boards.missing.length} board(s)\n`
+            )
+          );
+        } else {
+          console.log(chalk.green(`✅ All boards validated/created successfully\n`));
+        }
       }
     }
 
@@ -615,12 +754,14 @@ export interface AzureDevOpsValidationResult {
   areaPaths?: Array<{
     name: string;
     id?: number;
+    project?: string; // NEW: Per-project area paths
     exists: boolean;
     created: boolean;
   }>;
   teams?: Array<{
     name: string;
     id?: string;
+    project?: string; // NEW: Per-project teams
     exists: boolean;
     created: boolean;
   }>;
@@ -937,6 +1078,24 @@ export class AzureDevOpsResourceValidator {
     console.log(chalk.gray(`Strategy: ${strategy}`));
     console.log(chalk.gray(`Checking project(s): ${projectNames.join(', ')}...\n`));
 
+    // NEW: Validate per-project var naming (detect orphaned configs)
+    const perProjectVars = Object.keys(env).filter(
+      key => key.startsWith('AZURE_DEVOPS_AREA_PATHS_') || key.startsWith('AZURE_DEVOPS_TEAMS_')
+    );
+
+    for (const varName of perProjectVars) {
+      const projectFromVar = varName.includes('_AREA_PATHS_')
+        ? varName.split('_AREA_PATHS_')[1]
+        : varName.split('_TEAMS_')[1];
+
+      if (!projectNames.includes(projectFromVar)) {
+        console.log(chalk.yellow(`⚠️  Configuration warning: ${varName}`));
+        console.log(chalk.gray(`    Project "${projectFromVar}" not found in AZURE_DEVOPS_PROJECTS`));
+        console.log(chalk.gray(`    Expected projects: ${projectNames.join(', ')}`));
+        console.log(chalk.gray(`    This configuration will be ignored.\n`));
+      }
+    }
+
     // 1. Validate projects
     for (const projectName of projectNames) {
       const project = await this.checkProject(projectName);
@@ -1051,16 +1210,70 @@ export class AzureDevOpsResourceValidator {
 
     console.log(); // Empty line after project validation
 
-    // 2. Validate area paths (area-path-based strategy only)
-    if (strategy === 'area-path-based') {
+    // 2. Validate area paths (per-project OR legacy area-path-based strategy)
+    result.areaPaths = [];
+
+    // NEW: Check for per-project area paths (AZURE_DEVOPS_AREA_PATHS_{ProjectName})
+    let hasPerProjectAreaPaths = false;
+    for (const projectName of projectNames) {
+      const perProjectKey = `AZURE_DEVOPS_AREA_PATHS_${projectName}`;
+      if (env[perProjectKey]) {
+        hasPerProjectAreaPaths = true;
+        break;
+      }
+    }
+
+    if (hasPerProjectAreaPaths) {
+      // Per-project area paths (NEW!)
+      console.log(chalk.gray(`Checking per-project area paths...\n`));
+
+      for (const projectName of projectNames) {
+        const perProjectKey = `AZURE_DEVOPS_AREA_PATHS_${projectName}`;
+        const areaPathsConfig = env[perProjectKey];
+
+        if (areaPathsConfig) {
+          const areaNames = areaPathsConfig.split(',').map(a => a.trim()).filter(a => a);
+
+          if (areaNames.length > 0) {
+            console.log(chalk.gray(`  Project: ${projectName} (${areaNames.length} area paths)`));
+
+            for (const areaName of areaNames) {
+              try {
+                await this.createAreaPath(projectName, areaName);
+                result.areaPaths.push({
+                  name: areaName,
+                  project: projectName,
+                  exists: false,
+                  created: true
+                });
+              } catch (error: any) {
+                if (error.message.includes('already exists')) {
+                  console.log(chalk.green(`    ✅ Area path exists: ${projectName}\\${areaName}`));
+                  result.areaPaths.push({
+                    name: areaName,
+                    project: projectName,
+                    exists: true,
+                    created: false
+                  });
+                } else {
+                  console.log(chalk.red(`    ❌ Failed to create/validate area path: ${areaName}`));
+                  result.valid = false;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      console.log();
+    } else if (strategy === 'area-path-based') {
+      // Legacy: Global area paths (backward compatibility)
       const areaPathsConfig = env.AZURE_DEVOPS_AREA_PATHS || '';
       if (areaPathsConfig) {
         console.log(chalk.gray(`Checking area paths...`));
 
         const projectName = projectNames[0]; // Single project for area-path-based
         const areaNames = areaPathsConfig.split(',').map(a => a.trim());
-
-        result.areaPaths = [];
 
         for (const areaName of areaNames) {
           // Check if area path exists (simplified - would need proper API call)
@@ -1083,8 +1296,70 @@ export class AzureDevOpsResourceValidator {
       }
     }
 
-    // 3. Validate teams (team-based strategy only)
-    if (strategy === 'team-based') {
+    // 3. Validate teams (per-project OR legacy team-based strategy)
+    result.teams = [];
+
+    // NEW: Check for per-project teams (AZURE_DEVOPS_TEAMS_{ProjectName})
+    let hasPerProjectTeams = false;
+    for (const projectName of projectNames) {
+      const perProjectKey = `AZURE_DEVOPS_TEAMS_${projectName}`;
+      if (env[perProjectKey]) {
+        hasPerProjectTeams = true;
+        break;
+      }
+    }
+
+    if (hasPerProjectTeams) {
+      // Per-project teams (NEW!)
+      console.log(chalk.gray(`Checking per-project teams...\n`));
+
+      for (const projectName of projectNames) {
+        const perProjectKey = `AZURE_DEVOPS_TEAMS_${projectName}`;
+        const teamsConfig = env[perProjectKey];
+
+        if (teamsConfig) {
+          const teamNames = teamsConfig.split(',').map(t => t.trim()).filter(t => t);
+
+          if (teamNames.length > 0) {
+            console.log(chalk.gray(`  Project: ${projectName} (${teamNames.length} teams)`));
+
+            const existingTeams = await this.fetchTeams(projectName);
+
+            for (const teamName of teamNames) {
+              const team = existingTeams.find(t => t.name === teamName);
+
+              if (team) {
+                console.log(chalk.green(`    ✅ Team exists: ${teamName}`));
+                result.teams.push({
+                  name: teamName,
+                  id: team.id,
+                  project: projectName,
+                  exists: true,
+                  created: false
+                });
+              } else {
+                try {
+                  const newTeam = await this.createTeam(projectName, teamName);
+                  result.teams.push({
+                    name: teamName,
+                    id: newTeam.id,
+                    project: projectName,
+                    exists: false,
+                    created: true
+                  });
+                } catch (error: any) {
+                  console.log(chalk.red(`    ❌ Failed to create team: ${teamName}`));
+                  result.valid = false;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      console.log();
+    } else if (strategy === 'team-based') {
+      // Legacy: Global teams (backward compatibility)
       const teamsConfig = env.AZURE_DEVOPS_TEAMS || '';
       if (teamsConfig) {
         console.log(chalk.gray(`Checking teams...`));
@@ -1092,8 +1367,6 @@ export class AzureDevOpsResourceValidator {
         const projectName = projectNames[0]; // Single project for team-based
         const teamNames = teamsConfig.split(',').map(t => t.trim());
         const existingTeams = await this.fetchTeams(projectName);
-
-        result.teams = [];
 
         for (const teamName of teamNames) {
           const team = existingTeams.find(t => t.name === teamName);

@@ -142,20 +142,44 @@ if [[ -d ".specweave/increments" ]]; then
   done)
 
   if [[ -n "$ACTIVE_INCREMENT" ]]; then
-    # Get task completion percentage
-    TASKS_FILE=".specweave/increments/$ACTIVE_INCREMENT/tasks.md"
-    if [[ -f "$TASKS_FILE" ]]; then
-      TASK_STATS=$(grep -E "^\s*-\s*\[[ x]\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
-      COMPLETED_TASKS=$(grep -E "^\s*-\s*\[x\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
+    # Use status line cache for consistent display
+    STATUS_LINE_CACHE=".specweave/state/status-line.json"
+    if [[ -f "$STATUS_LINE_CACHE" ]]; then
+      # Get status line from cache (ultra-fast)
+      STATUS_LINE=$(node -e "
+        try {
+          const { StatusLineManager } = require('./dist/core/status-line/status-line-manager.js');
+          const manager = new StatusLineManager(process.cwd());
+          const result = manager.render();
+          console.log(result || '');
+        } catch (e) {
+          // Fallback: show increment name only
+          console.log('');
+        }
+      " 2>/dev/null || echo "")
 
-      if [[ "$TASK_STATS" -gt 0 ]]; then
-        PERCENTAGE=$(( COMPLETED_TASKS * 100 / TASK_STATS ))
-        CONTEXT="📍 Active Increment: $ACTIVE_INCREMENT ($PERCENTAGE% complete, $COMPLETED_TASKS/$TASK_STATS tasks)"
+      if [[ -n "$STATUS_LINE" ]]; then
+        CONTEXT="✓ $STATUS_LINE"
       else
-        CONTEXT="📍 Active Increment: $ACTIVE_INCREMENT"
+        # Fallback: parse tasks.md manually
+        TASKS_FILE=".specweave/increments/$ACTIVE_INCREMENT/tasks.md"
+        if [[ -f "$TASKS_FILE" ]]; then
+          TASK_STATS=$(grep -E "^\s*-\s*\[[ x]\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
+          COMPLETED_TASKS=$(grep -E "^\s*-\s*\[x\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
+
+          if [[ "$TASK_STATS" -gt 0 ]]; then
+            PERCENTAGE=$(( COMPLETED_TASKS * 100 / TASK_STATS ))
+            CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT ($PERCENTAGE% complete, $COMPLETED_TASKS/$TASK_STATS tasks)"
+          else
+            CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
+          fi
+        else
+          CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
+        fi
       fi
     else
-      CONTEXT="📍 Active Increment: $ACTIVE_INCREMENT"
+      # No cache, fall back to increment name only
+      CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
     fi
   fi
 fi

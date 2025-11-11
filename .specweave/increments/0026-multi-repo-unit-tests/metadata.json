@@ -1,0 +1,13 @@
+{
+  "id": "0026-multi-repo-unit-tests",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-11T23:22:58.495Z",
+  "lastActivity": "2025-11-11T23:22:58.495Z",
+  "github": {
+    "issue": 33,
+    "url": "https://github.com/anton-abyzov/specweave/issues/33",
+    "synced": "2025-11-11T23:29:54Z"
+  },
+  "githubProfile": "specweave-dev"
+}

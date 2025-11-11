@@ -1,6 +1,6 @@
 ---
 name: jira-resource-validator
-description: Validates Jira projects and boards exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. For boards, accepts either IDs (validates existence) or names (creates boards and updates .env with IDs). Activates for jira setup, jira validation, jira configuration, missing jira project, missing jira boards, jira .env setup.
+description: Validates Jira projects and boards exist, creates missing resources automatically. Smart enough to prompt user to select existing or create new projects. For boards, accepts either IDs (validates existence) or names (creates boards and updates .env with IDs). NEW - Per-project configuration support - JIRA_BOARDS_{ProjectKey} for hierarchical board organization across multiple projects. Activates for jira setup, jira validation, jira configuration, missing jira project, missing jira boards, jira .env setup, per-project boards.
 allowed-tools: Read, Bash, Write, Edit
 ---
 
@@ -69,6 +69,36 @@ JIRA_BOARDS=101,102,QA,Dashboard
 - Numeric (e.g., "123") → Validate ID exists
 - Non-numeric (e.g., "QA") → Create board with that name
 - After creation, .env is updated with ALL board IDs
+
+### NEW: Per-Project Configuration (Advanced - Multiple Projects × Boards)
+
+**Multiple JIRA projects with their own boards:**
+
+```bash
+# Multiple projects with their own boards
+JIRA_STRATEGY=project-per-team
+JIRA_PROJECTS=BACKEND,FRONTEND,MOBILE
+
+# Per-project boards (hierarchical naming)
+JIRA_BOARDS_BACKEND=123,456         # Sprint + Kanban (IDs)
+JIRA_BOARDS_FRONTEND=Sprint,Bug     # Create these boards
+JIRA_BOARDS_MOBILE=789,012,345      # iOS + Android + Release (IDs)
+```
+→ Validates 3 projects exist: BACKEND, FRONTEND, MOBILE
+→ Validates/creates boards per project:
+  - BACKEND: Validates boards 123, 456 exist
+  - FRONTEND: Creates "Sprint" and "Bug" boards, updates .env with IDs
+  - MOBILE: Validates boards 789, 012, 345 exist
+
+**Naming Convention**: `{PROVIDER}_{RESOURCE_TYPE}_{PROJECT_KEY}`
+
+**Mixed IDs and Names Per Project**:
+```bash
+JIRA_BOARDS_BACKEND=123,NewBoard,456
+```
+→ Validates 123, 456 exist
+→ Creates "NewBoard"
+→ Updates .env: `JIRA_BOARDS_BACKEND=123,789,456` (all IDs!)
 
 ## Validation Flow
 

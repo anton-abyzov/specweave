@@ -1,9 +1,11 @@
 # Increment 0008: User Education & FAQ Implementation
 
-**Status**: active
+**Status**: completed (scope reduced)
 **Type**: feature
 **Created**: 2025-11-04
+**Completed**: 2025-11-11
 **Related**: Increment 0007 (Smart Increment Discipline)
+**Scope Change**: Core clarification document (SPECS-ARCHITECTURE-CLARIFICATION.md) created. Full FAQ implementation deferred to future increment.
 
 ---
 
