@@ -15,6 +15,5 @@
     "integration",
     "sync",
     "specweave"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
