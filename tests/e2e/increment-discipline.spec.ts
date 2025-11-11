@@ -9,6 +9,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
+import { execSync } from 'child_process';
 
 test.describe('Increment Discipline Enforcement (E2E)', () => {
   let testDir: string;
@@ -97,8 +98,6 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
    * Helper: Simulate hook execution
    */
   async function simulateHook(prompt: string): Promise<{ decision: string; reason?: string; systemMessage?: string }> {
-    const { execSync } = require('child_process');
-
     try {
       const hookPath = path.join(__dirname, '../../plugins/specweave/hooks/user-prompt-submit.sh');
       const input = JSON.stringify({ prompt });
