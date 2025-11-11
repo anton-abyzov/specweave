@@ -28,7 +28,7 @@ Brings the same engineering discipline to ML that SpecWeave brings to software:
 
 ```bash
 # Install SpecWeave ML plugin
-/plugin install specweave-ml@specweave
+/plugin install specweave-ml
 
 # Verify installation
 /plugin list

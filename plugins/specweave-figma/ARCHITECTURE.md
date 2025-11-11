@@ -287,7 +287,7 @@ specweave plugin install figma
 **Via Claude Code**:
 ```bash
 /plugin marketplace add specweave/marketplace
-/plugin install specweave-figma@specweave
+/plugin install specweave-figma
 ```
 
 ### Verify Installation

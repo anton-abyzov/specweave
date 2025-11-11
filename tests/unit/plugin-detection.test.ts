@@ -263,8 +263,8 @@ describe('Plugin Detection Utility', () => {
       const commands = generateInstallCommands(plugins);
 
       expect(commands).toHaveLength(2); // Only high + medium
-      expect(commands).toContain('/plugin install specweave-frontend@specweave');
-      expect(commands).toContain('/plugin install specweave-backend@specweave');
+      expect(commands).toContain('/plugin install specweave-frontend');
+      expect(commands).toContain('/plugin install specweave-backend');
       expect(commands.find(c => c.includes('diagrams'))).toBeUndefined(); // Low confidence excluded
     });
 
