@@ -39,9 +39,14 @@ describe('MetadataManager', () => {
     // Restore original cwd
     process.chdir(originalCwd);
 
-    // Cleanup
+    // Cleanup with retry logic for ENOTEMPTY errors
     if (fs.existsSync(testRootPath)) {
-      fs.removeSync(testRootPath);
+      try {
+        fs.rmSync(testRootPath, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
+      } catch (error) {
+        // Ignore cleanup errors in tests
+        console.warn(`Failed to cleanup test directory: ${error}`);
+      }
     }
   });
 

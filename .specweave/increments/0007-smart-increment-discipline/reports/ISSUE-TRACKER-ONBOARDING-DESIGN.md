@@ -615,7 +615,7 @@ async function installTrackerPlugin(
   if (!isCommandAvailableSync('claude')) {
     spinner.warn('Claude CLI not found');
     console.log(chalk.yellow('\n📦 Manual plugin installation required:'));
-    console.log(chalk.white(`   /plugin install ${pluginName}@specweave\n`));
+    console.log(chalk.white(`   /plugin install ${pluginName}\n`));
     return;
   }
 
@@ -623,7 +623,7 @@ async function installTrackerPlugin(
     const result = execFileNoThrowSync('claude', [
       'plugin',
       'install',
-      `${pluginName}@specweave`
+      pluginName
     ]);
 
     if (result.success) {
@@ -635,7 +635,7 @@ async function installTrackerPlugin(
   } catch (error: any) {
     spinner.fail(`Could not auto-install ${pluginName}`);
     console.log(chalk.yellow('\n📦 Manual plugin installation:'));
-    console.log(chalk.white(`   /plugin install ${pluginName}@specweave\n`));
+    console.log(chalk.white(`   /plugin install ${pluginName}\n`));
   }
 }
 

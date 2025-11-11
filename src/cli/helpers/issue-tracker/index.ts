@@ -183,8 +183,20 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5: Save credentials to .env
   await saveCredentials(projectPath, tracker, credentials);
 
-  // Step 5.1: Write sync config to .specweave/config.json
-  await writeSyncConfig(projectPath, tracker, credentials);
+  // Step 5.1: Configure repositories (GitHub only)
+  let repositoryProfiles = [];
+  let monorepoProjects = undefined;
+
+  if (tracker === 'github') {
+    // Import the configuration function
+    const { configureGitHubRepositories } = await import('./github.js');
+    const repoConfig = await configureGitHubRepositories(projectPath, language);
+    repositoryProfiles = repoConfig.profiles;
+    monorepoProjects = repoConfig.monorepoProjects;
+  }
+
+  // Step 5.2: Write sync config to .specweave/config.json
+  await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
 
   // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
   if (tracker === 'jira') {
@@ -352,7 +364,9 @@ async function saveCredentials(
 async function writeSyncConfig(
   projectPath: string,
   tracker: IssueTracker,
-  credentials: TrackerCredentials
+  credentials: TrackerCredentials,
+  repositoryProfiles?: any[],
+  monorepoProjects?: string[]
 ): Promise<void> {
   const configPath = path.join(projectPath, '.specweave', 'config.json');
 
@@ -429,20 +443,18 @@ async function writeSyncConfig(
   }
 
   // Add sync configuration
-  config.sync = {
-    enabled: true,
-    activeProfile: `${tracker}-default`,
-    settings: {
-      autoCreateIssue: true,
-      syncDirection: 'bidirectional'
-    },
-    profiles: {
-      [`${tracker}-default`]: tracker === 'github' ? {
+  const profiles: any = {};
+
+  // Handle GitHub with multiple repository profiles
+  if (tracker === 'github' && repositoryProfiles && repositoryProfiles.length > 0) {
+    // Create profiles from repository configuration
+    for (const profile of repositoryProfiles) {
+      profiles[profile.id] = {
         provider: 'github',
-        displayName: 'GitHub Default',
+        displayName: profile.displayName,
         config: {
-          owner,
-          repo
+          owner: profile.owner,
+          repo: profile.repo
         },
         timeRange: {
           default: '1M',
@@ -452,35 +464,105 @@ async function writeSyncConfig(
           maxItemsPerSync: 500,
           warnThreshold: 100
         }
-      } : tracker === 'jira' ? {
-        provider: 'jira',
-        displayName: 'Jira Default',
-        config: {
-          domain,
-          // Handle both single project (string) and multiple projects (array)
-          ...(Array.isArray(project)
-            ? { projects: project }  // project-per-team: array of project keys
-            : { projectKey: project } // component/board-based: single project key
-          )
-        },
-        timeRange: {
-          default: '1M',
-          max: '6M'
-        }
-      } : {
-        provider: 'ado',
-        displayName: 'Azure DevOps Default',
-        config: {
-          organization,
-          project
-        },
-        timeRange: {
-          default: '1M',
-          max: '6M'
-        }
+      };
+    }
+
+    // Handle monorepo projects if present
+    if (monorepoProjects && monorepoProjects.length > 0) {
+      // Store monorepo projects in the single profile
+      const mainProfile = Object.values(profiles)[0] as any;
+      if (mainProfile) {
+        mainProfile.config.monorepoProjects = monorepoProjects;
       }
     }
-  };
+
+    // Set default profile to the first one or the one marked as default
+    const defaultProfile = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
+    config.sync = {
+      enabled: true,
+      activeProfile: defaultProfile?.id || 'main',
+      settings: {
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      },
+      profiles
+    };
+  } else if (tracker === 'github') {
+    // Fallback for legacy single-repo configuration
+    profiles[`${tracker}-default`] = {
+      provider: 'github',
+      displayName: 'GitHub Default',
+      config: {
+        owner,
+        repo
+      },
+      timeRange: {
+        default: '1M',
+        max: '6M'
+      },
+      rateLimits: {
+        maxItemsPerSync: 500,
+        warnThreshold: 100
+      }
+    };
+    config.sync = {
+      enabled: true,
+      activeProfile: `${tracker}-default`,
+      settings: {
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      },
+      profiles
+    };
+  } else if (tracker === 'jira') {
+    profiles[`${tracker}-default`] = {
+      provider: 'jira',
+      displayName: 'Jira Default',
+      config: {
+        domain,
+        // Handle both single project (string) and multiple projects (array)
+        ...(Array.isArray(project)
+          ? { projects: project }  // project-per-team: array of project keys
+          : { projectKey: project } // component/board-based: single project key
+        )
+      },
+      timeRange: {
+        default: '1M',
+        max: '6M'
+      }
+    };
+    config.sync = {
+      enabled: true,
+      activeProfile: `${tracker}-default`,
+      settings: {
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      },
+      profiles
+    };
+  } else if (tracker === 'ado') {
+    profiles[`${tracker}-default`] = {
+      provider: 'ado',
+      displayName: 'Azure DevOps Default',
+      config: {
+        organization,
+        project
+      },
+      timeRange: {
+        default: '1M',
+        max: '6M'
+      }
+    };
+    config.sync = {
+      enabled: true,
+      activeProfile: `${tracker}-default`,
+      settings: {
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      },
+      profiles
+    };
+  }
 
   // Write config
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
@@ -509,7 +591,11 @@ async function installPlugin(tracker: IssueTracker, language: string): Promise<v
   const result = installTrackerPlugin(tracker);
 
   if (result.success) {
-    spinner.succeed(`${getTrackerDisplayName(tracker)} plugin installed`);
+    if (result.alreadyInstalled) {
+      spinner.succeed(`${getTrackerDisplayName(tracker)} plugin already installed`);
+    } else {
+      spinner.succeed(`${getTrackerDisplayName(tracker)} plugin installed`);
+    }
   } else {
     spinner.fail(`Could not auto-install plugin`);
     console.log(chalk.yellow('\n📦 Manual plugin installation:'));

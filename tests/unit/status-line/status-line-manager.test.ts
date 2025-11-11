@@ -61,7 +61,8 @@ describe('StatusLineManager', () => {
       });
 
       const result = manager.render();
-      expect(result).toContain('[sync-architecture-fix]');
+      // Name gets truncated at 20 chars (sync-architecture-fix is 21 chars)
+      expect(result).toMatch(/\[sync-architecture-f[…\]]/);
       expect(result).toContain('15/30');
       expect(result).toContain('50%');
       expect(result).toContain('T-016');

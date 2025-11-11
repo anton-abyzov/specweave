@@ -110,25 +110,25 @@ total_tasks: 5
       const manager = new StatusLineManager(tempDir);
       expect(manager.render()).toContain('0/5');
 
-      // Wait 100ms to ensure mtime changes
-      await sleep(100);
+      // Get cache data before edit
+      const cacheDataBefore = manager.getCacheData();
+      expect(cacheDataBefore).not.toBeNull();
+      const mtimeBefore = cacheDataBefore!.lastModified;
+
+      // Wait to ensure mtime will be different
+      await sleep(1000);
 
       // Simulate external edit (vim, git, etc.)
       const updatedTasks = fs.readFileSync(tasksFile, 'utf8')
         .replace('## T-001: First task\n[ ] Pending', '## T-001: First task\n[x] Completed');
       fs.writeFileSync(tasksFile, updatedTasks);
 
-      // Cache becomes stale due to mtime mismatch
-      // Manager should return null (cache invalid)
-      const cacheData = manager.getCacheData();
-      expect(cacheData).not.toBeNull();
-
-      // Check mtime mismatch
+      // Check that file mtime has changed
       const tasksMtime = Math.floor(fs.statSync(tasksFile).mtimeMs / 1000);
-      expect(tasksMtime).not.toBe(cacheData!.lastModified);
+      expect(tasksMtime).toBeGreaterThan(mtimeBefore);
 
-      // After >5s, cache would be considered stale
-      // For now, just verify mtime changed
+      // Cache is now stale due to mtime mismatch
+      // The manager would detect this on next render
     });
 
     it('should regenerate cache on next hook fire after external edit', async () => {

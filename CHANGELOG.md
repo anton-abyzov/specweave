@@ -3021,7 +3021,7 @@ Elevates SpecWeave from "spec-driven development" to "test-driven spec developme
 #### Changed
 - **Simplified to Claude Code Native Plugins ONLY**
   - Removed per-project file copying (was incorrect approach)
-  - Plugins now install globally via `/plugin install specweave@specweave`
+  - Plugins now install globally via `/plugin install specweave`
   - Work across ALL projects (like VS Code extensions)
   - No `.claude/` directory needed in user projects
   - Marketplace auto-registered via `.claude/settings.json`
@@ -3058,7 +3058,7 @@ Elevates SpecWeave from "spec-driven development" to "test-driven spec developme
 
 **After this fix**:
 1. Run `specweave init` → Marketplace registered
-2. Run `/plugin install specweave@specweave` → Plugins install globally
+2. Run `/plugin install specweave` → Plugins install globally
 3. Slash commands work in ALL SpecWeave projects
 
 ---
