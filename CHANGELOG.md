@@ -4,7 +4,7 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.16.6] - 2025-11-11
+## [0.16.7] - 2025-11-11
 
 ### 🐛 Critical Bug Fixes
 
