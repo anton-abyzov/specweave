@@ -7,6 +7,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
 describe('Increment Duplicate Prevention', () => {
   let testDir: string;
@@ -17,8 +18,30 @@ describe('Increment Duplicate Prevention', () => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-dup-test-'));
     fs.mkdirSync(path.join(testDir, '.specweave/increments'), { recursive: true });
 
-    // Path to feature-utils script
-    utilsPath = path.join(process.cwd(), 'plugins/specweave/skills/increment-planner/scripts/feature-utils.js');
+    // Calculate path to feature-utils script relative to this test file
+    // Test is in: tests/unit/increment/duplicate-prevention.test.ts
+    // Script is in: plugins/specweave/skills/increment-planner/scripts/feature-utils.js
+    const testFileDir = path.dirname(__filename);
+    const projectRoot = path.resolve(testFileDir, '../../..');
+    utilsPath = path.join(projectRoot, 'plugins/specweave/skills/increment-planner/scripts/feature-utils.js');
+
+    // Fallback to process.cwd() if the calculated path doesn't exist
+    if (!fs.existsSync(utilsPath)) {
+      utilsPath = path.join(process.cwd(), 'plugins/specweave/skills/increment-planner/scripts/feature-utils.js');
+    }
+
+    // Additional fallback for CI environment where script might be in dist/
+    if (!fs.existsSync(utilsPath)) {
+      const distPath = path.join(projectRoot, 'dist/plugins/specweave/skills/increment-planner/scripts/feature-utils.js');
+      if (fs.existsSync(distPath)) {
+        utilsPath = distPath;
+      }
+    }
+
+    // Verify the script exists before running tests
+    if (!fs.existsSync(utilsPath)) {
+      throw new Error(`feature-utils.js not found. Tried:\n- ${utilsPath}\n- ${path.join(process.cwd(), 'plugins/specweave/skills/increment-planner/scripts/feature-utils.js')}\n- ${path.join(projectRoot, 'dist/plugins/specweave/skills/increment-planner/scripts/feature-utils.js')}`);
+    }
   });
 
   afterEach(() => {
