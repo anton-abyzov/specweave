@@ -68,6 +68,64 @@ rm -rf .specweave/docs/internal/projects.old/
 
 ---
 
+## [0.16.12] - 2025-11-11
+
+### ✨ Features
+
+#### Per-Project Resource Validation (Increment 0025)
+- **Smart JIRA/ADO resource validation** (AC-US1-01, AC-US1-02, AC-US1-03)
+  - Automatic board/project detection and creation
+  - User-friendly selection prompts for existing resources
+  - Intelligent validation for JIRA boards and ADO projects
+  - Implementation: `src/utils/external-resource-validator.ts` (400+ lines)
+
+- **Enhanced resource configuration** (AC-US2-01, AC-US2-02)
+  - Per-project JIRA board configuration
+  - Per-project ADO project/team configuration
+  - Automatic metadata backfill for existing increments
+  - Implementation: `scripts/backfill-metadata.sh`
+
+- **Improved plugin validation skills** (AC-US3-01, AC-US3-02)
+  - Updated JIRA resource validator with board validation
+  - Updated ADO resource validator with project/team validation
+  - Better error messages and recovery options
+  - Implementation: Plugin skills in `plugins/specweave-jira/` and `plugins/specweave-ado/`
+
+#### Multi-Repo Unit Tests (Increment 0026)
+- **Comprehensive test coverage** (AC-US1-01 through AC-US1-05)
+  - Integration tests for multi-project workflows
+  - Project switching and spec organization tests
+  - 95% code coverage for multi-project features
+  - Implementation: `tests/e2e/multi-project/` and `tests/integration/`
+
+### 🔧 Improvements
+
+- **Plugin version bumps**
+  - specweave: 0.16.11 → 0.16.12
+  - specweave-ado: 0.5.6 → 0.5.7
+  - specweave-jira: 0.5.6 → 0.5.7
+  - specweave-github: 0.4.15 → 0.4.16
+  - specweave-release: 0.2.4 → 0.2.5
+
+- **Documentation improvements**
+  - Added spec-0020: GitHub Multi-Repo Integration
+  - Added spec-0026: Multi-Repo Unit Tests
+  - Moved deprecated increment copies to proper archive location
+  - Updated living docs with external PM tool references
+
+- **User-prompt-submit hook enhancements**
+  - Enhanced validation for user prompts
+  - Better error handling and logging
+  - Improved performance and reliability
+
+### 🐛 Bug Fixes
+
+- Fixed external resource validator edge cases
+- Improved JIRA/ADO integration error handling
+- Fixed metadata sync issues in multi-project setups
+
+---
+
 ## [Unreleased]
 
 ### ✨ Features
