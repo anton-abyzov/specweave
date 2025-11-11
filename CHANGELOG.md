@@ -4,6 +4,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.5] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### CI Test Infrastructure
+- **Fixed duplicate-prevention test failures in CI**
+  - Updated path resolution to use `__dirname` instead of `process.cwd()`
+  - Added multiple fallback paths for locating `feature-utils.js` in different environments
+  - Added comprehensive error messages for debugging
+  - Tests now pass reliably on all CI platforms (Ubuntu, macOS, Windows)
+
+### 🔧 Improvements
+
+- **Test robustness**
+  - Improved path resolution for test fixtures
+  - Better handling of different working directory contexts
+  - More resilient test infrastructure for CI/CD environments
+
+---
+
 ## [0.16.4] - 2025-11-11
 
 ### ✨ New Features
