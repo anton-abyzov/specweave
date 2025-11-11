@@ -4,6 +4,137 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.2] - 2025-11-10
+
+### 🐛 **CRITICAL BUG FIX** - Jira Validation Always Passed
+
+**Severity**: CRITICAL - Affects ALL users setting up Jira integration
+
+#### The Problem
+
+Jira project validation was **broken** - it incorrectly validated non-existent projects as "existing"!
+
+**User Experience**:
+```bash
+specweave init my-project
+# Enter: FRONTEND,BACKEND,MOBILE (projects that DON'T exist)
+
+# ❌ BUG: SpecWeave says they exist!
+✅ Validated: Project "FRONTEND" exists in Jira
+✅ Validated: Project "BACKEND" exists in Jira
+✅ Validated: Project "MOBILE" exists in Jira
+
+# Config written with non-existent projects
+# Later: 404 errors everywhere!
+```
+
+#### Root Cause
+
+**File**: `src/utils/external-resource-validator.ts:138`
+
+The `curl` command used `-s` (silent) flag without `-f` (fail on errors), causing HTTP 404 responses to be parsed as successful API responses.
+
+**Technical Details**:
+1. When checking `/rest/api/3/project/FRONTEND` for non-existent project
+2. Jira API returns HTTP 404 with error JSON: `{"errorMessages": ["No project found"], "errors": {}}`
+3. `curl -s` doesn't fail on HTTP errors (silent mode)
+4. Code parses error JSON as if it's a valid project
+5. Validation incorrectly passes
+
+#### The Fix
+
+**Added `-f` flag to curl**:
+```typescript
+// Before
+const curlCommand = `curl -s -X ${method} ...`;  // ❌ No fail on errors
+
+// After
+const curlCommand = `curl -s -f -X ${method} ...`;  // ✅ Fail on HTTP 4xx/5xx
+```
+
+**Added error response detection** (defense in depth):
+```typescript
+const response = JSON.parse(stdout);
+
+// Check if response contains error
+if (response.errorMessages || response.errors) {
+  throw new Error(...);  // Properly handle as error
+}
+```
+
+#### New Behavior
+
+**When projects DON'T exist** (correct flow):
+```bash
+specweave init my-project
+# Enter: FRONTEND,BACKEND,MOBILE
+
+⚠️  Project "FRONTEND" not found
+
+What would you like to do for project "FRONTEND"?
+1. Select an existing project (shows available projects)
+2. Create a new project          ← Auto-creates in Jira!
+3. Skip this project
+4. Cancel validation
+
+# If selecting "Create a new project":
+📦 Creating Jira project: FRONTEND...
+✅ Project created: FRONTEND
+
+# Repeats for BACKEND, MOBILE
+# Config written with ACTUAL existing project keys!
+```
+
+**When projects DO exist** (works correctly):
+```bash
+# Enter: SCRUM (exists)
+✅ Validated: Project "SCRUM" exists in Jira  ← Correct!
+```
+
+#### Impact
+
+**Who's Affected**: ALL users setting up Jira integration in v0.13.0 and v0.13.1
+
+**Severity**: CRITICAL
+- ❌ False validation success
+- ❌ Configs written with non-existent projects
+- ❌ 404 errors when trying to sync/access projects
+
+**Workaround** (before fix):
+- Manually create projects in Jira before running `specweave init`
+
+**Solution** (after fix):
+- ✅ Correctly detects missing projects
+- ✅ Offers to auto-create them
+- ✅ Prompts to select existing projects
+
+#### Files Modified
+
+- `src/utils/external-resource-validator.ts:138-161` - Fixed curl command + error detection
+
+#### Migration for Affected Users
+
+If you ran `specweave init` with v0.13.0 or v0.13.1 and entered non-existent projects:
+
+```bash
+# 1. Clean up broken config
+cd your-project
+rm .env .specweave/config.json
+
+# 2. Upgrade to v0.13.2
+npm install -g specweave@latest
+
+# 3. Re-run init
+specweave init .
+
+# 4. Either:
+#    - Let SpecWeave create projects automatically
+#    - Or select existing projects (e.g., SCRUM)
+#    - Or switch to component-based strategy
+```
+
+---
+
 ## [0.13.1] - 2025-11-10
 
 ### 🐛 Bug Fixes - Jira Init Improvements

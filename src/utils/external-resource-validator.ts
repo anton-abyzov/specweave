@@ -135,7 +135,7 @@ export class JiraResourceValidator {
     const url = `https://${this.domain}/rest/api/3/${endpoint}`;
     const auth = Buffer.from(`${this.email}:${this.apiToken}`).toString('base64');
 
-    const curlCommand = `curl -s -X ${method} \
+    const curlCommand = `curl -s -f -X ${method} \
       -H "Authorization: Basic ${auth}" \
       -H "Content-Type: application/json" \
       ${body ? `-d '${JSON.stringify(body)}'` : ''} \
@@ -143,9 +143,20 @@ export class JiraResourceValidator {
 
     try {
       const { stdout } = await execAsync(curlCommand);
-      return JSON.parse(stdout);
+      const response = JSON.parse(stdout);
+
+      // Double-check for error response (defense in depth)
+      if (response.errorMessages || response.errors) {
+        const errorMsg = response.errorMessages?.join(', ') || JSON.stringify(response.errors);
+        throw new Error(errorMsg);
+      }
+
+      return response;
     } catch (error: any) {
-      console.error(chalk.red(`Jira API error: ${error.message}`));
+      // Improve error message for common cases
+      if (error.message.includes('curl: (22)')) {
+        throw new Error('Resource not found (HTTP 404)');
+      }
       throw error;
     }
   }
@@ -422,7 +433,7 @@ export class JiraResourceValidator {
           };
         }
       } else {
-        console.log(chalk.green(`✅ Project "${projectKey}" exists`));
+        console.log(chalk.green(`✅ Validated: Project "${projectKey}" exists in Jira`));
         result.project = {
           exists: true,
           key: project.key,
