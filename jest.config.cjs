@@ -54,6 +54,13 @@ module.exports = {
     'ml-pipeline-soccer-detection.test.ts',
     'jira-incremental-sync.test.ts',
     'github-sync.test.ts',
+    // Additional tests with TypeScript/module issues
+    'ado-sync.test.ts',
+    'jira-sync.test.ts',
+    'jira-bidirectional-sync.test.ts',
+    'docusaurus/dual-site.test.ts',
+    'reflection/end-to-end.test.ts',
+    'github-client-v2.test.ts',
   ],
   // Timeout for long-running tests
   testTimeout: 10000,
