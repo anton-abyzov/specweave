@@ -4,6 +4,40 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.8] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### TypeScript Compilation Errors
+- **Fixed ExecResult API usage**
+  - Replaced `ExecResult.status` with `ExecResult.exitCode` across entire codebase
+  - Updated git-utils.ts, github-client-v2.ts, and all plugin files
+  - Ensures consistent API usage with execFileNoThrow utility
+
+- **Fixed ado-client-v2.ts type errors**
+  - Removed deprecated SyncContainer type references
+  - Updated to use projects[] array for intelligent mapping
+  - Fixed property name mismatches (workItemType → workItemTypes, areaPath → areaPaths)
+
+- **Fixed missing axios dependency**
+  - Added axios to package.json dependencies for JIRA plugin compatibility
+
+### 🔧 Configuration Changes
+
+- **Updated tsconfig.json**
+  - Added plugin lib files to TypeScript compilation
+  - Removed rootDir constraint to allow cross-directory imports
+  - Excluded deprecated plugin files from compilation
+  - Improved build reliability
+
+### ✨ Features from Parallel Agent
+
+- **Spec commit sync feature** (GitHub, JIRA, ADO integration)
+- **specweave-release plugin** for automated release management
+- **Multi-repo init UX improvements** (increment 0022)
+
+---
+
 ## [0.17.0] - 2025-11-11
 
 ### 🔧 Major Refactoring
