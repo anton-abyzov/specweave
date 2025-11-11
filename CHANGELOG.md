@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.6] - 2025-11-11
+
+### 🐛 Critical Bug Fixes
+
+#### Issue Tracker Repository Configuration
+- **Fixed critical bug where repository configuration was skipped during `specweave init`**
+  - When existing GitHub credentials were found and validated, the init flow would return early without prompting for repository configuration
+  - Users with existing `GITHUB_TOKEN` env var would never be asked to configure repositories
+  - Now properly prompts for repository configuration even when using existing credentials
+  - Ensures sync profiles are created with correct owner/repo information
+  - Fixes automatic GitHub issue creation and bidirectional sync
+
+### 🔧 Improvements
+
+- **Better init flow for existing projects**
+  - Repository configuration now happens for all users, regardless of credential source
+  - Improved user experience with clear repository setup prompts
+  - Maintains backward compatibility with existing configurations
+
+---
+
 ## [0.16.5] - 2025-11-11
 
 ### 🐛 Bug Fixes
