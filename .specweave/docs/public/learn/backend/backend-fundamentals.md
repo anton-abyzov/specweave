@@ -23,8 +23,8 @@ Backend development (also called server-side development) is the part of softwar
 
 ```mermaid
 graph LR
-    User[User] --> Frontend[Frontend<br/>[React](/docs/glossary/terms/react)/Vue/[Angular](/docs/glossary/terms/angular)]
-    Frontend --> Backend[Backend<br/>[Node.js](/docs/glossary/terms/nodejs)/Python/Java]
+    User[User] --> Frontend[Frontend<br/>React/Vue/Angular]
+    Frontend --> Backend[Backend<br/>Node.js/Python/Java]
     Backend --> DB[(Database<br/>PostgreSQL/MongoDB)]
     Backend --> Cache[(Cache<br/>Redis)]
     Backend --> Queue[Message Queue<br/>RabbitMQ]
