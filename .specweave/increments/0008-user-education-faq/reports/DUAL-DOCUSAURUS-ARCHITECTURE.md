@@ -530,7 +530,7 @@ cd docs-site-internal && npm start  # Port 3015
 npx specweave init
 
 # 2. Install docs plugin
-/plugin install specweave-docs@specweave
+/plugin install specweave-docs
 
 # 3. Generate doc sites (optional)
 /docs-generate-internal  # Creates docs-site-internal/
