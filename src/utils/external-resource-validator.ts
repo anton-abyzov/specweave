@@ -356,6 +356,9 @@ export class JiraResourceValidator {
     console.log(chalk.gray(`Strategy: ${strategy}`));
     console.log(chalk.gray(`Checking project(s): ${projectKeys.join(', ')}...\n`));
 
+    // Track all validated/created projects (for multi-project IDs)
+    const allProjects: Array<{ key: string; id: string; name: string }> = [];
+
     for (const projectKey of projectKeys) {
       const project = await this.checkProject(projectKey);
 
@@ -403,6 +406,13 @@ export class JiraResourceValidator {
             },
           ]);
 
+          // Fetch full project details to get ID
+          const selectedProjectDetails = await this.checkProject(selectedProject);
+          if (!selectedProjectDetails) {
+            console.log(chalk.red(`❌ Failed to fetch details for project "${selectedProject}"\n`));
+            continue;
+          }
+
           // Update .env (handle both single and multiple projects)
           if (strategy === 'project-per-team') {
             // Replace this project key in JIRA_PROJECTS
@@ -411,9 +421,26 @@ export class JiraResourceValidator {
           } else {
             await this.updateEnv({ JIRA_PROJECT: selectedProject });
           }
-          result.project = { exists: true, key: selectedProject };
+
+          // Print link to selected project
+          const projectUrl = `https://${this.domain}/jira/software/c/projects/${selectedProject}`;
+          console.log(chalk.cyan(`🔗 View in Jira: ${projectUrl}`));
+
+          result.project = {
+            exists: true,
+            key: selectedProject,
+            id: selectedProjectDetails.id,
+            name: selectedProjectDetails.name,
+          };
           result.envUpdated = true;
           console.log(chalk.green(`✅ Project "${selectedProject}" selected\n`));
+
+          // Track for multi-project ID collection
+          allProjects.push({
+            key: selectedProject,
+            id: selectedProjectDetails.id,
+            name: selectedProjectDetails.name,
+          });
         } else if (action === 'create') {
           const { projectName } = await inquirer.prompt([
             {
@@ -425,25 +452,62 @@ export class JiraResourceValidator {
           ]);
 
           const newProject = await this.createProject(projectKey, projectName);
+
+          // Print link to created project
+          const projectUrl = `https://${this.domain}/jira/software/c/projects/${newProject.key}`;
+          console.log(chalk.cyan(`🔗 View in Jira: ${projectUrl}\n`));
+
           result.project = {
             exists: true,
             key: newProject.key,
             id: newProject.id,
             name: newProject.name,
           };
+
+          // Track for multi-project ID collection
+          allProjects.push({
+            key: newProject.key,
+            id: newProject.id,
+            name: newProject.name,
+          });
         }
       } else {
         console.log(chalk.green(`✅ Validated: Project "${projectKey}" exists in Jira`));
+
+        // Print link to validated project
+        const projectUrl = `https://${this.domain}/jira/software/c/projects/${project.key}`;
+        console.log(chalk.cyan(`🔗 View in Jira: ${projectUrl}`));
+
         result.project = {
           exists: true,
           key: project.key,
           id: project.id,
           name: project.name,
         };
+
+        // Track for multi-project ID collection
+        allProjects.push({
+          key: project.key,
+          id: project.id,
+          name: project.name,
+        });
       }
     }
 
     console.log(); // Empty line after project validation
+
+    // Update .env with project IDs (for multi-project strategy)
+    if (strategy === 'project-per-team' && allProjects.length > 0) {
+      const projectIds = allProjects.map(p => p.id).join(',');
+      await this.updateEnv({ JIRA_PROJECT_IDS: projectIds });
+      result.envUpdated = true;
+      console.log(chalk.green(`✅ Updated .env with project IDs: ${projectIds}\n`));
+    } else if (allProjects.length === 1) {
+      // Single project - store both key and ID
+      await this.updateEnv({ JIRA_PROJECT_ID: allProjects[0].id });
+      result.envUpdated = true;
+      console.log(chalk.green(`✅ Updated .env with project ID: ${allProjects[0].id}\n`));
+    }
 
     // 2. Validate boards (smart per-board detection)
     // Boards only apply to board-based strategy
