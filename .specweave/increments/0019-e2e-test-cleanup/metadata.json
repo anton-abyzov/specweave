@@ -1,0 +1,10 @@
+{
+  "id": "0019",
+  "name": "e2e-test-cleanup",
+  "type": "bug",
+  "status": "completed",
+  "priority": "P1",
+  "created": "2025-11-11",
+  "completed": "2025-11-11",
+  "summary": "Fixed failing e2e tests and reduced skipped tests from 18 to 10 with clear documentation"
+}

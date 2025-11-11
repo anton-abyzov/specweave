@@ -1,0 +1,10 @@
+{
+  "id": "0024",
+  "name": "bidirectional-spec-sync",
+  "type": "feature",
+  "status": "completed",
+  "priority": "P1",
+  "created": "2025-11-11",
+  "completed": "2025-11-11",
+  "summary": "Implemented bidirectional spec sync between SpecWeave and external tools (GitHub/JIRA/ADO)"
+}
