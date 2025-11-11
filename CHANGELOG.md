@@ -4,6 +4,70 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.11] - 2025-11-11
+
+### ⚠️ BREAKING CHANGES
+
+#### Internal Documentation Structure Flattened
+- **BREAKING**: Changed from `projects/{id}/specs/` to `specs/{id}/`
+- **Impact**: Existing projects with multi-project structure need migration
+- **Migration**: Run `bash scripts/migrate-flatten-structure.sh` in project root
+- **Rationale**: 33% shorter paths, document-type-first organization, easier external tool integration
+
+**Before (Nested)**:
+```
+.specweave/docs/internal/
+└── projects/
+    ├── backend/
+    │   └── specs/
+    └── frontend/
+        └── specs/
+```
+
+**After (Flattened)**:
+```
+.specweave/docs/internal/
+├── specs/
+│   ├── backend/
+│   └── frontend/
+├── modules/
+│   └── backend/
+└── team/
+    └── backend/
+```
+
+**Benefits**:
+- ✅ 33% shorter paths (easier to type and navigate)
+- ✅ Document-type-first organization (find all specs: `ls specs/`)
+- ✅ Consistent with cross-project folders (all at same level)
+- ✅ Clearer parent repo naming (`_parent` for multi-repo)
+- ✅ Simpler GitHub/JIRA/ADO sync integration
+
+**Migration for Existing Projects**:
+```bash
+# Automatic migration script
+bash scripts/migrate-flatten-structure.sh
+
+# Verify migration
+ls .specweave/docs/internal/specs/
+ls .specweave/docs/internal/modules/
+
+# Delete backup after verification
+rm -rf .specweave/docs/internal/projects.old/
+```
+
+**What Changed**:
+- ProjectManager: Removed `getProjectBasePath()`, updated path resolution
+- SpecMetadataManager: Now uses ProjectManager (auto-fixes GitHub/JIRA/ADO)
+- Tests: Updated 180+ path references
+- Documentation: Updated CLAUDE.md, created ADR-0028
+
+**Related ADRs**:
+- ADR-0028: Flatten Internal Documentation Structure
+- ADR-0017: Multi-Project Internal Structure (updated)
+
+---
+
 ## [Unreleased]
 
 ### ✨ Features
