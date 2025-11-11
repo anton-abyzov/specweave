@@ -192,6 +192,15 @@ program
     await checkDisciplineCommand(options);
   });
 
+// Revert WIP limit command - Restore original WIP limit after temporary adjustment
+program
+  .command('revert-wip-limit')
+  .description('Revert WIP limit to original value after temporary adjustment')
+  .action(async () => {
+    const { revertWipLimitCommand } = await import('../dist/cli/commands/revert-wip-limit.js');
+    await revertWipLimitCommand();
+  });
+
 // QA command - Quality assessment
 program
   .command('qa <increment-id>')
