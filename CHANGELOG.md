@@ -4,6 +4,57 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.13.5] - 2025-11-10
+
+### 🔧 **CRITICAL BUG FIX** - Plugin Hooks Auto-Loading
+
+**Fixed: Removed explicit hooks field causing duplicate hooks error**
+
+#### The Problem
+
+After fixing the hooks path in v0.13.4, plugins still failed to load with a new error:
+
+```
+Duplicate hooks file detected: ./hooks/hooks.json resolves to already-loaded file
+The standard hooks/hooks.json is loaded automatically, so manifest.hooks should only reference additional hook files.
+```
+
+**Impact**:
+- ❌ All 4 plugins still failed to load despite v0.13.4 fix
+- ❌ No SpecWeave functionality available
+- ❌ Framework still non-functional
+
+#### The Fix
+
+Claude Code **automatically discovers and loads** `hooks/hooks.json` if it exists. The `"hooks"` field in plugin.json should **only** be used for additional hook files, not the standard one.
+
+**Solution**: Removed the `"hooks"` field entirely from plugin.json.
+
+```json
+// ❌ WRONG (v0.13.4) - Causes duplicate loading
+"hooks": "./hooks/hooks.json"
+
+// ✅ CORRECT (v0.13.5) - Let Claude Code auto-discover
+// (no hooks field needed)
+```
+
+**Files changed**:
+- `plugins/specweave/.claude-plugin/plugin.json`
+- `plugins/specweave-github/.claude-plugin/plugin.json`
+- `plugins/specweave-jira/.claude-plugin/plugin.json`
+- `plugins/specweave-ado/.claude-plugin/plugin.json`
+
+#### What This Means
+
+- ✅ Claude Code auto-discovers `hooks/hooks.json` (no explicit reference needed)
+- ✅ All plugins now load correctly
+- ✅ Skills, agents, commands, and hooks all work
+- ✅ Framework fully functional
+
+**Reference**: [Claude Code Plugin Documentation](https://code.claude.com/docs/en/plugins)
+
+---
+
 ## [0.13.4] - 2025-11-10
 
 ### 🔧 **CRITICAL BUG FIX** - Plugin Loading
