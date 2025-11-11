@@ -13,7 +13,6 @@ import {
   SyncProfile,
   AdoConfig,
   TimeRangePreset,
-  SyncContainer,
 } from '../../../src/core/types/sync-profile';
 
 // ============================================================================
@@ -71,14 +70,13 @@ export interface UpdateWorkItemRequest {
 export class AdoClientV2 {
   private organization: string;
   private project?: string; // Optional for multi-project mode
-  private workItemType: string;
-  private areaPath?: string;
-  private iterationPath?: string;
+  private projects?: string[]; // Multiple projects for intelligent mapping
+  private workItemTypes?: AdoConfig['workItemTypes'];
+  private areaPaths?: string[];
   private baseUrl: string;
   private authHeader: string;
 
   // Multi-project support
-  private containers?: SyncContainer[];
   private customQuery?: string;
   private isMultiProject: boolean;
 
@@ -92,13 +90,13 @@ export class AdoClientV2 {
 
     const config = profile.config as AdoConfig;
     this.organization = config.organization;
-    this.workItemType = config.workItemType || 'Epic';
+    this.workItemTypes = config.workItemTypes;
 
     // Detect mode: single-project vs multi-project
-    if (config.containers && config.containers.length > 0) {
-      // Multi-project mode
+    if (config.projects && config.projects.length > 0) {
+      // Multi-project mode (intelligent mapping)
       this.isMultiProject = true;
-      this.containers = config.containers;
+      this.projects = config.projects;
       this.baseUrl = `https://dev.azure.com/${this.organization}`;
     } else if (config.customQuery) {
       // Custom WIQL query mode
@@ -109,8 +107,7 @@ export class AdoClientV2 {
       // Single-project mode (backward compatible)
       this.isMultiProject = false;
       this.project = config.project;
-      this.areaPath = config.areaPath;
-      this.iterationPath = config.iterationPath;
+      this.areaPaths = config.areaPaths;
       this.baseUrl = `https://dev.azure.com/${this.organization}/${this.project}`;
     }
 
@@ -125,13 +122,12 @@ export class AdoClientV2 {
   static fromProject(
     organization: string,
     project: string,
-    personalAccessToken: string,
-    workItemType: string = 'Epic'
+    personalAccessToken: string
   ): AdoClientV2 {
     const profile: SyncProfile = {
       provider: 'ado',
       displayName: `${organization}/${project}`,
-      config: { organization, project, workItemType },
+      config: { organization, project } as AdoConfig,
       timeRange: { default: '1M', max: '6M' },
     };
     return new AdoClientV2(profile, personalAccessToken);
@@ -167,7 +163,8 @@ export class AdoClientV2 {
    * Create epic work item
    */
   async createEpic(request: CreateWorkItemRequest): Promise<WorkItem> {
-    const url = `/_apis/wit/workitems/$${this.workItemType}?api-version=7.1`;
+    const workItemType = this.workItemTypes?.epic || 'Epic';
+    const url = `/_apis/wit/workitems/$${workItemType}?api-version=7.1`;
 
     // Build JSON Patch document
     const operations: any[] = [
@@ -186,19 +183,19 @@ export class AdoClientV2 {
       });
     }
 
-    if (request.areaPath || this.areaPath) {
+    if (request.areaPath || (this.areaPaths && this.areaPaths.length > 0)) {
       operations.push({
         op: 'add',
         path: '/fields/System.AreaPath',
-        value: request.areaPath || this.areaPath,
+        value: request.areaPath || this.areaPaths![0],
       });
     }
 
-    if (request.iterationPath || this.iterationPath) {
+    if (request.iterationPath) {
       operations.push({
         op: 'add',
         path: '/fields/System.IterationPath',
-        value: request.iterationPath || this.iterationPath,
+        value: request.iterationPath,
       });
     }
 
@@ -394,9 +391,9 @@ export class AdoClientV2 {
       return this.queryWorkItems(this.customQuery);
     }
 
-    // Multi-project mode with containers
-    if (this.isMultiProject && this.containers) {
-      return this.queryWorkItemsAcrossContainers(since, until);
+    // Multi-project mode with intelligent mapping
+    if (this.isMultiProject && this.projects) {
+      return this.queryWorkItemsAcrossProjects(since, until);
     }
 
     // Single-project mode (backward compatible)
@@ -413,27 +410,27 @@ export class AdoClientV2 {
   }
 
   /**
-   * Query work items across multiple containers (multi-project)
+   * Query work items across multiple projects (multi-project mode)
    */
-  private async queryWorkItemsAcrossContainers(
+  private async queryWorkItemsAcrossProjects(
     since: string,
     until: string
   ): Promise<WorkItem[]> {
-    if (!this.containers || this.containers.length === 0) {
+    if (!this.projects || this.projects.length === 0) {
       return [];
     }
 
     const allWorkItems: WorkItem[] = [];
 
-    for (const container of this.containers) {
-      const wiql = this.buildContainerWIQL(container, since, until);
+    for (const projectName of this.projects) {
+      const wiql = this.buildProjectWIQL(projectName, since, until);
 
       try {
         const workItems = await this.queryWorkItems(wiql);
         allWorkItems.push(...workItems);
       } catch (error: any) {
-        console.error(`Failed to query container ${container.id}:`, error.message);
-        // Continue with other containers
+        console.error(`Failed to query project ${projectName}:`, error.message);
+        // Continue with other projects
       }
     }
 
@@ -441,44 +438,39 @@ export class AdoClientV2 {
   }
 
   /**
-   * Build WIQL query for a specific container with filters
+   * Build WIQL query for a specific project
    */
-  private buildContainerWIQL(
-    container: SyncContainer,
+  private buildProjectWIQL(
+    projectName: string,
     since: string,
     until: string
   ): string {
     const conditions: string[] = [];
 
     // Project filter
-    conditions.push(`[System.TeamProject] = '${container.id}'`);
+    conditions.push(`[System.TeamProject] = '${projectName}'`);
 
     // Time range
     conditions.push(`[System.CreatedDate] >= '${since}'`);
     conditions.push(`[System.CreatedDate] <= '${until}'`);
 
-    // Area paths filter
-    if (container.filters?.areaPaths && container.filters.areaPaths.length > 0) {
-      const areaPathConditions = container.filters.areaPaths
-        .map(ap => `[System.AreaPath] UNDER '${container.id}\\${ap}'`)
+    // Area paths filter (if configured)
+    if (this.areaPaths && this.areaPaths.length > 0) {
+      const areaPathConditions = this.areaPaths
+        .map((ap: string) => `[System.AreaPath] UNDER '${projectName}\\${ap}'`)
         .join(' OR ');
       conditions.push(`(${areaPathConditions})`);
     }
 
-    // Work item types filter
-    if (container.filters?.workItemTypes && container.filters.workItemTypes.length > 0) {
-      const typeConditions = container.filters.workItemTypes
-        .map(type => `[System.WorkItemType] = '${type}'`)
-        .join(' OR ');
-      conditions.push(`(${typeConditions})`);
-    }
-
-    // Iteration paths filter
-    if (container.filters?.iterationPaths && container.filters.iterationPaths.length > 0) {
-      const iterationConditions = container.filters.iterationPaths
-        .map(ip => `[System.IterationPath] UNDER '${container.id}\\${ip}'`)
-        .join(' OR ');
-      conditions.push(`(${iterationConditions})`);
+    // Work item types filter (if configured)
+    if (this.workItemTypes) {
+      const types = Object.values(this.workItemTypes).filter(Boolean);
+      if (types.length > 0) {
+        const typeConditions = types
+          .map((type: string) => `[System.WorkItemType] = '${type}'`)
+          .join(' OR ');
+        conditions.push(`(${typeConditions})`);
+      }
     }
 
     return `

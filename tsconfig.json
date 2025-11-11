@@ -4,7 +4,6 @@
     "module": "ES2020",
     "lib": ["ES2020"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "strict": true,
     "strictNullChecks": false,
     "esModuleInterop": true,
@@ -18,12 +17,19 @@
     "allowImportingTsExtensions": false
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "plugins/**/lib/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "plugins/**/lib/*-hierarchical-sync.ts",
+    "plugins/**/lib/*-multi-project-sync.ts",
+    "plugins/**/lib/*-project-detector.ts",
+    "plugins/**/lib/*-selector.ts",
+    "plugins/**/lib/*-board-resolver.ts",
+    "plugins/**/lib/conflict-resolver.ts"
   ]
 }
