@@ -22,6 +22,18 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
+import { generateRepoId, ensureUniqueId, validateRepoId } from './repo-id-generator.js';
+import { SetupStateManager, SetupState, type SetupArchitecture, type ParentRepoConfig } from './setup-state-manager.js';
+import { validateRepository, validateOwner } from './github-validator.js';
+import { generateEnvFile, type EnvConfig, type RepoMapping } from '../../utils/env-file-generator.js';
+import { generateSetupSummary, type SummaryConfig } from './setup-summary.js';
+import {
+  getArchitecturePrompt,
+  getParentRepoBenefits,
+  getRepoCountClarification,
+  getVisibilityPrompt,
+  type ArchitectureChoice
+} from './prompt-consolidator.js';
 
 export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
 
@@ -31,6 +43,7 @@ export interface RepoStructureConfig {
     name: string;
     owner: string;
     description: string;
+    visibility: 'private' | 'public';
     createOnGitHub: boolean;
   };
   repositories: Array<{
@@ -39,6 +52,7 @@ export interface RepoStructureConfig {
     owner: string;         // e.g., 'myorg'
     description: string;
     path: string;          // Relative path from parent
+    visibility: 'private' | 'public';
     createOnGitHub: boolean;
     isNested: boolean;     // True for multi-repo nested repos
   }>;
@@ -48,10 +62,12 @@ export interface RepoStructureConfig {
 export class RepoStructureManager {
   private projectPath: string;
   private githubToken?: string;
+  private stateManager: SetupStateManager;
 
   constructor(projectPath: string, githubToken?: string) {
     this.projectPath = projectPath;
     this.githubToken = githubToken;
+    this.stateManager = new SetupStateManager(projectPath);
   }
 
   /**
@@ -61,41 +77,99 @@ export class RepoStructureManager {
     console.log(chalk.cyan.bold('\n🏗️  Repository Architecture Setup\n'));
     console.log(chalk.gray('Let\'s configure your repository structure for optimal organization.\n'));
 
-    // Step 1: Ask about architecture type
+    // Check for resumed setup
+    const resumedState = await this.stateManager.detectAndResumeSetup();
+    if (resumedState) {
+      console.log(chalk.yellow('\n⏸️  Detected interrupted setup!'));
+      console.log(chalk.gray(`   Last step: ${resumedState.currentStep}`));
+      console.log(chalk.gray(`   Time: ${new Date(resumedState.timestamp).toLocaleString()}\n`));
+
+      const { shouldResume } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'shouldResume',
+        message: 'Resume previous setup?',
+        default: true
+      }]);
+
+      if (shouldResume) {
+        return this.resumeSetup(resumedState);
+      } else {
+        // Delete old state and start fresh
+        await this.stateManager.deleteState();
+      }
+    }
+
+    // Step 1: Ask about architecture type using consolidator
+    const promptData = getArchitecturePrompt();
     const { architecture } = await inquirer.prompt([{
       type: 'list',
       name: 'architecture',
-      message: 'What repository architecture do you want to use?',
-      choices: [
-        {
-          name: '📦 Single repository (everything in one repo)',
-          value: 'single',
-          short: 'Single'
-        },
-        {
-          name: '🎯 Multi-repository (separate repos for each service)',
-          value: 'multi-repo',
-          short: 'Multi-repo'
-        },
-        {
-          name: '📚 Monorepo (single repo with multiple projects)',
-          value: 'monorepo',
-          short: 'Monorepo'
-        }
-      ],
+      message: promptData.question,
+      choices: promptData.options.map(opt => ({
+        name: `${opt.label}\n${chalk.gray(opt.description)}\n${chalk.dim(opt.example)}`,
+        value: opt.value,
+        short: opt.label
+      })),
       default: 'single'
     }]);
 
-    switch (architecture) {
+    // Map ArchitectureChoice to internal architecture
+    const mappedArch = this.mapArchitectureChoice(architecture as ArchitectureChoice);
+
+    switch (mappedArch) {
       case 'single':
         return this.configureSingleRepo();
       case 'multi-repo':
-        return this.configureMultiRepo();
+      case 'parent':
+        return this.configureMultiRepo(architecture === 'multi-with-parent');
       case 'monorepo':
         return this.configureMonorepo();
       default:
         throw new Error(`Unknown architecture: ${architecture}`);
     }
+  }
+
+  /**
+   * Map ArchitectureChoice to internal RepoArchitecture
+   */
+  private mapArchitectureChoice(choice: ArchitectureChoice): RepoArchitecture {
+    switch (choice) {
+      case 'single':
+        return 'single';
+      case 'multi-with-parent':
+        return 'parent';
+      case 'multi-without-parent':
+        return 'multi-repo';
+      case 'monorepo':
+        return 'monorepo';
+      default:
+        return 'single';
+    }
+  }
+
+  /**
+   * Resume setup from saved state
+   */
+  private async resumeSetup(state: SetupState): Promise<RepoStructureConfig> {
+    // Convert saved state back to config format
+    const config: RepoStructureConfig = {
+      architecture: state.architecture as RepoArchitecture,
+      parentRepo: state.parentRepo,
+      repositories: state.repos.map(r => ({
+        id: r.id,
+        name: r.repo,
+        owner: r.owner,
+        description: '', // Not saved in state
+        path: r.path || r.id,
+        visibility: r.visibility,
+        createOnGitHub: r.created !== true,
+        isNested: state.architecture === 'parent'
+      })),
+      monorepoProjects: state.monorepoProjects
+    };
+
+    console.log(chalk.green('✅ Setup resumed from previous session\n'));
+    return config;
   }
 
   /**
@@ -138,6 +212,7 @@ export class RepoStructureManager {
                 owner: owner,
                 description: `${repo} - SpecWeave project`,
                 path: '.',
+                visibility: 'private', // Default for existing repo
                 createOnGitHub: false,
                 isNested: false
               }]
@@ -178,6 +253,20 @@ export class RepoStructureManager {
       }
     ]);
 
+    // Ask about visibility
+    const visibilityPrompt = getVisibilityPrompt(answers.repo);
+    const { visibility } = await inquirer.prompt([{
+      type: 'list',
+      name: 'visibility',
+      message: visibilityPrompt.question,
+      choices: visibilityPrompt.options.map(opt => ({
+        name: `${opt.label}\n${chalk.gray(opt.description)}`,
+        value: opt.value,
+        short: opt.label
+      })),
+      default: visibilityPrompt.default
+    }]);
+
     return {
       architecture: 'single',
       repositories: [{
@@ -186,6 +275,7 @@ export class RepoStructureManager {
         owner: answers.owner,
         description: answers.description,
         path: '.',
+        visibility: visibility,
         createOnGitHub: answers.createOnGitHub,
         isNested: false
       }]
@@ -195,30 +285,31 @@ export class RepoStructureManager {
   /**
    * Configure multi-repository architecture
    */
-  private async configureMultiRepo(): Promise<RepoStructureConfig> {
+  private async configureMultiRepo(useParent: boolean = true): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n🎯 Multi-Repository Configuration\n'));
     console.log(chalk.gray('This creates separate repositories for each service/component.\n'));
 
-    // Ask about parent repository approach
-    const { useParent } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'useParent',
-      message: 'Use parent repository approach? (Recommended)',
-      default: true
-    }]);
-
+    // Show parent repo benefits if using parent approach
     if (useParent) {
-      console.log(chalk.blue('\n📋 Parent Repository Benefits:'));
-      console.log(chalk.gray('  • Central .specweave/ folder for all specs and documentation'));
-      console.log(chalk.gray('  • Living docs sync to parent repo (single source of truth)'));
-      console.log(chalk.gray('  • Implementation repos stay clean and focused'));
-      console.log(chalk.gray('  • Better for enterprise/multi-team projects\n'));
+      console.log(chalk.blue(getParentRepoBenefits()));
+      console.log('');
     }
 
     const config: RepoStructureConfig = {
       architecture: useParent ? 'parent' : 'multi-repo',
       repositories: []
     };
+
+    // Save state: architecture selected
+    await this.saveSetupState({
+      version: '1.0.0',
+      architecture: useParent ? 'parent' : 'multi-repo',
+      parentRepo: undefined,
+      repos: [],
+      currentStep: 'architecture-selected',
+      timestamp: new Date().toISOString(),
+      envCreated: false
+    });
 
     // Configure parent repository if using that approach
     if (useParent) {
@@ -227,14 +318,36 @@ export class RepoStructureManager {
           type: 'input',
           name: 'owner',
           message: 'GitHub owner/organization for ALL repos:',
-          validate: (input: string) => !!input.trim() || 'Owner is required'
+          validate: async (input: string) => {
+            if (!input.trim()) return 'Owner is required';
+
+            // Validate owner exists on GitHub
+            if (this.githubToken) {
+              const result = await validateOwner(input, this.githubToken);
+              if (!result.valid) {
+                return result.error || 'Invalid GitHub owner';
+              }
+            }
+            return true;
+          }
         },
         {
           type: 'input',
           name: 'parentName',
           message: 'Parent repository name:',
           default: `${path.basename(this.projectPath)}-parent`,
-          validate: (input: string) => !!input.trim() || 'Repository name is required'
+          validate: async (input: string, answers: any) => {
+            if (!input.trim()) return 'Repository name is required';
+
+            // Validate repository doesn't exist
+            if (this.githubToken && answers.owner) {
+              const result = await validateRepository(answers.owner, input, this.githubToken);
+              if (result.exists) {
+                return `Repository ${answers.owner}/${input} already exists at ${result.url}`;
+              }
+            }
+            return true;
+          }
         },
         {
           type: 'input',
@@ -248,14 +361,40 @@ export class RepoStructureManager {
           message: 'Create parent repository on GitHub?',
           default: true
         }
-      ]);
+      ] as any);
+
+      // Ask about visibility for parent repo
+      const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
+      const { parentVisibility } = await inquirer.prompt([{
+        type: 'list',
+        name: 'parentVisibility',
+        message: parentVisibilityPrompt.question,
+        choices: parentVisibilityPrompt.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}`,
+          value: opt.value,
+          short: opt.label
+        })),
+        default: parentVisibilityPrompt.default
+      }]);
 
       config.parentRepo = {
         name: parentAnswers.parentName,
         owner: parentAnswers.owner,
         description: parentAnswers.description,
+        visibility: parentVisibility,
         createOnGitHub: parentAnswers.createOnGitHub
       };
+
+      // Save state: parent repo configured
+      await this.saveSetupState({
+        version: '1.0.0',
+        architecture: useParent ? 'parent' : 'multi-repo',
+        parentRepo: config.parentRepo,
+        repos: [],
+        currentStep: 'parent-repo-configured',
+        timestamp: new Date().toISOString(),
+        envCreated: false
+      });
     }
 
     // Ask how many implementation repositories
@@ -271,8 +410,17 @@ export class RepoStructureManager {
       }
     }]);
 
+    // Show repository count clarification
+    if (useParent && config.parentRepo) {
+      console.log('');
+      console.log(chalk.blue(getRepoCountClarification(1, repoCount)));
+      console.log('');
+    }
+
     // Configure each repository
     console.log(chalk.cyan('\n📦 Configure Each Repository:\n'));
+
+    const usedIds = new Set<string>();
 
     for (let i = 0; i < repoCount; i++) {
       console.log(chalk.white(`\nRepository ${i + 1} of ${repoCount}:`));
@@ -280,28 +428,27 @@ export class RepoStructureManager {
       const repoAnswers = await inquirer.prompt([
         {
           type: 'input',
-          name: 'id',
-          message: 'Repository ID (e.g., frontend, backend, shared):',
-          validate: (input: string) => {
-            if (!input.trim()) return 'ID is required';
-            if (config.repositories.some(r => r.id === input)) {
-              return 'ID must be unique';
+          name: 'name',
+          message: 'Repository name:',
+          default: i === 0 ? `${path.basename(this.projectPath)}-frontend` : '',
+          validate: async (input: string) => {
+            if (!input.trim()) return 'Repository name is required';
+
+            // Validate repository doesn't exist
+            if (this.githubToken && config.parentRepo) {
+              const result = await validateRepository(config.parentRepo.owner, input, this.githubToken);
+              if (result.exists) {
+                return `Repository ${config.parentRepo.owner}/${input} already exists at ${result.url}`;
+              }
             }
             return true;
           }
         },
         {
           type: 'input',
-          name: 'name',
-          message: 'Repository name:',
-          default: (answers: any) => `${path.basename(this.projectPath)}-${answers.id}`,
-          validate: (input: string) => !!input.trim() || 'Repository name is required'
-        },
-        {
-          type: 'input',
           name: 'description',
           message: 'Repository description:',
-          default: (answers: any) => `${answers.id} service`
+          default: (answers: any) => `${path.basename(answers.name)} service`
         },
         {
           type: 'confirm',
@@ -311,18 +458,80 @@ export class RepoStructureManager {
         }
       ]);
 
+      // Auto-generate ID from repository name
+      const baseId = generateRepoId(repoAnswers.name);
+      const { id, wasModified } = ensureUniqueId(baseId, usedIds);
+      usedIds.add(id);
+
+      if (wasModified) {
+        console.log(chalk.yellow(`   ℹ Auto-generated unique ID: "${id}" (base: "${baseId}")`));
+      } else {
+        console.log(chalk.gray(`   ✓ Auto-generated ID: "${id}"`));
+      }
+
+      // Validate the ID
+      const validation = validateRepoId(id);
+      if (!validation.valid) {
+        throw new Error(`Generated invalid ID "${id}": ${validation.error}`);
+      }
+
+      // Ask about visibility
+      const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);
+      const { visibility } = await inquirer.prompt([{
+        type: 'list',
+        name: 'visibility',
+        message: visibilityPrompt.question,
+        choices: visibilityPrompt.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}`,
+          value: opt.value,
+          short: opt.label
+        })),
+        default: visibilityPrompt.default
+      }]);
+
       config.repositories.push({
-        id: repoAnswers.id,
+        id: id,
         name: repoAnswers.name,
         owner: config.parentRepo?.owner || '',
         description: repoAnswers.description,
-        path: useParent ? `services/${repoAnswers.id}` : repoAnswers.id,
+        path: useParent ? id : id, // Root-level cloning (not services/)
+        visibility: visibility,
         createOnGitHub: repoAnswers.createOnGitHub,
         isNested: useParent
+      });
+
+      // Save state after each repo
+      await this.saveSetupState({
+        version: '1.0.0',
+        architecture: useParent ? 'parent' : 'multi-repo',
+        parentRepo: config.parentRepo,
+        repos: config.repositories.map(r => ({
+          id: r.id,
+          repo: r.name,
+          owner: r.owner,
+          path: r.path,
+          visibility: r.visibility,
+          displayName: r.name,
+          created: false
+        })),
+        currentStep: `repo-${i + 1}-configured`,
+        timestamp: new Date().toISOString(),
+        envCreated: false
       });
     }
 
     return config;
+  }
+
+  /**
+   * Save setup state for Ctrl+C recovery
+   */
+  private async saveSetupState(state: SetupState): Promise<void> {
+    try {
+      await this.stateManager.saveState(state);
+    } catch (error: any) {
+      console.warn(chalk.yellow(`⚠️  Failed to save setup state: ${error.message}`));
+    }
   }
 
   /**
@@ -372,6 +581,20 @@ export class RepoStructureManager {
       }
     ]);
 
+    // Ask about visibility
+    const visibilityPrompt = getVisibilityPrompt(answers.repo);
+    const { visibility } = await inquirer.prompt([{
+      type: 'list',
+      name: 'visibility',
+      message: visibilityPrompt.question,
+      choices: visibilityPrompt.options.map(opt => ({
+        name: `${opt.label}\n${chalk.gray(opt.description)}`,
+        value: opt.value,
+        short: opt.label
+      })),
+      default: visibilityPrompt.default
+    }]);
+
     const projects = answers.projects.split(',').map((p: string) => p.trim());
 
     return {
@@ -382,6 +605,7 @@ export class RepoStructureManager {
         owner: answers.owner,
         description: answers.description,
         path: '.',
+        visibility: visibility,
         createOnGitHub: answers.createOnGitHub,
         isNested: false
       }],
@@ -410,9 +634,21 @@ export class RepoStructureManager {
         await this.createGitHubRepo(
           config.parentRepo.owner,
           config.parentRepo.name,
-          config.parentRepo.description
+          config.parentRepo.description,
+          config.parentRepo.visibility
         );
         created.push(`${config.parentRepo.owner}/${config.parentRepo.name}`);
+
+        // Save state: parent repo created
+        await this.saveSetupState({
+          version: '1.0.0',
+          architecture: config.architecture as SetupArchitecture,
+          parentRepo: { ...config.parentRepo!, url: `https://github.com/${config.parentRepo!.owner}/${config.parentRepo!.name}` },
+          repos: [],
+          currentStep: 'parent-repo-created',
+          timestamp: new Date().toISOString(),
+          envCreated: false
+        });
       } catch (error: any) {
         failed.push(`${config.parentRepo.owner}/${config.parentRepo.name}: ${error.message}`);
       }
@@ -425,7 +661,8 @@ export class RepoStructureManager {
           await this.createGitHubRepo(
             repo.owner,
             repo.name,
-            repo.description
+            repo.description,
+            repo.visibility
           );
           created.push(`${repo.owner}/${repo.name}`);
         } catch (error: any) {
@@ -449,12 +686,105 @@ export class RepoStructureManager {
         console.log(chalk.gray(`   • ${msg}`));
       });
     }
+
+    // Generate and save .env file
+    await this.generateEnvFile(config);
+
+    // Show setup summary
+    await this.showSetupSummary(config);
+
+    // Delete state file (setup complete)
+    await this.stateManager.deleteState();
+  }
+
+  /**
+   * Generate .env file with GitHub configuration
+   */
+  private async generateEnvFile(config: RepoStructureConfig): Promise<void> {
+    const spinner = ora('Generating .env configuration...').start();
+
+    try {
+      const envConfig: EnvConfig = {
+        githubToken: this.githubToken,
+        githubOwner: config.parentRepo?.owner || config.repositories[0]?.owner,
+        repos: config.repositories.map(r => ({
+          id: r.id,
+          repo: r.name
+        })),
+        syncEnabled: true,
+        autoCreateIssue: true,
+        syncDirection: 'bidirectional'
+      };
+
+      await generateEnvFile(this.projectPath, envConfig);
+
+      spinner.succeed('.env file created');
+      console.log(chalk.gray('   File: .env (permissions: 0600)'));
+      console.log(chalk.gray('   File: .env.example (safe to commit)'));
+      console.log(chalk.yellow('   ⚠️  DO NOT commit .env to git (contains secrets!)'));
+
+      // Save state: env created
+      await this.saveSetupState({
+        version: '1.0.0',
+        architecture: config.architecture as SetupArchitecture,
+        parentRepo: config.parentRepo,
+        repos: config.repositories.map(r => ({
+          id: r.id,
+          repo: r.name,
+          owner: r.owner,
+          path: r.path,
+          visibility: r.visibility,
+          displayName: r.name,
+          created: false
+        })),
+        currentStep: 'env-created',
+        timestamp: new Date().toISOString(),
+        envCreated: true
+      });
+    } catch (error: any) {
+      spinner.fail(`Failed to generate .env: ${error.message}`);
+    }
+  }
+
+  /**
+   * Show setup completion summary
+   */
+  private async showSetupSummary(config: RepoStructureConfig): Promise<void> {
+    const projectName = path.basename(this.projectPath);
+
+    const state: SetupState = {
+      version: '1.0.0',
+      architecture: config.architecture as SetupArchitecture,
+      parentRepo: config.parentRepo,
+      repos: config.repositories.map(r => ({
+        id: r.id,
+        repo: r.name,
+        owner: r.owner,
+        path: r.path,
+        visibility: r.visibility,
+        displayName: r.name,
+        url: `https://github.com/${r.owner}/${r.name}`,
+        created: false
+      })),
+      currentStep: 'complete',
+      timestamp: new Date().toISOString(),
+      envCreated: true
+    };
+
+    const summary = generateSetupSummary({
+      projectName,
+      state,
+      folderStructure: config.repositories.map(r => r.path)
+    });
+
+    console.log('');
+    console.log(summary);
   }
 
   /**
    * Create a single GitHub repository via API
    */
-  private async createGitHubRepo(owner: string, name: string, description: string): Promise<void> {
+  private async createGitHubRepo(owner: string, name: string, description: string, visibility: 'private' | 'public' = 'private'): Promise<void> {
     // Check if it's an organization or user
     const isOrg = await this.isGitHubOrganization(owner);
     const endpoint = isOrg
@@ -471,7 +801,7 @@ export class RepoStructureManager {
       body: JSON.stringify({
         name,
         description,
-        private: false,
+        private: visibility === 'private',
         auto_init: false,
         has_issues: true,
         has_projects: true,
@@ -519,12 +849,7 @@ export class RepoStructureManager {
 
     // Create directory structure based on architecture
     if (config.architecture === 'parent') {
-      // Parent repo approach: create services/ directory for nested repos
-      const servicesDir = path.join(this.projectPath, 'services');
-      if (!fs.existsSync(servicesDir)) {
-        fs.mkdirSync(servicesDir, { recursive: true });
-      }
-
+      // Parent repo approach: ROOT-LEVEL cloning (not services/!)
       // Initialize parent repo at root
       if (!fs.existsSync(path.join(this.projectPath, '.git'))) {
         execFileNoThrowSync('git', ['init'], { cwd: this.projectPath });
@@ -535,7 +860,7 @@ export class RepoStructureManager {
         }
       }
 
-      // Initialize nested repos
+      // Initialize implementation repos at ROOT LEVEL
       for (const repo of config.repositories) {
         const repoPath = path.join(this.projectPath, repo.path);
 

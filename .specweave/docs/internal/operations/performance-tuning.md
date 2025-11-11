@@ -439,7 +439,7 @@ export let options = {
     { duration: '2m', target: 0 },    // Ramp down
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'],  // 95% of requests < 500ms
+    http_req_duration: ['p(95)\<500'],  // 95% of requests < 500ms
   },
 };
 

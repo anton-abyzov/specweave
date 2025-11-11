@@ -50,7 +50,7 @@ This is the **final gate** before official 1.0.0 release.
 - [ ] **AC-001-02**: Test `specweave init` creates `.specweave/` structure correctly
 - [ ] **AC-001-03**: Test plugin loading works (core plugin auto-loads)
 - [ ] **AC-001-04**: Test hooks execute (post-task-completion.sh fires)
-- [ ] **AC-001-05**: Test runs in <2 minutes (fast feedback)
+- [ ] **AC-001-05**: Test runs in \<2 minutes (fast feedback)
 
 **US-002**: As a developer, I want E2E CLI tests so that commands work end-to-end
 - [ ] **AC-002-01**: Test `/specweave:increment` creates increment folder + spec.md

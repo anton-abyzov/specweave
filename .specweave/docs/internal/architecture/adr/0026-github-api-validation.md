@@ -418,7 +418,7 @@ query {
 **Cost**:
 - API calls per setup: 3-5 (owner + repo validations)
 - Rate limit impact: Low (5000/hour limit)
-- Network bandwidth: <10KB per setup
+- Network bandwidth: \<10KB per setup
 
 ---
 
@@ -665,9 +665,9 @@ describe('Validation Flow', () => {
 ## References
 
 **GitHub API Documentation**:
-- GET /repos/{owner}/{repo}: https://docs.github.com/en/rest/repos/repos#get-a-repository
-- GET /users/{username}: https://docs.github.com/en/rest/users/users#get-a-user
-- GET /orgs/{org}: https://docs.github.com/en/rest/orgs/orgs#get-an-organization
+- GET /repos/\{owner\}/\{repo\}: https://docs.github.com/en/rest/repos/repos#get-a-repository
+- GET /users/\{username\}: https://docs.github.com/en/rest/users/users#get-a-user
+- GET /orgs/\{org\}: https://docs.github.com/en/rest/orgs/orgs#get-an-organization
 - GET /rate_limit: https://docs.github.com/en/rest/rate-limit
 
 **Implementation Files**:

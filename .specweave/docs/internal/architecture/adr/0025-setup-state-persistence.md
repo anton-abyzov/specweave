@@ -400,9 +400,9 @@ git commit -m "WIP: Frontend repo cloned"
 ### Neutral
 
 **Performance**:
-- JSON serialization: <5ms (negligible)
-- File write: <10ms (acceptable)
-- Total overhead per save: <15ms (unnoticeable)
+- JSON serialization: \<5ms (negligible)
+- File write: \<10ms (acceptable)
+- Total overhead per save: \<15ms (unnoticeable)
 
 ---
 
@@ -548,7 +548,7 @@ async function loadState(): Promise<SetupState | null> {
 ```typescript
 async function saveState(state: SetupState): Promise<void> {
   try {
-    // Check available disk space (warn if <100MB)
+    // Check available disk space (warn if \<100MB)
     const stats = await fs.statfs(process.cwd());
     const availableMB = (stats.bfree * stats.bsize) / 1024 / 1024;
     if (availableMB < 100) {
@@ -572,13 +572,13 @@ async function saveState(state: SetupState): Promise<void> {
 
 | Operation | Time | Impact |
 |-----------|------|--------|
-| Save state | <10ms | Per save point (10-15 total) |
-| Load state | <5ms | Once per resume |
-| Validate state | <1ms | Once per resume |
-| Backup state | <5ms | Per save point |
-| Delete state | <5ms | Once per completion |
+| Save state | \<10ms | Per save point (10-15 total) |
+| Load state | \<5ms | Once per resume |
+| Validate state | \<1ms | Once per resume |
+| Backup state | \<5ms | Per save point |
+| Delete state | \<5ms | Once per completion |
 
-**Total Overhead**: <150ms per setup (negligible)
+**Total Overhead**: \<150ms per setup (negligible)
 
 ---
 

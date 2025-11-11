@@ -161,7 +161,7 @@ overview.sanitized-c4-container.mmd        # Sanitized container view
 ```markdown
 ## System Context
 
-![Main Flow Diagram](../../architecture/diagrams/1-main-flow.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 ```
 
 **That's it—no images needed.** MkDocs renders the diagram at build time.
@@ -247,7 +247,7 @@ jobs:
 
 **Purpose**: Show the system boundary and external actors
 
-![delivery-guides-diagram-conventions-comprehensive-1](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-1.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md`
 
@@ -259,7 +259,7 @@ jobs:
 
 **Purpose**: Show applications, services, and data stores
 
-![delivery-guides-diagram-conventions-comprehensive-2](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-2.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md`
 
@@ -271,7 +271,7 @@ jobs:
 
 **Purpose**: Show internal structure of Auth Service
 
-![delivery-guides-diagram-conventions-comprehensive-3](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-3.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Referenced in**: `docs/internal/architecture/lld-auth-service.md`
 
@@ -279,7 +279,7 @@ jobs:
 
 **File**: `docs/internal/architecture/hld-system-overview.sequence-auth.mmd`
 
-![delivery-guides-diagram-conventions-comprehensive-4](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-4.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md` (Authentication section)
 
@@ -287,7 +287,7 @@ jobs:
 
 **File**: `docs/internal/architecture/hld-system-overview.entity.mmd`
 
-![delivery-guides-diagram-conventions-comprehensive-5](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-5.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Referenced in**: `docs/internal/architecture/hld-system-overview.md` (Data Model section)
 
@@ -297,7 +297,7 @@ jobs:
 
 **Diagram**: `docs/internal/architecture/adr/0007-event-streaming.context.mmd`
 
-![delivery-guides-diagram-conventions-comprehensive-6](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-6.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **In the ADR**:
 ```markdown
@@ -307,7 +307,7 @@ We will use **Kafka** for event streaming between services.
 
 ### Architecture
 
-![delivery-guides-diagram-conventions-comprehensive-7](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-7.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 ```
 
 ---
@@ -428,10 +428,10 @@ When creating public diagrams from internal ones:
 **Example**:
 
 **Internal** (`docs/internal/architecture/hld-system-overview.context.mmd`):
-![delivery-guides-diagram-conventions-comprehensive-8](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-8.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 **Public** (`docs/public/architecture/overview.sanitized-context.mmd`):
-![delivery-guides-diagram-conventions-comprehensive-9](../../architecture/diagrams/delivery-guides-diagram-conventions-comprehensive-9.svg)
+**Note**: This diagram has been consolidated into the [architecture diagrams](../../architecture/diagrams/). See the main diagrams for complete workflow visualization.
 
 ---
 

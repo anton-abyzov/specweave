@@ -34,7 +34,7 @@ The self-reflection system needs to call Anthropic's Claude API to analyze code 
 
 ### Requirements
 
-- **Cost-effective**: Default cost should be <$0.01 per task, <$0.20 per increment
+- **Cost-effective**: Default cost should be \<$0.01 per task, \<$0.20 per increment
 - **Quality**: Must detect 80%+ of OWASP Top 10 vulnerabilities
 - **Speed**: Must complete within 30 seconds (95% of cases)
 - **Configurable**: User can override default model per increment
@@ -44,7 +44,7 @@ The self-reflection system needs to call Anthropic's Claude API to analyze code 
 
 - Most users are cost-sensitive (indie developers, startups)
 - Security issues must be detected reliably (80%+ recall)
-- False positive rate must be <10% (precision matters)
+- False positive rate must be \<10% (precision matters)
 - Speed is critical (non-blocking workflow)
 
 ## Decision
@@ -70,7 +70,7 @@ The self-reflection system needs to call Anthropic's Claude API to analyze code 
 
 3. **Speed** (Weight: 15%)
    - Haiku is fastest (2-3x faster than Sonnet)
-   - Completes in <15 seconds (Sonnet: <30s, Opus: <60s)
+   - Completes in \<15 seconds (Sonnet: \<30s, Opus: \<60s)
    - Non-blocking workflow stays responsive
 
 4. **Adoption** (Weight: 10%)
@@ -90,9 +90,9 @@ enum ReflectionModel {
 }
 
 enum ReflectionDepth {
-  QUICK = 'quick',     // Haiku only, <15s, basic checks
-  STANDARD = 'standard', // Haiku by default, <30s, comprehensive
-  DEEP = 'deep'        // Sonnet/Opus, <60s, thorough analysis
+  QUICK = 'quick',     // Haiku only, \<15s, basic checks
+  STANDARD = 'standard', // Haiku by default, \<30s, comprehensive
+  DEEP = 'deep'        // Sonnet/Opus, \<60s, thorough analysis
 }
 ```
 
@@ -151,7 +151,7 @@ const modifiedFiles = await git.diff('HEAD~1', { nameOnly: true });
 // Skip large files (>100KB)
 const relevantFiles = modifiedFiles.filter(f => fs.statSync(f).size < 100_000);
 
-// Aggregate small changes (<10 lines)
+// Aggregate small changes (\<10 lines)
 const aggregatedChanges = aggregateSmallChanges(relevantFiles);
 
 // Result: Typical input reduced from 10K to 3K tokens
@@ -257,8 +257,8 @@ Example:
 
 ### Positive
 
-- ✅ **Cost-effective**: Default cost <$0.01 per task, <$0.20 per increment
-- ✅ **Fast**: Haiku completes in <15 seconds (non-blocking)
+- ✅ **Cost-effective**: Default cost \<$0.01 per task, \<$0.20 per increment
+- ✅ **Fast**: Haiku completes in \<15 seconds (non-blocking)
 - ✅ **High adoption**: Low cost → users keep reflection enabled
 - ✅ **Sufficient quality**: Haiku detects 75%+ of issues (acceptable)
 - ✅ **Configurable**: Users can upgrade to Sonnet/Opus manually
@@ -398,8 +398,8 @@ export function estimateCost(
 
 **Quality Validation**:
 - Compare Haiku vs Sonnet on 100 sample reflections
-- Measure false negative rate (target: <25%)
-- Measure false positive rate (target: <15%)
+- Measure false negative rate (target: \<25%)
+- Measure false positive rate (target: \<15%)
 
 ## Review Notes
 

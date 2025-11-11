@@ -51,7 +51,7 @@ This enables **data-driven improvement** and **stakeholder reporting**.
 **US-004**: As a team lead, I want to track MTTR so that I can improve incident response
 - [x] **AC-004-01**: Measure time from hotfix start to resolution
 - [x] **AC-004-02**: Show average MTTR over time
-- [x] **AC-004-03**: Benchmark against industry standards (<1 hour elite)
+- [x] **AC-004-03**: Benchmark against industry standards (\<1 hour elite)
 
 **US-005**: As a developer, I want cost analytics so that I can optimize AI usage
 - [x] **AC-005-01**: Track cost per increment (model usage)
@@ -92,9 +92,9 @@ graph TB
 | Metric | Elite | High | Medium | Low |
 |--------|-------|------|--------|-----|
 | **Deployment Frequency** | Multiple/day | Weekly | Monthly | Yearly |
-| **Lead Time** | <1 day | <1 week | <1 month | >6 months |
-| **MTTR** | <1 hour | <1 day | <1 week | >6 months |
-| **Change Failure Rate** | <5% | <15% | <30% | >45% |
+| **Lead Time** | \<1 day | \<1 week | \<1 month | >6 months |
+| **MTTR** | \<1 hour | \<1 day | \<1 week | >6 months |
+| **Change Failure Rate** | \<5% | \<15% | \<30% | >45% |
 
 ---
 
@@ -113,7 +113,7 @@ graph TB
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
 | **Metrics accuracy** | 95%+ | 98% | ✅ Exceeds |
-| **Dashboard load time** | <2s | 1.2s | ✅ Exceeds |
+| **Dashboard load time** | \<2s | 1.2s | ✅ Exceeds |
 | **Export success rate** | 100% | 100% | ✅ Meets |
 | **Adoption rate** (teams using) | 50%+ | 12% | ⚠️ Below (early adoption) |
 

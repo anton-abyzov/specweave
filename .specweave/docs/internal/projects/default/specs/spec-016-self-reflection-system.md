@@ -41,7 +41,7 @@ Automated self-reflection system that:
 - **Efficiency**: 30% reduction in code review time
 - **Security**: Earlier detection of OWASP Top 10 vulnerabilities
 - **Learning**: Institutional knowledge from reflection logs
-- **Cost**: <$0.10 per increment (negligible vs. bug fix costs)
+- **Cost**: \<$0.10 per increment (negligible vs. bug fix costs)
 
 ---
 
@@ -56,7 +56,7 @@ Automated self-reflection system that:
 **Acceptance Criteria**:
 - **AC-US1-01**: Hook integration - reflection triggers automatically when TodoWrite marks task complete (P1, testable)
 - **AC-US1-02**: Async execution - reflection runs non-blocking, doesn't delay next task (P1, testable)
-- **AC-US1-03**: Performance - reflection completes in <30 seconds for typical task (P1, testable)
+- **AC-US1-03**: Performance - reflection completes in \<30 seconds for typical task (P1, testable)
 - **AC-US1-04**: Error tolerance - reflection failures don't block workflow (P1, testable)
 
 ---
@@ -438,9 +438,9 @@ Automated self-reflection system that:
 **Requirement**: Reflection completes within acceptable time limits
 
 **Metrics**:
-- <15s for quick mode
-- <30s for standard mode
-- <60s for deep mode
+- \<15s for quick mode
+- \<30s for standard mode
+- \<60s for deep mode
 - Async execution (non-blocking)
 
 **Acceptance**: 95% of reflections complete within target time
@@ -452,12 +452,12 @@ Automated self-reflection system that:
 **Requirement**: Cost-effective AI usage
 
 **Metrics**:
-- <$0.01 per task (Haiku mode)
-- <$0.05 per task (Sonnet mode)
-- <$0.15 per task (Opus mode)
-- <$0.10 per increment average
+- \<$0.01 per task (Haiku mode)
+- \<$0.05 per task (Sonnet mode)
+- \<$0.15 per task (Opus mode)
+- \<$0.10 per increment average
 
-**Acceptance**: 90% of increments cost <$0.10
+**Acceptance**: 90% of increments cost \<$0.10
 
 ---
 
@@ -471,7 +471,7 @@ Automated self-reflection system that:
 - No workflow blocking on errors
 - Automatic retry on transient failures
 
-**Acceptance**: <0.5% failure rate, zero workflow blocks
+**Acceptance**: \<0.5% failure rate, zero workflow blocks
 
 ---
 
@@ -480,9 +480,9 @@ Automated self-reflection system that:
 **Requirement**: Simple configuration and clear feedback
 
 **Metrics**:
-- <5 minutes to configure for first time
+- \<5 minutes to configure for first time
 - Clear, actionable feedback (not vague warnings)
-- <10% false positive rate
+- \<10% false positive rate
 - Feedback includes fix suggestions
 
 **Acceptance**: User survey >80% satisfaction
@@ -499,7 +499,7 @@ Automated self-reflection system that:
 - Customizable severity thresholds
 - Third-party analyzer plugins (future)
 
-**Acceptance**: New category added in <4 hours
+**Acceptance**: New category added in \<4 hours
 
 ---
 
@@ -550,14 +550,14 @@ Automated self-reflection system that:
 ### Effectiveness Metrics
 
 - **Issue Detection Rate**: 50%+ of code review issues caught by reflection
-- **False Positive Rate**: <10% of flagged issues are invalid
+- **False Positive Rate**: \<10% of flagged issues are invalid
 - **Security Coverage**: 80%+ of OWASP Top 10 vulnerabilities detected
 - **Test Coverage**: +10% average test coverage after reflection adoption
 
 ### Performance Metrics
 
-- **Execution Time**: 95% of reflections complete in <30s
-- **Cost Efficiency**: <$0.01 average cost per task (Haiku mode)
+- **Execution Time**: 95% of reflections complete in \<30s
+- **Cost Efficiency**: \<$0.01 average cost per task (Haiku mode)
 - **Availability**: 99.5% reflection success rate
 
 ### Adoption Metrics
@@ -787,7 +787,7 @@ Automated self-reflection system that:
    - **Recommendation**: No for MVP (task list pollution). Show warnings only.
 
 3. **Scope threshold**: When to skip reflection for trivial changes?
-   - **Recommendation**: Skip if <10 lines changed (configurable)
+   - **Recommendation**: Skip if \<10 lines changed (configurable)
 
 4. **Model selection**: Haiku default or let user choose?
    - **Recommendation**: Haiku default (cost-effective). User can override.

@@ -37,7 +37,7 @@ This ensures SpecWeave is **usable worldwide** and has **low learning curve**.
 **US-001**: As a non-English developer, I want to use SpecWeave in my native language
 - [x] **AC-001-01**: Users can work in Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
 - [x] **AC-001-02**: Auto-translates increment specs to English (maintainable docs)
-- [x] **AC-001-03**: Translation cost <$0.02 per increment
+- [x] **AC-001-03**: Translation cost \<$0.02 per increment
 
 **US-002**: As a maintainer, I want English docs despite multilingual input
 - [x] **AC-002-01**: Post-generation translation (spec.md, plan.md, tasks.md → English)
@@ -85,7 +85,7 @@ graph LR
 ```
 
 **Translation Features**:
-- Heuristic-based language detection (<1ms, zero cost)
+- Heuristic-based language detection (\<1ms, zero cost)
 - Code block preservation (never translates code)
 - Link preservation (never breaks URLs)
 - YAML structure validation (ensures frontmatter intact)
@@ -122,7 +122,7 @@ graph LR
 | Metric | Target | Current | Status |
 |--------|--------|---------|--------|
 | **Language support** | 5+ languages | 9 languages | ✅ Exceeds |
-| **Translation cost** | <$0.05/increment | $0.01/increment | ✅ Exceeds |
+| **Translation cost** | \<$0.05/increment | $0.01/increment | ✅ Exceeds |
 | **Translation quality** | 95%+ | 97% avg | ✅ Exceeds |
 | **FAQ coverage** | 50+ questions | 67 questions | ✅ Exceeds |
 | **Glossary terms** | 30+ terms | 42 terms | ✅ Exceeds |

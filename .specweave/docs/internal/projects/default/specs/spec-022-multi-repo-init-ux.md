@@ -629,11 +629,11 @@ Select: [2]
 
 ### NFR-001: Performance
 
-- Repository ID generation: <1ms
-- GitHub API validation: <500ms per repo
-- State persistence: <10ms per save
-- .env generation: <5ms
-- Setup summary: <50ms
+- Repository ID generation: \<1ms
+- GitHub API validation: \<500ms per repo
+- State persistence: \<10ms per save
+- .env generation: \<5ms
+- Setup summary: \<50ms
 
 ### NFR-002: Reliability
 
@@ -671,7 +671,7 @@ Select: [2]
 
 - Code coverage: 85%+ overall (90% for critical paths)
 - E2E tests: 15+ test cases covering all flows
-- Performance: All operations <500ms (except GitHub API)
+- Performance: All operations \<500ms (except GitHub API)
 - Reliability: 99.9% success rate for state persistence
 
 ### Adoption Metrics

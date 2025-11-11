@@ -688,7 +688,43 @@ EOF
     log_debug "GitHub issue auto-create disabled in config"
   fi
 
-  # 8. Final summary
+  # 8. Sync spec content to external tools (if configured)
+  log_info ""
+  log_info "🔗 Checking spec content sync..."
+
+  # Check if sync is enabled in config
+  local sync_enabled=$(cat "$CONFIG_FILE" 2>/dev/null | grep -o '"enabled"[[:space:]]*:[[:space:]]*\(true\|false\)' | head -1 | grep -o '\(true\|false\)' || echo "false")
+
+  if [ "$sync_enabled" = "true" ]; then
+    log_info "  📦 Sync enabled, syncing spec content to external tool..."
+
+    # Find the helper script
+    local sync_script="${CLAUDE_PLUGIN_ROOT}/hooks/lib/sync-spec-content.sh"
+
+    # Fallback to relative path if CLAUDE_PLUGIN_ROOT not set
+    if [ -z "$CLAUDE_PLUGIN_ROOT" ]; then
+      local hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+      sync_script="$hook_dir/lib/sync-spec-content.sh"
+    fi
+
+    if [ -f "$sync_script" ] && [ -x "$sync_script" ]; then
+      log_debug "Calling sync-spec-content.sh for $spec_file"
+
+      # Call the sync script (non-blocking)
+      if "$sync_script" "$spec_file" 2>&1 | while read -r line; do echo "  $line"; done; then
+        log_info "  ✅ Spec content sync completed successfully!"
+      else
+        log_info "  ⚠️  Spec content sync failed (non-blocking)"
+        log_debug "Spec sync failed, continuing..."
+      fi
+    else
+      log_debug "Sync script not found or not executable: $sync_script"
+    fi
+  else
+    log_debug "Spec content sync disabled in config"
+  fi
+
+  # 9. Final summary
   log_info ""
   local total_translated=$((increment_success_count))
 
