@@ -113,9 +113,9 @@ describe('ProjectManager - Path Resolution', () => {
       const confluencePath = projectManager.getLegacyPath('confluence');
       const wikiPath = projectManager.getLegacyPath('wiki');
 
-      expect(notionPath).toContain('/legacy/notion');
-      expect(confluencePath).toContain('/legacy/confluence');
-      expect(wikiPath).toContain('/legacy/wiki');
+      expect(notionPath).toContain('/legacy/default/notion');
+      expect(confluencePath).toContain('/legacy/default/confluence');
+      expect(wikiPath).toContain('/legacy/default/wiki');
     });
   });
 
