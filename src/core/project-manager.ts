@@ -122,12 +122,12 @@ export class ProjectManager {
   }
 
   /**
-   * Get base path for active project
-   * Example: .specweave/docs/internal/projects/default/
+   * Get specs path for active project
+   * Example: .specweave/docs/internal/specs/backend/
    *
    * @returns string
    */
-  getProjectBasePath(projectId?: string): string {
+  getSpecsPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
     if (!project) {
       throw new Error(`Project '${projectId}' not found`);
@@ -135,61 +135,88 @@ export class ProjectManager {
 
     return path.join(
       this.projectRoot,
-      '.specweave/docs/internal/projects',
+      '.specweave/docs/internal/specs',
       project.id
     );
   }
 
   /**
-   * Get specs path for active project
-   * Example: .specweave/docs/internal/projects/default/specs/
-   *
-   * @returns string
-   */
-  getSpecsPath(projectId?: string): string {
-    return path.join(this.getProjectBasePath(projectId), 'specs');
-  }
-
-  /**
    * Get modules path for active project
-   * Example: .specweave/docs/internal/projects/default/modules/
+   * Example: .specweave/docs/internal/modules/backend/
    *
    * @returns string
    */
   getModulesPath(projectId?: string): string {
-    return path.join(this.getProjectBasePath(projectId), 'modules');
+    const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
+    if (!project) {
+      throw new Error(`Project '${projectId}' not found`);
+    }
+
+    return path.join(
+      this.projectRoot,
+      '.specweave/docs/internal/modules',
+      project.id
+    );
   }
 
   /**
    * Get team docs path for active project
-   * Example: .specweave/docs/internal/projects/default/team/
+   * Example: .specweave/docs/internal/team/backend/
    *
    * @returns string
    */
   getTeamPath(projectId?: string): string {
-    return path.join(this.getProjectBasePath(projectId), 'team');
+    const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
+    if (!project) {
+      throw new Error(`Project '${projectId}' not found`);
+    }
+
+    return path.join(
+      this.projectRoot,
+      '.specweave/docs/internal/team',
+      project.id
+    );
   }
 
   /**
-   * Get architecture path for active project
-   * Example: .specweave/docs/internal/projects/default/architecture/
+   * Get project-specific architecture path
+   * Renamed from getArchitecturePath() to avoid conflict with top-level architecture/
+   * Example: .specweave/docs/internal/project-arch/backend/
    *
    * @returns string
    */
-  getArchitecturePath(projectId?: string): string {
-    return path.join(this.getProjectBasePath(projectId), 'architecture');
+  getProjectArchitecturePath(projectId?: string): string {
+    const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
+    if (!project) {
+      throw new Error(`Project '${projectId}' not found`);
+    }
+
+    return path.join(
+      this.projectRoot,
+      '.specweave/docs/internal/project-arch',
+      project.id
+    );
   }
 
   /**
    * Get legacy docs path for active project
-   * Example: .specweave/docs/internal/projects/default/legacy/
-   * Or with source: .specweave/docs/internal/projects/default/legacy/notion/
+   * Example: .specweave/docs/internal/legacy/backend/
+   * Or with source: .specweave/docs/internal/legacy/backend/notion/
    *
    * @param source - Optional source type (notion, confluence, wiki, custom)
    * @returns string
    */
   getLegacyPath(source?: string, projectId?: string): string {
-    const basePath = path.join(this.getProjectBasePath(projectId), 'legacy');
+    const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
+    if (!project) {
+      throw new Error(`Project '${projectId}' not found`);
+    }
+
+    const basePath = path.join(
+      this.projectRoot,
+      '.specweave/docs/internal/legacy',
+      project.id
+    );
     return source ? path.join(basePath, source) : basePath;
   }
 
@@ -223,30 +250,29 @@ export class ProjectManager {
 
   /**
    * Create project structure with all folders
+   * Uses flattened structure: specs/{project}/, modules/{project}/, etc.
    *
    * @param projectId - Project identifier
    */
   async createProjectStructure(projectId: string): Promise<void> {
-    const basePath = this.getProjectBasePath(projectId);
-
-    // Create folders
-    await fs.ensureDir(path.join(basePath, 'specs'));
-    await fs.ensureDir(path.join(basePath, 'modules'));
-    await fs.ensureDir(path.join(basePath, 'team'));
-    await fs.ensureDir(path.join(basePath, 'architecture/adr'));
-    await fs.ensureDir(path.join(basePath, 'legacy'));
+    // Create folders using flattened structure
+    await fs.ensureDir(this.getSpecsPath(projectId));
+    await fs.ensureDir(this.getModulesPath(projectId));
+    await fs.ensureDir(this.getTeamPath(projectId));
+    await fs.ensureDir(path.join(this.getProjectArchitecturePath(projectId), 'adr'));
+    await fs.ensureDir(this.getLegacyPath(undefined, projectId));
 
     // Create README files
     const project = this.getProjectById(projectId);
     if (project) {
-      await this.createProjectREADME(project, basePath);
-      await this.createModulesREADME(basePath);
-      await this.createTeamREADME(basePath);
-      await this.createArchitectureREADME(basePath);
-      await this.createLegacyREADME(basePath);
+      await this.createProjectREADME(project);
+      await this.createModulesREADME(projectId);
+      await this.createTeamREADME(projectId);
+      await this.createArchitectureREADME(projectId);
+      await this.createLegacyREADME(projectId);
     }
 
-    console.log(`📁 Created project structure: ${basePath}`);
+    console.log(`📁 Created project structure for: ${projectId}`);
   }
 
   /**
@@ -330,7 +356,8 @@ export class ProjectManager {
 
   // README creation methods
 
-  private async createProjectREADME(project: ProjectContext, basePath: string): Promise<void> {
+  private async createProjectREADME(project: ProjectContext): Promise<void> {
+    const specsPath = this.getSpecsPath(project.id);
     const content = `# ${project.name}
 
 ${project.description}
@@ -342,13 +369,15 @@ ${project.description}
 ${project.contacts?.lead ? `- **Tech Lead**: ${project.contacts.lead}` : ''}
 ${project.contacts?.pm ? `- **Product Manager**: ${project.contacts.pm}` : ''}
 
-## Folder Structure
+## Folder Structure (Flattened)
 
-- \`specs/\` - Living documentation specs (spec-001, spec-002, ...)
-- \`modules/\` - Module-level documentation (auth, payments, etc.)
-- \`team/\` - Team playbooks (onboarding, conventions, workflows)
-- \`architecture/\` - Project-specific architecture (optional)
-- \`legacy/\` - Brownfield imported documentation
+This project uses a flattened structure:
+
+- \`.specweave/docs/internal/specs/${project.id}/\` - Living documentation specs
+- \`.specweave/docs/internal/modules/${project.id}/\` - Module-level documentation
+- \`.specweave/docs/internal/team/${project.id}/\` - Team playbooks
+- \`.specweave/docs/internal/project-arch/${project.id}/\` - Project-specific architecture
+- \`.specweave/docs/internal/legacy/${project.id}/\` - Brownfield imported documentation
 
 ## Documentation
 
@@ -381,10 +410,11 @@ ${project.syncProfiles.map(profile => `- ${profile}`).join('\n')}` :
 **Last Updated**: ${new Date().toISOString().split('T')[0]}
 `;
 
-    await fs.writeFile(path.join(basePath, 'README.md'), content);
+    await fs.writeFile(path.join(specsPath, 'README.md'), content);
   }
 
-  private async createModulesREADME(basePath: string): Promise<void> {
+  private async createModulesREADME(projectId: string): Promise<void> {
+    const modulesPath = this.getModulesPath(projectId);
     const content = `# Module Documentation
 
 Module-level documentation for components, services, and domains.
@@ -435,19 +465,20 @@ Handles user authentication, session management, OAuth2 integration.
 | Aspect | Module Docs | Architecture Docs |
 |--------|-------------|-------------------|
 | **Scope** | Component-level | System-level |
-| **Location** | \`projects/{id}/modules/\` | \`architecture/\` (shared) or \`projects/{id}/architecture/\` (project-specific) |
+| **Location** | \`modules/{id}/\` | \`architecture/\` (shared) or \`project-arch/{id}/\` (project-specific) |
 | **Audience** | Developers working on module | All technical stakeholders |
 | **Examples** | auth-module.md, payment-module.md | HLD, ADR, system diagrams |
 
 ---
 
-**See**: [../README.md](../README.md) for project overview
+**See**: [../specs/${projectId}/README.md](../specs/${projectId}/README.md) for project overview
 `;
 
-    await fs.writeFile(path.join(basePath, 'modules', 'README.md'), content);
+    await fs.writeFile(path.join(modulesPath, 'README.md'), content);
   }
 
-  private async createTeamREADME(basePath: string): Promise<void> {
+  private async createTeamREADME(projectId: string): Promise<void> {
+    const teamPath = this.getTeamPath(projectId);
     const content = `# Team Playbook
 
 Team-specific conventions, workflows, and processes.
@@ -507,20 +538,21 @@ Team-specific conventions, workflows, and processes.
 
 ---
 
-**See**: [../README.md](../README.md) for project overview
+**See**: [../specs/${projectId}/README.md](../specs/${projectId}/README.md) for project overview
 `;
 
-    await fs.writeFile(path.join(basePath, 'team', 'README.md'), content);
+    await fs.writeFile(path.join(teamPath, 'README.md'), content);
   }
 
-  private async createArchitectureREADME(basePath: string): Promise<void> {
+  private async createArchitectureREADME(projectId: string): Promise<void> {
+    const archPath = this.getProjectArchitecturePath(projectId);
     const content = `# Project-Specific Architecture
 
 Project-specific architecture documentation and ADRs.
 
 ## When to Use This vs Shared Architecture
 
-### Project-Specific Architecture (\`projects/{id}/architecture/\`)
+### Project-Specific Architecture (\`project-arch/{id}/\`)
 - Decisions specific to this project/team
 - Component-level design
 - Project-specific ADRs
@@ -562,13 +594,14 @@ What other options did we evaluate?
 
 ---
 
-**See**: [../README.md](../README.md) for project overview
+**See**: [../specs/${projectId}/README.md](../specs/${projectId}/README.md) for project overview
 `;
 
-    await fs.writeFile(path.join(basePath, 'architecture', 'README.md'), content);
+    await fs.writeFile(path.join(archPath, 'README.md'), content);
   }
 
-  private async createLegacyREADME(basePath: string): Promise<void> {
+  private async createLegacyREADME(projectId: string): Promise<void> {
+    const legacyPath = this.getLegacyPath(undefined, projectId);
     const content = `# Legacy Documentation
 
 Brownfield documentation imported from external sources.
@@ -601,9 +634,9 @@ See \`.specweave/config.json\` → \`brownfield.importHistory\` for import detai
 
 ---
 
-**See**: [../README.md](../README.md) for project overview
+**See**: [../specs/${projectId}/README.md](../specs/${projectId}/README.md) for project overview
 `;
 
-    await fs.writeFile(path.join(basePath, 'legacy', 'README.md'), content);
+    await fs.writeFile(path.join(legacyPath, 'README.md'), content);
   }
 }

@@ -19,7 +19,7 @@ describe('BrownfieldImporter - Report Generation', () => {
 
       // Create .specweave structure with default project
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       // Create config.json with default project
       const configPath = path.join(specweaveRoot, 'config.json');
@@ -50,7 +50,7 @@ describe('BrownfieldImporter - Report Generation', () => {
 
       // Create .specweave structure
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -89,7 +89,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       await importer.import(options);
 
       // Verify report exists
-      const reportPath = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       expect(await fs.pathExists(reportPath)).toBe(true);
 
       // Read report content
@@ -110,7 +110,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       // Setup
       testRoot = tmpDir;
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -149,7 +149,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       await importer.import(options);
 
       // Read report
-      const reportPath = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       const reportContent = await fs.readFile(reportPath, 'utf-8');
 
       // Verify statistics
@@ -166,7 +166,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       // Setup
       testRoot = tmpDir;
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -202,7 +202,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       await importer.import(options);
 
       // Read report
-      const reportPath = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       const reportContent = await fs.readFile(reportPath, 'utf-8');
 
       // Verify metadata
@@ -218,7 +218,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       // Setup
       testRoot = tmpDir;
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -256,7 +256,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       const after = new Date().toISOString();
 
       // Read report
-      const reportPath = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       const reportContent = await fs.readFile(reportPath, 'utf-8');
 
       // Verify ISO timestamp format (YYYY-MM-DDTHH:mm:ss.sssZ)
@@ -277,7 +277,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       // Setup
       testRoot = tmpDir;
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       await fs.writeFile(configPath, JSON.stringify({
@@ -313,13 +313,13 @@ describe('BrownfieldImporter - Report Generation', () => {
 
       await importer.import(options1);
 
-      const reportPath1 = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath1 = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       const reportContent1 = await fs.readFile(reportPath1, 'utf-8');
 
       expect(reportContent1).toContain('📁 Files flattened to destination folders (no subdirectories)');
 
       // Clean up and test with preserveStructure=true
-      await fs.remove(path.join(testRoot, '.specweave/docs/internal/projects/default/legacy'));
+      await fs.remove(path.join(testRoot, '.specweave/docs/internal/legacy/default'));
 
       const options2: ImportOptions = {
         sourcePath: sourceDir,
@@ -330,7 +330,7 @@ describe('BrownfieldImporter - Report Generation', () => {
 
       await importer.import(options2);
 
-      const reportPath2 = path.join(testRoot, '.specweave/docs/internal/projects/default/legacy/README.md');
+      const reportPath2 = path.join(testRoot, '.specweave/docs/internal/legacy/default/README.md');
       const reportContent2 = await fs.readFile(reportPath2, 'utf-8');
 
       expect(reportContent2).toContain('✅ Original folder structure preserved');
@@ -342,7 +342,7 @@ describe('BrownfieldImporter - Report Generation', () => {
       // Setup
       testRoot = tmpDir;
       const specweaveRoot = path.join(testRoot, '.specweave');
-      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/projects/default'));
+      await fs.ensureDir(path.join(specweaveRoot, 'docs/internal/specs/default'));
 
       const configPath = path.join(specweaveRoot, 'config.json');
       const initialConfig = {

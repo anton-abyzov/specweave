@@ -226,8 +226,8 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5.2: Write sync config to .specweave/config.json
   await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
 
-  // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
-  if (tracker === 'jira') {
+  // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
+  if (tracker === 'jira' || tracker === 'ado') {
     await validateResources(tracker, credentials, projectPath);
   }
 
@@ -299,12 +299,12 @@ async function validateConnection(
 }
 
 /**
- * Validate resources (projects/boards) - Jira only
+ * Validate resources (projects/boards/teams) - Jira and Azure DevOps
  *
  * Uses the smart validator to:
  * - Check if projects exist, prompt to create if missing
- * - Check if boards exist (IDs) or create them (names)
- * - Update .env with actual board IDs
+ * - For Jira: Check if boards exist (IDs) or create them (names), update .env with board IDs
+ * - For ADO: Check if teams/area paths exist, create if missing
  *
  * @param tracker - Issue tracker type
  * @param credentials - Tracker credentials
@@ -315,29 +315,43 @@ async function validateResources(
   credentials: TrackerCredentials,
   projectPath: string
 ): Promise<void> {
-  if (tracker !== 'jira') {
-    return; // Only Jira needs resource validation
+  if (tracker !== 'jira' && tracker !== 'ado') {
+    return; // Only Jira and ADO need resource validation
   }
 
   try {
-    // Import the validator (dynamic import for ESM)
-    const { validateJiraResources } = await import('../../../utils/external-resource-validator.js');
-
     console.log('');
 
-    // Run validation
-    const result = await validateJiraResources(`${projectPath}/.env`);
+    if (tracker === 'jira') {
+      // Import the Jira validator (dynamic import for ESM)
+      const { validateJiraResources } = await import('../../../utils/external-resource-validator.js');
 
-    if (!result.valid) {
-      console.log(chalk.yellow('⚠️  Some resources could not be validated'));
-      console.log(chalk.gray('   You can run "specweave validate-jira" later to fix this\n'));
+      // Run validation
+      const result = await validateJiraResources(`${projectPath}/.env`);
+
+      if (!result.valid) {
+        console.log(chalk.yellow('⚠️  Some Jira resources could not be validated'));
+        console.log(chalk.gray('   You can run "specweave validate-jira" later to fix this\n'));
+      }
+    } else if (tracker === 'ado') {
+      // Import the ADO validator (dynamic import for ESM)
+      const { validateAzureDevOpsResources } = await import('../../../utils/external-resource-validator.js');
+
+      // Run validation
+      const result = await validateAzureDevOpsResources(`${projectPath}/.env`);
+
+      if (!result.valid) {
+        console.log(chalk.yellow('⚠️  Some Azure DevOps resources could not be validated'));
+        console.log(chalk.gray('   You can run "specweave validate-ado" later to fix this\n'));
+      }
     }
   } catch (error: any) {
     // Non-blocking - validation can happen later
     if (process.env.DEBUG) {
       console.log(chalk.gray(`\n   Resource validation skipped: ${error.message}`));
     }
-    console.log(chalk.gray('   You can run "specweave validate-jira" later\n'));
+    const validatorCommand = tracker === 'jira' ? 'validate-jira' : 'validate-ado';
+    console.log(chalk.gray(`   You can run "specweave ${validatorCommand}" later\n`));
   }
 }
 

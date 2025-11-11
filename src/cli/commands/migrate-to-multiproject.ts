@@ -137,7 +137,7 @@ export async function autoMigrateSingleToMulti(
     if (hasOldSpecs) {
       const newSpecsPath = path.join(
         projectRoot,
-        `.specweave/docs/internal/projects/${projectId}/specs`
+        `.specweave/docs/internal/specs/${projectId}`
       );
 
       try {
@@ -155,7 +155,7 @@ export async function autoMigrateSingleToMulti(
         }
 
         result.migratedSpecsCount = migratedCount;
-        console.log(`📋 Migrated ${migratedCount} spec(s) to projects/${projectId}/specs/`);
+        console.log(`📋 Migrated ${migratedCount} spec(s) to specs/${projectId}/`);
 
         // Rename old folder (preserve as backup)
         const oldSpecsBackupPath = path.join(
@@ -172,7 +172,7 @@ export async function autoMigrateSingleToMulti(
       console.log('ℹ️  No existing specs/ folder to migrate');
     }
 
-    console.log(`\n✅ Migration complete! Using projects/${projectId}/ structure`);
+    console.log(`\n✅ Migration complete! Using flattened specs/${projectId}/ structure`);
     console.log('💡 Run /specweave:init-multiproject to enable multi-project mode\n');
 
     result.success = result.errors.length === 0;

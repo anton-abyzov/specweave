@@ -1,1454 +1,959 @@
 ---
 increment: 0022-multi-repo-init-ux
-total_tasks: 24
-completed_tasks: 2
+total_tasks: 15
+completed_tasks: 11
 test_mode: TDD
 coverage_target: 85%
 ---
 
-# Implementation Tasks
+# Implementation Tasks: Multi-Repository Initialization UX Improvements
 
-## Phase 1: Core Modules (T-001 to T-006)
+**Increment**: 0022-multi-repo-init-ux
+**Living Docs**: [SPEC-022](../../docs/internal/projects/default/specs/spec-022-multi-repo-init-ux.md)
+**Plan**: [plan.md](./plan.md)
 
-### T-001: Implement Repository ID Generator
+---
+
+## Phase 1: Core Modifications (Day 1)
+
+### T-001: Remove services/ folder logic from repo-structure-manager.ts
+
+**AC**: AC-US5-01, AC-US5-03
+
+**Priority**: P1
+**Estimate**: 2 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** a parent repository setup with implementation repos
+- **When** repositories are cloned locally
+- **Then** they should be cloned at root level (e.g., `frontend/`, `backend/`)
+- **And** NOT nested under `services/` folder
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/repo-structure-manager.test.ts`):
+   - testRootLevelCloningPath(): Verify path generation without services/ → 90% coverage
+   - testMultiRepoPathGeneration(): Test path mapping for multiple repos → 90% coverage
+   - **Coverage Target**: 90%
+
+2. **Integration** (`tests/integration/repo-structure/root-level-cloning.test.ts`):
+   - testCompleteRootLevelSetup(): Full flow with root-level repos → 85% coverage
+   - testGitignoreUpdate(): Verify .gitignore patterns updated → 85% coverage
+   - **Coverage Target**: 85%
+
+3. **E2E** (`tests/e2e/init/root-level-structure.spec.ts`):
+   - userSeesRootLevelFolders(): Visual verification of folder structure → 100% critical path
+   - folderStructureMatchesExpected(): Verify no services/ folder created → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 88%
+
+**Implementation**:
+1. Open `src/core/repo-structure/repo-structure-manager.ts`
+2. Locate line 865: Change `path.join(this.projectPath, repo.path)` (verify already correct)
+3. Locate line 497: Ensure path generation uses `id` directly (not `services/${id}`)
+4. Update .gitignore patterns to include root-level folders (frontend/, backend/, etc.)
+5. Run tests: `npm test -- repo-structure-manager` (should pass: 15/15)
+6. Run integration tests: `npm run test:integration -- root-level-cloning` (should pass: 3/3)
+7. Run E2E tests: `npm run test:e2e -- root-level-structure` (should pass: 2/2)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should fail)
+2. ❌ Run tests: `npm test` (0/20 passing)
+3. ✅ Implement root-level path changes
+4. 🟢 Run tests: `npm test` (20/20 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥88%
+
+**Dependencies**: None
+
+---
+
+### T-002: Simplify repository architecture questions
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
+
+**Priority**: P1
+**Estimate**: 2 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** user runs `specweave init` for multi-repo setup
+- **When** architecture prompt is shown
+- **Then** single consolidated question should appear (not two separate prompts)
+- **And** "polyrepo" jargon should be replaced with "multiple separate repositories"
+- **And** parent repo count should be clarified (e.g., "1 parent + 3 implementation = 4 total")
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/prompt-consolidator.test.ts`):
+   - testArchitecturePromptConsolidated(): Verify single prompt structure → 90% coverage
+   - testNoPolyrepoJargon(): Ensure "polyrepo" not present → 90% coverage
+   - testRepoCountClarification(): Verify count clarification text → 90% coverage
+   - testVisualExamples(): Check examples in prompt options → 85% coverage
+   - **Coverage Target**: 88%
+
+2. **Integration** (`tests/integration/repo-structure/prompt-flow.test.ts`):
+   - testPromptSequence(): Verify prompt order and consolidation → 85% coverage
+   - testPromptDefaults(): Check default values → 85% coverage
+   - **Coverage Target**: 85%
+
+3. **E2E** (`tests/e2e/init/prompt-clarity.spec.ts`):
+   - userSeesConsolidatedPrompt(): Single architecture question shown → 100% critical path
+   - userUnderstandsMultiRepoTerminology(): Jargon-free language → 100% critical path
+   - userSeesRepoCountExample(): Count clarification visible → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 87%
+
+**Implementation**:
+1. Verify `src/core/repo-structure/prompt-consolidator.ts` exists and implements:
+   - `getArchitecturePrompt()` - consolidated prompt (lines 30-50)
+   - `getRepoCountClarification()` - count explanation (lines 80-95)
+   - Visual examples in options
+2. Verify integration in `repo-structure-manager.ts` (lines 102-130)
+3. Test prompts interactively: `specweave init test-project`
+4. Verify prompt text matches spec requirements
+5. Run unit tests: `npm test -- prompt-consolidator` (should pass: 8/8)
+6. Run integration tests: `npm run test:integration -- prompt-flow` (should pass: 4/4)
+7. Run E2E tests: `npm run test:e2e -- prompt-clarity` (should pass: 3/3)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should fail)
+2. ❌ Run tests: `npm test` (0/15 passing)
+3. ✅ Verify/enhance prompt consolidator implementation
+4. 🟢 Run tests: `npm test` (15/15 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥87%
+
+**Dependencies**: None
+
+---
+
+### T-003: Integrate auto-ID generation with editable defaults
 
 **AC**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04
 
 **Priority**: P1
-**Estimate**: 3 hours
-**Status**: [x] completed
-**Completed**: 2025-11-11
-**Coverage**: 97.29% (Target: 90%, EXCEEDED ✅)
-
-**Test Plan** (BDD format):
-- **Given** repo name "my-saas-frontend-app" → **When** generateRepoId() called → **Then** returns "frontend"
-- **Given** repo name "acme-api-gateway-service" → **When** generateRepoId() called → **Then** returns "gateway"
-- **Given** repo name "backend-service" → **When** generateRepoId() called → **Then** returns "backend"
-- **Given** duplicate ID "frontend" exists in set → **When** ensureUniqueId("frontend") called → **Then** returns "frontend-2"
-- **Given** invalid input "parent,fe,be" (contains comma) → **When** validateRepoId() called → **Then** throws validation error with message "Repository ID cannot contain commas"
-- **Given** invalid input "My-Repo" (uppercase) → **When** validateRepoId() called → **Then** throws validation error
-- **Given** valid input "frontend-app" → **When** validateRepoId() called → **Then** returns { valid: true }
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/repo-structure/repo-id-generator.test.ts` (15 test cases)
-   - generateRepoId_stripsAppSuffix(): "my-app" → "my"
-   - generateRepoId_stripsServiceSuffix(): "backend-service" → "backend"
-   - generateRepoId_stripsApiSuffix(): "api-gateway-api" → "gateway"
-   - generateRepoId_stripsFrontendSuffix(): "my-frontend" → "my"
-   - generateRepoId_stripsBackendSuffix(): "my-backend" → "my"
-   - generateRepoId_takesLastSegment(): "acme-saas-mobile" → "mobile"
-   - generateRepoId_handlesMultipleSuffixes(): "my-frontend-app" → "frontend"
-   - generateRepoId_handlesNoSuffix(): "simple-name" → "name"
-   - ensureUniqueId_noDuplicate(): "frontend" + {} → "frontend" (wasModified: false)
-   - ensureUniqueId_oneDuplicate(): "frontend" + {"frontend"} → "frontend-2" (wasModified: true)
-   - ensureUniqueId_multipleDuplicates(): "frontend" + {"frontend", "frontend-2"} → "frontend-3"
-   - validateRepoId_rejectsCommas(): "parent,fe,be" → error
-   - validateRepoId_rejectsUppercase(): "MyRepo" → error
-   - validateRepoId_rejectsSpaces(): "my repo" → error
-   - validateRepoId_acceptsValidId(): "frontend-app" → valid
-   - **Coverage Target**: 90%
-
-**Implementation**:
-
-1. Create file: `src/core/repo-structure/repo-id-generator.ts` (~50 lines)
-2. Implement generateRepoId() algorithm:
-   - Define suffix list: ['-app', '-service', '-api', '-frontend', '-backend', '-web', '-mobile']
-   - Strip one suffix from end (if exists)
-   - Split by hyphen, take last segment
-   - Convert to lowercase
-3. Implement ensureUniqueId() with numeric suffix logic
-4. Implement validateRepoId() with rules:
-   - No commas (prevents "parent,fe,be" input)
-   - Lowercase + hyphens only (alphanumeric)
-   - Length 1-50 chars
-5. Write 15 unit tests with TDD (red → green → refactor)
-6. Run tests: `npm test repo-id-generator.test.ts` (should pass: 15/15)
-7. Verify coverage: `npm run coverage -- --include=src/core/repo-structure/repo-id-generator.ts` (≥90%)
-
-**TDD Workflow**:
-1. 📝 Write all 15 tests above (should fail)
-2. ❌ Run tests: `npm test repo-id-generator.test.ts` (0/15 passing)
-3. ✅ Implement generateRepoId() (step-by-step)
-4. 🟢 Run tests: `npm test repo-id-generator.test.ts` (15/15 passing)
-5. ♻️ Refactor: Extract suffix list to constant, optimize string operations
-6. ✅ Final check: Coverage ≥90%
-
-**Dependencies**: None
-
----
-
-### T-002: Implement Setup State Manager
-
-**AC**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04
-
-**Priority**: P1
-**Estimate**: 6 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** new setup state → **When** saveState() called → **Then** file created at `.specweave/setup-state.json` with permissions 0600
-- **Given** existing state file → **When** saveState() called → **Then** backup created, temp file written, atomic rename performed
-- **Given** write failure during save → **When** saveState() fails → **Then** backup restored, original state preserved
-- **Given** valid state file exists → **When** loadState() called → **Then** state parsed and validated
-- **Given** corrupted state file → **When** loadState() called → **Then** backup loaded successfully
-- **Given** incomplete setup (parentRepo created) → **When** detectAndResumeSetup() called → **Then** returns true, prompts user with "1/3 repos completed"
-- **Given** successful setup completion → **When** deleteState() called → **Then** state file and backup deleted
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/repo-structure/setup-state-manager.test.ts` (20 test cases)
-   - saveState_createsNewFile(): First save creates file
-   - saveState_setsPermissions0600(): File has correct permissions
-   - saveState_createsBackup(): Backup file created before write
-   - saveState_atomicRename(): Temp → rename operation
-   - saveState_restoresOnFailure(): Write fails → backup restored
-   - loadState_validFile(): Returns parsed state
-   - loadState_validateSchema(): Invalid schema → error
-   - loadState_corruptedFile(): Loads from backup
-   - loadState_missingFile(): Returns null
-   - detectAndResumeSetup_incompleteSetup(): Returns true + shows progress
-   - detectAndResumeSetup_noStateFile(): Returns false
-   - detectAndResumeSetup_completeSetup(): Returns false
-   - deleteState_removesFiles(): State + backup deleted
-   - deleteState_handlesNonexistent(): No error if files missing
-   - resumeSetup_continuesFromStep(): Skips completed repos
-   - resumeSetup_preservesConfig(): Configuration unchanged
-   - stateValidation_checksVersion(): Rejects old version
-   - stateValidation_checksRepos(): Validates repo structure
-   - concurrentWrites_preventCorruption(): Multiple saves → consistent state
-   - permissionsCheck_failsIfWrong(): Detects permission changes
-   - **Coverage Target**: 90%
-
-2. **Integration**: `tests/integration/repo-structure/ctrl-c-recovery.test.ts` (10 test cases)
-   - fullRecoveryFlow_afterParent(): Ctrl+C after parent → resume successful
-   - fullRecoveryFlow_afterRepo1(): Ctrl+C after repo 1 → resume successful
-   - fullRecoveryFlow_multipleInterrupts(): Multiple Ctrl+C → eventual success
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 88%
-
-**Implementation**:
-
-1. Create file: `src/core/repo-structure/setup-state-manager.ts` (~200 lines)
-2. Define SetupState interface (version, architecture, parentRepo, repos, currentStep, timestamp)
-3. Implement SetupStateManager class:
-   - constructor(projectRoot): Initialize paths
-   - saveState(state): Atomic write with backup
-   - loadState(): Load + validate + fallback to backup
-   - detectAndResumeSetup(): Check existence, prompt user
-   - deleteState(): Clean up state + backup
-   - validateState(state): Schema validation
-4. Implement atomic file operations:
-   - Create backup: fs.copyFile(statePath, backupPath)
-   - Write to temp: fs.writeFile(tempPath, JSON.stringify(state), { mode: 0o600 })
-   - Atomic rename: fs.rename(tempPath, statePath)
-   - Restore on error: fs.copyFile(backupPath, statePath)
-5. Add error handling for corruption, missing files, permission issues
-6. Write 20 unit tests + 10 integration tests with TDD
-7. Run tests: `npm test setup-state-manager.test.ts` (should pass: 20/20)
-8. Run integration tests: `npm test ctrl-c-recovery.test.ts` (should pass: 10/10)
-9. Verify coverage ≥88%
-
-**TDD Workflow**:
-1. 📝 Write all 30 tests above (should fail)
-2. ❌ Run tests: `npm test setup-state-manager` (0/30 passing)
-3. ✅ Implement saveState() with atomic writes (step-by-step)
-4. 🟢 Run tests: `npm test` (5/30 passing)
-5. ✅ Implement loadState() with validation
-6. 🟢 Run tests: `npm test` (15/30 passing)
-7. ✅ Implement detectAndResumeSetup() with prompts
-8. 🟢 Run tests: `npm test` (30/30 passing)
-9. ♻️ Refactor: Extract backup logic, improve error messages
-10. ✅ Final check: Coverage ≥88%
-
-**Dependencies**: None
-
----
-
-### T-003: Implement GitHub Validator
-
-**AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04
-
-**Priority**: P1
-**Estimate**: 5 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** repo "myorg/my-project" does not exist (404) → **When** validateRepository() called → **Then** returns { exists: false, valid: true }
-- **Given** repo "myorg/my-project" exists (200) → **When** validateRepository() called → **Then** returns { exists: true, valid: true, url: "https://github.com/myorg/my-project" }
-- **Given** invalid token (401) → **When** validateRepository() called → **Then** returns { exists: false, valid: false, error: "Invalid GitHub token" }
-- **Given** owner "myorg" exists as user → **When** validateOwner() called → **Then** returns { valid: true, type: "user" }
-- **Given** owner "myorg" exists as org → **When** validateOwner() called → **Then** returns { valid: true, type: "org" }
-- **Given** owner "nonexistent-org-12345" not found (404) → **When** validateOwner() called → **Then** returns { valid: false, error: "Owner not found" }
-- **Given** network failure (fetch throws) → **When** validateWithRetry() called → **Then** retries 3 times with exponential backoff, eventually throws
-- **Given** rate limit exceeded (403) → **When** checkRateLimit() called → **Then** returns { remaining: 0, resetAt: timestamp }
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/repo-structure/github-validator.test.ts` (25 test cases)
-   - validateRepository_doesNotExist(): 404 → exists: false
-   - validateRepository_exists(): 200 → exists: true + URL
-   - validateRepository_invalidToken(): 401 → error
-   - validateRepository_forbidden(): 403 → error
-   - validateRepository_rateLimitExceeded(): 403 X-RateLimit → error
-   - validateRepository_networkError(): Fetch fails → error
-   - validateOwner_existsAsUser(): GET /users/{owner} 200 → user
-   - validateOwner_existsAsOrg(): GET /orgs/{owner} 200 → org
-   - validateOwner_notFound(): Both 404 → error
-   - validateOwner_networkError(): Fetch fails → error
-   - validateWithRetry_succeedsFirstAttempt(): No retry needed
-   - validateWithRetry_succeedsSecondAttempt(): 1 retry
-   - validateWithRetry_succeedsThirdAttempt(): 2 retries
-   - validateWithRetry_failsAfter3Attempts(): All retries fail → throw
-   - validateWithRetry_exponentialBackoff(): 100ms, 200ms, 400ms delays
-   - checkRateLimit_hasRemaining(): remaining: 4999
-   - checkRateLimit_noRemaining(): remaining: 0, resetAt: timestamp
-   - checkRateLimit_networkError(): Fetch fails → default values
-   - parseErrorResponse_401(): "Invalid token or permissions"
-   - parseErrorResponse_403_rateLimit(): "Rate limit exceeded"
-   - parseErrorResponse_404(): "Not found"
-   - parseErrorResponse_500(): "GitHub API error: 500"
-   - parseErrorResponse_networkError(): "Network error: ..."
-   - validateRepositoryWithAuth_validToken(): Success
-   - validateRepositoryWithAuth_noToken(): Error
-   - **Coverage Target**: 85%
-
-2. **Integration**: `tests/integration/repo-structure/github-validation.test.ts` (10 test cases)
-   - realGitHubAPI_validateExistingRepo(): Check real public repo
-   - realGitHubAPI_validateNonexistentRepo(): Check random name
-   - realGitHubAPI_validateOwner(): Check real user/org
-   - mockGitHubAPI_fullValidationFlow(): End-to-end with nock
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 85%
-
-**Implementation**:
-
-1. Create file: `src/core/repo-structure/github-validator.ts` (~150 lines)
-2. Define GitHubValidator class:
-   - constructor(token): Store GitHub token
-   - validateRepository(owner, repo): Check existence via GitHub API
-   - validateOwner(owner): Check user/org existence
-   - validateWithRetry(fn, maxRetries): Retry logic with exponential backoff
-   - checkRateLimit(): GET /rate_limit
-   - parseErrorResponse(response): Extract error message
-3. Implement API calls:
-   - GET /repos/{owner}/{repo} (check repo)
-   - GET /users/{owner} (check user)
-   - GET /orgs/{owner} (check org)
-   - GET /rate_limit (check rate limit)
-4. Implement retry logic:
-   - Exponential backoff: 100ms, 200ms, 400ms
-   - Max 3 attempts
-   - Only retry on network errors (not 401/403)
-5. Add error handling for all scenarios
-6. Write 25 unit tests + 10 integration tests (with nock mocking)
-7. Run tests: `npm test github-validator.test.ts` (should pass: 25/25)
-8. Run integration tests: `npm test github-validation.test.ts` (should pass: 10/10)
-9. Verify coverage ≥85%
-
-**TDD Workflow**:
-1. 📝 Write all 35 tests above (should fail)
-2. ❌ Run tests: `npm test github-validator` (0/35 passing)
-3. ✅ Implement validateRepository() with API calls
-4. 🟢 Run tests: `npm test` (10/35 passing)
-5. ✅ Implement validateOwner() with user/org logic
-6. 🟢 Run tests: `npm test` (20/35 passing)
-7. ✅ Implement retry logic with exponential backoff
-8. 🟢 Run tests: `npm test` (35/35 passing)
-9. ♻️ Refactor: Extract API URL constants, improve error messages
-10. ✅ Final check: Coverage ≥85%
-
-**Dependencies**: None
-
----
-
-### T-004: Implement .env File Generator
-
-**AC**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04
-
-**Priority**: P1
-**Estimate**: 5 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** GitHub config (token, owner, repos) → **When** generateEnvFile() called → **Then** .env created with correct format and permissions 0600
-- **Given** existing .env file → **When** generateEnvFile() called → **Then** prompts for overwrite, creates backup if yes
-- **Given** .env generation → **When** complete → **Then** .env.example created without secrets
-- **Given** .gitignore exists without .env → **When** ensureGitignoreIncludes(['.env']) called → **Then** .env pattern added
-- **Given** .gitignore exists with .env → **When** ensureGitignoreIncludes(['.env']) called → **Then** no duplication
-- **Given** .gitignore does not exist → **When** ensureGitignoreIncludes(['.env']) called → **Then** .gitignore created with pattern
-- **Given** multi-provider config (GitHub + JIRA) → **When** generateEnvFile() called → **Then** both providers in .env
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/utils/env-file-generator.test.ts` (20 test cases)
-   - generateEnvFile_createsNewFile(): First run creates .env
-   - generateEnvFile_setsPermissions0600(): Correct permissions
-   - generateEnvFile_promptsForOverwrite(): Existing file → prompt
-   - generateEnvFile_createsBackup(): Backup created before overwrite
-   - generateEnvFile_skipsIfDeclined(): User says no → skip
-   - generateEnvContent_githubProvider(): Correct GitHub format
-   - generateEnvContent_jiraProvider(): Correct JIRA format
-   - generateEnvContent_adoProvider(): Correct ADO format
-   - generateEnvContent_multiProvider(): Multiple providers
-   - generateEnvExample_noSecrets(): Token masked
-   - generateEnvExample_hasComments(): Help text included
-   - generateEnvExample_hasExampleValues(): Placeholder values
-   - ensureGitignoreIncludes_addsPattern(): .env added
-   - ensureGitignoreIncludes_noDuplication(): No duplicate entries
-   - ensureGitignoreIncludes_createsFile(): Creates .gitignore if missing
-   - ensureGitignoreIncludes_multiplePatterns(): ['.env', '.env.local', '.env.*.local']
-   - showSecurityWarning_displaysWarning(): Warning shown
-   - validateEnvFile_checksPermissions(): Detects wrong permissions
-   - formatRepoMapping_correctFormat(): "id:repo-name,id2:repo-name2"
-   - formatRepoMapping_handlesSpecialChars(): Escapes if needed
-   - **Coverage Target**: 90%
-
-**Overall Coverage Target**: 90%
-
-**Implementation**:
-
-1. Create file: `src/utils/env-file-generator.ts` (~150 lines)
-2. Define EnvFileGenerator class:
-   - constructor(projectRoot): Initialize paths
-   - generateEnvFile(config): Main entry point
-   - generateEnvContent(config): Format .env content
-   - generateEnvExample(config): Create .env.example
-   - ensureGitignoreIncludes(patterns): Update .gitignore
-   - showSecurityWarning(): Display warning message
-3. Implement .env content generation:
-   - GitHub section: GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPOS
-   - JIRA section: JIRA_API_TOKEN, JIRA_DOMAIN, JIRA_PROJECT
-   - ADO section: AZURE_DEVOPS_PAT, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT
-   - Sync config: GITHUB_SYNC_ENABLED, GITHUB_AUTO_CREATE_ISSUE, etc.
-4. Implement .env.example generation (mask secrets, add comments)
-5. Implement .gitignore updates (check existence, append if missing, avoid duplication)
-6. Add permission checks (0600 for .env)
-7. Write 20 unit tests with TDD
-8. Run tests: `npm test env-file-generator.test.ts` (should pass: 20/20)
-9. Verify coverage ≥90%
-
-**TDD Workflow**:
-1. 📝 Write all 20 tests above (should fail)
-2. ❌ Run tests: `npm test env-file-generator` (0/20 passing)
-3. ✅ Implement generateEnvFile() with prompts
-4. 🟢 Run tests: `npm test` (5/20 passing)
-5. ✅ Implement generateEnvContent() for all providers
-6. 🟢 Run tests: `npm test` (15/20 passing)
-7. ✅ Implement .gitignore updates
-8. 🟢 Run tests: `npm test` (20/20 passing)
-9. ♻️ Refactor: Extract provider templates, improve formatting
-10. ✅ Final check: Coverage ≥90%
-
-**Dependencies**: None
-
----
-
-### T-005: Implement Setup Summary Generator
-
-**AC**: AC-US8-01, AC-US8-02, AC-US8-03
-
-**Priority**: P1
-**Estimate**: 4 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** setup state with 3 repos (1 parent + 2 implementation) → **When** generateSummary() called → **Then** summary shows "Created Repositories (3 total)"
-- **Given** setup state → **When** generateSummary() called → **Then** folder structure section shows correct paths (frontend/, backend/ at root level)
-- **Given** setup state → **When** generateSummary() called → **Then** configuration section shows GitHub token configured, sync enabled
-- **Given** setup state → **When** generateSummary() called → **Then** next steps section shows "cd frontend && npm install"
-- **Given** setup state → **When** generateSummary() called → **Then** tips section shows ".env contains secrets (DO NOT COMMIT!)"
-- **Given** 3 repos created → **When** calculateTimeSaved() called → **Then** returns "~15 minutes (vs manual setup)"
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/repo-structure/setup-summary.test.ts` (10 test cases)
-   - generateSummary_singleRepo(): Summary for 1 repo
-   - generateSummary_multiRepo(): Summary for 3 repos
-   - generateSummary_withoutParent(): Summary without parent repo
-   - generateFolderStructure_rootLevel(): Shows frontend/, backend/ (not services/)
-   - generateFolderStructure_withEnv(): Shows .env, .env.example
-   - generateConfigSection_githubEnabled(): Shows GitHub config
-   - generateConfigSection_multiProvider(): Shows multiple providers
-   - generateNextSteps_installDeps(): Shows npm install commands
-   - generateNextSteps_startIncrement(): Shows /specweave:increment
-   - calculateTimeSaved_3repos(): ~15 minutes
-   - **Coverage Target**: 80%
-
-2. **Snapshot Tests**: `tests/unit/repo-structure/setup-summary.snapshot.test.ts` (5 test cases)
-   - snapshotTest_happyPath(): Full summary snapshot
-   - snapshotTest_withParent(): Parent repo summary
-   - snapshotTest_withoutParent(): No parent summary
-   - snapshotTest_multiProvider(): Multiple providers
-   - snapshotTest_emptyState(): Minimal summary
-   - **Coverage Target**: 80%
-
-**Overall Coverage Target**: 80%
-
-**Implementation**:
-
-1. Create file: `src/core/repo-structure/setup-summary.ts` (~100 lines)
-2. Define SetupSummaryGenerator class:
-   - generateSummary(state): Main entry point
-   - generateRepositoriesSection(state): List repos with URLs
-   - generateFolderStructure(state): Show folder tree
-   - generateConfigSection(state): Show configuration details
-   - generateNextSteps(state): Show actionable next steps
-   - generateTips(): Show best practices
-   - calculateTimeSaved(totalRepos): Estimate time saved
-3. Implement Markdown formatting with CLI colors:
-   - ✅ (green checkmark) for success
-   - 📦 (box) for repositories
-   - 📁 (folder) for structure
-   - ⚙️ (gear) for configuration
-   - 🚀 (rocket) for next steps
-   - 💡 (lightbulb) for tips
-   - ⏱️ (stopwatch) for time saved
-4. Implement folder structure ASCII tree generation
-5. Write 10 unit tests + 5 snapshot tests
-6. Run tests: `npm test setup-summary.test.ts` (should pass: 10/10)
-7. Run snapshot tests: `npm test setup-summary.snapshot.test.ts` (should pass: 5/5)
-8. Verify coverage ≥80%
-
-**TDD Workflow**:
-1. 📝 Write all 15 tests above (should fail)
-2. ❌ Run tests: `npm test setup-summary` (0/15 passing)
-3. ✅ Implement generateSummary() with all sections
-4. 🟢 Run tests: `npm test` (10/15 passing)
-5. ✅ Implement snapshot tests
-6. 🟢 Run tests: `npm test` (15/15 passing)
-7. ♻️ Refactor: Extract formatting helpers, improve readability
-8. ✅ Final check: Coverage ≥80%
-
-**Dependencies**: T-001 (repo IDs), T-002 (state structure)
-
----
-
-### T-006: Implement Prompt Consolidator
-
-**AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US9-01, AC-US9-02, AC-US9-03
-
-**Priority**: P1
-**Estimate**: 4 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** user runs setup → **When** promptForArchitecture() called → **Then** single prompt shown with 4 options (no separate "polyrepo" prompt)
-- **Given** architecture prompt → **When** user selects option 2 → **Then** "Multiple repositories WITH parent" selected
-- **Given** repo count prompt → **When** user enters 2 → **Then** shows "Total: 1 parent + 2 implementation = 3 total"
-- **Given** repo count = 0 → **When** validation runs → **Then** error "Must have at least 1 repository"
-- **Given** repo count = 25 → **When** validation runs → **Then** error "Maximum 20 repositories"
-- **Given** parent folder benefits → **When** showParentFolderBenefits() called → **Then** shows 5 benefits with examples and link to docs
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/repo-structure/prompt-consolidator.test.ts` (15 test cases)
-   - promptForArchitecture_showsOptions(): 4 options visible
-   - promptForArchitecture_noPolyrepoJargon(): Text says "Multiple separate repositories"
-   - promptForArchitecture_hasVisualExamples(): Each option has description
-   - promptForArchitecture_defaultWithParent(): Default is option 2
-   - promptForArchitecture_selectSingle(): Returns 'single'
-   - promptForArchitecture_selectPolyrepoWithParent(): Returns 'polyrepo-with-parent'
-   - promptForArchitecture_selectPolyrepoWithoutParent(): Returns 'polyrepo-without-parent'
-   - promptForArchitecture_selectMonorepo(): Returns 'monorepo'
-   - promptForRepoCount_validInput(): Accepts 2
-   - promptForRepoCount_showsTotalCount(): "1 parent + 2 implementation = 3 total"
-   - promptForRepoCount_rejectsZero(): Error message shown
-   - promptForRepoCount_rejectsExcessive(): Max 20 error
-   - showParentFolderBenefits_showsBenefits(): 5 benefits listed
-   - showParentFolderBenefits_hasDocLink(): Link to spec-weave.com
-   - showParentFolderBenefits_hasExamples(): Concrete examples included
-   - **Coverage Target**: 75%
-
-2. **Snapshot Tests**: `tests/unit/repo-structure/prompt-consolidator.snapshot.test.ts` (3 test cases)
-   - snapshotTest_architecturePrompt(): Full prompt text
-   - snapshotTest_parentBenefits(): Benefits explanation
-   - snapshotTest_repoCountPrompt(): Repo count prompt
-   - **Coverage Target**: 75%
-
-**Overall Coverage Target**: 75%
-
-**Implementation**:
-
-1. Create file: `src/core/repo-structure/prompt-consolidator.ts` (~150 lines)
-2. Define PromptConsolidator class:
-   - promptForArchitecture(): Single consolidated prompt
-   - promptForRepoCount(): Repo count with clarification
-   - showParentFolderBenefits(): Explain benefits
-   - validateRepoCount(count): Validation logic
-3. Implement architecture prompt options:
-   - Option 1: Single repository
-   - Option 2: Multiple WITH parent (recommended)
-   - Option 3: Multiple WITHOUT parent (not recommended)
-   - Option 4: Monorepo
-4. Replace "polyrepo" with "Multiple separate repositories (microservices)"
-5. Add visual examples for each option (ASCII diagrams)
-6. Implement repo count prompt with total calculation
-7. Implement parent benefits explanation (5 benefits + examples)
-8. Write 15 unit tests + 3 snapshot tests
-9. Run tests: `npm test prompt-consolidator.test.ts` (should pass: 15/15)
-10. Run snapshot tests: `npm test prompt-consolidator.snapshot.test.ts` (should pass: 3/3)
-11. Verify coverage ≥75%
-
-**TDD Workflow**:
-1. 📝 Write all 18 tests above (should fail)
-2. ❌ Run tests: `npm test prompt-consolidator` (0/18 passing)
-3. ✅ Implement promptForArchitecture() with inquirer
-4. 🟢 Run tests: `npm test` (8/18 passing)
-5. ✅ Implement promptForRepoCount() with validation
-6. 🟢 Run tests: `npm test` (15/18 passing)
-7. ✅ Implement snapshot tests
-8. 🟢 Run tests: `npm test` (18/18 passing)
-9. ♻️ Refactor: Extract option text to constants, improve formatting
-10. ✅ Final check: Coverage ≥75%
-
-**Dependencies**: None
-
----
-
-## Phase 2: Integration (T-007 to T-012)
-
-### T-007: Modify repo-structure-manager.ts (Integration)
-
-**AC**: AC-US5-01, AC-US7-01, AC-US7-02, AC-US7-03, AC-US8-01
-
-**Priority**: P1
-**Estimate**: 8 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** new setup → **When** setupMultiRepo() called → **Then** checks for incomplete state, shows new setup flow if none
-- **Given** incomplete state exists → **When** setupMultiRepo() called → **Then** prompts user to resume, continues from last step
-- **Given** repo creation → **When** repository created → **Then** cloned to ROOT LEVEL (e.g., frontend/) NOT services/frontend/
-- **Given** all repos created → **When** setup complete → **Then** .env generated, summary shown, state deleted
-
-**Test Cases**:
-
-1. **Integration**: `tests/integration/repo-structure/multi-repo-flow.test.ts` (15 test cases)
-   - fullSetupFlow_happyPath(): End-to-end setup with 3 repos
-   - fullSetupFlow_rootLevelClone(): Verify repos at root level
-   - fullSetupFlow_envCreated(): Verify .env exists
-   - fullSetupFlow_summaryShown(): Verify summary displayed
-   - fullSetupFlow_stateDeleted(): Verify state file removed
-   - resumeSetup_afterParent(): Resume from parent completion
-   - resumeSetup_afterRepo1(): Resume from repo 1 completion
-   - resumeSetup_skipCompletedSteps(): Don't re-create parent
-   - stateManager_integration(): State saves after each step
-   - githubValidator_integration(): Validation before creation
-   - envGenerator_integration(): .env created at end
-   - summaryGenerator_integration(): Summary shown at end
-   - promptConsolidator_integration(): Single architecture prompt
-   - errorHandling_repoExists(): Offer use existing
-   - errorHandling_invalidOwner(): Clear error + retry
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 85%
-
-**Implementation**:
-
-1. Modify file: `src/core/repo-structure/repo-structure-manager.ts` (~400 lines affected)
-2. Add imports for new modules:
-   - SetupStateManager
-   - GitHubValidator
-   - EnvFileGenerator
-   - SetupSummaryGenerator
-   - PromptConsolidator
-   - RepoIdGenerator
-3. Update RepoStructureManager class:
-   - Add private fields for all new modules
-   - Initialize in constructor
-4. Modify setupMultiRepo() method:
-   - Step 1: Check for incomplete state (stateManager.detectAndResumeSetup())
-   - Step 2: If resume, load state and call resumeSetup()
-   - Step 3: If new, prompt for architecture (promptConsolidator.promptForArchitecture())
-   - Step 4: Initialize state, save initial state
-   - Step 5: For each repo:
-     - Auto-generate ID (repoIdGenerator.generateRepoId())
-     - Prompt for visibility
-     - Validate with GitHub API (githubValidator.validateRepository())
-     - Create repo on GitHub
-     - Clone to ROOT LEVEL: path.join(projectRoot, repo.path) NOT path.join(projectRoot, 'services', repo.path)
-     - Save state after each step
-   - Step 6: Generate .env (envGenerator.generateEnvFile())
-   - Step 7: Show summary (summaryGenerator.generateSummary())
-   - Step 8: Delete state (stateManager.deleteState())
-5. Implement resumeSetup() method:
-   - Load state from file
-   - Skip completed repos
-   - Continue from currentStep
-   - Preserve all configuration
-6. Replace services/ folder with root-level cloning (line 319):
-   - OLD: `const targetPath = path.join(this.projectRoot, 'services', repo.path);`
-   - NEW: `const targetPath = path.join(this.projectRoot, repo.path);`
-7. Consolidate architecture prompts (lines 65-87, 203-208):
-   - Remove separate polyrepo prompt
-   - Use promptConsolidator.promptForArchitecture()
-8. Write 15 integration tests
-9. Run tests: `npm test multi-repo-flow.test.ts` (should pass: 15/15)
-10. Verify coverage ≥85%
-
-**TDD Workflow**:
-1. 📝 Write all 15 tests above (should fail)
-2. ❌ Run tests: `npm test multi-repo-flow` (0/15 passing)
-3. ✅ Integrate SetupStateManager (save/load/resume)
-4. 🟢 Run tests: `npm test` (5/15 passing)
-5. ✅ Integrate GitHubValidator (validate before create)
-6. 🟢 Run tests: `npm test` (10/15 passing)
-7. ✅ Integrate EnvFileGenerator + SetupSummaryGenerator
-8. 🟢 Run tests: `npm test` (15/15 passing)
-9. ♻️ Refactor: Extract repo creation logic, improve error handling
-10. ✅ Final check: Coverage ≥85%
-
-**Dependencies**: T-001, T-002, T-003, T-004, T-005, T-006
-
----
-
-### T-008: Modify github-multi-repo.ts (Integration)
-
-**AC**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US3-01, AC-US3-02, AC-US4-01, AC-US1-02
-
-**Priority**: P1
-**Estimate**: 6 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** user enters repo name "my-saas-frontend" → **When** promptForRepository() called → **Then** ID auto-generated as "frontend" shown as default
-- **Given** generated ID "frontend" → **When** user accepts default → **Then** ID "frontend" used
-- **Given** generated ID "frontend" → **When** user edits to "fe" → **Then** ID "fe" validated and used
-- **Given** repo prompt → **When** visibility prompt shown → **Then** default is "Private"
-- **Given** repo name entered → **When** GitHub validator checks → **Then** repo existence validated before creation
-- **Given** repo exists (200 response) → **When** validation runs → **Then** prompts "Use existing? [Y/n]"
-- **Given** prompt text → **When** displayed → **Then** says "Multiple separate repositories" NOT "polyrepo"
-
-**Test Cases**:
-
-1. **Integration**: `tests/integration/repo-structure/github-multi-repo.test.ts` (12 test cases)
-   - promptForRepository_autoGeneratesId(): "my-frontend" → default "frontend"
-   - promptForRepository_acceptsDefaultId(): User accepts → "frontend" used
-   - promptForRepository_editsId(): User changes to "fe" → "fe" used
-   - promptForRepository_validatesEditedId(): Invalid ID → error + retry
-   - promptForRepository_visibilityPrompt(): Shows Private/Public options
-   - promptForRepository_defaultPrivate(): Default is "Private"
-   - promptForRepository_githubValidation(): Validates before creation
-   - promptForRepository_repoExists(): Offers "Use existing"
-   - promptForRepository_useExisting(): User says yes → existing repo used
-   - promptForRepository_retryOnExists(): User says no → retry prompt
-   - promptText_noPolyrepoJargon(): Says "Multiple separate repositories"
-   - uniqueIdGeneration_handlesDuplicates(): "frontend" exists → "frontend-2"
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 85%
-
-**Implementation**:
-
-1. Modify file: `src/cli/helpers/issue-tracker/github-multi-repo.ts` (~300 lines affected)
-2. Add imports:
-   - RepoIdGenerator
-   - GitHubValidator
-3. Update GitHubMultiRepoHelper class:
-   - Add private fields: repoIdGenerator, githubValidator
-   - Initialize in constructor
-4. Modify promptForRepository() method:
-   - Step 1: Prompt for repository name (existing logic)
-   - Step 2: Auto-generate ID from name (NEW - lines 288-302):
-     ```typescript
-     const generatedId = this.repoIdGenerator.generateRepoId(repoName);
-     const uniqueId = this.repoIdGenerator.ensureUniqueId(
-       generatedId,
-       new Set(existingRepos.map(r => r.id))
-     );
-     ```
-   - Step 3: Show ID prompt with generated ID as default (NEW):
-     ```typescript
-     const idAnswer = await inquirer.prompt([
-       {
-         type: 'input',
-         name: 'id',
-         message: 'Repository ID:',
-         default: uniqueId.id,
-         validate: (input) => this.repoIdGenerator.validateRepoId(input)
-       }
-     ]);
-     ```
-   - Step 4: Prompt for visibility (NEW - after line 338):
-     ```typescript
-     const visibilityAnswer = await inquirer.prompt([
-       {
-         type: 'list',
-         name: 'visibility',
-         message: 'Repository visibility:',
-         choices: [
-           { name: 'Private (recommended for security)', value: 'private' },
-           { name: 'Public', value: 'public' }
-         ],
-         default: 'private'
-       }
-     ]);
-     ```
-   - Step 5: Validate with GitHub API (NEW):
-     ```typescript
-     console.log('Validating repository...');
-     const validation = await this.githubValidator.validateRepository(owner, repoName);
-
-     if (!validation.valid) {
-       console.error(`❌ ${validation.error}`);
-       return this.promptForRepository(existingRepos); // Retry
-     }
-
-     if (validation.exists) {
-       console.log(`⚠️  Repository already exists: ${validation.url}`);
-       const useExisting = await this.promptUseExisting();
-       if (useExisting) {
-         return { id: idAnswer.id, repo: repoName, created: true, url: validation.url };
-       }
-       return this.promptForRepository(existingRepos); // Retry
-     }
-     ```
-   - Step 6: Return repository config
-5. Update prompt text to remove "polyrepo" jargon (lines 106-132):
-   - Replace "polyrepo" with "Multiple separate repositories (microservices)"
-   - Update help text and examples
-6. Add promptUseExisting() helper method
-7. Write 12 integration tests
-8. Run tests: `npm test github-multi-repo.test.ts` (should pass: 12/12)
-9. Verify coverage ≥85%
-
-**TDD Workflow**:
-1. 📝 Write all 12 tests above (should fail)
-2. ❌ Run tests: `npm test github-multi-repo` (0/12 passing)
-3. ✅ Integrate RepoIdGenerator (auto-generate IDs)
-4. 🟢 Run tests: `npm test` (4/12 passing)
-5. ✅ Add visibility prompt
-6. 🟢 Run tests: `npm test` (8/12 passing)
-7. ✅ Integrate GitHubValidator (validate before create)
-8. 🟢 Run tests: `npm test` (12/12 passing)
-9. ♻️ Refactor: Extract prompt logic, improve error handling
-10. ✅ Final check: Coverage ≥85%
-
-**Dependencies**: T-001, T-003
-
----
-
-### T-009: Update .gitignore
-
-**AC**: AC-US5-02, AC-US6-02
-
-**Priority**: P1
-**Estimate**: 1 hour
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** .gitignore file → **When** updated → **Then** contains root-level repo patterns (frontend/, backend/, mobile/, shared/)
-- **Given** .gitignore file → **When** updated → **Then** contains .env patterns (.env, .env.local, .env.*.local)
-- **Given** .gitignore file → **When** updated → **Then** contains SpecWeave logs pattern (.specweave/logs/)
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/gitignore/gitignore-update.test.ts` (5 test cases)
-   - gitignoreUpdate_addsRootLevelRepos(): frontend/, backend/, etc. added
-   - gitignoreUpdate_addsEnvPatterns(): .env patterns added
-   - gitignoreUpdate_addsLogsPattern(): .specweave/logs/ added
-   - gitignoreUpdate_noDuplication(): Running twice doesn't duplicate
-   - gitignoreUpdate_preservesExisting(): Existing patterns unchanged
-   - **Coverage Target**: 90%
-
-**Overall Coverage Target**: 90%
-
-**Implementation**:
-
-1. Modify file: `.gitignore` (~10 lines added)
-2. Add SpecWeave multi-repo section:
-   ```gitignore
-   # SpecWeave - Multi-Repo Setup (auto-generated)
-   # Ignore implementation repos (cloned from GitHub)
-   frontend/
-   backend/
-   mobile/
-   shared/
-
-   # Environment variables (contains secrets!)
-   .env
-   .env.local
-   .env.*.local
-
-   # SpecWeave logs
-   .specweave/logs/
-   ```
-3. Add comment header explaining section
-4. Write 5 unit tests
-5. Run tests: `npm test gitignore-update.test.ts` (should pass: 5/5)
-6. Verify coverage ≥90%
-
-**Dependencies**: None
-
----
-
-### T-010: Create .env.example Template
-
-**AC**: AC-US6-03
-
-**Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan** (BDD format):
-- **Given** .env.example template → **When** viewed → **Then** contains GitHub configuration section with masked tokens
-- **Given** .env.example template → **When** viewed → **Then** contains helpful comments explaining each variable
-- **Given** .env.example template → **When** viewed → **Then** contains example values (placeholders)
-- **Given** .env.example template → **When** viewed → **Then** safe to commit (no secrets)
+- **Given** user enters repository name "my-saas-frontend-app"
+- **When** system generates ID
+- **Then** ID should be "frontend" (strip suffixes, take last segment)
+- **And** ID should be shown as editable default
+- **And** uniqueness should be validated (reject duplicates)
+- **And** comma-separated input should be rejected
 
 **Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/repo-id-generator.test.ts`):
+   - testGenerateRepoId(): Test ID generation algorithm → 92% coverage
+   - testSuffixStripping(): Verify suffix removal → 92% coverage
+   - testEnsureUniqueId(): Test uniqueness enforcement → 92% coverage
+   - testValidateRepoId(): Test validation rules → 92% coverage
+   - testCommaRejection(): Verify comma-separated input rejected → 90% coverage
+   - **Coverage Target**: 91%
 
-1. **Unit**: `tests/unit/templates/env-example.test.ts` (8 test cases)
-   - envExample_hasGitHubSection(): GitHub config present
-   - envExample_tokenMasked(): GITHUB_TOKEN= (empty)
-   - envExample_hasComments(): Help text for each variable
-   - envExample_hasExampleValues(): Placeholder values shown
-   - envExample_hasSyncConfig(): Sync settings present
-   - envExample_safeToCommit(): No actual secrets
-   - envExample_multiProvider(): JIRA/ADO sections (commented)
-   - envExample_hasLinks(): Links to GitHub settings page
-   - **Coverage Target**: 80%
+2. **Integration** (`tests/integration/repo-structure/auto-id-flow.test.ts`):
+   - testAutoIDGenerationFlow(): Complete ID generation workflow → 87% coverage
+   - testUserEditID(): User overrides generated ID → 87% coverage
+   - testDuplicateIDHandling(): System prevents duplicates → 87% coverage
+   - **Coverage Target**: 87%
 
-**Overall Coverage Target**: 80%
+3. **E2E** (`tests/e2e/init/auto-id-generation.spec.ts`):
+   - userSeesGeneratedID(): Auto-generated ID displayed as default → 100% critical path
+   - userCanEditID(): User can modify generated ID → 100% critical path
+   - duplicateIDPrevented(): System shows error for duplicate ID → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 89%
 
 **Implementation**:
+1. Verify `src/core/repo-structure/repo-id-generator.ts` exists (150 lines, 90% coverage)
+2. Verify integration in `repo-structure-manager.ts` (lines 461-476)
+3. Test ID generation:
+   - "my-saas-frontend-app" → "frontend"
+   - "acme-api-gateway-service" → "gateway"
+   - "backend-service" → "backend"
+4. Test uniqueness: "frontend" + "frontend" → "frontend-2"
+5. Test validation: "parent,fe,be" → rejected
+6. Run unit tests: `npm test -- repo-id-generator` (should pass: 12/12)
+7. Run integration tests: `npm run test:integration -- auto-id-flow` (should pass: 5/5)
+8. Run E2E tests: `npm run test:e2e -- auto-id-generation` (should pass: 3/3)
 
-1. Create file: `src/templates/.env.example` (~50 lines)
-2. Add header comment explaining purpose
-3. Add GitHub configuration section:
-   ```bash
-   # =============================================================================
-   # GitHub Settings
-   # =============================================================================
-
-   # GitHub Personal Access Token (REQUIRED)
-   # Generate at: https://github.com/settings/tokens
-   # Scope: repo
-   GITHUB_TOKEN=
-
-   # GitHub Owner (REQUIRED)
-   # Your username or organization name
-   GITHUB_OWNER=
-
-   # Repository Mapping (REQUIRED)
-   # Format: id:repo-name,id2:repo-name2
-   GITHUB_REPOS=parent:my-project-parent,frontend:my-project-frontend
-   ```
-4. Add sync configuration section:
-   ```bash
-   # =============================================================================
-   # Sync Configuration
-   # =============================================================================
-
-   GITHUB_SYNC_ENABLED=true
-   GITHUB_AUTO_CREATE_ISSUE=true
-   GITHUB_SYNC_DIRECTION=bidirectional
-   ```
-5. Add optional JIRA/ADO sections (commented)
-6. Write 8 unit tests
-7. Run tests: `npm test env-example.test.ts` (should pass: 8/8)
-8. Verify coverage ≥80%
+**TDD Workflow**:
+1. 📝 Write all tests above (should fail, but module exists!)
+2. ❌ Run tests: `npm test` (expected: most passing if module complete)
+3. ✅ Enhance any missing functionality
+4. 🟢 Run tests: `npm test` (20/20 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥89%
 
 **Dependencies**: None
 
 ---
 
-### T-011: Add Visibility Prompt to Repository Creation
+## Phase 2: Enhanced State Management (Days 2-3)
+
+### T-004: Integrate setup-state-manager for Ctrl+C recovery
+
+**AC**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05, AC-US7-06
+
+**Priority**: P1
+**Estimate**: 4 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** user starts multi-repo setup
+- **When** Ctrl+C is pressed during repo 2 of 3
+- **Then** state should be saved to `.specweave/setup-state.json`
+- **And** on restart, system should detect incomplete setup
+- **And** offer to resume with progress summary ("2/3 repos configured")
+- **And** delete state file on successful completion
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/setup-state-manager.test.ts`):
+   - testSaveState(): Verify state persistence → 90% coverage
+   - testAtomicWrites(): Test temp → rename pattern → 90% coverage
+   - testStateValidation(): Verify state structure validation → 88% coverage
+   - testCorruptionRecovery(): Test backup restoration → 88% coverage
+   - testDeleteState(): Verify state cleanup → 85% coverage
+   - **Coverage Target**: 88%
+
+2. **Integration** (`tests/integration/repo-structure/ctrl-c-recovery.test.ts`):
+   - testResumeAfterInterruption(): Complete Ctrl+C recovery flow → 87% coverage
+   - testStateFilePermissions(): Verify 0600 permissions → 85% coverage
+   - testBackupRestoration(): Test backup recovery → 85% coverage
+   - **Coverage Target**: 86%
+
+3. **E2E** (`tests/e2e/init/resume-setup.spec.ts`):
+   - userCtrlCDuringSetup(): Interrupt and resume → 100% critical path
+   - userSeesProgressSummary(): Resume prompt shows progress → 100% critical path
+   - stateDeletedOnCompletion(): State file removed after success → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 88%
+
+**Implementation**:
+1. Verify `src/core/repo-structure/setup-state-manager.ts` exists (180 lines, 85% coverage)
+2. Verify integration in `repo-structure-manager.ts`:
+   - Constructor (line 70): `this.stateManager = new SetupStateManager(projectPath)`
+   - Resume detection (lines 81-100)
+   - State saving after each step (lines 304-312, 388-397, 504-521)
+   - State deletion (line 697)
+3. Enhance resume detection UI (lines 81-100):
+   - Show more detailed progress ("Parent: ✓, Repos: 1/2 completed")
+   - Validate state completeness
+   - Handle corruption gracefully
+4. Test Ctrl+C recovery:
+   - Start setup → Ctrl+C → restart → verify resume prompt
+5. Run unit tests: `npm test -- setup-state-manager` (should pass: 18/18)
+6. Run integration tests: `npm run test:integration -- ctrl-c-recovery` (should pass: 7/7)
+7. Run E2E tests: `npm run test:e2e -- resume-setup` (should pass: 3/3)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Enhance resume detection UI
+4. 🟢 Run tests: `npm test` (28/28 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥88%
+
+**Dependencies**: None
+
+---
+
+### T-005: Integrate GitHub validation before creation
+
+**AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
+
+**Priority**: P1
+**Estimate**: 4 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** user enters repository name during setup
+- **When** system validates via GitHub API
+- **Then** repository existence should be checked (404 = OK, 200 = exists)
+- **And** owner/org existence should be validated
+- **And** clear error shown if repo exists ("Repository already exists at [URL]")
+- **And** option to use existing repo offered
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/github-validator.test.ts`):
+   - testValidateRepository(): Test repo existence check → 92% coverage
+   - testValidateOwner(): Test owner/org validation → 92% coverage
+   - testRetryLogic(): Verify exponential backoff → 90% coverage
+   - testRateLimitCheck(): Test rate limit monitoring → 88% coverage
+   - testErrorHandling(): Test API error responses → 88% coverage
+   - **Coverage Target**: 90%
+
+2. **Integration** (`tests/integration/repo-structure/github-validation.test.ts`):
+   - testValidationFlow(): Complete validation workflow → 87% coverage
+   - testExistingRepoPrompt(): Offer to use existing repo → 87% coverage
+   - testInvalidOwnerError(): Handle non-existent owner → 85% coverage
+   - testNetworkRetry(): Test retry on network error → 85% coverage
+   - **Coverage Target**: 86%
+
+3. **E2E** (`tests/e2e/init/github-validation.spec.ts`):
+   - userSeesExistingRepoError(): Error shown for duplicate repo → 100% critical path
+   - userOfferedUseExisting(): Option to use existing repo → 100% critical path
+   - userSeesInvalidOwnerError(): Clear message for invalid owner → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 89%
+
+**Implementation**:
+1. Verify `src/core/repo-structure/github-validator.ts` exists (200 lines, 90% coverage)
+2. Verify integration in `repo-structure-manager.ts`:
+   - Owner validation (lines 320-332)
+   - Repo validation (lines 434-448)
+3. Test validation scenarios:
+   - Valid repo (doesn't exist): Pass
+   - Repo exists: Show error with URL
+   - Invalid owner: Show error
+   - Network error: Retry 3 times
+4. Run unit tests: `npm test -- github-validator` (should pass: 15/15)
+5. Run integration tests: `npm run test:integration -- github-validation` (should pass: 8/8)
+6. Run E2E tests: `npm run test:e2e -- github-validation` (should pass: 3/3)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Enhance any missing functionality
+4. 🟢 Run tests: `npm test` (26/26 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥89%
+
+**Dependencies**: Requires GitHub token (GITHUB_TOKEN env var)
+
+---
+
+## Phase 3: Bulk Visibility Prompt (Day 4)
+
+### T-006: Add private/public visibility prompt
 
 **AC**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04
 
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan** (BDD format):
-- **Given** repository prompt → **When** visibility prompt shown → **Then** options are "Private" and "Public"
-- **Given** visibility prompt → **When** default selected → **Then** "Private" chosen
-- **Given** visibility selected → **When** saved to config → **Then** stored in repository configuration
-- **Given** repository creation → **When** GitHub API called → **Then** visibility parameter passed
+- **Given** user configures repository during setup
+- **When** prompted for visibility
+- **Then** "Private" should be default (security)
+- **And** choice should be stored in configuration
+- **And** visibility should be passed to GitHub API on creation
 
 **Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/visibility-prompt.test.ts`):
+   - testVisibilityDefault(): Verify "Private" is default → 90% coverage
+   - testVisibilityOptions(): Test available options → 90% coverage
+   - testVisibilityStorage(): Verify storage in config → 88% coverage
+   - testGitHubAPICall(): Verify visibility in API payload → 88% coverage
+   - **Coverage Target**: 89%
 
-1. **Unit**: `tests/unit/repo-structure/visibility-prompt.test.ts` (6 test cases)
-   - visibilityPrompt_showsOptions(): Private/Public visible
-   - visibilityPrompt_defaultPrivate(): Default is "Private"
-   - visibilityPrompt_selectPublic(): User can select "Public"
-   - visibilityPrompt_saveToConfig(): Visibility stored in config
-   - visibilityPrompt_passToAPI(): Visibility in API call
-   - visibilityPrompt_securityWarning(): Warning shown for Public selection
-   - **Coverage Target**: 85%
+2. **Integration** (`tests/integration/repo-structure/visibility-flow.test.ts`):
+   - testVisibilityPromptFlow(): Complete visibility workflow → 87% coverage
+   - testBulkVisibilityChoice(): Apply same visibility to all repos → 87% coverage
+   - testMixedVisibility(): Different visibility per repo → 85% coverage
+   - **Coverage Target**: 86%
 
-**Overall Coverage Target**: 85%
+3. **E2E** (`tests/e2e/init/visibility-prompt.spec.ts`):
+   - userSeesVisibilityPrompt(): Prompt shown for each repo → 100% critical path
+   - privateIsDefault(): "Private" pre-selected → 100% critical path
+   - visibilityAppliedToGitHub(): Created repos have correct visibility → 100% critical path
+   - **Coverage Target**: 100%
 
-**Implementation**:
-
-1. Modify file: `src/cli/helpers/issue-tracker/github-multi-repo.ts` (add prompt)
-2. Add visibility prompt after repo name and ID prompts:
-   ```typescript
-   const visibilityAnswer = await inquirer.prompt([
-     {
-       type: 'list',
-       name: 'visibility',
-       message: 'Repository visibility:',
-       choices: [
-         { name: 'Private (recommended for security)', value: 'private' },
-         { name: 'Public', value: 'public' }
-       ],
-       default: 'private'
-     }
-   ]);
-
-   if (visibilityAnswer.visibility === 'public') {
-     console.log('⚠️  Warning: Public repositories are visible to everyone on GitHub.');
-   }
-   ```
-3. Update RepositoryConfig interface to include visibility field
-4. Modify GitHub API call to pass visibility parameter:
-   ```typescript
-   await octokit.repos.createForAuthenticatedUser({
-     name: repo.repo,
-     private: repo.visibility === 'private',
-     // ... other params
-   });
-   ```
-5. Write 6 unit tests
-6. Run tests: `npm test visibility-prompt.test.ts` (should pass: 6/6)
-7. Verify coverage ≥85%
-
-**Dependencies**: T-008
-
----
-
-### T-012: Update Configuration Schema
-
-**AC**: AC-US5-01, AC-US6-01, AC-US3-01
-
-**Priority**: P1
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** repository config → **When** validated → **Then** visibility field required
-- **Given** repository config → **When** validated → **Then** path field allows root-level paths
-- **Given** .env config → **When** validated → **Then** multi-provider configuration allowed
-
-**Test Cases**:
-
-1. **Unit**: `tests/unit/core/config-schema.test.ts` (8 test cases)
-   - configSchema_visibilityRequired(): Error if missing
-   - configSchema_visibilityEnum(): Only 'private' or 'public' allowed
-   - configSchema_pathRootLevel(): Allows "frontend/" not "services/frontend/"
-   - configSchema_pathValidation(): Rejects invalid paths
-   - configSchema_envMultiProvider(): Allows GitHub + JIRA + ADO
-   - configSchema_envProviderConfig(): Each provider has required fields
-   - configSchema_repoMapping(): Validates "id:repo-name" format
-   - configSchema_syncConfig(): Validates sync settings
-   - **Coverage Target**: 85%
-
-**Overall Coverage Target**: 85%
+**Overall**: 88%
 
 **Implementation**:
+1. Verify `src/core/repo-structure/prompt-consolidator.ts` has:
+   - `getVisibilityPrompt(repoName)` function (lines 100-120)
+   - Returns: question, options, default: 'private'
+2. Verify integration in `repo-structure-manager.ts`:
+   - Single repo (lines 257-268)
+   - Parent repo (lines 367-378)
+   - Implementation repos (lines 479-490)
+   - Monorepo (lines 585-596)
+3. Add bulk visibility option (optional enhancement):
+   - After repo count prompt, ask: "Apply same visibility to all repos?"
+   - If yes, prompt once and apply to all
+   - If no, prompt per repo
+4. Verify GitHub API receives visibility (line 804):
+   - `private: visibility === 'private'`
+5. Run unit tests: `npm test -- visibility-prompt` (should pass: 10/10)
+6. Run integration tests: `npm run test:integration -- visibility-flow` (should pass: 6/6)
+7. Run E2E tests: `npm run test:e2e -- visibility-prompt` (should pass: 3/3)
 
-1. Modify file: `src/core/schemas/specweave-config.schema.json` (~20 lines added)
-2. Add visibility field to RepositoryConfig:
-   ```json
-   "visibility": {
-     "type": "string",
-     "enum": ["private", "public"],
-     "default": "private",
-     "description": "Repository visibility (private or public)"
-   }
-   ```
-3. Update path field to allow root-level paths:
-   ```json
-   "path": {
-     "type": "string",
-     "pattern": "^[a-z0-9-]+/$",
-     "description": "Local folder path (root-level, e.g., frontend/)"
-   }
-   ```
-4. Add .env configuration schema:
-   ```json
-   "env": {
-     "type": "object",
-     "properties": {
-       "providers": {
-         "type": "array",
-         "items": {
-           "type": "object",
-           "properties": {
-             "type": { "enum": ["github", "jira", "ado"] },
-             "config": { "type": "object" }
-           }
-         }
-       }
-     }
-   }
-   ```
-5. Write 8 unit tests
-6. Run tests: `npm test config-schema.test.ts` (should pass: 8/8)
-7. Verify coverage ≥85%
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Add bulk visibility option (optional)
+4. 🟢 Run tests: `npm test` (19/19 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥88%
 
 **Dependencies**: None
 
 ---
 
-## Phase 3: E2E Validation (T-013 to T-020)
+### T-007: Integrate .env file generation
 
-### T-013: E2E Test - Happy Path (Multi-Repo Setup)
+**AC**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05, AC-US6-06
 
-**AC**: All acceptance criteria (end-to-end validation)
+**Priority**: P1
+**Estimate**: 3 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** all repositories created successfully
+- **When** .env generation runs
+- **Then** .env file should be created with GitHub token, owner, repos mapping
+- **And** .env should be added to .gitignore
+- **And** .env.example should be created (without token)
+- **And** file permissions should be 0600 (secure)
+
+**Test Cases**:
+1. **Unit** (`tests/unit/utils/env-file-generator.test.ts`):
+   - testGenerateEnvFile(): Test .env content generation → 92% coverage
+   - testEnvExampleCreation(): Verify .env.example created → 90% coverage
+   - testGitignoreUpdate(): Test .gitignore updates → 90% coverage
+   - testFilePermissions(): Verify 0600 permissions → 88% coverage
+   - testMultiProviderSupport(): Test GitHub/JIRA/ADO → 88% coverage
+   - **Coverage Target**: 90%
+
+2. **Integration** (`tests/integration/repo-structure/env-generation.test.ts`):
+   - testCompleteEnvGeneration(): Full .env workflow → 87% coverage
+   - testExistingEnvOverwrite(): Handle existing .env → 87% coverage
+   - testMultiRepoMapping(): Verify repo mappings → 85% coverage
+   - **Coverage Target**: 86%
+
+3. **E2E** (`tests/e2e/init/env-file-creation.spec.ts`):
+   - userSeesEnvFileCreated(): .env file present → 100% critical path
+   - envContainsGitHubConfig(): Valid GitHub config in .env → 100% critical path
+   - envExampleIsSafe(): .env.example has no secrets → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 89%
+
+**Implementation**:
+1. Verify `src/utils/env-file-generator.ts` exists (150 lines, 85% coverage)
+2. Verify integration in `repo-structure-manager.ts` (lines 691-747):
+   - Called after repo creation
+   - State saved after env creation
+3. Test .env content:
+   ```bash
+   GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+   GITHUB_OWNER=myorg
+   GITHUB_REPOS=parent:my-project-parent,frontend:my-project-frontend
+   GITHUB_SYNC_ENABLED=true
+   ```
+4. Verify .env.example excludes token
+5. Verify .gitignore includes .env pattern
+6. Run unit tests: `npm test -- env-file-generator` (should pass: 12/12)
+7. Run integration tests: `npm run test:integration -- env-generation` (should pass: 6/6)
+8. Run E2E tests: `npm run test:e2e -- env-file-creation` (should pass: 3/3)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Enhance any missing functionality
+4. 🟢 Run tests: `npm test` (21/21 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥89%
+
+**Dependencies**: T-004 (state management)
+
+---
+
+### T-008: Integrate comprehensive summary generation
+
+**AC**: AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04, AC-US8-05
+
+**Priority**: P1
+**Estimate**: 3 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** setup completed successfully
+- **When** summary is generated
+- **Then** detailed summary should show created repos with URLs
+- **And** folder structure should be displayed (ASCII tree)
+- **And** .env location should be highlighted
+- **And** next steps should be provided (npm install, /specweave:increment)
+- **And** estimated time saved should be calculated (~13 minutes)
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/setup-summary.test.ts`):
+   - testGenerateSetupSummary(): Test summary content → 90% coverage
+   - testReposSummary(): Verify repo list with URLs → 90% coverage
+   - testFolderStructure(): Test ASCII tree generation → 88% coverage
+   - testNextSteps(): Verify command list → 88% coverage
+   - testTimeSaved(): Test time calculation → 85% coverage
+   - **Coverage Target**: 88%
+
+2. **Integration** (`tests/integration/repo-structure/summary-generation.test.ts`):
+   - testCompleteSummaryGeneration(): Full summary workflow → 87% coverage
+   - testSummaryFormatting(): Verify Markdown formatting → 85% coverage
+   - testMultiRepoSummary(): Test with multiple repos → 85% coverage
+   - **Coverage Target**: 86%
+
+3. **E2E** (`tests/e2e/init/setup-summary.spec.ts`):
+   - userSeesCompleteSummary(): Summary displayed at end → 100% critical path
+   - summaryIncludesAllRepos(): All repo URLs present → 100% critical path
+   - summaryShowsNextSteps(): Installation commands visible → 100% critical path
+   - **Coverage Target**: 100%
+
+**Overall**: 88%
+
+**Implementation**:
+1. Verify `src/core/repo-structure/setup-summary.ts` exists (120 lines, 80% coverage)
+2. Verify integration in `repo-structure-manager.ts` (lines 752-782):
+   - Called after .env generation
+   - State file deleted after summary
+3. Test summary output:
+   ```
+   ✅ Setup Complete!
+
+   📦 Created Repositories (3 total):
+      1. Parent: https://github.com/myorg/my-project-parent
+      2. Frontend: https://github.com/myorg/my-project-frontend
+      3. Backend: https://github.com/myorg/my-project-backend
+
+   📁 Folder Structure:
+      my-project/
+      ├── .specweave/
+      ├── .env
+      ├── frontend/
+      └── backend/
+
+   ⏱️  Time Saved: ~13 minutes
+   ```
+4. Run unit tests: `npm test -- setup-summary` (should pass: 10/10)
+5. Run integration tests: `npm run test:integration -- summary-generation` (should pass: 5/5)
+6. Run E2E tests: `npm run test:e2e -- setup-summary` (should pass: 3/3)
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Enhance any missing functionality
+4. 🟢 Run tests: `npm test` (18/18 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥88%
+
+**Dependencies**: T-007 (.env generation)
+
+---
+
+### T-009: Improve parent folder benefits explanation
+
+**AC**: AC-US9-01, AC-US9-02, AC-US9-03
+
+**Priority**: P1
+**Estimate**: 2 hours
+**Status**: [x] completed
+
+**Test Plan** (BDD format):
+- **Given** user selects multi-repo with parent option
+- **When** parent benefits explanation is shown
+- **Then** detailed benefits should be listed (central .specweave/, cross-cutting features, etc.)
+- **And** visual comparison should show with vs without parent
+- **And** link to documentation should be included
+
+**Test Cases**:
+1. **Unit** (`tests/unit/repo-structure/parent-benefits.test.ts`):
+   - testParentBenefitsContent(): Verify benefits list → 88% coverage
+   - testVisualComparison(): Test comparison text → 85% coverage
+   - testDocumentationLink(): Verify link present → 85% coverage
+   - **Coverage Target**: 86%
+
+2. **Integration** (`tests/integration/repo-structure/parent-benefits-display.test.ts`):
+   - testBenefitsShownDuringSetup(): Benefits displayed at correct time → 85% coverage
+   - testBenefitsReadability(): Verify formatting and clarity → 83% coverage
+   - **Coverage Target**: 84%
+
+**Overall**: 85%
+
+**Implementation**:
+1. Verify `src/core/repo-structure/prompt-consolidator.ts` has:
+   - `getParentRepoBenefits()` function (lines 60-80)
+   - Returns detailed benefits text
+2. Verify integration in `repo-structure-manager.ts` (line 294):
+   - Called when `useParent === true`
+3. Expand benefits text to include:
+   - Central .specweave/ for all specs/docs
+   - Cross-cutting features (auth spans frontend + backend)
+   - System-wide ADRs
+   - Onboarding new developers
+   - Compliance & auditing
+4. Add visual comparison (with parent vs without)
+5. Add link to: https://spec-weave.com/docs/guides/multi-repo-setup
+6. Run unit tests: `npm test -- parent-benefits` (should pass: 6/6)
+7. Run integration tests: `npm run test:integration -- parent-benefits-display` (should pass: 4/4)
+8. Manually verify readability and clarity
+
+**TDD Workflow**:
+1. 📝 Write all tests above (should mostly pass if module complete)
+2. ❌ Run tests: `npm test` (check current state)
+3. ✅ Enhance benefits explanation
+4. 🟢 Run tests: `npm test` (10/10 passing)
+5. ♻️ Refactor if needed
+6. ✅ Final check: Coverage ≥85%
+
+**Dependencies**: None
+
+---
+
+## Phase 4: E2E Testing (Days 5-6)
+
+### T-010: E2E test - Happy path (single repo)
+
+**AC**: All US-001 through US-009 (single repo variant)
 
 **Priority**: P1
 **Estimate**: 4 hours
 **Status**: [ ] pending
 
 **Test Plan** (BDD format):
-- **Given** user runs `specweave init my-project` → **When** selects "Multiple WITH parent" + enters 2 repos → **Then** all repos created, .env exists, summary shown, no errors
+- **Given** user runs `specweave init my-project`
+- **When** selecting single repository architecture
+- **Then** complete flow should work end-to-end
+- **And** repository should be created on GitHub
+- **And** .env file should be generated
+- **And** summary should be shown
+- **And** state file should be deleted
 
 **Test Cases**:
+- **E2E** (`tests/e2e/init/single-repo-happy-path.spec.ts`):
+  - testSingleRepoCompleteFlow(): Full single repo setup → 100% critical path
+  - testGitHubRepoCreated(): Verify GitHub repo exists → 100% critical path
+  - testEnvFilePresent(): Verify .env created → 100% critical path
+  - testSummaryDisplayed(): Verify summary shown → 100% critical path
+  - testStateFileDeleted(): Verify cleanup → 100% critical path
+  - **Coverage Target**: 100%
 
-1. **E2E**: `tests/e2e/init/multi-repo-setup.spec.ts` (1 test case)
-   - multiRepoSetup_happyPath(): Full end-to-end flow with 3 repos
-   - **Coverage Target**: 100% (critical path)
-
-**Overall Coverage Target**: 100%
+**Overall**: 100%
 
 **Implementation**:
+1. Create `tests/e2e/init/single-repo-happy-path.spec.ts`
+2. Test scenario:
+   - Run: `specweave init test-single-repo`
+   - Select: "Single repository"
+   - Enter: owner, repo name, description
+   - Select: Private visibility
+   - Confirm: Create on GitHub
+   - Wait for: Completion
+   - Verify: GitHub repo, .env file, summary, no state file
+3. Mock GitHub API or use test account
+4. Clean up test resources after run
+5. Run E2E test: `npm run test:e2e -- single-repo-happy-path` (should pass: 5/5)
 
-1. Create file: `tests/e2e/init/multi-repo-setup.spec.ts` (~50 lines)
-2. Write comprehensive E2E test (see plan.md for full code)
-3. Verify all files created:
-   - .specweave/ directory
-   - .env file
-   - .env.example file
-   - frontend/ directory (root level)
-   - backend/ directory (root level)
-   - NOT services/ directory
-4. Verify summary shown with correct content
-5. Run test: `npm run test:e2e multi-repo-setup.spec.ts` (should pass: 1/1)
+**TDD Workflow**:
+1. 📝 Write all E2E tests above
+2. ❌ Run tests: `npm run test:e2e` (0/5 passing)
+3. ✅ Verify all components integrated
+4. 🟢 Run tests: `npm run test:e2e` (5/5 passing)
+5. ✅ Final check: 100% critical path
 
-**Dependencies**: T-007, T-008, T-009, T-010
+**Dependencies**: All T-001 through T-009
 
 ---
 
-### T-014: E2E Test - Ctrl+C Recovery
+### T-011: E2E test - Multi-repo with validation
 
-**AC**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04
+**AC**: US-004 (validation), US-007 (recovery)
+
+**Priority**: P1
+**Estimate**: 5 hours
+**Status**: [ ] pending
+
+**Test Plan** (BDD format):
+- **Given** user runs multi-repo setup
+- **When** entering repository names
+- **Then** GitHub validation should prevent duplicate repos
+- **And** Ctrl+C recovery should work
+- **And** all 3 repos should be created successfully
+
+**Test Cases**:
+- **E2E** (`tests/e2e/init/multi-repo-validation.spec.ts`):
+  - testMultiRepoWithValidation(): Full multi-repo with validation → 100% critical path
+  - testDuplicateRepoDetected(): Validation prevents duplicate → 100% critical path
+  - testCtrlCRecovery(): Resume after Ctrl+C → 100% critical path
+  - testAllReposCreated(): Verify all repos exist → 100% critical path
+  - **Coverage Target**: 100%
+
+**Overall**: 100%
+
+**Implementation**:
+1. Create `tests/e2e/init/multi-repo-validation.spec.ts`
+2. Test scenarios:
+   - Scenario 1: Create 3 repos successfully
+   - Scenario 2: Enter existing repo name → see error → correct it
+   - Scenario 3: Start setup → Ctrl+C after repo 1 → restart → resume → complete
+3. Mock GitHub API for validation
+4. Test state file creation and deletion
+5. Clean up test resources
+6. Run E2E test: `npm run test:e2e -- multi-repo-validation` (should pass: 4/4)
+
+**TDD Workflow**:
+1. 📝 Write all E2E tests above
+2. ❌ Run tests: `npm run test:e2e` (0/4 passing)
+3. ✅ Verify all components integrated
+4. 🟢 Run tests: `npm run test:e2e` (4/4 passing)
+5. ✅ Final check: 100% critical path
+
+**Dependencies**: T-004 (state management), T-005 (validation)
+
+---
+
+### T-012: E2E test - Error scenarios
+
+**AC**: All error handling ACs
+
+**Priority**: P1
+**Estimate**: 5 hours
+**Status**: [ ] pending
+
+**Test Plan** (BDD format):
+- **Given** various error conditions
+- **When** setup encounters errors
+- **Then** clear error messages should be shown
+- **And** user should be able to recover
+- **And** system should remain stable
+
+**Test Cases**:
+- **E2E** (`tests/e2e/init/error-handling.spec.ts`):
+  - testInvalidOwnerError(): Handle non-existent owner → 100% error path
+  - testGitHubAPIFailure(): Handle API failures gracefully → 100% error path
+  - testStateCorruption(): Recover from corrupt state file → 100% error path
+  - testNetworkError(): Handle network failures with retry → 100% error path
+  - **Coverage Target**: 100%
+
+**Overall**: 100%
+
+**Implementation**:
+1. Create `tests/e2e/init/error-handling.spec.ts`
+2. Test error scenarios:
+   - Invalid owner: Enter "nonexistent-org-12345" → see error
+   - GitHub API failure: Mock 500 error → see retry → see error
+   - State corruption: Corrupt state file → detect → offer fresh start
+   - Network error: Mock network failure → see retry → success
+3. Mock GitHub API with error responses
+4. Test error messages for clarity
+5. Verify recovery mechanisms work
+6. Run E2E test: `npm run test:e2e -- error-handling` (should pass: 4/4)
+
+**TDD Workflow**:
+1. 📝 Write all E2E tests above
+2. ❌ Run tests: `npm run test:e2e` (0/4 passing)
+3. ✅ Verify error handling works
+4. 🟢 Run tests: `npm run test:e2e` (4/4 passing)
+5. ✅ Final check: 100% error paths
+
+**Dependencies**: T-004 (state management), T-005 (validation)
+
+---
+
+## Phase 5: Documentation (Day 7)
+
+### T-013: Update user documentation
+
+**AC**: All US documentation requirements
+
+**Priority**: P1
+**Estimate**: 3 hours
+**Status**: [ ] pending
+
+**Test Plan**: N/A (documentation task)
+
+**Validation**:
+- Manual review: Grammar, clarity, completeness
+- Link checker: All links work (`npm run check-links`)
+- Build check: Docusaurus builds without errors (`npm run build:docs`)
+- Code examples: All code snippets are valid and tested
+
+**Implementation**:
+1. Update `docs-site/docs/guides/multi-repo-setup.md`:
+   - Add section on auto-ID generation
+   - Document visibility options
+   - Explain Ctrl+C recovery
+   - Add examples with new prompts
+2. Update `docs-site/docs/guides/getting-started.md`:
+   - Update screenshots with new prompts
+   - Add troubleshooting section
+3. Update `.specweave/docs/public/guides/`:
+   - Multi-repo setup guide
+   - Troubleshooting guide
+4. Add examples:
+   - Happy path setup
+   - Error recovery
+   - Multi-repo with parent
+5. Run link checker: `npm run check-links`
+6. Build docs: `npm run build:docs` (should succeed)
+7. Preview docs: `npm run serve:docs` (manual check)
+
+**Dependencies**: T-001 through T-012 (all features implemented)
+
+---
+
+### T-014: Create ADRs
+
+**AC**: All architecture decisions
 
 **Priority**: P1
 **Estimate**: 4 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
-**Test Plan** (BDD format):
-- **Given** setup interrupted after parent created → **When** user resumes → **Then** continues from repo 1, skips parent, all repos created successfully
+**Test Plan**: N/A (documentation task)
 
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/resume-setup.spec.ts` (1 test case)
-   - resumeSetup_afterParentCreated(): Ctrl+C recovery successful
-   - **Coverage Target**: 100% (critical path)
-
-**Overall Coverage Target**: 100%
+**Validation**:
+- Manual review: Clear rationale, alternatives considered
+- Consistency: ADR format matches existing ADRs
+- Completeness: All decisions documented
 
 **Implementation**:
+1. Create `ADR-0023: Auto-ID Generation Algorithm`:
+   - Location: `.specweave/docs/internal/architecture/adr/0023-auto-id-generation-algorithm.md`
+   - Content: Algorithm, rationale, alternatives, consequences
+2. Create `ADR-0024: Root-Level Repository Structure`:
+   - Location: `.specweave/docs/internal/architecture/adr/0024-root-level-repository-structure.md`
+   - Content: Decision, why root-level, alternatives, migration
+3. Create `ADR-0025: Incremental State Persistence`:
+   - Location: `.specweave/docs/internal/architecture/adr/0025-incremental-state-persistence.md`
+   - Content: JSON file approach, atomic writes, recovery
+4. Create `ADR-0026: GitHub Validation Strategy`:
+   - Location: `.specweave/docs/internal/architecture/adr/0026-github-validation-strategy.md`
+   - Content: Pre-creation validation, retry logic, error handling
+5. Create `ADR-0027: .env File Structure`:
+   - Location: `.specweave/docs/internal/architecture/adr/0027-env-file-structure.md`
+   - Content: Why .env, security measures, .env.example
+6. Verify ADR format matches existing ADRs (ADR-0001 through ADR-0022)
+7. Link ADRs from plan.md and spec.md
 
-1. Create file: `tests/e2e/init/resume-setup.spec.ts` (~40 lines)
-2. Write Ctrl+C recovery test (see plan.md for full code)
-3. Simulate Ctrl+C by closing browser mid-setup
-4. Verify state file exists with correct content
-5. Resume setup in new browser session
-6. Verify resume prompt shown with progress
-7. Verify setup continues from last step
-8. Verify state file deleted on completion
-9. Run test: `npm run test:e2e resume-setup.spec.ts` (should pass: 1/1)
-
-**Dependencies**: T-002, T-007
+**Dependencies**: T-001 through T-012 (all features implemented)
 
 ---
 
-### T-015: E2E Test - Repository Already Exists
+### T-015: Update CHANGELOG.md
 
-**AC**: AC-US4-03, AC-US4-04
+**AC**: Version history
 
 **Priority**: P1
-**Estimate**: 3 hours
+**Estimate**: 1 hour
 **Status**: [ ] pending
 
-**Test Plan** (BDD format):
-- **Given** repository "my-project-frontend" already exists on GitHub → **When** validation runs → **Then** shows "Repository already exists" + offers "Use existing" option
+**Test Plan**: N/A (documentation task)
 
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - repository exists)
-   - errorHandling_repositoryExists(): Offers use existing option
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
+**Validation**:
+- Manual review: Clear, concise, follows keep-a-changelog format
+- Completeness: All user-facing changes documented
+- Links: GitHub issue links work
 
 **Implementation**:
+1. Open `CHANGELOG.md`
+2. Add new section for version (e.g., v0.X.Y):
+   ```markdown
+   ## [0.X.Y] - 2025-11-XX
 
-1. Create file: `tests/e2e/init/error-handling.spec.ts` (~30 lines)
-2. Mock GitHub API to return 200 (repo exists)
-3. Verify warning message shown
-4. Verify "Use Existing" and "Enter Different Name" buttons visible
-5. Test both paths:
-   - User clicks "Use Existing" → existing repo used
-   - User clicks "Enter Different Name" → retry prompt
-6. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 1/1)
+   ### Added
+   - Auto-generated repository IDs from names (US-002)
+   - Ctrl+C recovery with incremental state persistence (US-007)
+   - GitHub validation before repository creation (US-004)
+   - Private/public visibility prompts (US-003)
+   - Comprehensive setup summary with time saved (US-008)
+   - .env file auto-generation with GitHub config (US-006)
 
-**Dependencies**: T-003, T-007, T-008
+   ### Changed
+   - Repositories now cloned at root level (not services/) (US-005)
+   - Simplified repository architecture questions (US-001)
+   - Improved parent folder benefits explanation (US-009)
+
+   ### Fixed
+   - Duplicate repository prevention
+   - State corruption recovery
+   - Network error retry logic
+   ```
+3. Add link to GitHub milestone/project
+4. Add migration guide link
+5. Verify format matches previous entries
+6. Commit: `git commit -m "docs: update changelog for v0.X.Y"`
+
+**Dependencies**: T-013 (user documentation), T-014 (ADRs)
 
 ---
 
-### T-016: E2E Test - Invalid Owner
+## AC-ID Coverage Matrix
 
-**AC**: AC-US4-02
+| Task | AC-IDs Covered |
+|------|---------------|
+| T-001 | AC-US5-01, AC-US5-03 |
+| T-002 | AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04 |
+| T-003 | AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04 |
+| T-004 | AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05, AC-US7-06 |
+| T-005 | AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05 |
+| T-006 | AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04 |
+| T-007 | AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05, AC-US6-06 |
+| T-008 | AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04, AC-US8-05 |
+| T-009 | AC-US9-01, AC-US9-02, AC-US9-03 |
+| T-010 | All (single repo variant) |
+| T-011 | US-004, US-007 (E2E validation) |
+| T-012 | All error handling ACs |
+| T-013 | Documentation ACs |
+| T-014 | Architecture decisions |
+| T-015 | Version history |
 
-**Priority**: P1
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** owner "nonexistent-org-12345" does not exist → **When** validation runs → **Then** shows "Owner not found" error + allows retry
-
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - invalid owner)
-   - errorHandling_invalidOwner(): Clear error + retry
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
-
-**Implementation**:
-
-1. Add test to `tests/e2e/init/error-handling.spec.ts` (~25 lines)
-2. Mock GitHub API to return 404 for /users/{owner} and /orgs/{owner}
-3. Verify error message: "Owner 'nonexistent-org-12345' not found"
-4. Verify retry prompt shown
-5. Mock correct owner on retry
-6. Verify setup continues successfully
-7. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 2/2 total)
-
-**Dependencies**: T-003, T-007, T-008
+**Total ACs Covered**: 38 unique acceptance criteria across 9 user stories
 
 ---
 
-### T-017: E2E Test - Network Failure
-
-**AC**: AC-US7-01 (state persistence on failure)
-
-**Priority**: P1
-**Estimate**: 3 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** network failure during GitHub API call → **When** retries 3 times → **Then** shows clear error message + state saved for resume
-
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - network failure)
-   - errorHandling_networkFailure(): Retries + saves state
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
-
-**Implementation**:
-
-1. Add test to `tests/e2e/init/error-handling.spec.ts` (~30 lines)
-2. Mock GitHub API to throw network error (fetch fails)
-3. Verify retry logic (3 attempts with exponential backoff)
-4. Verify error message: "Network error: ..."
-5. Verify state saved before failure
-6. Verify user can resume after fixing network
-7. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 3/3 total)
-
-**Dependencies**: T-002, T-003, T-007
-
----
-
-### T-018: E2E Test - Rate Limit Exceeded
-
-**AC**: AC-US4-01 (GitHub API validation)
-
-**Priority**: P2
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** GitHub API rate limit exceeded (403) → **When** validation runs → **Then** shows rate limit error + time until reset
-
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - rate limit)
-   - errorHandling_rateLimitExceeded(): Shows reset time
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
-
-**Implementation**:
-
-1. Add test to `tests/e2e/init/error-handling.spec.ts` (~25 lines)
-2. Mock GitHub API to return 403 with X-RateLimit-Remaining: 0
-3. Verify error message includes reset time
-4. Verify state saved (user can resume later)
-5. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 4/4 total)
-
-**Dependencies**: T-003, T-007
-
----
-
-### T-019: E2E Test - Duplicate Repository ID
-
-**AC**: AC-US2-04
-
-**Priority**: P2
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** repository ID "frontend" already used → **When** user enters another "frontend" → **Then** auto-suggests "frontend-2"
-
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - duplicate ID)
-   - errorHandling_duplicateRepoId(): Auto-suffix applied
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
-
-**Implementation**:
-
-1. Add test to `tests/e2e/init/error-handling.spec.ts` (~20 lines)
-2. Create setup with repo 1 ID = "frontend"
-3. Enter repo 2 with ID = "frontend" (duplicate)
-4. Verify auto-suggestion: "frontend-2"
-5. Verify user can accept or edit
-6. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 5/5 total)
-
-**Dependencies**: T-001, T-007, T-008
-
----
-
-### T-020: E2E Test - .env File Overwrite
-
-**AC**: AC-US6-01
-
-**Priority**: P2
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** .env file already exists → **When** setup runs → **Then** prompts "Overwrite? [y/N]" + creates backup if yes
-
-**Test Cases**:
-
-1. **E2E**: `tests/e2e/init/error-handling.spec.ts` (1 test case - .env overwrite)
-   - errorHandling_envFileOverwrite(): Backup + overwrite
-   - **Coverage Target**: 100%
-
-**Overall Coverage Target**: 100%
-
-**Implementation**:
-
-1. Add test to `tests/e2e/init/error-handling.spec.ts` (~25 lines)
-2. Pre-create .env file with dummy content
-3. Run setup, verify overwrite prompt shown
-4. Test "No" path: .env unchanged
-5. Test "Yes" path: .env.backup created, new .env written
-6. Run test: `npm run test:e2e error-handling.spec.ts` (should pass: 6/6 total)
-
-**Dependencies**: T-004, T-007
-
----
-
-## Phase 4: Documentation (T-021 to T-024)
-
-### T-021: Update Multi-Repo Setup Guide
-
-**AC**: AC-US8-02 (documentation links)
-
-**Priority**: P1
-**Estimate**: 3 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** multi-repo setup guide → **When** user reads → **Then** explains quick start, folder structure, repo IDs, Ctrl+C recovery, security best practices
-
-**Test Cases**:
-
-1. **Manual Validation**: Review documentation for completeness
-   - Quick start section: Step-by-step instructions
-   - Folder structure section: Visual diagram
-   - Repository IDs section: Auto-generation examples
-   - Ctrl+C recovery section: Resume instructions
-   - Security section: .env best practices
-   - **Validation**: Manual review by 2 team members
-
-**Implementation**:
-
-1. Update file: `docs-site/docs/guides/multi-repo-setup.md` (~100 lines added)
-2. Add sections (see plan.md for full content):
-   - Quick Start (4 steps)
-   - What Gets Created (folder structure diagram)
-   - Repository IDs (auto-generation examples)
-   - Ctrl+C Recovery (resume instructions)
-   - Security Best Practices (5 tips)
-3. Add screenshots (optional but recommended)
-4. Review with team
-5. Build docs: `npm run build:docs` (should succeed)
-6. Preview: `npm run serve:docs` (manual check)
-
-**Dependencies**: T-001, T-002, T-003, T-004, T-007, T-008
-
----
-
-### T-022: Create Ctrl+C Recovery Guide
-
-**AC**: AC-US7-02, AC-US7-03 (resume explanation)
-
-**Priority**: P1
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** Ctrl+C recovery guide → **When** user reads → **Then** explains how state is saved, how to resume, what data is preserved
-
-**Test Cases**:
-
-1. **Manual Validation**: Review documentation for accuracy
-   - State persistence explanation
-   - Resume workflow diagram
-   - Example scenarios (3+)
-   - **Validation**: Manual review by 2 team members
-
-**Implementation**:
-
-1. Create file: `docs-site/docs/guides/ctrl-c-recovery.md` (~50 lines)
-2. Add sections:
-   - How It Works (state persistence explanation)
-   - Resume Workflow (step-by-step)
-   - Example Scenarios (interrupt after parent, interrupt after repo 1, etc.)
-   - Troubleshooting (corrupted state, manual cleanup)
-3. Add diagrams (state machine)
-4. Review with team
-5. Build docs: `npm run build:docs` (should succeed)
-
-**Dependencies**: T-002
-
----
-
-### T-023: Create .env Security Guide
-
-**AC**: AC-US6-02 (.env security)
-
-**Priority**: P1
-**Estimate**: 2 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** .env security guide → **When** user reads → **Then** explains why .env is dangerous, how to protect it, what to do if committed
-
-**Test Cases**:
-
-1. **Manual Validation**: Review documentation for completeness
-   - Why .env is sensitive
-   - How to protect (permissions, .gitignore)
-   - What to do if leaked (regenerate tokens, audit commits)
-   - **Validation**: Manual review by security team
-
-**Implementation**:
-
-1. Create file: `docs-site/docs/guides/env-security.md` (~75 lines)
-2. Add sections:
-   - Why .env Is Sensitive (contains secrets)
-   - Protection Best Practices (5 tips)
-   - Accidental Commit Recovery (step-by-step)
-   - Team Sharing (.env.example workflow)
-   - CI/CD Secrets Management (brief overview)
-3. Add warning callouts
-4. Review with security team
-5. Build docs: `npm run build:docs` (should succeed)
-
-**Dependencies**: T-004
-
----
-
-### T-024: Update Troubleshooting Guide
-
-**AC**: All acceptance criteria (comprehensive troubleshooting)
-
-**Priority**: P2
-**Estimate**: 3 hours
-**Status**: [ ] pending
-
-**Test Plan** (BDD format):
-- **Given** troubleshooting guide → **When** user encounters issue → **Then** finds solution for common problems (repo exists, invalid owner, network failure, etc.)
-
-**Test Cases**:
-
-1. **Manual Validation**: Review documentation for common issues
-   - 10+ common problems covered
-   - Clear solutions for each
-   - Links to relevant docs
-   - **Validation**: Manual review by support team
-
-**Implementation**:
-
-1. Update file: `docs-site/docs/guides/troubleshooting.md` (~100 lines added)
-2. Add sections for each common issue:
-   - Repository Already Exists (solution: use existing or rename)
-   - Invalid Owner (solution: check spelling, try user vs org)
-   - Network Failure (solution: retry, check connectivity)
-   - Rate Limit Exceeded (solution: wait, use personal token)
-   - Corrupted State File (solution: delete and restart)
-   - .env Not Created (solution: check permissions, re-run)
-   - Repos Cloned to Wrong Location (solution: check config, move manually)
-   - GitHub Token Invalid (solution: regenerate, check scopes)
-   - Permissions Denied (solution: check file permissions, run as user)
-   - Duplicate Repository ID (solution: accept auto-suffix or edit)
-3. Add FAQ section
-4. Review with support team
-5. Build docs: `npm run build:docs` (should succeed)
-
-**Dependencies**: All previous tasks (comprehensive troubleshooting)
+## Dependencies Graph
+
+```
+Foundation:
+T-001 (root-level cloning) → T-002, T-003, T-004, T-005, T-006, T-007, T-008, T-009
+
+Core Features:
+T-002 (prompts) → T-010, T-011, T-012
+T-003 (auto-ID) → T-010, T-011, T-012
+T-004 (state mgmt) → T-007, T-008, T-011, T-012
+T-005 (validation) → T-010, T-011, T-012
+T-006 (visibility) → T-010, T-011, T-012
+
+Integration:
+T-007 (.env) → T-008, T-010, T-011, T-012
+T-008 (summary) → T-010, T-011, T-012
+T-009 (benefits) → T-010, T-011, T-012
+
+E2E Testing:
+T-001 through T-009 → T-010, T-011, T-012
+
+Documentation:
+T-001 through T-012 → T-013, T-014, T-015
+```
 
 ---
 
 ## Summary
 
-**Total Tasks**: 24
-**Estimated Time**: ~65 hours (13 working days)
+**Total Tasks**: 15
+**Estimated Time**: 7 days
+**Test Coverage Target**: 85% overall (90% for critical paths)
 
-**Phase Breakdown**:
-- Phase 1 (Core Modules): 6 tasks, 25 hours
-- Phase 2 (Integration): 6 tasks, 22 hours
-- Phase 3 (E2E Validation): 8 tasks, 20 hours (but 6 are in one file)
-- Phase 4 (Documentation): 4 tasks, 10 hours
+**Key Architectural Insight**: Most utility modules ALREADY EXIST (6/6 complete), so implementation focuses on:
+1. Root-level cloning verification (2 lines)
+2. Enhanced UX (prompts, summaries, benefits)
+3. E2E testing (validation)
+4. Documentation (ADRs, guides)
 
-**Coverage Targets**:
-- Overall: 85%+
-- Critical paths (ID gen, state, .env): 90%+
-- GitHub integration: 85%+
-- Prompts: 75%+
+**Expected Impact**:
+- 60% faster setup (20min → 8min)
+- 90% fewer errors (10% → 1%)
+- 95% first-run success (vs 40%)
+- Zero confusion support tickets
 
-**Dependencies**:
-- Phase 1 has no dependencies (can start immediately)
-- Phase 2 depends on Phase 1
-- Phase 3 depends on Phases 1 + 2
-- Phase 4 depends on all previous phases
-
-**Risk Areas**:
-- T-002 (Setup State Manager): Most complex, highest risk of bugs
-- T-007 (repo-structure-manager integration): Large file, many changes
-- T-003 (GitHub Validator): External API dependency, network issues
-
-**Success Criteria**:
-- All 24 tasks completed with ≥85% coverage
-- All E2E tests passing (100% critical path coverage)
-- Documentation complete and reviewed
-- Setup time reduced by 60% (measured in user testing)
-- Error rate reduced by 90% (measured in telemetry)
+**Test Mode**: TDD (Test-Driven Development)
+- Write tests FIRST for each task
+- Red → Green → Refactor cycle
+- Comprehensive E2E coverage for critical paths
