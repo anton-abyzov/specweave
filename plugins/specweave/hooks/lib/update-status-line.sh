@@ -76,8 +76,23 @@ else
 fi
 
 # Parse tasks.md (THIS is the slow part: 10-50ms)
-TOTAL_TASKS=$(grep -c '^## T-' "$TASKS_FILE" 2>/dev/null || echo 0)
-COMPLETED_TASKS=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+# Support both ## T- and ### T- formats (flexible task heading levels)
+TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
+
+# Remove any whitespace/newlines and ensure integer
+TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
+
+# Support both checkbox formats:
+# 1. Standard: [x] at line start
+# 2. Inline: **Status**: [x] (in task body)
+COMPLETED_TASKS_STANDARD=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+COMPLETED_TASKS_INLINE=$(grep -c 'Status\*\*: \[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+
+# Remove any whitespace/newlines and ensure integer
+COMPLETED_TASKS_STANDARD=$(echo "$COMPLETED_TASKS_STANDARD" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
+COMPLETED_TASKS_INLINE=$(echo "$COMPLETED_TASKS_INLINE" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
+
+COMPLETED_TASKS=$((COMPLETED_TASKS_STANDARD + COMPLETED_TASKS_INLINE))
 
 # Calculate percentage
 if [[ "$TOTAL_TASKS" -gt 0 ]]; then
@@ -87,8 +102,19 @@ else
 fi
 
 # Find current task (first incomplete task)
-# Strategy: Find first [ ] checkbox, then get the task heading above it
-CURRENT_TASK_LINE=$(grep -B1 '^\[ \]' "$TASKS_FILE" 2>/dev/null | grep '^## T-' | head -1 || echo "")
+# Strategy: Find first [ ] checkbox (either format), then get the task heading above it
+# Try standard format first (checkbox at line start)
+CURRENT_TASK_LINE=$(grep -B1 '^\[ \]' "$TASKS_FILE" 2>/dev/null | grep -E '^##+ T-' | head -1 || echo "")
+
+# If not found, try inline format (**Status**: [ ])
+if [[ -z "$CURRENT_TASK_LINE" ]]; then
+  # Find line with **Status**: [ ], then look backward for task heading
+  TASK_LINE_NUM=$(grep -n '\*\*Status\*\*: \[ \]' "$TASKS_FILE" 2>/dev/null | head -1 | cut -d: -f1 || echo "")
+  if [[ -n "$TASK_LINE_NUM" ]]; then
+    # Get lines before the status line and find the task heading
+    CURRENT_TASK_LINE=$(head -n "$TASK_LINE_NUM" "$TASKS_FILE" | grep -E '^##+ T-' | tail -1 || echo "")
+  fi
+fi
 CURRENT_TASK_ID=""
 CURRENT_TASK_TITLE=""
 

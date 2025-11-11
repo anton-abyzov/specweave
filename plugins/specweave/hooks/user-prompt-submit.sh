@@ -20,40 +20,96 @@ PROMPT=$(echo "$INPUT" | node -e "
 # ==============================================================================
 
 if echo "$PROMPT" | grep -q "/specweave:increment"; then
-  # Check for incomplete increments
+  # Check increment discipline using check-discipline CLI command
+  # This enforces WIP limits (max 1 active, hard cap 2)
   SPECWEAVE_DIR=".specweave"
 
   if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
-    INCOMPLETE_INCREMENTS=$(find "$SPECWEAVE_DIR/increments" -mindepth 1 -maxdepth 1 -type d | while read increment_dir; do
-      metadata="$increment_dir/metadata.json"
-      if [[ -f "$metadata" ]]; then
-        status=$(node -e "
+    # Run discipline check (exit code: 0=pass, 1=violations, 2=error)
+    if command -v node >/dev/null 2>&1 && [[ -f "dist/cli/index.js" ]]; then
+      # Check active increments using MetadataManager
+      ACTIVE_COUNT=$(node -e "
+        try {
+          const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+          const active = MetadataManager.getActive();
+          console.log(active.length);
+        } catch (e) {
+          console.error('Error checking active increments:', e.message);
+          process.exit(2);
+        }
+      " 2>/dev/null || echo "0")
+
+      # Hard cap: never >2 active
+      if [[ "$ACTIVE_COUNT" -ge 2 ]]; then
+        # Get list of active increments for error message
+        ACTIVE_LIST=$(node -e "
           try {
-            const data = JSON.parse(require('fs').readFileSync('$metadata', 'utf-8'));
-            console.log(data.status || 'unknown');
-          } catch (e) {
-            console.log('unknown');
-          }
-        ")
+            const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+            const active = MetadataManager.getActive();
+            active.forEach(inc => console.log('  - ' + inc.id + ' [' + inc.type + ']'));
+          } catch (e) {}
+        " 2>/dev/null || echo "")
 
-        if [[ "$status" == "active" || "$status" == "planning" ]]; then
-          echo "$(basename "$increment_dir")"
-        fi
+        cat <<EOF
+{
+  "decision": "block",
+  "reason": "❌ HARD CAP REACHED\n\nYou have $ACTIVE_COUNT active increments (absolute maximum: 2)\n\nActive increments:\n$ACTIVE_LIST\n\n💡 You MUST complete or pause existing work first:\n\n1️⃣  Complete an increment:\n   /specweave:done <id>\n\n2️⃣  Pause an increment:\n   /specweave:pause <id> --reason=\"...\"\n\n3️⃣  Check status:\n   /specweave:status\n\n📝 Multiple hotfixes? Combine them into ONE increment!\n   Example: 0009-security-fixes (SQL + XSS + CSRF)\n\n⛔ This limit is enforced for your productivity.\nResearch: 3+ concurrent tasks = 40% slower + more bugs"
+}
+EOF
+        exit 0
       fi
-    done)
 
-    if [[ -n "$INCOMPLETE_INCREMENTS" ]]; then
-      # Count incomplete increments
-      COUNT=$(echo "$INCOMPLETE_INCREMENTS" | wc -l | xargs)
+      # Soft warning: 1 active (recommended limit)
+      if [[ "$ACTIVE_COUNT" -ge 1 ]]; then
+        # Get list of active increments for warning
+        ACTIVE_LIST=$(node -e "
+          try {
+            const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+            const active = MetadataManager.getActive();
+            active.forEach(inc => console.log('  - ' + inc.id + ' [' + inc.type + ']'));
+          } catch (e) {}
+        " 2>/dev/null || echo "")
 
-      # Block execution
-      cat <<EOF
+        # Just warn, don't block (user can choose to continue)
+        cat <<EOF
+{
+  "decision": "approve",
+  "systemMessage": "⚠️  WIP LIMIT REACHED\n\nYou have $ACTIVE_COUNT active increment (recommended limit: 1)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Focus Principle: ONE active increment = maximum productivity\nStarting a 2nd increment reduces focus and velocity.\n\n💡 Consider:\n  1️⃣  Complete current work (recommended)\n  2️⃣  Pause current work (/specweave:pause)\n  3️⃣  Continue anyway (accept 20% productivity cost)\n\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug to bypass this warning."
+}
+EOF
+        exit 0
+      fi
+    else
+      # Fallback: check for active/planning status manually
+      INCOMPLETE_INCREMENTS=$(find "$SPECWEAVE_DIR/increments" -mindepth 1 -maxdepth 1 -type d | while read increment_dir; do
+        metadata="$increment_dir/metadata.json"
+        if [[ -f "$metadata" ]]; then
+          status=$(node -e "
+            try {
+              const data = JSON.parse(require('fs').readFileSync('$metadata', 'utf-8'));
+              console.log(data.status || 'unknown');
+            } catch (e) {
+              console.log('unknown');
+            }
+          ")
+
+          if [[ "$status" == "active" || "$status" == "planning" ]]; then
+            echo "$(basename "$increment_dir")"
+          fi
+        fi
+      done)
+
+      if [[ -n "$INCOMPLETE_INCREMENTS" ]]; then
+        COUNT=$(echo "$INCOMPLETE_INCREMENTS" | wc -l | xargs)
+
+        cat <<EOF
 {
   "decision": "block",
   "reason": "❌ Cannot create new increment! You have $COUNT incomplete increment(s):\n\n$(echo "$INCOMPLETE_INCREMENTS" | sed 's/^/  - /')\n\n💡 Complete or close them first:\n  - /specweave:done <id>     # Mark as complete\n  - /specweave:pause <id>    # Pause for later\n  - /specweave:abandon <id>  # Abandon if obsolete\n\nℹ️ The discipline exists for a reason:\n  ✓ Prevents scope creep\n  ✓ Ensures completions are tracked\n  ✓ Maintains living docs accuracy\n  ✓ Keeps work focused"
 }
 EOF
-      exit 0
+        exit 0
+      fi
     fi
   fi
 fi
