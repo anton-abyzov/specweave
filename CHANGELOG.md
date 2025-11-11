@@ -4,6 +4,46 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.0] - 2025-11-11
+
+### 🔧 Major Refactoring
+
+#### Project Organization Improvements
+- **Reorganized increment reports to reports/ subdirectories**
+  - All completion summaries moved to dedicated reports/ folders within increments
+  - Enforces clean structure mandated in CLAUDE.md for better maintainability
+  - Improved organization of ADO multi-project implementation files
+  - Better separation of increment documentation (spec/plan/tasks vs. reports)
+
+### ✨ New Features
+
+#### Azure DevOps Multi-Project Support
+- **New agents for ADO multi-project workflows**
+  - `ado-multi-project-mapper` - Intelligent mapping between SpecWeave specs and ADO work items
+  - `ado-sync-judge` - Conflict resolution and sync validation
+
+#### Enhanced Testing Infrastructure
+- **Comprehensive E2E test suite**
+  - Full increment lifecycle tests (creation, execution, completion)
+  - GitHub bidirectional sync tests
+  - ADO multi-project sync scenarios
+  - Living docs synchronization tests
+
+### 📝 Documentation
+
+- **New architecture documentation**
+  - Increment vs. spec lifecycle explanation
+  - ADO multi-project migration guide
+  - Improved CLAUDE.md template with latest conventions
+
+### 🐛 Bug Fixes
+
+- **JIRA improvements increment restructure** (0019 → 0021)
+  - Fixed increment numbering inconsistency
+  - Proper organization of JIRA-related improvements
+
+---
+
 ## [0.16.7] - 2025-11-11
 
 ### 🐛 Critical Bug Fixes
