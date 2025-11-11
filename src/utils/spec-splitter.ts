@@ -19,24 +19,42 @@ import {
 
 export interface SpecMetadata {
   specId?: string;
-  spec_id?: string; // Alternative naming
+  spec_id?: string; // Alternative naming (deprecated, use specId)
   title: string;
   version: string;
   status: string;
   created: string;
   lastUpdated?: string;
-  last_updated?: string; // Alternative naming
+  last_updated?: string; // Alternative naming (deprecated, use lastUpdated)
   authors: string[];
   reviewers?: string[];
   priority: string;
   estimatedEffort?: string;
-  estimated_effort?: string; // Alternative naming
+  estimated_effort?: string; // Alternative naming (deprecated, use estimatedEffort)
   targetRelease?: string;
-  target_release?: string; // Alternative naming
+  target_release?: string; // Alternative naming (deprecated, use targetRelease)
   jiraSync?: boolean;
-  jira_sync?: boolean; // Alternative naming
+  jira_sync?: boolean; // Alternative naming (deprecated, use jiraSync)
   jiraProjects?: string[];
-  jira_projects?: string[]; // Alternative naming
+  jira_projects?: string[]; // Alternative naming (deprecated, use jiraProjects)
+}
+
+/**
+ * Normalize metadata fields (prefers camelCase over snake_case)
+ *
+ * @param metadata Raw metadata with potential snake_case fields
+ * @returns Normalized metadata with camelCase fields
+ */
+export function normalizeMetadata(metadata: SpecMetadata): SpecMetadata {
+  return {
+    ...metadata,
+    specId: metadata.specId || metadata.spec_id,
+    lastUpdated: metadata.lastUpdated || metadata.last_updated,
+    estimatedEffort: metadata.estimatedEffort || metadata.estimated_effort,
+    targetRelease: metadata.targetRelease || metadata.target_release,
+    jiraSync: metadata.jiraSync !== undefined ? metadata.jiraSync : metadata.jira_sync,
+    jiraProjects: metadata.jiraProjects || metadata.jira_projects
+  };
 }
 
 export interface ParsedSpec {
@@ -69,7 +87,8 @@ export async function parseSpecFile(specPath: string): Promise<ParsedSpec> {
     throw new Error('No frontmatter found in spec file');
   }
 
-  const metadata = parseFrontmatter(frontmatterMatch[1]);
+  const rawMetadata = parseFrontmatter(frontmatterMatch[1]);
+  const metadata = normalizeMetadata(rawMetadata);
 
   // Extract sections
   const sections = extractSections(content);
@@ -260,7 +279,7 @@ export async function splitSpecIntoProjects(
     const projectDir = path.join(outputDir, projectId);
     await fs.ensureDir(projectDir);
 
-    const specId = (parsedSpec.metadata.specId || parsedSpec.metadata.spec_id || '0001').replace(/^SPEC-/, '');
+    const specId = (parsedSpec.metadata.specId || '0001').replace(/^SPEC-/, '');
     const outputPath = path.join(projectDir, `spec-${specId.toLowerCase()}-${projectId.toLowerCase()}.md`);
 
     const projectSpec = generateProjectSpec(parsedSpec, projectId, stories);

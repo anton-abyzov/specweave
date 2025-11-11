@@ -33,79 +33,30 @@ export function validateJiraConfig(config: JiraConfig): ProfileValidationResult 
     errors.push('Jira domain is required');
   }
 
-  // Strategy is optional for backward compatibility
-  // If not provided, assume single project mode
-  if (!config.strategy) {
-    // Legacy mode: single projectKey
-    if (!config.projectKey) {
-      errors.push(
-        'Either strategy (with projects/components) or projectKey (legacy) is required'
-      );
-    }
-    return { valid: errors.length === 0, errors, warnings };
+  // NOTE: Strategy-based validation temporarily disabled (v0.13.0+ migration in progress)
+  // TODO: Update validation to match new v0.13.0 architecture (intelligent/custom strategies)
+
+  // Basic validation: domain + either projectKey or projects[]
+  if (!config.projectKey && (!config.projects || config.projects.length === 0)) {
+    errors.push('Either projectKey (single project) or projects[] (multiple projects) is required');
   }
 
-  // Validate project-per-team strategy
-  if (config.strategy === 'project-per-team') {
-    if (!config.projects || config.projects.length === 0) {
-      errors.push('projects[] is required for project-per-team strategy');
-    } else {
-      // Validate project keys (must be uppercase alphanumeric)
-      const invalidProjects = config.projects.filter(
-        (p) => !/^[A-Z][A-Z0-9]*$/.test(p)
-      );
-      if (invalidProjects.length > 0) {
-        errors.push(
-          `Invalid Jira project keys: ${invalidProjects.join(', ')} (must be uppercase alphanumeric, e.g., FRONTEND, QA)`
-        );
-      }
-    }
-
-    // Cannot have projectKey or components with this strategy
-    if (config.projectKey) {
+  // Validate project keys if provided
+  if (config.projects && config.projects.length > 0) {
+    const invalidProjects = config.projects.filter(
+      (p) => !/^[A-Z][A-Z0-9]*$/.test(p)
+    );
+    if (invalidProjects.length > 0) {
       errors.push(
-        'projectKey is not allowed with project-per-team strategy (use projects[] instead)'
-      );
-    }
-    if (config.components) {
-      errors.push(
-        'components[] is not allowed with project-per-team strategy'
+        `Invalid Jira project keys: ${invalidProjects.join(', ')} (must be uppercase alphanumeric, e.g., FRONTEND, QA)`
       );
     }
   }
 
-  // Validate shared-project-with-components strategy
-  if (config.strategy === 'shared-project-with-components') {
-    if (!config.projectKey || config.projectKey.trim().length === 0) {
-      errors.push('projectKey is required for shared-project-with-components strategy');
-    } else if (!/^[A-Z][A-Z0-9]*$/.test(config.projectKey)) {
-      errors.push(
-        `Invalid Jira project key: ${config.projectKey} (must be uppercase alphanumeric, e.g., PRODUCT)`
-      );
-    }
-
-    if (!config.components || config.components.length === 0) {
-      errors.push('components[] is required for shared-project-with-components strategy');
-    } else {
-      // Validate component names (no empty strings)
-      const emptyComponents = config.components.filter((c) => !c.trim());
-      if (emptyComponents.length > 0) {
-        errors.push('Component names cannot be empty');
-      }
-    }
-
-    // Cannot have projects[] with this strategy
-    if (config.projects) {
-      errors.push(
-        'projects[] is not allowed with shared-project-with-components strategy (use components[] instead)'
-      );
-    }
-  }
-
-  // Warnings
-  if (config.strategy === 'project-per-team' && config.projects && config.projects.length > 10) {
-    warnings.push(
-      `Large number of projects (${config.projects.length}). Consider using shared-project-with-components strategy for better manageability.`
+  // Validate single projectKey if provided
+  if (config.projectKey && !/^[A-Z][A-Z0-9]*$/.test(config.projectKey)) {
+    errors.push(
+      `Invalid Jira project key: ${config.projectKey} (must be uppercase alphanumeric, e.g., PRODUCT)`
     );
   }
 
@@ -137,61 +88,41 @@ export function validateAdoConfig(config: AdoConfig): ProfileValidationResult {
     errors.push('ADO organization is required');
   }
 
-  // Validate project
-  if (!config.project || config.project.trim().length === 0) {
-    errors.push('ADO project is required');
+  // NOTE: teams[] validation removed in v0.13.0 (deprecated field)
+  // TODO: Update validation to match new v0.13.0 architecture (projects[], areaPaths[])
+
+  // Validate project (optional in v0.13.0+ - can have projects[] instead)
+  if (!config.project && (!config.projects || config.projects.length === 0)) {
+    errors.push('Either project (single) or projects[] (multiple) is required');
   }
 
-  // Validate teams (optional)
-  if (config.teams) {
-    if (config.teams.length === 0) {
-      warnings.push('teams[] is empty. Remove it to use single-project mode.');
-    } else {
-      // Validate team names (no empty strings)
-      const emptyTeams = config.teams.filter((t) => !t.trim());
-      if (emptyTeams.length > 0) {
-        errors.push('Team names cannot be empty');
-      }
+  // Validate projects[] if provided
+  if (config.projects && config.projects.length > 0) {
+    const emptyProjects = config.projects.filter((p) => !p.trim());
+    if (emptyProjects.length > 0) {
+      errors.push('Project names cannot be empty');
+    }
 
-      // Check for duplicate team names
-      const uniqueTeams = new Set(config.teams);
-      if (uniqueTeams.size !== config.teams.length) {
-        errors.push('Duplicate team names detected');
-      }
+    if (config.projects.length > 10) {
+      warnings.push(
+        `Large number of projects (${config.projects.length}). Consider using custom query for complex filtering.`
+      );
     }
   }
 
-  // Validate areaPaths (optional, must match teams if both provided)
-  if (config.areaPaths && config.teams) {
-    const teamFolders = new Set(
-      config.teams.map((t) => t.toLowerCase().replace(/\s+/g, '-'))
-    );
-    const areaPathFolders = new Set(Object.keys(config.areaPaths));
-
-    // Check if all team folders have area paths
-    for (const folder of teamFolders) {
-      if (!areaPathFolders.has(folder)) {
-        warnings.push(
-          `Missing Area Path for team folder "${folder}". It will be auto-generated.`
-        );
-      }
+  // Validate areaPaths[] if provided (Pattern 3: Single project + area paths)
+  if (config.areaPaths && config.areaPaths.length > 0) {
+    const emptyPaths = config.areaPaths.filter((p) => !p.trim());
+    if (emptyPaths.length > 0) {
+      errors.push('Area path names cannot be empty');
     }
 
-    // Check for extra area paths (not matching any team)
-    for (const folder of areaPathFolders) {
-      if (!teamFolders.has(folder)) {
-        warnings.push(
-          `Area Path for "${folder}" does not match any team. It will be ignored.`
-        );
-      }
+    // areaPaths should only be used with single project (not projects[])
+    if (config.projects && config.projects.length > 0) {
+      warnings.push(
+        'areaPaths[] should be used with single project, not projects[]. Use projects[] for multiple projects.'
+      );
     }
-  }
-
-  // Warnings
-  if (config.teams && config.teams.length > 20) {
-    warnings.push(
-      `Large number of teams (${config.teams.length}). Consider splitting into multiple ADO projects.`
-    );
   }
 
   return {

@@ -354,7 +354,6 @@ function createJiraProfile(config: {
     config: {
       domain: config.domain,
       projectKey: config.projectKey,
-      issueType: 'Epic',
     },
     timeRange: {
       default: '1M',
@@ -378,7 +377,6 @@ function createAdoProfile(config: {
     config: {
       organization: config.organization,
       project: config.project,
-      workItemType: 'Epic',
     },
     timeRange: {
       default: '1M',
