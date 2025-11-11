@@ -176,7 +176,7 @@ describe('SetupStateManager', () => {
       const loaded = await manager.loadState();
 
       expect(loaded).toBeDefined();
-      expect(loaded?.architecture).toBe('polyrepo');
+      expect(loaded?.architecture).toBe('multi-repo');
       expect(loaded?.currentStep).toBe('parent-created');
       expect(loaded?.parentRepo?.owner).toBe('myorg');
     });
@@ -262,15 +262,16 @@ describe('SetupStateManager', () => {
       await manager.saveState(state);
 
       const detected = await manager.detectAndResumeSetup();
-      expect(detected).toBe(true);
+      expect(detected).not.toBeNull();
+      expect(detected?.currentStep).toBe('repo-1-of-2');
     });
 
-    it('should return false if no state file', async () => {
+    it('should return null if no state file', async () => {
       const detected = await manager.detectAndResumeSetup();
-      expect(detected).toBe(false);
+      expect(detected).toBeNull();
     });
 
-    it('should return false if setup complete', async () => {
+    it('should return null if setup complete', async () => {
       const state: SetupState = {
         version: '1.0',
         architecture: 'single',
@@ -294,7 +295,7 @@ describe('SetupStateManager', () => {
       await manager.saveState(state);
 
       const detected = await manager.detectAndResumeSetup();
-      expect(detected).toBe(false);
+      expect(detected).toBeNull();
     });
   });
 
