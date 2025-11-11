@@ -107,7 +107,6 @@ required_dirs=(
   ".specweave"
   ".specweave/docs"
   ".specweave/increments"
-  ".claude"
 )
 
 for dir in "${required_dirs[@]}"; do

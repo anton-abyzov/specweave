@@ -413,7 +413,15 @@ async function writeSyncConfig(
   } else if (tracker === 'jira') {
     const jiraCreds = credentials as any;
     domain = jiraCreds.domain || '';
-    project = jiraCreds.projectKey || '';
+
+    // Handle different Jira strategies
+    if (jiraCreds.strategy === 'project-per-team' && jiraCreds.projects) {
+      // For project-per-team, store array of project keys
+      project = jiraCreds.projects; // This will be an array
+    } else {
+      // For component-based or board-based, single project
+      project = jiraCreds.projectKey || jiraCreds.project || '';
+    }
   } else if (tracker === 'ado') {
     const adoCreds = credentials as any;
     organization = adoCreds.organization || '';
@@ -449,7 +457,11 @@ async function writeSyncConfig(
         displayName: 'Jira Default',
         config: {
           domain,
-          projectKey: project
+          // Handle both single project (string) and multiple projects (array)
+          ...(Array.isArray(project)
+            ? { projects: project }  // project-per-team: array of project keys
+            : { projectKey: project } // component/board-based: single project key
+          )
         },
         timeRange: {
           default: '1M',
