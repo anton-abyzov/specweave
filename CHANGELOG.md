@@ -4,8 +4,39 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.16.8] - 2025-11-11
+## [0.16.10] - 2025-11-11
+
+### 📚 Documentation
+
+#### Internal Docs Build Fixes
+- **Fixed Docusaurus MDX compilation errors** (30+ files)
+  - Escaped all `<` characters followed by numbers (e.g., `<1`, `<2` → `\<1`, `\<2`)
+  - Escaped all `<$` patterns in cost metrics (e.g., `<$0.01` → `\<$0.01`)
+  - Fixed JSX expression parsing errors (curly braces in templates)
+  - Removed nested code blocks in reflection templates
+
+- **Updated diagram references to use consolidated diagrams**
+  - ADR-0007: Now references `1-main-flow.svg` for GitHub sync workflow
+  - Brownfield Integration: Now references `brownfield-onboarding-strategy.svg`
+  - Delivery guides: Updated to reference 7 essential consolidated diagrams
+  - Follows diagram architecture v3.0 consolidation (removed redundant diagrams)
+
+- **Build Status**: ✅ Success
+  - MDX compilation: All files pass
+  - Webpack client bundle: Compiled successfully
+  - Static site generation: All pages render correctly
+  - Internal docs now build without errors
+
+### 🎯 Impact
+- Documentation site fully functional for contributors
+- All 30+ internal docs files now properly parsed
+- Diagram references follow DRY principles (reuse consolidated diagrams)
+- Build time reduced (no redundant diagram generation needed)
+
+---
+
 ## [0.16.9] - 2025-11-11
+## [0.16.8] - 2025-11-11
 
 ### ✨ Features
 
