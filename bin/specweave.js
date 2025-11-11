@@ -182,8 +182,12 @@ program
   .description('Validate increment discipline compliance (WIP limits, hard cap)')
   .option('-v, --verbose', 'Show detailed increment information')
   .option('--json', 'Output results as JSON')
-  .option('--project-root <path>', 'Project root directory', process.cwd())
+  .option('--project-root <path>', 'Project root directory')
   .action(async (options) => {
+    // Set default project-root at runtime, not module load time
+    if (!options.projectRoot) {
+      options.projectRoot = process.cwd();
+    }
     const { checkDisciplineCommand } = await import('../dist/cli/commands/check-discipline.js');
     await checkDisciplineCommand(options);
   });
