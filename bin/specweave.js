@@ -38,7 +38,7 @@ program
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)', 'en')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .action(async (projectName, options) => {
-    const { initCommand } = await import('../dist/cli/commands/init.js');
+    const { initCommand } = await import('../dist/src/cli/commands/init.js');
     await initCommand(projectName, options);
   });
 
@@ -48,7 +48,7 @@ program
 //   .description('Manage increments (create, list, status)')
 //   .option('-p, --priority <level>', 'Priority level (P1, P2, P3)', 'P1')
 //   .action(async (action, name, options) => {
-//     const { incrementCommand } = require('../dist/cli/commands/increment');
+//     const { incrementCommand } = require('../dist/src/cli/commands/increment');
 //     await incrementCommand(action, name, options);
 //   });
 
@@ -59,7 +59,7 @@ program
   .option('-g, --global', 'Install globally to ~/.claude/')
   .option('-l, --local', 'Install locally to .claude/ (default)')
   .action(async (componentName, options) => {
-    const { installCommand } = await import('../dist/cli/commands/install.js');
+    const { installCommand } = await import('../dist/src/cli/commands/install.js');
     await installCommand(componentName, options);
   });
 
@@ -69,7 +69,7 @@ program
   .description('List available and installed components')
   .option('--installed', 'Show only installed components')
   .action(async (options) => {
-    const { listCommand } = await import('../dist/cli/commands/list.js');
+    const { listCommand } = await import('../dist/src/cli/commands/list.js');
     await listCommand(options);
   });
 
@@ -80,7 +80,7 @@ program
   .option('-r, --reason <text>', 'Reason for pausing')
   .option('-f, --force', 'Force pause (update reason if already paused)')
   .action(async (incrementId, options) => {
-    const { pauseCommand } = await import('../dist/cli/commands/pause.js');
+    const { pauseCommand } = await import('../dist/src/cli/commands/pause.js');
     await pauseCommand(incrementId, options);
   });
 
@@ -89,7 +89,7 @@ program
   .description('Resume a paused or abandoned increment')
   .option('-f, --force', 'Force resume (bypass WIP limit checks)')
   .action(async (incrementId, options) => {
-    const { resumeCommand } = await import('../dist/cli/commands/resume.js');
+    const { resumeCommand } = await import('../dist/src/cli/commands/resume.js');
     await resumeCommand(incrementId, options);
   });
 
@@ -99,7 +99,7 @@ program
   .option('-r, --reason <text>', 'Reason for abandoning')
   .option('-f, --force', 'Force abandon (skip confirmation)')
   .action(async (incrementId, options) => {
-    const { abandonCommand } = await import('../dist/cli/commands/abandon.js');
+    const { abandonCommand } = await import('../dist/src/cli/commands/abandon.js');
     await abandonCommand(incrementId, options);
   });
 
@@ -109,7 +109,7 @@ program
   .option('-v, --verbose', 'Show detailed information')
   .option('-t, --type <type>', 'Filter by increment type (feature, hotfix, bug, etc.)')
   .action(async (options) => {
-    const { statusCommand } = await import('../dist/cli/commands/status.js');
+    const { statusCommand } = await import('../dist/src/cli/commands/status.js');
     await statusCommand(options);
   });
 
@@ -121,11 +121,11 @@ program
   .option('--clear', 'Clear status line cache')
   .option('--config <path>', 'Path to config file')
   .action(async (options) => {
-    const { registerStatusLineCommand } = await import('../dist/cli/commands/status-line.js');
+    const { registerStatusLineCommand } = await import('../dist/src/cli/commands/status-line.js');
     const tempProgram = new Command();
     registerStatusLineCommand(tempProgram);
     // Execute action manually since we need the temp program
-    const manager = await import('../dist/core/status-line/status-line-manager.js').then(m => m.StatusLineManager);
+    const manager = await import('../dist/src/core/status-line/status-line-manager.js').then(m => m.StatusLineManager);
     const StatusLineManager = manager;
     const path = await import('path');
     const fs = await import('fs');
@@ -188,7 +188,7 @@ program
     if (!options.projectRoot) {
       options.projectRoot = process.cwd();
     }
-    const { checkDisciplineCommand } = await import('../dist/cli/commands/check-discipline.js');
+    const { checkDisciplineCommand } = await import('../dist/src/cli/commands/check-discipline.js');
     await checkDisciplineCommand(options);
   });
 
@@ -197,7 +197,7 @@ program
   .command('revert-wip-limit')
   .description('Revert WIP limit to original value after temporary adjustment')
   .action(async () => {
-    const { revertWipLimitCommand } = await import('../dist/cli/commands/revert-wip-limit.js');
+    const { revertWipLimitCommand } = await import('../dist/src/cli/commands/revert-wip-limit.js');
     await revertWipLimitCommand();
   });
 
@@ -216,7 +216,7 @@ program
   .option('-f, --force', 'Force run even if rule-based fails')
   .option('-v, --verbose', 'Show recommendations')
   .action(async (incrementId, options) => {
-    const { qaCommand } = await import('../dist/cli/commands/qa.js');
+    const { qaCommand } = await import('../dist/src/cli/commands/qa.js');
     await qaCommand(incrementId, options);
   });
 
@@ -229,12 +229,12 @@ program
   .option('--dry-run', 'Show what would be installed without installing', false)
   .option('-v, --verbose', 'Show detailed validation steps', false)
   .action(async (options) => {
-    const { setupValidatePluginsCommand } = await import('../dist/cli/commands/validate-plugins.js');
+    const { setupValidatePluginsCommand } = await import('../dist/src/cli/commands/validate-plugins.js');
     // Create a temporary program for this command
     const tempProgram = new Command();
     setupValidatePluginsCommand(tempProgram);
     // Execute the action directly
-    await import('../dist/cli/commands/validate-plugins.js').then(m => m.runValidation(options));
+    await import('../dist/src/cli/commands/validate-plugins.js').then(m => m.runValidation(options));
   });
 
 // Validate Jira command - Jira resource validation
@@ -243,7 +243,7 @@ program
   .description('Validate Jira configuration and create missing resources')
   .option('--env <path>', 'Path to .env file', '.env')
   .action(async (options) => {
-    const { runJiraValidation } = await import('../dist/cli/commands/validate-jira.js');
+    const { runJiraValidation } = await import('../dist/src/cli/commands/validate-jira.js');
     await runJiraValidation(options);
   });
 
