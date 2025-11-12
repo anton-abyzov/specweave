@@ -1,14 +1,14 @@
 ---
 name: plugin-validator
-description: Proactively validates SpecWeave plugin installation before workflows execute. Auto-activates when /specweave:* commands detected. Ensures marketplace registered, core plugin installed, and context-specific plugins available. Prevents cryptic errors from missing plugins. Enables seamless environment migration (local → VM → Cloud IDE). Activates for plugin validation, environment setup, missing plugins, specweave commands, marketplace registration, plugin installation, environment migration, fresh setup.
+description: Validates SpecWeave plugin installation when EXPLICITLY requested by user. Ensures marketplace registered, core plugin installed, and context-specific plugins available. ONLY activates for explicit validation requests - does NOT auto-activate for workflow commands to avoid false positives. Activates ONLY for plugin validation, environment setup, validate plugins, check plugins, specweave init, fresh setup, marketplace registration.
 allowed-tools: Read, Bash, Grep
 ---
 
 # Plugin Validator Skill
 
-**Purpose**: Proactively validate and install SpecWeave plugins before workflow commands execute.
+**Purpose**: Validate and install SpecWeave plugins when explicitly requested by the user.
 
-**Auto-Activation**: Triggers when `/specweave:*` commands are detected or when plugin-related issues arise.
+**Activation**: Triggers ONLY when user explicitly requests plugin validation (e.g., "validate plugins", "check plugins", or runs `specweave validate-plugins` command). Does NOT auto-activate for workflow commands to prevent false positive errors.
 
 ## What This Skill Does
 
@@ -24,16 +24,19 @@ This skill ensures that your SpecWeave environment is properly configured with a
 
 ## When This Skill Activates
 
-✅ **Automatically activates when**:
-- You run any `/specweave:*` command (increment, do, next, etc.)
-- You mention "plugin validation" or "environment setup"
-- You encounter errors related to missing plugins
-- You're setting up SpecWeave in a new environment
+✅ **ONLY activates when explicitly requested**:
+- You mention "plugin validation" or "validate plugins"
+- You mention "environment setup" or "check plugins"
+- You run: `specweave validate-plugins`
+- You ask: "Can you validate my plugins?"
+- You report: "I'm getting plugin errors"
+- During: `specweave init` (initial setup only)
 
-✅ **Manual activation**:
-- Run: `specweave validate-plugins`
-- Ask: "Can you validate my plugins?"
-- Report: "I'm getting plugin errors"
+❌ **Does NOT auto-activate for**:
+- `/specweave:increment` commands
+- `/specweave:do` commands
+- Any other workflow commands
+- Reason: Prevents false positive errors when plugins are installed but detection fails
 
 ## Validation Process
 
