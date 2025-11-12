@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.2] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### Multi-Project Structure Detection
+- **Fixed**: Parent folder detection for multi-project setups
+  - Improved path resolution logic in `project-manager.ts`
+  - Enhanced folder detection for nested project structures
+  - Better handling of parent repo configurations
+- **Tests**: Updated unit tests for path resolution accuracy
+
+**Files Changed**:
+- `src/core/project-manager.ts`: Streamlined parent detection logic
+- `src/core/repo-structure/folder-detector.ts`: Enhanced multi-project detection
+- `src/core/repo-structure/repo-structure-manager.ts`: Improved structure handling
+- `tests/unit/project-manager/path-resolution.test.ts`: Updated test expectations
+
+**Increment**: 0026-multiproject-structure-fix
+
+---
+
 ## [0.17.1] - 2025-11-11
 
 ### 🔧 Critical Fixes
