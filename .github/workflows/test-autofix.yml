@@ -1,0 +1,32 @@
+name: Test Auto-Fix
+
+# This workflow intentionally fails to test the auto-fix trigger
+# It will create an issue mentioning @claude, which should then
+# create a PR with a fix.
+
+on:
+  workflow_dispatch:  # Manual trigger only (don't run automatically)
+
+jobs:
+  test-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Intentional Failure (Missing Import)
+        run: |
+          echo "This step will fail because we're testing auto-fix"
+          exit 1
+
+      # When this fails, the auto-fix-trigger workflow should:
+      # 1. Create an issue with @claude mention
+      # 2. Claude analyzes the failure
+      # 3. Claude creates a PR with a fix
+      # 4. We review and merge
+      # 5. This workflow re-runs and passes
