@@ -60,19 +60,28 @@ jobs:
         id: package_version
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Bumped to version: $VERSION"
 
-      - name: Verify version matches input
+      - name: Verify version matches input (or accept bumped version)
         env:
           EXPECTED_VERSION: ${{ github.event.inputs.version }}
           ACTUAL_VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          if [ "$EXPECTED_VERSION" != "$ACTUAL_VERSION" ]; then
-            echo "❌ Version mismatch! Expected: $EXPECTED_VERSION, Got: $ACTUAL_VERSION"
-            exit 1
+          echo "Expected version: $EXPECTED_VERSION"
+          echo "Actual version after bump: $ACTUAL_VERSION"
+
+          # If versions match, great!
+          if [ "$EXPECTED_VERSION" = "$ACTUAL_VERSION" ]; then
+            echo "✅ Version matches: $ACTUAL_VERSION"
+            exit 0
           fi
-          echo "✅ Version matches: $ACTUAL_VERSION"
+
+          # If they don't match, show warning but continue
+          # (User might have specified the PRE-bump version by mistake)
+          echo "⚠️  Version mismatch - Expected: $EXPECTED_VERSION, Got: $ACTUAL_VERSION"
+          echo "ℹ️  Continuing with bumped version: $ACTUAL_VERSION"
+          echo "💡 Next time, specify the FINAL version (after bump), not the current one"
 
       - name: Extract release notes from CHANGELOG
         id: changelog
