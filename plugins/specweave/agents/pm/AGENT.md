@@ -386,7 +386,27 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 ### Output 1: Spec (Living Docs - Source of Truth, Permanent) ✅
 
-**Location**: `.specweave/docs/internal/specs/spec-{number}-{name}.md`
+**⚠️ CRITICAL: Multi-Project Path Detection**
+
+1. **Check if multi-project mode enabled**:
+   - Read `.specweave/config.json`
+   - Look for `multiProject.enabled: true`
+
+2. **Determine project ID** (one of these methods):
+   - **From increment name**: `0001-backend-auth` → project: `backend`
+   - **From tech stack**: React/TypeScript → `frontend`, ASP.NET/C# → `backend`
+   - **From config**: `multiProject.activeProject` field
+   - **Fallback**: Use `default` project
+
+3. **Use CORRECT flattened path** (v0.16.11+):
+   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project-id}/spec-{number}-{name}.md`
+   - ❌ **WRONG**: `.specweave/docs/internal/projects/{project-id}/specs/...` (OLD nested structure)
+
+**Examples**:
+- Single project: `.specweave/docs/internal/specs/default/spec-0001-inventory-tracker.md`
+- Backend project: `.specweave/docs/internal/specs/backend/spec-0002-api-auth.md`
+- Frontend project: `.specweave/docs/internal/specs/frontend/spec-0003-dark-mode.md`
+- Parent repo: `.specweave/docs/internal/specs/_parent/spec-0004-system-architecture.md`
 
 **CRITICAL**: Specs are **FILES**, not directories! The spec file itself contains all content.
 
@@ -598,7 +618,7 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 ```markdown
 # Feature: [Name]
 
-**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/spec-{number}-{name}.md)
+**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/{project-id}/spec-{number}-{name}.md)
 
 **Quick Summary**:
 - US-001: View current weather
@@ -607,6 +627,8 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 
 (Minimal overview for context)
 ```
+
+**Note**: Replace `{project-id}` with actual project (e.g., `default`, `backend`, `frontend`, `_parent`)
 
 **Key Points**:
 - This is TEMPORARY (may be deleted after increment completes)

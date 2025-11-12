@@ -30,7 +30,7 @@ if echo "$PROMPT" | grep -q "/specweave:increment"; then
       # Check active increments using MetadataManager
       ACTIVE_COUNT=$(node -e "
         try {
-          const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+          const { MetadataManager } = require('./dist/src/core/increment/metadata-manager.js');
           const active = MetadataManager.getActive();
           console.log(active.length);
         } catch (e) {
@@ -44,7 +44,7 @@ if echo "$PROMPT" | grep -q "/specweave:increment"; then
         # Get list of active increments for error message
         ACTIVE_LIST=$(node -e "
           try {
-            const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+            const { MetadataManager } = require('./dist/src/core/increment/metadata-manager.js');
             const active = MetadataManager.getActive();
             active.forEach(inc => console.log('  - ' + inc.id + ' [' + inc.type + ']'));
           } catch (e) {}
@@ -64,7 +64,7 @@ EOF
         # Get list of active increments for warning
         ACTIVE_LIST=$(node -e "
           try {
-            const { MetadataManager } = require('./dist/core/increment/metadata-manager.js');
+            const { MetadataManager } = require('./dist/src/core/increment/metadata-manager.js');
             const active = MetadataManager.getActive();
             active.forEach(inc => console.log('  - ' + inc.id + ' [' + inc.type + ']'));
           } catch (e) {}
@@ -231,7 +231,7 @@ if [[ -d ".specweave/increments" ]]; then
       # Get status line from cache (ultra-fast)
       STATUS_LINE=$(node -e "
         try {
-          const { StatusLineManager } = require('./dist/core/status-line/status-line-manager.js');
+          const { StatusLineManager } = require('./dist/src/core/status-line/status-line-manager.js');
           const manager = new StatusLineManager(process.cwd());
           const result = manager.render();
           console.log(result || '');

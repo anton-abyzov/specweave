@@ -404,6 +404,8 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 # - JIRA epic created in WEBAPP project
 ```
 
+> **Note**: If you used the `-shared` flag during `specweave init`, ensure your git remote also includes `-shared` in the repo name. Validate with: `bash scripts/validate-parent-repo-setup.sh`
+
 ---
 
 ## Best Practices

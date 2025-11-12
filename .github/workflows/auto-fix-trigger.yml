@@ -1,0 +1,85 @@
+name: Auto-Fix Trigger
+
+# Trigger when any workflow completes
+on:
+  workflow_run:
+    workflows: ["*"]  # All workflows
+    types: [completed]
+
+jobs:
+  trigger-autofix:
+    # Only run if workflow failed
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Find or create issue for failed workflow
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflowName = '${{ github.event.workflow_run.name }}';
+            const runNumber = '${{ github.event.workflow_run.run_number }}';
+            const runUrl = '${{ github.event.workflow_run.html_url }}';
+            const commitSha = '${{ github.event.workflow_run.head_sha }}';
+            const branch = '${{ github.event.workflow_run.head_branch }}';
+
+            // Check if issue already exists for this workflow run
+            const issueTitle = `[Auto-Fix] ${workflowName} failed (run #${runNumber})`;
+
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'auto-fix,workflow-failure',
+              per_page: 100
+            });
+
+            const existingIssue = existingIssues.find(issue =>
+              issue.title.includes(workflowName) && issue.title.includes(`run #${runNumber}`)
+            );
+
+            if (existingIssue) {
+              console.log(`Issue already exists: #${existingIssue.number}`);
+              return;
+            }
+
+            // Create new issue with @claude mention
+            const issueBody = `@claude This workflow failed and needs fixing:
+
+**Workflow**: ${workflowName}
+**Run**: #${runNumber}
+**Branch**: ${branch}
+**Commit**: ${commitSha}
+**URL**: ${runUrl}
+
+Please:
+1. Analyze the failure logs from the workflow run
+2. Identify the root cause
+3. Create a PR with a fix
+
+The logs are available at: ${runUrl}
+
+---
+*This issue was automatically created by the Auto-Fix Trigger workflow.*`;
+
+            const { data: issue } = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issueTitle,
+              body: issueBody,
+              labels: ['auto-fix', 'workflow-failure', 'bug']
+            });
+
+            console.log(`Created issue #${issue.number} to trigger auto-fix`);
+
+            // Also comment on the commit
+            await github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: commitSha,
+              body: `🚨 Workflow \`${workflowName}\` failed. Auto-fix triggered in issue #${issue.number}`
+            });
