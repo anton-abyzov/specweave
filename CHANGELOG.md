@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.11] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### Multi-Repo Parent Setup - Inquirer Validator Issue (CRITICAL FIX)
+- **Fixed**: `specweave init` no longer crashes when configuring multi-repo with GitHub parent
+  - **Root cause**: Inquirer.js validator tried to access `answers.owner` but `answers` was undefined
+  - **Error**: `TypeError: Cannot read properties of undefined (reading 'owner')`
+  - **Location**: `src/core/repo-structure/repo-structure-manager.ts` line 394
+  - **Solution**: Split prompt into two parts:
+    1. Ask for owner first (separate prompt)
+    2. Use stored owner value in parent name validator
+  - **Impact**: Users can now complete multi-repo setup without crashes
+  - **Affected workflow**: "Multiple repos WITH parent repo (GitHub)" option
+  - **Testing**: Verified fix compiles and build succeeds
+
+---
+
 ## [0.17.7] - 2025-11-12
 
 ### 🐛 Bug Fixes

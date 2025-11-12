@@ -364,7 +364,8 @@ export class RepoStructureManager {
         parentAnswers.createOnGitHub = false; // Never create GitHub repo for local parent
       } else {
         // GitHub parent: Ask all questions including GitHub details
-        parentAnswers = await inquirer.prompt([
+        // First, ask for owner (separate prompt to avoid validator issues)
+        const ownerPrompt = await inquirer.prompt([
           {
             type: 'input',
             name: 'owner',
@@ -381,20 +382,24 @@ export class RepoStructureManager {
               }
               return true;
             }
-          },
+          }
+        ]);
+
+        // Now ask remaining questions, using the owner value
+        const remainingAnswers = await inquirer.prompt([
           {
             type: 'input',
             name: 'parentName',
             message: 'Parent repository name:',
             default: `${path.basename(this.projectPath)}-parent`,
-            validate: async (input: string, answers: any) => {
+            validate: async (input: string) => {
               if (!input.trim()) return 'Repository name is required';
 
               // Validate repository doesn't exist
-              if (this.githubToken && answers.owner) {
-                const result = await validateRepository(answers.owner, input, this.githubToken);
+              if (this.githubToken && ownerPrompt.owner) {
+                const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
                 if (result.exists) {
-                  return `Repository ${answers.owner}/${input} already exists at ${result.url}`;
+                  return `Repository ${ownerPrompt.owner}/${input} already exists at ${result.url}`;
                 }
               }
               return true;
@@ -413,6 +418,9 @@ export class RepoStructureManager {
             default: true
           }
         ] as any);
+
+        // Merge the answers
+        parentAnswers = { ...ownerPrompt, ...remainingAnswers };
       }
 
       // Ask about visibility for parent repo (only if creating on GitHub)
