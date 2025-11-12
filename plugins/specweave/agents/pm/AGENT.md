@@ -1034,6 +1034,152 @@ measurement_plan:
   - "A/B test: 50% of users get feature, measure delta"
 ```
 
+## ✅ Post-Creation Validation (CRITICAL - v0.14.0+)
+
+**MANDATORY STEP**: After creating increment files, ALWAYS validate metadata.json exists.
+
+### Why This Matters
+
+Without metadata.json:
+- ❌ Status line shows nothing (no active increment tracking)
+- ❌ WIP limits don't work (can't count active increments)
+- ❌ External sync breaks (no GitHub/JIRA/ADO links)
+- ❌ `/specweave:status`, `/pause`, `/resume` commands fail
+
+### Validation Workflow
+
+**STEP: Validate Increment Creation** (Run after creating spec.md, plan.md, tasks.md)
+
+```typescript
+// After Write tool creates all files:
+// 1. spec.md created ✅
+// 2. plan.md created ✅
+// 3. tasks.md created ✅
+
+// STEP: Validate metadata.json exists
+const incrementPath = `.specweave/increments/${incrementId}`;
+const metadataPath = `${incrementPath}/metadata.json`;
+
+// Check if metadata.json exists
+if (!fs.existsSync(metadataPath)) {
+  console.warn(`⚠️  Warning: metadata.json not found for ${incrementId}`);
+  console.warn(`   This indicates the post-increment-planning hook may have failed.`);
+  console.warn(`   Creating minimal metadata as fallback...`);
+
+  // Create minimal metadata
+  const metadata = {
+    id: incrementId,
+    status: "active",
+    type: "feature", // or derive from spec.md frontmatter
+    created: new Date().toISOString(),
+    lastActivity: new Date().toISOString()
+  };
+
+  fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
+  console.log(`   ✅ Created minimal metadata.json`);
+  console.log(`   ⚠️  Note: No GitHub issue linked.`);
+  console.log(`   💡 Run /specweave-github:create-issue ${incrementId} to create one manually.`);
+} else {
+  console.log(`✅ Increment validation passed - metadata.json exists`);
+
+  // Read metadata to check if GitHub issue was created
+  const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+
+  if (metadata.github && metadata.github.issue) {
+    console.log(`   ✅ GitHub issue #${metadata.github.issue} linked`);
+    console.log(`   🔗 ${metadata.github.url}`);
+  } else {
+    console.log(`   ℹ️  No GitHub issue linked (autoCreateIssue may be disabled)`);
+  }
+}
+```
+
+### Implementation Guide
+
+**Add this validation as the FINAL STEP** in your increment creation workflow:
+
+1. ✅ Create spec.md (via Write tool)
+2. ✅ Create plan.md (via Write tool)
+3. ✅ Create tasks.md (via Write tool or test-aware-planner agent)
+4. ✅ **NEW**: Validate metadata.json exists (via Read tool + conditional Write)
+
+**Example workflow**:
+
+```markdown
+User: /specweave:increment "Add user authentication"
+
+PM Agent workflow:
+1. Validate no incomplete increments ✅
+2. Research & gather requirements ✅
+3. Generate spec.md ✅ (Write tool)
+4. Invoke Architect for plan.md ✅ (Task tool)
+5. Invoke test-aware-planner for tasks.md ✅ (Task tool)
+6. **NEW**: Validate metadata.json exists ✅ (Read tool + fallback Write)
+   - Hook should have created it automatically
+   - If missing → create minimal metadata
+   - Warn user if GitHub issue not created
+7. Report completion to user ✅
+```
+
+### Error Handling
+
+**Scenario 1: Hook failed (no GitHub CLI)**
+```
+⚠️  Warning: metadata.json not found for 0023-release-management
+   This indicates the post-increment-planning hook may have failed.
+   Creating minimal metadata as fallback...
+   ✅ Created minimal metadata.json
+   ⚠️  Note: No GitHub issue linked.
+   💡 Run /specweave-github:create-issue 0023-release-management to create one manually.
+```
+
+**Scenario 2: Hook succeeded**
+```
+✅ Increment validation passed - metadata.json exists
+   ✅ GitHub issue #45 linked
+   🔗 https://github.com/anton-abyzov/specweave/issues/45
+```
+
+**Scenario 3: Hook succeeded, but no GitHub integration**
+```
+✅ Increment validation passed - metadata.json exists
+   ℹ️  No GitHub issue linked (autoCreateIssue may be disabled)
+```
+
+### Benefits
+
+- ✅ **100% metadata.json coverage** (no silent failures)
+- ✅ **Immediate feedback** (user knows if GitHub issue failed)
+- ✅ **Graceful degradation** (creates minimal metadata as fallback)
+- ✅ **Clear next steps** (tells user how to fix if needed)
+
+### Testing
+
+**Test Case 1: Normal flow (hook succeeds)**
+```bash
+/specweave:increment "Test feature"
+# Expected: metadata.json created by hook
+# Validation: Passes with GitHub issue link
+```
+
+**Test Case 2: Hook fails (no gh CLI)**
+```bash
+# Remove gh CLI: brew uninstall gh
+/specweave:increment "Test feature"
+# Expected: metadata.json NOT created by hook
+# Validation: Creates minimal metadata, warns user
+```
+
+**Test Case 3: GitHub disabled**
+```bash
+# Set autoCreateIssue: false in config
+/specweave:increment "Test feature"
+# Expected: metadata.json created by hook (no GitHub section)
+# Validation: Passes with info message
+```
+
+---
+
 ## Integration with Other Agents
 
 ### Works With

@@ -2558,6 +2558,109 @@ cat .specweave/increments/0016-self-reflection-system/metadata.json
 
 ---
 
+**✅ Metadata Validation & Fallback Creation** (NEW in v0.14.0+):
+
+**The Problem**: Hook failures (no GitHub CLI, network issues, permission problems) left increments without metadata.json, breaking status line, WIP limits, and external sync.
+
+**The Solution**: Multi-layer validation ensures 100% metadata.json coverage.
+
+**How It Works**:
+
+**Layer 1: Hook Fallback** (Automatic)
+- After GitHub issue creation (success or fail)
+- Hook validates metadata.json exists
+- If missing → creates minimal metadata automatically
+- User sees warning + manual fix instructions
+
+```bash
+# Hook output example (GitHub CLI not found):
+🔗 Checking GitHub issue auto-creation...
+  ⚠️  GitHub CLI (gh) not found, skipping issue creation
+
+🔍 Validating metadata.json existence...
+  ⚠️  metadata.json not found (hook may have failed)
+  📝 Creating minimal metadata as fallback...
+  ✅ Created minimal metadata.json
+  ⚠️  Note: No GitHub issue linked
+  💡 Run /specweave-github:create-issue 0023-feature to create one manually
+```
+
+**Layer 2: PM Agent Validation** (Automatic)
+- PM agent checks metadata.json after creating spec/plan/tasks
+- If missing → creates minimal metadata + warns user
+- Shows GitHub issue status (linked or not)
+
+```markdown
+✅ Increment validation passed - metadata.json exists
+   ✅ GitHub issue #45 linked
+   🔗 https://github.com/anton-abyzov/specweave/issues/45
+```
+
+**Layer 3: Lazy Initialization** (Fallback)
+- `MetadataManager.read()` creates metadata on first access
+- Used by `/specweave:status`, `/pause`, `/resume` commands
+- Creates basic metadata but WITHOUT GitHub info
+
+**Minimal Metadata Format** (when GitHub fails):
+```json
+{
+  "id": "0023-release-management-enhancements",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-11T15:43:00Z",
+  "lastActivity": "2025-11-11T15:43:00Z"
+}
+```
+
+**Full Metadata Format** (when GitHub succeeds):
+```json
+{
+  "id": "0016-self-reflection-system",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-10T12:00:00Z",
+  "lastActivity": "2025-11-10T12:00:00Z",
+  "github": {
+    "issue": 30,
+    "url": "https://github.com/anton-abyzov/specweave/issues/30",
+    "synced": "2025-11-10T12:00:00Z"
+  },
+  "githubProfile": "specweave-dev"
+}
+```
+
+**Benefits**:
+- ✅ **100% coverage**: Every increment gets metadata.json (no silent failures)
+- ✅ **Immediate feedback**: User knows if GitHub issue creation failed
+- ✅ **Graceful degradation**: Creates minimal metadata as fallback
+- ✅ **Clear next steps**: Shows manual fix command if needed
+- ✅ **Status line works**: Even without GitHub integration
+- ✅ **WIP limits work**: Counts active increments correctly
+
+**Configuration Note**:
+
+The old config key `hooks.post_increment_planning.auto_create_github_issue` is **deprecated** (v0.14.0+).
+
+```json
+{
+  "hooks": {
+    "post_increment_planning": {
+      // ❌ REMOVED (deprecated)
+      // "auto_create_github_issue": false
+    }
+  },
+  "sync": {
+    "settings": {
+      "autoCreateIssue": true  // ✅ Use this instead
+    }
+  }
+}
+```
+
+**Single source of truth**: `sync.settings.autoCreateIssue`
+
+---
+
 ## Status Line Feature (Increment Progress Display)
 
 **NEW in v0.14.0**: Ultra-fast status line showing current increment progress with intelligent caching.
