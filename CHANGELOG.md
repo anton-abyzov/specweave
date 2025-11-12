@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.6] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### GitHub Init Flow - Silent Repository Configuration Failure (CRITICAL FIX)
+- **Fixed**: Repository configuration exceptions now caught and handled gracefully
+  - Wrapped `configureGitHubRepositories()` calls in try-catch (BOTH existing + new credentials paths)
+  - Prevents exceptions from bubbling up to init.ts catch-all handler
+  - Shows actual error message instead of generic "Issue tracker setup skipped"
+  - Continues setup with empty profiles (creates default sync config) instead of aborting
+  - Enables DEBUG mode to show full stack trace for debugging
+  - **Root cause**: Uncaught exceptions in repository config caused entire setup to abort silently
+
+---
+
 ## [0.17.5] - 2025-11-12
 
 ### 🐛 Bug Fixes
