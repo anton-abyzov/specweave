@@ -311,8 +311,8 @@ Status: done
     test('should only sync changed items for performance', async () => {
       const syncState = {
         lastSyncTime: '2025-11-10T10:00:00Z',
-        itemsToSync: [],
-        itemsSkipped: []
+        itemsToSync: [] as string[],
+        itemsSkipped: [] as string[]
       };
 
       // Items with modification times

@@ -20,6 +20,8 @@ import {
   buildExternalDescription,
   hasExternalLink,
   updateSpecWithExternalLink,
+  type SpecUserStory,
+  type SpecAcceptanceCriterion,
 } from '../../../src/core/spec-content-sync.js';
 
 describe('Spec Content Sync - Core', () => {
@@ -102,7 +104,7 @@ Just a simple spec with no user stories.
         id: 'spec-001',
         title: 'User Authentication v2',
         description: 'Add user authentication',
-        userStories: [],
+        userStories: [] as SpecUserStory[],
         metadata: {},
       };
 
@@ -123,7 +125,7 @@ Just a simple spec with no user stories.
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user authentication with OAuth',
-        userStories: [],
+        userStories: [] as SpecUserStory[],
         metadata: {},
       };
 
@@ -145,8 +147,8 @@ Just a simple spec with no user stories.
         title: 'User Authentication',
         description: 'Add user authentication',
         userStories: [
-          { id: 'US-001', title: 'Login', acceptanceCriteria: [] },
-          { id: 'US-002', title: 'Logout', acceptanceCriteria: [] },
+          { id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
+          { id: 'US-002', title: 'Logout', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
         ],
         metadata: {},
       };
@@ -168,7 +170,7 @@ Just a simple spec with no user stories.
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user authentication',
-        userStories: [{ id: 'US-001', title: 'Login', acceptanceCriteria: [] }],
+        userStories: [{ id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] }],
         metadata: {},
       };
 
@@ -266,7 +268,7 @@ Just a simple spec with no user stories.
         title: 'Minimal Spec',
         description: '',
         userStories: [
-          { id: 'US-001', title: 'Feature', acceptanceCriteria: [] },
+          { id: 'US-001', title: 'Feature', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
         ],
         metadata: {},
       };
