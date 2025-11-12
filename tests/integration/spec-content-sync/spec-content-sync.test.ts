@@ -191,7 +191,7 @@ Just a simple spec with no user stories.
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user\n\nauthentication with\nOAuth',
-        userStories: [],
+        userStories: [] as SpecUserStory[],
         metadata: {},
       };
 
@@ -252,7 +252,7 @@ Just a simple spec with no user stories.
         id: 'spec-001',
         title: 'Simple Spec',
         description: 'Simple description',
-        userStories: [],
+        userStories: [] as SpecUserStory[],
         metadata: {},
       };
 
