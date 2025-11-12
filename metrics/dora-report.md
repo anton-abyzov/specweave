@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Nov 7, 2025 at 1:04:31 PM
+**Generated**: Nov 12, 2025 at 12:39:02 PM
 **Period**: Last 30 days
 
 ---
@@ -9,18 +9,18 @@
 
 | Metric | Value | Tier | Status |
 |--------|-------|------|--------|
-| **Deployment Frequency** | 5 deploys/month | ⭐ High | ✅ |
-| **Lead Time for Changes** | 11.3 hours | ⭐ High | ✅ |
+| **Deployment Frequency** | 42 deploys/month | 🏆 Elite | ✅ |
+| **Lead Time for Changes** | 0.5 hours | 🏆 Elite | ✅ |
 | **Change Failure Rate** | 0% | 🏆 Elite | ✅ |
 | **Mean Time to Recovery** | 0 minutes | ⚪ N/A | ℹ️ |
 
-**Overall Assessment**: ⭐ **High-Performing Team** - 3/4 metrics at high or elite
+**Overall Assessment**: 🏆 **Elite Team** - 3/4 metrics at elite level
 
 ---
 
 ## 🚀 Deployment Frequency
 
-**Current**: 5 deploys/month (⭐ High)
+**Current**: 42 deploys/month (🏆 Elite)
 
 **Industry Benchmarks**:
 - 🏆 Elite: Multiple deploys per day (>365/year)
@@ -30,16 +30,15 @@
 
 ### Insights
 
-- ✅ **Strong Performance**: Weekly to monthly deployments indicate healthy delivery rhythm
-- 📈 **Next Level**: Consider increasing to daily deployments for elite performance
-- 💡 **Tip**: Implement feature flags to decouple deployment from release
+- 🎉 **Elite Performance**: Deploying multiple times per day enables rapid feedback and reduced risk
+- ✅ Continue current cadence - no action needed
 
 ---
 
 ## ⚡ Lead Time for Changes
 
-**Current**: 11.3 hours (⭐ High)
-**Percentiles**: P50 = 6.2h, P90 = 44.9h
+**Current**: 0.5 hours (🏆 Elite)
+**Percentiles**: P50 = 0.2h, P90 = 1.2h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,17 +48,15 @@
 
 ### Insights
 
-- ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 6.2h, 90% in 44.9h
-- 📈 **Next Level**: Focus on reducing p90 to reach elite tier
-- 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
+- 🎉 **Elite Performance**: Sub-hour lead time enables rapid iteration
+- ✅ Best-in-class delivery speed
 
 ---
 
 ## ✅ Change Failure Rate
 
 **Current**: 0% (🏆 Elite)
-**Failed Releases**: 0 / 5
+**Failed Releases**: 0 / 42
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
@@ -95,18 +92,16 @@
 
 ## 📈 Recent Activity
 
-### Recent Releases (5 in last 30 days)
+### Recent Releases (42 in last 30 days)
 
-- **[v0.9.1](https://github.com/anton-abyzov/specweave/releases/tag/v0.9.1)** - Nov 7, 2025
-  _v0.9.1 - Bug Fix: Duplicate Command Invocation_
-- **[v0.8.21](https://github.com/anton-abyzov/specweave/releases/tag/v0.8.21)** - Nov 7, 2025
-  _v0.8.21 - Azure DevOps Team-Based Structure Fix_
-- **[v0.8.18](https://github.com/anton-abyzov/specweave/releases/tag/v0.8.18)** - Nov 7, 2025
-  _v0.8.18 - Documentation Preview Enabled by Default_
-- **[v0.7.1](https://github.com/anton-abyzov/specweave/releases/tag/v0.7.1)** - Nov 4, 2025
-  _v0.7.1 - Critical Bug Fix: Init Command_
-- **[v0.7.0](https://github.com/anton-abyzov/specweave/releases/tag/v0.7.0)** - Nov 4, 2025
-  _v0.7.0 - Increment Management v2.0_
+- **[v0.17.7](https://github.com/anton-abyzov/specweave/releases/tag/untagged-30dbec6e1ca562f6ccf2)** - Nov 11, 2025
+- **[v0.17.13](https://github.com/anton-abyzov/specweave/releases/tag/v0.17.13)** - Nov 12, 2025
+- **[v0.17.11](https://github.com/anton-abyzov/specweave/releases/tag/v0.17.11)** - Nov 12, 2025
+  _v0.17.11 - Multi-Repo Parent Setup Fix_
+- **[v0.17.8](https://github.com/anton-abyzov/specweave/releases/tag/v0.17.8)** - Nov 12, 2025
+- **[v0.17.3](https://github.com/anton-abyzov/specweave/releases/tag/v0.17.3)** - Nov 11, 2025
+
+_...and 37 more releases_
 
 ### Production Incidents
 
@@ -136,4 +131,4 @@
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Nov 7, 2025_
+_Last updated: Nov 12, 2025_

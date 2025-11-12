@@ -1,25 +1,25 @@
 {
-  "timestamp": "2025-11-07T18:04:31.767Z",
+  "timestamp": "2025-11-12T17:39:02.935Z",
   "metrics": {
     "deploymentFrequency": {
-      "value": 5,
+      "value": 42,
       "unit": "deploys/month",
-      "tier": "High",
-      "description": "High deployment frequency (weekly to daily)"
+      "tier": "Elite",
+      "description": "On-demand deployment capability (multiple deploys per day)"
     },
     "leadTime": {
-      "value": 11.3,
+      "value": 0.5,
       "unit": "hours",
-      "tier": "High",
-      "p50": 6.2,
-      "p90": 44.9
+      "tier": "Elite",
+      "p50": 0.2,
+      "p90": 1.2
     },
     "changeFailureRate": {
       "value": 0,
       "unit": "percentage",
       "tier": "Elite",
       "failedReleases": 0,
-      "totalReleases": 5
+      "totalReleases": 42
     },
     "mttr": {
       "value": 0,
