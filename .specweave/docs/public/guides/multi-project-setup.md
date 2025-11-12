@@ -1,7 +1,8 @@
 # Multi-Project Setup Guide
 
-**Version**: 0.8.0+
-**Last Updated**: 2025-11-05
+**Version**: 0.16.11+ (Flattened Structure)
+**Last Updated**: 2025-11-11
+**Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
 
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
 
@@ -46,7 +47,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 **Structure**:
 ```
-.specweave/docs/internal/projects/default/
+.specweave/docs/internal/specs/default/
 ├── specs/
 ├── modules/
 └── team/
@@ -65,7 +66,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 **Structure**:
 ```
-.specweave/docs/internal/projects/
+.specweave/docs/internal/specs/
 ├── web-app/
 ├── mobile-app/
 └── platform-infra/
@@ -88,7 +89,6 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 ```
 🚀 Initialize Multi-Project Mode
 
-📁 Step 1: Auto-migrating to multi-project structure...
 ✅ Migration complete! Using projects/default/ structure
 
 Enable multi-project mode? (supports multiple teams/repos) (y/N): y
@@ -125,9 +125,9 @@ Project ID (kebab-case): mobile-app
 ✅ Switched to project: Web Application (web-app)
 
 ℹ️  Future increments will use:
-   - .specweave/docs/internal/projects/web-app/specs/
-   - .specweave/docs/internal/projects/web-app/modules/
-   - .specweave/docs/internal/projects/web-app/team/
+   - .specweave/docs/internal/specs/web-app/
+   - .specweave/docs/internal/modules/web-app/
+   - .specweave/docs/internal/team/web-app/
 ```
 
 ### Step 3: Create Increments (As Usual)
@@ -136,7 +136,7 @@ Project ID (kebab-case): mobile-app
 /specweave:increment "Add user authentication"
 ```
 
-**Result**: Spec created in `projects/web-app/specs/spec-001-user-auth.md`
+**Result**: Spec created in `specs/web-app/spec-001-user-auth.md`
 
 ---
 
@@ -276,12 +276,12 @@ legacy/
 # Morning: Frontend team work
 /specweave:switch-project web-app
 /specweave:increment "Add dark mode"
-# Spec created in: projects/web-app/specs/spec-004-dark-mode.md
+# Spec created in: specs/web-app/spec-004-dark-mode.md
 
 # Afternoon: Mobile team work
 /specweave:switch-project mobile-app
 /specweave:increment "Add biometric auth"
-# Spec created in: projects/mobile-app/specs/spec-001-biometric-auth.md
+# Spec created in: specs/mobile-app/spec-001-biometric-auth.md
 ```
 
 ### Workflow 2: Platform Engineering
@@ -399,7 +399,7 @@ Multi-project mode integrates with external sync (GitHub, JIRA, ADO):
 /specweave:increment "Add payment integration"
 
 # Result:
-# - Spec: projects/web-app/specs/spec-005-payment-integration.md
+# - Spec: specs/web-app/spec-005-payment-integration.md
 # - GitHub issue created in acme-corp/web-app
 # - JIRA epic created in WEBAPP project
 ```
@@ -433,11 +433,11 @@ projects/
 Specs are numbered per project:
 
 ```
-projects/web-app/specs/
+specs/web-app/
 ├── spec-001-user-auth.md       ← Web app feature 1
 └── spec-002-payments.md        ← Web app feature 2
 
-projects/mobile-app/specs/
+specs/mobile-app/
 ├── spec-001-push-notifs.md     ← Mobile feature 1 (different from web!)
 └── spec-002-offline-mode.md   ← Mobile feature 2
 ```
@@ -527,27 +527,6 @@ modules/
 
 ## Migration from Single to Multi-Project
 
-Existing single-project setups automatically migrate:
-
-### What Happens
-
-```bash
-/specweave:init-multiproject
-
-# Auto-migration:
-# 1. Copies .specweave/docs/internal/specs/ → projects/default/specs/
-# 2. Renames old specs/ to specs.old/ (backup)
-# 3. Creates multiProject section in config
-# 4. No behavior change (still single project)
-```
-
-### Behavior
-
-- **Before**: Specs at `.specweave/docs/internal/specs/`
-- **After**: Specs at `.specweave/docs/internal/projects/default/specs/`
-- **Result**: No behavior change, just new structure
-
-### Enable Multi-Project
 
 ```bash
 /specweave:init-multiproject

@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.4] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### GitHub Init Flow
+- **Fixed**: Repository configuration now happens BEFORE project validation during `specweave init`
+  - Users are now asked about repository strategy (single/multiple/monorepo) immediately after authentication
+  - For each repository, checks if it exists on GitHub and offers to create it if missing
+  - Project context validation moved to AFTER repository configuration (correct dependency order)
+  - Eliminates confusing "No projects configured!" error before understanding repository setup
+  - Improves onboarding UX with logical question flow
+
+---
+
 ## [0.17.3] - 2025-11-12
 
 ### 🐛 Bug Fixes
