@@ -94,11 +94,20 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
     const identifier = detectSpecIdentifier(specContentInput);
 
     // Extract description (text between title and first ## heading)
-    const descMatch = content.match(/^#\s+.+\n\n(.+?)(?=\n##|\n---|\n\*\*|$)/s);
+    // Match content between the main heading and the first ## heading or ** pattern
+    const descMatch = content.match(/^#[^\n]+\n\n(.+?)(?=\n##|\n\*\*[A-Z])/ms);
     const description = descMatch ? descMatch[1].trim() : '';
 
     // Extract metadata from frontmatter or body
     const metadata: SpecContent['metadata'] = {};
+
+    // Priority from frontmatter first, then body
+    if (frontmatter.priority) {
+      metadata.priority = frontmatter.priority;
+    } else {
+      const priorityMatch = content.match(/\*\*Priority\*\*:\s*(P\d)/);
+      if (priorityMatch) metadata.priority = priorityMatch[1];
+    }
 
     // GitHub Project
     const githubMatch = content.match(/\*\*GitHub Project\*\*:\s*(.+)/);
@@ -111,10 +120,6 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
     // ADO Feature
     const adoMatch = content.match(/\*\*ADO Feature\*\*:\s*(.+)/);
     if (adoMatch) metadata.adoFeature = adoMatch[1].trim();
-
-    // Priority
-    const priorityMatch = content.match(/\*\*Priority\*\*:\s*(P\d)/);
-    if (priorityMatch) metadata.priority = priorityMatch[1];
 
     // Parse user stories
     const userStories: SpecUserStory[] = [];
@@ -129,8 +134,10 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
       const usTitle = usMatch[2].trim();
 
       // Find acceptance criteria for this user story
+      // Support both AC-US001-01 and AC-US1-01 formats
+      const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
       const acRegex = new RegExp(
-        `- \\[([ x])\\] \\*\\*AC-US${usNumber}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
+        `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
         'g'
       );
 
