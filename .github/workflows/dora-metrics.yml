@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,8 +42,27 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add metrics/dora-latest.json metrics/dora-report.md
-          git diff --staged --quiet || git commit -m "chore: update DORA metrics and report [skip ci]"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: update DORA metrics and report [skip ci]"
+            # Push with retry logic for branch protection
+            for i in {1..3}; do
+              if git push; then
+                echo "✅ Successfully pushed metrics update"
+                break
+              else
+                if [ $i -lt 3 ]; then
+                  echo "⚠️ Push attempt $i failed, retrying..."
+                  sleep 2
+                else
+                  echo "❌ Failed to push metrics after 3 attempts"
+                  echo "📋 Note: Metrics were calculated successfully but not committed to repository"
+                  echo "💡 This is expected if branch protection requires pull requests"
+                fi
+              fi
+            done
+          else
+            echo "ℹ️ No changes to commit"
+          fi
         continue-on-error: true
 
       - name: Create error issue on failure
