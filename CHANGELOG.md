@@ -4,6 +4,29 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.16.12] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### Critical Test Fixes for Structure Flattening
+- **Fixed**: `validateState()` incorrectly validating parent repos with wrong schema
+  - Added `validateParentRepo()` method to properly validate `ParentRepoConfig` structure
+  - Parent repos now validated separately from implementation repos
+- **Fixed**: Legacy path test expectations after structure flattening
+  - Updated paths to include project ID: `/legacy/default/notion` instead of `/legacy/notion`
+- **Fixed**: State validation rejecting valid 'multi-repo' and 'parent' architecture types
+  - Updated validation array to accept new architecture types
+- **Fixed**: Test return type expectations (null vs boolean)
+
+**Test Results**: 31/31 core structure flattening tests passing
+
+### 📦 Changes
+- `setup-state-manager.ts`: Add separate validation for parent and implementation repos
+- `path-resolution.test.ts`: Update legacy path expectations
+- `setup-state-manager.test.ts`: Fix architecture types and return type expectations
+
+---
+
 ## [0.16.11] - 2025-11-11
 
 ### ⚠️ BREAKING CHANGES
