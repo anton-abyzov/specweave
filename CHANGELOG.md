@@ -4,6 +4,28 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.7] - 2025-11-11
+
+### 🐛 Bug Fixes
+
+#### Repository Strategy Selection - Missing Dependency (CRITICAL FIX)
+- **Fixed**: Repository strategy selection prompt now displays correctly during `specweave init`
+  - Added missing `glob@^11.0.0` dependency to package.json
+  - **Root cause**: `folder-detector.ts` imported `glob` package but it wasn't in dependencies
+  - Exception was silently caught, causing "Repository configuration failed" error
+  - Users were forced into "manual sync configuration" without seeing strategy options
+  - **Impact**: 100% of users can now choose from 5 repository strategies:
+    - 🚫 None (configure later)
+    - 📦 Single repository (mono-repo)
+    - 🎯 Multiple repositories (multi-repo/microservices)
+    - 🏢 Monorepo (single repo with multiple projects like Nx/Turborepo)
+    - 🔍 Auto-detect (from git remotes)
+  - Enhanced UX with automatic folder detection and repository suggestions now works
+  - Repository creation via GitHub API now functional
+  - See: `.specweave/increments/0026-multi-repo-unit-tests/reports/REPOSITORY-STRATEGY-SELECTION-FIX.md`
+
+---
+
 ## [0.17.6] - 2025-11-12
 
 ### 🐛 Bug Fixes
