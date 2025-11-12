@@ -86,7 +86,7 @@ echo "📚 Test 6: Package Structure"
 echo "---------------------------------"
 test_command "package.json exists" "test -f $PROJECT_ROOT/package.json"
 test_command "dist/ directory exists" "test -d $PROJECT_ROOT/dist"
-test_command "dist/cli directory exists" "test -d $PROJECT_ROOT/dist/cli"
+test_command "dist/src/cli directory exists" "test -d $PROJECT_ROOT/dist/src/cli"
 echo ""
 
 # Cleanup
