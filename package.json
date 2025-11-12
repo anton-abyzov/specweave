@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.17.8",
+  "version": "0.17.9",
   "description": "Spec-driven development framework for Claude Code. AI-native workflow with living documentation, intelligent agents, and multilingual support (9 languages). Enterprise-grade traceability with permanent specs and temporary increments.",
   "type": "module",
   "main": "dist/index.js",
