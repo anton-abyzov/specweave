@@ -209,6 +209,29 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5: Save credentials to .env
   await saveCredentials(projectPath, tracker, credentials);
 
+  // Step 5.0.5: Validate project configuration (GitHub only)
+  if (tracker === 'github') {
+    const { validateProjectConfiguration, promptCreateProject } = await import('../../../utils/project-validator.js');
+
+    console.log(chalk.cyan('\n🔍 Validating Project Configuration\n'));
+
+    const validation = await validateProjectConfiguration(projectPath);
+
+    if (!validation.valid) {
+      const shouldCreate = await promptCreateProject(projectPath);
+
+      if (shouldCreate) {
+        // TODO: Invoke project creation flow
+        console.log(chalk.yellow('   ⚠️  Project creation not yet implemented - manual setup required'));
+        console.log(chalk.gray('   → Run: /specweave:project create\n'));
+      } else {
+        console.log(chalk.gray('   → You can create projects later with: /specweave:project create\n'));
+      }
+    } else {
+      console.log(chalk.green(`✓ Found ${validation.projectCount} project context(s): ${validation.projects.join(', ')}\n`));
+    }
+  }
+
   // Step 5.1: Configure repositories (GitHub only)
   let repositoryProfiles = [];
   let monorepoProjects = undefined;

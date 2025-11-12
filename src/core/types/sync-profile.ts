@@ -51,7 +51,23 @@ export type LegacySyncStrategy = 'simple' | 'intelligent' | 'custom';
 // ============================================================================
 
 /**
+ * GitHub Sync Strategy (v0.18.0+ - Multi-Project Spec Sync)
+ *
+ * Determines how specs are synced to GitHub:
+ * - project-per-spec: One GitHub Project per spec (default, current behavior)
+ * - team-board: One GitHub Project per team (aggregates multiple specs)
+ * - centralized: Parent repo tracks all specs (multi-repo pattern)
+ * - distributed: Each team syncs to their repo (microservices)
+ */
+export type GitHubSyncStrategy =
+  | 'project-per-spec'
+  | 'team-board'
+  | 'centralized'
+  | 'distributed';
+
+/**
  * GitHub Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
+ * ENHANCED in v0.18.0 with spec-sync strategy support
  *
  * Supports four patterns:
  * 1. Single repo (backward compatible): owner + repo
@@ -88,6 +104,32 @@ export interface GitHubConfig {
 
   // Pattern 4: Custom query (power users)
   customQuery?: string;  // GitHub search syntax
+
+  // ============================================================================
+  // NEW in v0.18.0: Spec-Sync Strategy Support
+  // ============================================================================
+
+  /**
+   * GitHub sync strategy for specs (v0.18.0+)
+   * - project-per-spec: One GitHub Project per spec (default)
+   * - team-board: One GitHub Project per team
+   * - centralized: Parent repo tracks all
+   * - distributed: Each team syncs to their repo
+   */
+  githubStrategy?: GitHubSyncStrategy;
+
+  /**
+   * Team board ID (for team-board strategy)
+   * - ID of the GitHub Project that aggregates all specs from this team
+   */
+  teamBoardId?: number;
+
+  /**
+   * Cross-team detection (for distributed strategy)
+   * - Auto-detect specs that touch multiple teams
+   * - Create issues in multiple repos for cross-team specs
+   */
+  enableCrossTeamDetection?: boolean;
 }
 
 /**

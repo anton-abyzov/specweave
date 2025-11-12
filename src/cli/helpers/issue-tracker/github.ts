@@ -378,7 +378,18 @@ export async function configureGitHubRepositories(
   } = await import('./github-multi-repo.js');
 
   // Pass projectPath and token for enhanced flow with repo creation
-  const setupType = await promptGitHubSetupType(projectPath, githubToken);
+  const setupResult = await promptGitHubSetupType(projectPath, githubToken);
+
+  // If RepoStructureManager was used, profiles are already extracted - return them directly
+  if (setupResult.profiles) {
+    return {
+      profiles: setupResult.profiles,
+      monorepoProjects: setupResult.monorepoProjects
+    };
+  }
+
+  // Otherwise, use legacy flow to collect profiles
+  const { setupType } = setupResult;
 
   switch (setupType) {
     case 'none':

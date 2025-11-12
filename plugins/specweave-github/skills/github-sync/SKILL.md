@@ -1,15 +1,15 @@
 ---
 name: github-sync
-description: Bidirectional synchronization between SpecWeave increments and GitHub Issues (two-way sync by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync command instead.
+description: Bidirectional synchronization between SpecWeave specs and GitHub Projects (two-way sync by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync-spec command instead.
 ---
 
-# GitHub Sync - Bidirectional Increment ↔ Issue Synchronization
+# GitHub Sync - Bidirectional Spec ↔ Project Synchronization
 
-**Purpose**: Seamlessly synchronize SpecWeave increments with GitHub Issues for team visibility and project management.
+**Purpose**: Seamlessly synchronize SpecWeave specs with GitHub Projects for team visibility and project management.
 
 **Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/specweave-github:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/specweave-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 ## When to Activate
 
@@ -20,183 +20,196 @@ description: Bidirectional synchronization between SpecWeave increments and GitH
 - User needs help configuring GitHub integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/specweave-github:sync` command (command handles it)
+- User invokes `/specweave-github:sync-spec` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 
-**Integration**: Works with `/specweave-github:sync` command
+**Integration**: Works with `/specweave-github:sync-spec` command
+
+---
+
+## CORRECT Architecture (v0.17.0+)
+
+**CRITICAL**: SpecWeave syncs **SPECS** to GitHub, NOT increments!
+
+```
+✅ CORRECT:
+.specweave/docs/internal/specs/spec-001.md  ↔  GitHub Project
+├─ User Story US-001                        ↔  GitHub Issue #1
+├─ User Story US-002                        ↔  GitHub Issue #2
+└─ User Story US-003                        ↔  GitHub Issue #3
+
+❌ WRONG (OLD, REMOVED!):
+.specweave/increments/0001-feature  ↔  GitHub Issue (DEPRECATED!)
+```
+
+**Why Specs, Not Increments?**
+- ✅ **Specs = Permanent** (living docs, feature-level knowledge base)
+- ❌ **Increments = Temporary** (implementation snapshots, can be deleted after done)
+- ✅ **GitHub should mirror PERMANENT work**, not temporary iterations
 
 ---
 
 ## How GitHub Sync Works
 
-### 1. Increment → GitHub Issue (Export)
+### 1. Spec → GitHub Project (Export)
 
-**Trigger**: After `/specweave:inc` creates a new increment
+**Trigger**: When spec is created or updated
 
 **Actions**:
-1. Create GitHub issue with:
-   - Title: `[Increment ${ID}] ${Title}`
-   - Body: Executive summary from spec.md
-   - Labels: `increment`, `specweave`, priority label (P0/P1/P2/P3)
-   - Milestone: Current release (if configured)
+1. Create GitHub Project with:
+   - Title: `[SPEC-001] Core Framework & Architecture`
+   - Description: Spec overview + progress
+   - Columns: Backlog, In Progress, Done
+   - Linked to repository
 
-2. Store issue number in increment metadata:
+2. Store project ID in spec metadata:
    ```yaml
-   # .specweave/increments/####-name/.metadata.yaml
-   github:
-     issue_number: 123
-     issue_url: https://github.com/owner/repo/issues/123
-     synced_at: 2025-10-30T10:00:00Z
+   # .specweave/docs/internal/specs/spec-001.md (frontmatter)
+   ---
+   externalLinks:
+     github:
+       projectId: 123
+       projectUrl: https://github.com/users/anton-abyzov/projects/123
+       syncedAt: 2025-11-11T10:00:00Z
+   ---
    ```
 
-3. Add link to issue in increment README
+3. Create GitHub Issues for each user story:
+   - Title: `[US-001] As a developer, I want to install SpecWeave via NPM`
+   - Body: Acceptance criteria as checkboxes
+   - Labels: `user-story`, `spec:spec-001`, `priority:P1`
+   - Linked to project
 
-**Example Issue**:
+**Example GitHub Project**:
 ```markdown
-# [Increment 0004] Plugin Architecture
+# [SPEC-001] Core Framework & Architecture
 
-**Status**: Planning
-**Priority**: P1
-**Created**: 2025-10-30
+**Status**: In Progress (75% complete)
+**Priority**: P0 (Critical)
+**Feature Area**: Foundation & Plugin System
 
-## Executive Summary
+## Overview
 
-Implement a modular plugin architecture for SpecWeave...
-
-## SpecWeave Increment
-
-This issue tracks SpecWeave increment `0004-plugin-architecture`.
-
-- **Spec**: `.specweave/increments/0004-plugin-architecture/spec.md`
-- **Plan**: `.specweave/increments/0004-plugin-architecture/plan.md`
-- **Tasks**: 48 tasks across 4 weeks
+The core framework and architecture spec covers SpecWeave's foundational capabilities:
+- TypeScript-based CLI framework
+- Plugin system architecture
+- Cross-platform compatibility
 
 ## Progress
 
-- [ ] Week 1: Foundation (0/12 tasks)
-- [ ] Week 2: GitHub Plugin (0/10 tasks)
-- [ ] Week 3: Additional Plugins (0/15 tasks)
-- [ ] Week 4: Documentation & Testing (0/11 tasks)
+- ✅ US-001: NPM installation (Complete)
+- ✅ US-002: Plugin system (Complete)
+- ⏳ US-003: Context optimization (In Progress)
+- ⏳ US-004: Intelligent agents (In Progress)
+
+**Overall**: 2/4 user stories complete (50%)
 
 ---
 
 🤖 Auto-synced by SpecWeave GitHub Plugin
 ```
 
-### 2. Progress Updates (Increment → Issue)
+### 2. User Story Progress Updates (Spec → GitHub)
 
-**Trigger**: After each `/specweave:do` task completion (via post-task-completion hook)
-
-**Actions**:
-1. **Update issue description** (v0.7.0+):
-   - Updates task checklist in issue body
-   - Marks completed tasks with `[x]`
-   - Updates progress bars
-   - Keeps issue description synchronized
-
-2. Post comment to GitHub issue:
-   ```markdown
-   **Task Completed**: T-007 - Implement Claude plugin installer
-
-   **Progress**: 7/48 tasks (15%)
-   **Status**: Week 1 in progress
-
-   ---
-   🤖 Auto-updated by SpecWeave
-   ```
-
-3. Update issue labels:
-   - Add `in-progress` label when first task starts
-   - Add `testing` label when implementation phase completes
-   - Add `ready-for-review` label when all tasks done
-
-**Note**: As of v0.7.0+, the post-task-completion hook automatically uses `--tasks` flag to update both the issue description AND add comments. This ensures the main issue stays in sync with increment progress.
-
-### 3. Increment Completion (Close Issue)
-
-**Trigger**: `/specweave:done` closes increment
+**Trigger**: After each task completion (via post-task-completion hook)
 
 **Actions**:
-1. Post final comment:
+1. **Update GitHub Issue** (for user story):
+   - Updates acceptance criteria checkboxes
+   - Marks completed ACs with `[x]`
+   - Updates issue description
+   - Updates labels (`in-progress`, `testing`, `ready-for-review`)
+
+2. **Update GitHub Project**:
+   - Moves cards between columns (Backlog → In Progress → Done)
+   - Updates project progress percentage
+   - Posts progress comment
+
+**Example Issue Update**:
+```markdown
+**User Story**: US-001
+
+As a developer, I want to install SpecWeave via NPM so that I can use it in my projects
+
+## Acceptance Criteria
+
+- [x] AC-001-01: `npm install -g specweave` works
+- [x] AC-001-02: `specweave init` creates `.specweave/` structure
+- [ ] AC-001-03: Version command shows current version (In Progress)
+
+---
+
+**Progress**: 2/3 ACs complete (67%)
+
+🤖 Auto-updated by SpecWeave (2025-11-11)
+```
+
+### 3. Spec Completion (Close Project)
+
+**Trigger**: All user stories in spec are complete
+
+**Actions**:
+1. Close all GitHub Issues (user stories)
+2. Archive GitHub Project
+3. Post final comment:
    ```markdown
-   ✅ **Increment Completed**
+   ✅ **Spec Completed**
 
    **Final Stats**:
-   - 48/48 tasks completed (100%)
-   - 127 test cases passing
-   - Duration: 4 weeks
+   - 35 user stories completed (100%)
+   - 4 increments implemented (0001, 0002, 0004, 0005)
+   - Duration: 6 weeks
 
    **Deliverables**:
-   - Plugin architecture implemented
-   - 15 plugins migrated
-   - Documentation updated
+   - Core framework architecture
+   - Plugin system
+   - Cross-platform CLI
 
-   Closing this issue as the increment is complete.
+   Spec complete. Project archived.
 
    ---
    🤖 Auto-closed by SpecWeave
    ```
 
-2. Close GitHub issue
-3. Update metadata with completion timestamp
+### 4. GitHub Project → Spec (Import)
 
-### 4. GitHub Issue → Increment (Import)
+**Use Case**: Import existing GitHub Projects as SpecWeave specs
 
-**Use Case**: Import existing GitHub issues as SpecWeave increments
-
-**Command**: `/specweave:github:import <issue-number>`
+**Command**: `/specweave-github:import-project <project-number>`
 
 **Actions**:
-1. Fetch issue via GitHub CLI:
-   ```bash
-   gh issue view 123 --json title,body,labels
-   ```
+1. Fetch project via GitHub GraphQL API
+2. Create spec structure:
+   - Parse project title → spec title
+   - Parse project body → spec overview
+   - Map issues → user stories
+   - Map labels → priority
 
-2. Create increment structure:
-   - Parse issue title → increment title
-   - Parse issue body → spec.md executive summary
-   - Map labels → increment priority
-
-3. Generate spec.md, plan.md, tasks.md from issue description
-
-4. Link issue to increment in metadata
+3. Generate spec.md with user stories and acceptance criteria
+4. Link project to spec in metadata
 
 ---
 
 ## Configuration
 
-Configure GitHub sync in `.specweave/config.yaml`:
+Configure GitHub sync in `.specweave/config.json`:
 
-```yaml
-plugins:
-  enabled:
-    - specweave-github
-  settings:
-    specweave-github:
-      # GitHub repository (auto-detected from git remote)
-      repo: "owner/repo"
-
-      # Auto-create issues for new increments
-      auto_create_issue: true
-
-      # Auto-update progress after tasks
-      auto_update_progress: true
-
-      # Auto-close issues when increments complete
-      auto_close_issue: true
-
-      # Default labels to add
-      default_labels:
-        - "specweave"
-        - "increment"
-
-      # Milestone to use (optional)
-      milestone: "v0.4.0"
-
-      # Sync frequency for progress updates
-      # Options: "every-task", "daily", "manual"
-      sync_frequency: "every-task"
+```json
+{
+  "plugins": {
+    "enabled": ["specweave-github"],
+    "settings": {
+      "specweave-github": {
+        "repo": "owner/repo",
+        "autoSyncSpecs": true,
+        "syncDirection": "bidirectional",
+        "defaultLabels": ["specweave", "spec"],
+        "syncFrequency": "on-change"
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -222,37 +235,37 @@ gh auth status
 
 ## Manual Sync Operations
 
-### Create Issue from Increment
+### Sync Spec to GitHub
 
 ```bash
-/specweave:github:create-issue 0004
+/specweave-github:sync-spec spec-001
 ```
 
-Creates GitHub issue for increment 0004 if not already synced.
+Creates or updates GitHub Project for spec-001.
 
-### Sync Progress
+### Sync All Specs
 
 ```bash
-/specweave:github:sync 0004
+/specweave-github:sync-spec --all
 ```
 
-Posts current progress to GitHub issue.
+Syncs all specs to GitHub Projects.
 
-### Close Issue
+### Import Project
 
 ```bash
-/specweave:github:close-issue 0004
+/specweave-github:import-project 123
 ```
 
-Closes GitHub issue for completed increment.
+Imports GitHub Project #123 as a SpecWeave spec.
 
 ### Check Status
 
 ```bash
-/specweave:github:status 0004
+/specweave-github:status spec-001
 ```
 
-Shows sync status (issue number, last sync time, progress %).
+Shows sync status (project ID, last sync time, progress %).
 
 ---
 
@@ -261,59 +274,71 @@ Shows sync status (issue number, last sync time, progress %).
 ### Full Automated Workflow
 
 ```bash
-# 1. Create increment
-/specweave:inc "Add dark mode toggle"
-# → Auto-creates GitHub issue #125
+# 1. Create spec (PM agent)
+User: "Create spec for user authentication"
+PM: Creates .specweave/docs/internal/specs/spec-005-user-auth.md
 
-# 2. Implement tasks
+# 2. Auto-sync to GitHub (hook)
+→ GitHub Project created automatically
+→ Issues created for each user story
+
+# 3. Implement increments
+/specweave:increment "Add login flow"
+→ Increment 0010 created (implements US-001, US-002)
+
+# 4. Work on tasks
 /specweave:do
-# → Auto-updates issue with progress after each task
+→ Task completed
+→ Hook fires
+→ Spec updated (AC marked complete)
+→ GitHub Project updated automatically
 
-# 3. Complete increment
-/specweave:done 0005
-# → Auto-closes GitHub issue #125
+# 5. Complete spec
+→ All user stories done
+→ GitHub Project archived automatically
 ```
 
 ### Team Collaboration
 
 **For Developers**:
-- Work in SpecWeave increments locally
-- Automatic GitHub issue updates keep team informed
-- No manual issue management needed
+- Work in SpecWeave specs locally
+- Automatic GitHub Project updates keep team informed
+- No manual project management needed
 
 **For Project Managers**:
-- View all increments as GitHub issues
-- Track progress in GitHub Projects/Milestones
+- View all specs as GitHub Projects
+- Track progress in GitHub Projects UI
 - Comment on issues to communicate with developers
 
 **For Stakeholders**:
 - See progress in familiar GitHub interface
 - No need to understand SpecWeave structure
-- Clear visibility into development status
+- Clear visibility into feature development status
 
 ---
 
 ## Conflict Resolution
 
-**What if issue and increment diverge?**
+**What if project and spec diverge?**
 
-The increment is always the source of truth. GitHub issues are a mirror for visibility.
+The spec is always the source of truth. GitHub Projects are a mirror for visibility.
 
 **Sync conflicts** (rare):
-1. Increment status conflicts with issue state
-2. Manual edits to issue body/title
+1. Spec status conflicts with project state
+2. Manual edits to project/issue body/title
 
 **Resolution**:
-- Run `/specweave:github:sync 0004 --force` to overwrite issue from increment
-- Or manually update increment metadata to match issue
+- Run `/specweave-github:sync-spec spec-001 --force` to overwrite project from spec
+- Or manually update spec metadata to match project
 
 ---
 
 ## Privacy & Security
 
 **What gets synced?**
-- ✅ Increment title, summary, progress
-- ✅ Task completion status (not implementation details)
+- ✅ Spec title, overview, progress
+- ✅ User stories and acceptance criteria
+- ✅ User story completion status
 - ❌ Code diffs, file contents (never synced)
 - ❌ Internal notes, sensitive data
 
@@ -324,56 +349,12 @@ The increment is always the source of truth. GitHub issues are a mirror for visi
 
 ---
 
-## Example Session
-
-```
-User: /specweave:inc "Implement user authentication"
-
-Claude:
-✓ Created increment: 0005-user-authentication
-✓ Generated spec.md, plan.md, tasks.md, tests.md
-✓ Creating GitHub issue...
-
-GitHub Issue Created: #126
-https://github.com/myorg/myapp/issues/126
-
-Title: [Increment 0005] User Authentication
-Labels: specweave, increment, P1
-Status: Open
-
----
-
-User: /specweave:do
-
-Claude:
-✓ Completed: T-001 - Design auth flow
-✓ Updated GitHub issue #126 with progress (1/15 tasks, 7%)
-
----
-
-[After 15 tasks...]
-
-User: /specweave:done 0005
-
-Claude:
-✓ All PM gates passed
-✓ Increment 0005 closed
-✓ Closing GitHub issue #126...
-
-GitHub Issue #126: Closed
-Final comment posted with completion stats.
-
-Increment complete! 🎉
-```
-
----
-
 ## Benefits
 
 **For SpecWeave Users**:
-- ✅ No manual GitHub issue management
+- ✅ No manual GitHub project management
 - ✅ Automatic team visibility
-- ✅ Single source of truth (increment specs)
+- ✅ Single source of truth (spec docs)
 - ✅ GitHub integration without leaving IDE
 
 **For Teams**:
@@ -383,7 +364,7 @@ Increment complete! 🎉
 - ✅ View progress in real-time
 
 **For Organizations**:
-- ✅ Unified issue tracking across projects
+- ✅ Unified project tracking across repos
 - ✅ GitHub-native workflow (familiar to all)
 - ✅ Audit trail (all syncs timestamped)
 - ✅ Integration with GitHub Actions, webhooks
@@ -392,88 +373,99 @@ Increment complete! 🎉
 
 ## Troubleshooting
 
-**Issue not created?**
+**Project not created?**
 - Check GitHub CLI: `gh auth status`
 - Verify repo permissions (write access)
-- Check config: `.specweave/config.yaml`
+- Check config: `.specweave/config.json`
 
 **Sync failing?**
 - Check network connectivity
-- Verify issue still exists (not deleted)
+- Verify project still exists (not deleted)
 - Check rate limits: `gh api rate_limit`
 
 **Progress not updating?**
-- Check `auto_update_progress: true` in config
-- Verify hook execution: `.specweave/logs/hooks.log`
-- Manually sync: `/specweave:github:sync 0005`
+- Check `autoSyncSpecs: true` in config
+- Verify hook execution: `.specweave/logs/hooks-debug.log`
+- Manually sync: `/specweave-github:sync-spec spec-001`
 
 ---
 
 ## Advanced Usage
 
-### Custom Issue Templates
+### Custom Project Templates
 
-Create `.specweave/github/issue-template.md`:
+Create `.specweave/github/project-template.md`:
 
 ```markdown
-# [Increment {{id}}] {{title}}
+# [{{spec.id.toUpperCase()}}] {{spec.title}}
 
-{{summary}}
+{{spec.overview}}
 
 ## SpecWeave Details
 
-- **Spec**: [spec.md]({{spec_url}})
-- **Priority**: {{priority}}
-- **Estimated Duration**: {{duration}}
+- **Spec**: [spec.md]({{spec.url}})
+- **Priority**: {{spec.priority}}
+- **Feature Area**: {{spec.featureArea}}
 
-## Progress
+## User Stories
 
-{{progress_checklist}}
+{{spec.userStories.map(us => `- ${us.id}: ${us.title}`).join('\n')}}
 ```
 
 ### Selective Sync
 
-Sync only specific increments:
+Sync only specific specs:
 
-```yaml
-# .specweave/config.yaml
-plugins:
-  settings:
-    specweave-github:
-      sync_increments:
-        - 0004-plugin-architecture
-        - 0005-user-authentication
-      # Others won't create GitHub issues
+```json
+{
+  "plugins": {
+    "settings": {
+      "specweave-github": {
+        "syncSpecs": [
+          "spec-001-core-framework",
+          "spec-005-user-authentication"
+        ]
+      }
+    }
+  }
+}
 ```
 
 ### Multi-Repo Sync
 
 For monorepos with multiple GitHub repositories:
 
-```yaml
-# .specweave/config.yaml
-plugins:
-  settings:
-    specweave-github:
-      repos:
-        frontend:
-          repo: "myorg/frontend"
-          increments: ["0001-*", "0002-*"]
-        backend:
-          repo: "myorg/backend"
-          increments: ["0003-*", "0004-*"]
+```json
+{
+  "plugins": {
+    "settings": {
+      "specweave-github": {
+        "repos": {
+          "frontend": {
+            "repo": "myorg/frontend",
+            "specs": ["spec-001-*", "spec-002-*"]
+          },
+          "backend": {
+            "repo": "myorg/backend",
+            "specs": ["spec-003-*", "spec-004-*"]
+          }
+        }
+      }
+    }
+  }
+}
 ```
 
 ---
 
 ## Related
 
-- **github-issue-tracker**: Track individual tasks as issue comments
+- **github-issue-tracker**: Track individual tasks as issue comments (DEPRECATED - use spec sync instead)
 - **github-manager agent**: AI agent for GitHub operations
-- **Commands**: `/specweave:github:create-issue`, `/specweave:github:sync`, `/specweave:github:close-issue`
+- **Commands**: `/specweave-github:sync-spec`, `/specweave-github:import-project`, `/specweave-github:status`
 
 ---
 
-**Version**: 1.0.0
+**Version**: 2.0.0 (Spec-based architecture)
 **Plugin**: specweave-github
-**Last Updated**: 2025-10-30
+**Last Updated**: 2025-11-11

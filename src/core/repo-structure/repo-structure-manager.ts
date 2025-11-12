@@ -34,6 +34,7 @@ import {
   getVisibilityPrompt,
   type ArchitectureChoice
 } from './prompt-consolidator.js';
+import { detectRepositoryHints } from './folder-detector.js';
 
 export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
 
@@ -397,24 +398,45 @@ export class RepoStructureManager {
       });
     }
 
+    // Auto-detect existing folders
+    const hints = await detectRepositoryHints(this.projectPath);
+
+    if (hints.detectedFolders.length > 0) {
+      console.log(chalk.green(`\n✓ Detected ${hints.detectedFolders.length} service folder(s):`));
+      hints.detectedFolders.forEach(f => console.log(chalk.gray(`  • ${f}`)));
+      console.log('');
+    }
+
+    // Show repository count clarification BEFORE asking
+    if (useParent && config.parentRepo) {
+      console.log(chalk.cyan('\n📊 Repository Count\n'));
+      console.log(chalk.gray('You will create:'));
+      console.log(chalk.white('  • 1 parent repository (specs, docs, increments)'));
+      console.log(chalk.white('  • N implementation repositories (your services/apps)'));
+      console.log(chalk.gray('\nNext question asks for: IMPLEMENTATION repositories ONLY (not counting parent)\n'));
+    }
+
     // Ask how many implementation repositories
     const { repoCount } = await inquirer.prompt([{
       type: 'number',
       name: 'repoCount',
-      message: 'How many implementation repositories?',
-      default: 3,
+      message: useParent
+        ? '📦 How many IMPLEMENTATION repositories? (not counting parent)'
+        : 'How many repositories?',
+      default: hints.suggestedCount,  // Use auto-detected count
       validate: (input: number) => {
-        if (input < 2) return 'Multi-repo needs at least 2 repositories';
+        if (input < 1) return useParent
+          ? 'Need at least 1 implementation repository'
+          : 'Need at least 2 repositories';
         if (input > 10) return 'Maximum 10 repositories supported';
         return true;
       }
     }]);
 
-    // Show repository count clarification
+    // Show summary AFTER for confirmation
     if (useParent && config.parentRepo) {
-      console.log('');
-      console.log(chalk.blue(getRepoCountClarification(1, repoCount)));
-      console.log('');
+      const totalRepos = 1 + repoCount;
+      console.log(chalk.green(`\n✓ Total repositories to create: ${totalRepos} (1 parent + ${repoCount} implementation)\n`));
     }
 
     // Configure each repository
