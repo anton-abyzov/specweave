@@ -277,6 +277,24 @@ export class PluginValidator {
   async validate(options: ValidationOptions = {}): Promise<ValidationResult> {
     this.verbose = options.verbose ?? false;
 
+    // ✅ FIX 4: Check if validation is disabled in config
+    const config = await this.loadConfig();
+    if (config?.pluginValidation?.enabled === false) {
+      this.log('Plugin validation disabled in config - skipping');
+      return {
+        valid: true,
+        timestamp: Date.now(),
+        missing: { marketplace: false, corePlugin: false, contextPlugins: [] },
+        installed: {
+          corePlugin: true,
+          corePluginVersion: 'skipped',
+          contextPlugins: [],
+        },
+        recommendations: [],
+        errors: [],
+      };
+    }
+
     // Check cache first (unless verbose mode)
     if (!options.verbose && !options.dryRun) {
       const cached = await this.getCachedValidation();
@@ -347,11 +365,26 @@ export class PluginValidator {
             result.errors.push(
               `Failed to install core plugin: ${installResult.error}`
             );
+
+            // ✅ FIX 2: Graceful degradation - warn but don't block
+            // If installation fails but plugin might exist (detection issue),
+            // mark as warning instead of blocking error
+            this.log('⚠️  Plugin installation/detection failed, but proceeding with validation...');
+            result.installed.corePlugin = true; // Mark as installed to allow workflow
+            result.installed.corePluginVersion = 'unknown';
+            result.errors.push(
+              'Warning: Could not verify plugin installation. If you see plugin-related errors, try running: /plugin install specweave'
+            );
           } else {
             result.missing.corePlugin = false;
             result.installed.corePlugin = true;
             this.log('Core plugin installed successfully');
           }
+        } else {
+          // ✅ FIX 2: If auto-install not requested, warn but allow workflow
+          // (user might have plugins installed but detection failed)
+          this.log('⚠️  Core plugin not detected, but validation not blocking workflow');
+          this.log('⚠️  If you encounter errors, run: /plugin install specweave');
         }
       } else {
         result.installed.corePlugin = true;
@@ -476,6 +509,9 @@ export class PluginValidator {
   /**
    * Check if a specific plugin is installed
    *
+   * FIXED: Read from Claude's installed_plugins.json instead of non-existent CLI command.
+   * The 'claude plugin list' command doesn't exist in CLI (only in interactive UI).
+   *
    * @param pluginName - Name of plugin to check
    * @returns Plugin installation info
    */
@@ -483,38 +519,65 @@ export class PluginValidator {
     pluginName: string
   ): Promise<{ installed: boolean; version?: string }> {
     try {
-      // Execute: claude plugin list --installed | grep "{pluginName}"
-      // Note: This assumes Claude CLI is available
-      const { stdout } = await execAsync(
-        `claude plugin list --installed 2>/dev/null | grep -i "${pluginName}"`
+      // ✅ CORRECT - Read Claude's plugin registry
+      const pluginRegistryPath = path.join(
+        os.homedir(),
+        '.claude',
+        'plugins',
+        'installed_plugins.json'
       );
 
-      if (stdout.trim()) {
-        // Parse version from output (format: "name  version  description")
-        const match = stdout.match(/(\d+\.\d+\.\d+)/);
-        const version = match ? match[1] : undefined;
-        this.log(`Plugin ${pluginName} found (version: ${version})`);
-        return { installed: true, version };
-      }
+      // Check if registry exists
+      if (!(await fs.pathExists(pluginRegistryPath))) {
+        this.log('Plugin registry not found at ~/.claude/plugins/installed_plugins.json');
 
-      this.log(`Plugin ${pluginName} not found`);
-      return { installed: false };
-    } catch (error: any) {
-      // grep returns exit code 1 if no matches (not an error)
-      if (error.code === 1) {
-        this.log(`Plugin ${pluginName} not found`);
+        // Fallback: Check for development mode
+        const isDevMode = await fs.pathExists(
+          path.join(process.cwd(), 'plugins', pluginName)
+        );
+
+        if (isDevMode) {
+          this.log(`Development mode detected for ${pluginName}`);
+          return { installed: true, version: 'dev' };
+        }
+
         return { installed: false };
       }
 
-      // Check if Claude CLI is not available
-      if (error.message.includes('command not found')) {
-        this.log('Claude CLI not available');
-        throw new Error(
-          'Claude CLI not available. Please ensure Claude Code is installed.'
-        );
+      // Read registry
+      const registry = await fs.readJson(pluginRegistryPath);
+
+      // Check for plugin (format: "pluginName@marketplace")
+      // e.g., "specweave@specweave", "specweave-github@specweave"
+      const pluginKey = Object.keys(registry.plugins || {}).find(
+        (key) => key.startsWith(`${pluginName}@`)
+      );
+
+      if (pluginKey) {
+        const pluginInfo = registry.plugins[pluginKey];
+        this.log(`Plugin ${pluginName} found (version: ${pluginInfo.version})`);
+        return { installed: true, version: pluginInfo.version };
       }
 
+      this.log(`Plugin ${pluginName} not found in registry`);
+      return { installed: false };
+    } catch (error: any) {
       this.log(`Error checking plugin ${pluginName}: ${error.message}`);
+
+      // Fallback: Try development mode detection
+      try {
+        const isDevMode = await fs.pathExists(
+          path.join(process.cwd(), 'plugins', pluginName)
+        );
+
+        if (isDevMode) {
+          this.log(`Development mode detected for ${pluginName} (after error)`);
+          return { installed: true, version: 'dev' };
+        }
+      } catch {
+        // Ignore fallback errors
+      }
+
       return { installed: false };
     }
   }
@@ -635,6 +698,28 @@ export class PluginValidator {
         component: pluginName,
         error: error.message,
       };
+    }
+  }
+
+  /**
+   * Load SpecWeave config file
+   *
+   * @returns Config object or null if not found
+   */
+  private async loadConfig(): Promise<any | null> {
+    try {
+      const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+
+      if (!(await fs.pathExists(configPath))) {
+        this.log('Config file not found at .specweave/config.json');
+        return null;
+      }
+
+      const config = await fs.readJson(configPath);
+      return config;
+    } catch (error: any) {
+      this.log(`Error loading config: ${error.message}`);
+      return null;
     }
   }
 

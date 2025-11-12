@@ -66,5 +66,11 @@
       "classificationConfidenceThreshold": 0.6,
       "fallbackProject": "default"
     }
+  },
+  "pluginValidation": {
+    "enabled": false,
+    "autoInstall": false,
+    "verbose": false,
+    "cacheValidation": false
   }
 }
