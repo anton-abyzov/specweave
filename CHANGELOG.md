@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.1] - 2025-11-11
+
+### 🔧 Critical Fixes
+
+#### NPM Distribution Tag Fix
+- **Fixed**: NPM "latest" dist-tag pointing to wrong version
+  - 0.17.0 was published but "latest" tag still pointed to 0.16.12
+  - Users running `npm i -g specweave` were getting 0.16.12 instead of latest
+  - This release properly updates the "latest" tag
+  - Creates proper git tag (v0.17.1) and GitHub release
+
+### 📦 Includes
+
+- All features from 0.16.12 and earlier
+- Increment 0025: Per-Project Resource Validation progress
+
+---
+
 ## [0.16.12] - 2025-11-11
 
 ### 🐛 Bug Fixes
