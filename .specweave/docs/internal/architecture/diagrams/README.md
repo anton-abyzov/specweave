@@ -1,6 +1,5 @@
 # SpecWeave Architecture Diagrams
 
-**Version**: 3.0
 **Date**: 2025-11-10
 **Status**: Consolidated and streamlined
 
@@ -15,9 +14,9 @@ This folder contains **7 essential Mermaid diagrams** for SpecWeave architecture
 - Combined for comprehensive explanations
 
 **Change Log**:
-- **v3.0 (2025-11-10)**: Major consolidation - removed redundant delivery guide diagrams, renamed brownfield workflow for clarity
-- **v2.0 (2025-10-31)**: Plugin architecture diagrams (v0.4.0)
-- **v1.0**: Initial diagram set
+- **2025-11-10**: Major consolidation - removed redundant delivery guide diagrams, renamed brownfield workflow for clarity
+- **2025-10-31**: Plugin architecture diagrams (product v0.4.0)
+- **Initial**: First diagram set
 
 ---
 
