@@ -66,13 +66,10 @@ test.describe('Project Switching (E2E)', () => {
       }
     }, null, 2));
 
-    // Create project directories (flattened structure v0.15.0+, ADR-0028)
+    // Create project directories (simplified structure, increment 0026)
+    // Only specs folder is created - all docs live at root internal/ level
     for (const projectId of ['frontend', 'backend', 'mobile']) {
-      // Flattened: specs/{projectId}/ not projects/{projectId}/specs/
       await fs.ensureDir(path.join(specweaveRoot, `docs/internal/specs/${projectId}`));
-      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/modules/${projectId}`));
-      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/team/${projectId}`));
-      await fs.ensureDir(path.join(specweaveRoot, `docs/internal/legacy/${projectId}`));
     }
 
     // Add content to frontend project

@@ -10,7 +10,7 @@
 /**
  * Architecture choice
  */
-export type ArchitectureChoice = 'single' | 'multi-with-parent' | 'multi-without-parent' | 'monorepo';
+export type ArchitectureChoice = 'single' | 'multi-with-parent' | 'local-parent' | 'multi-without-parent' | 'monorepo';
 
 /**
  * Architecture prompt option
@@ -39,7 +39,7 @@ export function getArchitecturePrompt(): {
     options: [
       {
         value: 'single',
-        label: 'Single repository',
+        label: '1️⃣  Single repository',
         description: 'All code in one repository',
         example: `
 my-project/
@@ -51,19 +51,34 @@ my-project/
       },
       {
         value: 'multi-with-parent',
-        label: 'Multiple separate repositories WITH parent repository',
-        description: '1 parent repo (specs, docs) + N implementation repos (recommended for teams)',
+        label: '2️⃣  Multiple repos WITH parent repo (GitHub)',
+        description: '✅ RECOMMENDED: Parent repo on GitHub + implementation repos (best for teams)',
         example: `
-my-project-parent/         ← Parent repo (specs, docs, increments)
+my-project-parent/         ← Parent repo (specs, docs) - PUSHED TO GITHUB
 ├── .specweave/
-my-project-frontend/       ← Separate GitHub repo
-my-project-backend/        ← Separate GitHub repo
+├── .env
+└── .gitignore
+my-project-frontend/       ← Separate GitHub repo (root level)
+my-project-backend/        ← Separate GitHub repo (root level)
+        `.trim()
+      },
+      {
+        value: 'local-parent',
+        label: '3️⃣  Multiple repos WITH parent folder (LOCAL only)',
+        description: 'Parent folder with .specweave (NOT pushed to GitHub, local filesystem only)',
+        example: `
+my-parent-folder/          ← Parent folder (LOCAL, NOT synced to GitHub)
+├── .specweave/            ← Gitignored (local only)
+├── .env
+├── frontend/              ← Cloned from GitHub (or init new)
+├── backend/               ← Cloned from GitHub (or init new)
+└── shared/                ← Cloned from GitHub (or init new)
         `.trim()
       },
       {
         value: 'multi-without-parent',
-        label: 'Multiple separate repositories WITHOUT parent repository',
-        description: 'Each repo has its own .specweave/ (NOT RECOMMENDED - leads to fragmentation)',
+        label: '4️⃣  Multiple repos WITHOUT parent',
+        description: '❌ NOT RECOMMENDED: Each repo has .specweave/ (leads to fragmentation)',
         example: `
 my-project-frontend/
 ├── .specweave/            ← Duplicated
@@ -73,7 +88,7 @@ my-project-backend/
       },
       {
         value: 'monorepo',
-        label: 'Monorepo (single repo, multiple projects)',
+        label: '5️⃣  Monorepo (single repo, multiple projects)',
         description: 'All code in one repo, organized by project (best for tightly coupled services)',
         example: `
 my-monorepo/
@@ -95,7 +110,7 @@ my-monorepo/
  */
 export function getParentRepoBenefits(): string {
   return `
-**Why use a parent repository?**
+**Why use a parent folder/repository?**
 
 ✅ **Central .specweave/ for all specs/docs**
    - One source of truth for entire system
@@ -112,27 +127,39 @@ export function getParentRepoBenefits(): string {
 
 ✅ **Simplified onboarding**
    - New developers read one set of docs
-   - Complete system overview in one repo
+   - Complete system overview in one location
 
 ✅ **Compliance & auditing**
    - Complete audit trail in one place
    - Regulatory requirements easier to satisfy
 
-**Example Structure:**
+**Two parent approaches available:**
 
-my-project-parent/         ← Contains .specweave/ (cloned locally)
-├── .specweave/
+**Option 2: GitHub Parent Repository** (Recommended for teams)
+  - Parent repo pushed to GitHub
+  - Team can clone and collaborate
+  - Full version control for specs/docs
+  - Works with CI/CD pipelines
+
+**Option 3: Local Parent Folder** (Recommended for solo developers)
+  - Parent folder stays on your machine
+  - .specweave/ is gitignored (not synced)
+  - Implementation repos still on GitHub
+  - Lighter setup, less overhead
+
+**Example Structure (Local Parent):**
+
+my-parent-folder/          ← Local folder (NOT a GitHub repo)
+├── .specweave/            ← Gitignored (local only)
 │   ├── increments/
 │   ├── docs/
 │   └── logs/
-├── .env                   ← GitHub config
-└── .gitignore
+├── .env                   ← Config
+├── frontend/              ← Cloned from GitHub (or init new)
+├── backend/               ← Cloned from GitHub (or init new)
+└── shared/                ← Cloned from GitHub (or init new)
 
-frontend/                  ← Cloned from GitHub (root-level!)
-backend/                   ← Cloned from GitHub (root-level!)
-shared/                    ← Cloned from GitHub (root-level!)
-
-**Note:** Implementation repos are cloned at root level for clean folder structure.
+**Note:** With local parent, .specweave/ is NOT synced to GitHub.
   `.trim();
 }
 
@@ -197,7 +224,9 @@ export function formatArchitectureChoice(choice: ArchitectureChoice): string {
     case 'single':
       return 'Single repository';
     case 'multi-with-parent':
-      return 'Multiple repositories with parent';
+      return 'Multiple repositories with parent (GitHub)';
+    case 'local-parent':
+      return 'Multiple repositories with local parent folder';
     case 'multi-without-parent':
       return 'Multiple repositories without parent';
     case 'monorepo':
