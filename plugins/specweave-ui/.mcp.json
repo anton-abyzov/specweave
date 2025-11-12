@@ -1,5 +1,11 @@
 {
   "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "description": "Local Playwright browser automation - PRIMARY choice for E2E testing and web interaction",
+      "optional": false
+    },
     "browserbase": {
       "command": "npx",
       "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
@@ -7,7 +13,7 @@
         "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
         "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
       },
-      "description": "Cloud browser automation for running Playwright tests in scalable infrastructure",
+      "description": "Cloud browser automation for running Playwright tests in scalable infrastructure - FALLBACK option",
       "optional": true
     }
   }

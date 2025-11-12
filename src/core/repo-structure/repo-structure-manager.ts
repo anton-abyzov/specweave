@@ -1037,10 +1037,13 @@ export class RepoStructureManager {
 
   /**
    * Create basic structure for a repository/project
+   *
+   * NOTE: Only creates src/ and tests/ folders for nested projects.
+   * Documentation lives in .specweave/docs/internal/specs/{project-id}/ (source of truth)
    */
   private createBasicRepoStructure(repoPath: string, projectId: string): void {
-    // Create basic directories
-    const dirs = ['src', 'tests', 'docs'];
+    // Create basic directories (NO docs/ - documentation lives in .specweave/)
+    const dirs = ['src', 'tests'];
     for (const dir of dirs) {
       const dirPath = path.join(repoPath, dir);
       if (!fs.existsSync(dirPath)) {

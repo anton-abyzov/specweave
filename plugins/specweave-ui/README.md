@@ -199,14 +199,107 @@ AI: I'll create a comprehensive design system...
 
 ---
 
-## MCP Integration (Optional)
+## MCP Integration
 
-### Browserbase (Cloud Browser Automation)
+### Playwright MCP (PRIMARY - Local Browser Automation)
+
+**✅ RECOMMENDED: Use Playwright MCP for local development**
+
+**What it does**:
+- Local browser automation (Chromium, Firefox, WebKit, Edge)
+- E2E testing with accessibility-first selectors
+- No API keys or credentials needed
+- Fast, reliable, works offline
+
+**Setup** (Automatic via `.mcp.json`):
+
+The plugin auto-configures Playwright MCP. To verify:
+
+```bash
+# Check MCP server status
+claude mcp list
+
+# Should show: playwright - ✓ Connected
+```
+
+**Manual Installation** (if needed):
+```bash
+# Install Playwright MCP globally
+npm install -g @playwright/mcp
+
+# Or use npx (recommended)
+npx @playwright/mcp@latest
+```
+
+**Configuration** (`.mcp.json`):
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],  // ⚠️ -y flag is REQUIRED!
+      "description": "Local Playwright - PRIMARY"
+    }
+  }
+}
+```
+
+**⚠️ IMPORTANT**: The `-y` flag is **required**! Without it, npx waits for user confirmation and the MCP connection hangs.
+
+**Advanced Options**:
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y",  // ⚠️ REQUIRED for auto-install
+        "@playwright/mcp@latest",
+        "--browser", "chromium",    // or firefox, webkit, msedge
+        "--headless",               // run without UI
+        "--timeout-action", "5000", // ms
+        "--timeout-navigation", "60000" // ms
+      ]
+    }
+  }
+}
+```
+
+**Usage Example**:
+```javascript
+// Navigate to page
+mcp__plugin_specweave-ui_playwright__browser_goto({ url: "https://example.com" })
+
+// Click button (accessibility-first)
+mcp__plugin_specweave-ui_playwright__browser_click({
+  ref: "button[name='submit']",
+  element: "Submit button"
+})
+
+// Fill input
+mcp__plugin_specweave-ui_playwright__browser_fill({
+  ref: "input[name='email']",
+  text: "user@example.com"
+})
+```
+
+**Benefits**:
+- ✅ No API keys needed
+- ✅ Works offline
+- ✅ Fast local execution
+- ✅ Full browser control
+- ✅ Built-in debugging
+
+---
+
+### Browserbase (FALLBACK - Cloud Browser Automation)
+
+**⚠️ Use only when Playwright MCP unavailable (CI/CD, cloud scenarios)**
 
 **What it does**:
 - Runs Playwright tests in cloud infrastructure
-- Parallel test execution (10x faster)
-- No local browser dependencies
+- Parallel test execution (10x faster at scale)
+- No local browser dependencies in CI
 - Automatic screenshots/videos
 
 **Setup**:
@@ -221,23 +314,36 @@ AI: I'll create a comprehensive design system...
 
 3. SpecWeave auto-configures MCP server (via `.mcp.json`)
 
-4. Use in Playwright:
-   ```typescript
-   // playwright.config.ts
-   export default {
-     use: {
-       connectOptions: {
-         wsEndpoint: process.env.BROWSERBASE_WS_ENDPOINT
-       }
-     }
-   }
-   ```
+4. Use in CI/CD pipelines
+
+**Configuration** (`.mcp.json`):
+```json
+{
+  "mcpServers": {
+    "browserbase": {
+      "command": "npx",
+      "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
+      "env": {
+        "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
+        "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
+      },
+      "optional": true
+    }
+  }
+}
+```
 
 **Benefits**:
-- ✅ 10x faster parallel execution
-- ✅ No local ChromeDriver installation
+- ✅ Parallel execution (10x faster)
+- ✅ No browser installation in CI
 - ✅ Automatic scaling
-- ✅ Works in CI/CD without setup
+- ✅ Works in serverless environments
+
+**When to Use**:
+- ✅ CI/CD pipelines
+- ✅ Cloud deployments
+- ✅ High-scale parallel testing
+- ❌ Local development (use Playwright MCP instead)
 
 ---
 
