@@ -202,10 +202,30 @@ if command -v node &> /dev/null; then
   if [ -n "$CURRENT_INCREMENT" ]; then
     echo "[$(date)] 📚 Checking living docs sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
-    # Run living docs sync (non-blocking, best-effort)
-    node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-      echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-    }
+    # Determine which sync script to use (project local or global)
+    SYNC_SCRIPT=""
+    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      # Development: Use project's compiled files (has node_modules)
+      SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
+      echo "[$(date)]   Using local dist: $SYNC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      # Installed as dependency: Use node_modules version
+      SYNC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
+      echo "[$(date)]   Using node_modules: $SYNC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js" ]; then
+      # Fallback: Plugin marketplace (may fail if deps missing)
+      SYNC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js"
+      echo "[$(date)]   Using plugin marketplace: $SYNC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+
+    if [ -n "$SYNC_SCRIPT" ]; then
+      # Run living docs sync (non-blocking, best-effort)
+      (cd "$PROJECT_ROOT" && node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+        echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      }
+    else
+      echo "[$(date)] ⚠️  sync-living-docs.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
   fi
 fi
 
@@ -217,10 +237,30 @@ if command -v node &> /dev/null; then
   if [ -n "$CURRENT_INCREMENT" ]; then
     echo "[$(date)] 🌐 Checking if living docs translation is needed for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
-    # Run living docs translation (non-blocking, best-effort)
-    node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js "$CURRENT_INCREMENT" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-      echo "[$(date)] ⚠️  Failed to translate living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-    }
+    # Determine which translation script to use (project local or global)
+    TRANSLATE_SCRIPT=""
+    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
+      # Development: Use project's compiled files (has node_modules)
+      TRANSLATE_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js"
+      echo "[$(date)]   Using local dist: $TRANSLATE_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
+      # Installed as dependency: Use node_modules version
+      TRANSLATE_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/translate-living-docs.js"
+      echo "[$(date)]   Using node_modules: $TRANSLATE_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js" ]; then
+      # Fallback: Plugin marketplace (may fail if deps missing)
+      TRANSLATE_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js"
+      echo "[$(date)]   Using plugin marketplace: $TRANSLATE_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+
+    if [ -n "$TRANSLATE_SCRIPT" ]; then
+      # Run living docs translation (non-blocking, best-effort)
+      (cd "$PROJECT_ROOT" && node "$TRANSLATE_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+        echo "[$(date)] ⚠️  Failed to translate living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      }
+    else
+      echo "[$(date)] ⚠️  translate-living-docs.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
   fi
 fi
 
@@ -256,10 +296,30 @@ if command -v node &> /dev/null; then
     LATEST_TASK=$(grep "^## T-[0-9]" ".specweave/increments/$CURRENT_INCREMENT/tasks.md" 2>/dev/null | tail -1 | awk '{print $2}' | sed 's/://')
 
     if [ -n "$LATEST_TASK" ]; then
-      # Prepare reflection context (non-blocking, best-effort)
-      node ${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js "$CURRENT_INCREMENT" "$LATEST_TASK" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-        echo "[$(date)] ⚠️  Failed to prepare reflection context (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-      }
+      # Determine which reflection script to use (project local or global)
+      REFLECTION_SCRIPT=""
+      if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
+        # Development: Use project's compiled files (has node_modules)
+        REFLECTION_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js"
+        echo "[$(date)]   Using local dist: $REFLECTION_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+      elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
+        # Installed as dependency: Use node_modules version
+        REFLECTION_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js"
+        echo "[$(date)]   Using node_modules: $REFLECTION_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+      elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js" ]; then
+        # Fallback: Plugin marketplace (may fail if deps missing)
+        REFLECTION_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js"
+        echo "[$(date)]   Using plugin marketplace: $REFLECTION_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
+
+      if [ -n "$REFLECTION_SCRIPT" ]; then
+        # Prepare reflection context (non-blocking, best-effort)
+        (cd "$PROJECT_ROOT" && node "$REFLECTION_SCRIPT" "$CURRENT_INCREMENT" "$LATEST_TASK") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to prepare reflection context (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      else
+        echo "[$(date)] ⚠️  prepare-reflection-context.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
     else
       echo "[$(date)] ℹ️  No tasks found in tasks.md, skipping reflection" >> "$DEBUG_LOG" 2>/dev/null || true
     fi

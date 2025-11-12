@@ -89,6 +89,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 ```
 🚀 Initialize Multi-Project Mode
 
+📁 Step 1: Auto-migrating to multi-project structure...
 ✅ Migration complete! Using projects/default/ structure
 
 Enable multi-project mode? (supports multiple teams/repos) (y/N): y
@@ -527,6 +528,27 @@ modules/
 
 ## Migration from Single to Multi-Project
 
+Existing single-project setups automatically migrate:
+
+### What Happens
+
+```bash
+/specweave:init-multiproject
+
+# Auto-migration:
+# 1. Copies .specweave/docs/internal/specs/ → specs/default/
+# 2. Renames old specs/ to specs.old/ (backup)
+# 3. Creates multiProject section in config
+# 4. No behavior change (still single project)
+```
+
+### Behavior
+
+- **Before**: Specs at `.specweave/docs/internal/specs/`
+- **After**: Specs at `.specweave/docs/internal/specs/default/`
+- **Result**: No behavior change, just new structure
+
+### Enable Multi-Project
 
 ```bash
 /specweave:init-multiproject

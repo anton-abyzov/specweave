@@ -71,10 +71,10 @@ EOF
   exit 0
 fi
 
-# Check if github-spec-sync CLI exists
-SYNC_CLI="$PROJECT_ROOT/dist/cli/commands/sync-specs-to-github.js"
+# Check if github-spec-content-sync CLI exists
+SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
 if [ ! -f "$SYNC_CLI" ]; then
-  echo "[$(date)] [GitHub] ⚠️  github-spec-sync CLI not found at $SYNC_CLI, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] [GitHub] ⚠️  sync-spec-content CLI not found at $SYNC_CLI, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
   cat <<EOF
 {
   "continue": true
@@ -131,23 +131,43 @@ fi
 # ============================================================================
 
 if [ -n "$SPEC_ID" ]; then
-  # Sync specific spec
-  echo "[$(date)] [GitHub] 🔄 Syncing spec $SPEC_ID to GitHub Project..." >> "$DEBUG_LOG" 2>/dev/null || true
+  # Convert SPEC_ID to spec file path
+  SPEC_FILE=$(find .specweave/docs/internal/specs -name "${SPEC_ID}*.md" -o -name "${SPEC_ID}.md" 2>/dev/null | head -1)
 
-  node "$SYNC_CLI" --spec-id "$SPEC_ID" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-    echo "[$(date)] [GitHub] ⚠️  Spec sync failed for $SPEC_ID (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-  }
+  if [ -n "$SPEC_FILE" ]; then
+    # Sync specific spec
+    echo "[$(date)] [GitHub] 🔄 Syncing spec $SPEC_ID ($SPEC_FILE) to GitHub..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-  echo "[$(date)] [GitHub] ✅ Spec sync complete for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+    (cd "$PROJECT_ROOT" && node "$SYNC_CLI" --spec "$SPEC_FILE" --provider github) 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+      echo "[$(date)] [GitHub] ⚠️  Spec sync failed for $SPEC_ID (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+    }
+
+    echo "[$(date)] [GitHub] ✅ Spec sync complete for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+  else
+    echo "[$(date)] [GitHub] ⚠️  Spec file not found for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
 else
-  # Sync all changed specs (fallback)
-  echo "[$(date)] [GitHub] 🔄 Syncing all changed specs to GitHub..." >> "$DEBUG_LOG" 2>/dev/null || true
+  # Sync all modified specs (check git diff)
+  echo "[$(date)] [GitHub] 🔄 Checking for modified specs..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-  node "$SYNC_CLI" --all 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-    echo "[$(date)] [GitHub] ⚠️  Batch spec sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-  }
+  MODIFIED_SPECS=$(git diff --name-only HEAD .specweave/docs/internal/specs/*.md 2>/dev/null || echo "")
 
-  echo "[$(date)] [GitHub] ✅ Batch spec sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [ -n "$MODIFIED_SPECS" ]; then
+    echo "[$(date)] [GitHub] 📝 Found modified specs:" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "$MODIFIED_SPECS" >> "$DEBUG_LOG" 2>/dev/null || true
+
+    # Sync each modified spec
+    echo "$MODIFIED_SPECS" | while read -r SPEC_FILE; do
+      if [ -n "$SPEC_FILE" ]; then
+        echo "[$(date)] [GitHub] 🔄 Syncing $SPEC_FILE..." >> "$DEBUG_LOG" 2>/dev/null || true
+        (cd "$PROJECT_ROOT" && node "$SYNC_CLI" --spec "$SPEC_FILE" --provider github) 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || true
+      fi
+    done
+
+    echo "[$(date)] [GitHub] ✅ Batch spec sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
+  else
+    echo "[$(date)] [GitHub] ℹ️  No modified specs found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
 fi
 
 # ============================================================================

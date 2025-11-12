@@ -212,20 +212,16 @@ export async function getSpecTaskMapping(
     // Determine spec path
     let actualSpecPath = specPath;
     if (!actualSpecPath && specId) {
-      // Try to find spec in living docs
+      // Try to find spec in living docs (flattened structure v0.16.11+)
       const projectRoot = incrementPath.split('.specweave')[0];
-      const possiblePaths = [
-        path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs', `${specId}-*.md`),
-        path.join(projectRoot, '.specweave', 'docs', 'internal', 'projects', 'default', 'specs', `${specId}-*.md`),
-      ];
+      const glob = await import('glob');
 
-      for (const possiblePath of possiblePaths) {
-        const glob = await import('glob');
-        const matches = glob.sync(possiblePath);
-        if (matches.length > 0) {
-          actualSpecPath = matches[0];
-          break;
-        }
+      // Search in flattened structure: .specweave/docs/internal/specs/{project-id}/spec-{id}-*.md
+      const specPattern = path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs', '*', `${specId}-*.md`);
+      const matches = glob.sync(specPattern);
+
+      if (matches.length > 0) {
+        actualSpecPath = matches[0];
       }
     }
 
