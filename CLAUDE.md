@@ -2863,8 +2863,7 @@ plugins/specweave-{name}/
   "repository": "https://github.com/owner/repo",
   "homepage": "https://example.com",
   "license": "MIT",
-  "keywords": ["keyword1", "keyword2"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["keyword1", "keyword2"]
 }
 ```
 
@@ -2877,21 +2876,11 @@ plugins/specweave-{name}/
 | **version** | string | Required, semver format | `"1.0.0"` |
 | **author** | object | Required, with name field | `{"name": "Team"}` |
 | **repository** | string | Must be string, NOT object | `"https://github.com/..."` ✅ |
-| **hooks** | string | Must start with "./" | `"./hooks/hooks.json"` ✅ |
 | **keywords** | array | Optional, array of strings | `["github", "sync"]` |
 | **homepage** | string | Optional, URL | `"https://spec-weave.com"` |
 | **license** | string | Optional, SPDX identifier | `"MIT"` |
 
 #### Common Validation Errors
-
-**❌ hooks: Invalid input: must start with "./"**
-```json
-// WRONG
-"hooks": "hooks/hooks.json"
-
-// CORRECT
-"hooks": "./hooks/hooks.json"
-```
 
 **❌ repository: Expected string, received object**
 ```json
@@ -2932,7 +2921,7 @@ plugins/specweave-{name}/
 - `skills/` directory → auto-discovered (no plugin.json field needed)
 - `agents/` directory → auto-discovered (no plugin.json field needed)
 - `commands/` directory → auto-discovered (no plugin.json field needed)
-- `hooks/hooks.json` → MUST be declared in plugin.json with "./hooks/hooks.json"
+- `hooks/hooks.json` → auto-discovered (no plugin.json field needed)
 
 **Example: Working plugin.json**
 ```json
@@ -2943,8 +2932,7 @@ plugins/specweave-{name}/
   "author": {"name": "SpecWeave Team"},
   "repository": "https://github.com/anton-abyzov/specweave",
   "license": "MIT",
-  "keywords": ["github", "sync"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["github", "sync"]
 }
 ```
 
@@ -2952,7 +2940,7 @@ plugins/specweave-{name}/
 ```
 plugins/specweave-github/
 ├── .claude-plugin/
-│   └── plugin.json          ← Declares hooks only
+│   └── plugin.json          ← Plugin metadata only
 ├── skills/                  ← Auto-discovered
 │   └── github-sync/
 ├── agents/                  ← Auto-discovered
@@ -2960,17 +2948,16 @@ plugins/specweave-github/
 ├── commands/                ← Auto-discovered
 │   └── github-sync.md
 └── hooks/
-    ├── hooks.json           ← Referenced in plugin.json
+    ├── hooks.json           ← Auto-discovered
     └── post-task-completion.sh
 ```
 
 #### Quick Validation Checklist
 
 Before committing a new plugin:
-- [ ] All paths start with "./" (hooks, any explicit file references)
 - [ ] repository is a string, not an object
 - [ ] No NPM-specific fields (engines, dependencies)
-- [ ] No directory references in plugin.json (skills, agents, commands)
+- [ ] No directory references in plugin.json (skills, agents, commands, hooks)
 - [ ] Valid JSON syntax (use `jq . < plugin.json` to validate)
 - [ ] Test with: `/plugin marketplace add ./.claude-plugin && /plugin install plugin-name`
 
@@ -2991,8 +2978,7 @@ cat > plugins/specweave-myplugin/.claude-plugin/plugin.json << 'EOF'
   "repository": "https://github.com/anton-abyzov/specweave",
   "homepage": "https://spec-weave.com",
   "license": "MIT",
-  "keywords": ["specweave", "plugin"],
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["specweave", "plugin"]
 }
 EOF
 
