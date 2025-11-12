@@ -145,7 +145,7 @@ export class ConflictResolver {
    */
   public mapExternalStatus(tool: 'ado' | 'jira' | 'github', externalStatus: string): SpecStatus {
     const mapping = STATUS_MAPPING[tool];
-    return mapping[externalStatus] || 'unknown' as SpecStatus;
+    return (mapping as Record<string, SpecStatus>)[externalStatus] || 'unknown' as SpecStatus;
   }
 
   /**

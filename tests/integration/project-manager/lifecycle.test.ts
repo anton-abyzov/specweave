@@ -170,22 +170,22 @@ describe('ProjectManager - Full Lifecycle (Integration)', () => {
 
       const projectManager = new ProjectManager(tmpDir);
 
-      // Test paths for default project
+      // Test paths for default project (flattened structure)
       const defaultSpecsPath = projectManager.getSpecsPath();
-      expect(defaultSpecsPath).toContain('projects/default/specs');
+      expect(defaultSpecsPath).toContain('specs/default');
 
       const defaultModulesPath = projectManager.getModulesPath();
-      expect(defaultModulesPath).toContain('projects/default/modules');
+      expect(defaultModulesPath).toContain('modules/default');
 
       // Switch to backend project
       await projectManager.switchProject('backend');
 
-      // Test paths for backend project
+      // Test paths for backend project (flattened structure)
       const backendSpecsPath = projectManager.getSpecsPath();
-      expect(backendSpecsPath).toContain('projects/backend/specs');
+      expect(backendSpecsPath).toContain('specs/backend');
 
       const backendModulesPath = projectManager.getModulesPath();
-      expect(backendModulesPath).toContain('projects/backend/modules');
+      expect(backendModulesPath).toContain('modules/backend');
 
       // Verify paths are different
       expect(backendSpecsPath).not.toBe(defaultSpecsPath);
