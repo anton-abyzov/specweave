@@ -1,17 +1,22 @@
 #!/bin/bash
 
 # SpecWeave GitHub Sync Hook
-# Runs after task completion to sync progress to GitHub Issues
+# Runs after task completion to sync progress to GitHub Projects
+#
+# CORRECT ARCHITECTURE (v0.17.0+):
+# - Syncs .specweave/docs/internal/specs/spec-*.md ↔ GitHub Projects
+# - NOT increments ↔ GitHub Issues (that was wrong!)
 #
 # This hook is part of the specweave-github plugin and handles:
-# - Updating GitHub issue checkboxes based on tasks.md completion status
-# - Posting progress comments to GitHub issues
-# - Syncing task completion state bidirectionally
+# - Finding which spec the current work belongs to
+# - Updating spec user stories based on task completion
+# - Syncing spec state to GitHub Projects
+# - Updating GitHub Project cards/issues
 #
 # Dependencies:
-# - gh CLI (GitHub CLI) must be installed and authenticated
-# - jq for JSON parsing
-# - metadata.json must have .github.issue field
+# - Node.js and TypeScript CLI (dist/cli/commands/*)
+# - GitHub CLI (gh) must be installed and authenticated
+# - Spec metadata must have .externalLinks.github field
 
 set -e
 
@@ -55,11 +60,9 @@ mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
 echo "[$(date)] [GitHub] 🔗 GitHub sync hook fired" >> "$DEBUG_LOG" 2>/dev/null || true
 
-# Detect current increment
-CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
-
-if [ -z "$CURRENT_INCREMENT" ]; then
-  echo "[$(date)] [GitHub] ℹ️  No active increment, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
+# Check if Node.js is available
+if ! command -v node &> /dev/null; then
+  echo "[$(date)] [GitHub] ⚠️  Node.js not found, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
   cat <<EOF
 {
   "continue": true
@@ -68,34 +71,10 @@ EOF
   exit 0
 fi
 
-# Check for metadata.json
-METADATA_FILE=".specweave/increments/$CURRENT_INCREMENT/metadata.json"
-
-if [ ! -f "$METADATA_FILE" ]; then
-  echo "[$(date)] [GitHub] ℹ️  No metadata.json for $CURRENT_INCREMENT, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
-  exit 0
-fi
-
-# Check for GitHub issue link
-if ! command -v jq &> /dev/null; then
-  echo "[$(date)] [GitHub] ⚠️  jq not found, skipping GitHub sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
-  exit 0
-fi
-
-GITHUB_ISSUE=$(jq -r '.github.issue // empty' "$METADATA_FILE" 2>/dev/null)
-
-if [ -z "$GITHUB_ISSUE" ]; then
-  echo "[$(date)] [GitHub] ℹ️  No GitHub issue linked to $CURRENT_INCREMENT, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+# Check if github-spec-sync CLI exists
+SYNC_CLI="$PROJECT_ROOT/dist/cli/commands/sync-specs-to-github.js"
+if [ ! -f "$SYNC_CLI" ]; then
+  echo "[$(date)] [GitHub] ⚠️  github-spec-sync CLI not found at $SYNC_CLI, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
   cat <<EOF
 {
   "continue": true
@@ -116,140 +95,59 @@ EOF
 fi
 
 # ============================================================================
-# GITHUB SYNC LOGIC
+# DETECT CURRENT SPEC
 # ============================================================================
 
-echo "[$(date)] [GitHub] 🔄 Syncing to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
+# Strategy: Find current increment, then find which spec it belongs to
 
-TASKS_FILE=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
+# 1. Detect current increment (temporary context)
+CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
 
-if [ ! -f "$TASKS_FILE" ]; then
-  echo "[$(date)] [GitHub] ℹ️  tasks.md not found for $CURRENT_INCREMENT, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
-  exit 0
+if [ -z "$CURRENT_INCREMENT" ]; then
+  echo "[$(date)] [GitHub] ℹ️  No active increment, checking for spec changes..." >> "$DEBUG_LOG" 2>/dev/null || true
+  # Fall through to sync all changed specs
 fi
 
-echo "[$(date)] [GitHub] 📊 Syncing task checkboxes to GitHub issue #$GITHUB_ISSUE" >> "$DEBUG_LOG" 2>/dev/null || true
+SPEC_ID=""
 
-# Get list of completed tasks from tasks.md
-# Find all "## T-XXX:" headers where the task has "[x]" checkbox
-COMPLETED_TASK_IDS=$(awk '
-  /^## T-[0-9]+:/ {
-    task_id = $2
-    gsub(/:/, "", task_id)
-    current_task = task_id
-    task_title = substr($0, index($0, $3))
-    next
-  }
-  /^- \[x\]/ && current_task != "" {
-    # Found a completed checkbox under a task
-    print current_task
-    current_task = ""
-  }
-' "$TASKS_FILE" 2>/dev/null)
+if [ -n "$CURRENT_INCREMENT" ]; then
+  # 2. Try to find spec reference in increment
+  SPEC_FILE=".specweave/increments/$CURRENT_INCREMENT/spec.md"
 
-echo "[$(date)] [GitHub] Completed tasks found: $COMPLETED_TASK_IDS" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [ -f "$SPEC_FILE" ]; then
+    # Look for "Implements: SPEC-XXX" or "See: SPEC-XXX" patterns
+    SPEC_REF=$(grep -E "^(Implements|See|References).*SPEC-[0-9]+" "$SPEC_FILE" 2>/dev/null | head -1 || echo "")
 
-# Read current issue body
-ISSUE_BODY=$(gh issue view "$GITHUB_ISSUE" --json body -q .body 2>/dev/null || echo "")
-
-if [ -z "$ISSUE_BODY" ]; then
-  echo "[$(date)] [GitHub] ⚠️  Failed to read issue body, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
-  exit 0
+    if [ -n "$SPEC_REF" ]; then
+      # Extract spec ID (e.g., "SPEC-001" → "spec-001")
+      SPEC_ID=$(echo "$SPEC_REF" | grep -oE "SPEC-[0-9]+" | tr 'A-Z' 'a-z' | head -1)
+      echo "[$(date)] [GitHub] 📋 Detected spec: $SPEC_ID (from increment $CURRENT_INCREMENT)" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  fi
 fi
-
-# Create temporary file for updated body
-TEMP_BODY=$(mktemp)
-echo "$ISSUE_BODY" > "$TEMP_BODY"
-
-# Update checkboxes for completed tasks
-# Pattern: "- [ ] task-name" -> "- [x] task-name"
-for task_id in $COMPLETED_TASK_IDS; do
-  # Update checkbox for this task ID
-  # Look for patterns like "[ ] T-013:" or "[ ] CLAUDE.md updates" etc.
-  sed -i.bak "s/- \[ \] \(.*${task_id}.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-  sed -i.bak "s/- \[ \] \(.*T-0*${task_id#T-}[: ].*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-
-  echo "[$(date)] [GitHub] Updated checkbox for task: $task_id" >> "$DEBUG_LOG" 2>/dev/null || true
-done
-
-# Also update based on task names (more reliable)
-# Check for common patterns in issue body
-if grep -q "test-aware-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-  sed -i.bak "s/- \[ \] \(.*test-aware-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-fi
-if grep -q "PM.*increment-planner" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-  sed -i.bak "s/- \[ \] \(.*PM.*increment-planner.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-  sed -i.bak "s/- \[ \] \(.*Enhanced PM.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-fi
-if grep -q "CLAUDE.md" "$TASKS_FILE" && grep -q "\[x\]" "$TASKS_FILE"; then
-  sed -i.bak "s/- \[ \] \(.*CLAUDE\.md.*\)/- [x] \1/g" "$TEMP_BODY" 2>/dev/null || true
-fi
-
-# Read updated body
-UPDATED_BODY=$(cat "$TEMP_BODY")
-
-# Update issue with new body
-gh issue edit "$GITHUB_ISSUE" --body "$UPDATED_BODY" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-  echo "[$(date)] [GitHub] ⚠️  Failed to update issue description (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-}
-
-# Cleanup
-rm -f "$TEMP_BODY" "$TEMP_BODY.bak"
-
-echo "[$(date)] [GitHub] ✅ Issue description checkboxes updated" >> "$DEBUG_LOG" 2>/dev/null || true
-
-# Calculate progress for comment
-TOTAL_TASKS=$(grep -c "^## T-[0-9]" "$TASKS_FILE" 2>/dev/null || echo "0")
-COMPLETED_TASKS=$(echo "$COMPLETED_TASK_IDS" | wc -w | tr -d ' ')
-
-if [ "$TOTAL_TASKS" -gt 0 ]; then
-  PROGRESS_PCT=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
-
-  # Post progress comment
-  gh issue comment "$GITHUB_ISSUE" --body "**Progress Update**: $COMPLETED_TASKS/$TOTAL_TASKS tasks ($PROGRESS_PCT%)
-
-Increment: \`$CURRENT_INCREMENT\`
-
----
-🤖 Auto-updated by SpecWeave GitHub plugin" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-    echo "[$(date)] [GitHub] ⚠️  Failed to comment on GitHub issue (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-  }
-
-  echo "[$(date)] [GitHub] ✅ Progress comment posted ($PROGRESS_PCT%)" >> "$DEBUG_LOG" 2>/dev/null || true
-fi
-
-echo "[$(date)] [GitHub] ✅ GitHub sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
-# SPEC COMMIT SYNC (NEW!)
+# SYNC SPEC TO GITHUB
 # ============================================================================
 
-echo "[$(date)] [GitHub] 🔗 Checking for spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+if [ -n "$SPEC_ID" ]; then
+  # Sync specific spec
+  echo "[$(date)] [GitHub] 🔄 Syncing spec $SPEC_ID to GitHub Project..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-# Call TypeScript CLI to sync commits
-if command -v node &> /dev/null && [ -f "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" ]; then
-  echo "[$(date)] [GitHub] 🚀 Running spec commit sync..." >> "$DEBUG_LOG" 2>/dev/null || true
+  node "$SYNC_CLI" --spec-id "$SPEC_ID" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+    echo "[$(date)] [GitHub] ⚠️  Spec sync failed for $SPEC_ID (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+  }
 
-  node "$PROJECT_ROOT/dist/cli/commands/sync-spec-commits.js" \
-    --increment "$PROJECT_ROOT/.specweave/increments/$CURRENT_INCREMENT" \
-    --provider github \
-    2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-      echo "[$(date)] [GitHub] ⚠️  Spec commit sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-    }
-
-  echo "[$(date)] [GitHub] ✅ Spec commit sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] [GitHub] ✅ Spec sync complete for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
 else
-  echo "[$(date)] [GitHub] ℹ️  Spec commit sync not available (node or script not found)" >> "$DEBUG_LOG" 2>/dev/null || true
+  # Sync all changed specs (fallback)
+  echo "[$(date)] [GitHub] 🔄 Syncing all changed specs to GitHub..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+  node "$SYNC_CLI" --all 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+    echo "[$(date)] [GitHub] ⚠️  Batch spec sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+  }
+
+  echo "[$(date)] [GitHub] ✅ Batch spec sync complete" >> "$DEBUG_LOG" 2>/dev/null || true
 fi
 
 # ============================================================================

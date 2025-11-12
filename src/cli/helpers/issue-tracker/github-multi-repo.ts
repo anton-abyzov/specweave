@@ -59,14 +59,23 @@ export interface GitHubConfiguration {
 }
 
 /**
+ * Result from promptGitHubSetupType including optional profiles
+ */
+export interface GitHubSetupResult {
+  setupType: GitHubSetupType;
+  profiles?: GitHubProfile[];      // Profiles extracted from RepoStructureManager
+  monorepoProjects?: string[];     // Projects for monorepo setup
+}
+
+/**
  * Prompt for GitHub setup type
  * Enhanced to integrate with RepoStructureManager for repository creation
  *
  * @param projectPath - Path to project directory
  * @param githubToken - Optional GitHub token for API calls
- * @returns Selected setup type with configuration
+ * @returns Selected setup type with optional profiles (if RepoStructureManager was used)
  */
-export async function promptGitHubSetupType(projectPath?: string, githubToken?: string): Promise<GitHubSetupType> {
+export async function promptGitHubSetupType(projectPath?: string, githubToken?: string): Promise<GitHubSetupResult> {
   console.log(chalk.cyan('\n📂 Repository Configuration\n'));
   console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
 
@@ -88,14 +97,27 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     // Create SpecWeave structure
     await manager.createSpecWeaveStructure(config);
 
-    // Map to legacy format for backward compatibility
-    if (config.architecture === 'single') {
-      return 'single';
-    } else if (config.architecture === 'monorepo') {
-      return 'monorepo';
-    } else {
-      return 'multiple';
-    }
+    // Extract profiles from config to avoid duplicate prompts
+    const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
+      id: repo.id,
+      displayName: repo.description || repo.name,
+      owner: repo.owner,
+      repo: repo.name,
+      isDefault: index === 0  // First repo is default
+    }));
+
+    // Map to setup type
+    const setupType: GitHubSetupType =
+      config.architecture === 'single' ? 'single' :
+      config.architecture === 'monorepo' ? 'monorepo' :
+      'multiple';
+
+    // Return profiles directly - no need to call configureMultipleRepositories()
+    return {
+      setupType,
+      profiles,
+      monorepoProjects: config.monorepoProjects
+    };
   }
 
   // Fallback to legacy prompt if no projectPath/token
@@ -133,7 +155,8 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     default: 'single'
   }]);
 
-  return setupType as GitHubSetupType;
+  // Return just the setup type (profiles will be collected by configure* functions)
+  return { setupType: setupType as GitHubSetupType };
 }
 
 /**
@@ -286,10 +309,14 @@ export async function configureMultipleRepositories(projectPath: string): Promis
       {
         type: 'input',
         name: 'id',
-        message: 'Repository ID (e.g., frontend, backend, api):',
+        message: 'Repository ID (single identifier, e.g., "frontend" or "backend"):',
         validate: (input: string) => {
           if (!input.trim()) {
             return 'ID is required';
+          }
+          // Explicit comma check
+          if (input.includes(',')) {
+            return 'One ID at a time (no commas)';
           }
           if (!/^[a-z][a-z0-9-]*$/.test(input)) {
             return 'ID must be lowercase letters, numbers, and hyphens';
@@ -428,7 +455,8 @@ export async function autoDetectRepositories(projectPath: string): Promise<GitHu
 
   if (!confirmDetected) {
     // Ask which setup type they want instead
-    const setupType = await promptGitHubSetupType();
+    const setupResult = await promptGitHubSetupType();
+    const { setupType } = setupResult;
     switch (setupType) {
       case 'none':
         return configureNoRepository();

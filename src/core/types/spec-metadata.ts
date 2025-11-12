@@ -35,7 +35,7 @@ export interface ExternalToolLink {
 }
 
 /**
- * GitHub-specific external link
+ * GitHub-specific external link (v0.18.0+ Multi-Project Support)
  */
 export interface GitHubLink {
   /** GitHub Project ID (numeric) */
@@ -52,6 +52,48 @@ export interface GitHubLink {
 
   /** Repository name */
   repo?: string;
+
+  // ============================================================================
+  // NEW in v0.18.0: Multi-Project Support
+  // ============================================================================
+
+  /**
+   * Sync strategy used for this spec
+   * - project-per-spec: One GitHub Project per spec (default)
+   * - team-board: One GitHub Project per team
+   * - centralized: Parent repo tracks all
+   * - distributed: Each team syncs to their repo
+   */
+  syncStrategy?: 'project-per-spec' | 'team-board' | 'centralized' | 'distributed';
+
+  /**
+   * Project ID (for multi-project architecture)
+   * - Maps to .specweave/docs/internal/specs/{projectId}/
+   */
+  specProjectId?: string;
+
+  /**
+   * Cross-team sync info (for distributed strategy)
+   * - Multiple GitHub repos if spec touches multiple teams
+   */
+  crossTeamRepos?: Array<{
+    owner: string;
+    repo: string;
+    projectUrl?: string;
+    relevantUserStories?: string[];  // US-IDs synced to this repo
+  }>;
+
+  /**
+   * Team board ID (for team-board strategy)
+   * - ID of the GitHub Project that aggregates all specs from this team
+   */
+  teamBoardId?: number;
+
+  /**
+   * Sync profile ID used for this sync
+   * - Maps to config.sync.profiles[profileId]
+   */
+  syncProfileId?: string;
 }
 
 /**
