@@ -101,11 +101,13 @@ Just a simple spec with no user stories.
   describe('detectContentChanges', () => {
     it('should detect title change', () => {
       const localSpec = {
+        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
         id: 'spec-001',
         title: 'User Authentication v2',
         description: 'Add user authentication',
         userStories: [] as SpecUserStory[],
         metadata: {},
+        project: 'default',
       };
 
       const externalContent = {
@@ -122,11 +124,13 @@ Just a simple spec with no user stories.
 
     it('should detect description change', () => {
       const localSpec = {
+        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user authentication with OAuth',
         userStories: [] as SpecUserStory[],
         metadata: {},
+        project: 'default',
       };
 
       const externalContent = {
@@ -167,11 +171,13 @@ Just a simple spec with no user stories.
 
     it('should detect no changes when content is identical', () => {
       const localSpec = {
+        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user authentication',
         userStories: [{ id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] }],
         metadata: {},
+        project: 'default',
       };
 
       const externalContent = {
@@ -188,11 +194,13 @@ Just a simple spec with no user stories.
 
     it('should normalize whitespace when comparing descriptions', () => {
       const localSpec = {
+        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
         id: 'spec-001',
         title: 'User Authentication',
         description: 'Add user\n\nauthentication with\nOAuth',
         userStories: [] as SpecUserStory[],
         metadata: {},
+        project: 'default',
       };
 
       const externalContent = {
@@ -249,11 +257,13 @@ Just a simple spec with no user stories.
 
     it('should handle spec without user stories', () => {
       const spec = {
+        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
         id: 'spec-001',
         title: 'Simple Spec',
         description: 'Simple description',
         userStories: [] as SpecUserStory[],
         metadata: {},
+        project: 'default',
       };
 
       const description = buildExternalDescription(spec);

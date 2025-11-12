@@ -1,9 +1,15 @@
 name: Auto-Fix Trigger
 
-# Trigger when any workflow completes
+# Trigger when specific workflows complete
 on:
   workflow_run:
-    workflows: ["*"]  # All workflows
+    workflows:
+      - "Test & Validate"
+      - "Release & Publish"
+      - "Documentation Build"
+      - "Deploy Documentation to GitHub Pages"
+      - "SpecWeave E2E Smoke Test"
+      - "DORA Metrics"
     types: [completed]
 
 jobs:

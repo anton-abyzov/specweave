@@ -535,7 +535,7 @@ Frontend dashboard for visualization
       }
     });
 
-    it('should handle invalid YAML frontmatter', async () => {
+    it('should throw on invalid YAML frontmatter', async () => {
       const originalCwd = process.cwd();
       process.chdir(testDir);
 
@@ -550,10 +550,8 @@ invalid yaml here
 # Content
 `;
 
-        // Should parse, but might have empty frontmatter
-        const spec = parser.parse(invalidSpec);
-
-        expect(spec).toBeDefined();
+        // Invalid YAML should throw during parsing
+        expect(() => parser.parse(invalidSpec)).toThrow();
       } finally {
         process.chdir(originalCwd);
       }
