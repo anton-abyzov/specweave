@@ -679,6 +679,61 @@ EOF
     log_debug "Auto-create disabled in config"
   fi
 
+  # ============================================================================
+  # FALLBACK METADATA CREATION (v0.14.0+)
+  # ============================================================================
+  # CRITICAL: Ensure metadata.json exists even if GitHub integration failed
+  # This prevents silent failures where increment appears complete but lacks metadata
+
+  log_info ""
+  log_info "🔍 Validating metadata.json existence..."
+
+  local metadata_file="$increment_dir/metadata.json"
+
+  if [ ! -f "$metadata_file" ]; then
+    log_info "  ⚠️  metadata.json not found (hook may have failed)"
+    log_info "  📝 Creating minimal metadata as fallback..."
+
+    local current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    # Extract type from spec.md frontmatter (if available)
+    local increment_type="feature"
+    if [ -f "$spec_file" ]; then
+      local extracted_type=$(awk '/^---$/,/^---$/ {if (/^type:/) {sub(/^type:[[:space:]]*"?/, ""); sub(/"?[[:space:]]*$/, ""); print; exit}}' "$spec_file" 2>/dev/null)
+      if [ -n "$extracted_type" ]; then
+        increment_type="$extracted_type"
+      fi
+    fi
+
+    # Create minimal metadata.json
+    cat > "$metadata_file" <<EOF_MINIMAL
+{
+  "id": "$increment_id",
+  "status": "active",
+  "type": "$increment_type",
+  "created": "$current_timestamp",
+  "lastActivity": "$current_timestamp"
+}
+EOF_MINIMAL
+
+    log_info "  ✅ Created minimal metadata.json"
+    log_info "  ⚠️  Note: No GitHub issue linked"
+    log_info "  💡 Run /specweave-github:create-issue $increment_id to create one manually"
+  else
+    log_info "  ✅ metadata.json exists"
+
+    # Check if GitHub issue was created
+    local has_github=$(cat "$metadata_file" 2>/dev/null | grep -o '"github"[[:space:]]*:[[:space:]]*{' || echo "")
+    if [ -n "$has_github" ]; then
+      local issue_num=$(cat "$metadata_file" 2>/dev/null | grep -o '"issue"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*' || echo "")
+      if [ -n "$issue_num" ]; then
+        log_info "  ✅ GitHub issue #$issue_num linked"
+      fi
+    else
+      log_debug "  ℹ️  No GitHub issue linked (autoCreateIssue may be disabled)"
+    fi
+  fi
+
   # Note: Spec-level sync (SPECS → GitHub Projects/JIRA Epics) is handled separately
   # See: /specweave-github:sync-spec, /specweave-jira:sync-spec, /specweave-ado:sync-spec
 
