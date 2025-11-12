@@ -125,10 +125,10 @@ import { ProjectManager } from '../../core/project-manager';
 const projectManager = new ProjectManager(projectRoot);
 const activeProject = projectManager.getActiveProject();
 
-// Get correct paths for active project
-const specsPath = projectManager.getSpecsPath();  // projects/{activeProject.id}/specs/
-const modulesPath = projectManager.getModulesPath();  // projects/{activeProject.id}/modules/
-const teamPath = projectManager.getTeamPath();  // projects/{activeProject.id}/team/
+// Get correct paths for active project (flattened structure v0.16.11+)
+const specsPath = projectManager.getSpecsPath();  // specs/{activeProject.id}/
+const modulesPath = projectManager.getModulesPath();  // modules/{activeProject.id}/
+const teamPath = projectManager.getTeamPath();  // team/{activeProject.id}/
 ```
 
 **In PM Agent Instructions**:

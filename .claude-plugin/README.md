@@ -96,7 +96,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
   "description": "SpecWeave - Spec-Driven Development Framework",
   "owner": {
     "name": "Anton Abyzov",
-    "email": "anton@spec-weave.com"
+    "email": "anton.abyzov@gmail.com"
   },
   "plugins": [
     {
@@ -107,7 +107,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
       "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",
-        "email": "anton@spec-weave.com"
+        "email": "anton.abyzov@gmail.com"
       }
     }
   ]

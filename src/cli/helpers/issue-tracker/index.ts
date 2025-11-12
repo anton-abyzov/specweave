@@ -209,7 +209,27 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5: Save credentials to .env
   await saveCredentials(projectPath, tracker, credentials);
 
-  // Step 5.0.5: Validate project configuration (GitHub only)
+  // Step 5.1: Configure repositories FIRST (GitHub only)
+  // CRITICAL: This must happen BEFORE project validation!
+  // Repository strategy (single/multiple/monorepo) determines how projects are organized
+  let repositoryProfiles = [];
+  let monorepoProjects = undefined;
+
+  if (tracker === 'github') {
+    // Import the configuration function
+    const { configureGitHubRepositories } = await import('./github.js');
+    // Pass the GitHub token for repository creation
+    const githubToken = (credentials as any).token;
+    const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+    repositoryProfiles = repoConfig.profiles;
+    monorepoProjects = repoConfig.monorepoProjects;
+  }
+
+  // Step 5.2: Write sync config to .specweave/config.json
+  await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
+
+  // Step 5.3: Validate project configuration (GitHub only)
+  // NOW we can ask about project contexts (after repos are configured)
   if (tracker === 'github') {
     const { validateProjectConfiguration, promptCreateProject } = await import('../../../utils/project-validator.js');
 
@@ -231,23 +251,6 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       console.log(chalk.green(`✓ Found ${validation.projectCount} project context(s): ${validation.projects.join(', ')}\n`));
     }
   }
-
-  // Step 5.1: Configure repositories (GitHub only)
-  let repositoryProfiles = [];
-  let monorepoProjects = undefined;
-
-  if (tracker === 'github') {
-    // Import the configuration function
-    const { configureGitHubRepositories } = await import('./github.js');
-    // Pass the GitHub token for repository creation
-    const githubToken = (credentials as any).token;
-    const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
-    repositoryProfiles = repoConfig.profiles;
-    monorepoProjects = repoConfig.monorepoProjects;
-  }
-
-  // Step 5.2: Write sync config to .specweave/config.json
-  await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
 
   // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
   if (tracker === 'jira' || tracker === 'ado') {

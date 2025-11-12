@@ -144,19 +144,19 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
       console.log(chalk.blue('\n📁 Creating Multi-Project Folders'));
       console.log(chalk.gray(`   Detected: ${jiraProjects.length} Jira projects (${jiraProjects.join(', ')})`));
 
-      // Create project-specific folders following v0.8.0+ architecture
-      // Structure: .specweave/docs/internal/projects/{project-id}/{specs,modules,team,architecture,legacy}
+      // Create project-specific folders following v0.16.11+ FLATTENED architecture
+      // Structure: .specweave/docs/internal/{specs,modules,team,project-arch,legacy}/{project-id}/
       for (const projectKey of jiraProjects) {
         const projectId = projectKey.toLowerCase(); // FE → fe, BE → be
-        const projectBasePath = path.join(targetDir, '.specweave', 'docs', 'internal', 'projects', projectId);
+        const internalDocsPath = path.join(targetDir, '.specweave', 'docs', 'internal');
 
-        // Create full project structure
+        // Create project folders in FLATTENED structure (v0.16.11+)
         const projectSubfolders = [
-          path.join(projectBasePath, 'specs'),         // Living docs specs
-          path.join(projectBasePath, 'modules'),       // Module/component documentation
-          path.join(projectBasePath, 'team'),         // Team playbooks
-          path.join(projectBasePath, 'architecture'), // Project-specific ADRs
-          path.join(projectBasePath, 'legacy')        // Brownfield imports
+          path.join(internalDocsPath, 'specs', projectId),         // Living docs specs
+          path.join(internalDocsPath, 'modules', projectId),       // Module/component documentation
+          path.join(internalDocsPath, 'team', projectId),         // Team playbooks
+          path.join(internalDocsPath, 'project-arch', projectId), // Project-specific ADRs (renamed from architecture)
+          path.join(internalDocsPath, 'legacy', projectId)        // Brownfield imports
         ];
 
         for (const subfolder of projectSubfolders) {
@@ -165,7 +165,7 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
           }
         }
 
-        console.log(chalk.green(`   ✓ Created project: ${projectKey} → projects/${projectId}/`));
+        console.log(chalk.green(`   ✓ Created project: ${projectKey} (flattened structure)`));
       }
 
       console.log('');

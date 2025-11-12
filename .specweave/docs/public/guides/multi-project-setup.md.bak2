@@ -1,8 +1,7 @@
 # Multi-Project Setup Guide
 
-**Version**: 0.16.11+ (Flattened Structure)
-**Last Updated**: 2025-11-11
-**Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
+**Version**: 0.8.0+
+**Last Updated**: 2025-11-05
 
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
 
@@ -89,6 +88,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 ```
 🚀 Initialize Multi-Project Mode
 
+📁 Step 1: Auto-migrating to multi-project structure...
 ✅ Migration complete! Using projects/default/ structure
 
 Enable multi-project mode? (supports multiple teams/repos) (y/N): y
@@ -126,8 +126,8 @@ Project ID (kebab-case): mobile-app
 
 ℹ️  Future increments will use:
    - .specweave/docs/internal/specs/web-app/
-   - .specweave/docs/internal/modules/web-app/
-   - .specweave/docs/internal/team/web-app/
+   - .specweave/docs/internal/specs/web-app/modules/
+   - .specweave/docs/internal/specs/web-app/team/
 ```
 
 ### Step 3: Create Increments (As Usual)
@@ -527,6 +527,27 @@ modules/
 
 ## Migration from Single to Multi-Project
 
+Existing single-project setups automatically migrate:
+
+### What Happens
+
+```bash
+/specweave:init-multiproject
+
+# Auto-migration:
+# 1. Copies .specweave/docs/internal/specs/ → specs/default/
+# 2. Renames old specs/ to specs.old/ (backup)
+# 3. Creates multiProject section in config
+# 4. No behavior change (still single project)
+```
+
+### Behavior
+
+- **Before**: Specs at `.specweave/docs/internal/specs/`
+- **After**: Specs at `.specweave/docs/internal/specs/default/`
+- **Result**: No behavior change, just new structure
+
+### Enable Multi-Project
 
 ```bash
 /specweave:init-multiproject
