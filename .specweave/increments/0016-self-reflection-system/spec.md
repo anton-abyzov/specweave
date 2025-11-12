@@ -2,7 +2,7 @@
 increment: 0016-self-reflection-system
 title: "AI Self-Reflection System"
 priority: P1
-status: planned
+status: abandoned
 created: 2025-11-10
 target_version: "0.12.0-beta"
 

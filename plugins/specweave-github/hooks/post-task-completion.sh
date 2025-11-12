@@ -95,10 +95,10 @@ EOF
 fi
 
 # ============================================================================
-# DETECT CURRENT SPEC
+# DETECT ALL SPECS (Multi-Spec Support)
 # ============================================================================
 
-# Strategy: Find current increment, then find which spec it belongs to
+# Strategy: Use multi-spec detector to find ALL specs referenced in current increment
 
 # 1. Detect current increment (temporary context)
 CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
@@ -108,49 +108,78 @@ if [ -z "$CURRENT_INCREMENT" ]; then
   # Fall through to sync all changed specs
 fi
 
-SPEC_ID=""
+# 2. Use TypeScript CLI to detect all specs
+DETECT_CLI="$PROJECT_ROOT/dist/src/cli/commands/detect-specs.js"
 
-if [ -n "$CURRENT_INCREMENT" ]; then
-  # 2. Try to find spec reference in increment
-  SPEC_FILE=".specweave/increments/$CURRENT_INCREMENT/spec.md"
+if [ -f "$DETECT_CLI" ]; then
+  echo "[$(date)] [GitHub] 🔍 Detecting all specs in increment $CURRENT_INCREMENT..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-  if [ -f "$SPEC_FILE" ]; then
-    # Look for "Implements: SPEC-XXX" or "See: SPEC-XXX" patterns
-    SPEC_REF=$(grep -E "^(Implements|See|References).*SPEC-[0-9]+" "$SPEC_FILE" 2>/dev/null | head -1 || echo "")
+  # Call detect-specs CLI and capture JSON output
+  DETECTION_RESULT=$(node "$DETECT_CLI" 2>> "$DEBUG_LOG" || echo "{}")
 
-    if [ -n "$SPEC_REF" ]; then
-      # Extract spec ID (e.g., "SPEC-001" → "spec-001")
-      SPEC_ID=$(echo "$SPEC_REF" | grep -oE "SPEC-[0-9]+" | tr 'A-Z' 'a-z' | head -1)
-      echo "[$(date)] [GitHub] 📋 Detected spec: $SPEC_ID (from increment $CURRENT_INCREMENT)" >> "$DEBUG_LOG" 2>/dev/null || true
-    fi
-  fi
+  # Extract spec count
+  SPEC_COUNT=$(echo "$DETECTION_RESULT" | node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf-8')); console.log(data.specs?.length || 0)")
+
+  echo "[$(date)] [GitHub] 📋 Detected $SPEC_COUNT spec(s)" >> "$DEBUG_LOG" 2>/dev/null || true
+
+  # Store detection result for later use
+  echo "$DETECTION_RESULT" > /tmp/specweave-detected-specs.json
+else
+  echo "[$(date)] [GitHub] ⚠️  detect-specs CLI not found at $DETECT_CLI, falling back to git diff" >> "$DEBUG_LOG" 2>/dev/null || true
+  SPEC_COUNT=0
 fi
 
 # ============================================================================
-# SYNC SPEC TO GITHUB
+# SYNC ALL DETECTED SPECS TO GITHUB (Multi-Spec Support)
 # ============================================================================
 
-if [ -n "$SPEC_ID" ]; then
-  # Convert SPEC_ID to spec file path
-  SPEC_FILE=$(find .specweave/docs/internal/specs -name "${SPEC_ID}*.md" -o -name "${SPEC_ID}.md" 2>/dev/null | head -1)
+if [ -f /tmp/specweave-detected-specs.json ] && [ "$SPEC_COUNT" -gt 0 ]; then
+  # Multi-spec sync: Loop through all detected specs
+  echo "[$(date)] [GitHub] 🔄 Syncing $SPEC_COUNT spec(s) to GitHub..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-  if [ -n "$SPEC_FILE" ]; then
-    # Sync specific spec
-    echo "[$(date)] [GitHub] 🔄 Syncing spec $SPEC_ID ($SPEC_FILE) to GitHub..." >> "$DEBUG_LOG" 2>/dev/null || true
+  # Extract spec paths using Node.js
+  SPEC_PATHS=$(node -e "
+    const fs = require('fs');
+    const data = JSON.parse(fs.readFileSync('/tmp/specweave-detected-specs.json', 'utf-8'));
+    const syncable = data.specs.filter(s => s.syncEnabled && s.project !== '_parent');
+    syncable.forEach(s => console.log(s.path));
+  " 2>> "$DEBUG_LOG")
 
-    (cd "$PROJECT_ROOT" && node "$SYNC_CLI" --spec "$SPEC_FILE" --provider github) 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-      echo "[$(date)] [GitHub] ⚠️  Spec sync failed for $SPEC_ID (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-    }
+  # Count syncable specs
+  SYNCABLE_COUNT=$(echo "$SPEC_PATHS" | grep -v '^$' | wc -l | tr -d ' ')
 
-    echo "[$(date)] [GitHub] ✅ Spec sync complete for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [ "$SYNCABLE_COUNT" -gt 0 ]; then
+    echo "[$(date)] [GitHub] 📋 Syncing $SYNCABLE_COUNT syncable spec(s) (excluding _parent)" >> "$DEBUG_LOG" 2>/dev/null || true
+
+    # Sync each spec
+    echo "$SPEC_PATHS" | while read -r SPEC_FILE; do
+      if [ -n "$SPEC_FILE" ] && [ -f "$SPEC_FILE" ]; then
+        # Extract project and spec ID from path
+        SPEC_NAME=$(basename "$SPEC_FILE" .md)
+        PROJECT=$(basename "$(dirname "$SPEC_FILE")")
+
+        echo "[$(date)] [GitHub] 🔄 Syncing $PROJECT/$SPEC_NAME..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+        (cd "$PROJECT_ROOT" && node "$SYNC_CLI" --spec "$SPEC_FILE" --provider github) 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] [GitHub] ⚠️  Spec sync failed for $PROJECT/$SPEC_NAME (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+
+        echo "[$(date)] [GitHub] ✅ Synced $PROJECT/$SPEC_NAME" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
+    done
+
+    echo "[$(date)] [GitHub] ✅ Multi-spec sync complete ($SYNCABLE_COUNT synced)" >> "$DEBUG_LOG" 2>/dev/null || true
   else
-    echo "[$(date)] [GitHub] ⚠️  Spec file not found for $SPEC_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "[$(date)] [GitHub] ℹ️  No syncable specs (all specs are _parent or syncEnabled=false)" >> "$DEBUG_LOG" 2>/dev/null || true
   fi
+
+  # Cleanup temp file
+  rm -f /tmp/specweave-detected-specs.json 2>/dev/null || true
 else
-  # Sync all modified specs (check git diff)
+  # Fallback: Sync all modified specs (check git diff)
   echo "[$(date)] [GitHub] 🔄 Checking for modified specs..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-  MODIFIED_SPECS=$(git diff --name-only HEAD .specweave/docs/internal/specs/*.md 2>/dev/null || echo "")
+  MODIFIED_SPECS=$(git diff --name-only HEAD .specweave/docs/internal/specs/**/*.md 2>/dev/null || echo "")
 
   if [ -n "$MODIFIED_SPECS" ]; then
     echo "[$(date)] [GitHub] 📝 Found modified specs:" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -158,7 +187,7 @@ else
 
     # Sync each modified spec
     echo "$MODIFIED_SPECS" | while read -r SPEC_FILE; do
-      if [ -n "$SPEC_FILE" ]; then
+      if [ -n "$SPEC_FILE" ] && [ -f "$SPEC_FILE" ]; then
         echo "[$(date)] [GitHub] 🔄 Syncing $SPEC_FILE..." >> "$DEBUG_LOG" 2>/dev/null || true
         (cd "$PROJECT_ROOT" && node "$SYNC_CLI" --spec "$SPEC_FILE" --provider github) 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || true
       fi

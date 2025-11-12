@@ -2192,6 +2192,180 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
 - ✅ **Compliance & auditing**: Complete audit trail of all product decisions
 - ✅ **Living documentation**: Specs stay up-to-date without manual intervention
 
+**🧠 INTELLIGENT LIVING DOCS SYNC (v0.18.0+)**
+
+**Two Sync Modes**:
+
+1. **Simple Mode** (Legacy):
+   - Copies entire `spec.md` to living docs as single file
+   - Location: `.specweave/docs/internal/specs/spec-{id}.md`
+   - Use when: Single project, simple workflow
+
+2. **Intelligent Mode** (NEW in v0.18.0+):
+   - Parses spec.md into sections
+   - Classifies content (user stories, architecture, ADRs, operations, etc.)
+   - Detects project (backend/frontend/mobile)
+   - Distributes to appropriate folders
+   - Generates cross-links
+   - Adds Docusaurus frontmatter
+
+**Enable Intelligent Mode** (`.specweave/config.json`):
+```json
+{
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true
+    }
+  },
+  "livingDocs": {
+    "intelligent": {
+      "enabled": true,
+      "splitByCategory": true,
+      "generateCrossLinks": true,
+      "preserveOriginal": true,
+      "classificationConfidenceThreshold": 0.6,
+      "fallbackProject": "default"
+    }
+  }
+}
+```
+
+**Result** (Intelligent Mode):
+```
+✅ BEFORE (Simple Mode):
+.specweave/docs/internal/specs/spec-0016-authentication.md  (5,000 lines, mixed content)
+
+✅ AFTER (Intelligent Mode):
+.specweave/docs/internal/
+├── specs/backend/
+│   ├── us-001-backend-api-auth.md        (User Story + Docusaurus frontmatter)
+│   ├── us-002-session-management.md      (User Story + Cross-links)
+│   ├── _archive/spec-0016-authentication.md  (Original preserved)
+│   └── README.md                         (Auto-generated project index)
+├── architecture/
+│   ├── authentication-flow.md            (HLD)
+│   └── adr/0001-oauth-vs-jwt.md          (ADR)
+├── operations/
+│   ├── runbook-auth-service.md           (Runbook)
+│   └── slo-auth-availability.md          (SLO)
+├── delivery/
+│   └── test-strategy-authentication.md   (Test Strategy)
+└── strategy/
+    └── auth-business-requirements.md     (Business Requirements)
+```
+
+**Classification System** (9 Categories):
+
+| Category | Detects | Goes To |
+|----------|---------|---------|
+| **User Story** | US-XXX pattern, "As a" format, AC | `specs/{project}/` |
+| **NFR** | NFR-XXX pattern, metrics, SLAs | `specs/{project}/nfr/` |
+| **Architecture** | HLD, LLD, diagrams | `architecture/` |
+| **ADR** | ADR-XXX pattern, decision structure | `architecture/adr/` |
+| **Operations** | Runbooks, SLOs | `operations/` |
+| **Delivery** | Test strategy, release plans | `delivery/` |
+| **Strategy** | Business requirements, PRDs | `strategy/` |
+| **Governance** | Security, compliance | `governance/` |
+| **Overview** | Summaries | `specs/{project}/` |
+
+**Project Detection** (Multi-Project Support):
+
+Intelligent sync detects which project (backend/frontend/mobile) via:
+- Increment name contains project ID (e.g., `0016-backend-auth`) → +10 points
+- Frontmatter `project:` field → +20 points (highest)
+- Team name match → +5 points
+- Keyword match → +3 points each
+- Tech stack match → +2 points each
+
+**Example**:
+```yaml
+---
+title: User Authentication
+project: backend    # ← Explicit project (100% confidence)
+---
+
+# User Authentication
+
+Quick overview: Implement OAuth for **backend services** using Node.js...
+# Keywords: backend, service, Node.js → detected!
+```
+
+**Multi-Project Setup** (`.specweave/config.json`):
+```json
+{
+  "multiProject": {
+    "projects": {
+      "backend": {
+        "name": "Backend Services",
+        "keywords": ["api", "backend", "service"],
+        "techStack": ["Node.js", "PostgreSQL"]
+      },
+      "frontend": {
+        "name": "Frontend App",
+        "keywords": ["ui", "frontend", "react"],
+        "techStack": ["React", "Next.js"]
+      }
+    }
+  }
+}
+```
+
+**Result**: Content distributed to `specs/backend/` and `specs/frontend/` automatically!
+
+**Docusaurus Frontmatter** (Auto-Generated):
+
+Every distributed file gets rich frontmatter for LLM context:
+
+```yaml
+---
+id: us-001-user-login
+title: "US-001: User Login"
+sidebar_label: "User Login"
+description: "User can log in with email and password"
+tags: ["user-story", "backend", "authentication"]
+increment: "0016-authentication"
+project: "backend"                    # ← LLM knows which project
+category: "user-story"                # ← LLM knows document type
+last_updated: "2025-11-10"
+status: "planning"
+priority: "P1"
+---
+```
+
+**Cross-Linking** (Bidirectional):
+
+Intelligent sync generates "Related Documents" sections:
+
+```markdown
+## Related Documents
+
+### Implements
+- [Authentication Architecture](../../architecture/auth-flow.md)
+
+### References
+- [ADR-001: OAuth vs JWT](../../architecture/adr/0001-oauth-vs-jwt.md)
+
+### Defined In
+- [Business Requirements](../../strategy/auth-requirements.md)
+```
+
+**Benefits of Intelligent Mode**:
+- ✅ **Better organization**: Content organized by type and project
+- ✅ **Easier navigation**: Find docs quickly (specs vs architecture vs operations)
+- ✅ **LLM-friendly**: Rich context (project, category, tags) for AI assistants
+- ✅ **Cross-linked**: Related documents automatically connected
+- ✅ **Docusaurus-ready**: Frontmatter works out-of-the-box
+- ✅ **Multi-project**: Separate docs for backend/frontend/mobile
+- ✅ **Traceability**: Footer shows source increment and last updated
+
+**Performance**:
+- Fast: ~10-50ms to parse, classify, and distribute
+- Async: Runs in background (non-blocking)
+- Fallback: Falls back to simple mode on error
+
+**User Guide**: `.specweave/docs/public/guides/intelligent-living-docs-sync.md`
+**Architecture**: `.specweave/docs/internal/architecture/adr/0030-intelligent-living-docs-sync.md`
+
 ---
 
 **🔧 HOOKS ARCHITECTURE CHANGES (v0.13.0)**

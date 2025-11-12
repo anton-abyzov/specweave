@@ -51,7 +51,7 @@ if (fs.existsSync(configPath)) {
 const docsConfig = config.documentation?.preview || {
   enabled: true,
   autoInstall: true,
-  port: 3015,
+  port: 3016,
   openBrowser: true,
   theme: 'default',
   excludeFolders: ['legacy', 'node_modules']
@@ -103,7 +103,7 @@ if (setupNeeded) {
 ```typescript
 try {
   const options = {
-    port: docsConfig.port || 3015,
+    port: docsConfig.port || 3016,
     openBrowser: docsConfig.openBrowser !== false,
     theme: docsConfig.theme || 'default',
     excludeFolders: docsConfig.excludeFolders || ['legacy', 'node_modules']
@@ -135,8 +135,8 @@ try {
   } else if (error.message.includes('port')) {
     console.log('💡 Solution:');
     console.log('   • Change port in .specweave/config.json');
-    console.log('   • Or stop the service using port ' + (docsConfig.port || 3015));
-    console.log('   • Check with: lsof -i :' + (docsConfig.port || 3015) + '\n');
+    console.log('   • Or stop the service using port ' + (docsConfig.port || 3016));
+    console.log('   • Check with: lsof -i :' + (docsConfig.port || 3016) + '\n');
   } else {
     console.log('💡 Troubleshooting:');
     console.log('   • Check Node.js version (18+ required): node --version');
@@ -160,7 +160,7 @@ The command uses settings from `.specweave/config.json`:
     "preview": {
       "enabled": true,
       "autoInstall": true,
-      "port": 3015,
+      "port": 3016,
       "openBrowser": true,
       "theme": "default",
       "excludeFolders": ["legacy", "node_modules"]
@@ -250,11 +250,11 @@ Changes to markdown files in `.specweave/docs/internal/` are detected automatica
 ✓ Packages installed successfully
 ✓ Configuration generated
 ✓ Sidebar generated (42 documents, 8 categories)
-✓ Server started on http://localhost:3015
+✓ Server started on http://localhost:3016
 
 ✅ Documentation server started successfully!
 
-🌐 URL: http://localhost:3015
+🌐 URL: http://localhost:3016
 🔄 Hot reload enabled - edit markdown files to see changes instantly
 🗂️  Sidebar auto-generated from folder structure
 📊 Mermaid diagrams supported
@@ -270,11 +270,11 @@ Changes to markdown files in `.specweave/docs/internal/` are detected automatica
 ✓ Configuration up-to-date
 
 ✓ Sidebar generated (42 documents, 8 categories)
-✓ Server started on http://localhost:3015
+✓ Server started on http://localhost:3016
 
 ✅ Documentation server started successfully!
 
-🌐 URL: http://localhost:3015
+🌐 URL: http://localhost:3016
 🔄 Hot reload enabled - edit markdown files to see changes instantly
 🗂️  Sidebar auto-generated from folder structure
 📊 Mermaid diagrams supported
@@ -288,11 +288,11 @@ Changes to markdown files in `.specweave/docs/internal/` are detected automatica
 
 **Port Already in Use:**
 ```
-Error: Port 3015 is already in use
+Error: Port 3016 is already in use
 ```
 Solution:
 1. Change port in `.specweave/config.json` → `documentation.preview.port`
-2. Or stop the service: `lsof -i :3015` then `kill -9 <PID>`
+2. Or stop the service: `lsof -i :3016` then `kill -9 <PID>`
 
 **Node.js Version:**
 ```

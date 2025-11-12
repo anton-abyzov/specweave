@@ -5,6 +5,10 @@
  *
  * Automatically syncs living documentation after task completion.
  *
+ * Supports two modes:
+ * 1. Simple mode: Copy spec.md to living docs (legacy)
+ * 2. Intelligent mode: Parse, classify, and distribute content (v0.18.0+)
+ *
  * Usage:
  *   node dist/hooks/lib/sync-living-docs.js <incrementId>
  *
@@ -13,12 +17,13 @@
  *
  * What it does:
  * 1. Checks if sync_living_docs enabled in config
- * 2. Detects changed docs via git diff
- * 3. Invokes /sync-docs update command (future implementation)
- * 4. Logs sync actions
+ * 2. Detects sync mode (simple or intelligent)
+ * 3. Runs appropriate sync strategy
+ * 4. Syncs to external tools (GitHub/Jira/ADO)
+ * 5. Logs sync actions
  *
  * @author SpecWeave Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import fs from 'fs-extra';
@@ -29,6 +34,16 @@ interface Config {
   hooks?: {
     post_task_completion?: {
       sync_living_docs?: boolean;
+    };
+  };
+  livingDocs?: {
+    intelligent?: {
+      enabled?: boolean;
+      splitByCategory?: boolean;
+      generateCrossLinks?: boolean;
+      preserveOriginal?: boolean;
+      classificationConfidenceThreshold?: number;
+      fallbackProject?: string;
     };
   };
 }
@@ -59,19 +74,31 @@ async function syncLivingDocs(incrementId: string): Promise<void> {
 
     console.log('✅ Living docs sync enabled');
 
-    // 3. Copy increment spec to living docs
-    const specCopied = await copyIncrementSpecToLivingDocs(incrementId);
+    // 3. Determine sync mode (simple or intelligent)
+    const intelligentEnabled = config.livingDocs?.intelligent?.enabled ?? false;
 
-    // 4. Detect changed docs via git diff
-    const changedDocs = detectChangedDocs();
+    let specCopied = false;
+    let changedDocs: string[] = [];
+
+    if (intelligentEnabled) {
+      // Intelligent mode: Parse, classify, and distribute
+      console.log('🧠 Using intelligent sync mode (v0.18.0+)');
+      const result = await intelligentSyncLivingDocs(incrementId, config);
+      specCopied = result.success;
+      changedDocs = result.changedFiles;
+    } else {
+      // Simple mode: Copy spec to living docs (legacy)
+      console.log('📋 Using simple sync mode (legacy)');
+      specCopied = await copyIncrementSpecToLivingDocs(incrementId);
+      changedDocs = detectChangedDocs();
+    }
 
     if (changedDocs.length === 0 && !specCopied) {
-      console.log('ℹ️  No living docs changed (no git diff in .specweave/docs/)');
+      console.log('ℹ️  No living docs changed');
       return;
     }
 
-    console.log(`📄 Detected ${changedDocs.length} changed doc(s):`);
-    changedDocs.forEach((doc) => console.log(`   - ${doc}`));
+    console.log(`📄 Changed/created ${changedDocs.length} file(s)`);
 
     // 4. Sync to GitHub if configured
     await syncToGitHub(incrementId, changedDocs);
@@ -85,7 +112,69 @@ async function syncLivingDocs(incrementId: string): Promise<void> {
 }
 
 /**
- * Copy increment spec to living docs
+ * Intelligent sync using the new architecture (v0.18.0+)
+ */
+async function intelligentSyncLivingDocs(
+  incrementId: string,
+  config: Config
+): Promise<{ success: boolean; changedFiles: string[] }> {
+  try {
+    // Dynamic import to avoid circular dependencies
+    const { syncIncrement } = await import('../../../../src/core/living-docs/index.js');
+
+    console.log('   📖 Parsing and classifying spec sections...');
+
+    const result = await syncIncrement(incrementId, {
+      verbose: false, // We'll log our own summary
+      dryRun: false,
+      parser: {
+        preserveCodeBlocks: true,
+        preserveLinks: true,
+        preserveImages: true,
+      },
+      distributor: {
+        generateFrontmatter: true,
+        preserveOriginal: config.livingDocs?.intelligent?.preserveOriginal ?? true,
+      },
+      linker: {
+        generateBacklinks: config.livingDocs?.intelligent?.generateCrossLinks ?? true,
+        updateExisting: true,
+      },
+    });
+
+    // Log summary
+    console.log(`   ✅ Intelligent sync complete:`);
+    console.log(`      Project: ${result.project.name} (${(result.project.confidence * 100).toFixed(0)}% confidence)`);
+    console.log(`      Files created: ${result.distribution.summary.filesCreated}`);
+    console.log(`      Files updated: ${result.distribution.summary.filesUpdated}`);
+    console.log(`      Cross-links: ${result.links.length}`);
+    console.log(`      Duration: ${result.duration}ms`);
+
+    // Collect changed file paths
+    const changedFiles = [
+      ...result.distribution.created.map((f) => f.path),
+      ...result.distribution.updated.map((f) => f.path),
+    ];
+
+    return {
+      success: result.success,
+      changedFiles,
+    };
+  } catch (error) {
+    console.error(`   ❌ Intelligent sync failed: ${error}`);
+    console.error('   Falling back to simple sync mode...');
+
+    // Fallback to simple mode
+    const copied = await copyIncrementSpecToLivingDocs(incrementId);
+    return {
+      success: copied,
+      changedFiles: copied ? [path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs', `spec-${incrementId}.md`)] : [],
+    };
+  }
+}
+
+/**
+ * Copy increment spec to living docs (legacy/simple mode)
  * Returns true if spec was copied, false if skipped
  */
 async function copyIncrementSpecToLivingDocs(incrementId: string): Promise<boolean> {
