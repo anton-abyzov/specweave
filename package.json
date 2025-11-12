@@ -23,7 +23,7 @@
     "test": "npm run test:smoke",
     "benchmark": "ts-node tests/performance/run-all-benchmarks.ts",
     "validate:plugins": "node scripts/validate-plugin-manifests.cjs",
-    "metrics:dora": "node dist/metrics/dora-calculator.js",
+    "metrics:dora": "node dist/src/metrics/dora-calculator.js",
     "generate:diagrams": "bash scripts/generate-diagram-svgs.sh",
     "docs:dev": "cd docs-site && npm start",
     "docs:build": "cd docs-site && npm run build",
