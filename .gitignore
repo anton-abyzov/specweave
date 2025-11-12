@@ -54,6 +54,7 @@ api_keys.json
 .specweave/feedback/
 .specweave/logs/
 .specweave/docs-site-internal/
+.specweave/state/
 
 # Increment logs (inside each increment folder)
 .specweave/increments/*/logs/

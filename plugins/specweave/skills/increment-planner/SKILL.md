@@ -110,13 +110,15 @@ This skill activates automatically when users say:
 
 ---
 
-## 🆕 Multi-Project Support (v0.8.0+)
+## 🆕 Multi-Project Support (v0.8.0+ | Flattened v0.16.11+)
 
 **Key Changes**:
-- Specs are now organized by project: `.specweave/docs/internal/projects/{project-id}/specs/`
-- Use `ProjectManager` (from `src/core/project-manager.ts`) to get correct paths
-- Single project uses `projects/default/` automatically (transparent)
+- ✅ **CORRECT** (v0.16.11+): Specs organized with FLATTENED structure: `.specweave/docs/internal/specs/{project-id}/`
+- ❌ **OLD** (v0.8.0-v0.16.10): `.specweave/docs/internal/projects/{project-id}/specs/` (DEPRECATED nested structure)
+- Use `ProjectManager` (from `src/core/project-manager.ts`) to get correct paths (always returns flattened structure)
+- Single project uses `specs/default/` automatically (transparent)
 - Multi-project mode allows multiple teams/repos
+- Parent repo content goes to `specs/_parent/` (for multi-repo setups with parent repositories)
 
 **Path Resolution**:
 ```typescript
@@ -177,7 +179,7 @@ Task(
   1. Spec (living docs - SOURCE OF TRUTH, permanent):
      - IMPORTANT: Use ProjectManager to get correct path for active project
      - Create at: {projectManager.getSpecsPath()}/spec-{number}-{name}.md
-       (This resolves to projects/{activeProject}/specs/ automatically)
+       (This resolves to specs/{activeProject}/ with FLATTENED structure v0.16.11+)
      - This is the COMPLETE, PERMANENT source of truth
      - Include ALL of:
        * User stories (US-001, US-002, etc.) with full details
@@ -299,17 +301,20 @@ STEP 6: Validate Living Docs and Increment Files
 
 #### Living Spec (Living Docs - Source of Truth) ✅
 ```
-.specweave/docs/internal/projects/{project-id}/specs/  # ← Multi-project (v0.8.0+)
+.specweave/docs/internal/specs/{project-id}/  # ← FLATTENED structure (v0.16.11+)
 └── spec-{number}-{name}.md          # ← PM Agent (MANDATORY)
                                      # COMPLETE user stories, AC, requirements
                                      # This is the PERMANENT source of truth
                                      # Can be linked to Jira/ADO/GitHub Issues
                                      # Persists after increment completes
 
-# Examples:
-# Single project: projects/default/specs/spec-001-user-auth.md
-# Multi-project: projects/web-app/specs/spec-001-user-auth.md
-#                projects/mobile/specs/spec-001-push-notifications.md
+# Examples (v0.16.11+ Flattened):
+# Single project: specs/default/spec-001-user-auth.md
+# Multi-project: specs/web-app/spec-001-user-auth.md
+#                specs/mobile/spec-001-push-notifications.md
+# Parent repo:   specs/_parent/spec-002-system-architecture.md
+
+# OLD (v0.8.0-v0.16.10): projects/default/specs/... ← DEPRECATED
 ```
 
 #### Strategy Docs (Optional, High-Level) ⚠️

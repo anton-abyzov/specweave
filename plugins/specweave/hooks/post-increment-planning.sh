@@ -646,33 +646,41 @@ EOF
 
   translate_living_docs_specs "$increment_id"
 
-  # 7. Increment-level GitHub sync (DISABLED - See architecture note below)
+  # 7. Increment-level GitHub issue creation (for single-repo projects)
   log_info ""
-  log_info "ℹ️  Increment-level GitHub sync disabled (by design)"
-  log_debug "Increments are INTERNAL work units, not synced to external tools"
-  log_debug "External sync happens at SPEC level (.specweave/docs/internal/specs/)"
-  log_debug "See: .specweave/increments/0025-per-project-resource-config/reports/CORRECT-SYNC-ARCHITECTURE.md"
+  log_info "🔗 Checking GitHub issue auto-creation..."
 
-  # TODO: Implement spec-level sync instead
-  # Architecture:
-  #   - SPECS (.specweave/docs/internal/specs/) → GitHub Projects/JIRA Epics/ADO Features
-  #   - User Stories → GitHub Issues
-  #   - Increments → INTERNAL ONLY (no external sync)
-  #
-  # Commands to implement:
-  #   - /specweave-github:sync-spec spec-001
-  #   - /specweave-jira:sync-spec spec-001
-  #   - /specweave-ado:sync-spec spec-001
-  #
-  # See: plugins/specweave-github/commands/specweave-github-sync-spec.md
+  # Check if auto-create is enabled in config
+  local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
 
-  # COMMENTED OUT: Increment-level GitHub issue creation (architecturally wrong)
-  # # Check if auto-create is enabled in config
-  # local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
-  #
-  # if [ "$auto_create" = "true" ]; then
-  #   ... (increment-level sync code removed)
-  # fi
+  log_debug "Auto-create GitHub issue: $auto_create"
+
+  if [ "$auto_create" = "true" ]; then
+    log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
+
+    # Check if gh CLI is available
+    if ! command -v gh >/dev/null 2>&1; then
+      log_info "  ⚠️  GitHub CLI (gh) not found, skipping issue creation"
+      log_debug "Install: https://cli.github.com/"
+    else
+      log_info "  ✓ GitHub CLI found"
+      log_info ""
+      log_info "🚀 Creating GitHub issue for $increment_id..."
+
+      # Create issue (non-blocking)
+      if create_github_issue "$increment_id" "$increment_dir"; then
+        log_info "  ✅ GitHub issue created successfully"
+      else
+        log_info "  ⚠️  GitHub issue creation failed (non-blocking)"
+        log_debug "Issue creation failed, but continuing execution"
+      fi
+    fi
+  else
+    log_debug "Auto-create disabled in config"
+  fi
+
+  # Note: Spec-level sync (SPECS → GitHub Projects/JIRA Epics) is handled separately
+  # See: /specweave-github:sync-spec, /specweave-jira:sync-spec, /specweave-ado:sync-spec
 
   # 8. Sync spec content to external tools (if configured)
   log_info ""
