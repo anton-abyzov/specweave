@@ -80,6 +80,14 @@ export interface JiraCredentials {
 }
 
 /**
+ * Azure DevOps team mapping strategies
+ */
+export type AzureDevOpsStrategy =
+  | 'project-per-team'           // Separate projects for each team
+  | 'area-path-based'            // One project with multiple area paths
+  | 'team-based';                // One project with multiple teams
+
+/**
  * Azure DevOps credentials
  */
 export interface AzureDevOpsCredentials {
@@ -88,6 +96,7 @@ export interface AzureDevOpsCredentials {
   project: string; // One project per organization (ADO standard)
   team?: string; // Single team (backward compatibility)
   teams?: string[]; // Multiple teams within project (optional)
+  strategy?: AzureDevOpsStrategy; // Team mapping strategy (optional)
 }
 
 /**
