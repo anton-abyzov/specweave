@@ -1,18 +1,31 @@
 /**
- * GitHub Spec Sync
+ * GitHub Spec Sync (Multi-Project Architecture)
  *
  * CORRECT ARCHITECTURE:
- * - Syncs .specweave/docs/internal/specs/spec-*.md ↔ GitHub Projects
+ * - Syncs .specweave/docs/internal/specs/{project-id}/spec-*.md ↔ GitHub Projects
  * - NOT increments ↔ GitHub Issues (that was wrong!)
+ *
+ * MULTI-PROJECT SUPPORT (v0.18.0+):
+ * - Detects which project a spec belongs to (by folder path)
+ * - Routes to correct GitHub repo based on project config
+ * - Supports multiple sync strategies per project
+ * - Handles cross-team specs (create issues in multiple repos)
  *
  * Mapping:
  * - Spec → GitHub Project
  * - User Story → GitHub Project Card/Issue
  * - Acceptance Criteria → Checklist in Issue
  *
+ * Sync Strategies:
+ * - project-per-spec: One GitHub Project per spec (default)
+ * - team-board: One GitHub Project per team (aggregates specs)
+ * - centralized: Parent repo tracks all (multi-repo pattern)
+ * - distributed: Each team syncs to their repo (microservices)
+ *
  * @module github-spec-sync
  */
 
+import * as path from 'path';
 import { SpecMetadataManager } from '../../../src/core/specs/spec-metadata-manager.js';
 import { SpecParser } from '../../../src/core/specs/spec-parser.js';
 import {
@@ -22,6 +35,8 @@ import {
   SpecSyncConflict
 } from '../../../src/core/types/spec-metadata.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { ProjectContextManager } from '../../../src/core/sync/project-context.js';
+import { SyncProfile, GitHubConfig } from '../../../src/core/types/sync-profile.js';
 
 export interface GitHubProject {
   id: number;
@@ -50,15 +65,97 @@ export interface GitHubIssue {
   assignees: string[];
 }
 
+/**
+ * GitHub Sync Strategy
+ */
+export type GitHubSyncStrategy =
+  | 'project-per-spec'   // One GitHub Project per spec (default, current behavior)
+  | 'team-board'         // One GitHub Project per team (aggregates multiple specs)
+  | 'centralized'        // Parent repo tracks all specs (multi-repo pattern)
+  | 'distributed';       // Each team syncs to their repo (microservices)
+
+/**
+ * Project-specific GitHub configuration
+ */
+export interface ProjectGitHubConfig {
+  projectId: string;
+  strategy: GitHubSyncStrategy;
+  owner: string;
+  repo: string;
+  teamBoardId?: number;  // For team-board strategy
+}
+
 export class GitHubSpecSync {
   private specManager: SpecMetadataManager;
+  private projectContextManager: ProjectContextManager;
+  private projectRoot: string;
 
   constructor(projectRoot: string = process.cwd()) {
+    this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot);
+    this.projectContextManager = new ProjectContextManager(projectRoot);
+  }
+
+  /**
+   * Detect project from spec file path
+   *
+   * Spec path format: .specweave/docs/internal/specs/{project-id}/spec-*.md
+   * OR (single project): .specweave/docs/internal/specs/spec-*.md
+   */
+  private async detectProjectFromSpecPath(specFilePath: string): Promise<string | null> {
+    const specPathMatch = specFilePath.match(/\.specweave\/docs\/internal\/specs\/([^/]+)\//);
+
+    if (specPathMatch) {
+      // Multi-project: .specweave/docs/internal/specs/frontend/spec-001.md
+      const projectId = specPathMatch[1];
+      const project = await this.projectContextManager.getProject(projectId);
+      return project ? projectId : null;
+    }
+
+    // Single project (default): .specweave/docs/internal/specs/spec-001.md
+    return 'default';
+  }
+
+  /**
+   * Get GitHub configuration for a project
+   */
+  private async getGitHubConfigForProject(projectId: string): Promise<ProjectGitHubConfig | null> {
+    const config = await this.projectContextManager.load();
+    const project = await this.projectContextManager.getProject(projectId);
+
+    if (!project) {
+      return null;
+    }
+
+    // Get profile from project's default sync profile
+    const profileId = project.defaultSyncProfile || config.activeProfile;
+    if (!profileId) {
+      return null;
+    }
+
+    const profile = config.profiles?.[profileId];
+    if (!profile || profile.provider !== 'github') {
+      return null;
+    }
+
+    const githubConfig = profile.config as GitHubConfig;
+
+    return {
+      projectId,
+      strategy: (githubConfig as any).githubStrategy || 'project-per-spec',
+      owner: githubConfig.owner || '',
+      repo: githubConfig.repo || (githubConfig.repos && githubConfig.repos[0]) || '',
+      teamBoardId: (githubConfig as any).teamBoardId
+    };
   }
 
   /**
    * Sync spec to GitHub Project (CREATE or UPDATE)
+   *
+   * MULTI-PROJECT ARCHITECTURE:
+   * - Detects which project the spec belongs to
+   * - Routes to correct GitHub repo based on project config
+   * - Supports multiple sync strategies
    */
   async syncSpecToGitHub(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing spec ${specId} to GitHub Project...`);
@@ -75,20 +172,103 @@ export class GitHubSpecSync {
         };
       }
 
-      // 2. Detect repository
-      const repoInfo = await this.detectRepo();
-      if (!repoInfo) {
+      // 2. Detect project from spec path
+      const projectId = await this.detectProjectFromSpecPath(spec.filePath);
+      if (!projectId) {
         return {
           success: false,
           specId,
           provider: 'github',
-          error: 'Could not detect GitHub repository'
+          error: 'Could not determine project for spec'
         };
       }
 
-      const { owner, repo } = repoInfo;
+      console.log(`   📦 Detected project: ${projectId}`);
 
-      // 3. Check if spec already linked to GitHub Project
+      // 3. Get GitHub config for this project
+      const githubConfig = await this.getGitHubConfigForProject(projectId);
+      if (!githubConfig) {
+        // Fallback to auto-detect from git remote
+        const repoInfo = await this.detectRepo();
+        if (!repoInfo) {
+          return {
+            success: false,
+            specId,
+            provider: 'github',
+            error: `No GitHub configuration found for project '${projectId}'`
+          };
+        }
+
+        // Use fallback config
+        githubConfig.owner = repoInfo.owner;
+        githubConfig.repo = repoInfo.repo;
+        githubConfig.strategy = 'project-per-spec';
+      }
+
+      console.log(`   🎯 Strategy: ${githubConfig.strategy}`);
+      console.log(`   🔗 Repository: ${githubConfig.owner}/${githubConfig.repo}`);
+
+      const { owner, repo, strategy } = githubConfig;
+
+      // 4. Handle strategy-specific sync
+      return await this.syncWithStrategy(spec, owner, repo, strategy, githubConfig);
+
+    } catch (error) {
+      console.error('❌ Error syncing to GitHub:', error);
+      return {
+        success: false,
+        specId,
+        provider: 'github',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Sync spec using specified strategy
+   */
+  private async syncWithStrategy(
+    spec: SpecContent,
+    owner: string,
+    repo: string,
+    strategy: GitHubSyncStrategy,
+    config: ProjectGitHubConfig
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    switch (strategy) {
+      case 'project-per-spec':
+        return await this.syncProjectPerSpec(spec, owner, repo);
+
+      case 'team-board':
+        return await this.syncTeamBoard(spec, owner, repo, config.teamBoardId);
+
+      case 'centralized':
+        return await this.syncCentralized(spec, owner, repo);
+
+      case 'distributed':
+        return await this.syncDistributed(spec, config);
+
+      default:
+        // Fallback to project-per-spec
+        return await this.syncProjectPerSpec(spec, owner, repo);
+    }
+  }
+
+  /**
+   * Strategy 1: Project-per-Spec (DEFAULT)
+   * - One GitHub Project per spec
+   * - Current behavior, no changes needed
+   */
+  private async syncProjectPerSpec(
+    spec: SpecContent,
+    owner: string,
+    repo: string
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    try {
+      // Check if spec already linked to GitHub Project
       const existingLink = spec.metadata.externalLinks?.github;
 
       let project: GitHubProject;
@@ -320,59 +500,6 @@ export class GitHubSpecSync {
     };
   }
 
-  /**
-   * Sync user stories as GitHub Issues
-   */
-  private async syncUserStories(
-    owner: string,
-    repo: string,
-    projectNumber: number,
-    spec: SpecContent
-  ): Promise<{ created: string[]; updated: string[]; deleted: string[] }> {
-    const created: string[] = [];
-    const updated: string[] = [];
-    const deleted: string[] = [];
-
-    if (!spec.metadata.userStories || spec.metadata.userStories.length === 0) {
-      console.log('   ℹ️  No user stories to sync');
-      return { created, updated, deleted };
-    }
-
-    console.log(`   Syncing ${spec.metadata.userStories.length} user stories...`);
-
-    for (const us of spec.metadata.userStories) {
-      // Create or update issue for each user story
-      const issueTitle = `[${us.id}] ${us.title}`;
-      const issueBody = this.generateIssueBody(us);
-
-      // Check if issue already exists (by title pattern)
-      const existingIssue = await this.findIssueByTitle(owner, repo, us.id);
-
-      if (existingIssue) {
-        // UPDATE existing issue
-        await this.updateIssue(owner, repo, existingIssue.number, {
-          title: issueTitle,
-          body: issueBody,
-          state: us.status === 'done' ? 'closed' : 'open'
-        });
-
-        updated.push(us.id);
-        console.log(`   ✅ Updated ${us.id}`);
-      } else {
-        // CREATE new issue
-        const newIssue = await this.createIssue(owner, repo, {
-          title: issueTitle,
-          body: issueBody,
-          labels: ['user-story', `spec:${spec.metadata.id}`, `priority:${us.priority}`]
-        });
-
-        created.push(us.id);
-        console.log(`   ✅ Created ${us.id} → Issue #${newIssue.number}`);
-      }
-    }
-
-    return { created, updated, deleted };
-  }
 
   /**
    * Generate project description from spec
@@ -625,6 +752,415 @@ ${acList}
     if (result.error) {
       throw new Error(`Failed to update issue #${issueNumber}: ${result.error}`);
     }
+  }
+
+  /**
+   * Strategy 2: Team-Board
+   * - One GitHub Project per team (aggregates multiple specs)
+   * - All specs from the same team/project sync to same board
+   */
+  private async syncTeamBoard(
+    spec: SpecContent,
+    owner: string,
+    repo: string,
+    teamBoardId?: number
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    try {
+      console.log('   📋 Using team-board strategy (aggregated)');
+
+      // If team board doesn't exist, create it
+      if (!teamBoardId) {
+        const projectId = await this.detectProjectFromSpecPath(spec.filePath);
+        const project = await this.projectContextManager.getProject(projectId || 'default');
+
+        const teamName = project?.team || 'Team';
+        const teamProject = await this.createGitHubProject(owner, repo, {
+          ...spec,
+          metadata: {
+            ...spec.metadata,
+            title: `${teamName} Board`
+          }
+        });
+
+        teamBoardId = teamProject.id;
+
+        console.log(`   ✅ Created team board: ${teamName} Board (#${teamBoardId})`);
+      }
+
+      // Sync this spec's user stories to the team board
+      const changes = await this.syncUserStories(owner, repo, teamBoardId, spec);
+
+      return {
+        success: true,
+        specId,
+        provider: 'github',
+        externalId: teamBoardId.toString(),
+        url: `https://github.com/orgs/${owner}/projects/${teamBoardId}`,
+        changes
+      };
+
+    } catch (error) {
+      console.error('❌ Error syncing to team board:', error);
+      return {
+        success: false,
+        specId,
+        provider: 'github',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Strategy 3: Centralized
+   * - Parent repo tracks all specs (multi-repo pattern)
+   * - Issues created in parent repo with tags for child repos
+   */
+  private async syncCentralized(
+    spec: SpecContent,
+    parentOwner: string,
+    parentRepo: string
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    try {
+      console.log('   🏢 Using centralized strategy (parent repo tracks all)');
+
+      // Create project in parent repo
+      const project = await this.createGitHubProject(parentOwner, parentRepo, spec);
+
+      // Tag issues with project/team info
+      const projectId = await this.detectProjectFromSpecPath(spec.filePath);
+      const projectContext = await this.projectContextManager.getProject(projectId || 'default');
+
+      // Sync user stories with project tags
+      const changes = await this.syncUserStories(
+        parentOwner,
+        parentRepo,
+        project.number,
+        spec,
+        projectContext?.name ? [`project:${projectContext.name}`] : []
+      );
+
+      console.log(`   ✅ Synced to parent repo: ${parentOwner}/${parentRepo}`);
+
+      return {
+        success: true,
+        specId,
+        provider: 'github',
+        externalId: project.id.toString(),
+        url: project.url,
+        changes
+      };
+
+    } catch (error) {
+      console.error('❌ Error syncing centralized:', error);
+      return {
+        success: false,
+        specId,
+        provider: 'github',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Strategy 4: Distributed
+   * - Each team syncs to their repo (microservices)
+   * - Cross-team specs create issues in multiple repos
+   */
+  private async syncDistributed(
+    spec: SpecContent,
+    config: ProjectGitHubConfig
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    try {
+      console.log('   🌐 Using distributed strategy (per-team repos)');
+
+      const projectId = config.projectId;
+      const projectContext = await this.projectContextManager.getProject(projectId);
+
+      if (!projectContext) {
+        throw new Error(`Project context not found for ${projectId}`);
+      }
+
+      // Determine if this is a cross-team spec
+      const isCrossTeam = this.isCrossTeamSpec(spec);
+
+      if (isCrossTeam) {
+        console.log('   🔗 Cross-team spec detected, syncing to multiple repos');
+        return await this.syncCrossTeamSpec(spec, projectId);
+      }
+
+      // Single-team spec: sync to its own repo
+      return await this.syncProjectPerSpec(spec, config.owner, config.repo);
+
+    } catch (error) {
+      console.error('❌ Error syncing distributed:', error);
+      return {
+        success: false,
+        specId,
+        provider: 'github',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Check if spec is cross-team (touches multiple projects)
+   *
+   * Detection heuristics:
+   * - Spec title contains keywords like "integration", "cross-team", "shared"
+   * - User stories reference multiple projects/teams
+   * - Tags include multiple project names
+   */
+  private isCrossTeamSpec(spec: SpecContent): boolean {
+    const crossTeamKeywords = [
+      'integration',
+      'cross-team',
+      'cross-project',
+      'shared',
+      'common',
+      'auth',  // Auth often touches frontend + backend
+      'api-contract',
+      'sync'
+    ];
+
+    const title = spec.metadata.title.toLowerCase();
+    const hasCrossTeamKeyword = crossTeamKeywords.some(keyword =>
+      title.includes(keyword)
+    );
+
+    // Check tags for multiple project references
+    const tags = spec.metadata.tags || [];
+    const projectTags = tags.filter(tag => tag.startsWith('project:'));
+    const hasMultipleProjects = projectTags.length > 1;
+
+    return hasCrossTeamKeyword || hasMultipleProjects;
+  }
+
+  /**
+   * Sync cross-team spec to multiple repositories
+   *
+   * Creates issues in multiple repos:
+   * - Frontend repo gets frontend-specific user stories
+   * - Backend repo gets backend-specific user stories
+   * - Shared stories get created in both with cross-links
+   */
+  private async syncCrossTeamSpec(
+    spec: SpecContent,
+    projectId: string
+  ): Promise<SpecSyncResult> {
+    const specId = spec.metadata.id;
+
+    try {
+      // Get all related project profiles
+      const config = await this.projectContextManager.load();
+      const relatedProfiles = await this.detectRelatedProfiles(spec, config);
+
+      if (relatedProfiles.length === 0) {
+        throw new Error('No related profiles found for cross-team spec');
+      }
+
+      console.log(`   📂 Syncing to ${relatedProfiles.length} repositories:`);
+
+      const allChanges = {
+        created: [] as string[],
+        updated: [] as string[],
+        deleted: [] as string[]
+      };
+
+      // Sync to each related repo
+      for (const profile of relatedProfiles) {
+        const githubConfig = profile.config as GitHubConfig;
+        console.log(`      → ${githubConfig.owner}/${githubConfig.repo}`);
+
+        // Filter user stories relevant to this project
+        const relevantStories = this.filterRelevantUserStories(
+          spec,
+          profile.projectContext?.name || ''
+        );
+
+        if (relevantStories.length === 0) {
+          console.log(`        ℹ️  No relevant stories, skipping`);
+          continue;
+        }
+
+        // Create project in this repo
+        const project = await this.createGitHubProject(
+          githubConfig.owner || '',
+          githubConfig.repo || '',
+          {
+            ...spec,
+            metadata: {
+              ...spec.metadata,
+              userStories: relevantStories
+            }
+          }
+        );
+
+        // Sync user stories
+        const changes = await this.syncUserStories(
+          githubConfig.owner || '',
+          githubConfig.repo || '',
+          project.number,
+          { ...spec, metadata: { ...spec.metadata, userStories: relevantStories } }
+        );
+
+        allChanges.created.push(...changes.created);
+        allChanges.updated.push(...changes.updated);
+        allChanges.deleted.push(...changes.deleted);
+      }
+
+      console.log('   ✅ Cross-team sync complete!');
+
+      return {
+        success: true,
+        specId,
+        provider: 'github',
+        externalId: 'cross-team',
+        url: 'multiple-repos',
+        changes: allChanges
+      };
+
+    } catch (error) {
+      console.error('❌ Error syncing cross-team spec:', error);
+      return {
+        success: false,
+        specId,
+        provider: 'github',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  /**
+   * Detect related profiles for cross-team spec
+   */
+  private async detectRelatedProfiles(
+    spec: SpecContent,
+    config: any
+  ): Promise<Array<any>> {
+    const profiles: Array<any> = [];
+    const tags = spec.metadata.tags || [];
+
+    // Extract project tags (e.g., project:frontend, project:backend)
+    const projectTags = tags
+      .filter(tag => tag.startsWith('project:'))
+      .map(tag => tag.replace('project:', ''));
+
+    // Find profiles for these projects
+    for (const projectId of projectTags) {
+      const project = await this.projectContextManager.getProject(projectId);
+      if (project && project.defaultSyncProfile) {
+        const profile = config.profiles?.[project.defaultSyncProfile];
+        if (profile && profile.provider === 'github') {
+          profiles.push({
+            ...profile,
+            projectContext: project
+          });
+        }
+      }
+    }
+
+    return profiles;
+  }
+
+  /**
+   * Filter user stories relevant to a specific project
+   *
+   * Heuristics:
+   * - Story title/description contains project keywords
+   * - Story tags include project name
+   * - Story implementation references project folder
+   */
+  private filterRelevantUserStories(
+    spec: SpecContent,
+    projectName: string
+  ): UserStory[] {
+    if (!spec.metadata.userStories) {
+      return [];
+    }
+
+    const projectKeywords = projectName.toLowerCase().split(/[-_\s]/);
+
+    return spec.metadata.userStories.filter(story => {
+      const storyText = `${story.title} ${story.description || ''}`.toLowerCase();
+
+      // Check if story mentions this project
+      const mentionsProject = projectKeywords.some(keyword =>
+        storyText.includes(keyword)
+      );
+
+      // If story doesn't mention any specific project, include it (shared story)
+      const isShared = !storyText.match(/\b(frontend|backend|mobile|infra|platform)\b/);
+
+      return mentionsProject || isShared;
+    });
+  }
+
+  /**
+   * Enhanced syncUserStories with optional extra labels
+   */
+  private async syncUserStories(
+    owner: string,
+    repo: string,
+    projectNumber: number,
+    spec: SpecContent,
+    extraLabels: string[] = []
+  ): Promise<{ created: string[]; updated: string[]; deleted: string[] }> {
+    const created: string[] = [];
+    const updated: string[] = [];
+    const deleted: string[] = [];
+
+    if (!spec.metadata.userStories || spec.metadata.userStories.length === 0) {
+      console.log('   ℹ️  No user stories to sync');
+      return { created, updated, deleted };
+    }
+
+    console.log(`   Syncing ${spec.metadata.userStories.length} user stories...`);
+
+    for (const us of spec.metadata.userStories) {
+      // Create or update issue for each user story
+      const issueTitle = `[${us.id}] ${us.title}`;
+      const issueBody = this.generateIssueBody(us);
+
+      // Check if issue already exists (by title pattern)
+      const existingIssue = await this.findIssueByTitle(owner, repo, us.id);
+
+      const labels = [
+        'user-story',
+        `spec:${spec.metadata.id}`,
+        `priority:${us.priority}`,
+        ...extraLabels
+      ];
+
+      if (existingIssue) {
+        // UPDATE existing issue
+        await this.updateIssue(owner, repo, existingIssue.number, {
+          title: issueTitle,
+          body: issueBody,
+          state: us.status === 'done' ? 'closed' : 'open'
+        });
+
+        updated.push(us.id);
+        console.log(`   ✅ Updated ${us.id}`);
+      } else {
+        // CREATE new issue
+        const newIssue = await this.createIssue(owner, repo, {
+          title: issueTitle,
+          body: issueBody,
+          labels
+        });
+
+        created.push(us.id);
+        console.log(`   ✅ Created ${us.id} → Issue #${newIssue.number}`);
+      }
+    }
+
+    return { created, updated, deleted };
   }
 
   /**
