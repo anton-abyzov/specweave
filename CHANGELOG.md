@@ -4,6 +4,59 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.13] - 2025-11-12
+
+### ✨ Features
+
+#### SpecWeave UI Plugin - Browser Automation & Visual Testing
+- **Added**: New `specweave-ui` plugin for comprehensive browser automation and UI testing
+  - **MCP Integration**: Configured both Playwright (local) and Browserbase (cloud) MCP servers
+    - Playwright: Primary choice for E2E testing and web interaction (local execution)
+    - Browserbase: Fallback option for cloud-based browser automation with scalable infrastructure
+  - **Skills**: Three specialized skills for UI development workflow
+    - `browser-automation`: Local browser automation for E2E testing and web scraping
+    - `visual-regression`: Visual diff testing and screenshot comparison
+    - `ui-testing`: Comprehensive UI testing strategies and best practices
+  - **Auto-Activation**: Skills automatically load when discussing UI testing, browser automation, or visual regression
+  - **Use Cases**:
+    - E2E test automation with Playwright
+    - Visual regression testing
+    - Web scraping and data extraction
+    - Accessibility testing
+    - Performance monitoring
+  - **Location**: `plugins/specweave-ui/`
+- **Infrastructure Updates**: Enhanced repo-structure-manager to support UI plugin
+  - Added specweave-ui to known plugins list
+  - Integrated with multi-project initialization flow
+
+### 📚 Documentation
+
+#### CI/CD Architecture Decisions
+- **Added**: Three new ADRs documenting CI/CD failure detection architecture
+  - ADR-0031: GitHub Actions Polling vs Webhooks strategy
+  - ADR-0032: Haiku vs Sonnet model selection for log parsing
+  - ADR-0033: Auto-apply vs Manual Review workflow for fixes
+- **Added**: Mermaid diagrams for CI/CD failure detection and auto-fix flows
+  - Failure detection flow diagram
+  - Auto-fix architecture diagram
+- **Location**: `.specweave/docs/internal/architecture/`
+
+### 🚀 Increments
+
+#### Increment 0029: CI/CD Failure Detection & Auto-Fix
+- **Added**: Complete increment planning for CI/CD failure detection system
+  - Specification with user stories and acceptance criteria
+  - Implementation plan with 30 detailed tasks
+  - Reports documenting MCP browser automation implementation
+  - Verification guide for MCP Playwright setup
+- **Location**: `.specweave/increments/0029-cicd-failure-detection-auto-fix/`
+
+#### Increment 0015: Intelligent Living Docs - Validation Complete
+- **Added**: Final validation report documenting completion status
+- **Location**: `.specweave/increments/0015-intelligent-living-docs/reports/`
+
+---
+
 ## [0.17.11] - 2025-11-12
 
 ### 🐛 Bug Fixes
