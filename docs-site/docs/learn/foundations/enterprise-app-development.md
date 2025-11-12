@@ -12,8 +12,8 @@ In enterprise development, specialized roles collaborate to build robust systems
 
 | Role | Responsibilities | Skills | SpecWeave Agent |
 |------|-----------------|--------|----------------|
-| **[Product Manager (PM)](/docs/glossary/terms/pm)** | Define requirements, prioritize features, stakeholder communication | Business analysis, user research, roadmap planning | [PM Agent](/docs/agents/pm) (spec) |
-| **[Software Architect](/docs/glossary/terms/architect)** | Design system architecture, technology decisions, ADRs | System design, scalability, trade-off analysis | [Architect Agent](/docs/agents/architect) (plan) |
+| **[Product Manager (PM)](/docs/glossary/terms/pm)** | Define requirements, prioritize features, stakeholder communication | Business analysis, user research, roadmap planning | PM Agent (spec) |
+| **[Software Architect](/docs/glossary/terms/architect)** | Design system architecture, technology decisions, ADRs | System design, scalability, trade-off analysis | Architect Agent (plan) |
 | **[Backend Developer](/docs/glossary/terms/backend-developer)** | Implement APIs, business logic, database design | Java, Python, Node.js, SQL, API design | [Tech Lead Agent](/docs/agents/tech-lead) (tasks) |
 | **[Frontend Developer](/docs/glossary/terms/frontend-developer)** | Build user interfaces, client-side logic | React, Angular, Vue, TypeScript, CSS | [Frontend Agent](/docs/plugins/specweave-frontend) (plugin) |
 | **[DevOps Engineer](/docs/glossary/terms/devops-engineer)** | CI/CD pipelines, infrastructure, deployment automation | Docker, Kubernetes, Terraform, AWS/Azure | [DevOps Agent](/docs/plugins/specweave-infrastructure) (plugin) |
@@ -58,7 +58,7 @@ Enterprise applications differ from simple apps in several key ways:
 **Requirement**: Handle growing users, data, transactions without performance degradation.
 
 **SpecWeave Approach**:
-- [Architect Agent](/docs/agents/architect) designs scalable architecture
+- Architect Agent designs scalable architecture
 - Performance testing in [tasks.md](/docs/glossary/terms/tasks-md)
 - [ADRs](/docs/glossary/terms/adr) document scaling decisions
 
@@ -154,7 +154,7 @@ Enterprise applications follow structured SDLC phases. SpecWeave maps directly t
 **Traditional**: Business analysts write requirements documents.
 
 **SpecWeave**:
-- [PM Agent](/docs/agents/pm) creates [spec.md](/docs/glossary/terms/spec)
+- PM Agent creates [spec.md](/docs/glossary/terms/spec)
 - [User stories](/docs/glossary/terms/acceptance-criteria) with [AC-IDs](/docs/glossary/terms/ac-id)
 - [PRD](/docs/glossary/terms/prd) documents business case
 
@@ -165,7 +165,7 @@ Enterprise applications follow structured SDLC phases. SpecWeave maps directly t
 **Traditional**: Architects create design documents (weeks of meetings).
 
 **SpecWeave**:
-- [Architect Agent](/docs/agents/architect) creates [plan.md](/docs/glossary/terms/spec#planmd)
+- Architect Agent creates [plan.md](/docs/glossary/terms/spec#planmd)
 - [HLD](/docs/glossary/terms/hld) for system architecture
 - [ADRs](/docs/glossary/terms/adr) for major decisions
 

@@ -328,7 +328,7 @@ decision_date: 2025-11-15
 # → Creates .specweave/docs/internal/strategy/rfc/
 ```
 
-**See**: [Brownfield Onboarding](/docs/workflows/brownfield/onboarding)
+**See**: [Brownfield Onboarding](/docs/workflows/brownfield)
 
 ## Related Terms
 
