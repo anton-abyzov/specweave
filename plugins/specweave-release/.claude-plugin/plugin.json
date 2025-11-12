@@ -25,6 +25,5 @@
     "brownfield-release"
   ],
   "repository": "https://github.com/anton-abyzov/specweave",
-  "license": "MIT",
-  "hooks": "./hooks/hooks.json"
+  "license": "MIT"
 }

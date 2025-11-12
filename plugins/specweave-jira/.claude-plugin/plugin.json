@@ -16,6 +16,5 @@
     "sync",
     "specweave",
     "project-management"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
