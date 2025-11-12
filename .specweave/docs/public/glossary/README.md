@@ -139,6 +139,16 @@ This glossary helps you:
 - **[SSR (Server-Side Rendering)](./terms/ssr)** - Rendering pages on server
 - **[SSG (Static Site Generation)](./terms/ssg)** - Pre-building pages at build time
 
+**SpecWeave-Specific Terms**:
+- **[Bidirectional Sync](./terms/bidirectional-sync)** - Two-way synchronization (Local ↔ External)
+- **[Content Classification](./terms/content-classification)** - 9-category automatic classification system
+- **[Cross-Linking](./terms/cross-linking)** - Automatic bidirectional document linking
+- **[Docusaurus Frontmatter](./terms/docusaurus-frontmatter)** - Auto-generated YAML metadata
+- **[Intelligent Living Docs Sync](./terms/intelligent-living-docs-sync)** - Smart content distribution (v0.18.0+)
+- **[Profile-Based Sync](./terms/profile-based-sync)** - Multi-repo sync configuration
+- **[Project Detection](./terms/project-detection)** - Auto-detect backend/frontend/mobile projects
+- **[Source of Truth](./terms/source-of-truth)** - Single authoritative data source
+
 ### T
 - **[TDD (Test-Driven Development)](./terms/tdd)** - Writing tests before code
 - **[Terraform](./terms/terraform)** - IaC tool for cloud infrastructure

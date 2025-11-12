@@ -192,6 +192,32 @@ Machine learning and AI integration.
 
 ---
 
+---
+
+## 📦 [SpecWeave Framework](./categories/specweave-category)
+
+SpecWeave-specific concepts and features.
+
+- [Increments](/docs/glossary/terms/increments) - Focused units of work (spec.md, plan.md, tasks.md)
+- [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
+- [Specs](/docs/glossary/terms/specs) - Permanent knowledge base specifications
+- [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
+- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution (v0.18.0+)
+- [Content Classification](/docs/glossary/terms/content-classification) - 9-category automatic classification
+- [Project Detection](/docs/glossary/terms/project-detection) - Auto-detect backend/frontend/mobile
+- [Cross-Linking](/docs/glossary/terms/cross-linking) - Automatic bidirectional document linking
+- [Docusaurus Frontmatter](/docs/glossary/terms/docusaurus-frontmatter) - Auto-generated YAML metadata
+- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single authoritative data source
+- [User Stories](/docs/glossary/terms/user-stories) - User story format (As a...I want...So that)
+- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - AC format with AC-IDs
+- [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers (AC-US1-01)
+- [WIP Limits](/docs/glossary/terms/wip-limits) - Work in progress limits (1 active default)
+
+**Learn More →**
+
+---
+
 ## Navigation
 
 - **[Alphabetical Index](./README)** - Browse A-Z
