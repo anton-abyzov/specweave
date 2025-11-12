@@ -18,6 +18,9 @@ import type {
   ProjectConfidence
 } from '../../../plugins/specweave-ado/lib/ado-project-detector';
 
+// Local type definition for testing
+type AzureDevOpsStrategy = 'project-per-team' | 'area-path-based' | 'team-based';
+
 describe('Azure DevOps Multi-Project Integration', () => {
   let testDir: string;
 
