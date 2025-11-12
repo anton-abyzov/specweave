@@ -22,7 +22,49 @@ import {
   updateSpecWithExternalLink,
   type SpecUserStory,
   type SpecAcceptanceCriterion,
+  type SpecContent,
 } from '../../../src/core/spec-content-sync.js';
+import type { SpecIdentifier } from '../../../src/core/types/spec-identifier.js';
+
+/**
+ * Helper to create complete SpecIdentifier mock
+ */
+function createSpecIdentifier(
+  value: string,
+  project: string = 'default',
+  source: 'sequential' | 'title-slug' | 'external-jira' | 'external-ado' | 'external-github' | 'custom' | 'hybrid-prefix' = 'sequential'
+): SpecIdentifier {
+  const projectCode = project === 'backend' ? 'BE' : project === 'frontend' ? 'FE' : 'DF';
+  return {
+    full: `${project}/${value}`,
+    display: value,
+    source,
+    project,
+    stable: true,
+    compact: `${projectCode}-${value}`,
+  };
+}
+
+/**
+ * Helper to create complete SpecContent mock
+ */
+function createSpecContent(
+  id: string,
+  title: string,
+  description: string,
+  userStories: SpecUserStory[] = [],
+  project: string = 'default'
+): SpecContent {
+  return {
+    identifier: createSpecIdentifier(id, project),
+    id,
+    title,
+    description,
+    userStories,
+    metadata: {},
+    project,
+  };
+}
 
 describe('Spec Content Sync - Core', () => {
   const fixturesDir = path.join(__dirname, '../../fixtures/specs');
@@ -47,7 +89,8 @@ describe('Spec Content Sync - Core', () => {
       const spec = await parseSpecContent(specPath);
 
       expect(spec).not.toBeNull();
-      expect(spec!.id).toBe('spec-001');
+      expect(spec!.identifier).toBeDefined();
+      expect(spec!.id).toBeTruthy(); // ID is auto-generated from title or frontmatter
       expect(spec!.title).toContain('User Authentication');
       expect(spec!.description).toBeTruthy();
       expect(spec!.userStories.length).toBeGreaterThan(0);
@@ -100,15 +143,11 @@ Just a simple spec with no user stories.
 
   describe('detectContentChanges', () => {
     it('should detect title change', () => {
-      const localSpec = {
-        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
-        id: 'spec-001',
-        title: 'User Authentication v2',
-        description: 'Add user authentication',
-        userStories: [] as SpecUserStory[],
-        metadata: {},
-        project: 'default',
-      };
+      const localSpec = createSpecContent(
+        'spec-001',
+        'User Authentication v2',
+        'Add user authentication'
+      );
 
       const externalContent = {
         title: 'User Authentication',
@@ -123,15 +162,11 @@ Just a simple spec with no user stories.
     });
 
     it('should detect description change', () => {
-      const localSpec = {
-        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
-        id: 'spec-001',
-        title: 'User Authentication',
-        description: 'Add user authentication with OAuth',
-        userStories: [] as SpecUserStory[],
-        metadata: {},
-        project: 'default',
-      };
+      const localSpec = createSpecContent(
+        'spec-001',
+        'User Authentication',
+        'Add user authentication with OAuth'
+      );
 
       const externalContent = {
         title: 'User Authentication',
@@ -146,16 +181,15 @@ Just a simple spec with no user stories.
     });
 
     it('should detect user story count change', () => {
-      const localSpec = {
-        id: 'spec-001',
-        title: 'User Authentication',
-        description: 'Add user authentication',
-        userStories: [
+      const localSpec = createSpecContent(
+        'spec-001',
+        'User Authentication',
+        'Add user authentication',
+        [
           { id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
           { id: 'US-002', title: 'Logout', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
-        ],
-        metadata: {},
-      };
+        ]
+      );
 
       const externalContent = {
         title: 'User Authentication',
@@ -170,15 +204,12 @@ Just a simple spec with no user stories.
     });
 
     it('should detect no changes when content is identical', () => {
-      const localSpec = {
-        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
-        id: 'spec-001',
-        title: 'User Authentication',
-        description: 'Add user authentication',
-        userStories: [{ id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] }],
-        metadata: {},
-        project: 'default',
-      };
+      const localSpec = createSpecContent(
+        'spec-001',
+        'User Authentication',
+        'Add user authentication',
+        [{ id: 'US-001', title: 'Login', acceptanceCriteria: [] as SpecAcceptanceCriterion[] }]
+      );
 
       const externalContent = {
         title: 'User Authentication',
@@ -193,15 +224,11 @@ Just a simple spec with no user stories.
     });
 
     it('should normalize whitespace when comparing descriptions', () => {
-      const localSpec = {
-        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
-        id: 'spec-001',
-        title: 'User Authentication',
-        description: 'Add user\n\nauthentication with\nOAuth',
-        userStories: [] as SpecUserStory[],
-        metadata: {},
-        project: 'default',
-      };
+      const localSpec = createSpecContent(
+        'spec-001',
+        'User Authentication',
+        'Add user\n\nauthentication with\nOAuth'
+      );
 
       const externalContent = {
         title: 'User Authentication',
@@ -217,11 +244,11 @@ Just a simple spec with no user stories.
 
   describe('buildExternalDescription', () => {
     it('should build markdown description with user stories', () => {
-      const spec = {
-        id: 'spec-001',
-        title: 'User Authentication',
-        description: 'Add user authentication system',
-        userStories: [
+      const spec = createSpecContent(
+        'spec-001',
+        'User Authentication',
+        'Add user authentication system',
+        [
           {
             id: 'US-001',
             title: 'Basic Login',
@@ -240,9 +267,9 @@ Just a simple spec with no user stories.
               },
             ],
           },
-        ],
-        metadata: { priority: 'P1' },
-      };
+        ]
+      );
+      spec.metadata.priority = 'P1';
 
       const description = buildExternalDescription(spec);
 
@@ -256,15 +283,11 @@ Just a simple spec with no user stories.
     });
 
     it('should handle spec without user stories', () => {
-      const spec = {
-        identifier: { type: 'specweave', value: 'spec-001', format: 'spec-###', confidence: 1.0 },
-        id: 'spec-001',
-        title: 'Simple Spec',
-        description: 'Simple description',
-        userStories: [] as SpecUserStory[],
-        metadata: {},
-        project: 'default',
-      };
+      const spec = createSpecContent(
+        'spec-001',
+        'Simple Spec',
+        'Simple description'
+      );
 
       const description = buildExternalDescription(spec);
 
@@ -273,15 +296,12 @@ Just a simple spec with no user stories.
     });
 
     it('should handle spec without description', () => {
-      const spec = {
-        id: 'spec-001',
-        title: 'Minimal Spec',
-        description: '',
-        userStories: [
-          { id: 'US-001', title: 'Feature', acceptanceCriteria: [] as SpecAcceptanceCriterion[] },
-        ],
-        metadata: {},
-      };
+      const spec = createSpecContent(
+        'spec-001',
+        'Minimal Spec',
+        '',
+        [{ id: 'US-001', title: 'Feature', acceptanceCriteria: [] as SpecAcceptanceCriterion[] }]
+      );
 
       const description = buildExternalDescription(spec);
 
@@ -459,6 +479,7 @@ Add user authentication system with OAuth support.
       expect(spec).not.toBeNull();
       expect(spec!.title).toBe('User Authentication');
       expect(spec!.userStories).toHaveLength(1);
+      expect(spec!.description).toBe('Add user authentication system with OAuth support.');
 
       // 3. Simulate external tool having old content
       const externalContent = {
