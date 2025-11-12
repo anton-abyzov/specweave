@@ -202,7 +202,7 @@ export class AdoProjectDetector {
     const candidates = this.analyzeContent(content);
 
     // High confidence: Auto-select
-    if (candidates[0]?.confidence > 0.7) {
+    if (candidates[0]?.confidence >= 0.7) {
       return {
         primary: candidates[0].project,
         confidence: candidates[0].confidence,
@@ -211,10 +211,10 @@ export class AdoProjectDetector {
     }
 
     // Medium confidence: Primary with secondary projects
-    if (candidates[0]?.confidence > 0.4) {
+    if (candidates[0]?.confidence >= 0.4) {
       const secondary = candidates
         .slice(1)
-        .filter(c => c.confidence > 0.3)
+        .filter(c => c.confidence >= 0.3)
         .map(c => c.project);
 
       return {
@@ -299,7 +299,7 @@ export class AdoProjectDetector {
     const candidates = this.analyzeContent(content);
 
     // Get all projects with meaningful confidence
-    const significantProjects = candidates.filter(c => c.confidence > 0.3);
+    const significantProjects = candidates.filter(c => c.confidence >= 0.3);
 
     if (significantProjects.length === 0) {
       return {
@@ -330,11 +330,50 @@ export class AdoProjectDetector {
    */
   mapToAreaPath(content: string, project: string): string {
     const areaPaths = process.env.AZURE_DEVOPS_AREA_PATHS?.split(',').map(a => a.trim()) || [];
+    const lowerContent = content.toLowerCase();
 
+    // First try exact area path name match
     for (const areaPath of areaPaths) {
-      if (content.toLowerCase().includes(areaPath.toLowerCase())) {
+      if (lowerContent.includes(areaPath.toLowerCase())) {
         return `${project}\\${areaPath}`;
       }
+    }
+
+    // Try keyword-based detection using PROJECT_KEYWORDS
+    // Map area paths to common project types
+    const areaPathKeywordMap: { [key: string]: string[] } = {
+      'Frontend': ['WebApp', 'frontend'],
+      'Backend': ['backend', 'api', 'server'],
+      'Mobile': ['MobileApp', 'mobile', 'ios', 'android'],
+      'Infrastructure': ['Platform', 'infrastructure'],
+      'Data': ['DataService', 'data', 'analytics']
+    };
+
+    let bestMatch = { areaPath: '', confidence: 0 };
+
+    for (const areaPath of areaPaths) {
+      // Get related project types for this area path
+      const relatedTypes = areaPathKeywordMap[areaPath] || [areaPath];
+      let matchCount = 0;
+
+      for (const projectType of relatedTypes) {
+        // Check if this project type has keywords defined
+        const keywords = this.projectKeywords[projectType] || [];
+        for (const keyword of keywords) {
+          if (lowerContent.includes(keyword.toLowerCase())) {
+            matchCount++;
+          }
+        }
+      }
+
+      if (matchCount > bestMatch.confidence) {
+        bestMatch = { areaPath, confidence: matchCount };
+      }
+    }
+
+    // Return best match if confidence is high enough
+    if (bestMatch.confidence >= 2) {
+      return `${project}\\${bestMatch.areaPath}`;
     }
 
     // Default area path
