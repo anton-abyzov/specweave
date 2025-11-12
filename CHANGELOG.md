@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.3] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### Marketplace Plugin Installation
+- **Fixed**: Marketplace plugin installation cleanup and documentation
+  - Updated `.claude-plugin/README.md` with correct installation instructions
+  - Clarified marketplace.json structure and plugin sources
+  - Improved documentation for plugin development workflow
+
+---
+
 ## [0.17.2] - 2025-11-11
 
 ### ✅ Release Status
@@ -39,6 +51,28 @@ All notable changes to SpecWeave will be documented in this file.
 - **Fixed**: Test expectations for flattened structure
   - Updated paths from `projects/default/specs` to `specs/default`
   - Aligned with v0.16.11 structure flattening changes
+- **🔥 CRITICAL FIX + AGGRESSIVE CLEANUP**: Incorrect directory structure + removed all legacy baggage
+  - **Bug**: JIRA multi-project initialization was creating nested structure `projects/{id}/specs/` instead of flattened `specs/{id}/`
+  - **Impact**: Specs stored in wrong location, GitHub/JIRA/ADO sync would fail
+  - **Root Cause**: Lines 148-169 in `src/cli/commands/init.ts` created old nested structure
+  - **Fix**: Updated to create flattened structure (v0.16.11+): `specs/{projectId}/`, `modules/{projectId}/`, `team/{projectId}/`, `project-arch/{projectId}/`, `legacy/{projectId}/`
+  - **Aggressive Cleanup** (no users yet, no backward compatibility needed):
+    - ✅ DELETED migration script `scripts/migrate-flatten-structure.sh` (not needed)
+    - ✅ DELETED obsolete ADR-0017 (nested structure no longer exists)
+    - ✅ MOVED 7 spec files from `.specweave/docs/internal/projects/default/specs/` to `.specweave/docs/internal/specs/default/` (correct location)
+    - ✅ DELETED entire `.specweave/docs/internal/projects/` folder (wrong structure eliminated)
+    - ✅ CLEANED ADR-0028 (removed all migration/backward compatibility sections)
+    - ✅ SIMPLIFIED multi-project-setup.md guide (removed migration sections)
+  - **Result**: ONE structure, no legacy support, no fallback logic, clean codebase
+  - **Files Changed**:
+    - `src/cli/commands/init.ts`: Fixed directory creation (lines 147-169)
+    - `src/core/spec-task-mapper.ts`: Removed wrong fallback path (line 219)
+    - `plugins/specweave/skills/increment-planner/SKILL.md`: Fixed path comments
+    - `.specweave/docs/internal/architecture/adr/0017-multi-project-internal-structure.md`: DELETED (obsolete)
+    - `.specweave/docs/internal/architecture/adr/0028-flatten-internal-documentation-structure.md`: Cleaned up, removed migration references
+    - `.specweave/docs/public/guides/multi-project-setup.md`: Simplified, removed migration sections
+    - `.specweave/docs/internal/specs/default/`: MOVED 7 specs from old location
+    - `scripts/migrate-flatten-structure.sh`: DELETED (not needed)
 
 **Files Changed**:
 - `.github/workflows/test.yml`: Add build step before tests
