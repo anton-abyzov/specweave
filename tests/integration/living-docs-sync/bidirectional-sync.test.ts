@@ -411,7 +411,7 @@ externalLinks:
       const report = resolver.generateReport();
 
       expect(report).toContain('Conflict Resolution Report');
-      expect(report).toContain('Total Resolutions: 2');
+      expect(report).toContain('**Total Resolutions**: 2');
       expect(report).toContain('EXTERNAL WINS');
       expect(report).toContain('All conflicts resolved with external tool priority');
     });
