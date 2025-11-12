@@ -1,0 +1,126 @@
+```mermaid
+sequenceDiagram
+    participant GH as GitHub Actions
+    participant Mon as Workflow Monitor
+    participant Ext as Haiku Extractor
+    participant Ana as Sonnet Analyzer
+    participant Val as Safety Validator
+    participant App as Fix Applicator
+    participant Ver as Verifier
+    participant User as Developer
+
+    Note over Mon: Poll every 60 seconds
+    Mon->>GH: GET /actions/runs (status=completed)
+    GH-->>Mon: Workflow runs (last 5 minutes)
+
+    alt Failure detected
+        Mon->>Mon: Filter failures (conclusion=failure)
+        Mon->>Mon: Check if already processed
+
+        Note over Mon,Ext: Phase 1: Log Extraction (Haiku)
+        Mon->>GH: GET /jobs/{job_id}/logs
+        GH-->>Mon: Raw logs (500-5000 lines)
+        Mon->>Ext: extract(logs)
+        Ext->>Ext: Parse errors, stack traces, tests
+        Ext-->>Mon: ErrorExtraction (JSON)
+
+        Note over Mon,Ana: Phase 2: Root Cause Analysis (Sonnet)
+        Mon->>Ana: analyze(extraction)
+        Ana->>Ana: Load affected files
+        Ana->>Ana: Get git diff
+        Ana->>Ana: Generate fix proposal
+        Ana-->>Mon: FixProposal (confidence, fixes)
+
+        Note over Mon,Val: Phase 3: Safety Gates
+        Mon->>Val: evaluate(proposal, config)
+        Val->>Val: Check confidence (>0.8?)
+        Val->>Val: Check critical files
+        Val->>Val: Check multi-file risk
+        Val-->>Mon: SafetyGate (autoApply, reason)
+
+        alt High confidence & safe
+            Note over Mon,App: Auto-Apply Mode
+            Mon->>App: createBackup(proposal)
+            App->>App: Save original files
+            App-->>Mon: Backup created
+
+            Mon->>App: applyFix(proposal)
+            App->>App: Update files
+            App-->>Mon: Fix applied
+
+            Mon->>User: Desktop notification (auto-applied)
+
+            Note over Mon,Ver: Phase 4: Verification
+            Mon->>Ver: verify(fixId, workflowRunId)
+            Ver->>GH: POST /actions/runs/{run_id}/rerun
+            GH-->>Ver: Re-run started
+
+            loop Wait for completion (poll every 10s)
+                Ver->>GH: GET /actions/runs/{new_run_id}
+                GH-->>Ver: Status: in_progress
+            end
+
+            alt Workflow passes
+                GH-->>Ver: Status: completed, conclusion: success
+                Ver->>User: Desktop notification (verified)
+                Ver-->>Mon: Verification successful ✅
+            else Workflow still fails
+                GH-->>Ver: Status: completed, conclusion: failure
+                Ver->>App: rollback(fixId)
+                App->>App: Restore original files
+                App-->>Ver: Rollback complete
+                Ver->>User: Desktop notification (rollback)
+                Ver-->>Mon: Verification failed ❌
+            end
+
+        else Low confidence or critical files
+            Note over Mon,User: Manual Review Mode
+            Mon->>User: Desktop notification (review needed)
+            Mon->>Mon: Save fix proposal (pending)
+
+            User->>Mon: specweave cicd fix preview {fix-id}
+            Mon-->>User: Show diff (old vs new code)
+
+            User->>Mon: specweave cicd fix apply {fix-id}
+            Mon->>App: applyFix(proposal)
+            App->>App: Update files
+            App-->>Mon: Fix applied
+
+            Mon->>Ver: verify(fixId, workflowRunId)
+            Note right of Ver: Same verification flow as auto-apply
+        end
+
+        Mon->>Mon: Mark run as processed
+        Mon->>Mon: Log action (audit trail)
+    end
+
+    Note over Mon: Continue polling...
+```
+
+**Key Points**:
+
+1. **Polling Loop**: Monitor polls GitHub API every 60 seconds
+2. **Two-Phase Analysis**: Haiku for extraction (fast), Sonnet for analysis (intelligent)
+3. **Safety Gates**: Validate before auto-apply (confidence, critical files, multi-file)
+4. **Auto-Apply Path**: Backup → Apply → Verify → Rollback if failed
+5. **Manual Review Path**: Notification → User decision → Apply → Verify
+6. **Verification**: Re-run workflow to confirm fix worked
+7. **Rollback**: Restore original files if verification fails
+
+**Performance**:
+- Detection latency: 60 seconds average (polling interval)
+- Extraction: 2-5 seconds (Haiku)
+- Analysis: 10-30 seconds (Sonnet)
+- Total: 12-95 seconds from failure to fix proposal
+- Verification: 2-10 minutes (workflow runtime)
+
+**Cost**:
+- Extraction: $0.001-0.003 (Haiku)
+- Analysis: $0.03-0.08 (Sonnet)
+- Total: $0.015 per failure (under $0.10 budget)
+
+**Safety**:
+- Backups created before every apply
+- Auto-rollback on verification failure
+- Manual review for low confidence or critical files
+- Desktop notifications keep user informed
