@@ -233,15 +233,15 @@ class AdoProjectDetector {
    */
   async detectFromContent(content) {
     const candidates = this.analyzeContent(content);
-    if (candidates[0]?.confidence > 0.7) {
+    if (candidates[0]?.confidence >= 0.7) {
       return {
         primary: candidates[0].project,
         confidence: candidates[0].confidence,
         strategy: this.strategy
       };
     }
-    if (candidates[0]?.confidence > 0.4) {
-      const secondary = candidates.slice(1).filter((c) => c.confidence > 0.3).map((c) => c.project);
+    if (candidates[0]?.confidence >= 0.4) {
+      const secondary = candidates.slice(1).filter((c) => c.confidence >= 0.3).map((c) => c.project);
       return {
         primary: candidates[0].project,
         secondary: secondary.length > 0 ? secondary : void 0,
@@ -306,7 +306,7 @@ class AdoProjectDetector {
    */
   async detectMultiProject(content) {
     const candidates = this.analyzeContent(content);
-    const significantProjects = candidates.filter((c) => c.confidence > 0.3);
+    const significantProjects = candidates.filter((c) => c.confidence >= 0.3);
     if (significantProjects.length === 0) {
       return {
         primary: this.availableProjects[0] || "Unknown",
@@ -328,10 +328,37 @@ class AdoProjectDetector {
    */
   mapToAreaPath(content, project) {
     const areaPaths = process.env.AZURE_DEVOPS_AREA_PATHS?.split(",").map((a) => a.trim()) || [];
+    const lowerContent = content.toLowerCase();
     for (const areaPath of areaPaths) {
-      if (content.toLowerCase().includes(areaPath.toLowerCase())) {
+      if (lowerContent.includes(areaPath.toLowerCase())) {
         return `${project}\\${areaPath}`;
       }
+    }
+    const areaPathKeywordMap = {
+      "Frontend": ["WebApp", "frontend"],
+      "Backend": ["backend", "api", "server"],
+      "Mobile": ["MobileApp", "mobile", "ios", "android"],
+      "Infrastructure": ["Platform", "infrastructure"],
+      "Data": ["DataService", "data", "analytics"]
+    };
+    let bestMatch = { areaPath: "", confidence: 0 };
+    for (const areaPath of areaPaths) {
+      const relatedTypes = areaPathKeywordMap[areaPath] || [areaPath];
+      let matchCount = 0;
+      for (const projectType of relatedTypes) {
+        const keywords = this.projectKeywords[projectType] || [];
+        for (const keyword of keywords) {
+          if (lowerContent.includes(keyword.toLowerCase())) {
+            matchCount++;
+          }
+        }
+      }
+      if (matchCount > bestMatch.confidence) {
+        bestMatch = { areaPath, confidence: matchCount };
+      }
+    }
+    if (bestMatch.confidence >= 2) {
+      return `${project}\\${bestMatch.areaPath}`;
     }
     return project;
   }
