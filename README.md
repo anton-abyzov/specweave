@@ -212,11 +212,48 @@ specweave init .
 - ⏸️ **Intelligent Pausing** - Auto-detects blockers, pauses with context, resumes when ready
 - 📚 **Living Documentation** - Auto-updates after every task (no manual sync!)
 - 🤖 **AI Agents** - PM, Architect, Quality Judge guide your work
+- 🔧 **CI/CD Auto-Fix** - Workflow failures auto-fixed by Claude (just mention `@claude`)
 - 🌍 **Multilingual** - Work in 11 languages (FREE translation)
 - 🏢 **Multi-Project** - Organize by team/repo/microservice
 - 🔗 **Issue Tracker Sync** - GitHub, Jira, Azure DevOps integration
 
 **[→ Complete Feature List](https://spec-weave.com/docs/overview/features)**
+
+---
+
+## 🔧 CI/CD Auto-Fix
+
+**Workflow fails? Claude fixes it automatically.**
+
+When any GitHub Actions workflow fails, SpecWeave automatically:
+1. Creates an issue mentioning `@claude`
+2. Claude analyzes the failure logs
+3. Claude creates a PR with the fix
+4. You review and merge
+5. Workflow re-runs and passes ✅
+
+**Manual Trigger**:
+```markdown
+@claude This workflow failed: https://github.com/your-org/repo/actions/runs/12345
+
+Please analyze the logs and create a fix PR.
+```
+
+**Automatic** (via GitHub Actions):
+- Detects failures automatically
+- No manual intervention needed
+- Works 24/7 in the cloud
+- Zero cost (uses GitHub Actions free tier)
+
+**Common fixes**:
+- TypeScript compilation errors
+- Test failures
+- Linting violations
+- Missing imports
+- Type mismatches
+- Configuration issues
+
+**[→ Setup Guide](https://spec-weave.com/docs/features/cicd-autofix)**
 
 ---
 

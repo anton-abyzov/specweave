@@ -289,13 +289,19 @@ Config: Auto-detected from project files
 
 ## Project Structure
 
+**IMPORTANT**: This project uses {MONOREPO_OR_SINGLE} mode.
+
+{#IF_SINGLE_PROJECT}
+### Single Project Structure
+
 ```
 {PROJECT_NAME}/
 ├── .specweave/
 │   ├── docs/                    # Strategic documentation
 │   │   ├── internal/
 │   │   │   ├── strategy/        # Business specs (WHAT, WHY)
-│   │   │   ├── specs/           # Feature specifications (detailed requirements)
+│   │   │   ├── specs/           # Feature specifications (living docs)
+│   │   │   │   └── default/     # ✅ All specs in default project
 │   │   │   ├── architecture/    # Technical design (HOW)
 │   │   │   ├── delivery/        # Guides, roadmap, CI/CD
 │   │   │   ├── operations/      # Runbooks, monitoring
@@ -319,6 +325,50 @@ Config: Auto-detected from project files
 ├── CLAUDE.md                    # This file
 └── src/                         # Your source code
 ```
+{#ENDIF}
+
+{#IF_MULTI_PROJECT}
+### Multi-Project Structure (v0.16.11+ Flattened)
+
+**CRITICAL**: Specs are organized by project with FLATTENED structure (v0.16.11+).
+
+```
+{PROJECT_NAME}/
+├── .specweave/
+│   ├── docs/internal/
+│   │   ├── strategy/            # Cross-project strategy
+│   │   ├── specs/               # ✅ FLATTENED structure (v0.16.11+)
+│   │   │   ├── backend/         # Backend project specs
+│   │   │   │   ├── spec-001-api-auth.md
+│   │   │   │   └── spec-002-data-layer.md
+│   │   │   ├── frontend/        # Frontend project specs
+│   │   │   │   ├── spec-001-user-dashboard.md
+│   │   │   │   └── spec-002-dark-mode.md
+│   │   │   ├── mobile/          # Mobile project specs (if applicable)
+│   │   │   │   └── spec-001-push-notifications.md
+│   │   │   └── _parent/         # Parent repo specs (multi-repo only)
+│   │   │       └── spec-001-system-architecture.md
+│   │   ├── architecture/        # System-wide technical design
+│   │   ├── delivery/            # Cross-project delivery
+│   │   ├── operations/          # Cross-project operations
+│   │   └── governance/          # Cross-project governance
+│   ├── increments/
+│   │   ├── 0001-backend-auth/   # Backend increment
+│   │   ├── 0002-frontend-ui/    # Frontend increment
+│   │   └── 0003-mobile-push/    # Mobile increment
+│   └── ...
+```
+
+**Living Docs Path Format**:
+- ✅ **CORRECT** (v0.16.11+): `.specweave/docs/internal/specs/{project-id}/spec-NNN-name.md`
+- ❌ **OLD** (v0.8.0-v0.16.10): `.specweave/docs/internal/projects/{project-id}/specs/...` (DEPRECATED)
+
+**Project Detection** (automatic):
+- **From increment name**: `0001-backend-auth` → project: `backend`
+- **From tech stack**: React/Next.js → `frontend`, ASP.NET/Node.js → `backend`
+- **From config**: `multiProject.activeProject` in `.specweave/config.json`
+- **Fallback**: Uses `default` project
+{#ENDIF}
 
 ---
 
