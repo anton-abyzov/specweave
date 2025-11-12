@@ -143,17 +143,30 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         const credentials = existing.credentials;
 
         // Step 5.1: Configure repositories (GitHub only)
+        // CRITICAL: Must wrap in try-catch to prevent silent failure!
         let repositoryProfiles = [];
         let monorepoProjects = undefined;
 
         if (tracker === 'github') {
-          // Import the configuration function
-          const { configureGitHubRepositories } = await import('./github.js');
-          // Pass the GitHub token for repository creation
-          const githubToken = (credentials as any).token;
-          const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
-          repositoryProfiles = repoConfig.profiles;
-          monorepoProjects = repoConfig.monorepoProjects;
+          try {
+            // Import the configuration function
+            const { configureGitHubRepositories } = await import('./github.js');
+            // Pass the GitHub token for repository creation
+            const githubToken = (credentials as any).token;
+            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+            repositoryProfiles = repoConfig.profiles;
+            monorepoProjects = repoConfig.monorepoProjects;
+          } catch (error: any) {
+            // Repository configuration failed - show error but continue with empty profiles
+            console.log(chalk.red(`\n❌ Repository configuration failed: ${error.message}`));
+            console.log(chalk.yellow('   Continuing with manual sync configuration\n'));
+
+            if (process.env.DEBUG && error.stack) {
+              console.log(chalk.gray(error.stack));
+            }
+
+            // Leave repositoryProfiles empty - will be created with defaults
+          }
         }
 
         // Step 5.2: Write sync config to .specweave/config.json
@@ -212,17 +225,30 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5.1: Configure repositories FIRST (GitHub only)
   // CRITICAL: This must happen BEFORE project validation!
   // Repository strategy (single/multiple/monorepo) determines how projects are organized
+  // MUST wrap in try-catch to prevent silent failure!
   let repositoryProfiles = [];
   let monorepoProjects = undefined;
 
   if (tracker === 'github') {
-    // Import the configuration function
-    const { configureGitHubRepositories } = await import('./github.js');
-    // Pass the GitHub token for repository creation
-    const githubToken = (credentials as any).token;
-    const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
-    repositoryProfiles = repoConfig.profiles;
-    monorepoProjects = repoConfig.monorepoProjects;
+    try {
+      // Import the configuration function
+      const { configureGitHubRepositories } = await import('./github.js');
+      // Pass the GitHub token for repository creation
+      const githubToken = (credentials as any).token;
+      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+      repositoryProfiles = repoConfig.profiles;
+      monorepoProjects = repoConfig.monorepoProjects;
+    } catch (error: any) {
+      // Repository configuration failed - show error but continue with empty profiles
+      console.log(chalk.red(`\n❌ Repository configuration failed: ${error.message}`));
+      console.log(chalk.yellow('   Continuing with manual sync configuration\n'));
+
+      if (process.env.DEBUG && error.stack) {
+        console.log(chalk.gray(error.stack));
+      }
+
+      // Leave repositoryProfiles empty - will be created with defaults
+    }
   }
 
   // Step 5.2: Write sync config to .specweave/config.json
