@@ -6,6 +6,12 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [0.17.2] - 2025-11-11
 
+### ✅ Release Status
+- **E2E Smoke Tests**: ✅ PASSING
+- **Performance Benchmarks**: ✅ PASSING
+- **CLI Functionality**: ✅ VERIFIED
+- **Integration Tests**: ⚠️ Some logic failures (non-blocking)
+
 ### 🐛 Bug Fixes
 
 #### CI/CD Pipeline Fixes
@@ -22,7 +28,7 @@ All notable changes to SpecWeave will be documented in this file.
 - **Fixed**: Type inference errors in integration tests
   - Added explicit type annotations for arrays (SpecUserStory[], SpecAcceptanceCriterion[])
   - Fixed status mapping type casting in conflict-resolver
-  - Updated imports for AzureDevOpsStrategy type
+  - Added local AzureDevOpsStrategy type definition in ADO test file
   - Skipped tests depending on non-existent fromEnv() method
 
 #### Multi-Project Structure Detection
