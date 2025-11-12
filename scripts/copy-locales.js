@@ -14,7 +14,7 @@ const __dirname = dirname(__filename);
 
 const projectRoot = join(__dirname, '..');
 const srcLocales = join(projectRoot, 'src', 'locales');
-const distLocales = join(projectRoot, 'dist', 'locales');
+const distLocales = join(projectRoot, 'dist', 'src', 'locales');
 
 try {
   // Create dist/locales directory if it doesn't exist
