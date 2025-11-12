@@ -1720,6 +1720,359 @@ SPEC-002: Intelligent AI Capabilities (Living Docs - Permanent, Feature-Level)
 
 ---
 
+## Enterprise Specs Organization (Domain-Based)
+
+**NEW in v0.20.0**: Living docs specs organized by feature domain with rich metadata and auto-generated indices.
+
+### The Problem with Flat Structure
+
+**Before** (v0.19.x and earlier):
+```
+.specweave/docs/internal/specs/default/
+├── spec-001-core-framework-architecture.md
+├── spec-002-intelligent-capabilities.md
+├── spec-003-developer-experience.md
+... (30+ files in one folder)
+├── nfr-risks.md
+├── nfr-configuration-example.md
+├── overview-overview.md
+└── us-us1-single-provider-setup.md
+```
+
+**Problems**:
+- ❌ 30+ files in single folder (hard to navigate)
+- ❌ Mixed document types (specs, NFRs, overviews, user stories)
+- ❌ No categorization by feature area
+- ❌ Poor scalability (becomes unmanageable at 100+ specs)
+- ❌ No rich metadata (status, priority, ownership)
+
+### Enterprise Solution: Domain-Based Organization
+
+**After** (v0.20.0+):
+```
+.specweave/docs/internal/specs/default/
+├── core-framework/              # Domain folder
+│   ├── README.md                # Domain overview
+│   ├── spec-001-*.md           # Feature specs
+│   ├── spec-004-*.md
+│   ├── nfrs/                    # NFRs for this domain
+│   │   └── nfr-cross-platform.md
+│   └── user-stories/            # Extracted user stories
+│       └── us-001-*.md
+│
+├── developer-experience/
+│   ├── spec-003-*.md
+│   ├── spec-022-*.md
+│   └── user-stories/
+│
+├── integrations/
+│   ├── github/
+│   │   └── spec-017-sync-fix.md
+│   ├── jira/
+│   └── ado/
+│
+├── infrastructure/
+│   ├── spec-004-metrics.md
+│   ├── spec-029-cicd-failure.md
+│   └── nfrs/
+│
+├── quality-velocity/
+│   ├── spec-005-stabilization.md
+│   └── spec-010-dora-metrics.md
+│
+├── intelligence/
+│   ├── spec-002-intelligent-capabilities.md
+│   ├── spec-016-self-reflection.md
+│   └── spec-009-intelligent-reopen.md
+│
+└── _index/                      # Auto-generated indices
+    ├── README.md                # Master index
+    ├── by-status.md             # Active, planning, completed, archived
+    ├── by-domain.md             # All domains
+    ├── by-release.md            # 1.0.0, 1.1.0, 2.0.0
+    ├── by-priority.md           # P0, P1, P2, P3
+    └── by-team.md               # Core Team, Platform Team, etc.
+```
+
+### Six Feature Domains
+
+| Domain | Description | Examples |
+|--------|-------------|----------|
+| **core-framework** | Core framework capabilities | CLI, plugin architecture, configuration, lifecycle |
+| **developer-experience** | DX improvements | Setup, onboarding, docs, error messages, usability |
+| **integrations** | External tool integrations | GitHub, JIRA, Azure DevOps, Figma, Slack |
+| **infrastructure** | Platform, DevOps, ops | CI/CD, monitoring, observability, performance |
+| **quality-velocity** | Testing, metrics, releases | Testing framework, DORA metrics, stabilization |
+| **intelligence** | AI-powered features | Model selection, self-reflection, smart workflows |
+
+### Rich Metadata for Every Spec
+
+Every spec gets YAML frontmatter with comprehensive metadata:
+
+```yaml
+---
+# Identity
+id: spec-001-core-framework-architecture
+title: "Core Framework & Architecture"
+version: 2.0
+status: active | planning | completed | archived
+
+# Classification
+domain: core-framework
+category: feature | nfr | user-story | overview
+priority: P0 | P1 | P2 | P3
+complexity: low | medium | high | very-high
+
+# Ownership
+team: Core Team
+owner: @anton-abyzov
+stakeholders: ["Product", "Engineering"]
+
+# Lifecycle
+created: 2025-01-15
+last_updated: 2025-11-10
+target_release: 1.0.0
+
+# Relationships
+increments: [0001, 0002, 0004, 0005]
+depends_on: []
+blocks: [spec-002, spec-003]
+related: [spec-016]
+
+# External Links
+github_project: https://github.com/anton-abyzov/specweave/projects/1
+jira_epic: null
+confluence: null
+
+# Tags
+tags: [framework, cli, plugin-system, mvp]
+
+# Metrics
+estimated_effort: 120h
+actual_effort: 95h
+user_stories: 35
+completion: 100%
+---
+```
+
+### Auto-Generated Navigation Indices
+
+**Five index views** for different navigation needs:
+
+1. **by-status.md** - Status-based view
+   - Active (currently being worked on)
+   - Planning (being planned)
+   - Completed (delivered to production)
+   - Archived (historical reference)
+
+2. **by-domain.md** - Domain-based view
+   - Core Framework (5 specs)
+   - Developer Experience (3 specs)
+   - Integrations (4 specs)
+   - Infrastructure (3 specs)
+   - Quality & Velocity (2 specs)
+   - Intelligence (3 specs)
+
+3. **by-release.md** - Release planning view
+   - 1.0.0 (MVP release)
+   - 1.1.0 (Post-launch improvements)
+   - 2.0.0 (Major features)
+   - Unscheduled (backlog)
+
+4. **by-priority.md** - Priority-based view
+   - P0 (Critical, security, production blockers)
+   - P1 (High, MVPessential, core features)
+   - P2 (Medium, nice-to-have, enhancements)
+   - P3 (Low, future, backlog, deferred)
+
+5. **by-team.md** - Team ownership view
+   - Core Team
+   - Platform Team
+   - DX Team
+   - Integrations Team
+
+### Automated Classification
+
+**Intelligent Living Docs Sync** auto-classifies specs by domain using keyword matching:
+
+```typescript
+// Auto-classification during living docs sync
+const classifyDomain = (spec: string): string => {
+  const keywords = {
+    'core-framework': ['framework', 'cli', 'plugin', 'core', 'foundation'],
+    'developer-experience': ['dx', 'ux', 'installation', 'setup', 'guide'],
+    'integrations': ['github', 'jira', 'ado', 'figma', 'sync'],
+    'infrastructure': ['cicd', 'monitoring', 'observability', 'performance'],
+    'quality-velocity': ['testing', 'dora', 'metrics', 'stabilization'],
+    'intelligence': ['ai', 'intelligent', 'smart', 'reflection', 'model']
+  };
+
+  // Score each domain and return highest
+  // Confidence threshold: 0.5 (50% keyword match)
+};
+```
+
+### PM Agent Instructions
+
+**CRITICAL**: When creating living docs specs, PM agent MUST:
+
+1. **Classify Domain** - Determine feature domain based on content
+2. **Add Rich Metadata** - Include all required frontmatter fields
+3. **Use Correct Path** - Save to domain-specific folder
+4. **Generate README** - Update domain README.md
+5. **Regenerate Indices** - Run index generation after creating spec
+
+**Example PM Agent Workflow**:
+
+```typescript
+// Step 1: Classify domain
+const domain = classifyDomain(spec.title, spec.content);
+// Result: "core-framework"
+
+// Step 2: Determine path
+const specPath = `.specweave/docs/internal/specs/default/${domain}/spec-001-core-framework.md`;
+
+// Step 3: Add frontmatter
+const frontmatter = {
+  id: 'spec-001-core-framework-architecture',
+  title: 'Core Framework & Architecture',
+  domain: 'core-framework',
+  category: 'feature',
+  priority: 'P1',
+  status: 'active',
+  team: 'Core Team',
+  owner: '@anton-abyzov',
+  created: '2025-11-12',
+  target_release: '1.0.0',
+  tags: ['framework', 'cli', 'plugin']
+};
+
+// Step 4: Write spec with frontmatter
+writeSpec(specPath, frontmatter, content);
+
+// Step 5: Update domain README
+updateDomainReadme(domain, spec);
+
+// Step 6: Regenerate indices
+regenerateIndices();
+```
+
+### Migration Scripts
+
+**Three scripts for migration**:
+
+1. **Classify Specs** (`scripts/classify-specs.ts`)
+   - Scans existing specs
+   - Auto-classifies by domain (keyword matching)
+   - Generates classification report
+   - Saves classification.json for migration
+
+2. **Migrate to Domains** (`scripts/migrate-specs-to-domains.ts`)
+   - Reads classification.json
+   - Creates domain folders
+   - Moves specs to domain-specific folders
+   - Adds/updates frontmatter
+   - Creates domain READMEs
+   - Supports --dry-run mode
+
+3. **Generate Indices** (`scripts/generate-spec-indices.ts`)
+   - Scans all specs
+   - Generates 5 navigation indices
+   - Creates master index (README.md)
+   - Shows statistics
+
+**Usage**:
+
+```bash
+# Step 1: Classify existing specs
+npx ts-node scripts/classify-specs.ts
+# Output: classification-report.md, classification.json
+
+# Step 2: Review classification
+vim .specweave/docs/internal/specs/default/_index/classification-report.md
+
+# Step 3: Migrate (dry-run first)
+npx ts-node scripts/migrate-specs-to-domains.ts --dry-run
+
+# Step 4: Migrate (actual)
+npx ts-node scripts/migrate-specs-to-domains.ts
+
+# Step 5: Generate indices
+npx ts-node scripts/generate-spec-indices.ts
+```
+
+### Benefits
+
+**For Users**:
+- ✅ Find specs 10x faster (browse by domain vs scroll through 30+ files)
+- ✅ Clear relationships (dependencies, blockers, related specs)
+- ✅ Rich metadata (status, priority, ownership, effort)
+- ✅ Multi-dimensional navigation (status, domain, release, team, priority)
+
+**For Teams**:
+- ✅ Team ownership (core-team/, platform-team/)
+- ✅ Release planning (1.0.0, 1.1.0, 2.0.0)
+- ✅ Dependency management (blocks[], depends_on[])
+- ✅ Effort tracking (estimated_effort vs actual_effort)
+
+**For Enterprise**:
+- ✅ Scalability (handles 100+ specs easily)
+- ✅ Compliance (audit trail via metadata)
+- ✅ Reporting (auto-generated indices for stakeholders)
+- ✅ Multi-project (backend/, frontend/, mobile/)
+
+### Configuration
+
+Add to `.specweave/config.json`:
+
+```json
+{
+  "specs": {
+    "organization": {
+      "strategy": "domain-based",
+      "autoDomainClassification": true,
+      "autoGenerateIndices": true,
+      "requireMetadata": true,
+      "domains": [
+        "core-framework",
+        "developer-experience",
+        "integrations",
+        "infrastructure",
+        "quality-velocity",
+        "intelligence"
+      ],
+      "metadata": {
+        "required": ["id", "title", "status", "domain", "team", "owner"],
+        "optional": ["priority", "complexity", "tags", "increments"]
+      }
+    }
+  }
+}
+```
+
+### For Agents and Skills
+
+**PM Agent MUST**:
+1. Always classify domain before creating spec
+2. Add rich frontmatter with all required fields
+3. Save to correct domain folder (not flat structure)
+4. Update domain README after creating spec
+5. Regenerate indices after spec creation
+
+**Living Docs Sync MUST**:
+1. Detect domain from increment spec content
+2. Place spec in correct domain folder
+3. Add/update frontmatter with metadata
+4. Preserve existing classification if present
+5. Regenerate indices after sync
+
+**See**:
+- [Organization Strategy](.specweave/docs/internal/specs/ORGANIZATION-STRATEGY.md) - Complete architecture
+- Migration scripts in `scripts/` directory
+- Configuration in `.specweave/config.json`
+
+---
+
 ## Living Completion Reports
 
 ### The Problem with Traditional Reports
