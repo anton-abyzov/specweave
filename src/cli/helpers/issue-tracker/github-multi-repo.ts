@@ -79,48 +79,57 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   console.log(chalk.cyan('\n📂 Repository Configuration\n'));
   console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
 
-  // If we have projectPath and token, use RepoStructureManager for enhanced flow
+  // If we have projectPath and token, TRY to use RepoStructureManager for enhanced flow
+  // CRITICAL: Wrap in try-catch to fall back to legacy flow if it fails
   if (projectPath && githubToken) {
-    const manager = new RepoStructureManager(projectPath, githubToken);
-    const config = await manager.promptStructure();
+    try {
+      const manager = new RepoStructureManager(projectPath, githubToken);
+      const config = await manager.promptStructure();
 
-    // Create repositories on GitHub if requested
-    if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
-      console.log(chalk.cyan('\n🚀 Creating GitHub Repositories\n'));
-      await manager.createGitHubRepositories(config);
+      // Create repositories on GitHub if requested
+      if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
+        console.log(chalk.cyan('\n🚀 Creating GitHub Repositories\n'));
+        await manager.createGitHubRepositories(config);
+      }
+
+      // Initialize local repos
+      console.log(chalk.cyan('\n📁 Setting Up Local Repositories\n'));
+      await manager.initializeLocalRepos(config);
+
+      // Create SpecWeave structure
+      await manager.createSpecWeaveStructure(config);
+
+      // Extract profiles from config to avoid duplicate prompts
+      const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
+        id: repo.id,
+        displayName: repo.description || repo.name,
+        owner: repo.owner,
+        repo: repo.name,
+        isDefault: index === 0  // First repo is default
+      }));
+
+      // Map to setup type
+      const setupType: GitHubSetupType =
+        config.architecture === 'single' ? 'single' :
+        config.architecture === 'monorepo' ? 'monorepo' :
+        'multiple';
+
+      // Return profiles directly - no need to call configureMultipleRepositories()
+      return {
+        setupType,
+        profiles,
+        monorepoProjects: config.monorepoProjects
+      };
+    } catch (error: any) {
+      // Enhanced flow failed - fall back to legacy prompt
+      console.log(chalk.yellow('\n⚠️  Enhanced repository setup unavailable'));
+      console.log(chalk.gray(`   Reason: ${error.message || 'Unknown error'}`));
+      console.log(chalk.gray('   Falling back to simplified setup\n'));
+      // Fall through to legacy prompt below
     }
-
-    // Initialize local repos
-    console.log(chalk.cyan('\n📁 Setting Up Local Repositories\n'));
-    await manager.initializeLocalRepos(config);
-
-    // Create SpecWeave structure
-    await manager.createSpecWeaveStructure(config);
-
-    // Extract profiles from config to avoid duplicate prompts
-    const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
-      id: repo.id,
-      displayName: repo.description || repo.name,
-      owner: repo.owner,
-      repo: repo.name,
-      isDefault: index === 0  // First repo is default
-    }));
-
-    // Map to setup type
-    const setupType: GitHubSetupType =
-      config.architecture === 'single' ? 'single' :
-      config.architecture === 'monorepo' ? 'monorepo' :
-      'multiple';
-
-    // Return profiles directly - no need to call configureMultipleRepositories()
-    return {
-      setupType,
-      profiles,
-      monorepoProjects: config.monorepoProjects
-    };
   }
 
-  // Fallback to legacy prompt if no projectPath/token
+  // Legacy prompt (runs if no projectPath/token OR if enhanced flow failed)
   const { setupType } = await inquirer.prompt([{
     type: 'list',
     name: 'setupType',
