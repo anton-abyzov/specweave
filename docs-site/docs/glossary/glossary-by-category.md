@@ -217,8 +217,8 @@ Machine learning, AI integration, and ML operations.
 ## Related Documentation
 
 - [Glossary Overview](./glossary.md) - Main glossary page
-- [Getting Started](/docs/guides/getting-started/quickstart) - Quickstart guide
-- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment) - Learn SpecWeave basics
+- [Getting Started](/docs/intro) - Quickstart guide
+- [Core Concepts](/docs/glossary/terms/increment) - Learn SpecWeave basics
 - [Commands Reference](/docs/commands/overview) - All commands
 
 ---

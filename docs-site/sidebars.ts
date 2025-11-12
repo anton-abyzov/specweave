@@ -20,12 +20,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'overview/introduction',
+          id: 'overview/what-is-specweave',
           label: 'What is SpecWeave?',
         },
         {
           type: 'doc',
-          id: 'overview/features',
+          id: 'overview/key-features',
           label: 'Key Features',
         },
         {
@@ -47,12 +47,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'guides/core-concepts/what-is-an-increment',
+          id: 'glossary/terms/increment',
           label: 'What is an Increment?',
         },
         {
           type: 'doc',
-          id: 'guides/core-concepts/living-documentation',
+          id: 'glossary/terms/living-docs',
           label: 'Living Documentation',
         },
       ],
@@ -116,13 +116,13 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'guides/getting-started/quickstart',
+          id: 'intro',
           label: 'Quickstart',
         },
         {
-          type: 'doc',
-          id: 'guides/getting-started/installation',
+          type: 'link',
           label: 'Installation',
+          href: '/docs/intro#installation',
         },
         {
           type: 'doc',
@@ -138,12 +138,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'guides/core-concepts/what-is-an-increment',
+          id: 'glossary/terms/increment',
           label: 'What is an Increment?',
         },
         {
           type: 'doc',
-          id: 'guides/core-concepts/living-documentation',
+          id: 'glossary/terms/living-docs',
           label: 'Living Documentation',
         },
       ],

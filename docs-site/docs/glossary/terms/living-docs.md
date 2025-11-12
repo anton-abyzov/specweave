@@ -290,6 +290,6 @@ fi
 
 ## Learn More
 
-- [Living Documentation Guide](/docs/guides/core-concepts/living-documentation)
+- [Living Documentation Guide](/docs/glossary/terms/living-docs)
 - [Hooks Documentation](/docs/workflows/implementation#hooks-and-automation)
 - [Configuration Reference](/docs/api/configuration)

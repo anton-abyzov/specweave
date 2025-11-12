@@ -172,7 +172,7 @@ specweave init
 - [Key Features](./key-features) - Detailed capabilities
 - [Philosophy](./philosophy) - Core principles
 - [Quickstart Guide](/docs/intro#getting-started) - Get up and running
-- [Complete Journey](/docs/workflows/complete-journey) - End-to-end workflow
+- [Complete Journey](/docs/workflows/overview) - End-to-end workflow
 
 ---
 

@@ -207,10 +207,10 @@ specweave init .
 
 ## Key Features
 
+- 📚 **Living Documentation** - Auto-updates after every task (no manual sync!)
 - 🧪 **Test-Aware Planning** - Embedded tests in BDD format (Given/When/Then)
 - 🎯 **Disciplined Progress** - Can't start increment N+1 until N is DONE
 - ⏸️ **Intelligent Pausing** - Auto-detects blockers, pauses with context, resumes when ready
-- 📚 **Living Documentation** - Auto-updates after every task (no manual sync!)
 - 🤖 **AI Agents** - PM, Architect, Quality Judge guide your work
 - 🔧 **CI/CD Auto-Fix** - Workflow failures auto-fixed by Claude (just mention `@claude`)
 - 🌍 **Multilingual** - Work in 11 languages (FREE translation)

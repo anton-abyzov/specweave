@@ -261,7 +261,7 @@ Month 6: 20 increments, 120 docs imported, 95% team adoption
 
 ## Learn More
 
-- [Brownfield Onboarding Guide](/docs/workflows/brownfield/onboarding)
+- [Brownfield Onboarding Guide](/docs/workflows/brownfield)
 - [Import Documentation](/docs/commands/import-docs)
 - [Migration Strategies](/docs/guides/migration/brownfield-to-greenfield)
 

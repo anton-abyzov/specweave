@@ -347,8 +347,8 @@ Then: Expected outcome
 
 ## Related Documentation
 
-- [Getting Started Guide](/docs/guides/getting-started/quickstart)
-- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
+- [Getting Started Guide](/docs/intro)
+- [Core Concepts](/docs/glossary/terms/increment)
 - [Complete Workflow](/docs/workflows/overview)
 - [Commands Reference](/docs/commands/overview)
 
