@@ -43,17 +43,44 @@ All notable changes to SpecWeave will be documented in this file.
 
 ### 🚀 Increments
 
+#### Increment Status Updates
+- **Completed**: 3 increments marked as complete
+  - **0023-release-management-enhancements**: Release plugin completion (12/12 tasks)
+    - DORA metrics tracking with persistent storage
+    - Living docs dashboard with auto-updates
+    - Platform release coordination with RC workflow
+    - GitFlow integration
+  - **0028-multi-repo-ux-improvements**: Multi-repo setup UX fixes (11/11 tasks)
+    - Repository count clarification (clear prompts before/after)
+    - Repository ID single-value validation (blocks comma input)
+    - Auto-detection for repository count (detects existing folders)
+    - Project ID validation (checks config before continuing)
+  - **0027-multi-project-github-sync**: Abandoned (no tasks.md, superseded by 0028)
+
 #### Increment 0029: CI/CD Failure Detection & Auto-Fix
 - **Added**: Complete increment planning for CI/CD failure detection system
   - Specification with user stories and acceptance criteria
-  - Implementation plan with 30 detailed tasks
+  - Implementation plan with 38 detailed tasks
   - Reports documenting MCP browser automation implementation
   - Verification guide for MCP Playwright setup
+  - **Added**: 6 new glossary terms for intelligent living docs sync
+- **Status**: Active (0/38 tasks)
 - **Location**: `.specweave/increments/0029-cicd-failure-detection-auto-fix/`
 
 #### Increment 0015: Intelligent Living Docs - Validation Complete
 - **Added**: Final validation report documenting completion status
 - **Location**: `.specweave/increments/0015-intelligent-living-docs/reports/`
+
+### 📚 Glossary Terms
+
+#### New Documentation Terms (6 added)
+- **content-classification**: Document classification system for intelligent living docs sync
+- **cross-linking**: Bidirectional document relationship management
+- **docusaurus-frontmatter**: Metadata structure for Docusaurus documentation
+- **intelligent-living-docs-sync**: AI-powered content distribution to appropriate folders
+- **project-detection**: Multi-project content classification using confidence scoring
+- **source-of-truth**: SpecWeave's fundamental architectural principle
+- **Location**: `.specweave/docs/public/glossary/terms/`
 
 ---
 
