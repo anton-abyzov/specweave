@@ -144,28 +144,21 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
       console.log(chalk.blue('\n📁 Creating Multi-Project Folders'));
       console.log(chalk.gray(`   Detected: ${jiraProjects.length} Jira projects (${jiraProjects.join(', ')})`));
 
-      // Create project-specific folders following v0.16.11+ FLATTENED architecture
-      // Structure: .specweave/docs/internal/{specs,modules,team,project-arch,legacy}/{project-id}/
+      // Create project-specific folders following SIMPLIFIED architecture (increment 0026)
+      // Structure: .specweave/docs/internal/specs/{project-id}/
+      // NOTE: Only specs folder is created. All docs live at root internal/ level.
       for (const projectKey of jiraProjects) {
         const projectId = projectKey.toLowerCase(); // FE → fe, BE → be
         const internalDocsPath = path.join(targetDir, '.specweave', 'docs', 'internal');
 
-        // Create project folders in FLATTENED structure (v0.16.11+)
-        const projectSubfolders = [
-          path.join(internalDocsPath, 'specs', projectId),         // Living docs specs
-          path.join(internalDocsPath, 'modules', projectId),       // Module/component documentation
-          path.join(internalDocsPath, 'team', projectId),         // Team playbooks
-          path.join(internalDocsPath, 'project-arch', projectId), // Project-specific ADRs (renamed from architecture)
-          path.join(internalDocsPath, 'legacy', projectId)        // Brownfield imports
-        ];
+        // Create ONLY specs folder (simplified structure)
+        const specsPath = path.join(internalDocsPath, 'specs', projectId);
 
-        for (const subfolder of projectSubfolders) {
-          if (!fs.existsSync(subfolder)) {
-            fs.mkdirSync(subfolder, { recursive: true });
-          }
+        if (!fs.existsSync(specsPath)) {
+          fs.mkdirSync(specsPath, { recursive: true });
         }
 
-        console.log(chalk.green(`   ✓ Created project: ${projectKey} (flattened structure)`));
+        console.log(chalk.green(`   ✓ Created project: ${projectKey} (simplified structure)`));
       }
 
       console.log('');
