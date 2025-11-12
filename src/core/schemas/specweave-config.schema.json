@@ -954,6 +954,153 @@
         }
       },
       "additionalProperties": false
+    },
+    "livingDocs": {
+      "type": "object",
+      "description": "Living documentation sync configuration (v0.18.0+)",
+      "properties": {
+        "intelligent": {
+          "type": "object",
+          "description": "Intelligent living docs sync - automatically classify and distribute spec content",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable intelligent sync mode (parse, classify, distribute). If false, uses simple copy mode.",
+              "default": false
+            },
+            "splitByCategory": {
+              "type": "boolean",
+              "description": "Split spec into separate files by category (User Stories, Architecture, Operations, etc.)",
+              "default": true
+            },
+            "generateCrossLinks": {
+              "type": "boolean",
+              "description": "Generate cross-references between related documents for traceability",
+              "default": true
+            },
+            "preserveOriginal": {
+              "type": "boolean",
+              "description": "Keep original monolithic spec.md in archive folder for reference",
+              "default": true
+            },
+            "classificationConfidenceThreshold": {
+              "type": "number",
+              "description": "Minimum confidence (0.0-1.0) for automatic classification. Sections below threshold go to Unknown category.",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.6
+            },
+            "fallbackProject": {
+              "type": "string",
+              "description": "Default project ID when project cannot be detected from increment name/metadata",
+              "default": "default",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z0-9-]+$"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "specs": {
+      "type": "object",
+      "description": "Spec identifier and sync configuration for flexible multi-project architecture (v0.16.0+)",
+      "properties": {
+        "identifierStrategy": {
+          "type": "string",
+          "description": "Default identifier strategy for new specs: auto (detect from context), external (JIRA/ADO/GitHub), custom (user-defined), title-slug (from spec title), sequential (001, 002, ...)",
+          "enum": ["auto", "external", "custom", "title-slug", "sequential"],
+          "default": "auto"
+        },
+        "preferTitleSlug": {
+          "type": "boolean",
+          "description": "Prefer title-based slugs over sequential numbers when no external ID exists",
+          "default": true
+        },
+        "minSlugLength": {
+          "type": "number",
+          "description": "Minimum length for title slugs to be considered valid",
+          "minimum": 3,
+          "maximum": 20,
+          "default": 5
+        },
+        "projects": {
+          "type": "object",
+          "description": "Project-specific spec configurations for multi-project sync (backend, frontend, mobile, infra, _parent, etc.)",
+          "patternProperties": {
+            "^[a-z0-9-_]+$": {
+              "type": "object",
+              "description": "Project configuration for spec sync",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique project identifier (must match PROJECT_CODES in spec-identifier.ts: backend, frontend, mobile, infra, _parent, default)",
+                  "pattern": "^[a-z0-9-_]+$",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "displayName": {
+                  "type": "string",
+                  "description": "Human-readable project name",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Project description",
+                  "maxLength": 512
+                },
+                "github": {
+                  "type": ["object", "null"],
+                  "description": "GitHub repository configuration (null = no sync, e.g., _parent project)",
+                  "properties": {
+                    "owner": {
+                      "type": "string",
+                      "description": "GitHub repository owner (organization or user)",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "repo": {
+                      "type": "string",
+                      "description": "GitHub repository name",
+                      "minLength": 1,
+                      "maxLength": 128
+                    }
+                  },
+                  "required": ["owner", "repo"],
+                  "additionalProperties": false
+                },
+                "defaultLabels": {
+                  "type": "array",
+                  "description": "Default labels for GitHub issues created from specs in this project",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
+                  "default": []
+                },
+                "team": {
+                  "type": "string",
+                  "description": "Team or organization name responsible for this project",
+                  "maxLength": 128
+                },
+                "syncEnabled": {
+                  "type": "boolean",
+                  "description": "Enable GitHub sync for specs in this project (false = specs remain local-only)",
+                  "default": true
+                }
+              },
+              "required": ["id", "displayName"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": true,

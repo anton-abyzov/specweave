@@ -2,28 +2,28 @@
 increment: 0002-core-enhancements
 title: "Core Framework Enhancements - Multi-Tool Support & Diagram Agents"
 priority: P1
-status: in-progress
+status: completed
 created: 2025-10-26
-updated: 2025-10-28
+updated: 2025-11-12
 started: 2025-10-27
-completed: null
-closed: null
+completed: 2025-11-12
+closed: 2025-11-12
 structure: user-stories
 
 # Completion tracking
 total_tasks: 15
-completed_tasks: 11
-completion_rate: 73
+completed_tasks: 15
+completion_rate: 100
 
 # Dependencies
 dependencies:
   - 0001-core-framework
 
 # WIP tracking
-wip_slot: 1
+wip_slot: null
 
 # Notes
-notes: "Part B (Diagram Agents) 73% complete. Part A (Multi-Tool Adapters) deferred to future increment."
+notes: "Force closed 2025-11-12. Diagram components implemented in specweave-diagrams plugin. Part A (Multi-Tool Adapters) deferred."
 ---
 
 # Increment 0002: Core Framework Enhancements

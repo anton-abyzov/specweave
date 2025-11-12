@@ -985,6 +985,303 @@ cat plugins/specweave-github/commands/github-sync.md
 
 ---
 
+## 📖 Documentation Preview with Docusaurus (Port 3016)
+
+**IMPORTANT**: SpecWeave supports beautiful documentation preview using Docusaurus. This is NOT just for Claude Code - it works for ALL tools!
+
+### Overview
+
+The `/specweave-docs-preview:preview` command launches an interactive Docusaurus development server to preview your living documentation at **http://localhost:3016** (NOT port 3000!).
+
+**Why Port 3016?**
+- Port 3000 is commonly used by other development servers (React, Next.js, etc.)
+- Port 3016 avoids conflicts with client projects
+- This is the default for ALL SpecWeave documentation preview
+
+### Quick Start
+
+**For Claude Code** (slash command):
+```bash
+/specweave-docs-preview:preview
+```
+
+**For Other Tools** (manual execution):
+```bash
+# 1. Read the command file
+cat plugins/specweave-docs-preview/commands/preview.md
+
+# 2. Execute the workflow manually (follow the instructions in preview.md)
+# The command will:
+# - Install Docusaurus (~30 seconds first time)
+# - Generate configuration
+# - Create sidebar from folder structure
+# - Start server on http://localhost:3016
+# - Open browser automatically
+
+# 3. Access the documentation
+# Open browser to: http://localhost:3016
+```
+
+### Common MDX Compilation Errors (MUST READ!)
+
+**Problem**: Docusaurus uses MDX (Markdown + JSX) which has stricter parsing rules than regular Markdown. Files with certain patterns may cause compilation errors like:
+
+```
+Error: MDX compilation failed for file ".../adr-001-signalr-vs-websockets.md"
+Cause: Unexpected character `1` (U+0031) before name
+```
+
+**Solutions** (in order of preference):
+
+#### Solution 1: Use Frontmatter for Problematic Files
+
+Add YAML frontmatter to files with numeric prefixes or special characters:
+
+```markdown
+---
+id: adr-001-signalr-vs-websockets
+title: ADR 001: SignalR vs WebSockets
+sidebar_label: SignalR vs WebSockets
+---
+
+# ADR 001: SignalR vs WebSockets
+
+[Rest of content...]
+```
+
+#### Solution 2: Exclude Problematic Files
+
+If certain files can't be fixed, exclude them from the build:
+
+**Edit `.specweave/config.json`:**
+```json
+{
+  "documentation": {
+    "preview": {
+      "enabled": true,
+      "port": 3016,
+      "excludeFolders": ["legacy", "node_modules", "problematic-folder"]
+    }
+  }
+}
+```
+
+#### Solution 3: Use MDX1 Compatibility Mode
+
+The config generator already adds MDX1 compatibility mode to handle most common issues:
+
+```javascript
+// This is already in the generated docusaurus.config.js
+markdown: {
+  mermaid: true,
+  format: 'mdx',
+  mdx1Compat: {
+    comments: true,
+    admonitions: true,
+    headingIds: true,
+  },
+}
+```
+
+#### Solution 4: Fix Special Characters in Content
+
+MDX interprets `<`, `>`, `{`, `}` as JSX. Escape them in your markdown:
+
+**Bad** (causes MDX errors):
+```markdown
+Use <Component> to render the UI
+Configure {apiKey} in the settings
+```
+
+**Good** (works):
+```markdown
+Use `<Component>` to render the UI
+Configure `{apiKey}` in the settings
+```
+
+Or use code blocks:
+```markdown
+```
+Use <Component> to render the UI
+```
+
+### Configuration Reference
+
+**Default Configuration** (`.specweave/config.json`):
+```json
+{
+  "documentation": {
+    "preview": {
+      "enabled": true,
+      "autoInstall": true,
+      "port": 3016,
+      "openBrowser": true,
+      "theme": "default",
+      "excludeFolders": ["legacy", "node_modules"]
+    }
+  }
+}
+```
+
+**Configuration Options**:
+- `enabled`: Enable/disable docs preview (default: true)
+- `autoInstall`: Auto-install Docusaurus on first run (default: true)
+- `port`: Port for dev server (default: 3016, NEVER use 3000!)
+- `openBrowser`: Auto-open browser (default: true)
+- `theme`: Theme variant ("default", "classic", "dark")
+- `excludeFolders`: Folders to exclude from build (array)
+
+### Features
+
+**What You Get**:
+- ✅ Auto-generated navigation from folder structure
+- ✅ Search functionality (instant local search)
+- ✅ Beautiful theming (light/dark mode)
+- ✅ Mermaid diagram rendering
+- ✅ Hot reload (edit markdown, see changes instantly)
+- ✅ Professional typography and layout
+- ✅ Mobile responsive design
+
+**Hot Reload**:
+- Edit any file in `.specweave/docs/internal/`
+- Save the file
+- Browser refreshes automatically
+- No need to restart server!
+
+### Troubleshooting
+
+**Port Already in Use:**
+```bash
+# Error: Port 3016 is already in use
+# Solution 1: Change port in config
+vim .specweave/config.json
+# Change "port": 3016 to "port": 3017
+
+# Solution 2: Stop the service
+lsof -i :3016  # Find PID
+kill -9 <PID>  # Kill the process
+```
+
+**Build Fails with MDX Errors:**
+```bash
+# Check which files are causing errors
+# Look for files with:
+# - Numeric prefixes (adr-001-, spec-123-)
+# - Special characters in content (<, >, {, })
+# - JSX-like syntax
+
+# Fix using Solution 1-4 above (add frontmatter, exclude files, etc.)
+```
+
+**Node.js Version:**
+```bash
+# Error: Node.js 18+ required
+# Solution: Update Node.js
+nvm install 20  # Using nvm
+# Or download from nodejs.org
+node --version  # Verify
+```
+
+### Best Practices
+
+**1. Always Use Port 3016** (NOT 3000):
+```json
+// ✅ CORRECT
+{"documentation": {"preview": {"port": 3016}}}
+
+// ❌ WRONG
+{"documentation": {"preview": {"port": 3000}}}
+```
+
+**2. Add Frontmatter to ADRs/Specs:**
+```markdown
+---
+id: unique-identifier
+title: Human-Readable Title
+sidebar_label: Short Label
+---
+
+# Your content here
+```
+
+**3. Escape Special Characters:**
+```markdown
+Use backticks: `<Component>`, `{variable}`
+Or code blocks for multiline
+```
+
+**4. Test Before Committing:**
+```bash
+# Start preview locally
+/specweave-docs-preview:preview
+
+# Check for errors in console
+# Fix any MDX compilation errors
+# Then commit
+```
+
+### Integration with SpecWeave Workflow
+
+**After Creating Increment:**
+```bash
+/specweave:increment "User Authentication"
+# → Creates spec.md, plan.md, tasks.md
+
+/specweave-docs-preview:preview
+# → Preview shows new spec in sidebar
+```
+
+**After Completing Increment:**
+```bash
+/specweave:done 0008
+# → Syncs spec.md to .specweave/docs/internal/specs/
+
+# Hot reload automatically shows the new spec!
+# No need to restart preview server
+```
+
+### For Non-Claude Tools: Manual Execution
+
+**Step-by-Step Workflow:**
+
+```bash
+# 1. Load the command
+cat plugins/specweave-docs-preview/commands/preview.md
+
+# 2. Create or verify config
+vim .specweave/config.json
+# Ensure "documentation.preview.enabled" is true
+# Ensure "documentation.preview.port" is 3016
+
+# 3. Run the preview (follow instructions from preview.md)
+# The command will guide you through:
+# - Installing Docusaurus (first time only)
+# - Generating config and sidebar
+# - Starting server on port 3016
+# - Opening browser
+
+# 4. Access documentation
+# Open: http://localhost:3016
+
+# 5. Edit docs and see changes live
+# Edit any file in .specweave/docs/internal/
+# Browser refreshes automatically!
+
+# 6. Stop server when done
+# Press Ctrl+C in terminal
+```
+
+### Summary
+
+- 🌐 **Default Port**: 3016 (NOT 3000!)
+- 📁 **Source**: `.specweave/docs/internal/`
+- 🔧 **Config**: `.specweave/config.json`
+- 🔄 **Hot Reload**: Automatic
+- ⚠️ **MDX Errors**: Add frontmatter or escape special chars
+- ✅ **Works for ALL tools** (Claude Code, Cursor, Copilot, etc.)
+
+---
+
 ## Build & Test Commands
 
 ```bash
