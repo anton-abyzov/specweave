@@ -141,10 +141,8 @@ export class ProjectManager {
   }
 
   /**
-   * Get modules path for active project
-   * Example: .specweave/docs/internal/modules/backend/
-   *
-   * @returns string
+   * @deprecated As of v0.X.X (increment 0026), modules/ folder is no longer created.
+   * Use getSpecsPath() instead and document modules within specs.
    */
   getModulesPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
@@ -152,6 +150,7 @@ export class ProjectManager {
       throw new Error(`Project '${projectId}' not found`);
     }
 
+    // Still return path for backward compatibility, but folder not created
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/modules',
@@ -160,10 +159,8 @@ export class ProjectManager {
   }
 
   /**
-   * Get team docs path for active project
-   * Example: .specweave/docs/internal/team/backend/
-   *
-   * @returns string
+   * @deprecated As of v0.X.X (increment 0026), team/ folder is no longer created.
+   * Use getSpecsPath() instead and document team info within specs or README.
    */
   getTeamPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
@@ -171,6 +168,7 @@ export class ProjectManager {
       throw new Error(`Project '${projectId}' not found`);
     }
 
+    // Still return path for backward compatibility, but folder not created
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/team',
@@ -179,11 +177,8 @@ export class ProjectManager {
   }
 
   /**
-   * Get project-specific architecture path
-   * Renamed from getArchitecturePath() to avoid conflict with top-level architecture/
-   * Example: .specweave/docs/internal/project-arch/backend/
-   *
-   * @returns string
+   * @deprecated As of v0.X.X (increment 0026), project-arch/ folder is no longer created.
+   * Use top-level .specweave/docs/internal/architecture/ for all ADRs instead.
    */
   getProjectArchitecturePath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
@@ -191,6 +186,7 @@ export class ProjectManager {
       throw new Error(`Project '${projectId}' not found`);
     }
 
+    // Still return path for backward compatibility, but folder not created
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/project-arch',
@@ -199,12 +195,8 @@ export class ProjectManager {
   }
 
   /**
-   * Get legacy docs path for active project
-   * Example: .specweave/docs/internal/legacy/backend/
-   * Or with source: .specweave/docs/internal/legacy/backend/notion/
-   *
-   * @param source - Optional source type (notion, confluence, wiki, custom)
-   * @returns string
+   * @deprecated As of v0.X.X (increment 0026), legacy/ folder is no longer created.
+   * Import brownfield docs directly into specs/ folder instead.
    */
   getLegacyPath(source?: string, projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
@@ -212,6 +204,7 @@ export class ProjectManager {
       throw new Error(`Project '${projectId}' not found`);
     }
 
+    // Still return path for backward compatibility, but folder not created
     const basePath = path.join(
       this.projectRoot,
       '.specweave/docs/internal/legacy',
@@ -249,27 +242,22 @@ export class ProjectManager {
   }
 
   /**
-   * Create project structure with all folders
-   * Uses flattened structure: specs/{project}/, modules/{project}/, etc.
+   * Create project structure (simplified - ONLY specs folder)
+   *
+   * NOTE: As of v0.X.X (increment 0026), we ONLY create specs/ folder.
+   * No modules/, team/, project-arch/, legacy/ folders.
+   * This simplifies the structure and reduces complexity.
    *
    * @param projectId - Project identifier
    */
   async createProjectStructure(projectId: string): Promise<void> {
-    // Create folders using flattened structure
+    // Create ONLY specs folder
     await fs.ensureDir(this.getSpecsPath(projectId));
-    await fs.ensureDir(this.getModulesPath(projectId));
-    await fs.ensureDir(this.getTeamPath(projectId));
-    await fs.ensureDir(path.join(this.getProjectArchitecturePath(projectId), 'adr'));
-    await fs.ensureDir(this.getLegacyPath(undefined, projectId));
 
-    // Create README files
+    // Create README file
     const project = this.getProjectById(projectId);
     if (project) {
       await this.createProjectREADME(project);
-      await this.createModulesREADME(projectId);
-      await this.createTeamREADME(projectId);
-      await this.createArchitectureREADME(projectId);
-      await this.createLegacyREADME(projectId);
     }
 
     console.log(`📁 Created project structure for: ${projectId}`);
@@ -369,33 +357,23 @@ ${project.description}
 ${project.contacts?.lead ? `- **Tech Lead**: ${project.contacts.lead}` : ''}
 ${project.contacts?.pm ? `- **Product Manager**: ${project.contacts.pm}` : ''}
 
-## Folder Structure (Flattened)
+## Documentation Structure (Simplified)
 
-This project uses a flattened structure:
+This project uses a simplified structure:
 
-- \`.specweave/docs/internal/specs/${project.id}/\` - Living documentation specs
-- \`.specweave/docs/internal/modules/${project.id}/\` - Module-level documentation
-- \`.specweave/docs/internal/team/${project.id}/\` - Team playbooks
-- \`.specweave/docs/internal/project-arch/${project.id}/\` - Project-specific architecture
-- \`.specweave/docs/internal/legacy/${project.id}/\` - Brownfield imported documentation
+- \`.specweave/docs/internal/specs/${project.id}/\` - **All living documentation** (specs, features, requirements)
 
-## Documentation
+**Note**: As of v0.X.X (increment 0026), we use a simplified structure with ONLY the specs folder. All project documentation lives here.
 
-### Specs
+## Specs
+
 Living documentation for features and requirements. Each spec follows the format:
 - \`spec-NNN-feature-name.md\`
 
-### Modules
-Module-level documentation for components, services, and domains. Examples:
-- \`auth-module.md\` - Authentication domain
-- \`payment-module.md\` - Payment processing
-- \`ml-pipeline-module.md\` - Machine learning pipeline
-
-### Team Playbooks
-Team-specific conventions, workflows, and processes:
-- \`onboarding.md\` - How to join this team
-- \`conventions.md\` - Coding conventions, naming standards
-- \`workflows.md\` - PR process, deployment, incident handling
+Examples:
+- \`spec-001-user-authentication.md\` - User authentication feature
+- \`spec-002-payment-processing.md\` - Payment integration
+- \`spec-003-admin-dashboard.md\` - Admin dashboard
 
 ## External Sync
 
@@ -413,6 +391,9 @@ ${project.syncProfiles.map(profile => `- ${profile}`).join('\n')}` :
     await fs.writeFile(path.join(specsPath, 'README.md'), content);
   }
 
+  /**
+   * @deprecated As of v0.X.X (increment 0026), modules/ folder no longer created
+   */
   private async createModulesREADME(projectId: string): Promise<void> {
     const modulesPath = this.getModulesPath(projectId);
     const content = `# Module Documentation
@@ -477,6 +458,9 @@ Handles user authentication, session management, OAuth2 integration.
     await fs.writeFile(path.join(modulesPath, 'README.md'), content);
   }
 
+  /**
+   * @deprecated As of v0.X.X (increment 0026), team/ folder no longer created
+   */
   private async createTeamREADME(projectId: string): Promise<void> {
     const teamPath = this.getTeamPath(projectId);
     const content = `# Team Playbook
@@ -544,6 +528,9 @@ Team-specific conventions, workflows, and processes.
     await fs.writeFile(path.join(teamPath, 'README.md'), content);
   }
 
+  /**
+   * @deprecated As of v0.X.X (increment 0026), project-arch/ folder no longer created
+   */
   private async createArchitectureREADME(projectId: string): Promise<void> {
     const archPath = this.getProjectArchitecturePath(projectId);
     const content = `# Project-Specific Architecture
@@ -600,6 +587,9 @@ What other options did we evaluate?
     await fs.writeFile(path.join(archPath, 'README.md'), content);
   }
 
+  /**
+   * @deprecated As of v0.X.X (increment 0026), legacy/ folder no longer created
+   */
   private async createLegacyREADME(projectId: string): Promise<void> {
     const legacyPath = this.getLegacyPath(undefined, projectId);
     const content = `# Legacy Documentation
