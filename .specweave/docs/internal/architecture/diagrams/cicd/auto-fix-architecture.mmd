@@ -1,0 +1,239 @@
+```mermaid
+graph TB
+    subgraph "GitHub Actions"
+        GH[Workflow Runs API]
+        Jobs[Jobs API]
+        Logs[Logs API]
+        Rerun[Rerun API]
+    end
+
+    subgraph "Monitoring Layer"
+        Mon[Workflow Monitor]
+        State[State Manager]
+        Poller[Polling Loop<br/>60s interval]
+    end
+
+    subgraph "Analysis Layer"
+        Ext[Haiku Log Extractor<br/>Fast & Cheap]
+        Ana[Sonnet Root Cause Analyzer<br/>Intelligent]
+        Orch[Analysis Orchestrator<br/>Fallback Logic]
+    end
+
+    subgraph "Safety Layer"
+        Val[Safety Validator]
+        Gates{Safety Gates}
+        Config[Config Manager]
+    end
+
+    subgraph "Application Layer"
+        Backup[Rollback Manager<br/>Backups]
+        Apply[Fix Applicator]
+        Ver[Verification Manager]
+    end
+
+    subgraph "User Interface"
+        CLI[CLI Commands]
+        Notify[Desktop Notifications]
+        Report[Reports & Metrics]
+    end
+
+    subgraph "State & Persistence"
+        CICDState[.specweave/state/<br/>cicd-monitor.json]
+        BackupState[.specweave/state/<br/>backups/]
+        Patterns[.specweave/state/<br/>cicd-patterns.db]
+    end
+
+    %% Monitoring Flow
+    Poller -->|Every 60s| Mon
+    Mon -->|GET runs| GH
+    GH -->|Failed runs| Mon
+    Mon -->|GET jobs| Jobs
+    Jobs -->|Job details| Mon
+    Mon -->|GET logs| Logs
+    Logs -->|Raw logs| Mon
+    Mon -->|Load/Save| State
+    State -->|Persist| CICDState
+
+    %% Analysis Flow
+    Mon -->|Raw logs| Ext
+    Ext -->|ErrorExtraction<br/>$0.002| Orch
+    Orch -->|Pass to Sonnet| Ana
+    Ana -->|FixProposal<br/>$0.03-0.08| Orch
+    Orch -->|Fix proposal| Val
+
+    %% Fallback path
+    Ext -.->|Low confidence| Orch
+    Orch -.->|Fallback| Ana
+    Ana -.->|Full analysis| Orch
+
+    %% Safety Flow
+    Config -->|Load rules| Val
+    Val -->|Evaluate| Gates
+    Gates -->|Auto-apply?| Apply
+    Gates -.->|Review needed| Notify
+
+    %% Application Flow
+    Apply -->|Create backup| Backup
+    Backup -->|Save files| BackupState
+    Apply -->|Update files| Apply
+    Apply -->|Trigger| Ver
+    Ver -->|POST rerun| Rerun
+    Rerun -->|New run| GH
+    Ver -->|Poll status| GH
+    Ver -->|Success?| Apply
+    Ver -.->|Failure| Backup
+    Backup -.->|Restore| Apply
+
+    %% User Interface
+    CLI -->|Commands| Mon
+    CLI -->|Preview| Apply
+    CLI -->|Apply| Apply
+    CLI -->|Rollback| Backup
+    Mon -->|Events| Notify
+    Ver -->|Events| Notify
+    Mon -->|Metrics| Report
+    Ver -->|Metrics| Report
+
+    %% Pattern Learning
+    Ana -->|Store patterns| Patterns
+    Patterns -.->|Learn| Ana
+
+    %% Styling
+    classDef external fill:#e1f5ff,stroke:#0066cc
+    classDef monitoring fill:#fff4e1,stroke:#ff9900
+    classDef analysis fill:#e8f5e9,stroke:#4caf50
+    classDef safety fill:#fff3e0,stroke:#ff6f00
+    classDef application fill:#f3e5f5,stroke:#9c27b0
+    classDef ui fill:#fce4ec,stroke:#e91e63
+    classDef state fill:#f5f5f5,stroke:#666
+
+    class GH,Jobs,Logs,Rerun external
+    class Mon,State,Poller monitoring
+    class Ext,Ana,Orch analysis
+    class Val,Gates,Config safety
+    class Backup,Apply,Ver application
+    class CLI,Notify,Report ui
+    class CICDState,BackupState,Patterns state
+```
+
+**Architecture Overview**:
+
+### 6 Layers
+
+1. **GitHub Actions (External)**
+   - Workflow Runs API (polling)
+   - Jobs API (failure details)
+   - Logs API (error extraction)
+   - Rerun API (verification)
+
+2. **Monitoring Layer** (Polling & State)
+   - Workflow Monitor: Main orchestrator
+   - State Manager: Persistence layer
+   - Polling Loop: 60-second intervals
+
+3. **Analysis Layer** (AI-Powered)
+   - Haiku Log Extractor: Fast error parsing ($0.002)
+   - Sonnet Root Cause Analyzer: Intelligent fix generation ($0.03-0.08)
+   - Analysis Orchestrator: Fallback logic (Haiku → Sonnet or Sonnet-only)
+
+4. **Safety Layer** (Risk Management)
+   - Safety Validator: Evaluates fix proposals
+   - Safety Gates: Auto-apply decision (confidence, critical files, multi-file)
+   - Config Manager: User settings
+
+5. **Application Layer** (Fix Execution)
+   - Rollback Manager: Backup/restore files
+   - Fix Applicator: Apply code changes
+   - Verification Manager: Re-run workflow, auto-rollback on failure
+
+6. **User Interface** (CLI & Notifications)
+   - CLI Commands: Manual control (preview, apply, rollback)
+   - Desktop Notifications: Real-time alerts
+   - Reports & Metrics: Success rate, cost tracking
+
+### Data Flow
+
+**Happy Path** (Auto-Apply):
+```
+Failure detected → Extract logs (Haiku) → Analyze root cause (Sonnet) →
+Safety gates pass → Backup files → Apply fix → Re-run workflow →
+Workflow passes → Success ✅
+```
+
+**Manual Review Path**:
+```
+Failure detected → Extract logs → Analyze root cause →
+Safety gates block (low confidence) → Notify user → User reviews →
+User applies → Verify → Success ✅
+```
+
+**Rollback Path**:
+```
+... Apply fix → Re-run workflow → Workflow still fails ❌ →
+Restore backup → Rollback complete → Notify user
+```
+
+### State Management
+
+**Files**:
+- `.specweave/state/cicd-monitor.json`: Current state (last poll, processed runs, workflow status)
+- `.specweave/state/backups/`: File backups (before apply)
+- `.specweave/state/cicd-patterns.db`: Pattern learning (SQLite, optional)
+
+**State Schema**:
+```typescript
+interface CICDState {
+  lastPoll: Date;
+  processedRuns: Set<number>;
+  workflows: {
+    [workflowId: string]: {
+      status: 'success' | 'failure';
+      lastRun: Date;
+      failureCount: number;
+      lastFailure?: {
+        runId: number;
+        logs: string;
+        analysis?: FixProposal;
+        fixApplied?: boolean;
+        verified?: boolean;
+      };
+    };
+  };
+}
+```
+
+### Performance Characteristics
+
+| Component | Latency | Cost | Accuracy |
+|-----------|---------|------|----------|
+| **Polling** | 60s avg | Free | 100% |
+| **Haiku Extraction** | 2-5s | $0.002 | 90% |
+| **Sonnet Analysis** | 10-30s | $0.03-0.08 | 75% |
+| **Safety Gates** | <1ms | Free | 95% |
+| **Fix Application** | 1-2s | Free | 100% |
+| **Verification** | 2-10min | CI/CD time | 100% |
+| **Total** | 12s-11min | $0.015 | 70-80% |
+
+### Integration Points
+
+**Reuses Existing SpecWeave Code**:
+- `plugins/specweave-github/lib/github-client-v2.ts` (GitHub CLI wrapper)
+- `src/core/sync/rate-limiter.ts` (API rate limiting)
+- `src/utils/execFileNoThrow.ts` (Secure shell execution)
+
+**New Components** (Increment 0029):
+- `src/core/cicd/workflow-monitor.ts` (polling)
+- `src/core/cicd/haiku-extractor.ts` (log parsing)
+- `src/core/cicd/sonnet-analyzer.ts` (root cause analysis)
+- `src/core/cicd/safety-validator.ts` (safety gates)
+- `src/core/cicd/fix-applicator.ts` (apply fixes)
+- `src/core/cicd/verification-manager.ts` (verify fixes)
+- `src/core/cicd/rollback-manager.ts` (backup/restore)
+
+### Security Considerations
+
+1. **No Code Execution**: Fixes are text replacements, never executed before review/verification
+2. **Sensitive Data Redaction**: Tokens/secrets stripped from logs before sending to Claude
+3. **Critical File Protection**: Workflow files, .env, package.json require manual review
+4. **Rollback Always Available**: Original files backed up before every apply
+5. **Audit Trail**: All actions logged to `.specweave/logs/cicd-actions.log`
