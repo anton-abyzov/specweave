@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.17.5] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### GitHub Init Flow - Existing Credentials
+- **Fixed**: Repository configuration prompts now show when using existing GitHub credentials
+  - Added try-catch fallback to legacy repository setup if RepoStructureManager fails
+  - Users with existing GITHUB_TOKEN now see repository configuration options
+  - Prevents silent failure that caused "Issue tracker setup skipped" message
+  - Falls back to simplified repository setup prompts if enhanced flow unavailable
+  - Ensures repository strategy is ALWAYS prompted, even with existing credentials
+
+---
+
 ## [0.17.4] - 2025-11-12
 
 ### 🐛 Bug Fixes
