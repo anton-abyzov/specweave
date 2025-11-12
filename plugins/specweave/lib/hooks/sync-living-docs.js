@@ -18,18 +18,74 @@ async function syncLivingDocs(incrementId) {
       return;
     }
     console.log("\u2705 Living docs sync enabled");
-    const specCopied = await copyIncrementSpecToLivingDocs(incrementId);
-    const changedDocs = detectChangedDocs();
+    const intelligentEnabled = config.livingDocs?.intelligent?.enabled ?? false;
+    let specCopied = false;
+    let changedDocs = [];
+    if (intelligentEnabled) {
+      console.log("\u{1F9E0} Using intelligent sync mode (v0.18.0+)");
+      const result = await intelligentSyncLivingDocs(incrementId, config);
+      specCopied = result.success;
+      changedDocs = result.changedFiles;
+    } else {
+      console.log("\u{1F4CB} Using simple sync mode (legacy)");
+      specCopied = await copyIncrementSpecToLivingDocs(incrementId);
+      changedDocs = detectChangedDocs();
+    }
     if (changedDocs.length === 0 && !specCopied) {
-      console.log("\u2139\uFE0F  No living docs changed (no git diff in .specweave/docs/)");
+      console.log("\u2139\uFE0F  No living docs changed");
       return;
     }
-    console.log(`\u{1F4C4} Detected ${changedDocs.length} changed doc(s):`);
-    changedDocs.forEach((doc) => console.log(`   - ${doc}`));
+    console.log(`\u{1F4C4} Changed/created ${changedDocs.length} file(s)`);
     await syncToGitHub(incrementId, changedDocs);
     console.log("\u2705 Living docs sync complete\n");
   } catch (error) {
     console.error("\u274C Error syncing living docs:", error);
+  }
+}
+async function intelligentSyncLivingDocs(incrementId, config) {
+  try {
+    const { syncIncrement } = await import("../../../../src/core/living-docs/index.js");
+    console.log("   \u{1F4D6} Parsing and classifying spec sections...");
+    const result = await syncIncrement(incrementId, {
+      verbose: false,
+      // We'll log our own summary
+      dryRun: false,
+      parser: {
+        preserveCodeBlocks: true,
+        preserveLinks: true,
+        preserveImages: true
+      },
+      distributor: {
+        generateFrontmatter: true,
+        preserveOriginal: config.livingDocs?.intelligent?.preserveOriginal ?? true
+      },
+      linker: {
+        generateBacklinks: config.livingDocs?.intelligent?.generateCrossLinks ?? true,
+        updateExisting: true
+      }
+    });
+    console.log(`   \u2705 Intelligent sync complete:`);
+    console.log(`      Project: ${result.project.name} (${(result.project.confidence * 100).toFixed(0)}% confidence)`);
+    console.log(`      Files created: ${result.distribution.summary.filesCreated}`);
+    console.log(`      Files updated: ${result.distribution.summary.filesUpdated}`);
+    console.log(`      Cross-links: ${result.links.length}`);
+    console.log(`      Duration: ${result.duration}ms`);
+    const changedFiles = [
+      ...result.distribution.created.map((f) => f.path),
+      ...result.distribution.updated.map((f) => f.path)
+    ];
+    return {
+      success: result.success,
+      changedFiles
+    };
+  } catch (error) {
+    console.error(`   \u274C Intelligent sync failed: ${error}`);
+    console.error("   Falling back to simple sync mode...");
+    const copied = await copyIncrementSpecToLivingDocs(incrementId);
+    return {
+      success: copied,
+      changedFiles: copied ? [path.join(process.cwd(), ".specweave", "docs", "internal", "specs", `spec-${incrementId}.md`)] : []
+    };
   }
 }
 async function copyIncrementSpecToLivingDocs(incrementId) {

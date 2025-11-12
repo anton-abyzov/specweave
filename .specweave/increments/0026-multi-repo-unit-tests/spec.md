@@ -3,7 +3,7 @@ increment: 0026-multi-repo-unit-tests
 title: "Multi-Repo Unit Test Coverage Gap"
 type: testing
 priority: P2
-status: planned
+status: abandoned
 created: 2025-11-11
 dependencies:
   - 0022-multi-repo-setup

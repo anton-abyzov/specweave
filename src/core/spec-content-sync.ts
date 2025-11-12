@@ -11,9 +11,17 @@
 
 import fs from 'fs/promises';
 import path from 'path';
+import matter from 'gray-matter';
+import { detectSpecIdentifier, SpecContent as SpecContentInput } from './spec-identifier-detector.js';
+import { SpecIdentifier } from './types/spec-identifier.js';
 
 export interface SpecContent {
-  id: string; // spec-001
+  /** Flexible identifier (JIRA-AUTH-123, user-login-ui, spec-001, etc.) */
+  identifier: SpecIdentifier;
+
+  /** Legacy ID for backward compatibility (deprecated) */
+  id: string;
+
   title: string;
   description: string;
   userStories: SpecUserStory[];
@@ -24,6 +32,9 @@ export interface SpecContent {
     jiraEpic?: string;
     adoFeature?: string;
   };
+
+  /** Project this spec belongs to (backend, frontend, mobile, etc.) */
+  project: string;
 }
 
 export interface SpecUserStory {
@@ -54,16 +65,33 @@ export interface ContentSyncResult {
 export async function parseSpecContent(specPath: string): Promise<SpecContent | null> {
   try {
     const content = await fs.readFile(specPath, 'utf-8');
-
-    // Extract spec ID from filename
-    // spec-001-feature-name.md → spec-001
-    const filename = path.basename(specPath);
-    const specIdMatch = filename.match(/^(spec-\d+)/);
-    const specId = specIdMatch ? specIdMatch[1] : 'unknown';
+    const { data: frontmatter } = matter(content);
 
     // Extract title (first heading)
     const titleMatch = content.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1].replace(/^SPEC-\d+:\s*/, '') : 'Untitled';
+    let title = titleMatch ? titleMatch[1].replace(/^SPEC-\d+:\s*/, '') : 'Untitled';
+
+    // Remove ID prefix from title if present
+    title = title.replace(/^\[?[A-Z]{2,4}-[A-Z0-9-]+\]?\s*/, '');
+
+    // Extract project from path
+    // .specweave/docs/internal/specs/{project}/{spec-id}.md
+    const pathParts = specPath.split(path.sep);
+    const specsIndex = pathParts.indexOf('specs');
+    const project = specsIndex >= 0 && pathParts.length > specsIndex + 1
+      ? pathParts[specsIndex + 1]
+      : 'default';
+
+    // Detect flexible identifier
+    const specContentInput: SpecContentInput = {
+      content,
+      frontmatter,
+      title,
+      project,
+      path: specPath
+    };
+
+    const identifier = detectSpecIdentifier(specContentInput);
 
     // Extract description (text between title and first ## heading)
     const descMatch = content.match(/^#\s+.+\n\n(.+?)(?=\n##|\n---|\n\*\*|$)/s);
@@ -132,11 +160,13 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
     }
 
     return {
-      id: specId,
+      identifier,
+      id: identifier.display, // Legacy field for backward compatibility
       title,
       description,
       userStories,
       metadata,
+      project
     };
   } catch (error: any) {
     console.error(`Failed to parse spec: ${error.message}`);

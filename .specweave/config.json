@@ -59,5 +59,15 @@
         "node_modules"
       ]
     }
+  },
+  "livingDocs": {
+    "intelligent": {
+      "enabled": true,
+      "splitByCategory": true,
+      "generateCrossLinks": true,
+      "preserveOriginal": true,
+      "classificationConfidenceThreshold": 0.6,
+      "fallbackProject": "default"
+    }
   }
 }

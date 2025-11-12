@@ -2,7 +2,7 @@
 increment: 0018-strict-increment-discipline-enforcement
 title: "Strict Increment Discipline Enforcement"
 priority: P1
-status: planned
+status: abandoned
 created: 2025-11-10
 target_version: "0.13.0"
 

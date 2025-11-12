@@ -25,10 +25,52 @@ import fs from 'fs/promises';
 
 export interface GitHubContentSyncOptions {
   specPath: string;
-  owner: string;
-  repo: string;
+  owner?: string; // Optional: will be auto-detected from project config
+  repo?: string; // Optional: will be auto-detected from project config
   dryRun?: boolean;
   verbose?: boolean;
+}
+
+/**
+ * Get GitHub owner/repo from project config
+ */
+async function getGitHubRepoForProject(
+  project: string,
+  specPath: string
+): Promise<{ owner: string; repo: string } | null> {
+  try {
+    // Find project root
+    let currentDir = path.dirname(specPath);
+    let configPath = path.join(currentDir, '.specweave', 'config.json');
+
+    // Search upward for .specweave/config.json
+    while (!await fs.access(configPath).then(() => true).catch(() => false)) {
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) {
+        return null; // Reached root
+      }
+      currentDir = parentDir;
+      configPath = path.join(currentDir, '.specweave', 'config.json');
+    }
+
+    // Read config
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    // Get project config
+    const projectConfig = config.specs?.projects?.[project];
+
+    if (!projectConfig?.github) {
+      return null;
+    }
+
+    return {
+      owner: projectConfig.github.owner,
+      repo: projectConfig.github.repo
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -38,7 +80,7 @@ export interface GitHubContentSyncOptions {
 export async function syncSpecContentToGitHub(
   options: GitHubContentSyncOptions
 ): Promise<ContentSyncResult> {
-  const { specPath, owner, repo, dryRun = false, verbose = false } = options;
+  let { specPath, owner, repo, dryRun = false, verbose = false } = options;
 
   try {
     // 1. Parse spec content
@@ -52,12 +94,33 @@ export async function syncSpecContentToGitHub(
     }
 
     if (verbose) {
-      console.log(`📄 Parsed spec: ${spec.id}`);
+      console.log(`📄 Parsed spec: ${spec.identifier.compact}`);
+      console.log(`   Project: ${spec.project}`);
       console.log(`   Title: ${spec.title}`);
       console.log(`   User Stories: ${spec.userStories.length}`);
     }
 
-    // 2. Check if issue already exists
+    // 2. Auto-detect owner/repo from project config if not provided
+    if (!owner || !repo) {
+      const repoConfig = await getGitHubRepoForProject(spec.project, specPath);
+
+      if (!repoConfig) {
+        return {
+          success: false,
+          action: 'error',
+          error: `No GitHub repository configured for project "${spec.project}". Add specs.projects.${spec.project}.github in config.json`,
+        };
+      }
+
+      owner = repoConfig.owner;
+      repo = repoConfig.repo;
+
+      if (verbose) {
+        console.log(`   Auto-detected repo: ${owner}/${repo}`);
+      }
+    }
+
+    // 3. Check if issue already exists
     const existingIssueNumber = await hasExternalLink(specPath, 'github');
 
     const client = GitHubClientV2.fromRepo(owner, repo);
@@ -89,8 +152,9 @@ async function createGitHubIssue(
   const { specPath, dryRun, verbose } = options;
 
   try {
-    // Build issue title and body
-    const title = `[${spec.id.toUpperCase()}] ${spec.title}`;
+    // Build issue title and body using compact format
+    // Examples: [BE-JIRA-AUTH-123] User Authentication, [FE-user-login-ui] Login UI
+    const title = `[${spec.identifier.compact}] ${spec.title}`;
     const body = buildExternalDescription(spec);
 
     if (verbose) {
@@ -112,8 +176,13 @@ async function createGitHubIssue(
       };
     }
 
-    // Create issue
-    const labels = ['specweave', 'spec', spec.metadata.priority || 'P2'].filter(Boolean);
+    // Create issue with project-specific labels
+    const labels = [
+      'specweave',
+      'spec',
+      spec.project, // backend, frontend, mobile, etc.
+      spec.metadata.priority || 'P2'
+    ].filter(Boolean);
     const issue = await client.createEpicIssue(title, body, undefined, labels);
 
     if (verbose) {
@@ -164,8 +233,11 @@ async function updateGitHubIssue(
     }
 
     // Detect changes
+    // Strip any ID prefix from title (flexible format: [BE-JIRA-123], [FE-login-ui], etc.)
+    const cleanTitle = issue.title.replace(/^\[[A-Z]{2,4}-[A-Z0-9-]+\]\s*/, '');
+
     const changes = detectContentChanges(spec, {
-      title: issue.title.replace(/^\[SPEC-\d+\]\s*/, ''),
+      title: cleanTitle,
       description: issue.body || '',
       userStoryCount: countUserStoriesInBody(issue.body || ''),
     });
@@ -190,8 +262,8 @@ async function updateGitHubIssue(
       }
     }
 
-    // Build updated content
-    const newTitle = `[${spec.id.toUpperCase()}] ${spec.title}`;
+    // Build updated content using compact format
+    const newTitle = `[${spec.identifier.compact}] ${spec.title}`;
     const newBody = buildExternalDescription(spec);
 
     if (dryRun) {

@@ -36,6 +36,7 @@ const config = {
 
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
+  onBrokenAnchors: 'warn',
 
   // Internationalization
   i18n: {
@@ -53,6 +54,10 @@ const config = {
           path: '${docsPath}',
           sidebarPath: './sidebars.js',
           editUrl: undefined, // Disable "Edit this page" for internal docs
+          remarkPlugins: [],
+          rehypePlugins: [],
+          beforeDefaultRemarkPlugins: [],
+          beforeDefaultRehypePlugins: [],
         },
         blog: false, // Disable blog
         theme: {
@@ -114,6 +119,12 @@ const config = {
   // Mermaid diagrams support
   markdown: {
     mermaid: true,
+    format: 'mdx',
+    mdx1Compat: {
+      comments: true,
+      admonitions: true,
+      headingIds: true,
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 };
