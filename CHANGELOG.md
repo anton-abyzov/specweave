@@ -13,6 +13,10 @@ All notable changes to SpecWeave will be documented in this file.
   - Added `npm run build` before running tests
   - Ensures `dist/` directory exists before test execution
   - Resolves ERR_MODULE_NOT_FOUND errors in all CI jobs
+- **Fixed**: Incorrect import paths in bin/specweave.js
+  - TypeScript compiles to `dist/src/` but imports were pointing to `dist/`
+  - Updated all imports to use correct `dist/src/cli/` paths
+  - Fixes E2E smoke test failures
 
 #### TypeScript Compilation Errors
 - **Fixed**: Type inference errors in integration tests
