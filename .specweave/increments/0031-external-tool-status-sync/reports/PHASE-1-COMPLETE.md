@@ -1,15 +1,17 @@
 # Phase 1: Enhanced Content Sync - COMPLETE ✅
 
 **Date**: 2025-11-12
-**Status**: All 5 tasks completed
-**Test Coverage**: 100% (24/24 tests passing)
+**Status**: All 5 tasks completed + ENHANCED (bidirectional linking)
+**Test Coverage**: 100% (33/33 tests passing - expanded from 24 tests)
 **Delivery Time**: ~2 hours (autonomous implementation)
 
 ---
 
 ## Summary
 
-Successfully implemented Phase 1 of the External Tool Status Synchronization feature, delivering **rich external issue descriptions** with full spec content, task-level traceability, and enhanced GitHub/JIRA/ADO sync capabilities.
+Successfully implemented Phase 1 of the External Tool Status Synchronization feature, delivering **rich external issue descriptions** with full spec content, task-level traceability, **bidirectional spec-increment linking**, and enhanced GitHub/JIRA/ADO sync capabilities.
+
+**Bonus Enhancement**: Added comprehensive bidirectional linking system allowing navigation in both directions (spec ↔ increment) with validation to detect broken references and orphaned increments.
 
 ---
 
@@ -45,28 +47,40 @@ Successfully implemented Phase 1 of the External Tool Status Synchronization fea
 
 ### T-002: Spec-to-Increment Mapper ✅
 
-**Status**: COMPLETE
-**Tests**: 11/11 passing
+**Status**: COMPLETE + ENHANCED
+**Tests**: 20/20 passing (expanded from 11 tests)
 **Coverage**: 100%
 
 **Deliverables**:
-- `src/core/sync/spec-increment-mapper.ts` (350+ lines)
-- `tests/unit/sync/spec-increment-mapper.test.ts` (151 lines)
+- `src/core/sync/spec-increment-mapper.ts` (540 lines - enhanced with bidirectional linking)
+- `tests/unit/sync/spec-increment-mapper.test.ts` (220 lines)
 - Test fixtures in `tests/fixtures/sync/`
 
 **Features Implemented**:
 - Map specs to increments: "Which increments implement spec-001?"
 - Find increments by user story: "Which increments implement US-001?"
 - Get tasks for user story: "Which tasks implement US-001?"
-- Update spec frontmatter with increment links
+- **NEW: Bidirectional linking** - Navigate both directions (spec ↔ increment)
+- **NEW: Link validation** - Detect broken references and orphaned increments
 - Build traceability reports with coverage metrics
 
 **Key Methods**:
 - `mapSpecToIncrements()` - Complete spec-to-increment mapping
 - `findIncrementsByUserStory()` - User story traceability
 - `getTasksForUserStory()` - Task-level traceability
-- `updateSpecWithIncrementLinks()` - Bidirectional linking
+- `updateSpecWithIncrementLinks()` - Forward link (spec → increment)
+- **NEW: `updateIncrementWithSpecLink()`** - Backward link (increment → spec)
+- **NEW: `createBidirectionalLink()`** - Atomic operation for both directions
+- **NEW: `getSpecForIncrement()`** - Reverse lookup (increment → spec)
+- **NEW: `validateLinks()`** - Validate bidirectional links and detect issues
 - `buildTraceabilityReport()` - Coverage analysis
+
+**Bidirectional Linking Architecture**:
+- **Forward links** (spec → increment): `linked_increments: [0001-core-framework, 0002-enhancements]`
+- **Backward links** (increment → spec): `source_spec: spec-001-core-framework`
+- **Atomic operations**: Single method updates both directions
+- **Link validation**: Detects broken forward links, broken backward links, orphaned increments
+- **Idempotent**: Duplicate link attempts return false (no-op)
 
 **Traceability Report Includes**:
 - Total user stories / increments / tasks
@@ -195,9 +209,9 @@ Enhanced Sync (GitHub/JIRA/ADO)
 
 ```bash
 ✅ EnhancedContentBuilder: 13/13 tests passing
-✅ SpecIncrementMapper: 11/11 tests passing
+✅ SpecIncrementMapper: 20/20 tests passing (ENHANCED - added 9 bidirectional linking tests)
 ---
-Total: 24/24 tests passing (100%)
+Total: 33/33 tests passing (100%)
 Time: ~3 seconds
 ```
 
@@ -249,6 +263,12 @@ Time: ~3 seconds
 3. **Architecture Docs Auto-Detection**: Automatically find related ADRs/HLDs by spec ID
 4. **Source Links**: Generate GitHub/ADO URLs automatically
 5. **Traceability Reports**: Added coverage metrics and unmapped user story detection
+6. **Bidirectional Linking** (BONUS): Complete navigation system for spec ↔ increment
+   - Forward links: Specs reference which increments implemented them
+   - Backward links: Increments reference which spec they implement
+   - Atomic operations: Single method updates both directions
+   - Link validation: Detects broken references and orphaned increments
+   - Enables easy navigation and living docs updates
 
 ### Simplified
 
