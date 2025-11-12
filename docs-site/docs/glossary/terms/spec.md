@@ -305,5 +305,5 @@ SPEC-002: Payment Processing (Living Docs - Permanent, Feature-Level)
 ## Learn More
 
 - [Planning Guide](/docs/workflows/planning)
-- [Living Documentation](/docs/guides/core-concepts/living-documentation)
+- [Living Documentation](/docs/glossary/terms/living-docs)
 - [Specs Architecture (Internal)](../../.specweave/increments/0007-smart-increment-discipline/reports/SPECS-ARCHITECTURE-CLARIFICATION.md)

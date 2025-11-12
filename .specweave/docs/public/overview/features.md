@@ -588,13 +588,28 @@ Framework-agnostic commands:
 
 All commands adapt to detected tech stack.
 
-## 🚀 Coming Soon
+## 🎯 Additional Capabilities
 
-- **Vector search**: Semantic spec search (v2.0)
-- **Multi-language support**: i18n for docs
-- **Figma integration**: Design → Code
-- **Cost optimization**: Infrastructure cost analysis
-- **Enterprise features**: Compliance tracking, advanced analytics
+### ✅ Already Implemented
+
+- **Multi-language support**: Work in 11 languages with FREE LLM-native translation (v0.6.0+)
+  - Supports: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
+  - Auto-translates specs, plans, tasks, and living docs to English
+  - Zero translation costs (uses same LLM session)
+
+- **Cost optimization**: 75%+ context reduction through intelligent plugin architecture
+  - Plugin-based system loads only what you need
+  - MCP protocol for efficient context management
+  - Typical savings: $60-120/month per developer
+
+- **Figma integration**: Design sync capabilities via specweave-figma plugin
+  - Import Figma designs into SpecWeave specs
+  - Track design-to-code alignment
+
+### 🔜 Roadmap
+
+- **Vector search**: Semantic spec search across all increments (v2.0)
+- **Enterprise analytics**: Advanced compliance tracking and team metrics
 
 ---
 

@@ -244,7 +244,7 @@ Increments:
 
 ## Learn More
 
-- [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
+- [what is an Increment?](/docs/glossary/terms/increment)
 - [Complete Workflow](/docs/workflows/overview)
 - [Planning Guide](/docs/workflows/planning)
 - [Implementation Guide](/docs/workflows/implementation)

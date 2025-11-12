@@ -1,0 +1,230 @@
+#!/usr/bin/env ts-node
+/**
+ * Migrate specs to domain-based folder structure
+ *
+ * Usage: npx ts-node scripts/migrate-specs-to-domains.ts [--dry-run]
+ */
+
+import * as fs from 'fs-extra';
+import * as path from 'path';
+import * as yaml from 'js-yaml';
+
+interface SpecMetadata {
+  id: string;
+  title: string;
+  domain: string;
+  category: string;
+  priority: string;
+  status: string;
+  confidence: number;
+  filePath: string;
+}
+
+const SPECS_DIR = '.specweave/docs/internal/specs/default';
+const DRY_RUN = process.argv.includes('--dry-run');
+
+/**
+ * Add or update frontmatter in markdown file
+ */
+function updateFrontmatter(content: string, metadata: SpecMetadata): string {
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+
+  const newFrontmatter = {
+    id: metadata.id,
+    title: metadata.title,
+    version: '1.0',
+    status: metadata.status,
+    domain: metadata.domain,
+    category: metadata.category,
+    priority: metadata.priority,
+    team: 'Core Team',
+    owner: '@anton-abyzov',
+    created: new Date().toISOString().split('T')[0],
+    last_updated: new Date().toISOString().split('T')[0],
+    tags: []
+  };
+
+  if (frontmatterMatch) {
+    // Merge with existing frontmatter
+    const existing = yaml.load(frontmatterMatch[1]) as any || {};
+    const merged = { ...newFrontmatter, ...existing };
+
+    // Ensure our classifications override
+    merged.domain = metadata.domain;
+    merged.category = metadata.category;
+    merged.priority = metadata.priority;
+    merged.status = metadata.status;
+
+    const yamlStr = yaml.dump(merged, { lineWidth: -1 });
+    return `---\n${yamlStr}---\n${frontmatterMatch[2]}`;
+  } else {
+    // Add new frontmatter
+    const yamlStr = yaml.dump(newFrontmatter, { lineWidth: -1 });
+    return `---\n${yamlStr}---\n\n${content}`;
+  }
+}
+
+/**
+ * Migrate specs to domain folders
+ */
+async function migrateSpecs(): Promise<void> {
+  const specsPath = path.join(process.cwd(), SPECS_DIR);
+  const classificationPath = path.join(specsPath, '_index', 'classification.json');
+
+  if (!fs.existsSync(classificationPath)) {
+    console.error('❌ Classification file not found. Run classify-specs.ts first.');
+    process.exit(1);
+  }
+
+  const specs: SpecMetadata[] = fs.readJsonSync(classificationPath);
+
+  console.log(`\n📦 Migrating ${specs.length} specs to domain-based structure...\n`);
+
+  if (DRY_RUN) {
+    console.log('🔍 DRY RUN MODE - No files will be moved\n');
+  }
+
+  // Group by domain
+  const byDomain: { [key: string]: SpecMetadata[] } = {};
+  for (const spec of specs) {
+    if (!byDomain[spec.domain]) byDomain[spec.domain] = [];
+    byDomain[spec.domain].push(spec);
+  }
+
+  // Create domain folders
+  for (const domain of Object.keys(byDomain)) {
+    const domainPath = path.join(specsPath, domain);
+
+    if (!DRY_RUN) {
+      fs.ensureDirSync(domainPath);
+      fs.ensureDirSync(path.join(domainPath, 'nfrs'));
+      fs.ensureDirSync(path.join(domainPath, 'user-stories'));
+      fs.ensureDirSync(path.join(domainPath, 'overviews'));
+    }
+
+    console.log(`✅ Created domain folder: ${domain}/`);
+  }
+
+  // Move specs
+  let moved = 0;
+  let skipped = 0;
+
+  for (const spec of specs) {
+    const oldPath = path.join(specsPath, spec.filePath);
+
+    // Determine subfolder based on category
+    let subfolder = '';
+    if (spec.category === 'nfr') subfolder = 'nfrs';
+    else if (spec.category === 'user-story') subfolder = 'user-stories';
+    else if (spec.category === 'overview') subfolder = 'overviews';
+
+    const newPath = path.join(
+      specsPath,
+      spec.domain,
+      subfolder,
+      spec.filePath
+    );
+
+    if (oldPath === newPath) {
+      console.log(`  ⏭️  Skip: ${spec.filePath} (already in correct location)`);
+      skipped++;
+      continue;
+    }
+
+    if (!DRY_RUN) {
+      // Read content
+      const content = fs.readFileSync(oldPath, 'utf-8');
+
+      // Update frontmatter
+      const updated = updateFrontmatter(content, spec);
+
+      // Ensure target directory exists
+      fs.ensureDirSync(path.dirname(newPath));
+
+      // Write to new location
+      fs.writeFileSync(newPath, updated);
+
+      // Remove old file
+      fs.removeSync(oldPath);
+    }
+
+    console.log(`  ✅ Moved: ${spec.filePath} → ${spec.domain}/${subfolder || ''}`);
+    moved++;
+  }
+
+  // Create domain README files
+  for (const [domain, domainSpecs] of Object.entries(byDomain)) {
+    const readmePath = path.join(specsPath, domain, 'README.md');
+
+    const readme = `# ${domain.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+
+**Specs**: ${domainSpecs.length}
+**Status**: ${domainSpecs.filter(s => s.status === 'active').length} active, ${domainSpecs.filter(s => s.status === 'completed').length} completed
+
+## Specs in This Domain
+
+${domainSpecs.map(s => `- [${s.id}](${s.category === 'feature' ? '' : s.category + '/'}${s.filePath}): ${s.title} (${s.status})`).join('\n')}
+
+## Domain Description
+
+${getDomainDescription(domain)}
+
+---
+
+Generated by SpecWeave Migration Script
+`;
+
+    if (!DRY_RUN) {
+      fs.writeFileSync(readmePath, readme);
+    }
+
+    console.log(`  📝 Created README: ${domain}/README.md`);
+  }
+
+  // Summary
+  console.log(`\n📊 Migration Summary:\n`);
+  console.log(`  Total specs: ${specs.length}`);
+  console.log(`  Moved: ${moved}`);
+  console.log(`  Skipped: ${skipped}`);
+  console.log(`  Domains: ${Object.keys(byDomain).length}\n`);
+
+  if (DRY_RUN) {
+    console.log('🔍 DRY RUN COMPLETE - Run without --dry-run to apply changes\n');
+  } else {
+    console.log('✅ Migration complete!\n');
+    console.log('Next steps:');
+    console.log('  1. Review migrated specs in domain folders');
+    console.log('  2. Generate indices: npx ts-node scripts/generate-spec-indices.ts');
+    console.log('  3. Update CLAUDE.md with new organization rules');
+    console.log('  4. Update living docs sync logic');
+  }
+}
+
+/**
+ * Get domain description
+ */
+function getDomainDescription(domain: string): string {
+  const descriptions: { [key: string]: string } = {
+    'core-framework': 'Core framework capabilities including CLI, plugin architecture, configuration management, and lifecycle workflows.',
+    'developer-experience': 'Developer experience improvements including setup, onboarding, documentation, error messages, and usability enhancements.',
+    'integrations': 'External tool integrations with GitHub, JIRA, Azure DevOps, Figma, and other platforms.',
+    'infrastructure': 'Infrastructure, DevOps, CI/CD pipelines, monitoring, observability, and performance optimization.',
+    'quality-velocity': 'Quality assurance, testing frameworks, DORA metrics, stabilization, and release management.',
+    'intelligence': 'AI-powered features including intelligent model selection, self-reflection, smart workflows, and context optimization.',
+    'uncategorized': 'Specs that need manual classification or don\'t fit existing domains.'
+  };
+
+  return descriptions[domain] || 'No description available.';
+}
+
+/**
+ * Main execution
+ */
+async function main() {
+  await migrateSpecs();
+}
+
+main().catch(err => {
+  console.error('❌ Error:', err);
+  process.exit(1);
+});
