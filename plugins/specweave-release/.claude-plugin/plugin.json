@@ -24,19 +24,7 @@
     "independent-release",
     "brownfield-release"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/anton-abyzov/specweave",
-    "directory": "plugins/specweave-release"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "specweave": ">=0.14.0"
-  },
-  "skills": "skills",
-  "agents": "agents",
-  "commands": "commands",
-  "hooks": "hooks/hooks.json"
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "hooks": "./hooks/hooks.json"
 }

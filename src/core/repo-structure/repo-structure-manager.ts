@@ -122,7 +122,11 @@ export class RepoStructureManager {
         return this.configureSingleRepo();
       case 'multi-repo':
       case 'parent':
-        return this.configureMultiRepo(architecture === 'multi-with-parent');
+        // Pass whether to create GitHub repo for parent
+        return this.configureMultiRepo(
+          architecture === 'multi-with-parent' || architecture === 'local-parent',
+          architecture === 'local-parent' // isLocalParent flag
+        );
       case 'monorepo':
         return this.configureMonorepo();
       default:
@@ -139,6 +143,8 @@ export class RepoStructureManager {
         return 'single';
       case 'multi-with-parent':
         return 'parent';
+      case 'local-parent':
+        return 'parent'; // Same as parent, but won't create GitHub repo
       case 'multi-without-parent':
         return 'multi-repo';
       case 'monorepo':
@@ -285,8 +291,10 @@ export class RepoStructureManager {
 
   /**
    * Configure multi-repository architecture
+   * @param useParent - Whether to use parent repository/folder
+   * @param isLocalParent - If true, parent folder is local only (NOT pushed to GitHub)
    */
-  private async configureMultiRepo(useParent: boolean = true): Promise<RepoStructureConfig> {
+  private async configureMultiRepo(useParent: boolean = true, isLocalParent: boolean = false): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n🎯 Multi-Repository Configuration\n'));
     console.log(chalk.gray('This creates separate repositories for each service/component.\n'));
 
@@ -314,69 +322,116 @@ export class RepoStructureManager {
 
     // Configure parent repository if using that approach
     if (useParent) {
-      const parentAnswers = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'owner',
-          message: 'GitHub owner/organization for ALL repos:',
-          validate: async (input: string) => {
-            if (!input.trim()) return 'Owner is required';
+      let parentAnswers: any;
 
-            // Validate owner exists on GitHub
-            if (this.githubToken) {
-              const result = await validateOwner(input, this.githubToken);
-              if (!result.valid) {
-                return result.error || 'Invalid GitHub owner';
-              }
+      if (isLocalParent) {
+        // Local parent: Skip GitHub questions, just ask for folder name
+        console.log(chalk.blue('\n💡 Local Parent Folder Setup'));
+        console.log(chalk.gray('This folder will contain .specweave/ but will NOT be pushed to GitHub.\n'));
+
+        parentAnswers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'parentName',
+            message: 'Parent folder name:',
+            default: `${path.basename(this.projectPath)}`,
+            validate: (input: string) => {
+              if (!input.trim()) return 'Folder name is required';
+              return true;
             }
-            return true;
-          }
-        },
-        {
-          type: 'input',
-          name: 'parentName',
-          message: 'Parent repository name:',
-          default: `${path.basename(this.projectPath)}-parent`,
-          validate: async (input: string, answers: any) => {
-            if (!input.trim()) return 'Repository name is required';
+          },
+          {
+            type: 'input',
+            name: 'owner',
+            message: 'GitHub owner/organization for IMPLEMENTATION repos:',
+            validate: async (input: string) => {
+              if (!input.trim()) return 'Owner is required';
 
-            // Validate repository doesn't exist
-            if (this.githubToken && answers.owner) {
-              const result = await validateRepository(answers.owner, input, this.githubToken);
-              if (result.exists) {
-                return `Repository ${answers.owner}/${input} already exists at ${result.url}`;
+              // Validate owner exists on GitHub
+              if (this.githubToken) {
+                const result = await validateOwner(input, this.githubToken);
+                if (!result.valid) {
+                  return result.error || 'Invalid GitHub owner';
+                }
               }
+              return true;
             }
-            return true;
           }
-        },
-        {
-          type: 'input',
-          name: 'description',
-          message: 'Parent repository description:',
-          default: 'SpecWeave parent repository - specs, docs, and architecture'
-        },
-        {
-          type: 'confirm',
-          name: 'createOnGitHub',
-          message: 'Create parent repository on GitHub?',
-          default: true
-        }
-      ] as any);
+        ]);
 
-      // Ask about visibility for parent repo
-      const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
-      const { parentVisibility } = await inquirer.prompt([{
-        type: 'list',
-        name: 'parentVisibility',
-        message: parentVisibilityPrompt.question,
-        choices: parentVisibilityPrompt.options.map(opt => ({
-          name: `${opt.label}\n${chalk.gray(opt.description)}`,
-          value: opt.value,
-          short: opt.label
-        })),
-        default: parentVisibilityPrompt.default
-      }]);
+        // Set defaults for local parent
+        parentAnswers.description = 'Local parent folder (not synced to GitHub)';
+        parentAnswers.createOnGitHub = false; // Never create GitHub repo for local parent
+      } else {
+        // GitHub parent: Ask all questions including GitHub details
+        parentAnswers = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'owner',
+            message: 'GitHub owner/organization for ALL repos:',
+            validate: async (input: string) => {
+              if (!input.trim()) return 'Owner is required';
+
+              // Validate owner exists on GitHub
+              if (this.githubToken) {
+                const result = await validateOwner(input, this.githubToken);
+                if (!result.valid) {
+                  return result.error || 'Invalid GitHub owner';
+                }
+              }
+              return true;
+            }
+          },
+          {
+            type: 'input',
+            name: 'parentName',
+            message: 'Parent repository name:',
+            default: `${path.basename(this.projectPath)}-parent`,
+            validate: async (input: string, answers: any) => {
+              if (!input.trim()) return 'Repository name is required';
+
+              // Validate repository doesn't exist
+              if (this.githubToken && answers.owner) {
+                const result = await validateRepository(answers.owner, input, this.githubToken);
+                if (result.exists) {
+                  return `Repository ${answers.owner}/${input} already exists at ${result.url}`;
+                }
+              }
+              return true;
+            }
+          },
+          {
+            type: 'input',
+            name: 'description',
+            message: 'Parent repository description:',
+            default: 'SpecWeave parent repository - specs, docs, and architecture'
+          },
+          {
+            type: 'confirm',
+            name: 'createOnGitHub',
+            message: 'Create parent repository on GitHub?',
+            default: true
+          }
+        ] as any);
+      }
+
+      // Ask about visibility for parent repo (only if creating on GitHub)
+      let parentVisibility: 'private' | 'public' = 'private';
+      if (!isLocalParent) {
+        const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
+        const result = await inquirer.prompt([{
+          type: 'list',
+          name: 'parentVisibility',
+          message: parentVisibilityPrompt.question,
+          choices: parentVisibilityPrompt.options.map(opt => ({
+            name: `${opt.label}\n${chalk.gray(opt.description)}`,
+            value: opt.value,
+            short: opt.label
+          })),
+          default: parentVisibilityPrompt.default
+        }]);
+        parentVisibility = result.parentVisibility;
+      }
 
       config.parentRepo = {
         name: parentAnswers.parentName,
@@ -411,8 +466,13 @@ export class RepoStructureManager {
     if (useParent && config.parentRepo) {
       console.log(chalk.cyan('\n📊 Repository Count\n'));
       console.log(chalk.gray('You will create:'));
-      console.log(chalk.white('  • 1 parent repository (specs, docs, increments)'));
-      console.log(chalk.white('  • N implementation repositories (your services/apps)'));
+      if (isLocalParent) {
+        console.log(chalk.white('  • 1 parent FOLDER (local only, .specweave/ gitignored)'));
+        console.log(chalk.white('  • N implementation repositories (your services/apps on GitHub)'));
+      } else {
+        console.log(chalk.white('  • 1 parent repository (specs, docs, increments)'));
+        console.log(chalk.white('  • N implementation repositories (your services/apps)'));
+      }
       console.log(chalk.gray('\nNext question asks for: IMPLEMENTATION repositories ONLY (not counting parent)\n'));
     }
 
@@ -435,8 +495,13 @@ export class RepoStructureManager {
 
     // Show summary AFTER for confirmation
     if (useParent && config.parentRepo) {
-      const totalRepos = 1 + repoCount;
-      console.log(chalk.green(`\n✓ Total repositories to create: ${totalRepos} (1 parent + ${repoCount} implementation)\n`));
+      if (isLocalParent) {
+        console.log(chalk.green(`\n✓ Total repositories to create: ${repoCount} implementation repos`));
+        console.log(chalk.gray(`  (Parent folder is local only, not counted)\n`));
+      } else {
+        const totalRepos = 1 + repoCount;
+        console.log(chalk.green(`\n✓ Total repositories to create: ${totalRepos} (1 parent + ${repoCount} implementation)\n`));
+      }
     }
 
     // Configure each repository

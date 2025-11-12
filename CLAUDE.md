@@ -736,6 +736,26 @@ my-project/
 
 **Solution**: Create a **parent folder** with ONE root-level `.specweave/`
 
+SpecWeave supports **THREE approaches** for multi-repo projects:
+
+**Option 2: Parent Repo on GitHub** (✅ Recommended for teams)
+- Parent folder is a GitHub repository
+- Team can clone and collaborate on specs/docs
+- Full version control for .specweave/
+- Works with CI/CD pipelines
+
+**Option 3: Local Parent Folder** (✅ Recommended for solo developers)
+- Parent folder stays on your machine (NOT pushed to GitHub)
+- .specweave/ is gitignored (local only)
+- Implementation repos still on GitHub
+- Lighter setup, less overhead
+
+**Option 4: Each Repo Has .specweave/** (❌ NOT RECOMMENDED)
+- Each repo maintains its own .specweave/ folder
+- Leads to fragmentation and duplication
+- Difficult to manage cross-cutting features
+- Only use if you absolutely must
+
 The pattern is the same whether you have:
 - Multiple git repos (polyrepo architecture)
 - Microservices (separate service directories)
@@ -777,20 +797,34 @@ microservices-project/       ← Create parent folder
 **How to Set Up**:
 
 ```bash
-# Option 1: Multiple repos (clone as subdirectories)
+# APPROACH 1: Parent Repo on GitHub (Option 2)
+# Step 1: Run specweave init and select "Option 2: Multiple repos WITH parent repo (GitHub)"
 mkdir microservices-project && cd microservices-project
 npx specweave init .
+# → Select: "2️⃣  Multiple repos WITH parent repo (GitHub)"
+# → Creates .specweave/ and pushes to GitHub
+
+# Step 2: Clone implementation repos
 git clone https://github.com/myorg/user-service.git services/user-service
 git clone https://github.com/myorg/order-service.git services/order-service
 
-# Option 2: Git submodules (advanced)
-mkdir microservices-project && cd microservices-project
-git init && npx specweave init .
-git submodule add https://github.com/myorg/user-service.git services/user-service
+# APPROACH 2: Local Parent Folder (Option 3) - NEW!
+# Step 1: Run specweave init and select "Option 3: Local parent folder"
+mkdir my-parent-folder && cd my-parent-folder
+npx specweave init .
+# → Select: "3️⃣  Multiple repos WITH parent folder (LOCAL only)"
+# → Creates .specweave/ (gitignored, local only)
 
-# Option 3: Monorepo (services in same repo)
+# Step 2: Clone implementation repos
+git clone https://github.com/myorg/frontend.git frontend
+git clone https://github.com/myorg/backend.git backend
+
+# .specweave/ stays on your machine, NOT synced to GitHub!
+
+# APPROACH 3: Monorepo (services in same repo)
 mkdir microservices-project && cd microservices-project
 git init && npx specweave init .
+# → Select: "1️⃣  Single repository" OR "5️⃣  Monorepo"
 mkdir -p services/{user,order,payment}
 
 # Work normally - SpecWeave sees all services
@@ -800,11 +834,25 @@ mkdir -p services/{user,order,payment}
 ```
 
 **Benefits**:
+
+**All approaches**:
 - ✅ One `.specweave/` for entire system (no duplication)
 - ✅ Each repo maintains its own git history (if using polyrepo)
 - ✅ Cross-service increments are natural (e.g., checkout flow)
 - ✅ System-wide architecture docs in one place
 - ✅ Living docs cover all services
+
+**Option 2 (GitHub Parent) specific**:
+- ✅ Team can collaborate on specs/docs
+- ✅ Full version control history for .specweave/
+- ✅ Works with CI/CD pipelines
+- ✅ Can enforce code reviews for specs
+
+**Option 3 (Local Parent) specific**:
+- ✅ Lighter setup (no GitHub repo for parent)
+- ✅ No extra repository to manage
+- ✅ Perfect for solo developers
+- ✅ .specweave/ stays private on your machine
 
 ### Enforcement
 
@@ -1922,7 +1970,7 @@ npm run build && npm test
 ```
 plugins/specweave/
 ├── .claude-plugin/
-│   └── plugin.json              ← "hooks": "hooks/hooks.json"
+│   └── plugin.json              ← "hooks": "./hooks/hooks.json"
 ├── hooks/
 │   ├── hooks.json               ← Hook configuration (references .sh files)
 │   ├── post-task-completion.sh  ← Stays here (NOT copied!)
@@ -1946,7 +1994,7 @@ plugins/specweave/
 2. Claude Code startup:
    Reads: plugins/specweave/.claude-plugin/plugin.json
    ↓
-   Discovers: "hooks": "hooks/hooks.json"
+   Discovers: "hooks": "./hooks/hooks.json"
    ↓
    Loads: plugins/specweave/hooks/hooks.json
    ↓
@@ -2623,6 +2671,135 @@ plugins/specweave-{name}/
 
 **Result**: Core plugin stayed at ~12K tokens (75% smaller than v0.3.7!)
 
+### Plugin Manifest Validation Rules
+
+**CRITICAL**: Claude Code enforces strict validation on plugin.json manifests. Follow these rules to avoid loading errors:
+
+#### Required Format
+
+```json
+{
+  "name": "specweave-plugin-name",
+  "description": "What it does and when to use it",
+  "version": "1.0.0",
+  "author": {
+    "name": "Author Name",
+    "url": "https://example.com"
+  },
+  "repository": "https://github.com/owner/repo",
+  "homepage": "https://example.com",
+  "license": "MIT",
+  "keywords": ["keyword1", "keyword2"],
+  "hooks": "./hooks/hooks.json"
+}
+```
+
+#### Validation Rules
+
+| Field | Type | Rules | Example |
+|-------|------|-------|---------|
+| **name** | string | Required, lowercase, hyphens only | `"specweave-github"` |
+| **description** | string | Required, max 1024 chars | `"GitHub integration..."` |
+| **version** | string | Required, semver format | `"1.0.0"` |
+| **author** | object | Required, with name field | `{"name": "Team"}` |
+| **repository** | string | Must be string, NOT object | `"https://github.com/..."` ✅ |
+| **hooks** | string | Must start with "./" | `"./hooks/hooks.json"` ✅ |
+| **keywords** | array | Optional, array of strings | `["github", "sync"]` |
+| **homepage** | string | Optional, URL | `"https://spec-weave.com"` |
+| **license** | string | Optional, SPDX identifier | `"MIT"` |
+
+#### Common Validation Errors
+
+**❌ hooks: Invalid input: must start with "./"**
+```json
+// WRONG
+"hooks": "hooks/hooks.json"
+
+// CORRECT
+"hooks": "./hooks/hooks.json"
+```
+
+**❌ repository: Expected string, received object**
+```json
+// WRONG
+"repository": {
+  "type": "git",
+  "url": "https://github.com/..."
+}
+
+// CORRECT
+"repository": "https://github.com/..."
+```
+
+**❌ Unrecognized key(s): 'engines', 'dependencies'**
+```json
+// WRONG - These are NPM fields, not Claude plugin fields
+"engines": {"node": ">=18.0.0"},
+"dependencies": {"specweave": ">=0.14.0"}
+
+// CORRECT - Omit these fields entirely
+// Claude plugins don't support dependency declaration
+```
+
+**❌ skills/agents/commands: Invalid input**
+```json
+// WRONG - Directory references not supported in plugin.json
+"skills": "skills",
+"agents": "agents",
+"commands": "commands"
+
+// CORRECT - Omit these fields entirely
+// Claude Code auto-discovers skills/, agents/, commands/ by convention
+```
+
+#### Auto-Discovery vs Explicit Declaration
+
+**Claude Code auto-discovers components by directory convention**:
+- `skills/` directory → auto-discovered (no plugin.json field needed)
+- `agents/` directory → auto-discovered (no plugin.json field needed)
+- `commands/` directory → auto-discovered (no plugin.json field needed)
+- `hooks/hooks.json` → MUST be declared in plugin.json with "./hooks/hooks.json"
+
+**Example: Working plugin.json**
+```json
+{
+  "name": "specweave-github",
+  "description": "GitHub integration",
+  "version": "1.0.0",
+  "author": {"name": "SpecWeave Team"},
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": ["github", "sync"],
+  "hooks": "./hooks/hooks.json"
+}
+```
+
+**Directory structure** (auto-discovered):
+```
+plugins/specweave-github/
+├── .claude-plugin/
+│   └── plugin.json          ← Declares hooks only
+├── skills/                  ← Auto-discovered
+│   └── github-sync/
+├── agents/                  ← Auto-discovered
+│   └── github-manager/
+├── commands/                ← Auto-discovered
+│   └── github-sync.md
+└── hooks/
+    ├── hooks.json           ← Referenced in plugin.json
+    └── post-task-completion.sh
+```
+
+#### Quick Validation Checklist
+
+Before committing a new plugin:
+- [ ] All paths start with "./" (hooks, any explicit file references)
+- [ ] repository is a string, not an object
+- [ ] No NPM-specific fields (engines, dependencies)
+- [ ] No directory references in plugin.json (skills, agents, commands)
+- [ ] Valid JSON syntax (use `jq . < plugin.json` to validate)
+- [ ] Test with: `/plugin marketplace add ./.claude-plugin && /plugin install plugin-name`
+
 ### Adding a New Plugin (Contributors)
 
 **Create New Plugin**:
@@ -2636,7 +2813,12 @@ cat > plugins/specweave-myplugin/.claude-plugin/plugin.json << 'EOF'
   "name": "specweave-myplugin",
   "description": "What it does and when to use it",
   "version": "1.0.0",
-  "author": {"name": "Your Name"}
+  "author": {"name": "Your Name"},
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "homepage": "https://spec-weave.com",
+  "license": "MIT",
+  "keywords": ["specweave", "plugin"],
+  "hooks": "./hooks/hooks.json"
 }
 EOF
 

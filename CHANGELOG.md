@@ -4,7 +4,34 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.17.7] - 2025-11-11
+## [0.17.7] - 2025-11-12
+
+### 🐛 Bug Fixes
+
+#### Plugin Validation Errors - Claude Code Plugin System (CRITICAL FIX)
+- **Fixed**: All SpecWeave plugins now pass Claude Code's strict plugin.json validation
+  - **Hooks path format**: Changed `"hooks": "hooks/hooks.json"` → `"hooks": "./hooks/hooks.json"`
+    - Claude Code requires "./" prefix for all relative paths
+    - Fixed in 4 plugins: specweave, specweave-github, specweave-jira, specweave-ado
+  - **Repository format**: Changed repository object → string
+    - Claude Code expects: `"repository": "https://github.com/owner/repo"` (string)
+    - NOT: `"repository": {"type": "git", "url": "..."}` (object)
+    - Fixed in 2 plugins: specweave-mobile, specweave-release
+  - **Invalid NPM fields**: Removed `engines`, `dependencies`, `skills`, `agents`, `commands` fields
+    - These are NPM package.json fields, not Claude plugin manifest fields
+    - Claude Code auto-discovers skills/agents/commands by directory convention
+    - Fixed in 1 plugin: specweave-release
+  - **Duplicate files**: Removed 4 legacy plugin.json files from plugin root directories
+    - Correct location: `plugins/{name}/.claude-plugin/plugin.json`
+    - Removed: `plugins/{specweave,specweave-github,specweave-jira,specweave-ado}/plugin.json`
+  - **Impact**: All 21 SpecWeave plugins now load correctly in Claude Code
+  - **Validation**: Added comprehensive validation rules to CLAUDE.md
+  - **Error messages**: Users no longer see "Plugin has an invalid manifest" errors
+  - See: CLAUDE.md "Plugin Manifest Validation Rules" section for complete documentation
+
+---
+
+## [0.17.6] - 2025-11-11
 
 ### 🐛 Bug Fixes
 
