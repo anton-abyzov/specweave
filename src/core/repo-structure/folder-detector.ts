@@ -17,6 +17,9 @@ export interface RepositoryHints {
 
 /**
  * Common repository patterns
+ * NOTE: Removed nested patterns (services/*, apps/*, packages/*) to ensure
+ * repositories are created at ROOT level only (e.g., backend/, frontend/)
+ * not in nested folders (e.g., services/backend/)
  */
 const COMMON_PATTERNS = [
   // Direct folders (highest confidence)
@@ -30,15 +33,9 @@ const COMMON_PATTERNS = [
   'server',
   'ui',
 
-  // Service patterns (medium confidence)
-  'services/*',
-  'apps/*',
-  'packages/*',
-
   // Microservice patterns (medium confidence)
-  '*-service',
-  '*-api',
-  '*-app'
+  // NOTE: Removed '*-service', '*-api', '*-app' patterns
+  // to prevent creating repos in services/ folder
 ];
 
 /**

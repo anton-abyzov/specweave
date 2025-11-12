@@ -991,50 +991,45 @@ export class RepoStructureManager {
   }
 
   /**
-   * Create SpecWeave project structure
+   * Create SpecWeave project structure (simplified - ONLY specs folders)
+   *
+   * NOTE: As of v0.X.X (increment 0026), we ONLY create specs/ folders.
+   * No modules/, team/, architecture/, legacy/ folders.
    */
   async createSpecWeaveStructure(config: RepoStructureConfig): Promise<void> {
     const specweavePath = path.join(this.projectPath, '.specweave');
 
-    // Create project-specific spec folders
+    // Create project-specific spec folders (ONLY specs/, no nested folders)
     if (config.architecture === 'monorepo' && config.monorepoProjects) {
-      // Monorepo: create project folders
+      // Monorepo: create specs folder for each project
       for (const project of config.monorepoProjects) {
         const projectSpecPath = path.join(
           specweavePath,
           'docs',
           'internal',
-          'projects',
+          'specs',
           project.toLowerCase()
         );
 
-        const subfolders = ['specs', 'modules', 'team', 'architecture', 'legacy'];
-        for (const subfolder of subfolders) {
-          const folderPath = path.join(projectSpecPath, subfolder);
-          if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, { recursive: true });
-          }
+        if (!fs.existsSync(projectSpecPath)) {
+          fs.mkdirSync(projectSpecPath, { recursive: true });
         }
 
         console.log(chalk.gray(`   ✓ Created project structure: ${project}`));
       }
     } else if (config.architecture === 'multi-repo' || config.architecture === 'parent') {
-      // Multi-repo: create folders for each repository
+      // Multi-repo: create specs folder for each repository
       for (const repo of config.repositories) {
         const projectSpecPath = path.join(
           specweavePath,
           'docs',
           'internal',
-          'projects',
+          'specs',
           repo.id
         );
 
-        const subfolders = ['specs', 'modules', 'team', 'architecture', 'legacy'];
-        for (const subfolder of subfolders) {
-          const folderPath = path.join(projectSpecPath, subfolder);
-          if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, { recursive: true });
-          }
+        if (!fs.existsSync(projectSpecPath)) {
+          fs.mkdirSync(projectSpecPath, { recursive: true });
         }
 
         console.log(chalk.gray(`   ✓ Created project structure: ${repo.id}`));
