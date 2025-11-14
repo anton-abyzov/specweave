@@ -452,42 +452,64 @@ EOF
   local temp_body=$(mktemp)
   echo "$issue_body" > "$temp_body"
 
-  # Create GitHub issue
-  log_debug "Calling gh issue create..."
+  # Create GitHub issue with FULL DUPLICATE PROTECTION
+  log_debug "Creating issue with DuplicateDetector (global protection)..."
 
-  local gh_output=$(gh issue create \
-    --repo "$repo" \
+  # Call Node.js wrapper script with DuplicateDetector
+  local node_output=$(node scripts/create-github-issue-with-protection.js \
     --title "[$issue_prefix] $title" \
-    --body-file "$temp_body" \
-    --label "specweave,increment" \
+    --body "$issue_body" \
+    --pattern "[$issue_prefix]" \
+    --labels "specweave,increment" \
+    --repo "$repo" \
     2>&1)
 
-  local gh_status=$?
+  local node_status=$?
 
   # Clean up temp file
   rm -f "$temp_body"
 
-  if [ $gh_status -ne 0 ]; then
-    log_error "gh issue create failed: $gh_output"
+  if [ $node_status -ne 0 ]; then
+    log_error "DuplicateDetector failed: $node_output"
     return 1
   fi
 
-  # Extract issue number from output (format: "https://github.com/owner/repo/issues/123")
-  local issue_number=$(echo "$gh_output" | grep -o '/issues/[0-9]*' | grep -o '[0-9]*')
-  local issue_url=$(echo "$gh_output" | grep 'https://github.com')
+  # Parse JSON output using jq (if available) or fallback to grep
+  local issue_number=""
+  local issue_url=""
+  local duplicates_found=0
+  local duplicates_closed=0
+  local was_reused="false"
+
+  if command -v jq >/dev/null 2>&1; then
+    issue_number=$(echo "$node_output" | jq -r '.issue.number')
+    issue_url=$(echo "$node_output" | jq -r '.issue.url')
+    duplicates_found=$(echo "$node_output" | jq -r '.duplicatesFound // 0')
+    duplicates_closed=$(echo "$node_output" | jq -r '.duplicatesClosed // 0')
+    was_reused=$(echo "$node_output" | jq -r '.wasReused // false')
+  else
+    # Fallback: grep-based parsing
+    issue_number=$(echo "$node_output" | grep -o '"number"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*')
+    issue_url=$(echo "$node_output" | grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+  fi
 
   if [ -z "$issue_number" ]; then
-    log_error "Could not extract issue number from gh output: $gh_output"
+    log_error "Could not extract issue number from DuplicateDetector output"
+    log_debug "Output was: $node_output"
     return 1
   fi
 
-  if [ -z "$issue_url" ]; then
-    # Construct URL manually if extraction failed
-    issue_url="https://github.com/$repo/issues/$issue_number"
+  # Log results with duplicate detection info
+  if [ "$was_reused" = "true" ]; then
+    log_info "  ♻️  Using existing issue #$issue_number (duplicate prevention)"
+  else
+    log_info "  📝 Issue #$issue_number created"
   fi
-
-  log_info "  📝 Issue #$issue_number created"
   log_info "  🔗 $issue_url"
+
+  if [ "$duplicates_found" -gt 0 ]; then
+    log_info "  🛡️  Duplicates detected: $duplicates_found (auto-closed: $duplicates_closed)"
+  fi
 
   # Create or update metadata.json
   local current_timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")

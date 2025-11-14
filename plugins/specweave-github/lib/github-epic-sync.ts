@@ -14,6 +14,7 @@ import * as path from 'path';
 import * as yaml from 'yaml';
 import { GitHubClientV2 } from './github-client-v2.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { DuplicateDetector } from './duplicate-detector.js';
 
 interface EpicFrontmatter {
   id: string;
@@ -525,7 +526,7 @@ export class GitHubEpicSync {
   }
 
   /**
-   * Create GitHub Issue for increment
+   * Create GitHub Issue for increment with FULL DUPLICATE PROTECTION
    */
   private async createIssue(
     epicId: string,
@@ -540,34 +541,30 @@ export class GitHubEpicSync {
     const title = `[${epicId}] ${increment.title}`;
     const body = `# ${increment.title}\n\n${increment.overview}\n\n---\n\n**Increment**: ${increment.id}\n**Epic**: ${epicId}\n**Milestone**: See milestone for Epic progress\n\n🤖 Auto-created by SpecWeave Epic Sync`;
 
-    const result = await execFileNoThrow('gh', [
-      'issue',
-      'create',
-      '--title',
-      title,
-      '--body',
-      body,
-      '--milestone',
-      milestoneNumber.toString(),
-      '--label',
-      'increment',
-      '--label',
-      'epic-sync',
-    ]);
+    try {
+      // Use DuplicateDetector for full 3-phase protection
+      const result = await DuplicateDetector.createWithProtection({
+        title,
+        body,
+        titlePattern: `[${epicId}]`,
+        incrementId: increment.id, // For body matching
+        labels: ['increment', 'epic-sync'],
+        milestone: milestoneNumber.toString()
+      });
 
-    if (result.exitCode !== 0) {
-      throw new Error(
-        `Failed to create GitHub Issue: ${result.stderr || result.stdout}`
-      );
+      // Log duplicate detection results
+      if (result.wasReused) {
+        console.log(`      ♻️  Reused existing issue #${result.issue.number} (duplicate prevention)`);
+      }
+      if (result.duplicatesFound > 0) {
+        console.log(`      🛡️  Duplicates: ${result.duplicatesFound} found, ${result.duplicatesClosed} closed`);
+      }
+
+      return result.issue.number;
+
+    } catch (error: any) {
+      throw new Error(`Failed to create GitHub Issue: ${error.message}`);
     }
-
-    // Extract issue number from URL
-    const match = result.stdout.match(/\/issues\/(\d+)/);
-    if (!match) {
-      throw new Error('Could not extract issue number from GitHub CLI output');
-    }
-
-    return parseInt(match[1], 10);
   }
 
   /**

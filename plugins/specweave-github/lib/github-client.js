@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { DuplicateDetector } from "./duplicate-detector.js";
 class GitHubClient {
   constructor(repo) {
     this.repo = repo || this.detectRepo();
@@ -70,21 +71,31 @@ class GitHubClient {
     }
   }
   /**
-   * Create epic issue (increment-level)
+   * Create epic issue (increment-level) with FULL DUPLICATE PROTECTION
    */
   async createEpicIssue(title, body, milestone, labels = []) {
-    const labelArgs = labels.map((l) => `-l "${l}"`).join(" ");
-    const milestoneArg = milestone ? `-m "${milestone}"` : "";
-    const createCmd = `gh issue create --repo ${this.repo} --title "${this.escapeQuotes(title)}" --body "${this.escapeQuotes(body)}" ${labelArgs} ${milestoneArg}`;
+    const titlePattern = DuplicateDetector.extractTitlePattern(title);
+    if (!titlePattern) {
+      throw new Error(`Epic issue title must start with pattern like [FS-XXX] or [INC-XXXX]: ${title}`);
+    }
     try {
-      const issueUrl = execSync(createCmd, { encoding: "utf-8" }).trim();
-      const issueNumber = parseInt(issueUrl.split("/").pop() || "0", 10);
-      if (!issueNumber) {
-        throw new Error("Failed to extract issue number from URL: " + issueUrl);
-      }
-      const viewCmd = `gh issue view ${issueNumber} --repo ${this.repo} --json number,title,body,state,url,labels,milestone`;
+      const result = await DuplicateDetector.createWithProtection({
+        title,
+        body,
+        titlePattern,
+        labels: labels.length > 0 ? labels : ["specweave", "increment"],
+        milestone: milestone?.toString(),
+        repo: this.repo
+      });
+      const viewCmd = `gh issue view ${result.issue.number} --repo ${this.repo} --json number,title,body,state,url,labels,milestone`;
       const output = execSync(viewCmd, { encoding: "utf-8" });
       const issue = JSON.parse(output);
+      if (result.wasReused) {
+        console.log(`   \u267B\uFE0F  Reused existing issue #${result.issue.number} (duplicate prevention)`);
+      }
+      if (result.duplicatesFound > 0) {
+        console.log(`   \u{1F6E1}\uFE0F  Duplicates detected: ${result.duplicatesFound} (auto-closed: ${result.duplicatesClosed})`);
+      }
       return {
         ...issue,
         html_url: issue.url,

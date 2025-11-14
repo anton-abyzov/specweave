@@ -5,6 +5,7 @@
 
 import { execSync } from 'child_process';
 import { GitHubIssue, GitHubMilestone } from './types';
+import { DuplicateDetector } from './duplicate-detector.js';
 
 export class GitHubClient {
   private repo: string;
@@ -96,7 +97,7 @@ export class GitHubClient {
   }
 
   /**
-   * Create epic issue (increment-level)
+   * Create epic issue (increment-level) with FULL DUPLICATE PROTECTION
    */
   async createEpicIssue(
     title: string,
@@ -104,26 +105,36 @@ export class GitHubClient {
     milestone?: number | string,
     labels: string[] = []
   ): Promise<GitHubIssue> {
-    const labelArgs = labels.map(l => `-l "${l}"`).join(' ');
-    const milestoneArg = milestone ? `-m "${milestone}"` : '';
+    // Extract title pattern for duplicate detection (e.g., "[FS-031]" from "[FS-031] Feature Title")
+    const titlePattern = DuplicateDetector.extractTitlePattern(title);
 
-    // Create issue (returns URL)
-    const createCmd = `gh issue create --repo ${this.repo} --title "${this.escapeQuotes(title)}" --body "${this.escapeQuotes(body)}" ${labelArgs} ${milestoneArg}`;
+    if (!titlePattern) {
+      throw new Error(`Epic issue title must start with pattern like [FS-XXX] or [INC-XXXX]: ${title}`);
+    }
 
     try {
-      const issueUrl = execSync(createCmd, { encoding: 'utf-8' }).trim();
+      // Use DuplicateDetector for full 3-phase protection
+      const result = await DuplicateDetector.createWithProtection({
+        title,
+        body,
+        titlePattern,
+        labels: labels.length > 0 ? labels : ['specweave', 'increment'],
+        milestone: milestone?.toString(),
+        repo: this.repo
+      });
 
-      // Extract issue number from URL (e.g., https://github.com/owner/repo/issues/123)
-      const issueNumber = parseInt(issueUrl.split('/').pop() || '0', 10);
-
-      if (!issueNumber) {
-        throw new Error('Failed to extract issue number from URL: ' + issueUrl);
-      }
-
-      // Fetch issue details
-      const viewCmd = `gh issue view ${issueNumber} --repo ${this.repo} --json number,title,body,state,url,labels,milestone`;
+      // Fetch full issue details (DuplicateDetector returns minimal info)
+      const viewCmd = `gh issue view ${result.issue.number} --repo ${this.repo} --json number,title,body,state,url,labels,milestone`;
       const output = execSync(viewCmd, { encoding: 'utf-8' });
       const issue = JSON.parse(output);
+
+      // Log duplicate detection results if any
+      if (result.wasReused) {
+        console.log(`   ♻️  Reused existing issue #${result.issue.number} (duplicate prevention)`);
+      }
+      if (result.duplicatesFound > 0) {
+        console.log(`   🛡️  Duplicates detected: ${result.duplicatesFound} (auto-closed: ${result.duplicatesClosed})`);
+      }
 
       return {
         ...issue,
