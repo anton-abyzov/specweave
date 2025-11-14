@@ -17,7 +17,7 @@ Implement DORA (DevOps Research and Assessment) metrics tracking for SpecWeave t
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0010-dora-metrics-mvp](../../../../increments/0010-dora-metrics-mvp/tasks.md) | US-001 through US-003 (all) | ✅ Complete | 2025-11-14 |
+| [0010-dora-metrics-mvp](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0010-dora-metrics-mvp) | US-001 through US-003 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 3/3 user stories complete (100%)
 
@@ -30,8 +30,3 @@ Implement DORA (DevOps Research and Assessment) metrics tracking for SpecWeave t
 - [US-003: Visualize Metrics (P2)](us-003-visualize-metrics-p2.md) - ✅ Complete
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#192 - Feature](https://github.com/anton-abyzov/specweave/issues/192)

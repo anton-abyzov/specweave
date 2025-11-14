@@ -17,7 +17,7 @@ Implement intelligent automatic detection system that knows when to **reopen a c
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0009-intelligent-reopen-logic](../../../../increments/0009-intelligent-reopen-logic/tasks.md) | US-001 through US-005 (all) | ✅ Complete | 2025-11-14 |
+| [0009-intelligent-reopen-logic](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0009-intelligent-reopen-logic) | US-001 through US-005 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 5/5 user stories complete (100%)
 
@@ -32,8 +32,3 @@ Implement intelligent automatic detection system that knows when to **reopen a c
 - [US-005: Sync Reopen to GitHub/ADO/Jira](us-005-sync-reopen-to-github-ado-jira.md) - ✅ Complete
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#193 - Feature](https://github.com/anton-abyzov/specweave/issues/193)

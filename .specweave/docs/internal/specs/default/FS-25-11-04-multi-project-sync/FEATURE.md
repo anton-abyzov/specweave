@@ -17,7 +17,7 @@ Implement multi-project sync architecture enabling unlimited GitHub/JIRA/ADO rep
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0011-multi-project-sync](../../../../increments/0011-multi-project-sync/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0011-multi-project-sync](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0011-multi-project-sync) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -29,5 +29,5 @@ Implement multi-project sync architecture enabling unlimited GitHub/JIRA/ADO rep
 
 ## External Tool Integration
 
-**GitHub Issue**: [#199 - Feature](https://github.com/anton-abyzov/specweave/issues/199)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/18](https://github.com/anton-abyzov/specweave/issues/18)
 **JIRA Epic**: [SCRUM-30](https://jira.atlassian.com/browse/SCRUM-30)

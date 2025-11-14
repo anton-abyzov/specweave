@@ -17,7 +17,7 @@ Comprehensive UX improvements to multi-repository initiali
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0022-multi-repo-init-ux](../../../../increments/0022-multi-repo-init-ux/tasks.md) | US-001 through US-009 (all) | ✅ Complete | 2025-11-14 |
+| [0022-multi-repo-init-ux](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0022-multi-repo-init-ux) | US-001 through US-009 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 9/9 user stories complete (100%)
 
@@ -36,8 +36,3 @@ Comprehensive UX improvements to multi-repository initiali
 - [US-009: Update Parent Folder Benefits Explanation](us-009-update-parent-folder-benefits-explanation.md) - ✅ Complete
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#215 - Feature](https://github.com/anton-abyzov/specweave/issues/215)

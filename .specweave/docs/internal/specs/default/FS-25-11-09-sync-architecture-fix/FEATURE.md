@@ -17,7 +17,7 @@ Fix sync prompts during `specweave init` to correctly ask about "Local (.specwea
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0017-sync-architecture-fix](../../../../increments/0017-sync-architecture-fix/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0017-sync-architecture-fix](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0017-sync-architecture-fix) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ Fix sync prompts during `specweave init` to correctly ask about "Local (.specwea
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#206 - Feature](https://github.com/anton-abyzov/specweave/issues/206)

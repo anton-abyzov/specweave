@@ -21,7 +21,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0005-cross-platform-cli](../../../../increments/0005-cross-platform-cli/tasks.md) | US-001 through US-003 (all) | ✅ Complete | 2025-11-14 |
+| [0005-cross-platform-cli](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0005-cross-platform-cli) | US-001 through US-003 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 3/3 user stories complete (100%)
 
@@ -37,5 +37,5 @@ last_updated: 2025-11-14
 
 ## External Tool Integration
 
-**GitHub Issue**: [#191 - Feature](https://github.com/anton-abyzov/specweave/issues/191)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/24](https://github.com/anton-abyzov/specweave/issues/24)
 **JIRA Epic**: [SCRUM-26](https://jira.atlassian.com/browse/SCRUM-26)

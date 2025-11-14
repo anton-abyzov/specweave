@@ -17,7 +17,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0015-hierarchical-external-sync](../../../../increments/0015-hierarchical-external-sync/tasks.md) | US-001 through US-005 (all) | ✅ Complete | 2025-11-14 |
+| [0015-hierarchical-external-sync](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0015-hierarchical-external-sync) | US-001 through US-005 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 5/5 user stories complete (100%)
 
@@ -35,5 +35,5 @@ last_updated: 2025-11-14
 
 ## External Tool Integration
 
-**GitHub Issue**: [#202 - Feature](https://github.com/anton-abyzov/specweave/issues/202)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/29](https://github.com/anton-abyzov/specweave/issues/29)
 **JIRA Epic**: [SCRUM-33](https://jira.atlassian.com/browse/SCRUM-33)

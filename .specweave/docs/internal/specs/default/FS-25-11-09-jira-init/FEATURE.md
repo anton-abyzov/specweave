@@ -17,7 +17,7 @@ Fixed two critical issues with `specweave init` Jira integration to improve user
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0021-jira-init-improvements](../../../../increments/0021-jira-init-improvements/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0021-jira-init-improvements](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0021-jira-init-improvements) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ Fixed two critical issues with `specweave init` Jira integration to improve user
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#203 - Feature](https://github.com/anton-abyzov/specweave/issues/203)

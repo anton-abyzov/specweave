@@ -29,7 +29,7 @@ Fill unit test coverage gap identified in increment 0022. Four test files were c
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0026-multi-repo-unit-tests](../../../../increments/0026-multi-repo-unit-tests/tasks.md) | US-001 through US-004 (all) | ✅ Complete | 2025-11-14 |
+| [0026-multi-repo-unit-tests](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0026-multi-repo-unit-tests) | US-001 through US-004 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 4/4 user stories complete (100%)
 
@@ -46,4 +46,4 @@ Fill unit test coverage gap identified in increment 0022. Four test files were c
 
 ## External Tool Integration
 
-**GitHub Issue**: [#209 - Feature](https://github.com/anton-abyzov/specweave/issues/209)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/33](https://github.com/anton-abyzov/specweave/issues/33)

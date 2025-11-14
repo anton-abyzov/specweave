@@ -17,7 +17,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0003-intelligent-model-selection](../../../../increments/0003-intelligent-model-selection/tasks.md) | US-001 through US-011 (all) | ✅ Complete | 2025-11-14 |
+| [0003-intelligent-model-selection](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0003-intelligent-model-selection) | US-001 through US-011 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 11/11 user stories complete (100%)
 
@@ -41,5 +41,5 @@ last_updated: 2025-11-14
 
 ## External Tool Integration
 
-**GitHub Issue**: [#190 - Feature](https://github.com/anton-abyzov/specweave/issues/190)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/22](https://github.com/anton-abyzov/specweave/issues/22)
 **JIRA Epic**: [SCRUM-24](https://jira.atlassian.com/browse/SCRUM-24)

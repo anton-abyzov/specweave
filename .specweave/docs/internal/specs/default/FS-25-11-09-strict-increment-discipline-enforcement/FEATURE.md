@@ -19,7 +19,7 @@ Implement mandatory pre-flight checks to prevent multiple active increments and 
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0018-strict-increment-discipline-enforcement](../../../../increments/0018-strict-increment-discipline-enforcement/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0018-strict-increment-discipline-enforcement](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0018-strict-increment-discipline-enforcement) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -31,4 +31,4 @@ Implement mandatory pre-flight checks to prevent multiple active increments and 
 
 ## External Tool Integration
 
-**GitHub Issue**: [#205 - Feature](https://github.com/anton-abyzov/specweave/issues/205)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/32](https://github.com/anton-abyzov/specweave/issues/32)

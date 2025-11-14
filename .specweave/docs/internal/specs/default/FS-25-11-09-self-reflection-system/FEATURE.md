@@ -17,7 +17,7 @@ Add AI self-reflection capabilities inspired by Kimi model. After each task comp
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0016-self-reflection-system](../../../../increments/0016-self-reflection-system/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0016-self-reflection-system](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0016-self-reflection-system) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -29,5 +29,5 @@ Add AI self-reflection capabilities inspired by Kimi model. After each task comp
 
 ## External Tool Integration
 
-**GitHub Issue**: [#204 - Feature](https://github.com/anton-abyzov/specweave/issues/204)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/30](https://github.com/anton-abyzov/specweave/issues/30)
 **JIRA Epic**: [SCRUM-34](https://jira.atlassian.com/browse/SCRUM-34)

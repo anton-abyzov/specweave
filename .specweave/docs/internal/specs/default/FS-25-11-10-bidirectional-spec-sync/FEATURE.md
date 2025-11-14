@@ -17,7 +17,7 @@ This increment implemented bidirectional synchroni
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0024-bidirectional-spec-sync](../../../../increments/0024-bidirectional-spec-sync/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0024-bidirectional-spec-sync](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0024-bidirectional-spec-sync) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ This increment implemented bidirectional synchroni
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#207 - Feature](https://github.com/anton-abyzov/specweave/issues/207)
