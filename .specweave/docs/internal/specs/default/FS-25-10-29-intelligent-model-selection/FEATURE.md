@@ -1,15 +1,10 @@
 ---
 id: FS-25-10-29-intelligent-model-selection
-title: Intelligent Model Selection - Automatic Cost Optimization
+title: "Intelligent Model Selection - Automatic Cost Optimization"
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
-external_tools:
-  github:
-    type: issue
-    id: 386
-    url: https://github.com/anton-abyzov/specweave/issues/386
 ---
 
 # FS-25-10-29-intelligent-model-selection: Intelligent Model Selection - Automatic Cost Optimization
@@ -46,5 +41,5 @@ external_tools:
 
 ## External Tool Integration
 
-**GitHub Issue**: [#333 - [FS-25-10-29]](https://github.com/anton-abyzov/specweave/issues/333)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/22](https://github.com/anton-abyzov/specweave/issues/22)
 **JIRA Epic**: [SCRUM-24](https://jira.atlassian.com/browse/SCRUM-24)

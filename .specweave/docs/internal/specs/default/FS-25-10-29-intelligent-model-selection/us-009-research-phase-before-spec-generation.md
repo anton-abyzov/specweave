@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-017: Update Role-Orchestrator with Intelligent Model Selection](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-017-update-role-orchestrator-with-intelligent-model-selection)
+- [T-018: Write ADR-007: Intelligent Model Selection](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-018-write-adr-007-intelligent-model-selection)
 
 ---
 

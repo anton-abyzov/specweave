@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-004: Create PluginManager Class](../../../../../increments/0004-plugin-architecture/tasks.md#t-004-create-pluginmanager-class)
+- [T-005: Create PluginDetector Class](../../../../../increments/0004-plugin-architecture/tasks.md#t-005-create-plugindetector-class)
+- [T-006: Update Adapter Interface for Plugins](../../../../../increments/0004-plugin-architecture/tasks.md#t-006-update-adapter-interface-for-plugins)
 
 ---
 

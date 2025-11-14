@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-010: Implement Generic Plugin Compiler](../../../../../increments/0004-plugin-architecture/tasks.md#t-010-implement-generic-plugin-compiler)
+- [T-011: Create Config Schema](../../../../../increments/0004-plugin-architecture/tasks.md#t-011-create-config-schema)
+- [T-012: Update .gitignore for Plugins](../../../../../increments/0004-plugin-architecture/tasks.md#t-012-update-gitignore-for-plugins)
 
 ---
 

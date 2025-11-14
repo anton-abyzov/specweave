@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-000: Create IncrementStatusDetector Utility](../../../../../increments/0006-llm-native-i18n/tasks.md#t-000-create-incrementstatusdetector-utility)
+- [T-001: Create Type Definitions](../../../../../increments/0006-llm-native-i18n/tasks.md#t-001-create-type-definitions)
+- [T-002: Implement LanguageManager Class](../../../../../increments/0006-llm-native-i18n/tasks.md#t-002-implement-languagemanager-class)
+- [T-003: Update Config Schema](../../../../../increments/0006-llm-native-i18n/tasks.md#t-003-update-config-schema)
+- [T-004: Create Locale Directory Structure](../../../../../increments/0006-llm-native-i18n/tasks.md#t-004-create-locale-directory-structure)
+- [T-005: Implement Locale Loading in CLI](../../../../../increments/0006-llm-native-i18n/tasks.md#t-005-implement-locale-loading-in-cli)
 
 ---
 

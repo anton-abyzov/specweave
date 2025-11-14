@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-013: Create /specweave:costs Command](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-013-create-specweave-costs-command)
+- [T-014: Unit Tests for Cost Tracker](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-014-unit-tests-for-cost-tracker)
 
 ---
 

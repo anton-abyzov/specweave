@@ -28,8 +28,14 @@
 **CRITICAL**: This phase implements strict increment discipline to prevent multiple incomplete increments.
 
 ### T-000: Create IncrementStatusDetector Utility
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [x] Completed
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P0
 **Dependencies**: None
 **Estimated Effort**: 2 hours
@@ -310,8 +316,14 @@ Add v0.6.0 section:
 ## Phase 1: Core Infrastructure
 
 ### T-001: Create Type Definitions
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P0
 **Dependencies**: None
 **Estimated Effort**: 1 hour
@@ -376,8 +388,14 @@ export interface I18nConfig {
 ---
 
 ### T-002: Implement LanguageManager Class
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P0
 **Dependencies**: T-001
 **Estimated Effort**: 4 hours
@@ -565,8 +583,14 @@ export class LanguageManager {
 ---
 
 ### T-003: Update Config Schema
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P0
 **Dependencies**: T-001
 **Estimated Effort**: 1 hour
@@ -652,8 +676,14 @@ export interface SpecweaveConfig {
 ---
 
 ### T-004: Create Locale Directory Structure
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P0
 **Dependencies**: None
 **Estimated Effort**: 30 minutes
@@ -720,8 +750,14 @@ Create empty English files:
 ---
 
 ### T-005: Implement Locale Loading in CLI
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-001-russian-developer-initializes-project.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-001: Russian Developer Initializes Project](../../docs/internal/specs/default/llm-native-i18n/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 **Priority**: P1
 **Dependencies**: T-002, T-004
 **Estimated Effort**: 2 hours
@@ -777,8 +813,14 @@ export async function initCommand(
 ---
 
 ### T-006: Write Unit Tests for LanguageManager
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P1
 **Dependencies**: T-002
 **Estimated Effort**: 2 hours
@@ -889,8 +931,14 @@ describe('LanguageManager', () => {
 ---
 
 ### T-007: Add Language Option to CLI
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P1
 **Dependencies**: T-005
 **Estimated Effort**: 1 hour
@@ -930,8 +978,14 @@ program
 ---
 
 ### T-008: Update .gitignore for Locale Files
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P2
 **Dependencies**: T-004
 **Estimated Effort**: 15 minutes
@@ -964,8 +1018,14 @@ Ensure locale files are committed to git (not ignored).
 ## Phase 2: Translator Plugin
 
 ### T-009: Create Translator Plugin Directory Structure
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P0
 **Dependencies**: None
 **Estimated Effort**: 30 minutes
@@ -997,8 +1057,14 @@ mkdir -p src/plugins/specweave-translator/{.claude-plugin,skills/translator/test
 ---
 
 ### T-010: Write Translator Skill
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P0
 **Dependencies**: T-009
 **Estimated Effort**: 3 hours
@@ -1026,8 +1092,14 @@ Create translator skill that auto-activates for translation requests.
 ---
 
 ### T-011: Write Translator Agent
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-002-generate-specification-in-russian.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-002: Generate Specification in Russian](../../docs/internal/specs/default/llm-native-i18n/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 **Priority**: P0
 **Dependencies**: T-009
 **Estimated Effort**: 2 hours
@@ -1054,8 +1126,14 @@ Create translator agent for batch translation jobs.
 ---
 
 ### T-012: Write Translation Command
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P1
 **Dependencies**: T-009
 **Estimated Effort**: 1 hour
@@ -1082,8 +1160,14 @@ Create `/specweave:translate` command for manual translation.
 ---
 
 ### T-013: Create Plugin Manifests
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P0
 **Dependencies**: T-010, T-011, T-012
 **Estimated Effort**: 1 hour
@@ -1159,8 +1243,14 @@ Create plugin manifests (SpecWeave custom + Claude native).
 ---
 
 ### T-014: Write Translator Skill Test Cases
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P1
 **Dependencies**: T-010
 **Estimated Effort**: 2 hours
@@ -1229,8 +1319,14 @@ expected_output_contains:
 ---
 
 ### T-015: Test Translator Agent Batch Translation
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P1
 **Dependencies**: T-011
 **Estimated Effort**: 2 hours
@@ -1278,8 +1374,14 @@ Verify placeholders preserved
 ## Phase 3: Adapter Integration
 
 ### T-016: Update ClaudeAdapter for Language Injection
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P0
 **Dependencies**: T-002, T-010
 **Estimated Effort**: 3 hours
@@ -1361,8 +1463,14 @@ export class ClaudeAdapter extends AdapterBase {
 ---
 
 ### T-017: Update CursorAdapter for Language Injection
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-003-execute-tasks-with-russian-context.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-003: Execute Tasks with Russian Context](../../docs/internal/specs/default/llm-native-i18n/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 **Priority**: P1
 **Dependencies**: T-002
 **Estimated Effort**: 2 hours
@@ -1420,8 +1528,14 @@ export class CursorAdapter extends AdapterBase {
 ---
 
 ### T-018: Update CopilotAdapter for Language Injection
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P1
 **Dependencies**: T-002
 **Estimated Effort**: 1 hour
@@ -1446,8 +1560,14 @@ Update CopilotAdapter to inject system prompts in instructions.md.
 ---
 
 ### T-019: Update GenericAdapter for Language Injection
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P2
 **Dependencies**: T-002
 **Estimated Effort**: 1 hour
@@ -1471,8 +1591,14 @@ Update GenericAdapter to inject system prompts in SPECWEAVE-MANUAL.md.
 ---
 
 ### T-020: Test Adapter Installation with Russian
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P1
 **Dependencies**: T-016, T-017, T-018, T-019
 **Estimated Effort**: 2 hours
@@ -1511,8 +1637,14 @@ specweave init test-ru-copilot --adapter copilot --language ru
 ---
 
 ### T-021: Test Adapter Installation with Spanish
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P1
 **Dependencies**: T-020
 **Estimated Effort**: 1 hour
@@ -1530,8 +1662,14 @@ Same tests as T-020 but with Spanish (es).
 ---
 
 ### T-022: Update Adapter Interface Documentation
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P2
 **Dependencies**: T-016, T-017, T-018, T-019
 **Estimated Effort**: 1 hour
@@ -1566,8 +1704,14 @@ export interface IAdapter {
 ## Phase 4: CLI Internationalization
 
 ### T-023: Extract All CLI Strings
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-004-living-docs-auto-translation.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-004: Living Docs Auto-Translation](../../docs/internal/specs/default/llm-native-i18n/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 **Priority**: P1
 **Dependencies**: T-004
 **Estimated Effort**: 2 hours
@@ -1626,8 +1770,14 @@ Extract to `cli.json`:
 ---
 
 ### T-024: Translate CLI to Russian
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-023, T-011
 **Estimated Effort**: 1 hour
@@ -1689,8 +1839,14 @@ Output to `src/locales/ru/cli.json`:
 ---
 
 ### T-025: Translate CLI to Spanish
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-023, T-011
 **Estimated Effort**: 1 hour
@@ -1712,8 +1868,14 @@ Same as T-024 but for Spanish.
 ---
 
 ### T-026: Replace Hardcoded Strings in init.ts
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-024, T-025
 **Estimated Effort**: 2 hours
@@ -1748,8 +1910,14 @@ console.log(chalk.blue.bold(`\n${langManager.t('cli.init.welcome')}\n`));
 ---
 
 ### T-027: Replace Hardcoded Strings in Other CLI Files
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-026
 **Estimated Effort**: 1 hour
@@ -1771,8 +1939,14 @@ Replace hardcoded strings in `version.ts`, `index.ts`, etc.
 ---
 
 ### T-028: Test CLI in All Languages
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-026, T-027
 **Estimated Effort**: 2 hours
@@ -1813,8 +1987,14 @@ specweave init test-es --language es
 ## Phase 5: Living Docs Translation
 
 ### T-029: Create translate-living-docs.ts Script
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-005-spanish-developer-workflow.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-005: Spanish Developer Workflow](../../docs/internal/specs/default/llm-native-i18n/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 **Priority**: P1
 **Dependencies**: T-002, T-010
 **Estimated Effort**: 3 hours
@@ -1907,8 +2087,14 @@ translateLivingDocs().catch(console.error);
 ---
 
 ### T-030: Update post-task-completion.sh Hook
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-029
 **Estimated Effort**: 1 hour
@@ -1944,8 +2130,14 @@ fi
 ---
 
 ### T-031: Implement File Change Detection
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-029
 **Estimated Effort**: 1 hour
@@ -1976,8 +2168,14 @@ Handle edge cases:
 ---
 
 ### T-032: Implement Translator Skill Invocation
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-029, T-010
 **Estimated Effort**: 2 hours
@@ -2059,8 +2257,14 @@ private getContextPrompt(contextType: string): string {
 ---
 
 ### T-033: Test Living Docs Auto-Translation
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-030, T-032
 **Estimated Effort**: 2 hours
@@ -2109,8 +2313,14 @@ cat .specweave/docs/internal/delivery/implementation-notes/TEST-NOTES.md
 ## Phase 6: Testing
 
 ### T-034: Unit Tests for LanguageManager
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-002
 **Estimated Effort**: 2 hours
@@ -2124,8 +2334,14 @@ Already covered in T-006 (duplicate check).
 ---
 
 ### T-035: Skill Test Cases for Translator
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-006-mixed-language-input.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-006: Mixed Language Input](../../docs/internal/specs/default/llm-native-i18n/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 **Priority**: P1
 **Dependencies**: T-014
 **Estimated Effort**: 1 hour
@@ -2139,8 +2355,14 @@ Already covered in T-014 (duplicate check).
 ---
 
 ### T-036: Integration Test - Russian CLI
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-026, T-027
 **Estimated Effort**: 2 hours
@@ -2211,8 +2433,14 @@ describe('Russian CLI Integration', () => {
 ---
 
 ### T-037: Integration Test - Spanish CLI
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-026, T-027
 **Estimated Effort**: 1 hour
@@ -2233,8 +2461,14 @@ Same as T-036 but for Spanish.
 ---
 
 ### T-038: Integration Test - Adapter Installation
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-020, T-021
 **Estimated Effort**: 2 hours
@@ -2282,8 +2516,14 @@ describe('Adapter Installation with Languages', () => {
 ---
 
 ### T-039: E2E Test - Russian Workflow
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-036, T-038, T-033
 **Estimated Effort**: 3 hours
@@ -2348,8 +2588,14 @@ test.describe('Russian Workflow E2E', () => {
 ---
 
 ### T-040: E2E Test - Spanish Workflow
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-037, T-038, T-033
 **Estimated Effort**: 2 hours
@@ -2370,8 +2616,14 @@ Same as T-039 but for Spanish.
 ---
 
 ### T-041: E2E Test - Living Docs Translation
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-007-language-configuration.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-007: Language Configuration](../../docs/internal/specs/default/llm-native-i18n/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 **Priority**: P1
 **Dependencies**: T-033
 **Estimated Effort**: 2 hours
@@ -2420,8 +2672,14 @@ test('should auto-translate living docs on task completion', async () => {
 ---
 
 ### T-042: Validate Test Coverage
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-008-cost-transparency.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/llm-native-i18n/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 **Priority**: P1
 **Dependencies**: T-006, T-036, T-037, T-038, T-039, T-040, T-041
 **Estimated Effort**: 1 hour
@@ -2457,8 +2715,14 @@ npm run test:coverage
 ## Phase 7: Documentation
 
 ### T-043: Update CLAUDE.md
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-008-cost-transparency.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/llm-native-i18n/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 **Priority**: P1
 **Dependencies**: All previous tasks
 **Estimated Effort**: 2 hours
@@ -2528,8 +2792,14 @@ specweave init my-project --language ru
 ---
 
 ### T-044: Update README.md
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-008-cost-transparency.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/llm-native-i18n/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 **Priority**: P1
 **Dependencies**: T-043
 **Estimated Effort**: 1 hour
@@ -2576,8 +2846,14 @@ All generated content (specs, plans, tasks, docs) will be in your chosen languag
 ---
 
 ### T-045: Create Multilingual Guide
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/FS-25-11-03-llm-native-i18n/us-008-cost-transparency.md)
+
 
 **Status**: [ ] Pending
+
+**User Story**: [US-008: Cost Transparency](../../docs/internal/specs/default/llm-native-i18n/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 **Priority**: P2
 **Dependencies**: T-043, T-044
 **Estimated Effort**: 2 hours

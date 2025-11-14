@@ -5,11 +5,6 @@ type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
-external_tools:
-  github:
-    type: issue
-    id: 391
-    url: https://github.com/anton-abyzov/specweave/issues/391
 ---
 
 # FS-25-11-03-plugin-architecture: Product Specification: Plugin Architecture
@@ -56,5 +51,5 @@ Transform SpecWeave from a monolithic skill/agent bundle into a **modular plugin
 
 ## External Tool Integration
 
-**GitHub Issue**: [#338 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/338)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/23](https://github.com/anton-abyzov/specweave/issues/23)
 **JIRA Epic**: [SCRUM-25](https://jira.atlassian.com/browse/SCRUM-25)
