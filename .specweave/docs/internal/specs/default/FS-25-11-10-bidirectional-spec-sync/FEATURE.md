@@ -1,0 +1,33 @@
+---
+id: FS-25-11-10-bidirectional-spec-sync
+title: "Bidirectional Spec Sync"
+type: epic
+status: complete
+created: 2025-11-14
+last_updated: 2025-11-14
+---
+
+# FS-25-11-10-bidirectional-spec-sync: Bidirectional Spec Sync
+
+This increment implemented bidirectional synchroni
+
+---
+
+## Implementation History
+
+| Increment | User Stories | Status | Completion Date |
+|-----------|--------------|--------|----------------|
+| [0024-bidirectional-spec-sync](../../../../increments/0024-bidirectional-spec-sync/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+
+**Overall Progress**: No user stories (implementation only)
+
+---
+
+## User Stories
+
+---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#207 - Feature](https://github.com/anton-abyzov/specweave/issues/207)
