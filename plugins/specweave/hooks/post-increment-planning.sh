@@ -777,14 +777,38 @@ EOF
       fi
     fi
 
-    # Create minimal metadata.json
+    # Read testing config from .specweave/config.json (NEW - v0.18.0+)
+    local test_mode="TDD"
+    local coverage_target=80
+
+    if [ -f "$CONFIG_FILE" ] && command -v jq >/dev/null 2>&1; then
+      test_mode=$(jq -r '.testing.defaultTestMode // "TDD"' "$CONFIG_FILE" 2>/dev/null || echo "TDD")
+      coverage_target=$(jq -r '.testing.defaultCoverageTarget // 80' "$CONFIG_FILE" 2>/dev/null || echo "80")
+    fi
+
+    # Check for overrides in spec.md frontmatter
+    if [ -f "$spec_file" ]; then
+      local spec_test_mode=$(awk '/^---$/,/^---$/ {if (/^test_mode:/) {sub(/^test_mode:[[:space:]]*"?/, ""); sub(/"?[[:space:]]*$/, ""); print; exit}}' "$spec_file" 2>/dev/null)
+      local spec_coverage=$(awk '/^---$/,/^---$/ {if (/^coverage_target:/) {sub(/^coverage_target:[[:space:]]*/, ""); sub(/[[:space:]]*$/, ""); print; exit}}' "$spec_file" 2>/dev/null)
+
+      if [ -n "$spec_test_mode" ]; then
+        test_mode="$spec_test_mode"
+      fi
+      if [ -n "$spec_coverage" ]; then
+        coverage_target="$spec_coverage"
+      fi
+    fi
+
+    # Create minimal metadata.json with testing config
     cat > "$metadata_file" <<EOF_MINIMAL
 {
   "id": "$increment_id",
   "status": "active",
   "type": "$increment_type",
   "created": "$current_timestamp",
-  "lastActivity": "$current_timestamp"
+  "lastActivity": "$current_timestamp",
+  "testMode": "$test_mode",
+  "coverageTarget": $coverage_target
 }
 EOF_MINIMAL
 

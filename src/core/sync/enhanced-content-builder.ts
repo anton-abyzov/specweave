@@ -1,282 +1,244 @@
+import { SpecContent, UserStory, TaskLink, AcceptanceCriterion, EnhancedSpecContent } from './types';
+
+// Re-export for backward compatibility
+export { EnhancedSpecContent };
+
 /**
  * Enhanced Content Builder
  *
- * Builds rich external issue descriptions with full spec content including:
- * - Executive summary
- * - User stories with collapsible sections
- * - Acceptance criteria
- * - Task links with GitHub issue numbers
- * - Architecture references
- * - Source links
+ * Builds rich external issue descriptions with full spec content
+ * for GitHub, JIRA, and Azure DevOps integrations.
  */
-
-import { SpecContent, SpecUserStory, SpecAcceptanceCriterion } from '../spec-content-sync.js';
-
-export interface TaskMapping {
-  incrementId: string;
-  tasks: Task[];
-  tasksUrl: string;
-}
-
-export interface Task {
-  id: string;
-  title: string;
-  userStories: string[];
-  githubIssue?: number;
-  jiraIssue?: string;
-  adoWorkItem?: number;
-  completed?: boolean;  // NEW: Track completion status
-  status?: 'pending' | 'in-progress' | 'completed';  // NEW: Detailed status (matches TaskInfo)
-}
-
-export interface ArchitectureDoc {
-  type: 'adr' | 'hld' | 'diagram';
-  path: string;
-  title: string;
-}
-
-export interface SourceLinks {
-  spec?: string;
-  plan?: string;
-  tasks?: string;
-}
-
-export interface EnhancedSpecContent extends SpecContent {
-  summary?: string;
-  taskMapping?: TaskMapping;
-  architectureDocs?: ArchitectureDoc[];
-  sourceLinks?: SourceLinks;
-}
-
 export class EnhancedContentBuilder {
   /**
-   * Build complete external issue description with all spec content
+   * Build complete external description from spec
    */
-  buildExternalDescription(spec: EnhancedSpecContent): string {
+  public buildExternalDescription(spec: SpecContent): string {
     const sections: string[] = [];
 
-    // Summary section
+    // 1. Executive Summary
     sections.push(this.buildSummarySection(spec));
 
-    // User stories section
-    if (spec.userStories && spec.userStories.length > 0) {
-      sections.push(this.buildUserStoriesSection(spec.userStories));
+    // 2. User Stories (collapsible in GitHub)
+    sections.push(this.buildUserStoriesSection(spec.userStories));
+
+    // 3. Linked Tasks (if available)
+    if (spec.tasks && spec.tasks.length > 0) {
+      sections.push(this.buildTasksSection(spec.tasks));
     }
 
-    // Tasks section
-    if (spec.taskMapping) {
-      sections.push(this.buildTasksSection(spec.taskMapping));
-    }
-
-    // Architecture section
+    // 4. Architecture References (if available)
     if (spec.architectureDocs && spec.architectureDocs.length > 0) {
       sections.push(this.buildArchitectureSection(spec.architectureDocs));
     }
 
-    // Source links section
+    // 5. Source Links (if available)
     if (spec.sourceLinks) {
       sections.push(this.buildSourceLinksSection(spec.sourceLinks));
     }
 
-    return sections.filter(s => s.length > 0).join('\n\n---\n\n');
+    return sections.join('\n\n');
   }
 
   /**
-   * Build summary section with executive overview
+   * Build summary section
    */
-  buildSummarySection(spec: EnhancedSpecContent): string {
-    return `## Summary\n\n${spec.summary || spec.description}`;
+  public buildSummarySection(spec: SpecContent | { summary: string }): string {
+    return `## Summary\n\n${spec.summary}`;
   }
 
   /**
-   * Build user stories section with collapsible GitHub sections
+   * Build user stories section with collapsible details
    */
-  buildUserStoriesSection(userStories: SpecUserStory[]): string {
-    const lines: string[] = ['## User Stories'];
+  public buildUserStoriesSection(userStories: UserStory[]): string {
+    if (!userStories || userStories.length === 0) {
+      return `## User Stories\n\nNo user stories defined.`;
+    }
+
+    const sections: string[] = ['## User Stories'];
 
     for (const story of userStories) {
-      lines.push('');
-      lines.push(`<details>`);
-      lines.push(`<summary><strong>${story.id}: ${story.title}</strong></summary>`);
-      lines.push('');
-
-      if (story.acceptanceCriteria && story.acceptanceCriteria.length > 0) {
-        lines.push('**Acceptance Criteria**:');
-        for (const ac of story.acceptanceCriteria) {
-          const priority = ac.priority ? ` (${ac.priority}` : '';
-          const testable = ac.testable ? ', testable)' : ')';
-          const suffix = priority || ac.testable ? `${priority}${testable}` : '';
-          const checkbox = ac.completed ? '[x]' : '[ ]';
-          lines.push(`- ${checkbox} **${ac.id}**: ${ac.description}${suffix}`);
-        }
-        lines.push('');
-      }
-
-      lines.push('</details>');
+      const storySection = this.buildUserStoryDetails(story);
+      sections.push(storySection);
     }
+
+    return sections.join('\n\n');
+  }
+
+  /**
+   * Build individual user story with collapsible details
+   */
+  private buildUserStoryDetails(story: UserStory): string {
+    const lines: string[] = [];
+
+    // Use GitHub collapsible format
+    lines.push(`<details>`);
+    lines.push(`<summary><strong>${story.id}: ${story.title}</strong></summary>`);
+    lines.push('');
+
+    // Add description if available
+    if (story.description) {
+      lines.push(`**Description**: ${story.description}`);
+      lines.push('');
+    }
+
+    // Acceptance Criteria
+    if (story.acceptanceCriteria && story.acceptanceCriteria.length > 0) {
+      lines.push('**Acceptance Criteria**:');
+      lines.push('');
+
+      // Group by priority
+      const byPriority = this.groupAcceptanceCriteriaByPriority(story.acceptanceCriteria);
+
+      for (const priority of ['P1', 'P2', 'P3', 'OTHER']) {
+        const criteria = byPriority[priority];
+        if (criteria && criteria.length > 0) {
+          for (const ac of criteria) {
+            const priorityLabel = ac.priority ? ` (${ac.priority})` : '';
+            lines.push(`- **${ac.id}**${priorityLabel}: ${ac.description}`);
+          }
+        }
+      }
+    } else {
+      lines.push('**Acceptance Criteria**: No acceptance criteria defined.');
+    }
+
+    lines.push('');
+    lines.push('</details>');
 
     return lines.join('\n');
   }
 
   /**
-   * Build tasks section with checkboxes (GitHub/Jira/ADO compatible)
-   *
-   * NEW: Shows tasks as checkboxes with completion status
+   * Group acceptance criteria by priority
    */
-  buildTasksSection(
-    taskMapping: TaskMapping,
-    options?: {
-      showCheckboxes?: boolean;
-      showProgressBar?: boolean;
-      showCompletionStatus?: boolean;
-      provider?: 'github' | 'jira' | 'ado';
+  private groupAcceptanceCriteriaByPriority(criteria: AcceptanceCriterion[]): Record<string, AcceptanceCriterion[]> {
+    const grouped: Record<string, AcceptanceCriterion[]> = {
+      P1: [],
+      P2: [],
+      P3: [],
+      OTHER: []  // For criteria without priority or with other priorities
+    };
+
+    for (const ac of criteria) {
+      const priority = ac.priority || 'OTHER';
+      if (priority in grouped) {
+        grouped[priority].push(ac);
+      } else {
+        grouped.OTHER.push(ac);
+      }
     }
+
+    return grouped;
+  }
+
+  /**
+   * Build tasks section with GitHub issue links
+   * Supports both simple array and options object for backward compatibility
+   */
+  public buildTasksSection(
+    tasks: TaskLink[] | any,
+    ownerOrOptions?: string | { showCheckboxes?: boolean; showProgressBar?: boolean; showCompletionStatus?: boolean; provider?: string },
+    repo?: string
   ): string {
-    const {
-      showCheckboxes = true,
-      showProgressBar = true,
-      showCompletionStatus = true,
-      provider = 'github'
-    } = options || {};
+    // Handle both old and new signatures
+    let taskList: TaskLink[];
+    let owner: string | undefined;
+    let options: { showCheckboxes?: boolean; showProgressBar?: boolean; showCompletionStatus?: boolean; provider?: string } = {};
+
+    if (Array.isArray(tasks)) {
+      taskList = tasks;
+      if (typeof ownerOrOptions === 'string') {
+        owner = ownerOrOptions;
+      } else if (typeof ownerOrOptions === 'object') {
+        options = ownerOrOptions;
+      }
+    } else {
+      // tasks is actually taskMapping object
+      taskList = tasks?.tasks || [];
+      if (typeof ownerOrOptions === 'object') {
+        options = ownerOrOptions;
+        owner = tasks?.owner;
+        repo = tasks?.repo;
+      }
+    }
+
+    if (!taskList || taskList.length === 0) {
+      return `## Tasks\n\nNo tasks defined.`;
+    }
 
     const lines: string[] = ['## Tasks'];
     lines.push('');
 
-    // Calculate progress
-    const total = taskMapping.tasks.length;
-    const completed = taskMapping.tasks.filter(t => t.completed || t.status === 'completed').length;
-    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    // Progress header with count
-    lines.push(`**Progress**: ${completed}/${total} tasks completed (${percent}%)`);
-    lines.push('');
-
-    // Progress bar (visual)
-    if (showProgressBar && total > 0) {
-      const barWidth = 12;
-      const filled = Math.round((completed / total) * barWidth);
-      const bar = '█'.repeat(filled) + '░'.repeat(barWidth - filled);
-      lines.push(`\`${bar}\` ${percent}%`);
+    // Add progress bar if requested
+    if (options.showProgressBar && taskList.length > 0) {
+      const completed = taskList.filter(t => t.completed).length;
+      const total = taskList.length;
+      const percentage = Math.round((completed / total) * 100);
+      lines.push(`**Progress**: ${completed}/${total} tasks (${percentage}%)`);
       lines.push('');
     }
 
-    // Tasks list
-    if (showCheckboxes) {
-      // Show tasks as checkboxes (provider-specific format)
-      for (const task of taskMapping.tasks) {
-        const isCompleted = task.completed || task.status === 'completed';
+    for (const task of taskList) {
+      let taskLine = '';
 
-        // Provider-specific checkbox format
-        let checkbox: string;
-        if (provider === 'jira') {
-          // Jira uses (x) for checked, ( ) for unchecked
-          checkbox = isCompleted ? '(x)' : '( )';
-        } else if (provider === 'ado') {
-          // ADO uses HTML checkboxes (rendered in description)
-          checkbox = isCompleted ? '[x]' : '[ ]';
-        } else {
-          // GitHub uses markdown checkboxes
-          checkbox = isCompleted ? '[x]' : '[ ]';
-        }
-
-        const statusEmoji = isCompleted && showCompletionStatus && provider === 'github' ? ' ✅' : '';
-
-        // Issue link (provider-specific)
-        let issueLink = '';
-        if (provider === 'github' && task.githubIssue) {
-          issueLink = ` [#${task.githubIssue}](https://github.com/issue/${task.githubIssue})`;
-        } else if (provider === 'jira' && task.jiraIssue) {
-          issueLink = ` [${task.jiraIssue}]`;
-        } else if (provider === 'ado' && task.adoWorkItem) {
-          issueLink = ` [#${task.adoWorkItem}]`;
-        }
-
-        // User stories
-        const userStories = task.userStories && task.userStories.length > 0
-          ? ` (implements ${task.userStories.join(', ')})`
-          : '';
-
-        lines.push(`- ${checkbox} **${task.id}**: ${task.title}${userStories}${issueLink}${statusEmoji}`);
+      // Add checkbox if requested
+      if (options.showCheckboxes) {
+        taskLine += task.completed ? '- [x] ' : '- [ ] ';
+      } else {
+        taskLine += '- ';
       }
-    } else {
-      // Fallback: show as bullet list (backward compatibility)
-      for (const task of taskMapping.tasks) {
-        const issueLink = task.githubIssue ? ` (#${task.githubIssue})` : '';
-        lines.push(`- **${task.id}**: ${task.title}${issueLink}`);
 
-        if (task.userStories && task.userStories.length > 0) {
-          lines.push(`  - Implements: ${task.userStories.join(', ')}`);
-        }
+      taskLine += `**${task.id}**: ${task.title}`;
+
+      // Add GitHub issue link if available
+      if (task.githubIssue && owner && repo) {
+        const issueUrl = `https://github.com/${owner}/${repo}/issues/${task.githubIssue}`;
+        taskLine += ` ([#${task.githubIssue}](${issueUrl}))`;
       }
+
+      // Add user story references
+      if (task.userStoryIds && task.userStoryIds.length > 0) {
+        taskLine += ` → Implements: ${task.userStoryIds.join(', ')}`;
+      }
+
+      // Add completion status if requested
+      if (options.showCompletionStatus && task.completed) {
+        taskLine += ' ✅';
+      }
+
+      lines.push(taskLine);
     }
-
-    lines.push('');
-    lines.push(`**Full task list**: [tasks.md](${taskMapping.tasksUrl})`);
 
     return lines.join('\n');
   }
 
   /**
-   * Build architecture references section
+   * Build architecture section
    */
-  buildArchitectureSection(architectureDocs: ArchitectureDoc[]): string {
-    if (architectureDocs.length === 0) {
-      return '';
-    }
-
+  public buildArchitectureSection(docs: string[]): string {
     const lines: string[] = ['## Architecture'];
     lines.push('');
+    lines.push('Related architecture documentation:');
+    lines.push('');
 
-    // Group by type
-    const adrs = architectureDocs.filter(doc => doc.type === 'adr');
-    const hlds = architectureDocs.filter(doc => doc.type === 'hld');
-    const diagrams = architectureDocs.filter(doc => doc.type === 'diagram');
-
-    if (adrs.length > 0) {
-      lines.push('**Architecture Decision Records (ADRs)**:');
-      for (const adr of adrs) {
-        lines.push(`- [${adr.title}](${adr.path})`);
-      }
-      lines.push('');
+    for (const doc of docs) {
+      const fileName = doc.split('/').pop() || doc;
+      lines.push(`- [${fileName}](${doc})`);
     }
 
-    if (hlds.length > 0) {
-      lines.push('**High-Level Design (HLD)**:');
-      for (const hld of hlds) {
-        lines.push(`- [${hld.title}](${hld.path})`);
-      }
-      lines.push('');
-    }
-
-    if (diagrams.length > 0) {
-      lines.push('**Diagrams**:');
-      for (const diagram of diagrams) {
-        lines.push(`- [${diagram.title}](${diagram.path})`);
-      }
-      lines.push('');
-    }
-
-    return lines.join('\n').trim();
+    return lines.join('\n');
   }
 
   /**
    * Build source links section
    */
-  buildSourceLinksSection(sourceLinks: SourceLinks): string {
-    const lines: string[] = ['## Source'];
+  public buildSourceLinksSection(sourceLinks: { spec: string; plan: string; tasks: string }): string {
+    const lines: string[] = ['## Source Files'];
     lines.push('');
-
-    if (sourceLinks.spec) {
-      lines.push(`- [spec.md](${sourceLinks.spec})`);
-    }
-
-    if (sourceLinks.plan) {
-      lines.push(`- [plan.md](${sourceLinks.plan})`);
-    }
-
-    if (sourceLinks.tasks) {
-      lines.push(`- [tasks.md](${sourceLinks.tasks})`);
-    }
+    lines.push(`- **Specification**: [spec.md](${sourceLinks.spec})`);
+    lines.push(`- **Technical Plan**: [plan.md](${sourceLinks.plan})`);
+    lines.push(`- **Task List**: [tasks.md](${sourceLinks.tasks})`);
 
     return lines.join('\n');
   }

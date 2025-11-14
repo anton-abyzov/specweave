@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-05-v0.8.0-stabilization
-title: "v0.8.0 Stabilization & Test Coverage"
+title: v0.8.0 Stabilization & Test Coverage
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 397
+    url: https://github.com/anton-abyzov/specweave/issues/397
 ---
 
 # FS-25-11-05-v0.8.0-stabilization: v0.8.0 Stabilization & Test Coverage

@@ -5,6 +5,11 @@ type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 390
+    url: https://github.com/anton-abyzov/specweave/issues/390
 ---
 
 # FS-25-11-03-llm-native-i18n: Specification: LLM-Native Multilingual Support

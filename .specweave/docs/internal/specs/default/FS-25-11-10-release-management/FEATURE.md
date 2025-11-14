@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-10-release-management
-title: "Release Management Plugin Enhancements"
+title: Release Management Plugin Enhancements
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 407
+    url: https://github.com/anton-abyzov/specweave/issues/407
 ---
 
 # FS-25-11-10-release-management: Release Management Plugin Enhancements

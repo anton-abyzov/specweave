@@ -1,0 +1,80 @@
+---
+# Context Manifest for Increment 0032: Prevent Increment Number Gaps
+
+# Specification sections to load
+spec_sections:
+  - .specweave/increments/0032-prevent-increment-number-gaps/spec.md
+  - .specweave/docs/internal/specs/default/FS-25-11-14-prevent-increment-number-gaps/FEATURE.md
+
+# Architecture documents to load
+architecture:
+  - .specweave/docs/internal/architecture/adr/0032-increment-number-gap-prevention.md
+  - .specweave/docs/internal/architecture/diagrams/increment-number-management.mmd
+  - .specweave/docs/internal/architecture/test-strategy-increment-numbering.md
+
+# Implementation plans
+plans:
+  - .specweave/increments/0032-prevent-increment-number-gaps/plan.md
+  - .specweave/increments/0032-prevent-increment-number-gaps/ARCHITECTURE-SUMMARY.md
+  - .specweave/increments/0032-prevent-increment-number-gaps/DEVELOPER-QUICK-START.md
+
+# Tasks and tests
+tasks:
+  - .specweave/increments/0032-prevent-increment-number-gaps/tasks.md
+
+# Source code to modify
+source_code:
+  - plugins/specweave/skills/increment-planner/scripts/feature-utils.js  # Lines 63-85
+  - src/integrations/jira/jira-mapper.ts  # Lines 395-406
+  - src/integrations/jira/jira-incremental-mapper.ts  # Similar implementation
+
+# New source code to create
+new_code:
+  - src/core/increment-utils.ts  # Centralized IncrementNumberManager utility
+
+# Tests to create
+test_files:
+  - tests/unit/increment-utils.test.ts  # 40 unit tests
+  - tests/integration/increment-numbering.test.ts  # 8 integration tests
+  - tests/e2e/increment-creation.spec.ts  # 5 E2E tests
+  - tests/benchmarks/increment-numbering.bench.ts  # 4 performance benchmarks
+
+# Documentation to update
+documentation:
+  - .specweave/docs/public/guides/increment-lifecycle.md  # User guide
+  - CLAUDE.md  # Contributor guide (if needed)
+
+# Context budget (max tokens to load)
+max_context_tokens: 15000
+
+# Priority level (high = load first, critical path)
+priority: high
+
+# Auto-refresh context on spec changes
+auto_refresh: true
+
+# Related increments
+related_increments:
+  - 0007-smart-increment-discipline  # WIP limits and status progression
+  - 0018-strict-increment-discipline-enforcement  # Discipline checks
+
+# Tags for search and categorization
+tags:
+  - bug-fix
+  - data-integrity
+  - increment-lifecycle
+  - core-framework
+  - TypeScript
+  - Node.js
+  - Jest
+  - TDD
+
+# Estimated implementation time
+estimated_hours: 7
+
+# Test coverage target
+coverage_target: 95
+
+# TDD mode
+test_mode: TDD
+---

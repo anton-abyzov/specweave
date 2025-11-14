@@ -1,0 +1,230 @@
+```mermaid
+graph TB
+    subgraph "Before (Bug) - Duplicate IDs Possible"
+        A1[PM Agent<br/>Creates Increment] --> B1[feature-utils.js<br/>getNextFeatureNumber]
+        A2[JIRA Mapper<br/>Import Epic] --> B2[jira-mapper.ts<br/>getNextIncrementId]
+        A3[JIRA Incremental<br/>Cherry-Pick Items] --> B3[jira-incremental-mapper.ts<br/>getNextIncrementId]
+
+        B1 --> C1[Scan ONLY<br/>.specweave/increments/]
+        B2 --> C2[Scan ONLY<br/>.specweave/increments/]
+        B3 --> C3[Scan ONLY<br/>.specweave/increments/]
+
+        C1 --> D1[Find highest: 0003]
+        C2 --> D2[Find highest: 0003]
+        C3 --> D3[Find highest: 0003]
+
+        D1 --> E1[Return 0004]
+        D2 --> E2[Return 0004]
+        D3 --> E3[Return 0004]
+
+        style C1 fill:#ff6b6b
+        style C2 fill:#ff6b6b
+        style C3 fill:#ff6b6b
+        style E1 fill:#ff6b6b
+        style E2 fill:#ff6b6b
+        style E3 fill:#ff6b6b
+    end
+
+    subgraph "After (Fixed) - No Duplicates"
+        F1[PM Agent<br/>Creates Increment] --> G1[feature-utils.js<br/>DELEGATES]
+        F2[JIRA Mapper<br/>Import Epic] --> G2[jira-mapper.ts<br/>DELEGATES]
+        F3[JIRA Incremental<br/>Cherry-Pick Items] --> G3[jira-incremental-mapper.ts<br/>DELEGATES]
+
+        G1 --> H[IncrementNumberManager<br/>Single Source of Truth]
+        G2 --> H
+        G3 --> H
+
+        H --> I{Cache<br/>Available?}
+        I -->|Yes| J[Return cached<br/>value <1ms]
+        I -->|No| K[Comprehensive Scan]
+
+        K --> L[Scan .specweave/increments/]
+        K --> M[Scan _abandoned/]
+        K --> N[Scan _paused/]
+
+        L --> O[Find: 0001, 0002, 0003]
+        M --> P[Find: 0004, 0005]
+        N --> Q[Find: 0010]
+
+        O --> R[Highest: 0010]
+        P --> R
+        Q --> R
+
+        R --> S[Cache: 0011<br/>TTL: 5s]
+        S --> T[Return 0011]
+
+        style H fill:#51cf66
+        style I fill:#ffd43b
+        style J fill:#51cf66
+        style K fill:#51cf66
+        style R fill:#51cf66
+        style S fill:#51cf66
+        style T fill:#51cf66
+    end
+
+    subgraph "Filesystem State"
+        FS[.specweave/increments/]
+        FS --> FS1[0001-core/]
+        FS --> FS2[0002-model/]
+        FS --> FS3[0003-cli/]
+        FS --> FSA[_abandoned/]
+        FS --> FSP[_paused/]
+
+        FSA --> FSA1[0004-failed/]
+        FSA --> FSA2[0005-experiment/]
+
+        FSP --> FSP1[0010-on-hold/]
+
+        style FSA fill:#ffd43b
+        style FSP fill:#ffd43b
+    end
+```
+
+## Architecture Flow Explanation
+
+### Before (Bug State)
+
+**Problem**: Three separate functions scan only main directory
+- ❌ `feature-utils.js` → Finds highest: 0003
+- ❌ `jira-mapper.ts` → Finds highest: 0003
+- ❌ `jira-incremental-mapper.ts` → Finds highest: 0003
+
+**Result**: All return 0004, ignoring 0004 in `_abandoned/` → **COLLISION!**
+
+### After (Fixed State)
+
+**Solution**: Centralized utility with comprehensive scanning
+- ✅ All functions delegate to `IncrementNumberManager`
+- ✅ Scans main + _abandoned + _paused directories
+- ✅ Finds true highest: 0010
+- ✅ Returns 0011 (no collision)
+
+**Performance**: Cache reduces repeated scans (<1ms vs. 10-50ms)
+
+### Cache Behavior
+
+```mermaid
+sequenceDiagram
+    participant PM as PM Agent
+    participant Manager as IncrementNumberManager
+    participant Cache as In-Memory Cache
+    participant FS as Filesystem
+
+    Note over PM,FS: First Call (Cache Miss)
+    PM->>Manager: getNextIncrementNumber()
+    Manager->>Cache: Check cache
+    Cache-->>Manager: Miss (no entry)
+    Manager->>FS: Scan all directories
+    FS-->>Manager: Highest: 0010
+    Manager->>Cache: Set 0011, TTL=5s
+    Manager-->>PM: Return 0011
+
+    Note over PM,FS: Second Call (Cache Hit, <5s later)
+    PM->>Manager: getNextIncrementNumber()
+    Manager->>Cache: Check cache
+    Cache-->>Manager: Hit (0011)
+    Manager-->>PM: Return 0011 (<1ms)
+
+    Note over PM,FS: Third Call (Cache Miss, >5s later)
+    PM->>Manager: getNextIncrementNumber()
+    Manager->>Cache: Check cache
+    Cache-->>Manager: Miss (expired)
+    Manager->>FS: Scan all directories
+    FS-->>Manager: Highest: 0011 (new increment created)
+    Manager->>Cache: Set 0012, TTL=5s
+    Manager-->>PM: Return 0012
+```
+
+### Error Scenarios
+
+```mermaid
+graph LR
+    A[IncrementNumberManager] --> B{Directory<br/>Exists?}
+    B -->|No| C[Return 0001<br/>First increment]
+    B -->|Yes| D{Contains<br/>Valid IDs?}
+    D -->|No| E[Return 0001<br/>Empty directory]
+    D -->|Yes| F{Subdirs<br/>Exist?}
+    F -->|_abandoned missing| G[Scan main only]
+    F -->|_paused missing| G
+    F -->|All exist| H[Scan all 3 dirs]
+    G --> I[Find highest]
+    H --> I
+    I --> J[Return next ID]
+
+    style C fill:#ffd43b
+    style E fill:#ffd43b
+    style G fill:#ffd43b
+```
+
+## Key Design Patterns
+
+### 1. Singleton Pattern (Static Class)
+
+**Why**: Only one increment numbering authority needed
+```typescript
+export class IncrementNumberManager {
+  private static cache: Map<string, number> = new Map();
+  // Static methods only, no instances
+}
+```
+
+### 2. Cache-Aside Pattern
+
+**Why**: Performance optimization without database
+```typescript
+1. Check cache first
+2. If miss, read from filesystem
+3. Update cache with result
+4. Return value
+```
+
+### 3. Delegation Pattern
+
+**Why**: Backward compatibility during migration
+```javascript
+function getNextFeatureNumber(featuresDir) {
+  // Delegate to new utility
+  return IncrementNumberManager.getNextIncrementNumber(projectRoot);
+}
+```
+
+### 4. Strategy Pattern (Directory Scanning)
+
+**Why**: Extensible to future subdirectories
+```typescript
+const dirsToScan = [
+  { path: main, label: 'active' },
+  { path: abandoned, label: 'abandoned' },
+  { path: paused, label: 'paused' }
+  // Easy to add: { path: archived, label: 'archived' }
+];
+```
+
+## Performance Characteristics
+
+| Operation | Uncached | Cached | Complexity |
+|-----------|----------|--------|-----------|
+| **Empty directory** | ~1ms | <1ms | O(1) |
+| **10 increments** | ~5ms | <1ms | O(n) |
+| **100 increments** | ~15ms | <1ms | O(n) |
+| **1000 increments** | ~50ms | <1ms | O(n) |
+
+**Cache Hit Rate**: Estimated 80%+ (most increments created within 5s)
+
+## Security Considerations
+
+1. **Path Traversal**: No user input in paths (projectRoot is internal)
+2. **Permission Errors**: Graceful handling with clear error messages
+3. **Race Conditions**: Filesystem is final arbiter (directory creation fails on duplicate)
+4. **Cache Poisoning**: Not applicable (internal cache, no external input)
+
+## Scalability
+
+**Current Limits**:
+- **Max increments**: ~10,000 (before scan becomes slow >100ms)
+- **Cache memory**: ~1MB (10,000 entries × 100 bytes)
+
+**Future Optimizations** (if needed):
+1. **Index file**: Maintain `.specweave/increments/.index` with highest number
+2. **Parallel scanning**: Promise.all for async version
+3. **Incremental indexing**: Update index on increment creation/deletion
