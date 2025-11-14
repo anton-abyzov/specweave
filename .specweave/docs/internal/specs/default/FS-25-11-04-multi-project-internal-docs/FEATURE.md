@@ -5,6 +5,11 @@ type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 394
+    url: https://github.com/anton-abyzov/specweave/issues/394
 ---
 
 # FS-25-11-04-multi-project-internal-docs: Specification: Multi-Project Internal Docs & Brownfield Import

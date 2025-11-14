@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-10-e2e-test-cleanup
-title: "E2E Test Cleanup and Fix"
+title: E2E Test Cleanup and Fix
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 404
+    url: https://github.com/anton-abyzov/specweave/issues/404
 ---
 
 # FS-25-11-10-e2e-test-cleanup: E2E Test Cleanup and Fix

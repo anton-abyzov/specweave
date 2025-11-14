@@ -67,6 +67,12 @@ export interface IncrementMetadata {
   /** Last activity timestamp (ISO 8601) */
   lastActivity: string;
 
+  /** Testing mode for this increment (defaults to global config) */
+  testMode?: 'TDD' | 'test-after' | 'manual';
+
+  /** Coverage target percentage (70-95, defaults to global config) */
+  coverageTarget?: number;
+
   /** Reason for pausing (only if status = paused) */
   pausedReason?: string;
 

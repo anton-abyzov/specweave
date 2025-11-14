@@ -15,6 +15,7 @@ import * as yaml from 'yaml';
 import { GitHubClientV2 } from './github-client-v2.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 import { DuplicateDetector } from './duplicate-detector.js';
+import { EpicContentBuilder } from './epic-content-builder.js';
 
 interface EpicFrontmatter {
   id: string;
@@ -526,7 +527,7 @@ export class GitHubEpicSync {
   }
 
   /**
-   * Create GitHub Issue for increment with FULL DUPLICATE PROTECTION
+   * Create GitHub Issue for Epic with hierarchical content (US → Tasks)
    */
   private async createIssue(
     epicId: string,
@@ -539,7 +540,19 @@ export class GitHubEpicSync {
     milestoneNumber: number
   ): Promise<number> {
     const title = `[${epicId}] ${increment.title}`;
-    const body = `# ${increment.title}\n\n${increment.overview}\n\n---\n\n**Increment**: ${increment.id}\n**Epic**: ${epicId}\n**Milestone**: See milestone for Epic progress\n\n🤖 Auto-created by SpecWeave Epic Sync`;
+
+    // Build hierarchical issue body using EpicContentBuilder
+    const epicFolder = await this.findEpicFolder(epicId);
+    if (!epicFolder) {
+      throw new Error(`Epic folder not found for ${epicId}`);
+    }
+
+    const contentBuilder = new EpicContentBuilder(
+      epicFolder,
+      path.dirname(this.specsDir) // Project root
+    );
+
+    const body = await contentBuilder.buildIssueBody();
 
     try {
       // Use DuplicateDetector for full 3-phase protection
@@ -568,7 +581,7 @@ export class GitHubEpicSync {
   }
 
   /**
-   * Update GitHub Issue for increment
+   * Update GitHub Issue for Epic with hierarchical content (US → Tasks)
    */
   private async updateIssue(
     epicId: string,
@@ -582,7 +595,19 @@ export class GitHubEpicSync {
     milestoneNumber: number
   ): Promise<void> {
     const title = `[${epicId}] ${increment.title}`;
-    const body = `# ${increment.title}\n\n${increment.overview}\n\n---\n\n**Increment**: ${increment.id}\n**Epic**: ${epicId}\n**Milestone**: See milestone for Epic progress\n\n🤖 Auto-updated by SpecWeave Epic Sync`;
+
+    // Build hierarchical issue body using EpicContentBuilder
+    const epicFolder = await this.findEpicFolder(epicId);
+    if (!epicFolder) {
+      throw new Error(`Epic folder not found for ${epicId}`);
+    }
+
+    const contentBuilder = new EpicContentBuilder(
+      epicFolder,
+      path.dirname(this.specsDir) // Project root
+    );
+
+    const body = await contentBuilder.buildIssueBody();
 
     const result = await execFileNoThrow('gh', [
       'issue',

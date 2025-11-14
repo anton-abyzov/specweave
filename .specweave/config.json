@@ -3,6 +3,9 @@
     "name": "specweave",
     "version": "0.1.0"
   },
+  "wip": {
+    "limit": 2
+  },
   "adapters": {
     "default": "claude"
   },

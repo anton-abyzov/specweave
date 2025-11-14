@@ -7,14 +7,49 @@
 
 import { SpecIncrementMapper, SpecIncrementMapping } from '../../../src/core/sync/spec-increment-mapper';
 import path from 'path';
+import fs from 'fs/promises';
+import os from 'os';
 
 describe('SpecIncrementMapper', () => {
   let mapper: SpecIncrementMapper;
-  const testRoot = path.join(__dirname, '../../fixtures/sync');
+  let testRoot: string;
+  const fixtureRoot = path.join(__dirname, '../../fixtures/sync');
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Create a temporary directory for each test to avoid pollution
+    testRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-mapper-test-'));
+
+    // Copy fixtures to temp directory
+    await copyDir(fixtureRoot, testRoot);
+
     mapper = new SpecIncrementMapper(testRoot);
   });
+
+  afterEach(async () => {
+    // Clean up temp directory
+    try {
+      await fs.rm(testRoot, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  // Helper function to copy directory recursively
+  async function copyDir(src: string, dest: string) {
+    await fs.mkdir(dest, { recursive: true });
+    const entries = await fs.readdir(src, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+
+      if (entry.isDirectory()) {
+        await copyDir(srcPath, destPath);
+      } else {
+        await fs.copyFile(srcPath, destPath);
+      }
+    }
+  }
 
   describe('mapSpecToIncrements', () => {
     it('should map spec to related increments', async () => {

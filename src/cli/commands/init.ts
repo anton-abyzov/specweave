@@ -832,8 +832,107 @@ export async function initCommand(
       }
     }
 
-    // 13. Create config.json with language setting
-    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, false);
+    // 12. Prompt for testing configuration (NEW)
+    let testMode: 'TDD' | 'test-after' | 'manual' = 'TDD';
+    let coverageTarget = 80;
+
+    // Only prompt if interactive (not CI)
+    const isCI = process.env.CI === 'true' ||
+                 process.env.GITHUB_ACTIONS === 'true' ||
+                 process.env.GITLAB_CI === 'true' ||
+                 process.env.CIRCLECI === 'true' ||
+                 !process.stdin.isTTY;
+
+    if (!isCI && !continueExisting) {
+      console.log('');
+      console.log(chalk.cyan.bold('🧪 Testing Configuration'));
+      console.log(chalk.gray('   Configure your default testing approach and coverage targets'));
+      console.log('');
+
+      const { selectedTestMode } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'selectedTestMode',
+          message: 'Select your testing approach:',
+          choices: [
+            {
+              name: 'TDD (Test-Driven Development) - Write tests first',
+              value: 'TDD',
+              short: 'TDD'
+            },
+            {
+              name: 'Test-After - Implement first, then write tests',
+              value: 'test-after',
+              short: 'Test-After'
+            },
+            {
+              name: 'Manual Testing - No automated tests',
+              value: 'manual',
+              short: 'Manual'
+            }
+          ],
+          default: 'TDD'
+        }
+      ]);
+      testMode = selectedTestMode;
+
+      const { selectedCoverageLevel } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'selectedCoverageLevel',
+          message: 'Select your coverage target level:',
+          choices: [
+            {
+              name: '70% - Acceptable (core paths covered)',
+              value: 70,
+              short: '70%'
+            },
+            {
+              name: '80% - Good (recommended - most paths covered)',
+              value: 80,
+              short: '80%'
+            },
+            {
+              name: '90% - Excellent (comprehensive coverage)',
+              value: 90,
+              short: '90%'
+            },
+            {
+              name: 'Custom (enter your own value)',
+              value: 'custom',
+              short: 'Custom'
+            }
+          ],
+          default: 80
+        }
+      ]);
+
+      if (selectedCoverageLevel === 'custom') {
+        const { customCoverage } = await inquirer.prompt([
+          {
+            type: 'number',
+            name: 'customCoverage',
+            message: 'Enter custom coverage target (70-95):',
+            default: 80,
+            validate: (input: number) => {
+              if (input >= 70 && input <= 95) return true;
+              return 'Coverage target must be between 70% and 95%';
+            }
+          }
+        ]);
+        coverageTarget = customCoverage;
+      } else {
+        coverageTarget = selectedCoverageLevel;
+      }
+
+      console.log('');
+      console.log(chalk.green(`   ✔ Testing: ${testMode}`));
+      console.log(chalk.green(`   ✔ Coverage Target: ${coverageTarget}%`));
+      console.log('');
+    }
+
+    // 13. Create config.json with language and testing settings
+    createConfigFile(targetDir, finalProjectName, toolName, language as SupportedLanguage, false, testMode, coverageTarget);
 
     // 14. AUTO-INSTALL ALL PLUGINS via Claude CLI (Breaking Change: No selective loading)
     // NOTE: We do NOT create .claude/settings.json - marketplace registration via CLI is GLOBAL
@@ -1362,7 +1461,9 @@ function createConfigFile(
   projectName: string,
   adapter: string,
   language: SupportedLanguage,
-  enableDocsPreview: boolean = true
+  enableDocsPreview: boolean = true,
+  testMode: 'TDD' | 'test-after' | 'manual' = 'TDD',
+  coverageTarget: number = 80
 ): void {
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
@@ -1373,6 +1474,16 @@ function createConfigFile(
     },
     adapters: {
       default: adapter,
+    },
+    // Testing configuration (NEW - v0.18.0+)
+    testing: {
+      defaultTestMode: testMode,
+      defaultCoverageTarget: coverageTarget,
+      coverageTargets: {
+        unit: Math.min(coverageTarget + 5, 95),        // Unit tests slightly higher
+        integration: coverageTarget,                    // Integration at default
+        e2e: Math.min(coverageTarget + 10, 100)        // E2E tests highest (critical paths)
+      }
     },
     // Documentation preview settings (for Claude Code only)
     ...(adapter === 'claude' && {

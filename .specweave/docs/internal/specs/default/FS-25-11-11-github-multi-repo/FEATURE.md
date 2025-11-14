@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-11-github-multi-repo
-title: "Enhanced Multi-Repository GitHub Support"
+title: Enhanced Multi-Repository GitHub Support
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 408
+    url: https://github.com/anton-abyzov/specweave/issues/408
 ---
 
 # FS-25-11-11-github-multi-repo: Enhanced Multi-Repository GitHub Support

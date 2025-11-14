@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-03-dora-metrics-mvp
-title: "DORA Metrics MVP"
+title: DORA Metrics MVP
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 388
+    url: https://github.com/anton-abyzov/specweave/issues/388
 ---
 
 # FS-25-11-03-dora-metrics-mvp: DORA Metrics MVP

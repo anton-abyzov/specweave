@@ -1,10 +1,15 @@
 ---
 id: FS-25-10-24-core-framework
-title: "Core Framework Enhancements - Multi-Tool Support & Diagram Agents"
+title: Core Framework Enhancements - Multi-Tool Support & Diagram Agents
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 385
+    url: https://github.com/anton-abyzov/specweave/issues/385
 ---
 
 # FS-25-10-24-core-framework: Core Framework Enhancements - Multi-Tool Support & Diagram Agents
