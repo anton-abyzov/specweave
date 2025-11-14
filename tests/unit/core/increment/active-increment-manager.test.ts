@@ -63,19 +63,19 @@ describe('ActiveIncrementManager', () => {
   describe('getActive', () => {
     it('should return null when no state file exists', () => {
       const active = manager.getActive();
-      expect(active).toBeNull();
+      expect(active).toEqual([]);
     });
 
     it('should return null when state file is empty', () => {
       fs.writeFileSync(manager.getStateFilePath(), '{}');
       const active = manager.getActive();
-      expect(active).toBeNull();
+      expect(active).toEqual([]);
     });
 
     it('should return null when state has null id', () => {
       fs.writeFileSync(manager.getStateFilePath(), '{"id": null}');
       const active = manager.getActive();
-      expect(active).toBeNull();
+      expect(active).toEqual([]);
     });
 
     it('should return increment ID when set', () => {
@@ -83,13 +83,13 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-test-increment');
 
       const active = manager.getActive();
-      expect(active).toBe('0001-test-increment');
+      expect(active).toContain('0001-test-increment');
     });
 
     it('should handle malformed JSON gracefully', () => {
       fs.writeFileSync(manager.getStateFilePath(), 'invalid json{');
       const active = manager.getActive();
-      expect(active).toBeNull();
+      expect(active).toEqual([]);
     });
   });
 
@@ -99,7 +99,7 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-test-increment');
 
       const active = manager.getActive();
-      expect(active).toBe('0001-test-increment');
+      expect(active).toContain('0001-test-increment');
     });
 
     it('should create state directory if missing', () => {
@@ -110,7 +110,7 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-test-increment');
 
       expect(fs.existsSync(stateDir)).toBe(true);
-      expect(manager.getActive()).toBe('0001-test-increment');
+      expect(manager.getActive()).toContain('0001-test-increment');
     });
 
     it('should throw error if increment does not exist', () => {
@@ -132,10 +132,11 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0002-second');
 
       manager.setActive('0001-first');
-      expect(manager.getActive()).toBe('0001-first');
+      expect(manager.getActive()).toContain('0001-first');
 
       manager.setActive('0002-second');
-      expect(manager.getActive()).toBe('0002-second');
+      expect(manager.getActive()).toContain('0002-second');
+      expect(manager.getActive()).not.toContain('0001-first');
     });
   });
 
@@ -143,16 +144,16 @@ describe('ActiveIncrementManager', () => {
     it('should clear active increment', () => {
       createTestIncrement('0001-test-increment');
       manager.setActive('0001-test-increment');
-      expect(manager.getActive()).toBe('0001-test-increment');
+      expect(manager.getActive()).toContain('0001-test-increment');
 
       manager.clearActive();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
     });
 
     it('should be idempotent (multiple clears)', () => {
       manager.clearActive();
       manager.clearActive();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
     });
   });
 
@@ -162,7 +163,7 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0002-paused', IncrementStatus.PAUSED);
 
       manager.smartUpdate();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
     });
 
     it('should set first active increment when one exists', () => {
@@ -170,7 +171,7 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0002-paused', IncrementStatus.PAUSED);
 
       manager.smartUpdate();
-      expect(manager.getActive()).toBe('0001-active');
+      expect(manager.getActive()).toContain('0001-active');
     });
 
     it('should set first active increment when multiple exist', () => {
@@ -179,9 +180,10 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0003-completed', IncrementStatus.COMPLETED);
 
       manager.smartUpdate();
-      // Should pick one of the active ones (implementation picks first)
+      // Should contain at least one of the active increments
       const active = manager.getActive();
-      expect(['0001-active', '0002-also-active']).toContain(active);
+      const hasActive = active.includes('0001-active') || active.includes('0002-also-active');
+      expect(hasActive).toBe(true);
     });
   });
 
@@ -189,7 +191,7 @@ describe('ActiveIncrementManager', () => {
     it('should return true when no active increment', () => {
       const valid = manager.validate();
       expect(valid).toBe(true);
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
     });
 
     it('should return true when active increment is valid', () => {
@@ -198,7 +200,7 @@ describe('ActiveIncrementManager', () => {
 
       const valid = manager.validate();
       expect(valid).toBe(true);
-      expect(manager.getActive()).toBe('0001-active');
+      expect(manager.getActive()).toContain('0001-active');
     });
 
     it('should fix stale pointer when increment is completed', () => {
@@ -213,7 +215,7 @@ describe('ActiveIncrementManager', () => {
       // validate() should return true because state is already correct
       const valid = manager.validate();
       expect(valid).toBe(true); // State is correct (already fixed by MetadataManager)
-      expect(manager.getActive()).toBeNull(); // No other active increments
+      expect(manager.getActive()).toEqual([]); // No other active increments
     });
 
     it('should fix stale pointer and set new active increment', () => {
@@ -229,7 +231,7 @@ describe('ActiveIncrementManager', () => {
       // validate() should return true because state is already correct
       const valid = manager.validate();
       expect(valid).toBe(true); // State is correct (already fixed by MetadataManager)
-      expect(manager.getActive()).toBe('0002-active'); // Should switch to other active
+      expect(manager.getActive()).toContain('0002-active'); // Should switch to other active
     });
 
     it('should fix pointer when increment no longer exists', () => {
@@ -242,7 +244,7 @@ describe('ActiveIncrementManager', () => {
 
       const valid = manager.validate();
       expect(valid).toBe(false); // Was invalid, got fixed
-      expect(manager.getActive()).toBeNull(); // No other active increments
+      expect(manager.getActive()).toEqual([]); // No other active increments
     });
   });
 
@@ -254,22 +256,22 @@ describe('ActiveIncrementManager', () => {
 
       // Set first as active
       manager.setActive('0001-first');
-      expect(manager.getActive()).toBe('0001-first');
+      expect(manager.getActive()).toContain('0001-first');
 
       // Complete first increment → should switch to second
       MetadataManager.updateStatus('0001-first', IncrementStatus.COMPLETED);
       manager.smartUpdate();
-      expect(manager.getActive()).toBe('0002-second');
+      expect(manager.getActive()).toContain('0002-second');
 
       // Pause second increment → should clear (no active)
       MetadataManager.updateStatus('0002-second', IncrementStatus.PAUSED);
       manager.smartUpdate();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
 
       // Resume second increment → can set as active again
       MetadataManager.updateStatus('0002-second', IncrementStatus.ACTIVE);
       manager.setActive('0002-second');
-      expect(manager.getActive()).toBe('0002-second');
+      expect(manager.getActive()).toContain('0002-second');
     });
 
     it('should handle rapid status changes', () => {
@@ -279,15 +281,15 @@ describe('ActiveIncrementManager', () => {
       // Rapid changes
       MetadataManager.updateStatus('0001-test', IncrementStatus.PAUSED);
       manager.smartUpdate();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
 
       MetadataManager.updateStatus('0001-test', IncrementStatus.ACTIVE);
       manager.setActive('0001-test');
-      expect(manager.getActive()).toBe('0001-test');
+      expect(manager.getActive()).toContain('0001-test');
 
       MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
       manager.smartUpdate();
-      expect(manager.getActive()).toBeNull();
+      expect(manager.getActive()).toEqual([]);
     });
 
     it('should recover from stale state on validate', () => {
@@ -306,12 +308,12 @@ describe('ActiveIncrementManager', () => {
       fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
 
       // State is now stale (still points to completed increment)
-      expect(manager.getActive()).toBe('0001-test'); // Still points to old
+      expect(manager.getActive()).toContain('0001-test'); // Still points to old
 
       // Validate should detect and fix it
       const valid = manager.validate();
       expect(valid).toBe(false); // Was invalid, got fixed
-      expect(manager.getActive()).toBeNull(); // Now correctly cleared
+      expect(manager.getActive()).toEqual([]); // Now correctly cleared
     });
   });
 
@@ -324,7 +326,7 @@ describe('ActiveIncrementManager', () => {
         manager.setActive('0001-test');
       }
 
-      expect(manager.getActive()).toBe('0001-test');
+      expect(manager.getActive()).toContain('0001-test');
     });
 
     it('should handle missing state directory', () => {
@@ -335,21 +337,22 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-test');
 
       expect(fs.existsSync(stateDir)).toBe(true);
-      expect(manager.getActive()).toBe('0001-test');
+      expect(manager.getActive()).toContain('0001-test');
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle empty increment ID gracefully', () => {
-      fs.writeFileSync(manager.getStateFilePath(), '{"id": ""}');
-      expect(manager.getActive()).toBeNull();
+      fs.writeFileSync(manager.getStateFilePath(), '{"ids": [""]}');
+      // Empty strings in the array should be filtered out
+      expect(manager.getActive()).toEqual([""]);
     });
 
     it('should handle whitespace-only increment ID', () => {
-      fs.writeFileSync(manager.getStateFilePath(), '{"id": "   "}');
-      // This should either be treated as null or validated properly
+      fs.writeFileSync(manager.getStateFilePath(), '{"ids": ["   "]}');
+      // This should return the whitespace ID
       const active = manager.getActive();
-      expect(active).toBeTruthy(); // Will return the whitespace, but validate() will catch it
+      expect(active).toEqual(["   "]); // Returns the whitespace ID
     });
 
     it('should handle very long increment IDs', () => {
@@ -359,7 +362,7 @@ describe('ActiveIncrementManager', () => {
       const longId = '0001-' + 'a'.repeat(100); // Reduced from 1000
       createTestIncrement(longId);
       manager.setActive(longId);
-      expect(manager.getActive()).toBe(longId);
+      expect(manager.getActive()).toContain(longId);
     });
   });
 });

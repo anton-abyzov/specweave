@@ -697,48 +697,45 @@ See [SPECS-ARCHITECTURE-CLARIFICATION.md](.specweave/increments/0007-smart-incre
 
 ## Living Docs Sync (Universal Hierarchy)
 
-**CRITICAL**: SpecWeave uses Universal Hierarchy architecture for living docs. This section explains the structure and automatic sync process.
+**CRITICAL**: SpecWeave uses Universal Hierarchy architecture (v1.0.0) for living docs. This section explains the new structure with Epic → Feature → User Story → Task hierarchy.
 
-### Structure (Standard Level)
+### Universal Hierarchy Structure
 
-**Location**: `.specweave/docs/internal/specs/{project-id}/`
+**Core Hierarchy**:
+```
+Epic (optional) → Feature (required) → User Story → Task
+```
 
-Each FS-* (Feature Spec / Epic) folder contains:
-- **README.md** - Epic overview (high-level feature summary, business value, implementation history)
-- **us-\*.md** - User story files DIRECTLY in epic folder (NOT in subfolder)
-
-**Correct Structure**:
+**File Structure**:
 ```
 .specweave/docs/internal/specs/
-└── default/                              ← Project: default
-    ├── README.md                         ← Project overview
-    ├── FS-024-bidirectional-spec-sync/
-    │   ├── README.md                     ← Epic overview
-    │   ├── us-001-*.md                   ← User stories
-    │   ├── us-002-*.md
-    │   └── us-003-*.md
-    ├── FS-030-intelligent-living-docs/
-    │   ├── README.md
-    │   ├── us-001-*.md
-    │   └── (more user stories...)
-    └── FS-031-external-tool-status-synchronization/
-        ├── README.md
-        ├── us-001-rich-external-issue-content.md
-        ├── us-002-task-level-mapping.md
-        └── (5 more user stories...)
+├── _epics/                               ← Optional: Strategic themes
+│   └── EPIC-2025-Q4-platform/
+│       └── EPIC.md                       ← Epic overview
+├── _features/                            ← Required: Cross-project features
+│   └── FS-25-11-14-external-tool-sync/
+│       └── FEATURE.md                    ← Feature overview
+└── {project-id}/                         ← Project-specific content
+    └── FS-25-11-14-external-tool-sync/
+        ├── README.md                      ← Project context
+        ├── us-001-*.md                    ← User stories
+        └── us-002-*.md
 ```
 
-**❌ WRONG - Do NOT create**:
-- `spec.md` files (use README.md instead)
-- `user-stories/` subfolders (user stories go directly in FS-* folder)
-- Root-level `user-stories/` folder
+**Key Changes from v0.x**:
+- ✅ **Epics** are optional strategic themes (EPIC-YYYY-QN-name)
+- ✅ **Features** use date-based naming (FS-YY-MM-DD-name)
+- ✅ **Cross-project features** in _features/ folder
+- ✅ **Project-specific** user stories in {project}/ folders
+- ✅ **NO hardcoded project names** - all dynamic from config
 
 ### Hierarchy Mapping
 
 | SpecWeave | GitHub | Jira | ADO | Description |
 |-----------|--------|------|-----|-------------|
-| **FS-* (Epic)** | Project/Milestone | Epic | Epic | Strategic feature (20+ user stories) |
-| **US-* (User Story)** | Issue | Story | User Story | Detailed requirement (5-10 AC) |
+| **Epic** | - | Initiative | Epic | Optional: Strategic theme (multiple features) |
+| **Feature (FS-*)** | Milestone | Epic | Feature | Required: Cross-project feature |
+| **US-* (User Story)** | Issue | Story | User Story | Project-specific requirement |
 | **T-* (Task)** | Checkbox | Sub-task | Task | Implementation unit (1-4 hours) |
 
 ### Automatic Sync Process
@@ -746,17 +743,26 @@ Each FS-* (Feature Spec / Epic) folder contains:
 **When**: After completing an increment with `/specweave:done`
 
 **How It Works**:
-1. **HierarchyMapper** detects which FS-* folder the increment belongs to:
-   - **Method 1 (Frontmatter)**: Checks `epic: FS-031` in increment's `spec.md` (100% confidence)
-   - **Method 2 (Increment ID)**: Maps `0031-feature` → `FS-031` (90% confidence)
-   - **Method 3 (Config)**: Checks explicit mapping in `config.json` (100% confidence)
-   - **Fallback**: Auto-creates new FS-* folder if needed (50% confidence)
+1. **HierarchyMapper** detects Epic and Feature mappings:
+   - **Epic Detection** (optional):
+     - Frontmatter: `epic: EPIC-2025-Q4-platform` (100% confidence)
+     - Config mapping: Explicit in config.json (100% confidence)
+   - **Feature Detection** (required):
+     - Frontmatter: `feature: FS-25-11-14-external-tool-sync` (100% confidence)
+     - Increment name: `0031-external-tool-sync` → `FS-25-11-14-external-tool-sync` (90% confidence)
+     - Auto-creation: Creates new FS-YY-MM-DD-{name} from increment (50% confidence)
+   - **Project Detection**:
+     - Frontmatter: `projects: ['backend', 'frontend']` (100% confidence)
+     - Keywords/techStack matching (60-80% confidence)
+     - Fallback: Uses all configured projects
 
-2. **SpecDistributor** writes files:
-   - Epic overview → `FS-031/README.md` (high-level summary, business value, implementation history)
-   - User stories → `FS-031/us-001-*.md`, `FS-031/us-002-*.md`, etc. (directly in folder)
+2. **SpecDistributor** writes hierarchical structure:
+   - Epic overview → `_epics/EPIC-*/EPIC.md` (if epic exists)
+   - Feature overview → `_features/FS-*/FEATURE.md` (cross-project)
+   - Project context → `{project}/FS-*/README.md` (per project)
+   - User stories → `{project}/FS-*/us-001-*.md` (project-specific)
 
-**ID Normalization**: Handles both `0031` and `31` → `FS-031` (removes leading zeros, pads to 3 digits)
+**Date-Based Naming**: Features use creation date from metadata.json (FS-YY-MM-DD-name)
 
 ### Manual Sync (If Needed)
 
@@ -772,41 +778,50 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 
 ### Key Implementation Files
 
-- **`src/core/living-docs/hierarchy-mapper.ts`** - Detects epic folder (400+ lines)
-- **`src/core/living-docs/spec-distributor.ts`** - Distributes content to FS-* folders
-- **`.specweave/docs/internal/specs/default/README.md`** - Project overview with sync instructions
+- **`src/core/living-docs/hierarchy-mapper.ts`** - Detects Epic/Feature mappings, projects (~700 lines, v3.0.0)
+- **`src/core/living-docs/spec-distributor.ts`** - Distributes to universal hierarchy (~1200 lines, v3.0.0)
+- **`src/core/living-docs/types.ts`** - New types: EpicMapping, FeatureMapping, ProjectContext
+- **`src/core/types/config.ts`** - MultiProjectConfig for dynamic project configuration
 
-### User Story Format
+### File Formats
 
-Each `us-*.md` file contains:
-- **Frontmatter**: `id`, `epic`, `title`, `status`, `priority`, `created`, `completed`
-- **Epic Link**: `[SPEC-0031](./README.md)` (links to README.md in same folder)
-- **User Story**: "As a... I want... So that..."
-- **Acceptance Criteria**: AC-US1-01, AC-US1-02, etc. (with P1/P2 priorities)
-- **Implementation**: Links to increment and tasks
-- **Business Rationale**: Why this user story matters
-- **Related Stories**: Cross-links to other US-*.md files
+#### Epic File (_epics/EPIC-*/EPIC.md)
+- **Frontmatter**: `id`, `title`, `type: epic`, `status`, `quarter`, `created`, `lastUpdated`
+- **Strategic Overview**: Business goals and objectives
+- **Features**: List of FS-* features under this epic
+- **Success Metrics**: Measurable targets with status
+- **Timeline**: Start, completion, current phase
+- **Stakeholders**: Sponsor, product owner, technical lead
 
-### Epic Overview Format (README.md)
-
-Each `README.md` contains:
-- **Frontmatter**: `id`, `title`, `type: epic`, `status`, `priority`, `created`, `last_updated`, `external_tools`
-- **Epic Overview**: High-level feature description
+#### Feature File (_features/FS-*/FEATURE.md)
+- **Frontmatter**: `id`, `title`, `type: feature`, `epic?`, `projects`, `status`, `created`
+- **Overview**: Cross-project feature description
 - **Business Value**: Key benefits (bullet points)
-- **Implementation History**: Table showing which increments implemented which stories
-- **User Stories**: Links to all us-*.md files (grouped by phase)
-- **External Tool Integration**: GitHub/Jira/ADO links
+- **Implementation History**: Which increments implemented what
+- **User Stories by Project**: Map of project → user stories
+- **External Links**: GitHub milestone, Jira epic, ADO feature
+
+#### User Story File ({project}/FS-*/us-*.md)
+- **Frontmatter**: `id`, `feature`, `title`, `status`, `project`, `priority`, `created`
+- **Feature Link**: `[FS-25-11-14](../../_features/FS-25-11-14/FEATURE.md)`
+- **User Story**: "As a... I want... So that..."
+- **Acceptance Criteria**: AC-US1-01, AC-US1-02, etc.
+- **Implementation**: Links to increment and tasks
+- **Business Rationale**: Why this matters for this project
 
 ### Troubleshooting
 
-**Problem**: Sync creates wrong folder (e.g., FS-0031 instead of FS-031)
-**Solution**: ID normalization is already implemented. Rebuild: `npm run build`
+**Problem**: Feature not detected, creates new FS-* every time
+**Solution**: Add `feature: FS-25-11-14-name` to increment's `spec.md` frontmatter
 
-**Problem**: Files go to wrong location (root level or wrong subfolder)
-**Solution**: Check `userStoriesSubdir` is empty string in HierarchyMapper
+**Problem**: Files go to wrong project folder
+**Solution**: Add `projects: ['backend', 'frontend']` to increment's `spec.md` frontmatter
 
-**Problem**: Epic not detected
-**Solution**: Add `epic: FS-031` to increment's `spec.md` frontmatter
+**Problem**: Epic not linked to feature
+**Solution**: Add `epic: EPIC-2025-Q4-platform` to increment's `spec.md` frontmatter
+
+**Problem**: Date-based naming not working
+**Solution**: Ensure metadata.json exists with `created` field, or add to spec.md frontmatter
 
 ---
 

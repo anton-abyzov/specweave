@@ -43,11 +43,11 @@ describe('ProjectManager - Project Switching', () => {
       multiProject: {
         enabled: true,
         activeProject: 'web-app',
-        projects: [
-          { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
-          { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' },
-          { id: 'backend-api', name: 'Backend API', description: '', techStack: [], team: '' }
-        ]
+        projects: {
+          'web-app': { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
+          'mobile-app': { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' },
+          'backend-api': { id: 'backend-api', name: 'Backend API', description: '', techStack: [], team: '' }
+        }
       }
     } as any);
   });
@@ -55,13 +55,13 @@ describe('ProjectManager - Project Switching', () => {
   describe('switchProject()', () => {
     it('should switch to an existing project successfully', async () => {
       // Initial active project is 'web-app'
-      expect(projectManager.getActiveProject().id).toBe('web-app');
+      expect(projectManager.getActiveProject().projectId).toBe('web-app');
 
       // Switch to 'mobile-app'
       await projectManager.switchProject('mobile-app');
 
       // Verify the switch
-      expect(projectManager.getActiveProject().id).toBe('mobile-app');
+      expect(projectManager.getActiveProject().projectId).toBe('mobile-app');
     });
 
     it('should throw error when switching to non-existent project', async () => {
@@ -90,7 +90,7 @@ describe('ProjectManager - Project Switching', () => {
     it('should invalidate cache when switching projects', async () => {
       // Get active project to populate cache
       const project1 = projectManager.getActiveProject();
-      expect(project1.id).toBe('web-app');
+      expect(project1.projectId).toBe('web-app');
 
       // Switch to different project
       await projectManager.switchProject('mobile-app');
@@ -98,8 +98,8 @@ describe('ProjectManager - Project Switching', () => {
       // Clear cache should have been called internally
       // Verify by checking that getActiveProject returns new project
       const project2 = projectManager.getActiveProject();
-      expect(project2.id).toBe('mobile-app');
-      expect(project2.id).not.toBe(project1.id);
+      expect(project2.projectId).toBe('mobile-app');
+      expect(project2.projectId).not.toBe(project1.projectId);
     });
 
     it('should handle switching to same project (no-op)', async () => {
@@ -110,7 +110,7 @@ describe('ProjectManager - Project Switching', () => {
       await projectManager.switchProject('web-app');
 
       // Should still work without errors
-      expect(projectManager.getActiveProject().id).toBe('web-app');
+      expect(projectManager.getActiveProject().projectId).toBe('web-app');
 
       // Config save should still be called (idempotent)
       expect(mockConfigManager.save).toHaveBeenCalled();
@@ -122,7 +122,9 @@ describe('ProjectManager - Project Switching', () => {
         multiProject: {
           enabled: false,
           activeProject: 'default',
-          projects: []
+          projects: {
+            'default': { id: 'default', name: 'Default', description: '', techStack: [], team: '' }
+          }
         }
       } as any);
 

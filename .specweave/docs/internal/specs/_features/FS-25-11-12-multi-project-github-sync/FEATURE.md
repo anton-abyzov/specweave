@@ -4,8 +4,8 @@ title: "Multi-Project GitHub Sync"
 type: feature
 status: planning
 priority: P1
-created: 2025-11-14T20:27:49.058Z
-lastUpdated: 2025-11-14T20:27:49.060Z
+created: 2025-11-14T20:51:22.164Z
+lastUpdated: 2025-11-14T20:51:22.166Z
 projects: ["default"]
 
 ---

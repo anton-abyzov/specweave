@@ -42,10 +42,10 @@ describe('ProjectManager - Validation Logic', () => {
       multiProject: {
         enabled: true,
         activeProject: 'web-app',
-        projects: [
-          { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
-          { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
-        ]
+        projects: {
+          'web-app': { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
+          'mobile-app': { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
+        }
       }
     } as any);
 
@@ -56,11 +56,11 @@ describe('ProjectManager - Validation Logic', () => {
   describe('addProject() validation', () => {
     it('should successfully add a valid new project', async () => {
       const newProject: ProjectContext = {
-        id: 'backend-api',
-        name: 'Backend API',
-        description: 'REST API service',
-        techStack: ['Node.js', 'Express'],
-        team: 'Backend Team'
+        projectId: 'backend-api',
+        projectName: 'Backend API',
+        projectPath: '/test/project/root/.specweave/docs/internal/specs/backend-api',
+        keywords: [],
+        techStack: ['Node.js', 'Express']
       };
 
       await projectManager.addProject(newProject);
@@ -69,9 +69,9 @@ describe('ProjectManager - Validation Logic', () => {
       expect(mockConfigManager.save).toHaveBeenCalledWith(
         expect.objectContaining({
           multiProject: expect.objectContaining({
-            projects: expect.arrayContaining([
-              expect.objectContaining({ id: 'backend-api' })
-            ])
+            projects: expect.objectContaining({
+              'backend-api': expect.objectContaining({ id: 'backend-api' })
+            })
           })
         })
       );
@@ -79,11 +79,11 @@ describe('ProjectManager - Validation Logic', () => {
 
     it('should reject duplicate project IDs', async () => {
       const duplicateProject: ProjectContext = {
-        id: 'web-app', // Already exists!
-        name: 'Another Web App',
-        description: '',
-        techStack: [],
-        team: ''
+        projectId: 'web-app', // Already exists!
+        projectName: 'Another Web App',
+        projectPath: '/test/project/root/.specweave/docs/internal/specs/web-app',
+        keywords: [],
+        techStack: []
       };
 
       await expect(async () => {
@@ -114,11 +114,11 @@ describe('ProjectManager - Validation Logic', () => {
       });
 
       const newProject: ProjectContext = {
-        id: 'first-project',
-        name: 'First Project',
-        description: '',
-        techStack: [],
-        team: ''
+        projectId: 'first-project',
+        projectName: 'First Project',
+        projectPath: '/test/project/root/.specweave/docs/internal/specs/first-project',
+        keywords: [],
+        techStack: []
       };
 
       await projectManager.addProject(newProject);
@@ -129,9 +129,9 @@ describe('ProjectManager - Validation Logic', () => {
       expect(savedCall.multiProject).toBeDefined();
       expect(savedCall.multiProject.activeProject).toBe('default');
       expect(savedCall.multiProject.projects).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: 'first-project' })
-        ])
+        expect.objectContaining({
+          'first-project': expect.objectContaining({ id: 'first-project' })
+        })
       );
     });
   });
@@ -144,9 +144,9 @@ describe('ProjectManager - Validation Logic', () => {
       expect(mockConfigManager.save).toHaveBeenCalledWith(
         expect.objectContaining({
           multiProject: expect.objectContaining({
-            projects: expect.not.arrayContaining([
-              expect.objectContaining({ id: 'mobile-app' })
-            ])
+            projects: expect.not.objectContaining({
+              'mobile-app': expect.anything()
+            })
           })
         })
       );
@@ -177,7 +177,9 @@ describe('ProjectManager - Validation Logic', () => {
         multiProject: {
           enabled: false,
           activeProject: 'default',
-          projects: []
+          projects: {
+            'default': { id: 'default', name: 'Default', description: '', techStack: [], team: '' }
+          }
         }
       } as any);
 

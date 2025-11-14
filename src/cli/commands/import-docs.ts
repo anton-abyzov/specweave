@@ -56,7 +56,7 @@ export async function importDocs(
     const allProjects = projectManager.getAllProjects();
     const activeProject = projectManager.getActiveProject();
 
-    let targetProject = args.project || activeProject.id;
+    let targetProject = args.project || activeProject.projectId;
 
     if (!args.project && allProjects.length > 1) {
       const { projectId } = await inquirer.prompt([{
@@ -64,10 +64,10 @@ export async function importDocs(
         name: 'projectId',
         message: 'Select target project:',
         choices: allProjects.map(p => ({
-          name: `${p.name} (${p.id})`,
-          value: p.id
+          name: `${p.projectName} (${p.projectId})`,
+          value: p.projectId
         })),
-        default: activeProject.id
+        default: activeProject.projectId
       }]);
       targetProject = projectId;
     }

@@ -54,6 +54,7 @@ export interface UserStory {
   phase?: string; // "Phase 1: Enhanced Content Sync"
   created?: string; // ISO date
   completed?: string; // ISO date
+  project?: string; // Project ID (backend, frontend, mobile, etc.)
 }
 
 /**
@@ -156,6 +157,7 @@ export interface UserStoryFile {
 
   // Metadata
   phase?: string;
+  project?: string; // Project ID (backend, frontend, mobile, etc.)
 }
 
 // ============================================================================
@@ -201,7 +203,10 @@ export interface ParsedIncrementSpec {
   businessValue: string[]; // Bullet points
   priority?: string;
   status?: string;
-  project?: string; // Project ID from frontmatter (backend, frontend, mobile, etc.)
+  epic?: string; // Epic ID from frontmatter (EPIC-YYYY-QN-name)
+  project?: string; // Single project ID from frontmatter (backward compat)
+  projects?: string[]; // Multiple projects (for cross-project features)
+  created?: string; // ISO date
 
   // User Stories
   userStories: UserStory[];
@@ -257,6 +262,128 @@ export interface CrossLink {
 }
 
 // ============================================================================
+// UNIVERSAL HIERARCHY MAPPING (NEW)
+// ============================================================================
+
+/**
+ * Epic Mapping - Maps increments to cross-project epics (_epics/ folder)
+ *
+ * Epics are strategic themes that span multiple features.
+ * Example: EPIC-2025-Q4-platform
+ */
+export interface EpicMapping {
+  epicId: string;                 // EPIC-2025-Q4-platform
+  epicFolder: string;             // EPIC-2025-Q4-platform
+  epicPath: string;               // .../specs/_epics/EPIC-2025-Q4-platform
+  features: string[];             // ['FS-25-11-12-external-tool-sync', ...]
+  confidence: number;             // 0-100
+  detectionMethod: 'frontmatter' | 'config' | 'fallback';
+}
+
+/**
+ * Feature Mapping - Maps increments to cross-project features (_features/ + project folders)
+ *
+ * Features can be cross-project (implemented in multiple projects) or single-project.
+ * Format: FS-{YY-MM-DD}-{feature-name}
+ * Example: FS-25-11-12-external-tool-sync
+ */
+export interface FeatureMapping {
+  featureId: string;              // FS-25-11-12-external-tool-sync
+  featureFolder: string;          // FS-25-11-12-external-tool-sync
+  featurePath: string;            // .../specs/_features/FS-25-11-12-external-tool-sync
+  projects: string[];             // ['backend', 'frontend'] or ['default']
+  projectPaths: Map<string, string>; // backend → .../specs/backend/FS-25-11-12-external-tool-sync
+  epic?: string;                  // EPIC-2025-Q4-platform (if part of epic)
+  confidence: number;             // 0-100
+  detectionMethod: 'frontmatter' | 'increment-name' | 'config' | 'fallback';
+}
+
+/**
+ * Project Context - Information about a specific project
+ *
+ * Projects are dynamic (no hardcodes):
+ * - Single-project mode: ['default']
+ * - Multi-project mode: User-configured names from config.json
+ */
+export interface ProjectContext {
+  projectId: string;              // 'backend', 'frontend', 'default'
+  projectName: string;            // 'Backend Services', 'Frontend App'
+  projectPath: string;            // .../specs/backend/
+  keywords: string[];             // ['api', 'backend', 'service']
+  techStack: string[];            // ['Node.js', 'PostgreSQL']
+}
+
+/**
+ * Feature File - Cross-project feature overview (FEATURE.md)
+ *
+ * NEW: Separate from EpicFile (which was repurposed from SPEC-###.md)
+ * Location: _features/FS-{id}/FEATURE.md
+ */
+export interface FeatureFile {
+  // Frontmatter
+  id: string;                     // FS-25-11-12-external-tool-sync
+  title: string;
+  type: 'feature';
+  status: 'planned' | 'in-progress' | 'complete' | 'archived';
+  priority?: string;              // P0, P1, P2, P3
+  created: string;                // ISO date
+  lastUpdated: string;            // ISO date
+  epic?: string;                  // EPIC-2025-Q4-platform (if part of epic)
+  projects: string[];             // ['backend', 'frontend'] (which projects implement this)
+
+  // Content
+  overview: string;               // High-level feature description
+  businessValue: string[];        // Bullet points
+  implementationHistory: ImplementationHistoryEntry[];
+  userStoriesByProject: Map<string, UserStorySummary[]>; // backend -> [US-001, US-002]
+  externalLinks: ExternalLinks;
+
+  // Progress
+  totalStories: number;
+  completedStories: number;
+  overallProgress: number;        // Percentage
+}
+
+/**
+ * Epic File - Strategic theme overview (EPIC.md)
+ *
+ * NEW: Top-level strategic planning
+ * Location: _epics/EPIC-{id}/EPIC.md
+ */
+export interface EpicThemeFile {
+  // Frontmatter
+  id: string;                     // EPIC-2025-Q4-platform
+  title: string;
+  type: 'epic';
+  status: 'planned' | 'in-progress' | 'complete' | 'archived';
+  priority?: string;              // P0, P1, P2, P3
+  created: string;                // ISO date
+  lastUpdated: string;            // ISO date
+  quarter?: string;               // '2025-Q4'
+
+  // Content
+  strategicOverview: string;      // Business goals and objectives
+  features: string[];             // ['FS-25-11-12-external-tool-sync', ...]
+  successMetrics: Array<{
+    metric: string;
+    target: string;
+    current: string;
+    status: 'on-track' | 'at-risk' | 'blocked';
+  }>;
+  timeline: {
+    start: string;
+    targetCompletion: string;
+    currentPhase: string;
+  };
+  stakeholders: {
+    sponsor?: string;
+    productOwner?: string;
+    technicalLead?: string;
+  };
+  externalLinks: ExternalLinks;
+}
+
+// ============================================================================
 // CONFIGURATION
 // ============================================================================
 
@@ -266,10 +393,10 @@ export interface CrossLink {
 export interface DistributionConfig {
   // Output paths
   specsDir: string; // .specweave/docs/internal/specs/default/
-  userStoriesSubdir: string; // "user-stories"
+  userStoriesSubdir: string; // "user-stories" (deprecated: use empty string)
 
   // File naming
-  epicFilePattern: string; // "SPEC-{id}-{name}.md"
+  epicFilePattern: string; // "SPEC-{id}-{name}.md" (deprecated: use EPIC.md)
   userStoryFilePattern: string; // "us-{id}-{name}.md"
 
   // Content generation

@@ -5,6 +5,7 @@
  */
 
 import inquirer from 'inquirer';
+import path from 'path';
 import { ProjectManager, ProjectContext } from '../../core/project-manager';
 import { ConfigManager } from '../../core/config-manager';
 import { autoMigrateSingleToMulti } from './migrate-to-multiproject';
@@ -57,13 +58,15 @@ export async function initMultiProject(projectRoot: string): Promise<void> {
       config.multiProject = {
         enabled: true,
         activeProject: projectId,
-        projects: [{
-          id: projectId,
-          name: config.project?.name || formatProjectName(projectId),
-          description: config.project?.description || `${formatProjectName(projectId)} project`,
-          techStack: config.project?.techStack || [],
-          team: config.project?.team || 'Engineering Team'
-        }]
+        projects: {
+          [projectId]: {
+            id: projectId,
+            name: config.project?.name || formatProjectName(projectId),
+            description: config.project?.description || `${formatProjectName(projectId)} project`,
+            techStack: config.project?.techStack || [],
+            team: config.project?.team || 'Engineering Team'
+          }
+        }
       };
     } else {
       config.multiProject.enabled = true;
@@ -110,7 +113,7 @@ async function createAdditionalProjects(projectRoot: string): Promise<void> {
 
     // Get existing project IDs to prevent duplicates
     const existingProjects = projectManager.getAllProjects();
-    const existingIds = existingProjects.map(p => p.id);
+    const existingIds = existingProjects.map(p => p.projectId);
 
     const answers = await inquirer.prompt([
       {
@@ -169,20 +172,16 @@ async function createAdditionalProjects(projectRoot: string): Promise<void> {
 
     // Create project context
     const project: ProjectContext = {
-      id: answers.id,
-      name: answers.name,
-      description: answers.description || '',
-      techStack: answers.techStack || [],
-      team: answers.team,
-      contacts: {
-        ...(answers.leadEmail && { lead: answers.leadEmail }),
-        ...(answers.pmEmail && { pm: answers.pmEmail })
-      }
+      projectId: answers.id,
+      projectName: answers.name,
+      projectPath: path.join(projectRoot, '.specweave/docs/internal/specs', answers.id),
+      keywords: [],
+      techStack: answers.techStack || []
     };
 
     try {
       await projectManager.addProject(project);
-      console.log(`\n✅ Created project: ${project.name} (${project.id})`);
+      console.log(`\n✅ Created project: ${project.projectName} (${project.projectId})`);
     } catch (error) {
       console.error(`\n❌ Failed to create project: ${error instanceof Error ? error.message : String(error)}`);
       continue;
@@ -211,16 +210,16 @@ export async function listProjects(projectRoot: string): Promise<void> {
   console.log('\n📋 Projects:\n');
 
   projects.forEach(project => {
-    const isActive = project.id === activeProject.id;
+    const isActive = project.projectId === activeProject.projectId;
     const marker = isActive ? '→' : ' ';
-    console.log(`${marker} ${project.id} - ${project.name}`);
-    console.log(`    ${project.description}`);
-    console.log(`    Team: ${project.team}`);
+    console.log(`${marker} ${project.projectId} - ${project.projectName}`);
+    console.log(`    ${project.projectName} project`);
+    console.log(`    Team: Engineering Team`);
     if (project.techStack.length > 0) {
       console.log(`    Tech: ${project.techStack.join(', ')}`);
     }
     console.log('');
   });
 
-  console.log(`Active project: ${activeProject.name} (${activeProject.id})\n`);
+  console.log(`Active project: ${activeProject.projectName} (${activeProject.projectId})\n`);
 }

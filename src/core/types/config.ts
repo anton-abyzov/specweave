@@ -79,6 +79,65 @@ export interface AdapterConfig {
 }
 
 /**
+ * Multi-Project Configuration
+ *
+ * Defines multiple projects within the same repository.
+ * Projects are DYNAMIC - no hardcoded names (backend, frontend are examples).
+ *
+ * Single-project mode: No multiProject config = default project "default"
+ * Multi-project mode: multiProject.projects contains user-defined project names
+ */
+export interface MultiProjectConfig {
+  /** Is multi-project mode enabled? (default: false = single project "default") */
+  enabled?: boolean;
+
+  /** Active project (for increment creation, can be switched) */
+  activeProject?: string;
+
+  /** Project definitions (dynamic, no hardcodes) */
+  projects?: Record<string, ProjectConfig>;
+}
+
+/**
+ * Individual Project Configuration
+ *
+ * Defines a single project within multi-project mode.
+ * Examples: backend, frontend, mobile, infrastructure (user-defined)
+ */
+export interface ProjectConfig {
+  /** Project ID (e.g., 'backend', 'frontend', 'default') */
+  id?: string;
+
+  /** Human-readable project name */
+  name: string;
+
+  /** Project description */
+  description?: string;
+
+  /** Keywords for auto-detection (when user doesn't specify project) */
+  keywords?: string[];
+
+  /** Technology stack */
+  techStack?: string[];
+
+  /** Team name */
+  team?: string;
+
+  /** External tool configuration (optional project-specific overrides) */
+  externalTools?: {
+    github?: {
+      repository?: string;  // Project-specific GitHub repo (for multi-repo setups)
+    };
+    jira?: {
+      project?: string;     // Project-specific Jira project key
+    };
+    ado?: {
+      project?: string;     // Project-specific ADO project name
+    };
+  };
+}
+
+/**
  * Testing mode options
  */
 export type TestMode = 'TDD' | 'test-after' | 'manual';
@@ -148,6 +207,9 @@ export interface SpecweaveConfig {
 
   /** Project metadata */
   project?: ProjectMetadata;
+
+  /** Multi-project configuration (v1.0.0+ Universal Hierarchy) */
+  multiProject?: MultiProjectConfig;
 
   /** Adapter configuration */
   adapters?: AdapterConfig;
