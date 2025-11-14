@@ -109,7 +109,7 @@ if [[ ! "$PROVIDER" =~ ^(github|jira|ado)$ ]]; then
 fi
 
 # Check if sync CLI command exists
-SYNC_CLI="$PROJECT_ROOT/dist/cli/commands/sync-spec-content.js"
+SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
 if [ ! -f "$SYNC_CLI" ]; then
   echo "ℹ️  Sync CLI not built, skipping spec content sync" >&2
   echo "   Run: npm run build" >&2
@@ -141,7 +141,7 @@ else
   echo ""
   echo "⚠️  Spec content sync failed (exit code: $SYNC_EXIT_CODE)" >&2
   echo "   This is non-blocking. You can sync manually later:" >&2
-  echo "   node dist/cli/commands/sync-spec-content.js --spec \"$SPEC_PATH\" --provider $PROVIDER" >&2
+  echo "   node dist/src/cli/commands/sync-spec-content.js --spec \"$SPEC_PATH\" --provider $PROVIDER" >&2
   echo ""
   # Non-blocking: continue execution even if sync fails
 fi
