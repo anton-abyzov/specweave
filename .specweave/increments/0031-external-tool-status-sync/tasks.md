@@ -11,6 +11,8 @@ estimated_effort: 2-3 weeks
 ## Phase 1: Enhanced Content Sync (Week 1)
 
 ### T-001: Create Enhanced Content Builder
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
 
 
@@ -58,6 +60,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-002: Create Spec-to-Increment Mapper
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-002: Task-Level Mapping & Traceability](../../docs/internal/specs/default/external-tool-status-sync/us-002-task-level-mapping-traceability.md)
 
 
@@ -105,6 +109,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-003: Enhance GitHub Content Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
 
 
@@ -152,6 +158,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-004: Enhance JIRA Content Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
 
 
@@ -197,6 +205,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-005: Enhance ADO Content Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
 
 
@@ -244,6 +254,8 @@ estimated_effort: 2-3 weeks
 ## Phase 2: Status Synchronization (Week 2)
 
 ### T-006: Create Status Mapper
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
 
 
@@ -291,6 +303,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-007: Create Conflict Resolver
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-006: Conflict Resolution](../../docs/internal/specs/default/external-tool-status-sync/us-006-conflict-resolution.md)
 
 
@@ -337,6 +351,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-008: Create Status Sync Engine (Core)
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -386,6 +402,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-009: Implement GitHub Status Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -434,6 +452,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-010: Implement JIRA Status Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -481,6 +501,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-011: Implement ADO Status Sync
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -527,6 +549,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-012: Integrate Status Sync with /specweave:done Command
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-005: User Prompts on Completion](../../docs/internal/specs/default/external-tool-status-sync/us-005-user-prompts-on-completion.md)
 
 
@@ -575,6 +599,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-013: Update Configuration Schema
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
 
 
@@ -621,6 +647,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-014: Create Default Status Mappings
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
 
 
@@ -667,6 +695,8 @@ estimated_effort: 2-3 weeks
 ## Phase 3: Advanced Features & Testing (Week 3)
 
 ### T-015: Implement Workflow Detection
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-007: Multi-Tool Workflow Support](../../docs/internal/specs/default/external-tool-status-sync/us-007-multi-tool-workflow-support.md)
 
 
@@ -715,6 +745,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-016: Add Bulk Status Sync
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: None (performance optimization)
 
@@ -740,6 +772,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-017: Implement Auto-Sync Mode
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-005: User Prompts on Completion](../../docs/internal/specs/default/external-tool-status-sync/us-005-user-prompts-on-completion.md)
 
 
@@ -785,6 +819,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-018: Add Sync Event Logging
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -830,6 +866,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-019: Create E2E Tests for Status Sync
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: All AC (E2E validation)
 
@@ -857,6 +895,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-020: Performance Optimization
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: None (performance requirement)
 
@@ -881,6 +921,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-021: Error Handling & Retry Logic
+**Status**: [ ] (0% - Not started)
+
 **User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
 
 
@@ -928,6 +970,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-022: Create User Documentation
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: None (documentation)
 
@@ -948,6 +992,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-023: Create Migration Guide
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: None (migration documentation)
 
@@ -968,6 +1014,8 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-024: Final Integration Testing
+**Status**: [ ] (0% - Not started)
+
 
 **AC**: All AC (integration validation)
 
