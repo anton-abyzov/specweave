@@ -1,3 +1,17 @@
+---
+title: External Tool Status Synchronization
+increment: 0031-external-tool-status-sync
+epic: EPIC-2025-Q4-platform
+feature: FS-25-11-12-external-tool-sync
+projects: ['backend']
+status: in-progress
+priority: P1
+type: feature
+created: 2025-11-12
+started: 2025-11-12
+estimatedEffort: 2-3 weeks
+---
+
 # Increment 0031: External Tool Status Synchronization
 
 **Status**: In Progress

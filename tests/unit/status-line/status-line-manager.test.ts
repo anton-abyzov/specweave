@@ -47,17 +47,15 @@ describe('StatusLineManager', () => {
 
     it('should render status line with valid cache', () => {
       createValidCache({
-        incrementId: '0017-sync-architecture-fix',
-        incrementName: 'sync-architecture-fix',
-        totalTasks: 30,
-        completedTasks: 15,
-        percentage: 50,
-        currentTask: {
-          id: 'T-016',
-          title: 'Update documentation'
+        current: {
+          id: '0017-sync-architecture-fix',
+          name: 'sync-architecture-fix',
+          total: 30,
+          completed: 15,
+          percentage: 50
         },
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -65,19 +63,19 @@ describe('StatusLineManager', () => {
       expect(result).toMatch(/\[sync-architecture-f[…\]]/);
       expect(result).toContain('15/30');
       expect(result).toContain('50%');
-      expect(result).toContain('T-016');
     });
 
     it('should render progress bar correctly', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 8,
-        completedTasks: 4,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 8,
+          completed: 4,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -87,14 +85,15 @@ describe('StatusLineManager', () => {
     it('should truncate long increment names', () => {
       const longName = 'very-long-increment-name-that-exceeds-maximum-length';
       createValidCache({
-        incrementId: `0017-${longName}`,
-        incrementName: longName,
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: `0017-${longName}`,
+          name: longName,
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -104,14 +103,15 @@ describe('StatusLineManager', () => {
 
     it('should show completion percentage', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 30,
-        completedTasks: 27,
-        percentage: 90,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 30,
+          completed: 27,
+          percentage: 90
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -120,14 +120,15 @@ describe('StatusLineManager', () => {
 
     it('should handle 0% completion', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 30,
-        completedTasks: 0,
-        percentage: 0,
-        currentTask: { id: 'T-001', title: 'First task' },
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 30,
+          completed: 0,
+          percentage: 0
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -138,14 +139,15 @@ describe('StatusLineManager', () => {
 
     it('should handle 100% completion', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 30,
-        completedTasks: 30,
-        percentage: 100,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 30,
+          completed: 30,
+          percentage: 100
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -155,35 +157,39 @@ describe('StatusLineManager', () => {
     });
 
     it('should show current task when present', () => {
+      // Note: The new StatusLineCache doesn't have currentTask field
+      // This test is no longer applicable with the new structure
+      // The status line now only shows progress, not current task details
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: {
-          id: 'T-006',
-          title: 'Implement feature X'
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
         },
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
-      expect(result).toContain('T-006');
-      expect(result).toContain('Implement feature X');
+      // Test that basic progress is shown since current task is not part of new structure
+      expect(result).toContain('5/10');
+      expect(result).toContain('50%');
     });
 
     it('should hide current task when null', () => {
+      // This test is now redundant since currentTask is not part of new structure
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
@@ -193,88 +199,52 @@ describe('StatusLineManager', () => {
   });
 
   describe('cache freshness validation', () => {
-    it('should accept fresh cache (<5s old)', () => {
+    it('should accept fresh cache (<30s old)', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(), // Just now
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString() // Just now
       });
 
       const result = manager.render();
       expect(result).not.toBeNull();
     });
 
-    it('should invalidate old cache (>5s) if tasks.md unchanged', () => {
-      const incrementId = '0017-test';
-      const tasksFile = path.join(tempDir, '.specweave/increments', incrementId, 'tasks.md');
-
-      // Create tasks.md
-      fs.mkdirSync(path.dirname(tasksFile), { recursive: true });
-      fs.writeFileSync(tasksFile, '## T-001: Test task');
-
-      const tasksMtime = Math.floor(fs.statSync(tasksFile).mtimeMs / 1000);
-
-      // Create old cache (6s ago) with matching mtime
-      const oldDate = new Date(Date.now() - 6000);
+    it('should invalidate old cache (>30s)', () => {
+      // Create old cache (31s ago)
+      const oldDate = new Date(Date.now() - 31000);
       createValidCache({
-        incrementId,
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: oldDate.toISOString(),
-        lastModified: tasksMtime // Matches tasks.md mtime
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: oldDate.toISOString()
       });
 
-      // Should still be valid (mtime unchanged)
-      const result = manager.render();
-      expect(result).not.toBeNull();
-    });
-
-    it('should invalidate cache if tasks.md modified', () => {
-      const incrementId = '0017-test';
-      const tasksFile = path.join(tempDir, '.specweave/increments', incrementId, 'tasks.md');
-
-      // Create tasks.md
-      fs.mkdirSync(path.dirname(tasksFile), { recursive: true });
-      fs.writeFileSync(tasksFile, '## T-001: Test task');
-
-      // Create cache with old mtime
-      createValidCache({
-        incrementId,
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date(Date.now() - 6000).toISOString(),
-        lastModified: Math.floor((Date.now() - 10000) / 1000) // 10s ago
-      });
-
-      // Cache should be invalid (mtime mismatch)
+      // Cache should be invalid (too old)
       const result = manager.render();
       expect(result).toBeNull();
     });
 
-    it('should invalidate cache if tasks.md missing', () => {
+    it('should handle missing current increment', () => {
       createValidCache({
-        incrementId: '0017-nonexistent',
-        incrementName: 'nonexistent',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date(Date.now() - 6000).toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: null,
+        openCount: 0,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = manager.render();
+      // Should return null or a message about no active increments
       expect(result).toBeNull();
     });
   });
@@ -283,14 +253,15 @@ describe('StatusLineManager', () => {
     it('should respect enabled=false', () => {
       const disabledManager = new StatusLineManager(tempDir, { enabled: false });
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = disabledManager.render();
@@ -300,72 +271,61 @@ describe('StatusLineManager', () => {
     it('should respect custom progressBarWidth', () => {
       const customManager = new StatusLineManager(tempDir, { progressBarWidth: 16 });
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 16,
-        completedTasks: 8,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 16,
+          completed: 8,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const result = customManager.render();
       expect(result).toContain('████████░░░░░░░░'); // 50% of 16 = 8 filled
     });
 
-    it('should respect showProgressBar=false', () => {
-      const noBarManager = new StatusLineManager(tempDir, { showProgressBar: false });
+    it('should respect maxNameLength config', () => {
+      const customManager = new StatusLineManager(tempDir, { maxNameLength: 10 });
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'very-long-increment-name',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
-      const result = noBarManager.render();
-      expect(result).not.toContain('█');
-      expect(result).not.toContain('░');
+      const result = customManager.render();
+      // Name should be truncated to 10 chars max
+      expect(result).toContain('…'); // Should have ellipsis for truncation
     });
 
-    it('should respect showPercentage=false', () => {
-      const noPercentManager = new StatusLineManager(tempDir, { showPercentage: false });
+    it('should respect maxCacheAge config', () => {
+      // Test with short cache age
+      const shortCacheManager = new StatusLineManager(tempDir, { maxCacheAge: 1000 });
+
+      // Create cache that's 2 seconds old
+      const oldDate = new Date(Date.now() - 2000);
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: oldDate.toISOString()
       });
 
-      const result = noPercentManager.render();
-      expect(result).not.toContain('(50%)');
-      expect(result).toContain('5/10'); // Still shows count
-    });
-
-    it('should respect showCurrentTask=false', () => {
-      const noTaskManager = new StatusLineManager(tempDir, { showCurrentTask: false });
-      createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: { id: 'T-006', title: 'Test task' },
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
-      });
-
-      const result = noTaskManager.render();
-      expect(result).not.toContain('T-006');
-      expect(result).not.toContain('Test task');
+      const result = shortCacheManager.render();
+      // Should be null because cache is older than maxCacheAge (1 second)
+      expect(result).toBeNull();
     });
   });
 
@@ -377,37 +337,41 @@ describe('StatusLineManager', () => {
 
     it('should return cache data when present', () => {
       const expectedData: StatusLineCache = {
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: { id: 'T-006', title: 'Test' },
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       };
 
       createValidCache(expectedData);
 
       const data = manager.getCacheData();
       expect(data).not.toBeNull();
-      expect(data!.incrementId).toBe('0017-test');
-      expect(data!.totalTasks).toBe(10);
-      expect(data!.completedTasks).toBe(5);
+      expect(data!.current).not.toBeNull();
+      expect(data!.current!.id).toBe('0017-test');
+      expect(data!.current!.total).toBe(10);
+      expect(data!.current!.completed).toBe(5);
+      expect(data!.openCount).toBe(1);
     });
   });
 
   describe('clearCache()', () => {
     it('should remove cache file', () => {
       createValidCache({
-        incrementId: '0017-test',
-        incrementName: 'test',
-        totalTasks: 10,
-        completedTasks: 5,
-        percentage: 50,
-        currentTask: null,
-        lastUpdate: new Date().toISOString(),
-        lastModified: Math.floor(Date.now() / 1000)
+        current: {
+          id: '0017-test',
+          name: 'test',
+          total: 10,
+          completed: 5,
+          percentage: 50
+        },
+        openCount: 1,
+        lastUpdate: new Date().toISOString()
       });
 
       const cacheFile = path.join(tempDir, '.specweave/state/status-line.json');

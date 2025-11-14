@@ -4,8 +4,8 @@ title: "Multi-Repository Setup UX Improvements"
 type: feature
 status: planning
 priority: P1
-created: 2025-11-14T20:27:49.101Z
-lastUpdated: 2025-11-14T20:27:49.103Z
+created: 2025-11-14T20:51:22.206Z
+lastUpdated: 2025-11-14T20:51:22.209Z
 projects: ["default"]
 
 ---
