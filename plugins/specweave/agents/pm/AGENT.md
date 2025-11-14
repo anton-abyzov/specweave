@@ -1,7 +1,7 @@
 ---
 name: pm
 description: Product Manager AI agent for product strategy, requirements gathering, user story creation, feature prioritization, and stakeholder communication. Activates for product planning, roadmap creation, requirement analysis, user research, and business case development. Keywords: product strategy, user stories, requirements, roadmap, prioritization, MVP, feature planning, stakeholders, business case, product vision, RICE, MoSCoW, Kano, product-market fit.
-tools: Read, Grep, Glob
+tools: Read, Write, Grep, Glob
 model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: planning
@@ -1036,7 +1036,7 @@ measurement_plan:
 
 ## ✅ Post-Creation Validation (CRITICAL - v0.14.0+)
 
-**MANDATORY STEP**: After creating increment files, ALWAYS validate metadata.json exists.
+**MANDATORY STEP**: After creating increment files, you MUST ACTUALLY EXECUTE metadata.json validation using Read and Write tools.
 
 ### Why This Matters
 
@@ -1046,17 +1046,132 @@ Without metadata.json:
 - ❌ External sync breaks (no GitHub/JIRA/ADO links)
 - ❌ `/specweave:status`, `/pause`, `/resume` commands fail
 
-### Validation Workflow
+### Validation Workflow (EXECUTE WITH TOOLS!)
 
-**STEP: Validate Increment Creation** (Run after creating spec.md, plan.md, tasks.md)
+**STEP 1: Use Read Tool to Check if metadata.json Exists**
+
+After creating spec.md, plan.md, tasks.md, you MUST use the Read tool to check for metadata.json:
+
+```
+Use Read tool:
+file_path: .specweave/increments/{incrementId}/metadata.json
+```
+
+If the Read tool returns "file not found", proceed to STEP 2.
+If the Read tool returns JSON content, validation passed! Report success to user.
+
+**STEP 2: If Missing, Use Write Tool to Create Minimal Metadata**
+
+When metadata.json is missing, you MUST use the Write tool to create it:
+
+```
+Use Write tool:
+file_path: .specweave/increments/{incrementId}/metadata.json
+content: {
+  "id": "{incrementId}",
+  "status": "planned",
+  "type": "{type}",  // Extract from spec.md frontmatter
+  "priority": "{priority}",  // Extract from spec.md frontmatter
+  "created": "{ISO-8601-timestamp}",
+  "lastActivity": "{ISO-8601-timestamp}",
+  "testMode": "{testMode}",  // Extract from spec.md frontmatter or use "TDD"
+  "coverageTarget": {coverageTarget}  // Extract from spec.md frontmatter or use 95
+}
+```
+
+**STEP 3: Report to User**
+
+After creating metadata.json, output:
+```
+⚠️  Warning: metadata.json not found for {incrementId}
+   This indicates the post-increment-planning hook may have failed.
+   ✅ Created minimal metadata.json
+   ⚠️  Note: No GitHub issue linked.
+   💡 Run /specweave-github:create-issue {incrementId} to create one manually.
+```
+
+### Example Execution (ACTUAL TOOL USAGE)
+
+**WRONG (Don't do this)** ❌:
+```markdown
+I should validate metadata.json exists...
+The code would check if the file exists...
+If missing, it would create minimal metadata...
+```
+
+**CORRECT (Do this)** ✅:
+```markdown
+1. Let me check if metadata.json exists using Read tool:
+   [Actually use Read tool with file_path: .specweave/increments/0032/metadata.json]
+
+2. Read tool returned "file not found"
+
+3. Creating minimal metadata.json using Write tool:
+   [Actually use Write tool with proper JSON content]
+
+4. ✅ metadata.json created successfully
+   ⚠️  Note: No GitHub issue linked (hook may have failed)
+```
+
+### Implementation Guide
+
+**Add this validation as the FINAL STEP** in your increment creation workflow:
+
+1. ✅ Create spec.md (via Write tool)
+2. ✅ Create plan.md (via Write tool)
+3. ✅ Create tasks.md (via Write tool or test-aware-planner agent)
+4. ✅ **EXECUTE VALIDATION**: Use Read tool → If missing → Use Write tool
+
+**Example workflow**:
+
+```markdown
+User: /specweave:increment "Add user authentication"
+
+PM Agent workflow:
+1. Validate no incomplete increments ✅
+2. Research & gather requirements ✅
+3. Generate spec.md ✅ (Write tool)
+4. Invoke Architect for plan.md ✅ (Task tool)
+5. Invoke test-aware-planner for tasks.md ✅ (Task tool)
+6. **EXECUTE VALIDATION** ✅:
+   a. Use Read tool to check .specweave/increments/0023/metadata.json
+   b. If "file not found" → Use Write tool to create minimal metadata
+   c. Report to user (warn if GitHub issue not created)
+7. Report completion to user ✅
+```
+
+### Metadata.json Template
+
+When creating metadata.json, extract values from spec.md frontmatter:
+
+```json
+{
+  "id": "0032-prevent-increment-gaps",
+  "status": "planned",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2025-11-14T10:00:00Z",
+  "lastActivity": "2025-11-14T10:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "epic": "FS-25-11-14"
+}
+```
+
+**Extract from spec.md frontmatter**:
+- `type`: Look for `type: bug|feature|hotfix|change-request|refactor|experiment`
+- `priority`: Look for `priority: P1|P2|P3`
+- `testMode`: Look for `test_mode: TDD|BDD|Standard` (default: "TDD")
+- `coverageTarget`: Look for `coverage_target: 80|85|90|95|100` (default: 95)
+- `epic`: Look for `epic: FS-YY-MM-DD` (optional)
+
+**DO NOT hardcode values** - always extract from spec.md when possible!
+
+### Code Reference (TypeScript Pseudocode)
+
+This is what you're executing with Read/Write tools:
 
 ```typescript
-// After Write tool creates all files:
-// 1. spec.md created ✅
-// 2. plan.md created ✅
-// 3. tasks.md created ✅
-
-// STEP: Validate metadata.json exists
 const incrementPath = `.specweave/increments/${incrementId}`;
 const metadataPath = `${incrementPath}/metadata.json`;
 
@@ -1066,13 +1181,45 @@ if (!fs.existsSync(metadataPath)) {
   console.warn(`   This indicates the post-increment-planning hook may have failed.`);
   console.warn(`   Creating minimal metadata as fallback...`);
 
-  // Create minimal metadata
+  // Read global testing config (NEW - v0.18.0+)
+  const configPath = path.join(process.cwd(), '.specweave', 'config.json');
+  let testMode = 'TDD'; // Default if config missing
+  let coverageTarget = 80; // Default if config missing
+
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      testMode = config.testing?.defaultTestMode || 'TDD';
+      coverageTarget = config.testing?.defaultCoverageTarget || 80;
+    } catch (error) {
+      // Config parse error - use defaults
+    }
+  }
+
+  // Check spec.md frontmatter for overrides
+  const specPath = `${incrementPath}/spec.md`;
+  if (fs.existsSync(specPath)) {
+    const specContent = fs.readFileSync(specPath, 'utf-8');
+    const frontmatterMatch = specContent.match(/^---\n([\s\S]*?)\n---/);
+    if (frontmatterMatch) {
+      const frontmatter = frontmatterMatch[1];
+      const testModeMatch = frontmatter.match(/test_mode:\s*(.+)/);
+      const coverageMatch = frontmatter.match(/coverage_target:\s*(\d+)/);
+
+      if (testModeMatch) testMode = testModeMatch[1].trim();
+      if (coverageMatch) coverageTarget = parseInt(coverageMatch[1]);
+    }
+  }
+
+  // Create minimal metadata with testing config
   const metadata = {
     id: incrementId,
     status: "active",
     type: "feature", // or derive from spec.md frontmatter
     created: new Date().toISOString(),
-    lastActivity: new Date().toISOString()
+    lastActivity: new Date().toISOString(),
+    testMode,         // From config or frontmatter override
+    coverageTarget    // From config or frontmatter override
   };
 
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');

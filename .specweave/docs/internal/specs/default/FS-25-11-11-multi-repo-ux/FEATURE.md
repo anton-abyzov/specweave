@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-11-multi-repo-ux
-title: "Multi-Repository Setup UX Improvements"
+title: Multi-Repository Setup UX Improvements
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 411
+    url: https://github.com/anton-abyzov/specweave/issues/411
 ---
 
 # FS-25-11-11-multi-repo-ux: Multi-Repository Setup UX Improvements

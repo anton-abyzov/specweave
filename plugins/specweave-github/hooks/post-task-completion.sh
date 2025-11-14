@@ -200,6 +200,38 @@ else
 fi
 
 # ============================================================================
+# EPIC GITHUB ISSUE SYNC (Update Epic issue with fresh task progress)
+# ============================================================================
+
+echo "[$(date)] [GitHub] 🔄 Checking for Epic GitHub issue update..." >> "$DEBUG_LOG" 2>/dev/null || true
+
+# Find active increment ID
+ACTIVE_INCREMENT=$(ls -t .specweave/increments/ | grep -v '^\.' | while read inc; do
+  if [ -f ".specweave/increments/$inc/metadata.json" ]; then
+    STATUS=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' ".specweave/increments/$inc/metadata.json" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' || true)
+    if [ "$STATUS" = "active" ]; then
+      echo "$inc"
+      break
+    fi
+  fi
+done | head -1)
+
+if [ -n "$ACTIVE_INCREMENT" ]; then
+  echo "[$(date)] [GitHub] 🎯 Active increment: $ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+
+  # Run Epic sync script (silently, errors logged to debug log)
+  if [ -f "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" ]; then
+    echo "[$(date)] [GitHub] 🚀 Updating Epic GitHub issue..." >> "$DEBUG_LOG" 2>/dev/null || true
+    "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" "$ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>&1 || true
+    echo "[$(date)] [GitHub] ✅ Epic sync complete (see logs for details)" >> "$DEBUG_LOG" 2>/dev/null || true
+  else
+    echo "[$(date)] [GitHub] ⚠️  Epic sync script not found, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
+else
+  echo "[$(date)] [GitHub] ℹ️  No active increment found, skipping Epic sync" >> "$DEBUG_LOG" 2>/dev/null || true
+fi
+
+# ============================================================================
 # OUTPUT TO CLAUDE
 # ============================================================================
 

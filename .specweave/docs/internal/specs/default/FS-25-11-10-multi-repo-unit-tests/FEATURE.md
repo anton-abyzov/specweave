@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-10-multi-repo-unit-tests
-title: "Multi-Repo Unit Test Coverage Gap"
+title: Multi-Repo Unit Test Coverage Gap
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 405
+    url: https://github.com/anton-abyzov/specweave/issues/405
 ---
 
 # FS-25-11-10-multi-repo-unit-tests: Multi-Repo Unit Test Coverage Gap

@@ -2,7 +2,7 @@
 id: US-004
 epic: FS-25-11-12-external-tool-status-sync
 title: "Bidirectional Status Sync"
-status: complete
+status: planning
 created: 2025-11-14
 completed: 2025-11-14
 ---

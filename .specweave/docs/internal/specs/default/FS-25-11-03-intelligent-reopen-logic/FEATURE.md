@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-03-intelligent-reopen-logic
-title: "Intelligent Reopen Logic with Automatic Detection"
+title: Intelligent Reopen Logic with Automatic Detection
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 389
+    url: https://github.com/anton-abyzov/specweave/issues/389
 ---
 
 # FS-25-11-03-intelligent-reopen-logic: Intelligent Reopen Logic with Automatic Detection

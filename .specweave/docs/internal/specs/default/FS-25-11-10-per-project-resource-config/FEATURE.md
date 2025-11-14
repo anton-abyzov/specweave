@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-10-per-project-resource-config
-title: "Per Project Resource Config"
+title: Per Project Resource Config
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 406
+    url: https://github.com/anton-abyzov/specweave/issues/406
 ---
 
 # FS-25-11-10-per-project-resource-config: Per Project Resource Config

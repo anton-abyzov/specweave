@@ -79,6 +79,42 @@ export interface AdapterConfig {
 }
 
 /**
+ * Testing mode options
+ */
+export type TestMode = 'TDD' | 'test-after' | 'manual';
+
+/**
+ * Coverage target configuration
+ */
+export interface CoverageTargets {
+  /** Unit test coverage target (70-95%) */
+  unit: number;
+
+  /** Integration test coverage target (70-95%) */
+  integration: number;
+
+  /** E2E test coverage target (70-95%) */
+  e2e: number;
+}
+
+/**
+ * Testing configuration
+ *
+ * Controls default testing approach and coverage targets for all increments.
+ * Can be overridden per-increment via frontmatter.
+ */
+export interface TestingConfig {
+  /** Default testing mode for new increments */
+  defaultTestMode: TestMode;
+
+  /** Default overall coverage target (70-95%) */
+  defaultCoverageTarget: number;
+
+  /** Specific coverage targets per test type */
+  coverageTargets: CoverageTargets;
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -92,6 +128,9 @@ export interface SpecweaveConfig {
 
   /** Adapter configuration */
   adapters?: AdapterConfig;
+
+  /** Testing configuration */
+  testing?: TestingConfig;
 
   /** Primary language for generated content and CLI */
   language?: SupportedLanguage;
@@ -119,6 +158,15 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
   },
   adapters: {
     default: 'claude',
+  },
+  testing: {
+    defaultTestMode: 'TDD',
+    defaultCoverageTarget: 80,
+    coverageTargets: {
+      unit: 85,
+      integration: 80,
+      e2e: 90,
+    },
   },
   limits: {
     maxActiveIncrements: 1,        // v0.7.0+: 1 active increment (maximum focus)

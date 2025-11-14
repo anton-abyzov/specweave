@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-09-hierarchical-external-sync
-title: "Hierarchical External Sync"
+title: Hierarchical External Sync
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 398
+    url: https://github.com/anton-abyzov/specweave/issues/398
 ---
 
 # FS-25-11-09-hierarchical-external-sync: Hierarchical External Sync

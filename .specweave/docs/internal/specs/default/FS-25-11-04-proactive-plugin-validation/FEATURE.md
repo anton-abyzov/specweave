@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-04-proactive-plugin-validation
-title: "Proactive Plugin Validation System"
+title: Proactive Plugin Validation System
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 396
+    url: https://github.com/anton-abyzov/specweave/issues/396
 ---
 
 # FS-25-11-04-proactive-plugin-validation: Proactive Plugin Validation System

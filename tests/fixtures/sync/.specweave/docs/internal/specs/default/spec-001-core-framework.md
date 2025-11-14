@@ -1,9 +1,6 @@
 ---
 linked_increments:
   - 0001-core-framework
-  - 0002-enhancements
-  - 0003-new-feature
-  - 0004-bidirectional-test
 ---
 # SPEC-001: Core Framework
 

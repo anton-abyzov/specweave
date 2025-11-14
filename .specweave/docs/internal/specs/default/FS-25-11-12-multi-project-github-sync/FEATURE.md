@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-12-multi-project-github-sync
-title: "Multi-Project GitHub Sync"
+title: Multi-Project GitHub Sync
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 412
+    url: https://github.com/anton-abyzov/specweave/issues/412
 ---
 
 # FS-25-11-12-multi-project-github-sync: Multi-Project GitHub Sync

@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-09-self-reflection-system
-title: "AI Self-Reflection System"
+title: AI Self-Reflection System
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 400
+    url: https://github.com/anton-abyzov/specweave/issues/400
 ---
 
 # FS-25-11-09-self-reflection-system: AI Self-Reflection System

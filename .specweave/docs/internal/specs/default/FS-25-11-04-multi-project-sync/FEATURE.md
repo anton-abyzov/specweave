@@ -1,10 +1,15 @@
 ---
 id: FS-25-11-04-multi-project-sync
-title: "Multi-Project Sync Architecture"
+title: Multi-Project Sync Architecture
 type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 395
+    url: https://github.com/anton-abyzov/specweave/issues/395
 ---
 
 # FS-25-11-04-multi-project-sync: Multi-Project Sync Architecture

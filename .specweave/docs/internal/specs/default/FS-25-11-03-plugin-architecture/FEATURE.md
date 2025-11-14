@@ -5,6 +5,11 @@ type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
+external_tools:
+  github:
+    type: issue
+    id: 391
+    url: https://github.com/anton-abyzov/specweave/issues/391
 ---
 
 # FS-25-11-03-plugin-architecture: Product Specification: Plugin Architecture
