@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-011: Integrate Cost Tracking with Task Tool](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-011-integrate-cost-tracking-with-task-tool)
+- [T-012: Implement Cost Report Generation](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-012-implement-cost-report-generation)
 
 ---
 

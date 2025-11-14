@@ -32,6 +32,35 @@
       "autoCreateIssue": true,
       "syncDirection": "bidirectional"
     },
+    "statusSync": {
+      "enabled": true,
+      "autoSync": true,
+      "promptUser": false,
+      "conflictResolution": "external-wins",
+      "mappings": {
+        "github": {
+          "planning": { "state": "open", "labels": ["status:planning", "phase:design"] },
+          "active": { "state": "open", "labels": ["status:active", "in-progress"] },
+          "paused": { "state": "open", "labels": ["status:paused", "on-hold"] },
+          "completed": { "state": "closed", "labels": ["status:completed", "done"] },
+          "abandoned": { "state": "closed", "labels": ["status:abandoned", "wont-fix"] }
+        },
+        "jira": {
+          "planning": "To Do",
+          "active": "In Progress",
+          "paused": "On Hold",
+          "completed": "Done",
+          "abandoned": "Won't Do"
+        },
+        "ado": {
+          "planning": { "state": "New", "tags": ["Planning"] },
+          "active": { "state": "Active", "tags": ["In Progress"] },
+          "paused": { "state": "Active", "tags": ["Paused"] },
+          "completed": { "state": "Closed", "tags": ["Completed"] },
+          "abandoned": { "state": "Removed", "tags": ["Abandoned"] }
+        }
+      }
+    },
     "profiles": {
       "specweave-dev": {
         "provider": "github",

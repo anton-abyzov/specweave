@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-018: Update CopilotAdapter for Language Injection](../../../../../increments/0006-llm-native-i18n/tasks.md#t-018-update-copilotadapter-for-language-injection)
+- [T-019: Update GenericAdapter for Language Injection](../../../../../increments/0006-llm-native-i18n/tasks.md#t-019-update-genericadapter-for-language-injection)
+- [T-020: Test Adapter Installation with Russian](../../../../../increments/0006-llm-native-i18n/tasks.md#t-020-test-adapter-installation-with-russian)
+- [T-021: Test Adapter Installation with Spanish](../../../../../increments/0006-llm-native-i18n/tasks.md#t-021-test-adapter-installation-with-spanish)
+- [T-022: Update Adapter Interface Documentation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-022-update-adapter-interface-documentation)
+- [T-023: Extract All CLI Strings](../../../../../increments/0006-llm-native-i18n/tasks.md#t-023-extract-all-cli-strings)
 
 ---
 

@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-019: Write ADR-008: Cost Tracking System](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-019-write-adr-008-cost-tracking-system)
+- [T-020: Write ADR-009: Phase Detection Algorithm](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-020-write-adr-009-phase-detection-algorithm)
 
 ---
 

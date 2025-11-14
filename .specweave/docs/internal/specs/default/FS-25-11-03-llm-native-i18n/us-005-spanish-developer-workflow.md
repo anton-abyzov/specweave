@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-024: Translate CLI to Russian](../../../../../increments/0006-llm-native-i18n/tasks.md#t-024-translate-cli-to-russian)
+- [T-025: Translate CLI to Spanish](../../../../../increments/0006-llm-native-i18n/tasks.md#t-025-translate-cli-to-spanish)
+- [T-026: Replace Hardcoded Strings in init.ts](../../../../../increments/0006-llm-native-i18n/tasks.md#t-026-replace-hardcoded-strings-in-init-ts)
+- [T-027: Replace Hardcoded Strings in Other CLI Files](../../../../../increments/0006-llm-native-i18n/tasks.md#t-027-replace-hardcoded-strings-in-other-cli-files)
+- [T-028: Test CLI in All Languages](../../../../../increments/0006-llm-native-i18n/tasks.md#t-028-test-cli-in-all-languages)
+- [T-029: Create translate-living-docs.ts Script](../../../../../increments/0006-llm-native-i18n/tasks.md#t-029-create-translate-living-docs-ts-script)
 
 ---
 

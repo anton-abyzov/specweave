@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-022: Install Hook Scripts](../../../../../increments/0004-plugin-architecture/tasks.md#t-022-install-hook-scripts)
+- [T-023: Create GitHub Plugin Structure (Priority #1)](../../../../../increments/0004-plugin-architecture/tasks.md#t-023-create-github-plugin-structure-priority-1)
+- [T-024: Create Kubernetes Plugin Structure](../../../../../increments/0004-plugin-architecture/tasks.md#t-024-create-kubernetes-plugin-structure)
 
 ---
 

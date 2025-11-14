@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-009: Unit Tests for Model Selector](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-009-unit-tests-for-model-selector)
+- [T-010: Implement Cost Tracker Service](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-010-implement-cost-tracker-service)
 
 ---
 

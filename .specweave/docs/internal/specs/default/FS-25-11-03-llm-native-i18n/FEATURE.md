@@ -5,11 +5,6 @@ type: epic
 status: complete
 created: 2025-11-14
 last_updated: 2025-11-14
-external_tools:
-  github:
-    type: issue
-    id: 390
-    url: https://github.com/anton-abyzov/specweave/issues/390
 ---
 
 # FS-25-11-03-llm-native-i18n: Specification: LLM-Native Multilingual Support
@@ -24,7 +19,7 @@ Enable SpecWeave to support multiple languages (Russian, Spanish, Chinese, Germa
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0006-llm-native-i18n](../../../../increments/0006-llm-native-i18n/tasks.md) | US-001 through US-008 (all) | ✅ Complete | 2025-11-14 |
+| [0006-llm-native-i18n](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0006-llm-native-i18n) | US-001 through US-008 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 8/8 user stories complete (100%)
 
@@ -45,5 +40,5 @@ Enable SpecWeave to support multiple languages (Russian, Spanish, Chinese, Germa
 
 ## External Tool Integration
 
-**GitHub Issue**: [#337 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/337)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/25](https://github.com/anton-abyzov/specweave/issues/25)
 **JIRA Epic**: [SCRUM-27](https://jira.atlassian.com/browse/SCRUM-27)

@@ -36,9 +36,15 @@ See reports:
 ## Phase 1: Foundation (Week 1) - 12 tasks
 
 ### T-001: Create Plugin Type Definitions
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-001-core-framework-separation.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/plugin-architecture/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 
 **Description**:
 Create TypeScript interfaces and types for plugin system.
@@ -96,9 +102,15 @@ export interface Plugin {
 ---
 
 ### T-002: Create Plugin Manifest JSON Schema
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-001-core-framework-separation.md)
+
 **Priority**: P0
 **Estimate**: 1 hour
 **Status**: pending
+
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/plugin-architecture/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 
 **Description**:
 Create JSON Schema for plugin manifest validation.
@@ -136,9 +148,15 @@ Create JSON Schema for plugin manifest validation.
 ---
 
 ### T-003: Create PluginLoader Class
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-001-core-framework-separation.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-001: Core Framework Separation](../../docs/internal/specs/default/plugin-architecture/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
 
 **Description**:
 Implement core PluginLoader class for reading plugin directories.
@@ -189,9 +207,15 @@ export class PluginLoader {
 ---
 
 ### T-004: Create PluginManager Class
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-002-auto-detect-plugins-from-project.md)
+
 **Priority**: P0
 **Estimate**: 6 hours
 **Status**: pending
+
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/plugin-architecture/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 
 **Description**:
 Implement core PluginManager for plugin lifecycle management.
@@ -249,9 +273,15 @@ export class PluginManager {
 ---
 
 ### T-005: Create PluginDetector Class
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-002-auto-detect-plugins-from-project.md)
+
 **Priority**: P0
 **Estimate**: 6 hours
 **Status**: pending
+
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/plugin-architecture/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 
 **Description**:
 Implement auto-detection logic for plugins.
@@ -311,9 +341,15 @@ export class PluginDetector {
 ---
 
 ### T-006: Update Adapter Interface for Plugins
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-002-auto-detect-plugins-from-project.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-002: Auto-Detect Plugins from Project](../../docs/internal/specs/default/plugin-architecture/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
 
 **Description**:
 Add plugin support methods to adapter interface.
@@ -345,9 +381,15 @@ export interface IAdapter {
 ---
 
 ### T-007: Implement Claude Plugin Installer
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-003-spec-based-plugin-detection.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/plugin-architecture/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 
 **Description**:
 Implement native .claude/ plugin installation for Claude Code.
@@ -394,9 +436,15 @@ export class ClaudePluginInstaller {
 ---
 
 ### T-008: Implement Cursor Plugin Compiler
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-003-spec-based-plugin-detection.md)
+
 **Priority**: P1
 **Estimate**: 6 hours
 **Status**: pending
+
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/plugin-architecture/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 
 **Description**:
 Compile plugins to AGENTS.md and Cursor team commands.
@@ -472,9 +520,15 @@ ${a.capabilities}
 ---
 
 ### T-009: Implement Copilot Plugin Compiler
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-003-spec-based-plugin-detection.md)
+
 **Priority**: P2
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-003: Spec-Based Plugin Detection](../../docs/internal/specs/default/plugin-architecture/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
 
 **Description**:
 Compile plugins to .github/copilot/instructions.md.
@@ -520,9 +574,15 @@ ${s.description}
 ---
 
 ### T-010: Implement Generic Plugin Compiler
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-004-manual-plugin-management.md)
+
 **Priority**: P2
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/plugin-architecture/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 
 **Description**:
 Generate copy-paste manual for generic tools (ChatGPT, Gemini).
@@ -579,9 +639,15 @@ Act as: ${a.capabilities}
 ---
 
 ### T-011: Create Config Schema
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-004-manual-plugin-management.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/plugin-architecture/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 
 **Description**:
 Define .specweave/config.yaml schema.
@@ -621,9 +687,15 @@ plugins:
 ---
 
 ### T-012: Update .gitignore for Plugins
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-004-manual-plugin-management.md)
+
 **Priority**: P0
 **Estimate**: 30 minutes
 **Status**: pending
+
+**User Story**: [US-004: Manual Plugin Management](../../docs/internal/specs/default/plugin-architecture/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
 
 **Description**:
 Update .gitignore to handle plugin-generated files.
@@ -661,9 +733,15 @@ AGENTS.md
 ## Phase 2: CLI & Commands (Week 1-2) - 10 tasks
 
 ### T-013: Create Plugin CLI Command
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-005-plugin-lifecycle-hooks.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/plugin-architecture/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 
 **Description**:
 Implement `specweave plugin` CLI command.
@@ -710,9 +788,15 @@ export function createPluginCommand(): Command {
 ---
 
 ### T-014: Implement `plugin list` Command
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-005-plugin-lifecycle-hooks.md)
+
 **Priority**: P0
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/plugin-architecture/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 
 **Description**:
 Show all available and enabled plugins.
@@ -755,9 +839,15 @@ async function listPlugins() {
 ---
 
 ### T-015: Implement `plugin enable` Command
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-005-plugin-lifecycle-hooks.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-005: Plugin Lifecycle Hooks](../../docs/internal/specs/default/plugin-architecture/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
 
 **Description**:
 Enable a plugin and install via adapter.
@@ -800,9 +890,15 @@ async function enablePlugin(name: string) {
 ---
 
 ### T-016: Implement `plugin disable` Command
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-006-claude-code-plugin-installer-native.md)
+
 **Priority**: P0
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/plugin-architecture/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 
 **Description**:
 Disable a plugin and uninstall.
@@ -816,9 +912,15 @@ Disable a plugin and uninstall.
 ---
 
 ### T-017: Implement `plugin info` Command
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-006-claude-code-plugin-installer-native.md)
+
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/plugin-architecture/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 
 **Description**:
 Show detailed info about a plugin.
@@ -832,9 +934,15 @@ Show detailed info about a plugin.
 ---
 
 ### T-018: Integrate Detector into `specweave init`
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-006-claude-code-plugin-installer-native.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-006: Claude Code Plugin Installer (Native)](../../docs/internal/specs/default/plugin-architecture/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
 
 **Description**:
 Add auto-detection to specweave init command.
@@ -885,9 +993,15 @@ async function init() {
 ---
 
 ### T-019: Integrate Detector into `/specweave:inc`
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-007-cursor-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 
 **Description**:
 Add spec-based detection to increment planning.
@@ -936,9 +1050,15 @@ Enable kubernetes plugin? (Y/n) y
 ---
 
 ### T-020: Create Pre-Task Hook
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-007-cursor-plugin-compiler.md)
+
 **Priority**: P1
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 
 **Description**:
 Create pre-task hook for runtime detection.
@@ -977,9 +1097,15 @@ fi
 ---
 
 ### T-021: Create Post-Increment Hook
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-007-cursor-plugin-compiler.md)
+
 **Priority**: P1
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-007: Cursor Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
 
 **Description**:
 Create post-increment hook for discovering new dependencies.
@@ -1015,9 +1141,15 @@ fi
 ---
 
 ### T-022: Install Hook Scripts
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-008-copilot-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 
 **Description**:
 Update install scripts to copy hooks.
@@ -1049,9 +1181,15 @@ echo "✅ Hooks installed!"
 ## Phase 3: Plugin Migration (Week 2-3) - 13 tasks
 
 ### T-023: Create GitHub Plugin Structure (Priority #1)
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-008-copilot-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 
 **Description**:
 Create directory structure for GitHub plugin (SpecWeave's primary sync).
@@ -1082,9 +1220,15 @@ src/plugins/github/
 ---
 
 ### T-024: Create Kubernetes Plugin Structure
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-008-copilot-plugin-compiler.md)
+
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-008: Copilot Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
 
 **Description**:
 Create directory structure for kubernetes plugin.
@@ -1660,9 +1804,15 @@ See tasks T-024-C through T-024-H in increment 0004.
 ## Phase 4: Documentation (Week 3) - 8 tasks
 
 ### T-037: Update CLAUDE.md - Claude Superiority
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-009-generic-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-009-*.md)
+
+**AC**: AC-US009-01, AC-US009-02, AC-US009-03
 
 **Description**:
 Update CLAUDE.md to emphasize Claude Code best-in-class status.
@@ -1693,9 +1843,15 @@ Update CLAUDE.md to emphasize Claude Code best-in-class status.
 ---
 
 ### T-038: Update README.md - User-Facing
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-009-generic-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-009-*.md)
+
+**AC**: AC-US009-01, AC-US009-02, AC-US009-03
 
 **Description**:
 Update README.md for user-facing documentation.
@@ -1719,9 +1875,15 @@ Update README.md for user-facing documentation.
 ---
 
 ### T-039: Update Claude Adapter README
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-009-generic-plugin-compiler.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-009: Generic Plugin Compiler](../../docs/internal/specs/default/plugin-architecture/us-009-*.md)
+
+**AC**: AC-US009-01, AC-US009-02, AC-US009-03
 
 **Description**:
 Update Claude adapter README with superiority messaging.
@@ -1743,9 +1905,15 @@ Update Claude adapter README with superiority messaging.
 ---
 
 ### T-040: Update Cursor Adapter README
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-010-marketplace-publication.md)
+
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/plugin-architecture/us-010-*.md)
+
+**AC**: AC-US010-01, AC-US010-02, AC-US010-03
 
 **Description**:
 Update Cursor adapter README with realistic expectations.
@@ -1773,9 +1941,15 @@ Update Cursor adapter README with realistic expectations.
 ---
 
 ### T-041: Update Copilot Adapter README
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-010-marketplace-publication.md)
+
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/plugin-architecture/us-010-*.md)
+
+**AC**: AC-US010-01, AC-US010-02, AC-US010-03
 
 **Description**:
 Update Copilot adapter README.
@@ -1793,9 +1967,15 @@ Update Copilot adapter README.
 ---
 
 ### T-042: Update AGENTS.md Template
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-010-marketplace-publication.md)
+
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-010: Marketplace Publication](../../docs/internal/specs/default/plugin-architecture/us-010-*.md)
+
+**AC**: AC-US010-01, AC-US010-02, AC-US010-03
 
 **Description**:
 Update AGENTS.md template for plugin support.
@@ -1816,9 +1996,15 @@ Update AGENTS.md template for plugin support.
 ---
 
 ### T-043: Create Plugin Developer Guide
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-011-documentation-overhaul-claude-code-superiority.md)
+
 **Priority**: P1
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/plugin-architecture/us-011-*.md)
+
+**AC**: AC-US011-01, AC-US011-02, AC-US011-03
 
 **Description**:
 Write comprehensive plugin development guide.
@@ -1842,9 +2028,15 @@ Write comprehensive plugin development guide.
 ---
 
 ### T-044: Create Migration Guide (v0.3.7 → v0.4.0)
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-011-documentation-overhaul-claude-code-superiority.md)
+
 **Priority**: P0
 **Estimate**: 3 hours
 **Status**: pending
+
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/plugin-architecture/us-011-*.md)
+
+**AC**: AC-US011-01, AC-US011-02, AC-US011-03
 
 **Description**:
 Write migration guide for existing users.
@@ -1868,9 +2060,15 @@ Write migration guide for existing users.
 ## Phase 5: Marketplace (Week 4) - 5 tasks
 
 ### T-045: Create Marketplace Repository
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-011-documentation-overhaul-claude-code-superiority.md)
+
 **Priority**: P1
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-011: Documentation Overhaul - Claude Code Superiority](../../docs/internal/specs/default/plugin-architecture/us-011-*.md)
+
+**AC**: AC-US011-01, AC-US011-02, AC-US011-03
 
 **Description**:
 Create specweave/marketplace GitHub repository.
@@ -1898,9 +2096,15 @@ specweave-marketplace/
 ---
 
 ### T-046: Create Marketplace Manifest
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-012-github-plugin-integration.md)
+
 **Priority**: P1
 **Estimate**: 1 hour
 **Status**: pending
+
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/plugin-architecture/us-012-*.md)
+
+**AC**: AC-US012-01, AC-US012-02, AC-US012-03
 
 **Description**:
 Write marketplace.json for Anthropic's plugin system.
@@ -1935,9 +2139,15 @@ Write marketplace.json for Anthropic's plugin system.
 ---
 
 ### T-047: Publish Plugins to Marketplace
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-012-github-plugin-integration.md)
+
 **Priority**: P1
 **Estimate**: 4 hours
 **Status**: pending
+
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/plugin-architecture/us-012-*.md)
+
+**AC**: AC-US012-01, AC-US012-02, AC-US012-03
 
 **Description**:
 Copy plugins to marketplace repo for standalone installation.
@@ -1962,9 +2172,15 @@ Copy plugins to marketplace repo for standalone installation.
 ---
 
 ### T-048: Test Marketplace Installation
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/FS-25-11-03-plugin-architecture/us-012-github-plugin-integration.md)
+
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: pending
+
+**User Story**: [US-012: GitHub Plugin Integration](../../docs/internal/specs/default/plugin-architecture/us-012-*.md)
+
+**AC**: AC-US012-01, AC-US012-02, AC-US012-03
 
 **Description**:
 E2E test marketplace installation flow.

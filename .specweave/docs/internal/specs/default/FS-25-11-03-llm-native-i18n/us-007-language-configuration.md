@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-036: Integration Test - Russian CLI](../../../../../increments/0006-llm-native-i18n/tasks.md#t-036-integration-test-russian-cli)
+- [T-037: Integration Test - Spanish CLI](../../../../../increments/0006-llm-native-i18n/tasks.md#t-037-integration-test-spanish-cli)
+- [T-038: Integration Test - Adapter Installation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-038-integration-test-adapter-installation)
+- [T-039: E2E Test - Russian Workflow](../../../../../increments/0006-llm-native-i18n/tasks.md#t-039-e2e-test-russian-workflow)
+- [T-040: E2E Test - Spanish Workflow](../../../../../increments/0006-llm-native-i18n/tasks.md#t-040-e2e-test-spanish-workflow)
+- [T-041: E2E Test - Living Docs Translation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-041-e2e-test-living-docs-translation)
 
 ---
 

@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-012: Write Translation Command](../../../../../increments/0006-llm-native-i18n/tasks.md#t-012-write-translation-command)
+- [T-013: Create Plugin Manifests](../../../../../increments/0006-llm-native-i18n/tasks.md#t-013-create-plugin-manifests)
+- [T-014: Write Translator Skill Test Cases](../../../../../increments/0006-llm-native-i18n/tasks.md#t-014-write-translator-skill-test-cases)
+- [T-015: Test Translator Agent Batch Translation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-015-test-translator-agent-batch-translation)
+- [T-016: Update ClaudeAdapter for Language Injection](../../../../../increments/0006-llm-native-i18n/tasks.md#t-016-update-claudeadapter-for-language-injection)
+- [T-017: Update CursorAdapter for Language Injection](../../../../../increments/0006-llm-native-i18n/tasks.md#t-017-update-cursoradapter-for-language-injection)
 
 ---
 

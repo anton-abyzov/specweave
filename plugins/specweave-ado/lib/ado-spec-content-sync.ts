@@ -20,8 +20,9 @@ import {
   ContentSyncResult,
 } from '../../../src/core/spec-content-sync.js';
 import { SyncProfile } from '../../../src/core/types/sync-profile.js';
-import path from 'path';
-import fs from 'fs/promises';
+import { SpecIncrementMapper, TaskInfo } from '../../../src/core/sync/spec-increment-mapper.js';
+import * as path from 'path';
+import * as fs from 'fs/promises';
 
 export interface AdoContentSyncOptions {
   specPath: string;
@@ -91,9 +92,12 @@ async function createAdoFeature(
   const { specPath, dryRun, verbose } = options;
 
   try {
+    // Get task mappings (if available)
+    const tasks = await getTaskMappings(specPath, spec.id);
+
     // Build feature title and description
     const title = `[${spec.id.toUpperCase()}] ${spec.title}`;
-    const description = buildAdoDescription(spec);
+    const description = buildAdoDescription(spec, tasks);
 
     if (verbose) {
       console.log(`\n📝 Creating ADO feature:`);
@@ -196,9 +200,12 @@ async function updateAdoFeature(
       }
     }
 
+    // Get task mappings (if available)
+    const tasks = await getTaskMappings(specPath, spec.id);
+
     // Build updated content
     const newTitle = `[${spec.id.toUpperCase()}] ${spec.title}`;
-    const newDescription = buildAdoDescription(spec);
+    const newDescription = buildAdoDescription(spec, tasks);
 
     if (dryRun) {
       console.log('\n🔍 Dry run - would update feature:');
@@ -242,10 +249,10 @@ async function updateAdoFeature(
 }
 
 /**
- * Build ADO description from spec content
+ * Build ADO description from spec content with optional task mappings
  * ADO supports HTML in description
  */
-function buildAdoDescription(spec: SpecContent): string {
+function buildAdoDescription(spec: SpecContent, tasks?: TaskInfo[]): string {
   let html = '';
 
   // Add spec description
@@ -271,12 +278,71 @@ function buildAdoDescription(spec: SpecContent): string {
     }
   }
 
+  // Add task mappings (if provided)
+  if (tasks && tasks.length > 0) {
+    html += '<h2>Implementation Tasks</h2>';
+    html += '<ul>';
+    for (const task of tasks) {
+      html += `<li><strong>${task.id}</strong>: ${escapeHtml(task.title)}`;
+      if (task.userStories && task.userStories.length > 0) {
+        html += ` (${task.userStories.join(', ')})`;
+      }
+      html += '</li>';
+    }
+    html += '</ul>';
+  }
+
   // Add metadata
   if (spec.metadata.priority) {
     html += `<p><strong>Priority:</strong> ${spec.metadata.priority}</p>`;
   }
 
   return html;
+}
+
+/**
+ * Get task mappings for a spec (if available)
+ */
+async function getTaskMappings(specPath: string, specId: string): Promise<TaskInfo[] | undefined> {
+  try {
+    // Find SpecWeave root
+    const rootDir = await findSpecWeaveRoot(specPath);
+
+    // Use SpecIncrementMapper to get task mappings
+    const mapper = new SpecIncrementMapper(rootDir);
+    const mapping = await mapper.mapSpecToIncrements(specId);
+
+    if (mapping.increments.length > 0) {
+      // Return tasks from the first (most recent) increment
+      return mapping.increments[0].tasks;
+    }
+
+    return undefined;
+  } catch (error) {
+    // If mapping fails, just return undefined (not critical)
+    return undefined;
+  }
+}
+
+/**
+ * Find SpecWeave root directory from spec path
+ */
+async function findSpecWeaveRoot(specPath: string): Promise<string> {
+  let currentDir = path.dirname(specPath);
+
+  while (true) {
+    const specweaveDir = path.join(currentDir, '.specweave');
+    try {
+      await fs.access(specweaveDir);
+      return currentDir;
+    } catch {
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) {
+        throw new Error('.specweave directory not found');
+      }
+      currentDir = parentDir;
+    }
+  }
 }
 
 /**

@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-005: Unit Tests for Agent Model Manager](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-005-unit-tests-for-agent-model-manager)
+- [T-006: Implement Phase Detector](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-006-implement-phase-detector)
 
 ---
 

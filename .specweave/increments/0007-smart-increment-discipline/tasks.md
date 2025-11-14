@@ -34,6 +34,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 0.5 hours
 **Status**: [x] completed
 
+**User Story**: [US1: Acceptance Criteria with IDs (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us1-*.md)
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
+
 **Test Plan**: N/A (documentation task)
 
 **Validation**:
@@ -59,6 +63,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P2
 **Estimate**: 0.5 hours
 **Status**: [x] completed
+
+**User Story**: [US1: Acceptance Criteria with IDs (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us1-*.md)
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
 
 **Test Plan**: N/A (documentation task)
 
@@ -179,6 +187,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1 hour
 **Status**: [x] completed
 
+**User Story**: [US2: Test-Aware Tasks (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us2-*.md)
+
+**AC**: AC-US2-01, AC-US2-02, AC-US2-03
+
 **Test Plan**:
 - **Given** plugin directory structure exists
 - **When** test-aware-planner agent is created
@@ -214,6 +226,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 3 hours
 **Status**: [x] completed
+
+**User Story**: [US2: Test-Aware Tasks (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us2-*.md)
+
+**AC**: AC-US2-01, AC-US2-02, AC-US2-03
 
 **Test Plan**:
 - **Given** spec.md and plan.md as input
@@ -263,6 +279,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1 hour
 **Status**: [x] completed
 
+**User Story**: [US3: Task-Aware Tests (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us3-*.md)
+
+**AC**: AC-US3-01, AC-US3-02, AC-US3-03
+
 **Test Plan**:
 - **Given** template files created
 - **When** agent uses templates
@@ -290,6 +310,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1-2 hours
 **Status**: [x] completed
+
+**User Story**: [US3: Task-Aware Tests (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us3-*.md)
+
+**AC**: AC-US3-01, AC-US3-02, AC-US3-03
 
 **Test Plan**:
 - **Given** real spec.md and plan.md from increment 0008 (create test increment)
@@ -330,6 +354,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 0.5 hours
 **Status**: [x] completed
 
+**User Story**: [US4: test-aware-planner Agent (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us4-*.md)
+
+**AC**: AC-US4-01, AC-US4-02, AC-US4-03
+
 **Test Plan**:
 - **Given** command file created
 - **When** user runs `/specweave:check-tests <id>`
@@ -357,6 +385,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: [x] completed
+
+**User Story**: [US4: test-aware-planner Agent (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us4-*.md)
+
+**AC**: AC-US4-01, AC-US4-02, AC-US4-03
 
 **Test Plan**:
 - **Given** increment with tasks.md (embedded tests)
@@ -406,6 +438,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1 hour
 **Status**: [x] completed
 
+**User Story**: [US5: Optional TDD Mode (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us5-*.md)
+
+**AC**: AC-US5-01, AC-US5-02, AC-US5-03
+
 **Test Plan**:
 - **Given** increment with old format (tests.md exists)
 - **When** /specweave:check-tests is run
@@ -442,6 +478,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1.5 hours
 **Status**: [x] completed
+
+**User Story**: [US5: Optional TDD Mode (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us5-*.md)
+
+**AC**: AC-US5-01, AC-US5-02, AC-US5-03
 
 **Test Plan**:
 - **Given** increment-planner skill invoked
@@ -485,6 +525,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 0.5 hours
 **Status**: [x] completed
 
+**User Story**: [US6: Test Coverage Validation (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us6-*.md)
+
+**AC**: AC-US6-01, AC-US6-02, AC-US6-03
+
 **Test Plan**:
 - **Given** tasks.md generated
 - **When** validation step runs
@@ -514,6 +558,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1 hour
 **Status**: [x] completed
+
+**User Story**: [US6: Test Coverage Validation (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us6-*.md)
+
+**AC**: AC-US6-01, AC-US6-02, AC-US6-03
 
 **Test Plan**:
 - **Given** PM Agent invoked
@@ -557,6 +605,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1.5 hours
 **Status**: [x] completed
 
+**User Story**: [US7: Enhanced increment-planner (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us7-*.md)
+
+**AC**: AC-US7-01, AC-US7-02, AC-US7-03
+
 **Test Plan**: N/A (documentation task)
 
 **Validation**:
@@ -587,6 +639,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1 hour
 **Status**: [x] completed
+
+**User Story**: [US7: Enhanced increment-planner (P1)](../../docs/internal/specs/default/smart-increment-discipline/us-us7-*.md)
+
+**AC**: AC-US7-01, AC-US7-02, AC-US7-03
 
 **Test Plan**:
 - **Given** TypeScript types defined
@@ -627,6 +683,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1 hour
 **Status**: [x] completed
 
+**User Story**: [US8: Pause Blocked Work (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us8-*.md)
+
+**AC**: AC-US8-01, AC-US8-02, AC-US8-03
+
 **Test Plan**:
 - **Given** metadata utilities implemented
 - **When** reading/writing metadata.json
@@ -659,6 +719,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1 hour
 **Status**: [x] completed
+
+**User Story**: [US8: Pause Blocked Work (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us8-*.md)
+
+**AC**: AC-US8-01, AC-US8-02, AC-US8-03
 
 **Test Plan**:
 - **Given** active increment
@@ -704,6 +768,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 0.5 hours
 **Status**: [x] completed
 
+**User Story**: [US9: Abandon Obsolete Work (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us9-*.md)
+
+**AC**: AC-US9-01, AC-US9-02, AC-US9-03
+
 **Test Plan**:
 - **Given** paused increment
 - **When** /specweave:resume is run
@@ -739,6 +807,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1 hour
 **Status**: [x] completed
+
+**User Story**: [US9: Abandon Obsolete Work (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us9-*.md)
+
+**AC**: AC-US9-01, AC-US9-02, AC-US9-03
 
 **Test Plan**:
 - **Given** active or paused increment
@@ -777,6 +849,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1.5 hours
 **Status**: [x] completed
 
+**User Story**: [US10: Increment Types (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us10-*.md)
+
+**AC**: AC-US10-01, AC-US10-02, AC-US10-03
+
 **Test Plan**:
 - **Given** increment types defined
 - **When** checking active count limits
@@ -807,6 +883,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 1.5 hours
 **Status**: [x] completed
+
+**User Story**: [US10: Increment Types (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us10-*.md)
+
+**AC**: AC-US10-01, AC-US10-02, AC-US10-03
 
 **Test Plan**:
 - **Given** user creates 2nd feature
@@ -847,6 +927,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1.5 hours
 **Status**: [x] completed
 
+**User Story**: [US11: Context Switching Warning (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us11-*.md)
+
+**AC**: AC-US11-01, AC-US11-02, AC-US11-03
+
 **Test Plan**:
 - **Given** increments with different statuses/types
 - **When** /specweave:status is run
@@ -885,6 +969,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Estimate**: 1 hour
 **Status**: [x] completed
 
+**User Story**: [US11: Context Switching Warning (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us11-*.md)
+
+**AC**: AC-US11-01, AC-US11-02, AC-US11-03
+
 **Test Plan**:
 - **Given** old increments without metadata.json
 - **When** first v0.7.0 command runs
@@ -914,6 +1002,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 2 hours
 **Status**: [x] completed
+
+**User Story**: [US12: Hotfix Bypasses Limits (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us12-*.md)
+
+**AC**: AC-US12-01, AC-US12-02, AC-US12-03
 
 **Test Plan**:
 - **Given** all features implemented
@@ -952,6 +1044,10 @@ This increment combines TWO major enhancements delivered in ONE release:
 **Priority**: P1
 **Estimate**: 0.5 hours
 **Status**: [x] completed
+
+**User Story**: [US12: Hotfix Bypasses Limits (P2)](../../docs/internal/specs/default/smart-increment-discipline/us-us12-*.md)
+
+**AC**: AC-US12-01, AC-US12-02, AC-US12-03
 
 **Test Plan**: N/A (documentation task)
 

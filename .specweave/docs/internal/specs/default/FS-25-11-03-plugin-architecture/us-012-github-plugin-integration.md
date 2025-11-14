@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-046: Create Marketplace Manifest](../../../../../increments/0004-plugin-architecture/tasks.md#t-046-create-marketplace-manifest)
+- [T-047: Publish Plugins to Marketplace](../../../../../increments/0004-plugin-architecture/tasks.md#t-047-publish-plugins-to-marketplace)
+- [T-048: Test Marketplace Installation](../../../../../increments/0004-plugin-architecture/tasks.md#t-048-test-marketplace-installation)
 
 ---
 
