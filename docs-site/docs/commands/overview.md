@@ -196,7 +196,7 @@ SpecWeave provides **three distinct QA commands**, each serving a specific purpo
 **Exit codes** (for CI/CD):
 - 0 = All tests passing, coverage ≥80%
 - 1 = Tests failing
-- 2 = Coverage <80%
+- 2 = Coverage &lt;80%
 - 3 = AC-IDs not covered
 - 4 = Command error (invalid increment, etc.)
 

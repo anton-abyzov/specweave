@@ -394,6 +394,164 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 ℹ️ No GitHub issue linked to this increment
 ```
 
+#### C) Sync Status to External Tools (NEW in Phase 2)
+
+**CRITICAL**: After increment completes, automatically sync status to all linked external tools (GitHub, JIRA, Azure DevOps).
+
+**Check metadata** (`.specweave/increments/0001/.metadata.json`):
+```json
+{
+  "github": {
+    "issue": 42,
+    "url": "https://github.com/org/repo/issues/42"
+  },
+  "jira": {
+    "issue": "PROJ-123",
+    "url": "https://company.atlassian.net/browse/PROJ-123"
+  },
+  "ado": {
+    "workItem": 456,
+    "url": "https://dev.azure.com/org/project/_workitems/edit/456"
+  }
+}
+```
+
+**Check configuration** (`.specweave/config.json`):
+```json
+{
+  "sync": {
+    "statusSync": {
+      "enabled": true,
+      "autoSync": true,
+      "promptUser": true,
+      "conflictResolution": "last-write-wins",
+      "mappings": {
+        "github": {
+          "completed": "closed"
+        },
+        "jira": {
+          "completed": "Done"
+        },
+        "ado": {
+          "completed": "Closed"
+        }
+      }
+    }
+  }
+}
+```
+
+**If status sync enabled AND external links exist**:
+
+1. **GitHub Status Sync** (if GitHub issue linked):
+   ```typescript
+   // Use StatusSyncEngine to sync status
+   import { StatusSyncEngine } from '../../../src/core/sync/status-sync-engine.js';
+   import { GitHubStatusSync } from '../../../plugins/specweave-github/lib/github-status-sync.js';
+
+   const engine = new StatusSyncEngine(config);
+   const githubSync = new GitHubStatusSync(token, owner, repo);
+
+   // Prompt user
+   const shouldSync = await promptUser("Update GitHub issue #42 to 'closed'?");
+
+   if (shouldSync) {
+     const result = await engine.syncToExternal({
+       incrementId: '0001-user-authentication',
+       tool: 'github',
+       localStatus: 'completed',
+       localTimestamp: new Date().toISOString()
+     });
+
+     if (result.success) {
+       await githubSync.updateStatus(42, result.externalMapping);
+       await githubSync.postStatusComment(42, 'active', 'completed');
+     }
+   }
+   ```
+
+2. **JIRA Status Sync** (if JIRA issue linked):
+   ```typescript
+   import { JiraStatusSync } from '../../../plugins/specweave-jira/lib/jira-status-sync.js';
+
+   const jiraSync = new JiraStatusSync(domain, email, apiToken, projectKey);
+
+   const shouldSync = await promptUser("Update JIRA issue PROJ-123 to 'Done'?");
+
+   if (shouldSync) {
+     const result = await engine.syncToExternal({
+       incrementId: '0001-user-authentication',
+       tool: 'jira',
+       localStatus: 'completed',
+       localTimestamp: new Date().toISOString()
+     });
+
+     if (result.success) {
+       await jiraSync.updateStatus('PROJ-123', result.externalMapping);
+       await jiraSync.postStatusComment('PROJ-123', 'In Progress', 'completed');
+     }
+   }
+   ```
+
+3. **Azure DevOps Status Sync** (if ADO work item linked):
+   ```typescript
+   import { AdoStatusSync } from '../../../plugins/specweave-ado/lib/ado-status-sync.js';
+
+   const adoSync = new AdoStatusSync(organization, project, pat);
+
+   const shouldSync = await promptUser("Update ADO work item #456 to 'Closed'?");
+
+   if (shouldSync) {
+     const result = await engine.syncToExternal({
+       incrementId: '0001-user-authentication',
+       tool: 'ado',
+       localStatus: 'completed',
+       localTimestamp: new Date().toISOString()
+     });
+
+     if (result.success) {
+       await adoSync.updateStatus(456, result.externalMapping);
+       await adoSync.postStatusComment(456, 'Active', 'completed');
+     }
+   }
+   ```
+
+**Report results**:
+```
+🔄 Status Sync:
+   ✓ GitHub issue #42: active → closed (with comment)
+   ✓ JIRA issue PROJ-123: In Progress → Done (with comment)
+   ✓ ADO work item #456: Active → Closed (with comment)
+```
+
+**If status sync disabled**:
+```
+ℹ️ Status sync disabled in config (enable in .specweave/config.json)
+```
+
+**If no external links**:
+```
+ℹ️ No external tools linked to this increment
+```
+
+**If user declines sync**:
+```
+ℹ️ Status sync skipped (user choice)
+```
+
+**Conflict Resolution** (if remote status differs):
+- Uses configured strategy (default: `last-write-wins`)
+- Compares timestamps to determine which status to use
+- Favors local (SpecWeave) status on timestamp tie
+- Reports conflict and resolution in output:
+  ```
+  ⚠️ Conflict detected:
+     Local: completed (2025-11-12 15:00:00)
+     Remote: active (2025-11-12 14:30:00)
+     Resolution: Use local (last-write-wins)
+     Action: Syncing to external
+  ```
+
 **Example Full Output**:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -417,6 +575,11 @@ GitHub Project:
 GitHub Issue:
   ✓ Closed issue #42
   ✓ Added completion summary
+
+Status Sync:
+  ✓ GitHub issue #42: active → closed (with comment)
+  ✓ JIRA issue PROJ-123: In Progress → Done (with comment)
+  ✓ ADO work item #456: Active → Closed (with comment)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 NEXT STEPS

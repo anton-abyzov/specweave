@@ -25,13 +25,28 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'overview/enterprise-ai',
+          label: '🤖 AI-Native Enterprise',
+        },
+        {
+          type: 'doc',
           id: 'overview/key-features',
           label: 'Key Features',
         },
         {
           type: 'doc',
+          id: 'overview/plugins-ecosystem',
+          label: '🧩 Plugin Ecosystem',
+        },
+        {
+          type: 'doc',
           id: 'overview/philosophy',
           label: 'Philosophy',
+        },
+        {
+          type: 'doc',
+          id: 'overview/why-claude-code',
+          label: 'Why Claude Code?',
         },
         {
           type: 'doc',
@@ -102,6 +117,61 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'integrations/issue-trackers',
           label: 'Overview',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Multi-Project',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'integrations/multi-project-sync',
+          label: 'Multi-Project Sync',
+        },
+      ],
+    },
+  ],
+
+  // Enterprise sidebar
+  enterpriseSidebar: [
+    {
+      type: 'category',
+      label: '🏢 Enterprise Migration',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'enterprise/github-migration',
+          label: 'GitHub Enterprise',
+        },
+        {
+          type: 'doc',
+          id: 'enterprise/jira-migration',
+          label: 'JIRA Enterprise',
+        },
+        {
+          type: 'doc',
+          id: 'enterprise/azure-devops-migration',
+          label: 'Azure DevOps',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: '🚀 Deployment & Release',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'enterprise/multi-environment-deployment',
+          label: 'Multi-Environment Deployment',
+        },
+        {
+          type: 'doc',
+          id: 'enterprise/release-management',
+          label: 'Release Management',
         },
       ],
     },
@@ -238,6 +308,23 @@ const sidebars: SidebarsConfig = {
 
   // Learn sidebar
   learnSidebar: [
+    {
+      type: 'category',
+      label: 'SpecWeave Features',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'learn/status-line',
+          label: 'Status Line Feature',
+        },
+        {
+          type: 'doc',
+          id: 'learn/translation',
+          label: 'Translation Workflow',
+        },
+      ],
+    },
     {
       type: 'category',
       label: 'Foundations',

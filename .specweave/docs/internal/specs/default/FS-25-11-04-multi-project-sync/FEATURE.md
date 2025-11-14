@@ -29,5 +29,5 @@ Implement multi-project sync architecture enabling unlimited GitHub/JIRA/ADO rep
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/18](https://github.com/anton-abyzov/specweave/issues/18)
+**GitHub Issue**: [#342 - [FS-25-11-04]](https://github.com/anton-abyzov/specweave/issues/342)
 **JIRA Epic**: [SCRUM-30](https://jira.atlassian.com/browse/SCRUM-30)

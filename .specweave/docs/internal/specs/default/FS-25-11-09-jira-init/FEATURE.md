@@ -26,3 +26,8 @@ Fixed two critical issues with `specweave init` Jira integration to improve user
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#347 - [FS-25-11-09]](https://github.com/anton-abyzov/specweave/issues/347)

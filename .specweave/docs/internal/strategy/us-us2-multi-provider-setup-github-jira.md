@@ -2,9 +2,7 @@
 id: "us2-multi-provider-setup-github-jira"
 title: "US2: Multi-Provider Setup (GitHub + Jira)"
 sidebar_label: "US2: Multi-Provider Setup (GitHub + Jira)"
-description: "**As a** developer setting up SpecWeave with both GitHub and Jira
-**I want to** see separate prompts for "Local ↔ GitHub" and "Local ↔ Jira"
-**So that** I can c"
+description: "Developer wants to see separate prompts for Local to GitHub and Local to Jira sync during SpecWeave setup"
 tags: ["user-story", "default", "0017-sync-architecture-fix"]
 increment: "0017-sync-architecture-fix"
 project: "default"

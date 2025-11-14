@@ -29,5 +29,5 @@ This increment combines two critical framework enhancements:
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/21](https://github.com/anton-abyzov/specweave/issues/21)
+**GitHub Issue**: [#331 - [FS-25-10-24]](https://github.com/anton-abyzov/specweave/issues/331)
 **JIRA Epic**: [SCRUM-23](https://jira.atlassian.com/browse/SCRUM-23)

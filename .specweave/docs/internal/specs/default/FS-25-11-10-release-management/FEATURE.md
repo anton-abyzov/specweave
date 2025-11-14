@@ -38,3 +38,8 @@ last_updated: 2025-11-14
 - [US-007: Post-Task-Completion Hooks Integration (P1)](us-007-post-task-completion-hooks-integration-p1.md) - ✅ Complete
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#355 - [FS-25-11-10]](https://github.com/anton-abyzov/specweave/issues/355)

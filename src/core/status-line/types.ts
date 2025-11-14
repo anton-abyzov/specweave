@@ -1,77 +1,55 @@
 /**
- * Status Line Types
+ * Status Line Types (Simplified)
  *
- * Type definitions for the fast status line caching system.
- * Supports <1ms rendering with intelligent cache invalidation.
+ * Ultra-simple status line with cached progress.
+ * Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
  */
 
 export interface StatusLineCache {
-  /** Active increment ID (e.g., "0017-sync-architecture-fix") */
-  incrementId: string;
+  /** Current active/in-progress increment (null if none) */
+  current: CurrentIncrement | null;
 
-  /** Short increment name (e.g., "sync-architecture-fix") */
-  incrementName: string;
-
-  /** Total number of tasks in tasks.md */
-  totalTasks: number;
-
-  /** Number of completed tasks ([x]) */
-  completedTasks: number;
-
-  /** Completion percentage (0-100) */
-  percentage: number;
-
-  /** Current task being worked on */
-  currentTask: TaskInfo | null;
+  /** Total number of open increments (active/in-progress/planning) */
+  openCount: number;
 
   /** ISO timestamp of last cache update */
   lastUpdate: string;
-
-  /** Unix timestamp of tasks.md mtime (for invalidation) */
-  lastModified: number;
 }
 
-export interface TaskInfo {
-  /** Task ID (e.g., "T-016") */
+export interface CurrentIncrement {
+  /** Increment ID (e.g., "0031-external-tool-status-sync") */
   id: string;
 
-  /** Task title (e.g., "Update documentation") */
-  title: string;
+  /** Short name (e.g., "external-tool-status-sync") */
+  name: string;
+
+  /** Number of completed tasks */
+  completed: number;
+
+  /** Total number of tasks */
+  total: number;
+
+  /** Completion percentage (0-100) */
+  percentage: number;
 }
 
 export interface StatusLineConfig {
   /** Enable status line rendering */
   enabled: boolean;
 
-  /** Maximum age of cache before forcing refresh (ms) */
+  /** Maximum age of cache before showing stale warning (ms) */
   maxCacheAge: number;
 
   /** Width of progress bar (characters) */
   progressBarWidth: number;
 
   /** Maximum length for increment name */
-  maxIncrementNameLength: number;
-
-  /** Maximum length for task title */
-  maxTaskTitleLength: number;
-
-  /** Show progress bar */
-  showProgressBar: boolean;
-
-  /** Show percentage */
-  showPercentage: boolean;
-
-  /** Show current task */
-  showCurrentTask: boolean;
+  maxNameLength: number;
 }
 
 export const DEFAULT_STATUS_LINE_CONFIG: StatusLineConfig = {
   enabled: true,
-  maxCacheAge: 5000, // 5 seconds
+  maxCacheAge: 30000, // 30 seconds (much longer, simpler)
   progressBarWidth: 8,
-  maxIncrementNameLength: 20,
-  maxTaskTitleLength: 30,
-  showProgressBar: true,
-  showPercentage: true,
-  showCurrentTask: true,
+  maxNameLength: 30,
 };

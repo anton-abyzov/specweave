@@ -81,9 +81,13 @@ export class TaskSync {
 
       // 6. Create epic issue
       console.log(`\n🎯 Creating epic issue for increment ${metadata.id}...`);
+
+      // Get issue prefix from metadata.json (with created date)
+      const issuePrefix = this.getIssuePrefix(metadata.id);
+
       const epicBody = this.generateEpicBody(metadata, tasks);
       const epic = await this.client.createEpicIssue(
-        `[INC-${metadata.id}] ${metadata.title}`,
+        `[${issuePrefix}] ${metadata.title}`,
         epicBody,
         milestone.title,
         ['increment', 'specweave', metadata.priority.toLowerCase()]
@@ -349,6 +353,43 @@ ${task.description}
   }
 
   /**
+   * Get issue prefix from metadata.json (with created date)
+   * Returns FS-YY-MM-DD format or fallback to FS-UNKNOWN
+   */
+  private getIssuePrefix(incrementId: string): string {
+    const metadataJsonPath = path.join(this.incrementPath, 'metadata.json');
+
+    // Try to read metadata.json for created date
+    if (fs.existsSync(metadataJsonPath)) {
+      try {
+        const metadataContent = fs.readFileSync(metadataJsonPath, 'utf-8');
+        const metadata = JSON.parse(metadataContent);
+
+        if (metadata.created) {
+          // Extract YY-MM-DD from date (e.g., "2025-11-12T12:46:00Z" -> "25-11-12")
+          const dateMatch = metadata.created.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (dateMatch) {
+            const year = dateMatch[1].slice(2); // "2025" -> "25"
+            const month = dateMatch[2]; // "11"
+            const day = dateMatch[3]; // "12"
+            return `FS-${year}-${month}-${day}`;
+          }
+        }
+      } catch (error) {
+        console.warn(`⚠️  Could not parse metadata.json: ${error}`);
+      }
+    }
+
+    // Fallback: use increment number if available
+    const incrementNumber = incrementId.match(/^(\d+)/)?.[1];
+    if (incrementNumber) {
+      return `FS-${incrementNumber}`;
+    }
+
+    return 'FS-UNKNOWN';
+  }
+
+  /**
    * Save sync mapping
    */
   private saveSyncMapping(githubData: any): void {
@@ -390,9 +431,10 @@ ${task.description}
    * Print dry run summary
    */
   private printDryRunSummary(tasks: Task[], metadata: IncrementMetadata): void {
+    const issuePrefix = this.getIssuePrefix(metadata.id);
     console.log(`\n📊 Dry Run Summary:`);
     console.log(`   Milestone: ${this.getMilestoneTitle(metadata)}`);
-    console.log(`   Epic: [INC-${metadata.id}] ${metadata.title}`);
+    console.log(`   Epic: [${issuePrefix}] ${metadata.title}`);
     console.log(`   Task Issues: ${tasks.length}`);
     console.log(`\n📝 Would create:`);
     tasks.forEach((task, i) => {

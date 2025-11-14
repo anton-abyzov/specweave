@@ -403,7 +403,7 @@ The PM Agent acts as your AI Product Manager, helping you:
    - ❌ **WRONG**: `.specweave/docs/internal/projects/{project-id}/specs/...` (OLD nested structure)
 
 **Examples**:
-- Single project: `.specweave/docs/internal/specs/default/spec-0001-inventory-tracker.md`
+- Single project: `.specweave/docs/internal/specs/default/spec-0001-user-authentication.md`
 - Backend project: `.specweave/docs/internal/specs/backend/spec-0002-api-auth.md`
 - Frontend project: `.specweave/docs/internal/specs/frontend/spec-0003-dark-mode.md`
 - Parent repo: `.specweave/docs/internal/specs/_parent/spec-0004-system-architecture.md`

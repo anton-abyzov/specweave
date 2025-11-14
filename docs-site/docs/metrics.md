@@ -30,7 +30,7 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 - 🏆 **Elite**: Multiple deploys per day (>365/year)
 - ⭐ **High**: Weekly to daily (52-365/year)
 - 📊 **Medium**: Monthly to weekly (12-52/year)
-- ⚠️ **Low**: Less than monthly (<12/year)
+- ⚠️ **Low**: Less than monthly (&lt;12/year)
 
 ---
 
@@ -168,6 +168,6 @@ Track our progress over time as we optimize SpecWeave's delivery performance:
 
 **Current Goals:**
 - 🚀 Deployment Frequency: High → Elite (8/month → 30/month)
-- ⚡ Lead Time: High → Elite (15.6h → <1h)
+- ⚡ Lead Time: High → Elite (15.6h → &lt;1h)
 - ✅ Change Failure Rate: Elite (maintain 0-15%)
-- 🔧 MTTR: Track once we have incidents (target: <1 hour)
+- 🔧 MTTR: Track once we have incidents (target: &lt;1 hour)

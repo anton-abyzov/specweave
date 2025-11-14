@@ -35,7 +35,7 @@ SpecWeave's translator skill supports **9 languages**:
 
 SpecWeave works seamlessly with localized AI interfaces. Here's Claude Code running entirely in Russian:
 
-![Claude Code in Russian](/img/i18n/claude-code-russian-interface.png)
+<!-- ![Claude Code in Russian](/img/i18n/claude-code-russian-interface.png) -->
 
 **What you see**:
 - Interface in Russian: "Создай профессионального риелтора" (Create a professional realtor)
@@ -261,7 +261,7 @@ Works with **ANY** LLM backend:
 ### SpecWeave in Different Languages
 
 #### Russian Interface
-![Russian interface showing increment planning](/img/i18n/claude-code-russian-interface.png)
+<!-- ![Russian interface showing increment planning](/img/i18n/claude-code-russian-interface.png) -->
 *SpecWeave increment planning in Russian - note framework terms stay in English*
 
 #### Coming Soon

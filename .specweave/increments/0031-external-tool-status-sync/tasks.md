@@ -11,6 +11,28 @@ estimated_effort: 2-3 weeks
 ## Phase 1: Enhanced Content Sync (Week 1)
 
 ### T-001: Create Enhanced Content Builder
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
 
@@ -36,6 +58,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-002: Create Spec-to-Increment Mapper
+**User Story**: [US-002: Task-Level Mapping & Traceability](../../docs/internal/specs/default/external-tool-status-sync/us-002-task-level-mapping-traceability.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04
 
@@ -61,6 +105,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-003: Enhance GitHub Content Sync
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US1-05
 
@@ -86,6 +152,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-004: Enhance JIRA Content Sync
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
 
@@ -109,6 +197,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-005: Enhance ADO Content Sync
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/external-tool-status-sync/us-001-rich-external-issue-content.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
 
@@ -134,6 +244,28 @@ estimated_effort: 2-3 weeks
 ## Phase 2: Status Synchronization (Week 2)
 
 ### T-006: Create Status Mapper
+**User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04, AC-US3-05
 
@@ -159,6 +291,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-007: Create Conflict Resolver
+**User Story**: [US-006: Conflict Resolution](../../docs/internal/specs/default/external-tool-status-sync/us-006-conflict-resolution.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05, AC-US6-06, AC-US6-07
 
@@ -183,6 +337,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-008: Create Status Sync Engine (Core)
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
 
@@ -210,6 +386,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-009: Implement GitHub Status Sync
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-01, AC-US4-06
 
@@ -236,6 +434,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-010: Implement JIRA Status Sync
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-01, AC-US4-06
 
@@ -261,6 +481,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-011: Implement ADO Status Sync
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-01, AC-US4-06
 
@@ -285,6 +527,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-012: Integrate Status Sync with /specweave:done Command
+**User Story**: [US-005: User Prompts on Completion](../../docs/internal/specs/default/external-tool-status-sync/us-005-user-prompts-on-completion.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05, AC-US5-06, AC-US5-07
 
@@ -311,6 +575,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-013: Update Configuration Schema
+**User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04
 
@@ -335,6 +621,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-014: Create Default Status Mappings
+**User Story**: [US-003: Status Mapping Configuration](../../docs/internal/specs/default/external-tool-status-sync/us-003-status-mapping-configuration.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US3-02
 
@@ -359,6 +667,28 @@ estimated_effort: 2-3 weeks
 ## Phase 3: Advanced Features & Testing (Week 3)
 
 ### T-015: Implement Workflow Detection
+**User Story**: [US-007: Multi-Tool Workflow Support](../../docs/internal/specs/default/external-tool-status-sync/us-007-multi-tool-workflow-support.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US7-01
 
@@ -410,6 +740,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-017: Implement Auto-Sync Mode
+**User Story**: [US-005: User Prompts on Completion](../../docs/internal/specs/default/external-tool-status-sync/us-005-user-prompts-on-completion.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US5-08
 
@@ -433,6 +785,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-018: Add Sync Event Logging
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-04, AC-US6-07
 
@@ -507,6 +881,28 @@ estimated_effort: 2-3 weeks
 ---
 
 ### T-021: Error Handling & Retry Logic
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/external-tool-status-sync/us-004-bidirectional-status-sync.md)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 **AC**: AC-US4-05
 

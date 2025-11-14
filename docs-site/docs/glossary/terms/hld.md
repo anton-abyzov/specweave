@@ -175,7 +175,7 @@ SpecWeave is a spec-driven development framework built on Claude Code's plugin s
 
 ## Performance & Scalability
 - **Context Usage**: 75%+ reduction vs monolithic (12K tokens core)
-- **Installation**: <30 seconds (GitHub marketplace)
+- **Installation**: &lt;30 seconds (GitHub marketplace)
 - **Scalability**: Unlimited plugins (load on-demand)
 ```
 

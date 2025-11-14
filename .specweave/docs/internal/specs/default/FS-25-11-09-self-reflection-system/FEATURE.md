@@ -29,5 +29,5 @@ Add AI self-reflection capabilities inspired by Kimi model. After each task comp
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/30](https://github.com/anton-abyzov/specweave/issues/30)
+**GitHub Issue**: [#348 - [FS-25-11-09]](https://github.com/anton-abyzov/specweave/issues/348)
 **JIRA Epic**: [SCRUM-34](https://jira.atlassian.com/browse/SCRUM-34)

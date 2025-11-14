@@ -17,6 +17,8 @@ coverage_target: 85%
 ## Phase 1: Core Modifications (Day 1)
 
 ### T-001: Remove services/ folder logic from repo-structure-manager.ts
+**User Story**: [US-005: Root-Level Repository Folders (Not services/)](../../docs/internal/specs/default/multi-repo-init-ux/us-005-root-level-repository-folders-not-services.md)
+
 
 **AC**: AC-US5-01, AC-US5-03
 
@@ -70,6 +72,8 @@ coverage_target: 85%
 ---
 
 ### T-002: Simplify repository architecture questions
+**User Story**: [US-001: Simplify Repository Architecture Questions](../../docs/internal/specs/default/multi-repo-init-ux/us-001-simplify-repository-architecture-questions.md)
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
 
@@ -130,6 +134,8 @@ coverage_target: 85%
 ---
 
 ### T-003: Integrate auto-ID generation with editable defaults
+**User Story**: [US-002: Auto-Generate Repository IDs](../../docs/internal/specs/default/multi-repo-init-ux/us-002-auto-generate-repository-ids.md)
+
 
 **AC**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04
 
@@ -196,6 +202,8 @@ coverage_target: 85%
 ## Phase 2: Enhanced State Management (Days 2-3)
 
 ### T-004: Integrate setup-state-manager for Ctrl+C recovery
+**User Story**: [US-007: Ctrl+C Recovery (Save Progress Incrementally)](../../docs/internal/specs/default/multi-repo-init-ux/us-007-ctrl-c-recovery-save-progress-incrementally.md)
+
 
 **AC**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05, AC-US7-06
 
@@ -264,6 +272,8 @@ coverage_target: 85%
 ---
 
 ### T-005: Integrate GitHub validation before creation
+**User Story**: [US-004: GitHub Repository Existence Validation](../../docs/internal/specs/default/multi-repo-init-ux/us-004-github-repository-existence-validation.md)
+
 
 **AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
 
@@ -332,6 +342,8 @@ coverage_target: 85%
 ## Phase 3: Bulk Visibility Prompt (Day 4)
 
 ### T-006: Add private/public visibility prompt
+**User Story**: [US-003: Add Private/Public Repository Visibility Prompt](../../docs/internal/specs/default/multi-repo-init-ux/us-003-add-private-public-repository-visibility-prompt.md)
+
 
 **AC**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04
 
@@ -400,6 +412,8 @@ coverage_target: 85%
 ---
 
 ### T-007: Integrate .env file generation
+**User Story**: [US-006: Create .env File with GitHub Configuration](../../docs/internal/specs/default/multi-repo-init-ux/us-006-create-env-file-with-github-configuration.md)
+
 
 **AC**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05, AC-US6-06
 
@@ -469,6 +483,8 @@ coverage_target: 85%
 ---
 
 ### T-008: Integrate comprehensive summary generation
+**User Story**: [US-008: Detailed Setup Summary](../../docs/internal/specs/default/multi-repo-init-ux/us-008-detailed-setup-summary.md)
+
 
 **AC**: AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04, AC-US8-05
 
@@ -548,6 +564,8 @@ coverage_target: 85%
 ---
 
 ### T-009: Improve parent folder benefits explanation
+**User Story**: [US-009: Update Parent Folder Benefits Explanation](../../docs/internal/specs/default/multi-repo-init-ux/us-009-update-parent-folder-benefits-explanation.md)
+
 
 **AC**: AC-US9-01, AC-US9-02, AC-US9-03
 

@@ -142,4 +142,35 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
       external_tracker_sync: true, // Sync to GitHub/Jira/ADO automatically
     },
   },
+  sync: {
+    statusSync: {
+      enabled: true,
+      autoSync: true,
+      promptUser: true,
+      conflictResolution: 'last-write-wins',
+      mappings: {
+        github: {
+          planning: 'open',
+          active: { state: 'open', labels: ['in-progress'] },
+          paused: { state: 'open', labels: ['paused'] },
+          completed: 'closed',
+          abandoned: { state: 'closed', labels: ['wontfix'] }
+        },
+        jira: {
+          planning: 'To Do',
+          active: 'In Progress',
+          paused: 'On Hold',
+          completed: 'Done',
+          abandoned: 'Cancelled'
+        },
+        ado: {
+          planning: 'New',
+          active: 'Active',
+          paused: 'On Hold',
+          completed: 'Closed',
+          abandoned: 'Removed'
+        }
+      }
+    }
+  },
 };

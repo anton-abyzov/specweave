@@ -1175,7 +1175,7 @@
 - **Line 133:** `The migration tool will analyze your existing specs and suggest project mappings:...`
 - **Line 173:** `### Step 6: Re-sync Specs to New Structure...`
 - **Line 175:** `After migration, sync your specs to the new ADO structure:...`
-- **Line 213:** `Migrate everything at once (recommended for <20 specs):...`
+- **Line 213:** `Migrate everything at once (recommended for &lt;20 specs):...`
 - **Line 229:** `Keep some specs in root, migrate others:...`
 - *...and 17 more occurrences*
 

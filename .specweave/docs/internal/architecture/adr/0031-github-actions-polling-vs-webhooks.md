@@ -216,7 +216,7 @@ Events: workflow_run (completed)
 - ✅ Real-time updates (no polling delay)
 - ✅ Zero API calls (GitHub pushes data)
 - ✅ No rate limit concerns
-- ✅ Lower latency (<1 second vs 60 seconds)
+- ✅ Lower latency (&lt;1 second vs 60 seconds)
 
 **Cons**:
 - ❌ Requires public endpoint (security risk)
@@ -374,7 +374,7 @@ GET /repos/{owner}/{repo}/events
 ### Negative
 
 **Latency**:
-- ❌ Detection delay: 60 seconds average (vs <1s with webhooks)
+- ❌ Detection delay: 60 seconds average (vs &lt;1s with webhooks)
 - ❌ Worst case: 120 seconds (if failure happens just after poll)
 
 **API Calls**:
@@ -389,8 +389,8 @@ GET /repos/{owner}/{repo}/events
 ### Neutral
 
 **Performance**:
-- Negligible CPU usage (<0.1%)
-- Negligible memory usage (<10MB)
+- Negligible CPU usage (&lt;0.1%)
+- Negligible memory usage (&lt;10MB)
 - Network bandwidth: ~1KB per poll
 
 **Cost**:
@@ -562,7 +562,7 @@ describe('GitHub Actions Integration', () => {
 ## Acceptance Criteria
 
 - [x] Polling architecture designed and documented
-- [x] Rate limit analysis shows <2% quota usage
+- [x] Rate limit analysis shows &lt;2% quota usage
 - [x] Conditional requests strategy defined
 - [x] State persistence format defined
 - [x] Testing strategy covers polling scenarios

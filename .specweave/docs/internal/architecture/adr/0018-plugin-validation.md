@@ -38,7 +38,7 @@ This violated SpecWeave's core principle: **"Just works" in ANY environment with
 
 **Requirements**:
 - ✅ Zero manual plugin installation
-- ✅ \<5 seconds validation overhead per command
+- ✅ \&lt;5 seconds validation overhead per command
 - ✅ Works across all environments (local, VM, Cloud IDE, CI/CD)
 - ✅ Context-aware (suggest relevant plugins based on work)
 - ✅ Graceful degradation (offline mode, CLI unavailable)
@@ -48,7 +48,7 @@ This violated SpecWeave's core principle: **"Just works" in ANY environment with
 - Must work with Claude Code's native plugin system (no custom loaders)
 - Must not break existing workflows (backward compatible)
 - Must remain below v1.0.0 (not a breaking change)
-- Must have \<1% false positive rate for plugin suggestions
+- Must have \&lt;1% false positive rate for plugin suggestions
 
 ---
 
@@ -94,12 +94,12 @@ This violated SpecWeave's core principle: **"Just works" in ANY environment with
 - ✅ Zero manual intervention
 - ✅ Prevents errors before they occur (proactive)
 - ✅ Context-aware plugin suggestions (keyword mapping)
-- ✅ \<5s overhead with caching (\<2s cached)
+- ✅ \&lt;5s overhead with caching (\&lt;2s cached)
 - ✅ Clear guidance on success/failure
 - ✅ Works across all environments
 
 **Cons**:
-- ⚠️ Slight overhead per command (\<5s uncached, \<2s cached)
+- ⚠️ Slight overhead per command (\&lt;5s uncached, \&lt;2s cached)
 - ⚠️ Requires Claude CLI to be available (falls back to manual instructions)
 - ⚠️ Adds complexity (673 lines of code)
 
@@ -148,8 +148,8 @@ User runs: /specweave:increment "Add GitHub sync"
    │   ├─ Missing? → Suggest to user
    │   └─ Present? → Record for later
    └─ Phase 4: Caching (5-minute TTL)
-       ├─ Cache valid? → Return cached result (\<2s)
-       └─ Cache stale? → Re-validate (\<5s)
+       ├─ Cache valid? → Return cached result (\&lt;2s)
+       └─ Cache stale? → Re-validate (\&lt;5s)
    ↓ (Only proceeds if validation passes)
 [STEP 1: PM Agent Planning]
 ```
@@ -203,9 +203,9 @@ interface ValidationCache {
 **Invalidation**: Manual plugin changes, cache age > TTL
 
 **Performance Impact**:
-- Cached validation: \<2 seconds (95% of calls)
-- Uncached validation: \<5 seconds (5% of calls)
-- Average overhead: \<2.15 seconds per command
+- Cached validation: \&lt;2 seconds (95% of calls)
+- Uncached validation: \&lt;5 seconds (5% of calls)
+- Average overhead: \&lt;2.15 seconds per command
 
 **Why 5 minutes?**
 - ✅ Balances freshness vs performance
@@ -285,7 +285,7 @@ DO NOT PROCEED until plugin validation passes!
 ### Positive
 
 ✅ **User Experience**
-- Zero manual plugin installation (10-15 minutes → \<5 seconds)
+- Zero manual plugin installation (10-15 minutes → \&lt;5 seconds)
 - Seamless environment migration (local → VM → Cloud IDE)
 - Clear error messages (no more "command not found")
 - Context-aware suggestions (relevant plugins for the work)
@@ -308,8 +308,8 @@ DO NOT PROCEED until plugin validation passes!
 ### Negative
 
 ⚠️ **Performance Overhead**
-- \<5 seconds per command (uncached)
-- \<2 seconds per command (cached)
+- \&lt;5 seconds per command (uncached)
+- \&lt;2 seconds per command (cached)
 - Acceptable for workflow commands (not tight loops)
 
 ⚠️ **Complexity**
@@ -324,7 +324,7 @@ DO NOT PROCEED until plugin validation passes!
 - Assumes plugin naming convention (`specweave-*`)
 
 ⚠️ **False Positives (Minimal)**
-- Keyword matching can suggest wrong plugins (\<1% rate)
+- Keyword matching can suggest wrong plugins (\&lt;1% rate)
 - Example: "Azure deployment" might suggest specweave-ado (Azure DevOps) instead of specweave-kubernetes
 - Mitigation: High threshold (2+ matches), user can skip suggestions
 
@@ -379,9 +379,9 @@ DO NOT PROCEED until plugin validation passes!
 - **Total**: ~1,353 lines of production code + 500 lines tests
 
 **Performance**:
-- Cached validation: \<2 seconds (95% of calls)
-- Uncached validation: \<5 seconds (5% of calls)
-- Average overhead: \<2.15 seconds per command
+- Cached validation: \&lt;2 seconds (95% of calls)
+- Uncached validation: \&lt;5 seconds (5% of calls)
+- Average overhead: \&lt;2.15 seconds per command
 - Cache TTL: 5 minutes (300 seconds)
 
 **Accuracy**:
@@ -390,7 +390,7 @@ DO NOT PROCEED until plugin validation passes!
 - Installation success: ~90% (10% fail gracefully with manual instructions)
 
 **User Impact**:
-- Time saved: 10-15 minutes → \<5 seconds per environment (95% reduction)
+- Time saved: 10-15 minutes → \&lt;5 seconds per environment (95% reduction)
 - Error reduction: ~100% (no more "command not found" errors)
 - Onboarding friction: Near zero (automatic setup)
 
@@ -403,11 +403,11 @@ DO NOT PROCEED until plugin validation passes!
 ✅ **Keyword-Based Context Detection**
 - Simple but effective (2+ match threshold)
 - Easy to extend (just add keywords to map)
-- Minimal false positives (\<1%)
+- Minimal false positives (\&lt;1%)
 
 ✅ **Caching Strategy**
 - 5-minute TTL is sweet spot (balances freshness vs performance)
-- Dramatically reduces overhead (95% of calls \<2s)
+- Dramatically reduces overhead (95% of calls \&lt;2s)
 
 ✅ **Graceful Degradation**
 - Clear manual instructions when auto-install fails

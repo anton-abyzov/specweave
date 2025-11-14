@@ -30,12 +30,12 @@ sidebar_position: 9
 
 **Standard Format**:
 ```markdown
-## US-{number}: User Story Title
+## US-\{number\}: User Story Title
 **Priority**: P1 | P2 | P3 | P4
 
 **Acceptance Criteria**:
-- [ ] **AC-US{story}-{number}**: Description (Priority, testable)
-- [ ] **AC-US{story}-{number}**: Description (Priority, testable)
+- [ ] **AC-US\{story\}-\{number\}**: Description (Priority, testable)
+- [ ] **AC-US\{story\}-\{number\}**: Description (Priority, testable)
 ```
 
 **Example**:
@@ -267,7 +267,7 @@ Scenario: Failed login with invalid password (AC-US1-02)
 - [ ] Specific and measurable (no ambiguity)
 - [ ] Testable (can be verified objectively)
 - [ ] Prioritized (P1, P2, P3, P4)
-- [ ] Unique AC-ID assigned (AC-US{story}-{number})
+- [ ] Unique AC-ID assigned (AC-US\{story\}-\{number\})
 - [ ] Test written (if marked "testable")
 - [ ] Test passing (green in CI/CD)
 - [ ] Stakeholder acceptance (if P1/P2)

@@ -154,7 +154,7 @@ Each AC has a **priority** (P1, P2, P3):
 - [ ] **AC-US1-01**: Login should be fast
 
 # ✅ Good: Testable (specific, measurable)
-- [ ] **AC-US1-01**: Login completes in <200ms (p99) (P1, testable)
+- [ ] **AC-US1-01**: Login completes in &lt;200ms (p99) (P1, testable)
 
 # ❌ Bad: Not testable (subjective)
 - [ ] **AC-US2-01**: Dashboard looks good
@@ -457,7 +457,7 @@ SpecWeave validates AC coverage automatically:
 - [ ] **AC-US2-01**: Dashboard loads quickly
 
 # ✅ Good: Specific and measurable
-- [ ] **AC-US2-01**: Dashboard loads in <500ms (p95) (P1, testable)
+- [ ] **AC-US2-01**: Dashboard loads in &lt;500ms (p95) (P1, testable)
 ```
 
 ### 3. Multiple Conditions in One AC
@@ -522,7 +522,7 @@ SpecWeave validates AC coverage automatically:
 - [ ] **AC-US2-02**: Results sorted by relevance (P1, testable)
 
 # Non-functional (performance)
-- [ ] **AC-US2-03**: Search returns results in <300ms (p95) (P1, testable)
+- [ ] **AC-US2-03**: Search returns results in &lt;300ms (p95) (P1, testable)
 - [ ] **AC-US2-04**: Search handles 1000 concurrent requests (P2, testable)
 ```
 

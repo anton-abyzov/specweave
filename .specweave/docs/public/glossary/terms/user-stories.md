@@ -465,7 +465,7 @@ US-007: OAuth Revocation (8 hours)
 US-001: Make the system better
 
 # ✅ Good: Specific and measurable
-US-001: Reduce login latency to <200ms (p99)
+US-001: Reduce login latency to &lt;200ms (p99)
 ```
 
 **Example 2: No Benefit**
@@ -546,7 +546,7 @@ US-005: Refactor authentication module to use TypeScript
 US-005: Faster Login Experience
 
 **As a** user
-**I want** login to complete in <200ms
+**I want** login to complete in &lt;200ms
 **So that** I can access my dashboard quickly
 ```
 

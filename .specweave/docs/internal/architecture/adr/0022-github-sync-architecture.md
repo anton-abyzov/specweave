@@ -230,7 +230,7 @@ fi
 
 ### Neutral
 
-⚪ **Performance**: Negligible (\<2s network call)
+⚪ **Performance**: Negligible (\&lt;2s network call)
 ⚪ **Maintenance**: Need to keep sync logic in sync with GitHub API changes
 ⚪ **Testing**: Need integration tests with GitHub (or mocks)
 

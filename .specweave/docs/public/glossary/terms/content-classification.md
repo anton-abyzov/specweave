@@ -164,7 +164,7 @@ graph TB
 **Requirement**: All API endpoints must respond within 200ms at p95
 
 **Metrics**:
-- Latency: <200ms (p95)
+- Latency: &lt;200ms (p95)
 - Throughput: >10,000 req/sec
 - Availability: 99.9% (SLO)
 ```
@@ -488,7 +488,7 @@ graph LR
     E -->|0.9-1.0| F[Very High]
     E -->|0.7-0.9| G[High]
     E -->|0.6-0.7| H[Medium]
-    E -->|<0.6| I[Low / Fallback]
+    E -->|&lt;0.6| I[Low / Fallback]
 
     style F fill:#51cf66
     style G fill:#51cf66
@@ -503,7 +503,7 @@ graph LR
 | **Very High** | 0.9-1.0 | Strong match (multiple patterns) | Classify with high confidence |
 | **High** | 0.7-0.9 | Good match (primary pattern + keywords) | Classify with medium confidence |
 | **Medium** | 0.6-0.7 | Acceptable match (keywords only) | Classify if above threshold |
-| **Low** | <0.6 | Weak match (fallback) | Try next category or use fallback |
+| **Low** | &lt;0.6 | Weak match (fallback) | Try next category or use fallback |
 
 **Default Threshold**: 0.6 (medium confidence minimum)
 
@@ -661,6 +661,6 @@ mv specs/backend/us-001.md architecture/us-001.md
 - 0.9-1.0: Very high (multiple patterns)
 - 0.7-0.9: High (primary pattern + keywords)
 - 0.6-0.7: Medium (keywords only)
-- <0.6: Low (fallback to overview)
+- &lt;0.6: Low (fallback to overview)
 
 **Result**: Automatic, consistent, accurate organization with zero manual work.

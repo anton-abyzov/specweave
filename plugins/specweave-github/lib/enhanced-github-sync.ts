@@ -2,12 +2,14 @@
  * Enhanced GitHub Spec Content Sync
  *
  * Uses EnhancedContentBuilder and SpecIncrementMapper for rich external descriptions.
+ * NEW (v0.21.0): Supports task checkboxes and automatic labeling.
  */
 
 import { GitHubClientV2 } from './github-client-v2.js';
 import { EnhancedContentBuilder, EnhancedSpecContent } from '../../../src/core/sync/enhanced-content-builder.js';
 import { SpecIncrementMapper, TaskInfo } from '../../../src/core/sync/spec-increment-mapper.js';
 import { parseSpecContent, SpecContent } from '../../../src/core/spec-content-sync.js';
+import { LabelDetector } from '../../../src/core/sync/label-detector.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -80,9 +82,44 @@ export async function syncSpecWithEnhancedContent(
       sourceLinks
     };
 
-    // 7. Build external description
+    // 7. Build external description with task checkboxes
     const builder = new EnhancedContentBuilder();
-    const description = builder.buildExternalDescription(enhancedSpec);
+
+    // NEW: Override buildTasksSection call to include checkboxes
+    const originalBuildExternal = builder.buildExternalDescription.bind(builder);
+    const description = (() => {
+      const sections: string[] = [];
+
+      // Summary
+      sections.push(builder.buildSummarySection(enhancedSpec));
+
+      // User stories
+      if (enhancedSpec.userStories && enhancedSpec.userStories.length > 0) {
+        sections.push(builder.buildUserStoriesSection(enhancedSpec.userStories));
+      }
+
+      // Tasks with checkboxes (NEW!)
+      if (enhancedSpec.taskMapping) {
+        sections.push(builder.buildTasksSection(enhancedSpec.taskMapping, {
+          showCheckboxes: true,
+          showProgressBar: true,
+          showCompletionStatus: true,
+          provider: 'github'
+        }));
+      }
+
+      // Architecture
+      if (enhancedSpec.architectureDocs && enhancedSpec.architectureDocs.length > 0) {
+        sections.push(builder.buildArchitectureSection(enhancedSpec.architectureDocs));
+      }
+
+      // Source links
+      if (enhancedSpec.sourceLinks) {
+        sections.push(builder.buildSourceLinksSection(enhancedSpec.sourceLinks));
+      }
+
+      return sections.filter(s => s.length > 0).join('\n\n---\n\n');
+    })();
 
     if (verbose) {
       console.log(`📝 Generated description: ${description.length} characters`);
@@ -109,7 +146,21 @@ export async function syncSpecWithEnhancedContent(
       };
     }
 
-    const client = new GitHubClientV2({ owner, repo });
+    const client = GitHubClientV2.fromRepo(owner, repo);
+
+    // NEW: Detect increment type and apply labels
+    const labelDetector = new LabelDetector(undefined, false);  // Use GitHub format
+    const detection = labelDetector.detectType(
+      await fs.readFile(specPath, 'utf-8'),
+      mapping.increments[0]?.id
+    );
+    const githubLabels = labelDetector.getGitHubLabels(detection.type);
+    const allLabels = ['spec', ...githubLabels];  // Include both 'spec' and type labels
+
+    if (verbose) {
+      console.log(`🏷️  Detected type: ${detection.type} (${detection.confidence}% confidence)`);
+      console.log(`   Labels: ${allLabels.join(', ')}`);
+    }
 
     // Check if issue already exists
     const existingIssue = await findExistingIssue(client, baseSpec.identifier.compact);
@@ -117,32 +168,34 @@ export async function syncSpecWithEnhancedContent(
     let result: EnhancedSyncResult;
 
     if (existingIssue) {
-      // Update existing issue
-      await client.updateIssue(existingIssue.number, {
-        title: `[${baseSpec.identifier.compact}] ${baseSpec.title}`,
-        body: description
-      });
+      // Update existing issue (body + labels)
+      await client.updateIssueBody(existingIssue.number, description);
+
+      // Update labels if autoApplyLabels is enabled
+      // TODO: Read from config, for now always apply
+      await client.addLabels(existingIssue.number, allLabels);
 
       result = {
         success: true,
         action: 'updated',
         issueNumber: existingIssue.number,
-        issueUrl: existingIssue.url,
+        issueUrl: existingIssue.html_url,
         tasksLinked: taskMapping?.tasks.length || 0
       };
     } else {
-      // Create new issue
-      const issue = await client.createIssue({
-        title: `[${baseSpec.identifier.compact}] ${baseSpec.title}`,
-        body: description,
-        labels: ['spec', 'external-tool-sync']
-      });
+      // Create new issue with labels
+      const issue = await client.createEpicIssue(
+        `[${baseSpec.identifier.compact}] ${baseSpec.title}`,
+        description,
+        undefined,
+        allLabels  // Apply labels at creation
+      );
 
       result = {
         success: true,
         action: 'created',
         issueNumber: issue.number,
-        issueUrl: issue.url,
+        issueUrl: issue.html_url,
         tasksLinked: taskMapping?.tasks.length || 0
       };
 
@@ -261,8 +314,8 @@ function buildSourceLinks(incrementId: string | undefined, owner: string, repo: 
 
 async function findExistingIssue(client: GitHubClientV2, specId: string): Promise<any | null> {
   try {
-    const issues = await client.listIssues({ state: 'all', labels: 'spec' });
-    return issues.find(issue => issue.title.includes(`[${specId}]`)) || null;
+    const issues = await client.listIssuesInTimeRange('ALL');
+    return issues.find((issue: any) => issue.title.includes(`[${specId}]`) && issue.labels?.some((l: any) => l.name === 'spec')) || null;
   } catch {
     return null;
   }

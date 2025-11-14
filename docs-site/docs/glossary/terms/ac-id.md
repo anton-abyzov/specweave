@@ -10,7 +10,7 @@ sidebar_position: 6
 
 **AC-ID** (Acceptance Criteria ID) is a unique identifier for acceptance criteria in SpecWeave specs. AC-IDs enable complete traceability from specifications through tasks to tests and implementation.
 
-**Format**: `AC-US{story}-{number}`
+**Format**: `AC-US\{story\}-\{number\}`
 
 **Examples**:
 - `AC-US1-01` - User Story 1, Acceptance Criterion 1
@@ -86,13 +86,13 @@ export class AuthService {
 
 ## Naming Convention
 
-**Format**: `AC-US{story}-{number}`
+**Format**: `AC-US\{story\}-\{number\}`
 
 **Components**:
 - `AC` - Acceptance Criteria prefix
 - `US` - User Story indicator
 - `{story}` - User story number (1, 2, 3, ...)
-- `{number}` - Acceptance criterion number within story (01, 02, 03, ...)
+- `\{number\}` - Acceptance criterion number within story (01, 02, 03, ...)
 
 **Examples**:
 ```

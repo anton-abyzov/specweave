@@ -26,3 +26,8 @@ Fix sync prompts during `specweave init` to correctly ask about "Local (.specwea
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#350 - [FS-25-11-09]](https://github.com/anton-abyzov/specweave/issues/350)

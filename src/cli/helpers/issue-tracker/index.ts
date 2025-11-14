@@ -120,6 +120,32 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     return true;
   }
 
+  // Step 1.5: Ask about sync settings (NEW in v0.21.0)
+  console.log('');
+  console.log(chalk.cyan.bold('⚙️  Sync Settings'));
+  console.log('');
+
+  const syncSettings = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'includeStatus',
+      message: 'Include work item status in sync? (e.g., update external tool when increment completes)',
+      default: true
+    },
+    {
+      type: 'confirm',
+      name: 'includeTaskCheckboxes',
+      message: 'Copy tasks as checkboxes to external issues? (recommended for GitHub/Jira)',
+      default: true
+    },
+    {
+      type: 'confirm',
+      name: 'autoApplyLabels',
+      message: 'Auto-apply labels based on increment type? ([Bug], [Feature], [Docs])',
+      default: true
+    }
+  ]);
+
   // Step 2: Check for existing credentials
   const existing = await checkExistingCredentials(tracker, projectPath);
 
@@ -170,7 +196,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         }
 
         // Step 5.2: Write sync config to .specweave/config.json
-        await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
+        await writeSyncConfig(projectPath, tracker, credentials, syncSettings, repositoryProfiles, monorepoProjects);
 
         // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
         if (tracker === 'jira') {
@@ -252,7 +278,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   }
 
   // Step 5.2: Write sync config to .specweave/config.json
-  await writeSyncConfig(projectPath, tracker, credentials, repositoryProfiles, monorepoProjects);
+  await writeSyncConfig(projectPath, tracker, credentials, syncSettings, repositoryProfiles, monorepoProjects);
 
   // Step 5.3: Validate project configuration (GitHub only)
   // NOW we can ask about project contexts (after repos are configured)
@@ -454,11 +480,14 @@ async function saveCredentials(
  *
  * This is CRITICAL for hooks to fire! Without this, the post-task-completion hook
  * won't sync to GitHub/Jira/ADO.
+ *
+ * NEW (v0.21.0): Includes sync settings (status sync, task checkboxes, auto-labels)
  */
 async function writeSyncConfig(
   projectPath: string,
   tracker: IssueTracker,
   credentials: TrackerCredentials,
+  syncSettings: { includeStatus: boolean; includeTaskCheckboxes: boolean; autoApplyLabels: boolean },
   repositoryProfiles?: any[],
   monorepoProjects?: string[]
 ): Promise<void> {
@@ -574,6 +603,10 @@ async function writeSyncConfig(
     const defaultProfile = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
     config.sync = {
       enabled: true,
+      provider: tracker,                                    // NEW: Exclusive provider
+      includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
+      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
+      autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: defaultProfile?.id || 'main',
       settings: {
         autoCreateIssue: true,
@@ -601,6 +634,10 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      provider: tracker,                                    // NEW: Exclusive provider
+      includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
+      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
+      autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
         autoCreateIssue: true,
@@ -627,6 +664,10 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      provider: tracker,                                    // NEW: Exclusive provider
+      includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
+      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
+      autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
         autoCreateIssue: true,
@@ -649,6 +690,10 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      provider: tracker,                                    // NEW: Exclusive provider
+      includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
+      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
+      autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
         autoCreateIssue: true,
@@ -664,6 +709,9 @@ async function writeSyncConfig(
   console.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
   console.log(chalk.gray(`   Provider: ${tracker}`));
   console.log(chalk.gray(`   Auto-sync: enabled`));
+  console.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
+  console.log(chalk.gray(`   Task checkboxes: ${syncSettings.includeTaskCheckboxes ? 'enabled' : 'disabled'}`));
+  console.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
   console.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
 }
 

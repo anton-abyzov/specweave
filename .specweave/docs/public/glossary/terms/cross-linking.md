@@ -487,7 +487,7 @@ See [ADR-001: OAuth vs JWT](../../architecture/adr/0001-oauth-vs-jwt.md) for tok
 | **Generate Section** | 2ms | Render markdown |
 | **Total** | 20ms | Per document |
 
-**Result**: Fast enough for real-time sync (<50ms overhead).
+**Result**: Fast enough for real-time sync (&lt;50ms overhead).
 
 ---
 
@@ -568,7 +568,7 @@ See [ADR-001: OAuth vs JWT](../../architecture/adr/0001-oauth-vs-jwt.md) for tok
 - Docusaurus compatible
 
 **Performance**:
-- Fast (<20ms per document)
+- Fast (&lt;20ms per document)
 - Async (non-blocking)
 
 **Result**: Documentation that's navigable, interconnected, and self-documenting.

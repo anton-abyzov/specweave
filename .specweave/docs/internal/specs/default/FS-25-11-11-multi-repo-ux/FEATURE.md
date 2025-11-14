@@ -31,3 +31,8 @@ Fix critical UX issues in the multi-repository GitHub setup flow that cause user
 - [US-004: Auto-Detect Repository Count](us-004-auto-detect-repository-count.md) - ✅ Complete
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#359 - [FS-25-11-11]](https://github.com/anton-abyzov/specweave/issues/359)

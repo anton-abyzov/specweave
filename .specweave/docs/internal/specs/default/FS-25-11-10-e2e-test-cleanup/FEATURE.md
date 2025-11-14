@@ -30,4 +30,4 @@ Fix failing e2e tests and reduce the number of skipped tests by removing inappro
 
 ## External Tool Integration
 
-**GitHub Issue**: [#208 - Feature](https://github.com/anton-abyzov/specweave/issues/208)
+**GitHub Issue**: [#352 - [FS-25-11-10]](https://github.com/anton-abyzov/specweave/issues/352)
