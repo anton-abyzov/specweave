@@ -13,7 +13,7 @@ SPECWEAVE_ROOT="${SPECWEAVE_ROOT:-$(pwd)}"
 METRICS_DIR="${SPECWEAVE_ROOT}/.specweave/metrics"
 HISTORY_FILE="${METRICS_DIR}/dora-history.jsonl"
 DASHBOARD_FILE="${SPECWEAVE_ROOT}/.specweave/docs/internal/delivery/dora-dashboard.md"
-DORA_CALCULATOR="${SPECWEAVE_ROOT}/dist/metrics/dora-calculator.js"
+DORA_CALCULATOR="${SPECWEAVE_ROOT}/dist/src/metrics/dora-calculator.js"
 LATEST_FILE="${METRICS_DIR}/dora-latest.json"
 
 # Logging
@@ -60,7 +60,7 @@ fi
 
 # Step 3: Update living docs dashboard
 log "📝 Updating DORA dashboard..."
-DASHBOARD_GENERATOR="${SPECWEAVE_ROOT}/dist/metrics/dashboard-generator.js"
+DASHBOARD_GENERATOR="${SPECWEAVE_ROOT}/dist/plugins/specweave-release/lib/dashboard-generator.js"
 
 if [[ -f "$DASHBOARD_GENERATOR" ]]; then
   if node "$DASHBOARD_GENERATOR"; then
