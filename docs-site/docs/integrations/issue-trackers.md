@@ -459,9 +459,49 @@ JIRA_COMPONENTS=Frontend,Backend
 
 ---
 
+## Cross-Platform Migration
+
+:::tip Switching Tools?
+SpecWeave's universal mapping template enables seamless migration between GitHub ↔ JIRA ↔ Azure DevOps.
+:::
+
+### How It Works
+
+Since `.specweave/` is your **permanent source of truth**, you can migrate between external tools:
+
+```
+GitHub → .specweave/ → JIRA
+JIRA → .specweave/ → Azure DevOps
+ADO → .specweave/ → GitHub
+```
+
+**Example: GitHub to JIRA Migration**
+
+```bash
+# Step 1: Import from GitHub
+/specweave-github:sync-spec spec-001 --direction import
+
+# Step 2: Export to JIRA
+/specweave-jira:sync-spec spec-001 --direction export
+
+# Done! Your GitHub issues are now in JIRA with full history
+```
+
+**What gets migrated:**
+- ✅ Hierarchy (Epics → Stories → Tasks)
+- ✅ Status (via configurable mapping)
+- ✅ Priority, labels, assignees
+- ✅ Comments and attachments
+- ✅ Links between issues
+
+**See**: [Multi-Project Sync - Cross-Platform Migration](/docs/integrations/multi-project-sync#cross-platform-migration) for complete guide
+
+---
+
 ## Next Steps
 
 - [Sync Increments to Issues](/docs/commands/sync)
 - [Create GitHub/Jira Issues Automatically](/docs/commands/create-issue)
 - [View Sync Status](/docs/commands/status)
 - [Multi-Project Configuration](/docs/advanced/multi-project)
+- [Cross-Platform Migration Guide](/docs/integrations/multi-project-sync#cross-platform-migration)
