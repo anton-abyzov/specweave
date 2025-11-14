@@ -22,9 +22,13 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-042: Validate Test Coverage](../../../../../increments/0006-llm-native-i18n/tasks.md#t-042-validate-test-coverage)
+- [T-043: Update CLAUDE.md](../../../../../increments/0006-llm-native-i18n/tasks.md#t-043-update-claude-md)
+- [T-044: Update README.md](../../../../../increments/0006-llm-native-i18n/tasks.md#t-044-update-readme-md)
+- [T-045: Create Multilingual Guide](../../../../../increments/0006-llm-native-i18n/tasks.md#t-045-create-multilingual-guide)
 
 ---
 

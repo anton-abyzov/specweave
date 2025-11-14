@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-016: Implement `plugin disable` Command](../../../../../increments/0004-plugin-architecture/tasks.md#t-016-implement-plugin-disable-command)
+- [T-017: Implement `plugin info` Command](../../../../../increments/0004-plugin-architecture/tasks.md#t-017-implement-plugin-info-command)
+- [T-018: Integrate Detector into `specweave init`](../../../../../increments/0004-plugin-architecture/tasks.md#t-018-integrate-detector-into-specweave-init)
 
 ---
 

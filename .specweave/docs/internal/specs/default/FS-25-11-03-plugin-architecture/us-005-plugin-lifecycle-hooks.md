@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-013: Create Plugin CLI Command](../../../../../increments/0004-plugin-architecture/tasks.md#t-013-create-plugin-cli-command)
+- [T-014: Implement `plugin list` Command](../../../../../increments/0004-plugin-architecture/tasks.md#t-014-implement-plugin-list-command)
+- [T-015: Implement `plugin enable` Command](../../../../../increments/0004-plugin-architecture/tasks.md#t-015-implement-plugin-enable-command)
 
 ---
 

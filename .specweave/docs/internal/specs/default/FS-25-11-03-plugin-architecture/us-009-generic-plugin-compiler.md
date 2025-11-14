@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-037: Update CLAUDE.md - Claude Superiority](../../../../../increments/0004-plugin-architecture/tasks.md#t-037-update-claude-md-claude-superiority)
+- [T-038: Update README.md - User-Facing](../../../../../increments/0004-plugin-architecture/tasks.md#t-038-update-readme-md-user-facing)
+- [T-039: Update Claude Adapter README](../../../../../increments/0004-plugin-architecture/tasks.md#t-039-update-claude-adapter-readme)
 
 ---
 

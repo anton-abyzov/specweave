@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-030: Update post-task-completion.sh Hook](../../../../../increments/0006-llm-native-i18n/tasks.md#t-030-update-post-task-completion-sh-hook)
+- [T-031: Implement File Change Detection](../../../../../increments/0006-llm-native-i18n/tasks.md#t-031-implement-file-change-detection)
+- [T-032: Implement Translator Skill Invocation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-032-implement-translator-skill-invocation)
+- [T-033: Test Living Docs Auto-Translation](../../../../../increments/0006-llm-native-i18n/tasks.md#t-033-test-living-docs-auto-translation)
+- [T-034: Unit Tests for LanguageManager](../../../../../increments/0006-llm-native-i18n/tasks.md#t-034-unit-tests-for-languagemanager)
+- [T-035: Skill Test Cases for Translator](../../../../../increments/0006-llm-native-i18n/tasks.md#t-035-skill-test-cases-for-translator)
 
 ---
 

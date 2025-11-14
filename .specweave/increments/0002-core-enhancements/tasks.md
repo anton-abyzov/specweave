@@ -26,6 +26,10 @@
 **Estimated**: 1 hour
 **Status**: [x] Completed
 
+**User Story**: [US-A001: Developer Using Cursor](../../docs/internal/specs/default/core-enhancements/us-a001-*.md)
+
+**AC**: AC-USA001-01, AC-USA001-02, AC-USA001-03
+
 **Implementation**:
 - Create `src/agents/diagrams-architect/` directory
 - Create `AGENT.md` with YAML frontmatter
@@ -48,6 +52,10 @@
 **Estimated**: 2 hours
 **Depends on**: T001
 **Status**: [x] Completed
+
+**User Story**: [US-A001: Developer Using Cursor](../../docs/internal/specs/default/core-enhancements/us-a001-*.md)
+
+**AC**: AC-USA001-01, AC-USA001-02, AC-USA001-03
 
 **See**: [plan.md#agent-architecture](plan.md#agent-architecture) for complete agent specification
 
@@ -80,6 +88,10 @@
 **Depends on**: T001
 **Status**: [x] Completed
 
+**User Story**: [US-A002: Developer Using GitHub Copilot](../../docs/internal/specs/default/core-enhancements/us-a002-*.md)
+
+**AC**: AC-USA002-01, AC-USA002-02, AC-USA002-03
+
 **Implementation**:
 Create Mermaid templates in `src/agents/diagrams-architect/templates/`:
 - `c4-context-template.mmd` (C4 Level 1)
@@ -102,6 +114,10 @@ Each template should:
 **Estimated**: 2 hours
 **Depends on**: T002
 **Status**: [x] Completed
+
+**User Story**: [US-A002: Developer Using GitHub Copilot](../../docs/internal/specs/default/core-enhancements/us-a002-*.md)
+
+**AC**: AC-USA002-01, AC-USA002-02, AC-USA002-03
 
 **See**: [tests.md#agent-test-cases-diagrams-architect](tests.md#agent-test-cases-diagrams-architect) for complete test definitions
 
@@ -129,6 +145,10 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 **Estimated**: 1 hour
 **Status**: [x] Completed (pre-existing)
 
+**User Story**: [US-A003: Developer Using ANY AI Tool (Generic Adapter)](../../docs/internal/specs/default/core-enhancements/us-a003-*.md)
+
+**AC**: AC-USA003-01, AC-USA003-02, AC-USA003-03
+
 **Implementation**:
 - Create `src/skills/diagrams-generator/` directory
 - Create `SKILL.md` with YAML frontmatter
@@ -147,6 +167,10 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 **Estimated**: 1.5 hours
 **Depends on**: T005
 **Status**: [x] Completed
+
+**User Story**: [US-A003: Developer Using ANY AI Tool (Generic Adapter)](../../docs/internal/specs/default/core-enhancements/us-a003-*.md)
+
+**AC**: AC-USA003-01, AC-USA003-02, AC-USA003-03
 
 **Implementation**:
 - Add YAML frontmatter (name, description, allowed-tools)
@@ -173,6 +197,10 @@ Create YAML test cases in `src/agents/diagrams-architect/test-cases/`:
 **Estimated**: 1.5 hours
 **Depends on**: T006
 **Status**: [x] Completed (pre-existing)
+
+**User Story**: [US-A004: Developer Upgrading from Claude-Only beta.1](../../docs/internal/specs/default/core-enhancements/us-a004-*.md)
+
+**AC**: AC-USA004-01, AC-USA004-02, AC-USA004-03
 
 **See**: [tests.md#skill-test-cases-diagrams-generator](tests.md#skill-test-cases-diagrams-generator) for complete test definitions
 
@@ -202,6 +230,10 @@ Create YAML test cases in `src/skills/diagrams-generator/test-cases/`:
 **Depends on**: T002
 **Status**: [x] Completed
 
+**User Story**: [US-A004: Developer Upgrading from Claude-Only beta.1](../../docs/internal/specs/default/core-enhancements/us-a004-*.md)
+
+**AC**: AC-USA004-01, AC-USA004-02, AC-USA004-03
+
 **Implementation**:
 - Extract C4 Model knowledge from DIAGRAM-CONVENTIONS.md
 - Move to `diagrams-architect/AGENT.md` system prompt
@@ -221,6 +253,10 @@ Create YAML test cases in `src/skills/diagrams-generator/test-cases/`:
 **Estimated**: 1 hour
 **Depends on**: T004, T007
 **Status**: [x] Completed
+
+**User Story**: [US-A005: Framework Developer (Adapter Creation)](../../docs/internal/specs/default/core-enhancements/us-a005-*.md)
+
+**AC**: AC-USA005-01, AC-USA005-02, AC-USA005-03
 
 **Implementation**:
 Update `CLAUDE.md` sections:
@@ -254,6 +290,10 @@ Update `CLAUDE.md` sections:
 **Depends on**: T009
 **Status**: [x] Completed
 
+**User Story**: [US-A005: Framework Developer (Adapter Creation)](../../docs/internal/specs/default/core-enhancements/us-a005-*.md)
+
+**AC**: AC-USA005-01, AC-USA005-02, AC-USA005-03
+
 **Implementation**:
 Create `.specweave/increments/0002-diagram-agents/context-manifest.yaml`:
 
@@ -283,6 +323,10 @@ auto_refresh: false
 **Depends on**: T004, T007
 **Status**: [x] Completed
 
+**User Story**: [US-B001: Create C4 Context Diagram](../../docs/internal/specs/default/core-enhancements/us-b001-*.md)
+
+**AC**: AC-USB001-01, AC-USB001-02, AC-USB001-03
+
 **Implementation**:
 - Run `npm run install:agents` to verify diagrams-architect copies to `.claude/agents/`
 - Run `npm run install:skills` to verify diagrams-generator copies to `.claude/skills/`
@@ -302,6 +346,10 @@ ls -la .claude/skills/diagrams-generator/
 **Estimated**: 1 hour
 **Depends on**: T011
 **Status**: [x] Completed
+
+**User Story**: [US-B001: Create C4 Context Diagram](../../docs/internal/specs/default/core-enhancements/us-b001-*.md)
+
+**AC**: AC-USB001-01, AC-USB001-02, AC-USB001-03
 
 **Implementation**:
 - Restart Claude Code to load new agent/skill
@@ -324,6 +372,10 @@ ls -la .claude/skills/diagrams-generator/
 **Estimated**: 1 hour
 **Depends on**: T012
 **Status**: [x] Completed
+
+**User Story**: [US-B002: Create Sequence Diagram](../../docs/internal/specs/default/core-enhancements/us-b002-*.md)
+
+**AC**: AC-USB002-01, AC-USB002-02, AC-USB002-03
 
 **Implementation**:
 - Run all agent test cases (3+)
@@ -350,6 +402,10 @@ npm run test:skills -- diagrams-generator
 **Estimated**: 5 minutes
 **Status**: [x] Completed
 
+**User Story**: [US-B002: Create Sequence Diagram](../../docs/internal/specs/default/core-enhancements/us-b002-*.md)
+
+**AC**: AC-USB002-01, AC-USB002-02, AC-USB002-03
+
 **Implementation**:
 - Create feature branch from `develop`
 - Name: `features/002-diagram-agents`
@@ -372,6 +428,10 @@ git push -u origin features/002-diagram-agents
 **Estimated**: 30 minutes
 **Depends on**: T001-T013
 **Status**: [x] Completed
+
+**User Story**: [US-B003: Create ER Diagram](../../docs/internal/specs/default/core-enhancements/us-b003-*.md)
+
+**AC**: AC-USB003-01, AC-USB003-02, AC-USB003-03
 
 **Implementation**:
 - Commit all changes with proper messages

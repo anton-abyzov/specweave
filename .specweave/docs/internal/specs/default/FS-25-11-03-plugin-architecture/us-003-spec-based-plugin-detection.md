@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-007: Implement Claude Plugin Installer](../../../../../increments/0004-plugin-architecture/tasks.md#t-007-implement-claude-plugin-installer)
+- [T-008: Implement Cursor Plugin Compiler](../../../../../increments/0004-plugin-architecture/tasks.md#t-008-implement-cursor-plugin-compiler)
+- [T-009: Implement Copilot Plugin Compiler](../../../../../increments/0004-plugin-architecture/tasks.md#t-009-implement-copilot-plugin-compiler)
 
 ---
 

@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-003: Implement Agent Model Manager](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-003-implement-agent-model-manager)
+- [T-004: Add model_preference to All Agents (20 agents)](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-004-add-model-preference-to-all-agents-20-agents)
 
 ---
 

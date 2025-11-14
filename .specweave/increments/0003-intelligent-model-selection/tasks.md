@@ -21,6 +21,8 @@ This document contains **executable, independent tasks** for implementing the In
 ## Phase 1: Foundation - Agent Model Preferences (Week 1)
 
 ### T-001: Create Core Type Definitions
+**User Story**: [US-001: Automatic Cost Optimization (Core Value)](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-001-automatic-cost-optimization-core-value.md)
+
 
 **Priority**: P1
 **Estimated Time**: 30 min
@@ -117,9 +119,15 @@ export interface IncrementCostReport {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-001: Automatic Cost Optimization (Core Value)](../../docs/internal/specs/default/intelligent-model-selection/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
+
 ---
 
 ### T-002: Create Pricing Constants Utility
+**User Story**: [US-001: Automatic Cost Optimization (Core Value)](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-001-automatic-cost-optimization-core-value.md)
+
 
 **Priority**: P1
 **Estimated Time**: 15 min
@@ -168,9 +176,15 @@ export function getModelPricing(model: 'sonnet' | 'haiku' | 'opus') {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-001: Automatic Cost Optimization (Core Value)](../../docs/internal/specs/default/intelligent-model-selection/us-001-*.md)
+
+**AC**: AC-US001-01, AC-US001-02, AC-US001-03
+
 ---
 
 ### T-003: Implement Agent Model Manager
+**User Story**: [US-002: Cost Visibility & Tracking](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-002-cost-visibility-tracking.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -270,9 +284,15 @@ export class AgentModelManager {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-002: Cost Visibility & Tracking](../../docs/internal/specs/default/intelligent-model-selection/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
+
 ---
 
 ### T-004: Add model_preference to All Agents (20 agents)
+**User Story**: [US-002: Cost Visibility & Tracking](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-002-cost-visibility-tracking.md)
+
 
 **Priority**: P1
 **Estimated Time**: 1 hour
@@ -332,6 +352,10 @@ fallback_behavior: auto
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-002: Cost Visibility & Tracking](../../docs/internal/specs/default/intelligent-model-selection/us-002-*.md)
+
+**AC**: AC-US002-01, AC-US002-02, AC-US002-03
+
 **Summary**:
 - Sonnet (planning): pm, architect, security, performance, database-optimizer, kubernetes-architect, data-scientist
 - Haiku (execution): devops, qa-lead, tech-lead, network-engineer, observability-engineer, tdd-orchestrator, ml-engineer, mlops-engineer, payment-integration, performance-engineer
@@ -340,6 +364,8 @@ fallback_behavior: auto
 ---
 
 ### T-005: Unit Tests for Agent Model Manager
+**User Story**: [US-003: Agent-Level Model Intelligence](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-003-agent-level-model-intelligence.md)
+
 
 **Priority**: P1
 **Estimated Time**: 1 hour
@@ -401,11 +427,17 @@ describe('AgentModelManager', () => {
 
 **Status**: [ ]
 
+**User Story**: [US-003: Agent-Level Model Intelligence](../../docs/internal/specs/default/intelligent-model-selection/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
+
 ---
 
 ## Phase 2: Intelligence - Phase Detection & Model Selection (Week 2)
 
 ### T-006: Implement Phase Detector
+**User Story**: [US-003: Agent-Level Model Intelligence](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-003-agent-level-model-intelligence.md)
+
 
 **Priority**: P1
 **Estimated Time**: 3 hours
@@ -650,9 +682,15 @@ export class PhaseDetector {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-003: Agent-Level Model Intelligence](../../docs/internal/specs/default/intelligent-model-selection/us-003-*.md)
+
+**AC**: AC-US003-01, AC-US003-02, AC-US003-03
+
 ---
 
 ### T-007: Unit Tests for Phase Detector
+**User Story**: [US-004: Phase Detection](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-004-phase-detection.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -752,9 +790,15 @@ describe('PhaseDetector', () => {
 
 **Status**: [ ]
 
+**User Story**: [US-004: Phase Detection](../../docs/internal/specs/default/intelligent-model-selection/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
+
 ---
 
 ### T-008: Implement Model Selector
+**User Story**: [US-004: Phase Detection](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-004-phase-detection.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -888,9 +932,15 @@ export class ModelSelector {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-004: Phase Detection](../../docs/internal/specs/default/intelligent-model-selection/us-004-*.md)
+
+**AC**: AC-US004-01, AC-US004-02, AC-US004-03
+
 ---
 
 ### T-009: Unit Tests for Model Selector
+**User Story**: [US-005: Multi-Phase Auto-Split](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-005-multi-phase-auto-split.md)
+
 
 **Priority**: P1
 **Estimated Time**: 1.5 hours
@@ -989,11 +1039,17 @@ describe('ModelSelector', () => {
 
 **Status**: [ ]
 
+**User Story**: [US-005: Multi-Phase Auto-Split](../../docs/internal/specs/default/intelligent-model-selection/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
+
 ---
 
 ## Phase 3: Cost Tracking (Week 2-3)
 
 ### T-010: Implement Cost Tracker Service
+**User Story**: [US-005: Multi-Phase Auto-Split](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-005-multi-phase-auto-split.md)
+
 
 **Priority**: P1
 **Estimated Time**: 3 hours
@@ -1023,9 +1079,15 @@ Key methods:
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-005: Multi-Phase Auto-Split](../../docs/internal/specs/default/intelligent-model-selection/us-005-*.md)
+
+**AC**: AC-US005-01, AC-US005-02, AC-US005-03
+
 ---
 
 ### T-011: Integrate Cost Tracking with Task Tool
+**User Story**: [US-006: Cost Dashboard & Reporting](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-006-cost-dashboard-reporting.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -1070,9 +1132,15 @@ try {
 
 **Status**: [ ]
 
+**User Story**: [US-006: Cost Dashboard & Reporting](../../docs/internal/specs/default/intelligent-model-selection/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
+
 ---
 
 ### T-012: Implement Cost Report Generation
+**User Story**: [US-006: Cost Dashboard & Reporting](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-006-cost-dashboard-reporting.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -1128,9 +1196,15 @@ export class CostReporter {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-006: Cost Dashboard & Reporting](../../docs/internal/specs/default/intelligent-model-selection/us-006-*.md)
+
+**AC**: AC-US006-01, AC-US006-02, AC-US006-03
+
 ---
 
 ### T-013: Create /specweave:costs Command
+**User Story**: [US-007: User Control Modes](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-007-user-control-modes.md)
+
 
 **Priority**: P1
 **Estimated Time**: 1 hour
@@ -1190,9 +1264,15 @@ if (wantsExport) {
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-007: User Control Modes](../../docs/internal/specs/default/intelligent-model-selection/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
+
 ---
 
 ### T-014: Unit Tests for Cost Tracker
+**User Story**: [US-007: User Control Modes](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-007-user-control-modes.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -1217,11 +1297,17 @@ Write comprehensive unit tests for CostTracker.
 
 **Status**: [ ]
 
+**User Story**: [US-007: User Control Modes](../../docs/internal/specs/default/intelligent-model-selection/us-007-*.md)
+
+**AC**: AC-US007-01, AC-US007-02, AC-US007-03
+
 ---
 
 ## Phase 4: Auto-Split Orchestration (Week 3)
 
 ### T-015: Implement Auto-Split Orchestrator
+**User Story**: [US-008: Cost Policies & Guardrails](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-008-cost-policies-guardrails.md)
+
 
 **Priority**: P2
 **Estimated Time**: 3 hours
@@ -1332,9 +1418,15 @@ export class AutoSplitOrchestrator {
 
 **Status**: [ ]
 
+**User Story**: [US-008: Cost Policies & Guardrails](../../docs/internal/specs/default/intelligent-model-selection/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
+
 ---
 
 ### T-016: Update Brownfield-Onboarder with Auto-Split
+**User Story**: [US-008: Cost Policies & Guardrails](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-008-cost-policies-guardrails.md)
+
 
 **Priority**: P2
 **Estimated Time**: 2 hours
@@ -1408,9 +1500,15 @@ const result = await orchestrator.execute(phases, context);
 
 **Status**: [ ]
 
+**User Story**: [US-008: Cost Policies & Guardrails](../../docs/internal/specs/default/intelligent-model-selection/us-008-*.md)
+
+**AC**: AC-US008-01, AC-US008-02, AC-US008-03
+
 ---
 
 ### T-017: Update Role-Orchestrator with Intelligent Model Selection
+**User Story**: [US-009: Research Phase Before Spec Generation](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-009-research-phase-before-spec-generation.md)
+
 
 **Priority**: P2
 **Estimated Time**: 2 hours
@@ -1446,11 +1544,17 @@ Implementation already works via agent preferences (T-004), just document it.
 
 **Status**: [ ]
 
+**User Story**: [US-009: Research Phase Before Spec Generation](../../docs/internal/specs/default/intelligent-model-selection/us-009-*.md)
+
+**AC**: AC-US009-01, AC-US009-02, AC-US009-03
+
 ---
 
 ## Phase 5: Documentation & Refinement (Week 3)
 
 ### T-018: Write ADR-007: Intelligent Model Selection
+**User Story**: [US-009: Research Phase Before Spec Generation](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-009-research-phase-before-spec-generation.md)
+
 
 **Priority**: P1
 **Estimated Time**: 1 hour
@@ -1479,9 +1583,15 @@ Sections:
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-009: Research Phase Before Spec Generation](../../docs/internal/specs/default/intelligent-model-selection/us-009-*.md)
+
+**AC**: AC-US009-01, AC-US009-02, AC-US009-03
+
 ---
 
 ### T-019: Write ADR-008: Cost Tracking System
+**User Story**: [US-010: Model Version Policy (Always Latest)](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-010-model-version-policy-always-latest.md)
+
 
 **Priority**: P1
 **Estimated Time**: 45 min
@@ -1503,9 +1613,15 @@ Document cost tracking architecture.
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-010: Model Version Policy (Always Latest)](../../docs/internal/specs/default/intelligent-model-selection/us-010-*.md)
+
+**AC**: AC-US010-01, AC-US010-02, AC-US010-03
+
 ---
 
 ### T-020: Write ADR-009: Phase Detection Algorithm
+**User Story**: [US-010: Model Version Policy (Always Latest)](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-010-model-version-policy-always-latest.md)
+
 
 **Priority**: P1
 **Estimated Time**: 45 min
@@ -1527,9 +1643,15 @@ Document phase detection algorithm.
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-010: Model Version Policy (Always Latest)](../../docs/internal/specs/default/intelligent-model-selection/us-010-*.md)
+
+**AC**: AC-US010-01, AC-US010-02, AC-US010-03
+
 ---
 
 ### T-021: Write User Documentation
+**User Story**: [US-011: Quality Validation Optimization](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-011-quality-validation-optimization.md)
+
 
 **Priority**: P1
 **Estimated Time**: 2 hours
@@ -1565,9 +1687,15 @@ Create user-facing documentation for intelligent model selection.
 
 **Status**: [x] ✅ Completed 2025-10-31
 
+**User Story**: [US-011: Quality Validation Optimization](../../docs/internal/specs/default/intelligent-model-selection/us-011-*.md)
+
+**AC**: AC-US011-01, AC-US011-02, AC-US011-03
+
 ---
 
 ### T-022: Update CLAUDE.md with Increment Naming Convention
+**User Story**: [US-011: Quality Validation Optimization](../../docs/internal/specs/default/FS-25-10-29-intelligent-model-selection/us-011-quality-validation-optimization.md)
+
 
 **Priority**: P1
 **Estimated Time**: 30 min
@@ -1612,6 +1740,10 @@ Add to `CLAUDE.md`:
 - [x] Rationale explained
 
 **Status**: [x] ✅ Completed 2025-10-31 (Already in CLAUDE.md)
+
+**User Story**: [US-011: Quality Validation Optimization](../../docs/internal/specs/default/intelligent-model-selection/us-011-*.md)
+
+**AC**: AC-US011-01, AC-US011-02, AC-US011-03
 
 ---
 

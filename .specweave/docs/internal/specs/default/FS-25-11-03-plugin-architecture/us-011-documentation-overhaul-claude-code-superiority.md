@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-043: Create Plugin Developer Guide](../../../../../increments/0004-plugin-architecture/tasks.md#t-043-create-plugin-developer-guide)
+- [T-044: Create Migration Guide (v0.3.7 → v0.4.0)](../../../../../increments/0004-plugin-architecture/tasks.md#t-044-create-migration-guide-v0-3-7-v0-4-0)
+- [T-045: Create Marketplace Repository](../../../../../increments/0004-plugin-architecture/tasks.md#t-045-create-marketplace-repository)
 
 ---
 

@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-001: Create Plugin Type Definitions](../../../../../increments/0004-plugin-architecture/tasks.md#t-001-create-plugin-type-definitions)
+- [T-002: Create Plugin Manifest JSON Schema](../../../../../increments/0004-plugin-architecture/tasks.md#t-002-create-plugin-manifest-json-schema)
+- [T-003: Create PluginLoader Class](../../../../../increments/0004-plugin-architecture/tasks.md#t-003-create-pluginloader-class)
 
 ---
 

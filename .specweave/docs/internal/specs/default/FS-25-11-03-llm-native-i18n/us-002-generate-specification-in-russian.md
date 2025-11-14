@@ -22,9 +22,15 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0006-llm-native-i18n](undefined)
+**Increment**: [0006-llm-native-i18n](../../../../../increments/0006-llm-native-i18n/tasks.md)
 
 **Tasks**:
+- [T-006: Write Unit Tests for LanguageManager](../../../../../increments/0006-llm-native-i18n/tasks.md#t-006-write-unit-tests-for-languagemanager)
+- [T-007: Add Language Option to CLI](../../../../../increments/0006-llm-native-i18n/tasks.md#t-007-add-language-option-to-cli)
+- [T-008: Update .gitignore for Locale Files](../../../../../increments/0006-llm-native-i18n/tasks.md#t-008-update-gitignore-for-locale-files)
+- [T-009: Create Translator Plugin Directory Structure](../../../../../increments/0006-llm-native-i18n/tasks.md#t-009-create-translator-plugin-directory-structure)
+- [T-010: Write Translator Skill](../../../../../increments/0006-llm-native-i18n/tasks.md#t-010-write-translator-skill)
+- [T-011: Write Translator Agent](../../../../../increments/0006-llm-native-i18n/tasks.md#t-011-write-translator-agent)
 
 ---
 

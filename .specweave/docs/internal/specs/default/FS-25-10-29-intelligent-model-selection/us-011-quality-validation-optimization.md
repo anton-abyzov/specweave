@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-021: Write User Documentation](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-021-write-user-documentation)
+- [T-022: Update CLAUDE.md with Increment Naming Convention](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-022-update-claude-md-with-increment-naming-convention)
 
 ---
 

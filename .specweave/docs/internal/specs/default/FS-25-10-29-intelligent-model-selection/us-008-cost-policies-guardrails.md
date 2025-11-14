@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-015: Implement Auto-Split Orchestrator](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-015-implement-auto-split-orchestrator)
+- [T-016: Update Brownfield-Onboarder with Auto-Split](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-016-update-brownfield-onboarder-with-auto-split)
 
 ---
 

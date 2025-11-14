@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-019: Integrate Detector into `/specweave:inc`](../../../../../increments/0004-plugin-architecture/tasks.md#t-019-integrate-detector-into-specweave-inc)
+- [T-020: Create Pre-Task Hook](../../../../../increments/0004-plugin-architecture/tasks.md#t-020-create-pre-task-hook)
+- [T-021: Create Post-Increment Hook](../../../../../increments/0004-plugin-architecture/tasks.md#t-021-create-post-increment-hook)
 
 ---
 

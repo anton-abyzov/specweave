@@ -22,9 +22,12 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0004-plugin-architecture](undefined)
+**Increment**: [0004-plugin-architecture](../../../../../increments/0004-plugin-architecture/tasks.md)
 
 **Tasks**:
+- [T-040: Update Cursor Adapter README](../../../../../increments/0004-plugin-architecture/tasks.md#t-040-update-cursor-adapter-readme)
+- [T-041: Update Copilot Adapter README](../../../../../increments/0004-plugin-architecture/tasks.md#t-041-update-copilot-adapter-readme)
+- [T-042: Update AGENTS.md Template](../../../../../increments/0004-plugin-architecture/tasks.md#t-042-update-agents-md-template)
 
 ---
 

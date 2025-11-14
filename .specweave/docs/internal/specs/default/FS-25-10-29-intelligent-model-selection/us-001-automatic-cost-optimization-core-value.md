@@ -22,9 +22,11 @@ completed: 2025-11-14
 
 ## Implementation
 
-**Increment**: [0003-intelligent-model-selection](undefined)
+**Increment**: [0003-intelligent-model-selection](../../../../../increments/0003-intelligent-model-selection/tasks.md)
 
 **Tasks**:
+- [T-001: Create Core Type Definitions](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-001-create-core-type-definitions)
+- [T-002: Create Pricing Constants Utility](../../../../../increments/0003-intelligent-model-selection/tasks.md#t-002-create-pricing-constants-utility)
 
 ---
 
