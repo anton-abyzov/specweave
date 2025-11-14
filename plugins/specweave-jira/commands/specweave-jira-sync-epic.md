@@ -1,5 +1,5 @@
 ---
-name: specweave-jira-sync-epic
+name: specweave-jira:sync-epic
 description: Sync SpecWeave Epic folder to JIRA (Epic + Stories with Epic Link). Implements Universal Hierarchy architecture - Epic → JIRA Epic, Increments → Stories.
 ---
 
