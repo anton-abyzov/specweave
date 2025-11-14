@@ -1,10 +1,10 @@
 /**
- * SpecWeave Hierarchy Mapper (v3.0.0 - Universal Hierarchy)
+ * SpecWeave Hierarchy Mapper (v4.0.0 - Universal Hierarchy with FS-XXX)
  *
  * Maps increments to universal hierarchy following work item type matrix:
  * - Epic (EPIC-{id}) -> Cross-project strategic themes (_epics/)
- * - Feature (FS-YY-MM-DD-{name}) -> Cross-project features (_features/ + project folders)
- * - User Story (us-{id}) -> Project-specific requirements (project/FS-{id}/us-{id}.md)
+ * - Feature (FS-XXX) -> Cross-project features (_features/ + project folders)
+ * - User Story (us-{id}) -> Project-specific requirements (project/FS-XXX/us-{id}.md)
  * - Task (T-{id}) -> Increment-specific implementation (increments/{id}/tasks.md)
  *
  * Key Principles:
@@ -12,10 +12,11 @@
  * - Projects are DYNAMIC from config.json -> multiProject.projects
  * - Single-project mode: ['default'] (always)
  * - Multi-project mode: User-configured project names
- * - Date + name = unique feature folder (multiple features per day OK)
+ * - Feature IDs assigned by creation date (FS-001, FS-002, etc.)
+ * - NO DUPLICATE FEATURE IDS (enforced by FeatureIDManager)
  *
  * @author SpecWeave Team
- * @version 3.0.0 (Universal Hierarchy)
+ * @version 4.0.0 (Universal Hierarchy with FS-XXX)
  */
 
 import fs from 'fs-extra';
@@ -23,6 +24,7 @@ import path from 'path';
 import { ConfigManager } from '../config-manager.js';
 import { SpecweaveConfig, MultiProjectConfig, ProjectConfig } from '../types/config.js';
 import { EpicMapping, FeatureMapping, ProjectContext } from './types.js';
+import { FeatureIDManager } from './feature-id-manager.js';
 
 /**
  * Hierarchy Configuration
@@ -39,21 +41,23 @@ export interface HierarchyConfig {
 /**
  * HierarchyMapper - Maps increments to universal hierarchy
  *
- * Universal Hierarchy (v3.0.0):
+ * Universal Hierarchy (v4.0.0):
  * 1. Epic (EPIC-YYYY-QN-{name}) -> _epics/EPIC-{id}/EPIC.md
- * 2. Feature (FS-YY-MM-DD-{name}) -> _features/FS-{id}/FEATURE.md + {project}/FS-{id}/
- * 3. User Story (us-NNN-{name}) -> {project}/FS-{id}/us-{id}.md
+ * 2. Feature (FS-XXX) -> _features/FS-XXX/FEATURE.md + {project}/FS-XXX/
+ * 3. User Story (us-NNN-{name}) -> {project}/FS-XXX/us-{id}.md
  * 4. Task (T-NNN) -> increments/{id}/tasks.md
  */
 export class HierarchyMapper {
   private config: HierarchyConfig;
   private projectRoot: string;
+  private featureIdManager: FeatureIDManager;
   private configManager: ConfigManager;
   private specweaveConfig: SpecweaveConfig | null = null;
 
   constructor(projectRoot: string, config?: Partial<HierarchyConfig>) {
     this.projectRoot = projectRoot;
     this.configManager = new ConfigManager(projectRoot);
+    this.featureIdManager = new FeatureIDManager(projectRoot);
 
     this.config = {
       level: 'standard',
@@ -181,6 +185,9 @@ export class HierarchyMapper {
    * 4. Fallback: Auto-create feature from increment name + date
    */
   async detectFeatureMapping(incrementId: string): Promise<FeatureMapping> {
+    // Load feature registry first
+    await this.featureIdManager.loadRegistry();
+
     const specPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'spec.md');
 
     if (!fs.existsSync(specPath)) {
@@ -436,24 +443,21 @@ export class HierarchyMapper {
     confidence: number,
     detectionMethod: 'frontmatter' | 'increment-name' | 'config' | 'fallback'
   ): FeatureMapping {
-    // Full folder name for _features directory (e.g., FS-25-11-12-external-tool-sync)
-    const featureFolder = featureId;
+    // Get the assigned FS-XXX ID from the registry
+    const assignedId = this.featureIdManager.getAssignedId(featureId);
+
+    // Use assigned ID for both _features and project folders
+    const featureFolder = assignedId;  // e.g., FS-001
     const featurePath = path.join(this.config.specsBaseDir, '_features', featureFolder);
 
-    // Extract short name for project folders (e.g., FS-25-11-12)
-    // Pattern: FS-YY-MM-DD (first 11 characters) or fallback to full ID if doesn't match
-    const shortFeatureName = featureId.match(/^FS-\d{2}-\d{2}-\d{2}/)
-      ? featureId.substring(0, 11)  // FS-YY-MM-DD
-      : featureId;  // Fallback to full ID if pattern doesn't match
-
-    // Build project paths map using short names
+    // Build project paths map using assigned ID
     const projectPaths = new Map<string, string>();
     for (const project of projects) {
-      projectPaths.set(project, path.join(this.config.specsBaseDir, project, shortFeatureName));
+      projectPaths.set(project, path.join(this.config.specsBaseDir, project, assignedId));
     }
 
     return {
-      featureId,
+      featureId: assignedId,  // Use assigned ID as the feature ID
       featureFolder,
       featurePath,
       projects,
