@@ -298,6 +298,337 @@ specweave migrate-to-profiles
 
 ---
 
+## Cross-Platform Migration
+
+:::tip Universal Migration Capability
+SpecWeave's universal mapping template enables seamless migration **between** external tools (GitHub ↔ JIRA ↔ Azure DevOps) without data loss.
+:::
+
+### The Power of `.specweave/` as Hub
+
+Since `.specweave/` is the **permanent source of truth**, you can easily migrate between external tools:
+
+```
+Step 1: Import          Step 2: Export
+GitHub → .specweave/ → JIRA
+JIRA → .specweave/ → Azure DevOps
+ADO → .specweave/ → GitHub
+```
+
+**Key Insight**: You're not migrating GitHub-to-JIRA directly. You're importing from GitHub into SpecWeave's canonical format, then exporting to JIRA.
+
+### How It Works
+
+#### 1. Universal Data Model
+
+All external tools map to SpecWeave's standard hierarchy:
+
+| SpecWeave | GitHub | JIRA | Azure DevOps |
+|-----------|--------|------|--------------|
+| **Epic** | Milestone | Epic | Epic |
+| **User Story** | Issue | Story | User Story |
+| **Task** | Checkbox | Sub-task | Task |
+| **Status** | Open/Closed | To Do/Done | New/Active/Closed |
+| **Priority** | Labels | Priority | Priority |
+| **Assignee** | Assignee | Assignee | Assigned To |
+
+#### 2. Status Mapping Configuration
+
+Define how statuses translate between tools:
+
+```json
+{
+  "sync": {
+    "statusMapping": {
+      "github": {
+        "open": "To Do",
+        "in_progress": "In Development",
+        "in_review": "Code Review",
+        "done": "Closed"
+      },
+      "jira": {
+        "To Do": "Open",
+        "In Development": "In Progress",
+        "Code Review": "In Review",
+        "Closed": "Done"
+      },
+      "ado": {
+        "New": "To Do",
+        "Active": "In Development",
+        "Resolved": "In Review",
+        "Closed": "Done"
+      }
+    },
+    "priorityMapping": {
+      "github": {
+        "critical": "Highest",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "jira": {
+        "Highest": "P0",
+        "High": "P1",
+        "Medium": "P2",
+        "Low": "P3"
+      }
+    }
+  }
+}
+```
+
+#### 3. Migration Process
+
+**Example: GitHub to JIRA Migration**
+
+```bash
+# Step 1: Import all GitHub issues to SpecWeave
+/specweave-github:sync-spec spec-001-user-auth --direction import
+
+# Step 2: Review imported spec
+# .specweave/docs/internal/specs/default/FS-001-user-auth/
+# ├── README.md (Epic overview)
+# ├── us-001-login.md (User Story)
+# ├── us-002-oauth.md (User Story)
+# └── us-003-password-reset.md (User Story)
+
+# Step 3: Export to JIRA with status mapping
+/specweave-jira:sync-spec spec-001-user-auth --direction export
+
+# Result:
+# ✅ JIRA Epic created: AUTH-123 "User Authentication"
+# ✅ JIRA Stories created: AUTH-124, AUTH-125, AUTH-126
+# ✅ All metadata preserved (priority, assignees, comments)
+# ✅ Links between stories maintained
+# ✅ Attachments migrated
+```
+
+### What Gets Migrated
+
+| Data | Preserved | Notes |
+|------|-----------|-------|
+| **Hierarchy** | ✅ Yes | Epic → Stories → Tasks |
+| **Title & Description** | ✅ Yes | Full markdown content |
+| **Status** | ✅ Yes | Via status mapping config |
+| **Priority** | ✅ Yes | Via priority mapping config |
+| **Assignees** | ✅ Yes | Requires user mapping |
+| **Labels/Tags** | ✅ Yes | Converted to target format |
+| **Comments** | ✅ Yes | Full discussion history |
+| **Attachments** | ✅ Yes | Files and screenshots |
+| **Links** | ✅ Yes | Cross-references maintained |
+| **Custom Fields** | ⚠️ Partial | Via field mapping config |
+| **Time Tracking** | ⚠️ Partial | If supported by target |
+
+### User Mapping
+
+Map users between systems:
+
+```json
+{
+  "sync": {
+    "userMapping": {
+      "github_user1": "jira.user1@company.com",
+      "github_user2": "jira.user2@company.com"
+    }
+  }
+}
+```
+
+**Auto-detection**: SpecWeave tries to match users by email when possible.
+
+### Common Migration Scenarios
+
+#### Scenario 1: Switching Project Management Tools
+
+**Context**: Your company is migrating from GitHub Issues to JIRA.
+
+**Process**:
+1. Import all GitHub issues: `/specweave-github:sync-spec --all --direction import`
+2. Review and organize in `.specweave/docs/internal/specs/`
+3. Export to JIRA: `/specweave-jira:sync-spec --all --direction export`
+4. Validate: Compare counts, check critical issues
+5. Deactivate GitHub sync, activate JIRA sync
+
+#### Scenario 2: Multi-Tool Team Workflow
+
+**Context**: Developers use GitHub, Product team uses JIRA.
+
+**Setup**:
+```json
+{
+  "sync": {
+    "settings": {
+      "syncDirection": "bidirectional"
+    },
+    "profiles": {
+      "github-dev": {
+        "provider": "github",
+        "config": { "owner": "myorg", "repo": "product" }
+      },
+      "jira-product": {
+        "provider": "jira",
+        "config": { "domain": "myorg.atlassian.net", "project": "PROD" }
+      }
+    }
+  }
+}
+```
+
+**Workflow**:
+- Developers create increments in SpecWeave
+- Auto-sync to GitHub (for dev tracking)
+- Auto-sync to JIRA (for product visibility)
+- Changes in either tool sync back to SpecWeave
+
+#### Scenario 3: Client Deliverables
+
+**Context**: Internal work in GitHub, deliver to client's Azure DevOps.
+
+**Process**:
+1. Develop internally with GitHub sync enabled
+2. Before client delivery: `/specweave-ado:sync-spec spec-002-mobile-app --direction export`
+3. Client sees work items in their ADO instance
+4. Continue development in GitHub, sync updates to ADO periodically
+
+### Field Mapping Configuration
+
+Map custom fields between tools:
+
+```json
+{
+  "sync": {
+    "fieldMapping": {
+      "github": {
+        "story_points": "labels.story-points",
+        "sprint": "milestone"
+      },
+      "jira": {
+        "story_points": "customfield_10016",
+        "sprint": "customfield_10020"
+      },
+      "ado": {
+        "story_points": "Microsoft.VSTS.Scheduling.StoryPoints",
+        "sprint": "System.IterationPath"
+      }
+    }
+  }
+}
+```
+
+### Migration Commands
+
+```bash
+# Import from external tool
+/specweave-github:sync-spec <spec-id> --direction import
+/specweave-jira:sync-spec <spec-id> --direction import
+/specweave-ado:sync-spec <spec-id> --direction import
+
+# Export to external tool
+/specweave-github:sync-spec <spec-id> --direction export
+/specweave-jira:sync-spec <spec-id> --direction export
+/specweave-ado:sync-spec <spec-id> --direction export
+
+# Bidirectional sync (default)
+/specweave-github:sync-spec <spec-id>
+/specweave-jira:sync-spec <spec-id>
+/specweave-ado:sync-spec <spec-id>
+
+# Dry run (preview changes)
+/specweave-github:sync-spec <spec-id> --dry-run
+```
+
+### Migration Validation
+
+After migration, validate the transfer:
+
+```bash
+# Check item counts
+specweave sync-stats spec-001
+
+# Output:
+# Source (GitHub): 1 Epic, 15 Stories, 73 Tasks
+# Target (JIRA): 1 Epic, 15 Stories, 73 Tasks
+# ✅ All items migrated successfully
+
+# Compare critical fields
+specweave sync-diff spec-001 --fields priority,status,assignee
+
+# Check for orphaned items
+specweave sync-verify spec-001
+```
+
+### Best Practices
+
+1. **Test with Small Spec First**
+   - Migrate one spec/epic before doing bulk migration
+   - Validate status mapping works correctly
+   - Check user mapping is accurate
+
+2. **Use Dry Run**
+   - Preview changes before executing: `--dry-run`
+   - Review generated report
+   - Fix any mapping issues
+
+3. **Backup Before Migration**
+   - Export current state from source tool
+   - Keep `.specweave/` in version control
+   - Take snapshots of target tool
+
+4. **Incremental Migration**
+   - Migrate specs in batches
+   - Validate each batch before proceeding
+   - Don't migrate everything at once
+
+5. **Maintain History**
+   - Keep original tool read-only for reference
+   - Document migration date and reason
+   - Preserve links to old system
+
+### Troubleshooting
+
+**Issue**: Users not mapped correctly
+
+**Solution**: Update `userMapping` config:
+```json
+{
+  "sync": {
+    "userMapping": {
+      "github.user": "jira.user@company.com"
+    }
+  }
+}
+```
+
+**Issue**: Custom fields missing
+
+**Solution**: Add field mapping:
+```json
+{
+  "sync": {
+    "fieldMapping": {
+      "github": { "sprint": "milestone" },
+      "jira": { "sprint": "customfield_10020" }
+    }
+  }
+}
+```
+
+**Issue**: Status mapping incorrect
+
+**Solution**: Review and update status mapping:
+```json
+{
+  "sync": {
+    "statusMapping": {
+      "github": { "open": "To Do", "closed": "Done" },
+      "jira": { "To Do": "Open", "Done": "Closed" }
+    }
+  }
+}
+```
+
+---
+
 ## Related
 
 - [GitHub Integration](./github.md)

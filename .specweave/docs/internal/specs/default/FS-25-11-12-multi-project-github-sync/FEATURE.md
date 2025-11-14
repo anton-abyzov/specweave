@@ -1,18 +1,37 @@
 ---
-id: FS-25-11-12-multi-project-github-sync
+id: FS-25-11-12
 title: Multi-Project GitHub Sync
 type: epic
 status: complete
+priority: P1
 created: 2025-11-14
 last_updated: 2025-11-14
 external_tools:
   github:
-    type: issue
-    id: 412
-    url: https://github.com/anton-abyzov/specweave/issues/412
+    type: milestone
+    id: 2
+    url: https://github.com/anton-abyzov/specweave/milestone/2
+  jira:
+    type: epic
+    key: null
+    url: null
+  ado:
+    type: feature
+    id: null
+    url: null
+increments:
+  - id: 0027-multi-project-github-sync
+    status: complete
+    external:
+      github: 412
+      jira: null
+      ado: null
+total_increments: 1
+completed_increments: 1
+progress: 100%
 ---
 
-# FS-25-11-12-multi-project-github-sync: Multi-Project GitHub Sync
+# FS-25-11-12: Multi-Project GitHub Sync
 
 Multi-project GitHub sync enhancements to support syncing specs across multiple GitHub repositories and organizational structures.
 

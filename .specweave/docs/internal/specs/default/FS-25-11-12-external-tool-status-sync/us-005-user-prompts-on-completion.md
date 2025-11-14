@@ -2,7 +2,7 @@
 id: US-005
 epic: FS-25-11-12-external-tool-status-sync
 title: "User Prompts on Completion"
-status: planning
+status: complete
 created: 2025-11-14
 completed: 2025-11-14
 ---

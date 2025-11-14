@@ -283,6 +283,62 @@ Prevent context-switching:
 - Issues ↔ RFCs/Tasks
 - Checkable subtasks
 
+### Cross-Platform Migration (GitHub ↔ JIRA ↔ Azure DevOps)
+
+SpecWeave's **universal mapping template** enables seamless migration between external tools:
+
+**How it works:**
+1. **Import from Source** - Pull issues from GitHub/JIRA/ADO into `.specweave/`
+2. **Universal Format** - Convert to SpecWeave's canonical structure
+3. **Export to Target** - Push to different tool (GitHub → JIRA, JIRA → ADO, etc.)
+
+**Example: GitHub to JIRA Migration**
+```bash
+# Import GitHub issues to SpecWeave
+/specweave-github:sync-spec spec-001 --direction import
+
+# Export to JIRA with mapping
+/specweave-jira:sync-spec spec-001 --direction export
+# Result: GitHub issues now in JIRA with full history
+```
+
+**What gets migrated:**
+- ✅ **Hierarchy** - Epics → User Stories → Tasks (preserves structure)
+- ✅ **Status mapping** - In Progress → In Development (configurable)
+- ✅ **Metadata** - Priority, labels, assignees, due dates
+- ✅ **Comments** - Full discussion history preserved
+- ✅ **Attachments** - Files and screenshots migrated
+- ✅ **Relationships** - Links between issues maintained
+
+**Use cases:**
+- **Switching tools** - Move entire project from GitHub to JIRA
+- **Multi-tool teams** - Sync GitHub (dev) with JIRA (product/PM)
+- **Client requirements** - Export internal work to client's tool
+- **Compliance** - Migrate to enterprise-approved platform
+- **Vendor change** - Switch from one tool to another seamlessly
+
+**Configuration** - Map statuses, priorities, and custom fields:
+```json
+{
+  "sync": {
+    "statusMapping": {
+      "github": {
+        "open": "To Do",
+        "in_progress": "In Development",
+        "done": "Closed"
+      },
+      "jira": {
+        "To Do": "Open",
+        "In Development": "In Progress",
+        "Closed": "Done"
+      }
+    }
+  }
+}
+```
+
+**See**: [Multi-Project Sync](/docs/integrations/multi-project-sync#cross-platform-migration) for complete migration guide
+
 ## 🏢 [Brownfield](/docs/glossary/terms/brownfield) Excellence (The Hardest Problem Solved)
 
 ### Why [Brownfield](/docs/glossary/terms/brownfield) is Most Complicated
