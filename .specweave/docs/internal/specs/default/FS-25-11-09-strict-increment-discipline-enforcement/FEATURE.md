@@ -31,4 +31,4 @@ Implement mandatory pre-flight checks to prevent multiple active increments and 
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/32](https://github.com/anton-abyzov/specweave/issues/32)
+**GitHub Issue**: [#349 - [FS-25-11-09]](https://github.com/anton-abyzov/specweave/issues/349)

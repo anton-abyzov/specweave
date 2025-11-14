@@ -2,9 +2,9 @@
 
 **Purpose**: Quick reference for all available skills. Read this file BEFORE starting any task.
 
-**Last Updated**: 2025-11-10 (manually updated to include plugin-installer and plugin-expert)
+**Last Updated**: 2025-11-13 (removed deprecated skills: plugin-installer, increment-quality-judge v1)
 
-**Total Skills**: 14
+**Total Skills**: 18
 
 ---
 
@@ -36,16 +36,6 @@ Step 4: Execute → Follow the increment planning workflow
 
 
 ### Framework Core
-
-#### plugin-installer
-
-**Description**: Proactive just-in-time plugin installation. Auto-detects when specialized plugins are needed (frontend, kubernetes, ML, payments, testing, etc.) and installs them automatically before use. Activates for React, Next.js, K8s, Kubernetes, Helm, TensorFlow, PyTorch, ML model, Stripe, billing, payment, Playwright, E2E testing, Figma, design system, ADO, Azure DevOps, infrastructure, Prometheus, Grafana, monitoring, Node.js, Python backend, REST API, cloud deployment, diagram, Mermaid, C4, architecture diagram.
-
-**Activates for**: React, Next.js, frontend, UI component, K8s, Kubernetes, deploy, TensorFlow, ML model, Stripe, billing, E2E testing, Figma, diagram, architecture diagram
-
-**Location**: `.claude/skills/plugin-installer/SKILL.md`
-
----
 
 #### plugin-expert
 
@@ -82,16 +72,6 @@ Step 4: Execute → Follow the increment planning workflow
 **Activates for**: increment planning, feature planning, implementation plan, create increment, create feature, plan increment, plan feature, organize work, break down increment, break down feature, new product, build project, MVP, SaaS, app development, product description, tech stack planning, feature list
 
 **Location**: `.claude/skills/increment-planner/SKILL.md`
-
----
-
-#### increment-quality-judge
-
-**Description**: Optional AI-powered quality assessment for specifications, plans, and tests. Goes beyond rule-based validation to evaluate clarity, testability, edge cases, and architecture soundness. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score.
-
-**Location**: `.claude/skills/increment-quality-judge/SKILL.md`
-
-**Allowed tools**: Read, Grep, Glob
 
 ---
 
@@ -202,13 +182,13 @@ Step 4: Execute → Follow the increment planning workflow
 
 | Your Task | Relevant Skill | Keywords |
 |-----------|---------------|----------|
-| "Preview internal docs" | `plugin-installer` | "preview docs", "Docusaurus", "documentation UI" |
 | "Plan a new feature" | `increment-planner` | "feature planning", "create increment" |
+| "Implement feature" | `increment-work-router` | "implement", "complete", "build", "work on" |
 | "Sync to JIRA" | `jira-sync` | "JIRA sync", "create JIRA issue" |
 | "Create diagram" | `diagrams-architect` | "architecture diagram", "C4 diagram" |
 | "Build React UI" | `frontend` | "React", "components", "UI" |
 | "Deploy to cloud" | `hetzner-provisioner` | "deploy", "infrastructure" |
-| "Quality check" | `increment-quality-judge` | "quality check", "assess spec" |
+| "Quality check" | `increment-quality-judge-v2` | "quality check", "assess spec", "risk assessment" |
 | "E2E testing" | `e2e-playwright` | "E2E test", "browser test" |
 | "Generate docs site" | `docusaurus` | "documentation site", "docs" |
 

@@ -23,6 +23,10 @@ export interface Task {
   title: string;
   userStories: string[];
   githubIssue?: number;
+  jiraIssue?: string;
+  adoWorkItem?: number;
+  completed?: boolean;  // NEW: Track completion status
+  status?: 'pending' | 'in-progress' | 'completed';  // NEW: Detailed status (matches TaskInfo)
 }
 
 export interface ArchitectureDoc {
@@ -115,25 +119,99 @@ export class EnhancedContentBuilder {
   }
 
   /**
-   * Build tasks section with GitHub issue links
+   * Build tasks section with checkboxes (GitHub/Jira/ADO compatible)
+   *
+   * NEW: Shows tasks as checkboxes with completion status
    */
-  buildTasksSection(taskMapping: TaskMapping): string {
+  buildTasksSection(
+    taskMapping: TaskMapping,
+    options?: {
+      showCheckboxes?: boolean;
+      showProgressBar?: boolean;
+      showCompletionStatus?: boolean;
+      provider?: 'github' | 'jira' | 'ado';
+    }
+  ): string {
+    const {
+      showCheckboxes = true,
+      showProgressBar = true,
+      showCompletionStatus = true,
+      provider = 'github'
+    } = options || {};
+
     const lines: string[] = ['## Tasks'];
     lines.push('');
-    lines.push(`This epic includes ${taskMapping.tasks.length} tasks from increment ${taskMapping.incrementId}:`);
+
+    // Calculate progress
+    const total = taskMapping.tasks.length;
+    const completed = taskMapping.tasks.filter(t => t.completed || t.status === 'completed').length;
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    // Progress header with count
+    lines.push(`**Progress**: ${completed}/${total} tasks completed (${percent}%)`);
     lines.push('');
 
-    for (const task of taskMapping.tasks) {
-      const issueLink = task.githubIssue ? ` (#${task.githubIssue})` : '';
-      lines.push(`- **${task.id}**: ${task.title}${issueLink}`);
+    // Progress bar (visual)
+    if (showProgressBar && total > 0) {
+      const barWidth = 12;
+      const filled = Math.round((completed / total) * barWidth);
+      const bar = '█'.repeat(filled) + '░'.repeat(barWidth - filled);
+      lines.push(`\`${bar}\` ${percent}%`);
+      lines.push('');
+    }
 
-      if (task.userStories && task.userStories.length > 0) {
-        lines.push(`  - Implements: ${task.userStories.join(', ')}`);
+    // Tasks list
+    if (showCheckboxes) {
+      // Show tasks as checkboxes (provider-specific format)
+      for (const task of taskMapping.tasks) {
+        const isCompleted = task.completed || task.status === 'completed';
+
+        // Provider-specific checkbox format
+        let checkbox: string;
+        if (provider === 'jira') {
+          // Jira uses (x) for checked, ( ) for unchecked
+          checkbox = isCompleted ? '(x)' : '( )';
+        } else if (provider === 'ado') {
+          // ADO uses HTML checkboxes (rendered in description)
+          checkbox = isCompleted ? '[x]' : '[ ]';
+        } else {
+          // GitHub uses markdown checkboxes
+          checkbox = isCompleted ? '[x]' : '[ ]';
+        }
+
+        const statusEmoji = isCompleted && showCompletionStatus && provider === 'github' ? ' ✅' : '';
+
+        // Issue link (provider-specific)
+        let issueLink = '';
+        if (provider === 'github' && task.githubIssue) {
+          issueLink = ` [#${task.githubIssue}](https://github.com/issue/${task.githubIssue})`;
+        } else if (provider === 'jira' && task.jiraIssue) {
+          issueLink = ` [${task.jiraIssue}]`;
+        } else if (provider === 'ado' && task.adoWorkItem) {
+          issueLink = ` [#${task.adoWorkItem}]`;
+        }
+
+        // User stories
+        const userStories = task.userStories && task.userStories.length > 0
+          ? ` (implements ${task.userStories.join(', ')})`
+          : '';
+
+        lines.push(`- ${checkbox} **${task.id}**: ${task.title}${userStories}${issueLink}${statusEmoji}`);
+      }
+    } else {
+      // Fallback: show as bullet list (backward compatibility)
+      for (const task of taskMapping.tasks) {
+        const issueLink = task.githubIssue ? ` (#${task.githubIssue})` : '';
+        lines.push(`- **${task.id}**: ${task.title}${issueLink}`);
+
+        if (task.userStories && task.userStories.length > 0) {
+          lines.push(`  - Implements: ${task.userStories.join(', ')}`);
+        }
       }
     }
 
     lines.push('');
-    lines.push(`See full task list: [tasks.md](${taskMapping.tasksUrl})`);
+    lines.push(`**Full task list**: [tasks.md](${taskMapping.tasksUrl})`);
 
     return lines.join('\n');
   }

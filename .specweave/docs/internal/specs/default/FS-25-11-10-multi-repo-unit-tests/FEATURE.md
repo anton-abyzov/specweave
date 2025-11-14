@@ -46,4 +46,4 @@ Fill unit test coverage gap identified in increment 0022. Four test files were c
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/33](https://github.com/anton-abyzov/specweave/issues/33)
+**GitHub Issue**: [#353 - [FS-25-11-10]](https://github.com/anton-abyzov/specweave/issues/353)

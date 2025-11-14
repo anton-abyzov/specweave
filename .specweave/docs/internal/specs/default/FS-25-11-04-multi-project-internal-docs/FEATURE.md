@@ -36,5 +36,5 @@ Transform SpecWeave's internal documentation structure to support **enterprise-s
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/19](https://github.com/anton-abyzov/specweave/issues/19)
+**GitHub Issue**: [#341 - [FS-25-11-04]](https://github.com/anton-abyzov/specweave/issues/341)
 **JIRA Epic**: [SCRUM-31](https://jira.atlassian.com/browse/SCRUM-31)

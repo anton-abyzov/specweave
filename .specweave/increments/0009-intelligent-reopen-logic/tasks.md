@@ -19,6 +19,8 @@ coverage_target: 85%
 ## Phase 1: Core Similarity Engine (4-5 hours, ~500 lines)
 
 ### T-001: Create IncrementSimilarity Class Foundation
+**User Story**: [US-004: Intelligent Similarity Algorithm](../../docs/internal/specs/default/intelligent-reopen-logic/us-004-intelligent-similarity-algorithm.md)
+
 
 **AC**: AC-US4-01, AC-US4-02, AC-US4-06
 
@@ -54,6 +56,8 @@ coverage_target: 85%
 ---
 
 ### T-002: Implement Fuzzy Keyword Matching
+**User Story**: [US-004: Intelligent Similarity Algorithm](../../docs/internal/specs/default/intelligent-reopen-logic/us-004-intelligent-similarity-algorithm.md)
+
 
 **AC**: AC-US4-01, AC-US4-02
 
@@ -84,6 +88,8 @@ coverage_target: 85%
 ---
 
 ### T-003: Implement Jaccard Similarity Calculation
+**User Story**: [US-004: Intelligent Similarity Algorithm](../../docs/internal/specs/default/intelligent-reopen-logic/us-004-intelligent-similarity-algorithm.md)
+
 
 **AC**: AC-US4-03, AC-US4-06
 
@@ -115,6 +121,8 @@ coverage_target: 85%
 ---
 
 ### T-004: Add Domain-Specific Term Weighting
+**User Story**: [US-004: Intelligent Similarity Algorithm](../../docs/internal/specs/default/intelligent-reopen-logic/us-004-intelligent-similarity-algorithm.md)
+
 
 **AC**: AC-US4-04, AC-US4-06
 
@@ -145,6 +153,8 @@ coverage_target: 85%
 ---
 
 ### T-005: Implement findRelated Method with Metadata Integration
+**User Story**: [US-001: PM Agent Detects Related Increments (Core Intelligence)](../../docs/internal/specs/default/intelligent-reopen-logic/us-001-pm-agent-detects-related-increments-core-intelligence.md)
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US1-05
 
@@ -186,6 +196,8 @@ coverage_target: 85%
 ---
 
 ### T-006: Add Helper Methods for Match Reasons
+**User Story**: [US-002: Interactive Reopen vs Create Decision](../../docs/internal/specs/default/intelligent-reopen-logic/us-002-interactive-reopen-vs-create-decision.md)
+
 
 **AC**: AC-US2-02, AC-US2-03
 
@@ -226,6 +238,8 @@ coverage_target: 85%
 ## Phase 2: PM Agent Intelligence (3-4 hours, ~600 lines)
 
 ### T-007: Add Step 0A to PM Agent with Detection Logic
+**User Story**: [US-001: PM Agent Detects Related Increments (Core Intelligence)](../../docs/internal/specs/default/intelligent-reopen-logic/us-001-pm-agent-detects-related-increments-core-intelligence.md)
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US1-05
 
@@ -267,6 +281,8 @@ coverage_target: 85%
 ---
 
 ### T-008: Create reopenIncrementWithScope Helper Function
+**User Story**: [US-002: Interactive Reopen vs Create Decision](../../docs/internal/specs/default/intelligent-reopen-logic/us-002-interactive-reopen-vs-create-decision.md)
+
 
 **AC**: AC-US2-01, AC-US2-03, AC-US3-01, AC-US3-04
 
@@ -304,6 +320,8 @@ coverage_target: 85%
 ---
 
 ### T-009: Add Interactive Prompt with Match Details
+**User Story**: [US-002: Interactive Reopen vs Create Decision](../../docs/internal/specs/default/intelligent-reopen-logic/us-002-interactive-reopen-vs-create-decision.md)
+
 
 **AC**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05
 
@@ -364,6 +382,8 @@ coverage_target: 85%
 ---
 
 ### T-010: Handle Edge Cases (Multiple Matches, Borderline, Explicit)
+**User Story**: [US-001: PM Agent Detects Related Increments (Core Intelligence)](../../docs/internal/specs/default/intelligent-reopen-logic/us-001-pm-agent-detects-related-increments-core-intelligence.md)
+
 
 **AC**: AC-US1-04, AC-US2-05
 
@@ -406,6 +426,8 @@ coverage_target: 85%
 ## Phase 3: Scope Updater (2-3 hours, ~350 lines)
 
 ### T-011: Create updateSpecWithScope Function
+**User Story**: [US-003: Automatic Scope Update on Reopen](../../docs/internal/specs/default/intelligent-reopen-logic/us-003-automatic-scope-update-on-reopen.md)
+
 
 **AC**: AC-US3-01, AC-US3-02, AC-US3-03
 
@@ -454,6 +476,8 @@ coverage_target: 85%
 ---
 
 ### T-012: Implement Atomic File Write (Temp → Rename)
+**User Story**: [US-003: Automatic Scope Update on Reopen](../../docs/internal/specs/default/intelligent-reopen-logic/us-003-automatic-scope-update-on-reopen.md)
+
 
 **AC**: AC-US3-01, AC-US3-06, AC-US3-07
 
@@ -502,6 +526,8 @@ coverage_target: 85%
 ---
 
 ### T-013: Add Reopen Version Tracking
+**User Story**: [US-003: Automatic Scope Update on Reopen](../../docs/internal/specs/default/intelligent-reopen-logic/us-003-automatic-scope-update-on-reopen.md)
+
 
 **AC**: AC-US3-03
 
@@ -547,6 +573,8 @@ coverage_target: 85%
 ## Phase 4: Sync Orchestrator (2-3 hours, ~650 lines)
 
 ### T-014: Create reopenSyncedIssues Orchestrator
+**User Story**: [US-005: Sync Reopen to GitHub/ADO/Jira](../../docs/internal/specs/default/intelligent-reopen-logic/us-005-sync-reopen-to-github-ado-jira.md)
+
 
 **AC**: AC-US5-01, AC-US5-02, AC-US5-03
 
@@ -584,6 +612,8 @@ coverage_target: 85%
 ---
 
 ### T-015: Implement GitHub Issue Reopen with CLI
+**User Story**: [US-005: Sync Reopen to GitHub/ADO/Jira](../../docs/internal/specs/default/intelligent-reopen-logic/us-005-sync-reopen-to-github-ado-jira.md)
+
 
 **AC**: AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
 
@@ -639,6 +669,8 @@ coverage_target: 85%
 ---
 
 ### T-016: Implement ADO Work Item Reopen with CLI
+**User Story**: [US-005: Sync Reopen to GitHub/ADO/Jira](../../docs/internal/specs/default/intelligent-reopen-logic/us-005-sync-reopen-to-github-ado-jira.md)
+
 
 **AC**: AC-US5-06
 
@@ -691,6 +723,8 @@ coverage_target: 85%
 ---
 
 ### T-017: Implement Jira Issue Reopen with CLI
+**User Story**: [US-005: Sync Reopen to GitHub/ADO/Jira](../../docs/internal/specs/default/intelligent-reopen-logic/us-005-sync-reopen-to-github-ado-jira.md)
+
 
 **AC**: AC-US5-07
 

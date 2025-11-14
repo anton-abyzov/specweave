@@ -36,3 +36,8 @@ Comprehensive UX improvements to multi-repository initiali
 - [US-009: Update Parent Folder Benefits Explanation](us-009-update-parent-folder-benefits-explanation.md) - ✅ Complete
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#358 - [FS-25-11-11]](https://github.com/anton-abyzov/specweave/issues/358)

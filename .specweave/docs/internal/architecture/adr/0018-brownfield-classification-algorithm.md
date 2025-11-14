@@ -17,7 +17,7 @@ SpecWeave needs to import brownfield documentation from external sources (Notion
 
 1. **Accuracy Target**: 85%+ correct classification (validated against fixtures)
 2. **Confidence Scoring**: 0-1 scale indicating classification certainty
-3. **Performance**: Classify 100 files in \<5 seconds
+3. **Performance**: Classify 100 files in \&lt;5 seconds
 4. **No ML Required**: Simple keyword-based approach (no training data needed)
 5. **Explainable**: Users can understand why a file was classified a certain way
 
@@ -62,7 +62,7 @@ SpecWeave needs to import brownfield documentation from external sources (Notion
 
 **Step 3: Classification**
 - Choose category with highest score
-- Apply confidence threshold: If score \<0.3 → classify as 'legacy'
+- Apply confidence threshold: If score \&lt;0.3 → classify as 'legacy'
 - Return type + confidence + reasons
 
 ### Keyword Lists
@@ -121,7 +121,7 @@ const TEAM_KEYWORDS = [
 - **0.7-1.0**: High confidence (likely correct)
 - **0.5-0.7**: Medium confidence (review recommended)
 - **0.3-0.5**: Low confidence (likely legacy)
-- **\<0.3**: No match (classified as legacy)
+- **\&lt;0.3**: No match (classified as legacy)
 
 ### Implementation
 
@@ -187,7 +187,7 @@ class BrownfieldAnalyzer {
 ### Positive
 
 - ✅ **Simple**: No ML training, no external dependencies
-- ✅ **Fast**: \<5 seconds for 100 files (keyword search is O(n) per file)
+- ✅ **Fast**: \&lt;5 seconds for 100 files (keyword search is O(n) per file)
 - ✅ **Explainable**: Users see which keywords matched and why
 - ✅ **Tunable**: Easy to add/remove keywords to improve accuracy
 - ✅ **No API Costs**: Runs locally, no LLM API calls
@@ -220,8 +220,8 @@ class BrownfieldAnalyzer {
 ### Performance Measurement
 
 1. **Benchmark**: Classify 100 files, measure execution time
-2. **Target**: \<5 seconds (50ms per file average)
-3. **Memory**: \<100MB peak memory usage
+2. **Target**: \&lt;5 seconds (50ms per file average)
+3. **Memory**: \&lt;100MB peak memory usage
 
 **Test Suite**: `tests/performance/analyzer.bench.ts`
 

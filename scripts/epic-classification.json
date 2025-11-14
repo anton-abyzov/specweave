@@ -1,0 +1,175 @@
+{
+  "epics": [
+    {
+      "id": "FS-001",
+      "name": "Core Framework Architecture",
+      "description": "Foundation framework with CLI, plugin system, cross-platform support",
+      "increments": [
+        "0001-core-framework",
+        "0002-core-enhancements",
+        "0004-plugin-architecture",
+        "0005-cross-platform-cli"
+      ],
+      "priority": "P0",
+      "status": "complete"
+    },
+    {
+      "id": "FS-002",
+      "name": "Intelligent AI Capabilities",
+      "description": "AI-powered features: model selection, smart workflows, self-reflection",
+      "increments": [
+        "0003-intelligent-model-selection",
+        "0007-smart-increment-discipline",
+        "0009-intelligent-reopen-logic",
+        "0016-self-reflection-system"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-003",
+      "name": "Developer Experience",
+      "description": "UX improvements, onboarding, setup workflows",
+      "increments": [
+        "0008-user-education-faq",
+        "0022-multi-repo-init-ux",
+        "0028-multi-repo-ux-improvements"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-004",
+      "name": "Metrics & Observability",
+      "description": "DORA metrics, performance tracking, analytics",
+      "increments": [
+        "0010-dora-metrics-mvp"
+      ],
+      "priority": "P2",
+      "status": "complete"
+    },
+    {
+      "id": "FS-005",
+      "name": "Quality & Stabilization",
+      "description": "Testing, stabilization, quality improvements",
+      "increments": [
+        "0013-v0.8.0-stabilization",
+        "0019-e2e-test-cleanup",
+        "0026-multi-repo-unit-tests"
+      ],
+      "priority": "P0",
+      "status": "complete"
+    },
+    {
+      "id": "FS-006",
+      "name": "Internationalization",
+      "description": "Multilingual support, LLM-native translation",
+      "increments": [
+        "0006-llm-native-i18n"
+      ],
+      "priority": "P2",
+      "status": "complete"
+    },
+    {
+      "id": "FS-011",
+      "name": "Multi-Project Architecture",
+      "description": "Multi-project sync, internal docs, resource config",
+      "increments": [
+        "0011-multi-project-sync",
+        "0012-multi-project-internal-docs",
+        "0025-per-project-resource-config",
+        "0027-multi-project-github-sync"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-014",
+      "name": "Plugin Validation",
+      "description": "Proactive plugin validation system",
+      "increments": [
+        "0014-proactive-plugin-validation"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-015",
+      "name": "External Tool Sync Architecture",
+      "description": "Hierarchical external sync, sync architecture fixes",
+      "increments": [
+        "0015-hierarchical-external-sync",
+        "0017-sync-architecture-fix"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-018",
+      "name": "Increment Discipline",
+      "description": "Strict increment discipline enforcement, WIP limits",
+      "increments": [
+        "0018-strict-increment-discipline-enforcement"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-020",
+      "name": "GitHub Integration",
+      "description": "GitHub multi-repo support, JIRA init improvements",
+      "increments": [
+        "0020-github-multi-repo",
+        "0021-jira-init-improvements"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-023",
+      "name": "Release Management",
+      "description": "Release management enhancements, versioning, changelog",
+      "increments": [
+        "0023-release-management-enhancements"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-024",
+      "name": "Bidirectional Spec Sync",
+      "description": "Bidirectional synchronization between specs and external tools",
+      "increments": [
+        "0024-bidirectional-spec-sync"
+      ],
+      "priority": "P1",
+      "status": "complete"
+    },
+    {
+      "id": "FS-030",
+      "name": "Intelligent Living Docs",
+      "description": "Intelligent living docs sync, hierarchical distribution",
+      "increments": [
+        "0030-intelligent-living-docs"
+      ],
+      "priority": "P0",
+      "status": "complete"
+    },
+    {
+      "id": "FS-031",
+      "name": "External Tool Status Synchronization",
+      "description": "Enhanced external tool integration with rich content sync",
+      "increments": [
+        "0031-external-tool-status-sync"
+      ],
+      "priority": "P0",
+      "status": "complete"
+    }
+  ],
+  "metadata": {
+    "total_epics": 15,
+    "total_increments": 31,
+    "avg_increments_per_epic": 2.07,
+    "date_created": "2025-11-13"
+  }
+}

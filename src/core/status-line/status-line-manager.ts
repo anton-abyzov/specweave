@@ -1,13 +1,13 @@
 /**
- * Status Line Manager
+ * Status Line Manager (Simplified)
  *
- * Ultra-fast status line rendering with intelligent caching.
- * Target: <1ms render time for 99% of requests.
+ * Simple, reliable status line rendering.
+ * Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
  *
  * Architecture:
- * - Hook pre-computes cache (async, 10-50ms)
- * - Renderer reads cache (sync, <1ms)
- * - mtime-based invalidation (handles external edits)
+ * - Hook updates cache with current increment + open count
+ * - Manager reads cache and formats output
+ * - Simple age-based validation (no complex mtime checks)
  */
 
 import * as fs from 'fs';
@@ -31,34 +31,30 @@ export class StatusLineManager {
   }
 
   /**
-   * Render status line (FAST PATH: <1ms)
+   * Render status line
    *
-   * Returns formatted status line string or null if no active increment.
+   * Returns formatted string or null if no active increment.
    */
   public render(): string | null {
     if (!this.config.enabled) {
       return null;
     }
 
-    const cache = this.getCache();
-    if (!cache) {
-      return null; // No active increment or cache stale
+    const cache = this.readCache();
+    if (!cache || !cache.current) {
+      return 'No active increment';
     }
 
     return this.formatStatusLine(cache);
   }
 
   /**
-   * Get cache with freshness validation (0.5-1ms)
+   * Read cache from disk
    *
-   * Returns null if:
-   * - Cache file missing
-   * - Cache too old (>maxCacheAge)
-   * - tasks.md modified since cache update
+   * Simple read with basic validation.
    */
-  private getCache(): StatusLineCache | null {
+  private readCache(): StatusLineCache | null {
     try {
-      // Step 1: Read cache file (0.3ms)
       if (!fs.existsSync(this.cacheFile)) {
         return null;
       }
@@ -66,99 +62,49 @@ export class StatusLineManager {
       const content = fs.readFileSync(this.cacheFile, 'utf8');
       const cache = JSON.parse(content) as StatusLineCache;
 
-      // Step 2: Validate cache has required fields
-      if (!cache.incrementId || cache.totalTasks === undefined) {
-        return null;
-      }
-
-      // Step 3: Check freshness (0.2-0.5ms)
-      if (!this.isCacheFresh(cache)) {
-        return null;
+      // Simple age check (warn if stale but still show)
+      const age = Date.now() - new Date(cache.lastUpdate).getTime();
+      if (age > this.config.maxCacheAge) {
+        // Stale but we still show it (better than nothing)
+        // Hook will update it soon
       }
 
       return cache;
-    } catch (error) {
-      // Cache read/parse error = treat as cache miss
+    } catch {
       return null;
     }
   }
 
   /**
-   * Check if cache is fresh (0.2-0.5ms)
+   * Format status line
    *
-   * Two-level check:
-   * 1. Age check (ultra-fast, no I/O)
-   * 2. mtime check (fast, single stat() call)
-   */
-  private isCacheFresh(cache: StatusLineCache): boolean {
-    // Check 1: Recent update? (no I/O, ultra-fast)
-    const age = Date.now() - new Date(cache.lastUpdate).getTime();
-    if (age < this.config.maxCacheAge) {
-      return true; // Cache is fresh (<5s old)
-    }
-
-    // Check 2: Has tasks.md changed? (single stat() call)
-    try {
-      const tasksFile = path.join(
-        this.rootDir,
-        '.specweave/increments',
-        cache.incrementId,
-        'tasks.md'
-      );
-
-      const stats = fs.statSync(tasksFile);
-      const currentMtime = Math.floor(stats.mtimeMs / 1000);
-
-      return currentMtime === cache.lastModified;
-    } catch {
-      // File missing or stat() failed = invalidate cache
-      return false;
-    }
-  }
-
-  /**
-   * Format status line from cache (0.1ms)
+   * Format: [increment-name] ████░░░░ X/Y tasks (Z open)
    */
   private formatStatusLine(cache: StatusLineCache): string {
+    const current = cache.current!;
     const parts: string[] = [];
 
     // Increment name (truncated)
-    const name = this.truncate(
-      cache.incrementName,
-      this.config.maxIncrementNameLength
-    );
+    const name = this.truncate(current.name, this.config.maxNameLength);
     parts.push(`[${name}]`);
 
     // Progress bar
-    if (this.config.showProgressBar) {
-      const bar = this.renderProgressBar(
-        cache.completedTasks,
-        cache.totalTasks
-      );
-      parts.push(bar);
-    }
+    const bar = this.renderProgressBar(current.completed, current.total);
+    parts.push(bar);
 
-    // Tasks count and percentage
-    if (this.config.showPercentage) {
-      parts.push(`${cache.completedTasks}/${cache.totalTasks} (${cache.percentage}%)`);
-    } else {
-      parts.push(`${cache.completedTasks}/${cache.totalTasks}`);
-    }
+    // Tasks count
+    parts.push(`${current.completed}/${current.total}`);
 
-    // Current task
-    if (this.config.showCurrentTask && cache.currentTask) {
-      const taskTitle = this.truncate(
-        cache.currentTask.title,
-        this.config.maxTaskTitleLength
-      );
-      parts.push(`• ${cache.currentTask.id}: ${taskTitle}`);
+    // Open count (if more than 1)
+    if (cache.openCount > 1) {
+      parts.push(`(${cache.openCount} open)`);
     }
 
     return parts.join(' ');
   }
 
   /**
-   * Render ASCII progress bar (0.05ms)
+   * Render ASCII progress bar
    */
   private renderProgressBar(completed: number, total: number): string {
     if (total === 0) {
@@ -173,7 +119,7 @@ export class StatusLineManager {
   }
 
   /**
-   * Truncate string with ellipsis (0.01ms)
+   * Truncate string with ellipsis
    */
   private truncate(str: string, maxLength: number): string {
     if (str.length <= maxLength) {

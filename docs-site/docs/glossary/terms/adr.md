@@ -120,7 +120,7 @@ SpecWeave needed a plugin architecture to reduce context usage from 50K tokens t
 - ✅ Zero maintenance for plugin system (Anthropic owns it)
 - ✅ Future-proof (follows industry standard)
 - ✅ Better developer UX (skills auto-activate)
-- ✅ Faster installation (<30 seconds vs 2 minutes)
+- ✅ Faster installation (&lt;30 seconds vs 2 minutes)
 
 **Negative**:
 - ⚠️  Vendor lock-in (dependent on Claude Code)
@@ -257,7 +257,7 @@ Answer: "See ADR-0015: AES-256-GCM Encryption"
 
 **Quick Template** (for simpler decisions):
 ```markdown
-# ADR-{number}: {Title}
+# ADR-\{number\}: {Title}
 
 **Status**: Accepted
 **Date**: YYYY-MM-DD

@@ -396,15 +396,31 @@ create_github_issue() {
     return 1
   fi
 
-  # Extract increment number from ID (e.g., "0016-self-reflection-system" -> "0016")
-  local inc_number=$(echo "$increment_id" | grep -o '^[0-9]*')
+  # Extract creation date from metadata.json and format as FS-YY-MM-DD
+  local issue_prefix="FS-UNKNOWN"
+  if [ -f "$metadata_file" ]; then
+    # Extract created date (format: "2025-11-12T12:46:00Z")
+    local created_date=$(cat "$metadata_file" 2>/dev/null | grep -o '"created"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    if [ -n "$created_date" ]; then
+      # Extract YY-MM-DD from date (e.g., "2025-11-12" -> "25-11-12")
+      local year=$(echo "$created_date" | cut -d'-' -f1 | cut -c3-4)  # "2025" -> "25"
+      local month=$(echo "$created_date" | cut -d'-' -f2)              # "11"
+      local day=$(echo "$created_date" | cut -d'-' -f3 | cut -d'T' -f1) # "12T..." -> "12"
+      issue_prefix="FS-${year}-${month}-${day}"
+      log_debug "Using date-based prefix from metadata: $issue_prefix"
+    else
+      log_debug "No created date in metadata, using fallback"
+    fi
+  else
+    log_debug "No metadata.json found, using fallback prefix"
+  fi
 
   log_debug "Creating issue for repo: $repo"
-  log_debug "Title: [INC-$inc_number] $title"
+  log_debug "Title: [$issue_prefix] $title"
 
   # Generate issue body
   local issue_body=$(cat <<EOF
-# [INC-$inc_number] $title
+# [$issue_prefix] $title
 
 **Status**: Planning → Implementation
 **Priority**: P1
@@ -441,7 +457,7 @@ EOF
 
   local gh_output=$(gh issue create \
     --repo "$repo" \
-    --title "[INC-$inc_number] $title" \
+    --title "[$issue_prefix] $title" \
     --body-file "$temp_body" \
     --label "specweave,increment" \
     2>&1)
@@ -658,21 +674,55 @@ EOF
   if [ "$auto_create" = "true" ]; then
     log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
 
-    # Check if gh CLI is available
-    if ! command -v gh >/dev/null 2>&1; then
-      log_info "  ⚠️  GitHub CLI (gh) not found, skipping issue creation"
-      log_debug "Install: https://cli.github.com/"
-    else
-      log_info "  ✓ GitHub CLI found"
-      log_info ""
-      log_info "🚀 Creating GitHub issue for $increment_id..."
+    # ============================================================================
+    # DUPLICATE DETECTION (v0.14.1+)
+    # ============================================================================
+    # Check if GitHub issue already exists in metadata.json
+    # If exists, skip creation (idempotent operation)
 
-      # Create issue (non-blocking)
-      if create_github_issue "$increment_id" "$increment_dir"; then
-        log_info "  ✅ GitHub issue created successfully"
+    local metadata_file="$increment_dir/metadata.json"
+    local existing_issue=""
+
+    if [ -f "$metadata_file" ]; then
+      # Extract existing GitHub issue number from metadata
+      existing_issue=$(cat "$metadata_file" 2>/dev/null | \
+        grep -o '"github"[[:space:]]*:[[:space:]]*{[^}]*"issue"[[:space:]]*:[[:space:]]*[0-9]*' | \
+        grep -o '[0-9]*$')
+
+      if [ -n "$existing_issue" ]; then
+        log_info "  ✅ GitHub issue already exists: #$existing_issue"
+        log_info "  ⏭️  Skipping creation (idempotent)"
+        log_debug "Metadata already contains github.issue = $existing_issue"
+
+        # Extract URL if available
+        local existing_url=$(cat "$metadata_file" 2>/dev/null | \
+          grep -o '"url"[[:space:]]*:[[:space:]]*"[^"]*"' | \
+          sed 's/.*"\([^"]*\)".*/\1/')
+
+        if [ -n "$existing_url" ]; then
+          log_info "  🔗 $existing_url"
+        fi
+      fi
+    fi
+
+    # Only create if no existing issue found
+    if [ -z "$existing_issue" ]; then
+      # Check if gh CLI is available
+      if ! command -v gh >/dev/null 2>&1; then
+        log_info "  ⚠️  GitHub CLI (gh) not found, skipping issue creation"
+        log_debug "Install: https://cli.github.com/"
       else
-        log_info "  ⚠️  GitHub issue creation failed (non-blocking)"
-        log_debug "Issue creation failed, but continuing execution"
+        log_info "  ✓ GitHub CLI found"
+        log_info ""
+        log_info "🚀 Creating GitHub issue for $increment_id..."
+
+        # Create issue (non-blocking)
+        if create_github_issue "$increment_id" "$increment_dir"; then
+          log_info "  ✅ GitHub issue created successfully"
+        else
+          log_info "  ⚠️  GitHub issue creation failed (non-blocking)"
+          log_debug "Issue creation failed, but continuing execution"
+        fi
       fi
     fi
   else

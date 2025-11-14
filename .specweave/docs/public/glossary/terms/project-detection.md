@@ -63,7 +63,7 @@ graph TB
 - ✅ **Zero manual work** (automatic detection)
 - ✅ **Accurate** (70%+ success rate with multi-signal)
 - ✅ **Consistent** (same rules for everyone)
-- ✅ **Fast** (<5ms per document)
+- ✅ **Fast** (&lt;5ms per document)
 - ✅ **Validated** (confidence threshold ensures quality)
 
 ---
@@ -633,6 +633,6 @@ specweave detect-project /tmp/test-content.md
 
 **Fallback**: `default` project if below threshold
 
-**Performance**: <5ms per document
+**Performance**: &lt;5ms per document
 
 **Result**: Automatic, accurate project assignment with zero manual work (70%+ accuracy).

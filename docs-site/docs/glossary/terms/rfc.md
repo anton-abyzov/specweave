@@ -196,7 +196,7 @@ Adopt Claude native plugins:
 ## Metrics & Success Criteria
 - Context usage reduced by 70%+
 - All 18 plugins migrated successfully
-- Installation time <30 seconds
+- Installation time &lt;30 seconds
 
 ## Decision
 **APPROVED** - 2025-09-15

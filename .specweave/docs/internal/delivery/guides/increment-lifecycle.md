@@ -442,6 +442,177 @@ _backlog/ file archived (kept for history)
 
 ---
 
+## Increment Discipline (The Iron Rule)
+
+### Core Philosophy: ONE Active Increment = Maximum Focus
+
+Simplified from complex per-type limits to **focus-first architecture**:
+- ✅ **Default**: 1 active increment (maximum productivity)
+- ✅ **Emergency ceiling**: 2 active max (hotfix/bug can interrupt)
+- ✅ **Hard cap**: Never >2 active (enforced)
+
+**Why 1?** Research shows:
+- 1 task = 100% productivity
+- 2 tasks = 20% slower (context switching cost)
+- 3+ tasks = 40% slower + more bugs
+
+### ⛔ THE IRON RULE
+
+**You CANNOT start increment N+1 until increment N is DONE**
+
+This is **NOT negotiable**. It is a **hard enforcement** to prevent:
+- Multiple incomplete increments piling up
+- No clear source of truth ("which increment are we working on?")
+- Living docs becoming stale (sync doesn't know what's current)
+- Scope creep (jumping between features without finishing)
+- Quality degradation (tests not run, docs not updated)
+
+### What "DONE" Means
+
+An increment is DONE if **ONE** of the following is true:
+
+1. **All tasks completed**: All tasks in `tasks.md` marked `[x] Completed`
+2. **Completion report exists**: `COMPLETION-SUMMARY.md` with "✅ COMPLETE" status
+3. **Explicit closure**: Closed via `/specweave:done` with documentation
+
+### Enforcement
+
+**When you try to start a new increment**:
+
+```bash
+/specweave:increment "new feature"
+```
+
+**If previous increments are incomplete, you'll see**:
+
+```
+❌ Cannot create new increment!
+
+Previous increments are incomplete:
+
+📋 Increment 0002-core-enhancements
+   Status: 73% complete (11/15 tasks)
+   Pending:
+     - T-008: Migrate content
+     - T-010: Create context manifest
+     - ... (3 more tasks)
+
+💡 What would you like to do?
+
+1️⃣  Close incomplete increments: /specweave:close
+2️⃣  Check status: /specweave:status
+3️⃣  Force create (DANGEROUS): Add --force flag
+
+⚠️  The discipline exists for a reason:
+   - Prevents scope creep
+   - Ensures completions are tracked
+   - Maintains living docs accuracy
+   - Keeps work focused
+```
+
+### How to Resolve Incomplete Increments
+
+**Option 1: Complete the Work** (Recommended)
+```bash
+# Continue working on incomplete increment
+/specweave:do
+
+# Once all tasks done, it's automatically complete
+/specweave:increment "new feature"  # ✅ Now works!
+```
+
+**Option 2: Close Interactively**
+```bash
+# Interactive closure with options
+/specweave:close
+
+# You'll be asked to choose:
+# - Force complete (mark all tasks done)
+# - Move tasks to next increment (defer work)
+# - Reduce scope (mark tasks as won't-do)
+```
+
+**Option 3: Check Status First**
+```bash
+# See all incomplete increments
+/specweave:status
+
+# Output shows completion percentages
+```
+
+**Option 4: Force Create** (Emergency Only!)
+```bash
+# Bypass the check (USE SPARINGLY!)
+/specweave:increment "urgent-hotfix" --force
+
+# This is logged and should be explained
+```
+
+### Three Options for Closing
+
+When using `/specweave:close`:
+
+**1. Adjust Scope** (Simplest - Recommended)
+- Remove features from `spec.md`
+- Regenerate `plan.md` and `tasks.md`
+- Now 100% complete!
+
+**2. Move Scope to Next Increment**
+- Transfer incomplete tasks
+- Old increment closed
+- New increment gets the work
+
+**3. Extend Existing Increment** (Merge Work)
+- Don't start new increment
+- Update `spec.md` to include new features
+- Add new tasks to `tasks.md`
+- Work on combined scope in ONE increment
+
+### Helper Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave:status` | Show all increments and completion status |
+| `/specweave:close` | Interactive closure of incomplete increments |
+| `/specweave:force-close <id>` | Mark all tasks complete (dangerous!) |
+
+### Philosophy: Discipline = Quality
+
+**Why enforce this strictly?**
+
+- **Focus**: Work on ONE thing at a time
+- **Completion**: Finish before starting new
+- **Quality**: Tests run, docs updated, code reviewed
+- **Clarity**: Everyone knows what's current
+- **Velocity**: Actually shipping > endless WIP
+
+**Old Way** (suggest):
+- User: "Just let me start the new feature, I'll come back to this"
+- Result: 5 incomplete increments, nothing ships
+
+**New Way** (enforce):
+- Framework: "Close this first, then start new"
+- User: *closes increment properly*
+- Result: Clean increments, clear progress, shipping regularly
+
+### Exception: The `--force` Flag
+
+For **emergencies only** (hotfixes, urgent features):
+
+```bash
+/specweave:increment "urgent-security-fix" --force
+```
+
+**This bypasses the check** but:
+- ✅ Logs the force creation
+- ✅ Warns in CLI output
+- ✅ Should be explained in PR/standup
+- ✅ Should close previous increments ASAP
+
+**Use sparingly!** The discipline exists for a reason.
+
+---
+
 ## Task vs Increment Decision
 
 ### Decision Tree
@@ -776,7 +947,7 @@ priority: high
 - [Increment Validation](./increment-validation.md) - Validation workflow
 - [Testing Strategy](./testing-strategy.md) - Test strategy and coverage
 - [Branch Strategy](../branch-strategy.md) - Git workflow and branching
-- [Context Loading](../../architecture/context-loading.md) - Context manifests
+- [Context Loading](../../architecture/concepts/context-loading.md) - Context manifests
 
 ---
 

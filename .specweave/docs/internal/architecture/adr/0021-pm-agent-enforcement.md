@@ -28,7 +28,7 @@ const incomplete = await detector.getAllIncomplete();
 1. Agent must execute actual validation (not read code snippets)
 2. Must block increment planning if violations detected
 3. Must show clear, actionable errors to user
-4. Must be fast (\<2 seconds including tool invocation)
+4. Must be fast (\&lt;2 seconds including tool invocation)
 5. Must work with Claude Code's Bash tool
 
 ## Decision
@@ -198,7 +198,7 @@ if (!result.compliant) {
 ✅ **Executable Validation**: Agent runs actual command, not just reads instructions
 ✅ **Programmatic Blocking**: Exit code 1 prevents planning
 ✅ **Clear Errors**: JSON output provides structured violation data
-✅ **Fast Execution**: \<2 seconds (CLI command + JSON parsing)
+✅ **Fast Execution**: \&lt;2 seconds (CLI command + JSON parsing)
 ✅ **Consistent Behavior**: Same validation logic every time
 ✅ **Debuggable**: User can run `check-discipline` manually to see status
 ✅ **CI/CD Ready**: Same command works in automated pipelines
@@ -212,7 +212,7 @@ if (!result.compliant) {
 
 ### Neutral
 
-⚪ **Performance**: Negligible overhead (\<2s)
+⚪ **Performance**: Negligible overhead (\&lt;2s)
 ⚪ **Maintenance**: Need to keep CLI and agent in sync
 ⚪ **Testing**: Need integration tests for agent + CLI interaction
 

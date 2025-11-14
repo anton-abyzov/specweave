@@ -20,7 +20,7 @@
 
 | Code | Type | Location | Purpose |
 |------|------|----------|---------|
-| **FS** | Feature Spec | `specs/{project}/` | Living docs (implementation history) |
+| **FS** | Feature Spec | `specs/\{project\}/` | Living docs (implementation history) |
 | **PRD** | Product Req Doc | `strategy/` | Business requirements |
 | **HLD** | High-Level Design | `architecture/` | System design |
 | **ADR** | Arch Decision | `architecture/adr/` | Design decisions |
@@ -66,7 +66,7 @@
 | Aspect | domain-based approach (Rejected) | brownfield-first (Approved) |
 |--------|----------------|-----------------|
 | **Duplication** | ❌ Yes (4x) | ✅ No (1x) |
-| **Spec Location** | `specs/{domain}/` | `specs/{project}/` |
+| **Spec Location** | `specs/{domain}/` | `specs/\{project\}/` |
 | **Folder Names** | Domain-based (core-framework, dx, etc.) | Project-based (BE, FE, MOB from JIRA) |
 | **Subfolder Structure** | `nfrs/`, `user-stories/`, `overviews/` | None (no duplication!) |
 | **Spec Content** | Duplicates other docs | References other docs |
@@ -96,7 +96,7 @@
   - Detect external tool (JIRA/ADO/GitHub)
   - Fetch projects/area paths/repos
   - Ask user to select project when creating spec
-  - Create spec in `specs/{project}/FS-{NNN}-*.md`
+  - Create spec in `specs/\{project\}/FS-{NNN}-*.md`
   - Create JIRA epic/ADO feature/GitHub project
   - Add epic/feature link to spec frontmatter
 - [ ] Update spec template with references (not duplication)
@@ -105,7 +105,7 @@
 
 - [ ] Update living docs sync to:
   - Detect project from increment spec
-  - Place spec in correct `specs/{project}/` folder
+  - Place spec in correct `specs/\{project\}/` folder
   - Add frontmatter with references
   - Create JIRA epic/ADO feature if not exists
   - Link epic/feature to spec
@@ -117,7 +117,7 @@
 - [ ] Map existing specs to projects (manual)
 - [ ] Run restructure: `npx ts-node scripts/restructure-to-brownfield.ts`
 - [ ] Generate indices: `npx ts-node scripts/generate-spec-indices.ts`
-- [ ] Verify: Check all specs in correct `specs/{project}/` folders
+- [ ] Verify: Check all specs in correct `specs/\{project\}/` folders
 
 ### Phase 6: Documentation (Week 3)
 
@@ -192,7 +192,7 @@ When creating living docs specs:
 When syncing increment specs to living docs:
 
 1. **Detect Project** from increment spec content
-2. **Place in Correct Folder**: `specs/{project}/FS-{NNN}-*.md`
+2. **Place in Correct Folder**: `specs/\{project\}/FS-{NNN}-*.md`
 3. **Add References** (not duplication): `strategy_docs`, `architecture_docs`, etc.
 4. **Create JIRA Epic** if not exists
 5. **Link Epic** to spec frontmatter
@@ -202,7 +202,7 @@ When syncing increment specs to living docs:
 | Metric | Target | How to Measure |
 |--------|--------|----------------|
 | **Zero Duplication** | 0 duplicate docs | Manual audit: No NFRs/overviews/user-stories in specs/ |
-| **100% Brownfield Alignment** | All specs in project folders | Check: All specs in specs/{project}/ matching JIRA/ADO/GitHub |
+| **100% Brownfield Alignment** | All specs in project folders | Check: All specs in specs/\{project\}/ matching JIRA/ADO/GitHub |
 | **100% Reference Coverage** | All specs reference other docs | Check: All FS-* have strategy_docs, architecture_docs, etc. |
 | **Auto-Detection Works** | 95%+ accuracy | Test: `detect-external-structure.ts` detects JIRA/ADO/GitHub correctly |
 | **Migration Success** | 100% specs migrated | Verify: All specs moved from domain folders to project folders |

@@ -61,9 +61,10 @@ class TaskSync {
       console.log(`   \u2705 Milestone #${milestone.number}: ${milestone.title}`);
       console.log(`
 \u{1F3AF} Creating epic issue for increment ${metadata.id}...`);
+      const issuePrefix = this.getIssuePrefix(metadata.id);
       const epicBody = this.generateEpicBody(metadata, tasks);
       const epic = await this.client.createEpicIssue(
-        `[INC-${metadata.id}] ${metadata.title}`,
+        `[${issuePrefix}] ${metadata.title}`,
         epicBody,
         milestone.title,
         ["increment", "specweave", metadata.priority.toLowerCase()]
@@ -329,6 +330,35 @@ This task blocks:
     fs.writeFileSync(metadataPath, yaml.dump(metadata), "utf-8");
   }
   /**
+   * Get issue prefix from metadata.json (with created date)
+   * Returns FS-YY-MM-DD format or fallback to FS-UNKNOWN
+   */
+  getIssuePrefix(incrementId) {
+    const metadataJsonPath = path.join(this.incrementPath, "metadata.json");
+    if (fs.existsSync(metadataJsonPath)) {
+      try {
+        const metadataContent = fs.readFileSync(metadataJsonPath, "utf-8");
+        const metadata = JSON.parse(metadataContent);
+        if (metadata.created) {
+          const dateMatch = metadata.created.match(/^(\d{4})-(\d{2})-(\d{2})/);
+          if (dateMatch) {
+            const year = dateMatch[1].slice(2);
+            const month = dateMatch[2];
+            const day = dateMatch[3];
+            return `FS-${year}-${month}-${day}`;
+          }
+        }
+      } catch (error) {
+        console.warn(`\u26A0\uFE0F  Could not parse metadata.json: ${error}`);
+      }
+    }
+    const incrementNumber = incrementId.match(/^(\d+)/)?.[1];
+    if (incrementNumber) {
+      return `FS-${incrementNumber}`;
+    }
+    return "FS-UNKNOWN";
+  }
+  /**
    * Save sync mapping
    */
   saveSyncMapping(githubData) {
@@ -363,10 +393,11 @@ This task blocks:
    * Print dry run summary
    */
   printDryRunSummary(tasks, metadata) {
+    const issuePrefix = this.getIssuePrefix(metadata.id);
     console.log(`
 \u{1F4CA} Dry Run Summary:`);
     console.log(`   Milestone: ${this.getMilestoneTitle(metadata)}`);
-    console.log(`   Epic: [INC-${metadata.id}] ${metadata.title}`);
+    console.log(`   Epic: [${issuePrefix}] ${metadata.title}`);
     console.log(`   Task Issues: ${tasks.length}`);
     console.log(`
 \u{1F4DD} Would create:`);

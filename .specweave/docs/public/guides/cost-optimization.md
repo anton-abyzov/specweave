@@ -389,7 +389,7 @@ Since we store NO personal data:
 
 ### Q: Does this slow down execution?
 
-**A**: No. Phase detection takes `<1ms`. Haiku is actually 2x faster than Sonnet.
+**A**: No. Phase detection takes `&lt;1ms`. Haiku is actually 2x faster than Sonnet.
 
 ### Q: Is quality affected?
 

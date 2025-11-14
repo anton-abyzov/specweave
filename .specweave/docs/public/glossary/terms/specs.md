@@ -136,7 +136,7 @@ Links to existing project documentation:
 - ✅ Security audit passed
 
 ### Non-Functional
-- ✅ Login latency <200ms (p99)
+- ✅ Login latency &lt;200ms (p99)
 - ✅ 99.9% uptime SLA
 - ✅ Support 10,000 concurrent users
 - ✅ OWASP Top 10 compliance
@@ -255,7 +255,7 @@ Deferred to future increments:
 - ✅ All 3 user stories implemented
 - ✅ 85%+ test coverage
 - ✅ Security audit passed
-- ✅ Performance: <200ms login latency
+- ✅ Performance: &lt;200ms login latency
 ```
 
 ### Key Benefits
@@ -271,7 +271,7 @@ Increment specs contain **only what's being built RIGHT NOW**:
 Developers can quickly see:
 - What am I building? (US-001 to US-003)
 - What's NOT in scope? (OAuth, 2FA, SSO)
-- What's the success criteria? (85% coverage, <200ms latency)
+- What's the success criteria? (85% coverage, &lt;200ms latency)
 
 **3. Clean After Completion**
 

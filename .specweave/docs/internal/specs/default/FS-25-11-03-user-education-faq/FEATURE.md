@@ -26,3 +26,8 @@ last_updated: 2025-11-14
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#340 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/340)

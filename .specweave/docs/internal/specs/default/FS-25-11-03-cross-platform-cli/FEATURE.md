@@ -37,5 +37,5 @@ last_updated: 2025-11-14
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/24](https://github.com/anton-abyzov/specweave/issues/24)
+**GitHub Issue**: [#334 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/334)
 **JIRA Epic**: [SCRUM-26](https://jira.atlassian.com/browse/SCRUM-26)

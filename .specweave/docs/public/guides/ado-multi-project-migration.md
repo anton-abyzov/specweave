@@ -210,7 +210,7 @@ Week 3: Migrate PaymentService specs
 
 ### Pattern 2: Big Bang Migration
 
-Migrate everything at once (recommended for <20 specs):
+Migrate everything at once (recommended for &lt;20 specs):
 
 ```bash
 # Run full migration
@@ -453,7 +453,7 @@ The migration process is:
 4. Validated (dry-run mode)
 
 Expected timeline:
-- Small org (<20 specs): 1-2 hours
+- Small org (&lt;20 specs): 1-2 hours
 - Medium org (20-100 specs): 1 day
 - Large org (100+ specs): 1 week (gradual)
 

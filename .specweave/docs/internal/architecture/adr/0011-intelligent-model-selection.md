@@ -1,6 +1,19 @@
-# ADR-0011: Intelligent Model Selection
+# ADR-0011: Intelligent Model Selection (SUPERSEDED)
 
-**Status**: Accepted
+---
+**⚠️ SUPERSEDED**: This ADR has been superseded by more detailed sub-ADRs in Increment 0003.
+
+**See instead**:
+- [ADR-0003-007: Intelligent Model Selection Architecture](0003-007-intelligent-model-selection.md)
+- [ADR-0003-008: Cost Tracking System](0003-008-cost-tracking-system.md)
+- [ADR-0003-009: Phase Detection Algorithm](0003-009-phase-detection-algorithm.md)
+
+**Date Superseded**: 2025-11-13
+**Reason**: Replaced by more granular, increment-scoped ADRs with updated implementation details.
+
+---
+
+**Status**: Superseded (was: Accepted)
 **Date**: 2025-10-31
 **Deciders**: Core Team
 **Related**: Increment 0003-intelligent-model-selection

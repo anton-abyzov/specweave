@@ -683,7 +683,7 @@ related:
 | **Write Files** | 10-20ms | Write 6-10 files |
 | **Total** | 40-70ms | End-to-end intelligent sync |
 
-**Result**: Fast enough to run on every task completion (<100ms overhead).
+**Result**: Fast enough to run on every task completion (&lt;100ms overhead).
 
 ---
 
@@ -783,7 +783,7 @@ title: "My User Story"
 - Bidirectional links (implements, references, defined-in, related-to)
 
 **Performance**:
-- Fast (<100ms overhead per sync)
+- Fast (&lt;100ms overhead per sync)
 - Async (non-blocking)
 - Fallback to simple mode on error
 

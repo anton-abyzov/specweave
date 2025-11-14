@@ -26,3 +26,8 @@ This increment implemented bidirectional synchroni
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#351 - [FS-25-11-10]](https://github.com/anton-abyzov/specweave/issues/351)

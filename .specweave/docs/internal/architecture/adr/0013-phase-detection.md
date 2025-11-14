@@ -1,6 +1,17 @@
-# ADR-0011: Phase Detection Algorithm
+# ADR-0013: Phase Detection Algorithm (SUPERSEDED)
 
-**Status**: Accepted
+---
+**⚠️ SUPERSEDED**: This ADR has been superseded by more detailed sub-ADR in Increment 0003.
+
+**See instead**:
+- [ADR-0003-009: Phase Detection Algorithm](0003-009-phase-detection-algorithm.md)
+
+**Date Superseded**: 2025-11-13
+**Reason**: Replaced by more granular, increment-scoped ADR with updated implementation details.
+
+---
+
+**Status**: Superseded (was: Accepted)
 **Date**: 2025-10-31
 **Deciders**: Core Team
 **Related**: Increment 0003-intelligent-model-selection, ADR-0011

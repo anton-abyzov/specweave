@@ -45,4 +45,4 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, A
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/186](https://github.com/anton-abyzov/specweave/issues/186)
+**GitHub Issue**: [#360 - [FS-25-11-12]](https://github.com/anton-abyzov/specweave/issues/360)

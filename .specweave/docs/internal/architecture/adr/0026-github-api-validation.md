@@ -418,7 +418,7 @@ query {
 **Cost**:
 - API calls per setup: 3-5 (owner + repo validations)
 - Rate limit impact: Low (5000/hour limit)
-- Network bandwidth: \<10KB per setup
+- Network bandwidth: \&lt;10KB per setup
 
 ---
 

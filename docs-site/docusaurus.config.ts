@@ -41,8 +41,8 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/anton-abyzov/specweave/tree/develop/docs-site/',
-          // Point to .specweave/docs/public/ as source
-          path: '../.specweave/docs/public',
+          // Use docs/ folder as source (standard Docusaurus location)
+          path: './docs',
           routeBasePath: 'docs',
           showLastUpdateTime: true,
           showLastUpdateAuthor: true,
@@ -110,12 +110,12 @@ const config: Config = {
           position: 'left',
           label: 'Glossary',
         },
-        {
-          type: 'docSidebar',
-          sidebarId: 'apiSidebar',
-          position: 'left',
-          label: 'API',
-        },
+        // {
+        //   type: 'docSidebar',
+        //   sidebarId: 'apiSidebar',
+        //   position: 'left',
+        //   label: 'API',
+        // },
         {
           type: 'docSidebar',
           sidebarId: 'commandsSidebar',

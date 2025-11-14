@@ -122,7 +122,7 @@ SPEC-002: Intelligent AI Capabilities (Permanent)
 - ✅ Brownfield integration needed (link to existing project docs)
 
 **Don't create a spec for**:
-- ❌ Small features (1 increment, \<1 week) - just use increment spec
+- ❌ Small features (1 increment, \&lt;1 week) - just use increment spec
 - ❌ Bug fixes or hotfixes - use increment spec only
 - ❌ Temporary experiments - use increment spec only
 

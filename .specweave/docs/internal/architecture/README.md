@@ -2,21 +2,32 @@
 
 **Purpose**: Define the system design, technical decisions, and data models.
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-13
 
 ---
+
+## Folder Structure
+
+```
+architecture/
+├── hld/                    ← High-Level Designs (C4 L1-L2)
+├── guides/                 ← Implementation guides
+├── concepts/               ← Conceptual documentation
+├── specs-architecture/     ← Meta-architecture about specs
+├── adr/                    ← Architecture Decision Records
+└── diagrams/               ← Shared diagrams
+```
 
 ## What Goes Here
 
 - **HLD (High-Level Design)** - System overview, component diagrams, data flow (C4 Levels 1-2)
-- **LLD (Low-Level Design)** - Detailed component design, internal structure (C4 Level 3)
+- **Implementation Guides** - Step-by-step implementation instructions
+- **Conceptual Docs** - Core principles and patterns
+- **Specs Architecture** - Meta-architecture about how specs are organized
 - **ADR (Architecture Decision Records)** - Technical decisions with rationale
-- **Diagrams** - Mermaid diagrams, SVGs (C4 context, container, component, sequence)
-- **Data Models** - Database schemas, entity relationships
-- **Integration Maps** - How systems communicate
-- **Security Architecture** - Security model, authentication, authorization
+- **Diagrams** - Shared/cross-cutting Mermaid diagrams
 
-**Note**: Specs (Specifications) are in a separate top-level folder: `../specs/`
+**Note**: Feature specs are in a separate folder: `../specs/`
 
 ## C4 Model Adoption
 
@@ -33,27 +44,43 @@ SpecWeave uses the **C4 model** for architecture documentation:
 
 ## Subdirectories
 
+### `/hld/` - High-Level Designs
+**C4 Levels**: 1 (Context), 2 (Container)
+
+**Purpose**: System-level architecture showing external boundaries and internal services
+
+**See**: [hld/README.md](hld/README.md)
+
+### `/guides/` - Implementation Guides
+**Purpose**: Step-by-step instructions for implementing architectural patterns
+
+**See**: [guides/README.md](guides/README.md)
+
+### `/concepts/` - Conceptual Documentation
+**Purpose**: Core architectural principles and mental models
+
+**See**: [concepts/README.md](concepts/README.md)
+
+### `/specs-architecture/` - Specs Architecture
+**Purpose**: Meta-architecture about how specs are organized and managed
+
+**See**: [specs-architecture/README.md](specs-architecture/README.md)
+
 ### `/adr/` - Architecture Decision Records
-**Format**: `0001-decision-title.md`, `0002-decision-title.md`, etc.
+**Format**: `0001-decision-title.md`, `0003-007-subtopic.md` (increment-scoped)
 
-**Purpose**: Document architectural decisions with context, options considered, and rationale.
-
-**Template**: See `templates/docs/adr-template.md`
-
-**Example**: `0001-adopt-nextjs.md`, `0002-use-prisma.md`
+**Purpose**: Document architectural decisions with context, options considered, and rationale
 
 **See**: [adr/README.md](adr/README.md)
 
-### `/diagrams/` - Architecture Diagrams
+### `/diagrams/` - Shared Diagrams
 **Format**: `{page}.{type}.mmd` (Mermaid source), `{page}.{type}.svg` (rendered)
 
-**Purpose**: Visual representation of architecture using C4 model diagrams
+**Purpose**: Cross-cutting diagrams used by multiple documents
 
-**Types**: `context`, `sequence`, `flow`, `entity`, `deployment`
+**Note**: Most diagrams should be co-located with their parent document
 
-**Example**: `hld-system.context.mmd`, `auth-flow.sequence.mmd`
-
-**See**: [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md)
+**See**: [diagrams/README.md](diagrams/README.md)
 
 ---
 

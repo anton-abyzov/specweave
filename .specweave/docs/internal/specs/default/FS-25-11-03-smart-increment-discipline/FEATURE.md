@@ -29,5 +29,5 @@ This increment combines TWO major enhancements to SpecWeave's increment manageme
 
 ## External Tool Integration
 
-**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/4](https://github.com/anton-abyzov/specweave/issues/4)
+**GitHub Issue**: [#339 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/339)
 **JIRA Epic**: [SCRUM-28](https://jira.atlassian.com/browse/SCRUM-28)

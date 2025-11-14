@@ -63,9 +63,10 @@ test.describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
     fs.mkdirSync(incrementDir, { recursive: true });
 
     // spec.md with user stories
+    // Note: epic field uses feature name (not FS-* prefix) - system will auto-generate FS-{date}-{name}
     const specContent = `---
 title: External Tool Status Synchronization
-epic: FS-031
+created: 2025-11-12
 project: default
 ---
 
@@ -156,8 +157,13 @@ completed_tasks: 0
 
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
-    // 3. Verify user story files exist (NEW: feature-based folder naming)
-    const featureDir = path.join(testDir, '.specweave/docs/internal/specs/default/external-tool-status-sync');
+    // 3. Verify user story files exist (NEW: date-based folder naming FS-{yy-mm-dd}-{name})
+    // Find the feature folder (should be FS-25-11-12-external-tool-status-sync based on created date)
+    const specsDir = path.join(testDir, '.specweave/docs/internal/specs/default');
+    const folders = fs.readdirSync(specsDir).filter(f => f.includes('external-tool-status-sync'));
+    expect(folders.length).toBe(1);
+
+    const featureDir = path.join(specsDir, folders[0]);
     expect(fs.existsSync(featureDir)).toBeTruthy();
 
     const us001Path = path.join(featureDir, 'us-001-rich-external-issue-content.md');
@@ -185,7 +191,9 @@ completed_tasks: 0
     // Each task should have a "User Story" link injected after the heading
     expect(updatedTasksContent).toContain('## T-001: Extract Title from Spec Frontmatter');
     expect(updatedTasksContent).toContain('**User Story**: [US-001: Rich External Issue Content]');
-    expect(updatedTasksContent).toContain('docs/internal/specs/default/external-tool-status-sync');
+    // Path will include FS-{date}-external-tool-status-sync folder
+    expect(updatedTasksContent).toContain('docs/internal/specs/default/');
+    expect(updatedTasksContent).toContain('external-tool-status-sync');
 
     expect(updatedTasksContent).toContain('## T-002: Generate Task Checklist');
     expect(updatedTasksContent).toContain('**User Story**: [US-001: Rich External Issue Content]');
@@ -231,7 +239,7 @@ completed_tasks: 0
 
     const backendSpec = `---
 title: Backend Authentication
-epic: FS-025
+created: 2025-11-10
 project: backend
 ---
 
@@ -275,7 +283,12 @@ title: Backend Auth Tasks
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
     // Verify links point to correct project folder (backend, not default)
-    const backendFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/backend/backend-auth');
+    // Find backend feature folder (should be FS-{date}-backend-auth)
+    const backendSpecsDir = path.join(testDir, '.specweave/docs/internal/specs/backend');
+    const backendFolders = fs.readdirSync(backendSpecsDir).filter(f => f.includes('backend-auth'));
+    expect(backendFolders.length).toBe(1);
+
+    const backendFeatureDir = path.join(backendSpecsDir, backendFolders[0]);
     expect(fs.existsSync(backendFeatureDir)).toBeTruthy();
 
     const us001Path = path.join(backendFeatureDir, 'us-001-api-authentication.md');
@@ -286,7 +299,8 @@ title: Backend Auth Tasks
 
     const syncedTasksContent = fs.readFileSync(path.join(backendDir, 'tasks.md'), 'utf-8');
     expect(syncedTasksContent).toContain('**User Story**: [US-001: API Authentication]');
-    expect(syncedTasksContent).toContain('specs/backend/backend-auth'); // Project-specific path
+    expect(syncedTasksContent).toContain('specs/backend/'); // Project-specific path
+    expect(syncedTasksContent).toContain('backend-auth'); // Feature name in path
   });
 
   test('should handle tasks with multiple AC-IDs (maps to multiple user stories)', async () => {
@@ -295,7 +309,7 @@ title: Backend Auth Tasks
 
     const specContent = `---
 title: Complex Feature
-epic: FS-032
+created: 2025-11-13
 ---
 
 # Complex Feature
@@ -339,7 +353,9 @@ title: Tasks
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
     // Verify task appears in BOTH user stories (forward links)
-    const featureDir = path.join(testDir, '.specweave/docs/internal/specs/default/complex-feature');
+    const specsDir2 = path.join(testDir, '.specweave/docs/internal/specs/default');
+    const folders2 = fs.readdirSync(specsDir2).filter(f => f.includes('complex-feature'));
+    const featureDir = path.join(specsDir2, folders2[0]);
 
     const us001Content = fs.readFileSync(path.join(featureDir, 'us-001-frontend-ui.md'), 'utf-8');
     expect(us001Content).toContain('T-001'); // Task ID present in US-001
@@ -362,7 +378,7 @@ title: Tasks
 
     const specContent = `---
 title: Idempotent Test
-epic: FS-033
+created: 2025-11-13
 ---
 
 # Idempotent Test
@@ -420,7 +436,7 @@ title: Tasks
 
     const specContent = `---
 title: No AC IDs Test
-epic: FS-034
+created: 2025-11-13
 ---
 
 # No AC IDs Test
@@ -467,7 +483,7 @@ title: Tasks
 
     const specContent = `---
 title: Epic README Test
-epic: FS-035
+created: 2025-11-13
 ---
 
 # Epic README Test
@@ -504,15 +520,18 @@ title: Tasks
 
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
-    const featureDir = path.join(testDir, '.specweave/docs/internal/specs/default/epic-readme-test');
+    // Find feature folder (should be FS-{date}-epic-readme-test)
+    const specsDir3 = path.join(testDir, '.specweave/docs/internal/specs/default');
+    const folders3 = fs.readdirSync(specsDir3).filter(f => f.includes('epic-readme-test'));
+    const featureDir = path.join(specsDir3, folders3[0]);
     const featurePath = path.join(featureDir, 'FEATURE.md');
 
     expect(fs.existsSync(featurePath)).toBeTruthy();
 
     const featureContent = fs.readFileSync(featurePath, 'utf-8');
 
-    // Should contain feature overview (NEW format includes SPEC- prefix)
-    expect(featureContent).toContain('# SPEC-0035'); // SPEC ID prefix
+    // Should contain feature overview (NEW format: FS-{date}-{name} as ID)
+    expect(featureContent).toContain('epic-readme-test'); // Feature name in ID
     expect(featureContent).toContain('Epic README Test'); // Title
     expect(featureContent).toContain('High-level feature overview');
 

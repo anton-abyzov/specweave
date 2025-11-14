@@ -29,4 +29,4 @@ Comprehensive testing increment to stabili
 
 ## External Tool Integration
 
-**GitHub Issue**: [#201 - Feature](https://github.com/anton-abyzov/specweave/issues/201)
+**GitHub Issue**: [#344 - [FS-25-11-05]](https://github.com/anton-abyzov/specweave/issues/344)

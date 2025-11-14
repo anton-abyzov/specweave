@@ -1,26 +1,18 @@
 #!/usr/bin/env bash
 #
-# update-status-line.sh
+# update-status-line.sh (Simplified)
 #
-# Updates the status line cache with current increment progress.
-# Called by post-task-completion hook.
+# Updates status line cache with current increment progress.
+# Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
 #
-# Performance: 10-50ms (runs async in hook, user doesn't wait)
+# Logic:
+# 1. Scan all metadata.json for status=active/in-progress/planning
+# 2. Take first (oldest) as current increment
+# 3. Count all active/in-progress/planning as openCount
+# 4. Parse current increment's tasks.md for progress
+# 5. Write to cache
 #
-# Cache format (.specweave/state/status-line.json):
-# {
-#   "incrementId": "0017-sync-architecture-fix",
-#   "incrementName": "sync-architecture-fix",
-#   "totalTasks": 30,
-#   "completedTasks": 15,
-#   "percentage": 50,
-#   "currentTask": {
-#     "id": "T-016",
-#     "title": "Update documentation"
-#   },
-#   "lastUpdate": "2025-11-10T15:30:00Z",
-#   "lastModified": 1699632600
-# }
+# Performance: 50-100ms (runs async, user doesn't wait)
 
 set -euo pipefail
 
@@ -39,126 +31,102 @@ find_project_root() {
 
 PROJECT_ROOT=$(find_project_root)
 CACHE_FILE="$PROJECT_ROOT/.specweave/state/status-line.json"
-STATE_FILE="$PROJECT_ROOT/.specweave/state/active-increment.json"
+INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
+TMP_FILE="$PROJECT_ROOT/.specweave/state/.status-line-tmp.txt"
 
 # Ensure state directory exists
 mkdir -p "$PROJECT_ROOT/.specweave/state"
 
-# Check if there's an active increment
-if [[ ! -f "$STATE_FILE" ]]; then
-  # No active increment = clear cache
-  echo '{}' > "$CACHE_FILE"
+# Step 1: Find all open increments (active/in-progress/planning)
+# Write to temp file: "timestamp increment_id"
+> "$TMP_FILE"
+
+if [[ -d "$INCREMENTS_DIR" ]]; then
+  for metadata in "$INCREMENTS_DIR"/*/metadata.json; do
+    if [[ -f "$metadata" ]]; then
+      status=$(jq -r '.status // ""' "$metadata" 2>/dev/null || echo "")
+
+      # Check if increment is open (active, in-progress, or planning)
+      if [[ "$status" == "active" ]] || [[ "$status" == "in-progress" ]] || [[ "$status" == "planning" ]]; then
+        increment_id=$(basename "$(dirname "$metadata")")
+        created=$(jq -r '.created // ""' "$metadata" 2>/dev/null || echo "1970-01-01T00:00:00Z")
+
+        # Write to temp file
+        echo "$created $increment_id" >> "$TMP_FILE"
+      fi
+    fi
+  done
+fi
+
+# Step 2: Count open increments
+OPEN_COUNT=$(wc -l < "$TMP_FILE" | tr -d ' ')
+
+if [[ $OPEN_COUNT -eq 0 ]]; then
+  # No open increments
+  jq -n '{
+    current: null,
+    openCount: 0,
+    lastUpdate: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
+  }' > "$CACHE_FILE"
+  rm -f "$TMP_FILE"
   exit 0
 fi
 
-# Get active increment ID
-INCREMENT_ID=$(jq -r '.id // empty' "$STATE_FILE" 2>/dev/null || echo "")
-if [[ -z "$INCREMENT_ID" ]]; then
-  echo '{}' > "$CACHE_FILE"
-  exit 0
-fi
+# Step 3: Sort by timestamp (oldest first) and take first
+CURRENT_INCREMENT=$(sort "$TMP_FILE" | head -1 | awk '{print $2}')
 
-TASKS_FILE="$PROJECT_ROOT/.specweave/increments/$INCREMENT_ID/tasks.md"
+# Clean up temp file
+rm -f "$TMP_FILE"
 
-# No tasks file yet? (Planning phase)
-if [[ ! -f "$TASKS_FILE" ]]; then
-  echo '{}' > "$CACHE_FILE"
-  exit 0
-fi
+# Step 4: Parse current increment's tasks.md for progress
+TASKS_FILE="$INCREMENTS_DIR/$CURRENT_INCREMENT/tasks.md"
+TOTAL_TASKS=0
+COMPLETED_TASKS=0
+PERCENTAGE=0
 
-# Get tasks.md mtime for invalidation detection
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  # macOS
-  MTIME=$(stat -f %m "$TASKS_FILE" 2>/dev/null || echo 0)
-else
-  # Linux
-  MTIME=$(stat -c %Y "$TASKS_FILE" 2>/dev/null || echo 0)
-fi
+if [[ -f "$TASKS_FILE" ]]; then
+  # Count total tasks (## T- or ### T- headings)
+  TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
+  TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' || echo 0)
 
-# Parse tasks.md (THIS is the slow part: 10-50ms)
-# Support both ## T- and ### T- formats (flexible task heading levels)
-TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
+  # Count completed tasks (both checkbox formats)
+  # Format 1: [x] at line start
+  COMPLETED_STANDARD=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+  COMPLETED_STANDARD=$(echo "$COMPLETED_STANDARD" | tr -d '\n\r ' || echo 0)
 
-# Remove any whitespace/newlines and ensure integer
-TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
+  # Format 2: **Status**: [x] inline
+  COMPLETED_INLINE=$(grep -c '\*\*Status\*\*: \[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+  COMPLETED_INLINE=$(echo "$COMPLETED_INLINE" | tr -d '\n\r ' || echo 0)
 
-# Support both checkbox formats:
-# 1. Standard: [x] at line start
-# 2. Inline: **Status**: [x] (in task body)
-COMPLETED_TASKS_STANDARD=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
-COMPLETED_TASKS_INLINE=$(grep -c 'Status\*\*: \[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
+  COMPLETED_TASKS=$((COMPLETED_STANDARD + COMPLETED_INLINE))
 
-# Remove any whitespace/newlines and ensure integer
-COMPLETED_TASKS_STANDARD=$(echo "$COMPLETED_TASKS_STANDARD" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
-COMPLETED_TASKS_INLINE=$(echo "$COMPLETED_TASKS_INLINE" | tr -d '\n\r ' | grep -E '^[0-9]+$' || echo 0)
-
-COMPLETED_TASKS=$((COMPLETED_TASKS_STANDARD + COMPLETED_TASKS_INLINE))
-
-# Calculate percentage
-if [[ "$TOTAL_TASKS" -gt 0 ]]; then
-  PERCENTAGE=$(( COMPLETED_TASKS * 100 / TOTAL_TASKS ))
-else
-  PERCENTAGE=0
-fi
-
-# Find current task (first incomplete task)
-# Strategy: Find first [ ] checkbox (either format), then get the task heading above it
-# Try standard format first (checkbox at line start)
-CURRENT_TASK_LINE=$(grep -B1 '^\[ \]' "$TASKS_FILE" 2>/dev/null | grep -E '^##+ T-' | head -1 || echo "")
-
-# If not found, try inline format (**Status**: [ ])
-if [[ -z "$CURRENT_TASK_LINE" ]]; then
-  # Find line with **Status**: [ ], then look backward for task heading
-  TASK_LINE_NUM=$(grep -n '\*\*Status\*\*: \[ \]' "$TASKS_FILE" 2>/dev/null | head -1 | cut -d: -f1 || echo "")
-  if [[ -n "$TASK_LINE_NUM" ]]; then
-    # Get lines before the status line and find the task heading
-    CURRENT_TASK_LINE=$(head -n "$TASK_LINE_NUM" "$TASKS_FILE" | grep -E '^##+ T-' | tail -1 || echo "")
+  # Calculate percentage
+  if [[ $TOTAL_TASKS -gt 0 ]]; then
+    PERCENTAGE=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
   fi
 fi
-CURRENT_TASK_ID=""
-CURRENT_TASK_TITLE=""
 
-if [[ -n "$CURRENT_TASK_LINE" ]]; then
-  # Extract task ID (T-NNN)
-  CURRENT_TASK_ID=$(echo "$CURRENT_TASK_LINE" | grep -o 'T-[0-9][0-9]*' || echo "")
+# Step 5: Extract increment name (remove 4-digit prefix)
+INCREMENT_NAME=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
 
-  # Extract task title (after "## T-NNN: ")
-  # Use parameter expansion to remove prefix
-  TEMP="${CURRENT_TASK_LINE#*: }"
-  CURRENT_TASK_TITLE=$(echo "$TEMP" | head -c 50)
-fi
-
-# Extract increment name (remove leading 4-digit number and dash)
-INCREMENT_NAME=$(echo "$INCREMENT_ID" | sed 's/^[0-9]\{4\}-//')
-
-# Build current task JSON
-if [[ -n "$CURRENT_TASK_ID" ]]; then
-  CURRENT_TASK_JSON=$(jq -n \
-    --arg id "$CURRENT_TASK_ID" \
-    --arg title "$CURRENT_TASK_TITLE" \
-    '{id: $id, title: $title}')
-else
-  CURRENT_TASK_JSON="null"
-fi
-
-# Write cache atomically using jq
+# Step 6: Write cache
 jq -n \
-  --arg id "$INCREMENT_ID" \
+  --arg id "$CURRENT_INCREMENT" \
   --arg name "$INCREMENT_NAME" \
-  --argjson total "$TOTAL_TASKS" \
   --argjson completed "$COMPLETED_TASKS" \
+  --argjson total "$TOTAL_TASKS" \
   --argjson percentage "$PERCENTAGE" \
-  --argjson task "$CURRENT_TASK_JSON" \
-  --argjson mtime "$MTIME" \
+  --argjson openCount "$OPEN_COUNT" \
   '{
-    incrementId: $id,
-    incrementName: $name,
-    totalTasks: $total,
-    completedTasks: $completed,
-    percentage: $percentage,
-    currentTask: $task,
-    lastUpdate: (now | strftime("%Y-%m-%dT%H:%M:%SZ")),
-    lastModified: $mtime
+    current: {
+      id: $id,
+      name: $name,
+      completed: $completed,
+      total: $total,
+      percentage: $percentage
+    },
+    openCount: $openCount,
+    lastUpdate: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
   }' > "$CACHE_FILE"
 
 exit 0

@@ -265,6 +265,55 @@ project-root/
 
 ---
 
+## 🔗 Bidirectional Task ↔ User Story Linking
+
+**AUTOMATIC FEATURE**: SpecWeave creates bidirectional links between tasks and user stories.
+
+### How It Works
+
+**When you complete an increment** (`/specweave:done`):
+1. User stories are extracted to `.specweave/docs/internal/specs/default/`
+2. Tasks.md is automatically updated with links back to user stories
+3. Complete bidirectional navigation is created!
+
+**Example Task** (WITH bidirectional link):
+```markdown
+### T-001: Implement User Login
+
+**User Story**: [US-001: User Authentication](../../docs/internal/specs/default/auth-service/us-001-user-authentication.md)
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
+
+**Test Plan** (BDD):
+- **Given** valid credentials → **When** login → **Then** receive JWT token
+```
+
+### Requirements
+
+**Your tasks.md MUST have AC-IDs** for bidirectional linking:
+
+```markdown
+## T-001: Implement User Login
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03   ← CRITICAL for linking!
+```
+
+**AC-ID Format**: `AC-US{number}-{criteria}` (e.g., `AC-US1-01`, `AC-US2-03`)
+- Maps to user stories: `AC-US1-01` → `US-001`
+- Multiple AC-IDs allowed per task
+- Task links to FIRST user story found
+
+### Benefits
+
+- ✅ **Navigate both directions**: Tasks → User Stories → Tasks
+- ✅ **Automatic**: No manual linking needed
+- ✅ **Multi-project aware**: Works with backend, frontend, mobile, etc.
+- ✅ **Always in sync**: Links created during `/specweave:done`
+
+**For complete details**: Ask me about "bidirectional linking" or check `.specweave/docs/internal/specs/default/README.md`
+
+---
+
 ## Tech Stack
 
 **Project Type**: {MONOREPO_OR_SINGLE}

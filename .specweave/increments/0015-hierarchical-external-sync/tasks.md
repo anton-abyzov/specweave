@@ -8,6 +8,8 @@ coverage_target: 88%
 ---
 
 ## T-001: Update Sync Profile Types with Hierarchical Support
+**User Story**: [US-001: Multi-Project Jira Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-001-multi-project-jira-sync-p1-testable.md)
+
 
 **AC**: AC-US1-01, AC-US2-01, AC-US3-01
 
@@ -31,6 +33,8 @@ coverage_target: 88%
 ---
 
 ## T-002: Update JSON Schema Validation
+**User Story**: [US-001: Multi-Project Jira Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-001-multi-project-jira-sync-p1-testable.md)
+
 
 **AC**: AC-US1-01, AC-US4-05
 
@@ -54,6 +58,8 @@ coverage_target: 88%
 ---
 
 ## T-003: Implement Jira Board Resolution
+**User Story**: [US-001: Multi-Project Jira Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-001-multi-project-jira-sync-p1-testable.md)
+
 
 **AC**: AC-US1-02
 
@@ -78,6 +84,8 @@ coverage_target: 88%
 ---
 
 ## T-004: Implement Jira Hierarchical JQL Builder
+**User Story**: [US-001: Multi-Project Jira Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-001-multi-project-jira-sync-p1-testable.md)
+
 
 **AC**: AC-US1-01, AC-US1-03
 
@@ -102,6 +110,8 @@ coverage_target: 88%
 ---
 
 ## T-005: Implement Jira Hierarchical Sync
+**User Story**: [US-001: Multi-Project Jira Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-001-multi-project-jira-sync-p1-testable.md)
+
 
 **AC**: AC-US1-04
 
@@ -127,6 +137,8 @@ coverage_target: 88%
 ---
 
 ## T-006: Implement GitHub Project Board Resolution
+**User Story**: [US-002: Multi-Repo GitHub Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-002-multi-repo-github-sync-p1-testable.md)
+
 
 **AC**: AC-US2-02
 
@@ -151,6 +163,8 @@ coverage_target: 88%
 ---
 
 ## T-007: Implement GitHub Hierarchical Query Builder
+**User Story**: [US-002: Multi-Repo GitHub Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-002-multi-repo-github-sync-p1-testable.md)
+
 
 **AC**: AC-US2-01, AC-US2-03
 
@@ -175,6 +189,8 @@ coverage_target: 88%
 ---
 
 ## T-008: Implement GitHub Hierarchical Sync
+**User Story**: [US-002: Multi-Repo GitHub Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-002-multi-repo-github-sync-p1-testable.md)
+
 
 **AC**: AC-US2-04
 
@@ -200,6 +216,8 @@ coverage_target: 88%
 ---
 
 ## T-009: Implement ADO Area Path Resolution
+**User Story**: [US-003: Multi-Project ADO Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-003-multi-project-ado-sync-p1-testable.md)
+
 
 **AC**: AC-US3-02
 
@@ -224,6 +242,8 @@ coverage_target: 88%
 ---
 
 ## T-010: Implement ADO Hierarchical WIQL Builder
+**User Story**: [US-003: Multi-Project ADO Sync (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-003-multi-project-ado-sync-p1-testable.md)
+
 
 **AC**: AC-US3-01, AC-US3-03
 
@@ -248,6 +268,8 @@ coverage_target: 88%
 ---
 
 ## T-011: Implement Init Wizard Enhancement
+**User Story**: [US-004: Init Wizard Enhancement (P1, testable)](../../docs/internal/specs/default/hierarchical-external-sync/us-004-init-wizard-enhancement-p1-testable.md)
+
 
 **AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
 
@@ -279,6 +301,8 @@ coverage_target: 88%
 ---
 
 ## T-012: Create Public Documentation
+**User Story**: [US-005: Public Documentation (P1, manual validation)](../../docs/internal/specs/default/hierarchical-external-sync/us-005-public-documentation-p1-manual-validation.md)
+
 
 **AC**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
 

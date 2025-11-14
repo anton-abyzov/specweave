@@ -155,7 +155,7 @@ US-001: Build entire authentication system
 
 ## Numbering Convention
 
-**Format**: `US-{number}`
+**Format**: `US-\{number\}`
 
 **Examples**:
 - `US-001` - First user story

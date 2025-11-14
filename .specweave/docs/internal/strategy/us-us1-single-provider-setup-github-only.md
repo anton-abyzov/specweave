@@ -2,9 +2,7 @@
 id: "us1-single-provider-setup-github-only"
 title: "US1: Single Provider Setup (GitHub Only)"
 sidebar_label: "US1: Single Provider Setup (GitHub Only)"
-description: "**As a** developer setting up SpecWeave with GitHub integration
-**I want to** see prompts asking about "Local increments ↔ GitHub Issues"
-**So that** I understa"
+description: "Developer wants to see prompts asking about Local increments syncing with GitHub Issues during SpecWeave setup"
 tags: ["user-story", "default", "0017-sync-architecture-fix"]
 increment: "0017-sync-architecture-fix"
 project: "default"

@@ -370,7 +370,7 @@ test('should resize image to 200x200px (AC-US5-02)', async () => {
 - [ ] **AC-US12-06**: Sort by relevance (default) (P1, testable)
 - [ ] **AC-US12-07**: Sort by date (newest first) (P2, testable)
 - [ ] **AC-US12-08**: Pagination (20 results per page) (P1, testable)
-- [ ] **AC-US12-09**: Search completes in <300ms (p95) (P1, testable)
+- [ ] **AC-US12-09**: Search completes in &lt;300ms (p95) (P1, testable)
 - [ ] **AC-US12-10**: No results shows helpful message (P2, testable)
 ```
 
