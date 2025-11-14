@@ -43,8 +43,8 @@ for project_dir in "$SPECS_DIR"/*; do
 
             echo "  📝 $story_id: $title"
 
-            # Extract short feature name (FS-YY-MM-DD) from feature folder
-            short_feature=$(echo "$feature" | grep -oE "^FS-[0-9]{2}-[0-9]{2}-[0-9]{2}" || echo "$feature")
+            # Feature folder is already in FS-XXX format
+            short_feature="$feature"
 
             # Check if issue already exists (must match both story ID and feature)
             issue_title="[$short_feature $story_id] $title"

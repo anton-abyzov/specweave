@@ -13,7 +13,7 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, A
 
 ## Features
 
-- FS-25-11-12-external-tool-sync
+- FS-033
 
 ## Timeline
 

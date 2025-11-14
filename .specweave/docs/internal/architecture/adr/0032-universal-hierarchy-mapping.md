@@ -77,12 +77,12 @@ Epic (Cross-Project Theme)
 │       └── EPIC.md                        # Epic overview + linked features
 │
 ├── _features/                             # Cross-project features (high-level)
-│   └── FS-25-11-12-external-tool-sync/    # Feature folder (date-based naming)
+│   └── FS-001/                            # Feature folder (sequential ID)
 │       └── FEATURE.md                     # Feature overview (cross-project)
 │
 ├── backend/                               # Backend project
 │   ├── README.md                          # Project overview
-│   └── FS-25-11-12-external-tool-sync/    # Feature implementation for backend
+│   └── FS-001/                            # Feature implementation for backend
 │       ├── README.md                      # Feature context (backend-specific)
 │       ├── us-001-backend-api.md          # User stories for backend
 │       ├── us-002-backend-service.md
@@ -106,30 +106,30 @@ Epic (Cross-Project Theme)
 
 | Level | Format | Example | Location |
 |-------|--------|---------|----------|
-| **Epic** | `EPIC-YYYY-QN-{name}` | `EPIC-2025-Q4-platform` | `_epics/` |
-| **Feature** | `FS-YY-MM-DD-{name}` | `FS-25-11-12-external-tool-sync` | `_features/` + `{project}/` |
-| **User Story** | `us-NNN-{name}.md` | `us-001-backend-api.md` | `{project}/FS-*/` |
+| **Epic** | `EPIC-XXX` | `EPIC-001` | `_epics/` |
+| **Feature** | `FS-XXX` | `FS-001` | `_features/` + `{project}/` |
+| **User Story** | `us-NNN-{name}.md` | `us-001-backend-api.md` | `{project}/FS-XXX/` |
 | **Task** | `T-NNN: {name}` | `T-001: Implement API` | `.specweave/increments/####/tasks.md` |
 
-**Why Date-Based Feature Naming?**
-- Aligns with increment creation dates
-- Prevents duplicates (one feature per day is reasonable)
-- Matches GitHub issue format: `[FS-25-11-12] External Tool Status Sync`
-- Easy to sort chronologically
-- Clear when feature was started
+**Why Sequential Feature Naming (FS-XXX)?**
+- Prevents duplicates through FeatureIDManager registry
+- Features assigned IDs based on creation date order
+- Short, readable format (FS-001, FS-002, etc.)
+- Easy to reference in issues: `[FS-001 US-001] Title`
+- Consistent numbering across entire system
 
 ### 4. Cross-Project Feature Support
 
 **Key Innovation**: Same `FS-*` folder name appears in multiple projects!
 
-**Example**: Feature "User Authentication" (FS-25-11-10-user-auth)
+**Example**: Feature "User Authentication" (FS-002)
 ```
 _features/
-└── FS-25-11-10-user-auth/
+└── FS-002/
     └── FEATURE.md                     # High-level: What is user auth?
 
 backend/
-└── FS-25-11-10-user-auth/
+└── FS-002/
     ├── README.md                      # Backend context: OAuth API, JWT tokens
     ├── us-001-oauth-api.md            # Backend user stories
     └── us-002-jwt-tokens.md
