@@ -1,5 +1,5 @@
 ---
-name: specweave-github-cleanup-duplicates
+name: specweave-github:cleanup-duplicates
 description: Clean up duplicate GitHub issues for an Epic. Finds issues with duplicate titles and closes all except the first created issue.
 ---
 

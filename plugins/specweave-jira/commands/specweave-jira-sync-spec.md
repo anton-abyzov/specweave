@@ -1,5 +1,5 @@
 ---
-name: specweave-jira-sync-spec
+name: specweave-jira:sync-spec
 description: Sync SpecWeave spec to Jira Epic (bidirectional). Use when syncing .specweave/docs/internal/specs/spec-*.md files with Jira Epics for permanent feature tracking.
 ---
 

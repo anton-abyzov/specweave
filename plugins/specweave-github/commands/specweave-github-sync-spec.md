@@ -1,5 +1,5 @@
 ---
-name: specweave-github-sync-spec
+name: specweave-github:sync-spec
 description: Sync SpecWeave spec to GitHub Project (bidirectional). Use when syncing .specweave/docs/internal/specs/spec-*.md files with GitHub Projects for permanent feature tracking.
 ---
 

@@ -1,0 +1,252 @@
+/**
+ * Integration Tests: Deduplication Hook Integration
+ *
+ * Tests the bash hook that integrates with CommandDeduplicator
+ * to prevent duplicate command invocations at the hook level.
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import * as fs from 'fs-extra';
+import * as path from 'path';
+
+const execAsync = promisify(exec);
+
+describe('Deduplication Hook Integration', () => {
+  const hookPath = path.join(process.cwd(), 'plugins', 'specweave', 'hooks', 'pre-command-deduplication.sh');
+  const cachePath = path.join(process.cwd(), '.specweave', 'state', 'command-invocations.json');
+
+  beforeEach(async () => {
+    // Clear cache before each test
+    if (await fs.pathExists(cachePath)) {
+      await fs.remove(cachePath);
+    }
+
+    // Ensure dist is built
+    if (!await fs.pathExists('dist/src/core/deduplication/command-deduplicator.js')) {
+      throw new Error('TypeScript not compiled! Run: npm run build');
+    }
+  });
+
+  afterEach(async () => {
+    // Cleanup
+    if (await fs.pathExists(cachePath)) {
+      await fs.remove(cachePath);
+    }
+  });
+
+  describe('Hook Execution', () => {
+    it('should approve first command invocation', async () => {
+      const input = JSON.stringify({
+        prompt: '/specweave:do 0031'
+      });
+
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+      expect(output.reason).toBeUndefined();
+    });
+
+    it('should block duplicate command within 1 second', async () => {
+      const input = JSON.stringify({
+        prompt: '/specweave:do 0031'
+      });
+
+      // First invocation
+      await execAsync(`echo '${input}' | bash "${hookPath}"`);
+
+      // Second invocation immediately (should be blocked)
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('block');
+      expect(output.reason).toContain('DUPLICATE COMMAND DETECTED');
+      expect(output.reason).toContain('/specweave:do');
+    });
+
+    it('should allow command after time window expires', async () => {
+      const input = JSON.stringify({
+        prompt: '/specweave:do 0031'
+      });
+
+      // First invocation
+      await execAsync(`echo '${input}' | bash "${hookPath}"`);
+
+      // Wait for window to expire (1 second + buffer)
+      await new Promise(resolve => setTimeout(resolve, 1200));
+
+      // Second invocation after window (should be approved)
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+    });
+
+    it('should treat different commands as separate invocations', async () => {
+      const input1 = JSON.stringify({ prompt: '/specweave:do 0031' });
+      const input2 = JSON.stringify({ prompt: '/specweave:progress' });
+
+      // First command
+      await execAsync(`echo '${input1}' | bash "${hookPath}"`);
+
+      // Different command (should NOT be blocked)
+      const { stdout } = await execAsync(`echo '${input2}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+    });
+
+    it('should treat different arguments as separate commands', async () => {
+      const input1 = JSON.stringify({ prompt: '/specweave:do 0031' });
+      const input2 = JSON.stringify({ prompt: '/specweave:do 0032' });
+
+      // First invocation with args ['0031']
+      await execAsync(`echo '${input1}' | bash "${hookPath}"`);
+
+      // Second invocation with different args ['0032'] (should NOT be blocked)
+      const { stdout } = await execAsync(`echo '${input2}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+    });
+  });
+
+  describe('Non-Command Input', () => {
+    it('should approve non-slash-command prompts', async () => {
+      const input = JSON.stringify({
+        prompt: 'Please help me implement a feature'
+      });
+
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+    });
+
+    it('should approve empty prompts', async () => {
+      const input = JSON.stringify({
+        prompt: ''
+      });
+
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('approve');
+    });
+  });
+
+  describe('Error Handling', () => {
+    it('should fail-open if deduplication module unavailable', async () => {
+      // Temporarily rename dist folder
+      const distPath = path.join(process.cwd(), 'dist');
+      const distBackup = path.join(process.cwd(), 'dist-backup');
+
+      if (await fs.pathExists(distPath)) {
+        await fs.move(distPath, distBackup);
+      }
+
+      try {
+        const input = JSON.stringify({ prompt: '/specweave:do' });
+        const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+        const output = JSON.parse(stdout.trim());
+
+        // Should approve (fail-open behavior)
+        expect(output.decision).toBe('approve');
+      } finally {
+        // Restore dist folder
+        if (await fs.pathExists(distBackup)) {
+          await fs.move(distBackup, distPath);
+        }
+      }
+    });
+
+    it('should handle malformed JSON input gracefully', async () => {
+      const input = 'invalid json {{{';
+
+      // Should not crash (may return error, but shouldn't hang)
+      await expect(
+        execAsync(`echo '${input}' | bash "${hookPath}"`, { timeout: 5000 })
+      ).resolves.toBeDefined();
+    });
+  });
+
+  describe('Cache Persistence', () => {
+    it('should create cache file on first invocation', async () => {
+      const input = JSON.stringify({ prompt: '/specweave:do 0031' });
+
+      await execAsync(`echo '${input}' | bash "${hookPath}"`);
+
+      // Cache file should exist
+      const exists = await fs.pathExists(cachePath);
+      expect(exists).toBe(true);
+    });
+
+    it('should update cache file on subsequent invocations', async () => {
+      const input1 = JSON.stringify({ prompt: '/specweave:do 0031' });
+      const input2 = JSON.stringify({ prompt: '/specweave:progress' });
+
+      // First invocation
+      await execAsync(`echo '${input1}' | bash "${hookPath}"`);
+      const data1 = await fs.readJson(cachePath);
+      expect(data1.invocations).toHaveLength(1);
+
+      // Second invocation (different command)
+      await execAsync(`echo '${input2}' | bash "${hookPath}"`);
+      const data2 = await fs.readJson(cachePath);
+      expect(data2.invocations).toHaveLength(2);
+    });
+  });
+
+  describe('Statistics in Error Message', () => {
+    it('should include statistics in duplicate block message', async () => {
+      const input = JSON.stringify({ prompt: '/specweave:do 0031' });
+
+      // First invocation
+      await execAsync(`echo '${input}' | bash "${hookPath}"`);
+
+      // Second invocation (duplicate)
+      const { stdout } = await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const output = JSON.parse(stdout.trim());
+
+      expect(output.decision).toBe('block');
+      expect(output.reason).toContain('Deduplication Stats');
+    });
+  });
+
+  describe('Performance', () => {
+    it('should complete within reasonable time (<100ms)', async () => {
+      const input = JSON.stringify({ prompt: '/specweave:do 0031' });
+
+      const start = Date.now();
+      await execAsync(`echo '${input}' | bash "${hookPath}"`);
+      const elapsed = Date.now() - start;
+
+      // Hook should execute quickly (<100ms)
+      expect(elapsed).toBeLessThan(100);
+    });
+
+    it('should handle rapid sequential invocations', async () => {
+      const input = JSON.stringify({ prompt: '/specweave:do 0031' });
+
+      // Fire 5 invocations rapidly
+      const promises = Array.from({ length: 5 }, () =>
+        execAsync(`echo '${input}' | bash "${hookPath}"`)
+      );
+
+      const results = await Promise.all(promises);
+
+      // First should be approved, rest should be blocked
+      const outputs = results.map(r => JSON.parse(r.stdout.trim()));
+
+      // At least one should be approved (first)
+      const approved = outputs.filter(o => o.decision === 'approve');
+      expect(approved.length).toBeGreaterThanOrEqual(1);
+
+      // At least some should be blocked
+      const blocked = outputs.filter(o => o.decision === 'block');
+      expect(blocked.length).toBeGreaterThan(0);
+    });
+  });
+});

@@ -1,5 +1,5 @@
 ---
-name: specweave-release-platform
+name: specweave-release:platform
 description: "Coordinate multi-repo platform releases with synchronized versioning, RC workflow, and GitFlow integration. Usage: /specweave-release:platform create|promote|status"
 ---
 

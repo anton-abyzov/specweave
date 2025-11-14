@@ -1,5 +1,5 @@
 ---
-name: specweave-github-sync-epic
+name: specweave-github:sync-epic
 description: Sync SpecWeave Epic folder to GitHub (Milestone + Issues). Implements Universal Hierarchy architecture - Epic → Milestone, Increments → Issues.
 ---
 

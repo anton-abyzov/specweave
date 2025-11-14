@@ -115,6 +115,29 @@ export interface TestingConfig {
 }
 
 /**
+ * Global command deduplication configuration
+ *
+ * Prevents ANY command/tool from being invoked twice within a configurable time window.
+ * Protects against accidental duplicate invocations (router confusion, double-clicks, etc.)
+ */
+export interface DeduplicationConfig {
+  /** Enable global deduplication (default: true) */
+  enabled?: boolean;
+
+  /** Time window in milliseconds to check for duplicates (default: 1000ms) */
+  windowMs?: number;
+
+  /** Maximum cache entries before cleanup (default: 1000) */
+  maxCacheSize?: number;
+
+  /** Enable debug logging (default: false) */
+  debug?: boolean;
+
+  /** Cleanup interval in milliseconds (default: 60000ms = 1 minute) */
+  cleanupIntervalMs?: number;
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -140,6 +163,9 @@ export interface SpecweaveConfig {
 
   /** WIP limits configuration */
   limits?: LimitsConfig;
+
+  /** Global command deduplication configuration (v0.17.18+) */
+  deduplication?: DeduplicationConfig;
 
   /** Allow additional properties */
   [key: string]: any;
@@ -182,6 +208,13 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
       paused: 7,                   // Warn if paused >7 days
       active: 30,                  // Warn if active >30 days
     },
+  },
+  deduplication: {
+    enabled: true,                 // v0.17.18+: Prevent duplicate command invocations
+    windowMs: 1000,                // 1 second window
+    maxCacheSize: 1000,            // Keep last 1000 invocations
+    debug: false,                  // Disable debug logging
+    cleanupIntervalMs: 60000,      // Cleanup every minute
   },
   hooks: {
     post_task_completion: {

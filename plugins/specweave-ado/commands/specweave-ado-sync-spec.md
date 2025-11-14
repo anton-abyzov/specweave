@@ -1,5 +1,5 @@
 ---
-name: specweave-ado-sync-spec
+name: specweave-ado:sync-spec
 description: Sync SpecWeave spec to Azure DevOps Feature (bidirectional). Use when syncing .specweave/docs/internal/specs/spec-*.md files with ADO Features for permanent feature tracking.
 ---
 
