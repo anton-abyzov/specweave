@@ -21,7 +21,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0023-release-management-enhancements](../../../../increments/0023-release-management-enhancements/tasks.md) | US-001 through US-007 (all) | ✅ Complete | 2025-11-14 |
+| [0023-release-management-enhancements](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0023-release-management-enhancements) | US-001 through US-007 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 7/7 user stories complete (100%)
 
@@ -38,8 +38,3 @@ last_updated: 2025-11-14
 - [US-007: Post-Task-Completion Hooks Integration (P1)](us-007-post-task-completion-hooks-integration-p1.md) - ✅ Complete
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#211 - Feature](https://github.com/anton-abyzov/specweave/issues/211)

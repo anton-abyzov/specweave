@@ -23,7 +23,7 @@ Transform SpecWeave from a monolithic skill/agent bundle into a **modular plugin
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0004-plugin-architecture](../../../../increments/0004-plugin-architecture/tasks.md) | US-001 through US-015 (all) | ✅ Complete | 2025-11-14 |
+| [0004-plugin-architecture](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0004-plugin-architecture) | US-001 through US-015 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 15/15 user stories complete (100%)
 
@@ -51,5 +51,5 @@ Transform SpecWeave from a monolithic skill/agent bundle into a **modular plugin
 
 ## External Tool Integration
 
-**GitHub Issue**: [#195 - Feature](https://github.com/anton-abyzov/specweave/issues/195)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/23](https://github.com/anton-abyzov/specweave/issues/23)
 **JIRA Epic**: [SCRUM-25](https://jira.atlassian.com/browse/SCRUM-25)

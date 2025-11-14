@@ -17,7 +17,7 @@ This increment combines TWO major enhancements to SpecWeave's increment manageme
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0007-smart-increment-discipline](../../../../increments/0007-smart-increment-discipline/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0007-smart-increment-discipline](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0007-smart-increment-discipline) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -29,5 +29,5 @@ This increment combines TWO major enhancements to SpecWeave's increment manageme
 
 ## External Tool Integration
 
-**GitHub Issue**: [#196 - Feature](https://github.com/anton-abyzov/specweave/issues/196)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/4](https://github.com/anton-abyzov/specweave/issues/4)
 **JIRA Epic**: [SCRUM-28](https://jira.atlassian.com/browse/SCRUM-28)

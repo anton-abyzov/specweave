@@ -17,7 +17,7 @@ Implement a comprehensive plugin validation system that proactively checks and i
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0014-proactive-plugin-validation](../../../../increments/0014-proactive-plugin-validation/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0014-proactive-plugin-validation](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0014-proactive-plugin-validation) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ Implement a comprehensive plugin validation system that proactively checks and i
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#200 - Feature](https://github.com/anton-abyzov/specweave/issues/200)

@@ -17,7 +17,7 @@ Transform SpecWeave's internal documentation structure to support **enterprise-s
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0012-multi-project-internal-docs](../../../../increments/0012-multi-project-internal-docs/tasks.md) | US-001 through US-006 (all) | ✅ Complete | 2025-11-14 |
+| [0012-multi-project-internal-docs](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0012-multi-project-internal-docs) | US-001 through US-006 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 6/6 user stories complete (100%)
 
@@ -36,5 +36,5 @@ Transform SpecWeave's internal documentation structure to support **enterprise-s
 
 ## External Tool Integration
 
-**GitHub Issue**: [#198 - Feature](https://github.com/anton-abyzov/specweave/issues/198)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/19](https://github.com/anton-abyzov/specweave/issues/19)
 **JIRA Epic**: [SCRUM-31](https://jira.atlassian.com/browse/SCRUM-31)
