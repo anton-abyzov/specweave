@@ -17,7 +17,7 @@ Fix critical UX issues in the multi-repository GitHub setup flow that cause user
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0028-multi-repo-ux-improvements](../../../../increments/0028-multi-repo-ux-improvements/tasks.md) | US-001 through US-004 (all) | ✅ Complete | 2025-11-14 |
+| [0028-multi-repo-ux-improvements](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0028-multi-repo-ux-improvements) | US-001 through US-004 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 4/4 user stories complete (100%)
 
@@ -31,8 +31,3 @@ Fix critical UX issues in the multi-repository GitHub setup flow that cause user
 - [US-004: Auto-Detect Repository Count](us-004-auto-detect-repository-count.md) - ✅ Complete
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#216 - Feature](https://github.com/anton-abyzov/specweave/issues/216)

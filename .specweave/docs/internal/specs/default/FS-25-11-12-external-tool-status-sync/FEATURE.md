@@ -23,7 +23,7 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, A
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/tasks.md) | US-001 through US-007 (all) | ✅ Complete | 2025-11-14 |
+| [0031-external-tool-status-sync](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0031-external-tool-status-sync) | US-001 through US-007 (all) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: 7/7 user stories complete (100%)
 
@@ -45,4 +45,4 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, A
 
 ## External Tool Integration
 
-**GitHub Issue**: [#217 - Feature](https://github.com/anton-abyzov/specweave/issues/217)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/186](https://github.com/anton-abyzov/specweave/issues/186)

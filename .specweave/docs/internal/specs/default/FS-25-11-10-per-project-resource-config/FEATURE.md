@@ -17,7 +17,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0025-per-project-resource-config](../../../../increments/0025-per-project-resource-config/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0025-per-project-resource-config](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0025-per-project-resource-config) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ last_updated: 2025-11-14
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#210 - Feature](https://github.com/anton-abyzov/specweave/issues/210)

@@ -17,7 +17,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0030-intelligent-living-docs](../../../../increments/0030-intelligent-living-docs/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0030-intelligent-living-docs](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0030-intelligent-living-docs) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ last_updated: 2025-11-14
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#213 - Feature](https://github.com/anton-abyzov/specweave/issues/213)

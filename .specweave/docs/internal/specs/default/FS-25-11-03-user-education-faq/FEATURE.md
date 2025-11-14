@@ -17,7 +17,7 @@ last_updated: 2025-11-14
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0008-user-education-faq](../../../../increments/0008-user-education-faq/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0008-user-education-faq](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0008-user-education-faq) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -26,8 +26,3 @@ last_updated: 2025-11-14
 ## User Stories
 
 ---
-
-
-## External Tool Integration
-
-**GitHub Issue**: [#197 - Feature](https://github.com/anton-abyzov/specweave/issues/197)

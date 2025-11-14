@@ -17,7 +17,7 @@ This increment combines two critical framework enhancements:
 
 | Increment | User Stories | Status | Completion Date |
 |-----------|--------------|--------|----------------|
-| [0002-core-enhancements](../../../../increments/0002-core-enhancements/tasks.md) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
+| [0002-core-enhancements](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0002-core-enhancements) | Implementation only (no user stories) | ✅ Complete | 2025-11-14 |
 
 **Overall Progress**: No user stories (implementation only)
 
@@ -29,5 +29,5 @@ This increment combines two critical framework enhancements:
 
 ## External Tool Integration
 
-**GitHub Issue**: [#189 - Feature](https://github.com/anton-abyzov/specweave/issues/189)
+**GitHub Project**: [https://github.com/anton-abyzov/specweave/issues/21](https://github.com/anton-abyzov/specweave/issues/21)
 **JIRA Epic**: [SCRUM-23](https://jira.atlassian.com/browse/SCRUM-23)
