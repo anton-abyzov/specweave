@@ -9,25 +9,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import { ConfigManager } from './config-manager';
 import { autoDetectProjectIdSync, formatProjectName } from '../utils/project-detection';
+import { ProjectContext } from './living-docs/types';
 
-export interface ProjectContext {
-  id: string;
-  name: string;
-  description: string;
-  techStack: string[];
-  team: string;
-  contacts?: {
-    lead?: string;
-    pm?: string;
-  };
-  syncProfiles?: string[];  // Links to sync profiles from increment 0011
-}
-
-export interface MultiProjectConfig {
-  enabled: boolean;
-  activeProject: string;
-  projects: ProjectContext[];
-}
+// Re-export ProjectContext for backward compatibility with CLI commands
+export { ProjectContext };
 
 export class ProjectManager {
   private configManager: ConfigManager;
@@ -59,11 +44,11 @@ export class ProjectManager {
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
 
       this.cachedProject = {
-        id: projectId,
-        name: config.project?.name || formatProjectName(projectId),
-        description: config.project?.description || `${formatProjectName(projectId)} project`,
-        techStack: config.project?.techStack || [],
-        team: config.project?.team || 'Engineering Team'
+        projectId: projectId,
+        projectName: config.project?.name || formatProjectName(projectId),
+        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
+        keywords: [],
+        techStack: config.project?.techStack || []
       };
       return this.cachedProject;
     }
@@ -74,13 +59,21 @@ export class ProjectManager {
       throw new Error('Multi-project mode enabled but no active project set in config');
     }
 
-    const project = config.multiProject.projects.find(
-      (p: ProjectContext) => p.id === activeProjectId
-    );
+    const projectConfig = config.multiProject.projects[activeProjectId];
 
-    if (!project) {
-      throw new Error(`Active project '${activeProjectId}' not found in config. Available projects: ${config.multiProject.projects.map((p: ProjectContext) => p.id).join(', ')}`);
+    if (!projectConfig) {
+      const availableProjects = Object.keys(config.multiProject.projects).join(', ');
+      throw new Error(`Active project '${activeProjectId}' not found in config. Available projects: ${availableProjects}`);
     }
+
+    // Convert ProjectConfig to ProjectContext
+    const project: ProjectContext = {
+      projectId: activeProjectId,
+      projectName: projectConfig.name,
+      projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', activeProjectId),
+      keywords: projectConfig.keywords || [],
+      techStack: projectConfig.techStack || []
+    };
 
     this.cachedProject = project;
     return project;
@@ -99,15 +92,27 @@ export class ProjectManager {
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
 
       return [{
-        id: projectId,
-        name: config.project?.name || formatProjectName(projectId),
-        description: config.project?.description || `${formatProjectName(projectId)} project`,
-        techStack: config.project?.techStack || [],
-        team: config.project?.team || 'Engineering Team'
+        projectId: projectId,
+        projectName: config.project?.name || formatProjectName(projectId),
+        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
+        keywords: [],
+        techStack: config.project?.techStack || []
       }];
     }
 
-    return config.multiProject.projects;
+    // Convert Record<string, ProjectConfig> to ProjectContext[]
+    const projects: ProjectContext[] = [];
+    for (const [projectId, projectConfig] of Object.entries(config.multiProject.projects)) {
+      projects.push({
+        projectId: projectId,
+        projectName: projectConfig.name,
+        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
+        keywords: projectConfig.keywords || [],
+        techStack: projectConfig.techStack || []
+      });
+    }
+
+    return projects;
   }
 
   /**
@@ -118,7 +123,7 @@ export class ProjectManager {
    */
   getProjectById(projectId: string): ProjectContext | null {
     const projects = this.getAllProjects();
-    return projects.find(p => p.id === projectId) || null;
+    return projects.find(p => p.projectId === projectId) || null;
   }
 
   /**
@@ -136,7 +141,7 @@ export class ProjectManager {
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/specs',
-      project.id
+      project.projectId
     );
   }
 
@@ -154,7 +159,7 @@ export class ProjectManager {
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/modules',
-      project.id
+      project.projectId
     );
   }
 
@@ -172,7 +177,7 @@ export class ProjectManager {
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/team',
-      project.id
+      project.projectId
     );
   }
 
@@ -190,7 +195,7 @@ export class ProjectManager {
     return path.join(
       this.projectRoot,
       '.specweave/docs/internal/project-arch',
-      project.id
+      project.projectId
     );
   }
 
@@ -208,7 +213,7 @@ export class ProjectManager {
     const basePath = path.join(
       this.projectRoot,
       '.specweave/docs/internal/legacy',
-      project.id
+      project.projectId
     );
     return source ? path.join(basePath, source) : basePath;
   }
@@ -225,9 +230,9 @@ export class ProjectManager {
       throw new Error('Multi-project mode not enabled. Run /specweave:init-multiproject first.');
     }
 
-    const project = config.multiProject.projects.find((p: ProjectContext) => p.id === projectId);
-    if (!project) {
-      const availableProjects = config.multiProject.projects.map((p: ProjectContext) => p.id).join(', ');
+    const projectConfig = config.multiProject.projects[projectId];
+    if (!projectConfig) {
+      const availableProjects = Object.keys(config.multiProject.projects).join(', ');
       throw new Error(`Project '${projectId}' not found. Available projects: ${availableProjects}`);
     }
 
@@ -238,7 +243,7 @@ export class ProjectManager {
     // Clear cache
     this.cachedProject = null;
 
-    console.log(`✅ Switched to project: ${project.name} (${projectId})`);
+    console.log(`✅ Switched to project: ${projectConfig.name} (${projectId})`);
   }
 
   /**
@@ -276,30 +281,36 @@ export class ProjectManager {
       config.multiProject = {
         enabled: false,
         activeProject: 'default',
-        projects: []
+        projects: {}
       };
     }
 
     // Check for duplicate ID
-    const existingProject = config.multiProject.projects.find((p: ProjectContext) => p.id === project.id);
-    if (existingProject) {
-      throw new Error(`Project with ID '${project.id}' already exists`);
+    if (config.multiProject.projects[project.projectId]) {
+      throw new Error(`Project with ID '${project.projectId}' already exists`);
     }
 
     // Validate project ID (kebab-case)
     const kebabCaseRegex = /^[a-z0-9-]+$/;
-    if (!kebabCaseRegex.test(project.id)) {
-      throw new Error(`Project ID '${project.id}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
+    if (!kebabCaseRegex.test(project.projectId)) {
+      throw new Error(`Project ID '${project.projectId}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
     }
 
-    // Add project
-    config.multiProject.projects.push(project);
+    // Add project - convert ProjectContext to ProjectConfig
+    config.multiProject.projects[project.projectId] = {
+      id: project.projectId,
+      name: project.projectName,
+      description: `${project.projectName} project`,
+      keywords: project.keywords,
+      techStack: project.techStack,
+      team: 'Engineering Team'
+    };
     await this.configManager.save(config);
 
     // Create structure
-    await this.createProjectStructure(project.id);
+    await this.createProjectStructure(project.projectId);
 
-    console.log(`✅ Added project: ${project.name} (${project.id})`);
+    console.log(`✅ Added project: ${project.projectName} (${project.projectId})`);
   }
 
   /**
@@ -322,13 +333,12 @@ export class ProjectManager {
       throw new Error('Cannot remove active project. Switch to another project first.');
     }
 
-    const projectIndex = config.multiProject.projects.findIndex((p: ProjectContext) => p.id === projectId);
-    if (projectIndex === -1) {
+    if (!config.multiProject.projects[projectId]) {
       throw new Error(`Project '${projectId}' not found`);
     }
 
     // Remove from config
-    config.multiProject.projects.splice(projectIndex, 1);
+    delete config.multiProject.projects[projectId];
     await this.configManager.save(config);
 
     console.log(`✅ Removed project: ${projectId}`);
@@ -345,23 +355,21 @@ export class ProjectManager {
   // README creation methods
 
   private async createProjectREADME(project: ProjectContext): Promise<void> {
-    const specsPath = this.getSpecsPath(project.id);
-    const content = `# ${project.name}
+    const specsPath = this.getSpecsPath(project.projectId);
+    const content = `# ${project.projectName}
 
-${project.description}
+${project.projectName} project
 
 ## Project Information
 
-- **Team**: ${project.team}
+- **Team**: Engineering Team
 - **Tech Stack**: ${project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
-${project.contacts?.lead ? `- **Tech Lead**: ${project.contacts.lead}` : ''}
-${project.contacts?.pm ? `- **Product Manager**: ${project.contacts.pm}` : ''}
 
 ## Documentation Structure (Simplified)
 
 This project uses a simplified structure:
 
-- \`.specweave/docs/internal/specs/${project.id}/\` - **All living documentation** (specs, features, requirements)
+- \`.specweave/docs/internal/specs/${project.projectId}/\` - **All living documentation** (specs, features, requirements)
 
 **Note**: As of v0.X.X (increment 0026), we use a simplified structure with ONLY the specs folder. All project documentation lives here.
 
@@ -377,10 +385,7 @@ Examples:
 
 ## External Sync
 
-${project.syncProfiles && project.syncProfiles.length > 0 ?
-`This project syncs with external tools:
-${project.syncProfiles.map(profile => `- ${profile}`).join('\n')}` :
-'No external sync profiles configured yet.'}
+No external sync profiles configured yet.
 
 ---
 

@@ -69,13 +69,15 @@ export async function autoMigrateSingleToMulti(
         config.multiProject = {
           enabled: false,
           activeProject: projectId,
-          projects: [{
-            id: projectId,
-            name: config.project?.name || formatProjectName(projectId),
-            description: config.project?.description || `${formatProjectName(projectId)} project`,
-            techStack: config.project?.techStack || [],
-            team: config.project?.team || 'Engineering Team'
-          }]
+          projects: {
+            [projectId]: {
+              id: projectId,
+              name: config.project?.name || formatProjectName(projectId),
+              description: config.project?.description || `${formatProjectName(projectId)} project`,
+              techStack: config.project?.techStack || [],
+              team: config.project?.team || 'Engineering Team'
+            }
+          }
         };
         await configManager.save(config);
         console.log('📝 Updated config to reflect multi-project structure');
@@ -116,13 +118,15 @@ export async function autoMigrateSingleToMulti(
       config.multiProject = {
         enabled: false,  // Still single project, just using new structure
         activeProject: projectId,
-        projects: [{
-          id: projectId,
-          name: config.project?.name || formatProjectName(projectId),
-          description: config.project?.description || `${formatProjectName(projectId)} project`,
-          techStack: config.project?.techStack || [],
-          team: config.project?.team || 'Engineering Team'
-        }]
+        projects: {
+          [projectId]: {
+            id: projectId,
+            name: config.project?.name || formatProjectName(projectId),
+            description: config.project?.description || `${formatProjectName(projectId)} project`,
+            techStack: config.project?.techStack || [],
+            team: config.project?.team || 'Engineering Team'
+          }
+        }
       };
     }
 

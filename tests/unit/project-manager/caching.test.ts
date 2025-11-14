@@ -43,10 +43,10 @@ describe('ProjectManager - Caching Mechanism', () => {
       multiProject: {
         enabled: true,
         activeProject: 'web-app',
-        projects: [
-          { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
-          { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
-        ]
+        projects: {
+          'web-app': { id: 'web-app', name: 'Web App', description: '', techStack: [], team: '' },
+          'mobile-app': { id: 'mobile-app', name: 'Mobile App', description: '', techStack: [], team: '' }
+        }
       }
     } as any);
   });
@@ -57,7 +57,7 @@ describe('ProjectManager - Caching Mechanism', () => {
       const project = projectManager.getActiveProject();
 
       expect(mockConfigManager.load).toHaveBeenCalledTimes(1);
-      expect(project.id).toBe('web-app');
+      expect(project.projectId).toBe('web-app');
     });
 
     it('should return cached project on subsequent calls', () => {
@@ -82,7 +82,7 @@ describe('ProjectManager - Caching Mechanism', () => {
       // All should return the same cached instance
       expect(project1).toBe(project2);
       expect(project2).toBe(project3);
-      expect(project1.id).toBe('web-app');
+      expect(project1.projectId).toBe('web-app');
     });
   });
 
@@ -121,14 +121,14 @@ describe('ProjectManager - Caching Mechanism', () => {
     it('should clear cache when switching projects', async () => {
       // Load initial project
       const project1 = projectManager.getActiveProject();
-      expect(project1.id).toBe('web-app');
+      expect(project1.projectId).toBe('web-app');
 
       // Switch to different project (should clear cache)
       await projectManager.switchProject('mobile-app');
 
       // Next call should load new project
       const project2 = projectManager.getActiveProject();
-      expect(project2.id).toBe('mobile-app');
+      expect(project2.projectId).toBe('mobile-app');
       expect(project2).not.toBe(project1); // Different instance
     });
   });

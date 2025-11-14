@@ -23,8 +23,13 @@ import {
   UserStory,
   TaskReference,
   ImplementationHistoryEntry,
+  EpicThemeFile,
+  FeatureFile,
+  FeatureMapping,
+  ProjectContext,
+  EpicMapping,
 } from './types.js';
-import { HierarchyMapper, EpicMapping } from './hierarchy-mapper.js';
+import { HierarchyMapper } from './hierarchy-mapper.js';
 import { detectPrimaryGitHubRemote, GitRemote } from '../../utils/git-detector.js';
 
 /**
@@ -56,16 +61,12 @@ export class SpecDistributor {
       createBackups: true,
       ...config,
     };
-    // Initialize HierarchyMapper with same project config
-    this.hierarchyMapper = new HierarchyMapper(projectRoot, {
-      projectId: config?.specsDir?.includes('/specs/')
-        ? config.specsDir.split('/specs/')[1]?.split('/')[0] || 'default'
-        : 'default'
-    });
+    // Initialize HierarchyMapper
+    this.hierarchyMapper = new HierarchyMapper(projectRoot);
   }
 
   /**
-   * Distribute increment spec into epic + user story files
+   * Distribute increment spec into universal hierarchy (epic + feature + user stories)
    */
   async distribute(incrementId: string): Promise<DistributionResult> {
     const errors: string[] = [];
@@ -76,62 +77,74 @@ export class SpecDistributor {
       if (!this.githubRemote) {
         this.githubRemote = await detectPrimaryGitHubRemote(this.projectRoot);
       }
-      // Step 0a: Parse increment spec to detect project ID
+
+      // Step 1: Parse increment spec (with epic and project detection)
       const parsed = await this.parseIncrementSpec(incrementId);
 
-      // Step 0b: Update config if project ID is specified in frontmatter
-      let projectId = this.config.specsDir.split('/specs/')[1]?.split('/')[0] || 'default';
-      if (parsed.project) {
-        projectId = parsed.project;
-        // Update config paths for correct project
-        this.config.specsDir = path.join(
-          this.projectRoot,
-          '.specweave',
-          'docs',
-          'internal',
-          'specs',
-          projectId
-        );
-        // Recreate hierarchy mapper with correct project ID
-        this.hierarchyMapper = new HierarchyMapper(this.projectRoot, {
-          projectId,
-          specsBaseDir: this.config.specsDir,
-        });
+      // Step 2: Detect epic mapping (OPTIONAL - from frontmatter)
+      const epicMapping = await this.hierarchyMapper.detectEpicMapping(incrementId);
+      if (epicMapping) {
+        console.log(`   🎯 Mapped to epic ${epicMapping.epicId} (confidence: ${epicMapping.confidence}%)`);
       }
 
-      // Step 0c: Detect feature folder using HierarchyMapper (NEW: feature-based naming)
+      // Step 3: Detect feature mapping (REQUIRED)
       console.log(`   🔍 Detecting feature folder for ${incrementId}...`);
-      const epicMapping = await this.hierarchyMapper.detectFeatureMapping(incrementId);
-      console.log(`   📁 Mapped to ${epicMapping.featureFolder} (confidence: ${epicMapping.confidence}%, method: ${epicMapping.detectionMethod})`);
+      const featureMapping = await this.hierarchyMapper.detectFeatureMapping(incrementId);
+      console.log(`   📁 Mapped to feature ${featureMapping.featureId} (confidence: ${featureMapping.confidence}%, method: ${featureMapping.detectionMethod})`);
+      console.log(`   📦 Projects: ${featureMapping.projects.join(', ')}`);
 
-      // Ensure specs base directory exists (for multi-project support)
-      await fs.ensureDir(this.config.specsDir);
+      // Step 4: Classify content by project (NEW)
+      const storiesByProject = await this.classifyContentByProject(parsed, featureMapping);
+      console.log(`   📊 Classified ${parsed.userStories.length} user stories across ${storiesByProject.size} project(s)`);
 
-      // Step 2: Classify content (pass epicMapping to use feature folder as ID)
-      const classified = await this.classifyContent(parsed, epicMapping);
+      // Step 5: Generate epic file (OPTIONAL)
+      const epicFile = epicMapping ? await this.generateEpicFile(parsed, epicMapping, featureMapping) : null;
 
-      // Step 3: Generate epic file
-      const epic = await this.generateEpicFile(classified, incrementId);
+      // Step 6: Generate feature file (REQUIRED)
+      const featureFile = await this.generateFeatureFile(parsed, featureMapping, storiesByProject);
 
-      // Step 4: Generate user story files
-      const userStories = await this.generateUserStoryFiles(classified, incrementId);
+      // Step 7: Generate project context files (REQUIRED)
+      const projectContextFiles = await this.generateProjectContextFiles(featureMapping, parsed);
 
-      // Step 5: Write files (using epicMapping paths)
-      const epicPath = await this.writeEpicFile(epic, epicMapping);
-      const userStoryPaths = await this.writeUserStoryFiles(userStories, epicMapping);
+      // Step 8: Generate user story files by project (REQUIRED)
+      const userStoryFilesByProject = await this.generateUserStoryFilesByProject(
+        storiesByProject,
+        featureMapping,
+        incrementId
+      );
 
-      // Step 6: Update tasks.md with bidirectional links to user stories (CRITICAL!)
-      await this.updateTasksWithUserStoryLinks(incrementId, userStories, epicMapping);
+      // Step 9: Write epic file (if exists)
+      const epicPath = epicFile && epicMapping ? await this.writeEpicFile(epicFile, epicMapping) : null;
+
+      // Step 10: Write feature file
+      const featurePath = await this.writeFeatureFile(featureFile, featureMapping);
+
+      // Step 11: Write project context files
+      const contextPaths = await this.writeProjectContextFiles(projectContextFiles, featureMapping);
+
+      // Step 12: Write user story files by project
+      const storyPathsByProject = await this.writeUserStoryFilesByProject(
+        userStoryFilesByProject,
+        featureMapping,
+        incrementId
+      );
+
+      // Step 13: Update tasks.md with bidirectional links (project-aware)
+      await this.updateTasksWithUserStoryLinks(incrementId, userStoryFilesByProject, featureMapping);
+
+      // Prepare legacy result (for backward compatibility)
+      const allUserStories = Array.from(userStoryFilesByProject.values()).flat();
+      const allStoryPaths = Array.from(storyPathsByProject.values()).flat();
 
       return {
-        epic,
-        userStories,
+        epic: featureFile as any, // Type compatibility hack
+        userStories: allUserStories,
         incrementId,
-        specId: epic.id,
-        totalStories: userStories.length,
-        totalFiles: 1 + userStories.length,
-        epicPath,
-        userStoryPaths,
+        specId: featureFile.id,
+        totalStories: allUserStories.length,
+        totalFiles: 1 + (epicFile ? 1 : 0) + contextPaths.length + allStoryPaths.length,
+        epicPath: featurePath, // Feature is the new "epic"
+        userStoryPaths: allStoryPaths,
         success: true,
         errors,
         warnings,
@@ -251,14 +264,24 @@ export class SpecDistributor {
     // Extract user stories
     const userStories = await this.extractUserStories(content, incrementId);
 
+    // Extract priority, status, and created date from frontmatter
+    const priority = frontmatter.priority || 'P1';
+    const status = frontmatter.status || 'planning';
+    const created = frontmatter.created || new Date().toISOString();
+
     return {
       incrementId,
       title,
       overview,
       businessValue,
+      epic: frontmatter.epic, // Epic ID from frontmatter (optional)
       project: frontmatter.project, // Project ID from frontmatter (if present)
+      projects: frontmatter.projects || [], // Multiple projects (for cross-project features)
+      priority,
+      status,
+      created,
       userStories,
-      externalLinks, // NEW: External links from metadata.json
+      externalLinks, // External links from metadata.json
     };
   }
 
@@ -378,72 +401,7 @@ export class SpecDistributor {
     return criteria;
   }
 
-  /**
-   * Classify content into epic vs user-story level
-   *
-   * NEW (v0.18.0): Uses feature folder name as ID (e.g., FS-25-11-14-release-management)
-   */
-  private async classifyContent(parsed: ParsedIncrementSpec, epicMapping: EpicMapping): Promise<ClassifiedContent> {
-    // Use feature folder name as ID (e.g., FS-25-11-14-release-management)
-    // This ensures ID matches folder name
-    const specId = epicMapping.featureFolder;
 
-    return {
-      epic: {
-        id: specId,
-        title: parsed.title,
-        overview: parsed.overview,
-        businessValue: parsed.businessValue,
-        status: 'complete',
-      },
-      userStories: parsed.userStories,
-      implementationHistory: [
-        {
-          increment: parsed.incrementId,
-          stories: parsed.userStories.map((us) => us.id),
-          status: 'complete',
-          date: new Date().toISOString().split('T')[0],
-        },
-      ],
-      externalLinks: parsed.externalLinks || {},
-      relatedDocs: [],
-    };
-  }
-
-  /**
-   * Generate epic file
-   */
-  private async generateEpicFile(classified: ClassifiedContent, incrementId: string): Promise<EpicFile> {
-    // Generate user story summaries
-    const userStorySummaries: UserStorySummary[] = classified.userStories.map((us) => ({
-      id: us.id,
-      title: us.title,
-      status: us.status,
-      phase: us.phase,
-      filePath: this.generateUserStoryFilename(us.id, us.title), // User stories are directly in FS folder
-    }));
-
-    const completedStories = classified.userStories.filter((us) => us.status === 'complete').length;
-
-    return {
-      id: classified.epic.id,
-      title: classified.epic.title,
-      type: 'epic',
-      status: 'complete',
-      priority: classified.epic.priority,
-      created: new Date().toISOString().split('T')[0],
-      lastUpdated: new Date().toISOString().split('T')[0],
-      overview: classified.epic.overview,
-      businessValue: classified.epic.businessValue,
-      implementationHistory: classified.implementationHistory,
-      userStories: userStorySummaries,
-      externalLinks: classified.externalLinks,
-      relatedDocs: classified.relatedDocs,
-      totalStories: classified.userStories.length,
-      completedStories,
-      overallProgress: Math.round((completedStories / classified.userStories.length) * 100),
-    };
-  }
 
   /**
    * Generate user story files
@@ -588,45 +546,7 @@ export class SpecDistributor {
     return `${id.toLowerCase()}-${slug}.md`;
   }
 
-  /**
-   * Write feature file to disk (NEW: writes to FEATURE.md instead of README.md)
-   */
-  private async writeEpicFile(epic: EpicFile, epicMapping: EpicMapping): Promise<string> {
-    // Write to feature-folder/FEATURE.md (feature overview - high-level summary)
-    const featurePath = path.join(epicMapping.featurePath, 'FEATURE.md');
 
-    const content = this.formatEpicFile(epic);
-
-    await fs.ensureDir(path.dirname(featurePath));
-    await fs.writeFile(featurePath, content, 'utf-8');
-
-    console.log(`   ✅ Written feature overview to ${epicMapping.featureFolder}/FEATURE.md`);
-    return featurePath;
-  }
-
-  /**
-   * Write user story files to disk (NEW: writes directly to feature folder)
-   */
-  private async writeUserStoryFiles(userStories: UserStoryFile[], epicMapping: EpicMapping): Promise<string[]> {
-    // Write user stories directly to feature folder (not in subfolder)
-    const featureDir = epicMapping.featurePath;
-    await fs.ensureDir(featureDir);
-
-    const paths: string[] = [];
-
-    for (const userStory of userStories) {
-      const filename = this.generateUserStoryFilename(userStory.id, userStory.title);
-      const filePath = path.join(featureDir, filename);
-
-      const content = this.formatUserStoryFile(userStory);
-
-      await fs.writeFile(filePath, content, 'utf-8');
-      paths.push(filePath);
-    }
-
-    console.log(`   ✅ Written ${userStories.length} user stories directly to ${epicMapping.featureFolder}/`);
-    return paths;
-  }
 
   /**
    * Format epic file as markdown
@@ -864,121 +784,567 @@ export class SpecDistributor {
    * Update tasks.md with bidirectional links to user stories (CRITICAL!)
    *
    * This creates bidirectional traceability:
-   * - User Story → Tasks (already done in us-*.md files)
-   * - Tasks → User Story (NEW - added here)
-   *
-   * When a task implements a user story, this adds a link in tasks.md:
-   * **User Story**: [US-001: Title](../../docs/internal/specs/{project}/{feature}/us-001-*.md)
+
+  /**
+   * Classify content by project (NEW for universal hierarchy)
+   * Split user stories across projects based on keywords and frontmatter
    */
-  private async updateTasksWithUserStoryLinks(
-    incrementId: string,
-    userStories: UserStoryFile[],
-    epicMapping: EpicMapping
-  ): Promise<void> {
-    const tasksPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'tasks.md');
+  private async classifyContentByProject(
+    parsed: ParsedIncrementSpec,
+    featureMapping: FeatureMapping
+  ): Promise<Map<string, UserStory[]>> {
+    const storiesByProject = new Map<string, UserStory[]>();
 
-    // Check if tasks.md exists
-    if (!fs.existsSync(tasksPath)) {
-      console.log(`   ⚠️  tasks.md not found for ${incrementId}, skipping bidirectional link update`);
-      return;
+    for (const story of parsed.userStories) {
+      // Detect which project(s) this story belongs to
+      const storyProjects = await this.detectUserStoryProjects(story, featureMapping.projects);
+
+      for (const project of storyProjects) {
+        if (!storiesByProject.has(project)) {
+          storiesByProject.set(project, []);
+        }
+        storiesByProject.get(project)!.push(story);
+      }
     }
 
-    try {
-      const tasksContent = await fs.readFile(tasksPath, 'utf-8');
-
-      // Parse tasks to create task → user story mapping
-      const taskToUSMapping = this.mapTasksToUserStories(tasksContent, userStories);
-
-      if (Object.keys(taskToUSMapping).length === 0) {
-        console.log(`   ℹ️  No AC-based task-to-US mapping found, skipping bidirectional links`);
-        return;
-      }
-
-      // Update tasks.md content with user story links
-      let updatedContent = tasksContent;
-      let linksAdded = 0;
-
-      for (const [taskId, userStory] of Object.entries(taskToUSMapping)) {
-        // Generate relative path from tasks.md to user story file
-        const projectId = epicMapping.featurePath.split('/specs/')[1]?.split('/')[0] || 'default';
-        const featureFolder = epicMapping.featureFolder;
-        const userStoryFile = this.generateUserStoryFilename(userStory.id, userStory.title);
-        const relativePath = `../../docs/internal/specs/${projectId}/${featureFolder}/${userStoryFile}`;
-
-        // Find task section and add link if not already present (supports both ## and ### headings)
-        // CRITICAL: Remove 'g' flag to prevent multiple matches of the same task
-        const taskPattern = new RegExp(`(^##+ ${taskId}:.*?$\\n)([\\s\\S]*?)(?=^##+ T-|^---$|$)`, 'm');
-
-        // Only replace once per task
-        let replaced = false;
-        updatedContent = updatedContent.replace(taskPattern, (match, heading, body) => {
-          // Prevent multiple replacements
-          if (replaced) {
-            return match;
-          }
-
-          // Check if link already exists
-          if (body.includes('**User Story**:')) {
-            return match; // Link already exists
-          }
-
-          // Insert link right after the heading (before any content)
-          const linkLine = `**User Story**: [${userStory.id}: ${userStory.title}](${relativePath})\n\n`;
-
-          replaced = true;
-          linksAdded++;
-          return heading + linkLine + body;
-        });
-      }
-
-      // Write updated tasks.md
-      if (linksAdded > 0) {
-        await fs.writeFile(tasksPath, updatedContent, 'utf-8');
-        console.log(`   🔗 Added ${linksAdded} bidirectional links to tasks.md`);
-      } else {
-        console.log(`   ℹ️  All tasks already have user story links`);
-      }
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to update tasks.md with bidirectional links: ${error}`);
+    // If no stories were classified to any project, add all to default/first project
+    if (storiesByProject.size === 0 && parsed.userStories.length > 0) {
+      const defaultProject = featureMapping.projects[0] || 'default';
+      storiesByProject.set(defaultProject, parsed.userStories);
     }
+
+    return storiesByProject;
   }
 
   /**
-   * Map tasks to user stories using AC-IDs
-   *
-   * Extracts AC-IDs from tasks (e.g., AC-US1-01) and maps them to user stories (e.g., US-001)
+   * Detect which projects a user story belongs to
    */
-  private mapTasksToUserStories(
-    tasksContent: string,
-    userStories: UserStoryFile[]
-  ): Record<string, UserStoryFile> {
-    const mapping: Record<string, UserStoryFile> = {};
+  private async detectUserStoryProjects(
+    story: UserStory,
+    availableProjects: string[]
+  ): Promise<string[]> {
+    // If only one project available, return it
+    if (availableProjects.length === 1) {
+      return availableProjects;
+    }
 
-    // Extract all tasks with their AC-IDs (supports both ## and ### headings)
-    const taskPattern = /^##+ (T-\d+):.*?$\n[\s\S]*?\*\*AC\*\*:\s*([^\n]+)/gm;
-    let match;
+    const projects: string[] = [];
+    const config = await this.hierarchyMapper.getSpecweaveConfig();
 
-    while ((match = taskPattern.exec(tasksContent)) !== null) {
-      const taskId = match[1]; // T-001
-      const acList = match[2]; // AC-US1-01, AC-US1-02
+    // Method 1: Check if story has explicit project field
+    if (story.project) {
+      if (availableProjects.includes(story.project)) {
+        return [story.project];
+      }
+    }
 
-      // Extract user story IDs from AC-IDs (AC-US1-01 → US-001)
-      const acPattern = /AC-US(\d+)-\d+/g;
-      let acMatch;
+    // Method 2: Keyword detection in title and description
+    const text = `${story.title} ${story.description}`.toLowerCase();
 
-      while ((acMatch = acPattern.exec(acList)) !== null) {
-        const usNumber = acMatch[1]; // "1"
-        const usId = `US-${usNumber.padStart(3, '0')}`; // "US-001"
+    for (const projectId of availableProjects) {
+      if (projectId === 'default') {
+        continue; // Skip default for keyword matching
+      }
 
-        // Find matching user story
-        const userStory = userStories.find(us => us.id === usId);
-        if (userStory) {
-          mapping[taskId] = userStory;
-          break; // One task can only map to one primary user story
+      // Get project config for keywords
+      const projectConfig = config.multiProject?.projects?.[projectId];
+      if (projectConfig?.keywords) {
+        const hasKeyword = projectConfig.keywords.some(keyword =>
+          text.includes(keyword.toLowerCase())
+        );
+        if (hasKeyword) {
+          projects.push(projectId);
+        }
+      }
+
+      // Also check if project name is mentioned
+      if (text.includes(projectId.toLowerCase())) {
+        if (!projects.includes(projectId)) {
+          projects.push(projectId);
         }
       }
     }
 
-    return mapping;
+    // Method 3: Fallback - if no projects detected, assign to all
+    if (projects.length === 0) {
+      return availableProjects;
+    }
+
+    return projects;
+  }
+
+  /**
+   * Generate epic file (OPTIONAL - for strategic themes)
+   */
+  private async generateEpicFile(
+    parsed: ParsedIncrementSpec,
+    epicMapping: EpicMapping,
+    featureMapping: FeatureMapping
+  ): Promise<EpicThemeFile | null> {
+    if (!epicMapping) return null;
+
+    return {
+      id: epicMapping.epicId,
+      title: parsed.title,
+      type: 'epic',
+      status: (parsed.status as 'planned' | 'in-progress' | 'complete' | 'archived') || 'in-progress',
+      created: parsed.created || new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      strategicOverview: parsed.overview,
+      features: [featureMapping.featureId],
+      successMetrics: [],
+      timeline: {
+        start: parsed.created || new Date().toISOString(),
+        targetCompletion: 'TBD',
+        currentPhase: 'Phase 1',
+      },
+      stakeholders: {},
+      externalLinks: parsed.externalLinks || {},
+    };
+  }
+
+  /**
+   * Generate feature file (REQUIRED - cross-project overview)
+   */
+  private async generateFeatureFile(
+    parsed: ParsedIncrementSpec,
+    featureMapping: FeatureMapping,
+    storiesByProject: Map<string, UserStory[]>
+  ): Promise<FeatureFile> {
+    // Convert stories to summaries grouped by project
+    const userStoriesByProject = new Map<string, UserStorySummary[]>();
+
+    for (const [project, stories] of storiesByProject.entries()) {
+      const summaries = stories.map(s => ({
+        id: s.id,
+        title: s.title,
+        status: s.status,
+        phase: s.phase,
+        filePath: `../../${project}/${featureMapping.featureFolder}/${this.generateUserStoryFilename(s.id, s.title)}`,
+      }));
+      userStoriesByProject.set(project, summaries);
+    }
+
+    // Count completed stories
+    let completedStories = 0;
+    for (const stories of storiesByProject.values()) {
+      completedStories += stories.filter(s => s.status === 'complete').length;
+    }
+
+    return {
+      id: featureMapping.featureId,
+      title: parsed.title,
+      type: 'feature',
+      status: (parsed.status as 'planned' | 'in-progress' | 'complete' | 'archived') || 'in-progress',
+      priority: parsed.priority || 'P1',
+      created: parsed.created || new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      epic: featureMapping.epic,
+      projects: featureMapping.projects,
+      overview: parsed.overview,
+      businessValue: parsed.businessValue || [],
+      implementationHistory: [],
+      userStoriesByProject,
+      externalLinks: parsed.externalLinks || {},
+      totalStories: parsed.userStories.length,
+      completedStories,
+      overallProgress: parsed.userStories.length > 0
+        ? Math.round((completedStories / parsed.userStories.length) * 100)
+        : 0,
+    };
+  }
+
+  /**
+   * Generate project context files (README.md for each project)
+   */
+  private async generateProjectContextFiles(
+    featureMapping: FeatureMapping,
+    parsed: ParsedIncrementSpec
+  ): Promise<Map<string, string>> {
+    const contextFiles = new Map<string, string>();
+
+    for (const project of featureMapping.projects) {
+      const projectContext = await this.hierarchyMapper.getProjectContext(project);
+      if (!projectContext) continue;
+
+      const content = this.formatProjectContextFile(
+        featureMapping,
+        projectContext,
+        parsed
+      );
+
+      contextFiles.set(project, content);
+    }
+
+    return contextFiles;
+  }
+
+  /**
+   * Format project context file (README.md)
+   */
+  private formatProjectContextFile(
+    featureMapping: FeatureMapping,
+    projectContext: ProjectContext,
+    parsed: ParsedIncrementSpec
+  ): string {
+    const featurePathUp = featureMapping.projects.length > 1 ? '../../../' : '../../';
+
+    return `---
+id: ${featureMapping.featureId}-${projectContext.projectId}
+title: "${parsed.title} - ${projectContext.projectName} Implementation"
+feature: ${featureMapping.featureId}
+project: ${projectContext.projectId}
+type: feature-context
+status: in-progress
+---
+
+# ${projectContext.projectName} Implementation: ${parsed.title}
+
+**Feature**: [${featureMapping.featureId}](${featurePathUp}_features/${featureMapping.featureFolder}/FEATURE.md)
+
+## ${projectContext.projectName}-Specific Context
+
+This document contains the ${projectContext.projectName} implementation details for the ${parsed.title} feature.
+
+## Tech Stack
+
+${projectContext.techStack.map(t => `- ${t}`).join('\n')}
+
+## User Stories (${projectContext.projectName})
+
+User stories for this project are listed below.
+
+## Dependencies
+
+[Project-specific dependencies will be documented here]
+
+## Architecture Considerations
+
+[${projectContext.projectName}-specific architecture notes]
+`;
+  }
+
+  /**
+   * Generate user story files by project
+   */
+  private async generateUserStoryFilesByProject(
+    storiesByProject: Map<string, UserStory[]>,
+    featureMapping: FeatureMapping,
+    incrementId: string
+  ): Promise<Map<string, UserStoryFile[]>> {
+    const filesByProject = new Map<string, UserStoryFile[]>();
+
+    // Load tasks for linking
+    const taskMap = await this.loadTaskReferences(incrementId);
+
+    for (const [project, stories] of storiesByProject.entries()) {
+      const userStoryFiles: UserStoryFile[] = [];
+
+      for (const userStory of stories) {
+        // Find tasks that implement this user story
+        const tasks = this.findTasksForUserStory(userStory.id, taskMap);
+
+        // Find related user stories (same project, same phase)
+        const relatedStories = stories
+          .filter((us) => us.id !== userStory.id && us.phase === userStory.phase)
+          .map((us) => ({
+            id: us.id,
+            title: us.title,
+            status: us.status,
+            phase: us.phase,
+            filePath: this.generateUserStoryFilename(us.id, us.title),
+          }));
+
+        userStoryFiles.push({
+          id: userStory.id,
+          epic: featureMapping.featureId, // Feature is the parent
+          title: userStory.title,
+          status: userStory.status,
+          priority: userStory.priority,
+          created: new Date().toISOString().split('T')[0],
+          completed: userStory.status === 'complete' ? new Date().toISOString().split('T')[0] : undefined,
+          description: userStory.description,
+          acceptanceCriteria: userStory.acceptanceCriteria,
+          implementation: {
+            increment: incrementId,
+            tasks,
+          },
+          businessRationale: userStory.businessRationale,
+          relatedStories,
+          phase: userStory.phase,
+          project, // Add project field
+        });
+      }
+
+      filesByProject.set(project, userStoryFiles);
+    }
+
+    return filesByProject;
+  }
+
+  /**
+   * Write epic file to _epics/ folder
+   */
+  private async writeEpicFile(
+    epic: EpicThemeFile | null,
+    epicMapping: EpicMapping | null
+  ): Promise<string | null> {
+    if (!epic || !epicMapping) return null;
+
+    const epicPath = path.join(epicMapping.epicPath, 'EPIC.md');
+    const content = this.formatEpicThemeFile(epic);
+
+    await fs.ensureDir(path.dirname(epicPath));
+    await fs.writeFile(epicPath, content, 'utf-8');
+
+    console.log(`   ✅ Written epic overview to _epics/${epicMapping.epicFolder}/EPIC.md`);
+    return epicPath;
+  }
+
+  /**
+   * Format epic theme file content
+   */
+  private formatEpicThemeFile(epic: EpicThemeFile): string {
+    const yaml = `---
+id: ${epic.id}
+title: "${epic.title}"
+type: ${epic.type}
+status: ${epic.status}
+---`;
+
+    return `${yaml}
+
+# ${epic.title}
+
+## Strategic Overview
+
+${epic.strategicOverview}
+
+## Features
+
+${epic.features.map(f => `- ${f}`).join('\n')}
+
+## Timeline
+
+- **Start**: ${epic.timeline.start}
+- **Target Completion**: ${epic.timeline.targetCompletion}
+- **Current Phase**: ${epic.timeline.currentPhase}
+`;
+  }
+
+  /**
+   * Write feature file to _features/ folder
+   */
+  private async writeFeatureFile(
+    feature: FeatureFile,
+    featureMapping: FeatureMapping
+  ): Promise<string> {
+    const featurePath = path.join(featureMapping.featurePath, 'FEATURE.md');
+    const content = this.formatFeatureFile(feature);
+
+    await fs.ensureDir(path.dirname(featurePath));
+    await fs.writeFile(featurePath, content, 'utf-8');
+
+    console.log(`   ✅ Written feature overview to _features/${featureMapping.featureFolder}/FEATURE.md`);
+    return featurePath;
+  }
+
+  /**
+   * Format feature file content
+   */
+  private formatFeatureFile(feature: FeatureFile): string {
+    const yaml = `---
+id: ${feature.id}
+title: "${feature.title}"
+type: ${feature.type}
+status: ${feature.status}
+priority: ${feature.priority}
+created: ${feature.created}
+lastUpdated: ${feature.lastUpdated}
+projects: [${feature.projects.map(p => `"${p}"`).join(', ')}]
+${feature.epic ? `epic: ${feature.epic}` : ''}
+---`;
+
+    const storiesByProjectSection = Array.from(feature.userStoriesByProject.entries())
+      .map(([project, stories]) => `
+### ${project}
+
+${stories.map(s => `- [${s.id}: ${s.title}](${s.filePath}) - ${s.status}`).join('\n')}`)
+      .join('\n');
+
+    return `${yaml}
+
+# ${feature.title}
+
+## Overview
+
+${feature.overview}
+
+## Business Value
+
+${feature.businessValue.map(v => `- ${v}`).join('\n') || 'See overview above'}
+
+## Projects
+
+This feature spans the following projects:
+${feature.projects.map(p => `- ${p}`).join('\n')}
+
+## User Stories by Project
+${storiesByProjectSection}
+
+## Progress
+
+- **Total Stories**: ${feature.totalStories}
+- **Completed**: ${feature.completedStories}
+- **Progress**: ${feature.overallProgress}%
+`;
+  }
+
+  /**
+   * Write project context files
+   * NOTE: We NO LONGER create README.md in project feature folders
+   * User stories go directly in the folder without README
+   */
+  private async writeProjectContextFiles(
+    contextFiles: Map<string, string>,
+    featureMapping: FeatureMapping
+  ): Promise<string[]> {
+    // Skip writing README.md files in project folders
+    // Only user story files should exist there
+    console.log(`   ℹ️  Skipping project README creation (user stories only in project folders)`);
+    return [];
+  }
+
+  /**
+   * Write user story files by project
+   */
+  private async writeUserStoryFilesByProject(
+    userStoryFilesByProject: Map<string, UserStoryFile[]>,
+    featureMapping: FeatureMapping,
+    incrementId: string
+  ): Promise<Map<string, string[]>> {
+    const pathsByProject = new Map<string, string[]>();
+
+    for (const [project, stories] of userStoryFilesByProject.entries()) {
+      const projectPath = featureMapping.projectPaths.get(project);
+      if (!projectPath) continue;
+
+      await fs.ensureDir(projectPath);
+
+      const paths: string[] = [];
+
+      for (const story of stories) {
+        const filename = this.generateUserStoryFilename(story.id, story.title);
+        const filePath = path.join(projectPath, filename);
+
+        const content = this.formatUserStoryFile(story);
+
+        await fs.writeFile(filePath, content, 'utf-8');
+        paths.push(filePath);
+      }
+
+      pathsByProject.set(project, paths);
+    }
+
+    const totalStories = Array.from(userStoryFilesByProject.values())
+      .reduce((sum, stories) => sum + stories.length, 0);
+    console.log(`   ✅ Written ${totalStories} user stories to ${featureMapping.projects.length} project(s)`);
+
+    return pathsByProject;
+  }
+
+  /**
+   * Update tasks.md with bidirectional links (project-aware)
+   */
+  private async updateTasksWithUserStoryLinks(
+    incrementId: string,
+    userStoryFilesByProject: Map<string, UserStoryFile[]>,
+    featureMapping: FeatureMapping
+  ): Promise<void> {
+    const tasksPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'tasks.md');
+
+    if (!fs.existsSync(tasksPath)) {
+      console.warn(`   ⚠️  tasks.md not found for ${incrementId}, skipping bidirectional linking`);
+      return;
+    }
+
+    let content = await fs.readFile(tasksPath, 'utf-8');
+
+    // Build a map of all user stories across all projects
+    const allUserStories = new Map<string, { story: UserStoryFile; project: string }>();
+    for (const [project, stories] of userStoryFilesByProject.entries()) {
+      for (const story of stories) {
+        allUserStories.set(story.id, { story, project });
+      }
+    }
+
+    // Pattern to find task headings and their AC fields
+    const taskSections = content.split(/(?=^##+ T-\d+:)/m);
+    const updatedSections: string[] = [];
+
+    for (const section of taskSections) {
+      if (!section.trim()) {
+        updatedSections.push(section);
+        continue;
+      }
+
+      // Extract task ID and AC list
+      const taskMatch = section.match(/^(##+ T-\d+:.+?)$/m);
+      const acMatch = section.match(/\*\*AC\*\*:\s*([^\n]+)/);
+
+      if (!taskMatch || !acMatch) {
+        updatedSections.push(section);
+        continue;
+      }
+
+      const taskHeading = taskMatch[1];
+      const acList = acMatch[1];
+
+      // Find which user story this task belongs to based on AC-IDs
+      let linkedStory: { story: UserStoryFile; project: string } | null = null;
+      const acPattern = /AC-US(\d+)-\d+/g;
+      let acIdMatch;
+
+      while ((acIdMatch = acPattern.exec(acList)) !== null) {
+        const usNumber = acIdMatch[1];
+        const usId = `US-${usNumber.padStart(3, '0')}`;
+
+        if (allUserStories.has(usId)) {
+          linkedStory = allUserStories.get(usId)!;
+          break;
+        }
+      }
+
+      if (linkedStory) {
+        // Check if link already exists
+        const userStoryLinkPattern = /\n\*\*User Story\*\*:/;
+        if (!userStoryLinkPattern.test(section)) {
+          // Add the user story link right after the heading
+          const { story, project } = linkedStory;
+          const relativePath = `../../docs/internal/specs/${project}/${featureMapping.featureFolder}/${this.generateUserStoryFilename(story.id, story.title)}`;
+          const linkLine = `\n\n**User Story**: [${story.id}: ${story.title}](${relativePath})`;
+
+          // Insert after the heading line
+          const lines = section.split('\n');
+          const headingIndex = lines.findIndex(line => line.match(/^##+ T-\d+:/));
+          if (headingIndex >= 0) {
+            lines.splice(headingIndex + 1, 0, linkLine);
+            updatedSections.push(lines.join('\n'));
+          } else {
+            updatedSections.push(section);
+          }
+        } else {
+          updatedSections.push(section);
+        }
+      } else {
+        updatedSections.push(section);
+      }
+    }
+
+    const updatedContent = updatedSections.join('');
+    if (content !== updatedContent) {
+      await fs.writeFile(tasksPath, updatedContent, 'utf-8');
+      console.log(`   ✅ Updated tasks.md with bidirectional user story links`);
+    }
   }
 }
