@@ -26,8 +26,8 @@ status: "abandoned"
 - ✅ Warns user for CRITICAL issues in terminal
 
 **Performance**:
-- ✅ Reflection completes in <30s (95% of cases)
-- ✅ Cost <$0.01 per task (Haiku mode)
+- ✅ Reflection completes in &lt;30s (95% of cases)
+- ✅ Cost &lt;$0.01 per task (Haiku mode)
 - ✅ Non-blocking execution (workflow continues)
 
 **Quality**:

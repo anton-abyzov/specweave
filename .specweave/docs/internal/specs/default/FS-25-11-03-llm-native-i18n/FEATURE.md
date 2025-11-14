@@ -40,5 +40,5 @@ Enable SpecWeave to support multiple languages (Russian, Spanish, Chinese, Germa
 
 ## External Tool Integration
 
-**GitHub Issue**: [#194 - Feature](https://github.com/anton-abyzov/specweave/issues/194)
+**GitHub Issue**: [#337 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/337)
 **JIRA Epic**: [SCRUM-27](https://jira.atlassian.com/browse/SCRUM-27)

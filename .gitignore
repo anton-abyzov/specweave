@@ -112,7 +112,30 @@ temp/
 # This keeps all increment-related files together for better traceability
 # Workflow trigger - increment 0014 cleanup
 *.bak
+*.backup
 coverage/
+
+# ROOT FOLDER POLLUTION PREVENTION
+# Only allow these files in root (see CLAUDE.md):
+# ✅ CLAUDE.md, README.md, CHANGELOG.md, LICENSE, CODE_OF_CONDUCT.md, SECURITY.md
+# ✅ package.json, package-lock.json, tsconfig*.json, jest.config.*, playwright.config.ts
+# ✅ .gitignore, .gitattributes, .npmignore, .mermaidrc.json
+# ✅ Directories: src/, tests/, plugins/, .specweave/, docs-site/, scripts/, bin/
+# ❌ Everything else (*.md reports, *.js scripts, *.log files) → Use increment folders!
+
+# Prevent common root folder violations
+/*-SUMMARY*.md
+/*-REPORT*.md
+/*-ANALYSIS*.md
+/*-COMPLETE*.md
+/*-GUIDE*.md
+/*-FIX*.md
+/SESSION-*.md
+/IMPLEMENTATION-*.md
+/PHASE-*.md
+/*.md.backup*
+/test-*.js
+/debug-*.js
 
 # Claude Code hooks (NOT needed - hooks live in plugins/)
 .claude/hooks/

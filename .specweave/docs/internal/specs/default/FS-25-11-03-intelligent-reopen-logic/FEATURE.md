@@ -32,3 +32,8 @@ Implement intelligent automatic detection system that knows when to **reopen a c
 - [US-005: Sync Reopen to GitHub/ADO/Jira](us-005-sync-reopen-to-github-ado-jira.md) - ✅ Complete
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#336 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/336)

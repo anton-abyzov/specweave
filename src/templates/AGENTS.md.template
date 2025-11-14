@@ -17,6 +17,37 @@ This is a **SpecWeave project** where specifications and documentation are the s
 - **Context Manifests**: Load only relevant files (70%+ token reduction)
 - **Living Documentation**: Specs evolve with code, never diverge
 - **Role-Based Development**: PM defines requirements, Architect designs, DevOps deploys
+- **Bidirectional Linking**: Tasks automatically link to user stories (and vice versa)
+
+### Bidirectional Task ↔ User Story Linking
+
+**AUTOMATIC FEATURE**: When increment completes (`/specweave:done`), SpecWeave creates bidirectional links.
+
+**How It Works**:
+1. User stories extracted to `.specweave/docs/internal/specs/{project}/`
+2. Tasks.md automatically updated with links back to user stories
+3. Complete bidirectional navigation created!
+
+**Requirements**:
+- Tasks MUST have **AC**: field with AC-IDs (e.g., `AC-US1-01, AC-US1-02`)
+- AC-IDs map to user stories: `AC-US1-01` → `US-001`
+
+**Example Task** (WITH bidirectional link):
+```markdown
+### T-001: Implement User Login
+
+**User Story**: [US-001: User Authentication](../../docs/internal/specs/default/auth-service/us-001-user-authentication.md)
+
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
+
+**Test Plan** (BDD):
+- **Given** valid credentials → **When** login → **Then** receive JWT token
+```
+
+**Benefits**:
+- ✅ Navigate both directions (Tasks → User Stories → Tasks)
+- ✅ Automatic (no manual linking)
+- ✅ Multi-project aware (works with backend, frontend, mobile, etc.)
 
 ---
 
@@ -490,9 +521,65 @@ When you complete a task (mark todo as done), the hook:
 # After completing a task, run these three commands:
 
 /specweave:sync-tasks                  # 1. Update tasks.md completion status
-/specweave:sync-docs update            # 2. Sync to living docs
+/specweave:sync-docs update            # 2. Sync to living docs (THIS IS CRITICAL!)
 /specweave-github:sync <increment-id>  # 3. Sync to GitHub (replace <increment-id> with your increment, e.g., 0007)
 ```
+
+**🔥 CRITICAL: Living Docs Sync (`/specweave:sync-docs`)**
+
+The `/specweave:sync-docs` command is one of the MOST IMPORTANT commands in SpecWeave. It ensures your increment work gets properly archived in the living documentation.
+
+**How to call it** (for non-Claude tools):
+
+```bash
+# Read the command file
+cat plugins/specweave/commands/specweave-sync-docs.md
+
+# Then execute the workflow described in that file
+# The command will:
+# 1. Extract user stories from spec.md
+# 2. Distribute them to .specweave/docs/internal/specs/{project}/
+# 3. Create bidirectional links (Tasks ↔ User Stories)
+# 4. Update epic folders (FS-*) with latest content
+# 5. Generate proper Docusaurus frontmatter
+```
+
+**When to run it**:
+- ✅ After completing an increment (`/specweave:done`)
+- ✅ After making significant spec changes
+- ✅ After implementing multiple user stories
+- ✅ Before creating a PR/merge request
+- ❌ NOT after every single task (too frequent)
+
+**Two modes**:
+- `review` mode: Review strategic docs BEFORE implementation starts
+- `update` mode: Sync living docs AFTER implementation completes
+
+**Example workflow**:
+
+```bash
+# Complete increment
+/specweave:done 0031
+
+# Sync to living docs (MANDATORY!)
+/specweave:sync-docs update 0031
+
+# Result: All user stories from increment 0031 are now in:
+# .specweave/docs/internal/specs/{project}/FS-031-feature-name/
+#   ├── README.md (epic overview)
+#   ├── us-001-story-title.md (user story)
+#   ├── us-002-story-title.md
+#   └── ... (all user stories)
+```
+
+**Why this matters**:
+- ✅ Permanent archive of all user stories (never lost)
+- ✅ Bidirectional links created automatically
+- ✅ Epic folders organized hierarchically
+- ✅ Docusaurus-ready frontmatter generated
+- ✅ Complete traceability (increment → living docs)
+
+Without running this command, your increment work stays isolated in the increment folder and NEVER makes it to the permanent living documentation!
 
 **Alternative: Manual Update** (if slash commands unavailable):
 

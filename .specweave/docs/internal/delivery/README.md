@@ -16,6 +16,8 @@ Then review the key guides below ↓
 - **Branching Strategy** - Git workflow, trunk-based development
 - **Code Review Standards** - PR guidelines, review process
 - **DORA Metrics** - Engineering performance tracking
+- **Delivery Plans** - **NEW!** Quarter/sprint planning, epic timeline coordination
+- **Release Management** - Release tooling, automation, multi-repo coordination
 - **Roadmap** - Feature timeline, priorities
 - **Release Process** - Version planning, release notes
 - **Guides** - Detailed how-to documentation
@@ -106,6 +108,18 @@ cp templates/docs/test-strategy-template.md docs/internal/delivery/test-strategy
 ### 📊 Metrics & Performance
 - **[DORA Metrics](dora-metrics.md)** - Engineering performance tracking (Deployment Frequency, Lead Time, etc.)
   - ↔️ Related: [Branch Strategy](branch-strategy.md), [Operations](../operations/README.md)
+
+### 📅 Delivery Planning (NEW!)
+- **[Delivery Plans](plans/README.md)** - Quarter/sprint planning, epic timeline coordination
+  - When epics ship, dependencies, team allocation
+  - Links to ADO Delivery Plans, JIRA Roadmaps, GitHub Projects
+  - ↔️ Related: [Specs (Epics)](../specs/README.md), [Roadmap](roadmap.md)
+
+### 🚀 Release Management
+- **[Release Management](release-management/README.md)** - Release tooling & automation
+  - Multi-repo coordination, version synchronization
+  - DORA metrics tracking, GitFlow automation
+  - ↔️ Related: [Release Process](release-process.md), [DORA Metrics](dora-metrics.md)
 
 ### 🗺️ Planning & Roadmap
 - **[Product Roadmap](roadmap.md)** - Feature planning, prioritization

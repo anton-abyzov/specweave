@@ -48,14 +48,7 @@ Users receive a different CLAUDE.md via the template system.
     └── 0006-deep-analysis.md          # ✅ Architecture decisions
 ```
 
-### Why This Matters
-
-- ✅ **Complete traceability** - Know which increment created which files
-- ✅ **Easy cleanup** - Delete increment folder = delete all files
-- ✅ **Clear context** - All files for a feature in one place
-- ✅ **No root clutter** - Project root stays clean and professional
-- ✅ **Better git history** - Changes grouped by increment
-- ✅ **Status line works correctly** - Parses tasks.md without confusion from extra .md files
+**Why**: Traceability, easy cleanup, clear context. See [File Organization Guide](https://spec-weave.com/docs/learn/file-organization).
 
 ### ⚠️ CRITICAL: reports/ Folder is MANDATORY!
 
@@ -86,13 +79,7 @@ Users receive a different CLAUDE.md via the template system.
 └── SESSION-SUMMARY.md              # ❌ NO! Should be in reports/
 ```
 
-**Why reports/ folder matters for status line**:
-- Status line parses `tasks.md` to count progress
-- Extra `.md` files in root can confuse the parser
-- Files MUST be in `reports/` subfolder for clean parsing
-- **Without proper structure → Status line shows nothing!**
-
-**Rule**: Only 3 core files allowed in increment root: `spec.md`, `plan.md`, `tasks.md`. Everything else → subfolders!
+**Rule**: Only 3 core files in increment root: `spec.md`, `plan.md`, `tasks.md`. Everything else → subfolders (reports/, scripts/, logs/). Required for status line parsing.
 
 ### What IS Allowed in Root?
 
@@ -116,38 +103,9 @@ These should NEVER be committed:
 
 ---
 
-## Why Claude Code is Best-in-Class
+## Tool Support
 
-**CRITICAL**: SpecWeave is designed for Claude Code FIRST. Other tools are supported but with reduced capabilities.
-
-### Anthropic Sets the Standards
-
-Claude Code isn't just another AI coding assistant - **Anthropic defines the industry standards**:
-
-1. **MCP (Model Context Protocol)** - Industry standard for context management
-2. **Skills** - Proven pattern for auto-activating capabilities
-3. **Agents** - Proven pattern for role-based, isolated workflows
-4. **Hooks** - Proven pattern for lifecycle automation
-
-### Why SpecWeave + Claude Code = 10x Better
-
-| Feature | Claude Code (Native) | Cursor 2.0 | Other (Copilot, ChatGPT, etc.) |
-|---------|---------------------|------------|-------------------------------|
-| **Living Docs** | ✅ Auto-sync via hooks | ❌ Manual | ❌ Manual |
-| **Skills** | ✅ Auto-activate | 🟡 Must @mention | ❌ None |
-| **Commands** | ✅ Plugin-based `/specweave:*` | 🟡 Team commands | ❌ None |
-| **Hooks** | ✅ Pre/Post lifecycle | ❌ No hooks | ❌ No hooks |
-| **Agents** | ✅ Isolated contexts | 🟡 Shared (8 parallel) | ❌ None |
-| **Context** | ✅ MCP + 60-80% reduction | 🟡 @ shortcuts | ❌ High usage |
-| **Quality** | ⭐⭐⭐⭐⭐ 100% Reliable | ⭐⭐⭐ 60% Less reliable | ⭐⭐ 40% Manual workflow |
-
-**Quick Comparison**:
-
-**Claude Code** - Full automation with native hooks, MCP protocol, plugin system, isolated agent contexts. **ONLY fully reliable option.**
-**Cursor 2.0** - Partial support (AGENTS.md compilation, team commands, @ shortcuts) but no hooks, no agent isolation, less reliable than Claude
-**Other (Copilot, ChatGPT, Gemini)** - Manual workflow, high context usage, AGENTS.md support but no automation, least reliable
-
-**The Key Differentiator**: Only Claude Code supports **automated living docs** via native hooks. After EVERY task completion, docs sync automatically - zero manual intervention. This is why SpecWeave is designed Claude Code-first, though it gracefully degrades to other tools.
+Claude Code-first (native hooks, plugins, MCP). See [Why Claude Code?](https://spec-weave.com/docs/overview/why-claude-code).
 
 ---
 
@@ -158,523 +116,186 @@ Claude Code isn't just another AI coding assistant - **Anthropic defines the ind
 **Format**: `####-descriptive-kebab-case-name`
 
 **Examples**:
-- ✅ `0001-core-framework`
-- ✅ `0002-core-enhancements`
-- ✅ `0003-intelligent-model-selection`
-- ❌ `0003` (too generic, rejected)
-- ❌ `0004` (no description, rejected)
+- ✅ `0001-core-framework` ← Clear what it does
+- ✅ `0003-intelligent-model-selection` ← Searchable
+- ❌ `0003` ← Too generic (rejected!)
 
-**Rationale**:
-- **Clear intent at a glance** - "0003-intelligent-model-selection" tells you exactly what it does
-- **Easy to reference** - "the model selection increment" vs "increment 3"
-- **Better git history** - Commit messages naturally include feature name
-- **Searchable by feature** - `git log --grep="model-selection"` works
-- **Self-documenting** - Increment folders are readable without opening files
+**Why**: Clear intent, better git history, searchable, self-documenting.
 
-**When Creating Increments**:
-```bash
-# ❌ Wrong
-/specweave:increment "0004"
-
-# ✅ Correct
-/specweave:increment "0004-cost-optimization"
-/specweave:increment "0005-github-sync-enhancements"
-```
-
-**Enforcement**:
-- `/specweave:increment` command validates naming (rejects bare numbers)
-- Code review requirement (descriptive names mandatory)
-- This document serves as the source of truth
-
-**Quick Reference**:
-- `####` = Zero-padded 4-digit number (0001, 0002, 0003, ...)
-- `-descriptive-name` = Kebab-case description (lowercase, hyphens)
-- Max 50 chars total (for readability)
-- No special characters except hyphens
+**For complete naming rules**: See `increment-planner` skill (auto-loads when using `/specweave:increment`)
 
 ---
 
 ## Increment Discipline
 
-### Core Philosophy: **ONE Active Increment = Maximum Focus**
+**⛔ THE IRON RULE**: You CANNOT start increment N+1 until increment N is DONE.
 
-Simplified from complex per-type limits to **focus-first architecture**:
+**Core Philosophy**:
 - ✅ **Default**: 1 active increment (maximum productivity)
 - ✅ **Emergency ceiling**: 2 active max (hotfix/bug can interrupt)
 - ✅ **Hard cap**: Never >2 active (enforced)
 
-**Why 1?** Research shows:
-- 1 task = 100% productivity
-- 2 tasks = 20% slower (context switching cost)
-- 3+ tasks = 40% slower + more bugs
+**Why**: Focus = Quality. Research shows 1 task = 100% productivity, 2 tasks = 20% slower, 3+ = 40% slower + more bugs.
 
-### What is an Increment?
+**For complete discipline rules**: See [Increment Lifecycle Guide](.specweave/docs/internal/delivery/guides/increment-lifecycle.md#increment-discipline-the-iron-rule)
 
-**An increment can be any type of work**, not just features. SpecWeave supports six increment types:
+This guide auto-loads when using increment commands (progressive disclosure pattern).
 
-| Type | Description | Use When | Can Interrupt? | Examples |
-|------|-------------|----------|----------------|----------|
-| **feature** | Standard feature development | Adding new functionality | No | User authentication, payment integration, real-time chat |
-| **hotfix** | Critical production fixes | Production is broken | ✅ Yes (emergency) | Security patch, critical bug causing downtime |
-| **bug** | Production bugs with SRE investigation | Bug requires root cause analysis | ✅ Yes (emergency) | Memory leak investigation, performance degradation |
-| **change-request** | Stakeholder requests | Business requirements change | No | UI redesign per stakeholder feedback, API contract changes |
-| **refactor** | Code improvement | Technical debt, code quality | No | Extract service layer, migrate to TypeScript, improve test coverage |
-| **experiment** | POC/spike work | Exploring options, prototypes | No* | Evaluate GraphQL vs REST, test new library, architecture spike |
+**Quick Reference**:
+- Complete work: `/specweave:do`
+- Close increments: `/specweave:close` (3 options: adjust scope, move scope, extend)
+- Check status: `/specweave:status`
+- Emergency bypass: `--force` (use sparingly!)
 
-**Notes**:
-- **Experiments auto-abandon** after 14 days of inactivity (prevents accumulation of stale POCs)
-- **Types are for tracking**, not separate limits (git log shows hotfixes vs features)
-- **Single simple rule**: 1 active, allow 2 for emergencies only
-
-**Key Insight**: The increment structure (spec.md, plan.md, tasks.md) works for ALL types. A bug investigation still needs:
-- **spec.md**: What's broken? Why? What's the expected behavior?
-- **plan.md**: How to investigate? What tools? What hypothesis?
-- **tasks.md**: Investigation steps, fix implementation, verification tests
-
-### WIP Limits
-
-**Configuration** (`.specweave/config.json`):
-```json
-{
-  "limits": {
-    "maxActiveIncrements": 1,  // Default: 1 active (focus)
-    "hardCap": 2,               // Emergency ceiling (never exceeded)
-    "allowEmergencyInterrupt": true, // hotfix/bug can interrupt
-    "typeBehaviors": {
-      "canInterrupt": ["hotfix", "bug"], // Emergency types
-      "autoAbandonDays": {
-        "experiment": 14  // Auto-abandon stale experiments
-      }
-    }
-  }
-}
-```
-
-**Enforcement**:
-- **0 active** → Create new (no warnings)
-- **1 active** → Warn about context switching (allow with confirmation)
-- **2 active** → HARD BLOCK (must complete or pause one first)
-
-**Exception**: Hotfix/bug can interrupt to start 2nd active (emergency only)
-
-**Multiple hotfixes?** Combine into ONE increment:
-```bash
-# ❌ Wrong: Multiple hotfix increments
-0009-sql-injection-fix
-0010-xss-vulnerability-fix
-0011-csrf-token-fix
-
-# ✅ Right: Combined hotfix increment
-0009-security-fixes (SQL + XSS + CSRF)
-```
-
-**⛔ THE IRON RULE: You CANNOT start increment N+1 until increment N is DONE**
-
-This is **NOT negotiable**. It is a **hard enforcement** to prevent chaos, scope creep, and stale documentation.
-
-### Why This Rule Exists
-
-**The Problem**:
-- Multiple incomplete increments piling up (0002, 0003, 0006 all in progress)
-- No clear source of truth ("which increment are we working on?")
-- Living docs become stale (sync doesn't know what's current)
-- Scope creep (jumping between features without finishing)
-- Quality degradation (tests not run, docs not updated)
-
-**The Solution**:
-- ✅ **Hard block** on `/specweave:increment` if previous increments incomplete
-- ✅ **Helper commands** to close increments properly
-- ✅ **Clear guidance** on how to resolve incomplete work
-- ✅ **Force discipline** = force quality
-
-### What "DONE" Means
-
-An increment is DONE if **ONE** of the following is true:
-
-1. **All tasks completed**: All tasks in `tasks.md` marked `[x] Completed`
-2. **Completion report exists**: `COMPLETION-SUMMARY.md` with "✅ COMPLETE" status
-3. **Explicit closure**: Closed via `/specweave:close` with documentation
-
-### The Enforcement
-
-**When you try to start a new increment**:
-
-```bash
-/specweave:increment "new feature"
-```
-
-**If previous increments are incomplete, you'll see**:
-
-```
-❌ Cannot create new increment!
-
-Previous increments are incomplete:
-
-📋 Increment 0002-core-enhancements
-   Status: 73% complete (11/15 tasks)
-   Pending:
-     - T-008: Migrate DIAGRAM-CONVENTIONS.md content
-     - T-010: Create context-manifest.yaml
-     - T-012: Test agent invocation manually
-     - T-013: Run skill test suite
-     - T-015: Create PR when increment complete
-
-📋 Increment 0003-intelligent-model-selection
-   Status: 50% complete (11/22 tasks)
-   Pending: 11 tasks
-
-💡 What would you like to do?
-
-1️⃣  Close incomplete increments:
-   /specweave:close
-
-2️⃣  Check status:
-   /specweave:status
-
-3️⃣  Force create (DANGEROUS - violates discipline!):
-   Add --force flag to bypass this check
-
-⚠️  The discipline exists for a reason:
-   - Prevents scope creep
-   - Ensures completions are tracked
-   - Maintains living docs accuracy
-   - Keeps work focused
-```
-
-### How to Resolve Incomplete Increments
-
-#### Option 1: Complete the Work (Recommended)
-
-```bash
-# Continue working on incomplete increment
-/specweave:do
-
-# Once all tasks done, it's automatically complete
-/specweave:increment "new feature"  # ✅ Now works!
-```
-
-#### Option 2: Close Interactively
-
-```bash
-# Interactive closure with options
-/specweave:close
-
-# You'll be asked to choose:
-# - Force complete (mark all tasks done)
-# - Move tasks to next increment (defer work)
-# - Reduce scope (mark tasks as won't-do)
-# - Create completion report (manual close)
-```
-
-#### Option 3: Check Status First
-
-```bash
-# See all incomplete increments
-/specweave:status
-
-# Output shows:
-# ✅ 0001-core-framework
-# ✅ 0004-plugin-architecture
-# ⏳ 0002-core-enhancements (73% complete)
-# ⏳ 0003-intelligent-model-selection (50% complete)
-```
-
-#### Option 4: Force Create (Emergency Only!)
-
-```bash
-# Bypass the check (USE SPARINGLY!)
-/specweave:increment "urgent-hotfix" --force
-
-# This is logged and should be explained in the next standup/PR
-```
-
-### The Three Options for Closing
-
-When using `/specweave:close`, you get **THREE options**:
-
-#### 1. **Adjust Scope** (Simplest - Recommended)
-
-Remove parts from `spec.md`, regenerate `plan.md` and `tasks.md` to match reduced scope:
-
-```bash
-# 1. Edit spec.md - remove features you're not doing
-# 2. Delete plan.md and tasks.md
-# 3. Regenerate from spec
-/specweave:increment "same increment" --regenerate
-
-# Now tasks match reduced scope → 100% complete!
-```
-
-#### 2. **Move Scope to Next Increment**
-
-Transfer incomplete tasks to the new increment:
-
-```bash
-# Via /specweave:close
-# Select "Move tasks to next increment"
-# Tasks are migrated with documentation
-# Old increment closed, new increment gets the work
-```
-
-#### 3. **Extend Existing Increment** (Merge Work)
-
-Simplest option: **Don't start a new increment**. Just extend the current one:
-
-```bash
-# Instead of creating 0003, extend 0002:
-# 1. Update spec.md to include new features
-# 2. Update plan.md with new implementation details
-# 3. Add new tasks to tasks.md
-# 4. Minimize tests if needed (focus on critical paths)
-
-# Work on combined scope in ONE increment
-/specweave:do
-```
-
-### Helper Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/specweave:status` | Show all increments and their completion status |
-| `/specweave:close` | Interactive closure of incomplete increments |
-| `/specweave:force-close <id>` | Mark all tasks complete (dangerous!) |
-
-### Enforcement Points
-
-1. **`/specweave:increment` command** - Hard block (Step 0A)
-2. **PM agent** - Pre-flight validation before planning
-3. **CI/CD** (future) - Prevent PR merges with incomplete increments
-
-### Philosophy: Discipline = Quality
-
-**Why enforce this strictly?**
-
-- **Focus**: Work on ONE thing at a time
-- **Completion**: Finish before starting new
-- **Quality**: Tests run, docs updated, code reviewed
-- **Clarity**: Everyone knows what's current
-- **Velocity**: Actually shipping > endless WIP
-
-**Old Way (suggest)**:
-```
-User: "Just let me start the new feature, I'll come back to this"
-Result: 5 incomplete increments, nothing ships
-```
-
-**New Way (enforce)**:
-```
-Framework: "Close this first, then start new"
-User: *closes increment properly*
-Result: Clean increments, clear progress, shipping regularly
-```
-
-### Real-World Example
-
-**Scenario**: You have 0002 at 73% complete, want to start 0006.
-
-**Old approach** (broken):
-```bash
-/specweave:increment "0006-i18n"
-# ✅ Creates 0006 (no check)
-# Result: 0002, 0003, 0006 all incomplete
-```
-
-**Current approach** (disciplined):
-```bash
-/specweave:increment "0006-i18n"
-# ❌ Blocked! "Close 0002 and 0003 first"
-
-# Check status
-/specweave:status
-# Shows: 0002 (73%), 0003 (50%) incomplete
-
-# Close them
-/specweave:close
-# Select 0002 → Force complete (work was done, just not marked)
-# Select 0003 → Move tasks to 0007 (defer work)
-
-# Now can proceed
-/specweave:increment "0006-i18n"
-# ✅ Works! Clean slate, disciplined workflow
-```
-
-### Exception: The `--force` Flag
-
-For **emergencies only** (hotfixes, urgent features):
-
-```bash
-/specweave:increment "urgent-security-fix" --force
-```
-
-**This bypasses the check** but:
-- ✅ Logs the force creation
-- ✅ Warns in CLI output
-- ✅ Should be explained in PR/standup
-- ✅ Should close previous increments ASAP
-
-**Use sparingly!** The discipline exists for a reason.
-
----
-
-**Summary**: Close previous increments before starting new ones. Use `/specweave:status` and `/specweave:close` to maintain discipline. This isn't bureaucracy—it's quality enforcement.
+**What "DONE" means**: All P1 tasks completed OR completion report exists OR explicit closure via `/specweave:done`.
 
 ---
 
 ## Test-Aware Planning
 
-**MAJOR ARCHITECTURE CHANGE**: Tests are now embedded in tasks.md instead of separate tests.md file.
+Tests embedded in tasks.md (no separate tests.md).
 
-### Why the Change?
+**Architecture**:
+- **spec.md**: User stories with AC-IDs (AC-US1-01, AC-US1-02)
+- **plan.md**: Technical design + test strategy
+- **tasks.md**: Tasks with embedded test plans (BDD format)
 
-**OLD Format**:
-- ❌ Separate tests.md file (duplication, sync issues)
-- ❌ Manual TC-ID management (TC-001, TC-002, etc.)
-- ❌ No BDD format (hard to understand test intent)
-- ❌ Tests disconnected from tasks (traceability gaps)
-
-**NEW Format**:
-- ✅ Tests embedded in tasks.md (single source of truth)
-- ✅ BDD format (Given/When/Then - clear intent)
-- ✅ AC-ID traceability (spec.md → tasks.md → tests)
-- ✅ Test-first workflow (TDD supported naturally)
-- ✅ Coverage targets per task (realistic 80-90%, not 100%)
-
-### Quick Workflow Example
-
-**Step 1: Create increment** → PM agent generates spec.md with user stories and AC-IDs:
-
-```bash
-/specweave:increment "Add user authentication"  # → generates spec.md with AC-US1-01, AC-US1-02, etc.
-```
-
-**spec.md excerpt** (acceptance criteria with AC-IDs):
-
-### US1: Basic Login Flow
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: User can log in with valid email/password (P1, testable)
-- [ ] **AC-US1-02**: Invalid credentials show error (P1, testable)
-- [ ] **AC-US1-03**: 5 failed attempts lock account 15min (P2, testable)
-```
-
-**Step 2: Architect creates plan.md** with architecture and test strategy (85% unit, 80% integration, 100% E2E critical path)
-
-**Step 3: test-aware-planner generates tasks.md** with embedded tests:
-
+**Example Task with Tests**:
 ```markdown
----
-increment: 0008-user-authentication
-total_tasks: 5
-test_mode: TDD
-coverage_target: 85%
----
-
-# Tasks for Increment 0008: User Authentication
-
-## T-001: Implement Authentication Service (FULL EXAMPLE)
+## T-001: Implement Authentication Service
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03
 
-**Test Plan** (BDD format):
-- **Given** user with valid credentials → **When** login → **Then** receive JWT token + timestamp update
+**Test Plan** (BDD):
+- **Given** valid credentials → **When** login → **Then** receive JWT token
 
 **Test Cases**:
-- Unit (`auth.test.ts`): validLogin, invalidPassword, nonexistentUser, rateLimiting → 90% coverage
-- Integration (`auth-flow.test.ts`): loginEndpoint, lockedAccount → 85% coverage
-- **Overall: 87% coverage**
+- Unit (`auth.test.ts`): validLogin, invalidPassword → 90% coverage
+- Integration (`auth-flow.test.ts`): loginEndpoint → 85% coverage
 
-**Implementation**: AuthService.ts, password hashing (bcrypt), JWT generation, rate limiting (Redis), TDD tests
+**Implementation**: AuthService.ts, bcrypt, JWT, Redis rate limiting
+```
+
+**Key Benefits**:
+- ✅ Single source of truth (no sync issues)
+- ✅ AC-ID traceability (spec → tasks → tests)
+- ✅ BDD format (Given/When/Then - clear intent)
+- ✅ TDD support (set `test_mode: TDD` in frontmatter)
+- ✅ Realistic coverage (80-90%, not 100%)
+
+**For complete workflow**: The `increment-planner` skill contains comprehensive test-aware planning guide (auto-loads when using `/specweave:increment`)
+
+**Validation**: `/specweave:check-tests` shows AC-ID coverage and missing tests
 
 ---
 
-## T-002 through T-005 (Abbreviated)
+## Bidirectional Task ↔ User Story Linking
 
-- **T-002**: Session Manager (AC-US2-01, AC-US2-02) - session persistence, "Remember Me", 85% coverage, deps: T-001
-- **T-003**: Login API Endpoint (AC-US1-01, AC-US1-02) - REST API, validation, rate limiting, 85% coverage, deps: T-001, T-002
-- **T-004**: Update Documentation - API docs, flow diagram, user guide (validation: manual review, link checker, build check)
-- **T-005**: Security Audit (AC-US1-03) - OWASP scan, password/JWT verification, 90% coverage, deps: T-001, T-002, T-003
-```
+**CRITICAL FEATURE**: SpecWeave automatically creates bidirectional links between tasks and user stories during living docs sync.
 
-**Step 4: Validate** → `/specweave:check-tests 0008` shows per-task coverage, AC-ID coverage, missing tests, recommendations
+### How It Works
 
-**AC-ID Format**: `AC-US{story}-{number}` (e.g., AC-US1-01) enables traceability from spec.md → tasks.md → tests
+**AC-ID Based Mapping**: Uses acceptance criteria IDs from tasks to map back to user stories.
 
-### Agent Invocation (increment-planner skill)
-
-The `increment-planner` skill automatically invokes the `test-aware-planner` agent:
-
+**Example Task** (WITH bidirectional link):
 ```markdown
-STEP 4: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
+### T-001: Implement Authentication Service
 
-Task(
-  subagent_type: "test-aware-planner",
-  description: "Generate tasks with embedded tests",
-  prompt: "Create tasks.md with embedded test plans for: [user feature description]
+**User Story**: [US-001: User Authentication](../../docs/internal/specs/default/auth-service/us-001-user-authentication.md)
 
-  FIRST, read the increment files:
-  - .specweave/increments/0008-user-authentication/spec.md
-  - .specweave/increments/0008-user-authentication/plan.md
+**AC**: AC-US1-01, AC-US1-02, AC-US1-03
 
-  Generate tasks.md with:
-  - Test Plan (Given/When/Then in BDD format)
-  - Test Cases (unit/integration/E2E with file paths)
-  - Coverage Targets (80-90% overall)
-  - Implementation steps
-  - Ensure all AC-IDs from spec.md are covered"
-)
+**Test Plan** (BDD):
+- **Given** valid credentials → **When** login → **Then** receive JWT token
 ```
 
-### TDD Workflow Mode
+### Traceability Flow
 
-When `test_mode: TDD` in tasks.md frontmatter:
+**Complete Bidirectional Navigation**:
+```
+User Story (US-001) ←――――――――――┐
+  ↓                            |
+  ↓ Links to Tasks (forward)  | Link to User Story (reverse)
+  ↓                            |
+Tasks (T-001, T-002, T-003) ――┘
+```
 
-**Red → Green → Refactor**:
-1. **Red**: Write failing test first
-2. **Green**: Implement minimal code to pass test
-3. **Refactor**: Improve code while keeping tests green
+**Forward Links** (US → Tasks):
+- User story files contain **Implementation** section
+- Lists all tasks that implement the user story
+- Example: `[T-001: Implement Auth](../../../../../increments/0031/tasks.md#t-001-implement-auth)`
 
-**Example**:
+**Reverse Links** (Tasks → US) - **AUTOMATIC**:
+- Added during living docs sync (`/specweave:done` or manual distribution)
+- Uses AC-IDs from **AC**: field to map task → user story
+- Mapping: `AC-US1-01` → `US-001` → User story file
+- Injected as `**User Story**: [US-XXX: Title](path)` after task heading
+
+### Multi-Project Support
+
+**Project Detection** (automatic):
+```typescript
+// Detects from config or path
+projectId = "default" | "backend" | "frontend" | "mobile" | ...
+
+// Paths adapt automatically
+../../docs/internal/specs/${projectId}/${featureFolder}/us-001-*.md
+```
+
+**Example Paths**:
+- **Default**: `../../docs/internal/specs/default/auth-service/us-001-*.md`
+- **Backend**: `../../docs/internal/specs/backend/auth-service/us-001-*.md`
+- **Frontend**: `../../docs/internal/specs/frontend/dashboard/us-001-*.md`
+
+### When Links Are Created
+
+**Automatic** (during living docs sync):
+1. Complete increment: `/specweave:done 0031`
+2. System automatically:
+   - Extracts user stories from spec.md
+   - Writes user story files with forward links (US → Tasks)
+   - Parses tasks.md for **AC**: fields
+   - Creates task → user story mapping
+   - **Injects reverse links** (Tasks → US) into tasks.md
+
+**Manual** (if needed):
 ```bash
-# 1. RED - Write failing test
-vim tests/unit/services/auth.test.ts
-npm test  # ❌ Fails (expected)
-
-# 2. GREEN - Implement feature
-vim src/services/auth/AuthService.ts
-npm test  # ✅ Passes
-
-# 3. REFACTOR - Improve code
-vim src/services/auth/AuthService.ts
-npm test  # ✅ Still passes
+node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {
+  const dist = new SpecDistributor(process.cwd());
+  await dist.distribute('0031-external-tool-status-sync');
+});"
 ```
 
-### Migration from OLD Format
+### Requirements for Bidirectional Links
 
-**If you have increments with tests.md**:
+**Must Have**:
+- ✅ **AC**: field in tasks with AC-IDs (e.g., `AC-US1-01, AC-US1-02`)
+- ✅ User stories in spec.md with matching IDs (e.g., `### US-001:` or `#### US-001:`)
+- ✅ Living docs sync enabled
 
-```bash
-# Option 1: Keep old format (works, but deprecated)
-# No action needed - old increments continue to work
+**Optional**:
+- No configuration needed (works out of the box)
+- Can disable with `livingDocs.intelligent.bidirectionalLinks: false`
 
-# Option 2: Migrate to new format (recommended)
-# 1. Extract tests from tests.md
-# 2. Embed them in tasks.md for each task
-# 3. Delete tests.md
-# 4. Run /specweave:check-tests to validate
-```
+### Key Benefits
 
-**Note**: New increments ONLY use tasks.md format. Backward compatibility removed per user feedback (greenfield product).
+- ✅ **Complete Traceability**: Navigate from tasks to user stories and back
+- ✅ **LLM-Friendly**: AI can understand relationships bidirectionally
+- ✅ **Zero Manual Work**: Links created automatically during sync
+- ✅ **Multi-Project Aware**: Paths adapt to project structure
+- ✅ **Idempotent**: Safe to run sync multiple times
 
-### Quick Reference
+### Implementation Details
 
-| Aspect | OLD (tests.md) | NEW (tasks.md) |
-|--------|---------------|----------------|
-| **File** | Separate tests.md | Embedded in tasks.md |
-| **Format** | TC-IDs (TC-001) | Function names + BDD |
-| **Traceability** | Manual | Automatic (AC-IDs) |
-| **BDD** | No | Yes (Given/When/Then) |
-| **Sync Issues** | Yes (tasks ↔ tests) | No (single file) |
-| **Coverage** | Per test case | Per task + overall |
-| **TDD Support** | Limited | Native (test_mode: TDD) |
+**Code**: `src/core/living-docs/spec-distributor.ts`
+- `updateTasksWithUserStoryLinks()` - Adds links to tasks.md
+- `mapTasksToUserStories()` - Creates AC-ID based mapping
+
+**Pattern Support**:
+- Task headings: Both `## T-001:` and `### T-001:`
+- User story headings: Both `### US-001:` and `#### US-001:`
+
+**For complete technical details**: See `.specweave/increments/0030-intelligent-living-docs/reports/BIDIRECTIONAL-LINKING-COMPLETE.md`
 
 ---
 
@@ -707,205 +328,17 @@ my-project/
 
 ### Why Root-Level Only?
 
-**Single Source of Truth**:
-- ✅ One central location for all specs, increments, architecture
-- ✅ No duplication or fragmentation
-- ✅ Clear ownership and responsibility
-- ✅ Simplified living docs sync (one place to update)
-
-**Cross-Cutting Features**:
-- ✅ Increments often span multiple modules (frontend + backend + infra)
-- ✅ Architecture decisions (ADRs) apply system-wide
-- ✅ Strategy docs are project-level, not module-level
-- ✅ Living docs sync works best with one central location
-
-**Plugin Installation**:
-- ✅ ALL plugins installed automatically during `specweave init`
-- ✅ No selective loading or detection needed
-- ✅ Full capabilities available immediately
-
-**Prevents Chaos**:
-- ❌ Nested folders cause: Which is the source of truth?
-- ❌ Duplication: Same increment in multiple places?
-- ❌ Conflicts: Different modules with same increment numbers?
-- ❌ Complexity: Where do cross-cutting features live?
+Single source of truth, cross-cutting features, simpler sync. Prevents duplication and conflicts. See [Multi-Repo Setup Guide](https://spec-weave.com/docs/learn/multi-repo-setup).
 
 ### Multi-Repo & Microservices Pattern
 
-**Problem**: "My project has multiple repos, microservices, or complex architecture"
+Create parent folder with ONE `.specweave/`. Three options: GitHub parent (teams), local parent (solo), or per-repo (not recommended). Works for polyrepo, microservices, monorepo. See [Multi-Repo Setup Guide](https://spec-weave.com/docs/learn/multi-repo-setup).
 
-**Solution**: Create a **parent folder** with ONE root-level `.specweave/`
-
-SpecWeave supports **THREE approaches** for multi-repo projects:
-
-**Option 2: Parent Repo on GitHub** (✅ Recommended for teams)
-- Parent folder is a GitHub repository
-- Team can clone and collaborate on specs/docs
-- Full version control for .specweave/
-- Works with CI/CD pipelines
-
-**Option 3: Local Parent Folder** (✅ Recommended for solo developers)
-- Parent folder stays on your machine (NOT pushed to GitHub)
-- .specweave/ is gitignored (local only)
-- Implementation repos still on GitHub
-- Lighter setup, less overhead
-
-**Option 4: Each Repo Has .specweave/** (❌ NOT RECOMMENDED)
-- Each repo maintains its own .specweave/ folder
-- Leads to fragmentation and duplication
-- Difficult to manage cross-cutting features
-- Only use if you absolutely must
-
-The pattern is the same whether you have:
-- Multiple git repos (polyrepo architecture)
-- Microservices (separate service directories)
-- Monorepo with multiple modules
-
-```
-microservices-project/       ← Create parent folder
-├── .specweave/              ← ONE source of truth for entire system
-│   ├── increments/
-│   │   ├── 0001-add-service-mesh/      ← Cross-cutting
-│   │   ├── 0002-user-svc-v2/           ← Single service
-│   │   └── 0003-checkout-flow/         ← Multi-service
-│   ├── docs/
-│   │   ├── internal/
-│   │   │   ├── strategy/               ← System-wide strategy
-│   │   │   ├── architecture/
-│   │   │   │   ├── service-mesh.md     ← System-wide
-│   │   │   │   ├── api-contracts.md    ← Cross-service
-│   │   │   │   └── adr/
-│   │   │   │       └── 0001-service-mesh-choice.md
-│   │   │   └── ...
-│   │   └── public/
-│   └── logs/
-│
-├── services/
-│   ├── user-service/        ← Can be separate git repos
-│   ├── order-service/       ← Or monorepo subdirectories
-│   ├── payment-service/
-│   └── notification-service/
-│
-├── infrastructure/
-│   ├── k8s/
-│   └── terraform/
-│
-└── shared/
-    └── api-contracts/
-```
-
-**How to Set Up**:
-
-```bash
-# APPROACH 1: Parent Repo on GitHub (Option 2)
-# Step 1: Run specweave init and select "Option 2: Multiple repos WITH parent repo (GitHub)"
-mkdir microservices-project && cd microservices-project
-npx specweave init .
-# → Select: "2️⃣  Multiple repos WITH parent repo (GitHub)"
-# → Creates .specweave/ and pushes to GitHub
-
-# Step 2: Clone implementation repos
-git clone https://github.com/myorg/user-service.git services/user-service
-git clone https://github.com/myorg/order-service.git services/order-service
-
-# APPROACH 2: Local Parent Folder (Option 3) - NEW!
-# Step 1: Run specweave init and select "Option 3: Local parent folder"
-mkdir my-parent-folder && cd my-parent-folder
-npx specweave init .
-# → Select: "3️⃣  Multiple repos WITH parent folder (LOCAL only)"
-# → Creates .specweave/ (gitignored, local only)
-
-# Step 2: Clone implementation repos
-git clone https://github.com/myorg/frontend.git frontend
-git clone https://github.com/myorg/backend.git backend
-
-# .specweave/ stays on your machine, NOT synced to GitHub!
-
-# APPROACH 3: Monorepo (services in same repo)
-mkdir microservices-project && cd microservices-project
-git init && npx specweave init .
-# → Select: "1️⃣  Single repository" OR "5️⃣  Monorepo"
-mkdir -p services/{user,order,payment}
-
-# Work normally - SpecWeave sees all services
-/specweave:increment "0001-add-service-mesh"
-# Creates: .specweave/increments/0001-add-service-mesh/
-# Can reference: services/user-service/, infrastructure/k8s/, etc.
-```
-
-**Benefits**:
-
-**All approaches**:
-- ✅ One `.specweave/` for entire system (no duplication)
-- ✅ Each repo maintains its own git history (if using polyrepo)
-- ✅ Cross-service increments are natural (e.g., checkout flow)
-- ✅ System-wide architecture docs in one place
-- ✅ Living docs cover all services
-
-**Option 2 (GitHub Parent) specific**:
-- ✅ Team can collaborate on specs/docs
-- ✅ Full version control history for .specweave/
-- ✅ Works with CI/CD pipelines
-- ✅ Can enforce code reviews for specs
-
-**Option 3 (Local Parent) specific**:
-- ✅ Lighter setup (no GitHub repo for parent)
-- ✅ No extra repository to manage
-- ✅ Perfect for solo developers
-- ✅ .specweave/ stays private on your machine
+**Setup**: `mkdir parent && cd parent && npx specweave init .` → Select option during init. See guide for full examples.
 
 ### Enforcement
 
-**Validation in `init.ts`**:
-
-```typescript
-// Check for parent .specweave/
-function detectNestedSpecweave(targetDir: string): string | null {
-  let currentDir = path.dirname(targetDir);
-  const root = path.parse(currentDir).root;
-
-  while (currentDir !== root) {
-    const specweavePath = path.join(currentDir, '.specweave');
-    if (fs.existsSync(specweavePath)) {
-      return currentDir; // Found parent .specweave/
-    }
-    currentDir = path.dirname(currentDir);
-  }
-
-  return null;
-}
-
-// Prevent nested initialization
-const parentSpecweave = detectNestedSpecweave(targetDir);
-if (parentSpecweave) {
-  console.error('❌ Nested .specweave/ folders are not supported!');
-  console.error(`   Found parent .specweave/ at: ${parentSpecweave}`);
-  console.error(`   Use the parent folder for all increments.`);
-  process.exit(1);
-}
-```
-
-**Detection Rules**:
-- ❌ Prevent `specweave init` in subdirectories if parent `.specweave/` exists
-- ✅ Suggest using parent folder instead
-- ✅ Provide clear error messages with path to parent
-
-**Code Review**:
-- ❌ Reject PRs with nested `.specweave/` folders
-- ✅ Enforce via linting/validation scripts
-
-### Summary
-
-| Aspect | Root-Level Only | Nested (NOT Supported) |
-|--------|----------------|------------------------|
-| **Source of Truth** | ✅ One central location | ❌ Multiple conflicting sources |
-| **Cross-Cutting Features** | ✅ Natural | ❌ Complex coordination |
-| **Living Docs Sync** | ✅ Simple | ❌ Merge conflicts |
-| **Plugin Detection** | ✅ Works | ❌ Ambiguous |
-| **Multi-Repo** | ✅ Parent folder | ❌ Fragmented |
-| **Complexity** | ✅ Simple | ❌ High |
-
-**Bottom Line**: Root-level `.specweave/` only. For multi-repo projects, create a parent folder. No exceptions.
+`init.ts` detects parent `.specweave/` and prevents nested init. Code review rejects nested folders.
 
 ---
 
@@ -943,39 +376,8 @@ if (parentSpecweave) {
 - Commands: create-issue, sync, close-issue, status
 - Auto-detects: `.git/`, `github.com` remote, `GITHUB_TOKEN`
 
-**Planned Plugins** (future releases):
-
-| Plugin | Skills | Agents | Commands | Use When |
-|--------|--------|--------|----------|----------|
-| **frontend-stack** | 5 | 1 | 0 | React, Next.js, design systems |
-| **kubernetes** | 3 | 1 | 2 | Deploying to K8s, Helm |
-
-**Domain Plugins**:
-
-| Plugin | Skills | Agents | Commands | Use When |
-|--------|--------|--------|----------|----------|
-| **ml-ops** | 3 | 3 | 1 | Machine learning, TensorFlow, PyTorch |
-| **observability** | 4 | 4 | 2 | Prometheus, Grafana, monitoring |
-| **payment-processing** | 4 | 1 | 0 | Stripe, billing, subscriptions |
-| **e2e-testing** | 1 | 0 | 0 | Playwright, E2E browser automation, visual regression |
-| **figma-ecosystem** | 5 | 2 | 0 | Design integration, Figma API |
-| **security** | 3 | 1 | 0 | Security scanning, best practices |
-| **diagrams** | 2 | 1 | 0 | C4 diagrams, Mermaid |
-
-**Backend Stacks**:
-
-| Plugin | Skills | Agents | Commands | Use When |
-|--------|--------|--------|----------|----------|
-| **nodejs-backend** | 1 | 1 | 0 | Express, Fastify, NestJS |
-| **python-backend** | 1 | 1 | 0 | FastAPI, Django, Flask |
-| **dotnet-backend** | 1 | 1 | 0 | ASP.NET Core, EF Core |
-
-**Enterprise Sync** (Alternative to GitHub):
-
-| Plugin | Skills | Agents | Commands | Use When |
-|--------|--------|--------|----------|----------|
-| **jira-sync** | 1 | 1 | 2 | JIRA project tracking |
-| **ado-sync** | 1 | 1 | 2 | Azure DevOps tracking |
+**Available Plugins**: See `plugins/` directory or `/plugin list --installed`
+**Plugin Roadmap**: See [Roadmap](https://spec-weave.com/docs/overview/roadmap) for planned plugins and release timeline
 
 ### Context Efficiency
 
@@ -1121,246 +523,35 @@ No per-project installation needed!
 
 ---
 
-## Project Architecture
+## Project Structure
 
 ### Source of Truth Principle
 
 **CRITICAL**: SpecWeave follows a strict source-of-truth pattern:
 
 ```
-src/                            ← SOURCE OF TRUTH (TypeScript code only)
-├── core/                       ← Core framework logic (TypeScript utilities)
-│   ├── plugin-loader.ts
-│   ├── config-manager.ts
-│   ├── types/                  ← TypeScript type definitions
-│   └── schemas/                ← JSON schemas
-├── cli/                        ← CLI commands
-├── hooks/                      ← TypeScript utilities for hooks
-│   └── lib/                    ← Hook helper functions
-├── adapters/                   ← Tool adapters (legacy)
-├── templates/                  ← Templates for user projects
-└── utils/                      ← Utility functions
-
-plugins/                        ← ROOT: All plugins (version controlled)
-├── specweave/             ← CORE PLUGIN (framework essentials)
-│   ├── .claude-plugin/         ← plugin.json (Claude native)
-│   ├── skills/                 ← Core skills (9 total)
-│   │   ├── spec-generator/
-│   │   ├── increment-planner/
-│   │   ├── tdd-workflow/
-│   │   └── ...
-│   ├── agents/                 ← Core agents (3 core + 19 specialized)
-│   │   ├── pm/
-│   │   ├── architect/
-│   │   ├── tech-lead/
-│   │   └── ...
-│   ├── commands/               ← Core commands (7 core + 15 specialized)
-│   │   ├── inc.md
-│   │   ├── do.md
-│   │   └── ...
-│   ├── hooks/                  ← Lifecycle hooks (8 total)
-│   │   ├── post-task-completion.sh
-│   │   ├── pre-implementation.sh
-│   │   └── ...
-│   └── lib/                    ← TypeScript utilities (optional)
-│
-└── specweave-{name}/           ← Other plugins (GitHub, Figma, etc.)
-    ├── .claude-plugin/         ← plugin.json (Claude native)
-    ├── skills/                 ← Plugin skills
-    ├── agents/                 ← Plugin agents
-    ├── commands/               ← Plugin commands
-    └── lib/                    ← TypeScript utilities (optional)
-
-.claude/                        ← INSTALLED (gitignored in user projects)
-├── agents/                     ← Installed from plugins/*/agents/
-├── commands/                   ← Installed from plugins/*/commands/
-├── hooks/                      ← Installed from plugins/*/hooks/
-└── skills/                     ← Installed from plugins/*/skills/
-
-.specweave/                     ← FRAMEWORK DATA (always present)
-├── increments/                 ← Feature development
-├── docs/                       ← Strategic documentation
-└── logs/                       ← Logs and execution history
+src/                    # TypeScript code ONLY (compiled to dist/)
+plugins/                # ALL Claude Code components (skills, agents, commands, hooks)
+├── specweave/          # Core plugin (auto-loaded)
+└── specweave-*/        # Optional plugins (GitHub, JIRA, etc.)
+.specweave/             # Framework data (increments, docs, logs)
 ```
 
-**Rules**:
-- ✅ `src/` = TypeScript code ONLY (compiled to `dist/`)
-- ✅ ALL skills/agents/commands/hooks = Inside `plugins/` (including core!)
-- ✅ `plugins/specweave/` = Core framework plugin (always loaded)
-- ✅ Marketplace = GLOBAL via CLI (no per-project `.claude/` folder)
-- ❌ NEVER mix `*.ts` and `SKILL.md` in the same directory
+**Key Rules**:
+- ✅ `src/` = TypeScript code ONLY
+- ✅ ALL skills/agents/commands/hooks = Inside `plugins/`
+- ✅ Marketplace = GLOBAL via CLI (no per-project `.claude/`)
+- ❌ NEVER mix `*.ts` and `SKILL.md` in same directory
 - ❌ NEVER create new files in project root (use increment folders)
-
-**Key Architectural Principle**:
-- TypeScript code (`*.ts`) goes in `src/` → compiled to `dist/`
-- Claude-native files (`SKILL.md`, `AGENT.md`, `*.md`) stay in `plugins/` → loaded directly by Claude Code
-- Even "core" framework components are in `plugins/specweave/` (everything is a plugin!)
-- This separation ensures clean builds and prevents mixing compiled code with runtime files
 
 ### Tech Stack
 
-**Core**:
-- TypeScript 5.x (strict mode)
-- Node.js 18+ (ESM + CommonJS)
-- Commander.js (CLI framework)
-- Inquirer.js (interactive prompts)
-- fs-extra (file operations)
+**Core**: TypeScript 5.x, Node.js 18+, Commander.js, Inquirer.js
+**Testing**: Playwright (E2E), Jest (unit/integration)
+**Docs**: Docusaurus 3.x, Mermaid diagrams
+**Distribution**: NPM package, install script
 
-**Testing**:
-- Playwright (E2E browser tests)
-- Jest (unit + integration tests)
-- ts-jest (TypeScript support)
-
-**Documentation**:
-- Docusaurus 3.x (docs-site/)
-- Mermaid diagrams (architecture visualization)
-- Markdown (all docs)
-
-**Distribution**:
-- NPM package (`npm publish`)
-- Install script (`install.sh`)
-
----
-
-## Directory Structure
-
-```
-specweave/
-├── src/                        # SOURCE OF TRUTH (TypeScript code ONLY)
-│   ├── cli/                    # CLI commands (init, version)
-│   │   └── commands/
-│   │       └── init.ts         # Main installation logic
-│   ├── core/                   # Core framework logic (TypeScript only)
-│   │   ├── plugin-loader.ts    # Load plugins from disk
-│   │   ├── plugin-manager.ts   # Plugin lifecycle management
-│   │   ├── plugin-detector.ts  # Auto-detect plugins (4 phases)
-│   │   ├── config-manager.ts   # Config loading/validation
-│   │   ├── types/
-│   │   │   └── plugin.ts       # Plugin type definitions
-│   │   └── schemas/
-│   │       ├── plugin-manifest.schema.json
-│   │       └── specweave-config.schema.json
-│   ├── hooks/                  # TypeScript utilities for hooks
-│   │   └── lib/                # Hook helper functions
-│   ├── adapters/               # Tool adapters (legacy)
-│   │   ├── adapter-interface.ts
-│   │   ├── adapter-base.ts
-│   │   ├── claude/
-│   │   ├── cursor/ (legacy)
-│   │   └── generic/ (legacy)
-│   ├── templates/              # User project templates
-│   │   ├── CLAUDE.md.template
-│   │   ├── AGENTS.md.template
-│   │   └── ...
-│   └── utils/                  # Utility functions
-│
-├── plugins/                    # ALL PLUGINS (root level)
-│   ├── specweave/         # CORE PLUGIN (framework essentials)
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json     # Claude native manifest
-│   │   ├── skills/             # Core skills (9 total)
-│   │   │   ├── spec-generator/         # Specification generation for increments
-│   │   │   ├── increment-planner/      # Increment planning and spec generation
-│   │   │   ├── context-loader/         # Context loading optimization
-│   │   │   ├── tdd-workflow/           # Test-driven development workflow
-│   │   │   ├── project-kickstarter/    # New project bootstrapping
-│   │   │   ├── brownfield-analyzer/    # Existing codebase analysis
-│   │   │   ├── brownfield-onboarder/   # Brownfield project onboarding
-│   │   │   ├── increment-quality-judge/# Quality assessment
-│   │   │   └── context-optimizer/      # Context optimization
-│   │   ├── agents/             # Core agents (22 total)
-│   │   │   ├── pm/             # Product Manager agent
-│   │   │   ├── architect/      # System Architect agent
-│   │   │   ├── tech-lead/      # Tech Lead agent
-│   │   │   └── ...
-│   │   ├── commands/           # Core commands (22 total)
-│   │   │   ├── inc.md        # /specweave:inc
-│   │   │   ├── do.md         # /specweave:do
-│   │   │   ├── done.md       # /specweave:done
-│   │   │   └── ...
-│   │   ├── hooks/              # Lifecycle hooks (8 total)
-│   │   │   ├── post-task-completion.sh # Auto-runs after tasks complete
-│   │   │   ├── pre-implementation.sh   # Pre-task validation
-│   │   │   └── ...
-│   │   └── lib/                # TypeScript utilities (optional)
-│   │
-│   ├── specweave-github/       # GitHub Issues integration
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json     # Claude native manifest
-│   │   ├── skills/
-│   │   │   ├── github-sync/
-│   │   │   └── github-issue-tracker/
-│   │   ├── agents/
-│   │   │   └── github-manager/
-│   │   ├── commands/
-│   │   │   ├── github-create-issue.md
-│   │   │   ├── github-sync.md
-│   │   │   └── ...
-│   │   └── lib/                # TypeScript utilities
-│   ├── specweave-figma/        # Figma design sync
-│   ├── specweave-infrastructure/ # K8s, Helm, Terraform
-│   └── ... (18 plugins total)
-│
-├── .claude-plugin/             # Claude Code marketplace (root level)
-│   ├── marketplace.json        # Plugin catalog (18 plugins)
-│   └── README.md               # Marketplace documentation
-│
-├── .claude/                    # Pre-installed for SpecWeave dev
-│   ├── agents/                 # Installed from plugins/*/agents/
-│   ├── commands/               # Installed from plugins/*/commands/
-│   ├── hooks/                  # Installed from plugins/*/hooks/
-│   └── skills/                 # Installed from plugins/*/skills/
-│
-├── .specweave/                 # SpecWeave's own increments
-│   ├── increments/
-│   │   ├── 0001-core-framework/
-│   │   ├── 0002-core-enhancements/
-│   │   │   ├── spec.md
-│   │   │   ├── plan.md
-│   │   │   ├── tasks.md        # Tasks with embedded tests (v0.7.0+)
-│   │   │   ├── logs/           # ✅ Session logs go here
-│   │   │   ├── scripts/        # ✅ Helper scripts
-│   │   │   └── reports/        # ✅ Analysis files
-│   │   └── _backlog/
-│   ├── docs/
-│   │   ├── internal/           # Strategic docs (NEVER published) - 6 core folders
-│   │   │   ├── strategy/       # Business rationale, vision, PRDs, OKRs
-│   │   │   ├── specs/          # Feature specifications (detailed requirements, project history)
-│   │   │   │   └── spec-###-{name}.md  # User stories, AC, implementation plans
-│   │   │   ├── architecture/   # Technical design (HLD, LLD, ADR, diagrams)
-│   │   │   │   ├── adr/        # Architecture Decision Records (why we chose X over Y)
-│   │   │   │   └── diagrams/   # Mermaid + SVG (C4 model diagrams)
-│   │   │   ├── delivery/       # Build & release processes (roadmap, DORA, branching)
-│   │   │   ├── operations/     # Production operations (runbooks, SLOs, incidents)
-│   │   │   └── governance/     # Policies (security, compliance, coding standards)
-│   │   └── public/             # User-facing docs (can publish)
-│   │       ├── guides/
-│   │       └── api/
-│   └── logs/
-│
-├── tests/
-│   ├── e2e/                    # Playwright E2E tests
-│   ├── integration/            # Integration tests
-│   ├── unit/                   # Unit tests
-│   └── specs/                  # Test specifications
-│
-├── bin/                        # Installation scripts
-│   ├── install-all.sh
-│   ├── install-skills.sh
-│   └── install-agents.sh
-│
-├── scripts/                    # Build/deployment scripts
-│   ├── install-brownfield.sh
-│   └── generate-diagram-svgs.sh
-│
-├── docs-site/                  # Docusaurus documentation site
-│
-├── CLAUDE.md                   # This file (for contributors)
-├── README.md                   # GitHub README (for users)
-├── CHANGELOG.md                # Version history
-├── package.json                # NPM package definition
-└── tsconfig.json               # TypeScript configuration
-```
+**For complete directory structure**: See `README.md` or browse the repository
 
 ---
 
@@ -1368,44 +559,32 @@ specweave/
 
 ### ✅ ALLOWED in Root
 
-- `CLAUDE.md` (this file)
-- `README.md`, `CHANGELOG.md`, `LICENSE`
-- Standard config files (`package.json`, `tsconfig.json`, `.gitignore`)
+- `CLAUDE.md`, `README.md`, `CHANGELOG.md`, `LICENSE`
+- Config files (`package.json`, `tsconfig.json`, `.gitignore`)
 - Build artifacts (`dist/`, only if needed temporarily)
 
-### ❌ NEVER Create in Root (Pollutes Repository)
+### ❌ NEVER Create in Root
 
-**See comprehensive rules at top of document**: [🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!](#-critical-never-pollute-project-root)
+**See comprehensive rules at top**: [🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!](#-critical-never-pollute-project-root)
 
 **Quick summary**:
-- ✅ ALL AI-generated files → increment folders (`.specweave/increments/####/reports/`, `logs/`, `scripts/`)
+- ✅ ALL AI-generated files → `.specweave/increments/####/reports/`
 - ✅ Architecture decisions → `.specweave/docs/internal/architecture/adr/`
 - ❌ NEVER create `.md` files, scripts, or logs in project root
-- ❌ Build artifacts (`.tgz`, `.pt`, etc.) → add to `.gitignore`
 
 ### Runtime Artifacts (NOT Source Controlled)
 
-**Logs and ephemeral files** should NEVER be committed:
-
 ```
 ❌ NEVER COMMIT:
-.specweave/logs/                        # Framework runtime logs
-.specweave/logs/last-hook-fire          # Hook execution timestamps
-.specweave/increments/*/logs/           # Increment execution logs
-.specweave/cache/                       # Temporary cache
-*.tmp                                   # Temporary files
+.specweave/logs/                # Runtime logs
+.specweave/increments/*/logs/   # Increment logs
+.specweave/cache/               # Temporary cache
 ```
 
-**Why?**
-- ✅ Logs are execution artifacts, not source code
-- ✅ They change on every run (noise in git history)
-- ✅ They cause unnecessary merge conflicts
-- ✅ They bloat the repository over time
-- ✅ They're developer-specific, not shared state
+**Why?** Logs are execution artifacts, not source code. They cause merge conflicts and bloat the repo.
 
-**Enforcement**: `.gitignore` excludes these patterns automatically.
+**Enforcement**: `.gitignore` excludes these automatically.
 
----
 
 ## Internal Documentation Structure
 
@@ -1423,9 +602,9 @@ specweave/
 | **operations/** | Production ops (How we run) | Runbooks, incidents, performance | `runbook-api.md`, `performance-tuning.md` |
 | **governance/** | Policies (Guardrails) | Security, compliance, coding standards | `security-policy.md`, `coding-standards.md` |
 
-### Multi-Project Organization (v0.8.0+, Flattened v0.16.11+)
+### Multi-Project Organization
 
-**FLATTENED STRUCTURE** (v0.16.11): Simpler, cleaner paths with document-type-first organization
+**FLATTENED STRUCTURE**: Simpler, cleaner paths with document-type-first organization
 
 ```
 .specweave/docs/internal/
@@ -1505,724 +684,141 @@ specweave/
 
 ---
 
-## Specs Architecture: Two Locations Explained
+## Specs: Two Locations
 
-**CRITICAL ARCHITECTURAL CONCEPT**: SpecWeave uses specs in TWO locations for different purposes. Understanding this distinction is essential.
+1. **Living Docs** (`.specweave/docs/internal/specs/`): Permanent, feature-level, 20+ user stories (3-digit: spec-001)
+2. **Increment Specs** (`.specweave/increments/####/`): Temporary, focused, 3-5 user stories (4-digit: 0001)
 
-### The Core Question: Why Two Locations?
+**Relationship**: One living docs spec → Many increment specs.
 
-1. **Living Docs Specs**: `.specweave/docs/internal/specs/{project-id}/spec-NNN-feature-area.md` - **Permanent, feature-level knowledge base**
-2. **Increment Specs**: `.specweave/increments/####-name/spec.md` - **Temporary, focused implementation snapshot**
-
-**Key Difference**: Specs use **3-digit numbers** (001, 002, 003) for **feature areas**, increments use **4-digit numbers** (0001, 0002, 0003) for **implementations**.
-
-### The Answer: Permanent vs Temporary
-
-**Living Docs Specs = Permanent, Feature-Level Knowledge Base**
-
-- **Location**: `.specweave/docs/internal/specs/default/spec-001-core-framework-architecture.md` (single project) or `.specweave/docs/internal/specs/web-app/spec-001-user-auth.md` (multi-project)
-- **Purpose**: COMPLETE, PERMANENT source of truth for entire feature area
-- **Lifecycle**: Created once, updated over time, NEVER deleted
-- **Scope**: Comprehensive feature area (e.g., "Core Framework", 10-50 user stories)
-- **Contains**:
-  - ✅ ALL user stories for the feature area (across multiple increments)
-  - ✅ ALL acceptance criteria for those user stories
-  - ✅ Implementation history (which increments implemented which parts)
-  - ✅ Links to brownfield documentation (existing project docs)
-  - ✅ External PM tool links (GitHub Project, Jira Epic, ADO Feature)
-  - ✅ Architecture decisions rationale (ADRs)
-  - ✅ Success criteria & metrics for the feature area
-
-**Increment Specs = Temporary, Focused Implementation Snapshot**
-
-- **Location**: `.specweave/increments/0001-core-framework/spec.md`
-- **Purpose**: TEMPORARY implementation reference (what am I building THIS iteration?)
-- **Lifecycle**: Created per increment, can be deleted after completion
-- **Scope**: Focused subset (3-5 user stories for this increment only)
-- **Contains**:
-  - ✅ Reference to living docs: `"See: SPEC-001-core-framework-architecture"`
-  - ✅ Subset of user stories: `"Implements: US-001, US-002, US-003 only"`
-  - ✅ What's being implemented RIGHT NOW (this iteration)
-  - ✅ Out of scope: Lists what's NOT in this increment (deferred to future increments)
-
-### Real-World Example: SpecWeave Core Framework
-
-**Living Docs Spec** (Permanent, Feature-Level):
-```
-File: .specweave/docs/internal/specs/default/spec-001-core-framework-architecture.md
-
-# SPEC-001: Core Framework & Architecture
-Foundation framework with CLI, plugin system, cross-platform support
-
-## Increments (Implementation History)
-- 0001-core-framework: MVP CLI, skills, agents (Complete)
-- 0002-core-enhancements: Context optimization, PM agent (Complete)
-- 0004-plugin-architecture: Claude native plugins (Complete)
-- 0005-cross-platform-cli: Windows/Mac/Linux support (Complete)
-
-## User Stories (35 total across all 4 increments)
-- US-001: NPM installation (0001) ✅
-- US-003: Context optimization (0002) ✅
-- US-005: Plugin system (0004) ✅
-- US-007: Cross-platform CLI (0005) ✅
-... (31 more stories)
-
-## External References
-- GitHub Project: TBD (create for 1.0.0)
-```
-
-**Increment Spec** (Temporary, Implementation-Level):
-```
-File: .specweave/increments/0001-core-framework/spec.md
-
-# Increment 0001: Core Framework MVP
-**Implements**: SPEC-001-core-framework-architecture (US-001 to US-002 only)
-**Complete Specification**: See ../../docs/internal/projects/default/specs/spec-001-core-framework-architecture.md
-
-## What We're Implementing (This Increment Only)
-- US-001: NPM installation + CLI basics ✅
-- US-002: Plugin system foundation ✅
-
-## Out of Scope (For This Increment)
-- ❌ Context optimization (US-003) → Increment 0002
-- ❌ Claude native plugins (US-005) → Increment 0004
-- ❌ Cross-platform support (US-007) → Increment 0005
-```
-
-### Key Benefits
-
-**Why This Architecture?**
-
-1. **Permanent Knowledge Base**: Living docs = long-term memory. Answer: "How did we build authentication?"
-2. **Focused Implementation**: Increment specs = short-term focus. Answer: "What am I building RIGHT NOW?"
-3. **Brownfield Integration**: Living docs link to existing project documentation, increment specs don't need this complexity
-4. **Clean After Completion**: Delete increment specs (optional), living docs remain as knowledge base
-5. **External PM Tool Integration**: Jira epic → Living docs spec (permanent link), increment specs don't need external links
-
-### When to Use Which?
-
-**Create Living Docs Spec When**:
-- ✅ Planning a major feature (authentication, payments, messaging)
-- ✅ Feature spans multiple increments (will take weeks/months)
-- ✅ Need brownfield integration (link to existing project docs)
-- ✅ Want permanent historical record (how did we build this?)
-- ✅ Need external PM tool link (Jira epic, ADO feature, GitHub milestone)
-
-**Create Increment Spec When**:
-- ✅ Starting implementation of one increment
-- ✅ Want quick reference (what am I building right now?)
-- ✅ Need focused scope (just 3 user stories, not 20)
-
-### Comparison Table
-
-| Aspect | Living Docs Specs | Increment Specs |
-|--------|------------------|----------------|
-| **Location** | `.specweave/docs/internal/specs/` | `.specweave/increments/####/` |
-| **Lifecycle** | ✅ Permanent (never deleted) | ⏳ Temporary (optional deletion) |
-| **Scope** | 📚 Complete feature (20 US) | 🎯 Focused subset (3 US) |
-| **Size** | 500+ lines (comprehensive) | 50-100 lines (focused) |
-| **Purpose** | Knowledge base + history | Implementation tracker |
-| **Coverage** | ALL user stories | SUBSET of user stories |
-| **Brownfield** | ✅ Links to existing docs | ❌ Rarely needed |
-| **External Links** | ✅ Jira, ADO, GitHub | ❌ Rarely needed |
-| **Multiple Increments** | ✅ One spec → many increments | ❌ One increment → one spec |
-| **After Completion** | ✅ Remains forever | ⚠️ Can be deleted |
-
-### Analogy: Wikipedia vs Sticky Notes
-
-- **Living Docs Specs** = 📚 Wikipedia Article (permanent, comprehensive, updated over time)
-- **Increment Specs** = 📝 Sticky Note Reminder (temporary, focused, disposable after done)
-
-### Typical Workflow
-
-**Phase 1: Planning** (PM Agent)
-```
-User: "I want to build a plugin-based framework with CLI"
-PM Agent:
-1. Creates living docs spec:
-   → .specweave/docs/internal/specs/spec-001-core-framework-architecture.md
-   → Contains ALL 35 user stories (comprehensive, feature-level)
-   → Links to GitHub Project (TBD)
-   → Maps to 4 increments (0001, 0002, 0004, 0005)
-```
-
-**Phase 2: Increment 1** (Core MVP)
-```
-User: "/specweave:increment 0001-core-framework"
-PM Agent:
-1. Creates increment spec:
-   → .specweave/increments/0001-core-framework/spec.md
-   → References living docs: "See SPEC-001"
-   → Contains ONLY US-001 to US-002 (focused, this iteration only)
-2. Implementation happens...
-3. Increment completes ✅
-4. Increment spec stays for history (or can be deleted)
-```
-
-**Phase 3: Increment 2** (Enhancements)
-```
-User: "/specweave:increment 0002-core-enhancements"
-PM Agent:
-1. Creates increment spec:
-   → .specweave/increments/0002-core-enhancements/spec.md
-   → References SAME living docs: "See SPEC-001"
-   → Contains ONLY US-003 to US-004 (focused, this iteration only)
-2. Implementation happens...
-3. Increment completes ✅
-```
-
-**Phase 4: All Increments Done!**
-```
-After ALL increments complete (0001, 0002, 0004, 0005):
-- ✅ Living docs spec REMAINS (permanent knowledge base)
-- ⏳ Increment specs can be deleted (optional cleanup)
-- ✅ Complete history preserved in spec-001
-- ✅ GitHub Project linked to SPEC-001 (not increments)
-```
-
-### Relationship
-
-**One living docs spec → Many increment specs**
-
-```
-SPEC-001: Core Framework & Architecture (Living Docs - Permanent, Feature-Level)
-├── 0001-core-framework (Increment - Temporary, Implementation-Level)
-├── 0002-core-enhancements (Increment - Temporary, Implementation-Level)
-├── 0004-plugin-architecture (Increment - Temporary, Implementation-Level)
-└── 0005-cross-platform-cli (Increment - Temporary, Implementation-Level)
-
-SPEC-002: Intelligent AI Capabilities (Living Docs - Permanent, Feature-Level)
-├── 0003-intelligent-model-selection (Increment - Temporary, Implementation-Level)
-├── 0007-smart-increment-discipline (Increment - Temporary, Implementation-Level)
-└── 0009-intelligent-reopen-logic (Increment - Temporary, Implementation-Level)
-```
-
-### Summary
-
-**Two Locations, Two Purposes**:
-
-1. **Living Docs Specs** (`.specweave/docs/internal/specs/`):
-   - ✅ Permanent knowledge base
-   - ✅ Complete feature specification
-   - ✅ Links to brownfield docs
-   - ✅ External PM tool integration
-   - ✅ Spans multiple increments
-
-2. **Increment Specs** (`.specweave/increments/####/`):
-   - ⏳ Temporary implementation tracker
-   - 🎯 Focused subset of work
-   - 📝 Quick reference: "What am I building?"
-   - 🗑️ Can be deleted after completion
-
-**Result**: Clean, focused implementation + permanent knowledge base
-
-**For comprehensive explanation**: See [SPECS-ARCHITECTURE-CLARIFICATION.md](.specweave/increments/0007-smart-increment-discipline/reports/SPECS-ARCHITECTURE-CLARIFICATION.md)
+See [SPECS-ARCHITECTURE-CLARIFICATION.md](.specweave/increments/0007-smart-increment-discipline/reports/SPECS-ARCHITECTURE-CLARIFICATION.md) for full explanation.
 
 ---
 
-## Enterprise Specs Organization (Domain-Based)
+## Living Docs Sync (Universal Hierarchy)
 
-**NEW in v0.20.0**: Living docs specs organized by feature domain with rich metadata and auto-generated indices.
+**CRITICAL**: SpecWeave uses Universal Hierarchy architecture for living docs. This section explains the structure and automatic sync process.
 
-### The Problem with Flat Structure
+### Structure (Standard Level)
 
-**Before** (v0.19.x and earlier):
+**Location**: `.specweave/docs/internal/specs/{project-id}/`
+
+Each FS-* (Feature Spec / Epic) folder contains:
+- **README.md** - Epic overview (high-level feature summary, business value, implementation history)
+- **us-\*.md** - User story files DIRECTLY in epic folder (NOT in subfolder)
+
+**Correct Structure**:
 ```
-.specweave/docs/internal/specs/default/
-├── spec-001-core-framework-architecture.md
-├── spec-002-intelligent-capabilities.md
-├── spec-003-developer-experience.md
-... (30+ files in one folder)
-├── nfr-risks.md
-├── nfr-configuration-example.md
-├── overview-overview.md
-└── us-us1-single-provider-setup.md
-```
-
-**Problems**:
-- ❌ 30+ files in single folder (hard to navigate)
-- ❌ Mixed document types (specs, NFRs, overviews, user stories)
-- ❌ No categorization by feature area
-- ❌ Poor scalability (becomes unmanageable at 100+ specs)
-- ❌ No rich metadata (status, priority, ownership)
-
-### Enterprise Solution: Domain-Based Organization
-
-**After** (v0.20.0+):
-```
-.specweave/docs/internal/specs/default/
-├── core-framework/              # Domain folder
-│   ├── README.md                # Domain overview
-│   ├── spec-001-*.md           # Feature specs
-│   ├── spec-004-*.md
-│   ├── nfrs/                    # NFRs for this domain
-│   │   └── nfr-cross-platform.md
-│   └── user-stories/            # Extracted user stories
-│       └── us-001-*.md
-│
-├── developer-experience/
-│   ├── spec-003-*.md
-│   ├── spec-022-*.md
-│   └── user-stories/
-│
-├── integrations/
-│   ├── github/
-│   │   └── spec-017-sync-fix.md
-│   ├── jira/
-│   └── ado/
-│
-├── infrastructure/
-│   ├── spec-004-metrics.md
-│   ├── spec-029-cicd-failure.md
-│   └── nfrs/
-│
-├── quality-velocity/
-│   ├── spec-005-stabilization.md
-│   └── spec-010-dora-metrics.md
-│
-├── intelligence/
-│   ├── spec-002-intelligent-capabilities.md
-│   ├── spec-016-self-reflection.md
-│   └── spec-009-intelligent-reopen.md
-│
-└── _index/                      # Auto-generated indices
-    ├── README.md                # Master index
-    ├── by-status.md             # Active, planning, completed, archived
-    ├── by-domain.md             # All domains
-    ├── by-release.md            # 1.0.0, 1.1.0, 2.0.0
-    ├── by-priority.md           # P0, P1, P2, P3
-    └── by-team.md               # Core Team, Platform Team, etc.
+.specweave/docs/internal/specs/
+└── default/                              ← Project: default
+    ├── README.md                         ← Project overview
+    ├── FS-024-bidirectional-spec-sync/
+    │   ├── README.md                     ← Epic overview
+    │   ├── us-001-*.md                   ← User stories
+    │   ├── us-002-*.md
+    │   └── us-003-*.md
+    ├── FS-030-intelligent-living-docs/
+    │   ├── README.md
+    │   ├── us-001-*.md
+    │   └── (more user stories...)
+    └── FS-031-external-tool-status-synchronization/
+        ├── README.md
+        ├── us-001-rich-external-issue-content.md
+        ├── us-002-task-level-mapping.md
+        └── (5 more user stories...)
 ```
 
-### Six Feature Domains
+**❌ WRONG - Do NOT create**:
+- `spec.md` files (use README.md instead)
+- `user-stories/` subfolders (user stories go directly in FS-* folder)
+- Root-level `user-stories/` folder
 
-| Domain | Description | Examples |
-|--------|-------------|----------|
-| **core-framework** | Core framework capabilities | CLI, plugin architecture, configuration, lifecycle |
-| **developer-experience** | DX improvements | Setup, onboarding, docs, error messages, usability |
-| **integrations** | External tool integrations | GitHub, JIRA, Azure DevOps, Figma, Slack |
-| **infrastructure** | Platform, DevOps, ops | CI/CD, monitoring, observability, performance |
-| **quality-velocity** | Testing, metrics, releases | Testing framework, DORA metrics, stabilization |
-| **intelligence** | AI-powered features | Model selection, self-reflection, smart workflows |
+### Hierarchy Mapping
 
-### Rich Metadata for Every Spec
+| SpecWeave | GitHub | Jira | ADO | Description |
+|-----------|--------|------|-----|-------------|
+| **FS-* (Epic)** | Project/Milestone | Epic | Epic | Strategic feature (20+ user stories) |
+| **US-* (User Story)** | Issue | Story | User Story | Detailed requirement (5-10 AC) |
+| **T-* (Task)** | Checkbox | Sub-task | Task | Implementation unit (1-4 hours) |
 
-Every spec gets YAML frontmatter with comprehensive metadata:
+### Automatic Sync Process
 
-```yaml
----
-# Identity
-id: spec-001-core-framework-architecture
-title: "Core Framework & Architecture"
-version: 2.0
-status: active | planning | completed | archived
+**When**: After completing an increment with `/specweave:done`
 
-# Classification
-domain: core-framework
-category: feature | nfr | user-story | overview
-priority: P0 | P1 | P2 | P3
-complexity: low | medium | high | very-high
+**How It Works**:
+1. **HierarchyMapper** detects which FS-* folder the increment belongs to:
+   - **Method 1 (Frontmatter)**: Checks `epic: FS-031` in increment's `spec.md` (100% confidence)
+   - **Method 2 (Increment ID)**: Maps `0031-feature` → `FS-031` (90% confidence)
+   - **Method 3 (Config)**: Checks explicit mapping in `config.json` (100% confidence)
+   - **Fallback**: Auto-creates new FS-* folder if needed (50% confidence)
 
-# Ownership
-team: Core Team
-owner: @anton-abyzov
-stakeholders: ["Product", "Engineering"]
+2. **SpecDistributor** writes files:
+   - Epic overview → `FS-031/README.md` (high-level summary, business value, implementation history)
+   - User stories → `FS-031/us-001-*.md`, `FS-031/us-002-*.md`, etc. (directly in folder)
 
-# Lifecycle
-created: 2025-01-15
-last_updated: 2025-11-10
-target_release: 1.0.0
+**ID Normalization**: Handles both `0031` and `31` → `FS-031` (removes leading zeros, pads to 3 digits)
 
-# Relationships
-increments: [0001, 0002, 0004, 0005]
-depends_on: []
-blocks: [spec-002, spec-003]
-related: [spec-016]
+### Manual Sync (If Needed)
 
-# External Links
-github_project: https://github.com/anton-abyzov/specweave/projects/1
-jira_epic: null
-confluence: null
-
-# Tags
-tags: [framework, cli, plugin-system, mvp]
-
-# Metrics
-estimated_effort: 120h
-actual_effort: 95h
-user_stories: 35
-completion: 100%
----
-```
-
-### Auto-Generated Navigation Indices
-
-**Five index views** for different navigation needs:
-
-1. **by-status.md** - Status-based view
-   - Active (currently being worked on)
-   - Planning (being planned)
-   - Completed (delivered to production)
-   - Archived (historical reference)
-
-2. **by-domain.md** - Domain-based view
-   - Core Framework (5 specs)
-   - Developer Experience (3 specs)
-   - Integrations (4 specs)
-   - Infrastructure (3 specs)
-   - Quality & Velocity (2 specs)
-   - Intelligence (3 specs)
-
-3. **by-release.md** - Release planning view
-   - 1.0.0 (MVP release)
-   - 1.1.0 (Post-launch improvements)
-   - 2.0.0 (Major features)
-   - Unscheduled (backlog)
-
-4. **by-priority.md** - Priority-based view
-   - P0 (Critical, security, production blockers)
-   - P1 (High, MVPessential, core features)
-   - P2 (Medium, nice-to-have, enhancements)
-   - P3 (Low, future, backlog, deferred)
-
-5. **by-team.md** - Team ownership view
-   - Core Team
-   - Platform Team
-   - DX Team
-   - Integrations Team
-
-### Automated Classification
-
-**Intelligent Living Docs Sync** auto-classifies specs by domain using keyword matching:
-
-```typescript
-// Auto-classification during living docs sync
-const classifyDomain = (spec: string): string => {
-  const keywords = {
-    'core-framework': ['framework', 'cli', 'plugin', 'core', 'foundation'],
-    'developer-experience': ['dx', 'ux', 'installation', 'setup', 'guide'],
-    'integrations': ['github', 'jira', 'ado', 'figma', 'sync'],
-    'infrastructure': ['cicd', 'monitoring', 'observability', 'performance'],
-    'quality-velocity': ['testing', 'dora', 'metrics', 'stabilization'],
-    'intelligence': ['ai', 'intelligent', 'smart', 'reflection', 'model']
-  };
-
-  // Score each domain and return highest
-  // Confidence threshold: 0.5 (50% keyword match)
-};
-```
-
-### PM Agent Instructions
-
-**CRITICAL**: When creating living docs specs, PM agent MUST:
-
-1. **Classify Domain** - Determine feature domain based on content
-2. **Add Rich Metadata** - Include all required frontmatter fields
-3. **Use Correct Path** - Save to domain-specific folder
-4. **Generate README** - Update domain README.md
-5. **Regenerate Indices** - Run index generation after creating spec
-
-**Example PM Agent Workflow**:
-
-```typescript
-// Step 1: Classify domain
-const domain = classifyDomain(spec.title, spec.content);
-// Result: "core-framework"
-
-// Step 2: Determine path
-const specPath = `.specweave/docs/internal/specs/default/${domain}/spec-001-core-framework.md`;
-
-// Step 3: Add frontmatter
-const frontmatter = {
-  id: 'spec-001-core-framework-architecture',
-  title: 'Core Framework & Architecture',
-  domain: 'core-framework',
-  category: 'feature',
-  priority: 'P1',
-  status: 'active',
-  team: 'Core Team',
-  owner: '@anton-abyzov',
-  created: '2025-11-12',
-  target_release: '1.0.0',
-  tags: ['framework', 'cli', 'plugin']
-};
-
-// Step 4: Write spec with frontmatter
-writeSpec(specPath, frontmatter, content);
-
-// Step 5: Update domain README
-updateDomainReadme(domain, spec);
-
-// Step 6: Regenerate indices
-regenerateIndices();
-```
-
-### Migration Scripts
-
-**Three scripts for migration**:
-
-1. **Classify Specs** (`scripts/classify-specs.ts`)
-   - Scans existing specs
-   - Auto-classifies by domain (keyword matching)
-   - Generates classification report
-   - Saves classification.json for migration
-
-2. **Migrate to Domains** (`scripts/migrate-specs-to-domains.ts`)
-   - Reads classification.json
-   - Creates domain folders
-   - Moves specs to domain-specific folders
-   - Adds/updates frontmatter
-   - Creates domain READMEs
-   - Supports --dry-run mode
-
-3. **Generate Indices** (`scripts/generate-spec-indices.ts`)
-   - Scans all specs
-   - Generates 5 navigation indices
-   - Creates master index (README.md)
-   - Shows statistics
-
-**Usage**:
+If automatic sync doesn't trigger, run manually:
 
 ```bash
-# Step 1: Classify existing specs
-npx ts-node scripts/classify-specs.ts
-# Output: classification-report.md, classification.json
-
-# Step 2: Review classification
-vim .specweave/docs/internal/specs/default/_index/classification-report.md
-
-# Step 3: Migrate (dry-run first)
-npx ts-node scripts/migrate-specs-to-domains.ts --dry-run
-
-# Step 4: Migrate (actual)
-npx ts-node scripts/migrate-specs-to-domains.ts
-
-# Step 5: Generate indices
-npx ts-node scripts/generate-spec-indices.ts
+# From project root
+node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {
+  const distributor = new SpecDistributor(process.cwd());
+  await distributor.distribute('0031-external-tool-status-sync');
+});"
 ```
 
-### Benefits
+### Key Implementation Files
 
-**For Users**:
-- ✅ Find specs 10x faster (browse by domain vs scroll through 30+ files)
-- ✅ Clear relationships (dependencies, blockers, related specs)
-- ✅ Rich metadata (status, priority, ownership, effort)
-- ✅ Multi-dimensional navigation (status, domain, release, team, priority)
+- **`src/core/living-docs/hierarchy-mapper.ts`** - Detects epic folder (400+ lines)
+- **`src/core/living-docs/spec-distributor.ts`** - Distributes content to FS-* folders
+- **`.specweave/docs/internal/specs/default/README.md`** - Project overview with sync instructions
 
-**For Teams**:
-- ✅ Team ownership (core-team/, platform-team/)
-- ✅ Release planning (1.0.0, 1.1.0, 2.0.0)
-- ✅ Dependency management (blocks[], depends_on[])
-- ✅ Effort tracking (estimated_effort vs actual_effort)
+### User Story Format
 
-**For Enterprise**:
-- ✅ Scalability (handles 100+ specs easily)
-- ✅ Compliance (audit trail via metadata)
-- ✅ Reporting (auto-generated indices for stakeholders)
-- ✅ Multi-project (backend/, frontend/, mobile/)
+Each `us-*.md` file contains:
+- **Frontmatter**: `id`, `epic`, `title`, `status`, `priority`, `created`, `completed`
+- **Epic Link**: `[SPEC-0031](./README.md)` (links to README.md in same folder)
+- **User Story**: "As a... I want... So that..."
+- **Acceptance Criteria**: AC-US1-01, AC-US1-02, etc. (with P1/P2 priorities)
+- **Implementation**: Links to increment and tasks
+- **Business Rationale**: Why this user story matters
+- **Related Stories**: Cross-links to other US-*.md files
 
-### Configuration
+### Epic Overview Format (README.md)
 
-Add to `.specweave/config.json`:
+Each `README.md` contains:
+- **Frontmatter**: `id`, `title`, `type: epic`, `status`, `priority`, `created`, `last_updated`, `external_tools`
+- **Epic Overview**: High-level feature description
+- **Business Value**: Key benefits (bullet points)
+- **Implementation History**: Table showing which increments implemented which stories
+- **User Stories**: Links to all us-*.md files (grouped by phase)
+- **External Tool Integration**: GitHub/Jira/ADO links
 
-```json
-{
-  "specs": {
-    "organization": {
-      "strategy": "domain-based",
-      "autoDomainClassification": true,
-      "autoGenerateIndices": true,
-      "requireMetadata": true,
-      "domains": [
-        "core-framework",
-        "developer-experience",
-        "integrations",
-        "infrastructure",
-        "quality-velocity",
-        "intelligence"
-      ],
-      "metadata": {
-        "required": ["id", "title", "status", "domain", "team", "owner"],
-        "optional": ["priority", "complexity", "tags", "increments"]
-      }
-    }
-  }
-}
-```
+### Troubleshooting
 
-### For Agents and Skills
+**Problem**: Sync creates wrong folder (e.g., FS-0031 instead of FS-031)
+**Solution**: ID normalization is already implemented. Rebuild: `npm run build`
 
-**PM Agent MUST**:
-1. Always classify domain before creating spec
-2. Add rich frontmatter with all required fields
-3. Save to correct domain folder (not flat structure)
-4. Update domain README after creating spec
-5. Regenerate indices after spec creation
+**Problem**: Files go to wrong location (root level or wrong subfolder)
+**Solution**: Check `userStoriesSubdir` is empty string in HierarchyMapper
 
-**Living Docs Sync MUST**:
-1. Detect domain from increment spec content
-2. Place spec in correct domain folder
-3. Add/update frontmatter with metadata
-4. Preserve existing classification if present
-5. Regenerate indices after sync
+**Problem**: Epic not detected
+**Solution**: Add `epic: FS-031` to increment's `spec.md` frontmatter
 
-**See**:
-- [Organization Strategy](.specweave/docs/internal/specs/ORGANIZATION-STRATEGY.md) - Complete architecture
-- Migration scripts in `scripts/` directory
-- Configuration in `.specweave/config.json`
+---
+
+## Enterprise Specs Organization
+
+Living docs organized by feature domain (core-framework, integrations, infrastructure, etc.). Six domains, rich YAML metadata, auto-generated indices (by-status, by-domain, by-release, by-priority, by-team). Migration scripts available. See [Organization Strategy](.specweave/docs/internal/specs/ORGANIZATION-STRATEGY.md).
 
 ---
 
 ## Living Completion Reports
 
-### The Problem with Traditional Reports
-
-**Traditional approach** (report written at the end):
-```
-Start increment: Plan 10 user stories
-During work: Scope changes 5 times (not documented)
-End increment: Write report "Completed 8/10 stories"
-Future: "Why was Story 5 removed?" → No one remembers!
-```
-
-**Problems**:
-- ❌ No audit trail for scope changes
-- ❌ Decision rationale lost
-- ❌ Difficult for onboarding/compliance
-- ❌ Can't learn from past iterations
-
-### Living Reports Solution
-
-**SpecWeave approach** (report updated in real-time):
-```
-Start: Initialize completion report (v1.0)
-During work:
-  - 2025-11-06: Added US6 (dark mode) → /update-scope → v1.1
-  - 2025-11-07: Deferred US3 (CSV export) → /update-scope → v1.2
-  - 2025-11-08: WebSockets → Polling pivot → /update-scope → v1.3
-End: Finalize report with complete scope evolution history
-Future: "Why was Story 5 removed?" → Check report, find exact reason with WHO approved and WHY!
-```
-
-**Benefits**:
-- ✅ Complete audit trail (every scope change documented)
-- ✅ Real-time context (captured when decision is fresh)
-- ✅ Regulatory compliance (explains deviations from plan)
-- ✅ Learning for future increments
-- ✅ Onboarding new team members (understand project history)
-
-### Report Structure
-
-**Location**: `.specweave/increments/{id}/reports/COMPLETION-REPORT.md`
-
-**Sections**:
-1. **Original Scope**: What was planned at increment start
-2. **Scope Evolution**: Living log of changes (updated during increment)
-3. **Final Delivery**: What was actually delivered
-4. **What Changed and Why**: Rationale for scope changes
-5. **Lessons Learned**: What we learned for next time
-6. **Metrics**: Velocity, scope creep, test coverage, defects
-
-### Workflow
-
-**1. Initialize Report** (automatic when increment created):
-```bash
-/specweave:increment "User dashboard"
-# Creates: .specweave/increments/0008-user-dashboard/reports/COMPLETION-REPORT.md (v1.0)
-```
-
-**2. Update During Work** (whenever scope changes):
-```bash
-# Quick log
-/specweave:update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
-
-# Or interactive
-/specweave:update-scope
-# Prompts:
-#   - What changed? (Added/Removed/Modified)
-#   - Why? (Business reason, technical blocker, etc.)
-#   - Impact? (+/- hours)
-#   - Who approved? (PM, stakeholder, etc.)
-#   - Documentation? (ADR, GitHub issue, etc.)
-```
-
-**3. Finalize at Completion** (via `/specweave:done`):
-```bash
-/specweave:done 0008
-# Validates report completeness
-# Prompts to fill any missing sections
-# Marks increment as complete
-```
-
-### Example Entry
-
-```markdown
-## Scope Evolution (Living Updates)
-
-### 2025-11-06: Added user story
-
-**Changed**: US6: Dark mode toggle
-**Reason**: Stakeholder request from CMO (high priority, blocks marketing launch)
-**Impact**: +16 hours
-**Decision**: PM + CMO
-**Documentation**: GitHub issue #45
-
----
-
-### 2025-11-07: Removed/deferred user story
-
-**Changed**: US3: Data export to CSV
-**Reason**: Not critical for MVP, can be added later without breaking changes
-**Impact**: -8 hours (deferred to increment 0009)
-**Decision**: PM
-**Documentation**: None
-
----
-
-### 2025-11-08: Technical pivot (architecture change)
-
-**Changed**: WebSockets → Long-polling
-**Reason**: WebSocket library had critical security vulnerability (CVE-2025-1234)
-**Impact**: -4 hours (simpler implementation)
-**Decision**: Architect + Security Lead
-**Documentation**: ADR-008: Why We Chose Polling Over WebSockets
-
----
-```
-
-### When to Update
-
-✅ **DO update** when:
-- Adding new user story or task
-- Removing/deferring work
-- Modifying scope of existing story
-- Making architecture pivots (technical decisions)
-- Reducing/expanding scope
-- Blocking issues discovered
-
-❌ **DON'T update** for:
-- Bug fixes discovered during implementation (normal)
-- Minor implementation details
-- Code refactoring (unless scope-affecting)
-
-### Best Practices
-
-1. **Update in real-time**: Don't batch updates (capture context while fresh)
-2. **Be specific**: "Added US6: Dark mode" not "Added feature"
-3. **Include rationale**: Always answer WHY
-4. **Link to docs**: ADR, GitHub issue, Jira ticket
-5. **Track approvals**: Who made the decision
-6. **Quantify impact**: +/- hours for scope changes
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/specweave:increment "feature"` | Creates increment with initial completion report |
-| `/specweave:update-scope` | Log scope change during increment |
-| `/specweave:done <id>` | Finalize report and mark increment complete |
-
-**See**: [update-scope.md](plugins/specweave/commands/update-scope.md) for detailed documentation
+Update reports during work (not at end) for complete audit trail. Log scope changes with `/specweave:update-scope`. Commands: `/specweave:increment` (init), `/specweave:update-scope` (log changes), `/specweave:done` (finalize). See [update-scope.md](plugins/specweave/commands/update-scope.md).
 
 ---
 
@@ -2285,7 +881,7 @@ npm run build && npm test
    - Manual validation
 
 2. **Embedded Tests** (`.specweave/increments/####/tasks.md`)
-   - Test plans embedded in tasks (BDD format, v0.7.0+)
+   - Test plans embedded in tasks (BDD format)
    - AC-ID traceability (AC-US1-01, AC-US1-02, etc.)
 
 3. **Integration Tests** (`tests/integration/{skill-name}/`)
@@ -2312,255 +908,20 @@ npm run build && npm test
 
 ### Hooks and Automation
 
-## 🎯 CRITICAL: How Claude Code Hooks Actually Work
+## Hooks (Automated Workflows)
 
-**Official Docs**: https://code.claude.com/docs/en/hooks
-
-### The Correct Architecture (Plugin-Based Hooks)
-
-**Hooks live in the PLUGIN, not in `.claude/hooks/`!**
-
-```
-plugins/specweave/
-├── .claude-plugin/
-│   └── plugin.json              ← "hooks": "./hooks/hooks.json"
-├── hooks/
-│   ├── hooks.json               ← Hook configuration (references .sh files)
-│   ├── post-task-completion.sh  ← Stays here (NOT copied!)
-│   └── post-increment-planning.sh
-└── ...
-```
-
-**Key Facts**:
-1. ✅ **Hooks stay in plugins/** - They are NOT copied to `.claude/hooks/`
-2. ✅ **hooks.json references them** - Uses `${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh`
-3. ✅ **Automatic discovery** - Claude Code reads plugin's hooks.json at startup
-4. ✅ **Runtime merging** - Plugin hooks merge with user/project hooks automatically
-5. ✅ **SpecWeave doesn't use `.claude/`** - Plugin hooks live in `plugins/`, but users CAN add custom hooks to `.claude/settings.json`
-
-### Hook Discovery Flow
-
-```
-1. Plugin installed:
-   /plugin install specweave
-
-2. Claude Code startup:
-   Reads: plugins/specweave/.claude-plugin/plugin.json
-   ↓
-   Discovers: "hooks": "./hooks/hooks.json"
-   ↓
-   Loads: plugins/specweave/hooks/hooks.json
-   ↓
-   Registers: PostToolUse → TodoWrite → ${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh
-
-3. Hook execution:
-   TodoWrite completes
-   ↓
-   Claude Code executes: plugins/specweave/hooks/post-task-completion.sh
-   ↓
-   Hook runs!
-```
-
-**NO copying needed!** `${CLAUDE_PLUGIN_ROOT}` resolves to the plugin directory automatically.
-
-### What `.claude/` Actually Contains
-
-**SpecWeave doesn't create it!** But users can create `.claude/settings.json` for custom hooks/settings.
-
-**Why SpecWeave doesn't create `.claude/`:**
-- Marketplace registration is GLOBAL via CLI (`claude plugin marketplace add`)
-- No per-project settings.json needed for SpecWeave
-- No hook files needed (hooks come from plugins, not project)
-- Cleaner project structure
-
-**Valid uses of `.claude/` folder:**
-- ✅ User-defined custom hooks (`.claude/settings.json`)
-- ✅ Project-specific hook configurations
-- ✅ Local settings (`.claude/settings.local.json`)
-
-**If you see `.claude/settings.json`** created by SpecWeave in your project:
-- It's from an older version of SpecWeave (<v0.14.0)
-- Safe to delete - marketplace is already registered globally
-- Won't affect functionality
-
-### What `.specweave/config.json` Contains
-
-**THIS is where hook behavior is configured**:
-```json
-{
-  "hooks": {
-    "post_task_completion": {
-      "sync_living_docs": true,        // ✅ Enables living docs sync
-      "sync_tasks_md": true,           // ✅ Updates tasks.md
-      "external_tracker_sync": true    // ✅ Syncs to GitHub/Jira/ADO
-    }
-  },
-  "sync": {
-    "enabled": true,
-    "activeProfile": "github-default",
-    "profiles": {
-      "github-default": {
-        "provider": "github",
-        "config": {
-          "owner": "anton-abyzov",
-          "repo": "specweave"
-        }
-      }
-    }
-  }
-}
-```
-
-Hooks READ this config to know:
-- Whether sync is enabled
-- Which provider to sync to (GitHub/Jira/ADO)
-- Owner/repo or domain/project info
-
-### Summary: What Makes Hooks Work
-
-| Component | Location | Purpose |
-|-----------|----------|---------|
-| **Hook scripts** | `plugins/specweave/hooks/*.sh` | Actual executable code |
-| **Hook config** | `plugins/specweave/hooks/hooks.json` | Registers hooks with Claude |
-| **Plugin manifest** | `plugins/specweave/.claude-plugin/plugin.json` | Points to hooks.json |
-| **Marketplace** | GLOBAL (via CLI) | Plugin discovery (NOT per-project!) |
-| **Behavior config** | `.specweave/config.json` | Hook behavior settings |
-
-**Bottom line**: Hooks are a **plugin feature**, not a project feature. They work via plugin installation (GLOBAL), not file copying!
-
-**For detailed hook documentation**, see:
-- **Plugin Hook Documentation**: `plugins/specweave/hooks/README.md` - How hooks work, configuration, testing
-- **Official Claude Code Docs**: https://code.claude.com/docs/en/hooks - Native hook system reference
+Hooks live in plugins (`plugins/specweave/hooks/`), auto-discovered via `plugin.json`. No `.claude/` folder needed (global CLI registration). Configure behavior in `.specweave/config.json`. See [Plugin Hook Docs](plugins/specweave/hooks/README.md) and [Claude Code Hooks](https://code.claude.com/docs/en/hooks).
 
 ---
 
-**Post-Task Completion Hook** (`plugins/specweave/hooks/post-task-completion.sh`):
+**Key Hooks**:
+- **post-task-completion**: Smart session-end detection (15s inactivity), sound notification, living docs sync, external tool sync
+- **pre-tool-use**: Immediate sound on AskUserQuestion (before task completion)
+- **Living docs sync**: Auto-syncs increment specs to `.specweave/docs/internal/specs/` (permanent archive)
 
-**Smart Session-End Detection**:
-- ✅ Tracks inactivity gaps between TodoWrite calls
-- ✅ Only plays sound when session is TRULY ending (15s+ inactivity after all tasks complete)
-- ✅ Skips sound during rapid work (Claude creating multiple todo lists)
-- ✅ Enhanced logging with decision reasoning in `.specweave/logs/hooks-debug.log`
-- ✅ Debouncing prevents duplicate hook fires
+Configure via `.specweave/config.json` → `hooks.post_task_completion`. Manual sync: `/specweave:sync-docs`.
 
-**How It Works**:
-```
-Problem: Claude creates multiple todo lists in one conversation
-- List 1: [A, B, C] → completes → sound plays ❌
-- List 2: [D, E] → completes 30s later → sound plays again ❌
-- User hears sounds while Claude is still working!
-
-Solution: Inactivity-based detection
-- 10:00:00 - Task done (gap: 5s) → skip sound
-- 10:00:05 - Task done (gap: 5s) → skip sound
-- 10:00:10 - All done (gap: 5s) → skip sound (rapid work)
-- ... (15+ seconds pass)
-- 10:01:00 - All done (gap: 50s) → PLAY SOUND! ✅ (session ending)
-```
-
-**Configuration** (`src/hooks/post-task-completion.sh`):
-- `INACTIVITY_THRESHOLD=15` - Seconds of inactivity to assume session ending (adjustable)
-- `DEBOUNCE_SECONDS=2` - Prevents duplicate hook fires
-
-**Pre-Tool-Use Hook** (`.claude/hooks/pre-tool-use.sh`):
-
-**Purpose**: Detect when Claude asks questions BEFORE task completion
-
-**The Problem**: The post-task-completion hook only fires after TodoWrite events. If Claude asks a question via AskUserQuestion WITHOUT completing any tasks first, no sound plays and the user doesn't know Claude is waiting for input.
-
-**The Solution**: The pre-tool-use hook fires BEFORE every tool call, allowing us to detect AskUserQuestion immediately.
-
-**How It Works**:
-```
-Scenario 1: Question after task completion
-- 10:00:00 - Task completed (TodoWrite) → post-task-completion hook fires
-- 10:00:15 - Inactivity threshold reached → SOUND! ✅
-
-Scenario 2: Question WITHOUT task completion (NEW!)
-- 10:00:00 - Claude calls AskUserQuestion → pre-tool-use hook fires
-- 10:00:00 - Detects tool_name="AskUserQuestion" → SOUND! ✅
-- User is notified IMMEDIATELY, not after 15s
-```
-
-**Key Features**:
-- ✅ Fires BEFORE any tool call (PreToolUse event)
-- ✅ Filters for AskUserQuestion specifically
-- ✅ Plays distinctive sound (Tink.aiff on macOS, dialog-question.oga on Linux)
-- ✅ Non-blocking and fast (<10ms overhead)
-- ✅ Complements post-task-completion hook (both work together)
-
-**Result**: Users are ALWAYS notified when Claude needs input, regardless of whether tasks have been completed or not.
-
-**Manual Actions** (Claude MUST do after each task):
-- Update `CLAUDE.md` when structure changes
-- Update `README.md` for user-facing changes
-- Update `CHANGELOG.md` for API changes
-
-**Living Docs Sync** (AUTOMATIC after task completion):
-
-**The Critical Problem**: `.specweave/docs/internal/specs/` is the **permanent source of truth** for ALL completed work across the entire enterprise. Without automatic sync, this documentation becomes stale and incomplete.
-
-**How It Works** (Automatic):
-1. **Hook Triggers**: After every task completion (TodoWrite), `post-task-completion.sh` fires
-2. **Sync Check**: Runs `dist/hooks/lib/sync-living-docs.js` to check if sync is needed
-3. **Automatic Sync**: If enabled in config, syncs increment specs to living docs
-4. **Result**: `.specweave/docs/internal/specs/spec-{id}.md` is always up-to-date
-
-**Configuration** (`.specweave/config.json`):
-```json
-{
-  "hooks": {
-    "post_task_completion": {
-      "sync_living_docs": true,        // ✅ MUST be true!
-      "sync_tasks_md": true,           // Updates tasks.md with completion status
-      "external_tracker_sync": true    // Syncs to GitHub/Jira/ADO
-    }
-  }
-}
-```
-
-**Manual Sync** (when automatic sync was disabled):
-```bash
-# Sync all completed increments to living docs
-/specweave:sync-docs update
-
-# Or copy manually (emergency only):
-cp .specweave/increments/0001-core-framework/spec.md \
-   .specweave/docs/internal/specs/spec-0001-core-framework.md
-```
-
-**Verify Sync**:
-```bash
-# Check all synced specs
-ls -1 .specweave/docs/internal/specs/spec-*.md
-
-# Should match number of completed increments
-ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
-```
-
-**Why This Matters**:
-- ✅ **Enterprise-level traceability**: Every increment's spec is permanently archived
-- ✅ **Cross-increment history**: See all work completed across the entire project
-- ✅ **Onboarding new developers**: Read specs to understand what was built and why
-- ✅ **Compliance & auditing**: Complete audit trail of all product decisions
-- ✅ **Living documentation**: Specs stay up-to-date without manual intervention
-
-**🧠 INTELLIGENT LIVING DOCS SYNC (v0.18.0+)**
-
-**Two Sync Modes**:
-
-1. **Simple Mode** (Legacy):
-   - Copies entire `spec.md` to living docs as single file
-   - Location: `.specweave/docs/internal/specs/spec-{id}.md`
-   - Use when: Single project, simple workflow
-
-2. **Intelligent Mode** (NEW in v0.18.0+):
-   - Parses spec.md into sections
-   - Classifies content (user stories, architecture, ADRs, operations, etc.)
-   - Detects project (backend/frontend/mobile)
-   - Distributes to appropriate folders
-   - Generates cross-links
-   - Adds Docusaurus frontmatter
+**Intelligent Living Docs Sync**: Two modes - Simple (single file) or Intelligent (parses, classifies, distributes by category+project). 9 categories, multi-project support. Enable in `.specweave/config.json` → `livingDocs.intelligent.enabled`. See [Intelligent Living Docs Guide](.specweave/docs/public/guides/intelligent-living-docs-sync.md).
 
 **Enable Intelligent Mode** (`.specweave/config.json`):
 ```json
@@ -2734,7 +1095,7 @@ Core hook: plugins/specweave/hooks/post-task-completion.sh (452 lines)
 └── Azure DevOps sync (11 lines) ← Embedded in core!
 ```
 
-**After (v0.13.0+)**:
+**After**:
 ```
 Core hook: plugins/specweave/hooks/post-task-completion.sh (330 lines)
 ├── Core concerns ONLY (sound, living docs, translation, reflection)
@@ -2780,11 +1141,24 @@ ADO plugin: plugins/specweave-ado/hooks/post-task-completion.sh (150 lines)
 
 **Post-Increment-Planning Hook** (AUTOMATIC after `/specweave:increment`):
 
-**GitHub Issue Auto-Creation** (NEW in v0.8.20+):
+**GitHub Issue Auto-Creation**:
 
 **The Critical Problem**: Without automatic GitHub issue creation, increments don't sync to GitHub automatically. This requires manual `/specweave-github:create-issue` calls, which are often forgotten.
 
 **The Solution**: The `post-increment-planning.sh` hook now auto-creates GitHub issues immediately after increment planning completes.
+
+**Issue Title Format** (IMPORTANT):
+
+SpecWeave uses **date-based naming** for GitHub issues to match the Epic folder structure:
+
+| Context | Format | Example | Code Location |
+|---------|--------|---------|---------------|
+| **Increment Issue** | `[FS-YY-MM-DD] Title` | `[FS-25-11-12] External Tool Status Sync` | `post-increment-planning.sh` (line 409) |
+| **Epic/Spec Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `github-epic-sync.ts` (line 540) |
+
+**Legacy Format** (deprecated): `[INC-0031]` - No longer used in codebase!
+
+The date format (`FS-YY-MM-DD`) is extracted from `metadata.json` creation date and matches the Epic folder naming convention in `.specweave/docs/internal/specs/default/FS-YY-MM-DD-feature-name/`.
 
 **How It Works** (Automatic):
 1. **Hook Triggers**: After `/specweave:increment` completes planning (spec.md, plan.md, tasks.md created)
@@ -2911,7 +1285,7 @@ cat .specweave/increments/0016-self-reflection-system/metadata.json
 
 ---
 
-**✅ Metadata Validation & Fallback Creation** (NEW in v0.14.0+):
+**✅ Metadata Validation & Fallback Creation**:
 
 **The Problem**: Hook failures (no GitHub CLI, network issues, permission problems) left increments without metadata.json, breaking status line, WIP limits, and external sync.
 
@@ -2992,7 +1366,7 @@ cat .specweave/increments/0016-self-reflection-system/metadata.json
 
 **Configuration Note**:
 
-The old config key `hooks.post_increment_planning.auto_create_github_issue` is **deprecated** (v0.14.0+).
+The old config key `hooks.post_increment_planning.auto_create_github_issue` is **deprecated**.
 
 ```json
 {
@@ -3014,192 +1388,9 @@ The old config key `hooks.post_increment_planning.auto_create_github_issue` is *
 
 ---
 
-## Status Line Feature (Increment Progress Display)
+## Status Line Feature
 
-**NEW in v0.14.0**: Ultra-fast status line showing current increment progress with intelligent caching.
-
-### The Problem
-
-Users working on increments had no quick way to see:
-- Which increment is active
-- How many tasks complete (X/Y)
-- Current task being worked on
-- Overall progress percentage
-
-They had to run `/specweave:progress` every time, which was slow and disruptive.
-
-### The Solution: Fast Caching Architecture
-
-**Performance Target**: <1ms render time (99% of requests)
-
-**Architecture**:
-1. **Hook pre-computes cache** (async, 10-50ms) - User doesn't wait
-2. **Status line reads cache** (sync, <1ms) - Ultra-fast display
-3. **mtime-based invalidation** - Detects external edits
-
-### How It Works
-
-```
-Post-Task-Completion Hook
-  ↓
-Runs update-status-line.sh (async, non-blocking)
-  ├─ Parses tasks.md (counts completed/total)
-  ├─ Finds current task (first [ ] checkbox)
-  ├─ Gets tasks.md mtime (for invalidation)
-  └─ Writes to .specweave/state/status-line.json
-
-Status Line Renderer
-  ├─ Reads cache (<0.3ms)
-  ├─ Validates freshness (0.2ms)
-  │   ├─ Age check (<5s = fresh)
-  │   └─ mtime check (file unchanged = fresh)
-  └─ Formats output (0.1ms)
-
-Total: <1ms ✅
-```
-
-### Example Output
-
-```bash
-# Normal progress
-[sync-fix] ████░░░░ 15/30 (50%) • T-016: Update docs
-
-# Near completion
-[sync-fix] ███████░ 28/30 (93%) • T-029: Final review
-
-# Complete
-[sync-fix] ████████ 30/30 (100%) • Use /specweave:done
-
-# No active increment
-No active increment
-```
-
-### Cache File Format
-
-**Location**: `.specweave/state/status-line.json`
-
-```json
-{
-  "incrementId": "0017-sync-architecture-fix",
-  "incrementName": "sync-architecture-fix",
-  "totalTasks": 30,
-  "completedTasks": 15,
-  "percentage": 50,
-  "currentTask": {
-    "id": "T-016",
-    "title": "Update documentation"
-  },
-  "lastUpdate": "2025-11-10T15:30:00Z",
-  "lastModified": 1699632600
-}
-```
-
-### Multi-Window Support
-
-**Scenario 1: Same Increment, Multiple Windows** ✅
-- Window 1 completes T-016 → Hook updates cache
-- Window 2 reads cache → Sees same progress
-- ✅ Both windows synchronized via shared cache
-
-**Scenario 2: External Edits (Vim/Git)** ✅
-- User edits tasks.md in vim → mtime changes
-- Cache detects mtime mismatch → Returns null
-- Next hook fire regenerates cache
-- ✅ Changes detected within 5 seconds
-
-**Scenario 3: Multiple Active Increments** ⚠️
-- User violates 1-active rule (starts 0018 while 0017 active)
-- Cache shows 0018 (most recent)
-- Window 1 (working on 0017) sees 0018 status ❌
-- ✅ **This is intentional!** Visual enforcement of discipline
-
-### Configuration
-
-**In `.specweave/config.json`**:
-
-```json
-{
-  "statusLine": {
-    "enabled": true,
-    "maxCacheAge": 5000,
-    "progressBarWidth": 8,
-    "maxIncrementNameLength": 20,
-    "maxTaskTitleLength": 30,
-    "showProgressBar": true,
-    "showPercentage": true,
-    "showCurrentTask": true
-  }
-}
-```
-
-### Performance Benchmarks
-
-| Metric | Target | Actual | Result |
-|--------|--------|--------|--------|
-| **Cache Hit** | <1ms | 0.015ms | ✅ 67x faster |
-| **Cache Miss** | N/A | 10-50ms | Async (no wait) |
-| **1000 Renders** | <1000ms | 14.87ms | ✅ 67x faster |
-
-### Implementation Files
-
-**Core**:
-- `src/core/status-line/types.ts` - Type definitions
-- `src/core/status-line/status-line-manager.ts` - Fast cache reader
-- `plugins/specweave/hooks/lib/update-status-line.sh` - Cache updater
-- `src/cli/commands/status-line.ts` - CLI command
-
-**Tests**:
-- `tests/unit/status-line/status-line-manager.test.ts` - Unit tests
-- `tests/integration/status-line/multi-window.test.ts` - Integration tests
-
-**Integration**:
-- Modified: `plugins/specweave/hooks/post-task-completion.sh` (+8 lines)
-- Modified: `src/core/schemas/specweave-config.schema.json` (+54 lines)
-
-### Usage
-
-**Automatic** (via hook):
-```bash
-# Complete any task
-# → Hook fires automatically
-# → Cache updates in background
-# → Status line shows latest progress
-```
-
-**Manual** (CLI):
-```bash
-# Display status line
-specweave status-line
-
-# Output JSON
-specweave status-line --json
-
-# Clear cache
-specweave status-line --clear
-```
-
-**Integration** (status displays):
-```typescript
-import { StatusLineManager } from 'specweave/core/status-line';
-
-const manager = new StatusLineManager(process.cwd());
-const status = manager.render();
-console.log(status); // "[sync-fix] ████░░░░ 15/30 (50%) • T-016"
-```
-
-### Benefits
-
-**For Users**:
-- ✅ Always know where they are in increment (at a glance)
-- ✅ No need to run `/specweave:progress` repeatedly
-- ✅ Multi-window support (shared cache)
-- ✅ Detects external edits (vim, git)
-
-**For Development**:
-- ✅ <1ms render (no performance impact)
-- ✅ Simple architecture (150 lines total)
-- ✅ No database, no locking, no complexity
-- ✅ Works with CI/CD (cache optional)
+<1ms render, auto-updates after tasks, multi-window support, external edit detection. Shows most recent increment progress. See [Status Line Guide](https://spec-weave.com/docs/learn/status-line).
 
 ---
 
@@ -3466,259 +1657,24 @@ vim .claude-plugin/marketplace.json
 
 **SpecWeave supports syncing increments to unlimited external repositories** (GitHub, JIRA, Azure DevOps) with intelligent rate limiting and time range filtering.
 
-### 🎯 CRITICAL: Source of Truth Architecture
-
-**The Hub is LOCAL**, not external!
-
-```
-✅ CORRECT Architecture:
-.specweave/docs/specs/  ↔  GitHub Issues       (Local ↔ External)
-.specweave/docs/specs/  ↔  Jira Epics          (Local ↔ External)
-.specweave/docs/specs/  ↔  Azure DevOps Items  (Local ↔ External)
-
-❌ WRONG (External-to-External):
-GitHub  ↔  Jira                                 (External ↔ External - NO!)
-GitHub PRs  ↔  Jira Features                    (External ↔ External - NO!)
-```
-
-**Key Principle**: `.specweave/` is the **permanent source of truth**. External tools (GitHub, Jira, ADO) are **MIRRORS** of this truth.
-
-**Sync Direction**:
-- **Bidirectional** (default): Local ↔ External (changes sync both ways)
-- **Export only**: Local → External (push changes from Local to External)
-- **Import only**: External → Local (pull changes from External to Local)
-
-### Core Concepts
-
-**3-Layer Architecture**:
-
-```
-Layer 1: Credentials (.env)
-├── GITHUB_TOKEN=...
-├── JIRA_API_TOKEN=...
-└── AZURE_DEVOPS_PAT=...
-
-Layer 2: Sync Profiles (config.json)
-├── specweave-dev (GitHub: anton-abyzov/specweave)
-├── client-mobile (GitHub: client-org/mobile-app)
-├── internal-jira (JIRA: company.atlassian.net/PROJ)
-└── ado-backend (ADO: myorg/backend-services)
-
-Layer 3: Per-Increment Metadata (metadata.json)
-└── 0004-plugin-architecture
-    ├── profile: specweave-dev
-    ├── issueNumber: 130
-    └── timeRange: 1M
-```
-
-### Sync Profiles
-
-**Profiles** define how to connect to external systems:
-
-```json
-{
-  "sync": {
-    "profiles": {
-      "specweave-dev": {
-        "provider": "github",
-        "displayName": "SpecWeave Development",
-        "config": {
-          "owner": "anton-abyzov",
-          "repo": "specweave"
-        },
-        "timeRange": {
-          "default": "1M",
-          "max": "6M"
-        },
-        "rateLimits": {
-          "maxItemsPerSync": 500,
-          "warnThreshold": 100
-        }
-      }
-    }
-  }
-}
-```
-
-**Benefits**:
-- ✅ Unlimited profiles per provider (3+, 5+, 10+ repos)
-- ✅ Different increments sync to different repos
-- ✅ Team-based organization (Frontend → repo-A, Backend → repo-B)
-- ✅ Multi-client support (Client-A, Client-B, Client-C)
-
-### Project Contexts
-
-**Projects** organize work into logical groups:
-
-```json
-{
-  "sync": {
-    "projects": {
-      "specweave-core": {
-        "id": "specweave-core",
-        "name": "SpecWeave Core",
-        "description": "Core framework development",
-        "keywords": ["framework", "cli", "plugin"],
-        "team": "Core Team",
-        "defaultSyncProfile": "specweave-dev",
-        "specsFolder": ".specweave/docs/internal/specs/specweave-core",
-        "increments": ["0001-core-framework", "0002-core-enhancements"]
-      }
-    }
-  }
-}
-```
-
-**Smart Project Detection**:
-- Project name match: +10 points
-- Team name match: +5 points
-- Keyword match: +3 points per keyword
-- Auto-select if confidence > 0.7
+**Quick Summary**:
+- ✅ **Local is source of truth** - `.specweave/` → External tools (mirrors)
+- ✅ **3-layer architecture** - Credentials → Profiles → Per-increment metadata
+- ✅ **Unlimited profiles** - Frontend → repo-A, Backend → repo-B, Client-C → repo-C
+- ✅ **Smart project detection** - Auto-selects profile based on keywords
+- ✅ **Time range filtering** - 1W/1M/3M/6M/ALL (prevents rate limit issues)
+- ✅ **Rate limit protection** - Pre-flight validation, safe thresholds
 
 **Example**:
-```
-Increment: "Add React Native dark mode for mobile app"
-→ Detects project "mobile-app" (keywords: mobile, react-native)
-→ Uses profile "client-mobile" automatically
-→ Syncs to client-org/mobile-app repo
-```
-
-### Time Range Filtering
-
-**Problem**: Syncing ALL data takes 25+ minutes and hits rate limits.
-
-**Solution**: Time range presets filter data by creation date:
-
-| Preset | Duration | Items | API Calls | Duration | Impact |
-|--------|----------|-------|-----------|----------|--------|
-| **1W** | 1 week | ~50 | 75 | 30 sec | Low |
-| **1M** | 1 month | ~200 | 300 | 2 min | Medium (✅ Recommended) |
-| **3M** | 3 months | ~600 | 900 | 5 min | Medium |
-| **6M** | 6 months | ~1,200 | 1,800 | 10 min | High |
-| **ALL** | All time | ~5,000+ | 7,500+ | 30+ min | Critical (❌ Avoid) |
-
-**Usage**:
 ```bash
-# Interactive (select time range)
+# Interactive sync (selects time range)
 /specweave-github:sync 0004
 
-# Specify time range
+# Specify time range (recommended: 1M)
 /specweave-github:sync 0004 --time-range 1M
-
-# Preview before executing
-/specweave-github:sync 0004 --dry-run
 ```
 
-### Rate Limiting Protection
-
-**Pre-Flight Validation**:
-1. Estimate API calls based on time range
-2. Check current rate limit status (GitHub: 5000/hour, JIRA: 100/min, ADO: 200/5min)
-3. Calculate impact: low (<250 calls), medium (250-1000), high (1000-2500), critical (2500+)
-4. Warn or block if risky
-
-**Example: Critical Impact Blocked**:
-```
-❌ This sync may FAIL due to:
-
-Blockers:
-   • CRITICAL rate limit impact: 7,500 API calls exceeds safe threshold
-   • Not enough rate limit remaining (need 7,500, only 4,850 remaining)
-
-Recommendations:
-   1. Reduce time range to 1 month (~300 API calls, SAFE)
-   2. Wait for rate limit reset (25 minutes)
-   3. Split sync across multiple time periods
-```
-
-### File Organization
-
-**Specs organized by project**:
-```
-.specweave/docs/internal/specs/
-├── specweave-core/
-│   ├── spec-001-core-framework.md
-│   └── spec-002-plugin-architecture.md
-├── client-mobile/
-│   ├── spec-001-mvp.md
-│   └── spec-002-dark-mode.md
-└── internal-backend/
-    └── spec-001-api-v2.md
-```
-
-### Key Files
-
-**Core Infrastructure**:
-- `src/core/types/sync-profile.ts` - Type definitions (432 lines)
-- `src/core/sync/profile-manager.ts` - CRUD for profiles (463 lines)
-- `src/core/sync/rate-limiter.ts` - Rate limiting logic (365 lines)
-- `src/core/sync/project-context.ts` - Project management (379 lines)
-
-**Client Libraries** (Profile-Based):
-- `plugins/specweave-github/lib/github-client-v2.ts` - GitHub sync (466 lines)
-- `plugins/specweave-jira/lib/jira-client-v2.ts` - JIRA sync (520 lines)
-- `plugins/specweave-ado/lib/ado-client-v2.ts` - ADO sync (485 lines)
-
-**UX Components**:
-- `src/core/sync/time-range-selector.ts` - Interactive time range selection (295 lines)
-- `src/core/sync/profile-selector.ts` - Interactive profile selection (230 lines)
-
-**Migration**:
-- `src/cli/commands/migrate-to-profiles.ts` - Automatic migration from V1 (425 lines)
-
-### Common Commands
-
-```bash
-# Profile management
-/specweave:sync-profile create
-/specweave:sync-profile list
-/specweave:sync-profile get <id>
-/specweave:sync-profile update <id>
-/specweave:sync-profile delete <id>
-
-# Project management
-/specweave:project create
-/specweave:project list
-/specweave:project link <project-id> <increment-id>
-/specweave:project stats
-
-# Syncing (GitHub example)
-/specweave-github:sync <increment-id>
-/specweave-github:sync <increment-id> --profile <id>
-/specweave-github:sync <increment-id> --time-range 1M
-/specweave-github:sync <increment-id> --dry-run
-
-# Migration from V1
-specweave migrate-to-profiles
-```
-
-### Migration from V1 (Single Project)
-
-**Automatic**:
-```bash
-specweave migrate-to-profiles
-```
-
-**Output**:
-```
-✅ Created GitHub profile: default-github
-   Repository: anton-abyzov/specweave
-
-✅ Created default project context
-   Name: specweave
-   Default profile: default-github
-
-📊 Migration Summary:
-   Profiles created: 1
-   Projects created: 1
-```
-
-### Documentation
-
-**User Guide**: `.specweave/increments/0011-multi-project-sync/reports/USER-GUIDE-MULTI-PROJECT-SYNC.md`
-**ADR**: `.specweave/docs/internal/architecture/adr/0016-multi-project-external-sync.md`
-**Implementation Summary**: `.specweave/increments/0011-multi-project-sync/COMPLETE-IMPLEMENTATION.md`
-**Command Docs**: `plugins/specweave-github/commands/specweave-github-sync.md`
+**For complete architecture, configuration, profiles, project contexts, and time range filtering**: See [Multi-Project Sync Architecture](https://spec-weave.com/docs/integrations/multi-project-sync) (comprehensive guide with 3-layer architecture, rate limiting, smart detection, and migration guide)
 
 ---
 
@@ -3913,148 +1869,9 @@ vim docs-site/docs/guides/getting-started.md
 cd docs-site && npm run build
 ```
 
-### Translation Workflow (Multilingual Support)
+### Translation Workflow
 
-**SpecWeave supports multilingual development** via two-phase post-generation translation (Increment 0006).
-
-**Key Concept**: Users work in their native language (great UX), system auto-translates to English (maintainable docs).
-
-**Two-Phase Translation Architecture**:
-
-| Phase | Hook | What Gets Translated | When | Coverage |
-|-------|------|---------------------|------|----------|
-| **Phase 1** | post-increment-planning | Increment files + Living docs specs | After `/specweave:increment` | 80% of docs |
-| **Phase 2** | post-task-completion | ADRs, HLDs, diagrams | After each task completion | 20% of docs |
-
-**Workflow**:
-
-```bash
-# 1. User creates increment in Russian
-/specweave:increment "Добавить пользовательскую аутентификацию"
-
-# 2. PM agent generates spec.md, plan.md, tasks.md in Russian (natural, user-friendly)
-
-# 3. post-increment-planning hook fires automatically (PHASE 1)
-#    Phase A: Translates increment files (spec.md, plan.md, tasks.md) to English
-#    Phase B: Translates living docs specs to English (NEW!)
-#             - .specweave/docs/internal/specs/spec-*.md
-#             - .specweave/docs/internal/strategy/**/*.md
-#    Cost: ~$0.02 total
-
-# User sees:
-# ✅ Increment created
-# 🌐 Detected Russian content. Translating increment files to English...
-#   📄 spec.md... ✅
-#   📄 plan.md... ✅
-#   📄 tasks.md... ✅
-# 🌐 Checking living docs for translation...
-#   📄 Living docs detected: spec-0001-user-auth.md
-#   ✅ Translated 1 living docs file(s) to English
-# ✅ Translation complete!
-#    Increment files: 3/3
-#    Living docs: 1 file(s)
-#    Estimated cost: ~$0.01-0.02 (using Haiku)
-
-# 4. During implementation, architect creates ADRs in Russian
-
-# 5. post-task-completion hook fires after each task (PHASE 2)
-#    - Translates newly created ADRs to English
-#    - Translates HLDs/diagrams to English
-#    Cost: ~$0.01 per file
-
-# Result: ALL documentation in English (100% coverage)
-```
-
-**Configuration** (`.specweave/config.json`):
-
-```json
-{
-  "language": "ru",
-  "translation": {
-    "enabled": true,
-    "autoTranslateInternalDocs": true,
-    "autoTranslateLivingDocs": true,
-    "keepFrameworkTerms": true,
-    "keepTechnicalTerms": true,
-    "translationModel": "haiku"
-  }
-}
-```
-
-**Key Settings**:
-- `language`: Primary language (en, ru, es, zh, de, fr, ja, ko, pt)
-- `autoTranslateInternalDocs`: Auto-translate increment files + living docs specs to English (default: true)
-- `autoTranslateLivingDocs`: Auto-translate ADRs/HLDs after task completion (default: true)
-- `translationModel`: Model to use (haiku/sonnet/opus, default: haiku)
-
-**Supported Languages**:
-- English (en)
-- Russian (ru)
-- Spanish (es)
-- Chinese (zh)
-- German (de)
-- French (fr)
-- Japanese (ja)
-- Korean (ko)
-- Portuguese (pt)
-
-**Cost**: ~$0.02 per increment (5-7 files, Haiku model)
-
-**Coverage**: 100% (no gaps! All living docs translated)
-
-**Implementation Details**:
-- Language detection: Heuristic-based (<1ms, zero cost)
-- Code preservation: Never translates code blocks, inline code, or links
-- Validation: Checks heading count, code block count, link count, YAML structure
-- See: `.specweave/increments/0006-llm-native-i18n/reports/IMPLEMENTATION-COMPLETE.md`
-
-**Testing Translation Utilities**:
-
-```bash
-# Run translation unit tests
-npm test -- tests/unit/i18n/translation.test.ts
-
-# Test result: 67/67 passing (100%)
-```
-
-**Files**:
-- Utilities: `src/utils/translation.ts` (673 lines, 11 languages)
-- CLI Script: `src/hooks/lib/translate-file.ts` (398 lines)
-- Hook (Phase 1): `plugins/specweave/hooks/post-increment-planning.sh` (~420 lines)
-- Hook (Phase 2): `src/hooks/lib/translate-living-docs.ts` (217 lines)
-- Tests: `tests/unit/i18n/translation.test.ts` (705 lines, 67 tests)
-- E2E Tests: `tests/e2e/i18n/living-docs-translation.spec.ts` (6 test cases)
-- Schema: `src/core/schemas/specweave-config.schema.json`
-
-**Migrating Existing Non-English Living Docs**:
-
-For projects with existing non-English living docs, use the one-time migration script:
-
-```bash
-# One-time migration (translates all living docs to English)
-bash scripts/migrate-living-docs-to-english.sh
-
-# What it does:
-# - Scans .specweave/docs/internal/ for non-English files
-# - Translates each file to English (preserves code blocks, links, framework terms)
-# - Skips files already in English
-# - Non-blocking (continues even if some files fail)
-
-# Estimated time: 1-2 minutes per 100 files
-# Estimated cost: ~$0.01 per file (using Haiku)
-```
-
-**After migration**:
-```bash
-# Review translated files
-git diff .specweave/docs/internal/
-
-# Commit changes
-git add . && git commit -m "docs: translate living docs to English"
-
-# Future increments will auto-translate
-/specweave:increment "Добавить новую функцию"  # Auto-translates!
-```
+Two-phase post-generation: Phase 1 (increment files), Phase 2 (ADRs/HLDs). 9 languages, ~$0.02/increment, 100% auto. See [Translation Guide](https://spec-weave.com/docs/learn/translation).
 
 ---
 
@@ -4082,6 +1899,99 @@ git add . && git commit -m "docs: translate living docs to English"
 1. Identify which increment created the files
 2. Move to `.specweave/increments/####/reports/`
 3. Update `.gitignore` if needed
+
+**Plugin hooks not working? (Development Setup)**
+
+**Symptom 1**: Errors like `"post-task-completion.sh: No such file or directory"` after TodoWrite
+**Symptom 2**: `✘ Plugin 'specweave' not found in marketplace 'specweave'`
+
+**Root Cause**: Two common issues:
+1. **No symlink**: Directory doesn't exist at `~/.claude/plugins/marketplaces/specweave`
+2. **No registration**: Marketplace not registered with Claude Code (common after updates/restarts)
+
+**The Key Insight**:
+- ✅ **Symlink**: Creates directory structure for hooks
+- ✅ **Registration**: Tells Claude Code where to find plugins
+- ⚠️ **Both required**: Having one without the other breaks functionality!
+
+**🚀 Automated Setup (Recommended)**:
+
+```bash
+# Run smart setup script (auto-detects and fixes BOTH issues)
+./scripts/setup-dev-plugins.sh
+
+# What it does:
+# 1. Detects environment (local vs VM)
+# 2. Creates/verifies symlink
+# 3. ✨ NEW: Checks marketplace registration
+# 4. ✨ NEW: Auto-registers if missing
+# 5. Installs core plugins
+# 6. Verifies everything works
+```
+
+**Environment Detection**:
+- **Local machine** → Symlink + Registration (instant updates)
+- **claude.ai/code VM** → GitHub marketplace (reliable, auto-clones)
+- **Codespaces/Gitpod** → GitHub marketplace (cloud-friendly)
+
+**Manual Fix (If Script Fails)**:
+
+**Step 1: Check Registration**
+```bash
+# See if marketplace is registered
+claude plugin marketplace list
+
+# If empty or no "specweave" → Need to register!
+```
+
+**Step 2: Fix Registration**
+```bash
+# Register marketplace (use PROJECT ROOT, not .claude-plugin!)
+claude plugin marketplace add /Users/antonabyzov/Projects/github/specweave
+
+# OR from within project:
+cd /path/to/specweave
+claude plugin marketplace add $(pwd)
+
+# Verify it worked
+claude plugin marketplace list
+# Should show: ❯ specweave (Source: Directory /path/to/specweave)
+```
+
+**Step 3: Install Plugins**
+```bash
+# Now plugins should install successfully
+claude plugin install specweave
+claude plugin install specweave-github
+claude plugin install specweave-jira
+claude plugin install specweave-ado
+```
+
+**Alternative: Use GitHub Marketplace** (VM/Cloud)
+```bash
+# Remove local marketplace
+claude plugin marketplace remove specweave
+
+# Add from GitHub (like production users)
+claude plugin marketplace add anton-abyzov/specweave
+
+# Install plugins (should work immediately)
+claude plugin install specweave
+claude plugin install specweave-github
+```
+
+**Benefits**:
+- ✅ **Local + Registration**: Instant updates + Plugin installation works
+- ✅ **VM (GitHub)**: Always reliable, no registration issues
+- ✅ **Automated script**: Handles both symlink AND registration
+- ✅ **Self-healing**: Re-running script fixes broken registrations
+
+**Why This Matters**:
+- **Production users**: No issue (GitHub marketplace via `specweave init`)
+- **Contributors**: Need both symlink AND registration (script handles it)
+- **After Claude Code updates**: Registration can be lost (script detects and fixes)
+
+**Documentation**: See `.specweave/increments/0030-intelligent-living-docs/reports/MARKETPLACE-REGISTRATION-FIX.md` for complete analysis
 
 ---
 

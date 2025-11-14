@@ -217,7 +217,7 @@
     },
     "statusLine": {
       "type": "object",
-      "description": "Status line configuration for fast increment progress display",
+      "description": "Status line configuration (simplified). Shows: [increment-name] ████░░░░ X/Y tasks (Z open)",
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -226,10 +226,10 @@
         },
         "maxCacheAge": {
           "type": "number",
-          "description": "Maximum age of cache before forcing refresh (milliseconds)",
-          "default": 5000,
-          "minimum": 1000,
-          "maximum": 60000
+          "description": "Maximum age of cache before showing stale warning (milliseconds)",
+          "default": 30000,
+          "minimum": 5000,
+          "maximum": 120000
         },
         "progressBarWidth": {
           "type": "number",
@@ -238,34 +238,12 @@
           "minimum": 4,
           "maximum": 20
         },
-        "maxIncrementNameLength": {
+        "maxNameLength": {
           "type": "number",
           "description": "Maximum length for increment name display",
-          "default": 20,
+          "default": 30,
           "minimum": 10,
           "maximum": 50
-        },
-        "maxTaskTitleLength": {
-          "type": "number",
-          "description": "Maximum length for task title display",
-          "default": 30,
-          "minimum": 15,
-          "maximum": 100
-        },
-        "showProgressBar": {
-          "type": "boolean",
-          "description": "Show visual progress bar",
-          "default": true
-        },
-        "showPercentage": {
-          "type": "boolean",
-          "description": "Show percentage completion",
-          "default": true
-        },
-        "showCurrentTask": {
-          "type": "boolean",
-          "description": "Show current task being worked on",
-          "default": true
         }
       },
       "additionalProperties": false
@@ -611,6 +589,32 @@
       "type": "object",
       "description": "External sync configuration for multi-project support (GitHub, JIRA, ADO, etc.)",
       "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable external tool synchronization (overall toggle)",
+          "default": false
+        },
+        "provider": {
+          "type": "string",
+          "description": "Active sync provider (EXCLUSIVE: choose ONE provider, not multiple)",
+          "enum": ["github", "jira", "ado", "none"],
+          "default": "none"
+        },
+        "includeStatus": {
+          "type": "boolean",
+          "description": "Include status synchronization (sync increment status to external tool)",
+          "default": true
+        },
+        "includeTaskCheckboxes": {
+          "type": "boolean",
+          "description": "Copy tasks as checkboxes in external issue descriptions (GitHub markdown checkboxes, Jira checkboxes, ADO HTML checkboxes)",
+          "default": true
+        },
+        "autoApplyLabels": {
+          "type": "boolean",
+          "description": "Automatically apply labels based on increment type ([Bug], [Feature], [Docs])",
+          "default": true
+        },
         "activeProfile": {
           "type": "string",
           "description": "Default active sync profile"
@@ -951,6 +955,51 @@
               "default": "prompt"
             }
           }
+        },
+        "statusSync": {
+          "type": "object",
+          "description": "Status synchronization configuration between SpecWeave and external tools (v0.20.0+)",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable status synchronization",
+              "default": true
+            },
+            "autoSync": {
+              "type": "boolean",
+              "description": "Automatically sync status changes on increment state transitions",
+              "default": true
+            },
+            "promptUser": {
+              "type": "boolean",
+              "description": "Prompt user before syncing status to external tools",
+              "default": true
+            },
+            "conflictResolution": {
+              "type": "string",
+              "description": "Default conflict resolution strategy when local and external statuses differ",
+              "enum": ["prompt", "last-write-wins", "specweave-wins", "external-wins"],
+              "default": "prompt"
+            },
+            "mappings": {
+              "type": "object",
+              "description": "Status mappings for each external tool",
+              "properties": {
+                "github": {
+                  "$ref": "#/definitions/statusMapping",
+                  "description": "GitHub status mappings (open/closed with labels)"
+                },
+                "jira": {
+                  "$ref": "#/definitions/statusMapping",
+                  "description": "JIRA status mappings (workflow states)"
+                },
+                "ado": {
+                  "$ref": "#/definitions/statusMapping",
+                  "description": "Azure DevOps status mappings (work item states)"
+                }
+              }
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -1104,6 +1153,115 @@
     }
   },
   "additionalProperties": true,
+  "definitions": {
+    "statusMapping": {
+      "type": "object",
+      "description": "Status mappings for a specific external tool",
+      "properties": {
+        "planning": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "state": { "type": "string" },
+                "labels": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["state"]
+            }
+          ]
+        },
+        "active": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "state": { "type": "string" },
+                "labels": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["state"]
+            }
+          ]
+        },
+        "paused": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "state": { "type": "string" },
+                "labels": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["state"]
+            }
+          ]
+        },
+        "completed": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "state": { "type": "string" },
+                "labels": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["state"]
+            }
+          ]
+        },
+        "abandoned": {
+          "oneOf": [
+            { "type": "string" },
+            {
+              "type": "object",
+              "properties": {
+                "state": { "type": "string" },
+                "labels": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              },
+              "required": ["state"]
+            }
+          ]
+        }
+      },
+      "required": ["planning", "active", "paused", "completed", "abandoned"]
+    }
+  },
   "examples": [
     {
       "plugins": {

@@ -72,7 +72,7 @@ Structured task file with embedded test plans (BDD format). Contains tasks, test
 ### [AC-ID](../terms/ac-id.md)
 Acceptance Criteria ID - unique identifier for acceptance criteria enabling complete traceability from specs through tasks to tests and implementation.
 
-**Format**: `AC-US{story}-{number}`
+**Format**: `AC-US\{story\}-\{number\}`
 
 **Examples**:
 - `AC-US1-01` - User Story 1, Acceptance Criterion 1

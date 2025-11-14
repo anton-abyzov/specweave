@@ -410,8 +410,8 @@ export class SpecIncrementMapper {
       const { data: frontmatter } = matter(content);
       const tasks: TaskInfo[] = [];
 
-      // Parse tasks from markdown
-      const taskRegex = /^##\s+(T-\d+):\s+(.+)$/gm;
+      // Parse tasks from markdown (tasks use ### heading level)
+      const taskRegex = /^###\s+(T-\d+):\s+(.+)$/gm;
       let match;
 
       while ((match = taskRegex.exec(content)) !== null) {
@@ -441,13 +441,13 @@ export class SpecIncrementMapper {
   }
 
   private extractTaskSection(content: string, taskId: string): string {
-    const startRegex = new RegExp(`^##\\s+${taskId}:`, 'm');
+    const startRegex = new RegExp(`^###\\s+${taskId}:`, 'm');
     const startMatch = content.match(startRegex);
 
     if (!startMatch) return '';
 
     const startIndex = startMatch.index!;
-    const nextTaskMatch = content.slice(startIndex + 1).match(/^##\s+T-\d+:/m);
+    const nextTaskMatch = content.slice(startIndex + 1).match(/^###\s+T-\d+:/m);
     const endIndex = nextTaskMatch
       ? startIndex + 1 + nextTaskMatch.index!
       : content.length;

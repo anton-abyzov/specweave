@@ -30,3 +30,8 @@ Implement DORA (DevOps Research and Assessment) metrics tracking for SpecWeave t
 - [US-003: Visualize Metrics (P2)](us-003-visualize-metrics-p2.md) - ✅ Complete
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#335 - [FS-25-11-03]](https://github.com/anton-abyzov/specweave/issues/335)

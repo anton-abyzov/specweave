@@ -1781,8 +1781,8 @@ export let options = {
     { duration: '1m', target: 0 },    // Ramp down to 0 users
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'], // 95% of requests must complete in 500ms
-    http_req_failed: ['rate<0.01'],   // Error rate < 1%
+    http_req_duration: ['p(95)&lt;500'], // 95% of requests must complete in 500ms
+    http_req_failed: ['rate&lt;0.01'],   // Error rate < 1%
   },
 };
 

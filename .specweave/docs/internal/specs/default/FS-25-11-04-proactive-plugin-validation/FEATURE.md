@@ -26,3 +26,8 @@ Implement a comprehensive plugin validation system that proactively checks and i
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#343 - [FS-25-11-04]](https://github.com/anton-abyzov/specweave/issues/343)

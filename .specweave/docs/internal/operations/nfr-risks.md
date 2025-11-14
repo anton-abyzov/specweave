@@ -2,9 +2,7 @@
 id: "risks"
 title: "Risks"
 sidebar_label: "Risks"
-description: "1. **Cost escalation**: Mitigated by Haiku default, token optimization
-2. **False positives**: Mitigated by severity levels, user feedback
-3. **Workflow slowdow"
+description: "Risk mitigation strategies for cost escalation, false positives, and workflow slowdown"
 tags: ["nfr", "default", "0016-self-reflection-system"]
 increment: "0016-self-reflection-system"
 project: "default"

@@ -1,0 +1,9 @@
+{
+  "id": "0029-cicd-failure-detection-auto-fix",
+  "status": "abandoned",
+  "type": "feature",
+  "created": "2025-11-12T01:43:00Z",
+  "lastActivity": "2025-11-12T01:43:00Z",
+  "abandonedAt": "2025-11-12T14:50:00Z",
+  "abandonedReason": "Feature deprioritized - focus shifted to other work"
+}

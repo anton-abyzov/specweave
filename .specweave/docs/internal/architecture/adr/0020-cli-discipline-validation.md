@@ -20,7 +20,7 @@ SpecWeave enforces strict increment discipline: only 1 active increment at a tim
 - Clear, actionable error messages with suggestions
 - Query all metadata.json files (no filtering)
 - Use existing `ConfigManager` for WIP limits
-- Fast execution (\<1 second for 100 increments)
+- Fast execution (\&lt;1 second for 100 increments)
 
 ## Decision
 
@@ -186,7 +186,7 @@ if (options.json) {
 ✅ **Programmatic Enforcement**: Discipline rules enforced at framework level
 ✅ **CI/CD Integration**: Exit codes allow automated checks in pipelines
 ✅ **Clear Feedback**: Users see exactly what's wrong and how to fix it
-✅ **Fast Execution**: \<1 second for 100 increments (async metadata loading)
+✅ **Fast Execution**: \&lt;1 second for 100 increments (async metadata loading)
 ✅ **Standalone Tool**: Can be run manually for debugging or validation
 ✅ **Consistent Behavior**: Same validation logic everywhere
 ✅ **JSON Output**: Supports automation and tooling integration
@@ -199,7 +199,7 @@ if (options.json) {
 
 ### Neutral
 
-⚪ **Performance**: Negligible (\<1s) for typical projects
+⚪ **Performance**: Negligible (\&lt;1s) for typical projects
 ⚪ **Documentation**: Need to document command and exit codes
 ⚪ **Testing**: Need unit + integration + E2E tests
 

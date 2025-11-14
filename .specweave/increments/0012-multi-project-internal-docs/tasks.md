@@ -16,6 +16,8 @@ coverage_target: 85%
 ## Phase 1: Core Infrastructure
 
 ### T-001: Create ProjectManager Class
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US5-01, AC-US5-04
 
@@ -43,6 +45,8 @@ coverage_target: 85%
 ---
 
 ### T-002: Update Config Schema for Multi-Project
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-04, AC-US5-02, AC-US5-03
 
@@ -67,6 +71,8 @@ coverage_target: 85%
 ---
 
 ### T-003: Implement Auto-Migration Script
+**User Story**: [US-005: Unified Architecture (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-005-unified-architecture-p0.md)
+
 
 **AC**: AC-US5-01, AC-US5-05
 
@@ -100,6 +106,8 @@ coverage_target: 85%
 ## Phase 2: Brownfield Analyzer
 
 ### T-004: Implement File Classification Algorithm
+**User Story**: [US-004: Brownfield Import (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-004-brownfield-import-p0.md)
+
 
 **AC**: AC-US4-02, AC-US4-05
 
@@ -128,6 +136,8 @@ coverage_target: 85%
 ---
 
 ### T-005: Implement Brownfield Import Logic
+**User Story**: [US-004: Brownfield Import (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-004-brownfield-import-p0.md)
+
 
 **AC**: AC-US4-01, AC-US4-03, AC-US4-04, AC-US4-06, AC-US4-07
 
@@ -159,6 +169,8 @@ coverage_target: 85%
 ## Phase 3: CLI Commands
 
 ### T-006: Create `/specweave:init-multiproject` Command
+**User Story**: [US-005: Unified Architecture (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-005-unified-architecture-p0.md)
+
 
 **AC**: AC-US5-02, AC-US5-03, AC-US5-05
 
@@ -188,6 +200,8 @@ coverage_target: 85%
 ---
 
 ### T-007: Create `/specweave:import-docs` Command
+**User Story**: [US-004: Brownfield Import (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-004-brownfield-import-p0.md)
+
 
 **AC**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04
 
@@ -217,6 +231,8 @@ coverage_target: 85%
 ---
 
 ### T-008: Create `/specweave:switch-project` Command
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-02, AC-US5-03
 
@@ -247,6 +263,8 @@ coverage_target: 85%
 ## Phase 4: Integration with Increment Planner
 
 ### T-009: Update increment-planner Skill for Multi-Project
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-02, AC-US5-03, AC-US5-04
 
@@ -274,6 +292,8 @@ coverage_target: 85%
 ---
 
 ### T-010: Create Project-Specific README Templates
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-03, AC-US2-04, AC-US3-03, AC-US3-04
 
@@ -374,6 +394,8 @@ coverage_target: 85%
 ---
 
 ### T-014: Write User Documentation
+**User Story**: [US-001: Multi-Project Organization (P0)](../../docs/internal/specs/default/multi-project-internal-docs/us-001-multi-project-organization-p0.md)
+
 
 **AC**: AC-US1-03, AC-US2-04, AC-US3-03, AC-US4-04
 
@@ -400,6 +422,8 @@ coverage_target: 85%
 ---
 
 ### T-015: Write Internal Documentation (ADR)
+**User Story**: [US-006: Cross-Cutting Documentation (P1)](../../docs/internal/specs/default/multi-project-internal-docs/us-006-cross-cutting-documentation-p1.md)
+
 
 **AC**: AC-US6-04, AC-US6-05
 

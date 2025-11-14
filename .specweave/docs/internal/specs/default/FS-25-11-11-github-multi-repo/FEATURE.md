@@ -26,3 +26,8 @@ Enhance SpecWeave's GitHub integration to properly support multiple repository s
 ## User Stories
 
 ---
+
+
+## External Tool Integration
+
+**GitHub Issue**: [#356 - [FS-25-11-11]](https://github.com/anton-abyzov/specweave/issues/356)

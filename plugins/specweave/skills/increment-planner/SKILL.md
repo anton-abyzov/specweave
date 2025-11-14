@@ -34,6 +34,56 @@ The increment-planner skill automates the creation of implementation plans for A
 - Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks with test plans)
 - **v0.7.0+**: Test-Aware Planning (bidirectional AC↔Task↔Test linking)
 - **v0.8.0+**: Multi-Project Support (specs organized by project/team)
+- **v0.18.0+**: Bidirectional Task↔User Story Linking (automatic during `/specweave:done`)
+
+## Bidirectional Linking (v0.18.0+)
+
+**CRITICAL FEATURE**: When you create tasks, ensure they have **AC**: fields so bidirectional links can be created automatically.
+
+### How It Works
+
+1. **During Planning**: Create tasks with AC-IDs
+   ```markdown
+   ## T-001: Implement User Login
+
+   **AC**: AC-US1-01, AC-US1-02, AC-US1-03   ← CRITICAL!
+   ```
+
+2. **During Completion**: `/specweave:done` automatically:
+   - Extracts user stories to `.specweave/docs/internal/specs/{project}/{feature}/`
+   - Parses tasks.md for AC-IDs
+   - **Injects bidirectional links** into tasks.md
+   - Creates complete traceability (Tasks ↔ User Stories)
+
+3. **Result**: Tasks now link back to user stories:
+   ```markdown
+   ## T-001: Implement User Login
+
+   **User Story**: [US-001: User Authentication](../../docs/internal/specs/default/auth-service/us-001-user-authentication.md)
+
+   **AC**: AC-US1-01, AC-US1-02, AC-US1-03
+   ```
+
+### Requirements
+
+**MUST HAVE** for bidirectional linking:
+- ✅ Tasks with **AC**: field
+- ✅ AC-IDs in format: `AC-US{number}-{criteria}` (e.g., `AC-US1-01`)
+- ✅ Matching user stories in spec.md (e.g., `### US-001:` or `#### US-001:`)
+
+**Multi-Project Support**:
+- Works with `specs/default/`, `specs/backend/`, `specs/frontend/`, etc.
+- Paths automatically adapt to project structure
+- No additional configuration needed
+
+### Benefits
+
+- ✅ **Complete Traceability**: Navigate from tasks to user stories and back
+- ✅ **Automatic**: Zero manual linking during `/specweave:done`
+- ✅ **LLM-Friendly**: AI can understand relationships bidirectionally
+- ✅ **Multi-Project Aware**: Works across all projects
+
+**For complete details**: See `.specweave/docs/public/guides/bidirectional-linking.md`
 
 ## Increment Types (v0.7.0+)
 
@@ -79,6 +129,50 @@ Do NOT activate if:
 - ❌ Another skill (e.g., `project-kickstarter`) is already handling the request
 - ❌ User is already in an active increment planning workflow
 - ❌ Increment files (spec.md, plan.md, tasks.md) are currently being created
+
+---
+
+## Increment Naming Convention
+
+**CRITICAL**: All increments MUST use descriptive names, not just numbers.
+
+**Format**: `####-descriptive-kebab-case-name`
+
+**Examples**:
+- ✅ `0001-core-framework`
+- ✅ `0002-core-enhancements`
+- ✅ `0003-intelligent-model-selection`
+- ❌ `0003` (too generic, rejected)
+- ❌ `0004` (no description, rejected)
+
+**Rationale**:
+- **Clear intent at a glance** - "0003-intelligent-model-selection" tells you exactly what it does
+- **Easy to reference** - "the model selection increment" vs "increment 3"
+- **Better git history** - Commit messages naturally include feature name
+- **Searchable by feature** - `git log --grep="model-selection"` works
+- **Self-documenting** - Increment folders are readable without opening files
+
+**Rules**:
+- `####` = Zero-padded 4-digit number (0001, 0002, 0003, ...)
+- `-descriptive-name` = Kebab-case description (lowercase, hyphens)
+- Max 50 chars total (for readability)
+- No special characters except hyphens
+
+**When Creating Increments**:
+```bash
+# ❌ Wrong
+/specweave:increment "0004"
+
+# ✅ Correct
+/specweave:increment "0004-cost-optimization"
+/specweave:increment "0005-github-sync-enhancements"
+```
+
+**Enforcement**:
+- `/specweave:increment` command validates naming (rejects bare numbers)
+- Code review requirement (descriptive names mandatory)
+
+---
 
 ## 🔗 External Sync Architecture (CRITICAL)
 

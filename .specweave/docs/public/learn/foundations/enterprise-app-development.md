@@ -1083,8 +1083,8 @@ POST   /refunds (admin only)
 ```bash
 # Monitoring dashboard shows:
 # - Wishlist creation rate: 1,200/hour
-# - API latency: P95 = 120ms (target: <200ms)
-# - Error rate: 0.3% (target: <1%)
+# - API latency: P95 = 120ms (target: &lt;200ms)
+# - Error rate: 0.3% (target: &lt;1%)
 
 # Living docs automatically updated:
 # - ADR-012: Wishlist in Cart Service (Proposed → Accepted)

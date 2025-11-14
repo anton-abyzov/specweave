@@ -132,7 +132,7 @@ graph LR
 - CRITICAL (≥9.0) - Immediate action required
 - HIGH (6.0-8.9) - Address before release
 - MEDIUM (3.0-5.9) - Monitor
-- LOW (\<3.0) - Acceptable
+- LOW (\&lt;3.0) - Acceptable
 
 <!-- TODO: Add dedicated qa command documentation -->
 

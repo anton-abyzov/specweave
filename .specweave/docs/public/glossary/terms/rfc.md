@@ -434,7 +434,7 @@ Phase 3: Full migration
 ✅ "85%+ user satisfaction score (post-launch survey)"
 
 ❌ "Fast performance"
-✅ "Page load \<2s (95th percentile)"
+✅ "Page load \&lt;2s (95th percentile)"
 
 ## Common Mistakes
 

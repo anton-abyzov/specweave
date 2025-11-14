@@ -386,7 +386,7 @@ sequenceDiagram
 
 | Impact | API Calls | Status | Action |
 |--------|-----------|--------|--------|
-| **LOW** | <250 | ✅ Safe | Proceed |
+| **LOW** | &lt;250 | ✅ Safe | Proceed |
 | **MEDIUM** | 250-1,000 | ⚠️  Warning | Confirm |
 | **HIGH** | 1,000-2,500 | ⚠️  Risky | Strong warning |
 | **CRITICAL** | 2,500+ | ❌ Block | Reduce time range |

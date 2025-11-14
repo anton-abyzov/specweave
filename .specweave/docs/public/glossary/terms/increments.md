@@ -96,7 +96,7 @@ and rate limiting. Supports OAuth 2.0 for future social login integration.
 - ✅ All AC-IDs implemented and tested
 - ✅ 85%+ test coverage
 - ✅ Security audit passed
-- ✅ Performance: <200ms login latency
+- ✅ Performance: &lt;200ms login latency
 ```
 
 ### 2. plan.md - Implementation Approach
@@ -162,7 +162,7 @@ graph TB
 ## Rollout Plan
 1. Deploy to staging (1 day testing)
 2. Canary deployment (10% traffic)
-3. Monitor error rates (<0.1%)
+3. Monitor error rates (&lt;0.1%)
 4. Full rollout (if canary succeeds)
 ```
 
@@ -316,7 +316,7 @@ Users report application memory growing from 200MB to 2GB after 4 hours of usage
 5. Verify fix (24-hour load test)
 
 ## Acceptance Criteria
-- [ ] **AC-BUG-01**: Memory stays <300MB after 8 hours (P1, testable)
+- [ ] **AC-BUG-01**: Memory stays &lt;300MB after 8 hours (P1, testable)
 - [ ] **AC-BUG-02**: No crashes in 24-hour load test (P1, testable)
 ```
 
@@ -519,7 +519,7 @@ graph LR
 
 ### Status Line (Fast Cache)
 
-**NEW in v0.14.0**: Ultra-fast status display (<1ms)
+**NEW in v0.14.0**: Ultra-fast status display (&lt;1ms)
 
 ```bash
 # Shows current increment progress
@@ -534,7 +534,7 @@ graph LR
 
 **How It Works**:
 1. Hook pre-computes cache (async, 10-50ms) - User doesn't wait
-2. Status line reads cache (sync, <1ms) - Ultra-fast display
+2. Status line reads cache (sync, &lt;1ms) - Ultra-fast display
 3. mtime-based invalidation - Detects external edits
 
 ### Status Overview

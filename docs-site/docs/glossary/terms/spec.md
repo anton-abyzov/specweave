@@ -95,7 +95,7 @@ Complete authentication solution with social login, 2FA, and session management
 
 ## Success Metrics
 - 95%+ user satisfaction (post-launch survey)
-- <500ms average login time (P95)
+- &lt;500ms average login time (P95)
 - Zero critical security vulnerabilities
 ```
 
@@ -172,12 +172,12 @@ Brief description (1-2 sentences)
 
 ## Success Metrics
 - 95%+ user satisfaction score (post-launch survey)
-- Page load <2s (95th percentile)
+- Page load &lt;2s (95th percentile)
 - Zero critical security vulnerabilities
 
 ## Non-Functional Requirements
 - Security: OWASP Top 10 compliance
-- Performance: <500ms average response time
+- Performance: &lt;500ms average response time
 - Scalability: Support 10K concurrent users
 ```
 
