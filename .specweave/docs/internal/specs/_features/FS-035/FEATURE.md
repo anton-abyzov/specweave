@@ -1,13 +1,18 @@
 ---
-id: FS-25-11-14
+id: FS-035
 title: "Prevent Increment Number Gaps When Increments Are Abandoned or Paused"
-type: epic
+type: feature
 status: planned
+priority: P1
+created: 2025-11-14
+lastUpdated: 2025-11-14T21:59:50.660Z
+projects: ["default"]
+
 ---
 
 # Prevent Increment Number Gaps When Increments Are Abandoned or Paused
 
-## Strategic Overview
+## Overview
 
 Fix critical bug where increment ID generation (`getNextIncrementId()` / `getNextFeatureNumber()`) only scans the main `.specweave/increments/` directory, ignoring `_abandoned/` and `_paused/` subdirectories. This causes number reuse when increments are moved to these subdirectories (e.g., increment 0029 was abandoned, next increment tried to use 0029 again).
 
@@ -15,12 +20,25 @@ Fix critical bug where increment ID generation (`getNextIncrementId()` / `getNex
 
 **Solution**: Update all three affected functions to scan ALL increment locations (main directory + `_abandoned/` + `_paused/`) to maintain sequential numbering and complete audit trail.
 
-## Features
+## Business Value
 
-- FS-035
+See overview above
 
-## Timeline
+## Projects
 
-- **Start**: 2025-11-14
-- **Target Completion**: TBD
-- **Current Phase**: Phase 1
+This feature spans the following projects:
+- default
+
+## User Stories by Project
+
+### default
+
+- [US-001: Scan All Increment Directories (P1 - Critical)](../../default/FS-035/us-001-scan-all-increment-directories-p1-critical.md) - complete
+- [US-002: Preserve Audit Trail for Abandoned Increments (P1 - Critical)](../../default/FS-035/us-002-preserve-audit-trail-for-abandoned-increments-p1-critical.md) - complete
+- [US-003: Prevent Duplicate Increment Numbers (P1 - Critical)](../../default/FS-035/us-003-prevent-duplicate-increment-numbers-p1-critical.md) - complete
+
+## Progress
+
+- **Total Stories**: 3
+- **Completed**: 3
+- **Progress**: 100%
