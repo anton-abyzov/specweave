@@ -20,9 +20,20 @@ import { MetadataManager } from './metadata-manager.js';
 
 /**
  * Active increment state stored in .specweave/state/active-increment.json
+ *
+ * **UPGRADED**: Now supports MULTIPLE active increments (up to 2)
+ * - One regular feature increment
+ * - One hotfix/bug increment (optional)
  */
 export interface ActiveIncrementState {
-  id: string | null;
+  // NEW: Array of active increment IDs (max 2)
+  ids: string[];
+
+  // For backwards compatibility (deprecated, read-only)
+  id?: string | null;
+
+  // Metadata
+  lastUpdated: string;
 }
 
 /**
@@ -38,56 +49,114 @@ export class ActiveIncrementManager {
   }
 
   /**
-   * Get the currently active increment ID
-   * Returns null if no increment is active
+   * Get all currently active increment IDs
+   * Returns empty array if no increments are active
+   *
+   * **NEW**: Returns array of ALL active increments (max 2)
    */
-  getActive(): string | null {
+  getActive(): string[] {
     try {
       if (!fs.existsSync(this.stateFile)) {
-        return null;
+        return [];
       }
 
       const content = fs.readFileSync(this.stateFile, 'utf-8');
       const state: ActiveIncrementState = JSON.parse(content);
 
-      return state.id || null;
+      // Backwards compatibility: Support old format
+      if (state.id && !state.ids) {
+        return [state.id];
+      }
+
+      return state.ids || [];
     } catch (error) {
-      // File read/parse error = no active increment
-      return null;
+      // File read/parse error = no active increments
+      return [];
     }
   }
 
   /**
-   * Set the active increment
-   * Validates that the increment exists and is actually active
+   * Get the primary active increment (first in list)
+   * Returns null if no increments are active
+   *
+   * This maintains backwards compatibility with code expecting a single ID
    */
-  setActive(incrementId: string): void {
+  getPrimary(): string | null {
+    const active = this.getActive();
+    return active.length > 0 ? active[0] : null;
+  }
+
+  /**
+   * Add an increment to the active list
+   * Validates that the increment exists and is actually active
+   *
+   * **NEW**: Adds to list instead of replacing (max 2)
+   */
+  addActive(incrementId: string): void {
     // Validate increment exists
     const metadata = MetadataManager.read(incrementId);
 
     // Validate increment is actually active
     if (metadata.status !== IncrementStatus.ACTIVE) {
       throw new Error(
-        `Cannot set ${incrementId} as active: status is ${metadata.status}, not active`
+        `Cannot add ${incrementId} as active: status is ${metadata.status}, not active`
       );
     }
 
-    // Write state file atomically
-    const state: ActiveIncrementState = { id: incrementId };
+    // Get current active list
+    const currentActive = this.getActive();
+
+    // Don't add if already in list
+    if (currentActive.includes(incrementId)) {
+      return;
+    }
+
+    // Add to list (max 2)
+    const newActive = [...currentActive, incrementId].slice(0, 2);
+
+    // Write state
+    const state: ActiveIncrementState = {
+      ids: newActive,
+      lastUpdated: new Date().toISOString()
+    };
     this.writeState(state);
   }
 
   /**
-   * Clear the active increment (no increment is active)
+   * Remove an increment from the active list
+   */
+  removeActive(incrementId: string): void {
+    const currentActive = this.getActive();
+    const newActive = currentActive.filter(id => id !== incrementId);
+
+    const state: ActiveIncrementState = {
+      ids: newActive,
+      lastUpdated: new Date().toISOString()
+    };
+    this.writeState(state);
+  }
+
+  /**
+   * Set the active increment (legacy method for backwards compatibility)
+   * Now delegates to addActive()
+   */
+  setActive(incrementId: string): void {
+    this.addActive(incrementId);
+  }
+
+  /**
+   * Clear all active increments
    */
   clearActive(): void {
-    const state: ActiveIncrementState = { id: null };
+    const state: ActiveIncrementState = {
+      ids: [],
+      lastUpdated: new Date().toISOString()
+    };
     this.writeState(state);
   }
 
   /**
-   * Smart update: Set active increment to next available active increment,
-   * or clear if none are active.
+   * Smart update: Rebuild active list from metadata
    *
    * This is called when:
    * - An increment is completed
@@ -95,17 +164,29 @@ export class ActiveIncrementManager {
    * - An increment is abandoned
    *
    * Logic:
-   * 1. Get all active increments
-   * 2. If any exist, set the first one as active
-   * 3. Otherwise, clear active state
+   * 1. Scan all increments for status=active
+   * 2. Update cache to match reality
+   * 3. Max 2 increments (sorted by lastActivity)
    */
   smartUpdate(): void {
     const activeIncrements = MetadataManager.getActive();
 
     if (activeIncrements.length > 0) {
-      // Set first active increment as the active one
-      // (Could be improved with "most recently active" logic)
-      this.setActive(activeIncrements[0].id);
+      // Sort by lastActivity (most recent first)
+      const sorted = activeIncrements.sort((a, b) => {
+        const aTime = new Date(a.lastActivity).getTime();
+        const bTime = new Date(b.lastActivity).getTime();
+        return bTime - aTime; // Descending
+      });
+
+      // Take max 2
+      const activeIds = sorted.slice(0, 2).map(m => m.id);
+
+      const state: ActiveIncrementState = {
+        ids: activeIds,
+        lastUpdated: new Date().toISOString()
+      };
+      this.writeState(state);
     } else {
       // No active increments
       this.clearActive();
@@ -113,40 +194,48 @@ export class ActiveIncrementManager {
   }
 
   /**
-   * Validate that the active increment pointer is correct
+   * Validate that all active increment pointers are correct
    * Fixes stale pointers automatically
    *
-   * Returns true if valid/fixed, false if invalid and couldn't fix
+   * Returns true if all valid/fixed, false if any invalid
    */
   validate(): boolean {
     const currentActive = this.getActive();
 
-    // No active increment = valid (nothing to validate)
-    if (currentActive === null) {
+    // No active increments = valid (nothing to validate)
+    if (currentActive.length === 0) {
       return true;
     }
 
-    try {
-      // Check if increment still exists
-      const metadata = MetadataManager.read(currentActive);
+    let hasStale = false;
 
-      // Check if increment is actually active
-      if (metadata.status !== IncrementStatus.ACTIVE) {
-        // Stale pointer! Fix it automatically
-        console.warn(
-          `⚠️  Active increment pointer is stale: ${currentActive} is ${metadata.status}`
-        );
-        this.smartUpdate();
-        return false;
+    for (const incrementId of currentActive) {
+      try {
+        // Check if increment still exists
+        const metadata = MetadataManager.read(incrementId);
+
+        // Check if increment is actually active
+        if (metadata.status !== IncrementStatus.ACTIVE) {
+          // Stale pointer! Mark for fix
+          console.warn(
+            `⚠️  Active increment pointer is stale: ${incrementId} is ${metadata.status}`
+          );
+          hasStale = true;
+        }
+      } catch (error) {
+        // Increment doesn't exist = stale pointer
+        console.warn(`⚠️  Active increment pointer is invalid: ${incrementId} not found`);
+        hasStale = true;
       }
+    }
 
-      return true;
-    } catch (error) {
-      // Increment doesn't exist = stale pointer
-      console.warn(`⚠️  Active increment pointer is invalid: ${currentActive} not found`);
+    // If any stale, rebuild from source of truth
+    if (hasStale) {
       this.smartUpdate();
       return false;
     }
+
+    return true;
   }
 
   /**

@@ -4,6 +4,60 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.18.2] - 2025-11-14
+
+### ✨ Features
+
+#### External Tool Status Synchronization Enhancements (Increment 0031)
+- **Enhanced**: GitHub epic sync with rich issue content and task-level tracking
+  - Added active increments cache implementation for better performance
+  - Improved task status migration from legacy format to new Status field
+  - Enhanced hook system with validation scripts
+  - Added comprehensive error analysis and investigation reports
+- **Fixed**: Plugin hook error handling and path resolution
+- **Added**: Direct GitHub issue update scripts for manual sync operations
+- **Location**: `.specweave/increments/0031-external-tool-status-sync/`
+
+#### Multi-Project GitHub Sync Improvements
+- **Enhanced**: Multi-project sync architecture documentation
+  - Added comprehensive architecture documentation for multi-project setups
+  - Improved sync coordination across multiple repositories
+  - Enhanced documentation site with multi-project sync guides
+- **Location**: `.specweave/docs/internal/specs/default/FS-25-11-12-multi-project-github-sync/`
+
+### 🐛 Bug Fixes
+
+#### Active Increment Management
+- **Fixed**: Active increment cache and state management
+  - Improved metadata manager reliability
+  - Enhanced progress tracking across multiple increments
+  - Fixed hook validation and execution paths
+
+### 📚 Documentation
+
+#### Integration Guides
+- **Updated**: Issue tracker integration documentation
+  - Enhanced multi-project sync guide with architecture details
+  - Updated key features documentation with latest capabilities
+- **Location**: `docs-site/docs/integrations/`
+
+### 🔧 Technical Improvements
+
+#### Hook System
+- **Enhanced**: User prompt submit hook with better error handling
+  - Added validation scripts for hook execution
+  - Improved hook path resolution for compiled TypeScript files
+- **Added**: Integration tests for hook validation
+- **Location**: `plugins/specweave/hooks/`, `tests/integration/hooks/`
+
+#### Commands
+- **Updated**: Progress command with enhanced reporting
+  - Better formatting for active increment status
+  - Improved task completion percentage display
+- **Location**: `plugins/specweave/commands/specweave-progress.md`
+
+---
+
 ## [0.17.13] - 2025-11-12
 
 ### ✨ Features

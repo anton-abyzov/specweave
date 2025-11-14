@@ -26,7 +26,7 @@ if echo "$PROMPT" | grep -q "/specweave:increment"; then
 
   if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
     # Run discipline check (exit code: 0=pass, 1=violations, 2=error)
-    if command -v node >/dev/null 2>&1 && [[ -f "dist/cli/index.js" ]]; then
+    if command -v node >/dev/null 2>&1 && [[ -f "dist/src/core/increment/metadata-manager.js" ]]; then
       # Check active increments using MetadataManager
       ACTIVE_COUNT=$(node -e "
         try {

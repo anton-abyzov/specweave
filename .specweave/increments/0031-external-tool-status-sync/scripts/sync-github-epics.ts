@@ -20,9 +20,8 @@ async function main() {
   const projectRoot = process.cwd();
   const specsDir = path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs', 'default');
 
-  // Initialize GitHub client (use default profile 'specweave-dev')
-  const profile = 'specweave-dev';
-  const client = new GitHubClientV2(projectRoot, profile);
+  // Initialize GitHub client (anton-abyzov/specweave)
+  const client = GitHubClientV2.fromRepo('anton-abyzov', 'specweave');
 
   // Initialize epic sync
   const epicSync = new GitHubEpicSync(client, specsDir);
