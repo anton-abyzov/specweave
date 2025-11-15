@@ -8,7 +8,7 @@ usage: /specweave:abandon <increment-id> --reason="<reason>"
 
 **Usage**: `/specweave:abandon <increment-id> --reason="<reason>"`
 
-⚠️  **THIS ACTION MOVES THE INCREMENT TO `_abandoned/` FOLDER**
+⚠️  **THIS ACTION MOVES THE INCREMENT TO `_archive/` FOLDER**
 
 ---
 
@@ -33,7 +33,7 @@ Abandon an increment when:
    - `abandonedAt`: Current timestamp
 5. **Moves folder**:
    - From: `.specweave/increments/{id}/`
-   - To: `.specweave/increments/_abandoned/{id}/`
+   - To: `.specweave/increments/_archive/{id}/`
 6. **Displays** confirmation with preserved location
 
 ---
@@ -44,13 +44,13 @@ Abandon an increment when:
 ```bash
 /specweave:abandon 0008 --reason="Requirements changed - feature no longer needed"
 
-⚠️  This will move increment 0008 to _abandoned/
+⚠️  This will move increment 0008 to _archive/
    Reason: Requirements changed - feature no longer needed
 
 Continue? [y/N]: y
 
 ✅ Increment 0008 abandoned
-📦 Moved to: .specweave/increments/_abandoned/0008-old-feature/
+📦 Moved to: .specweave/increments/_archive/0008-old-feature/
 📝 Reason: Requirements changed - feature no longer needed
 💾 All work preserved for reference
 
@@ -70,13 +70,13 @@ Continue? [y/N]: y
 
 > 1
 
-⚠️  This will move increment 0009 to _abandoned/
+⚠️  This will move increment 0009 to _archive/
    Reason: Requirements changed
 
 Continue? [y/N]: y
 
 ✅ Increment 0009 abandoned
-📦 Moved to: .specweave/increments/_abandoned/0009-experiment/
+📦 Moved to: .specweave/increments/_archive/0009-experiment/
 ```
 
 ---
@@ -117,7 +117,7 @@ No action needed.
 ```bash
 /specweave:abandon 0008 --reason="Not needed"
 
-⚠️  This will move increment 0008 to _abandoned/
+⚠️  This will move increment 0008 to _archive/
    Reason: Not needed
 
 Continue? [y/N]: n
@@ -155,9 +155,9 @@ if (!confirmed) {
 // Update metadata
 MetadataManager.updateStatus(incrementId, IncrementStatus.ABANDONED, reason);
 
-// Move to _abandoned/ folder
+// Move to _archive/ folder
 const fromPath = path.join('.specweave/increments', incrementId);
-const toPath = path.join('.specweave/increments/_abandoned', incrementId);
+const toPath = path.join('.specweave/increments/_archive', incrementId);
 fs.moveSync(fromPath, toPath);
 
 console.log(`✅ Moved to: ${toPath}`);
@@ -179,22 +179,24 @@ completed (CANNOT abandon)
 
 ---
 
-## _abandoned/ Folder Structure
+## _archive/ Folder Structure
 
 ```
 .specweave/increments/
-├── 0001-core-framework/          # Active/completed
-├── 0002-core-enhancements/       # Active/completed
-├── 0003-model-selection/         # Active/completed
-├── _abandoned/                    # Abandoned increments
-│   ├── 0008-old-approach/        # Abandoned
+├── 0023-release-management/      # Active
+├── 0024-bidirectional-spec/      # Active
+├── 0025-per-project-config/      # Active
+├── _archive/                      # All archived/abandoned/old increments
+│   ├── 0001-core-framework/       # Completed (archived)
+│   ├── 0002-core-enhancements/    # Completed (archived)
+│   ├── 0008-old-approach/         # Abandoned
 │   │   ├── spec.md
 │   │   ├── plan.md
 │   │   ├── tasks.md
 │   │   └── metadata.json (status: abandoned)
-│   ├── 0009-failed-experiment/
-│   └── 0010-superseded-feature/
-└── _backlog/                      # Future work
+│   ├── 0009-failed-experiment/    # Abandoned
+│   └── 0029-cicd-auto-fix/        # Abandoned
+└── _backlog/                       # Future work
 ```
 
 ---
@@ -205,7 +207,7 @@ To un-abandon an increment:
 
 ```bash
 # 1. Move back to increments/
-mv .specweave/increments/_abandoned/0008-feature \
+mv .specweave/increments/_archive/0008-feature \
    .specweave/increments/0008-feature
 
 # 2. Resume via command
@@ -304,7 +306,7 @@ Abandoned work is valuable!
 - **Learnings**: Failed experiments teach us what NOT to do
 - **Reference**: Abandoned specs can inform future work
 
-💡 Periodically review `_abandoned/` folder for insights
+💡 Periodically review `_archive/` folder for insights
 
 ---
 

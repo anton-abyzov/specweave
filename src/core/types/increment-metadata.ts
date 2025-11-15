@@ -13,6 +13,9 @@ export enum IncrementStatus {
   /** Currently being worked on */
   ACTIVE = 'active',
 
+  /** Planned but not ready to start yet (does NOT count towards WIP limits) */
+  BACKLOG = 'backlog',
+
   /** Temporarily stopped (blocked by external dependency, deprioritized) */
   PAUSED = 'paused',
 
@@ -73,6 +76,12 @@ export interface IncrementMetadata {
   /** Coverage target percentage (70-95, defaults to global config) */
   coverageTarget?: number;
 
+  /** Reason for moving to backlog (only if status = backlog) */
+  backlogReason?: string;
+
+  /** Timestamp when moved to backlog (ISO 8601) */
+  backlogAt?: string;
+
   /** Reason for pausing (only if status = paused) */
   pausedReason?: string;
 
@@ -113,8 +122,13 @@ export interface IncrementMetadataExtended extends IncrementMetadata {
  */
 export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
   [IncrementStatus.ACTIVE]: [
+    IncrementStatus.BACKLOG,
     IncrementStatus.PAUSED,
     IncrementStatus.COMPLETED,
+    IncrementStatus.ABANDONED
+  ],
+  [IncrementStatus.BACKLOG]: [
+    IncrementStatus.ACTIVE,
     IncrementStatus.ABANDONED
   ],
   [IncrementStatus.PAUSED]: [
@@ -122,7 +136,9 @@ export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
     IncrementStatus.ABANDONED
   ],
   [IncrementStatus.COMPLETED]: [
-    // Completed is terminal (cannot transition out)
+    // NEW: Allow reopening completed increments when issues discovered
+    IncrementStatus.ACTIVE,     // Reopen for fixes
+    IncrementStatus.ABANDONED   // Mark as failed (rare)
   ],
   [IncrementStatus.ABANDONED]: [
     IncrementStatus.ACTIVE  // Can un-abandon if needed (rare)

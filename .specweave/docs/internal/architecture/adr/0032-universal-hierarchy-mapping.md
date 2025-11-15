@@ -505,9 +505,15 @@ Implemented in:
 **Pros**: Matches increment numbers
 **Cons**: Features aren't numbered, creates duplicates when multiple increments contribute to same feature
 
-### Alternative 4: Date-Based Naming (FS-YY-MM-DD) (✅ SELECTED)
-**Pros**: Chronological, prevents duplicates, matches increment creation dates, aligns with GitHub issue format
-**Cons**: Requires extracting dates from metadata
+### Alternative 4: Sequential Naming (FS-XXX) (✅ SELECTED for Greenfield)
+**Pros**: Matches increment numbers perfectly, simple, predictable
+**Cons**: None for greenfield projects
+**Decision**: Use `FS-{last-3-digits}` for greenfield (default), date-based only for brownfield imports
+
+**Example**:
+- Increment `0031-external-tool-sync` → Feature `FS-031` ✅
+- Increment `0032-prevent-gaps` → Feature `FS-032` ✅
+- Brownfield import from JIRA → Feature `FS-YY-MM-DD-feature-name` ✅
 
 ---
 
@@ -554,14 +560,53 @@ npm run migrate-to-universal-hierarchy
 
 ---
 
+## Critical Bugs Fixed (2025-11-14)
+
+### Bug 1: Feature ID Generation Mismatch ❌→✅
+
+**Problem**: Features getting random IDs instead of matching increment numbers
+```
+Increments: 0030, 0031, 0032
+Features:   FS-034, FS-037, FS-039  ❌ WRONG!
+Expected:   FS-030, FS-031, FS-032  ✅ CORRECT
+```
+
+**Root Cause**: `FeatureIDManager.scanIncrements()` (line 100-107) was using date-based ordering instead of increment-based IDs for greenfield projects.
+
+**Fix**: Changed to extract last 3 digits from increment ID:
+```typescript
+// OLD (WRONG):
+const date = this.formatDateShort(created);
+featureId = `FS-${date}-${match[2]}`;
+
+// NEW (CORRECT):
+const num = parseInt(match[1], 10); // 31
+featureId = `FS-${String(num).padStart(3, '0')}`; // FS-031
+```
+
+### Bug 2: Acceptance Criteria Extraction ❌→✅
+
+**Problem**: User stories showing "Acceptance criteria to be extracted..." placeholder instead of actual AC from spec.md
+
+**Root Cause**: `SpecDistributor.extractAcceptanceCriteria()` patterns not matching AC sections correctly
+
+**Fix**: Enhanced patterns to handle multiple formats:
+- AC in same section as user story
+- AC in separate "Acceptance Criteria:" section
+- Both `###` and `####` heading levels
+- Leading/trailing blank lines
+
 ## Success Criteria
 
-1. **Structure**: All features organized under `_features/` and `{project}/`
-2. **Migration**: 100% of existing specs migrated without data loss
-3. **Tests**: All tests pass with new structure
-4. **Sync**: GitHub, Jira, and ADO sync work with new hierarchy
-5. **Documentation**: Complete migration guide and user documentation
-6. **Performance**: No degradation in sync or query performance
+1. ✅ **Feature IDs**: Greenfield increments get matching FS-XXX IDs (0031 → FS-031)
+2. ✅ **AC Extraction**: User stories populate with actual acceptance criteria
+3. ✅ **Hierarchy Docs**: Complete enterprise hierarchy mapping documented
+4. **Structure**: All features organized under `_features/` and `{project}/`
+5. **Migration**: 100% of existing specs migrated without data loss
+6. **Tests**: All tests pass with new structure
+7. **Sync**: GitHub, Jira, and ADO sync work with new hierarchy
+8. **Documentation**: Complete migration guide and user documentation
+9. **Performance**: No degradation in sync or query performance
 
 ---
 

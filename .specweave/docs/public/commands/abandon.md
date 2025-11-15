@@ -14,7 +14,7 @@ specweave abandon <increment-id> [options]
 
 ## Description
 
-The `abandon` command permanently cancels work on an increment by moving it to the `_abandoned/` folder. This preserves all work for reference while freeing up your WIP limit.
+The `abandon` command permanently cancels work on an increment by moving it to the `_archive/` folder. This preserves all work for reference while freeing up your WIP limit.
 
 **Use abandon when**:
 - 🔄 Requirements changed (feature no longer needed)
@@ -23,7 +23,7 @@ The `abandon` command permanently cancels work on an increment by moving it to t
 - 🧪 Experiment failed (spike didn't pan out)
 
 :::warning Permanent Action
-Abandon is **permanent** and moves the increment to `_abandoned/`. Unlike pause, abandoned increments require manual restoration.
+Abandon is **permanent** and moves the increment to `_archive/`. Unlike pause, abandoned increments require manual restoration.
 :::
 
 ## Options
@@ -66,13 +66,13 @@ specweave abandon 0008-social-features \
   --reason "Requirements changed - pivoting to enterprise focus"
 
 # Output:
-⚠️  This will move increment 0008-social-features to _abandoned/
+⚠️  This will move increment 0008-social-features to _archive/
    Reason: Requirements changed - pivoting to enterprise focus
 
 Continue? [y/N]: y
 
 ✅ Increment 0008-social-features abandoned
-📦 Moved to: .specweave/increments/_abandoned/0008-social-features/
+📦 Moved to: .specweave/increments/_archive/0008-social-features/
 📝 Reason: Requirements changed - pivoting to enterprise focus
 💾 All work preserved for reference
 
@@ -80,7 +80,7 @@ Continue? [y/N]: y
 ```
 
 **What happened**:
-- ✅ Increment moved to `_abandoned/` folder
+- ✅ Increment moved to `_archive/` folder
 - ✅ Metadata updated (status: abandoned, timestamp)
 - ✅ WIP limit freed (can start other work)
 - ✅ All files preserved for reference
@@ -100,13 +100,13 @@ specweave abandon 0009-experiment
 
 > 4
 
-⚠️  This will move increment 0009-experiment to _abandoned/
+⚠️  This will move increment 0009-experiment to _archive/
    Reason: Experiment failed
 
 Continue? [y/N]: y
 
 ✅ Increment 0009-experiment abandoned
-📦 Moved to: .specweave/increments/_abandoned/0009-experiment/
+📦 Moved to: .specweave/increments/_archive/0009-experiment/
 ```
 
 ### Example 3: Force Abandon (Skip Confirmation)
@@ -117,7 +117,7 @@ specweave abandon 0010 --reason "Obsolete" --force
 
 # Output:
 ✅ Increment 0010 abandoned (forced)
-📦 Moved to: .specweave/increments/_abandoned/0010/
+📦 Moved to: .specweave/increments/_archive/0010/
 📝 Reason: Obsolete
 ```
 
@@ -194,7 +194,7 @@ graph LR
 .specweave/increments/
 ├── 0007-feature-x/
 ├── 0009-feature-z/
-└── _abandoned/
+└── _archive/
     └── 0008-social-features/  # ← Moved here
         ├── spec.md
         ├── plan.md
@@ -239,14 +239,14 @@ $ specweave abandon 0001
 ```bash
 $ specweave abandon 0008
 ⚠️  Increment 0008 is already abandoned
-   Location: .specweave/increments/_abandoned/0008-old-feature/
+   Location: .specweave/increments/_archive/0008-old-feature/
    Reason: Requirements changed
    Abandoned: 5 days ago
 
 No action needed.
 ```
 
-**Solution**: Already in `_abandoned/` folder.
+**Solution**: Already in `_archive/` folder.
 
 ### Increment Not Found
 
@@ -263,7 +263,7 @@ $ specweave abandon 9999
 ```bash
 $ specweave abandon 0008 --reason "Not needed"
 
-⚠️  This will move increment 0008 to _abandoned/
+⚠️  This will move increment 0008 to _archive/
    Reason: Not needed
 
 Continue? [y/N]: n
@@ -351,7 +351,7 @@ specweave abandon 0007-graphql-migration \
   --reason "Experiment failed - complexity too high, sticking with REST"
 
 # Document learnings
-vim .specweave/increments/_abandoned/0007-graphql-migration/spec.md
+vim .specweave/increments/_archive/0007-graphql-migration/spec.md
 # Add: "## Learnings: GraphQL adds 3x complexity, REST is sufficient"
 ```
 
@@ -422,7 +422,7 @@ To restore an abandoned increment:
 
 ```bash
 # 1. Manually move back to increments/
-mv .specweave/increments/_abandoned/0008-feature \
+mv .specweave/increments/_archive/0008-feature \
    .specweave/increments/0008-feature
 
 # 2. Resume via command
@@ -506,7 +506,7 @@ specweave status
 
 ```bash
 # Review abandoned folder quarterly
-ls .specweave/increments/_abandoned/
+ls .specweave/increments/_archive/
 
 # Common patterns?
 # - Requirements changing too often? → Improve planning
@@ -544,7 +544,7 @@ ls .specweave/increments/_abandoned/
 **Key Points**:
 - ✅ Use `abandon` for **permanent** cancellation
 - ✅ Always provide clear reason
-- ✅ Work moved to `_abandoned/` (preserved)
+- ✅ Work moved to `_archive/` (preserved)
 - ✅ Frees WIP limit
 - ✅ Cannot abandon completed increments
 - ✅ Experiments auto-abandon after 14 days

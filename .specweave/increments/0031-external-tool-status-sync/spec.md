@@ -3,7 +3,7 @@ title: External Tool Status Synchronization
 increment: 0031-external-tool-status-sync
 epic: EPIC-2025-Q4-platform
 feature: FS-25-11-12-external-tool-sync
-projects: ['backend']
+projects: ['default']
 status: in-progress
 priority: P1
 type: feature
@@ -68,11 +68,11 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 **So that** I don't need to navigate to the repository to understand the feature
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: External issues show executive summary (P1, testable)
-- [ ] **AC-US1-02**: External issues show all user stories with descriptions (P1, testable)
-- [ ] **AC-US1-03**: External issues show acceptance criteria (P1, testable)
-- [ ] **AC-US1-04**: External issues show linked tasks with GitHub issue numbers (P1, testable)
-- [ ] **AC-US1-05**: User stories collapsed by default in GitHub UI (P2, testable)
+- [x] **AC-US1-01**: External issues show executive summary (P1, testable)
+- [x] **AC-US1-02**: External issues show all user stories with descriptions (P1, testable)
+- [x] **AC-US1-03**: External issues show acceptance criteria (P1, testable)
+- [x] **AC-US1-04**: External issues show linked tasks with GitHub issue numbers (P1, testable)
+- [x] **AC-US1-05**: User stories collapsed by default in GitHub UI (P2, testable)
 - [ ] **AC-US1-06**: Content updates when spec.md changes (P2, testable)
 - [ ] **AC-US1-07**: Architecture diagrams embedded (if available) (P3, testable)
 
@@ -87,10 +87,10 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 **So that** I can track progress and understand implementation history
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Spec frontmatter includes linked_increments mapping (P1, testable)
-- [ ] **AC-US2-02**: User stories map to specific tasks (US-001 → T-001, T-002) (P1, testable)
-- [ ] **AC-US2-03**: Tasks include GitHub/JIRA/ADO issue numbers (P1, testable)
-- [ ] **AC-US2-04**: Can query "which increment implemented US-001?" (P2, testable)
+- [x] **AC-US2-01**: Spec frontmatter includes linked_increments mapping (P1, testable)
+- [x] **AC-US2-02**: User stories map to specific tasks (US-001 → T-001, T-002) (P1, testable)
+- [x] **AC-US2-03**: Tasks include GitHub/JIRA/ADO issue numbers (P1, testable)
+- [x] **AC-US2-04**: Can query "which increment implemented US-001?" (P2, testable)
 - [ ] **AC-US2-05**: Traceability report shows complete history (P2, testable)
 - [ ] **AC-US2-06**: Acceptance criteria map to task validation (P3, testable)
 
@@ -107,11 +107,11 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 **So that** I can match my team's workflow
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Config schema supports status mappings per tool (P1, testable)
-- [ ] **AC-US3-02**: Default mappings provided for GitHub/JIRA/ADO (P1, testable)
-- [ ] **AC-US3-03**: Users can customize mappings (P2, testable)
-- [ ] **AC-US3-04**: Validation prevents invalid mappings (P2, testable)
-- [ ] **AC-US3-05**: Tool-specific label/tag support (GitHub: labels, JIRA: none, ADO: tags) (P2, testable)
+- [x] **AC-US3-01**: Config schema supports status mappings per tool (P1, testable)
+- [x] **AC-US3-02**: Default mappings provided for GitHub/JIRA/ADO (P1, testable)
+- [x] **AC-US3-03**: Users can customize mappings (P2, testable)
+- [x] **AC-US3-04**: Validation prevents invalid mappings (P2, testable)
+- [x] **AC-US3-05**: Tool-specific label/tag support (GitHub: labels, JIRA: none, ADO: tags) (P2, testable)
 
 **Default Mappings**:
 
@@ -149,12 +149,12 @@ ado:
 **So that** I don't manually update status in two places
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: SpecWeave status change triggers external update (P1, testable)
-- [ ] **AC-US4-02**: External issue close triggers SpecWeave prompt (P1, testable)
-- [ ] **AC-US4-03**: External issue reopen triggers SpecWeave prompt (P2, testable)
-- [ ] **AC-US4-04**: Sync logs include timestamp and reason (P2, testable)
-- [ ] **AC-US4-05**: Failed syncs retry with exponential backoff (P2, testable)
-- [ ] **AC-US4-06**: Sync works for GitHub, JIRA, and ADO (P1, testable)
+- [x] **AC-US4-01**: SpecWeave status change triggers external update (P1, testable)
+- [x] **AC-US4-02**: External issue close triggers SpecWeave prompt (P1, testable)
+- [x] **AC-US4-03**: External issue reopen triggers SpecWeave prompt (P2, testable)
+- [x] **AC-US4-04**: Sync logs include timestamp and reason (P2, testable)
+- [x] **AC-US4-05**: Failed syncs retry with exponential backoff (P2, testable)
+- [x] **AC-US4-06**: Sync works for GitHub, JIRA, and ADO (P1, testable)
 
 **Bidirectional Sync Rules**:
 - **SpecWeave → External**: When increment status changes, update external issue
@@ -171,14 +171,14 @@ ado:
 **So that** I can choose whether to sync (with context about what will happen)
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: `/specweave:done` detects external link and prompts (P1, testable)
-- [ ] **AC-US5-02**: Prompt shows current external status (P1, testable)
-- [ ] **AC-US5-03**: Prompt shows what status will change to (P1, testable)
-- [ ] **AC-US5-04**: User can choose: Yes/No/Custom (P1, testable)
-- [ ] **AC-US5-05**: "Yes" updates external issue with completion comment (P1, testable)
-- [ ] **AC-US5-06**: "No" skips sync (user will update manually) (P1, testable)
-- [ ] **AC-US5-07**: "Custom" allows user to specify status (P2, testable)
-- [ ] **AC-US5-08**: Auto-sync mode available (skip prompts) (P3, testable)
+- [x] **AC-US5-01**: `/specweave:done` detects external link and prompts (P1, testable)
+- [x] **AC-US5-02**: Prompt shows current external status (P1, testable)
+- [x] **AC-US5-03**: Prompt shows what status will change to (P1, testable)
+- [x] **AC-US5-04**: User can choose: Yes/No/Custom (P1, testable)
+- [x] **AC-US5-05**: "Yes" updates external issue with completion comment (P1, testable)
+- [x] **AC-US5-06**: "No" skips sync (user will update manually) (P1, testable)
+- [x] **AC-US5-07**: "Custom" allows user to specify status (P2, testable)
+- [x] **AC-US5-08**: Auto-sync mode available (skip prompts) (P3, testable)
 
 **Prompt Example**:
 ```
@@ -207,13 +207,13 @@ Your choice [1/2/3]: _
 **So that** I don't lose work or create inconsistencies
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Detect status conflicts (local vs remote differ) (P1, testable)
-- [ ] **AC-US6-02**: Configurable conflict resolution strategy (P1, testable)
-- [ ] **AC-US6-03**: "prompt" strategy asks user to resolve (P1, testable)
-- [ ] **AC-US6-04**: "last-write-wins" strategy uses most recent (P2, testable)
-- [ ] **AC-US6-05**: "specweave-wins" strategy keeps local status (P2, testable)
-- [ ] **AC-US6-06**: "external-wins" strategy uses external status (P2, testable)
-- [ ] **AC-US6-07**: Conflict log shows resolution history (P2, testable)
+- [x] **AC-US6-01**: Detect status conflicts (local vs remote differ) (P1, testable)
+- [x] **AC-US6-02**: Configurable conflict resolution strategy (P1, testable)
+- [x] **AC-US6-03**: "prompt" strategy asks user to resolve (P1, testable)
+- [x] **AC-US6-04**: "last-write-wins" strategy uses most recent (P2, testable)
+- [x] **AC-US6-05**: "specweave-wins" strategy keeps local status (P2, testable)
+- [x] **AC-US6-06**: "external-wins" strategy uses external status (P2, testable)
+- [x] **AC-US6-07**: Conflict log shows resolution history (P2, testable)
 
 **Conflict Scenarios**:
 1. Increment completed in SpecWeave, external issue already closed → Skip sync (already closed)
@@ -234,7 +234,7 @@ Your choice [1/2/3]: _
 **So that** SpecWeave respects my team's process
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: Detect tool-specific workflows (GitHub: simple, JIRA: complex) (P2, testable)
+- [x] **AC-US7-01**: Detect tool-specific workflows (GitHub: simple, JIRA: complex) (P2, testable)
 - [ ] **AC-US7-02**: Support custom workflow definitions (P3, testable)
 - [ ] **AC-US7-03**: Validate status transitions against workflow (P3, testable)
 - [ ] **AC-US7-04**: Suggest valid next states based on workflow (P3, testable)

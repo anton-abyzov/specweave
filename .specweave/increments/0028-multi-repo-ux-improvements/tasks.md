@@ -9,8 +9,7 @@ coverage_target: 85%
 ---
 
 ## T-001: Update Repository Count Clarification (US-001)
-**User Story**: [US-001: Clear Repository Count Prompt](../../docs/internal/specs/default/multi-repo-ux/us-001-clear-repository-count-prompt.md)
-
+**User Story**: [US-001: Clear Repository Count Prompt](../../docs/internal/specs/default/FS-028/us-001-clear-repository-count-prompt.md)
 
 **AC**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04
 **Priority**: P0
@@ -33,10 +32,8 @@ coverage_target: 85%
 **Manual Test**: Run `specweave init` → Select multi-repo → Verify clarification
 
 ---
-
 ## T-002: Fix Repository ID Single-Value Validation (US-002)
-**User Story**: [US-002: Single-Value Repository ID Input](../../docs/internal/specs/default/multi-repo-ux/us-002-single-value-repository-id-input.md)
-
+**User Story**: [US-002: Single-Value Repository ID Input](../../docs/internal/specs/default/FS-028/us-002-single-value-repository-id-input.md)
 
 **AC**: AC-US2-01, AC-US2-02, AC-US2-03
 **Priority**: P0
@@ -57,10 +54,8 @@ coverage_target: 85%
 **Manual Test**: Enter comma-separated value → Verify error
 
 ---
-
 ## T-003: Create Folder Detection Module (US-004)
-**User Story**: [US-004: Auto-Detect Repository Count](../../docs/internal/specs/default/multi-repo-ux/us-004-auto-detect-repository-count.md)
-
+**User Story**: [US-004: Auto-Detect Repository Count](../../docs/internal/specs/default/FS-028/us-004-auto-detect-repository-count.md)
 
 **AC**: AC-US4-01
 **Priority**: P2
@@ -84,10 +79,8 @@ coverage_target: 85%
 - Suggested count: Math.max(2, detectedCount)
 
 ---
-
 ## T-004: Integrate Auto-Detection in Repository Setup (US-004)
-**User Story**: [US-004: Auto-Detect Repository Count](../../docs/internal/specs/default/multi-repo-ux/us-004-auto-detect-repository-count.md)
-
+**User Story**: [US-004: Auto-Detect Repository Count](../../docs/internal/specs/default/FS-028/us-004-auto-detect-repository-count.md)
 
 **AC**: AC-US4-02, AC-US4-03
 **Priority**: P2
@@ -109,10 +102,8 @@ coverage_target: 85%
 **Manual Test**: Create frontend/backend folders → Run init → Verify detection
 
 ---
-
 ## T-005: Create Project Validation Module (US-003)
-**User Story**: [US-003: Project ID Validation](../../docs/internal/specs/default/multi-repo-ux/us-003-project-id-validation.md)
-
+**User Story**: [US-003: Project ID Validation](../../docs/internal/specs/default/FS-028/us-003-project-id-validation.md)
 
 **AC**: AC-US3-01
 **Priority**: P1
@@ -137,10 +128,8 @@ coverage_target: 85%
 - Return validation result with project list
 
 ---
-
 ## T-006: Integrate Project Validation in GitHub Setup (US-003)
-**User Story**: [US-003: Project ID Validation](../../docs/internal/specs/default/multi-repo-ux/us-003-project-id-validation.md)
-
+**User Story**: [US-003: Project ID Validation](../../docs/internal/specs/default/FS-028/us-003-project-id-validation.md)
 
 **AC**: AC-US3-02, AC-US3-03
 **Priority**: P1
@@ -164,7 +153,6 @@ coverage_target: 85%
 **Manual Test**: Delete sync.projects from config → Run init → Verify prompt
 
 ---
-
 ## T-007: Write Unit Tests for Folder Detection
 
 **Priority**: P2

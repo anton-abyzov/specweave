@@ -12,11 +12,11 @@ coverage_target: 95%
 
 ### T-001: Create IncrementNumberManager Class Structure
 
-**User Story**: Core infrastructure for increment number management
-**Acceptance Criteria**: AC-US1-01 (Centralized utility), AC-US1-02 (TypeScript implementation)
+**User Story**: [US-001: Scan All Increment Directories (P1 - Critical)](../../docs/internal/specs/default/FS-032/us-001-scan-all-increment-directories-p1-critical.md)
+**AC**: AC-US1-01, AC-US1-02
 **Priority**: P1
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] (100% - Completed)
 
 **Test Plan**:
 - **Given** a new TypeScript project with existing increment structure
@@ -56,7 +56,6 @@ coverage_target: 95%
 6. Final check: Coverage 100%
 
 ---
-
 ### T-002: Implement Comprehensive Directory Scanning Logic
 
 **User Story**: Core infrastructure for increment number management
@@ -66,18 +65,17 @@ coverage_target: 95%
 **Status**: [ ] pending
 
 **Test Plan**:
-- **Given** increments exist in main, _abandoned, and _paused directories
+- **Given** increments exist in main and _archive directories
 - **When** scanAllIncrementDirectories() is called
-- **Then** it should find the highest increment number across ALL directories
+- **Then** it should find the highest increment number across both directories
 - **And** handle both 3-digit (001) and 4-digit (0001) formats
 - **And** log which directory contained the highest number
 
 **Test Cases**:
 1. **Unit**: `tests/unit/increment-utils.test.ts`
    - testScanMainDirectory(): Finds increments in main directory
-   - testScanAbandonedDirectory(): Finds increments in _abandoned/
-   - testScanPausedDirectory(): Finds increments in _paused/
-   - testFindHighestAcrossAll(): Returns highest from any directory
+   - testScanArchiveDirectory(): Finds increments in _archive/
+   - testFindHighestAcrossAll(): Returns highest from both directories
    - testHandle3DigitIDs(): Correctly parses 001-feature format
    - testHandle4DigitIDs(): Correctly parses 0001-feature format
    - testHandleMixedFormats(): Handles mix of 3-digit and 4-digit
@@ -90,7 +88,7 @@ coverage_target: 95%
 
 **Implementation**:
 1. Implement `scanAllIncrementDirectories(incrementsDir: string): number`
-2. Define directories to scan: main, _abandoned, _paused
+2. Define directories to scan: main, _archive
 3. For each directory:
    - Check if exists using fs.existsSync()
    - If missing, continue gracefully
@@ -100,15 +98,15 @@ coverage_target: 95%
    - Log highest number found with directory label
 4. Return highest number (0 if none found)
 5. Add error handling for permission issues
-6. Write unit tests: 10 test cases
-7. Run tests: `npm test increment-utils.test` (should pass: 10/10)
+6. Write unit tests: 9 test cases
+7. Run tests: `npm test increment-utils.test` (should pass: 9/9)
 8. Verify coverage: `npm run coverage` (should be 95%+)
 
 **TDD Workflow**:
-1. Write all 10 tests above (should fail)
-2. Run tests: `npm test increment-utils.test` (0/10 passing)
+1. Write all 9 tests above (should fail)
+2. Run tests: `npm test increment-utils.test` (0/9 passing)
 3. Implement scanAllIncrementDirectories() step-by-step
-4. Run tests: `npm test increment-utils.test` (10/10 passing)
+4. Run tests: `npm test increment-utils.test` (9/9 passing)
 5. Refactor: Extract directory list to constant
 6. Final check: Coverage 95%+
 
@@ -187,8 +185,8 @@ coverage_target: 95%
 **Test Cases**:
 1. **Unit**: `tests/unit/increment-utils.test.ts`
    - testDetectsInMainDirectory(): Finds increment in main directory
-   - testDetectsInAbandonedDirectory(): Finds increment in _abandoned/
-   - testDetectsInPausedDirectory(): Finds increment in _paused/
+   - testDetectsInAbandonedDirectory(): Finds increment in _archive/
+   - testDetectsInPausedDirectory(): Finds increment in _archive/
    - testNormalizes3DigitTo4Digit(): '001' matches '0001-feature'
    - testAcceptsStringInput(): Works with '0032' string
    - testAcceptsNumberInput(): Works with 32 number
@@ -202,7 +200,7 @@ coverage_target: 95%
 1. Implement `incrementNumberExists(incrementNumber: string | number, projectRoot = process.cwd()): boolean`
 2. Normalize input: `const normalized = String(incrementNumber).padStart(4, '0')`
 3. Construct incrementsDir path
-4. Define directories to check: main, _abandoned, _paused
+4. Define directories to check: main, _archive, _archive
 5. For each directory:
    - Check if exists using fs.existsSync()
    - If missing, continue
@@ -490,8 +488,8 @@ coverage_target: 95%
 2. Setup test fixture: Create temporary project structure
 3. Helper functions:
    - createIncrement(id, name) → creates folder
-   - abandonIncrement(id) → moves to _abandoned/
-   - pauseIncrement(id) → moves to _paused/
+   - abandonIncrement(id) → moves to _archive/
+   - pauseIncrement(id) → moves to _archive/
 4. Write integration tests: 8 scenarios
 5. Use real filesystem (not mocks) for integration tests
 6. Clean up temp directories in afterEach()
@@ -597,7 +595,7 @@ coverage_target: 95%
 **Test Plan**: N/A (documentation task)
 
 **Validation**:
-- Manual review: Section explains _abandoned/ and _paused/ folders
+- Manual review: Section explains _archive/ and _archive/ folders
 - Grammar check: Run spell checker
 - Link checker: All internal links work
 - User testing: Ask user to follow guide and create/abandon increment
@@ -605,7 +603,7 @@ coverage_target: 95%
 **Implementation**:
 1. Open file: `.specweave/docs/public/guides/increment-lifecycle.md`
 2. Add new section: "Understanding Increment Subdirectories"
-3. Add table explaining main, _abandoned, _paused folders
+3. Add table explaining main, _archive, _archive folders
 4. Add example showing increment number reservation
 5. Add "Why" explanation (prevents duplicate IDs, maintains audit trail)
 6. Add visual diagram (ASCII art or Mermaid)
@@ -637,7 +635,7 @@ coverage_target: 95%
 2. Add inline comments for:
    - Cache TTL logic (why 5 seconds?)
    - ID normalization (why padStart(4, '0')?)
-   - Directory scanning order (why main, then _abandoned, then _paused?)
+   - Directory scanning order (why main, then _archive, then _archive?)
    - Regex pattern (why /^(\d{3,4})-/?)
    - Graceful fallbacks (why not throw errors?)
 3. Add TODO comments for future enhancements:

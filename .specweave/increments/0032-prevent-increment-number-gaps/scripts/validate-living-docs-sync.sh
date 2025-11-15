@@ -1,0 +1,167 @@
+#!/bin/bash
+#
+# Living Docs Sync Validation Script
+# Tests the reliability and completeness of the sync algorithm
+#
+
+set -e
+
+PROJECT_ROOT="/Users/antonabyzov/Projects/github/specweave"
+SPECS_DIR="$PROJECT_ROOT/.specweave/docs/internal/specs"
+INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
+REPORT_FILE="$PROJECT_ROOT/.specweave/increments/0032-prevent-increment-number-gaps/reports/SYNC-VALIDATION-REPORT.md"
+
+echo "==================================================="
+echo "Living Docs Sync Validation"
+echo "==================================================="
+echo ""
+
+# Active increments (excluding archived/abandoned)
+ACTIVE_INCREMENTS=(
+  "0023-release-management-enhancements"
+  "0024-bidirectional-spec-sync"
+  "0025-per-project-resource-config"
+  "0026-multi-repo-unit-tests"
+  "0027-multi-project-github-sync"
+  "0028-multi-repo-ux-improvements"
+  "0030-intelligent-living-docs"
+  "0031-external-tool-status-sync"
+  "0032-prevent-increment-number-gaps"
+)
+
+# Initialize report
+cat > "$REPORT_FILE" << 'EOF'
+# Living Docs Sync Validation Report
+
+**Generated**: $(date '+%Y-%m-%d %H:%M:%S')
+**Test Type**: Sync Completeness and Correctness
+
+## Executive Summary
+
+EOF
+
+# Counter variables
+total_increments=0
+total_user_stories_source=0
+total_user_stories_synced=0
+total_features_created=0
+issues_found=0
+
+# Detailed results
+echo "## Increment-by-Increment Analysis" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+echo "| Increment | User Stories (Source) | User Stories (Synced) | Feature Folder | Status |" >> "$REPORT_FILE"
+echo "|-----------|----------------------|----------------------|----------------|--------|" >> "$REPORT_FILE"
+
+for inc in "${ACTIVE_INCREMENTS[@]}"; do
+  total_increments=$((total_increments + 1))
+
+  # Extract increment number (FS-XXX format)
+  inc_num=$(echo "$inc" | sed 's/^0*//' | sed 's/-.*//')
+  feature_id="FS-$(printf '%03d' $inc_num)"
+
+  # Count user stories in spec.md
+  spec_file="$INCREMENTS_DIR/$inc/spec.md"
+  if [ -f "$spec_file" ]; then
+    us_source=$(grep -E "^#{3,4} US-[0-9]+" "$spec_file" | wc -l | tr -d ' ')
+  else
+    us_source=0
+  fi
+
+  # Count synced user stories
+  feature_dir="$SPECS_DIR/default/$feature_id"
+  if [ -d "$feature_dir" ]; then
+    us_synced=$(find "$feature_dir" -name "us-*.md" 2>/dev/null | wc -l | tr -d ' ')
+    total_features_created=$((total_features_created + 1))
+
+    # Check if FEATURE.md exists
+    if [ ! -f "$SPECS_DIR/_features/$feature_id/FEATURE.md" ]; then
+      status="⚠️ Missing FEATURE.md"
+      issues_found=$((issues_found + 1))
+    elif [ "$us_source" -ne "$us_synced" ]; then
+      status="❌ Mismatch ($us_source vs $us_synced)"
+      issues_found=$((issues_found + 1))
+    elif [ "$us_source" -eq 0 ]; then
+      status="✅ No user stories (implementation only)"
+    else
+      status="✅ Perfect sync"
+    fi
+  else
+    us_synced=0
+    if [ "$us_source" -eq 0 ]; then
+      status="⚠️ No folder (no user stories)"
+    else
+      status="❌ NOT SYNCED"
+      issues_found=$((issues_found + 1))
+    fi
+  fi
+
+  # Update totals
+  total_user_stories_source=$((total_user_stories_source + us_source))
+  total_user_stories_synced=$((total_user_stories_synced + us_synced))
+
+  # Add to report
+  echo "| $inc | $us_source | $us_synced | $feature_id | $status |" >> "$REPORT_FILE"
+
+  # Console output
+  printf "%-45s | Source: %2d | Synced: %2d | %s\n" "$inc" "$us_source" "$us_synced" "$status"
+done
+
+echo "" >> "$REPORT_FILE"
+echo "## Summary Statistics" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+echo "- **Total Increments**: $total_increments" >> "$REPORT_FILE"
+echo "- **User Stories in Source**: $total_user_stories_source" >> "$REPORT_FILE"
+echo "- **User Stories Synced**: $total_user_stories_synced" >> "$REPORT_FILE"
+echo "- **Features Created**: $total_features_created" >> "$REPORT_FILE"
+echo "- **Issues Found**: $issues_found" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+
+# Calculate accuracy
+if [ "$total_user_stories_source" -gt 0 ]; then
+  accuracy=$(awk "BEGIN {printf \"%.1f\", ($total_user_stories_synced / $total_user_stories_source) * 100}")
+else
+  accuracy="100.0"
+fi
+
+echo "- **Sync Accuracy**: ${accuracy}%" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+
+# Final verdict
+echo "## Final Verdict" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+
+if [ "$issues_found" -eq 0 ] && [ "$total_user_stories_source" -eq "$total_user_stories_synced" ]; then
+  echo "**PASS** ✅ - 100% sync accuracy, zero issues" >> "$REPORT_FILE"
+  echo "**Confidence Score**: 100%" >> "$REPORT_FILE"
+  verdict="PASS"
+elif [ "$issues_found" -le 2 ] && awk "BEGIN {exit !($accuracy >= 90)}"; then
+  echo "**PARTIAL PASS** ⚠️ - Minor issues found" >> "$REPORT_FILE"
+  echo "**Confidence Score**: ${accuracy}%" >> "$REPORT_FILE"
+  verdict="PARTIAL"
+else
+  echo "**FAIL** ❌ - Significant sync issues detected" >> "$REPORT_FILE"
+  echo "**Confidence Score**: ${accuracy}%" >> "$REPORT_FILE"
+  verdict="FAIL"
+fi
+
+echo "" >> "$REPORT_FILE"
+echo "---" >> "$REPORT_FILE"
+echo "" >> "$REPORT_FILE"
+echo "*Generated by validate-living-docs-sync.sh*" >> "$REPORT_FILE"
+
+# Console summary
+echo ""
+echo "==================================================="
+echo "SUMMARY"
+echo "==================================================="
+echo "Total Increments:     $total_increments"
+echo "User Stories Source:  $total_user_stories_source"
+echo "User Stories Synced:  $total_user_stories_synced"
+echo "Features Created:     $total_features_created"
+echo "Issues Found:         $issues_found"
+echo "Sync Accuracy:        ${accuracy}%"
+echo ""
+echo "VERDICT: $verdict"
+echo ""
+echo "Report saved to: $REPORT_FILE"

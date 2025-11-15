@@ -14,25 +14,24 @@ coverage_target: 95
 
 ## Quick Overview
 
-Fix critical bug where increment ID generation (`getNextIncrementId()` / `getNextFeatureNumber()`) only scans the main `.specweave/increments/` directory, ignoring `_abandoned/` and `_paused/` subdirectories. This causes number reuse when increments are moved to these subdirectories (e.g., increment 0029 was abandoned, next increment tried to use 0029 again).
+Fix critical bug where increment ID generation (`getNextIncrementId()` / `getNextFeatureNumber()`) only scans the main `.specweave/increments/` directory, ignoring the `_archive/` subdirectory. This causes number reuse when increments are moved to the archive (e.g., increment 0029 was archived/abandoned, next increment tried to use 0029 again).
 
 **Impact**: Data integrity issue - duplicate increment numbers break living docs sync, status line tracking, and external tool integration.
 
-**Solution**: Update all three affected functions to scan ALL increment locations (main directory + `_abandoned/` + `_paused/`) to maintain sequential numbering and complete audit trail.
+**Solution**: Update all affected functions to scan both the main directory and `_archive/` subdirectory to maintain sequential numbering and complete audit trail.
 
 ## User Stories
 
 ### US-001: Scan All Increment Directories (P1 - Critical)
 
 **As a** SpecWeave developer
-**I want** increment ID generation to scan all increment directories (_abandoned, _paused)
-**So that** increment numbers remain sequential even when increments are moved to subdirectories
+**I want** increment ID generation to scan all increment directories including archive
+**So that** increment numbers remain sequential even when increments are archived
 
 **Acceptance Criteria**:
 - **AC-US1-01**: `getNextFeatureNumber()` scans `.specweave/increments/` directory (main)
-- **AC-US1-02**: `getNextFeatureNumber()` scans `.specweave/increments/_abandoned/` directory
-- **AC-US1-03**: `getNextFeatureNumber()` scans `.specweave/increments/_paused/` directory
-- **AC-US1-04**: Function returns highest number + 1 across ALL three directories
+- **AC-US1-02**: `getNextFeatureNumber()` scans `.specweave/increments/_archive/` directory
+- **AC-US1-03**: Function returns highest number + 1 across both directories
 - **AC-US1-05**: Zero-pads result to 4 digits (e.g., "0032")
 
 **Priority**: P1 (Critical - prevents data integrity issues)
@@ -46,8 +45,8 @@ Fix critical bug where increment ID generation (`getNextIncrementId()` / `getNex
 **So that** the audit trail remains complete and numbers are never reused
 
 **Acceptance Criteria**:
-- **AC-US2-01**: Abandoned increment numbers are NOT reused
-- **AC-US2-02**: Moving increment to `_abandoned/` doesn't "free up" its number
+- **AC-US2-01**: Abandoned/archived increment numbers are NOT reused
+- **AC-US2-02**: Moving increment to `_archive/` doesn't "free up" its number
 - **AC-US2-03**: Increment sequence shows gaps where increments were abandoned (e.g., 0028, [0029 abandoned], 0030)
 - **AC-US2-04**: User can reconstruct full project history from increment numbers
 

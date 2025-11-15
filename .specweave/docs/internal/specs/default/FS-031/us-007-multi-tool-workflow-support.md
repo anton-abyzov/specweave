@@ -3,20 +3,26 @@ id: US-007
 epic: FS-031
 title: "Multi-Tool Workflow Support"
 status: complete
-created: 2025-11-14
-completed: 2025-11-14
+created: 2025-11-15
+completed: 2025-11-15
 ---
 
 # US-007: Multi-Tool Workflow Support
 
-**Feature**: [FS-031](./FEATURE.md)
+**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
 
-
+**As a** SpecWeave user with custom workflows
+**I want** to define tool-specific workflows and transitions
+**So that** SpecWeave respects my team's process
 
 ---
 
 ## Acceptance Criteria
 
+- [x] **AC-US7-01**: Detect tool-specific workflows (GitHub: simple, JIRA: complex) (P2, testable)
+- [ ] **AC-US7-02**: Support custom workflow definitions (P3, testable)
+- [ ] **AC-US7-03**: Validate status transitions against workflow (P3, testable)
+- [ ] **AC-US7-04**: Suggest valid next states based on workflow (P3, testable)
 
 ---
 
@@ -26,6 +32,12 @@ completed: 2025-11-14
 
 **Tasks**:
 - [T-015: Implement Workflow Detection](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-015-implement-workflow-detection)
+
+---
+
+## Business Rationale
+
+Advanced teams have sophisticated workflows; support them.
 
 ---
 
@@ -41,4 +53,4 @@ completed: 2025-11-14
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-14
+**Completed**: 2025-11-15

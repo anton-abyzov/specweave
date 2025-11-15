@@ -1,6 +1,6 @@
 ---
 name: specweave:resume
-description: Resume a paused increment
+description: Resume a paused or backlog increment
 usage: /specweave:resume <increment-id>
 ---
 
@@ -12,29 +12,41 @@ usage: /specweave:resume <increment-id>
 
 ## Purpose
 
-Resume a paused increment when:
-- **Blocker resolved** (API keys arrived, approval granted)
-- **Ready to continue** after deprioritization
-- **Prerequisite completed** (can now proceed)
+Resume a paused or backlog increment when:
+- **From Backlog**: Ready to start planned work
+- **From Paused**: Blocker resolved (API keys arrived, approval granted)
+- **From Paused**: Ready to continue after deprioritization
+- **From Paused**: Prerequisite completed (can now proceed)
 
 ---
 
 ## Behavior
 
-1. **Validates** increment exists and is "paused"
-2. **Calculates** pause duration (days, hours)
+1. **Validates** increment exists and is "paused" or "backlog"
+2. **Calculates** pause/backlog duration (days, hours)
 3. **Updates** metadata.json:
-   - `status`: "paused" → "active"
-   - Clears `pausedReason` and `pausedAt`
+   - `status`: "paused" or "backlog" → "active"
+   - Clears `pausedReason` and `pausedAt` (if paused)
+   - Clears `backlogReason` and `backlogAt` (if backlog)
    - Updates `lastActivity` timestamp
-4. **Displays** context (pause duration, last activity)
-5. **Suggests** next actions (`/specweave:do` to continue work)
+4. **Displays** context (duration, last activity)
+5. **Suggests** next actions (`/specweave:do` to continue/start work)
 
 ---
 
 ## Examples
 
-### Resume after a few days
+### Resume from backlog
+```bash
+/specweave:resume 0032
+
+✅ Increment 0032 activated from backlog
+📦 Was in backlog for: 5 days
+💡 Reason: Low priority, focus on 0031 first
+📋 Start work with: /specweave:do
+```
+
+### Resume paused work after a few days
 ```bash
 /specweave:resume 0006
 
@@ -44,7 +56,7 @@ Resume a paused increment when:
 📋 Continue with: /specweave:do
 ```
 
-### Resume after a few hours
+### Resume paused work after a few hours
 ```bash
 /specweave:resume 0007
 
@@ -114,14 +126,20 @@ if (metadata.status === IncrementStatus.COMPLETED) {
   throw new Error('Cannot resume completed increment');
 }
 
-// Calculate pause duration
-const pauseDuration = calculateDuration(metadata.pausedAt, new Date());
+// Calculate duration based on status
+let duration;
+if (metadata.status === IncrementStatus.PAUSED && metadata.pausedAt) {
+  duration = calculateDuration(metadata.pausedAt, new Date());
+  console.log(`Was paused for: ${duration}`);
+} else if (metadata.status === IncrementStatus.BACKLOG && metadata.backlogAt) {
+  duration = calculateDuration(metadata.backlogAt, new Date());
+  console.log(`Was in backlog for: ${duration}`);
+}
 
-// Update status
+// Update status to active
 MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
 
 // Display context
-console.log(`Was paused for: ${pauseDuration}`);
 console.log(`Last activity: ${getLastActivity(incrementId)}`);
 ```
 
@@ -130,7 +148,9 @@ console.log(`Last activity: ${getLastActivity(incrementId)}`);
 ## Status Flow
 
 ```
-paused ──resume──> active
+backlog ──resume──> active (start work)
+   │
+paused ──resume──> active (continue work)
    │
 abandoned ──resume──> active (with confirmation)
 ```
@@ -139,10 +159,12 @@ abandoned ──resume──> active (with confirmation)
 
 ## Related Commands
 
-- `/pause <id>` - Pause active increment
-- `/status` - Show all increment statuses
-- `/status --paused` - Show only paused increments
-- `/do` - Continue work after resuming
+- `/specweave:pause <id>` - Pause active increment
+- `/specweave:backlog <id>` - Move increment to backlog
+- `/specweave:status` - Show all increment statuses
+- `/specweave:status --paused` - Show only paused increments
+- `/specweave:status --backlog` - Show only backlog increments
+- `/specweave:do` - Continue/start work after resuming
 
 ---
 
@@ -164,10 +186,16 @@ abandoned ──resume──> active (with confirmation)
 
 ## Automatic Suggestions
 
-When you run `/specweave:status`, stale paused increments trigger suggestions:
+When you run `/specweave:status`, stale paused/backlog increments trigger suggestions:
 
 ```bash
 /specweave:status
+
+🗂️  Backlog (2):
+  📦 0032-feature-a [feature]
+     In backlog: 5 days
+     Reason: Low priority
+     💡 Ready to start? → /specweave:resume 0032
 
 ⏸️  Paused (2):
   🔄 0006-stripe [feature]

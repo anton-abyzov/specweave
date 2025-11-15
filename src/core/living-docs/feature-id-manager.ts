@@ -93,16 +93,32 @@ export class FeatureIDManager {
           created = stats.birthtime || stats.mtime;
         }
 
-        // Extract feature ID from various sources
-        let featureId = frontmatter.feature || frontmatter.epic || '';
+        // Extract feature ID - CRITICAL LOGIC for greenfield vs brownfield
+        const match = incrementId.match(/^(\d{4})-(.+)$/);
+        let featureId = '';
 
-        // If no explicit feature, derive from increment name
-        if (!featureId) {
-          // Pattern: 0031-external-tool-status-sync -> FS-031-external-tool-status-sync
-          const match = incrementId.match(/^(\d{4})-(.+)$/);
-          if (match) {
-            const num = parseInt(match[1], 10);
-            featureId = `FS-${String(num).padStart(3, '0')}-${match[2]}`;
+        if (match) {
+          const num = parseInt(match[1], 10);
+
+          // Check if brownfield (imported from external tool)
+          const isBrownfield = frontmatter.source === 'external' ||
+                               frontmatter.imported === true;
+
+          if (isBrownfield) {
+            // Brownfield: Honor explicit feature ID from frontmatter
+            featureId = frontmatter.feature || frontmatter.epic || '';
+
+            // If still no feature ID, generate date-based one
+            if (!featureId) {
+              const yy = String(created.getFullYear()).slice(-2);
+              const mm = String(created.getMonth() + 1).padStart(2, '0');
+              const dd = String(created.getDate()).padStart(2, '0');
+              featureId = `FS-${yy}-${mm}-${dd}-${match[2]}`;
+            }
+          } else {
+            // Greenfield: ALWAYS use increment number (ignore frontmatter)
+            // This ensures 0031 → FS-031 even if frontmatter says FS-25-11-12
+            featureId = `FS-${String(num).padStart(3, '0')}`;
           }
         }
 
@@ -200,16 +216,28 @@ export class FeatureIDManager {
   }
 
   /**
-   * Assign FS-XXX IDs based on creation date order
+   * Assign FS-XXX IDs based on strategy
+   *
+   * CRITICAL: For greenfield (FS-XXX), assigned ID = original ID
+   * For brownfield (FS-YY-MM-DD-name), assigned ID = sequential
    */
   private assignFeatureIds(features: FeatureInfo[]): void {
     let nextId = 1;
 
     for (const feature of features) {
-      const assignedId = `FS-${String(nextId).padStart(3, '0')}`;
-      feature.assignedId = assignedId;
+      // Check if this is a greenfield feature (FS-XXX format)
+      const isGreenfield = /^FS-\d{3}$/.test(feature.originalId);
+
+      if (isGreenfield) {
+        // Greenfield: Use the increment number as-is
+        feature.assignedId = feature.originalId; // FS-030 stays FS-030
+      } else {
+        // Brownfield: Assign sequential ID
+        feature.assignedId = `FS-${String(nextId).padStart(3, '0')}`;
+        nextId++;
+      }
+
       this.registry.features.set(feature.originalId, feature);
-      nextId++;
     }
 
     this.registry.nextId = nextId;
@@ -259,27 +287,33 @@ export class FeatureIDManager {
 
   /**
    * Normalize feature ID to consistent format
+   *
+   * CRITICAL: For greenfield, we use FS-XXX (sequential numbers)
+   * For brownfield, we use FS-YY-MM-DD-name (date-based)
    */
   private normalizeFeatureId(id: string): string {
     // Remove any leading/trailing whitespace
     id = id.trim();
 
-    // If it's already in date format (FS-YY-MM-DD-*), extract the full ID
+    // KEEP numeric IDs as-is for greenfield (FS-001, FS-030, FS-031, etc.)
+    // These come directly from increment numbers and should NOT be converted
+    const simpleNumMatch = id.match(/^FS-(\d{3})$/);
+    if (simpleNumMatch) {
+      return id; // Return as-is: FS-030, FS-031, etc.
+    }
+
+    // If it's already in date format (FS-YY-MM-DD-*), keep as-is
     const dateMatch = id.match(/^FS-\d{2}-\d{2}-\d{2}-.+$/);
     if (dateMatch) {
       return id;
     }
 
-    // If it's in old numeric format (FS-031-*), normalize
-    const numMatch = id.match(/^FS-(\d+)(-.*)?$/);
-    if (numMatch) {
-      const num = parseInt(numMatch[1], 10);
-      const suffix = numMatch[2] || '';
-
-      // Try to derive a date-based ID from the number
-      // This is a heuristic - we'll use 2025-11 as base
-      const day = String(num).padStart(2, '0');
-      return `FS-25-11-${day}${suffix}`;
+    // Legacy: If it has a suffix (FS-031-feature-name), it's date-based
+    // This handles old IDs that need migration
+    const numMatchWithSuffix = id.match(/^FS-(\d+)-.+$/);
+    if (numMatchWithSuffix) {
+      // This is likely a date-based ID, keep as-is
+      return id;
     }
 
     return id;

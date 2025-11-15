@@ -3,20 +3,27 @@ id: US-003
 epic: FS-031
 title: "Status Mapping Configuration"
 status: complete
-created: 2025-11-14
-completed: 2025-11-14
+created: 2025-11-15
+completed: 2025-11-15
 ---
 
 # US-003: Status Mapping Configuration
 
-**Feature**: [FS-031](./FEATURE.md)
+**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
 
-
+**As a** SpecWeave user
+**I want** to configure how SpecWeave statuses map to external tool statuses
+**So that** I can match my team's workflow
 
 ---
 
 ## Acceptance Criteria
 
+- [x] **AC-US3-01**: Config schema supports status mappings per tool (P1, testable)
+- [x] **AC-US3-02**: Default mappings provided for GitHub/JIRA/ADO (P1, testable)
+- [x] **AC-US3-03**: Users can customize mappings (P2, testable)
+- [x] **AC-US3-04**: Validation prevents invalid mappings (P2, testable)
+- [x] **AC-US3-05**: Tool-specific label/tag support (GitHub: labels, JIRA: none, ADO: tags) (P2, testable)
 
 ---
 
@@ -28,6 +35,12 @@ completed: 2025-11-14
 - [T-006: Create Status Mapper](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-006-create-status-mapper)
 - [T-013: Update Configuration Schema](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-013-update-configuration-schema)
 - [T-014: Create Default Status Mappings](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-014-create-default-status-mappings)
+
+---
+
+## Business Rationale
+
+Different teams use different workflows; configuration enables flexibility.
 
 ---
 
@@ -43,4 +56,4 @@ completed: 2025-11-14
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-14
+**Completed**: 2025-11-15

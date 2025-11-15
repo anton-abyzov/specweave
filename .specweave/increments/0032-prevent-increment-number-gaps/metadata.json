@@ -8,5 +8,9 @@
   "epic": "FS-25-11-14",
   "estimatedHours": 7,
   "testMode": "TDD",
-  "coverageTarget": 95
+  "coverageTarget": 95,
+  "github": {
+    "issue": 497,
+    "url": "https://github.com/anton-abyzov/specweave/issues/497"
+  }
 }
