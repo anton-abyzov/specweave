@@ -25,7 +25,14 @@ interface UserStory {
   title: string;
   status: 'complete' | 'active' | 'planning' | 'not-started';
   increment: string | null; // e.g., "0031-external-tool-status-sync"
+  acceptanceCriteria: AcceptanceCriteria[];
   tasks: Task[];
+}
+
+interface AcceptanceCriteria {
+  id: string; // e.g., "AC-US2-01"
+  description: string;
+  completed: boolean; // true = [x], false = [ ]
 }
 
 interface Task {
@@ -126,6 +133,9 @@ export class EpicContentBuilder {
       const incrementMatch = bodyContent.match(/\*\*Increment\*\*:\s*\[([^\]]+)\]/);
       const increment = incrementMatch ? incrementMatch[1] : null;
 
+      // Extract acceptance criteria from AC section
+      const acceptanceCriteria = this.extractAcceptanceCriteria(bodyContent);
+
       // Extract tasks from Implementation section
       const tasks = await this.extractTasksForUserStory(
         frontmatter.id,
@@ -138,6 +148,7 @@ export class EpicContentBuilder {
         title: frontmatter.title,
         status: this.normalizeStatus(frontmatter.status),
         increment,
+        acceptanceCriteria,
         tasks,
       });
     }
@@ -217,6 +228,44 @@ export class EpicContentBuilder {
   }
 
   /**
+   * Extract acceptance criteria from user story content
+   *
+   * Parses the "## Acceptance Criteria" section and extracts all checkable items.
+   * Format: - [x] **AC-US2-01**: Description...
+   */
+  private extractAcceptanceCriteria(content: string): AcceptanceCriteria[] {
+    const acceptanceCriteria: AcceptanceCriteria[] = [];
+
+    // Find Acceptance Criteria section
+    const acSectionMatch = content.match(/##\s+Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\n$)/i);
+
+    if (!acSectionMatch) {
+      return acceptanceCriteria; // No AC section found
+    }
+
+    const acSection = acSectionMatch[1];
+
+    // Parse each AC line: - [x] **AC-US2-01**: Description (P1, testable)
+    // Pattern matches both checked [x] and unchecked [ ] boxes
+    const acPattern = /^-\s+\[([x\s])\]\s+\*\*([^*]+)\*\*:\s*(.+)$/gm;
+
+    let match;
+    while ((match = acPattern.exec(acSection)) !== null) {
+      const completed = match[1].trim().toLowerCase() === 'x';
+      const acId = match[2].trim(); // e.g., "AC-US2-01"
+      const description = match[3].trim(); // e.g., "Spec frontmatter includes linked_increments mapping (P1, testable)"
+
+      acceptanceCriteria.push({
+        id: acId,
+        description,
+        completed,
+      });
+    }
+
+    return acceptanceCriteria;
+  }
+
+  /**
    * Build overview section
    */
   private buildOverviewSection(epic: EpicFrontmatter): string {
@@ -241,6 +290,16 @@ export class EpicContentBuilder {
         : 'TBD';
 
       section += `- ${checkbox} **${us.id}: ${us.title}** (${statusEmoji} ${us.status} | Increment: ${incrementLink})\n`;
+
+      // Add Acceptance Criteria checkboxes under each user story
+      if (us.acceptanceCriteria.length > 0) {
+        section += '\n  **Acceptance Criteria**:\n';
+        for (const ac of us.acceptanceCriteria) {
+          const acCheckbox = ac.completed ? '[x]' : '[ ]';
+          section += `  - ${acCheckbox} **${ac.id}**: ${ac.description}\n`;
+        }
+        section += '\n';
+      }
     }
 
     return section;

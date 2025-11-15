@@ -4,8 +4,8 @@ title: "Multi-Repository Initialization UX Improvements"
 type: feature
 status: planning
 priority: P1
-created: 2025-11-15T05:43:12.783Z
-lastUpdated: 2025-11-15T05:43:12.794Z
+created: 2025-11-15T05:53:44.652Z
+lastUpdated: 2025-11-15T05:53:44.661Z
 projects: ["default"]
 
 sourceIncrement: 0022-multi-repo-init-ux

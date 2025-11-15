@@ -6,6 +6,39 @@
 
 Status synchronization keeps SpecWeave increment statuses in sync with external project management tools. When you complete an increment in SpecWeave, the corresponding GitHub issue, JIRA story, or ADO work item can be automatically updated - and vice versa.
 
+### What SpecWeave Syncs (and Doesn't Sync)
+
+**✅ Implementation Status** (what we sync):
+- Increment status (planning → active → completed → abandoned)
+- Task completion checkboxes (P1, P2, P3 tasks)
+- Content updates (user stories, acceptance criteria, implementation notes)
+- Implementation progress tracking
+
+**❌ Scheduling Metadata** (what we DON'T sync):
+- **Sprint/Iteration assignments** - Not synced
+- **Story points / effort estimates** - Not synced
+- **Due dates / target dates** - Not synced
+- **Release planning dates** - Not synced
+- **Time tracking** (logged/remaining hours) - Not synced
+- **Velocity / capacity planning** - Not synced
+
+**Why This Matters**: SpecWeave is **implementation-first**, not **planning-first**. We focus on:
+- ✅ What to build (specs, user stories, acceptance criteria)
+- ✅ How to build (plans, architecture, tasks)
+- ✅ Implementation status (completed, in progress, blocked)
+
+We deliberately **do NOT** manage:
+- ❌ When to build (sprints, iterations, release dates)
+- ❌ How much effort (story points, hours, estimates)
+- ❌ Team capacity (velocity, sprint planning, burndown charts)
+
+**Recommendation**: Use external tools for scheduling:
+- **GitHub Projects** - For sprint planning, milestones, roadmaps
+- **JIRA Boards** - For sprint assignment, story points, velocity tracking
+- **Azure DevOps Sprints** - For iteration planning, capacity management
+
+See the [Scheduling and Planning Guide](./scheduling-and-planning.md) for recommended workflow.
+
 ### Supported Tools
 
 - **GitHub Issues** - Bidirectional sync with issue statuses
