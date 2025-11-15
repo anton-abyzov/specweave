@@ -5,10 +5,15 @@ type: feature
 status: in-progress
 priority: P1
 created: 2025-11-12
-lastUpdated: 2025-11-15T05:56:35.686Z
-projects: ["default"]
+lastUpdated: 2025-11-15T19:55:42.558Z
+projects: ["specweave"]
 epic: EPIC-2025-Q4-platform
 sourceIncrement: 0031-external-tool-status-sync
+external_tools:
+  github:
+    type: milestone
+    id: 4
+    url: https://github.com/anton-abyzov/specweave/milestone/4
 ---
 
 # External Tool Status Synchronization
@@ -30,19 +35,19 @@ This feature was created from increment: [`0031-external-tool-status-sync`](../.
 ## Projects
 
 This feature spans the following projects:
-- default
+- specweave
 
 ## User Stories by Project
 
-### default
+### specweave
 
-- [US-001: Rich External Issue Content](../../default/FS-031/us-001-rich-external-issue-content.md) - complete
-- [US-002: Task-Level Mapping & Traceability](../../default/FS-031/us-002-task-level-mapping-traceability.md) - complete
-- [US-003: Status Mapping Configuration](../../default/FS-031/us-003-status-mapping-configuration.md) - complete
-- [US-004: Bidirectional Status Sync](../../default/FS-031/us-004-bidirectional-status-sync.md) - complete
-- [US-005: User Prompts on Completion](../../default/FS-031/us-005-user-prompts-on-completion.md) - complete
-- [US-006: Conflict Resolution](../../default/FS-031/us-006-conflict-resolution.md) - complete
-- [US-007: Multi-Tool Workflow Support](../../default/FS-031/us-007-multi-tool-workflow-support.md) - complete
+- [US-001: Rich External Issue Content](../../specweave/FS-031/us-001-rich-external-issue-content.md) - complete
+- [US-002: Task-Level Mapping & Traceability](../../specweave/FS-031/us-002-task-level-mapping-traceability.md) - complete
+- [US-003: Status Mapping Configuration](../../specweave/FS-031/us-003-status-mapping-configuration.md) - complete
+- [US-004: Bidirectional Status Sync](../../specweave/FS-031/us-004-bidirectional-status-sync.md) - complete
+- [US-005: User Prompts on Completion](../../specweave/FS-031/us-005-user-prompts-on-completion.md) - complete
+- [US-006: Conflict Resolution](../../specweave/FS-031/us-006-conflict-resolution.md) - complete
+- [US-007: Multi-Tool Workflow Support](../../specweave/FS-031/us-007-multi-tool-workflow-support.md) - complete
 
 ## Progress
 
