@@ -108,19 +108,32 @@ export class UserStoryContentBuilder {
 
   /**
    * Build GitHub issue body from user story content
+   *
+   * @param githubRepo Optional GitHub repo in format "owner/repo" for generating URLs
    */
-  async buildIssueBody(): Promise<string> {
+  async buildIssueBody(githubRepo?: string): Promise<string> {
     const content = await this.parse();
 
     let body = '';
 
-    // Header with metadata
-    body += `**Feature**: [${content.featureId}](../../_features/${content.featureId}/FEATURE.md)\n`;
-    body += `**Status**: ${content.frontmatter.status}\n`;
-    body += `**Priority**: ${content.frontmatter.priority}\n`;
-    body += `**Project**: ${content.frontmatter.project}\n\n`;
+    // Extract priority from ACs (highest priority wins)
+    const priority = this.extractPriorityFromACs(content.acceptanceCriteria);
 
-    body += `---\n\n`;
+    // Detect GitHub repo from git remote if not provided
+    const repo = githubRepo || await this.detectGitHubRepo();
+
+    // Header with metadata
+    if (repo) {
+      body += `**Feature**: [${content.featureId}](https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/_features/${content.featureId})\n`;
+    } else {
+      body += `**Feature**: ${content.featureId}\n`;
+    }
+    body += `**Status**: ${content.frontmatter.status}\n`;
+    if (priority) {
+      body += `**Priority**: ${priority}\n`;
+    }
+
+    body += `\n---\n\n`;
 
     // User Story description
     body += `## User Story\n\n`;
@@ -132,12 +145,14 @@ export class UserStoryContentBuilder {
       body += `*User story description not found*\n\n`;
     }
 
-    // Link to full user story file
+    // Link to full user story file (GitHub URL)
     const usFilename = path.basename(this.userStoryPath);
-    const relativePath = this.userStoryPath
-      .replace(this.projectRoot, '')
-      .replace(/^\//, '');
-    body += `📄 View full story: [\`${usFilename}\`](../../${relativePath})\n\n`;
+    if (repo) {
+      const relativePath = this.userStoryPath
+        .replace(this.projectRoot, '')
+        .replace(/^\//, '');
+      body += `📄 View full story: [\`${usFilename}\`](https://github.com/${repo}/tree/develop/${relativePath})\n\n`;
+    }
 
     body += `---\n\n`;
 
@@ -171,12 +186,22 @@ export class UserStoryContentBuilder {
       body += `Progress: ${completed}/${total} tasks complete (${percentage}%)\n\n`;
 
       if (content.incrementId) {
-        body += `**Increment**: [${content.incrementId}](../../increments/${content.incrementId}/)\n\n`;
+        if (repo) {
+          body += `**Increment**: [${content.incrementId}](https://github.com/${repo}/tree/develop/.specweave/increments/${content.incrementId})\n\n`;
+        } else {
+          body += `**Increment**: ${content.incrementId}\n\n`;
+        }
       }
 
       for (const task of content.tasks) {
         const checkbox = task.status ? '[x]' : '[ ]';
-        body += `- ${checkbox} [${task.id}: ${task.title}](${task.link})\n`;
+        // Convert relative link to GitHub URL if repo is known
+        let taskLink = task.link;
+        if (repo && taskLink.startsWith('../../')) {
+          const relativePath = taskLink.replace(/^\.\.\/\.\.\//, '.specweave/');
+          taskLink = `https://github.com/${repo}/tree/develop/${relativePath}`;
+        }
+        body += `- ${checkbox} [${task.id}: ${task.title}](${taskLink})\n`;
       }
       body += '\n';
     } else {
@@ -329,5 +354,60 @@ export class UserStoryContentBuilder {
     }
 
     return tasks;
+  }
+
+  /**
+   * Extract highest priority from acceptance criteria
+   * Priority order: P1 > P2 > P3
+   */
+  private extractPriorityFromACs(acceptanceCriteria: AcceptanceCriterion[]): string | null {
+    if (acceptanceCriteria.length === 0) {
+      return null;
+    }
+
+    // Check for P1 first (highest priority)
+    if (acceptanceCriteria.some(ac => ac.priority === 'P1')) {
+      return 'P1';
+    }
+
+    // Then P2
+    if (acceptanceCriteria.some(ac => ac.priority === 'P2')) {
+      return 'P2';
+    }
+
+    // Then P3
+    if (acceptanceCriteria.some(ac => ac.priority === 'P3')) {
+      return 'P3';
+    }
+
+    return null; // No priority found
+  }
+
+  /**
+   * Detect GitHub repository from git remote
+   * Returns "owner/repo" format
+   */
+  private async detectGitHubRepo(): Promise<string | null> {
+    try {
+      const { execFileNoThrow } = await import('../../../src/utils/execFileNoThrow.js');
+      const result = await execFileNoThrow('git', ['remote', 'get-url', 'origin']);
+
+      if (result.exitCode !== 0 || !result.stdout) {
+        return null;
+      }
+
+      const remoteUrl = result.stdout.trim();
+
+      // Parse GitHub URL
+      // Formats: git@github.com:owner/repo.git or https://github.com/owner/repo.git
+      const githubMatch = remoteUrl.match(/github\.com[:/](.+\/.+?)(?:\.git)?$/);
+      if (githubMatch) {
+        return githubMatch[1]; // "owner/repo"
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
   }
 }
