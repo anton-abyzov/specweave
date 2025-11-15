@@ -27,15 +27,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -57,15 +56,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -117,15 +115,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -173,15 +170,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -225,15 +221,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -284,15 +279,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -349,15 +343,14 @@ describe('BrownfieldImporter - Report Generation', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       };
       await fs.writeFile(configPath, JSON.stringify(initialConfig, null, 2));

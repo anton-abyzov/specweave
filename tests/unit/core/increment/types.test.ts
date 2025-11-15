@@ -49,6 +49,7 @@ describe('Increment Discipline Types', () => {
         increments: {
           total: 10,
           active: 3,
+          backlog: 0,
           paused: 1,
           completed: 5,
           abandoned: 1,
@@ -80,6 +81,7 @@ describe('Increment Discipline Types', () => {
         increments: {
           total: 5,
           active: 1,
+          backlog: 0,
           paused: 0,
           completed: 4,
           abandoned: 0,

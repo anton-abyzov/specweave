@@ -151,6 +151,86 @@ This guide auto-loads when using increment commands (progressive disclosure patt
 
 ---
 
+## Increment Archiving (Manual Only)
+
+**⚠️ CRITICAL POLICY**: Increments are **NEVER** auto-archived. Archiving is **MANUAL ONLY** and requires explicit user action.
+
+### Core Philosophy: Keep Recent Work Visible
+
+**Completed increments remain in the main folder** (`.specweave/increments/`) for easy reference until you explicitly archive them.
+
+**Why Manual Only?**
+- ✅ **Quick reference** - Recent implementations easily accessible
+- ✅ **Easy linking** - Can reference completed work in new increments
+- ✅ **Visible history** - See completion patterns and velocity
+- ✅ **~10-20 completed** - Keep recent work visible without searching archives
+
+### What Happens When You Close an Increment
+
+**When running `/specweave:done`**, the system:
+- ✅ Sets status to "completed"
+- ✅ Syncs to external tools (GitHub, JIRA, ADO)
+- ✅ Updates living docs
+- ❌ **Does NOT move to `_archive` folder**
+
+**Result**: Increment stays in `.specweave/increments/0031-name/` for easy access
+
+### Manual Archiving Commands
+
+**Archive increments**:
+```bash
+# Archive specific increment
+/specweave:archive 0031
+
+# Archive old work (keep last 10 visible)
+/specweave:archive --keep-last 10
+
+# Archive by age (older than 90 days)
+/specweave:archive --older-than 90
+
+# Preview before archiving
+/specweave:archive --keep-last 10 --dry-run
+```
+
+**Restore from archive**:
+```bash
+# Restore specific increment
+/specweave:restore 0031
+
+# List archived increments
+/specweave:restore --list
+```
+
+### Archive Safety Checks
+
+The system automatically prevents archiving:
+- ❌ Active or paused increments
+- ❌ Increments with open GitHub/JIRA/ADO issues
+- ❌ Increments with uncommitted git changes
+- ❌ Duplicates (if already in archive)
+
+### Recommended Workflow
+
+```bash
+# 1. Check what would be archived
+/specweave:archive --keep-last 10 --dry-run
+
+# 2. Archive old increments
+/specweave:archive --keep-last 10
+
+# 3. Archive related features (separate system)
+/specweave:archive-features
+
+# 4. Check results
+/specweave:status
+```
+
+**Frequency**: Monthly or quarterly cleanup (not after every increment!)
+
+**For complete archiving guide**: See `/specweave:archive --help`
+
+---
+
 ## Test-Aware Planning
 
 Tests embedded in tasks.md (no separate tests.md).
@@ -1947,10 +2027,12 @@ Two-phase post-generation: Phase 1 (increment files), Phase 2 (ADRs/HLDs). 9 lan
 
 **Symptom 1**: Errors like `"post-task-completion.sh: No such file or directory"` after TodoWrite
 **Symptom 2**: `✘ Plugin 'specweave' not found in marketplace 'specweave'`
+**Symptom 3**: Hooks execute but use old code (GitHub version instead of local changes)
 
-**Root Cause**: Two common issues:
+**Root Cause**: Three common issues:
 1. **No symlink**: Directory doesn't exist at `~/.claude/plugins/marketplaces/specweave`
 2. **No registration**: Marketplace not registered with Claude Code (common after updates/restarts)
+3. **GitHub marketplace instead of local**: Marketplace registered from GitHub, not local directory
 
 **The Key Insight**:
 - ✅ **Symlink**: Creates directory structure for hooks
@@ -1989,11 +2071,18 @@ claude plugin marketplace list
 
 **Step 2: Fix Registration**
 ```bash
-# Register marketplace (use PROJECT ROOT, not .claude-plugin!)
+# Check current marketplace source
+claude plugin marketplace list
+# ❌ BAD: Source: GitHub (anton-abyzov/specweave)
+# ✅ GOOD: Source: Directory (/path/to/specweave)
+
+# If registered from GitHub, switch to local directory:
+claude plugin marketplace remove specweave
 claude plugin marketplace add /Users/antonabyzov/Projects/github/specweave
 
 # OR from within project:
 cd /path/to/specweave
+claude plugin marketplace remove specweave
 claude plugin marketplace add $(pwd)
 
 # Verify it worked
@@ -2075,6 +2164,15 @@ claude plugin install specweave-github
 - `/specweave:pause 0002 --reason="..."` - Pause active increment
 - `/specweave:resume 0002` - Resume paused increment
 - `/specweave:abandon 0002 --reason="..."` - Abandon increment
+
+*Archiving (MANUAL ONLY - never auto-archives)*:
+- `/specweave:archive 0031` - Archive specific increment
+- `/specweave:archive --keep-last 10` - Archive old work (keep last 10)
+- `/specweave:archive --older-than 90` - Archive increments older than 90 days
+- `/specweave:archive --dry-run` - Preview what would be archived
+- `/specweave:restore 0031` - Restore increment from archive
+- `/specweave:restore --list` - List archived increments
+- `/specweave:archive-features` - Archive features/epics (separate system)
 
 *Documentation sync*:
 - `/specweave:sync-docs update` - Sync living docs after implementation

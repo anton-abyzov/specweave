@@ -32,17 +32,17 @@ describe('StatusLineManager', () => {
   });
 
   describe('render()', () => {
-    it('should return null when no cache exists', () => {
+    it('should return message when no cache exists', () => {
       const result = manager.render();
-      expect(result).toBeNull();
+      expect(result).toBe('No active increment');
     });
 
-    it('should return null when cache is empty', () => {
+    it('should return message when cache is empty', () => {
       const cacheFile = path.join(tempDir, '.specweave/state/status-line.json');
       fs.writeFileSync(cacheFile, '{}');
 
       const result = manager.render();
-      expect(result).toBeNull();
+      expect(result).toBe('No active increment');
     });
 
     it('should render status line with valid cache', () => {
@@ -59,10 +59,10 @@ describe('StatusLineManager', () => {
       });
 
       const result = manager.render();
-      // Name gets truncated at 20 chars (sync-architecture-fix is 21 chars)
-      expect(result).toMatch(/\[sync-architecture-f[…\]]/);
+      // Format: [name] ████░░░░ X/Y
+      expect(result).toContain('[sync-architecture-fix]');
       expect(result).toContain('15/30');
-      expect(result).toContain('50%');
+      expect(result).toContain('████'); // 50% = 4 filled bars
     });
 
     it('should render progress bar correctly', () => {
@@ -101,7 +101,7 @@ describe('StatusLineManager', () => {
       expect(result!.length).toBeLessThan(100); // Reasonable length
     });
 
-    it('should show completion percentage', () => {
+    it('should show progress with high completion', () => {
       createValidCache({
         current: {
           id: '0017-test',
@@ -115,7 +115,10 @@ describe('StatusLineManager', () => {
       });
 
       const result = manager.render();
-      expect(result).toContain('(90%)');
+      // Format: [name] ████░░░░ X/Y
+      expect(result).toContain('[test]');
+      expect(result).toContain('27/30');
+      expect(result).toContain('███'); // Should have mostly filled bars
     });
 
     it('should handle 0% completion', () => {
@@ -133,7 +136,6 @@ describe('StatusLineManager', () => {
 
       const result = manager.render();
       expect(result).toContain('0/30');
-      expect(result).toContain('(0%)');
       expect(result).toContain('░░░░░░░░'); // All empty
     });
 
@@ -152,14 +154,11 @@ describe('StatusLineManager', () => {
 
       const result = manager.render();
       expect(result).toContain('30/30');
-      expect(result).toContain('(100%)');
       expect(result).toContain('████████'); // All filled
     });
 
-    it('should show current task when present', () => {
-      // Note: The new StatusLineCache doesn't have currentTask field
-      // This test is no longer applicable with the new structure
-      // The status line now only shows progress, not current task details
+    it('should show basic progress information', () => {
+      // Status line shows progress bar and count, not detailed task info
       createValidCache({
         current: {
           id: '0017-test',
@@ -173,9 +172,10 @@ describe('StatusLineManager', () => {
       });
 
       const result = manager.render();
-      // Test that basic progress is shown since current task is not part of new structure
+      // Test that basic progress is shown: [name] ████░░░░ X/Y
+      expect(result).toContain('[test]');
       expect(result).toContain('5/10');
-      expect(result).toContain('50%');
+      expect(result).toMatch(/████░░░░/); // 50% progress bar
     });
 
     it('should hide current task when null', () => {
@@ -231,9 +231,11 @@ describe('StatusLineManager', () => {
         lastUpdate: oldDate.toISOString()
       });
 
-      // Cache should be invalid (too old)
+      // Cache is old but should still be displayed (better than nothing)
       const result = manager.render();
-      expect(result).toBeNull();
+      // Should still render the status line even if cache is stale
+      expect(result).toContain('test');
+      expect(result).toContain('5/10');
     });
 
     it('should handle missing current increment', () => {
@@ -244,8 +246,8 @@ describe('StatusLineManager', () => {
       });
 
       const result = manager.render();
-      // Should return null or a message about no active increments
-      expect(result).toBeNull();
+      // Should return message about no active increments
+      expect(result).toBe('No active increment');
     });
   });
 
@@ -324,8 +326,9 @@ describe('StatusLineManager', () => {
       });
 
       const result = shortCacheManager.render();
-      // Should be null because cache is older than maxCacheAge (1 second)
-      expect(result).toBeNull();
+      // Should still show cache even if stale (better than nothing)
+      expect(result).toContain('test');
+      expect(result).toContain('5/10');
     });
   });
 

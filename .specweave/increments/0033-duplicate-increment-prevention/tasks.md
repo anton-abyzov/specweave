@@ -11,6 +11,8 @@ completedTasks: 0
 
 ### T-001: Create DuplicateDetector Utility
 
+**User Story**: [US-001: Prevent Duplicate Locations](../../docs/internal/specs/default/FS-033/us-001-prevent-duplicate-locations.md)
+
 **Priority**: P1
 **Estimate**: 4h
 **AC**: AC-US1-01, AC-US2-01
@@ -44,6 +46,8 @@ completedTasks: 0
 ---
 
 ### T-002: Implement Conflict Resolution Algorithm
+
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
 
 **Priority**: P1
 **Estimate**: 4h
@@ -82,6 +86,8 @@ completedTasks: 0
 
 ### T-003: Implement Content Merge Logic
 
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
+
 **Priority**: P1
 **Estimate**: 3h
 **AC**: AC-US2-02
@@ -113,6 +119,8 @@ completedTasks: 0
 ---
 
 ### T-004: Create Comprehensive Unit Tests
+
+**User Story**: [US-004: Comprehensive Test Coverage](../../docs/internal/specs/default/FS-033/us-004-comprehensive-test-coverage.md)
 
 **Priority**: P1
 **Estimate**: 2h
@@ -153,6 +161,8 @@ completedTasks: 0
 
 ### T-005: Add Validation to Increment Creation
 
+**User Story**: [US-001: Prevent Duplicate Locations](../../docs/internal/specs/default/FS-033/us-001-prevent-duplicate-locations.md)
+
 **Priority**: P1
 **Estimate**: 2h
 **AC**: AC-US1-01
@@ -184,6 +194,8 @@ completedTasks: 0
 
 ### T-006: Add Validation to Increment Archiving
 
+**User Story**: [US-001: Prevent Duplicate Locations](../../docs/internal/specs/default/FS-033/us-001-prevent-duplicate-locations.md)
+
 **Priority**: P1
 **Estimate**: 2h
 **AC**: AC-US1-02
@@ -214,6 +226,8 @@ completedTasks: 0
 ---
 
 ### T-007: Add Validation to Increment Reopening
+
+**User Story**: [US-001: Prevent Duplicate Locations](../../docs/internal/specs/default/FS-033/us-001-prevent-duplicate-locations.md)
 
 **Priority**: P1
 **Estimate**: 2h
@@ -247,6 +261,8 @@ completedTasks: 0
 ---
 
 ### T-008: Add Startup Duplicate Check (Warning)
+
+**User Story**: [US-001: Prevent Duplicate Locations](../../docs/internal/specs/default/FS-033/us-001-prevent-duplicate-locations.md)
 
 **Priority**: P2
 **Estimate**: 1h
@@ -285,6 +301,8 @@ completedTasks: 0
 
 ### T-009: Create Base Archive Command
 
+**User Story**: [US-003: Manual Archive with Configurable Threshold](../../docs/internal/specs/default/FS-033/us-003-manual-archive-with-configurable-threshold.md)
+
 **Priority**: P1
 **Estimate**: 3h
 **AC**: AC-US3-01, AC-US3-02
@@ -316,6 +334,8 @@ completedTasks: 0
 ---
 
 ### T-010: Implement Dry-Run Mode
+
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
 
 **Priority**: P1
 **Estimate**: 1h
@@ -355,6 +375,8 @@ completedTasks: 0
 
 ### T-011: Implement Safe Mode with Confirmation
 
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
+
 **Priority**: P1
 **Estimate**: 2h
 **AC**: AC-US2-04
@@ -391,6 +413,8 @@ completedTasks: 0
 
 ### T-012: Add Filtering Options
 
+**User Story**: [US-003: Manual Archive with Configurable Threshold](../../docs/internal/specs/default/FS-033/us-003-manual-archive-with-configurable-threshold.md)
+
 **Priority**: P2
 **Estimate**: 2h
 **AC**: AC-US3-04
@@ -426,6 +450,8 @@ completedTasks: 0
 ---
 
 ### T-013: Respect External Sync Status
+
+**User Story**: [US-003: Manual Archive with Configurable Threshold](../../docs/internal/specs/default/FS-033/us-003-manual-archive-with-configurable-threshold.md)
 
 **Priority**: P1
 **Estimate**: 2h
@@ -465,6 +491,8 @@ completedTasks: 0
 
 ### T-014: Create Fix Duplicates Command
 
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
+
 **Priority**: P1
 **Estimate**: 3h
 **AC**: AC-US2-01, AC-US2-02
@@ -500,6 +528,8 @@ completedTasks: 0
 ---
 
 ### T-015: Implement Auto-Resolution
+
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
 
 **Priority**: P1
 **Estimate**: 2h
@@ -540,6 +570,8 @@ completedTasks: 0
 
 ### T-016: Implement Content Merging
 
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
+
 **Priority**: P1
 **Estimate**: 2h
 **AC**: AC-US2-02
@@ -571,6 +603,8 @@ completedTasks: 0
 ---
 
 ### T-017: Generate Resolution Report
+
+**User Story**: [US-002: Auto-Detect and Resolve Conflicts](../../docs/internal/specs/default/FS-033/us-002-auto-detect-and-resolve-conflicts.md)
 
 **Priority**: P2
 **Estimate**: 1h
@@ -607,6 +641,8 @@ completedTasks: 0
 ---
 
 ### T-018: Add Comprehensive E2E Tests
+
+**User Story**: [US-004: Comprehensive Test Coverage](../../docs/internal/specs/default/FS-033/us-004-comprehensive-test-coverage.md)
 
 **Priority**: P1
 **Estimate**: 2h

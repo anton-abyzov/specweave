@@ -182,16 +182,16 @@ describe('import-docs command', () => {
 
       const mockProjectInstance = {
         getAllProjects: jest.fn().mockReturnValue([
-          { id: 'project1', name: 'Project One' },
-          { id: 'project2', name: 'Project Two' }
+          { projectId: 'project1', projectName: 'Project One' },
+          { projectId: 'project2', projectName: 'Project Two' }
         ]),
         getActiveProject: jest.fn().mockReturnValue({
-          id: 'project1',
-          name: 'Project One'
+          projectId: 'project1',
+          projectName: 'Project One'
         }),
         getProjectById: jest.fn().mockReturnValue({
-          id: 'project1',
-          name: 'Project One'
+          projectId: 'project1',
+          projectName: 'Project One'
         })
       };
 

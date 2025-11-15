@@ -10,12 +10,7 @@
  * 6. Verify LLM context preservation
  */
 
-import { IntelligentLivingDocsSync } from '../../../src/core/living-docs/index';
-import { ContentParser } from '../../../src/core/living-docs/content-parser';
-import { ContentClassifier } from '../../../src/core/living-docs/content-classifier';
-import { ProjectDetector } from '../../../src/core/living-docs/project-detector';
-import { ContentDistributor } from '../../../src/core/living-docs/content-distributor';
-import { CrossLinker } from '../../../src/core/living-docs/cross-linker';
+import { ContentParser, ContentClassifier, ProjectDetector, ContentDistributor, CrossLinker } from '../../../src/core/living-docs/index';
 import fs from 'fs-extra';
 import path from 'path';
 

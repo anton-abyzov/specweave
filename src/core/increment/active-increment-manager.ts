@@ -91,16 +91,19 @@ export class ActiveIncrementManager {
    * Validates that the increment exists and is actually active
    *
    * **NEW**: Adds to list instead of replacing (max 2)
+   * @param skipValidation - Skip validation (used during lazy initialization to prevent circular dependency)
    */
-  addActive(incrementId: string): void {
-    // Validate increment exists
-    const metadata = MetadataManager.read(incrementId);
+  addActive(incrementId: string, skipValidation: boolean = false): void {
+    // Validate increment exists and is active (unless skipValidation is true)
+    if (!skipValidation) {
+      const metadata = MetadataManager.read(incrementId);
 
-    // Validate increment is actually active
-    if (metadata.status !== IncrementStatus.ACTIVE) {
-      throw new Error(
-        `Cannot add ${incrementId} as active: status is ${metadata.status}, not active`
-      );
+      // Validate increment is actually active
+      if (metadata.status !== IncrementStatus.ACTIVE) {
+        throw new Error(
+          `Cannot add ${incrementId} as active: status is ${metadata.status}, not active`
+        );
+      }
     }
 
     // Get current active list
@@ -139,9 +142,10 @@ export class ActiveIncrementManager {
   /**
    * Set the active increment (legacy method for backwards compatibility)
    * Now delegates to addActive()
+   * @param skipValidation - Skip validation (used during lazy initialization to prevent circular dependency)
    */
-  setActive(incrementId: string): void {
-    this.addActive(incrementId);
+  setActive(incrementId: string, skipValidation: boolean = false): void {
+    this.addActive(incrementId, skipValidation);
   }
 
   /**

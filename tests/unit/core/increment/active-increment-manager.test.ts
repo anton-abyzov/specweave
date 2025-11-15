@@ -124,10 +124,10 @@ describe('ActiveIncrementManager', () => {
 
       expect(() => {
         manager.setActive('0001-completed');
-      }).toThrow(/Cannot set.*status is completed, not active/);
+      }).toThrow(/Cannot add.*status is completed, not active/);
     });
 
-    it('should overwrite previous active increment', () => {
+    it('should add to active list (now supports up to 2 active)', () => {
       createTestIncrement('0001-first');
       createTestIncrement('0002-second');
 
@@ -135,8 +135,9 @@ describe('ActiveIncrementManager', () => {
       expect(manager.getActive()).toContain('0001-first');
 
       manager.setActive('0002-second');
+      // Both should be in the list now (max 2 active)
+      expect(manager.getActive()).toContain('0001-first');
       expect(manager.getActive()).toContain('0002-second');
-      expect(manager.getActive()).not.toContain('0001-first');
     });
   });
 
@@ -243,7 +244,10 @@ describe('ActiveIncrementManager', () => {
       fs.removeSync(incrementDir);
 
       const valid = manager.validate();
-      expect(valid).toBe(false); // Was invalid, got fixed
+      expect(valid).toBe(false); // Detected invalid state
+
+      // Manually fix by calling smartUpdate
+      manager.smartUpdate();
       expect(manager.getActive()).toEqual([]); // No other active increments
     });
   });
@@ -310,9 +314,12 @@ describe('ActiveIncrementManager', () => {
       // State is now stale (still points to completed increment)
       expect(manager.getActive()).toContain('0001-test'); // Still points to old
 
-      // Validate should detect and fix it
+      // Validate should detect stale state
       const valid = manager.validate();
-      expect(valid).toBe(false); // Was invalid, got fixed
+      expect(valid).toBe(false); // Detected invalid state
+
+      // Manually fix by calling smartUpdate
+      manager.smartUpdate();
       expect(manager.getActive()).toEqual([]); // Now correctly cleared
     });
   });

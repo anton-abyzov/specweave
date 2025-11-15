@@ -210,7 +210,7 @@ describe('RetryHandler', () => {
     });
 
     it('should return null for non-rate-limit errors', () => {
-      const error = new Error('Not a rate limit error');
+      const error = new Error('Generic network error');
       const waitTime = RetryHandler.detectRateLimitWait(error);
 
       expect(waitTime).toBeNull();
