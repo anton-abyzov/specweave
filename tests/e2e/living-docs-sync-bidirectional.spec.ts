@@ -63,7 +63,7 @@ test.describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
     fs.mkdirSync(incrementDir, { recursive: true });
 
     // spec.md with user stories
-    // Note: epic field uses feature name (not FS-* prefix) - system will auto-generate FS-{date}-{name}
+    // Note: Greenfield increments use numeric feature IDs (FS-XXX), e.g., increment 0031 → FS-031
     const specContent = `---
 title: External Tool Status Synchronization
 created: 2025-11-12
@@ -157,13 +157,10 @@ completed_tasks: 0
 
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
-    // 3. Verify user story files exist (NEW: date-based folder naming FS-{yy-mm-dd}-{name})
-    // Find the feature folder (should be FS-25-11-12-external-tool-status-sync based on created date)
+    // 3. Verify user story files exist (Greenfield: numeric folder naming FS-XXX)
+    // Find the feature folder (should be FS-031 for increment 0031)
     const specsDir = path.join(testDir, '.specweave/docs/internal/specs/default');
-    const folders = fs.readdirSync(specsDir).filter(f => f.includes('external-tool-status-sync'));
-    expect(folders.length).toBe(1);
-
-    const featureDir = path.join(specsDir, folders[0]);
+    const featureDir = path.join(specsDir, 'FS-031');
     expect(fs.existsSync(featureDir)).toBeTruthy();
 
     const us001Path = path.join(featureDir, 'us-001-rich-external-issue-content.md');
@@ -191,9 +188,9 @@ completed_tasks: 0
     // Each task should have a "User Story" link injected after the heading
     expect(updatedTasksContent).toContain('## T-001: Extract Title from Spec Frontmatter');
     expect(updatedTasksContent).toContain('**User Story**: [US-001: Rich External Issue Content]');
-    // Path will include FS-{date}-external-tool-status-sync folder
+    // Path will include FS-031 folder (greenfield numeric naming)
     expect(updatedTasksContent).toContain('docs/internal/specs/default/');
-    expect(updatedTasksContent).toContain('external-tool-status-sync');
+    expect(updatedTasksContent).toContain('FS-031');
 
     expect(updatedTasksContent).toContain('## T-002: Generate Task Checklist');
     expect(updatedTasksContent).toContain('**User Story**: [US-001: Rich External Issue Content]');
@@ -283,12 +280,9 @@ title: Backend Auth Tasks
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
     // Verify links point to correct project folder (backend, not default)
-    // Find backend feature folder (should be FS-{date}-backend-auth)
+    // Find backend feature folder (should be FS-025 for increment 0025)
     const backendSpecsDir = path.join(testDir, '.specweave/docs/internal/specs/backend');
-    const backendFolders = fs.readdirSync(backendSpecsDir).filter(f => f.includes('backend-auth'));
-    expect(backendFolders.length).toBe(1);
-
-    const backendFeatureDir = path.join(backendSpecsDir, backendFolders[0]);
+    const backendFeatureDir = path.join(backendSpecsDir, 'FS-025');
     expect(fs.existsSync(backendFeatureDir)).toBeTruthy();
 
     const us001Path = path.join(backendFeatureDir, 'us-001-api-authentication.md');
@@ -300,7 +294,7 @@ title: Backend Auth Tasks
     const syncedTasksContent = fs.readFileSync(path.join(backendDir, 'tasks.md'), 'utf-8');
     expect(syncedTasksContent).toContain('**User Story**: [US-001: API Authentication]');
     expect(syncedTasksContent).toContain('specs/backend/'); // Project-specific path
-    expect(syncedTasksContent).toContain('backend-auth'); // Feature name in path
+    expect(syncedTasksContent).toContain('FS-025'); // Feature folder (numeric naming)
   });
 
   test('should handle tasks with multiple AC-IDs (maps to multiple user stories)', async () => {
@@ -354,8 +348,7 @@ title: Tasks
 
     // Verify task appears in BOTH user stories (forward links)
     const specsDir2 = path.join(testDir, '.specweave/docs/internal/specs/default');
-    const folders2 = fs.readdirSync(specsDir2).filter(f => f.includes('complex-feature'));
-    const featureDir = path.join(specsDir2, folders2[0]);
+    const featureDir = path.join(specsDir2, 'FS-032');
 
     const us001Content = fs.readFileSync(path.join(featureDir, 'us-001-frontend-ui.md'), 'utf-8');
     expect(us001Content).toContain('T-001'); // Task ID present in US-001
@@ -520,28 +513,31 @@ title: Tasks
 
     execSync(`node -e "${syncScript}"`, { cwd: testDir, stdio: 'inherit' });
 
-    // Find feature folder (should be FS-{date}-epic-readme-test)
-    const specsDir3 = path.join(testDir, '.specweave/docs/internal/specs/default');
-    const folders3 = fs.readdirSync(specsDir3).filter(f => f.includes('epic-readme-test'));
-    const featureDir = path.join(specsDir3, folders3[0]);
+    // FEATURE.md is in cross-project _features/ folder (Universal Hierarchy)
+    const specsBaseDir = path.join(testDir, '.specweave/docs/internal/specs');
+    const featureDir = path.join(specsBaseDir, '_features', 'FS-035');
     const featurePath = path.join(featureDir, 'FEATURE.md');
 
     expect(fs.existsSync(featurePath)).toBeTruthy();
 
     const featureContent = fs.readFileSync(featurePath, 'utf-8');
 
-    // Should contain feature overview (NEW format: FS-{date}-{name} as ID)
-    expect(featureContent).toContain('epic-readme-test'); // Feature name in ID
+    // Should contain feature overview (Greenfield format: FS-XXX as ID)
+    expect(featureContent).toContain('FS-035'); // Feature ID (numeric)
     expect(featureContent).toContain('Epic README Test'); // Title
     expect(featureContent).toContain('High-level feature overview');
 
-    // Should contain implementation history table
-    expect(featureContent).toContain('## Implementation History');
-    expect(featureContent).toContain('| Increment | User Stories | Status |');
+    // Should contain source increment reference
+    expect(featureContent).toContain('## Source');
     expect(featureContent).toContain('0035-epic-readme-test');
+    expect(featureContent).toContain('increments/0035-epic-readme-test');
 
-    // Should contain links to user stories
-    expect(featureContent).toContain('## User Stories');
+    // Should contain user stories by project
+    expect(featureContent).toContain('## User Stories by Project');
     expect(featureContent).toContain('[US-001: Test Story]');
+
+    // Should contain progress section
+    expect(featureContent).toContain('## Progress');
+    expect(featureContent).toContain('**Total Stories**:');
   });
 });
