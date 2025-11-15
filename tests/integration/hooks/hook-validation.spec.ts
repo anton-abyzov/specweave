@@ -180,6 +180,22 @@ describe('Hook Validation', () => {
       cwd: projectRoot
     });
 
+    const cachePath = path.join(projectRoot, '.specweave/state/command-invocations.json');
+
+    beforeEach(() => {
+      // Clear deduplication cache before each test
+      if (fs.existsSync(cachePath)) {
+        fs.unlinkSync(cachePath);
+      }
+    });
+
+    afterEach(() => {
+      // Cleanup cache after each test
+      if (fs.existsSync(cachePath)) {
+        fs.unlinkSync(cachePath);
+      }
+    });
+
     it('should output valid JSON', async () => {
       const result = await runHook('pre-command-deduplication.sh', sampleInput);
 
