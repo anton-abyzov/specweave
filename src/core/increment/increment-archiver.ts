@@ -10,6 +10,7 @@ import * as path from 'path';
 import { glob } from 'glob';
 import { ConfigManager } from '../config-manager.js';
 import { MetadataManager } from './metadata-manager.js';
+import { detectDuplicatesByNumber } from './duplicate-detector.js';
 
 // Simple logger implementation
 class Logger {
@@ -246,6 +247,29 @@ export class IncrementArchiver {
     const sourcePath = path.join(this.incrementsDir, increment);
     const targetPath = path.join(this.archiveDir, increment);
 
+    // CRITICAL: Check for duplicates before archiving
+    const numberMatch = increment.match(/^(\d+)/);
+    if (numberMatch) {
+      const incrementNumber = numberMatch[1];
+      const duplicates = await detectDuplicatesByNumber(incrementNumber, this.rootDir);
+
+      // Check if any duplicates exist in archive or abandoned
+      const archiveDuplicates = duplicates.filter(d =>
+        d.path.includes('_archive') || d.path.includes('_abandoned')
+      );
+
+      if (archiveDuplicates.length > 0) {
+        const locations = archiveDuplicates.map(d => d.path).join('\n  - ');
+        throw new Error(
+          `Cannot archive ${increment}: Increment number ${incrementNumber} already exists in:\n  - ${locations}\n\n` +
+          `Resolution options:\n` +
+          `  1. Delete the existing archive/abandoned version first\n` +
+          `  2. Use --force to overwrite (not recommended)\n` +
+          `  3. Run /specweave:fix-duplicates to resolve conflicts`
+        );
+      }
+    }
+
     // Move the directory
     await fs.move(sourcePath, targetPath, { overwrite: false });
 
@@ -355,6 +379,28 @@ export class IncrementArchiver {
 
     if (await fs.pathExists(targetPath)) {
       throw new Error(`Increment ${increment} already exists in main folder`);
+    }
+
+    // CRITICAL: Check for duplicates before restoring
+    const numberMatch = increment.match(/^(\d+)/);
+    if (numberMatch) {
+      const incrementNumber = numberMatch[1];
+      const duplicates = await detectDuplicatesByNumber(incrementNumber, this.rootDir);
+
+      // Check if any duplicates exist in active increments
+      const activeDuplicates = duplicates.filter(d =>
+        !d.path.includes('_archive') && !d.path.includes('_abandoned')
+      );
+
+      if (activeDuplicates.length > 0) {
+        const locations = activeDuplicates.map(d => d.path).join('\n  - ');
+        throw new Error(
+          `Cannot restore ${increment}: Increment number ${incrementNumber} already exists in active folder:\n  - ${locations}\n\n` +
+          `Resolution options:\n` +
+          `  1. Delete/archive the existing active version first\n` +
+          `  2. Run /specweave:fix-duplicates to resolve conflicts`
+        );
+      }
     }
 
     await fs.move(sourcePath, targetPath);
