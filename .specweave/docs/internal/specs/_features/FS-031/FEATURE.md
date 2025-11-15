@@ -5,7 +5,7 @@ type: feature
 status: in-progress
 priority: P1
 created: 2025-11-12
-lastUpdated: 2025-11-15T00:29:04.419Z
+lastUpdated: 2025-11-15T02:10:35.487Z
 projects: ["default"]
 epic: EPIC-2025-Q4-platform
 sourceIncrement: 0031-external-tool-status-sync
@@ -34,9 +34,18 @@ This feature spans the following projects:
 
 ## User Stories by Project
 
+### default
+
+- [US-001: Rich External Issue Content](../../default/FS-031/us-001-rich-external-issue-content.md) - complete
+- [US-002: Task-Level Mapping & Traceability](../../default/FS-031/us-002-task-level-mapping-traceability.md) - complete
+- [US-003: Status Mapping Configuration](../../default/FS-031/us-003-status-mapping-configuration.md) - complete
+- [US-004: Bidirectional Status Sync](../../default/FS-031/us-004-bidirectional-status-sync.md) - complete
+- [US-005: User Prompts on Completion](../../default/FS-031/us-005-user-prompts-on-completion.md) - complete
+- [US-006: Conflict Resolution](../../default/FS-031/us-006-conflict-resolution.md) - complete
+- [US-007: Multi-Tool Workflow Support](../../default/FS-031/us-007-multi-tool-workflow-support.md) - complete
 
 ## Progress
 
-- **Total Stories**: 0
-- **Completed**: 0
-- **Progress**: 0%
+- **Total Stories**: 7
+- **Completed**: 7
+- **Progress**: 100%

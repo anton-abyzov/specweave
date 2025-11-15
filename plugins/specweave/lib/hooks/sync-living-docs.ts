@@ -176,6 +176,10 @@ async function hierarchicalDistribution(
       }
     }
 
+    // Update acceptance criteria status based on completed tasks
+    console.log('   📊 Updating acceptance criteria status from completed tasks...');
+    await distributor.updateAcceptanceCriteriaStatus(incrementId);
+
     // Collect changed file paths
     const changedFiles = [result.epicPath, ...result.userStoryPaths];
 

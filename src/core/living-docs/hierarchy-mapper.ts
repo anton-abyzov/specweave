@@ -99,6 +99,57 @@ export class HierarchyMapper {
   }
 
   /**
+   * Check if a feature is archived
+   */
+  async isFeatureArchived(featureId: string): Promise<boolean> {
+    const archivePaths = [
+      path.join(this.config.specsBaseDir, '_features', '_archive', featureId),
+      // Check project-specific archives
+      ...(await this.getConfiguredProjects()).map(project =>
+        path.join(this.config.specsBaseDir, project, '_archive', featureId)
+      )
+    ];
+
+    for (const archivePath of archivePaths) {
+      if (await fs.pathExists(archivePath)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if an epic is archived
+   */
+  async isEpicArchived(epicId: string): Promise<boolean> {
+    const archivePath = path.join(this.config.specsBaseDir, '_epics', '_archive', epicId);
+    return await fs.pathExists(archivePath);
+  }
+
+  /**
+   * Filter out archived items from mappings
+   */
+  async filterArchivedItems<T extends { id: string }>(
+    items: T[],
+    type: 'feature' | 'epic'
+  ): Promise<T[]> {
+    const filtered: T[] = [];
+
+    for (const item of items) {
+      const isArchived = type === 'feature'
+        ? await this.isFeatureArchived(item.id)
+        : await this.isEpicArchived(item.id);
+
+      if (!isArchived) {
+        filtered.push(item);
+      }
+    }
+
+    return filtered;
+  }
+
+  /**
    * Get project context for a specific project ID
    */
   async getProjectContext(projectId: string): Promise<ProjectContext | null> {
@@ -175,14 +226,17 @@ export class HierarchyMapper {
   /**
    * Detect which feature this increment belongs to (REQUIRED)
    *
-   * Feature Format: FS-YY-MM-DD-{feature-name}
-   * Example: FS-25-11-14-external-tool-sync
+   * Feature Format (Greenfield): FS-XXX (matches increment number)
+   * Feature Format (Brownfield): FS-YY-MM-DD-{feature-name} (date-based)
+   * Examples:
+   * - Greenfield: 0031-external-tool-sync → FS-031
+   * - Brownfield: Imported from JIRA → FS-25-11-14-external-tool-sync
    *
    * Detection Methods:
-   * 1. Frontmatter: feature: FS-25-11-14-external-tool-sync
-   * 2. Increment Name: 0031-external-tool-status-sync → FS-25-11-14-external-tool-status-sync
+   * 1. Frontmatter: feature: FS-031 (greenfield) or feature: FS-25-11-14-name (brownfield)
+   * 2. Increment Name: 0031-external-tool-status-sync → FS-031 (auto-extract number)
    * 3. Config: livingDocs.hierarchyMapping.incrementToFeature
-   * 4. Fallback: Auto-create feature from increment name + date
+   * 4. Fallback: Auto-create feature from increment number (FS-XXX format)
    */
   async detectFeatureMapping(incrementId: string): Promise<FeatureMapping> {
     // Load feature registry first
@@ -339,6 +393,9 @@ export class HierarchyMapper {
 
   /**
    * Detect feature from frontmatter
+   *
+   * CRITICAL: For greenfield projects, ALWAYS use increment number (FS-XXX)
+   * even if frontmatter says FS-YY-MM-DD-name (date-based format)
    */
   private async detectFeatureFromFrontmatter(content: string, incrementId: string): Promise<FeatureMapping | null> {
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
@@ -349,7 +406,21 @@ export class HierarchyMapper {
       const frontmatter = yaml.parse(frontmatterMatch[1]) as Record<string, any>;
 
       if (frontmatter.feature && typeof frontmatter.feature === 'string') {
-        const featureId = frontmatter.feature; // FS-25-11-14-external-tool-sync
+        let featureId = frontmatter.feature;
+
+        // Check if this is a brownfield project (imported from external tool)
+        const isBrownfield = frontmatter.source === 'external' || frontmatter.imported === true;
+
+        if (!isBrownfield) {
+          // Greenfield: ALWAYS use increment number, ignore frontmatter's date-based ID
+          const numMatch = incrementId.match(/^(\d{4})-/);
+          if (numMatch) {
+            const num = parseInt(numMatch[1], 10);
+            featureId = `FS-${String(num).padStart(3, '0')}`;
+          }
+        }
+        // For brownfield, keep the date-based ID from frontmatter
+
         const projects = await this.detectProjects(incrementId);
         const epic = frontmatter.epic || undefined;
 
@@ -366,21 +437,19 @@ export class HierarchyMapper {
    * Detect feature from increment name
    *
    * Examples:
-   * - 0031-external-tool-status-sync → FS-25-11-14-external-tool-status-sync
-   * - 0032-user-authentication → FS-25-11-15-user-authentication
+   * - 0031-external-tool-status-sync → FS-031
+   * - 0032-user-authentication → FS-032
+   * - 0001-core-framework → FS-001
    */
   private async detectFeatureFromIncrementName(incrementId: string): Promise<FeatureMapping | null> {
-    // Extract feature name from increment ID
-    const nameMatch = incrementId.match(/^\d+-(.+)/);
-    if (!nameMatch) return null;
+    // Extract increment number (first 4 digits)
+    const numMatch = incrementId.match(/^(\d{4})-/);
+    if (!numMatch) return null;
 
-    const featureName = nameMatch[1]; // external-tool-status-sync
+    const num = parseInt(numMatch[1], 10);
 
-    // Get increment creation date
-    const date = await this.getIncrementCreationDate(incrementId);
-
-    // Build feature ID: FS-YY-MM-DD-{feature-name}
-    const featureId = `FS-${date}-${featureName}`;
+    // Build feature ID: FS-XXX (using last 3 digits, zero-padded)
+    const featureId = `FS-${String(num).padStart(3, '0')}`;
 
     // Detect projects
     const projects = await this.detectProjects(incrementId);
@@ -415,15 +484,16 @@ export class HierarchyMapper {
    * Create fallback feature mapping
    */
   private async createFallbackFeatureMapping(incrementId: string): Promise<FeatureMapping> {
-    // Extract feature name from increment ID
-    const nameMatch = incrementId.match(/^\d+-(.+)/);
-    const featureName = nameMatch ? nameMatch[1] : 'unknown';
+    // Extract increment number (first 4 digits)
+    const numMatch = incrementId.match(/^(\d{4})-/);
+    if (!numMatch) {
+      throw new Error(`Invalid increment ID format: ${incrementId}`);
+    }
 
-    // Get increment creation date
-    const date = await this.getIncrementCreationDate(incrementId);
+    const num = parseInt(numMatch[1], 10);
 
-    // Build feature ID: FS-YY-MM-DD-{feature-name}
-    const featureId = `FS-${date}-${featureName}`;
+    // Build feature ID: FS-XXX (using last 3 digits, zero-padded)
+    const featureId = `FS-${String(num).padStart(3, '0')}`;
 
     // Detect projects
     const projects = await this.detectProjects(incrementId);
@@ -435,6 +505,9 @@ export class HierarchyMapper {
 
   /**
    * Build FeatureMapping object
+   *
+   * CRITICAL: For greenfield (FS-XXX format), use the feature ID directly.
+   * The feature ID manager is only used for brownfield (date-based) IDs.
    */
   private buildFeatureMapping(
     featureId: string,
@@ -443,21 +516,27 @@ export class HierarchyMapper {
     confidence: number,
     detectionMethod: 'frontmatter' | 'increment-name' | 'config' | 'fallback'
   ): FeatureMapping {
-    // Get the assigned FS-XXX ID from the registry
-    const assignedId = this.featureIdManager.getAssignedId(featureId);
+    // Check if this is greenfield (FS-XXX) or brownfield (FS-YY-MM-DD-name)
+    const isGreenfield = /^FS-\d{3}$/.test(featureId);
 
-    // Use assigned ID for both _features and project folders
-    const featureFolder = assignedId;  // e.g., FS-001
+    // For greenfield, use the feature ID directly (no registry lookup)
+    // For brownfield, get assigned ID from registry (for deduplication)
+    const finalFeatureId = isGreenfield
+      ? featureId
+      : this.featureIdManager.getAssignedId(featureId);
+
+    // Use final ID for folders
+    const featureFolder = finalFeatureId;
     const featurePath = path.join(this.config.specsBaseDir, '_features', featureFolder);
 
-    // Build project paths map using assigned ID
+    // Build project paths map using final ID
     const projectPaths = new Map<string, string>();
     for (const project of projects) {
-      projectPaths.set(project, path.join(this.config.specsBaseDir, project, assignedId));
+      projectPaths.set(project, path.join(this.config.specsBaseDir, project, finalFeatureId));
     }
 
     return {
-      featureId: assignedId,  // Use assigned ID as the feature ID
+      featureId: finalFeatureId,
       featureFolder,
       featurePath,
       projects,
@@ -599,6 +678,9 @@ export class HierarchyMapper {
 
   /**
    * Find existing feature folder (exact or fuzzy match)
+   *
+   * CRITICAL: For greenfield (FS-XXX), only exact match.
+   * For brownfield (FS-YY-MM-DD-name), fuzzy match allowed.
    */
   private async findExistingFeatureFolder(featureId: string): Promise<string | null> {
     const featuresDir = path.join(this.config.specsBaseDir, '_features');
@@ -610,14 +692,25 @@ export class HierarchyMapper {
     try {
       const folders = await fs.readdir(featuresDir);
 
-      // Exact match
+      // Exact match (always try this first)
       if (folders.includes(featureId)) {
         return featureId;
       }
 
-      // Fuzzy match (feature name is substring)
+      // Fuzzy match ONLY for brownfield (date-based) IDs
+      // Greenfield IDs (FS-XXX) should NEVER fuzzy match
+      const isGreenfield = /^FS-\d{3}$/.test(featureId);
+      if (isGreenfield) {
+        return null; // No fuzzy match for greenfield
+      }
+
+      // Fuzzy match for brownfield (feature name is substring)
       // Example: FS-25-11-14-external-tool-sync matches FS-25-11-14-external-tool-status-sync
       const featureNamePart = featureId.split('-').slice(3).join('-'); // external-tool-sync
+      if (!featureNamePart) {
+        return null; // No feature name part, skip fuzzy match
+      }
+
       for (const folder of folders) {
         if (folder.includes(featureNamePart)) {
           const folderPath = path.join(featuresDir, folder);

@@ -415,15 +415,26 @@ export class SpecDistributor {
   private async extractUserStories(content: string, incrementId: string): Promise<UserStory[]> {
     const userStories: UserStory[] = [];
 
-    // Find all user story sections (supports both ### and #### patterns)
-    // Modified to handle --- separators that appear after each user story in some specs
-    const userStoryPattern = /^###\s+(US-\d+):\s+(.+?)\s*\n([\s\S]*?)(?=\n---\n|^###\s+US-|^##\s+|$)/gm;
+    // Split content into individual user stories
+    // Each story runs from "### US-XXX:" or "#### US-XXX:" until the next user story or end of content
+    const storyParts = content.split(/(?=^#{3,4}\s+US-\d+:)/m);
 
-    let match;
-    while ((match = userStoryPattern.exec(content)) !== null) {
-      const id = match[1]; // US-001
-      const title = match[2];
-      const storyContent = match[3];
+    for (const part of storyParts) {
+      // Skip empty parts or parts that don't start with US-
+      if (!part.trim() || !part.match(/^#{3,4}\s+US-\d+:/)) continue;
+
+      // Extract the user story ID and title from the first line (supports both ### and ####)
+      const headerMatch = part.match(/^#{3,4}\s+(US-\d+):\s+(.+?)$/m);
+      if (!headerMatch) continue;
+
+      const id = headerMatch[1];
+      const title = headerMatch[2];
+
+      // Get everything after the header line, removing trailing ---
+      const storyContent = part
+        .substring(part.indexOf('\n') + 1)
+        .replace(/\n---\s*$/, '')
+        .trim();
 
       // Extract description (As a... I want... So that...) - supports both inline and separate line formats
       const descMatch = storyContent.match(/\*\*As a\*\*\s+(.*?)\n\*\*I want\*\*\s+(.*?)\n\*\*So that\*\*\s+(.*?)(?:\n|$)/is);
@@ -438,12 +449,14 @@ export class SpecDistributor {
         acceptanceCriteria = this.extractAcceptanceCriteria(storyContent);
       }
 
+
       // Extract business rationale
       const rationaleMatch = storyContent.match(/\*\*Business Rationale\*\*:\s+(.*?)(?=\n\n---|\n\n##|$)/is);
       const businessRationale = rationaleMatch ? rationaleMatch[1].trim() : undefined;
 
-      // Extract phase
-      const phaseMatch = content.substring(0, match.index).match(/###\s+(Phase\s+\d+:.*?)$/im);
+      // Extract phase (look for phase header before this story in the original content)
+      const storyIndex = content.indexOf(part);
+      const phaseMatch = content.substring(0, storyIndex).match(/###\s+(Phase\s+\d+:.*?)$/im);
       const phase = phaseMatch ? phaseMatch[1] : undefined;
 
       // Determine status (assume complete if in completed increment)
@@ -470,27 +483,62 @@ export class SpecDistributor {
   private extractAcceptanceCriteria(content: string): any[] {
     const criteria: any[] = [];
 
-    // Pattern: - [x] **AC-US1-01**: Description (P1, testable)
-    // Also handle pattern: - [ ] **AC-US1-01**: Description (P1, testable)
-    const acPattern = /^[-*]\s+\[([ x])\]\s+\*\*(AC-[^:]+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm;
+    // Pattern 1: - [x] **AC-US1-01**: Description (P1, testable)
+    // Pattern 2: - [ ] **AC-001**: Description (P0, testable)
+    // Pattern 3: - AC-001: Description (P0, testable) [without checkbox]
+    // Also handles both ** bold ** and plain text formats
+    const acPatterns = [
+      // With checkbox and bold
+      /^[-*]\s+\[([ x])\]\s+\*\*(AC-[^:]+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+      // Without checkbox but with bold
+      /^[-*]\s+\*\*(AC-[^:]+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+      // Without checkbox and without bold (common in specs)
+      /^[-*]\s+(AC-\d+):\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+    ];
 
-    let match;
-    while ((match = acPattern.exec(content)) !== null) {
-      const completed = match[1] === 'x';
-      const id = match[2]; // AC-US1-01
-      const description = match[3];
-      const metaString = match[4] || ''; // "P1, testable"
+    // Try each pattern
+    for (const pattern of acPatterns) {
+      const contentCopy = content; // Work with a copy for each pattern
+      pattern.lastIndex = 0; // Reset regex state
 
-      const priority = metaString.match(/P\d/)?.[0];
-      const testable = metaString.includes('testable');
+      let match;
+      while ((match = pattern.exec(contentCopy)) !== null) {
+        let completed = false;
+        let id = '';
+        let description = '';
+        let metaString = '';
 
-      criteria.push({
-        id,
-        description,
-        priority,
-        testable,
-        completed,
-      });
+        // Handle different match groups based on pattern
+        if (match.length === 5) {
+          // Pattern with checkbox: [1]=checkbox, [2]=id, [3]=desc, [4]=meta
+          completed = match[1] === 'x';
+          id = match[2];
+          description = match[3];
+          metaString = match[4] || '';
+        } else if (match.length === 4) {
+          // Pattern without checkbox: [1]=id, [2]=desc, [3]=meta
+          completed = false; // Default to not completed
+          id = match[1];
+          description = match[2];
+          metaString = match[3] || '';
+        }
+
+        // Skip if already added (avoid duplicates from multiple patterns)
+        if (criteria.some(c => c.id === id)) {
+          continue;
+        }
+
+        const priority = metaString.match(/P\d/)?.[0];
+        const testable = metaString.includes('testable');
+
+        criteria.push({
+          id,
+          description,
+          priority,
+          testable,
+          completed,
+        });
+      }
     }
 
     return criteria;
@@ -508,18 +556,23 @@ export class SpecDistributor {
 
     // Try multiple patterns to find AC section (supports both ### and #### headings)
     const patterns = [
-      // Pattern 1: AC in "**Acceptance Criteria**:" section (most common)
-      // Match until we hit blank line + Business Rationale or next section
+      // Pattern 1: AC in "**Acceptance Criteria**:" section (most common - matches spec format)
+      // This matches: **Acceptance Criteria**:\n- AC-XXX: description
+      new RegExp(
+        `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?\\*\\*Acceptance Criteria\\*\\*:\\s*\\n+((?:[-*]\\s+AC-\\d+:[^\\n]+\\n?)+)`,
+        'im'
+      ),
+      // Pattern 2: AC with checkboxes format
       new RegExp(
         `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?\\*\\*Acceptance Criteria\\*\\*:\\s*\\n+((?:[-*]\\s+\\[[ x]\\]\\s+\\*\\*AC-[^\\n]+\\n?)+)`,
         'im'
       ),
-      // Pattern 2: AC directly after user story (no separate section)
+      // Pattern 3: AC directly after user story (no separate section)
       new RegExp(
         `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?(?:\\n\\n|\\n)+([-*]\\s+\\[[ x]\\]\\s+\\*\\*AC-US${usNumber}-\\d+[\\s\\S]*?)(?=\\n\\s*\\*\\*Business|\\n###|\\n---|$)`,
         'im'
       ),
-      // Pattern 3: AC in a dedicated "### Acceptance Criteria" subsection
+      // Pattern 4: AC in a dedicated "### Acceptance Criteria" subsection
       new RegExp(
         `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?####+?\\s+Acceptance Criteria\\s*\\n+([\\s\\S]*?)(?=\\n\\s*\\*\\*Business|\\n###|\\n---|$)`,
         'im'
@@ -539,27 +592,63 @@ export class SpecDistributor {
       return criteria;
     }
 
-    // Pattern: - [ ] **AC-USX-XX**: Description (P1, testable)
-    // Also handles: - [x] **AC-USX-XX**: Description (P1, testable)
-    const acPattern = /^[-*]\s+\[([ x])\]\s+\*\*(AC-US\d+-\d+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm;
+    // Multiple patterns to handle different AC formats
+    // Pattern 1: - [ ] **AC-USX-XX**: Description (P1, testable)
+    // Pattern 2: - [x] **AC-001**: Description (P0, testable)
+    // Pattern 3: - AC-001: Description (P0, testable) [without checkbox]
+    const acPatterns = [
+      // With checkbox and bold (specific user story format)
+      /^[-*]\s+\[([ x])\]\s+\*\*(AC-US\d+-\d+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+      // With checkbox and bold (general format)
+      /^[-*]\s+\[([ x])\]\s+\*\*(AC-\d+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+      // Without checkbox but with bold
+      /^[-*]\s+\*\*(AC-\d+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+      // Without checkbox and without bold (common in specs)
+      /^[-*]\s+(AC-\d+):\s+(.+?)(?:\s+\(([^)]+)\))?$/gm,
+    ];
 
-    let match;
-    while ((match = acPattern.exec(acContent)) !== null) {
-      const completed = match[1] === 'x';
-      const id = match[2];
-      const description = match[3];
-      const metaString = match[4] || '';
+    // Try each pattern
+    for (const pattern of acPatterns) {
+      pattern.lastIndex = 0; // Reset regex state
 
-      const priority = metaString.match(/P\d/)?.[0];
-      const testable = metaString.includes('testable');
+      let match;
+      while ((match = pattern.exec(acContent)) !== null) {
+        let completed = false;
+        let id = '';
+        let description = '';
+        let metaString = '';
 
-      criteria.push({
-        id,
-        description,
-        priority,
-        testable,
-        completed,
-      });
+        // Handle different match groups based on pattern
+        if (match.length === 5) {
+          // Pattern with checkbox: [1]=checkbox, [2]=id, [3]=desc, [4]=meta
+          completed = match[1] === 'x';
+          id = match[2];
+          description = match[3];
+          metaString = match[4] || '';
+        } else if (match.length === 4) {
+          // Pattern without checkbox: [1]=id, [2]=desc, [3]=meta
+          completed = false; // Default to not completed
+          id = match[1];
+          description = match[2];
+          metaString = match[3] || '';
+        }
+
+        // Skip if already added (avoid duplicates from multiple patterns)
+        if (criteria.some(c => c.id === id)) {
+          continue;
+        }
+
+        const priority = metaString.match(/P\d/)?.[0];
+        const testable = metaString.includes('testable');
+
+        criteria.push({
+          id,
+          description,
+          priority,
+          testable,
+          completed,
+        });
+      }
     }
 
     return criteria;
@@ -1178,6 +1267,7 @@ export class SpecDistributor {
 
   /**
    * Format project context file (README.md)
+   * IMPORTANT: This README is created for ALL increments, even without user stories!
    */
   private formatProjectContextFile(
     featureMapping: FeatureMapping,
@@ -1186,18 +1276,28 @@ export class SpecDistributor {
   ): string {
     const featurePathUp = featureMapping.projects.length > 1 ? '../../../' : '../../';
 
+    // Determine if this increment has user stories
+    const hasUserStories = parsed.userStories && parsed.userStories.length > 0;
+    const statusNote = parsed.status === 'abandoned' ? 'abandoned' :
+                       parsed.status === 'complete' ? 'complete' : 'in-progress';
+
     return `---
 id: ${featureMapping.featureId}-${projectContext.projectId}
 title: "${parsed.title} - ${projectContext.projectName} Implementation"
 feature: ${featureMapping.featureId}
 project: ${projectContext.projectId}
 type: feature-context
-status: in-progress
+status: ${statusNote}
+sourceIncrement: ${parsed.incrementId}
 ---
 
 # ${projectContext.projectName} Implementation: ${parsed.title}
 
 **Feature**: [${featureMapping.featureId}](${featurePathUp}_features/${featureMapping.featureFolder}/FEATURE.md)
+
+## Overview
+
+${parsed.overview}
 
 ## ${projectContext.projectName}-Specific Context
 
@@ -1209,7 +1309,7 @@ ${projectContext.techStack.map(t => `- ${t}`).join('\n')}
 
 ## User Stories (${projectContext.projectName})
 
-User stories for this project are listed below.
+${hasUserStories ? 'User stories for this project are listed below.' : `_This increment has no user stories. See [FEATURE.md](${featurePathUp}_features/${featureMapping.featureFolder}/FEATURE.md) for overview and implementation details._`}
 
 ## Dependencies
 
@@ -1218,6 +1318,10 @@ User stories for this project are listed below.
 ## Architecture Considerations
 
 [${projectContext.projectName}-specific architecture notes]
+
+---
+
+**Source**: [Increment ${parsed.incrementId}](../../../../../increments/${parsed.incrementId})
 `;
   }
 
@@ -1458,22 +1562,43 @@ ${storiesByProjectSection}
   }
 
   /**
-   * Write project context files
-   * NOTE: We NO LONGER create README.md in project feature folders
-   * User stories go directly in the folder without README
+   * Write project context files (README.md for each project)
+   * IMPORTANT: Always create README.md even if increment has no user stories!
+   * This ensures every increment is represented in living docs, preventing gaps.
    */
   private async writeProjectContextFiles(
     contextFiles: Map<string, string>,
     featureMapping: FeatureMapping
   ): Promise<string[]> {
-    // Skip writing README.md files in project folders
-    // Only user story files should exist there
-    console.log(`   ℹ️  Skipping project README creation (user stories only in project folders)`);
-    return [];
+    const writtenPaths: string[] = [];
+
+    // Write README.md for EVERY project, even if no user stories exist
+    for (const [project, content] of contextFiles.entries()) {
+      const projectPath = featureMapping.projectPaths.get(project);
+      if (!projectPath) {
+        console.warn(`   ⚠️  No project path found for ${project}, skipping README`);
+        continue;
+      }
+
+      // Ensure directory exists
+      await fs.ensureDir(projectPath);
+
+      // Write README.md
+      const readmePath = path.join(projectPath, 'README.md');
+      await fs.writeFile(readmePath, content, 'utf-8');
+      writtenPaths.push(readmePath);
+    }
+
+    if (writtenPaths.length > 0) {
+      console.log(`   ✅ Written README.md to ${writtenPaths.length} project folder(s)`);
+    }
+
+    return writtenPaths;
   }
 
   /**
    * Write user story files by project
+   * IMPORTANT: Ensures project folders exist even if no user stories!
    */
   private async writeUserStoryFilesByProject(
     userStoryFilesByProject: Map<string, UserStoryFile[]>,
@@ -1482,14 +1607,21 @@ ${storiesByProjectSection}
   ): Promise<Map<string, string[]>> {
     const pathsByProject = new Map<string, string[]>();
 
-    for (const [project, stories] of userStoryFilesByProject.entries()) {
+    // CRITICAL FIX: Ensure ALL project folders exist, even without user stories
+    for (const project of featureMapping.projects) {
       const projectPath = featureMapping.projectPaths.get(project);
-      if (!projectPath) continue;
+      if (!projectPath) {
+        console.warn(`   ⚠️  No project path found for ${project}, skipping`);
+        continue;
+      }
 
+      // Ensure directory exists (even if no stories to write)
       await fs.ensureDir(projectPath);
 
+      const stories = userStoryFilesByProject.get(project) || [];
       const paths: string[] = [];
 
+      // Write user story files (if any exist)
       for (const story of stories) {
         const filename = this.generateUserStoryFilename(story.id, story.title);
         const filePath = path.join(projectPath, filename);
@@ -1505,7 +1637,12 @@ ${storiesByProjectSection}
 
     const totalStories = Array.from(userStoryFilesByProject.values())
       .reduce((sum, stories) => sum + stories.length, 0);
-    console.log(`   ✅ Written ${totalStories} user stories to ${featureMapping.projects.length} project(s)`);
+
+    if (totalStories > 0) {
+      console.log(`   ✅ Written ${totalStories} user stories to ${featureMapping.projects.length} project(s)`);
+    } else {
+      console.log(`   ℹ️  No user stories to write, but created ${featureMapping.projects.length} project folder(s)`);
+    }
 
     return pathsByProject;
   }
@@ -1637,5 +1774,326 @@ ${storiesByProjectSection}
       await fs.writeFile(tasksPath, updatedContent, 'utf-8');
       console.log(`   ✅ Updated tasks.md with bidirectional user story links`);
     }
+  }
+
+  /**
+   * Update acceptance criteria status in user stories based on completed tasks
+   * This method synchronizes AC checkboxes with task completion status
+   */
+  public async updateAcceptanceCriteriaStatus(incrementId: string): Promise<void> {
+    console.log(`\n📊 Updating acceptance criteria status for increment: ${incrementId}`);
+
+    const incrementPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId);
+    const tasksPath = path.join(incrementPath, 'tasks.md');
+    const specPath = path.join(incrementPath, 'spec.md');
+
+    if (!await fs.pathExists(tasksPath)) {
+      console.log(`   ⚠️  No tasks.md found, skipping AC status update`);
+      return;
+    }
+
+    const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+
+    // Parse completed tasks and their AC references
+    const completedACs = this.extractCompletedAcceptanceCriteria(tasksContent);
+
+    if (completedACs.size === 0) {
+      console.log(`   ℹ️  No completed acceptance criteria found`);
+      return;
+    }
+
+    console.log(`   📝 Found ${completedACs.size} user stories with completed acceptance criteria`);
+
+    // Try to detect the feature folder this increment maps to
+    let featureId: string | null = null;
+    if (await fs.pathExists(specPath)) {
+      const specContent = await fs.readFile(specPath, 'utf-8');
+      // Look for feature mapping in frontmatter or content
+      const featureMatch = specContent.match(/feature:\s*(FS-[^\s\n]+)/i);
+      if (featureMatch) {
+        const declaredFeature = featureMatch[1];
+        // Try to find the actual feature folder that exists
+        featureId = await this.findActualFeatureFolder(incrementId, declaredFeature);
+        console.log(`   📁 Feature mapping: ${declaredFeature} → ${featureId || 'not found'}`);
+      }
+    }
+
+    // Update user story files with completed ACs
+    await this.updateUserStoryACStatus(completedACs, incrementId, featureId);
+  }
+
+  /**
+   * Extract completed acceptance criteria from tasks
+   */
+  private extractCompletedAcceptanceCriteria(tasksContent: string): Map<string, Set<string>> {
+    const completedACs = new Map<string, Set<string>>(); // US-ID -> Set of AC-IDs
+
+    // Split into task sections
+    const taskSections = tasksContent.split(/^#{2,3}\s+T-\d+:/m);
+
+    for (const section of taskSections) {
+      if (!section.trim()) continue;
+
+      // Check if task is completed
+      const statusMatch = section.match(/\*\*Status\*\*:\s*\[x\]/i);
+      if (!statusMatch) continue; // Skip incomplete tasks
+
+      // Extract AC field
+      const acMatch = section.match(/\*\*AC\*\*:\s*([^\n]+)/);
+      if (!acMatch) continue;
+
+      // Parse AC-IDs
+      const acIds = acMatch[1].split(/[,\s]+/).filter(id => id.match(/^AC-/));
+
+      for (const acId of acIds) {
+        // Determine user story from AC-ID
+        // Patterns: AC-US1-01 -> US-001, AC-001 -> US-001 (assume single story)
+        let userStoryId = '';
+
+        const usMatch = acId.match(/AC-US(\d+)-/);
+        if (usMatch) {
+          userStoryId = `US-${usMatch[1].padStart(3, '0')}`;
+        } else {
+          // For generic AC-XXX format, try to infer from task's user story link
+          const usLinkMatch = section.match(/\[US-(\d+):/);
+          if (usLinkMatch) {
+            userStoryId = `US-${usLinkMatch[1].padStart(3, '0')}`;
+          }
+        }
+
+        if (userStoryId) {
+          if (!completedACs.has(userStoryId)) {
+            completedACs.set(userStoryId, new Set());
+          }
+          completedACs.get(userStoryId)!.add(acId);
+        }
+      }
+    }
+
+    return completedACs;
+  }
+
+  /**
+   * Update user story files with completed AC status
+   */
+  private async updateUserStoryACStatus(
+    completedACs: Map<string, Set<string>>,
+    incrementId: string,
+    featureId: string | null = null
+  ): Promise<void> {
+    const specsPath = path.join(this.projectRoot, '.specweave', 'docs', 'internal', 'specs');
+
+    // Find all user story files
+    const projects = await this.getProjectFolders();
+    let updatedCount = 0;
+
+    for (const project of projects) {
+      const projectSpecsPath = path.join(specsPath, project);
+
+      if (!await fs.pathExists(projectSpecsPath)) continue;
+
+      // Find all feature folders
+      const entries = await fs.readdir(projectSpecsPath, { withFileTypes: true });
+      let featureFolders = entries.filter(e => e.isDirectory() && e.name.startsWith('FS-'));
+
+      // If we have a specific feature ID, only look in that folder
+      if (featureId) {
+        featureFolders = featureFolders.filter(e =>
+          e.name === featureId || e.name.includes(featureId)
+        );
+        if (featureFolders.length === 0) {
+          console.log(`   ⚠️  Feature folder ${featureId} not found in ${project}`);
+        }
+      }
+
+      for (const folder of featureFolders) {
+        const featurePath = path.join(projectSpecsPath, folder.name);
+
+        // Find all user story files
+        const files = await fs.readdir(featurePath);
+        const userStoryFiles = files.filter(f => f.match(/^us-\d+-.+\.md$/));
+
+        for (const file of userStoryFiles) {
+          const filePath = path.join(featurePath, file);
+          const content = await fs.readFile(filePath, 'utf-8');
+
+          // Extract user story ID from content or filename
+          const idMatch = content.match(/^id:\s*(US-\d+)/m) || file.match(/us-(\d+)/);
+          if (!idMatch) continue;
+
+          const userStoryId = idMatch[1].startsWith('US') ? idMatch[1] : `US-${idMatch[1].padStart(3, '0')}`;
+
+          const acsToComplete = completedACs.get(userStoryId);
+          if (!acsToComplete || acsToComplete.size === 0) continue;
+
+          // Update AC checkboxes
+          let updatedContent = content;
+          let hasUpdates = false;
+
+          for (const acId of acsToComplete) {
+            // Find and update the AC checkbox
+            // Pattern: - [ ] **AC-XXX**: Description
+            const acPattern = new RegExp(
+              `^(\\s*-\\s*)\\[\\s\\](\\s*\\*\\*${acId}\\*\\*:.*)$`,
+              'gm'
+            );
+
+            // Check if pattern exists before replacing
+            const originalContent = updatedContent;
+            updatedContent = updatedContent.replace(
+              acPattern,
+              '$1[x]$2'
+            );
+
+            // Check if replacement actually happened
+            if (originalContent !== updatedContent) {
+              hasUpdates = true;
+              console.log(`   ✅ Updated ${acId} in ${userStoryId} (${project}/${folder.name})`);
+            } else {
+              // Debug: pattern didn't match
+              console.log(`   ⚠️  Could not find ${acId} in ${userStoryId} (${project}/${folder.name})`);
+              // Try to find what format the AC actually has
+              const lineWithAc = updatedContent.split('\n').find(line => line.includes(acId));
+              if (lineWithAc) {
+                console.log(`      Found line: "${lineWithAc}"`);
+              }
+            }
+          }
+
+          if (hasUpdates) {
+            await fs.writeFile(filePath, updatedContent, 'utf-8');
+            updatedCount++;
+          }
+        }
+      }
+    }
+
+    if (updatedCount > 0) {
+      console.log(`   ✅ Updated ${updatedCount} user story file(s) with completed acceptance criteria`);
+    }
+  }
+
+  /**
+   * Get all project folders from specs
+   */
+  private async getProjectFolders(): Promise<string[]> {
+    const specsPath = path.join(this.projectRoot, '.specweave', 'docs', 'internal', 'specs');
+
+    if (!await fs.pathExists(specsPath)) {
+      return ['default'];
+    }
+
+    const entries = await fs.readdir(specsPath, { withFileTypes: true });
+    const projectFolders = entries
+      .filter(e => e.isDirectory() && !e.name.startsWith('_'))
+      .map(e => e.name);
+
+    return projectFolders.length > 0 ? projectFolders : ['default'];
+  }
+
+  /**
+   * Find the actual feature folder that matches an increment
+   * Handles mapping between different naming conventions
+   */
+  private async findActualFeatureFolder(
+    incrementId: string,
+    declaredFeature: string
+  ): Promise<string | null> {
+    const specsPath = path.join(this.projectRoot, '.specweave', 'docs', 'internal', 'specs');
+    const projects = await this.getProjectFolders();
+
+    // Extract increment number
+    const incrementNum = incrementId.match(/^(\d+)/)?.[1];
+
+    for (const project of projects) {
+      const projectPath = path.join(specsPath, project);
+      if (!await fs.pathExists(projectPath)) continue;
+
+      const entries = await fs.readdir(projectPath);
+      const featureFolders = entries.filter(e => e.startsWith('FS-'));
+
+      // Strategy 1: Direct match
+      if (featureFolders.includes(declaredFeature)) {
+        return declaredFeature;
+      }
+
+      // Strategy 2: Match by increment number (FS-031 for increment 0031)
+      if (incrementNum) {
+        const paddedNum = incrementNum.padStart(3, '0');
+        const numericFeature = `FS-${paddedNum}`;
+        if (featureFolders.includes(numericFeature)) {
+          return numericFeature;
+        }
+      }
+
+      // Strategy 3: Match by suffix (e.g., FS-XXX-external-tool-sync matches external-tool-sync)
+      const incrementSuffix = incrementId.replace(/^\d+-/, '');
+      for (const folder of featureFolders) {
+        if (folder.includes(incrementSuffix)) {
+          return folder;
+        }
+      }
+
+      // Strategy 4: Match by date pattern
+      if (declaredFeature.match(/^FS-\d{2}-\d{2}-\d{2}-/)) {
+        // Find folder with same date prefix
+        const datePrefix = declaredFeature.match(/^FS-\d{2}-\d{2}-\d{2}/)?.[0];
+        for (const folder of featureFolders) {
+          if (folder.startsWith(datePrefix)) {
+            return folder;
+          }
+        }
+      }
+
+      // Strategy 5: Smart content-based matching
+      // Look for feature folders containing user stories that reference this increment
+      for (const folder of featureFolders) {
+        const featurePath = path.join(projectPath, folder);
+        const files = await fs.readdir(featurePath);
+        const userStoryFiles = files.filter(f => f.match(/^us-\d+-.+\.md$/));
+
+        for (const file of userStoryFiles) {
+          const filePath = path.join(featurePath, file);
+          const content = await fs.readFile(filePath, 'utf-8');
+
+          // Check if this user story references our increment
+          if (content.includes(`increments/${incrementId}/`) ||
+              content.includes(`Increment**: [${incrementId}]`)) {
+            console.log(`   🎯 Found feature folder ${folder} by content match in ${file}`);
+            return folder;
+          }
+        }
+      }
+
+      // Strategy 6: Fuzzy match on increment name parts
+      // Split increment name into words and look for feature folders with matching words
+      const incrementWords = incrementId.toLowerCase().split(/[-_]/);
+      let bestMatch: { folder: string; score: number } | null = null;
+
+      for (const folder of featureFolders) {
+        const folderWords = folder.toLowerCase().split(/[-_]/);
+        let matchScore = 0;
+
+        // Count matching words (ignoring numbers and 'FS' prefix)
+        for (const word of incrementWords) {
+          if (word.match(/^\d+$/) || word === 'fs') continue;
+          if (folderWords.includes(word)) {
+            matchScore++;
+          }
+        }
+
+        // Update best match if this score is better
+        if (matchScore > 0 && (!bestMatch || matchScore > bestMatch.score)) {
+          bestMatch = { folder, score: matchScore };
+        }
+      }
+
+      if (bestMatch && bestMatch.score >= 2) {  // Require at least 2 word matches
+        console.log(`   🎯 Found feature folder ${bestMatch.folder} by fuzzy match (score: ${bestMatch.score})`);
+        return bestMatch.folder;
+      }
+    }
+
+    return null;
   }
 }

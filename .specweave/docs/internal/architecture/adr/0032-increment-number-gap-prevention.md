@@ -7,7 +7,7 @@
 
 ## Context
 
-SpecWeave currently has a critical bug where increment numbering can create gaps when increments are abandoned or paused. The root cause is that three separate functions (`getNextFeatureNumber()` in JavaScript and `getNextIncrementId()` in two TypeScript files) only scan the main `.specweave/increments/` directory, ignoring subdirectories like `_abandoned/` and `_paused/`.
+SpecWeave currently has a critical bug where increment numbering can create gaps when increments are archived (abandoned, completed, or moved for cleanup). The root cause is that functions generating increment numbers only scan the main `.specweave/increments/` directory, ignoring the `_archive/` subdirectory.
 
 **Current Behavior**:
 ```
@@ -15,16 +15,15 @@ SpecWeave currently has a critical bug where increment numbering can create gaps
 ├── 0001-core-framework/          ← Found (0001)
 ├── 0002-intelligent-model/       ← Found (0002)
 ├── 0003-cross-platform-cli/      ← Found (0003)
-├── _abandoned/
-│   └── 0004-failed-experiment/   ← IGNORED! (0004)
-└── _paused/
-    └── 0005-on-hold-feature/     ← IGNORED! (0005)
+└── _archive/
+    ├── 0004-failed-experiment/   ← IGNORED! (0004 - abandoned)
+    └── 0005-old-feature/         ← IGNORED! (0005 - completed)
 
-Next increment: 0004  ← COLLISION! (0004 already exists in _abandoned/)
+Next increment: 0004  ← COLLISION! (0004 already exists in _archive/)
 ```
 
 **Impact**:
-- **Duplicate increment numbers** (same number in active and _abandoned/_paused)
+- **Duplicate increment numbers** (same number in active and _archive)
 - **External sync conflicts** (GitHub/JIRA issues with duplicate IDs)
 - **Audit trail corruption** (impossible to trace increment history)
 - **Metadata conflicts** (metadata.json collision)
@@ -86,7 +85,7 @@ export class IncrementNumberManager {
   }
 
   /**
-   * Scan ALL directories (main, _abandoned, _paused) for increment numbers
+   * Scan ALL directories (main, _archive, _archive) for increment numbers
    * @param incrementsDir - Base increments directory
    * @returns Highest increment number found
    */
@@ -96,8 +95,8 @@ export class IncrementNumberManager {
     // Directories to scan (order matters for error messages)
     const dirsToScan = [
       { path: incrementsDir, label: 'active' },
-      { path: path.join(incrementsDir, '_abandoned'), label: 'abandoned' },
-      { path: path.join(incrementsDir, '_paused'), label: 'paused' }
+      { path: path.join(incrementsDir, '_archive'), label: 'abandoned' },
+      { path: path.join(incrementsDir, '_archive'), label: 'paused' }
     ];
 
     dirsToScan.forEach(({ path: dirPath, label }) => {
@@ -134,8 +133,8 @@ export class IncrementNumberManager {
 
     const dirsToCheck = [
       incrementsDir,
-      path.join(incrementsDir, '_abandoned'),
-      path.join(incrementsDir, '_paused')
+      path.join(incrementsDir, '_archive'),
+      path.join(incrementsDir, '_archive')
     ];
 
     return dirsToCheck.some(dir => {
@@ -273,7 +272,7 @@ function getNextFeatureNumber(featuresDir = '.specweave/increments') {
 - **Note**: This is existing behavior, not introduced by this change
 
 **Risk 3: Subdirectory Name Change**
-- **Scenario**: Future version renames `_abandoned/` to `_archived/`
+- **Scenario**: Future version renames `_archive/` to `_archived/`
 - **Mitigation**: Add new name to `dirsToScan` array (backward compatible)
 
 ## Implementation Plan
@@ -291,18 +290,18 @@ function getNextFeatureNumber(featuresDir = '.specweave/increments') {
 - [x] Add deprecation warnings
 
 **Phase 3: Testing** (Priority: P1)
-- [x] Unit tests for all scenarios (main, _abandoned, _paused)
+- [x] Unit tests for all scenarios (main, _archive, _archive)
 - [x] Integration tests (create increment → abandon → create new → verify no collision)
 - [x] Edge cases (empty directories, missing subdirectories, 3-digit IDs)
 
 **Phase 4: Documentation** (Priority: P2)
 - [x] Update ADR (this file)
-- [x] Update user guide (explain _abandoned/_paused naming)
+- [x] Update user guide (explain _archive/_archive naming)
 - [x] Add inline code comments
 
 ## Related Decisions
 
-- **ADR-0007**: Increment discipline (defines _abandoned/_paused folders)
+- **ADR-0007**: Increment discipline (defines _archive/_archive folders)
 - **ADR-0016**: Multi-project sync (relies on unique increment IDs)
 - **Future**: ADR-0033 (if we add _archived/ folder later)
 
@@ -322,18 +321,18 @@ describe('IncrementNumberManager', () => {
     expect(getNext()).toBe('0002');
   });
 
-  it('scans _abandoned directory', () => {
-    // .specweave/increments/_abandoned/0005-failed/
+  it('scans _archive directory', () => {
+    // .specweave/increments/_archive/0005-failed/
     expect(getNext()).toBe('0006');
   });
 
-  it('scans _paused directory', () => {
-    // .specweave/increments/_paused/0010-on-hold/
+  it('scans _archive directory', () => {
+    // .specweave/increments/_archive/0010-on-hold/
     expect(getNext()).toBe('0011');
   });
 
   it('finds highest across all directories', () => {
-    // 0001 (main), 0005 (_abandoned), 0010 (_paused)
+    // 0001 (main), 0005 (_archive), 0010 (_archive)
     expect(getNext()).toBe('0011');
   });
 
@@ -346,7 +345,7 @@ describe('IncrementNumberManager', () => {
   it('clears cache after TTL', async () => {
     const first = getNext();
     await sleep(6000); // Wait for cache expiry
-    // Manually create 0020 in _abandoned
+    // Manually create 0020 in _archive
     const second = getNext(); // Should detect new highest
     expect(second).toBe('0021');
   });

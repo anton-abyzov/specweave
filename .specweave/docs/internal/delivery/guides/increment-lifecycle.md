@@ -142,6 +142,118 @@ reports/completion.md generated
 spec.md (YAML: status: closed)
 ```
 
+### 🆕 Reopening Completed Increments (v0.19.0)
+
+**NEW**: COMPLETED is no longer terminal! You can now reopen increments when issues are discovered post-completion.
+
+#### Reopen State Transitions (NEW)
+
+```
+completed → active (reopen for fixes)
+completed → abandoned (mark as failed, rare)
+```
+
+**When to Reopen**:
+- ✅ Production bug found after completion
+- ✅ Acceptance criteria not actually met
+- ✅ Regression discovered
+- ✅ External integration broken
+
+**Reopen Workflow**:
+```
+Issue Discovered
+    ↓
+Smart Detector suggests reopen
+    ↓
+/specweave:reopen 0031 --reason "GitHub sync failing"
+    ↓
+WIP limit validation (warns if exceeded)
+    ↓
+Status: COMPLETED → ACTIVE
+    ↓
+Tasks marked [ ] (reopened)
+    ↓
+Audit trail created
+    ↓
+External tools synced
+    ↓
+Fix the issue
+    ↓
+/specweave:done 0031 (close again)
+```
+
+#### Three Reopen Levels
+
+**1. Task-Level** (Surgical Fix):
+```bash
+/specweave:reopen 0031 --task T-003 --reason "API rate limiting"
+```
+- Updates only specific task
+- Doesn't change increment status
+- Best for small, isolated bugs
+
+**2. User Story-Level** (Feature Fix):
+```bash
+/specweave:reopen 0031 --user-story US-001 --reason "AC not met"
+```
+- Reopens all related tasks
+- Updates living docs spec
+- Best for incomplete features
+
+**3. Increment-Level** (Systemic Fix):
+```bash
+/specweave:reopen 0031 --reason "Multiple production issues"
+```
+- Transitions COMPLETED → ACTIVE
+- Validates WIP limits
+- Reopens all incomplete tasks
+- Best for systemic problems
+
+#### Smart Auto-Detection
+
+Just report the issue naturally:
+```
+"The GitHub sync isn't working"
+```
+
+The `smart-reopen-detector` skill will:
+1. 🔍 Scan recent work (active + 7 days completed)
+2. 🎯 Find related items (relevance scoring)
+3. 💡 Suggest exact reopen command
+
+#### WIP Limits During Reopen
+
+Reopening respects WIP limits:
+```
+⚠️  WIP LIMIT WARNING:
+   Current: 2/2 features active
+   Reopening will EXCEED limit!
+
+Options:
+1. Pause: /specweave:pause 0030
+2. Force: /specweave:reopen 0031 --force --reason "Production critical"
+```
+
+#### Audit Trail
+
+Every reopen is tracked in metadata.json:
+```json
+{
+  "reopened": {
+    "count": 1,
+    "history": [
+      {
+        "date": "2025-11-14T15:30:00Z",
+        "reason": "GitHub sync failing",
+        "previousStatus": "completed"
+      }
+    ]
+  }
+}
+```
+
+**See**: [ADR-0033](../../architecture/adr/0033-smart-reopen-functionality.md) for complete architecture
+
 ---
 
 ## Backlog Management

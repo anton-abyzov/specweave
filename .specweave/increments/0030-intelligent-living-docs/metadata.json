@@ -4,5 +4,9 @@
   "type": "feature",
   "created": "2025-11-12T01:43:00Z",
   "lastActivity": "2025-11-12T15:33:00Z",
-  "completedAt": "2025-11-12T15:33:00Z"
+  "completedAt": "2025-11-12T15:33:00Z",
+  "github": {
+    "issue": 496,
+    "url": "https://github.com/anton-abyzov/specweave/issues/496"
+  }
 }

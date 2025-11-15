@@ -4,6 +4,117 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.19.0] - 2025-11-14
+
+### 🚀 Major Features
+
+#### Smart Reopen Functionality (Increment 0032)
+- **NEW**: Auto-reopen completed increments, tasks, or user stories when issues are discovered
+  - **Smart Auto-Detection**: Report "broken" → AI scans recent work, suggests what to reopen
+  - **Three Reopen Levels**: Task (surgical), User Story (feature), Increment (systemic)
+  - **WIP Limits Respected**: Validates before reopening, warns if exceeded
+  - **Full Audit Trail**: Tracks all reopens with reason, date, and previous status
+  - **External Tool Sync**: GitHub/JIRA/ADO updated automatically on reopen
+- **Status Transitions Updated**: COMPLETED → ACTIVE (reopen), COMPLETED → ABANDONED (mark failed)
+- **Location**: `.specweave/increments/0032-prevent-increment-number-gaps/`
+
+#### Core Components Added
+- **IncrementReopener** (`src/core/increment/increment-reopener.ts`, 556 lines)
+  - `reopenIncrement()` - Full increment reopen with WIP validation
+  - `reopenTask()` - Surgical task-level reopen
+  - `reopenUserStory()` - Feature-level reopen with related tasks
+  - `validateWIPLimits()` - WIP limit checking before reopen
+- **RecentWorkScanner** (`src/core/increment/recent-work-scanner.ts`, 437 lines)
+  - `scanRecentIncrements()` - Find completed work (7 days)
+  - `matchKeywords()` - Relevance scoring algorithm (+10/+7/+5/+3 points)
+  - `formatMatches()` - Display suggestions with days-ago calculation
+
+#### New Skill & Command
+- **Skill**: `smart-reopen-detector` - Auto-activates on keywords ("not working", "broken", "bug", "failing")
+  - Scans active + recently completed work (7 days)
+  - Pattern matches keywords, scores relevance
+  - Suggests reopen command with WIP warnings
+- **Command**: `/specweave:reopen` - Execute reopen actions
+  - `--task T-XXX` - Reopen specific task
+  - `--user-story US-XXX` - Reopen user story + related tasks
+  - `--reason "..."` - Required for audit trail
+  - `--force` - Bypass WIP limits (production emergencies)
+
+### 📚 Documentation
+
+#### Command Reference Update
+- **NEW**: Command Reference by Priority (`.specweave/docs/public/guides/command-reference-by-priority.md`)
+  - Organized 62 commands across 10 plugins into P0/P1/P2/P3 priorities
+  - P0 (Critical/Daily): increment, do, done, progress, **reopen**
+  - P1 (Weekly): pause, resume, validate, sync-docs
+  - P2 (Monthly): tdd-cycle, archive, translate
+  - P3 (Rarely): GitHub/JIRA/ADO sync, ML pipelines
+  - Quick start guide with essential 5 commands
+  - Daily workflow examples and troubleshooting
+
+#### Internal Documentation Updates
+- **Updated**: Increment Lifecycle Guide (`.specweave/docs/internal/delivery/guides/increment-lifecycle.md`)
+  - Added "Reopening Completed Increments" section
+  - Documented three reopen levels with examples
+  - Explained smart auto-detection workflow
+  - Included WIP limit validation examples
+
+#### Architecture Documentation
+- **NEW**: ADR-0033: Smart Reopen Functionality (`.specweave/docs/internal/architecture/adr/0033-smart-reopen-functionality.md`)
+  - Decision rationale (why reopen needed)
+  - Three architecture options considered
+  - Implementation details (status transitions, audit trail)
+  - Consequences and mitigation strategies
+- **NEW**: Smart Reopen Architecture Design (`.specweave/increments/0032-prevent-increment-number-gaps/reports/SMART-REOPEN-ARCHITECTURE.md`)
+  - Complete architecture overview (721 lines)
+  - Component diagrams and data flow
+  - Success criteria and testing strategy
+
+### 🔧 Technical Improvements
+
+#### Status Transition Updates
+- **Updated**: `src/core/types/increment-metadata.ts`
+  - Added COMPLETED → ACTIVE transition (reopen)
+  - Added COMPLETED → ABANDONED transition (mark failed)
+  - Removed terminal state restriction on COMPLETED
+
+#### Metadata Extensions
+- **NEW**: `IncrementMetadataWithReopen` interface
+  - `reopened.count` - Number of times reopened
+  - `reopened.history[]` - Full audit trail with dates, reasons, previous status
+
+### ✨ Features Summary
+
+**Before v0.19.0**:
+- ❌ COMPLETED was terminal (no way to reopen)
+- ❌ Manual search required to find related work
+- ❌ No audit trail for fixes
+- ❌ Had to create new increments for simple bugs
+
+**After v0.19.0**:
+- ✅ Smart auto-detection of what to reopen
+- ✅ Three-level reopen (task/user story/increment)
+- ✅ WIP limits respected during reopen
+- ✅ Complete audit trail preserved
+- ✅ External tools stay in sync
+
+### 📊 Impact
+
+- **Total Code Added**: 2,702 lines (code + documentation)
+- **Files Created**: 6
+- **Files Modified**: 2
+- **Build Status**: ✅ PASSING
+- **Breaking Changes**: ❌ NONE (fully backward compatible)
+
+### 🎯 Migration Notes
+
+- No migration required - feature is opt-in
+- Old completed increments remain terminal (no auto-reopen)
+- New status transitions available immediately
+- Existing workflows unaffected
+
+---
+
 ## [0.18.2] - 2025-11-14
 
 ### ✨ Features

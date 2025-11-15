@@ -136,8 +136,9 @@ Skips all delays between issue creation. **Auto-enabled** for increments < 10 ta
 
 ### 2. Epic Issue (Increment-Level)
 
-**Title**: `[INC-####] Increment Title`
-**Example**: `[INC-0004] Plugin Architecture`
+**Title**: `[FS-YY-MM-DD] Increment Title` (date-based format matching Epic folder)
+**Example**: `[FS-25-11-12] Plugin Architecture`
+**Legacy Format** (deprecated): `[INC-0004]` - No longer used!
 **Labels**: `increment`, `specweave`, priority (`p0`/`p1`/`p2`/`p3`)
 **Body**:
 - Executive summary from `spec.md`

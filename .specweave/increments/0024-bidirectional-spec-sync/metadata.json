@@ -6,5 +6,9 @@
   "priority": "P1",
   "created": "2025-11-11",
   "completed": "2025-11-11",
-  "summary": "Implemented bidirectional spec sync between SpecWeave and external tools (GitHub/JIRA/ADO)"
+  "summary": "Implemented bidirectional spec sync between SpecWeave and external tools (GitHub/JIRA/ADO)",
+  "github": {
+    "issue": 493,
+    "url": "https://github.com/anton-abyzov/specweave/issues/493"
+  }
 }

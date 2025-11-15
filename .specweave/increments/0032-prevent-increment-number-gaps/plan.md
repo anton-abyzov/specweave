@@ -14,7 +14,7 @@ created: 2025-11-14
 
 **Complete architecture**: [ADR-0032: Increment Number Gap Prevention](../../docs/internal/architecture/adr/0032-increment-number-gap-prevention.md)
 
-**Problem Summary**: Three separate functions generate increment numbers by scanning only the main `.specweave/increments/` directory, ignoring `_abandoned/` and `_paused/` subdirectories. This causes duplicate increment IDs when increments are moved to these folders.
+**Problem Summary**: Functions generating increment numbers only scan the main `.specweave/increments/` directory, ignoring the `_archive/` subdirectory. This causes duplicate increment IDs when increments are moved to archive (for abandonment, completion, or cleanup).
 
 **Solution Summary**: Create centralized `IncrementNumberManager` utility that comprehensively scans ALL directories, with caching for performance and backward-compatible migration.
 
@@ -26,7 +26,7 @@ created: 2025-11-14
 
 **Rationale**:
 - **DRY principle**: Single source of truth (3 functions → 1 utility)
-- **Maintainability**: Future subdirectories (e.g., `_archived/`) require 1 change, not 3
+- **Maintainability**: Future subdirectories require 1 change, not 3
 - **Testability**: One comprehensive test suite covers all cases
 - **Performance**: Caching possible (shared across all callers)
 
@@ -114,8 +114,7 @@ private static scanAllIncrementDirectories(incrementsDir: string): number {
   // Directories to scan (extensible)
   const dirsToScan = [
     { path: incrementsDir, label: 'active' },
-    { path: path.join(incrementsDir, '_abandoned'), label: 'abandoned' },
-    { path: path.join(incrementsDir, '_paused'), label: 'paused' }
+    { path: path.join(incrementsDir, '_archive'), label: 'archive' }
   ];
 
   dirsToScan.forEach(({ path: dirPath, label }) => {
@@ -196,8 +195,7 @@ static incrementNumberExists(
 
   const dirsToCheck = [
     incrementsDir,
-    path.join(incrementsDir, '_abandoned'),
-    path.join(incrementsDir, '_paused')
+    path.join(incrementsDir, '_archive')
   ];
 
   return dirsToCheck.some(dir => {
@@ -314,8 +312,7 @@ describe('IncrementNumberManager', () => {
   describe('getNextIncrementNumber', () => {
     it('returns 0001 for empty directory');
     it('scans main directory and returns next number');
-    it('scans _abandoned directory and returns next number');
-    it('scans _paused directory and returns next number');
+    it('scans _archive directory and returns next number');
     it('finds highest across all directories');
     it('handles 3-digit legacy IDs (001, 002, etc.)');
     it('handles 4-digit IDs (0001, 0002, etc.)');
@@ -333,8 +330,7 @@ describe('IncrementNumberManager', () => {
 
   describe('incrementNumberExists', () => {
     it('detects increment in main directory');
-    it('detects increment in _abandoned directory');
-    it('detects increment in _paused directory');
+    it('detects increment in _archive directory');
     it('normalizes 3-digit to 4-digit for comparison');
     it('returns false for non-existent increment');
   });
@@ -355,8 +351,8 @@ describe('IncrementNumberManager', () => {
 it('finds highest across all directories', () => {
   // Setup
   createIncrement('0001-feature-a'); // main
-  createIncrement('_abandoned/0005-feature-b'); // abandoned
-  createIncrement('_paused/0010-feature-c'); // paused
+  createIncrement('_archive/0005-feature-b'); // archived/abandoned
+  createIncrement('_archive/0010-feature-c'); // archived/old
 
   // Execute
   const next = IncrementNumberManager.getNextIncrementNumber(projectRoot);
@@ -387,7 +383,7 @@ it('uses cache on repeated calls', () => {
 it('handles mixed 3-digit and 4-digit IDs', () => {
   createIncrement('001-legacy'); // 3-digit
   createIncrement('0005-new'); // 4-digit
-  createIncrement('_abandoned/010-old'); // 3-digit
+  createIncrement('_archive/010-old'); // 3-digit
 
   const next = IncrementNumberManager.getNextIncrementNumber(projectRoot);
 
@@ -408,7 +404,7 @@ it('prevents duplicate IDs when abandoning increments', async () => {
   // 2. Abandon 0002
   fs.renameSync(
     '.specweave/increments/0002-feature-b',
-    '.specweave/increments/_abandoned/0002-feature-b'
+    '.specweave/increments/_archive/0002-feature-b'
   );
 
   // 3. Clear cache (simulate restart)
@@ -419,7 +415,7 @@ it('prevents duplicate IDs when abandoning increments', async () => {
 
   // 5. Verify: Should be 0004, not 0002 (collision)
   expect(next).toBe('0004');
-  expect(IncrementNumberManager.incrementNumberExists('0002')).toBe(true); // 0002 exists in _abandoned
+  expect(IncrementNumberManager.incrementNumberExists('0002')).toBe(true); // 0002 exists in _archive
 });
 ```
 
@@ -427,7 +423,7 @@ it('prevents duplicate IDs when abandoning increments', async () => {
 ```typescript
 it('detects duplicates via incrementNumberExists', () => {
   createIncrement('0001-feature');
-  createIncrement('_paused/0005-on-hold');
+  createIncrement('_archive/0005-on-hold');
 
   // Simulate PM Agent trying to create duplicate
   expect(IncrementNumberManager.incrementNumberExists('0001')).toBe(true);
@@ -453,9 +449,9 @@ it('handles empty .specweave/increments directory', () => {
 
 **Edge Case 2: Missing subdirectories**
 ```typescript
-it('gracefully handles missing _abandoned directory', () => {
+it('gracefully handles missing _archive directory', () => {
   createIncrement('0001-feature');
-  // Don't create _abandoned/ directory
+  // Don't create _archive/ directory
 
   const next = IncrementNumberManager.getNextIncrementNumber();
   expect(next).toBe('0002'); // Should not throw error
@@ -497,8 +493,7 @@ SpecWeave uses subdirectories to organize increments by state:
 | Subdirectory | Purpose | Increment Lifecycle |
 |-------------|---------|---------------------|
 | `.specweave/increments/` (main) | Active increments | Planning → Implementation → Completed |
-| `_abandoned/` | Cancelled increments | Failed experiments, scope changes |
-| `_paused/` | On-hold increments | Waiting for dependencies, blocked |
+| `_archive/` | Archived increments | Abandoned, completed, old increments |
 
 **Important**: Increment numbers are **globally unique** across ALL subdirectories.
 When you abandon or pause an increment, its number is reserved forever.
@@ -508,10 +503,9 @@ When you abandon or pause an increment, its number is reserved forever.
 .specweave/increments/
 ├── 0001-core-framework/         ← Active
 ├── 0002-intelligent-model/      ← Active
-├── _abandoned/
-│   └── 0003-failed-experiment/  ← Number 0003 is reserved
-└── _paused/
-    └── 0004-on-hold-feature/    ← Number 0004 is reserved
+└── _archive/
+    ├── 0003-failed-experiment/   ← Number 0003 is reserved (abandoned)
+    └── 0004-old-feature/         ← Number 0004 is reserved (completed)
 
 Next increment: 0005  ← Skips 0003 and 0004 (already used)
 ```
@@ -534,7 +528,7 @@ Next increment: 0005  ← Skips 0003 and 0004 (already used)
  *
  * **Problem Solved**:
  * - Before: `getNextFeatureNumber()` only scanned main directory
- * - After: Comprehensive scan of main + _abandoned + _paused directories
+ * - After: Comprehensive scan of main + _archive directory
  *
  * **Usage**:
  * ```typescript
@@ -542,7 +536,7 @@ Next increment: 0005  ← Skips 0003 and 0004 (already used)
  * console.log(next); // "0033"
  *
  * const exists = IncrementNumberManager.incrementNumberExists('0032', projectRoot);
- * console.log(exists); // true (found in _paused/)
+ * console.log(exists); // true (found in _archive/)
  * ```
  *
  * **Performance**:

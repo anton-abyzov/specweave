@@ -58,6 +58,7 @@ export interface ValidationResult {
   increments: {
     total: number;
     active: number;
+    backlog: number;
     paused: number;
     completed: number;
     abandoned: number;

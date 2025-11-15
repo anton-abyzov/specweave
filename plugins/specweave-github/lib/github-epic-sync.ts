@@ -318,7 +318,7 @@ export class GitHubEpicSync {
   ): Promise<number | null> {
     try {
       // Search GitHub for issues with Epic ID in title
-      // Pattern: "[FS-031] Title" or "[INC-0031] Title"
+      // Pattern: "[FS-031] Title" (new) or "[INC-0031] Title" (deprecated, legacy support only)
       const titlePattern = `[${epicId}]`;
 
       const result = await execFileNoThrow('gh', [

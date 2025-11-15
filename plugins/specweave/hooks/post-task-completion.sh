@@ -230,6 +230,45 @@ if command -v node &> /dev/null; then
 fi
 
 # ============================================================================
+# UPDATE AC STATUS (NEW in v0.18.3 - Acceptance Criteria Checkbox Update)
+# ============================================================================
+# Updates acceptance criteria checkboxes in spec.md based on completed tasks
+# - Extracts AC-IDs from completed tasks (AC-US1-01, AC-US1-02, etc.)
+# - Checks off corresponding AC in spec.md
+# - Ensures external tool sync reflects current AC completion status
+
+if command -v node &> /dev/null; then
+  if [ -n "$CURRENT_INCREMENT" ]; then
+    echo "[$(date)] ✓ Updating AC status for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+
+    # Determine which AC update script to use (project local or global)
+    UPDATE_AC_SCRIPT=""
+    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
+      # Development: Use project's compiled files (has node_modules)
+      UPDATE_AC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js"
+      echo "[$(date)]   Using local dist: $UPDATE_AC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
+      # Installed as dependency: Use node_modules version
+      UPDATE_AC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-ac-status.js"
+      echo "[$(date)]   Using node_modules: $UPDATE_AC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-ac-status.js" ]; then
+      # Fallback: Plugin marketplace (may fail if deps missing)
+      UPDATE_AC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-ac-status.js"
+      echo "[$(date)]   Using plugin marketplace: $UPDATE_AC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+
+    if [ -n "$UPDATE_AC_SCRIPT" ]; then
+      # Run AC status update (non-blocking, best-effort)
+      (cd "$PROJECT_ROOT" && node "$UPDATE_AC_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+        echo "[$(date)] ⚠️  Failed to update AC status (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      }
+    else
+      echo "[$(date)] ⚠️  update-ac-status.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  fi
+fi
+
+# ============================================================================
 # TRANSLATE LIVING DOCS (NEW in v0.6.0 - i18n)
 # ============================================================================
 

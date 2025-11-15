@@ -143,7 +143,7 @@ This guide auto-loads when using increment commands (progressive disclosure patt
 
 **Quick Reference**:
 - Complete work: `/specweave:do`
-- Close increments: `/specweave:close` (3 options: adjust scope, move scope, extend)
+- Close increments: `/specweave:done` (3 options: adjust scope, move scope, extend)
 - Check status: `/specweave:status`
 - Emergency bypass: `--force` (use sparingly!)
 
@@ -738,6 +738,34 @@ Epic (optional) → Feature (required) → User Story → Task
 | **US-* (User Story)** | Issue | Story | User Story | Project-specific requirement |
 | **T-* (Task)** | Checkbox | Sub-task | Task | Implementation unit (1-4 hours) |
 
+### 🏷️ GitHub Issue Title Format (CRITICAL FOR CONTRIBUTORS!)
+
+**IMPORTANT**: When creating GitHub issues (manually or via sync), use the correct format:
+
+| Context | Format | Example | Code Location |
+|---------|--------|---------|---------------|
+| **Feature/Epic Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `github-epic-sync.ts:542` |
+| **User Story Issue** | `[FS-NNN][US-NNN] Title` | `[FS-031][US-002] Task Mapping` | `spec-distributor.ts` |
+| **Increment Issue** | `[FS-YY-MM-DD] Title` | `[FS-25-11-12] Feature Name` | `post-increment-planning.sh:409` |
+
+**⛔ NEVER use `[INC-XXXX]` format** - This is DEPRECATED (pre-v0.18.0)!
+
+**Why this matters**:
+- ✅ `[FS-XXX]` matches Epic folder structure in `.specweave/docs/internal/specs/_features/`
+- ✅ Enables hierarchical tracking (Epic → Feature → User Story → Task)
+- ✅ Works with living docs sync and duplicate detection
+- ❌ `[INC-XXX]` was the old format and breaks Universal Hierarchy architecture
+
+**If you see old [INC-] issues**:
+```bash
+# Close all old [INC-] format issues
+gh issue list --search "[INC-" --state open --json number --jq '.[].number' | \
+  xargs -I {} gh issue close {} --comment "Migrating to [FS-XXX] format (Universal Hierarchy v0.18.0+)"
+
+# Re-sync to create new [FS-] issues
+/specweave-github:sync-epic FS-031
+```
+
 ### Automatic Sync Process
 
 **When**: After completing an increment with `/specweave:done`
@@ -1212,7 +1240,7 @@ The date format (`FS-YY-MM-DD`) is extracted from `metadata.json` creation date 
 
 **What Gets Created**:
 ```markdown
-# [INC-0016] AI Self-Reflection System
+# [FS-25-11-14] AI Self-Reflection System
 
 **Status**: Planning → Implementation
 **Priority**: P1
@@ -2022,9 +2050,8 @@ claude plugin install specweave-github
 - Discussions: https://github.com/anton-abyzov/specweave/discussions
 
 **Current Increment**:
-- Spec: `.specweave/increments/0002-core-enhancements/spec.md`
-- Plan: `.specweave/increments/0002-core-enhancements/plan.md`
-- Tasks: `.specweave/increments/0002-core-enhancements/tasks.md`
+- Check active increments: `/specweave:status`
+- Or view: `ls -t .specweave/increments/ | grep -v "_archive\|_abandoned\|_backlog" | head -1`
 
 ---
 

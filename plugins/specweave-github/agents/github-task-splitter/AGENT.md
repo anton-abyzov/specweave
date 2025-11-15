@@ -139,9 +139,9 @@ Total Tasks: 2
 For each repository, I create a tracking issue:
 
 ```markdown
-# [INC-0015] Shopping Cart - Frontend Tasks
+# [FS-25-11-14] Shopping Cart - Frontend Tasks
 
-Part of increment 0015-shopping-cart
+Part of increment 0015-shopping-cart (Feature: FS-25-11-14)
 
 ## Tasks (5)
 - [ ] T-001: Create CartItem component

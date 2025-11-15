@@ -77,6 +77,23 @@ export interface ExternalLinks {
   ado?: string; // Azure DevOps Feature URL
 }
 
+/**
+ * External Tool Mapping - Shows how SpecWeave hierarchy maps to external tool hierarchy
+ *
+ * Examples:
+ * - SpecWeave Feature (FS-031) → JIRA Epic (AUTH-100)
+ * - SpecWeave User Story (US-001) → JIRA Story (AUTH-101)
+ * - SpecWeave Task (T-001) → JIRA Sub-task (AUTH-102)
+ */
+export interface ExternalToolMapping {
+  provider: 'github' | 'jira' | 'ado'; // Which external tool
+  externalType: string; // External type (e.g., "epic", "story", "issue", "feature")
+  externalId?: string; // External ID (e.g., "AUTH-100", "#45", "12345")
+  externalUrl?: string; // Full URL to external item
+  hierarchyLevel: 'epic' | 'feature' | 'user-story' | 'task'; // SpecWeave hierarchy level
+  mappingNote?: string; // Optional note explaining the divergence
+}
+
 // ============================================================================
 // EPIC FILE
 // ============================================================================
@@ -139,6 +156,7 @@ export interface UserStoryFile {
   priority?: string;
   created: string;
   completed?: string;
+  externalToolMapping?: ExternalToolMapping; // How this user story maps to external tool
 
   // Content
   description: string; // "As a... I want... So that..."
@@ -330,6 +348,8 @@ export interface FeatureFile {
   lastUpdated: string;            // ISO date
   epic?: string;                  // EPIC-2025-Q4-platform (if part of epic)
   projects: string[];             // ['backend', 'frontend'] (which projects implement this)
+  sourceIncrement?: string;       // Source increment ID (e.g., '0031-external-tool-sync')
+  externalToolMapping?: ExternalToolMapping; // How this feature maps to external tool
 
   // Content
   overview: string;               // High-level feature description

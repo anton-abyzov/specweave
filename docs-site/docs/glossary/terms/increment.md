@@ -85,17 +85,24 @@ graph LR
     A[Plan] -->|/specweave:increment| B[Active]
     B -->|/specweave:do| C[In Progress]
     C -->|Tasks complete| D[Done]
-    B -->|/specweave:pause| E[Paused]
+    B -->|/specweave:backlog| E[Backlog]
     E -->|/specweave:resume| B
-    B -->|/specweave:abandon| F[Abandoned]
+    B -->|/specweave:pause| F[Paused]
+    F -->|/specweave:resume| B
+    B -->|/specweave:abandon| G[Abandoned]
 ```
 
 **States**:
-- **Planned**: Spec created, not started
-- **Active**: Currently being worked on
-- **Paused**: Temporarily blocked (external dependency)
+- **Planned**: Spec created via `/specweave:increment`
+- **Active**: Currently being worked on (counts towards WIP limits)
+- **Backlog**: Planned but not ready to start (does NOT count towards WIP)
+- **Paused**: Temporarily blocked by external dependency (does NOT count towards WIP)
 - **Done**: All tasks complete, docs synced
 - **Abandoned**: Requirements changed, no longer needed
+
+**Key Difference: Backlog vs Paused**:
+- **Backlog**: Never started, planned for future (use when prioritizing work)
+- **Paused**: Started but blocked (use when external dependency blocks progress)
 
 ## WIP Limits (Work In Progress)
 
@@ -123,6 +130,38 @@ graph LR
 - 1 task = 100% productivity
 - 2 tasks = 20% slower (context switching cost)
 - 3+ tasks = 40% slower + more bugs
+
+## Using the Backlog
+
+**When to Use Backlog**:
+- ✅ **Planning ahead**: Create specs for future features without violating WIP
+- ✅ **Prioritization**: Have multiple ideas, move lower priority to backlog
+- ✅ **Stakeholder requests**: Plan requested features for later
+- ✅ **Waiting for decisions**: Spec ready, but waiting for approval to start
+
+**Backlog Workflow**:
+```bash
+# Create and plan increment
+/specweave:increment "Feature B"
+# Creates 0032-feature-b/
+
+# Not ready to start? Move to backlog
+/specweave:backlog 0032 --reason="Low priority, focus on 0031 first"
+# ✅ Does NOT count towards WIP limits
+
+# Later, when ready to start
+/specweave:resume 0032
+# Moves from backlog → active
+
+# Now start work
+/specweave:do
+```
+
+**Benefits**:
+- ✅ Plan multiple increments without context switching
+- ✅ Maintain clear priorities
+- ✅ Stakeholders can see planned work
+- ✅ Don't lose ideas (capture in backlog)
 
 ## Real-World Example
 
