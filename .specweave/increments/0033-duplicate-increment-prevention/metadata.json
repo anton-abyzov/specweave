@@ -3,5 +3,11 @@
   "status": "active",
   "type": "feature",
   "created": "2025-11-14T23:45:00Z",
-  "lastActivity": "2025-11-14T23:45:00Z"
+  "lastActivity": "2025-11-14T23:45:00Z",
+  "github": {
+    "issue": 506,
+    "url": "https://github.com/anton-abyzov/specweave/issues/506",
+    "synced": "2025-11-15T01:22:00Z"
+  },
+  "githubProfile": "specweave-dev"
 }

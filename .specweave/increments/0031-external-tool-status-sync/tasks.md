@@ -2,7 +2,7 @@
 
 ---
 increment: 0031-external-tool-status-sync
-total_tasks: 24
+total_tasks: 28
 test_mode: TDD
 coverage_target: 85%
 estimated_effort: 2-3 weeks
@@ -644,28 +644,179 @@ estimated_effort: 2-3 weeks
 
 ---
 
+## Phase 4: Immutable Descriptions + Progress Comments (Enhancement)
+
+### T-025: Create Progress Comment Builder
+
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/FS-031/us-001-rich-external-issue-content.md)
+
+**Status**: [ ] (0% - Not Started)
+
+**AC**: AC-US1-06 (Content updates when spec.md changes)
+
+**Test Plan** (BDD):
+- **Given** user story with ACs and tasks → **When** building progress comment → **Then** includes AC checkboxes, task checkboxes, and percentage
+- **Given** completed ACs and tasks → **When** formatting → **Then** checkboxes marked with [x]
+- **Given** P1/P2/P3 priorities → **When** formatting → **Then** priorities displayed inline
+
+**Test Cases**:
+- Unit (`progress-comment-builder.test.ts`): buildProgressComment, formatACList, formatTaskList, calculateProgress → 90% coverage
+- Integration (`comment-builder-integration.test.ts`): Real user story → Progress comment → 85% coverage
+- **Overall: 87% coverage**
+
+**Implementation**:
+- Create `plugins/specweave-github/lib/progress-comment-builder.ts`
+- Methods: `buildProgressComment(userStoryPath)`, `formatACCheckboxes()`, `formatTaskCheckboxes()`, `calculateProgressPercentage()`
+- Format template:
+```markdown
+📊 **Progress Update from Increment {incrementId}**
+
+**Status**: Core Complete (4/6 AC implemented - 67%)
+
+## Completed Acceptance Criteria:
+- [x] **AC-US2-01**: Spec frontmatter includes linked_increments mapping (P1)
+- [x] **AC-US2-02**: User stories map to specific tasks (US-001 → T-001, T-002) (P1)
+- [x] **AC-US2-03**: Tasks include GitHub/JIRA/ADO issue numbers (P1)
+- [x] **AC-US2-04**: Can query "which increment implemented US-001?" (P2)
+
+## Remaining Work (P2-P3):
+- [ ] **AC-US2-05**: Traceability report shows complete history (P2)
+- [ ] **AC-US2-06**: Acceptance criteria map to task validation (P3)
+
+---
+🤖 Auto-synced by SpecWeave | [View increment](link)
+```
+
+**Dependencies**: None
+**Estimate**: 0.5 day
+
+---
+
+### T-026: Implement Immutable Issue Description Pattern
+
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/FS-031/us-001-rich-external-issue-content.md)
+
+**Status**: [ ] (0% - Not Started)
+
+**AC**: AC-US1-06 (Content updates via comments, not description edits)
+
+**Test Plan** (BDD):
+- **Given** GitHub issue created → **When** spec changes → **Then** description remains unchanged
+- **Given** GitHub issue exists → **When** posting progress → **Then** creates comment, not edit
+- **Given** multiple progress updates → **When** posting → **Then** each creates new comment (audit trail)
+
+**Test Cases**:
+- Unit (`immutable-description.test.ts`): shouldUpdateViaComment, isIssueDescriptionImmutable → 90% coverage
+- Integration (`github-comment-post.test.ts`): Create issue → Post comment → Verify description unchanged → 85% coverage
+- **Overall: 87% coverage**
+
+**Implementation**:
+- Update `plugins/specweave-github/lib/github-spec-content-sync.ts`
+- Add `postProgressComment(issueNumber, comment)` method
+- Modify `updateGitHubIssue()` to:
+  - **NEVER edit issue body** after creation
+  - **ALWAYS post comments** for progress updates
+  - Only update: labels, milestone, assignees (metadata only)
+- Use GitHub API: `POST /repos/{owner}/{repo}/issues/{issue_number}/comments`
+
+**Dependencies**: T-025
+**Estimate**: 1 day
+
+---
+
+### T-027: Update Post-Task-Completion Hook
+
+**User Story**: [US-004: Bidirectional Status Sync](../../docs/internal/specs/default/FS-031/us-004-bidirectional-status-sync.md)
+
+**Status**: [ ] (0% - Not Started)
+
+**AC**: AC-US4-01 (Automatic sync after task completion)
+
+**Test Plan** (BDD):
+- **Given** task completed → **When** hook fires → **Then** posts progress comment (not edit)
+- **Given** multiple user stories in increment → **When** task complete → **Then** updates all affected user story issues
+- **Given** hook failure → **When** error occurs → **Then** logs error but doesn't block
+
+**Test Cases**:
+- Unit (`hook-comment-update.test.ts`): detectAffectedUserStories, postProgressComments → 90% coverage
+- E2E (`post-task-hook.spec.ts`): Complete task → Hook fires → Comment posted → 100% coverage
+- **Overall: 92% coverage**
+
+**Implementation**:
+- Update `plugins/specweave-github/hooks/post-task-completion.sh`
+- Replace `gh issue edit` calls with `gh issue comment` calls
+- Use `ProgressCommentBuilder` from T-025
+- For each affected user story:
+  1. Parse user story file for current AC/task status
+  2. Build progress comment
+  3. Post comment via `gh issue comment {issue_number} --body "{comment}"`
+- Add error handling (non-blocking)
+
+**Dependencies**: T-025, T-026
+**Estimate**: 1 day
+
+---
+
+### T-028: Add Comprehensive Tests for Comment-Based Updates
+
+**User Story**: [US-001: Rich External Issue Content](../../docs/internal/specs/default/FS-031/us-001-rich-external-issue-content.md)
+
+**Status**: [ ] (0% - Not Started)
+
+**AC**: AC-US1-06 (Content updates when spec.md changes)
+
+**Test Plan** (BDD):
+- **Given** increment with 3 user stories → **When** completing tasks → **Then** all 3 user story issues get progress comments
+- **Given** AC status changes → **When** posting comment → **Then** checkboxes updated correctly
+- **Given** 10 progress updates → **When** viewing issue → **Then** 10 separate comments visible (audit trail)
+
+**Test Cases**:
+- Integration (`comment-based-sync-integration.test.ts`): Full increment → Task completion → Comments posted → 90% coverage
+- E2E (`immutable-description.spec.ts`): Create issue → Complete tasks → Verify description unchanged + comments added → 100% coverage
+- E2E (`multi-us-sync.spec.ts`): 3 user stories → Complete tasks → All issues updated → 100% coverage
+- **Overall: 93% coverage**
+
+**Implementation**:
+- Playwright tests for E2E validation
+- Mock GitHub API for integration tests
+- Test scenarios:
+  - Initial issue creation (immutable description)
+  - Progress comment posting
+  - Multiple user stories per increment
+  - Error handling (API failures)
+  - Audit trail verification
+
+**Dependencies**: T-025, T-026, T-027
+**Estimate**: 1 day
+
+---
+
 ## Summary
 
-**Total Tasks**: 24
-**Estimated Effort**: 2-3 weeks
+**Total Tasks**: 28 (24 original + 4 new)
+**Estimated Effort**: 2-3 weeks + 3.5 days (Phase 4)
 **Test Coverage Target**: 85% overall (90% unit, 85% integration, 100% E2E critical paths)
-**Test Mode**: TDD (test-first for critical components: T-006, T-007, T-008)
+**Test Mode**: TDD (test-first for critical components: T-006, T-007, T-008, T-025, T-026)
 
 **Phase Breakdown**:
 - **Phase 1** (Enhanced Content Sync): 5 tasks, 1 week
 - **Phase 2** (Status Synchronization): 9 tasks, 1 week
 - **Phase 3** (Advanced Features & Testing): 10 tasks, 1 week
+- **Phase 4** (Immutable Descriptions + Progress Comments): 4 tasks, 3.5 days
 
-**Critical Path**: T-006 → T-007 → T-008 → T-009/T-010/T-011 → T-012
+**Critical Path**: T-006 → T-007 → T-008 → T-009/T-010/T-011 → T-012 → T-025 → T-026 → T-027 → T-028
 
 **Success Metrics**:
-- All 45 acceptance criteria met
+- All 45+ acceptance criteria met
 - 85%+ test coverage achieved
 - Status sync completes in <2 seconds
+- Progress comments create audit trail
+- Issue descriptions immutable after creation
 - User satisfaction: 90%+ rate as "helpful"
 
 ---
 
 **Created**: 2025-11-12
-**Status**: Ready for Implementation
-**Next Step**: `/specweave:do 0031`
+**Updated**: 2025-11-15 (Added Phase 4)
+**Status**: Phase 1-3 Complete, Phase 4 Ready for Implementation
+**Next Step**: `/specweave:do 0031` (resume for Phase 4)
