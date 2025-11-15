@@ -515,16 +515,10 @@ export class JiraIncrementalMapper {
   // ... (rest of helper methods: getNextIncrementId, ensureDir, parseMarkdownWithFrontmatter, etc.)
 
   private getNextIncrementId(): string {
-    const incrementsDir = path.join(this.projectRoot, '.specweave', 'increments');
-    this.ensureDir(incrementsDir);
-
-    const existing = fs.readdirSync(incrementsDir)
-      .filter(name => /^\d{4}/.test(name))
-      .map(name => parseInt(name.split('-')[0]))
-      .sort((a, b) => b - a);
-
-    const nextNum = existing.length > 0 ? existing[0] + 1 : 1;
-    return String(nextNum).padStart(4, '0');
+    // UPDATED: Use centralized IncrementNumberManager to prevent gaps when increments are archived
+    // This now scans ALL directories: main, _archive, _abandoned, _paused
+    const { IncrementNumberManager } = require('../../core/increment-utils.js');
+    return IncrementNumberManager.getNextIncrementNumber(this.projectRoot, false);
   }
 
   private ensureDir(dir: string): void {

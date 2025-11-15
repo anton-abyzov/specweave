@@ -23,15 +23,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -134,15 +133,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -194,15 +192,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -256,15 +253,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -324,15 +320,14 @@ describe('BrownfieldImporter - Full Workflow (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 

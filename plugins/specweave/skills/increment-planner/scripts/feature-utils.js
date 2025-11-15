@@ -59,8 +59,15 @@ function generateShortName(description) {
  * Get the next available feature number
  * @param {string} featuresDir - Path to features directory (default: '.specweave/increments')
  * @returns {string} Next feature number (zero-padded to 4 digits: 0001-9999)
+ *
+ * NOTE: This function is DEPRECATED. Use IncrementNumberManager from src/core/increment-utils.ts instead.
+ * Kept for backward compatibility with existing scripts.
  */
 function getNextFeatureNumber(featuresDir = '.specweave/increments') {
+  // DEPRECATED: For backward compatibility only
+  // The NEW implementation scans ALL directories (_archive, _abandoned, _paused)
+  // To use the new implementation, import IncrementNumberManager from src/core/increment-utils.ts
+
   let highest = 0;
 
   if (fs.existsSync(featuresDir)) {
@@ -104,8 +111,15 @@ function featureExists(shortName, featuresDir = '.specweave/increments') {
  * @param {string} incrementNumber - Increment number to check (e.g., '0001')
  * @param {string} featuresDir - Path to features directory
  * @returns {boolean} True if number already exists
+ *
+ * NOTE: This function is DEPRECATED. Use IncrementNumberManager.incrementNumberExists() instead.
+ * Kept for backward compatibility with existing scripts.
  */
 function incrementNumberExists(incrementNumber, featuresDir = '.specweave/increments') {
+  // DEPRECATED: For backward compatibility only
+  // The NEW implementation scans ALL directories (_archive, _abandoned, _paused)
+  // To use the new implementation, import IncrementNumberManager from src/core/increment-utils.ts
+
   if (!fs.existsSync(featuresDir)) {
     return false;
   }

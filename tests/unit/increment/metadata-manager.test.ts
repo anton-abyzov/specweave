@@ -110,13 +110,15 @@ describe('MetadataManager', () => {
       // **CRITICAL**: Should also update active-increment.json
       const activeManager = new ActiveIncrementManager(testRootPath);
       const activeIncrement = activeManager.getActive();
-      expect(activeIncrement).toBe(testIncrementId);
+      // getActive() now returns an array of IDs
+      expect(activeIncrement).toContain(testIncrementId);
 
       // Verify state file was created
       const stateFile = path.join(stateDir, 'active-increment.json');
       expect(fs.existsSync(stateFile)).toBe(true);
       const stateContent = fs.readJsonSync(stateFile);
-      expect(stateContent.id).toBe(testIncrementId);
+      // New format uses 'ids' array instead of single 'id'
+      expect(stateContent.ids).toContain(testIncrementId);
     });
 
     test('throws MetadataError if increment directory not found', () => {
