@@ -28,6 +28,7 @@ import {
   FeatureMapping,
   ProjectContext,
   EpicMapping,
+  ExternalToolMapping,
 } from './types.js';
 import { HierarchyMapper } from './hierarchy-mapper.js';
 import { detectPrimaryGitHubRemote, GitRemote } from '../../utils/git-detector.js';
@@ -81,55 +82,66 @@ export class SpecDistributor {
       // Step 1: Parse increment spec (with epic and project detection)
       const parsed = await this.parseIncrementSpec(incrementId);
 
-      // Step 2: Detect epic mapping (OPTIONAL - from frontmatter)
-      const epicMapping = await this.hierarchyMapper.detectEpicMapping(incrementId);
-      if (epicMapping) {
-        console.log(`   🎯 Mapped to epic ${epicMapping.epicId} (confidence: ${epicMapping.confidence}%)`);
+      // Step 2: Check if we should create epics (skip for GitHub)
+      const config = await this.hierarchyMapper.getSpecweaveConfig();
+      const syncProvider = config.sync?.provider || config.sync?.activeProfile ?
+        config.sync.profiles?.[config.sync.activeProfile]?.provider : undefined;
+      const shouldCreateEpic = syncProvider !== 'github'; // GitHub doesn't have epics concept
+
+      // Step 3: Detect epic mapping (OPTIONAL - skip for GitHub)
+      let epicMapping: EpicMapping | null = null;
+      if (shouldCreateEpic) {
+        epicMapping = await this.hierarchyMapper.detectEpicMapping(incrementId);
+        if (epicMapping) {
+          console.log(`   🎯 Mapped to epic ${epicMapping.epicId} (confidence: ${epicMapping.confidence}%)`);
+        }
+      } else {
+        console.log(`   ⚡ Skipping epic creation (GitHub integration)`);
       }
 
-      // Step 3: Detect feature mapping (REQUIRED)
+      // Step 4: Detect feature mapping (REQUIRED)
       console.log(`   🔍 Detecting feature folder for ${incrementId}...`);
       const featureMapping = await this.hierarchyMapper.detectFeatureMapping(incrementId);
       console.log(`   📁 Mapped to feature ${featureMapping.featureId} (confidence: ${featureMapping.confidence}%, method: ${featureMapping.detectionMethod})`);
       console.log(`   📦 Projects: ${featureMapping.projects.join(', ')}`);
 
-      // Step 4: Classify content by project (NEW)
+      // Step 5: Classify content by project (NEW)
       const storiesByProject = await this.classifyContentByProject(parsed, featureMapping);
       console.log(`   📊 Classified ${parsed.userStories.length} user stories across ${storiesByProject.size} project(s)`);
 
-      // Step 5: Generate epic file (OPTIONAL)
-      const epicFile = epicMapping ? await this.generateEpicFile(parsed, epicMapping, featureMapping) : null;
+      // Step 6: Generate epic file (OPTIONAL - only if not GitHub)
+      const epicFile = epicMapping && shouldCreateEpic ? await this.generateEpicFile(parsed, epicMapping, featureMapping) : null;
 
-      // Step 6: Generate feature file (REQUIRED)
-      const featureFile = await this.generateFeatureFile(parsed, featureMapping, storiesByProject);
+      // Step 7: Generate feature file (REQUIRED)
+      const featureFile = await this.generateFeatureFile(parsed, featureMapping, storiesByProject, incrementId);
 
-      // Step 7: Generate project context files (REQUIRED)
+      // Step 8: Generate project context files (REQUIRED)
       const projectContextFiles = await this.generateProjectContextFiles(featureMapping, parsed);
 
-      // Step 8: Generate user story files by project (REQUIRED)
+      // Step 9: Generate user story files by project (REQUIRED)
       const userStoryFilesByProject = await this.generateUserStoryFilesByProject(
         storiesByProject,
         featureMapping,
         incrementId
       );
 
-      // Step 9: Write epic file (if exists)
-      const epicPath = epicFile && epicMapping ? await this.writeEpicFile(epicFile, epicMapping) : null;
+      // Step 10: Write epic file (if exists and not GitHub)
+      const epicPath = epicFile && epicMapping && shouldCreateEpic ? await this.writeEpicFile(epicFile, epicMapping) : null;
 
-      // Step 10: Write feature file
+      // Step 11: Write feature file
       const featurePath = await this.writeFeatureFile(featureFile, featureMapping);
 
-      // Step 11: Write project context files
+      // Step 12: Write project context files
       const contextPaths = await this.writeProjectContextFiles(projectContextFiles, featureMapping);
 
-      // Step 12: Write user story files by project
+      // Step 13: Write user story files by project
       const storyPathsByProject = await this.writeUserStoryFilesByProject(
         userStoryFilesByProject,
         featureMapping,
         incrementId
       );
 
-      // Step 13: Update tasks.md with bidirectional links (project-aware)
+      // Step 14: Update tasks.md with bidirectional links (project-aware)
       await this.updateTasksWithUserStoryLinks(incrementId, userStoryFilesByProject, featureMapping);
 
       // Prepare legacy result (for backward compatibility)
@@ -223,18 +235,36 @@ export class SpecDistributor {
     let overview = '';
 
     // Try "Quick Overview" or "Executive Summary"
-    let overviewMatch = bodyContent.match(/##\s+(?:Quick\s+)?(?:Overview|Executive\s+Summary)\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
-    if (overviewMatch) overview = overviewMatch[1].trim();
+    let overviewMatch = bodyContent.match(/##\s+(?:Quick\s+)?(?:Overview|Executive\s+Summary)\s*\n+([\s\S]*?)(?=\n\*\*Business Value\*\*:|\n##|\n---|$)/im);
+    if (overviewMatch) {
+      overview = overviewMatch[1].trim();
+      // Remove any trailing fragments or incomplete sentences
+      if (overview && !overview.endsWith('.') && !overview.endsWith('!') && !overview.endsWith('?')) {
+        // Try to complete the sentence by looking ahead
+        const extendedMatch = bodyContent.match(/##\s+(?:Quick\s+)?(?:Overview|Executive\s+Summary)\s*\n+([\s\S]{0,1000}?)(?:\n\n|\n\*\*|\n##|\n---|$)/im);
+        if (extendedMatch) {
+          const extended = extendedMatch[1].trim();
+          // Find the last complete sentence
+          const sentences = extended.match(/[^.!?]+[.!?]/g);
+          if (sentences) {
+            overview = sentences.join('').trim();
+          }
+        }
+      }
+    }
 
     if (!overview) {
       // Try "Overview" section
-      overviewMatch = bodyContent.match(/##\s+Overview\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
-      if (overviewMatch) overview = overviewMatch[1].trim();
+      overviewMatch = bodyContent.match(/##\s+Overview\s*\n+([\s\S]*?)(?=\n##|\n---|$)/im);
+      if (overviewMatch) {
+        const parts = overviewMatch[1].trim().split(/\n\n|\n---/);
+        overview = parts[0].trim();
+      }
     }
 
     if (!overview) {
       // Try "Problem Statement" section
-      const problemMatch = bodyContent.match(/##\s+Problem\s+Statement\s*\n+([\s\S]*?)(?=\n##|\n---|\Z)/i);
+      const problemMatch = bodyContent.match(/##\s+Problem\s+Statement\s*\n+([\s\S]*?)(?=\n##|\n---|$)/im);
       if (problemMatch) {
         // Take first paragraph only
         const firstPara = problemMatch[1].trim().split('\n\n')[0];
@@ -321,13 +351,73 @@ export class SpecDistributor {
   }
 
   /**
+   * Detect external tool mapping from metadata.json
+   *
+   * Maps SpecWeave hierarchy to external tool hierarchy with clear indicators.
+   * Examples:
+   * - SpecWeave Feature (FS-031) → JIRA Epic (AUTH-100)
+   * - SpecWeave Feature (FS-031) → GitHub Issue (#45)
+   * - SpecWeave Feature (FS-031) → ADO Feature (12345)
+   */
+  private async detectExternalToolMapping(incrementId: string): Promise<ExternalToolMapping | undefined> {
+    const metadataPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'metadata.json');
+
+    if (!fs.existsSync(metadataPath)) {
+      return undefined;
+    }
+
+    try {
+      const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+
+      // Priority order: JIRA > ADO > GitHub
+      // (JIRA has most divergence, GitHub has least)
+
+      // JIRA mapping (Epic → Feature divergence)
+      if (metadata.jira?.epicKey) {
+        return {
+          provider: 'jira',
+          externalType: 'epic',
+          externalId: metadata.jira.epicKey,
+          externalUrl: metadata.jira.url || `https://jira.atlassian.com/browse/${metadata.jira.epicKey}`,
+          hierarchyLevel: 'feature',
+          mappingNote: 'JIRA Epic maps to SpecWeave Feature',
+        };
+      }
+
+      // Azure DevOps mapping (Feature → Feature same level)
+      if (metadata.ado?.workItemId) {
+        return {
+          provider: 'ado',
+          externalType: 'feature',
+          externalId: String(metadata.ado.workItemId),
+          externalUrl: metadata.ado.workItemUrl,
+          hierarchyLevel: 'feature',
+          mappingNote: 'ADO Feature maps to SpecWeave Feature',
+        };
+      }
+
+      // GitHub mapping - Features should NOT map to issues
+      // According to Universal Hierarchy:
+      // - SpecWeave Feature (FS-*) → GitHub Milestone
+      // - SpecWeave User Story (US-*) → GitHub Issue
+      // We should NOT show GitHub issue mapping at feature level
+      // This will be handled at user story level instead
+    } catch (error) {
+      console.warn(`   ⚠️  Failed to parse metadata.json for external mapping: ${error}`);
+    }
+
+    return undefined;
+  }
+
+  /**
    * Extract user stories from increment spec
    */
   private async extractUserStories(content: string, incrementId: string): Promise<UserStory[]> {
     const userStories: UserStory[] = [];
 
-    // Find all user story sections (supports both ### and #### patterns, with or without blank line)
-    const userStoryPattern = /^###+\s+(US-\d+):\s+(.+?)\s*\n([\s\S]*?)(?=^###+\s+US-|\n---\n|$)/gm;
+    // Find all user story sections (supports both ### and #### patterns)
+    // Modified to handle --- separators that appear after each user story in some specs
+    const userStoryPattern = /^###\s+(US-\d+):\s+(.+?)\s*\n([\s\S]*?)(?=\n---\n|^###\s+US-|^##\s+|$)/gm;
 
     let match;
     while ((match = userStoryPattern.exec(content)) !== null) {
@@ -336,13 +426,17 @@ export class SpecDistributor {
       const storyContent = match[3];
 
       // Extract description (As a... I want... So that...) - supports both inline and separate line formats
-      const descMatch = storyContent.match(/\*\*As a\*\*\s+(.*?)\s*\n\*\*I want\*\*\s+(.*?)\s*\n\*\*So that\*\*\s+(.*?)(?=\n\n|\*\*Acceptance)/is);
+      const descMatch = storyContent.match(/\*\*As a\*\*\s+(.*?)\n\*\*I want\*\*\s+(.*?)\n\*\*So that\*\*\s+(.*?)(?:\n|$)/is);
       const description = descMatch
         ? `**As a** ${descMatch[1].trim()}\n**I want** ${descMatch[2].trim()}\n**So that** ${descMatch[3].trim()}`
         : '';
 
-      // Extract acceptance criteria
-      const acceptanceCriteria = this.extractAcceptanceCriteria(storyContent);
+      // Extract acceptance criteria from the Acceptance Criteria section
+      // Try full content first (works for #### headings), then story content (works for ### headings)
+      let acceptanceCriteria = this.extractAcceptanceCriteriaFromSection(content, id);
+      if (!acceptanceCriteria || acceptanceCriteria.length === 0) {
+        acceptanceCriteria = this.extractAcceptanceCriteria(storyContent);
+      }
 
       // Extract business rationale
       const rationaleMatch = storyContent.match(/\*\*Business Rationale\*\*:\s+(.*?)(?=\n\n---|\n\n##|$)/is);
@@ -377,7 +471,8 @@ export class SpecDistributor {
     const criteria: any[] = [];
 
     // Pattern: - [x] **AC-US1-01**: Description (P1, testable)
-    const acPattern = /^[-*]\s+\[([ x])\]\s+\*\*(.+?)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm;
+    // Also handle pattern: - [ ] **AC-US1-01**: Description (P1, testable)
+    const acPattern = /^[-*]\s+\[([ x])\]\s+\*\*(AC-[^:]+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm;
 
     let match;
     while ((match = acPattern.exec(content)) !== null) {
@@ -401,6 +496,74 @@ export class SpecDistributor {
     return criteria;
   }
 
+  /**
+   * Extract acceptance criteria from the full spec content for a specific user story
+   * This handles cases where AC is in a separate section after the user story
+   */
+  private extractAcceptanceCriteriaFromSection(content: string, userStoryId: string): any[] {
+    const criteria: any[] = [];
+
+    // Find the user story section and its acceptance criteria
+    const usNumber = userStoryId.replace('US-', '');
+
+    // Try multiple patterns to find AC section (supports both ### and #### headings)
+    const patterns = [
+      // Pattern 1: AC in "**Acceptance Criteria**:" section (most common)
+      // Match until we hit blank line + Business Rationale or next section
+      new RegExp(
+        `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?\\*\\*Acceptance Criteria\\*\\*:\\s*\\n+((?:[-*]\\s+\\[[ x]\\]\\s+\\*\\*AC-[^\\n]+\\n?)+)`,
+        'im'
+      ),
+      // Pattern 2: AC directly after user story (no separate section)
+      new RegExp(
+        `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?(?:\\n\\n|\\n)+([-*]\\s+\\[[ x]\\]\\s+\\*\\*AC-US${usNumber}-\\d+[\\s\\S]*?)(?=\\n\\s*\\*\\*Business|\\n###|\\n---|$)`,
+        'im'
+      ),
+      // Pattern 3: AC in a dedicated "### Acceptance Criteria" subsection
+      new RegExp(
+        `####+?\\s+${userStoryId}:.*?\\n[\\s\\S]*?####+?\\s+Acceptance Criteria\\s*\\n+([\\s\\S]*?)(?=\\n\\s*\\*\\*Business|\\n###|\\n---|$)`,
+        'im'
+      ),
+    ];
+
+    let acContent = '';
+    for (const pattern of patterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        acContent = match[1];
+        break;
+      }
+    }
+
+    if (!acContent) {
+      return criteria;
+    }
+
+    // Pattern: - [ ] **AC-USX-XX**: Description (P1, testable)
+    // Also handles: - [x] **AC-USX-XX**: Description (P1, testable)
+    const acPattern = /^[-*]\s+\[([ x])\]\s+\*\*(AC-US\d+-\d+)\*\*:\s+(.+?)(?:\s+\(([^)]+)\))?$/gm;
+
+    let match;
+    while ((match = acPattern.exec(acContent)) !== null) {
+      const completed = match[1] === 'x';
+      const id = match[2];
+      const description = match[3];
+      const metaString = match[4] || '';
+
+      const priority = metaString.match(/P\d/)?.[0];
+      const testable = metaString.includes('testable');
+
+      criteria.push({
+        id,
+        description,
+        priority,
+        testable,
+        completed,
+      });
+    }
+
+    return criteria;
+  }
 
 
   /**
@@ -707,30 +870,58 @@ export class SpecDistributor {
     if (userStory.priority) lines.push(`priority: ${userStory.priority}`);
     lines.push(`created: ${userStory.created}`);
     if (userStory.completed) lines.push(`completed: ${userStory.completed}`);
+
+    // Add external tool mapping to frontmatter
+    if (userStory.externalToolMapping) {
+      lines.push('externalTool:');
+      lines.push(`  provider: ${userStory.externalToolMapping.provider}`);
+      lines.push(`  type: ${userStory.externalToolMapping.externalType}`);
+      lines.push(`  id: "${userStory.externalToolMapping.externalId}"`);
+      lines.push(`  url: "${userStory.externalToolMapping.externalUrl}"`);
+    }
+
     lines.push('---');
     lines.push('');
 
-    // Title
-    lines.push(`# ${userStory.id}: ${userStory.title}`);
+    // Title with external tool indicator
+    let titleLine = `# ${userStory.id}: ${userStory.title}`;
+    if (userStory.externalToolMapping) {
+      const provider = userStory.externalToolMapping.provider.toUpperCase();
+      const type = userStory.externalToolMapping.externalType.charAt(0).toUpperCase() +
+                   userStory.externalToolMapping.externalType.slice(1);
+      titleLine += ` (${provider} ${type}: ${userStory.externalToolMapping.externalId})`;
+    }
+    lines.push(titleLine);
     lines.push('');
 
-    // Feature link (FEATURE.md in same folder)
-    lines.push(`**Feature**: [${userStory.epic}](./FEATURE.md)`);
+    // Feature link (to _features folder)
+    // User story is at: .specweave/docs/internal/specs/{project}/{FS-XXX}/us-*.md
+    // Feature is at: .specweave/docs/internal/specs/_features/{FS-XXX}/FEATURE.md
+    // From {project}/{FS-XXX}/ we need to go up 2 levels to specs/, then into _features/
+    // Relative path: ../../_features/{FS-XXX}/FEATURE.md
+    const featureRelativePath = `../../_features/${userStory.epic}/FEATURE.md`;
+    lines.push(`**Feature**: [${userStory.epic}](${featureRelativePath})`);
     lines.push('');
 
     // Description
-    lines.push(userStory.description);
-    lines.push('');
+    if (userStory.description) {
+      lines.push(userStory.description);
+      lines.push('');
+    }
     lines.push('---');
     lines.push('');
 
     // Acceptance Criteria
     lines.push('## Acceptance Criteria');
     lines.push('');
-    for (const ac of userStory.acceptanceCriteria) {
-      const checkbox = ac.completed ? '[x]' : '[ ]';
-      const priorityText = ac.priority ? ` (${ac.priority}, testable)` : '';
-      lines.push(`- ${checkbox} **${ac.id}**: ${ac.description}${priorityText}`);
+    if (userStory.acceptanceCriteria && userStory.acceptanceCriteria.length > 0) {
+      for (const ac of userStory.acceptanceCriteria) {
+        const checkbox = ac.completed ? '[x]' : '[ ]';
+        const priorityText = ac.priority ? ` (${ac.priority}, testable)` : '';
+        lines.push(`- ${checkbox} **${ac.id}**: ${ac.description}${priorityText}`);
+      }
+    } else {
+      lines.push('*Acceptance criteria to be extracted from increment specification*');
     }
     lines.push('');
     lines.push('---');
@@ -909,7 +1100,8 @@ export class SpecDistributor {
   private async generateFeatureFile(
     parsed: ParsedIncrementSpec,
     featureMapping: FeatureMapping,
-    storiesByProject: Map<string, UserStory[]>
+    storiesByProject: Map<string, UserStory[]>,
+    incrementId?: string
   ): Promise<FeatureFile> {
     // Convert stories to summaries grouped by project
     const userStoriesByProject = new Map<string, UserStorySummary[]>();
@@ -931,6 +1123,9 @@ export class SpecDistributor {
       completedStories += stories.filter(s => s.status === 'complete').length;
     }
 
+    // Detect external tool mapping
+    const externalToolMapping = incrementId ? await this.detectExternalToolMapping(incrementId) : undefined;
+
     return {
       id: featureMapping.featureId,
       title: parsed.title,
@@ -951,6 +1146,8 @@ export class SpecDistributor {
       overallProgress: parsed.userStories.length > 0
         ? Math.round((completedStories / parsed.userStories.length) * 100)
         : 0,
+      sourceIncrement: incrementId, // Track the source increment
+      externalToolMapping, // Include external tool mapping
     };
   }
 
@@ -1153,7 +1350,8 @@ ${epic.features.map(f => `- ${f}`).join('\n')}
    * Format feature file content
    */
   private formatFeatureFile(feature: FeatureFile): string {
-    const yaml = `---
+    // Build YAML frontmatter with external tool mapping
+    let yaml = `---
 id: ${feature.id}
 title: "${feature.title}"
 type: ${feature.type}
@@ -1163,7 +1361,19 @@ created: ${feature.created}
 lastUpdated: ${feature.lastUpdated}
 projects: [${feature.projects.map(p => `"${p}"`).join(', ')}]
 ${feature.epic ? `epic: ${feature.epic}` : ''}
----`;
+${feature.sourceIncrement ? `sourceIncrement: ${feature.sourceIncrement}` : ''}`;
+
+    // Add external tool mapping to frontmatter
+    if (feature.externalToolMapping) {
+      yaml += `
+externalTool:
+  provider: ${feature.externalToolMapping.provider}
+  type: ${feature.externalToolMapping.externalType}
+  id: "${feature.externalToolMapping.externalId}"
+  url: "${feature.externalToolMapping.externalUrl}"`;
+    }
+
+    yaml += '\n---';
 
     const storiesByProjectSection = Array.from(feature.userStoriesByProject.entries())
       .map(([project, stories]) => `
@@ -1172,14 +1382,61 @@ ${feature.epic ? `epic: ${feature.epic}` : ''}
 ${stories.map(s => `- [${s.id}: ${s.title}](${s.filePath}) - ${s.status}`).join('\n')}`)
       .join('\n');
 
+    // Build title with external tool indicator
+    let titleLine = `# ${feature.title}`;
+    if (feature.externalToolMapping) {
+      const provider = feature.externalToolMapping.provider.toUpperCase();
+      const type = feature.externalToolMapping.externalType.charAt(0).toUpperCase() +
+                   feature.externalToolMapping.externalType.slice(1);
+      titleLine += ` (${provider} ${type}: ${feature.externalToolMapping.externalId})`;
+    }
+
+    // Add external tool mapping section
+    let externalMappingSection = '';
+    if (feature.externalToolMapping) {
+      externalMappingSection = `
+## External Tool Mapping
+
+**Mapped from**: ${feature.externalToolMapping.provider.toUpperCase()} ${feature.externalToolMapping.externalType.charAt(0).toUpperCase() + feature.externalToolMapping.externalType.slice(1)} [${feature.externalToolMapping.externalId}](${feature.externalToolMapping.externalUrl})
+
+> **Note**: ${feature.externalToolMapping.mappingNote}
+
+This SpecWeave Feature corresponds to a ${feature.externalToolMapping.externalType} in ${feature.externalToolMapping.provider.toUpperCase()}. The hierarchy mapping is:
+- **SpecWeave**: Feature (${feature.id})
+- **${feature.externalToolMapping.provider.toUpperCase()}**: ${feature.externalToolMapping.externalType.charAt(0).toUpperCase() + feature.externalToolMapping.externalType.slice(1)} (${feature.externalToolMapping.externalId})
+
+`;
+    }
+
+    // Add source section based on where the feature came from
+    let sourceSection = '';
+    if (feature.sourceIncrement) {
+      sourceSection = `
+## Source
+
+This feature was created from increment: [\`${feature.sourceIncrement}\`](../../../../../increments/${feature.sourceIncrement})
+`;
+    } else if (feature.externalLinks?.github || feature.externalLinks?.jira || feature.externalLinks?.ado) {
+      sourceSection = `
+## Source
+
+This feature was imported from external tool:
+${feature.externalLinks?.github ? `- GitHub: ${feature.externalLinks.github}` : ''}
+${feature.externalLinks?.jira ? `- JIRA: ${feature.externalLinks.jira}` : ''}
+${feature.externalLinks?.ado ? `- Azure DevOps: ${feature.externalLinks.ado}` : ''}
+
+Note: No explicit feature was specified during import.
+`;
+    }
+
     return `${yaml}
 
-# ${feature.title}
-
+${titleLine}
+${externalMappingSection}
 ## Overview
 
 ${feature.overview}
-
+${sourceSection}
 ## Business Value
 
 ${feature.businessValue.map(v => `- ${v}`).join('\n') || 'See overview above'}
@@ -1316,25 +1573,59 @@ ${storiesByProjectSection}
       }
 
       if (linkedStory) {
-        // Check if link already exists
-        const userStoryLinkPattern = /\n\*\*User Story\*\*:/;
-        if (!userStoryLinkPattern.test(section)) {
-          // Add the user story link right after the heading
-          const { story, project } = linkedStory;
-          const relativePath = `../../docs/internal/specs/${project}/${featureMapping.featureFolder}/${this.generateUserStoryFilename(story.id, story.title)}`;
-          const linkLine = `\n\n**User Story**: [${story.id}: ${story.title}](${relativePath})`;
+        const { story, project } = linkedStory;
+        // Use the FS-XXX feature ID from featureMapping, not featureFolder
+        const newRelativePath = `../../docs/internal/specs/${project}/${featureMapping.featureId}/${this.generateUserStoryFilename(story.id, story.title)}`;
+        const newLinkLine = `**User Story**: [${story.id}: ${story.title}](${newRelativePath})`;
 
-          // Insert after the heading line
+        // Check for existing user story links (old or new format)
+        const userStoryLinkPattern = /\*\*User Story\*\*:.*/g;
+        const existingLinks = section.match(userStoryLinkPattern);
+
+        if (!existingLinks || existingLinks.length === 0) {
+          // No link exists - add new one
           const lines = section.split('\n');
           const headingIndex = lines.findIndex(line => line.match(/^##+ T-\d+:/));
           if (headingIndex >= 0) {
-            lines.splice(headingIndex + 1, 0, linkLine);
+            lines.splice(headingIndex + 1, 0, '', newLinkLine);
             updatedSections.push(lines.join('\n'));
           } else {
             updatedSections.push(section);
           }
         } else {
-          updatedSections.push(section);
+          // Link(s) exist - update them and remove duplicates/blank lines
+          const lines = section.split('\n');
+          let foundFirst = false;
+          const cleanedLines: string[] = [];
+          let consecutiveBlankLines = 0;
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+
+            // Handle user story links
+            if (line.includes('**User Story**:')) {
+              if (!foundFirst) {
+                foundFirst = true;
+                cleanedLines.push(newLinkLine); // Replace with updated link
+                consecutiveBlankLines = 0;
+              }
+              // Skip duplicate links
+              continue;
+            }
+
+            // Handle blank lines (keep max 1 consecutive)
+            if (line.trim() === '') {
+              consecutiveBlankLines++;
+              if (consecutiveBlankLines <= 1) {
+                cleanedLines.push(line);
+              }
+            } else {
+              consecutiveBlankLines = 0;
+              cleanedLines.push(line);
+            }
+          }
+
+          updatedSections.push(cleanedLines.join('\n'));
         }
       } else {
         updatedSections.push(section);
