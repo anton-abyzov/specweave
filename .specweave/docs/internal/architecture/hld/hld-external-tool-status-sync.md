@@ -11,6 +11,26 @@
 
 Bidirectional status synchronization system between SpecWeave increments and external project management tools (GitHub Issues, JIRA, Azure DevOps) with rich content sync and task-level traceability.
 
+### What SpecWeave Syncs
+
+✅ **Implementation Status** (what we sync):
+- Increment status (planning → active → completed)
+- Task completion checkboxes
+- Content updates (user stories, acceptance criteria)
+- Implementation progress
+
+❌ **Scheduling Metadata** (what we DON'T sync):
+- Sprint/Iteration assignments
+- Story points / effort estimates
+- Due dates / target dates
+- Release planning dates
+- Time tracking (logged/remaining hours)
+- Velocity / capacity planning
+
+**Why**: SpecWeave is **implementation-first**, not **planning-first**. Scheduling is a team coordination concern managed in external tools (GitHub Projects, JIRA Boards, ADO Sprints). SpecWeave focuses on execution (what/how/status), not planning (when/effort).
+
+**User Perspective**: Use external tools for scheduling (sprints, estimates, dates) while SpecWeave handles implementation tracking.
+
 ---
 
 ## System Architecture

@@ -9,6 +9,30 @@
 
 ## Context
 
+### What SpecWeave Syncs (Implementation Only)
+
+**CRITICAL**: SpecWeave deliberately **does NOT sync scheduling metadata**. We are **implementation-first**, not **planning-first**.
+
+**✅ What We Sync**:
+- Increment status (planning → active → completed → abandoned)
+- Task completion checkboxes
+- Content (user stories, acceptance criteria, implementation notes)
+- Implementation progress
+
+**❌ What We DON'T Sync**:
+- Sprint/Iteration assignments
+- Story points / effort estimates
+- Due dates / target dates
+- Release planning dates
+- Time tracking (logged/remaining hours)
+- Velocity / capacity planning
+
+**Why**: Scheduling is a **team coordination concern**, not an **implementation concern**. Different stakeholders (PMs, clients, teams) need different scheduling views. SpecWeave stays focused on execution (what/how/status), not planning (when/effort).
+
+**User Workflow**: Use external tools (GitHub Projects, JIRA Boards, ADO Sprints) for scheduling while SpecWeave handles implementation tracking.
+
+---
+
 ### The Problem
 
 Current external sync plugins (GitHub, Azure DevOps, JIRA) support only **ONE project per tool**:

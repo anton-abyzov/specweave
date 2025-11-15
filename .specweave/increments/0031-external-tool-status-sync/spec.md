@@ -73,8 +73,10 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 - [x] **AC-US1-03**: External issues show acceptance criteria (P1, testable)
 - [x] **AC-US1-04**: External issues show linked tasks with GitHub issue numbers (P1, testable)
 - [x] **AC-US1-05**: User stories collapsed by default in GitHub UI (P2, testable)
-- [ ] **AC-US1-06**: Content updates when spec.md changes (P2, testable)
-- [ ] **AC-US1-07**: Architecture diagrams embedded (if available) (P3, testable)
+- [ ] **AC-US1-06**: Issue descriptions immutable after creation; updates via progress comments (P1, testable)
+- [ ] **AC-US1-07**: Progress comments show AC completion status with checkboxes (P1, testable)
+- [ ] **AC-US1-08**: Progress comments create audit trail of changes over time (P2, testable)
+- [ ] **AC-US1-09**: Architecture diagrams embedded (if available) (P3, testable)
 
 **Business Rationale**: External stakeholders (PM, clients, executives) need complete context without developer access to repository.
 
