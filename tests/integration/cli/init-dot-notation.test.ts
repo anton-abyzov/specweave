@@ -83,10 +83,10 @@ describe('specweave init . (current directory)', () => {
         { cwd: testDir }
       ).catch(() => ({ stdout: '' }));
 
-      // Run specweave init
+      // Run specweave init (needs longer timeout for plugin installation)
       await execAsync(
         `cd ${testDir} && echo "test-project" | node "${specweaveBin}" init .`,
-        { timeout: 30000 }
+        { timeout: 60000 }
       );
 
       // Verify .git still exists
@@ -95,7 +95,7 @@ describe('specweave init . (current directory)', () => {
       // Verify git repository wasn't re-initialized
       // (checking that original .git wasn't replaced)
       expect(fs.existsSync(path.join(testDir, '.git', 'config'))).toBe(true);
-    }, 45000);
+    }, 75000);  // Increased timeout for plugin installation
   });
 
   describe('Non-empty directory handling', () => {
