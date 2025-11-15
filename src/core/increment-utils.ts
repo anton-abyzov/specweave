@@ -10,6 +10,9 @@
  * @since 0.18.3
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+
 /**
  * Centralized manager for increment number generation and validation.
  *
@@ -67,8 +70,33 @@ export class IncrementNumberManager {
     projectRoot: string = process.cwd(),
     useCache: boolean = true
   ): string {
-    // Implementation will be added in next task
-    throw new Error('Not yet implemented');
+    const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
+    const cacheKey = incrementsDir;
+
+    // Check cache if enabled
+    if (useCache) {
+      const cached = this.cache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
+        return String(cached.number).padStart(4, '0');
+      }
+    }
+
+    // Scan all directories
+    const highestNumber = this.scanAllIncrementDirectories(incrementsDir);
+    const nextNumber = highestNumber + 1;
+
+    // Update cache
+    this.cache.set(cacheKey, {
+      number: nextNumber,
+      timestamp: Date.now()
+    });
+
+    // Auto-expire cache after TTL
+    setTimeout(() => {
+      this.cache.delete(cacheKey);
+    }, this.CACHE_TTL);
+
+    return String(nextNumber).padStart(4, '0');
   }
 
   /**
@@ -92,8 +120,45 @@ export class IncrementNumberManager {
     incrementNumber: string | number,
     projectRoot: string = process.cwd()
   ): boolean {
-    // Implementation will be added in T-004
-    throw new Error('Not yet implemented');
+    const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
+
+    // Normalize to 4-digit string
+    const normalizedNumber = String(incrementNumber).padStart(4, '0');
+
+    // Directories to check
+    const dirsToCheck = [
+      incrementsDir,
+      path.join(incrementsDir, '_archive'),
+      path.join(incrementsDir, '_abandoned'),
+      path.join(incrementsDir, '_paused')
+    ];
+
+    // Check each directory
+    for (const dir of dirsToCheck) {
+      if (!fs.existsSync(dir)) continue;
+
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          // Match pattern: 0032-name or 032-name
+          const match = entry.name.match(/^(\d{3,4})-/);
+          if (match) {
+            const entryNumber = match[1].padStart(4, '0');
+            if (entryNumber === normalizedNumber) {
+              return true;
+            }
+          }
+        }
+      } catch (error) {
+        // Permission denied or other error - continue
+        continue;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -128,7 +193,42 @@ export class IncrementNumberManager {
    * @private
    */
   private static scanAllIncrementDirectories(incrementsDir: string): number {
-    // Implementation will be added in T-002
-    throw new Error('Not yet implemented');
+    let highestNumber = 0;
+
+    // Directories to scan
+    const dirsToScan = [
+      { path: incrementsDir, label: 'main' },
+      { path: path.join(incrementsDir, '_archive'), label: '_archive' },
+      { path: path.join(incrementsDir, '_abandoned'), label: '_abandoned' },
+      { path: path.join(incrementsDir, '_paused'), label: '_paused' }
+    ];
+
+    // Scan each directory
+    for (const { path: dirPath, label } of dirsToScan) {
+      if (!fs.existsSync(dirPath)) continue;
+
+      try {
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          // Match pattern: 0032-name or 032-name
+          const match = entry.name.match(/^(\d{3,4})-/);
+          if (match) {
+            const number = parseInt(match[1], 10);
+            if (number > highestNumber) {
+              highestNumber = number;
+            }
+          }
+        }
+      } catch (error) {
+        // Permission denied or other error - log warning and continue
+        console.warn(`Warning: Could not scan directory ${dirPath}:`, (error as Error).message);
+        continue;
+      }
+    }
+
+    return highestNumber;
   }
 }

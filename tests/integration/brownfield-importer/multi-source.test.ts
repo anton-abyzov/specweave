@@ -24,22 +24,20 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'web-app',
-          projects: [
-            {
-              id: 'web-app',
+          projects: {
+            'web-app': {
               name: 'Web Application',
               description: 'Frontend web app',
               techStack: ['react'] as string[],
               team: 'Web Team'
             },
-            {
-              id: 'mobile-app',
+            'mobile-app': {
               name: 'Mobile Application',
               description: 'Mobile app',
               techStack: ['react-native'] as string[],
               team: 'Mobile Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -118,15 +116,14 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -240,15 +237,14 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 
@@ -324,15 +320,14 @@ describe('BrownfieldImporter - Multi-Source Import (Integration)', () => {
         multiProject: {
           enabled: true,
           activeProject: 'default',
-          projects: [
-            {
-              id: 'default',
+          projects: {
+            'default': {
               name: 'Default Project',
               description: 'Default project',
               techStack: [] as string[],
               team: 'Engineering Team'
             }
-          ]
+          }
         }
       }, null, 2));
 

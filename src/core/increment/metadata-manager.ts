@@ -83,9 +83,10 @@ export class MetadataManager {
 
       // **CRITICAL**: Update active increment state if default status is ACTIVE
       // This ensures that newly created increments are immediately tracked for status line
+      // Skip validation to prevent circular dependency during lazy initialization
       if (defaultMetadata.status === IncrementStatus.ACTIVE) {
         const activeManager = new ActiveIncrementManager();
-        activeManager.setActive(incrementId);
+        activeManager.setActive(incrementId, true); // skipValidation = true
       }
 
       return defaultMetadata;
@@ -323,9 +324,33 @@ export class MetadataManager {
     // SLOW PATH: Cache miss or invalid, scan all increments
     const allActive = this.getByStatus(IncrementStatus.ACTIVE);
 
-    // Rebuild cache from scan results
+    // Rebuild cache from scan results (DIRECTLY without calling smartUpdate to avoid circular dependency)
     if (allActive.length > 0) {
-      activeManager.smartUpdate();
+      // Sort by lastActivity (most recent first)
+      const sorted = allActive.sort((a, b) => {
+        const aTime = new Date(a.lastActivity).getTime();
+        const bTime = new Date(b.lastActivity).getTime();
+        return bTime - aTime; // Descending
+      });
+
+      // Take max 2 and write state directly
+      const activeIds = sorted.slice(0, 2).map(m => m.id);
+      const state = {
+        ids: activeIds,
+        lastUpdated: new Date().toISOString()
+      };
+      // Write state directly using private method (copy logic from ActiveIncrementManager.writeState)
+      const stateFile = activeManager.getStateFilePath();
+      const stateDir = path.dirname(stateFile);
+      if (!fs.existsSync(stateDir)) {
+        fs.mkdirSync(stateDir, { recursive: true });
+      }
+      const tempFile = `${stateFile}.tmp`;
+      fs.writeFileSync(tempFile, JSON.stringify(state, null, 2), 'utf-8');
+      fs.renameSync(tempFile, stateFile);
+    } else {
+      // No active increments, clear cache
+      activeManager.clearActive();
     }
 
     return allActive;

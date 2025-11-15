@@ -53,6 +53,7 @@ describe('FeatureIDManager', () => {
 title: "${inc.title}"
 feature: ${inc.feature}
 created: ${inc.created}
+imported: true
 ---
 
 # ${inc.title}
@@ -267,7 +268,7 @@ feature: FS-no-date-feature
       // Add features with non-sequential dates
       const unorderedIncrements = [
         { id: '0010-newest', created: '2025-03-01', feature: 'FS-newest' },
-        { id: '0011-oldest', created: '2025-01-01', feature: 'FS-oldest' },
+        { id: '0011-oldest', created: '2024-12-01', feature: 'FS-oldest' },  // Earlier than beforeEach features
         { id: '0012-middle', created: '2025-02-01', feature: 'FS-middle' }
       ];
 
@@ -278,6 +279,7 @@ feature: FS-no-date-feature
         await fs.writeFile(path.join(incrementPath, 'spec.md'), `---
 feature: ${inc.feature}
 created: ${inc.created}
+imported: true
 ---`);
       }
 
