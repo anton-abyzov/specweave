@@ -1,0 +1,18 @@
+{
+  "id": "0031-external-tool-status-sync",
+  "status": "completed",
+  "type": "feature",
+  "created": "2025-11-12T12:46:00Z",
+  "started": "2025-11-12T13:00:00Z",
+  "completed": "2025-11-14T21:20:00Z",
+  "lastActivity": "2025-11-14T21:20:00Z",
+  "github": {
+    "issue": 375,
+    "url": "https://github.com/anton-abyzov/specweave/issues/375",
+    "synced": "2025-11-14T21:20:00Z"
+  },
+  "githubProfile": "specweave-dev",
+  "duration": "2 days",
+  "velocity": "10x faster than estimated (2 days vs 2-3 weeks)",
+  "completionNote": "All PM gates passed: tasks completed (24/24), tests passing, documentation updated"
+}

@@ -195,9 +195,9 @@ export class ActiveIncrementManager {
 
   /**
    * Validate that all active increment pointers are correct
-   * Fixes stale pointers automatically
+   * Does NOT fix stale pointers - caller should call smartUpdate() if needed
    *
-   * Returns true if all valid/fixed, false if any invalid
+   * Returns true if all valid, false if any invalid
    */
   validate(): boolean {
     const currentActive = this.getActive();
@@ -229,13 +229,9 @@ export class ActiveIncrementManager {
       }
     }
 
-    // If any stale, rebuild from source of truth
-    if (hasStale) {
-      this.smartUpdate();
-      return false;
-    }
-
-    return true;
+    // Return false if stale found, but DON'T auto-fix (prevents circular dependency)
+    // Caller should call smartUpdate() if needed
+    return !hasStale;
   }
 
   /**
