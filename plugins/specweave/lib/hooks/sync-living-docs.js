@@ -77,6 +77,8 @@ async function hierarchicalDistribution(incrementId) {
         console.log(`      - ${warning}`);
       }
     }
+    console.log("   \u{1F4CA} Updating acceptance criteria status from completed tasks...");
+    await distributor.updateAcceptanceCriteriaStatus(incrementId);
     const changedFiles = [result.epicPath, ...result.userStoryPaths];
     return {
       success: true,

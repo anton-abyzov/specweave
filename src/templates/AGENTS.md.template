@@ -64,8 +64,7 @@ This is a **SpecWeave project** where specifications and documentation are the s
 │   └── 0001-feature-name/
 │       ├── spec.md          # WHAT & WHY (business requirements)
 │       ├── plan.md          # HOW (technical implementation)
-│       ├── tasks.md         # Implementation checklist
-│       ├── tests.md         # Test strategy
+│       ├── tasks.md         # Tasks with embedded test plans (BDD format)
 │       ├── context-manifest.yaml  # Selective loading (token savings!)
 │       ├── logs/            # Execution logs, errors
 │       ├── scripts/         # Helper scripts
@@ -1016,7 +1015,7 @@ Template:
 [Step-by-step approach]
 ```
 
-**Step 4: Create tasks.md**
+**Step 4: Create tasks.md (with embedded tests)**
 ```markdown
 ---
 increment: 0001-feature-name
@@ -1026,8 +1025,18 @@ completed_tasks: 0
 
 # Implementation Tasks
 
-- [ ] T001: Task description
-- [ ] T002: Task description
+## T-001: Task description
+
+**AC**: AC-US1-01, AC-US1-02
+
+**Test Plan** (BDD):
+- **Given** [context] → **When** [action] → **Then** [expected result]
+
+**Test Cases**:
+- Unit (`*.test.ts`): testCase1, testCase2 → 90% coverage
+- Integration (`*.spec.ts`): integrationTest → 85% coverage
+
+**Implementation**: [Technical details]
 ```
 
 **Step 5: Create context-manifest.yaml (CRITICAL)**
@@ -1482,10 +1491,12 @@ npm run lint
 
 **Four Levels of Test Cases**:
 
-1. **Specification** (`.specweave/docs/internal/strategy/`) - TC-0001 acceptance criteria
-2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage matrix
+1. **Specification** (`.specweave/docs/internal/strategy/`) - AC-IDs (AC-US1-01, etc.)
+2. **Feature** (`.specweave/increments/####/tasks.md`) - Test plans embedded in tasks (BDD format)
 3. **Skill** (`src/skills/{name}/test-cases/`) - YAML test cases (if creating skills)
 4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
+
+**Test-Aware Planning**: Tests are embedded directly in tasks.md using BDD format (Given/When/Then), with AC-ID traceability (mapping to spec.md acceptance criteria) and realistic coverage targets (80-90%).
 
 **Requirements:**
 - E2E tests (Playwright/Cypress) when UI exists

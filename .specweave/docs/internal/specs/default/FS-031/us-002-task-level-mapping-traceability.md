@@ -3,20 +3,28 @@ id: US-002
 epic: FS-031
 title: "Task-Level Mapping & Traceability"
 status: complete
-created: 2025-11-14
-completed: 2025-11-14
+created: 2025-11-15
+completed: 2025-11-15
 ---
 
 # US-002: Task-Level Mapping & Traceability
 
-**Feature**: [FS-031](./FEATURE.md)
+**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
 
-
+**As a** developer or PM
+**I want** to see which tasks implement which user stories
+**So that** I can track progress and understand implementation history
 
 ---
 
 ## Acceptance Criteria
 
+- [x] **AC-US2-01**: Spec frontmatter includes linked_increments mapping (P1, testable)
+- [x] **AC-US2-02**: User stories map to specific tasks (US-001 → T-001, T-002) (P1, testable)
+- [x] **AC-US2-03**: Tasks include GitHub/JIRA/ADO issue numbers (P1, testable)
+- [x] **AC-US2-04**: Can query "which increment implemented US-001?" (P2, testable)
+- [ ] **AC-US2-05**: Traceability report shows complete history (P2, testable)
+- [ ] **AC-US2-06**: Acceptance criteria map to task validation (P3, testable)
 
 ---
 
@@ -26,6 +34,12 @@ completed: 2025-11-14
 
 **Tasks**:
 - [T-002: Create Spec-to-Increment Mapper](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-002-create-spec-to-increment-mapper)
+
+---
+
+## Business Rationale
+
+Traceability is essential for compliance, auditing, and understanding product evolution.
 
 ---
 
@@ -41,4 +55,4 @@ completed: 2025-11-14
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-14
+**Completed**: 2025-11-15

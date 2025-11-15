@@ -95,7 +95,8 @@ export class EnhancedContentBuilder {
         if (criteria && criteria.length > 0) {
           for (const ac of criteria) {
             const priorityLabel = ac.priority ? ` (${ac.priority})` : '';
-            lines.push(`- **${ac.id}**${priorityLabel}: ${ac.description}`);
+            const checkbox = ac.completed ? '[x]' : '[ ]';
+            lines.push(`- ${checkbox} **${ac.id}**${priorityLabel}: ${ac.description}`);
           }
         }
       }

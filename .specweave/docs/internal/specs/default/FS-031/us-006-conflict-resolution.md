@@ -3,20 +3,29 @@ id: US-006
 epic: FS-031
 title: "Conflict Resolution"
 status: complete
-created: 2025-11-14
-completed: 2025-11-14
+created: 2025-11-15
+completed: 2025-11-15
 ---
 
 # US-006: Conflict Resolution
 
-**Feature**: [FS-031](./FEATURE.md)
+**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
 
-
+**As a** SpecWeave user
+**I want** conflicts handled gracefully when statuses diverge
+**So that** I don't lose work or create inconsistencies
 
 ---
 
 ## Acceptance Criteria
 
+- [x] **AC-US6-01**: Detect status conflicts (local vs remote differ) (P1, testable)
+- [x] **AC-US6-02**: Configurable conflict resolution strategy (P1, testable)
+- [x] **AC-US6-03**: "prompt" strategy asks user to resolve (P1, testable)
+- [x] **AC-US6-04**: "last-write-wins" strategy uses most recent (P2, testable)
+- [x] **AC-US6-05**: "specweave-wins" strategy keeps local status (P2, testable)
+- [x] **AC-US6-06**: "external-wins" strategy uses external status (P2, testable)
+- [x] **AC-US6-07**: Conflict log shows resolution history (P2, testable)
 
 ---
 
@@ -27,6 +36,12 @@ completed: 2025-11-14
 **Tasks**:
 - [T-007: Create Conflict Resolver](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-007-create-conflict-resolver)
 - [T-018: Add Sync Event Logging](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-018-add-sync-event-logging)
+
+---
+
+## Business Rationale
+
+Robust conflict handling prevents data loss and maintains consistency.
 
 ---
 
@@ -42,4 +57,4 @@ completed: 2025-11-14
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-14
+**Completed**: 2025-11-15

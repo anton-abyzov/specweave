@@ -197,6 +197,34 @@ export interface DeduplicationConfig {
 }
 
 /**
+ * Archiving Configuration
+ *
+ * Controls how completed increments are archived to keep workspace clean
+ */
+export interface ArchivingConfig {
+  /** Number of increments to keep in main folder (default: 10) */
+  keepLast?: number;
+
+  /** Automatically archive completed increments (default: false) */
+  autoArchive?: boolean;
+
+  /** Archive increments after N days of inactivity (default: 60) */
+  archiveAfterDays?: number;
+
+  /** Always preserve active/paused increments (default: true) */
+  preserveActive?: boolean;
+
+  /** Archive all completed increments (default: false) */
+  archiveCompleted?: boolean;
+
+  /** Archive patterns (regex) to match increment names */
+  archivePatterns?: string[];
+
+  /** Never archive these increments (by name or number) */
+  preserveList?: string[];
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -228,6 +256,9 @@ export interface SpecweaveConfig {
 
   /** Global command deduplication configuration (v0.17.18+) */
   deduplication?: DeduplicationConfig;
+
+  /** Archiving configuration for increment management */
+  archiving?: ArchivingConfig;
 
   /** Allow additional properties */
   [key: string]: any;
@@ -277,6 +308,15 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     maxCacheSize: 1000,            // Keep last 1000 invocations
     debug: false,                  // Disable debug logging
     cleanupIntervalMs: 60000,      // Cleanup every minute
+  },
+  archiving: {
+    keepLast: 10,                  // Keep last 10 increments in main folder
+    autoArchive: false,            // Manual archiving by default
+    archiveAfterDays: 60,          // Archive after 60 days of inactivity
+    preserveActive: true,          // Never archive active/paused increments
+    archiveCompleted: false,       // Don't auto-archive completed (manual control)
+    archivePatterns: [],           // No patterns by default
+    preserveList: [],              // No preserved increments by default
   },
   hooks: {
     post_task_completion: {

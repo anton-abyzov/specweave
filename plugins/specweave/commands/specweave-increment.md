@@ -449,9 +449,10 @@ Proceeding with hotfix 0006...
 
 ### Step 1: Find next increment number
 
-- Scan `.specweave/increments/` directory
-- Find highest number (e.g., 002)
-- Next increment: 003
+- Scan `.specweave/increments/` directory (active increments)
+- Scan `.specweave/increments/_archive/` directory (archived/abandoned increments)
+- Find highest number across both directories (e.g., 032)
+- Next increment: 033
 
 ### Step 2: Detect tech stack (CRITICAL - framework-agnostic)
    - Settings auto-detected

@@ -27,10 +27,11 @@ description: Sync SpecWeave Epic folder to GitHub (Milestone + Issues). Implemen
    - Description: Epic overview + progress stats
    - State: Open (active/planning) or Closed (complete)
 4. **Sync each increment as GitHub Issue**:
-   - Title: `[INC-0001-core-framework] Title`
+   - Title: `[FS-031] Title` (Feature ID from Epic folder)
    - Body: Increment overview + link to tasks.md
    - Milestone: Linked to Epic Milestone
    - Labels: `increment`, `epic-sync`
+   - **Note**: Uses Epic's FS-XXX ID, not increment number!
 5. **Update frontmatter** in Epic README.md and increment files
 
 ## Examples
@@ -116,19 +117,23 @@ State: Closed (if complete) or Open (if active/planning)
 ### GitHub Issues (Increment-level)
 
 ```markdown
-Title: [INC-0001-core-framework] Core Framework
+Title: [FS-031] External Tool Status Sync
 
-# Core Framework
+# External Tool Status Sync
 
-Foundation framework with CLI, plugin system, and agent architecture...
+Bidirectional sync between SpecWeave and external issue trackers...
 
 ---
 
-**Increment**: 0001-core-framework
+**Increment**: 0031-external-tool-status-sync
 **Milestone**: See milestone for Epic progress
+**Feature**: FS-031 (External Tool Status Synchronization)
 
 🤖 Auto-created by SpecWeave Epic Sync
 ```
+
+**Note**: Issue title uses Feature ID ([FS-031]), not increment number!
+**Legacy Format** (deprecated): `[INC-0001]` - No longer used!
 
 **Labels**: `increment`, `epic-sync`
 **Milestone**: Linked to Epic Milestone

@@ -1,7 +1,7 @@
 ---
 name: specweave:status
-description: Show increment status overview with rich details (active, paused, completed, abandoned)
-usage: /specweave:status [--active|--paused|--completed|--abandoned|--stale]
+description: Show increment status overview with rich details (active, backlog, paused, completed, abandoned)
+usage: /specweave:status [--active|--backlog|--paused|--completed|--abandoned|--stale]
 ---
 
 # Increment Status Command
@@ -14,6 +14,7 @@ usage: /specweave:status [--active|--paused|--completed|--abandoned|--stale]
 
 Display comprehensive increment status overview:
 - **Active** increments (currently working)
+- **Backlog** increments (planned but not started)
 - **Paused** increments (blocked/deprioritized)
 - **Completed** increments (done)
 - **Abandoned** increments (obsolete)
@@ -42,6 +43,15 @@ Display comprehensive increment status overview:
      Age: 2 days
      Last: Created translation pipeline
 
+🗂️  Backlog (2):
+  📦 0032-feature-a [feature]
+     In backlog: 5 days
+     Reason: Low priority
+
+  📦 0033-feature-b [feature]
+     In backlog: 3 days
+     Reason: Waiting for decisions
+
 ⏸️  Paused (1):
   🔄 0007-stripe-integration [feature]
      Progress: 30% (6/20 tasks)
@@ -57,6 +67,7 @@ Display comprehensive increment status overview:
 
 📊 Summary:
   - Active: 2 increments (1 hotfix, 1 feature)
+  - Backlog: 2 increments (planned for future)
   - Paused: 1 increment
   - Completed: 4 increments
   - Context switching: 20-40% cost (2 active)
@@ -122,6 +133,7 @@ const allIncrements = MetadataManager.getAll();
 
 // Group by status
 const active = allIncrements.filter(m => m.status === IncrementStatus.ACTIVE);
+const backlog = allIncrements.filter(m => m.status === IncrementStatus.BACKLOG);
 const paused = allIncrements.filter(m => m.status === IncrementStatus.PAUSED);
 const completed = allIncrements.filter(m => m.status === IncrementStatus.COMPLETED);
 const abandoned = allIncrements.filter(m => m.status === IncrementStatus.ABANDONED);
@@ -148,6 +160,7 @@ if (active.length > 0) {
 // Summary with type limits (v0.7.0+)
 console.log('\n📊 Summary:');
 console.log(`  - Active: ${active.length} increments`);
+console.log(`  - Backlog: ${backlog.length} increments`);
 console.log(`  - Paused: ${paused.length} increments`);
 console.log(`  - Completed: ${completed.length} increments`);
 
@@ -263,6 +276,26 @@ Show only active increments
   🔧 0006-i18n [feature] (50% done)
 ```
 
+### --backlog
+
+Show only backlog increments
+
+```bash
+/specweave:status --backlog
+
+🗂️  Backlog (3):
+  📦 0032-feature-a [feature] (in backlog 5 days)
+     Reason: Low priority
+
+  📦 0033-feature-b [feature] (in backlog 3 days)
+     Reason: Waiting for decisions
+
+  📦 0034-feature-c [feature] (in backlog 1 day)
+     Reason: Multiple planned ideas
+
+💡 Start work: /specweave:resume <id>
+```
+
 ### --paused
 
 Show only paused increments
@@ -336,11 +369,12 @@ Show only stale increments (paused >7 days OR active >30 days)
 
 ## Related Commands
 
-- `/do` - Continue work on active increment
-- `/progress` - Detailed progress for current increment
-- `/pause <id>` - Pause active increment
-- `/resume <id>` - Resume paused increment
-- `/abandon <id>` - Abandon increment (move to _abandoned/)
+- `/specweave:do` - Continue work on active increment
+- `/specweave:progress` - Detailed progress for current increment
+- `/specweave:backlog <id>` - Move increment to backlog
+- `/specweave:pause <id>` - Pause active increment
+- `/specweave:resume <id>` - Resume paused or backlog increment
+- `/specweave:abandon <id>` - Abandon increment (move to _abandoned/)
 
 ---
 

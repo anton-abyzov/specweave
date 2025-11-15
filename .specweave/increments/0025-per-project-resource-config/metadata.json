@@ -5,7 +5,13 @@
   "created": "2025-11-11T00:00:00Z",
   "completed": "2025-11-11T23:59:00Z",
   "priority": "P0",
-  "tags": ["infrastructure", "ado", "jira", "multi-project", "configuration"],
+  "tags": [
+    "infrastructure",
+    "ado",
+    "jira",
+    "multi-project",
+    "configuration"
+  ],
   "lastUpdated": "2025-11-11T23:59:00Z",
   "metrics": {
     "totalTasks": 15,
@@ -56,5 +62,9 @@
     "backwardCompatibility": "PASS (100%)",
     "documentation": "PASS",
     "manualTesting": "DEFERRED (requires live instances)"
+  },
+  "github": {
+    "issue": 494,
+    "url": "https://github.com/anton-abyzov/specweave/issues/494"
   }
 }

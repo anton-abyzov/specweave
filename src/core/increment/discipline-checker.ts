@@ -77,7 +77,7 @@ export class DisciplineChecker {
       // Phase 2: Count by status and get status map
       const { statusCounts, statusMap } = this.countByStatus(allIncrements);
 
-      // Phase 3: Find incomplete increments (active or paused, not completed/abandoned)
+      // Phase 3: Find incomplete increments (active or paused, not backlog/completed/abandoned)
       const incomplete = allIncrements.filter(
         (inc) => {
           const status = statusMap.get(inc.id) || 'active';
@@ -124,6 +124,7 @@ export class DisciplineChecker {
         increments: {
           total: 0,
           active: 0,
+          backlog: 0,
           paused: 0,
           completed: 0,
           abandoned: 0,
@@ -180,6 +181,7 @@ export class DisciplineChecker {
     statusCounts: {
       total: number;
       active: number;
+      backlog: number;
       paused: number;
       completed: number;
       abandoned: number;
@@ -187,6 +189,7 @@ export class DisciplineChecker {
     statusMap: Map<string, string>;
   } {
     let active = 0;
+    let backlog = 0;
     let paused = 0;
     let completed = 0;
     let abandoned = 0;
@@ -224,6 +227,9 @@ export class DisciplineChecker {
         case 'active':
           active++;
           break;
+        case 'backlog':
+          backlog++;
+          break;
         case 'paused':
           paused++;
           break;
@@ -242,6 +248,7 @@ export class DisciplineChecker {
       statusCounts: {
         total: increments.length,
         active,
+        backlog,
         paused,
         completed,
         abandoned,

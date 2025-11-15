@@ -63,7 +63,7 @@ export interface CorrectionResult {
 export interface CreateOptions {
   title: string;
   body: string;
-  titlePattern: string;  // e.g., "[FS-031]" or "[INC-0031]"
+  titlePattern: string;  // e.g., "[FS-031]" (current) or "[INC-0031]" (deprecated, legacy only)
   incrementId?: string;  // e.g., "0031-feature-name"
   labels?: string[];
   milestone?: string;
@@ -89,7 +89,7 @@ export class DuplicateDetector {
    * Searches GitHub for existing issues matching the title pattern.
    * This is the PRIMARY defense against duplicates.
    *
-   * @param titlePattern - Pattern to search (e.g., "[FS-031]" or "[INC-0031]")
+   * @param titlePattern - Pattern to search (e.g., "[FS-031]" current, "[INC-0031]" deprecated)
    * @param incrementId - Optional increment ID for more precise matching
    * @param repo - Optional repo (format: "owner/repo")
    * @returns Existing issue if found, null otherwise
@@ -498,8 +498,8 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
    * Utility: Extract title pattern from full title
    *
    * Examples:
-   * - "[FS-031] Feature Title" → "[FS-031]"
-   * - "[INC-0031] Increment Title" → "[INC-0031]"
+   * - "[FS-031] Feature Title" → "[FS-031]" (current format)
+   * - "[INC-0031] Increment Title" → "[INC-0031]" (deprecated, legacy support only)
    *
    * @param title - Full issue title
    * @returns Extracted pattern or null

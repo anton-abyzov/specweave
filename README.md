@@ -301,6 +301,7 @@ specweave init .
 - 🧪 **Test-Aware Planning** - Embedded tests in BDD format (Given/When/Then)
 - 🎯 **Disciplined Progress** - Can't start increment N+1 until N is DONE
 - ⏸️ **Intelligent Pausing** - Auto-detects blockers, pauses with context, resumes when ready
+- 🔄 **Smart Reopen (NEW!)** - Report "broken" → Auto-detects what to reopen, respects WIP limits
 - 👥 **Multi-Project Tracking** - Unlimited JIRA/ADO/GitHub repos, intelligent routing
 - 🤖 **AI Agents** - PM, Architect, Quality Judge guide your work
 - 🔧 **CI/CD Auto-Fix** - Workflow failures auto-fixed by Claude (just mention `@claude`)
@@ -344,6 +345,73 @@ Please analyze the logs and create a fix PR.
 - Configuration issues
 
 **[→ Setup Guide](https://spec-weave.com/docs/features/cicd-autofix)**
+
+---
+
+## 🔄 Smart Reopen (v0.19.0)
+
+**Production bug? Just say "it's broken" - AI figures out what to reopen.**
+
+### Auto-Detection Feature
+
+Report issues naturally:
+```
+"The GitHub sync isn't working"
+```
+
+SpecWeave automatically:
+1. 🔍 Scans recent work (active + 7 days completed)
+2. 🎯 Finds related items (relevance scoring)
+3. 💡 Suggests exact reopen command
+4. ⚠️  Validates WIP limits
+
+```bash
+# Suggested by AI:
+/specweave:reopen 0031 --reason "GitHub sync failing"
+
+# Result:
+✅ Increment 0031 reopened
+⚠️  WIP LIMIT: 3/2 active (EXCEEDED)
+📋 Reopened 5 tasks
+💡 Continue work: /specweave:do 0031
+```
+
+### Three Reopen Levels
+
+**Task-Level** (Surgical Fix):
+```bash
+/specweave:reopen 0031 --task T-003 --reason "API rate limiting"
+```
+
+**User Story-Level** (Feature Fix):
+```bash
+/specweave:reopen 0031 --user-story US-001 --reason "AC not met"
+```
+
+**Increment-Level** (Systemic Fix):
+```bash
+/specweave:reopen 0031 --reason "Multiple production issues"
+```
+
+### Complete Audit Trail
+
+Every reopen is tracked:
+```json
+{
+  "reopened": {
+    "count": 1,
+    "history": [
+      {
+        "date": "2025-11-14T15:30:00Z",
+        "reason": "GitHub sync failing",
+        "previousStatus": "completed"
+      }
+    ]
+  }
+}
+```
+
+**WIP Limits Respected** - No more "I'll just squeeze in one more fix" chaos!
 
 ---
 

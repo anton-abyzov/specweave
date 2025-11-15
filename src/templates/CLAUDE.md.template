@@ -22,8 +22,7 @@ This project uses **SpecWeave** - a specification-first AI development framework
 .specweave/increments/0001-user-auth/
 ├── spec.md                            # Core spec files
 ├── plan.md
-├── tasks.md
-├── tests.md
+├── tasks.md                           # Tasks with embedded tests (BDD format)
 ├── reports/                           # ✅ PUT REPORTS HERE!
 │   ├── SESSION-SUMMARY.md
 │   └── ANALYSIS-REPORT.md
@@ -56,7 +55,7 @@ This project uses **SpecWeave** - a specification-first AI development framework
 ```
 
 **1. Plan Feature** → `/specweave:increment "user authentication"`
-   - Creates spec.md (WHAT/WHY), plan.md (HOW), tasks.md, tests.md
+   - Creates spec.md (WHAT/WHY), plan.md (HOW), tasks.md (with embedded tests)
    - PM-led process with architect/security/QA review
    - **Use when**: Starting any new feature or increment
 
@@ -69,9 +68,9 @@ This project uses **SpecWeave** - a specification-first AI development framework
    - Shows task completion %, next action
    - **Use when**: Want to see status
 
-**4. Validate Quality** → `/specweave:validate 0001` or `/specweave:validate 0001 --quality`
-   - Rule-based validation (120 checks)
-   - Optional AI quality assessment
+**4. Validate Quality** → `/specweave:validate 0001` or `/specweave:qa 0001`
+   - Rule-based validation (120 checks) or AI quality assessment with risk scoring
+   - Validates tasks, tests (embedded in tasks.md), and documentation
    - **Use when**: Verify increment quality before completion
 
 **5. Close Increment** → `/specweave:done 0001`
@@ -127,6 +126,23 @@ ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort | tail -5
    - Jira - Issue status updates automatically
    - Azure DevOps - Work item updates automatically
    - **Configurable**: Set `external_tracker_sync: true` in `.specweave/config.json`
+
+### 🏷️ GitHub Issue Format (CRITICAL!)
+
+**SpecWeave uses date-based naming for GitHub issues:**
+
+| Context | Format | Example |
+|---------|--------|---------|
+| **Feature/Epic Issue** | `[FS-NNN]` | `[FS-031] External Tool Status Sync` |
+| **User Story Issue** | `[FS-NNN][US-NNN]` | `[FS-031][US-002] Task-Level Mapping` |
+
+**⛔ NEVER use `[INC-XXXX]` format** - This is deprecated and will cause sync issues!
+
+**Why?**
+- ✅ `[FS-XXX]` matches Epic folder structure in living docs
+- ✅ Enables proper hierarchical tracking (Epic → User Stories → Tasks)
+- ✅ Works with Universal Hierarchy architecture (v0.18.0+)
+- ❌ `[INC-XXX]` is obsolete and breaks living docs sync
 
 3. **Sound Notifications**:
    - Plays sound when tasks complete (helps you know when to review)
@@ -235,7 +251,7 @@ Both approaches work perfectly - use whichever feels more natural!
 .specweave/increments/0001-user-auth/   # ⚠️ ID must be unique!
 ├── spec.md                      # WHAT & WHY
 ├── plan.md                      # HOW
-├── tasks.md                     # Implementation steps with embedded tests
+├── tasks.md                     # Tasks with embedded test plans (BDD format)
 ├── context-manifest.yaml        # Selective context loading
 ├── logs/                        # ✅ Execution logs, errors, AI sessions
 ├── scripts/                     # ✅ Helper scripts, migrations, setup
@@ -519,10 +535,12 @@ Plugins are detected and suggested during `specweave init` based on:
 ## Testing
 
 **Four Levels**:
-1. **Specification** (`.specweave/docs/internal/strategy/`) - Acceptance criteria
-2. **Feature** (`.specweave/increments/####/tests.md`) - Test coverage per increment
+1. **Specification** (`.specweave/docs/internal/strategy/`) - Acceptance criteria (AC-IDs)
+2. **Feature** (`.specweave/increments/####/tasks.md`) - Test plans embedded in tasks (BDD format)
 3. **Integration** (`tests/integration/` or `tests/specs/`) - Component/module tests
 4. **Code** (`tests/`) - Automated tests (Unit, Integration, E2E)
+
+**Test-Aware Planning**: Tests are embedded in tasks.md using BDD format (Given/When/Then), with AC-ID traceability and realistic coverage targets (80-90%).
 
 **Requirements**:
 - E2E tests when UI exists

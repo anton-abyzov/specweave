@@ -191,11 +191,16 @@ export class MetadataManager {
     metadata.lastActivity = new Date().toISOString();
 
     // Update status-specific fields
-    if (newStatus === IncrementStatus.PAUSED) {
+    if (newStatus === IncrementStatus.BACKLOG) {
+      metadata.backlogReason = reason || 'Planned for future work';
+      metadata.backlogAt = new Date().toISOString();
+    } else if (newStatus === IncrementStatus.PAUSED) {
       metadata.pausedReason = reason || 'No reason provided';
       metadata.pausedAt = new Date().toISOString();
     } else if (newStatus === IncrementStatus.ACTIVE) {
-      // Clear paused fields when resuming
+      // Clear backlog/paused fields when activating
+      metadata.backlogReason = undefined;
+      metadata.backlogAt = undefined;
       metadata.pausedReason = undefined;
       metadata.pausedAt = undefined;
     } else if (newStatus === IncrementStatus.ABANDONED) {
@@ -213,6 +218,7 @@ export class MetadataManager {
       activeManager.setActive(incrementId);
     } else if (
       newStatus === IncrementStatus.COMPLETED ||
+      newStatus === IncrementStatus.BACKLOG ||
       newStatus === IncrementStatus.PAUSED ||
       newStatus === IncrementStatus.ABANDONED
     ) {
@@ -323,6 +329,13 @@ export class MetadataManager {
     }
 
     return allActive;
+  }
+
+  /**
+   * Get backlog increments
+   */
+  static getBacklog(): IncrementMetadata[] {
+    return this.getByStatus(IncrementStatus.BACKLOG);
   }
 
   /**
