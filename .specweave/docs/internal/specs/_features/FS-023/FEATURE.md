@@ -5,10 +5,15 @@ type: feature
 status: completed
 priority: P1
 created: 2025-11-11
-lastUpdated: 2025-11-15T05:53:53.659Z
-projects: ["default"]
+lastUpdated: 2025-11-15T19:55:42.544Z
+projects: ["specweave"]
 
 sourceIncrement: 0023-release-management-enhancements
+external_tools:
+  github:
+    type: milestone
+    id: 6
+    url: https://github.com/anton-abyzov/specweave/milestone/6
 ---
 
 # Release Management Plugin Enhancements
@@ -28,19 +33,19 @@ See overview above
 ## Projects
 
 This feature spans the following projects:
-- default
+- specweave
 
 ## User Stories by Project
 
-### default
+### specweave
 
-- [US-001: Claude Code Plugin Registration (P0 - Critical)](../../default/FS-023/us-001-claude-code-plugin-registration-p0-critical.md) - complete
-- [US-002: DORA Metrics Persistent Tracking (P1)](../../default/FS-023/us-002-dora-metrics-persistent-tracking-p1.md) - complete
-- [US-003: DORA Living Docs Dashboard (P1)](../../default/FS-023/us-003-dora-living-docs-dashboard-p1.md) - complete
-- [US-004: Platform Release Coordination (P1)](../../default/FS-023/us-004-platform-release-coordination-p1.md) - complete
-- [US-005: GitFlow Release Branch Automation (P2)](../../default/FS-023/us-005-gitflow-release-branch-automation-p2.md) - complete
-- [US-006: Multi-Repo Git Tag Synchronization (P1)](../../default/FS-023/us-006-multi-repo-git-tag-synchronization-p1.md) - complete
-- [US-007: Post-Task-Completion Hooks Integration (P1)](../../default/FS-023/us-007-post-task-completion-hooks-integration-p1.md) - complete
+- [US-001: Claude Code Plugin Registration (P0 - Critical)](../../specweave/FS-023/us-001-claude-code-plugin-registration-p0-critical.md) - complete
+- [US-002: DORA Metrics Persistent Tracking (P1)](../../specweave/FS-023/us-002-dora-metrics-persistent-tracking-p1.md) - complete
+- [US-003: DORA Living Docs Dashboard (P1)](../../specweave/FS-023/us-003-dora-living-docs-dashboard-p1.md) - complete
+- [US-004: Platform Release Coordination (P1)](../../specweave/FS-023/us-004-platform-release-coordination-p1.md) - complete
+- [US-005: GitFlow Release Branch Automation (P2)](../../specweave/FS-023/us-005-gitflow-release-branch-automation-p2.md) - complete
+- [US-006: Multi-Repo Git Tag Synchronization (P1)](../../specweave/FS-023/us-006-multi-repo-git-tag-synchronization-p1.md) - complete
+- [US-007: Post-Task-Completion Hooks Integration (P1)](../../specweave/FS-023/us-007-post-task-completion-hooks-integration-p1.md) - complete
 
 ## Progress
 
