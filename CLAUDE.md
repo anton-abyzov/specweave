@@ -793,10 +793,10 @@ Epic (optional) → Feature (required) → User Story → Task
 │   └── EPIC-2025-Q4-platform/
 │       └── EPIC.md                       ← Epic overview
 ├── _features/                            ← Required: Cross-project features
-│   └── FS-25-11-14-external-tool-sync/
+│   └── FS-031/
 │       └── FEATURE.md                    ← Feature overview
 └── {project-id}/                         ← Project-specific content
-    └── FS-25-11-14-external-tool-sync/
+    └── FS-031/
         ├── README.md                      ← Project context
         ├── us-001-*.md                    ← User stories
         └── us-002-*.md
@@ -804,7 +804,7 @@ Epic (optional) → Feature (required) → User Story → Task
 
 **Key Changes from v0.x**:
 - ✅ **Epics** are optional strategic themes (EPIC-YYYY-QN-name)
-- ✅ **Features** use date-based naming (FS-YY-MM-DD-name)
+- ✅ **Features** use numeric naming (FS-XXX)
 - ✅ **Cross-project features** in _features/ folder
 - ✅ **Project-specific** user stories in {project}/ folders
 - ✅ **NO hardcoded project names** - all dynamic from config
@@ -826,7 +826,7 @@ Epic (optional) → Feature (required) → User Story → Task
 |---------|--------|---------|---------------|
 | **Feature/Epic Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `github-epic-sync.ts:542` |
 | **User Story Issue** | `[FS-NNN][US-NNN] Title` | `[FS-031][US-002] Task Mapping` | `spec-distributor.ts` |
-| **Increment Issue** | `[FS-YY-MM-DD] Title` | `[FS-25-11-12] Feature Name` | `post-increment-planning.sh:409` |
+| **Increment Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `post-increment-planning.sh:409` |
 
 **⛔ NEVER use `[INC-XXXX]` format** - This is DEPRECATED (pre-v0.18.0)!
 
@@ -856,9 +856,9 @@ gh issue list --search "[INC-" --state open --json number --jq '.[].number' | \
      - Frontmatter: `epic: EPIC-2025-Q4-platform` (100% confidence)
      - Config mapping: Explicit in config.json (100% confidence)
    - **Feature Detection** (required):
-     - Frontmatter: `feature: FS-25-11-14-external-tool-sync` (100% confidence)
-     - Increment name: `0031-external-tool-sync` → `FS-25-11-14-external-tool-sync` (90% confidence)
-     - Auto-creation: Creates new FS-YY-MM-DD-{name} from increment (50% confidence)
+     - Frontmatter: `feature: FS-031` (100% confidence)
+     - Increment name: `0031-external-tool-sync` → `FS-031` (90% confidence)
+     - Auto-creation: Creates new FS-XXX from increment (50% confidence)
    - **Project Detection**:
      - Frontmatter: `projects: ['backend', 'frontend']` (100% confidence)
      - Keywords/techStack matching (60-80% confidence)
@@ -870,7 +870,7 @@ gh issue list --search "[INC-" --state open --json number --jq '.[].number' | \
    - Project context → `{project}/FS-*/README.md` (per project)
    - User stories → `{project}/FS-*/us-001-*.md` (project-specific)
 
-**Date-Based Naming**: Features use creation date from metadata.json (FS-YY-MM-DD-name)
+**Numeric Naming**: Features use sequential IDs (FS-XXX) independent of creation date
 
 ### Manual Sync (If Needed)
 
@@ -911,7 +911,7 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 
 #### User Story File ({project}/FS-*/us-*.md)
 - **Frontmatter**: `id`, `feature`, `title`, `status`, `project`, `priority`, `created`
-- **Feature Link**: `[FS-25-11-14](../../_features/FS-25-11-14/FEATURE.md)`
+- **Feature Link**: `[FS-031](../../_features/FS-031/FEATURE.md)`
 - **User Story**: "As a... I want... So that..."
 - **Acceptance Criteria**: AC-US1-01, AC-US1-02, etc.
 - **Implementation**: Links to increment and tasks
@@ -920,7 +920,7 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 ### Troubleshooting
 
 **Problem**: Feature not detected, creates new FS-* every time
-**Solution**: Add `feature: FS-25-11-14-name` to increment's `spec.md` frontmatter
+**Solution**: Add `feature: FS-031` to increment's `spec.md` frontmatter
 
 **Problem**: Files go to wrong project folder
 **Solution**: Add `projects: ['backend', 'frontend']` to increment's `spec.md` frontmatter
@@ -928,8 +928,8 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 **Problem**: Epic not linked to feature
 **Solution**: Add `epic: EPIC-2025-Q4-platform` to increment's `spec.md` frontmatter
 
-**Problem**: Date-based naming not working
-**Solution**: Ensure metadata.json exists with `created` field, or add to spec.md frontmatter
+**Problem**: Feature ID not mapping correctly
+**Solution**: Ensure feature ID is explicitly set in spec.md frontmatter or config.json
 
 ---
 
@@ -1272,16 +1272,17 @@ ADO plugin: plugins/specweave-ado/hooks/post-task-completion.sh (150 lines)
 
 **Issue Title Format** (IMPORTANT):
 
-SpecWeave uses **date-based naming** for GitHub issues to match the Epic folder structure:
+SpecWeave uses **numeric feature IDs** for GitHub issues to match the Epic folder structure:
 
 | Context | Format | Example | Code Location |
 |---------|--------|---------|---------------|
-| **Increment Issue** | `[FS-YY-MM-DD] Title` | `[FS-25-11-12] External Tool Status Sync` | `post-increment-planning.sh` (line 409) |
+| **Increment Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `post-increment-planning.sh` (line 409) |
 | **Epic/Spec Issue** | `[FS-NNN] Title` | `[FS-031] External Tool Status Sync` | `github-epic-sync.ts` (line 540) |
+| **User Story Issue** | `[FS-NNN][US-NNN] Title` | `[FS-031][US-002] Task Mapping` | `spec-distributor.ts` |
 
 **Legacy Format** (deprecated): `[INC-0031]` - No longer used in codebase!
 
-The date format (`FS-YY-MM-DD`) is extracted from `metadata.json` creation date and matches the Epic folder naming convention in `.specweave/docs/internal/specs/default/FS-YY-MM-DD-feature-name/`.
+The numeric format (`FS-XXX`) is a sequential ID independent of creation date and matches the Epic folder naming convention in `.specweave/docs/internal/specs/default/FS-XXX/`.
 
 **How It Works** (Automatic):
 1. **Hook Triggers**: After `/specweave:increment` completes planning (spec.md, plan.md, tasks.md created)
@@ -1320,7 +1321,7 @@ The date format (`FS-YY-MM-DD`) is extracted from `metadata.json` creation date 
 
 **What Gets Created**:
 ```markdown
-# [FS-25-11-14] AI Self-Reflection System
+# [FS-031] AI Self-Reflection System
 
 **Status**: Planning → Implementation
 **Priority**: P1
