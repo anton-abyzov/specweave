@@ -18,6 +18,7 @@ import {
   shouldAutoAbandon
 } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
+import { detectDuplicatesByNumber } from './duplicate-detector.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -106,6 +107,38 @@ export class MetadataManager {
         `Failed to read metadata for ${incrementId}: ${errorMessage}`,
         incrementId,
         error instanceof Error ? error : new Error(String(error))
+      );
+    }
+  }
+
+  /**
+   * Validate increment before creation (check for duplicates)
+   * Throws if duplicates exist in other locations
+   */
+  static async validateBeforeCreate(incrementId: string, rootDir?: string): Promise<void> {
+    // Extract increment number from ID (e.g., "0033-feature-name" → "0033")
+    const numberMatch = incrementId.match(/^(\d+)/);
+    if (!numberMatch) {
+      throw new MetadataError(
+        `Invalid increment ID format: ${incrementId}. Expected format: ####-name`,
+        incrementId
+      );
+    }
+
+    const incrementNumber = numberMatch[1];
+
+    // Check for duplicates
+    const duplicates = await detectDuplicatesByNumber(incrementNumber, rootDir || process.cwd());
+
+    if (duplicates.length > 0) {
+      const locations = duplicates.map(d => d.path).join('\n  - ');
+      throw new MetadataError(
+        `Cannot create increment ${incrementId}: Increment number ${incrementNumber} already exists in other location(s):\n  - ${locations}\n\n` +
+        `Resolution options:\n` +
+        `  1. Use a different increment number\n` +
+        `  2. Delete/archive the existing increment(s)\n` +
+        `  3. Run /specweave:fix-duplicates to resolve conflicts`,
+        incrementId
       );
     }
   }

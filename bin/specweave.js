@@ -283,10 +283,61 @@ program.on('--help', () => {
   console.log('For more information, visit: https://spec-weave.com');
 });
 
-// Parse arguments
-program.parse(process.argv);
+// Startup duplicate check (runs before any command)
+async function checkForDuplicates() {
+  try {
+    // Skip check for init command (no .specweave yet)
+    const args = process.argv.slice(2);
+    if (args.length === 0 || args[0] === 'init' || args[0] === '--help' || args[0] === '-h' || args[0] === '--version' || args[0] === '-V') {
+      return;
+    }
 
-// Show help if no command specified
-if (!process.argv.slice(2).length) {
-  program.outputHelp();
+    // Check if .specweave exists
+    const { default: fs } = await import('fs-extra');
+    const { default: path } = await import('path');
+    const specweavePath = path.join(process.cwd(), '.specweave');
+
+    if (!fs.existsSync(specweavePath)) {
+      return; // No .specweave directory, skip check
+    }
+
+    // Detect duplicates
+    const { detectAllDuplicates } = await import('../dist/src/core/increment/duplicate-detector.js');
+    const report = await detectAllDuplicates(process.cwd());
+
+    if (report.duplicateCount > 0) {
+      console.log(chalk.yellow('\n⚠️  WARNING: Duplicate increments detected!\n'));
+
+      for (const duplicate of report.duplicates) {
+        console.log(chalk.yellow(`  Increment ${duplicate.incrementNumber} exists in multiple locations:`));
+        for (const location of duplicate.locations) {
+          const indicator = location === duplicate.recommendedWinner ? chalk.green('✓ (recommended)') : chalk.red('✗');
+          console.log(`    ${indicator} ${location.name} [${location.status}] - ${location.path}`);
+        }
+        console.log(chalk.dim(`    Reason: ${duplicate.resolutionReason}\n`));
+      }
+
+      console.log(chalk.yellow('  Resolution:'));
+      console.log(chalk.dim('    Run /specweave:fix-duplicates to automatically resolve conflicts'));
+      console.log(chalk.dim('    or manually delete/archive the losing versions\n'));
+    }
+  } catch (error) {
+    // Silently ignore errors (don't block CLI startup)
+    if (process.env.DEBUG) {
+      console.error(chalk.dim(`[DEBUG] Duplicate check failed: ${error}`));
+    }
+  }
 }
+
+// Run startup check, then parse arguments
+(async () => {
+  await checkForDuplicates();
+
+  // Parse arguments
+  program.parse(process.argv);
+
+  // Show help if no command specified
+  if (!process.argv.slice(2).length) {
+    program.outputHelp();
+  }
+})();
