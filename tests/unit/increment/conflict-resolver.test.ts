@@ -15,6 +15,7 @@ import {
   type ResolveOptions
 } from '../../../src/core/increment/conflict-resolver.js';
 import type { Duplicate, IncrementLocation } from '../../../src/core/increment/duplicate-detector.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import {
   createTestDir,
   cleanupTestDir,
@@ -37,11 +38,11 @@ describe('ConflictResolver', () => {
     it('should resolve conflict with merge enabled', async () => {
       // Create duplicate increments
       const winnerPath = await createTestIncrement(testDir, 'active', '0001-winner', {
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         hasReports: true
       });
       const loserPath = await createTestIncrement(testDir, '_archive', '0001-loser', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         hasReports: true
       });
 
@@ -51,7 +52,7 @@ describe('ConflictResolver', () => {
           {
             path: winnerPath,
             name: '0001-winner',
-            status: 'active',
+            status: IncrementStatus.ACTIVE,
             lastActivity: '2025-11-14T10:00:00Z',
             fileCount: 5,
             totalSize: 5000,
@@ -61,7 +62,7 @@ describe('ConflictResolver', () => {
           {
             path: loserPath,
             name: '0001-loser',
-            status: 'completed',
+            status: IncrementStatus.COMPLETED,
             lastActivity: '2025-11-13T10:00:00Z',
             fileCount: 3,
             totalSize: 3000,
@@ -72,7 +73,7 @@ describe('ConflictResolver', () => {
         recommendedWinner: {
           path: winnerPath,
           name: '0001-winner',
-          status: 'active',
+          status: IncrementStatus.ACTIVE,
           lastActivity: '2025-11-14T10:00:00Z',
           fileCount: 5,
           totalSize: 5000,
@@ -82,7 +83,7 @@ describe('ConflictResolver', () => {
         losingVersions: [{
           path: loserPath,
           name: '0001-loser',
-          status: 'completed',
+          status: IncrementStatus.COMPLETED,
           lastActivity: '2025-11-13T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,
@@ -116,22 +117,22 @@ describe('ConflictResolver', () => {
 
     it('should not modify filesystem in dry-run mode', async () => {
       const winnerPath = await createTestIncrement(testDir, 'active', '0002-winner', {
-        status: 'active'
+        status: IncrementStatus.ACTIVE
       });
       const loserPath = await createTestIncrement(testDir, '_archive', '0002-loser', {
-        status: 'completed'
+        status: IncrementStatus.COMPLETED
       });
 
       const duplicate: Duplicate = {
         incrementNumber: '0002',
         locations: [
-          createMockLocation('0002-winner', 'active', '2025-11-14T10:00:00Z'),
-          createMockLocation('0002-loser', 'completed', '2025-11-13T10:00:00Z')
+          createMockLocation('0002-winner', IncrementStatus.ACTIVE, '2025-11-14T10:00:00Z'),
+          createMockLocation('0002-loser', IncrementStatus.COMPLETED, '2025-11-13T10:00:00Z')
         ],
         recommendedWinner: {
           path: winnerPath,
           name: '0002-winner',
-          status: 'active',
+          status: IncrementStatus.ACTIVE,
           lastActivity: '2025-11-14T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,
@@ -141,7 +142,7 @@ describe('ConflictResolver', () => {
         losingVersions: [{
           path: loserPath,
           name: '0002-loser',
-          status: 'completed',
+          status: IncrementStatus.COMPLETED,
           lastActivity: '2025-11-13T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,
@@ -178,7 +179,7 @@ describe('ConflictResolver', () => {
         recommendedWinner: {
           path: winnerPath,
           name: '0003-winner',
-          status: 'active',
+          status: IncrementStatus.ACTIVE,
           lastActivity: '2025-11-14T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,
@@ -188,7 +189,7 @@ describe('ConflictResolver', () => {
         losingVersions: [{
           path: loserPath,
           name: '0003-loser',
-          status: 'completed',
+          status: IncrementStatus.COMPLETED,
           lastActivity: '2025-11-13T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,
@@ -225,7 +226,7 @@ describe('ConflictResolver', () => {
       const winner: IncrementLocation = {
         path: winnerPath,
         name: '0004-winner',
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 5,
         totalSize: 5000,
@@ -236,7 +237,7 @@ describe('ConflictResolver', () => {
       const losers: IncrementLocation[] = [{
         path: loserPath,
         name: '0004-loser',
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-13T10:00:00Z',
         fileCount: 4,
         totalSize: 4000,
@@ -275,7 +276,7 @@ describe('ConflictResolver', () => {
       const winner: IncrementLocation = {
         path: winnerPath,
         name: '0005-winner',
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 5,
         totalSize: 5000,
@@ -286,7 +287,7 @@ describe('ConflictResolver', () => {
       const losers: IncrementLocation[] = [{
         path: loserPath,
         name: '0005-loser',
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-13T10:00:00Z',
         fileCount: 4,
         totalSize: 4000,
@@ -318,7 +319,7 @@ describe('ConflictResolver', () => {
       const winner: IncrementLocation = {
         path: winnerPath,
         name: '0006-winner',
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 5,
         totalSize: 5000,
@@ -329,7 +330,7 @@ describe('ConflictResolver', () => {
       const losers: IncrementLocation[] = [{
         path: loserPath,
         name: '0006-loser',
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-13T10:00:00Z',
         fileCount: 4,
         totalSize: 4000,
@@ -355,7 +356,7 @@ describe('ConflictResolver', () => {
       const winner: IncrementLocation = {
         path: winnerPath,
         name: '0007-winner',
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 3,
         totalSize: 3000,
@@ -366,7 +367,7 @@ describe('ConflictResolver', () => {
       const losers: IncrementLocation[] = [{
         path: loserPath,
         name: '0007-loser',
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-13T10:00:00Z',
         fileCount: 4,
         totalSize: 4000,
@@ -389,17 +390,17 @@ describe('ConflictResolver', () => {
     it('should resolve multiple duplicates in batch', async () => {
       // Create two sets of duplicates
       const winner1 = await createTestIncrement(testDir, 'active', '0008-winner1', {
-        status: 'active'
+        status: IncrementStatus.ACTIVE
       });
       const loser1 = await createTestIncrement(testDir, '_archive', '0008-loser1', {
-        status: 'completed'
+        status: IncrementStatus.COMPLETED
       });
 
       const winner2 = await createTestIncrement(testDir, 'active', '0009-winner2', {
-        status: 'active'
+        status: IncrementStatus.ACTIVE
       });
       const loser2 = await createTestIncrement(testDir, '_archive', '0009-loser2', {
-        status: 'completed'
+        status: IncrementStatus.COMPLETED
       });
 
       const duplicates: Duplicate[] = [
@@ -409,7 +410,7 @@ describe('ConflictResolver', () => {
           recommendedWinner: {
             path: winner1,
             name: '0008-winner1',
-            status: 'active',
+            status: IncrementStatus.ACTIVE,
             lastActivity: '2025-11-14T10:00:00Z',
             fileCount: 3,
             totalSize: 3000,
@@ -419,7 +420,7 @@ describe('ConflictResolver', () => {
           losingVersions: [{
             path: loser1,
             name: '0008-loser1',
-            status: 'completed',
+            status: IncrementStatus.COMPLETED,
             lastActivity: '2025-11-13T10:00:00Z',
             fileCount: 3,
             totalSize: 3000,
@@ -434,7 +435,7 @@ describe('ConflictResolver', () => {
           recommendedWinner: {
             path: winner2,
             name: '0009-winner2',
-            status: 'active',
+            status: IncrementStatus.ACTIVE,
             lastActivity: '2025-11-14T10:00:00Z',
             fileCount: 3,
             totalSize: 3000,
@@ -444,7 +445,7 @@ describe('ConflictResolver', () => {
           losingVersions: [{
             path: loser2,
             name: '0009-loser2',
-            status: 'completed',
+            status: IncrementStatus.COMPLETED,
             lastActivity: '2025-11-13T10:00:00Z',
             fileCount: 3,
             totalSize: 3000,
@@ -468,10 +469,10 @@ describe('ConflictResolver', () => {
   describe('Report Generation', () => {
     it('should create resolution report with all details', async () => {
       const winnerPath = await createTestIncrement(testDir, 'active', '0010-winner', {
-        status: 'active'
+        status: IncrementStatus.ACTIVE
       });
       const loserPath = await createTestIncrement(testDir, '_archive', '0010-loser', {
-        status: 'completed'
+        status: IncrementStatus.COMPLETED
       });
 
       const duplicate: Duplicate = {
@@ -480,7 +481,7 @@ describe('ConflictResolver', () => {
         recommendedWinner: {
           path: winnerPath,
           name: '0010-winner',
-          status: 'active',
+          status: IncrementStatus.ACTIVE,
           lastActivity: '2025-11-14T10:00:00Z',
           fileCount: 5,
           totalSize: 5000,
@@ -490,7 +491,7 @@ describe('ConflictResolver', () => {
         losingVersions: [{
           path: loserPath,
           name: '0010-loser',
-          status: 'completed',
+          status: IncrementStatus.COMPLETED,
           lastActivity: '2025-11-13T10:00:00Z',
           fileCount: 3,
           totalSize: 3000,

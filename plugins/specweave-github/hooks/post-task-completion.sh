@@ -3,20 +3,21 @@
 # SpecWeave GitHub Sync Hook
 # Runs after task completion to sync progress to GitHub Projects
 #
-# CORRECT ARCHITECTURE (v0.17.0+):
-# - Syncs .specweave/docs/internal/specs/spec-*.md ↔ GitHub Projects
-# - NOT increments ↔ GitHub Issues (that was wrong!)
+# ARCHITECTURE (v0.19.0+): IMMUTABLE DESCRIPTIONS + PROGRESS COMMENTS
+# - User Story files (.specweave/docs/internal/specs/) ↔ GitHub Issues
+# - Issue descriptions created once (IMMUTABLE snapshot)
+# - All updates via progress comments (audit trail)
 #
 # This hook is part of the specweave-github plugin and handles:
-# - Finding which spec the current work belongs to
-# - Updating spec user stories based on task completion
-# - Syncing spec state to GitHub Projects
-# - Updating GitHub Project cards/issues
+# - Finding which spec user stories the current work belongs to
+# - Syncing progress via GitHub comments (NOT editing issue body)
+# - Creating audit trail of all changes over time
+# - Notifying stakeholders via GitHub notifications
 #
 # Dependencies:
-# - Node.js and TypeScript CLI (dist/cli/commands/*)
+# - Node.js and TypeScript CLI (dist/cli/commands/sync-spec-content.js)
 # - GitHub CLI (gh) must be installed and authenticated
-# - Spec metadata must have .externalLinks.github field
+# - ProgressCommentBuilder (lib/progress-comment-builder.ts)
 
 set -e
 

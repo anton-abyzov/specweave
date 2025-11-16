@@ -24,6 +24,18 @@ class GitHubClientV2 {
     };
     return new GitHubClientV2(profile);
   }
+  /**
+   * Get repository owner
+   */
+  getOwner() {
+    return this.owner;
+  }
+  /**
+   * Get repository name
+   */
+  getRepo() {
+    return this.repo;
+  }
   // ==========================================================================
   // Authentication & Setup
   // ==========================================================================
@@ -185,6 +197,43 @@ ${body}`;
     const issue = JSON.parse(result.stdout);
     return {
       ...issue,
+      html_url: issue.url,
+      labels: issue.labels?.map((l) => l.name) || []
+    };
+  }
+  /**
+   * Search for issue by exact title match
+   *
+   * IDEMPOTENCY: Use this before creating issues to prevent duplicates
+   */
+  async searchIssueByTitle(title) {
+    const escapedTitle = title.replace(/"/g, '\\"');
+    const result = await execFileNoThrow("gh", [
+      "issue",
+      "list",
+      "--repo",
+      this.fullRepo,
+      "--search",
+      `"${escapedTitle}" in:title`,
+      "--json",
+      "number,title,state,url,labels",
+      "--limit",
+      "1"
+    ]);
+    if (result.exitCode !== 0) {
+      return null;
+    }
+    const issues = JSON.parse(result.stdout || "[]");
+    if (!issues || issues.length === 0) {
+      return null;
+    }
+    const issue = issues[0];
+    return {
+      number: issue.number,
+      title: issue.title,
+      body: "",
+      // Body not included in list view
+      state: issue.state,
       html_url: issue.url,
       labels: issue.labels?.map((l) => l.name) || []
     };

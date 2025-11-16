@@ -12,6 +12,7 @@ import {
   type DuplicateReport,
   type IncrementLocation
 } from '../../../src/core/increment/duplicate-detector.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import {
   createTestDir,
   cleanupTestDir,
@@ -54,8 +55,8 @@ describe('DuplicateDetector', () => {
 
     it('should detect increment in both active and archive', async () => {
       // Create duplicate in active and archive
-      await createTestIncrement(testDir, 'active', '0001-test', { status: 'active' });
-      await createTestIncrement(testDir, '_archive', '0001-test', { status: 'completed' });
+      await createTestIncrement(testDir, 'active', '0001-test', { status: IncrementStatus.ACTIVE });
+      await createTestIncrement(testDir, '_archive', '0001-test', { status: IncrementStatus.COMPLETED });
 
       const result = await detectAllDuplicates(testDir);
 
@@ -80,9 +81,9 @@ describe('DuplicateDetector', () => {
 
     it('should detect increment in all three locations', async () => {
       // Create increment in active, archive, and abandoned
-      await createTestIncrement(testDir, 'active', '0003-test', { status: 'active' });
-      await createTestIncrement(testDir, '_archive', '0003-test', { status: 'completed' });
-      await createTestIncrement(testDir, '_abandoned', '0003-test', { status: 'abandoned' });
+      await createTestIncrement(testDir, 'active', '0003-test', { status: IncrementStatus.ACTIVE });
+      await createTestIncrement(testDir, '_archive', '0003-test', { status: IncrementStatus.COMPLETED });
+      await createTestIncrement(testDir, '_abandoned', '0003-test', { status: IncrementStatus.ABANDONED });
 
       const result = await detectAllDuplicates(testDir);
 
@@ -94,11 +95,11 @@ describe('DuplicateDetector', () => {
     it('should recommend active version as winner over completed', async () => {
       // Active should win over completed
       await createTestIncrement(testDir, 'active', '0004-test', {
-        status: 'active',
+        status: IncrementStatus.ACTIVE,
         lastActivity: '2025-11-14T10:00:00Z'
       });
       await createTestIncrement(testDir, '_archive', '0004-test', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T12:00:00Z' // More recent, but lower status
       });
 
@@ -112,11 +113,11 @@ describe('DuplicateDetector', () => {
     it('should recommend more recent version when status is same', async () => {
       // Both completed, but one more recent
       await createTestIncrement(testDir, 'active', '0005-test-old', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-10T10:00:00Z'
       });
       await createTestIncrement(testDir, 'active', '0005-test-new', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z'
       });
 
@@ -130,12 +131,12 @@ describe('DuplicateDetector', () => {
     it('should recommend more complete version when status and time are same', async () => {
       // Same status and time, but different file counts
       await createTestIncrement(testDir, 'active', '0006-test-small', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 5
       });
       await createTestIncrement(testDir, 'active', '0006-test-large', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 20
       });
@@ -148,8 +149,8 @@ describe('DuplicateDetector', () => {
     });
 
     it('should include resolution reason in duplicate report', async () => {
-      await createTestIncrement(testDir, 'active', '0007-test', { status: 'active' });
-      await createTestIncrement(testDir, '_archive', '0007-test', { status: 'completed' });
+      await createTestIncrement(testDir, 'active', '0007-test', { status: IncrementStatus.ACTIVE });
+      await createTestIncrement(testDir, '_archive', '0007-test', { status: IncrementStatus.COMPLETED });
 
       const result = await detectAllDuplicates(testDir);
 
@@ -215,9 +216,9 @@ describe('DuplicateDetector', () => {
 
   describe('Winner Selection Logic', () => {
     it('should prefer active over completed over paused', () => {
-      const active = createMockLocation('0001-test', 'active', '2025-11-14T10:00:00Z');
-      const completed = createMockLocation('0001-test', 'completed', '2025-11-14T10:00:00Z');
-      const paused = createMockLocation('0001-test', 'paused', '2025-11-14T10:00:00Z');
+      const active = createMockLocation('0001-test', IncrementStatus.ACTIVE, '2025-11-14T10:00:00Z');
+      const completed = createMockLocation('0001-test', IncrementStatus.COMPLETED, '2025-11-14T10:00:00Z');
+      const paused = createMockLocation('0001-test', IncrementStatus.PAUSED, '2025-11-14T10:00:00Z');
 
       // Manually test selectWinner logic by checking the duplicate report
       // (selectWinner is a private function, so we test it indirectly)
@@ -231,17 +232,17 @@ describe('DuplicateDetector', () => {
     it('should prefer active location over archive over abandoned', async () => {
       // Create same increment in different locations with same status and time
       await createTestIncrement(testDir, 'active', '0009-test', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 10
       });
       await createTestIncrement(testDir, '_archive', '0009-test-archive', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 10
       });
       await createTestIncrement(testDir, '_abandoned', '0009-test-abandoned', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 10
       });
@@ -301,8 +302,8 @@ describe('DuplicateDetector', () => {
 
   describe('Resolution Reason Explanations', () => {
     it('should explain status-based winner selection', async () => {
-      await createTestIncrement(testDir, 'active', '0012-test', { status: 'active' });
-      await createTestIncrement(testDir, '_archive', '0012-test', { status: 'completed' });
+      await createTestIncrement(testDir, 'active', '0012-test', { status: IncrementStatus.ACTIVE });
+      await createTestIncrement(testDir, '_archive', '0012-test', { status: IncrementStatus.COMPLETED });
 
       const result = await detectAllDuplicates(testDir);
 
@@ -312,11 +313,11 @@ describe('DuplicateDetector', () => {
 
     it('should explain recency-based winner selection', async () => {
       await createTestIncrement(testDir, 'active', '0013-old', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-10T10:00:00Z'
       });
       await createTestIncrement(testDir, 'active', '0013-new', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z'
       });
 
@@ -327,12 +328,12 @@ describe('DuplicateDetector', () => {
 
     it('should explain completeness-based winner selection', async () => {
       await createTestIncrement(testDir, 'active', '0014-small', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 5
       });
       await createTestIncrement(testDir, 'active', '0014-large', {
-        status: 'completed',
+        status: IncrementStatus.COMPLETED,
         lastActivity: '2025-11-14T10:00:00Z',
         fileCount: 20
       });

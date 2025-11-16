@@ -40,29 +40,29 @@ test.describe('Project Switching (E2E)', () => {
       multiProject: {
         enabled: true,
         activeProject: 'frontend',
-        projects: [
-          {
+        projects: {
+          frontend: {
             id: 'frontend',
             name: 'Frontend Application',
             description: 'React frontend',
             techStack: ['react', 'typescript'],
             team: 'Frontend Team'
           },
-          {
+          backend: {
             id: 'backend',
             name: 'Backend API',
             description: 'Node.js API',
             techStack: ['nodejs', 'express'],
             team: 'Backend Team'
           },
-          {
+          mobile: {
             id: 'mobile',
             name: 'Mobile App',
             description: 'React Native app',
             techStack: ['react-native'],
             team: 'Mobile Team'
           }
-        ]
+        }
       }
     }, null, 2));
 

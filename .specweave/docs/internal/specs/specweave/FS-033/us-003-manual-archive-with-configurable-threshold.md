@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 552
-    url: https://github.com/anton-abyzov/specweave/issues/552
+    issue: 592
+    url: https://github.com/anton-abyzov/specweave/issues/592
 ---
 
 # US-003: Manual Archive with Configurable Threshold

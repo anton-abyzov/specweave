@@ -6,6 +6,22 @@
   "wip": {
     "limit": 2
   },
+  "multiProject": {
+    "enabled": true,
+    "projects": {
+      "specweave": {
+        "name": "SpecWeave",
+        "description": "Core SpecWeave framework and CLI",
+        "keywords": ["specweave", "framework", "spec-driven", "claude-code", "plugins"],
+        "techStack": ["TypeScript", "Node.js", "Claude Code", "Playwright"],
+        "team": "core",
+        "github": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        }
+      }
+    }
+  },
   "adapters": {
     "default": "claude"
   },
@@ -100,7 +116,7 @@
       "generateCrossLinks": true,
       "preserveOriginal": true,
       "classificationConfidenceThreshold": 0.6,
-      "fallbackProject": "default"
+      "fallbackProject": "specweave"
     }
   },
   "pluginValidation": {

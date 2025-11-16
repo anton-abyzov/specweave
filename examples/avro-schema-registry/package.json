@@ -1,0 +1,14 @@
+{
+  "name": "kafka-avro-schema-registry",
+  "version": "1.0.0",
+  "description": "Avro Schema Registry integration example",
+  "scripts": {
+    "producer": "node producer.js",
+    "consumer": "node consumer.js"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "@kafkajs/confluent-schema-registry": "^3.3.0",
+    "dotenv": "^16.3.1"
+  }
+}

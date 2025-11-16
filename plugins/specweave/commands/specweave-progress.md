@@ -19,6 +19,23 @@ Shows:
 
 ---
 
+## Quick Start
+
+```bash
+# Check progress for all active increments (recommended)
+specweave progress
+
+# Or use the full command name
+specweave status --verbose
+
+# Filter by increment type
+specweave progress --type feature
+```
+
+**Note**: `progress` is an alias for `status --verbose` with automatic verbose mode enabled.
+
+---
+
 ## Usage
 
 ```bash
@@ -275,3 +292,116 @@ Use `/specweave:progress` when you:
 ---
 
 **💡 Remember**: `/progress` is your "where am I?" command. Use it anytime you need orientation!
+
+---
+
+## Executable Implementation
+
+```typescript
+import { Task } from '@claude/types';
+
+const task = new Task('progress-check', 'Show progress for all active increments');
+
+task.run(async () => {
+  const { MetadataManager } = await import('../../../dist/src/core/increment/metadata-manager.js');
+  const fs = await import('fs-extra');
+  const path = await import('path');
+
+  // Step 1: Get ALL active increments (FAST via cache!)
+  const activeIncrements = MetadataManager.getActive();
+
+  // Step 2: Check if specific increment requested
+  const requestedId = process.argv[2]?.replace(/^0+/, '').padStart(4, '0');
+  const increments = requestedId
+    ? activeIncrements.filter(inc => inc.id === requestedId)
+    : activeIncrements;
+
+  // Step 3: Display results
+  console.log('\n📊 Current Progress\n');
+
+  if (increments.length === 0) {
+    if (requestedId) {
+      console.log(`❌ Increment ${requestedId} is not active`);
+    } else {
+      console.log('No active increments found.\n');
+      console.log('Recent Increments:');
+      const allIncrements = MetadataManager.getAll()
+        .filter(m => m.status === 'completed' || m.status === 'closed')
+        .sort((a, b) => new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime())
+        .slice(0, 3);
+
+      allIncrements.forEach(inc => {
+        const age = Math.floor((Date.now() - new Date(inc.lastActivity).getTime()) / (1000 * 60 * 60 * 24));
+        console.log(`├─ ${inc.id} (${inc.status}) - ${age} day${age === 1 ? '' : 's'} ago`);
+      });
+
+      console.log('\nNext Action: Run /specweave:increment "feature description" to start new work');
+    }
+    return;
+  }
+
+  // Step 4: Show progress for each active increment
+  for (const increment of increments) {
+    console.log(`📦 Increment: ${increment.id}`);
+    console.log(`Status: ${increment.status}`);
+
+    const started = new Date(increment.created);
+    const lastActivity = new Date(increment.lastActivity);
+    const ageHours = Math.floor((Date.now() - started.getTime()) / (1000 * 60 * 60));
+    const lastActivityHours = Math.floor((Date.now() - lastActivity.getTime()) / (1000 * 60 * 60));
+
+    console.log(`Started: ${ageHours} hours ago`);
+    console.log(`Last Activity: ${lastActivityHours} hours ago`);
+
+    // Try to read tasks.md for progress
+    const incrementPath = path.default.join(process.cwd(), '.specweave/increments', increment.id);
+    const tasksPath = path.default.join(incrementPath, 'tasks.md');
+
+    if (await fs.default.pathExists(tasksPath)) {
+      const tasksContent = await fs.default.readFile(tasksPath, 'utf-8');
+
+      // Count tasks
+      const taskLines = tasksContent.split('\n').filter(line =>
+        line.match(/^#+\s+(T-?\d+|Task-?\d+):/i)
+      );
+      const completedTasks = tasksContent.split('\n').filter(line =>
+        line.includes('[✅]') || line.includes('[x]') || line.includes('[X]')
+      );
+
+      const total = taskLines.length;
+      const completed = completedTasks.length;
+      const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+      console.log(`\nTask Progress: ${completed}/${total} completed (${percent}%)`);
+
+      if (total > 0) {
+        console.log('\nTasks:');
+        taskLines.slice(0, 10).forEach(line => {
+          const isComplete = line.includes('[✅]') || line.includes('[x]') || line.includes('[X]');
+          const marker = isComplete ? '✅' : '⏳';
+          const taskName = line.replace(/^#+\s+/, '').replace(/\s*\[.*?\]\s*/, '').trim();
+          console.log(`  ${marker} ${taskName}`);
+        });
+
+        if (taskLines.length > 10) {
+          console.log(`  ... and ${taskLines.length - 10} more tasks`);
+        }
+      }
+    }
+
+    console.log(`\nNext Action: Run /specweave:do ${increment.id} to continue work\n`);
+  }
+
+  // Step 5: Show WIP limit warnings
+  if (activeIncrements.length > 2) {
+    console.log('⚠️ Warning: More than 2 active increments (exceeds WIP limit)');
+    console.log('💡 Recommendation: Focus on completing one increment before starting new work\n');
+  } else if (activeIncrements.length === 2) {
+    console.log('✅ 2 active increments (at WIP limit, but OK)\n');
+  } else if (activeIncrements.length === 1) {
+    console.log('✅ 1 active increment (optimal focus)\n');
+  }
+});
+
+export default task;
+```

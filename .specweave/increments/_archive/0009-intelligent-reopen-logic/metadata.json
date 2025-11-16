@@ -6,6 +6,12 @@
   "completed": "2025-11-11T17:46:00Z",
   "priority": "P0",
   "scopeChange": "Deferred to future increment - not critical for MVP",
-  "tags": ["ai", "automation", "smart-detection"],
-  "lastUpdated": "2025-11-11T17:46:00Z"
+  "tags": [
+    "ai",
+    "automation",
+    "smart-detection"
+  ],
+  "lastUpdated": "2025-11-11T17:46:00Z",
+  "historicalTracking": "ac-incomplete",
+  "archivedNote": "2025-11-15"
 }

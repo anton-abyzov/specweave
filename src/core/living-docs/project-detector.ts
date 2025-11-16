@@ -8,6 +8,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import { execSync } from 'child_process';
 import { ParsedSpec } from './content-parser.js';
 
 /**
@@ -51,14 +52,52 @@ export class ProjectDetector {
   private projects: Map<string, ProjectConfig>;
 
   constructor(options: DetectorOptions = {}) {
+    // ✅ FIX: Use repo name as fallback instead of "default" for GitHub integration
+    const detectedFallback = options.fallbackProject || this.detectRepoName() || 'default';
+
     this.options = {
       configPath: options.configPath || path.join(process.cwd(), '.specweave', 'config.json'),
-      fallbackProject: options.fallbackProject || 'default',
+      fallbackProject: detectedFallback,
       confidenceThreshold: options.confidenceThreshold || 0.7,
     };
 
     this.projects = new Map();
     this.loadProjects();
+  }
+
+  /**
+   * Detect repository name from git remote
+   * Returns repo name (e.g., "specweave" from "anton-abyzov/specweave")
+   * or null if not a git repository
+   */
+  private detectRepoName(): string | null {
+    try {
+      // Get git remote URL
+      const remoteUrl = execSync('git config --get remote.origin.url', {
+        cwd: process.cwd(),
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'ignore'] // Suppress stderr
+      }).trim();
+
+      if (!remoteUrl) {
+        return null;
+      }
+
+      // Extract repo name from different URL formats:
+      // - https://github.com/owner/repo.git
+      // - git@github.com:owner/repo.git
+      // - https://github.com/owner/repo
+      const match = remoteUrl.match(/[:/]([^/]+)\/([^/.]+)(\.git)?$/);
+
+      if (match) {
+        return match[2]; // Return repo name (e.g., "specweave")
+      }
+
+      return null;
+    } catch (error) {
+      // Not a git repo or git command failed
+      return null;
+    }
   }
 
   /**

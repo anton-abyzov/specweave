@@ -212,12 +212,7 @@ export class IncrementArchiver {
       }
     }
 
-    // Archive completed increments if requested
-    if (options.archiveCompleted && metadata?.status === 'completed') {
-      return true;
-    }
-
-    // Check for active external sync (GitHub, JIRA, ADO)
+    // Check for active external sync (GitHub, JIRA, ADO) - MUST check before archiveCompleted
     if (metadata) {
       const hasActiveSync =
         (metadata.github && !metadata.github.closed) ||
@@ -228,6 +223,11 @@ export class IncrementArchiver {
         this.logger.warn(`${increment} has active external sync, skipping`);
         return false;
       }
+    }
+
+    // Archive completed increments if requested
+    if (options.archiveCompleted && metadata?.status === 'completed') {
+      return true;
     }
 
     // Check for uncommitted changes

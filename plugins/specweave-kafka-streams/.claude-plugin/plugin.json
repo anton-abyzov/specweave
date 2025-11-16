@@ -1,0 +1,23 @@
+{
+  "name": "specweave-kafka-streams",
+  "description": "Kafka Streams library integration for SpecWeave - Stream processing with Java/Kotlin, topology patterns, state stores, windowing, joins, and testing frameworks",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "homepage": "https://spec-weave.com/docs/plugins/kafka-streams",
+  "license": "MIT",
+  "keywords": [
+    "kafka-streams",
+    "stream-processing",
+    "kstream",
+    "ktable",
+    "topology",
+    "state-store",
+    "windowing",
+    "java",
+    "kotlin"
+  ]
+}

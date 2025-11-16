@@ -105,11 +105,16 @@ program
 
 program
   .command('status')
-  .description('Show increment status overview')
+  .alias('progress')
+  .description('Show increment status overview (alias: progress)')
   .option('-v, --verbose', 'Show detailed information')
   .option('-t, --type <type>', 'Filter by increment type (feature, hotfix, bug, etc.)')
   .action(async (options) => {
     const { statusCommand } = await import('../dist/src/cli/commands/status.js');
+    // Auto-enable verbose when called as 'progress'
+    if (process.argv.includes('progress') && !options.verbose) {
+      options.verbose = true;
+    }
     await statusCommand(options);
   });
 

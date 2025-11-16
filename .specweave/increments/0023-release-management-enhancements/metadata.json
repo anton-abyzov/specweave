@@ -2,12 +2,13 @@
   "id": "0023-release-management-enhancements",
   "status": "completed",
   "type": "feature",
-  "created": "2025-11-11T15:43:00Z",
-  "lastActivity": "2025-11-11T15:43:00Z",
+  "created": "2025-11-11T12:00:00Z",
+  "completed": "2025-11-11T20:00:00Z",
+  "lastActivity": "2025-11-15T10:05:00Z",
   "github": {
-    "issue": 509,
-    "url": "https://github.com/anton-abyzov/specweave/issues/509",
-    "synced": "2025-11-15T01:27:00Z"
+    "issue": 519,
+    "url": "https://github.com/anton-abyzov/specweave/issues/519",
+    "synced": "2025-11-15T10:05:00Z"
   },
   "githubProfile": "specweave-dev"
 }

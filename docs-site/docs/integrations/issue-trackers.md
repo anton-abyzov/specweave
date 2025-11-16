@@ -478,13 +478,14 @@ ADO → .specweave/ → GitHub
 **Example: GitHub to JIRA Migration**
 
 ```bash
-# Step 1: Import from GitHub
-/specweave-github:sync-spec spec-001 --direction import
+# Migration happens automatically via living docs sync
+# Complete your increment first:
+/specweave:done 0001
 
-# Step 2: Export to JIRA
-/specweave-jira:sync-spec spec-001 --direction export
-
-# Done! Your GitHub issues are now in JIRA with full history
+# Living docs sync automatically:
+# 1. Syncs to GitHub (creates Milestone + Issues)
+# 2. Syncs to JIRA (creates Epic + Stories)
+# Both tools stay synchronized!
 ```
 
 **What gets migrated:**

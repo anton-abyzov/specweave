@@ -377,13 +377,20 @@ User selects **Option 1** → JIRA updated to `Done`
 
 ### Q: Can I sync from external tool to SpecWeave?
 
-**A**: Yes! Use:
+**A**: Yes! The sync is **bidirectional by default**:
 
 ```bash
-/specweave-github:sync-from 0001
+/specweave-github:sync 0001
 ```
 
-This pulls GitHub status and updates SpecWeave.
+This syncs in both directions:
+- Pulls status/comments/labels FROM GitHub → SpecWeave
+- Pushes task progress/metadata FROM SpecWeave → GitHub
+
+To sync only from GitHub (one-way):
+```bash
+/specweave-github:sync 0001 --direction from-github
+```
 
 ### Q: What if status mapping is invalid?
 

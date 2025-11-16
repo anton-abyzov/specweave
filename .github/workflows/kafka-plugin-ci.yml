@@ -1,0 +1,484 @@
+name: Kafka Plugin CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'plugins/specweave-kafka/**'
+      - 'plugins/specweave-kafka-streams/**'
+      - 'plugins/specweave-confluent/**'
+      - 'plugins/specweave-n8n/**'
+      - 'tests/**'
+      - '.github/workflows/kafka-plugin-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'plugins/specweave-kafka/**'
+      - 'plugins/specweave-kafka-streams/**'
+      - 'plugins/specweave-confluent/**'
+      - 'plugins/specweave-n8n/**'
+      - 'tests/**'
+
+env:
+  NODE_VERSION: '18'
+  KAFKA_VERSION: '3.6.0'
+  CONFLUENT_PLATFORM_VERSION: '7.5.0'
+
+jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Run Prettier
+        run: npm run format:check
+
+      - name: TypeScript type check
+        run: npm run type-check
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unit
+          name: unit-tests
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: unit-test-results
+          path: |
+            coverage/
+            test-results/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      zookeeper:
+        image: confluentinc/cp-zookeeper:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "kafka-broker-api-versions --bootstrap-server localhost:9092"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      schema-registry:
+        image: confluentinc/cp-schema-registry:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          SCHEMA_REGISTRY_HOST_NAME: schema-registry
+          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+          SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+        ports:
+          - 8081:8081
+        options: >-
+          --health-cmd "curl -f http://localhost:8081 || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for Kafka
+        run: |
+          timeout 60 bash -c 'until nc -z localhost 9092; do sleep 1; done'
+          echo "Kafka is ready"
+
+      - name: Wait for Schema Registry
+        run: |
+          timeout 60 bash -c 'until curl -f http://localhost:8081; do sleep 1; done'
+          echo "Schema Registry is ready"
+
+      - name: Run integration tests
+        env:
+          KAFKA_BROKERS: localhost:9092
+          SCHEMA_REGISTRY_URL: http://localhost:8081
+        run: npm run test:integration -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: integration
+          name: integration-tests
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: |
+            coverage/
+            test-results/
+
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      zookeeper:
+        image: confluentinc/cp-zookeeper:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+          KAFKA_NUM_PARTITIONS: 3
+        ports:
+          - 9092:9092
+
+      schema-registry:
+        image: confluentinc/cp-schema-registry:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          SCHEMA_REGISTRY_HOST_NAME: schema-registry
+          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+          SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+        ports:
+          - 8081:8081
+
+      kafka-connect:
+        image: confluentinc/cp-kafka-connect:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+          CONNECT_REST_PORT: 8083
+          CONNECT_GROUP_ID: 'connect-cluster'
+          CONNECT_CONFIG_STORAGE_TOPIC: 'connect-configs'
+          CONNECT_OFFSET_STORAGE_TOPIC: 'connect-offsets'
+          CONNECT_STATUS_STORAGE_TOPIC: 'connect-status'
+          CONNECT_KEY_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+          CONNECT_VALUE_CONVERTER: 'org.apache.kafka.connect.json.JsonConverter'
+          CONNECT_REST_ADVERTISED_HOST_NAME: 'localhost'
+        ports:
+          - 8083:8083
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for services
+        run: |
+          timeout 90 bash -c 'until nc -z localhost 9092; do sleep 2; done'
+          timeout 90 bash -c 'until curl -f http://localhost:8081; do sleep 2; done'
+          timeout 90 bash -c 'until curl -f http://localhost:8083; do sleep 2; done'
+          echo "All services ready"
+
+      - name: Run E2E tests
+        env:
+          KAFKA_BROKERS: localhost:9092
+          SCHEMA_REGISTRY_URL: http://localhost:8081
+          KAFKA_CONNECT_URL: http://localhost:8083
+        run: npm run test:e2e -- --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: e2e
+          name: e2e-tests
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results
+          path: |
+            coverage/
+            test-results/
+            logs/
+
+  security-scan:
+    name: Security Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+      - name: Upload Snyk results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
+        continue-on-error: true
+
+  performance-benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    services:
+      zookeeper:
+        image: confluentinc/cp-zookeeper:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          ZOOKEEPER_CLIENT_PORT: 2181
+          ZOOKEEPER_TICK_TIME: 2000
+
+      kafka:
+        image: confluentinc/cp-kafka:${{ env.CONFLUENT_PLATFORM_VERSION }}
+        env:
+          KAFKA_BROKER_ID: 1
+          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_NUM_NETWORK_THREADS: 8
+          KAFKA_NUM_IO_THREADS: 8
+        ports:
+          - 9092:9092
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for Kafka
+        run: timeout 60 bash -c 'until nc -z localhost 9092; do sleep 1; done'
+
+      - name: Run performance benchmarks
+        env:
+          KAFKA_BROKERS: localhost:9092
+        run: npm run benchmark
+
+      - name: Archive benchmark results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: benchmark-results/
+
+  build:
+    name: Build & Package
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, integration-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Package plugins
+        run: |
+          mkdir -p dist/plugins
+          cp -r plugins/specweave-kafka dist/plugins/
+          cp -r plugins/specweave-kafka-streams dist/plugins/
+          cp -r plugins/specweave-confluent dist/plugins/
+          cp -r plugins/specweave-n8n dist/plugins/
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+  coverage-report:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests, e2e-tests]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate combined coverage report
+        run: |
+          echo "# Test Coverage Summary" > coverage-summary.md
+          echo "" >> coverage-summary.md
+          echo "## Unit Tests" >> coverage-summary.md
+          echo "Coverage: See Codecov report" >> coverage-summary.md
+          echo "" >> coverage-summary.md
+          echo "## Integration Tests" >> coverage-summary.md
+          echo "Coverage: See Codecov report" >> coverage-summary.md
+          echo "" >> coverage-summary.md
+          echo "## E2E Tests" >> coverage-summary.md
+          echo "Coverage: See Codecov report" >> coverage-summary.md
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('coverage-summary.md', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  notify:
+    name: Notify Build Status
+    runs-on: ubuntu-latest
+    needs: [build, coverage-report]
+    if: always()
+
+    steps:
+      - name: Check workflow status
+        run: |
+          if [ "${{ needs.build.result }}" == "success" ]; then
+            echo "Build succeeded!"
+          else
+            echo "Build failed!"
+            exit 1
+          fi
+
+      - name: Notify Slack on failure
+        if: failure() && github.event_name == 'push'
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Kafka Plugin CI/CD failed on branch ${{ github.ref }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+# Workflow Summary:
+# 1. Lint - Code quality checks (ESLint, Prettier, TypeScript)
+# 2. Unit Tests - Fast isolated tests with 90%+ coverage
+# 3. Integration Tests - Kafka integration with services
+# 4. E2E Tests - Complete workflow scenarios
+# 5. Security Scan - Vulnerability detection (npm audit, Snyk)
+# 6. Performance Benchmark - Throughput validation (main branch only)
+# 7. Build & Package - Compile and prepare artifacts
+# 8. Coverage Report - Aggregate coverage and report
+# 9. Notify - Status notifications
+
+# Environment:
+# - Node.js 18
+# - Kafka 3.6.0
+# - Confluent Platform 7.5.0
+# - Schema Registry, Kafka Connect
+
+# Coverage Targets:
+# - Unit: 90%+
+# - Integration: 85%+
+# - E2E: 95%+
+# - Overall: 85%+

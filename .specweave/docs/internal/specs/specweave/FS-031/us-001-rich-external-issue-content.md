@@ -2,13 +2,12 @@
 id: US-001
 feature: FS-031
 title: Rich External Issue Content
-status: complete
+status: in-progress
 created: 2025-11-15
-completed: 2025-11-15
 external:
   github:
-    issue: 565
-    url: https://github.com/anton-abyzov/specweave/issues/565
+    issue: 583
+    url: https://github.com/anton-abyzov/specweave/issues/583
 ---
 
 # US-001: Rich External Issue Content

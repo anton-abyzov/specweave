@@ -233,11 +233,60 @@ Third test task that blocks future work.
     process.exit(1);
   }
 
-  // Step 6: Cleanup (optional)
-  console.log('\n🧹 Cleanup:');
-  console.log('   Test increment directory: ' + testIncrementPath);
-  console.log('   You can delete this manually if needed');
-  console.log('   Or delete GitHub issues via: gh issue close <number> --delete-branch');
+  // Step 6: Cleanup test data (MANDATORY)
+  console.log('\n🧹 Cleaning up test data...');
+
+  try {
+    // Step 6a: Delete local test increment directory
+    if (fs.existsSync(testIncrementPath)) {
+      console.log('   Removing local test increment directory...');
+      fs.rmSync(testIncrementPath, { recursive: true, force: true });
+      console.log('   ✅ Local directory deleted');
+    }
+
+    // Step 6b: Close all GitHub issues created by the test
+    console.log('   Closing GitHub issues...');
+    const { execSync } = await import('child_process');
+
+    // Get all issues created by this test (milestone filter)
+    const issuesJson = execSync(
+      'gh api repos/anton-abyzov/specweave/issues?milestone=9999-github-sync-test --jq ".[].number"',
+      { encoding: 'utf-8' }
+    ).trim();
+
+    if (issuesJson) {
+      const issueNumbers = issuesJson.split('\n').filter(Boolean);
+      for (const issueNum of issueNumbers) {
+        execSync(`gh issue close ${issueNum} --repo anton-abyzov/specweave --comment "Closing test issue (automated cleanup)"`, { stdio: 'ignore' });
+        console.log(`   ✅ Closed issue #${issueNum}`);
+      }
+    }
+
+    // Step 6c: Delete GitHub milestone
+    console.log('   Deleting GitHub milestone...');
+    const milestonesJson = execSync(
+      'gh api repos/anton-abyzov/specweave/milestones --jq \'.[] | select(.title | contains("9999")) | .number\'',
+      { encoding: 'utf-8' }
+    ).trim();
+
+    if (milestonesJson) {
+      const milestoneNumbers = milestonesJson.split('\n').filter(Boolean);
+      for (const milestoneNum of milestoneNumbers) {
+        execSync(`gh api -X DELETE repos/anton-abyzov/specweave/milestones/${milestoneNum}`, { stdio: 'ignore' });
+        console.log(`   ✅ Deleted milestone #${milestoneNum}`);
+      }
+    }
+
+    console.log('\n✅ Cleanup complete! All test data removed.');
+
+  } catch (cleanupError) {
+    console.error('\n⚠️  Cleanup error (non-fatal):');
+    console.error(cleanupError);
+    console.log('\n💡 Manual cleanup may be required:');
+    console.log('   - Local: rm -rf ' + testIncrementPath);
+    console.log('   - GitHub issues: gh issue list --search "9999" --json number --jq ".[].number" | xargs -I {} gh issue close {}');
+    console.log('   - GitHub milestone: gh api -X DELETE repos/anton-abyzov/specweave/milestones/<number>');
+  }
 }
 
 main().catch(error => {

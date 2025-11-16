@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 566
-    url: https://github.com/anton-abyzov/specweave/issues/566
+    issue: 595
+    url: https://github.com/anton-abyzov/specweave/issues/595
 ---
 
 # US-002: Task-Level Mapping & Traceability

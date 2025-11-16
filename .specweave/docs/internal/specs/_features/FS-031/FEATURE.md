@@ -5,7 +5,7 @@ type: feature
 status: in-progress
 priority: P1
 created: 2025-11-12
-lastUpdated: 2025-11-15T19:55:42.558Z
+lastUpdated: 2025-11-15T21:11:46.376Z
 projects: ["specweave"]
 epic: EPIC-2025-Q4-platform
 sourceIncrement: 0031-external-tool-status-sync
@@ -13,7 +13,7 @@ external_tools:
   github:
     type: milestone
     id: 4
-    url: https://github.com/anton-abyzov/specweave/milestone/4
+    url: "https://github.com/anton-abyzov/specweave/milestone/4"
 ---
 
 # External Tool Status Synchronization
