@@ -555,5 +555,5 @@ Planning complete! Move to implementation:
 
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
-- [what is an Increment?](/docs/glossary/terms/increment)
+- [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
 - PM Agent

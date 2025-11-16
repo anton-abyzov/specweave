@@ -125,7 +125,7 @@ graph TD
 
 **When to Skip Living Docs Spec** (just use increment spec):
 - ✅ Feature completes in 1 increment (add dark mode toggle)
-- ✅ Feature completes in 2 increments (refactor API client)
+- ✅ Feature completes in 2 increments (refactor [API](/docs/glossary/terms/api) client)
 - ✅ Bug fix, hotfix, experiment (temporary work)
 - ✅ Small enhancement (add CSV export button)
 
@@ -370,7 +370,7 @@ monorepo/
         └── 0008-mobile-basic-login/
 ```
 
-**2. [Microservices](/docs/glossary/terms/microservices) (Multiple Repos)**:
+**2. [Microservices](/docs/glossary/terms/[microservices](/docs/glossary/terms/microservices)) (Multiple Repos)**:
 ```
 parent-folder/                     ← Create parent folder
 ├── .specweave/                    ← One SpecWeave for entire system
