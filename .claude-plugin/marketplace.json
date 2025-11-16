@@ -237,6 +237,50 @@
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
       }
+    },
+    {
+      "name": "specweave-kafka",
+      "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
+      "source": "./plugins/specweave-kafka",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-kafka-streams",
+      "description": "Kafka Streams library integration - Stream processing with Java/Kotlin, topology patterns, state stores, windowing, joins, and testing frameworks",
+      "source": "./plugins/specweave-kafka-streams",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-confluent",
+      "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, and enterprise Kafka features",
+      "source": "./plugins/specweave-confluent",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-n8n",
+      "description": "n8n workflow automation integration with Kafka - Event-driven workflows, Kafka triggers, producers, consumers, and workflow patterns for no-code/low-code event processing",
+      "source": "./plugins/specweave-n8n",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
     }
   ]
 }
