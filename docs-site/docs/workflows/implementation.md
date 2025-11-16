@@ -508,7 +508,7 @@ graph TB
 - ✅ Test suite runs (all pass)
 - ✅ Coverage target met (per task)
 - ✅ Linting passes (ESLint, Prettier)
-- ✅ Type checking (TypeScript)
+- ✅ Type checking ([TypeScript](/docs/glossary/terms/typescript))
 - ✅ Security scan (npm audit)
 
 ## Commit Strategy
@@ -596,9 +596,9 @@ Implementation complete? Move to validation:
 ```
 
 **Learn more:**
-- [Validation Workflow](/docs/workflows/overview#5--implementation--validation)
+- [Validation Workflow](/docs/workflows/validation)
 - [TDD with SpecWeave](/docs/guides/testing/tdd-workflow)
-- [Living Documentation](/docs/glossary/terms/living-docs)
+- [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---
 

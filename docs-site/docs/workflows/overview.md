@@ -56,7 +56,7 @@ graph LR
 - User personas
 - Feature list (prioritized)
 
-**Next**: Continue to [Design Phase](#2--research--design)
+**[→ Full Research Workflow](/docs/workflows/research)**
 
 ---
 
@@ -86,7 +86,7 @@ graph LR
 - ADRs (architecture decisions)
 - Tech stack selection
 
-**Next**: Continue to [Planning Phase](#3--design--planning)
+**[→ Full Design Workflow](/docs/workflows/design)**
 
 ---
 
@@ -181,7 +181,7 @@ graph LR
 
 **Command**: `/specweave:validate`
 
-**Next**: Continue to [Deployment Phase](#6--validation--deployment)
+**[→ Full Validation Workflow](/docs/workflows/validation)**
 
 ---
 
@@ -211,7 +211,7 @@ graph LR
 - User feedback
 - Next increment ideas
 
-**Next**: Return to [Overview](#the-big-picture) or explore [Workflow Patterns](#workflow-patterns)
+**[→ Full Deployment Workflow](/docs/workflows/deployment)**
 
 ---
 
@@ -249,7 +249,7 @@ graph TB
 - Build incrementally
 - Comprehensive specs optional
 
-**See Also**: [Brownfield Pattern](#pattern-2-brownfield-existing-project) for comparison
+**[→ Greenfield Guide](/docs/workflows/greenfield)**
 
 ---
 
@@ -301,7 +301,7 @@ graph TB
 - Fast implementation
 - Thorough testing
 
-**See Also**: [Hotfix in Workflow Comparison](#workflow-comparison)
+**[→ Hotfix Guide](/docs/workflows/hotfix)**
 
 ---
 
@@ -483,14 +483,14 @@ Solution: Run /specweave:validate before /specweave:done
 
 Ready to dive deeper? Choose your path:
 
-- **New to SpecWeave?** → [Quickstart Guide](/docs/intro)
+- **New to SpecWeave?** → [Quickstart Guide](/docs/guides/getting-started/quickstart)
 - **Planning your first feature?** → [Planning Workflow](/docs/workflows/planning)
 - **Working with existing code?** → [Brownfield Workflow](/docs/workflows/brownfield)
-- **Need emergency fix?** → See [Hotfix Pattern](#pattern-3-hotfix-emergency) above
+- **Need emergency fix?** → [Hotfix Workflow](/docs/workflows/hotfix)
 
 ---
 
 **Learn More:**
-- [Core Concepts](/docs/glossary/terms/increment)
-- [Command Reference](/docs/commands/overview)
-- [Living Documentation](/docs/glossary/terms/living-docs)
+- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment)
+- [Command Reference](/docs/commands/status-management)
+- Best Practices

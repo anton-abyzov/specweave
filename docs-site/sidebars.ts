@@ -20,17 +20,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'overview/what-is-specweave',
+          id: 'overview/introduction',
           label: 'What is SpecWeave?',
         },
         {
           type: 'doc',
-          id: 'overview/enterprise-ai',
-          label: '🤖 AI-Native Enterprise',
-        },
-        {
-          type: 'doc',
-          id: 'overview/key-features',
+          id: 'overview/features',
           label: 'Key Features',
         },
         {
@@ -42,11 +37,6 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'overview/philosophy',
           label: 'Philosophy',
-        },
-        {
-          type: 'doc',
-          id: 'overview/why-claude-code',
-          label: 'Why Claude Code?',
         },
         {
           type: 'doc',
@@ -62,7 +52,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'glossary/terms/increment',
+          id: 'glossary/terms/increments',
           label: 'What is an Increment?',
         },
         {
@@ -117,18 +107,6 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'integrations/issue-trackers',
           label: 'Overview',
-        },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Multi-Project',
-      collapsed: false,
-      items: [
-        {
-          type: 'doc',
-          id: 'integrations/multi-project-sync',
-          label: 'Multi-Project Sync',
         },
       ],
     },
@@ -208,7 +186,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'glossary/terms/increment',
+          id: 'glossary/terms/increments',
           label: 'What is an Increment?',
         },
         {
@@ -310,23 +288,6 @@ const sidebars: SidebarsConfig = {
   learnSidebar: [
     {
       type: 'category',
-      label: 'SpecWeave Features',
-      collapsed: false,
-      items: [
-        {
-          type: 'doc',
-          id: 'learn/status-line',
-          label: 'Status Line Feature',
-        },
-        {
-          type: 'doc',
-          id: 'learn/translation',
-          label: 'Translation Workflow',
-        },
-      ],
-    },
-    {
-      type: 'category',
       label: 'Foundations',
       collapsed: false,
       items: [
@@ -408,13 +369,8 @@ const sidebars: SidebarsConfig = {
   glossarySidebar: [
     {
       type: 'doc',
-      id: 'glossary/glossary',
-      label: '📖 Glossary Overview',
-    },
-    {
-      type: 'doc',
       id: 'glossary/glossary-by-category',
-      label: '🗂️ Browse by Category',
+      label: '📖 Glossary by Category',
     },
     {
       type: 'category',

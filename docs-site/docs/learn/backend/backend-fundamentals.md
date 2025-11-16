@@ -2,7 +2,7 @@
 id: backend-fundamentals
 title: Backend Development Fundamentals
 sidebar_label: Backend Fundamentals
-description: Complete guide to backend/server-side development - API design, databases, authentication, microservices, and production best practices
+description: Complete guide to backend/server-side development - [API](/docs/glossary/terms/api) design, databases, authentication, [microservices](/docs/glossary/terms/microservices), and production best practices
 ---
 
 # Backend Development Fundamentals
@@ -12,7 +12,7 @@ description: Complete guide to backend/server-side development - API design, dat
 Backend development (also called server-side development) is the part of software engineering that handles everything users don't see directly. While the frontend presents the user interface, the backend processes requests, manages data, enforces business rules, and coordinates with external services.
 
 **Backend responsibilities:**
-- **Process HTTP requests** - Handle incoming API calls from frontend/mobile apps
+- **Process HTTP requests** - Handle incoming [API](/docs/glossary/terms/api) calls from frontend/mobile apps
 - **Manage data** - Store, retrieve, update, and delete data in databases
 - **Enforce business logic** - Apply rules (e.g., "users can't overdraw accounts")
 - **Authenticate users** - Verify identities and manage sessions
@@ -39,11 +39,11 @@ graph LR
 
 ## Core Backend Responsibilities
 
-### 1. API Endpoints
+### 1. [API](/docs/glossary/terms/api) Endpoints
 
 **Purpose**: Provide structured access to data and operations
 
-**Example**: User management API
+**Example**: User management [API](/docs/glossary/terms/api)
 ```
 GET    /api/users           → List users
 GET    /api/users/:id       → Get single user
@@ -444,9 +444,9 @@ class PostgresOrderRepository implements IOrderRepository {
 
 ---
 
-## Node.js Backend Development
+## [Node.js](/docs/glossary/terms/nodejs) Backend Development
 
-### Why Node.js?
+### Why [Node.js](/docs/glossary/terms/nodejs)?
 
 **Advantages:**
 1. **JavaScript everywhere** - Same language for frontend and backend
@@ -456,10 +456,10 @@ class PostgresOrderRepository implements IOrderRepository {
 5. **Performance** - V8 engine compiles JavaScript to native code
 
 **Use Cases:**
-- ✅ REST/[GraphQL](/docs/glossary/terms/graphql) [APIs](/docs/glossary/terms/api)
+- ✅ [REST](/docs/glossary/terms/rest)/[GraphQL](/docs/glossary/terms/graphql) [APIs](/docs/glossary/terms/api)
 - ✅ Real-time applications (chat, notifications)
 - ✅ [Microservices](/docs/glossary/terms/microservices)
-- ✅ Server-side rendering (Next.js, SSR)
+- ✅ Server-side rendering ([Next.js](/docs/glossary/terms/nextjs), [SSR](/docs/glossary/terms/ssr))
 
 **Not Ideal For:**
 - ❌ CPU-intensive tasks (video encoding, machine learning)
@@ -469,7 +469,7 @@ class PostgresOrderRepository implements IOrderRepository {
 
 **Philosophy**: Unopinionated, minimal, flexible
 
-**Complete REST API Example:**
+**Complete [REST](/docs/glossary/terms/rest) [API](/docs/glossary/terms/api) Example:**
 
 ```typescript
 import express from 'express';

@@ -1,352 +1,500 @@
 ---
-sidebar_position: 7
+id: rfc
+title: RFC (Request for Comments)
+sidebar_label: RFC
 ---
 
 # RFC (Request for Comments)
 
-**Category**: Planning & Requirements
-
 ## Definition
 
-**RFC** (Request for Comments) is a proposal document for significant technical or architectural changes in SpecWeave projects. RFCs enable collaborative decision-making by soliciting feedback from stakeholders before implementation.
+An **RFC (Request for Comments)** is a detailed feature specification document that defines WHAT will be built and WHY it's needed, before implementation begins.
 
-**Purpose**: Gather input, build consensus, and document decisions for major changes that affect system architecture, APIs, or development workflows.
+Think of it as **"a blueprint for a building"** - before construction starts, architects create detailed plans showing what the building will look like, how it will function, and why design decisions were made.
 
 ## What Problem Does It Solve?
 
-**The Premature Implementation Problem**:
-- ❌ Major changes implemented without stakeholder buy-in
-- ❌ Architecture decisions made in isolation (no team input)
-- ❌ Expensive rework when concerns arise late
-- ❌ Lost institutional knowledge (why was X chosen over Y?)
+### The Problem: Building Without Planning
 
-**RFC Solution**:
-- ✅ Early feedback from all stakeholders (before implementation)
-- ✅ Multiple perspectives considered (engineering, PM, security, ops)
-- ✅ Documented rationale for future reference
-- ✅ Reduced risk of costly rework
+**Scenario**: Your team starts building a new feature immediately.
 
-## When to Write an RFC
+**Without RFC**:
+- Developer 1: "I think users need this"
+- Developer 2: "Actually, I'm building it differently"
+- 2 weeks later: Features don't work together, stakeholders unhappy
 
-**Use RFC for**:
-- ✅ Major architecture changes (switching databases, changing auth system)
-- ✅ API design (public APIs, breaking changes)
-- ✅ New framework patterns (new testing approach, CI/CD changes)
-- ✅ Security-critical decisions (encryption, authentication)
-- ✅ Cross-team impacts (changes affecting multiple teams/projects)
+**With RFC**:
+- Write RFC first (WHAT + WHY)
+- Team reviews and agrees
+- Implementation follows agreed plan
+- Result: Coherent feature, happy stakeholders
 
-**Skip RFC for**:
-- ❌ Bug fixes (just fix it)
-- ❌ Minor refactoring (use PR description)
-- ❌ Internal implementation details (not architectural)
-- ❌ Straightforward features (use spec.md instead)
-
-## RFC Structure
-
-**Standard Sections**:
-
-```markdown
-# RFC-001: [Title - What You're Proposing]
-
-**Status**: Draft | Review | Approved | Rejected | Implemented
-**Created**: 2025-11-06
-**Author**: [Your Name]
-**Stakeholders**: [PM, Architect, Security, Ops, etc.]
-
-## Summary (Executive Summary)
-One-paragraph overview of what you're proposing.
-
-## Motivation (Why?)
-- What problem does this solve?
-- Why is change needed now?
-- What happens if we don't do this?
-
-## Proposal (What?)
-Detailed technical proposal:
-- Architecture changes
-- API designs
-- Implementation approach
-- Migration strategy (if applicable)
-
-## Alternatives Considered (What Else?)
-Other options you evaluated and why they were rejected:
-- **Option A**: Description → Rejected because...
-- **Option B**: Description → Rejected because...
-
-## Trade-offs (Costs & Benefits)
-**Benefits**:
-- ✅ What we gain
-
-**Costs**:
-- ⚠️  What we give up or must maintain
-- ⚠️  Migration effort
-- ⚠️  Breaking changes
-
-## Implementation Plan (How?)
-1. Phase 1: [What]
-2. Phase 2: [What]
-3. Phase 3: [What]
-
-**Timeline**: X weeks/months
-**Dependencies**: What must be done first?
-
-## Security & Compliance
-- Security implications
-- Compliance requirements (GDPR, HIPAA, etc.)
-- Risk assessment
-
-## Metrics & Success Criteria
-How will we know this succeeded?
-- Performance benchmarks
-- Adoption metrics
-- Quality gates
-
-## Open Questions
-What needs to be resolved before implementation?
-
-## References
-- Links to related docs (ADRs, PRDs, specs)
-- External resources
-- Prior art
-
-## Feedback & Discussion
-[Stakeholder comments and responses]
-```
-
-## RFC Workflow
+### Why RFCs Matter
 
 ```mermaid
-graph TD
-    A[Write RFC Draft] --> B[Share with Stakeholders]
-    B --> C{Feedback Received?}
-    C -->|Yes| D[Revise RFC]
-    D --> C
-    C -->|No More| E{Consensus?}
-    E -->|Yes| F[Approve RFC]
-    E -->|No| G[Reject RFC]
-    F --> H[Create Increment]
-    H --> I[Implement]
-    I --> J[Create ADR]
-    G --> K[Document Why Rejected]
+graph LR
+    A[Feature Idea] --> B{Plan First?}
+    B -->|No RFC| C[Start Coding]
+    C --> D[Misalignment]
+    D --> E[Rework/Waste]
+
+    B -->|With RFC| F[Write RFC]
+    F --> G[Team Review]
+    G --> H[Aligned Implementation]
+    H --> I[Success]
+
+    style D fill:#ffcccc
+    style E fill:#ffcccc
+    style H fill:#ccffcc
+    style I fill:#ccffcc
 ```
 
-**Steps**:
-1. **Draft**: Author writes RFC
-2. **Review**: Stakeholders provide feedback (async, comments in doc)
-3. **Revise**: Author addresses concerns, updates RFC
-4. **Decision**: Approve, Reject, or Request More Info
-5. **Implementation**: If approved, create increment(s)
-6. **ADR**: After implementation, create Architecture Decision Record
+## How It Works
+
+### RFC Structure
+
+Every RFC follows a standard format:
+
+```markdown
+# RFC-NNNN: Feature Name
+
+## Summary
+One-paragraph overview: what this feature does and why it matters.
+
+## Motivation
+Why are we building this?
+- What problem does it solve?
+- Who benefits?
+- What's the business value?
+
+## User Stories
+- US-001: As a [user type], I want [goal], so that [benefit]
+- US-002: As a [user type], I want [goal], so that [benefit]
+
+## Acceptance Criteria
+- AC-US1-01: Given [context], when [action], then [outcome]
+- AC-US1-02: Given [context], when [action], then [outcome]
+
+## Functional Requirements
+- FR-001: System shall [requirement]
+- FR-002: System shall [requirement]
+
+## Non-Functional Requirements
+- NFR-001: Performance: Page load < 2s
+- NFR-002: Security: HTTPS only
+
+## Out of Scope
+What we're explicitly NOT building in this RFC.
+
+## Success Metrics
+How we'll measure if this feature succeeded.
+
+## Dependencies
+What needs to exist before we can build this.
+
+## Timeline
+Estimated effort and milestones.
+```
+
+### Planning Flow
+
+```mermaid
+graph TB
+    A[Feature Request] --> B[Write RFC]
+    B --> C{Stakeholder Review}
+    C -->|Needs Changes| B
+    C -->|Approved| D[Create Increment]
+
+    D --> E[Architect Reviews RFC]
+    E --> F[Create HLD + ADRs]
+    F --> G[Implementation]
+
+    G --> H{Completed?}
+    H -->|No| G
+    H -->|Yes| I[Feature Complete]
+
+    style B fill:#e3f2fd
+    style D fill:#e3f2fd
+    style F fill:#e3f2fd
+```
 
 ## Real-World Example
 
-**Scenario**: SpecWeave needs to decide on plugin architecture approach.
+### Scenario: User Authentication System
 
-**RFC-004: Claude Native Plugin System vs Custom Plugin Architecture**
+**RFC-0005: User Authentication System**
 
 ```markdown
-# RFC-004: Claude Native Plugin System vs Custom Plugin Architecture
-
-**Status**: Approved → Implemented
-**Created**: 2025-09-01
-**Author**: Anton Abyzov
-**Stakeholders**: Core Team, Plugin Developers
+# RFC-0005: User Authentication System
 
 ## Summary
-Proposal to adopt Claude Code's native plugin system instead of building custom plugin architecture.
+Add secure user authentication to our SaaS platform, allowing users to sign up, log in, and manage their accounts. This enables user-specific features and data isolation.
 
 ## Motivation
-- Claude Code released official plugin system (Sept 2024)
-- Our custom system duplicates Anthropic's work
-- Native integration = better performance, less maintenance
 
-## Proposal
-Adopt Claude native plugins:
-- Use `plugin.json` manifest (Claude standard)
-- Skills auto-activate based on description keywords
-- Agents use Claude's isolation
-- Commands integrate with slash command system
+**Problem**: Currently, our app has no user accounts. All data is public and unprotected. We need:
+- User-specific data and settings
+- Secure access control
+- Compliance with GDPR (user data protection)
+- Foundation for paid subscriptions
 
-## Alternatives Considered
-**Option A: Custom Plugin System**
-- ❌ Rejected: Duplicates Anthropic's work, high maintenance burden
+**Business Value**:
+- Enable B2B sales (companies require user accounts)
+- Reduce support costs (users self-manage accounts)
+- Increase retention (personalized experience)
 
-**Option B: No Plugins (Monolithic)**
-- ❌ Rejected: Poor scalability, high context usage
+**Who Benefits**:
+- End users: Personalized, secure experience
+- Business: Monetization path, compliance
+- Support team: Self-service reduces tickets
 
-## Trade-offs
-**Benefits**:
-- ✅ 70%+ context reduction (load only needed plugins)
-- ✅ Future-proof (follows Anthropic standards)
-- ✅ Zero maintenance for plugin system
+## User Stories
 
-**Costs**:
-- ⚠️  Migration effort from custom system
-- ⚠️  Dependent on Claude Code (vendor lock-in)
+### US-001: Basic Login (P1)
+**As a registered user**, I want to log in with email/password, so that I can access my personalized dashboard.
 
-## Implementation Plan
-1. Phase 1: Create plugin.json manifests
-2. Phase 2: Migrate skills/agents/commands
-3. Phase 3: Update installation process
-4. Phase 4: Deprecate custom system
+**Acceptance Criteria**:
+- AC-US1-01: User can log in with valid credentials (P1, testable)
+- AC-US1-02: Invalid credentials show clear error message (P1, testable)
+- AC-US1-03: After 5 failed attempts, account locks for 15 minutes (P2, testable)
 
-**Timeline**: 3 weeks
-**Dependencies**: None
+### US-002: Account Registration (P1)
+**As a new user**, I want to create an account, so that I can start using the platform.
 
-## Metrics & Success Criteria
-- Context usage reduced by 70%+
-- All 18 plugins migrated successfully
-- Installation time &lt;30 seconds
+**Acceptance Criteria**:
+- AC-US2-01: User can register with email + password (P1, testable)
+- AC-US2-02: Email confirmation required before login (P1, testable)
+- AC-US2-03: Password must meet security requirements (8+ chars, uppercase, number) (P1, testable)
 
-## Decision
-**APPROVED** - 2025-09-15
+### US-003: Password Reset (P2)
+**As a user who forgot password**, I want to reset it via email, so that I can regain access to my account.
 
-## Implementation
-- Increment 0004: Plugin Architecture
-- ADR-0010: Claude Native Plugin System
+**Acceptance Criteria**:
+- AC-US3-01: User receives password reset email (P2, testable)
+- AC-US3-02: Reset link expires after 1 hour (P2, testable)
+
+### US-004: Session Management (P2)
+**As a user**, I want to stay logged in for 7 days, so that I don't have to log in every time.
+
+**Acceptance Criteria**:
+- AC-US4-01: "Remember Me" checkbox keeps session active 7 days (P2, testable)
+- AC-US4-02: User can log out from all devices (P2, testable)
+
+## Functional Requirements
+
+- FR-001: System shall hash passwords using bcrypt (cost factor 12)
+- FR-002: System shall generate JWT tokens for session management
+- FR-003: System shall validate email format before registration
+- FR-004: System shall send confirmation emails via SendGrid API
+- FR-005: System shall rate-limit login attempts (5 per 15 minutes per IP)
+
+## Non-Functional Requirements
+
+- NFR-001: **Performance**: Login response time < 500ms (95th percentile)
+- NFR-002: **Security**: All passwords encrypted at rest, HTTPS only
+- NFR-003: **Availability**: 99.9% uptime for authentication service
+- NFR-004: **Compliance**: GDPR-compliant (password deletion, data export)
+- NFR-005: **Scalability**: Handle 10,000 concurrent users
+
+## Out of Scope (Future Work)
+
+❌ **NOT in this RFC**:
+- OAuth2 social login (Google, GitHub) → RFC-0010
+- Two-factor authentication (2FA) → RFC-0015
+- Single Sign-On (SSO) for enterprises → RFC-0020
+- Biometric authentication → RFC-0025
+
+## Success Metrics
+
+- ✅ 80%+ registration completion rate
+- ✅ < 2% login failures (non-malicious)
+- ✅ < 5% password reset requests
+- ✅ Zero security incidents in first 3 months
+- ✅ 95% user satisfaction (post-launch survey)
+
+## Dependencies
+
+**Must Have Before Implementation**:
+- PostgreSQL database (for user storage)
+- SendGrid account (for email)
+- HTTPS certificate (for secure communication)
+
+**Nice to Have**:
+- Redis (for session caching) - can add later
+
+## Technical Constraints
+
+- Must use existing PostgreSQL database (no new DB)
+- Must integrate with current Express.js backend
+- Must support mobile app (JWT-based, not cookies)
+
+## Timeline
+
+- **Week 1**: Database schema + authentication service
+- **Week 2**: Registration + login endpoints
+- **Week 3**: Password reset + session management
+- **Week 4**: Testing + security audit
+
+**Total Estimate**: 4 weeks (160 hours)
+
+## Related Documents
+
+- **Architecture**: See ADR-008 (JWT vs Sessions)
+- **API Design**: See api-contract.yaml
+- **Security**: See security-checklist.md
 ```
 
-## RFC vs Other Documents
+**Result**: Clear requirements → Aligned team → Successful implementation → Happy stakeholders
 
-| Document | Purpose | When | Audience |
-|----------|---------|------|----------|
-| **RFC** | Gather feedback on proposal | Before implementation | All stakeholders |
-| **ADR** | Document decision & rationale | After implementation | Future developers |
-| **PRD** | Business requirements | Before RFC/spec | PM, stakeholders |
-| **Spec** | Implementation details | After RFC approval | Engineering team |
-| **HLD** | System architecture | After RFC/spec | Architects, engineers |
+## How SpecWeave Uses RFCs
 
-**Workflow**:
-```
-PRD → RFC → Spec → Increment → Implementation → ADR
-```
-
-## Storage Location
-
-**SpecWeave Project Structure**:
+### Storage Location
 
 ```
-.specweave/docs/internal/
-├── strategy/
-│   └── rfc/                          # RFCs stored here
-│       ├── rfc-001-auth-system.md
-│       ├── rfc-002-api-redesign.md
-│       └── rfc-003-plugin-arch.md
+.specweave/docs/internal/specs/
+├── README.md                             # Specs index
+├── spec-0005-authentication/
+│   ├── spec.md                           # Main RFC document
+│   ├── user-flows.md                     # User journey diagrams
+│   ├── api-contract.yaml                 # OpenAPI spec
+│   └── wireframes/                       # UI mockups
+├── spec-0010-oauth-integration/
+│   └── spec.md
+└── template.md                           # RFC template
+```
+
+### Workflow
+
+```mermaid
+graph TB
+    A[Feature Idea] --> B[PM Creates RFC]
+    B --> C[RFC Draft]
+    C --> D{Stakeholder Review}
+    D -->|Changes Needed| C
+    D -->|Approved| E[RFC Finalized]
+
+    E --> F[Create Increment]
+    F --> G[Architect Creates HLD]
+    G --> H[Break into Tasks]
+    H --> I[Implementation]
+
+    I --> J{All US Complete?}
+    J -->|No| I
+    J -->|Yes| K[Feature Complete]
+    K --> L[Update RFC: Deployed]
+
+    style B fill:#e3f2fd
+    style E fill:#ccffcc
+    style G fill:#e3f2fd
+```
+
+### When to Create an RFC
+
+✅ **CREATE RFC for**:
+- New features (authentication, payments, messaging)
+- Major refactoring (monolith → microservices)
+- Platform changes (API v2, database migration)
+- User-facing changes (UI redesign, new workflow)
+
+❌ **DON'T CREATE RFC for**:
+- Bug fixes (use tasks.md directly)
+- Minor improvements (use increment spec)
+- Internal optimizations (use ADR)
+- Dependency updates
+
+### Relationship to Other Documents
+
+```
+RFC (WHAT + WHY)
+├── Implemented by → Multiple Increments
+│   ├── Increment 0007 (US-001, US-002)
+│   ├── Increment 0012 (US-003)
+│   └── Increment 0018 (US-004)
 │
-└── architecture/
-    └── adr/                          # ADRs (after implementation)
-        ├── 0001-use-postgres.md
-        └── 0002-jwt-tokens.md
+├── Technical Design → HLD (HOW)
+│   └── Architecture decisions → ADRs (WHY technical choice)
+│
+└── External Links → Jira Epic, GitHub Milestone
 ```
 
-**Naming Convention**: `rfc-###-short-description.md`
+### SpecWeave Commands
 
-## RFC Status
+```bash
+# Create new increment from RFC
+/specweave:increment "Implement authentication (RFC-0005)"
 
-**Lifecycle**:
-- **Draft**: Work in progress, not ready for review
-- **Review**: Open for stakeholder feedback
-- **Approved**: Consensus reached, ready to implement
-- **Rejected**: Not moving forward (document why!)
-- **Implemented**: Done, ADR created
+# PM agent:
+# - Reads RFC-0005 from .specweave/docs/internal/specs/spec-0005-authentication/
+# - Extracts relevant user stories (US-001, US-002)
+# - Creates increment spec with focused scope
+# - Links back to RFC for complete context
 
-**Status Updates** (in frontmatter):
-```yaml
----
-status: Draft
-created: 2025-11-06
-updated: 2025-11-10
-decision_date: 2025-11-15
----
+# Result: Increment spec references RFC
 ```
+
+### Example from SpecWeave
+
+**RFC: SpecWeave Plugin Architecture**
+
+```markdown
+# RFC: SpecWeave Plugin Architecture
+
+## Summary
+Modularize SpecWeave into core framework + optional plugins, reducing context from 50K → 12K tokens for typical projects.
+
+## Motivation
+
+**Problem**: v0.3.7 loads ALL 44 skills regardless of project needs:
+- Simple React app: Loads K8s skills (unnecessary)
+- Backend API: Loads Figma skills (irrelevant)
+- Token usage: 50K+ for every project
+
+**Solution**: Plugin architecture - load only what you need.
+
+## User Stories
+
+- US-001: As a developer, I want minimal token usage for my stack
+- US-002: As a user, I want auto-detection of relevant plugins
+
+## Functional Requirements
+
+- FR-001: Core plugin auto-loads (increment lifecycle)
+- FR-002: Optional plugins install on-demand
+- FR-003: Plugins follow Claude Code native format
+
+## Success Metrics
+
+- 70%+ context reduction (50K → 15K tokens)
+- &lt;30s plugin installation time
+- Zero breaking changes for existing projects
+```
+
+**Implementation**: Divided into multiple increments (0004, 0005, 0006).
 
 ## Best Practices
 
-### 1. **Write RFC Before Coding**
+### 1. Write RFC Before Code
+
+**Create RFC FIRST**, not during or after implementation.
+
+❌ Wrong: Build feature → Reverse-engineer RFC → Incomplete docs
+✅ Right: Write RFC → Review → Implement
+
+### 2. Include User Stories + Acceptance Criteria
+
+**User stories explain WHO and WHY**, acceptance criteria make it testable:
+
 ```markdown
-❌ WRONG: Code first, RFC later (justification document)
-✅ CORRECT: RFC first, gather feedback, then code
+## User Stories
+
+### US-001: Export Data (P1)
+**As a user**, I want to export my data to CSV, so that I can analyze it in Excel.
+
+**Acceptance Criteria**:
+- AC-US1-01: Export button on dashboard (P1, testable)
+- AC-US1-02: CSV includes all fields (name, email, created_at) (P1, testable)
+- AC-US1-03: Download completes in &lt;3s for 10K rows (P2, testable)
 ```
 
-### 2. **Include Alternatives**
+### 3. Define Out of Scope
+
+**Explicitly state what you're NOT building**:
+
 ```markdown
-❌ WRONG: Only present your preferred option
-✅ CORRECT: Show 2-3 alternatives with pros/cons
+## Out of Scope
+
+❌ Excel export (.xlsx format) → Deferred to RFC-0012
+❌ PDF export → Not planned
+❌ Real-time sync → Different feature
 ```
 
-### 3. **Be Specific**
+Prevents scope creep and sets expectations.
+
+### 4. Link to Brownfield Docs
+
+**If replacing existing functionality, link to current docs**:
+
 ```markdown
-❌ WRONG: "We should improve performance"
-✅ CORRECT: "Migrate from REST to gRPC for 10x throughput"
+## Current State
+
+See: `/docs/legacy/auth-v1.md` for existing authentication flow.
+
+## Migration Plan
+
+Phase 1: Run new auth alongside old (feature flag)
+Phase 2: Migrate 10% users → test
+Phase 3: Full migration
 ```
 
-### 4. **Quantify Trade-offs**
-```markdown
-❌ WRONG: "This will be faster"
-✅ CORRECT: "Reduces latency from 500ms to 50ms (10x improvement)"
-```
+### 5. Quantify Success Metrics
 
-### 5. **Create ADR After Implementation**
-```markdown
-✅ Workflow:
-1. Write RFC (proposal)
-2. Get approval
-3. Implement
-4. Create ADR (record decision)
-```
+**Make success measurable**:
 
-## Acceptance Criteria
+❌ "Users will be happy"
+✅ "85%+ user satisfaction score (post-launch survey)"
 
-**An RFC is complete when it has**:
-- [ ] Clear problem statement (Motivation)
-- [ ] Detailed proposal (What & How)
-- [ ] 2-3 alternatives considered
-- [ ] Trade-offs documented (costs & benefits)
-- [ ] Implementation plan with timeline
-- [ ] Stakeholder feedback addressed
-- [ ] Decision recorded (Approved/Rejected)
+❌ "Fast performance"
+✅ "Page load \&lt;2s (95th percentile)"
 
-## User Story
+## Common Mistakes
 
-**US-001: RFC Creation**
-- **AC-US1-01**: Author can write RFC using standard template (P1, manual)
-- **AC-US1-02**: Stakeholders can comment on RFC async (P1, manual)
-- **AC-US1-03**: RFC status updated through lifecycle (P1, manual)
+### ❌ Mistake 1: RFC = Implementation Plan
 
-## Brownfield
+**Problem**: Mixing WHAT with HOW.
 
-**Existing projects** often have RFCs scattered across:
-- Google Docs
-- Confluence
-- GitHub Discussions
-- Email threads
+**RFC Should Contain**:
+- ✅ User stories (WHAT users need)
+- ✅ Business rationale (WHY building)
+- ✅ Acceptance criteria (WHAT success looks like)
 
-**Migration**:
-```bash
-# Import existing RFCs
-/specweave:import-docs --source confluence --type rfc
-# → Creates .specweave/docs/internal/strategy/rfc/
-```
+**RFC Should NOT Contain**:
+- ❌ Database schema details (that's HLD)
+- ❌ API endpoint designs (that's plan)
+- ❌ Technology choices (that's ADR)
 
-**See**: [Brownfield Onboarding](/docs/workflows/brownfield)
+**Solution**: RFC = requirements, HLD/ADR = design decisions.
+
+### ❌ Mistake 2: No Stakeholder Review
+
+**Problem**: Build feature, stakeholders say "not what we wanted".
+
+**Solution**: Get stakeholder approval BEFORE creating increments.
+
+### ❌ Mistake 3: Too Vague
+
+**Problem**: "Add user management system" with no details.
+
+**Solution**: Specific user stories + acceptance criteria.
+
+### ❌ Mistake 4: Scope Creep During Implementation
+
+**Problem**: RFC says 3 user stories, increment implements 10.
+
+**Solution**: Stick to RFC scope. If scope changes, update RFC and get approval.
+
+### ❌ Mistake 5: No Success Metrics
+
+**Problem**: Can't measure if feature succeeded.
+
+**Solution**: Define quantifiable success metrics (completion rate, performance, satisfaction).
 
 ## Related Terms
 
-- [ADR](./adr.md) - Architecture Decision Record (after implementation)
-- [Acceptance Criteria](./acceptance-criteria.md) - How to verify user story is complete
-- [Spec](./spec.md) - Specification document (detailed requirements)
-- [PRD](./prd.md) - Product Requirements Document (business case)
-- [HLD](./hld.md) - High-Level Design (system architecture)
-- [Brownfield](./brownfield.md) - Existing codebase integration
+- **[ADR (Architecture Decision Record)](/docs/glossary/terms/adr)** - Technical decisions (WHY this approach), RFC is requirements (WHAT to build)
+- **HLD (High-Level Design)** - System architecture (HOW to build), RFC is requirements (WHAT to build)
+- **[Increment](/docs/guides/core-concepts/what-is-an-increment)** - Unit of work that implements part of an RFC
+- **[User Story](/docs/glossary/terms/user-story)** - Individual feature from user perspective
+- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** - How to verify user story is complete
+- **[Brownfield](/docs/glossary/terms/brownfield)** - Existing codebase (RFCs often modify brownfield code)
 
 ## Learn More
 
-- [RFC Best Practices](#best-practices) - See best practices section above
-- [Related Terms](#related-terms) - ADR, Spec, PRD, HLD
-- [SpecWeave Planning Workflow](/docs/intro#how-specweave-works) - Complete workflow overview
+- **How to Write an RFC** - Step-by-step guide
+- **[Planning Workflow](/docs/guides/workflows/planning-workflow)** - RFC → Increment → Implementation
+- **[SpecWeave Internal Specs](./.specweave/docs/internal/specs/)** - See RFCs in action
 
 ---
 
 **Category**: Planning & Requirements
 
-**Tags**: #rfc #requirements #specification #planning #user-stories
+**Tags**: `#rfc` `#requirements` `#specification` `#planning` `#user-stories`

@@ -392,7 +392,7 @@ business_metrics:
 
 - [ ] Each service deploys independently
 - [ ] No shared databases
-- [ ] <100ms latency between services (p99)
+- [ ] Less than 100ms latency between services (p99)
 - [ ] Zero-downtime deployments achieved
 - [ ] Horizontal scaling works
 - [ ] Circuit breakers prevent cascading failures

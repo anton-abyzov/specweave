@@ -1,163 +1,319 @@
----
-sidebar_position: 3
----
-
 # Philosophy
 
-SpecWeave is built on three core philosophical principles that differentiate it from traditional development approaches.
+SpecWeave is built on a set of core principles that guide every design decision. Understanding these principles will help you get the most out of the framework.
 
-## 1. Specification-First Development
+## Core Principles
 
-**Traditional problem**: Code is written first, documentation comes later (if at all).
+### 1. Specification Before Implementation
 
-**Common issues**:
-- Code without clear requirements
-- Documentation that doesn't match reality
+**Define WHAT and WHY before HOW.**
+
+Traditional development often jumps straight to implementation without clear specifications. This leads to:
+- Unclear requirements
+- Scope creep
+- Missing features
 - Undocumented systems
 
 SpecWeave enforces specification-first development:
 
-```
+\`\`\`
 Specification → Architecture → Implementation → Testing
-```
+\`\`\`
 
-## 2. Append-Only Snapshots + Living Documentation
+### 2. Append-Only Snapshots + Living Documentation
 
 **Historical audit trails + current state = complete context.**
 
-SpecWeave's revolutionary approach: Most documentation systems force you to choose between historical documentation (version control) or current documentation (wikis). SpecWeave gives you BOTH simultaneously.
+**SpecWeave's revolutionary approach**: Most documentation systems force you to choose between historical context (version control) or current documentation (wikis). SpecWeave gives you BOTH simultaneously.
 
-### The Dual-Documentation System
+#### The Dual-Documentation System
 
-#### Append-Only Increments (Never Modified)
-
+**Append-Only Increments** (Never Modified)
 - Each increment is an immutable snapshot of a feature
 - Contains: spec, plan, tasks, tests, logs, reports
 - Provides complete audit trail and historical context
+- Like [Git](/docs/glossary/terms/git) commits for specifications
 
-#### Living Documentation (Always Current)
+**Living Documentation** (Always Current)
+- Auto-updated by Claude hooks after each task
+- Reflects actual code state
+- Organized by purpose (strategy, architecture, operations)
+- Single source of truth for current system
 
-- Strategic documentation syncs automatically after every task
-- `.specweave/docs/internal/` stays current without manual updates
-- Permanent knowledge base (specs, architecture, runbooks)
+#### Why Both Are Essential
 
-### Why This Matters
+| Need | Source | Example |
+|------|--------|---------|
+| "Why was this built?" | Increment snapshot | `.specweave/increments/0001-feature/spec.md` |
+| "What's the current state?" | Living docs | `.specweave/docs/internal/strategy/feature.md` |
+| "How did it evolve?" | All related increments | Search increments 0001, 0005, 0012 |
+| "Compliance proof?" | Increment audit trail | Complete snapshots with timestamps |
 
-**Traditional approach**:
-```
-Day 1: Write docs → accurate
-Day 30: Code changed 10 times → docs stale
-Day 90: Docs completely wrong → trust lost
-```
+#### Key Properties
 
-**SpecWeave approach**:
-```
-Day 1: Write spec → automatic sync → docs current
-Day 30: 10 tasks complete → automatic sync → docs current
-Day 90: Feature done → automatic sync → docs current
-```
+- **Append-only increments**: Never modified after completion (like event sourcing)
+- **Auto-updated docs**: Hooks maintain current state automatically
+- **Version controlled**: Both stored in [Git](/docs/glossary/terms/git)
+- **Searchable**: Find historical context or current state
+- **Audit-ready**: Complete paper trail for compliance ([SOC 2](/docs/glossary/terms/soc2), [HIPAA](/docs/glossary/terms/hipaa), [FDA](/docs/glossary/terms/fda))
+- **Context recovery**: Understand decisions from months/years ago
+
+**Think of it as "Git for Specifications"**:
+- Increments = commits (snapshots in time)
+- Living docs = working directory (current state)
+- Both essential for different purposes
+
+### 3. Context Precision
+
+**Load only what's needed (70%+ token reduction).**
+
+Loading entire specifications wastes tokens and money. SpecWeave uses:
+- **Selective loading**: Load specific sections
+- **Context manifests**: Declare required context
+- **Cache-friendly**: Reuse frequently-loaded context
+- **Scalable**: Works with 10 pages or 1000+ pages
+
+### 4. Test-Validated Features
+
+**Every feature proven through automated tests.**
+
+Four levels of testing ensure quality:
+1. Specification acceptance criteria (AC-IDs like AC-US1-01)
+2. Feature test strategy (embedded in tasks.md, v0.7.0+)
+3. Skill test cases (YAML)
+4. Code tests ([E2E](/docs/glossary/terms/e2e), unit, integration)
+
+**Truth-telling requirement**: E2E tests MUST tell the truth—no false positives.
+
+### 5. Regression Prevention
+
+**Document existing code before modification.**
+
+Modifying [brownfield](/docs/glossary/terms/brownfield) code without documentation is dangerous. SpecWeave enforces:
+
+1. Analyze current implementation
+2. Generate retroactive documentation
+3. Create baseline tests
+4. User reviews and approves
+5. Implement modifications safely
+
+### 6. Scalable from Solo to Enterprise
+
+**Modular structure that grows with project size.**
+
+Whether you're a solo developer or a 100-person team, SpecWeave scales:
+
+- **Solo/Startup**: Start with 10-20 pages, grow incrementally
+- **Enterprise**: Create 500-600+ pages upfront
+- **Both approaches supported**: Comprehensive or incremental
+
+### 7. Auto-Role Routing
+
+**Skills detect expertise automatically.**
+
+No manual agent selection—SpecWeave routes intelligently:
+
+\`\`\`
+User: "Create payment integration"
+→ specweave-detector activates
+→ Routes to increment-planner
+→ Invokes PM, Architect, Security agents
+→ Generates complete specification
+\`\`\`
+
+>90% routing accuracy.
+
+### 8. Closed-Loop Validation
+
+**[E2E](/docs/glossary/terms/e2e) tests must tell the truth (no false positives).**
+
+Test validation is not enough—tests must be **truthful**:
+
+- ✅ If test passes → feature actually works
+- ✅ If test fails → exactly what failed
+- ❌ No masking failures
+- ❌ No assuming success without verification
+
+## Design Decisions
+
+### Why Markdown?
+
+**Human-readable, version-controllable, AI-friendly.**
+
+- [Git](/docs/glossary/terms/git)-friendly (easy diffs)
+- Tooling-agnostic (works anywhere)
+- Readable without rendering
+- AI can parse and generate
+- Supports Mermaid diagrams
+- No vendor lock-in
+
+### Why Mermaid Diagrams?
+
+**Diagrams-as-code, version controlled, maintainable.**
+
+- Text-based (git-friendly)
+- No binary files
+- Easy to update
+- Renders beautifully
+- C4 Model support
+- No external tools required
+
+### Why C4 Model?
+
+**Industry-standard architecture visualization.**
+
+- Clear hierarchy (Context → Container → Component → Code)
+- Scales to enterprise systems
+- Well-documented methodology
+- Tool support (Mermaid, PlantUML, Structurizr)
+- Familiar to architects
+
+### Why Auto-Numbering?
+
+**Prevents merge conflicts, maintains order.**
+
+- Increments: `0001-feature-name`
+- ADRs: `0001-decision-title.md`
+- RFCs: `0001-proposal-title.md`
+- Test cases: `TC-0001`
+
+No manual numbering = no conflicts.
+
+### Why Framework-Agnostic?
+
+**Works with ANY tech stack.**
+
+SpecWeave doesn't impose technology choices:
+- Detects your stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, etc.)
+- Adapts commands to your framework
+- Generates stack-specific examples
+- No vendor lock-in
+
+### Why Claude Code?
+
+**Best AI coding assistant for production software.**
+
+- Sonnet 4.5: Best for coding and complex agents
+- Agentic workflows: Multi-agent orchestration
+- Tool use: Read, Write, Edit, Bash, etc.
+- Context awareness: Large context window
+- Production-ready: Not a toy
+
+## Documentation Approaches
+
+SpecWeave supports TWO valid approaches:
+
+### Approach 1: Comprehensive Upfront (Enterprise)
+
+**When to use**:
+- Enterprise systems with complex requirements
+- Regulated industries (healthcare, finance, government)
+- Large teams (10+ developers)
+- Production systems requiring complete spec before implementation
+
+**Characteristics**:
+- 500-600+ page specifications created before development
+- Complete architecture documentation upfront
+- All ADRs documented in advance
 
 **Benefits**:
-- ✅ **Zero manual effort**: Hooks auto-sync docs after every task
-- ✅ **Always current**: Living docs reflect latest implementation
-- ✅ **Complete history**: Increments preserve every decision
-- ✅ **Audit trail**: Know what was built, when, and why
+- Complete clarity before code is written
+- Easier team coordination
+- Better for regulated environments
 
-## 3. Context Efficiency Through Modular Architecture
+### Approach 2: Incremental/Evolutionary (Startup)
 
-**The AI context problem**: Loading everything = slow, expensive, hitting token limits.
+**When to use**:
+- Startups with evolving requirements
+- Exploratory projects
+- Small teams (1-5 developers)
+- MVPs and prototypes
 
-**SpecWeave solution**: 75%+ context reduction through modular plugin architecture.
+**Characteristics**:
+- Start with high-level overview (10-20 pages)
+- Build documentation as you go (like Microsoft)
+- Add modules/specs as features are planned
 
-### How It Works
+**Benefits**:
+- Faster time-to-first-code
+- Adapts to changing requirements
+- Less documentation maintenance
 
-**Before** (Monolithic):
-```
-Load ALL features: 50K tokens
-Simple React app: Pays for K8s, ML, payments (wasteful)
-Complex projects: Hit 200K context limit quickly
-```
+**Both approaches are equally valid!** Choose based on your project needs.
 
-**After** (Modular Plugins):
-```
-Core plugin: 12K tokens (always loaded)
-+ GitHub plugin: 3K tokens (if needed)
-+ React plugin: 4K tokens (if needed)
-= 19K tokens total (62% reduction!)
-```
+## Workflow Philosophy
 
-### The Plugin Architecture
+### [Greenfield](/docs/glossary/terms/greenfield) Projects
 
-**Everything is a plugin** - even the core framework:
+1. Choose documentation approach (comprehensive or incremental)
+2. Create specifications (strategy docs)
+3. Design architecture (ADRs, system design)
+4. Plan increments
+5. Implement with context precision
+6. Tests validate automatically
 
-- **Core Plugin** (`specweave`): Auto-loaded, essential features (12K tokens)
-  - 9 skills, 22 agents, 22 commands, 8 hooks
-- **Integration Plugins**: GitHub, Jira, Figma, ADO (opt-in)
-- **Tech Stack Plugins**: Frontend, Kubernetes, ML, Payments (opt-in)
+### [Brownfield](/docs/glossary/terms/brownfield) Projects
 
-**Result**:
-- Simple projects: Load 2-3 plugins (~15K tokens)
-- Complex projects: Load 8-10 plugins (~35K tokens)
-- vs Monolithic: 50K+ tokens for everything
+1. **Step 0**: Merge existing CLAUDE.md (if exists)
+2. **Step 1**: Analyze existing code
+3. **Step 2**: Document related modules
+4. **Step 3**: Create tests for current behavior
+5. **Step 4**: Plan modifications
+6. **Step 5**: Implement with regression monitoring
 
-### Context Efficiency in Practice
+## Anti-Patterns
 
-**Example 1**: Simple React App
-```
-Needs: Core + GitHub + Frontend
-Loads: 12K + 3K + 4K = 19K tokens
-Saves: 31K tokens (62% reduction)
-```
+### ❌ What SpecWeave Prevents
 
-**Example 2**: Backend API
-```
-Needs: Core + GitHub + Backend
-Loads: 12K + 3K + 4K = 19K tokens
-Saves: 31K tokens (62% reduction)
-```
+1. **Vibe Coding**: Implementing without specifications
+2. **Documentation Divergence**: Code and docs out of sync
+3. **Context Bloat**: Loading entire specs unnecessarily
+4. **Regression Bugs**: Modifying code without tests
+5. **Tech Debt**: Missing architecture decisions
+6. **False Confidence**: Tests that lie about functionality
 
-**Example 3**: Full-Stack + ML
-```
-Needs: Core + GitHub + Frontend + Backend + ML
-Loads: 12K + 3K + 4K + 4K + 6K = 29K tokens
-Saves: 21K tokens (42% reduction)
-```
+### ✅ What SpecWeave Enforces
 
-## Why These Principles Matter
+1. **Specification-First**: Always define before implementing
+2. **Living Documentation**: Auto-update via hooks
+3. **Context Precision**: Load only what's needed
+4. **Regression Prevention**: Document before modifying
+5. **Architecture Clarity**: ADRs for all major decisions
+6. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
 
-### Specification-First
-- **Prevents**: Building wrong features, scope creep, rework
-- **Enables**: Clear requirements, stakeholder alignment, focused work
+## Success Metrics
 
-### Append-Only + Living Docs
-- **Prevents**: Stale docs, lost context, manual sync burden
-- **Enables**: Complete audit trail, always-current docs, zero manual effort
+How do you know SpecWeave is working?
 
-### Context Efficiency
-- **Prevents**: Slow initialization, token limits, wasted costs
-- **Enables**: Fast performance, unlimited scale, load only what's needed
+### Code Quality
+- ✅ >80% test coverage for critical paths
+- ✅ All P1 tasks have specifications
+- ✅ All ADRs documented
+- ✅ 0% false positive tests
 
-## The SpecWeave Difference
+### Efficiency
+- ✅ 70%+ token reduction (context precision)
+- ✅ >90% routing accuracy
+- ✅ &lt;5 minutes to find relevant specs
+- ✅ Auto-documentation updates
 
-**Other Frameworks**:
-- ❌ Code-first (docs optional)
-- ❌ Manual doc sync (docs become stale)
-- ❌ Monolithic (high context usage)
+### Team Collaboration
+- ✅ New developers onboard in &lt;1 day
+- ✅ Specifications are single source of truth
+- ✅ No "tribal knowledge" silos
+- ✅ Clear decision history (ADRs)
 
-**SpecWeave**:
-- ✅ Spec-first (requirements before code)
-- ✅ Auto-sync (docs always current)
-- ✅ Modular (75%+ context reduction)
-
-**Result**: Enterprise-level discipline + AI-assisted speed + always-current documentation.
-
-## Learn More
-
-- [What is SpecWeave?](./what-is-specweave) - Framework overview
-- [Key Features](./key-features) - Core capabilities
-- [Living Documentation](/docs/glossary/terms/living-docs) - Auto-sync system
-- [Plugin Architecture](/docs/glossary/terms/plugin) - Modular design
+### Production Readiness
+- ✅ All features have specifications
+- ✅ All features have tests
+- ✅ All features have documentation
+- ✅ Regression tests before modifications
 
 ---
 
-**Summary**: SpecWeave combines spec-first development, dual-documentation (append-only + living), and modular architecture to deliver enterprise discipline with AI-assisted development speed.
+**Ready to get started?**
+
+- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
+- [Core Concepts](/docs/guides/core-concepts/specifications) - Understand the fundamentals
+
+**Previous**: [Key Features](/docs/overview/features) ←
