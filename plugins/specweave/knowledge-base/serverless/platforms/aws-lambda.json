@@ -1,0 +1,41 @@
+{
+  "id": "aws-lambda",
+  "name": "AWS Lambda",
+  "provider": "AWS",
+  "pricing": {
+    "freeTier": {
+      "requests": 1000000,
+      "computeGbSeconds": 400000,
+      "dataTransferGb": 1
+    },
+    "payAsYouGo": {
+      "requestsPer1M": 0.20,
+      "computePerGbSecond": 0.0000166667,
+      "dataTransferPerGb": 0.09
+    }
+  },
+  "features": {
+    "runtimes": ["Node.js 18/20", "Python 3.9/3.10/3.11/3.12", "Java 11/17/21", "Go 1.x", ".NET 6/8", "Ruby 3.2", "Custom Runtime"],
+    "coldStartMs": 200,
+    "maxExecutionMinutes": 15,
+    "maxMemoryMb": 10240
+  },
+  "ecosystem": {
+    "integrations": ["S3", "DynamoDB", "RDS", "SQS", "SNS", "EventBridge", "Step Functions", "API Gateway", "CloudWatch", "X-Ray"],
+    "sdks": ["Node.js", "Python (Boto3)", "Java", "Go", ".NET", "Ruby"],
+    "communitySize": "very-large"
+  },
+  "lockIn": {
+    "portability": "medium",
+    "migrationComplexity": "medium",
+    "vendorLockIn": "Medium - Lambda function code is portable, but integrations with AWS services (S3, DynamoDB, etc.) create lock-in. Use standard interfaces (HTTP, message queues) to reduce lock-in risk."
+  },
+  "startupPrograms": [
+    {
+      "name": "AWS Activate",
+      "credits": 5000,
+      "duration": "2 years"
+    }
+  ],
+  "lastVerified": "2025-11-16"
+}

@@ -1,0 +1,79 @@
+```mermaid
+stateDiagram-v2
+    [*] --> NoIncrement: No active increments
+
+    NoIncrement --> BacklogAvailable: Backlog items exist
+    NoIncrement --> CreateNew: User creates increment
+
+    BacklogAvailable --> CreateNew: User selects backlog item
+    BacklogAvailable --> NoIncrement: Backlog empty
+
+    CreateNew --> NeedsPlanning: spec.md created
+
+    NeedsPlanning --> PlanningInProgress: /specweave:plan invoked
+    PlanningInProgress --> NeedsExecution: plan.md + tasks.md created
+
+    NeedsExecution --> ExecutionInProgress: /specweave:do invoked
+    ExecutionInProgress --> NeedsExecution: More tasks remain
+    ExecutionInProgress --> NeedsValidation: All P1 tasks completed
+
+    NeedsValidation --> ValidationFailed: /specweave:validate → errors found
+    ValidationFailed --> NeedsExecution: User fixes issues
+
+    NeedsValidation --> NeedsQA: Validation passed
+
+    NeedsQA --> QAFailed: /specweave:qa → quality issues
+    QAFailed --> NeedsExecution: User fixes issues
+
+    NeedsQA --> NeedsClosure: QA passed
+
+    NeedsClosure --> IncrementClosed: /specweave:done invoked
+
+    IncrementClosed --> NextIncrement: Find next active increment
+    NextIncrement --> NeedsExecution: Next increment found (resume work)
+    NextIncrement --> BacklogAvailable: No active increments, check backlog
+    NextIncrement --> NoIncrement: All done
+
+    %% Autonomous Mode Loop
+    NoIncrement --> [*]: Exit autonomous mode
+
+    %% Error States
+    NeedsExecution --> CorruptState: File corruption detected
+    CorruptState --> NeedsPlanning: User recovers
+    CorruptState --> [*]: Unrecoverable error
+
+    %% Multi-Project Paths
+    BacklogAvailable --> ProjectSelection: Multi-project mode enabled
+    ProjectSelection --> CreateNew: Project selected
+
+    note right of NeedsPlanning
+        Confidence: High (0.9+)
+        Auto-Action: /specweave:plan
+        Agents: Architect, test-aware-planner
+    end note
+
+    note right of NeedsExecution
+        Confidence: High (0.9+)
+        Auto-Action: /specweave:do (repeat)
+        Agents: Coder, TDD Orchestrator
+    end note
+
+    note right of NeedsValidation
+        Confidence: Medium (0.7-0.9)
+        Suggested Action: /specweave:validate
+        User Control: Prompt before running
+    end note
+
+    note right of NeedsQA
+        Confidence: Medium (0.7-0.9)
+        Suggested Action: /specweave:qa
+        User Control: Prompt before running
+        Cost: $$$ (judge LLM)
+    end note
+
+    note right of IncrementClosed
+        Confidence: High (0.9+)
+        Auto-Action: Find next work
+        WIP Limit: Enforced
+    end note
+```

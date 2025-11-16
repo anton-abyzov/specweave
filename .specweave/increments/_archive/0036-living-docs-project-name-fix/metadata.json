@@ -1,0 +1,9 @@
+{
+  "id": "0036-living-docs-project-name-fix",
+  "status": "abandoned",
+  "type": "feature",
+  "created": "2025-11-15T22:46:43.606Z",
+  "lastActivity": "2025-11-15T22:46:43.606Z",
+  "abandonedAt": "2025-11-16T06:00:00.000Z",
+  "abandonedReason": "Work completed in commit 49e86aa before increment created. Fix implemented in project-detector.ts to use detectRepoName() instead of hardcoded 'default'. Tests exist: tests/e2e/living-docs-project-name-fix.spec.ts (8 tests), tests/unit/living-docs/hierarchy-mapper-project-detection.test.ts (21 tests). Shipped in v0.20.0."
+}

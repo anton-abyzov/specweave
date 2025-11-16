@@ -1,0 +1,46 @@
+{
+  "id": "firebase",
+  "name": "Firebase (Cloud Functions for Firebase)",
+  "provider": "GCP",
+  "pricing": {
+    "freeTier": {
+      "requests": 2000000,
+      "computeGbSeconds": 400000,
+      "dataTransferGb": 10
+    },
+    "payAsYouGo": {
+      "requestsPer1M": 0.40,
+      "computePerGbSecond": 0.0000025,
+      "dataTransferPerGb": 0.12
+    }
+  },
+  "features": {
+    "runtimes": ["Node.js 18/20", "Python 3.10/3.11"],
+    "coldStartMs": 300,
+    "maxExecutionMinutes": 60,
+    "maxMemoryMb": 8192
+  },
+  "ecosystem": {
+    "integrations": ["Firestore", "Realtime Database", "Firebase Storage", "Authentication", "Hosting", "Analytics", "Cloud Messaging", "Remote Config"],
+    "sdks": ["JavaScript/TypeScript", "Swift (iOS)", "Kotlin (Android)", "Dart (Flutter)"],
+    "communitySize": "very-large"
+  },
+  "lockIn": {
+    "portability": "low",
+    "migrationComplexity": "high",
+    "vendorLockIn": "High - Firebase is tightly integrated with Google services. Migrating away requires rewriting authentication, database queries, and storage logic. Use Firebase for rapid prototyping and MVPs, but be aware of long-term lock-in."
+  },
+  "startupPrograms": [
+    {
+      "name": "Firebase Spark (Free Tier)",
+      "credits": 0,
+      "duration": "Permanent"
+    },
+    {
+      "name": "Google Cloud for Startups (if linked)",
+      "credits": 100000,
+      "duration": "2 years"
+    }
+  ],
+  "lastVerified": "2025-11-16"
+}
