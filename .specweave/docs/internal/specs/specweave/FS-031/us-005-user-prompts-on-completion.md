@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 569
-    url: https://github.com/anton-abyzov/specweave/issues/569
+    issue: 598
+    url: https://github.com/anton-abyzov/specweave/issues/598
 ---
 
 # US-005: User Prompts on Completion

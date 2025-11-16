@@ -59,17 +59,26 @@ All SpecWeave commands are namespaced for brownfield safety and follow a consist
 19. `specweave-tdd-refactor.md` - Refactor code → `/specweave:tdd-refactor`
 20. `specweave-tdd-cycle.md` - Full TDD cycle → `/specweave:tdd-cycle`
 
-### Utilities (2 commands)
-21. `specweave-translate.md` - Batch translation → `/specweave:translate`
-22. `specweave.md` - Master router → `/specweave`
+### Archiving & Cleanup (6 commands)
+21. `specweave-archive.md` - Archive increments → `/specweave:archive`
+22. `specweave-restore.md` - Restore from archive → `/specweave:restore`
+23. `specweave-archive-features.md` - Archive features/epics → `/specweave:archive-features`
+24. `specweave-restore-feature.md` - Restore features/epics → `/specweave:restore-feature`
+25. `specweave-fix-duplicates.md` - Resolve duplicate increments → `/specweave:fix-duplicates`
+26. `specweave-backlog.md` - Move to backlog → `/specweave:backlog`
 
-**Total**: 22 commands (down from 31, removed 8 duplicates/deprecated, removed 1 redundant)
+### Utilities (2 commands)
+27. `specweave-translate.md` - Batch translation → `/specweave:translate`
+28. `specweave.md` - Master router → `/specweave`
+
+**Total**: 28 commands (6 new archiving/cleanup commands added in v0.18.3)
 
 ## Command Categories
 
 - **ESSENTIAL**: increment, do, done, next, progress, validate, sync-docs
 - **IMPORTANT**: status, qa, check-tests, update-scope, costs, translate
-- **STATE MANAGEMENT**: pause, resume, abandon
+- **STATE MANAGEMENT**: pause, resume, abandon, backlog
+- **ARCHIVING**: archive, restore, archive-features, restore-feature, fix-duplicates
 - **OPTIONAL**: TDD workflow commands, sync-tasks
 
 ## Removed/Deprecated Commands

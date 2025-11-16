@@ -29,9 +29,12 @@ import {
   ProjectContext,
   EpicMapping,
   ExternalToolMapping,
+  ProjectSpecificTask,
 } from './types.js';
 import { HierarchyMapper } from './hierarchy-mapper.js';
 import { detectPrimaryGitHubRemote, GitRemote } from '../../utils/git-detector.js';
+import { ACProjectSpecificGenerator } from './ac-project-specific-generator.js';
+import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 
 /**
  * SpecDistributor - Distributes increment specs into hierarchical living docs
@@ -41,6 +44,8 @@ export class SpecDistributor {
   private projectRoot: string;
   private hierarchyMapper: HierarchyMapper;
   private githubRemote: GitRemote | null = null;
+  private acGenerator: ACProjectSpecificGenerator;
+  private taskGenerator: TaskProjectSpecificGenerator; // ✅ NEW: Task generator
 
   constructor(projectRoot: string, config?: Partial<DistributionConfig>) {
     this.projectRoot = projectRoot;
@@ -64,6 +69,10 @@ export class SpecDistributor {
     };
     // Initialize HierarchyMapper
     this.hierarchyMapper = new HierarchyMapper(projectRoot);
+    // Initialize AC Generator
+    this.acGenerator = new ACProjectSpecificGenerator();
+    // ✅ NEW: Initialize Task Generator
+    this.taskGenerator = new TaskProjectSpecificGenerator(projectRoot);
   }
 
   /**
@@ -81,6 +90,25 @@ export class SpecDistributor {
 
       // Step 1: Parse increment spec (with epic and project detection)
       const parsed = await this.parseIncrementSpec(incrementId);
+
+      // Step 1.5: Filter abandoned/archived increments (CRITICAL: prevent pollution)
+      if (parsed.status === 'abandoned' || parsed.status === 'archived') {
+        console.log(`   ⚠️  Skipping distribution for ${parsed.status} increment: ${incrementId}`);
+        console.log(`   💡 Living docs are NOT updated for ${parsed.status} increments`);
+        return {
+          epic: {} as any,
+          userStories: [],
+          incrementId,
+          specId: `${parsed.status.toUpperCase()}-${incrementId}`,
+          totalStories: 0,
+          totalFiles: 0,
+          epicPath: '',
+          userStoryPaths: [],
+          success: false,
+          errors: [`Increment ${incrementId} is ${parsed.status} - skipping living docs distribution`],
+          warnings: [`To preserve history, archived content remains in the increment folder`],
+        };
+      }
 
       // Step 2: Check if we should create epics (skip for GitHub)
       const config = await this.hierarchyMapper.getSpecweaveConfig();
@@ -953,7 +981,7 @@ export class SpecDistributor {
     // Frontmatter
     lines.push('---');
     lines.push(`id: ${userStory.id}`);
-    lines.push(`epic: ${userStory.epic}`);
+    lines.push(`feature: ${userStory.epic}`);  // ✅ FIX: Use 'feature:' not 'epic:' (Universal Hierarchy)
     lines.push(`title: "${userStory.title}"`);
     lines.push(`status: ${userStory.status}`);
     if (userStory.priority) lines.push(`priority: ${userStory.priority}`);
@@ -1016,16 +1044,31 @@ export class SpecDistributor {
     lines.push('---');
     lines.push('');
 
-    // Implementation
+    // ✅ NEW: Tasks section with checkboxes (project-specific)
+    if (userStory.tasks && userStory.tasks.length > 0) {
+      lines.push('## Tasks');
+      lines.push('');
+      for (const task of userStory.tasks) {
+        const checkbox = task.completed ? '[x]' : '[ ]';
+        lines.push(`- ${checkbox} **${task.id}**: ${task.title}`);
+      }
+      lines.push('');
+      lines.push('> **Note**: Tasks are project-specific. For the full increment task list, see [increment tasks.md](../../../../../increments/${userStory.implementation.increment}/tasks.md)');
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    }
+
+    // Implementation (source reference)
     lines.push('## Implementation');
     lines.push('');
-    lines.push(`**Increment**: [${userStory.implementation.increment}](${userStory.implementation.tasks[0]?.path.replace(/#.*$/, '')})`);
+    const incrementLink = userStory.implementation.tasks[0]?.path.replace(/#.*$/, '') || `../../../../../increments/${userStory.implementation.increment}/tasks.md`;
+    lines.push(`**Increment**: [${userStory.implementation.increment}](${incrementLink})`);
     lines.push('');
-    lines.push('**Tasks**:');
-    for (const task of userStory.implementation.tasks) {
-      lines.push(`- [${task.id}: ${task.title}](${task.path})`);
+    if (userStory.implementation.tasks.length > 0) {
+      lines.push('**Source Tasks**: See increment tasks.md for complete task breakdown');
+      lines.push('');
     }
-    lines.push('');
 
     // Business Rationale
     if (userStory.businessRationale) {
@@ -1335,15 +1378,31 @@ ${hasUserStories ? 'User stories for this project are listed below.' : `_This in
   ): Promise<Map<string, UserStoryFile[]>> {
     const filesByProject = new Map<string, UserStoryFile[]>();
 
-    // Load tasks for linking
+    // Load tasks for linking (LEGACY - for backward compatibility)
     const taskMap = await this.loadTaskReferences(incrementId);
 
     for (const [project, stories] of storiesByProject.entries()) {
       const userStoryFiles: UserStoryFile[] = [];
 
+      // Get project context for AC and task transformation
+      const rawProjectContext = await this.hierarchyMapper.getProjectContext(project);
+
       for (const userStory of stories) {
-        // Find tasks that implement this user story
-        const tasks = this.findTasksForUserStory(userStory.id, taskMap);
+        // LEGACY: Find tasks that implement this user story (for backward compatibility)
+        const taskReferences = this.findTasksForUserStory(userStory.id, taskMap);
+
+        // ✅ NEW: Generate project-specific tasks with completion status
+        const projectSpecificTasks = await this.taskGenerator.generateProjectSpecificTasks(
+          incrementId,
+          userStory.id,
+          rawProjectContext ? {
+            id: rawProjectContext.projectId,
+            name: rawProjectContext.projectName,
+            type: this.detectProjectType(rawProjectContext),
+            techStack: rawProjectContext.techStack,
+            keywords: rawProjectContext.keywords,
+          } : undefined
+        );
 
         // Find related user stories (same project, same phase)
         const relatedStories = stories
@@ -1356,6 +1415,25 @@ ${hasUserStories ? 'User stories for this project are listed below.' : `_This in
             filePath: this.generateUserStoryFilename(us.id, us.title),
           }));
 
+        // ✨ Apply project-specific AC transformation
+        let projectSpecificACs = userStory.acceptanceCriteria;
+        if (rawProjectContext) {
+          // Map ProjectContext to AC generator's expected format
+          const acGeneratorContext = {
+            id: rawProjectContext.projectId,
+            name: rawProjectContext.projectName,
+            type: this.detectProjectType(rawProjectContext),
+            techStack: rawProjectContext.techStack,
+            keywords: rawProjectContext.keywords,
+          };
+
+          projectSpecificACs = this.acGenerator.makeProjectSpecific(
+            userStory.acceptanceCriteria,
+            userStory.id,
+            acGeneratorContext
+          );
+        }
+
         userStoryFiles.push({
           id: userStory.id,
           epic: featureMapping.featureId, // Feature is the parent
@@ -1365,10 +1443,11 @@ ${hasUserStories ? 'User stories for this project are listed below.' : `_This in
           created: new Date().toISOString().split('T')[0],
           completed: userStory.status === 'complete' ? new Date().toISOString().split('T')[0] : undefined,
           description: userStory.description,
-          acceptanceCriteria: userStory.acceptanceCriteria,
+          acceptanceCriteria: projectSpecificACs, // ✅ Use project-specific AC
+          tasks: projectSpecificTasks, // ✅ NEW: Project-specific tasks with completion status
           implementation: {
             increment: incrementId,
-            tasks,
+            tasks: taskReferences, // LEGACY: Keep for backward compatibility
           },
           businessRationale: userStory.businessRationale,
           relatedStories,
@@ -1989,6 +2068,54 @@ ${storiesByProjectSection}
       .map(e => e.name);
 
     return projectFolders.length > 0 ? projectFolders : ['default'];
+  }
+
+  /**
+   * Detect project type for AC generation (backend, frontend, mobile, infrastructure, generic)
+   */
+  private detectProjectType(context: ProjectContext): 'backend' | 'frontend' | 'mobile' | 'infrastructure' | 'generic' {
+    const projectId = context.projectId.toLowerCase();
+    const keywords = context.keywords.map(k => k.toLowerCase());
+    const techStack = context.techStack.map(t => t.toLowerCase());
+
+    // Direct match on project ID
+    if (projectId.includes('backend') || projectId.includes('api') || projectId.includes('service')) {
+      return 'backend';
+    }
+    if (projectId.includes('frontend') || projectId.includes('web') || projectId.includes('ui')) {
+      return 'frontend';
+    }
+    if (projectId.includes('mobile') || projectId.includes('ios') || projectId.includes('android')) {
+      return 'mobile';
+    }
+    if (projectId.includes('infra') || projectId.includes('devops') || projectId.includes('deployment')) {
+      return 'infrastructure';
+    }
+
+    // Keyword-based detection
+    const backendKeywords = ['api', 'backend', 'service', 'server', 'database'];
+    const frontendKeywords = ['frontend', 'ui', 'component', 'react', 'web'];
+    const mobileKeywords = ['mobile', 'ios', 'android', 'react-native'];
+    const infraKeywords = ['infrastructure', 'devops', 'deployment', 'ci/cd', 'kubernetes'];
+
+    if (keywords.some(k => backendKeywords.includes(k))) return 'backend';
+    if (keywords.some(k => frontendKeywords.includes(k))) return 'frontend';
+    if (keywords.some(k => mobileKeywords.includes(k))) return 'mobile';
+    if (keywords.some(k => infraKeywords.includes(k))) return 'infrastructure';
+
+    // Tech stack-based detection
+    const backendTech = ['node.js', 'express', 'postgresql', 'mongodb', 'redis'];
+    const frontendTech = ['react', 'next.js', 'vue', 'angular', 'typescript'];
+    const mobileTech = ['react native', 'swift', 'kotlin', 'flutter'];
+    const infraTech = ['docker', 'kubernetes', 'terraform', 'ansible'];
+
+    if (techStack.some(t => backendTech.some(bt => t.includes(bt)))) return 'backend';
+    if (techStack.some(t => frontendTech.some(ft => t.includes(ft)))) return 'frontend';
+    if (techStack.some(t => mobileTech.some(mt => t.includes(mt)))) return 'mobile';
+    if (techStack.some(t => infraTech.some(it => t.includes(it)))) return 'infrastructure';
+
+    // Default to generic if no match
+    return 'generic';
   }
 
   /**

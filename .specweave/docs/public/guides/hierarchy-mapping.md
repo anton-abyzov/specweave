@@ -34,9 +34,9 @@ SpecWeave implements a **Universal Hierarchy** that maps consistently across all
 
 **Key Insight**: GitHub Epics = Milestones, NOT Issue Type "Epic"!
 
-**When to use each approach**:
-- **Milestone approach**: Use `/specweave-github:sync-epic` to create Milestone + Issues (hierarchical)
-- **Issue approach**: Use `bulk-spec-sync.ts` to create Issues for permanent specs (flat)
+**Sync Approach**:
+- Epic/Feature/User Story syncing happens **automatically** via living docs sync (triggered by `/specweave:done`)
+- Increments sync to GitHub issues via `/specweave-github:sync` (manual or automatic via hooks)
 
 ### JIRA
 
@@ -111,54 +111,40 @@ type: epic  # ← Internal SpecWeave type
 
 ## Sync Workflows
 
-### 1. Hierarchical Sync (GitHub Milestones)
+### Automatic Living Docs Sync
 
-**Use Case**: Epic-level tracking with hierarchical structure (Epic → Increments)
+**Use Case**: Universal sync for all external tools (GitHub, JIRA, ADO)
 
-**Command**: `/specweave-github:sync-epic FS-001`
+**Trigger**: Automatically when running `/specweave:done` after completing an increment
 
-**Creates**:
-- GitHub Milestone (Epic level)
-- GitHub Issues (Increment level, linked to Milestone)
+**How It Works**:
+1. SpecWeave analyzes the increment's spec.md
+2. Detects Epic, Feature, and User Story entities
+3. Distributes to living docs structure
+4. Syncs to external tools based on configuration
+
+**What Gets Created**:
+
+**GitHub**:
+- Feature → Milestone
+- User Stories → Issues (linked to Milestone)
+- Tasks → Checkboxes in issue body
+
+**JIRA**:
+- Feature → Epic
+- User Stories → Stories (linked to Epic)
+- Tasks → Sub-tasks (linked to Stories)
+
+**Azure DevOps**:
+- Feature → Feature work item
+- User Stories → User Stories (linked to Feature)
+- Tasks → Tasks (linked to User Stories)
 
 **Benefits**:
-- Visual hierarchy in GitHub
-- Milestone progress tracking
-- Group related increments
-
-### 2. Flat Sync (GitHub Issues)
-
-**Use Case**: Permanent feature tracking without hierarchy
-
-**Script**: `npx tsx scripts/bulk-spec-sync.ts`
-
-**Creates**:
-- GitHub Issues (Feature level)
-- User stories as checkboxes in issue body
-- Tasks from increments as checkboxes
-
-**Benefits**:
-- Simple flat structure
-- Good for permanent specs
-- Auto-close when complete
-
-### 3. JIRA Sync
-
-**Command**: `/specweave-jira:sync-epic FS-001`
-
-**Creates**:
-- JIRA Epic
-- JIRA Stories (linked to Epic)
-- JIRA Sub-tasks (linked to Stories)
-
-### 4. ADO Sync
-
-**Command**: `/specweave-ado:sync-epic FS-001`
-
-**Creates**:
-- ADO Feature
-- ADO User Stories (linked to Feature)
-- ADO Tasks (linked to User Stories)
+- Single command triggers all syncs
+- Consistent mapping across all tools
+- Automatic based on configuration
+- No manual commands needed
 
 ---
 

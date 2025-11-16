@@ -1,13 +1,14 @@
 {
   "id": "0033-duplicate-increment-prevention",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
-  "created": "2025-11-14T23:45:00Z",
-  "lastActivity": "2025-11-14T23:45:00Z",
+  "created": "2025-11-14T10:00:00Z",
+  "completed": "2025-11-14T22:00:00Z",
+  "lastActivity": "2025-11-15T10:12:00Z",
   "github": {
-    "issue": 506,
-    "url": "https://github.com/anton-abyzov/specweave/issues/506",
-    "synced": "2025-11-15T01:22:00Z"
+    "issue": 522,
+    "url": "https://github.com/anton-abyzov/specweave/issues/522",
+    "synced": "2025-11-15T10:12:00Z"
   },
   "githubProfile": "specweave-dev"
 }

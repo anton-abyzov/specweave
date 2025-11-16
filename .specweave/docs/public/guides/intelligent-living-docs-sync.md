@@ -1,8 +1,29 @@
 # Intelligent Living Docs Sync - User Guide
 
-**Version**: 0.18.0+
+**Version**: 0.18.3+
 **Status**: Production-Ready
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-15
+
+## NEW in v0.18.3: Project-Specific Tasks
+
+User stories now include **checkable task lists** instead of just links:
+
+```markdown
+## Tasks
+
+- [ ] **T-001**: Setup API endpoint
+- [x] **T-003**: Add DB migration (completed)
+
+> **Note**: Tasks are project-specific. See increment tasks.md for full list
+```
+
+**Benefits**:
+- **Project Isolation**: Backend tasks separate from frontend tasks
+- **GitHub UX**: Tasks appear as checkable checkboxes in GitHub issues
+- **Traceability**: Each user story explicitly lists relevant tasks
+- **Status Tracking**: Completion state synced from increment tasks.md
+
+**See**: [Project-Specific Tasks Architecture](#project-specific-tasks) below for details.
 
 ## Quick Start
 

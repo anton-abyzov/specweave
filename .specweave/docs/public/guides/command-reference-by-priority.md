@@ -127,33 +127,32 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-github:sync` | Sync increment ↔ GitHub issue | `/specweave-github:sync 0031` |
-| `/specweave-github:sync-epic` | Sync Epic → GitHub Milestone | `/specweave-github:sync-epic FS-031` |
-| `/specweave-github:sync-spec` | Sync spec → GitHub Project | `/specweave-github:sync-spec spec-031` |
-| `/specweave-github:sync-tasks` | Task-level GitHub issues | `/specweave-github:sync-tasks 0031` |
+| `/specweave-github:sync` | Sync increment ↔ GitHub issue (bidirectional) | `/specweave-github:sync 0031` |
 | `/specweave-github:create-issue` | Create GitHub issue | `/specweave-github:create-issue 0031` |
 | `/specweave-github:close-issue` | Close GitHub issue | `/specweave-github:close-issue 0031` |
 | `/specweave-github:status` | Check sync status | `/specweave-github:status 0031` |
 | `/specweave-github:cleanup-duplicates` | Clean duplicate issues | `/specweave-github:cleanup-duplicates FS-031` |
-| `/specweave-github:sync-from` | Sync from GitHub → SpecWeave | `/specweave-github:sync-from 0031` |
+
+**Note**: Epic/Feature/User Story syncing happens automatically via living docs sync (triggered by `/specweave:done`). The `/sync` command is for increments only.
 
 ### JIRA Integration
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-jira:sync` | Sync increment ↔ JIRA epic | `/specweave-jira:sync 0031` |
-| `/specweave-jira:sync-epic` | Sync Epic → JIRA Epic | `/specweave-jira:sync-epic FS-031` |
-| `/specweave-jira:sync-spec` | Sync spec → JIRA Epic | `/specweave-jira:sync-spec spec-031` |
+| `/specweave-jira:sync` | Sync increment ↔ JIRA epic (bidirectional) | `/specweave-jira:sync 0031` |
+
+**Note**: Epic/Feature/User Story syncing happens automatically via living docs sync (triggered by `/specweave:done`). The `/sync` command is for increments only.
 
 ### Azure DevOps Integration
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-ado:sync` | Sync increment ↔ ADO work item | `/specweave-ado:sync 0031` |
-| `/specweave-ado:sync-spec` | Sync spec → ADO Feature | `/specweave-ado:sync-spec spec-031` |
+| `/specweave-ado:sync` | Sync increment ↔ ADO work item (bidirectional) | `/specweave-ado:sync 0031` |
 | `/specweave-ado:create-workitem` | Create ADO work item | `/specweave-ado:create-workitem 0031` |
 | `/specweave-ado:close-workitem` | Close ADO work item | `/specweave-ado:close-workitem 0031` |
 | `/specweave-ado:status` | Check ADO sync status | `/specweave-ado:status 0031` |
+
+**Note**: Epic/Feature/User Story syncing happens automatically via living docs sync (triggered by `/specweave:done`). The `/sync` command is for increments only.
 
 ### Documentation Preview
 

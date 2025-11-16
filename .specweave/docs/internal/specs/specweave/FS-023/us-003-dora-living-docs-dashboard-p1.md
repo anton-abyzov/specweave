@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 556
-    url: https://github.com/anton-abyzov/specweave/issues/556
+    issue: 574
+    url: https://github.com/anton-abyzov/specweave/issues/574
 ---
 
 # US-003: DORA Living Docs Dashboard (P1)

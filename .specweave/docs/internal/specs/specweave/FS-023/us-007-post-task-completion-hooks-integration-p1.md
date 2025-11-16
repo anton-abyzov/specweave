@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 560
-    url: https://github.com/anton-abyzov/specweave/issues/560
+    issue: 578
+    url: https://github.com/anton-abyzov/specweave/issues/578
 ---
 
 # US-007: Post-Task-Completion Hooks Integration (P1)

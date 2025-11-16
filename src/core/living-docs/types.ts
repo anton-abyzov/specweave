@@ -29,6 +29,7 @@ export interface AcceptanceCriterion {
 
 /**
  * Task Reference (links to tasks.md)
+ * LEGACY: Used for backward compatibility, prefer ProjectSpecificTask
  */
 export interface TaskReference {
   id: string; // T-001, T-002, etc.
@@ -36,6 +37,19 @@ export interface TaskReference {
   anchor: string; // "#t-001-create-enhanced-content-builder"
   path: string; // Full relative path to tasks.md
   acIds: string[]; // AC-IDs extracted from task (e.g., ["AC-US1-01", "AC-US1-02"])
+}
+
+/**
+ * Project-Specific Task (with completion status)
+ * NEW: Preferred format for user story tasks
+ */
+export interface ProjectSpecificTask {
+  id: string;           // T-001
+  title: string;        // Setup API endpoint
+  completed: boolean;   // Read from increment tasks.md
+  acIds: string[];      // [AC-US1-01, AC-US1-02]
+  project?: string;     // backend, frontend, etc. (for filtering)
+  sourceIncrement?: string; // 0031-external-tool-sync
 }
 
 /**
@@ -161,9 +175,10 @@ export interface UserStoryFile {
   // Content
   description: string; // "As a... I want... So that..."
   acceptanceCriteria: AcceptanceCriterion[];
+  tasks?: ProjectSpecificTask[]; // ✅ NEW: Project-specific tasks with completion status
   implementation: {
     increment: string; // Link to increment tasks.md
-    tasks: TaskReference[]; // Links to specific tasks
+    tasks: TaskReference[]; // LEGACY: Links to specific tasks (for backward compatibility)
   };
   businessRationale?: string;
   testCoverage?: {
