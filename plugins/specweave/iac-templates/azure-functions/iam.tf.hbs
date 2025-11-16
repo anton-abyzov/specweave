@@ -1,0 +1,34 @@
+# IAM Roles and Permissions for Azure Functions
+# Project: {{projectName}}
+
+{{#if databaseName}}
+###############################
+# Cosmos DB Access for Function App
+###############################
+
+# Grant Function App managed identity access to Cosmos DB
+resource "azurerm_cosmosdb_sql_role_assignment" "{{snakeCase functionName}}" {
+  resource_group_name = azurerm_resource_group.{{snakeCase projectName}}.name
+  account_name        = azurerm_cosmosdb_account.{{snakeCase databaseName}}.name
+  role_definition_id  = "${azurerm_cosmosdb_account.{{snakeCase databaseName}}.id}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002"
+  principal_id        = azurerm_linux_function_app.{{snakeCase functionName}}.identity[0].principal_id
+  scope               = azurerm_cosmosdb_account.{{snakeCase databaseName}}.id
+}
+{{/if}}
+
+###############################
+# Storage Account Access
+###############################
+
+# Function App already has built-in access via storage account key
+# For Key Vault secrets (future enhancement):
+# resource "azurerm_key_vault_access_policy" "function_app" {
+#   key_vault_id = azurerm_key_vault.main.id
+#   tenant_id    = data.azurerm_client_config.current.tenant_id
+#   object_id    = azurerm_linux_function_app.{{snakeCase functionName}}.identity[0].principal_id
+#
+#   secret_permissions = [
+#     "Get",
+#     "List"
+#   ]
+# }

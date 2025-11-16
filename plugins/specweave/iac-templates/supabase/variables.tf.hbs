@@ -1,0 +1,78 @@
+# Terraform Variables for Supabase
+# Project: {{projectName}}
+
+{{#unless selfHosted}}
+variable "organization_id" {
+  description = "Supabase organization ID"
+  type        = string
+  default     = "{{#if organizationId}}{{organizationId}}{{else}}your-org-id{{/if}}"
+}
+{{/unless}}
+
+variable "region" {
+  description = "Supabase region"
+  type        = string
+  default     = "{{#if region}}{{region}}{{else}}us-east-1{{/if}}"
+  validation {
+    condition     = contains(["us-east-1", "us-west-1", "eu-west-1", "eu-central-1", "ap-southeast-1", "ap-northeast-1"], var.region)
+    error_message = "Region must be a valid Supabase region."
+  }
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "database_password" {
+  description = "PostgreSQL database password (at least 12 characters)"
+  type        = string
+  sensitive   = true
+  validation {
+    condition     = length(var.database_password) >= 12
+    error_message = "Database password must be at least 12 characters."
+  }
+}
+
+{{#if databaseName}}
+variable "database_name" {
+  description = "Database name"
+  type        = string
+  default     = "{{databaseName}}"
+}
+{{/if}}
+
+variable "function_name" {
+  description = "Edge function name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+{{#if selfHosted}}
+variable "data_path" {
+  description = "Path for persistent data storage (self-hosted)"
+  type        = string
+  default     = "/var/lib/supabase"
+}
+{{/if}}
+
+variable "tags" {
+  description = "Additional tags to apply to resources"
+  type        = map(string)
+  default     = {
+    project     = "{{projectName}}"
+    environment = "{{environment}}"
+    managed_by  = "terraform"
+  }
+}

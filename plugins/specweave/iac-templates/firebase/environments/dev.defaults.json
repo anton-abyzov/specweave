@@ -1,0 +1,44 @@
+{
+  "environment": "dev",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "enableAuth": true,
+  "firestore": {
+    "concurrencyMode": "PESSIMISTIC",
+    "pointInTimeRecovery": false,
+    "deleteProtection": false,
+    "securityRules": "permissive"
+  },
+  "storage": {
+    "versioning": false,
+    "forceDestroy": true,
+    "fileSizeLimit": null,
+    "securityRules": "permissive"
+  },
+  "auth": {
+    "providers": ["email"],
+    "allowDuplicateEmails": false,
+    "advancedSecurity": false
+  },
+  "hosting": {
+    "caching": "disabled",
+    "customDomain": false
+  },
+  "functions": {
+    "runtime": "nodejs18",
+    "minInstances": 0,
+    "maxInstances": 10
+  },
+  "costOptimization": {
+    "description": "Free tier optimized - Stays within Spark plan limits",
+    "estimatedMonthlyCost": "$0",
+    "freeTierEligible": true,
+    "plan": "Spark (Free)",
+    "notes": [
+      "10 GB hosting storage",
+      "50K Firestore reads/day",
+      "125K function invocations/month",
+      "Unlimited authentication"
+    ]
+  }
+}

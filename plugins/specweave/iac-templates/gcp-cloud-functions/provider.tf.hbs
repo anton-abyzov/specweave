@@ -1,0 +1,14 @@
+# GCP Provider Configuration
+# Project: {{projectName}}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+
+  default_labels = {
+    project     = var.project_name
+    environment = var.environment
+    managed_by  = "terraform"
+    created_by  = "specweave"
+  }
+}

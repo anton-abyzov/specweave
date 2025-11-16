@@ -1,0 +1,146 @@
+# IAM and Security Configuration for Supabase
+# Project: {{projectName}}
+
+{{#unless selfHosted}}
+###############################
+# Row Level Security (RLS) Policies
+###############################
+
+# RLS policies are defined in the migration SQL (main.tf)
+# This file contains additional security configurations
+
+###############################
+# API Key Management
+###############################
+
+# Anonymous key (public) - For client-side access
+# Generated automatically by Supabase
+
+# Service role key (private) - For server-side access
+# Generated automatically by Supabase
+
+# Custom API keys can be created via Supabase Dashboard
+
+###############################
+# Database Roles
+###############################
+
+# Default roles created by Supabase:
+# - postgres: Superuser
+# - authenticator: Used by PostgREST
+# - authenticated: For logged-in users
+# - anon: For anonymous users
+# - service_role: For backend services
+
+# Additional custom roles can be created via migrations
+
+resource "supabase_migration" "custom_roles" {
+  project_ref = supabase_project.{{snakeCase projectName}}.id
+  version     = "20240101000001"
+  name        = "custom_roles"
+
+  statements = [
+    <<-SQL
+      -- Create custom role for read-only access
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'readonly') THEN
+          CREATE ROLE readonly;
+        END IF;
+      END
+      $$;
+
+      GRANT USAGE ON SCHEMA public TO readonly;
+      GRANT SELECT ON ALL TABLES IN SCHEMA public TO readonly;
+      ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO readonly;
+
+      {{#if (eq environment "prod")}}
+      -- Production: Create audit role
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'auditor') THEN
+          CREATE ROLE auditor;
+        END IF;
+      END
+      $$;
+
+      GRANT USAGE ON SCHEMA public TO auditor;
+      GRANT SELECT ON ALL TABLES IN SCHEMA public TO auditor;
+      {{/if}}
+    SQL
+  ]
+}
+
+###############################
+# Storage Security
+###############################
+
+# Storage policies are defined in main.tf
+# Additional security configurations:
+
+{{#if (eq environment "prod")}}
+# Production: Enable strict CORS
+resource "supabase_settings" "{{snakeCase projectName}}_storage" {
+  project_ref = supabase_project.{{snakeCase projectName}}.id
+
+  storage = {
+    cors_allowed_origins = ["https://{{projectName}}.com"]
+  }
+}
+{{/if}}
+
+###############################
+# Network Security
+###############################
+
+{{#if (eq environment "prod")}}
+# Production: Configure network restrictions
+resource "supabase_network_restrictions" "{{snakeCase projectName}}" {
+  project_ref = supabase_project.{{snakeCase projectName}}.id
+
+  # Restrict database access to specific IP ranges
+  # Example: Only allow from your backend servers
+  # allowed_cidrs = ["10.0.0.0/8", "172.16.0.0/12"]
+
+  # Enable IPv6 restrictions
+  apply_to_ipv6 = true
+}
+{{/if}}
+
+{{else}}
+###############################
+# Self-Hosted Security Configuration
+###############################
+
+# For self-hosted deployments:
+# 1. Configure Kong API Gateway security
+# 2. Set up SSL/TLS certificates
+# 3. Configure firewall rules
+# 4. Set strong database passwords
+# 5. Restrict network access
+
+# Example: Docker network isolation is handled in main.tf
+{{/unless}}
+
+###############################
+# Authentication Security
+###############################
+
+# Auth settings are configured in main.tf
+# Additional recommendations:
+
+# {{#if (eq environment "prod")}}
+# Production checklist:
+# - Enable email confirmation
+# - Set strong password requirements (12+ chars)
+# - Enable double confirmation for email changes
+# - Configure rate limiting
+# - Enable MFA (configure in Supabase Dashboard)
+# - Set up custom SMTP for transactional emails
+# - Configure OAuth providers with proper scopes
+# {{else}}
+# Development notes:
+# - Email confirmation disabled for easier testing
+# - Weaker password requirements (8+ chars)
+# - No rate limiting
+# {{/if}}

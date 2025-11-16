@@ -1,0 +1,68 @@
+# Terraform Variables for Firebase
+# Project: {{projectName}}
+
+variable "project_id" {
+  description = "GCP project ID (must be a Firebase project)"
+  type        = string
+  default     = "{{#if projectId}}{{projectId}}{{else}}my-firebase-project{{/if}}"
+}
+
+variable "region" {
+  description = "GCP region for Cloud Functions"
+  type        = string
+  default     = "{{#if region}}{{region}}{{else}}us-central1{{/if}}"
+}
+
+variable "firestore_location" {
+  description = "Firestore location"
+  type        = string
+  default     = "{{#if firestoreLocation}}{{firestoreLocation}}{{else}}us-central{{/if}}"
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "function_name" {
+  description = "Cloud Functions name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+{{#if databaseName}}
+variable "database_name" {
+  description = "Firestore database name"
+  type        = string
+  default     = "{{databaseName}}"
+}
+{{/if}}
+
+{{#if enableAuth}}
+variable "enable_auth" {
+  description = "Enable Firebase Authentication"
+  type        = bool
+  default     = true
+}
+{{/if}}
+
+variable "labels" {
+  description = "Additional labels to apply to resources"
+  type        = map(string)
+  default     = {
+    project     = "{{projectName}}"
+    environment = "{{environment}}"
+    managed_by  = "terraform"
+  }
+}

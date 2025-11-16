@@ -1,0 +1,33 @@
+{
+  "environment": "dev",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "memory": "256M",
+  "timeout": 60,
+  "instances": {
+    "min": 0,
+    "max": 5
+  },
+  "ingress": "ALLOW_ALL",
+  "publicInvoker": true,
+  "storage": {
+    "versioning": false,
+    "lifecycleDays": 30,
+    "forceDestroy": true
+  },
+  "firestore": {
+    "concurrencyMode": "PESSIMISTIC",
+    "pointInTimeRecovery": false,
+    "deleteProtection": false
+  },
+  "costOptimization": {
+    "description": "Free tier optimized - 0 min instances, cold starts acceptable",
+    "estimatedMonthlyCost": "$0-1",
+    "freeTierEligible": true,
+    "notes": [
+      "2M invocations/month free",
+      "50K Firestore reads/day free",
+      "Cold starts expected (0 min instances)"
+    ]
+  }
+}

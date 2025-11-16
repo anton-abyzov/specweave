@@ -1,0 +1,54 @@
+{
+  "environment": "staging",
+  "region": "us-east-1",
+  "plan": "free",
+  "selfHosted": false,
+  "database": {
+    "maxConnections": 100,
+    "extensions": ["uuid-ossp", "pgcrypto"]
+  },
+  "auth": {
+    "providers": ["email", "google"],
+    "emailConfirmRequired": false,
+    "passwordMinLength": 10,
+    "jwtExpiry": 7200,
+    "enableSignup": true,
+    "doubleConfirmChanges": false
+  },
+  "storage": {
+    "publicBucket": {
+      "fileSizeLimit": 20971520,
+      "allowedMimeTypes": ["image/*", "application/pdf"]
+    },
+    "privateBucket": {
+      "fileSizeLimit": 20971520,
+      "allowedMimeTypes": ["image/*", "application/pdf", "application/json"]
+    }
+  },
+  "api": {
+    "maxRows": 10000
+  },
+  "rls": {
+    "strictMode": true,
+    "defaultDeny": false
+  },
+  "costOptimization": {
+    "description": "Free or Pro tier - Upgrade if exceeding limits",
+    "estimatedMonthlyCost": "$0-32",
+    "freeTierEligible": true,
+    "plan": "Free (upgrade to Pro if needed)",
+    "limits": {
+      "database": "500 MB (8 GB on Pro)",
+      "storage": "1 GB (100 GB on Pro)",
+      "edgeFunctions": "500K invocations/month (2M on Pro)",
+      "bandwidth": "2 GB (50 GB on Pro)",
+      "realtime": "200 concurrent (500 on Pro)"
+    },
+    "notes": [
+      "Start with Free tier",
+      "Upgrade to Pro if needed ($25/month base)",
+      "Stricter RLS policies",
+      "OAuth providers enabled"
+    ]
+  }
+}

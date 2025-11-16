@@ -1,0 +1,72 @@
+# Terraform Outputs for Azure Functions
+# Project: {{projectName}}
+
+output "function_app_name" {
+  description = "Name of the Function App"
+  value       = azurerm_linux_function_app.{{snakeCase functionName}}.name
+}
+
+output "function_app_id" {
+  description = "ID of the Function App"
+  value       = azurerm_linux_function_app.{{snakeCase functionName}}.id
+}
+
+output "function_app_default_hostname" {
+  description = "Default hostname of the Function App"
+  value       = azurerm_linux_function_app.{{snakeCase functionName}}.default_hostname
+}
+
+output "function_app_url" {
+  description = "HTTPS URL of the Function App"
+  value       = "https://${azurerm_linux_function_app.{{snakeCase functionName}}.default_hostname}"
+}
+
+output "function_identity_principal_id" {
+  description = "Principal ID of the Function App's managed identity"
+  value       = azurerm_linux_function_app.{{snakeCase functionName}}.identity[0].principal_id
+}
+
+output "resource_group_name" {
+  description = "Name of the resource group"
+  value       = azurerm_resource_group.{{snakeCase projectName}}.name
+}
+
+output "storage_account_name" {
+  description = "Name of the storage account"
+  value       = azurerm_storage_account.{{snakeCase functionName}}.name
+}
+
+output "application_insights_key" {
+  description = "Application Insights instrumentation key"
+  value       = azurerm_application_insights.{{snakeCase functionName}}.instrumentation_key
+  sensitive   = true
+}
+
+output "application_insights_connection_string" {
+  description = "Application Insights connection string"
+  value       = azurerm_application_insights.{{snakeCase functionName}}.connection_string
+  sensitive   = true
+}
+
+{{#if databaseName}}
+output "cosmosdb_endpoint" {
+  description = "Cosmos DB account endpoint"
+  value       = azurerm_cosmosdb_account.{{snakeCase databaseName}}.endpoint
+}
+
+output "cosmosdb_database_name" {
+  description = "Cosmos DB database name"
+  value       = azurerm_cosmosdb_sql_database.{{snakeCase databaseName}}.name
+}
+
+output "cosmosdb_container_name" {
+  description = "Cosmos DB container name"
+  value       = azurerm_cosmosdb_sql_container.{{snakeCase databaseName}}.name
+}
+
+output "cosmosdb_primary_key" {
+  description = "Cosmos DB primary key"
+  value       = azurerm_cosmosdb_account.{{snakeCase databaseName}}.primary_key
+  sensitive   = true
+}
+{{/if}}
