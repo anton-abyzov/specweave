@@ -230,7 +230,9 @@ const teamPath = projectManager.getTeamPath();  // team/{activeProject.id}/
 **In PM Agent Instructions**:
 - DO NOT hardcode `.specweave/docs/internal/specs/`
 - USE ProjectManager to get correct path for active project
-- Specs go to: `{projectManager.getSpecsPath()}/spec-{number}-{name}.md`
+- Living docs are created via `/specweave:sync-docs update` (not manually):
+  - Feature overviews: `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md`
+  - User stories: `.specweave/docs/internal/specs/{project}/FS-{number}/us-{id}-{slug}.md`
 
 ---
 
@@ -271,9 +273,10 @@ Task(
   You MUST create living Spec (living docs - source of truth) AND optionally create increment spec.md:
 
   1. Spec (living docs - SOURCE OF TRUTH, permanent):
-     - IMPORTANT: Use ProjectManager to get correct path for active project
-     - Create at: {projectManager.getSpecsPath()}/spec-{number}-{name}.md
-       (This resolves to specs/{activeProject}/ with FLATTENED structure v0.16.11+)
+     - IMPORTANT: Living docs are created via `/specweave:sync-docs update` (not manually)
+     - Structure (v0.18.0+ - three-layer architecture):
+       * Feature overview: `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md`
+       * User stories: `.specweave/docs/internal/specs/{project}/FS-{number}/us-*.md`
      - This is the COMPLETE, PERMANENT source of truth
      - Include ALL of:
        * User stories (US-001, US-002, etc.) with full details
@@ -300,7 +303,7 @@ Task(
   3. Increment spec.md (optional, can duplicate living spec):
      - Create .specweave/increments/{number}-{name}/spec.md
      - This CAN duplicate content from living spec.md (temporary reference - that's OK!)
-     - OR it can just reference the spec: \"See SPEC-{number}-{name} for complete requirements\"
+     - OR it can just reference the spec: \"See [FS-{number}](../../docs/internal/specs/_features/FS-{number}/FEATURE.md) for complete requirements\"
      - Increment spec.md may be deleted after increment completes
      - Living spec.md persists as permanent documentation
 
@@ -379,7 +382,7 @@ Task(
 Wait for test-aware-planner agent to complete!
     ↓
 STEP 6: Validate Living Docs and Increment Files
-├─ Check .specweave/docs/internal/specs/spec-{number}-{name}/spec.md exists (SOURCE OF TRUTH)
+├─ Check `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md` exists (SOURCE OF TRUTH)
 ├─ Check living spec.md contains ALL user stories, requirements, AC-IDs (with AC-IDs)
 ├─ Check .specweave/docs/internal/architecture/adr/ has ≥3 ADRs
 ├─ Check strategy docs (if created) are high-level only (no detailed user stories)
@@ -395,19 +398,26 @@ STEP 6: Validate Living Docs and Increment Files
 
 #### Living Spec (Living Docs - Source of Truth) ✅
 ```
-.specweave/docs/internal/specs/{project-id}/  # ← FLATTENED structure (v0.16.11+)
-└── spec-{number}-{name}.md          # ← PM Agent (MANDATORY)
+.specweave/docs/internal/specs/
+├── _features/                       # ← Cross-project feature overviews (v0.18.0+)
+│   └── FS-{number}/
+│       └── FEATURE.md               # ← Feature summary (created via sync-docs)
+└── {project-id}/                    # ← Project-specific user stories
+    └── FS-{number}/
+        ├── README.md                # ← Project context
+        └── us-*.md                  # ← User story details (created via sync-docs)
                                      # COMPLETE user stories, AC, requirements
                                      # This is the PERMANENT source of truth
                                      # Can be linked to Jira/ADO/GitHub Issues
                                      # Persists after increment completes
 
-# Examples (v0.16.11+ Flattened):
-# Single project: specs/default/spec-001-user-auth.md
-# Multi-project: specs/web-app/spec-001-user-auth.md
-#                specs/mobile/spec-001-push-notifications.md
-# Parent repo:   specs/_parent/spec-002-system-architecture.md
+# Examples (v0.18.0+ Three-Layer):
+# Feature overview: specs/_features/FS-001/FEATURE.md
+# User stories: specs/specweave/FS-001/us-001-user-auth.md, us-002-password-reset.md
+#               specs/mobile/FS-002/us-001-push-notifications.md
+#               specs/backend/FS-003/us-001-api-auth.md
 
+# OLD (v0.17.x): specs/{project}/spec-{number}-{name}.md ← DEPRECATED
 # OLD (v0.8.0-v0.16.10): projects/default/specs/... ← DEPRECATED
 ```
 
@@ -465,7 +475,7 @@ STEP 6: Validate Living Docs and Increment Files
 Before completing feature planning, verify:
 
 **Living Spec (Living Docs - Source of Truth, Mandatory)**:
-- [ ] `.specweave/docs/internal/specs/spec-{number}-{name}/spec.md` exists
+- [ ] `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md` exists (created via sync-docs)
 - [ ] Living spec.md contains ALL user stories (US-001, US-002, etc.) with full details
 - [ ] Living spec.md contains ALL acceptance criteria (AC-US1-01, etc.)
 - [ ] Living spec.md contains ALL requirements (FR-001, NFR-001, etc.)
@@ -485,7 +495,7 @@ Before completing feature planning, verify:
 - [ ] Diagrams created for module (system-context, system-container)
 
 **Increment spec.md (Optional - can duplicate living spec)**:
-- [ ] `spec.md` either duplicates living spec.md OR references it ("See SPEC-{number}-{name}")
+- [ ] `spec.md` either duplicates living spec.md OR references it ("See [FS-{number}](../../docs/internal/specs/_features/FS-{number}/FEATURE.md)")
 - [ ] If duplicated, content matches living spec.md
 
 **Increment plan.md (Mandatory)**:

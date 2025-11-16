@@ -10,6 +10,9 @@
  * Tracks the lifecycle state of an increment
  */
 export enum IncrementStatus {
+  /** Planning phase - spec/plan/tasks being created (does NOT count towards WIP limits) */
+  PLANNING = 'planning',
+
   /** Currently being worked on */
   ACTIVE = 'active',
 
@@ -121,6 +124,11 @@ export interface IncrementMetadataExtended extends IncrementMetadata {
  * Enforces increment lifecycle rules
  */
 export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
+  [IncrementStatus.PLANNING]: [
+    IncrementStatus.ACTIVE,     // Move to active when tasks start
+    IncrementStatus.BACKLOG,    // Move to backlog if deprioritized
+    IncrementStatus.ABANDONED   // Cancel planning
+  ],
   [IncrementStatus.ACTIVE]: [
     IncrementStatus.BACKLOG,
     IncrementStatus.PAUSED,
@@ -128,6 +136,7 @@ export const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]> = {
     IncrementStatus.ABANDONED
   ],
   [IncrementStatus.BACKLOG]: [
+    IncrementStatus.PLANNING,   // Resume planning
     IncrementStatus.ACTIVE,
     IncrementStatus.ABANDONED
   ],
@@ -178,13 +187,16 @@ export const STALENESS_THRESHOLDS = {
 
 /**
  * Default metadata for new increments
+ *
+ * NOTE: New increments start in PLANNING status by default.
+ * They auto-transition to ACTIVE when tasks.md is created or first task starts.
  */
 export function createDefaultMetadata(id: string, type: IncrementType = IncrementType.FEATURE): IncrementMetadata {
   const now = new Date().toISOString();
 
   return {
     id,
-    status: IncrementStatus.ACTIVE,
+    status: IncrementStatus.PLANNING,  // Start in planning phase
     type,
     created: now,
     lastActivity: now
@@ -233,4 +245,20 @@ export function shouldAutoAbandon(metadata: IncrementMetadata): boolean {
   const daysSinceActivity = (now.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24);
 
   return daysSinceActivity > STALENESS_THRESHOLDS.EXPERIMENT;
+}
+
+/**
+ * Check if increment status counts toward WIP (Work In Progress) limits
+ *
+ * Statuses that do NOT count toward WIP:
+ * - PLANNING: Planning phase, not consuming active work capacity
+ * - BACKLOG: Not started yet
+ * - PAUSED: Temporarily blocked, not actively being worked on
+ * - COMPLETED: Already done
+ * - ABANDONED: Cancelled
+ *
+ * Only ACTIVE increments count toward WIP limits.
+ */
+export function countsTowardWipLimit(status: IncrementStatus): boolean {
+  return status === IncrementStatus.ACTIVE;
 }

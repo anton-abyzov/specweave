@@ -191,12 +191,13 @@ async function hierarchicalDistribution(
     console.error(`   ❌ Hierarchical distribution failed: ${error}`);
     console.error((error as Error).stack);
 
-    // Fallback to simple mode
-    console.error('   Falling back to simple sync mode...');
-    const copied = await copyIncrementSpecToLivingDocs(incrementId);
+    // No fallback - hierarchical distribution is the only supported mode
+    console.error('   ⚠️  Living docs sync skipped due to error');
+    console.error('   💡 Tip: Run /specweave:sync-docs manually to retry');
+
     return {
-      success: copied,
-      changedFiles: copied ? [path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs', `spec-${incrementId}.md`)] : [],
+      success: false,
+      changedFiles: [],
     };
   }
 }
@@ -370,49 +371,9 @@ function extractFeatureArea(title: string): string {
   return title.replace(/^(Increment \d+:\s*)?/, '').trim();
 }
 
-/**
- * Copy increment spec to living docs (DEPRECATED - use extractAndMergeLivingDocs instead)
- * Returns true if spec was copied, false if skipped
- */
-async function copyIncrementSpecToLivingDocs(incrementId: string): Promise<boolean> {
-  console.warn('⚠️  Using deprecated copyIncrementSpecToLivingDocs (simple mode)');
-  console.warn('   Consider enabling intelligent mode to avoid duplication');
-
-  try {
-    const incrementSpecPath = path.join(process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
-    const livingDocsPath = path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs', `spec-${incrementId}.md`);
-
-    // Check if increment spec exists
-    if (!fs.existsSync(incrementSpecPath)) {
-      console.log(`⚠️  Increment spec not found: ${incrementSpecPath}`);
-      return false;
-    }
-
-    // Check if living docs spec already exists and is identical
-    if (fs.existsSync(livingDocsPath)) {
-      const incrementContent = await fs.readFile(incrementSpecPath, 'utf-8');
-      const livingDocsContent = await fs.readFile(livingDocsPath, 'utf-8');
-
-      if (incrementContent === livingDocsContent) {
-        console.log(`ℹ️  Living docs spec already up-to-date: spec-${incrementId}.md`);
-        return false;
-      }
-    }
-
-    // Ensure target directory exists
-    await fs.ensureDir(path.dirname(livingDocsPath));
-
-    // Copy spec to living docs
-    await fs.copy(incrementSpecPath, livingDocsPath);
-
-    console.log(`✅ Copied increment spec to living docs: spec-${incrementId}.md`);
-    return true;
-
-  } catch (error) {
-    console.error(`❌ Error copying increment spec: ${error}`);
-    return false;
-  }
-}
+// REMOVED: copyIncrementSpecToLivingDocs() function
+// Reason: Created wrong file structure (spec-XXXX-*.md instead of FS-XXX/ folder)
+// Use hierarchicalDistribution() instead (SpecDistributor)
 
 /**
  * Detect changed documentation files via git diff
