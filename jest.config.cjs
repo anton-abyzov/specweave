@@ -116,6 +116,8 @@ module.exports = {
     'role-orchestrator/',                 // Uses import.meta.url
     'increment-quality-judge/',           // Uses import.meta.url
     'hetzner-provisioner/',               // Uses import.meta.url
+    'github-feature-sync-idempotency.test.ts',  // GitHub API integration tests (requires gh CLI)
+    'github-immutable-description.test.ts',     // GitHub API integration tests (requires gh CLI)
   ],
   // Timeout for long-running tests
   testTimeout: 10000,
