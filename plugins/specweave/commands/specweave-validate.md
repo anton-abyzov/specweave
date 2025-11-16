@@ -57,25 +57,34 @@ Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--alwa
 
 ### Step 2: Run Rule-Based Validation (Always)
 
-Run 120 validation rules across 4 categories:
+Run 125+ validation rules across 5 categories:
 
-1. **Consistency Rules (47 checks)**:
+**CRITICAL: Always run structure validation FIRST to prevent duplicate task files**
+
+1. **Structure Rules (5 checks)** - NEW in v0.18.4:
+   - Only ONE tasks.md file exists (no tasks-detailed.md, tasks-final.md)
+   - Only allowed root files present (spec.md, plan.md, tasks.md, metadata.json, README.md)
+   - Unknown files moved to subdirectories (reports/, scripts/, logs/)
+   - No root-level pollution (analysis.md, summary.md moved to reports/)
+   - Metadata.json structure valid
+
+2. **Consistency Rules (47 checks)**:
    - User stories in spec.md → sections in plan.md
    - Components in plan.md → tasks in tasks.md
    - Test cases (TC-0001) in spec.md → tests.md coverage
    - Cross-document consistency (IDs, priorities, dependencies)
 
-2. **Completeness Rules (23 checks)**:
+3. **Completeness Rules (23 checks)**:
    - spec.md: Frontmatter, problem statement, user stories, acceptance criteria
    - plan.md: Architecture, components, data model, API contracts, security
    - tasks.md: Task IDs, descriptions, priorities, estimates
 
-3. **Quality Rules (31 checks)**:
+4. **Quality Rules (31 checks)**:
    - spec.md: Technology-agnostic, testable acceptance criteria
    - plan.md: Technical details, ADRs exist, security addressed
    - tasks.md: Actionable, reasonable estimates (<1 day)
 
-4. **Traceability Rules (19 checks)**:
+5. **Traceability Rules (19 checks)**:
    - TC-0001 format, sequential numbering
    - ADR references exist
    - Diagram references valid
@@ -86,7 +95,8 @@ Run 120 validation rules across 4 categories:
 VALIDATION RESULTS: Increment 0001-authentication
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Rule-Based Validation: PASSED (120/120 checks)
+✅ Rule-Based Validation: PASSED (125/125 checks)
+   ✓ Structure (5/5) [NEW]
    ✓ Consistency (47/47)
    ✓ Completeness (23/23)
    ✓ Quality (31/31)
@@ -103,11 +113,19 @@ Files validated:
 
 **If errors found**:
 ```
-❌ Rule-Based Validation: FAILED (115/120 checks)
+❌ Rule-Based Validation: FAILED (118/125 checks)
+   ❌ Structure (3/5) - 2 CRITICAL ERRORS
    ✓ Consistency (45/47) - 2 errors
    ✓ Completeness (23/23)
    ⚠️  Quality (28/31) - 3 warnings
    ✓ Traceability (19/19)
+
+CRITICAL STRUCTURE ERRORS (MUST FIX FIRST):
+  ❌ Duplicate task files detected: tasks.md, tasks-detailed.md
+     → Only ONE tasks.md allowed per increment
+     → Move tasks-detailed.md to reports/tasks-detailed.md
+  ❌ Unknown root-level file: analysis.md
+     → Move to reports/ directory
 
 ERRORS (2):
   🔴 spec.md:45 - Missing acceptance criteria for US-003
@@ -119,9 +137,10 @@ WARNINGS (3):
   🟡 ADR-0005 referenced but doesn't exist (plan.md:89)
 
 Action required:
-1. Fix missing acceptance criteria for US-003
-2. Address "real-time updates" in plan.md or remove from spec.md
-3. Consider breaking down T012 into smaller tasks
+1. ❗ FIX STRUCTURE ERRORS FIRST (single source of truth violation)
+2. Fix missing acceptance criteria for US-003
+3. Address "real-time updates" in plan.md or remove from spec.md
+4. Consider breaking down T012 into smaller tasks
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

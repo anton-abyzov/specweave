@@ -4,6 +4,36 @@
 
 ---
 
+## What Counts Toward WIP Limits?
+
+**ONLY `active` increments count toward WIP limits!**
+
+| Status | Counts Toward WIP? | Reason |
+|--------|-------------------|--------|
+| **planning** | ❌ No | Planning doesn't consume active work capacity |
+| **active** | ✅ Yes | Actively executing tasks |
+| **backlog** | ❌ No | Not started yet |
+| **paused** | ❌ No | Temporarily blocked, not active work |
+| **completed** | ❌ No | Already done |
+| **abandoned** | ❌ No | Cancelled |
+
+**Why PLANNING doesn't count**:
+- Creating spec/plan/tasks is preparation, not execution
+- Doesn't block you from active work
+- Auto-transitions to ACTIVE when tasks.md created
+
+**Example**:
+```
+Increments:
+- 0008-authentication (status: planning) → WIP: 0
+- 0009-dark-mode (status: active) → WIP: 1
+- 0010-payments (status: backlog) → WIP: 0
+
+Total WIP: 1/1 (within limit) ✅
+```
+
+---
+
 ## The Core Philosophy
 
 **Focus-First Architecture**: ONE Active Increment = Maximum Productivity

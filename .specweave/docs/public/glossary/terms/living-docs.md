@@ -236,6 +236,242 @@ graph TB
 
 ---
 
+## User Story Files: COPIED ACs and Tasks
+
+**NEW**: User Story files in living docs now contain **COPIED** Acceptance Criteria (ACs) and implementation tasks from increment, not just references.
+
+### Why COPIED Instead of References?
+
+**Traditional Approach** (References):
+```markdown
+# specs/backend/FS-031/us-001-authentication.md
+
+## Acceptance Criteria
+See [increment spec.md](../../../increments/0031/spec.md#us-001)
+
+## Implementation
+See [increment tasks.md](../../../increments/0031/tasks.md)
+```
+
+**Problems**:
+- ❌ Breaks when increment is archived
+- ❌ Requires navigation to multiple files
+- ❌ Not self-contained
+- ❌ Poor readability
+
+**SpecWeave Approach** (COPIED):
+```markdown
+# specs/backend/FS-031/us-001-authentication.md
+
+## Acceptance Criteria (COPIED from increment spec.md, filtered by backend)
+- [x] AC-US1-01: JWT token generation (backend)
+- [ ] AC-US1-02: Protected routes (backend)
+
+## Implementation (COPIED tasks from increment tasks.md, filtered by AC-ID)
+- [x] T-001: Setup JWT service
+- [ ] T-002: Create login API endpoint
+```
+
+**Benefits**:
+- ✅ Self-contained documentation
+- ✅ Survives increment archiving
+- ✅ Project-specific filtering (backend vs frontend)
+- ✅ GitHub integration (checkable checkboxes)
+
+---
+
+### User Story File Structure
+
+**Complete Example** (`specs/backend/FS-031/us-001-authentication.md`):
+
+```markdown
+---
+id: us-001-authentication-backend
+title: "US-001: Implement Authentication (Backend)"
+sidebar_label: "Authentication (Backend)"
+description: "Implement backend authentication using JWT tokens"
+tags: ["user-story", "backend", "authentication", "FS-031"]
+increment: "0031-external-tool-status-sync"
+project: "backend"
+category: "user-story"
+priority: "P1"
+status: "in-progress"
+---
+
+# US-001: Implement Authentication (Backend)
+
+**Feature**: [FS-031: External Tool Status Sync](../../_features/FS-031/FEATURE.md)
+**Epic** (if exists): [Epic-123: Authentication System](../../_epics/epic-123.md)
+
+---
+
+## Description
+
+Implement backend authentication using JWT tokens, including token generation,
+validation, and protected route middleware.
+
+---
+
+## Acceptance Criteria (COPIED from increment spec.md, filtered by backend)
+
+- [x] **AC-US1-01**: JWT token generation (backend) (P1)
+  - Generate secure JWT tokens on successful login
+  - Include user ID and role in token payload
+  - Set appropriate expiration time (24 hours)
+
+- [ ] **AC-US1-02**: Protected routes (backend) (P1)
+  - Middleware validates JWT token
+  - Unauthorized requests return 401
+  - Token expiration handled correctly
+
+---
+
+## Implementation (COPIED tasks from increment tasks.md, filtered by AC-ID)
+
+### JWT Token Generation (AC-US1-01)
+- [x] **T-001**: Setup JWT service
+- [ ] **T-002**: Create login API endpoint
+
+### Protected Routes (AC-US1-02)
+- [ ] **T-005**: Create auth middleware
+- [ ] **T-006**: Apply middleware to protected routes
+
+---
+
+## Technical Notes
+
+- Using `jsonwebtoken` library (v9.0.0)
+- Token secret stored in environment variable
+- RS256 algorithm for token signing
+
+---
+
+**Status**: In Progress (50% complete)
+**Last Updated**: 2025-11-16
+**Increment**: [0031-external-tool-status-sync](../../../increments/0031/)
+```
+
+---
+
+### Filtering Logic: Project-Specific Tasks
+
+User Stories are **project-specific** (organized by `specs/backend/`, `specs/frontend/`, `specs/mobile/`). Tasks are filtered to match:
+
+**Source (Increment)** - All tasks for ALL projects:
+```markdown
+# .specweave/increments/0031/spec.md
+## US-001: Implement Authentication
+**Acceptance Criteria**:
+- AC-US1-01: JWT token generation (backend)
+- AC-US1-02: Protected routes (backend)
+- AC-US1-03: Login form component (frontend)
+- AC-US1-04: Protected routes (frontend)
+
+# .specweave/increments/0031/tasks.md
+- [x] **T-001**: Setup JWT service (AC-US1-01)
+- [ ] **T-002**: Create login API endpoint (AC-US1-01)
+- [ ] **T-003**: Build login form component (AC-US1-03)
+- [ ] **T-004**: Add route protection HOC (AC-US1-04)
+```
+
+**Destination (Backend User Story)** - Only backend ACs and tasks:
+```markdown
+# specs/backend/FS-031/us-001-authentication.md
+
+## Acceptance Criteria (COPIED, filtered by "backend" keyword)
+- [x] AC-US1-01: JWT token generation (backend)
+- [ ] AC-US1-02: Protected routes (backend)
+
+## Implementation (COPIED, filtered by AC-ID)
+- [x] T-001: Setup JWT service (AC-US1-01)
+- [ ] T-002: Create login API endpoint (AC-US1-01)
+```
+
+**Destination (Frontend User Story)** - Only frontend ACs and tasks:
+```markdown
+# specs/frontend/FS-031/us-001-authentication.md
+
+## Acceptance Criteria (COPIED, filtered by "frontend" keyword)
+- [ ] AC-US1-03: Login form component (frontend)
+- [ ] AC-US1-04: Protected routes (frontend)
+
+## Implementation (COPIED, filtered by AC-ID)
+- [ ] T-003: Build login form component (AC-US1-03)
+- [ ] T-004: Add route protection HOC (AC-US1-04)
+```
+
+**Learn More**: [Project-Specific Tasks](/docs/glossary/terms/project-specific-tasks), [COPIED ACs and Tasks](/docs/glossary/terms/copied-acs-and-tasks)
+
+---
+
+### Three-Layer Bidirectional Sync
+
+COPIED content stays synchronized through the [Three-Layer Architecture](/docs/glossary/terms/three-layer-architecture):
+
+```
+Layer 1: GitHub Issue (checkable checkboxes)
+    ↕ (bidirectional)
+Layer 2: Living Docs User Story (COPIED ACs and tasks)
+    ↕ (bidirectional)
+Layer 3: Increment (source of truth)
+    - spec.md (for ACs)
+    - tasks.md (for tasks)
+```
+
+**Example Flow 1: Developer → GitHub**:
+```
+1. Developer completes task in increment tasks.md: [x] T-001
+2. Living docs sync copies to User Story: [x] T-001
+3. GitHub sync updates issue subtask: [x] T-001
+```
+
+**Example Flow 2: Stakeholder → Increment**:
+```
+1. Stakeholder checks GitHub subtask: [x] T-002
+2. GitHub sync updates User Story: [x] T-002
+3. Living docs sync updates increment tasks.md: [x] T-002
+```
+
+**Learn More**: [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync#three-layer-bidirectional-sync)
+
+---
+
+### GitHub Integration with COPIED Content
+
+COPIED content becomes **checkable checkboxes** in GitHub issues:
+
+**GitHub Issue** (from User Story):
+```markdown
+# US-001: Implement Authentication (Backend)
+
+**Feature**: [FS-031: External Tool Status Sync](link)
+**User Story**: [us-001-authentication.md](link)
+
+## Acceptance Criteria
+(Synced bidirectionally: GitHub ↔ Living Docs ↔ Increment spec.md)
+
+- [x] AC-US1-01: JWT token generation (backend)
+- [ ] AC-US1-02: Protected routes (backend)
+
+## Subtasks
+(Synced bidirectionally: GitHub ↔ Living Docs ↔ Increment tasks.md)
+
+- [x] T-001: Setup JWT service
+- [ ] T-002: Create login API endpoint
+
+---
+
+**Progress**: 50% (1/2 ACs, 1/2 Subtasks)
+```
+
+**Benefits**:
+- ✅ Stakeholders can check/uncheck boxes in GitHub
+- ✅ No repository access needed
+- ✅ Changes sync back to increment (source of truth)
+- ✅ Mobile-friendly progress tracking
+
+---
+
 ## Configuration
 
 **Enable Living Docs Sync** (`.specweave/config.json`):

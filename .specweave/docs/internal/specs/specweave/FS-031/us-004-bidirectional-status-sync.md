@@ -1,14 +1,10 @@
 ---
 id: US-004
 feature: FS-031
-title: Bidirectional Status Sync
+title: "Bidirectional Status Sync"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 597
-    url: https://github.com/anton-abyzov/specweave/issues/597
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-004: Bidirectional Status Sync
@@ -36,14 +32,7 @@ external:
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-008: Create Status Sync Engine (Core)](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-008-create-status-sync-engine-core)
-- [T-009: Implement GitHub Status Sync](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-009-implement-github-status-sync)
-- [T-010: Implement JIRA Status Sync](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-010-implement-jira-status-sync)
-- [T-011: Implement ADO Status Sync](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-011-implement-ado-status-sync)
-- [T-018: Add Sync Event Logging](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-018-add-sync-event-logging)
-- [T-021: Error Handling & Retry Logic](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-021-error-handling-retry-logic)
-- [T-027: Update Post-Task-Completion Hook](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-027-update-post-task-completion-hook)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -65,4 +54,4 @@ Automation eliminates manual work and keeps teams synchronized.
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16

@@ -1,14 +1,10 @@
 ---
 id: US-003
 feature: FS-031
-title: Status Mapping Configuration
+title: "Status Mapping Configuration"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 596
-    url: https://github.com/anton-abyzov/specweave/issues/596
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-003: Status Mapping Configuration
@@ -35,10 +31,7 @@ external:
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-006: Create Status Mapper](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-006-create-status-mapper)
-- [T-013: Update Configuration Schema](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-013-update-configuration-schema)
-- [T-014: Create Default Status Mappings](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-014-create-default-status-mappings)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -60,4 +53,4 @@ Different teams use different workflows; configuration enables flexibility.
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16

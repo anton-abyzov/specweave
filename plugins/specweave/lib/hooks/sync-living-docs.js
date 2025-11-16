@@ -87,11 +87,11 @@ async function hierarchicalDistribution(incrementId) {
   } catch (error) {
     console.error(`   \u274C Hierarchical distribution failed: ${error}`);
     console.error(error.stack);
-    console.error("   Falling back to simple sync mode...");
-    const copied = await copyIncrementSpecToLivingDocs(incrementId);
+    console.error("   \u26A0\uFE0F  Living docs sync skipped due to error");
+    console.error("   \u{1F4A1} Tip: Run /specweave:sync-docs manually to retry");
     return {
-      success: copied,
-      changedFiles: copied ? [path.join(process.cwd(), ".specweave", "docs", "internal", "specs", `spec-${incrementId}.md`)] : []
+      success: false,
+      changedFiles: []
     };
   }
 }
@@ -192,33 +192,6 @@ async function extractAndMergeLivingDocs(incrementId) {
 }
 function extractFeatureArea(title) {
   return title.replace(/^(Increment \d+:\s*)?/, "").trim();
-}
-async function copyIncrementSpecToLivingDocs(incrementId) {
-  console.warn("\u26A0\uFE0F  Using deprecated copyIncrementSpecToLivingDocs (simple mode)");
-  console.warn("   Consider enabling intelligent mode to avoid duplication");
-  try {
-    const incrementSpecPath = path.join(process.cwd(), ".specweave", "increments", incrementId, "spec.md");
-    const livingDocsPath = path.join(process.cwd(), ".specweave", "docs", "internal", "specs", `spec-${incrementId}.md`);
-    if (!fs.existsSync(incrementSpecPath)) {
-      console.log(`\u26A0\uFE0F  Increment spec not found: ${incrementSpecPath}`);
-      return false;
-    }
-    if (fs.existsSync(livingDocsPath)) {
-      const incrementContent = await fs.readFile(incrementSpecPath, "utf-8");
-      const livingDocsContent = await fs.readFile(livingDocsPath, "utf-8");
-      if (incrementContent === livingDocsContent) {
-        console.log(`\u2139\uFE0F  Living docs spec already up-to-date: spec-${incrementId}.md`);
-        return false;
-      }
-    }
-    await fs.ensureDir(path.dirname(livingDocsPath));
-    await fs.copy(incrementSpecPath, livingDocsPath);
-    console.log(`\u2705 Copied increment spec to living docs: spec-${incrementId}.md`);
-    return true;
-  } catch (error) {
-    console.error(`\u274C Error copying increment spec: ${error}`);
-    return false;
-  }
 }
 function detectChangedDocs() {
   try {

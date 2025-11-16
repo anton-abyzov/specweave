@@ -15,15 +15,21 @@ An increment is a **time-boxed, goal-oriented work package** that:
 
 ```mermaid
 graph LR
-    A[Planning] --> B[Implementation]
+    A[PLANNING] --> B[ACTIVE]
     B --> C[Validation]
-    C --> D[Done]
+    C --> D[COMPLETED]
 
     style A fill:#339af0
     style B fill:#ffd43b
     style C fill:#ff922b
     style D fill:#51cf66
 ```
+
+**Status Phases**:
+- **PLANNING** (Blue): Creating spec.md, plan.md, tasks.md
+- **ACTIVE** (Yellow): Executing tasks, writing code
+- **Validation** (Orange): Quality checks, testing
+- **COMPLETED** (Green): Shipped to production
 
 ---
 
@@ -326,12 +332,17 @@ Users report application memory growing from 200MB to 2GB after 4 hours of usage
 
 ```mermaid
 graph TB
-    A[Planning] --> B[Implementation]
+    A[PLANNING] --> B[ACTIVE]
     B --> C[Validation]
     C --> D{Pass?}
-    D -->|Yes| E[Done]
+    D -->|Yes| E[COMPLETED]
     D -->|No| B
     E --> F[Archive]
+    A -.->|Deprioritize| G[BACKLOG]
+    G -.->|Resume| A
+    A -.->|Cancel| H[ABANDONED]
+    B -.->|Blocked| I[PAUSED]
+    I -.->|Unblocked| B
 
     style A fill:#339af0
     style B fill:#ffd43b
@@ -339,9 +350,26 @@ graph TB
     style D fill:#fab005
     style E fill:#51cf66
     style F fill:#868e96
+    style G fill:#adb5bd
+    style H fill:#ff6b6b
+    style I fill:#ffd43b
 ```
 
-### Phase 1: Planning
+**Status Flow**:
+- **Solid lines**: Normal progression
+- **Dotted lines**: State transitions (pause, resume, abandon)
+
+**Status Definitions**:
+| Status | Meaning | Counts Toward WIP? |
+|--------|---------|-------------------|
+| **PLANNING** | Creating spec/plan/tasks | ❌ No |
+| **ACTIVE** | Executing tasks | ✅ Yes |
+| **BACKLOG** | Not started yet | ❌ No |
+| **PAUSED** | Temporarily blocked | ❌ No |
+| **COMPLETED** | All tasks done | ❌ No |
+| **ABANDONED** | Work cancelled | ❌ No |
+
+### Phase 1: Planning (PLANNING Status)
 
 **Command**: `/specweave:increment "feature description"`
 
@@ -353,7 +381,9 @@ graph TB
 
 **Output**: Complete increment ready for implementation
 
-### Phase 2: Implementation
+**Status Transition**: Automatically transitions from PLANNING → ACTIVE when tasks.md is created and first task starts.
+
+### Phase 2: Implementation (ACTIVE Status)
 
 **Command**: `/specweave:do`
 
@@ -561,7 +591,7 @@ Each increment has optional metadata file:
 ```json
 {
   "increment": "0008-user-authentication",
-  "status": "implementation",
+  "status": "active",
   "created": "2025-11-01T10:00:00Z",
   "updated": "2025-11-10T15:30:00Z",
   "github": {
@@ -576,6 +606,14 @@ Each increment has optional metadata file:
   }
 }
 ```
+
+**Valid Status Values**:
+- `"planning"` - Planning phase (spec/plan/tasks creation)
+- `"active"` - Active implementation
+- `"backlog"` - Not started yet
+- `"paused"` - Temporarily blocked
+- `"completed"` - All tasks done
+- `"abandoned"` - Work cancelled
 
 ---
 

@@ -198,6 +198,84 @@ if echo "$PROMPT" | grep -qE "/(specweave:)?(done|validate|progress|do)"; then
 fi
 
 # ==============================================================================
+# SPEC SYNC CHECK: Detect spec.md changes and warn about sync needed
+# ==============================================================================
+
+# Check if spec.md was modified after plan.md (requires sync)
+if [[ -d ".specweave/increments" ]]; then
+  # Find active increment
+  ACTIVE_INCREMENT_FOR_SYNC=$(find .specweave/increments -mindepth 1 -maxdepth 1 -type d | while read increment_dir; do
+    metadata="$increment_dir/metadata.json"
+    if [[ -f "$metadata" ]]; then
+      status=$(node -e "
+        try {
+          const data = JSON.parse(require('fs').readFileSync('$metadata', 'utf-8'));
+          if (data.status === 'active') {
+            console.log('$(basename "$increment_dir")');
+          }
+        } catch (e) {}
+      " 2>/dev/null)
+
+      if [[ -n "$status" ]]; then
+        echo "$status"
+        break
+      fi
+    fi
+  done)
+
+  if [[ -n "$ACTIVE_INCREMENT_FOR_SYNC" ]]; then
+    # Check if SpecSyncManager detects changes
+    if command -v node >/dev/null 2>&1 && [[ -f "dist/src/core/increment/spec-sync-manager.js" ]]; then
+      SYNC_CHECK=$(node -e "
+        try {
+          const { SpecSyncManager } = require('./dist/src/core/increment/spec-sync-manager.js');
+          const manager = new SpecSyncManager(process.cwd());
+          const detection = manager.detectSpecChange('$ACTIVE_INCREMENT_FOR_SYNC');
+
+          if (detection.specChanged) {
+            const message = manager.formatSyncMessage(detection);
+            console.log(JSON.stringify({ needsSync: true, message }));
+          } else {
+            console.log(JSON.stringify({ needsSync: false }));
+          }
+        } catch (e) {
+          console.log(JSON.stringify({ needsSync: false, error: e.message }));
+        }
+      " 2>/dev/null || echo '{"needsSync":false}')
+
+      NEEDS_SYNC=$(echo "$SYNC_CHECK" | node -e "
+        try {
+          const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+          console.log(data.needsSync || false);
+        } catch (e) {
+          console.log(false);
+        }
+      ")
+
+      if [[ "$NEEDS_SYNC" == "true" ]]; then
+        SYNC_MESSAGE=$(echo "$SYNC_CHECK" | node -e "
+          try {
+            const data = JSON.parse(require('fs').readFileSync(0, 'utf-8'));
+            console.log(data.message || '');
+          } catch (e) {
+            console.log('');
+          }
+        ")
+
+        # Show sync warning (don't block, just warn)
+        cat <<EOF
+{
+  "decision": "approve",
+  "systemMessage": "$SYNC_MESSAGE"
+}
+EOF
+        exit 0
+      fi
+    fi
+  fi
+fi
+
+# ==============================================================================
 # CONTEXT INJECTION: Add current increment status
 # ==============================================================================
 

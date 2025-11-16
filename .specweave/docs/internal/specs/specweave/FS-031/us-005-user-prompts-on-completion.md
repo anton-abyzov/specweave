@@ -1,14 +1,10 @@
 ---
 id: US-005
 feature: FS-031
-title: User Prompts on Completion
+title: "User Prompts on Completion"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 598
-    url: https://github.com/anton-abyzov/specweave/issues/598
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-005: User Prompts on Completion
@@ -34,13 +30,19 @@ external:
 
 ---
 
+## Tasks
+
+- [x] **T-012**: Integrate Status Sync with /specweave:done Command
+
+> **Note**: Tasks are project-specific. For the full increment task list, see [increment tasks.md](../../../../../increments/${userStory.implementation.increment}/tasks.md)
+
+---
+
 ## Implementation
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-012: Integrate Status Sync with /specweave:done Command](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-012-integrate-status-sync-with-specweave-done-command)
-- [T-017: Implement Auto-Sync Mode](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-017-implement-auto-sync-mode)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -62,4 +64,4 @@ User control prevents surprises and allows flexibility.
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16

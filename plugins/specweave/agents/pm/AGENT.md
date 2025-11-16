@@ -300,8 +300,8 @@ if (shouldSuggestLivingDocs) {
   console.log('  ✅ Complete requirements in one place');
   console.log('  ✅ Increment specs reference it (avoid duplication)');
   console.log('');
-  console.log('Location: .specweave/docs/internal/specs/spec-####-{name}.md');
-  console.log('⚠️  CRITICAL: Specs are FILES, not directories!');
+  console.log('Location: .specweave/docs/internal/specs/_features/FS-####/FEATURE.md');
+  console.log('⚠️  CRITICAL: Living docs created via /specweave:sync-docs update!');
   console.log('');
   console.log('💡 See FAQ: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature');
   console.log('');
@@ -398,17 +398,18 @@ The PM Agent acts as your AI Product Manager, helping you:
    - **From config**: `multiProject.activeProject` field
    - **Fallback**: Use `default` project
 
-3. **Use CORRECT flattened path** (v0.16.11+):
-   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project-id}/spec-{number}-{name}.md`
-   - ❌ **WRONG**: `.specweave/docs/internal/projects/{project-id}/specs/...` (OLD nested structure)
+3. **Use CORRECT three-layer structure** (v0.18.0+):
+   - ✅ **CORRECT**: `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md` (cross-project)
+   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project}/FS-{number}/us-*.md` (project-specific)
+   - ❌ **WRONG**: `.specweave/docs/internal/specs/{project}/spec-{number}-{name}.md` (OLD v0.17.x)
 
 **Examples**:
-- Single project: `.specweave/docs/internal/specs/default/spec-0001-user-authentication.md`
-- Backend project: `.specweave/docs/internal/specs/backend/spec-0002-api-auth.md`
-- Frontend project: `.specweave/docs/internal/specs/frontend/spec-0003-dark-mode.md`
-- Parent repo: `.specweave/docs/internal/specs/_parent/spec-0004-system-architecture.md`
+- Feature overview: `.specweave/docs/internal/specs/_features/FS-001/FEATURE.md`
+- Backend user story: `.specweave/docs/internal/specs/backend/FS-002/us-001-api-auth.md`
+- Frontend user story: `.specweave/docs/internal/specs/frontend/FS-003/us-001-dark-mode.md`
+- Cross-project feature: `.specweave/docs/internal/specs/_features/FS-004/FEATURE.md`
 
-**CRITICAL**: Specs are **FILES**, not directories! The spec file itself contains all content.
+**CRITICAL**: Living docs are created via `/specweave:sync-docs update` - NOT manually created!
 
 **Purpose**: Complete, detailed requirements specification - PERMANENT source of truth
 
@@ -427,7 +428,7 @@ status: proposed|accepted|implemented
 created: 2025-11-04
 ---
 
-# SPEC-{number}: [Feature Name]
+# FS-{number}: [Feature Name]
 
 ## Overview
 
@@ -611,14 +612,14 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 ```markdown
 # Feature: [Name]
 
-[Copy all content from SPEC-{number}-{name}/spec.md here]
+[Copy all content from FS-{number}/FEATURE.md here]
 ```
 
 **Option B: Reference Spec** (minimal approach):
 ```markdown
 # Feature: [Name]
 
-**Complete Requirements**: See [SPEC-{number}-{name}](../../docs/internal/specs/{project-id}/spec-{number}-{name}.md)
+**Complete Requirements**: See [FS-{number}](../../docs/internal/specs/_features/FS-{number}/FEATURE.md)
 
 **Quick Summary**:
 - US-001: View current weather

@@ -73,7 +73,7 @@ describe('MetadataManager', () => {
       const result = MetadataManager.read(testIncrementId);
 
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.ACTIVE);
+      expect(result.status).toBe(IncrementStatus.PLANNING); // NEW: Default status is PLANNING
       expect(result.type).toBe(IncrementType.FEATURE);
     });
 
@@ -83,13 +83,13 @@ describe('MetadataManager', () => {
 
       const result = MetadataManager.read(testIncrementId);
 
-      // Should create default metadata
+      // Should create default metadata with PLANNING status
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.ACTIVE);
+      expect(result.status).toBe(IncrementStatus.PLANNING); // NEW: Default status is PLANNING
       expect(fs.existsSync(testMetadataPath)).toBe(true);
     });
 
-    test('lazy initialization updates active increment state', () => {
+    test('lazy initialization does NOT update active increment state for PLANNING status', () => {
       // Import ActiveIncrementManager
       const { ActiveIncrementManager } = require('../../../src/core/increment/active-increment-manager');
 
@@ -103,22 +103,16 @@ describe('MetadataManager', () => {
       // Read should trigger lazy initialization
       const result = MetadataManager.read(testIncrementId);
 
-      // Should create default metadata with ACTIVE status
+      // Should create default metadata with PLANNING status
       expect(result.id).toBe(testIncrementId);
-      expect(result.status).toBe(IncrementStatus.ACTIVE);
+      expect(result.status).toBe(IncrementStatus.PLANNING);
 
-      // **CRITICAL**: Should also update active-increment.json
+      // **CHANGED**: PLANNING increments do NOT get added to active-increment.json
+      // Only ACTIVE status increments count toward WIP limits
       const activeManager = new ActiveIncrementManager(testRootPath);
       const activeIncrement = activeManager.getActive();
-      // getActive() now returns an array of IDs
-      expect(activeIncrement).toContain(testIncrementId);
-
-      // Verify state file was created
-      const stateFile = path.join(stateDir, 'active-increment.json');
-      expect(fs.existsSync(stateFile)).toBe(true);
-      const stateContent = fs.readJsonSync(stateFile);
-      // New format uses 'ids' array instead of single 'id'
-      expect(stateContent.ids).toContain(testIncrementId);
+      // PLANNING increment should NOT be in active list
+      expect(activeIncrement).not.toContain(testIncrementId);
     });
 
     test('throws MetadataError if increment directory not found', () => {
@@ -254,9 +248,68 @@ describe('MetadataManager', () => {
       metadata.status = IncrementStatus.COMPLETED;
       fs.writeJsonSync(testMetadataPath, metadata);
 
-      // Cannot transition from completed
+      // Cannot transition COMPLETED → PAUSED (invalid)
       expect(() => MetadataManager.updateStatus(testIncrementId, IncrementStatus.PAUSED)).toThrow(MetadataError);
       expect(() => MetadataManager.updateStatus(testIncrementId, IncrementStatus.PAUSED)).toThrow('Invalid status transition');
+    });
+
+    describe('PLANNING status transitions', () => {
+      test('PLANNING → ACTIVE transition is valid', () => {
+        // Create increment in PLANNING
+        const metadata = createDefaultMetadata(testIncrementId);
+        expect(metadata.status).toBe(IncrementStatus.PLANNING);
+        fs.writeJsonSync(testMetadataPath, metadata);
+
+        // Transition to ACTIVE
+        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.ACTIVE);
+
+        expect(result.status).toBe(IncrementStatus.ACTIVE);
+      });
+
+      test('PLANNING → BACKLOG transition is valid', () => {
+        // Create increment in PLANNING
+        const metadata = createDefaultMetadata(testIncrementId);
+        fs.writeJsonSync(testMetadataPath, metadata);
+
+        // Transition to BACKLOG (deprioritize planning)
+        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.BACKLOG, 'Deprioritized');
+
+        expect(result.status).toBe(IncrementStatus.BACKLOG);
+        expect(result.backlogReason).toBe('Deprioritized');
+      });
+
+      test('PLANNING → ABANDONED transition is valid', () => {
+        // Create increment in PLANNING
+        const metadata = createDefaultMetadata(testIncrementId);
+        fs.writeJsonSync(testMetadataPath, metadata);
+
+        // Abandon planning
+        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.ABANDONED, 'Requirements changed');
+
+        expect(result.status).toBe(IncrementStatus.ABANDONED);
+        expect(result.abandonedReason).toBe('Requirements changed');
+      });
+
+      test('PLANNING → PAUSED transition is invalid', () => {
+        // Create increment in PLANNING
+        const metadata = createDefaultMetadata(testIncrementId);
+        fs.writeJsonSync(testMetadataPath, metadata);
+
+        // Cannot pause planning (not in VALID_TRANSITIONS)
+        expect(() => MetadataManager.updateStatus(testIncrementId, IncrementStatus.PAUSED)).toThrow(MetadataError);
+      });
+
+      test('BACKLOG → PLANNING transition is valid', () => {
+        // Create increment in BACKLOG
+        const metadata = createDefaultMetadata(testIncrementId);
+        metadata.status = IncrementStatus.BACKLOG;
+        fs.writeJsonSync(testMetadataPath, metadata);
+
+        // Resume planning
+        const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.PLANNING);
+
+        expect(result.status).toBe(IncrementStatus.PLANNING);
+      });
     });
   });
 

@@ -1522,6 +1522,9 @@ ${epic.features.map(f => `- ${f}`).join('\n')}
     const featurePath = path.join(featureMapping.featurePath, 'FEATURE.md');
     const content = this.formatFeatureFile(feature);
 
+    // CRITICAL VALIDATION: Prevent wrong file patterns (spec-XXXX-*.md)
+    this.validateFeatureFilePath(featurePath, featureMapping.featureFolder);
+
     await fs.ensureDir(path.dirname(featurePath));
     await fs.writeFile(featurePath, content, 'utf-8');
 
@@ -2068,6 +2071,46 @@ ${storiesByProjectSection}
       .map(e => e.name);
 
     return projectFolders.length > 0 ? projectFolders : ['default'];
+  }
+
+  /**
+   * CRITICAL VALIDATION: Prevent wrong file patterns (spec-XXXX-*.md)
+   * This ensures files are always created in proper FS-XXX folder structure
+   *
+   * @throws Error if file path doesn't match expected pattern
+   */
+  private validateFeatureFilePath(filePath: string, featureFolder: string): void {
+    // Wrong patterns to reject:
+    // - /specs/spec-0039-*.md (flat file, no folder)
+    // - /specs/SPEC-0039-*.md (flat file, no folder)
+    //
+    // Correct pattern:
+    // - /specs/_features/FS-039/FEATURE.md
+    // - /specs/{project}/FS-039/FEATURE.md
+
+    const wrongPattern = /\/specs\/[^/]+\/spec-\d+-[^/]+\.md$/i;
+    if (wrongPattern.test(filePath)) {
+      throw new Error(
+        `CRITICAL: Attempted to create file with wrong pattern: ${filePath}\n` +
+        `Expected pattern: /specs/{project}/${featureFolder}/FEATURE.md\n` +
+        `This bug was fixed in v0.21.3 - if you see this error, please report it.`
+      );
+    }
+
+    // Validate that path contains feature folder (FS-XXX)
+    if (!filePath.includes(featureFolder)) {
+      throw new Error(
+        `CRITICAL: Feature file path doesn't contain feature folder ${featureFolder}: ${filePath}\n` +
+        `Expected: path should include ${featureFolder}/FEATURE.md`
+      );
+    }
+
+    // Validate that file is FEATURE.md (not spec-*.md)
+    if (!filePath.endsWith('/FEATURE.md') && !filePath.endsWith('/EPIC.md')) {
+      throw new Error(
+        `CRITICAL: Feature file must be named FEATURE.md or EPIC.md, got: ${path.basename(filePath)}`
+      );
+    }
   }
 
   /**

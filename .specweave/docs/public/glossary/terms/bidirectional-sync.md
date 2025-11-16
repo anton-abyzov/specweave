@@ -103,6 +103,279 @@ graph TB
 
 ---
 
+## Three-Layer Bidirectional Sync
+
+**NEW**: SpecWeave implements bidirectional sync through a **three-layer architecture** that separates concerns and ensures data consistency across all systems.
+
+### The Three Layers
+
+```mermaid
+graph TB
+    A[Layer 1: GitHub Issue] -->|Bidirectional Sync| B[Layer 2: Living Docs]
+    B -->|Bidirectional Sync| C[Layer 3: Increment]
+
+    A --> D[Stakeholder UI]
+    B --> E[Project-Specific Docs]
+    C --> F[Source of Truth]
+
+    style A fill:#51cf66
+    style B fill:#339af0
+    style C fill:#ff922b
+```
+
+**Layer 1: GitHub Issue** (Visualization Layer)
+- Checkable checkboxes for ACs and tasks
+- Stakeholder-friendly UI
+- No repository access needed
+- Mobile-friendly tracking
+
+**Layer 2: Living Docs User Story** (Middle Layer)
+- Project-specific documentation (`specs/backend/`, `specs/frontend/`)
+- COPIED ACs and tasks (not references)
+- Connects GitHub with increment
+- Part of version-controlled living docs
+
+**Layer 3: Increment** (Source of Truth)
+- `spec.md` - All Acceptance Criteria
+- `tasks.md` - All implementation tasks
+- Definitive status (no conflicts)
+- Single source of truth
+
+**Learn More**: [Three-Layer Architecture](/docs/glossary/terms/three-layer-architecture)
+
+---
+
+### TWO Independent Three-Layer Syncs
+
+Bidirectional sync actually consists of **TWO independent three-layer syncs**:
+
+#### 1. Acceptance Criteria (ACs) Sync
+
+```
+GitHub Issue Acceptance Criteria (checkboxes)
+    ↕ (bidirectional)
+Living Docs User Story Acceptance Criteria
+    ↕ (bidirectional)
+Increment spec.md (SOURCE OF TRUTH)
+```
+
+**Example Flow**:
+```markdown
+# Stakeholder checks AC in GitHub
+GitHub Issue:
+- [x] AC-US1-01: JWT token generation (backend) ← CHECKED
+    ↓ (GitHub webhook/manual sync)
+Living Docs User Story:
+- [x] AC-US1-01: JWT token generation (backend)
+    ↓ (Living docs sync)
+Increment spec.md:
+- [x] AC-US1-01: JWT token generation (backend)
+```
+
+#### 2. Tasks (Subtasks) Sync
+
+```
+GitHub Issue Subtasks (checkboxes)
+    ↕ (bidirectional)
+Living Docs User Story Implementation
+    ↕ (bidirectional)
+Increment tasks.md (SOURCE OF TRUTH)
+```
+
+**Example Flow**:
+```markdown
+# Developer completes task locally
+Increment tasks.md:
+- [x] T-001: Setup JWT service (AC-US1-01) ← COMPLETED
+    ↓ (Living docs sync)
+Living Docs User Story Implementation:
+- [x] T-001: Setup JWT service
+    ↓ (GitHub sync)
+GitHub Issue Subtasks:
+- [x] T-001: Setup JWT service
+```
+
+---
+
+### Two Sync Directions Through Three Layers
+
+#### Direction 1: Increment → Living Docs → GitHub
+**Trigger**: Developer completes work and updates increment
+
+```
+┌─────────────────────────────────────────────┐
+│ LAYER 3: INCREMENT (Source of Truth)       │
+│ Developer marks task complete:              │
+│ - [x] T-001: Setup JWT service             │
+└──────────────────┬──────────────────────────┘
+                   ↓
+          (COPY to living docs, filtered)
+                   ↓
+┌─────────────────────────────────────────────┐
+│ LAYER 2: LIVING DOCS USER STORY             │
+│ Implementation section updates:             │
+│ - [x] T-001: Setup JWT service             │
+└──────────────────┬──────────────────────────┘
+                   ↓
+          (GitHub sync)
+                   ↓
+┌─────────────────────────────────────────────┐
+│ LAYER 1: GITHUB ISSUE                       │
+│ Subtask checkbox updates:                   │
+│ - [x] T-001: Setup JWT service             │
+└─────────────────────────────────────────────┘
+```
+
+**Commands**:
+```bash
+# Update increment
+vim .specweave/increments/0031/tasks.md
+# → Mark [x] T-001
+
+# Sync to living docs
+/specweave:sync-docs
+
+# Sync to GitHub
+/specweave-github:sync 0031
+```
+
+#### Direction 2: GitHub → Living Docs → Increment
+**Trigger**: Stakeholder checks checkbox in GitHub issue
+
+```
+┌─────────────────────────────────────────────┐
+│ LAYER 1: GITHUB ISSUE                       │
+│ Stakeholder checks subtask:                 │
+│ - [ ] T-002 → [x] T-002                    │
+└──────────────────┬──────────────────────────┘
+                   ↓
+          (GitHub webhook/sync)
+                   ↓
+┌─────────────────────────────────────────────┐
+│ LAYER 2: LIVING DOCS USER STORY             │
+│ Implementation section updates:             │
+│ - [x] T-002: Create login API              │
+└──────────────────┬──────────────────────────┘
+                   ↓
+          (Living docs sync)
+                   ↓
+┌─────────────────────────────────────────────┐
+│ LAYER 3: INCREMENT (Source of Truth)       │
+│ tasks.md updates:                            │
+│ - [x] T-002: Create login API              │
+└─────────────────────────────────────────────┘
+```
+
+**Automatic Flow**:
+1. Stakeholder checks GitHub checkbox
+2. GitHub webhook fires (or manual `/specweave-github:sync`)
+3. Living Docs User Story Implementation updates
+4. Increment tasks.md updates (source of truth)
+
+---
+
+### COPIED ACs and Tasks (Not References)
+
+**Key Concept**: Living Docs User Stories contain **COPIED** content from increment, not references.
+
+**Why COPIED?**
+- ✅ Self-contained documentation (readable without increment)
+- ✅ Survives increment archiving
+- ✅ Project-specific filtering (backend vs frontend)
+- ✅ GitHub integration (checkable checkboxes)
+
+**Example**:
+
+**Increment** (`.specweave/increments/0031/spec.md` and `tasks.md`):
+```markdown
+# spec.md
+## US-001: Implement Authentication
+**Acceptance Criteria**:
+- [x] AC-US1-01: JWT token generation (backend)
+- [ ] AC-US1-02: Protected routes (backend)
+
+# tasks.md
+- [x] **T-001**: Setup JWT service (AC-US1-01)
+- [ ] **T-002**: Create login API endpoint (AC-US1-01)
+```
+
+**Living Docs User Story** (`specs/backend/FS-031/us-001.md`):
+```markdown
+## Acceptance Criteria (COPIED from increment spec.md, filtered by backend)
+- [x] AC-US1-01: JWT token generation (backend)
+- [ ] AC-US1-02: Protected routes (backend)
+
+## Implementation (COPIED tasks from increment tasks.md, filtered by AC-ID)
+- [x] T-001: Setup JWT service
+- [ ] T-002: Create login API endpoint
+```
+
+**Learn More**: [COPIED ACs and Tasks](/docs/glossary/terms/copied-acs-and-tasks)
+
+---
+
+### Conflict Resolution Through Three Layers
+
+**Rule**: Increment ALWAYS wins (source of truth)
+
+**Example Scenario**:
+```
+Conflict: GitHub shows T-002 complete, Increment shows incomplete
+
+Resolution:
+1. Read increment tasks.md (source of truth)
+2. T-002 is incomplete → That's the truth
+3. Update Living Docs: [ ] T-002
+4. Update GitHub: [ ] T-002
+5. Increment wins!
+```
+
+**Validation & Reopen**:
+```bash
+# Task marked complete but code missing
+/specweave:validate 0031
+
+# Validation finds: T-001 marked [x] but no code
+# → Reopen in increment: [ ] T-001
+# → Propagate to living docs: [ ] T-001
+# → Propagate to GitHub: [ ] T-001
+# → Add comment: "❌ Code not found at src/auth/jwt-service.ts"
+```
+
+---
+
+### Benefits of Three-Layer Architecture
+
+**1. Separation of Concerns**
+- GitHub = Stakeholder UI
+- Living Docs = Project organization
+- Increment = Source of truth
+
+**2. Project-Specific Tasks**
+```markdown
+# Backend User Story (specs/backend/FS-031/us-001.md)
+- T-001: Backend task (only)
+- T-002: Backend task (only)
+
+# Frontend User Story (specs/frontend/FS-031/us-001.md)
+- T-003: Frontend task (only)
+- T-004: Frontend task (only)
+```
+
+**Learn More**: [Project-Specific Tasks](/docs/glossary/terms/project-specific-tasks)
+
+**3. Stakeholder Access**
+- No repository access needed
+- Check/uncheck boxes in GitHub
+- Changes sync automatically
+
+**4. Data Integrity**
+- All three layers stay synchronized
+- Increment is always source of truth
+- Validation ensures code matches status
+
+---
+
 ## Sync Directions
 
 SpecWeave supports **three sync directions**:
