@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.21.2] - 2025-11-16
+
+### Changed
+
+- **Release Process**: Verify automated GitHub workflow for releases
+- **CI/CD**: Test workflow_dispatch release automation
+
+### Meta
+
+This is a patch release to verify the automated release workflow works correctly. All future releases will use the GitHub Actions workflow instead of manual npm publish.
+
+---
+
 ## [0.21.1] - 2025-11-16
 
 ### Added
