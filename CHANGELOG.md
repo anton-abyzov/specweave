@@ -4,6 +4,40 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.21.1] - 2025-11-16
+
+### Added
+
+#### Claude Code GitHub Workflows
+
+**CRITICAL UPDATE**: Automated PR assistance and code review with Claude Code
+
+- **GitHub Workflows**:
+  - `claude.yml` - Claude Code PR Assistant for automated code review
+  - `claude-code-review.yml` - Claude Code Review workflow for quality gates
+  - Integrated with existing CI/CD pipeline
+  - Automatic code suggestions and improvements
+  - Quality checks on every pull request
+
+### Fixed
+
+- **Conflict Resolver**: Skip directory creation during dry-run mode (prevents side effects in preview)
+- **Duplicate Detector Tests**: Fix file count expectations (account for metadata.json)
+- **Template Validation**: Skip runtime-injected anchor validation (prevents false positives)
+
+### Changed
+
+- **AGENTS.md Documentation**: Add version conflicts troubleshooting section
+- **Template System**: Improve anchor link validation for dynamic content
+
+### Impact
+
+- **New installations**: Get Claude Code GitHub workflows automatically
+- **Existing installations**: Workflows available after upgrade to v0.21.0
+- **CI/CD**: Enhanced with AI-powered code review and assistance
+
+---
+
 ## [0.20.2] - 2025-11-16
 
 ### Added
