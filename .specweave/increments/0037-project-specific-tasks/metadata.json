@@ -4,9 +4,17 @@
   "type": "feature",
   "priority": "P1",
   "created": "2025-11-15T22:29:54Z",
-  "lastActivity": "2025-11-15T22:29:54Z",
+  "planned": "2025-11-16T03:45:00Z",
+  "lastActivity": "2025-11-16T03:45:00Z",
   "testMode": "TDD",
   "coverageTarget": 95,
   "feature": "FS-037",
-  "projects": ["specweave"]
+  "projects": ["specweave"],
+  "estimatedEffort": "78-107 hours",
+  "totalTasks": 85,
+  "taskBreakdown": {
+    "phase0": 45,
+    "phase1to4": 25,
+    "testing": 15
+  }
 }

@@ -1,0 +1,128 @@
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as /specweave:next
+    participant Orchestrator as WorkflowOrchestrator
+    participant Detector as PhaseDetector
+    participant Invoker as CommandInvoker
+    participant PlanCmd as /specweave:plan
+    participant DoCmd as /specweave:do
+    participant ValidateCmd as /specweave:validate
+    participant QACmd as /specweave:qa
+    participant DoneCmd as /specweave:done
+    participant Metadata as metadata.json
+
+    User->>CLI: /specweave:next --autonomous
+    CLI->>Orchestrator: executeAutonomous(increment)
+
+    Note over Orchestrator: Initialize session
+    Orchestrator->>Orchestrator: Check WIP limits
+    Orchestrator->>Orchestrator: Estimate cost ($5.50)
+    Orchestrator->>User: Display cost estimate
+    User->>Orchestrator: Confirm (acceptable cost)
+
+    loop Until All Done (Max 50 iterations)
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector->>Metadata: Read metadata.json
+        Detector->>Detector: Check file existence (spec.md, plan.md, tasks.md)
+        Detector->>Detector: Parse tasks.md (incomplete tasks)
+        Detector->>Detector: Calculate confidence (0.95)
+        Detector-->>Orchestrator: { phase: NEEDS_PLANNING, confidence: 0.95 }
+
+        Note over Orchestrator: Phase: NEEDS_PLANNING
+        Orchestrator->>Orchestrator: Determine action → /specweave:plan
+        Orchestrator->>Orchestrator: Save checkpoint (iteration 1)
+
+        Orchestrator->>Invoker: invokeCommand('/specweave:plan', increment)
+        Invoker->>PlanCmd: Execute planning
+        PlanCmd->>PlanCmd: Invoke Architect Agent
+        PlanCmd->>PlanCmd: Invoke test-aware-planner
+        PlanCmd->>Metadata: Update metadata (planningCompletedAt)
+        PlanCmd-->>Invoker: { status: SUCCESS }
+        Invoker-->>Orchestrator: { status: SUCCESS }
+
+        Orchestrator->>Orchestrator: Log action (plan completed, 120s)
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector->>Metadata: Read metadata.json
+        Detector->>Detector: Check files (plan.md exists, tasks.md exists)
+        Detector->>Detector: Parse tasks.md (5 incomplete tasks)
+        Detector-->>Orchestrator: { phase: NEEDS_EXECUTION, confidence: 0.92 }
+
+        Note over Orchestrator: Phase: NEEDS_EXECUTION
+        Orchestrator->>Invoker: invokeCommand('/specweave:do', increment)
+        Invoker->>DoCmd: Execute Task 1
+        DoCmd->>DoCmd: Invoke Coder Agent
+        DoCmd->>DoCmd: Run embedded tests
+        DoCmd->>Metadata: Update task status (T-001: completed)
+        DoCmd-->>Invoker: { status: SUCCESS }
+        Invoker-->>Orchestrator: { status: SUCCESS }
+
+        Orchestrator->>Orchestrator: Save checkpoint (iteration 2)
+
+        Note over Orchestrator: Repeat /specweave:do for all tasks...
+
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector->>Detector: Parse tasks.md (all P1 tasks done)
+        Detector-->>Orchestrator: { phase: NEEDS_VALIDATION, confidence: 0.85 }
+
+        Note over Orchestrator: Phase: NEEDS_VALIDATION (Medium Confidence)
+        alt Autonomous Mode (confidence >= 0.7)
+            Orchestrator->>Invoker: invokeCommand('/specweave:validate', increment)
+        else Manual Mode (prompt user)
+            Orchestrator->>User: Suggest /specweave:validate (85% confident)
+            User->>Orchestrator: Confirm
+            Orchestrator->>Invoker: invokeCommand('/specweave:validate', increment)
+        end
+
+        Invoker->>ValidateCmd: Run validation
+        ValidateCmd->>ValidateCmd: Check 3-gate validation (tasks, tests, docs)
+        ValidateCmd-->>Invoker: { status: SUCCESS, validationPassed: true }
+        Invoker-->>Orchestrator: { status: SUCCESS }
+
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector-->>Orchestrator: { phase: NEEDS_QA, confidence: 0.78 }
+
+        Note over Orchestrator: Phase: NEEDS_QA
+        Orchestrator->>Invoker: invokeCommand('/specweave:qa', increment)
+        Invoker->>QACmd: Run QA assessment
+        QACmd->>QACmd: Invoke judge LLM (Claude Opus)
+        QACmd->>Metadata: Update qaScore (8.5/10)
+        QACmd-->>Invoker: { status: SUCCESS, qaScore: 8.5 }
+        Invoker-->>Orchestrator: { status: SUCCESS }
+
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector-->>Orchestrator: { phase: NEEDS_CLOSURE, confidence: 0.96 }
+
+        Note over Orchestrator: Phase: NEEDS_CLOSURE
+        Orchestrator->>Invoker: invokeCommand('/specweave:done', increment)
+        Invoker->>DoneCmd: Close increment
+        DoneCmd->>Metadata: Update status (closed)
+        DoneCmd->>Metadata: Update closedAt timestamp
+        DoneCmd-->>Invoker: { status: SUCCESS }
+        Invoker-->>Orchestrator: { status: SUCCESS }
+
+        Orchestrator->>Detector: detectPhaseWithConfidence(increment)
+        Detector-->>Orchestrator: { phase: NEEDS_NEXT_INCREMENT, confidence: 1.0 }
+
+        Note over Orchestrator: Phase: NEEDS_NEXT_INCREMENT
+        Orchestrator->>Orchestrator: Check WIP limits (2/3 active)
+        Orchestrator->>Orchestrator: Scan backlog (3 items found)
+        Orchestrator->>Orchestrator: Rank by priority (P1 > P2)
+        Orchestrator->>User: Suggest top backlog item
+
+        alt User accepts OR --autonomous with autoStartBacklog
+            User->>Orchestrator: Start backlog item
+            Orchestrator->>Orchestrator: Create new increment from backlog
+            Note over Orchestrator: Loop continues with new increment
+        else User declines OR WIP limit reached
+            Orchestrator-->>Orchestrator: Exit loop
+        end
+    end
+
+    Orchestrator->>Orchestrator: Generate execution log
+    Orchestrator->>Orchestrator: Generate human-readable report
+    Orchestrator-->>CLI: { status: SUCCESS, iterations: 12, durationMin: 45 }
+
+    CLI->>User: ✅ Autonomous execution complete!
+    CLI->>User: View report: .specweave/increments/0039/reports/autonomous-execution-abc123.md
+```

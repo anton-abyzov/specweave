@@ -1,0 +1,41 @@
+{
+  "id": "supabase",
+  "name": "Supabase (Edge Functions)",
+  "provider": "Supabase",
+  "pricing": {
+    "freeTier": {
+      "requests": 500000,
+      "computeGbSeconds": 100000,
+      "dataTransferGb": 2
+    },
+    "payAsYouGo": {
+      "requestsPer1M": 2.00,
+      "computePerGbSecond": 0.00002,
+      "dataTransferPerGb": 0.15
+    }
+  },
+  "features": {
+    "runtimes": ["Deno (TypeScript, JavaScript)"],
+    "coldStartMs": 150,
+    "maxExecutionMinutes": 5,
+    "maxMemoryMb": 512
+  },
+  "ecosystem": {
+    "integrations": ["PostgreSQL (Supabase Database)", "Storage", "Auth", "Realtime", "Vector embeddings", "REST API", "GraphQL (PostgREST)"],
+    "sdks": ["JavaScript/TypeScript", "Python", "Swift", "Kotlin", "Dart (Flutter)"],
+    "communitySize": "medium"
+  },
+  "lockIn": {
+    "portability": "high",
+    "migrationComplexity": "low",
+    "vendorLockIn": "Low - Supabase is open-source and built on PostgreSQL. Database can be migrated easily. Edge Functions use Deno (standard runtime). Self-hosting is supported for full control."
+  },
+  "startupPrograms": [
+    {
+      "name": "Supabase Free Tier",
+      "credits": 0,
+      "duration": "Permanent"
+    }
+  ],
+  "lastVerified": "2025-11-16"
+}

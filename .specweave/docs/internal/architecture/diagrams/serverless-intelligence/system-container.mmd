@@ -1,0 +1,77 @@
+%% C4 Container Diagram - Serverless Intelligence
+%% Level 2: Containers
+
+graph TB
+    %% External User
+    Developer["Developer<br/>(User)"]
+
+    %% SpecWeave Containers
+    subgraph SpecWeave["SpecWeave Serverless Intelligence"]
+        %% Agents
+        ArchitectAgent["Architect Agent<br/>[Agent]<br/>Architecture recommendations,<br/>ADR generation"]
+        InfraAgent["Infrastructure Agent<br/>[Agent]<br/>IaC generation,<br/>deployment orchestration"]
+
+        %% Skills (Knowledge Injection)
+        ServerlessRecommender["Serverless Recommender<br/>[Skill]<br/>Context detection,<br/>platform recommendations"]
+        IaCGenerator["IaC Generator<br/>[Skill]<br/>Terraform template generation"]
+        CostEstimator["Cost Estimator<br/>[Skill]<br/>Pricing calculations,<br/>free tier optimization"]
+        SecurityGuidance["Security Guidance<br/>[Skill]<br/>IAM, secrets management,<br/>compliance"]
+
+        %% Knowledge Base
+        KnowledgeBase["Platform Knowledge Base<br/>[JSON Files]<br/>Pricing, features, ecosystem,<br/>free tiers for 5 platforms"]
+
+        %% Template Library
+        TemplateLibrary["IaC Template Library<br/>[Handlebars Templates]<br/>Terraform templates for<br/>AWS, Azure, GCP, Firebase, Supabase"]
+
+        %% Core Engine
+        ContextDetector["Context Detector<br/>[TypeScript Module]<br/>Pet project vs startup vs enterprise<br/>detection"]
+    end
+
+    %% External Systems
+    CloudProviders["Cloud Providers<br/>(AWS, Azure, GCP, Firebase, Supabase)"]
+    TerraformCLI["Terraform CLI<br/>[External Tool]<br/>Infrastructure provisioning"]
+
+    %% User Interactions
+    Developer -->|"Asks: 'Should I use serverless?'"| ArchitectAgent
+    Developer -->|"Requests: 'Generate Terraform'"| InfraAgent
+
+    %% Agent-Skill Collaboration
+    ArchitectAgent -->|"Activates when serverless mentioned"| ServerlessRecommender
+    ArchitectAgent -->|"Activates for cost analysis"| CostEstimator
+    ArchitectAgent -->|"Activates for security questions"| SecurityGuidance
+
+    InfraAgent -->|"Activates for IaC generation"| IaCGenerator
+
+    %% Skill Dependencies
+    ServerlessRecommender -->|"Reads platform data"| KnowledgeBase
+    ServerlessRecommender -->|"Uses for recommendations"| ContextDetector
+    ServerlessRecommender -->|"Gets cost estimates from"| CostEstimator
+
+    CostEstimator -->|"Reads pricing data"| KnowledgeBase
+
+    IaCGenerator -->|"Loads Handlebars templates"| TemplateLibrary
+    IaCGenerator -->|"Uses defaults from"| KnowledgeBase
+    IaCGenerator -->|"Uses context for config"| ContextDetector
+
+    SecurityGuidance -->|"References platform features"| KnowledgeBase
+
+    %% Agent Outputs
+    ArchitectAgent -->|"Creates ADRs, architecture docs"| Developer
+    InfraAgent -->|"Generates Terraform files"| Developer
+
+    %% Deployment
+    Developer -->|"Runs terraform apply"| TerraformCLI
+    TerraformCLI -->|"Provisions infrastructure"| CloudProviders
+
+    %% Styling
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef agent fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef skill fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef data fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef external fill:#999,stroke:#666,color:#fff
+
+    class Developer person
+    class ArchitectAgent,InfraAgent agent
+    class ServerlessRecommender,IaCGenerator,CostEstimator,SecurityGuidance skill
+    class KnowledgeBase,TemplateLibrary,ContextDetector data
+    class CloudProviders,TerraformCLI external

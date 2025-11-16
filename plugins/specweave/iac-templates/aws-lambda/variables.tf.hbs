@@ -1,0 +1,88 @@
+# Terraform Variables for AWS Lambda
+# Project: {{projectName}}
+
+variable "aws_region" {
+  description = "AWS region for deployment"
+  type        = string
+  default     = "{{#if region}}{{region}}{{else}}us-east-1{{/if}}"
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "function_name" {
+  description = "Lambda function name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+variable "runtime" {
+  description = "Lambda runtime (e.g., nodejs20.x, python3.12)"
+  type        = string
+  default     = "{{runtime}}"
+}
+
+variable "memory_size" {
+  description = "Lambda memory size in MB"
+  type        = number
+  default     = {{#if memorySize}}{{memorySize}}{{else}}256{{/if}}
+  validation {
+    condition     = var.memory_size >= 128 && var.memory_size <= 10240
+    error_message = "Memory size must be between 128 MB and 10240 MB."
+  }
+}
+
+variable "timeout" {
+  description = "Lambda timeout in seconds"
+  type        = number
+  default     = {{#if timeout}}{{timeout}}{{else}}30{{/if}}
+  validation {
+    condition     = var.timeout >= 1 && var.timeout <= 900
+    error_message = "Timeout must be between 1 and 900 seconds."
+  }
+}
+
+{{#if apiName}}
+variable "api_name" {
+  description = "API Gateway name"
+  type        = string
+  default     = "{{apiName}}"
+}
+
+variable "api_stage_name" {
+  description = "API Gateway stage name"
+  type        = string
+  default     = "{{#if apiStageName}}{{apiStageName}}{{else}}default{{/if}}"
+}
+{{/if}}
+
+{{#if databaseName}}
+variable "database_name" {
+  description = "DynamoDB table name"
+  type        = string
+  default     = "{{databaseName}}"
+}
+{{/if}}
+
+variable "tags" {
+  description = "Additional tags to apply to resources"
+  type        = map(string)
+  default     = {
+    Project     = "{{projectName}}"
+    Environment = "{{environment}}"
+    ManagedBy   = "Terraform"
+  }
+}

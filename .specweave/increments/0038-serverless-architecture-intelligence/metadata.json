@@ -1,0 +1,12 @@
+{
+  "id": "0038-serverless-architecture-intelligence",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-16T06:44:42Z",
+  "lastActivity": "2025-11-16T06:44:42Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature": "FS-038",
+  "projects": ["specweave"]
+}

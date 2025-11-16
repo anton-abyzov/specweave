@@ -1,0 +1,61 @@
+# Terraform Outputs for AWS Lambda
+# Project: {{projectName}}
+
+output "lambda_function_arn" {
+  description = "ARN of the Lambda function"
+  value       = aws_lambda_function.{{snakeCase functionName}}.arn
+}
+
+output "lambda_function_name" {
+  description = "Name of the Lambda function"
+  value       = aws_lambda_function.{{snakeCase functionName}}.function_name
+}
+
+output "lambda_function_invoke_arn" {
+  description = "Invoke ARN of the Lambda function"
+  value       = aws_lambda_function.{{snakeCase functionName}}.invoke_arn
+}
+
+output "lambda_role_arn" {
+  description = "ARN of the Lambda IAM role"
+  value       = aws_iam_role.lambda_role.arn
+}
+
+output "lambda_role_name" {
+  description = "Name of the Lambda IAM role"
+  value       = aws_iam_role.lambda_role.name
+}
+
+output "lambda_log_group" {
+  description = "CloudWatch Log Group for Lambda function"
+  value       = aws_cloudwatch_log_group.lambda_logs.name
+}
+
+{{#if apiName}}
+output "api_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = aws_apigatewayv2_api.{{snakeCase apiName}}.api_endpoint
+}
+
+output "api_id" {
+  description = "API Gateway ID"
+  value       = aws_apigatewayv2_api.{{snakeCase apiName}}.id
+}
+
+output "api_execution_arn" {
+  description = "API Gateway execution ARN"
+  value       = aws_apigatewayv2_api.{{snakeCase apiName}}.execution_arn
+}
+{{/if}}
+
+{{#if databaseName}}
+output "dynamodb_table_name" {
+  description = "DynamoDB table name"
+  value       = aws_dynamodb_table.{{snakeCase databaseName}}.name
+}
+
+output "dynamodb_table_arn" {
+  description = "DynamoDB table ARN"
+  value       = aws_dynamodb_table.{{snakeCase databaseName}}.arn
+}
+{{/if}}

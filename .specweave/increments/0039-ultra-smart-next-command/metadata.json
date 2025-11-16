@@ -1,0 +1,13 @@
+{
+  "id": "0039-ultra-smart-next-command",
+  "status": "planning",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-16T10:00:00Z",
+  "lastActivity": "2025-11-16T10:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "project": "specweave",
+  "featureId": "FS-039",
+  "featureTitle": "Ultra-Smart Next Command - Intelligent Workflow Orchestrator"
+}

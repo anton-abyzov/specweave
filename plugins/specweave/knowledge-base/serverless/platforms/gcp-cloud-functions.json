@@ -1,0 +1,41 @@
+{
+  "id": "gcp-cloud-functions",
+  "name": "GCP Cloud Functions",
+  "provider": "GCP",
+  "pricing": {
+    "freeTier": {
+      "requests": 2000000,
+      "computeGbSeconds": 400000,
+      "dataTransferGb": 1
+    },
+    "payAsYouGo": {
+      "requestsPer1M": 0.40,
+      "computePerGbSecond": 0.0000025,
+      "dataTransferPerGb": 0.12
+    }
+  },
+  "features": {
+    "runtimes": ["Node.js 18/20", "Python 3.9/3.10/3.11", "Java 11/17", "Go 1.18+", ".NET 6", "Ruby 3.0+"],
+    "coldStartMs": 300,
+    "maxExecutionMinutes": 60,
+    "maxMemoryMb": 8192
+  },
+  "ecosystem": {
+    "integrations": ["Cloud Storage", "Firestore", "Pub/Sub", "Cloud SQL", "BigQuery", "Cloud Tasks", "Cloud Run", "Datastore"],
+    "sdks": ["Node.js", "Python", "Java", "Go", ".NET", "Ruby"],
+    "communitySize": "large"
+  },
+  "lockIn": {
+    "portability": "medium",
+    "migrationComplexity": "medium",
+    "vendorLockIn": "Medium - Function code is portable, but GCP-specific integrations (Pub/Sub, Firestore) create lock-in. Cloud Run provides better portability with container-based deployment."
+  },
+  "startupPrograms": [
+    {
+      "name": "Google Cloud for Startups",
+      "credits": 100000,
+      "duration": "2 years"
+    }
+  ],
+  "lastVerified": "2025-11-16"
+}

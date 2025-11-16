@@ -1,0 +1,41 @@
+{
+  "id": "azure-functions",
+  "name": "Azure Functions",
+  "provider": "Azure",
+  "pricing": {
+    "freeTier": {
+      "requests": 1000000,
+      "computeGbSeconds": 400000,
+      "dataTransferGb": 5
+    },
+    "payAsYouGo": {
+      "requestsPer1M": 0.20,
+      "computePerGbSecond": 0.000016,
+      "dataTransferPerGb": 0.087
+    }
+  },
+  "features": {
+    "runtimes": ["Node.js 18/20", "Python 3.9/3.10/3.11", "Java 11/17", ".NET 6/8", "PowerShell 7.2"],
+    "coldStartMs": 250,
+    "maxExecutionMinutes": 10,
+    "maxMemoryMb": 4096
+  },
+  "ecosystem": {
+    "integrations": ["Cosmos DB", "Azure Storage", "Event Hubs", "Service Bus", "Event Grid", "API Management", "Application Insights"],
+    "sdks": ["Node.js", "Python", "Java", ".NET", "PowerShell"],
+    "communitySize": "large"
+  },
+  "lockIn": {
+    "portability": "medium",
+    "migrationComplexity": "medium",
+    "vendorLockIn": "Medium - Function code is portable, but Azure-specific bindings and integrations create lock-in. Use Durable Functions cautiously as they're Azure-specific."
+  },
+  "startupPrograms": [
+    {
+      "name": "Microsoft for Startups",
+      "credits": 1000,
+      "duration": "1 year"
+    }
+  ],
+  "lastVerified": "2025-11-16"
+}

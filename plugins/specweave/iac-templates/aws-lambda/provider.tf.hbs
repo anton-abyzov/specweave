@@ -1,0 +1,15 @@
+# AWS Provider Configuration
+# Project: {{projectName}}
+
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = {
+      Project     = "{{projectName}}"
+      Environment = var.environment
+      ManagedBy   = "Terraform"
+      CreatedBy   = "SpecWeave"
+    }
+  }
+}
