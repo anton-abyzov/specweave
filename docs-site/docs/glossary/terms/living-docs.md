@@ -1,295 +1,639 @@
+# Living Documentation
+
+**Living Documentation** is documentation that stays automatically synchronized with your codebase and project state. Unlike traditional static documentation that becomes outdated, living docs are updated automatically through hooks, automation, and bidirectional sync with external systems.
+
 ---
-sidebar_position: 4
----
 
-# Living Docs (Living Documentation)
+## The Problem with Traditional Documentation
 
-**Category**: SpecWeave Core
-
-## Definition
-
-**Living Docs** (Living Documentation) is SpecWeave's automatic documentation synchronization system that ensures documentation never becomes stale. After every task completion, living docs automatically sync from increment specs to the permanent knowledge base in `.specweave/docs/internal/`.
-
-**Key Principle**: Documentation = Code. They evolve together, automatically, with zero manual intervention.
-
-## What Problem Does It Solve?
-
-**The Traditional Documentation Problem**:
-- ❌ Docs written once, never updated ("Documentation is always out of date")
-- ❌ Code changes, docs don't ("It works differently now")
-- ❌ Manual sync (too much effort, never happens)
-- ❌ Tribal knowledge ("Just ask Sarah, she knows")
-
-**Living Docs Solution**:
-- ✅ Automatic sync after every task completion (hooks-based)
-- ✅ Documentation tracks code changes (always current)
-- ✅ Zero manual effort (post-task-completion hook handles it)
-- ✅ Complete audit trail (know what was built and when)
-
-## How It Works
+Traditional documentation has a fatal flaw: **it dies the moment you write it**.
 
 ```mermaid
 graph LR
-    A[Complete Task] --> B[Hook Fires]
-    B --> C[Check Sync Config]
-    C --> D{Enabled?}
-    D -->|Yes| E[Sync Increment → Living Docs]
-    D -->|No| F[Skip Sync]
-    E --> G[.specweave/docs/internal/specs/]
-    E --> H[.specweave/docs/internal/architecture/]
+    A[Write Docs] --> B[Code Changes]
+    B --> C[Docs Outdated]
+    C --> D[Team Ignores Docs]
+    D --> E[Documentation Dies]
+
+    style C fill:#ff6b6b
+    style E fill:#ff0000
 ```
 
-**Workflow**:
-1. **Task Completion**: Developer marks task complete via `TodoWrite`
-2. **Hook Fires**: `post-task-completion.sh` triggers automatically
-3. **Sync Check**: Reads `.specweave/config.json` for sync settings
-4. **Auto-Sync**: If enabled, syncs:
-   - `spec.md` → `.specweave/docs/internal/specs/spec-NNN-feature.md`
-   - `plan.md` → `.specweave/docs/internal/architecture/hld-NNN-feature.md`
-   - `tasks.md` → Task completion status updates
-5. **External Sync**: Optionally syncs to GitHub/Jira/ADO
+**Why traditional docs fail**:
+- ❌ Manual updates required (often forgotten)
+- ❌ No validation (docs can lie)
+- ❌ Drift from code (code changes, docs don't)
+- ❌ No source of truth (multiple versions)
+- ❌ Low trust (team knows docs are stale)
+
+---
+
+## Living Documentation: The Solution
+
+**Living docs stay alive** through three key mechanisms:
+
+```mermaid
+graph TB
+    A[Code Changes] --> B[Hooks Fire]
+    B --> C[Auto-Update Docs]
+    C --> D[Validate Sync]
+    D --> E[Docs Always Accurate]
+
+    style E fill:#51cf66
+```
+
+### 1. Auto-Update After Tasks
+
+**SpecWeave's post-task-completion hook** automatically updates living docs:
+
+```bash
+# Complete any task
+# → Hook fires automatically
+# → Living docs sync in background
+# → Zero manual intervention
+```
+
+### 2. Bidirectional Sync
+
+Changes flow **both ways**:
+
+```
+Local (.specweave/) ↔ External (GitHub/JIRA/ADO)
+```
+
+**Example**:
+- Task completed in SpecWeave → GitHub issue updated
+- GitHub issue closed → SpecWeave increment updated
+
+### 3. Validation
+
+Living docs are **validated on every sync**:
+- AC-ID coverage (all acceptance criteria documented)
+- Test coverage targets (85-90%)
+- Link integrity (no broken references)
+- Content classification (correct folder placement)
+
+---
+
+## Living Docs Structure in SpecWeave
+
+### Permanent Knowledge Base
+
+**Location**: `.specweave/docs/internal/`
+
+```
+.specweave/docs/internal/
+├── strategy/              # Business rationale (PRDs, vision)
+├── specs/                 # Feature specifications (permanent)
+│   └── spec-001-auth.md   # ALL user stories for authentication
+├── architecture/          # Technical design (HLD, ADR)
+│   ├── adr/               # Architecture Decision Records
+│   └── diagrams/          # System diagrams
+├── delivery/              # Build & release (roadmap, DORA)
+├── operations/            # Production ops (runbooks, SLOs)
+└── governance/            # Policies (security, compliance)
+```
+
+**Key Principle**: Specs use **3-digit numbers** (spec-001, spec-002) for **feature areas**.
+
+### Temporary Implementation Tracker
+
+**Location**: `.specweave/increments/####-name/`
+
+```
+.specweave/increments/0008-user-authentication/
+├── spec.md                # Subset of work (this iteration only)
+├── plan.md                # Implementation approach
+└── tasks.md               # Task checklist with tests
+```
+
+**Key Principle**: Increments use **4-digit numbers** (0001, 0002) for **implementations**.
+
+---
+
+## Living Docs Sync Flow
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Task as Task Completion
+    participant Hook as Post-Task Hook
+    participant Living as Living Docs
+    participant External as GitHub/JIRA/ADO
+
+    Dev->>Task: Complete T-001
+    Task->>Hook: Trigger hook
+    Hook->>Living: 1. Sync increment → specs
+    Living->>Living: 2. Validate AC-IDs
+    Living->>Living: 3. Check test coverage
+    Hook->>External: 4. Update external tracker
+    External->>Hook: 5. Confirm sync
+    Hook->>Dev: ✅ All docs synced
+```
+
+### Step-by-Step Example
+
+**1. Complete Task**:
+```bash
+# Developer marks task complete in tasks.md
+- [x] T-001: Implement password hashing (AC-US1-02)
+```
+
+**2. Hook Fires Automatically**:
+```bash
+# Hook: plugins/specweave/hooks/post-task-completion.sh
+# Runs sync-living-docs.js automatically
+```
+
+**3. Living Docs Updated**:
+```bash
+# Before (living docs):
+.specweave/docs/internal/specs/spec-001-authentication.md
+## US-001: User Login
+Status: Planning
+
+# After (living docs):
+.specweave/docs/internal/specs/spec-001-authentication.md
+## US-001: User Login
+Status: Complete ✅
+Implemented: Increment 0008
+Test Coverage: 90% (target: 85%)
+```
+
+**4. External Tracker Synced**:
+```bash
+# GitHub issue updated automatically:
+- [x] T-001: Implement password hashing
+
+Progress: 1/5 tasks (20%)
+```
+
+---
+
+## Intelligent Living Docs Sync (v0.18.0+)
+
+**NEW in v0.18.0**: Intelligent mode automatically classifies and distributes content to correct folders.
+
+### Simple Mode vs Intelligent Mode
+
+| Aspect | Simple Mode | Intelligent Mode |
+|--------|-------------|------------------|
+| **Output** | One file (spec-001.md) | Multiple files (9 categories) |
+| **Classification** | None | 9-category system |
+| **Project Detection** | None | Auto-detects (backend/frontend) |
+| **Cross-Linking** | Manual | Automatic |
+| **Docusaurus** | Manual frontmatter | Auto-generated |
+| **Size** | 5,000+ lines | 200-500 lines per file |
+
+### 9-Category Classification
+
+```mermaid
+graph TB
+    A[Parse spec.md] --> B{Classify Content}
+    B --> C1[User Story → specs/]
+    B --> C2[NFR → specs/nfr/]
+    B --> C3[Architecture → architecture/]
+    B --> C4[ADR → architecture/adr/]
+    B --> C5[Operations → operations/]
+    B --> C6[Delivery → delivery/]
+    B --> C7[Strategy → strategy/]
+    B --> C8[Governance → governance/]
+    B --> C9[Overview → specs/]
+```
+
+**Example: Before/After Intelligent Sync**
+
+**Before (Simple Mode)**:
+```
+.specweave/docs/internal/specs/spec-001-authentication.md (5,000 lines)
+- User stories
+- Architecture diagrams
+- ADRs
+- Runbooks
+- Test strategy
+- Business requirements
+(All mixed together)
+```
+
+**After (Intelligent Mode)**:
+```
+.specweave/docs/internal/
+├── specs/backend/
+│   ├── us-001-user-login.md              (User Story)
+│   ├── us-002-session-management.md      (User Story)
+│   └── _archive/spec-001-authentication.md (Original preserved)
+├── architecture/
+│   ├── authentication-flow.md            (HLD)
+│   └── adr/0001-oauth-vs-jwt.md          (ADR)
+├── operations/
+│   ├── runbook-auth-service.md           (Runbook)
+│   └── slo-auth-availability.md          (SLO)
+├── delivery/
+│   └── test-strategy-authentication.md   (Test Strategy)
+└── strategy/
+    └── auth-business-requirements.md     (Business Requirements)
+```
+
+---
 
 ## Configuration
 
-**Location**: `.specweave/config.json`
+**Enable Living Docs Sync** (`.specweave/config.json`):
 
 ```json
 {
   "hooks": {
     "post_task_completion": {
-      "sync_living_docs": true,         // ✅ MUST be true!
-      "sync_tasks_md": true,            // Updates tasks.md status
-      "external_tracker_sync": true     // Syncs to GitHub/Jira/ADO
+      "sync_living_docs": true,        // ✅ Enable auto-sync
+      "sync_tasks_md": true,           // ✅ Update tasks.md
+      "external_tracker_sync": true    // ✅ Sync to GitHub/JIRA/ADO
+    }
+  },
+  "livingDocs": {
+    "intelligent": {
+      "enabled": true,                 // ✅ Use intelligent mode
+      "splitByCategory": true,         // ✅ Classify content
+      "generateCrossLinks": true,      // ✅ Auto-link related docs
+      "preserveOriginal": true,        // ✅ Keep original spec
+      "classificationConfidenceThreshold": 0.6,
+      "fallbackProject": "default"
     }
   }
 }
 ```
 
-**Settings**:
-- `sync_living_docs`: Auto-sync increment specs to living docs (default: true)
-- `sync_tasks_md`: Update tasks.md with completion status (default: true)
-- `external_tracker_sync`: Sync to external issue trackers (default: false)
+---
 
-## Living Docs Structure
+## Project Detection (Multi-Project Support)
 
-```
-.specweave/docs/internal/
-├── strategy/                    # Business rationale (Why?)
-│   ├── prd-001-user-auth.md     # Product requirements
-│   └── okr-2025-q1.md           # Quarterly objectives
-│
-├── specs/                       # Living specs (What?)
-│   ├── spec-001-user-auth.md    # ✅ Synced from 0001, 0002, 0003
-│   └── spec-002-payments.md     # ✅ Synced from 0004, 0005
-│
-├── architecture/                # Technical design (How?)
-│   ├── hld-system.md            # High-level design
-│   ├── adr/                     # Architecture decisions
-│   │   ├── 0001-database.md     # Why PostgreSQL?
-│   │   └── 0002-auth-jwt.md     # Why JWT over sessions?
-│   └── diagrams/                # Visual architecture
-│       └── c4-system.mmd        # C4 model diagrams
-│
-├── delivery/                    # Build & release (How we build)
-│   ├── branch-strategy.md       # Git workflow
-│   └── dora-metrics.md          # Deployment frequency, lead time
-│
-├── operations/                  # Production ops (How we run)
-│   ├── runbook-api.md           # Operational procedures
-│   └── incident-001.md          # Postmortem reports
-│
-└── governance/                  # Policies (Guardrails)
-    ├── security-policy.md       # Security requirements
-    └── coding-standards.md      # Code style, conventions
+Intelligent sync auto-detects which project (backend/frontend/mobile) content belongs to:
+
+### Detection Signals
+
+| Signal | Score | Example |
+|--------|-------|---------|
+| **Frontmatter** | +20 | `project: backend` |
+| **Increment ID** | +10 | `0016-backend-auth` |
+| **Team Name** | +5 | `team: backend-team` |
+| **Keywords** | +3 each | `backend`, `api`, `service` |
+| **Tech Stack** | +2 each | `Node.js`, `PostgreSQL` |
+
+**Example Detection**:
+
+```yaml
+---
+title: User Authentication
+project: backend    # ← +20 points (explicit)
+---
+
+# User Authentication
+
+Implement OAuth for **backend services** using Node.js...
+# Keywords: backend (+3), service (+3), Node.js (+2) = +8
+# Total: 20 + 8 = 28 points → 100% confidence → "backend" project
 ```
 
-## Real-World Example
+---
 
-**Scenario**: Building user authentication across 3 increments
+## Docusaurus Frontmatter (Auto-Generated)
 
-```bash
-# Increment 0001: Basic Login
-/specweave:increment "User authentication MVP"
-# Creates: .specweave/increments/0001-user-auth-mvp/spec.md
+Every distributed file gets **rich frontmatter** for LLM context:
 
-# Implement tasks
-/specweave:do
-# Task T-001 complete → Hook fires automatically
-# Syncs: spec.md → .specweave/docs/internal/specs/spec-001-user-auth.md
-
-# Increment 0002: Password Reset
-/specweave:increment "Password reset flow"
-# Creates: .specweave/increments/0002-password-reset/spec.md
-# References: SPEC-001 (same living doc)
-
-/specweave:do
-# Task T-001 complete → Hook fires automatically
-# Updates: SPEC-001 with password reset user stories
-
-# Increment 0003: Social Login
-/specweave:increment "Social login (Google, GitHub)"
-# Creates: .specweave/increments/0003-social-login/spec.md
-# References: SPEC-001 (same living doc)
-
-/specweave:do
-# Task T-001 complete → Hook fires automatically
-# Updates: SPEC-001 with social login user stories
-
-# Result:
-# - 3 increments completed
-# - 1 living docs spec (SPEC-001) with COMPLETE history
-# - All user stories from all 3 increments
-# - No manual sync required!
+```yaml
+---
+id: us-001-user-login
+title: "US-001: User Login"
+sidebar_label: "User Login"
+description: "User can log in with email and password"
+tags: ["user-story", "backend", "authentication"]
+increment: "0016-authentication"
+project: "backend"                    # ← LLM knows which project
+category: "user-story"                # ← LLM knows document type
+last_updated: "2025-11-10"
+status: "planning"
+priority: "P1"
+---
 ```
 
-**Living Docs Spec After 3 Increments**:
+**Benefits**:
+- ✅ **LLM Context**: AI assistants understand project/category
+- ✅ **Docusaurus Ready**: Works out-of-the-box
+- ✅ **Navigation**: Sidebar generation
+- ✅ **Search**: Better search results
+- ✅ **Traceability**: Links to increment
+
+---
+
+## Cross-Linking (Bidirectional)
+
+Intelligent sync generates **automatic cross-links** between related documents:
 
 ```markdown
-File: .specweave/docs/internal/specs/spec-001-user-authentication.md
+## Related Documents
 
-# SPEC-001: User Authentication System
-Complete authentication solution with social login, 2FA, session management
+### Implements
+- [Authentication Architecture](../../architecture/auth-flow.md)
 
-## Increments (Implementation History)
-- 0001-user-auth-mvp: Basic login/logout (Complete ✅)
-- 0002-password-reset: Password reset flow (Complete ✅)
-- 0003-social-login: Google/GitHub OAuth (Complete ✅)
+### References
+- [ADR-001: OAuth vs JWT](../../architecture/adr/0001-oauth-vs-jwt.md)
 
-## User Stories
-### US-001: Basic Login Flow (0001) ✅
-[Implementation details synced from 0001]
+### Defined In
+- [Business Requirements](../../strategy/auth-requirements.md)
 
-### US-002: Password Reset (0002) ✅
-[Implementation details synced from 0002]
-
-### US-003: Social Login (0003) ✅
-[Implementation details synced from 0003]
-
-[... Complete history of all 3 increments]
+### Related To
+- [US-002: Session Management](./us-002-session-management.md)
 ```
 
-## Benefits
+**Link Types**:
+1. **Implements**: User story implements architecture
+2. **References**: References ADR or design doc
+3. **Defined In**: Defined in PRD or strategy doc
+4. **Related To**: Related to other user stories
 
-### 1. **Always Current**
-- ✅ Docs sync after every task (real-time updates)
-- ✅ No stale documentation
-- ✅ Code and docs evolve together
+---
 
-### 2. **Zero Manual Effort**
-- ✅ Automatic sync (hooks-based)
-- ✅ No "remember to update docs" guilt
-- ✅ Developers focus on code, framework handles docs
+## Specs vs Increments (Two Locations Explained)
 
-### 3. **Complete Audit Trail**
-- ✅ Know what was built and when
-- ✅ Implementation history per increment
-- ✅ Compliance & regulatory requirements (FDA, SOC 2, HIPAA)
+**The Core Question**: Why does SpecWeave have specs in TWO locations?
 
-### 4. **Easy Onboarding**
-- ✅ New developers read living docs
-- ✅ Complete project history
-- ✅ No "tribal knowledge" bottlenecks
+### Living Docs Specs = Permanent Knowledge Base
 
-### 5. **Enterprise-Ready**
-- ✅ Regulatory compliance (audit trails)
-- ✅ Knowledge preservation (no "Sarah knows" syndrome)
-- ✅ Multi-team coordination (shared specs)
+**Location**: `.specweave/docs/internal/specs/default/spec-001-core-framework.md`
+
+**Purpose**: COMPLETE, PERMANENT source of truth for entire feature area
+
+**Lifecycle**: Created once, updated over time, NEVER deleted
+
+**Scope**: Comprehensive feature area (10-50 user stories)
+
+**Contains**:
+- ✅ ALL user stories for the feature area (across multiple increments)
+- ✅ ALL acceptance criteria for those user stories
+- ✅ Implementation history (which increments implemented which parts)
+- ✅ Links to brownfield documentation (existing project docs)
+- ✅ External PM tool links (GitHub Project, Jira Epic, ADO Feature)
+- ✅ Architecture decisions rationale (ADRs)
+- ✅ Success criteria & metrics for the feature area
+
+### Increment Specs = Temporary Implementation Tracker
+
+**Location**: `.specweave/increments/0001-core-framework/spec.md`
+
+**Purpose**: TEMPORARY implementation reference (what am I building THIS iteration?)
+
+**Lifecycle**: Created per increment, can be deleted after completion
+
+**Scope**: Focused subset (3-5 user stories for this increment only)
+
+**Contains**:
+- ✅ Reference to living docs: `"See: SPEC-001-core-framework"`
+- ✅ Subset of user stories: `"Implements: US-001, US-002, US-003 only"`
+- ✅ What's being implemented RIGHT NOW (this iteration)
+- ✅ Out of scope: Lists what's NOT in this increment (deferred to future)
+
+### Real-World Example
+
+**Living Docs Spec** (Permanent):
+```markdown
+File: .specweave/docs/internal/specs/default/spec-001-core-framework.md
+
+# SPEC-001: Core Framework & Architecture
+
+## Increments (Implementation History)
+- 0001-core-framework: MVP CLI (Complete)
+- 0002-core-enhancements: Context optimization (Complete)
+- 0004-plugin-architecture: Claude native plugins (Complete)
+
+## User Stories (35 total across all increments)
+- US-001: NPM installation (0001) ✅
+- US-003: Context optimization (0002) ✅
+- US-005: Plugin system (0004) ✅
+... (32 more stories)
+```
+
+**Increment Spec** (Temporary):
+```markdown
+File: .specweave/increments/0001-core-framework/spec.md
+
+# Increment 0001: Core Framework MVP
+
+**Implements**: SPEC-001 (US-001 to US-002 only)
+**Complete Specification**: See ../../docs/internal/specs/default/spec-001.md
+
+## What We're Implementing (This Increment Only)
+- US-001: NPM installation + CLI basics ✅
+
+## Out of Scope (For This Increment)
+- ❌ Context optimization (US-003) → Increment 0002
+- ❌ Plugin system (US-005) → Increment 0004
+```
+
+### Analogy: Wikipedia vs Sticky Notes
+
+- **Living Docs Specs** = 📚 Wikipedia Article (permanent, comprehensive)
+- **Increment Specs** = 📝 Sticky Note Reminder (temporary, focused, disposable)
+
+---
+
+## Benefits of Living Documentation
+
+### 1. Always Accurate
+
+Traditional docs are often outdated. Living docs are **always accurate** because they're auto-synced:
+
+```bash
+# Traditional docs (manual):
+Code changes → Developer forgets to update docs → Docs outdated
+
+# Living docs (automatic):
+Code changes → Hook fires → Docs synced automatically → Always accurate
+```
+
+### 2. Zero Manual Work
+
+Developers never manually update living docs:
+
+```bash
+# Complete task
+- [x] T-001: Implement password hashing
+
+# Hook fires automatically:
+# ✅ Living docs synced
+# ✅ GitHub issue updated
+# ✅ Test coverage validated
+# ✅ AC-IDs checked
+
+# Developer: Zero manual work!
+```
+
+### 3. Single Source of Truth
+
+Living docs are the **permanent source of truth**:
+
+```
+SpecWeave (.specweave/docs/internal/) = Source of Truth
+External tools (GitHub, JIRA, ADO) = Mirrors
+```
+
+### 4. Complete History
+
+Living docs preserve **complete implementation history**:
+
+```markdown
+## SPEC-001: Core Framework
+
+## Implementation History
+- 2025-09-01: 0001-core-framework (US-001 to US-002) ✅
+- 2025-09-15: 0002-core-enhancements (US-003 to US-004) ✅
+- 2025-10-01: 0004-plugin-architecture (US-005 to US-006) ✅
+
+## What Was Built
+- US-001: NPM installation (Increment 0001) ✅
+- US-002: CLI basics (Increment 0001) ✅
+- US-003: Context optimization (Increment 0002) ✅
+- US-004: Smart caching (Increment 0002) ✅
+- US-005: Plugin marketplace (Increment 0004) ✅
+- US-006: Plugin loader (Increment 0004) ✅
+```
+
+### 5. Onboarding New Developers
+
+New developers can **read living docs** to understand the project:
+
+```bash
+# New developer joins team
+# Reads: .specweave/docs/internal/specs/spec-001-core-framework.md
+
+# Learns:
+# - What was built (35 user stories)
+# - Why decisions were made (ADRs)
+# - How to use the system (architecture docs)
+# - What tests exist (test coverage)
+
+# Result: Productive in hours, not weeks
+```
+
+---
 
 ## Manual Sync (When Automatic Sync Disabled)
+
+If automatic sync is disabled, you can manually sync:
 
 ```bash
 # Sync all completed increments to living docs
 /specweave:sync-docs update
 
-# Or copy manually (emergency only)
-cp .specweave/increments/0001-user-auth-mvp/spec.md \
-   .specweave/docs/internal/specs/spec-001-user-auth.md
+# Or copy manually (emergency only):
+cp .specweave/increments/0001-core-framework/spec.md \
+   .specweave/docs/internal/specs/spec-001-core-framework.md
 ```
 
-## Verify Sync
+---
+
+## Verification
+
+**Check Living Docs Are Synced**:
 
 ```bash
-# Check all synced specs
+# List all synced specs
 ls -1 .specweave/docs/internal/specs/spec-*.md
 
 # Should match number of completed increments
 ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | wc -l
+
+# Check intelligent sync distribution
+ls -1 .specweave/docs/internal/specs/*/us-*.md
+ls -1 .specweave/docs/internal/architecture/adr/*.md
 ```
 
-## Hook Implementation
+---
 
-**File**: `plugins/specweave/hooks/post-task-completion.sh`
+## When to Use Living Docs
+
+### ✅ Good Fits for Living Docs
+
+- **Feature specifications**: Complete user story documentation
+- **Architecture decisions**: ADRs that evolve over time
+- **API contracts**: Endpoints, schemas, versioning
+- **Runbooks**: Production operations procedures
+- **Test strategies**: Coverage targets, test plans
+- **Business requirements**: PRDs, vision statements
+
+### ❌ Not Suitable for Living Docs
+
+- **Temporary notes**: Session summaries, scratch work
+- **Prototypes**: Throwaway exploration
+- **Draft content**: Not-yet-approved specifications
+- **Meeting notes**: Unstructured discussions
+
+---
+
+## Living Docs Anti-Patterns
+
+### 1. Manual Updates
 
 ```bash
-#!/bin/bash
-# Fires after every TodoWrite tool use (Claude Code native)
+# ❌ Bad: Manual updates to living docs
+vim .specweave/docs/internal/specs/spec-001.md
+# (Changes get overwritten by next sync)
 
-# 1. Check if sync enabled
-if [ "$(cat .specweave/config.json | jq -r '.hooks.post_task_completion.sync_living_docs')" = "true" ]; then
-  # 2. Run sync utility
-  node dist/hooks/lib/sync-living-docs.js
-
-  # 3. Update tasks.md with completion status
-  if [ "$(cat .specweave/config.json | jq -r '.hooks.post_task_completion.sync_tasks_md')" = "true" ]; then
-    node dist/hooks/lib/sync-tasks-md.js
-  fi
-
-  # 4. External tracker sync (GitHub/Jira/ADO)
-  if [ "$(cat .specweave/config.json | jq -r '.hooks.post_task_completion.external_tracker_sync')" = "true" ]; then
-    node dist/hooks/lib/external-sync.js
-  fi
-fi
+# ✅ Good: Update increment spec, let sync handle it
+vim .specweave/increments/0001-core-framework/spec.md
+# Hook syncs automatically to living docs
 ```
 
-## Best Practices
+### 2. Duplicate Content
 
-### 1. **Enable Automatic Sync**
-- ✅ Set `sync_living_docs: true` in config
-- ✅ Let hooks handle sync (zero manual effort)
-- ❌ Don't disable sync (docs become stale)
+```bash
+# ❌ Bad: Same content in multiple places
+.specweave/increments/0001/spec.md (5,000 lines)
+.specweave/docs/internal/specs/spec-001.md (5,000 lines, duplicate)
 
-### 2. **Review Synced Docs**
-- ✅ Periodically check living docs for accuracy
-- ✅ Ensure increment history is complete
-- ❌ Don't assume sync is perfect (review quarterly)
+# ✅ Good: Increment references living docs
+.specweave/increments/0001/spec.md (500 lines, focused)
+.specweave/docs/internal/specs/spec-001.md (5,000 lines, complete)
+```
 
-### 3. **Use Descriptive Names**
-- ✅ Clear increment names (0001-user-auth-mvp)
-- ✅ Clear spec names (spec-001-user-authentication.md)
-- ❌ Avoid generic names (0001, increment-1)
+### 3. Outdated External Links
 
-### 4. **Link to External Tools**
-- ✅ Add GitHub Project links to living docs
-- ✅ Add Jira Epic links to living docs
-- ✅ Keep external tools in sync (via external_tracker_sync)
+```bash
+# ❌ Bad: Manual links that break
+GitHub: https://github.com/owner/repo/issues/123 (closed)
+Living docs: Still references old issue
 
-## Common Pitfalls
+# ✅ Good: Bidirectional sync keeps links fresh
+GitHub issue closed → Hook updates living docs → Link removed
+```
 
-### ❌ Disabling Automatic Sync
-**Problem**: Documentation becomes stale immediately
-
-**Solution**: Keep `sync_living_docs: true` unless you have a specific reason
-
-### ❌ Editing Living Docs Directly
-**Problem**: Changes get overwritten by next sync
-
-**Solution**: Edit increment specs, let sync propagate changes
-
-### ❌ Deleting Increment Folders
-**Problem**: Lose implementation history
-
-**Solution**: Keep increment folders, or ensure living docs are synced first
+---
 
 ## Related Terms
 
-- [SpecWeave](./specweave.md) - The framework
-- [Increment](./increment.md) - Unit of work
-- [Spec](./spec.md) - Specification document
-- [Hook](./hook.md) - Lifecycle automation
-- [Post-Task-Completion Hook](./post-task-completion-hook.md) - Specific hook
+- [Specs](/docs/glossary/terms/specs) - Specifications (permanent knowledge base)
+- [Increments](/docs/glossary/terms/increments) - Temporary implementation tracker
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
+- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
+- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth principle
+- [User Stories](/docs/glossary/terms/user-stories) - User story format
+- [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers
 
-## Learn More
+---
 
-- [Living Documentation Guide](/docs/glossary/terms/living-docs)
-- [Hooks Documentation](/docs/workflows/implementation#hooks-and-automation)
-- [Configuration Reference](/docs/api/configuration)
+## Summary
+
+**Living Documentation** stays synchronized automatically through:
+1. **Auto-update hooks** (post-task-completion)
+2. **Bidirectional sync** (Local ↔ External)
+3. **Validation** (AC-IDs, test coverage, links)
+
+**Two Locations**:
+- **Living docs** (`.specweave/docs/internal/specs/`) = Permanent knowledge base
+- **Increment specs** (`.specweave/increments/####/`) = Temporary implementation tracker
+
+**Intelligent Mode** (v0.18.0+):
+- 9-category classification
+- Project detection (backend/frontend)
+- Auto-generated frontmatter
+- Cross-linking
+
+**Result**: Documentation that **never dies** because it's **always alive**.

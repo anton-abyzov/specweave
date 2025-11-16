@@ -75,10 +75,10 @@ ADO Work Items (External)
 
 ### Step 1: Generate Personal Access Token (PAT)
 
-1. Go to: https://dev.azure.com/{organization}/_usersSettings/tokens
+1. Go to: https://dev.azure.com/`{organization}`/_usersSettings/tokens
 2. Click "New Token"
-3. Name: "SpecWeave - {project-name}"
-4. Organization: {your-org}
+3. Name: "SpecWeave - `{project-name}`"
+4. Organization: `{your-org}`
 5. Scopes:
    - ☑ Work Items (Read, Write, Delete)
    - ☑ Code (Read) - for repo info

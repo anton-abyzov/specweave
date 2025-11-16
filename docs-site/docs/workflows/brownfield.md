@@ -796,4 +796,4 @@ npx specweave init .
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
 - Regression Prevention
-- [Living Documentation](/docs/glossary/terms/living-docs)
+- [Living Documentation](/docs/guides/core-concepts/living-documentation)

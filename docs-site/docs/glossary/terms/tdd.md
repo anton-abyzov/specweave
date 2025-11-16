@@ -1,442 +1,422 @@
----
-sidebar_position: 21
----
-
 # TDD (Test-Driven Development)
 
-**Category**: Testing & Quality
+**Test-Driven Development (TDD)** is a software development methodology where tests are written **before** the implementation code. The developer writes a failing test, then writes the minimum code to pass the test, and finally refactors the code while keeping tests passing.
 
-## Definition
+---
 
-**TDD** (Test-Driven Development) is a development methodology where you write tests **before** writing implementation code. TDD follows the **red-green-refactor** cycle to ensure code is tested from the start.
+## The Red-Green-Refactor Cycle
 
-**Cycle**: Red (failing test) → Green (minimal code to pass) → Refactor (improve while keeping tests green)
-
-## What Problem Does It Solve?
-
-**The Traditional Development Problem**:
-- ❌ Code written first, tests added later (if at all)
-- ❌ Untestable code (not designed for testing)
-- ❌ Low test coverage (tests treated as afterthought)
-- ❌ Bugs discovered late (during QA or production)
-
-**TDD Solution**:
-- ✅ Tests written first (code is testable by design)
-- ✅ 100% test coverage (every line tested)
-- ✅ Better design (testing forces good architecture)
-- ✅ Bugs discovered immediately (test fails = immediate feedback)
-
-## Red-Green-Refactor Cycle
+TDD follows a three-step cycle:
 
 ```mermaid
 graph LR
-    A[🔴 RED<br/>Write Failing Test] --> B[🟢 GREEN<br/>Write Minimal Code]
-    B --> C[🔵 REFACTOR<br/>Improve Code]
+    A[Red: Write Failing Test] --> B[Green: Make Test Pass]
+    B --> C[Refactor: Improve Code]
     C --> A
+
+    style A fill:#ff6b6b
+    style B fill:#51cf66
+    style C fill:#339af0
 ```
 
-### 1. **RED**: Write a Failing Test
+### 1. Red: Write a Failing Test
 
-Write a test for functionality that doesn't exist yet. Test must fail!
+Write a test for the next piece of functionality you want to add. Run the test and watch it fail (because the functionality doesn't exist yet).
 
+**Example**:
 ```typescript
-// Step 1: RED - Write failing test
-it('should return JWT token when given valid credentials', async () => {
-  // Given
-  const email = 'user@example.com';
-  const password = 'Password123!';
+// tests/unit/services/auth.test.ts
+describe('AuthService', () => {
+  test('should hash password before storing', async () => {
+    const authService = new AuthService();
+    const result = await authService.register('user@example.com', 'password123');
 
-  // When
-  const result = await authService.login(email, password);
-
-  // Then
-  expect(result.accessToken).toBeDefined();
-  expect(result.refreshToken).toBeDefined();
+    // Test will fail - register() doesn't exist yet
+    expect(result.password).not.toBe('password123');
+    expect(result.password).toMatch(/^\$2[aby]\$\d+\$/); // bcrypt format
+  });
 });
-
-// Run test: ❌ FAILS (authService.login doesn't exist yet)
 ```
 
-### 2. **GREEN**: Write Minimal Code to Pass
+**Run**: `npm test` → ❌ Test fails (expected)
 
-Implement just enough code to make the test pass. Don't over-engineer!
+### 2. Green: Make the Test Pass
 
+Write the **minimum code** necessary to make the test pass. Don't worry about perfection—just make it work.
+
+**Example**:
 ```typescript
-// Step 2: GREEN - Write minimal implementation
+// src/services/AuthService.ts
+import bcrypt from 'bcrypt';
+
 export class AuthService {
-  async login(email: string, password: string) {
-    // Minimal code to pass test
+  async register(email: string, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
     return {
-      accessToken: 'fake-access-token',
-      refreshToken: 'fake-refresh-token'
+      email,
+      password: hashedPassword
     };
   }
 }
-
-// Run test: ✅ PASSES (but implementation is fake)
 ```
 
-### 3. **REFACTOR**: Improve Code Quality
+**Run**: `npm test` → ✅ Test passes
 
-Now improve the implementation while keeping tests green.
+### 3. Refactor: Improve the Code
 
+Improve the code structure, remove duplication, and optimize—while keeping all tests passing.
+
+**Example**:
 ```typescript
-// Step 3: REFACTOR - Real implementation
+// src/services/AuthService.ts
+import bcrypt from 'bcrypt';
+
 export class AuthService {
-  async login(email: string, password: string) {
-    // Validate input
-    if (!email || !password) {
-      throw new Error('Email and password required');
+  private readonly SALT_ROUNDS = 10;
+
+  async register(email: string, password: string) {
+    this.validatePassword(password);
+    const hashedPassword = await this.hashPassword(password);
+
+    return {
+      email,
+      password: hashedPassword
+    };
+  }
+
+  private validatePassword(password: string): void {
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters');
     }
+  }
 
-    // Find user
-    const user = await this.userRepo.findByEmail(email);
-    if (!user) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Verify password
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      throw new Error('Invalid credentials');
-    }
-
-    // Generate tokens
-    const accessToken = jwt.sign({ userId: user.id }, SECRET, { expiresIn: '15m' });
-    const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: '7d' });
-
-    return { accessToken, refreshToken };
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, this.SALT_ROUNDS);
   }
 }
-
-// Run test: ✅ STILL PASSES (real implementation works)
 ```
+
+**Run**: `npm test` → ✅ Tests still pass (refactoring successful)
+
+---
+
+## TDD Workflow Diagram
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant Test as Test Suite
+    participant Code as Production Code
+
+    Dev->>Test: 1. Write failing test
+    Test->>Dev: ❌ Test fails
+    Dev->>Code: 2. Write minimal code
+    Code->>Test: 3. Run test
+    Test->>Dev: ✅ Test passes
+    Dev->>Code: 4. Refactor
+    Code->>Test: 5. Run test
+    Test->>Dev: ✅ Still passes
+    Dev->>Test: 6. Write next test (repeat)
+```
+
+---
 
 ## TDD in SpecWeave
 
-### In tasks.md
+SpecWeave supports TDD workflow in **v0.7.0+** via `tasks.md` configuration:
 
+### Enabling TDD Mode
+
+**tasks.md frontmatter**:
 ```yaml
 ---
 increment: 0008-user-authentication
 total_tasks: 5
-test_mode: TDD           # ← Enables TDD workflow
-coverage_target: 90%
+test_mode: TDD
+coverage_target: 85%
 ---
 ```
 
-**When `test_mode: TDD`**:
-- Write tests FIRST (before implementation)
-- Follow red-green-refactor cycle strictly
-- Aim for 90%+ coverage
+When `test_mode: TDD`, SpecWeave guides you through the Red-Green-Refactor cycle:
 
-### Workflow
+### Example Task with TDD
 
-```bash
-# Task T-001: Authentication Service (TDD mode)
+```markdown
+## T-001: Implement Password Hashing
 
-# 1. RED - Write failing test
-vim tests/unit/services/auth.test.ts
-npm test  # ❌ Fails (expected)
+**AC**: AC-US1-02 (Passwords must be stored securely)
 
-# 2. GREEN - Minimal implementation
-vim src/services/auth/AuthService.ts
-npm test  # ✅ Passes
+**Test Plan** (BDD format):
+- **Given** user registers with password → **When** stored → **Then** password is hashed (bcrypt)
 
-# 3. REFACTOR - Improve code
-vim src/services/auth/AuthService.ts
-npm test  # ✅ Still passes
+**TDD Steps**:
 
-# 4. Repeat for next feature
+1. **Red**: Write failing test
+   ```bash
+   vim tests/unit/services/auth.test.ts
+   npm test  # ❌ Fails (expected)
+   ```
+
+2. **Green**: Implement minimal code
+   ```bash
+   vim src/services/AuthService.ts
+   npm test  # ✅ Passes
+   ```
+
+3. **Refactor**: Improve code
+   ```bash
+   vim src/services/AuthService.ts
+   npm test  # ✅ Still passes
+   ```
+
+**Test Cases**:
+- Unit (`auth.test.ts`): hashPassword, saltGeneration, invalidPassword → 90% coverage
+
+**Implementation**: AuthService.ts, bcrypt integration, password validation
+
+**Coverage**: 90% (target met)
 ```
 
-## Real-World Example
-
-**Feature**: Password validation
-
-### RED: Write Failing Test
-
-```typescript
-describe('PasswordValidator', () => {
-  it('should accept password with 8+ chars, uppercase, lowercase, number, special', () => {
-    const validator = new PasswordValidator();
-    const result = validator.validate('ValidPass123!');
-    expect(result.valid).toBe(true);
-  });
-
-  it('should reject password shorter than 8 chars', () => {
-    const validator = new PasswordValidator();
-    const result = validator.validate('Short1!');
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Password must be at least 8 characters');
-  });
-
-  it('should reject password without uppercase letter', () => {
-    const validator = new PasswordValidator();
-    const result = validator.validate('lowercase123!');
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Password must contain uppercase letter');
-  });
-});
-
-// Run: ❌ FAILS (PasswordValidator doesn't exist)
-```
-
-### GREEN: Minimal Implementation
-
-```typescript
-export class PasswordValidator {
-  validate(password: string) {
-    const errors: string[] = [];
-
-    if (password.length < 8) {
-      errors.push('Password must be at least 8 characters');
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain uppercase letter');
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain lowercase letter');
-    }
-
-    if (!/[0-9]/.test(password)) {
-      errors.push('Password must contain number');
-    }
-
-    if (!/[!@#$%^&*]/.test(password)) {
-      errors.push('Password must contain special character');
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors
-    };
-  }
-}
-
-// Run: ✅ PASSES
-```
-
-### REFACTOR: Improve Design
-
-```typescript
-export class PasswordValidator {
-  private readonly MIN_LENGTH = 8;
-  private readonly RULES = [
-    { regex: /[A-Z]/, error: 'Password must contain uppercase letter' },
-    { regex: /[a-z]/, error: 'Password must contain lowercase letter' },
-    { regex: /[0-9]/, error: 'Password must contain number' },
-    { regex: /[!@#$%^&*]/, error: 'Password must contain special character' }
-  ];
-
-  validate(password: string) {
-    const errors: string[] = [];
-
-    // Check length
-    if (password.length < this.MIN_LENGTH) {
-      errors.push(`Password must be at least ${this.MIN_LENGTH} characters`);
-    }
-
-    // Check each rule
-    for (const rule of this.RULES) {
-      if (!rule.regex.test(password)) {
-        errors.push(rule.error);
-      }
-    }
-
-    return {
-      valid: errors.length === 0,
-      errors
-    };
-  }
-}
-
-// Run: ✅ STILL PASSES (improved design)
-```
+---
 
 ## Benefits of TDD
 
-### 1. **Better Design**
-Tests force you to think about API before implementation
+### 1. Better Design
+
+Writing tests first forces you to think about the API design before implementation:
 
 ```typescript
-// TDD forces good design
-class AuthService {
-  async login(email, password) { ... }  // Simple, testable
+// ❌ Bad: Unclear API
+function process(data) { /* ... */ }
+
+// ✅ Good: Test-driven API
+test('should process user data and return validated result', () => {
+  const result = processUserData({ email: 'test@example.com' });
+  expect(result).toMatchObject({
+    isValid: true,
+    normalizedEmail: 'test@example.com'
+  });
+});
+
+// API is now clear from the test
+```
+
+### 2. Fewer Bugs
+
+Tests catch issues immediately:
+
+```typescript
+// Test written first
+test('should reject invalid email formats', () => {
+  expect(() => validateEmail('invalid')).toThrow('Invalid email format');
+});
+
+// This test will force you to handle validation
+// Bug is prevented before it reaches production
+```
+
+### 3. Living Documentation
+
+Tests document how the code should behave:
+
+```typescript
+describe('AuthService', () => {
+  test('should allow login with valid credentials', async () => { /* ... */ });
+  test('should reject login with invalid password', async () => { /* ... */ });
+  test('should lock account after 5 failed attempts', async () => { /* ... */ });
+  test('should unlock account after 15 minutes', async () => { /* ... */ });
+});
+
+// Test names document business rules
+```
+
+### 4. Confidence to Refactor
+
+With comprehensive tests, you can refactor fearlessly:
+
+```typescript
+// Original implementation
+function calculateTotal(items) {
+  let total = 0;
+  for (let i = 0; i < items.length; i++) {
+    total += items[i].price;
+  }
+  return total;
 }
 
-// Without TDD
-class AuthService {
-  async doLoginStuffWithEmailAndPasswordAndMaybeThrowErrors(email, password, req, res, next) { ... }
-  // Complex, hard to test
+// Refactored implementation
+function calculateTotal(items) {
+  return items.reduce((sum, item) => sum + item.price, 0);
 }
+
+// Tests still pass → refactoring is safe
 ```
 
-### 2. **Faster Debugging**
-Tests fail immediately when code breaks
+---
 
-```typescript
-// Change breaks test immediately
-it('should return JWT token', () => {
-  const result = authService.login(email, password);
-  expect(result.accessToken).toBeDefined();  // ❌ Fails immediately
-});
-```
+## TDD vs Traditional Testing
 
-### 3. **Refactoring Confidence**
-Can improve code without breaking behavior
+| Aspect | TDD | Traditional Testing |
+|--------|-----|-------------------|
+| **When tests written** | Before code | After code |
+| **Design thinking** | Test-first drives design | Code-first, tests follow |
+| **Coverage** | High (tests drive code) | Variable (depends on effort) |
+| **Bug prevention** | Proactive | Reactive |
+| **Refactoring confidence** | High (tests exist) | Lower (tests may be missing) |
+| **Learning curve** | Steeper initially | Easier to start |
+| **Code quality** | Generally higher | Depends on discipline |
 
-```bash
-# Before refactoring
-npm test  # ✅ All tests pass
-
-# Refactor code (improve structure)
-vim src/services/auth/AuthService.ts
-
-# After refactoring
-npm test  # ✅ Still pass = refactoring safe!
-```
-
-### 4. **Documentation**
-Tests document how code should be used
-
-```typescript
-// Tests serve as examples
-it('should return JWT token when given valid credentials', () => {
-  // Shows how to use authService.login()
-  const result = await authService.login('user@example.com', 'Password123!');
-  expect(result.accessToken).toBeDefined();
-});
-```
-
-## TDD vs BDD
-
-| Aspect | TDD | BDD |
-|--------|-----|-----|
-| **Level** | Unit tests | Integration/E2E tests |
-| **Focus** | Code correctness | Business behavior |
-| **Format** | Assertions | Given/When/Then |
-| **Language** | Technical | Plain English |
-| **Audience** | Developers | Developers + stakeholders |
-
-**Can Use Both**:
-- BDD for user-facing scenarios (integration/E2E)
-- TDD for implementation details (unit tests)
-
-## Best Practices
-
-### 1. **Write Smallest Possible Test**
-```typescript
-✅ CORRECT:
-it('should return true for valid email', () => {
-  expect(isValidEmail('user@example.com')).toBe(true);
-});
-
-❌ WRONG:
-it('should handle all email scenarios', () => {
-  // Testing 20 different cases in one test
-});
-```
-
-### 2. **One Assert Per Test** (Ideally)
-```typescript
-✅ CORRECT:
-it('should return JWT token', () => {
-  expect(result.accessToken).toBeDefined();
-});
-
-it('should return refresh token', () => {
-  expect(result.refreshToken).toBeDefined();
-});
-
-🟡 ACCEPTABLE (related asserts):
-it('should return both tokens', () => {
-  expect(result.accessToken).toBeDefined();
-  expect(result.refreshToken).toBeDefined();
-});
-```
-
-### 3. **Don't Skip RED Step**
-```bash
-❌ WRONG:
-# Write test
-# Write implementation immediately
-# Test passes on first run
-# ⚠️  How do you know test is correct if it never failed?
-
-✅ CORRECT:
-# Write test
-# Run test → ❌ FAILS (verifies test is correct)
-# Write implementation
-# Run test → ✅ PASSES
-```
-
-### 4. **Refactor Only When Green**
-```bash
-✅ CORRECT:
-Tests passing → Refactor → Tests still passing
-
-❌ WRONG:
-Tests failing → Refactor → Still failing → Now what?
-```
+---
 
 ## Common TDD Patterns
 
-### Test-First for New Features
-```bash
-# New feature: Email verification
-# 1. Write test for send verification email
-npm test  # ❌ Fails
-# 2. Implement send verification email
-npm test  # ✅ Passes
-# 3. Write test for verify email token
-npm test  # ❌ Fails
-# 4. Implement verify email token
-npm test  # ✅ Passes
-```
+### AAA Pattern (Arrange-Act-Assert)
 
-### Bug Fix with TDD
-```bash
-# Bug reported: Password reset link doesn't expire
-# 1. Write test that reproduces bug
-it('should reject expired reset link', () => {
-  const expiredToken = createExpiredToken();
-  expect(validateToken(expiredToken)).toBe(false);
+```typescript
+test('should calculate order total with tax', () => {
+  // Arrange: Set up test data
+  const order = new Order();
+  order.addItem({ price: 100 });
+  order.addItem({ price: 50 });
+
+  // Act: Execute the behavior
+  const total = order.calculateTotalWithTax(0.1); // 10% tax
+
+  // Assert: Verify the outcome
+  expect(total).toBe(165); // (100 + 50) * 1.1
 });
-npm test  # ❌ Fails (reproduces bug)
-
-# 2. Fix implementation
-vim src/services/auth/token-validator.ts
-npm test  # ✅ Passes (bug fixed)
 ```
 
-## TDD Commands in SpecWeave
+### Test Doubles (Mocks, Stubs, Spies)
 
-```bash
-# Start TDD workflow
-/specweave:tdd-cycle 0008
+```typescript
+test('should send email after user registration', async () => {
+  // Arrange: Mock email service
+  const emailService = {
+    send: jest.fn().mockResolvedValue(true)
+  };
+  const authService = new AuthService(emailService);
 
-# Execute TDD red phase (write failing tests)
-/specweave:tdd-red
+  // Act: Register user
+  await authService.register('user@example.com', 'password123');
 
-# Execute TDD green phase (implement to pass)
-/specweave:tdd-green
-
-# Execute TDD refactor phase (improve code)
-/specweave:tdd-refactor
+  // Assert: Email was sent
+  expect(emailService.send).toHaveBeenCalledWith({
+    to: 'user@example.com',
+    subject: 'Welcome to SpecWeave'
+  });
+});
 ```
+
+---
+
+## When to Use TDD
+
+### ✅ Good Fits for TDD
+
+- **Business logic**: Calculation, validation, data transformation
+- **Utility functions**: Pure functions with clear inputs/outputs
+- **APIs**: REST endpoints, GraphQL resolvers
+- **Core domain models**: User, Order, Payment entities
+- **Bug fixes**: Write test that reproduces bug, then fix
+
+### ❌ Less Suitable for TDD
+
+- **UI layouts**: Visual design exploration
+- **Prototypes**: Throwaway code for exploring ideas
+- **Glue code**: Simple integration between libraries
+- **Configuration**: YAML, JSON config files
+
+---
+
+## TDD Anti-Patterns
+
+### 1. Testing Implementation Details
+
+```typescript
+// ❌ Bad: Tests implementation
+test('should call bcrypt.hash with SALT_ROUNDS', async () => {
+  const spy = jest.spyOn(bcrypt, 'hash');
+  await authService.register('user@example.com', 'password123');
+  expect(spy).toHaveBeenCalledWith('password123', 10);
+});
+
+// ✅ Good: Tests behavior
+test('should store hashed password', async () => {
+  const result = await authService.register('user@example.com', 'password123');
+  expect(result.password).not.toBe('password123');
+  expect(result.password).toMatch(/^\$2[aby]\$\d+\$/);
+});
+```
+
+### 2. Writing Tests After Code
+
+```typescript
+// ❌ Not TDD: Code written first, tests added later
+// Result: Tests may miss edge cases, design not influenced by tests
+
+// ✅ True TDD: Test written first, code follows
+// Result: Better design, complete coverage
+```
+
+### 3. Skipping Refactor Step
+
+```typescript
+// ❌ Bad: Stop after Green (duplicate code remains)
+test('should hash password', () => { /* ... */ });
+function hashPassword(password) {
+  return bcrypt.hash(password, 10);
+}
+
+test('should hash API key', () => { /* ... */ });
+function hashAPIKey(key) {
+  return bcrypt.hash(key, 10); // Duplication!
+}
+
+// ✅ Good: Refactor to extract common logic
+function hashSecret(secret: string): Promise<string> {
+  return bcrypt.hash(secret, 10);
+}
+```
+
+---
+
+## TDD Resources
+
+### Books
+- **"Test Driven Development: By Example"** by Kent Beck (creator of TDD)
+- **"Growing Object-Oriented Software, Guided by Tests"** by Steve Freeman
+
+### Tools
+- **Jest**: JavaScript/TypeScript testing framework
+- **Playwright**: E2E testing framework
+- **Vitest**: Modern Jest alternative (faster)
+
+### SpecWeave Integration
+- **TDD mode** in tasks.md (`test_mode: TDD`)
+- **BDD format** for test plans (Given/When/Then)
+- **Coverage targets** per task (85-90%)
+
+---
 
 ## Related Terms
 
-- [BDD](./bdd.md) - Behavior-Driven Development
-- [Unit Testing](./unit-testing.md) - Testing individual components
-- [Tasks.md](./tasks-md.md) - Task file with test plans
-- [Test Coverage](./test-coverage.md) - Code coverage metrics
+- [BDD (Behavior-Driven Development)](/docs/glossary/terms/bdd) - Testing from user behavior perspective
+- [Unit Testing](/docs/glossary/terms/unit-testing) - Testing individual functions
+- E2E Testing - Testing complete user flows
+- [Test Coverage](/docs/glossary/terms/test-coverage) - Measuring code tested
 
-## Learn More
+---
 
-- [TDD Workflow](/docs/workflows/implementation#tdd-workflow)
-- [Test-Driven Development Guide](https://martinfowler.com/bliki/TestDrivenDevelopment.html)
-- [Kent Beck - TDD by Example](https://www.amazon.com/Test-Driven-Development-Kent-Beck/dp/0321146530)
+## Summary
+
+**TDD is a discipline**:
+1. **Red**: Write failing test first
+2. **Green**: Make test pass (minimal code)
+3. **Refactor**: Improve code structure
+
+**Benefits**: Better design, fewer bugs, living documentation, refactoring confidence
+
+**SpecWeave supports TDD**: Set `test_mode: TDD` in tasks.md for guided workflow
+
+**Key insight**: TDD is about design first, testing second. The test is a design tool, not just a validation tool.

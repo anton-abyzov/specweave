@@ -230,19 +230,7 @@ With SpecWeave, every project contributes to a growing library of portable, reus
 
 ## Next Steps
 
-import { Card, CardGroup } from '@site/src/components/Card';
-
-<CardGroup>
-  <Card title="Quick Start" href="/docs/getting-started">
-    Start your first portable project
-  </Card>
-  <Card title="Brownfield Guide" href="/docs/workflows/brownfield">
-    Extract specs from existing code
-  </Card>
-  <Card title="Migration Patterns" href="/docs/guides/migration-patterns">
-    Learn proven migration strategies
-  </Card>
-  <Card title="Contact Sales" href="https://spec-weave.com/enterprise">
-    Discuss your migration project
-  </Card>
-</CardGroup>
+- **[Quick Start](/docs/getting-started)** - Start your first portable project
+- **[Brownfield Guide](/docs/workflows/brownfield)** - Extract specs from existing code
+- **[Migration Patterns](/docs/guides/migration-patterns)** - Learn proven migration strategies
+- **[Contact Sales](https://spec-weave.com/enterprise)** - Discuss your migration project
