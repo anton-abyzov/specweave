@@ -1,14 +1,10 @@
 ---
 id: US-006
 feature: FS-031
-title: Conflict Resolution
+title: "Conflict Resolution"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 599
-    url: https://github.com/anton-abyzov/specweave/issues/599
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-006: Conflict Resolution
@@ -37,9 +33,7 @@ external:
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-007: Create Conflict Resolver](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-007-create-conflict-resolver)
-- [T-018: Add Sync Event Logging](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-018-add-sync-event-logging)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -61,4 +55,4 @@ Robust conflict handling prevents data loss and maintains consistency.
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16

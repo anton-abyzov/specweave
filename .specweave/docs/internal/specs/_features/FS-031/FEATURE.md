@@ -2,18 +2,13 @@
 id: FS-031
 title: "External Tool Status Synchronization"
 type: feature
-status: in-progress
+status: completed
 priority: P1
 created: 2025-11-12
-lastUpdated: 2025-11-15T21:11:46.376Z
+lastUpdated: 2025-11-16T06:26:49.713Z
 projects: ["specweave"]
 epic: EPIC-2025-Q4-platform
 sourceIncrement: 0031-external-tool-status-sync
-external_tools:
-  github:
-    type: milestone
-    id: 4
-    url: "https://github.com/anton-abyzov/specweave/milestone/4"
 ---
 
 # External Tool Status Synchronization

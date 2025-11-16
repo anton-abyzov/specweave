@@ -1,14 +1,10 @@
 ---
 id: US-002
 feature: FS-031
-title: Task-Level Mapping & Traceability
+title: "Task-Level Mapping & Traceability"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 595
-    url: https://github.com/anton-abyzov/specweave/issues/595
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-002: Task-Level Mapping & Traceability
@@ -36,8 +32,7 @@ external:
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-002: Create Spec-to-Increment Mapper](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-002-create-spec-to-increment-mapper)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -59,4 +54,4 @@ Traceability is essential for compliance, auditing, and understanding product ev
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16

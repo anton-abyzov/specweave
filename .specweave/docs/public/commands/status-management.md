@@ -87,10 +87,17 @@ Get instant visibility:
 
 | Status | Meaning | Counts Toward WIP Limit? |
 |--------|---------|-------------------------|
+| **planning** | Creating spec/plan/tasks | ❌ No |
 | **active** | Currently being worked on | ✅ Yes |
+| **backlog** | Not started yet | ❌ No |
 | **paused** | Temporarily blocked (automatic) | ❌ No |
 | **completed** | All tasks done, shipped | ❌ No |
 | **abandoned** | Work cancelled | ❌ No |
+
+**Auto-Transitions**:
+- **PLANNING → ACTIVE**: Automatically when tasks.md created and first task starts
+- **BACKLOG → PLANNING**: When spec.md created (resume planning)
+- **PAUSED → ACTIVE**: When blockage resolved
 
 ## WIP Limits
 

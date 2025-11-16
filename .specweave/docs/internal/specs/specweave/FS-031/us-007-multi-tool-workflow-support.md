@@ -1,14 +1,10 @@
 ---
 id: US-007
 feature: FS-031
-title: Multi-Tool Workflow Support
+title: "Multi-Tool Workflow Support"
 status: complete
-created: 2025-11-15
-completed: 2025-11-15
-external:
-  github:
-    issue: 600
-    url: https://github.com/anton-abyzov/specweave/issues/600
+created: 2025-11-16
+completed: 2025-11-16
 ---
 
 # US-007: Multi-Tool Workflow Support
@@ -34,8 +30,7 @@ external:
 
 **Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
 
-**Tasks**:
-- [T-015: Implement Workflow Detection](../../../../../increments/0031-external-tool-status-sync/tasks.md#t-015-implement-workflow-detection)
+**Source Tasks**: See increment tasks.md for complete task breakdown
 
 ---
 
@@ -57,4 +52,4 @@ Advanced teams have sophisticated workflows; support them.
 ---
 
 **Status**: ✅ Complete
-**Completed**: 2025-11-15
+**Completed**: 2025-11-16
