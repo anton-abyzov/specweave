@@ -6,17 +6,15 @@ module.exports = {
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/?(*.)+(spec|test).+(ts|tsx|js)'
   ],
-  globals: {
-    'ts-jest': {
+  transform: {
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
         target: 'ES2020',
-        module: 'commonjs',
-        moduleResolution: 'node',
+        module: 'nodenext',
+        moduleResolution: 'nodenext',
+        isolatedModules: true,
       },
-    },
-  },
-  transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    }],
     '^.+\\.jsx?$': 'babel-jest',
   },
   transformIgnorePatterns: [

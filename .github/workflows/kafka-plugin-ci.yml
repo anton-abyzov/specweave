@@ -1,26 +1,12 @@
 name: Kafka Plugin CI/CD
 
+# DISABLED: Kafka plugins are future work and don't exist yet
+# Enable this workflow once the Kafka plugins are implemented
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'plugins/specweave-kafka/**'
-      - 'plugins/specweave-kafka-streams/**'
-      - 'plugins/specweave-confluent/**'
-      - 'plugins/specweave-n8n/**'
-      - 'tests/**'
-      - '.github/workflows/kafka-plugin-ci.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'plugins/specweave-kafka/**'
-      - 'plugins/specweave-kafka-streams/**'
-      - 'plugins/specweave-confluent/**'
-      - 'plugins/specweave-n8n/**'
-      - 'tests/**'
+  workflow_dispatch:  # Manual trigger only
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   KAFKA_VERSION: '3.6.0'
   CONFLUENT_PLATFORM_VERSION: '7.5.0'
 
@@ -31,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -57,10 +43,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -80,7 +66,7 @@ jobs:
 
       - name: Archive test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: unit-test-results
           path: |
@@ -134,10 +120,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -170,7 +156,7 @@ jobs:
 
       - name: Archive test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: integration-test-results
           path: |
@@ -231,10 +217,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -265,7 +251,7 @@ jobs:
 
       - name: Archive test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: e2e-test-results
           path: |
@@ -279,10 +265,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -335,10 +321,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -355,7 +341,7 @@ jobs:
         run: npm run benchmark
 
       - name: Archive benchmark results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark-results
           path: benchmark-results/
@@ -367,10 +353,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -390,7 +376,7 @@ jobs:
           cp -r plugins/specweave-n8n dist/plugins/
 
       - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v5
         with:
           name: build-artifacts
           path: dist/
@@ -402,10 +388,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Download all coverage artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v5
 
       - name: Generate combined coverage report
         run: |
