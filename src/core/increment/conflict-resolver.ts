@@ -89,7 +89,11 @@ export async function mergeContent(
     const loserReportsDir = path.join(loser.path, 'reports');
     if (await fs.pathExists(loserReportsDir)) {
       const winnerReportsDir = path.join(winner.path, 'reports');
-      await fs.ensureDir(winnerReportsDir);
+
+      // Only create directory if not in dry-run mode
+      if (!options.dryRun) {
+        await fs.ensureDir(winnerReportsDir);
+      }
 
       const reportFiles = await fs.readdir(loserReportsDir);
       for (const file of reportFiles) {
