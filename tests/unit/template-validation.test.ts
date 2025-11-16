@@ -275,8 +275,17 @@ describe('Template Validation Tests', () => {
         const anchorLinks = extractAnchorLinks(sectionIndex);
         expect(anchorLinks.length).toBeGreaterThan(0);
 
+        // Runtime-injected anchor prefixes (content injected via {AGENTS_SECTION} and {SKILLS_SECTION})
+        const runtimeInjectedPrefixes = ['command-', 'skill-', 'agent-', 'workflow-'];
+
         const missingAnchors: string[] = [];
         for (const anchor of anchorLinks) {
+          // Skip runtime-injected anchors (they're added when template is compiled)
+          const isRuntimeInjected = runtimeInjectedPrefixes.some(prefix => anchor.startsWith(prefix));
+          if (isRuntimeInjected) {
+            continue;
+          }
+
           if (!anchorExists(fullContent, anchor)) {
             missingAnchors.push(anchor);
           }

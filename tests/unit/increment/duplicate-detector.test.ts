@@ -144,7 +144,8 @@ describe('DuplicateDetector', () => {
       const result = await detectAllDuplicates(testDir);
 
       const winner = result.duplicates[0].recommendedWinner;
-      expect(winner.fileCount).toBe(20);
+      // fileCount includes metadata.json + spec/plan/tasks.md + 17 additional = 21 total
+      expect(winner.fileCount).toBe(21);
       expect(winner.name).toBe('0006-test-large');
     });
 
@@ -193,12 +194,24 @@ describe('DuplicateDetector', () => {
       expect(result.every(loc => loc.name.startsWith('0001'))).toBe(true);
     });
 
-    it('should return empty array when no duplicates for number', async () => {
+    it('should return empty array when no increments exist with that number', async () => {
+      await createTestIncrement(testDir, 'active', '0001-test');
+
+      const result = await detectDuplicatesByNumber('0099', testDir);
+
+      // Should return empty if no increments with that number
+      expect(result).toEqual([]);
+    });
+
+    it('should return increment even when only one exists (for validation)', async () => {
       await createTestIncrement(testDir, 'active', '0001-test');
 
       const result = await detectDuplicatesByNumber('0001', testDir);
 
-      expect(result).toEqual([]);
+      // NEW BEHAVIOR: Returns the increment even if there's only one
+      // This is used for validation before creating a new increment
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('0001-test');
     });
 
     it('should normalize increment number with padding', async () => {
@@ -341,7 +354,8 @@ describe('DuplicateDetector', () => {
       const result = await detectAllDuplicates(testDir);
 
       expect(result.duplicates[0].resolutionReason).toContain('Most complete');
-      expect(result.duplicates[0].resolutionReason).toContain('20 files');
+      // fileCount includes metadata.json, so 20 requested = 21 actual
+      expect(result.duplicates[0].resolutionReason).toContain('21 files');
     });
   });
 });

@@ -127,7 +127,7 @@ Search pattern: `#workflow-{name}`
 - [Increment Closure](#workflow-increment-closure)
 - [Documentation Updates](#workflow-documentation-updates)
 
-### 🆘 Troubleshooting (When Stuck)
+### 🆘 Common Issues (When Stuck)
 Search pattern: `#troubleshoot-{topic}`
 
 - [Skills Not Working](#troubleshoot-skills)
@@ -2365,7 +2365,7 @@ When you encounter a new task:
 
 **Symptoms**: Command workflows seem to take forever
 
-**Causes & Solutions**:
+**Solutions**:
 1. **Loading entire AGENTS.md** - This is normal!
    - File is 2000+ lines (comprehensive)
    - Use search (Ctrl+F) to jump to relevant sections
@@ -2417,7 +2417,9 @@ When you encounter a new task:
 
 **Symptoms**: GitHub/Jira sync fails with auth errors
 
-**Solutions (GitHub)**:
+**Solutions**:
+
+**For GitHub**:
 ```bash
 # Check auth status
 gh auth status
@@ -2429,7 +2431,7 @@ gh auth login
 gh repo view
 ```
 
-**Solutions (Jira)**:
+**For Jira**:
 ```bash
 # Check config
 jira config list
@@ -2441,7 +2443,7 @@ jira init
 jira issue list --project PROJ
 ```
 
-**Solutions (Azure DevOps)**:
+**For Azure DevOps**:
 ```bash
 # Check auth
 az account show
@@ -2484,6 +2486,39 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 
 ---
 
+### Version Conflicts {#troubleshoot-version-conflicts}
+
+**Symptoms**: SpecWeave commands fail with unexpected errors, missing files, or format incompatibilities
+
+**Solutions**:
+1. **Check SpecWeave version**:
+   ```bash
+   specweave --version
+   # Compare with project requirements
+   ```
+
+2. **Update SpecWeave CLI**:
+   ```bash
+   npm install -g specweave@latest
+   # Or for local project:
+   npm install specweave@latest
+   ```
+
+3. **Check project `.specweave/config.json`**:
+   ```bash
+   cat .specweave/config.json | grep version
+   # Verify compatible with CLI version
+   ```
+
+4. **Migrate if needed**:
+   - Check CHANGELOG.md for breaking changes
+   - Follow migration guide for your version
+   - Update templates and plugins
+
+**Prevention**: Pin SpecWeave version in package.json and update intentionally
+
+---
+
 ### Multi-Tool Confusion {#troubleshoot-multi-tool}
 
 **Symptoms**: Instructions mention Claude Code but I'm using Cursor/Copilot
@@ -2492,7 +2527,7 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 1. **Look for multi-tool callouts**:
    ```markdown
    **For Claude Code**: ✅ Automatic via hooks
-   **For Other Tools**: ⚠️ Manual sync required
+   **For Other Tools**: ⚠️ manual sync required
    ```
 
 2. **If instruction says "automatic"**:
