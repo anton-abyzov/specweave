@@ -95,6 +95,7 @@ async function syncGitHub(specPath: string, options: any) {
     const actionVerb = {
       created: 'Created',
       updated: 'Updated',
+      'updated-via-comment': 'Updated (via progress comment)',
       'no-change': 'No changes',
       error: 'Error',
     }[result.action] || 'Unknown';
@@ -135,6 +136,7 @@ async function syncJira(specPath: string, options: any) {
     const actionVerb = {
       created: 'Created',
       updated: 'Updated',
+      'updated-via-comment': 'Updated (via progress comment)',
       'no-change': 'No changes',
       error: 'Error',
     }[result.action] || 'Unknown';
@@ -187,6 +189,7 @@ async function syncAdo(specPath: string, options: any) {
     const actionVerb = {
       created: 'Created',
       updated: 'Updated',
+      'updated-via-comment': 'Updated (via progress comment)',
       'no-change': 'No changes',
       error: 'Error',
     }[result.action] || 'Unknown';

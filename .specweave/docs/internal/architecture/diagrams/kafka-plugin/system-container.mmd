@@ -1,0 +1,79 @@
+```mermaid
+C4Container
+    title Container Diagram - Kafka Plugin Suite Architecture
+
+    Person(user, "Developer/DevOps", "Uses SpecWeave Kafka plugins")
+
+    System_Boundary(specweave, "SpecWeave Framework") {
+        Container(core, "SpecWeave Core", "TypeScript/Node.js", "Increment lifecycle, living docs, plugin manager")
+        Container(claude_code, "Claude Code", "AI IDE", "Native plugin system, MCP support, skill activation")
+    }
+
+    System_Boundary(kafka_plugins, "Kafka Plugin Suite") {
+        Container(plugin_kafka, "specweave-kafka", "Claude Plugin", "Core Kafka operations, MCP, CLI tools, monitoring")
+        Container(plugin_confluent, "specweave-confluent", "Claude Plugin", "Confluent Cloud management, Schema Registry, ksqlDB")
+        Container(plugin_streams, "specweave-kafka-streams", "Claude Plugin", "Kafka Streams, OpenShift, Red Hat AMQ Streams")
+        Container(plugin_n8n, "specweave-n8n", "Claude Plugin", "n8n workflow automation, MCP triggers")
+    }
+
+    System_Boundary(kafka_infrastructure, "Kafka Infrastructure") {
+        Container(kafka_cluster, "Kafka Cluster", "Apache Kafka 3.6+", "Brokers, topics, partitions, consumer groups")
+        Container(schema_registry, "Schema Registry", "Confluent", "Avro/Protobuf schemas, compatibility checks")
+        Container(kafka_connect, "Kafka Connect", "Kafka", "Source/sink connectors")
+        Container(ksqldb, "ksqlDB", "Confluent", "Stream processing SQL")
+    }
+
+    System_Boundary(observability, "Observability Stack") {
+        Container(prometheus, "Prometheus", "Metrics DB", "Time-series metrics storage")
+        Container(grafana, "Grafana", "Visualization", "Dashboards, alerts")
+        Container(jaeger, "Jaeger", "Tracing", "Distributed tracing backend")
+        Container(kafka_exporter, "kafka_exporter", "Metrics Exporter", "Topic, consumer lag metrics")
+    }
+
+    System_Boundary(mcp_layer, "MCP Layer") {
+        Container(mcp_kanapuli, "kanapuli/mcp-kafka", "TypeScript MCP Server", "Basic Kafka operations")
+        Container(mcp_tuannvm, "tuannvm/kafka-mcp-server", "Go MCP Server", "Advanced SASL, high performance")
+        Container(mcp_confluent, "Confluent MCP Server", "Confluent", "Natural language cluster management")
+    }
+
+    System_Boundary(automation, "Automation & IaC") {
+        Container(terraform, "Terraform Modules", "HCL", "Infrastructure-as-code for Kafka clusters")
+        Container(n8n_instance, "n8n Instance", "Node.js", "Workflow automation engine")
+    }
+
+    Rel(user, claude_code, "Interacts with", "Claude Code IDE")
+    Rel(claude_code, core, "Uses", "Plugin API")
+    Rel(core, plugin_kafka, "Loads", "Plugin system")
+    Rel(core, plugin_confluent, "Loads", "Plugin system")
+    Rel(core, plugin_streams, "Loads", "Plugin system")
+    Rel(core, plugin_n8n, "Loads", "Plugin system")
+
+    Rel(plugin_kafka, mcp_kanapuli, "Calls", "MCP Protocol")
+    Rel(plugin_kafka, mcp_tuannvm, "Calls", "MCP Protocol")
+    Rel(plugin_kafka, kafka_cluster, "Manages", "Kafka Protocol")
+    Rel(plugin_kafka, kafka_exporter, "Deploys", "Docker")
+    Rel(plugin_kafka, prometheus, "Configures", "HTTP")
+    Rel(plugin_kafka, terraform, "Generates modules", "File system")
+
+    Rel(plugin_confluent, mcp_confluent, "Calls", "MCP Protocol")
+    Rel(plugin_confluent, schema_registry, "Manages", "REST API")
+    Rel(plugin_confluent, kafka_connect, "Manages", "REST API")
+    Rel(plugin_confluent, ksqldb, "Manages", "REST API")
+
+    Rel(plugin_streams, kafka_cluster, "Deploys apps", "Kafka Protocol")
+
+    Rel(plugin_n8n, n8n_instance, "Deploys workflows", "n8n API")
+
+    Rel(mcp_kanapuli, kafka_cluster, "Connects to", "Kafka Protocol")
+    Rel(mcp_tuannvm, kafka_cluster, "Connects to", "Kafka Protocol")
+    Rel(mcp_confluent, kafka_cluster, "Connects to", "Confluent API")
+
+    Rel(kafka_exporter, kafka_cluster, "Scrapes metrics", "Kafka Protocol")
+    Rel(prometheus, kafka_exporter, "Scrapes", "HTTP")
+    Rel(grafana, prometheus, "Queries", "PromQL")
+    Rel(jaeger, kafka_cluster, "Receives traces", "OTLP")
+
+    Rel(n8n_instance, kafka_cluster, "Triggers workflows", "Kafka Protocol")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")
+```

@@ -46,6 +46,48 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## 📋 Quick Reference Cards
+
+### Daily Workflow
+```
+┌────────────────────────────────────────────────────────────┐
+│ TASK                    → COMMAND                          │
+├────────────────────────────────────────────────────────────┤
+│ Plan new feature        → /specweave:increment "feature"   │
+│ Execute tasks           → /specweave:do                    │
+│ Check progress          → /specweave:progress              │
+│ Validate quality        → /specweave:validate 0001         │
+│ Close increment         → /specweave:done 0001             │
+│ Sync to GitHub          → /specweave:github:sync           │
+│ Sync to Jira            → /specweave:jira:sync             │
+└────────────────────────────────────────────────────────────┘
+```
+
+### When to Use Which Command
+| User Says...              | Use Command                        |
+|---------------------------|------------------------------------|
+| "Let's build X"           | `/specweave:increment "X"`         |
+| "Start implementing"      | `/specweave:do`                    |
+| "What's the status?"      | `/specweave:progress`              |
+| "Is this ready?"          | `/specweave:validate 0001`         |
+| "We're done"              | `/specweave:done 0001`             |
+| "Sync to GitHub"          | `/specweave:github:sync`           |
+| "Sync to Jira"            | `/specweave:jira:sync`             |
+
+### File Organization Rules
+```
+┌────────────────────────────────────────────────────────────┐
+│ NEVER in Root           ↔ ALWAYS in Increment Folder      │
+├────────────────────────────────────────────────────────────┤
+│ ❌ analysis.md          ↔ ✅ .../0001/reports/analysis.md  │
+│ ❌ migration.py         ↔ ✅ .../0001/scripts/migration.py │
+│ ❌ execution.log        ↔ ✅ .../0001/logs/execution.log   │
+│ ❌ session-notes.md     ↔ ✅ .../0001/reports/session.md   │
+└────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## SpecWeave Workflow (Use These Commands!)
 
 **How SpecWeave works**:
@@ -127,22 +169,25 @@ ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort | tail -5
    - Azure DevOps - Work item updates automatically
    - **Configurable**: Set `external_tracker_sync: true` in `.specweave/config.json`
 
-### 🏷️ GitHub Issue Format (CRITICAL!)
+### 🏷️ GitHub Sync Mapping (Universal Hierarchy)
 
-**SpecWeave uses date-based naming for GitHub issues:**
+**SpecWeave follows strict hierarchy for GitHub sync:**
 
-| Context | Format | Example |
-|---------|--------|---------|
-| **Feature/Epic Issue** | `[FS-NNN]` | `[FS-031] External Tool Status Sync` |
-| **User Story Issue** | `[FS-NNN][US-NNN]` | `[FS-031][US-002] Task-Level Mapping` |
+| SpecWeave Entity | GitHub Mapping | Example |
+|------------------|----------------|---------|
+| **Feature** (FS-XXX) | **Milestone** | `FS-031: External Tool Status Sync` |
+| **User Story** (US-XXX) | **Issue** | `[FS-031][US-002] Task-Level Mapping` |
+| **Task** (T-XXX) | **Checkbox** | `- [ ] T-001: Implement validator` |
 
-**⛔ NEVER use `[INC-XXXX]` format** - This is deprecated and will cause sync issues!
+**Key Principles**:
+- ✅ **Features → Milestones** (container for all User Stories)
+- ✅ **User Stories → Issues** (each US-* file = separate GitHub issue)
+- ✅ **Tasks → Checkboxes** (listed in User Story issue body)
+- ❌ **NEVER create Feature-level issues** (Features are Milestones!)
 
-**Why?**
-- ✅ `[FS-XXX]` matches Epic folder structure in living docs
-- ✅ Enables proper hierarchical tracking (Epic → User Stories → Tasks)
-- ✅ Works with Universal Hierarchy architecture (v0.18.0+)
-- ❌ `[INC-XXX]` is obsolete and breaks living docs sync
+**⛔ DEPRECATED**:
+- ❌ `[INC-XXXX]` - Old increment format (pre-v0.18.0)
+- ❌ `[FS-XXX] Feature Title` as issue - Feature-level issues (pre-v0.19.0, wrong!)
 
 3. **Sound Notifications**:
    - Plays sound when tasks complete (helps you know when to review)
@@ -325,6 +370,26 @@ project-root/
 - ✅ **Automatic**: No manual linking needed
 - ✅ **Multi-project aware**: Works with backend, frontend, mobile, etc.
 - ✅ **Always in sync**: Links created during `/specweave:done`
+- ✅ **NEW (v0.18.3+)**: User stories include project-specific checkable task lists
+
+### Project-Specific Tasks (v0.18.3+)
+
+**NEW**: User stories now have their OWN checkable task lists, not just links!
+
+```markdown
+## Tasks
+
+- [ ] **T-001**: Setup API endpoint
+- [x] **T-003**: Add DB migration (completed)
+
+> **Note**: Tasks are project-specific. See increment tasks.md for full list
+```
+
+**Benefits**:
+- **Project Isolation**: Backend tasks ≠ Frontend tasks
+- **GitHub UX**: Checkable task lists in GitHub issues
+- **Traceability**: Each user story explicitly lists its tasks
+- **Completion Tracking**: Status synced from increment tasks.md
 
 **For complete details**: Ask me about "bidirectional linking" or check `.specweave/docs/internal/specs/default/README.md`
 
@@ -437,86 +502,37 @@ Config: Auto-detected from project files
 
 ---
 
-## Plugin Architecture
+## Plugins
 
-**SpecWeave uses Claude Code's native plugin system** for optional capabilities.
-
-### Core vs. Plugins
-
-**Core Framework** (always loaded):
-- 9 core skills (increment-planner, tdd-workflow, context-loader, etc.)
-- 3 core agents (PM, Architect, Tech Lead)
-- 7 core commands (`/specweave:increment`, `/specweave:do`, etc.)
-- ~12K tokens (lightweight!)
-
-**Plugins** (opt-in based on your stack):
-- Tech stacks: `specweave-frontend`, `specweave-backend`, `specweave-kubernetes`
-- Integrations: `specweave-github`, `specweave-jira`
-- Domains: `specweave-ml`, `specweave-payments`, `specweave-testing`
-
-### Using Plugin Commands
-
-**Core commands** (always available):
-```bash
-/specweave:increment "feature"
-/specweave:do
-/specweave:progress
-```
-
-**Plugin commands** (when plugin installed):
-```bash
-# GitHub plugin:
-/specweave:github:sync          # Sync increments to GitHub issues
-/specweave:github:create-issue  # Create new issue
-/specweave:github:status        # Check sync status
-
-# Jira plugin:
-/specweave:jira:sync           # Sync to Jira
-/specweave:jira:create-ticket  # Create Jira ticket
-```
-
-**Plugin agents and skills activate automatically** based on your tech stack and context.
-
-### Installing Plugins
-
-Plugins are detected and suggested during `specweave init` based on:
-- Git remote (GitHub detected → suggest github plugin)
-- Tech stack (React detected → suggest frontend plugin)
-- Project files (K8s yamls → suggest kubernetes plugin)
+SpecWeave uses Claude Code's native plugin system. All plugins auto-install during `specweave init`.
 
 **Enabled plugins**: {ENABLED_PLUGINS}
 
+**Plugin commands** (examples):
+- `/specweave:github:sync` - Sync to GitHub
+- `/specweave:jira:sync` - Sync to Jira
+
+Skills/agents activate automatically based on context.
+
 ---
 
-## Documentation Philosophy
+## Documentation Approach
 
 **You chose**: {DOCUMENTATION_APPROACH}
 
 {#IF_COMPREHENSIVE}
-### Comprehensive Upfront Approach
-- Create complete specifications before coding (scope-appropriate detail)
-- All ADRs documented in advance
-- Best for: Enterprise, regulated industries, large teams, complex systems
-- Spec size scales with project complexity (10-500+ pages depending on scope)
+**Comprehensive** - Detailed specs upfront, best for enterprise/regulated industries.
 {#ENDIF}
 
 {#IF_INCREMENTAL}
-### Incremental/Evolutionary Approach
-- Start with overview (10-20 pages)
-- Build documentation as you go
-- Best for: Startups, MVPs, small teams
+**Incremental** - Build docs as you go, best for startups/MVPs.
 {#ENDIF}
 
 ---
 
-## Frequently Asked Questions
+## Quick Reference
 
-**New to SpecWeave?** Check out the [FAQ](https://spec-weave.com/docs/faq) for answers to common questions:
-
-### Quick Answers
-- **Why specs in two locations?** Living Docs (permanent, complete feature) vs Increment Specs (temporary, current work)
-- **When do I need living docs spec?** Major features (3+ increments), brownfield integration, or external PM tools
-- **Can I delete increment specs?** YES, after completion. Living docs specs are NEVER deleted (permanent)
+**Need help?** [SpecWeave Docs](https://spec-weave.com/docs)
 - **Which spec is source of truth?** Living docs spec (when it exists), otherwise increment spec
 
 ### Key Topics Covered
@@ -549,24 +565,6 @@ Plugins are detected and suggested during `specweave init` based on:
 
 ---
 
-## Quick Reference Card
-
-### When to Use Each Command
-
-| User Says | Use Command | What It Does |
-|-----------|-------------|--------------|
-| "Let's build [feature]" | `/specweave:increment "[feature]"` | Plan new increment |
-| "Start implementing" | `/specweave:do` | Execute tasks (smart resume) |
-| "What's the status?" | `/specweave:progress` | Show task completion % |
-| "Is this ready?" | `/specweave:validate 0001` | Validate increment quality |
-| "We're done" | `/specweave:done 0001` | Close increment |
-
-**Plugin Commands** (when installed):
-| "Sync to GitHub" | `/specweave:github:sync` | Export to GitHub issues |
-| "Sync to Jira" | `/specweave:jira:sync` | Export to Jira |
-
----
-
 ## Key SpecWeave Principles
 
 1. **Specification-First**: Always start with `/specweave:increment` to create specs before coding
@@ -584,6 +582,90 @@ Plugins are detected and suggested during `specweave init` based on:
 {#CUSTOM_NOTES}
 <!-- Add project-specific conventions, team workflows, deployment notes here -->
 {#ENDCUSTOM}
+
+---
+
+## 🆘 Troubleshooting
+
+### Skills Not Activating
+
+**Symptoms**: Expected skill didn't load automatically
+
+**Solutions**:
+1. Restart Claude Code (skills loaded at startup)
+2. Check keywords: Skills activate based on description keywords
+3. Verify plugin installed: Use `/plugin list --installed`
+4. Manual check: Look in `.claude/skills/SKILLS-INDEX.md` for available skills
+
+### Commands Not Found
+
+**Symptoms**: `/specweave:increment` doesn't work
+
+**Solutions**:
+1. Verify plugin installed: `/plugin list --installed`
+2. Check installed commands: `ls .claude/commands/`
+3. Restart Claude Code
+4. Re-run: `specweave init` if plugins missing
+
+### Root Folder Polluted
+
+**Symptoms**: `git status` shows `.md` files in project root
+
+**Solutions**:
+1. **Immediate fix**: Move files to increment folder
+   ```bash
+   mv SESSION-NOTES.md .specweave/increments/0001/reports/
+   mv analysis.md .specweave/increments/0001/reports/
+   ```
+2. Check `.gitignore` is up to date
+3. Commit cleaned structure:
+   ```bash
+   git add .
+   git commit -m "fix: move reports to increment folder"
+   ```
+
+### Increment Numbers Not Unique
+
+**Symptoms**: Multiple increments with same number (0001, 0001, etc.)
+
+**Solutions**:
+1. Check existing: `ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-"`
+2. Use next available number
+3. If duplicates exist, run: `/specweave:fix-duplicates`
+
+### External Tracker Not Syncing
+
+**Symptoms**: GitHub/Jira not updating after task completion
+
+**Solutions (Claude Code)**:
+1. Check config: `.specweave/config.json` has `external_tracker_sync: true`
+2. Verify hook exists: `ls plugins/specweave-github/hooks/post-task-completion.sh`
+3. Check credentials: `gh auth status` or `jira config list`
+4. Manual sync: `/specweave:github:sync 0001`
+
+### Tasks.md Out of Sync
+
+**Symptoms**: Progress shows 0/24 but many tasks done
+
+**Solutions**:
+1. Auto-sync from reality: `/specweave:sync-tasks`
+2. Manual update: Edit tasks.md, change `[ ]` to `[x]`
+3. Recalculate progress counters
+
+### Can't Find Increment
+
+**Symptoms**: Don't know which increment is active
+
+**Solutions**:
+1. Check status: `/specweave:status` (shows all increments)
+2. Check progress: `/specweave:progress` (shows active increment)
+3. View active: `cat .specweave/state/active-increment.json`
+
+### More Help
+
+**Documentation**: https://spec-weave.com/docs/troubleshooting
+**GitHub Issues**: https://github.com/anton-abyzov/specweave/issues
+**Discussions**: https://github.com/anton-abyzov/specweave/discussions
 
 ---
 

@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 558
-    url: https://github.com/anton-abyzov/specweave/issues/558
+    issue: 576
+    url: https://github.com/anton-abyzov/specweave/issues/576
 ---
 
 # US-005: GitFlow Release Branch Automation (P2)

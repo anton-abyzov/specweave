@@ -1,0 +1,26 @@
+{
+  "id": "0034-github-ac-checkboxes-fix",
+  "status": "completed",
+  "type": "feature",
+  "created": "2025-11-15T08:33:11.320Z",
+  "completed": "2025-11-15T17:15:00.000Z",
+  "lastActivity": "2025-11-15T17:15:00.000Z",
+  "pmGates": {
+    "tasks": "PASS",
+    "tests": "PASS",
+    "documentation": "PASS"
+  },
+  "businessValue": {
+    "timeSaved": "12-15 minutes per sync",
+    "linksFix": "22 GitHub issues",
+    "issuesFixed": "7 FS-031 issues",
+    "bugFixed": "Issue #583 premature closure",
+    "verificationGate": "CompletionCalculator implemented"
+  },
+  "phases": {
+    "phase1": "Status Sync - COMPLETE",
+    "phase2": "AC Project-Specific Generation - COMPLETE",
+    "phase3": "Issue #583 Fix - COMPLETE",
+    "phase4": "Project-Specific Tasks - Deferred to 0035"
+  }
+}

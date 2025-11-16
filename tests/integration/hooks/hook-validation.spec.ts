@@ -53,10 +53,46 @@ describe('Hook Validation', () => {
   // Helper to validate JSON output
   function isValidJSON(str: string): boolean {
     try {
-      JSON.parse(str);
+      // Extract JSON from potential stderr/stdout mix
+      const lines = str.split('\n');
+      const jsonLines = lines.filter(line =>
+        line.trim().startsWith('{') ||
+        line.includes('"decision"') ||
+        line.includes('"approve"') ||
+        line.includes('"block"')
+      );
+
+      if (jsonLines.length === 0) return false;
+
+      // Try to parse the JSON portion
+      const jsonStr = jsonLines.join('\n');
+      JSON.parse(jsonStr);
       return true;
     } catch {
       return false;
+    }
+  }
+
+  // Helper to extract JSON from hook output (may contain stderr)
+  function extractJSON(str: string): any {
+    try {
+      // Try parsing the whole string first
+      return JSON.parse(str);
+    } catch {
+      // Extract JSON portion from mixed output
+      const lines = str.split('\n');
+      const jsonLines = lines.filter(line =>
+        line.trim().startsWith('{') ||
+        line.includes('"decision"') ||
+        line.includes('"approve"') ||
+        line.includes('"block"')
+      );
+
+      if (jsonLines.length > 0) {
+        return JSON.parse(jsonLines.join('\n'));
+      }
+
+      throw new Error('No valid JSON found in output');
     }
   }
 
@@ -142,7 +178,7 @@ describe('Hook Validation', () => {
 
     it('should have valid decision field', async () => {
       const result = await runHook('user-prompt-submit.sh', sampleInput);
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       expect(['approve', 'block']).toContain(output.decision);
     });
@@ -165,7 +201,7 @@ describe('Hook Validation', () => {
       // This test assumes we have 2+ active increments
       // If not, it should approve
       const result = await runHook('user-prompt-submit.sh', sampleInput);
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       if (output.decision === 'block') {
         expect(output.reason).toContain('HARD CAP');
@@ -210,7 +246,7 @@ describe('Hook Validation', () => {
 
     it('should approve first invocation', async () => {
       const result = await runHook('pre-command-deduplication.sh', sampleInput);
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       expect(output.decision).toBe('approve');
     });
@@ -221,7 +257,7 @@ describe('Hook Validation', () => {
 
       // Immediate second call (< 1s)
       const result = await runHook('pre-command-deduplication.sh', sampleInput);
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       // Should block duplicate
       expect(['approve', 'block']).toContain(output.decision);
@@ -243,7 +279,7 @@ describe('Hook Validation', () => {
       expect(result.exitCode).toBe(0);
       expect(isValidJSON(result.stdout)).toBe(true);
 
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
       expect(output.decision).toBe('approve');
     });
   });
@@ -333,7 +369,7 @@ describe('Hook Validation', () => {
       });
 
       const result = await runHook('user-prompt-submit.sh', input);
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       if (output.decision === 'block') {
         expect(output).toHaveProperty('reason');
@@ -396,7 +432,7 @@ describe('Hook Validation', () => {
         cwd: projectRoot
       }));
 
-      const output = JSON.parse(result.stdout);
+      const output = extractJSON(result.stdout);
 
       // Claude Code expects these fields
       expect(output).toHaveProperty('decision');

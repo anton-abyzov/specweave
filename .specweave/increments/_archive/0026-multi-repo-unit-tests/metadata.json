@@ -12,5 +12,7 @@
   "githubProfile": "specweave-dev",
   "completionNote": "Force-closed to start new increment (WIP limit reached)",
   "completedAt": "2025-11-11T23:48:58.563Z",
-  "forceCloseReason": "wip-limit-reached"
+  "forceCloseReason": "wip-limit-reached",
+  "historicalTracking": "ac-incomplete",
+  "archivedNote": "2025-11-15"
 }

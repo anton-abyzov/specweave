@@ -85,8 +85,9 @@ Bidirectional sync between SpecWeave increments and GitHub Issues.
 **Commands:**
 - `/specweave-github:sync` - Bidirectional sync with time range filtering
 - `/specweave-github:create-issue` - Manual issue creation
-- `/specweave-github:sync-epic` - Sync Epic folder to GitHub Milestone
 - `/specweave-github:status` - Check sync status
+
+**Note**: Epic/Feature syncing happens automatically via living docs (triggered by `/specweave:done`)
 
 **Configuration:**
 ```json
@@ -122,14 +123,14 @@ Enterprise JIRA integration with Epic/Story sync.
 
 **Example: JIRA Sync**
 ```bash
-# Sync increment to JIRA
+# Sync increment to JIRA (bidirectional)
 /specweave-jira:sync 0042
 
-# Sync Epic folder (20+ user stories)
-/specweave-jira:sync-epic FS-031-authentication
-
-# Check status
+# Check sync status
 /specweave-jira:status 0042
+
+# Note: Epic/Feature syncing happens automatically via living docs
+# Triggered by: /specweave:done 0042
 ```
 
 **Status Mapping:**

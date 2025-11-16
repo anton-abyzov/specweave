@@ -1,0 +1,50 @@
+{
+  "name": "Kafka to Slack Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "topic": "user-events",
+        "brokers": "localhost:9092",
+        "groupId": "n8n-consumer"
+      },
+      "name": "Kafka Trigger",
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"event_type\"]}}",
+              "value2": "purchase"
+            }
+          ]
+        }
+      },
+      "name": "Filter Purchases",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#sales",
+        "text": "New purchase: {{$json[\"amount\"]}} from user {{$json[\"userId\"]}}"
+      },
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Kafka Trigger": {
+      "main": [[{"node": "Filter Purchases", "type": "main", "index": 0}]]
+    },
+    "Filter Purchases": {
+      "main": [[{"node": "Slack Notification", "type": "main", "index": 0}]]
+    }
+  }
+}

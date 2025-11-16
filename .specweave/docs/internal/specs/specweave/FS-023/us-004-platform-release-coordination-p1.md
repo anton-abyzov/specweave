@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 557
-    url: https://github.com/anton-abyzov/specweave/issues/557
+    issue: 575
+    url: https://github.com/anton-abyzov/specweave/issues/575
 ---
 
 # US-004: Platform Release Coordination (P1)

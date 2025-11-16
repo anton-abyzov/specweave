@@ -1,0 +1,12 @@
+{
+  "id": "0037-project-specific-tasks",
+  "status": "planning",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-15T22:29:54Z",
+  "lastActivity": "2025-11-15T22:29:54Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature": "FS-037",
+  "projects": ["specweave"]
+}

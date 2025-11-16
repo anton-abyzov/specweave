@@ -1,0 +1,23 @@
+{
+  "name": "specweave-confluent",
+  "description": "Confluent Cloud integration for SpecWeave - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, and enterprise Kafka features",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "homepage": "https://spec-weave.com/docs/plugins/confluent",
+  "license": "MIT",
+  "keywords": [
+    "kafka",
+    "confluent",
+    "schema-registry",
+    "ksqldb",
+    "kafka-connect",
+    "flink",
+    "stream-processing",
+    "avro",
+    "protobuf"
+  ]
+}

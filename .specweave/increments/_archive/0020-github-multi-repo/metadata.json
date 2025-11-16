@@ -4,5 +4,7 @@
   "type": "feature",
   "created": "2025-11-10T20:00:00.000Z",
   "completed": "2025-11-11T00:59:00.000Z",
-  "lastActivity": "2025-11-11T00:59:00.000Z"
+  "lastActivity": "2025-11-11T00:59:00.000Z",
+  "historicalTracking": "ac-incomplete",
+  "archivedNote": "2025-11-15"
 }

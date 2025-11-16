@@ -1,0 +1,22 @@
+{
+  "name": "specweave-n8n",
+  "description": "n8n workflow automation integration with Kafka - Event-driven workflows, Kafka triggers, producers, consumers, and workflow patterns for no-code/low-code event processing",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "homepage": "https://spec-weave.com/docs/plugins/n8n",
+  "license": "MIT",
+  "keywords": [
+    "n8n",
+    "workflow-automation",
+    "kafka-integration",
+    "event-driven",
+    "no-code",
+    "low-code",
+    "kafka-trigger",
+    "kafka-producer"
+  ]
+}

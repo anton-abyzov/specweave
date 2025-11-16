@@ -608,7 +608,426 @@ See full documentation above for detailed troubleshooting.
 
 ---
 
-**Last Updated**: 2025-11-10
-**Increment**: 0013-v0.8.0-stabilization
-**Coverage**: 90%+ (unit), 90%+ (integration), 70% (E2E)
+## Kafka Event Streaming Plugin Tests (v0.20.0)
+
+**Increment**: 0035-kafka-event-streaming-plugin
+**Focus**: Apache Kafka integration, multi-cloud deployment, stream processing
+
+### Test Structure (Kafka Suite)
+
+```
+tests/
+├── unit/                                    # Kafka unit tests (20 modules, 1,400+ tests, 90%+ coverage)
+│   ├── kafka/                               # Core Kafka client tests
+│   │   ├── client-config.test.ts            # Client configuration validation
+│   │   ├── producer-lifecycle.test.ts       # Producer connect/disconnect/send
+│   │   ├── consumer-lifecycle.test.ts       # Consumer subscribe/consume/commit
+│   │   └── admin-operations.test.ts         # Topic/ACL/config management
+│   │
+│   ├── security/                            # Security configurations
+│   │   ├── sasl-plain.test.ts               # SASL/PLAIN authentication
+│   │   ├── sasl-scram.test.ts               # SCRAM-SHA-256/512
+│   │   ├── mtls.test.ts                     # Mutual TLS
+│   │   └── acl-management.test.ts           # Access Control Lists
+│   │
+│   ├── schema-registry/                     # Schema Registry tests
+│   │   ├── schema-registration.test.ts      # Avro/Protobuf/JSON schema registration
+│   │   ├── schema-evolution.test.ts         # Compatibility mode validation
+│   │   └── serialization.test.ts            # Encode/decode operations
+│   │
+│   ├── terraform/                           # IaC module tests
+│   │   ├── aws-msk-validation.test.ts       # AWS MSK module validation
+│   │   ├── azure-event-hubs.test.ts         # Azure Event Hubs validation
+│   │   ├── confluent-cloud.test.ts          # Confluent Cloud validation
+│   │   └── apache-kafka.test.ts             # Self-managed Kafka validation
+│   │
+│   └── mcp-server/                          # MCP server integration
+│       ├── server-selection.test.ts         # MCP server auto-detection
+│       ├── connection-validation.test.ts    # Connection health checks
+│       └── command-execution.test.ts        # Command execution via MCP
+│
+├── integration/                             # Kafka integration tests (6 modules, 120 tests, 85%+ coverage)
+│   ├── producer-consumer/                   # Core workflows
+│   │   ├── basic-workflow.test.ts           # Produce → consume workflow
+│   │   ├── security.test.ts                 # SASL/SSL authentication flows
+│   │   ├── stream-processing.test.ts        # Stream processing pipelines
+│   │   ├── kafka-connect.test.ts            # Kafka Connect integration
+│   │   └── message-lifecycle.test.ts        # Full message lifecycle
+│   │
+│   ├── topic-management/                    # Topic operations
+│   │   ├── schema-registry.test.ts          # Schema Registry operations
+│   │   ├── topic-creation.test.ts           # Topic creation/deletion
+│   │   └── partitioning.test.ts             # Partition management
+│   │
+│   ├── multi-cluster/                       # Multi-cluster management
+│   │   ├── cluster-factory.test.ts          # Cluster factory operations
+│   │   ├── health-checks.test.ts            # Health check aggregation
+│   │   └── failover.test.ts                 # Cluster failover scenarios
+│   │
+│   └── deduplication/                       # Exactly-Once Semantics
+│       ├── transactional-producer.test.ts   # Transactional message production
+│       ├── read-committed.test.ts           # Read-committed consumers
+│       └── offset-management.test.ts        # Offset commit within transactions
+│
+├── performance/                             # Kafka performance benchmarks
+│   ├── kafka-producer-throughput.js         # Producer throughput (target: 100K msg/sec)
+│   ├── kafka-consumer-lag.js                # Consumer lag monitoring
+│   └── kafka-e2e-latency.js                 # End-to-end latency measurement
+│
+└── e2e/                                     # Kafka E2E tests
+    ├── kafka-cluster-lifecycle.spec.ts      # Full cluster lifecycle
+    └── multi-cloud-deployment.spec.ts       # Multi-cloud deployment validation
+```
+
+### Test Categories
+
+#### 1. Unit Tests (20 modules, 1,400+ tests)
+
+**Purpose**: Validate individual components in isolation
+
+**Coverage**: 90%+ (Core: 95%, Security: 90%, Schema: 88%)
+
+**Key Test Suites**:
+- **Client Configuration** (180 tests) - Broker URLs, SSL, SASL, timeouts
+- **Producer Lifecycle** (220 tests) - Connect, send, disconnect, error handling
+- **Consumer Lifecycle** (240 tests) - Subscribe, consume, commit, rebalance
+- **Schema Registry** (160 tests) - Avro/Protobuf/JSON registration, evolution
+- **Security** (200 tests) - SASL/PLAIN, SCRAM-SHA-256/512, mTLS, ACLs
+- **Terraform** (150 tests) - Module validation for all platforms
+- **MCP Server** (120 tests) - Auto-detection, connection, command execution
+
+**Run**: `npm test` or `npm run test:unit`
+
+**Example**:
+```typescript
+// tests/unit/kafka/producer-lifecycle.test.ts
+describe('Producer Lifecycle', () => {
+  test('should connect to Kafka broker', async () => {
+    const producer = kafka.producer();
+    await producer.connect();
+    expect(producer.isConnected()).toBe(true);
+    await producer.disconnect();
+  });
+
+  test('should send message successfully', async () => {
+    const result = await producer.send({
+      topic: 'test-topic',
+      messages: [{ value: 'test' }]
+    });
+    expect(result[0].topicName).toBe('test-topic');
+    expect(result[0].partition).toBeGreaterThanOrEqual(0);
+  });
+});
+```
+
+#### 2. Integration Tests (6 modules, 120 tests)
+
+**Purpose**: Validate component interactions with real Kafka clusters
+
+**Coverage**: 85%+ (Workflows: 90%, Multi-cluster: 85%, Streams: 80%)
+
+**Prerequisites**:
+- Docker Desktop running
+- Kafka cluster accessible (localhost:9092 or remote)
+- Schema Registry (for schema tests)
+
+**Key Test Suites**:
+- **Basic Workflow** (25 tests) - Full produce → consume cycle
+- **Security** (20 tests) - SASL/SSL authentication end-to-end
+- **Stream Processing** (22 tests) - Windowed aggregations, joins
+- **Kafka Connect** (23 tests) - Connector lifecycle, data transfer
+- **Schema Registry** (18 tests) - Schema registration, validation, evolution
+- **Multi-Cluster** (12 tests) - Failover, health checks
+
+**Run**: `npm run test:integration`
+
+**Example**:
+```typescript
+// tests/integration/producer-consumer/basic-workflow.test.ts
+describe('Producer-Consumer Workflow', () => {
+  test('should produce and consume message end-to-end', async () => {
+    const producer = kafka.producer();
+    const consumer = kafka.consumer({ groupId: 'test-group' });
+
+    await producer.connect();
+    await consumer.connect();
+    await consumer.subscribe({ topic: 'test-topic' });
+
+    const testMessage = { id: '123', data: 'test' };
+
+    // Produce
+    await producer.send({
+      topic: 'test-topic',
+      messages: [{ value: JSON.stringify(testMessage) }]
+    });
+
+    // Consume
+    let received = null;
+    await consumer.run({
+      eachMessage: async ({ message }) => {
+        received = JSON.parse(message.value.toString());
+      }
+    });
+
+    await waitFor(() => received !== null);
+    expect(received).toEqual(testMessage);
+
+    await producer.disconnect();
+    await consumer.disconnect();
+  });
+});
+```
+
+#### 3. Performance Benchmarks (3 test suites)
+
+**Purpose**: Measure throughput, latency, and consumer lag
+
+**Targets**:
+- **Producer Throughput**: 100K msg/sec (single producer)
+- **Consumer Lag**: <100ms at 50K msg/sec
+- **E2E Latency**: <10ms (p99)
+
+**Run**: `npm run test:performance`
+
+**Example**:
+```javascript
+// tests/performance/kafka-producer-throughput.js
+const { Kafka } = require('kafkajs');
+
+async function benchmarkProducer() {
+  const kafka = new Kafka({ brokers: ['localhost:9092'] });
+  const producer = kafka.producer();
+
+  await producer.connect();
+
+  const startTime = Date.now();
+  const messageCount = 100000;
+
+  for (let i = 0; i < messageCount; i++) {
+    await producer.send({
+      topic: 'benchmark',
+      messages: [{ value: `message-${i}` }]
+    });
+  }
+
+  const duration = (Date.now() - startTime) / 1000;
+  const throughput = messageCount / duration;
+
+  console.log(`Throughput: ${throughput.toFixed(0)} msg/sec`);
+  // Expected: >100,000 msg/sec
+
+  await producer.disconnect();
+}
+
+benchmarkProducer().catch(console.error);
+```
+
+### Test Execution
+
+**All Tests** (recommended):
+```bash
+npm test
+```
+
+**Unit Tests Only** (fast, ~10 seconds):
+```bash
+npm run test:unit
+```
+
+**Integration Tests Only** (requires Kafka, ~30 seconds):
+```bash
+npm run test:integration
+```
+
+**Performance Benchmarks** (requires Kafka, ~60 seconds):
+```bash
+npm run test:performance
+```
+
+**E2E Tests** (full workflow, ~120 seconds):
+```bash
+npm run test:e2e
+```
+
+**Watch Mode** (for development):
+```bash
+npm run test:watch
+```
+
+### Prerequisites for Integration Tests
+
+#### 1. Start Local Kafka Cluster
+
+```bash
+# Using SpecWeave command
+/specweave-kafka:dev-env start
+
+# Wait for cluster (~60 seconds)
+docker logs kafka-broker -f
+```
+
+#### 2. Verify Kafka is Running
+
+```bash
+# Check containers
+docker ps | grep kafka
+
+# Expected output:
+# kafka-broker      (port 9092)
+# schema-registry   (port 8081)
+# kafka-ui          (port 8080)
+```
+
+#### 3. Set Environment Variables (if needed)
+
+```bash
+# .env.test
+KAFKA_BROKERS=localhost:9092
+SCHEMA_REGISTRY_URL=http://localhost:8081
+```
+
+### Test Data & Fixtures
+
+**Location**: `tests/fixtures/kafka/`
+
+**Structure**:
+```
+tests/fixtures/kafka/
+├── schemas/                    # Avro/Protobuf/JSON schemas
+│   ├── user.avsc              # User schema
+│   └── order.proto            # Order Protobuf
+├── configs/                   # Kafka configurations
+│   ├── producer-config.json
+│   └── consumer-config.json
+└── test-data/                 # Sample messages
+    ├── users.json
+    └── orders.json
+```
+
+### Common Issues
+
+#### Issue: Kafka container won't start
+
+**Error**: `kafka-broker exited with code 1`
+
+**Fix**:
+```bash
+# Check port 9092 availability
+lsof -i :9092
+
+# If occupied, kill process or change port
+docker-compose down
+/specweave-kafka:dev-env start
+```
+
+#### Issue: Consumer not receiving messages
+
+**Error**: `eachMessage` callback never called
+
+**Fix**:
+```bash
+# Reset consumer group offsets
+kafka-consumer-groups --bootstrap-server localhost:9092 \
+  --group test-group \
+  --topic test-topic \
+  --reset-offsets --to-earliest \
+  --execute
+
+# Or use different consumer group
+const consumer = kafka.consumer({ groupId: 'new-group-id' });
+```
+
+#### Issue: Schema Registry connection failed
+
+**Error**: `Cannot connect to Schema Registry`
+
+**Fix**:
+```bash
+# Verify Schema Registry is running
+curl http://localhost:8081/subjects
+
+# If not running, start it
+/specweave-kafka:dev-env start
+
+# Or skip schema tests
+npm test -- --testPathIgnorePatterns=schema-registry
+```
+
+### Test Coverage Reports
+
+**Generate Coverage**:
+```bash
+npm run test:coverage
+```
+
+**View HTML Report**:
+```bash
+open coverage/lcov-report/index.html
+```
+
+**Coverage Targets**:
+- Overall: 85%+
+- Core modules: 90%+
+- Security: 90%+
+- Integration: 85%+
+
+### CI/CD Integration
+
+Tests run automatically on:
+- Every PR (unit + integration)
+- Merge to main (full suite)
+- Nightly (performance benchmarks)
+
+**GitHub Actions**:
+```yaml
+# .github/workflows/kafka-tests.yml
+name: Kafka Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - run: npm install
+      - run: npm test
+```
+
+### Debugging Tests
+
+**Enable Debug Logs**:
+```bash
+DEBUG=kafka* npm test
+```
+
+**Run Single Test**:
+```bash
+npm test -- producer-lifecycle.test.ts
+```
+
+**Debug in VS Code**:
+```json
+// .vscode/launch.json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Jest Debug Kafka",
+  "program": "${workspaceFolder}/node_modules/.bin/jest",
+  "args": ["--runInBand", "kafka"],
+  "console": "integratedTerminal"
+}
+```
+
+---
+
+**Last Updated**: 2025-11-15
+**Increments**: 0013 (v0.8.0), 0035 (Kafka v0.20.0)
+**Coverage**: Unit: 90%+, Integration: 85%+, E2E: 70%
 **Maintainer**: SpecWeave Team

@@ -5,6 +5,152 @@
 
 ---
 
+## 🚨 CRITICAL: How to Use This File (Non-Claude Code Tools)
+
+**You're using Cursor, GitHub Copilot, or another AI tool - NOT Claude Code.**
+
+This means you **DO NOT have progressive disclosure** - this ENTIRE file (2000+ lines) is loaded into your context right now.
+
+**BUT** - you don't need to process everything at once!
+
+### Think of This File as a REFERENCE MANUAL
+
+- 📖 **Skim section headers** at session start (don't read all details)
+- 🔍 **Search for sections** when needed (use Ctrl+F / Command+F)
+- ✅ **Process ONLY relevant section** for current task
+- ♻️ **Ignore irrelevant sections** (don't waste tokens processing them)
+
+### Navigation Pattern
+
+**When user requests a task**:
+1. Search for relevant section (use Section Index below)
+2. Example: "sync to GitHub" → Search for `#workflow-github-sync`
+3. Read ONLY that section (50-100 lines)
+4. Execute workflow from that section
+5. Ignore other 1900+ lines (not needed right now!)
+
+### Example Workflow
+
+```
+User says: "Create new increment for user auth"
+↓
+You search: "increment" or "#command-increment"
+↓
+You find: ## Command: /specweave:increment {#command-increment}
+↓
+You read: That section ONLY (workflow, parameters, examples)
+↓
+You execute: Follow workflow from that section
+↓
+Done! (Ignored 95% of file - that's good!)
+```
+
+**This simulates progressive disclosure without tool support!**
+
+---
+
+## 📑 SECTION INDEX (Your Navigation Menu)
+
+**Use Ctrl+F / Command+F to jump to sections instantly!**
+
+### 🎯 Essential (Read First - Always)
+- [Essential Knowledge](#essential-knowledge) ← **START HERE** every session
+- [Quick Reference Cards](#quick-reference-cards) ← Common commands
+- [Critical Rules](#critical-rules) ← Never violate these
+- [File Organization](#file-organization) ← Where files go
+
+### 🚀 Commands (When User Requests Action)
+Search pattern: `#command-{name}`
+
+**Core Commands**:
+- [/specweave:increment](#command-increment) - Plan new feature
+- [/specweave:do](#command-do) - Execute tasks
+- [/specweave:done](#command-done) - Close increment
+- [/specweave:progress](#command-progress) - Check status
+- [/specweave:validate](#command-validate) - Quality check
+- [/specweave:sync-docs](#command-sync-docs) - Sync living docs
+- [/specweave:sync-tasks](#command-sync-tasks) - Sync task status
+- [/specweave:next](#command-next) - Smart transition
+- [/specweave:costs](#command-costs) - AI cost dashboard
+
+**Plugin Commands** (if installed):
+- [/specweave:github:sync](#command-github-sync) - Sync to GitHub
+- [/specweave:jira:sync](#command-jira-sync) - Sync to Jira
+- [/specweave:ado:sync](#command-ado-sync) - Sync to Azure DevOps
+
+### 🎓 Skills (When You Need Specific Capability)
+Search pattern: `#skill-{name}`
+
+**Core Skills**:
+- [increment-planner](#skill-increment-planner) - Plan features
+- [spec-generator](#skill-spec-generator) - Generate specs
+- [context-loader](#skill-context-loader) - Token optimization
+- [brownfield-analyzer](#skill-brownfield-analyzer) - Analyze existing projects
+
+**Integration Skills**:
+- [github-sync](#skill-github-sync) - GitHub integration
+- [jira-sync](#skill-jira-sync) - Jira integration
+- [ado-sync](#skill-ado-sync) - Azure DevOps integration
+
+**Tech Stack Skills**:
+- [frontend](#skill-frontend) - React/Next.js/Vue
+- [backend](#skill-backend) - Node.js/Python/.NET
+- [infrastructure](#skill-infrastructure) - DevOps/Cloud
+
+### 👔 Agents (When You Need Role Perspective)
+Search pattern: `#agent-{name}`
+
+**Core Agents**:
+- [PM (Product Manager)](#agent-pm) - Requirements, user stories
+- [Architect](#agent-architect) - System design, technical planning
+- [Tech Lead](#agent-tech-lead) - Code review, best practices
+- [DevOps](#agent-devops) - Infrastructure, deployment
+- [QA Lead](#agent-qa-lead) - Testing strategy, quality gates
+- [Security](#agent-security) - Threat modeling, compliance
+
+### 📖 Workflows (Step-by-Step Procedures)
+Search pattern: `#workflow-{name}`
+
+**Daily Workflows**:
+- [Daily Development Workflow](#workflow-daily-development)
+- [Feature Increment Lifecycle](#workflow-increment-lifecycle)
+- [Task Completion Workflow](#workflow-task-completion)
+
+**Sync Workflows**:
+- [Living Docs Sync](#workflow-living-docs-sync)
+- [GitHub Sync](#workflow-github-sync)
+- [Jira Sync](#workflow-jira-sync)
+- [External Tracker Sync](#workflow-external-sync)
+
+**Advanced Workflows**:
+- [Multi-Project Setup](#workflow-multi-project)
+- [Increment Closure](#workflow-increment-closure)
+- [Documentation Updates](#workflow-documentation-updates)
+
+### 🆘 Troubleshooting (When Stuck)
+Search pattern: `#troubleshoot-{topic}`
+
+- [Skills Not Working](#troubleshoot-skills)
+- [Commands Not Found](#troubleshoot-commands)
+- [Sync Issues](#troubleshoot-sync)
+- [Root Folder Polluted](#troubleshoot-root-pollution)
+- [Duplicate Increments](#troubleshoot-duplicates)
+- [More Troubleshooting →](#troubleshooting)
+
+### 🔍 Search Patterns Reference
+
+| What You Need | Search For | Example |
+|---------------|------------|---------|
+| Command workflow | `#command-{name}` | "github sync" → `#command-github-sync` |
+| Skill capability | `#skill-{name}` | "planning" → `#skill-increment-planner` |
+| Agent role | `#agent-{name}` | "architect" → `#agent-architect` |
+| Procedure | `#workflow-{name}` | "daily work" → `#workflow-daily-development` |
+| Problem solving | `#troubleshoot-{topic}` | "sync broken" → `#troubleshoot-sync` |
+
+**Remember**: You have access to ALL knowledge - use search to find it efficiently!
+
+---
+
 ## Project Overview
 
 This is a **SpecWeave project** where specifications and documentation are the source of truth.
@@ -48,6 +194,73 @@ This is a **SpecWeave project** where specifications and documentation are the s
 - ✅ Navigate both directions (Tasks → User Stories → Tasks)
 - ✅ Automatic (no manual linking)
 - ✅ Multi-project aware (works with backend, frontend, mobile, etc.)
+
+---
+
+## 📋 Quick Reference Cards {#quick-reference-cards}
+
+### 🎯 Essential Knowledge {#essential-knowledge}
+
+**Read this EVERY session start!**
+
+#### Critical Rules {#critical-rules}
+```
+⛔ NEVER pollute project root with .md files!
+⛔ Increment IDs must be unique (0001-9999)!
+⛔ All reports/scripts/logs go in increment folders!
+⛔ Always check: git status (before committing)!
+```
+
+#### File Organization {#file-organization}
+```
+┌────────────────────────────────────────────────────────────┐
+│ NEVER in Root           ↔ ALWAYS in Increment Folder      │
+├────────────────────────────────────────────────────────────┤
+│ ❌ analysis.md          ↔ ✅ .../0001/reports/analysis.md  │
+│ ❌ migration.py         ↔ ✅ .../0001/scripts/migration.py │
+│ ❌ execution.log        ↔ ✅ .../0001/logs/execution.log   │
+│ ❌ session-notes.md     ↔ ✅ .../0001/reports/session.md   │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Daily Workflow
+```
+┌────────────────────────────────────────────────────────────┐
+│ TASK                    → COMMAND                          │
+├────────────────────────────────────────────────────────────┤
+│ Plan new feature        → /specweave:increment "feature"   │
+│ Execute tasks           → /specweave:do                    │
+│ Check progress          → /specweave:progress              │
+│ Validate quality        → /specweave:validate 0001         │
+│ Close increment         → /specweave:done 0001             │
+└────────────────────────────────────────────────────────────┘
+```
+
+### After EVERY Task Completion (CRITICAL!)
+```
+⚠️ Non-Claude tools do NOT have automatic hooks!
+
+After completing EACH task, you MUST run:
+
+1. /specweave:sync-tasks                  # Update tasks.md
+2. /specweave:sync-docs update            # Sync living docs
+3. /specweave:github:sync <increment-id>  # Sync to GitHub (if enabled)
+
+Without these, your work won't be tracked properly!
+```
+
+### When to Use Which Command
+
+| User Says...              | Use Command                        |
+|---------------------------|------------------------------------|
+| "Let's build X"           | `/specweave:increment "X"`         |
+| "Start implementing"      | `/specweave:do`                    |
+| "What's the status?"      | `/specweave:progress`              |
+| "Is this ready?"          | `/specweave:validate 0001`         |
+| "We're done"              | `/specweave:done 0001`             |
+| "Sync to GitHub"          | `/specweave:github:sync`           |
+| "Sync to Jira"            | `/specweave:jira:sync`             |
+| "Update docs"             | `/specweave:sync-docs update`      |
 
 ---
 
@@ -1947,6 +2160,376 @@ When you encounter a new task:
 6. ✅ **Use checkboxes in tasks.md** for tracking
 7. ✅ **All supporting files in increment folders** (never in root)
 8. 🔴 **UPDATE DOCUMENTATION AFTER EVERY TASK** (see "Documentation Updates" section above - CRITICAL for non-Claude tools!)
+
+---
+
+## 🆘 Troubleshooting {#troubleshooting}
+
+**Use Ctrl+F / Command+F with the search patterns below to jump to specific issues!**
+
+### Skills Not Working {#troubleshoot-skills}
+
+**Symptoms**: Expected skill didn't activate or can't find skill
+
+**Solutions (Non-Claude Tools)**:
+1. **Skills don't auto-activate in Cursor/Copilot** - This is normal!
+   - You must manually discover skills from Section Index above
+   - Search for relevant skill: `#skill-{name}`
+   - Read that section and follow the workflow
+
+2. **Can't find the right skill**:
+   ```bash
+   # Check Section Index above for skill list
+   # Search this file for: #skill-increment-planner, #skill-github-sync, etc.
+   ```
+
+3. **Skill workflow unclear**:
+   - Each skill section has "How It Works" and "Workflow" subsections
+   - Follow step-by-step instructions
+   - Check examples provided
+
+**Remember**: In non-Claude tools, YOU control skill discovery (search this file), not automatic activation!
+
+---
+
+### Commands Not Found {#troubleshoot-commands}
+
+**Symptoms**: `/specweave:increment` or other commands don't work
+
+**Solutions (Non-Claude Tools)**:
+1. **Commands are NOT slash commands in Cursor/Copilot** - They're workflows!
+   - Search this file for: `#command-increment`, `#command-do`, etc.
+   - Read the workflow from that section
+   - Execute manually (step by step)
+
+2. **Example**: User says "create increment"
+   ```
+   You search: "#command-increment"
+   You find: ## Command: /specweave:increment {#command-increment}
+   You read: Workflow section (PM-led planning, spec creation, etc.)
+   You execute: Follow those steps manually
+   ```
+
+3. **Command workflow unclear**:
+   - Each command section has detailed workflow
+   - Check "When to use", "Parameters", "Workflow", "Example"
+   - Follow step-by-step
+
+**Remember**: In non-Claude tools, commands are manual workflows, not automatic slash commands!
+
+---
+
+### Sync Issues {#troubleshoot-sync}
+
+**Symptoms**: GitHub/Jira not updating, living docs not syncing
+
+**Solutions (Non-Claude Tools)**:
+1. **No automatic hooks** - You must manually sync:
+   ```bash
+   # After EACH task completion:
+   /specweave:sync-tasks                  # Update tasks.md
+   /specweave:sync-docs update            # Sync living docs
+   /specweave:github:sync <increment-id>  # Sync to GitHub
+   ```
+
+2. **Living docs sync not working**:
+   - Search for: `#workflow-living-docs-sync`
+   - Follow manual workflow from that section
+   - Check: `.specweave/docs/internal/specs/{project}/` for output
+
+3. **GitHub sync not working**:
+   - Search for: `#workflow-github-sync`
+   - Verify credentials: `gh auth status`
+   - Check metadata: `cat .specweave/increments/0001/metadata.json`
+   - Manual sync: Follow workflow from `#command-github-sync`
+
+4. **Jira sync not working**:
+   - Search for: `#workflow-jira-sync`
+   - Verify credentials: `jira config list`
+   - Manual sync: Follow workflow from `#command-jira-sync`
+
+**Remember**: Automatic sync ONLY works in Claude Code. In other tools, you must manually run sync commands!
+
+---
+
+### Root Folder Polluted {#troubleshoot-root-pollution}
+
+**Symptoms**: `git status` shows `.md` files in project root
+
+**Solutions**:
+1. **Immediate fix** - Move files to increment folder:
+   ```bash
+   # Find current increment
+   CURRENT=$(ls -t .specweave/increments/ | grep -v "_backlog" | head -1)
+
+   # Move files
+   mv SESSION-NOTES.md .specweave/increments/$CURRENT/reports/
+   mv analysis.md .specweave/increments/$CURRENT/reports/
+   mv migration.py .specweave/increments/$CURRENT/scripts/
+   mv execution.log .specweave/increments/$CURRENT/logs/
+   ```
+
+2. **Update .gitignore** if needed:
+   ```bash
+   echo "/*.md" >> .gitignore  # Ignore all root .md files except CLAUDE.md
+   echo "!CLAUDE.md" >> .gitignore
+   echo "!README.md" >> .gitignore
+   ```
+
+3. **Commit cleaned structure**:
+   ```bash
+   git add .
+   git commit -m "fix: move reports/scripts/logs to increment folders"
+   ```
+
+**Prevention**: Always create files in increment folders (reports/, scripts/, logs/), NEVER in root!
+
+---
+
+### Duplicate Increments {#troubleshoot-duplicates}
+
+**Symptoms**: Multiple increments with same number (0001, 0001, etc.)
+
+**Solutions**:
+1. **Check for duplicates**:
+   ```bash
+   ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort
+   # Look for duplicate numbers
+   ```
+
+2. **Find next available number**:
+   ```bash
+   ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort | tail -1
+   # Increment the number by 1
+   ```
+
+3. **Fix duplicates** (if they exist):
+   - Search for: `#command-fix-duplicates`
+   - Follow manual workflow to resolve
+
+**Prevention**: Always check existing increments before creating new ones!
+
+---
+
+### Tasks.md Out of Sync {#troubleshoot-tasks-out-of-sync}
+
+**Symptoms**: Progress shows 0/24 but many tasks actually done
+
+**Solutions**:
+1. **Auto-sync from reality**:
+   - Search for: `#command-sync-tasks`
+   - Follow workflow to sync tasks.md with actual status
+
+2. **Manual update**:
+   ```bash
+   # Open tasks.md
+   vim .specweave/increments/0001/tasks.md
+
+   # Change completed tasks:
+   **Status**: [ ] pending  → **Status**: [x] completed
+
+   # Update progress counters:
+   **Completed**: 0  → **Completed**: 15
+   **Progress**: 0%  → **Progress**: 62%  (15/24 = 62%)
+   ```
+
+3. **Verify sync**:
+   - Search for: `#command-progress`
+   - Run progress check to verify correct counts
+
+**Prevention**: In non-Claude tools, manually update tasks.md after EACH task completion!
+
+---
+
+### Can't Find Current Increment {#troubleshoot-find-increment}
+
+**Symptoms**: Don't know which increment is active
+
+**Solutions**:
+1. **Check active increment**:
+   ```bash
+   cat .specweave/state/active-increment.json
+   ```
+
+2. **List all increments with status**:
+   - Search for: `#command-status`
+   - Follow workflow to see all increments and their states
+
+3. **Check progress**:
+   - Search for: `#command-progress`
+   - Shows active increment and completion %
+
+---
+
+### Commands Taking Too Long {#troubleshoot-slow-commands}
+
+**Symptoms**: Command workflows seem to take forever
+
+**Causes & Solutions**:
+1. **Loading entire AGENTS.md** - This is normal!
+   - File is 2000+ lines (comprehensive)
+   - Use search (Ctrl+F) to jump to relevant sections
+   - Don't read everything - only what you need
+
+2. **Too much context loaded**:
+   - Check for `context-manifest.yaml` in increment folder
+   - Load ONLY files listed there
+   - Don't load entire `.specweave/docs/` folder
+
+3. **Workflow unclear**:
+   - Each section has step-by-step workflow
+   - Follow instructions precisely
+   - Check examples
+
+**Optimization**: Use Section Index above to quickly find and jump to relevant sections!
+
+---
+
+### Living Docs Not Updating {#troubleshoot-living-docs}
+
+**Symptoms**: `.specweave/docs/internal/specs/` not showing new user stories
+
+**Solutions**:
+1. **Manual sync required** (non-Claude tools):
+   - Search for: `#command-sync-docs`
+   - Follow workflow to sync increment → living docs
+
+2. **Check spec distribution**:
+   ```bash
+   # After sync, verify files exist:
+   ls -la .specweave/docs/internal/specs/{project}/
+   # Should show FS-XXX folders with us-XXX.md files
+   ```
+
+3. **Verify project detection**:
+   ```bash
+   # Check increment name for project hint:
+   ls .specweave/increments/
+   # Example: 0001-backend-auth → project: backend
+   #          0002-frontend-ui → project: frontend
+   ```
+
+**Prevention**: Run `/specweave:sync-docs update` after completing increments!
+
+---
+
+### External Tracker Credentials {#troubleshoot-credentials}
+
+**Symptoms**: GitHub/Jira sync fails with auth errors
+
+**Solutions (GitHub)**:
+```bash
+# Check auth status
+gh auth status
+
+# Re-authenticate if needed
+gh auth login
+
+# Test access
+gh repo view
+```
+
+**Solutions (Jira)**:
+```bash
+# Check config
+jira config list
+
+# Set up credentials
+jira init
+
+# Test access
+jira issue list --project PROJ
+```
+
+**Solutions (Azure DevOps)**:
+```bash
+# Check auth
+az account show
+
+# Login if needed
+az login
+
+# Set default org/project
+az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG project=YOUR_PROJECT
+```
+
+---
+
+### Context Manifest Not Working {#troubleshoot-context-manifest}
+
+**Symptoms**: Loading too many files, high token usage
+
+**Solutions**:
+1. **Check for context-manifest.yaml**:
+   ```bash
+   ls .specweave/increments/0001/context-manifest.yaml
+   ```
+
+2. **If missing, create one**:
+   ```yaml
+   # .specweave/increments/0001/context-manifest.yaml
+   spec_sections:
+     - .specweave/docs/internal/strategy/relevant-spec.md
+   documentation:
+     - .specweave/docs/internal/architecture/relevant-design.md
+   max_context_tokens: 10000
+   ```
+
+3. **Load ONLY files listed**:
+   - Read context-manifest.yaml first
+   - Load files from `spec_sections` and `documentation`
+   - Don't load entire `.specweave/docs/` folder
+
+**Token Savings**: 70%+ reduction when using context manifests!
+
+---
+
+### Multi-Tool Confusion {#troubleshoot-multi-tool}
+
+**Symptoms**: Instructions mention Claude Code but I'm using Cursor/Copilot
+
+**Solutions**:
+1. **Look for multi-tool callouts**:
+   ```markdown
+   **For Claude Code**: ✅ Automatic via hooks
+   **For Other Tools**: ⚠️ Manual sync required
+   ```
+
+2. **If instruction says "automatic"**:
+   - In Claude Code: It's automatic
+   - In other tools: Find manual workflow section
+
+3. **General pattern**:
+   - Claude Code: Commands via slash syntax, hooks automatic
+   - Other tools: Commands via manual workflows, sync manual
+
+**This file (AGENTS.md) is optimized for non-Claude tools!** Follow the manual workflows.
+
+---
+
+### More Help {#more-help}
+
+**Documentation**:
+- Official docs: https://spec-weave.com/docs
+- Troubleshooting guide: https://spec-weave.com/docs/troubleshooting
+- Multi-tool guide: https://spec-weave.com/docs/multi-tool-support
+
+**Community**:
+- GitHub Issues: https://github.com/anton-abyzov/specweave/issues
+- Discussions: https://github.com/anton-abyzov/specweave/discussions
+- Discord: https://discord.gg/specweave (if available)
+
+**Quick Reference**:
+- Section Index: See top of this file
+- Search patterns: `#command-*`, `#skill-*`, `#agent-*`, `#workflow-*`
+- Quick reference cards: See `#quick-reference-cards` above
+
+**When reporting issues**:
+1. Tool used (Cursor, Copilot, ChatGPT, etc.)
+2. SpecWeave version: `specweave --version`
+3. Command/workflow attempted
+4. Error message or unexpected behavior
+5. Relevant files (metadata.json, config.json)
 
 ---
 

@@ -112,10 +112,70 @@ export class MetadataManager {
   }
 
   /**
-   * Validate increment before creation (check for duplicates)
-   * Throws if duplicates exist in other locations
+   * Reserved increment IDs that cannot be used
+   * These are status values, special folders, and state files
+   */
+  private static readonly RESERVED_INCREMENT_IDS = [
+    // Status values (would confuse state management)
+    'active', 'backlog', 'paused', 'completed', 'abandoned',
+
+    // Special folders (file system conflicts)
+    '_archive', '_templates', '_config',
+
+    // State files (would overwrite critical files)
+    'active-increment', 'state', 'config',
+
+    // Common terms that should not be IDs
+    'current', 'latest', 'new', 'temp', 'test'
+  ];
+
+  /**
+   * Validate increment ID is not a reserved name
+   * Throws if ID is reserved
+   */
+  private static validateNotReserved(incrementId: string): void {
+    // Check exact match
+    if (this.RESERVED_INCREMENT_IDS.includes(incrementId)) {
+      throw new MetadataError(
+        `Invalid increment ID "${incrementId}": This is a reserved name.\n\n` +
+        `Reserved names include:\n` +
+        `  - Status values: active, backlog, paused, completed, abandoned\n` +
+        `  - Special folders: _archive, _templates, _config\n` +
+        `  - State files: active-increment, state, config\n\n` +
+        `Please use a descriptive name like "0035-my-feature" instead.`,
+        incrementId
+      );
+    }
+
+    // Check if it starts with underscore (reserved for special folders)
+    if (incrementId.startsWith('_')) {
+      throw new MetadataError(
+        `Invalid increment ID "${incrementId}": Increment IDs cannot start with underscore.\n` +
+        `Names starting with "_" are reserved for special folders like _archive.\n\n` +
+        `Please use a name like "0035-my-feature" instead.`,
+        incrementId
+      );
+    }
+
+    // Check base name (before first hyphen) is not reserved
+    const baseName = incrementId.split('-')[0];
+    if (this.RESERVED_INCREMENT_IDS.includes(baseName)) {
+      throw new MetadataError(
+        `Invalid increment ID "${incrementId}": Base name "${baseName}" is reserved.\n\n` +
+        `Please use a 4-digit number prefix like "0035-my-feature".`,
+        incrementId
+      );
+    }
+  }
+
+  /**
+   * Validate increment before creation (check for duplicates and reserved names)
+   * Throws if duplicates exist in other locations or ID is reserved
    */
   static async validateBeforeCreate(incrementId: string, rootDir?: string): Promise<void> {
+    // Check for reserved names first
+    this.validateNotReserved(incrementId);
+
     // Extract increment number from ID (e.g., "0033-feature-name" → "0033")
     const numberMatch = incrementId.match(/^(\d+)/);
     if (!numberMatch) {

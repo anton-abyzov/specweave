@@ -1,0 +1,415 @@
+# ==================================================
+# Prometheus Alerting Rules for Apache Kafka
+# ==================================================
+#
+# Usage (Kubernetes):
+#   kubectl apply -f kafka-alerts.yml
+#
+# Usage (Prometheus standalone):
+#   Copy to /etc/prometheus/rules/kafka-alerts.yml
+#   Add to prometheus.yml:
+#     rule_files:
+#       - "rules/kafka-alerts.yml"
+#   Reload: kill -HUP $(pidof prometheus)
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kafka-alerts
+  namespace: monitoring
+  labels:
+    app: kafka
+    prometheus: kube-prometheus
+spec:
+  groups:
+    # ==================================================
+    # Group 1: CRITICAL Alerts (Immediate Action Required)
+    # ==================================================
+    - name: kafka.critical
+      interval: 30s
+      rules:
+        # ALERT 1: Under-Replicated Partitions
+        - alert: KafkaUnderReplicatedPartitions
+          expr: sum(kafka_server_replica_manager_under_replicated_partitions) > 0
+          for: 5m
+          labels:
+            severity: critical
+            component: kafka
+            alert_type: data_loss_risk
+          annotations:
+            summary: "Kafka has under-replicated partitions ({{ $value }} partitions)"
+            description: |
+              **CRITICAL**: {{ $value }} partitions are under-replicated.
+
+              **Impact**: Data loss risk if broker fails.
+              **Possible Causes**:
+              - Broker down or unreachable
+              - Network issues between brokers
+              - High replication lag
+              - Disk I/O saturation
+
+              **Action**:
+              1. Check broker status: `kubectl get pods -n kafka` (K8s) or `systemctl status kafka` (VM)
+              2. Check network connectivity between brokers
+              3. Check disk I/O: `iostat -x 1`
+              4. Check broker logs for errors
+            runbook_url: "https://kafka.apache.org/documentation/#replication"
+
+        # ALERT 2: Offline Partitions
+        - alert: KafkaOfflinePartitions
+          expr: kafka_controller_offline_partitions_count > 0
+          for: 1m
+          labels:
+            severity: critical
+            component: kafka
+            alert_type: service_degradation
+          annotations:
+            summary: "Kafka has offline partitions ({{ $value }} partitions)"
+            description: |
+              **CRITICAL**: {{ $value }} partitions are OFFLINE (no in-sync replicas).
+
+              **Impact**: Complete data loss for these partitions! Producers/consumers cannot access them.
+              **Possible Causes**:
+              - All replicas for partition are down
+              - Unclean leader election disabled (good) but no ISR available
+              - Disk corruption
+
+              **Action**:
+              1. Identify offline partitions: `kafka-topics.sh --describe --under-min-isr-partitions`
+              2. Check broker logs for failures
+              3. Restart failed brokers if safe
+              4. As last resort: Enable unclean.leader.election.enable=true (DATA LOSS!)
+            runbook_url: "https://kafka.apache.org/documentation/#design_ha"
+
+        # ALERT 3: No Active Controller
+        - alert: KafkaNoActiveController
+          expr: kafka_controller_active_controller_count == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: kafka
+            alert_type: cluster_unavailable
+          annotations:
+            summary: "No active Kafka controller in cluster"
+            description: |
+              **CRITICAL**: Cluster has NO active controller.
+
+              **Impact**: Cannot perform:
+              - Topic creation/deletion
+              - Partition reassignment
+              - Preferred leader election
+              - Metadata updates
+
+              **Possible Causes**:
+              - Controller broker crashed
+              - ZooKeeper connection lost (if using ZooKeeper mode)
+              - Split-brain scenario
+
+              **Action**:
+              1. Check all broker status
+              2. Check ZooKeeper status (if not KRaft mode)
+              3. Check broker logs for controller election messages
+              4. Restart brokers in sequence if needed
+            runbook_url: "https://kafka.apache.org/documentation/#controller"
+
+        # ALERT 4: Multiple Active Controllers
+        - alert: KafkaMultipleActiveControllers
+          expr: kafka_controller_active_controller_count > 1
+          for: 1m
+          labels:
+            severity: critical
+            component: kafka
+            alert_type: split_brain
+          annotations:
+            summary: "Multiple active controllers detected ({{ $value }} controllers)"
+            description: |
+              **CRITICAL**: {{ $value }} controllers are active (should be exactly 1).
+
+              **Impact**: Split-brain! Conflicting metadata updates, undefined behavior.
+              **Possible Causes**:
+              - Network partition
+              - ZooKeeper issues (if not KRaft mode)
+              - KRaft quorum issues
+
+              **Action**:
+              1. STOP all operations immediately
+              2. Check network partitioning
+              3. Identify which controller is legitimate
+              4. Restart non-legitimate controllers
+              5. Verify only 1 active controller: `kafka-broker-api-versions.sh --bootstrap-server :9092`
+            runbook_url: "https://kafka.apache.org/documentation/#controller"
+
+        # ALERT 5: Unclean Leader Elections
+        - alert: KafkaUncleanLeaderElections
+          expr: sum(rate(kafka_controller_unclean_leader_elections_total[5m])) > 0
+          for: 1m
+          labels:
+            severity: critical
+            component: kafka
+            alert_type: data_loss
+          annotations:
+            summary: "Unclean leader elections detected ({{ $value }}/sec)"
+            description: |
+              **CRITICAL**: Unclean leader elections are happening.
+
+              **Impact**: DATA LOSS! Partition leader elected from out-of-sync replica.
+              **Possible Causes**:
+              - unclean.leader.election.enable=true (should be false in production!)
+              - All ISRs went down, cluster elected non-ISR as leader
+
+              **Action**:
+              1. **DO NOT** set unclean.leader.election.enable=true in production
+              2. Investigate why all ISRs went down
+              3. Check broker logs for failures
+              4. Review replication.factor and min.insync.replicas settings
+            runbook_url: "https://kafka.apache.org/documentation/#design_ha"
+
+    # ==================================================
+    # Group 2: HIGH Priority Alerts (Action Within Hours)
+    # ==================================================
+    - name: kafka.high
+      interval: 30s
+      rules:
+        # ALERT 6: High Consumer Lag
+        - alert: KafkaConsumerLagHigh
+          expr: sum by (consumergroup) (kafka_consumergroup_lag) > 10000
+          for: 10m
+          labels:
+            severity: high
+            component: kafka
+            alert_type: performance_degradation
+          annotations:
+            summary: "Consumer group '{{ $labels.consumergroup }}' has high lag ({{ $value }} messages)"
+            description: |
+              **HIGH**: Consumer group is falling behind.
+
+              **Impact**: Delayed processing, stale data, potential timeout issues.
+              **Possible Causes**:
+              - Consumer processing too slow
+              - Insufficient consumer instances
+              - Network issues
+              - Partition imbalance
+
+              **Action**:
+              1. Check consumer logs for errors
+              2. Scale up consumer instances
+              3. Optimize consumer processing logic
+              4. Check partition distribution: `kafka-consumer-groups.sh --describe --group {{ $labels.consumergroup }}`
+            threshold: 10000 messages
+            runbook_url: "https://kafka.apache.org/documentation/#consumerconfigs"
+
+        # ALERT 7: ISR Shrinks (High Rate)
+        - alert: KafkaISRShrinksHigh
+          expr: sum(rate(kafka_server_replica_manager_isr_shrinks_total[5m])) > 5
+          for: 5m
+          labels:
+            severity: high
+            component: kafka
+            alert_type: replication_issue
+          annotations:
+            summary: "High rate of ISR shrinks ({{ $value }}/sec)"
+            description: |
+              **HIGH**: Replicas are frequently falling out of sync.
+
+              **Impact**: Reduced fault tolerance, potential under-replication.
+              **Possible Causes**:
+              - Network instability
+              - Slow disk I/O
+              - Overloaded brokers
+              - High producer throughput
+
+              **Action**:
+              1. Check network latency between brokers
+              2. Check disk I/O: `iostat -x 1`
+              3. Review broker CPU/memory usage
+              4. Consider increasing replica.fetch.max.bytes
+            runbook_url: "https://kafka.apache.org/documentation/#replication"
+
+        # ALERT 8: Leader Election Rate High
+        - alert: KafkaLeaderElectionRateHigh
+          expr: sum(rate(kafka_controller_leader_election_total[5m])) > 0.5
+          for: 5m
+          labels:
+            severity: high
+            component: kafka
+            alert_type: cluster_instability
+          annotations:
+            summary: "High leader election rate ({{ $value }}/sec)"
+            description: |
+              **HIGH**: Frequent leader elections indicate cluster instability.
+
+              **Impact**: Increased latency, potential client errors during elections.
+              **Possible Causes**:
+              - Broker failures/restarts
+              - Network issues
+              - ZooKeeper issues (if not KRaft)
+              - Auto leader rebalancing enabled
+
+              **Action**:
+              1. Check broker uptime and logs
+              2. Disable auto.leader.rebalance.enable if enabled
+              3. Check network stability
+              4. Review recent broker restarts
+            runbook_url: "https://kafka.apache.org/documentation/#controller"
+
+    # ==================================================
+    # Group 3: WARNING Alerts (Action Within Days)
+    # ==================================================
+    - name: kafka.warning
+      interval: 30s
+      rules:
+        # ALERT 9: Broker High CPU
+        - alert: KafkaBrokerHighCPU
+          expr: os_process_cpu_load{job="kafka"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: resource_saturation
+          annotations:
+            summary: "Broker {{ $labels.instance }} has high CPU usage ({{ $value | humanizePercentage }})"
+            description: |
+              **WARNING**: Broker CPU usage is high.
+
+              **Impact**: Slower request processing, potential client timeouts.
+              **Possible Causes**:
+              - High message throughput
+              - Complex consumer queries
+              - Insufficient brokers for load
+
+              **Action**:
+              1. Review broker metrics for throughput spikes
+              2. Consider scaling horizontally (add brokers)
+              3. Optimize producer/consumer configurations
+              4. Review compaction settings (if using log compaction)
+            threshold: 80%
+
+        # ALERT 10: Broker Low Heap Memory
+        - alert: KafkaBrokerLowHeapMemory
+          expr: jvm_memory_heap_used_bytes{job="kafka"} / jvm_memory_heap_max_bytes{job="kafka"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: memory_pressure
+          annotations:
+            summary: "Broker {{ $labels.instance }} has low heap memory ({{ $value | humanizePercentage }})"
+            description: |
+              **WARNING**: JVM heap usage is high.
+
+              **Impact**: Risk of OutOfMemoryError, frequent GC pauses.
+              **Possible Causes**:
+              - Too many partitions per broker
+              - High message cache usage
+              - Memory leak (rare)
+
+              **Action**:
+              1. Increase JVM heap: -Xmx (up to 50% of system RAM, leave room for page cache)
+              2. Reduce partitions per broker
+              3. Monitor GC metrics
+              4. Review log.segment.bytes and segment.ms settings
+            threshold: 85%
+
+        # ALERT 11: High GC Time
+        - alert: KafkaBrokerHighGCTime
+          expr: rate(jvm_gc_collection_time_ms_total{job="kafka"}[5m]) > 500
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: gc_pressure
+          annotations:
+            summary: "Broker {{ $labels.instance }} spending too much time in GC ({{ $value }}ms/sec)"
+            description: |
+              **WARNING**: Application spending significant time in garbage collection.
+
+              **Impact**: Stop-the-world pauses, increased latency.
+              **Possible Causes**:
+              - High heap usage
+              - Wrong GC algorithm
+              - Too small heap size
+
+              **Action**:
+              1. Increase JVM heap size
+              2. Use G1GC (recommended for Kafka): -XX:+UseG1GC
+              3. Tune GC parameters: -XX:MaxGCPauseMillis=20
+              4. Monitor heap usage and adjust
+            threshold: 500ms/sec
+
+        # ALERT 12: Open File Descriptors High
+        - alert: KafkaBrokerHighOpenFiles
+          expr: os_open_file_descriptors{job="kafka"} / os_max_file_descriptors{job="kafka"} > 0.8
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: resource_exhaustion
+          annotations:
+            summary: "Broker {{ $labels.instance }} has high file descriptor usage ({{ $value | humanizePercentage }})"
+            description: |
+              **WARNING**: Running out of file descriptors.
+
+              **Impact**: Broker may crash when limit reached.
+              **Possible Causes**:
+              - Too many partitions
+              - Too many concurrent connections
+              - File descriptor limit too low
+
+              **Action**:
+              1. Increase system file descriptor limit: `ulimit -n 100000`
+              2. Add to /etc/security/limits.conf: `kafka soft nofile 100000; kafka hard nofile 100000`
+              3. Reduce partitions per broker
+              4. Close idle connections
+            threshold: 80%
+
+        # ALERT 13: Request Handler Idle Percentage Low
+        - alert: KafkaRequestHandlerBusy
+          expr: kafka_server_request_handler_avg_idle_percent{job="kafka"} < 0.3
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: thread_saturation
+          annotations:
+            summary: "Broker {{ $labels.instance }} request handlers are busy ({{ $value | humanizePercentage }} idle)"
+            description: |
+              **WARNING**: Request handlers are saturated.
+
+              **Impact**: Slow request processing, client timeouts.
+              **Possible Causes**:
+              - High request rate
+              - Slow disk I/O
+              - Insufficient num.network.threads or num.io.threads
+
+              **Action**:
+              1. Increase num.network.threads (default: 3, try 8)
+              2. Increase num.io.threads (default: 8, try 16)
+              3. Check disk I/O performance
+              4. Scale horizontally (add brokers)
+            threshold: 30% idle (70% busy)
+
+        # ALERT 14: Disk Usage High
+        - alert: KafkaBrokerHighDiskUsage
+          expr: (node_filesystem_size_bytes{mountpoint="/data/kafka"} - node_filesystem_free_bytes{mountpoint="/data/kafka"}) / node_filesystem_size_bytes{mountpoint="/data/kafka"} > 0.85
+          for: 5m
+          labels:
+            severity: warning
+            component: kafka
+            alert_type: disk_pressure
+          annotations:
+            summary: "Broker {{ $labels.instance }} has high disk usage ({{ $value | humanizePercentage }})"
+            description: |
+              **WARNING**: Kafka data disk is filling up.
+
+              **Impact**: Broker will fail when disk full.
+              **Possible Causes**:
+              - High message retention
+              - Insufficient disk space
+              - Log compaction not running
+
+              **Action**:
+              1. Reduce log.retention.hours (default: 168 hours = 7 days)
+              2. Reduce log.retention.bytes per partition
+              3. Expand disk volume
+              4. Enable log compaction for topics where appropriate
+            threshold: 85%

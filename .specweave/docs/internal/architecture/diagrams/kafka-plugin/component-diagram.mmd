@@ -1,0 +1,85 @@
+```mermaid
+C4Component
+    title Component Diagram - specweave-kafka Plugin (Core Plugin)
+
+    Container_Boundary(plugin, "specweave-kafka Plugin") {
+        Component(plugin_manifest, "plugin.json", "Metadata", "Plugin name, version, description, author")
+
+        Component_Boundary(skills, "Skills (Auto-Activating)") {
+            Component(skill_architecture, "kafka-architecture", "Skill", "Deployment patterns, scaling strategies")
+            Component(skill_topic_design, "kafka-topic-design", "Skill", "Partitioning, replication, retention")
+            Component(skill_monitoring, "kafka-monitoring", "Skill", "Prometheus, Grafana, OpenTelemetry setup")
+            Component(skill_mcp, "kafka-mcp-integration", "Skill", "MCP server configuration, operations")
+            Component(skill_cli, "kafka-cli-tools", "Skill", "kcat, kcli, kaf usage patterns")
+        }
+
+        Component_Boundary(agents, "Agents (Invokable)") {
+            Component(agent_architect, "kafka-architect", "Agent", "Architecture decisions, capacity planning")
+            Component(agent_devops, "kafka-devops", "Agent", "Deployment, configuration management")
+            Component(agent_observability, "kafka-observability", "Agent", "Monitoring setup, alerting")
+        }
+
+        Component_Boundary(commands, "Commands (Slash Commands)") {
+            Component(cmd_deploy, "/specweave-kafka:deploy", "Command", "Deploy Kafka cluster (Terraform)")
+            Component(cmd_monitor, "/specweave-kafka:monitor-setup", "Command", "Setup monitoring stack")
+            Component(cmd_mcp, "/specweave-kafka:mcp-configure", "Command", "Configure MCP server")
+            Component(cmd_dev_env, "/specweave-kafka:dev-env", "Command", "Start/stop local dev cluster")
+        }
+
+        Component_Boundary(lib, "Library (TypeScript)") {
+            Component(lib_mcp_detector, "MCP Server Detector", "TypeScript", "Auto-detect available MCP servers")
+            Component(lib_terraform_gen, "Terraform Generator", "TypeScript", "Generate Terraform modules")
+            Component(lib_config_validator, "Config Validator", "TypeScript", "Validate Kafka configuration")
+            Component(lib_monitoring_setup, "Monitoring Setup", "TypeScript", "Deploy Prometheus, Grafana")
+            Component(lib_kcat_wrapper, "kcat Wrapper", "TypeScript", "CLI tool integration")
+        }
+
+        Component_Boundary(terraform, "Terraform Modules") {
+            Component(tf_self_hosted, "self-hosted/cluster", "HCL", "Docker Compose Kafka cluster")
+            Component(tf_aws_msk, "aws-msk/cluster", "HCL", "AWS MSK cluster provisioning")
+            Component(tf_azure_eh, "azure-event-hubs/namespace", "HCL", "Azure Event Hubs provisioning")
+            Component(tf_monitoring, "monitoring/prometheus-grafana", "HCL", "Observability stack")
+        }
+
+        Component_Boundary(templates, "Code Templates") {
+            Component(tmpl_producer, "producer-template", "TypeScript", "kafkajs producer boilerplate")
+            Component(tmpl_consumer, "consumer-template", "TypeScript", "kafkajs consumer boilerplate")
+            Component(tmpl_testing, "testing-template", "Jest", "testcontainers-kafka integration tests")
+        }
+    }
+
+    System_Ext(kafka, "Apache Kafka", "Event streaming platform")
+    System_Ext(mcp_server, "Kafka MCP Server", "MCP server (kanapuli, tuannvm, etc.)")
+    System_Ext(prometheus, "Prometheus", "Metrics storage")
+    System_Ext(grafana, "Grafana", "Visualization")
+    System_Ext(terraform_cli, "Terraform CLI", "Infrastructure provisioning")
+    System_Ext(docker, "Docker", "Container runtime")
+
+    Rel(skill_architecture, agent_architect, "Invokes", "Agent call")
+    Rel(skill_monitoring, agent_observability, "Invokes", "Agent call")
+    Rel(skill_mcp, lib_mcp_detector, "Uses", "Function call")
+
+    Rel(cmd_deploy, lib_terraform_gen, "Calls", "Generate modules")
+    Rel(cmd_monitor, lib_monitoring_setup, "Calls", "Deploy stack")
+    Rel(cmd_mcp, lib_mcp_detector, "Calls", "Detect servers")
+    Rel(cmd_dev_env, docker, "Controls", "Docker CLI")
+
+    Rel(lib_terraform_gen, tf_self_hosted, "Generates", "File system")
+    Rel(lib_terraform_gen, tf_aws_msk, "Generates", "File system")
+    Rel(lib_terraform_gen, tf_monitoring, "Generates", "File system")
+
+    Rel(lib_monitoring_setup, prometheus, "Deploys", "Docker")
+    Rel(lib_monitoring_setup, grafana, "Deploys", "Docker")
+
+    Rel(lib_kcat_wrapper, kafka, "Connects to", "Kafka Protocol")
+    Rel(lib_mcp_detector, mcp_server, "Detects", "MCP Protocol")
+
+    Rel(tf_self_hosted, docker, "Deploys to", "Docker Compose")
+    Rel(tf_aws_msk, terraform_cli, "Executed by", "Terraform")
+    Rel(tf_monitoring, docker, "Deploys to", "Docker Compose")
+
+    Rel(tmpl_producer, kafka, "Connects to", "Kafka Protocol (kafkajs)")
+    Rel(tmpl_consumer, kafka, "Connects to", "Kafka Protocol (kafkajs)")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+```

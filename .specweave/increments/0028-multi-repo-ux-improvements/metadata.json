@@ -1,13 +1,14 @@
 {
   "id": "0028-multi-repo-ux-improvements",
   "status": "completed",
-  "type": "feature",
-  "created": "2025-11-11T19:30:00Z",
-  "lastActivity": "2025-11-11T19:30:00Z",
+  "type": "enhancement",
+  "created": "2025-11-11T14:00:00Z",
+  "completed": "2025-11-11T18:00:00Z",
+  "lastActivity": "2025-11-15T10:10:00Z",
   "github": {
-    "issue": 510,
-    "url": "https://github.com/anton-abyzov/specweave/issues/510",
-    "synced": "2025-11-15T01:27:00Z"
+    "issue": 520,
+    "url": "https://github.com/anton-abyzov/specweave/issues/520",
+    "synced": "2025-11-15T10:10:00Z"
   },
   "githubProfile": "specweave-dev"
 }

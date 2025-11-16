@@ -91,7 +91,11 @@ export class HierarchyMapper {
 
     // Check if multi-project mode is enabled
     if (config.multiProject?.enabled && config.multiProject.projects) {
-      return Object.keys(config.multiProject.projects);
+      const projects = Object.keys(config.multiProject.projects);
+      // If projects object is empty, fallback to default
+      if (projects.length > 0) {
+        return projects;
+      }
     }
 
     // Default: single-project mode
@@ -290,7 +294,8 @@ export class HierarchyMapper {
     const specPath = path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'spec.md');
 
     if (!fs.existsSync(specPath)) {
-      return ['default'];
+      // Fallback to configured projects when spec missing
+      return await this.getConfiguredProjects();
     }
 
     const content = await fs.readFile(specPath, 'utf-8');
@@ -319,8 +324,8 @@ export class HierarchyMapper {
       return configProjects;
     }
 
-    // Fallback: Default project
-    return ['default'];
+    // Fallback: Use configured projects (single-project mode uses repo name, not 'default')
+    return configuredProjects;
   }
 
   /**

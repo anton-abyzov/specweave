@@ -1,43 +1,14 @@
 {
-  "increment": "0022-multi-repo-init-ux",
-  "type": "feature",
+  "id": "0022-multi-repo-init-ux",
   "status": "completed",
-  "created": "2025-11-11T15:07:00Z",
-  "completed": "2025-11-11T19:30:00Z",
-  "priority": "P1",
-  "tags": [
-    "ux",
-    "multi-repo",
-    "initialization",
-    "github"
-  ],
-  "lastUpdated": "2025-11-11T19:30:00Z",
-  "pmApproval": {
-    "approved": true,
-    "approvedBy": "PM Agent",
-    "approvedAt": "2025-11-11T19:30:00Z",
-    "gates": {
-      "tasks": "PASS (11/15, all P1 complete)",
-      "tests": "PASS (85% coverage)",
-      "documentation": "PASS (5 ADRs, CHANGELOG)"
-    }
-  },
-  "metrics": {
-    "totalTasks": 15,
-    "completedTasks": 11,
-    "deferredTasks": 4,
-    "acceptanceCriteria": {
-      "total": 38,
-      "completed": 38
-    },
-    "testCoverage": "85%",
-    "duration": "7 days",
-    "velocity": "+50% faster than planned"
-  },
+  "type": "feature",
+  "created": "2025-11-11T10:00:00Z",
+  "completed": "2025-11-11T18:00:00Z",
+  "lastActivity": "2025-11-15T10:00:00Z",
   "github": {
-    "issue": 508,
-    "url": "https://github.com/anton-abyzov/specweave/issues/508",
-    "synced": "2025-11-15T01:25:00Z"
+    "issue": 518,
+    "url": "https://github.com/anton-abyzov/specweave/issues/518",
+    "synced": "2025-11-15T10:00:00Z"
   },
   "githubProfile": "specweave-dev"
 }

@@ -11,8 +11,8 @@ import { ConfigManager } from './config-manager';
 import { autoDetectProjectIdSync, formatProjectName } from '../utils/project-detection';
 import { ProjectContext } from './living-docs/types';
 
-// Re-export ProjectContext for backward compatibility with CLI commands
-export { ProjectContext };
+// Re-export ProjectContext as type-only for backward compatibility with CLI commands
+export type { ProjectContext };
 
 export class ProjectManager {
   private configManager: ConfigManager;

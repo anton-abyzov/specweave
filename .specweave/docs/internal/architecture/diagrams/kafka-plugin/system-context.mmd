@@ -1,0 +1,48 @@
+```mermaid
+C4Context
+    title System Context - Kafka Event Streaming Plugin Suite
+
+    Person(developer, "Developer", "Uses SpecWeave + Kafka plugins for event-driven development")
+    Person(devops, "DevOps Engineer", "Deploys and manages Kafka infrastructure")
+    Person(sre, "SRE", "Monitors Kafka clusters and troubleshoots incidents")
+
+    System(specweave, "SpecWeave Framework", "Spec-driven development framework with Claude Code plugins")
+
+    System_Ext(kafka_self_hosted, "Apache Kafka (Self-Hosted)", "Open-source event streaming platform")
+    System_Ext(confluent_cloud, "Confluent Cloud", "Managed Kafka service with Schema Registry, ksqlDB")
+    System_Ext(aws_msk, "AWS MSK", "Amazon Managed Streaming for Apache Kafka")
+    System_Ext(azure_event_hubs, "Azure Event Hubs", "Kafka-compatible event streaming service")
+    System_Ext(redpanda, "Redpanda", "High-performance Kafka-compatible platform")
+
+    System_Ext(mcp_servers, "Kafka MCP Servers", "Model Context Protocol servers (kanapuli, tuannvm, Confluent)")
+    System_Ext(cli_tools, "Kafka CLI Tools", "kcat, kcli, kaf, kafkactl")
+    System_Ext(monitoring, "Observability Stack", "Prometheus, Grafana, OpenTelemetry, Jaeger")
+    System_Ext(n8n, "n8n Workflow Automation", "Event-driven workflow automation platform")
+    System_Ext(terraform, "Terraform", "Infrastructure-as-code for Kafka deployment")
+
+    Rel(developer, specweave, "Uses", "Claude Code")
+    Rel(devops, specweave, "Uses", "Claude Code")
+    Rel(sre, specweave, "Uses", "Claude Code")
+
+    Rel(specweave, kafka_self_hosted, "Manages topics, produces/consumes messages", "Kafka Protocol")
+    Rel(specweave, confluent_cloud, "Manages clusters, connectors, schemas", "Confluent API")
+    Rel(specweave, aws_msk, "Provisions clusters, configures topics", "AWS API + Kafka Protocol")
+    Rel(specweave, azure_event_hubs, "Manages namespaces, event hubs", "Azure API + Kafka Protocol")
+    Rel(specweave, redpanda, "Manages topics, produces/consumes messages", "Kafka Protocol")
+
+    Rel(specweave, mcp_servers, "Natural language Kafka operations", "MCP Protocol")
+    Rel(specweave, cli_tools, "CLI-based Kafka operations", "Shell commands")
+    Rel(specweave, monitoring, "Exports metrics, traces, logs", "Prometheus/OTLP")
+    Rel(specweave, n8n, "Triggers workflows from Kafka events", "n8n API")
+    Rel(specweave, terraform, "Deploys Kafka infrastructure", "Terraform CLI")
+
+    Rel(mcp_servers, kafka_self_hosted, "Connects to", "Kafka Protocol")
+    Rel(mcp_servers, confluent_cloud, "Connects to", "Confluent API")
+    Rel(cli_tools, kafka_self_hosted, "Connects to", "Kafka Protocol")
+    Rel(monitoring, kafka_self_hosted, "Scrapes metrics from", "JMX/HTTP")
+    Rel(n8n, kafka_self_hosted, "Consumes events from", "Kafka Protocol")
+    Rel(terraform, aws_msk, "Provisions", "AWS API")
+    Rel(terraform, confluent_cloud, "Provisions", "Confluent API")
+
+    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="2")
+```

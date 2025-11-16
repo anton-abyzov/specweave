@@ -1,0 +1,199 @@
+# Redpanda Local Development Environment
+#
+# Redpanda is a Kafka-compatible streaming platform (10x faster, C++)
+# Includes: Redpanda cluster, Console UI, Prometheus
+
+version: '3.8'
+
+services:
+  # ========================================
+  # Redpanda Broker 1
+  # ========================================
+  redpanda-1:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
+    container_name: redpanda-1
+    hostname: redpanda-1
+    ports:
+      - "9092:9092"   # Kafka API
+      - "9644:9644"   # Admin API
+      - "8082:8082"   # HTTP Proxy
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda-1:9092,external://localhost:9092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda-1:8082,external://localhost:8082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda-1:33145
+      - --advertise-rpc-addr redpanda-1:33145
+      - --mode dev-container
+      - --smp 1
+      - --memory 1G
+    volumes:
+      - redpanda-1-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep 'Healthy:.*true' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - redpanda-network
+
+  # ========================================
+  # Redpanda Broker 2
+  # ========================================
+  redpanda-2:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
+    container_name: redpanda-2
+    hostname: redpanda-2
+    ports:
+      - "9093:9092"
+      - "9645:9644"
+      - "8083:8082"
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19093
+      - --advertise-kafka-addr internal://redpanda-2:9092,external://localhost:9093
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18083
+      - --advertise-pandaproxy-addr internal://redpanda-2:8082,external://localhost:8083
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18082
+      - --rpc-addr redpanda-2:33145
+      - --advertise-rpc-addr redpanda-2:33145
+      - --seeds redpanda-1:33145
+      - --mode dev-container
+      - --smp 1
+      - --memory 1G
+    volumes:
+      - redpanda-2-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep 'Healthy:.*true' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - redpanda-1
+    networks:
+      - redpanda-network
+
+  # ========================================
+  # Redpanda Broker 3
+  # ========================================
+  redpanda-3:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
+    container_name: redpanda-3
+    hostname: redpanda-3
+    ports:
+      - "9094:9092"
+      - "9646:9644"
+      - "8084:8082"
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19094
+      - --advertise-kafka-addr internal://redpanda-3:9092,external://localhost:9094
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18084
+      - --advertise-pandaproxy-addr internal://redpanda-3:8082,external://localhost:8084
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18083
+      - --rpc-addr redpanda-3:33145
+      - --advertise-rpc-addr redpanda-3:33145
+      - --seeds redpanda-1:33145
+      - --mode dev-container
+      - --smp 1
+      - --memory 1G
+    volumes:
+      - redpanda-3-data:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health | grep 'Healthy:.*true' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      - redpanda-1
+    networks:
+      - redpanda-network
+
+  # ========================================
+  # Redpanda Console (UI)
+  # ========================================
+  console:
+    image: docker.redpanda.com/redpandadata/console:v2.6.0
+    container_name: redpanda-console
+    ports:
+      - "8080:8080"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      KAFKA_BROKERS: redpanda-1:9092,redpanda-2:9092,redpanda-3:9092
+      KAFKA_SCHEMAREGISTRY_ENABLED: "true"
+      KAFKA_SCHEMAREGISTRY_URLS: http://redpanda-1:8081
+    volumes:
+      - ./config/console-config.yml:/tmp/config.yml:ro
+    depends_on:
+      - redpanda-1
+      - redpanda-2
+      - redpanda-3
+    networks:
+      - redpanda-network
+
+  # ========================================
+  # Prometheus (metrics)
+  # ========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - redpanda-network
+
+  # ========================================
+  # Grafana (dashboards)
+  # ========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - redpanda-network
+
+# ========================================
+# Networks
+# ========================================
+networks:
+  redpanda-network:
+    driver: bridge
+
+# ========================================
+# Volumes
+# ========================================
+volumes:
+  redpanda-1-data:
+    driver: local
+  redpanda-2-data:
+    driver: local
+  redpanda-3-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local

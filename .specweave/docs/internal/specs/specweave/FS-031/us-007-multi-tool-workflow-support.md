@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 571
-    url: https://github.com/anton-abyzov/specweave/issues/571
+    issue: 600
+    url: https://github.com/anton-abyzov/specweave/issues/600
 ---
 
 # US-007: Multi-Tool Workflow Support

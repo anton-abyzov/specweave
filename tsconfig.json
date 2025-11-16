@@ -30,6 +30,7 @@
     "plugins/**/lib/*-project-detector.ts",
     "plugins/**/lib/*-selector.ts",
     "plugins/**/lib/*-board-resolver.ts",
-    "plugins/**/lib/conflict-resolver.ts"
+    "plugins/**/lib/conflict-resolver.ts",
+    "plugins/specweave-kafka/**/*.ts"
   ]
 }

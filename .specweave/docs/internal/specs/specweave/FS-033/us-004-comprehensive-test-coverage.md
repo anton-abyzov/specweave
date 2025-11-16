@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 553
-    url: https://github.com/anton-abyzov/specweave/issues/553
+    issue: 593
+    url: https://github.com/anton-abyzov/specweave/issues/593
 ---
 
 # US-004: Comprehensive Test Coverage

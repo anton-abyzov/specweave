@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 559
-    url: https://github.com/anton-abyzov/specweave/issues/559
+    issue: 577
+    url: https://github.com/anton-abyzov/specweave/issues/577
 ---
 
 # US-006: Multi-Repo Git Tag Synchronization (P1)

@@ -1,0 +1,11 @@
+{
+  "name": "kafka-exactly-once-semantics",
+  "version": "1.0.0",
+  "scripts": {
+    "eos-pipeline": "node eos-pipeline.js"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "dotenv": "^16.3.1"
+  }
+}

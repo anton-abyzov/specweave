@@ -6,21 +6,30 @@
 
 If you're integrating SpecWeave into an **existing project**, start with:
 
-📘 **[Brownfield Integration Strategy](brownfield-integration-strategy.md)** - How to adopt SpecWeave in existing codebases
+📘 **[Brownfield Integration Strategy](brownfield/brownfield-integration-strategy.md)** - How to adopt SpecWeave in existing codebases
 
 Then review the key guides below ↓
 
+## Folder Structure
+
+```
+delivery/
+├── core/               # Core delivery docs (branching, code review, releases, roadmap)
+├── metrics/            # DORA metrics and performance tracking
+├── brownfield/         # Brownfield integration strategy
+├── guides/             # Detailed how-to documentation
+├── plans/              # Quarter/sprint planning, epic timelines
+└── release-management/ # Release tooling, automation, multi-repo coordination
+```
+
 ## What Goes Here
 
-- **Brownfield Integration** - How to adopt SpecWeave in existing projects ← **Start here!**
-- **Branching Strategy** - Git workflow, trunk-based development
-- **Code Review Standards** - PR guidelines, review process
-- **DORA Metrics** - Engineering performance tracking
-- **Delivery Plans** - **NEW!** Quarter/sprint planning, epic timeline coordination
-- **Release Management** - Release tooling, automation, multi-repo coordination
-- **Roadmap** - Feature timeline, priorities
-- **Release Process** - Version planning, release notes
-- **Guides** - Detailed how-to documentation
+- **Core** (`core/`) - Branching strategy, code review standards, release process, roadmap
+- **Metrics** (`metrics/`) - DORA metrics, performance dashboards
+- **Brownfield** (`brownfield/`) - How to adopt SpecWeave in existing projects ← **Start here!**
+- **Guides** (`guides/`) - Detailed how-to documentation
+- **Plans** (`plans/`) - Quarter/sprint planning, epic timeline coordination
+- **Release Management** (`release-management/`) - Release tooling, automation, multi-repo coordination
 
 ## Document Types
 
@@ -94,40 +103,41 @@ cp templates/docs/test-strategy-template.md docs/internal/delivery/test-strategy
 ## Index of Delivery Documents
 
 ### 🔑 Brownfield & Integration
-- **[Brownfield Integration Strategy](brownfield-integration-strategy.md)** - Adopting SpecWeave in existing projects
+- **[Brownfield Integration Strategy](brownfield/brownfield-integration-strategy.md)** - Adopting SpecWeave in existing projects
   - ↔️ Related: [Architecture ADR-0008](../architecture/adr/0008-brownfield-support.md)
 
-### 🌿 Branching & Git
-- **[Branch Strategy](branch-strategy.md)** - Trunk-based development, Git workflow
-  - ↔️ Related: [Code Review Standards](code-review-standards.md), [Roadmap](roadmap.md)
+### 🌿 Core Delivery Processes
+- **[Branch Strategy](core/branch-strategy.md)** - Trunk-based development, Git workflow
+  - ↔️ Related: [Code Review Standards](core/code-review-standards.md), [Roadmap](core/roadmap.md)
 
 ### ✅ Code Review & Quality
-- **[Code Review Standards](code-review-standards.md)** - PR guidelines, review checklist
-  - ↔️ Related: [Branch Strategy](branch-strategy.md), [DORA Metrics](dora-metrics.md)
+- **[Code Review Standards](core/code-review-standards.md)** - PR guidelines, review checklist
+  - ↔️ Related: [Branch Strategy](core/branch-strategy.md), [DORA Metrics](metrics/dora-metrics.md)
 
 ### 📊 Metrics & Performance
-- **[DORA Metrics](dora-metrics.md)** - Engineering performance tracking (Deployment Frequency, Lead Time, etc.)
-  - ↔️ Related: [Branch Strategy](branch-strategy.md), [Operations](../operations/README.md)
+- **[DORA Metrics](metrics/dora-metrics.md)** - Engineering performance tracking (Deployment Frequency, Lead Time, etc.)
+  - ↔️ Related: [Branch Strategy](core/branch-strategy.md), [Operations](../operations/README.md)
+- **[DORA Dashboard](metrics/dora-dashboard.md)** - Interactive performance dashboard
 
 ### 📅 Delivery Planning (NEW!)
 - **[Delivery Plans](plans/README.md)** - Quarter/sprint planning, epic timeline coordination
   - When epics ship, dependencies, team allocation
   - Links to ADO Delivery Plans, JIRA Roadmaps, GitHub Projects
-  - ↔️ Related: [Specs (Epics)](../specs/README.md), [Roadmap](roadmap.md)
+  - ↔️ Related: [Specs (Epics)](../specs/README.md), [Roadmap](core/roadmap.md)
 
 ### 🚀 Release Management
 - **[Release Management](release-management/README.md)** - Release tooling & automation
   - Multi-repo coordination, version synchronization
   - DORA metrics tracking, GitFlow automation
-  - ↔️ Related: [Release Process](release-process.md), [DORA Metrics](dora-metrics.md)
+  - ↔️ Related: [Release Process](core/release-process.md), [DORA Metrics](metrics/dora-metrics.md)
 
 ### 🗺️ Planning & Roadmap
-- **[Product Roadmap](roadmap.md)** - Feature planning, prioritization
-  - ↔️ Related: [Strategy PRDs](../strategy/README.md), [Release Process](release-process.md)
+- **[Product Roadmap](core/roadmap.md)** - Feature planning, prioritization
+  - ↔️ Related: [Strategy PRDs](../strategy/README.md), [Release Process](core/release-process.md)
 
 ### 🚀 Release Process
-- **[Release Process](release-process.md)** - How we ship versions
-  - ↔️ Related: [Branch Strategy](branch-strategy.md), [Roadmap](roadmap.md)
+- **[Release Process](core/release-process.md)** - How we ship versions
+  - ↔️ Related: [Branch Strategy](core/branch-strategy.md), [Roadmap](core/roadmap.md)
 
 ### 📚 Detailed Guides (guides/)
 - **[Deployment Intelligence](guides/deployment-intelligence.md)** - Smart deployment target detection

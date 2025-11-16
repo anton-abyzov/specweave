@@ -105,6 +105,39 @@ If `/plugin install specweave` fails, make sure the local marketplace is added:
 
 ---
 
+## Core Development Principles
+
+SpecWeave follows these key principles for all contributions:
+
+### 1. Source of Truth Discipline
+- `src/` is ALWAYS the source of truth for TypeScript code
+- `.claude/` files are ALWAYS generated (never edit directly)
+- Keep project root clean - use increment folders for AI-generated content
+
+### 2. Documentation = Code
+- All changes must update relevant documentation
+- ADRs required for architecture decisions
+- RFCs for feature proposals
+- Inline code comments for complex logic
+
+### 3. Testing is Non-Negotiable
+- E2E tests MANDATORY for UI features (Playwright)
+- 80%+ coverage for critical paths
+- Tests must tell the truth (no false positives)
+- Agent/skill test cases required (minimum 3 per component)
+
+### 4. Incremental Development
+- Work in small, measurable increments
+- Use SpecWeave's own workflow (`/specweave:increment`, `/specweave:do`, etc.)
+- All work traces back to specs
+
+### 5. Multi-Tool Support
+- Core framework must be tool-agnostic
+- Tool-specific features in adapters (`src/adapters/`)
+- Plain Markdown + YAML = maximum portability
+
+---
+
 ## Development Workflow
 
 ### 1. Check for Existing Issues

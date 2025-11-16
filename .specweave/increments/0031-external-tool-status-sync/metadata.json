@@ -1,15 +1,16 @@
 {
   "id": "0031-external-tool-status-sync",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-12T12:46:00Z",
   "started": "2025-11-12T13:00:00Z",
   "resumed": "2025-11-15T01:30:00Z",
-  "lastActivity": "2025-11-15T01:30:00Z",
+  "completed": "2025-11-15T07:36:40.616Z",
+  "lastActivity": "2025-11-15T10:11:00Z",
   "github": {
-    "issue": 505,
-    "url": "https://github.com/anton-abyzov/specweave/issues/505",
-    "synced": "2025-11-15T01:20:00Z"
+    "issue": 521,
+    "url": "https://github.com/anton-abyzov/specweave/issues/521",
+    "synced": "2025-11-15T10:11:00Z"
   },
   "githubProfile": "specweave-dev",
   "phaseHistory": [
@@ -19,8 +20,16 @@
       "tasks": "24/24",
       "duration": "2 days",
       "velocity": "10x faster than estimated"
+    },
+    {
+      "phase": "4",
+      "completed": "2025-11-15T02:15:00Z",
+      "tasks": "4/4",
+      "duration": "1 session",
+      "velocity": "As estimated"
     }
   ],
-  "currentPhase": "Phase 4: Immutable Descriptions + Progress Comments",
-  "resumeReason": "Adding Option 3 architecture: Immutable issue descriptions with progress comments for better audit trail and no AC sync conflicts"
+  "totalDuration": "3 days",
+  "totalTasks": "28/28",
+  "overallVelocity": "On schedule"
 }

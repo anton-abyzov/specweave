@@ -1,15 +1,31 @@
 #!/usr/bin/env tsx
 /**
- * Create GitHub Issue for Feature Spec (Living Docs)
+ * ⚠️  DEPRECATED - DO NOT USE! ⚠️
  *
- * Properly maps SpecWeave hierarchy to GitHub:
- * - FS-* (Epic/Feature) → GitHub Issue (Type: Feature)
+ * This script creates Feature-level GitHub issues, which violates Universal Hierarchy.
+ *
+ * ❌ OLD (WRONG):
+ * - FS-* (Feature) → GitHub Issue (Type: Feature)
  * - US-* (User Story) → Checkbox in issue body
- * - T-* (Task) → Not synced (temporary, in increments)
  *
- * NOTE: GitHub Milestones represent Epics in hierarchical sync.
- * This script creates standalone Feature issues for living docs tracking.
+ * ✅ NEW (CORRECT):
+ * - FS-* (Feature) → GitHub Milestone (Container)
+ * - US-* (User Story) → GitHub Issue (Trackable item)
+ * - T-* (Task) → Checkbox in User Story issue
+ *
+ * **Use Instead**:
+ * - `GitHubFeatureSync` class: plugins/specweave-github/lib/github-feature-sync.ts
+ * - Migration script: scripts/migrate-feature-issues-to-user-stories.ts
+ * - Command: `/specweave-github:sync-epic FS-XXX` (after update)
+ *
+ * **This file will be removed in v0.20.0**
  */
+
+console.error('\n⚠️  DEPRECATION WARNING ⚠️\n');
+console.error('This script creates Feature-level issues (wrong architecture!)');
+console.error('Use GitHubFeatureSync instead for User Story-based issues.\n');
+console.error('See: .specweave/increments/0034-github-ac-checkboxes-fix/reports/UNIVERSAL-HIERARCHY-FIX-COMPLETE.md\n');
+process.exit(1);
 
 import * as path from 'path';
 import * as fs from 'fs-extra';

@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 570
-    url: https://github.com/anton-abyzov/specweave/issues/570
+    issue: 599
+    url: https://github.com/anton-abyzov/specweave/issues/599
 ---
 
 # US-006: Conflict Resolution

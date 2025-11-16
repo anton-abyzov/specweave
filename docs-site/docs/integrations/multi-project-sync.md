@@ -6,6 +6,15 @@ sidebar_label: Multi-Project Sync
 
 # Multi-Project Sync Architecture
 
+:::warning Important Update
+This document describes the multi-project sync architecture. Note that **spec-level sync commands** (`sync-spec`, `sync-epic`) are deprecated. Spec syncing now happens **automatically via living docs** (triggered by `/specweave:done`).
+
+For **increments**, use:
+- `/specweave-github:sync` - Sync increment to GitHub issue
+- `/specweave-jira:sync` - Sync increment to JIRA epic
+- `/specweave-ado:sync` - Sync increment to ADO work item
+:::
+
 :::tip Key Capability
 Sync increments to unlimited external repositories (GitHub, JIRA, Azure DevOps) with intelligent rate limiting and time range filtering.
 :::

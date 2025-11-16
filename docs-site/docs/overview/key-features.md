@@ -294,12 +294,14 @@ SpecWeave's **universal mapping template** enables seamless migration between ex
 
 **Example: GitHub to JIRA Migration**
 ```bash
-# Import GitHub issues to SpecWeave
-/specweave-github:sync-spec spec-001 --direction import
+# Migration happens automatically via living docs sync
+# Complete your increment:
+/specweave:done 0001
 
-# Export to JIRA with mapping
-/specweave-jira:sync-spec spec-001 --direction export
-# Result: GitHub issues now in JIRA with full history
+# Living docs sync automatically:
+# - Syncs to GitHub (Milestone + Issues)
+# - Syncs to JIRA (Epic + Stories)
+# Result: Both tools synchronized automatically!
 ```
 
 **What gets migrated:**

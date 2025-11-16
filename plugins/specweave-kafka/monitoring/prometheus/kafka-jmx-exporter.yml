@@ -1,0 +1,256 @@
+# ==================================================
+# Prometheus JMX Exporter Configuration for Kafka
+# ==================================================
+#
+# Usage: Download JMX Prometheus agent JAR and add to Kafka startup:
+# KAFKA_OPTS="-javaagent:/opt/jmx_prometheus_javaagent.jar=7071:/opt/kafka-jmx-exporter.yml"
+
+# Lowercase metric names
+lowercaseOutputName: true
+lowercaseOutputLabelNames: true
+
+# ==================================================
+# Whitelist patterns (what to export)
+# ==================================================
+whitelistObjectNames:
+  # Broker metrics
+  - "kafka.server:type=BrokerTopicMetrics,name=*"
+  - "kafka.server:type=ReplicaManager,name=*"
+  - "kafka.server:type=ReplicaFetcherManager,name=*"
+  - "kafka.server:type=KafkaRequestHandlerPool,name=*"
+  - "kafka.server:type=DelayedOperationPurgatory,name=*"
+  - "kafka.server:type=SessionExpireListener,name=*"
+
+  # Network metrics
+  - "kafka.network:type=RequestMetrics,name=*,request=*"
+  - "kafka.network:type=SocketServer,name=*"
+  - "kafka.network:type=Processor,name=*,networkProcessor=*"
+
+  # Controller metrics
+  - "kafka.controller:type=KafkaController,name=*"
+  - "kafka.controller:type=ControllerStats,name=*"
+
+  # Log metrics
+  - "kafka.log:type=LogFlushStats,name=*"
+  - "kafka.log:type=Log,name=*,topic=*,partition=*"
+  - "kafka.log:type=LogCleaner,name=*"
+  - "kafka.log:type=LogCleanerManager,name=*"
+
+  # Partition metrics
+  - "kafka.cluster:type=Partition,name=*,topic=*,partition=*"
+
+  # Group coordinator
+  - "kafka.coordinator.group:type=GroupMetadataManager,name=*"
+
+  # JVM metrics
+  - "java.lang:type=Memory,*"
+  - "java.lang:type=GarbageCollector,name=*"
+  - "java.lang:type=Threading,*"
+  - "java.lang:type=OperatingSystem,*"
+
+# ==================================================
+# Custom metric rules
+# ==================================================
+rules:
+  # ========================================
+  # Broker Topic Metrics
+  # ========================================
+
+  - pattern: kafka.server<type=BrokerTopicMetrics, name=(.+)><>Count
+    name: kafka_server_broker_topic_metrics_$1_total
+    type: COUNTER
+    help: "Broker topic metrics: $1"
+
+  - pattern: kafka.server<type=BrokerTopicMetrics, name=(.+)><>OneMinuteRate
+    name: kafka_server_broker_topic_metrics_$1_rate
+    type: GAUGE
+    help: "Broker topic metrics rate: $1"
+
+  # ========================================
+  # Replica Manager
+  # ========================================
+
+  - pattern: kafka.server<type=ReplicaManager, name=(.+)><>Value
+    name: kafka_server_replica_manager_$1
+    type: GAUGE
+    help: "Replica manager: $1"
+
+  - pattern: kafka.server<type=ReplicaManager, name=(.+)><>Count
+    name: kafka_server_replica_manager_$1_total
+    type: COUNTER
+    help: "Replica manager counter: $1"
+
+  # ========================================
+  # Under-replicated partitions (CRITICAL)
+  # ========================================
+
+  - pattern: kafka.server<type=ReplicaManager, name=UnderReplicatedPartitions><>Value
+    name: kafka_server_replica_manager_under_replicated_partitions
+    type: GAUGE
+    help: "Number of under-replicated partitions (CRITICAL METRIC)"
+
+  # ========================================
+  # Offline partitions (CRITICAL)
+  # ========================================
+
+  - pattern: kafka.controller<type=KafkaController, name=OfflinePartitionsCount><>Value
+    name: kafka_controller_offline_partitions_count
+    type: GAUGE
+    help: "Number of offline partitions (CRITICAL METRIC)"
+
+  # ========================================
+  # Active controller count (should be 1)
+  # ========================================
+
+  - pattern: kafka.controller<type=KafkaController, name=ActiveControllerCount><>Value
+    name: kafka_controller_active_controller_count
+    type: GAUGE
+    help: "Active controller count (should be exactly 1)"
+
+  # ========================================
+  # Request metrics
+  # ========================================
+
+  - pattern: kafka.network<type=RequestMetrics, name=(.+), request=(.+)><>Count
+    name: kafka_network_request_metrics_$1_total
+    labels:
+      request: $2
+    type: COUNTER
+    help: "Request metrics: $1 for request type $2"
+
+  - pattern: kafka.network<type=RequestMetrics, name=(.+), request=(.+)><>OneMinuteRate
+    name: kafka_network_request_metrics_$1_rate
+    labels:
+      request: $2
+    type: GAUGE
+    help: "Request metrics rate: $1 for request type $2"
+
+  # ========================================
+  # Request handler pool
+  # ========================================
+
+  - pattern: kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate
+    name: kafka_server_request_handler_avg_idle_percent
+    type: GAUGE
+    help: "Request handler average idle percentage (low = CPU saturation)"
+
+  # ========================================
+  # Log flush metrics
+  # ========================================
+
+  - pattern: kafka.log<type=LogFlushStats, name=LogFlushRateAndTimeMs><>Count
+    name: kafka_log_flush_total
+    type: COUNTER
+    help: "Number of log flushes"
+
+  - pattern: kafka.log<type=LogFlushStats, name=LogFlushRateAndTimeMs><>50thPercentile
+    name: kafka_log_flush_time_ms_p50
+    type: GAUGE
+    help: "Log flush time p50 (ms)"
+
+  - pattern: kafka.log<type=LogFlushStats, name=LogFlushRateAndTimeMs><>99thPercentile
+    name: kafka_log_flush_time_ms_p99
+    type: GAUGE
+    help: "Log flush time p99 (ms)"
+
+  # ========================================
+  # Leader election rate
+  # ========================================
+
+  - pattern: kafka.controller<type=ControllerStats, name=LeaderElectionRateAndTimeMs><>Count
+    name: kafka_controller_leader_election_total
+    type: COUNTER
+    help: "Number of leader elections (high = instability)"
+
+  # ========================================
+  # Unclean leader elections (BAD!)
+  # ========================================
+
+  - pattern: kafka.controller<type=ControllerStats, name=UncleanLeaderElectionsPerSec><>Count
+    name: kafka_controller_unclean_leader_elections_total
+    type: COUNTER
+    help: "Number of unclean leader elections (SHOULD BE ZERO!)"
+
+  # ========================================
+  # ISR shrinks/expands
+  # ========================================
+
+  - pattern: kafka.server<type=ReplicaManager, name=IsrShrinksPerSec><>Count
+    name: kafka_server_replica_manager_isr_shrinks_total
+    type: COUNTER
+    help: "Number of ISR shrinks (replica falling out of sync)"
+
+  - pattern: kafka.server<type=ReplicaManager, name=IsrExpandsPerSec><>Count
+    name: kafka_server_replica_manager_isr_expands_total
+    type: COUNTER
+    help: "Number of ISR expands (replica catching up)"
+
+  # ========================================
+  # JVM Memory
+  # ========================================
+
+  - pattern: java.lang<type=Memory><HeapMemoryUsage>used
+    name: jvm_memory_heap_used_bytes
+    type: GAUGE
+    help: "JVM heap memory used"
+
+  - pattern: java.lang<type=Memory><HeapMemoryUsage>max
+    name: jvm_memory_heap_max_bytes
+    type: GAUGE
+    help: "JVM heap memory max"
+
+  # ========================================
+  # JVM GC
+  # ========================================
+
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>CollectionCount
+    name: jvm_gc_collection_count_total
+    labels:
+      gc: $1
+    type: COUNTER
+    help: "JVM garbage collection count"
+
+  - pattern: java.lang<type=GarbageCollector, name=(.+)><>CollectionTime
+    name: jvm_gc_collection_time_ms_total
+    labels:
+      gc: $1
+    type: COUNTER
+    help: "JVM garbage collection time (ms)"
+
+  # ========================================
+  # JVM Threads
+  # ========================================
+
+  - pattern: java.lang<type=Threading><>ThreadCount
+    name: jvm_threads_count
+    type: GAUGE
+    help: "JVM thread count"
+
+  - pattern: java.lang<type=Threading><>DaemonThreadCount
+    name: jvm_threads_daemon_count
+    type: GAUGE
+    help: "JVM daemon thread count"
+
+  # ========================================
+  # OS metrics
+  # ========================================
+
+  - pattern: java.lang<type=OperatingSystem><>OpenFileDescriptorCount
+    name: os_open_file_descriptors
+    type: GAUGE
+    help: "Open file descriptors"
+
+  - pattern: java.lang<type=OperatingSystem><>MaxFileDescriptorCount
+    name: os_max_file_descriptors
+    type: GAUGE
+    help: "Max file descriptors"
+
+  - pattern: java.lang<type=OperatingSystem><>ProcessCpuLoad
+    name: os_process_cpu_load
+    type: GAUGE
+    help: "Process CPU load"
+
+  - pattern: java.lang<type=OperatingSystem><>SystemCpuLoad
+    name: os_system_cpu_load
+    type: GAUGE
+    help: "System CPU load"

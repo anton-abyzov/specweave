@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 563
-    url: https://github.com/anton-abyzov/specweave/issues/563
+    issue: 581
+    url: https://github.com/anton-abyzov/specweave/issues/581
 ---
 
 # US-003: Project ID Validation

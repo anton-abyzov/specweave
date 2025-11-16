@@ -20,6 +20,7 @@ import {
   SpecContent,
   ContentSyncResult,
 } from '../../../src/core/spec-content-sync.js';
+import { ProgressCommentBuilder } from './progress-comment-builder.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -215,6 +216,11 @@ async function createGitHubIssue(
 
 /**
  * Update existing GitHub issue with spec content
+ *
+ * ARCHITECTURE: IMMUTABLE DESCRIPTIONS (Phase 4)
+ * - Issue description is NEVER edited after creation
+ * - All content updates communicated via progress comments
+ * - Metadata updates only (labels, milestone, assignees)
  */
 async function updateGitHubIssue(
   client: GitHubClientV2,
@@ -262,36 +268,47 @@ async function updateGitHubIssue(
       }
     }
 
-    // Build updated content using compact format
-    const newTitle = `[${spec.identifier.compact}] ${spec.title}`;
-    const newBody = buildExternalDescription(spec);
-
     if (dryRun) {
-      console.log('\n🔍 Dry run - would update issue:');
-      console.log(`   Title: ${newTitle}`);
-      console.log(`   Body:\n${newBody}`);
+      console.log('\n🔍 Dry run - would post progress comment');
 
       return {
         success: true,
-        action: 'updated',
+        action: 'updated-via-comment',
         externalId: issueNumber.toString(),
         externalUrl: issue.html_url,
       };
     }
 
-    // Update issue (ONLY title and description, NOT status!)
-    await client.updateIssueBody(issueNumber, newBody);
+    // IMMUTABLE DESCRIPTION PATTERN:
+    // ❌ OLD: Update issue body (overwrites description)
+    // ✅ NEW: Post progress comment (preserves description)
 
-    // Note: We do NOT update status/state - that's managed in GitHub
-    // We also do NOT close/reopen issues - that's done by humans/automation in GitHub
+    // Update metadata only (labels via GitHub CLI - no direct API method)
+    const labels = [
+      'specweave',
+      'spec',
+      spec.project,
+      spec.metadata.priority || 'P2'
+    ].filter(Boolean);
+
+    await client.addLabels(issueNumber, labels);
+
+    // Post progress comment (NOT edit body)
+    await postProgressComment(
+      client,
+      specPath,
+      issueNumber,
+      spec,
+      verbose
+    );
 
     if (verbose) {
-      console.log(`✅ Updated issue #${issueNumber}`);
+      console.log(`✅ Posted progress comment to issue #${issueNumber}`);
     }
 
     return {
       success: true,
-      action: 'updated',
+      action: 'updated-via-comment',
       externalId: issueNumber.toString(),
       externalUrl: issue.html_url,
     };
@@ -301,6 +318,57 @@ async function updateGitHubIssue(
       action: 'error',
       error: `Failed to update GitHub issue: ${error.message}`,
     };
+  }
+}
+
+/**
+ * Post progress comment to GitHub issue (IMMUTABLE DESCRIPTION PATTERN)
+ *
+ * This replaces the old pattern of editing issue body.
+ * Benefits:
+ * - Preserves original issue description
+ * - Creates audit trail of changes
+ * - Stakeholders get notifications on updates
+ */
+async function postProgressComment(
+  client: GitHubClientV2,
+  specPath: string,
+  issueNumber: number,
+  spec: SpecContent,
+  verbose: boolean = false
+): Promise<void> {
+  try {
+    // Extract increment ID from spec path or identifier
+    // Examples:
+    // - .specweave/increments/0031-external-tool-sync/spec.md → 0031
+    // - .specweave/docs/internal/specs/default/FS-031/us-001-*.md → FS-031
+
+    let incrementId = 'unknown';
+
+    // Try to extract from spec path
+    const incrementMatch = specPath.match(/increments\/([^/]+)/);
+    if (incrementMatch) {
+      incrementId = incrementMatch[1];
+    } else {
+      // Fallback: use spec identifier
+      incrementId = spec.identifier.compact;
+    }
+
+    // Build progress comment using ProgressCommentBuilder
+    const builder = new ProgressCommentBuilder(specPath);
+    const comment = await builder.buildProgressComment(incrementId);
+
+    // Post comment (using addComment method)
+    await client.addComment(issueNumber, comment);
+
+    if (verbose) {
+      console.log(`   📊 Progress comment posted (${comment.length} chars)`);
+    }
+  } catch (error: any) {
+    // Non-blocking: Log error but don't fail the sync
+    if (verbose) {
+      console.error(`   ⚠️  Failed to post progress comment: ${error.message}`);
+    }
   }
 }
 

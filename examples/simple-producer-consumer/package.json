@@ -1,0 +1,18 @@
+{
+  "name": "kafka-simple-producer-consumer",
+  "version": "1.0.0",
+  "description": "Simple Kafka producer and consumer example",
+  "main": "producer.js",
+  "scripts": {
+    "producer": "node producer.js",
+    "consumer": "node consumer.js",
+    "start": "npm run consumer"
+  },
+  "keywords": ["kafka", "producer", "consumer", "example"],
+  "author": "SpecWeave",
+  "license": "MIT",
+  "dependencies": {
+    "kafkajs": "^2.2.4",
+    "dotenv": "^16.3.1"
+  }
+}

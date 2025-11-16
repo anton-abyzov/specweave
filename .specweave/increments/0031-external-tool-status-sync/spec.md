@@ -73,9 +73,9 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 - [x] **AC-US1-03**: External issues show acceptance criteria (P1, testable)
 - [x] **AC-US1-04**: External issues show linked tasks with GitHub issue numbers (P1, testable)
 - [x] **AC-US1-05**: User stories collapsed by default in GitHub UI (P2, testable)
-- [ ] **AC-US1-06**: Issue descriptions immutable after creation; updates via progress comments (P1, testable)
-- [ ] **AC-US1-07**: Progress comments show AC completion status with checkboxes (P1, testable)
-- [ ] **AC-US1-08**: Progress comments create audit trail of changes over time (P2, testable)
+- [x] **AC-US1-06**: Issue descriptions immutable after creation; updates via progress comments (P1, testable)
+- [x] **AC-US1-07**: Progress comments show AC completion status with checkboxes (P1, testable)
+- [x] **AC-US1-08**: Progress comments create audit trail of changes over time (P2, testable)
 - [ ] **AC-US1-09**: Architecture diagrams embedded (if available) (P3, testable)
 
 **Business Rationale**: External stakeholders (PM, clients, executives) need complete context without developer access to repository.
@@ -364,6 +364,22 @@ Your choice [1/2/3]: _
 
 ---
 
+## Completion Note (2025-11-15)
+
+**Status**: ✅ Core P1/P2 functionality complete
+
+**Implemented ACs**: AC-US1-06, AC-US1-07, AC-US1-08 verified in code
+- `plugins/specweave-github/lib/progress-comment-builder.ts:78-145` (immutable descriptions)
+- `plugins/specweave-github/lib/progress-comment-builder.ts:127-138` (AC checkboxes in comments)
+- E2E tests confirm audit trail functionality
+
+**Deferred ACs**: AC-US1-09 (P3 - architecture diagrams)
+
+**Business Value**: Bidirectional sync operational, progress tracking functional.
+**Tech Debt**: P3 features deferred to future increments if needed.
+
+---
+
 **Created**: 2025-11-12
-**Last Updated**: 2025-11-12
+**Last Updated**: 2025-11-15
 **Approved By**: TBD

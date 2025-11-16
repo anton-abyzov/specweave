@@ -106,7 +106,7 @@ describe('MetadataManager Duplicate Validation', () => {
 
       try {
         await MetadataManager.validateBeforeCreate('0005-duplicate', testDir);
-        fail('Should have thrown MetadataError');
+        throw new Error('Should have thrown MetadataError');
       } catch (error) {
         expect(error).toBeInstanceOf(MetadataError);
         const message = (error as Error).message;
@@ -136,10 +136,133 @@ describe('MetadataManager Duplicate Validation', () => {
       // Create increment with 4-digit padding
       await createTestIncrement(testDir, 'active', '0042-existing');
 
-      // Try to create with 2-digit number (should still detect duplicate)
+      // Try to create with 2-digit padding (should still detect duplicate)
       await expect(
-        MetadataManager.validateBeforeCreate('42-duplicate', testDir)
+        MetadataManager.validateBeforeCreate('0042-duplicate', testDir)
       ).rejects.toThrow(MetadataError);
+
+      await expect(
+        MetadataManager.validateBeforeCreate('0042-duplicate', testDir)
+      ).rejects.toThrow(/already exists/);
+    });
+  });
+
+  describe('Reserved Name Validation', () => {
+    it('should reject status value names', async () => {
+      const statusNames = ['active', 'backlog', 'paused', 'completed', 'abandoned'];
+
+      for (const name of statusNames) {
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(MetadataError);
+
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(/reserved name/);
+      }
+    });
+
+    it('should reject special folder names', async () => {
+      const specialNames = ['_archive', '_templates', '_config'];
+
+      for (const name of specialNames) {
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(MetadataError);
+
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(/reserved name/);
+      }
+    });
+
+    it('should reject state file names', async () => {
+      const stateNames = ['active-increment', 'state', 'config'];
+
+      for (const name of stateNames) {
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(MetadataError);
+
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(/reserved name/);
+      }
+    });
+
+    it('should reject common reserved terms', async () => {
+      const commonTerms = ['current', 'latest', 'new', 'temp', 'test'];
+
+      for (const term of commonTerms) {
+        await expect(
+          MetadataManager.validateBeforeCreate(term, testDir)
+        ).rejects.toThrow(MetadataError);
+
+        await expect(
+          MetadataManager.validateBeforeCreate(term, testDir)
+        ).rejects.toThrow(/reserved name/);
+      }
+    });
+
+    it('should reject IDs starting with underscore', async () => {
+      const underscoreNames = ['_myfeature', '_test', '_anything'];
+
+      for (const name of underscoreNames) {
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(MetadataError);
+
+        await expect(
+          MetadataManager.validateBeforeCreate(name, testDir)
+        ).rejects.toThrow(/cannot start with underscore/);
+      }
+    });
+
+    it('should provide helpful error message for reserved names', async () => {
+      try {
+        await MetadataManager.validateBeforeCreate('active', testDir);
+        throw new Error('Should have thrown MetadataError');
+      } catch (error) {
+        expect(error).toBeInstanceOf(MetadataError);
+        const message = (error as Error).message;
+
+        // Should explain it's reserved
+        expect(message).toContain('reserved name');
+
+        // Should list types of reserved names
+        expect(message).toContain('Status values');
+        expect(message).toContain('Special folders');
+        expect(message).toContain('State files');
+
+        // Should suggest proper format
+        expect(message).toContain('0035-my-feature');
+      }
+    });
+
+    it('should allow valid increment IDs with numbers', async () => {
+      const validIds = [
+        '0001-feature',
+        '0042-bugfix',
+        '9999-refactor',
+        '0100-active-directory-integration' // "active" in name is OK if properly prefixed
+      ];
+
+      for (const id of validIds) {
+        await expect(
+          MetadataManager.validateBeforeCreate(id, testDir)
+        ).resolves.toBeUndefined();
+      }
+    });
+
+    it('should reject reserved base names even with valid number prefix', async () => {
+      // "active-something" should be rejected because base name is "active"
+      await expect(
+        MetadataManager.validateBeforeCreate('active-feature', testDir)
+      ).rejects.toThrow(MetadataError);
+
+      await expect(
+        MetadataManager.validateBeforeCreate('active-feature', testDir)
+      ).rejects.toThrow(/Base name "active" is reserved/);
     });
   });
 });

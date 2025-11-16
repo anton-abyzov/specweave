@@ -1,20 +1,14 @@
 ---
 id: FS-035
-title: Kafka Event Streaming Integration Plugin
+title: "Kafka Event Streaming Integration Plugin"
 type: feature
 status: planned
 priority: P1
 created: 2025-11-15
-lastUpdated: 2025-11-15T19:55:42.571Z
-projects:
-  - specweave
+lastUpdated: 2025-11-16T03:08:35.591Z
+projects: ["specweave"]
 epic: EPIC-2025-Q4-integrations
 sourceIncrement: 0035-kafka-event-streaming-plugin
-external_tools:
-  github:
-    type: milestone
-    id: 9
-    url: https://github.com/anton-abyzov/specweave/milestone/9
 ---
 
 # Kafka Event Streaming Integration Plugin

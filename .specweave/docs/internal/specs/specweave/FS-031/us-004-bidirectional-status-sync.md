@@ -7,8 +7,8 @@ created: 2025-11-15
 completed: 2025-11-15
 external:
   github:
-    issue: 568
-    url: https://github.com/anton-abyzov/specweave/issues/568
+    issue: 597
+    url: https://github.com/anton-abyzov/specweave/issues/597
 ---
 
 # US-004: Bidirectional Status Sync
