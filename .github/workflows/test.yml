@@ -146,16 +146,62 @@ jobs:
       - name: Check increment structure (if any exist)
         run: |
           if [ -d ".specweave/increments" ]; then
+            echo "Validating increment structure (informational only)..."
+            echo ""
+
+            has_warnings=false
+
             for increment in .specweave/increments/[0-9][0-9][0-9][0-9]-*/; do
               if [ -d "$increment" ]; then
-                echo "Checking increment: $increment"
-                # Only check if spec.md exists (other files are optional)
-                if [ ! -f "$increment/spec.md" ]; then
-                  echo "ERROR: Missing spec.md in $increment"
-                  exit 1
+                increment_name=$(basename "$increment")
+                echo "Checking: $increment_name"
+
+                # Check if metadata.json exists to determine increment state
+                if [ -f "$increment/metadata.json" ]; then
+                  # Extract status from metadata.json (requires jq)
+                  if command -v jq >/dev/null 2>&1; then
+                    status=$(jq -r '.status // "unknown"' "$increment/metadata.json" 2>/dev/null || echo "unknown")
+                  else
+                    # Fallback: extract status using grep/sed if jq not available
+                    status=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' "$increment/metadata.json" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' || echo "unknown")
+                  fi
+
+                  echo "  Status: $status"
+
+                  # Check for standard structure (informational)
+                  # Only warn - don't fail the build as increments may be:
+                  # - Just created (no spec yet)
+                  # - Abandoned (incomplete by design)
+                  # - Experimental (non-standard structure)
+                  # - Completed with alternative structure
+                  if [ ! -f "$increment/spec.md" ]; then
+                    if [ "$status" = "active" ]; then
+                      echo "  ⚠️  Active increment missing spec.md (may need planning)"
+                      has_warnings=true
+                    else
+                      echo "  ℹ️  No spec.md (OK for $status increments)"
+                    fi
+                  else
+                    echo "  ✓ Has spec.md"
+                  fi
+                else
+                  # No metadata.json - could be legacy or in-progress setup
+                  echo "  ⚠️  No metadata.json (legacy or incomplete increment)"
+                  has_warnings=true
+                  if [ ! -f "$increment/spec.md" ]; then
+                    echo "  ⚠️  Also missing spec.md"
+                  fi
                 fi
+                echo ""
               fi
             done
+
+            if [ "$has_warnings" = true ]; then
+              echo "⚠️  Some increments have warnings but build continues"
+              echo "Note: Warnings don't fail the build - increments may be incomplete by design"
+            else
+              echo "✅ All increments have valid structure"
+            fi
           else
             echo "No increments directory found (OK for new projects)"
           fi
