@@ -1,0 +1,137 @@
+# IAM Role and Policies for Lambda Function
+# Follows least privilege principle
+
+# Lambda Execution Role
+resource "aws_iam_role" "lambda_exec" {
+  name = "{{functionName}}-lambda-exec-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "{{functionName}}-lambda-exec-role"
+    Environment = "{{environment}}"
+    ManagedBy   = "Terraform"
+  }
+}
+
+# CloudWatch Logs Policy
+resource "aws_iam_role_policy" "lambda_logs" {
+  name = "{{functionName}}-logs-policy"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = [
+          "${aws_cloudwatch_log_group.lambda_logs.arn}:*"
+        ]
+      }
+    ]
+  })
+}
+
+# DynamoDB Access Policy (Least Privilege)
+resource "aws_iam_role_policy" "lambda_dynamodb" {
+  name = "{{functionName}}-dynamodb-policy"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = [
+          aws_dynamodb_table.{{snakeCase databaseName}}.arn,
+          "${aws_dynamodb_table.{{snakeCase databaseName}}.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+{{#if enableVpc}}
+# VPC Execution Policy (if VPC enabled)
+resource "aws_iam_role_policy_attachment" "lambda_vpc_execution" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+{{/if}}
+
+{{#if enableXray}}
+# X-Ray Tracing Policy (if enabled)
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}
+{{/if}}
+
+{{#if enableSecretsManager}}
+# Secrets Manager Access (if enabled)
+resource "aws_iam_role_policy" "lambda_secrets" {
+  name = "{{functionName}}-secrets-policy"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = var.secrets_manager_arns
+      }
+    ]
+  })
+}
+{{/if}}
+
+{{#if enableKms}}
+# KMS Decryption Policy (if encryption enabled)
+resource "aws_iam_role_policy" "lambda_kms" {
+  name = "{{functionName}}-kms-policy"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ]
+        Resource = [
+          var.kms_key_arn
+        ]
+      }
+    ]
+  })
+}
+{{/if}}
