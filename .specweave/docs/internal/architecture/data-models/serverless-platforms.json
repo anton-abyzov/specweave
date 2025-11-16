@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Serverless Platform Data Model",
+  "description": "Unified schema for all serverless platform metadata (pricing, features, ecosystem)",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "provider",
+    "category",
+    "pricing",
+    "features",
+    "ecosystem",
+    "vendorLockIn",
+    "suitability",
+    "lastVerified"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z-]+$",
+      "description": "Unique identifier (e.g., 'aws-lambda', 'firebase')",
+      "examples": ["aws-lambda", "azure-functions", "gcp-functions", "firebase", "supabase"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name",
+      "examples": ["AWS Lambda", "Firebase", "Supabase"]
+    },
+    "provider": {
+      "type": "string",
+      "description": "Cloud provider",
+      "examples": ["Amazon Web Services", "Google", "Supabase Inc."]
+    },
+    "category": {
+      "type": "string",
+      "enum": ["compute", "backend-as-a-service"],
+      "description": "Platform category (compute = FaaS only, backend-as-a-service = Full stack)"
+    },
+    "pricing": {
+      "type": "object",
+      "description": "Pricing structure",
+      "required": ["freeTier", "payAsYouGo"],
+      "properties": {
+        "freeTier": {
+          "type": "object",
+          "description": "Free tier limits",
+          "required": ["compute", "requests", "storage", "dataTransfer", "duration"],
+          "properties": {
+            "compute": {
+              "type": "string",
+              "description": "Free compute allocation",
+              "examples": ["400,000 GB-seconds per month", "125,000 invocations per month"]
+            },
+            "requests": {
+              "type": "string",
+              "description": "Free request allocation",
+              "examples": ["1,000,000 requests per month", "125,000 requests per month"]
+            },
+            "storage": {
+              "type": "string",
+              "description": "Free storage allocation",
+              "examples": ["1 GB", "500 MB", "Not included (use S3 free tier)"]
+            },
+            "dataTransfer": {
+              "type": "string",
+              "description": "Free data transfer allocation",
+              "examples": ["10 GB per month", "Not included"]
+            },
+            "duration": {
+              "type": "string",
+              "description": "Free tier duration",
+              "enum": ["Perpetual (no time limit)", "12 months", "Trial (30 days)"],
+              "examples": ["Perpetual (no time limit)", "12 months"]
+            }
+          }
+        },
+        "payAsYouGo": {
+          "type": "object",
+          "description": "Pay-as-you-go pricing",
+          "required": ["computePerGBSecond", "requestsPer1M"],
+          "properties": {
+            "computePerGBSecond": {
+              "type": "number",
+              "description": "Cost per GB-second of compute",
+              "examples": [0.0000166667, 0.000024]
+            },
+            "requestsPer1M": {
+              "type": "number",
+              "description": "Cost per 1 million requests",
+              "examples": [0.20, 0.40]
+            },
+            "dataTransferPerGB": {
+              "type": "number",
+              "description": "Cost per GB of data transfer (egress)",
+              "examples": [0.09, 0.12]
+            },
+            "storagePerGB": {
+              "type": "number",
+              "description": "Cost per GB-month of storage",
+              "examples": [0.25, 0.18]
+            }
+          }
+        },
+        "startupCredits": {
+          "type": "array",
+          "description": "Startup credit programs",
+          "items": {
+            "type": "object",
+            "required": ["program", "amount", "duration", "eligibility"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Credit program name",
+                "examples": ["AWS Activate", "Microsoft for Startups", "Google for Startups"]
+              },
+              "amount": {
+                "type": "string",
+                "description": "Credit amount (range if variable)",
+                "examples": ["$1,000 - $100,000", "$150,000", "$200,000"]
+              },
+              "duration": {
+                "type": "string",
+                "description": "Credit validity period",
+                "examples": ["1-2 years", "2 years", "1 year"]
+              },
+              "eligibility": {
+                "type": "string",
+                "description": "Eligibility requirements",
+                "examples": ["Startups (requires VC backing or accelerator)", "Early-stage startups", "B2B SaaS startups"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "description": "Technical features",
+      "required": ["runtimes", "maxDuration", "maxMemory", "coldStartTypical", "concurrency"],
+      "properties": {
+        "runtimes": {
+          "type": "array",
+          "description": "Supported runtimes",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["Node.js 20", "Python 3.12", "Java 21", "Go 1.x"]]
+        },
+        "maxDuration": {
+          "type": "string",
+          "description": "Maximum execution duration",
+          "examples": ["15 minutes", "10 minutes", "60 seconds"]
+        },
+        "maxMemory": {
+          "type": "string",
+          "description": "Maximum memory allocation",
+          "examples": ["10,240 MB", "4,096 MB", "8,192 MB"]
+        },
+        "coldStartTypical": {
+          "type": "string",
+          "description": "Typical cold start latency",
+          "examples": ["100-500ms (depends on runtime, memory)", "200-800ms", "50-200ms"]
+        },
+        "concurrency": {
+          "type": "string",
+          "description": "Concurrent execution limits",
+          "examples": ["1,000 concurrent executions (default, can request increase)", "Unlimited (auto-scales)"]
+        },
+        "vpc": {
+          "type": "boolean",
+          "description": "VPC support (private network access)"
+        },
+        "customDomains": {
+          "type": "boolean",
+          "description": "Custom domain support"
+        },
+        "websockets": {
+          "type": "boolean",
+          "description": "WebSocket support"
+        },
+        "layers": {
+          "type": "boolean",
+          "description": "Support for shared code layers (e.g., AWS Lambda Layers)"
+        }
+      }
+    },
+    "ecosystem": {
+      "type": "object",
+      "description": "Ecosystem and community",
+      "required": ["integrations", "sdks", "communitySize", "documentation"],
+      "properties": {
+        "integrations": {
+          "type": "array",
+          "description": "Native integrations with other services",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["S3", "DynamoDB", "RDS", "EventBridge", "SQS", "SNS"]]
+        },
+        "sdks": {
+          "type": "array",
+          "description": "Available SDKs and frameworks",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["AWS SDK (all languages)", "Serverless Framework", "SAM", "CDK"]]
+        },
+        "communitySize": {
+          "type": "string",
+          "enum": ["small", "medium", "large"],
+          "description": "Community size (forums, GitHub activity, Stack Overflow)"
+        },
+        "documentation": {
+          "type": "string",
+          "enum": ["poor", "good", "excellent"],
+          "description": "Documentation quality"
+        },
+        "marketShare": {
+          "type": "string",
+          "description": "Market share estimate",
+          "examples": ["~60% (largest)", "~15%", "~10%"]
+        }
+      }
+    },
+    "vendorLockIn": {
+      "type": "object",
+      "description": "Vendor lock-in risk assessment",
+      "required": ["risk", "portability", "migrationComplexity"],
+      "properties": {
+        "risk": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Overall lock-in risk"
+        },
+        "portability": {
+          "type": "string",
+          "description": "Code portability assessment",
+          "examples": [
+            "Function code portable (Node.js/Python), integrations not portable (DynamoDB, EventBridge)",
+            "Firestore queries not portable, but Firebase SDK can be abstracted"
+          ]
+        },
+        "migrationComplexity": {
+          "type": "string",
+          "description": "Migration difficulty",
+          "examples": ["Medium (function code easy, infrastructure requires rewrite)", "High (tight Firebase coupling)"]
+        },
+        "multiCloudSupport": {
+          "type": "boolean",
+          "description": "Can be deployed across multiple clouds (e.g., via Terraform)"
+        }
+      }
+    },
+    "suitability": {
+      "type": "object",
+      "description": "Suitability for different project contexts",
+      "required": ["petProjects", "startups", "enterprise"],
+      "properties": {
+        "petProjects": {
+          "type": "string",
+          "enum": ["poor", "fair", "good", "excellent"],
+          "description": "Suitability for pet projects (learning, side projects)"
+        },
+        "startups": {
+          "type": "string",
+          "enum": ["poor", "fair", "good", "excellent"],
+          "description": "Suitability for startups (MVPs, rapid scaling)"
+        },
+        "enterprise": {
+          "type": "string",
+          "enum": ["poor", "fair", "good", "excellent"],
+          "description": "Suitability for enterprise (compliance, support, SLAs)"
+        }
+      }
+    },
+    "bestFor": {
+      "type": "array",
+      "description": "Use cases where this platform excels",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["Event-driven architectures", "API backends", "Microservices", "Rapid prototyping"],
+        ["Mobile app backends", "Real-time apps", "Quick MVPs"]
+      ]
+    },
+    "notRecommendedFor": {
+      "type": "array",
+      "description": "Use cases where this platform is not suitable",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        ["Long-running processes (>15 min)", "WebSockets (stateful connections)", "High memory (>10GB)"],
+        ["Legacy monoliths", "Complex state management"]
+      ]
+    },
+    "learningCurve": {
+      "type": "string",
+      "enum": ["beginner-friendly", "moderate", "steep"],
+      "description": "Learning curve for developers new to the platform"
+    },
+    "lastVerified": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when platform data was last verified (YYYY-MM-DD)",
+      "examples": ["2025-11-16"]
+    },
+    "references": {
+      "type": "object",
+      "description": "External references",
+      "properties": {
+        "pricing": {
+          "type": "string",
+          "format": "uri",
+          "description": "Official pricing page URL"
+        },
+        "documentation": {
+          "type": "string",
+          "format": "uri",
+          "description": "Official documentation URL"
+        },
+        "freeTier": {
+          "type": "string",
+          "format": "uri",
+          "description": "Free tier details URL"
+        },
+        "startupCredits": {
+          "type": "string",
+          "format": "uri",
+          "description": "Startup credit program URL"
+        }
+      }
+    }
+  }
+}

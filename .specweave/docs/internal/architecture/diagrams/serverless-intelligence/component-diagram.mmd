@@ -1,0 +1,144 @@
+%% C4 Component Diagram - Serverless Intelligence
+%% Level 3: Components (Detailed Architecture)
+
+graph TB
+    %% External User
+    Developer["Developer"]
+
+    %% ======================================
+    %% ARCHITECT AGENT FLOW
+    %% ======================================
+    subgraph ArchitectFlow["Architect Agent Flow"]
+        ArchitectAgent["Architect Agent<br/>[AGENT.md]"]
+
+        subgraph RecommenderSkill["Serverless Recommender Skill"]
+            KeywordMatcher["Keyword Matcher<br/>[Component]<br/>Detects serverless keywords"]
+            ContextDetector["Context Detector<br/>[Component]<br/>Pet/Startup/Enterprise<br/>classification"]
+            PlatformRanker["Platform Ranker<br/>[Component]<br/>Scores platforms by<br/>suitability"]
+            RecommendationFormatter["Recommendation Formatter<br/>[Component]<br/>Generates markdown output"]
+        end
+
+        subgraph CostEstimatorSkill["Cost Estimator Skill"]
+            UsageAnalyzer["Usage Analyzer<br/>[Component]<br/>Extracts traffic patterns"]
+            PricingCalculator["Pricing Calculator<br/>[Component]<br/>Compute, requests,<br/>data transfer costs"]
+            FreeTierChecker["Free Tier Checker<br/>[Component]<br/>Deducts free tier"]
+            RecommendationEngine["Recommendation Engine<br/>[Component]<br/>Cost optimization tips"]
+        end
+
+        ADRWriter["ADR Writer<br/>[Component]<br/>Documents serverless<br/>decisions"]
+    end
+
+    %% ======================================
+    %% INFRASTRUCTURE AGENT FLOW
+    %% ======================================
+    subgraph InfraFlow["Infrastructure Agent Flow"]
+        InfraAgent["Infrastructure Agent<br/>[AGENT.md]"]
+
+        subgraph IaCGeneratorSkill["IaC Generator Skill"]
+            TemplateLoader["Template Loader<br/>[Component]<br/>Loads Handlebars templates"]
+            VariableResolver["Variable Resolver<br/>[Component]<br/>Merges defaults + custom vars"]
+            HandlebarsCompiler["Handlebars Compiler<br/>[Component]<br/>Renders Terraform HCL"]
+            TfvarsGenerator["Tfvars Generator<br/>[Component]<br/>Creates env configs<br/>(dev/staging/prod)"]
+            ReadmeGenerator["README Generator<br/>[Component]<br/>Deployment instructions"]
+        end
+
+        FileWriter["File Writer<br/>[Component]<br/>Writes to infrastructure/"]
+    end
+
+    %% ======================================
+    %% DATA LAYER
+    %% ======================================
+    subgraph DataLayer["Data Layer"]
+        KnowledgeBase["Platform Knowledge Base<br/>[JSON Files]"]
+        TemplateLibrary["Template Library<br/>[Handlebars Files]"]
+
+        subgraph KBStructure["Knowledge Base Structure"]
+            AWSData["aws-lambda.json<br/>Pricing, features, ecosystem"]
+            AzureData["azure-functions.json<br/>Pricing, features, ecosystem"]
+            GCPData["gcp-functions.json<br/>Pricing, features, ecosystem"]
+            FirebaseData["firebase.json<br/>Pricing, features, ecosystem"]
+            SupabaseData["supabase.json<br/>Pricing, features, ecosystem"]
+        end
+
+        subgraph TemplateStructure["Template Library Structure"]
+            AWSTemplates["aws-lambda/<br/>main.tf.hbs, variables.tf.hbs,<br/>outputs.tf.hbs, iam.tf.hbs"]
+            AzureTemplates["azure-functions/<br/>Terraform templates"]
+            GCPTemplates["gcp-functions/<br/>Terraform templates"]
+            FirebaseTemplates["firebase/<br/>Terraform templates"]
+            SupabaseTemplates["supabase/<br/>Terraform templates"]
+        end
+    end
+
+    %% ======================================
+    %% FLOW: User asks about serverless
+    %% ======================================
+    Developer -->|"Question: 'Should I use<br/>serverless for pet project?'"| ArchitectAgent
+
+    ArchitectAgent -->|"Delegates to skill"| KeywordMatcher
+    KeywordMatcher -->|"Detects: 'serverless',<br/>'pet project'"| ContextDetector
+
+    ContextDetector -->|"Classifies as<br/>pet-project"| PlatformRanker
+    ContextDetector -.->|"Reads signals"| KnowledgeBase
+
+    PlatformRanker -->|"Ranks platforms"| KnowledgeBase
+    PlatformRanker -->|"Top choice: Firebase"| RecommendationFormatter
+
+    RecommendationFormatter -->|"Formats recommendation"| ArchitectAgent
+    ArchitectAgent -->|"Sends to cost estimator"| UsageAnalyzer
+
+    UsageAnalyzer -->|"Assumes low traffic<br/>(pet project)"| PricingCalculator
+    PricingCalculator -->|"Reads pricing"| KnowledgeBase
+    PricingCalculator -->|"Gross cost: $2.50"| FreeTierChecker
+
+    FreeTierChecker -->|"Reads free tier"| KnowledgeBase
+    FreeTierChecker -->|"Deducts $2.50"| RecommendationEngine
+    RecommendationEngine -->|"Net cost: $0<br/>(within free tier)"| ArchitectAgent
+
+    ArchitectAgent -->|"Creates ADR-001:<br/>Firebase for Pet Project"| ADRWriter
+    ADRWriter -->|"Writes ADR file"| Developer
+
+    %% ======================================
+    %% FLOW: User requests IaC generation
+    %% ======================================
+    Developer -->|"Request: 'Generate<br/>Terraform for Firebase'"| InfraAgent
+
+    InfraAgent -->|"Delegates to skill"| TemplateLoader
+    TemplateLoader -->|"Loads templates"| TemplateLibrary
+
+    TemplateLoader -->|"Passes to resolver"| VariableResolver
+    VariableResolver -->|"Reads defaults<br/>(pet-project config)"| KnowledgeBase
+    VariableResolver -->|"Merges variables"| HandlebarsCompiler
+
+    HandlebarsCompiler -->|"Renders main.tf,<br/>variables.tf, outputs.tf"| TfvarsGenerator
+    TfvarsGenerator -->|"Generates dev.tfvars,<br/>staging.tfvars, prod.tfvars"| ReadmeGenerator
+    ReadmeGenerator -->|"Creates deployment guide"| FileWriter
+
+    FileWriter -->|"Writes files to<br/>infrastructure/"| Developer
+
+    %% ======================================
+    %% DATA LAYER CONNECTIONS
+    %% ======================================
+    KnowledgeBase -.->|"Contains"| AWSData
+    KnowledgeBase -.->|"Contains"| AzureData
+    KnowledgeBase -.->|"Contains"| GCPData
+    KnowledgeBase -.->|"Contains"| FirebaseData
+    KnowledgeBase -.->|"Contains"| SupabaseData
+
+    TemplateLibrary -.->|"Contains"| AWSTemplates
+    TemplateLibrary -.->|"Contains"| AzureTemplates
+    TemplateLibrary -.->|"Contains"| GCPTemplates
+    TemplateLibrary -.->|"Contains"| FirebaseTemplates
+    TemplateLibrary -.->|"Contains"| SupabaseTemplates
+
+    %% Styling
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef agent fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef component fill:#438dd5,stroke:#2e6295,color:#fff
+    classDef data fill:#85bbf0,stroke:#5d82a8,color:#000
+    classDef file fill:#c4d7ed,stroke:#8a9bb5,color:#000
+
+    class Developer person
+    class ArchitectAgent,InfraAgent agent
+    class KeywordMatcher,ContextDetector,PlatformRanker,RecommendationFormatter,UsageAnalyzer,PricingCalculator,FreeTierChecker,RecommendationEngine,ADRWriter,TemplateLoader,VariableResolver,HandlebarsCompiler,TfvarsGenerator,ReadmeGenerator,FileWriter component
+    class KnowledgeBase,TemplateLibrary data
+    class AWSData,AzureData,GCPData,FirebaseData,SupabaseData,AWSTemplates,AzureTemplates,GCPTemplates,FirebaseTemplates,SupabaseTemplates file

@@ -1,0 +1,50 @@
+%% C4 Context Diagram - Serverless Intelligence System
+%% Level 1: System Context
+
+graph TB
+    %% External Users
+    Developer["Developer<br/>(Pet Project, Startup, Enterprise)"]
+
+    %% SpecWeave System
+    SpecWeave["SpecWeave<br/>Serverless Intelligence<br/>[CLI + Claude Code Plugin]"]
+
+    %% External Cloud Platforms
+    AWS["AWS Lambda<br/>[Cloud Platform]<br/>Serverless compute, API Gateway, DynamoDB"]
+    Azure["Azure Functions<br/>[Cloud Platform]<br/>Serverless compute, Cosmos DB"]
+    GCP["GCP Cloud Functions<br/>[Cloud Platform]<br/>Serverless compute, Firestore"]
+    Firebase["Firebase<br/>[Cloud Platform]<br/>Hosting, Functions, Firestore"]
+    Supabase["Supabase<br/>[Cloud Platform]<br/>Database, Auth, Storage"]
+
+    %% External Documentation Sources
+    PricingDocs["Cloud Provider Docs<br/>[Documentation]<br/>Pricing, features, free tiers"]
+
+    %% Terraform Registry
+    TerraformRegistry["Terraform Registry<br/>[Package Registry]<br/>AWS, Azure, GCP providers"]
+
+    %% Relationships
+    Developer -->|"Asks serverless questions<br/>(recommendations, IaC)"| SpecWeave
+    SpecWeave -->|"Provides context-aware<br/>recommendations, cost estimates,<br/>IaC templates"| Developer
+
+    SpecWeave -.->|"References pricing<br/>and features"| PricingDocs
+    SpecWeave -->|"Generates Terraform<br/>configurations for"| AWS
+    SpecWeave -->|"Generates Terraform<br/>configurations for"| Azure
+    SpecWeave -->|"Generates Terraform<br/>configurations for"| GCP
+    SpecWeave -->|"Generates Terraform<br/>configurations for"| Firebase
+    SpecWeave -->|"Generates Terraform<br/>configurations for"| Supabase
+
+    SpecWeave -.->|"Uses provider schemas"| TerraformRegistry
+
+    Developer -->|"Deploys infrastructure to"| AWS
+    Developer -->|"Deploys infrastructure to"| Azure
+    Developer -->|"Deploys infrastructure to"| GCP
+    Developer -->|"Deploys infrastructure to"| Firebase
+    Developer -->|"Deploys infrastructure to"| Supabase
+
+    %% Styling
+    classDef person fill:#08427b,stroke:#052e56,color:#fff
+    classDef system fill:#1168bd,stroke:#0b4884,color:#fff
+    classDef external fill:#999,stroke:#666,color:#fff
+
+    class Developer person
+    class SpecWeave system
+    class AWS,Azure,GCP,Firebase,Supabase,PricingDocs,TerraformRegistry external

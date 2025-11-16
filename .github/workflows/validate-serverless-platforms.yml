@@ -1,0 +1,168 @@
+name: Validate Serverless Platform Data
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/specweave/knowledge-base/serverless/**'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'plugins/specweave/knowledge-base/serverless/**'
+  schedule:
+    # Run weekly on Monday at 9am UTC to check data freshness
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  validate:
+    name: Validate Platform Knowledge Base
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Validate platform data against schema
+        id: validate
+        run: |
+          echo "🔍 Validating platform data against JSON schema..."
+          npx ts-node scripts/validate-platforms.ts
+        continue-on-error: true
+
+      - name: Check data freshness
+        id: freshness
+        run: |
+          echo "📅 Checking platform data freshness..."
+
+          THIRTY_DAYS_AGO=$(date -d '30 days ago' +%Y-%m-%d 2>/dev/null || date -v -30d +%Y-%m-%d)
+
+          STALE_PLATFORMS=""
+          for platform_file in plugins/specweave/knowledge-base/serverless/platforms/*.json; do
+            PLATFORM_NAME=$(basename "$platform_file" .json)
+            LAST_VERIFIED=$(jq -r '.lastVerified' "$platform_file")
+
+            if [[ "$LAST_VERIFIED" < "$THIRTY_DAYS_AGO" ]]; then
+              STALE_PLATFORMS="${STALE_PLATFORMS}\n- ${PLATFORM_NAME} (last verified: ${LAST_VERIFIED})"
+            fi
+          done
+
+          if [ -n "$STALE_PLATFORMS" ]; then
+            echo "⚠️ WARNING: The following platforms have stale data (>30 days old):"
+            echo -e "$STALE_PLATFORMS"
+            echo "Please update the platform data and verify current pricing/features."
+            echo "freshness=stale" >> $GITHUB_OUTPUT
+          else
+            echo "✅ All platform data is fresh (< 30 days old)"
+            echo "freshness=fresh" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run platform data unit tests
+        run: |
+          echo "🧪 Running platform data unit tests..."
+          npx jest tests/unit/serverless/platform-knowledge-base.test.ts
+
+      - name: Run platform data integration tests
+        run: |
+          echo "🧪 Running platform data integration tests..."
+          npx jest tests/integration/serverless/platform-data-loading.test.ts
+
+      - name: Report validation results
+        if: always()
+        run: |
+          echo "## 📊 Platform Data Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.validate.outcome }}" == "success" ]; then
+            echo "✅ **Schema Validation**: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Schema Validation**: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ steps.freshness.outputs.freshness }}" == "fresh" ]; then
+            echo "✅ **Data Freshness**: All platforms updated within 30 days" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **Data Freshness**: Some platforms have stale data (>30 days)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Validated Platforms" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          for platform_file in plugins/specweave/knowledge-base/serverless/platforms/*.json; do
+            PLATFORM_NAME=$(jq -r '.name' "$platform_file")
+            PROVIDER=$(jq -r '.provider' "$platform_file")
+            LAST_VERIFIED=$(jq -r '.lastVerified' "$platform_file")
+            FREE_TIER_REQUESTS=$(jq -r '.pricing.freeTier.requests.count' "$platform_file")
+
+            echo "- **${PLATFORM_NAME}** (${PROVIDER})" >> $GITHUB_STEP_SUMMARY
+            echo "  - Last Verified: ${LAST_VERIFIED}" >> $GITHUB_STEP_SUMMARY
+            echo "  - Free Tier: ${FREE_TIER_REQUESTS} requests/month" >> $GITHUB_STEP_SUMMARY
+          done
+
+      - name: Fail if validation failed
+        if: steps.validate.outcome == 'failure'
+        run: |
+          echo "❌ Platform data validation failed. Please fix the errors above."
+          exit 1
+
+      - name: Comment PR with validation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const platforms = fs.readdirSync('plugins/specweave/knowledge-base/serverless/platforms')
+              .filter(f => f.endsWith('.json'))
+              .map(f => {
+                const data = JSON.parse(fs.readFileSync(`plugins/specweave/knowledge-base/serverless/platforms/${f}`, 'utf8'));
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                const lastVerified = new Date(data.lastVerified);
+                const isStale = lastVerified < thirtyDaysAgo;
+
+                return {
+                  name: data.name,
+                  provider: data.provider,
+                  lastVerified: data.lastVerified,
+                  isStale: isStale,
+                  freeTier: data.pricing.freeTier.requests.count
+                };
+              });
+
+            const staleCount = platforms.filter(p => p.isStale).length;
+            const status = staleCount === 0 ? '✅ All Fresh' : `⚠️ ${staleCount} Stale`;
+
+            let comment = `## 🚀 Serverless Platform Data Validation\n\n`;
+            comment += `**Status**: ${status}\n\n`;
+            comment += `| Platform | Provider | Last Verified | Status | Free Tier |\n`;
+            comment += `|----------|----------|---------------|--------|----------|\n`;
+
+            platforms.forEach(p => {
+              const statusIcon = p.isStale ? '⚠️ Stale' : '✅ Fresh';
+              comment += `| ${p.name} | ${p.provider} | ${p.lastVerified} | ${statusIcon} | ${p.freeTier.toLocaleString()} req/mo |\n`;
+            });
+
+            if (staleCount > 0) {
+              comment += `\n⚠️ **Warning**: ${staleCount} platform(s) have stale data (>30 days old). Please update and verify current pricing/features.\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

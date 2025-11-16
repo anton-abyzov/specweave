@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Serverless Platform Data Schema",
+  "description": "Schema for serverless platform comparison data",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "provider",
+    "pricing",
+    "features",
+    "ecosystem",
+    "lockIn",
+    "startupPrograms",
+    "lastVerified"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique platform identifier (e.g., 'aws-lambda')"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable platform name"
+    },
+    "provider": {
+      "type": "string",
+      "description": "Cloud provider (AWS, Azure, GCP, Firebase, Supabase)"
+    },
+    "pricing": {
+      "type": "object",
+      "required": ["freeTier", "payAsYouGo"],
+      "properties": {
+        "freeTier": {
+          "type": "object",
+          "required": ["requests", "computeGbSeconds", "dataTransferGb"],
+          "properties": {
+            "requests": {
+              "type": "number",
+              "description": "Free requests per month"
+            },
+            "computeGbSeconds": {
+              "type": "number",
+              "description": "Free GB-seconds per month"
+            },
+            "dataTransferGb": {
+              "type": "number",
+              "description": "Free data transfer GB per month"
+            }
+          }
+        },
+        "payAsYouGo": {
+          "type": "object",
+          "required": ["requestsPer1M", "computePerGbSecond", "dataTransferPerGb"],
+          "properties": {
+            "requestsPer1M": {
+              "type": "number",
+              "description": "Cost per 1M requests (USD)"
+            },
+            "computePerGbSecond": {
+              "type": "number",
+              "description": "Cost per GB-second (USD)"
+            },
+            "dataTransferPerGb": {
+              "type": "number",
+              "description": "Cost per GB data transfer (USD)"
+            }
+          }
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "required": ["runtimes", "coldStartMs", "maxExecutionMinutes", "maxMemoryMb"],
+      "properties": {
+        "runtimes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Supported runtimes (Node.js, Python, etc.)"
+        },
+        "coldStartMs": {
+          "type": "number",
+          "description": "Typical cold start time in milliseconds"
+        },
+        "maxExecutionMinutes": {
+          "type": "number",
+          "description": "Maximum execution duration in minutes"
+        },
+        "maxMemoryMb": {
+          "type": "number",
+          "description": "Maximum memory allocation in MB"
+        }
+      }
+    },
+    "ecosystem": {
+      "type": "object",
+      "required": ["integrations", "sdks", "communitySize"],
+      "properties": {
+        "integrations": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Native integrations (S3, DynamoDB, etc.)"
+        },
+        "sdks": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Official SDKs (Node.js, Python, etc.)"
+        },
+        "communitySize": {
+          "type": "string",
+          "enum": ["small", "medium", "large", "very-large"],
+          "description": "Community size indicator"
+        }
+      }
+    },
+    "lockIn": {
+      "type": "object",
+      "required": ["portability", "migrationComplexity", "vendorLockIn"],
+      "properties": {
+        "portability": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Platform portability score"
+        },
+        "migrationComplexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Complexity of migrating away from platform"
+        },
+        "vendorLockIn": {
+          "type": "string",
+          "description": "Description of vendor lock-in risks"
+        }
+      }
+    },
+    "startupPrograms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "credits", "duration"],
+        "properties": {
+          "name": { "type": "string" },
+          "credits": { "type": "number" },
+          "duration": { "type": "string" }
+        }
+      },
+      "description": "Startup credit programs"
+    },
+    "lastVerified": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Date when data was last verified (YYYY-MM-DD)"
+    }
+  }
+}
