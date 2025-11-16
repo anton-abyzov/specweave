@@ -109,21 +109,39 @@ export async function detectAllDuplicates(
 
 /**
  * Detect duplicates for a specific increment number
+ *
+ * Returns ALL increments that have the given number, even if there's only one.
+ * This is used for validation before creating a new increment.
  */
 export async function detectDuplicatesByNumber(
   incrementNumber: string,
   rootDir: string
 ): Promise<IncrementLocation[]> {
-  const report = await detectAllDuplicates(rootDir);
+  const incrementsDir = path.join(rootDir, '.specweave', 'increments');
 
-  // Normalize increment number (remove leading zeros if present)
+  // Check if increments directory exists
+  if (!await fs.pathExists(incrementsDir)) {
+    return [];
+  }
+
+  // Normalize increment number (pad to 4 digits)
   const normalizedNumber = incrementNumber.padStart(4, '0');
 
-  const duplicate = report.duplicates.find(
-    d => d.incrementNumber === normalizedNumber
-  );
+  // Scan all locations in parallel
+  const [active, archived, abandoned] = await Promise.all([
+    scanDirectory(incrementsDir, false),
+    scanDirectory(path.join(incrementsDir, '_archive'), false),
+    scanDirectory(path.join(incrementsDir, '_abandoned'), false)
+  ]);
 
-  return duplicate ? duplicate.locations : [];
+  // Combine all increments and filter by number
+  const allIncrements = [...active, ...archived, ...abandoned];
+  const matchingIncrements = allIncrements.filter(inc => {
+    const number = extractIncrementNumber(inc.name);
+    return number === normalizedNumber;
+  });
+
+  return matchingIncrements;
 }
 
 /**
