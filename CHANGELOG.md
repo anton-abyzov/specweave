@@ -4,6 +4,39 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.20.2] - 2025-11-16
+
+### Added
+
+#### Kafka Plugin Suite Auto-Installation ⭐
+
+**CRITICAL UPDATE**: All 4 Kafka plugins now install automatically with `specweave init`
+
+- **Default Plugin Count**: 25 plugins (previously 21)
+- **Auto-installed Kafka plugins**:
+  1. `specweave-kafka` - Core Kafka integration (Apache Kafka, AWS MSK, Azure Event Hubs)
+  2. `specweave-kafka-streams` - Stream processing with Kafka Streams
+  3. `specweave-confluent` - Confluent Cloud integration (Schema Registry, ksqlDB)
+  4. `specweave-n8n` - No-code workflow automation with Kafka triggers
+
+### Changed
+
+- Updated `.claude-plugin/marketplace.json` to include Kafka plugin suite
+- Plugin installation during `specweave init` now installs 25 plugins by default (was 21)
+
+### Impact
+
+- **New installations**: Automatically get all Kafka event streaming capabilities
+- **Existing installations**: Run `specweave init` again or manually install plugins:
+  ```bash
+  claude plugin install specweave-kafka
+  claude plugin install specweave-kafka-streams
+  claude plugin install specweave-confluent
+  claude plugin install specweave-n8n
+  ```
+
+---
+
 ## [0.20.0] - 2025-11-15
 
 ### 🚀 Major Features
