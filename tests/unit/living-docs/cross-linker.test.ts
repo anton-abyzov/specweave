@@ -32,9 +32,12 @@ describe('CrossLinker', () => {
     vi.clearAllMocks();
     mockBasePath = '/test/.specweave/docs/internal';
 
-    // Default mocks
-    mockFs.existsSync.mockReturnValue(false);
-    (mockFs.readFile as any).mockResolvedValue('');
+    // Default mocks - set existsSync to true so documentsRelated() can find links
+    mockFs.existsSync.mockReturnValue(true);
+    // Return content with cross-references to trigger link detection
+    (mockFs.readFile as any).mockResolvedValue(
+      '# Document\n\nSee authentication-architecture and 0001-use-oauth-authentication for details about us-001-user-authentication'
+    );
     (mockFs.writeFile as any).mockResolvedValue(undefined);
   });
 
@@ -108,8 +111,9 @@ describe('CrossLinker', () => {
       // Mock files exist and have content with cross-references
       mockFs.existsSync.mockReturnValue(true);
       // Content mentions the other file basenames for cross-reference detection
+      // Note: Must match actual basenames from test data above
       (mockFs.readFile as any).mockResolvedValue(
-        '# Document\n\nSee authentication-architecture and use-oauth-authentication for details about user-authentication'
+        '# Document\n\nSee authentication-architecture and 0001-use-oauth-authentication for details about us-001-user-authentication'
       );
 
       linker = new CrossLinker({
