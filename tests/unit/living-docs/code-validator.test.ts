@@ -7,18 +7,19 @@
  * - Content validation (not empty)
  */
 
-import { CodeValidator } from '../../../src/core/living-docs/CodeValidator';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { CodeValidator } from '../../../src/core/living-docs/CodeValidator.js';
 import fs from 'fs/promises';
 
 // Mock dependencies
-jest.mock('fs/promises');
+vi.mock('fs/promises');
 
 describe('CodeValidator', () => {
   let validator: CodeValidator;
 
   beforeEach(() => {
     validator = new CodeValidator();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('validateCodeExists', () => {
@@ -30,11 +31,11 @@ describe('CodeValidator', () => {
 - src/core/living-docs/types.ts
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.readFile as any).mockResolvedValue(tasksContent);
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 1000
-      } as any);
+      });
 
       const result = await validator.validateCodeExists('T-001', '/path/to/increment');
 
@@ -48,8 +49,8 @@ describe('CodeValidator', () => {
 - src/missing/file.ts
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
-      (fs.stat as jest.Mock).mockRejectedValue(new Error('File not found'));
+      (fs.readFile as any).mockResolvedValue(tasksContent);
+      (fs.stat as any).mockRejectedValue(new Error('File not found'));
 
       const result = await validator.validateCodeExists('T-001', '/path/to/increment');
 
@@ -63,11 +64,11 @@ describe('CodeValidator', () => {
 - src/empty/file.ts
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.readFile as any).mockResolvedValue(tasksContent);
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 0
-      } as any);
+      });
 
       const result = await validator.validateCodeExists('T-001', '/path/to/increment');
 
@@ -80,11 +81,11 @@ describe('CodeValidator', () => {
 Update \`src/core/file.ts\` and \`src/utils/helper.ts\`
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.readFile as any).mockResolvedValue(tasksContent);
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 100
-      } as any);
+      });
 
       const result = await validator.validateCodeExists('T-001', '/path/to/increment');
 
@@ -97,7 +98,7 @@ Update \`src/core/file.ts\` and \`src/utils/helper.ts\`
 This task has no specific files.
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
+      (fs.readFile as any).mockResolvedValue(tasksContent);
 
       const result = await validator.validateCodeExists('T-001', '/path/to/increment');
 
@@ -107,10 +108,10 @@ This task has no specific files.
 
   describe('validateFile', () => {
     it('should validate existing file with content', async () => {
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 500
-      } as any);
+      });
 
       const result = await validator.validateFile('src/test.ts');
 
@@ -120,7 +121,7 @@ This task has no specific files.
     });
 
     it('should detect missing file', async () => {
-      (fs.stat as jest.Mock).mockRejectedValue(new Error('Not found'));
+      (fs.stat as any).mockRejectedValue(new Error('Not found'));
 
       const result = await validator.validateFile('missing.ts');
 
@@ -131,7 +132,7 @@ This task has no specific files.
 
   describe('validateMultipleTasks', () => {
     it('should validate multiple tasks', async () => {
-      (fs.readFile as jest.Mock).mockResolvedValue(`
+      (fs.readFile as any).mockResolvedValue(`
 ### T-001: Task One
 \`src/file1.ts\`
 
@@ -139,10 +140,10 @@ This task has no specific files.
 \`src/file2.ts\`
       `);
 
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 100
-      } as any);
+      });
 
       const results = await validator.validateMultipleTasks(
         ['T-001', 'T-002'],
@@ -157,17 +158,17 @@ This task has no specific files.
 
   describe('getValidationDetails', () => {
     it('should provide detailed validation results', async () => {
-      (fs.readFile as jest.Mock).mockResolvedValue(`
+      (fs.readFile as any).mockResolvedValue(`
 ### T-001: Create files
 **Files**:
 - src/file1.ts
 - src/file2.ts
       `);
 
-      (fs.stat as jest.Mock).mockResolvedValue({
+      (fs.stat as any).mockResolvedValue({
         isFile: () => true,
         size: 200
-      } as any);
+      });
 
       const details = await validator.getValidationDetails('T-001', '/path/to/increment');
 

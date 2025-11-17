@@ -427,23 +427,44 @@ npm run build              # Compile TypeScript
 
 ### Testing
 
+**Test Framework**: **Vitest** (migrated from Jest on 2025-11-17)
+
 ```bash
-npm test                    # Unit tests only
-npm run test:validation     # Plugin structure validation
-npm run test:integration    # All integration tests
+npm test                    # Smoke tests (quick validation)
+npm run test:unit           # Unit tests with Vitest
+npm run test:integration    # Integration tests with Vitest
 npm run test:e2e            # E2E tests (Playwright)
 npm run test:all            # All tests
+npm run test:coverage       # Coverage report
 ```
 
+**Why Vitest?**
+- ✅ ESM-native (no tsconfig hacks)
+- ✅ Faster than Jest
+- ✅ Better TypeScript integration
+- ✅ Native import.meta.url support
+- ✅ Modern, actively maintained
+
 **Test Organization** (4 categories):
-- `tests/unit/` - Pure logic tests (no I/O)
+- `tests/unit/` - Pure logic tests (no I/O) - **Vitest**
 - `tests/plugin-validation/` - Plugin structure contracts
-- `tests/integration/` - 4 semantic categories:
+- `tests/integration/` - 4 semantic categories - **Vitest**:
   - `external-tools/` - GitHub, JIRA, ADO, Kafka sync
   - `core/` - Core framework + workflows
   - `generators/` - Code generation (frontend, backend, ML)
   - `features/` - Feature plugins (Figma, i18n, diagrams, etc.)
-- `tests/e2e/` - Full user scenarios
+- `tests/e2e/` - Full user scenarios - **Playwright**
+
+**Writing Tests**:
+```typescript
+// Import from vitest (NOT jest)
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Mocking
+vi.mock('fs/promises');
+const mockFn = vi.fn();
+vi.clearAllMocks();
+```
 
 **Details**: `.specweave/docs/internal/architecture/TEST-ORGANIZATION-PROPOSAL.md`
 

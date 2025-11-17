@@ -8,26 +8,28 @@ import {
   LinkType,
   LinkerOptions,
   createCrossLinker,
-} from '../../../src/core/living-docs/cross-linker';
-import { DistributionResult, DistributedFile } from '../../../src/core/living-docs/content-distributor';
-import { ContentCategory } from '../../../src/core/living-docs/content-classifier';
+} from '../../../src/core/living-docs/cross-linker.js';
+import { DistributionResult, DistributedFile } from '../../../src/core/living-docs/content-distributor.js';
+import { ContentCategory } from '../../../src/core/living-docs/content-classifier.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock fs-extra
-jest.mock('fs-extra');
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  readFile: jest.MockedFunction<typeof fs.readFile>;
-  writeFile: jest.MockedFunction<typeof fs.writeFile>;
-  existsSync: jest.MockedFunction<typeof fs.existsSync>;
+vi.mock('fs-extra');
+const mockFs = fs as anyed<typeof fs> & {
+  readFile: anyedFunction<typeof fs.readFile>;
+  writeFile: anyedFunction<typeof fs.writeFile>;
+  existsSync: anyedFunction<typeof fs.existsSync>;
 };
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('CrossLinker', () => {
   let linker: CrossLinker;
   let mockBasePath: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockBasePath = '/test/.specweave/docs/internal';
 
     // Default mocks
