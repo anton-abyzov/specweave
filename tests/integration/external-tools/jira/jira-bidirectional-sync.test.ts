@@ -33,18 +33,28 @@ class JiraBidirectionalSyncTest {
   private results: TestResult[] = [];
   private testEpicKey: string = '';
   private testIncrementId: string = '';
+  // ✅ ISOLATED TEST PROJECT (NOT real .specweave/)
+  private testProjectRoot: string;
 
   constructor() {
     this.client = new JiraClient();
     this.mapper = new JiraMapper(this.client);
+
+    // Use isolated test directory OUTSIDE .specweave/
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.testProjectRoot = path.join(__dirname, '../../../fixtures', `jira-bidirectional-test-${timestamp}`);
   }
 
   async run(): Promise<void> {
     console.log('╔══════════════════════════════════════════════════════════════╗');
     console.log('║      Jira Bidirectional Sync Integration Test               ║');
     console.log('╚══════════════════════════════════════════════════════════════╝\n');
+    console.log(`📁 Test Project: ${this.testProjectRoot}\n`);
 
     try {
+      // Setup isolated test environment
+      await this.setupTestEnvironment();
+
       await this.test1_CheckCredentials();
       await this.test2_TestConnection();
       await this.test3_FindOrCreateTestEpic();
@@ -57,6 +67,30 @@ class JiraBidirectionalSyncTest {
       console.error('❌ Test suite failed:', error);
     } finally {
       await this.generateReport();
+    }
+  }
+
+  private async setupTestEnvironment(): Promise<void> {
+    console.log('🔧 Setting up isolated test environment...');
+
+    // Create test .specweave/ structure
+    const specweaveDir = path.join(this.testProjectRoot, '.specweave');
+    const incrementsDir = path.join(specweaveDir, 'increments');
+    const docsDir = path.join(specweaveDir, 'docs');
+    const rfcsDir = path.join(docsDir, 'rfcs');
+
+    fs.mkdirSync(incrementsDir, { recursive: true });
+    fs.mkdirSync(rfcsDir, { recursive: true });
+
+    console.log('✅ Test environment ready\n');
+  }
+
+  private async cleanupTestEnvironment(): Promise<void> {
+    console.log('\n🧹 Cleaning up test environment...');
+
+    if (fs.existsSync(this.testProjectRoot)) {
+      fs.rmSync(this.testProjectRoot, { recursive: true, force: true });
+      console.log('✅ Test environment cleaned');
     }
   }
 
@@ -247,7 +281,8 @@ class JiraBidirectionalSyncTest {
         throw new Error('No increment ID from previous test');
       }
 
-      const incrementFolder = path.join(process.cwd(), '.specweave', 'increments', this.testIncrementId);
+      // Using ISOLATED test directory
+      const incrementFolder = path.join(this.testProjectRoot, '.specweave', 'increments', this.testIncrementId);
 
       // Check files exist
       const requiredFiles = ['spec.md', 'tasks.md', 'context-manifest.yaml'];
@@ -293,7 +328,8 @@ class JiraBidirectionalSyncTest {
     const start = Date.now();
 
     try {
-      const rfcFolder = path.join(process.cwd(), '.specweave', 'docs', 'rfcs');
+      // Using ISOLATED test directory
+      const rfcFolder = path.join(this.testProjectRoot, '.specweave', 'docs', 'rfcs');
 
       if (!fs.existsSync(rfcFolder)) {
         throw new Error('RFC folder not created');
@@ -386,18 +422,20 @@ class JiraBidirectionalSyncTest {
     const start = Date.now();
 
     try {
-      console.log(`⚠️  Test data created:`);
+      console.log(`✅ JIRA test data created (preserved in Jira):`);
       console.log(`   - Jira Epic: ${this.testEpicKey}`);
+      console.log(`\n✅ Local test increments (will be cleaned up):`);
       console.log(`   - SpecWeave Increment: ${this.testIncrementId}`);
-      console.log(`   - Increment folder: .specweave/increments/${this.testIncrementId}/`);
-      console.log(`   - RFC document: .specweave/docs/internal/architecture/rfc/rfc-${this.testIncrementId}-*.md`);
-      console.log(`\n   Note: Test data preserved for inspection. Delete manually if needed.`);
+      console.log(`   - Test Project: ${this.testProjectRoot}`);
+
+      // Clean up test environment
+      await this.cleanupTestEnvironment();
 
       this.results.push({
         name: testName,
         status: 'PASS',
         duration: Date.now() - start,
-        message: 'Test data preserved for inspection'
+        message: 'Test environment cleaned up successfully'
       });
       console.log('✅ PASS\n');
     } catch (error: any) {

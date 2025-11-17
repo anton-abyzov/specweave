@@ -53,8 +53,9 @@ class MLPipelineRealVideoTest {
   private readonly youtubeUrl = 'https://youtu.be/mcgbGn-frj4';
 
   constructor() {
+    // ✅ Setup ISOLATED test directories (NOT real .specweave/)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.testRunDir = path.join(process.cwd(), '.specweave', 'test-runs', 'ml-pipeline-real', timestamp);
+    this.testRunDir = path.join(__dirname, '../../../fixtures', `ml-video-test-${timestamp}`);
     this.framesDir = path.join(this.testRunDir, 'frames');
     this.detectionsDir = path.join(this.testRunDir, 'detections_visualized');
   }
