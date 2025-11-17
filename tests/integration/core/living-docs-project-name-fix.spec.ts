@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { SpecDistributor } from '../../src/core/living-docs/spec-distributor';
@@ -27,7 +28,8 @@ test.describe('Living Docs Project Name Fix (E2E)', () => {
   let testDir: string;
 
   test.beforeEach(() => {
-    testDir = path.join(__dirname, '../fixtures/e2e-project-name-fix', `test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+    testDir = path.join(os.tmpdir(), 'specweave-test-project-name-fix-' + Date.now());
     fs.mkdirSync(testDir, { recursive: true });
   });
 

@@ -40,7 +40,12 @@ cat > "$HOOKS_DIR/pre-commit" << 'EOF'
 
 echo "🔍 Running pre-commit checks..."
 
-# 0. Prevent accidental .specweave/ mass deletion
+# 0A. Check for dangerous test patterns
+if [ -f "scripts/pre-commit-test-pattern-check.sh" ]; then
+  bash scripts/pre-commit-test-pattern-check.sh || exit 1
+fi
+
+# 0B. Prevent accidental .specweave/ mass deletion
 DELETED_COUNT=$(git status --short | grep "^ D .specweave/" | wc -l | tr -d ' ')
 THRESHOLD=50
 
@@ -122,6 +127,8 @@ chmod +x "$HOOKS_DIR/pre-commit"
 echo "✅ Git hooks installed successfully!"
 echo ""
 echo "Installed hooks:"
+echo "  - pre-commit: Dangerous test pattern detection"
+echo "  - pre-commit: Mass .specweave/ deletion protection"
 echo "  - pre-commit: Build verification and .js extension check"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"

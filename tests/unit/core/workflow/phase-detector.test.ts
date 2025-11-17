@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import * as os from 'os';
+import * as path from 'path';
 
 /**
  * Unit tests for PhaseDetector
@@ -7,7 +9,6 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Part of increment 0039: Ultra-Smart Next Command (US-001)
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
 import { PhaseDetector } from '../../../../src/core/workflow/phase-detector.js';
 import {
   WorkflowPhase,
@@ -394,8 +395,8 @@ describe('PhaseDetector', () => {
   });
 
   describe('Context Analysis (20% weight)', () => {
-    // Temporarily create test increment directories for context testing
-    const testProjectDir = '/tmp/specweave-phase-detector-test';
+    // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+    const testProjectDir = path.join(os.tmpdir(), 'specweave-test-phase-detector-' + Date.now());
     const testIncrementId = '0001-test-feature';
 
     beforeEach(() => {
@@ -615,7 +616,8 @@ describe('PhaseDetector', () => {
   describe('Performance & Caching', () => {
     it('should cache file states for repeated detections', async () => {
       // Setup: Create increment
-      const testProjectDir = '/tmp/specweave-perf-test';
+      // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+      const testProjectDir = path.join(os.tmpdir(), 'specweave-test-perf-' + Date.now());
       const testIncrementId = '0001-test';
       const incrementDir = `${testProjectDir}/.specweave/increments/${testIncrementId}`;
 
@@ -683,7 +685,8 @@ describe('PhaseDetector', () => {
     });
 
     it('should clear cache on demand', async () => {
-      const testProjectDir = '/tmp/specweave-cache-clear-test';
+      // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+      const testProjectDir = path.join(os.tmpdir(), 'specweave-test-cache-clear-' + Date.now());
       const testIncrementId = '0001-test';
       const incrementDir = `${testProjectDir}/.specweave/increments/${testIncrementId}`;
 
@@ -718,7 +721,8 @@ describe('PhaseDetector', () => {
     });
 
     it('should expire cache after TTL', async () => {
-      const testProjectDir = '/tmp/specweave-ttl-test';
+      // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+      const testProjectDir = path.join(os.tmpdir(), 'specweave-test-ttl-' + Date.now());
       const testIncrementId = '0001-test';
       const incrementDir = `${testProjectDir}/.specweave/increments/${testIncrementId}`;
 

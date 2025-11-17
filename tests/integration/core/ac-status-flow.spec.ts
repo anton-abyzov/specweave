@@ -14,10 +14,12 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 import { ACStatusManager } from '../../src/core/increment/ac-status-manager';
 
-const TEST_PROJECT_DIR = path.join(__dirname, '../../.test-ac-status-flow');
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-ac-status-flow-' + Date.now());
 
 test.describe('AC Status Automation E2E Flow', () => {
   let manager: ACStatusManager;

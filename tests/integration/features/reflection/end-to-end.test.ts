@@ -11,6 +11,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 import { createReflectionContext } from '../../plugins/specweave/lib/hooks/run-self-reflection';
 import { buildReflectionPrompt } from '../../plugins/specweave/lib/hooks/reflection-prompt-builder';
@@ -25,7 +26,8 @@ import {
 import { ReflectionModel } from '../../plugins/specweave/lib/hooks/types/reflection-types';
 
 describe('Self-Reflection System - End-to-End', () => {
-  const testDir = path.join(__dirname, '../../fixtures/e2e-reflection');
+  // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+  const testDir = path.join(os.tmpdir(), 'specweave-test-reflection-' + Date.now());
   const incrementId = '0016-self-reflection-system';
   const taskId = 'T-005';
 

@@ -13,10 +13,12 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as os from 'os';
 import { detectAllDuplicates } from '../../dist/src/core/increment/duplicate-detector.js';
 import { resolveConflict } from '../../dist/src/core/increment/conflict-resolver.js';
 
-const TEST_ROOT = path.join(process.cwd(), '.test-fix-duplicates');
+// ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project .specweave/
+const TEST_ROOT = path.join(os.tmpdir(), 'test-fix-duplicates-integration-' + Date.now());
 const INCREMENTS_DIR = path.join(TEST_ROOT, '.specweave', 'increments');
 const ARCHIVE_DIR = path.join(INCREMENTS_DIR, '_archive');
 const ABANDONED_DIR = path.join(INCREMENTS_DIR, '_abandoned');

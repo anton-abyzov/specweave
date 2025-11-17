@@ -468,6 +468,62 @@ vi.clearAllMocks();
 
 **Details**: `.specweave/docs/internal/architecture/TEST-ORGANIZATION-PROPOSAL.md`
 
+### Test Isolation (CRITICAL - Prevents .specweave/ Deletion!)
+
+**🚨 MANDATORY FOR ALL TESTS creating .specweave/ structures:**
+
+**THE PROBLEM**: Tests using `process.cwd()` can accidentally delete the project `.specweave/` folder containing all your work!
+
+**CORRECT PATTERN** (ALWAYS use this):
+```typescript
+import * as os from 'os';
+import * as path from 'path';
+
+// ✅ SAFE: Uses isolated temp directory
+const testRoot = path.join(os.tmpdir(), 'test-name-' + Date.now());
+```
+
+**DANGEROUS PATTERN** (NEVER use this):
+```typescript
+// ❌ DANGER: Creates directories in project root!
+const testRoot = path.join(process.cwd(), '.test-something');
+const testPath = path.join(__dirname, '..', '.specweave', 'increments');
+```
+
+**Why This Matters**:
+1. Tests create mock `.specweave/` structures for testing
+2. Cleanup uses `fs.rm(testRoot, { recursive: true })`
+3. If `testRoot` points to project root → **DELETES REAL .specweave/!**
+4. You lose all increments, docs, and history
+
+**Use Test Utilities** (RECOMMENDED):
+```typescript
+import { createIsolatedTestDir, createSpecweaveStructure } from '../test-utils/isolated-test-dir';
+
+test('my test', async () => {
+  const { testDir, cleanup } = await createIsolatedTestDir('my-test');
+
+  try {
+    // Setup .specweave structure in isolated directory
+    await createSpecweaveStructure(testDir);
+
+    // Test code here - NEVER touches project .specweave/
+    const incrementPath = path.join(testDir, '.specweave', 'increments', '0001-test');
+    // ...
+  } finally {
+    await cleanup(); // ALWAYS cleanup
+  }
+});
+```
+
+**Protection Layers**:
+1. ✅ **Pre-commit hook**: Blocks commits with dangerous test patterns
+2. ✅ **Test utilities**: `tests/test-utils/isolated-test-dir.ts`
+3. ✅ **Documentation**: This section
+
+**Related Incident**: 2025-11-17 - Multiple `.specweave/` deletions traced to dangerous test patterns
+**Root Cause Analysis**: `.specweave/increments/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
+
 ### Build Health Checks
 
 **CRITICAL**: TypeScript ES Modules require specific practices:

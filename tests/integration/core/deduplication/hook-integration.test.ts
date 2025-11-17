@@ -10,14 +10,15 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 const execAsync = promisify(exec);
 
 describe('Deduplication Hook Integration', () => {
   const hookPath = path.join(process.cwd(), 'plugins', 'specweave', 'hooks', 'pre-command-deduplication.sh');
 
-  // ✅ FIXED: Use isolated test directory instead of real .specweave/ folder
-  const testDir = path.join(process.cwd(), 'tests', 'tmp', 'dedup-hook-test');
+  // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+  const testDir = path.join(os.tmpdir(), 'dedup-hook-test-' + Date.now());
   const cachePath = path.join(testDir, '.specweave', 'state', 'command-invocations.json');
 
   beforeEach(async () => {
