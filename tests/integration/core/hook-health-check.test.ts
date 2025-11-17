@@ -4,7 +4,7 @@
  * Tests full workflow of hook health checking system.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { HookHealthChecker } from '../../src/core/hooks/HookHealthChecker';
 import { HealthReporter } from '../../src/core/hooks/HealthReporter';
 

@@ -7,7 +7,7 @@
 import { SpecDistributor } from '../../src/core/living-docs/spec-distributor.js';
 import fs from 'fs-extra';
 import path from 'path';
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('SpecDistributor - Project-Specific Tasks Integration', () => {
   let testDir: string;

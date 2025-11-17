@@ -5,7 +5,7 @@
  * Verifies the complete flow from user story → GitHub issue → progress comment.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2';
 import { syncSpecContentToGitHub } from '../../plugins/specweave-github/lib/github-spec-content-sync';
 import { promises as fs } from 'fs';

@@ -11,12 +11,12 @@ import { ConfigManager } from '../../../src/core/config-manager.js';
 import fs from 'fs-extra';
 import path from 'path';
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-
 // Mock dependencies
 vi.mock('fs-extra');
 vi.mock('../../../src/core/config-manager');
 vi.mock('../../../src/core/living-docs/feature-id-manager');
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

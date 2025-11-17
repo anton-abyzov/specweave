@@ -5,7 +5,7 @@
  * (GitHub, JIRA, Azure DevOps) when completing spec user stories.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { syncSpecCommitsToGitHub } from '../../plugins/specweave-github/lib/github-spec-commit-sync.js';
 import { syncSpecCommitsToJira } from '../../plugins/specweave-jira/lib/jira-spec-commit-sync.js';
 import { syncSpecCommitsToAdo } from '../../plugins/specweave-ado/lib/ado-spec-commit-sync.js';

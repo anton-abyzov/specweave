@@ -8,7 +8,7 @@
  * - Platform-specific configurations
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   TerraformTemplateEngine,
   createTemplateEngine,

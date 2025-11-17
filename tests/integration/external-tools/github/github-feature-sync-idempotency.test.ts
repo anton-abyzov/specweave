@@ -9,7 +9,7 @@
  * These tests use MOCKED GitHub CLI to avoid rate limiting and ensure deterministic results.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
 import { GitHubFeatureSync } from '../../plugins/specweave-github/lib/github-feature-sync.js';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import * as fs from 'fs/promises';

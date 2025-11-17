@@ -14,12 +14,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-
 // Mock fs-extra
 vi.mock('fs-extra');
 // Mock child_process to prevent real git calls
 vi.mock('child_process');
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Type-safe mocked functions
 const mockExistsSync = vi.mocked(fs.existsSync);

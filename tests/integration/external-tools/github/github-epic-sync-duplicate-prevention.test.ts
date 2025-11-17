@@ -7,7 +7,7 @@
  * @module tests/integration/github-epic-sync-duplicate-prevention
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'fs';
 import path from 'path';
 
