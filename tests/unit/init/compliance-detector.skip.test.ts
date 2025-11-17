@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectCompliance } from '../../../src/init/compliance/ComplianceDetector.js.js';
+import { detectCompliance } from '../../../src/init/compliance/ComplianceDetector.js';
 
 describe('ComplianceDetector', () => {
   describe('detectCompliance', () => {

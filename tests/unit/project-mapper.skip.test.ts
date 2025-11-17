@@ -15,7 +15,7 @@ import {
   type UserStory,
   type ProjectRule,
   type ProjectMapperConfig
-} from '../../src/utils/project-mapper.js.js';
+} from '../../src/utils/project-mapper.js';
 
 describe('Project Mapper', () => {
   describe('mapUserStoryToProjects', () => {

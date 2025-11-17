@@ -8,13 +8,13 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
+import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement
-} from '../../helpers/increment-test-helpers.js.js';
+} from '../../helpers/increment-test-helpers.js';
 
 describe('MetadataManager Duplicate Validation', () => {
   let testDir: string;

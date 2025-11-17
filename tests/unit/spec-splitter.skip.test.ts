@@ -15,7 +15,7 @@ import {
   normalizeMetadata,
   type SpecMetadata,
   type ParsedSpec
-} from '../../src/utils/spec-splitter.js.js';
+} from '../../src/utils/spec-splitter.js';
 
 // Test fixtures directory
 const FIXTURES_DIR = path.join(__dirname, '../fixtures/spec-splitter');

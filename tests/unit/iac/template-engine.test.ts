@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { TerraformTemplateEngine, createTemplateEngine } from '../../../src/core/iac/template-engine.js.js';
+import { TerraformTemplateEngine, createTemplateEngine } from '../../../src/core/iac/template-engine.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

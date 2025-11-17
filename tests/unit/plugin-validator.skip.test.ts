@@ -13,7 +13,7 @@ import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { PluginValidator, PLUGIN_KEYWORDS } from '../../src/utils/plugin-validator.js.js';
+import { PluginValidator, PLUGIN_KEYWORDS } from '../../src/utils/plugin-validator.js';
 
 // Mock fs-extra
 vi.mock('fs-extra');
