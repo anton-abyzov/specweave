@@ -17,18 +17,18 @@ import { ProjectContext } from '../../../src/core/living-docs/project-detector.j
 import fs from 'fs-extra';
 import path from 'path';
 
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 // Mock fs-extra
 vi.mock('fs-extra');
-const mockFs = fs as anyed<typeof fs> & {
-  readFile: anyedFunction<typeof fs.readFile>;
-  writeFile: anyedFunction<typeof fs.writeFile>;
-  existsSync: anyedFunction<typeof fs.existsSync>;
-  readdir: anyedFunction<typeof fs.readdir>;
-  readJSON: anyedFunction<typeof fs.readJSON>;
-  ensureDir: anyedFunction<typeof fs.ensureDir>;
-};
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+// Type-safe mocked functions
+const mockReadFile = vi.mocked(fs.readFile);
+const mockWriteFile = vi.mocked(fs.writeFile);
+const mockExistsSync = vi.mocked(fs.existsSync);
+const mockReaddir = vi.mocked(fs.readdir);
+const mockReadJSON = vi.mocked(fs.readJSON);
+const mockEnsureDir = vi.mocked(fs.ensureDir);
 
 describe('ContentDistributor', () => {
   let distributor: ContentDistributor;
@@ -39,10 +39,10 @@ describe('ContentDistributor', () => {
     mockBasePath = '/test/.specweave/docs/internal';
 
     // Default mocks
-    mockFs.existsSync.mockReturnValue(false);
-    (mockFs.ensureDir as any).mockResolvedValue(undefined);
-    (mockFs.writeFile as any).mockResolvedValue(undefined);
-    (mockFs.readFile as any).mockResolvedValue('');
+    mockExistsSync.mockReturnValue(false);
+    mockEnsureDir.mockResolvedValue(undefined);
+    mockWriteFile.mockResolvedValue(undefined);
+    mockReadFile.mockResolvedValue('');
   });
 
   describe('Constructor and Options', () => {
@@ -149,7 +149,7 @@ describe('ContentDistributor', () => {
       expect(result.created.length).toBe(2);
       expect(result.summary.totalSections).toBe(2);
       expect(result.summary.filesCreated).toBe(2);
-      expect(mockFs.writeFile).toHaveBeenCalledTimes(3); // 2 files + 1 archive
+      expect(mockWriteFile).toHaveBeenCalledTimes(3); // 2 files + 1 archive
     });
 
     it('should count sections by category', async () => {
@@ -160,8 +160,8 @@ describe('ContentDistributor', () => {
     });
 
     it('should update existing files', async () => {
-      mockFs.existsSync.mockReturnValue(true);
-      (mockFs.readFile as any).mockResolvedValue('old content');
+      mockExistsSync.mockReturnValue(true);
+      mockReadFile.mockResolvedValue('old content');
 
       const result = await distributor.distribute('0016-test', spec, classifications, project);
 
@@ -170,10 +170,10 @@ describe('ContentDistributor', () => {
     });
 
     it('should skip unchanged files', async () => {
-      mockFs.existsSync.mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
 
       // Mock readFile to return the exact content that would be generated
-      mockFs.readFile.mockImplementation(async (filePath) => {
+      mockReadFile.mockImplementation(async (filePath) => {
         // Return the same content that will be generated
         // This will cause the file to be skipped
         const generated = `---
@@ -209,7 +209,7 @@ User can log in with credentials
     });
 
     it('should handle errors during file write', async () => {
-      mockFs.writeFile.mockRejectedValue(new Error('Write failed'));
+      mockWriteFile.mockRejectedValue(new Error('Write failed'));
 
       const result = await distributor.distribute('0016-test', spec, classifications, project);
 
@@ -246,7 +246,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      const archiveCalls = (mockFs.writeFile as any).mock.calls.filter(
+      const archiveCalls = mockWriteFile.mock.calls.filter(
         (call) => call[0].includes('_archive')
       );
 
@@ -261,7 +261,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      const archiveCalls = (mockFs.writeFile as any).mock.calls.filter(
+      const archiveCalls = mockWriteFile.mock.calls.filter(
         (call) => call[0].includes('_archive')
       );
 
@@ -315,7 +315,7 @@ User can log in with credentials
 
       const result = await distributor.distribute('0016-test', spec, classifications, project);
 
-      expect(mockFs.writeFile).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
       expect(result.created.length).toBeGreaterThan(0); // Still reports what would be created
     });
   });
@@ -369,7 +369,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       expect(content).toContain('---');
@@ -423,7 +423,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       // Should start with heading, not frontmatter
@@ -453,8 +453,8 @@ User can log in with credentials
 
       await distributor.generateIndex(ContentCategory.UserStory, 'backend', files);
 
-      expect(mockFs.writeFile).toHaveBeenCalled();
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      expect(mockWriteFile).toHaveBeenCalled();
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       expect(content).toContain('# User Stories');
@@ -488,7 +488,7 @@ User can log in with credentials
 
       await distributor.generateIndex(ContentCategory.UserStory, 'backend', files);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       // Should be sorted: us-001, us-002, us-003
@@ -508,7 +508,7 @@ User can log in with credentials
 
       await distributor.generateIndex(ContentCategory.UserStory, 'backend', []);
 
-      expect(mockFs.writeFile).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
   });
 
@@ -632,7 +632,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const filePath = writeCall[0];
 
       expect(filePath).toContain('specs/backend'); // Placeholder replaced
@@ -774,7 +774,7 @@ User can log in with credentials
 
       await distributor.distribute('0016-test', spec, classifications, project);
 
-      expect(mockFs.ensureDir).toHaveBeenCalled();
+      expect(mockEnsureDir).toHaveBeenCalled();
     });
   });
 
