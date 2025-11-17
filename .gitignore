@@ -143,3 +143,9 @@ coverage/
 plugins/**/lib/*.js
 plugins/**/lib/*.js.map
 .test-fix-duplicates/
+
+# Temporary backups (do not commit)
+dist-backup/
+
+# External content (marketing/non-technical content)
+youtube-content/
