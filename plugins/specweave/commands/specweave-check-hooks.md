@@ -1,3 +1,8 @@
+---
+name: specweave:check-hooks
+description: Comprehensive health check for hooks - detects import errors, runtime failures, performance issues, and provides auto-fix suggestions
+---
+
 # Check Hook Health
 
 **Command**: `/specweave:check-hooks`

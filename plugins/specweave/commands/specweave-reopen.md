@@ -1,5 +1,5 @@
 ---
-name: specweave-reopen
+name: specweave:reopen
 description: |
   Reopen completed increments, tasks, or user stories when issues are discovered.
   Validates WIP limits, creates audit trail, and syncs to external tools.

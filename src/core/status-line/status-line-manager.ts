@@ -5,8 +5,9 @@
  * Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
  *
  * Architecture:
- * - Hook updates cache with current increment + open count
+ * - Hook reads from spec.md (source of truth) and updates cache
  * - Manager reads cache and formats output
+ * - Smart display: Shows full ID if multiple increments, just name if single
  * - Simple age-based validation (no complex mtime checks)
  */
 
@@ -79,13 +80,17 @@ export class StatusLineManager {
    * Format status line
    *
    * Format: [increment-name] ████░░░░ X/Y tasks (Z open)
+   * Smart display: Shows full ID if multiple increments, just name if single
    */
   private formatStatusLine(cache: StatusLineCache): string {
     const current = cache.current!;
     const parts: string[] = [];
 
-    // Increment name (truncated)
-    const name = this.truncate(current.name, this.config.maxNameLength);
+    // Smart truncation: Show full ID if multiple increments, just name if single
+    // This makes it clear which increment is active when juggling multiple,
+    // but keeps it clean for simple single-increment workflows
+    const displayName = cache.openCount > 1 ? current.id : current.name;
+    const name = this.truncate(displayName, this.config.maxNameLength);
     parts.push(`[${name}]`);
 
     // Progress bar
@@ -105,15 +110,18 @@ export class StatusLineManager {
 
   /**
    * Render ASCII progress bar
+   *
+   * Handles edge cases: completed > total (caps at 100%), negative values
    */
   private renderProgressBar(completed: number, total: number): string {
     if (total === 0) {
       return '░'.repeat(this.config.progressBarWidth);
     }
 
-    const percentage = completed / total;
+    // Cap percentage at 100% (handle cases where completed > total)
+    const percentage = Math.min(1, Math.max(0, completed / total));
     const filled = Math.floor(percentage * this.config.progressBarWidth);
-    const empty = this.config.progressBarWidth - filled;
+    const empty = Math.max(0, this.config.progressBarWidth - filled);
 
     return '█'.repeat(filled) + '░'.repeat(empty);
   }

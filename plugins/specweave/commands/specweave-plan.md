@@ -1,5 +1,5 @@
 ---
-name: specweave-plan
+name: specweave:plan
 description: Generate plan.md and tasks.md for PLANNING increment using Architect Agent
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave-archive-increments
+name: specweave:archive-increments
 description: Archive completed increments to keep workspace clean
 ---
 

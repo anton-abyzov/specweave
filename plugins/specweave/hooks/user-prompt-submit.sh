@@ -303,44 +303,26 @@ if [[ -d ".specweave/increments" ]]; then
   done)
 
   if [[ -n "$ACTIVE_INCREMENT" ]]; then
-    # Use status line cache for consistent display
-    STATUS_LINE_CACHE=".specweave/state/status-line.json"
-    if [[ -f "$STATUS_LINE_CACHE" ]]; then
-      # Get status line from cache (ultra-fast)
-      STATUS_LINE=$(node -e "
-        try {
-          const { StatusLineManager } = require('./dist/src/core/status-line/status-line-manager.js');
-          const manager = new StatusLineManager(process.cwd());
-          const result = manager.render();
-          console.log(result || '');
-        } catch (e) {
-          // Fallback: show increment name only
-          console.log('');
-        }
-      " 2>/dev/null || echo "")
+    # Simple status: parse tasks.md for completion
+    TASKS_FILE=".specweave/increments/$ACTIVE_INCREMENT/tasks.md"
+    if [[ -f "$TASKS_FILE" ]]; then
+      # Count tasks (headers with T-NNN format - both ### and ####)
+      TOTAL_TASKS=$(grep -cE '^#{3,4}\s*T-[0-9]' "$TASKS_FILE" 2>/dev/null | tr -d '\n' || echo "0")
+      # Count completed (various formats)
+      COMPLETED_TASKS=$(grep -cE '(✅ COMPLETE|\[COMPLETED\]|\[x\] Completed)' "$TASKS_FILE" 2>/dev/null | tr -d '\n' || echo "0")
 
-      if [[ -n "$STATUS_LINE" ]]; then
-        CONTEXT="✓ $STATUS_LINE"
+      # Ensure valid numbers
+      TOTAL_TASKS=${TOTAL_TASKS:-0}
+      COMPLETED_TASKS=${COMPLETED_TASKS:-0}
+
+      if [[ "$TOTAL_TASKS" -gt 0 ]] 2>/dev/null; then
+        PERCENTAGE=$(( COMPLETED_TASKS * 100 / TOTAL_TASKS ))
+        CONTEXT="✓ Active: $ACTIVE_INCREMENT ($COMPLETED_TASKS/$TOTAL_TASKS tasks, $PERCENTAGE%)"
       else
-        # Fallback: parse tasks.md manually
-        TASKS_FILE=".specweave/increments/$ACTIVE_INCREMENT/tasks.md"
-        if [[ -f "$TASKS_FILE" ]]; then
-          TASK_STATS=$(grep -E "^\s*-\s*\[[ x]\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
-          COMPLETED_TASKS=$(grep -E "^\s*-\s*\[x\]" "$TASKS_FILE" 2>/dev/null | wc -l | xargs || echo "0")
-
-          if [[ "$TASK_STATS" -gt 0 ]]; then
-            PERCENTAGE=$(( COMPLETED_TASKS * 100 / TASK_STATS ))
-            CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT ($PERCENTAGE% complete, $COMPLETED_TASKS/$TASK_STATS tasks)"
-          else
-            CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
-          fi
-        else
-          CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
-        fi
+        CONTEXT="✓ Active: $ACTIVE_INCREMENT"
       fi
     else
-      # No cache, fall back to increment name only
-      CONTEXT="✓ Active Increment: $ACTIVE_INCREMENT"
+      CONTEXT="✓ Active: $ACTIVE_INCREMENT"
     fi
   fi
 fi

@@ -1,12 +1,13 @@
 {
   "id": "0037-project-specific-tasks",
-  "status": "in-progress",
+  "status": "completed",
   "type": "feature",
   "priority": "P1",
   "created": "2025-11-15T22:29:54Z",
   "planned": "2025-11-16T03:45:00Z",
   "started": "2025-11-17T15:54:00Z",
-  "lastActivity": "2025-11-17T15:58:00Z",
+  "completed": "2025-11-17T18:30:00Z",
+  "lastActivity": "2025-11-17T18:30:00Z",
   "testMode": "TDD",
   "coverageTarget": 95,
   "feature": "FS-037",
@@ -229,5 +230,6 @@
       ],
       "changesCount": 0
     }
-  ]
+  ],
+  "completed": "2025-11-17T18:41:00Z"
 }

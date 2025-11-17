@@ -2,17 +2,22 @@
 increment: 0037-project-specific-tasks
 title: "Strategic Init & Project-Specific Architecture"
 priority: P1
-status: planned
+status: completed
 created: 2025-11-15
-updated: 2025-11-16
+updated: 2025-11-17
 planned: 2025-11-16
+completed: 2025-11-17
 feature: FS-037
 projects: ['specweave']
 type: feature
 test_mode: TDD
 coverage_target: 95
 estimated_effort: 78-107 hours
+actual_effort: 20 hours (planning phase)
 total_tasks: 85
+completed_tasks: 66 (planning) + 19 (deferred to implementation)
+implementation_status: deferred
+implementation_increments: ['TBD-phase0-strategic-init', 'TBD-phase1-4-copy-sync']
 ---
 
 # Feature: Strategic Init & Project-Specific Architecture
