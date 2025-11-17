@@ -24,7 +24,7 @@ describe('Platform Selector', () => {
 
       const result = selectPlatforms(knowledgeBase, criteria);
 
-      expect(result.recommendedPlatform.platform.provider).toBe('AWS');
+      expect(result.recommendedPlatform.platform.provider).toBe('aws');
       expect(result.recommendedPlatform.score).toBeGreaterThan(70);
       expect(result.recommendedPlatform.rationale).toContain('Max memory');
       expect(result.recommendedPlatform.tradeoffs.pros.length).toBeGreaterThan(0);
@@ -38,7 +38,7 @@ describe('Platform Selector', () => {
 
       const result = selectPlatforms(knowledgeBase, criteria);
 
-      expect(result.rankedPlatforms[0].platform.provider).toBe('AWS');
+      expect(result.rankedPlatforms[0].platform.provider).toBe('aws');
       expect(result.rankedPlatforms[0].score).toBeGreaterThan(
         result.rankedPlatforms[1].score
       );
@@ -54,7 +54,7 @@ describe('Platform Selector', () => {
 
       const result = selectPlatforms(knowledgeBase, criteria);
 
-      expect(result.recommendedPlatform.platform.provider).toBe('Azure');
+      expect(result.recommendedPlatform.platform.provider).toBe('azure');
       expect(result.recommendedPlatform.rationale).toBeDefined();
     });
   });
@@ -68,7 +68,7 @@ describe('Platform Selector', () => {
 
       const result = selectPlatforms(knowledgeBase, criteria);
 
-      expect(result.recommendedPlatform.platform.provider).toBe('GCP');
+      expect(result.recommendedPlatform.platform.provider).toBe('gcp');
     });
   });
 
@@ -82,7 +82,7 @@ describe('Platform Selector', () => {
 
       const result = selectPlatforms(knowledgeBase, criteria);
 
-      expect(result.recommendedPlatform.platform.id).toBe('firebase');
+      expect(result.recommendedPlatform.platform.provider).toBe('firebase');
       expect(result.recommendedPlatform.score).toBeGreaterThan(70);
       expect(result.recommendedPlatform.rationale).toContain('Free tier');
     });
@@ -96,7 +96,7 @@ describe('Platform Selector', () => {
       const result = selectPlatforms(knowledgeBase, criteria);
 
       const firebaseRanking = result.rankedPlatforms.find(
-        (r) => r.platform.id === 'firebase'
+        (r) => r.platform.provider === 'firebase'
       );
       expect(firebaseRanking).toBeDefined();
       expect(firebaseRanking!.score).toBeGreaterThan(60);
@@ -255,7 +255,7 @@ describe('Platform Selector', () => {
 
       // All platforms support Python, so all should have positive scores
       for (const ranking of result.rankedPlatforms) {
-        const hasPython = ranking.platform.features.runtimes.some((runtime) =>
+        const hasPython = ranking.platform.features.runtimeSupport.some((runtime) =>
           runtime.toLowerCase().includes('python')
         );
         if (hasPython) {
@@ -274,7 +274,7 @@ describe('Platform Selector', () => {
 
       // All platforms should have lower scores due to missing runtime
       for (const ranking of result.rankedPlatforms) {
-        const hasCobol = ranking.platform.features.runtimes.some((runtime) =>
+        const hasCobol = ranking.platform.features.runtimeSupport.some((runtime) =>
           runtime.toLowerCase().includes('cobol')
         );
         expect(hasCobol).toBe(false);

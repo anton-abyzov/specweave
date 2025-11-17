@@ -241,7 +241,34 @@ export class ProjectDetector {
     // Normalize confidence (max score of ~30 = 1.0 confidence)
     const confidence = Math.min(maxScore / 30, 1.0);
 
-    const project = this.projects.get(bestProjectId)!;
+    // ✅ FIX: Ensure fallback project exists in map
+    const project = this.projects.get(bestProjectId);
+
+    if (!project) {
+      // ✅ FIX: Fallback project not found in map - create it on-demand
+      const createdFallback: ProjectConfig = {
+        id: bestProjectId,
+        name: 'Default Project',
+        keywords: [],
+        techStack: [],
+      };
+      this.projects.set(bestProjectId, createdFallback);
+
+      bestReasoning.push(`Created fallback project "${bestProjectId}"`);
+
+      return {
+        id: createdFallback.id,
+        name: createdFallback.name,
+        confidence,
+        reasoning: bestReasoning,
+        metadata: {
+          totalProjects: this.projects.size,
+          scores: Object.fromEntries(
+            Array.from(scores.entries()).map(([id, data]) => [id, data.score])
+          ),
+        },
+      };
+    }
 
     return {
       id: project.id,
@@ -300,7 +327,26 @@ export class ProjectDetector {
 
     if (!project) {
       // Unknown project - use fallback
-      const fallbackProject = this.projects.get(this.options.fallbackProject)!;
+      const fallbackProject = this.projects.get(this.options.fallbackProject);
+
+      if (!fallbackProject) {
+        // ✅ FIX: Fallback project doesn't exist - create it on-demand
+        const createdFallback: ProjectConfig = {
+          id: this.options.fallbackProject,
+          name: 'Default Project',
+          keywords: [],
+          techStack: [],
+        };
+        this.projects.set(this.options.fallbackProject, createdFallback);
+
+        return {
+          id: createdFallback.id,
+          name: createdFallback.name,
+          confidence: 1.0,
+          reasoning: [`Fallback to "${createdFallback.id}" (created on-demand, project "${projectId}" not found)`],
+        };
+      }
+
       return {
         id: fallbackProject.id,
         name: fallbackProject.name,

@@ -24,21 +24,23 @@ Users receive a different CLAUDE.md via the template system.
 /SESSION-SUMMARY-2025-10-28.md         # NO! Goes to increment reports/
 /ADR-006-DEEP-ANALYSIS.md              # NO! Goes to .specweave/docs/internal/architecture/adr/
 /ANALYSIS-MULTI-TOOL-COMPARISON.md     # NO! Goes to increment reports/
+/QUICK-START.md                        # NO! Goes to increment reports/
 /migration-helper.sh                   # NO! Goes to increment scripts/
 /execution.log                         # NO! Goes to increment logs/
 
 ✅ CORRECT - INCREMENT FOLDERS:
 .specweave/increments/0004-plugin-architecture/
-├── spec.md                            # Spec files (core 3)
+├── spec.md                            # ⚠️ ONLY THESE 3 FILES in root!
 ├── plan.md
 ├── tasks.md                           # Tasks with embedded tests
-├── reports/                           # ✅ PUT REPORTS HERE!
+├── reports/                           # ✅ ALL REPORTS HERE!
 │   ├── PLUGIN-MIGRATION-COMPLETE.md   # ✅ Completion reports
 │   ├── SESSION-SUMMARY.md             # ✅ Session summaries
+│   ├── QUICK-START.md                 # ✅ Quick start guides
 │   └── ANALYSIS-*.md                  # ✅ Analysis files
-├── scripts/                           # ✅ PUT SCRIPTS HERE!
+├── scripts/                           # ✅ ALL SCRIPTS HERE!
 │   └── migration-helper.sh            # ✅ Helper scripts
-└── logs/                              # ✅ PUT LOGS HERE!
+└── logs/                              # ✅ ALL LOGS HERE!
     └── execution.log                  # ✅ Execution logs
 
 .specweave/docs/internal/architecture/ # ✅ PUT ADRS/DIAGRAMS HERE!
@@ -47,6 +49,31 @@ Users receive a different CLAUDE.md via the template system.
 ```
 
 **Before committing, ALWAYS check**: `git status` - If you see `.md` files in root, MOVE THEM!
+
+### 📁 Increment Structure Rules (MANDATORY)
+
+**ONLY 3 files allowed in increment root**:
+1. ✅ `spec.md` - Specification
+2. ✅ `plan.md` - Implementation plan
+3. ✅ `tasks.md` - Tasks with embedded tests
+
+**Everything else MUST be in subfolders**:
+- `reports/` - Session summaries, completion reports, analysis files, quick-start guides
+- `scripts/` - Helper scripts, migrations, utilities
+- `logs/` - Execution logs, debug output, temp files
+
+**Examples of files that belong in subfolders**:
+- `QUICK-START.md` → `reports/QUICK-START.md`
+- `SESSION-NOTES.md` → `reports/SESSION-NOTES.md`
+- `ULTRATHINK-*.md` → `reports/ULTRATHINK-*.md`
+- `validation.sh` → `scripts/validation.sh`
+- `debug.log` → `logs/debug.log`
+
+**Why this matters**:
+- ✅ Clean, predictable structure
+- ✅ Easy to find files by type
+- ✅ No increment root clutter
+- ✅ Consistent across all increments
 
 ---
 

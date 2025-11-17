@@ -17,7 +17,7 @@ import {
 // Mock global fetch
 global.fetch = vi.fn();
 
-const mockedFetch = global.fetch as anyedFunction<typeof fetch>;
+const mockedFetch = global.fetch as vi.MockedFunction<typeof fetch>;
 
 describe('validateRepository', () => {
   beforeEach(() => {

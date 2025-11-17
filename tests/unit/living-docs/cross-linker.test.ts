@@ -11,13 +11,14 @@ import {
 } from '../../../src/core/living-docs/cross-linker.js';
 import { DistributionResult, DistributedFile } from '../../../src/core/living-docs/content-distributor.js';
 import { ContentCategory } from '../../../src/core/living-docs/content-classifier.js';
-import fs from 'fs-extra';
 import path from 'path';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock fs-extra
+// Mock fs-extra BEFORE importing
 vi.mock('fs-extra');
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+// Import after mock
+import fs from 'fs-extra';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

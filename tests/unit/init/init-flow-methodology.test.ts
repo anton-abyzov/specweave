@@ -12,6 +12,9 @@ import inquirer from 'inquirer';
 vi.mock('inquirer', () => ({
   default: {
     prompt: vi.fn()
+  },
+  prompt: vi.fn()
+}));
   }
 }));
 

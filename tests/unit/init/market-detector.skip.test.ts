@@ -1,5 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
 /**
  * Unit tests for MarketDetector
  */

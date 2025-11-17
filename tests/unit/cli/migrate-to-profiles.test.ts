@@ -46,8 +46,8 @@ describe('migrate-to-profiles', () => {
     mockProfileManager = new ProfileManager(testDir) as anyed<ProfileManager>;
     mockProjectManager = new ProjectContextManager(testDir) as anyed<ProjectContextManager>;
 
-    (ProfileManager as anyedClass<typeof ProfileManager>).mockImplementation(() => mockProfileManager);
-    (ProjectContextManager as anyedClass<typeof ProjectContextManager>).mockImplementation(() => mockProjectManager);
+    (ProfileManager as vi.Mocked<typeof ProfileManager>).mockImplementation(() => mockProfileManager);
+    (ProjectContextManager as vi.Mocked<typeof ProjectContextManager>).mockImplementation(() => mockProjectManager);
 
     mockProfileManager.load.mockResolvedValue();
     mockProjectManager.load.mockResolvedValue();

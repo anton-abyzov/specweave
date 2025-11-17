@@ -14,13 +14,14 @@ import {
   ContentCategory,
 } from '../../../src/core/living-docs/content-classifier.js';
 import { ProjectContext } from '../../../src/core/living-docs/project-detector.js';
-import fs from 'fs-extra';
 import path from 'path';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock fs-extra
+// Mock fs-extra BEFORE importing it
 vi.mock('fs-extra');
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+// Import after mock
+import fs from 'fs-extra';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

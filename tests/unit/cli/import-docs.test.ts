@@ -18,12 +18,16 @@ import * as path from 'path';
 vi.mock('../../../src/core/brownfield/importer');
 vi.mock('../../../src/core/project-manager');
 vi.mock('inquirer', () => ({
+  default: {
+    prompt: vi.fn()
+  },
   prompt: vi.fn()
+}));
 }));
 
 describe('import-docs command', () => {
-  const mockImporter = BrownfieldImporter as anyedClass<typeof BrownfieldImporter>;
-  const mockProjectManager = ProjectManager as anyedClass<typeof ProjectManager>;
+  const mockImporter = BrownfieldImporter as vi.Mocked<typeof BrownfieldImporter>;
+  const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
   const mockInquirer = inquirer as any;
 
   const mockProjectRoot = '/test/project';
