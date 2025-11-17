@@ -37,11 +37,11 @@ describe('CompletionPropagator', () => {
 **Completed**: 2025-11-16
       `;
 
-      (fs.readFile as any)
-        .mockResolvedValueOnce(specContent)  // spec.md
-        .mockResolvedValueOnce(tasksContent); // tasks.md
+      vi.mocked(fs.readFile)
+        .mockResolvedValueOnce(specContent as any)  // spec.md
+        .mockResolvedValueOnce(tasksContent as any); // tasks.md
 
-      (fs.writeFile as any).mockResolvedValue(undefined);
+      vi.mocked(fs.writeFile).mockResolvedValue(undefined as any);
 
       const result = await propagator.propagateCompletion('/path/to/increment');
 
@@ -64,11 +64,11 @@ describe('CompletionPropagator', () => {
 **Completed**: Not completed
       `;
 
-      (fs.readFile as any)
-        .mockResolvedValueOnce(specContent)
-        .mockResolvedValueOnce(tasksContent);
+      vi.mocked(fs.readFile)
+        .mockResolvedValueOnce(specContent as any)
+        .mockResolvedValueOnce(tasksContent as any);
 
-      (fs.writeFile as any).mockResolvedValue(undefined);
+      vi.mocked(fs.writeFile).mockResolvedValue(undefined as any);
 
       const result = await propagator.propagateCompletion('/path/to/increment');
 
@@ -87,9 +87,9 @@ describe('CompletionPropagator', () => {
 **Completed**: 2025-11-16
       `;
 
-      (fs.readFile as any)
-        .mockResolvedValueOnce(specContent)
-        .mockResolvedValueOnce(tasksContent);
+      vi.mocked(fs.readFile)
+        .mockResolvedValueOnce(specContent as any)
+        .mockResolvedValueOnce(tasksContent as any);
 
       const result = await propagator.propagateCompletion('/path/to/increment');
 
@@ -113,7 +113,7 @@ describe('CompletionPropagator', () => {
 **Completed**: Not completed
       `;
 
-      (fs.readFile as any).mockResolvedValue(tasksContent);
+      vi.mocked(fs.readFile).mockResolvedValue(tasksContent as any);
 
       const stats = await propagator.getAcCompletionStats('AC-US1-01', '/path/to/increment');
 
@@ -124,7 +124,7 @@ describe('CompletionPropagator', () => {
     });
 
     it('should handle AC with no tasks', async () => {
-      (fs.readFile as any).mockResolvedValue('### T-001: Other task\n**AC**: AC-US2-01');
+      vi.mocked(fs.readFile).mockResolvedValue('### T-001: Other task\n**AC**: AC-US2-01' as any);
 
       const stats = await propagator.getAcCompletionStats('AC-US1-01', '/path/to/increment');
 
@@ -142,7 +142,7 @@ describe('CompletionPropagator', () => {
 - [ ] **AC-US1-03**: Incomplete
       `;
 
-      (fs.readFile as any).mockResolvedValue(specContent);
+      vi.mocked(fs.readFile).mockResolvedValue(specContent as any);
 
       const stats = await propagator.getUserStoryCompletionStats('US1', '/path/to/increment');
 
@@ -161,7 +161,7 @@ describe('CompletionPropagator', () => {
 - [ ] **AC-US2-02**: Incomplete
       `;
 
-      (fs.readFile as any).mockResolvedValue(specContent);
+      vi.mocked(fs.readFile).mockResolvedValue(specContent as any);
 
       const stats = await propagator.getIncrementCompletionStats('/path/to/increment');
 
@@ -177,7 +177,7 @@ describe('CompletionPropagator', () => {
 - [x] **AC-US1-02**: Complete
       `;
 
-      (fs.readFile as any).mockResolvedValue(specContent);
+      vi.mocked(fs.readFile).mockResolvedValue(specContent as any);
 
       const stats = await propagator.getIncrementCompletionStats('/path/to/increment');
 

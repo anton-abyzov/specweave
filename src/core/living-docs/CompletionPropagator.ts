@@ -202,7 +202,8 @@ export class CompletionPropagator {
     const lines = content.split('\n');
 
     for (const line of lines) {
-      const match = line.match(/^- \[([ x])\] (AC-([A-Z0-9]+)-\d+):/);
+      // Match both: - [ ] AC-US1-01: and - [ ] **AC-US1-01**:
+      const match = line.match(/^- \[([ x])\] \**(AC-([A-Z0-9]+)-\d+)\*\*:/);
       if (match) {
         acs.push({
           id: match[2],
@@ -270,7 +271,7 @@ export class CompletionPropagator {
    */
   private updateAcCheckbox(content: string, acId: string, completed: boolean): string {
     const checkbox = completed ? 'x' : ' ';
-    const pattern = new RegExp(`^- \\[([ x])\\] ${acId}:`, 'gm');
-    return content.replace(pattern, `- [${checkbox}] ${acId}:`);
+    const pattern = new RegExp(`^- \\[([ x])\\] \\*\\*${acId}\\*\\*:`, 'gm');
+    return content.replace(pattern, `- [${checkbox}] **${acId}**:`);
   }
 }
