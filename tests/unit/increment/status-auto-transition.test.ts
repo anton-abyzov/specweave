@@ -17,9 +17,11 @@ import { MetadataManager } from '../../../src/core/increment/metadata-manager.js
 import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 describe('Status Auto-Transition', () => {
-  const testRootPath = path.join(process.cwd(), '.specweave-test-transition');
+  // ✅ SAFE: Use temp directory instead of project root
+  const testRootPath = path.join(os.tmpdir(), 'specweave-test-status-auto-transition');
   const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
 
   let originalCwd: string;
