@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Prompt Consolidator
  *
@@ -11,7 +13,7 @@ import {
   getRepoCountClarification,
   getVisibilityPrompt,
   formatArchitectureChoice,
-} from '../../../src/core/repo-structure/prompt-consolidator';
+} from '../../../src/core/repo-structure/prompt-consolidator.js';
 
 describe('getArchitecturePrompt', () => {
   it('should return question with 4 architecture options', () => {

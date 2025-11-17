@@ -1,7 +1,9 @@
-import { describe, it, expect } from '@jest/globals';
-import { PlatformDataLoader } from '../../../src/core/serverless/platform-data-loader';
-import { formatPlatformRecommendationWithFreshness, checkDataFreshness } from '../../../src/core/serverless/recommendation-formatter';
-import type { ServerlessPlatform } from '../../../src/core/serverless/types';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+import { describe, it, expect } from 'vitest';
+import { PlatformDataLoader } from '../../../src/core/serverless/platform-data-loader.js';
+import { formatPlatformRecommendationWithFreshness, checkDataFreshness } from '../../../src/core/serverless/recommendation-formatter.js';
+import type { ServerlessPlatform } from '../../../src/core/serverless/types.js';
 
 describe('Data Freshness Indicator', () => {
   describe('testFreshnessIndicatorDisplay', () => {

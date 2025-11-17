@@ -1,9 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for MarketDetector
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { detectMarketCategory, analyzeMarketCategories } from '../../../src/init/research/MarketDetector.js';
+import { describe, it, expect } from 'vitest';
+import { detectMarketCategory, analyzeMarketCategories } from '../../../src/init/research/MarketDetector.js.js';
 
 describe('MarketDetector', () => {
   describe('detectMarketCategory', () => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Methodology Selection (Agile vs Waterfall)
  *
@@ -7,7 +9,7 @@
  * - User-friendly explanations provided
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 
 describe('Methodology Selection', () => {
   describe('Methodology Types', () => {

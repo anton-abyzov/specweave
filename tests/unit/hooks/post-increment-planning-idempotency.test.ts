@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Post-Increment-Planning Hook Idempotency
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/hooks/post-increment-planning-idempotency
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for VisionAnalyzer
  *
@@ -9,9 +11,9 @@
  * - Error handling
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { VisionAnalyzer } from '../../../src/init/research/VisionAnalyzer.js';
-import { VisionInsights, MarketCategory } from '../../../src/init/research/types.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { VisionAnalyzer } from '../../../src/init/research/VisionAnalyzer.js.js';
+import { VisionInsights, MarketCategory } from '../../../src/init/research/types.js.js';
 
 describe('VisionAnalyzer', () => {
   let analyzer: VisionAnalyzer;

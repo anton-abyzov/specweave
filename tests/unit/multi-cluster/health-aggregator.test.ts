@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Health Aggregator
  *
@@ -6,31 +8,31 @@
  * @module health-aggregator.test
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { HealthAggregator } from '../../../plugins/specweave-kafka/lib/multi-cluster/health-aggregator';
-import { ClusterSwitcher } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher';
+import { describe, test, expect, beforeEach, jest } from 'vitest';
+import { HealthAggregator } from '../../../plugins/specweave-kafka/lib/multi-cluster/health-aggregator.js';
+import { ClusterSwitcher } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher.js';
 import { Admin } from 'kafkajs';
 
 // Mock ClusterSwitcher
-jest.mock('../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher');
+vi.mock('../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher');
 
 describe('HealthAggregator', () => {
   let healthAggregator: HealthAggregator;
-  let mockClusterSwitcher: jest.Mocked<ClusterSwitcher>;
-  let mockAdmin: jest.Mocked<Admin>;
+  let mockClusterSwitcher: anyed<ClusterSwitcher>;
+  let mockAdmin: anyed<Admin>;
 
   beforeEach(() => {
     mockAdmin = {
-      describeCluster: jest.fn(),
-      listTopics: jest.fn(),
-      fetchTopicMetadata: jest.fn(),
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
+      describeCluster: vi.fn(),
+      listTopics: vi.fn(),
+      fetchTopicMetadata: vi.fn(),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
     } as any;
 
     mockClusterSwitcher = {
-      getAdmin: jest.fn().mockResolvedValue(mockAdmin),
-      executeOn: jest.fn(),
+      getAdmin: vi.fn().mockResolvedValue(mockAdmin),
+      executeOn: vi.fn(),
     } as any;
 
     healthAggregator = new HealthAggregator(mockClusterSwitcher);

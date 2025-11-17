@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Stream Processor
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/stream-processing/stream-processor
  */
 
-import { StreamProcessor, WindowedAggregator, StreamJoiner, StateStore, Topology } from '../../../plugins/specweave-kafka/lib/stream-processing/stream-processor';
+import { StreamProcessor, WindowedAggregator, StreamJoiner, StateStore, Topology } from '../../../plugins/specweave-kafka/lib/stream-processing/stream-processor.js';
 
 describe('StreamProcessor - Stream Transformations', () => {
   let processor: StreamProcessor;

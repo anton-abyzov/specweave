@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for StatusLineManager
  *
  * Tests the fast caching and rendering system.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { StatusLineManager } from '../../../src/core/status-line/status-line-manager.js';
-import { StatusLineCache } from '../../../src/core/status-line/types.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { StatusLineManager } from '../../../src/core/status-line/status-line-manager.js.js';
+import { StatusLineCache } from '../../../src/core/status-line/types.js.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

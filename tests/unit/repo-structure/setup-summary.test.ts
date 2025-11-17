@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Setup Summary
  *
@@ -5,7 +7,7 @@
  * Test Coverage Target: 85%
  */
 
-import { generateSetupSummary, formatRepo } from '../../../src/core/repo-structure/setup-summary';
+import { generateSetupSummary, formatRepo } from '../../../src/core/repo-structure/setup-summary.js';
 
 describe('generateSetupSummary', () => {
   it('should include repository count in summary', () => {

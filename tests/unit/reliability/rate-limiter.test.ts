@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Rate Limiter
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/reliability/rate-limiter
  */
 
-import { RateLimiter, TokenBucketLimiter, LeakyBucketLimiter, SlidingWindowLimiter } from '../../../plugins/specweave-kafka/lib/reliability/rate-limiter';
+import { RateLimiter, TokenBucketLimiter, LeakyBucketLimiter, SlidingWindowLimiter } from '../../../plugins/specweave-kafka/lib/reliability/rate-limiter.js';
 
 describe('RateLimiter - Token Bucket Algorithm', () => {
   let limiter: TokenBucketLimiter;
@@ -535,9 +537,9 @@ describe('RateLimiter - Distributed Rate Limiting', () => {
 
     // Mock Redis client
     const redisClient = {
-      incrby: jest.fn().mockResolvedValue(1),
-      expire: jest.fn().mockResolvedValue('OK'),
-      get: jest.fn().mockResolvedValue('50'),
+      incrby: vi.fn().mockResolvedValue(1),
+      expire: vi.fn().mockResolvedValue('OK'),
+      get: vi.fn().mockResolvedValue('50'),
     };
 
     const limiter = new SlidingWindowLimiter(config, redisClient as any);
@@ -552,9 +554,9 @@ describe('RateLimiter - Distributed Rate Limiting', () => {
 
   test('should handle Redis connection failures gracefully', async () => {
     const redisClient = {
-      incrby: jest.fn().mockRejectedValue(new Error('Redis connection failed')),
-      expire: jest.fn(),
-      get: jest.fn(),
+      incrby: vi.fn().mockRejectedValue(new Error('Redis connection failed')),
+      expire: vi.fn(),
+      get: vi.fn(),
     };
 
     const limiter = new SlidingWindowLimiter(
@@ -637,7 +639,7 @@ describe('RateLimiter - Integration with Kafka', () => {
     });
 
     const mockProducer = {
-      send: jest.fn().mockResolvedValue({ topicName: 'test', partition: 0 }),
+      send: vi.fn().mockResolvedValue({ topicName: 'test', partition: 0 }),
     };
 
     const rateLimitedSend = async (messages: any[]) => {
@@ -670,7 +672,7 @@ describe('RateLimiter - Integration with Kafka', () => {
       leakInterval: 1000,
     });
 
-    const processMessage = jest.fn().mockResolvedValue(undefined);
+    const processMessage = vi.fn().mockResolvedValue(undefined);
 
     // Simulate consuming messages
     const messages = Array.from({ length: 100 }, (_, i) => ({

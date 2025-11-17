@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Capacity Planner
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/performance/capacity-planner
  */
 
-import { CapacityPlanner, ThroughputEstimator, StoragePlanner, NetworkPlanner, BrokerSizer } from '../../../plugins/specweave-kafka/lib/performance/capacity-planner';
+import { CapacityPlanner, ThroughputEstimator, StoragePlanner, NetworkPlanner, BrokerSizer } from '../../../plugins/specweave-kafka/lib/performance/capacity-planner.js';
 
 describe('CapacityPlanner - Throughput Estimation', () => {
   let estimator: ThroughputEstimator;

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Architecture Presenter
  *
@@ -6,15 +8,15 @@
  * - User can accept/reject/modify recommendation
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { presentArchitectureRecommendation, promptAcceptArchitecture, promptModifyArchitecture, presentArchitectureSummary } from '../../../src/init/ArchitecturePresenter.js';
-import type { ArchitectureRecommendation } from '../../../src/init/architecture/types.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { presentArchitectureRecommendation, promptAcceptArchitecture, promptModifyArchitecture, presentArchitectureSummary } from '../../../src/init/ArchitecturePresenter.js.js';
+import type { ArchitectureRecommendation } from '../../../src/init/architecture/types.js.js';
 
 describe('Architecture Presenter', () => {
   let consoleLogSpy: any;
 
   beforeEach(() => {
-    consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for MetadataManager duplicate validation
  *
@@ -5,14 +7,14 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement
-} from '../../helpers/increment-test-helpers.js';
+} from '../../helpers/increment-test-helpers.js.js';
 
 describe('MetadataManager Duplicate Validation', () => {
   let testDir: string;

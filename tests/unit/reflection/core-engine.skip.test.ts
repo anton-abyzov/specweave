@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Core Reflection Engine
  */
@@ -6,14 +8,14 @@ import {
   runSelfReflection,
   createReflectionContext,
   runReflectionAuto
-} from '../../../src/hooks/lib/run-self-reflection';
+} from '../../../src/hooks/lib/run-self-reflection.js';
 import {
   DEFAULT_REFLECTION_CONFIG,
   ReflectionMode,
   ReflectionModel,
   ReflectionContext,
   GitDiffInfo
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Core Reflection Engine', () => {
   const mockModifiedFiles: GitDiffInfo[] = [

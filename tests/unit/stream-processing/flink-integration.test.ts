@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Flink Integration
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/stream-processing/flink-integration
  */
 
-import { FlinkKafkaConnector, FlinkCheckpointing, FlinkStateBackend, FlinkSavepoints, FlinkJob } from '../../../plugins/specweave-kafka/lib/stream-processing/flink-integration';
+import { FlinkKafkaConnector, FlinkCheckpointing, FlinkStateBackend, FlinkSavepoints, FlinkJob } from '../../../plugins/specweave-kafka/lib/stream-processing/flink-integration.js';
 
 describe('FlinkIntegration - Kafka Connectors', () => {
   let connector: FlinkKafkaConnector;

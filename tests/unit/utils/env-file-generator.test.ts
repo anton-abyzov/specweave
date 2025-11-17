@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Environment File Generator
  *
@@ -10,16 +12,16 @@ import {
   generateEnvFile,
   envFileExists,
   loadEnvConfig,
-} from '../../../src/utils/env-file-generator';
+} from '../../../src/utils/env-file-generator.js';
 
 // Mock fs-extra
-jest.mock('fs-extra');
+vi.mock('fs-extra');
 
-const mockedFs = fs as jest.Mocked<typeof fs>;
+const mockedFs = fs as anyed<typeof fs>;
 
 describe('generateEnvFile', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should create .env with required environment variables', async () => {
@@ -39,7 +41,7 @@ describe('generateEnvFile', () => {
 
     // Then: .env contains required variables
     expect(mockedFs.writeFile).toHaveBeenCalled();
-    const writeCall = (mockedFs.writeFile as jest.Mock).mock.calls[0];
+    const writeCall = (mockedFs.writeFile as any).mock.calls[0];
     const envContent = writeCall[1];
     expect(envContent).toContain('GITHUB_TOKEN');
     expect(envContent).toContain('GITHUB_OWNER');
@@ -49,7 +51,7 @@ describe('generateEnvFile', () => {
 
 describe('envFileExists', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return true when .env file exists', async () => {
@@ -80,7 +82,7 @@ describe('envFileExists', () => {
 
 describe('loadEnvConfig', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should parse valid .env file and return EnvConfig', async () => {

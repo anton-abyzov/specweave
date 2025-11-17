@@ -1,9 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for CostEstimator (T-040)
  */
 
-import { CostEstimator } from '../../../src/init/architecture/CostEstimator.js';
-import type { ArchitectureType } from '../../../src/init/architecture/types.js';
+import { CostEstimator } from '../../../src/init/architecture/CostEstimator.js.js';
+import type { ArchitectureType } from '../../../src/init/architecture/types.js.js';
 
 describe('CostEstimator', () => {
   const estimator = new CostEstimator();

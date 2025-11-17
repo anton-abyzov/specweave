@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Enhanced JIRA Sync Tests
  *
  * Tests for enhanced JIRA content sync with rich descriptions.
  */
 
-import { syncSpecToJiraWithEnhancedContent, EnhancedJiraSyncOptions } from '../../../plugins/specweave-jira/lib/enhanced-jira-sync';
+import { syncSpecToJiraWithEnhancedContent, EnhancedJiraSyncOptions } from '../../../plugins/specweave-jira/lib/enhanced-jira-sync.js';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import * as os from 'os';
@@ -118,7 +120,7 @@ describe('Enhanced JIRA Sync', () => {
       };
 
       // Capture console output
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
       const result = await syncSpecToJiraWithEnhancedContent(options);
 

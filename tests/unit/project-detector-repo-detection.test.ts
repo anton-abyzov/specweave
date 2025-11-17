@@ -1,26 +1,28 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for ProjectDetector Repo Name Detection
  *
  * Critical functionality: Auto-detect repo name from git remote instead of "default"
  */
 
-import { ProjectDetector } from '../../src/core/living-docs/project-detector.js';
+import { ProjectDetector } from '../../src/core/living-docs/project-detector.js.js';
 import { execSync } from 'child_process';
 
 // Mock execSync
-jest.mock('child_process', () => ({
-  execSync: jest.fn(),
+vi.mock('child_process', () => ({
+  execSync: vi.fn(),
 }));
 
 describe('ProjectDetector - Repo Name Detection', () => {
-  const mockExecSync = execSync as unknown as jest.Mock;
+  const mockExecSync = execSync as unknown as any;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('detectRepoName()', () => {

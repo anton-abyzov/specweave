@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Metrics Collector
  *
@@ -6,16 +8,16 @@
  * @module metrics-collector.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   MetricsCollector,
   MetricType,
   MetricsRegistry,
-} from '../../../plugins/specweave-kafka/lib/observability/metrics-collector';
+} from '../../../plugins/specweave-kafka/lib/observability/metrics-collector.js';
 import { Kafka, Producer, Consumer } from 'kafkajs';
 
 // Mock Prometheus client
-jest.mock('prom-client');
+vi.mock('prom-client');
 
 describe('MetricsCollector', () => {
   let metricsCollector: MetricsCollector;

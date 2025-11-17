@@ -1,18 +1,20 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for Folder Mapper
  *
  * Covers ADO multi-team and Jira multi-project/component folder mapping
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import {
   getSpecsFoldersForProfile,
   getAreaPathForTeam,
   generateAreaPaths,
   getFolderNameFromAreaPath,
   getTeamFromFolder,
-} from '../../../src/core/sync/folder-mapper.js';
-import { SyncProfile } from '../../../src/core/types/sync-profile.js';
+} from '../../../src/core/sync/folder-mapper.js.js';
+import { SyncProfile } from '../../../src/core/types/sync-profile.js.js';
 
 describe('Folder Mapper - ADO', () => {
   describe('Multi-Team Folders', () => {

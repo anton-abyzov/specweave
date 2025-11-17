@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for QualityGateDecider
  *
@@ -5,8 +7,8 @@
  * @module tests/unit/qa/quality-gate-decider.test
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { QualityGateDecider, DEFAULT_THRESHOLDS } from '../../../src/core/qa/quality-gate-decider.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { QualityGateDecider, DEFAULT_THRESHOLDS } from '../../../src/core/qa/quality-gate-decider.js.js';
 import {
   QualityAssessment,
   QualityGateDecision,
@@ -14,7 +16,7 @@ import {
   SecurityAuditResult,
   Risk,
   QualityGateThresholds,
-} from '../../../src/core/qa/types.js';
+} from '../../../src/core/qa/types.js.js';
 
 describe('QualityGateDecider', () => {
   let decider: QualityGateDecider;

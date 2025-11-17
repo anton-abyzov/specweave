@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Bulk Status Sync
  *
@@ -7,7 +9,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { StatusSyncEngine, BulkSyncInput, BulkSyncResult, SyncResult } from '../../../src/core/sync/status-sync-engine';
+import { StatusSyncEngine, BulkSyncInput, BulkSyncResult, SyncResult } from '../../../src/core/sync/status-sync-engine.js';
 
 describe('StatusSyncEngine - Bulk Sync', () => {
   let engine: StatusSyncEngine;
@@ -61,7 +63,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
       ];
 
       // Mock syncToExternal to return success
-      jest.spyOn(engine, 'syncToExternal').mockResolvedValue({
+      vi.spyOn(engine, 'syncToExternal').mockResolvedValue({
         success: true,
         direction: 'to-external',
         action: 'sync-to-external',
@@ -92,7 +94,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
         remoteTimestamp: '2025-11-10T11:00:00Z'
       }));
 
-      jest.spyOn(engine, 'syncToExternal').mockResolvedValue({
+      vi.spyOn(engine, 'syncToExternal').mockResolvedValue({
         success: true,
         direction: 'to-external',
         action: 'sync-to-external',
@@ -145,7 +147,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
         }
       ];
 
-      jest.spyOn(engine, 'syncToExternal')
+      vi.spyOn(engine, 'syncToExternal')
         .mockResolvedValueOnce({
           success: true,
           direction: 'to-external',
@@ -187,7 +189,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
         remoteTimestamp: '2025-11-10T11:00:00Z'
       }));
 
-      jest.spyOn(engine, 'syncToExternal').mockResolvedValue({
+      vi.spyOn(engine, 'syncToExternal').mockResolvedValue({
         success: true,
         direction: 'to-external',
         action: 'sync-to-external',
@@ -219,7 +221,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
         }
       ];
 
-      jest.spyOn(engine, 'syncToExternal').mockResolvedValue({
+      vi.spyOn(engine, 'syncToExternal').mockResolvedValue({
         success: true,
         direction: 'to-external',
         action: 'sync-to-external',
@@ -253,7 +255,7 @@ describe('StatusSyncEngine - Bulk Sync', () => {
         remoteTimestamp: '2025-11-10T11:00:00Z'
       }));
 
-      jest.spyOn(engine, 'syncToExternal').mockResolvedValue({
+      vi.spyOn(engine, 'syncToExternal').mockResolvedValue({
         success: true,
         direction: 'to-external',
         action: 'sync-to-external',

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Reflection Prompt Builder
  */
@@ -7,14 +9,14 @@ import {
   estimatePromptTokens,
   truncateModifiedFiles,
   buildSimplifiedPrompt
-} from '../../../src/hooks/lib/reflection-prompt-builder';
+} from '../../../src/hooks/lib/reflection-prompt-builder.js';
 import {
   DEFAULT_REFLECTION_CONFIG,
   ReflectionDepth,
   ReflectionModel,
   IssueSeverity,
   GitDiffInfo
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Reflection Prompt Builder', () => {
   const mockModifiedFiles: GitDiffInfo[] = [

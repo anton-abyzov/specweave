@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Security Patterns
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/security/security-patterns
  */
 
-import { SecurityPatterns, EncryptionManager, AuthenticationManager, AuthorizationManager, TLSManager } from '../../../plugins/specweave-kafka/lib/security/security-patterns';
+import { SecurityPatterns, EncryptionManager, AuthenticationManager, AuthorizationManager, TLSManager } from '../../../plugins/specweave-kafka/lib/security/security-patterns.js';
 
 describe('SecurityPatterns - Encryption', () => {
   let encryption: EncryptionManager;

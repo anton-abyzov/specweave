@@ -1,21 +1,23 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Plugin Detection
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { isPluginInstalled } from '../../../src/cli/helpers/issue-tracker/utils';
+import { isPluginInstalled } from '../../../src/cli/helpers/issue-tracker/utils.js';
 
 // Mock fs module
-jest.mock('fs');
+vi.mock('fs');
 
 describe('Plugin Detection', () => {
-  const mockFs = fs as jest.Mocked<typeof fs>;
+  const mockFs = fs as anyed<typeof fs>;
   const originalHome = process.env.HOME;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env.HOME = '/test/home';
   });
 

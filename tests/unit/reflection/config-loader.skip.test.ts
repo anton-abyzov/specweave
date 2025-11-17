@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Reflection Configuration Loader
  */
@@ -9,14 +11,14 @@ import {
   loadReflectionConfig,
   validateReflectionConfig,
   loadAndValidateReflectionConfig
-} from '../../../src/hooks/lib/reflection-config-loader';
+} from '../../../src/hooks/lib/reflection-config-loader.js';
 import {
   DEFAULT_REFLECTION_CONFIG,
   ReflectionMode,
   ReflectionDepth,
   ReflectionModel,
   IssueSeverity
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Reflection Configuration Loader', () => {
   const testDir = path.join(__dirname, '../../fixtures/reflection-config');

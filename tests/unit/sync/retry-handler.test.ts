@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Retry Handler
  *
  * Tests retry logic with exponential backoff.
  */
 
-import { RetryHandler, RetryableError } from '../../../src/core/sync/retry-handler';
+import { RetryHandler, RetryableError } from '../../../src/core/sync/retry-handler.js';
 
 describe('RetryHandler', () => {
   let handler: RetryHandler;
@@ -20,7 +22,7 @@ describe('RetryHandler', () => {
 
   describe('executeWithRetry', () => {
     it('should succeed on first attempt', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = vi.fn().mockResolvedValue('success');
 
       const result = await handler.executeWithRetry(operation);
 
@@ -31,7 +33,7 @@ describe('RetryHandler', () => {
     });
 
     it('should retry on network error and eventually succeed', async () => {
-      const operation = jest.fn()
+      const operation = vi.fn()
         .mockRejectedValueOnce(new Error('Network error: ECONNREFUSED'))
         .mockRejectedValueOnce(new Error('Network error: ECONNREFUSED'))
         .mockResolvedValueOnce('success');
@@ -46,7 +48,7 @@ describe('RetryHandler', () => {
 
     it('should retry with exponential backoff', async () => {
       const delays: number[] = [];
-      const operation = jest.fn().mockImplementation(async () => {
+      const operation = vi.fn().mockImplementation(async () => {
         throw new Error('Server error: 500');
       });
 
@@ -60,7 +62,7 @@ describe('RetryHandler', () => {
     });
 
     it('should stop retrying after max attempts', async () => {
-      const operation = jest.fn().mockRejectedValue(new Error('Network error'));
+      const operation = vi.fn().mockRejectedValue(new Error('Network error'));
 
       const result = await handler.executeWithRetry(operation);
 
@@ -71,7 +73,7 @@ describe('RetryHandler', () => {
     });
 
     it('should not retry non-retryable errors', async () => {
-      const operation = jest.fn().mockRejectedValue(new Error('Validation failed'));
+      const operation = vi.fn().mockRejectedValue(new Error('Validation failed'));
 
       const result = await handler.executeWithRetry(operation);
 
@@ -81,7 +83,7 @@ describe('RetryHandler', () => {
     });
 
     it('should handle rate limit errors', async () => {
-      const operation = jest.fn()
+      const operation = vi.fn()
         .mockRejectedValueOnce(new Error('Rate limit exceeded: 429'))
         .mockResolvedValueOnce('success');
 
@@ -92,7 +94,7 @@ describe('RetryHandler', () => {
     });
 
     it('should use custom error classifier', async () => {
-      const operation = jest.fn()
+      const operation = vi.fn()
         .mockRejectedValueOnce(new Error('Custom error'))
         .mockResolvedValueOnce('success');
 
@@ -116,7 +118,7 @@ describe('RetryHandler', () => {
       ];
 
       for (const error of errors) {
-        const operation = jest.fn()
+        const operation = vi.fn()
           .mockRejectedValueOnce(error)
           .mockResolvedValueOnce('success');
 
@@ -133,7 +135,7 @@ describe('RetryHandler', () => {
       ];
 
       for (const error of errors) {
-        const operation = jest.fn()
+        const operation = vi.fn()
           .mockRejectedValueOnce(error)
           .mockResolvedValueOnce('success');
 
@@ -151,7 +153,7 @@ describe('RetryHandler', () => {
       ];
 
       for (const error of errors) {
-        const operation = jest.fn()
+        const operation = vi.fn()
           .mockRejectedValueOnce(error)
           .mockResolvedValueOnce('success');
 

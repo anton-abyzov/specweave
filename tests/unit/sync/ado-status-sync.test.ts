@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Azure DevOps Status Sync
  *
@@ -7,30 +9,30 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { AdoStatusSync, ExternalStatus } from '../../../plugins/specweave-ado/lib/ado-status-sync';
+import { AdoStatusSync, ExternalStatus } from '../../../plugins/specweave-ado/lib/ado-status-sync.js';
 import axios from 'axios';
 
 // Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as anyed<typeof axios>;
 
 describe('AdoStatusSync', () => {
   let sync: AdoStatusSync;
-  let mockGet: jest.Mock;
-  let mockPatch: jest.Mock;
-  let mockPost: jest.Mock;
+  let mockGet: any;
+  let mockPatch: any;
+  let mockPost: any;
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock functions
-    mockGet = jest.fn();
-    mockPatch = jest.fn();
-    mockPost = jest.fn();
+    mockGet = vi.fn();
+    mockPatch = vi.fn();
+    mockPost = vi.fn();
 
     // Mock axios.create to return a client with mocked methods
-    mockedAxios.create = jest.fn().mockReturnValue({
+    mockedAxios.create = vi.fn().mockReturnValue({
       get: mockGet,
       patch: mockPatch,
       post: mockPost

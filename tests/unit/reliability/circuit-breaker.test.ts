@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Circuit Breaker
  *
@@ -6,12 +8,12 @@
  * @module circuit-breaker.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   CircuitBreaker,
   CircuitState,
   CircuitBreakerConfig,
-} from '../../../plugins/specweave-kafka/lib/reliability/circuit-breaker';
+} from '../../../plugins/specweave-kafka/lib/reliability/circuit-breaker.js';
 
 describe('CircuitBreaker', () => {
   let circuitBreaker: CircuitBreaker;
@@ -37,7 +39,7 @@ describe('CircuitBreaker', () => {
     });
 
     test('should transition to OPEN after threshold failures', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Execute 5 failures
       for (let i = 0; i < 5; i++) {
@@ -52,7 +54,7 @@ describe('CircuitBreaker', () => {
     });
 
     test('should transition to HALF_OPEN after timeout', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -142,7 +144,7 @@ describe('CircuitBreaker', () => {
 
   describe('Failure Detection', () => {
     test('should count consecutive failures', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       for (let i = 0; i < 3; i++) {
         try {
@@ -206,7 +208,7 @@ describe('CircuitBreaker', () => {
 
   describe('Operation Execution', () => {
     test('should execute operation in CLOSED state', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = vi.fn().mockResolvedValue('success');
 
       const result = await circuitBreaker.execute(operation);
 
@@ -215,7 +217,7 @@ describe('CircuitBreaker', () => {
     });
 
     test('should reject immediately in OPEN state', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -226,7 +228,7 @@ describe('CircuitBreaker', () => {
         }
       }
 
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = vi.fn().mockResolvedValue('success');
 
       await expect(circuitBreaker.execute(operation)).rejects.toThrow('Circuit breaker is OPEN');
 
@@ -256,8 +258,8 @@ describe('CircuitBreaker', () => {
 
   describe('Fallback Mechanism', () => {
     test('should execute fallback on circuit open', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
-      const fallback = jest.fn().mockResolvedValue('fallback result');
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
+      const fallback = vi.fn().mockResolvedValue('fallback result');
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -275,8 +277,8 @@ describe('CircuitBreaker', () => {
     });
 
     test('should execute fallback on operation failure', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
-      const fallback = jest.fn().mockResolvedValue('fallback result');
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
+      const fallback = vi.fn().mockResolvedValue('fallback result');
 
       const result = await circuitBreaker.execute(failingOperation, { fallback });
 
@@ -284,8 +286,8 @@ describe('CircuitBreaker', () => {
     });
 
     test('should not execute fallback on success', async () => {
-      const successOperation = jest.fn().mockResolvedValue('success');
-      const fallback = jest.fn().mockResolvedValue('fallback');
+      const successOperation = vi.fn().mockResolvedValue('success');
+      const fallback = vi.fn().mockResolvedValue('fallback');
 
       const result = await circuitBreaker.execute(successOperation, { fallback });
 
@@ -359,7 +361,7 @@ describe('CircuitBreaker', () => {
     });
 
     test('should track state transition history', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -393,10 +395,10 @@ describe('CircuitBreaker', () => {
 
   describe('Event Listeners', () => {
     test('should emit state change events', async () => {
-      const stateChangeListener = jest.fn();
+      const stateChangeListener = vi.fn();
       circuitBreaker.on('stateChange', stateChangeListener);
 
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -415,10 +417,10 @@ describe('CircuitBreaker', () => {
     });
 
     test('should emit failure events', async () => {
-      const failureListener = jest.fn();
+      const failureListener = vi.fn();
       circuitBreaker.on('failure', failureListener);
 
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Test error'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Test error'));
 
       try {
         await circuitBreaker.execute(failingOperation);
@@ -433,10 +435,10 @@ describe('CircuitBreaker', () => {
     });
 
     test('should emit success events', async () => {
-      const successListener = jest.fn();
+      const successListener = vi.fn();
       circuitBreaker.on('success', successListener);
 
-      const successOperation = jest.fn().mockResolvedValue('success');
+      const successOperation = vi.fn().mockResolvedValue('success');
 
       await circuitBreaker.execute(successOperation);
 
@@ -454,7 +456,7 @@ describe('CircuitBreaker', () => {
         monitoringPeriod: 10000,
       });
 
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       for (let i = 0; i < 9; i++) {
         try {
@@ -482,7 +484,7 @@ describe('CircuitBreaker', () => {
         monitoringPeriod: 10000,
       });
 
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -503,8 +505,8 @@ describe('CircuitBreaker', () => {
 
   describe('Error Handling', () => {
     test('should handle errors in fallback', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Operation failed'));
-      const failingFallback = jest.fn().mockRejectedValue(new Error('Fallback failed'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Operation failed'));
+      const failingFallback = vi.fn().mockRejectedValue(new Error('Fallback failed'));
 
       await expect(
         circuitBreaker.execute(failingOperation, { fallback: failingFallback })
@@ -518,7 +520,7 @@ describe('CircuitBreaker', () => {
 
   describe('Performance', () => {
     test('should have minimal overhead for successful operations', async () => {
-      const operation = jest.fn().mockResolvedValue('success');
+      const operation = vi.fn().mockResolvedValue('success');
       const iterations = 10000;
 
       const startTime = Date.now();
@@ -534,7 +536,7 @@ describe('CircuitBreaker', () => {
     });
 
     test('should reject fast in OPEN state', async () => {
-      const failingOperation = jest.fn().mockRejectedValue(new Error('Failure'));
+      const failingOperation = vi.fn().mockRejectedValue(new Error('Failure'));
 
       // Open the circuit
       for (let i = 0; i < 5; i++) {
@@ -545,7 +547,7 @@ describe('CircuitBreaker', () => {
         }
       }
 
-      const operation = jest.fn();
+      const operation = vi.fn();
       const iterations = 1000;
 
       const startTime = Date.now();

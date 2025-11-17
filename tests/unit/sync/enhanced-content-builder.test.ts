@@ -1,5 +1,7 @@
-import { EnhancedContentBuilder } from '../../../src/core/sync/enhanced-content-builder';
-import { SpecContent, UserStory, TaskLink } from '../../../src/core/sync/types';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+import { EnhancedContentBuilder } from '../../../src/core/sync/enhanced-content-builder.js';
+import { SpecContent, UserStory, TaskLink } from '../../../src/core/sync/types.js';
 
 describe('EnhancedContentBuilder', () => {
   let builder: EnhancedContentBuilder;

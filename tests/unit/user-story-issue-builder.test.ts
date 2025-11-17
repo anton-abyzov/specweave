@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for UserStoryIssueBuilder
  *
@@ -8,8 +10,8 @@
  * 4. ✅ Implementation section inclusion
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { mkdtemp, rm } from 'fs/promises';

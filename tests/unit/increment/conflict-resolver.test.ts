@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for ConflictResolver
  *
@@ -5,7 +7,7 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import * as path from 'path';
 import {
@@ -13,15 +15,15 @@ import {
   mergeContent,
   resolveAllDuplicates,
   type ResolveOptions
-} from '../../../src/core/increment/conflict-resolver.js';
-import type { Duplicate, IncrementLocation } from '../../../src/core/increment/duplicate-detector.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+} from '../../../src/core/increment/conflict-resolver.js.js';
+import type { Duplicate, IncrementLocation } from '../../../src/core/increment/duplicate-detector.js.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement,
   createMockLocation
-} from '../../helpers/increment-test-helpers.js';
+} from '../../helpers/increment-test-helpers.js.js';
 
 describe('ConflictResolver', () => {
   let testDir: string;
