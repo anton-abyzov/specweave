@@ -5,10 +5,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
+import * as os from 'os';
 import { ReportGenerator } from '../../../src/init/research/ReportGenerator.js';
 import type { VisionInsights } from '../../../src/init/research/types.js';
 
-const TEST_REPORT_PATH = '.specweave/test-reports/market-research.md';
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-report-generator-' + Date.now());
+const TEST_REPORT_PATH = path.join(TEST_ROOT, '.specweave/test-reports/market-research.md');
 
 describe('ReportGenerator', () => {
   beforeEach(async () => {
