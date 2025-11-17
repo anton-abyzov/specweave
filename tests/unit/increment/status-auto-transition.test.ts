@@ -84,7 +84,7 @@ describe('Status Auto-Transition', () => {
 
   describe('autoTransitionStatus()', () => {
     describe('Rule 1: PLANNING → ACTIVE when tasks.md created', () => {
-      test('transitions from PLANNING to ACTIVE when tasks.md exists', () => {
+      it('transitions from PLANNING to ACTIVE when tasks.md exists', () => {
         const incrementId = '0001-test';
         createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -99,7 +99,7 @@ describe('Status Auto-Transition', () => {
         expect(metadata.status).toBe(IncrementStatus.ACTIVE);
       });
 
-      test('does not transition if tasks.md does not exist', () => {
+      it('does not transition if tasks.md does not exist', () => {
         const incrementId = '0002-test';
         createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -111,7 +111,7 @@ describe('Status Auto-Transition', () => {
         expect(metadata.status).toBe(IncrementStatus.PLANNING);
       });
 
-      test('does not transition if already ACTIVE', () => {
+      it('does not transition if already ACTIVE', () => {
         const incrementId = '0003-test';
         createTestIncrement(incrementId, IncrementStatus.ACTIVE);
         createFile(incrementId, 'tasks.md', '# Tasks');
@@ -126,7 +126,7 @@ describe('Status Auto-Transition', () => {
     });
 
     describe('Rule 2: BACKLOG → PLANNING when spec.md created', () => {
-      test('transitions from BACKLOG to PLANNING when spec.md exists', () => {
+      it('transitions from BACKLOG to PLANNING when spec.md exists', () => {
         const incrementId = '0004-test';
         createTestIncrement(incrementId, IncrementStatus.BACKLOG);
 
@@ -141,7 +141,7 @@ describe('Status Auto-Transition', () => {
         expect(metadata.status).toBe(IncrementStatus.PLANNING);
       });
 
-      test('does not transition if spec.md does not exist', () => {
+      it('does not transition if spec.md does not exist', () => {
         const incrementId = '0005-test';
         createTestIncrement(incrementId, IncrementStatus.BACKLOG);
 
@@ -155,7 +155,7 @@ describe('Status Auto-Transition', () => {
     });
 
     describe('Rule 3: Any status → ACTIVE when tasks in-progress', () => {
-      test('transitions from PLANNING to ACTIVE when tasks in-progress', () => {
+      it('transitions from PLANNING to ACTIVE when tasks in-progress', () => {
         const incrementId = '0006-test';
         createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -176,7 +176,7 @@ describe('Status Auto-Transition', () => {
         expect(metadata.status).toBe(IncrementStatus.ACTIVE);
       });
 
-      test('transitions from BACKLOG to ACTIVE when tasks in-progress', () => {
+      it('transitions from BACKLOG to ACTIVE when tasks in-progress', () => {
         const incrementId = '0007-test';
         createTestIncrement(incrementId, IncrementStatus.BACKLOG);
 
@@ -194,7 +194,7 @@ describe('Status Auto-Transition', () => {
         expect(metadata.status).toBe(IncrementStatus.ACTIVE);
       });
 
-      test('does not transition if all tasks pending', () => {
+      it('does not transition if all tasks pending', () => {
         const incrementId = '0008-test';
         createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -214,14 +214,14 @@ describe('Status Auto-Transition', () => {
       });
     });
 
-    test('handles missing increment gracefully', () => {
+    it('handles missing increment gracefully', () => {
       const result = autoTransitionStatus('9999-nonexistent');
       expect(result).toBe(false);
     });
   });
 
   describe('onFileCreated()', () => {
-    test('triggers auto-transition when spec.md created', () => {
+    it('triggers auto-transition when spec.md created', () => {
       const incrementId = '0009-test';
       createTestIncrement(incrementId, IncrementStatus.BACKLOG);
 
@@ -234,7 +234,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe(IncrementStatus.PLANNING);
     });
 
-    test('triggers auto-transition when tasks.md created', () => {
+    it('triggers auto-transition when tasks.md created', () => {
       const incrementId = '0010-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -247,7 +247,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe(IncrementStatus.ACTIVE);
     });
 
-    test('ignores non-trigger files', () => {
+    it('ignores non-trigger files', () => {
       const incrementId = '0011-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -262,7 +262,7 @@ describe('Status Auto-Transition', () => {
   });
 
   describe('shouldTransitionToActive()', () => {
-    test('returns true for PLANNING with tasks.md', () => {
+    it('returns true for PLANNING with tasks.md', () => {
       const incrementId = '0012-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
       createFile(incrementId, 'tasks.md', '# Tasks');
@@ -270,7 +270,7 @@ describe('Status Auto-Transition', () => {
       expect(shouldTransitionToActive(incrementId)).toBe(true);
     });
 
-    test('returns true for PLANNING with in-progress tasks', () => {
+    it('returns true for PLANNING with in-progress tasks', () => {
       const incrementId = '0013-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
       createFile(incrementId, 'tasks.md', '- [⏳] **T-001**: In-progress');
@@ -278,7 +278,7 @@ describe('Status Auto-Transition', () => {
       expect(shouldTransitionToActive(incrementId)).toBe(true);
     });
 
-    test('returns false for ACTIVE status', () => {
+    it('returns false for ACTIVE status', () => {
       const incrementId = '0014-test';
       createTestIncrement(incrementId, IncrementStatus.ACTIVE);
       createFile(incrementId, 'tasks.md', '# Tasks');
@@ -286,20 +286,20 @@ describe('Status Auto-Transition', () => {
       expect(shouldTransitionToActive(incrementId)).toBe(false);
     });
 
-    test('returns false for PLANNING without tasks.md', () => {
+    it('returns false for PLANNING without tasks.md', () => {
       const incrementId = '0015-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
       expect(shouldTransitionToActive(incrementId)).toBe(false);
     });
 
-    test('handles missing increment gracefully', () => {
+    it('handles missing increment gracefully', () => {
       expect(shouldTransitionToActive('9999-nonexistent')).toBe(false);
     });
   });
 
   describe('migrateLegacyStatuses()', () => {
-    test('migrates "planned" to "planning"', () => {
+    it('migrates "planned" to "planning"', () => {
       const incrementId = '0016-test';
       const incrementPath = path.join(testIncrementsPath, incrementId);
       fs.ensureDirSync(incrementPath);
@@ -323,7 +323,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe('planning'); // ✅ Valid
     });
 
-    test('migrates multiple increments', () => {
+    it('migrates multiple increments', () => {
       // Create 3 increments with legacy status
       for (let i = 1; i <= 3; i++) {
         const incrementId = `001${i}-test`;
@@ -346,7 +346,7 @@ describe('Status Auto-Transition', () => {
       expect(migratedCount).toBe(3);
     });
 
-    test('skips increments with valid status', () => {
+    it('skips increments with valid status', () => {
       const incrementId = '0020-test';
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
@@ -358,7 +358,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe(IncrementStatus.PLANNING); // Unchanged
     });
 
-    test('skips _archive folder', () => {
+    it('skips _archive folder', () => {
       const archivePath = path.join(testIncrementsPath, '_archive');
       fs.ensureDirSync(path.join(archivePath, '0021-test'));
 
@@ -377,14 +377,14 @@ describe('Status Auto-Transition', () => {
       expect(migratedCount).toBe(0); // Archive not migrated
     });
 
-    test('handles empty increments folder', () => {
+    it('handles empty increments folder', () => {
       const migratedCount = migrateLegacyStatuses();
       expect(migratedCount).toBe(0);
     });
   });
 
   describe('Integration: Full workflow', () => {
-    test('increment lifecycle: PLANNING → ACTIVE', () => {
+    it('increment lifecycle: PLANNING → ACTIVE', () => {
       const incrementId = '0022-full-lifecycle';
 
       // Step 1: Create increment (starts in PLANNING)
@@ -408,7 +408,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe(IncrementStatus.ACTIVE);
     });
 
-    test('increment lifecycle: BACKLOG → PLANNING → ACTIVE', () => {
+    it('increment lifecycle: BACKLOG → PLANNING → ACTIVE', () => {
       const incrementId = '0023-full-lifecycle-backlog';
 
       // Step 1: Create increment in BACKLOG
