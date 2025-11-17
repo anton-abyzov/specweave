@@ -5,6 +5,7 @@
 # Usage: bash scripts/install-git-hooks.sh
 #
 # This script installs the pre-commit hook that verifies:
+# - No mass .specweave/ deletion (test cleanup protection)
 # - Build succeeds
 # - No TypeScript source files in dist/ (TS5055 prevention)
 # - Missing .js extensions warning
@@ -38,6 +39,31 @@ cat > "$HOOKS_DIR/pre-commit" << 'EOF'
 #
 
 echo "🔍 Running pre-commit checks..."
+
+# 0. Prevent accidental .specweave/ mass deletion
+DELETED_COUNT=$(git status --short | grep "^ D .specweave/" | wc -l | tr -d ' ')
+THRESHOLD=50
+
+if [ "$DELETED_COUNT" -gt "$THRESHOLD" ]; then
+  echo ""
+  echo "🚨 ═══════════════════════════════════════════════════════════════"
+  echo "🚨  ERROR: Mass .specweave/ Deletion Detected!"
+  echo "🚨 ═══════════════════════════════════════════════════════════════"
+  echo ""
+  echo "  Attempting to delete $DELETED_COUNT files in .specweave/"
+  echo "  Threshold: $THRESHOLD files"
+  echo ""
+  echo "  This likely indicates:"
+  echo "    1. Test cleanup deleted real .specweave/ folder"
+  echo "    2. Accidental 'rm -rf .specweave/'"
+  echo ""
+  echo "  📋 To restore: git restore .specweave/"
+  echo "  ⚠️  To bypass: git commit --no-verify"
+  echo ""
+  echo "🚨 ═══════════════════════════════════════════════════════════════"
+  echo ""
+  exit 1
+fi
 
 # 1. Check for TypeScript source files in dist/ (TS5055 indicator)
 if [ -d "dist/src" ]; then
