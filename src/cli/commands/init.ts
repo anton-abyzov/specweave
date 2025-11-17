@@ -280,9 +280,32 @@ export async function initCommand(
       let action: string;
 
       if (options.force) {
-        // Force mode: Skip interactive prompt and do fresh start
+        // ⚠️ CRITICAL WARNING: --force attempts fresh start
+        console.log(chalk.red.bold('\n⛔ DANGER: --force DELETES ALL DATA!'));
+        console.log(chalk.red('   This will permanently delete:'));
+        console.log(chalk.red('   • All increments (.specweave/increments/)'));
+        console.log(chalk.red('   • All documentation (.specweave/docs/)'));
+        console.log(chalk.red('   • All configuration and history'));
+        console.log(chalk.yellow('\n   💡 TIP: Use "specweave init ." (no --force) for safe updates\n'));
+
+        // ALWAYS require confirmation, even in force mode (safety critical!)
+        const { confirmDeletion } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirmDeletion',
+            message: chalk.red('⚠️  Type "y" to PERMANENTLY DELETE all .specweave/ data:'),
+            default: false,
+          },
+        ]);
+
+        if (!confirmDeletion) {
+          console.log(chalk.green('\n✅ Deletion cancelled. No data lost.'));
+          console.log(chalk.gray('   → Run "specweave init ." (without --force) for safe updates'));
+          process.exit(0);
+        }
+
         action = 'fresh';
-        console.log(chalk.yellow('   🔄 Force mode: Performing fresh start (removing existing .specweave/)'));
+        console.log(chalk.yellow('\n   🔄 Force mode: Proceeding with fresh start...'));
       } else {
         // Interactive mode: Ask user what to do
         const result = await inquirer.prompt([
@@ -320,7 +343,7 @@ export async function initCommand(
 
       if (action === 'fresh') {
         if (!options.force) {
-          // Interactive mode: Ask for confirmation
+          // Interactive mode: Ask for confirmation (force mode already confirmed above)
           console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
           const { confirmFresh } = await inquirer.prompt([
             {
@@ -337,9 +360,44 @@ export async function initCommand(
           }
         }
 
+        // Create backup before deletion (safety net!)
+        const specweavePath = path.join(targetDir, '.specweave');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+        const backupPath = path.join(targetDir, `.specweave.backup-${timestamp}`);
+
+        try {
+          console.log(chalk.cyan('\n   📦 Creating backup before deletion...'));
+          fs.copySync(specweavePath, backupPath);
+          console.log(chalk.green(`   ✅ Backup saved: ${path.relative(targetDir, backupPath)}`));
+          console.log(chalk.gray(`      To restore: mv ${path.basename(backupPath)} .specweave`));
+        } catch (backupError) {
+          console.log(chalk.yellow('   ⚠️  Could not create backup (proceeding anyway)'));
+        }
+
+        // Count files before deletion (for logging)
+        let fileCount = 0;
+        try {
+          const countFiles = (dir: string): number => {
+            let count = 0;
+            const items = fs.readdirSync(dir);
+            for (const item of items) {
+              const fullPath = path.join(dir, item);
+              if (fs.statSync(fullPath).isDirectory()) {
+                count += countFiles(fullPath);
+              } else {
+                count++;
+              }
+            }
+            return count;
+          };
+          fileCount = countFiles(specweavePath);
+        } catch (e) {
+          // Ignore errors
+        }
+
         // Delete .specweave/ for fresh start
-        fs.removeSync(path.join(targetDir, '.specweave'));
-        console.log(chalk.blue('   ♻️  Removed .specweave/ (fresh start)'));
+        fs.removeSync(specweavePath);
+        console.log(chalk.blue(`\n   ♻️  Removed .specweave/ (${fileCount} files deleted)`));
         // NOTE: No need to delete .claude/ - marketplace is GLOBAL, not per-project
         console.log(chalk.green('   ✅ Starting fresh - will create new .specweave/ structure\n'));
       } else {
