@@ -1,0 +1,67 @@
+# Terraform Outputs for Firebase
+# Project: {{projectName}}
+
+output "firebase_project_id" {
+  description = "Firebase project ID"
+  value       = google_firebase_project.{{snakeCase projectName}}.project
+}
+
+output "web_app_id" {
+  description = "Firebase Web App ID"
+  value       = google_firebase_web_app.{{snakeCase projectName}}.app_id
+}
+
+output "web_app_api_key" {
+  description = "Firebase Web App API Key"
+  value       = data.google_firebase_web_app_config.{{snakeCase projectName}}.api_key
+  sensitive   = true
+}
+
+output "web_app_auth_domain" {
+  description = "Firebase Auth Domain"
+  value       = data.google_firebase_web_app_config.{{snakeCase projectName}}.auth_domain
+}
+
+output "hosting_site_id" {
+  description = "Firebase Hosting Site ID"
+  value       = google_firebase_hosting_site.{{snakeCase projectName}}.site_id
+}
+
+output "hosting_url" {
+  description = "Firebase Hosting URL"
+  value       = "https://${google_firebase_hosting_site.{{snakeCase projectName}}.site_id}.web.app"
+}
+
+{{#if databaseName}}
+output "firestore_database_name" {
+  description = "Firestore database name"
+  value       = google_firestore_database.{{snakeCase databaseName}}.name
+}
+
+output "firestore_rules_deployed" {
+  description = "Firestore security rules deployment status"
+  value       = google_firebaserules_release.{{snakeCase databaseName}}.name
+}
+{{/if}}
+
+output "storage_bucket" {
+  description = "Firebase Storage bucket"
+  value       = google_firebase_storage_bucket.{{snakeCase projectName}}.bucket_id
+}
+
+output "storage_rules_deployed" {
+  description = "Storage security rules deployment status"
+  value       = google_firebaserules_release.storage.name
+}
+
+output "functions_service_account_email" {
+  description = "Service account for Cloud Functions"
+  value       = google_service_account.{{snakeCase functionName}}.email
+}
+
+{{#if enableAuth}}
+output "auth_enabled" {
+  description = "Firebase Authentication status"
+  value       = "enabled"
+}
+{{/if}}

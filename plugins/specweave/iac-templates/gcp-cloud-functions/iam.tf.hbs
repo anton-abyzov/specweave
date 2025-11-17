@@ -1,0 +1,54 @@
+# IAM Roles and Permissions for GCP Cloud Functions
+# Project: {{projectName}}
+
+###############################
+# Service Account Permissions
+###############################
+
+{{#if databaseName}}
+# Grant Cloud Function service account access to Firestore
+resource "google_project_iam_member" "{{snakeCase functionName}}_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+{{/if}}
+
+# Grant Cloud Function service account access to Cloud Logging
+resource "google_project_iam_member" "{{snakeCase functionName}}_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+
+# Grant Cloud Function service account access to Cloud Monitoring
+resource "google_project_iam_member" "{{snakeCase functionName}}_monitoring" {
+  project = var.project_id
+  role    = "roles/monitoring.metricWriter"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+
+# Grant service account access to read from source bucket
+resource "google_storage_bucket_iam_member" "{{snakeCase functionName}}_source_reader" {
+  bucket = google_storage_bucket.{{snakeCase functionName}}_source.name
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+
+###############################
+# Additional IAM Bindings (Optional)
+###############################
+
+# For Secret Manager integration (uncomment if needed):
+# resource "google_project_iam_member" "function_secret_accessor" {
+#   project = var.project_id
+#   role    = "roles/secretmanager.secretAccessor"
+#   member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+# }
+
+# For Cloud Storage access (uncomment if needed):
+# resource "google_project_iam_member" "function_storage_admin" {
+#   project = var.project_id
+#   role    = "roles/storage.objectAdmin"
+#   member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+# }

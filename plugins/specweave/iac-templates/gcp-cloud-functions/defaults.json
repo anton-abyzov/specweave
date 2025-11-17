@@ -1,0 +1,69 @@
+{
+  "platform": "gcp-cloud-functions",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "runtime": "nodejs20",
+  "memory": "256M",
+  "timeout": 60,
+  "instances": {
+    "dev": {
+      "min": 0,
+      "max": 5
+    },
+    "staging": {
+      "min": 0,
+      "max": 10
+    },
+    "prod": {
+      "min": 1,
+      "max": 100
+    }
+  },
+  "ingress": {
+    "dev": "ALLOW_ALL",
+    "staging": "ALLOW_ALL",
+    "prod": "ALLOW_INTERNAL_AND_GCLB"
+  },
+  "storage": {
+    "versioning": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "lifecycleDays": {
+      "dev": 30,
+      "staging": 30,
+      "prod": 90
+    },
+    "forceDestroy": {
+      "dev": true,
+      "staging": true,
+      "prod": false
+    }
+  },
+  "firestore": {
+    "type": "FIRESTORE_NATIVE",
+    "concurrencyMode": {
+      "dev": "PESSIMISTIC",
+      "staging": "OPTIMISTIC",
+      "prod": "OPTIMISTIC"
+    },
+    "pointInTimeRecovery": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "deleteProtection": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    }
+  },
+  "iam": {
+    "publicInvoker": {
+      "dev": true,
+      "staging": true,
+      "prod": false
+    }
+  }
+}

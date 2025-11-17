@@ -1,0 +1,55 @@
+{
+  "platform": "firebase",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "enableAuth": true,
+  "enableHosting": true,
+  "enableFunctions": true,
+  "enableStorage": true,
+  "firestore": {
+    "type": "FIRESTORE_NATIVE",
+    "concurrencyMode": {
+      "dev": "PESSIMISTIC",
+      "staging": "OPTIMISTIC",
+      "prod": "OPTIMISTIC"
+    },
+    "pointInTimeRecovery": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "deleteProtection": {
+      "dev": false,
+      "staging": false,
+      "prod": false
+    }
+  },
+  "storage": {
+    "versioning": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "forceDestroy": {
+      "dev": true,
+      "staging": true,
+      "prod": false
+    }
+  },
+  "auth": {
+    "providers": ["email"],
+    "allowDuplicateEmails": false
+  },
+  "hosting": {
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": {
+    "runtime": "nodejs18",
+    "region": "us-central1"
+  }
+}

@@ -89,7 +89,27 @@ I score and rank platforms based on multiple criteria:
 - **Learning Resources**: Documentation quality, community size
 - **Portability**: Vendor lock-in vs ease of migration
 
-### 5. Startup Credits & Free Tiers
+### 5. Data Freshness & Accuracy
+I maintain data freshness indicators for all platform recommendations:
+
+**Freshness Tracking**:
+- **Last Verified Date**: Each platform shows when its data was last verified
+- **Freshness Warning**: If data is older than 30 days, I warn you to verify current pricing
+- **Source**: Data comes from `platform-data-loader.ts` which tracks `lastVerified` timestamps
+- **User Responsibility**: Always verify critical pricing/features before production decisions
+
+**What This Means**:
+- 🟢 **Data ≤ 30 days old**: Current and reliable ✅
+- 🟡 **Data 31-60 days old**: Likely current, but recommend verification
+- 🔴 **Data > 60 days old**: Outdated, verify before relying on recommendations
+
+All recommendations include:
+```
+Last verified: YYYY-MM-DD ✅ Current
+(or with warning if stale)
+```
+
+### 6. Startup Credits & Free Tiers
 I know about startup programs:
 - **AWS Activate**: $1,000 - $100,000 credits
 - **Microsoft for Startups**: $1,000 - $150,000 credits
@@ -146,12 +166,14 @@ Me: Based on your learning project context, I recommend:
 - **Pros**: Easy to get started, mobile SDK, real-time features
 - **Cons**: Some vendor lock-in, smaller free tier than AWS/GCP
 - **Cost**: Free for small projects
+- **Last verified**: 2025-11-16 ✅ Current
 
 🥈 **Supabase** (Score: 75/100)
 - **Why**: Open-source friendly, PostgreSQL-native, high portability
 - **Free Tier**: 500K requests/month
 - **Pros**: Low lock-in, great docs, modern DX
 - **Cons**: Newer platform, smaller ecosystem
+- **Last verified**: 2025-11-15 ✅ Current
 
 Your workload (simple API) is well-suited for serverless ✅
 ```
@@ -170,6 +192,7 @@ Me: Based on your startup context + AWS ecosystem:
 - **Pros**: Largest ecosystem, mature platform, extensive integrations
 - **Cons**: Higher complexity, learning curve
 - **Cost**: Very cost-effective with free tier + startup credits
+- **Last verified**: 2025-11-16 ✅ Current
 
 Staying within AWS ecosystem avoids multi-cloud complexity and leverages your existing infrastructure.
 ```
@@ -191,17 +214,43 @@ Me: Analysis for enterprise + compliance:
 - **Features**: VPC support, encryption, detailed audit logs
 - **Pros**: Proven enterprise track record, comprehensive compliance
 - **Cons**: Higher cost at enterprise scale
+- **Last verified**: 2025-11-16 ✅ Current
 
 🥈 **Azure Functions** (Score: 85/100)
 - **Why**: Strong compliance, good for Microsoft shops
 - **Compliance**: HIPAA, SOC 2, ISO 27001
 - **Pros**: Excellent for .NET enterprises, Azure ecosystem integration
+- **Last verified**: 2025-11-12 ✅ Current
 
 **Important**: You'll need:
 - BAA with cloud provider
 - Encrypted storage (AWS KMS, Azure Key Vault)
 - VPC/private endpoints
 - Audit logging enabled
+```
+
+### Example 4: Data Freshness Warning
+```
+User: "Which serverless platform for my GraphQL API?"
+
+Me: Based on your API workload context, I recommend:
+
+🥇 **AWS Lambda** (Score: 95/100)
+- Free Tier: 1M requests/month, 400K GB-seconds
+- Startup Credits: AWS Activate ($5,000, 2 years)
+- Last verified: 2025-11-16 ✅ Current
+
+🥈 **GCP Cloud Functions** (Score: 88/100)
+- Free Tier: 2M requests/month, 400K GB-seconds
+- Best free tier for heavy testing
+- Last verified: 2025-10-15 ⚠️ WARNING
+
+⚠️  FRESHNESS WARNING:
+GCP pricing data last verified 2025-10-15 (32 days old)
+Platform data may be outdated. Please verify current pricing
+and free tier limits before making production decisions.
+
+✅ Source: Data freshness tracked by platform-data-loader.ts
 ```
 
 ## Implementation Details
@@ -227,10 +276,18 @@ I use the following modules to provide recommendations:
 - Tradeoff generation (pros/cons)
 
 ### `platform-data-loader.ts`
-- JSON-based knowledge base
-- 5 platforms with verified data (last updated 2025-01-15)
-- Automatic data freshness checks
-- Query interface for filtering
+- JSON-based knowledge base with 5 major serverless platforms
+- Each platform includes `lastVerified` timestamp (ISO 8601 format)
+- **Automatic data freshness checking**:
+  - Calculates days since last verification
+  - Flags data older than 30 days for warning
+  - Marks data older than 60 days as outdated
+- Provides freshness metadata with all recommendations:
+  - ✅ Current: Data ≤ 30 days old
+  - ⚠️ Warning: Data 31-60 days old (verify recommended)
+  - 🔴 Outdated: Data > 60 days old (update required)
+- Query interface for filtering by platform, context, or freshness
+- Timestamp validation to ensure data integrity
 
 ### `recommendation-formatter.ts`
 - Formats platform recommendations with freshness indicators
@@ -279,6 +336,9 @@ When recommending platforms, I:
 4. **Explain tradeoffs** - No platform is perfect, I show pros/cons
 5. **Account for learning curve** - Firebase for beginners, AWS for experienced teams
 6. **Respect portability preferences** - Open-source users → Supabase
+7. **Track data freshness** - All recommendations include verification timestamps
+8. **Warn about stale data** - I alert you if pricing/features are older than 30 days
+9. **Encourage verification** - For production decisions, always verify current data
 
 ## Keywords That Activate This Skill
 - Serverless recommendations

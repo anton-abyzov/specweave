@@ -1,0 +1,118 @@
+{
+  "platform": "aws-lambda",
+  "region": "us-east-1",
+  "secondaryRegion": "us-west-2",
+  "runtime": "nodejs18.x",
+  "handler": "index.handler",
+  "lambda": {
+    "memorySize": {
+      "dev": 128,
+      "staging": 256,
+      "prod": 512
+    },
+    "timeout": {
+      "dev": 3,
+      "staging": 10,
+      "prod": 30
+    },
+    "reservedConcurrentExecutions": {
+      "dev": null,
+      "staging": 10,
+      "prod": 100
+    },
+    "provisionedConcurrency": {
+      "dev": 0,
+      "staging": 0,
+      "prod": 5
+    }
+  },
+  "dynamodb": {
+    "billingMode": {
+      "dev": "PAY_PER_REQUEST",
+      "staging": "PAY_PER_REQUEST",
+      "prod": "PROVISIONED"
+    },
+    "readCapacity": {
+      "dev": null,
+      "staging": null,
+      "prod": 5
+    },
+    "writeCapacity": {
+      "dev": null,
+      "staging": null,
+      "prod": 5
+    },
+    "pointInTimeRecovery": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "streamEnabled": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "ttlEnabled": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    }
+  },
+  "cloudwatch": {
+    "retentionDays": {
+      "dev": 7,
+      "staging": 14,
+      "prod": 30
+    },
+    "metricsEnabled": {
+      "dev": false,
+      "staging": true,
+      "prod": true
+    }
+  },
+  "apiGateway": {
+    "throttling": {
+      "dev": {
+        "rateLimit": 10,
+        "burstLimit": 20
+      },
+      "staging": {
+        "rateLimit": 100,
+        "burstLimit": 200
+      },
+      "prod": {
+        "rateLimit": 1000,
+        "burstLimit": 2000
+      }
+    },
+    "cors": {
+      "dev": ["*"],
+      "staging": ["https://staging.example.com"],
+      "prod": ["https://example.com"]
+    }
+  },
+  "monitoring": {
+    "xrayEnabled": {
+      "dev": false,
+      "staging": true,
+      "prod": true
+    },
+    "alarms": {
+      "dev": false,
+      "staging": true,
+      "prod": true
+    }
+  },
+  "security": {
+    "kmsEncryption": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "vpcEnabled": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    }
+  }
+}

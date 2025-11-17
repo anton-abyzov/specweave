@@ -1,0 +1,43 @@
+{
+  "environment": "staging",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "enableAuth": true,
+  "firestore": {
+    "concurrencyMode": "OPTIMISTIC",
+    "pointInTimeRecovery": false,
+    "deleteProtection": false,
+    "securityRules": "moderate"
+  },
+  "storage": {
+    "versioning": false,
+    "forceDestroy": true,
+    "fileSizeLimit": "20MB",
+    "securityRules": "moderate"
+  },
+  "auth": {
+    "providers": ["email", "google"],
+    "allowDuplicateEmails": false,
+    "advancedSecurity": false
+  },
+  "hosting": {
+    "caching": "enabled",
+    "customDomain": false
+  },
+  "functions": {
+    "runtime": "nodejs18",
+    "minInstances": 0,
+    "maxInstances": 25
+  },
+  "costOptimization": {
+    "description": "Light usage - Blaze plan with low traffic",
+    "estimatedMonthlyCost": "$4-8",
+    "freeTierEligible": false,
+    "plan": "Blaze (Pay as you go)",
+    "notes": [
+      "Optimistic concurrency for performance",
+      "No min instances for cost savings",
+      "Moderate security rules"
+    ]
+  }
+}

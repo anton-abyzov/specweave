@@ -1,0 +1,34 @@
+{
+  "environment": "prod",
+  "location": "eastus",
+  "secondaryLocation": "westus",
+  "planSku": "EP1",
+  "alwaysOn": true,
+  "storage": {
+    "replication": "GRS",
+    "versioning": true,
+    "softDeleteDays": 30
+  },
+  "cosmosDb": {
+    "mode": "provisioned",
+    "throughput": 400,
+    "consistencyLevel": "Session",
+    "backupType": "Continuous",
+    "geoReplication": true
+  },
+  "monitoring": {
+    "retentionDays": 90
+  },
+  "cors": {
+    "allowedOrigins": ["https://*.example.com"]
+  },
+  "security": {
+    "preventResourceGroupDeletion": true,
+    "enableAdvancedThreatProtection": true
+  },
+  "costOptimization": {
+    "description": "Production-ready - Premium plan + Geo-replicated Cosmos DB",
+    "estimatedMonthlyCost": "$200-250",
+    "freeTierEligible": false
+  }
+}

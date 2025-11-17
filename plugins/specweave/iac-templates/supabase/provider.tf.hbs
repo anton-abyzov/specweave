@@ -1,0 +1,19 @@
+# Supabase Provider Configuration
+# Project: {{projectName}}
+
+{{#unless selfHosted}}
+provider "supabase" {
+  access_token = var.supabase_access_token
+  # Get token from: https://app.supabase.com/account/tokens
+}
+
+variable "supabase_access_token" {
+  description = "Supabase personal access token"
+  type        = string
+  sensitive   = true
+}
+{{else}}
+provider "docker" {
+  host = "unix:///var/run/docker.sock"
+}
+{{/unless}}
