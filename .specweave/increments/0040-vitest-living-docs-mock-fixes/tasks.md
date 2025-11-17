@@ -1,7 +1,7 @@
 ---
 increment: 0040-vitest-living-docs-mock-fixes
 total_tasks: 5
-completed_tasks: 0
+completed_tasks: 5
 test_mode: standard
 coverage_target: 85%
 ---
@@ -20,7 +20,7 @@ Fix remaining Vitest migration issues in living-docs tests by replacing invalid 
 **Acceptance Criteria**: AC-TD-01 (All living-docs tests pass)
 **Priority**: P0
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** cross-linker.test.ts uses invalid `anyed<>` syntax for fs-extra mocks
@@ -75,7 +75,7 @@ Fix remaining Vitest migration issues in living-docs tests by replacing invalid 
 **Acceptance Criteria**: AC-TD-01
 **Priority**: P0
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** project-detector.test.ts uses invalid `anyed<>` syntax and has execSync mock issues
@@ -144,7 +144,7 @@ Fix remaining Vitest migration issues in living-docs tests by replacing invalid 
 **Acceptance Criteria**: AC-TD-01
 **Priority**: P0
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** content-distributor.test.ts uses invalid `anyed<>` syntax for fs-extra
@@ -208,7 +208,7 @@ Fix remaining Vitest migration issues in living-docs tests by replacing invalid 
 **Acceptance Criteria**: AC-TD-01
 **Priority**: P0
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** three-layer-sync.test.ts has execSync mock issues (already uses vi.mocked)
@@ -261,7 +261,7 @@ Fix remaining Vitest migration issues in living-docs tests by replacing invalid 
 **Acceptance Criteria**: AC-TD-01
 **Priority**: P0
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** all 5 test files have been fixed
