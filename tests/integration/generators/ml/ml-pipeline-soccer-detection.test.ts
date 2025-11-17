@@ -48,9 +48,9 @@ class MLPipelineSoccerDetectionTest {
   private pythonCheck: PythonCheck = { available: false };
 
   constructor() {
-    // Setup test directories
+    // ✅ Setup ISOLATED test directories (NOT real .specweave/)
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.testRunDir = path.join(process.cwd(), '.specweave', 'test-runs', 'ml-pipeline', timestamp);
+    this.testRunDir = path.join(__dirname, '../../../fixtures', `ml-soccer-test-${timestamp}`);
     this.datasetDir = path.join(this.testRunDir, 'dataset');
     this.modelsDir = path.join(this.testRunDir, 'models');
   }
