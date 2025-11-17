@@ -18,12 +18,14 @@ import { MetadataManager } from '../../../src/core/increment/metadata-manager.js
 import { IncrementType, IncrementStatus, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 // Mock MetadataManager
 vi.mock('../../../src/core/increment/metadata-manager');
 
 describe('Increment Limits', () => {
-  const testIncrementsPath = path.join(process.cwd(), '.specweave-test', 'increments');
+  // ✅ SAFE: Use temp directory instead of project root
+  const testIncrementsPath = path.join(os.tmpdir(), 'specweave-test-limits', 'increments');
 
   beforeEach(() => {
     // Reset mocks

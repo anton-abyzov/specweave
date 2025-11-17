@@ -11,9 +11,11 @@ import { MetadataManager, MetadataError } from '../../../src/core/increment/meta
 import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 describe('MetadataManager', () => {
-  const testRootPath = path.join(process.cwd(), '.specweave-test');
+  // ✅ SAFE: Use temp directory instead of project root
+  const testRootPath = path.join(os.tmpdir(), 'specweave-test-metadata-manager');
   const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
   const testIncrementId = '0001-test-increment';
   const testIncrementPath = path.join(testIncrementsPath, testIncrementId);
