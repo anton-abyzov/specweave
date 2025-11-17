@@ -21,6 +21,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { CodeValidator, type TaskValidationResult } from './CodeValidator.js';
 
 /**
  * Acceptance Criterion with completion state
@@ -70,6 +71,23 @@ export interface SyncResult {
 }
 
 export class ThreeLayerSyncManager {
+  private codeValidator: CodeValidator;
+  private userStoryFileCache: Map<string, string | null> = new Map();
+  private projectRoot: string;
+
+  constructor(projectRoot: string = process.cwd()) {
+    this.projectRoot = projectRoot;
+    this.codeValidator = new CodeValidator({ projectRoot });
+  }
+
+  /**
+   * Clear User Story file cache
+   * Call this when file structure changes or for testing
+   */
+  clearCache(): void {
+    this.userStoryFileCache.clear();
+  }
+
   /**
    * Sync from GitHub to Increment (Flow 1: GitHub → Living Docs → Increment)
    *
@@ -98,39 +116,43 @@ export class ThreeLayerSyncManager {
       const githubAcs = this.extractAcsFromIssue(githubState.body);
       const githubTasks = this.extractTasksFromIssue(githubState.body);
 
-      // 3. Update Living Docs User Stories (Layer 2)
-      for (const ac of githubAcs) {
+      // 3. Update Living Docs User Stories (Layer 2) - PARALLEL I/O for performance
+      const acUpdatePromises = githubAcs.map(async (ac) => {
         const userStoryPath = await this.findUserStoryFile(livingDocsPath, ac.userStoryId);
         if (userStoryPath) {
           await this.updateUserStoryAc(userStoryPath, ac.id, ac.completed);
           result.acsUpdated++;
         }
-      }
+      });
 
-      for (const task of githubTasks) {
+      const taskUpdatePromises = githubTasks.map(async (task) => {
         // Find User Story that contains this task
         const userStoryPath = await this.findUserStoryFileForTask(livingDocsPath, task.id);
         if (userStoryPath) {
           await this.updateUserStoryTask(userStoryPath, task.id, task.completed);
           result.tasksUpdated++;
         }
-      }
+      });
 
-      // 4. Update Increment (Layer 3 - source of truth)
-      await this.updateIncrementAcs(incrementPath, githubAcs);
-      await this.updateIncrementTasks(incrementPath, githubTasks);
+      // Wait for all updates to complete in parallel
+      await Promise.all([...acUpdatePromises, ...taskUpdatePromises]);
 
-      // 5. Code validation: If task marked complete, check if code exists
-      for (const task of githubTasks) {
-        if (task.completed) {
-          const codeExists = await this.validateCodeExists(task);
-          if (!codeExists) {
-            console.log(`⚠️  Task ${task.id} marked complete but code missing - reopening`);
-            await this.reopenTask(task.id, incrementPath, livingDocsPath, issueNumber);
-            result.tasksReopened++;
-          }
+      // 4. Update Increment (Layer 3 - source of truth) with conflict resolution
+      await this.updateIncrementAcsWithConflictResolution(incrementPath, githubAcs, result);
+      await this.updateIncrementTasksWithConflictResolution(incrementPath, githubTasks, result);
+
+      // 5. Code validation: If task marked complete, check if code exists - PARALLEL for performance
+      const completedTasks = githubTasks.filter(t => t.completed);
+      const validationPromises = completedTasks.map(async (task) => {
+        const codeExists = await this.validateCodeExists(task);
+        if (!codeExists) {
+          console.log(`⚠️  Task ${task.id} marked complete but code missing - reopening`);
+          await this.reopenTask(task.id, incrementPath, livingDocsPath, issueNumber);
+          result.tasksReopened++;
         }
-      }
+      });
+
+      await Promise.all(validationPromises);
 
       console.log(`✅ Sync complete: ${result.acsUpdated} ACs, ${result.tasksUpdated} tasks updated`);
       if (result.tasksReopened > 0) {
@@ -212,28 +234,12 @@ export class ThreeLayerSyncManager {
 
   /**
    * Validate that code exists for completed task
+   * Uses CodeValidator for comprehensive validation
    */
   private async validateCodeExists(task: Task): Promise<boolean> {
-    if (!task.filePaths || task.filePaths.length === 0) {
-      // No file paths specified - assume validation passes
-      return true;
-    }
-
-    for (const filePath of task.filePaths) {
-      // Check if file exists
-      const exists = await fs.pathExists(filePath);
-      if (!exists) {
-        return false;
-      }
-
-      // Check if file has meaningful content (not just empty or whitespace)
-      const content = await fs.readFile(filePath, 'utf-8');
-      if (content.trim().length < 10) {
-        return false;
-      }
-    }
-
-    return true;
+    // Use CodeValidator for robust validation
+    const validationResult = await this.codeValidator.validateTask(task.title, task.id);
+    return validationResult.valid;
   }
 
   /**
@@ -507,9 +513,15 @@ export class ThreeLayerSyncManager {
   }
 
   /**
-   * Find User Story file by ID
+   * Find User Story file by ID (with caching for performance)
    */
   private async findUserStoryFile(livingDocsPath: string, userStoryId: string): Promise<string | null> {
+    // Check cache first
+    const cacheKey = `${livingDocsPath}:${userStoryId}`;
+    if (this.userStoryFileCache.has(cacheKey)) {
+      return this.userStoryFileCache.get(cacheKey)!;
+    }
+
     // Search in specs directory
     const specsPath = path.join(livingDocsPath, 'internal', 'specs');
 
@@ -518,7 +530,12 @@ export class ThreeLayerSyncManager {
     const { glob } = await import('glob');
     const files = await glob(pattern, { cwd: specsPath, absolute: true });
 
-    return files.length > 0 ? files[0] : null;
+    const result = files.length > 0 ? files[0] : null;
+
+    // Cache the result
+    this.userStoryFileCache.set(cacheKey, result);
+
+    return result;
   }
 
   /**
@@ -644,6 +661,91 @@ export class ThreeLayerSyncManager {
         if (!content.includes(`${taskHeader}`) || !content.includes(`**Completed**`)) {
           // Find task section and add completed marker
           const regex = new RegExp(`(### ${task.id}:[^#]*?)(###|$)`, 's');
+          content = content.replace(regex, `$1\n${completedMarker}\n\n$2`);
+        }
+      }
+    }
+
+    await fs.writeFile(tasksPath, content, 'utf-8');
+  }
+
+  /**
+   * Update ACs in increment with conflict resolution (Increment wins)
+   *
+   * If GitHub and Increment disagree, Increment state wins as it's the source of truth.
+   * Conflicts are logged for transparency.
+   */
+  private async updateIncrementAcsWithConflictResolution(
+    incrementPath: string,
+    githubAcs: AcceptanceCriterion[],
+    result: SyncResult
+  ): Promise<void> {
+    const specPath = path.join(incrementPath, 'spec.md');
+    const currentContent = await fs.readFile(specPath, 'utf-8');
+
+    // Parse current state from increment
+    const currentAcs = this.parseAcceptanceCriteria(currentContent);
+
+    let content = currentContent;
+
+    for (const githubAc of githubAcs) {
+      const currentAc = currentAcs.find(ac => ac.id === githubAc.id);
+
+      if (currentAc && currentAc.completed !== githubAc.completed) {
+        // CONFLICT: Increment state differs from GitHub state
+        const conflictMsg = `AC ${githubAc.id}: GitHub says ${githubAc.completed ? 'complete' : 'incomplete'}, Increment says ${currentAc.completed ? 'complete' : 'incomplete'} → Increment wins`;
+        result.conflicts.push(conflictMsg);
+        console.log(`⚠️  CONFLICT RESOLVED: ${conflictMsg}`);
+
+        // Keep increment state (do not update)
+        continue;
+      }
+
+      // No conflict - apply GitHub change
+      const checkboxState = githubAc.completed ? 'x' : ' ';
+      const regex = new RegExp(`(- \\[)[ x](\\] ${githubAc.id}:)`, 'g');
+      content = content.replace(regex, `$1${checkboxState}$2`);
+    }
+
+    await fs.writeFile(specPath, content, 'utf-8');
+  }
+
+  /**
+   * Update Tasks in increment with conflict resolution (Increment wins)
+   */
+  private async updateIncrementTasksWithConflictResolution(
+    incrementPath: string,
+    githubTasks: Task[],
+    result: SyncResult
+  ): Promise<void> {
+    const tasksPath = path.join(incrementPath, 'tasks.md');
+    const currentContent = await fs.readFile(tasksPath, 'utf-8');
+
+    // Parse current state from increment
+    const currentTasks = this.parseTasks(currentContent);
+
+    let content = currentContent;
+
+    for (const githubTask of githubTasks) {
+      const currentTask = currentTasks.find(t => t.id === githubTask.id);
+
+      if (currentTask && currentTask.completed !== githubTask.completed) {
+        // CONFLICT: Increment state differs from GitHub state
+        const conflictMsg = `Task ${githubTask.id}: GitHub says ${githubTask.completed ? 'complete' : 'incomplete'}, Increment says ${currentTask.completed ? 'complete' : 'incomplete'} → Increment wins`;
+        result.conflicts.push(conflictMsg);
+        console.log(`⚠️  CONFLICT RESOLVED: ${conflictMsg}`);
+
+        // Keep increment state (do not update)
+        continue;
+      }
+
+      // No conflict - apply GitHub change
+      if (githubTask.completed) {
+        const taskHeader = `### ${githubTask.id}:`;
+        const completedMarker = `**Completed**: ${new Date().toISOString().split('T')[0]}`;
+
+        if (!content.includes(`${taskHeader}`) || !content.includes(`**Completed**`)) {
+          const regex = new RegExp(`(### ${githubTask.id}:[^#]*?)(###|$)`, 's');
           content = content.replace(regex, `$1\n${completedMarker}\n\n$2`);
         }
       }

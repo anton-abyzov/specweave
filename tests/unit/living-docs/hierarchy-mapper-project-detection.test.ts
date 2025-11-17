@@ -6,27 +6,29 @@
  * with 1:1 mapping between project folder name and repository name.
  */
 
-import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper';
-import { ConfigManager } from '../../../src/core/config-manager';
+import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper.js';
+import { ConfigManager } from '../../../src/core/config-manager.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock dependencies
-jest.mock('fs-extra');
-jest.mock('../../../src/core/config-manager');
-jest.mock('../../../src/core/living-docs/feature-id-manager');
+vi.mock('fs-extra');
+vi.mock('../../../src/core/config-manager');
+vi.mock('../../../src/core/living-docs/feature-id-manager');
 
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  readFile: jest.MockedFunction<any>;
+const mockFs = fs as anyed<typeof fs> & {
+  readFile: anyedFunction<any>;
 };
-const MockConfigManager = ConfigManager as jest.MockedClass<typeof ConfigManager>;
+const MockConfigManager = ConfigManager as anyedClass<typeof ConfigManager>;
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('HierarchyMapper - Project Detection Fallback Fix', () => {
   let mapper: HierarchyMapper;
   let mockProjectRoot: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockProjectRoot = '/test/project';
 
     // Default: spec.md exists

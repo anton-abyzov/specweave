@@ -84,3 +84,41 @@ export interface GitHubSyncOptions {
   projectName?: string; // Optional: Add issues to GitHub Project (e.g., "SpecWeave v0.4.0")
   fastMode?: boolean; // Skip rate limiting (for increments < 10 tasks)
 }
+
+/**
+ * Three-Layer Sync Types (for bidirectional sync)
+ */
+export interface AcceptanceCriterion {
+  id: string; // e.g., "AC-US1-01"
+  userStoryId: string; // e.g., "US1"
+  description: string;
+  completed: boolean;
+  projects: string[]; // ["backend", "frontend", "mobile"]
+  rawLine: string; // Original markdown line
+}
+
+export interface SyncTask {
+  id: string; // e.g., "T-001"
+  title: string;
+  completed: boolean;
+  completedDate?: string;
+  acIds: string[]; // e.g., ["AC-US1-01", "AC-US1-02"]
+  filePaths?: string[]; // For code validation
+}
+
+export interface SyncChange {
+  type: 'ac' | 'task';
+  id: string;
+  completed: boolean;
+  layer: 'github' | 'living-docs' | 'increment';
+  userStoryPath?: string;
+  incrementPath?: string;
+}
+
+export interface ThreeLayerSyncResult {
+  acsUpdated: number;
+  tasksUpdated: number;
+  tasksReopened: number;
+  conflicts: string[];
+  errors: string[];
+}

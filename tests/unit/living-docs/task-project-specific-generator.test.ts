@@ -7,7 +7,7 @@
 import { TaskProjectSpecificGenerator } from '../../../src/core/living-docs/task-project-specific-generator.js';
 import fs from 'fs-extra';
 import path from 'path';
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('TaskProjectSpecificGenerator', () => {
   let generator: TaskProjectSpecificGenerator;
