@@ -136,7 +136,7 @@ class CopyBasedSyncMigration {
   }
 
   /**
-   * Scan increments
+   * Scan increments (non-archived only)
    */
   private async scanIncrements(specificIncrementId?: string): Promise<IncrementInfo[]> {
     const increments: IncrementInfo[] = [];
@@ -149,6 +149,11 @@ class CopyBasedSyncMigration {
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
+
+      // ✅ Skip archived increments
+      if (entry.name.startsWith('_archive')) {
+        continue;
+      }
 
       const incrementId = entry.name;
 

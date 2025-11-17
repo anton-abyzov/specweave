@@ -1,5 +1,5 @@
 ---
-name: specweave-archive-features
+name: specweave:archive-features
 description: Archive features and epics when all related increments are archived
 ---
 
