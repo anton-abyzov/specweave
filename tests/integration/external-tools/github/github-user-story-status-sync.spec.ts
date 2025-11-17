@@ -17,9 +17,11 @@
 import { test, expect } from '@playwright/test';
 import { promises as fs } from 'fs';
 import path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 
-const TEST_ROOT = path.join(process.cwd(), '.test-github-status-sync');
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-github-status-sync-' + Date.now());
 const FEATURE_ID = 'FS-TEST-STATUS';
 
 test.describe('GitHub User Story Status Sync', () => {
