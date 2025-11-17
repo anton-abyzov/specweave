@@ -658,70 +658,70 @@ interface RepositorySelectionRule {
 
 ---
 
-### T-031: ⚡ Implement keyword-based selection (P2)
+### T-031: ⚡ Implement keyword-based selection (P2) ✅ COMPLETE
 **Effort**: 1h | **AC**: AC-US4-05
 
 **Description**: Filter repositories by keyword in name.
 
 **Files**:
-- `src/init/repo/PatternMatcher.ts` (update)
+- `src/init/repo/RepositorySelector.ts` (implemented)
 
 **Implementation**:
-- [ ] User enters keyword (e.g., "service")
-- [ ] Filter repos where name contains keyword
-- [ ] Return matching repos
-- [ ] Unit tests verify filtering
+- [x] User enters keyword (e.g., "service")
+- [x] Filter repos where name contains keyword
+- [x] Return matching repos
+- [x] Unit tests verify filtering
 
 ---
 
-### T-032: ⚡ Implement combined rule selection (P2)
+### T-032: ⚡ Implement combined rule selection (P2) ✅ COMPLETE
 **Effort**: 1h | **AC**: AC-US4-06
 
 **Description**: Support combining multiple filters (prefix + owner, etc.).
 
 **Files**:
-- `src/init/repo/RepositorySelector.ts` (update)
+- `src/init/repo/RepositorySelector.ts` (implemented)
 
 **Implementation**:
-- [ ] Support combining prefix + owner filters
-- [ ] Support combining keyword + owner filters
-- [ ] Apply filters sequentially
-- [ ] Return matching repos
-- [ ] Unit tests verify combined filtering
+- [x] Support combining prefix + owner filters
+- [x] Support combining keyword + owner filters
+- [x] Apply filters sequentially
+- [x] Return matching repos
+- [x] Unit tests verify combined filtering
 
 ---
 
-### T-033: ⚡ Implement repository preview and exclusions (P1)
+### T-033: ⚡ Implement repository preview and exclusions (P1) ✅ COMPLETE
 **Effort**: 1h | **AC**: AC-US4-07, AC-US4-08
 
 **Description**: Show preview of selected repos and allow manual exclusions.
 
 **Files**:
-- `src/init/repo/RepositorySelector.ts` (update)
+- `src/init/repo/RepositorySelector.ts` (implemented)
 
 **Implementation**:
-- [ ] Display count + list of selected repos
-- [ ] Show metadata (language, stars, last updated)
-- [ ] Allow user to exclude repos by pattern
-- [ ] Re-filter after exclusions
-- [ ] Unit tests verify preview and exclusions
+- [x] Display count + list of selected repos
+- [x] Show metadata (language, stars, last updated)
+- [x] Allow user to exclude repos by pattern
+- [x] Re-filter after exclusions
+- [x] Unit tests verify preview and exclusions
 
 ---
 
-### T-034: ⚡ Implement adaptive UX for repo selection (P1)
+### T-034: ⚡ Implement adaptive UX for repo selection (P1) ✅ COMPLETE
 **Effort**: 1h | **AC**: AC-US4-10, AC-US4-11
 
 **Description**: Suggest best selection method based on repo count.
 
 **Files**:
-- `src/init/repo/RepositorySelector.ts` (update)
+- `src/init/repo/RepositorySelector.ts` (implemented)
 
 **Implementation**:
-- [ ] 3-5 repos → Suggest "All repos"
-- [ ] 10-20 repos → Suggest "Pattern-based"
-- [ ] 50+ repos → Recommend "Pattern-based" strongly
-- [ ] Always allow manual selection fallback
-- [ ] Unit tests verify adaptive suggestions
+- [x] 3-5 repos → Suggest "All repos"
+- [x] 10-20 repos → Suggest "Pattern-based"
+- [x] 50+ repos → Recommend "Pattern-based" strongly
+- [x] Always allow manual selection fallback
+- [x] Unit tests verify adaptive suggestions
 
 ---
 
@@ -737,10 +737,10 @@ interface RepositorySelectionRule {
 - `src/init/architecture/types.ts` (new)
 
 **Implementation**:
-- [ ] ArchitectureRecommendation interface defined
-- [ ] Decision tree logic (viral+bootstrapped→serverless, HIPAA→traditional, etc.)
-- [ ] Support 6+ architecture types (serverless, traditional, microservices, etc.)
-- [ ] Return recommendation with rationale
+- [x] ArchitectureRecommendation interface defined
+- [x] Decision tree logic (viral+bootstrapped→serverless, HIPAA→traditional, etc.)
+- [x] Support 6+ architecture types (serverless, traditional, microservices, etc.)
+- [x] Return recommendation with rationale
 - [ ] Unit tests for all decision paths
 
 **Implementation Notes**:
@@ -770,10 +770,10 @@ interface ArchitectureRecommendation {
 - `src/init/architecture/ArchitectureDecisionEngine.ts` (update)
 
 **Implementation**:
-- [ ] If viral potential + bootstrapped budget → Recommend serverless
-- [ ] Infrastructure: AWS Lambda, Supabase, Vercel, S3, CloudFront
-- [ ] Rationale explains instant scaling + pay-per-use
-- [ ] Cost estimate: $10/month → $850/month at 10K users
+- [x] If viral potential + bootstrapped budget → Recommend serverless
+- [x] Infrastructure: AWS Lambda, Supabase, Vercel, S3, CloudFront
+- [x] Rationale explains instant scaling + pay-per-use
+- [x] Cost estimate: $10/month → $850/month at 10K users
 - [ ] Unit tests verify serverless recommendation
 
 ---
@@ -787,10 +787,10 @@ interface ArchitectureRecommendation {
 - `src/init/architecture/ArchitectureDecisionEngine.ts` (update)
 
 **Implementation**:
-- [ ] If HIPAA/PCI detected → Recommend traditional-monolith
-- [ ] Infrastructure: AWS ECS, RDS encrypted, CloudTrail, WAF, VPC
-- [ ] Rationale explains BAA, audit logs, compliance controls
-- [ ] Cost estimate: $3K/month minimum (compliance overhead)
+- [x] If HIPAA/PCI detected → Recommend traditional-monolith
+- [x] Infrastructure: AWS ECS, RDS encrypted, CloudTrail, WAF, VPC
+- [x] Rationale explains BAA, audit logs, compliance controls
+- [x] Cost estimate: $3K/month minimum (compliance overhead)
 - [ ] Unit tests verify compliance architecture
 
 ---
@@ -804,10 +804,10 @@ interface ArchitectureRecommendation {
 - `src/init/architecture/ArchitectureDecisionEngine.ts` (update)
 
 **Implementation**:
-- [ ] If budget = "learning" → Recommend modular-monolith + free tier
-- [ ] Infrastructure: Vercel, Supabase, Cloudflare Pages
-- [ ] Rationale explains simplicity + zero cost
-- [ ] Cost estimate: $0/month (free tier)
+- [x] If budget = "learning" → Recommend modular-monolith + free tier
+- [x] Infrastructure: Vercel, Supabase, Cloudflare Pages
+- [x] Rationale explains simplicity + zero cost
+- [x] Cost estimate: $0/month (free tier)
 - [ ] Unit tests verify learning project recommendation
 
 ---
@@ -818,13 +818,13 @@ interface ArchitectureRecommendation {
 **Description**: Select cloud infrastructure based on architecture type.
 
 **Files**:
-- `src/init/architecture/InfrastructureSelector.ts` (new)
+- `src/init/architecture/InfrastructureMapper.ts` (new)
 
 **Implementation**:
-- [ ] Serverless → AWS Lambda, Vercel, Supabase
-- [ ] Traditional → AWS ECS/EKS, RDS, ElastiCache
-- [ ] Microservices → Kubernetes, API Gateway, service mesh
-- [ ] Return infrastructure array with rationale
+- [x] Serverless → AWS Lambda, Vercel, Supabase
+- [x] Traditional → AWS ECS/EKS, RDS, ElastiCache
+- [x] Microservices → Kubernetes, API Gateway, service mesh
+- [x] Return infrastructure array with rationale
 - [ ] Unit tests for all architecture types
 
 ---
@@ -838,10 +838,10 @@ interface ArchitectureRecommendation {
 - `src/init/architecture/CostEstimator.ts` (new)
 
 **Implementation**:
-- [ ] Calculate cost at 1K, 10K, 100K, 1M users
-- [ ] Consider architecture type (serverless vs traditional)
-- [ ] Consider compliance overhead
-- [ ] Return CostEstimate object
+- [x] Calculate cost at 1K, 10K, 100K, 1M users
+- [x] Consider architecture type (serverless vs traditional)
+- [x] Consider compliance overhead
+- [x] Return CostEstimate object
 - [ ] Unit tests verify calculations
 
 **Implementation Notes**:
@@ -882,11 +882,11 @@ interface CostEstimate {
 - `src/init/architecture/ProjectGenerator.ts` (new)
 
 **Implementation**:
-- [ ] Serverless → ["frontend", "backend-functions", "api-gateway"]
-- [ ] Traditional → ["backend", "frontend"]
-- [ ] Microservices → ["api-gateway", "auth-service", "user-service", etc.]
-- [ ] HIPAA → Add ["auth-service", "data-service", "audit-logs"]
-- [ ] Return ProjectDefinition[] array
+- [x] Serverless → ["frontend", "backend-functions", "api-gateway"]
+- [x] Traditional → ["backend", "frontend"]
+- [x] Microservices → ["api-gateway", "auth-service", "user-service", etc.]
+- [x] HIPAA → Add ["auth-service", "data-service", "audit-logs"]
+- [x] Return ProjectDefinition[] array
 - [ ] Unit tests for all architecture types
 
 ---
@@ -920,19 +920,20 @@ interface CostEstimate {
 
 ---
 
-### T-044: ⚡ Implement methodology selection (P1)
+### T-044: ⚡ Implement methodology selection (P1) ✅ COMPLETE
 **Effort**: 1h | **AC**: AC-US5-12
 
 **Description**: Support both Agile and Waterfall methodologies.
 
 **Files**:
-- `src/init/InitFlow.ts` (update)
+- `src/init/InitFlow.ts` (implemented)
+- `tests/unit/init/init-flow-methodology.test.ts` (new)
 
 **Implementation**:
-- [ ] Ask user: "Agile or Waterfall?"
-- [ ] Explain: Increments = Sprints (Agile) OR Phases (Waterfall)
-- [ ] Save to config.research.methodology
-- [ ] Unit tests verify both options
+- [x] Ask user: "Agile or Waterfall?" (inquirer list prompt)
+- [x] Explain: Increments = Sprints (Agile) OR Phases (Waterfall)
+- [x] Save to config.research.methodology
+- [x] Unit tests verify both options (9 tests, all passing)
 
 ---
 

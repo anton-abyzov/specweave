@@ -354,8 +354,8 @@ User Story: specs/frontend/FS-031/us-001-authentication.md
 
 **Acceptance Criteria**:
 - [x] **AC-US1-01**: JWT token generation (backend) (P1)
-- [ ] **AC-US1-02**: Login form component (frontend) (P1)
-- [ ] **AC-US1-03**: Protected routes (frontend) (P1)
+- [x] **AC-US1-02**: Login form component (frontend) (P1)
+- [x] **AC-US1-03**: Protected routes (frontend) (P1)
 ```
 
 **Increment tasks.md** (Source of Truth for Tasks):
@@ -381,8 +381,8 @@ User Story: specs/frontend/FS-031/us-001-authentication.md
 **User Story: specs/frontend/FS-031/us-001-authentication.md** (COPIED content):
 ```markdown
 ## Acceptance Criteria (COPIED from increment spec.md, filtered by frontend)
-- [ ] **AC-US1-02**: Login form component (frontend) (P1)
-- [ ] **AC-US1-03**: Protected routes (frontend) (P1)
+- [x] **AC-US1-02**: Login form component (frontend) (P1)
+- [x] **AC-US1-03**: Protected routes (frontend) (P1)
 
 ## Implementation (COPIED tasks from increment tasks.md, filtered by AC-ID)
 - [ ] **T-003**: Build login form component
@@ -705,7 +705,7 @@ Confirm selection? (y/n)
 **So that** I get perfect architecture match from day 1 (serverless vs traditional, monolith vs microservices)
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Vision insights + scaling goals + budget → Architecture decision (P1, testable)
+- [x] **AC-US5-01**: Vision insights + scaling goals + budget → Architecture decision (P1, testable)
 - [ ] **AC-US5-02**: Viral potential + bootstrapped → Recommends serverless (P1, testable)
 - [ ] **AC-US5-03**: Enterprise + compliance → Recommends traditional + compliance features (P1, testable)
 - [ ] **AC-US5-04**: Learning project → Recommends YAGNI + free tier (P1, testable)
@@ -713,7 +713,7 @@ Confirm selection? (y/n)
 - [ ] **AC-US5-06**: Cost estimation provided ($X/month at 1K, 10K, 100K users) (P2, testable)
 - [x] **AC-US5-07**: Cloud credits information shown (AWS Activate, Azure for Startups, GCP Cloud) (P2, testable)
 - [ ] **AC-US5-08**: Rationale clearly explained (why this architecture?) (P1, testable)
-- [ ] **AC-US5-09**: User can accept/reject/modify recommendation (P1, testable)
+- [x] **AC-US5-09**: User can accept/reject/modify recommendation (P1, testable)
 - [ ] **AC-US5-10**: Final architecture stored in config with all rationale (P1, testable)
 - [ ] **AC-US5-11**: Projects list generated based on architecture (backend, frontend, auth, etc.) (P1, testable)
 - [ ] **AC-US5-12**: Waterfall vs Agile methodology support configured (P1, testable)

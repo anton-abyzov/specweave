@@ -12,6 +12,7 @@
  * Synthesizes insights → Architecture recommendation → Project structure
  */
 
+import inquirer from 'inquirer';
 import { VisionAnalyzer } from './research/VisionAnalyzer.js';
 import { ComplianceDetector } from './compliance/ComplianceDetector.js';
 import { TeamRecommender } from './team/TeamRecommender.js';
@@ -238,8 +239,38 @@ async function promptBudget(): Promise<BudgetType> {
   return 'bootstrapped';
 }
 
+/**
+ * T-044: Methodology Selection (Agile vs Waterfall)
+ *
+ * Asks user to choose development methodology:
+ * - Agile: Iterative sprints, continuous delivery (SpecWeave increments = 1-2 week sprints)
+ * - Waterfall: Sequential phases, planned releases (SpecWeave increments = project phases)
+ *
+ * AC-US5-12: Support both Agile and Waterfall methodologies
+ */
 async function promptMethodology(): Promise<'agile' | 'waterfall'> {
-  return 'agile';
+  const { methodology } = await inquirer.prompt([{
+    type: 'list',
+    name: 'methodology',
+    message: 'How will your team work?',
+    choices: [
+      {
+        name: '✨ Agile (Recommended) - Iterative sprints, continuous delivery. SpecWeave increments = 1-2 week sprints.',
+        value: 'agile',
+        short: 'Agile'
+      },
+      {
+        name: '📋 Waterfall - Sequential phases, planned releases. SpecWeave increments = project phases.',
+        value: 'waterfall',
+        short: 'Waterfall'
+      }
+    ],
+    default: 'agile'
+  }]);
+
+  console.log(`\n✓ Methodology: ${methodology === 'agile' ? 'Agile (iterative sprints)' : 'Waterfall (sequential phases)'}`);
+
+  return methodology;
 }
 
 async function promptIsMultiRepo(): Promise<boolean> {

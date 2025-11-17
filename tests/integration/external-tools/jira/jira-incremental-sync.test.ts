@@ -40,18 +40,28 @@ class JiraIncrementalSyncTest {
   private testTaskKey: string = '';
   private testIncrementId: string = '';
   private cherryPickIncrementId: string = '';
+  // ✅ ISOLATED TEST PROJECT (NOT real .specweave/)
+  private testProjectRoot: string;
 
   constructor() {
     this.client = new JiraClient();
     this.mapper = new JiraIncrementalMapper(this.client);
+
+    // Use isolated test directory OUTSIDE .specweave/
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    this.testProjectRoot = path.join(__dirname, '../../../fixtures', `jira-test-${timestamp}`);
   }
 
   async run(): Promise<void> {
     console.log('╔══════════════════════════════════════════════════════════════╗');
     console.log('║      Jira Incremental Sync Integration Test                 ║');
     console.log('╚══════════════════════════════════════════════════════════════╝\n');
+    console.log(`📁 Test Project: ${this.testProjectRoot}\n`);
 
     try {
+      // Setup isolated test environment
+      await this.setupTestEnvironment();
+
       await this.test1_CheckCredentials();
       await this.test2_TestConnection();
       await this.test3_CreateTestWorkItems();
@@ -68,6 +78,30 @@ class JiraIncrementalSyncTest {
       console.error('❌ Test suite failed:', error);
     } finally {
       await this.generateReport();
+    }
+  }
+
+  private async setupTestEnvironment(): Promise<void> {
+    console.log('🔧 Setting up isolated test environment...');
+
+    // Create test .specweave/ structure
+    const specweaveDir = path.join(this.testProjectRoot, '.specweave');
+    const incrementsDir = path.join(specweaveDir, 'increments');
+    const docsDir = path.join(specweaveDir, 'docs');
+    const rfcsDir = path.join(docsDir, 'rfcs');
+
+    fs.mkdirSync(incrementsDir, { recursive: true });
+    fs.mkdirSync(rfcsDir, { recursive: true });
+
+    console.log('✅ Test environment ready\n');
+  }
+
+  private async cleanupTestEnvironment(): Promise<void> {
+    console.log('\n🧹 Cleaning up test environment...');
+
+    if (fs.existsSync(this.testProjectRoot)) {
+      fs.rmSync(this.testProjectRoot, { recursive: true, force: true });
+      console.log('✅ Test environment cleaned');
     }
   }
 
@@ -197,8 +231,8 @@ class JiraIncrementalSyncTest {
     const start = Date.now();
 
     try {
-      // Find highest increment number
-      const incrementsDir = path.join(process.cwd(), '.specweave', 'increments');
+      // Find highest increment number - using ISOLATED test directory
+      const incrementsDir = path.join(this.testProjectRoot, '.specweave', 'increments');
       if (!fs.existsSync(incrementsDir)) {
         fs.mkdirSync(incrementsDir, { recursive: true });
       }
@@ -388,7 +422,8 @@ This increment is for testing granular work item addition.
     const start = Date.now();
 
     try {
-      const incrementFolder = path.join(process.cwd(), '.specweave', 'increments', this.testIncrementId);
+      // Using ISOLATED test directory
+      const incrementFolder = path.join(this.testProjectRoot, '.specweave', 'increments', this.testIncrementId);
       const specPath = path.join(incrementFolder, 'spec.md');
       const specContent = fs.readFileSync(specPath, 'utf-8');
 
@@ -457,7 +492,8 @@ This increment is for testing granular work item addition.
     const start = Date.now();
 
     try {
-      const rfcFolder = path.join(process.cwd(), '.specweave', 'docs', 'rfcs');
+      // Using ISOLATED test directory
+      const rfcFolder = path.join(this.testProjectRoot, '.specweave', 'docs', 'rfcs');
 
       if (!fs.existsSync(rfcFolder)) {
         console.log(`⏭️  Skipping: RFC folder not created yet (expected for manual increments)`);
@@ -559,7 +595,8 @@ This increment is for testing granular work item addition.
         throw new Error('No cherry-pick increment ID from previous test');
       }
 
-      const incrementFolder = path.join(process.cwd(), '.specweave', 'increments', this.cherryPickIncrementId);
+      // Using ISOLATED test directory
+      const incrementFolder = path.join(this.testProjectRoot, '.specweave', 'increments', this.cherryPickIncrementId);
       const specPath = path.join(incrementFolder, 'spec.md');
       const specContent = fs.readFileSync(specPath, 'utf-8');
 
@@ -615,19 +652,23 @@ This increment is for testing granular work item addition.
     const start = Date.now();
 
     try {
-      console.log(`⚠️  Test data created:`);
+      console.log(`✅ JIRA test data created (preserved in Jira):`);
       console.log(`   - Jira Story: ${this.testStoryKey}`);
       console.log(`   - Jira Bug: ${this.testBugKey}`);
       console.log(`   - Jira Task: ${this.testTaskKey}`);
+      console.log(`\n✅ Local test increments (will be cleaned up):`);
       console.log(`   - Increment (add items): ${this.testIncrementId}`);
       console.log(`   - Increment (cherry-pick): ${this.cherryPickIncrementId}`);
-      console.log(`\n   Note: Test data preserved for inspection. Delete manually if needed.`);
+      console.log(`   - Test Project: ${this.testProjectRoot}`);
+
+      // Clean up test environment
+      await this.cleanupTestEnvironment();
 
       this.results.push({
         name: testName,
         status: 'PASS',
         duration: Date.now() - start,
-        message: 'Test data preserved for inspection'
+        message: 'Test environment cleaned up successfully'
       });
       console.log('✅ PASS\n');
     } catch (error: any) {
