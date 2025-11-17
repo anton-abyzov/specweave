@@ -1,6 +1,9 @@
 name: Release & Publish
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
@@ -51,7 +54,8 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Bump version
+      - name: Bump version (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           VERSION_TYPE: ${{ github.event.inputs.version_type }}
         run: npm version "$VERSION_TYPE" --no-git-tag-version
@@ -61,9 +65,10 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "📦 Bumped to version: $VERSION"
+          echo "📦 Version: $VERSION"
 
-      - name: Verify version matches input (or accept bumped version)
+      - name: Verify version matches input (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           EXPECTED_VERSION: ${{ github.event.inputs.version }}
           ACTUAL_VERSION: ${{ steps.package_version.outputs.version }}
@@ -99,14 +104,16 @@ jobs:
           echo "Release notes extracted for v$VERSION"
           cat /tmp/release-notes.md
 
-      - name: Commit version bump
+      - name: Commit version bump (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
           git add package.json package-lock.json
           git commit -m "chore: bump version to $VERSION"
 
-      - name: Create and push git tag
+      - name: Create and push git tag (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
         env:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
