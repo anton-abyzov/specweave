@@ -1,5 +1,5 @@
 /**
- * Jest setup file - runs before all tests
+ * Vitest setup file - runs before all tests
  *
  * This file is used to:
  * - Configure global test environment
@@ -8,20 +8,21 @@
  * - Configure mocks for external dependencies
  */
 
-// Extend Jest matchers with custom assertions
+import { afterEach, vi } from 'vitest';
+
+// Extend Vitest matchers with custom assertions
 import './utils/matchers';
 
-// Set longer timeout for integration tests
-jest.setTimeout(10000);
+// Note: Test timeout is configured in vitest.config.ts (testTimeout: 10000)
 
 // Suppress console output during tests (unless debugging)
 if (!process.env.DEBUG_TESTS) {
   global.console = {
     ...console,
-    log: jest.fn(),
-    debug: jest.fn(),
-    info: jest.fn(),
-    warn: jest.fn(),
+    log: vi.fn(),
+    debug: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
     // Keep error output for debugging failures
     error: console.error,
   };
@@ -33,5 +34,5 @@ process.env.LOG_LEVEL = 'error'; // Reduce log noise in tests
 
 // Clean up after each test
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
