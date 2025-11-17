@@ -12,6 +12,7 @@ import { TaskSync } from '../src/plugins/specweave-github/lib/task-sync.js';
 import { GitHubClient } from '../src/plugins/specweave-github/lib/github-client.js';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -40,8 +41,10 @@ async function main() {
   console.log('✅ GitHub CLI installed and authenticated\n');
 
   // Step 2: Create test increment directory
+  // ✅ FIXED: Use os.tmpdir() instead of project .specweave/ to prevent pollution
   console.log('Step 2: Creating test increment...');
-  const testIncrementPath = path.join(__dirname, '..', '.specweave', 'increments', '9999-github-sync-test');
+  const testRoot = path.join(os.tmpdir(), 'specweave-github-test-' + Date.now());
+  const testIncrementPath = path.join(testRoot, '.specweave', 'increments', '9999-github-sync-test');
 
   // Clean up if exists
   if (fs.existsSync(testIncrementPath)) {
@@ -163,6 +166,7 @@ Third test task that blocks future work.
 
   // Step 3: Execute sync (DRY RUN first)
   console.log('Step 3: Testing sync (DRY RUN)...');
+  console.log(`   Test directory: ${testRoot}`);
 
   const taskSync = new TaskSync(testIncrementPath);
 
