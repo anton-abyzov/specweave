@@ -7,26 +7,28 @@
  * - Bidirectional sync with conflict resolution
  */
 
-import { ThreeLayerSyncManager } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
-import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
+import { ThreeLayerSyncManager } from '../../../src/core/living-docs/ThreeLayerSyncManager.js.js';
+import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js.js';
 import fs from 'fs/promises';
 import { execSync } from 'child_process';
 
 // Mock dependencies
-jest.mock('fs/promises');
-jest.mock('child_process');
+vi.mock('fs/promises');
+vi.mock('child_process');
 
 // Type-safe mock helpers
-const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;
-const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
-const mockWriteFile = fs.writeFile as jest.MockedFunction<typeof fs.writeFile>;
+const mockExecSync = execSync as anyedFunction<typeof execSync>;
+const mockReadFile = fs.readFile as anyedFunction<typeof fs.readFile>;
+const mockWriteFile = fs.writeFile as anyedFunction<typeof fs.writeFile>;
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('ThreeLayerSyncManager', () => {
   let syncManager: ThreeLayerSyncManager;
 
   beforeEach(() => {
     syncManager = new ThreeLayerSyncManager();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('syncGitHubToIncrement', () => {

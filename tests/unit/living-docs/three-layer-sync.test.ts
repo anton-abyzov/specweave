@@ -7,22 +7,24 @@
  * - Bidirectional sync with conflict resolution
  */
 
-import { ThreeLayerSyncManager } from '../../../src/core/living-docs/ThreeLayerSyncManager';
-import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager';
+import { ThreeLayerSyncManager } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
 import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
+import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js.js';
 import fs from 'fs/promises';
 import { execSync } from 'child_process';
 
 // Mock dependencies
-jest.mock('fs/promises');
-jest.mock('child_process');
+vi.mock('fs/promises');
+vi.mock('child_process');
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('ThreeLayerSyncManager', () => {
   let syncManager: ThreeLayerSyncManager;
 
   beforeEach(() => {
     syncManager = new ThreeLayerSyncManager();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('syncGitHubToIncrement', () => {

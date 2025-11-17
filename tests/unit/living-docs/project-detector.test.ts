@@ -8,27 +8,29 @@ import {
   ProjectConfig,
   DetectorOptions,
   createProjectDetector,
-} from '../../../src/core/living-docs/project-detector';
-import { ParsedSpec } from '../../../src/core/living-docs/content-parser';
+} from '../../../src/core/living-docs/project-detector.js';
+import { ParsedSpec } from '../../../src/core/living-docs/content-parser.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock fs-extra
-jest.mock('fs-extra');
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  existsSync: jest.MockedFunction<typeof fs.existsSync>;
-  readJSON: jest.MockedFunction<typeof fs.readJSON>;
-  readFile: jest.MockedFunction<typeof fs.readFile>;
-  writeFile: jest.MockedFunction<typeof fs.writeFile>;
-  ensureDir: jest.MockedFunction<typeof fs.ensureDir>;
+vi.mock('fs-extra');
+const mockFs = fs as anyed<typeof fs> & {
+  existsSync: anyedFunction<typeof fs.existsSync>;
+  readJSON: anyedFunction<typeof fs.readJSON>;
+  readFile: anyedFunction<typeof fs.readFile>;
+  writeFile: anyedFunction<typeof fs.writeFile>;
+  ensureDir: anyedFunction<typeof fs.ensureDir>;
 };
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('ProjectDetector', () => {
   let detector: ProjectDetector;
   let mockConfigPath: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockConfigPath = '/test/.specweave/config.json';
 
     // Default: no config file exists
@@ -622,11 +624,11 @@ describe('ProjectDetector', () => {
       const mockConfig = {
         multiProject: {
           projects: {
-            project-a: {
+            'project-a': {
               name: 'Project A',
               keywords: ['test'],
             },
-            project-b: {
+            'project-b': {
               name: 'Project B',
               keywords: ['test'],
             },

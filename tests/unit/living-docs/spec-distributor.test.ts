@@ -88,10 +88,19 @@ describe('SpecDistributor', () => {
     // Verify US1 was updated
     const updatedContent = await fs.readFile(path.join(TEST_LIVING_DOCS, 'US1.md'), 'utf-8');
 
-    expect(updatedContent).toContain('AC-US1-01: Create REST endpoint');
-    expect(updatedContent).toContain('AC-US1-02: Add authentication middleware');
-    expect(updatedContent).toContain('T-001: Setup API endpoint');
-    expect(updatedContent).toContain('T-002: Add auth middleware');
+    // Test for AC presence with new format (checkbox + bold ID)
+    expect(updatedContent).toContain('**AC-US1-01**');
+    expect(updatedContent).toContain('Create REST endpoint');
+    expect(updatedContent).toContain('**AC-US1-02**');
+    expect(updatedContent).toContain('Add authentication middleware');
+
+    // Test for task presence with new format
+    expect(updatedContent).toContain('**T-001**');
+    expect(updatedContent).toContain('Setup API endpoint');
+    expect(updatedContent).toContain('**T-002**');
+    expect(updatedContent).toContain('Add auth middleware');
+
+    // Test for completion status
     expect(updatedContent).toContain('[x] **T-002**'); // Completed task
   });
 

@@ -5,18 +5,19 @@
  * - Tasks → ACs → User Stories → Increments
  */
 
-import { CompletionPropagator } from '../../../src/core/living-docs/CompletionPropagator';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { CompletionPropagator } from '../../../src/core/living-docs/CompletionPropagator.js';
 import fs from 'fs/promises';
 
 // Mock dependencies
-jest.mock('fs/promises');
+vi.mock('fs/promises');
 
 describe('CompletionPropagator', () => {
   let propagator: CompletionPropagator;
 
   beforeEach(() => {
     propagator = new CompletionPropagator();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('propagateCompletion', () => {
@@ -36,11 +37,11 @@ describe('CompletionPropagator', () => {
 **Completed**: 2025-11-16
       `;
 
-      (fs.readFile as jest.Mock)
+      (fs.readFile as any)
         .mockResolvedValueOnce(specContent)  // spec.md
         .mockResolvedValueOnce(tasksContent); // tasks.md
 
-      (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
+      (fs.writeFile as any).mockResolvedValue(undefined);
 
       const result = await propagator.propagateCompletion('/path/to/increment');
 
@@ -63,11 +64,11 @@ describe('CompletionPropagator', () => {
 **Completed**: Not completed
       `;
 
-      (fs.readFile as jest.Mock)
+      (fs.readFile as any)
         .mockResolvedValueOnce(specContent)
         .mockResolvedValueOnce(tasksContent);
 
-      (fs.writeFile as jest.Mock).mockResolvedValue(undefined);
+      (fs.writeFile as any).mockResolvedValue(undefined);
 
       const result = await propagator.propagateCompletion('/path/to/increment');
 
@@ -86,7 +87,7 @@ describe('CompletionPropagator', () => {
 **Completed**: 2025-11-16
       `;
 
-      (fs.readFile as jest.Mock)
+      (fs.readFile as any)
         .mockResolvedValueOnce(specContent)
         .mockResolvedValueOnce(tasksContent);
 
@@ -112,7 +113,7 @@ describe('CompletionPropagator', () => {
 **Completed**: Not completed
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(tasksContent);
+      (fs.readFile as any).mockResolvedValue(tasksContent);
 
       const stats = await propagator.getAcCompletionStats('AC-US1-01', '/path/to/increment');
 
@@ -123,7 +124,7 @@ describe('CompletionPropagator', () => {
     });
 
     it('should handle AC with no tasks', async () => {
-      (fs.readFile as jest.Mock).mockResolvedValue('### T-001: Other task\n**AC**: AC-US2-01');
+      (fs.readFile as any).mockResolvedValue('### T-001: Other task\n**AC**: AC-US2-01');
 
       const stats = await propagator.getAcCompletionStats('AC-US1-01', '/path/to/increment');
 
@@ -141,7 +142,7 @@ describe('CompletionPropagator', () => {
 - [ ] **AC-US1-03**: Incomplete
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(specContent);
+      (fs.readFile as any).mockResolvedValue(specContent);
 
       const stats = await propagator.getUserStoryCompletionStats('US1', '/path/to/increment');
 
@@ -160,7 +161,7 @@ describe('CompletionPropagator', () => {
 - [ ] **AC-US2-02**: Incomplete
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(specContent);
+      (fs.readFile as any).mockResolvedValue(specContent);
 
       const stats = await propagator.getIncrementCompletionStats('/path/to/increment');
 
@@ -176,7 +177,7 @@ describe('CompletionPropagator', () => {
 - [x] **AC-US1-02**: Complete
       `;
 
-      (fs.readFile as jest.Mock).mockResolvedValue(specContent);
+      (fs.readFile as any).mockResolvedValue(specContent);
 
       const stats = await propagator.getIncrementCompletionStats('/path/to/increment');
 

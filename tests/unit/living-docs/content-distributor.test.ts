@@ -7,33 +7,35 @@ import {
   DistributionResult,
   DistributorOptions,
   createContentDistributor,
-} from '../../../src/core/living-docs/content-distributor';
-import { ParsedSection, ParsedSpec } from '../../../src/core/living-docs/content-parser';
+} from '../../../src/core/living-docs/content-distributor.js';
+import { ParsedSection, ParsedSpec } from '../../../src/core/living-docs/content-parser.js';
 import {
   ClassificationResult,
   ContentCategory,
-} from '../../../src/core/living-docs/content-classifier';
-import { ProjectContext } from '../../../src/core/living-docs/project-detector';
+} from '../../../src/core/living-docs/content-classifier.js';
+import { ProjectContext } from '../../../src/core/living-docs/project-detector.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock fs-extra
-jest.mock('fs-extra');
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  readFile: jest.MockedFunction<typeof fs.readFile>;
-  writeFile: jest.MockedFunction<typeof fs.writeFile>;
-  existsSync: jest.MockedFunction<typeof fs.existsSync>;
-  readdir: jest.MockedFunction<typeof fs.readdir>;
-  readJSON: jest.MockedFunction<typeof fs.readJSON>;
-  ensureDir: jest.MockedFunction<typeof fs.ensureDir>;
+vi.mock('fs-extra');
+const mockFs = fs as anyed<typeof fs> & {
+  readFile: anyedFunction<typeof fs.readFile>;
+  writeFile: anyedFunction<typeof fs.writeFile>;
+  existsSync: anyedFunction<typeof fs.existsSync>;
+  readdir: anyedFunction<typeof fs.readdir>;
+  readJSON: anyedFunction<typeof fs.readJSON>;
+  ensureDir: anyedFunction<typeof fs.ensureDir>;
 };
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 describe('ContentDistributor', () => {
   let distributor: ContentDistributor;
   let mockBasePath: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockBasePath = '/test/.specweave/docs/internal';
 
     // Default mocks
