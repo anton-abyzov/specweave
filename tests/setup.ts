@@ -8,6 +8,8 @@
  * - Configure mocks for external dependencies
  */
 
+import { jest, afterEach } from '@jest/globals';
+
 // Extend Jest matchers with custom assertions
 import './utils/matchers';
 
@@ -24,7 +26,7 @@ if (!process.env.DEBUG_TESTS) {
     warn: jest.fn(),
     // Keep error output for debugging failures
     error: console.error,
-  };
+  } as Console;
 }
 
 // Mock environment variables for consistent testing
