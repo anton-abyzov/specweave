@@ -232,6 +232,44 @@ I use the following modules to provide recommendations:
 - Automatic data freshness checks
 - Query interface for filtering
 
+### `recommendation-formatter.ts`
+- Formats platform recommendations with freshness indicators
+- Automatically displays "Last verified: YYYY-MM-DD" for each platform
+- Shows ⚠️ warning if data is > 30 days old (stale)
+- Includes user-friendly message to verify current pricing
+- Data freshness: ✅ Fresh (≤30 days) or ⚠️ Stale (>30 days)
+
+## Recommendation Format
+
+All platform recommendations include data freshness indicators:
+
+```markdown
+## Platform Name (Provider)
+
+**Free Tier**:
+- 1M requests/month
+- 400K GB-seconds/month
+
+**Features**:
+- Runtimes: Node.js, Python, etc.
+- Cold Start: ~200ms
+- Max Execution: 15 minutes
+
+---
+
+📅 **Last verified**: 2025-11-16 ✅ (5 days ago)
+```
+
+If data is stale (>30 days old):
+
+```markdown
+📅 **Last verified**: 2025-01-15 ⚠️
+
+> **⚠️ Stale Data Warning**: This platform data is 306 days old (last verified: 2025-01-15).
+> Pricing and features may have changed. Please verify current pricing and features with
+> the platform provider before making decisions.
+```
+
 ## Best Practices
 
 When recommending platforms, I:
