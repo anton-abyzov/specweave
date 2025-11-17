@@ -7,6 +7,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import * as yaml from 'yaml';
 import {
   ConflictResolver,
@@ -22,8 +23,8 @@ describe('Bidirectional Sync with Living Docs', () => {
   let incrementPath: string;
 
   beforeEach(async () => {
-    // Create test directory
-    testDir = path.join(process.cwd(), 'tests', 'tmp', `sync-test-${Date.now()}`);
+    // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+    testDir = path.join(os.tmpdir(), `sync-test-${Date.now()}`);
     await fs.ensureDir(testDir);
 
     // Create test spec
