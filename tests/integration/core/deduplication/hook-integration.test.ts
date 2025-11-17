@@ -15,13 +15,17 @@ const execAsync = promisify(exec);
 
 describe('Deduplication Hook Integration', () => {
   const hookPath = path.join(process.cwd(), 'plugins', 'specweave', 'hooks', 'pre-command-deduplication.sh');
-  const cachePath = path.join(process.cwd(), '.specweave', 'state', 'command-invocations.json');
+
+  // ✅ FIXED: Use isolated test directory instead of real .specweave/ folder
+  const testDir = path.join(process.cwd(), 'tests', 'tmp', 'dedup-hook-test');
+  const cachePath = path.join(testDir, '.specweave', 'state', 'command-invocations.json');
 
   beforeEach(async () => {
-    // Clear cache before each test
-    if (await fs.pathExists(cachePath)) {
-      await fs.remove(cachePath);
-    }
+    // Create isolated test directory
+    await fs.ensureDir(path.dirname(cachePath));
+
+    // Set SPECWEAVE_ROOT env var so hook uses test directory
+    process.env.SPECWEAVE_ROOT = testDir;
 
     // Ensure dist is built
     if (!await fs.pathExists('dist/src/core/deduplication/command-deduplicator.js')) {
@@ -30,10 +34,13 @@ describe('Deduplication Hook Integration', () => {
   });
 
   afterEach(async () => {
-    // Cleanup
-    if (await fs.pathExists(cachePath)) {
-      await fs.remove(cachePath);
+    // Cleanup test directory (safe - isolated from real .specweave/)
+    if (await fs.pathExists(testDir)) {
+      await fs.remove(testDir);
     }
+
+    // Reset environment variable
+    delete process.env.SPECWEAVE_ROOT;
   });
 
   describe('Hook Execution', () => {
