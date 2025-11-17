@@ -44,7 +44,7 @@ describe('PluginLoader', () => {
 
     it('should validate manifest schema', async () => {
       // This test validates that the loader checks manifest structure
-      const plugin Path = path.join(fixturesPath, 'specweave-test');
+      const pluginPath = path.join(fixturesPath, 'specweave-test');
 
       if (await fs.pathExists(pluginPath)) {
         const plugin = await loader.loadFromDirectory(pluginPath);

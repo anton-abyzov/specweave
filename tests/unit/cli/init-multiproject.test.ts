@@ -20,12 +20,12 @@ vi.mock('../../../src/cli/commands/migrate-to-multiproject');
 vi.mock('../../../src/core/project-manager');
 vi.mock('../../../src/core/config-manager');
 vi.mock('../../../src/utils/project-detection');
+
+const mockPrompt = vi.fn();
 vi.mock('inquirer', () => ({
   default: {
-    prompt: vi.fn()
-  },
-  prompt: vi.fn()
-}));
+    prompt: mockPrompt
+  }
 }));
 
 describe('init-multiproject command', () => {
@@ -34,7 +34,6 @@ describe('init-multiproject command', () => {
   const mockAutoMigrate = autoMigrateSingleToMulti as vi.MockedFunction<typeof autoMigrateSingleToMulti>;
   const mockAutoDetect = autoDetectProjectIdSync as vi.MockedFunction<typeof autoDetectProjectIdSync>;
   const mockFormatProjectName = formatProjectName as vi.MockedFunction<typeof formatProjectName>;
-  const mockInquirer = inquirer as any;
 
   const mockProjectRoot = '/test/project';
 
@@ -87,7 +86,7 @@ describe('init-multiproject command', () => {
 
   describe('initMultiProject function', () => {
     it('should run auto-migration first', async () => {
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -107,7 +106,7 @@ describe('init-multiproject command', () => {
 
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Migration errors'));
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to migrate specs folder'));
-      expect(mockInquirer.prompt).not.toHaveBeenCalled();
+      expect(mockPrompt).not.toHaveBeenCalled();
     });
 
     it('should display migration warnings', async () => {
@@ -119,7 +118,7 @@ describe('init-multiproject command', () => {
         errors: []
       });
 
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -128,7 +127,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should stay in single-project mode when user chooses not to enable multi-project', async () => {
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -137,7 +136,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should enable multi-project mode when user chooses to enable', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
@@ -161,7 +160,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should use existing multiProject config if it exists', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
@@ -194,7 +193,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should prompt to create additional projects', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Additional project prompts
@@ -211,7 +210,7 @@ describe('init-multiproject command', () => {
 
       await initMultiProject(mockProjectRoot);
 
-      expect(mockInquirer.prompt).toHaveBeenCalledTimes(4);
+      expect(mockPrompt).toHaveBeenCalledTimes(4);
     });
 
     it('should handle project creation errors gracefully', async () => {
@@ -227,7 +226,7 @@ describe('init-multiproject command', () => {
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       // Set up all prompts in the correct order
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         // Check what's being prompted
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];
@@ -274,7 +273,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should create correct project structure with tech stack array', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Additional project with comma-separated tech stack
@@ -338,7 +337,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should prevent duplicate project IDs', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Try to create duplicate
@@ -370,7 +369,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should handle optional contact fields correctly', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Project without contact emails
@@ -405,7 +404,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should display correct next steps after setup', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
@@ -497,7 +496,7 @@ describe('init-multiproject command', () => {
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       let promptCount = 0;
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         promptCount++;
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];
@@ -559,7 +558,7 @@ describe('init-multiproject command', () => {
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       let promptCount = 0;
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         promptCount++;
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];

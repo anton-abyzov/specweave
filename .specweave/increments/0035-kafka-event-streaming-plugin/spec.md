@@ -2,8 +2,10 @@
 increment: 0035-kafka-event-streaming-plugin
 title: "Kafka Event Streaming Integration Plugin"
 priority: P1
-status: planned
+status: completed
 created: 2025-11-15
+started: 2025-11-15
+completed: 2025-11-17
 type: feature
 feature: FS-035
 epic: EPIC-2025-Q4-integrations

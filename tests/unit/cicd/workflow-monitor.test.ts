@@ -51,7 +51,7 @@ describe('WorkflowMonitor', () => {
    */
   it('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
     // Mock setInterval
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     // Start monitor
     monitor.start();
@@ -65,7 +65,7 @@ describe('WorkflowMonitor', () => {
     // Stop monitor
     monitor.stop();
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   /**
@@ -198,7 +198,7 @@ describe('WorkflowMonitor', () => {
    */
   it('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
     // Mock 429 response, then success
-    const mockListWorkflowRuns = jest
+    const mockListWorkflowRuns = vi
       .fn()
       .mockRejectedValueOnce({
         status: 429,
