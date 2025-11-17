@@ -1,0 +1,52 @@
+{
+  "environment": "prod",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "enableAuth": true,
+  "firestore": {
+    "concurrencyMode": "OPTIMISTIC",
+    "pointInTimeRecovery": true,
+    "deleteProtection": false,
+    "securityRules": "strict"
+  },
+  "storage": {
+    "versioning": true,
+    "forceDestroy": false,
+    "fileSizeLimit": "10MB",
+    "securityRules": "strict"
+  },
+  "auth": {
+    "providers": ["email", "google"],
+    "allowDuplicateEmails": false,
+    "advancedSecurity": true,
+    "mfa": true
+  },
+  "hosting": {
+    "caching": "aggressive",
+    "customDomain": true,
+    "cdn": "enabled"
+  },
+  "functions": {
+    "runtime": "nodejs18",
+    "minInstances": 1,
+    "maxInstances": 100
+  },
+  "security": {
+    "appCheckEnabled": true,
+    "recaptchaEnabled": true,
+    "strictSecurityRules": true
+  },
+  "costOptimization": {
+    "description": "Production-ready - Optimized for performance and reliability",
+    "estimatedMonthlyCost": "$25-75",
+    "freeTierEligible": false,
+    "plan": "Blaze (Pay as you go)",
+    "notes": [
+      "Point-in-time recovery enabled",
+      "1 min instance (always warm)",
+      "Strict security rules",
+      "App Check for abuse prevention",
+      "Custom domain with CDN"
+    ]
+  }
+}

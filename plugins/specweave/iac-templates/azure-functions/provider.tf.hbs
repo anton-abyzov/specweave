@@ -1,0 +1,14 @@
+# Azure Provider Configuration
+# Project: {{projectName}}
+
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = {{#if (eq environment "prod")}}true{{else}}false{{/if}}
+    }
+
+    key_vault {
+      purge_soft_delete_on_destroy = {{#if (eq environment "prod")}}false{{else}}true{{/if}}
+    }
+  }
+}

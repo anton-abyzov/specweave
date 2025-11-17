@@ -1,0 +1,65 @@
+{
+  "platform": "azure-functions",
+  "location": "eastus",
+  "secondaryLocation": "westus",
+  "runtime": "node",
+  "nodeVersion": "18",
+  "pythonVersion": "3.11",
+  "dotnetVersion": "7.0",
+  "planSku": {
+    "dev": "Y1",
+    "staging": "B1",
+    "prod": "EP1"
+  },
+  "storage": {
+    "replication": {
+      "dev": "LRS",
+      "staging": "LRS",
+      "prod": "GRS"
+    },
+    "versioning": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    },
+    "softDeleteDays": {
+      "dev": 7,
+      "staging": 7,
+      "prod": 30
+    }
+  },
+  "cosmosDb": {
+    "consistencyLevel": {
+      "dev": "Eventual",
+      "staging": "Session",
+      "prod": "Session"
+    },
+    "backupType": {
+      "dev": "Periodic",
+      "staging": "Periodic",
+      "prod": "Continuous"
+    },
+    "throughput": {
+      "dev": "serverless",
+      "staging": 400,
+      "prod": 400
+    },
+    "geoReplication": {
+      "dev": false,
+      "staging": false,
+      "prod": true
+    }
+  },
+  "monitoring": {
+    "retentionDays": {
+      "dev": 30,
+      "staging": 60,
+      "prod": 90
+    }
+  },
+  "security": {
+    "httpsOnly": true,
+    "minTlsVersion": "TLS1_2",
+    "managedIdentity": true
+  }
+}

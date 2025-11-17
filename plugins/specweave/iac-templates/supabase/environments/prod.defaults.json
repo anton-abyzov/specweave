@@ -1,0 +1,75 @@
+{
+  "environment": "prod",
+  "region": "us-east-1",
+  "plan": "pro",
+  "selfHosted": false,
+  "database": {
+    "maxConnections": 200,
+    "extensions": ["uuid-ossp", "pgcrypto"],
+    "pointInTimeRecovery": true,
+    "backupRetention": 30
+  },
+  "auth": {
+    "providers": ["email", "google", "github"],
+    "emailConfirmRequired": true,
+    "passwordMinLength": 12,
+    "jwtExpiry": 3600,
+    "enableSignup": true,
+    "doubleConfirmChanges": true,
+    "customSmtp": true,
+    "mfaEnabled": true
+  },
+  "storage": {
+    "publicBucket": {
+      "fileSizeLimit": 10485760,
+      "allowedMimeTypes": ["image/jpeg", "image/png", "image/webp", "application/pdf"]
+    },
+    "privateBucket": {
+      "fileSizeLimit": 10485760,
+      "allowedMimeTypes": ["image/jpeg", "image/png", "application/pdf", "application/json"]
+    }
+  },
+  "api": {
+    "maxRows": 1000,
+    "rateLimit": true
+  },
+  "rls": {
+    "strictMode": true,
+    "defaultDeny": true,
+    "auditLogging": true
+  },
+  "network": {
+    "ipWhitelist": [],
+    "corsOrigins": ["https://*.example.com"]
+  },
+  "security": {
+    "networkRestrictions": true,
+    "auditLog": true,
+    "soc2Compliant": true
+  },
+  "costOptimization": {
+    "description": "Production-ready - Pro plan with optimal settings",
+    "estimatedMonthlyCost": "$45-100",
+    "freeTierEligible": false,
+    "plan": "Pro",
+    "included": {
+      "database": "8 GB",
+      "storage": "100 GB",
+      "edgeFunctions": "2M invocations/month",
+      "bandwidth": "50 GB",
+      "realtime": "500 concurrent connections",
+      "backups": "Daily (30-day retention)",
+      "support": "Priority email support"
+    },
+    "notes": [
+      "Pro plan required for production ($25/month base)",
+      "Point-in-time recovery enabled",
+      "Email confirmation required",
+      "Strict RLS policies (default deny)",
+      "MFA recommended",
+      "Custom SMTP for transactional emails",
+      "Network restrictions for security",
+      "Audit logging enabled"
+    ]
+  }
+}

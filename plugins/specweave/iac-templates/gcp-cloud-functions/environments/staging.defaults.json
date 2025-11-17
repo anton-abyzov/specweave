@@ -1,0 +1,33 @@
+{
+  "environment": "staging",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "memory": "512M",
+  "timeout": 120,
+  "instances": {
+    "min": 0,
+    "max": 10
+  },
+  "ingress": "ALLOW_ALL",
+  "publicInvoker": true,
+  "storage": {
+    "versioning": false,
+    "lifecycleDays": 30,
+    "forceDestroy": true
+  },
+  "firestore": {
+    "concurrencyMode": "OPTIMISTIC",
+    "pointInTimeRecovery": false,
+    "deleteProtection": false
+  },
+  "costOptimization": {
+    "description": "Cost-effective for testing - Higher memory, no min instances",
+    "estimatedMonthlyCost": "$1-5",
+    "freeTierEligible": false,
+    "notes": [
+      "512M memory for realistic testing",
+      "No always-on instances",
+      "Optimistic concurrency for performance"
+    ]
+  }
+}
