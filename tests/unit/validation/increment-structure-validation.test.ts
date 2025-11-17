@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import * as os from 'os';
 
 /**
  * Unit tests for increment structure validation
@@ -16,7 +15,8 @@ import * as path from 'path';
  */
 
 describe('IncrementStructureValidator', () => {
-  const testIncrementsDir = path.join(__dirname, '../../../fixtures/test-increments');
+  // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+  const testIncrementsDir = path.join(os.tmpdir(), 'specweave-test-increment-validation-' + Date.now());
 
   beforeEach(async () => {
     // Create test directory

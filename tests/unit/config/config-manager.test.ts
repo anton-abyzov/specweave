@@ -5,11 +5,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
+import * as os from 'os';
 import { ConfigManager } from '../../../src/config/ConfigManager.js';
 import type { SpecWeaveConfig } from '../../../src/config/types.js';
 
-// Test config path
-const TEST_CONFIG_PATH = '.specweave/test-config.json';
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-config-manager-' + Date.now());
+const TEST_CONFIG_PATH = path.join(TEST_ROOT, '.specweave/test-config.json');
 
 describe('ConfigManager', () => {
   beforeEach(async () => {
