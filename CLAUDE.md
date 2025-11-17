@@ -50,6 +50,80 @@ Users receive a different CLAUDE.md via the template system.
 
 ---
 
+## 🛡️ CRITICAL: NEVER DELETE .specweave/ DIRECTORIES!
+
+**⛔ MASS DELETION PROTECTION IS ACTIVE ⛔**
+
+**PROTECTED DIRECTORIES**:
+- `.specweave/docs/` - All project documentation (internal + public)
+- `.specweave/increments/` - All increment history and specifications
+
+**WHAT THIS MEANS**:
+- ❌ **NEVER** run `rm -rf .specweave/docs` or `rm -rf .specweave/increments`
+- ❌ **NEVER** delete more than 50 files in these directories at once
+- ✅ Pre-commit hook will **BLOCK** accidental mass deletions
+- ✅ If intentional, bypass with `git commit --no-verify`
+
+**WHY THIS EXISTS**:
+On 2025-11-17, an accidental mass deletion occurred (1,200+ files). All files were recovered via `git restore`, but this protection prevents future incidents.
+
+**IF YOU ACCIDENTALLY DELETE**:
+```bash
+# Immediately restore:
+git restore .specweave/
+
+# Verify restoration:
+git status
+```
+
+**See**: `.specweave/increments/0039/reports/ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md`
+
+---
+
+## ⚠️ CRITICAL: NEVER USE `specweave init . --force` FOR REINSTALLS!
+
+**⛔ COMMON MISTAKE THAT DELETES ALL DATA ⛔**
+
+**THE DANGER**:
+```bash
+# ❌ DANGEROUS (deletes ALL increments and docs):
+specweave init . --force
+
+# What --force actually does:
+# 1. Skips all confirmation prompts
+# 2. AUTOMATICALLY DELETES .specweave/ entirely
+# 3. Loses all increments, docs, and history
+# 4. No backup unless you create one manually
+```
+
+**SAFE ALTERNATIVES**:
+```bash
+# ✅ SAFE - Update files, keep all data:
+specweave init .
+# When prompted, select: "Continue working"
+
+# ✅ SAFE - Always interactive, never deletes:
+npx specweave init .
+```
+
+**WHY THIS MATTERS**:
+- Documentation used to recommend `--force` for troubleshooting (FIXED in v0.21.4+)
+- Users followed the docs and lost all their work
+- Now `--force` has multiple safeguards:
+  - ⚠️ BIG RED WARNING before deletion
+  - ✅ ALWAYS requires confirmation (even in force mode)
+  - 📦 Automatic backup created before deletion
+  - 🔒 Pre-commit hook blocks accidental commits
+
+**IF YOU NEED A FRESH START**:
+1. Backup first: `cp -r .specweave .specweave.backup-$(date +%Y%m%d)`
+2. Run: `specweave init .` (select "Fresh start" option)
+3. Or: `specweave init . --force` (requires confirmation + creates auto-backup)
+
+**NEVER use `--force` unless you want to DELETE EVERYTHING!**
+
+---
+
 ## Tool Support
 
 SpecWeave supports multiple AI coding tools with varying automation levels:
@@ -354,10 +428,24 @@ npm run build              # Compile TypeScript
 ### Testing
 
 ```bash
-npm test                    # Unit tests
-npm run test:integration    # Integration tests (includes build verification)
+npm test                    # Unit tests only
+npm run test:validation     # Plugin structure validation
+npm run test:integration    # All integration tests
 npm run test:e2e            # E2E tests (Playwright)
+npm run test:all            # All tests
 ```
+
+**Test Organization** (4 categories):
+- `tests/unit/` - Pure logic tests (no I/O)
+- `tests/plugin-validation/` - Plugin structure contracts
+- `tests/integration/` - 4 semantic categories:
+  - `external-tools/` - GitHub, JIRA, ADO, Kafka sync
+  - `core/` - Core framework + workflows
+  - `generators/` - Code generation (frontend, backend, ML)
+  - `features/` - Feature plugins (Figma, i18n, diagrams, etc.)
+- `tests/e2e/` - Full user scenarios
+
+**Details**: `.specweave/docs/internal/architecture/TEST-ORGANIZATION-PROPOSAL.md`
 
 ### Build Health Checks
 

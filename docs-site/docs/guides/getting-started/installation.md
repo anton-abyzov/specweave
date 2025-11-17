@@ -404,14 +404,27 @@ If you need to reinstall SpecWeave in a project:
 ```bash
 cd your-project
 
-# Backup your .specweave/ if needed
-cp -r .specweave .specweave.backup
-
-# Reinstall (will prompt for confirmation)
-specweave init . --force
+# Safe reinstall (keeps all increments and docs)
+specweave init .
+# When prompted, select: "Continue working"
+# This updates files without deleting your data
 
 # Or with npm
-npx specweave init . --force
+npx specweave init .
+```
+
+**⚠️ WARNING about `--force` flag:**
+```bash
+# ⛔ DANGER: --force DELETES ALL DATA!
+# This will permanently delete:
+# - All increments (.specweave/increments/)
+# - All documentation (.specweave/docs/)
+# - All configuration
+# ONLY use --force if you want to start completely fresh!
+
+# If you must use --force, backup first:
+cp -r .specweave .specweave.backup-$(date +%Y%m%d)
+specweave init . --force
 ```
 
 ## Uninstallation
@@ -475,8 +488,11 @@ ls -la .claude/skills/
 # Check a specific skill
 cat .claude/skills/increment-planner/SKILL.md
 
-# If missing, reinstall
-npx specweave init . --force
+# If missing, safe reinstall (keeps all your data)
+npx specweave init .
+# When prompted, select: "Continue working"
+
+# ⚠️ DO NOT use --force (deletes all increments/docs)
 ```
 
 ### Commands not found (Claude Code)
@@ -489,8 +505,11 @@ ls -la .claude/commands/
 # Check a specific command
 cat .claude/commands/specweave-increment.md
 
-# If missing, reinstall
-npx specweave init . --force
+# If missing, safe reinstall (keeps all your data)
+npx specweave init .
+# When prompted, select: "Continue working"
+
+# ⚠️ DO NOT use --force (deletes all increments/docs)
 ```
 
 ### Hooks not running
