@@ -223,6 +223,13 @@ export class SpecDistributor {
   ): Promise<void> {
     let content = await fs.readFile(filePath, 'utf-8');
 
+    // Backward compatibility: Check if ## Implementation section exists
+    const hasImplementationSection = this.hasImplementationSection(content);
+
+    if (!hasImplementationSection) {
+      console.log(`🔄 [Backward Compatibility] Auto-generating ## Implementation section for ${path.basename(filePath)}`);
+    }
+
     // Update ## Acceptance Criteria section
     content = this.updateSection(content, '## Acceptance Criteria', acs.map(ac => {
       const checkbox = ac.completed ? '[x]' : '[ ]';
@@ -241,6 +248,14 @@ export class SpecDistributor {
     ]);
 
     await fs.writeFile(filePath, content, 'utf-8');
+  }
+
+  /**
+   * Check if User Story has ## Implementation section
+   * Used for backward compatibility detection
+   */
+  private hasImplementationSection(content: string): boolean {
+    return /##\s*Implementation/i.test(content);
   }
 
   /**
