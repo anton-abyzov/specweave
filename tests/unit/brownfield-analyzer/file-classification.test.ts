@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: BrownfieldAnalyzer File Classification
  *
@@ -5,8 +7,8 @@
  * Coverage Target: 95%
  */
 
-import { BrownfieldAnalyzer } from '../../../src/core/brownfield/analyzer';
-import { withTempDir } from '../../utils/temp-dir';
+import { BrownfieldAnalyzer } from '../../../src/core/brownfield/analyzer.js';
+import { withTempDir } from '../../utils/temp-dir.js';
 import fs from 'fs-extra';
 import path from 'path';
 

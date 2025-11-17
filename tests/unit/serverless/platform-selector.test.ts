@@ -1,13 +1,15 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Platform Selector Unit Tests
  *
  * Tests for platform ranking and selection logic.
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { selectPlatforms } from '../../../src/core/serverless/platform-selector.js';
-import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js';
-import type { ProjectContext } from '../../../src/core/serverless/types.js';
+import { describe, it, expect } from 'vitest';
+import { selectPlatforms } from '../../../src/core/serverless/platform-selector.js.js';
+import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js.js';
+import type { ProjectContext } from '../../../src/core/serverless/types.js.js';
 
 describe('Platform Selector', () => {
   const knowledgeBase = loadAllPlatforms();

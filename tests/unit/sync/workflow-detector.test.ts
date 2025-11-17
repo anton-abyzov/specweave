@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Workflow Detector
  *
@@ -7,26 +9,26 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { WorkflowDetector, WorkflowInfo } from '../../../src/core/sync/workflow-detector';
+import { WorkflowDetector, WorkflowInfo } from '../../../src/core/sync/workflow-detector.js';
 import axios from 'axios';
 
 // Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as anyed<typeof axios>;
 
 describe('WorkflowDetector', () => {
   let detector: WorkflowDetector;
-  let mockGet: jest.Mock;
+  let mockGet: any;
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock function
-    mockGet = jest.fn();
+    mockGet = vi.fn();
 
     // Mock axios.create to return a client with mocked methods
-    mockedAxios.create = jest.fn().mockReturnValue({
+    mockedAxios.create = vi.fn().mockReturnValue({
       get: mockGet
     } as any);
 

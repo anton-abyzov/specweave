@@ -1,5 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { IncrementNumberManager } from '../../src/core/increment-utils.js';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
+import { IncrementNumberManager } from '../../src/core/increment-utils.js.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import { tmpdir } from 'os';

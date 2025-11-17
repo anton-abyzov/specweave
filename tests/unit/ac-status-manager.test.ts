@@ -1,4 +1,6 @@
-import { ACStatusManager } from '../../src/core/increment/ac-status-manager';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+import { ACStatusManager } from '../../src/core/increment/ac-status-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 

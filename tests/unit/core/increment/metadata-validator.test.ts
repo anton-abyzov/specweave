@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: MetadataValidator
  *
@@ -5,8 +7,8 @@
  * metadata.json and actual increment state (tasks.md).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { MetadataValidator } from '../../../../src/core/increment/metadata-validator';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { MetadataValidator } from '../../../../src/core/increment/metadata-validator.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';

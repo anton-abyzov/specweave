@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Reflection Storage Manager
  */
@@ -12,13 +14,13 @@ import {
   listReflections,
   readReflection,
   deleteReflection
-} from '../../../src/hooks/lib/reflection-storage';
+} from '../../../src/hooks/lib/reflection-storage.js';
 import {
   ReflectionResult,
   IssueSeverity,
   IssueCategory,
   ReflectionModel
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Reflection Storage Manager', () => {
   const testDir = path.join(__dirname, '../../fixtures/reflection-storage');

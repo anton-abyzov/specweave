@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Exactly-Once Semantics (EOS)
  *
@@ -6,21 +8,21 @@
  * @module exactly-once-semantics.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   ExactlyOnceProducer,
   TransactionManager,
   IdempotenceConfig,
-} from '../../../plugins/specweave-kafka/lib/reliability/exactly-once-semantics';
+} from '../../../plugins/specweave-kafka/lib/reliability/exactly-once-semantics.js';
 import { Kafka, Producer, Consumer } from 'kafkajs';
 
 // Mock kafkajs
-jest.mock('kafkajs');
+vi.mock('kafkajs');
 
 describe('ExactlyOnceProducer', () => {
   let kafka: Kafka;
   let eosProducer: ExactlyOnceProducer;
-  let mockProducer: jest.Mocked<Producer>;
+  let mockProducer: anyed<Producer>;
 
   beforeEach(() => {
     kafka = new Kafka({
@@ -29,11 +31,11 @@ describe('ExactlyOnceProducer', () => {
     });
 
     mockProducer = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-      sendBatch: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-      transaction: jest.fn(),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+      sendBatch: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+      transaction: vi.fn(),
     } as any;
 
     eosProducer = new ExactlyOnceProducer(kafka, {
@@ -79,9 +81,9 @@ describe('ExactlyOnceProducer', () => {
 
     test('should send message within transaction', async () => {
       const txMock = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -101,9 +103,9 @@ describe('ExactlyOnceProducer', () => {
 
     test('should commit transaction on success', async () => {
       const txMock = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -119,9 +121,9 @@ describe('ExactlyOnceProducer', () => {
 
     test('should abort transaction on failure', async () => {
       const txMock = {
-        send: jest.fn().mockRejectedValue(new Error('Send failed')),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockRejectedValue(new Error('Send failed')),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -139,9 +141,9 @@ describe('ExactlyOnceProducer', () => {
 
     test('should support batch transactional send', async () => {
       const txMock = {
-        sendBatch: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        sendBatch: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -165,17 +167,17 @@ describe('ExactlyOnceProducer', () => {
 
     test('should isolate transactions (read-committed isolation)', async () => {
       const txMock1 = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockImplementation(async () => {
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockImplementation(async () => {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }),
-        abort: jest.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       const txMock2 = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '1' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '1' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction
@@ -218,9 +220,9 @@ describe('ExactlyOnceProducer', () => {
       await eosProducer.connect();
 
       const txMock = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -385,8 +387,8 @@ describe('ExactlyOnceProducer', () => {
           .mockRejectedValueOnce(new Error('Retriable: Network timeout'))
           .mockRejectedValueOnce(new Error('Retriable: Broker not available'))
           .mockResolvedValueOnce([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -405,9 +407,9 @@ describe('ExactlyOnceProducer', () => {
       await eosProducer.connect();
 
       const txMock = {
-        send: jest.fn().mockRejectedValue(new Error('Non-retriable: Invalid topic')),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockRejectedValue(new Error('Non-retriable: Invalid topic')),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -427,9 +429,9 @@ describe('ExactlyOnceProducer', () => {
       await eosProducer.connect();
 
       const txMock = {
-        send: jest.fn().mockRejectedValue(new Error('ProducerFenced: Epoch is fenced')),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockRejectedValue(new Error('ProducerFenced: Epoch is fenced')),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -451,9 +453,9 @@ describe('ExactlyOnceProducer', () => {
       await eosProducer.connect();
 
       const txMock = {
-        send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);
@@ -480,9 +482,9 @@ describe('ExactlyOnceProducer', () => {
       await eosProducer.connect();
 
       const txMock = {
-        sendBatch: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
-        commit: jest.fn().mockResolvedValue(undefined),
-        abort: jest.fn().mockResolvedValue(undefined),
+        sendBatch: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+        commit: vi.fn().mockResolvedValue(undefined),
+        abort: vi.fn().mockResolvedValue(undefined),
       };
 
       mockProducer.transaction.mockResolvedValue(txMock);

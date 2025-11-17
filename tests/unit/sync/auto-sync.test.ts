@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Auto-Sync Mode
  *
@@ -7,7 +9,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { StatusSyncEngine, SyncInput } from '../../../src/core/sync/status-sync-engine';
+import { StatusSyncEngine, SyncInput } from '../../../src/core/sync/status-sync-engine.js';
 
 describe('StatusSyncEngine - Auto-Sync Mode', () => {
   describe('isAutoSyncEnabled', () => {
@@ -190,7 +192,7 @@ describe('StatusSyncEngine - Auto-Sync Mode', () => {
       const engine = new StatusSyncEngine(config);
 
       // Mock syncToExternal to throw error
-      jest.spyOn(engine, 'syncToExternal').mockRejectedValue(
+      vi.spyOn(engine, 'syncToExternal').mockRejectedValue(
         new Error('Network error')
       );
 

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for DuplicateDetector
  *
@@ -5,20 +7,20 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   detectAllDuplicates,
   detectDuplicatesByNumber,
   type DuplicateReport,
   type IncrementLocation
-} from '../../../src/core/increment/duplicate-detector.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+} from '../../../src/core/increment/duplicate-detector.js.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement,
   createMockLocation
-} from '../../helpers/increment-test-helpers.js';
+} from '../../helpers/increment-test-helpers.js.js';
 
 describe('DuplicateDetector', () => {
   let testDir: string;

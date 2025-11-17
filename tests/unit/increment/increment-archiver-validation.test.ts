@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for IncrementArchiver duplicate validation
  *
@@ -5,14 +7,14 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
-import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement
-} from '../../helpers/increment-test-helpers.js';
+} from '../../helpers/increment-test-helpers.js.js';
 
 describe('IncrementArchiver Duplicate Validation', () => {
   let testDir: string;

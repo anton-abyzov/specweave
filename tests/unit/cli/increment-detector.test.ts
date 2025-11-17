@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for IncrementDetector
  *
@@ -6,28 +8,28 @@
  * Part of increment 0039: Ultra-Smart Next Command
  */
 
-import { IncrementDetector } from '../../../src/cli/commands/plan/increment-detector';
-import { MetadataManager } from '../../../src/core/increment/metadata-manager';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata';
+import { IncrementDetector } from '../../../src/cli/commands/plan/increment-detector.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
 // Mock dependencies
-jest.mock('fs');
-jest.mock('../../../src/core/increment/metadata-manager');
+vi.mock('fs');
+vi.mock('../../../src/core/increment/metadata-manager');
 
 describe('IncrementDetector', () => {
   let detector: IncrementDetector;
   const projectRoot = '/test/project';
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     detector = new IncrementDetector(projectRoot);
   });
 
   describe('detect', () => {
     it('should return error when .specweave/increments directory does not exist', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const result = await detector.detect();
 
@@ -37,8 +39,8 @@ describe('IncrementDetector', () => {
     });
 
     it('should return error when no increments exist', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readdirSync as jest.Mock).mockReturnValue([]);
+      (fs.existsSync as any).mockReturnValue(true);
+      (fs.readdirSync as any).mockReturnValue([]);
 
       const result = await detector.detect();
 
@@ -133,7 +135,7 @@ describe('IncrementDetector', () => {
         '0040-invalid-increment'
       ]);
 
-      (MetadataManager.read as jest.Mock).mockImplementation((incrementId: string) => {
+      (MetadataManager.read as any).mockImplementation((incrementId: string) => {
         if (incrementId === '0040-invalid-increment') {
           throw new Error('Invalid metadata');
         }
@@ -211,7 +213,7 @@ describe('IncrementDetector', () => {
     });
 
     it('should return error when increment does not exist', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const result = await detector.validate('9999-non-existent');
 
@@ -296,8 +298,8 @@ describe('IncrementDetector', () => {
 
     it('should handle metadata read errors', async () => {
       const incrementId = '0040-invalid';
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (MetadataManager.read as jest.Mock).mockImplementation(() => {
+      (fs.existsSync as any).mockReturnValue(true);
+      (MetadataManager.read as any).mockImplementation(() => {
         throw new Error('Corrupted metadata.json');
       });
 
@@ -314,16 +316,16 @@ describe('IncrementDetector', () => {
  * Helper: Setup mock file system
  */
 function setupMockFileSystem(incrementIds: string[]): void {
-  (fs.existsSync as jest.Mock).mockReturnValue(true);
-  (fs.readdirSync as jest.Mock).mockReturnValue(incrementIds);
-  (fs.statSync as jest.Mock).mockReturnValue({ isDirectory: () => true });
+  (fs.existsSync as any).mockReturnValue(true);
+  (fs.readdirSync as any).mockReturnValue(incrementIds);
+  (fs.statSync as any).mockReturnValue({ isDirectory: () => true });
 }
 
 /**
  * Helper: Setup mock metadata for increments
  */
 function setupMockMetadata(statuses: Record<string, IncrementStatus>): void {
-  (MetadataManager.read as jest.Mock).mockImplementation((incrementId: string) => {
+  (MetadataManager.read as any).mockImplementation((incrementId: string) => {
     const status = statuses[incrementId];
     if (!status) {
       throw new Error(`No metadata for ${incrementId}`);

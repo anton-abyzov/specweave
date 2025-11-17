@@ -1,15 +1,17 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: RateLimiter
  *
  * Tests for rate limiting, estimation, and backoff strategies.
  */
 
-import { RateLimiter, PROVIDER_RATE_LIMITS } from '../../../src/core/sync/rate-limiter';
+import { RateLimiter, PROVIDER_RATE_LIMITS } from '../../../src/core/sync/rate-limiter.js';
 import type {
   TimeRangePreset,
   TimeRangeEstimate,
   RateLimitStatus,
-} from '../../../src/core/types/sync-profile';
+} from '../../../src/core/types/sync-profile.js';
 
 describe('RateLimiter', () => {
   describe('estimateSync', () => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Plugin Validator
  *
@@ -7,19 +9,19 @@
  * Test Count: 30+ critical tests (subset of full 70 tests)
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { PluginValidator, PLUGIN_KEYWORDS } from '../../src/utils/plugin-validator.js';
+import { PluginValidator, PLUGIN_KEYWORDS } from '../../src/utils/plugin-validator.js.js';
 
 // Mock fs-extra
-jest.mock('fs-extra');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+vi.mock('fs-extra');
+const mockedFs = fs as anyed<typeof fs>;
 
 // Mock child_process
-jest.mock('child_process', () => ({
-  exec: jest.fn(),
+vi.mock('child_process', () => ({
+  exec: vi.fn(),
 }));
 
 describe('PluginValidator', () => {
@@ -28,11 +30,11 @@ describe('PluginValidator', () => {
 
   beforeEach(() => {
     validator = new PluginValidator();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   // =========================================================================
@@ -282,7 +284,7 @@ describe('PluginValidator', () => {
       });
 
       const { exec } = await import('child_process');
-      const mockedExec = exec as jest.MockedFunction<typeof exec>;
+      const mockedExec = exec as anyedFunction<typeof exec>;
 
       // Mock: core plugin installed, context plugin not installed
       mockedExec.mockImplementation((command, callback) => {

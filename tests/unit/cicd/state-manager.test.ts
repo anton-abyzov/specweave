@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: CI/CD State Manager
  *
@@ -7,12 +9,12 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { StateManager } from '../../../src/core/cicd/state-manager';
+import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import {
   CICDMonitorState,
   DEFAULT_STATE,
   FailureRecord
-} from '../../../src/core/cicd/types';
+} from '../../../src/core/cicd/types.js';
 
 describe('StateManager', () => {
   let testDir: string;

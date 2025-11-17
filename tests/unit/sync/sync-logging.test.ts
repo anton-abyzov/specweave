@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Sync Event Logging
  *
@@ -7,13 +9,13 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { SyncEventLogger, SyncEvent, ConflictEvent } from '../../../src/core/sync/sync-event-logger';
+import { SyncEventLogger, SyncEvent, ConflictEvent } from '../../../src/core/sync/sync-event-logger.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock fs-extra
-jest.mock('fs-extra');
-const mockedFs = fs as jest.Mocked<typeof fs>;
+vi.mock('fs-extra');
+const mockedFs = fs as anyed<typeof fs>;
 
 describe('SyncEventLogger', () => {
   let logger: SyncEventLogger;
@@ -21,7 +23,7 @@ describe('SyncEventLogger', () => {
   const eventsFile = path.join(logsDir, 'sync-events.json');
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     logger = new SyncEventLogger('/test');
   });
 

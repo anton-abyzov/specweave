@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for JIRA Status Sync
  *
@@ -7,30 +9,30 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { JiraStatusSync, ExternalStatus } from '../../../plugins/specweave-jira/lib/jira-status-sync';
+import { JiraStatusSync, ExternalStatus } from '../../../plugins/specweave-jira/lib/jira-status-sync.js';
 import axios from 'axios';
 
 // Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+vi.mock('axios');
+const mockedAxios = axios as anyed<typeof axios>;
 
 describe('JiraStatusSync', () => {
   let sync: JiraStatusSync;
-  let mockGet: jest.Mock;
-  let mockPut: jest.Mock;
-  let mockPost: jest.Mock;
+  let mockGet: any;
+  let mockPut: any;
+  let mockPost: any;
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock functions
-    mockGet = jest.fn();
-    mockPut = jest.fn();
-    mockPost = jest.fn();
+    mockGet = vi.fn();
+    mockPut = vi.fn();
+    mockPost = vi.fn();
 
     // Mock axios.create to return a client with mocked methods
-    mockedAxios.create = jest.fn().mockReturnValue({
+    mockedAxios.create = vi.fn().mockReturnValue({
       get: mockGet,
       put: mockPut,
       post: mockPost

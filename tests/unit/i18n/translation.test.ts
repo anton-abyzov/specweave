@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Translation Utilities
  *
@@ -22,7 +24,7 @@ import {
   formatCost,
   type SupportedLanguage,
   type PreservedContent,
-} from '../../../src/utils/translation';
+} from '../../../src/utils/translation.js';
 
 describe('Language Detection', () => {
   describe('detectLanguage()', () => {

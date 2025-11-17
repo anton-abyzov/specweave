@@ -1,8 +1,10 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for LocaleManager
  */
 
-import { LocaleManager } from '../../../src/core/i18n/locale-manager';
+import { LocaleManager } from '../../../src/core/i18n/locale-manager.js';
 
 describe('LocaleManager', () => {
   describe('constructor', () => {

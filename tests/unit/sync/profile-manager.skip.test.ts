@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: ProfileManager
  *
@@ -7,8 +9,8 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { ProfileManager } from '../../../src/core/sync/profile-manager';
-import { SyncProfile } from '../../../src/core/types/sync-profile';
+import { ProfileManager } from '../../../src/core/sync/profile-manager.js';
+import { SyncProfile } from '../../../src/core/types/sync-profile.js';
 
 describe('ProfileManager', () => {
   let tempDir: string;

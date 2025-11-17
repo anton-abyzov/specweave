@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: CommandDeduplicator
  *
@@ -5,10 +7,10 @@
  * command invocations within a configurable time window.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { CommandDeduplicator } from '../../../src/core/deduplication/command-deduplicator.js';
+import { CommandDeduplicator } from '../../../src/core/deduplication/command-deduplicator.js.js';
 
 describe('CommandDeduplicator', () => {
   const testCachePath = path.join(process.cwd(), '.specweave', 'test-cache', 'command-invocations.json');

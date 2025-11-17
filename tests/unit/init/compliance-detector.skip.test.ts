@@ -1,9 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for ComplianceDetector
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { detectCompliance } from '../../../src/init/compliance/ComplianceDetector.js';
+import { describe, it, expect } from 'vitest';
+import { detectCompliance } from '../../../src/init/compliance/ComplianceDetector.js.js';
 
 describe('ComplianceDetector', () => {
   describe('detectCompliance', () => {

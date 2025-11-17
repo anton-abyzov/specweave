@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: BrownfieldAnalyzer Keyword Scoring
  *
@@ -5,7 +7,7 @@
  * Coverage Target: 95%
  */
 
-import { BrownfieldAnalyzer } from '../../../src/core/brownfield/analyzer';
+import { BrownfieldAnalyzer } from '../../../src/core/brownfield/analyzer.js';
 
 describe('BrownfieldAnalyzer - Keyword Scoring', () => {
   let analyzer: BrownfieldAnalyzer;

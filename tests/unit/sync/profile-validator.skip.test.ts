@@ -1,22 +1,24 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for Sync Profile Validator
  *
  * Covers ADO multi-team and Jira multi-project/component validation
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import {
   validateJiraConfig,
   validateAdoConfig,
   validateGitHubConfig,
   validateSyncProfile,
-} from '../../../src/core/sync/profile-validator.js';
+} from '../../../src/core/sync/profile-validator.js.js';
 import {
   JiraConfig,
   AdoConfig,
   GitHubConfig,
   SyncProfile,
-} from '../../../src/core/types/sync-profile.js';
+} from '../../../src/core/types/sync-profile.js.js';
 
 describe('Jira Profile Validator', () => {
   describe('Strategy 1: Project per Team', () => {

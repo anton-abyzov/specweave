@@ -1,9 +1,11 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for LanguageManager
  */
 
-import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemPromptForLanguage } from '../../../src/core/i18n/language-manager';
-import { SupportedLanguage } from '../../../src/core/i18n/types';
+import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemPromptForLanguage } from '../../../src/core/i18n/language-manager.js';
+import { SupportedLanguage } from '../../../src/core/i18n/types.js';
 
 describe('LanguageManager', () => {
   describe('constructor', () => {
