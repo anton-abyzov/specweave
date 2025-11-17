@@ -1,0 +1,55 @@
+{
+  "environment": "dev",
+  "region": "us-east-1",
+  "plan": "free",
+  "selfHosted": false,
+  "database": {
+    "maxConnections": 50,
+    "extensions": ["uuid-ossp", "pgcrypto"]
+  },
+  "auth": {
+    "providers": ["email"],
+    "emailConfirmRequired": false,
+    "passwordMinLength": 8,
+    "jwtExpiry": 86400,
+    "enableSignup": true,
+    "doubleConfirmChanges": false
+  },
+  "storage": {
+    "publicBucket": {
+      "fileSizeLimit": 52428800,
+      "allowedMimeTypes": ["image/*", "application/pdf"]
+    },
+    "privateBucket": {
+      "fileSizeLimit": 52428800,
+      "allowedMimeTypes": ["image/*", "application/pdf", "application/json"]
+    }
+  },
+  "api": {
+    "maxRows": 100000
+  },
+  "rls": {
+    "strictMode": false,
+    "defaultDeny": false
+  },
+  "costOptimization": {
+    "description": "Free tier optimized - Generous limits for development",
+    "estimatedMonthlyCost": "$0",
+    "freeTierEligible": true,
+    "plan": "Free",
+    "limits": {
+      "database": "500 MB",
+      "storage": "1 GB",
+      "edgeFunctions": "500K invocations/month",
+      "bandwidth": "2 GB",
+      "realtime": "200 concurrent connections"
+    },
+    "notes": [
+      "Perfect for MVPs and prototypes",
+      "No credit card required",
+      "Unlimited API requests",
+      "Unlimited auth users",
+      "Daily backups (7-day retention)"
+    ]
+  }
+}

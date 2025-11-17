@@ -1,0 +1,74 @@
+# Terraform Outputs for Supabase
+# Project: {{projectName}}
+
+{{#unless selfHosted}}
+output "project_id" {
+  description = "Supabase project ID"
+  value       = supabase_project.{{snakeCase projectName}}.id
+}
+
+output "project_ref" {
+  description = "Supabase project reference"
+  value       = supabase_project.{{snakeCase projectName}}.id
+}
+
+output "api_url" {
+  description = "Supabase API URL"
+  value       = "https://${supabase_project.{{snakeCase projectName}}.id}.supabase.co"
+}
+
+output "anon_key" {
+  description = "Supabase anonymous (public) key"
+  value       = supabase_project.{{snakeCase projectName}}.anon_key
+  sensitive   = true
+}
+
+output "service_role_key" {
+  description = "Supabase service role (private) key"
+  value       = supabase_project.{{snakeCase projectName}}.service_role_key
+  sensitive   = true
+}
+
+output "database_url" {
+  description = "PostgreSQL database URL"
+  value       = "postgresql://postgres:${var.database_password}@db.${supabase_project.{{snakeCase projectName}}.id}.supabase.co:5432/postgres"
+  sensitive   = true
+}
+
+output "database_host" {
+  description = "PostgreSQL database host"
+  value       = "db.${supabase_project.{{snakeCase projectName}}.id}.supabase.co"
+}
+
+output "studio_url" {
+  description = "Supabase Studio URL"
+  value       = "https://app.supabase.com/project/${supabase_project.{{snakeCase projectName}}.id}"
+}
+
+output "public_bucket_url" {
+  description = "Public storage bucket URL"
+  value       = "https://${supabase_project.{{snakeCase projectName}}.id}.supabase.co/storage/v1/object/public/public"
+}
+
+{{else}}
+output "api_url" {
+  description = "Self-hosted Supabase API URL"
+  value       = "http://localhost:{{#if (eq environment "prod")}}8000{{else}}54321{{/if}}"
+}
+
+output "studio_url" {
+  description = "Self-hosted Supabase Studio URL"
+  value       = "http://localhost:{{#if (eq environment "prod")}}3000{{else}}54323{{/if}}"
+}
+
+output "database_url" {
+  description = "PostgreSQL database URL"
+  value       = "postgresql://postgres:${var.database_password}@localhost:{{#if (eq environment "prod")}}5432{{else}}54322{{/if}}/postgres"
+  sensitive   = true
+}
+
+output "database_port" {
+  description = "PostgreSQL database port"
+  value       = {{#if (eq environment "prod")}}5432{{else}}54322{{/if}}
+}
+{{/unless}}

@@ -1,0 +1,46 @@
+{
+  "environment": "dev",
+  "region": "us-east-1",
+  "lambda": {
+    "memorySize": 128,
+    "timeout": 3,
+    "reservedConcurrentExecutions": null,
+    "provisionedConcurrency": 0
+  },
+  "dynamodb": {
+    "billingMode": "PAY_PER_REQUEST",
+    "pointInTimeRecovery": false,
+    "streamEnabled": false,
+    "ttlEnabled": false
+  },
+  "cloudwatch": {
+    "retentionDays": 7,
+    "metricsEnabled": false
+  },
+  "apiGateway": {
+    "throttling": {
+      "rateLimit": 10,
+      "burstLimit": 20
+    },
+    "cors": ["*"]
+  },
+  "monitoring": {
+    "xrayEnabled": false,
+    "alarms": false
+  },
+  "security": {
+    "kmsEncryption": false,
+    "vpcEnabled": false
+  },
+  "costOptimization": {
+    "description": "Free tier optimized - On-demand billing, minimal resources",
+    "estimatedMonthlyCost": "$0-5",
+    "freeTierEligible": true,
+    "notes": [
+      "Uses AWS Lambda free tier (1M requests/month, 400K GB-seconds)",
+      "DynamoDB on-demand pricing (25GB storage, 25 RCU/WCU free)",
+      "CloudWatch Logs 5GB free per month",
+      "API Gateway 1M requests free per month (first 12 months)"
+    ]
+  }
+}

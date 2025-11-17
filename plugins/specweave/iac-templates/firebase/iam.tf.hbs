@@ -1,0 +1,75 @@
+# IAM Roles and Permissions for Firebase
+# Project: {{projectName}}
+
+###############################
+# Cloud Functions Service Account Permissions
+###############################
+
+# Firebase Admin SDK access (already granted in main.tf)
+# Includes Firestore, Storage, Auth access
+
+{{#if databaseName}}
+# Firestore access for Cloud Functions
+resource "google_project_iam_member" "{{snakeCase functionName}}_firestore" {
+  project = var.project_id
+  role    = "roles/datastore.user"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+{{/if}}
+
+# Cloud Logging access
+resource "google_project_iam_member" "{{snakeCase functionName}}_logging" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+
+# Cloud Storage access
+resource "google_project_iam_member" "{{snakeCase functionName}}_storage" {
+  project = var.project_id
+  role    = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+
+{{#if enableAuth}}
+# Firebase Authentication access
+resource "google_project_iam_member" "{{snakeCase functionName}}_auth" {
+  project = var.project_id
+  role    = "roles/firebaseauth.admin"
+  member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+}
+{{/if}}
+
+###############################
+# Firebase Hosting Permissions
+###############################
+
+# Service account for Firebase Hosting deployment (via Firebase CLI)
+resource "google_service_account" "hosting_deployer" {
+  account_id   = "{{kebabCase projectName}}-hosting-deploy"
+  display_name = "Firebase Hosting Deployer"
+  description  = "Service account for deploying to Firebase Hosting via CI/CD"
+}
+
+resource "google_project_iam_member" "hosting_deployer_firebase" {
+  project = var.project_id
+  role    = "roles/firebase.admin"
+  member  = "serviceAccount:${google_service_account.hosting_deployer.email}"
+}
+
+resource "google_project_iam_member" "hosting_deployer_hosting" {
+  project = var.project_id
+  role    = "roles/firebasehosting.admin"
+  member  = "serviceAccount:${google_service_account.hosting_deployer.email}"
+}
+
+###############################
+# Additional IAM Bindings (Optional)
+###############################
+
+# For Secret Manager integration (uncomment if needed):
+# resource "google_project_iam_member" "functions_secret_accessor" {
+#   project = var.project_id
+#   role    = "roles/secretmanager.secretAccessor"
+#   member  = "serviceAccount:${google_service_account.{{snakeCase functionName}}.email}"
+# }

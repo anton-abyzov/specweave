@@ -1,0 +1,30 @@
+{
+  "environment": "dev",
+  "location": "eastus",
+  "planSku": "Y1",
+  "alwaysOn": false,
+  "storage": {
+    "replication": "LRS",
+    "versioning": false,
+    "softDeleteDays": 7
+  },
+  "cosmosDb": {
+    "mode": "serverless",
+    "consistencyLevel": "Eventual",
+    "backupType": "Periodic",
+    "backupIntervalMinutes": 240,
+    "backupRetentionHours": 8,
+    "geoReplication": false
+  },
+  "monitoring": {
+    "retentionDays": 30
+  },
+  "cors": {
+    "allowedOrigins": ["*"]
+  },
+  "costOptimization": {
+    "description": "Free tier optimized - Consumption plan + Serverless Cosmos DB",
+    "estimatedMonthlyCost": "$2-5",
+    "freeTierEligible": true
+  }
+}

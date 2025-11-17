@@ -1,0 +1,31 @@
+{
+  "environment": "staging",
+  "location": "eastus",
+  "planSku": "B1",
+  "alwaysOn": false,
+  "storage": {
+    "replication": "LRS",
+    "versioning": false,
+    "softDeleteDays": 7
+  },
+  "cosmosDb": {
+    "mode": "provisioned",
+    "throughput": 400,
+    "consistencyLevel": "Session",
+    "backupType": "Periodic",
+    "backupIntervalMinutes": 240,
+    "backupRetentionHours": 8,
+    "geoReplication": false
+  },
+  "monitoring": {
+    "retentionDays": 60
+  },
+  "cors": {
+    "allowedOrigins": ["*"]
+  },
+  "costOptimization": {
+    "description": "Cost-effective for testing - Basic plan + Provisioned Cosmos DB",
+    "estimatedMonthlyCost": "$40-50",
+    "freeTierEligible": false
+  }
+}

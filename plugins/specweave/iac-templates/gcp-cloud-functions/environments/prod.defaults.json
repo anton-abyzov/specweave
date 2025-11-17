@@ -1,0 +1,40 @@
+{
+  "environment": "prod",
+  "region": "us-central1",
+  "firestoreLocation": "us-central",
+  "memory": "512M",
+  "timeout": 120,
+  "instances": {
+    "min": 1,
+    "max": 100
+  },
+  "ingress": "ALLOW_INTERNAL_AND_GCLB",
+  "publicInvoker": false,
+  "storage": {
+    "versioning": true,
+    "versionRetention": 3,
+    "lifecycleDays": 90,
+    "forceDestroy": false
+  },
+  "firestore": {
+    "concurrencyMode": "OPTIMISTIC",
+    "pointInTimeRecovery": true,
+    "deleteProtection": true
+  },
+  "security": {
+    "vpcConnectorRequired": false,
+    "internalIngressOnly": true,
+    "serviceAccountMinimalPrivileges": true
+  },
+  "costOptimization": {
+    "description": "Production-ready - Always-on, restricted ingress, PITR enabled",
+    "estimatedMonthlyCost": "$20-50",
+    "freeTierEligible": false,
+    "notes": [
+      "1 min instance = always warm (no cold starts)",
+      "Point-in-time recovery for Firestore",
+      "Restricted ingress for security",
+      "Delete protection enabled"
+    ]
+  }
+}

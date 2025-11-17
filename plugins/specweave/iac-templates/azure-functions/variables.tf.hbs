@@ -1,0 +1,64 @@
+# Terraform Variables for Azure Functions
+# Project: {{projectName}}
+
+variable "location" {
+  description = "Azure region for deployment"
+  type        = string
+  default     = "{{#if location}}{{location}}{{else}}eastus{{/if}}"
+}
+
+variable "secondary_location" {
+  description = "Azure secondary region for geo-replication (production)"
+  type        = string
+  default     = "{{#if secondaryLocation}}{{secondaryLocation}}{{else}}westus{{/if}}"
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "function_name" {
+  description = "Function App name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+variable "runtime" {
+  description = "Function runtime (node, python, dotnet)"
+  type        = string
+  default     = "{{#if runtime}}{{runtime}}{{else}}node{{/if}}"
+  validation {
+    condition     = contains(["node", "python", "dotnet"], var.runtime)
+    error_message = "Runtime must be node, python, or dotnet."
+  }
+}
+
+{{#if databaseName}}
+variable "database_name" {
+  description = "Cosmos DB database name"
+  type        = string
+  default     = "{{databaseName}}"
+}
+{{/if}}
+
+variable "tags" {
+  description = "Additional tags to apply to resources"
+  type        = map(string)
+  default     = {
+    Project     = "{{projectName}}"
+    Environment = "{{environment}}"
+    ManagedBy   = "Terraform"
+  }
+}

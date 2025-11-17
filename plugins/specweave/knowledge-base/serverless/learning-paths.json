@@ -1,0 +1,865 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2025-11-16",
+  "maxStaleDays": 60,
+  "platforms": {
+    "aws-lambda": {
+      "name": "AWS Lambda",
+      "id": "aws-lambda",
+      "lastVerified": "2025-10-20",
+      "resources": {
+        "tutorials": [
+          {
+            "id": "aws-lambda-getting-started",
+            "title": "Getting Started with AWS Lambda",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/getting-started.html",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "30 minutes",
+            "provider": "AWS",
+            "description": "Official AWS tutorial for creating your first Lambda function",
+            "tags": ["basics", "setup", "console"]
+          },
+          {
+            "id": "aws-lambda-nodejs-tutorial",
+            "title": "Build Node.js Lambda Functions",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-nodejs.html",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "45 minutes",
+            "provider": "AWS",
+            "description": "Create and deploy Lambda functions using Node.js runtime",
+            "tags": ["nodejs", "runtime", "deployment"],
+            "prerequisite": "aws-lambda-getting-started"
+          },
+          {
+            "id": "aws-lambda-api-gateway",
+            "title": "Create REST APIs with Lambda and API Gateway",
+            "url": "https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "60 minutes",
+            "provider": "AWS",
+            "description": "Build RESTful APIs using Lambda with API Gateway",
+            "tags": ["api", "api-gateway", "integration"]
+          },
+          {
+            "id": "aws-lambda-event-sources",
+            "title": "Working with Event Sources",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-eventsources.html",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "75 minutes",
+            "provider": "AWS",
+            "description": "Learn how to trigger Lambda from various AWS services",
+            "tags": ["events", "s3", "dynamodb", "sqs"]
+          },
+          {
+            "id": "aws-lambda-performance-tuning",
+            "title": "Optimize Lambda Performance",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/best-practices.html",
+            "type": "tutorial",
+            "skillLevel": "advanced",
+            "estimatedTime": "90 minutes",
+            "provider": "AWS",
+            "description": "Advanced techniques for performance optimization and cost reduction",
+            "tags": ["performance", "optimization", "cost"]
+          },
+          {
+            "id": "aws-lambda-containerization",
+            "title": "Deploy Lambda with Container Images",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-images.html",
+            "type": "tutorial",
+            "skillLevel": "advanced",
+            "estimatedTime": "120 minutes",
+            "provider": "AWS",
+            "description": "Package and deploy Lambda functions as Docker containers",
+            "tags": ["containers", "docker", "deployment"]
+          }
+        ],
+        "documentation": [
+          {
+            "id": "aws-lambda-developer-guide",
+            "title": "AWS Lambda Developer Guide",
+            "url": "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html",
+            "type": "documentation",
+            "skillLevel": "beginner",
+            "provider": "AWS",
+            "description": "Complete official documentation for AWS Lambda",
+            "tags": ["reference", "official"]
+          },
+          {
+            "id": "aws-lambda-api-reference",
+            "title": "Lambda API Reference",
+            "url": "https://docs.aws.amazon.com/lambda/latest/api/Welcome.html",
+            "type": "documentation",
+            "skillLevel": "intermediate",
+            "provider": "AWS",
+            "description": "Complete API reference for Lambda operations",
+            "tags": ["api", "reference", "advanced"]
+          }
+        ],
+        "videos": [
+          {
+            "id": "aws-lambda-basics-video",
+            "title": "AWS Lambda Basics - FreeCodeCamp",
+            "url": "https://www.youtube.com/watch?v=yudHMSPyIYo",
+            "type": "video",
+            "skillLevel": "beginner",
+            "estimatedTime": "45 minutes",
+            "provider": "FreeCodeCamp",
+            "description": "Comprehensive video introduction to AWS Lambda basics",
+            "tags": ["basics", "tutorial"]
+          },
+          {
+            "id": "aws-lambda-advanced-patterns",
+            "title": "Advanced Lambda Patterns",
+            "url": "https://www.youtube.com/watch?v=x16-5XUnkdg",
+            "type": "video",
+            "skillLevel": "advanced",
+            "estimatedTime": "75 minutes",
+            "provider": "AWS Events",
+            "description": "Deep dive into advanced Lambda design patterns",
+            "tags": ["patterns", "architecture"]
+          }
+        ],
+        "courses": [
+          {
+            "id": "aws-lambda-complete-course",
+            "title": "Complete AWS Lambda Course",
+            "url": "https://www.udemy.com/course/aws-lambda-serverless/",
+            "type": "course",
+            "skillLevel": "beginner",
+            "estimatedTime": "600 minutes",
+            "provider": "Udemy",
+            "description": "Complete hands-on course for AWS Lambda from basics to deployment",
+            "tags": ["course", "comprehensive"]
+          },
+          {
+            "id": "aws-lambda-production-course",
+            "title": "Lambda in Production",
+            "url": "https://www.pluralsight.com/courses/aws-lambda",
+            "type": "course",
+            "skillLevel": "advanced",
+            "estimatedTime": "480 minutes",
+            "provider": "Pluralsight",
+            "description": "Production-ready Lambda patterns and best practices",
+            "tags": ["production", "advanced"]
+          }
+        ],
+        "sampleProjects": [
+          {
+            "id": "aws-lambda-hello-world",
+            "title": "Hello World Lambda Function",
+            "url": "https://github.com/aws/aws-lambda-nodejs-runtime",
+            "type": "sample-project",
+            "skillLevel": "beginner",
+            "complexity": "basic",
+            "estimatedDuration": "15 minutes",
+            "estimatedTime": "15 minutes",
+            "provider": "AWS",
+            "description": "Simple Hello World function to get started",
+            "technologies": ["Node.js", "AWS Lambda"],
+            "tags": ["beginner", "simple"]
+          },
+          {
+            "id": "aws-lambda-rest-api",
+            "title": "REST API with Lambda and DynamoDB",
+            "url": "https://github.com/aws-samples/aws-serverless-rest-api-with-dynamodb",
+            "type": "sample-project",
+            "skillLevel": "intermediate",
+            "complexity": "intermediate",
+            "estimatedDuration": "2-3 hours",
+            "estimatedTime": "150 minutes",
+            "provider": "AWS",
+            "description": "Build a complete REST API with database operations",
+            "technologies": ["Node.js", "Lambda", "DynamoDB", "API Gateway"],
+            "sourceRepo": "https://github.com/aws-samples"
+          },
+          {
+            "id": "aws-lambda-microservices",
+            "title": "Microservices Architecture with Lambda",
+            "url": "https://github.com/aws-samples/aws-serverless-workshops",
+            "type": "sample-project",
+            "skillLevel": "advanced",
+            "complexity": "advanced",
+            "estimatedDuration": "6-8 hours",
+            "estimatedTime": "480 minutes",
+            "provider": "AWS",
+            "description": "Complete microservices system with multiple Lambda functions",
+            "technologies": ["Node.js", "Lambda", "API Gateway", "SQS", "SNS", "DynamoDB"],
+            "sourceRepo": "https://github.com/aws-samples"
+          }
+        ]
+      },
+      "bestPractices": [
+        {
+          "id": "lambda-cold-start-optimization",
+          "category": "performance",
+          "title": "Minimize Cold Start Times",
+          "description": "Use provisioned concurrency, optimize package size, and choose appropriate memory allocation to reduce cold start latency",
+          "priority": "high",
+          "example": "Set memory to 1769 MB or higher for better performance, use Lambda Layers for dependencies"
+        },
+        {
+          "id": "lambda-error-handling",
+          "category": "architecture",
+          "title": "Implement Robust Error Handling",
+          "description": "Use try-catch blocks, implement dead-letter queues, and add retry logic with exponential backoff",
+          "priority": "high",
+          "example": "Configure SQS DLQ for failed async invocations and implement custom retry logic"
+        },
+        {
+          "id": "lambda-security-iam",
+          "category": "security",
+          "title": "Use IAM Roles and Least Privilege",
+          "description": "Create specific IAM roles with minimal required permissions for each Lambda function",
+          "priority": "high",
+          "example": "Grant only specific DynamoDB table access instead of all DynamoDB operations"
+        },
+        {
+          "id": "lambda-cost-optimization",
+          "category": "cost",
+          "title": "Optimize for Cost",
+          "description": "Right-size memory, use reserved concurrency for predictable workloads, monitor execution time",
+          "priority": "medium",
+          "example": "Analyze CloudWatch metrics to find optimal memory configuration for your function"
+        },
+        {
+          "id": "lambda-monitoring",
+          "category": "monitoring",
+          "title": "Comprehensive Logging and Monitoring",
+          "description": "Use CloudWatch Logs, X-Ray for tracing, and set up alarms for errors and performance issues",
+          "priority": "high",
+          "example": "Enable X-Ray tracing to identify bottlenecks in service calls"
+        },
+        {
+          "id": "lambda-testing",
+          "category": "testing",
+          "title": "Test Locally and in Production",
+          "description": "Use SAM CLI for local testing, implement integration tests, and use canary deployments",
+          "priority": "medium",
+          "example": "Use SAM local start-api to test Lambda locally before deployment"
+        }
+      ],
+      "commonPitfalls": [
+        {
+          "id": "lambda-timeout-pitfall",
+          "title": "Functions Timing Out",
+          "description": "Lambda functions exceed the timeout limit due to slow operations or blocking calls",
+          "mitigation": "Profile your code, use async operations, increase timeout setting if needed (max 15 minutes), consider breaking into smaller functions",
+          "severity": "high",
+          "affectedSkillLevels": ["beginner", "intermediate"]
+        },
+        {
+          "id": "lambda-cold-start-pitfall",
+          "title": "Unexplained Latency Spikes",
+          "description": "Cold starts cause sudden increases in response time when Lambda scales up",
+          "mitigation": "Use provisioned concurrency, keep package size small, optimize initialization code, use Lambda Layers",
+          "severity": "medium",
+          "affectedSkillLevels": ["intermediate", "advanced"]
+        },
+        {
+          "id": "lambda-memory-pitfall",
+          "title": "Out of Memory Errors",
+          "description": "Lambda functions consume too much memory due to inefficient code or large data structures",
+          "mitigation": "Monitor memory usage in CloudWatch, optimize data structures, stream large files instead of loading into memory",
+          "severity": "high",
+          "affectedSkillLevels": ["intermediate"]
+        },
+        {
+          "id": "lambda-concurrency-pitfall",
+          "title": "Throttling Due to Concurrency Limits",
+          "description": "Requests are throttled when concurrent executions exceed the account limit",
+          "mitigation": "Request concurrency limit increase, reserve concurrency for critical functions, implement queue-based processing",
+          "severity": "high",
+          "affectedSkillLevels": ["intermediate", "advanced"]
+        },
+        {
+          "id": "lambda-cost-pitfall",
+          "title": "Unexpected AWS Bills",
+          "description": "Misconfigured functions run continuously or too frequently, causing unexpected costs",
+          "mitigation": "Set up CloudWatch alarms for invocation counts, use cost explorer, implement timeout limits, right-size memory allocation",
+          "severity": "critical",
+          "affectedSkillLevels": ["beginner"]
+        }
+      ]
+    },
+    "azure-functions": {
+      "name": "Azure Functions",
+      "id": "azure-functions",
+      "lastVerified": "2025-10-18",
+      "resources": {
+        "tutorials": [
+          {
+            "id": "azure-functions-getting-started",
+            "title": "Getting Started with Azure Functions",
+            "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-get-started",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "30 minutes",
+            "provider": "Microsoft",
+            "description": "Official Microsoft tutorial for your first Azure Function",
+            "tags": ["basics", "setup"]
+          },
+          {
+            "id": "azure-functions-http-trigger",
+            "title": "HTTP-Triggered Functions",
+            "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-http-webhook",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "45 minutes",
+            "provider": "Microsoft",
+            "description": "Create HTTP-triggered functions for REST APIs",
+            "tags": ["http", "api"]
+          },
+          {
+            "id": "azure-functions-bindings",
+            "title": "Azure Functions Bindings",
+            "url": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "60 minutes",
+            "provider": "Microsoft",
+            "description": "Learn about input and output bindings for connecting services",
+            "tags": ["bindings", "integration"]
+          },
+          {
+            "id": "azure-functions-durable",
+            "title": "Durable Functions for Long-Running Workflows",
+            "url": "https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-functions-overview",
+            "type": "tutorial",
+            "skillLevel": "advanced",
+            "estimatedTime": "120 minutes",
+            "provider": "Microsoft",
+            "description": "Build stateful serverless functions with Durable Functions",
+            "tags": ["stateful", "workflows", "orchestration"]
+          }
+        ],
+        "documentation": [
+          {
+            "id": "azure-functions-docs",
+            "title": "Azure Functions Documentation",
+            "url": "https://learn.microsoft.com/en-us/azure/azure-functions/",
+            "type": "documentation",
+            "skillLevel": "beginner",
+            "provider": "Microsoft",
+            "description": "Complete official Azure Functions documentation",
+            "tags": ["reference", "official"]
+          }
+        ],
+        "videos": [
+          {
+            "id": "azure-functions-intro-video",
+            "title": "Azure Functions in 100 Seconds",
+            "url": "https://www.youtube.com/watch?v=2K40ycX4j2c",
+            "type": "video",
+            "skillLevel": "beginner",
+            "estimatedTime": "5 minutes",
+            "provider": "Fireship",
+            "description": "Quick introduction to Azure Functions",
+            "tags": ["quick", "overview"]
+          }
+        ],
+        "courses": [
+          {
+            "id": "azure-functions-course",
+            "title": "Azure Serverless Computing",
+            "url": "https://learn.microsoft.com/en-us/training/modules/create-serverless-logic-with-azure-functions/",
+            "type": "course",
+            "skillLevel": "beginner",
+            "estimatedTime": "240 minutes",
+            "provider": "Microsoft Learn",
+            "description": "Comprehensive Microsoft Learn module on Azure Functions",
+            "tags": ["official", "comprehensive"]
+          }
+        ],
+        "sampleProjects": [
+          {
+            "id": "azure-functions-hello",
+            "title": "Hello World Azure Function",
+            "url": "https://github.com/Azure-Samples/azure-functions-samples",
+            "type": "sample-project",
+            "skillLevel": "beginner",
+            "complexity": "basic",
+            "estimatedDuration": "15 minutes",
+            "estimatedTime": "15 minutes",
+            "provider": "Microsoft",
+            "description": "Simple starter Azure Function",
+            "technologies": ["C#", "Node.js", "Python"],
+            "tags": ["simple", "beginner"]
+          },
+          {
+            "id": "azure-functions-rest-api",
+            "title": "REST API with Azure Functions and Cosmos DB",
+            "url": "https://github.com/Azure-Samples/azure-functions-samples",
+            "type": "sample-project",
+            "skillLevel": "intermediate",
+            "complexity": "intermediate",
+            "estimatedDuration": "2-3 hours",
+            "estimatedTime": "150 minutes",
+            "provider": "Microsoft",
+            "description": "Build a REST API with database operations",
+            "technologies": ["C#", "Azure Functions", "Cosmos DB"]
+          }
+        ]
+      },
+      "bestPractices": [
+        {
+          "id": "azure-bindings-usage",
+          "category": "architecture",
+          "title": "Leverage Input/Output Bindings",
+          "description": "Use declarative bindings instead of client SDKs for cleaner code and better performance",
+          "priority": "high",
+          "example": "Use @azure/functions bindings for Azure services instead of managing connections manually"
+        },
+        {
+          "id": "azure-error-handling",
+          "category": "architecture",
+          "title": "Implement Retry Logic",
+          "description": "Use built-in retry policies for bindings and implement custom retry logic for external calls",
+          "priority": "high",
+          "example": "Configure max retry count and backoff strategy in binding configurations"
+        },
+        {
+          "id": "azure-monitoring",
+          "category": "monitoring",
+          "title": "Application Insights Integration",
+          "description": "Use Application Insights for monitoring, logging, and performance tracking",
+          "priority": "high",
+          "example": "Enable Application Insights and track custom metrics and events"
+        }
+      ],
+      "commonPitfalls": [
+        {
+          "id": "azure-cold-start",
+          "title": "Cold Start Issues",
+          "description": "Azure Functions experience longer cold starts on consumption plan, especially with large dependencies",
+          "mitigation": "Consider Premium plan for predictable performance, optimize package size, use connection pooling",
+          "severity": "medium",
+          "affectedSkillLevels": ["intermediate"]
+        },
+        {
+          "id": "azure-binding-misconfiguration",
+          "title": "Binding Configuration Errors",
+          "description": "Incorrect binding configuration leads to connection failures or data loss",
+          "mitigation": "Validate binding settings, use local.settings.json for local development, test connections before deployment",
+          "severity": "high",
+          "affectedSkillLevels": ["beginner"]
+        }
+      ]
+    },
+    "gcp-functions": {
+      "name": "Google Cloud Functions",
+      "id": "gcp-functions",
+      "lastVerified": "2025-10-15",
+      "resources": {
+        "tutorials": [
+          {
+            "id": "gcp-functions-quickstart",
+            "title": "Cloud Functions Quickstart",
+            "url": "https://cloud.google.com/functions/docs/quickstart",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "20 minutes",
+            "provider": "Google Cloud",
+            "description": "Get started with your first Cloud Function",
+            "tags": ["basics", "quick"]
+          },
+          {
+            "id": "gcp-functions-http",
+            "title": "Create HTTP Functions",
+            "url": "https://cloud.google.com/functions/docs/create-deploy/http-trigger",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "30 minutes",
+            "provider": "Google Cloud",
+            "description": "Build HTTP-triggered functions",
+            "tags": ["http", "api"]
+          },
+          {
+            "id": "gcp-functions-pubsub",
+            "title": "Cloud Pub/Sub Triggered Functions",
+            "url": "https://cloud.google.com/functions/docs/calling/pubsub",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "45 minutes",
+            "provider": "Google Cloud",
+            "description": "Use Pub/Sub to trigger functions",
+            "tags": ["pubsub", "events"]
+          },
+          {
+            "id": "gcp-functions-cloud-events",
+            "title": "Cloud Events and Advanced Triggers",
+            "url": "https://cloud.google.com/functions/docs/concepts/events-triggers",
+            "type": "tutorial",
+            "skillLevel": "advanced",
+            "estimatedTime": "75 minutes",
+            "provider": "Google Cloud",
+            "description": "Advanced event handling and complex workflows",
+            "tags": ["events", "advanced"]
+          }
+        ],
+        "documentation": [
+          {
+            "id": "gcp-functions-docs",
+            "title": "Cloud Functions Documentation",
+            "url": "https://cloud.google.com/functions/docs",
+            "type": "documentation",
+            "skillLevel": "beginner",
+            "provider": "Google Cloud",
+            "description": "Official Google Cloud Functions documentation",
+            "tags": ["reference", "official"]
+          }
+        ],
+        "videos": [
+          {
+            "id": "gcp-functions-intro",
+            "title": "Cloud Functions Explained",
+            "url": "https://www.youtube.com/watch?v=lDv-8_3XFBM",
+            "type": "video",
+            "skillLevel": "beginner",
+            "estimatedTime": "10 minutes",
+            "provider": "Google Cloud",
+            "description": "Overview of Cloud Functions features",
+            "tags": ["overview", "introduction"]
+          }
+        ],
+        "courses": [
+          {
+            "id": "gcp-serverless-course",
+            "title": "Serverless Computing with Google Cloud",
+            "url": "https://www.coursera.org/learn/serverless-computing-gcp",
+            "type": "course",
+            "skillLevel": "intermediate",
+            "estimatedTime": "240 minutes",
+            "provider": "Coursera",
+            "description": "Complete course on Google Cloud serverless offerings",
+            "tags": ["comprehensive", "official"]
+          }
+        ],
+        "sampleProjects": [
+          {
+            "id": "gcp-functions-hello",
+            "title": "Hello World Cloud Function",
+            "url": "https://github.com/GoogleCloudPlatform/functions-framework-nodejs",
+            "type": "sample-project",
+            "skillLevel": "beginner",
+            "complexity": "basic",
+            "estimatedDuration": "10 minutes",
+            "estimatedTime": "10 minutes",
+            "provider": "Google Cloud",
+            "description": "Simple starter function",
+            "technologies": ["Node.js", "Cloud Functions"]
+          }
+        ]
+      },
+      "bestPractices": [
+        {
+          "id": "gcp-pubsub-pattern",
+          "category": "architecture",
+          "title": "Use Pub/Sub for Reliable Messaging",
+          "description": "Use Cloud Pub/Sub instead of direct function-to-function calls for reliable event processing",
+          "priority": "high",
+          "example": "Decouple producers and consumers using Pub/Sub topics and subscriptions"
+        },
+        {
+          "id": "gcp-cloud-tasks",
+          "category": "architecture",
+          "title": "Cloud Tasks for Scheduled Work",
+          "description": "Use Cloud Tasks for delayed execution and automatic retries",
+          "priority": "medium",
+          "example": "Create Cloud Tasks queues to handle batch processing with automatic retry"
+        }
+      ],
+      "commonPitfalls": [
+        {
+          "id": "gcp-timeout-default",
+          "title": "Default Timeout is Too Short",
+          "description": "Functions fail due to default 60-second timeout being too short for some workloads",
+          "mitigation": "Increase timeout to 540 seconds (max), but prefer breaking long operations into smaller functions",
+          "severity": "high",
+          "affectedSkillLevels": ["beginner"]
+        }
+      ]
+    },
+    "firebase-functions": {
+      "name": "Firebase Functions",
+      "id": "firebase-functions",
+      "lastVerified": "2025-10-12",
+      "resources": {
+        "tutorials": [
+          {
+            "id": "firebase-functions-quickstart",
+            "title": "Firebase Functions Quickstart",
+            "url": "https://firebase.google.com/docs/functions/get-started",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "25 minutes",
+            "provider": "Firebase",
+            "description": "Get started with Firebase Functions",
+            "tags": ["basics", "firebase"]
+          },
+          {
+            "id": "firebase-functions-firestore",
+            "title": "Firestore Triggers",
+            "url": "https://firebase.google.com/docs/functions/firestore-examples",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "45 minutes",
+            "provider": "Firebase",
+            "description": "Trigger functions from Firestore events",
+            "tags": ["firestore", "database"]
+          }
+        ],
+        "documentation": [
+          {
+            "id": "firebase-functions-guide",
+            "title": "Firebase Functions Guide",
+            "url": "https://firebase.google.com/docs/functions",
+            "type": "documentation",
+            "skillLevel": "beginner",
+            "provider": "Firebase",
+            "description": "Complete Firebase Functions documentation",
+            "tags": ["reference"]
+          }
+        ],
+        "videos": [
+          {
+            "id": "firebase-functions-video",
+            "title": "Firebase Functions Tutorial",
+            "url": "https://www.youtube.com/watch?v=BPFYc7OKqwI",
+            "type": "video",
+            "skillLevel": "beginner",
+            "estimatedTime": "30 minutes",
+            "provider": "Firebase",
+            "description": "Video introduction to Firebase Functions",
+            "tags": ["tutorial"]
+          }
+        ],
+        "courses": [
+          {
+            "id": "firebase-complete-course",
+            "title": "Complete Firebase Course",
+            "url": "https://www.udemy.com/course/firebase-complete-course/",
+            "type": "course",
+            "skillLevel": "intermediate",
+            "estimatedTime": "480 minutes",
+            "provider": "Udemy",
+            "description": "Comprehensive Firebase course including Functions",
+            "tags": ["complete", "firebase"]
+          }
+        ],
+        "sampleProjects": [
+          {
+            "id": "firebase-functions-hello",
+            "title": "Hello World Firebase Function",
+            "url": "https://github.com/firebase/functions-samples",
+            "type": "sample-project",
+            "skillLevel": "beginner",
+            "complexity": "basic",
+            "estimatedDuration": "15 minutes",
+            "estimatedTime": "15 minutes",
+            "provider": "Firebase",
+            "description": "Simple starter function",
+            "technologies": ["Node.js", "Firebase"]
+          },
+          {
+            "id": "firebase-functions-social-app",
+            "title": "Social App Backend with Firebase",
+            "url": "https://github.com/firebase/functions-samples",
+            "type": "sample-project",
+            "skillLevel": "advanced",
+            "complexity": "advanced",
+            "estimatedDuration": "4-6 hours",
+            "estimatedTime": "300 minutes",
+            "provider": "Firebase",
+            "description": "Complete social application backend",
+            "technologies": ["Node.js", "Firebase", "Firestore", "Cloud Storage"]
+          }
+        ]
+      },
+      "bestPractices": [
+        {
+          "id": "firebase-realtime-sync",
+          "category": "architecture",
+          "title": "Synchronize with Firestore",
+          "description": "Use Firestore triggers to keep data synchronized across your application",
+          "priority": "high",
+          "example": "Create functions to update aggregations when documents change"
+        },
+        {
+          "id": "firebase-auth-integration",
+          "category": "security",
+          "title": "Integrate with Firebase Auth",
+          "description": "Use Firebase Auth context in functions for secure operations",
+          "priority": "high",
+          "example": "Verify user identity before performing sensitive operations"
+        }
+      ],
+      "commonPitfalls": [
+        {
+          "id": "firebase-cold-start",
+          "title": "Slow First Invocation",
+          "description": "Firebase Functions experience cold starts on first invocation",
+          "mitigation": "Use Firebase Blaze plan for high volume, keep code size small, use Node.js for faster startup",
+          "severity": "medium",
+          "affectedSkillLevels": ["intermediate"]
+        }
+      ]
+    },
+    "supabase-functions": {
+      "name": "Supabase Edge Functions",
+      "id": "supabase",
+      "lastVerified": "2025-10-25",
+      "resources": {
+        "tutorials": [
+          {
+            "id": "supabase-functions-quickstart",
+            "title": "Supabase Edge Functions Quickstart",
+            "url": "https://supabase.com/docs/guides/functions/getting-started",
+            "type": "tutorial",
+            "skillLevel": "beginner",
+            "estimatedTime": "20 minutes",
+            "provider": "Supabase",
+            "description": "Get started with Supabase Edge Functions",
+            "tags": ["basics", "edge-functions"]
+          },
+          {
+            "id": "supabase-functions-webhooks",
+            "title": "Database Webhooks",
+            "url": "https://supabase.com/docs/guides/database/webhooks",
+            "type": "tutorial",
+            "skillLevel": "intermediate",
+            "estimatedTime": "40 minutes",
+            "provider": "Supabase",
+            "description": "Trigger functions on database events",
+            "tags": ["webhooks", "postgres"]
+          },
+          {
+            "id": "supabase-functions-deno",
+            "title": "Using Deno in Edge Functions",
+            "url": "https://supabase.com/docs/guides/functions/deno",
+            "type": "tutorial",
+            "skillLevel": "advanced",
+            "estimatedTime": "60 minutes",
+            "provider": "Supabase",
+            "description": "Advanced Deno features and optimization",
+            "tags": ["deno", "advanced"]
+          }
+        ],
+        "documentation": [
+          {
+            "id": "supabase-functions-docs",
+            "title": "Supabase Functions Documentation",
+            "url": "https://supabase.com/docs/guides/functions",
+            "type": "documentation",
+            "skillLevel": "beginner",
+            "provider": "Supabase",
+            "description": "Complete Supabase Functions documentation",
+            "tags": ["reference"]
+          }
+        ],
+        "videos": [
+          {
+            "id": "supabase-functions-video",
+            "title": "Supabase Edge Functions Explained",
+            "url": "https://www.youtube.com/watch?v=vQXwjVuIvQA",
+            "type": "video",
+            "skillLevel": "beginner",
+            "estimatedTime": "15 minutes",
+            "provider": "Supabase",
+            "description": "Introduction to Supabase Edge Functions",
+            "tags": ["overview"]
+          }
+        ],
+        "courses": [
+          {
+            "id": "supabase-backend-course",
+            "title": "Supabase Backend Development",
+            "url": "https://www.udemy.com/course/supabase-react/",
+            "type": "course",
+            "skillLevel": "intermediate",
+            "estimatedTime": "360 minutes",
+            "provider": "Udemy",
+            "description": "Build backend with Supabase and Edge Functions",
+            "tags": ["backend", "complete"]
+          }
+        ],
+        "sampleProjects": [
+          {
+            "id": "supabase-functions-hello",
+            "title": "Hello World Edge Function",
+            "url": "https://github.com/supabase/supabase/tree/master/examples/edge-functions",
+            "type": "sample-project",
+            "skillLevel": "beginner",
+            "complexity": "basic",
+            "estimatedDuration": "10 minutes",
+            "estimatedTime": "10 minutes",
+            "provider": "Supabase",
+            "description": "Simple starter Edge Function",
+            "technologies": ["Deno", "TypeScript"]
+          },
+          {
+            "id": "supabase-functions-rest-api",
+            "title": "REST API with Supabase",
+            "url": "https://github.com/supabase/supabase/tree/master/examples/edge-functions",
+            "type": "sample-project",
+            "skillLevel": "intermediate",
+            "complexity": "intermediate",
+            "estimatedDuration": "2 hours",
+            "estimatedTime": "120 minutes",
+            "provider": "Supabase",
+            "description": "Build a complete REST API backed by PostgreSQL",
+            "technologies": ["Deno", "TypeScript", "PostgreSQL"],
+            "sourceRepo": "https://github.com/supabase"
+          }
+        ]
+      },
+      "bestPractices": [
+        {
+          "id": "supabase-postgres-integration",
+          "category": "architecture",
+          "title": "Leverage PostgreSQL Power",
+          "description": "Use PostgreSQL features like JSON operators, full-text search, and PostGIS",
+          "priority": "high",
+          "example": "Use jsonb operators in queries instead of processing in Edge Functions"
+        },
+        {
+          "id": "supabase-edge-location",
+          "category": "performance",
+          "title": "Use Global Edge Network",
+          "description": "Edge Functions run globally for lower latency and better performance",
+          "priority": "medium",
+          "example": "Supabase Edge Functions are deployed to Deno Deploy globally"
+        },
+        {
+          "id": "supabase-deno-typing",
+          "category": "architecture",
+          "title": "Proper TypeScript Typing",
+          "description": "Use Deno's native TypeScript support for type safety",
+          "priority": "medium",
+          "example": "Import types from npm or use ///@deno-types comments"
+        }
+      ],
+      "commonPitfalls": [
+        {
+          "id": "supabase-deno-learning-curve",
+          "title": "Deno Learning Curve",
+          "description": "Developers familiar with Node.js may struggle with Deno's different module system",
+          "mitigation": "Use Deno import maps, leverage deno.land/x packages, read Deno documentation",
+          "severity": "medium",
+          "affectedSkillLevels": ["beginner"]
+        },
+        {
+          "id": "supabase-import-restrictions",
+          "title": "NPM Module Import Issues",
+          "description": "Not all NPM packages work in Edge Functions due to Node.js-specific APIs",
+          "mitigation": "Use packages tested with Deno, check for browser/edge-compatible alternatives",
+          "severity": "high",
+          "affectedSkillLevels": ["intermediate"]
+        }
+      ]
+    }
+  }
+}

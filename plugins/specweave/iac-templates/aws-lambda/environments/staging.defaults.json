@@ -1,0 +1,47 @@
+{
+  "environment": "staging",
+  "region": "us-east-1",
+  "lambda": {
+    "memorySize": 256,
+    "timeout": 10,
+    "reservedConcurrentExecutions": 10,
+    "provisionedConcurrency": 0
+  },
+  "dynamodb": {
+    "billingMode": "PAY_PER_REQUEST",
+    "pointInTimeRecovery": false,
+    "streamEnabled": false,
+    "ttlEnabled": false
+  },
+  "cloudwatch": {
+    "retentionDays": 14,
+    "metricsEnabled": true
+  },
+  "apiGateway": {
+    "throttling": {
+      "rateLimit": 100,
+      "burstLimit": 200
+    },
+    "cors": ["https://staging.example.com"]
+  },
+  "monitoring": {
+    "xrayEnabled": true,
+    "alarms": true
+  },
+  "security": {
+    "kmsEncryption": false,
+    "vpcEnabled": false
+  },
+  "costOptimization": {
+    "description": "Testing environment - Moderate resources, on-demand billing",
+    "estimatedMonthlyCost": "$20-40",
+    "freeTierEligible": false,
+    "notes": [
+      "256MB memory for realistic performance testing",
+      "10 concurrent executions limit to prevent runaway costs",
+      "X-Ray tracing enabled for debugging",
+      "CloudWatch alarms for error monitoring",
+      "14-day log retention for troubleshooting"
+    ]
+  }
+}

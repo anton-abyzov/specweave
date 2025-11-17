@@ -1,0 +1,67 @@
+{
+  "environment": "prod",
+  "region": "us-east-1",
+  "secondaryRegion": "us-west-2",
+  "lambda": {
+    "memorySize": 512,
+    "timeout": 30,
+    "reservedConcurrentExecutions": 100,
+    "provisionedConcurrency": 5
+  },
+  "dynamodb": {
+    "billingMode": "PROVISIONED",
+    "readCapacity": 5,
+    "writeCapacity": 5,
+    "pointInTimeRecovery": true,
+    "streamEnabled": true,
+    "ttlEnabled": true,
+    "globalTables": true
+  },
+  "cloudwatch": {
+    "retentionDays": 30,
+    "metricsEnabled": true
+  },
+  "apiGateway": {
+    "throttling": {
+      "rateLimit": 1000,
+      "burstLimit": 2000
+    },
+    "cors": ["https://example.com"],
+    "caching": {
+      "enabled": true,
+      "ttlSeconds": 300
+    }
+  },
+  "monitoring": {
+    "xrayEnabled": true,
+    "alarms": true,
+    "dashboards": true
+  },
+  "security": {
+    "kmsEncryption": true,
+    "vpcEnabled": true,
+    "waf": true,
+    "secretsManager": true
+  },
+  "backup": {
+    "enabled": true,
+    "retentionDays": 35,
+    "crossRegionCopy": true
+  },
+  "costOptimization": {
+    "description": "Production-ready - High availability, provisioned capacity, global tables",
+    "estimatedMonthlyCost": "$150-250",
+    "freeTierEligible": false,
+    "notes": [
+      "512MB memory for optimal performance",
+      "Provisioned concurrency (5 instances) eliminates cold starts",
+      "DynamoDB provisioned capacity for predictable performance",
+      "Point-in-time recovery and global tables for disaster recovery",
+      "KMS encryption at rest for compliance (SOC 2, HIPAA)",
+      "VPC integration for private resource access",
+      "WAF protection against common web exploits",
+      "30-day log retention for auditing",
+      "Cross-region backups for business continuity"
+    ]
+  }
+}

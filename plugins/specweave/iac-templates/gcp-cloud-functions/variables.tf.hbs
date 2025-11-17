@@ -1,0 +1,82 @@
+# Terraform Variables for GCP Cloud Functions
+# Project: {{projectName}}
+
+variable "project_id" {
+  description = "GCP project ID"
+  type        = string
+  default     = "{{#if projectId}}{{projectId}}{{else}}my-gcp-project{{/if}}"
+}
+
+variable "region" {
+  description = "GCP region for deployment"
+  type        = string
+  default     = "{{#if region}}{{region}}{{else}}us-central1{{/if}}"
+}
+
+variable "firestore_location" {
+  description = "Firestore location (must be compatible with region)"
+  type        = string
+  default     = "{{#if firestoreLocation}}{{firestoreLocation}}{{else}}us-central{{/if}}"
+}
+
+variable "environment" {
+  description = "Environment name (dev, staging, prod)"
+  type        = string
+  default     = "{{environment}}"
+  validation {
+    condition     = contains(["dev", "staging", "prod"], var.environment)
+    error_message = "Environment must be dev, staging, or prod."
+  }
+}
+
+variable "project_name" {
+  description = "Project name"
+  type        = string
+  default     = "{{projectName}}"
+}
+
+variable "function_name" {
+  description = "Cloud Function name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+variable "runtime" {
+  description = "Cloud Function runtime (e.g., nodejs20, python312, go121)"
+  type        = string
+  default     = "{{#if runtime}}{{runtime}}{{else}}nodejs20{{/if}}"
+}
+
+variable "memory" {
+  description = "Memory allocated to function (e.g., 256M, 512M, 1G)"
+  type        = string
+  default     = "{{#if memory}}{{memory}}{{else}}256M{{/if}}"
+}
+
+variable "timeout" {
+  description = "Function timeout in seconds"
+  type        = number
+  default     = {{#if timeout}}{{timeout}}{{else}}60{{/if}}
+  validation {
+    condition     = var.timeout >= 1 && var.timeout <= 540
+    error_message = "Timeout must be between 1 and 540 seconds."
+  }
+}
+
+{{#if databaseName}}
+variable "database_name" {
+  description = "Firestore database name"
+  type        = string
+  default     = "{{databaseName}}"
+}
+{{/if}}
+
+variable "labels" {
+  description = "Additional labels to apply to resources"
+  type        = map(string)
+  default     = {
+    project     = "{{projectName}}"
+    environment = "{{environment}}"
+    managed_by  = "terraform"
+  }
+}

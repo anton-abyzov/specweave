@@ -1,0 +1,44 @@
+# Terraform Outputs for GCP Cloud Functions
+# Project: {{projectName}}
+
+output "function_name" {
+  description = "Name of the Cloud Function"
+  value       = google_cloudfunctions2_function.{{snakeCase functionName}}.name
+}
+
+output "function_id" {
+  description = "ID of the Cloud Function"
+  value       = google_cloudfunctions2_function.{{snakeCase functionName}}.id
+}
+
+output "function_url" {
+  description = "HTTPS URL of the Cloud Function"
+  value       = google_cloudfunctions2_function.{{snakeCase functionName}}.service_config[0].uri
+}
+
+output "function_service_account_email" {
+  description = "Service account email for the Cloud Function"
+  value       = google_service_account.{{snakeCase functionName}}.email
+}
+
+output "source_bucket_name" {
+  description = "Name of the source code storage bucket"
+  value       = google_storage_bucket.{{snakeCase functionName}}_source.name
+}
+
+output "logs_bucket_name" {
+  description = "Name of the logs storage bucket"
+  value       = google_storage_bucket.{{snakeCase functionName}}_logs.name
+}
+
+{{#if databaseName}}
+output "firestore_database_name" {
+  description = "Firestore database name"
+  value       = google_firestore_database.{{snakeCase databaseName}}.name
+}
+
+output "firestore_database_id" {
+  description = "Firestore database ID"
+  value       = google_firestore_database.{{snakeCase databaseName}}.id
+}
+{{/if}}
