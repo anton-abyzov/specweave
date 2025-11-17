@@ -5,7 +5,7 @@
  * Calculates savings vs all-Sonnet baseline.
  */
 
-import type { Model } from './model-selection';
+import type { Model } from './model-selection.js';
 
 /**
  * Token usage for a single session

@@ -5,11 +5,11 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { checkNodeVersion, installDocusaurus, isDocusaurusInstalled } from './package-installer';
-import { buildSidebar, writeSidebar, countDocuments, countCategories } from './sidebar-builder';
-import { writeDocusaurusConfig, writePackageJSON, writeCustomCSS, writeIndexPage, writeIndexModuleCSS } from './config-generator';
-import { startDevServer, findAvailablePort } from './server-manager';
-import { SetupOptions, DocusaurusConfig, ServerProcess } from './types';
+import { checkNodeVersion, installDocusaurus, isDocusaurusInstalled } from './package-installer.js';
+import { buildSidebar, writeSidebar, countDocuments, countCategories } from './sidebar-builder.js';
+import { writeDocusaurusConfig, writePackageJSON, writeCustomCSS, writeIndexPage, writeIndexModuleCSS } from './config-generator.js';
+import { startDevServer, findAvailablePort } from './server-manager.js';
+import { SetupOptions, DocusaurusConfig, ServerProcess } from './types.js';
 
 /**
  * Full Docusaurus setup workflow

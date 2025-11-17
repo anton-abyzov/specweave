@@ -518,14 +518,14 @@ All tasks for AC-US1-01 complete (in increment tasks.md)
 **So that** my architecture recommendations are based on actual market potential and competitive landscape
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: Vision analyzer extracts keywords from product description (P1, testable)
-- [ ] **AC-US1-02**: Market detection identifies industry (SaaS, healthcare, fintech, e-commerce) (P1, testable)
-- [ ] **AC-US1-03**: Competitor analysis finds 3-5 comparable products (P2, testable)
-- [ ] **AC-US1-04**: Opportunity score calculated (market size vs competition, 1-10 scale) (P2, testable)
-- [ ] **AC-US1-05**: Follow-up questions adapt based on vision (viral → scaling, enterprise → compliance) (P1, testable)
-- [ ] **AC-US1-06**: Vision insights stored in config for architecture decision (P1, testable)
+- [x] **AC-US1-01**: Vision analyzer extracts keywords from product description (P1, testable)
+- [x] **AC-US1-02**: Market detection identifies industry (SaaS, healthcare, fintech, e-commerce) (P1, testable)
+- [x] **AC-US1-03**: Competitor analysis finds 3-5 comparable products (P2, testable)
+- [x] **AC-US1-04**: Opportunity score calculated (market size vs competition, 1-10 scale) (P2, testable)
+- [x] **AC-US1-05**: Follow-up questions adapt based on vision (viral → scaling, enterprise → compliance) (P1, testable)
+- [x] **AC-US1-06**: Vision insights stored in config for architecture decision (P1, testable)
 - [ ] **AC-US1-07**: User-friendly questions (no jargon like "microservices" or "monorepo") (P1, testable)
-- [ ] **AC-US1-08**: Research findings saved to `.specweave/reports/market-research.md` (P2, testable)
+- [x] **AC-US1-08**: Research findings saved to `.specweave/reports/market-research.md` (P2, testable)
 
 **Implementation Notes**:
 - Use LLM for vision analysis (similar to bmad-method plugin)
@@ -541,16 +541,16 @@ All tasks for AC-US1-01 complete (in increment tasks.md)
 **So that** I build compliant architecture from day 1 instead of refactoring later
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Data type detection asks user: "What data will you handle?" (P1, testable)
-- [ ] **AC-US2-02**: Healthcare data → Auto-detects HIPAA, HITRUST, FDA 21 CFR Part 11 (P1, testable)
-- [ ] **AC-US2-03**: Payment data → Auto-detects PCI-DSS, PSD2, SOX (P1, testable)
-- [ ] **AC-US2-04**: Personal data + EU users → Auto-detects GDPR, CCPA, PIPEDA, LGPD (P1, testable)
-- [ ] **AC-US2-05**: Government contracts → Auto-detects FedRAMP, FISMA, CMMC, ITAR (P2, testable)
-- [ ] **AC-US2-06**: Student records → Auto-detects FERPA, COPPA (P2, testable)
-- [ ] **AC-US2-07**: Financial services → Auto-detects GLBA, SOC2, ISO 27001 (P2, testable)
-- [ ] **AC-US2-08**: Critical infrastructure → Auto-detects NERC CIP (P3, testable)
-- [ ] **AC-US2-09**: Compliance standards stored in config with team impact notes (P1, testable)
-- [ ] **AC-US2-10**: User shown compliance requirements summary before finalizing (P1, testable)
+- [x] **AC-US2-01**: Data type detection asks user: "What data will you handle?" (P1, testable)
+- [x] **AC-US2-02**: Healthcare data → Auto-detects HIPAA, HITRUST, FDA 21 CFR Part 11 (P1, testable)
+- [x] **AC-US2-03**: Payment data → Auto-detects PCI-DSS, PSD2, SOX (P1, testable)
+- [x] **AC-US2-04**: Personal data + EU users → Auto-detects GDPR, CCPA, PIPEDA, LGPD (P1, testable)
+- [x] **AC-US2-05**: Government contracts → Auto-detects FedRAMP, FISMA, CMMC, ITAR (P2, testable)
+- [x] **AC-US2-06**: Student records → Auto-detects FERPA, COPPA (P2, testable)
+- [x] **AC-US2-07**: Financial services → Auto-detects GLBA, SOC2, ISO 27001 (P2, testable)
+- [x] **AC-US2-08**: Critical infrastructure → Auto-detects NERC CIP (P3, testable)
+- [x] **AC-US2-09**: Compliance standards stored in config with team impact notes (P1, testable)
+- [x] **AC-US2-10**: User shown compliance requirements summary before finalizing (P1, testable)
 
 **Compliance Table** (30+ standards):
 
@@ -572,17 +572,17 @@ All tasks for AC-US1-01 complete (in increment tasks.md)
 **So that** I know if I need auth, security, DevSecOps, or serverless teams
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Core teams always created: backend, frontend, mobile (if applicable) (P1, testable)
-- [ ] **AC-US3-02**: HIPAA detected → Suggests separate auth team + data team (P1, testable)
-- [ ] **AC-US3-03**: PCI-DSS detected → Suggests isolated payments team OR Stripe integration (P1, testable)
-- [ ] **AC-US3-04**: SOC2/ISO 27001 + >15 people → Suggests DevSecOps team + CISO (P1, testable)
-- [ ] **AC-US3-05**: >5 microservices → Suggests platform team (infrastructure) (P2, testable)
-- [ ] **AC-US3-06**: Analytics/ML detected → Suggests data team (P2, testable)
-- [ ] **AC-US3-07**: >20 services → Suggests observability team (P3, testable)
-- [ ] **AC-US3-08**: Specialized services identified: payments, notifications, analytics (P2, testable)
-- [ ] **AC-US3-09**: Serverless recommendations for specific use cases (auth, file uploads, email) (P1, testable)
-- [ ] **AC-US3-10**: Team structure stored in config with rationale (P1, testable)
-- [ ] **AC-US3-11**: Cost savings calculated for serverless recommendations (P2, testable)
+- [x] **AC-US3-01**: Core teams always created: backend, frontend, mobile (if applicable) (P1, testable)
+- [x] **AC-US3-02**: HIPAA detected → Suggests separate auth team + data team (P1, testable)
+- [x] **AC-US3-03**: PCI-DSS detected → Suggests isolated payments team OR Stripe integration (P1, testable)
+- [x] **AC-US3-04**: SOC2/ISO 27001 + >15 people → Suggests DevSecOps team + CISO (P1, testable)
+- [x] **AC-US3-05**: >5 microservices → Suggests platform team (infrastructure) (P2, testable)
+- [x] **AC-US3-06**: Analytics/ML detected → Suggests data team (P2, testable)
+- [x] **AC-US3-07**: >20 services → Suggests observability team (P3, testable)
+- [x] **AC-US3-08**: Specialized services identified: payments, notifications, analytics (P2, testable)
+- [x] **AC-US3-09**: Serverless recommendations for specific use cases (auth, file uploads, email) (P1, testable)
+- [x] **AC-US3-10**: Team structure stored in config with rationale (P1, testable)
+- [x] **AC-US3-11**: Cost savings calculated for serverless recommendations (P2, testable)
 
 **Serverless Savings**:
 - Auth → AWS Cognito/Auth0: $185/month saved
@@ -601,10 +601,10 @@ All tasks for AC-US1-01 complete (in increment tasks.md)
 **So that** I don't waste time manually selecting each repository during multi-repo init
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Detect multi-repo scenario during init (user has 3+ repositories) (P1, testable)
-- [ ] **AC-US4-02**: Offer batch selection options for ALL multi-repo setups: "All repos", "By prefix", "By owner/org", "By keyword", "Manual selection" (P1, testable)
-- [ ] **AC-US4-03**: Prefix rule: User enters "ec-" → Selects all repos starting with "ec-" (e.g., ec-frontend, ec-backend, ec-api) (P1, testable)
-- [ ] **AC-US4-04**: Owner/org rule: User enters "my-organization" → Selects all repos in that GitHub org/owner (P1, testable)
+- [x] **AC-US4-01**: Detect multi-repo scenario during init (user has 3+ repositories) (P1, testable)
+- [x] **AC-US4-02**: Offer batch selection options for ALL multi-repo setups: "All repos", "By prefix", "By owner/org", "By keyword", "Manual selection" (P1, testable)
+- [x] **AC-US4-03**: Prefix rule: User enters "ec-" → Selects all repos starting with "ec-" (e.g., ec-frontend, ec-backend, ec-api) (P1, testable)
+- [x] **AC-US4-04**: Owner/org rule: User enters "my-organization" → Selects all repos in that GitHub org/owner (P1, testable)
 - [ ] **AC-US4-05**: Keyword rule: User enters "service" → Selects all repos with "service" in name (e.g., auth-service, payment-service) (P2, testable)
 - [ ] **AC-US4-06**: Combined rules: User can combine filters (e.g., "ec-" prefix + "my-org" owner) (P2, testable)
 - [ ] **AC-US4-07**: Preview selected repositories before confirming (count + list) (P1, testable)
@@ -711,7 +711,7 @@ Confirm selection? (y/n)
 - [ ] **AC-US5-04**: Learning project → Recommends YAGNI + free tier (P1, testable)
 - [ ] **AC-US5-05**: Architecture includes infrastructure recommendations (AWS, Azure, GCP) (P1, testable)
 - [ ] **AC-US5-06**: Cost estimation provided ($X/month at 1K, 10K, 100K users) (P2, testable)
-- [ ] **AC-US5-07**: Cloud credits information shown (AWS Activate, Azure for Startups, GCP Cloud) (P2, testable)
+- [x] **AC-US5-07**: Cloud credits information shown (AWS Activate, Azure for Startups, GCP Cloud) (P2, testable)
 - [ ] **AC-US5-08**: Rationale clearly explained (why this architecture?) (P1, testable)
 - [ ] **AC-US5-09**: User can accept/reject/modify recommendation (P1, testable)
 - [ ] **AC-US5-10**: Final architecture stored in config with all rationale (P1, testable)
@@ -860,14 +860,14 @@ if (vision.viral && budget.bootstrapped) {
 - [ ] **AC-US9-07**: E2E tests cover user scenarios (viral product, enterprise, HIPAA, multi-repo) (P1, testable)
 
 **Phase 1-4 Tests (Project Tasks)**:
-- [x] **AC-US9-08**: Unit tests cover task splitting logic (95%+ coverage) (P1, testable)
-- [x] **AC-US9-09**: Unit tests cover bidirectional completion tracking (95%+ coverage) (P1, testable)
-- [x] **AC-US9-10**: Integration tests cover full living docs sync with project tasks (P1, testable)
-- [x] **AC-US9-11**: E2E tests cover complete workflow (increment → sync → GitHub) (P1, testable)
-- [x] **AC-US9-12**: Backward compatibility tests verify existing increments work (P1, testable)
-- [x] **AC-US9-13**: Migration script converts existing increments to project tasks (P2, testable)
-- [x] **AC-US9-14**: Performance tests ensure sync completes within 5 seconds (P2, testable)
-- [x] **AC-US9-15**: Error handling tests cover edge cases (missing files, malformed tasks) (P1, testable)
+- [ ] **AC-US9-08**: Unit tests cover task splitting logic (95%+ coverage) (P1, testable)
+- [ ] **AC-US9-09**: Unit tests cover bidirectional completion tracking (95%+ coverage) (P1, testable)
+- [ ] **AC-US9-10**: Integration tests cover full living docs sync with project tasks (P1, testable)
+- [ ] **AC-US9-11**: E2E tests cover complete workflow (increment → sync → GitHub) (P1, testable)
+- [ ] **AC-US9-12**: Backward compatibility tests verify existing increments work (P1, testable)
+- [ ] **AC-US9-13**: Migration script converts existing increments to project tasks (P2, testable)
+- [ ] **AC-US9-14**: Performance tests ensure sync completes within 5 seconds (P2, testable)
+- [ ] **AC-US9-15**: Error handling tests cover edge cases (missing files, malformed tasks) (P1, testable)
 
 ---
 

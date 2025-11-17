@@ -13,7 +13,7 @@ import {
   DEFAULT_STATE,
   FailureRecord,
   IStateManager
-} from './types';
+} from './types.js';
 
 /**
  * State file path (relative to project root)

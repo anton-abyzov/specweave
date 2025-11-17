@@ -10,7 +10,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import inquirer from 'inquirer';
-import { ConfigManager } from '../core/config-manager';
+import { ConfigManager } from '../core/config-manager.js';
 import { SyncProfile } from '../core/types/sync-profile.js';
 
 /**

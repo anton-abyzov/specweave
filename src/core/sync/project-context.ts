@@ -11,7 +11,7 @@ import {
   ProjectContext,
   ProjectDetectionResult,
   SyncConfiguration,
-} from '../types/sync-profile';
+} from '../types/sync-profile.js';
 
 export class ProjectContextManager {
   private configPath: string;

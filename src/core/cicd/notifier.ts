@@ -7,7 +7,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { FailureRecord } from './types';
+import { FailureRecord } from './types.js';
 
 /**
  * Notification channel types

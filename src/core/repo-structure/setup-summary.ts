@@ -11,7 +11,7 @@
  * @module setup-summary
  */
 
-import { RepoConfig, SetupState } from './setup-state-manager';
+import { RepoConfig, SetupState } from './setup-state-manager.js';
 
 /**
  * Summary configuration

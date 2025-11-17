@@ -13,7 +13,7 @@ import {
   QualityGateThresholds,
   TestCoverageResult,
   SecurityAuditResult,
-} from './types';
+} from './types.js';
 
 /**
  * Default quality gate thresholds (BMAD pattern)

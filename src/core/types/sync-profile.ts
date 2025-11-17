@@ -442,6 +442,9 @@ export interface ProjectContext {
   /** Keywords for auto-detection */
   keywords: string[];
 
+  /** Project root path (optional, for multi-project setups) */
+  projectPath?: string;
+
   /** Default sync profile for this project */
   defaultSyncProfile?: string;
 

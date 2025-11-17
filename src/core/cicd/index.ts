@@ -5,19 +5,19 @@
  */
 
 // Core types
-export * from './types';
+export * from './types.js';
 
 // State management
-export { StateManager } from './state-manager';
+export { StateManager } from './state-manager.js';
 
 // Workflow monitoring
-export { WorkflowMonitor, MonitorConfig, PollResult } from './workflow-monitor';
+export { WorkflowMonitor, MonitorConfig, PollResult } from './workflow-monitor.js';
 
 // Notifications
-export { Notifier, NotifierConfig, Notification } from './notifier';
+export { Notifier, NotifierConfig, Notification } from './notifier.js';
 
 // Service orchestration
-export { MonitorService, MonitorServiceConfig, ServiceStatus } from './monitor-service';
+export { MonitorService, MonitorServiceConfig, ServiceStatus } from './monitor-service.js';
 
 // Configuration loading
-export { loadConfig, createExampleConfig } from './config-loader';
+export { loadConfig, createExampleConfig } from './config-loader.js';

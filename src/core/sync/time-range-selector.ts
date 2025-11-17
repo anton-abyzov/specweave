@@ -8,13 +8,13 @@
  * - Warnings and recommendations
  */
 
-import { RateLimiter, PROVIDER_RATE_LIMITS } from './rate-limiter';
+import { RateLimiter, PROVIDER_RATE_LIMITS } from './rate-limiter.js';
 import {
   TimeRangePreset,
   TimeRangeEstimate,
   RateLimitStatus,
   SyncProvider,
-} from '../types/sync-profile';
+} from '../types/sync-profile.js';
 
 // ============================================================================
 // Time Range Selector

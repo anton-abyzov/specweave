@@ -4,7 +4,7 @@ import {
   prepareTranslation,
   postProcessTranslation,
   getLanguageName
-} from "../../../../src/utils/translation.js";
+} from "../../../../dist/src/utils/translation.js";
 async function invokeTranslatorSkill(content, sourceLang, targetLang = "en") {
   try {
     const prepared = prepareTranslation(content, sourceLang, targetLang);

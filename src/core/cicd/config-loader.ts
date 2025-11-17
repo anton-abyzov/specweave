@@ -7,8 +7,8 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { MonitorServiceConfig } from './monitor-service';
-import { NotificationChannel } from './notifier';
+import { MonitorServiceConfig } from './monitor-service.js';
+import { NotificationChannel } from './notifier.js';
 
 /**
  * Configuration source priority:

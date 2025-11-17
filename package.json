@@ -8,12 +8,14 @@
     "specweave": "./bin/specweave.js"
   },
   "scripts": {
+    "clean": "rm -rf dist/",
     "build": "tsc && npm run copy:locales && npm run copy:plugins",
+    "rebuild": "npm run clean && npm run build",
     "copy:locales": "node scripts/copy-locales.js",
     "copy:plugins": "node scripts/copy-plugin-js.js",
     "dev": "tsc --watch",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run rebuild",
     "test:unit": "jest tests/unit --coverage",
     "test:integration": "jest tests/integration --coverage",
     "test:smoke": "bash tests/smoke/smoke-test.sh",

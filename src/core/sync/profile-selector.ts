@@ -8,8 +8,8 @@
  * - Create new profile option
  */
 
-import { ProfileManager } from './profile-manager';
-import { SyncProfile, SyncProvider } from '../types/sync-profile';
+import { ProfileManager } from './profile-manager.js';
+import { SyncProfile, SyncProvider } from '../types/sync-profile.js';
 
 // ============================================================================
 // Profile Selector

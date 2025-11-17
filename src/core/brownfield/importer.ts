@@ -7,9 +7,9 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { BrownfieldAnalyzer, FileClassification } from './analyzer';
-import { ProjectManager } from '../project-manager';
-import { ConfigManager } from '../config-manager';
+import { BrownfieldAnalyzer, FileClassification } from './analyzer.js';
+import { ProjectManager } from '../project-manager.js';
+import { ConfigManager } from '../config-manager.js';
 
 export interface ImportOptions {
   sourcePath: string;

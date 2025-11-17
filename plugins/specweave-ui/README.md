@@ -292,9 +292,9 @@ mcp__plugin_specweave-ui_playwright__browser_fill({
 
 ---
 
-### Browserbase (FALLBACK - Cloud Browser Automation)
+### Browserbase (OPTIONAL - Cloud Browser Automation)
 
-**⚠️ Use only when Playwright MCP unavailable (CI/CD, cloud scenarios)**
+**⚠️ NOT loaded by default. Enable only when needed for CI/CD or cloud scenarios.**
 
 **What it does**:
 - Runs Playwright tests in cloud infrastructure
@@ -302,7 +302,7 @@ mcp__plugin_specweave-ui_playwright__browser_fill({
 - No local browser dependencies in CI
 - Automatic screenshots/videos
 
-**Setup**:
+**Manual Setup** (when needed):
 
 1. Get API key from [Browserbase](https://www.browserbase.com/)
 
@@ -312,26 +312,29 @@ mcp__plugin_specweave-ui_playwright__browser_fill({
    export BROWSERBASE_PROJECT_ID="proj_xxx"
    ```
 
-3. SpecWeave auto-configures MCP server (via `.mcp.json`)
+3. **Add to your project's `.claude/settings.json`**:
+   ```json
+   {
+     "mcpServers": {
+       "browserbase": {
+         "command": "npx",
+         "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
+         "env": {
+           "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
+           "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
+         }
+       }
+     }
+   }
+   ```
 
-4. Use in CI/CD pipelines
+4. Restart Claude Code
 
-**Configuration** (`.mcp.json`):
-```json
-{
-  "mcpServers": {
-    "browserbase": {
-      "command": "npx",
-      "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
-      "env": {
-        "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
-        "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
-      },
-      "optional": true
-    }
-  }
-}
-```
+**Why not auto-loaded?**
+- Saves ~5,600 tokens per request
+- Most developers use Playwright locally, not Browserbase
+- Browserbase requires API keys (not needed for most users)
+- Can still enable when needed for CI/CD
 
 **Benefits**:
 - ✅ Parallel execution (10x faster)
@@ -392,11 +395,6 @@ npm run storybook
   "plugins": {
     "specweave-ui": {
       "enabled": true,
-      "mcp": {
-        "browserbase": {
-          "enabled": false
-        }
-      },
       "defaults": {
         "frontend_framework": "react",  // or "vue", "angular"
         "test_framework": "playwright",
@@ -406,6 +404,8 @@ npm run storybook
   }
 }
 ```
+
+**Note**: Browserbase is NOT auto-loaded. See "Browserbase (OPTIONAL)" section above for manual setup.
 
 ---
 

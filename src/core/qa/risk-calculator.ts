@@ -5,7 +5,7 @@
  * @since v0.8.0
  */
 
-import { Risk, RiskAssessmentResult, RiskCategory, RiskSeverity } from './types';
+import { Risk, RiskAssessmentResult, RiskCategory, RiskSeverity } from './types.js';
 
 export class RiskCalculator {
   /**

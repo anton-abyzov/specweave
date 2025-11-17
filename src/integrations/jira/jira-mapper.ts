@@ -12,7 +12,7 @@
  * - .specweave/docs/internal/architecture/adr/ - Architecture decisions (ADRs)
  */
 
-import { JiraClient, JiraIssue } from './jira-client';
+import { JiraClient, JiraIssue } from './jira-client.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';

@@ -89,16 +89,20 @@ if [[ -f "$TASKS_FILE" ]]; then
   TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
   TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' || echo 0)
 
-  # Count completed tasks (both checkbox formats)
-  # Format 1: [x] at line start
+  # Count completed tasks (multiple formats)
+  # Format 1: [x] at line start (legacy)
   COMPLETED_STANDARD=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
   COMPLETED_STANDARD=$(echo "$COMPLETED_STANDARD" | tr -d '\n\r ' || echo 0)
 
-  # Format 2: **Status**: [x] inline
+  # Format 2: **Status**: [x] inline (legacy)
   COMPLETED_INLINE=$(grep -c '\*\*Status\*\*: \[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
   COMPLETED_INLINE=$(echo "$COMPLETED_INLINE" | tr -d '\n\r ' || echo 0)
 
-  COMPLETED_TASKS=$((COMPLETED_STANDARD + COMPLETED_INLINE))
+  # Format 3: **Completed**: <date> (current format)
+  COMPLETED_DATE=$(grep -c '\*\*Completed\*\*:' "$TASKS_FILE" 2>/dev/null || echo 0)
+  COMPLETED_DATE=$(echo "$COMPLETED_DATE" | tr -d '\n\r ' || echo 0)
+
+  COMPLETED_TASKS=$((COMPLETED_STANDARD + COMPLETED_INLINE + COMPLETED_DATE))
 
   # Calculate percentage
   if [[ $TOTAL_TASKS -gt 0 ]]; then

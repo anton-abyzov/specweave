@@ -16,7 +16,7 @@ import {
   postProcessTranslation,
   getLanguageName,
   type SupportedLanguage,
-} from '../../../../src/utils/translation.js';
+} from '../../../../dist/src/utils/translation.js';
 
 /**
  * Translation result

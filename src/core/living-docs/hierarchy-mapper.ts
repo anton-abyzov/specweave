@@ -545,10 +545,11 @@ export class HierarchyMapper {
       featureFolder,
       featurePath,
       projects,
-      projectPaths,
+      projectPaths: Object.fromEntries(projectPaths),  // Convert Map to Record
       epic,
       confidence,
       detectionMethod,
+      userStories: [],  // Initialize empty, populated later
     };
   }
 

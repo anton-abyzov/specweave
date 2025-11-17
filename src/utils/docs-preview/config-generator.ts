@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { DocusaurusConfig } from './types';
+import { DocusaurusConfig } from './types.js';
 
 /**
  * Generate docusaurus.config.js content
@@ -299,7 +299,7 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import styles from './index.module.css';
+import styles from './index.module.css.js';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
