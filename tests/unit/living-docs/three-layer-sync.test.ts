@@ -9,7 +9,6 @@
 
 import { ThreeLayerSyncManager } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
 import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js';
-import type { SyncResult } from '../../../src/core/living-docs/ThreeLayerSyncManager.js.js';
 import fs from 'fs/promises';
 import { execSync } from 'child_process';
 

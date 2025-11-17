@@ -12,9 +12,12 @@ import {
 import { ParsedSpec } from '../../../src/core/living-docs/content-parser.js';
 import fs from 'fs-extra';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Mock fs-extra
 vi.mock('fs-extra');
+// Mock child_process to prevent real git calls
+vi.mock('child_process');
 const mockFs = fs as anyed<typeof fs> & {
   existsSync: anyedFunction<typeof fs.existsSync>;
   readJSON: anyedFunction<typeof fs.readJSON>;
@@ -32,6 +35,11 @@ describe('ProjectDetector', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockConfigPath = '/test/.specweave/config.json';
+
+    // Mock execSync to prevent real git calls and ensure 'default' fallback
+    vi.mocked(execSync).mockImplementation(() => {
+      throw new Error('Not a git repository');
+    });
 
     // Default: no config file exists
     mockFs.existsSync.mockReturnValue(false);
