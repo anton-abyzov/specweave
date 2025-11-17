@@ -8,9 +8,9 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { ProjectManager } from '../../core/project-manager';
-import { ConfigManager } from '../../core/config-manager';
-import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection';
+import { ProjectManager } from '../../core/project-manager.js';
+import { ConfigManager } from '../../core/config-manager.js';
+import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection.js';
 
 export interface MigrationResult {
   success: boolean;

@@ -46,6 +46,17 @@ export interface ValidationResult {
 }
 
 /**
+ * AC sync event for metadata logging
+ */
+export interface ACSyncEvent {
+  timestamp: string;         // ISO 8601 timestamp
+  updated: string[];         // AC-IDs updated
+  conflicts: string[];       // Conflict messages
+  warnings: string[];        // Warning messages
+  changesCount: number;      // Number of ACs changed
+}
+
+/**
  * AC completion summary
  */
 export interface ACCompletionSummary {
@@ -75,8 +86,8 @@ export class ACStatusManager {
   parseTasksForACStatus(tasksContent: string): Map<string, ACCompletionStatus> {
     const acMap = new Map<string, ACCompletionStatus>();
 
-    // Regex to match task headers: #### T-###: Task name
-    const taskHeaderRegex = /####\s+(T-\d+):/g;
+    // Regex to match task headers: ### T-###: Task name
+    const taskHeaderRegex = /###\s+(T-\d+):/g;
 
     // Split content by task headers
     const lines = tasksContent.split('\n');
@@ -89,7 +100,7 @@ export class ACStatusManager {
       const line = lines[i];
 
       // Check if this is a task header
-      const taskMatch = line.match(/####\s+(T-\d+):/);
+      const taskMatch = line.match(/###\s+(T-\d+):/);
       if (taskMatch) {
         // Process previous task if exists
         if (currentTaskId && currentTaskACs.length > 0) {
@@ -193,7 +204,8 @@ export class ACStatusManager {
 
       // Match AC checkbox pattern: - [ ] AC-ID: Description
       // or: - [x] AC-ID: Description
-      const acMatch = line.match(/^-\s+\[([ x])\]\s+(AC-[A-Z0-9-]+):\s*(.+)/);
+      // Also handles bold format: - [ ] **AC-ID**: Description
+      const acMatch = line.match(/^-\s+\[([ x])\]\s+\*{0,2}(AC-[A-Z0-9-]+)\*{0,2}:\s*(.+)/);
 
       if (acMatch) {
         const checked = acMatch[1] === 'x';
@@ -303,7 +315,63 @@ export class ACStatusManager {
       result.synced = true;
     }
 
+    // Log sync event to metadata.json
+    if (result.synced || result.conflicts.length > 0 || result.warnings.length > 0) {
+      this.logSyncEvent(incrementId, result);
+    }
+
     return result;
+  }
+
+  /**
+   * Log AC sync event to metadata.json
+   * Keeps last 20 events for audit trail
+   *
+   * @param incrementId - Increment ID
+   * @param result - Sync result to log
+   */
+  private logSyncEvent(incrementId: string, result: ACSyncResult): void {
+    const metadataPath = path.join(this.rootPath, '.specweave', 'increments', incrementId, 'metadata.json');
+
+    try {
+      // Read existing metadata
+      let metadata: any = {};
+      if (fs.existsSync(metadataPath)) {
+        const metadataContent = fs.readFileSync(metadataPath, 'utf-8');
+        metadata = JSON.parse(metadataContent);
+      }
+
+      // Initialize acSyncEvents array if doesn't exist
+      if (!metadata.acSyncEvents) {
+        metadata.acSyncEvents = [];
+      }
+
+      // Create new event
+      const event: ACSyncEvent = {
+        timestamp: new Date().toISOString(),
+        updated: result.updated,
+        conflicts: result.conflicts,
+        warnings: result.warnings,
+        changesCount: result.updated.length
+      };
+
+      // Add event to beginning (newest first)
+      metadata.acSyncEvents.unshift(event);
+
+      // Keep only last 20 events (rolling history)
+      if (metadata.acSyncEvents.length > 20) {
+        metadata.acSyncEvents = metadata.acSyncEvents.slice(0, 20);
+      }
+
+      // Update lastActivity timestamp
+      metadata.lastActivity = new Date().toISOString();
+
+      // Write updated metadata
+      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
+    } catch (error) {
+      // Non-blocking: Log error but don't fail sync
+      console.error('Warning: Failed to log AC sync event to metadata.json', error);
+    }
   }
 
   /**

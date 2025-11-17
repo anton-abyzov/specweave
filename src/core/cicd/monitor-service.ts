@@ -5,10 +5,10 @@
  * state manager, and notifier for end-to-end failure detection and notification.
  */
 
-import { WorkflowMonitor, MonitorConfig } from './workflow-monitor';
-import { StateManager } from './state-manager';
-import { Notifier, NotifierConfig } from './notifier';
-import { FailureRecord } from './types';
+import { WorkflowMonitor, MonitorConfig } from './workflow-monitor.js';
+import { StateManager } from './state-manager.js';
+import { Notifier, NotifierConfig } from './notifier.js';
+import { FailureRecord } from './types.js';
 
 /**
  * Service configuration

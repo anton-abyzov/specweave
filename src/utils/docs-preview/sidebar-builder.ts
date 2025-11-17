@@ -5,7 +5,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs-extra';
-import { SidebarItem, Sidebar } from './types';
+import { SidebarItem, Sidebar } from './types.js';
 
 /**
  * Priority order for top-level folders

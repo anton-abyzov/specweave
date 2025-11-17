@@ -7,9 +7,9 @@
 
 import path from 'path';
 import fs from 'fs-extra';
-import { ConfigManager } from './config-manager';
-import { autoDetectProjectIdSync, formatProjectName } from '../utils/project-detection';
-import { ProjectContext } from './living-docs/types';
+import { ConfigManager } from './config-manager.js';
+import { autoDetectProjectIdSync, formatProjectName } from '../utils/project-detection.js';
+import { ProjectContext } from './living-docs/types.js';
 
 // Re-export ProjectContext as type-only for backward compatibility with CLI commands
 export type { ProjectContext };

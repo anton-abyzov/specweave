@@ -20,7 +20,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ProjectStructure, ProjectStructureDetector } from './project-structure-detector';
+import { ProjectStructure, ProjectStructureDetector } from './project-structure-detector.js';
 
 export type RFCSource = 'jira' | 'ado' | 'github' | 'manual';
 

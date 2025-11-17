@@ -11,8 +11,8 @@
  * - Respect user preferences (autoSync, promptUser, conflictResolution)
  */
 
-import { StatusMapper, StatusMappingConfig, ExternalTool, SpecWeaveStatus } from './status-mapper';
-import { ConflictResolver, StatusConflict, ConflictResolution, ConflictResolutionStrategy } from './conflict-resolver';
+import { StatusMapper, StatusMappingConfig, ExternalTool, SpecWeaveStatus } from './status-mapper.js';
+import { ConflictResolver, StatusConflict, ConflictResolution, ConflictResolutionStrategy } from './conflict-resolver.js';
 
 export type SyncDirection = 'to-external' | 'from-external' | 'bidirectional';
 

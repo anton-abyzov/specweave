@@ -26,7 +26,7 @@ import {
   getLanguageName,
   formatCost,
   type SupportedLanguage,
-} from '../../../../src/utils/translation.js';
+} from '../../../../dist/src/utils/translation.js';
 
 /**
  * CLI options

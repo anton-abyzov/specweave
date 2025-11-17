@@ -139,5 +139,9 @@ echo "$COMMENT" | gh issue comment "$GITHUB_ISSUE" --body-file - 2>&1 | tee -a "
 
 echo "[$(date)] ✅ Status change synced to GitHub" >> "$DEBUG_LOG" 2>/dev/null || true
 
+# Update status line cache (status changed - may affect which increment is "current")
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
 # Return success (non-blocking)
 exit 0

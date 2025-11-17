@@ -11,7 +11,13 @@
  * @version 3.0.0
  */
 
-export { SpecDistributor } from './spec-distributor.js';
+// Old SpecDistributor temporarily disabled due to missing types
+// TODO: Fix spec-distributor.ts type dependencies
+// export { SpecDistributor } from './spec-distributor.js';
+
+// New copy-based distributor (primary for increment 0037)
+export { SpecDistributor } from './SpecDistributor.js';
+
 export { HierarchyMapper } from './hierarchy-mapper.js';
 export { ContentParser } from './content-parser.js';
 export { ContentClassifier } from './content-classifier.js';

@@ -680,8 +680,8 @@ estimated_effort: 2-3 weeks
 - [x] **AC-US2-04**: Can query "which increment implemented US-001?" (P2)
 
 ## Remaining Work (P2-P3):
-- [ ] **AC-US2-05**: Traceability report shows complete history (P2)
-- [ ] **AC-US2-06**: Acceptance criteria map to task validation (P3)
+- [x] **AC-US2-05**: Traceability report shows complete history (P2)
+- [x] **AC-US2-06**: Acceptance criteria map to task validation (P3)
 
 ---
 🤖 Auto-synced by SpecWeave | [View increment](link)

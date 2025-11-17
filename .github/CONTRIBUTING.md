@@ -140,6 +140,123 @@ SpecWeave follows these key principles for all contributions:
 
 ## Development Workflow
 
+### Build Process & Best Practices
+
+**CRITICAL**: SpecWeave uses TypeScript ES Modules which require specific build practices.
+
+#### Quick Start
+
+```bash
+# Clean build (RECOMMENDED for development)
+npm run rebuild
+
+# Or manually:
+npm run clean  # Remove dist/
+npm run build  # Compile TypeScript
+```
+
+#### Build Architecture
+
+SpecWeave has a **dual compilation strategy**:
+
+1. **`tsc`** compiles `src/` → `dist/src/` (TypeScript compiler)
+2. **`esbuild`** compiles `plugins/**/lib/hooks/*.ts` → `plugins/**/lib/hooks/*.js` (in-place)
+
+**Why separate compilation?**
+- Hooks must import from `dist/src/` (compiled output)
+- But TypeScript compiles them, creating chicken-and-egg dependency
+- Solution: Exclude hooks from `tsconfig.json`, compile with esbuild after dist/ exists
+
+#### Common Build Issues
+
+**TS5055: Cannot write file (would overwrite input file)**
+
+```bash
+# Cause: dist/ polluted with .ts source files
+# Fix:
+npm run clean && npm run build
+
+# Prevent: Always use clean build in development
+```
+
+**Hook Import Errors: "Cannot find module 'src/...'"**
+
+```bash
+# Cause: Hooks importing from src/ instead of dist/src/
+# Fix:
+node scripts/fix-js-extensions.js  # Add missing .js extensions
+npm run rebuild
+
+# Verify:
+node plugins/specweave/lib/hooks/update-ac-status.js 0001
+```
+
+**Missing .js Extensions in Imports**
+
+TypeScript ES Modules **REQUIRE** `.js` extensions in imports:
+
+```typescript
+// ❌ WRONG (runtime error):
+import { foo } from './bar';
+
+// ✅ CORRECT:
+import { foo } from './bar.js';
+```
+
+```bash
+# Auto-fix all missing extensions:
+node scripts/fix-js-extensions.js
+
+# Dry-run first:
+node scripts/fix-js-extensions.js --dry-run
+```
+
+#### Build Verification
+
+**Pre-commit Hook** (RECOMMENDED):
+
+```bash
+# Install git hooks:
+bash scripts/install-git-hooks.sh
+
+# Hook verifies:
+# - Build succeeds
+# - No .ts files in dist/
+# - Missing .js extensions warning
+```
+
+**Manual Verification**:
+
+```bash
+# 1. Verify no source files in dist/
+find dist/src -name "*.ts" -not -name "*.d.ts"
+# Should return nothing
+
+# 2. Test build from scratch
+npm run clean && npm run build
+
+# 3. Test hook execution
+node plugins/specweave/lib/hooks/update-ac-status.js --help
+```
+
+#### CI Build
+
+GitHub Actions automatically:
+- Runs `npm run rebuild` (clean build)
+- Verifies no .ts files in dist/
+- Runs build verification tests
+- Runs hook execution tests
+
+See: `.github/workflows/test.yml`
+
+#### Related Documentation
+
+- **Ultrathink Analysis**: `.specweave/increments/0039/reports/HOOK-IMPORT-ERROR-ULTRATHINK-ANALYSIS.md`
+- **Fix Summary**: `.specweave/increments/0039/reports/HOOK-IMPORT-FIX-SUMMARY.md`
+- **Build Verification Tests**: `tests/integration/build/build-verification.test.ts`
+
+---
+
 ### 1. Check for Existing Issues
 
 Before starting work, search for existing issues or create a new one:

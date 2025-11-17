@@ -11,7 +11,7 @@
  * 4. Follow skill workflows for consistent output
  *
  * Usage:
- *   import { generateSkillsIndex } from './generate-skills-index';
+ *   import { generateSkillsIndex } from './generate-skills-index.js';
  *   await generateSkillsIndex();
  *
  * Or run directly:

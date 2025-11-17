@@ -17,6 +17,7 @@ import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import * as path from 'path';
 import * as yaml from 'yaml';
+import { IssueStateManager, ProgressInfo } from './IssueStateManager.js';
 
 interface UserStoryFrontmatter {
   id: string;
@@ -356,6 +357,12 @@ export class UserStoryIssueBuilder {
   }): string {
     const sections: string[] = [];
 
+    // Calculate progress
+    const progress = IssueStateManager.calculateProgress(
+      data.acceptanceCriteria,
+      data.tasks
+    );
+
     // Header with metadata
     sections.push(`**Feature**: ${this.featureId}`);
     sections.push(`**Status**: ${this.capitalize(data.frontmatter.status)}`);
@@ -364,6 +371,10 @@ export class UserStoryIssueBuilder {
     if (data.frontmatter.project && data.frontmatter.project !== 'default') {
       sections.push(`**Project**: ${data.frontmatter.project}`);
     }
+    sections.push('');
+
+    // Progress section (NEW)
+    sections.push(IssueStateManager.formatProgressMarkdown(progress));
     sections.push('');
 
     // User Story statement

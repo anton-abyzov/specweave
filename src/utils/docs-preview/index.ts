@@ -6,7 +6,7 @@ export {
   isSetupNeeded,
   getDocsSitePath,
   getDocsPath
-} from './docusaurus-setup';
+} from './docusaurus-setup.js';
 
 export {
   buildSidebar,
@@ -14,7 +14,7 @@ export {
   generateSidebarsJS,
   countDocuments,
   countCategories
-} from './sidebar-builder';
+} from './sidebar-builder.js';
 
 export {
   generateDocusaurusConfig,
@@ -27,7 +27,7 @@ export {
   writeIndexPage,
   generateIndexModuleCSS,
   writeIndexModuleCSS
-} from './config-generator';
+} from './config-generator.js';
 
 export {
   checkNodeVersion,
@@ -39,7 +39,7 @@ export {
   getPackageVersion,
   estimateInstallSize,
   estimateInstallTime
-} from './package-installer';
+} from './package-installer.js';
 
 export {
   findAvailablePort,
@@ -48,6 +48,6 @@ export {
   killAllDocusaurusProcesses,
   isDocusaurusRunning,
   getServerUrl
-} from './server-manager';
+} from './server-manager.js';
 
-export * from './types';
+export * from './types.js';

@@ -7,7 +7,7 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { ServerlessPlatform } from './types';
+import { ServerlessPlatform } from './types.js';
 
 // ============================================================================
 // Type Definitions
