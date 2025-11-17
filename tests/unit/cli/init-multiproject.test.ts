@@ -21,15 +21,19 @@ vi.mock('../../../src/core/project-manager');
 vi.mock('../../../src/core/config-manager');
 vi.mock('../../../src/utils/project-detection');
 vi.mock('inquirer', () => ({
+  default: {
+    prompt: vi.fn()
+  },
   prompt: vi.fn()
+}));
 }));
 
 describe('init-multiproject command', () => {
-  const mockProjectManager = ProjectManager as anyedClass<typeof ProjectManager>;
-  const mockConfigManager = ConfigManager as anyedClass<typeof ConfigManager>;
-  const mockAutoMigrate = autoMigrateSingleToMulti as anyedFunction<typeof autoMigrateSingleToMulti>;
-  const mockAutoDetect = autoDetectProjectIdSync as anyedFunction<typeof autoDetectProjectIdSync>;
-  const mockFormatProjectName = formatProjectName as anyedFunction<typeof formatProjectName>;
+  const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
+  const mockConfigManager = ConfigManager as vi.Mocked<typeof ConfigManager>;
+  const mockAutoMigrate = autoMigrateSingleToMulti as vi.MockedFunction<typeof autoMigrateSingleToMulti>;
+  const mockAutoDetect = autoDetectProjectIdSync as vi.MockedFunction<typeof autoDetectProjectIdSync>;
+  const mockFormatProjectName = formatProjectName as vi.MockedFunction<typeof formatProjectName>;
   const mockInquirer = inquirer as any;
 
   const mockProjectRoot = '/test/project';
