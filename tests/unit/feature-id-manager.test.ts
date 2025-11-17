@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { FeatureIDManager } from '../../src/core/living-docs/feature-id-manager.js.js';
+import { FeatureIDManager } from '../../src/core/living-docs/feature-id-manager.js';
 
 describe('FeatureIDManager', () => {
   const testProjectRoot = path.join(__dirname, '../fixtures/test-project');

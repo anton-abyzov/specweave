@@ -9,8 +9,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { presentArchitectureRecommendation, promptAcceptArchitecture, promptModifyArchitecture, presentArchitectureSummary } from '../../../src/init/ArchitecturePresenter.js.js';
-import type { ArchitectureRecommendation } from '../../../src/init/architecture/types.js.js';
+import { presentArchitectureRecommendation, promptAcceptArchitecture, promptModifyArchitecture, presentArchitectureSummary } from '../../../src/init/ArchitecturePresenter.js';
+import type { ArchitectureRecommendation } from '../../../src/init/architecture/types.js';
 
 describe('Architecture Presenter', () => {
   let consoleLogSpy: any;

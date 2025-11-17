@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { QualityGateDecider, DEFAULT_THRESHOLDS } from '../../../src/core/qa/quality-gate-decider.js.js';
+import { QualityGateDecider, DEFAULT_THRESHOLDS } from '../../../src/core/qa/quality-gate-decider.js';
 import {
   QualityAssessment,
   QualityGateDecision,
@@ -16,7 +16,7 @@ import {
   SecurityAuditResult,
   Risk,
   QualityGateThresholds,
-} from '../../../src/core/qa/types.js.js';
+} from '../../../src/core/qa/types.js';
 
 describe('QualityGateDecider', () => {
   let decider: QualityGateDecider;

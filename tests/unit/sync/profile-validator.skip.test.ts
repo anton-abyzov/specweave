@@ -12,13 +12,13 @@ import {
   validateAdoConfig,
   validateGitHubConfig,
   validateSyncProfile,
-} from '../../../src/core/sync/profile-validator.js.js';
+} from '../../../src/core/sync/profile-validator.js';
 import {
   JiraConfig,
   AdoConfig,
   GitHubConfig,
   SyncProfile,
-} from '../../../src/core/types/sync-profile.js.js';
+} from '../../../src/core/types/sync-profile.js';
 
 describe('Jira Profile Validator', () => {
   describe('Strategy 1: Project per Team', () => {

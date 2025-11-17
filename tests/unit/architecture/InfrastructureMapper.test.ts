@@ -4,8 +4,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Unit tests for InfrastructureMapper (T-039)
  */
 
-import { InfrastructureMapper } from '../../../src/init/architecture/InfrastructureMapper.js.js';
-import type { ComplianceStandard } from '../../../src/init/compliance/types.js.js';
+import { InfrastructureMapper } from '../../../src/init/architecture/InfrastructureMapper.js';
+import type { ComplianceStandard } from '../../../src/init/compliance/types.js';
 
 describe('InfrastructureMapper', () => {
   const mapper = new InfrastructureMapper();

@@ -5,7 +5,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectMarketCategory, analyzeMarketCategories } from '../../../src/init/research/MarketDetector.js.js';
+import { detectMarketCategory, analyzeMarketCategories } from '../../../src/init/research/MarketDetector.js';
 
 describe('MarketDetector', () => {
   describe('detectMarketCategory', () => {

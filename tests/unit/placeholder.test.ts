@@ -6,11 +6,11 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 describe('SpecWeave Framework', () => {
-  test('should be testable', () => {
+  it('should be testable', () => {
     expect(true).toBe(true);
   });
 
-  test('should have proper structure', () => {
+  it('should have proper structure', () => {
     // Basic smoke test that imports work
     const fs = require('fs');
     const path = require('path');

@@ -12,9 +12,9 @@ import {
   onFileCreated,
   shouldTransitionToActive,
   migrateLegacyStatuses
-} from '../../../src/core/increment/status-auto-transition.js.js';
-import { MetadataManager } from '../../../src/core/increment/metadata-manager.js.js';
-import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js.js';
+} from '../../../src/core/increment/status-auto-transition.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';

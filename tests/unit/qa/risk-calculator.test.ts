@@ -8,8 +8,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { RiskCalculator } from '../../../src/core/qa/risk-calculator.js.js';
-import { Risk, RiskCategory, RiskSeverity } from '../../../src/core/qa/types.js.js';
+import { RiskCalculator } from '../../../src/core/qa/risk-calculator.js';
+import { Risk, RiskCategory, RiskSeverity } from '../../../src/core/qa/types.js';
 
 describe('RiskCalculator', () => {
   describe('calculateRiskScore', () => {

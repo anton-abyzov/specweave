@@ -13,8 +13,8 @@ import {
   generateAreaPaths,
   getFolderNameFromAreaPath,
   getTeamFromFolder,
-} from '../../../src/core/sync/folder-mapper.js.js';
-import { SyncProfile } from '../../../src/core/types/sync-profile.js.js';
+} from '../../../src/core/sync/folder-mapper.js';
+import { SyncProfile } from '../../../src/core/types/sync-profile.js';
 
 describe('Folder Mapper - ADO', () => {
   describe('Multi-Team Folders', () => {
