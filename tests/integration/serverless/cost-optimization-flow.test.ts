@@ -10,7 +10,7 @@
  * - Compression and CDN recommendations
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { optimizeCost } from '../../../src/core/serverless/cost-optimizer.js';
 import { estimateCost } from '../../../src/core/serverless/cost-estimator.js';
 import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js';

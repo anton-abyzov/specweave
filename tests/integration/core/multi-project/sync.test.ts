@@ -4,7 +4,7 @@
  * Tests complete workflow for GitHub, JIRA, and ADO multi-project sync
  */
 
-import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import { parseSpecFile, splitSpecIntoProjects } from '../../src/utils/spec-splitter.js';

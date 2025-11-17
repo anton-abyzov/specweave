@@ -14,10 +14,10 @@ import { ContentCategory } from '../../../src/core/living-docs/content-classifie
 import fs from 'fs-extra';
 import path from 'path';
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-
 // Mock fs-extra
 vi.mock('fs-extra');
+
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

@@ -4,7 +4,7 @@
  * Tests for full suitability analysis workflow.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js';
 
 describe('Suitability Analysis Flow Integration', () => {

@@ -5,7 +5,7 @@
  * to prevent duplicate command invocations at the hook level.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs-extra';

@@ -1,4 +1,4 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { PlatformDataLoader } from '../../src/core/serverless/platform-data-loader';
 
 describe('Platform Data Loading Integration', () => {
