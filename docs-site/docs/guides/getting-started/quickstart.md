@@ -228,7 +228,11 @@ ls -la .claude/skills/
 
 **If missing:**
 ```bash
-specweave init . --force  # Reinstall
+# Safe reinstall (keeps all your data)
+specweave init .
+# Select: "Continue working"
+
+# ⚠️ DO NOT use --force (deletes all increments/docs)
 ```
 
 ### Commands not found?
