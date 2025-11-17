@@ -11,7 +11,7 @@ import {
   TimeRangePreset,
   TimeRangeEstimate,
   RateLimitStatus,
-} from '../types/sync-profile';
+} from '../types/sync-profile.js';
 
 // ============================================================================
 // Provider Rate Limit Constants

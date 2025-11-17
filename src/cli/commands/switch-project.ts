@@ -5,9 +5,9 @@
  */
 
 import inquirer from 'inquirer';
-import { ProjectManager } from '../../core/project-manager';
-import { ConfigManager } from '../../core/config-manager';
-import { listProjects } from './init-multiproject';
+import { ProjectManager } from '../../core/project-manager.js';
+import { ConfigManager } from '../../core/config-manager.js';
+import { listProjects } from './init-multiproject.js';
 
 export async function switchProject(
   projectRoot: string,

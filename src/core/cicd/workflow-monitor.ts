@@ -7,13 +7,13 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import { StateManager } from './state-manager';
+import { StateManager } from './state-manager.js';
 import {
   WorkflowRun,
   FailureRecord,
   WorkflowStatus,
   WorkflowConclusion
-} from './types';
+} from './types.js';
 
 /**
  * Monitor configuration

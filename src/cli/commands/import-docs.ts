@@ -6,8 +6,8 @@
 
 import path from 'path';
 import inquirer from 'inquirer';
-import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer';
-import { ProjectManager } from '../../core/project-manager';
+import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer.js';
+import { ProjectManager } from '../../core/project-manager.js';
 
 export interface ImportDocsArgs {
   sourcePath: string;

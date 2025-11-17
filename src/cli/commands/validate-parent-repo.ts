@@ -6,7 +6,7 @@
  * Usage: specweave validate-parent-repo
  */
 
-import { validateParentRepoSetup, printValidationResult } from '../../core/cicd/parent-repo-validator';
+import { validateParentRepoSetup, printValidationResult } from '../../core/cicd/parent-repo-validator.js';
 
 function main() {
   const projectRoot = process.cwd();

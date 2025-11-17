@@ -248,17 +248,39 @@ export function shouldAutoAbandon(metadata: IncrementMetadata): boolean {
 }
 
 /**
- * Check if increment status counts toward WIP (Work In Progress) limits
+ * Statuses that count toward WIP (Work In Progress) limits
  *
- * Statuses that do NOT count toward WIP:
- * - PLANNING: Planning phase, not consuming active work capacity
+ * ACTIVE: Currently executing tasks, consumes team capacity
+ * PAUSED: Temporarily blocked but still holding resources/context
+ *
+ * Statuses that do NOT count:
+ * - PLANNING: Lightweight spec/planning work, parallel-safe
  * - BACKLOG: Not started yet
- * - PAUSED: Temporarily blocked, not actively being worked on
  * - COMPLETED: Already done
  * - ABANDONED: Cancelled
- *
- * Only ACTIVE increments count toward WIP limits.
+ */
+export const WIP_COUNTED_STATUSES: IncrementStatus[] = [
+  IncrementStatus.ACTIVE,
+  IncrementStatus.PAUSED  // Paused work still blocks team capacity
+];
+
+/**
+ * Check if increment status counts toward WIP (Work In Progress) limits
  */
 export function countsTowardWipLimit(status: IncrementStatus): boolean {
-  return status === IncrementStatus.ACTIVE;
+  return WIP_COUNTED_STATUSES.includes(status);
+}
+
+/**
+ * Validate if a status transition is allowed
+ * @throws Error if transition is invalid
+ */
+export function validateTransition(from: IncrementStatus, to: IncrementStatus): void {
+  if (!isValidTransition(from, to)) {
+    const validTransitions = VALID_TRANSITIONS[from];
+    throw new Error(
+      `Invalid transition: ${from} → ${to}.\n` +
+      `Valid transitions from ${from}: ${validTransitions.join(', ')}`
+    );
+  }
 }

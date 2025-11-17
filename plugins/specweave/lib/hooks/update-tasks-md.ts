@@ -146,18 +146,160 @@ function parseTaskStatus(lines: string[]): TaskMatch[] {
 }
 
 /**
- * Detect which tasks are completed (heuristic-based for now)
- * TODO: In future, hook will pass completed task IDs via env var
+ * Detect which tasks are completed (STRICT VALIDATION)
+ *
+ * Detection strategies (ALL must be true):
+ * 1. Task header has "✅ COMPLETE" marker AND
+ *    all implementation checkboxes are marked [x]
+ * 2. OR: Task header has "Status: [x] Completed" (legacy format)
+ *
+ * This prevents inconsistencies where header says COMPLETE but checkboxes
+ * are unchecked. Both must match for a task to be considered complete.
+ *
+ * @see .specweave/increments/0037/reports/ULTRATHINK-COMPLETE-MARKER-VS-CHECKBOXES.md
  */
 function detectCompletedTasks(lines: string[]): string[] {
-  // For now, this is a placeholder - we'll mark tasks as complete
-  // if they have implementation sections or "COMPLETE" markers
   const completedTasks: string[] = [];
+  const warnings: string[] = [];
+  const taskPattern = /^###\s+(T-\d+[-A-Z]*):?\s+(.+)/;
 
-  // This function will be enhanced in future versions
-  // For MVP, we'll rely on manual marking in tasks.md
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const taskMatch = line.match(taskPattern);
+
+    if (!taskMatch) continue;
+
+    const taskId = taskMatch[1];
+    const taskTitle = taskMatch[2];
+    const hasCompleteMarker = taskTitle.includes('✅ COMPLETE');
+
+    // Get implementation section
+    const taskEndIndex = findNextTaskStart(lines, i + 1);
+    const implementationSection = findImplementationSection(lines, i, taskEndIndex);
+
+    let allCheckboxesComplete = false;
+    if (implementationSection) {
+      allCheckboxesComplete = checkAllCheckboxesComplete(implementationSection);
+    }
+
+    // STRICT VALIDATION: Require BOTH header AND checkboxes to match
+    if (hasCompleteMarker && implementationSection) {
+      if (allCheckboxesComplete) {
+        // ✅ CONSISTENT: Header says COMPLETE and all checkboxes checked
+        if (!completedTasks.includes(taskId)) {
+          completedTasks.push(taskId);
+        }
+      } else {
+        // ⚠️  INCONSISTENT: Header says COMPLETE but checkboxes incomplete
+        warnings.push(`${taskId}: Header has ✅ COMPLETE but not all checkboxes checked`);
+      }
+      continue;
+    }
+
+    // If no implementation section, trust the header marker
+    if (hasCompleteMarker && !implementationSection) {
+      if (!completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+      }
+      continue;
+    }
+
+    // Warn if checkboxes all complete but header missing marker
+    if (!hasCompleteMarker && implementationSection && allCheckboxesComplete) {
+      warnings.push(`${taskId}: All checkboxes checked but header missing ✅ COMPLETE`);
+      // Still count as complete (checkboxes are source of truth for work done)
+      if (!completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+      }
+      continue;
+    }
+
+    // Strategy 2: Check for "Status: [x] Completed" (legacy format)
+    for (let j = i + 1; j < Math.min(i + 10, taskEndIndex); j++) {
+      const statusLine = lines[j];
+      if (statusLine.includes('**Status**:') && statusLine.includes('[x] Completed')) {
+        if (!completedTasks.includes(taskId)) {
+          completedTasks.push(taskId);
+        }
+        break;
+      }
+    }
+  }
+
+  // Report warnings if any
+  if (warnings.length > 0) {
+    console.warn('\n⚠️  Task Consistency Warnings:');
+    warnings.forEach(w => console.warn(`   ${w}`));
+    console.warn('');
+  }
 
   return completedTasks;
+}
+
+/**
+ * Find the next task header start index
+ */
+function findNextTaskStart(lines: string[], startIndex: number): number {
+  const taskPattern = /^###\s+T-\d+/;
+
+  for (let i = startIndex; i < lines.length; i++) {
+    if (taskPattern.test(lines[i])) {
+      return i;
+    }
+  }
+
+  return lines.length;
+}
+
+/**
+ * Find the Implementation section within a task
+ */
+function findImplementationSection(lines: string[], taskStartIndex: number, taskEndIndex: number): string[] | null {
+  let inImplementation = false;
+  const implementationLines: string[] = [];
+
+  for (let i = taskStartIndex; i < taskEndIndex; i++) {
+    const line = lines[i];
+
+    if (line.includes('**Implementation**:')) {
+      inImplementation = true;
+      continue;
+    }
+
+    if (inImplementation) {
+      // Stop at next section header (**, ---, or ###)
+      if (line.trim().startsWith('**') && !line.startsWith('- [')) {
+        break;
+      }
+      if (line.trim().startsWith('---')) {
+        break;
+      }
+      if (line.trim().startsWith('###')) {
+        break;
+      }
+
+      implementationLines.push(line);
+    }
+  }
+
+  return implementationLines.length > 0 ? implementationLines : null;
+}
+
+/**
+ * Check if all checkboxes in implementation section are complete
+ */
+function checkAllCheckboxesComplete(implementationLines: string[]): boolean {
+  const checkboxes = implementationLines.filter(line => line.includes('- ['));
+
+  if (checkboxes.length === 0) {
+    return false; // No checkboxes = can't determine completion
+  }
+
+  // All checkboxes must be [x], none can be [ ]
+  const allComplete = checkboxes.every(line => line.includes('- [x]'));
+  const noneIncomplete = checkboxes.every(line => !line.includes('- [ ]'));
+
+  return allComplete && noneIncomplete;
 }
 
 /**
@@ -195,20 +337,50 @@ function countTotalTasks(lines: string[]): number {
 
 /**
  * Count completed tasks
+ *
+ * Recognizes multiple completion indicators:
+ * 1. "✅ COMPLETE" marker in task header
+ * 2. "**Status**: [x] Completed" line
+ * 3. All implementation checkboxes marked [x]
  */
 function countCompletedTasks(lines: string[]): number {
   let count = 0;
-  const taskPattern = /^###\s+(T-?\d+[-A-Z]*):?\s+/;
+  const taskPattern = /^###\s+(T-?\d+[-A-Z]*):?\s+(.+)/;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (taskPattern.test(line)) {
-      // Look ahead for status line
-      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+    const taskMatch = line.match(taskPattern);
+
+    if (taskMatch) {
+      const taskTitle = taskMatch[2];
+
+      // Strategy 1: Check for ✅ COMPLETE marker in header
+      if (taskTitle.includes('✅ COMPLETE')) {
+        count++;
+        continue;
+      }
+
+      // Strategy 2: Check for Status: [x] Completed
+      let found = false;
+      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
         const nextLine = lines[j];
         if (nextLine.includes('**Status**:') && nextLine.includes('[x] Completed')) {
           count++;
+          found = true;
           break;
+        }
+      }
+
+      if (found) continue;
+
+      // Strategy 3: Check if all implementation checkboxes are [x]
+      const taskEndIndex = findNextTaskStart(lines, i + 1);
+      const implementationSection = findImplementationSection(lines, i, taskEndIndex);
+
+      if (implementationSection) {
+        const allCheckboxesComplete = checkAllCheckboxesComplete(implementationSection);
+        if (allCheckboxesComplete) {
+          count++;
         }
       }
     }

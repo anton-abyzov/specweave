@@ -8,8 +8,8 @@
  */
 
 import fs from 'fs-extra';
-import type { CostTracker } from '../core/cost-tracker';
-import type { IncrementCostReport } from '../types/cost-tracking';
+import type { CostTracker } from '../core/cost-tracker.js';
+import type { IncrementCostReport } from '../types/cost-tracking.js';
 
 export class CostReporter {
   constructor(private costTracker: CostTracker) {}

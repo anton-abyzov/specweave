@@ -5,9 +5,9 @@
  */
 
 import { Command } from 'commander';
-import { WorkflowMonitor } from '../../core/cicd/workflow-monitor';
-import { StateManager } from '../../core/cicd/state-manager';
-import { Notifier } from '../../core/cicd/notifier';
+import { WorkflowMonitor } from '../../core/cicd/workflow-monitor.js';
+import { StateManager } from '../../core/cicd/state-manager.js';
+import { Notifier } from '../../core/cicd/notifier.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 

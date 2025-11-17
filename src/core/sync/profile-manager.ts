@@ -13,7 +13,7 @@ import {
   SyncProvider,
   ProfileValidationResult,
   SyncConfiguration,
-} from '../types/sync-profile';
+} from '../types/sync-profile.js';
 
 export class ProfileManager {
   private configPath: string;

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ServerlessPlatform } from './types';
+import { ServerlessPlatform } from './types.js';
 
 /**
  * Loads and manages serverless platform data from the knowledge base

@@ -8,12 +8,15 @@
  * 2. Syncs each Epic to GitHub using GitHubEpicSync
  * 3. Reports results and any duplicates detected
  * 4. Validates that no duplicates were created
+ *
+ * Note: Uses tsx for TypeScript execution.
+ *       Imports from plugins/ source (not dist/) for live code during development.
  */
 
 import { readdir } from 'fs/promises';
 import * as path from 'path';
-import { GitHubClientV2 } from '../../../../dist/plugins/specweave-github/lib/github-client-v2.js';
-import { GitHubEpicSync } from '../../../../dist/plugins/specweave-github/lib/github-epic-sync.js';
+import { GitHubClientV2 } from '../../../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubEpicSync } from '../../../../plugins/specweave-github/lib/github-epic-sync.js';
 
 const PROJECT_ROOT = process.cwd();
 const SPECS_DIR = path.join(PROJECT_ROOT, '.specweave', 'docs', 'internal', 'specs', 'default');

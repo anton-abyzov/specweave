@@ -2,10 +2,13 @@
 
 /**
  * Test sync for a single Epic (FS-25-11-12)
+ *
+ * Note: Uses tsx for TypeScript execution.
+ *       Imports from plugins/ source (not dist/) for live code during development.
  */
 
-import { GitHubClientV2 } from '../../../../dist/plugins/specweave-github/lib/github-client-v2.js';
-import { GitHubEpicSync } from '../../../../dist/plugins/specweave-github/lib/github-epic-sync.js';
+import { GitHubClientV2 } from '../../../../plugins/specweave-github/lib/github-client-v2.js';
+import { GitHubEpicSync } from '../../../../plugins/specweave-github/lib/github-epic-sync.js';
 
 async function main() {
   console.log('🧪 Testing sync for FS-25-11-12 (External Tool Status Sync)...\n');

@@ -78,7 +78,102 @@ function parseTaskStatus(lines) {
 }
 function detectCompletedTasks(lines) {
   const completedTasks = [];
+  const warnings = [];
+  const taskPattern = /^###\s+(T-\d+[-A-Z]*):?\s+(.+)/;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const taskMatch = line.match(taskPattern);
+    if (!taskMatch) continue;
+    const taskId = taskMatch[1];
+    const taskTitle = taskMatch[2];
+    const hasCompleteMarker = taskTitle.includes("\u2705 COMPLETE");
+    const taskEndIndex = findNextTaskStart(lines, i + 1);
+    const implementationSection = findImplementationSection(lines, i, taskEndIndex);
+    let allCheckboxesComplete = false;
+    if (implementationSection) {
+      allCheckboxesComplete = checkAllCheckboxesComplete(implementationSection);
+    }
+    if (hasCompleteMarker && implementationSection) {
+      if (allCheckboxesComplete) {
+        if (!completedTasks.includes(taskId)) {
+          completedTasks.push(taskId);
+        }
+      } else {
+        warnings.push(`${taskId}: Header has \u2705 COMPLETE but not all checkboxes checked`);
+      }
+      continue;
+    }
+    if (hasCompleteMarker && !implementationSection) {
+      if (!completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+      }
+      continue;
+    }
+    if (!hasCompleteMarker && implementationSection && allCheckboxesComplete) {
+      warnings.push(`${taskId}: All checkboxes checked but header missing \u2705 COMPLETE`);
+      if (!completedTasks.includes(taskId)) {
+        completedTasks.push(taskId);
+      }
+      continue;
+    }
+    for (let j = i + 1; j < Math.min(i + 10, taskEndIndex); j++) {
+      const statusLine = lines[j];
+      if (statusLine.includes("**Status**:") && statusLine.includes("[x] Completed")) {
+        if (!completedTasks.includes(taskId)) {
+          completedTasks.push(taskId);
+        }
+        break;
+      }
+    }
+  }
+  if (warnings.length > 0) {
+    console.warn("\n\u26A0\uFE0F  Task Consistency Warnings:");
+    warnings.forEach((w) => console.warn(`   ${w}`));
+    console.warn("");
+  }
   return completedTasks;
+}
+function findNextTaskStart(lines, startIndex) {
+  const taskPattern = /^###\s+T-\d+/;
+  for (let i = startIndex; i < lines.length; i++) {
+    if (taskPattern.test(lines[i])) {
+      return i;
+    }
+  }
+  return lines.length;
+}
+function findImplementationSection(lines, taskStartIndex, taskEndIndex) {
+  let inImplementation = false;
+  const implementationLines = [];
+  for (let i = taskStartIndex; i < taskEndIndex; i++) {
+    const line = lines[i];
+    if (line.includes("**Implementation**:")) {
+      inImplementation = true;
+      continue;
+    }
+    if (inImplementation) {
+      if (line.trim().startsWith("**") && !line.startsWith("- [")) {
+        break;
+      }
+      if (line.trim().startsWith("---")) {
+        break;
+      }
+      if (line.trim().startsWith("###")) {
+        break;
+      }
+      implementationLines.push(line);
+    }
+  }
+  return implementationLines.length > 0 ? implementationLines : null;
+}
+function checkAllCheckboxesComplete(implementationLines) {
+  const checkboxes = implementationLines.filter((line) => line.includes("- ["));
+  if (checkboxes.length === 0) {
+    return false;
+  }
+  const allComplete = checkboxes.every((line) => line.includes("- [x]"));
+  const noneIncomplete = checkboxes.every((line) => !line.includes("- [ ]"));
+  return allComplete && noneIncomplete;
 }
 function markTaskComplete(content, taskId) {
   let updated = content;
@@ -101,15 +196,32 @@ function countTotalTasks(lines) {
 }
 function countCompletedTasks(lines) {
   let count = 0;
-  const taskPattern = /^###\s+(T-?\d+[-A-Z]*):?\s+/;
+  const taskPattern = /^###\s+(T-?\d+[-A-Z]*):?\s+(.+)/;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (taskPattern.test(line)) {
-      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+    const taskMatch = line.match(taskPattern);
+    if (taskMatch) {
+      const taskTitle = taskMatch[2];
+      if (taskTitle.includes("\u2705 COMPLETE")) {
+        count++;
+        continue;
+      }
+      let found = false;
+      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
         const nextLine = lines[j];
         if (nextLine.includes("**Status**:") && nextLine.includes("[x] Completed")) {
           count++;
+          found = true;
           break;
+        }
+      }
+      if (found) continue;
+      const taskEndIndex = findNextTaskStart(lines, i + 1);
+      const implementationSection = findImplementationSection(lines, i, taskEndIndex);
+      if (implementationSection) {
+        const allCheckboxesComplete = checkAllCheckboxesComplete(implementationSection);
+        if (allCheckboxesComplete) {
+          count++;
         }
       }
     }

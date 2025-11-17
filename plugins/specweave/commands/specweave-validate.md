@@ -57,34 +57,49 @@ Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--alwa
 
 ### Step 2: Run Rule-Based Validation (Always)
 
-Run 125+ validation rules across 5 categories:
+Run 130+ validation rules across 6 categories:
 
 **CRITICAL: Always run structure validation FIRST to prevent duplicate task files**
 
-1. **Structure Rules (5 checks)** - NEW in v0.18.4:
+1. **Structure Rules (5 checks)** - v0.18.4:
    - Only ONE tasks.md file exists (no tasks-detailed.md, tasks-final.md)
    - Only allowed root files present (spec.md, plan.md, tasks.md, metadata.json, README.md)
    - Unknown files moved to subdirectories (reports/, scripts/, logs/)
    - No root-level pollution (analysis.md, summary.md moved to reports/)
    - Metadata.json structure valid
 
-2. **Consistency Rules (47 checks)**:
+2. **Three-File Canonical Structure (10 checks)** - ADR-0047 (v0.21.3):
+   - **tasks.md validations (CRITICAL)**:
+     - ❌ Does NOT contain "**Acceptance Criteria**:" sections
+     - ✅ MUST have "**Implementation**:" sections for each task
+     - ✅ MUST have "**Test Plan (BDD)**" sections
+     - ✅ MUST have **AC-IDs** references linking to spec.md
+     - ❌ Does NOT contain "As a user..." user story language
+   - **spec.md validations**:
+     - ❌ Does NOT contain task IDs (T-001, T-002, etc.)
+     - ❌ Does NOT contain technical class/file names
+     - ✅ MUST have "## Acceptance Criteria" section
+   - **plan.md validations**:
+     - ❌ Does NOT contain "Acceptance Criteria" sections
+     - ❌ Does NOT contain task checkboxes
+
+3. **Consistency Rules (47 checks)**:
    - User stories in spec.md → sections in plan.md
    - Components in plan.md → tasks in tasks.md
    - Test cases (TC-0001) in spec.md → tests.md coverage
    - Cross-document consistency (IDs, priorities, dependencies)
 
-3. **Completeness Rules (23 checks)**:
+4. **Completeness Rules (23 checks)**:
    - spec.md: Frontmatter, problem statement, user stories, acceptance criteria
    - plan.md: Architecture, components, data model, API contracts, security
    - tasks.md: Task IDs, descriptions, priorities, estimates
 
-4. **Quality Rules (31 checks)**:
+5. **Quality Rules (31 checks)**:
    - spec.md: Technology-agnostic, testable acceptance criteria
    - plan.md: Technical details, ADRs exist, security addressed
    - tasks.md: Actionable, reasonable estimates (<1 day)
 
-5. **Traceability Rules (19 checks)**:
+6. **Traceability Rules (19 checks)**:
    - TC-0001 format, sequential numbering
    - ADR references exist
    - Diagram references valid
@@ -95,8 +110,9 @@ Run 125+ validation rules across 5 categories:
 VALIDATION RESULTS: Increment 0001-authentication
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Rule-Based Validation: PASSED (125/125 checks)
-   ✓ Structure (5/5) [NEW]
+✅ Rule-Based Validation: PASSED (135/135 checks)
+   ✓ Structure (5/5)
+   ✓ Three-File Canonical (10/10) [ADR-0047]
    ✓ Consistency (47/47)
    ✓ Completeness (23/23)
    ✓ Quality (31/31)
@@ -113,8 +129,9 @@ Files validated:
 
 **If errors found**:
 ```
-❌ Rule-Based Validation: FAILED (118/125 checks)
+❌ Rule-Based Validation: FAILED (122/135 checks)
    ❌ Structure (3/5) - 2 CRITICAL ERRORS
+   ❌ Three-File Canonical (7/10) - 3 CRITICAL ERRORS [ADR-0047]
    ✓ Consistency (45/47) - 2 errors
    ✓ Completeness (23/23)
    ⚠️  Quality (28/31) - 3 warnings
@@ -127,6 +144,15 @@ CRITICAL STRUCTURE ERRORS (MUST FIX FIRST):
   ❌ Unknown root-level file: analysis.md
      → Move to reports/ directory
 
+CRITICAL THREE-FILE VIOLATIONS (ADR-0047):
+  🚨 tasks.md:45 - Contains "**Acceptance Criteria**:" section
+     → ACs belong in spec.md ONLY
+     → Replace with "**Implementation**:" and add AC-ID references
+  🚨 tasks.md:78 - Task T-003 missing "**Implementation**:" section
+     → Add checkable implementation steps
+  🚨 spec.md:102 - Contains task ID reference "T-001"
+     → Tasks belong in tasks.md, use AC-IDs to link instead
+
 ERRORS (2):
   🔴 spec.md:45 - Missing acceptance criteria for US-003
   🔴 Inconsistency: spec.md mentions "real-time updates" but plan.md doesn't address it
@@ -138,9 +164,13 @@ WARNINGS (3):
 
 Action required:
 1. ❗ FIX STRUCTURE ERRORS FIRST (single source of truth violation)
-2. Fix missing acceptance criteria for US-003
-3. Address "real-time updates" in plan.md or remove from spec.md
-4. Consider breaking down T012 into smaller tasks
+2. 🚨 FIX THREE-FILE VIOLATIONS (ADR-0047 compliance):
+   - Run refactoring script: .specweave/increments/XXXX/scripts/refactor-tasks-ac-to-implementation.sh
+   - Or manually replace "**Acceptance Criteria**:" with "**Implementation**:"
+   - Add "**AC-IDs**: AC-US-XX-YY" references to link tasks to spec.md
+3. Fix missing acceptance criteria for US-003
+4. Address "real-time updates" in plan.md or remove from spec.md
+5. Consider breaking down T012 into smaller tasks
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

@@ -1,4 +1,4 @@
-import { SpecContent, UserStory, TaskLink, AcceptanceCriterion, EnhancedSpecContent } from './types';
+import { SpecContent, UserStory, TaskLink, AcceptanceCriterion, EnhancedSpecContent } from './types.js';
 
 // Re-export for backward compatibility
 export { EnhancedSpecContent };

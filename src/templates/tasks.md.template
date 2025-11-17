@@ -23,16 +23,33 @@ Use this template for each task:
 **Priority**: P0 | P1 | P2 | P3
 **Estimate**: X hours
 **Status**: pending | in_progress | completed | blocked
+**AC-IDs**: AC-US-XXX-YY (links to spec.md acceptance criteria)
 **GitHub Issue**: #NNN (auto-populated after sync)
 **Assignee**: @username (optional)
 
 **Description**:
 Brief description of what this task accomplishes.
 
-**Subtasks** (optional):
-- [ ] S-XXX-01: Subtask description (Xmin)
-- [ ] S-XXX-02: Subtask description (Xmin)
-- [ ] S-XXX-03: Subtask description (Xmin)
+**Implementation**:
+- [ ] Create/update ClassName with method()
+- [ ] Implement core feature logic
+- [ ] Add error handling for edge cases
+- [ ] Add JSDoc comments
+- [ ] Update related type definitions
+
+**Test Plan** (BDD):
+- **Given** [precondition describing initial state]
+- **When** [action or event that triggers behavior]
+- **Then** [expected result or outcome]
+
+**Test Cases**:
+- Unit (`class-name.test.ts`):
+  - method_withValidInput_returnsExpectedResult
+  - method_withInvalidInput_throwsError
+  - Coverage: >95%
+- Integration (`feature.integration.test.ts`):
+  - fullWorkflow_happyPath_succeeds
+  - Coverage: >85%
 
 **Files to Create** (if applicable):
 - `path/to/new/file.ts`
@@ -42,19 +59,14 @@ Brief description of what this task accomplishes.
 - `path/to/existing/file.ts`
 - `path/to/another/existing.md`
 
-**Implementation** (optional - code snippets, examples):
+**Code Examples** (optional - snippets for clarity):
 ```typescript
-// Example implementation
+// Example implementation approach
 export function exampleFunction() {
   // Code here
 }
 ```
 ```
-
-**Acceptance Criteria**:
-- ✅ Criterion 1
-- ✅ Criterion 2
-- ✅ Criterion 3
 
 **Dependencies** (optional - tasks that must complete first):
 - T-001 (must complete first)
@@ -75,25 +87,40 @@ export function exampleFunction() {
 **Priority**: P0
 **Estimate**: 2 hours
 **Status**: pending
+**AC-IDs**: AC-US1-01, AC-US1-02
 **GitHub Issue**: (will be populated after sync)
 **Assignee**: (assign in GitHub after sync)
 
 **Description**:
-This is an example task showing the enhanced template format with GitHub sync fields.
+This is an example task showing the canonical template format following ADR-0047.
 
-**Subtasks**:
-- [ ] S-001-01: First subtask (30min)
-- [ ] S-001-02: Second subtask (45min)
-- [ ] S-001-03: Third subtask (30min)
-- [ ] S-001-04: Final polish (15min)
+**Implementation**:
+- [ ] Define ExampleInterface with id and name fields
+- [ ] Create ExampleClass implementing ExampleInterface
+- [ ] Add constructor with parameter properties
+- [ ] Add JSDoc comments for interface and class
+- [ ] Export both interface and class
+
+**Test Plan** (BDD):
+- **Given** ExampleClass constructor receives valid id and name
+- **When** new ExampleClass('123', 'Test') is instantiated
+- **Then** instance has correct id and name properties
+
+**Test Cases**:
+- Unit (`example-class.test.ts`):
+  - constructor_withValidParams_createsInstance
+  - constructor_withEmptyId_throwsError
+  - interface_conformsToContract
+  - Coverage: >95%
 
 **Files to Create**:
 - `src/example/new-file.ts`
+- `tests/unit/example/example-class.test.ts`
 
 **Files to Modify**:
 - `src/example/existing-file.ts`
 
-**Implementation**:
+**Code Examples**:
 ```typescript
 export interface ExampleInterface {
   id: string;
@@ -104,12 +131,6 @@ export class ExampleClass implements ExampleInterface {
   constructor(public id: string, public name: string) {}
 }
 ```
-
-**Acceptance Criteria**:
-- ✅ All interfaces defined
-- ✅ TypeScript compiles without errors
-- ✅ Unit tests pass
-- ✅ Documentation comments added
 
 **Dependencies**:
 None (foundation task)
@@ -231,22 +252,19 @@ As you work on tasks:
 - **Priority**: P0 (critical), P1 (high), P2 (medium), P3 (low)
 - **Estimate**: Hours or days (e.g., "2 hours", "3 days")
 - **Status**: pending, in_progress, completed, blocked
+- **AC-IDs**: Links to spec.md acceptance criteria (e.g., "AC-US1-01, AC-US1-02")
 - **Description**: What this task accomplishes
-- **Acceptance Criteria**: How we know it's done
+- **Implementation**: Checkable technical steps to complete the task
+- **Test Plan (BDD)**: Given-When-Then test scenarios
+- **Test Cases**: Unit and integration test cases with coverage targets
 
 ### Optional Fields (Enhanced for GitHub Sync)
 - **GitHub Issue**: Auto-populated after `/specweave.github.sync-tasks`
 - **Assignee**: GitHub username (assign in GitHub UI or via `@username`)
-- **Subtasks**: Granular steps (15-60min each, shown as checkboxes in GitHub)
 - **Dependencies**: Tasks that must complete first (linked in GitHub via "depends on")
 - **Blocks**: Tasks waiting on this one (linked in GitHub via "blocks")
-- **Files to Create/Modify**: Context for reviewers
-- **Implementation**: Code snippets, examples, pseudocode
-
-### Subtask Naming Convention
-- Format: `S-{TASK_ID}-{SUBTASK_NUM}: Description (time)`
-- Example: `S-001-01: Define interfaces (30min)`
-- Numbering: Zero-padded 2 digits (01, 02, 03, ...)
+- **Files to Create/Modify**: Context for reviewers and developers
+- **Code Examples**: Snippets showing implementation approach (TypeScript, pseudocode, etc.)
 
 ### Task Status Lifecycle
 1. **pending** - Not started, in backlog
