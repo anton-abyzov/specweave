@@ -2,8 +2,9 @@
 increment: 0039-ultra-smart-next-command
 title: "Ultra-Smart Next Command - Intelligent Workflow Orchestrator"
 priority: P1
-status: planning
+status: in-progress
 created: 2025-11-16
+started: 2025-11-17
 structure: user-stories
 project: specweave
 test_mode: TDD
