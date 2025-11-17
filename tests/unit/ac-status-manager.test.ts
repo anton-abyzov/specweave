@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import * as os from 'os';
 
 import { ACStatusManager } from '../../src/core/increment/ac-status-manager.js';
 import * as fs from 'fs';
@@ -6,7 +7,8 @@ import * as path from 'path';
 
 describe('ACStatusManager.parseTasksForACStatus', () => {
   let manager: ACStatusManager;
-  const testRoot = path.join(__dirname, '../fixtures/ac-status-test');
+  // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+  const testRoot = path.join(os.tmpdir(), 'specweave-test-ac-status-manager-' + Date.now());
 
   beforeEach(() => {
     manager = new ACStatusManager(testRoot);

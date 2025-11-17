@@ -12,9 +12,11 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 
-const TEST_PROJECT_DIR = path.join(__dirname, '../../.test-spec-sync');
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-e2e-spec-sync-' + Date.now());
 
 test.describe('Spec Synchronization E2E Flow', () => {
   test.beforeAll(() => {

@@ -8,9 +8,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
+import * as os from 'os';
 import { SpecDistributor } from '../../../src/core/living-docs/SpecDistributor.js';
 
-const TEST_DIR = '.specweave/test-backward-compat';
+// ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+const TEST_DIR = path.join(os.tmpdir(), 'specweave-test-backward-compat-' + Date.now());
 const TEST_INCREMENT = path.join(TEST_DIR, 'increments/0001-test');
 const TEST_LIVING_DOCS = path.join(TEST_DIR, 'docs/user-stories');
 

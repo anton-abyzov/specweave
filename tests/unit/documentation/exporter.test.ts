@@ -16,12 +16,14 @@ import {
 } from '../../../plugins/specweave-kafka/lib/documentation/exporter.js';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
 describe('DocumentationExporter', () => {
   let testOutputDir: string;
 
   beforeEach(() => {
-    testOutputDir = path.join(__dirname, 'test-exports');
+    // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+    testOutputDir = path.join(os.tmpdir(), 'specweave-test-documentation-exporter-' + Date.now());
     if (!fs.existsSync(testOutputDir)) {
       fs.mkdirSync(testOutputDir, { recursive: true });
     }

@@ -22,6 +22,7 @@ import { JiraIncrementalMapper } from '../../src/integrations/jira/jira-incremen
 import { credentialsManager } from '../../src/core/credentials-manager';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 
 interface TestResult {
   name: string;
@@ -47,9 +48,8 @@ class JiraIncrementalSyncTest {
     this.client = new JiraClient();
     this.mapper = new JiraIncrementalMapper(this.client);
 
-    // Use isolated test directory OUTSIDE .specweave/
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    this.testProjectRoot = path.join(__dirname, '../../../fixtures', `jira-test-${timestamp}`);
+    // ✅ SAFE: Use OS temp directory with unique timestamp
+    this.testProjectRoot = path.join(os.tmpdir(), `specweave-test-jira-incremental-${Date.now()}`);
   }
 
   async run(): Promise<void> {
