@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { ArchitectureDecisionEngine } from '../../../src/init/architecture/ArchitectureDecisionEngine.js.js';
-import type { ArchitectureInput } from '../../../src/init/architecture/ArchitectureDecisionEngine.js.js';
+import { ArchitectureDecisionEngine } from '../../../src/init/architecture/ArchitectureDecisionEngine.js';
+import type { ArchitectureInput } from '../../../src/init/architecture/ArchitectureDecisionEngine.js';
 
 describe('ArchitectureDecisionEngine', () => {
   const engine = new ArchitectureDecisionEngine();

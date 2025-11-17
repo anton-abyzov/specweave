@@ -7,10 +7,10 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { ProjectGenerator } from '../../../src/init/architecture/ProjectGenerator.js.js';
-import type { ArchitectureType } from '../../../src/init/architecture/types.js.js';
-import type { ComplianceStandard } from '../../../src/init/compliance/types.js.js';
-import type { VisionInsights } from '../../../src/init/research/types.js.js';
+import { ProjectGenerator } from '../../../src/init/architecture/ProjectGenerator.js';
+import type { ArchitectureType } from '../../../src/init/architecture/types.js';
+import type { ComplianceStandard } from '../../../src/init/compliance/types.js';
+import type { VisionInsights } from '../../../src/init/research/types.js';
 
 describe('ProjectGenerator', () => {
   const generator = new ProjectGenerator();

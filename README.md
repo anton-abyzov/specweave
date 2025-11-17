@@ -232,14 +232,33 @@ Claude implements Task 1:
 # Install SpecWeave
 npm install -g specweave
 
-# Initialize new project
+# Initialize with Strategic Init (AI-powered research)
 specweave init my-project
+
+# Strategic Init guides you through 6 phases:
+# Phase 1: Vision & Market Research
+# Phase 2: Scaling & Performance Goals
+# Phase 3: Data & Compliance Detection
+# Phase 4: Budget & Cloud Credits
+# Phase 5: Methodology & Organization
+# Phase 6: Repository Selection (optional)
+
+# Result: Architecture recommendation, team plan, cost estimates
 cd my-project
 
 # Start building
 /specweave:increment "User authentication"  # Plan increment
 /specweave:do                               # Implement tasks
 /specweave:done 0001                        # Complete increment
+```
+
+### Multi-Project Setup
+```bash
+# Initialize with multiple projects
+specweave init --projects backend,frontend,mobile
+
+# Tasks automatically split by project keyword detection
+# Each project gets its own user stories and GitHub issues
 ```
 
 ### Brownfield (Existing Project)
@@ -255,7 +274,7 @@ specweave init .
 /specweave:increment "Add dark mode"
 ```
 
-**[→ Complete Quickstart Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)**
+**[→ Complete Quickstart Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)** | **[→ Strategic Init Guide](https://spec-weave.com/docs/guides/strategic-init)**
 
 ---
 
@@ -296,12 +315,23 @@ specweave init .
 
 ## Key Features
 
+### Strategic Init - AI-Powered Architecture Planning (NEW!)
+
+- 🎯 **Research-Driven Discovery** - Answer 6 phases of questions about your product
+- 🏗️ **Architecture Recommendations** - Tech stack, scaling strategy, cost projections
+- 🔒 **Compliance Detection** - Auto-detects 30+ standards (HIPAA, GDPR, SOC2, etc.)
+- 👥 **Smart Team Planning** - Current and future team structure, hiring roadmap
+- ☁️ **Cloud Credits Discovery** - AWS Activate, Azure Startup, GCP eligibility
+- 📦 **Repository Selection** - Batch select 1-100+ repos with intelligent routing
+
+### Production Features
+
 - 🤖 **AI-Native Enterprise Sync** - Claude updates JIRA/GitHub/ADO automatically (bidirectional!)
 - 📚 **Living Documentation** - Auto-updates after every task (no manual sync!)
 - 🧪 **Test-Aware Planning** - Embedded tests in BDD format (Given/When/Then)
 - 🎯 **Disciplined Progress** - Can't start increment N+1 until N is DONE
 - ⏸️ **Intelligent Pausing** - Auto-detects blockers, pauses with context, resumes when ready
-- 🔄 **Smart Reopen (NEW!)** - Report "broken" → Auto-detects what to reopen, respects WIP limits
+- 🔄 **Smart Reopen** - Report "broken" → Auto-detects what to reopen, respects WIP limits
 - 👥 **Multi-Project Tracking** - Unlimited JIRA/ADO/GitHub repos, intelligent routing
 - 🤖 **AI Agents** - PM, Architect, Quality Judge guide your work
 - 🔧 **CI/CD Auto-Fix** - Workflow failures auto-fixed by Claude (just mention `@claude`)
