@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Cluster Config Manager
  *
@@ -6,10 +8,10 @@
  * @module cluster-config-manager.test
  */
 
-import { describe, test, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ClusterConfigManager } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-config-manager';
+import { ClusterConfigManager } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-config-manager.js';
 
 describe('ClusterConfigManager', () => {
   let configManager: ClusterConfigManager;

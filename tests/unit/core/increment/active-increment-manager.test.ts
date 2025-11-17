@@ -1,16 +1,18 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for ActiveIncrementManager
  *
  * Tests the core logic for managing active increment state
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { ActiveIncrementManager } from '../../../../src/core/increment/active-increment-manager.js';
-import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js';
-import { IncrementStatus, IncrementType } from '../../../../src/core/types/increment-metadata.js';
+import { ActiveIncrementManager } from '../../../../src/core/increment/active-increment-manager.js.js';
+import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js.js';
+import { IncrementStatus, IncrementType } from '../../../../src/core/types/increment-metadata.js.js';
 
 describe('ActiveIncrementManager', () => {
   let tempDir: string;

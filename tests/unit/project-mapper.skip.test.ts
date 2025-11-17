@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Project Mapper
  *
  * Tests intelligent classification of user stories to projects
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import {
   mapUserStoryToProjects,
   getPrimaryProject,
@@ -13,7 +15,7 @@ import {
   type UserStory,
   type ProjectRule,
   type ProjectMapperConfig
-} from '../../src/utils/project-mapper.js';
+} from '../../src/utils/project-mapper.js.js';
 
 describe('Project Mapper', () => {
   describe('mapUserStoryToProjects', () => {

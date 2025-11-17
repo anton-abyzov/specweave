@@ -1,11 +1,13 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for FeatureIDManager - Ensures no duplicate feature IDs
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { FeatureIDManager } from '../../src/core/living-docs/feature-id-manager.js';
+import { FeatureIDManager } from '../../src/core/living-docs/feature-id-manager.js.js';
 
 describe('FeatureIDManager', () => {
   const testProjectRoot = path.join(__dirname, '../fixtures/test-project');

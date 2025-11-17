@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Dead Letter Queue (DLQ)
  *
@@ -6,23 +8,23 @@
  * @module dead-letter-queue.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   DeadLetterQueueHandler,
   DLQConfig,
   FailedMessage,
   RetryStrategy,
-} from '../../../plugins/specweave-kafka/lib/reliability/dead-letter-queue';
+} from '../../../plugins/specweave-kafka/lib/reliability/dead-letter-queue.js';
 import { Kafka, Producer, Consumer, EachMessagePayload } from 'kafkajs';
 
 // Mock kafkajs
-jest.mock('kafkajs');
+vi.mock('kafkajs');
 
 describe('DeadLetterQueueHandler', () => {
   let kafka: Kafka;
   let dlqHandler: DeadLetterQueueHandler;
-  let mockProducer: jest.Mocked<Producer>;
-  let mockConsumer: jest.Mocked<Consumer>;
+  let mockProducer: anyed<Producer>;
+  let mockConsumer: anyed<Consumer>;
 
   beforeEach(() => {
     kafka = new Kafka({
@@ -31,16 +33,16 @@ describe('DeadLetterQueueHandler', () => {
     });
 
     mockProducer = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
     } as any;
 
     mockConsumer = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      subscribe: jest.fn().mockResolvedValue(undefined),
-      run: jest.fn(),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      subscribe: vi.fn().mockResolvedValue(undefined),
+      run: vi.fn(),
     } as any;
 
     const config: DLQConfig = {
@@ -145,7 +147,7 @@ describe('DeadLetterQueueHandler', () => {
 
       await dlqHandler.sendToDLQ(failedMessage);
 
-      const sentMessage = (mockProducer.send as jest.Mock).mock.calls[0][0].messages[0];
+      const sentMessage = (mockProducer.send as any).mock.calls[0][0].messages[0];
 
       expect(sentMessage.headers['dlq.error-message']).toBe(
         'JSON parse error: Unexpected token'
@@ -174,7 +176,7 @@ describe('DeadLetterQueueHandler', () => {
 
       await dlqHandler.sendToDLQ(failedMessage);
 
-      const sentMessage = (mockProducer.send as jest.Mock).mock.calls[0][0].messages[0];
+      const sentMessage = (mockProducer.send as any).mock.calls[0][0].messages[0];
 
       expect(sentMessage.headers['dlq.original-partition']).toBe('2');
       expect(sentMessage.headers['dlq.original-offset']).toBe('999');
@@ -212,7 +214,7 @@ describe('DeadLetterQueueHandler', () => {
     });
 
     test('should send to DLQ after max retries exhausted', async () => {
-      const messageHandler = jest.fn().mockRejectedValue(new Error('Permanent failure'));
+      const messageHandler = vi.fn().mockRejectedValue(new Error('Permanent failure'));
 
       const message = {
         topic: 'orders',
@@ -351,7 +353,7 @@ describe('DeadLetterQueueHandler', () => {
     });
 
     test('should support per-message retry configuration', async () => {
-      const messageHandler = jest.fn().mockRejectedValue(new Error('Test error'));
+      const messageHandler = vi.fn().mockRejectedValue(new Error('Test error'));
 
       const message = {
         topic: 'orders',
@@ -573,7 +575,7 @@ describe('DeadLetterQueueHandler', () => {
 
   describe('Performance', () => {
     test('should handle high failure rates efficiently', async () => {
-      const messageHandler = jest.fn().mockRejectedValue(new Error('Always fails'));
+      const messageHandler = vi.fn().mockRejectedValue(new Error('Always fails'));
 
       const iterations = 100;
       const startTime = Date.now();

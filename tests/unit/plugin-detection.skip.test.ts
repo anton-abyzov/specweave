@@ -1,14 +1,16 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Plugin Detection Utility Tests
  *
  * Tests the plugin detection logic for various tech stacks
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { scanProjectStructure, detectPlugins, formatDetectedPlugins, generateInstallCommands } from '../../src/utils/plugin-detection';
+import { scanProjectStructure, detectPlugins, formatDetectedPlugins, generateInstallCommands } from '../../src/utils/plugin-detection.js';
 
 describe('Plugin Detection Utility', () => {
   let tempDir: string;

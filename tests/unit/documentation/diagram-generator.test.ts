@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Diagram Generator
  *
@@ -6,13 +8,13 @@
  * @module diagram-generator.test
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect } from 'vitest';
 import {
   DiagramGenerator,
   DataFlowConfig,
   ArchitectureConfig,
   MultiDCConfig,
-} from '../../../plugins/specweave-kafka/lib/documentation/diagram-generator';
+} from '../../../plugins/specweave-kafka/lib/documentation/diagram-generator.js';
 
 describe('DiagramGenerator', () => {
   describe('generateDataFlowDiagram', () => {

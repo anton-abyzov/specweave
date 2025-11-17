@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Documentation Exporter
  *
@@ -6,12 +8,12 @@
  * @module exporter.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   DocumentationExporter,
   ExportFormat,
   ExportOptions,
-} from '../../../plugins/specweave-kafka/lib/documentation/exporter';
+} from '../../../plugins/specweave-kafka/lib/documentation/exporter.js';
 import * as fs from 'fs';
 import * as path from 'path';
 

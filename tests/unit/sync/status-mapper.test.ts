@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Status Mapper
  *
@@ -5,7 +7,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { StatusMapper } from '../../../src/core/sync/status-mapper';
+import { StatusMapper } from '../../../src/core/sync/status-mapper.js';
 
 describe('StatusMapper', () => {
   const mockConfig = {

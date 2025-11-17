@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: ProjectManager Caching Mechanism
  *
@@ -5,16 +7,16 @@
  * Coverage Target: 95%
  */
 
-import { ProjectManager } from '../../../src/core/project-manager';
-import { ConfigManager } from '../../../src/core/config-manager';
-import { benchmark } from '../../utils/benchmark';
+import { ProjectManager } from '../../../src/core/project-manager.js';
+import { ConfigManager } from '../../../src/core/config-manager.js';
+import { benchmark } from '../../utils/benchmark.js';
 
 // Mock ConfigManager
-jest.mock('../../../src/core/config-manager');
-jest.mock('fs-extra');
+vi.mock('../../../src/core/config-manager');
+vi.mock('fs-extra');
 
 // Mock auto-detect function
-jest.mock('../../../src/utils/project-detection', () => ({
+vi.mock('../../../src/utils/project-detection', () => ({
   autoDetectProjectIdSync: jest.fn(() => 'default'),
   formatProjectName: jest.fn((id: string) => {
     return id.split('-').map(word =>
@@ -25,18 +27,18 @@ jest.mock('../../../src/utils/project-detection', () => ({
 
 describe('ProjectManager - Caching Mechanism', () => {
   let projectManager: ProjectManager;
-  let mockConfigManager: jest.Mocked<ConfigManager>;
+  let mockConfigManager: anyed<ConfigManager>;
   const testRoot = '/test/project/root';
 
   beforeEach(() => {
     // Clear all mocks before each test
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create ProjectManager instance
     projectManager = new ProjectManager(testRoot);
 
     // Get mocked ConfigManager instance
-    mockConfigManager = (projectManager as any).configManager as jest.Mocked<ConfigManager>;
+    mockConfigManager = (projectManager as any).configManager as anyed<ConfigManager>;
 
     // Default mock: multi-project mode
     mockConfigManager.load.mockReturnValue({

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: OpenTelemetry Instrumentation
  *
@@ -6,17 +8,17 @@
  * @module opentelemetry-instrumentation.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   KafkaOpenTelemetry,
   TraceContext,
   SpanKind,
-} from '../../../plugins/specweave-kafka/lib/observability/opentelemetry-instrumentation';
+} from '../../../plugins/specweave-kafka/lib/observability/opentelemetry-instrumentation.js';
 import { Kafka, Producer, Consumer, EachMessagePayload } from 'kafkajs';
 
 // Mock OpenTelemetry SDK
-jest.mock('@opentelemetry/sdk-node');
-jest.mock('@opentelemetry/instrumentation-kafkajs');
+vi.mock('@opentelemetry/sdk-node');
+vi.mock('@opentelemetry/instrumentation-kafkajs');
 
 describe('KafkaOpenTelemetry', () => {
   let kafka: Kafka;
@@ -80,7 +82,7 @@ describe('KafkaOpenTelemetry', () => {
     });
 
     test('should create span for produce operation', async () => {
-      const spanMock = jest.fn();
+      const spanMock = vi.fn();
       otel.on('span-started', spanMock);
 
       await producer.send({
@@ -124,7 +126,7 @@ describe('KafkaOpenTelemetry', () => {
     });
 
     test('should handle produce errors with span status', async () => {
-      const spanMock = jest.fn();
+      const spanMock = vi.fn();
       otel.on('span-ended', spanMock);
 
       try {
@@ -181,7 +183,7 @@ describe('KafkaOpenTelemetry', () => {
     });
 
     test('should create span for consume operation', async () => {
-      const spanMock = jest.fn();
+      const spanMock = vi.fn();
       otel.on('span-started', spanMock);
 
       await otel.consumeWithTrace(consumer, async ({ message }: EachMessagePayload) => {
@@ -247,7 +249,7 @@ describe('KafkaOpenTelemetry', () => {
     });
 
     test('should handle consumer errors with span status', async () => {
-      const spanMock = jest.fn();
+      const spanMock = vi.fn();
       otel.on('span-ended', spanMock);
 
       try {

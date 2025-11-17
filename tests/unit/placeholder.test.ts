@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Placeholder test to ensure Jest runs successfully
  * TODO: Add actual unit tests as framework functionality is implemented

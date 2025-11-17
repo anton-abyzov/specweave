@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Kafka Connect
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/integrations/kafka-connect
  */
 
-import { KafkaConnectClient, SourceConnector, SinkConnector, ConnectorConfig, Transformation } from '../../../plugins/specweave-kafka/lib/integrations/kafka-connect';
+import { KafkaConnectClient, SourceConnector, SinkConnector, ConnectorConfig, Transformation } from '../../../plugins/specweave-kafka/lib/integrations/kafka-connect.js';
 
 describe('KafkaConnect - Client Management', () => {
   let client: KafkaConnectClient;

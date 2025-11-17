@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Topology Generator
  *
@@ -6,24 +8,24 @@
  * @module topology-generator.test
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
-import { TopologyGenerator } from '../../../plugins/specweave-kafka/lib/documentation/topology-generator';
+import { describe, test, expect, beforeEach, jest } from 'vitest';
+import { TopologyGenerator } from '../../../plugins/specweave-kafka/lib/documentation/topology-generator.js';
 import { Admin } from 'kafkajs';
 
 // Mock kafkajs Admin
-jest.mock('kafkajs');
+vi.mock('kafkajs');
 
 describe('TopologyGenerator', () => {
   let topologyGenerator: TopologyGenerator;
-  let mockAdmin: jest.Mocked<Admin>;
+  let mockAdmin: anyed<Admin>;
 
   beforeEach(() => {
     mockAdmin = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      describeCluster: jest.fn(),
-      listTopics: jest.fn(),
-      fetchTopicMetadata: jest.fn(),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      describeCluster: vi.fn(),
+      listTopics: vi.fn(),
+      fetchTopicMetadata: vi.fn(),
     } as any;
 
     topologyGenerator = new TopologyGenerator(mockAdmin);

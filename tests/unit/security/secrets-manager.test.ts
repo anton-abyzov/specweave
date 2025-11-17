@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Secrets Manager
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/security/secrets-manager
  */
 
-import { SecretsManager, VaultIntegration, RotationPolicy, EnvironmentManager } from '../../../plugins/specweave-kafka/lib/security/secrets-manager';
+import { SecretsManager, VaultIntegration, RotationPolicy, EnvironmentManager } from '../../../plugins/specweave-kafka/lib/security/secrets-manager.js';
 
 describe('SecretsManager - Secret Storage', () => {
   let manager: SecretsManager;

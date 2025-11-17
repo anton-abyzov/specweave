@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for PhaseDetector
  *
@@ -5,13 +7,13 @@
  * Part of increment 0039: Ultra-Smart Next Command (US-001)
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { PhaseDetector } from '../../../../src/core/workflow/phase-detector';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { PhaseDetector } from '../../../../src/core/workflow/phase-detector.js';
 import {
   WorkflowPhase,
   DetectionContext,
   EvidenceType
-} from '../../../../src/core/workflow/types';
+} from '../../../../src/core/workflow/types.js';
 
 describe('PhaseDetector', () => {
   let detector: PhaseDetector;

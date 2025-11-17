@@ -1,29 +1,31 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for GitHub Profile Manager
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GitHubProfileManager } from '../../../src/cli/helpers/github/profile-manager';
+import { GitHubProfileManager } from '../../../src/cli/helpers/github/profile-manager.js';
 
 // Mock fs module
-jest.mock('fs');
+vi.mock('fs');
 
 describe('GitHub Profile Manager', () => {
-  const mockFs = fs as jest.Mocked<typeof fs>;
+  const mockFs = fs as anyed<typeof fs>;
   const testProjectPath = '/test/project';
   const configPath = path.join(testProjectPath, '.specweave', 'config.json');
   let manager: GitHubProfileManager;
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'log').mockImplementation(() => {});
+    vi.clearAllMocks();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Profile CRUD Operations', () => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for AgentInvoker
  *
@@ -6,8 +8,8 @@
  * Coverage target: 95%+
  */
 
-import { AgentInvoker } from '../../../src/cli/commands/plan/agent-invoker';
-import type { PlanPipelineContext } from '../../../src/cli/commands/plan/types';
+import { AgentInvoker } from '../../../src/cli/commands/plan/agent-invoker.js';
+import type { PlanPipelineContext } from '../../../src/cli/commands/plan/types.js';
 
 describe('AgentInvoker', () => {
   let invoker: AgentInvoker;

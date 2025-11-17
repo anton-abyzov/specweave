@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for PLANNING status
  *
@@ -17,7 +19,7 @@ import {
   isValidTransition,
   WIP_COUNTED_STATUSES,
   VALID_TRANSITIONS
-} from '../../../src/core/types/increment-metadata';
+} from '../../../src/core/types/increment-metadata.js';
 
 describe('PLANNING Status - Enum Definition', () => {
   it('should include PLANNING in enum', () => {

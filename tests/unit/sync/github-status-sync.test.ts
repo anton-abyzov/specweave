@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for GitHub Status Sync
  *
@@ -7,29 +9,29 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { GitHubStatusSync, ExternalStatus } from '../../../plugins/specweave-github/lib/github-status-sync';
+import { GitHubStatusSync, ExternalStatus } from '../../../plugins/specweave-github/lib/github-status-sync.js';
 import { Octokit } from '@octokit/rest';
 
 // Mock @octokit/rest
-jest.mock('@octokit/rest');
+vi.mock('@octokit/rest');
 
 describe('GitHubStatusSync', () => {
   let sync: GitHubStatusSync;
-  let mockGet: jest.Mock;
-  let mockUpdate: jest.Mock;
-  let mockCreateComment: jest.Mock;
+  let mockGet: any;
+  let mockUpdate: any;
+  let mockCreateComment: any;
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock functions
-    mockGet = jest.fn();
-    mockUpdate = jest.fn();
-    mockCreateComment = jest.fn();
+    mockGet = vi.fn();
+    mockUpdate = vi.fn();
+    mockCreateComment = vi.fn();
 
     // Mock Octokit constructor
-    (Octokit as jest.MockedClass<typeof Octokit>).mockImplementation(() => ({
+    (Octokit as anyedClass<typeof Octokit>).mockImplementation(() => ({
       rest: {
         issues: {
           get: mockGet,

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for IssueStateManager
  *
@@ -7,7 +9,7 @@
  * - Label management
  */
 
-import { IssueStateManager } from '../../../plugins/specweave-github/lib/IssueStateManager';
+import { IssueStateManager } from '../../../plugins/specweave-github/lib/IssueStateManager.js';
 
 describe('IssueStateManager', () => {
   describe('determineState', () => {

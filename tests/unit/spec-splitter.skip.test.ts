@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Spec Splitter
  *
  * Tests parsing and splitting of specification files
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import {
@@ -13,7 +15,7 @@ import {
   normalizeMetadata,
   type SpecMetadata,
   type ParsedSpec
-} from '../../src/utils/spec-splitter.js';
+} from '../../src/utils/spec-splitter.js.js';
 
 // Test fixtures directory
 const FIXTURES_DIR = path.join(__dirname, '../fixtures/spec-splitter');

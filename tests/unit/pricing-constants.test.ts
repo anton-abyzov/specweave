@@ -1,4 +1,6 @@
-import { calculateCost, getModelPricing, calculateSavings, PRICING } from '../../src/utils/pricing-constants';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
+import { calculateCost, getModelPricing, calculateSavings, PRICING } from '../../src/utils/pricing-constants.js';
 
 describe('Pricing Constants', () => {
   describe('PRICING', () => {

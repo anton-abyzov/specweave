@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: ksqlDB Patterns
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/stream-processing/ksqldb-patterns
  */
 
-import { KsqlDBClient, MaterializedView, PushQuery, PullQuery, StreamBuilder } from '../../../plugins/specweave-kafka/lib/stream-processing/ksqldb-patterns';
+import { KsqlDBClient, MaterializedView, PushQuery, PullQuery, StreamBuilder } from '../../../plugins/specweave-kafka/lib/stream-processing/ksqldb-patterns.js';
 
 describe('KsqlDBPatterns - Connection Management', () => {
   let client: KsqlDBClient;

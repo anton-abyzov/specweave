@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for AC-US1-07: User-friendly questions (no jargon)
  *
@@ -5,7 +7,7 @@
  * and avoid technical jargon like "microservices", "monorepo", etc.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for increment discipline types
  */
@@ -9,7 +11,7 @@ import {
   ValidationResult,
   DisciplineCheckOptions,
   DisciplineLimits,
-} from '../../../../src/core/increment/types';
+} from '../../../../src/core/increment/types.js';
 
 describe('Increment Discipline Types', () => {
   describe('ViolationType', () => {

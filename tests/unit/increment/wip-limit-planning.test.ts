@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for WIP Limit behavior with PLANNING status
  *
@@ -13,7 +15,7 @@ import {
   countsTowardWipLimit,
   WIP_COUNTED_STATUSES,
   TYPE_LIMITS
-} from '../../../src/core/types/increment-metadata';
+} from '../../../src/core/types/increment-metadata.js';
 
 describe('WIP Limit - PLANNING Exclusion', () => {
   describe('countsTowardWipLimit function', () => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Test: Reflection Types Validation
  * Tests the type system and default configuration for self-reflection
@@ -16,7 +18,7 @@ import {
   type GitDiffInfo,
   type LessonLearned,
   type ReflectionMetrics
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Reflection Types - Validation', () => {
   describe('Enums', () => {

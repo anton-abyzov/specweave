@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: MetadataManager
  *
@@ -5,8 +7,8 @@
  * Part of increment 0007: Smart Status Management
  */
 
-import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager';
-import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata';
+import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 

@@ -1,11 +1,13 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Serverless Suitability Analyzer Unit Tests
  *
  * Tests for workload suitability analysis.
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js';
+import { describe, it, expect } from 'vitest';
+import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js.js';
 
 describe('Serverless Suitability Analyzer', () => {
   describe('testEventDrivenWorkload', () => {

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Performance Optimizer
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/performance/performance-optimizer
  */
 
-import { PerformanceOptimizer, BatchSizeOptimizer, CompressionOptimizer, PartitionOptimizer } from '../../../plugins/specweave-kafka/lib/performance/performance-optimizer';
+import { PerformanceOptimizer, BatchSizeOptimizer, CompressionOptimizer, PartitionOptimizer } from '../../../plugins/specweave-kafka/lib/performance/performance-optimizer.js';
 
 describe('PerformanceOptimizer - Batch Size Optimization', () => {
   let optimizer: BatchSizeOptimizer;

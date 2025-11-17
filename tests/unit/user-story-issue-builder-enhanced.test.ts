@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for UserStoryIssueBuilder - Enhanced Features
  *
@@ -7,7 +9,7 @@
  * 3. GitHub blob URL conversion
  */
 
-import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
+import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js.js';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';

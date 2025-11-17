@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Architecture Decision Engine
  *
  * Tests T-035 to T-042: Architecture recommendation system
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { ArchitectureDecisionEngine } from '../../../src/init/architecture/ArchitectureDecisionEngine.js';
-import type { ArchitectureInput } from '../../../src/init/architecture/ArchitectureDecisionEngine.js';
+import { describe, it, expect } from 'vitest';
+import { ArchitectureDecisionEngine } from '../../../src/init/architecture/ArchitectureDecisionEngine.js.js';
+import type { ArchitectureInput } from '../../../src/init/architecture/ArchitectureDecisionEngine.js.js';
 
 describe('ArchitectureDecisionEngine', () => {
   const engine = new ArchitectureDecisionEngine();

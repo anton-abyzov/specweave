@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Tiered Storage
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/integrations/tiered-storage
  */
 
-import { TieredStorage, RemoteStorageManager, RetentionPolicy, StorageLifecycle, ArchivalStrategy } from '../../../plugins/specweave-kafka/lib/integrations/tiered-storage';
+import { TieredStorage, RemoteStorageManager, RetentionPolicy, StorageLifecycle, ArchivalStrategy } from '../../../plugins/specweave-kafka/lib/integrations/tiered-storage.js';
 
 describe('TieredStorage - Configuration', () => {
   let tieredStorage: TieredStorage;

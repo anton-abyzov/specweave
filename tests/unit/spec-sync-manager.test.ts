@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for SpecSyncManager
  *
  * Tests spec change detection, synchronization logic, and status preservation
  */
 
-import { SpecSyncManager } from '../../src/core/increment/spec-sync-manager';
+import { SpecSyncManager } from '../../src/core/increment/spec-sync-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

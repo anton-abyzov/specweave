@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Cluster Switcher
  *
@@ -6,50 +8,50 @@
  * @module cluster-switcher.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
-import { ClusterSwitcher } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher';
-import { ClusterConfigManager } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-config-manager';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
+import { ClusterSwitcher } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-switcher.js';
+import { ClusterConfigManager } from '../../../plugins/specweave-kafka/lib/multi-cluster/cluster-config-manager.js';
 import { Kafka, Admin, Producer, Consumer } from 'kafkajs';
 
 // Mock kafkajs
-jest.mock('kafkajs');
+vi.mock('kafkajs');
 
 describe('ClusterSwitcher', () => {
   let configManager: ClusterConfigManager;
   let clusterSwitcher: ClusterSwitcher;
-  let mockKafka: jest.Mocked<Kafka>;
-  let mockAdmin: jest.Mocked<Admin>;
-  let mockProducer: jest.Mocked<Producer>;
-  let mockConsumer: jest.Mocked<Consumer>;
+  let mockKafka: anyed<Kafka>;
+  let mockAdmin: anyed<Admin>;
+  let mockProducer: anyed<Producer>;
+  let mockConsumer: anyed<Consumer>;
 
   beforeEach(() => {
     // Setup mock Kafka clients
     mockAdmin = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      listTopics: jest.fn().mockResolvedValue(['topic1', 'topic2']),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      listTopics: vi.fn().mockResolvedValue(['topic1', 'topic2']),
     } as any;
 
     mockProducer = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      send: jest.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      send: vi.fn().mockResolvedValue([{ partition: 0, offset: '0' }]),
     } as any;
 
     mockConsumer = {
-      connect: jest.fn().mockResolvedValue(undefined),
-      disconnect: jest.fn().mockResolvedValue(undefined),
-      subscribe: jest.fn().mockResolvedValue(undefined),
-      run: jest.fn().mockResolvedValue(undefined),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      subscribe: vi.fn().mockResolvedValue(undefined),
+      run: vi.fn().mockResolvedValue(undefined),
     } as any;
 
     mockKafka = {
-      admin: jest.fn().mockReturnValue(mockAdmin),
-      producer: jest.fn().mockReturnValue(mockProducer),
-      consumer: jest.fn().mockReturnValue(mockConsumer),
+      admin: vi.fn().mockReturnValue(mockAdmin),
+      producer: vi.fn().mockReturnValue(mockProducer),
+      consumer: vi.fn().mockReturnValue(mockConsumer),
     } as any;
 
-    (Kafka as jest.MockedClass<typeof Kafka>).mockImplementation(() => mockKafka);
+    (Kafka as anyedClass<typeof Kafka>).mockImplementation(() => mockKafka);
 
     // Setup config manager with test clusters
     configManager = new ClusterConfigManager(':memory:');
@@ -73,7 +75,7 @@ describe('ClusterSwitcher', () => {
 
   afterEach(async () => {
     await clusterSwitcher.disconnectAll();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('switch', () => {

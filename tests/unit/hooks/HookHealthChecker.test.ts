@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Hook Health Checker Tests
  *
  * Tests orchestration of hook health checking.
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { HookHealthChecker } from '../../../src/core/hooks/HookHealthChecker';
-import { HealthCheckConfig } from '../../../src/core/hooks/types';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { HookHealthChecker } from '../../../src/core/hooks/HookHealthChecker.js';
+import { HealthCheckConfig } from '../../../src/core/hooks/types.js';
 
 describe('HookHealthChecker', () => {
   let checker: HookHealthChecker;

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Setup State Manager
  *
@@ -13,7 +15,7 @@ import {
   SetupState,
   RepoConfig,
   SetupArchitecture
-} from '../../../src/core/repo-structure/setup-state-manager';
+} from '../../../src/core/repo-structure/setup-state-manager.js';
 
 describe('SetupStateManager', () => {
   let tempDir: string;
@@ -134,7 +136,7 @@ describe('SetupStateManager', () => {
       await manager.saveState(state1);
 
       // Mock fs.rename to fail
-      const renameSpy = jest.spyOn(fs, 'rename').mockRejectedValue(new Error('Disk full') as never);
+      const renameSpy = vi.spyOn(fs, 'rename').mockRejectedValue(new Error('Disk full') as never);
 
       const state2: SetupState = {
         ...state1,

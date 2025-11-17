@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Distributed Tracing
  *
@@ -6,17 +8,17 @@
  * @module distributed-tracing.test
  */
 
-import { describe, test, expect, beforeEach, afterEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, afterEach, jest } from 'vitest';
 import {
   DistributedTracer,
   TraceContext,
   SpanContext,
   TraceFlags,
-} from '../../../plugins/specweave-kafka/lib/observability/distributed-tracing';
+} from '../../../plugins/specweave-kafka/lib/observability/distributed-tracing.js';
 import { Kafka, Producer, Consumer, EachMessagePayload } from 'kafkajs';
 
 // Mock OpenTelemetry
-jest.mock('@opentelemetry/api');
+vi.mock('@opentelemetry/api');
 
 describe('DistributedTracer', () => {
   let tracer: DistributedTracer;

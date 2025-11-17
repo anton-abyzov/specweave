@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for Repository ID Generator
  *
@@ -5,7 +7,7 @@
  * Test Coverage Target: 90%+
  */
 
-import { generateRepoId, ensureUniqueId, validateRepoId } from '../../../src/core/repo-structure/repo-id-generator';
+import { generateRepoId, ensureUniqueId, validateRepoId } from '../../../src/core/repo-structure/repo-id-generator.js';
 
 describe('generateRepoId', () => {
   describe('Suffix stripping', () => {

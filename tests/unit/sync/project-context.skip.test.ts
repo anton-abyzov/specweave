@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: ProjectContextManager
  *
@@ -7,8 +9,8 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { ProjectContextManager } from '../../../src/core/sync/project-context';
-import type { ProjectContext } from '../../../src/core/types/sync-profile';
+import { ProjectContextManager } from '../../../src/core/sync/project-context.js';
+import type { ProjectContext } from '../../../src/core/types/sync-profile.js';
 
 describe('ProjectContextManager', () => {
   let tempDir: string;

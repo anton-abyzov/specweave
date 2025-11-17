@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for AutoTransitionManager - Phase Detection
  *
@@ -12,25 +14,25 @@
  * is tested in tests/integration/hooks/auto-transition-integration.test.ts
  */
 
-import { AutoTransitionManager } from '../../../src/core/increment/auto-transition-manager';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata';
+import { AutoTransitionManager } from '../../../src/core/increment/auto-transition-manager.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs';
 
 // Mock fs for file existence checks
-jest.mock('fs');
+vi.mock('fs');
 
 describe('AutoTransitionManager - Phase Detection', () => {
   let manager: AutoTransitionManager;
   const projectRoot = process.cwd();  // Use actual project root for tests
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     manager = new AutoTransitionManager(projectRoot);
   });
 
   describe('detectPhase', () => {
     it('should detect ACTIVE when tasks.md exists', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      (fs.existsSync as any).mockImplementation((filePath: string) => {
         return filePath.includes('tasks.md');
       });
 
@@ -39,7 +41,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
     });
 
     it('should detect PLANNING when spec.md exists but no tasks.md', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      (fs.existsSync as any).mockImplementation((filePath: string) => {
         return filePath.includes('spec.md') && !filePath.includes('tasks.md');
       });
 
@@ -48,7 +50,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
     });
 
     it('should detect PLANNING when plan.md exists but no tasks.md', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      (fs.existsSync as any).mockImplementation((filePath: string) => {
         return filePath.includes('plan.md') && !filePath.includes('tasks.md');
       });
 
@@ -57,21 +59,21 @@ describe('AutoTransitionManager - Phase Detection', () => {
     });
 
     it('should detect BACKLOG when no artifacts exist', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const phase = await manager.detectPhase('0001-test');
       expect(phase).toBe(IncrementStatus.BACKLOG);
     });
 
     it('should prioritize tasks.md over spec.md', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);  // All files exist
+      (fs.existsSync as any).mockReturnValue(true);  // All files exist
 
       const phase = await manager.detectPhase('0001-test');
       expect(phase).toBe(IncrementStatus.ACTIVE);  // tasks.md takes precedence
     });
 
     it('should prioritize tasks.md over plan.md', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      (fs.existsSync as any).mockImplementation((filePath: string) => {
         return filePath.includes('tasks.md') || filePath.includes('plan.md');
       });
 
@@ -80,7 +82,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
     });
 
     it('should detect PLANNING when both spec.md and plan.md exist (no tasks)', async () => {
-      (fs.existsSync as jest.Mock).mockImplementation((filePath: string) => {
+      (fs.existsSync as any).mockImplementation((filePath: string) => {
         return (filePath.includes('spec.md') || filePath.includes('plan.md')) &&
                !filePath.includes('tasks.md');
       });
@@ -141,7 +143,7 @@ describe('AutoTransitionManager - Phase Detection', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty increment ID gracefully', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const phase = await manager.detectPhase('');
       expect(phase).toBe(IncrementStatus.BACKLOG);
@@ -149,14 +151,14 @@ describe('AutoTransitionManager - Phase Detection', () => {
 
     it('should handle very long increment ID', async () => {
       const longId = '9999-' + 'a'.repeat(100);
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const phase = await manager.detectPhase(longId);
       expect(phase).toBe(IncrementStatus.BACKLOG);
     });
 
     it('should handle special characters in increment ID', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as any).mockReturnValue(false);
 
       const phase = await manager.detectPhase('0001-test_feature-v2.1');
       expect(phase).toBe(IncrementStatus.BACKLOG);

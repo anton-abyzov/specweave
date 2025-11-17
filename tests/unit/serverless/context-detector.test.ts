@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Context Detector Unit Tests
  *
  * Tests for project context detection logic.
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { detectContext } from '../../../src/core/serverless/context-detector.js';
-import type { ProjectMetadata } from '../../../src/core/serverless/types.js';
+import { describe, it, expect } from 'vitest';
+import { detectContext } from '../../../src/core/serverless/context-detector.js.js';
+import type { ProjectMetadata } from '../../../src/core/serverless/types.js.js';
 
 describe('Context Detector', () => {
   describe('testPetProjectDetection', () => {

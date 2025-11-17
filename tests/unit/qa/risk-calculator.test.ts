@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for RiskCalculator
  *
@@ -5,9 +7,9 @@
  * @module tests/unit/qa/risk-calculator.test
  */
 
-import { describe, it, expect } from '@jest/globals';
-import { RiskCalculator } from '../../../src/core/qa/risk-calculator.js';
-import { Risk, RiskCategory, RiskSeverity } from '../../../src/core/qa/types.js';
+import { describe, it, expect } from 'vitest';
+import { RiskCalculator } from '../../../src/core/qa/risk-calculator.js.js';
+import { Risk, RiskCategory, RiskSeverity } from '../../../src/core/qa/types.js.js';
 
 describe('RiskCalculator', () => {
   describe('calculateRiskScore', () => {

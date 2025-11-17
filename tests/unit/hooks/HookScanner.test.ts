@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Hook Scanner Tests
  *
  * Tests hook discovery and metadata extraction.
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { HookScanner } from '../../../src/core/hooks/HookScanner';
-import { ScannerConfig } from '../../../src/core/hooks/types';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { HookScanner } from '../../../src/core/hooks/HookScanner.js';
+import { ScannerConfig } from '../../../src/core/hooks/types.js';
 import * as path from 'path';
 
 describe('HookScanner', () => {

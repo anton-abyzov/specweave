@@ -1,16 +1,18 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Workflow Monitor
  *
  * Tests polling logic, failure detection, rate limiting, and deduplication.
  */
 
-import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor';
-import { StateManager } from '../../../src/core/cicd/state-manager';
+import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor.js';
+import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 // Mock Octokit
-jest.mock('@octokit/rest');
+vi.mock('@octokit/rest');
 
 describe('WorkflowMonitor', () => {
   let testDir: string;
@@ -111,7 +113,7 @@ describe('WorkflowMonitor', () => {
     ];
 
     // Mock Octokit
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: mockRuns },
       status: 200,
       headers: {
@@ -148,7 +150,7 @@ describe('WorkflowMonitor', () => {
    */
   test('testUsesConditionalRequests: Sends If-Modified-Since header', async () => {
     // First poll (no If-Modified-Since)
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [] },
       status: 200,
       headers: {
@@ -252,7 +254,7 @@ describe('WorkflowMonitor', () => {
       updated_at: '2025-11-12T11:05:00Z'
     };
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [mockRun] },
       status: 200,
       headers: {
@@ -297,7 +299,7 @@ describe('WorkflowMonitor', () => {
       updated_at: '2025-11-12T12:10:00Z'
     };
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [mockRun] },
       status: 200,
       headers: {

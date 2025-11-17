@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Schema Registry
  *
@@ -7,7 +9,7 @@
  * @module tests/unit/integrations/schema-registry
  */
 
-import { SchemaRegistryClient, AvroSchema, ProtobufSchema, JSONSchema, CompatibilityMode, SchemaEvolution } from '../../../plugins/specweave-kafka/lib/integrations/schema-registry';
+import { SchemaRegistryClient, AvroSchema, ProtobufSchema, JSONSchema, CompatibilityMode, SchemaEvolution } from '../../../plugins/specweave-kafka/lib/integrations/schema-registry.js';
 
 describe('SchemaRegistry - Client Connection', () => {
   let client: SchemaRegistryClient;
