@@ -4,7 +4,7 @@
  * Tests for full platform selection workflow.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { selectPlatforms } from '../../src/core/serverless/platform-selector.js';
 import { loadAllPlatforms } from '../../src/core/serverless/platform-data-loader.js';
 import type { ProjectContext } from '../../src/core/serverless/types.js';

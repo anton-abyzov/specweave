@@ -1,37 +1,43 @@
-import { expect } from '@jest/globals';
+import { expect } from 'vitest';
 
 /**
- * Custom Jest matchers for SpecWeave tests
+ * Custom Vitest matchers for SpecWeave tests
  */
 
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      /**
-       * Check if a number is within a specified range (inclusive)
-       */
-      toBeWithinRange(min: number, max: number): R;
+declare module 'vitest' {
+  interface Assertion<T = any> {
+    /**
+     * Check if a number is within a specified range (inclusive)
+     */
+    toBeWithinRange(min: number, max: number): T;
 
-      /**
-       * Check if an object has the expected classification result
-       */
-      toHaveClassification(expected: { type: string; confidence: number }): R;
+    /**
+     * Check if an object has the expected classification result
+     */
+    toHaveClassification(expected: { type: string; confidence: number }): T;
 
-      /**
-       * Check if a keyword score meets the minimum threshold
-       */
-      toHaveKeywordScore(min: number): R;
+    /**
+     * Check if a keyword score meets the minimum threshold
+     */
+    toHaveKeywordScore(min: number): T;
 
-      /**
-       * Check if a path exists on the filesystem
-       */
-      toExistOnFilesystem(): Promise<R>;
+    /**
+     * Check if a path exists on the filesystem
+     */
+    toExistOnFilesystem(): Promise<T>;
 
-      /**
-       * Check if a file contains specific content
-       */
-      toHaveFileContent(expectedContent: string): Promise<R>;
-    }
+    /**
+     * Check if a file contains specific content
+     */
+    toHaveFileContent(expectedContent: string): Promise<T>;
+  }
+
+  interface AsymmetricMatchersContaining {
+    toBeWithinRange(min: number, max: number): any;
+    toHaveClassification(expected: { type: string; confidence: number }): any;
+    toHaveKeywordScore(min: number): any;
+    toExistOnFilesystem(): any;
+    toHaveFileContent(expectedContent: string): any;
   }
 }
 

@@ -6,7 +6,7 @@
  * @module advanced-features.test
  */
 
-import { describe, test, expect, beforeAll, afterAll } from '@jest/globals';
+import { describe, test, expect, beforeAll, afterAll } from 'vitest';
 
 describe('Advanced Features - E2E Tests', () => {
   beforeAll(async () => {

@@ -10,7 +10,7 @@
  * - Storage buckets and policies
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createTemplateEngine } from '../../src/core/iac/template-engine.js';
 import type {
   TerraformTemplateEngine,

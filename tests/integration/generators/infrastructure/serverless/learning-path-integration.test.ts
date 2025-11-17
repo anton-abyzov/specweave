@@ -8,7 +8,7 @@
  * - Community resource mapping
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { detectContext } from '../../src/core/serverless/context-detector.js';
 import { selectPlatforms } from '../../src/core/serverless/platform-selector.js';
 import { loadAllPlatforms } from '../../src/core/serverless/platform-data-loader.js';

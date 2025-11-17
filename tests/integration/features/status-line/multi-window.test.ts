@@ -5,7 +5,7 @@
  * are working on the same project.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { StatusLineManager } from '../../src/core/status-line/status-line-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';

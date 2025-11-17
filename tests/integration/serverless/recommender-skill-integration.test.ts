@@ -7,7 +7,7 @@
  * - Platform selection
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { detectContext } from '../../../src/core/serverless/context-detector.js';
 import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js';
 import { selectPlatforms } from '../../../src/core/serverless/platform-selector.js';

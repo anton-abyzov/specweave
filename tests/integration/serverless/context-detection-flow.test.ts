@@ -4,7 +4,7 @@
  * Tests for full context detection workflow with refinement.
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { detectContext } from '../../../src/core/serverless/context-detector.js';
 import type { ProjectMetadata } from '../../../src/core/serverless/types.js';
 
