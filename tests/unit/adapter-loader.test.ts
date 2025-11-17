@@ -6,8 +6,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Tests adapter detection logic, especially the default-to-claude behavior
  */
 
-import { AdapterLoader } from '../../src/adapters/adapter-loader.js.js';
-import { CursorAdapter } from '../../src/adapters/cursor/adapter.js.js';
+import { AdapterLoader } from '../../src/adapters/adapter-loader.js';
+import { CursorAdapter } from '../../src/adapters/cursor/adapter.js';
 
 describe('AdapterLoader', () => {
   let adapterLoader: AdapterLoader;

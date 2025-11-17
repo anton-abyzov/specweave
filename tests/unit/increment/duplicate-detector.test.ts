@@ -13,14 +13,14 @@ import {
   detectDuplicatesByNumber,
   type DuplicateReport,
   type IncrementLocation
-} from '../../../src/core/increment/duplicate-detector.js.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
+} from '../../../src/core/increment/duplicate-detector.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement,
   createMockLocation
-} from '../../helpers/increment-test-helpers.js.js';
+} from '../../helpers/increment-test-helpers.js';
 
 describe('DuplicateDetector', () => {
   let testDir: string;

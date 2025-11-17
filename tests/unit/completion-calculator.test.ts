@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CompletionCalculator } from '../../plugins/specweave-github/lib/completion-calculator.js.js';
+import { CompletionCalculator } from '../../plugins/specweave-github/lib/completion-calculator.js';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';

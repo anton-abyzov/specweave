@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Critical functionality: Auto-detect repo name from git remote instead of "default"
  */
 
-import { ProjectDetector } from '../../src/core/living-docs/project-detector.js.js';
+import { ProjectDetector } from '../../src/core/living-docs/project-detector.js';
 import { execSync } from 'child_process';
 
 // Mock execSync

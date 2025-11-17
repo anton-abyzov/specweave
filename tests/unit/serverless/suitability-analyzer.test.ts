@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js.js';
+import { analyzeSuitability } from '../../../src/core/serverless/suitability-analyzer.js';
 
 describe('Serverless Suitability Analyzer', () => {
   describe('testEventDrivenWorkload', () => {

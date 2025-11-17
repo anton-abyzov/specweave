@@ -10,9 +10,9 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
-import { ActiveIncrementManager } from '../../../../src/core/increment/active-increment-manager.js.js';
-import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js.js';
-import { IncrementStatus, IncrementType } from '../../../../src/core/types/increment-metadata.js.js';
+import { ActiveIncrementManager } from '../../../../src/core/increment/active-increment-manager.js';
+import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType } from '../../../../src/core/types/increment-metadata.js';
 
 describe('ActiveIncrementManager', () => {
   let tempDir: string;

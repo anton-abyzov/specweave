@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { detectContext } from '../../../src/core/serverless/context-detector.js.js';
-import type { ProjectMetadata } from '../../../src/core/serverless/types.js.js';
+import { detectContext } from '../../../src/core/serverless/context-detector.js';
+import type { ProjectMetadata } from '../../../src/core/serverless/types.js';
 
 describe('Context Detector', () => {
   describe('testPetProjectDetection', () => {

@@ -7,9 +7,9 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect } from 'vitest';
-import { selectPlatforms } from '../../../src/core/serverless/platform-selector.js.js';
-import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js.js';
-import type { ProjectContext } from '../../../src/core/serverless/types.js.js';
+import { selectPlatforms } from '../../../src/core/serverless/platform-selector.js';
+import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js';
+import type { ProjectContext } from '../../../src/core/serverless/types.js';
 
 describe('Platform Selector', () => {
   const knowledgeBase = loadAllPlatforms();

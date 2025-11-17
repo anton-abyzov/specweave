@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
-import { CommandDeduplicator } from '../../../src/core/deduplication/command-deduplicator.js.js';
+import { CommandDeduplicator } from '../../../src/core/deduplication/command-deduplicator.js';
 
 describe('CommandDeduplicator', () => {
   // ✅ SAFE: Use temp directory instead of project root .specweave/

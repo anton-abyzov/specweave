@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { StatusLineManager } from '../../../src/core/status-line/status-line-manager.js.js';
-import { StatusLineCache } from '../../../src/core/status-line/types.js.js';
+import { StatusLineManager } from '../../../src/core/status-line/status-line-manager.js';
+import { StatusLineCache } from '../../../src/core/status-line/types.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

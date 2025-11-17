@@ -49,7 +49,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Polls every 60 seconds (using setInterval)
    */
-  test('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
+  it('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
     // Mock setInterval
     jest.useFakeTimers();
 
@@ -71,7 +71,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Detects failed runs (filters status=completed, conclusion=failure)
    */
-  test('testDetectsFailedRuns: Filters status=completed, conclusion=failure', async () => {
+  it('testDetectsFailedRuns: Filters status=completed, conclusion=failure', async () => {
     // Mock Octokit response with mixed runs
     const mockRuns = [
       {
@@ -148,7 +148,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Uses conditional requests (If-Modified-Since header)
    */
-  test('testUsesConditionalRequests: Sends If-Modified-Since header', async () => {
+  it('testUsesConditionalRequests: Sends If-Modified-Since header', async () => {
     // First poll (no If-Modified-Since)
     const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [] },
@@ -196,7 +196,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Handles rate limiting (429 response with exponential backoff)
    */
-  test('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
+  it('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
     // Mock 429 response, then success
     const mockListWorkflowRuns = jest
       .fn()
@@ -240,7 +240,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Deduplicates failures (doesn't reprocess same run)
    */
-  test('testDeduplicatesFailures: Does not reprocess same run', async () => {
+  it('testDeduplicatesFailures: Does not reprocess same run', async () => {
     const mockRun = {
       id: 2001,
       name: 'Build',
@@ -285,7 +285,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Extracts workflow metadata (ID, name, commit, timestamp)
    */
-  test('testExtractsWorkflowMetadata: Parses run ID, name, commit, timestamp', async () => {
+  it('testExtractsWorkflowMetadata: Parses run ID, name, commit, timestamp', async () => {
     const mockRun = {
       id: 3001,
       name: 'E2E Tests',

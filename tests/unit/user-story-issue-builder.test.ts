@@ -11,7 +11,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js.js';
+import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { mkdtemp, rm } from 'fs/promises';

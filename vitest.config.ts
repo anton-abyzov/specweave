@@ -21,7 +21,7 @@ export default defineConfig({
     ],
 
     // Global setup/teardown
-    setupFiles: ['./tests/setup.vitest.ts'],
+    setupFiles: ['./tests/setup.ts'],
 
     // Coverage configuration
     coverage: {

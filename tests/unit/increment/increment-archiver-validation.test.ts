@@ -8,13 +8,13 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js.js';
-import { IncrementStatus } from '../../../src/core/types/increment-metadata.js.js';
+import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js';
+import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 import {
   createTestDir,
   cleanupTestDir,
   createTestIncrement
-} from '../../helpers/increment-test-helpers.js.js';
+} from '../../helpers/increment-test-helpers.js';
 
 describe('IncrementArchiver Duplicate Validation', () => {
   let testDir: string;

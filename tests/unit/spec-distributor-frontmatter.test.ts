@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { SpecDistributor } from '../../src/core/living-docs/spec-distributor.js.js';
+import { SpecDistributor } from '../../src/core/living-docs/spec-distributor.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { mkdtemp, rm } from 'fs/promises';
