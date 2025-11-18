@@ -13,7 +13,10 @@ Reopen completed work when issues are discovered after completion.
 ## Quick Start
 
 ```bash
-# Reopen entire increment
+# Reopen entire increment (natural language - RECOMMENDED)
+/specweave:reopen 0043 Bug found in AC sync implementation
+
+# OR with explicit --reason flag
 /specweave:reopen 0031 --reason "GitHub sync failing"
 
 # Reopen specific task
@@ -22,6 +25,23 @@ Reopen completed work when issues are discovered after completion.
 # Reopen user story (all related tasks)
 /specweave:reopen 0031 --user-story US-001 --reason "Acceptance criteria not met"
 ```
+
+### Natural Language Syntax (NEW!)
+
+You can now use natural language without the `--reason` flag:
+
+```bash
+# ✅ WORKS: Natural language (everything after increment ID is the reason)
+/specweave:reopen 0043 Bug found in implementation, need to fix
+
+# ✅ WORKS: Traditional syntax with flag
+/specweave:reopen 0043 --reason "Bug found in implementation"
+
+# ✅ WORKS: With task ID
+/specweave:reopen 0043 --task T-005 Found edge case not covered
+```
+
+**How it works**: All text after the increment ID (and any flags) is treated as the reason. No quotes needed!
 
 ## Smart Detection First!
 
@@ -119,10 +139,17 @@ Use `--force` to bypass WIP limit checks (use sparingly!).
 | Parameter | Required | Description |
 |-----------|----------|-------------|
 | `<increment-id>` | Yes | Increment to reopen (e.g., `0031` or `0031-external-tool-status-sync`) |
-| `--reason <text>` | Yes | Why reopening (for audit trail) |
+| `--reason <text>` | Optional* | Why reopening (for audit trail). *Can use natural language instead! |
 | `--task <id>` | No | Reopen specific task (e.g., `T-003`) |
 | `--user-story <id>` | No | Reopen user story + related tasks (e.g., `US-001`) |
 | `--force` | No | Bypass WIP limit checks |
+
+**Natural Language**: If `--reason` is not provided, all remaining text is used as the reason.
+
+Examples:
+- `/specweave:reopen 0043 Bug found` → reason = "Bug found"
+- `/specweave:reopen 0043 --task T-005 Edge case` → reason = "Edge case"
+- `/specweave:reopen 0043 --reason "Formal reason"` → reason = "Formal reason" (explicit)
 
 ## WIP Limit Validation
 
