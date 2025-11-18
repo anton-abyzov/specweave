@@ -18,9 +18,9 @@ import type { CostEstimationInput } from '../../../src/core/serverless/cost-esti
 
 describe('Cost Optimization Flow Integration', () => {
   describe('testFullOptimizationWorkflow', () => {
-    it('should execute complete optimization workflow: estimate → analyze → recommend', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should execute complete optimization workflow: estimate → analyze → recommend', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 10000000, // 10M requests
@@ -58,9 +58,9 @@ describe('Cost Optimization Flow Integration', () => {
       expect(hasHighPriority || priorities.includes('medium')).toBe(true);
     });
 
-    it('should generate multiple optimization recommendations for high-traffic workload', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should generate multiple optimization recommendations for high-traffic workload', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 50000000, // 50M requests (high traffic)
@@ -90,9 +90,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testMemoryOptimization', () => {
-    it('should recommend memory reduction for over-provisioned functions', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend memory reduction for over-provisioned functions', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 5000000, // 5M requests
@@ -115,9 +115,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend memory reduction for minimal memory allocation', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend memory reduction for minimal memory allocation', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 1000000,
@@ -135,9 +135,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testCachingOptimization', () => {
-    it('should recommend caching for high-traffic workload', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend caching for high-traffic workload', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 30000000, // 30M requests (high traffic)
@@ -160,9 +160,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend caching for low-traffic workload', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend caching for low-traffic workload', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 100000, // 100K requests (low traffic)
@@ -180,9 +180,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testBatchingOptimization', () => {
-    it('should recommend batching for many short invocations', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend batching for many short invocations', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 50000000, // 50M requests
@@ -204,9 +204,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend batching for fewer long-running invocations', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend batching for fewer long-running invocations', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 500000, // 500K requests
@@ -224,9 +224,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testReservedCapacityOptimization', () => {
-    it('should recommend reserved capacity for high consistent traffic', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend reserved capacity for high consistent traffic', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 300000000, // 300M requests (very high)
@@ -252,9 +252,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend reserved capacity for low traffic', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend reserved capacity for low traffic', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 1000000, // 1M requests
@@ -272,9 +272,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testCompressionOptimization', () => {
-    it('should recommend compression for high data transfer', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend compression for high data transfer', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 5000000, // 5M requests
@@ -297,9 +297,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend compression for low data transfer', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend compression for low data transfer', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 2000000,
@@ -317,9 +317,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testCDNOptimization', () => {
-    it('should recommend CDN for very high traffic with significant data transfer', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should recommend CDN for very high traffic with significant data transfer', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 100000000, // 100M requests
@@ -342,9 +342,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should not recommend CDN for low traffic', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should not recommend CDN for low traffic', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 500000, // 500K requests
@@ -362,9 +362,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testPrioritization', () => {
-    it('should prioritize high-impact optimizations', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should prioritize high-impact optimizations', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 50000000, // 50M requests
@@ -395,9 +395,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should mark high-savings optimizations as high priority', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should mark high-savings optimizations as high priority', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 100000000, // Very high traffic
@@ -420,9 +420,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testImplementationComplexity', () => {
-    it('should mark simple optimizations as low complexity', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should mark simple optimizations as low complexity', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 10000000,
@@ -445,9 +445,9 @@ describe('Cost Optimization Flow Integration', () => {
       }
     });
 
-    it('should mark complex optimizations as high complexity', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should mark complex optimizations as high complexity', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 80000000, // High traffic
@@ -467,9 +467,9 @@ describe('Cost Optimization Flow Integration', () => {
   });
 
   describe('testEdgeCases', () => {
-    it('should handle minimal workload with no optimizations needed', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should handle minimal workload with no optimizations needed', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 50000, // Very low
@@ -487,9 +487,9 @@ describe('Cost Optimization Flow Integration', () => {
       expect(result.potentialSavings).toBeLessThan(result.currentCost * 0.5);
     });
 
-    it('should handle already optimized workload', () => {
-      const knowledgeBase = loadAllPlatforms();
-      const platform = Array.from(knowledgeBase.platforms.values())[0];
+    it('should handle already optimized workload', async () => {
+      const platforms = await loadAllPlatforms();
+      const platform = platforms[0];
 
       const input: CostEstimationInput = {
         requestsPerMonth: 2000000,
