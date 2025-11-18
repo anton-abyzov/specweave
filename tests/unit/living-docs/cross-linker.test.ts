@@ -78,19 +78,19 @@ describe('CrossLinker', () => {
       result = {
         created: [
           {
-            path: '/test/specs/backend/us-001-user-authentication.md',
+            path: '/test/specs/backend/us-001-user-authentication-flow.md',
             category: ContentCategory.UserStory,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/authentication-architecture.md',
+            path: '/test/architecture/authentication-flow-architecture.md',
             category: ContentCategory.Architecture,
             size: 2000,
             sections: 2,
           },
           {
-            path: '/test/architecture/adr/0001-use-oauth-authentication.md',
+            path: '/test/architecture/adr/0001-authentication-flow-oauth-decision.md',
             category: ContentCategory.ADR,
             size: 1500,
             sections: 1,
@@ -147,7 +147,7 @@ describe('CrossLinker', () => {
 
     it('should generate operations to architecture links', async () => {
       result.created.push({
-        path: '/test/operations/runbook-authentication-service.md',
+        path: '/test/operations/runbook-authentication-flow-service.md',
         category: ContentCategory.Operations,
         size: 1000,
         sections: 1,
@@ -167,7 +167,7 @@ describe('CrossLinker', () => {
 
     it('should generate delivery to specs links', async () => {
       result.created.push({
-        path: '/test/delivery/test-strategy-authentication.md',
+        path: '/test/delivery/test-strategy-user-authentication-flow.md',
         category: ContentCategory.Delivery,
         size: 1000,
         sections: 1,
@@ -187,7 +187,7 @@ describe('CrossLinker', () => {
 
     it('should generate strategy to specs links', async () => {
       result.created.push({
-        path: '/test/strategy/authentication-requirements.md',
+        path: '/test/strategy/user-authentication-flow-requirements.md',
         category: ContentCategory.Strategy,
         size: 1000,
         sections: 1,
@@ -465,13 +465,13 @@ describe('CrossLinker', () => {
       const result: DistributionResult = {
         created: [
           {
-            path: '/test/specs/user-authentication.md',
+            path: '/test/specs/user-authentication-flow.md',
             category: ContentCategory.UserStory,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/authentication-design.md',
+            path: '/test/architecture/authentication-flow-design.md',
             category: ContentCategory.Architecture,
             size: 1000,
             sections: 1,
@@ -506,13 +506,13 @@ describe('CrossLinker', () => {
       const result: DistributionResult = {
         created: [
           {
-            path: '/test/specs/user-authentication.md',
+            path: '/test/specs/user-authentication-flow.md',
             category: ContentCategory.UserStory,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/authentication-design.md',
+            path: '/test/architecture/authentication-flow-design.md',
             category: ContentCategory.Architecture,
             size: 1000,
             sections: 1,
@@ -553,19 +553,19 @@ describe('CrossLinker', () => {
       const result: DistributionResult = {
         created: [
           {
-            path: '/test/specs/user-authentication.md',
+            path: '/test/specs/user-authentication-system.md',
             category: ContentCategory.UserStory,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/authentication-design.md',
+            path: '/test/architecture/authentication-system-design.md',
             category: ContentCategory.Architecture,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/adr/0001-oauth-decision.md',
+            path: '/test/architecture/adr/0001-authentication-system-oauth-decision.md',
             category: ContentCategory.ADR,
             size: 1000,
             sections: 1,
@@ -600,13 +600,13 @@ describe('CrossLinker', () => {
       const result: DistributionResult = {
         created: [
           {
-            path: '/test/specs/backend/user-auth.md',
+            path: '/test/specs/backend/user-authentication-flow.md',
             category: ContentCategory.UserStory,
             size: 1000,
             sections: 1,
           },
           {
-            path: '/test/architecture/auth-design.md',
+            path: '/test/architecture/authentication-flow-design.md',
             category: ContentCategory.Architecture,
             size: 1000,
             sections: 1,

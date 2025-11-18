@@ -159,7 +159,16 @@ export class ContentDistributor {
 
     // Preserve original spec if requested
     if (this.options.preserveOriginal) {
-      await this.archiveOriginalSpec(incrementId, spec, project);
+      try {
+        await this.archiveOriginalSpec(incrementId, spec, project);
+      } catch (error) {
+        result.errors.push({
+          section: 'Archive Original Spec',
+          category: ContentCategory.Unknown,
+          error: String(error),
+        });
+        result.summary.errors++;
+      }
     }
 
     return result;

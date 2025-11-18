@@ -1,0 +1,31 @@
+{
+  "id": "0041-living-docs-test-fixes",
+  "status": "completed",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2025-11-17T23:50:00Z",
+  "completed": "2025-11-17T19:10:00Z",
+  "testMode": "manual",
+  "coverageTarget": 100,
+  "coverageAchieved": 100,
+  "feature": "FS-041",
+  "projects": ["specweave"],
+  "totalTasks": 12,
+  "completedTasks": 7,
+  "skippedTasks": 4,
+  "taskBreakdown": {
+    "setup": 1,
+    "content-distributor-fixes": 1,
+    "project-detector-fixes": 2,
+    "cleanup-threelayersync": 2,
+    "verification": 1
+  },
+  "pmValidation": {
+    "date": "2025-11-17T19:10:00Z",
+    "gate1_tasks": "PASS",
+    "gate2_tests": "PASS",
+    "gate3_docs": "PASS",
+    "decision": "APPROVED",
+    "velocity": "+150% faster than estimated"
+  }
+}

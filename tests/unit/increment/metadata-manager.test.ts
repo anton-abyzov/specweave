@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
 import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
+import { ActiveIncrementManager } from '../../../src/core/increment/active-increment-manager.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
@@ -94,9 +95,6 @@ describe('MetadataManager', () => {
     });
 
     it('lazy initialization does NOT update active increment state for PLANNING status', () => {
-      // Import ActiveIncrementManager
-      const { ActiveIncrementManager } = require('../../../src/core/increment/active-increment-manager');
-
       // Ensure metadata doesn't exist
       expect(fs.existsSync(testMetadataPath)).toBe(false);
 

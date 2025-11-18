@@ -1,9 +1,10 @@
 {
   "id": "0040-vitest-living-docs-mock-fixes",
-  "status": "active",
-  "type": "feature",
+  "status": "completed",
+  "type": "bug",
   "created": "2025-11-17T16:26:49Z",
-  "lastActivity": "2025-11-17T16:26:49Z",
+  "completed": "2025-11-17T23:35:33Z",
+  "lastActivity": "2025-11-17T18:30:00Z",
   "testMode": "TDD",
   "coverageTarget": 80
 }

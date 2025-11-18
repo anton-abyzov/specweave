@@ -88,33 +88,37 @@ COMPLETED_TASKS=0
 PERCENTAGE=0
 
 if [[ -f "$TASKS_FILE" ]]; then
-  # Count total tasks (## T- or ### T- headings)
-  TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
-  TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' || echo 0)
+  # Use TaskCounter CLI for accurate counting (fixes overcounting bug)
+  COUNT_TASKS_CLI="$PROJECT_ROOT/dist/src/cli/count-tasks.js"
 
-  # Count completed tasks (multiple formats)
-  # Format 1: [x] at line start (legacy)
-  COMPLETED_STANDARD=$(grep -c '^\[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
-  COMPLETED_STANDARD=$(echo "$COMPLETED_STANDARD" | tr -d '\n\r ' || echo 0)
+  if [[ -f "$COUNT_TASKS_CLI" ]]; then
+    # Call CLI and parse JSON output
+    TASK_COUNTS=$(node "$COUNT_TASKS_CLI" "$TASKS_FILE" 2>/dev/null || echo '{"total":0,"completed":0,"percentage":0}')
+    TOTAL_TASKS=$(echo "$TASK_COUNTS" | jq -r '.total' 2>/dev/null || echo 0)
+    COMPLETED_TASKS=$(echo "$TASK_COUNTS" | jq -r '.completed' 2>/dev/null || echo 0)
+    PERCENTAGE=$(echo "$TASK_COUNTS" | jq -r '.percentage' 2>/dev/null || echo 0)
+  else
+    # Fallback to legacy counting if CLI not available (graceful degradation)
+    # Count total tasks (## T- or ### T- headings)
+    TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
+    TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' || echo 0)
 
-  # Format 2: **Status**: [x] inline (legacy)
-  COMPLETED_INLINE=$(grep -c '\*\*Status\*\*: \[x\]' "$TASKS_FILE" 2>/dev/null || echo 0)
-  COMPLETED_INLINE=$(echo "$COMPLETED_INLINE" | tr -d '\n\r ' || echo 0)
+    # Count completed tasks - use most reliable single marker (**Completed**: format)
+    COMPLETED_TASKS=$(grep -c '\*\*Completed\*\*:' "$TASKS_FILE" 2>/dev/null || echo 0)
+    COMPLETED_TASKS=$(echo "$COMPLETED_TASKS" | tr -d '\n\r ' || echo 0)
 
-  # Format 3: **Completed**: <date> (current format)
-  COMPLETED_DATE=$(grep -c '\*\*Completed\*\*:' "$TASKS_FILE" 2>/dev/null || echo 0)
-  COMPLETED_DATE=$(echo "$COMPLETED_DATE" | tr -d '\n\r ' || echo 0)
-
-  COMPLETED_TASKS=$((COMPLETED_STANDARD + COMPLETED_INLINE + COMPLETED_DATE))
-
-  # Calculate percentage
-  if [[ $TOTAL_TASKS -gt 0 ]]; then
-    PERCENTAGE=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
+    # Calculate percentage
+    if [[ $TOTAL_TASKS -gt 0 ]]; then
+      PERCENTAGE=$((COMPLETED_TASKS * 100 / TOTAL_TASKS))
+    fi
   fi
 fi
 
-# Step 5: Extract increment name (remove 4-digit prefix)
-INCREMENT_NAME=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
+# Step 5: Extract increment ID and name
+# Format: [XXXX-name] where XXXX is 4-digit prefix
+INCREMENT_ID=$(echo "$CURRENT_INCREMENT" | grep -oE '^[0-9]{4}')
+INCREMENT_NAME_ONLY=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
+INCREMENT_NAME="[$INCREMENT_ID-$INCREMENT_NAME_ONLY]"
 
 # Step 6: Write cache
 jq -n \

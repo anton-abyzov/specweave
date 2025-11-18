@@ -1,0 +1,9 @@
+{
+  "id": "0038-serverless-recommender",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-17T23:58:05Z",
+  "lastActivity": "2025-11-17T23:58:05Z",
+  "testMode": "TDD",
+  "coverageTarget": 80
+}

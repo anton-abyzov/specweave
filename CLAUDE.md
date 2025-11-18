@@ -517,6 +517,51 @@ const testRoot = path.join(process.cwd(), '.test-something');
 const testPath = path.join(__dirname, '..', '.specweave', 'increments');
 ```
 
+### Vitest Mock Best Practices
+
+**🚨 MANDATORY FOR ALL TESTS using mocks:**
+
+**CORRECT PATTERN** (vi.mocked() for type-safe mocks):
+```typescript
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import fs from 'fs-extra';
+
+// Mock fs-extra BEFORE using it
+vi.mock('fs-extra');
+
+// Type-safe mocked functions
+const mockReadFile = vi.mocked(fs.readFile);
+const mockWriteFile = vi.mocked(fs.writeFile);
+const mockExistsSync = vi.mocked(fs.existsSync);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockExistsSync.mockReturnValue(true);
+  mockReadFile.mockResolvedValue('content');
+});
+```
+
+**DANGEROUS PATTERN** (NEVER use this):
+```typescript
+// ❌ WRONG: Invalid anyed<> syntax (pre-Vitest migration)
+const mockFs = fs as anyed<typeof fs> & {
+  readFile: anyedFunction<typeof fs.readFile>;
+};
+// This causes TypeScript errors and test failures!
+```
+
+**Why This Matters**:
+1. `vi.mocked()` provides full type safety
+2. Catches mock setup errors at compile time
+3. Works correctly with Vitest's mock system
+4. Prevents runtime "Cannot read properties of undefined" errors
+
+**Common Mock Gotchas**:
+- Always call `vi.clearAllMocks()` in beforeEach
+- Use `mockResolvedValue` for async functions
+- Use `mockReturnValue` for sync functions
+- Check that mocks are actually called: `expect(mockFn).toHaveBeenCalled()`
+
 **Why This Matters**:
 1. Tests create mock `.specweave/` structures for testing
 2. Cleanup uses `fs.rm(testRoot, { recursive: true })`

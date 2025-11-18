@@ -141,7 +141,7 @@ export class CodeValidator {
     }
 
     // Method 3: File path patterns in descriptions
-    // Match paths like: src/core/living-docs/ThreeLayerSyncManager.ts
+    // Match paths like: src/core/living-docs/ContentDistributor.ts
     const pathMatches = taskSection.matchAll(/\b([a-zA-Z0-9_\-]+(?:\/[a-zA-Z0-9_\-]+)+\.(?:ts|js|tsx|jsx|md|json|yml|yaml))/g);
     for (const match of pathMatches) {
       const filePath = match[1];

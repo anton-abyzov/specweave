@@ -171,42 +171,73 @@ describe('ContentDistributor', () => {
     });
 
     it('should skip unchanged files', async () => {
-      mockExistsSync.mockReturnValue(true);
+      // Use fake timers to ensure consistent date generation
+      vi.useFakeTimers();
+      const testDate = new Date('2025-01-15T12:00:00Z');
+      vi.setSystemTime(testDate);
 
-      // Mock readFile to return the exact content that would be generated
-      mockReadFile.mockImplementation(async (filePath) => {
-        // Return the same content that will be generated
-        // This will cause the file to be skipped
-        const generated = `---
-id: "us-001"
-title: "US-001: User Login"
-sidebar_label: "US-001: User Login"
-description: "User can log in with credentials"
-tags: ["user-story", "backend", "0016-test"]
-increment: "0016-test"
-project: "backend"
-category: "user-story"
-last_updated: "${new Date().toISOString().split('T')[0]}"
-status: "draft"
-priority: "P1"
----
-
-## US-001: User Login
-
-User can log in with credentials
-
----
-
-**Source**: [Increment 0016-test](../../../increments/0016-test/spec.md)
-**Project**: Backend Services
-**Last Updated**: ${new Date().toISOString().split('T')[0]}
-`;
-        return generated;
+      // Disable preserveOriginal to avoid archive writes
+      distributor = new ContentDistributor({
+        basePath: mockBasePath,
+        preserveOriginal: false,
       });
 
-      const result = await distributor.distribute('0016-test', spec, classifications, project);
+      // Simplified test with only ONE section
+      const simpleSpec: ParsedSpec = {
+        frontmatter: {
+          title: 'Test Spec',
+          status: 'draft',
+          priority: 'P1',
+        },
+        sections: [
+          {
+            id: 'us-001',
+            heading: 'US-001: User Login',
+            level: 2,
+            content: 'User can log in with credentials',
+            rawContent: '',
+            codeBlocks: [],
+            links: [],
+            images: [],
+            startLine: 1,
+            endLine: 5,
+            children: [],
+          },
+        ],
+        raw: '# Test Spec\n\n## US-001: User Login\n\nUser can log in',
+      };
 
-      expect(result.skipped.length).toBeGreaterThan(0);
+      const simpleClassifications: ClassificationResult[] = [
+        {
+          category: ContentCategory.UserStory,
+          confidence: 0.9,
+          reasoning: ['US-XXX pattern'],
+          suggestedFilename: 'us-001-user-login.md',
+          suggestedPath: 'specs/{project}',
+        },
+      ];
+
+      // Capture what content is written (now only one write - the distributed file)
+      let writtenContent: string = '';
+      mockWriteFile.mockImplementation(async (filePath: any, content: any) => {
+        writtenContent = content;
+        return;
+      });
+
+      // First call: File doesn't exist, gets created
+      mockExistsSync.mockReturnValue(false);
+      const result1 = await distributor.distribute('0016-test', simpleSpec, simpleClassifications, project);
+      expect(result1.created.length).toBe(1);
+
+      // Second call: File exists with same content, should be skipped
+      mockExistsSync.mockReturnValue(true);
+      mockReadFile.mockResolvedValue(writtenContent);
+
+      const result2 = await distributor.distribute('0016-test', simpleSpec, simpleClassifications, project);
+      expect(result2.skipped.length).toBeGreaterThan(0);
+
+      // Restore real timers
+      vi.useRealTimers();
     });
 
     it('should handle errors during file write', async () => {
@@ -460,7 +491,7 @@ User can log in with credentials
 
       expect(content).toContain('# User Stories');
       expect(content).toContain('backend');
-      expect(content).toContain('Files: 2');
+      expect(content).toContain('**Files**: 2');
     });
 
     it('should sort files alphabetically in index', async () => {

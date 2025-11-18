@@ -1,12 +1,21 @@
 {
   "id": "0038-serverless-architecture-intelligence",
-  "status": "active",
+  "status": "in-progress",
   "type": "feature",
   "priority": "P1",
   "created": "2025-11-16T06:44:42Z",
-  "lastActivity": "2025-11-16T06:44:42Z",
+  "started": "2025-11-17T00:00:00Z",
+  "lastActivity": "2025-11-17T23:50:00Z",
   "testMode": "TDD",
-  "coverageTarget": 80,
+  "coverageTarget": 90,
   "feature": "FS-038",
-  "projects": ["specweave"]
+  "projects": ["specweave"],
+  "totalTasks": 24,
+  "completedTasks": 10,
+  "taskBreakdown": {
+    "phase1": 6,
+    "phase2": 0,
+    "phase3": 4,
+    "phase4": 0
+  }
 }
