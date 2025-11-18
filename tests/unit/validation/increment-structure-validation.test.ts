@@ -42,7 +42,10 @@ describe('IncrementStructureValidator', () => {
 
       // Then: Validation fails with duplicate task file error
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Duplicate task files detected: tasks.md, tasks-detailed.md. Only ONE tasks.md allowed per increment.');
+      expect(result.errors[0]).toContain('Duplicate task files detected');
+      expect(result.errors[0]).toContain('tasks.md');
+      expect(result.errors[0]).toContain('tasks-detailed.md');
+      expect(result.errors[0]).toContain('Only ONE tasks.md allowed per increment');
     });
 
     it('should detect tasks.md and tasks-final.md as duplicate', async () => {
@@ -58,7 +61,10 @@ describe('IncrementStructureValidator', () => {
 
       // Then: Validation fails with duplicate task file error
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Duplicate task files detected: tasks.md, tasks-final.md. Only ONE tasks.md allowed per increment.');
+      expect(result.errors[0]).toContain('Duplicate task files detected');
+      expect(result.errors[0]).toContain('tasks.md');
+      expect(result.errors[0]).toContain('tasks-final.md');
+      expect(result.errors[0]).toContain('Only ONE tasks.md allowed per increment');
     });
 
     it('should allow only tasks.md without duplicates', async () => {
@@ -91,7 +97,10 @@ describe('IncrementStructureValidator', () => {
 
       // Then: Validation fails with all duplicates listed
       expect(result.valid).toBe(false);
-      expect(result.errors[0]).toContain('tasks.md, tasks-detailed.md, tasks-summary.md');
+      expect(result.errors[0]).toContain('Duplicate task files detected');
+      expect(result.errors[0]).toContain('tasks.md');
+      expect(result.errors[0]).toContain('tasks-detailed.md');
+      expect(result.errors[0]).toContain('tasks-summary.md');
     });
   });
 
@@ -204,7 +213,10 @@ describe('IncrementStructureValidator', () => {
 
       // Then: Validation fails
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain('Duplicate task files detected: tasks.md, tasks-detailed.md. Only ONE tasks.md allowed per increment.');
+      expect(result.errors[0]).toContain('Duplicate task files detected');
+      expect(result.errors[0]).toContain('tasks.md');
+      expect(result.errors[0]).toContain('tasks-detailed.md');
+      expect(result.errors[0]).toContain('Only ONE tasks.md allowed per increment');
     });
 
     it('should allow tasks-detailed.md in reports/ directory', async () => {

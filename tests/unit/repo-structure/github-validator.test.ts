@@ -299,10 +299,11 @@ describe('validateWithRetry', () => {
 
     // When: validateWithRetry is called
     const promise = validateWithRetry(alwaysFailFn, { maxAttempts: 3, baseDelay: 1000 });
-    await vi.runAllTimersAsync();
 
     // Then: throws last error
-    await expect(promise).rejects.toThrow('Persistent failure');
+    const expectPromise = expect(promise).rejects.toThrow('Persistent failure');
+    await vi.runAllTimersAsync();
+    await expectPromise;
     expect(alwaysFailFn).toHaveBeenCalledTimes(3);
   });
 

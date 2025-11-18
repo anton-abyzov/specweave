@@ -14,8 +14,19 @@ import fs from 'fs-extra';
 import path from 'path';
 
 // Mock fs-extra
-vi.mock('fs-extra');
-const mockedFs = fs as anyed<typeof fs>;
+vi.mock('fs-extra', () => ({
+  default: {
+    ensureDir: vi.fn(),
+    pathExists: vi.fn(),
+    readJson: vi.fn(),
+    writeJson: vi.fn(),
+  },
+}));
+
+const mockedEnsureDir = vi.mocked(fs.ensureDir);
+const mockedPathExists = vi.mocked(fs.pathExists);
+const mockedReadJson = vi.mocked(fs.readJson);
+const mockedWriteJson = vi.mocked(fs.writeJson);
 
 describe('SyncEventLogger', () => {
   let logger: SyncEventLogger;
@@ -29,9 +40,9 @@ describe('SyncEventLogger', () => {
 
   describe('logSyncEvent', () => {
     it('should log successful sync event', async () => {
-      mockedFs.ensureDir.mockResolvedValue(undefined as any);
-      mockedFs.pathExists.mockResolvedValue(false);
-      mockedFs.writeJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
 
       const event: SyncEvent = {
         incrementId: '0001-feature',
@@ -46,8 +57,8 @@ describe('SyncEventLogger', () => {
 
       await logger.logSyncEvent(event);
 
-      expect(mockedFs.ensureDir).toHaveBeenCalledWith(logsDir);
-      expect(mockedFs.writeJson).toHaveBeenCalledWith(
+      expect(mockedEnsureDir).toHaveBeenCalledWith(logsDir);
+      expect(mockedWriteJson).toHaveBeenCalledWith(
         eventsFile,
         [event],
         { spaces: 2 }
@@ -68,10 +79,11 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedFs.ensureDir.mockResolvedValue(undefined as any);
-      mockedFs.pathExists.mockResolvedValue(true);
-      mockedFs.readJson.mockResolvedValue(existingEvents);
-      mockedFs.writeJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(true);
+      // Return a copy to avoid mutation affecting test expectations
+      mockedReadJson.mockResolvedValue([...existingEvents]);
+      mockedWriteJson.mockResolvedValue(undefined as any);
 
       const newEvent: SyncEvent = {
         incrementId: '0001-feature',
@@ -86,8 +98,8 @@ describe('SyncEventLogger', () => {
 
       await logger.logSyncEvent(newEvent);
 
-      expect(mockedFs.readJson).toHaveBeenCalledWith(eventsFile);
-      expect(mockedFs.writeJson).toHaveBeenCalledWith(
+      expect(mockedReadJson).toHaveBeenCalledWith(eventsFile);
+      expect(mockedWriteJson).toHaveBeenCalledWith(
         eventsFile,
         [...existingEvents, newEvent],
         { spaces: 2 }
@@ -95,9 +107,9 @@ describe('SyncEventLogger', () => {
     });
 
     it('should log failed sync event with error', async () => {
-      mockedFs.ensureDir.mockResolvedValue(undefined as any);
-      mockedFs.pathExists.mockResolvedValue(false);
-      mockedFs.writeJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
 
       const event: SyncEvent = {
         incrementId: '0001-feature',
@@ -113,16 +125,16 @@ describe('SyncEventLogger', () => {
 
       await logger.logSyncEvent(event);
 
-      const writtenData = mockedFs.writeJson.mock.calls[0][1] as SyncEvent[];
+      const writtenData = mockedWriteJson.mock.calls[0][1] as SyncEvent[];
       expect(writtenData[0].error).toBe('Network timeout');
     });
   });
 
   describe('logConflictEvent', () => {
     it('should log conflict resolution event', async () => {
-      mockedFs.ensureDir.mockResolvedValue(undefined as any);
-      mockedFs.pathExists.mockResolvedValue(false);
-      mockedFs.writeJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0001-feature',
@@ -139,8 +151,8 @@ describe('SyncEventLogger', () => {
 
       await logger.logConflictEvent(conflictEvent);
 
-      expect(mockedFs.ensureDir).toHaveBeenCalledWith(logsDir);
-      expect(mockedFs.writeJson).toHaveBeenCalledWith(
+      expect(mockedEnsureDir).toHaveBeenCalledWith(logsDir);
+      expect(mockedWriteJson).toHaveBeenCalledWith(
         eventsFile,
         [conflictEvent],
         { spaces: 2 }
@@ -148,9 +160,9 @@ describe('SyncEventLogger', () => {
     });
 
     it('should log prompt conflict resolution', async () => {
-      mockedFs.ensureDir.mockResolvedValue(undefined as any);
-      mockedFs.pathExists.mockResolvedValue(false);
-      mockedFs.writeJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0002-feature',
@@ -168,7 +180,7 @@ describe('SyncEventLogger', () => {
 
       await logger.logConflictEvent(conflictEvent);
 
-      const writtenData = mockedFs.writeJson.mock.calls[0][1] as ConflictEvent[];
+      const writtenData = mockedWriteJson.mock.calls[0][1] as ConflictEvent[];
       expect(writtenData[0].userChoice).toBe('Keep external status (JIRA wins)');
     });
   });
@@ -198,18 +210,18 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedFs.pathExists.mockResolvedValue(true);
-      mockedFs.readJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadJson.mockResolvedValue(events);
 
       const history = await logger.loadSyncHistory();
 
-      expect(mockedFs.readJson).toHaveBeenCalledWith(eventsFile);
+      expect(mockedReadJson).toHaveBeenCalledWith(eventsFile);
       expect(history).toEqual(events);
       expect(history.length).toBe(2);
     });
 
     it('should return empty array when log file does not exist', async () => {
-      mockedFs.pathExists.mockResolvedValue(false);
+      mockedPathExists.mockResolvedValue(false);
 
       const history = await logger.loadSyncHistory();
 
@@ -240,8 +252,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedFs.pathExists.mockResolvedValue(true);
-      mockedFs.readJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadJson.mockResolvedValue(events);
 
       const history = await logger.loadSyncHistory({ incrementId: '0001-feature' });
 
@@ -273,8 +285,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedFs.pathExists.mockResolvedValue(true);
-      mockedFs.readJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadJson.mockResolvedValue(events);
 
       const history = await logger.loadSyncHistory({ tool: 'jira' });
 
@@ -307,8 +319,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedFs.pathExists.mockResolvedValue(true);
-      mockedFs.readJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadJson.mockResolvedValue(events);
 
       const successHistory = await logger.loadSyncHistory({ success: true });
       const failureHistory = await logger.loadSyncHistory({ success: false });

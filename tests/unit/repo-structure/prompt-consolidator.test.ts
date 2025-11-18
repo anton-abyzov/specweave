@@ -16,19 +16,20 @@ import {
 } from '../../../src/core/repo-structure/prompt-consolidator.js';
 
 describe('getArchitecturePrompt', () => {
-  it('should return question with 4 architecture options', () => {
+  it('should return question with 5 architecture options', () => {
     // Given: No input
     // When: getArchitecturePrompt is called
     const result = getArchitecturePrompt();
 
-    // Then: Returns question + 4 options
+    // Then: Returns question + 5 options
     expect(result.question).toBeDefined();
     expect(result.question).toContain('architecture');
-    expect(result.options).toHaveLength(4);
+    expect(result.options).toHaveLength(5);
 
     const values = result.options.map((c: any) => c.value);
     expect(values).toContain('single');
     expect(values).toContain('multi-with-parent');
+    expect(values).toContain('local-parent');
     expect(values).toContain('multi-without-parent');
     expect(values).toContain('monorepo');
   });
