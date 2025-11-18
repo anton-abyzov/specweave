@@ -32,6 +32,13 @@ interface TaskMatch {
   currentStatus: 'pending' | 'in_progress' | 'completed';
 }
 
+interface TaskConsistencyFix {
+  taskId: string;
+  lineNumber: number;
+  action: 'add-complete-marker' | 'remove-complete-marker';
+  currentLine: string;
+}
+
 /**
  * Main function - update tasks.md for given increment
  */
@@ -62,20 +69,30 @@ async function updateTasksMd(incrementId: string): Promise<void> {
     const tasks = parseTaskStatus(lines);
     console.log(`📋 Found ${tasks.length} tasks`);
 
-    // 4. Get recently completed tasks from environment (passed by hook)
-    // For now, we'll mark tasks as complete if they match a heuristic
-    // TODO: In future, hook will pass completed task IDs via env var
-    const completedTasks = detectCompletedTasks(lines);
+    // 4. Get recently completed tasks and consistency fixes
+    const { completedTasks, fixes } = detectCompletedTasks(lines);
 
-    if (completedTasks.length === 0) {
-      console.log('✅ No new task completions detected');
+    // 4a. Apply consistency fixes FIRST (if any)
+    let updatedContent = originalContent;
+    let autoFixedCount = 0;
+
+    if (fixes.length > 0) {
+      console.log(`🔧 Auto-fixing ${fixes.length} task consistency issue(s)...`);
+      updatedContent = applyConsistencyFixes(originalContent, fixes);
+      autoFixedCount = fixes.length;
+      console.log('✅ Task consistency auto-fixed');
+    }
+
+    if (completedTasks.length === 0 && fixes.length === 0) {
+      console.log('✅ No new task completions or consistency fixes needed');
       return;
     }
 
-    console.log(`🎯 Detected ${completedTasks.length} completed task(s):`, completedTasks);
+    if (completedTasks.length > 0) {
+      console.log(`🎯 Detected ${completedTasks.length} completed task(s):`, completedTasks);
+    }
 
     // 5. Update task status in content
-    let updatedContent = originalContent;
 
     for (const taskId of completedTasks) {
       updatedContent = markTaskComplete(updatedContent, taskId);
@@ -96,6 +113,9 @@ async function updateTasksMd(incrementId: string): Promise<void> {
     await fs.writeFile(tasksPath, updatedContent, 'utf-8');
 
     console.log(`✅ Updated ${tasksPath}`);
+    if (autoFixedCount > 0) {
+      console.log(`🔧 Auto-fixed ${autoFixedCount} consistency issue(s)`);
+    }
     console.log(`   Completed: ${completedCount}/${totalTasks}`);
     console.log(`   Progress: ${progress}%\n`);
 
@@ -158,8 +178,9 @@ function parseTaskStatus(lines: string[]): TaskMatch[] {
  *
  * @see .specweave/increments/0037/reports/ULTRATHINK-COMPLETE-MARKER-VS-CHECKBOXES.md
  */
-function detectCompletedTasks(lines: string[]): string[] {
+function detectCompletedTasks(lines: string[]): { completedTasks: string[]; fixes: TaskConsistencyFix[] } {
   const completedTasks: string[] = [];
+  const fixes: TaskConsistencyFix[] = [];
   const warnings: string[] = [];
   const taskPattern = /^###\s+(T-\d+[-A-Z]*):?\s+(.+)/;
 
@@ -190,22 +211,38 @@ function detectCompletedTasks(lines: string[]): string[] {
           completedTasks.push(taskId);
         }
       } else {
-        // ⚠️  INCONSISTENT: Header says COMPLETE but checkboxes incomplete
+        // ⚠️  INCONSISTENT: Header says COMPLETE but checkboxes incomplete - AUTO-FIX
+        fixes.push({
+          taskId,
+          lineNumber: i,
+          action: 'remove-complete-marker',
+          currentLine: line
+        });
         warnings.push(`${taskId}: Header has ✅ COMPLETE but not all checkboxes checked`);
       }
       continue;
     }
 
-    // If no implementation section, trust the header marker
+    // If no implementation section, remove COMPLETE marker (can't verify)
     if (hasCompleteMarker && !implementationSection) {
-      if (!completedTasks.includes(taskId)) {
-        completedTasks.push(taskId);
-      }
+      fixes.push({
+        taskId,
+        lineNumber: i,
+        action: 'remove-complete-marker',
+        currentLine: line
+      });
+      warnings.push(`${taskId}: Header has ✅ COMPLETE but no implementation section to verify`);
       continue;
     }
 
-    // Warn if checkboxes all complete but header missing marker
+    // Warn if checkboxes all complete but header missing marker - AUTO-FIX
     if (!hasCompleteMarker && implementationSection && allCheckboxesComplete) {
+      fixes.push({
+        taskId,
+        lineNumber: i,
+        action: 'add-complete-marker',
+        currentLine: line
+      });
       warnings.push(`${taskId}: All checkboxes checked but header missing ✅ COMPLETE`);
       // Still count as complete (checkboxes are source of truth for work done)
       if (!completedTasks.includes(taskId)) {
@@ -233,7 +270,31 @@ function detectCompletedTasks(lines: string[]): string[] {
     console.warn('');
   }
 
-  return completedTasks;
+  return { completedTasks, fixes };
+}
+
+/**
+ * Apply task consistency fixes to content
+ */
+function applyConsistencyFixes(content: string, fixes: TaskConsistencyFix[]): string {
+  const lines = content.split('\n');
+
+  // Apply fixes (process in reverse order to preserve line numbers)
+  for (const fix of fixes.reverse()) {
+    const line = lines[fix.lineNumber];
+
+    if (fix.action === 'remove-complete-marker') {
+      // Remove ✅ COMPLETE from header
+      const fixed = line.replace(/\s*✅\s*COMPLETE\s*/g, '');
+      lines[fix.lineNumber] = fixed;
+    } else if (fix.action === 'add-complete-marker') {
+      // Add ✅ COMPLETE to header (before any trailing spaces)
+      const fixed = line.trim() + ' ✅ COMPLETE';
+      lines[fix.lineNumber] = fixed;
+    }
+  }
+
+  return lines.join('\n');
 }
 
 /**
