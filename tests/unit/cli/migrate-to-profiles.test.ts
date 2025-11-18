@@ -69,15 +69,15 @@ describe('migrate-to-profiles', () => {
       // Create old .env file with GitHub config
       await fs.writeFile(
         path.join(testDir, '.env'),
-        'GITHUB_TOKEN=ghp_test123\n'
+        'GITHUB_TOKEN=ghp_test123\nGITHUB_OWNER=myorg\nGITHUB_REPO=myrepo\n'
       );
 
       const config = await detectOldConfiguration(testDir);
 
       expect(config.detected).toBe(true);
       expect(config.github).toEqual({
-        owner: expect.any(String),
-        repo: expect.any(String)
+        owner: 'myorg',
+        repo: 'myrepo'
       });
     });
 

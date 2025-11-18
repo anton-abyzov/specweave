@@ -9,10 +9,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import inquirer from 'inquirer';
 
 // Mock inquirer before importing InitFlow
-const mockPrompt = vi.fn();
 vi.mock('inquirer', () => ({
   default: {
-    prompt: mockPrompt
+    prompt: vi.fn()
   }
 }));
 

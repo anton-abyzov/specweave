@@ -11,6 +11,31 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { StatusSyncEngine, SyncInput } from '../../../src/core/sync/status-sync-engine.js';
 
+// Standard status mappings for tests
+const TEST_STATUS_MAPPINGS = {
+  github: {
+    planning: 'open',
+    active: 'open',
+    paused: 'open',
+    completed: 'closed',
+    abandoned: 'closed'
+  },
+  jira: {
+    planning: 'To Do',
+    active: 'In Progress',
+    paused: 'On Hold',
+    completed: 'Done',
+    abandoned: 'Cancelled'
+  },
+  ado: {
+    planning: 'New',
+    active: 'Active',
+    paused: 'Resolved',
+    completed: 'Closed',
+    abandoned: 'Removed'
+  }
+} as const;
+
 describe('StatusSyncEngine - Auto-Sync Mode', () => {
   describe('isAutoSyncEnabled', () => {
     it('should return true when autoSync is enabled', () => {
@@ -123,7 +148,7 @@ describe('StatusSyncEngine - Auto-Sync Mode', () => {
             autoSync: true,
             promptUser: false,
             conflictResolution: 'specweave-wins' as const,
-            mappings: { github: {}, jira: {}, ado: {} }
+            mappings: TEST_STATUS_MAPPINGS
           }
         }
       };
@@ -155,7 +180,7 @@ describe('StatusSyncEngine - Auto-Sync Mode', () => {
             autoSync: true,
             promptUser: false,
             conflictResolution: 'last-write-wins' as const,
-            mappings: { github: {}, jira: {}, ado: {} }
+            mappings: TEST_STATUS_MAPPINGS
           }
         }
       };
@@ -171,9 +196,13 @@ describe('StatusSyncEngine - Auto-Sync Mode', () => {
         remoteTimestamp: '2025-11-10T11:00:00Z'
       };
 
-      await expect(engine.executeAutoSync(input)).rejects.toThrow(
-        'Status synchronization is disabled'
-      );
+      // Should fail gracefully (return error in result, not throw)
+      const result = await engine.executeAutoSync(input);
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Status synchronization is disabled');
+      expect(result.wasAutomatic).toBe(true);
+      expect(result.wasPrompted).toBe(false);
     });
 
     it('should handle errors gracefully and not block', async () => {
@@ -252,7 +281,7 @@ describe('StatusSyncEngine - Auto-Sync Mode', () => {
             autoSync: true,
             promptUser: true, // Conflict: auto-sync but also prompt?
             conflictResolution: 'last-write-wins' as const,
-            mappings: { github: {}, jira: {}, ado: {} }
+            mappings: TEST_STATUS_MAPPINGS
           }
         }
       };

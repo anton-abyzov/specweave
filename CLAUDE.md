@@ -562,6 +562,57 @@ const mockFs = fs as anyed<typeof fs> & {
 - Use `mockReturnValue` for sync functions
 - Check that mocks are actually called: `expect(mockFn).toHaveBeenCalled()`
 
+### Testing Best Practices & Anti-Patterns
+
+**Lessons from fixing 72+ test failures (2025-11-17 Vitest migration)**
+
+#### Critical Rules (Will Fail Tests)
+
+```typescript
+// ❌ WRONG                           // ✅ CORRECT
+require('../src/module')              import { Module } from '../src/module.js'
+jest.fn()                             vi.fn()
+jest.mock()                           vi.mock()
+fs as anyed<typeof fs>                vi.mocked(fs.readFile)
+const mock = vi.fn()                  vi.mock('mod', () => ({
+vi.mock('mod', () => ({ mock }))        method: vi.fn()  // inline!
+                                      }))
+mockReadJson.mockResolvedValue(arr)   mockReadJson.mockResolvedValue([...arr])  // copy!
+```
+
+#### Quick Template
+
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+vi.mock('fs-extra', () => ({ default: { readFile: vi.fn() } }));
+import fs from 'fs-extra';
+
+describe('Feature', () => {
+  const mockReadFile = vi.mocked(fs.readFile);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockReadFile.mockResolvedValue('data');
+  });
+
+  it('works', async () => {
+    const result = await MyModule.doSomething();
+    expect(mockReadFile).toHaveBeenCalled();
+  });
+});
+```
+
+#### Pre-Commit Checklist
+
+- [ ] ES6 imports (NOT require())
+- [ ] vi.* APIs (NOT jest.*)
+- [ ] vi.mocked() for mocks (NOT anyed<>)
+- [ ] Inline mock factories (NO external variables)
+- [ ] Array copies in mocks (NO shared references)
+- [ ] vi.clearAllMocks() in beforeEach()
+
+**Full guide**: `tests/test-template.test.ts`
+
 **Why This Matters**:
 1. Tests create mock `.specweave/` structures for testing
 2. Cleanup uses `fs.rm(testRoot, { recursive: true })`

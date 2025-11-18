@@ -563,6 +563,37 @@ Skills/agents activate automatically based on context.
 - >80% coverage for critical paths
 - Tests MUST tell the truth
 
+### Writing Modern Tests (Vitest)
+
+**SpecWeave uses Vitest**. Key patterns:
+
+```typescript
+// ✅ CORRECT: ES6 imports, Vitest API, type-safe mocks
+import { describe, it, expect, vi } from 'vitest';
+vi.mock('fs-extra', () => ({ default: { readFile: vi.fn() } }));
+import fs from 'fs-extra';
+
+describe('Feature', () => {
+  const mockReadFile = vi.mocked(fs.readFile);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockReadFile.mockResolvedValue('data');
+  });
+
+  it('works', async () => {
+    const result = await MyModule.doSomething();
+    expect(mockReadFile).toHaveBeenCalled();
+  });
+});
+```
+
+**Common mistakes to avoid**:
+- ❌ `require()` → ✅ `import` (ES modules only)
+- ❌ `jest.fn()` → ✅ `vi.fn()` (Vitest API)
+- ❌ `fs as anyed<>` → ✅ `vi.mocked(fs.method)` (type-safe)
+- ❌ External variable in `vi.mock()` factory → ✅ Inline `vi.fn()`
+
 ---
 
 ## Key SpecWeave Principles

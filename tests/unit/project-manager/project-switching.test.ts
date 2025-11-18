@@ -17,8 +17,8 @@ vi.mock('fs-extra');
 
 // Mock auto-detect function
 vi.mock('../../../src/utils/project-detection', () => ({
-  autoDetectProjectIdSync: jest.fn(() => 'default'),
-  formatProjectName: jest.fn((id: string) => {
+  autoDetectProjectIdSync: vi.fn(() => 'default'),
+  formatProjectName: vi.fn((id: string) => {
     return id.split('-').map(word =>
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
@@ -27,7 +27,7 @@ vi.mock('../../../src/utils/project-detection', () => ({
 
 describe('ProjectManager - Project Switching', () => {
   let projectManager: ProjectManager;
-  let mockConfigManager: anyed<ConfigManager>;
+  let mockConfigManager: any;
   const testRoot = '/test/project/root';
 
   beforeEach(() => {
@@ -38,7 +38,7 @@ describe('ProjectManager - Project Switching', () => {
     projectManager = new ProjectManager(testRoot);
 
     // Get mocked ConfigManager instance
-    mockConfigManager = (projectManager as any).configManager as anyed<ConfigManager>;
+    mockConfigManager = (projectManager as any).configManager as any;
 
     // Default mock: multi-project mode with multiple projects
     mockConfigManager.load.mockReturnValue({
