@@ -1,9 +1,10 @@
 {
   "id": "0042-test-infrastructure-cleanup",
-  "status": "active",
-  "type": "feature",
+  "status": "in-progress",
+  "type": "refactor",
   "created": "2025-11-18T00:51:04Z",
-  "lastActivity": "2025-11-18T00:51:04Z",
+  "started": "2025-11-18T12:00:00Z",
+  "lastActivity": "2025-11-18T12:00:00Z",
   "testMode": "TDD",
-  "coverageTarget": 80
+  "coverageTarget": 90
 }

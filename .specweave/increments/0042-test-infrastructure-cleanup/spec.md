@@ -2,9 +2,10 @@
 increment: 0042-test-infrastructure-cleanup
 title: "Test Infrastructure Cleanup - Eliminate 48% Duplication"
 priority: P1
-status: planning
+status: in-progress
 type: refactor
 created: 2025-11-18
+started: 2025-11-18
 test_mode: TDD
 coverage_target: 90
 epic: FS-25-11-18

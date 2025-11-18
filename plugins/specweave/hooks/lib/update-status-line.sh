@@ -49,9 +49,9 @@ if [[ -d "$INCREMENTS_DIR" ]]; then
       # Parse YAML frontmatter for status (source of truth)
       status=$(grep -m1 "^status:" "$spec_file" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "")
 
-      # Check if increment is open (active or planning)
+      # Check if increment is open (active, planning, or in-progress)
       # ONLY accepts official IncrementStatus enum values
-      if [[ "$status" == "active" ]] || [[ "$status" == "planning" ]]; then
+      if [[ "$status" == "active" ]] || [[ "$status" == "planning" ]] || [[ "$status" == "in-progress" ]]; then
         increment_id=$(basename "$(dirname "$spec_file")")
         # Parse created date from spec.md YAML frontmatter
         created=$(grep -m1 "^created:" "$spec_file" 2>/dev/null | cut -d: -f2- | tr -d ' ' || echo "1970-01-01")

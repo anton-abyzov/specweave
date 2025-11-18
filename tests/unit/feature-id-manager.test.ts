@@ -295,6 +295,163 @@ imported: true
       expect(manager.getAssignedId('FS-newest')).toBe('FS-006');
     });
   });
+
+  describe('greenfield auto-generation', () => {
+    it('should auto-generate FS-XXX for greenfield without feature field', async () => {
+      // Create increment WITHOUT feature field and WITHOUT imported flag
+      const incrementPath = path.join(testProjectRoot, '.specweave/increments/0040-greenfield');
+      await fs.ensureDir(incrementPath);
+
+      await fs.writeFile(
+        path.join(incrementPath, 'spec.md'),
+        `---
+increment: 0040-greenfield
+status: completed
+type: bug
+---
+# No feature field here!
+`
+      );
+
+      await fs.writeJson(path.join(incrementPath, 'metadata.json'), {
+        id: '0040-greenfield',
+        created: '2025-11-17',
+        status: 'completed'
+      });
+
+      await manager.buildRegistry();
+
+      // Should auto-generate FS-040
+      const features = manager.getAllFeatures();
+      const feature040 = features.find(f => f.incrementId === '0040-greenfield');
+
+      expect(feature040).toBeDefined();
+      expect(feature040?.assignedId).toBe('FS-040');
+      expect(feature040?.originalId).toBe('FS-040');
+    });
+
+    it('should auto-generate FS-041 for increment 0041', async () => {
+      const incrementPath = path.join(testProjectRoot, '.specweave/increments/0041-another-greenfield');
+      await fs.ensureDir(incrementPath);
+
+      await fs.writeFile(
+        path.join(incrementPath, 'spec.md'),
+        `---
+increment: 0041-another-greenfield
+status: completed
+---
+# Another greenfield increment
+`
+      );
+
+      await fs.writeJson(path.join(incrementPath, 'metadata.json'), {
+        id: '0041-another-greenfield',
+        created: '2025-11-17',
+        status: 'completed'
+      });
+
+      await manager.buildRegistry();
+
+      const features = manager.getAllFeatures();
+      const feature041 = features.find(f => f.incrementId === '0041-another-greenfield');
+
+      expect(feature041).toBeDefined();
+      expect(feature041?.assignedId).toBe('FS-041');
+      expect(feature041?.originalId).toBe('FS-041');
+    });
+
+    it('should NOT auto-generate for brownfield with imported flag', async () => {
+      const incrementPath = path.join(testProjectRoot, '.specweave/increments/0050-imported');
+      await fs.ensureDir(incrementPath);
+
+      await fs.writeFile(
+        path.join(incrementPath, 'spec.md'),
+        `---
+increment: 0050-imported
+imported: true
+feature: FS-25-11-15-external
+---
+# Imported from external tool
+`
+      );
+
+      await fs.writeJson(path.join(incrementPath, 'metadata.json'), {
+        id: '0050-imported',
+        created: '2025-11-15',
+        status: 'completed'
+      });
+
+      await manager.buildRegistry();
+
+      const features = manager.getAllFeatures();
+      const feature050 = features.find(f => f.incrementId === '0050-imported');
+
+      // Should use date-based ID from frontmatter
+      expect(feature050?.originalId).toBe('FS-25-11-15-external');
+      // Assigned ID is sequential (from brownfield pool)
+      expect(feature050?.assignedId).toMatch(/^FS-\d{3}$/);
+    });
+
+    it('should handle mix of greenfield and brownfield', async () => {
+      // Greenfield: 0040
+      const greenfield1 = path.join(testProjectRoot, '.specweave/increments/0040-greenfield-1');
+      await fs.ensureDir(greenfield1);
+      await fs.writeFile(path.join(greenfield1, 'spec.md'), `---
+increment: 0040-greenfield-1
+---
+# Greenfield 1
+`);
+      await fs.writeJson(path.join(greenfield1, 'metadata.json'), {
+        id: '0040-greenfield-1',
+        created: '2025-11-17',
+        status: 'completed'
+      });
+
+      // Brownfield: imported
+      const brownfield = path.join(testProjectRoot, '.specweave/increments/0041-brownfield');
+      await fs.ensureDir(brownfield);
+      await fs.writeFile(path.join(brownfield, 'spec.md'), `---
+increment: 0041-brownfield
+imported: true
+feature: FS-25-11-18-external
+---
+# Brownfield
+`);
+      await fs.writeJson(path.join(brownfield, 'metadata.json'), {
+        id: '0041-brownfield',
+        created: '2025-11-18',
+        status: 'completed'
+      });
+
+      // Greenfield: 0042
+      const greenfield2 = path.join(testProjectRoot, '.specweave/increments/0042-greenfield-2');
+      await fs.ensureDir(greenfield2);
+      await fs.writeFile(path.join(greenfield2, 'spec.md'), `---
+increment: 0042-greenfield-2
+---
+# Greenfield 2
+`);
+      await fs.writeJson(path.join(greenfield2, 'metadata.json'), {
+        id: '0042-greenfield-2',
+        created: '2025-11-19',
+        status: 'completed'
+      });
+
+      await manager.buildRegistry();
+
+      const features = manager.getAllFeatures();
+
+      // Greenfield should have FS-XXX matching increment number
+      const green1 = features.find(f => f.incrementId === '0040-greenfield-1');
+      const green2 = features.find(f => f.incrementId === '0042-greenfield-2');
+      expect(green1?.assignedId).toBe('FS-040');
+      expect(green2?.assignedId).toBe('FS-042');
+
+      // Brownfield should have date-based original ID but sequential assigned ID
+      const brown = features.find(f => f.incrementId === '0041-brownfield');
+      expect(brown?.originalId).toBe('FS-25-11-18-external');
+    });
+  });
 });
 
 describe('FeatureIDManager Integration', () => {
