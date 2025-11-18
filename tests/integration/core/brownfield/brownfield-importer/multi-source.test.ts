@@ -5,9 +5,9 @@
  * Tests importing from multiple external sources into different projects
  */
 
-import { BrownfieldImporter, ImportOptions } from '../../src/core/brownfield/importer';
-import { ConfigManager } from '../../src/core/config-manager';
-import { withTempDir } from '../../utils/temp-dir';
+import { BrownfieldImporter, ImportOptions } from '../../src/core/brownfield/importer.js';
+import { ConfigManager } from '../../src/core/config-manager.js';
+import { withTempDir } from '../../utils/temp-dir.js';
 import fs from 'fs-extra';
 import path from 'path';
 

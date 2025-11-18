@@ -15,7 +15,7 @@ import {
   performBidirectionalSync,
   ExternalStatus,
   SpecStatus
-} from '../../plugins/specweave-ado/lib/conflict-resolver';
+} from '../../plugins/specweave-ado/lib/conflict-resolver.js';
 
 describe('Bidirectional Sync with Living Docs', () => {
   let testDir: string;

@@ -14,7 +14,7 @@ import {
   hasJiraCredentials,
   shouldRunIntegrationTests,
   getCredentialStatus
-} from '../../helpers/auth';
+} from '../../helpers/auth.js';
 
 // Load .env file
 dotenv.config();

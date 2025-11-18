@@ -9,9 +9,9 @@
  * Part of increment 0039: Ultra-Smart Next Command
  */
 
-import { AutoTransitionManager } from '../../src/core/increment/auto-transition-manager';
-import { MetadataManager } from '../../src/core/increment/metadata-manager';
-import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../src/core/types/increment-metadata';
+import { AutoTransitionManager } from '../../src/core/increment/auto-transition-manager.js';
+import { MetadataManager } from '../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../src/core/types/increment-metadata.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
