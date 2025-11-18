@@ -592,6 +592,11 @@ npm run test:coverage       # Coverage report
   - `features/` - Feature plugins (Figma, i18n, diagrams, etc.)
 - `tests/e2e/` - Full user scenarios - **Playwright**
 
+**Test Naming Convention** (standardized 2025-11-18):
+- ✅ ALL tests use `.test.ts` extension (unit, integration, E2E)
+- ❌ NEVER use `.spec.ts` extension (deprecated)
+- **Why**: Consistent glob patterns, simpler test discovery, aligned with Vitest conventions
+
 **Writing Tests**:
 ```typescript
 // Import from vitest (NOT jest)
