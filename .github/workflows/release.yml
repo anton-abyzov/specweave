@@ -88,6 +88,37 @@ jobs:
           echo "ℹ️  Continuing with bumped version: $ACTUAL_VERSION"
           echo "💡 Next time, specify the FINAL version (after bump), not the current one"
 
+      - name: Validate CHANGELOG entry exists
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          echo "🔍 Validating CHANGELOG entry for version $VERSION..."
+
+          # Check if version exists in CHANGELOG
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "❌ ERROR: No CHANGELOG entry found for version $VERSION"
+            echo ""
+            echo "Please add a CHANGELOG entry with format:"
+            echo "## [$VERSION] - $(date +%Y-%m-%d)"
+            echo ""
+            echo "See CHANGELOG.md for examples"
+            exit 1
+          fi
+
+          echo "✅ CHANGELOG entry found for $VERSION"
+
+          # Verify release notes are not empty
+          NOTES=$(awk "/## \[$VERSION\]/,/^## \[/" CHANGELOG.md | sed '1d;$d')
+          NOTES_LINES=$(echo "$NOTES" | wc -l | tr -d ' ')
+
+          if [ -z "$NOTES" ] || [ "$NOTES_LINES" -lt 3 ]; then
+            echo "⚠️  WARNING: CHANGELOG entry for $VERSION is empty or too short"
+            echo "Consider adding meaningful release notes"
+            exit 1
+          fi
+
+          echo "✅ CHANGELOG entry has content ($NOTES_LINES lines)"
+
       - name: Extract release notes from CHANGELOG
         id: changelog
         env:

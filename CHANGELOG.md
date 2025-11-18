@@ -4,6 +4,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.22.1] - 2025-11-18
+
+### Fixed
+
+- **Serverless Integration Tests** - Fixed async/await issues in cost optimization and learning path tests (39 tests now passing)
+- **Test Infrastructure** - Updated serverless tests to properly handle async platform loading
+- **CI/CD Stability** - All Dependabot PRs now passing integration tests
+
+### Changed
+
+- **Dependencies** - Vitest updated to 2.1.9 (improved test performance)
+- **Dependencies** - @types/node updated to 24.10.1 (latest type definitions)
+- **Dependencies** - Production dependencies group updated (3 packages)
+
+### Technical Details
+
+This patch release fixes critical test failures that were blocking all PRs. The root cause was a breaking API change where `loadAllPlatforms()` became async, but tests weren't updated to use `await`. All serverless integration tests now properly use async/await patterns.
+
+---
+
 ## [0.22.0] - 2025-11-20
 
 ### Added
