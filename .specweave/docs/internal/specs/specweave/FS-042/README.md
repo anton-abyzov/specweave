@@ -4,7 +4,7 @@ title: "Test Infrastructure Cleanup - Eliminate 48% Duplication - SpecWeave Impl
 feature: FS-042
 project: specweave
 type: feature-context
-status: in-progress
+status: completed
 ---
 
 # Test Infrastructure Cleanup - Eliminate 48% Duplication

@@ -2,7 +2,7 @@
 id: FS-042
 title: "Test Infrastructure Cleanup - Eliminate 48% Duplication"
 type: feature
-status: in-progress
+status: completed
 priority: P1
 created: 2025-11-18
 lastUpdated: 2025-11-18
@@ -18,7 +18,7 @@ lastUpdated: 2025-11-18
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0042-test-infrastructure-cleanup](../../../../increments/0042-test-infrastructure-cleanup/spec.md) | ⏳ in-progress | 2025-11-18 |
+| [0042-test-infrastructure-cleanup](../../../../increments/0042-test-infrastructure-cleanup/spec.md) | ✅ completed | 2025-11-18 |
 
 ## User Stories
 
