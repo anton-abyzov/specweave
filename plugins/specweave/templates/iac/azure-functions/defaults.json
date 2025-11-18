@@ -1,10 +1,10 @@
 {
   "location": "eastus",
   "resourceGroupName": "my-functions-rg",
-  "appName": "my-function-app",
+  "functionName": "my-function-app",
   "runtime": "node",
   "runtimeVersion": "20",
-  "osType": "Linux",
+  "osType": "linux",
   "skuName": "Y1",
   "environment": "dev",
   "databaseAccountName": "my-cosmosdb-account",

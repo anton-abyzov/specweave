@@ -106,7 +106,7 @@ describe('ConfigManager', () => {
       // Update research insights
       await ConfigManager.updateResearch({
         vision: {
-          keywords: ['design', 'collaboration'],
+          keywords: ['design', 'collaboration', 'productivity'],
           market: 'productivity-saas',
           competitors: [],
           opportunityScore: 8,
@@ -121,7 +121,7 @@ describe('ConfigManager', () => {
       const config = await ConfigManager.load(TEST_CONFIG_PATH);
       expect(config.research?.vision).toBeDefined();
       expect(config.research?.vision?.market).toBe('productivity-saas');
-      expect(config.research?.vision?.keywords).toEqual(['design', 'collaboration']);
+      expect(config.research?.vision?.keywords).toEqual(['design', 'collaboration', 'productivity']);
     });
 
     it('should merge with existing research data', async () => {
@@ -129,7 +129,7 @@ describe('ConfigManager', () => {
       await ConfigManager.initialize('Test Project', TEST_CONFIG_PATH);
       await ConfigManager.updateResearch({
         vision: {
-          keywords: ['design'],
+          keywords: ['design', 'collaboration', 'productivity'],
           market: 'productivity-saas',
           competitors: [],
           opportunityScore: 8,

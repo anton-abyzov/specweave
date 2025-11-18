@@ -27,6 +27,12 @@ describe('update-status-line.sh hook', () => {
     fs.mkdirSync(path.join(tempDir, '.specweave/state'), { recursive: true });
     fs.mkdirSync(path.join(tempDir, '.specweave/increments'), { recursive: true });
 
+    // Create symlink to dist/ so hook can find count-tasks CLI
+    // Hook looks for: PROJECT_ROOT/dist/src/cli/count-tasks.js
+    const sourceDistPath = path.join(process.cwd(), 'dist');
+    const targetDistPath = path.join(tempDir, 'dist');
+    fs.symlinkSync(sourceDistPath, targetDistPath, 'dir');
+
     // Path to hook script (from project root)
     hookScript = path.join(
       process.cwd(),
@@ -40,7 +46,7 @@ describe('update-status-line.sh hook', () => {
   });
 
   /**
-   * Helper: Create increment with metadata and tasks
+   * Helper: Create increment with spec.md (source of truth), metadata, and tasks
    */
   function createIncrement(
     id: string,
@@ -50,12 +56,28 @@ describe('update-status-line.sh hook', () => {
     const incrementDir = path.join(tempDir, '.specweave/increments', id);
     fs.mkdirSync(incrementDir, { recursive: true });
 
-    // Create metadata.json
+    const created = new Date().toISOString();
+
+    // Create spec.md (SOURCE OF TRUTH for hook!)
+    // Hook reads status from spec.md YAML frontmatter, not metadata.json
+    const specContent = `---
+increment: ${id}
+status: ${status}
+created: ${created}
+---
+
+# ${id}
+
+Specification content.
+`;
+    fs.writeFileSync(path.join(incrementDir, 'spec.md'), specContent);
+
+    // Create metadata.json (still useful for other tools)
     const metadata = {
       id,
       status,
-      created: new Date().toISOString(),
-      lastActivity: new Date().toISOString()
+      created,
+      lastActivity: created
     };
     fs.writeFileSync(
       path.join(incrementDir, 'metadata.json'),
@@ -71,8 +93,9 @@ describe('update-status-line.sh hook', () => {
    */
   function runHook(): void {
     execSync(`bash "${hookScript}"`, {
-      cwd: tempDir,
-      env: { ...process.env, PROJECT_ROOT: tempDir }
+      cwd: tempDir
+      // Hook's find_project_root() will find tempDir because it has .specweave/
+      // Hook will find CLI at tempDir/dist/... (symlink to actual dist/)
     });
   }
 
@@ -125,7 +148,7 @@ describe('update-status-line.sh hook', () => {
 
       expect(cache.current).toBeDefined();
       expect(cache.current?.id).toBe('0001-test-increment');
-      expect(cache.current?.name).toBe('test-increment');
+      expect(cache.current?.name).toBe('0001-test-increment'); // Hook includes increment ID in name
       expect(cache.current?.total).toBe(3); // 3 task headers
       expect(cache.current?.completed).toBe(2); // 2 **Completed**: markers
       expect(cache.current?.percentage).toBe(66); // 2/3 = 66%
@@ -263,9 +286,9 @@ describe('update-status-line.sh hook', () => {
       expect(cache.openCount).toBe(3); // All 3 are active
     });
 
-    it('should count all open increments (active/in-progress/planning)', () => {
+    it('should count all open increments (active/active/planning)', () => {
       createIncrement('0001-active', 'active', '### T-001: Task');
-      createIncrement('0002-in-progress', 'in-progress', '### T-001: Task');
+      createIncrement('0002-another-active', 'active', '### T-001: Task');
       createIncrement('0003-planning', 'planning', '### T-001: Task');
       createIncrement('0004-completed', 'completed', '### T-001: Task'); // Should not count
       createIncrement('0005-paused', 'paused', '### T-001: Task'); // Should not count
@@ -274,7 +297,7 @@ describe('update-status-line.sh hook', () => {
 
       const cache = readCache();
 
-      expect(cache.openCount).toBe(3); // Only active, in-progress, planning
+      expect(cache.openCount).toBe(3); // Only active, active, planning
     });
   });
 
@@ -487,7 +510,7 @@ describe('update-status-line.sh hook', () => {
       const cache = readCache();
 
       expect(cache.current?.id).toBe('0037-project-specific-tasks');
-      expect(cache.current?.name).toBe('project-specific-tasks');
+      expect(cache.current?.name).toBe('0037-project-specific-tasks'); // Hook includes increment ID in name
       expect(cache.current?.total).toBe(3); // T-001, T-002, T-003
       expect(cache.current?.completed).toBe(2); // Only T-001 and T-002 have **Completed**:
       expect(cache.current?.percentage).toBe(66); // 2/3 ≈ 66%

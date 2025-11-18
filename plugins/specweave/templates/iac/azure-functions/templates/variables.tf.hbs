@@ -13,10 +13,10 @@ variable "resource_group_name" {
   default     = "{{resourceGroupName}}"
 }
 
-variable "function_name" {
+variable "app_name" {
   description = "Function App name"
   type        = string
-  default     = "{{functionName}}"
+  default     = "{{appName}}"
 }
 
 variable "runtime" {
@@ -26,21 +26,21 @@ variable "runtime" {
 }
 
 variable "runtime_version" {
-  description = "Runtime version"
+  description = "Runtime version (20 for Node.js 20, 3.11 for Python 3.11, etc.)"
   type        = string
   default     = "{{runtimeVersion}}"
 }
 
 variable "os_type" {
-  description = "OS type (linux or windows)"
+  description = "OS type (Linux or Windows)"
   type        = string
   default     = "{{osType}}"
 }
 
-variable "sku_size" {
-  description = "App Service Plan SKU (Y1 for Consumption, EP1-EP3 for Premium)"
+variable "sku_name" {
+  description = "App Service Plan SKU (Y1 for Consumption, EP1/EP2/EP3 for Premium)"
   type        = string
-  default     = "{{skuSize}}"
+  default     = "{{skuName}}"
 }
 
 variable "environment" {
@@ -49,38 +49,38 @@ variable "environment" {
   default     = "{{environment}}"
 }
 
-variable "storage_account_name" {
-  description = "Storage account name (3-24 lowercase alphanumeric)"
+variable "database_account_name" {
+  description = "Cosmos DB account name"
   type        = string
-  default     = "{{storageAccountName}}"
+  default     = "{{databaseAccountName}}"
 }
 
 variable "database_name" {
-  description = "Cosmos DB account and database name"
+  description = "Cosmos DB database name"
   type        = string
   default     = "{{databaseName}}"
 }
 
-variable "primary_key" {
+variable "container_name" {
+  description = "Cosmos DB container name"
+  type        = string
+  default     = "{{containerName}}"
+}
+
+variable "partition_key" {
   description = "Cosmos DB partition key"
   type        = string
-  default     = "{{primaryKey}}"
+  default     = "{{partitionKey}}"
 }
 
-variable "cosmos_db_throughput" {
-  description = "Cosmos DB manual throughput (0 for autoscale or serverless)"
+variable "throughput" {
+  description = "Cosmos DB throughput (RU/s, minimum 400)"
   type        = number
-  default     = {{cosmosDbThroughput}}
-}
-
-variable "log_retention_days" {
-  description = "Application Insights data retention in days"
-  type        = number
-  default     = {{logRetentionDays}}
+  default     = {{throughput}}
 }
 
 variable "cors_origins" {
-  description = "List of allowed CORS origins"
+  description = "List of allowed CORS origins for Function App"
   type        = list(string)
   default     = {{tfList corsOrigins}}
 }
@@ -91,8 +91,34 @@ variable "project_name" {
   default     = "{{projectName}}"
 }
 
-variable "tags" {
-  description = "Additional tags for all resources"
-  type        = map(string)
-  default     = {}
+variable "storage_account_tier" {
+  description = "Storage account tier (Standard or Premium)"
+  type        = string
+  default     = "{{storageAccountTier}}"
 }
+
+variable "storage_account_replication" {
+  description = "Storage account replication type (LRS, GRS, RAGRS, ZRS)"
+  type        = string
+  default     = "{{storageAccountReplication}}"
+}
+
+{{#if enableMultiRegion}}
+variable "secondary_regions" {
+  description = "List of secondary regions for multi-region deployment"
+  type        = list(string)
+  default     = {{tfList secondaryRegions}}
+}
+{{/if}}
+
+{{#if enableVnet}}
+variable "vnet_id" {
+  description = "Virtual Network ID for Function App integration"
+  type        = string
+}
+
+variable "subnet_id" {
+  description = "Subnet ID for Function App integration"
+  type        = string
+}
+{{/if}}

@@ -1,0 +1,42 @@
+# Input Variables for Firebase
+variable "project_id" {
+  description = "GCP/Firebase Project ID"
+  type        = string
+  default     = "{{projectId}}"
+}
+
+variable "region" {
+  description = "Firebase/GCP region"
+  type        = string
+  default     = "{{region}}"
+}
+
+variable "app_display_name" {
+  description = "Firebase Web App display name"
+  type        = string
+  default     = "{{appDisplayName}}"
+}
+
+variable "site_id" {
+  description = "Firebase Hosting site ID"
+  type        = string
+  default     = "{{siteId}}"
+}
+
+variable "function_name" {
+  description = "Cloud Function name"
+  type        = string
+  default     = "{{functionName}}"
+}
+
+variable "runtime" {
+  description = "Function runtime"
+  type        = string
+  default     = "{{runtime}}"
+}
+
+variable "environment" {
+  description = "Environment (dev/staging/prod)"
+  type        = string
+  default     = "{{environment}}"
+}

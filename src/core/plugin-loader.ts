@@ -118,7 +118,15 @@ export class PluginLoader {
     const warnings: string[] = [];
 
     // Required fields (Claude's official schema)
-    if (!manifest.name) errors.push('Missing required field: name');
+    if (!manifest.name) {
+      errors.push('Missing required field: name');
+    } else {
+      // Validate name format (lowercase-with-hyphens)
+      const validNamePattern = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+      if (!validNamePattern.test(manifest.name)) {
+        errors.push('Invalid plugin name format. Must be lowercase letters, numbers, and hyphens (e.g., "my-plugin")');
+      }
+    }
     if (!manifest.description) errors.push('Missing required field: description');
     if (!manifest.version) errors.push('Missing required field: version');
     if (!manifest.author) errors.push('Missing required field: author');
@@ -145,6 +153,16 @@ export class PluginLoader {
       errors,
       warnings
     };
+  }
+
+  /**
+   * Validate plugin manifest (public API alias for validateManifest)
+   *
+   * @param manifest - Manifest object to validate
+   * @returns Validation result with errors/warnings
+   */
+  async validate(manifest: any): Promise<ValidationResult> {
+    return this.validateManifest(manifest);
   }
 
   /**

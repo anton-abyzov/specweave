@@ -1,0 +1,15 @@
+{
+  "name": "specweave-test",
+  "version": "1.0.0",
+  "description": "Test plugin for unit testing",
+  "author": {
+    "name": "SpecWeave Test Suite",
+    "email": "test@specweave.dev"
+  },
+  "specweave_core_version": ">=0.4.0",
+  "provides": {
+    "skills": [],
+    "agents": [],
+    "commands": []
+  }
+}

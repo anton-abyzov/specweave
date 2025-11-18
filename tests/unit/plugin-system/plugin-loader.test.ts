@@ -82,6 +82,10 @@ describe('PluginLoader', () => {
         name: 'specweave-valid',
         version: '1.0.0',
         description: 'Valid test plugin',
+        author: {
+          name: 'Test Author',
+          email: 'test@example.com'
+        },
         specweave_core_version: '>=0.4.0',
         provides: {
           skills: [],
@@ -114,6 +118,10 @@ describe('PluginLoader', () => {
         name: 'InvalidName',  // Must be lowercase with hyphens
         version: '1.0.0',
         description: 'Test',
+        author: {
+          name: 'Test Author',
+          email: 'test@example.com'
+        },
         specweave_core_version: '>=0.4.0',
         provides: {
           skills: [],

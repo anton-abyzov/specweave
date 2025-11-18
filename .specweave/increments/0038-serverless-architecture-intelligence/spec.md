@@ -2,7 +2,7 @@
 increment: 0038-serverless-architecture-intelligence
 title: "Serverless Architecture Intelligence"
 priority: P1
-status: in-progress
+status: active
 created: 2025-11-16
 started: 2025-11-16
 structure: user-stories

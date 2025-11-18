@@ -84,12 +84,12 @@ describe('Status Auto-Transition', () => {
 
   describe('autoTransitionStatus()', () => {
     describe('Rule 1: PLANNING → ACTIVE when tasks.md created', () => {
-      it('transitions from PLANNING to ACTIVE when tasks.md exists', () => {
+      it('transitions from PLANNING to ACTIVE when tasks.md exists with in-progress task', () => {
         const incrementId = '0001-test';
         createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
-        // Create tasks.md
-        createFile(incrementId, 'tasks.md', '# Tasks\n\n- [ ] **T-001**: Test task');
+        // Create tasks.md with in-progress task
+        createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Test task in progress');
 
         const result = autoTransitionStatus(incrementId);
 
@@ -239,7 +239,7 @@ describe('Status Auto-Transition', () => {
       createTestIncrement(incrementId, IncrementStatus.PLANNING);
 
       const tasksPath = path.join(testIncrementsPath, incrementId, 'tasks.md');
-      createFile(incrementId, 'tasks.md', '# Tasks');
+      createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Task in progress');
 
       onFileCreated(incrementId, tasksPath);
 
@@ -400,8 +400,8 @@ describe('Status Auto-Transition', () => {
       metadata = MetadataManager.read(incrementId);
       expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-      // Step 3: Create tasks.md (auto-transition to ACTIVE)
-      createFile(incrementId, 'tasks.md', '# Tasks\n\n- [ ] **T-001**: Test');
+      // Step 3: Create tasks.md with in-progress task (auto-transition to ACTIVE)
+      createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Test in progress');
       autoTransitionStatus(incrementId);
 
       metadata = MetadataManager.read(incrementId);
@@ -424,8 +424,8 @@ describe('Status Auto-Transition', () => {
       metadata = MetadataManager.read(incrementId);
       expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-      // Step 3: Create tasks.md (PLANNING → ACTIVE)
-      createFile(incrementId, 'tasks.md', '# Tasks');
+      // Step 3: Create tasks.md with in-progress task (PLANNING → ACTIVE)
+      createFile(incrementId, 'tasks.md', '# Tasks\n\n- [⏳] **T-001**: Task in progress');
       autoTransitionStatus(incrementId);
 
       metadata = MetadataManager.read(incrementId);
