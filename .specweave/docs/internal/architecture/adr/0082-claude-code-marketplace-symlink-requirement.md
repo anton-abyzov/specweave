@@ -350,9 +350,10 @@ Prominent warnings in CLAUDE.md ensure new contributors know about this requirem
 
 ### Related Documentation
 
-1. **CLAUDE.md**: "Local Development Setup (Contributors Only)" section
+1. **CLAUDE.md**: Lines 13-71 - "Critical Finding: Claude Code Marketplace Directory vs Symlink Issue"
 2. **Plugin Architecture**: `.specweave/docs/internal/architecture/PLUGIN-ARCHITECTURE.md`
 3. **User Story**: `.specweave/docs/internal/specs/specweave/FS-023/us-001-claude-code-plugin-registration-p0-critical.md`
+4. **Documentation Placement Analysis**: `.specweave/increments/0043-spec-md-desync-fix/reports/DOCUMENTATION-PLACEMENT-ANALYSIS-2025-11-18.md`
 
 ---
 
