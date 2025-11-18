@@ -25,7 +25,7 @@ if (!process.env.DEBUG_TESTS) {
     warn: vi.fn(),
     // Keep error output for debugging failures
     error: console.error,
-  };
+  } as Console;
 }
 
 // Mock environment variables for consistent testing

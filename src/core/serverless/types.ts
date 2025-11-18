@@ -3,7 +3,7 @@
  */
 
 // Cloud providers (matches actual JSON data)
-export type CloudProvider = 'AWS' | 'Azure' | 'GCP' | 'Supabase';
+export type CloudProvider = 'AWS' | 'Azure' | 'GCP' | 'Firebase' | 'Supabase';
 
 // Platform data structures
 export interface PlatformPricing {
