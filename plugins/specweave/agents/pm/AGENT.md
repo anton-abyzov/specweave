@@ -1208,9 +1208,22 @@ When creating metadata.json, extract values from spec.md frontmatter:
 - `priority`: Look for `priority: P1|P2|P3`
 - `testMode`: Look for `test_mode: TDD|BDD|Standard` (default: "TDD")
 - `coverageTarget`: Look for `coverage_target: 80|85|90|95|100` (default: 95)
-- `epic`: Look for `epic: FS-YY-MM-DD` (optional)
+- `epic`: **CRITICAL - Format depends on increment type**:
+  - **Greenfield** (SpecWeave-native): Leave EMPTY (auto-generated as `FS-{increment-number}` during sync)
+  - **Brownfield** (imported from Jira/GitHub/ADO): Use `epic: FS-YY-MM-DD-name` + add `imported: true`
 
 **DO NOT hardcode values** - always extract from spec.md when possible!
+
+**⛔ CRITICAL: Epic Field Rules**
+
+When creating spec.md frontmatter:
+- **NEW increments** (greenfield): DO NOT add `epic:` field (leave it empty for auto-generation)
+- **Imported work** (brownfield): Add `epic: FS-YY-MM-DD-name` AND `imported: true`
+
+**Why this matters**:
+- Greenfield increments use `FS-{increment-number}` format (e.g., `FS-031`, `FS-043`)
+- Brownfield increments use `FS-YY-MM-DD-name` format (e.g., `FS-25-11-14-jira-epic`)
+- Mixing formats pollutes living docs and breaks feature tracking
 
 ### Code Reference (TypeScript Pseudocode)
 
