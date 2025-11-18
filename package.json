@@ -75,7 +75,7 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.20.0",
+    "@anthropic-ai/sdk": "^0.70.0",
     "@octokit/rest": "^22.0.1",
     "@types/handlebars": "^4.0.40",
     "axios": "^1.13.2",
