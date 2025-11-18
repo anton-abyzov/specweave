@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 #
-# update-status-line.sh (Simplified)
+# update-status-line.sh (Enhanced with AC Metrics)
 #
 # Updates status line cache with current increment progress.
-# Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
+# Shows: [increment-name] ████░░░░ X/Y tasks | A/B ACs (Z open)
 #
 # Logic:
 # 1. Scan all spec.md for status=active/planning (SOURCE OF TRUTH!)
 # 2. Take first (oldest) as current increment
 # 3. Count all active/planning as openCount
-# 4. Parse current increment's tasks.md for progress
-# 5. Write to cache
+# 4. Parse current increment's tasks.md for task progress
+# 5. Parse current increment's spec.md for AC progress
+# 6. Write to cache
 #
 # Performance: 50-100ms (runs async, user doesn't wait)
 
@@ -116,19 +117,44 @@ if [[ -f "$TASKS_FILE" ]]; then
   fi
 fi
 
+# Step 4b: Parse spec.md for AC (Acceptance Criteria) progress
+SPEC_FILE="$INCREMENTS_DIR/$CURRENT_INCREMENT/spec.md"
+TOTAL_ACS=0
+COMPLETED_ACS=0
+OPEN_ACS=0
+
+if [[ -f "$SPEC_FILE" ]]; then
+  # Count total ACs: both checked and unchecked
+  # Pattern: - [ ] **AC- OR - [x] **AC-
+  TOTAL_ACS=$(grep -cE '^- \[(x| )\] \*\*AC-' "$SPEC_FILE" 2>/dev/null || echo 0)
+  TOTAL_ACS=$(echo "$TOTAL_ACS" | tr -d '\n\r ' || echo 0)
+
+  # Count completed ACs (checked)
+  # Pattern: - [x] **AC-
+  COMPLETED_ACS=$(grep -cE '^- \[x\] \*\*AC-' "$SPEC_FILE" 2>/dev/null || echo 0)
+  COMPLETED_ACS=$(echo "$COMPLETED_ACS" | tr -d '\n\r ' || echo 0)
+
+  # Count open ACs (unchecked)
+  # Pattern: - [ ] **AC-
+  OPEN_ACS=$(grep -cE '^- \[ \] \*\*AC-' "$SPEC_FILE" 2>/dev/null || echo 0)
+  OPEN_ACS=$(echo "$OPEN_ACS" | tr -d '\n\r ' || echo 0)
+fi
+
 # Step 5: Extract increment ID and name
 # Format: XXXX-name where XXXX is 4-digit prefix (brackets added by manager)
 INCREMENT_ID=$(echo "$CURRENT_INCREMENT" | grep -oE '^[0-9]{4}')
 INCREMENT_NAME_ONLY=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
 INCREMENT_NAME="$INCREMENT_ID-$INCREMENT_NAME_ONLY"
 
-# Step 6: Write cache
+# Step 6: Write cache (now includes AC metrics)
 jq -n \
   --arg id "$CURRENT_INCREMENT" \
   --arg name "$INCREMENT_NAME" \
   --argjson completed "$COMPLETED_TASKS" \
   --argjson total "$TOTAL_TASKS" \
   --argjson percentage "$PERCENTAGE" \
+  --argjson acsCompleted "$COMPLETED_ACS" \
+  --argjson acsTotal "$TOTAL_ACS" \
   --argjson openCount "$OPEN_COUNT" \
   '{
     current: {
@@ -136,7 +162,9 @@ jq -n \
       name: $name,
       completed: $completed,
       total: $total,
-      percentage: $percentage
+      percentage: $percentage,
+      acsCompleted: $acsCompleted,
+      acsTotal: $acsTotal
     },
     openCount: $openCount,
     lastUpdate: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))

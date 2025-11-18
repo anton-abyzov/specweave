@@ -51,7 +51,63 @@ You are acting as the Product Manager to validate increment completion before cl
 🎯 Validating readiness for closure...
 ```
 
-### Step 2: PM Validation (3 Gates)
+### Step 2: Automated Completion Validation (Gate 0)
+
+**🔥 CRITICAL: Automated validation runs BEFORE PM validation to catch obvious issues!**
+
+**BEFORE** invoking the PM agent, run automated validation using `IncrementCompletionValidator`:
+
+```typescript
+import { IncrementCompletionValidator } from '../../../src/core/increment/completion-validator.js';
+
+// Validate increment is ready for completion
+const validation = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+if (!validation.isValid) {
+  // BLOCK completion and show errors
+  console.error('❌ CANNOT CLOSE INCREMENT - Automated validation failed');
+  console.error('');
+  validation.errors.forEach(err => console.error(`  • ${err}`));
+  console.error('');
+  console.error('Fix these issues before running /specweave:done again');
+  process.exit(1);
+}
+```
+
+**Example validation output** (FAIL):
+```
+❌ CANNOT CLOSE INCREMENT - Automated validation failed
+
+  • 17 acceptance criteria still open
+  • 13 tasks still pending
+
+Fix these issues before running /specweave:done again
+```
+
+**Example validation output** (PASS):
+```
+✅ Automated validation passed
+  • All acceptance criteria completed
+  • All tasks completed
+
+Proceeding to PM validation...
+```
+
+**What Gate 0 validates**:
+- [ ] All acceptance criteria are checked (`- [x] **AC-...`)
+- [ ] All tasks are completed (`**Status**: [x] completed`)
+- [ ] Required files exist (`spec.md`, `tasks.md`)
+
+**Why Gate 0 matters**:
+- **Prevents false completion**: Can't mark increment "completed" with open work
+- **Fast feedback**: Fails immediately (< 1s) vs waiting for PM agent (30s+)
+- **Data integrity**: Ensures status matches reality (no spec.md desync)
+
+**CRITICAL**: Gate 0 is MANDATORY and CANNOT be bypassed. If validation fails, increment stays "in-progress" and command exits.
+
+---
+
+### Step 3: PM Validation (3 Gates)
 
 **🔥 CRITICAL: PM agent MUST validate all 3 gates before allowing closure!**
 
@@ -288,7 +344,7 @@ Recommendation: ❌ CANNOT close increment
   • Estimated effort: 1-2 hours
 ```
 
-### Step 3: PM Decision
+### Step 4: PM Decision
 
 **Based on 3-gate validation**:
 
@@ -326,7 +382,7 @@ Closing increment 0001-user-authentication...
 🎉 Increment 0001 closed successfully!
 ```
 
-### Step 4: Post-Closure Sync (AUTOMATIC)
+### Step 5: Post-Closure Sync (AUTOMATIC)
 
 **CRITICAL**: After increment closes, automatically perform these syncs:
 
@@ -651,7 +707,7 @@ Increment remains: in-progress
 Try again after fixing blockers: /specweave:done 0001
 ```
 
-### Step 4: Handle Incomplete Work
+### Step 6: Handle Incomplete Work
 
 **If increment cannot close due to scope creep**:
 

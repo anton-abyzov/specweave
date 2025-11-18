@@ -10,8 +10,8 @@
  * Acceptance Criteria: AC-US2-01, AC-US2-04
  */
 
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import fs from 'fs-extra';
+import path from 'path';
 import matter from 'gray-matter';
 import { IncrementStatus } from '../types/increment-metadata.js';
 

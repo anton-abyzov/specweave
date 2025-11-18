@@ -343,6 +343,27 @@ if echo "$PROMPT" | grep -qiE "(add|create|implement|build|develop)" && ! echo "
 fi
 
 # ==============================================================================
+# STATUS LINE REFRESH: Ensure cache is fresh before showing context
+# ==============================================================================
+# Performance: ~50-100ms (acceptable for UX)
+# Frequency: Every user prompt (high coverage)
+# Benefit: Catches ALL edge cases (manual edits, resume, direct changes)
+#
+# Why here? This hook runs on EVERY user prompt, ensuring status line
+# is ALWAYS up-to-date before showing context to the user.
+#
+# Prevents desync scenarios:
+# - Manual spec.md edits (status: planning → active)
+# - /specweave:resume (status: paused → active)
+# - Direct metadata changes (without hook triggers)
+# - File system operations bypassing hooks
+#
+# Background execution: Runs async, doesn't block user prompt
+
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
+# ==============================================================================
 # OUTPUT: Approve with context or no context
 # ==============================================================================
 

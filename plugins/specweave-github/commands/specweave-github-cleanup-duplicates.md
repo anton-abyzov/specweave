@@ -1,6 +1,27 @@
 ---
 name: specweave-github:cleanup-duplicates
 description: Clean up duplicate GitHub issues for an Epic. Finds issues with duplicate titles and closes all except the first created issue.
+justification: |
+  CRITICAL INCIDENT RESPONSE TOOL - DO NOT DELETE!
+
+  Why This Command Exists:
+  - Prevention systems (deduplication, GitHub self-healing) work for single-process execution
+  - Multiple parallel Claude Code instances bypass all prevention (file-based cache, no distributed locking)
+  - GitHub API race conditions: Time gap between "check exists" and "create issue" allows duplicates
+  - Historical duplicates from pre-v0.14.1 users (before prevention was added)
+
+  Evidence of Need:
+  - 2025-11-13: 123 duplicate GitHub issues incident (cleaned to 29 unique)
+  - Parallel execution creates race conditions that prevention CANNOT solve
+  - Industry standard: Prevention + Detection + Cleanup (defense in depth)
+
+  When to Delete:
+  - ONLY if distributed locking implemented (Redis/file locks)
+  - AND parallel execution tested (100+ concurrent syncs with zero duplicates)
+  - AND zero duplicates for 6+ months in production
+  - AND all users migrated to prevention-enabled versions
+
+  See: .specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-CLEANUP-DUPLICATES-NECESSITY-2025-11-18.md
 ---
 
 # Clean Up Duplicate GitHub Issues
