@@ -1,34 +1,21 @@
 {
-  "id": "0004-increment-with-tasks",
-  "name": "Increment With Tasks",
+  "id": "0002-test-with-tasks",
   "status": "active",
   "type": "feature",
-  "priority": "P1",
   "created": "2025-01-01T00:00:00Z",
-  "updated": "2025-01-05T00:00:00Z",
+  "lastActivity": "2025-01-02T00:00:00Z",
   "testMode": "TDD",
-  "coverageTarget": 90,
-  "tasks": [
-    {
-      "id": "T-001",
-      "title": "Create component foundation",
-      "status": "completed",
-      "priority": "P1",
-      "estimate": "2 hours"
-    },
-    {
-      "id": "T-002",
-      "title": "Add unit tests",
-      "status": "in-progress",
-      "priority": "P1",
-      "estimate": "3 hours"
-    },
-    {
-      "id": "T-003",
-      "title": "Update documentation",
-      "status": "pending",
-      "priority": "P2",
-      "estimate": "1 hour"
-    }
-  ]
+  "coverageTarget": 85,
+  "github": {
+    "milestone": 1,
+    "milestone_url": "https://github.com/test/repo/milestone/1",
+    "user_story_issues": [
+      {
+        "id": "US-001",
+        "issue_number": 100,
+        "issue_url": "https://github.com/test/repo/issues/100",
+        "title": "[FS-001][US-001] Test User Story"
+      }
+    ]
+  }
 }

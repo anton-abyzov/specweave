@@ -1,13 +1,9 @@
 {
-  "id": "0003-planning-increment",
-  "name": "Planning Increment",
+  "id": "0003-test-planning",
   "status": "planning",
   "type": "feature",
-  "priority": "P2",
-  "created": "2025-01-01T00:00:00Z",
-  "updated": "2025-01-01T00:00:00Z",
-  "testMode": "TDD",
-  "coverageTarget": 85,
-  "epic": "FS-001",
-  "userStories": ["US-001", "US-002", "US-003"]
+  "created": "2025-01-03T00:00:00Z",
+  "lastActivity": "2025-01-03T00:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80
 }
