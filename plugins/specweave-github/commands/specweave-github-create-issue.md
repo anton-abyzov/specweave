@@ -175,9 +175,9 @@ Creating issue...
 ✓ Milestone set: v0.4.0
 ✓ Metadata updated
 
-✅ GitHub Issue Created!
+✅ GitHub Issue Created! (❌ DEPRECATED FORMAT)
 
-Issue #130: [Increment 0004] Plugin Architecture
+Issue #130: [Increment 0004] Plugin Architecture  # ❌ DEPRECATED
 URL: https://github.com/owner/repo/issues/130
 
 Auto-sync enabled: progress will update automatically after each task.
@@ -274,15 +274,15 @@ Preview issue body before creating:
 
 Output:
 ```
-📄 Preview: Issue body for increment 0004
+📄 Preview: Issue body for increment 0004 (❌ DEPRECATED FORMAT)
 
-Title: [Increment 0004] Plugin Architecture
+Title: [Increment 0004] Plugin Architecture  # ❌ DEPRECATED
 Labels: specweave, increment, P1
 Milestone: v0.4.0
 
 Body:
 ---
-# [Increment 0004] Plugin Architecture
+# [Increment 0004] Plugin Architecture  # ❌ DEPRECATED
 
 **Status**: Planning
 **Priority**: P1

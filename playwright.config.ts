@@ -30,6 +30,9 @@ export default defineConfig({
   use: {
     /* Collect trace when retrying the failed test */
     trace: 'on-first-retry',
+
+    /* Run tests in headless mode */
+    headless: true,
   },
 
   /* Configure projects for major browsers */

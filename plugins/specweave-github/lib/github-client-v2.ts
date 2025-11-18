@@ -193,6 +193,34 @@ export class GitHubClientV2 {
   // ==========================================================================
 
   /**
+   * Validate issue title format
+   *
+   * CRITICAL: Enforces correct data flow architecture
+   * - ✅ CORRECT: "US-XXX: Title" or "FS-YY-MM-DD: Title"
+   * - ❌ WRONG: "[Increment XXXX] Title" (deprecated old format)
+   *
+   * @throws Error if title uses deprecated [Increment XXXX] format
+   */
+  private validateIssueTitle(title: string): void {
+    // Check for deprecated [Increment XXXX] format
+    const deprecatedPattern = /\[Increment\s+\d+\]/i;
+
+    if (deprecatedPattern.test(title)) {
+      throw new Error(
+        `❌ DEPRECATED FORMAT DETECTED: "${title}"\n\n` +
+        `GitHub issues MUST use living docs format:\n` +
+        `  ✅ CORRECT: "US-XXX: Title" (User Story)\n` +
+        `  ✅ CORRECT: "FS-YY-MM-DD: Title" (Feature Spec)\n` +
+        `  ❌ WRONG: "[Increment XXXX] Title" (old format)\n\n` +
+        `WHY: Correct data flow is: Increment → Living Docs → GitHub\n` +
+        `      Living docs are the source of truth for GitHub sync.\n\n` +
+        `FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.\n` +
+        `     OR: Use US/FS ID format directly if creating issues manually.`
+      );
+    }
+  }
+
+  /**
    * Create epic issue (increment-level)
    */
   async createEpicIssue(
@@ -201,6 +229,8 @@ export class GitHubClientV2 {
     milestone?: number | string,
     labels: string[] = []
   ): Promise<GitHubIssue> {
+    // Validate title format before creating
+    this.validateIssueTitle(title);
     const args = [
       'issue',
       'create',
