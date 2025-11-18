@@ -1,10 +1,13 @@
 {
   "id": "0042-test-infrastructure-cleanup",
-  "status": "in-progress",
+  "status": "completed",
   "type": "refactor",
   "created": "2025-11-18T00:51:04Z",
   "started": "2025-11-18T12:00:00Z",
-  "lastActivity": "2025-11-18T12:00:00Z",
+  "completed": "2025-11-18T15:06:00Z",
+  "lastActivity": "2025-11-18T15:06:00Z",
   "testMode": "TDD",
-  "coverageTarget": 90
+  "coverageTarget": 90,
+  "pmValidated": true,
+  "pmValidationDate": "2025-11-18T15:06:00Z"
 }
