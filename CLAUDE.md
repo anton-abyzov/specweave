@@ -107,6 +107,116 @@ git status
 
 ---
 
+## 🚨 CRITICAL: DANGEROUS TEST CLEANUP OPERATIONS!
+
+**⛔ WARNING: Test cleanup can cause CATASTROPHIC deletion ⛔**
+
+**INCIDENT**: On 2025-11-18, during increment 0042 (test infrastructure cleanup), a bash command nearly deleted the entire `tests/integration/` directory (209 test files). The command failed due to working directory confusion, but demonstrated the EXACT catastrophic risk identified in ultrathink analysis.
+
+**THE DANGER**:
+```bash
+# ❌ EXTREMELY DANGEROUS (can delete entire test suite):
+cd tests/integration
+find . -maxdepth 1 -type d ... -exec rm -rf {} +
+# Risk: Working directory confusion + no confirmation = catastrophic deletion
+
+# ❌ DANGEROUS (no verification):
+find tests/integration -type d -exec rm -rf {} +
+# Risk: Too broad, deletes everything
+
+# ❌ DANGEROUS (assumes pwd):
+rm -rf tests/integration/*/
+# Risk: If pwd is wrong, deletes unintended directories
+```
+
+**SAFE APPROACH** (MANDATORY for test cleanup):
+```bash
+# ✅ STEP 1: Verify working directory (ALWAYS FIRST!)
+pwd
+# Must output: /Users/antonabyzov/Projects/github/specweave
+
+# ✅ STEP 2: DRY RUN (list only, NO deletion)
+find tests/integration -maxdepth 1 -type d \
+  ! -name "integration" \
+  ! -name "core" ! -name "features" ! -name "external-tools" ! -name "generators" \
+  -print
+# Review output MANUALLY before proceeding
+
+# ✅ STEP 3: Count directories to delete
+find tests/integration -maxdepth 1 -type d \
+  ! -name "integration" \
+  ! -name "core" ! -name "features" ! -name "external-tools" ! -name "generators" \
+  -print | wc -l
+# Verify count matches expectations
+
+# ✅ STEP 4: Manual confirmation (REQUIRED)
+echo "About to delete XX directories. Type 'DELETE' to confirm:"
+read confirmation
+if [ "$confirmation" != "DELETE" ]; then
+  echo "Cancelled"
+  exit 1
+fi
+
+# ✅ STEP 5: Execute deletion (ONLY after all checks pass)
+find tests/integration -maxdepth 1 -type d \
+  ! -name "integration" \
+  ! -name "core" ! -name "features" ! -name "external-tools" ! -name "generators" \
+  -exec rm -rf {} +
+
+# ✅ STEP 6: Verify results
+ls tests/integration/
+find tests/integration -name "*.test.ts" | wc -l
+
+# ✅ STEP 7: Run tests (MANDATORY)
+npm run test:integration
+```
+
+**MANDATORY SAFETY RULES**:
+1. ✅ **ALWAYS** verify `pwd` before ANY deletion command
+2. ✅ **ALWAYS** use dry-run (`-print`) before `-exec rm`
+3. ✅ **ALWAYS** count directories/files before deletion
+4. ✅ **ALWAYS** require manual confirmation for deletion
+5. ✅ **ALWAYS** verify results after deletion
+6. ✅ **ALWAYS** run tests after structural changes
+7. ✅ **NEVER** use `rm -rf` without multiple safety checks
+
+**WHY THIS MATTERS**:
+- 🔴 One wrong command = entire test suite deleted
+- 🔴 213 unsafe `process.cwd()` patterns exist in tests (increment 0042 audit)
+- 🔴 Working directory confusion is COMMON
+- 🔴 Recovery requires git restore (assumes uncommitted changes)
+- 🔴 If changes committed, recovery requires time-consuming rollback
+
+**LESSONS FROM INCIDENT 0042**:
+1. **Dry-run is NOT optional** - Always list before deleting
+2. **Working directory matters** - Verify pwd FIRST
+3. **Confirmation prevents accidents** - Require manual "DELETE" confirmation
+4. **Test after changes** - Structural changes can break tests
+5. **Incremental commits** - Commit after each phase (easier rollback)
+
+**IF CATASTROPHIC DELETION OCCURS**:
+```bash
+# Immediately restore from git (if not committed):
+git restore tests/
+
+# If committed, restore from previous commit:
+git log --oneline -- tests/
+git checkout <previous-commit-hash> -- tests/
+
+# Verify restoration:
+find tests -name "*.test.ts" | wc -l
+npm run test:all
+```
+
+**REFERENCES**:
+- Incident report: `.specweave/increments/0042-test-infrastructure-cleanup/reports/CATASTROPHIC-DELETION-INCIDENT-2025-11-18.md`
+- Ultrathink analysis: `.specweave/increments/0041-living-docs-test-fixes/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md`
+- Safe cleanup approach: Increment 0042 Phase 1 tasks
+
+**NEVER delete test directories without following ALL safety steps above!**
+
+---
+
 ## ⚠️ CRITICAL: NEVER USE `specweave init . --force` FOR REINSTALLS!
 
 **⛔ COMMON MISTAKE THAT DELETES ALL DATA ⛔**
