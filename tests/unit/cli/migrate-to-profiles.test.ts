@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Unit Tests for migrate-to-profiles Command
@@ -6,8 +6,6 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * CRITICAL: This command poses data loss risk if migration fails
  * These tests ensure configuration migration works correctly
  */
-
-import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
@@ -31,8 +29,8 @@ vi.mock('../../../src/core/sync/project-context');
 
 describe('migrate-to-profiles', () => {
   let testDir: string;
-  let mockProfileManager: anyed<ProfileManager>;
-  let mockProjectManager: anyed<ProjectContextManager>;
+  let mockProfileManager: any;
+  let mockProjectManager: any;
 
   beforeEach(async () => {
     // Create temp directory for tests
@@ -43,16 +41,22 @@ describe('migrate-to-profiles', () => {
     vi.clearAllMocks();
 
     // Setup mocks
-    mockProfileManager = new ProfileManager(testDir) as anyed<ProfileManager>;
-    mockProjectManager = new ProjectContextManager(testDir) as anyed<ProjectContextManager>;
+    mockProfileManager = {
+      load: vi.fn().mockResolvedValue(undefined),
+      createProfile: vi.fn().mockResolvedValue(undefined),
+      getProfile: vi.fn().mockReturnValue(null),
+      listProfiles: vi.fn().mockReturnValue([])
+    };
 
-    (ProfileManager as vi.Mocked<typeof ProfileManager>).mockImplementation(() => mockProfileManager);
-    (ProjectContextManager as vi.Mocked<typeof ProjectContextManager>).mockImplementation(() => mockProjectManager);
+    mockProjectManager = {
+      load: vi.fn().mockResolvedValue(undefined),
+      createProject: vi.fn().mockResolvedValue(undefined),
+      getProject: vi.fn().mockReturnValue(null),
+      listProjects: vi.fn().mockReturnValue([])
+    };
 
-    mockProfileManager.load.mockResolvedValue();
-    mockProjectManager.load.mockResolvedValue();
-    mockProfileManager.createProfile.mockResolvedValue();
-    mockProjectManager.createProject.mockResolvedValue();
+    vi.mocked(ProfileManager).mockImplementation(() => mockProfileManager);
+    vi.mocked(ProjectContextManager).mockImplementation(() => mockProjectManager);
   });
 
   afterEach(async () => {

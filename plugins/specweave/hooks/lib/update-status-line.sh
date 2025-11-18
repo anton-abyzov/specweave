@@ -115,10 +115,10 @@ if [[ -f "$TASKS_FILE" ]]; then
 fi
 
 # Step 5: Extract increment ID and name
-# Format: [XXXX-name] where XXXX is 4-digit prefix
+# Format: XXXX-name where XXXX is 4-digit prefix (brackets added by manager)
 INCREMENT_ID=$(echo "$CURRENT_INCREMENT" | grep -oE '^[0-9]{4}')
 INCREMENT_NAME_ONLY=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
-INCREMENT_NAME="[$INCREMENT_ID-$INCREMENT_NAME_ONLY]"
+INCREMENT_NAME="$INCREMENT_ID-$INCREMENT_NAME_ONLY"
 
 # Step 6: Write cache
 jq -n \

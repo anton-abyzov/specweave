@@ -104,11 +104,12 @@ export class CostTracker {
     );
 
     // Calculate savings vs Sonnet baseline
-    session.savings = calculateSavings(
+    const { savedAmount } = calculateSavings(
       session.model,
       session.tokenUsage.inputTokens,
       session.tokenUsage.outputTokens
     );
+    session.savings = savedAmount;
   }
 
   /**

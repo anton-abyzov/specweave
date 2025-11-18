@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Test Coverage Target: 85%
  */
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import {
   generateEnvFile,
   envFileExists,
@@ -15,11 +15,19 @@ import {
 } from '../../../src/utils/env-file-generator.js';
 
 // Mock fs-extra
-vi.mock('fs-extra');
+vi.mock('fs-extra', () => ({
+  default: {
+    writeFile: vi.fn(),
+    readFile: vi.fn(),
+    pathExists: vi.fn(),
+    chmod: vi.fn(),
+  },
+}));
 
 const mockedWriteFile = vi.mocked(fs.writeFile);
 const mockedPathExists = vi.mocked(fs.pathExists);
 const mockedReadFile = vi.mocked(fs.readFile);
+const mockedChmod = vi.mocked(fs.chmod);
 
 describe('generateEnvFile', () => {
   beforeEach(() => {
@@ -59,20 +67,20 @@ describe('envFileExists', () => {
   it('should return true when .env file exists', async () => {
     // Given: .env file exists
     const projectRoot = '/test/project';
-    mockedFs.pathExists.mockResolvedValue(true);
+    mockedPathExists.mockResolvedValue(true);
 
     // When: envFileExists is called
     const result = await envFileExists(projectRoot);
 
     // Then: returns true
     expect(result).toBe(true);
-    expect(mockedFs.pathExists).toHaveBeenCalled();
+    expect(mockedPathExists).toHaveBeenCalled();
   });
 
   it('should return false when .env file missing', async () => {
     // Given: .env file missing
     const projectRoot = '/test/project';
-    mockedFs.pathExists.mockResolvedValue(false);
+    mockedPathExists.mockResolvedValue(false);
 
     // When: envFileExists is called
     const result = await envFileExists(projectRoot);
@@ -90,8 +98,8 @@ describe('loadEnvConfig', () => {
   it('should parse valid .env file and return EnvConfig', async () => {
     // Given: valid .env file
     const projectRoot = '/test/project';
-    mockedFs.pathExists.mockResolvedValue(true);
-    mockedFs.readFile.mockResolvedValue(
+    mockedPathExists.mockResolvedValue(true);
+    mockedReadFile.mockResolvedValue(
       'GITHUB_TOKEN=ghp_test123\nGITHUB_OWNER=myorg\nGITHUB_REPOS=frontend:frontend,backend:backend\n' as any
     );
 
@@ -111,7 +119,7 @@ describe('loadEnvConfig', () => {
   it('should return null when .env file missing', async () => {
     // Given: .env file missing
     const projectRoot = '/test/project';
-    mockedFs.pathExists.mockResolvedValue(false);
+    mockedPathExists.mockResolvedValue(false);
 
     // When: loadEnvConfig is called
     const result = await loadEnvConfig(projectRoot);

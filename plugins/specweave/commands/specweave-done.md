@@ -55,6 +55,18 @@ You are acting as the Product Manager to validate increment completion before cl
 
 **🔥 CRITICAL: PM agent MUST validate all 3 gates before allowing closure!**
 
+**⛔ CRITICAL: PM Validation Report File Location**
+
+When the PM agent writes the validation report, it MUST go in the `reports/` subfolder:
+- ✅ **CORRECT**: `.specweave/increments/####-name/reports/PM-VALIDATION-REPORT.md`
+- ❌ **WRONG**: `.specweave/increments/####-name/PM-VALIDATION-REPORT.md`
+
+**Folder structure rules**:
+- ONLY spec.md, plan.md, tasks.md allowed in increment root
+- ALL reports MUST go in `reports/` subfolder
+- ALL scripts MUST go in `scripts/` subfolder
+- ALL logs MUST go in `logs/` subfolder
+
 Invoke PM agent with validation task:
 
 ```

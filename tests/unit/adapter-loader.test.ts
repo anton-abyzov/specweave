@@ -55,11 +55,11 @@ describe('AdapterLoader', () => {
       expect(adapter?.name).toBe('cursor');
     });
 
-    it('should return copilot adapter when requested', () => {
-      const adapter = adapterLoader.getAdapter('copilot');
+    it('should return codex adapter when requested', () => {
+      const adapter = adapterLoader.getAdapter('codex');
 
       expect(adapter).toBeDefined();
-      expect(adapter?.name).toBe('copilot');
+      expect(adapter?.name).toBe('codex');
     });
 
     it('should return generic adapter when explicitly requested', () => {
@@ -117,7 +117,8 @@ describe('AdapterLoader', () => {
 
       expect(adapters.length).toBeGreaterThan(0);
       expect(adapters.some(a => a.name === 'cursor')).toBe(true);
-      expect(adapters.some(a => a.name === 'copilot')).toBe(true);
+      expect(adapters.some(a => a.name === 'codex')).toBe(true);
+      expect(adapters.some(a => a.name === 'gemini')).toBe(true);
       expect(adapters.some(a => a.name === 'generic')).toBe(true);
     });
 

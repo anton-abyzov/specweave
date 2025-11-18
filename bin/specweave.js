@@ -311,20 +311,17 @@ async function checkForDuplicates() {
     const report = await detectAllDuplicates(process.cwd());
 
     if (report.duplicateCount > 0) {
-      console.log(chalk.yellow('\n⚠️  WARNING: Duplicate increments detected!\n'));
+      console.log(chalk.yellow('\n⚠️  Duplicate increment(s) detected:\n'));
 
       for (const duplicate of report.duplicates) {
-        console.log(chalk.yellow(`  Increment ${duplicate.incrementNumber} exists in multiple locations:`));
+        console.log(chalk.dim(`  ${duplicate.incrementNumber}:`));
         for (const location of duplicate.locations) {
-          const indicator = location === duplicate.recommendedWinner ? chalk.green('✓ (recommended)') : chalk.red('✗');
-          console.log(`    ${indicator} ${location.name} [${location.status}] - ${location.path}`);
+          const indicator = location === duplicate.recommendedWinner ? chalk.green('→') : chalk.red('✗');
+          console.log(`    ${indicator} ${location.name} [${location.status}]`);
         }
-        console.log(chalk.dim(`    Reason: ${duplicate.resolutionReason}\n`));
       }
 
-      console.log(chalk.yellow('  Resolution:'));
-      console.log(chalk.dim('    Run /specweave:fix-duplicates to automatically resolve conflicts'));
-      console.log(chalk.dim('    or manually delete/archive the losing versions\n'));
+      console.log(chalk.dim('\n  Run /specweave:fix-duplicates to resolve\n'));
     }
   } catch (error) {
     // Silently ignore errors (don't block CLI startup)

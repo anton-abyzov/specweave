@@ -79,18 +79,16 @@ export class StatusLineManager {
   /**
    * Format status line
    *
-   * Format: [increment-name] ████░░░░ X/Y tasks (Z open)
-   * Smart display: Shows full ID if multiple increments, just name if single
+   * Format: [XXXX-name] ████░░░░ X/Y (Z open)
+   * Shows: Full ID always to prevent confusion
    */
   private formatStatusLine(cache: StatusLineCache): string {
     const current = cache.current!;
     const parts: string[] = [];
 
-    // Smart truncation: Show full ID if multiple increments, just name if single
-    // This makes it clear which increment is active when juggling multiple,
-    // but keeps it clean for simple single-increment workflows
-    const displayName = cache.openCount > 1 ? current.id : current.name;
-    const name = this.truncate(displayName, this.config.maxNameLength);
+    // Always show increment ID (XXXX-name format) for clarity
+    // Truncate if needed to fit in status line
+    const name = this.truncate(current.name, this.config.maxNameLength);
     parts.push(`[${name}]`);
 
     // Progress bar

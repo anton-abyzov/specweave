@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Unit tests for LocaleManager
  */
 
-import { LocaleManager } from '../../../src/core/i18n/locale-manager.js';
+import { LocaleManager, getLocaleManager, resetLocaleManager } from '../../../src/core/i18n/locale-manager.js';
 
 describe('LocaleManager', () => {
   describe('constructor', () => {
@@ -138,7 +138,6 @@ describe('LocaleManager', () => {
 describe('LocaleManager - Singleton', () => {
   describe('getLocaleManager()', () => {
     it('should return a LocaleManager instance', () => {
-      const { getLocaleManager } = require('../../../src/core/i18n/locale-manager');
       const manager = getLocaleManager();
 
       expect(manager).toBeDefined();
@@ -148,15 +147,11 @@ describe('LocaleManager - Singleton', () => {
 
   describe('resetLocaleManager()', () => {
     it('should exist as a function', () => {
-      const { resetLocaleManager } = require('../../../src/core/i18n/locale-manager');
-
       expect(resetLocaleManager).toBeDefined();
       expect(typeof resetLocaleManager).toBe('function');
     });
 
     it('should not throw when called', () => {
-      const { resetLocaleManager } = require('../../../src/core/i18n/locale-manager');
-
       expect(() => resetLocaleManager()).not.toThrow();
     });
   });

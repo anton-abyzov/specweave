@@ -207,6 +207,7 @@ describe('MetadataManager', () => {
     it('updates status from active to paused', () => {
       // Create active increment
       const metadata = createDefaultMetadata(testIncrementId);
+      metadata.status = IncrementStatus.ACTIVE; // Set to ACTIVE first
       fs.writeJsonSync(testMetadataPath, metadata);
 
       const result = MetadataManager.updateStatus(testIncrementId, IncrementStatus.PAUSED, 'Waiting for API keys');
@@ -406,6 +407,7 @@ describe('MetadataManager', () => {
 
       // Create increments with different statuses
       const active = createDefaultMetadata('0001-active');
+      active.status = IncrementStatus.ACTIVE; // Set to ACTIVE
       const paused = createDefaultMetadata('0002-paused');
       paused.status = IncrementStatus.PAUSED;
 
