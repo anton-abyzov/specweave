@@ -19,6 +19,7 @@ import {
 } from '../types/increment-metadata.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
+import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -303,6 +304,16 @@ export class MetadataManager {
     }
 
     this.write(incrementId, metadata);
+
+    // **NEW (T-005)**: Update spec.md frontmatter to keep in sync with metadata.json
+    // AC-US2-01: updateStatus() updates both metadata.json AND spec.md frontmatter
+    // AC-US2-03: All status transitions update spec.md
+    // Fire-and-forget async call (don't block on spec.md update)
+    SpecFrontmatterUpdater.updateStatus(incrementId, newStatus).catch((error) => {
+      // Log error but don't fail the status update
+      // This maintains backward compatibility if spec.md doesn't exist or has issues
+      console.warn(`⚠️  Failed to update spec.md for ${incrementId}:`, error);
+    });
 
     // **CRITICAL**: Update active increment state
     const activeManager = new ActiveIncrementManager();
