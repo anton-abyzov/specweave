@@ -6,9 +6,6 @@ status: planning
 priority: P1
 created: 2025-11-18
 lastUpdated: 2025-11-18
-external_tools:
-  github:
-    milestone: 12
 ---
 
 # Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools
