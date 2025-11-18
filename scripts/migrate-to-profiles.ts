@@ -1,6 +1,16 @@
 #!/usr/bin/env node
 
 /**
+ * DEPRECATED: Legacy migration script for v1 → v2 sync config migration
+ *
+ * This script is kept for rare edge cases where users need to migrate from
+ * old single-repo sync configuration to the new profile-based architecture.
+ *
+ * New users (post-November 2024) get v2 profile-based config automatically.
+ * Most users have already migrated or started with v2.
+ *
+ * Usage: node scripts/migrate-to-profiles.ts
+ *
  * Migration script to convert old single-repo configs to new profile-based configs
  *
  * Old format (v0.15.x and earlier):

@@ -2,7 +2,7 @@
 increment: 0042-test-infrastructure-cleanup
 title: "Test Infrastructure Cleanup - Eliminate 48% Duplication"
 priority: P1
-status: planned
+status: planning
 type: refactor
 created: 2025-11-18
 test_mode: TDD

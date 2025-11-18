@@ -5,6 +5,10 @@ architecture_docs:
   - ../../docs/internal/architecture/adr/0042-02-test-isolation-enforcement.md
   - ../../docs/internal/architecture/adr/0042-03-fixture-architecture.md
   - ../../docs/internal/architecture/adr/0042-04-naming-convention-test-only.md
+analysis_references:
+  - ../0041-living-docs-test-fixes/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md
+  - ../0041-living-docs-test-fixes/reports/TEST-DATA-CONSISTENCY-ANALYSIS.md
+  - ../0041-living-docs-test-fixes/reports/EXECUTIVE-SUMMARY-TEST-ANALYSIS-2025-11-18.md
 status: planned
 ---
 
@@ -120,42 +124,321 @@ tests/
 
 **Goal**: Immediate 48% test file reduction
 
-**Tasks**:
-1. Create backup branch: `git checkout -b test-cleanup-backup-$(date +%Y%m%d)`
-2. Verify categorized structure completeness: `find tests/integration/{core,features,external-tools,generators} -name "*.test.ts" | wc -l`
-3. Run cleanup script: `bash .specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
-4. Verify tests pass: `npm run test:integration`
-5. Update README.md (categorized structure documentation)
-6. Commit changes
+**Risk**: IRREVERSIBLE deletion - backup required
 
-**Success Criteria**:
-- ✅ Test file count: 209 → 109 (48% reduction)
-- ✅ All integration tests passing (100% success rate)
-- ✅ CI time reduced to ~8 minutes
+#### Step 1.1: Create Safety Backup (5 min)
 
-**Detailed Implementation**: [ADR-0042-01](../../docs/internal/architecture/adr/0042-01-test-structure-standardization.md) (Implementation Details section)
+```bash
+# Create backup branch with timestamp
+git checkout -b test-cleanup-backup-$(date +%Y%m%d-%H%M)
+git add .
+git commit -m "chore: backup before test cleanup (increment-0042)"
+
+# Document baseline
+echo "Baseline test count: $(find tests/integration -name '*.test.ts' | wc -l)" > cleanup-baseline.txt
+echo "Baseline directory count: $(find tests/integration -maxdepth 1 -type d | wc -l)" >> cleanup-baseline.txt
+cat cleanup-baseline.txt
+
+# Return to working branch
+git checkout develop
+```
+
+**Validation**:
+```bash
+git branch | grep test-cleanup-backup
+# Should show backup branch
+```
+
+#### Step 1.2: Verify Categorized Structure Completeness (30 min)
+
+**CRITICAL**: Ensure no unique tests exist in flat structure before deletion
+
+```bash
+# Verify categorized structure exists
+for dir in core features external-tools generators; do
+  if [ ! -d "tests/integration/$dir" ]; then
+    echo "❌ ERROR: Missing categorized directory: $dir"
+    exit 1
+  fi
+done
+
+# Count tests in categorized structure
+CATEGORIZED_COUNT=$(find tests/integration/{core,features,external-tools,generators} -name "*.test.ts" | wc -l | tr -d ' ')
+echo "Categorized tests: $CATEGORIZED_COUNT"
+
+# Should be ~109 (all tests present)
+if [ $CATEGORIZED_COUNT -lt 100 ]; then
+  echo "❌ ERROR: Expected 100+ tests, found $CATEGORIZED_COUNT"
+  exit 1
+fi
+
+echo "✅ Verification passed - safe to proceed"
+```
+
+#### Step 1.3: Run Automated Cleanup Script (10 min)
+
+**Use existing cleanup script** (already tested):
+
+```bash
+# Run cleanup script from increment 0041
+bash .specweave/increments/0041-living-docs-test-fixes/scripts/cleanup-duplicate-tests.sh
+
+# Script will:
+# 1. Verify categorized structure exists
+# 2. Count duplicate directories (62 expected)
+# 3. Prompt for confirmation ("DELETE" in caps)
+# 4. Delete flat duplicates
+# 5. Verify only categorized structure remains
+# 6. Run tests to verify nothing broken
+```
+
+**Expected Output**:
+```
+✅ Verification passed - safe to proceed with cleanup
+Found 62 flat directories to delete
+⚠️  Type 'DELETE' (in caps) to proceed...
+```
+
+**Validation After Cleanup**:
+```bash
+# Verify only 7 directories remain
+find tests/integration -maxdepth 1 -type d | wc -l
+# Expected: 7 (integration/ + core/ + features/ + external-tools/ + generators/ + commands/ + deduplication/)
+
+# Verify test count
+find tests/integration/{core,features,external-tools,generators} -name "*.test.ts" | wc -l
+# Expected: ~109 files
+
+# All tests must pass
+npm run test:integration
+```
+
+#### Step 1.4: Update Documentation (1 hour)
+
+**Update `tests/integration/README.md`**:
+
+```markdown
+# Integration Tests
+
+## Directory Structure
+
+Tests are organized into **four semantic categories**:
+
+### 1. Core Tests (`tests/integration/core/`)
+Core SpecWeave framework functionality (44 subdirectories)
+
+### 2. External Tools (`tests/integration/external-tools/`)
+Third-party service integrations (ado/, github/, jira/, kafka/)
+
+### 3. Features (`tests/integration/features/`)
+Plugin features (20 subdirectories)
+
+### 4. Generators (`tests/integration/generators/`)
+Code generation (backend/, frontend/)
+
+## Running Tests
+
+```bash
+npm run test:integration          # All integration tests
+npx vitest tests/integration/core/ # Specific category
+```
+
+## Adding New Tests
+
+**CRITICAL**: ALL new tests MUST use categorized structure:
+
+```bash
+# ✅ CORRECT:
+tests/integration/core/my-feature/my-feature.test.ts
+
+# ❌ WRONG (will be rejected):
+tests/integration/my-feature/my-feature.test.ts
+```
+
+**Test Isolation**: Use `createIsolatedTestDir()`:
+
+```typescript
+import { createIsolatedTestDir } from '../../test-utils/isolated-test-dir';
+
+test('my test', async () => {
+  const { testDir, cleanup } = await createIsolatedTestDir('my-test');
+  try {
+    // Use testDir (NOT process.cwd()!)
+  } finally {
+    await cleanup(); // ALWAYS cleanup
+  }
+});
+```
+```
+
+#### Step 1.5: Commit Changes (15 min)
+
+```bash
+git add tests/integration/
+git add .specweave/increments/0042-test-infrastructure-cleanup/
+
+git commit -m "chore: remove duplicate test directories (increment 0042)
+
+- Delete 62 duplicate test directories (48% reduction)
+- Test count: 209 → 109 files
+- CI time: ~15 min → ~8 min (47% faster)
+- Annual savings: 607 hours (25 days/year)
+
+Closes: US-001 (Eliminate Duplicate Test Directories)
+Ref: .specweave/increments/0041/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md
+"
+
+# Final validation
+npm run test:all
+```
+
+**Success Criteria** (US-001):
+- [ ] AC-US1-01: 7 directories remain in `tests/integration/`
+- [ ] AC-US1-02: No flat directories exist
+- [ ] AC-US1-03: All integration tests pass (100%)
+- [ ] AC-US1-04: CI time reduced by 40%+
+- [ ] AC-US1-05: Cleanup script executed with zero errors
 
 ---
 
-### Phase 2: Standardize E2E Naming (HIGH - 4 hours)
+### Phase 2: Standardize E2E Naming (HIGH - 3-4 hours)
 
 **Goal**: 100% consistent naming (.test.ts only)
 
-**Tasks**:
-1. Rename .spec.ts → .test.ts: `cd tests/e2e/ && for f in *.spec.ts; do git mv "$f" "${f%.spec.ts}.test.ts"; done`
-2. Move Kafka tests to integration: `git mv tests/e2e/complete-workflow.test.ts tests/integration/external-tools/kafka/workflows/`
-3. Update imports (adjust paths: `../../` → `../../../`)
-4. Update test configs (vitest.config.ts glob patterns)
-5. Update documentation (tests/e2e/README.md)
-6. Verify tests pass: `npm run test:e2e`
-7. Commit changes
+**Risk**: Low (git mv preserves history)
 
-**Success Criteria**:
-- ✅ Zero .spec.ts files in E2E tests
-- ✅ Kafka tests correctly categorized
-- ✅ 100% naming consistency
+#### Step 2.1: Rename E2E Tests (.spec.ts → .test.ts) (1 hour)
 
-**Detailed Implementation**: [ADR-0042-04](../../docs/internal/architecture/adr/0042-04-naming-convention-test-only.md) (Implementation Strategy section)
+```bash
+cd tests/e2e/
+
+# Rename all .spec.ts files
+for file in *.spec.ts workflow/*.spec.ts 2>/dev/null; do
+  if [ -f "$file" ]; then
+    NEW_NAME="${file%.spec.ts}.test.ts"
+    echo "Renaming: $file → $NEW_NAME"
+    git mv "$file" "$NEW_NAME"
+  fi
+done
+
+# Verify no .spec.ts files remain
+REMAINING=$(find . -name "*.spec.ts" | wc -l | tr -d ' ')
+if [ $REMAINING -ne 0 ]; then
+  echo "⚠️  WARNING: $REMAINING .spec.ts files still exist"
+  find . -name "*.spec.ts"
+  exit 1
+fi
+
+echo "✅ All E2E tests renamed to .test.ts"
+cd ../..
+```
+
+**Validation**:
+```bash
+find tests/e2e -name "*.spec.ts" | wc -l
+# Expected: 0
+
+npm run test:e2e
+# All tests must pass
+```
+
+#### Step 2.2: Move Misplaced Kafka Tests (30 min)
+
+**Analysis**: `tests/e2e/complete-workflow.test.ts` is Kafka integration test, NOT E2E
+
+```bash
+# Create directory if needed
+mkdir -p tests/integration/external-tools/kafka/workflows
+
+# Move test file
+git mv tests/e2e/complete-workflow.test.ts \
+       tests/integration/external-tools/kafka/workflows/complete-workflow.test.ts
+
+# Fix import paths (remove one level: ../../ → ../../../)
+sed -i.bak "s|from '../../src/|from '../../../src/|g" \
+  tests/integration/external-tools/kafka/workflows/complete-workflow.test.ts
+
+sed -i.bak "s|from '../../utils/|from '../../../utils/|g" \
+  tests/integration/external-tools/kafka/workflows/complete-workflow.test.ts
+
+# Remove backup files
+rm tests/integration/external-tools/kafka/workflows/*.bak
+
+# Verify test runs
+npx vitest tests/integration/external-tools/kafka/workflows/complete-workflow.test.ts
+```
+
+#### Step 2.3: Update Test Configs (30 min)
+
+**Update `vitest.config.ts`**:
+
+```typescript
+export default defineConfig({
+  test: {
+    include: [
+      'tests/**/*.test.ts',  // ✅ ONLY .test.ts
+    ],
+    exclude: [
+      'tests/**/*.spec.ts',  // ❌ NEVER .spec.ts
+      'node_modules/**',
+    ],
+  },
+});
+```
+
+#### Step 2.4: Create E2E README (30 min)
+
+**Create `tests/e2e/README.md`**:
+
+```markdown
+# E2E Tests
+
+## Naming Convention
+
+**REQUIRED**: All E2E tests MUST use `.test.ts` extension
+
+## Running Tests
+
+```bash
+npm run test:e2e                           # All E2E tests
+npx vitest tests/e2e/workflow/             # Specific workflow
+```
+
+## E2E vs Integration
+
+E2E tests should test **complete user workflows**:
+- CLI commands (`specweave init`, `/specweave:increment`)
+- Multiple SpecWeave components
+- End-to-end data flow
+
+**NOT E2E**: Component-level integration tests belong in `tests/integration/`
+```
+
+#### Step 2.5: Commit Changes (15 min)
+
+```bash
+git add tests/e2e/
+git add tests/integration/external-tools/kafka/
+git add vitest.config.ts
+
+git commit -m "chore: standardize E2E naming (increment 0042)
+
+- Rename all .spec.ts → .test.ts (21 files)
+- Move Kafka tests to integration
+- Update test configs to .test.ts pattern only
+- Document naming standard
+
+Closes: US-002 (Standardize E2E Test Naming)
+"
+
+npm run test:all
+```
+
+**Success Criteria** (US-002):
+- [ ] AC-US2-01: Zero `.spec.ts` files in E2E
+- [ ] AC-US2-02: Test configs use `.test.ts` only
+- [ ] AC-US2-03: README.md documents standard
+- [ ] AC-US2-04: All renamed tests pass
 
 ---
 
@@ -163,63 +446,224 @@ tests/
 
 **Goal**: Eliminate 213 unsafe process.cwd() patterns
 
-**Tasks**:
-1. **Audit** (1-2 hours): `grep -rn "process.cwd()" tests/ --include="*.test.ts" > audit.txt`
-2. **Fix Top 10 Dangerous** (4-6 hours): Tests that delete directories (highest risk)
-3. **Batch Migrate Remaining** (4-6 hours): Replace process.cwd() with createIsolatedTestDir()
-4. **Add Eslint Rule** (1 hour): Block process.cwd() in tests
-5. **Update Pre-commit Hook** (30 min): Block unsafe commits
-6. **Verify All Safe** (1-2 hours): Audit fs.rm() calls for isolation
-7. **Run Full Suite** (30 min): `npm run test:all`
-8. Commit changes
+**Risk**: Medium (requires careful refactoring)
 
-**Migration Pattern**:
-```typescript
-// BEFORE (DANGEROUS):
-const testPath = path.join(process.cwd(), '.specweave', 'increments');
-await fs.rm(testPath, { recursive: true }); // DELETES PROJECT!
+#### Step 3.1: Audit All process.cwd() Usages (1 hour)
 
-// AFTER (SAFE):
-import { createIsolatedTestDir } from '../test-utils/isolated-test-dir';
-const { testDir, cleanup } = await createIsolatedTestDir('my-test');
-try {
-  const testPath = path.join(testDir, '.specweave', 'increments');
-  // Test code
-} finally {
-  await cleanup(); // Cleans up /tmp/, not project
-}
+```bash
+# Find all process.cwd() usages
+grep -rn "process.cwd()" tests/ --include="*.test.ts" > unsafe-tests-audit.txt
+
+UNSAFE_COUNT=$(cat unsafe-tests-audit.txt | wc -l | tr -d ' ')
+echo "Total unsafe usages: $UNSAFE_COUNT"
+
+# Categorize by danger level
+grep -B3 -A3 "fs.rm.*recursive" tests/ -r --include="*.test.ts" > unsafe-tests-high-danger.txt
+HIGH_DANGER=$(grep -c "\.test\.ts:" unsafe-tests-high-danger.txt || echo "0")
+
+echo "🔴 High Danger (deletes directories): $HIGH_DANGER tests"
+echo "📄 Full audit saved to: unsafe-tests-audit.txt"
+
+# Review top 10 most dangerous
+head -20 unsafe-tests-high-danger.txt
 ```
 
-**Success Criteria**:
-- ✅ Zero process.cwd() usages in tests
-- ✅ 100% tests use createIsolatedTestDir() or os.tmpdir()
-- ✅ Eslint rule + pre-commit hook active
+#### Step 3.2: Fix Top 10 Most Dangerous Tests (4-6 hours)
 
-**Detailed Implementation**: [ADR-0042-02](../../docs/internal/architecture/adr/0042-02-test-isolation-enforcement.md) (Implementation Strategy section)
+**Migration Pattern**:
+
+```typescript
+// BEFORE (DANGEROUS):
+import * as path from 'path';
+
+test('my test', async () => {
+  const projectRoot = process.cwd();
+  const testPath = path.join(projectRoot, '.specweave');
+  await fs.rm(testPath, { recursive: true }); // ⚠️ DELETES PROJECT!
+});
+
+// AFTER (SAFE):
+import * as path from 'path';
+import { createIsolatedTestDir } from '../../test-utils/isolated-test-dir';
+
+test('my test', async () => {
+  const { testDir, cleanup } = await createIsolatedTestDir('my-test');
+  try {
+    const testPath = path.join(testDir, '.specweave');
+    // Test code
+  } finally {
+    await cleanup(); // ✅ SAFE - only deletes /tmp/
+  }
+});
+```
+
+**Process** (for each dangerous test):
+1. Read unsafe-tests-high-danger.txt
+2. For each test file:
+   - Add import: `createIsolatedTestDir`
+   - Replace `process.cwd()` with `testDir`
+   - Wrap in try/finally with cleanup
+   - Test passes: `npx vitest path/to/test.test.ts`
+   - Commit: `git commit -m "fix: safe isolation for <test-name>"`
+
+#### Step 3.3: Batch Migrate Remaining Tests (4-6 hours)
+
+**Semi-automated approach**:
+
+```bash
+# For each remaining test (after top 10)
+while read -r line; do
+  TEST_FILE=$(echo "$line" | cut -d':' -f1)
+  echo "🔧 Fixing: $TEST_FILE"
+
+  # Manual fix required:
+  # 1. Add createIsolatedTestDir import
+  # 2. Replace process.cwd() with testDir
+  # 3. Add try/finally with cleanup
+
+  # Test after fix
+  npx vitest "$TEST_FILE"
+
+  # Commit if passing
+  if [ $? -eq 0 ]; then
+    git add "$TEST_FILE"
+    git commit -m "fix: safe test isolation for $(basename $TEST_FILE .test.ts)"
+  fi
+done < <(tail -n +11 unsafe-tests-audit.txt)
+```
+
+#### Step 3.4: Add ESLint Rule (30 min)
+
+**Update `.eslintrc.js`**:
+
+```javascript
+module.exports = {
+  // ... existing config
+  overrides: [
+    {
+      files: ['tests/**/*.test.ts'],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          {
+            selector: 'CallExpression[callee.object.name="process"][callee.property.name="cwd"]',
+            message: '🚨 DANGER: process.cwd() in tests can delete .specweave/! Use createIsolatedTestDir() instead. See CLAUDE.md',
+          },
+        ],
+      },
+    },
+  ],
+};
+```
+
+**Test Rule**:
+```bash
+# Create test file with process.cwd()
+echo 'const x = process.cwd();' > tests/eslint-test.test.ts
+
+# Should FAIL
+npx eslint tests/eslint-test.test.ts
+
+# Clean up
+rm tests/eslint-test.test.ts
+```
+
+#### Step 3.5: Update Pre-commit Hook (30 min)
+
+```bash
+cat >> .git/hooks/pre-commit << 'EOF'
+
+# Block process.cwd() in test files
+if git diff --cached --name-only | grep -E "tests/.*\.test\.ts$"; then
+  if git diff --cached | grep -E "process\.cwd\(\)"; then
+    echo "❌ ERROR: process.cwd() in tests!"
+    echo "🚨 Use createIsolatedTestDir() instead"
+    exit 1
+  fi
+fi
+EOF
+
+chmod +x .git/hooks/pre-commit
+```
+
+#### Step 3.6: Commit Phase 3 Changes (30 min)
+
+```bash
+git add .eslintrc.js .git/hooks/pre-commit tests/
+
+git commit -m "feat: enforce safe test isolation (increment 0042)
+
+- Migrate 213 tests to createIsolatedTestDir()
+- Add ESLint rule to block process.cwd()
+- Update pre-commit hook
+- Eliminate catastrophic deletion risk
+
+Closes: US-003 (Fix Dangerous Test Isolation)
+Related: 2025-11-17 deletion incident
+"
+
+npm run test:all
+npx eslint tests/
+```
+
+**Success Criteria** (US-003):
+- [ ] AC-US3-01: Zero process.cwd() in tests
+- [ ] AC-US3-02: 100% use createIsolatedTestDir()
+- [ ] AC-US3-03: ESLint rule blocks process.cwd()
+- [ ] AC-US3-04: Pre-commit hook blocks unsafe commits
+- [ ] AC-US3-05: All cleanup operations verified safe
 
 ---
 
 ### Phase 4: Fixtures & Prevention (MEDIUM - 5-8 hours)
 
-**Goal**: Create shared infrastructure + multi-layer prevention
+**Goal**: Create shared infrastructure + prevention
 
-**Tasks**:
-1. **Create Fixtures Structure** (15 min): `mkdir -p tests/fixtures/{increments,github,ado,jira,living-docs}`
-2. **Create Fixtures** (4-5 hours):
-   - Increment fixtures (5 files): minimal.json, multi-project.json, completed.json, with-tasks.json, archived.json
-   - GitHub fixtures (4 files): issue.json, create-issue.json, list-issues.json, user-story.json
-   - ADO fixtures (2 files): work-item.json, create-work-item.json
-   - Jira fixtures (2 files): issue.json, create-issue.json
-   - Living docs fixtures (5 files): user-story.md, architecture.md, operations.md, adr.md
-3. **Create Mock Factories** (2-3 hours): IncrementFactory, GitHubFactory, ADOFactory, JiraFactory
-4. **Migrate 20 Tests** (2-3 hours): Replace inline data with fixtures/factories
-5. **Add CI Check** (30 min): Detect flat test structure creation
-6. **Update CONTRIBUTING.md** (1 hour): Test best practices
-7. Commit changes
+**Risk**: Low (additive changes)
 
-**Mock Factory Example**:
+#### Step 4.1: Create Fixtures Directory (30 min)
+
+```bash
+mkdir -p tests/fixtures/{increments,github,ado,jira,living-docs}
+
+# Create increment fixtures (3 examples)
+cat > tests/fixtures/increments/minimal.json << 'EOF'
+{
+  "id": "0001",
+  "name": "test-increment",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "metadata": {
+    "created": "2025-01-01T00:00:00Z",
+    "updated": "2025-01-01T00:00:00Z"
+  }
+}
+EOF
+
+# Create GitHub fixtures (2 examples)
+cat > tests/fixtures/github/issue.json << 'EOF'
+{
+  "number": 123,
+  "title": "Test Issue",
+  "state": "open",
+  "body": "Test description"
+}
+EOF
+
+# Create ADO, Jira, living-docs fixtures
+# (See ADR-0042-03 for complete fixture list)
+
+# Verify fixture count
+find tests/fixtures -type f | wc -l
+# Expected: 8+ files
+```
+
+#### Step 4.2: Create Mock Factories (2-3 hours)
+
+**Create `tests/test-utils/mock-factories.ts`**:
+
 ```typescript
-// tests/test-utils/mock-factories.ts
 export class IncrementFactory {
   static create(overrides?: Partial<Increment>): Increment {
     return {
@@ -232,61 +676,156 @@ export class IncrementFactory {
       ...overrides,
     };
   }
+
+  static createMetadata(overrides?: any): any {
+    return {
+      created: new Date('2025-01-01T00:00:00Z'),
+      updated: new Date('2025-01-01T00:00:00Z'),
+      ...overrides,
+    };
+  }
 }
 
-// Usage in tests:
-const increment = IncrementFactory.create({ id: '0042' });
+export class GitHubFactory {
+  static createIssue(overrides?: any): any {
+    return {
+      number: 123,
+      title: 'Test Issue',
+      state: 'open',
+      body: 'Test description',
+      ...overrides,
+    };
+  }
+}
+
+// ADOFactory, JiraFactory (see ADR-0042-03 for complete implementation)
 ```
 
-**Success Criteria**:
-- ✅ 20+ fixture files created
-- ✅ 4+ mock factories created
-- ✅ 20+ tests migrated
-- ✅ CI check active
+**Test Factories**:
+```bash
+npx tsc --noEmit tests/test-utils/mock-factories.ts
+```
 
-**Detailed Implementation**: [ADR-0042-03](../../docs/internal/architecture/adr/0042-03-fixture-architecture.md) (Implementation Strategy section)
+#### Step 4.3: Migrate 20 Tests to Fixtures (2-3 hours)
+
+**Example Migration**:
+
+```typescript
+// BEFORE:
+test('should create increment', () => {
+  const increment = {
+    id: '0001',
+    name: 'test-increment',
+    // ... 20 fields
+  };
+});
+
+// AFTER:
+import { IncrementFactory } from '../../test-utils/mock-factories';
+
+test('should create increment', () => {
+  const increment = IncrementFactory.create();
+});
+```
+
+**Process**:
+- Migrate tests in `tests/integration/core/living-docs/` (most reused increment data)
+- Migrate tests in `tests/integration/external-tools/github/` (most reused GitHub data)
+- Commit after each 5-10 test migrations
+
+#### Step 4.4: Add CI Checks (1 hour)
+
+**Update `.github/workflows/test.yml`**:
+
+```yaml
+jobs:
+  test-structure:
+    name: Validate Test Structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check for flat test structure
+        run: |
+          FLAT_DIRS=$(find tests/integration -maxdepth 1 -type d \
+            -not -name "tests" -not -name "integration" \
+            -not -name "core" -not -name "features" \
+            -not -name "external-tools" -not -name "generators" \
+            -not -name "deduplication" -not -name "commands" | wc -l)
+
+          if [ $FLAT_DIRS -gt 0 ]; then
+            echo "❌ ERROR: Flat test structure detected"
+            exit 1
+          fi
+
+      - name: Check for unsafe patterns
+        run: |
+          if grep -r "process.cwd()" tests/ --include="*.test.ts"; then
+            echo "❌ ERROR: process.cwd() in tests"
+            exit 1
+          fi
+
+      - name: Check E2E naming
+        run: |
+          if find tests/e2e -name "*.spec.ts" | grep -q .; then
+            echo "❌ ERROR: .spec.ts files in E2E"
+            exit 1
+          fi
+```
+
+#### Step 4.5: Commit Phase 4 Changes (30 min)
+
+```bash
+git add tests/fixtures/ tests/test-utils/mock-factories.ts .github/workflows/
+
+git commit -m "feat: shared fixtures and prevention (increment 0042)
+
+- Create fixtures directory (20+ templates)
+- Create mock factories (4+ classes)
+- Migrate 20 tests to shared fixtures
+- Add CI validation for structure/safety/naming
+
+Closes: US-004 (Shared Fixtures)
+Closes: US-005 (Prevention Measures)
+"
+
+npm run test:all
+```
+
+**Success Criteria** (US-004, US-005):
+- [ ] AC-US4-01: Fixtures directory created
+- [ ] AC-US4-02: 20+ fixture files
+- [ ] AC-US4-03: 4+ mock factories
+- [ ] AC-US4-04: 20+ tests migrated
+- [ ] AC-US4-05: Duplicate data reduced 50%
+- [ ] AC-US5-01: Pre-commit blocks flat structure
+- [ ] AC-US5-02: CI detects duplicates
+- [ ] AC-US5-03: ESLint enforces safety
+- [ ] AC-US5-04: Test structure documented
+- [ ] AC-US5-05: CONTRIBUTING.md updated
 
 ---
 
 ## Testing Strategy
 
-### Pre-Cleanup Validation
+### Validation Between Phases
 
 ```bash
-# 1. Verify categorized structure completeness
-find tests/integration/{core,features,external-tools,generators} -name "*.test.ts" | wc -l
-# Expected: ~109 (all tests present)
-
-# 2. Run full test suite
-npm run test:all
-# All tests must pass before proceeding
-
-# 3. Create backup branch
-git checkout -b test-cleanup-backup-$(date +%Y%m%d)
-```
-
-### Incremental Testing (After Each Phase)
-
-```bash
-# Phase 1: Delete duplicates
+# After Phase 1
 npm run test:integration
-find tests/integration -name "*.test.ts" | wc -l
-# Expected: ~109 files, 100% passing
+find tests/integration -name "*.test.ts" | wc -l  # ~109
 
-# Phase 2: Rename E2E
+# After Phase 2
 npm run test:e2e
-find tests/e2e -name "*.spec.ts" | wc -l
-# Expected: 0 .spec.ts files
+find tests/e2e -name "*.spec.ts" | wc -l  # 0
 
-# Phase 3: Fix isolation
+# After Phase 3
 npm run test:all
-grep -r "process.cwd()" tests/ --include="*.test.ts" | wc -l
-# Expected: 0 usages
+grep -r "process.cwd()" tests/ --include="*.test.ts" | wc -l  # 0
 
-# Phase 4: Fixtures
+# After Phase 4
 npm run test:all
-find tests/fixtures -type f | wc -l
-# Expected: 20+ fixtures
+find tests/fixtures -type f | wc -l  # 20+
 ```
 
 ### Performance Validation
@@ -294,8 +833,8 @@ find tests/fixtures -type f | wc -l
 ```bash
 # Measure CI time reduction
 time npm run test:integration
-# Baseline: ~15 minutes
-# Target: ~8 minutes (47% faster)
+# Before: ~15 minutes
+# After: ~8 minutes (47% faster)
 ```
 
 ---
@@ -303,112 +842,90 @@ time npm run test:integration
 ## Risk Mitigation
 
 ### Risk 1: Accidental Deletion of Unique Tests
-- **Mitigation**: Backup branch, automated script validation, ultrathink analysis verified completeness
-- **Contingency**: Restore from backup branch
+- **Mitigation**: Backup branch, completeness verification, dry-run mode
+- **Contingency**: `git checkout test-cleanup-backup`
 
 ### Risk 2: Breaking Tests During Migration
-- **Mitigation**: Migrate top 10 dangerous first, test individually, full suite before commit
-- **Contingency**: Git revert if tests fail
+- **Mitigation**: Top 10 first, test individually, full suite before commit
+- **Contingency**: `git revert HEAD`
 
-### Risk 3: Eslint/Hook False Positives
-- **Mitigation**: Test rules with known patterns, allow eslint-disable with justification
+### Risk 3: ESLint/Hook False Positives
+- **Mitigation**: Test with known patterns, allow `eslint-disable` with justification
 - **Contingency**: `// eslint-disable-next-line -- legitimate use case`
 
 ### Risk 4: CI Time Not Reduced as Expected
-- **Mitigation**: Baseline measurement, post-cleanup measurement, analyze bottlenecks
-- **Contingency**: Additional optimizations (parallelization, caching)
+- **Mitigation**: Baseline measurement, bottleneck analysis
+- **Contingency**: Additional optimizations (parallelization)
 
 ---
 
 ## Success Metrics Summary
 
-### Quantitative Metrics:
-
-**Test Infrastructure Efficiency**:
-- ✅ Test file count: 209 → 109 files (48% reduction)
-- ✅ CI test time: 15 min → 8 min (47% faster)
-- ✅ Annual CI savings: 607 hours/year = $12,140
-
-**Safety & Quality**:
-- ✅ Unsafe test patterns: 213 → 0 (100% elimination)
-- ✅ Shared fixtures: 0 → 20+ (eliminates ~150 duplicates)
-- ✅ Deletion risk: CRITICAL → ZERO
-
-**Prevention Effectiveness**:
-- ✅ Pre-commit hook: Blocks 100% of flat structure creation
-- ✅ CI validation: Blocks 100% of PRs with duplicates
-- ✅ Eslint enforcement: Blocks 100% of unsafe patterns
+**Quantitative**:
+- Test file count: 209 → 109 (48% reduction)
+- CI time: 15 min → 8 min (47% faster)
+- Unsafe patterns: 213 → 0 (100% elimination)
+- Annual savings: 607 hours = $72,140/year
 
 **ROI**:
 - Investment: 23 hours = $2,300
-- Annual returns: 707 hours = $72,140/year
-- ROI: 31x return (3,135%)
+- Annual returns: 707 hours = $72,140
+- ROI: 31x (3,135%)
 
 ---
 
 ## Validation Checklist
 
-Before marking increment complete:
+**Code Quality**:
+- [ ] All tests pass
+- [ ] No flat duplicates
+- [ ] Zero process.cwd()
+- [ ] All E2E use .test.ts
+- [ ] ESLint passes
 
-### Code Quality:
-- [ ] All tests pass (`npm run test:all`)
-- [ ] No flat duplicate directories exist
-- [ ] Zero process.cwd() usages in tests
-- [ ] All E2E tests use `.test.ts` extension
-- [ ] Eslint passes with no warnings
-
-### File Structure:
-- [ ] Only categorized structure exists (core/, features/, external-tools/, generators/)
-- [ ] 20+ fixture files created
-- [ ] 4+ mock factories created
-- [ ] Test count reduced to ~109 files
-
-### Documentation:
-- [ ] README.md updated (integration + E2E)
-- [ ] CONTRIBUTING.md updated
-- [ ] ADRs created for all decisions
-- [ ] Cleanup script documented
-
-### Infrastructure:
-- [ ] Shared fixtures directory created
-- [ ] Mock factories implemented
+**Infrastructure**:
+- [ ] 20+ fixtures created
+- [ ] 4+ mock factories
 - [ ] Pre-commit hook updated
-- [ ] CI duplicate detection added
-- [ ] Eslint rule active
+- [ ] CI checks added
 
-### Metrics:
-- [ ] Test file count: 209 → 109 (48% reduction)
-- [ ] CI time: 15 min → 8 min (47% faster)
-- [ ] Unsafe patterns: 213 → 0 (100% elimination)
-- [ ] Test duplication: 48% → 0% (100% elimination)
+**Documentation**:
+- [ ] README.md updated (integration + E2E)
+- [ ] ADRs created
+- [ ] CONTRIBUTING.md updated
+
+**Metrics**:
+- [ ] File count: 209 → 109
+- [ ] CI time: 15 → 8 min
+- [ ] Unsafe: 213 → 0
+- [ ] Duplication: 48% → 0%
 
 ---
 
 ## Related Documentation
 
-### Increment Documentation:
-- **Spec**: `.specweave/increments/0042-test-infrastructure-cleanup/spec.md`
-- **Tasks**: `.specweave/increments/0042-test-infrastructure-cleanup/tasks.md`
+**Increment Files**:
+- `spec.md` - User stories & acceptance criteria
+- `tasks.md` - Task breakdown with embedded tests
 
-### Analysis Reports (Increment 0041):
-- **ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md** (62 KB, 10 parts)
-- **TEST-DATA-CONSISTENCY-ANALYSIS.md** (15 KB, 7 parts)
-- **EXECUTIVE-SUMMARY-TEST-ANALYSIS-2025-11-18.md**
+**Analysis Reports** (Increment 0041):
+- ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md
+- TEST-DATA-CONSISTENCY-ANALYSIS.md
+- EXECUTIVE-SUMMARY-TEST-ANALYSIS-2025-11-18.md
 
-### Architecture Decision Records:
-- **ADR-0042-01**: Test Structure Standardization (delete flat duplicates)
-- **ADR-0042-02**: Test Isolation Enforcement (eliminate process.cwd())
-- **ADR-0042-03**: Fixture Architecture (shared fixtures + mock factories)
-- **ADR-0042-04**: Naming Convention (.test.ts only)
+**ADRs** (Architecture decisions):
+- ADR-0042-01: Test Structure Standardization
+- ADR-0042-02: Test Isolation Enforcement
+- ADR-0042-03: Fixture Architecture
+- ADR-0042-04: Naming Convention
 
-### Code Files:
-- **Cleanup Script**: `.specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
-- **Test Utilities**: `tests/test-utils/isolated-test-dir.ts`
-- **Mock Factories**: `tests/test-utils/mock-factories.ts` (to be created)
+**Tools**:
+- Cleanup script: `.specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
+- Test utilities: `tests/test-utils/isolated-test-dir.ts`
 
-### Historical Incidents:
-- **DELETION-ROOT-CAUSE-2025-11-17.md** (Increment 0037)
-- **ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md** (Increment 0039)
+**Historical**:
+- DELETION-ROOT-CAUSE-2025-11-17.md (Increment 0037)
+- ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md (Increment 0039)
 
 ---
 
