@@ -1,6 +1,273 @@
 # SpecWeave Test Suite
 
+**Test Framework**: Vitest (unit + integration) + Playwright (E2E)
+**Test Health**: 17%+ (improved from 7%)
+**Coverage Target**: 80%+ overall, 90%+ for critical paths
+**Test Files**: 78 (reduced from 245, -68% duplication)
+
 This directory contains all automated tests for the SpecWeave framework.
+
+---
+
+## 🚨 CRITICAL: Test Safety Rules (READ FIRST!)
+
+**⛔ NEVER USE THESE PATTERNS (Catastrophic Deletion Risk!):**
+
+```typescript
+// ❌ WRONG - Can delete project .specweave/!
+const testRoot = process.cwd();
+const testPath = path.join(__dirname, '..', '.specweave');
+const specweaveDir = path.join(process.cwd(), '.specweave');
+
+// ✅ CORRECT - Use isolated temp directories
+import * as os from 'os';
+import * as path from 'path';
+
+const testRoot = path.join(os.tmpdir(), 'test-name-' + Date.now());
+```
+
+**Why This Matters**:
+- Tests create mock `.specweave/` structures for testing
+- Cleanup uses `fs.rm(testRoot, { recursive: true })`
+- If `testRoot` points to project root → **DELETES REAL .specweave/!**
+- You lose all increments, docs, and history
+
+**Protection Layers**:
+1. ✅ **Pre-commit hook**: Blocks commits with dangerous test patterns
+2. ✅ **Test utilities**: `tests/test-utils/isolated-test-dir.ts`
+3. ✅ **This documentation**: Read before writing tests
+
+**Safe Pattern (ALWAYS Use This)**:
+
+```typescript
+import { createIsolatedTestDir, createSpecweaveStructure } from '../test-utils/isolated-test-dir';
+
+test('my test', async () => {
+  const { testDir, cleanup } = await createIsolatedTestDir('my-test');
+
+  try {
+    // Setup .specweave structure in isolated directory
+    await createSpecweaveStructure(testDir);
+
+    // Test code here - NEVER touches project .specweave/
+    const incrementPath = path.join(testDir, '.specweave', 'increments', '0001-test');
+    // ...
+  } finally {
+    await cleanup(); // ALWAYS cleanup
+  }
+});
+```
+
+---
+
+## Test Data Management (NEW: Fixtures + Factories!)
+
+### Option 1: Use Fixtures (Recommended for Static Data)
+
+**Fixtures** = Predefined test data in JSON/Markdown files
+
+**Benefits**:
+- ✅ **DRY Principle**: Single source of truth
+- ✅ **Type Safety**: TypeScript types from fixtures
+- ✅ **Consistency**: Same data across all tests
+- ✅ **Maintainability**: Update once, affects all tests
+
+**Available Fixtures**:
+- `tests/fixtures/increments/` - Increment metadata (minimal, complex, planning)
+- `tests/fixtures/github/` - GitHub API responses (issue, PR, comment, label, milestone)
+- `tests/fixtures/ado/` - Azure DevOps (work-item, sprint, board)
+- `tests/fixtures/jira/` - Jira (issue, epic, sprint)
+- `tests/fixtures/living-docs/` - Living documentation (user-story, feature, epic, requirement)
+
+**Usage**:
+
+```typescript
+import incrementFixture from 'tests/fixtures/increments/minimal.json';
+import githubIssue from 'tests/fixtures/github/issue.json';
+
+it('should process increment', () => {
+  // ALWAYS clone to avoid mutation!
+  const increment = { ...incrementFixture, id: '0099' };
+  // Test code here
+});
+```
+
+**See**: `tests/fixtures/README.md` for complete fixture documentation
+
+### Option 2: Use Factories (Recommended for Dynamic Data)
+
+**Factories** = Builder pattern for creating test objects with fluent interface
+
+**Benefits**:
+- ✅ **Fluent Interface**: Chain method calls
+- ✅ **Type Safety**: Full TypeScript support
+- ✅ **Flexibility**: Create variations easily
+- ✅ **Readability**: Self-documenting test data
+
+**Available Factories**:
+- `IncrementFactory` - Create increment metadata
+- `GitHubFactory` - Create GitHub issues, PRs, comments
+- `ADOFactory` - Create ADO work items, sprints, boards
+- `JiraFactory` - Create Jira issues, epics, sprints
+
+**Usage**:
+
+```typescript
+import { IncrementFactory, GitHubFactory } from 'tests/test-utils/factories';
+
+it('should handle increment lifecycle', () => {
+  const increment = new IncrementFactory()
+    .withId('0099')
+    .withStatus('active')
+    .withPriority('P1')
+    .withMetrics({ files_before: 245, files_after: 78 })
+    .build();
+
+  // Test code here
+});
+
+it('should sync to GitHub', () => {
+  const issue = new GitHubFactory()
+    .issue()
+    .withNumber(42)
+    .withTitle('[Epic] Test Infrastructure')
+    .addLabel('P1', 'B60205')
+    .withState('open')
+    .build();
+
+  // Test code here
+});
+```
+
+### Migration Guide: Duplicate Data → Fixtures/Factories
+
+**Before** (Duplicated):
+
+```typescript
+// ❌ WRONG - Duplicated across 78 test files!
+const increment1 = {
+  id: '0001',
+  name: 'test-increment',
+  status: 'active',
+  // ... 20 lines of boilerplate
+};
+
+const increment2 = {
+  id: '0002',
+  name: 'another-test',
+  status: 'planning',
+  // ... 20 lines of DUPLICATE boilerplate
+};
+```
+
+**After** (Fixtures):
+
+```typescript
+// ✅ CORRECT - Single source of truth
+import incrementFixture from 'tests/fixtures/increments/minimal.json';
+
+const increment1 = { ...incrementFixture, id: '0001', status: 'active' };
+const increment2 = { ...incrementFixture, id: '0002', status: 'planning' };
+```
+
+**After** (Factories - Most Readable):
+
+```typescript
+// ✅ BEST - Fluent interface, self-documenting
+import { IncrementFactory } from 'tests/test-utils/factories';
+
+const increment1 = new IncrementFactory()
+  .withId('0001')
+  .withStatus('active')
+  .build();
+
+const increment2 = new IncrementFactory()
+  .withId('0002')
+  .withStatus('planning')
+  .build();
+```
+
+---
+
+## Vitest Best Practices (Updated from Jest)
+
+### Import from Vitest (NOT Jest)
+
+```typescript
+// ✅ CORRECT
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// ❌ WRONG
+import { jest } from '@jest/globals';
+```
+
+### Type-Safe Mocks with vi.mocked()
+
+```typescript
+// ✅ CORRECT - Type-safe mocks
+import { vi } from 'vitest';
+import fs from 'fs-extra';
+
+vi.mock('fs-extra');
+
+const mockReadFile = vi.mocked(fs.readFile);
+const mockWriteFile = vi.mocked(fs.writeFile);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockReadFile.mockResolvedValue('content');
+});
+
+// ❌ WRONG - Invalid pre-Vitest syntax
+const mockFs = fs as anyed<typeof fs>;
+```
+
+### ES6 Imports (NOT require())
+
+```typescript
+// ✅ CORRECT
+import { MyModule } from '../src/module.js';
+
+// ❌ WRONG
+const MyModule = require('../src/module');
+```
+
+**See**: `tests/test-template.test.ts` for complete Vitest template
+
+---
+
+## Pre-Commit Validation (Automated Safety Checks)
+
+The pre-commit hook automatically validates:
+1. ✅ No _completed/ or _archive/ directories (increment safety)
+2. ✅ Valid status enum values (planning/active/paused/completed/abandoned)
+3. ✅ No increment deletions
+4. ✅ **No dangerous test patterns (process.cwd(), etc.)** ⬅️ NEW!
+
+**To run manually**:
+
+```bash
+# Validate increment operations
+bash scripts/pre-commit-increment-validation.sh
+
+# Validate test safety
+node scripts/validate-test-safety.js
+```
+
+### Pre-Commit Checklist
+
+Before committing test files, verify:
+
+- [ ] ✅ ES6 imports (NOT require())
+- [ ] ✅ vi.* APIs (NOT jest.*)
+- [ ] ✅ vi.mocked() for mocks (NOT anyed<>)
+- [ ] ✅ Inline mock factories (NO external variables)
+- [ ] ✅ Array copies in mocks (NO shared references)
+- [ ] ✅ vi.clearAllMocks() in beforeEach()
+- [ ] ✅ Test isolation (os.tmpdir(), NOT process.cwd())
+- [ ] ✅ Fixture/factory usage (NO hardcoded test data)
+
+**Pre-commit hook will automatically validate test safety!**
 
 ---
 
