@@ -56,3 +56,19 @@ export class PlatformDataLoader {
     return Array.from(this.platforms.values());
   }
 }
+
+/**
+ * Helper function to load all platforms (functional API)
+ */
+export async function loadAllPlatforms(): Promise<ServerlessPlatform[]> {
+  const loader = new PlatformDataLoader();
+  return loader.loadAll();
+}
+
+/**
+ * Helper function to load a specific platform by ID
+ */
+export async function loadPlatformById(id: string): Promise<ServerlessPlatform | undefined> {
+  const loader = new PlatformDataLoader();
+  return loader.loadById(id);
+}
