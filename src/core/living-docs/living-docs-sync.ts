@@ -122,8 +122,19 @@ export class LivingDocsSync {
 
       // Create user story files
       for (const story of parsed.userStories) {
-        const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const storyFile = path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+        // CRITICAL: Find existing file by US-ID first to prevent duplicates
+        const existingFile = await this.findExistingUserStoryFile(projectPath, story.id);
+
+        let storyFile: string;
+        if (existingFile) {
+          // Reuse existing file (prevent duplicate creation)
+          storyFile = path.join(projectPath, existingFile);
+          console.log(`   ♻️  Reusing existing file: ${existingFile}`);
+        } else {
+          // Create new file with standardized naming
+          const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          storyFile = path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+        }
 
         if (!options.dryRun) {
           const storyContent = this.generateUserStoryFile(story, featureId, incrementId, parsed);
@@ -798,6 +809,55 @@ export class LivingDocsSync {
   private async syncToADO(featureId: string, projectPath: string): Promise<void> {
     console.log(`   ⚠️  ADO sync not yet implemented - skipping`);
     // TODO: Implement ADO sync when specweave-ado plugin is available
+  }
+
+  /**
+   * Find existing user story file by US-ID
+   *
+   * Searches for any file matching pattern: us-{id}-*.md
+   * Example: US-001 matches us-001-status-line.md or us-001-status-line-priority-p1.md
+   *
+   * @param projectPath - Path to feature folder (e.g., .specweave/docs/internal/specs/specweave/FS-043)
+   * @param userStoryId - User story ID (e.g., "US-001")
+   * @returns Filename if found, null otherwise
+   */
+  private async findExistingUserStoryFile(
+    projectPath: string,
+    userStoryId: string
+  ): Promise<string | null> {
+    try {
+      const files = await fs.readdir(projectPath);
+
+      // Look for file matching: us-001-*.md (case insensitive)
+      const usIdLower = userStoryId.toLowerCase(); // us-001
+      const matchingFiles = files.filter(f => {
+        const match = f.match(/^(us-\d+)-/);
+        return match && match[1] === usIdLower;
+      });
+
+      if (matchingFiles.length === 0) {
+        return null; // No existing file found
+      }
+
+      if (matchingFiles.length === 1) {
+        return matchingFiles[0]; // Exactly one file found ✅
+      }
+
+      // Multiple files found - return most recent
+      console.warn(`   ⚠️  Found ${matchingFiles.length} files for ${userStoryId}, using most recent`);
+      const fileTimes = await Promise.all(
+        matchingFiles.map(async (f) => ({
+          file: f,
+          mtime: (await fs.stat(path.join(projectPath, f))).mtime.getTime()
+        }))
+      );
+      fileTimes.sort((a, b) => b.mtime - a.mtime); // Newest first
+      return fileTimes[0].file;
+
+    } catch (error) {
+      // Directory doesn't exist yet (first sync)
+      return null;
+    }
   }
 
   /**
