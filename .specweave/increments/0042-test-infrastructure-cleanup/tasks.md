@@ -1,7 +1,7 @@
 ---
 increment: 0042-test-infrastructure-cleanup
 total_tasks: 18
-completed_tasks: 4
+completed_tasks: 5
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -286,7 +286,9 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-02, AC-US2-03
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-18 (current session)
+**Notes**: Config already correct (.test.ts only). Created E2E README.md, updated integration README.md with naming convention. All 40 E2E tests discovered correctly.
 
 **Test Plan**:
 - **Given** renamed E2E tests and moved Kafka test
