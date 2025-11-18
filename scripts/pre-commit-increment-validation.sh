@@ -182,6 +182,32 @@ git diff --cached --name-status | grep "^D" | grep ".specweave/increments/[0-9]"
 done
 
 # ============================================================================
+# CHECK 6: Test safety validation (process.cwd(), fixtures, isolation)
+# ============================================================================
+
+# Check if any test files are being committed
+if git diff --cached --name-only | grep -q "tests/.*\.test\.ts$"; then
+  echo ""
+  echo "🧪 Validating test safety..."
+
+  # Run test safety validator
+  if ! node scripts/validate-test-safety.js; then
+    echo -e "${RED}❌ CRITICAL ERROR: Dangerous test patterns detected!${NC}"
+    echo ""
+    echo "   ${YELLOW}Fix:${NC}"
+    echo "   1. Replace process.cwd() with os.tmpdir() in tests"
+    echo "   2. Use isolated test directories"
+    echo "   3. Consider using test factories for test data"
+    echo ""
+    echo "   ${YELLOW}See:${NC} CLAUDE.md → Test Isolation section"
+    echo ""
+    VALIDATION_FAILED=1
+  else
+    echo -e "${GREEN}✅ Test safety validation passed${NC}"
+  fi
+fi
+
+# ============================================================================
 # FINAL RESULT
 # ============================================================================
 
@@ -197,15 +223,16 @@ if [ $VALIDATION_FAILED -eq 1 ]; then
   echo "   1. Moving increments to _completed/ (use status update)"
   echo "   2. Using invalid status values (use enum: planning/active/paused/completed/abandoned)"
   echo "   3. Deleting increments (use /specweave:abandon instead)"
+  echo "   4. Using process.cwd() in tests (catastrophic deletion risk)"
   echo ""
-  echo "   ${YELLOW}Correct closure pattern:${NC}"
-  echo "   - Update metadata.json status field ONLY"
-  echo "   - Increment stays in .specweave/increments/<id>/"
-  echo "   - No files moved or deleted"
+  echo "   ${YELLOW}Correct patterns:${NC}"
+  echo "   - Increment closure: Update metadata.json status field ONLY"
+  echo "   - Test isolation: Use os.tmpdir() for temp directories"
+  echo "   - Test data: Use fixtures or factories from tests/test-utils/"
   echo ""
   exit 1
 fi
 
-echo -e "${GREEN}✅ Increment validation passed${NC}"
+echo -e "${GREEN}✅ All validations passed${NC}"
 echo ""
 exit 0
