@@ -9,6 +9,37 @@ These tests verify that SpecWeave plugins work correctly with their respective e
 1. **Auth Verification Mode** (default) - Verifies credentials and API connectivity
 2. **Full Integration Mode** - Creates/deletes test data (requires `RUN_INTEGRATION_TESTS=true`)
 
+## 📁 Directory Structure
+
+```
+tests/integration/
+├── README.md                      # This file
+├── core/                          # Core framework tests
+├── external-tools/                # Third-party integrations (GitHub, JIRA, ADO, Kafka)
+├── features/                      # Plugin feature tests
+└── generators/                    # Code generation tests
+```
+
+## 📝 Test Naming Convention
+
+**✅ REQUIRED**: All integration tests MUST use `.test.ts` extension
+
+```bash
+# ✅ CORRECT:
+tests/integration/core/my-feature.test.ts
+tests/integration/external-tools/github/sync.test.ts
+
+# ❌ WRONG (deprecated):
+tests/integration/my-feature.spec.ts
+```
+
+**Why `.test.ts` only?**
+- Consistency with unit and E2E tests
+- Simpler glob patterns (`**/*.test.ts` vs `**/*.{test,spec}.ts`)
+- Aligned with Vitest conventions
+
+**Standardized**: 2025-11-18 (Increment 0042 - Test Infrastructure Cleanup)
+
 ## 🔐 Authentication Setup
 
 ### Local Development
