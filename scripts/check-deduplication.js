@@ -38,7 +38,10 @@ async function main() {
 
     // Dynamic import of CommandDeduplicator
     const { CommandDeduplicator } = await import('../dist/src/core/deduplication/command-deduplicator.js');
-    const dedup = new CommandDeduplicator({ debug: false });
+
+    // Respect SPECWEAVE_ROOT env var for testing (falls back to project root)
+    const effectiveRoot = process.env.SPECWEAVE_ROOT || projectRoot;
+    const dedup = new CommandDeduplicator({ debug: false }, effectiveRoot);
 
     // Check for duplicate
     const isDuplicate = await dedup.checkDuplicate(command, args);
