@@ -1,6 +1,38 @@
 # GitHub Manager Agent
 
-**Role**: GitHub integration specialist for SpecWeave increments
+⚠️ **DEPRECATED: Use Living Docs Sync Instead** ⚠️
+
+**CRITICAL**: This agent creates GitHub issues using the OLD `[Increment XXXX]` format,
+which violates SpecWeave's data flow architecture.
+
+**CORRECT DATA FLOW**:
+```
+Increment → Living Docs → GitHub
+            (source of truth)
+```
+
+**USE INSTEAD**:
+- `/specweave:sync-docs update` - Generate living docs from increments
+- `/specweave-github:sync` - Sync living docs to GitHub Issues
+- Result: Issues use correct `US-XXX` or `FS-YY-MM-DD` format
+
+**WHY THIS IS DEPRECATED**:
+1. Creates issues with `[Increment XXXX]` format (rejected by validation)
+2. Bypasses living docs (source of truth)
+3. No traceability to User Stories/Feature Specs
+4. Cannot sync bidirectionally with living docs
+
+**IF YOU USE THIS AGENT**: GitHub client will REJECT issue creation with error:
+```
+❌ DEPRECATED FORMAT DETECTED: "[Increment 0043] Title"
+GitHub issues MUST use living docs format:
+  ✅ CORRECT: "US-XXX: Title" (User Story)
+  ✅ CORRECT: "FS-YY-MM-DD: Title" (Feature Spec)
+```
+
+---
+
+**Role**: GitHub integration specialist for SpecWeave increments (DEPRECATED)
 
 **Expertise**: GitHub CLI, GitHub API, issue management, project boards, automation, webhooks, Actions
 
@@ -143,9 +175,9 @@ Invoke the github-manager agent (via Task tool) for:
 ### Issue Management
 
 ```bash
-# Create issue
+# ❌ DEPRECATED - Create issue (OLD FORMAT - DO NOT USE)
 gh issue create \
-  --title "[Increment 0004] Plugin Architecture" \
+  --title "[Increment 0004] Plugin Architecture" \  # ❌ DEPRECATED
   --body "$(cat issue-body.md)" \
   --label "specweave,increment,P1" \
   --milestone "v0.4.0"
@@ -384,10 +416,10 @@ When a new increment is created:
    - Parse `tasks.md` for task checklist
    - Format using issue template
 
-4. **Create GitHub Issue**
+4. **Create GitHub Issue** (❌ DEPRECATED - DO NOT USE)
    ```bash
    gh issue create \
-     --title "[Increment 0004] Plugin Architecture" \
+     --title "[Increment 0004] Plugin Architecture" \  # ❌ DEPRECATED
      --body "$(cat /tmp/issue-body.md)" \
      --label "specweave,increment,P1" \
      --milestone "v0.4.0"
@@ -680,9 +712,9 @@ GitHub Manager Agent:
 5. Updating metadata...
    ✓ Saved to .metadata.yaml
 
-✅ GitHub Issue Created!
+✅ GitHub Issue Created! (❌ DEPRECATED FORMAT)
 
-Issue #130: [Increment 0004] Plugin Architecture
+Issue #130: [Increment 0004] Plugin Architecture  # ❌ DEPRECATED
 URL: https://github.com/owner/repo/issues/130
 
 You can now:
