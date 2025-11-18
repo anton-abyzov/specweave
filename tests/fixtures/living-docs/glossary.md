@@ -1,23 +1,9 @@
 # Glossary
 
-## Test Infrastructure Terms
+## Terms
 
-**Fixture**: Predefined test data stored in JSON/Markdown files for reuse across multiple tests.
+**Fixture**: Reusable test data template
 
-**Test Health**: Percentage of tests passing in the test suite.
+**Factory**: Type-safe object creation pattern for tests
 
-**Duplication**: When the same test exists in multiple locations (e.g., flat and categorized directories).
-
-**Categorization**: Organizing tests into semantic categories (core, features, external-tools, generators).
-
-**Test Isolation**: Ensuring tests don't affect each other by using isolated temp directories.
-
-**Process.cwd()**: Dangerous pattern that can cause catastrophic deletions if used in test cleanup code.
-
-**TDD**: Test-Driven Development - write tests first, then implementation.
-
-**BDD**: Behavior-Driven Development - write tests in Given-When-Then format.
-
-**Coverage**: Percentage of code executed by tests.
-
-**CI/CD**: Continuous Integration/Continuous Deployment - automated testing and deployment pipeline.
+**Living Docs**: Always up-to-date documentation synchronized with specs

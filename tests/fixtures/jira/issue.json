@@ -1,30 +1,12 @@
 {
-  "id": "10042",
-  "key": "SPEC-42",
+  "id": "10001",
+  "key": "TEST-123",
   "fields": {
-    "summary": "Test Infrastructure Cleanup",
-    "description": "Eliminate 48% test duplication and improve test health",
-    "issuetype": {
-      "name": "Story",
-      "subtask": false
-    },
-    "status": {
-      "name": "In Progress",
-      "statusCategory": {
-        "name": "In Progress",
-        "key": "indeterminate"
-      }
-    },
-    "priority": {
-      "name": "High",
-      "id": "2"
-    },
-    "assignee": {
-      "displayName": "Claude Agent",
-      "emailAddress": "claude@specweave.com"
-    },
-    "created": "2025-11-18T00:00:00.000+0000",
-    "updated": "2025-11-18T06:00:00.000+0000",
-    "labels": ["test-infrastructure", "cleanup", "P1"]
+    "summary": "Test Jira Issue",
+    "description": "Test issue description",
+    "issuetype": {"name": "Story"},
+    "status": {"name": "In Progress"},
+    "priority": {"name": "High"},
+    "created": "2025-01-01T00:00:00.000+0000"
   }
 }
