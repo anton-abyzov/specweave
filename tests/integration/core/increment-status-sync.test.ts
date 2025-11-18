@@ -247,7 +247,7 @@ All tasks complete (for testing purposes).
   describe('T-015: /pause and /resume Commands Update spec.md', () => {
     it('testPauseCommandUpdatesSpec - should update spec.md to paused', async () => {
       // GIVEN an active increment
-      const incrementId = '0001-test';
+      const incrementId = '0005-pause-test';
       await createTestIncrement(incrementId, IncrementStatus.ACTIVE);
 
       // Verify initial state
@@ -268,7 +268,7 @@ All tasks complete (for testing purposes).
 
     it('testResumeCommandUpdatesSpec - should update spec.md back to active', async () => {
       // GIVEN a paused increment
-      const incrementId = '0002-test';
+      const incrementId = '0006-resume-test';
       await createTestIncrement(incrementId, IncrementStatus.PAUSED);
 
       // Verify initial state
@@ -289,7 +289,7 @@ All tasks complete (for testing purposes).
 
     it('testPauseResumeRoundTrip - should preserve state through pause/resume cycle', async () => {
       // GIVEN an active increment
-      const incrementId = '0003-test';
+      const incrementId = '0007-roundtrip-test';
       await createTestIncrement(incrementId, IncrementStatus.ACTIVE);
 
       // Verify initial state
@@ -315,7 +315,7 @@ All tasks complete (for testing purposes).
 
     it('testAbandonCommandUpdatesSpec - should update spec.md to abandoned', async () => {
       // GIVEN an active increment
-      const incrementId = '0004-test';
+      const incrementId = '0008-abandon-test';
       await createTestIncrement(incrementId, IncrementStatus.ACTIVE);
 
       // WHEN /specweave:abandon is executed
