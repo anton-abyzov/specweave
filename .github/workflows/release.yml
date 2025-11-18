@@ -108,7 +108,8 @@ jobs:
           echo "✅ CHANGELOG entry found for $VERSION"
 
           # Verify release notes are not empty
-          NOTES=$(awk "/## \[$VERSION\]/,/^## \[/" CHANGELOG.md | sed '1d;$d')
+          # Use flag-based extraction to avoid matching the same header twice
+          NOTES=$(awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
           NOTES_LINES=$(echo "$NOTES" | wc -l | tr -d ' ')
 
           if [ -z "$NOTES" ] || [ "$NOTES_LINES" -lt 3 ]; then
@@ -125,8 +126,8 @@ jobs:
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
           # Extract release notes for this version from CHANGELOG.md
-          # This finds the section between ## [VERSION] and the next ## [
-          NOTES=$(awk "/## \[$VERSION\]/,/^## \[/" CHANGELOG.md | sed '1d;$d')
+          # Use flag-based extraction to avoid matching the same header twice
+          NOTES=$(awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
 
           # Write to file for GitHub release
           echo "$NOTES" > /tmp/release-notes.md
