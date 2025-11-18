@@ -1,0 +1,11 @@
+{
+  "id": "abc-123-def-456",
+  "name": "Sprint 42",
+  "path": "SpecWeave\\Sprint 42",
+  "attributes": {
+    "startDate": "2025-11-11T00:00:00Z",
+    "finishDate": "2025-11-25T00:00:00Z",
+    "timeFrame": "current"
+  },
+  "url": "https://dev.azure.com/org/project/_apis/work/teamsettings/iterations/abc-123-def-456"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "0042",
+  "name": "test-infrastructure-cleanup",
+  "title": "Test Infrastructure Cleanup - Eliminate 48% Duplication",
+  "status": "in-progress",
+  "type": "refactor",
+  "priority": "P1",
+  "epic": "FS-042",
+  "test_mode": "TDD",
+  "coverage_target": 90,
+  "metadata": {
+    "created": "2025-11-18T00:00:00Z",
+    "updated": "2025-11-18T06:00:00Z",
+    "started": "2025-11-18T00:30:00Z"
+  },
+  "team": {
+    "lead": "claude",
+    "contributors": ["specweave-team"]
+  },
+  "metrics": {
+    "files_before": 245,
+    "files_after": 78,
+    "test_health_before": 7,
+    "test_health_after": 17
+  }
+}

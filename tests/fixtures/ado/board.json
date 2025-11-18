@@ -1,0 +1,44 @@
+{
+  "id": "board-123",
+  "name": "Stories",
+  "columns": [
+    {
+      "id": "col-1",
+      "name": "New",
+      "itemLimit": 0,
+      "stateMappings": {
+        "User Story": "New"
+      }
+    },
+    {
+      "id": "col-2",
+      "name": "Active",
+      "itemLimit": 5,
+      "stateMappings": {
+        "User Story": "Active"
+      }
+    },
+    {
+      "id": "col-3",
+      "name": "Resolved",
+      "itemLimit": 0,
+      "stateMappings": {
+        "User Story": "Resolved"
+      }
+    },
+    {
+      "id": "col-4",
+      "name": "Closed",
+      "itemLimit": 0,
+      "stateMappings": {
+        "User Story": "Closed"
+      }
+    }
+  ],
+  "rows": [
+    {
+      "id": "row-1",
+      "name": "Stories"
+    }
+  ]
+}
