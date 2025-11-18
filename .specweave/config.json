@@ -1,0 +1,186 @@
+{
+  "language": "en",
+  "translation": {
+    "languages": ["en"],
+    "primary": "en",
+    "method": "auto",
+    "preserveFrameworkTerms": true
+  },
+  "project": {
+    "name": "specweave",
+    "version": "0.22.0",
+    "description": "Core SpecWeave framework and CLI",
+    "techStack": ["TypeScript", "Node.js", "Claude Code", "Playwright"],
+    "team": "core"
+  },
+  "multiProject": {
+    "enabled": true,
+    "activeProject": "specweave",
+    "projects": {
+      "specweave": {
+        "id": "specweave",
+        "name": "SpecWeave",
+        "description": "Core SpecWeave framework and CLI",
+        "keywords": ["specweave", "framework", "spec-driven", "claude-code", "plugins"],
+        "techStack": ["TypeScript", "Node.js", "Claude Code", "Playwright"],
+        "team": "core",
+        "externalTools": {
+          "github": {
+            "repository": "anton-abyzov/specweave"
+          }
+        }
+      }
+    }
+  },
+  "adapters": {
+    "default": "claude"
+  },
+  "testing": {
+    "defaultTestMode": "TDD",
+    "defaultCoverageTarget": 80,
+    "coverageTargets": {
+      "unit": 85,
+      "integration": 80,
+      "e2e": 90
+    }
+  },
+  "limits": {
+    "maxActiveIncrements": 3,
+    "hardCap": 3,
+    "allowEmergencyInterrupt": true,
+    "typeBehaviors": {
+      "canInterrupt": ["hotfix", "bug"],
+      "autoAbandonDays": {
+        "experiment": 14
+      }
+    },
+    "staleness": {
+      "paused": 7,
+      "active": 30
+    }
+  },
+  "deduplication": {
+    "enabled": true,
+    "windowMs": 1000,
+    "maxCacheSize": 1000,
+    "debug": false,
+    "cleanupIntervalMs": 60000
+  },
+  "archiving": {
+    "keepLast": 10,
+    "autoArchive": false,
+    "archiveAfterDays": 60,
+    "preserveActive": true,
+    "archiveCompleted": false,
+    "archivePatterns": [],
+    "preserveList": []
+  },
+  "livingDocs": {
+    "copyBasedSync": {
+      "enabled": true,
+      "autoGenerate": true
+    },
+    "threeLayerSync": {
+      "enabled": true,
+      "autoSync": true
+    },
+    "intelligent": {
+      "enabled": true,
+      "splitByCategory": true,
+      "generateCrossLinks": true,
+      "preserveOriginal": true,
+      "classificationConfidenceThreshold": 0.6,
+      "fallbackProject": "specweave"
+    }
+  },
+  "hooks": {
+    "post_task_completion": {
+      "sync_living_docs": true,
+      "sync_tasks_md": true,
+      "external_tracker_sync": true
+    },
+    "post_increment_done": {
+      "sync_to_github_project": true,
+      "close_github_issue": true,
+      "update_living_docs_first": true
+    }
+  },
+  "sync": {
+    "enabled": true,
+    "provider": "github",
+    "includeStatus": true,
+    "includeTaskCheckboxes": true,
+    "autoApplyLabels": true,
+    "activeProfile": "specweave-dev",
+    "settings": {
+      "autoCreateIssue": true,
+      "syncDirection": "bidirectional"
+    },
+    "statusSync": {
+      "enabled": true,
+      "autoSync": true,
+      "promptUser": false,
+      "conflictResolution": "external-wins",
+      "mappings": {
+        "github": {
+          "planning": { "state": "open", "labels": ["status:planning", "phase:design"] },
+          "active": { "state": "open", "labels": ["status:active", "in-progress"] },
+          "paused": { "state": "open", "labels": ["status:paused", "on-hold"] },
+          "completed": { "state": "closed", "labels": ["status:completed", "done"] },
+          "abandoned": { "state": "closed", "labels": ["status:abandoned", "wont-fix"] }
+        },
+        "jira": {
+          "planning": "To Do",
+          "active": "In Progress",
+          "paused": "On Hold",
+          "completed": "Done",
+          "abandoned": "Won't Do"
+        },
+        "ado": {
+          "planning": { "state": "New", "tags": ["Planning"] },
+          "active": { "state": "Active", "tags": ["In Progress"] },
+          "paused": { "state": "Active", "tags": ["Paused"] },
+          "completed": { "state": "Closed", "tags": ["Completed"] },
+          "abandoned": { "state": "Removed", "tags": ["Abandoned"] }
+        }
+      }
+    },
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "displayName": "SpecWeave Development",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
+      }
+    }
+  },
+  "documentation": {
+    "preview": {
+      "enabled": true,
+      "autoInstall": true,
+      "port": 3015,
+      "openBrowser": true,
+      "theme": "default",
+      "excludeFolders": [
+        "legacy",
+        "node_modules"
+      ]
+    }
+  },
+  "pluginValidation": {
+    "enabled": false,
+    "autoInstall": false,
+    "verbose": false,
+    "cacheValidation": false
+  }
+}

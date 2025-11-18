@@ -17,7 +17,9 @@ import {
 // Mock fs-extra
 vi.mock('fs-extra');
 
-const mockedFs = fs as anyed<typeof fs>;
+const mockedWriteFile = vi.mocked(fs.writeFile);
+const mockedPathExists = vi.mocked(fs.pathExists);
+const mockedReadFile = vi.mocked(fs.readFile);
 
 describe('generateEnvFile', () => {
   beforeEach(() => {
@@ -40,8 +42,8 @@ describe('generateEnvFile', () => {
     await generateEnvFile(projectRoot, config);
 
     // Then: .env contains required variables
-    expect(mockedFs.writeFile).toHaveBeenCalled();
-    const writeCall = (mockedFs.writeFile as any).mock.calls[0];
+    expect(mockedWriteFile).toHaveBeenCalled();
+    const writeCall = mockedWriteFile.mock.calls[0];
     const envContent = writeCall[1];
     expect(envContent).toContain('GITHUB_TOKEN');
     expect(envContent).toContain('GITHUB_OWNER');

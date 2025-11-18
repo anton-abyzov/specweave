@@ -268,23 +268,23 @@ describe('validateOwner', () => {
 describe('validateWithRetry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    jest.useFakeTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('should succeed on 2nd attempt after initial failure', async () => {
     // Given: function fails once then succeeds
-    const failOnceFn = jest
+    const failOnceFn = vi
       .fn()
       .mockRejectedValueOnce(new Error('Temporary failure'))
       .mockResolvedValueOnce({ success: true });
 
     // When: validateWithRetry is called
     const promise = validateWithRetry(failOnceFn, { maxAttempts: 3, baseDelay: 1000 });
-    jest.runAllTimers();
+    await vi.runAllTimersAsync();
 
     const result = await promise;
 
@@ -299,7 +299,7 @@ describe('validateWithRetry', () => {
 
     // When: validateWithRetry is called
     const promise = validateWithRetry(alwaysFailFn, { maxAttempts: 3, baseDelay: 1000 });
-    jest.runAllTimers();
+    await vi.runAllTimersAsync();
 
     // Then: throws last error
     await expect(promise).rejects.toThrow('Persistent failure');
@@ -308,7 +308,7 @@ describe('validateWithRetry', () => {
 
   it('should use exponential backoff (1s, 2s, 4s)', async () => {
     // Given: exponential backoff config, function fails twice
-    const failTwiceFn = jest
+    const failTwiceFn = vi
       .fn()
       .mockRejectedValueOnce(new Error('Fail 1'))
       .mockRejectedValueOnce(new Error('Fail 2'))
@@ -318,9 +318,9 @@ describe('validateWithRetry', () => {
     const promise = validateWithRetry(failTwiceFn, { maxAttempts: 3, baseDelay: 1000 });
 
     // Fast-forward timers
-    jest.advanceTimersByTime(1000); // 1st retry after 1s
+    await vi.advanceTimersByTimeAsync(1000); // 1st retry after 1s
     await Promise.resolve();
-    jest.advanceTimersByTime(2000); // 2nd retry after 2s
+    await vi.advanceTimersByTimeAsync(2000); // 2nd retry after 2s
     await Promise.resolve();
 
     const result = await promise;

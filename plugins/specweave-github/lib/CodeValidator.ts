@@ -7,7 +7,7 @@
  * - Files are empty or have trivial content
  * - Implementation is incomplete
  *
- * Used by ThreeLayerSyncManager to enforce code-completion discipline.
+ * Used by GitHub sync to enforce code-completion discipline.
  *
  * @module CodeValidator
  */
