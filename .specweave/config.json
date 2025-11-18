@@ -36,7 +36,7 @@
     "default": "claude"
   },
   "testing": {
-    "defaultTestMode": "TDD",
+    "defaultTestMode": "test-after",
     "defaultCoverageTarget": 80,
     "coverageTargets": {
       "unit": 85,

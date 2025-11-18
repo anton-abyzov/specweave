@@ -1,11 +1,9 @@
 {
   "id": "0001-test-increment",
-  "name": "Test Increment",
   "status": "active",
   "type": "feature",
-  "priority": "P1",
   "created": "2025-01-01T00:00:00Z",
-  "updated": "2025-01-01T00:00:00Z",
+  "lastActivity": "2025-01-01T00:00:00Z",
   "testMode": "TDD",
-  "coverageTarget": 90
+  "coverageTarget": 80
 }

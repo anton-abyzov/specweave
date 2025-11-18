@@ -1,10 +1,16 @@
 {
   "number": 456,
-  "title": "feat: Add new feature",
+  "title": "Test Pull Request",
   "state": "open",
-  "body": "## Summary\n- Implemented feature\n- Added tests",
-  "head": {"ref": "feature/new", "sha": "abc123"},
-  "base": {"ref": "main", "sha": "main123"},
-  "created_at": "2025-01-05T00:00:00Z",
-  "html_url": "https://github.com/test/repo/pull/456"
+  "body": "Test PR description",
+  "head": {
+    "ref": "feature/test",
+    "sha": "abc123"
+  },
+  "base": {
+    "ref": "main",
+    "sha": "def456"
+  },
+  "created_at": "2025-01-01T00:00:00Z",
+  "updated_at": "2025-01-01T00:00:00Z"
 }

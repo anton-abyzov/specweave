@@ -216,6 +216,76 @@ jobs:
             echo "No increments directory found (OK for new projects)"
           fi
 
+  test-structure:
+    name: Validate Test Structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for flat test structure
+        run: |
+          echo "Checking for flat test structure in tests/integration/..."
+          FLAT_DIRS=$(find tests/integration -maxdepth 1 -type d \
+            ! -name "integration" \
+            ! -name "core" \
+            ! -name "features" \
+            ! -name "external-tools" \
+            ! -name "generators" \
+            ! -name "commands" \
+            ! -name "deduplication" 2>/dev/null | wc -l)
+
+          if [ "$FLAT_DIRS" -gt 0 ]; then
+            echo "❌ ERROR: Flat test structure detected!"
+            echo "Found $FLAT_DIRS unauthorized directories."
+            echo "Tests must be in: core/, features/, external-tools/, or generators/"
+            find tests/integration -maxdepth 1 -type d \
+              ! -name "integration" \
+              ! -name "core" \
+              ! -name "features" \
+              ! -name "external-tools" \
+              ! -name "generators" \
+              ! -name "commands" \
+              ! -name "deduplication"
+            exit 1
+          fi
+          echo "✅ Test structure is categorized (no flat directories)"
+
+      - name: Check for unsafe process.cwd() patterns
+        run: |
+          echo "Checking for unsafe process.cwd() usage in tests..."
+          if grep -r "process\.cwd()" tests/ --include="*.test.ts" 2>/dev/null | grep -q .; then
+            echo "❌ ERROR: process.cwd() found in tests!"
+            echo "This can cause catastrophic .specweave/ deletion."
+            echo "Use createIsolatedTestDir() instead. See CLAUDE.md"
+            echo ""
+            echo "Violations:"
+            grep -rn "process\.cwd()" tests/ --include="*.test.ts" | head -20
+            exit 1
+          fi
+          echo "✅ No unsafe process.cwd() patterns"
+
+      - name: Check E2E naming convention
+        run: |
+          echo "Checking E2E test naming convention..."
+          if find tests/e2e -name "*.spec.ts" 2>/dev/null | grep -q .; then
+            echo "❌ ERROR: .spec.ts files found in E2E tests!"
+            echo "All E2E tests must use .test.ts extension."
+            echo ""
+            echo "Violations:"
+            find tests/e2e -name "*.spec.ts"
+            exit 1
+          fi
+          echo "✅ All E2E tests use .test.ts naming"
+
+      - name: Verify test isolation utilities exist
+        run: |
+          if [ ! -f "tests/test-utils/isolated-test-dir.ts" ]; then
+            echo "❌ ERROR: Test isolation utilities missing!"
+            echo "Required: tests/test-utils/isolated-test-dir.ts"
+            exit 1
+          fi
+          echo "✅ Test isolation utilities present"
+
   lint:
     runs-on: ubuntu-latest
     steps:
