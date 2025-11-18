@@ -151,6 +151,11 @@ describe('Deduplication Hook Integration', () => {
       const distPath = path.join(process.cwd(), 'dist');
       const distBackup = path.join(process.cwd(), 'dist-backup');
 
+      // Clean up any existing backup from previous test runs
+      if (await fs.pathExists(distBackup)) {
+        await fs.remove(distBackup);
+      }
+
       if (await fs.pathExists(distPath)) {
         await fs.move(distPath, distBackup);
       }
