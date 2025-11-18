@@ -10,6 +10,66 @@ Users receive a different CLAUDE.md via the template system.
 
 ---
 
+## 🔍 CRITICAL FINDING: Claude Code Marketplace Directory vs Symlink Issue
+
+**⚠️ RECENTLY DISCOVERED (2025-11-18) - AFFECTS ALL SPECWEAVE CONTRIBUTORS ⚠️**
+
+### The Issue
+
+Claude Code's hook execution system expects plugins at `~/.claude/plugins/marketplaces/specweave/`, but this path can be **either a directory OR a symlink**. The difference is critical:
+
+| Type | Symbol | Behavior | Development Impact |
+|------|--------|----------|-------------------|
+| **Directory** | `drwxr-xr-x` | Stale copy from marketplace update | ❌ Hooks fail with "No such file or directory" |
+| **Symlink** | `lrwxr-xr-x` | Live reference to repository | ✅ Hooks work, changes immediately reflected |
+
+### Why This Matters
+
+**Hooks ONLY work reliably with a symlink setup.** If the marketplace path is a directory:
+- ❌ Post-task-completion hooks fail randomly
+- ❌ Status line doesn't update
+- ❌ Living docs don't sync
+- ❌ You waste hours debugging "No such file or directory" errors
+- ❌ Changes to hooks in your repo are NOT reflected until marketplace update
+
+### How the Problem Occurs
+
+1. **Initial setup**: You create a symlink (correct)
+2. **Marketplace update**: Running `claude plugin marketplace update specweave` MAY replace the symlink with a directory copy
+3. **Silent failure**: Hooks start failing but no clear error message points to symlink issue
+
+### The Fix
+
+```bash
+# ALWAYS verify your setup is a symlink:
+ls -ld ~/.claude/plugins/marketplaces/specweave
+# Should show: lrwxr-xr-x ... -> /path/to/your/repo (SYMLINK)
+# NOT: drwxr-xr-x ... (DIRECTORY)
+
+# If it's a directory, fix it:
+rm -rf ~/.claude/plugins/marketplaces/specweave
+ln -s "$(pwd)" ~/.claude/plugins/marketplaces/specweave
+
+# Verify the fix:
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+```
+
+### Protection Measures
+
+1. ✅ **Pre-commit hook** verifies symlink before each commit (warns if broken)
+2. ✅ **Verification script** checks all aspects of setup (see "Local Development Setup" below)
+3. ✅ **This warning** ensures new contributors know about this issue
+
+### Deep Dive
+
+For complete root cause analysis, investigation process, and prevention strategies:
+- **Ultrathink Report**: `.specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
+- **Fixes Applied**: `.specweave/increments/0043-spec-md-desync-fix/reports/HOOK-EXECUTION-ERRORS-FIXES-APPLIED-2025-11-18.md`
+
+**Golden Rule**: If hooks fail with "No such file or directory", check the symlink FIRST!
+
+---
+
 ## 🚨 CRITICAL: NEVER POLLUTE PROJECT ROOT!
 
 **⛔ THIS IS THE #1 RULE - VIOLATING THIS WILL GET YOUR PR REJECTED ⛔**

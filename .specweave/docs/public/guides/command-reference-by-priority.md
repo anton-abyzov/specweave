@@ -1,9 +1,14 @@
 # SpecWeave Command Reference - By Priority
 
-**Last Updated**: 2025-11-14
-**Version**: v0.19.0
+**Last Updated**: 2025-11-18
+**Version**: v0.22.0+
 
 This guide organizes all SpecWeave commands by priority, from essential daily workflow to specialized features.
+
+**What's New in v0.22.0**:
+- ✅ **AC Metrics in Status Line**: Now shows `X/Y tasks | A/B ACs`
+- ✅ **Natural Language Reopen**: `/specweave:reopen 0043 Bug found` (no --reason flag needed)
+- ✅ **Completion Scanning**: `/specweave:scan-completeness` finds false completions
 
 ---
 
@@ -21,24 +26,48 @@ These are the essential commands you'll use every day. Master these first!
 | `/specweave:progress` | Check current progress | `/specweave:progress` |
 | `/specweave:status` | Show all increments status | `/specweave:status` |
 
-### New! Reopen Functionality (v0.19.0)
+### New! Reopen & Completion Validation (v0.22.0)
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave:reopen` | **NEW!** Reopen completed work | `/specweave:reopen 0031 --reason "GitHub sync failing"` |
+| `/specweave:reopen` | **NEW!** Reopen completed work | `/specweave:reopen 0043 Bug found in implementation` |
+| `/specweave:scan-completeness` | **NEW!** Find false completions | `/specweave:scan-completeness --auto-fix` |
+
+**Natural Language Syntax** (v0.22.0+):
+```bash
+# ✅ NEW: Natural language (no --reason flag needed)
+/specweave:reopen 0043 Bug found in implementation
+
+# ✅ Traditional syntax still works
+/specweave:reopen 0031 --reason "Production bug found"
+
+# ✅ Scan for false completions
+/specweave:scan-completeness
+
+# ✅ Auto-fix invalid increments
+/specweave:scan-completeness --auto-fix
+```
 
 **Smart Detection**: Just say "GitHub sync not working" and the skill auto-suggests what to reopen!
 
+**Completion Scanning**: Automatically finds increments that were marked "completed" with open ACs or pending tasks.
+
 **Usage**:
 ```bash
-# Reopen entire increment
-/specweave:reopen 0031 --reason "Production bug found"
+# Reopen entire increment (natural language)
+/specweave:reopen 0043 Bug found need to fix
 
 # Reopen specific task
-/specweave:reopen 0031 --task T-003 --reason "API broken"
+/specweave:reopen 0031 --task T-003 API broken
 
 # Reopen user story
-/specweave:reopen 0031 --user-story US-001 --reason "AC not met"
+/specweave:reopen 0031 --user-story US-001 AC not met
+
+# Find all false completions
+/specweave:scan-completeness
+
+# Auto-fix false completions
+/specweave:scan-completeness --auto-fix
 ```
 
 ---
