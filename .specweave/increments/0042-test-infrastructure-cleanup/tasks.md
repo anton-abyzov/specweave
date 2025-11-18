@@ -33,7 +33,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-05
 **Priority**: P1
 **Estimate**: 15 minutes
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Session 1 + current session)
 **Git Commits**: test-cleanup-backup-20251117-2327 branch created
 **Notes**: Backup branch created, baseline file created with current state (79 tests, 8 directories)
@@ -85,7 +85,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-05
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Session 2)
 **Git Commits**: e8655ef (removed 64 duplicate directories)
 **Notes**: Cleanup complete - only categorized structure remains (core/, features/, external-tools/, generators/). Test count: 79 files.
@@ -149,7 +149,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-02, AC-US1-04
 **Priority**: P1
 **Estimate**: 1.75 hours
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Session 3 - Phase A)
 **Git Commits**: 72429b6 (Phase A fixes), 3199f99 (empty test removal)
 **Notes**: All import errors fixed (49 files), empty tests removed (38 files). Test discovery +34%.
@@ -217,7 +217,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-01, AC-US2-04
 **Priority**: P2
 **Estimate**: 1.5 hours
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (current session)
 **Files Renamed**: 34 E2E test files (.spec.ts → .test.ts)
 **Notes**: All .spec.ts files successfully renamed using git mv. Total E2E tests: 40 .test.ts files.
@@ -286,7 +286,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-02, AC-US2-03
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (current session)
 **Notes**: Config already correct (.test.ts only). Created E2E README.md, updated integration README.md with naming convention. All 40 E2E tests discovered correctly.
 
@@ -364,7 +364,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US3-01, AC-US3-05
 **Priority**: P1
 **Estimate**: 1 hour (actual: 20 minutes)
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Phase 3 autonomous execution)
 **Git Commits**: 400c84d (audit complete)
 **Notes**: Found 112 process.cwd() usages, identified 28 HIGH RISK files (can delete .specweave/). Created comprehensive risk categorization report. Discovery: 24 of 28 HIGH RISK already safe (86%).
@@ -421,7 +421,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US3-01, AC-US3-02, AC-US3-05
 **Priority**: P1
 **Estimate**: 5 hours (actual: 15 minutes)
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Phase 3 autonomous execution)
 **Git Commits**: 400c84d (4 files fixed)
 **Notes**: Expected 28 files to fix, actual: 4 files (24 already safe). Fixed: living-docs-translation.test.ts, multilingual-workflows.test.ts, ado-multi-project.test.ts, ado-sync-scenarios.test.ts. All changed from process.cwd() to os.tmpdir(). Verification: 0 HIGH RISK files remaining.
@@ -494,7 +494,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US3-01, AC-US3-02
 **Priority**: P1 → P3 (downgraded)
 **Estimate**: 6 hours (actual: 0 - DEFERRED)
-**Status**: [x] completed (deferred - not critical)
+**Status**: [x] Completed (deferred - not critical)
 **Completed**: 2025-11-18 (Phase 3 autonomous execution)
 **Notes**: DEFERRED - Remaining 84 process.cwd() usages are LOW RISK (read-only operations, no .specweave deletion risk). Catastrophic risk eliminated in T-007. Prevention layer (T-009) provides long-term protection. Can be done incrementally or never (acceptable risk level).
 
@@ -545,7 +545,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US3-03, AC-US3-04
 **Priority**: P1
 **Estimate**: 1 hour (actual: 5 minutes - already exists!)
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Phase 3 autonomous execution)
 **Git Commits**: 67fa83b (documentation)
 **Notes**: ALREADY EXISTS! Pre-commit hook (scripts/pre-commit-test-pattern-check.sh) deployed 2025-11-17. Detects: process.cwd() + .specweave, TEST_ROOT using process.cwd(), __dirname + .specweave. Also blocks: Jest API, require(), missing .js extensions. ESLint rule NOT added (pre-commit hook sufficient). Verified protection active and comprehensive.
@@ -632,7 +632,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04, AC-US3-05
 **Priority**: P1
 **Estimate**: 30 minutes (actual: 10 minutes)
-**Status**: [x] completed
+**Status**: [x] Completed
 **Completed**: 2025-11-18 (Phase 3 autonomous execution)
 **Git Commits**: 400c84d (fixes), 67fa83b (completion reports)
 **Notes**: Final verification passed - 0 HIGH RISK files, all tests passing (19/19 smoke tests). Created 6 completion reports documenting audit, fixes, prevention layer, and lessons learned. Phase 3 complete in 50 minutes vs 6 hours estimated (85% time saved). Safety goal achieved: 100% catastrophic deletion risk eliminated.
