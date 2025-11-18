@@ -192,6 +192,10 @@ ${phaseChecklist}
 
 ## SpecWeave Increment
 
+\u26A0\uFE0F **DEPRECATED FORMAT**: This issue was created using the old increment-based sync.
+
+**Correct data flow**: Increment \u2192 Living Docs \u2192 GitHub
+
 This epic tracks SpecWeave increment \`${metadata.id}\`.
 
 - **Spec**: [\`spec.md\`](${this.getGitHubFileURL("spec.md")})

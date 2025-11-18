@@ -151,13 +151,14 @@ imported: true
       await fs.writeJson(path.join(incrementPath, 'metadata.json'), {
         id: '0050-imported',
         feature: 'FS-25-11-15-external',
-        status: 'completed'
+        status: 'completed',
+        imported: true  // CRITICAL: Mark as brownfield (imported from external tool)
       });
 
       const result = await sync.syncIncrement('0050-imported');
 
       expect(result.success).toBe(true);
-      expect(result.featureId).toBe('FS-25-11-15-external'); // From metadata
+      expect(result.featureId).toBe('FS-25-11-15-external'); // From metadata (brownfield format preserved)
     });
   });
 

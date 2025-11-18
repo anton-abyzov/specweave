@@ -6,38 +6,38 @@
  * Part of increment 0039: Ultra-Smart Next Command
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { test, expect } from '@playwright/test';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
 import { executeNextCommand, parseArgs } from '../../../src/cli/commands/next-command.js';
 
-describe('Next Command E2E', () => {
+test.test.describe('Next Command E2E', () => {
   let testDir: string;
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     testDir = path.join(os.tmpdir(), `next-e2e-test-${Date.now()}`);
     await fs.ensureDir(testDir);
     await fs.ensureDir(path.join(testDir, '.specweave/increments'));
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     await fs.remove(testDir);
   });
 
-  describe('Argument Parsing', () => {
-    it('should parse increment ID', () => {
+  test.test.describe('Argument Parsing', () => {
+    test('should parse increment ID', () => {
       const config = parseArgs(['0039']);
       expect(config.incrementId).toBe('0039');
     });
 
-    it('should parse autonomous flag', () => {
+    test('should parse autonomous flag', () => {
       const config = parseArgs(['--autonomous', '0039']);
       expect(config.autonomous).toBe(true);
       expect(config.incrementId).toBe('0039');
     });
 
-    it('should parse all options', () => {
+    test('should parse all options', () => {
       const config = parseArgs([
         '--autonomous',
         '--dry-run',
@@ -62,8 +62,8 @@ describe('Next Command E2E', () => {
     });
   });
 
-  describe('Interactive Mode', () => {
-    it('should detect phase and suggest action', async () => {
+  test.describe('Interactive Mode', () => {
+    test('should detect phase and suggest action', async () => {
       // Create test increment with only spec.md
       const incrementDir = path.join(testDir, '.specweave/increments/0001-test');
       await fs.ensureDir(incrementDir);
@@ -90,18 +90,18 @@ status: in-progress
     });
   });
 
-  describe('Safety Guardrails', () => {
-    it('should respect max iterations', () => {
+  test.describe('Safety Guardrails', () => {
+    test('should respect max iterations', () => {
       const config = parseArgs(['--autonomous', '--max-iterations', '10', '0039']);
       expect(config.maxIterations).toBe(10);
     });
 
-    it('should respect cost threshold', () => {
+    test('should respect cost threshold', () => {
       const config = parseArgs(['--autonomous', '--max-cost', '5', '0039']);
       expect(config.maxCost).toBe(5);
     });
 
-    it('should support checkpoint resume', () => {
+    test('should support checkpoint resume', () => {
       const config = parseArgs(['--autonomous', '--resume-from', 'checkpoint-3', '0039']);
       expect(config.resumeFrom).toBe('checkpoint-3');
     });

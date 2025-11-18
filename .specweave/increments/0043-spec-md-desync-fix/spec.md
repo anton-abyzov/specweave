@@ -7,7 +7,7 @@ type: bug
 created: 2025-11-18
 test_mode: TDD
 coverage_target: 90
-epic: FS-25-11-18
+epic: FS-043
 ---
 
 # Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools

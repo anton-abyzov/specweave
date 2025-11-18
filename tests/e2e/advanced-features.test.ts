@@ -6,20 +6,20 @@
  * @module advanced-features.test
  */
 
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
+import { test, expect } from '@playwright/test';
 
-describe('Advanced Features - E2E Tests', () => {
-  beforeAll(async () => {
+test.test.describe('Advanced Features - E2E Tests', () => {
+  test.beforeAll(async () => {
     // Setup test environment
     console.log('Setting up advanced features test suite...');
   });
 
-  afterAll(async () => {
+  test.afterAll(async () => {
     // Cleanup
     console.log('Cleaning up advanced features test suite...');
   });
 
-  describe('OpenTelemetry Instrumentation', () => {
+  test.test.describe('OpenTelemetry Instrumentation', () => {
     test('should inject trace context into message headers', async () => {
       // Test producer instrumentation with W3C Trace Context
       expect(true).toBe(true); // Placeholder
@@ -36,7 +36,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Exactly-Once Semantics (EOS)', () => {
+  test.describe('Exactly-Once Semantics (EOS)', () => {
     test('should configure transactional producer with transactional.id', async () => {
       // Test transactional producer configuration
       expect(true).toBe(true); // Placeholder
@@ -58,7 +58,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Dead Letter Queue (DLQ)', () => {
+  test.describe('Dead Letter Queue (DLQ)', () => {
     test('should send failed messages to DLQ topic', async () => {
       // Test DLQ handler error routing
       expect(true).toBe(true); // Placeholder
@@ -75,7 +75,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Security Configuration', () => {
+  test.describe('Security Configuration', () => {
     test('should configure SASL/SCRAM authentication', async () => {
       // Test SASL_SCRAM connection
       expect(true).toBe(true); // Placeholder
@@ -97,7 +97,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Capacity Planning', () => {
+  test.describe('Capacity Planning', () => {
     test('should calculate broker count based on throughput', async () => {
       // Test capacity planner broker sizing
       const throughputMBps = 100;
@@ -132,7 +132,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Multi-DC Replication', () => {
+  test.describe('Multi-DC Replication', () => {
     test('should configure MirrorMaker 2 for active-passive', async () => {
       // Test active-passive topology
       expect(true).toBe(true); // Placeholder
@@ -154,7 +154,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Stream Processing Optimization', () => {
+  test.describe('Stream Processing Optimization', () => {
     test('should optimize RocksDB configuration for large state stores', async () => {
       // Test RocksDB tuning (block cache, write buffers)
       expect(true).toBe(true); // Placeholder
@@ -171,7 +171,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Advanced ksqlDB Patterns', () => {
+  test.describe('Advanced ksqlDB Patterns', () => {
     test('should generate stream-stream join query', async () => {
       // Test query builder for joins
       expect(true).toBe(true); // Placeholder
@@ -188,7 +188,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Flink Integration', () => {
+  test.describe('Flink Integration', () => {
     test('should generate Flink Table API DDL', async () => {
       // Test Table API code generator
       expect(true).toBe(true); // Placeholder
@@ -205,7 +205,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Kafka Connect Connectors', () => {
+  test.describe('Kafka Connect Connectors', () => {
     test('should generate JDBC source connector config', async () => {
       // Test JDBC connector
       expect(true).toBe(true); // Placeholder
@@ -227,7 +227,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Tiered Storage', () => {
+  test.describe('Tiered Storage', () => {
     test('should configure tiered storage with S3 backend', async () => {
       // Test tiered storage config generation
       expect(true).toBe(true); // Placeholder
@@ -250,7 +250,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Rate Limiting & Backpressure', () => {
+  test.describe('Rate Limiting & Backpressure', () => {
     test('should rate limit producer with token bucket', async () => {
       // Test token bucket rate limiter
       expect(true).toBe(true); // Placeholder
@@ -272,7 +272,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Circuit Breaker & Resilience', () => {
+  test.describe('Circuit Breaker & Resilience', () => {
     test('should transition circuit breaker states (CLOSED → OPEN → HALF_OPEN)', async () => {
       // Test circuit breaker state machine
       expect(true).toBe(true); // Placeholder
@@ -294,7 +294,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Multi-Cluster Management', () => {
+  test.describe('Multi-Cluster Management', () => {
     test('should switch between multiple clusters', async () => {
       // Test cluster switcher
       expect(true).toBe(true); // Placeholder
@@ -311,7 +311,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Documentation Generation', () => {
+  test.describe('Documentation Generation', () => {
     test('should generate cluster topology documentation', async () => {
       // Test topology generator
       expect(true).toBe(true); // Placeholder
@@ -338,7 +338,7 @@ describe('Advanced Features - E2E Tests', () => {
     });
   });
 
-  describe('Integration Scenarios', () => {
+  test.describe('Integration Scenarios', () => {
     test('should handle end-to-end message flow with all resilience patterns', async () => {
       // Full integration: rate limiting → circuit breaker → retry → bulkhead → DLQ
       expect(true).toBe(true); // Placeholder

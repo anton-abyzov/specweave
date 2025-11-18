@@ -13,6 +13,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import yaml from 'yaml';
 import { FeatureIDManager } from './feature-id-manager.js';
+import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 
 export interface SyncOptions {
   dryRun?: boolean;
@@ -133,6 +134,16 @@ export class LivingDocsSync {
         }
       }
 
+      // Step 5: Sync tasks from increment to user stories
+      if (!options.dryRun) {
+        await this.syncTasksToUserStories(incrementId, featureId, parsed.userStories, projectPath);
+      }
+
+      // Step 6: Sync to external tools (GitHub, JIRA, ADO)
+      if (!options.dryRun) {
+        await this.syncToExternalTools(incrementId, featureId, projectPath);
+      }
+
       result.success = true;
       console.log(`✅ Synced ${incrementId} → ${featureId}`);
       console.log(`   Created: ${result.filesCreated.length} files`);
@@ -148,6 +159,10 @@ export class LivingDocsSync {
 
   /**
    * Get feature ID for increment (auto-generates for greenfield)
+   *
+   * CRITICAL: Validates feature ID format matches increment type (greenfield vs brownfield)
+   * - Greenfield (SpecWeave-native): FS-XXX (e.g., FS-031, FS-043)
+   * - Brownfield (imported): FS-YY-MM-DD-name (e.g., FS-25-11-14-jira-epic)
    */
   private async getFeatureIdForIncrement(incrementId: string): Promise<string> {
     // Extract increment number (e.g., "0040-name" → 40)
@@ -168,13 +183,37 @@ export class LivingDocsSync {
 
     if (await fs.pathExists(metadataPath)) {
       const metadata = await fs.readJson(metadataPath);
+
+      // Check if brownfield (imported from external tool)
+      const isBrownfield = metadata.imported === true || metadata.source === 'external';
+
       if (metadata.feature) {
-        return metadata.feature;
+        // Validate format matches increment type
+        const isDateFormat = /^FS-\d{2}-\d{2}-\d{2}/.test(metadata.feature);
+        const isIncrementFormat = /^FS-\d{3}$/.test(metadata.feature);
+
+        if (isBrownfield && isDateFormat) {
+          // ✅ Brownfield with correct date format
+          return metadata.feature;
+        } else if (!isBrownfield && isIncrementFormat) {
+          // ✅ Greenfield with correct increment format
+          return metadata.feature;
+        } else {
+          // ⚠️ Format mismatch - log warning and auto-generate correct format
+          console.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
+          console.warn(`   Found: ${metadata.feature}`);
+          console.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield)'}`);
+          console.warn(`   Auto-generating correct format...`);
+
+          // Fall through to auto-generation
+        }
       }
     }
 
     // Auto-generate for greenfield: FS-040, FS-041, etc.
-    return `FS-${String(num).padStart(3, '0')}`;
+    const autoGenId = `FS-${String(num).padStart(3, '0')}`;
+    console.log(`   📝 Generated feature ID: ${autoGenId}`);
+    return autoGenId;
   }
 
   /**
@@ -497,5 +536,256 @@ export class LivingDocsSync {
     lines.push('');
 
     return lines.join('\n');
+  }
+
+  /**
+   * Sync tasks from increment to user story files
+   *
+   * Populates the ## Tasks section in each user story file with tasks from increment tasks.md
+   */
+  private async syncTasksToUserStories(
+    incrementId: string,
+    featureId: string,
+    userStories: UserStoryData[],
+    projectPath: string
+  ): Promise<void> {
+    const taskGenerator = new TaskProjectSpecificGenerator(this.projectRoot);
+
+    for (const story of userStories) {
+      try {
+        // Generate project-specific tasks for this user story
+        const tasks = await taskGenerator.generateProjectSpecificTasks(
+          incrementId,
+          story.id,  // e.g., "US-001"
+          undefined  // No project filter (use all tasks mapped to this user story)
+        );
+
+        // Format tasks as markdown
+        const tasksMarkdown = taskGenerator.formatTasksAsMarkdown(tasks);
+
+        // Update user story file
+        const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const storyFile = path.join(projectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+
+        await this.updateTasksSection(storyFile, tasksMarkdown);
+
+        console.log(`   ✅ Synced ${tasks.length} tasks to ${story.id}`);
+      } catch (error) {
+        console.error(`   ⚠️  Failed to sync tasks for ${story.id}:`, error);
+        // Continue with other user stories even if one fails
+      }
+    }
+  }
+
+  /**
+   * Update ## Tasks section in user story file
+   */
+  private async updateTasksSection(
+    userStoryFile: string,
+    tasksMarkdown: string
+  ): Promise<void> {
+    const content = await fs.readFile(userStoryFile, 'utf-8');
+
+    // Replace existing ## Tasks section
+    const tasksRegex = /##\s+Tasks\s+([\s\S]*?)(?=\n##|$)/;
+
+    if (tasksRegex.test(content)) {
+      // Replace existing section
+      const updatedContent = content.replace(
+        tasksRegex,
+        `## Tasks\n\n${tasksMarkdown}\n`
+      );
+      await fs.writeFile(userStoryFile, updatedContent, 'utf-8');
+    } else {
+      // Add new section before "Related" section or at the end
+      const relatedRegex = /\n---\n\n\*\*Related\*\*:/;
+
+      if (relatedRegex.test(content)) {
+        // Insert before "Related" section
+        const updatedContent = content.replace(
+          relatedRegex,
+          `\n\n## Tasks\n\n${tasksMarkdown}\n\n---\n\n**Related**:`
+        );
+        await fs.writeFile(userStoryFile, updatedContent, 'utf-8');
+      } else {
+        // Append at the end
+        const updatedContent = content + `\n\n## Tasks\n\n${tasksMarkdown}\n`;
+        await fs.writeFile(userStoryFile, updatedContent, 'utf-8');
+      }
+    }
+  }
+
+  /**
+   * Sync to external tools (GitHub, JIRA, ADO)
+   *
+   * AC-US5-01: Detect external tool configuration from metadata.json
+   * AC-US5-02: When GitHub configured, trigger GitHub sync
+   * AC-US5-03: When no external tools configured, skip
+   * AC-US5-05: External tool failures don't break living docs sync
+   */
+  private async syncToExternalTools(
+    incrementId: string,
+    featureId: string,
+    projectPath: string
+  ): Promise<void> {
+    try {
+      // 1. Detect external tool configuration from metadata.json
+      const externalTools = await this.detectExternalTools(incrementId);
+
+      if (externalTools.length === 0) {
+        // AC-US5-03: No external tools configured, skip
+        return;
+      }
+
+      console.log(`\n📡 Syncing to external tools: ${externalTools.join(', ')}`);
+
+      // 2. Sync to each configured external tool
+      for (const tool of externalTools) {
+        try {
+          switch (tool) {
+            case 'github':
+              await this.syncToGitHub(featureId, projectPath);
+              break;
+            case 'jira':
+              await this.syncToJira(featureId, projectPath);
+              break;
+            case 'ado':
+              await this.syncToADO(featureId, projectPath);
+              break;
+            default:
+              console.warn(`   ⚠️  Unknown external tool: ${tool}`);
+          }
+        } catch (error) {
+          // AC-US5-05: External tool failures are logged but don't break living docs sync
+          console.error(`   ⚠️  Failed to sync to ${tool}:`, error);
+          console.error(`      Living docs sync will continue...`);
+        }
+      }
+
+    } catch (error) {
+      // AC-US5-05: External tool failures don't break living docs sync
+      console.error(`   ⚠️  External tool sync failed:`, error);
+      console.error(`      Living docs sync completed successfully despite external tool errors`);
+    }
+  }
+
+  /**
+   * Detect external tool configuration from increment metadata.json
+   *
+   * AC-US5-01: Detect external tool configuration from metadata.json
+   *
+   * Returns: Array of tool names (['github'], ['github', 'jira'], or [])
+   */
+  private async detectExternalTools(incrementId: string): Promise<string[]> {
+    const metadataPath = path.join(
+      this.projectRoot,
+      '.specweave',
+      'increments',
+      incrementId,
+      'metadata.json'
+    );
+
+    if (!fs.existsSync(metadataPath)) {
+      return [];
+    }
+
+    try {
+      const metadata = await fs.readJson(metadataPath);
+      const tools: string[] = [];
+
+      // Check for GitHub configuration
+      if (metadata.github && (metadata.github.milestone || metadata.github.user_story_issues)) {
+        tools.push('github');
+      }
+
+      // Check for JIRA configuration
+      if (metadata.jira) {
+        tools.push('jira');
+      }
+
+      // Check for ADO configuration
+      if (metadata.ado || metadata.azure_devops) {
+        tools.push('ado');
+      }
+
+      return tools;
+
+    } catch (error) {
+      console.warn(`   ⚠️  Failed to read metadata.json: ${error}`);
+      return [];
+    }
+  }
+
+  /**
+   * Sync to GitHub Issues
+   *
+   * AC-US5-02: When GitHub configured, trigger GitHub sync
+   *
+   * Uses GitHubFeatureSync.syncFeatureToGitHub() which is idempotent:
+   * - Uses existing milestone if it exists
+   * - Updates existing issues (triple idempotency check)
+   * - Only creates new issues if they don't exist
+   */
+  private async syncToGitHub(featureId: string, projectPath: string): Promise<void> {
+    try {
+      console.log(`   🔄 Syncing to GitHub...`);
+
+      // Dynamic import to avoid circular dependencies
+      const { GitHubClientV2 } = await import('../../../plugins/specweave-github/lib/github-client-v2.js');
+      const { GitHubFeatureSync } = await import('../../../plugins/specweave-github/lib/github-feature-sync.js');
+
+      // Load GitHub config from environment
+      const profile = {
+        provider: 'github' as const,
+        displayName: 'GitHub',
+        config: {
+          owner: process.env.GITHUB_OWNER || '',
+          repo: process.env.GITHUB_REPO || '',
+          token: process.env.GITHUB_TOKEN || ''
+        },
+        timeRange: {
+          default: '1M' as const,  // 1 month
+          max: '3M' as const       // 3 months
+        }
+      };
+
+      if (!profile.config.token || !profile.config.owner || !profile.config.repo) {
+        console.warn(`   ⚠️  GitHub credentials not configured (GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO)`);
+        return;
+      }
+
+      // Initialize GitHub client and sync
+      const client = new GitHubClientV2(profile);
+      const specsDir = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      const sync = new GitHubFeatureSync(client, specsDir, this.projectRoot);
+
+      // Sync feature to GitHub (idempotent - safe to run multiple times)
+      const result = await sync.syncFeatureToGitHub(featureId);
+
+      console.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
+
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot find module')) {
+        console.warn(`   ⚠️  GitHub plugin not installed - skipping GitHub sync`);
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  /**
+   * Sync to JIRA (placeholder for future implementation)
+   */
+  private async syncToJira(featureId: string, projectPath: string): Promise<void> {
+    console.log(`   ⚠️  JIRA sync not yet implemented - skipping`);
+    // TODO: Implement JIRA sync when specweave-jira plugin is available
+  }
+
+  /**
+   * Sync to Azure DevOps (placeholder for future implementation)
+   */
+  private async syncToADO(featureId: string, projectPath: string): Promise<void> {
+    console.log(`   ⚠️  ADO sync not yet implemented - skipping`);
+    // TODO: Implement ADO sync when specweave-ado plugin is available
   }
 }

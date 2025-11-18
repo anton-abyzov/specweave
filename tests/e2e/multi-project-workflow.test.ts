@@ -20,20 +20,20 @@
  * @module increment-0037
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { test, expect } from '@playwright/test';
 import { mkdtemp, rm, mkdir, writeFile, readFile, stat } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { SpecDistributor } from '../../src/core/living-docs/SpecDistributor.js';
 import { detectProject, matchesProject } from '../../src/core/living-docs/ProjectDetector.js';
 
-describe('Multi-Project Workflow E2E (T-063)', () => {
+test.describe('Multi-Project Workflow E2E (T-063)', () => {
   let testDir: string;
   let specweaveDir: string;
   let incrementDir: string;
   let livingDocsDir: string;
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     testDir = await mkdtemp(join(tmpdir(), 'specweave-multiproject-e2e-'));
     specweaveDir = join(testDir, '.specweave');
     incrementDir = join(specweaveDir, 'increments', '0001-user-authentication');
@@ -44,12 +44,12 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     await mkdir(livingDocsDir, { recursive: true });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  describe('Step 1: Multi-Project Structure Creation', () => {
-    it('should create .specweave directory structure for multi-project', async () => {
+  test.describe('Step 1: Multi-Project Structure Creation', () => {
+    test('should create .specweave directory structure for multi-project', async () => {
       // GIVEN: Project initialized with multiple projects
       const projects = ['backend', 'frontend', 'mobile'];
 
@@ -78,7 +78,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(incrementsStat.isDirectory()).toBe(true);
     });
 
-    it('should create config with project list', async () => {
+    test('should create config with project list', async () => {
       // GIVEN: Multi-project configuration
       const config = {
         projects: ['backend', 'frontend', 'mobile'],
@@ -102,8 +102,8 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     });
   });
 
-  describe('Step 2: Create Increment with Project-Specific Tasks', () => {
-    it('should create increment with tasks for different projects', async () => {
+  test.describe('Step 2: Create Increment with Project-Specific Tasks', () => {
+    test('should create increment with tasks for different projects', async () => {
       // GIVEN: Increment spec.md with ACs for different projects
       const specContent = `# User Authentication
 
@@ -158,8 +158,8 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     });
   });
 
-  describe('Step 3: Project Detection and Filtering', () => {
-    it('should detect backend project from task descriptions', () => {
+  test.describe('Step 3: Project Detection and Filtering', () => {
+    test('should detect backend project from task descriptions', () => {
       // GIVEN: Backend-related task descriptions
       const backendTasks = [
         'Setup Express API endpoint POST /api/auth/register',
@@ -176,7 +176,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(results[2].projects).toContain('backend');
     });
 
-    it('should detect frontend project from task descriptions', () => {
+    test('should detect frontend project from task descriptions', () => {
       // GIVEN: Frontend-related task descriptions
       const frontendTasks = [
         'Create registration form component in React',
@@ -193,7 +193,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(results[2].projects).toContain('frontend');
     });
 
-    it('should detect mobile project from task descriptions', () => {
+    test('should detect mobile project from task descriptions', () => {
       // GIVEN: Mobile-related task descriptions
       const mobileTasks = [
         'Design registration screen in React Native',
@@ -208,7 +208,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(results[1].projects).toContain('mobile');
     });
 
-    it('should filter tasks by project using matchesProject', () => {
+    test('should filter tasks by project using matchesProject', () => {
       // GIVEN: Tasks with detected projects
       const tasks = [
         { description: 'Setup Express API', projects: ['backend'] },
@@ -228,8 +228,8 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     });
   });
 
-  describe('Step 4: Sync to Living Docs (Project-Specific)', () => {
-    it('should copy ACs and tasks to user story files with project filtering', async () => {
+  test.describe('Step 4: Sync to Living Docs (Project-Specific)', () => {
+    test('should copy ACs and tasks to user story files with project filtering', async () => {
       // GIVEN: Increment with multi-project ACs and tasks
       const specContent = `# User Authentication
 
@@ -299,8 +299,8 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     });
   });
 
-  describe('Step 5: Task Completion Tracking', () => {
-    it('should track task completion per project', async () => {
+  test.describe('Step 5: Task Completion Tracking', () => {
+    test('should track task completion per project', async () => {
       // GIVEN: Tasks completed in different projects
       const tasksContent = `# Tasks
 
@@ -329,7 +329,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(incompleteTasks).toHaveLength(2);
     });
 
-    it('should preserve completion status during sync', async () => {
+    test('should preserve completion status during sync', async () => {
       // GIVEN: Increment with completed tasks
       const specContent = `# User Authentication
 
@@ -372,8 +372,8 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
     });
   });
 
-  describe('Step 6: Complete Multi-Project Workflow', () => {
-    it('should complete entire workflow from init to sync', async () => {
+  test.describe('Step 6: Complete Multi-Project Workflow', () => {
+    test('should complete entire workflow from init to sync', async () => {
       // GIVEN: Complete increment setup
       const specContent = `# User Authentication
 
@@ -444,7 +444,7 @@ describe('Multi-Project Workflow E2E (T-063)', () => {
       expect(us2Content).toContain('T-004');
     });
 
-    it('should handle project-specific filtering across entire workflow', async () => {
+    test('should handle project-specific filtering across entire workflow', async () => {
       // GIVEN: Multi-project increment
       const specContent = `# Feature
 
