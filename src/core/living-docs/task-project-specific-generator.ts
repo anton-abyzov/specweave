@@ -33,6 +33,7 @@ export interface ProjectSpecificTask {
   title: string;        // Setup API endpoint
   completed: boolean;   // Read from increment tasks.md
   acIds: string[];      // [AC-US1-01, AC-US1-02]
+  userStoryIds?: string[]; // [US-001, US-002] - Direct User Story mapping (NEW)
   project?: string;     // backend, frontend, etc. (for filtering)
   sourceIncrement?: string; // 0031-external-tool-sync
 }
@@ -107,31 +108,44 @@ export class TaskProjectSpecificGenerator {
     const content = await fs.readFile(tasksPath, 'utf-8');
     const tasks: ProjectSpecificTask[] = [];
 
-    // Pattern: ### T-001: Task Title
-    // Followed by: **Status**: [x] or [ ]
-    // Followed by: **AC**: AC-US1-01, AC-US1-02
-    const taskPattern = /^##+ (T-\d+):\s+(.+?)$[\s\S]*?\*\*Status\*\*:\s*\[([x ])\][\s\S]*?\*\*AC\*\*:\s*([^\n]+)?/gm;
+    // Split content into task blocks
+    // Pattern: ### T-001: Task Title followed by task metadata
+    const taskBlocks = content.split(/^###\s+(T-\d+):/gm);
 
-    let match;
-    while ((match = taskPattern.exec(content)) !== null) {
-      const taskId = match[1];        // T-001
-      const taskTitle = match[2].trim(); // Setup API endpoint
-      const statusChar = match[3];    // 'x' or ' '
-      const acList = match[4] || '';  // AC-US1-01, AC-US1-02
+    for (let i = 1; i < taskBlocks.length; i += 2) {
+      const taskId = taskBlocks[i].trim();           // T-001
+      const taskContent = taskBlocks[i + 1] || '';   // Task metadata block
 
-      // Parse AC-IDs
+      // Extract task title (first line after task ID)
+      const titleMatch = taskContent.match(/^\s*(.+?)$/m);
+      const taskTitle = titleMatch ? titleMatch[1].trim() : '';
+
+      // Extract User Story IDs (NEW - use **User Story**: field directly)
+      const userStoryMatch = taskContent.match(/\*\*User Story\*\*:\s*(.+?)$/m);
+      const userStoryList = userStoryMatch ? userStoryMatch[1].trim() : '';
+      const userStoryIds = userStoryList.split(',').map(id => id.trim());
+
+      // Extract Acceptance Criteria IDs (for backward compatibility)
+      const acMatch = taskContent.match(/\*\*Acceptance Criteria\*\*:\s*(.+?)$/m);
+      const acList = acMatch ? acMatch[1].trim() : '';
       const acIds: string[] = [];
       const acPattern = /AC-[A-Z]+\d+-\d+/g;
-      let acMatch;
-      while ((acMatch = acPattern.exec(acList)) !== null) {
-        acIds.push(acMatch[0]);
+      let acIdMatch;
+      while ((acIdMatch = acPattern.exec(acList)) !== null) {
+        acIds.push(acIdMatch[0]);
       }
+
+      // Extract completion status
+      // Handles both: **Status**: [x] completed AND **Status**: [ ] pending
+      const statusMatch = taskContent.match(/\*\*Status\*\*:\s*\[([x ])\]/);
+      const statusChar = statusMatch ? statusMatch[1] : ' ';
 
       tasks.push({
         id: taskId,
         title: taskTitle,
         completed: statusChar === 'x',
         acIds,
+        userStoryIds,  // NEW - direct User Story mapping
         sourceIncrement: incrementId,
       });
     }
@@ -140,27 +154,34 @@ export class TaskProjectSpecificGenerator {
   }
 
   /**
-   * Filter tasks by User Story (via AC-IDs)
+   * Filter tasks by User Story
+   *
+   * Uses direct User Story IDs from **User Story**: field (NEW approach).
+   * Falls back to AC-ID extraction for backward compatibility.
    *
    * Example:
    *   User Story: US-001
-   *   Task AC-IDs: [AC-US1-01, AC-US1-02]
-   *   Match: Extract "1" from "AC-US1-01" → matches US-001
+   *   Task **User Story**: US-001, US-003
+   *   Match: Direct match
    */
   private filterTasksByUserStory(
     tasks: ProjectSpecificTask[],
     userStoryId: string
   ): ProjectSpecificTask[] {
-    // Extract US number from userStoryId (US-001 → "1")
-    const usMatch = userStoryId.match(/US-(\d+)/);
-    if (!usMatch) {
-      return [];
-    }
-
-    const usNumber = parseInt(usMatch[1], 10); // 1
-
-    // Filter tasks that reference this user story's AC-IDs
     return tasks.filter((task) => {
+      // NEW: Direct User Story ID matching (preferred)
+      if (task.userStoryIds && task.userStoryIds.length > 0) {
+        return task.userStoryIds.includes(userStoryId);
+      }
+
+      // FALLBACK: Extract US number from AC-IDs (backward compatibility)
+      const usMatch = userStoryId.match(/US-(\d+)/);
+      if (!usMatch) {
+        return false;
+      }
+
+      const usNumber = parseInt(usMatch[1], 10); // 1
+
       return task.acIds.some((acId) => {
         // Extract US number from AC-ID (AC-US1-01 → "1")
         const acMatch = acId.match(/AC-US(\d+)-\d+/);
