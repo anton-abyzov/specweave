@@ -1,0 +1,23 @@
+{
+  "projectId": "my-gcp-project",
+  "region": "us-central1",
+  "functionName": "my-cloud-function",
+  "runtime": "nodejs20",
+  "entryPoint": "handler",
+  "memorySize": 128,
+  "timeout": 60,
+  "environment": "dev",
+  "databaseName": "my-firestore-db",
+  "primaryKey": "id",
+  "apiName": "my-api",
+  "logRetentionDays": 90,
+  "corsOrigins": ["*"],
+  "projectName": "my-project",
+  "minInstances": 0,
+  "maxInstances": 10,
+  "enableVpc": false,
+  "enablePublicAccess": true,
+  "enableAuthentication": false,
+  "firestoreLocation": "us-central",
+  "firestoreType": "FIRESTORE_NATIVE"
+}

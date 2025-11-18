@@ -25,9 +25,9 @@ describe('CodeValidator', () => {
   describe('validateCodeExists', () => {
     it('should validate task with existing files', async () => {
       const tasksContent = `
-### T-001: Create ThreeLayerSyncManager
+### T-001: Create ContentDistributor
 **Files**:
-- src/core/living-docs/ThreeLayerSyncManager.ts
+- src/core/living-docs/ContentDistributor.ts
 - src/core/living-docs/types.ts
       `;
 

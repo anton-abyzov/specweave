@@ -90,6 +90,11 @@ export class TerraformTemplateEngine {
       return str.toUpperCase();
     });
 
+    // Helper: Lowercase
+    this.handlebars.registerHelper('lowercase', (str: string) => {
+      return str.toLowerCase();
+    });
+
     // Helper: Conditional equality check
     this.handlebars.registerHelper('eq', (a: any, b: any) => {
       return a === b;
