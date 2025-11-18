@@ -1,0 +1,14 @@
+{
+  "id": "0099",
+  "name": "new-feature-planning",
+  "title": "New Feature - Planning Phase",
+  "status": "planning",
+  "type": "feature",
+  "priority": "P2",
+  "test_mode": "BDD",
+  "coverage_target": 80,
+  "metadata": {
+    "created": "2025-11-18T10:00:00Z",
+    "updated": "2025-11-18T10:00:00Z"
+  }
+}
