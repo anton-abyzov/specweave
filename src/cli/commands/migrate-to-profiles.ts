@@ -214,7 +214,17 @@ export async function detectOldConfiguration(
 
     // Detect GitHub configuration
     if (envVars.GITHUB_TOKEN) {
-      const repoInfo = await detectGitHubRepo(projectRoot);
+      // Try environment variables first, then git detection
+      let repoInfo = null;
+      if (envVars.GITHUB_OWNER && envVars.GITHUB_REPO) {
+        repoInfo = {
+          owner: envVars.GITHUB_OWNER,
+          repo: envVars.GITHUB_REPO,
+        };
+      } else {
+        repoInfo = await detectGitHubRepo(projectRoot);
+      }
+
       if (repoInfo) {
         config.github = repoInfo;
         config.detected = true;
@@ -227,6 +237,7 @@ export async function detectOldConfiguration(
         config.jira = {
           domain: envVars.JIRA_DOMAIN,
           projectKey: envVars.JIRA_PROJECT_KEY,
+          email: envVars.JIRA_EMAIL,
         };
         config.detected = true;
       }
@@ -435,6 +446,7 @@ export interface OldConfiguration {
   jira?: {
     domain: string;
     projectKey: string;
+    email: string;
   };
   ado?: {
     organization: string;

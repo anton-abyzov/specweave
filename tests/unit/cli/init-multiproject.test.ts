@@ -20,11 +20,9 @@ vi.mock('../../../src/cli/commands/migrate-to-multiproject');
 vi.mock('../../../src/core/project-manager');
 vi.mock('../../../src/core/config-manager');
 vi.mock('../../../src/utils/project-detection');
-
-const mockPrompt = vi.fn();
 vi.mock('inquirer', () => ({
   default: {
-    prompt: mockPrompt
+    prompt: vi.fn()
   }
 }));
 
@@ -34,6 +32,7 @@ describe('init-multiproject command', () => {
   const mockAutoMigrate = autoMigrateSingleToMulti as vi.MockedFunction<typeof autoMigrateSingleToMulti>;
   const mockAutoDetect = autoDetectProjectIdSync as vi.MockedFunction<typeof autoDetectProjectIdSync>;
   const mockFormatProjectName = formatProjectName as vi.MockedFunction<typeof formatProjectName>;
+  const mockPrompt = vi.mocked(inquirer.default.prompt);
 
   const mockProjectRoot = '/test/project';
 
@@ -73,11 +72,20 @@ describe('init-multiproject command', () => {
     // Mock project manager
     const mockProjectInstance = {
       getAllProjects: vi.fn().mockReturnValue([
-        { id: 'default', name: 'Default Project' }
+        {
+          projectId: 'default',
+          projectName: 'Default Project',
+          projectPath: '/test/project/.specweave/docs/internal/specs/default',
+          keywords: [],
+          techStack: []
+        }
       ]),
       getActiveProject: vi.fn().mockReturnValue({
-        id: 'default',
-        name: 'Default Project'
+        projectId: 'default',
+        projectName: 'Default Project',
+        projectPath: '/test/project/.specweave/docs/internal/specs/default',
+        keywords: [],
+        techStack: []
       }),
       addProject: vi.fn()
     };
@@ -292,8 +300,11 @@ describe('init-multiproject command', () => {
       const mockProjectInstance = {
         getAllProjects: vi.fn().mockReturnValue([]),
         getActiveProject: vi.fn().mockReturnValue({
-          id: 'default',
-          name: 'Default Project'
+          projectId: 'default',
+          projectName: 'Default Project',
+          projectPath: '/test/project/.specweave/docs/internal/specs/default',
+          keywords: [],
+          techStack: []
         }),
         addProject: vi.fn()
       };
@@ -303,8 +314,8 @@ describe('init-multiproject command', () => {
 
       expect(mockProjectInstance.addProject).toHaveBeenCalledWith(
         expect.objectContaining({
-          id: 'fullstack',
-          name: 'Full Stack App',
+          projectId: 'fullstack',
+          projectName: 'Full Stack App',
           techStack: ['React', 'Node.js', 'PostgreSQL']
         })
       );
@@ -387,8 +398,11 @@ describe('init-multiproject command', () => {
       const mockProjectInstance = {
         getAllProjects: vi.fn().mockReturnValue([]),
         getActiveProject: vi.fn().mockReturnValue({
-          id: 'default',
-          name: 'Default Project'
+          projectId: 'default',
+          projectName: 'Default Project',
+          projectPath: '/test/project/.specweave/docs/internal/specs/default',
+          keywords: [],
+          techStack: []
         }),
         addProject: vi.fn()
       };
@@ -396,9 +410,12 @@ describe('init-multiproject command', () => {
 
       await initMultiProject(mockProjectRoot);
 
+      // The ProjectContext interface doesn't have contacts field
+      // It only has: projectId, projectName, projectPath, keywords, techStack
       expect(mockProjectInstance.addProject).toHaveBeenCalledWith(
         expect.objectContaining({
-          contacts: {}
+          projectId: 'minimal',
+          projectName: 'Minimal Project'
         })
       );
     });
