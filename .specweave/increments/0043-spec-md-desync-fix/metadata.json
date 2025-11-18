@@ -1,0 +1,9 @@
+{
+  "id": "0043-spec-md-desync-fix",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-18T05:06:41Z",
+  "lastActivity": "2025-11-18T05:06:41Z",
+  "testMode": "TDD",
+  "coverageTarget": 80
+}

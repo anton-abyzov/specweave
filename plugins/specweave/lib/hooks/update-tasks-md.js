@@ -20,13 +20,22 @@ async function updateTasksMd(incrementId) {
     console.log(`\u{1F4D6} Read tasks.md (${lines.length} lines)`);
     const tasks = parseTaskStatus(lines);
     console.log(`\u{1F4CB} Found ${tasks.length} tasks`);
-    const completedTasks = detectCompletedTasks(lines);
-    if (completedTasks.length === 0) {
-      console.log("\u2705 No new task completions detected");
+    const { completedTasks, fixes } = detectCompletedTasks(lines);
+    let updatedContent = originalContent;
+    let autoFixedCount = 0;
+    if (fixes.length > 0) {
+      console.log(`\u{1F527} Auto-fixing ${fixes.length} task consistency issue(s)...`);
+      updatedContent = applyConsistencyFixes(originalContent, fixes);
+      autoFixedCount = fixes.length;
+      console.log("\u2705 Task consistency auto-fixed");
+    }
+    if (completedTasks.length === 0 && fixes.length === 0) {
+      console.log("\u2705 No new task completions or consistency fixes needed");
       return;
     }
-    console.log(`\u{1F3AF} Detected ${completedTasks.length} completed task(s):`, completedTasks);
-    let updatedContent = originalContent;
+    if (completedTasks.length > 0) {
+      console.log(`\u{1F3AF} Detected ${completedTasks.length} completed task(s):`, completedTasks);
+    }
     for (const taskId of completedTasks) {
       updatedContent = markTaskComplete(updatedContent, taskId);
     }
@@ -38,6 +47,9 @@ async function updateTasksMd(incrementId) {
     updatedContent = updateProgressHeader(updatedContent, completedCount, totalTasks, progress);
     await fs.writeFile(tasksPath, updatedContent, "utf-8");
     console.log(`\u2705 Updated ${tasksPath}`);
+    if (autoFixedCount > 0) {
+      console.log(`\u{1F527} Auto-fixed ${autoFixedCount} consistency issue(s)`);
+    }
     console.log(`   Completed: ${completedCount}/${totalTasks}`);
     console.log(`   Progress: ${progress}%
 `);
@@ -78,6 +90,7 @@ function parseTaskStatus(lines) {
 }
 function detectCompletedTasks(lines) {
   const completedTasks = [];
+  const fixes = [];
   const warnings = [];
   const taskPattern = /^###\s+(T-\d+[-A-Z]*):?\s+(.+)/;
   for (let i = 0; i < lines.length; i++) {
@@ -99,17 +112,33 @@ function detectCompletedTasks(lines) {
           completedTasks.push(taskId);
         }
       } else {
+        fixes.push({
+          taskId,
+          lineNumber: i,
+          action: "remove-complete-marker",
+          currentLine: line
+        });
         warnings.push(`${taskId}: Header has \u2705 COMPLETE but not all checkboxes checked`);
       }
       continue;
     }
     if (hasCompleteMarker && !implementationSection) {
-      if (!completedTasks.includes(taskId)) {
-        completedTasks.push(taskId);
-      }
+      fixes.push({
+        taskId,
+        lineNumber: i,
+        action: "remove-complete-marker",
+        currentLine: line
+      });
+      warnings.push(`${taskId}: Header has \u2705 COMPLETE but no implementation section to verify`);
       continue;
     }
     if (!hasCompleteMarker && implementationSection && allCheckboxesComplete) {
+      fixes.push({
+        taskId,
+        lineNumber: i,
+        action: "add-complete-marker",
+        currentLine: line
+      });
       warnings.push(`${taskId}: All checkboxes checked but header missing \u2705 COMPLETE`);
       if (!completedTasks.includes(taskId)) {
         completedTasks.push(taskId);
@@ -131,7 +160,21 @@ function detectCompletedTasks(lines) {
     warnings.forEach((w) => console.warn(`   ${w}`));
     console.warn("");
   }
-  return completedTasks;
+  return { completedTasks, fixes };
+}
+function applyConsistencyFixes(content, fixes) {
+  const lines = content.split("\n");
+  for (const fix of fixes.reverse()) {
+    const line = lines[fix.lineNumber];
+    if (fix.action === "remove-complete-marker") {
+      const fixed = line.replace(/\s*✅\s*COMPLETE\s*/g, "");
+      lines[fix.lineNumber] = fixed;
+    } else if (fix.action === "add-complete-marker") {
+      const fixed = line.trim() + " \u2705 COMPLETE";
+      lines[fix.lineNumber] = fixed;
+    }
+  }
+  return lines.join("\n");
 }
 function findNextTaskStart(lines, startIndex) {
   const taskPattern = /^###\s+T-\d+/;
