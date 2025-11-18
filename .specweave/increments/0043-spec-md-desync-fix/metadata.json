@@ -5,5 +5,43 @@
   "created": "2025-11-18T05:06:41Z",
   "lastActivity": "2025-11-18T05:06:41Z",
   "testMode": "TDD",
-  "coverageTarget": 80
+  "coverageTarget": 80,
+  "github": {
+    "milestone": 12,
+    "milestone_url": "https://github.com/anton-abyzov/specweave/milestone/12",
+    "user_story_issues": [
+      {
+        "id": "US-001",
+        "issue_number": 617,
+        "issue_url": "https://github.com/anton-abyzov/specweave/issues/617",
+        "title": "[FS-043][US-001] Status Line Shows Correct Active Increment"
+      },
+      {
+        "id": "US-002",
+        "issue_number": 618,
+        "issue_url": "https://github.com/anton-abyzov/specweave/issues/618",
+        "title": "[FS-043][US-002] spec.md and metadata.json Stay in Sync"
+      },
+      {
+        "id": "US-003",
+        "issue_number": 619,
+        "issue_url": "https://github.com/anton-abyzov/specweave/issues/619",
+        "title": "[FS-043][US-003] Hooks Read Correct Increment Status"
+      },
+      {
+        "id": "US-004",
+        "issue_number": 620,
+        "issue_url": "https://github.com/anton-abyzov/specweave/issues/620",
+        "title": "[FS-043][US-004] Existing Desyncs Detected and Repaired"
+      },
+      {
+        "id": "US-005",
+        "issue_number": 621,
+        "issue_url": "https://github.com/anton-abyzov/specweave/issues/621",
+        "title": "[FS-043][US-005] Living Docs Sync Triggers External Tool Updates"
+      }
+    ],
+    "created_at": "2025-11-18T08:55:00Z",
+    "last_synced_at": "2025-11-18T08:55:00Z"
+  }
 }

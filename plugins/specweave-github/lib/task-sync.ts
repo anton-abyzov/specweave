@@ -219,6 +219,9 @@ export class TaskSync {
       });
     }
 
+    // DEPRECATED: This method generates old [Increment XXX] format
+    // It will be blocked by github-client-v2.ts validation
+    // TODO: Remove task-sync.ts entirely - use living docs sync instead
     return `# [Increment ${metadata.id}] ${metadata.title}
 
 **Status**: ${metadata.status}
@@ -233,6 +236,10 @@ ${summary}
 ${phaseChecklist}
 
 ## SpecWeave Increment
+
+⚠️ **DEPRECATED FORMAT**: This issue was created using the old increment-based sync.
+
+**Correct data flow**: Increment → Living Docs → GitHub
 
 This epic tracks SpecWeave increment \`${metadata.id}\`.
 

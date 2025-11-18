@@ -17,7 +17,7 @@
  * @module increment-0037
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { test, expect } from '@playwright/test';
 import { mkdtemp, rm, stat, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
@@ -27,20 +27,20 @@ import { TeamRecommender } from '../../src/init/team/TeamRecommender.js';
 import { ArchitectureDecisionEngine } from '../../src/init/architecture/ArchitectureDecisionEngine.js';
 import type { BudgetType } from '../../src/init/architecture/types.js';
 
-describe('Strategic Init Scenarios E2E (T-062)', () => {
+test.describe('Strategic Init Scenarios E2E (T-062)', () => {
   let testDir: string;
 
-  beforeEach(async () => {
+  test.beforeEach(async () => {
     testDir = await mkdtemp(join(tmpdir(), 'specweave-init-e2e-'));
     process.chdir(testDir);
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     await rm(testDir, { recursive: true, force: true });
   });
 
-  describe('Scenario A: Viral Startup (Social Network)', () => {
-    it('should recommend serverless architecture for viral social network', async () => {
+  test.describe('Scenario A: Viral Startup (Social Network)', () => {
+    test('should recommend serverless architecture for viral social network', async () => {
       // GIVEN: User input for viral startup
       const visionText = 'A social network for creators to share content, collaborate, and build communities';
       const expectedUsers = 100000;
@@ -58,7 +58,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(vision.opportunityScore).toBeGreaterThanOrEqual(7); // High opportunity
     });
 
-    it('should recommend small team (2-3 people) for bootstrapped budget', async () => {
+    test('should recommend small team (2-3 people) for bootstrapped budget', async () => {
       // GIVEN: Bootstrapped startup with basic use cases
       const budget: BudgetType = 'bootstrapped';
       const useCases = ['auth', 'file-uploads'];
@@ -83,7 +83,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(teams.rationale).toContain('small team');
     });
 
-    it('should suggest AWS Activate credits for startups', async () => {
+    test('should suggest AWS Activate credits for startups', async () => {
       // GIVEN: Startup budget
       const budget: BudgetType = 'bootstrapped';
 
@@ -100,7 +100,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       );
     });
 
-    it('should recommend serverless architecture for cost efficiency', async () => {
+    test('should recommend serverless architecture for cost efficiency', async () => {
       // GIVEN: Social network with viral potential and bootstrapped budget
       const visionText = 'Social network for creators with real-time collaboration';
 
@@ -120,8 +120,8 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
     });
   });
 
-  describe('Scenario B: Enterprise SaaS (B2B CRM)', () => {
-    it('should detect B2B market and enterprise requirements', async () => {
+  test.describe('Scenario B: Enterprise SaaS (B2B CRM)', () => {
+    test('should detect B2B market and enterprise requirements', async () => {
       // GIVEN: Enterprise CRM vision
       const visionText = 'B2B CRM platform for enterprise sales teams with advanced analytics and reporting';
 
@@ -135,7 +135,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(vision.keywords).toContain('analytics');
     });
 
-    it('should recommend larger team (8-12 people) for enterprise SaaS', async () => {
+    test('should recommend larger team (8-12 people) for enterprise SaaS', async () => {
       // GIVEN: Enterprise project with compliance and analytics
       const projectType = 'enterprise';
       const useCases = ['auth', 'email', 'background-jobs'];
@@ -159,7 +159,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(teams.roles).toContain('Security Engineer');
     });
 
-    it('should detect SOC2 and ISO27001 compliance requirements', async () => {
+    test('should detect SOC2 and ISO27001 compliance requirements', async () => {
       // GIVEN: Enterprise CRM with business data
       const visionText = 'Enterprise CRM platform for Fortune 500 companies with customer data management';
 
@@ -176,7 +176,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(soc2?.priority).toBe('critical');
     });
 
-    it('should recommend traditional architecture for enterprise SaaS', async () => {
+    test('should recommend traditional architecture for enterprise SaaS', async () => {
       // GIVEN: Enterprise vision with compliance
       const visionText = 'Enterprise CRM platform with SOC2 compliance';
       const complianceIds = ['SOC2', 'ISO27001'];
@@ -194,8 +194,8 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
     });
   });
 
-  describe('Scenario C: HIPAA Healthcare (Patient Records)', () => {
-    it('should detect HIPAA compliance requirement from vision', async () => {
+  test.describe('Scenario C: HIPAA Healthcare (Patient Records)', () => {
+    test('should detect HIPAA compliance requirement from vision', async () => {
       // GIVEN: Healthcare vision with patient data
       const visionText = 'Patient health records system for hospitals with electronic medical records (EMR)';
 
@@ -213,7 +213,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(hipaa?.rationale).toContain('healthcare');
     });
 
-    it('should warn about compliance cost impact for HIPAA', async () => {
+    test('should warn about compliance cost impact for HIPAA', async () => {
       // GIVEN: HIPAA compliance requirement
       const complianceRequirements = [
         {
@@ -234,7 +234,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(complianceRequirements[0].estimatedCost).toBe('High');
     });
 
-    it('should recommend HIPAA-specialized team roles', async () => {
+    test('should recommend HIPAA-specialized team roles', async () => {
       // GIVEN: Healthcare project with HIPAA
       const projectType = 'enterprise';
       const complianceStandards = ['HIPAA'];
@@ -256,7 +256,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(teams.recommended).toBeGreaterThanOrEqual(4);
     });
 
-    it('should recommend traditional architecture for audit trail requirements', async () => {
+    test('should recommend traditional architecture for audit trail requirements', async () => {
       // GIVEN: HIPAA healthcare system
       const visionText = 'HIPAA-compliant patient records system with audit trails';
       const complianceIds = ['HIPAA'];
@@ -281,8 +281,8 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
     });
   });
 
-  describe('Complete Init Flow Integration', () => {
-    it('should complete entire init flow for viral startup', async () => {
+  test.describe('Complete Init Flow Integration', () => {
+    test('should complete entire init flow for viral startup', async () => {
       // GIVEN: All components initialized
       const visionAnalyzer = new VisionAnalyzer();
       const complianceDetector = new ComplianceDetector();
@@ -292,7 +292,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       // WHEN: Running full init flow
       const visionText = 'Social network for creators';
       const vision = await visionAnalyzer.analyze(visionText);
-      const compliance = complianceDetector.detect(visionText, vision.market);
+      const compliance = complianceDetector.detect(visionTextsion.market);
       const teams = teamRecommender.recommend({
         complianceStandards: compliance.map(c => c.standard),
         microserviceCount: 3,
@@ -335,7 +335,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(config.livingDocs.copyBasedSync.enabled).toBe(true);
     });
 
-    it('should complete entire init flow for enterprise SaaS', async () => {
+    test('should complete entire init flow for enterprise SaaS', async () => {
       // GIVEN: Enterprise SaaS vision
       const visionAnalyzer = new VisionAnalyzer();
       const complianceDetector = new ComplianceDetector();
@@ -362,7 +362,7 @@ describe('Strategic Init Scenarios E2E (T-062)', () => {
       expect(vision.market).toMatch(/b2b|business|enterprise/i);
     });
 
-    it('should complete entire init flow for HIPAA healthcare', async () => {
+    test('should complete entire init flow for HIPAA healthcare', async () => {
       // GIVEN: Healthcare vision
       const visionAnalyzer = new VisionAnalyzer();
       const complianceDetector = new ComplianceDetector();
