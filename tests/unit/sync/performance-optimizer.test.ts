@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Performance Optimizer
  *
  * Tests caching, batching, and performance measurement utilities.
  */
 
-import { PerformanceOptimizer, PerformanceMetrics } from '../../../src/core/sync/performance-optimizer';
+import { PerformanceOptimizer, PerformanceMetrics } from '../../../src/core/sync/performance-optimizer.js';
 
 describe('PerformanceOptimizer', () => {
   let optimizer: PerformanceOptimizer;

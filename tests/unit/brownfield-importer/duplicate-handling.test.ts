@@ -1,11 +1,13 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: BrownfieldImporter Duplicate Filename Handling
  * Coverage Target: 95%
  */
 
-import { BrownfieldImporter } from '../../../src/core/brownfield/importer';
-import { FileClassification } from '../../../src/core/brownfield/analyzer';
-import { withTempDir } from '../../utils/temp-dir';
+import { BrownfieldImporter } from '../../../src/core/brownfield/importer.js';
+import { FileClassification } from '../../../src/core/brownfield/analyzer.js';
+import { withTempDir } from '../../utils/temp-dir.js';
 import fs from 'fs-extra';
 import path from 'path';
 

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for SpecDistributor - Frontmatter Generation
  *
@@ -7,7 +9,7 @@
  * that caused all GitHub issues to be malformed.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { SpecDistributor } from '../../src/core/living-docs/spec-distributor.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';

@@ -11,7 +11,7 @@
  * - Azure DevOps Features
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs/promises';
 import path from 'path';
 import {
@@ -71,7 +71,8 @@ describe('Spec Content Sync - Core', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    tempDir = path.join(__dirname, '../../tmp', `test-${Date.now()}`);
+    // ✅ SAFE: Use OS temp directory with unique timestamp
+    tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-spec-content-sync-${Date.now()}`);
     await fs.mkdir(tempDir, { recursive: true });
   });
 
@@ -449,7 +450,8 @@ Add user authentication system.
 
 describe('Spec Content Sync - Integration Scenarios', () => {
   it('should handle full workflow: parse → detect changes → build description → update link', async () => {
-    const tempDir = path.join(__dirname, '../../tmp', `test-workflow-${Date.now()}`);
+    // ✅ SAFE: Use OS temp directory with unique timestamp
+    const tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-workflow-${Date.now()}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     try {

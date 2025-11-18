@@ -90,5 +90,9 @@ node dist/plugins/specweave-github/lib/github-sync-increment-changes.js "$INCREM
 
 echo "[$(date)] ✅ Post-increment-change hook complete" >> "$DEBUG_LOG" 2>/dev/null || true
 
+# Update status line cache (increment changed)
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
 # Return success (non-blocking)
 exit 0

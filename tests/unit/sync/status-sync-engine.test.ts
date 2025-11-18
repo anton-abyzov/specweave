@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Status Sync Engine
  *
@@ -7,7 +9,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { StatusSyncEngine, SyncDirection, SyncResult } from '../../../src/core/sync/status-sync-engine';
+import { StatusSyncEngine, SyncDirection, SyncResult } from '../../../src/core/sync/status-sync-engine.js';
 
 describe('StatusSyncEngine', () => {
   const mockConfig = {

@@ -5,8 +5,8 @@
 
 import { spawn, ChildProcess } from 'child_process';
 import * as net from 'net';
-import { execFileNoThrow } from '../execFileNoThrow';
-import { ServerOptions, ServerProcess } from './types';
+import { execFileNoThrow } from '../execFileNoThrow.js';
+import { ServerOptions, ServerProcess } from './types.js';
 
 /**
  * Find an available port in the given range

@@ -1,11 +1,13 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * PluginLoader Unit Tests
  *
  * Tests for plugin loading, validation, and error handling
  */
 
-import { PluginLoader } from '../../../src/core/plugin-loader';
-import { ManifestValidationError, PluginNotFoundError } from '../../../src/core/types/plugin';
+import { PluginLoader } from '../../../src/core/plugin-loader.js';
+import { ManifestValidationError, PluginNotFoundError } from '../../../src/core/types/plugin.js';
 import path from 'path';
 import fs from 'fs-extra';
 
@@ -42,7 +44,7 @@ describe('PluginLoader', () => {
 
     it('should validate manifest schema', async () => {
       // This test validates that the loader checks manifest structure
-      const plugin Path = path.join(fixturesPath, 'specweave-test');
+      const pluginPath = path.join(fixturesPath, 'specweave-test');
 
       if (await fs.pathExists(pluginPath)) {
         const plugin = await loader.loadFromDirectory(pluginPath);

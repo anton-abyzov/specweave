@@ -8,7 +8,7 @@
  * - Cost breakdown analysis
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { estimateCost } from '../../../src/core/serverless/cost-estimator.js';
 import { compareCosts, getComparisonSummary } from '../../../src/core/serverless/cost-comparison.js';
 import { loadAllPlatforms } from '../../../src/core/serverless/platform-data-loader.js';

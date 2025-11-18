@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Spec-to-Increment Mapper
  *
@@ -5,7 +7,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { SpecIncrementMapper, SpecIncrementMapping } from '../../../src/core/sync/spec-increment-mapper';
+import { SpecIncrementMapper, SpecIncrementMapping } from '../../../src/core/sync/spec-increment-mapper.js';
 import path from 'path';
 import fs from 'fs/promises';
 import os from 'os';

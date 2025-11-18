@@ -896,5 +896,9 @@ EOF
 # Run main function
 main
 
+# Update status line cache (new increment created)
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
 # Always return success (non-blocking hook)
 exit 0

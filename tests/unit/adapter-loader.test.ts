@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for AdapterLoader
  *
@@ -17,7 +19,7 @@ describe('AdapterLoader', () => {
   describe('detectTool', () => {
     it('should default to claude when no other tools detected', async () => {
       // Mock all adapters to return false for detection
-      jest.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
+      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
 
       const detected = await adapterLoader.detectTool();
 
@@ -26,7 +28,7 @@ describe('AdapterLoader', () => {
 
     it('should detect cursor when .cursorrules exists', async () => {
       // Mock cursor detection to return true
-      jest.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
+      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
 
       const detected = await adapterLoader.detectTool();
 

@@ -1,12 +1,14 @@
 ---
 name: browser-automation
 description: |
-  Browser automation and E2E testing using Playwright MCP (primary) or Browserbase (fallback).
+  Browser automation and E2E testing using Playwright MCP (always available).
   Auto-activates for: browser automation, web testing, E2E tests, Playwright, browser interaction,
   scraping, testing flows, user journeys, accessibility testing, screenshot capture.
 
   CRITICAL: ALWAYS use Playwright MCP (mcp__plugin_specweave-ui_playwright__*) as PRIMARY choice.
-  Only use Browserbase (mcp__plugin_specweave-ui_browserbase__*) as FALLBACK when Playwright unavailable.
+
+  NOTE: Browserbase tools (mcp__plugin_specweave-ui_browserbase__*) are NOT loaded by default.
+  They require manual setup and are only for CI/CD or cloud scenarios.
 allowed-tools:
   - mcp__plugin_specweave-ui_playwright__*
   - mcp__plugin_specweave-ui_browserbase__*
@@ -133,9 +135,11 @@ browser_console_messages()
 browser_close()
 ```
 
-### 2. Browserbase Integration (FALLBACK - Cloud Testing)
+### 2. Browserbase Integration (OPTIONAL - Cloud Testing)
 
-**⚠️ ONLY USE AS FALLBACK when Playwright MCP unavailable!**
+**⚠️ NOT LOADED BY DEFAULT - Manual setup required!**
+
+**Note**: Browserbase is NOT auto-loaded to save ~5,600 tokens per request. Enable only when needed for CI/CD or cloud scenarios.
 
 Browserbase provides cloud-based browser automation:
 
@@ -148,6 +152,8 @@ Browserbase provides cloud-based browser automation:
 
 #### Available Tools (mcp__plugin_specweave-ui_browserbase__*)
 
+**Note**: These tools are ONLY available after manual setup.
+
 - **browserbase_session_create** - Create cloud session
 - **browserbase_session_close** - Close session
 - **browserbase_stagehand_navigate** - Navigate to URL
@@ -158,7 +164,7 @@ Browserbase provides cloud-based browser automation:
 - **browserbase_stagehand_get_url** - Get current URL
 - **browserbase_stagehand_agent** - Run autonomous task
 
-#### Setup Requirements
+#### Manual Setup (when needed)
 
 1. Get API credentials from [Browserbase](https://www.browserbase.com/)
 2. Set environment variables:
@@ -166,7 +172,22 @@ Browserbase provides cloud-based browser automation:
    export BROWSERBASE_API_KEY="bb_xxx"
    export BROWSERBASE_PROJECT_ID="proj_xxx"
    ```
-3. Configuration is in `.mcp.json`
+3. Add to `.claude/settings.json`:
+   ```json
+   {
+     "mcpServers": {
+       "browserbase": {
+         "command": "npx",
+         "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
+         "env": {
+           "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
+           "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
+         }
+       }
+     }
+   }
+   ```
+4. Restart Claude Code
 
 #### Testing Workflow (Browserbase)
 
@@ -398,29 +419,21 @@ Are you running locally (dev machine or VM)?
 
 ## Configuration Files
 
-### .mcp.json (Plugin-Level)
+### .mcp.json (Plugin-Level - Auto-Loaded)
 ```json
 {
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"],
+      "args": ["-y", "@playwright/mcp@latest"],
       "description": "Local Playwright - PRIMARY",
       "optional": false
-    },
-    "browserbase": {
-      "command": "npx",
-      "args": ["-y", "@browserbasehq/mcp-server-browserbase"],
-      "env": {
-        "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
-        "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
-      },
-      "description": "Cloud Browserbase - FALLBACK",
-      "optional": true
     }
   }
 }
 ```
+
+**Note**: Browserbase is NOT in `.mcp.json` (not auto-loaded). To enable Browserbase, add it to your project's `.claude/settings.json` as shown in the "Manual Setup" section above.
 
 ### playwright.config.ts (Project-Level)
 ```typescript

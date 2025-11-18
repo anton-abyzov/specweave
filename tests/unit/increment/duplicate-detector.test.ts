@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for DuplicateDetector
  *
@@ -5,7 +7,7 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   detectAllDuplicates,
   detectDuplicatesByNumber,

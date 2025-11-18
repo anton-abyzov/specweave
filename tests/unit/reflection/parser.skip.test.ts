@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Reflection Parser
  */
@@ -5,12 +7,12 @@
 import {
   parseReflectionMarkdown,
   validateReflectionResult
-} from '../../../src/hooks/lib/reflection-parser';
+} from '../../../src/hooks/lib/reflection-parser.js';
 import {
   IssueSeverity,
   IssueCategory,
   ReflectionModel
-} from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Reflection Parser', () => {
   const sampleReflection = `

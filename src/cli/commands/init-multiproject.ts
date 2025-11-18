@@ -6,10 +6,10 @@
 
 import inquirer from 'inquirer';
 import path from 'path';
-import { ProjectManager, ProjectContext } from '../../core/project-manager';
-import { ConfigManager } from '../../core/config-manager';
-import { autoMigrateSingleToMulti } from './migrate-to-multiproject';
-import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection';
+import { ProjectManager, ProjectContext } from '../../core/project-manager.js';
+import { ConfigManager } from '../../core/config-manager.js';
+import { autoMigrateSingleToMulti } from './migrate-to-multiproject.js';
+import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection.js';
 
 export async function initMultiProject(projectRoot: string): Promise<void> {
   console.log('\n🚀 Initialize Multi-Project Mode\n');

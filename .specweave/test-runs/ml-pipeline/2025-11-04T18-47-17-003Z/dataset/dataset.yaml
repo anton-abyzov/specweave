@@ -1,9 +1,0 @@
-
-# Soccer Player Detection Dataset
-path: /Users/antonabyzov/Projects/github/specweave/.specweave/test-runs/ml-pipeline/2025-11-04T18-47-17-003Z/dataset
-train: images/train
-val: images/val
-
-# Classes
-names:
-  0: player

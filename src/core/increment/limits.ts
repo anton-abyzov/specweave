@@ -5,13 +5,13 @@
  * Part of increment 0007: Smart Status Management
  */
 
-import { MetadataManager } from './metadata-manager';
+import { MetadataManager } from './metadata-manager.js';
 import {
   IncrementType,
   IncrementStatus,
   TYPE_LIMITS,
   IncrementMetadata
-} from '../types/increment-metadata';
+} from '../types/increment-metadata.js';
 
 /**
  * Limit check result

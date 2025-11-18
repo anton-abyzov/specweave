@@ -15,7 +15,7 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import inquirer from 'inquirer';
-import { SyncProvider } from '../types/sync-profile';
+import { SyncProvider } from '../types/sync-profile.js';
 
 // ============================================================================
 // Types

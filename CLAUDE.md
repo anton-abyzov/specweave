@@ -24,21 +24,23 @@ Users receive a different CLAUDE.md via the template system.
 /SESSION-SUMMARY-2025-10-28.md         # NO! Goes to increment reports/
 /ADR-006-DEEP-ANALYSIS.md              # NO! Goes to .specweave/docs/internal/architecture/adr/
 /ANALYSIS-MULTI-TOOL-COMPARISON.md     # NO! Goes to increment reports/
+/QUICK-START.md                        # NO! Goes to increment reports/
 /migration-helper.sh                   # NO! Goes to increment scripts/
 /execution.log                         # NO! Goes to increment logs/
 
 ✅ CORRECT - INCREMENT FOLDERS:
 .specweave/increments/0004-plugin-architecture/
-├── spec.md                            # Spec files (core 3)
+├── spec.md                            # ⚠️ ONLY THESE 3 FILES in root!
 ├── plan.md
 ├── tasks.md                           # Tasks with embedded tests
-├── reports/                           # ✅ PUT REPORTS HERE!
+├── reports/                           # ✅ ALL REPORTS HERE!
 │   ├── PLUGIN-MIGRATION-COMPLETE.md   # ✅ Completion reports
 │   ├── SESSION-SUMMARY.md             # ✅ Session summaries
+│   ├── QUICK-START.md                 # ✅ Quick start guides
 │   └── ANALYSIS-*.md                  # ✅ Analysis files
-├── scripts/                           # ✅ PUT SCRIPTS HERE!
+├── scripts/                           # ✅ ALL SCRIPTS HERE!
 │   └── migration-helper.sh            # ✅ Helper scripts
-└── logs/                              # ✅ PUT LOGS HERE!
+└── logs/                              # ✅ ALL LOGS HERE!
     └── execution.log                  # ✅ Execution logs
 
 .specweave/docs/internal/architecture/ # ✅ PUT ADRS/DIAGRAMS HERE!
@@ -47,6 +49,105 @@ Users receive a different CLAUDE.md via the template system.
 ```
 
 **Before committing, ALWAYS check**: `git status` - If you see `.md` files in root, MOVE THEM!
+
+### 📁 Increment Structure Rules (MANDATORY)
+
+**ONLY 3 files allowed in increment root**:
+1. ✅ `spec.md` - Specification
+2. ✅ `plan.md` - Implementation plan
+3. ✅ `tasks.md` - Tasks with embedded tests
+
+**Everything else MUST be in subfolders**:
+- `reports/` - Session summaries, completion reports, analysis files, quick-start guides
+- `scripts/` - Helper scripts, migrations, utilities
+- `logs/` - Execution logs, debug output, temp files
+
+**Examples of files that belong in subfolders**:
+- `QUICK-START.md` → `reports/QUICK-START.md`
+- `SESSION-NOTES.md` → `reports/SESSION-NOTES.md`
+- `ULTRATHINK-*.md` → `reports/ULTRATHINK-*.md`
+- `validation.sh` → `scripts/validation.sh`
+- `debug.log` → `logs/debug.log`
+
+**Why this matters**:
+- ✅ Clean, predictable structure
+- ✅ Easy to find files by type
+- ✅ No increment root clutter
+- ✅ Consistent across all increments
+
+---
+
+## 🛡️ CRITICAL: NEVER DELETE .specweave/ DIRECTORIES!
+
+**⛔ MASS DELETION PROTECTION IS ACTIVE ⛔**
+
+**PROTECTED DIRECTORIES**:
+- `.specweave/docs/` - All project documentation (internal + public)
+- `.specweave/increments/` - All increment history and specifications
+
+**WHAT THIS MEANS**:
+- ❌ **NEVER** run `rm -rf .specweave/docs` or `rm -rf .specweave/increments`
+- ❌ **NEVER** delete more than 50 files in these directories at once
+- ✅ Pre-commit hook will **BLOCK** accidental mass deletions
+- ✅ If intentional, bypass with `git commit --no-verify`
+
+**WHY THIS EXISTS**:
+On 2025-11-17, an accidental mass deletion occurred (1,200+ files). All files were recovered via `git restore`, but this protection prevents future incidents.
+
+**IF YOU ACCIDENTALLY DELETE**:
+```bash
+# Immediately restore:
+git restore .specweave/
+
+# Verify restoration:
+git status
+```
+
+**See**: `.specweave/increments/0039/reports/ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md`
+
+---
+
+## ⚠️ CRITICAL: NEVER USE `specweave init . --force` FOR REINSTALLS!
+
+**⛔ COMMON MISTAKE THAT DELETES ALL DATA ⛔**
+
+**THE DANGER**:
+```bash
+# ❌ DANGEROUS (deletes ALL increments and docs):
+specweave init . --force
+
+# What --force actually does:
+# 1. Skips all confirmation prompts
+# 2. AUTOMATICALLY DELETES .specweave/ entirely
+# 3. Loses all increments, docs, and history
+# 4. No backup unless you create one manually
+```
+
+**SAFE ALTERNATIVES**:
+```bash
+# ✅ SAFE - Update files, keep all data:
+specweave init .
+# When prompted, select: "Continue working"
+
+# ✅ SAFE - Always interactive, never deletes:
+npx specweave init .
+```
+
+**WHY THIS MATTERS**:
+- Documentation used to recommend `--force` for troubleshooting (FIXED in v0.21.4+)
+- Users followed the docs and lost all their work
+- Now `--force` has multiple safeguards:
+  - ⚠️ BIG RED WARNING before deletion
+  - ✅ ALWAYS requires confirmation (even in force mode)
+  - 📦 Automatic backup created before deletion
+  - 🔒 Pre-commit hook blocks accidental commits
+
+**IF YOU NEED A FRESH START**:
+1. Backup first: `cp -r .specweave .specweave.backup-$(date +%Y%m%d)`
+2. Run: `specweave init .` (select "Fresh start" option)
+3. Or: `specweave init . --force` (requires confirmation + creates auto-backup)
+
+**NEVER use `--force` unless you want to DELETE EVERYTHING!**
 
 ---
 
@@ -340,19 +441,337 @@ GitHub Issue (Checkable task list for stakeholders)
 
 ## Build & Test
 
-```bash
-# Build
-npm run build
+### Build Commands
 
-# Test
-npm test                    # Unit tests
-npm run test:e2e            # E2E tests (Playwright)
-npm run test:integration    # Integration tests
+```bash
+# ALWAYS use clean build during development (prevents TS5055 errors)
+npm run rebuild             # Clean + build (RECOMMENDED)
+
+# Or manual steps:
+npm run clean              # Remove dist/ folder
+npm run build              # Compile TypeScript
 ```
 
-**Coverage Requirements**:
+### Testing
+
+**Test Framework**: **Vitest** (migrated from Jest on 2025-11-17)
+
+```bash
+npm test                    # Smoke tests (quick validation)
+npm run test:unit           # Unit tests with Vitest
+npm run test:integration    # Integration tests with Vitest
+npm run test:e2e            # E2E tests (Playwright)
+npm run test:all            # All tests
+npm run test:coverage       # Coverage report
+```
+
+**Why Vitest?**
+- ✅ ESM-native (no tsconfig hacks)
+- ✅ Faster than Jest
+- ✅ Better TypeScript integration
+- ✅ Native import.meta.url support
+- ✅ Modern, actively maintained
+
+**Test Organization** (4 categories):
+- `tests/unit/` - Pure logic tests (no I/O) - **Vitest**
+- `tests/plugin-validation/` - Plugin structure contracts
+- `tests/integration/` - 4 semantic categories - **Vitest**:
+  - `external-tools/` - GitHub, JIRA, ADO, Kafka sync
+  - `core/` - Core framework + workflows
+  - `generators/` - Code generation (frontend, backend, ML)
+  - `features/` - Feature plugins (Figma, i18n, diagrams, etc.)
+- `tests/e2e/` - Full user scenarios - **Playwright**
+
+**Writing Tests**:
+```typescript
+// Import from vitest (NOT jest)
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+// Mocking
+vi.mock('fs/promises');
+const mockFn = vi.fn();
+vi.clearAllMocks();
+```
+
+**Details**: `.specweave/docs/internal/architecture/TEST-ORGANIZATION-PROPOSAL.md`
+
+### Test Isolation (CRITICAL - Prevents .specweave/ Deletion!)
+
+**🚨 MANDATORY FOR ALL TESTS creating .specweave/ structures:**
+
+**THE PROBLEM**: Tests using `process.cwd()` can accidentally delete the project `.specweave/` folder containing all your work!
+
+**CORRECT PATTERN** (ALWAYS use this):
+```typescript
+import * as os from 'os';
+import * as path from 'path';
+
+// ✅ SAFE: Uses isolated temp directory
+const testRoot = path.join(os.tmpdir(), 'test-name-' + Date.now());
+```
+
+**DANGEROUS PATTERN** (NEVER use this):
+```typescript
+// ❌ DANGER: Creates directories in project root!
+const testRoot = path.join(process.cwd(), '.test-something');
+const testPath = path.join(__dirname, '..', '.specweave', 'increments');
+```
+
+**Why This Matters**:
+1. Tests create mock `.specweave/` structures for testing
+2. Cleanup uses `fs.rm(testRoot, { recursive: true })`
+3. If `testRoot` points to project root → **DELETES REAL .specweave/!**
+4. You lose all increments, docs, and history
+
+**Use Test Utilities** (RECOMMENDED):
+```typescript
+import { createIsolatedTestDir, createSpecweaveStructure } from '../test-utils/isolated-test-dir';
+
+test('my test', async () => {
+  const { testDir, cleanup } = await createIsolatedTestDir('my-test');
+
+  try {
+    // Setup .specweave structure in isolated directory
+    await createSpecweaveStructure(testDir);
+
+    // Test code here - NEVER touches project .specweave/
+    const incrementPath = path.join(testDir, '.specweave', 'increments', '0001-test');
+    // ...
+  } finally {
+    await cleanup(); // ALWAYS cleanup
+  }
+});
+```
+
+**Protection Layers**:
+1. ✅ **Pre-commit hook**: Blocks commits with dangerous test patterns
+2. ✅ **Test utilities**: `tests/test-utils/isolated-test-dir.ts`
+3. ✅ **Documentation**: This section
+
+**Related Incident**: 2025-11-17 - Multiple `.specweave/` deletions traced to dangerous test patterns
+**Root Cause Analysis**: `.specweave/increments/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
+
+### Build Health Checks
+
+**CRITICAL**: TypeScript ES Modules require specific practices:
+
+1. **Always Import with .js Extensions**:
+   ```typescript
+   // ❌ WRONG (will break at runtime):
+   import { foo } from './bar';
+
+   // ✅ CORRECT:
+   import { foo } from './bar.js';
+   ```
+
+2. **Fix Missing Extensions**:
+   ```bash
+   # Auto-fix all missing .js extensions:
+   node scripts/fix-js-extensions.js
+
+   # Preview changes first:
+   node scripts/fix-js-extensions.js --dry-run
+   ```
+
+3. **Verify Build is Clean**:
+   ```bash
+   # Check for polluted dist/ (TS5055 indicator):
+   find dist/src -name "*.ts" -not -name "*.d.ts"
+   # Should return NOTHING
+
+   # If files found, clean rebuild:
+   npm run rebuild
+   ```
+
+4. **Test Hook Execution**:
+   ```bash
+   # Hooks must import correctly at runtime:
+   node plugins/specweave/lib/hooks/update-ac-status.js 0001
+   # Should execute without "Cannot find module" errors
+   ```
+
+5. **Install Git Hooks** (RECOMMENDED):
+   ```bash
+   bash scripts/install-git-hooks.sh
+   # Verifies build health before every commit
+   ```
+
+### Common Build Errors & Fixes
+
+**Error: TS5055 - Cannot write file (would overwrite input)**
+```bash
+# Cause: dist/ polluted with .ts source files
+# Fix:
+npm run clean && npm run build
+```
+
+**Error: Cannot find module 'src/...' (hook execution)**
+```bash
+# Cause: Hooks importing from src/ instead of dist/src/
+#    OR: Missing .js extensions in imports
+# Fix:
+node scripts/fix-js-extensions.js
+npm run rebuild
+```
+
+**Error: Module import without .js extension**
+```bash
+# Cause: TypeScript ES modules REQUIRE .js in relative imports
+# Fix:
+node scripts/fix-js-extensions.js
+```
+
+### Build Architecture
+
+SpecWeave uses **dual compilation**:
+- `tsc`: Compiles `src/` → `dist/src/` (source files)
+- `esbuild`: Compiles `plugins/**/lib/hooks/*.ts` → in-place `.js` (hooks only)
+
+**Why?** Hooks must import from `dist/src/` (compiled), but TypeScript would try to compile them before `dist/` exists (chicken-and-egg). Solution: Exclude hooks from `tsconfig.json`, compile separately with esbuild.
+
+### Increment Scripts vs Hooks
+
+**CRITICAL DISTINCTION**: Increment scripts and hooks have different purposes and import patterns.
+
+**Hooks** (`plugins/**/lib/hooks/*.ts`):
+- **Purpose**: Production runtime executables (called by shell scripts)
+- **Execution**: `#!/usr/bin/env node` (JavaScript runtime)
+- **Imports**: MUST use `dist/src/` (compiled JavaScript)
+- **Compilation**: esbuild (separate from main build)
+- **Example**:
+  ```typescript
+  #!/usr/bin/env node
+  import { ACStatusManager } from '../../../../dist/src/core/increment/ac-status-manager.js';
+  ```
+
+**Increment Scripts** (`.specweave/increments/####/scripts/*.ts`):
+- **Purpose**: Development utilities (one-off tasks, migrations, analysis)
+- **Execution**: `#!/usr/bin/env tsx` (TypeScript runtime with ESM support)
+- **Imports**: MUST use `src/` (TypeScript source, NOT compiled)
+- **Compilation**: None (tsx transpiles on-the-fly)
+- **Example**:
+  ```typescript
+  #!/usr/bin/env tsx
+  import { ACStatusManager } from '../../../../src/core/increment/ac-status-manager.js';
+  ```
+
+**Why Different Patterns?**
+
+| Aspect | Hooks (dist/) | Increment Scripts (src/) |
+|--------|---------------|-------------------------|
+| **Context** | Production runtime | Development only |
+| **Tooling** | Node.js only | TypeScript tooling (tsx) |
+| **Build dependency** | Yes (requires dist/) | No (live source code) |
+| **Live reload** | No (must rebuild) | Yes (tsx auto-transpiles) |
+| **Purpose** | Permanent infrastructure | Temporary dev utilities |
+
+**Common Mistake**: Copying hook import patterns to increment scripts.
+
+```typescript
+// ❌ WRONG (increment script importing from dist/):
+#!/usr/bin/env tsx
+import { ACStatusManager } from '../../../../dist/src/core/...';
+// Issues:
+// - Requires npm run build before execution
+// - Stale code if src/ changes without rebuild
+// - Semantic confusion (TS runtime + JS imports)
+
+// ✅ CORRECT (increment script importing from src/):
+#!/usr/bin/env tsx
+import { ACStatusManager } from '../../../../src/core/...';
+// Benefits:
+// - No build dependency
+// - Always uses latest source code
+// - Clear dev script pattern
+```
+
+**Note**: Use `tsx` (not `ts-node`) for increment scripts - it has better ESM + TypeScript support.
+
+### Running Increment Scripts
+
+**CRITICAL**: Increment scripts use `#!/usr/bin/env tsx` shebang, which assumes tsx is in your PATH. This often fails in development environments.
+
+**Recommended Execution Method** (Always Works):
+```bash
+# ✅ Use npx - finds tsx in node_modules/.bin/ automatically
+npx tsx .specweave/increments/####/scripts/script-name.ts
+
+# Example:
+npx tsx .specweave/increments/0037-project-specific-tasks/scripts/validate-task-consistency.ts
+```
+
+**Why npx?**
+- ✅ Works without global tsx installation
+- ✅ Uses project's tsx version (consistent across team)
+- ✅ No PATH configuration needed
+- ✅ Same behavior in CI/CD and local dev
+
+**Alternative Methods** (Less Recommended):
+```bash
+# Option 1: Direct execution (requires global tsx)
+chmod +x script.ts
+./script.ts
+# ❌ Fails if tsx not globally installed
+
+# Option 2: Install tsx globally (not recommended for teams)
+npm install -g tsx
+./script.ts
+# ❌ Every contributor must install globally
+# ❌ Version inconsistencies across team
+
+# Option 3: Full path
+./node_modules/.bin/tsx script.ts
+# ✅ Works, but verbose
+```
+
+**Troubleshooting "command not found: tsx" (Exit Code 127)**:
+
+This error means tsx isn't in your shell's PATH.
+
+**Root Cause**:
+- tsx is a **dev dependency** (installed in `node_modules/`)
+- Shell can't find commands in `node_modules/.bin/` automatically
+- npm scripts add `node_modules/.bin/` to PATH, but direct shell execution doesn't
+
+**Fix**:
+```bash
+# Instead of:
+tsx script.ts          # ❌ Fails with error 127
+
+# Use:
+npx tsx script.ts      # ✅ Always works
+```
+
+**Why This Happens "Sometimes"**:
+- **npm scripts**: Work (PATH includes node_modules/.bin/)
+- **Direct shell**: Fails (PATH doesn't include node_modules/.bin/)
+- **Global tsx installed**: Works (tsx in system PATH)
+- **CI/CD**: Depends on environment setup
+
+**Execution Context Comparison**:
+
+| Method | tsx in PATH? | Works? |
+|--------|--------------|--------|
+| `npm run script` | ✅ Yes (npm adds it) | ✅ Yes |
+| `./script.ts` | ❌ No (unless global) | ❌ Usually fails |
+| `tsx script.ts` | ❌ No (unless global) | ❌ Usually fails |
+| `npx tsx script.ts` | ✅ Yes (npx finds it) | ✅ Always works |
+
+**Best Practice for Contributors**:
+- **Creating scripts**: Use `#!/usr/bin/env tsx` shebang (conventional)
+- **Running scripts**: Always use `npx tsx script.ts` (reliable)
+- **Documentation**: Show npx execution method in examples
+
+### Coverage Requirements
+
 - Critical paths: 90%+
 - Overall: 80%+
+
+### Related Documentation
+
+- Build process details: `.github/CONTRIBUTING.md` → "Build Process & Best Practices"
+- Ultrathink analysis: `.specweave/increments/0039/reports/HOOK-IMPORT-ERROR-ULTRATHINK-ANALYSIS.md`
+- Build verification tests: `tests/integration/build/build-verification.test.ts`
 
 ---
 

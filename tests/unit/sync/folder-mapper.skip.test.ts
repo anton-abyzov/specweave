@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Tests for Folder Mapper
  *
  * Covers ADO multi-team and Jira multi-project/component folder mapping
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import {
   getSpecsFoldersForProfile,
   getAreaPathForTeam,

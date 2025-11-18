@@ -20,6 +20,37 @@ export interface SpecSyncResult {
   tasksRegenerated: boolean;
   changes: string[];
   error?: string;
+  regenerationContext?: RegenerationContext;
+}
+
+export interface RegenerationContext {
+  incrementId: string;
+  specPath: string;
+  planPath: string;
+  tasksPath: string;
+  specContent: string;
+  oldPlanContent?: string;
+  oldTasksContent?: string;
+  manualAnnotations: ManualAnnotation[];
+}
+
+export interface ManualAnnotation {
+  type: 'comment' | 'note' | 'todo';
+  line: number;
+  content: string;
+  context: string; // Surrounding context for re-insertion
+}
+
+export interface TaskCompletion {
+  taskId: string;
+  completed: boolean;
+  subtasks: SubtaskCompletion[];
+}
+
+export interface SubtaskCompletion {
+  text: string;
+  completed: boolean;
+  line: number;
 }
 
 export interface SpecChangeDetectionResult {
@@ -122,18 +153,326 @@ export class SpecSyncManager {
   }
 
   /**
+   * Extract manual annotations from markdown content
+   *
+   * Detects HTML comments with keywords: MANUAL NOTE, TODO, NOTE
+   *
+   * @param content - Markdown content to analyze
+   * @param filePath - File path for context
+   * @returns Array of manual annotations
+   */
+  extractManualAnnotations(content: string, filePath: string): ManualAnnotation[] {
+    const annotations: ManualAnnotation[] = [];
+    const lines = content.split('\n');
+
+    lines.forEach((line, index) => {
+      // Match HTML comments with manual keywords
+      const commentMatch = line.match(/<!--\s*(MANUAL NOTE|TODO|NOTE):\s*([^>]+)\s*-->/);
+
+      if (commentMatch) {
+        const keyword = commentMatch[1];
+        const text = commentMatch[2].trim();
+
+        annotations.push({
+          type: keyword === 'MANUAL NOTE' ? 'note' : keyword.toLowerCase() as 'todo' | 'note',
+          line: index + 1,
+          content: text,
+          context: this.getLineContext(lines, index)
+        });
+      }
+    });
+
+    return annotations;
+  }
+
+  /**
+   * Get surrounding context for a line (3 lines before and after)
+   *
+   * @param lines - All file lines
+   * @param lineIndex - Index of target line
+   * @returns Context string
+   */
+  private getLineContext(lines: string[], lineIndex: number): string {
+    const start = Math.max(0, lineIndex - 3);
+    const end = Math.min(lines.length, lineIndex + 4);
+    return lines.slice(start, end).join('\n');
+  }
+
+  /**
+   * Prepare regeneration context for plan.md and tasks.md
+   *
+   * @param incrementId - Increment ID
+   * @returns Regeneration context with all necessary information
+   */
+  prepareRegenerationContext(incrementId: string): RegenerationContext | null {
+    const incrementDir = path.join(this.incrementsDir, incrementId);
+    const specPath = path.join(incrementDir, 'spec.md');
+    const planPath = path.join(incrementDir, 'plan.md');
+    const tasksPath = path.join(incrementDir, 'tasks.md');
+
+    // Verify spec.md exists
+    if (!fs.existsSync(specPath)) {
+      return null;
+    }
+
+    // Read spec content
+    const specContent = fs.readFileSync(specPath, 'utf-8');
+
+    // Read old plan and tasks if they exist
+    const oldPlanContent = fs.existsSync(planPath)
+      ? fs.readFileSync(planPath, 'utf-8')
+      : undefined;
+
+    const oldTasksContent = fs.existsSync(tasksPath)
+      ? fs.readFileSync(tasksPath, 'utf-8')
+      : undefined;
+
+    // Extract manual annotations from plan.md
+    const manualAnnotations = oldPlanContent
+      ? this.extractManualAnnotations(oldPlanContent, planPath)
+      : [];
+
+    return {
+      incrementId,
+      specPath,
+      planPath,
+      tasksPath,
+      specContent,
+      oldPlanContent,
+      oldTasksContent,
+      manualAnnotations
+    };
+  }
+
+  /**
+   * Generate diff between old and new plan.md
+   *
+   * @param oldContent - Original plan.md content
+   * @param newContent - Regenerated plan.md content
+   * @returns Diff summary with line changes
+   */
+  generatePlanDiff(oldContent: string, newContent: string): string[] {
+    const oldLines = oldContent.split('\n');
+    const newLines = newContent.split('\n');
+
+    const changes: string[] = [];
+
+    // Simple line-based diff
+    const maxLines = Math.max(oldLines.length, newLines.length);
+
+    for (let i = 0; i < maxLines; i++) {
+      const oldLine = oldLines[i] || '';
+      const newLine = newLines[i] || '';
+
+      if (oldLine !== newLine) {
+        if (!oldLine) {
+          changes.push(`+ Line ${i + 1}: ${newLine}`);
+        } else if (!newLine) {
+          changes.push(`- Line ${i + 1}: ${oldLine}`);
+        } else {
+          changes.push(`~ Line ${i + 1}: ${oldLine} → ${newLine}`);
+        }
+      }
+    }
+
+    return changes;
+  }
+
+  /**
+   * Parse task completion status from tasks.md
+   *
+   * Extracts which tasks and subtasks are completed
+   *
+   * @param tasksContent - tasks.md content
+   * @returns Array of task completion records
+   */
+  parseTaskCompletion(tasksContent: string): TaskCompletion[] {
+    const completions: TaskCompletion[] = [];
+    const lines = tasksContent.split('\n');
+
+    let currentTask: TaskCompletion | null = null;
+
+    lines.forEach((line, index) => {
+      // Match task headers: ## T-001: Task name
+      const taskHeaderMatch = line.match(/^##\s+(T-\d+):/);
+
+      if (taskHeaderMatch) {
+        // Save previous task if exists
+        if (currentTask) {
+          completions.push(currentTask);
+        }
+
+        // Start new task
+        currentTask = {
+          taskId: taskHeaderMatch[1],
+          completed: false,
+          subtasks: []
+        };
+      }
+
+      // Match subtasks: - [x] or - [ ]
+      const subtaskMatch = line.match(/^-\s+\[(x| )\]\s+(.+)$/);
+
+      if (subtaskMatch && currentTask) {
+        const isCompleted = subtaskMatch[1] === 'x';
+        const text = subtaskMatch[2].trim();
+
+        currentTask.subtasks.push({
+          text,
+          completed: isCompleted,
+          line: index + 1
+        });
+
+        // Mark task as completed if all subtasks are completed
+        if (currentTask.subtasks.every(s => s.completed)) {
+          currentTask.completed = true;
+        }
+      }
+    });
+
+    // Add last task
+    if (currentTask) {
+      completions.push(currentTask);
+    }
+
+    return completions;
+  }
+
+  /**
+   * Generate diff between old and new tasks.md
+   *
+   * @param oldContent - Original tasks.md content
+   * @param newContent - Regenerated tasks.md content
+   * @returns Diff summary with task changes
+   */
+  generateTasksDiff(oldContent: string, newContent: string): string[] {
+    const changes: string[] = [];
+
+    // Extract task IDs from both versions
+    const oldTaskIds = (oldContent.match(/^## (T-\d+):/gm) || []).map(h =>
+      h.replace(/^## (T-\d+):/, '$1')
+    );
+
+    const newTaskIds = (newContent.match(/^## (T-\d+):/gm) || []).map(h =>
+      h.replace(/^## (T-\d+):/, '$1')
+    );
+
+    // Find added tasks
+    const addedTasks = newTaskIds.filter(id => !oldTaskIds.includes(id));
+    if (addedTasks.length > 0) {
+      changes.push(`+ Added ${addedTasks.length} tasks: ${addedTasks.join(', ')}`);
+    }
+
+    // Find removed tasks
+    const removedTasks = oldTaskIds.filter(id => !newTaskIds.includes(id));
+    if (removedTasks.length > 0) {
+      changes.push(`- Removed ${removedTasks.length} tasks: ${removedTasks.join(', ')}`);
+    }
+
+    // Find preserved tasks
+    const preservedTasks = oldTaskIds.filter(id => newTaskIds.includes(id));
+    if (preservedTasks.length > 0) {
+      changes.push(`~ Preserved ${preservedTasks.length} tasks: ${preservedTasks.join(', ')}`);
+    }
+
+    return changes;
+  }
+
+  /**
+   * Apply completion status from old tasks to new tasks
+   *
+   * Matches tasks by ID and text similarity, preserves completed checkboxes
+   *
+   * @param newTasksContent - Regenerated tasks.md content
+   * @param oldCompletions - Completion status from old tasks.md
+   * @returns Updated tasks.md content with completion status preserved
+   */
+  applyTaskCompletion(
+    newTasksContent: string,
+    oldCompletions: TaskCompletion[]
+  ): string {
+    const lines = newTasksContent.split('\n');
+    let currentTaskId: string | null = null;
+
+    const updatedLines = lines.map(line => {
+      // Track current task
+      const taskHeaderMatch = line.match(/^##\s+(T-\d+):/);
+      if (taskHeaderMatch) {
+        currentTaskId = taskHeaderMatch[1];
+        return line;
+      }
+
+      // Update subtask completion status
+      const subtaskMatch = line.match(/^(-\s+)\[(x| )\]\s+(.+)$/);
+
+      if (subtaskMatch && currentTaskId) {
+        const prefix = subtaskMatch[1];
+        const text = subtaskMatch[3].trim();
+
+        // Find old completion for this task
+        const oldTask = oldCompletions.find(t => t.taskId === currentTaskId);
+
+        if (oldTask) {
+          // Find matching subtask by text similarity
+          const matchingSubtask = oldTask.subtasks.find(s =>
+            this.isTextSimilar(s.text, text)
+          );
+
+          if (matchingSubtask && matchingSubtask.completed) {
+            // Preserve completion status
+            return `${prefix}[x] ${text}`;
+          }
+        }
+      }
+
+      return line;
+    });
+
+    return updatedLines.join('\n');
+  }
+
+  /**
+   * Check if two text strings are similar (for matching subtasks)
+   *
+   * Uses simple comparison: exact match or contains
+   *
+   * @param text1 - First text
+   * @param text2 - Second text
+   * @returns True if texts are similar
+   */
+  private isTextSimilar(text1: string, text2: string): boolean {
+    const normalized1 = text1.toLowerCase().trim();
+    const normalized2 = text2.toLowerCase().trim();
+
+    // Exact match
+    if (normalized1 === normalized2) {
+      return true;
+    }
+
+    // Check if one contains the other (for renamed but similar tasks)
+    if (
+      normalized1.includes(normalized2) ||
+      normalized2.includes(normalized1)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Synchronize plan.md and tasks.md based on spec.md changes
    *
    * This method:
    * 1. Detects if spec.md changed
-   * 2. Calls Architect Agent to regenerate plan.md
-   * 3. Calls test-aware-planner to regenerate tasks.md
-   * 4. Preserves task completion status
+   * 2. Prepares regeneration context
+   * 3. Returns context for Claude Code to invoke Architect Agent
+   * 4. Preserves manual annotations
    * 5. Logs changes to metadata
    *
    * @param incrementId - Increment to sync
    * @param skipSync - Skip sync even if spec changed (user override)
-   * @returns Sync result with details of what was regenerated
+   * @returns Sync result with regeneration context
    */
   async syncIncrement(
     incrementId: string,
@@ -167,23 +506,37 @@ export class SpecSyncManager {
     const changes: string[] = [];
 
     try {
-      // TODO: Implement actual regeneration logic
-      // This will be implemented in the tasks for US-011
-      // For now, just log the intent
-
       changes.push('spec.md detected as modified');
-      changes.push('plan.md regeneration required (not yet implemented)');
-      changes.push('tasks.md regeneration required (not yet implemented)');
+
+      // Prepare regeneration context
+      const context = this.prepareRegenerationContext(incrementId);
+
+      if (!context) {
+        return {
+          synced: false,
+          reason: 'Failed to prepare regeneration context',
+          planRegenerated: false,
+          tasksRegenerated: false,
+          changes
+        };
+      }
+
+      changes.push('Regeneration context prepared');
+
+      if (context.manualAnnotations.length > 0) {
+        changes.push(`Found ${context.manualAnnotations.length} manual annotations to preserve`);
+      }
 
       // Log sync event to metadata
       this.logSyncEvent(incrementId, detection);
 
       return {
         synced: true,
-        reason: 'Spec changed, sync triggered',
-        planRegenerated: false, // Will be true once implemented
-        tasksRegenerated: false, // Will be true once implemented
-        changes
+        reason: 'Spec changed, regeneration context prepared',
+        planRegenerated: false, // Will be set by command after agent invocation
+        tasksRegenerated: false, // Will be set by command after agent invocation
+        changes,
+        regenerationContext: context
       };
     } catch (error) {
       return {

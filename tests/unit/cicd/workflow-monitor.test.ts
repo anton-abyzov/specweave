@@ -1,16 +1,18 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Workflow Monitor
  *
  * Tests polling logic, failure detection, rate limiting, and deduplication.
  */
 
-import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor';
-import { StateManager } from '../../../src/core/cicd/state-manager';
+import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor.js';
+import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 // Mock Octokit
-jest.mock('@octokit/rest');
+vi.mock('@octokit/rest');
 
 describe('WorkflowMonitor', () => {
   let testDir: string;
@@ -47,9 +49,9 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Polls every 60 seconds (using setInterval)
    */
-  test('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
+  it('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
     // Mock setInterval
-    jest.useFakeTimers();
+    vi.useFakeTimers();
 
     // Start monitor
     monitor.start();
@@ -63,13 +65,13 @@ describe('WorkflowMonitor', () => {
     // Stop monitor
     monitor.stop();
 
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   /**
    * Test: Detects failed runs (filters status=completed, conclusion=failure)
    */
-  test('testDetectsFailedRuns: Filters status=completed, conclusion=failure', async () => {
+  it('testDetectsFailedRuns: Filters status=completed, conclusion=failure', async () => {
     // Mock Octokit response with mixed runs
     const mockRuns = [
       {
@@ -111,7 +113,7 @@ describe('WorkflowMonitor', () => {
     ];
 
     // Mock Octokit
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: mockRuns },
       status: 200,
       headers: {
@@ -146,9 +148,9 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Uses conditional requests (If-Modified-Since header)
    */
-  test('testUsesConditionalRequests: Sends If-Modified-Since header', async () => {
+  it('testUsesConditionalRequests: Sends If-Modified-Since header', async () => {
     // First poll (no If-Modified-Since)
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [] },
       status: 200,
       headers: {
@@ -194,9 +196,9 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Handles rate limiting (429 response with exponential backoff)
    */
-  test('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
+  it('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
     // Mock 429 response, then success
-    const mockListWorkflowRuns = jest
+    const mockListWorkflowRuns = vi
       .fn()
       .mockRejectedValueOnce({
         status: 429,
@@ -238,7 +240,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Deduplicates failures (doesn't reprocess same run)
    */
-  test('testDeduplicatesFailures: Does not reprocess same run', async () => {
+  it('testDeduplicatesFailures: Does not reprocess same run', async () => {
     const mockRun = {
       id: 2001,
       name: 'Build',
@@ -252,7 +254,7 @@ describe('WorkflowMonitor', () => {
       updated_at: '2025-11-12T11:05:00Z'
     };
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [mockRun] },
       status: 200,
       headers: {
@@ -283,7 +285,7 @@ describe('WorkflowMonitor', () => {
   /**
    * Test: Extracts workflow metadata (ID, name, commit, timestamp)
    */
-  test('testExtractsWorkflowMetadata: Parses run ID, name, commit, timestamp', async () => {
+  it('testExtractsWorkflowMetadata: Parses run ID, name, commit, timestamp', async () => {
     const mockRun = {
       id: 3001,
       name: 'E2E Tests',
@@ -297,7 +299,7 @@ describe('WorkflowMonitor', () => {
       updated_at: '2025-11-12T12:10:00Z'
     };
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: [mockRun] },
       status: 200,
       headers: {

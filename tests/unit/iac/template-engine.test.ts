@@ -1,8 +1,10 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Terraform Template Engine Unit Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TerraformTemplateEngine, createTemplateEngine } from '../../../src/core/iac/template-engine.js';
 import * as fs from 'fs';
 import * as path from 'path';

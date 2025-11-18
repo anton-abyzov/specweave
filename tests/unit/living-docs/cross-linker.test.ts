@@ -8,32 +8,38 @@ import {
   LinkType,
   LinkerOptions,
   createCrossLinker,
-} from '../../../src/core/living-docs/cross-linker';
-import { DistributionResult, DistributedFile } from '../../../src/core/living-docs/content-distributor';
-import { ContentCategory } from '../../../src/core/living-docs/content-classifier';
-import fs from 'fs-extra';
+} from '../../../src/core/living-docs/cross-linker.js';
+import { DistributionResult, DistributedFile } from '../../../src/core/living-docs/content-distributor.js';
+import { ContentCategory } from '../../../src/core/living-docs/content-classifier.js';
 import path from 'path';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock fs-extra
-jest.mock('fs-extra');
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  readFile: jest.MockedFunction<typeof fs.readFile>;
-  writeFile: jest.MockedFunction<typeof fs.writeFile>;
-  existsSync: jest.MockedFunction<typeof fs.existsSync>;
-};
+// Mock fs-extra BEFORE importing
+vi.mock('fs-extra');
+
+// Import after mock
+import fs from 'fs-extra';
+
+// Type-safe mocked functions
+const mockReadFile = vi.mocked(fs.readFile);
+const mockWriteFile = vi.mocked(fs.writeFile);
+const mockExistsSync = vi.mocked(fs.existsSync);
 
 describe('CrossLinker', () => {
   let linker: CrossLinker;
   let mockBasePath: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockBasePath = '/test/.specweave/docs/internal';
 
-    // Default mocks
-    mockFs.existsSync.mockReturnValue(false);
-    (mockFs.readFile as any).mockResolvedValue('');
-    (mockFs.writeFile as any).mockResolvedValue(undefined);
+    // Default mocks - set existsSync to true so documentsRelated() can find links
+    mockExistsSync.mockReturnValue(true);
+    // Return content with cross-references to trigger link detection
+    mockReadFile.mockResolvedValue(
+      '# Document\n\nSee authentication-architecture and 0001-use-oauth-authentication for details about us-001-user-authentication'
+    );
+    mockWriteFile.mockResolvedValue(undefined);
   });
 
   describe('Constructor and Options', () => {
@@ -104,10 +110,11 @@ describe('CrossLinker', () => {
       };
 
       // Mock files exist and have content with cross-references
-      mockFs.existsSync.mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
       // Content mentions the other file basenames for cross-reference detection
-      (mockFs.readFile as any).mockResolvedValue(
-        '# Document\n\nSee authentication-architecture and use-oauth-authentication for details about user-authentication'
+      // Note: Must match actual basenames from test data above
+      mockReadFile.mockResolvedValue(
+        '# Document\n\nSee authentication-architecture and 0001-use-oauth-authentication for details about us-001-user-authentication'
       );
 
       linker = new CrossLinker({
@@ -251,11 +258,11 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockFs.existsSync.mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
 
       await linker.generateLinks(result);
 
-      expect(mockFs.writeFile).not.toHaveBeenCalled();
+      expect(mockWriteFile).not.toHaveBeenCalled();
     });
 
     it('should update documents when updateExisting is true', async () => {
@@ -265,12 +272,12 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockFs.existsSync.mockReturnValue(true);
-      (mockFs.readFile as any).mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
+      mockExistsSync.mockReturnValue(true);
+      mockReadFile.mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
 
       await linker.generateLinks(result);
 
-      expect(mockFs.writeFile).toHaveBeenCalled();
+      expect(mockWriteFile).toHaveBeenCalled();
     });
   });
 
@@ -350,8 +357,8 @@ describe('CrossLinker', () => {
     });
 
     it('should detect relationships from content cross-references', async () => {
-      mockFs.existsSync.mockReturnValue(true);
-      mockFs.readFile.mockImplementation(async (filePath: any) => {
+      mockExistsSync.mockReturnValue(true);
+      mockReadFile.mockImplementation(async (filePath: any) => {
         if (filePath.includes('user-login')) {
           return 'User login uses authentication-system';
         }
@@ -449,11 +456,11 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockFs.existsSync.mockReturnValue(true);
+      mockExistsSync.mockReturnValue(true);
     });
 
     it('should add links section to document without one', async () => {
-      (mockFs.readFile as any).mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
+      mockReadFile.mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
 
       const result: DistributionResult = {
         created: [
@@ -485,14 +492,14 @@ describe('CrossLinker', () => {
 
       await linker.generateLinks(result);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       expect(content).toContain('## Related Documents');
     });
 
     it('should update existing links section', async () => {
-      (mockFs.readFile as any).mockResolvedValue(
+      mockReadFile.mockResolvedValue(
         '# Document\n\n## Related Documents\n\nOld links\n\n---\n\nFooter'
       );
 
@@ -526,7 +533,7 @@ describe('CrossLinker', () => {
 
       await linker.generateLinks(result);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       expect(content).toContain('## Related Documents');
@@ -541,7 +548,7 @@ describe('CrossLinker', () => {
         generateBacklinks: false,
       });
 
-      (mockFs.readFile as any).mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
+      mockReadFile.mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
 
       const result: DistributionResult = {
         created: [
@@ -579,7 +586,7 @@ describe('CrossLinker', () => {
 
       await linker.generateLinks(result);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       // Should have type headings
@@ -588,7 +595,7 @@ describe('CrossLinker', () => {
     });
 
     it('should use relative paths in links', async () => {
-      (mockFs.readFile as any).mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
+      mockReadFile.mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
 
       const result: DistributionResult = {
         created: [
@@ -620,7 +627,7 @@ describe('CrossLinker', () => {
 
       await linker.generateLinks(result);
 
-      const writeCall = (mockFs.writeFile as any).mock.calls[0];
+      const writeCall = mockWriteFile.mock.calls[0];
       const content = writeCall[1];
 
       // Should use relative path (from specs/backend/ to architecture/)
@@ -774,7 +781,7 @@ describe('CrossLinker', () => {
     it('should handle missing files gracefully', async () => {
       linker = new CrossLinker({ basePath: mockBasePath, dryRun: false, updateExisting: true });
 
-      mockFs.existsSync.mockReturnValue(false);
+      mockExistsSync.mockReturnValue(false);
 
       const result: DistributionResult = {
         created: [

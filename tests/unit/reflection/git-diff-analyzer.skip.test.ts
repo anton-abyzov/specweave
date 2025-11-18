@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Git Diff Analyzer
  */
@@ -15,8 +17,8 @@ import {
   getModifiedFilesSummary,
   filterFilesByExtension,
   excludeFilesByPattern
-} from '../../../src/hooks/lib/git-diff-analyzer';
-import { GitDiffInfo } from '../../../src/hooks/lib/types/reflection-types';
+} from '../../../src/hooks/lib/git-diff-analyzer.js';
+import { GitDiffInfo } from '../../../src/hooks/lib/types/reflection-types.js';
 
 describe('Git Diff Analyzer', () => {
   const testDir = path.join(__dirname, '../../fixtures/git-test-repo');

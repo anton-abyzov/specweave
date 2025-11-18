@@ -32,9 +32,11 @@ estimated_weeks: 6
 
 ### US-007: Implement /specweave:plan Command (P1)
 
-#### T-001: Write tests for PlanCommand initialization
+
+#### T-001: Write tests for PlanCommand initialization ✅ [COMPLETED]
 **AC**: AC-US7-01
 **File**: `tests/unit/cli/commands/plan-command.test.ts`
+**Status**: [x] Completed (2025-11-17)
 **Test Plan**:
 - **Given**: Empty increment with only spec.md
 - **When**: User runs /specweave:plan
@@ -57,14 +59,22 @@ describe('PlanCommand', () => {
 });
 ```
 
+**Result**: ✅ 13 tests passing
+- Command Detection: 2 tests
+- Validation: 4 tests
+- File Path Detection: 3 tests
+- Edge Cases: 4 tests
+
 **Dependencies**: None
 **Estimated**: 2 hours
+**Actual**: 1.5 hours
 
 ---
 
-#### T-002: Implement PlanCommand class
+#### T-002: Implement PlanCommand class ✅ [COMPLETED]
 **AC**: AC-US7-01, AC-US7-02
-**File**: `src/cli/commands/plan.ts`
+**File**: `src/cli/commands/plan-command.ts`
+**Status**: [x] Completed (2025-11-17) - Pre-existing implementation verified
 **Implementation**:
 1. Create PlanCommand class extending BaseCommand
 2. Add command registration (name: 'plan', description, options)
@@ -72,8 +82,22 @@ describe('PlanCommand', () => {
 4. Add increment number parameter parsing
 5. Add validation for spec.md existence
 
+**Verification**:
+- [x] `executePlanCommand` function exists (line 16)
+- [x] Command registration with full help (line 113-141)
+- [x] Execute method implemented with orchestrator pattern (line 21-71)
+- [x] Increment ID parsing via `parseArgs` (line 77-108)
+- [x] Validation delegated to PlanCommandOrchestrator
+
+**Result**: ✅ Implementation complete and verified
+- Argument parsing: --force, --preserve-task-status, --verbose, increment-id
+- Help function with examples and workflow
+- Integration with PlanCommandOrchestrator
+- Proper error handling and user feedback
+
 **Dependencies**: T-001
 **Estimated**: 3 hours
+**Actual**: 0 hours (pre-existing)
 
 ---
 
@@ -119,6 +143,14 @@ describe('PlanCommand - Architect Invocation', () => {
 5. Invoke agent via Task tool
 6. Wait for plan.md creation
 
+
+**Status**:
+- [ ] Create AgentInvoker utility
+- [ ] Read spec.md content
+- [ ] Detect tech stack from project files
+- [ ] Build Architect agent prompt
+- [ ] Invoke agent via Task tool
+- [ ] Wait for plan.md creation
 **Dependencies**: T-003
 **Estimated**: 4 hours
 
@@ -171,6 +203,14 @@ describe('PlanCommand - Test-Aware Planner', () => {
 5. Validate tasks.md has embedded tests
 6. Check AC-ID coverage (all AC-IDs covered)
 
+
+**Status**:
+- [ ] Parse spec.md for AC-IDs
+- [ ] Parse plan.md for phases
+- [ ] Build test-aware-planner prompt
+- [ ] Invoke agent via Task tool
+- [ ] Validate tasks.md has embedded tests
+- [ ] Check AC-ID coverage (all AC-IDs covered)
 **Dependencies**: T-005
 **Estimated**: 4 hours
 
@@ -222,6 +262,13 @@ describe('PlanCommand - Validation', () => {
 4. Check embedded test plans exist
 5. Report validation errors clearly
 
+
+**Status**:
+- [ ] Create validation function for plan.md
+- [ ] Create validation function for tasks.md
+- [ ] Check AC-ID coverage
+- [ ] Check embedded test plans exist
+- [ ] Report validation errors clearly
 **Dependencies**: T-007
 **Estimated**: 3 hours
 
@@ -274,6 +321,13 @@ describe('PlanCommand Integration', () => {
 4. Link to PlanCommand implementation
 5. Test command registration in Claude Code
 
+
+**Status**:
+- [ ] Create command markdown file
+- [ ] Define command name: `/specweave:plan`
+- [ ] Add description and usage examples
+- [ ] Link to PlanCommand implementation
+- [ ] Test command registration in Claude Code
 **Dependencies**: T-009
 **Estimated**: 2 hours
 
@@ -328,6 +382,13 @@ describe('PhaseDetector - Keyword Analysis', () => {
 4. Calculate weighted score (40% from ADR-0044)
 5. Return phase and confidence
 
+
+**Status**:
+- [ ] Create PhaseDetector class
+- [ ] Define keyword dictionaries (planning, execution, review)
+- [ ] Implement analyzeKeywords() method
+- [ ] Calculate weighted score (40% from ADR-0044)
+- [ ] Return phase and confidence
 **Dependencies**: T-011
 **Estimated**: 3 hours
 
@@ -379,6 +440,12 @@ describe('PhaseDetector - Command Analysis', () => {
 3. Calculate weighted score (30% from ADR-0044)
 4. Handle unknown commands gracefully
 
+
+**Status**:
+- [ ] Define command-to-phase mapping
+- [ ] Implement analyzeCommand() method
+- [ ] Calculate weighted score (30% from ADR-0044)
+- [ ] Handle unknown commands gracefully
 **Dependencies**: T-013
 **Estimated**: 2 hours
 
@@ -433,6 +500,13 @@ describe('PhaseDetector - Context Analysis', () => {
 4. Calculate weighted score (20% from ADR-0044)
 5. Return phase based on state
 
+
+**Status**:
+- [ ] Read increment metadata
+- [ ] Check file existence (spec.md, plan.md, tasks.md)
+- [ ] Parse task completion status
+- [ ] Calculate weighted score (20% from ADR-0044)
+- [ ] Return phase based on state
 **Dependencies**: T-015
 **Estimated**: 3 hours
 
@@ -497,6 +571,14 @@ describe('PhaseDetector - Confidence Scoring', () => {
 5. Generate signal breakdown for transparency
 6. Create human-readable reasoning string
 
+
+**Status**:
+- [ ] Implement calculateConfidence() method
+- [ ] Apply weights (40%, 30%, 20%, 10%)
+- [ ] Detect contradictions (different phases)
+- [ ] Apply penalty for contradictions
+- [ ] Generate signal breakdown for transparency
+- [ ] Create human-readable reasoning string
 **Dependencies**: T-017
 **Estimated**: 4 hours
 
@@ -585,6 +667,13 @@ describe('WorkflowOrchestrator - State Detection', () => {
 4. Map to workflow phase (12 phases from ADR-0043)
 5. Determine next action
 
+
+**Status**:
+- [ ] Create WorkflowOrchestrator class
+- [ ] Implement detectState() method
+- [ ] Check file existence (spec.md, plan.md, tasks.md)
+- [ ] Map to workflow phase (12 phases from ADR-0043)
+- [ ] Determine next action
 **Dependencies**: T-020
 **Estimated**: 4 hours
 
@@ -638,6 +727,14 @@ describe('CommandInvoker', () => {
 5. Capture output and logs
 6. Handle errors and return result
 
+
+**Status**:
+- [ ] Create CommandInvoker class
+- [ ] Implement invoke() method
+- [ ] Load command from registry
+- [ ] Execute command with parameters
+- [ ] Capture output and logs
+- [ ] Handle errors and return result
 **Dependencies**: T-022
 **Estimated**: 4 hours
 
@@ -693,6 +790,15 @@ describe('WorkflowOrchestrator - Auto-Planning', () => {
 6. Validate plan.md and tasks.md created
 7. Log action taken
 
+
+**Status**:
+- [ ] Add autoPlan option to next() method
+- [ ] Detect "needs-planning" phase
+- [ ] Prompt user (unless auto mode)
+- [ ] Invoke /specweave:plan via CommandInvoker
+- [ ] Wait for completion
+- [ ] Validate plan.md and tasks.md created
+- [ ] Log action taken
 **Dependencies**: T-024
 **Estimated**: 4 hours
 
@@ -747,6 +853,12 @@ describe('WorkflowOrchestrator - Execution Readiness', () => {
 3. Check for blocking dependencies
 4. Return readiness result with confidence
 
+
+**Status**:
+- [ ] Check all required files exist
+- [ ] Validate tasks.md format
+- [ ] Check for blocking dependencies
+- [ ] Return readiness result with confidence
 **Dependencies**: T-026
 **Estimated**: 3 hours
 
@@ -794,6 +906,14 @@ describe('WorkflowOrchestrator - Auto-Execution', () => {
 5. Handle errors during execution
 6. Log action taken
 
+
+**Status**:
+- [ ] Detect ready-for-execution phase
+- [ ] Prompt user (unless autonomous)
+- [ ] Invoke /specweave:do via CommandInvoker
+- [ ] Monitor task execution progress
+- [ ] Handle errors during execution
+- [ ] Log action taken
 **Dependencies**: T-028
 **Estimated**: 4 hours
 
@@ -849,6 +969,12 @@ describe('WorkflowOrchestrator - Validation Suggestion', () => {
 3. Determine if validation appropriate
 4. Generate suggestion with reasoning
 
+
+**Status**:
+- [ ] Parse tasks.md for P1 completion status
+- [ ] Check test results (via test framework)
+- [ ] Determine if validation appropriate
+- [ ] Generate suggestion with reasoning
 **Dependencies**: T-030
 **Estimated**: 3 hours
 
@@ -898,6 +1024,13 @@ describe('WorkflowOrchestrator - Completion Detection', () => {
 4. Update increment status to "completed"
 5. Log closure action
 
+
+**Status**:
+- [ ] Validate all PM gates (tasks, tests, docs)
+- [ ] Prompt user for closure confirmation
+- [ ] Invoke /specweave:done via CommandInvoker
+- [ ] Update increment status to "completed"
+- [ ] Log closure action
 **Dependencies**: T-032
 **Estimated**: 4 hours
 
@@ -952,6 +1085,14 @@ describe('BacklogScanner', () => {
 5. Estimate effort from tasks.md
 6. Sort by priority and effort
 
+
+**Status**:
+- [ ] Create BacklogScanner class
+- [ ] Scan all increments with status = "backlog"
+- [ ] Parse priority from metadata
+- [ ] Check dependencies
+- [ ] Estimate effort from tasks.md
+- [ ] Sort by priority and effort
 **Dependencies**: T-034
 **Estimated**: 4 hours
 
@@ -998,6 +1139,13 @@ describe('WorkflowOrchestrator - Backlog Suggestions', () => {
 4. Generate reasoning for each
 5. Present to user with effort estimates
 
+
+**Status**:
+- [ ] Detect "increment-closed" phase
+- [ ] Invoke BacklogScanner
+- [ ] Get top 3 prioritized items
+- [ ] Generate reasoning for each
+- [ ] Present to user with effort estimates
 **Dependencies**: T-036
 **Estimated**: 3 hours
 
@@ -1057,6 +1205,13 @@ describe('WorkflowOrchestrator - Confidence Thresholds', () => {
 4. Prompt if confidence in medium range
 5. Always prompt if confidence < 0.4
 
+
+**Status**:
+- [ ] Add confidence threshold configuration
+- [ ] Check detected phase confidence
+- [ ] Auto-proceed if confidence > threshold
+- [ ] Prompt if confidence in medium range
+- [ ] Always prompt if confidence < 0.4
 **Dependencies**: T-038
 **Estimated**: 3 hours
 
@@ -1103,6 +1258,12 @@ describe('WorkflowOrchestrator - Transparency', () => {
 3. Add verbose mode option
 4. Generate confidence visualization
 
+
+**Status**:
+- [ ] Format signal breakdown for display
+- [ ] Create human-readable reasoning
+- [ ] Add verbose mode option
+- [ ] Generate confidence visualization
 **Dependencies**: T-040
 **Estimated**: 3 hours
 
@@ -1164,6 +1325,14 @@ describe('StateManager - Loop Prevention', () => {
 5. Create checkpoints for recovery
 6. Implement abort logic
 
+
+**Status**:
+- [ ] Create StateManager class
+- [ ] Track iteration history
+- [ ] Detect same-phase loops (3+ repetitions)
+- [ ] Enforce max iterations (50 from ADR-0045)
+- [ ] Create checkpoints for recovery
+- [ ] Implement abort logic
 **Dependencies**: T-042
 **Estimated**: 4 hours
 
@@ -1230,6 +1399,15 @@ describe('AutonomousExecutor', () => {
 6. Log all actions for auditability
 7. Implement recovery from checkpoints
 
+
+**Status**:
+- [ ] Create AutonomousExecutor class
+- [ ] Implement run() method with loop
+- [ ] Integrate StateManager for safety
+- [ ] Create checkpoints after each phase
+- [ ] Handle user interrupts (Ctrl+C)
+- [ ] Log all actions for auditability
+- [ ] Implement recovery from checkpoints
 **Dependencies**: T-044
 **Estimated**: 6 hours
 
@@ -1286,6 +1464,13 @@ describe('CostEstimator', () => {
 4. Compare to threshold ($20 from ADR-0045)
 5. Return risk level (low/medium/high)
 
+
+**Status**:
+- [ ] Create CostEstimator class
+- [ ] Define AI call estimates per command
+- [ ] Calculate total estimated cost
+- [ ] Compare to threshold ($20 from ADR-0045)
+- [ ] Return risk level (low/medium/high)
 **Dependencies**: T-046
 **Estimated**: 3 hours
 
@@ -1337,6 +1522,13 @@ describe('Autonomous Mode Integration', () => {
 4. Handle errors and checkpoints
 5. Log autonomous execution
 
+
+**Status**:
+- [ ] Update NextCommand to support --autonomous flag
+- [ ] Invoke AutonomousExecutor when flag present
+- [ ] Display progress updates
+- [ ] Handle errors and checkpoints
+- [ ] Log autonomous execution
 **Dependencies**: T-048
 **Estimated**: 4 hours
 
@@ -1394,6 +1586,13 @@ describe('WorkflowOrchestrator - Multi-Project', () => {
 4. Filter workflow to selected project
 5. Handle cross-project dependencies
 
+
+**Status**:
+- [ ] Detect multi-project mode from config
+- [ ] Scan all projects for active increments
+- [ ] Prompt user to select project
+- [ ] Filter workflow to selected project
+- [ ] Handle cross-project dependencies
 **Dependencies**: T-050
 **Estimated**: 4 hours
 
@@ -1450,6 +1649,13 @@ describe('WorkflowOrchestrator - Error Handling', () => {
 4. Log errors for debugging
 5. Support retry logic
 
+
+**Status**:
+- [ ] Add try-catch blocks for all commands
+- [ ] Create clear error messages
+- [ ] Suggest recovery paths
+- [ ] Log errors for debugging
+- [ ] Support retry logic
 **Dependencies**: T-052
 **Estimated**: 4 hours
 
@@ -1500,6 +1706,13 @@ describe('WorkflowOrchestrator - UX', () => {
 4. Clear, concise messages
 5. Helpful suggestions
 
+
+**Status**:
+- [ ] Add colorized output (chalk)
+- [ ] Add emojis for visual clarity
+- [ ] Show progress indicators
+- [ ] Clear, concise messages
+- [ ] Helpful suggestions
 **Dependencies**: T-054
 **Estimated**: 3 hours
 
@@ -1581,6 +1794,12 @@ describe('Phase Detection Performance', () => {
 3. Add sequence diagrams
 4. Document configuration options
 
+
+**Status**:
+- [ ] Document WorkflowOrchestrator architecture
+- [ ] Update system design with new components
+- [ ] Add sequence diagrams
+- [ ] Document configuration options
 **Dependencies**: T-055
 **Estimated**: 4 hours
 
@@ -1596,6 +1815,13 @@ describe('Phase Detection Performance', () => {
 4. Document autonomous mode
 5. Add troubleshooting section
 
+
+**Status**:
+- [ ] Create user guide for /specweave:next
+- [ ] Document all flags and options
+- [ ] Add examples and use cases
+- [ ] Document autonomous mode
+- [ ] Add troubleshooting section
 **Dependencies**: T-058
 **Estimated**: 6 hours
 
@@ -1611,6 +1837,13 @@ describe('Phase Detection Performance', () => {
 4. Add usage examples
 5. Link to user guide
 
+
+**Status**:
+- [ ] Update command markdown
+- [ ] Document --autonomous flag
+- [ ] Document --auto-plan, --max-cost flags
+- [ ] Add usage examples
+- [ ] Link to user guide
 **Dependencies**: T-059
 **Estimated**: 2 hours
 
@@ -1625,6 +1858,12 @@ describe('Phase Detection Performance', () => {
 3. Update workflow diagrams
 4. Add benefits and use cases
 
+
+**Status**:
+- [ ] Add /specweave:next to quick reference
+- [ ] Document autonomous mode
+- [ ] Update workflow diagrams
+- [ ] Add benefits and use cases
 **Dependencies**: T-060
 **Estimated**: 3 hours
 
@@ -1684,6 +1923,11 @@ describe('SpecSyncManager.detectSpecChange', () => {
 2. Handle edge cases (missing files)
 3. Return SpecChangeDetectionResult with timestamps and reason
 
+
+**Status**:
+- [ ] Compare spec.md mtime vs plan.md mtime
+- [ ] Handle edge cases (missing files)
+- [ ] Return SpecChangeDetectionResult with timestamps and reason
 **Dependencies**: T-062
 **Estimated**: 2 hours (COMPLETED)
 
@@ -1734,6 +1978,12 @@ describe('user-prompt-submit hook - spec sync', () => {
 3. If specChanged, show formatted warning
 4. Approve with systemMessage (don't block)
 
+
+**Status**:
+- [ ] Detect active increment
+- [ ] Call SpecSyncManager.detectSpecChange()
+- [ ] If specChanged, show formatted warning
+- [ ] Approve with systemMessage (don't block)
 **Dependencies**: T-064
 **Estimated**: 2 hours (COMPLETED)
 
@@ -1789,6 +2039,14 @@ describe('SpecSyncManager.syncIncrement - plan regeneration', () => {
 5. Update plan.md file
 6. Log regeneration event to metadata
 
+
+**Status**:
+- [ ] Read updated spec.md content
+- [ ] Invoke Architect Agent with spec content
+- [ ] Generate new plan.md
+- [ ] Show diff to user (old vs new)
+- [ ] Update plan.md file
+- [ ] Log regeneration event to metadata
 **Dependencies**: T-066
 **Estimated**: 5 hours
 
@@ -1836,6 +2094,14 @@ describe('SpecSyncManager.syncIncrement - tasks regeneration', () => {
 5. Update tasks.md file
 6. Log regeneration event to metadata
 
+
+**Status**:
+- [ ] Read updated plan.md content
+- [ ] Invoke test-aware-planner with plan content
+- [ ] Generate new tasks.md
+- [ ] Show diff to user (old vs new)
+- [ ] Update tasks.md file
+- [ ] Log regeneration event to metadata
 **Dependencies**: T-068
 **Estimated**: 5 hours
 
@@ -1894,6 +2160,13 @@ describe('SpecSyncManager - status preservation', () => {
 4. Apply completion status from old to new
 5. Write updated tasks.md
 
+
+**Status**:
+- [ ] Parse old tasks.md (extract task IDs and completion status)
+- [ ] Parse new tasks.md (extract task IDs)
+- [ ] Create mapping: old task ID → new task ID
+- [ ] Apply completion status from old to new
+- [ ] Write updated tasks.md
 **Helper Methods**:
 ```typescript
 private parseTaskCompletion(tasksContent: string): Map<string, boolean>;
@@ -1953,6 +2226,12 @@ describe('SpecSyncManager - event logging', () => {
 3. Keep only last 10 events
 4. Write updated metadata.json
 
+
+**Status**:
+- [ ] Read metadata.json
+- [ ] Add sync event to syncEvents array
+- [ ] Keep only last 10 events
+- [ ] Write updated metadata.json
 **Dependencies**: T-072
 **Estimated**: 2 hours (COMPLETED)
 
@@ -1996,6 +2275,11 @@ describe('--skip-sync flag', () => {
 2. Return early if skipSync === true
 3. Log skip reason
 
+
+**Status**:
+- [ ] Accept skipSync parameter
+- [ ] Return early if skipSync === true
+- [ ] Log skip reason
 **Dependencies**: T-074
 **Estimated**: 1 hour (COMPLETED)
 
@@ -2005,6 +2289,18 @@ describe('--skip-sync flag', () => {
 **AC**: AC-US11-08
 **File**: `AGENTS.md` (root)
 **Implementation**:
+
+**Status**:
+- [ ] **Detection Section**:
+- [ ] **Regeneration Section**:
+- [ ] **Status Preservation Section**:
+- [ ] **Example Workflow**:
+- [ ] Read updated spec.md
+- [ ] Ask your AI assistant: "Based on this updated spec.md, regenerate plan.md following the existing format"
+- [ ] Review and save new plan.md
+- [ ] Read updated plan.md
+- [ ] Ask your AI assistant: "Based on this updated plan.md, regenerate tasks.md with embedded tests"
+- [ ] **IMPORTANT**: Preserve task completion status
 Create comprehensive section explaining manual sync for Cursor/generic tools:
 
 1. **Detection Section**:
@@ -2114,6 +2410,14 @@ describe('Spec Sync E2E Flow', () => {
 **AC**: Documentation requirement
 **File**: `docs/guides/spec-sync.md`
 **Implementation**:
+
+**Status**:
+- [ ] Why spec sync matters (spec-driven development)
+- [ ] How it works (automatic detection, regeneration)
+- [ ] When it triggers (spec.md mtime > plan.md mtime)
+- [ ] How to skip (--skip-sync flag)
+- [ ] Task status preservation
+- [ ] Edge cases and troubleshooting
 Create user guide explaining:
 1. Why spec sync matters (spec-driven development)
 2. How it works (automatic detection, regeneration)
@@ -2206,6 +2510,13 @@ describe('ACStatusManager.parseTasksForACStatus', () => {
 4. Check completion status via checkbox `[x]` or `[ ]`
 5. Build Map<AC-ID, ACCompletionStatus>
 
+
+**Status**:
+- [ ] Read tasks.md content
+- [ ] Regex match task headers: `#### T-###:`
+- [ ] Extract **AC**: tag values
+- [ ] Check completion status via checkbox `[x]` or `[ ]`
+- [ ] Build Map<AC-ID, ACCompletionStatus>
 **Dependencies**: T-079
 **Estimated**: 5 hours
 
@@ -2258,6 +2569,13 @@ Line 4`;
 4. Track line number for updates
 5. Build Map<AC-ID, ACDefinition>
 
+
+**Status**:
+- [ ] Read spec.md content
+- [ ] Regex match AC pattern: `- \[ \] AC-[A-Z0-9-]+:`
+- [ ] Extract AC-ID, description, checkbox status
+- [ ] Track line number for updates
+- [ ] Build Map<AC-ID, ACDefinition>
 **Dependencies**: T-081
 **Estimated**: 4 hours
 
@@ -2318,6 +2636,14 @@ describe('ACStatusManager.syncACStatus', () => {
 1. Call parseTasksForACStatus(tasks.md)
 2. Call parseSpecForACs(spec.md)
 3. For each AC:
+
+**Status**:
+- [ ] Call parseTasksForACStatus(tasks.md)
+- [ ] Call parseSpecForACs(spec.md)
+- [ ] For each AC:
+- [ ] Generate diff
+- [ ] Update spec.md file
+- [ ] Log changes to metadata.json
    - If isComplete=true and spec has [ ]: Update to [x]
    - If isComplete=false and spec has [x]: Warn conflict
    - If no tasks: Warn manual verification needed
@@ -2374,6 +2700,13 @@ describe('post-task-completion hook - AC sync', () => {
 4. Respect --skip-ac-sync flag
 5. Log AC updates
 
+
+**Status**:
+- [ ] Add AC sync logic after task completion
+- [ ] Call ACStatusManager.syncACStatus()
+- [ ] Show diff if ACs updated
+- [ ] Respect --skip-ac-sync flag
+- [ ] Log AC updates
 **Dependencies**: T-085
 **Estimated**: 3 hours
 
@@ -2390,6 +2723,14 @@ describe('post-task-completion hook - AC sync', () => {
 5. Show which ACs were updated
 6. Ask user confirmation before updating spec.md
 
+
+**Status**:
+- [ ] Create command registration
+- [ ] Accept optional increment ID
+- [ ] Call ACStatusManager.syncACStatus()
+- [ ] Display AC completion summary
+- [ ] Show which ACs were updated
+- [ ] Ask user confirmation before updating spec.md
 **Dependencies**: T-086
 **Estimated**: 4 hours
 
@@ -2435,6 +2776,13 @@ describe('ACStatusManager.validateACMapping', () => {
 4. Find task AC references not in spec.md (invalid)
 5. Return validation result
 
+
+**Status**:
+- [ ] Parse spec.md for all ACs
+- [ ] Parse tasks.md for all AC references
+- [ ] Find ACs with no tasks (orphaned)
+- [ ] Find task AC references not in spec.md (invalid)
+- [ ] Return validation result
 **Dependencies**: T-088
 **Estimated**: 3 hours
 
@@ -2474,6 +2822,11 @@ describe('ACStatusManager - logging', () => {
 **Implementation**:
 1. After updating spec.md, log event to metadata.json
 2. Event format:
+
+**Status**:
+- [ ] After updating spec.md, log event to metadata.json
+- [ ] Event format:
+- [ ] Keep last 20 AC status events
    ```json
    {
      "timestamp": "2025-11-16T...",
@@ -2534,6 +2887,15 @@ describe('AC Status Automation E2E', () => {
 **AC**: Documentation requirement
 **File**: `docs/guides/ac-status-automation.md`
 **Implementation**:
+
+**Status**:
+- [ ] Why AC status automation matters
+- [ ] How it works (task completion → spec.md update)
+- [ ] AC-task mapping via **AC**: tags
+- [ ] Manual sync command: /specweave:sync-acs
+- [ ] Skip flag: --skip-ac-sync
+- [ ] Validation and conflict detection
+- [ ] Troubleshooting
 Create user guide explaining:
 1. Why AC status automation matters
 2. How it works (task completion → spec.md update)

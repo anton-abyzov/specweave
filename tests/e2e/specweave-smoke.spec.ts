@@ -13,6 +13,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
+import * as os from 'os';
 import { parse as parseYaml } from 'yaml';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -29,8 +30,8 @@ test.describe.serial('SpecWeave E2E Smoke Test', () => {
   let testDir: string;
 
   test.beforeAll(async () => {
-    // Create unique test directory
-    testDir = path.join('/tmp', `specweave-e2e-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+    testDir = path.join(os.tmpdir(), `specweave-e2e-smoke-${Date.now()}`);
     await fs.mkdir(testDir, { recursive: true });
     console.log(`Test directory: ${testDir}`);
   });

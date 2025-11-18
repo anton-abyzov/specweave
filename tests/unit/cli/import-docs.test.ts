@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: import-docs CLI command
  *
@@ -6,42 +8,46 @@
  * Coverage: File validation, classification, import process, error handling.
  */
 
-import { importDocs, parseImportDocsArgs, ImportDocsArgs } from '../../../src/cli/commands/import-docs';
-import { BrownfieldImporter } from '../../../src/core/brownfield/importer';
-import { ProjectManager } from '../../../src/core/project-manager';
+import { importDocs, parseImportDocsArgs, ImportDocsArgs } from '../../../src/cli/commands/import-docs.js';
+import { BrownfieldImporter } from '../../../src/core/brownfield/importer.js';
+import { ProjectManager } from '../../../src/core/project-manager.js';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 
 // Mock dependencies
-jest.mock('../../../src/core/brownfield/importer');
-jest.mock('../../../src/core/project-manager');
-jest.mock('inquirer', () => ({
-  prompt: jest.fn()
+vi.mock('../../../src/core/brownfield/importer');
+vi.mock('../../../src/core/project-manager');
+
+const mockPrompt = vi.fn();
+vi.mock('inquirer', () => ({
+  default: {
+    prompt: mockPrompt
+  }
 }));
 
 describe('import-docs command', () => {
-  const mockImporter = BrownfieldImporter as jest.MockedClass<typeof BrownfieldImporter>;
-  const mockProjectManager = ProjectManager as jest.MockedClass<typeof ProjectManager>;
-  const mockInquirer = inquirer as any;
+  const mockImporter = BrownfieldImporter as vi.Mocked<typeof BrownfieldImporter>;
+  const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
 
   const mockProjectRoot = '/test/project';
   const mockSourcePath = '/test/source';
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    console.log = jest.fn();
-    console.error = jest.fn();
+    vi.clearAllMocks();
+    mockPrompt.mockReset();
+    console.log = vi.fn();
+    console.error = vi.fn();
 
     // Setup default mocks
     const mockProjectInstance = {
-      getAllProjects: jest.fn().mockReturnValue([
+      getAllProjects: vi.fn().mockReturnValue([
         { id: 'default', name: 'Default Project' }
       ]),
-      getActiveProject: jest.fn().mockReturnValue({
+      getActiveProject: vi.fn().mockReturnValue({
         id: 'default',
         name: 'Default Project'
       }),
-      getProjectById: jest.fn().mockReturnValue({
+      getProjectById: vi.fn().mockReturnValue({
         id: 'default',
         name: 'Default Project'
       })
@@ -66,7 +72,7 @@ describe('import-docs command', () => {
         dryRun: true
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ sourceType: 'notion' });
+      mockPrompt.mockResolvedValueOnce({ sourceType: 'notion' });
 
       const mockImportReport = {
         totalFiles: 10,
@@ -84,12 +90,12 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockInquirer.prompt).toHaveBeenCalledWith([{
+      expect(mockPrompt).toHaveBeenCalledWith([{
         type: 'list',
         name: 'sourceType',
         message: 'Select source type:',
@@ -121,7 +127,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -159,7 +165,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -181,15 +187,15 @@ describe('import-docs command', () => {
       };
 
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([
+        getAllProjects: vi.fn().mockReturnValue([
           { projectId: 'project1', projectName: 'Project One' },
           { projectId: 'project2', projectName: 'Project Two' }
         ]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getActiveProject: vi.fn().mockReturnValue({
           projectId: 'project1',
           projectName: 'Project One'
         }),
-        getProjectById: jest.fn().mockReturnValue({
+        getProjectById: vi.fn().mockReturnValue({
           projectId: 'project1',
           projectName: 'Project One'
         })
@@ -197,7 +203,7 @@ describe('import-docs command', () => {
 
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
-      mockInquirer.prompt.mockResolvedValueOnce({ projectId: 'project2' });
+      mockPrompt.mockResolvedValueOnce({ projectId: 'project2' });
 
       const mockImportReport = {
         totalFiles: 10,
@@ -215,12 +221,12 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockInquirer.prompt).toHaveBeenCalledWith([{
+      expect(mockPrompt).toHaveBeenCalledWith([{
         type: 'list',
         name: 'projectId',
         message: 'Select target project:',
@@ -243,7 +249,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const mockImportReport = {
         totalFiles: 10,
@@ -261,12 +267,12 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockInquirer.prompt).toHaveBeenCalledWith([{
+      expect(mockPrompt).toHaveBeenCalledWith([{
         type: 'confirm',
         name: 'confirm',
         message: 'Proceed with import?',
@@ -282,9 +288,9 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: false });
+      mockPrompt.mockResolvedValueOnce({ confirm: false });
 
-      const mockImportMethod = jest.fn();
+      const mockImportMethod = vi.fn();
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -301,7 +307,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const mockImportReport = {
         totalFiles: 10,
@@ -319,7 +325,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -356,7 +362,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -373,10 +379,10 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const errorMessage = 'Failed to read source directory';
-      const mockImportMethod = jest.fn().mockRejectedValue(new Error(errorMessage));
+      const mockImportMethod = vi.fn().mockRejectedValue(new Error(errorMessage));
       mockImporter.prototype.import = mockImportMethod;
 
       await expect(importDocs(mockProjectRoot, args))
@@ -411,7 +417,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -428,7 +434,7 @@ describe('import-docs command', () => {
         ['notion', 'confluence', 'wiki', 'custom'];
 
       for (const source of sourceTypes) {
-        jest.clearAllMocks();
+        vi.clearAllMocks();
 
         const args: ImportDocsArgs = {
           sourcePath: mockSourcePath,
@@ -453,7 +459,7 @@ describe('import-docs command', () => {
           }
         };
 
-        const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+        const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
         mockImporter.prototype.import = mockImportMethod;
 
         await importDocs(mockProjectRoot, args);
@@ -575,16 +581,16 @@ describe('import-docs command', () => {
       };
 
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue(null),
-        getProjectById: jest.fn().mockReturnValue(null)
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue(null),
+        getProjectById: vi.fn().mockReturnValue(null)
       };
 
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockImportMethod = jest.fn()
+      const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error("Project 'non-existent' not found"));
       mockImporter.prototype.import = mockImportMethod;
 
@@ -600,9 +606,9 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockImportMethod = jest.fn()
+      const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Source path does not exist'));
       mockImporter.prototype.import = mockImportMethod;
 
@@ -618,9 +624,9 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockImportMethod = jest.fn()
+      const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('No markdown files found in source directory'));
       mockImporter.prototype.import = mockImportMethod;
 
@@ -636,7 +642,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const mockImportReport = {
         totalFiles: 0,
@@ -654,7 +660,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -670,9 +676,9 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockImportMethod = jest.fn()
+      const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Permission denied: cannot write to destination'));
       mockImporter.prototype.import = mockImportMethod;
 
@@ -688,9 +694,9 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
-      const mockImportMethod = jest.fn()
+      const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Another import is already in progress for this project'));
       mockImporter.prototype.import = mockImportMethod;
 
@@ -706,7 +712,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const mockImportReport = {
         totalFiles: 10000,
@@ -724,7 +730,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);
@@ -742,7 +748,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockInquirer.prompt.mockResolvedValueOnce({ confirm: true });
+      mockPrompt.mockResolvedValueOnce({ confirm: true });
 
       const mockDestination = '/test/project/.specweave/docs/internal/legacy/default/notion';
       const mockImportReport = {
@@ -761,7 +767,7 @@ describe('import-docs command', () => {
         }
       };
 
-      const mockImportMethod = jest.fn().mockResolvedValue(mockImportReport);
+      const mockImportMethod = vi.fn().mockResolvedValue(mockImportReport);
       mockImporter.prototype.import = mockImportMethod;
 
       await importDocs(mockProjectRoot, args);

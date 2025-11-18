@@ -1,0 +1,32 @@
+/**
+ * Smart Team Size Recommender
+ */
+
+export interface TeamRecommendation {
+  recommended: number;
+  min: number;
+  max: number;
+  roles: string[];
+  rationale: string;
+}
+
+export class TeamRecommender {
+  recommend(complexity: number, timeline: string): TeamRecommendation {
+    if (complexity > 7) {
+      return {
+        recommended: 5,
+        min: 3,
+        max: 8,
+        roles: ['Full-stack', 'Backend', 'Frontend', 'DevOps', 'QA'],
+        rationale: 'High complexity requires specialized roles'
+      };
+    }
+    return {
+      recommended: 2,
+      min: 1,
+      max: 3,
+      roles: ['Full-stack', 'Backend/Frontend'],
+      rationale: 'Low complexity suits small team'
+    };
+  }
+}

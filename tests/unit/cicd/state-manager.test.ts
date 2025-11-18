@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: CI/CD State Manager
  *
@@ -7,12 +9,12 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { StateManager } from '../../../src/core/cicd/state-manager';
+import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import {
   CICDMonitorState,
   DEFAULT_STATE,
   FailureRecord
-} from '../../../src/core/cicd/types';
+} from '../../../src/core/cicd/types.js';
 
 describe('StateManager', () => {
   let testDir: string;
@@ -35,7 +37,7 @@ describe('StateManager', () => {
   /**
    * Test: Save workflow state to JSON file
    */
-  test('testSaveWorkflowState: Saves state to JSON file', async () => {
+  it('testSaveWorkflowState: Saves state to JSON file', async () => {
     const state: CICDMonitorState = {
       ...DEFAULT_STATE,
       lastPoll: '2025-11-12T10:00:00Z',
@@ -58,7 +60,7 @@ describe('StateManager', () => {
   /**
    * Test: Load workflow state from JSON file
    */
-  test('testLoadWorkflowState: Loads state from JSON file', async () => {
+  it('testLoadWorkflowState: Loads state from JSON file', async () => {
     // Create state file manually
     const statePath = path.join(testDir, '.specweave/state/cicd-monitor.json');
     await fs.ensureDir(path.dirname(statePath));
@@ -81,7 +83,7 @@ describe('StateManager', () => {
   /**
    * Test: Create state file if missing
    */
-  test('testCreateStateFileIfMissing: Creates .specweave/state/ directory', async () => {
+  it('testCreateStateFileIfMissing: Creates .specweave/state/ directory', async () => {
     // Ensure directory doesn't exist
     const stateDir = path.join(testDir, '.specweave/state');
     expect(await fs.pathExists(stateDir)).toBe(false);
@@ -100,7 +102,7 @@ describe('StateManager', () => {
   /**
    * Test: Handle concurrent writes without corruption
    */
-  test('testHandleConcurrentWrites: Uses file locking to prevent corruption', async () => {
+  it('testHandleConcurrentWrites: Uses file locking to prevent corruption', async () => {
     // Simulate concurrent writes
     const writes = Array.from({ length: 10 }, (_, i) =>
       stateManager.addFailure({
@@ -134,7 +136,7 @@ describe('StateManager', () => {
   /**
    * Test: Mark failure as processed (deduplication)
    */
-  test('testMarkFailureProcessed: Deduplicates failures', async () => {
+  it('testMarkFailureProcessed: Deduplicates failures', async () => {
     // Add failure
     await stateManager.addFailure({
       runId: 12345,
@@ -160,7 +162,7 @@ describe('StateManager', () => {
   /**
    * Test: Get last poll timestamp
    */
-  test('testGetLastPoll: Returns last poll timestamp', async () => {
+  it('testGetLastPoll: Returns last poll timestamp', async () => {
     // Initially null
     let lastPoll = await stateManager.getLastPoll();
     expect(lastPoll).toBeNull();

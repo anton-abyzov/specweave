@@ -1,12 +1,14 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Git Remote Detector
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import {
   parseGitUrl,
   type GitRemote
-} from '../../../src/utils/git-detector';
+} from '../../../src/utils/git-detector.js';
 
 describe('Git Remote Detector', () => {
   describe('parseGitUrl', () => {

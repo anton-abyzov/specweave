@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for migrate-to-profiles Command
  *
@@ -5,7 +7,7 @@
  * These tests ensure configuration migration works correctly
  */
 
-import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
@@ -20,17 +22,17 @@ import {
   MigrationOptions,
   MigrationResult,
   OldConfiguration
-} from '../../../src/cli/commands/migrate-to-profiles';
-import { ProfileManager } from '../../../src/core/sync/profile-manager';
-import { ProjectContextManager } from '../../../src/core/sync/project-context';
+} from '../../../src/cli/commands/migrate-to-profiles.js';
+import { ProfileManager } from '../../../src/core/sync/profile-manager.js';
+import { ProjectContextManager } from '../../../src/core/sync/project-context.js';
 
-jest.mock('../../../src/core/sync/profile-manager');
-jest.mock('../../../src/core/sync/project-context');
+vi.mock('../../../src/core/sync/profile-manager');
+vi.mock('../../../src/core/sync/project-context');
 
 describe('migrate-to-profiles', () => {
   let testDir: string;
-  let mockProfileManager: jest.Mocked<ProfileManager>;
-  let mockProjectManager: jest.Mocked<ProjectContextManager>;
+  let mockProfileManager: anyed<ProfileManager>;
+  let mockProjectManager: anyed<ProjectContextManager>;
 
   beforeEach(async () => {
     // Create temp directory for tests
@@ -38,14 +40,14 @@ describe('migrate-to-profiles', () => {
     await fs.mkdir(path.join(testDir, '.specweave'), { recursive: true });
 
     // Reset all mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mocks
-    mockProfileManager = new ProfileManager(testDir) as jest.Mocked<ProfileManager>;
-    mockProjectManager = new ProjectContextManager(testDir) as jest.Mocked<ProjectContextManager>;
+    mockProfileManager = new ProfileManager(testDir) as anyed<ProfileManager>;
+    mockProjectManager = new ProjectContextManager(testDir) as anyed<ProjectContextManager>;
 
-    (ProfileManager as jest.MockedClass<typeof ProfileManager>).mockImplementation(() => mockProfileManager);
-    (ProjectContextManager as jest.MockedClass<typeof ProjectContextManager>).mockImplementation(() => mockProjectManager);
+    (ProfileManager as vi.Mocked<typeof ProfileManager>).mockImplementation(() => mockProfileManager);
+    (ProjectContextManager as vi.Mocked<typeof ProjectContextManager>).mockImplementation(() => mockProjectManager);
 
     mockProfileManager.load.mockResolvedValue();
     mockProjectManager.load.mockResolvedValue();
@@ -268,7 +270,7 @@ AZURE_DEVOPS_PROJECT=myproject`
       );
 
       // Mock git detection
-      jest.spyOn(fs, 'pathExists').mockImplementation(async (p) => {
+      vi.spyOn(fs, 'pathExists').mockImplementation(async (p) => {
         if (p === path.join(testDir, '.git')) return true;
         return fs.pathExists(p as string);
       });
@@ -417,7 +419,7 @@ AZURE_DEVOPS_PROJECT=myproject`
     });
 
     it('should handle verbose output', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation();
 
       await fs.writeFile(
         path.join(testDir, '.env'),

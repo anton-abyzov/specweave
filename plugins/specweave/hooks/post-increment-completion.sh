@@ -37,7 +37,9 @@ fi
 ISSUE_NUMBER=$(jq -r '.github.issue // empty' "$METADATA_FILE" 2>/dev/null)
 
 if [ -z "$ISSUE_NUMBER" ] || [ "$ISSUE_NUMBER" = "null" ]; then
-  # No GitHub issue linked - skip
+  # No GitHub issue linked - skip GitHub closure but still update status line
+  HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
   exit 0
 fi
 
@@ -79,5 +81,9 @@ gh issue close "$ISSUE_NUMBER" --comment "$COMPLETION_COMMENT" 2>/dev/null || {
 }
 
 echo "✅ GitHub issue #$ISSUE_NUMBER closed successfully"
+
+# Update status line cache (increment no longer open)
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
 
 exit 0

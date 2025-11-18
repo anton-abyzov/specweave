@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: init-multiproject CLI command
  *
@@ -6,37 +8,40 @@
  * Coverage: Migration process, project creation, configuration updates.
  */
 
-import { initMultiProject, listProjects } from '../../../src/cli/commands/init-multiproject';
-import { autoMigrateSingleToMulti } from '../../../src/cli/commands/migrate-to-multiproject';
-import { ProjectManager } from '../../../src/core/project-manager';
-import { ConfigManager } from '../../../src/core/config-manager';
-import { autoDetectProjectIdSync, formatProjectName } from '../../../src/utils/project-detection';
+import { initMultiProject, listProjects } from '../../../src/cli/commands/init-multiproject.js';
+import { autoMigrateSingleToMulti } from '../../../src/cli/commands/migrate-to-multiproject.js';
+import { ProjectManager } from '../../../src/core/project-manager.js';
+import { ConfigManager } from '../../../src/core/config-manager.js';
+import { autoDetectProjectIdSync, formatProjectName } from '../../../src/utils/project-detection.js';
 import * as inquirer from 'inquirer';
 
 // Mock dependencies
-jest.mock('../../../src/cli/commands/migrate-to-multiproject');
-jest.mock('../../../src/core/project-manager');
-jest.mock('../../../src/core/config-manager');
-jest.mock('../../../src/utils/project-detection');
-jest.mock('inquirer', () => ({
-  prompt: jest.fn()
+vi.mock('../../../src/cli/commands/migrate-to-multiproject');
+vi.mock('../../../src/core/project-manager');
+vi.mock('../../../src/core/config-manager');
+vi.mock('../../../src/utils/project-detection');
+
+const mockPrompt = vi.fn();
+vi.mock('inquirer', () => ({
+  default: {
+    prompt: mockPrompt
+  }
 }));
 
 describe('init-multiproject command', () => {
-  const mockProjectManager = ProjectManager as jest.MockedClass<typeof ProjectManager>;
-  const mockConfigManager = ConfigManager as jest.MockedClass<typeof ConfigManager>;
-  const mockAutoMigrate = autoMigrateSingleToMulti as jest.MockedFunction<typeof autoMigrateSingleToMulti>;
-  const mockAutoDetect = autoDetectProjectIdSync as jest.MockedFunction<typeof autoDetectProjectIdSync>;
-  const mockFormatProjectName = formatProjectName as jest.MockedFunction<typeof formatProjectName>;
-  const mockInquirer = inquirer as any;
+  const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
+  const mockConfigManager = ConfigManager as vi.Mocked<typeof ConfigManager>;
+  const mockAutoMigrate = autoMigrateSingleToMulti as vi.MockedFunction<typeof autoMigrateSingleToMulti>;
+  const mockAutoDetect = autoDetectProjectIdSync as vi.MockedFunction<typeof autoDetectProjectIdSync>;
+  const mockFormatProjectName = formatProjectName as vi.MockedFunction<typeof formatProjectName>;
 
   const mockProjectRoot = '/test/project';
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    console.log = jest.fn();
-    console.warn = jest.fn();
-    console.error = jest.fn();
+    vi.clearAllMocks();
+    console.log = vi.fn();
+    console.warn = vi.fn();
+    console.error = vi.fn();
 
     // Setup default mocks
     mockAutoDetect.mockReturnValue('default');
@@ -53,7 +58,7 @@ describe('init-multiproject command', () => {
 
     // Mock config manager
     const mockConfigInstance = {
-      load: jest.fn().mockReturnValue({
+      load: vi.fn().mockReturnValue({
         project: {
           name: 'Default',
           description: 'Default project',
@@ -61,27 +66,27 @@ describe('init-multiproject command', () => {
           team: 'Default Team'
         }
       }),
-      save: jest.fn()
+      save: vi.fn()
     };
     mockConfigManager.mockImplementation(() => mockConfigInstance as any);
 
     // Mock project manager
     const mockProjectInstance = {
-      getAllProjects: jest.fn().mockReturnValue([
+      getAllProjects: vi.fn().mockReturnValue([
         { id: 'default', name: 'Default Project' }
       ]),
-      getActiveProject: jest.fn().mockReturnValue({
+      getActiveProject: vi.fn().mockReturnValue({
         id: 'default',
         name: 'Default Project'
       }),
-      addProject: jest.fn()
+      addProject: vi.fn()
     };
     mockProjectManager.mockImplementation(() => mockProjectInstance as any);
   });
 
   describe('initMultiProject function', () => {
     it('should run auto-migration first', async () => {
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -101,7 +106,7 @@ describe('init-multiproject command', () => {
 
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Migration errors'));
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to migrate specs folder'));
-      expect(mockInquirer.prompt).not.toHaveBeenCalled();
+      expect(mockPrompt).not.toHaveBeenCalled();
     });
 
     it('should display migration warnings', async () => {
@@ -113,7 +118,7 @@ describe('init-multiproject command', () => {
         errors: []
       });
 
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -122,7 +127,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should stay in single-project mode when user chooses not to enable multi-project', async () => {
-      mockInquirer.prompt.mockResolvedValueOnce({ enableMulti: false });
+      mockPrompt.mockResolvedValueOnce({ enableMulti: false });
 
       await initMultiProject(mockProjectRoot);
 
@@ -131,13 +136,13 @@ describe('init-multiproject command', () => {
     });
 
     it('should enable multi-project mode when user chooses to enable', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
       const mockConfigInstance = {
-        load: jest.fn().mockReturnValue({}),
-        save: jest.fn()
+        load: vi.fn().mockReturnValue({}),
+        save: vi.fn()
       };
       mockConfigManager.mockImplementation(() => mockConfigInstance as any);
 
@@ -155,7 +160,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should use existing multiProject config if it exists', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
@@ -170,8 +175,8 @@ describe('init-multiproject command', () => {
       };
 
       const mockConfigInstance = {
-        load: jest.fn().mockReturnValue(existingConfig),
-        save: jest.fn()
+        load: vi.fn().mockReturnValue(existingConfig),
+        save: vi.fn()
       };
       mockConfigManager.mockImplementation(() => mockConfigInstance as any);
 
@@ -188,7 +193,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should prompt to create additional projects', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Additional project prompts
@@ -205,14 +210,14 @@ describe('init-multiproject command', () => {
 
       await initMultiProject(mockProjectRoot);
 
-      expect(mockInquirer.prompt).toHaveBeenCalledTimes(4);
+      expect(mockPrompt).toHaveBeenCalledTimes(4);
     });
 
     it('should handle project creation errors gracefully', async () => {
-      const addProjectSpy = jest.fn().mockRejectedValueOnce(new Error('Failed to create project'));
+      const addProjectSpy = vi.fn().mockRejectedValueOnce(new Error('Failed to create project'));
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
@@ -221,7 +226,7 @@ describe('init-multiproject command', () => {
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       // Set up all prompts in the correct order
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         // Check what's being prompted
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];
@@ -268,7 +273,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should create correct project structure with tech stack array', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Additional project with comma-separated tech stack
@@ -285,12 +290,12 @@ describe('init-multiproject command', () => {
         .mockResolvedValueOnce({ another: false });
 
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
-        addProject: jest.fn()
+        addProject: vi.fn()
       };
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
@@ -332,7 +337,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should prevent duplicate project IDs', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Try to create duplicate
@@ -348,14 +353,14 @@ describe('init-multiproject command', () => {
         .mockResolvedValueOnce({ another: false });
 
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([
+        getAllProjects: vi.fn().mockReturnValue([
           { id: 'default', name: 'Default Project' }
         ]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
-        addProject: jest.fn()
+        addProject: vi.fn()
       };
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
@@ -364,7 +369,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should handle optional contact fields correctly', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: true })
         // Project without contact emails
@@ -380,12 +385,12 @@ describe('init-multiproject command', () => {
         .mockResolvedValueOnce({ another: false });
 
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
-        addProject: jest.fn()
+        addProject: vi.fn()
       };
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
@@ -399,7 +404,7 @@ describe('init-multiproject command', () => {
     });
 
     it('should display correct next steps after setup', async () => {
-      mockInquirer.prompt
+      mockPrompt
         .mockResolvedValueOnce({ enableMulti: true })
         .mockResolvedValueOnce({ createMore: false });
 
@@ -415,11 +420,11 @@ describe('init-multiproject command', () => {
   describe('listProjects function', () => {
     it('should list all projects with active marker', async () => {
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([
+        getAllProjects: vi.fn().mockReturnValue([
           { id: 'default', name: 'Default Project', description: 'Main project', team: 'Team A', techStack: [] },
           { id: 'backend', name: 'Backend API', description: 'API services', team: 'Team B', techStack: ['Node.js'] }
         ]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'backend',
           name: 'Backend API'
         })
@@ -436,7 +441,7 @@ describe('init-multiproject command', () => {
 
     it('should display tech stack when available', async () => {
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([
+        getAllProjects: vi.fn().mockReturnValue([
           {
             id: 'fullstack',
             name: 'Full Stack App',
@@ -445,7 +450,7 @@ describe('init-multiproject command', () => {
             techStack: ['React', 'Node.js', 'PostgreSQL']
           }
         ]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'fullstack',
           name: 'Full Stack App'
         })
@@ -459,8 +464,8 @@ describe('init-multiproject command', () => {
 
     it('should handle empty project list', async () => {
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         })
@@ -477,21 +482,21 @@ describe('init-multiproject command', () => {
   describe('edge cases', () => {
     it('should handle multiple projects creation in sequence', async () => {
       const mockProjectInstance = {
-        getAllProjects: jest.fn()
+        getAllProjects: vi.fn()
           .mockReturnValueOnce([])  // Initial call
           .mockReturnValueOnce([])  // First call when creating project1
           .mockReturnValueOnce([{ id: 'project1', name: 'Project One' }])  // Second call when creating project2
           .mockReturnValue([{ id: 'project1', name: 'Project One' }, { id: 'project2', name: 'Project Two' }]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
-        addProject: jest.fn().mockResolvedValue(undefined)
+        addProject: vi.fn().mockResolvedValue(undefined)
       };
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       let promptCount = 0;
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         promptCount++;
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];
@@ -541,19 +546,19 @@ describe('init-multiproject command', () => {
 
     it('should continue prompting after project creation failure', async () => {
       const mockProjectInstance = {
-        getAllProjects: jest.fn().mockReturnValue([]),
-        getActiveProject: jest.fn().mockReturnValue({
+        getAllProjects: vi.fn().mockReturnValue([]),
+        getActiveProject: vi.fn().mockReturnValue({
           id: 'default',
           name: 'Default Project'
         }),
-        addProject: jest.fn()
+        addProject: vi.fn()
           .mockRejectedValueOnce(new Error('Failed'))
           .mockResolvedValueOnce(undefined)
       };
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
       let promptCount = 0;
-      mockInquirer.prompt.mockImplementation((questions: any) => {
+      mockPrompt.mockImplementation((questions: any) => {
         promptCount++;
         if (Array.isArray(questions)) {
           const firstQuestion = questions[0];

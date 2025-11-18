@@ -225,6 +225,31 @@ export interface ArchivingConfig {
 }
 
 /**
+ * Living Docs Configuration
+ *
+ * Controls how Living Documentation is generated and synced
+ */
+export interface LivingDocsConfig {
+  /** Copy-based sync configuration (v0.21.4+) */
+  copyBasedSync?: {
+    /** Enable copy-based sync (default: true) */
+    enabled?: boolean;
+
+    /** Auto-generate ## Implementation sections for backward compatibility (default: true) */
+    autoGenerate?: boolean;
+  };
+
+  /** Three-layer sync configuration (increment → living docs → external tools) */
+  threeLayerSync?: {
+    /** Enable three-layer sync (default: true) */
+    enabled?: boolean;
+
+    /** Auto-sync after task completion (default: true) */
+    autoSync?: boolean;
+  };
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -259,6 +284,9 @@ export interface SpecweaveConfig {
 
   /** Archiving configuration for increment management */
   archiving?: ArchivingConfig;
+
+  /** Living docs configuration (v0.21.4+) */
+  livingDocs?: LivingDocsConfig;
 
   /** Allow additional properties */
   [key: string]: any;
@@ -317,6 +345,16 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     archiveCompleted: false,       // Don't auto-archive completed (manual control)
     archivePatterns: [],           // No patterns by default
     preserveList: [],              // No preserved increments by default
+  },
+  livingDocs: {
+    copyBasedSync: {
+      enabled: true,               // v0.21.4+: Copy-based sync (increment → living docs)
+      autoGenerate: true,          // Auto-generate ## Implementation for backward compatibility
+    },
+    threeLayerSync: {
+      enabled: true,               // Three-layer sync (increment → living docs → external)
+      autoSync: true,              // Auto-sync after task completion
+    },
   },
   hooks: {
     post_task_completion: {

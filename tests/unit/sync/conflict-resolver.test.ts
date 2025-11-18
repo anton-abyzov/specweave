@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for Conflict Resolver
  *
@@ -5,7 +7,7 @@
  * Following TDD: Tests written first, implementation follows.
  */
 
-import { ConflictResolver, StatusConflict, ConflictResolutionStrategy } from '../../../src/core/sync/conflict-resolver';
+import { ConflictResolver, StatusConflict, ConflictResolutionStrategy } from '../../../src/core/sync/conflict-resolver.js';
 
 describe('ConflictResolver', () => {
   let resolver: ConflictResolver;

@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests for GitHub Validator
  *
@@ -10,16 +12,16 @@ import {
   validateOwner,
   validateWithRetry,
   checkRateLimit,
-} from '../../../src/core/repo-structure/github-validator';
+} from '../../../src/core/repo-structure/github-validator.js';
 
 // Mock global fetch
-global.fetch = jest.fn();
+global.fetch = vi.fn();
 
-const mockedFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+const mockedFetch = global.fetch as vi.MockedFunction<typeof fetch>;
 
 describe('validateRepository', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return exists:false when repository does not exist (404)', async () => {
@@ -152,7 +154,7 @@ describe('validateRepository', () => {
 
 describe('validateOwner', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return valid:true with type:user for valid user', async () => {
@@ -265,7 +267,7 @@ describe('validateOwner', () => {
 
 describe('validateWithRetry', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     jest.useFakeTimers();
   });
 
@@ -293,7 +295,7 @@ describe('validateWithRetry', () => {
 
   it('should throw last error after all 3 attempts fail', async () => {
     // Given: function fails all attempts
-    const alwaysFailFn = jest.fn().mockRejectedValue(new Error('Persistent failure'));
+    const alwaysFailFn = vi.fn().mockRejectedValue(new Error('Persistent failure'));
 
     // When: validateWithRetry is called
     const promise = validateWithRetry(alwaysFailFn, { maxAttempts: 3, baseDelay: 1000 });
@@ -331,7 +333,7 @@ describe('validateWithRetry', () => {
 
 describe('checkRateLimit', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should return remaining and resetAt from API', async () => {

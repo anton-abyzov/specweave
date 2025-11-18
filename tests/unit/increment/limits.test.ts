@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: Increment Limits
  *
@@ -11,21 +13,23 @@ import {
   getContextSwitchWarning,
   canStartIncrement,
   getLimitsSummary
-} from '../../../src/core/increment/limits';
-import { MetadataManager } from '../../../src/core/increment/metadata-manager';
-import { IncrementType, IncrementStatus, createDefaultMetadata } from '../../../src/core/types/increment-metadata';
+} from '../../../src/core/increment/limits.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementType, IncrementStatus, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 // Mock MetadataManager
-jest.mock('../../../src/core/increment/metadata-manager');
+vi.mock('../../../src/core/increment/metadata-manager');
 
 describe('Increment Limits', () => {
-  const testIncrementsPath = path.join(process.cwd(), '.specweave-test', 'increments');
+  // ✅ SAFE: Use temp directory instead of project root
+  const testIncrementsPath = path.join(os.tmpdir(), 'specweave-test-limits', 'increments');
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup test directory
     if (fs.existsSync(testIncrementsPath)) {
@@ -42,7 +46,7 @@ describe('Increment Limits', () => {
   });
 
   describe('checkIncrementLimits()', () => {
-    test('testHotfixUnlimited() - Can create many hotfixes', () => {
+    it('testHotfixUnlimited() - Can create many hotfixes', () => {
       // Mock: 5 active hotfixes
       const mockIncrements = [
         { ...createDefaultMetadata('0001-hotfix-1'), type: IncrementType.HOTFIX, status: IncrementStatus.ACTIVE },
@@ -52,7 +56,7 @@ describe('Increment Limits', () => {
         { ...createDefaultMetadata('0005-hotfix-5'), type: IncrementType.HOTFIX, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.HOTFIX);
 
@@ -62,14 +66,14 @@ describe('Increment Limits', () => {
       expect(result.warning).toBeUndefined();
     });
 
-    test('testFeatureLimit() - Warning at 2 features', () => {
+    it('testFeatureLimit() - Warning at 2 features', () => {
       // Mock: 2 active features
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature-1'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
         { ...createDefaultMetadata('0002-feature-2'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.FEATURE);
 
@@ -83,13 +87,13 @@ describe('Increment Limits', () => {
       expect(result.suggestions?.length).toBeGreaterThan(0);
     });
 
-    test('testRefactorLimit() - Warning at 1 refactor', () => {
+    it('testRefactorLimit() - Warning at 1 refactor', () => {
       // Mock: 1 active refactor
       const mockIncrements = [
         { ...createDefaultMetadata('0001-refactor'), type: IncrementType.REFACTOR, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.REFACTOR);
 
@@ -101,7 +105,7 @@ describe('Increment Limits', () => {
       expect(result.warning).toContain('1 active refactor');
     });
 
-    test('testBugUnlimited() - Can create many bugs', () => {
+    it('testBugUnlimited() - Can create many bugs', () => {
       // Mock: 3 active bugs
       const mockIncrements = [
         { ...createDefaultMetadata('0001-bug-1'), type: IncrementType.BUG, status: IncrementStatus.ACTIVE },
@@ -109,7 +113,7 @@ describe('Increment Limits', () => {
         { ...createDefaultMetadata('0003-bug-3'), type: IncrementType.BUG, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.BUG);
 
@@ -118,7 +122,7 @@ describe('Increment Limits', () => {
       expect(result.severity).toBe('info');
     });
 
-    test('testExperimentUnlimited() - Can create many experiments', () => {
+    it('testExperimentUnlimited() - Can create many experiments', () => {
       // Mock: 4 active experiments
       const mockIncrements = [
         { ...createDefaultMetadata('0001-exp-1'), type: IncrementType.EXPERIMENT, status: IncrementStatus.ACTIVE },
@@ -127,7 +131,7 @@ describe('Increment Limits', () => {
         { ...createDefaultMetadata('0004-exp-4'), type: IncrementType.EXPERIMENT, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.EXPERIMENT);
 
@@ -135,14 +139,14 @@ describe('Increment Limits', () => {
       expect(result.limit).toBe(null); // Unlimited
     });
 
-    test('testPausedNotCounted() - Paused increments do not count toward limits', () => {
+    it('testPausedNotCounted() - Paused increments do not count toward limits', () => {
       // Mock: 1 active feature + 1 paused feature
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature-active'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
         { ...createDefaultMetadata('0002-feature-paused'), type: IncrementType.FEATURE, status: IncrementStatus.PAUSED }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = checkIncrementLimits(IncrementType.FEATURE);
 
@@ -153,7 +157,7 @@ describe('Increment Limits', () => {
   });
 
   describe('checkAllLimits()', () => {
-    test('testAllLimitsCheck() - Check all types at once', () => {
+    it('testAllLimitsCheck() - Check all types at once', () => {
       // Mock: Mixed increments
       const mockIncrements = [
         { ...createDefaultMetadata('0001-hotfix'), type: IncrementType.HOTFIX, status: IncrementStatus.ACTIVE },
@@ -162,7 +166,7 @@ describe('Increment Limits', () => {
         { ...createDefaultMetadata('0004-refactor'), type: IncrementType.REFACTOR, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const results = checkAllLimits();
 
@@ -183,8 +187,8 @@ describe('Increment Limits', () => {
   });
 
   describe('getContextSwitchWarning()', () => {
-    test('testNoWarningIfNoActive() - No warning when no active increments', () => {
-      (MetadataManager.getActive as jest.Mock).mockReturnValue([]);
+    it('testNoWarningIfNoActive() - No warning when no active increments', () => {
+      (MetadataManager.getActive as any).mockReturnValue([]);
 
       const warning = getContextSwitchWarning(IncrementType.FEATURE);
 
@@ -192,26 +196,26 @@ describe('Increment Limits', () => {
       expect(warning.productivityCost).toBe('0%');
     });
 
-    test('testNoWarningForHotfix() - Hotfixes bypass context switch warning', () => {
+    it('testNoWarningForHotfix() - Hotfixes bypass context switch warning', () => {
       // Mock: 1 active feature
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getActive as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getActive as any).mockReturnValue(mockIncrements);
 
       const warning = getContextSwitchWarning(IncrementType.HOTFIX);
 
       expect(warning.show).toBe(false); // Hotfixes don't trigger warning
     });
 
-    test('testWarningForSecondFeature() - Warning when starting second feature', () => {
+    it('testWarningForSecondFeature() - Warning when starting second feature', () => {
       // Mock: 1 active feature
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getActive as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getActive as any).mockReturnValue(mockIncrements);
 
       const warning = getContextSwitchWarning(IncrementType.FEATURE);
 
@@ -225,14 +229,14 @@ describe('Increment Limits', () => {
       expect(warning.options[2].value).toBe('parallel');
     });
 
-    test('testHigherCostForMultipleActive() - Higher cost with more active increments', () => {
+    it('testHigherCostForMultipleActive() - Higher cost with more active increments', () => {
       // Mock: 2 active increments
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature-1'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
         { ...createDefaultMetadata('0002-feature-2'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getActive as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getActive as any).mockReturnValue(mockIncrements);
 
       const warning = getContextSwitchWarning(IncrementType.FEATURE);
 
@@ -242,9 +246,9 @@ describe('Increment Limits', () => {
   });
 
   describe('canStartIncrement()', () => {
-    test('testCanStartFeature() - Can start first feature', () => {
+    it('testCanStartFeature() - Can start first feature', () => {
       // Mock: No active features
-      (MetadataManager.getAll as jest.Mock).mockReturnValue([]);
+      (MetadataManager.getAll as any).mockReturnValue([]);
 
       const result = canStartIncrement(IncrementType.FEATURE);
 
@@ -252,14 +256,14 @@ describe('Increment Limits', () => {
       expect(result.reason).toBeUndefined();
     });
 
-    test('testCannotStartThirdFeature() - Cannot start 3rd feature (limit 2)', () => {
+    it('testCannotStartThirdFeature() - Cannot start 3rd feature (limit 2)', () => {
       // Mock: 2 active features
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature-1'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
         { ...createDefaultMetadata('0002-feature-2'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = canStartIncrement(IncrementType.FEATURE);
 
@@ -268,7 +272,7 @@ describe('Increment Limits', () => {
       expect(result.reason).toContain('2 active feature');
     });
 
-    test('testCanStartHotfixAlways() - Can always start hotfix', () => {
+    it('testCanStartHotfixAlways() - Can always start hotfix', () => {
       // Mock: Many active increments
       const mockIncrements = [
         { ...createDefaultMetadata('0001-feature-1'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE },
@@ -276,7 +280,7 @@ describe('Increment Limits', () => {
         { ...createDefaultMetadata('0003-refactor'), type: IncrementType.REFACTOR, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const result = canStartIncrement(IncrementType.HOTFIX);
 
@@ -285,14 +289,14 @@ describe('Increment Limits', () => {
   });
 
   describe('getLimitsSummary()', () => {
-    test('testSummaryFormat() - Format summary correctly', () => {
+    it('testSummaryFormat() - Format summary correctly', () => {
       // Mock: Mixed increments
       const mockIncrements = [
         { ...createDefaultMetadata('0001-hotfix'), type: IncrementType.HOTFIX, status: IncrementStatus.ACTIVE },
         { ...createDefaultMetadata('0002-feature'), type: IncrementType.FEATURE, status: IncrementStatus.ACTIVE }
       ];
 
-      (MetadataManager.getAll as jest.Mock).mockReturnValue(mockIncrements);
+      (MetadataManager.getAll as any).mockReturnValue(mockIncrements);
 
       const summary = getLimitsSummary();
 

@@ -207,15 +207,36 @@ This is a **SpecWeave project** where specifications and documentation are the s
 ```
 ⛔ NEVER pollute project root with .md files!
 ⛔ Increment IDs must be unique (0001-9999)!
-⛔ All reports/scripts/logs go in increment folders!
+⛔ ONLY 3 files in increment root: spec.md, plan.md, tasks.md
+⛔ All reports/scripts/logs go in increment subfolders!
 ⛔ Always check: git status (before committing)!
 ```
 
 #### File Organization {#file-organization}
+
+**Increment Structure (MANDATORY)**:
+```
+.specweave/increments/0001-feature/
+├── spec.md              # ⚠️ ONLY THESE 3 FILES in root!
+├── plan.md
+├── tasks.md
+├── reports/             # ✅ ALL REPORTS HERE
+│   ├── SESSION-*.md
+│   ├── QUICK-START.md
+│   ├── ULTRATHINK-*.md
+│   └── ANALYSIS-*.md
+├── scripts/             # ✅ ALL SCRIPTS HERE
+│   └── *.{py,sh,ts}
+└── logs/                # ✅ ALL LOGS HERE
+    └── *.log
+```
+
+**File Placement Rules**:
 ```
 ┌────────────────────────────────────────────────────────────┐
 │ NEVER in Root           ↔ ALWAYS in Increment Folder      │
 ├────────────────────────────────────────────────────────────┤
+│ ❌ QUICK-START.md       ↔ ✅ .../0001/reports/QUICK-START  │
 │ ❌ analysis.md          ↔ ✅ .../0001/reports/analysis.md  │
 │ ❌ migration.py         ↔ ✅ .../0001/scripts/migration.py │
 │ ❌ execution.log        ↔ ✅ .../0001/logs/execution.log   │

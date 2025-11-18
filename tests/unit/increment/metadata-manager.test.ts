@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: MetadataManager
  *
@@ -5,13 +7,15 @@
  * Part of increment 0007: Smart Status Management
  */
 
-import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager';
-import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata';
+import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 describe('MetadataManager', () => {
-  const testRootPath = path.join(process.cwd(), '.specweave-test');
+  // ✅ SAFE: Use temp directory instead of project root
+  const testRootPath = path.join(os.tmpdir(), 'specweave-test-metadata-manager');
   const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
   const testIncrementId = '0001-test-increment';
   const testIncrementPath = path.join(testIncrementsPath, testIncrementId);
@@ -51,7 +55,7 @@ describe('MetadataManager', () => {
   });
 
   describe('exists()', () => {
-    test('returns true when metadata.json exists', () => {
+    it('returns true when metadata.json exists', () => {
       // Create metadata file
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -59,13 +63,13 @@ describe('MetadataManager', () => {
       expect(MetadataManager.exists(testIncrementId)).toBe(true);
     });
 
-    test('returns false when metadata.json does not exist', () => {
+    it('returns false when metadata.json does not exist', () => {
       expect(MetadataManager.exists(testIncrementId)).toBe(false);
     });
   });
 
   describe('read()', () => {
-    test('reads existing metadata successfully', () => {
+    it('reads existing metadata successfully', () => {
       // Create metadata file
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -77,7 +81,7 @@ describe('MetadataManager', () => {
       expect(result.type).toBe(IncrementType.FEATURE);
     });
 
-    test('lazy initialization creates default metadata if missing', () => {
+    it('lazy initialization creates default metadata if missing', () => {
       // Ensure metadata doesn't exist
       expect(fs.existsSync(testMetadataPath)).toBe(false);
 
@@ -89,7 +93,7 @@ describe('MetadataManager', () => {
       expect(fs.existsSync(testMetadataPath)).toBe(true);
     });
 
-    test('lazy initialization does NOT update active increment state for PLANNING status', () => {
+    it('lazy initialization does NOT update active increment state for PLANNING status', () => {
       // Import ActiveIncrementManager
       const { ActiveIncrementManager } = require('../../../src/core/increment/active-increment-manager');
 
@@ -115,7 +119,7 @@ describe('MetadataManager', () => {
       expect(activeIncrement).not.toContain(testIncrementId);
     });
 
-    test('throws MetadataError if increment directory not found', () => {
+    it('throws MetadataError if increment directory not found', () => {
       // Remove increment directory
       fs.removeSync(testIncrementPath);
 
@@ -123,14 +127,14 @@ describe('MetadataManager', () => {
       expect(() => MetadataManager.read(testIncrementId)).toThrow('Increment not found');
     });
 
-    test('throws MetadataError if JSON is corrupted', () => {
+    it('throws MetadataError if JSON is corrupted', () => {
       // Write invalid JSON
       fs.writeFileSync(testMetadataPath, '{invalid json}', 'utf-8');
 
       expect(() => MetadataManager.read(testIncrementId)).toThrow(MetadataError);
     });
 
-    test('validates schema on read', () => {
+    it('validates schema on read', () => {
       // Write metadata missing required field
       fs.writeJsonSync(testMetadataPath, { id: testIncrementId });
 
@@ -139,7 +143,7 @@ describe('MetadataManager', () => {
   });
 
   describe('write()', () => {
-    test('writes metadata successfully', () => {
+    it('writes metadata successfully', () => {
       const metadata = createDefaultMetadata(testIncrementId);
 
       MetadataManager.write(testIncrementId, metadata);
@@ -149,7 +153,7 @@ describe('MetadataManager', () => {
       expect(written.id).toBe(testIncrementId);
     });
 
-    test('atomic write uses temp file then rename', () => {
+    it('atomic write uses temp file then rename', () => {
       const metadata = createDefaultMetadata(testIncrementId);
 
       MetadataManager.write(testIncrementId, metadata);
@@ -159,7 +163,7 @@ describe('MetadataManager', () => {
       expect(fs.existsSync(testMetadataPath)).toBe(true);
     });
 
-    test('validates metadata before writing', () => {
+    it('validates metadata before writing', () => {
       const invalidMetadata = {
         id: testIncrementId,
         status: 'invalid-status' as any,
@@ -171,7 +175,7 @@ describe('MetadataManager', () => {
       expect(() => MetadataManager.write(testIncrementId, invalidMetadata)).toThrow('Invalid status');
     });
 
-    test('throws MetadataError if increment directory not found', () => {
+    it('throws MetadataError if increment directory not found', () => {
       // Remove increment directory
       fs.removeSync(testIncrementPath);
 
@@ -182,7 +186,7 @@ describe('MetadataManager', () => {
   });
 
   describe('delete()', () => {
-    test('deletes metadata file successfully', () => {
+    it('deletes metadata file successfully', () => {
       // Create metadata file
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -192,7 +196,7 @@ describe('MetadataManager', () => {
       expect(fs.existsSync(testMetadataPath)).toBe(false);
     });
 
-    test('does nothing if metadata already deleted', () => {
+    it('does nothing if metadata already deleted', () => {
       // Ensure metadata doesn't exist
       expect(fs.existsSync(testMetadataPath)).toBe(false);
 
@@ -202,7 +206,7 @@ describe('MetadataManager', () => {
   });
 
   describe('updateStatus()', () => {
-    test('updates status from active to paused', () => {
+    it('updates status from active to paused', () => {
       // Create active increment
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -215,7 +219,7 @@ describe('MetadataManager', () => {
       expect(result.lastActivity).toBeDefined();
     });
 
-    test('updates status from paused to active (resume)', () => {
+    it('updates status from paused to active (resume)', () => {
       // Create paused increment
       const metadata = createDefaultMetadata(testIncrementId);
       metadata.status = IncrementStatus.PAUSED;
@@ -230,7 +234,7 @@ describe('MetadataManager', () => {
       expect(result.pausedAt).toBeUndefined();
     });
 
-    test('updates status to abandoned with reason', () => {
+    it('updates status to abandoned with reason', () => {
       // Create active increment
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -242,7 +246,7 @@ describe('MetadataManager', () => {
       expect(result.abandonedAt).toBeDefined();
     });
 
-    test('throws MetadataError on invalid transition', () => {
+    it('throws MetadataError on invalid transition', () => {
       // Create completed increment
       const metadata = createDefaultMetadata(testIncrementId);
       metadata.status = IncrementStatus.COMPLETED;
@@ -254,7 +258,7 @@ describe('MetadataManager', () => {
     });
 
     describe('PLANNING status transitions', () => {
-      test('PLANNING → ACTIVE transition is valid', () => {
+      it('PLANNING → ACTIVE transition is valid', () => {
         // Create increment in PLANNING
         const metadata = createDefaultMetadata(testIncrementId);
         expect(metadata.status).toBe(IncrementStatus.PLANNING);
@@ -266,7 +270,7 @@ describe('MetadataManager', () => {
         expect(result.status).toBe(IncrementStatus.ACTIVE);
       });
 
-      test('PLANNING → BACKLOG transition is valid', () => {
+      it('PLANNING → BACKLOG transition is valid', () => {
         // Create increment in PLANNING
         const metadata = createDefaultMetadata(testIncrementId);
         fs.writeJsonSync(testMetadataPath, metadata);
@@ -278,7 +282,7 @@ describe('MetadataManager', () => {
         expect(result.backlogReason).toBe('Deprioritized');
       });
 
-      test('PLANNING → ABANDONED transition is valid', () => {
+      it('PLANNING → ABANDONED transition is valid', () => {
         // Create increment in PLANNING
         const metadata = createDefaultMetadata(testIncrementId);
         fs.writeJsonSync(testMetadataPath, metadata);
@@ -290,7 +294,7 @@ describe('MetadataManager', () => {
         expect(result.abandonedReason).toBe('Requirements changed');
       });
 
-      test('PLANNING → PAUSED transition is invalid', () => {
+      it('PLANNING → PAUSED transition is invalid', () => {
         // Create increment in PLANNING
         const metadata = createDefaultMetadata(testIncrementId);
         fs.writeJsonSync(testMetadataPath, metadata);
@@ -299,7 +303,7 @@ describe('MetadataManager', () => {
         expect(() => MetadataManager.updateStatus(testIncrementId, IncrementStatus.PAUSED)).toThrow(MetadataError);
       });
 
-      test('BACKLOG → PLANNING transition is valid', () => {
+      it('BACKLOG → PLANNING transition is valid', () => {
         // Create increment in BACKLOG
         const metadata = createDefaultMetadata(testIncrementId);
         metadata.status = IncrementStatus.BACKLOG;
@@ -314,7 +318,7 @@ describe('MetadataManager', () => {
   });
 
   describe('updateType()', () => {
-    test('updates increment type', () => {
+    it('updates increment type', () => {
       // Create increment
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -327,7 +331,7 @@ describe('MetadataManager', () => {
   });
 
   describe('touch()', () => {
-    test('updates lastActivity timestamp', () => {
+    it('updates lastActivity timestamp', () => {
       // Create increment
       const metadata = createDefaultMetadata(testIncrementId);
       const oldTimestamp = metadata.lastActivity;
@@ -343,7 +347,7 @@ describe('MetadataManager', () => {
   });
 
   describe('getAll()', () => {
-    test('returns all increments', () => {
+    it('returns all increments', () => {
       // Remove default test increment first
       fs.removeSync(testIncrementPath);
 
@@ -366,7 +370,7 @@ describe('MetadataManager', () => {
       expect(result[1].id).toBe('0002-second');
     });
 
-    test('returns empty array if no increments', () => {
+    it('returns empty array if no increments', () => {
       // Remove all increments (but keep .specweave/ structure)
       fs.removeSync(testIncrementsPath);
       fs.ensureDirSync(path.join(testRootPath, '.specweave'));
@@ -376,7 +380,7 @@ describe('MetadataManager', () => {
       expect(result).toEqual([]);
     });
 
-    test('skips increments with invalid metadata', () => {
+    it('skips increments with invalid metadata', () => {
       // Remove default test increment first
       fs.removeSync(testIncrementPath);
 
@@ -398,7 +402,7 @@ describe('MetadataManager', () => {
   });
 
   describe('getByStatus()', () => {
-    test('returns increments with matching status', () => {
+    it('returns increments with matching status', () => {
       // Remove default test increment first
       fs.removeSync(testIncrementPath);
 
@@ -426,7 +430,7 @@ describe('MetadataManager', () => {
   });
 
   describe('getExtended()', () => {
-    test('calculates progress from tasks.md', () => {
+    it('calculates progress from tasks.md', () => {
       // Create increment with tasks.md
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -449,7 +453,7 @@ describe('MetadataManager', () => {
       expect(result.progress).toBe(50); // 2/4 = 50%
     });
 
-    test('calculates age in days', () => {
+    it('calculates age in days', () => {
       // Create increment with old timestamp
       const metadata = createDefaultMetadata(testIncrementId);
       const twoDaysAgo = new Date();
@@ -462,7 +466,7 @@ describe('MetadataManager', () => {
       expect(result.ageInDays).toBeGreaterThanOrEqual(2);
     });
 
-    test('calculates days paused', () => {
+    it('calculates days paused', () => {
       // Create paused increment
       const metadata = createDefaultMetadata(testIncrementId);
       metadata.status = IncrementStatus.PAUSED;
@@ -476,7 +480,7 @@ describe('MetadataManager', () => {
       expect(result.daysPaused).toBeGreaterThanOrEqual(3);
     });
 
-    test('handles missing tasks.md gracefully', () => {
+    it('handles missing tasks.md gracefully', () => {
       // Create increment without tasks.md
       const metadata = createDefaultMetadata(testIncrementId);
       fs.writeJsonSync(testMetadataPath, metadata);
@@ -489,13 +493,13 @@ describe('MetadataManager', () => {
   });
 
   describe('validate()', () => {
-    test('validates complete metadata successfully', () => {
+    it('validates complete metadata successfully', () => {
       const metadata = createDefaultMetadata(testIncrementId);
 
       expect(() => MetadataManager.validate(metadata)).not.toThrow();
     });
 
-    test('throws on missing id', () => {
+    it('throws on missing id', () => {
       const metadata: any = {
         status: IncrementStatus.ACTIVE,
         type: IncrementType.FEATURE,
@@ -506,28 +510,28 @@ describe('MetadataManager', () => {
       expect(() => MetadataManager.validate(metadata)).toThrow('missing required field: id');
     });
 
-    test('throws on invalid status', () => {
+    it('throws on invalid status', () => {
       const metadata = createDefaultMetadata(testIncrementId);
       (metadata as any).status = 'invalid-status';
 
       expect(() => MetadataManager.validate(metadata)).toThrow('Invalid status');
     });
 
-    test('throws on invalid type', () => {
+    it('throws on invalid type', () => {
       const metadata = createDefaultMetadata(testIncrementId);
       (metadata as any).type = 'invalid-type';
 
       expect(() => MetadataManager.validate(metadata)).toThrow('Invalid type');
     });
 
-    test('throws on missing created', () => {
+    it('throws on missing created', () => {
       const metadata = createDefaultMetadata(testIncrementId);
       (metadata as any).created = undefined;
 
       expect(() => MetadataManager.validate(metadata)).toThrow('missing required field: created');
     });
 
-    test('throws on missing lastActivity', () => {
+    it('throws on missing lastActivity', () => {
       const metadata = createDefaultMetadata(testIncrementId);
       (metadata as any).lastActivity = undefined;
 

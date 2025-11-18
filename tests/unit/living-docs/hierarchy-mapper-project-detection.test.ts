@@ -6,32 +6,36 @@
  * with 1:1 mapping between project folder name and repository name.
  */
 
-import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper';
-import { ConfigManager } from '../../../src/core/config-manager';
+import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper.js';
+import { ConfigManager } from '../../../src/core/config-manager.js';
 import fs from 'fs-extra';
 import path from 'path';
 
 // Mock dependencies
-jest.mock('fs-extra');
-jest.mock('../../../src/core/config-manager');
-jest.mock('../../../src/core/living-docs/feature-id-manager');
+vi.mock('fs-extra');
+vi.mock('../../../src/core/config-manager');
+vi.mock('../../../src/core/living-docs/feature-id-manager');
 
-const mockFs = fs as jest.Mocked<typeof fs> & {
-  readFile: jest.MockedFunction<any>;
-};
-const MockConfigManager = ConfigManager as jest.MockedClass<typeof ConfigManager>;
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Type-safe mocked functions
+const mockReadFile = vi.mocked(fs.readFile);
+const mockExistsSync = vi.mocked(fs.existsSync);
+
+// Mock ConfigManager
+const mockLoadAsync = vi.fn();
 
 describe('HierarchyMapper - Project Detection Fallback Fix', () => {
   let mapper: HierarchyMapper;
   let mockProjectRoot: string;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockProjectRoot = '/test/project';
 
     // Default: spec.md exists
-    mockFs.existsSync.mockReturnValue(true);
-    mockFs.readFile.mockResolvedValue('---\ntitle: Test\n---\n# Test');
+    mockExistsSync.mockReturnValue(true);
+    mockReadFile.mockResolvedValue('---\ntitle: Test\n---\n# Test');
   });
 
   describe('Single-Project Mode (specweave repo)', () => {
@@ -55,7 +59,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -68,7 +74,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
 
     it('should use specweave as fallback when no project indicators found', async () => {
       // Spec with NO project indicators (no frontmatter project, no keywords in name)
-      mockFs.readFile.mockResolvedValue('---\ntitle: Generic Feature\n---\n# Generic');
+      mockReadFile.mockResolvedValue('---\ntitle: Generic Feature\n---\n# Generic');
 
       const projects = await mapper.detectProjects('0016-generic-feature');
 
@@ -83,7 +89,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should use specweave when spec content is minimal', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Fix\n---\n# Fix');
+      mockReadFile.mockResolvedValue('---\ntitle: Fix\n---\n# Fix');
 
       const projects = await mapper.detectProjects('0033-duplicate-fix');
 
@@ -120,7 +126,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -132,7 +140,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should detect project from frontmatter (explicit)', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\nproject: frontend\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\nproject: frontend\n---\n');
 
       const projects = await mapper.detectProjects('0016-some-feature');
 
@@ -140,7 +148,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should detect project from frontmatter with multiple projects', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\nprojects: [backend, mobile]\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\nprojects: [backend, mobile]\n---\n');
 
       const projects = await mapper.detectProjects('0016-api-mobile');
 
@@ -150,7 +158,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should detect project from increment name containing project keyword', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\n---\n');
 
       const projects = await mapper.detectProjects('0016-backend-authentication');
 
@@ -158,7 +166,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should fallback to all projects when no indicators found', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Generic\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Generic\n---\n');
 
       const projects = await mapper.detectProjects('0016-generic-task');
 
@@ -185,7 +193,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
@@ -201,7 +211,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should use project name that matches repo for GitHub sync compatibility', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\n---\n');
 
       const projects = await mapper.detectProjects('0031-external-tool-sync');
 
@@ -247,7 +257,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -276,12 +288,14 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
     });
 
     it('should handle missing spec.md file', async () => {
-      mockFs.existsSync.mockReturnValue(false);
+      mockExistsSync.mockReturnValue(false);
 
       const projects = await mapper.detectProjects('0016-missing-spec');
 
@@ -290,7 +304,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should handle empty frontmatter', async () => {
-      mockFs.readFile.mockResolvedValue('---\n---\n# Content');
+      mockReadFile.mockResolvedValue('---\n---\n# Content');
 
       const projects = await mapper.detectProjects('0016-empty-frontmatter');
 
@@ -298,7 +312,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should handle malformed frontmatter', async () => {
-      mockFs.readFile.mockResolvedValue('---\ninvalid yaml:\n  - broken\n---\n');
+      mockReadFile.mockResolvedValue('---\ninvalid yaml:\n  - broken\n---\n');
 
       const projects = await mapper.detectProjects('0016-malformed');
 
@@ -307,7 +321,7 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     });
 
     it('should validate frontmatter projects exist in config', async () => {
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\nproject: nonexistent\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\nproject: nonexistent\n---\n');
 
       const projects = await mapper.detectProjects('0016-invalid-project');
 
@@ -325,7 +339,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -337,7 +353,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
     it('should handle missing multiProject config', async () => {
       const mockConfig = {};
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -354,7 +372,9 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
 
       const projects = await mapper.getConfiguredProjects();
@@ -378,10 +398,12 @@ describe('HierarchyMapper - Project Detection Fallback Fix', () => {
         },
       };
 
-      MockConfigManager.prototype.loadAsync.mockResolvedValue(mockConfig as any);
+      vi.mocked(ConfigManager).mockImplementation(() => ({
+        loadAsync: mockLoadAsync.mockResolvedValue(mockConfig as any),
+      } as any));
       mapper = new HierarchyMapper(mockProjectRoot);
 
-      mockFs.readFile.mockResolvedValue('---\ntitle: Test\n---\n');
+      mockReadFile.mockResolvedValue('---\ntitle: Test\n---\n');
       const projects = await mapper.detectProjects('0016-some-feature');
 
       // CRITICAL: Should use configured project name, NOT 'default'

@@ -1,10 +1,12 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit tests for CompletionCalculator
  *
  * Tests the AC/Task verification logic that prevents premature GitHub issue closure
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CompletionCalculator } from '../../plugins/specweave-github/lib/completion-calculator.js';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import * as path from 'path';

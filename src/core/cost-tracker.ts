@@ -9,9 +9,9 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import type { Model } from '../types/model-selection';
-import type { TokenUsage, CostSession, IncrementCostReport } from '../types/cost-tracking';
-import { calculateCost, calculateSavings } from '../utils/pricing-constants';
+import type { Model } from '../types/model-selection.js';
+import type { TokenUsage, CostSession, IncrementCostReport } from '../types/cost-tracking.js';
+import { calculateCost, calculateSavings } from '../utils/pricing-constants.js';
 
 interface CostTrackerConfig {
   logPath?: string;

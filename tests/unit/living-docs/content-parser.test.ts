@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+
 /**
  * Unit tests for Content Parser
  */

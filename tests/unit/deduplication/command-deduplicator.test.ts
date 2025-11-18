@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+
 /**
  * Unit Tests: CommandDeduplicator
  *
@@ -5,13 +7,15 @@
  * command invocations within a configurable time window.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import { CommandDeduplicator } from '../../../src/core/deduplication/command-deduplicator.js';
 
 describe('CommandDeduplicator', () => {
-  const testCachePath = path.join(process.cwd(), '.specweave', 'test-cache', 'command-invocations.json');
+  // ✅ SAFE: Use temp directory instead of project root .specweave/
+  const testCachePath = path.join(os.tmpdir(), 'specweave-test-deduplicator', 'command-invocations.json');
   let deduplicator: CommandDeduplicator;
 
   beforeEach(async () => {
@@ -29,9 +33,10 @@ describe('CommandDeduplicator', () => {
   });
 
   afterEach(async () => {
-    // Cleanup test cache file
-    if (await fs.pathExists(testCachePath)) {
-      await fs.remove(testCachePath);
+    // ✅ SAFE: Cleanup temp directory (not project .specweave/)
+    const testDir = path.dirname(testCachePath);
+    if (await fs.pathExists(testDir)) {
+      await fs.remove(testDir);
     }
   });
 

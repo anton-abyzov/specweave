@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { execSync } from 'child_process';
@@ -26,7 +27,8 @@ test.describe('Living Docs Sync - Bidirectional Linking (E2E)', () => {
   let testDir: string;
 
   test.beforeEach(() => {
-    testDir = path.join(__dirname, '../fixtures/e2e-living-docs-sync', `test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
+    testDir = path.join(os.tmpdir(), 'specweave-test-e2e-living-docs-sync-' + Date.now());
     fs.mkdirSync(testDir, { recursive: true });
 
     // Initialize SpecWeave project
