@@ -1,7 +1,7 @@
 ---
 increment: 0043-spec-md-desync-fix
 total_tasks: 24
-completed_tasks: 0
+completed_tasks: 1
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -16,7 +16,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-01, AC-US2-04
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an increment with spec.md containing YAML frontmatter with status="active"
