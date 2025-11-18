@@ -1,8 +1,162 @@
 # Test Fixtures
 
-This directory contains test fixtures for SpecWeave's brownfield import functionality.
+This directory contains test fixtures for SpecWeave tests, organized into general-purpose and specialized categories.
 
 ## Structure
+
+```
+tests/fixtures/
+├── increments/          # Increment metadata fixtures
+│   ├── minimal.json    # Basic increment with required fields
+│   ├── complex.json    # Full increment with all optional fields
+│   └── planning.json   # Planning-stage increment
+│
+├── github/             # GitHub API response fixtures
+│   ├── issue.json      # GitHub issue response
+│   ├── pull-request.json
+│   ├── comment.json
+│   ├── label.json
+│   └── milestone.json
+│
+├── ado/                # Azure DevOps API fixtures
+│   ├── work-item.json  # ADO work item
+│   ├── sprint.json     # ADO sprint/iteration
+│   └── board.json      # ADO board configuration
+│
+├── jira/               # Jira API fixtures
+│   ├── issue.json      # Jira issue/story
+│   ├── epic.json       # Jira epic
+│   └── sprint.json     # Jira sprint
+│
+├── living-docs/        # Living documentation fixtures
+│   ├── user-story.md   # User story template
+│   ├── feature.md      # Feature specification
+│   ├── epic.md         # Epic overview
+│   ├── requirement.md  # Technical requirement
+│   ├── index.md        # Documentation index
+│   └── glossary.md     # Terminology definitions
+│
+├── brownfield/         # Brownfield import fixtures
+│   ├── notion-export/  # Notion workspace export simulation
+│   ├── confluence-export/ # Confluence export simulation
+│   ├── wiki-export/    # Git wiki export simulation
+│   └── custom/         # Custom edge cases
+│
+├── specs/              # Spec document fixtures
+│   ├── spec-001-user-auth.md
+│   └── spec-002-payment-integration.md
+│
+├── plugins/            # Plugin test fixtures
+│   └── specweave-test/ # Test plugin structure
+│
+└── e2e-brownfield-import/ # E2E brownfield test data
+```
+
+## General-Purpose Fixtures
+
+### Increments (`increments/`)
+
+**Purpose**: Test increment metadata parsing, validation, and lifecycle management
+
+**Files**:
+- `minimal.json` - Basic increment with only required fields
+- `complex.json` - Full increment with all optional fields (metrics, team, etc.)
+- `planning.json` - Increment in planning stage
+
+**Usage**:
+```typescript
+import minimalIncrement from 'tests/fixtures/increments/minimal.json';
+
+it('should parse increment metadata', () => {
+  const increment = { ...minimalIncrement, id: '0099' };
+  // Test code
+});
+```
+
+### GitHub (`github/`)
+
+**Purpose**: Test GitHub API integration, issue sync, and PR management
+
+**Files**:
+- `issue.json` - GitHub issue with labels, milestone, AC checkboxes
+- `pull-request.json` - PR with metadata, state, mergeable status
+- `comment.json` - Issue/PR comment
+- `label.json` - Label definition
+- `milestone.json` - Milestone with due date, progress
+
+**Usage**:
+```typescript
+import githubIssue from 'tests/fixtures/github/issue.json';
+
+it('should sync GitHub issue', () => {
+  const issue = { ...githubIssue, number: 100 };
+  // Test GitHub sync logic
+});
+```
+
+### Azure DevOps (`ado/`)
+
+**Purpose**: Test ADO integration, work item sync, sprint management
+
+**Files**:
+- `work-item.json` - ADO work item (Epic/Feature/User Story)
+- `sprint.json` - ADO sprint/iteration
+- `board.json` - ADO board configuration with columns
+
+**Usage**:
+```typescript
+import adoWorkItem from 'tests/fixtures/ado/work-item.json';
+
+it('should sync ADO work item', () => {
+  const workItem = { ...adoWorkItem, id: 99999 };
+  // Test ADO sync logic
+});
+```
+
+### Jira (`jira/`)
+
+**Purpose**: Test Jira integration, issue sync, epic management
+
+**Files**:
+- `issue.json` - Jira issue/story with fields, status, priority
+- `epic.json` - Jira epic with custom fields
+- `sprint.json` - Jira sprint with dates, state
+
+**Usage**:
+```typescript
+import jiraIssue from 'tests/fixtures/jira/issue.json';
+
+it('should sync Jira issue', () => {
+  const issue = { ...jiraIssue, key: 'SPEC-999' };
+  // Test Jira sync logic
+});
+```
+
+### Living Docs (`living-docs/`)
+
+**Purpose**: Test living documentation generation, Markdown rendering, spec distribution
+
+**Files**:
+- `user-story.md` - User story with AC, tasks, implementation notes
+- `feature.md` - Feature specification with business value, technical approach
+- `epic.md` - Epic overview with vision, features, timeline
+- `requirement.md` - Technical requirement with rationale, implementation
+- `index.md` - Documentation index with navigation
+- `glossary.md` - Terminology definitions
+
+**Usage**:
+```typescript
+import fs from 'fs-extra';
+
+it('should parse user story', async () => {
+  const content = await fs.readFile('tests/fixtures/living-docs/user-story.md', 'utf-8');
+  // Test Markdown parsing, frontmatter extraction
+});
+```
+
+## Brownfield Import Fixtures
+
+### Structure
 
 ```
 tests/fixtures/brownfield/
@@ -31,9 +185,9 @@ tests/fixtures/brownfield/
     └── special-chars-filename!@#.md # Legacy: Special char handling
 ```
 
-## Fixture Metadata
+### Fixture Metadata
 
-Each fixture file includes YAML frontmatter with expected classification:
+Each brownfield fixture file includes YAML frontmatter with expected classification:
 
 ```yaml
 ---
@@ -53,208 +207,250 @@ keywords_density: high | medium | low | none
 | **team** | Team processes, onboarding, conventions | onboarding.md, conventions.md, troubleshooting.md |
 | **legacy** | Miscellaneous, meeting notes, low-value content | meeting-notes.md, random-ideas.md, empty-file.md |
 
-### Confidence Levels
-
-| Level | Description | Keyword Density |
-|-------|-------------|-----------------|
-| **high** | Strong keyword matches (10+ keywords) | 90%+ match confidence |
-| **medium** | Moderate keyword matches (5-10 keywords) | 60-90% match confidence |
-| **low** | Few/no keyword matches (<5 keywords) | <60% match confidence |
-
 ## Fixture Statistics
 
-**Total Files**: 21
+**Total Files**: 68+
 
-**By Type**:
+**By Category**:
+- Increments: 3 files
+- GitHub: 5 files
+- ADO: 3 files
+- Jira: 3 files
+- Living Docs: 6 files
+- Brownfield: 21 files
+- Specs: 2 files
+- Plugins: 2 files
+- E2E Brownfield: 23+ files
+
+**By Type** (Brownfield):
 - Spec: 6 files (auth-feature, payment-flow, checkout-flow, security-policy, performance-requirements, mixed-content)
 - Module: 7 files (auth-module, api-design, database-schema, deployment-guide, api-reference, code-heavy, large-file)
 - Team: 5 files (onboarding, conventions, troubleshooting, faq)
 - Legacy: 3 files (meeting-notes, random-ideas, empty-file, special-chars)
 
-**By Source**:
-- Notion: 8 files
-- Confluence: 2 files
-- Wiki: 3 files
-- Custom: 8 files
-
-**By Confidence**:
-- High: 11 files
-- Medium: 7 files
-- Low: 3 files
-
 ## Using Fixtures in Tests
 
-### Load All Fixtures
+### Import JSON Fixtures
 
 ```typescript
-import { loadFixtures } from '../utils/fixture-loader';
+import incrementFixture from 'tests/fixtures/increments/minimal.json';
+import githubIssue from 'tests/fixtures/github/issue.json';
 
-const fixtures = await loadFixtures();
-// Returns all 21 fixture files
+it('should process fixtures', () => {
+  const increment = { ...incrementFixture, id: '0099' };
+  const issue = { ...githubIssue, number: 999 };
+  // Always clone fixtures to avoid mutation
+});
 ```
 
-### Load by Source
+### Import Markdown Fixtures
 
 ```typescript
-import { getFixturesBySource } from '../utils/fixture-loader';
+import fs from 'fs-extra';
+import path from 'path';
 
-const notionFixtures = await getFixturesBySource('notion');
-// Returns 8 files from notion-export/
+it('should parse markdown fixture', async () => {
+  const filePath = path.join(__dirname, '../fixtures/living-docs/user-story.md');
+  const content = await fs.readFile(filePath, 'utf-8');
+  // Parse Markdown, extract frontmatter, etc.
+});
 ```
 
-### Load by Type
+### Load Brownfield Fixtures
 
 ```typescript
-import { getFixturesByType } from '../utils/fixture-loader';
+import { loadFixtures, getFixturesByType } from '../utils/fixture-loader';
 
-const specFixtures = await getFixturesByType('spec');
-// Returns 6 spec-type files
+const fixtures = await loadFixtures(); // All brownfield fixtures
+const specFixtures = await getFixturesByType('spec'); // Only spec-type fixtures
 ```
 
-### Load by Confidence
+## Best Practices
 
+### 1. Always Clone Fixtures
+
+**❌ Wrong** - Mutates shared fixture:
 ```typescript
-import { getFixturesByConfidence } from '../utils/fixture-loader';
+import incrementFixture from 'tests/fixtures/increments/minimal.json';
 
-const highConfFixtures = await getFixturesByConfidence('high');
-// Returns 11 high-confidence files
+it('test', () => {
+  incrementFixture.id = '0099'; // Mutates shared fixture!
+  // Other tests will see the mutation
+});
 ```
 
-### Load Single Fixture
-
+**✅ Correct** - Clone before mutation:
 ```typescript
-import { loadFixture } from '../utils/fixture-loader';
+import incrementFixture from 'tests/fixtures/increments/minimal.json';
 
-const fixture = await loadFixture('notion-export/user-stories/auth-feature.md');
-// Returns specific fixture file
+it('test', () => {
+  const increment = { ...incrementFixture, id: '0099' }; // Clone first
+  // Safe to modify 'increment'
+});
 ```
 
-### Get Statistics
+### 2. Use Fixtures for Type Safety
+
+Fixtures provide TypeScript types:
 
 ```typescript
-import { getFixtureStats } from '../utils/fixture-loader';
+import incrementFixture from 'tests/fixtures/increments/complex.json';
+import type { IncrementMetadata } from 'src/types/increment';
 
-const stats = await getFixtureStats();
-// Returns: { total: 21, spec: 6, module: 7, team: 5, legacy: 3, ... }
+it('should have correct types', () => {
+  const increment: IncrementMetadata = incrementFixture;
+  // TypeScript validates structure
+});
+```
+
+### 3. Extend Fixtures for Test Cases
+
+```typescript
+import minimalIncrement from 'tests/fixtures/increments/minimal.json';
+
+it('should handle different statuses', () => {
+  const activeIncrement = { ...minimalIncrement, status: 'active' };
+  const pausedIncrement = { ...minimalIncrement, status: 'paused' };
+  const completedIncrement = { ...minimalIncrement, status: 'completed' };
+
+  // Test all status transitions
+});
+```
+
+### 4. Combine Fixtures
+
+```typescript
+import incrementFixture from 'tests/fixtures/increments/complex.json';
+import githubIssue from 'tests/fixtures/github/issue.json';
+
+it('should sync increment to GitHub', () => {
+  const increment = { ...incrementFixture, id: '0042' };
+  const issue = { ...githubIssue, number: 42 };
+
+  // Test increment → GitHub sync
+});
 ```
 
 ## Test Coverage
 
 These fixtures are used to test:
 
-1. **Keyword Scoring Algorithm** (`tests/unit/brownfield/analyzer/keyword-scoring.test.ts`)
-   - High density: auth-feature.md, auth-module.md
-   - Medium density: payment-flow.md, api-design.md
-   - Low density: meeting-notes.md, faq.md
+1. **Increment Management** (`tests/unit/increment/`)
+   - Metadata parsing and validation
+   - Status transitions
+   - Type enforcement
 
-2. **File Classification** (`tests/unit/brownfield/analyzer/classification.test.ts`)
-   - Spec classification: auth-feature.md, checkout-flow.md
-   - Module classification: database-schema.md, api-reference.md
-   - Team classification: onboarding.md, conventions.md
-   - Legacy classification: meeting-notes.md, random-ideas.md
+2. **External Tool Integration** (`tests/integration/external-tools/`)
+   - GitHub sync (`github/`)
+   - ADO sync (`ado/`)
+   - Jira sync (`jira/`)
 
-3. **Edge Cases** (`tests/unit/brownfield/analyzer/edge-cases.test.ts`)
-   - Empty file: empty-file.md
-   - Large file: large-file.md (performance test)
-   - Special characters: special-chars-filename!@#.md
-   - Code-heavy: code-heavy.md (exclude code blocks)
+3. **Living Documentation** (`tests/integration/core/living-docs/`)
+   - Spec distribution (`living-docs/`)
+   - Markdown rendering
+   - Frontmatter extraction
 
-4. **Classification Accuracy** (`tests/integration/brownfield/classification-accuracy.test.ts`)
-   - Target: 85%+ accuracy across all fixtures
-   - Measured: (correct classifications / total files) ≥ 0.85
+4. **Brownfield Import** (`tests/integration/brownfield/`)
+   - Classification algorithm (`brownfield/`)
+   - Keyword scoring
+   - Edge case handling
 
-## Modifying Fixtures
+## Adding New Fixtures
 
-### Adding New Fixtures
+### JSON Fixtures
 
-1. Create markdown file in appropriate directory:
-   - `notion-export/` for Notion simulations
-   - `confluence-export/` for Confluence simulations
-   - `wiki-export/` for wiki simulations
-   - `custom/` for edge cases
-
-2. Add YAML frontmatter with expected metadata:
-   ```yaml
-   ---
-   expected_type: spec
-   expected_confidence: high
-   source: notion
-   keywords_density: high
-   ---
+1. Create file in appropriate category:
+   ```bash
+   touch tests/fixtures/increments/new-fixture.json
    ```
 
-3. Write realistic content with appropriate keyword density:
-   - **Spec**: User stories, acceptance criteria, technical requirements
-   - **Module**: Architecture, API docs, components, integration points
-   - **Team**: Onboarding, conventions, playbooks, workflows
-   - **Legacy**: Meeting notes, random ideas, unstructured content
+2. Add valid JSON structure:
+   ```json
+   {
+     "id": "0001",
+     "name": "example",
+     "status": "active"
+   }
+   ```
+
+3. Validate JSON syntax:
+   ```bash
+   npx jsonlint tests/fixtures/increments/new-fixture.json
+   ```
 
 4. Update fixture count in this README
 
-### Keyword Guidelines
+### Markdown Fixtures
 
-**Spec Keywords** (use 5-10 for high confidence):
-- user story, acceptance criteria, requirement, feature, technical requirement
-- non-functional requirement, as a, I want, so that
-- priority, testable, acceptance test
+1. Create file in appropriate category:
+   ```bash
+   touch tests/fixtures/living-docs/new-document.md
+   ```
 
-**Module Keywords** (use 5-10 for high confidence):
-- component, architecture, API, endpoint, service, module
-- integration, schema, interface, method, function
-- class, implementation, library, dependency
+2. Add frontmatter (if needed):
+   ```markdown
+   ---
+   title: Example Document
+   type: feature
+   ---
 
-**Team Keywords** (use 5-10 for high confidence):
-- onboarding, workflow, process, convention, playbook
-- team, guide, best practice, how-to, checklist
-- contact, resource, tool, standup, retrospective
+   # Content here
+   ```
+
+3. Use realistic, test-relevant content
+
+4. Update fixture count in this README
 
 ## Validation
 
 Run fixture validation tests:
 
 ```bash
-# Validate fixtures load correctly
+# Validate all fixtures load correctly
 npm test -- tests/unit/fixtures/fixture-loader.test.ts
 
-# Validate expected classifications
+# Validate expected classifications (brownfield)
 npm test -- tests/integration/fixtures/fixture-validation.test.ts
 
-# Check classification accuracy
+# Check brownfield classification accuracy
 npm test -- tests/integration/brownfield/classification-accuracy.test.ts
 ```
 
 All fixtures must:
-- ✅ Have valid YAML frontmatter
-- ✅ Have all required metadata fields
+- ✅ Be valid JSON or Markdown
 - ✅ Load without errors
-- ✅ Contribute to 85%+ classification accuracy
+- ✅ Have consistent structure
+- ✅ Include realistic test data
 
 ## Performance Targets
 
-- **Loading time**: <100ms for all 21 fixtures
-- **Classification time**: <5 seconds for all fixtures
-- **Large file handling**: large-file.md should classify in <500ms
+- **Loading time**: <100ms for all fixtures
+- **JSON parsing**: <10ms per file
+- **Markdown parsing**: <50ms per file
+- **Large file handling**: <500ms
 
 ## Troubleshooting
 
 **Fixture won't load**:
-- Check YAML frontmatter syntax
+- Check JSON syntax with `npx jsonlint file.json`
 - Verify file encoding is UTF-8
-- Ensure file extension is `.md`
+- Ensure file extension is `.json` or `.md`
 
-**Classification inaccurate**:
-- Review keyword density in content
-- Check expected_type matches content
-- Verify frontmatter metadata is correct
-- Run accuracy test to identify misclassifications
+**Type errors in TypeScript**:
+- Ensure fixture structure matches TypeScript interface
+- Add type assertion if needed: `const data = fixture as MyType`
+- Update fixture to match latest type definitions
 
-**Performance issues**:
-- Check file size (large-file.md is intentionally large)
-- Profile with benchmark tests
-- Optimize keyword scoring algorithm if needed
+**Mutation issues**:
+- Always clone fixtures: `const data = { ...fixture }`
+- For nested objects: `const data = JSON.parse(JSON.stringify(fixture))`
+- Consider using `structuredClone()` (Node 17+)
 
 ## References
 
-- Classification algorithm: `src/cli/commands/brownfield-analyzer.ts`
-- Keyword lists: `src/cli/commands/brownfield-analyzer.ts` (KEYWORD_SETS)
+- Increment types: `src/types/increment.ts`
+- GitHub types: `src/integrations/github/types.ts`
+- ADO types: `src/integrations/ado/types.ts`
+- Jira types: `src/integrations/jira/types.ts`
+- Brownfield analyzer: `src/cli/commands/brownfield-analyzer.ts`
 - Test utilities: `tests/utils/fixture-loader.ts`

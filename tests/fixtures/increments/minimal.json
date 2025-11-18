@@ -1,0 +1,11 @@
+{
+  "id": "0001",
+  "name": "test-increment",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "metadata": {
+    "created": "2025-01-01T00:00:00Z",
+    "updated": "2025-01-01T00:00:00Z"
+  }
+}
