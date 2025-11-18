@@ -1,0 +1,34 @@
+{
+  "id": "0004-increment-with-tasks",
+  "name": "Increment With Tasks",
+  "status": "active",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-01-01T00:00:00Z",
+  "updated": "2025-01-05T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 90,
+  "tasks": [
+    {
+      "id": "T-001",
+      "title": "Create component foundation",
+      "status": "completed",
+      "priority": "P1",
+      "estimate": "2 hours"
+    },
+    {
+      "id": "T-002",
+      "title": "Add unit tests",
+      "status": "in-progress",
+      "priority": "P1",
+      "estimate": "3 hours"
+    },
+    {
+      "id": "T-003",
+      "title": "Update documentation",
+      "status": "pending",
+      "priority": "P2",
+      "estimate": "1 hour"
+    }
+  ]
+}

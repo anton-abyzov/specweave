@@ -1,23 +1,12 @@
 {
-  "id": 12345,
-  "rev": 3,
+  "id": 1001,
   "fields": {
-    "System.WorkItemType": "Epic",
-    "System.Title": "Test Infrastructure Cleanup",
-    "System.State": "In Progress",
-    "System.AssignedTo": {
-      "displayName": "Claude Agent"
-    },
-    "System.Description": "<div>Eliminate 48% test duplication and improve test health from 7% to 17%</div>",
-    "System.AreaPath": "SpecWeave\\Core",
-    "System.IterationPath": "SpecWeave\\Sprint 42",
-    "Microsoft.VSTS.Common.Priority": 1,
-    "System.CreatedDate": "2025-11-18T00:00:00Z",
-    "System.ChangedDate": "2025-11-18T06:00:00Z"
+    "System.WorkItemType": "User Story",
+    "System.Title": "Test ADO Work Item",
+    "System.State": "Active",
+    "System.Description": "Test work item",
+    "Microsoft.VSTS.Scheduling.StoryPoints": 5,
+    "System.CreatedDate": "2025-01-01T00:00:00Z"
   },
-  "_links": {
-    "self": {
-      "href": "https://dev.azure.com/org/project/_apis/wit/workItems/12345"
-    }
-  }
+  "url": "https://dev.azure.com/test/_workitems/1001"
 }

@@ -1,0 +1,18 @@
+{
+  "id": "0002-completed-increment",
+  "name": "Completed Increment",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-01-01T00:00:00Z",
+  "updated": "2025-01-15T00:00:00Z",
+  "completed": "2025-01-15T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 90,
+  "completionReport": {
+    "tasksCompleted": 12,
+    "totalTasks": 12,
+    "testsPassing": true,
+    "coverageAchieved": 92
+  }
+}
