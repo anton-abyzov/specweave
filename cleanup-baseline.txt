@@ -1,0 +1,35 @@
+=== Baseline Documentation ===
+Created: 2025-11-18
+
+Current test file count: 79
+Current directory count: 8
+Backup branch: test-cleanup-backup-20251117-2327
+
+Categorized structure:
+tests/integration (root)
+tests/integration/commands
+tests/integration/core
+tests/integration/deduplication
+tests/integration/external-tools
+tests/integration/features
+tests/integration/fixtures
+tests/integration/generators
+
+Test distribution:
+  core: 57 tests
+  external-tools: 9 tests
+  features: 9 tests
+  generators: 4 tests
+  commands: 0 tests (infrastructure)
+  deduplication: 0 tests (infrastructure)
+  fixtures: 0 tests (test data)
+
+Total categorized tests: 79
+
+Note: Cleanup already completed in commits:
+  - e8655ef: Removed 64 duplicate directories (40% reduction)
+  - 72429b6: Automated test fixes (49 files)
+  - 3199f99: Removed 38 empty placeholder files
+
+Phase 1 tasks (T-001 through T-005) completed ahead of /specweave:do execution
+Current state reflects fully cleaned test structure

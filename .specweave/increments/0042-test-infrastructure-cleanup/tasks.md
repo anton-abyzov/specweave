@@ -1,7 +1,7 @@
 ---
 increment: 0042-test-infrastructure-cleanup
 total_tasks: 18
-completed_tasks: 0
+completed_tasks: 4
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -33,7 +33,10 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-05
 **Priority**: P1
 **Estimate**: 15 minutes
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-18 (Session 1 + current session)
+**Git Commits**: test-cleanup-backup-20251117-2327 branch created
+**Notes**: Backup branch created, baseline file created with current state (79 tests, 8 directories)
 
 **Test Plan**:
 - **Given** the current state of test infrastructure with 209 test files
@@ -82,7 +85,10 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-05
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-18 (Session 2)
+**Git Commits**: e8655ef (removed 64 duplicate directories)
+**Notes**: Cleanup complete - only categorized structure remains (core/, features/, external-tools/, generators/). Test count: 79 files.
 
 **Test Plan**:
 - **Given** 62 flat duplicate directories in tests/integration/ and verified categorized structure
@@ -143,7 +149,10 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-02, AC-US1-04
 **Priority**: P1
 **Estimate**: 1.75 hours
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-18 (Session 3 - Phase A)
+**Git Commits**: 72429b6 (Phase A fixes), 3199f99 (empty test removal)
+**Notes**: All import errors fixed (49 files), empty tests removed (38 files). Test discovery +34%.
 
 **Test Plan**:
 - **Given** cleaned test structure with 109 test files and reduced CI time
@@ -208,7 +217,10 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-01, AC-US2-04
 **Priority**: P2
 **Estimate**: 1.5 hours
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-18 (current session)
+**Files Renamed**: 34 E2E test files (.spec.ts → .test.ts)
+**Notes**: All .spec.ts files successfully renamed using git mv. Total E2E tests: 40 .test.ts files.
 
 **Test Plan**:
 - **Given** 21 E2E test files with .spec.ts extension and 1 misplaced Kafka test
