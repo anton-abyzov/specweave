@@ -1,11 +1,11 @@
 {
-  "id": "0001",
-  "name": "test-increment",
+  "id": "0001-test-increment",
+  "name": "Test Increment",
   "status": "active",
   "type": "feature",
   "priority": "P1",
-  "metadata": {
-    "created": "2025-01-01T00:00:00Z",
-    "updated": "2025-01-01T00:00:00Z"
-  }
+  "created": "2025-01-01T00:00:00Z",
+  "updated": "2025-01-01T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 90
 }

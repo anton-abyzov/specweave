@@ -1,33 +1,29 @@
-# US-042-001: Eliminate Duplicate Test Directories
+---
+id: US-001
+title: Test User Story
+epic: FS-001
+priority: P1
+status: active
+---
 
-**Epic**: FS-042 - Test Infrastructure Cleanup
-**Priority**: P1 - CRITICAL
-**Status**: ✅ COMPLETE
-**Assignee**: Claude Agent
+# User Story: Test User Story
 
-## Summary
-
-As a SpecWeave contributor, I want duplicate test directories automatically removed so that CI time is reduced by 47% and test maintenance is simplified.
+**As a** developer
+**I want** to test user story fixtures
+**So that** I can reuse test data across tests
 
 ## Acceptance Criteria
 
-- [x] AC-001: All 62 flat duplicate directories deleted from `tests/integration/`
-- [x] AC-002: Only categorized structure remains (core/, features/, external-tools/, generators/)
-- [x] AC-003: All integration tests still pass after deletion
-- [x] AC-004: CI test execution time reduced by at least 40%
+- [ ] **AC-US1-01**: Feature implemented correctly
+  - **Priority**: P1
+  - **Testable**: Yes
+  
+- [ ] **AC-US1-02**: Tests passing with 90% coverage
+  - **Priority**: P1
+  - **Testable**: Yes
 
 ## Tasks
 
-- [x] T-001: Create safety backup
-- [x] T-002: Execute cleanup script
-- [x] T-003: Update documentation
-
-## Implementation Notes
-
-Successfully reduced test files from 245 to 78 (-68%) and improved test health from 7% to 17% (+143%).
-
-## Related
-
-- Epic: FS-042
-- Pull Request: #610
-- Branch: feature/test-cleanup
+- [ ] **T-001**: Implement core functionality
+- [ ] **T-002**: Add unit tests
+- [ ] **T-003**: Update documentation

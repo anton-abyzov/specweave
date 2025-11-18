@@ -1,14 +1,13 @@
 {
-  "id": "0099",
-  "name": "new-feature-planning",
-  "title": "New Feature - Planning Phase",
+  "id": "0003-planning-increment",
+  "name": "Planning Increment",
   "status": "planning",
   "type": "feature",
   "priority": "P2",
-  "test_mode": "BDD",
-  "coverage_target": 80,
-  "metadata": {
-    "created": "2025-11-18T10:00:00Z",
-    "updated": "2025-11-18T10:00:00Z"
-  }
+  "created": "2025-01-01T00:00:00Z",
+  "updated": "2025-01-01T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 85,
+  "epic": "FS-001",
+  "userStories": ["US-001", "US-002", "US-003"]
 }
