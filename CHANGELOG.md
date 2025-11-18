@@ -4,6 +4,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.22.3] - 2025-11-18
+
+### Fixed
+
+- **Spec/Metadata Sync** - Re-release of v0.22.0 spec.md desync fix with enhanced validation tools
+  - Validation command: `npx specweave validate-status-sync` (scans all increments for desyncs)
+  - Repair command: `npx specweave repair-status-desync --all` (fixes desyncs with backup + audit)
+  - Severity-based reporting: CRITICAL/HIGH/MEDIUM/LOW impact classification
+  - Production validation: 0 desyncs detected across 12 increments
+
+### Technical Details
+
+This patch release enhances the v0.22.0 spec.md desync fix with comprehensive CLI validation and repair tools. All 34 new tests passing, 90%+ coverage on critical paths. See v0.22.0 release notes for complete desync fix details.
+
+**Increment**: 0043-spec-md-desync-fix
+**Files**: 4 new files (validate-status-sync.ts, repair-status-desync.ts + tests)
+**Tests**: 34 new tests (14 validation + 20 repair, all passing)
+
+---
+
 ## [0.22.1] - 2025-11-18
 
 ### Fixed
