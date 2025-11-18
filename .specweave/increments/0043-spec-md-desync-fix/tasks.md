@@ -1,7 +1,7 @@
 ---
 increment: 0043-spec-md-desync-fix
 total_tasks: 24
-completed_tasks: 7
+completed_tasks: 13
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -109,7 +109,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-02, AC-US2-04
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an increment with spec.md containing status field
@@ -155,7 +155,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-02, AC-US2-04
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an increment with spec.md
@@ -580,7 +580,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-03, AC-US3-01
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an increment is closed via MetadataManager.updateStatus()
@@ -624,7 +624,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US1-02
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an active increment with all tasks completed
@@ -668,7 +668,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US2-03
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** an active increment
@@ -829,7 +829,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US2-01
 **Priority**: P1
 **Estimate**: 4 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** a SpecWeave project
