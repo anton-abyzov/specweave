@@ -1,6 +1,6 @@
 ---
 increment: 0043-spec-md-desync-fix
-title: "Fix spec.md Desync on Increment Closure - Status Line Bug"
+title: "Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools"
 priority: P1
 status: planning
 type: bug
@@ -10,17 +10,29 @@ coverage_target: 90
 epic: FS-25-11-18
 ---
 
-# Bug: Fix spec.md Desync on Increment Closure
+# Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools
 
 ## Overview
 
-**Problem Statement**: When closing an increment via `/specweave:done`, the system updates `metadata.json` but fails to update `spec.md` YAML frontmatter. This causes status line and hook failures because they read from spec.md (the documented source of truth), not metadata.json.
+**Problem Statement**: SpecWeave has TWO critical sync infrastructure bugs:
+
+1. **spec.md Desync**: When closing an increment via `/specweave:done`, the system updates `metadata.json` but fails to update `spec.md` YAML frontmatter. This causes status line and hook failures because they read from spec.md (the documented source of truth), not metadata.json.
+
+2. **Living Docs → External Tools**: When syncing living docs via `/specweave:sync-docs`, the system does NOT trigger external tool sync (GitHub, JIRA, ADO). This violates source-of-truth discipline and requires manual sync commands.
 
 **Impact Severity**: HIGH (P1)
+
+**Bug 1 Impact (spec.md Desync)**:
 - Status line shows wrong active increment (developer confusion)
 - Hooks read stale status data (potential sync failures with GitHub/JIRA/ADO)
 - Violates "spec.md = source of truth" architectural principle
 - Multi-increment workflows break (status line cache never updates)
+
+**Bug 2 Impact (Living Docs → External Tools)**:
+- GitHub/JIRA/ADO issues show STALE data (stakeholders see wrong information)
+- Requires manual sync commands (`/specweave-github:sync` after `/specweave:sync-docs`)
+- Violates source-of-truth discipline (living docs should automatically propagate)
+- Developer workflow inefficiency (2 commands instead of 1)
 
 **Target Users**:
 - SpecWeave developers (primary - experience status line bugs daily)
