@@ -11,6 +11,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import { AdoProjectDetector } from '../../plugins/specweave-ado/lib/ado-project-detector.js';
 import { AdoClientV2 } from '../../plugins/specweave-ado/lib/ado-client-v2.js';
 import type {
@@ -25,8 +26,8 @@ describe('Azure DevOps Multi-Project Integration', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    // Create temporary test directory
-    testDir = path.join(process.cwd(), 'tests', 'tmp', `ado-test-${Date.now()}`);
+    // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+    testDir = path.join(os.tmpdir(), `specweave-ado-test-${Date.now()}`);
     await fs.ensureDir(testDir);
   });
 
