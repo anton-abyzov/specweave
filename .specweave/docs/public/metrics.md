@@ -19,9 +19,9 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 ### 🚀 Deployment Frequency
 
 <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
-  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deployment%20Frequency&suffix=/month&color=brightgreen&style=for-the-badge" alt="Deployment Frequency" />
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deployment%20Frequency&suffix=/month&color=brightgreen&style=for-the-badge" alt="Deployment Frequency" />
   <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
-    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.tier&label=Tier&color=blue&style=for-the-badge" alt="DF Tier" />
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.tier&label=Tier&color=blue&style=for-the-badge" alt="DF Tier" />
   </span>
 </div>
 
@@ -37,9 +37,9 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 ### ⚡ Lead Time for Changes
 
 <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
-  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=%20hours&color=brightgreen&style=for-the-badge" alt="Lead Time" />
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=%20hours&color=brightgreen&style=for-the-badge" alt="Lead Time" />
   <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
-    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.tier&label=Tier&color=blue&style=for-the-badge" alt="LT Tier" />
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.tier&label=Tier&color=blue&style=for-the-badge" alt="LT Tier" />
   </span>
 </div>
 
@@ -51,17 +51,17 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 - ⚠️ **Low**: More than 1 month
 
 **Percentiles:**
-- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.p50&label=P50&suffix=%20hours&color=lightgrey)
-- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.leadTime.p90&label=P90&suffix=%20hours&color=lightgrey)
+- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.p50&label=P50&suffix=%20hours&color=lightgrey)
+- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.p90&label=P90&suffix=%20hours&color=lightgrey)
 
 ---
 
 ### ✅ Change Failure Rate
 
 <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
-  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen&style=for-the-badge" alt="CFR" />
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen&style=for-the-badge" alt="CFR" />
   <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
-    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.tier&label=Tier&color=blue&style=for-the-badge" alt="CFR Tier" />
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.tier&label=Tier&color=blue&style=for-the-badge" alt="CFR Tier" />
   </span>
 </div>
 
@@ -72,16 +72,16 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 - 📊 **Medium**: 31-45%
 - ⚠️ **Low**: More than 45%
 
-**Failed Releases:** ![Failed](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.failedReleases&label=Failed&color=red) / ![Total](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.changeFailureRate.totalReleases&label=Total&color=blue)
+**Failed Releases:** ![Failed](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.failedReleases&label=Failed&color=red) / ![Total](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.totalReleases&label=Total&color=blue)
 
 ---
 
 ### 🔧 Mean Time to Recovery (MTTR)
 
 <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem'}}>
-  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=%20minutes&color=brightgreen&style=for-the-badge" alt="MTTR" />
+  <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=%20minutes&color=brightgreen&style=for-the-badge" alt="MTTR" />
   <span style={{marginLeft: '1rem', fontSize: '1.2rem', fontWeight: 'bold'}}>
-    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.tier&label=Tier&color=blue&style=for-the-badge" alt="MTTR Tier" />
+    <img src="https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.tier&label=Tier&color=blue&style=for-the-badge" alt="MTTR Tier" />
   </span>
 </div>
 
@@ -93,8 +93,8 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 - ⚠️ **Low**: More than 1 week
 
 **Percentiles:**
-- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.p50&label=P50&suffix=%20minutes&color=lightgrey)
-- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.metrics.mttr.p90&label=P90&suffix=%20minutes&color=lightgrey)
+- **P50 (Median)**: ![P50](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.p50&label=P50&suffix=%20minutes&color=lightgrey)
+- **P90**: ![P90](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.p90&label=P90&suffix=%20minutes&color=lightgrey)
 
 ---
 
@@ -105,7 +105,7 @@ Real-time DevOps performance metrics for SpecWeave, updated daily.
 ```mermaid
 graph LR
     A[GitHub API] --> B[DORA Calculator]
-    B --> C[metrics/dora-latest.json]
+    B --> C[.specweave/metrics/dora-latest.json]
     C --> D[Shields.io Badges]
     D --> E[README.md]
     C --> F[This Dashboard]
@@ -139,7 +139,7 @@ Metrics update automatically:
 - **Workflow**: [`.github/workflows/dora-metrics.yml`](https://github.com/anton-abyzov/specweave/blob/develop/.github/workflows/dora-metrics.yml)
 - **Manual Trigger**: `gh workflow run dora-metrics.yml`
 
-**Latest Update**: ![Last Update](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/metrics/dora-latest.json&query=$.timestamp&label=Last%20Update&color=lightgrey)
+**Latest Update**: ![Last Update](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.timestamp&label=Last%20Update&color=lightgrey)
 
 ---
 
