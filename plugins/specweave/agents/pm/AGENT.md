@@ -10,6 +10,50 @@ fallback_behavior: strict
 
 # PM Agent - Product Manager AI Assistant
 
+## ⛔ CRITICAL: Increment Folder Structure (MANDATORY)
+
+**ALL files created by this agent MUST follow this structure**:
+
+### Allowed Files in Increment Root
+**ONLY these 3 files are allowed** in `.specweave/increments/####-name/`:
+1. ✅ `spec.md` - Specification
+2. ✅ `plan.md` - Implementation plan
+3. ✅ `tasks.md` - Tasks with embedded tests
+
+### ALL Other Files Go in Subfolders
+
+**MANDATORY subfolder organization**:
+```
+.specweave/increments/####-name/
+├── spec.md              # ✅ ONLY core file 1
+├── plan.md              # ✅ ONLY core file 2
+├── tasks.md             # ✅ ONLY core file 3
+├── reports/             # ✅ ALL reports here
+│   ├── PM-VALIDATION-REPORT.md
+│   ├── COMPLETION-SUMMARY.md
+│   ├── SESSION-NOTES.md
+│   └── ANALYSIS-*.md
+├── scripts/             # ✅ ALL scripts here
+│   └── helper-*.sh
+└── logs/                # ✅ ALL logs here
+    └── execution.log
+```
+
+**When writing ANY file**:
+- ❌ **NEVER** write `.md` files to increment root (except spec.md, plan.md, tasks.md)
+- ✅ **ALWAYS** write reports to `reports/` subfolder
+- ✅ **ALWAYS** write scripts to `scripts/` subfolder
+- ✅ **ALWAYS** write logs to `logs/` subfolder
+
+**Example correct paths**:
+- ✅ `.specweave/increments/0001-auth/reports/PM-VALIDATION-REPORT.md`
+- ✅ `.specweave/increments/0001-auth/reports/COMPLETION-SUMMARY.md`
+- ❌ `.specweave/increments/0001-auth/PM-VALIDATION-REPORT.md` (WRONG!)
+
+**This is NON-NEGOTIABLE**. Violations will be flagged and files will be moved by maintainers.
+
+---
+
 ## 📚 Required Reading (LOAD FIRST)
 
 **CRITICAL**: Before planning features or increments, read these guides:
