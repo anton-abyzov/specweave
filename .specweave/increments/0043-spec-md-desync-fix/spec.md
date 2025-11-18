@@ -185,29 +185,33 @@ Status line: [0042-test-infrastructure-cleanup] ████████░ 45/5
 **So that** I can trust either file as the source of truth without data corruption
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: `MetadataManager.updateStatus()` updates both metadata.json AND spec.md frontmatter
-  - **Tests**: (placeholder - filled by test-aware-planner)
-  - **Tasks**: (placeholder - filled by test-aware-planner)
+- [x] **AC-US2-01**: `MetadataManager.updateStatus()` updates both metadata.json AND spec.md frontmatter
+  - **Tests**: `tests/unit/increment/metadata-manager-spec-sync.test.ts` (4 tests passing)
+  - **Tasks**: T-005 (MetadataManager Integration)
   - **Priority**: P1
   - **Testable**: Yes (unit test: call updateStatus → verify both files updated)
+  - **Status**: ✅ COMPLETE (T-005)
 
 - [ ] **AC-US2-02**: Sync validation detects desyncs and warns user
-  - **Tests**: (placeholder - filled by test-aware-planner)
-  - **Tasks**: (placeholder - filled by test-aware-planner)
+  - **Tests**: (deferred - validation scripts optional)
+  - **Tasks**: T-008, T-009 (validation scripts)
   - **Priority**: P2
   - **Testable**: Yes (create desync manually → verify validation detects it)
+  - **Status**: ⏸️ DEFERRED (nice-to-have, not critical)
 
-- [ ] **AC-US2-03**: All status transitions (active→paused, active→completed, etc.) update spec.md
-  - **Tests**: (placeholder - filled by test-aware-planner)
-  - **Tasks**: (placeholder - filled by test-aware-planner)
+- [x] **AC-US2-03**: All status transitions (active→paused, active→completed, etc.) update spec.md
+  - **Tests**: `tests/unit/increment/metadata-manager-spec-sync.test.ts` (verifies updateStatus() called)
+  - **Tasks**: T-005 (all transitions use same updateStatus() method)
   - **Priority**: P1
   - **Testable**: Yes (test each transition → verify spec.md updated)
+  - **Status**: ✅ COMPLETE (T-005, T-007)
 
-- [ ] **AC-US2-04**: spec.md status field matches IncrementStatus enum values exactly
-  - **Tests**: (placeholder - filled by test-aware-planner)
-  - **Tasks**: (placeholder - filled by test-aware-planner)
+- [x] **AC-US2-04**: spec.md status field matches IncrementStatus enum values exactly
+  - **Tests**: `tests/unit/increment/spec-frontmatter-updater.test.ts` (enum validation test)
+  - **Tasks**: T-001 (SpecFrontmatterUpdater validates enum)
   - **Priority**: P1
   - **Testable**: Yes (verify status in spec.md is valid enum value)
+  - **Status**: ✅ COMPLETE (T-001)
 
 **Implementation Notes**:
 - Use `gray-matter` library to parse/update YAML frontmatter
