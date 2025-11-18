@@ -1,11 +1,11 @@
 ---
 name: specweave:sync-specs
-description: Sync only specs folder to living docs - distributes increment specs into hierarchical user stories without updating architecture, operations, or other docs
+description: Sync increment specifications to living docs structure. Auto-generates feature IDs for greenfield increments (FS-XXX). Use after completing an increment to make it visible in living docs.
 ---
 
-# Sync Specs Only
+# Sync Increment Specifications to Living Docs
 
-You are executing the SpecWeave specs-only sync command. This distributes increment specs specifically into the living docs specs folder using the Universal Hierarchy (Epic → Feature → User Story → Task), without touching other documentation areas.
+Syncs increment specs to living docs structure for stakeholder visibility. Auto-generates feature IDs for greenfield increments.
 
 ---
 
@@ -85,57 +85,29 @@ fi
 
 ---
 
-## STEP 3: Execute Spec Distribution
+## STEP 3: Execute Spec Sync
 
-### 3.1 Run SpecDistributor
+### 3.1 Run Sync Command
 
-**Execute the distribution using Node.js**:
+**Execute the sync using the CLI command**:
 
-```javascript
-// Direct execution via Node.js
-node -e "
-import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {
-  const distributor = new SpecDistributor(process.cwd());
+```typescript
+import { syncSpecs } from './dist/src/cli/commands/sync-specs.js';
 
-  console.log('🚀 Starting spec distribution...');
-  console.log('   📄 Reading spec.md from increment ${INCREMENT_ID}');
+// Parse arguments
+const args = process.argv.slice(2); // e.g., ['0040', '--dry-run']
 
-  try {
-    const result = await distributor.distribute('${INCREMENT_ID}');
-
-    console.log('');
-    console.log('✅ Distribution successful!');
-    console.log('   📊 Total stories: ' + result.totalStories);
-    console.log('   📁 Total files created: ' + result.totalFiles);
-    console.log('   🎯 Feature ID: ' + result.specId);
-
-    if (result.epicPath) {
-      console.log('   📂 Feature path: ' + result.epicPath);
-    }
-
-    if (result.userStoryPaths && result.userStoryPaths.length > 0) {
-      console.log('   📝 User stories created:');
-      result.userStoryPaths.forEach(p => console.log('      • ' + p));
-    }
-
-    if (result.warnings && result.warnings.length > 0) {
-      console.log('');
-      console.log('⚠️  Warnings:');
-      result.warnings.forEach(w => console.log('   • ' + w));
-    }
-
-    // Update acceptance criteria status based on completed tasks
-    console.log('');
-    console.log('📊 Updating acceptance criteria status...');
-    await distributor.updateAcceptanceCriteriaStatus('${INCREMENT_ID}');
-
-  } catch (error) {
-    console.error('❌ Distribution failed:', error.message);
-    process.exit(1);
-  }
-});
-"
+// Execute sync
+await syncSpecs(args);
 ```
+
+**This will**:
+1. Auto-generate feature ID for greenfield increments (FS-040, FS-041, etc.)
+2. Parse spec.md for user stories and acceptance criteria
+3. Create living docs structure:
+   - `.specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md`
+   - `.specweave/docs/internal/specs/specweave/FS-XXX/README.md`
+   - `.specweave/docs/internal/specs/specweave/FS-XXX/us-*.md`
 
 ---
 

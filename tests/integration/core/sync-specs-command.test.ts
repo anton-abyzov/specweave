@@ -4,7 +4,7 @@
  * Tests the CLI command for syncing increment specs to living docs
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import * as os from 'os';
