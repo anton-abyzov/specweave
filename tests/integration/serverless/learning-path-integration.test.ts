@@ -16,7 +16,7 @@ import type { ProjectMetadata } from '../../../src/core/serverless/types.js';
 
 describe('Learning Path Integration', () => {
   describe('testLearningResourcesForPetProject', () => {
-    it('should provide comprehensive learning resources for beginner pet project', () => {
+    it('should provide comprehensive learning resources for beginner pet project', async () => {
       const userInput = 'Personal project to learn serverless development';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -27,7 +27,7 @@ describe('Learning Path Integration', () => {
       const contextResult = detectContext(userInput, metadata);
       expect(contextResult.context).toBe('pet-project');
 
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeLearning: true,
@@ -47,7 +47,7 @@ describe('Learning Path Integration', () => {
       ).toBe(true);
     });
 
-    it('should recommend Firebase for mobile learning path', () => {
+    it('should recommend Firebase for mobile learning path', async () => {
       const userInput = 'Want to learn mobile backend development';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -56,7 +56,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         preferredEcosystem: 'mobile',
@@ -77,7 +77,7 @@ describe('Learning Path Integration', () => {
       expect(sdks.some((sdk) => sdk.toLowerCase().includes('android'))).toBe(true);
     });
 
-    it('should recommend AWS Lambda for enterprise learning path', () => {
+    it('should recommend AWS Lambda for enterprise learning path', async () => {
       const userInput = 'Learning AWS serverless for enterprise career';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -86,7 +86,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         preferredEcosystem: 'aws',
@@ -109,8 +109,8 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testPlatformEcosystemLearningResources', () => {
-    it('should verify all platforms have learning resource metadata', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should verify all platforms have learning resource metadata', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       for (const platform of platforms) {
@@ -133,8 +133,8 @@ describe('Learning Path Integration', () => {
       }
     });
 
-    it('should identify platforms with largest communities for learning', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should identify platforms with largest communities for learning', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       const largeCommunityPlatforms = platforms.filter(
@@ -151,8 +151,8 @@ describe('Learning Path Integration', () => {
       }
     });
 
-    it('should identify platforms with best documentation', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should identify platforms with best documentation', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       const excellentDocsPlatforms = platforms.filter(
@@ -177,7 +177,7 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testRuntimeSpecificLearningPaths', () => {
-    it('should recommend platform with strong Python support for Python learners', () => {
+    it('should recommend platform with strong Python support for Python learners', async () => {
       const userInput = 'Learning Python serverless development';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -186,7 +186,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         runtimeRequired: 'python',
@@ -200,7 +200,7 @@ describe('Learning Path Integration', () => {
       expect(supportsPython).toBe(true);
     });
 
-    it('should recommend platform with strong Node.js support for JavaScript learners', () => {
+    it('should recommend platform with strong Node.js support for JavaScript learners', async () => {
       const userInput = 'Learning JavaScript backend development';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -209,7 +209,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         runtimeRequired: 'nodejs',
@@ -223,8 +223,8 @@ describe('Learning Path Integration', () => {
       expect(supportsNodejs).toBe(true);
     });
 
-    it('should verify all major platforms support multiple runtimes for diverse learning', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should verify all major platforms support multiple runtimes for diverse learning', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       for (const platform of platforms) {
@@ -240,7 +240,7 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testProgressiveComplexityLearningPath', () => {
-    it('should recommend simple platforms for beginners', () => {
+    it('should recommend simple platforms for beginners', async () => {
       const userInput = 'Complete beginner to serverless and cloud';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -249,7 +249,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeLearning: true,
@@ -267,7 +267,7 @@ describe('Learning Path Integration', () => {
       expect(selectionResult.recommendedPlatform.rationale.length).toBeGreaterThan(0);
     });
 
-    it('should recommend AWS/Azure/GCP for advanced learners seeking enterprise skills', () => {
+    it('should recommend AWS/Azure/GCP for advanced learners seeking enterprise skills', async () => {
       const userInput = 'Experienced developer learning enterprise serverless patterns';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -276,7 +276,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeLearning: true,
@@ -293,7 +293,7 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testEcosystemIntegrationLearning', () => {
-    it('should recommend platforms with rich integration ecosystems for full-stack learning', () => {
+    it('should recommend platforms with rich integration ecosystems for full-stack learning', async () => {
       const userInput = 'Learning full-stack serverless development';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -302,7 +302,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeLearning: true,
@@ -317,8 +317,8 @@ describe('Learning Path Integration', () => {
       expect(selectionResult.recommendedPlatform.platform.ecosystem.sdks.length).toBeGreaterThan(2);
     });
 
-    it('should identify platforms with database integrations for backend learning', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should identify platforms with database integrations for backend learning', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       for (const platform of platforms) {
@@ -341,8 +341,8 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testCommunityResourceMapping', () => {
-    it('should map platforms to community size for learner support', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should map platforms to community size for learner support', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       const communityDistribution = {
@@ -360,7 +360,7 @@ describe('Learning Path Integration', () => {
       expect(communityDistribution['very-large'] + communityDistribution.large).toBeGreaterThan(0);
     });
 
-    it('should prioritize platforms with large communities for learners needing support', () => {
+    it('should prioritize platforms with large communities for learners needing support', async () => {
       const userInput = 'New to programming, need lots of community support';
       const metadata: ProjectMetadata = {
         teamSize: 1,
@@ -369,7 +369,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeLearning: true,
@@ -388,8 +388,8 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testLearningPathComparison', () => {
-    it('should enable comparison of platforms by learning-friendliness', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should enable comparison of platforms by learning-friendliness', async () => {
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: 'pet-project',
         prioritizeLearning: true,
@@ -411,8 +411,8 @@ describe('Learning Path Integration', () => {
       }
     });
 
-    it('should provide rationale explaining learning advantages', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should provide rationale explaining learning advantages', async () => {
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: 'pet-project',
         prioritizeLearning: true,
@@ -438,8 +438,8 @@ describe('Learning Path Integration', () => {
   });
 
   describe('testStartupProgramsForLearning', () => {
-    it('should surface startup programs that provide learning credits', () => {
-      const knowledgeBase = loadAllPlatforms();
+    it('should surface startup programs that provide learning credits', async () => {
+      const platforms = await loadAllPlatforms();
       const platforms = Array.from(knowledgeBase.platforms.values());
 
       // Count platforms with startup programs
@@ -458,7 +458,7 @@ describe('Learning Path Integration', () => {
       }
     });
 
-    it('should recommend platforms with startup credits for learning projects', () => {
+    it('should recommend platforms with startup credits for learning projects', async () => {
       const userInput = 'Learning serverless for startup I want to build';
       const metadata: ProjectMetadata = {
         teamSize: 2,
@@ -467,7 +467,7 @@ describe('Learning Path Integration', () => {
       };
 
       const contextResult = detectContext(userInput, metadata);
-      const knowledgeBase = loadAllPlatforms();
+      const platforms = await loadAllPlatforms();
       const selectionResult = selectPlatforms(knowledgeBase, {
         context: contextResult.context,
         prioritizeStartupCredits: true,
