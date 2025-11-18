@@ -134,14 +134,25 @@ export class LivingDocsSync {
         }
       }
 
-      // Step 5: Sync tasks from increment to user stories
+      // Step 5: Clean up duplicates and temp files BEFORE syncing tasks
+      if (!options.dryRun) {
+        await this.cleanupDuplicateFiles(featureId, projectPath);
+        await this.cleanupTempFiles(projectPath);
+      }
+
+      // Step 6: Sync tasks from increment to user stories
       if (!options.dryRun) {
         await this.syncTasksToUserStories(incrementId, featureId, parsed.userStories, projectPath);
       }
 
-      // Step 6: Sync to external tools (GitHub, JIRA, ADO)
+      // Step 7: Sync to external tools (GitHub, JIRA, ADO)
       if (!options.dryRun) {
         await this.syncToExternalTools(incrementId, featureId, projectPath);
+      }
+
+      // Step 8: Final cleanup (remove any temp files created during sync)
+      if (!options.dryRun) {
+        await this.cleanupTempFiles(projectPath);
       }
 
       result.success = true;
@@ -787,5 +798,86 @@ export class LivingDocsSync {
   private async syncToADO(featureId: string, projectPath: string): Promise<void> {
     console.log(`   ⚠️  ADO sync not yet implemented - skipping`);
     // TODO: Implement ADO sync when specweave-ado plugin is available
+  }
+
+  /**
+   * Clean up duplicate user story files
+   *
+   * Strategy:
+   * 1. List all user story files in feature folder
+   * 2. Group by user story ID (US-001, US-002, etc.)
+   * 3. If multiple files found for same US:
+   *    - Keep the file WITH most recent modification time
+   *    - Delete older files
+   *    - Log warning
+   */
+  private async cleanupDuplicateFiles(
+    featureId: string,
+    projectPath: string
+  ): Promise<void> {
+    const files = await fs.readdir(projectPath);
+
+    // Group files by user story ID
+    const filesByStory = new Map<string, string[]>();
+
+    for (const file of files) {
+      // Match pattern: us-001-*, us-002-*, etc.
+      const match = file.match(/^(us-\d+)-/);
+      if (match) {
+        const storyId = match[1].toUpperCase(); // US-001
+        if (!filesByStory.has(storyId)) {
+          filesByStory.set(storyId, []);
+        }
+        filesByStory.get(storyId)!.push(file);
+      }
+    }
+
+    // Check for duplicates
+    for (const [storyId, storyFiles] of filesByStory.entries()) {
+      if (storyFiles.length > 1) {
+        console.warn(`   ⚠️  Found ${storyFiles.length} duplicate files for ${storyId}`);
+
+        // Find the most recent file
+        const fileTimes = await Promise.all(
+          storyFiles.map(async (f) => ({
+            file: f,
+            mtime: (await fs.stat(path.join(projectPath, f))).mtime.getTime()
+          }))
+        );
+
+        fileTimes.sort((a, b) => b.mtime - a.mtime); // Newest first
+        const keepFile = fileTimes[0].file;
+        const deleteFiles = fileTimes.slice(1).map(f => f.file);
+
+        console.warn(`      → Keeping: ${keepFile} (most recent)`);
+
+        // Delete older files
+        for (const file of deleteFiles) {
+          const filePath = path.join(projectPath, file);
+          await fs.remove(filePath);
+          console.warn(`      ✅ Deleted: ${file}`);
+        }
+      }
+    }
+  }
+
+  /**
+   * Clean up temporary files left behind by sync operations
+   *
+   * Removes:
+   * - .tmp files (temporary update files)
+   * - .backup files (backup files from updates)
+   * - Any other temporary files
+   */
+  private async cleanupTempFiles(projectPath: string): Promise<void> {
+    const files = await fs.readdir(projectPath);
+
+    for (const file of files) {
+      if (file.endsWith('.tmp') || file.endsWith('.backup')) {
+        const filePath = path.join(projectPath, file);
+        await fs.remove(filePath);
+        console.log(`   🧹 Cleaned up: ${file}`);
+      }
+    }
   }
 }
