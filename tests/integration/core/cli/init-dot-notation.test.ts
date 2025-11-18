@@ -5,6 +5,7 @@
  * rather than creating a subdirectory.
  */
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs-extra';

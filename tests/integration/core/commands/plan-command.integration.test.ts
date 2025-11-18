@@ -11,10 +11,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { PlanCommandOrchestrator } from '../../src/cli/commands/plan/plan-orchestrator';
-import { PlanCommandConfig } from '../../src/cli/commands/plan/types';
-import { IncrementStatus, IncrementType, IncrementMetadata } from '../../src/core/types/increment-metadata';
-import { MetadataManager } from '../../src/core/increment/metadata-manager';
+import { PlanCommandOrchestrator } from '../../src/cli/commands/plan/plan-orchestrator.js';
+import { PlanCommandConfig } from '../../src/cli/commands/plan/types.js';
+import { IncrementStatus, IncrementType, IncrementMetadata } from '../../src/core/types/increment-metadata.js';
+import { MetadataManager } from '../../src/core/increment/metadata-manager.js';
 
 /**
  * Helper function to create valid increment metadata

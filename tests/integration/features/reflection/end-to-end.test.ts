@@ -13,17 +13,17 @@ import fs from 'fs-extra';
 import path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { createReflectionContext } from '../../plugins/specweave/lib/hooks/run-self-reflection';
-import { buildReflectionPrompt } from '../../plugins/specweave/lib/hooks/reflection-prompt-builder';
-import { parseReflectionMarkdown } from '../../plugins/specweave/lib/hooks/reflection-parser';
-import { saveReflection, listReflections, readReflection } from '../../plugins/specweave/lib/hooks/reflection-storage';
+import { createReflectionContext } from '../../plugins/specweave/lib/hooks/run-self-reflection.js';
+import { buildReflectionPrompt } from '../../plugins/specweave/lib/hooks/reflection-prompt-builder.js';
+import { parseReflectionMarkdown } from '../../plugins/specweave/lib/hooks/reflection-parser.js';
+import { saveReflection, listReflections, readReflection } from '../../plugins/specweave/lib/hooks/reflection-storage.js';
 import {
   prepareReflectionContext,
   hasReflectionContext,
   readReflectionContext,
   clearReflectionContext
-} from '../../plugins/specweave/lib/hooks/prepare-reflection-context';
-import { ReflectionModel } from '../../plugins/specweave/lib/hooks/types/reflection-types';
+} from '../../plugins/specweave/lib/hooks/prepare-reflection-context.js';
+import { ReflectionModel } from '../../plugins/specweave/lib/hooks/types/reflection-types.js';
 
 describe('Self-Reflection System - End-to-End', () => {
   // ✅ SAFE: Isolated test directory (prevents .specweave deletion)

@@ -11,12 +11,12 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { AdoProjectDetector } from '../../plugins/specweave-ado/lib/ado-project-detector';
-import { AdoClientV2 } from '../../plugins/specweave-ado/lib/ado-client-v2';
+import { AdoProjectDetector } from '../../plugins/specweave-ado/lib/ado-project-detector.js';
+import { AdoClientV2 } from '../../plugins/specweave-ado/lib/ado-client-v2.js';
 import type {
   ProjectDetectionResult,
   ProjectConfidence
-} from '../../plugins/specweave-ado/lib/ado-project-detector';
+} from '../../plugins/specweave-ado/lib/ado-project-detector.js';
 
 // Local type definition for testing
 type AzureDevOpsStrategy = 'project-per-team' | 'area-path-based' | 'team-based';
@@ -209,7 +209,7 @@ REST API endpoints with database query optimization.`;
     test('should export spec to ADO work item', async () => {
       // Mock ADO client
       const mockClient = {
-        createWorkItem: jest.fn().mockResolvedValue({
+        createWorkItem: vi.fn().mockResolvedValue({
           id: 123,
           fields: {
             'System.Title': '[SPEC-001] Test Feature',
@@ -240,7 +240,7 @@ REST API endpoints with database query optimization.`;
     test('should import ADO work item to spec', async () => {
       // Mock ADO client
       const mockClient = {
-        getWorkItem: jest.fn().mockResolvedValue({
+        getWorkItem: vi.fn().mockResolvedValue({
           id: 123,
           fields: {
             'System.Title': '[SPEC-001] Test Feature',

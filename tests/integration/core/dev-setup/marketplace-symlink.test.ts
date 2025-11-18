@@ -10,6 +10,7 @@
  * - CLAUDE.md (Local Development Setup section)
  */
 
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';

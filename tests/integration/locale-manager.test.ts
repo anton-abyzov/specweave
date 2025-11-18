@@ -4,6 +4,7 @@
  * Tests the i18n infrastructure for CLI localization
  */
 
+import { describe, it, expect, beforeEach } from 'vitest';
 import { getLocaleManager, resetLocaleManager } from '../../src/core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../src/core/i18n/types.js';
 

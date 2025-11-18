@@ -17,9 +17,9 @@
  * Run: npm run test:incremental:jira
  */
 
-import { JiraClient } from '../../src/integrations/jira/jira-client';
-import { JiraIncrementalMapper } from '../../src/integrations/jira/jira-incremental-mapper';
-import { credentialsManager } from '../../src/core/credentials-manager';
+import { JiraClient } from '../../src/integrations/jira/jira-client.js';
+import { JiraIncrementalMapper } from '../../src/integrations/jira/jira-incremental-mapper.js';
+import { credentialsManager } from '../../src/core/credentials-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

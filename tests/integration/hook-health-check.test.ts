@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { HookHealthChecker } from '../../src/core/hooks/HookHealthChecker';
-import { HealthReporter } from '../../src/core/hooks/HealthReporter';
+import { HookHealthChecker } from '../../src/core/hooks/HookHealthChecker.js';
+import { HealthReporter } from '../../src/core/hooks/HealthReporter.js';
 
 describe('Hook Health Check Integration', () => {
   it('should run full health check workflow', async () => {

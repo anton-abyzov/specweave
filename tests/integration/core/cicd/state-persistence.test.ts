@@ -7,8 +7,8 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { StateManager } from '../../src/core/cicd/state-manager';
-import { CICDMonitorState, FailureRecord } from '../../src/core/cicd/types';
+import { StateManager } from '../../src/core/cicd/state-manager.js';
+import { CICDMonitorState, FailureRecord } from '../../src/core/cicd/types.js';
 
 describe('State Persistence (Integration)', () => {
   let testDir: string;

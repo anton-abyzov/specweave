@@ -9,7 +9,7 @@
  * These tests use MOCKED GitHub CLI to avoid rate limiting and ensure deterministic results.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GitHubFeatureSync } from '../../plugins/specweave-github/lib/github-feature-sync.js';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import * as fs from 'fs/promises';
@@ -18,12 +18,12 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 
 // Mock execFileNoThrow to avoid actual GitHub CLI calls
-jest.mock('../../src/utils/execFileNoThrow.js', () => ({
-  execFileNoThrow: jest.fn()
+vi.mock('../../src/utils/execFileNoThrow.js', () => ({
+  execFileNoThrow: vi.fn()
 }));
 
 import { execFileNoThrow } from '../../src/utils/execFileNoThrow.js';
-const mockExecFileNoThrow = execFileNoThrow as jest.MockedFunction<typeof execFileNoThrow>;
+const mockExecFileNoThrow = vi.mocked(execFileNoThrow);
 
 describe('GitHubFeatureSync - Idempotency Integration Tests', () => {
   let tempDir: string;
