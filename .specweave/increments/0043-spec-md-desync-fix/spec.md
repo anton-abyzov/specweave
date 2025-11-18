@@ -2,9 +2,10 @@
 increment: 0043-spec-md-desync-fix
 title: "Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools"
 priority: P1
-status: planning
+status: active
 type: bug
 created: 2025-11-18
+started: 2025-11-18
 test_mode: TDD
 coverage_target: 90
 epic: FS-043
