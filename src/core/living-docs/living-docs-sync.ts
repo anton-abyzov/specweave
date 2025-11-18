@@ -368,7 +368,8 @@ export class LivingDocsSync {
     const criteria: AcceptanceCriterionData[] = [];
 
     // Pattern: - [x] AC-US1-01: Description
-    const acPattern = /^[-*]\s+\[([ x])\]\s+(AC-US\d+-\d+):\s+(.+?)$/gm;
+    // Supports both plain text and bold formatting: AC-US1-01 or **AC-US1-01**
+    const acPattern = /^[-*]\s+\[([ x])\]\s+\*{0,2}(AC-US\d+-\d+)\*{0,2}:\s+(.+?)$/gm;
 
     let match;
     while ((match = acPattern.exec(content)) !== null) {

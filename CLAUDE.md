@@ -283,8 +283,50 @@ For adapter implementation details, see "Multi-Tool Support via Adapters" sectio
 /specweave:increment "feature name"  # Plan new work (increment-planner skill)
 /specweave:do                        # Execute tasks
 /specweave:progress                  # Check status
-/specweave:done                      # Close increment
+/specweave:done                      # Close increment (with validation)
 ```
+
+**🔥 CRITICAL: Increment Completion Validation**
+
+**NEVER** mark an increment as "completed" without ALL of the following:
+1. ✅ All acceptance criteria checked (`- [x] **AC-...`)
+2. ✅ All tasks completed (`**Status**: [x] completed`)
+3. ✅ All tests passing (unit, integration, E2E)
+4. ✅ Coverage target met (`npm run test:coverage`)
+
+**Automated Protection**:
+- `/specweave:done` runs `IncrementCompletionValidator` before PM validation
+- Pre-commit hook blocks commits with invalid completion status
+- CI/CD validates completion on pull requests
+
+**Manual Protection** (if editing metadata.json directly):
+```bash
+# ❌ NEVER DO THIS - Manual metadata edit without validation
+vim .specweave/increments/0043-spec-md-desync-fix/metadata.json
+# Change "status": "active" → "completed"
+git commit -m "Complete increment"  # Will be BLOCKED by pre-commit hook
+
+# ✅ ALWAYS USE THIS - Let /specweave:done validate
+/specweave:done 0043  # Validates ACs, tasks, tests, docs before closing
+```
+
+**What Happens if Validation Fails**:
+```bash
+/specweave:done 0043
+
+❌ CANNOT CLOSE INCREMENT - Automated validation failed
+
+  • 17 acceptance criteria still open
+  • 13 tasks still pending
+
+Fix these issues before running /specweave:done again
+```
+
+**Why This Matters**:
+- **False completion** → Status line shows wrong increment
+- **GitHub sync broken** → Issues marked closed with open work
+- **Data integrity violation** → Source of truth is inconsistent
+- **Stakeholder confusion** → External tools show wrong status
 
 **State Management**:
 ```bash
@@ -380,7 +422,51 @@ When developing SpecWeave itself, you MUST use a **symlink** from the marketplac
 - ✅ No need to reinstall plugins after every change
 - ✅ Real-time testing of hooks, skills, and commands
 
-**Setup Instructions:**
+**⚡ QUICK SETUP (MANDATORY - Do this FIRST!):**
+
+```bash
+# 1. Clone and install dependencies
+git clone https://github.com/YOUR_USERNAME/specweave.git
+cd specweave
+npm install
+
+# 2. Create marketplace symlink (CRITICAL!)
+# ⚠️ IMPORTANT: Use absolute path, NOT $PWD (see ultrathink report for details)
+mkdir -p ~/.claude/plugins/marketplaces
+rm -rf ~/.claude/plugins/marketplaces/specweave  # Remove any existing directory/symlink
+ln -s "$(pwd)" ~/.claude/plugins/marketplaces/specweave
+
+# 3. Verify setup (MANDATORY!)
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+# Must show: ✅ ALL CHECKS PASSED!
+# If verification fails, see ultrathink report:
+#   .specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md
+
+# 4. Install git hooks (for pre-commit verification)
+bash scripts/install-git-hooks.sh
+```
+
+**Why Symlink is MANDATORY:**
+
+Claude Code's hook execution system looks for hooks in `~/.claude/plugins/marketplaces/specweave/`, NOT in your local repo.
+
+**⚠️ CRITICAL: Directory vs Symlink Issue**
+
+The marketplace path MUST be a **symlink**, NOT a **directory**:
+- ✅ **Symlink** (`lrwxr-xr-x`): All hook changes immediately reflected
+- ❌ **Directory** (`drwxr-xr-x`): Stale copy, hooks fail with "No such file or directory"
+
+**Without the symlink:**
+- ❌ All post-task-completion hooks fail with "No such file or directory"
+- ❌ Status line doesn't update automatically
+- ❌ Living docs don't sync after task completion
+- ❌ Increment metadata doesn't update
+- ❌ You'll waste hours debugging hook errors
+
+**Root Cause Analysis**: See comprehensive ultrathink report at:
+`.specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
+
+**Detailed Setup (if Quick Setup fails):**
 
 ```bash
 # 1. Remove any existing marketplace installation
@@ -392,20 +478,23 @@ ln -s /path/to/your/specweave/repo ~/.claude/plugins/marketplaces/specweave
 # Example:
 ln -s ~/Projects/github/specweave ~/.claude/plugins/marketplaces/specweave
 
-# 3. Register the local marketplace with Claude Code
-cd /path/to/your/specweave/repo
-claude plugin marketplace add ./.
+# 3. Verify symlink is correct
+readlink ~/.claude/plugins/marketplaces/specweave
+# Should output: /path/to/your/specweave/repo
 
-# 4. Verify the marketplace is registered
-claude plugin marketplace list
-# Should show: specweave (Source: Directory /path/to/your/repo)
-
-# 5. Update marketplace to discover all plugins
-claude plugin marketplace update specweave
-
-# 6. Verify hooks are accessible
-test -f ~/.claude/plugins/marketplaces/specweave/plugins/specweave/hooks/user-prompt-submit.sh && \
+# 4. Verify hooks are accessible
+test -f ~/.claude/plugins/marketplaces/specweave/plugins/specweave/hooks/post-task-completion.sh && \
   echo "✅ Hooks accessible" || echo "❌ Setup failed"
+
+# 5. Run automated verification
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+```
+
+**Verification Output:**
+
+```
+✅ ALL CHECKS PASSED! Local development setup is correct.
+You can now use TodoWrite and other tools without hook errors.
 ```
 
 **If you see "Plugin not found" errors:**

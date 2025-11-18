@@ -132,4 +132,243 @@ Content here.
       expect(updatedContent).toContain('status: active');
     });
   });
+
+  describe('T-002: Atomic Write Tests', () => {
+    it('testAtomicWriteSuccess - should write atomically and update status', async () => {
+      // GIVEN a spec.md file with valid frontmatter
+      // (already set up in beforeEach)
+
+      // WHEN updateStatus() is called
+      await SpecFrontmatterUpdater.updateStatus(incrementId, IncrementStatus.COMPLETED);
+
+      // THEN temp file should not exist after successful write
+      const tempPath = `${specPath}.tmp`;
+      expect(await fs.pathExists(tempPath)).toBe(false);
+
+      // AND final file should exist with updated content
+      expect(await fs.pathExists(specPath)).toBe(true);
+      const finalContent = await fs.readFile(specPath, 'utf-8');
+      expect(finalContent).toContain('status: completed');
+      expect(finalContent).not.toContain('status: active');
+    });
+
+    it('testAtomicWritePreservesFieldOrder - should preserve YAML field order', async () => {
+      // GIVEN a spec.md with specific field order
+      const originalContent = await fs.readFile(specPath, 'utf-8');
+      const originalLines = originalContent.split('\n');
+
+      // Find indices of key fields
+      const incrementLineIndex = originalLines.findIndex(l => l.includes('increment:'));
+      const titleLineIndex = originalLines.findIndex(l => l.includes('title:'));
+      const priorityLineIndex = originalLines.findIndex(l => l.includes('priority:'));
+      const statusLineIndex = originalLines.findIndex(l => l.includes('status:'));
+
+      // WHEN updateStatus() is called
+      await SpecFrontmatterUpdater.updateStatus(incrementId, IncrementStatus.COMPLETED);
+
+      // THEN field order should be preserved
+      const updatedContent = await fs.readFile(specPath, 'utf-8');
+      const updatedLines = updatedContent.split('\n');
+
+      const newIncrementLineIndex = updatedLines.findIndex(l => l.includes('increment:'));
+      const newTitleLineIndex = updatedLines.findIndex(l => l.includes('title:'));
+      const newPriorityLineIndex = updatedLines.findIndex(l => l.includes('priority:'));
+      const newStatusLineIndex = updatedLines.findIndex(l => l.includes('status:'));
+
+      // Field order should be same (relative positions)
+      expect(newIncrementLineIndex).toBe(incrementLineIndex);
+      expect(newTitleLineIndex).toBe(titleLineIndex);
+      expect(newPriorityLineIndex).toBe(priorityLineIndex);
+      expect(newStatusLineIndex).toBe(statusLineIndex);
+    });
+
+    it('testAtomicWriteHandlesMissingFile - should throw error for missing spec.md', async () => {
+      // GIVEN a non-existent increment
+      const nonExistentId = '9999-missing';
+
+      // WHEN updateStatus() is called
+      // THEN it should throw SpecUpdateError
+      await expect(
+        SpecFrontmatterUpdater.updateStatus(nonExistentId, IncrementStatus.COMPLETED)
+      ).rejects.toThrow(/spec\.md not found/i);
+    });
+
+    it('testAtomicWriteHandlesInvalidStatus - should throw error for invalid enum value', async () => {
+      // GIVEN a valid spec.md
+      // (already set up in beforeEach)
+
+      // WHEN updateStatus() is called with invalid status
+      // THEN it should throw SpecUpdateError with validation message
+      await expect(
+        SpecFrontmatterUpdater.updateStatus(incrementId, 'not-a-real-status' as IncrementStatus)
+      ).rejects.toThrow(/invalid.*status/i);
+
+      // AND original spec.md should be unchanged
+      const content = await fs.readFile(specPath, 'utf-8');
+      expect(content).toContain('status: active'); // Original status preserved
+    });
+  });
+
+  describe('T-003: readStatus() Method Tests', () => {
+    it('testReadStatusReturnsCurrentStatus - should read correct status value', async () => {
+      // GIVEN an increment with spec.md containing status="active"
+      const specContent = `---
+increment: 0001-test-increment
+title: Test Increment
+priority: P1
+status: active
+type: feature
+created: 2025-01-01
+test_mode: TDD
+coverage_target: 90
+---
+
+# Test Increment
+
+Test content here.
+`;
+      await fs.writeFile(specPath, specContent, 'utf-8');
+
+      // WHEN readStatus() is called
+      const status = await SpecFrontmatterUpdater.readStatus(incrementId);
+
+      // THEN it should return the current status value
+      expect(status).toBe(IncrementStatus.ACTIVE);
+    });
+
+    it('testReadStatusReturnsNullIfFileMissing - should return null for missing file', async () => {
+      // GIVEN a non-existent increment
+      const nonExistentId = '9999-missing';
+
+      // WHEN readStatus() is called
+      const status = await SpecFrontmatterUpdater.readStatus(nonExistentId);
+
+      // THEN it should return null (not throw error)
+      expect(status).toBeNull();
+    });
+
+    it('testReadStatusReturnsNullIfFieldMissing - should return null for missing status field', async () => {
+      // GIVEN a spec.md WITHOUT status field
+      const specWithoutStatus = `---
+increment: 0001-test-increment
+title: Test Increment
+priority: P1
+type: feature
+---
+
+# Test Increment
+
+Content here.
+`;
+      await fs.writeFile(specPath, specWithoutStatus, 'utf-8');
+
+      // WHEN readStatus() is called
+      const status = await SpecFrontmatterUpdater.readStatus(incrementId);
+
+      // THEN it should return null
+      expect(status).toBeNull();
+    });
+
+    it('testReadStatusValidatesEnumValue - should throw for invalid enum value', async () => {
+      // GIVEN a spec.md with invalid status value
+      const specWithInvalidStatus = `---
+increment: 0001-test-increment
+title: Test Increment
+status: invalid-status-value
+---
+
+# Test Increment
+
+Content here.
+`;
+      await fs.writeFile(specPath, specWithInvalidStatus, 'utf-8');
+
+      // WHEN readStatus() is called
+      // THEN it should throw SpecUpdateError
+      await expect(
+        SpecFrontmatterUpdater.readStatus(incrementId)
+      ).rejects.toThrow(/invalid.*status/i);
+    });
+  });
+
+  describe('T-004: validate() Method Tests', () => {
+    it('testValidatePassesForValidStatus - should return true for valid status', async () => {
+      // GIVEN an increment with valid spec.md containing status="active"
+      const specContent = `---
+increment: 0001-test-increment
+title: Test Increment
+priority: P1
+status: active
+type: feature
+created: 2025-01-01
+test_mode: TDD
+coverage_target: 90
+---
+
+# Test Increment
+
+Test content here.
+`;
+      await fs.writeFile(specPath, specContent, 'utf-8');
+
+      // WHEN validate() is called
+      const result = await SpecFrontmatterUpdater.validate(incrementId);
+
+      // THEN it should return true
+      expect(result).toBe(true);
+    });
+
+    it('testValidateThrowsForInvalidEnumValue - should throw for invalid status value', async () => {
+      // GIVEN a spec.md with invalid status value
+      const specWithInvalidStatus = `---
+increment: 0001-test-increment
+title: Test Increment
+status: not-a-valid-status
+---
+
+# Test Increment
+
+Content here.
+`;
+      await fs.writeFile(specPath, specWithInvalidStatus, 'utf-8');
+
+      // WHEN validate() is called
+      // THEN it should throw SpecUpdateError
+      await expect(
+        SpecFrontmatterUpdater.validate(incrementId)
+      ).rejects.toThrow(/invalid.*status/i);
+    });
+
+    it('testValidateThrowsForMissingStatusField - should throw if status field missing', async () => {
+      // GIVEN a spec.md WITHOUT status field
+      const specWithoutStatus = `---
+increment: 0001-test-increment
+title: Test Increment
+priority: P1
+---
+
+# Test Increment
+
+Content here.
+`;
+      await fs.writeFile(specPath, specWithoutStatus, 'utf-8');
+
+      // WHEN validate() is called
+      // THEN it should throw SpecUpdateError
+      await expect(
+        SpecFrontmatterUpdater.validate(incrementId)
+      ).rejects.toThrow(/missing.*status/i);
+    });
+
+    it('testValidateThrowsForMissingFile - should throw if spec.md missing', async () => {
+      // GIVEN a non-existent increment
+      const nonExistentId = '9999-missing';
+
+      // WHEN validate() is called
+      // THEN it should throw SpecUpdateError
+      await expect(
+        SpecFrontmatterUpdater.validate(nonExistentId)
+      ).rejects.toThrow(/missing.*status/i);
+    });
+  });
 });

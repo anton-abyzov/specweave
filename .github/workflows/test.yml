@@ -216,6 +216,35 @@ jobs:
             echo "No increments directory found (OK for new projects)"
           fi
 
+  verify-dev-setup:
+    name: Verify Local Development Setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Create marketplace symlink (for CI/CD testing)
+        run: |
+          mkdir -p ~/.claude/plugins/marketplaces
+          ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
+          echo "✅ Marketplace symlink created"
+
+      - name: Run dev setup verification
+        run: |
+          bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+          echo "Note: Marketplace registration check may be skipped in CI/CD"
+
+      - name: Verify hooks are accessible
+        run: |
+          if [ ! -f ~/.claude/plugins/marketplaces/specweave/plugins/specweave/hooks/post-task-completion.sh ]; then
+            echo "❌ ERROR: Hooks not accessible via symlink!"
+            exit 1
+          fi
+          if [ ! -x ~/.claude/plugins/marketplaces/specweave/plugins/specweave/hooks/post-task-completion.sh ]; then
+            echo "❌ ERROR: Hooks exist but not executable!"
+            exit 1
+          fi
+          echo "✅ All hooks accessible and executable"
+
   test-structure:
     name: Validate Test Structure
     runs-on: ubuntu-latest

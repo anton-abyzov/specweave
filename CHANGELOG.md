@@ -26,6 +26,15 @@ This patch release fixes critical test failures that were blocking all PRs. The 
 
 ## [0.22.0] - 2025-11-20
 
+### Fixed
+
+- **Spec/Metadata Sync** - Fixed critical bug where `spec.md` frontmatter wasn't updated during status transitions (increment 0043)
+  - Status line now shows correct active increment (no more stale completed increments)
+  - Hooks and external tools (GitHub/JIRA/ADO) read accurate status from `spec.md`
+  - Implemented atomic dual-write pattern with rollback for data integrity
+  - New validation command: `npx specweave validate-status-sync`
+  - New repair command: `npx specweave repair-status-desync --all`
+
 ### Added
 
 **Strategic Init System - Research-Driven Architecture (Phase 0)**

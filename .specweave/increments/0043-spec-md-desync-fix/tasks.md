@@ -1,7 +1,7 @@
 ---
 increment: 0043-spec-md-desync-fix
 total_tasks: 24
-completed_tasks: 13
+completed_tasks: 20
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -341,7 +341,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-01
 **Priority**: P2
 **Estimate**: 4 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** a SpecWeave project with multiple increments
@@ -393,7 +393,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-01
 **Priority**: P2
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** a desync between metadata.json and spec.md

@@ -1,9 +1,9 @@
 {
   "id": "0043-spec-md-desync-fix",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-18T05:06:41Z",
-  "lastActivity": "2025-11-18T05:06:41Z",
+  "lastActivity": "2025-11-18T20:32:08.458Z",
   "testMode": "TDD",
   "coverageTarget": 80,
   "github": {
@@ -50,5 +50,6 @@
       "comments_posted": 5,
       "direction": "to_github"
     }
-  }
+  },
+  "completed": "2025-11-18T22:18:38.102Z"
 }

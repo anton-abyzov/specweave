@@ -35,6 +35,7 @@ export class StatusLineManager {
    * Render status line
    *
    * Returns formatted string or null if no active increment.
+   * NOW supports multiple active increments (up to 2).
    */
   public render(): string | null {
     if (!this.config.enabled) {
@@ -42,8 +43,16 @@ export class StatusLineManager {
     }
 
     const cache = this.readCache();
-    if (!cache || !cache.current) {
+    if (!cache) {
       return 'No active increment';
+    }
+
+    // Support both new and old format
+    const increments = cache.activeIncrements ||
+      (cache.current ? [cache.current] : []);
+
+    if (increments.length === 0) {
+      return cache.message || 'No active increment';
     }
 
     return this.formatStatusLine(cache);
@@ -79,31 +88,53 @@ export class StatusLineManager {
   /**
    * Format status line
    *
-   * Format: [XXXX-name] ████░░░░ X/Y (Z open)
-   * Shows: Full ID always to prevent confusion
+   * Format: [inc-1] ████░░░░ X/Y tasks | A/B ACs | [inc-2] ██████░░ C/D tasks | E/F ACs
+   * Shows: Up to 2 active increments with task AND AC completion
    */
   private formatStatusLine(cache: StatusLineCache): string {
-    const current = cache.current!;
     const parts: string[] = [];
 
-    // Always show increment ID (XXXX-name format) for clarity
-    // Truncate if needed to fit in status line
-    const name = this.truncate(current.name, this.config.maxNameLength);
-    parts.push(`[${name}]`);
+    // Support both new and old format (backward compatibility)
+    const increments = cache.activeIncrements ||
+      (cache.current ? [cache.current] : []);
 
-    // Progress bar
-    const bar = this.renderProgressBar(current.completed, current.total);
-    parts.push(bar);
+    // Show each active increment (up to 2)
+    for (const inc of increments) {
+      const incrementParts: string[] = [];
 
-    // Tasks count
-    parts.push(`${current.completed}/${current.total}`);
+      // Increment ID (truncate if needed)
+      const name = this.truncate(inc.name, 20); // Shorter for multiple
+      incrementParts.push(`[${name}]`);
 
-    // Open count (if more than 1)
-    if (cache.openCount > 1) {
-      parts.push(`(${cache.openCount} open)`);
+      // Progress bar
+      const bar = this.renderProgressBar(inc.completed, inc.total);
+      incrementParts.push(bar);
+
+      // Tasks count
+      incrementParts.push(`${inc.completed}/${inc.total} tasks`);
+
+      // AC count (if available)
+      if (inc.acsTotal !== undefined && inc.acsCompleted !== undefined) {
+        incrementParts.push(`${inc.acsCompleted}/${inc.acsTotal} ACs`);
+      }
+
+      parts.push(incrementParts.join(' | '));
     }
 
-    return parts.join(' ');
+    // Show remaining open count (if more than shown)
+    if (cache.openCount > increments.length) {
+      parts.push(`(+${cache.openCount - increments.length} more)`);
+    }
+
+    // Join all parts with separator
+    const formatted = parts.join(' · '); // Use different separator for increments
+
+    // Truncate if too long (max 120 chars for status line with AC metrics)
+    if (formatted.length > 120) {
+      return this.truncate(formatted, 117) + '...';
+    }
+
+    return formatted;
   }
 
   /**

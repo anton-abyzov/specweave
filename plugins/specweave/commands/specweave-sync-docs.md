@@ -243,6 +243,57 @@ Synchronize living documentation in `.specweave/docs/` with learnings and decisi
 
 ### Execution Steps:
 
+#### 0. 🔄 SYNC LIVING SPECS (User Stories, ACs, Tasks) - CRITICAL FIRST STEP
+
+**🚨 MANDATORY: This MUST run FIRST before syncing strategic docs!**
+
+Execute the living specs sync using the TypeScript CLI:
+
+```typescript
+import { syncSpecs } from './dist/src/cli/commands/sync-specs.js';
+
+console.log('═══════════════════════════════════════════════════════');
+console.log('📋 STEP 0: SYNCING LIVING SPECS');
+console.log('═══════════════════════════════════════════════════════\n');
+console.log('🔄 Syncing user stories, acceptance criteria, and tasks...\n');
+
+// Call sync-specs to sync living docs structure
+await syncSpecs(['{increment_id}']);
+
+console.log('\n✅ Living specs synced successfully!');
+console.log('   - User stories created/updated in .specweave/docs/internal/specs/');
+console.log('   - Acceptance criteria synchronized with completion status');
+console.log('   - Tasks linked to user stories\n');
+```
+
+**What this step does**:
+- ✅ Parses increment spec.md and extracts user stories with ACs
+- ✅ Syncs AC completion status from spec.md to user story files
+- ✅ Updates task mappings in user story files
+- ✅ Creates/updates feature files and README
+- ✅ Ensures living specs are in sync BEFORE strategic docs
+
+**Output**:
+```
+🎯 Target increment: {increment_id}
+📁 Increment path: .specweave/increments/{increment_id}
+🔄 Mode: Specs-only sync (Universal Hierarchy)
+
+Processing...
+📚 Syncing {increment_id} → {FS-XXX}...
+   ✅ Synced 3 tasks to US-001
+   ✅ Synced 2 tasks to US-002
+
+✅ Synced {increment_id} → {FS-XXX}
+   Created: 5 files
+
+═══════════════════════════════════════════════════════
+```
+
+**CRITICAL**: If this step fails, STOP and report error. Do not proceed to strategic docs sync.
+
+---
+
 #### 1. Analyze Increment Artifacts
 
 ```bash
@@ -510,7 +561,16 @@ Increment: {increment_id} ({title})
 Status: {status} → Documentation Updated
 
 ───────────────────────────────────────────────────────
-📊 CHANGES SUMMARY
+📋 LIVING SPECS SYNCED (Step 0)
+───────────────────────────────────────────────────────
+
+✅ User Stories: {count} created/updated in .specweave/docs/internal/specs/
+✅ Acceptance Criteria: Synchronized with completion status from spec.md
+✅ Tasks: Linked to user stories with completion tracking
+✅ Feature Files: Created/updated in .specweave/docs/internal/specs/_features/
+
+───────────────────────────────────────────────────────
+📊 STRATEGIC DOCS CHANGES (Steps 1-5)
 ───────────────────────────────────────────────────────
 
 Created:
@@ -544,20 +604,27 @@ To restore: cp {file}.backup {file}
 ───────────────────────────────────────────────────────
 
 1. Review updated documentation:
+   - Living specs: .specweave/docs/internal/specs/
    - Public docs: .specweave/docs/public/
    - Internal docs: .specweave/docs/internal/
    - New ADRs: .specweave/docs/internal/architecture/adr/
 
-2. (Optional) Generate Docusaurus site:
+2. Verify living specs sync:
+   - Check user story files for updated AC checkboxes
+   - Verify tasks are linked correctly
+   - Confirm feature files are up to date
+
+3. (Optional) Generate Docusaurus site:
    - Use 'docusaurus' skill to publish updated docs
 
-3. Commit changes:
+4. Commit changes:
    git add .specweave/docs/
    git commit -m "docs: sync from increment {increment_id}"
 
 ═══════════════════════════════════════════════════════
 
-Documentation is now in sync with increment {increment_id}! 🎉
+ALL documentation is now in sync with increment {increment_id}! 🎉
+(Living specs + Strategic docs)
 ```
 
 ---
