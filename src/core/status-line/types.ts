@@ -1,19 +1,31 @@
 /**
- * Status Line Types (Simplified)
+ * Status Line Types
  *
- * Ultra-simple status line with cached progress.
- * Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
+ * Supports displaying multiple active increments (up to 2).
+ * Shows: [inc-1] ████░░░░ X/Y | [inc-2] ██████░░ A/B (Z open)
  */
 
 export interface StatusLineCache {
-  /** Current active/in-progress increment (null if none) */
-  current: CurrentIncrement | null;
+  /** NEW: Array of active increments (up to 2) */
+  activeIncrements: CurrentIncrement[];
 
   /** Total number of open increments (active/in-progress/planning) */
   openCount: number;
 
   /** ISO timestamp of last cache update */
   lastUpdate: string;
+
+  /**
+   * DEPRECATED: Use activeIncrements[0] instead
+   * Kept for backward compatibility with old code
+   */
+  current?: CurrentIncrement | null;
+
+  /**
+   * Optional message to display when no active increments
+   * Used for user guidance when openCount === 0
+   */
+  message?: string;
 }
 
 export interface CurrentIncrement {
