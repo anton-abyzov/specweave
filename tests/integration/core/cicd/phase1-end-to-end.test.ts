@@ -5,13 +5,13 @@
  * integrating all Phase 1 components.
  */
 
-import { MonitorService } from '../../src/core/cicd/monitor-service';
-import { loadConfig } from '../../src/core/cicd/config-loader';
+import { MonitorService } from '../../src/core/cicd/monitor-service.js';
+import { loadConfig } from '../../src/core/cicd/config-loader.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 // Mock Octokit
-jest.mock('@octokit/rest');
+vi.mock('@octokit/rest');
 
 describe('Phase 1: End-to-End Integration', () => {
   let testDir: string;
@@ -92,7 +92,7 @@ describe('Phase 1: End-to-End Integration', () => {
       }
     ];
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: mockWorkflowRuns },
       status: 200,
       headers: {
@@ -160,7 +160,7 @@ describe('Phase 1: End-to-End Integration', () => {
     (service as any).monitor.octokit = {
       rest: {
         actions: {
-          listWorkflowRunsForRepo: jest.fn().mockResolvedValue({
+          listWorkflowRunsForRepo: vi.fn().mockResolvedValue({
             data: { workflow_runs: mockWorkflowRuns },
             status: 200,
             headers: {
@@ -214,7 +214,7 @@ describe('Phase 1: End-to-End Integration', () => {
     (service as any).monitor.octokit = {
       rest: {
         actions: {
-          listWorkflowRunsForRepo: jest.fn().mockResolvedValue({
+          listWorkflowRunsForRepo: vi.fn().mockResolvedValue({
             data: { workflow_runs: mockWorkflowRuns },
             status: 200,
             headers: {

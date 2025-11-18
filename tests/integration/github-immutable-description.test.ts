@@ -5,34 +5,34 @@
  * Verifies the complete flow from user story → GitHub issue → progress comment.
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2';
-import { syncSpecContentToGitHub } from '../../plugins/specweave-github/lib/github-spec-content-sync';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'';
+import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
+import { syncSpecContentToGitHub } from '../../plugins/specweave-github/lib/github-spec-content-sync.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
 // Mock GitHub API
-jest.mock('../../plugins/specweave-github/lib/github-client-v2');
+vi.mock('../../plugins/specweave-github/lib/github-client-v2');
 
 describe('Immutable Description Pattern Integration', () => {
   let tempDir: string;
   let userStoryPath: string;
-  let mockClient: jest.Mocked<GitHubClientV2>;
+  let mockClient: vi.Mocked<GitHubClientV2>;
 
   beforeEach(async () => {
     // Create temp directory
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'immutable-desc-test-'));
 
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Setup mock GitHub client
     mockClient = {
-      createEpicIssue: jest.fn(),
-      addComment: jest.fn(),
-      addLabels: jest.fn(),
-      getIssue: jest.fn(),
+      createEpicIssue: vi.fn(),
+      addComment: vi.fn(),
+      addLabels: vi.fn(),
+      getIssue: vi.fn(),
     } as any;
 
     (GitHubClientV2.fromRepo as jest.Mock).mockReturnValue(mockClient);

@@ -4,13 +4,13 @@
  * Tests real GitHub API interactions (in mock mode) and network failure handling.
  */
 
-import { WorkflowMonitor } from '../../src/core/cicd/workflow-monitor';
-import { StateManager } from '../../src/core/cicd/state-manager';
+import { WorkflowMonitor } from '../../src/core/cicd/workflow-monitor.js';
+import { StateManager } from '../../src/core/cicd/state-manager.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
 // Mock Octokit for integration tests
-jest.mock('@octokit/rest');
+vi.mock('@octokit/rest');
 
 describe('GitHub API Polling (Integration)', () => {
   let testDir: string;
@@ -70,7 +70,7 @@ describe('GitHub API Polling (Integration)', () => {
       }
     ];
 
-    const mockListWorkflowRuns = jest.fn().mockResolvedValue({
+    const mockListWorkflowRuns = vi.fn().mockResolvedValue({
       data: { workflow_runs: mockWorkflowRuns },
       status: 200,
       headers: {
@@ -125,7 +125,7 @@ describe('GitHub API Polling (Integration)', () => {
     );
 
     // Simulate network error
-    const mockListWorkflowRuns = jest.fn().mockRejectedValue(new Error('Network timeout'));
+    const mockListWorkflowRuns = vi.fn().mockRejectedValue(new Error('Network timeout'));
 
     (monitor as any).octokit = {
       rest: {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PlatformDataLoader } from '../../src/core/serverless/platform-data-loader';
+import { PlatformDataLoader } from '../../src/core/serverless/platform-data-loader.js';
 
 describe('Platform Data Loading Integration', () => {
   let loader: PlatformDataLoader;
