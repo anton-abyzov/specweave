@@ -14,7 +14,7 @@ import path from 'path';
 const execAsync = promisify(exec);
 
 // Get path to local specweave binary for testing
-const projectRoot = path.resolve(__dirname, '../../..');
+const projectRoot = path.resolve(__dirname, '../../../..');
 const specweaveBin = path.join(projectRoot, 'bin', 'specweave.js');
 
 describe('specweave init . (current directory)', () => {

@@ -12,9 +12,11 @@
 import { test, expect } from '@playwright/test';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 import { execSync } from 'child_process';
 
-const TEST_DIR = path.join(process.cwd(), 'tests/fixtures/e2e-living-docs-translation');
+// ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+const TEST_DIR = path.join(os.tmpdir(), 'specweave-e2e-living-docs-translation');
 
 // Retry configuration for file system operations
 const CLEANUP_RETRIES = 3;

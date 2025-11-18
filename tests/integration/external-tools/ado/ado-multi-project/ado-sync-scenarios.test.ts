@@ -10,6 +10,7 @@
 
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import { execSync } from 'child_process';
 
 describe('ADO Sync Scenarios', () => {
@@ -17,7 +18,8 @@ describe('ADO Sync Scenarios', () => {
   let specsDir: string;
 
   beforeAll(async () => {
-    testDir = path.join(process.cwd(), 'tests', 'tmp', 'ado-sync-test');
+    // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+    testDir = path.join(os.tmpdir(), 'specweave-ado-sync-test');
     specsDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs');
     await fs.ensureDir(specsDir);
   });
