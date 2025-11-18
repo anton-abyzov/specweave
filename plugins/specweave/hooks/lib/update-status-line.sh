@@ -6,9 +6,9 @@
 # Shows: [increment-name] ████░░░░ X/Y tasks (Z open)
 #
 # Logic:
-# 1. Scan all spec.md for status=active/in-progress/planning (SOURCE OF TRUTH!)
+# 1. Scan all spec.md for status=active/planning (SOURCE OF TRUTH!)
 # 2. Take first (oldest) as current increment
-# 3. Count all active/in-progress/planning as openCount
+# 3. Count all active/planning as openCount
 # 4. Parse current increment's tasks.md for progress
 # 5. Write to cache
 #
@@ -37,8 +37,9 @@ TMP_FILE="$PROJECT_ROOT/.specweave/state/.status-line-tmp.txt"
 # Ensure state directory exists
 mkdir -p "$PROJECT_ROOT/.specweave/state"
 
-# Step 1: Find all open increments (active/in-progress/planning)
+# Step 1: Find all open increments (active/planning)
 # Read from spec.md (source of truth), not metadata.json
+# ONLY accepts official IncrementStatus enum values
 # Write to temp file: "timestamp increment_id"
 > "$TMP_FILE"
 
@@ -48,8 +49,9 @@ if [[ -d "$INCREMENTS_DIR" ]]; then
       # Parse YAML frontmatter for status (source of truth)
       status=$(grep -m1 "^status:" "$spec_file" 2>/dev/null | cut -d: -f2 | tr -d ' ' || echo "")
 
-      # Check if increment is open (active, in-progress, or planning)
-      if [[ "$status" == "active" ]] || [[ "$status" == "in-progress" ]] || [[ "$status" == "planning" ]]; then
+      # Check if increment is open (active or planning)
+      # ONLY accepts official IncrementStatus enum values
+      if [[ "$status" == "active" ]] || [[ "$status" == "planning" ]]; then
         increment_id=$(basename "$(dirname "$spec_file")")
         # Parse created date from spec.md YAML frontmatter
         created=$(grep -m1 "^created:" "$spec_file" 2>/dev/null | cut -d: -f2- | tr -d ' ' || echo "1970-01-01")

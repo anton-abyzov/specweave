@@ -18,6 +18,7 @@ export default defineConfig({
       '**/dist/**',
       '**/tests/e2e/**', // E2E tests run with Playwright
       '**/*.skip.test.ts', // Skip tests with .skip.test.ts extension
+      '**/plugins/**/lib/hooks/**', // Exclude hook TypeScript files (not tests!)
     ],
 
     // Global setup/teardown

@@ -52,6 +52,7 @@ describe('WorkflowMonitor', () => {
   it('testPollsEvery60Seconds: Uses setInterval(60000)', () => {
     // Mock setInterval
     vi.useFakeTimers();
+    const setIntervalSpy = vi.spyOn(global, 'setInterval');
 
     // Start monitor
     monitor.start();
@@ -60,7 +61,7 @@ describe('WorkflowMonitor', () => {
     expect(monitor.isRunning()).toBe(true);
 
     // Verify setInterval called with 100ms (test config)
-    expect(setInterval).toHaveBeenCalledWith(expect.any(Function), 100);
+    expect(setIntervalSpy).toHaveBeenCalledWith(expect.any(Function), 100);
 
     // Stop monitor
     monitor.stop();
@@ -197,6 +198,9 @@ describe('WorkflowMonitor', () => {
    * Test: Handles rate limiting (429 response with exponential backoff)
    */
   it('testHandlesRateLimiting: Exponential backoff on 429 response', async () => {
+    // Use fake timers for this test
+    vi.useFakeTimers();
+
     // Mock 429 response, then success
     const mockListWorkflowRuns = vi
       .fn()
@@ -227,14 +231,18 @@ describe('WorkflowMonitor', () => {
     };
 
     // Poll (should retry after 429)
-    const startTime = Date.now();
-    const result = await monitor.poll();
-    const elapsed = Date.now() - startTime;
+    const pollPromise = monitor.poll();
 
-    // Verify retried after ~2 seconds
-    expect(elapsed).toBeGreaterThanOrEqual(1900); // Allow 100ms tolerance
+    // Advance timers by 2 seconds to trigger retry
+    await vi.advanceTimersByTimeAsync(2000);
+
+    const result = await pollPromise;
+
+    // Verify retry succeeded
     expect(result.statusCode).toBe(200);
     expect(mockListWorkflowRuns).toHaveBeenCalledTimes(2);
+
+    vi.useRealTimers();
   });
 
   /**

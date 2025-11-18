@@ -1,0 +1,15 @@
+# Firebase Outputs
+output "web_app_id" {
+  description = "Firebase Web App ID"
+  value       = google_firebase_web_app.{{snakeCase appDisplayName}}.app_id
+}
+
+output "hosting_site_url" {
+  description = "Firebase Hosting URL"
+  value       = "https://${google_firebase_hosting_site.{{snakeCase siteId}}.default_url}"
+}
+
+output "function_url" {
+  description = "Cloud Function URL"
+  value       = google_cloudfunctions2_function.{{snakeCase functionName}}.service_config[0].uri
+}

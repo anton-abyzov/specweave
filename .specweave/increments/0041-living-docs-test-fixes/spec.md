@@ -2,7 +2,7 @@
 increment: 0041-living-docs-test-fixes
 title: "Complete Living Docs Test Fixes"
 priority: P1
-status: planned
+status: planning
 created: 2025-11-17
 type: bug
 structure: user-stories

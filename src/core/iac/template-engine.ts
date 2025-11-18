@@ -71,6 +71,7 @@ export class TerraformTemplateEngine {
   private registerHelpers(): void {
     // Helper: Convert to snake_case (Terraform naming convention)
     this.handlebars.registerHelper('snakeCase', (str: string) => {
+      if (!str) return '';
       return str
         .replace(/([A-Z])/g, '_$1')
         .toLowerCase()
@@ -79,6 +80,7 @@ export class TerraformTemplateEngine {
 
     // Helper: Convert to kebab-case
     this.handlebars.registerHelper('kebabCase', (str: string) => {
+      if (!str) return '';
       return str
         .replace(/([A-Z])/g, '-$1')
         .toLowerCase()
@@ -87,17 +89,38 @@ export class TerraformTemplateEngine {
 
     // Helper: Uppercase
     this.handlebars.registerHelper('uppercase', (str: string) => {
+      if (!str) return '';
       return str.toUpperCase();
     });
 
     // Helper: Lowercase
     this.handlebars.registerHelper('lowercase', (str: string) => {
+      if (!str) return '';
       return str.toLowerCase();
     });
 
     // Helper: Conditional equality check
     this.handlebars.registerHelper('eq', (a: any, b: any) => {
       return a === b;
+    });
+
+    // Helper: Multiply numbers (for cost calculations)
+    this.handlebars.registerHelper('multiply', (...args: any[]) => {
+      // Remove the options object (last argument)
+      const numbers = args.slice(0, -1);
+      return numbers.reduce((acc, val) => acc * (parseFloat(val) || 0), 1);
+    });
+
+    // Helper: Add numbers (for cost calculations)
+    this.handlebars.registerHelper('add', (...args: any[]) => {
+      // Remove the options object (last argument)
+      const numbers = args.slice(0, -1);
+      return numbers.reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
+    });
+
+    // Helper: Get current date (for documentation generation)
+    this.handlebars.registerHelper('currentDate', () => {
+      return new Date().toISOString().split('T')[0];
     });
 
     // Helper: Conditional OR

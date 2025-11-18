@@ -99,7 +99,8 @@ export class ConfigManager {
 
       await ConfigManager.save(config, configPath);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      const errorMessage = (error as Error).message || '';
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT' || errorMessage.includes('Config file not found')) {
         throw new Error(
           `Cannot update research: config file not found. Run 'specweave init' first.`
         );

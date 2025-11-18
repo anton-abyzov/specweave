@@ -76,10 +76,10 @@ export function autoTransitionStatus(incrementId: string, triggerFile?: string):
     const metadata = MetadataManager.read(incrementId);
     const currentStatus = metadata.status;
 
-    // Rule 1: PLANNING → ACTIVE (when tasks.md created)
-    if (currentStatus === IncrementStatus.PLANNING && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE)) {
+    // Rule 1: PLANNING → ACTIVE (when tasks.md created AND tasks in-progress)
+    if (currentStatus === IncrementStatus.PLANNING && hasFile(incrementId, TRANSITION_TRIGGERS.TASKS_FILE) && hasInProgressTasks(incrementId)) {
       MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
-      console.log(`✅ Auto-transitioned ${incrementId}: PLANNING → ACTIVE (tasks.md created)`);
+      console.log(`✅ Auto-transitioned ${incrementId}: PLANNING → ACTIVE (tasks in-progress)`);
       return true;
     }
 

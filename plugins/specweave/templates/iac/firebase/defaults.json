@@ -1,0 +1,29 @@
+{
+  "projectId": "my-firebase-project",
+  "region": "us-central1",
+  "appDisplayName": "My Firebase App",
+  "siteId": "my-firebase-site",
+  "functionName": "myFirebaseFunction",
+  "runtime": "nodejs20",
+  "entryPoint": "handler",
+  "memoryMb": 256,
+  "timeoutSeconds": 60,
+  "environment": "dev",
+  "databaseId": "(default)",
+  "collectionId": "my-collection",
+  "storageBucket": "my-firebase-storage",
+  "projectName": "my-project",
+  "enableAuth": false,
+  "enableStorage": false,
+  "enableAnalytics": false,
+  "enableCrashlytics": false,
+  "hostingIndexPage": "index.html",
+  "hosting404Page": "404.html",
+  "hostingHeaders": [],
+  "hostingRewrites": [
+    {
+      "source": "**",
+      "function": "myFirebaseFunction"
+    }
+  ]
+}

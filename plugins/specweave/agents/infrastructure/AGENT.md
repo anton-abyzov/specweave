@@ -60,24 +60,38 @@ I generate Terraform configurations for 5 serverless platforms:
 
 ### 2. Template Engine Integration
 
-I use the **TerraformTemplateEngine** to render Handlebars templates:
+I use the **TerraformTemplateEngine** to render Handlebars templates with full serverless platform support:
 
-**Template Location**: `plugins/specweave/iac-templates/{platform-id}/`
+**Template Location**: `plugins/specweave/templates/iac/{platform}/`
 
-**Template Files**:
-- `main.tf.hbs` - Core infrastructure resources
-- `variables.tf.hbs` - Input variables with defaults
-- `outputs.tf.hbs` - Output values (URLs, ARNs, IDs)
-- `provider.tf.hbs` - Cloud provider configuration
-- `iam.tf.hbs` - IAM roles, policies, service accounts (security)
-- `README.md.hbs` - Deployment instructions and documentation
+**Supported Platforms**:
+- `aws-lambda/` - AWS Lambda + API Gateway + DynamoDB
+- `azure-functions/` - Azure Functions + Cosmos DB
+- `gcp-cloud-functions/` - GCP Cloud Functions + Firestore
+- `firebase/` - Firebase Hosting + Functions + Firestore
+- `supabase/` - Supabase (PostgreSQL + Auth + Storage)
 
-**Custom Helpers**:
-- `{{snakeCase name}}` - Convert to snake_case
-- `{{kebabCase name}}` - Convert to kebab-case
-- `{{tfList items}}` - Format as Terraform list
-- `{{tfMap obj}}` - Format as Terraform map
+**Template Files** (each platform has):
+- `templates/main.tf.hbs` - Core infrastructure resources
+- `templates/variables.tf.hbs` - Input variables with defaults
+- `templates/outputs.tf.hbs` - Output values (URLs, ARNs, IDs)
+- `templates/providers.tf.hbs` - Cloud provider configuration
+- `templates/iam.tf.hbs` - IAM roles, policies, service accounts (AWS/GCP)
+- `templates/README.md.hbs` - Deployment instructions and cost estimates
+- `templates/environments/dev.tfvars.hbs` - Development config (free tier optimized)
+- `templates/environments/staging.tfvars.hbs` - Staging config
+- `templates/environments/prod.tfvars.hbs` - Production config (HA, backup)
+- `defaults.json` - Default values for template variables
+
+**Custom Handlebars Helpers**:
+- `{{snakeCase name}}` - Convert to snake_case (e.g., "myFunction" → "my_function")
+- `{{kebabCase name}}` - Convert to kebab-case (e.g., "myFunction" → "my-function")
+- `{{tfList items}}` - Format array as Terraform list (e.g., ["a","b"] → `["a", "b"]`)
+- `{{tfMap obj}}` - Format object as Terraform map
 - `{{#if (eq var "value")}}...{{/if}}` - Conditional rendering
+- `{{#each items}}...{{/each}}` - Loop over arrays
+- `{{multiply a b}}` - Arithmetic operations
+- `{{add a b}}` - Addition for cost calculations
 
 ### 3. Environment-Specific Configurations
 
@@ -156,37 +170,65 @@ Architect Agent: → Recommends: AWS Lambda for startup project
 
 Infrastructure Agent (me):
   1. Load Templates:
-     - Locate: plugins/specweave/iac-templates/aws-lambda/
-     - Read: main.tf.hbs, variables.tf.hbs, outputs.tf.hbs, provider.tf.hbs, iam.tf.hbs, README.md.hbs
+     - Locate: plugins/specweave/templates/iac/aws-lambda/
+     - Read all template files:
+       * templates/main.tf.hbs
+       * templates/variables.tf.hbs
+       * templates/outputs.tf.hbs
+       * templates/providers.tf.hbs
+       * templates/iam.tf.hbs
+       * templates/README.md.hbs
+       * templates/environments/*.tfvars.hbs
 
   2. Merge Defaults:
-     - Load: aws-lambda/defaults.json
-     - Merge: defaults + project metadata
-     - Result: Complete variable set
+     - Load: defaults.json from aws-lambda/
+     - Merge: defaults + architect recommendation metadata
+     - Result: Complete variable set with all required values
 
   3. Render Templates:
-     - Use: TerraformTemplateEngine
-     - Render: Each .hbs file → .tf file
-     - Apply: Custom helpers (snakeCase, conditionals)
+     - Use: Handlebars template engine
+     - Render: Each .hbs file → corresponding output file
+     - Apply: Custom helpers (snakeCase, tfList, conditionals, loops)
+     - Substitute: All {{variableName}} placeholders with actual values
 
   4. Generate Environment Configs:
-     - Load: environments/dev.defaults.json
-     - Generate: environments/dev.tfvars
-     - Load: environments/staging.defaults.json
-     - Generate: environments/staging.tfvars
-     - Load: environments/prod.defaults.json
-     - Generate: environments/prod.tfvars
+     - Dev environment:
+       * Render: templates/environments/dev.tfvars.hbs → dev.tfvars
+       * Optimize: Free tier settings (min resources, pay-per-request)
+     - Staging environment:
+       * Render: templates/environments/staging.tfvars.hbs → staging.tfvars
+       * Balance: Performance vs cost
+     - Production environment:
+       * Render: templates/environments/prod.tfvars.hbs → prod.tfvars
+       * Maximize: Availability, backup, multi-region
 
   5. Write Files:
-     - Create: .infrastructure/aws-lambda/ directory
-     - Write: main.tf, variables.tf, outputs.tf, provider.tf, iam.tf
-     - Write: README.md (deployment instructions)
-     - Write: environments/*.tfvars
+     - Create: .infrastructure/aws-lambda/ directory in project root
+     - Write Terraform files:
+       * main.tf (infrastructure resources)
+       * variables.tf (input variables)
+       * outputs.tf (output values)
+       * providers.tf (AWS provider config)
+       * iam.tf (IAM roles and policies)
+     - Write documentation:
+       * README.md (deployment instructions, cost estimates, troubleshooting)
+     - Write environment configs:
+       * environments/dev.tfvars
+       * environments/staging.tfvars
+       * environments/prod.tfvars
 
   6. Output Summary:
      ✅ Generated 9 files in .infrastructure/aws-lambda/
-     📄 Review files before deploying
-     🚀 Next steps: terraform init → plan → apply
+     📄 Review generated files:
+        - main.tf: Lambda, API Gateway, DynamoDB resources
+        - iam.tf: Least-privilege IAM roles
+        - README.md: Deployment guide with cost estimates
+     💰 Estimated cost (dev): $0/month (free tier)
+     🚀 Next steps:
+        1. Review infrastructure files
+        2. Run: terraform init
+        3. Run: terraform plan -var-file="environments/dev.tfvars"
+        4. Run: terraform apply -var-file="environments/dev.tfvars"
 ```
 
 ### Workflow 2: Multi-Environment Deployment
@@ -239,12 +281,12 @@ Infrastructure Agent:
 **My Process**:
 ```
 1. Load Templates:
-   ✅ plugins/specweave/iac-templates/aws-lambda/main.tf.hbs
-   ✅ plugins/specweave/iac-templates/aws-lambda/variables.tf.hbs
-   ✅ plugins/specweave/iac-templates/aws-lambda/outputs.tf.hbs
-   ✅ plugins/specweave/iac-templates/aws-lambda/provider.tf.hbs
-   ✅ plugins/specweave/iac-templates/aws-lambda/iam.tf.hbs
-   ✅ plugins/specweave/iac-templates/aws-lambda/README.md.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/main.tf.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/variables.tf.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/outputs.tf.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/provider.tf.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/iam.tf.hbs
+   ✅ plugins/specweave/templates/iac/aws-lambda/README.md.hbs
 
 2. Render with Variables:
    - projectName: "my-startup-api"
@@ -362,7 +404,7 @@ import { TerraformTemplateEngine } from '@specweave/core/iac/template-engine';
 
 const engine = new TerraformTemplateEngine();
 const result = await engine.render({
-  templatePath: 'plugins/specweave/iac-templates/aws-lambda',
+  templatePath: 'plugins/specweave/templates/iac/aws-lambda',
   variables: {
     projectName: 'my-api',
     functionName: 'my-handler',
@@ -406,7 +448,7 @@ const platformTemplateMap = {
   'supabase': 'supabase'
 };
 
-const templateDir = `plugins/specweave/iac-templates/${platformTemplateMap[platformId]}`;
+const templateDir = `plugins/specweave/templates/iac/${platformTemplateMap[platformId]}`;
 ```
 
 **Required Files**:
@@ -694,7 +736,7 @@ for (const env of environments) {
 **Solution**:
 ```bash
 # Verify template exists
-ls plugins/specweave/iac-templates/aws-lambda/
+ls plugins/specweave/templates/iac/aws-lambda/
 
 # Check platform ID mapping
 # Valid IDs: aws-lambda, azure-functions, gcp-cloud-functions, firebase, supabase

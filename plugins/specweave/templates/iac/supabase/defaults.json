@@ -1,0 +1,15 @@
+{
+  "projectName": "my-supabase-project",
+  "orgId": "your-org-id",
+  "region": "us-east-1",
+  "databasePassword": "changeme123",
+  "planType": "free",
+  "environment": "dev",
+  "enableAuth": true,
+  "enableStorage": true,
+  "enableRealtime": true,
+  "enableEdgeFunctions": true,
+  "storageBuckets": ["avatars", "documents"],
+  "authProviders": ["email"],
+  "postgresVersion": "15"
+}
