@@ -43,6 +43,12 @@ export interface CurrentIncrement {
 
   /** Completion percentage (0-100) */
   percentage: number;
+
+  /** Number of completed acceptance criteria (NEW) */
+  acsCompleted?: number;
+
+  /** Total number of acceptance criteria (NEW) */
+  acsTotal?: number;
 }
 
 export interface StatusLineConfig {

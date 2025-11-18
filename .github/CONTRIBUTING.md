@@ -44,64 +44,82 @@ git remote add upstream https://github.com/anton-abyzov/specweave.git
 
 ### Install SpecWeave
 
-SpecWeave uses **Claude Code's native plugin system**. For contributors:
+SpecWeave uses **Claude Code's native plugin system**. For contributors developing SpecWeave itself:
+
+**🚨 CRITICAL**: You MUST create a marketplace symlink for hooks to work!
 
 ```bash
 # 1. Install build dependencies
 npm install
 
-# 2. Add the local SpecWeave plugin marketplace
-# (In Claude Code, use slash commands - NOT shell commands)
-/plugin marketplace add ./.claude-plugin
+# 2. Build the project
+npm run build
 
-# 3. Install the core SpecWeave plugin
-/plugin install specweave
+# 3. Create marketplace symlink (MANDATORY!)
+mkdir -p ~/.claude/plugins/marketplaces
+ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
 
-# 4. (Optional) Install additional plugins for testing
-/plugin install specweave-github
+# 4. Verify setup (MANDATORY!)
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+# Must show: ✅ ALL CHECKS PASSED!
 
-# 5. Restart Claude Code to load plugins
-# (Use Claude Code menu: Code > Restart Claude Code)
+# 5. Install git hooks (recommended)
+bash scripts/install-git-hooks.sh
 ```
 
-**Why no `npm run install:all`?** That script is deprecated. SpecWeave now uses Claude Code's native plugin system (see [plugin docs](https://docs.claude.com/en/docs/claude-code/plugins)).
+**Why Symlink is MANDATORY:**
+
+Claude Code's hook execution system looks for hooks in `~/.claude/plugins/marketplaces/specweave/`, NOT in your local repo. Without the symlink:
+- ❌ Post-task-completion hooks fail with "No such file or directory"
+- ❌ Status line doesn't update automatically
+- ❌ Living docs don't sync after task completion
+- ❌ Development workflow is broken
+
+**Detailed Setup:** See [CLAUDE.md](../CLAUDE.md#local-development-setup-contributors-only) for complete instructions.
 
 ### Verify Installation
 
 ```bash
-# Build the project
+# 1. Run automated setup verification
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+
+# Expected output:
+# ✅ ALL CHECKS PASSED! Local development setup is correct.
+# You can now use TodoWrite and other tools without hook errors.
+
+# 2. Build the project
 npm run build
 
-# Run tests to verify everything works
+# 3. Run tests to verify everything works
 npm test
 
-# Verify plugins are installed
-/plugin
-# Select "Manage plugins" from the menu
-# Should see: specweave listed
+# 4. Test hook execution (use TodoWrite tool - should work without errors)
 ```
 
 ### Troubleshooting Installation
 
-**Plugin not found in marketplace**
+**Hook errors: "No such file or directory"**
 
-If `/plugin install specweave` fails, make sure the local marketplace is added:
+This means the marketplace symlink is missing or broken.
 
 ```bash
-# Add marketplace
-/plugin marketplace add ./.claude-plugin
+# Check if symlink exists
+readlink ~/.claude/plugins/marketplaces/specweave
 
-# Verify marketplace was added
-/plugin
-# Select "Manage marketplaces" to see the local marketplace listed
+# If missing or wrong path, recreate:
+rm -f ~/.claude/plugins/marketplaces/specweave
+mkdir -p ~/.claude/plugins/marketplaces
+ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
 
-# Now install
-/plugin install specweave
-
-# Verify installation
-/plugin
-# Select "Manage plugins" - should see specweave listed
+# Verify setup
+bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 ```
+
+**Setup verification fails**
+
+See the verification script output for specific fix instructions, or consult:
+- `.specweave/increments/0043-spec-md-desync-fix/reports/PLUGIN-HOOK-ERROR-FIX-2025-11-18.md`
+- [CLAUDE.md](../CLAUDE.md#local-development-setup-contributors-only)
 
 ---
 
