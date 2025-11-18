@@ -119,13 +119,13 @@ async function main() {
     const result = await calculateDORAMetrics(client);
 
     // Write JSON file
-    const jsonOutputPath = path.join(process.cwd(), 'metrics', 'dora-latest.json');
+    const jsonOutputPath = path.join(process.cwd(), '.specweave', 'metrics', 'dora-latest.json');
     writeMetricsJSON(result.metrics, jsonOutputPath);
 
     // Generate and write markdown report
     console.log('\n📝 Generating detailed report...');
     const report = generateMarkdownReport(result.metrics, result.releases, result.issues);
-    const reportOutputPath = path.join(process.cwd(), 'metrics', 'dora-report.md');
+    const reportOutputPath = path.join(process.cwd(), '.specweave', 'metrics', 'dora-report.md');
     writeReport(report, reportOutputPath);
 
     console.log('\n🎉 DORA metrics calculation complete!');

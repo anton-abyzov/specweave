@@ -4,7 +4,7 @@
 
 **Last Updated**: 2025-11-04 (Auto-updated by CI/CD)
 **Owner**: Engineering Leadership
-**Data Source**: `metrics/dora-latest.json` (updated on each release)
+**Data Source**: `.specweave/metrics/dora-latest.json` (updated daily at 06:00 UTC)
 
 ---
 
