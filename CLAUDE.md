@@ -10,77 +10,114 @@ For **contributors to SpecWeave itself** (not users).
 
 ## 🚨 CRITICAL SAFETY RULES
 
-### 1. Dual-Mode Development Setup (MANDATORY for Contributors)
+### 1. Local Development Setup
 
-**Context**: SpecWeave contributors need TWO modes:
-1. **Development Mode**: Local repo symlink (for iterating on SpecWeave itself)
-2. **NPM Testing Mode**: Global npm installation (for testing end-user experience)
+**SpecWeave uses Claude Code's GitHub marketplace** for plugin management. This is the **cross-platform, simple approach** that works on macOS, Linux, and Windows.
 
-#### Development Mode (Default for Contributors)
+#### Quick Start (Recommended - All Platforms)
 
-**Problem**: Claude Code executes hooks from `~/.claude/plugins/marketplaces/specweave/`. If this is a **directory** (not symlink), hooks fail with "No such file or directory".
-
-**Quick Setup**:
 ```bash
-# Switch to development mode (creates symlink)
-bash scripts/dev-mode.sh
+# 1. Clone and install
+git clone https://github.com/YOUR_USERNAME/specweave.git
+cd specweave
+npm install
 
-# Verify symlink:
-ls -ld ~/.claude/plugins/marketplaces/specweave
-# Must show: lrwxr-xr-x ... -> /path/to/repo (SYMLINK, not drwxr-xr-x)
+# 2. Build TypeScript
+npm run rebuild
+
+# 3. That's it! Claude Code auto-installs from GitHub marketplace
+# Hooks execute from: ~/.claude/plugins/marketplaces/specweave/
 ```
 
-**Manual Setup** (if scripts fail):
+#### Development Workflow
+
+**How it works**: Claude Code automatically pulls your latest code from GitHub every 5-10 seconds.
+
 ```bash
-# Verify symlink exists:
-ls -ld ~/.claude/plugins/marketplaces/specweave
+# 1. Make changes in local repo
+vim src/core/task-parser.ts
 
-# If directory or missing, fix it:
-rm -rf ~/.claude/plugins/marketplaces/specweave
-ln -s "$(pwd)" ~/.claude/plugins/marketplaces/specweave
+# 2. Build TypeScript changes
+npm run rebuild
 
-# Verify:
-bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+# 3. Test locally
+npm test
+
+# 4. Commit and push to your branch
+git add . && git commit -m "feat: new feature"
+git push origin develop
+
+# 5. Wait 5-10 seconds → Claude Code auto-updates marketplace
+
+# 6. Test in Claude Code
+/specweave:increment "test feature"
+# Your latest hooks now execute automatically!
 ```
 
-**Without symlink**: Hooks fail, status line broken, living docs don't sync.
-**Protection**: Pre-commit hook verifies symlink before each commit.
-
-#### NPM Testing Mode (For End-User Testing)
-
-**When to use**: Testing the npm-installed version as end-users would experience it.
-
-**Setup**:
+**For hook-only changes** (no TypeScript build needed):
 ```bash
-# 1. Install global npm package (if not already)
+vim plugins/specweave/hooks/post-task-completion.sh
+git add . && git commit -m "fix: improve hook logic"
+git push origin develop
+# Wait 5-10 seconds → hooks updated!
+```
+
+**Key Benefits**:
+- ✅ **Cross-platform** (works on Windows, no admin privileges needed)
+- ✅ **Simple** (standard git workflow, no scripts)
+- ✅ **Reliable** (Claude Code manages updates, no symlink race conditions)
+- ✅ **Team-friendly** (everyone gets updates automatically)
+
+#### Testing Unpushed Changes (Advanced)
+
+**Option 1: Temporary Branch** (Recommended)
+```bash
+# Create throwaway test branch
+git checkout -b temp-test-$(date +%s)
+git add . && git commit -m "temp: testing unpushed changes"
+git push origin temp-test-1234567890
+
+# Claude Code pulls from your test branch (5-10 seconds)
+# Test your changes...
+
+# Clean up when done
+git push origin --delete temp-test-1234567890
+git checkout develop && git branch -D temp-test-1234567890
+```
+
+**Option 2: Fork-Based Development**
+```bash
+# One-time: Point Claude Code to your fork
+claude plugin marketplace remove specweave
+claude plugin marketplace add github:YOUR_USERNAME/specweave
+
+# Now push to your fork's branch
+git push origin develop
+# Claude Code pulls from YOUR fork, not upstream
+```
+
+**Option 3: Symlink Mode** (Advanced, Unix-Only)
+If you need **instant updates** without pushing (e.g., rapid hook iteration):
+- See: `.specweave/docs/internal/advanced/symlink-dev-mode.md`
+- ⚠️ **Warning**: Only works on macOS/Linux, not Windows
+- ⚠️ Requires bash scripts, registry manipulation, ongoing maintenance
+
+#### NPM Testing Mode (End-User Experience)
+
+To test the published npm package as end-users experience it:
+
+```bash
+# 1. Install global npm package
 npm install -g specweave
 
-# 2. Switch to npm mode (removes symlink)
-bash scripts/npm-mode.sh
+# 2. Test in fresh directory
+cd /tmp && mkdir test-project && cd test-project
+specweave init .
+# ... test end-user workflows ...
 
-# 3. Test as end-user
-specweave init test-project
-cd test-project
-# ... test commands ...
-
-# 4. Switch back to dev mode when done
+# 3. Resume development
 cd /path/to/specweave/repo
-bash scripts/dev-mode.sh
-```
-
-**Key Differences**:
-| Aspect | Development Mode | NPM Testing Mode |
-|--------|------------------|------------------|
-| Symlink | ✅ Points to local repo | ❌ Removed |
-| Changes | ⚡ Instant (after rebuild) | 📦 Requires npm publish |
-| Use Case | Contributing to SpecWeave | Testing end-user experience |
-| Hooks | Use local `plugins/` | Use npm `node_modules/specweave/plugins/` |
-
-**Quick Toggle**:
-```bash
-# Switch modes anytime:
-./scripts/dev-mode.sh   # → Development (symlink)
-./scripts/npm-mode.sh   # → NPM testing (global install)
+# Claude Code automatically switches back to marketplace mode
 ```
 
 ### 2. NEVER Pollute Increment Folders
@@ -613,7 +650,7 @@ vim .specweave/docs/public/guides/user-guide.md
 **Commands not working**: Verify plugin installed, restart Claude Code
 **Tests failing**: Run `npm run rebuild`, check test output
 **Root folder polluted**: Move files to `.specweave/increments/####/reports/`
-**Hooks failing**: Verify symlink (see "Symlink Setup" above)
+**Hooks failing**: Ensure changes are pushed to GitHub (Claude Code auto-updates marketplace every 5-10s). For symlink mode, see `.specweave/docs/internal/advanced/symlink-dev-mode.md`
 
 ---
 
@@ -644,7 +681,7 @@ vim .specweave/docs/public/guides/user-guide.md
 - Tests: `tests/` (unit, integration, E2E)
 
 **Remember**:
-1. Symlink setup is MANDATORY for contributors
+1. Push changes to GitHub → Claude Code auto-updates marketplace (5-10s)
 2. Keep root clean (use increment folders)
 3. Test before committing
 4. Never delete .specweave/ directories

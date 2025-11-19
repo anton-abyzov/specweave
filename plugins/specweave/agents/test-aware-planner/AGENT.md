@@ -73,17 +73,24 @@ The test-aware-planner agent is responsible for generating `tasks.md` with **emb
 
 ---
 
-## Task Format (NEW - With Embedded Tests)
+## Task Format (NEW - v0.23.0: Hierarchical US-Task Linkage)
+
+**CRITICAL**: v0.23.0+ requires hierarchical structure grouped by User Story.
 
 Each task in `tasks.md` follows this format:
 
 ```markdown
+## User Story: US-001 - User Story Title
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: X total, 0 completed
+
 ### T-001: Implement Feature X
 
-**User Story**: US1
-**Acceptance Criteria**: AC-US1-01, AC-US1-02
-**Priority**: P1
-**Estimate**: 4 hours
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+**Priority**: P0 (Critical) | P1 (Important) | P2 (Nice-to-have)
+**Estimated Effort**: 4 hours
 **Status**: [ ] pending
 
 **Test Plan**:
@@ -667,43 +674,87 @@ If TDD mode is enabled (check frontmatter: `test_mode: TDD`), add TDD workflow s
 
 ### Phase 3: File Generation
 
-**Step 3.1: Generate tasks.md Frontmatter**
+**Step 3.1: Generate tasks.md Frontmatter (v0.23.0+)**
 
 ```markdown
 ---
-increment: {increment-id}
 total_tasks: {count}
-completed_tasks: 0
-test_mode: {TDD|standard}
-coverage_target: {percentage}%
+completed: 0
+by_user_story:
+  US-001: {count_for_us1}
+  US-002: {count_for_us2}
+  US-003: {count_for_us3}
+test_mode: {TDD|test-after}
+coverage_target: {percentage}
 ---
 
-# Implementation Tasks
+# Tasks: {Increment Title}
 ```
 
-**Rules:**
-- `increment`: Use increment ID from folder name
+**Rules (v0.23.0+)**:
 - `total_tasks`: Count all generated tasks
-- `completed_tasks`: Always starts at 0
-- `test_mode`: TDD if user requested, standard otherwise
-- `coverage_target`: Overall target (typically 80-90%)
+- `completed`: Always starts at 0
+- `by_user_story`: Map of US-ID → task count (REQUIRED for progress tracking)
+- `test_mode`: TDD or test-after (no "standard")
+- `coverage_target`: Number without % (e.g., 85, not 85%)
 
-**Step 3.2: Assemble All Tasks**
+**Example**:
+```yaml
+---
+total_tasks: 22
+completed: 0
+by_user_story:
+  US-001: 4
+  US-002: 3
+  US-003: 5
+  US-004: 3
+  US-005: 4
+  US-006: 3
+test_mode: test-after
+coverage_target: 90
+---
+```
 
-Combine all generated tasks in sequence:
+**Step 3.2: Assemble All Tasks (v0.23.0+: Hierarchical by User Story)**
+
+**CRITICAL**: Tasks MUST be grouped by User Story with section headers:
 
 ```markdown
-### T-001: [Task 1]
+## User Story: US-001 - User Story Title
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: 4 total, 0 completed
+
+### T-001: [First task for US-001]
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
 [Full task format from Phase 2]
 
-### T-002: [Task 2]
+### T-002: [Second task for US-001]
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-03
+[Full task format from Phase 2]
+
+---
+
+## User Story: US-002 - Another User Story Title
+
+**Linked ACs**: AC-US2-01, AC-US2-02
+**Tasks**: 3 total, 0 completed
+
+### T-003: [First task for US-002]
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01
 [Full task format from Phase 2]
 
 ...
-
-### T-{N}: [Last task]
-[Full task format from Phase 2]
 ```
+
+**Rules**:
+- Group tasks by User Story using `## User Story: US-XXX - Title` headers
+- Each section shows linked ACs and task count
+- Tasks within section MUST link to that User Story
+- Use `---` separator between User Story sections
 
 **Step 3.3: Write tasks.md**
 
@@ -719,9 +770,14 @@ Save the complete file to:
 
 Before finalizing, validate the generated tasks.md:
 
-**Validation Checklist:**
+**Validation Checklist (v0.23.0+)**:
 
-- [ ] **AC-ID Coverage**: Every AC-ID from spec.md is referenced in at least one task
+- [ ] **AC-ID Coverage**: Every AC-ID from spec.md is referenced in at least one task (100% coverage required)
+- [ ] **US-Task Linkage**: Every task has **User Story** field linking to valid US-ID
+- [ ] **AC Linkage**: Every task has **Satisfies ACs** field with valid AC-IDs
+- [ ] **Hierarchical Structure**: Tasks grouped by User Story with section headers
+- [ ] **by_user_story Map**: Frontmatter includes by_user_story with correct counts
+- [ ] **No Orphan Tasks**: All tasks link to at least one AC
 - [ ] **Task Format**: Each task follows the standard format (header, test plan, test cases, implementation)
 - [ ] **Test Plans**: All testable tasks have Given/When/Then
 - [ ] **Test Cases**: Test file paths follow project conventions
@@ -731,7 +787,7 @@ Before finalizing, validate the generated tasks.md:
 - [ ] **TDD Workflow**: Included if test_mode is TDD
 - [ ] **Estimates**: Realistic (2-8 hours typical per task)
 - [ ] **Dependencies**: Tasks ordered by dependencies
-- [ ] **Frontmatter**: Correct increment ID, task count, test mode
+- [ ] **Frontmatter**: Correct total_tasks, by_user_story map, test_mode, coverage_target
 
 **Validation Script Example:**
 

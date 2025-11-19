@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Fix spec.md/metadata.json Desync + Add Validation Tools
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/627
+
 ## Overview
 
 **Problem Statement**: SpecWeave has TWO critical sync infrastructure bugs:

@@ -14,6 +14,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { detectSpecIdentifier, SpecContent as SpecContentInput } from './spec-identifier-detector.js';
 import { SpecIdentifier } from './types/spec-identifier.js';
+import { Logger, consoleLogger } from '../utils/logger.js';
 
 export interface SpecContent {
   /** Flexible identifier (JIRA-AUTH-123, user-login-ui, spec-001, etc.) */
@@ -60,9 +61,83 @@ export interface ContentSyncResult {
 }
 
 /**
+ * Parse individual User Story file to extract ACs and tasks
+ */
+async function parseUserStoryFile(
+  usFilePath: string,
+  usId: string,
+  logger: Logger = consoleLogger
+): Promise<SpecUserStory | null> {
+  try {
+    const content = await fs.readFile(usFilePath, 'utf-8');
+    const { data: frontmatter } = matter(content);
+
+    // Extract title from frontmatter or heading
+    let title = frontmatter.title || '';
+    if (!title) {
+      const titleMatch = content.match(/^#\s+US-\d+:\s*(.+)$/m);
+      title = titleMatch ? titleMatch[1].trim() : '';
+    }
+
+    // Remove "Priority: XX" suffix from title if present
+    title = title.replace(/\s*\(Priority:.*?\)\s*$/, '').trim();
+
+    const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
+
+    // Extract US number from ID (US-001 → 001, US-1 → 1)
+    const usNumberMatch = usId.match(/US-(\d+)/);
+    if (!usNumberMatch) {
+      return null;
+    }
+    const usNumber = usNumberMatch[1];
+    const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
+
+    // Find acceptance criteria section
+    const acSectionMatch = content.match(/##\s+Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\z)/);
+    if (acSectionMatch) {
+      const acSection = acSectionMatch[1];
+
+      // Match ACs: - [x] **AC-US1-01**: Description
+      const acRegex = new RegExp(
+        `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^\\n]+)`,
+        'g'
+      );
+
+      const acMatches = [...acSection.matchAll(acRegex)];
+      for (const acMatch of acMatches) {
+        const completed = acMatch[1] === 'x';
+        const acNumber = acMatch[2];
+        const acDescription = acMatch[3].trim();
+
+        acceptanceCriteria.push({
+          id: `AC-US${usNumber}-${acNumber}`,
+          description: acDescription,
+          completed,
+          priority: frontmatter.priority || undefined,
+          testable: true, // Assume testable by default
+        });
+      }
+    }
+
+    return {
+      id: usId,
+      title,
+      acceptanceCriteria,
+    };
+  } catch (error: any) {
+    logger.error(`Failed to parse US file ${usFilePath}:`, error);
+    return null;
+  }
+}
+
+/**
  * Parse spec.md to extract content
  */
-export async function parseSpecContent(specPath: string): Promise<SpecContent | null> {
+export async function parseSpecContent(
+  specPath: string,
+  options: { logger?: Logger } = {}
+): Promise<SpecContent | null> {
+  const logger = options.logger ?? consoleLogger;
   try {
     const content = await fs.readFile(specPath, 'utf-8');
     const { data: frontmatter } = matter(content);
@@ -124,6 +199,7 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
     // Parse user stories
     const userStories: SpecUserStory[] = [];
 
+    // STRATEGY 1: Try inline format first (backward compatibility)
     // Match user story patterns: **US-001**: Title
     const userStoryRegex = /\*\*US-(\d+)\*\*:\s*(.+)/g;
     const usMatches = [...content.matchAll(userStoryRegex)];
@@ -166,6 +242,54 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
       });
     }
 
+    // STRATEGY 2: If no inline USs found, look for linked US files
+    // Match: - [US-001: Title](path/to/file.md)
+    if (userStories.length === 0) {
+      const linkedUsRegex = /- \[US-(\d+):\s*([^\]]+)\]\(([^)]+)\)/g;
+      const linkedUsMatches = [...content.matchAll(linkedUsRegex)];
+
+      for (const linkedMatch of linkedUsMatches) {
+        const usNumber = linkedMatch[1];
+        const usId = `US-${usNumber}`;
+        const usTitle = linkedMatch[2].trim();
+        const relativePath = linkedMatch[3];
+
+        // Resolve relative path from spec file location
+        const specDir = path.dirname(specPath);
+        const usFilePath = path.resolve(specDir, relativePath);
+
+        // Check if file exists
+        try {
+          await fs.access(usFilePath);
+
+          // Parse the linked US file
+          const parsedUs = await parseUserStoryFile(usFilePath, usId, logger);
+
+          if (parsedUs) {
+            // Use title from link if US file doesn't have one
+            if (!parsedUs.title) {
+              parsedUs.title = usTitle;
+            }
+            userStories.push(parsedUs);
+          } else {
+            // Fallback: create minimal US without ACs
+            userStories.push({
+              id: usId,
+              title: usTitle,
+              acceptanceCriteria: [],
+            });
+          }
+        } catch (error) {
+          // File doesn't exist or can't be read, create minimal US
+          userStories.push({
+            id: usId,
+            title: usTitle,
+            acceptanceCriteria: [],
+          });
+        }
+      }
+    }
+
     return {
       identifier,
       id: identifier.display, // Legacy field for backward compatibility
@@ -176,7 +300,7 @@ export async function parseSpecContent(specPath: string): Promise<SpecContent | 
       project
     };
   } catch (error: any) {
-    console.error(`Failed to parse spec: ${error.message}`);
+    logger.error('Failed to parse spec:', error);
     return null;
   }
 }
