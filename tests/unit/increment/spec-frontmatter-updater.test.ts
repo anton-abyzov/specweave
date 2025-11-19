@@ -21,14 +21,16 @@ describe('SpecFrontmatterUpdater', () => {
   let testRoot: string;
   let incrementId: string;
   let specPath: string;
+  let testCounter = 0;
 
   beforeEach(async () => {
-    // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), `spec-frontmatter-test-${Date.now()}`);
+    // Create isolated test directory with counter to ensure uniqueness
+    testCounter++;
+    testRoot = path.join(os.tmpdir(), `spec-frontmatter-test-${Date.now()}-${testCounter}-${Math.random().toString(36).substring(7)}`);
     await fs.ensureDir(testRoot);
 
-    // Create increment structure
-    incrementId = '0001-test-increment';
+    // Create increment structure with unique ID per test
+    incrementId = `000${testCounter}-test-increment`;
     const incrementDir = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementDir);
 
@@ -213,7 +215,7 @@ Content here.
     it('testReadStatusReturnsCurrentStatus - should read correct status value', async () => {
       // GIVEN an increment with spec.md containing status="active"
       const specContent = `---
-increment: 0001-test-increment
+increment: ${incrementId}
 title: Test Increment
 priority: P1
 status: active
@@ -250,7 +252,7 @@ Test content here.
     it('testReadStatusReturnsNullIfFieldMissing - should return null for missing status field', async () => {
       // GIVEN a spec.md WITHOUT status field
       const specWithoutStatus = `---
-increment: 0001-test-increment
+increment: ${incrementId}
 title: Test Increment
 priority: P1
 type: feature

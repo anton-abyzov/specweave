@@ -1,7 +1,7 @@
 ---
 increment: 0043-spec-md-desync-fix
 total_tasks: 24
-completed_tasks: 20
+completed_tasks: 18
 test_mode: TDD
 coverage_target: 90%
 ---
@@ -440,7 +440,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-02, AC-US4-03
 **Priority**: P2
 **Estimate**: 4 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** increments with metadata.json ↔ spec.md desyncs
@@ -492,7 +492,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-02
 **Priority**: P2
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** desyncs exist in the project
@@ -536,7 +536,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-03
 **Priority**: P3
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** repair script is executed
@@ -715,7 +715,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-01
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**: N/A (manual validation task)
 
@@ -742,7 +742,7 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US4-02, AC-US4-03
 **Priority**: P2
 **Estimate**: 1 hour
-**Status**: [ ] pending
+**Status**: [x] completed (no desyncs found during validation)
 
 **Test Plan**: N/A (manual repair task)
 

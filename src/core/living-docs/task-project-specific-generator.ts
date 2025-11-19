@@ -109,8 +109,8 @@ export class TaskProjectSpecificGenerator {
     const tasks: ProjectSpecificTask[] = [];
 
     // Split content into task blocks
-    // Pattern: ### T-001: Task Title followed by task metadata
-    const taskBlocks = content.split(/^###\s+(T-\d+):/gm);
+    // Pattern: ## T-001: or ### T-001: Task Title followed by task metadata
+    const taskBlocks = content.split(/^#{2,3}\s+(T-\d+):/gm);
 
     for (let i = 1; i < taskBlocks.length; i += 2) {
       const taskId = taskBlocks[i].trim();           // T-001
@@ -123,11 +123,12 @@ export class TaskProjectSpecificGenerator {
       // Extract User Story IDs (NEW - use **User Story**: field directly)
       const userStoryMatch = taskContent.match(/\*\*User Story\*\*:\s*(.+?)$/m);
       const userStoryList = userStoryMatch ? userStoryMatch[1].trim() : '';
-      const userStoryIds = userStoryList.split(',').map(id => id.trim());
+      const userStoryIds = userStoryList ? userStoryList.split(',').map(id => id.trim()) : [];
 
       // Extract Acceptance Criteria IDs (for backward compatibility)
-      const acMatch = taskContent.match(/\*\*Acceptance Criteria\*\*:\s*(.+?)$/m);
-      const acList = acMatch ? acMatch[1].trim() : '';
+      // Matches both "**AC**:" and "**Acceptance Criteria**:"
+      const acMatch = taskContent.match(/\*\*(AC|Acceptance Criteria)\*\*:\s*(.+?)$/m);
+      const acList = acMatch ? acMatch[2].trim() : '';
       const acIds: string[] = [];
       const acPattern = /AC-[A-Z]+\d+-\d+/g;
       let acIdMatch;
@@ -140,14 +141,20 @@ export class TaskProjectSpecificGenerator {
       const statusMatch = taskContent.match(/\*\*Status\*\*:\s*\[([x ])\]/);
       const statusChar = statusMatch ? statusMatch[1] : ' ';
 
-      tasks.push({
+      const task: ProjectSpecificTask = {
         id: taskId,
         title: taskTitle,
         completed: statusChar === 'x',
         acIds,
-        userStoryIds,  // NEW - direct User Story mapping
         sourceIncrement: incrementId,
-      });
+      };
+
+      // Only include userStoryIds if non-empty
+      if (userStoryIds.length > 0) {
+        task.userStoryIds = userStoryIds;
+      }
+
+      tasks.push(task);
     }
 
     return tasks;
