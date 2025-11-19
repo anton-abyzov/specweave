@@ -7,35 +7,37 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Test Coverage Target: 90%+
  */
 
-import { generateRepoId, ensureUniqueId, validateRepoId } from '../../../src/core/repo-structure/repo-id-generator.js';
+import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId } from '../../../src/core/repo-structure/repo-id-generator.js';
 
 describe('generateRepoId', () => {
   describe('Suffix stripping', () => {
-    it('should strip -app suffix', () => {
+    it('should strip -app suffix by detecting it as suffix keyword', () => {
       expect(generateRepoId('my-app')).toBe('my');
     });
 
-    it('should strip -service suffix', () => {
+    it('should strip -service suffix by detecting it as suffix keyword', () => {
       expect(generateRepoId('backend-service')).toBe('backend');
     });
 
-    it('should strip -api suffix', () => {
+    it('should strip -api suffix by detecting it as suffix keyword', () => {
       expect(generateRepoId('api-gateway-api')).toBe('gateway');
     });
 
-    it('should strip -frontend suffix', () => {
-      expect(generateRepoId('my-frontend')).toBe('my');
+    it('should extract service type from -frontend (not a suffix keyword)', () => {
+      // "frontend" is a service type, not a suffix keyword, so it's kept
+      expect(generateRepoId('my-frontend')).toBe('frontend');
     });
 
-    it('should strip -backend suffix', () => {
-      expect(generateRepoId('my-backend')).toBe('my');
+    it('should extract service type from -backend (not a suffix keyword)', () => {
+      // "backend" is a service type, not a suffix keyword, so it's kept
+      expect(generateRepoId('my-backend')).toBe('backend');
     });
 
-    it('should strip -web suffix', () => {
+    it('should strip -web suffix by detecting it as suffix keyword', () => {
       expect(generateRepoId('my-project-web')).toBe('project');
     });
 
-    it('should strip -mobile suffix', () => {
+    it('should strip -mobile suffix by detecting it as suffix keyword', () => {
       expect(generateRepoId('my-project-mobile')).toBe('project');
     });
   });
@@ -81,6 +83,32 @@ describe('generateRepoId', () => {
 
     it('should handle single character', () => {
       expect(generateRepoId('a')).toBe('a');
+    });
+  });
+
+  describe('Prefix stripping', () => {
+    it('should strip sw- prefix', () => {
+      expect(generateRepoId('sw-web-calc-frontend')).toBe('frontend');
+    });
+
+    it('should strip app- prefix', () => {
+      expect(generateRepoId('app-backend-service')).toBe('backend');
+    });
+
+    it('should strip web- prefix', () => {
+      expect(generateRepoId('web-admin-app')).toBe('admin');
+    });
+
+    it('should strip mobile- prefix', () => {
+      expect(generateRepoId('mobile-ios-app')).toBe('ios');
+    });
+
+    it('should strip api- prefix', () => {
+      expect(generateRepoId('api-gateway-service')).toBe('gateway');
+    });
+
+    it('should strip both prefix and suffix', () => {
+      expect(generateRepoId('sw-web-calc-frontend-app')).toBe('frontend');
     });
   });
 });
@@ -178,6 +206,128 @@ describe('validateRepoId', () => {
       const result = validateRepoId('frontend_app');
       expect(result.valid).toBe(false);
       expect(result.error).toContain('alphanumeric');
+    });
+  });
+});
+
+describe('generateRepoIdSmart', () => {
+  describe('No conflicts', () => {
+    it('should return base ID when no existing names', () => {
+      const result = generateRepoIdSmart('sw-web-calc-frontend', []);
+      expect(result).toBe('frontend');
+    });
+
+    it('should return base ID when no conflict with existing names', () => {
+      const result = generateRepoIdSmart('sw-web-calc-frontend', ['sw-web-calc-backend']);
+      expect(result).toBe('frontend');
+    });
+  });
+
+  describe('Conflict resolution', () => {
+    it('should use abbreviated form when base ID conflicts', () => {
+      const result = generateRepoIdSmart('sw-web-calc-frontend', ['sw-mobile-calc-frontend']);
+      // Both generate "frontend" → should try "fe" (abbreviated)
+      expect(result).toBe('fe');
+    });
+
+    it('should use abbreviated form for backend conflict', () => {
+      const result = generateRepoIdSmart('api-backend-service', ['mobile-backend-app']);
+      // Both generate "backend" → should try "be" (abbreviated)
+      expect(result).toBe('be');
+    });
+
+    it('should use last two segments when abbreviation conflicts', () => {
+      // Setup: both "frontend" and "fe" are taken
+      const existingNames = [
+        'sw-mobile-calc-frontend', // generates "frontend"
+        'admin-fe-app'              // generates "fe"
+      ];
+      const result = generateRepoIdSmart('sw-web-calc-frontend-app', existingNames);
+      // Should try "calc-frontend" or "calc-fe"
+      expect(['calc-frontend', 'calc-fe']).toContain(result);
+    });
+
+    it('should handle multiple conflicts and find unique ID', () => {
+      const existingNames = [
+        'project-a-frontend',
+        'project-b-frontend',
+        'project-c-frontend'
+      ];
+      const result = generateRepoIdSmart('my-app-frontend', existingNames);
+      // All generate "frontend", should use "fe" or fallback
+      expect(result).toBeDefined();
+      expect(result.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('Real-world scenarios', () => {
+    it('should handle calculator app example from user prompt', () => {
+      const repo1 = generateRepoIdSmart('sw-web-calc-frontend', []);
+      expect(repo1).toBe('frontend');
+
+      const repo2 = generateRepoIdSmart('sw-mobile-calc-frontend', [repo1]);
+      // Should detect conflict and use different strategy
+      expect(repo2).not.toBe('frontend');
+      expect(['fe', 'calc-fe', 'mobile-calc-frontend']).toContain(repo2);
+    });
+
+    it('should handle multi-service setup', () => {
+      const repos = [
+        'acme-saas-frontend-app',
+        'acme-saas-backend-service',
+        'acme-saas-admin-frontend',
+        'acme-saas-mobile-app'
+      ];
+
+      const ids = repos.map((repo, i) => {
+        const previousRepos = repos.slice(0, i);
+        return generateRepoIdSmart(repo, previousRepos);
+      });
+
+      // All IDs should be unique
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(ids.length);
+
+      // Should have generated: frontend, backend, admin, mobile (or variants)
+      expect(ids).toContain('frontend');
+      expect(ids).toContain('backend');
+      expect(ids).toContain('mobile');
+    });
+
+    it('should handle service with multiple suffix types', () => {
+      const result = generateRepoIdSmart('company-api-gateway-service', []);
+      expect(result).toBe('gateway');
+    });
+
+    it('should handle abbreviated service conflicts', () => {
+      const existingNames = ['user-service', 'auth-service', 'payment-service'];
+      const result = generateRepoIdSmart('admin-service', existingNames);
+      // Should generate "admin" (no conflict with "user", "auth", "payment")
+      expect(result).toBe('admin');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle empty repo name', () => {
+      const result = generateRepoIdSmart('', []);
+      expect(result).toBe('');
+    });
+
+    it('should handle single word repo name', () => {
+      const result = generateRepoIdSmart('frontend', []);
+      expect(result).toBe('frontend');
+    });
+
+    it('should handle repo name with only prefixes/suffixes', () => {
+      const result = generateRepoIdSmart('sw-app', []);
+      expect(result).toBeDefined();
+    });
+
+    it('should handle many existing repos', () => {
+      const existingNames = Array.from({ length: 20 }, (_, i) => `service-${i}`);
+      const result = generateRepoIdSmart('new-service', existingNames);
+      expect(result).toBeDefined();
+      expect(result.length).toBeGreaterThan(0);
     });
   });
 });

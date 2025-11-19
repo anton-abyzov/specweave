@@ -16,18 +16,19 @@ import {
 } from '../../../src/core/repo-structure/prompt-consolidator.js';
 
 describe('getArchitecturePrompt', () => {
-  it('should return question with 2 architecture options (GitHub-only)', () => {
+  it('should return question with 3 architecture options (GitHub-only)', () => {
     // Given: No input
     // When: getArchitecturePrompt is called
     const result = getArchitecturePrompt();
 
-    // Then: Returns question + 2 options (simplified for GitHub)
+    // Then: Returns question + 3 options (single, github-parent, local-parent)
     expect(result.question).toBeDefined();
     expect(result.question).toContain('architecture');
-    expect(result.options).toHaveLength(2);
+    expect(result.options).toHaveLength(3);
 
     const values = result.options.map((c: any) => c.value);
     expect(values).toContain('single');
+    expect(values).toContain('github-parent');
     expect(values).toContain('local-parent');
   });
 
@@ -139,8 +140,8 @@ describe('getVisibilityPrompt', () => {
 
 describe('formatArchitectureChoice', () => {
   it('should format each ArchitectureChoice to human-readable string', () => {
-    // Given: Each ArchitectureChoice value (simplified to 2 options)
-    const choices = ['single', 'local-parent'];
+    // Given: Each ArchitectureChoice value (3 options)
+    const choices = ['single', 'github-parent', 'local-parent'];
 
     // When: formatArchitectureChoice is called for each
     choices.forEach(choice => {

@@ -241,7 +241,7 @@ async function syncToGitHub(incrementId, changedDocs) {
       collectLivingDocs,
       updateIssueLivingDocs,
       postArchitectureComment
-    } = await import("../../../specweave-github/lib/github-issue-updater.js");
+    } = await import("../../../../dist/plugins/specweave-github/lib/github-issue-updater.js");
     const metadata = await loadIncrementMetadata(incrementId);
     if (!metadata?.github?.issue) {
       console.log("\u2139\uFE0F  No GitHub issue linked, skipping GitHub sync");

@@ -107,7 +107,7 @@ User: "create increment for auth"
 
 **Claude Code (automatic)**:
 ```typescript
-Task({ subagent_type: "pm", prompt: "create spec" })
+Task({ subagent_type: "specweave:pm:pm", prompt: "create spec" })
 → PM agent invoked with separate context window
 ```
 

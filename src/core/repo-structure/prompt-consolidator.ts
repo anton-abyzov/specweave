@@ -8,9 +8,9 @@
  */
 
 /**
- * Architecture choice (GitHub-only, simplified to 2 options)
+ * Architecture choice (GitHub-only, 3 options)
  */
-export type ArchitectureChoice = 'single' | 'local-parent';
+export type ArchitectureChoice = 'single' | 'github-parent' | 'local-parent';
 
 /**
  * Architecture prompt option
@@ -50,9 +50,23 @@ my-project/
         `.trim()
       },
       {
+        value: 'github-parent',
+        label: '2️⃣  Parent repo + nested repos (ALL on GitHub)',
+        description: '✅ RECOMMENDED: Parent repo on GitHub + implementation repos (best for teams)',
+        example: `
+my-project-parent/         ← Parent repo (PUSHED TO GITHUB)
+├── .specweave/
+├── .env
+└── .gitignore
+
+my-project-frontend/       ← Separate GitHub repo
+my-project-backend/        ← Separate GitHub repo
+        `.trim()
+      },
+      {
         value: 'local-parent',
-        label: '2️⃣  Parent folder with nested repos',
-        description: 'Parent folder with .specweave (local only), nested implementation repos',
+        label: '3️⃣  Local parent folder + nested repos',
+        description: 'Parent folder LOCAL only, implementation repos on GitHub',
         example: `
 my-parent-folder/          ← Parent folder (LOCAL, NOT synced to GitHub)
 ├── .specweave/            ← Gitignored (local only)
@@ -172,8 +186,10 @@ export function formatArchitectureChoice(choice: ArchitectureChoice): string {
   switch (choice) {
     case 'single':
       return 'Single repository';
+    case 'github-parent':
+      return 'Parent repo + nested repos (GitHub)';
     case 'local-parent':
-      return 'Parent folder with nested repos';
+      return 'Local parent folder + nested repos';
     default:
       return choice;
   }

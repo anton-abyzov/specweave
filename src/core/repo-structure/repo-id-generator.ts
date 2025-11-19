@@ -26,6 +26,25 @@ const REPO_SUFFIXES = [
 ] as const;
 
 /**
+ * Common word abbreviations for cleaner IDs
+ */
+const WORD_ABBREVIATIONS: Record<string, string> = {
+  'frontend': 'fe',
+  'backend': 'be',
+  'service': 'svc',
+  'database': 'db',
+  'application': 'app',
+  'interface': 'ui',
+  'authentication': 'auth',
+  'authorization': 'authz',
+  'administration': 'admin',
+  'configuration': 'config',
+  'management': 'mgmt',
+  'repository': 'repo',
+  'documentation': 'docs'
+} as const;
+
+/**
  * Validation result for repository IDs
  */
 export interface ValidationResult {
@@ -44,20 +63,23 @@ export interface UniqueIdResult {
 /**
  * Generate a clean repository ID from a repository name.
  *
- * Algorithm:
+ * Algorithm (REVISED for correct service-type extraction):
  * 1. Convert to lowercase
- * 2. Strip one common suffix from the end (if exists): -app, -service, etc.
+ * 2. Strip common prefixes (sw-, app-, web-, mobile-, api-)
  * 3. Split by hyphens
- * 4. Take the last segment
+ * 4. Take the last segment (this is usually the service type: frontend, backend, etc.)
+ * 5. If that segment is a known suffix (-app, -service), take the SECOND-TO-LAST segment instead
  *
- * @param repoName - Full repository name (e.g., "my-saas-frontend-app")
- * @returns Clean repository ID (e.g., "frontend")
+ * This correctly identifies the service type regardless of suffixes.
  *
- * @example
- * generateRepoId("my-saas-frontend-app") // "frontend" (strips "-app", then takes "frontend")
- * generateRepoId("acme-api-gateway-service") // "gateway" (strips "-service", then takes "gateway")
- * generateRepoId("backend-service") // "backend" (strips "-service", then takes "backend")
- * generateRepoId("acme-saas-mobile") // "mobile" (no suffix to strip, takes "mobile")
+ * Examples:
+ * - "sw-web-calc-frontend" → remove "sw-" → "web-calc-frontend" → last segment "frontend" ✓
+ * - "sw-web-calc-frontend-app" → remove "sw-" → "web-calc-frontend-app" → last "app" (suffix) → take "frontend" ✓
+ * - "acme-api-gateway-service" → remove "api-" → "gateway-service" → last "service" (suffix) → take "gateway" ✓
+ * - "backend-service" → no prefix → "backend-service" → last "service" (suffix) → take "backend" ✓
+ *
+ * @param repoName - Full repository name
+ * @returns Clean repository ID
  */
 export function generateRepoId(repoName: string): string {
   if (!repoName) {
@@ -66,22 +88,112 @@ export function generateRepoId(repoName: string): string {
 
   let cleaned = repoName.toLowerCase();
 
-  // Strip one suffix from the end (if exists)
-  for (const suffix of REPO_SUFFIXES) {
-    if (cleaned.endsWith(suffix)) {
-      cleaned = cleaned.slice(0, -suffix.length);
-      break; // Only strip one suffix
-    }
+  // Step 1: Strip common prefixes
+  const prefixes = [/^sw-/, /^app-/, /^web-/, /^mobile-/, /^api-/];
+  for (const prefix of prefixes) {
+    cleaned = cleaned.replace(prefix, '');
   }
 
-  // Split by hyphen and take last segment
+  // Step 2: Split by hyphen
   const segments = cleaned.split('-').filter(seg => seg.length > 0);
 
   if (segments.length === 0) {
     return '';
   }
 
-  return segments[segments.length - 1];
+  // Step 3: Take last segment, but if it's a known suffix word, take second-to-last
+  const lastSegment = segments[segments.length - 1];
+
+  // Check if last segment is a suffix keyword (without the hyphen)
+  const suffixKeywords = ['app', 'service', 'api', 'web', 'mobile'];
+
+  if (suffixKeywords.includes(lastSegment) && segments.length >= 2) {
+    return segments[segments.length - 2];
+  }
+
+  return lastSegment;
+}
+
+/**
+ * Generate a context-aware repository ID with conflict detection.
+ *
+ * This is a smarter version that considers existing IDs and tries different strategies:
+ * 1. Try last segment (e.g., "calc-frontend" → "frontend")
+ * 2. If conflict, try abbreviated last segment (e.g., "frontend" → "fe")
+ * 3. If still conflict, try last two segments (e.g., "calc-fe")
+ * 4. If still conflict, use full cleaned name
+ *
+ * @param repoName - Full repository name
+ * @param existingNames - Array of existing repository names (for conflict detection)
+ * @returns Best available repository ID
+ *
+ * @example
+ * generateRepoIdSmart("sw-web-calc-frontend", ["sw-mobile-calc-frontend"])
+ * // Returns "calc-fe" (avoids "frontend" conflict)
+ */
+export function generateRepoIdSmart(repoName: string, existingNames: string[] = []): string {
+  if (!repoName) {
+    return '';
+  }
+
+  // Generate base ID using standard algorithm
+  const baseId = generateRepoId(repoName);
+
+  // If no existing names, return base ID
+  if (existingNames.length === 0) {
+    return baseId;
+  }
+
+  // Generate IDs from existing names to check for conflicts
+  const existingIds = new Set(existingNames.map(name => generateRepoId(name)));
+
+  // Strategy 1: Try base ID
+  if (!existingIds.has(baseId)) {
+    return baseId;
+  }
+
+  // Strategy 2: Try abbreviated form (if available)
+  const abbreviated = WORD_ABBREVIATIONS[baseId];
+  if (abbreviated && !existingIds.has(abbreviated)) {
+    return abbreviated;
+  }
+
+  // Strategy 3: Try last two segments
+  let cleaned = repoName.toLowerCase();
+
+  // Strip prefixes
+  const prefixes = [/^sw-/, /^app-/, /^web-/, /^mobile-/, /^api-/];
+  for (const prefix of prefixes) {
+    cleaned = cleaned.replace(prefix, '');
+  }
+
+  const segments = cleaned.split('-').filter(seg => seg.length > 0);
+
+  if (segments.length >= 2) {
+    // Remove suffix keywords from end if present
+    const suffixKeywords = ['app', 'service', 'api', 'web', 'mobile'];
+    const cleanedSegments = suffixKeywords.includes(segments[segments.length - 1])
+      ? segments.slice(0, -1)
+      : segments;
+
+    if (cleanedSegments.length >= 2) {
+      const lastTwo = cleanedSegments.slice(-2).join('-');
+      if (!existingIds.has(lastTwo)) {
+        return lastTwo;
+      }
+
+      // Try abbreviated last segment with penultimate
+      const abbrevLast = WORD_ABBREVIATIONS[cleanedSegments[cleanedSegments.length - 1]] || cleanedSegments[cleanedSegments.length - 1];
+      const lastTwoAbbrev = `${cleanedSegments[cleanedSegments.length - 2]}-${abbrevLast}`;
+      if (!existingIds.has(lastTwoAbbrev)) {
+        return lastTwoAbbrev;
+      }
+    }
+  }
+
+  // Strategy 4: Fall back to full cleaned name
+  const finalSegments = segments.filter(seg => !['app', 'service', 'api'].includes(seg));
+  return finalSegments.join('-') || baseId;
 }
 
 /**

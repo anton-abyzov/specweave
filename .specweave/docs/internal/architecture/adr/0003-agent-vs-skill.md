@@ -46,7 +46,7 @@ You are an expert Product Manager...
 **Invocation**: Via Task tool
 ```typescript
 await Task({
-  subagent_type: "pm",
+  subagent_type: "specweave:pm:pm",
   prompt: "Create product requirements for..."
 });
 ```
