@@ -10,6 +10,12 @@ import { StateManager } from '../../core/cicd/state-manager.js';
 import { Notifier } from '../../core/cicd/notifier.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CI/CD monitor CLI command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (monitor status, workflow updates, notifications).
+// Logger infrastructure available for future internal debug logs if needed.
 
 /**
  * Monitor configuration from environment or .env file

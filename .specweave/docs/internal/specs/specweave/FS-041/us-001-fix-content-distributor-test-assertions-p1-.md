@@ -19,7 +19,9 @@ created: 2025-11-17
 
 ## Acceptance Criteria
 
-No acceptance criteria defined.
+- [ ] **AC-US1-01**: Test "should skip unchanged files" passes
+- [ ] **AC-US1-02**: Test "should handle errors during file write" passes
+- [ ] **AC-US1-03**: Test "should generate index file for category" passes
 
 ---
 
@@ -28,3 +30,11 @@ No acceptance criteria defined.
 **Increment**: [0041-living-docs-test-fixes](../../../../increments/0041-living-docs-test-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [ ] **T-002**: Fix "should skip unchanged files" Test
+- [ ] **T-003**: Fix "should handle errors during file write" Test
+- [ ] **T-004**: Fix "should generate index file for category" Test
+- [ ] **T-005**: Verify content-distributor Tests (Phase Checkpoint)

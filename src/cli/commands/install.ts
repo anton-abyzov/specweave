@@ -7,6 +7,12 @@ import inquirer from 'inquirer';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI install command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (installation progress, component status, confirmations).
+// Logger infrastructure available for future internal debug logs if needed.
 
 const __dirname = getDirname(import.meta.url);
 

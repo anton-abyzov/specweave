@@ -2,9 +2,9 @@
 id: US-005
 feature: FS-043
 title: "Living Docs Sync Triggers External Tool Updates (Priority: P1 - CRITICAL)"
-status: planning
+status: completed
 priority: P1
-created: 2025-11-18
+created: 2025-11-18T00:00:00.000Z
 ---
 
 # US-005: Living Docs Sync Triggers External Tool Updates (Priority: P1 - CRITICAL)
@@ -19,7 +19,13 @@ created: 2025-11-18
 
 ## Acceptance Criteria
 
-No acceptance criteria defined.
+- [ ] **AC-US5-01**: `LivingDocsSync.syncIncrement()` detects external tool configuration from metadata.json
+- [ ] **AC-US5-02**: When GitHub configured, living docs sync triggers `updateIssueLivingDocs()`
+- [ ] **AC-US5-03**: When no external tools configured, living docs sync completes without triggering external sync
+- [ ] **AC-US5-04**: When multiple external tools configured (GitHub + JIRA), all are synced
+- [ ] **AC-US5-05**: External tool sync failures are logged but don't break living docs sync
+- [ ] **AC-US5-06**: Dry-run mode skips external tool sync
+- [ ] **AC-US5-07**: Skipped test `github-sync-living-docs.skip.test.ts` is enabled and passes
 
 ---
 

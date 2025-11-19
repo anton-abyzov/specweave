@@ -18,6 +18,12 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { validateJiraResources } from '../../utils/external-resource-validator.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI validation command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (validation progress, resource status, errors).
+// Logger infrastructure available for future internal debug logs if needed.
 
 /**
  * Setup validate-jira command

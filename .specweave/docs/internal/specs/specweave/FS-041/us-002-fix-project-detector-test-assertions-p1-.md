@@ -19,7 +19,8 @@ created: 2025-11-17
 
 ## Acceptance Criteria
 
-No acceptance criteria defined.
+- [ ] **AC-US2-01**: Test "should detect project from team name" passes
+- [ ] **AC-US2-02**: Test "should include metadata in result" passes
 
 ---
 
@@ -28,3 +29,10 @@ No acceptance criteria defined.
 **Increment**: [0041-living-docs-test-fixes](../../../../increments/0041-living-docs-test-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [ ] **T-006**: Fix "should detect project from team name" Test
+- [ ] **T-007**: Fix "should include metadata in result" Test
+- [ ] **T-008**: Verify project-detector Tests (Phase Checkpoint)

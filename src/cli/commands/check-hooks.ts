@@ -13,6 +13,12 @@ import { HookHealthChecker } from '../../core/hooks/HookHealthChecker.js';
 import { HealthReporter } from '../../core/hooks/HealthReporter.js';
 import { HookAutoFixer } from '../../core/hooks/HookAutoFixer.js';
 import { ReportFormat } from '../../core/hooks/types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI check-hooks command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (health check results, auto-fix status, warnings).
+// Logger infrastructure available for future internal debug logs if needed.
 
 interface CommandOptions {
   fix: boolean;

@@ -10,6 +10,12 @@ import { ProjectManager, ProjectContext } from '../../core/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { autoMigrateSingleToMulti } from './migrate-to-multiproject.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI multi-project initialization command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (migration progress, project setup, user prompts).
+// Logger infrastructure available for future internal debug logs if needed.
 
 export async function initMultiProject(projectRoot: string): Promise<void> {
   console.log('\n🚀 Initialize Multi-Project Mode\n');

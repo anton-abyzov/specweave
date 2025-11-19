@@ -1,14 +1,14 @@
 ---
 id: FS-043
-title: "Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools"
+title: "Fix spec.md/metadata.json Desync + Add Validation Tools"
 type: feature
-status: planning
+status: completed
 priority: P1
-created: 2025-11-18
-lastUpdated: 2025-11-18
+created: 2025-11-18T00:00:00.000Z
+lastUpdated: 2025-11-19
 ---
 
-# Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools
+# Fix spec.md/metadata.json Desync + Add Validation Tools
 
 ## Overview
 
@@ -18,7 +18,7 @@ lastUpdated: 2025-11-18
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0043-spec-md-desync-fix](../../../../increments/0043-spec-md-desync-fix/spec.md) | ⏳ planning | 2025-11-18 |
+| [0043-spec-md-desync-fix](../../../../increments/0043-spec-md-desync-fix/spec.md) | ✅ completed | 2025-11-18T00:00:00.000Z |
 
 ## User Stories
 

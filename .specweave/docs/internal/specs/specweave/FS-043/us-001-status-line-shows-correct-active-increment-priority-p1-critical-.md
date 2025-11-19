@@ -2,9 +2,9 @@
 id: US-001
 feature: FS-043
 title: "Status Line Shows Correct Active Increment (Priority: P1 - CRITICAL)"
-status: planning
+status: completed
 priority: P1
-created: 2025-11-18
+created: 2025-11-18T00:00:00.000Z
 ---
 
 # US-001: Status Line Shows Correct Active Increment (Priority: P1 - CRITICAL)
@@ -19,7 +19,9 @@ created: 2025-11-18
 
 ## Acceptance Criteria
 
-No acceptance criteria defined.
+- [ ] **AC-US1-01**: When closing increment via `/specweave:done`, status line updates to next active increment
+- [ ] **AC-US1-02**: Status line never shows completed increments as active
+- [ ] **AC-US1-03**: Status line hook reads spec.md and finds correct status (not stale "active")
 
 ---
 
