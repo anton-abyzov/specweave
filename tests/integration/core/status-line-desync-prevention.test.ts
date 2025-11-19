@@ -84,9 +84,15 @@ This is a test increment for status line desync prevention.
     for (let i = 1; i <= totalTasks; i++) {
       const taskId = String(i).padStart(3, '0');
       const isCompleted = i <= completedTasks;
-      const statusMarker = isCompleted ? '✅ COMPLETE' : '⏳ In Progress';
 
-      tasksContent += `### T-${taskId}: Task ${i}\n\n**Status**: ${statusMarker}\n\n`;
+      tasksContent += `## T-${taskId}: Task ${i}\n\n`;
+      if (isCompleted) {
+        // Use format that TaskCounter recognizes: **Completed**: <date>
+        tasksContent += `**Completed**: 2025-11-18\n\n`;
+      } else {
+        // Pending tasks have no completion marker
+        tasksContent += `**Status**: Pending\n\n`;
+      }
     }
 
     await fs.writeFile(path.join(incrementDir, 'tasks.md'), tasksContent, 'utf-8');
