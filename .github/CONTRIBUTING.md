@@ -531,6 +531,75 @@ success_criteria:
 - **Formatting**: Use Prettier/Black/gofmt
 - **Linting**: Fix all linter warnings
 
+### Logging Guidelines (MANDATORY)
+
+**🚨 NEVER use `console.*` in `src/` production code!**
+
+**Why**: `console.log/error/warn` pollutes test output, causes flaky tests, and creates debugging noise.
+
+**Use Logger Abstraction Instead**:
+
+```typescript
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// Instance method pattern
+export class MyService {
+  private logger: Logger;
+
+  constructor(options: { logger?: Logger } = {}) {
+    this.logger = options.logger ?? consoleLogger;
+  }
+
+  async doSomething() {
+    this.logger.log('Starting operation...');
+    try {
+      // ... work ...
+      this.logger.log('Operation completed successfully');
+    } catch (error) {
+      this.logger.error('Operation failed', error);
+      throw error;
+    }
+  }
+}
+
+// Static method pattern
+export class MetadataManager {
+  private static logger: Logger = consoleLogger;
+
+  static setLogger(logger: Logger): void {
+    this.logger = logger;
+  }
+
+  static someMethod() {
+    this.logger.warn('Warning message');
+  }
+}
+```
+
+**In Tests, Use `silentLogger`**:
+
+```typescript
+import { silentLogger } from '../../src/utils/logger.js';
+
+beforeEach(() => {
+  MyService.setLogger(silentLogger); // Prevents test output pollution
+});
+
+test('should handle errors gracefully', () => {
+  const service = new MyService({ logger: silentLogger });
+  // Test expected errors without console noise
+});
+```
+
+**Pre-commit Hook**: Automatically blocks commits with `console.*` in `src/` files.
+
+**Migration Guide**: See `.specweave/increments/0046-console-elimination/analysis-report.md` for comprehensive migration strategy.
+
+**Exceptions**:
+- `src/utils/logger.ts` - Implements `consoleLogger` (uses `console.*` internally)
+- CLI command output - Use logger, but `consoleLogger` is acceptable for user-facing messages
+- Adapters - May use `console.*` for CLI output (but prefer logger for consistency)
+
 ---
 
 ## Pull Request Process

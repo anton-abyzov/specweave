@@ -31,21 +31,28 @@ bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 **Without symlink**: Hooks fail, status line broken, living docs don't sync.
 **Protection**: Pre-commit hook verifies symlink before each commit.
 
-### 2. NEVER Pollute Project Root
+### 2. NEVER Pollute Increment Folders
 
-**Rule**: ALL AI-generated files go into `.specweave/increments/####/` subfolders, NOT project root.
+**ONLY 4 files allowed in `.specweave/increments/####/` root**:
+- `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
 
-**ONLY 3 files allowed in increment root**:
-- `spec.md`, `plan.md`, `tasks.md`
-
-**Everything else goes in subfolders**:
-- `reports/` - Session summaries, analysis, completion reports
-- `scripts/` - Helper scripts, migrations
+**Everything else → subfolders**:
+- `reports/` - Analysis, completion reports, validation
+- `scripts/` - Helper scripts, automation
 - `logs/` - Execution logs, debug output
 
+**Examples**:
 ```bash
-# Before committing:
-git status  # If you see .md files in root, MOVE THEM!
+# ❌ WRONG
+.specweave/increments/0046/analysis-report.md
+
+# ✅ CORRECT
+.specweave/increments/0046/reports/analysis-report.md
+
+# Fix before committing:
+mkdir -p .specweave/increments/0046/reports
+mv .specweave/increments/0046/*.md .specweave/increments/0046/reports/
+git restore .specweave/increments/0046/{spec,plan,tasks}.md
 ```
 
 ### 3. NEVER Delete .specweave/ Directories
@@ -96,7 +103,74 @@ specweave init .  # Interactive, never deletes without confirmation
 **Always use**: `/specweave:done 0043` (validates before closing)
 **Never**: Manual `metadata.json` edit (blocked by pre-commit hook)
 
-### 7. NEVER Use `console.*` in Production Code
+### 7. Source of Truth: tasks.md and spec.md (CRITICAL!)
+
+**THE MOST CRITICAL RULE**: Internal TODO lists are ONLY for tracking work during execution. The SOURCE OF TRUTH is ALWAYS:
+1. **tasks.md** - Task completion status (`[x]` checkboxes)
+2. **spec.md** - Acceptance criteria status (`[x]` checkboxes)
+
+**MANDATORY Workflow When Using TodoWrite Tool**:
+
+```
+For EVERY task marked complete in internal TODO:
+1. ✅ Mark task as completed in internal TODO
+2. ⚠️  IMMEDIATELY update tasks.md checkbox: `[ ] pending` → `[x] completed`
+3. ⚠️  IMMEDIATELY update spec.md AC checkbox: `[ ]` → `[x]`
+4. ✅ Verify both files updated BEFORE moving to next task
+```
+
+**Example of CORRECT workflow**:
+```typescript
+// Step 1: Complete the work
+await createIntegrationTest();
+
+// Step 2: Update internal TODO
+TodoWrite([{task: "T-013", status: "completed"}]);
+
+// Step 3: IMMEDIATELY update tasks.md (NEVER skip this!)
+Edit("tasks.md", "**Status**: [ ] pending", "**Status**: [x] completed");
+
+// Step 4: IMMEDIATELY update spec.md ACs
+Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
+
+// Step 5: Move to next task
+```
+
+**❌ CRITICAL ERROR - Never Do This**:
+```typescript
+// ❌ WRONG: Marking TODO as complete WITHOUT updating source files
+TodoWrite([
+  {task: "T-013", status: "completed"},  // ❌ Only internal tracking
+  {task: "T-014", status: "completed"},  // ❌ Only internal tracking
+  {task: "T-015", status: "completed"}   // ❌ Only internal tracking
+]);
+// tasks.md still shows `[ ] pending` → DESYNC!
+// This is a CRITICAL VIOLATION!
+```
+
+**Pre-Closure Validation** (MANDATORY before `/specweave:done`):
+```bash
+# 1. Verify ALL tasks marked in tasks.md
+grep "^\*\*Status\*\*:" tasks.md | grep -c "\[x\] completed"
+# Output MUST equal total_tasks in frontmatter
+
+# 2. Verify ALL ACs checked in spec.md
+grep -c "^- \[x\] \*\*AC-" spec.md
+# Output MUST equal total ACs
+
+# 3. Only then close increment
+/specweave:done 0044
+```
+
+**Why This Matters**:
+- Internal TODO is ephemeral (lost between sessions)
+- tasks.md is permanent source of truth
+- spec.md is contract with stakeholders
+- Desync = broken promises to users/team
+
+**Incident Reference**: 2025-11-19 - Increment 0044 was incorrectly closed with tasks.md showing `[ ] pending` while internal TODO showed "completed". This violated SpecWeave's core principle. See `.specweave/increments/0044-integration-testing-status-hooks/reports/INCIDENT-SOURCE-OF-TRUTH-VIOLATION.md` for full post-mortem.
+
+### 8. NEVER Use `console.*` in Production Code
 
 **Rule**: ALL `src/` code MUST use logger abstraction, NEVER `console.log/error/warn`.
 
@@ -132,6 +206,40 @@ const instance = new MyClass({ logger: silentLogger });
 # Check for console.* in src/ before committing:
 git diff --cached --name-only | grep '^src/.*\.ts$' | xargs grep -n 'console\.' 2>/dev/null
 ```
+
+### 9. Coding Standards
+
+**Full standards**: `.specweave/docs/internal/governance/coding-standards.md`
+**Auto-discovery**: Runs during brownfield analysis or `/specweave:analyze-standards`
+
+**Critical rules (enforced during code generation)**:
+
+1. ✅ **NEVER use `console.*`** - Use logger abstraction (already enforced above)
+2. ✅ **ALWAYS import with `.js` extensions** - Required for ESM (already enforced in Build section)
+3. ✅ **Test files MUST use `.test.ts`** suffix, never `.spec.ts` (already enforced in Testing section)
+4. **Avoid `any` type** - Use specific types or generics
+5. **Functions < 50 lines** (ideal), < 100 lines (max)
+6. **Use custom error types**, not generic Error
+7. **Comment "why" not "what"**
+8. **No hardcoded secrets** - Use environment variables
+9. **No N+1 queries** - Batch database operations
+10. **Naming**: camelCase (vars), PascalCase (classes), UPPER_SNAKE_CASE (constants)
+
+**Auto-discovery features**:
+- **Brownfield projects**: Standards auto-detected during project analysis
+- **Manual analysis**: `/specweave:analyze-standards` - Generate comprehensive standards report
+- **Drift detection**: `/specweave:analyze-standards --drift` - Check compliance with declared standards
+- **Update standards**: `/specweave:analyze-standards --update` - Update official standards from analysis
+
+**How it works**:
+1. Scans codebase (src/**/*.ts) for naming patterns, import styles, function characteristics
+2. Parses ESLint, Prettier, TypeScript configs for enforced rules
+3. Analyzes existing CLAUDE.md, CONTRIBUTING.md for declared standards
+4. Generates evidence-based standards with confidence levels (90%+ = HIGH confidence)
+5. Detects anti-patterns: hardcoded secrets, large files (>500 lines), missing error handling
+6. Outputs to `.specweave/docs/internal/governance/coding-standards-analysis.md`
+
+**Note**: Most standards are enforced by ESLint/Prettier. This list focuses on SpecWeave-specific rules and patterns that can't be auto-fixed by linters.
 
 ---
 

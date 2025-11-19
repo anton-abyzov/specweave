@@ -1,7 +1,7 @@
 ---
 increment: 0044-integration-testing-status-hooks
 total_tasks: 6
-completed_tasks: 0
+completed_tasks: 6
 test_mode: TDD
 coverage_target: 95%
 parent_increment: 0043-spec-md-desync-fix
@@ -28,7 +28,7 @@ This increment validates the spec.md desync fix from increment 0043 works correc
 **Acceptance Criteria**: AC-US1-03, AC-US3-01
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku (straightforward integration test)
 
 **Test Plan**:
@@ -105,7 +105,7 @@ This increment validates the spec.md desync fix from increment 0043 works correc
 **Acceptance Criteria**: AC-US1-01, AC-US1-02
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku (straightforward command integration test)
 
 **Test Plan**:
@@ -182,7 +182,7 @@ This increment validates the spec.md desync fix from increment 0043 works correc
 **Acceptance Criteria**: AC-US1-01, AC-US1-02, AC-US3-03
 **Priority**: P1
 **Estimate**: 4 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: 🧠 sonnet (complex E2E scenario with Playwright)
 
 **Test Plan**:
@@ -256,7 +256,7 @@ This increment validates the spec.md desync fix from increment 0043 works correc
 **Acceptance Criteria**: AC-US1-02 (verification)
 **Priority**: P2
 **Estimate**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: 🧠 sonnet (complex E2E scenario with desync creation)
 
 **Test Plan**:
@@ -326,7 +326,7 @@ This increment validates the spec.md desync fix from increment 0043 works correc
 **Acceptance Criteria**: Performance targets from ADR-0043
 **Priority**: P2
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku (straightforward benchmark tests)
 
 **Test Plan**:
@@ -412,7 +412,7 @@ Compared to pre-0043 baseline: [NO REGRESSION / REGRESSION DETECTED]
 **Acceptance Criteria**: All ACs (human validation)
 **Priority**: P1
 **Estimate**: 2 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku (checklist creation and execution)
 
 **Test Plan**: N/A (manual testing task)

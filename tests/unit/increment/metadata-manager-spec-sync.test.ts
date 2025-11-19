@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { silentLogger } from '../../../src/utils/logger.js';
 import matter from 'gray-matter';
 
 describe('MetadataManager - spec.md Sync Integration', () => {
@@ -24,14 +25,16 @@ describe('MetadataManager - spec.md Sync Integration', () => {
   let incrementDir: string;
   let metadataPath: string;
   let specPath: string;
+  let testCounter = 0;
 
   beforeEach(async () => {
-    // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), `metadata-spec-sync-test-${Date.now()}`);
+    // Create isolated test directory with counter to ensure uniqueness
+    testCounter++;
+    testRoot = path.join(os.tmpdir(), `metadata-spec-sync-test-${Date.now()}-${testCounter}-${Math.random().toString(36).substring(7)}`);
     await fs.ensureDir(testRoot);
 
-    // Create increment structure
-    incrementId = '0001-test-increment';
+    // Create increment structure with unique ID per test
+    incrementId = `000${testCounter}-test-increment`;
     incrementDir = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementDir);
 
@@ -49,7 +52,7 @@ describe('MetadataManager - spec.md Sync Integration', () => {
     // Create spec.md with YAML frontmatter
     specPath = path.join(incrementDir, 'spec.md');
     const specContent = `---
-increment: 0001-test-increment
+increment: ${incrementId}
 title: Test Increment
 priority: P1
 status: active
@@ -65,6 +68,9 @@ Test content here.
 
     // Mock process.cwd() to return test root
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
+
+    // Use silent logger to prevent test output pollution
+    MetadataManager.setLogger(silentLogger);
   });
 
   afterEach(async () => {
@@ -90,10 +96,8 @@ Test content here.
       const metadataAfter = await fs.readJson(metadataPath);
       expect(metadataAfter.status).toBe(IncrementStatus.COMPLETED);
 
-      // AND spec.md should ALSO be updated (asynchronously, need to wait)
-      // Wait for async spec.md update to complete
-      await new Promise(resolve => setTimeout(resolve, 100));
-
+      // AND spec.md should ALSO be updated synchronously (no wait needed)
+      // Implementation uses updateSpecMdStatusSync() which is synchronous
       const specAfter = await fs.readFile(specPath, 'utf-8');
       expect(specAfter).toContain('status: completed');
       expect(specAfter).not.toContain('status: active');
@@ -125,17 +129,14 @@ Test content here.
       // GIVEN an increment with spec.md containing multiple frontmatter fields
       // (already set up in beforeEach)
 
-      // WHEN updateStatus() is called
+      // WHEN updateStatus() is called (synchronous operation)
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
-      // Wait for async spec.md update
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      // THEN all other frontmatter fields should remain unchanged
+      // THEN all other frontmatter fields should remain unchanged (no wait needed)
       const specAfter = await fs.readFile(specPath, 'utf-8');
       const parsed = matter(specAfter);
 
-      expect(parsed.data.increment).toBe('0001-test-increment');
+      expect(parsed.data.increment).toBe(incrementId);
       expect(parsed.data.title).toBe('Test Increment');
       expect(parsed.data.priority).toBe('P1');
       expect(parsed.data.type).toBe('feature');
@@ -151,9 +152,14 @@ Test content here.
       // GIVEN an active increment
       // (already set up in beforeEach with status=active)
 
+      // Reset module cache to ensure fresh import with mocked process.cwd()
+      // This prevents module caching issues when running all tests together
+      vi.resetModules();
+
       // Import ActiveIncrementManager to verify cache updates
       const { ActiveIncrementManager } = await import('../../../src/core/increment/active-increment-manager.js');
-      const activeManager = new ActiveIncrementManager();
+      // Pass testRoot explicitly to avoid relying on mocked process.cwd() timing
+      const activeManager = new ActiveIncrementManager(testRoot);
 
       // WHEN updateStatus() is called to complete the increment
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);

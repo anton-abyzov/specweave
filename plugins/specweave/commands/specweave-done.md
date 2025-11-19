@@ -94,14 +94,45 @@ Proceeding to PM validation...
 ```
 
 **What Gate 0 validates**:
-- [ ] All acceptance criteria are checked (`- [x] **AC-...`)
-- [ ] All tasks are completed (`**Status**: [x] completed`)
+- [ ] All acceptance criteria are checked in **spec.md** (`- [x] **AC-...`)
+- [ ] All tasks are completed in **tasks.md** (`**Status**: [x] completed`)
 - [ ] Required files exist (`spec.md`, `tasks.md`)
+- [ ] **NEW**: Tasks count in frontmatter matches checked tasks (source of truth validation)
+
+**⚠️  SOURCE OF TRUTH ENFORCEMENT (CRITICAL)**:
+
+Gate 0 now validates that `tasks.md` and `spec.md` are the ACTUAL source of truth, not internal TODO lists:
+
+```typescript
+// 1. Count completed tasks in tasks.md (ACTUAL source of truth)
+const tasksInFile = await countCompletedTasks(tasksPath);
+
+// 2. Compare with frontmatter
+const { total_tasks } = readTasksFrontmatter(tasksPath);
+
+// 3. BLOCK if mismatch
+if (tasksInFile < total_tasks) {
+  throw new ValidationError(
+    `CRITICAL: Source of truth violation!\n` +
+    `tasks.md shows ${tasksInFile}/${total_tasks} tasks completed.\n` +
+    `Internal TODO lists are NOT the source of truth.\n` +
+    `You MUST update tasks.md checkboxes before closing.\n` +
+    `See CLAUDE.md Rule #7 for details.`
+  );
+}
+```
+
+**This prevents**:
+- ❌ Closing increments with `[ ] pending` tasks in tasks.md
+- ❌ Relying on internal TODO lists instead of source files
+- ❌ Marking work "done" without updating acceptance criteria
+- ❌ The critical violation from increment 0044 (2025-11-19)
 
 **Why Gate 0 matters**:
 - **Prevents false completion**: Can't mark increment "completed" with open work
 - **Fast feedback**: Fails immediately (< 1s) vs waiting for PM agent (30s+)
 - **Data integrity**: Ensures status matches reality (no spec.md desync)
+- **Source of truth discipline**: Enforces tasks.md and spec.md as the ONLY source of truth
 
 **CRITICAL**: Gate 0 is MANDATORY and CANNOT be bypassed. If validation fails, increment stays "in-progress" and command exits.
 
