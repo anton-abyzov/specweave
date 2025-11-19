@@ -21,6 +21,7 @@ import {
 import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -38,6 +39,20 @@ export class MetadataError extends Error {
  * Provides CRUD operations and queries for increment metadata
  */
 export class MetadataManager {
+  /**
+   * Logger instance (injectable for testing)
+   */
+  private static logger: Logger = consoleLogger;
+
+  /**
+   * Set logger instance (primarily for testing with silentLogger)
+   *
+   * @param logger - Logger instance to use
+   */
+  static setLogger(logger: Logger): void {
+    this.logger = logger;
+  }
+
   /**
    * Get metadata file path for increment
    */
@@ -321,7 +336,7 @@ export class MetadataManager {
     } catch (error) {
       // Log error but don't fail the status update
       // This maintains backward compatibility if spec.md doesn't exist or has issues
-      console.warn(`⚠️  Failed to update spec.md for ${incrementId}:`, error);
+      this.logger.error(`Failed to update spec.md for ${incrementId}`, error);
     }
 
     // **CRITICAL**: Update active increment state

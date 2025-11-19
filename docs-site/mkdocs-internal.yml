@@ -53,26 +53,221 @@ nav:
 
   - Strategy:
     - Overview: strategy/README.md
+    - Product Vision: strategy/product-vision.md
+    - Core Features: strategy/core-features.md
+    - AI Infrastructure Costs: strategy/ai-infrastructure-costs.md
+    - Serverless Intelligence:
+      - Overview: strategy/serverless-intelligence/overview.md
 
   - Specs:
     - Overview: specs/README.md
 
+    - Feature Summaries:
+      - "FS-022: Multi-Repo Init UX": specs/_features/FS-022/FEATURE.md
+      - "FS-023: Release Management": specs/_features/FS-023/FEATURE.md
+      - "FS-028: Multi-Repo UX Improvements": specs/_features/FS-028/FEATURE.md
+      - "FS-031: External Tool Status Sync": specs/_features/FS-031/FEATURE.md
+      - "FS-033: Duplicate Prevention": specs/_features/FS-033/FEATURE.md
+      - "FS-035: Kafka Event Streaming": specs/_features/FS-035/FEATURE.md
+      - "FS-037: Project-Specific Tasks": specs/_features/FS-037/FEATURE.md
+      - "FS-038: Serverless Intelligence": specs/_features/FS-038/FEATURE.md
+      - "FS-039: Ultra-Smart Next Command": specs/_features/FS-039/FEATURE.md
+      - "FS-040: Living Docs External Sync": specs/_features/FS-040/FEATURE.md
+      - "FS-041: Integration Testing Status": specs/_features/FS-041/FEATURE.md
+      - "FS-042: Test Infrastructure Cleanup": specs/_features/FS-042/FEATURE.md
+      - "FS-043: spec.md Desync Fix": specs/_features/FS-043/FEATURE.md
+
   - Architecture:
     - Overview: architecture/README.md
-    - ADRs: architecture/adr/README.md
-    - HLD: architecture/hld/README.md
-    - Diagrams: architecture/diagrams/README.md
-    - Concepts: architecture/concepts/README.md
-    - Guides: architecture/guides/README.md
+    - System Design: architecture/system-design.md
+    - Project-Specific Tasks: architecture/system-design-project-specific-tasks.md
+    - Test Strategy: architecture/test-strategy-increment-numbering.md
+
+    - ADRs:
+      - Overview: architecture/adr/README.md
+      - Foundation:
+        - "0001: Tech Stack": architecture/adr/0001-tech-stack.md
+        - "0004: Increment Structure": architecture/adr/0004-increment-structure.md
+        - "0005: Documentation Philosophy": architecture/adr/0005-documentation-philosophy.md
+        - "0010: Append-Only Increments": architecture/adr/0010-append-only-increments.md
+        - "0014: Root-Level SpecWeave Only": architecture/adr/0014-root-level-specweave-only.md
+        - "0015: Hybrid Plugin System": architecture/adr/0015-hybrid-plugin-system.md
+        - "0047: Three-File Structure": architecture/adr/0047-three-file-structure-canonical-definition.md
+
+      - Agents & Skills:
+        - "0002-001: Agent Types (Roles vs Tools)": architecture/adr/0002-001-agent-types-roles-vs-tools.md
+        - "0002-002: Skills as Coordinators": architecture/adr/0002-002-skills-as-coordinators.md
+        - "0003: Agent vs Skill": architecture/adr/0003-agent-vs-skill.md
+        - "0009: Factory Pattern": architecture/adr/0009-factory-pattern.md
+        - "0042: Agent Enhancement Pattern": architecture/adr/0042-agent-enhancement-pattern.md
+
+      - Sync & Integration:
+        - "0016: Multi-Project External Sync": architecture/adr/0016-multi-project-external-sync.md
+        - "0022: GitHub Sync Architecture": architecture/adr/0022-github-sync-architecture.md
+        - "0030: Intelligent Living Docs Sync": architecture/adr/0030-intelligent-living-docs-sync.md
+        - "0031-001: Status Mapping Strategy": architecture/adr/0031-001-status-mapping-strategy.md
+        - "0031-002: Conflict Resolution": architecture/adr/0031-002-conflict-resolution-approach.md
+        - "0031-003: Bidirectional Sync": architecture/adr/0031-003-bidirectional-sync-implementation.md
+        - "0032: Universal Hierarchy Mapping": architecture/adr/0032-universal-hierarchy-mapping.md
+        - "0043: spec.md Source of Truth": architecture/adr/0043-spec-md-source-of-truth.md
+        - "0043: Spec Frontmatter Sync": architecture/adr/0043-spec-frontmatter-sync-strategy.md
+        - "0043: Workflow Orchestration": architecture/adr/0043-workflow-orchestration-architecture.md
+        - "0045: Atomic Update Rollback": architecture/adr/0045-atomic-update-rollback.md
+
+      - Testing:
+        - "0007: Testing Strategy": architecture/adr/0007-testing-strategy.md
+        - "0019: Test Infrastructure": architecture/adr/0019-test-infrastructure-architecture.md
+        - "0042-01: Test Structure Standardization": architecture/adr/0042-01-test-structure-standardization.md
+        - "0042-02: Test Isolation Enforcement": architecture/adr/0042-02-test-isolation-enforcement.md
+        - "0042-03: Fixture Architecture": architecture/adr/0042-03-fixture-architecture.md
+        - "0042-04: Naming Convention (test-only)": architecture/adr/0042-04-naming-convention-test-only.md
+
+      - Multi-Repo & Init:
+        - "0023: Multi-Repo Init UX": architecture/adr/0023-multi-repo-init-ux-architecture.md
+        - "0024: Repo ID Auto-Generation": architecture/adr/0024-repo-id-auto-generation.md
+        - "0027: Root-Level Folder Structure": architecture/adr/0027-root-level-folder-structure.md
+        - "0028: Flatten Internal Documentation": architecture/adr/0028-flatten-internal-documentation-structure.md
+
+      - Brownfield Support:
+        - "0008: Brownfield Support": architecture/adr/0008-brownfield-support.md
+        - "0018: Brownfield Classification": architecture/adr/0018-brownfield-classification-algorithm.md
+        - "0018: Specs Organization (Brownfield)": architecture/adr/0018-specs-organization-brownfield.md
+        - "0019: Brownfield-First Implementation": architecture/adr/0019-brownfield-first-implementation.md
+
+      - Intelligence & AI:
+        - "0003-007: Intelligent Model Selection": architecture/adr/0003-007-intelligent-model-selection.md
+        - "0003-008: Cost Tracking System": architecture/adr/0003-008-cost-tracking-system.md
+        - "0003-009: Phase Detection Algorithm": architecture/adr/0003-009-phase-detection-algorithm.md
+        - "0011: Intelligent Model Selection": architecture/adr/0011-intelligent-model-selection.md
+        - "0012: Cost Tracking": architecture/adr/0012-cost-tracking.md
+        - "0013: Phase Detection": architecture/adr/0013-phase-detection.md
+        - "0032: Haiku vs Sonnet (Log Parsing)": architecture/adr/0032-haiku-vs-sonnet-for-log-parsing.md
+        - "0039: Context Detection Strategy": architecture/adr/0039-context-detection-strategy.md
+        - "0044: Phase Detection Enhancement": architecture/adr/0044-phase-detection-enhancement.md
+
+      - Serverless & Cloud:
+        - "0035: Kafka Multi-Plugin": architecture/adr/0035-kafka-multi-plugin-architecture.md
+        - "0036: Kafka MCP Server Selection": architecture/adr/0036-kafka-mcp-server-selection.md
+        - "0037: Kafka Terraform Provider": architecture/adr/0037-kafka-terraform-provider-strategy.md
+        - "0038: Kafka Monitoring Stack": architecture/adr/0038-kafka-monitoring-stack-selection.md
+        - "0038: Serverless Platform Knowledge Base": architecture/adr/0038-serverless-platform-knowledge-base.md
+        - "0039: N8N Kafka Integration": architecture/adr/0039-n8n-kafka-integration-approach.md
+        - "0040: IaC Template Engine": architecture/adr/0040-iac-template-engine.md
+        - "0041: Cost Estimation Algorithm": architecture/adr/0041-cost-estimation-algorithm.md
+
+      - Operations & Tooling:
+        - "0006: Deployment Targets": architecture/adr/0006-deployment-targets.md
+        - "0017: Self-Reflection Architecture": architecture/adr/0017-self-reflection-architecture.md
+        - "0018: Plugin Validation": architecture/adr/0018-plugin-validation.md
+        - "0020: CLI Discipline Validation": architecture/adr/0020-cli-discipline-validation.md
+        - "0021: PM Agent Enforcement": architecture/adr/0021-pm-agent-enforcement.md
+        - "0033: Auto-Apply vs Manual Review": architecture/adr/0033-auto-apply-vs-manual-review-for-fixes.md
+        - "0033: Smart Reopen Functionality": architecture/adr/0033-smart-reopen-functionality.md
+        - "0034: Increment Backlog Status": architecture/adr/0034-increment-backlog-status.md
+        - "0044: YAML Parser (Gray Matter)": architecture/adr/0044-yaml-parser-gray-matter.md
+        - "0045: Autonomous Mode Safety": architecture/adr/0045-autonomous-mode-safety.md
+        - "0082: Claude Code Symlink Requirement": architecture/adr/0082-claude-code-marketplace-symlink-requirement.md
+
+      - Other ADRs:
+        - "0002: Context Loading": architecture/adr/0002-context-loading.md
+        - "0018: Reflection Model Selection": architecture/adr/0018-reflection-model-selection.md
+        - "0018: Strategy-Based Team Mapping": architecture/adr/0018-strategy-based-team-mapping.md
+        - "0019: Reflection Storage Format": architecture/adr/0019-reflection-storage-format.md
+        - "0023: Auto ID Generation": architecture/adr/0023-auto-id-generation-algorithm.md
+        - "0025: Incremental State Persistence": architecture/adr/0025-incremental-state-persistence.md
+        - "0025: Setup State Persistence": architecture/adr/0025-setup-state-persistence.md
+        - "0026: GitHub API Validation": architecture/adr/0026-github-api-validation.md
+        - "0026: GitHub Validation Strategy": architecture/adr/0026-github-validation-strategy.md
+        - "0027: Env File Structure": architecture/adr/0027-env-file-structure.md
+        - "0028: Env File Generation": architecture/adr/0028-env-file-generation.md
+        - "0031: GitHub Actions (Polling vs Webhooks)": architecture/adr/0031-github-actions-polling-vs-webhooks.md
+        - "0032: Increment Number Gap Prevention": architecture/adr/0032-increment-number-gap-prevention.md
+        - "ADR-0007: GitHub-First Task Sync": architecture/adr/adr-0007-github-first-task-sync.md
+
+    - High-Level Design (HLD):
+      - Overview: architecture/hld/README.md
+      - Diagram Generation: architecture/hld/hld-diagram-generation.md
+      - External Tool Status Sync: architecture/hld/hld-external-tool-status-sync.md
+      - Intelligent Model Selection: architecture/hld/hld-intelligent-model-selection.md
+
+    - Diagrams:
+      - Overview: architecture/diagrams/README.md
+      - Comprehensive Diagrams: architecture/diagrams/COMPREHENSIVE-DIAGRAMS.md
+      - Diagram Legend: architecture/diagrams/diagram-legend.md
+
+    - Concepts:
+      - Overview: architecture/concepts/README.md
+      - Context Loading: architecture/concepts/context-loading.md
+      - Increment vs Spec Lifecycle: architecture/concepts/increment-vs-spec-lifecycle.md
+      - Meta-Capability: architecture/concepts/meta-capability.md
+
+    - Guides:
+      - Overview: architecture/guides/README.md
+      - Intelligent Living Docs Implementation: architecture/guides/intelligent-living-docs-implementation.md
+      - Spec Commit Sync Implementation: architecture/guides/spec-commit-sync-implementation.md
+
+    - Specs Architecture:
+      - Overview: architecture/specs-architecture/README.md
+      - Brownfield-First Architecture: architecture/specs-architecture/brownfield-first-architecture.md
+      - Complete Example: architecture/specs-architecture/complete-example.md
+      - Domain vs Brownfield Comparison: architecture/specs-architecture/domain-vs-brownfield-comparison.md
+
+    - Data Models:
+      - Workflow State: architecture/data-models/workflow-state.md
 
   - Delivery:
     - Overview: delivery/README.md
 
+    - Core Processes:
+      - Branch Strategy: delivery/core/branch-strategy.md
+      - Code Review Standards: delivery/core/code-review-standards.md
+      - Release Process: delivery/core/release-process.md
+      - Roadmap: delivery/core/roadmap.md
+
+    - Guides:
+      - Development Workflow: delivery/guides/development-workflow.md
+      - Increment Lifecycle: delivery/guides/increment-lifecycle.md
+      - Increment Validation: delivery/guides/increment-validation.md
+      - Testing Strategy: delivery/guides/testing-strategy.md
+      - Test Import: delivery/guides/test-import.md
+      - Diagram Conventions: delivery/guides/diagram-conventions.md
+      - Diagram Conventions (Comprehensive): delivery/guides/diagram-conventions-comprehensive.md
+      - Diagram SVG Generation: delivery/guides/diagram-svg-generation.md
+      - Environment Strategy: delivery/guides/environment-strategy.md
+      - Deployment Intelligence: delivery/guides/deployment-intelligence.md
+      - Tool Concept Mapping: delivery/guides/tool-concept-mapping.md
+
+    - Metrics:
+      - DORA Metrics: delivery/metrics/dora-metrics.md
+      - DORA Dashboard: delivery/metrics/dora-dashboard.md
+
+    - Plans:
+      - Overview: delivery/plans/README.md
+      - 2025 Q4 Platform Example: delivery/plans/2025-q4-platform-example.md
+
+    - Release Management:
+      - Overview: delivery/release-management/README.md
+
+    - Brownfield:
+      - Integration Strategy: delivery/brownfield/brownfield-integration-strategy.md
+
   - Operations:
     - Overview: operations/README.md
+    - Deployment: operations/deployment.md
+    - Performance Tuning: operations/performance-tuning.md
+    - Marketplace Error Resolution: operations/marketplace-error-resolution.md
+    - NFR Configuration Example: operations/nfr-configuration-example.md
+    - NFR Success Criteria: operations/nfr-success-criteria-this-increment.md
+    - NFR Future Releases: operations/nfr-future-releases-post-beta.md
+    - NFR Risks: operations/nfr-risks.md
+    - NFR User Stories Summary: operations/nfr-user-stories-summary.md
 
   - Governance:
     - Overview: governance/README.md
+    - Coding Standards: governance/coding-standards.md
+    - Security Policy: governance/security-policy.md
+    - Compliance: governance/compliance.md
+    - Key Features Summary: governance/governance-key-features-summary.md
 
 plugins:
   - search:

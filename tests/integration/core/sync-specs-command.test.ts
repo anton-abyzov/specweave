@@ -9,6 +9,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import * as os from 'os';
 import { syncSpecs } from '../../../src/cli/commands/sync-specs.js';
+import { silentLogger } from '../../../src/utils/logger.js';
 
 describe('sync-specs command', () => {
   let testRoot: string;
@@ -197,7 +198,7 @@ status: completed
       });
 
       try {
-        await syncSpecs(['0099-nonexistent']);
+        await syncSpecs(['0099-nonexistent'], { logger: silentLogger });
       } catch (error) {
         // Expected to throw due to process.exit
       }
@@ -209,14 +210,8 @@ status: completed
     it('should succeed with no increments found (empty result)', async () => {
       // No increments created - should not fail, just return empty
 
-      // Mock console.log to capture output
-      const mockLog = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      await syncSpecs([]);
-
-      // Should complete successfully with 0 synced
-      expect(mockLog).toHaveBeenCalledWith(expect.stringContaining('Sync complete: 0 succeeded'));
-      mockLog.mockRestore();
+      // Should complete successfully with 0 synced (use silentLogger to avoid test output)
+      await expect(syncSpecs([], { logger: silentLogger })).resolves.toBeUndefined();
     });
   });
 

@@ -1,0 +1,447 @@
+# Coding Standards
+
+**Auto-Generated**: {{timestamp}}
+**Codebase**: {{project_name}}
+**Analysis**: {{file_count}} files, {{line_count}} lines of code
+**Overall Confidence**: {{overall_confidence}}%
+
+> 📊 This document combines:
+> - ✅ **Explicit Standards** - Declared in ESLint, Prettier, CLAUDE.md
+> - 📈 **Implicit Standards** - Detected from codebase analysis ({{file_count}} files)
+> - 🚨 **Issues** - Anti-patterns and security concerns
+
+---
+
+## Table of Contents
+
+1. [Summary](#summary)
+2. [Naming Conventions](#naming-conventions)
+3. [Import Patterns](#import-patterns)
+4. [Function Guidelines](#function-guidelines)
+5. [Type Safety](#type-safety)
+6. [Error Handling](#error-handling)
+7. [Security](#security)
+8. [Performance](#performance)
+9. [SpecWeave-Specific Rules](#specweave-specific-rules)
+10. [Anti-Patterns & Issues](#anti-patterns--issues)
+11. [Next Steps](#next-steps)
+12. [Appendix](#appendix)
+
+---
+
+## Summary
+
+### Confidence Levels
+
+| Level | Criteria | Meaning |
+|-------|----------|---------|
+| **ENFORCED** | 100% | Linter/compiler enforced |
+| **HIGH** | 90%+ | Overwhelming compliance |
+| **MEDIUM** | 70-89% | Majority compliance |
+| **LOW** | 50-69% | Weak pattern |
+| **CONFLICT** | <50% | Inconsistent, needs decision |
+
+### Overall Health
+
+{{overall_health_summary}}
+
+---
+
+## 1. Naming Conventions
+
+### Variables
+
+**Standard**: {{variable_naming_standard}}
+**Confidence**: {{variable_naming_confidence}}
+**Compliance**: {{variable_naming_compliance}}%
+**Samples**: {{variable_naming_samples}}
+
+**Enforced by**: {{variable_naming_enforcement}}
+
+**Examples**:
+```typescript
+// ✅ Good ({{variable_naming_good_percent}}% of codebase)
+{{variable_naming_good_examples}}
+
+// ❌ Bad ({{variable_naming_bad_percent}}% of codebase)
+{{variable_naming_bad_examples}}
+```
+
+**Recommendation**: {{variable_naming_recommendation}}
+
+---
+
+### Functions
+
+**Standard**: {{function_naming_standard}}
+**Confidence**: {{function_naming_confidence}}
+**Compliance**: {{function_naming_compliance}}%
+**Samples**: {{function_naming_samples}}
+
+**Examples**:
+```typescript
+// ✅ Good
+{{function_naming_good_examples}}
+
+// ❌ Bad
+{{function_naming_bad_examples}}
+```
+
+**Recommendation**: {{function_naming_recommendation}}
+
+---
+
+### Classes
+
+**Standard**: {{class_naming_standard}}
+**Confidence**: {{class_naming_confidence}}
+**Compliance**: {{class_naming_compliance}}%
+**Samples**: {{class_naming_samples}}
+
+**Examples**:
+```typescript
+// ✅ Good
+{{class_naming_good_examples}}
+
+// ❌ Bad (if any)
+{{class_naming_bad_examples}}
+```
+
+**Recommendation**: {{class_naming_recommendation}}
+
+---
+
+### Constants
+
+**Standard**: {{constant_naming_standard}}
+**Confidence**: {{constant_naming_confidence}}
+**Compliance**: {{constant_naming_compliance}}%
+**Samples**: {{constant_naming_samples}}
+
+**Examples**:
+```typescript
+// ✅ Good
+{{constant_naming_good_examples}}
+
+// ⚠️  Inconsistent ({{constant_naming_bad_percent}}% use different convention)
+{{constant_naming_bad_examples}}
+```
+
+**Recommendation**: {{constant_naming_recommendation}}
+
+---
+
+## 2. Import Patterns
+
+### File Extensions
+
+**Standard**: {{import_extension_standard}}
+**Confidence**: {{import_extension_confidence}}
+**Compliance**: {{import_extension_compliance}}%
+
+**Enforced by**: {{import_extension_enforcement}}
+
+**Examples**:
+```typescript
+// ✅ Good ({{import_extension_good_percent}}% compliance)
+{{import_extension_good_examples}}
+
+// ❌ Bad ({{import_extension_bad_percent}}% if any)
+{{import_extension_bad_examples}}
+```
+
+**Recommendation**: {{import_extension_recommendation}}
+
+---
+
+### Import Ordering
+
+**Standard**: {{import_ordering_standard}}
+**Confidence**: {{import_ordering_confidence}}
+**Compliance**: {{import_ordering_compliance}}%
+
+**Examples**:
+```typescript
+// ✅ Good ({{import_ordering_good_percent}}% of files)
+{{import_ordering_good_examples}}
+
+// ⚠️  Not followed ({{import_ordering_bad_percent}}% of files)
+{{import_ordering_bad_examples}}
+```
+
+**Recommendation**: {{import_ordering_recommendation}}
+
+---
+
+## 3. Function Guidelines
+
+### Function Length
+
+**Detected Pattern**:
+- **Average**: {{function_length_avg}} lines
+- **Median**: {{function_length_median}} lines
+- **90th percentile**: {{function_length_p90}} lines
+- **Max**: {{function_length_max}} lines ({{function_length_max_location}})
+
+**Recommended**: <50 lines (ideal), <100 lines (max)
+
+**Violations** ({{function_length_violations}} functions >100 lines):
+{{function_length_violations_list}}
+
+**Recommendation**: {{function_length_recommendation}}
+
+---
+
+### Function Style
+
+**Detected Pattern**:
+- Arrow functions: {{arrow_function_percent}}%
+- Regular functions: {{regular_function_percent}}%
+
+**Examples**:
+```typescript
+// Preferred ({{arrow_function_percent}}% of codebase)
+{{arrow_function_examples}}
+
+// Also acceptable ({{regular_function_percent}}% of codebase)
+{{regular_function_examples}}
+```
+
+**Recommendation**: {{function_style_recommendation}}
+
+---
+
+## 4. Type Safety
+
+### Avoid `any` Type
+
+**Detected**: {{any_type_count}} instances of `any` type
+
+**Enforced by**: {{any_type_enforcement}}
+
+**Violations**:
+{{any_type_violations_list}}
+
+**Recommendation**: {{any_type_recommendation}}
+
+---
+
+### Interface vs Type
+
+**Detected Pattern**:
+- Interfaces: {{interface_percent}}%
+- Types: {{type_percent}}%
+
+**Examples**:
+```typescript
+// Preferred for objects ({{interface_percent}}% of codebase)
+{{interface_examples}}
+
+// Preferred for unions/aliases ({{type_percent}}% of codebase)
+{{type_examples}}
+```
+
+**Recommendation**: {{interface_type_recommendation}}
+
+---
+
+## 5. Error Handling
+
+### Custom Error Types
+
+**Detected**: {{custom_error_count}} custom error classes
+
+**Examples**:
+```typescript
+{{custom_error_examples}}
+```
+
+**Recommendation**: {{custom_error_recommendation}}
+
+---
+
+### Try/Catch Usage
+
+**Detected**: {{try_catch_percent}}% of async functions have try/catch
+
+**Examples**:
+```typescript
+// ✅ Good ({{try_catch_good_count}} functions)
+{{try_catch_good_examples}}
+
+// ⚠️  Missing error handling ({{try_catch_missing_count}} functions)
+{{try_catch_missing_list}}
+```
+
+**Recommendation**: {{try_catch_recommendation}}
+
+---
+
+## 6. Security
+
+### No Hardcoded Secrets
+
+**Status**: {{hardcoded_secrets_status}}
+
+**Violations** ({{hardcoded_secrets_count}} instances):
+{{hardcoded_secrets_list}}
+
+**Recommendation**: {{hardcoded_secrets_recommendation}}
+
+---
+
+### No console.* in Production
+
+**Status**: {{console_usage_status}}
+
+**Violations** ({{console_usage_count}} instances):
+{{console_usage_list}}
+
+**Recommendation**: {{console_usage_recommendation}}
+
+---
+
+## 7. Performance
+
+### No N+1 Queries
+
+**Status**: {{n_plus_one_status}}
+
+{{n_plus_one_details}}
+
+**Recommendation**: {{n_plus_one_recommendation}}
+
+---
+
+## 8. SpecWeave-Specific Rules
+
+### 1. Logger Abstraction
+
+**Rule**: NEVER use console.* in src/
+
+**Compliance**: {{logger_compliance}}%
+
+**Violations**: {{logger_violations_count}} instances
+
+**Correct usage**:
+```typescript
+import { logger } from '../utils/logger.js';
+logger.info('Message');
+logger.error('Error', error);
+```
+
+---
+
+### 2. Test File Naming
+
+**Rule**: Use .test.ts suffix (NEVER .spec.ts)
+
+**Compliance**: {{test_naming_compliance}}%
+
+---
+
+### 3. Import Extensions
+
+**Rule**: ALWAYS use .js extensions for ESM compatibility
+
+**Compliance**: {{import_extension_compliance}}%
+
+---
+
+## 9. Anti-Patterns & Issues
+
+### 🔴 CRITICAL ({{critical_issues_count}} issues)
+
+{{critical_issues_list}}
+
+---
+
+### 🟠 HIGH ({{high_issues_count}} issues)
+
+{{high_issues_list}}
+
+---
+
+### 🟡 MEDIUM ({{medium_issues_count}} issues)
+
+{{medium_issues_list}}
+
+---
+
+### 🟢 LOW
+
+{{low_issues_summary}}
+
+---
+
+## 10. Next Steps
+
+### Critical (Fix Immediately)
+{{critical_next_steps}}
+
+### High Priority (This Sprint)
+{{high_priority_next_steps}}
+
+### Medium Priority (Next Sprint)
+{{medium_priority_next_steps}}
+
+### Documentation
+{{documentation_next_steps}}
+
+---
+
+## 11. Appendix
+
+### Configuration Files
+
+#### .eslintrc.json
+```json
+{{eslint_config}}
+```
+
+#### .prettierrc
+```json
+{{prettier_config}}
+```
+
+#### tsconfig.json (relevant sections)
+```json
+{{tsconfig_config}}
+```
+
+---
+
+### Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total Files | {{file_count}} |
+| Total LOC | {{line_count}} |
+| Variables Analyzed | {{variable_count}} |
+| Functions Analyzed | {{function_count}} |
+| Classes Analyzed | {{class_count}} |
+| Imports Analyzed | {{import_count}} |
+| Analysis Duration | {{analysis_duration}} |
+
+---
+
+### Change Log
+
+**Previous Analysis**: {{previous_analysis_date}}
+**This Analysis**: {{current_analysis_date}}
+
+**Changes Since Last Analysis**:
+{{change_log}}
+
+---
+
+## Metadata
+
+**Generated by**: SpecWeave code-standards-detective agent
+**Version**: {{specweave_version}}
+**Analysis Date**: {{analysis_date}}
+**Next Review**: {{next_review_date}} (recommended: quarterly)
+
+---
+
+*This document is auto-generated. For questions or updates, consult the development team.*

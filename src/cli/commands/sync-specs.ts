@@ -7,6 +7,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { LivingDocsSync, SyncOptions } from '../../core/living-docs/living-docs-sync.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 export interface SyncSpecsArgs {
   incrementId?: string;
@@ -18,24 +19,25 @@ export interface SyncSpecsArgs {
 /**
  * Sync specs command entry point
  */
-export async function syncSpecs(args: string[]): Promise<void> {
+export async function syncSpecs(args: string[], options: { logger?: Logger } = {}): Promise<void> {
+  const logger = options.logger ?? consoleLogger;
   const parsedArgs = parseArgs(args);
   const projectRoot = process.cwd();
 
-  const sync = new LivingDocsSync(projectRoot);
+  const sync = new LivingDocsSync(projectRoot, { logger });
 
   // Default to --all if no increment ID provided
   const shouldSyncAll = parsedArgs.all || !parsedArgs.incrementId;
 
   if (shouldSyncAll) {
     // Sync all increments (not just completed)
-    console.log('🔄 Syncing all increments...\n');
+    logger.log('🔄 Syncing all increments...\n');
 
     let increments: string[];
     try {
-      increments = await findAllSyncableIncrements(projectRoot);
+      increments = await findAllSyncableIncrements(projectRoot, logger);
     } catch (error) {
-      console.error('❌ Failed to find increments:', error);
+      logger.error('❌ Failed to find increments:', error);
       process.exit(1);
       return; // For type safety (unreachable)
     }
@@ -54,29 +56,29 @@ export async function syncSpecs(args: string[]): Promise<void> {
           successCount++;
         } else {
           failCount++;
-          console.error(`   ❌ Failed: ${result.errors.join(', ')}`);
+          logger.error(`   ❌ Failed: ${result.errors.join(', ')}`);
         }
       } catch (error) {
         failCount++;
-        console.error(`   ❌ Failed to sync ${incrementId}:`, error);
+        logger.error(`   ❌ Failed to sync ${incrementId}:`, error);
       }
     }
 
-    console.log(`\n✅ Sync complete: ${successCount} succeeded, ${failCount} failed`);
+    logger.log(`\n✅ Sync complete: ${successCount} succeeded, ${failCount} failed`);
 
   } else {
     // Sync single increment
     let incrementId: string | null;
     try {
-      incrementId = parsedArgs.incrementId || await findLatestCompletedIncrement(projectRoot);
+      incrementId = parsedArgs.incrementId || await findLatestCompletedIncrement(projectRoot, logger);
     } catch (error) {
-      console.error('❌ Failed to find latest increment:', error);
+      logger.error('❌ Failed to find latest increment:', error);
       process.exit(1);
       return; // For type safety (unreachable)
     }
 
     if (!incrementId) {
-      console.error('❌ No increment specified and no completed increments found');
+      logger.error('❌ No increment specified and no completed increments found');
       process.exit(1);
       return; // For type safety (unreachable)
     }
@@ -88,20 +90,20 @@ export async function syncSpecs(args: string[]): Promise<void> {
         force: parsedArgs.force
       });
     } catch (error) {
-      console.error('❌ Sync failed with unexpected error:', error);
+      logger.error('❌ Sync failed with unexpected error:', error);
       process.exit(1);
       return; // For type safety (unreachable)
     }
 
     if (!result.success) {
-      console.error('❌ Sync failed:', result.errors.join(', '));
+      logger.error('❌ Sync failed:', result.errors.join(', '));
       process.exit(1);
       return; // For type safety (unreachable)
     }
 
-    console.log('\n✅ Sync complete!');
+    logger.log('\n✅ Sync complete!');
     if (parsedArgs.dryRun) {
-      console.log('   (Dry run - no files were actually created)');
+      logger.log('   (Dry run - no files were actually created)');
     }
   }
 }
@@ -134,7 +136,7 @@ function parseArgs(args: string[]): SyncSpecsArgs {
  * Find all syncable increments (with spec.md, regardless of status)
  * Excludes non-increment directories like _archive, _backup, etc.
  */
-async function findAllSyncableIncrements(projectRoot: string): Promise<string[]> {
+async function findAllSyncableIncrements(projectRoot: string, logger: Logger): Promise<string[]> {
   const incrementsDir = path.join(projectRoot, '.specweave/increments');
 
   if (!await fs.pathExists(incrementsDir)) {
@@ -153,7 +155,7 @@ async function findAllSyncableIncrements(projectRoot: string): Promise<string[]>
     // Require spec.md to exist
     const specPath = path.join(incrementsDir, entry, 'spec.md');
     if (!await fs.pathExists(specPath)) {
-      console.log(`   ⚠️  Skipping ${entry} (no spec.md)`);
+      logger.log(`   ⚠️  Skipping ${entry} (no spec.md)`);
       continue;
     }
 
@@ -166,7 +168,7 @@ async function findAllSyncableIncrements(projectRoot: string): Promise<string[]>
 /**
  * Find all completed increments
  */
-async function findCompletedIncrements(projectRoot: string): Promise<string[]> {
+async function findCompletedIncrements(projectRoot: string, logger: Logger): Promise<string[]> {
   const incrementsDir = path.join(projectRoot, '.specweave/increments');
 
   if (!await fs.pathExists(incrementsDir)) {
@@ -184,7 +186,7 @@ async function findCompletedIncrements(projectRoot: string): Promise<string[]> {
 
     // Skip if no spec.md
     if (!await fs.pathExists(specPath)) {
-      console.log(`   ⚠️  Skipping ${entry} (no spec.md)`);
+      logger.log(`   ⚠️  Skipping ${entry} (no spec.md)`);
       continue;
     }
 
@@ -203,7 +205,7 @@ async function findCompletedIncrements(projectRoot: string): Promise<string[]> {
 /**
  * Find latest completed increment
  */
-async function findLatestCompletedIncrement(projectRoot: string): Promise<string | null> {
-  const completed = await findCompletedIncrements(projectRoot);
+async function findLatestCompletedIncrement(projectRoot: string, logger: Logger): Promise<string | null> {
+  const completed = await findCompletedIncrements(projectRoot, logger);
   return completed.length > 0 ? completed[completed.length - 1] : null;
 }

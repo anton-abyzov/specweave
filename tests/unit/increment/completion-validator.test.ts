@@ -8,13 +8,15 @@ describe('IncrementCompletionValidator', () => {
   let testRoot: string;
   let incrementId: string;
   let incrementPath: string;
+  let testCounter = 0;
 
   beforeEach(async () => {
-    // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), `completion-validator-test-${Date.now()}`);
+    // Create isolated test directory with counter to ensure uniqueness
+    testCounter++;
+    testRoot = path.join(os.tmpdir(), `completion-validator-test-${Date.now()}-${testCounter}-${Math.random().toString(36).substring(7)}`);
     await fs.ensureDir(testRoot);
 
-    incrementId = '0001-test-increment';
+    incrementId = `000${testCounter}-test-increment`;
     incrementPath = path.join(testRoot, '.specweave', 'increments', incrementId);
     await fs.ensureDir(incrementPath);
 

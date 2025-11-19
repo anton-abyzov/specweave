@@ -1,11 +1,11 @@
 ---
 increment: 0044-integration-testing-status-hooks
-title: 'Integration Testing - Status Line and Hooks'
+title: Integration Testing - Status Line and Hooks
 priority: P2
-status: in-progress
+status: completed
 type: test
 created: 2025-11-19T00:00:00.000Z
-started: 2025-11-19
+started: 2025-11-19T00:00:00.000Z
 test_mode: TDD
 coverage_target: 95
 parent_increment: 0043-spec-md-desync-fix
@@ -50,19 +50,19 @@ Increment 0043 successfully fixed the core spec.md/metadata.json desync bug:
 **So that** I know which increment I'm working on without manually checking folders
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: When closing increment via `/specweave:done`, status line updates to next active increment
-  - **Tests**: Integration test - close increment → verify status line updates
-  - **Tasks**: T-013, T-014 (deferred from 0043)
+- [x] **AC-US1-01**: When closing increment via `/specweave:done`, status line updates to next active increment
+  - **Tests**: Integration test - close increment → verify status line updates ✅
+  - **Tasks**: T-013, T-014 (completed)
   - **Priority**: P1
 
-- [ ] **AC-US1-02**: Status line never shows completed increments as active
-  - **Tests**: Integration test - scan completed increments → verify excluded from status line
-  - **Tasks**: T-014, T-020 (deferred from 0043)
+- [x] **AC-US1-02**: Status line never shows completed increments as active
+  - **Tests**: Integration test - scan completed increments → verify excluded from status line ✅
+  - **Tasks**: T-014, T-020 (completed)
   - **Priority**: P1
 
-- [ ] **AC-US1-03**: Status line hook reads spec.md and finds correct status (not stale "active")
-  - **Tests**: Integration test - execute hook → verify reads spec.md correctly
-  - **Tasks**: T-013 (deferred from 0043)
+- [x] **AC-US1-03**: Status line hook reads spec.md and finds correct status (not stale "active")
+  - **Tests**: Integration test - execute hook → verify reads spec.md correctly ✅
+  - **Tasks**: T-013 (completed)
   - **Priority**: P1
 
 ---
@@ -74,19 +74,19 @@ Increment 0043 successfully fixed the core spec.md/metadata.json desync bug:
 **So that** external tools stay in sync with SpecWeave state
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
-  - **Tests**: Integration test - call hook after status change → verify reads updated spec.md
-  - **Tasks**: T-013 (deferred from 0043)
+- [x] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
+  - **Tests**: Integration test - call hook after status change → verify reads updated spec.md ✅
+  - **Tasks**: T-013 (completed)
   - **Priority**: P1
 
-- [ ] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
-  - **Tests**: Integration test - mock sync hook → verify reads spec.md not metadata.json
-  - **Tasks**: T-020 (deferred from 0043)
+- [x] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
+  - **Tests**: Integration test - mock sync hook → verify reads spec.md not metadata.json ✅
+  - **Tasks**: T-020 (completed)
   - **Priority**: P2
 
-- [ ] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
-  - **Tests**: E2E test - close increment → verify GitHub issue closed
-  - **Tasks**: T-020, T-023 (deferred from 0043)
+- [x] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
+  - **Tests**: E2E test - close increment → verify GitHub issue closed ✅
+  - **Tasks**: T-020, T-023 (completed)
   - **Priority**: P2
 
 ---
@@ -95,29 +95,29 @@ Increment 0043 successfully fixed the core spec.md/metadata.json desync bug:
 
 ### Integration Tests
 
-- [ ] **T-013**: Test Status Line Hook Reads Updated spec.md
+- [x] **T-013**: Test Status Line Hook Reads Updated spec.md
   - Integration test: Close increment → run hook → verify reads "completed"
   - Priority: P1, Estimate: 3 hours
 
-- [ ] **T-014**: Test /specweave:done Updates spec.md
+- [x] **T-014**: Test /specweave:done Updates spec.md
   - Integration test: Execute /done → verify spec.md and status line updated
   - Priority: P1, Estimate: 3 hours
 
-- [ ] **T-020**: Write E2E Test (Full Increment Lifecycle)
+- [x] **T-020**: Write E2E Test (Full Increment Lifecycle)
   - E2E test: Create → work → close → verify status line updates
   - Priority: P1, Estimate: 4 hours
 
 ### Testing & Validation
 
-- [ ] **T-021**: Write E2E Test (Repair Script Workflow)
+- [x] **T-021**: Write E2E Test (Repair Script Workflow)
   - E2E test: Create desync → validate → repair → re-validate
   - Priority: P2, Estimate: 3 hours
 
-- [ ] **T-022**: Run Performance Benchmarks (< 10ms target)
+- [x] **T-022**: Run Performance Benchmarks (< 10ms target)
   - Performance test: Measure updateStatus() latency
   - Priority: P2, Estimate: 2 hours
 
-- [ ] **T-023**: Manual Testing Checklist Execution
+- [x] **T-023**: Manual Testing Checklist Execution
   - Manual validation: All status transitions, hooks, status line accuracy
   - Priority: P1, Estimate: 2 hours
 

@@ -40,7 +40,7 @@ SpecWeave uses the **C4 model** for architecture documentation:
 | **Level 3: Component** | LLD | Internal service structure | Controller → Service → Repository |
 | **Level 4: Code** | Source | Implementation details | Class diagrams, inline docs |
 
-**See**: [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md) for complete C4 mapping and diagram naming conventions.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions.md) for complete C4 mapping and diagram naming conventions.
 
 ## Subdirectories
 
@@ -144,13 +144,13 @@ Keep each diagram next to the markdown page that explains it:
 ![System Context](./hld-system-overview.context.svg)
 ```
 
-**See**: [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md) for complete guide.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions.md) for complete guide.
 
 ## Document Structures
 
 ### HLD (High-Level Design) - C4 Levels 1-2
 
-**Template**: See `templates/docs/hld-template.md`
+**Template**: See `src/templates/` (project root)
 
 **Purpose**: System-level design showing external boundaries (Level 1) and internal containers (Level 2)
 
@@ -181,7 +181,7 @@ Keep each diagram next to the markdown page that explains it:
 
 ### LLD (Low-Level Design) - C4 Level 3
 
-**Template**: See `templates/docs/lld-template.md`
+**Template**: See `src/templates/` (project root)
 
 **Purpose**: Component-level design showing internal structure of a service (Level 3)
 
@@ -222,7 +222,7 @@ Keep each diagram next to the markdown page that explains it:
 
 ### ADR (Architecture Decision Record)
 
-**Template**: See `templates/docs/adr-template.md`
+**Template**: See `src/templates/` (project root)
 
 **Sections**:
 - **Status** - draft | review | approved | deprecated
@@ -235,7 +235,7 @@ Keep each diagram next to the markdown page that explains it:
 
 ### Specs (Specifications)
 
-**Template**: See `templates/docs/spec-template.md`
+**Template**: See `src/templates/` (project root)
 
 **Sections**:
 - **Summary** - One-sentence description
@@ -254,7 +254,8 @@ Keep each diagram next to the markdown page that explains it:
 
 ### To create an HLD:
 ```bash
-cp templates/docs/hld-template.md docs/internal/architecture/hld-{system}.md
+# Templates are in src/templates/ at project root
+cp src/templates/docs/hld-template.md .specweave/docs/internal/architecture/hld-{system}.md
 ```
 
 **Then create diagrams**:
@@ -267,7 +268,7 @@ touch docs/internal/architecture/hld-{system}.entity.mmd
 
 ### To create an LLD:
 ```bash
-cp templates/docs/lld-template.md docs/internal/architecture/lld-{service}.md
+cp src/templates/docs/lld-template.md .specweave/docs/internal/architecture/lld-{service}.md
 ```
 
 **Then create diagrams**:
@@ -281,7 +282,7 @@ touch docs/internal/architecture/lld-{service}.sequence-{operation}.mmd
 # Find next number
 ls docs/internal/architecture/adr/ | grep -E '^[0-9]+' | tail -1
 # Create new ADR with next number
-cp templates/docs/adr-template.md docs/internal/architecture/adr/0001-decision-title.md
+cp src/templates/docs/adr-template.md .specweave/docs/internal/architecture/adr/0001-decision-title.md
 ```
 
 ### To create a Spec:
@@ -292,7 +293,7 @@ cp templates/docs/adr-template.md docs/internal/architecture/adr/0001-decision-t
 ls docs/internal/specs/ | grep -E '^spec-[0-9]+' | tail -1
 # Create new spec with next number
 mkdir -p docs/internal/specs/spec-0001-feature-title
-cp templates/docs/spec-template.md docs/internal/specs/spec-0001-feature-title/spec.md
+cp src/templates/docs/spec-template.md .specweave/docs/internal/specs/spec-0001-feature-title/spec.md
 ```
 
 **See**: [Specs README](../specs/README.md) for complete spec creation guide
@@ -339,7 +340,6 @@ PRD (Why/What) → HLD (How - System) → LLD (How - Component) → Code (Implem
 - [Delivery Documentation](../delivery/README.md) - Build & release processes
 - [Operations Documentation](../operations/README.md) - Production runbooks
 - [Governance Documentation](../governance/README.md) - Security, compliance
-- [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md) - C4 diagram conventions and naming
-- [HLD Template](../../../templates/docs/hld-template.md) - High-Level Design template
-- [LLD Template](../../../templates/docs/lld-template.md) - Low-Level Design template
-- [ADR Template](../../../templates/docs/adr-template.md) - Architecture Decision Record template
+- [Diagram Conventions](../delivery/guides/diagram-conventions.md) - C4 diagram conventions and naming
+- [Diagram Conventions (Comprehensive)](../delivery/guides/diagram-conventions-comprehensive.md) - Complete diagram guide
+- Templates: See `src/templates/` in project root (HLD, LLD, ADR templates)

@@ -20,9 +20,10 @@ description: Analyzes existing brownfield projects to map documentation structur
 3. **Classify Documents** - Identify PRD, HLD, ADR, Spec, Runbook candidates
 4. **Detect External Tools** - Find Jira, ADO, GitHub project references
 5. **Analyze Diagrams** - Identify architecture diagrams (PNG, SVG, drawio)
-6. **Generate Migration Plan** - Create actionable migration plan with effort estimate
-7. **Suggest Increment Mapping** - Map Jira Epics/ADO Features to SpecWeave Increments
-8. **Support Two Paths** - Quick Start (incremental) OR Comprehensive (upfront) 🆕
+6. **Discover Coding Standards** - Auto-detect naming conventions, patterns, linting rules 🆕
+7. **Generate Migration Plan** - Create actionable migration plan with effort estimate
+8. **Suggest Increment Mapping** - Map Jira Epics/ADO Features to SpecWeave Increments
+9. **Support Two Paths** - Quick Start (incremental) OR Comprehensive (upfront) 🆕
 
 ---
 
@@ -335,6 +336,42 @@ build/**
 **Conversion plan**:
 - PNG/DrawIO → Suggest Mermaid conversion
 - Estimate: 15-30 minutes per diagram
+
+### Step 4.5: Coding Standards Discovery 🆕
+
+**Auto-detect coding standards from codebase** using code-standards-detective agent.
+
+**Execution**:
+```bash
+# Run during brownfield analysis (automatic)
+# Or manually: /specweave:analyze-standards
+```
+
+**What it discovers**:
+1. **Explicit Standards** - Parse ESLint, Prettier, TypeScript, EditorConfig
+2. **Implicit Standards** - Analyze naming conventions (98% camelCase?), import patterns, function styles
+3. **Anti-Patterns** - Detect console.* usage, hardcoded secrets, large files (>500 lines)
+4. **Type Safety** - Count `any` usage, interface vs type preference
+5. **Error Handling** - Analyze try/catch patterns, custom error classes
+
+**Statistical Analysis**:
+- Confidence levels (HIGH 90%+, MEDIUM 70-89%, LOW 50-69%)
+- Real code examples from codebase
+- Inconsistency warnings
+
+**Output**:
+```
+.specweave/docs/internal/governance/coding-standards-analysis.md
+```
+
+**Benefits**:
+- ✅ New contributors understand project conventions immediately
+- ✅ Documents "tribal knowledge" that only exists in code
+- ✅ Detects security issues (hardcoded secrets, missing validation)
+- ✅ Provides baseline for code quality improvements
+- ✅ Identifies technical debt (large functions, missing error handling)
+
+**Integration**: This step runs automatically during brownfield analysis, providing coding standards context alongside documentation structure.
 
 ### Step 5: Effort Estimation
 
