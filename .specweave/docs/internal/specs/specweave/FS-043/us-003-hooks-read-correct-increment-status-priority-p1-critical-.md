@@ -19,9 +19,9 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
-- [ ] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
-- [ ] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
+- [x] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
+- [x] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
+- [x] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
 
 ---
 
@@ -34,5 +34,5 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Tasks
 
-- [ ] **T-013**: Test Status Line Hook Reads Updated spec.md
-- [ ] **T-023**: Manual Testing Checklist Execution
+- [x] **T-013**: Test Status Line Hook Reads Updated spec.md
+- [x] **T-023**: Manual Testing Checklist Execution

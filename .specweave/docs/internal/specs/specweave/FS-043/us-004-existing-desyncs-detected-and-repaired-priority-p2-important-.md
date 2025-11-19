@@ -41,6 +41,6 @@ created: 2025-11-18T00:00:00.000Z
 - [x] **T-012**: Add Audit Logging to Repair Script
 - [x] **T-016**: Run Validation Script on Current Codebase
 - [x] **T-017**: Repair Existing Desyncs (0038, 0041, etc.)
-- [ ] **T-021**: Write E2E Test (Repair Script Workflow)
-- [ ] **T-023**: Manual Testing Checklist Execution
-- [ ] **T-024**: Update User Guide (Troubleshooting Section)
+- [x] **T-021**: Write E2E Test (Repair Script Workflow)
+- [x] **T-023**: Manual Testing Checklist Execution
+- [x] **T-024**: Update User Guide (Troubleshooting Section)

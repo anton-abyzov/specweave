@@ -43,8 +43,8 @@ created: 2025-11-18T00:00:00.000Z
 - [x] **T-006**: Implement Rollback on spec.md Update Failure
 - [x] **T-007**: Test All Status Transitions Update spec.md
 - [x] **T-015**: Test /specweave:pause and /specweave:resume Update spec.md
-- [ ] **T-018**: Create ADR-0043 (Spec Frontmatter Sync Strategy)
-- [ ] **T-019**: Update CHANGELOG.md
-- [ ] **T-020**: Write E2E Test (Full Increment Lifecycle)
-- [ ] **T-022**: Run Performance Benchmarks (< 10ms target)
-- [ ] **T-023**: Manual Testing Checklist Execution
+- [x] **T-018**: Create ADR-0043 (Spec Frontmatter Sync Strategy)
+- [x] **T-019**: Update CHANGELOG.md
+- [x] **T-020**: Write E2E Test (Full Increment Lifecycle)
+- [x] **T-022**: Run Performance Benchmarks (< 10ms target)
+- [x] **T-023**: Manual Testing Checklist Execution
