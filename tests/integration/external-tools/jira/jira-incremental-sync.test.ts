@@ -23,6 +23,10 @@ import { credentialsManager } from '../../../../src/core/credentials-manager.js'
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import { findProjectRoot } from '../../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 interface TestResult {
   name: string;
@@ -706,7 +710,7 @@ This increment is for testing granular work item addition.
     });
 
     // Save to test-results folder
-    const resultsDir = path.join(process.cwd(), 'test-results');
+    const resultsDir = path.join(projectRoot, 'test-results');
     if (!fs.existsSync(resultsDir)) {
       fs.mkdirSync(resultsDir, { recursive: true });
     }

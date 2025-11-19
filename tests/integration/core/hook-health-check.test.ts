@@ -7,11 +7,15 @@
 import { describe, it, expect } from 'vitest';
 import { HookHealthChecker } from '../../../src/core/hooks/HookHealthChecker.js';
 import { HealthReporter } from '../../../src/core/hooks/HealthReporter.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Hook Health Check Integration', () => {
   it('should run full health check workflow', async () => {
     // 1. Create health checker
-    const config = HookHealthChecker.createDefaultConfig(process.cwd());
+    const config = HookHealthChecker.createDefaultConfig(projectRoot);
     const checker = new HookHealthChecker(config);
 
     // 2. Run health check
@@ -24,7 +28,7 @@ describe('Hook Health Check Integration', () => {
   });
 
   it('should generate console report', async () => {
-    const config = HookHealthChecker.createDefaultConfig(process.cwd());
+    const config = HookHealthChecker.createDefaultConfig(projectRoot);
     const checker = new HookHealthChecker(config);
     const result = await checker.checkAllHooks();
 
@@ -38,7 +42,7 @@ describe('Hook Health Check Integration', () => {
   });
 
   it('should generate markdown report', async () => {
-    const config = HookHealthChecker.createDefaultConfig(process.cwd());
+    const config = HookHealthChecker.createDefaultConfig(projectRoot);
     const checker = new HookHealthChecker(config);
     const result = await checker.checkAllHooks();
 
@@ -52,7 +56,7 @@ describe('Hook Health Check Integration', () => {
   });
 
   it('should generate JSON report', async () => {
-    const config = HookHealthChecker.createDefaultConfig(process.cwd());
+    const config = HookHealthChecker.createDefaultConfig(projectRoot);
     const checker = new HookHealthChecker(config);
     const result = await checker.checkAllHooks();
 

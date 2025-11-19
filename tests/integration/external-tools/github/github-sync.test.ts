@@ -16,6 +16,10 @@ import {
   shouldRunIntegrationTests,
   getCredentialStatus
 } from '../../helpers/auth.js';
+import { findProjectRoot } from '../../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 // Load .env file
 dotenv.config();
@@ -628,7 +632,7 @@ class GithubSyncTest {
     });
 
     // Save report
-    const resultsDir = path.join(process.cwd(), 'test-results', 'github-sync');
+    const resultsDir = path.join(projectRoot, 'test-results', 'github-sync');
     if (!fs.existsSync(resultsDir)) {
       fs.mkdirSync(resultsDir, { recursive: true });
     }
