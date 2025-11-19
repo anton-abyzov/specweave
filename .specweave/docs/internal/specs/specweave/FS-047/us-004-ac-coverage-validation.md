@@ -1,13 +1,19 @@
 ---
 id: US-004
 feature: FS-047
-title: "AC Coverage Validation"
-status: planned
+title: AC Coverage Validation
+status: active
 priority: P0
 created: 2025-11-19
+external:
+  github:
+    issue: 641
+    url: https://github.com/anton-abyzov/specweave/issues/641
 ---
 
 # US-004: AC Coverage Validation
+
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/633
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
@@ -35,6 +41,6 @@ created: 2025-11-19
 
 ## Tasks
 
-- [x] [T-013](../../../../increments/0047-us-task-linkage/tasks.md#T-013): Create AC coverage validator
-- [x] [T-014](../../../../increments/0047-us-task-linkage/tasks.md#T-014): Integrate AC coverage into /specweave:validate
-- [x] [T-015](../../../../increments/0047-us-task-linkage/tasks.md#T-015): Add closure validation to /specweave:done
+- [x] **T-013**: Create AC coverage validator
+- [x] **T-014**: Integrate AC coverage into /specweave:validate
+- [x] **T-015**: Add closure validation to /specweave:done

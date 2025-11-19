@@ -684,16 +684,42 @@ EOF
 
   translate_living_docs_specs "$increment_id"
 
-  # 7. Increment-level GitHub issue creation (for single-repo projects)
+  # ============================================================================
+  # INCREMENT-LEVEL GITHUB ISSUE CREATION (DEPRECATED v0.24.0+)
+  # ============================================================================
+  #
+  # ⚠️  DEPRECATED: SpecWeave now syncs ONLY at User Story level.
+  #
+  # Feature/Increment-level issues like "[FS-047] Title" are NO LONGER created.
+  # Instead, use:
+  #   /specweave-github:sync FS-047
+  #
+  # This creates PROPER User Story-level issues:
+  #   [FS-047][US-001] User Story Title
+  #   [FS-047][US-002] User Story Title
+  #   etc.
+  #
+  # @see .specweave/increments/0047-us-task-linkage/reports/GITHUB-TITLE-FORMAT-FIX-PLAN.md
+  # ============================================================================
+
+  # 7. Increment-level GitHub issue creation (DEPRECATED - disabled by default)
   log_info ""
   log_info "🔗 Checking GitHub issue auto-creation..."
 
   # Check if auto-create is enabled in config
   local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
 
+  # DEPRECATED: Override to false unless explicitly enabled via env var
+  if [ "$SPECWEAVE_ENABLE_INCREMENT_GITHUB_SYNC" != "true" ]; then
+    auto_create="false"
+    log_debug "Increment GitHub sync disabled (use /specweave-github:sync for User Story-level issues)"
+  fi
+
   log_debug "Auto-create GitHub issue: $auto_create"
 
   if [ "$auto_create" = "true" ]; then
+    log_info "  ⚠️  WARNING: Increment-level sync is DEPRECATED"
+    log_info "  ✅ Use /specweave-github:sync for [FS-XXX][US-YYY] format"
     log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
 
     # ============================================================================
@@ -827,6 +853,122 @@ EOF_MINIMAL
       fi
     else
       log_debug "  ℹ️  No GitHub issue linked (autoCreateIssue may be disabled)"
+    fi
+  fi
+
+  # ============================================================================
+  # LIVING DOCS SYNC (NEW - v0.23.0+, Increment 0047)
+  # ============================================================================
+  # CRITICAL: Sync increment spec to living docs structure IMMEDIATELY
+  # after increment creation (not just on task completion)
+  #
+  # Why this matters:
+  # - Creates FS-XXX feature folder with User Story files
+  # - Syncs acceptance criteria and task linkages
+  # - Enables traceability from the moment increment is planned
+  #
+  # Previous behavior (BROKEN):
+  # - Living docs only synced AFTER first task completion
+  # - New increments had empty living docs until tasks marked complete
+  # - Manual /specweave:sync-docs required for every new increment
+  #
+  # New behavior (FIXED):
+  # - Living docs auto-sync during increment creation
+  # - FS-XXX folder created with all User Stories immediately
+  # - No manual intervention needed
+  #
+  # @see .specweave/increments/0047-us-task-linkage/ (US-Task Linkage)
+  # ============================================================================
+
+  log_info ""
+  log_info "📚 Syncing living docs for new increment..."
+
+  if command -v node &> /dev/null && [ -n "$increment_id" ]; then
+    # Extract feature ID from spec.md frontmatter (epic: FS-047)
+    local FEATURE_ID=""
+    local spec_md_path="$increment_dir/spec.md"
+
+    if [ -f "$spec_md_path" ]; then
+      FEATURE_ID=$(awk '
+        BEGIN { in_frontmatter=0 }
+        /^---$/ {
+          if (in_frontmatter == 0) {
+            in_frontmatter=1; next
+          } else {
+            exit
+          }
+        }
+        in_frontmatter == 1 && /^epic:/ {
+          gsub(/^epic:[ \t]*/, "");
+          gsub(/["'\'']/, "");
+          print;
+          exit
+        }
+      ' "$spec_md_path" | tr -d '\r\n')
+
+      if [ -n "$FEATURE_ID" ]; then
+        log_debug "  📎 Extracted feature ID: $FEATURE_ID"
+      else
+        log_debug "  ⚠️  No epic field in spec.md, sync will auto-generate ID"
+      fi
+    fi
+
+    # Extract project ID from config (defaults to "default")
+    local PROJECT_ID="default"
+    if [ -f "$CONFIG_FILE" ]; then
+      if command -v jq >/dev/null 2>&1; then
+        local active_project=$(jq -r '.multiProject.activeProject // .project.name // "default"' "$CONFIG_FILE" 2>/dev/null)
+        if [ -n "$active_project" ] && [ "$active_project" != "null" ]; then
+          PROJECT_ID="$active_project"
+        fi
+      fi
+    fi
+    log_debug "  📁 Project ID: $PROJECT_ID"
+
+    # Determine sync script location (same logic as post-task-completion.sh)
+    local SYNC_SCRIPT=""
+    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      SYNC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"
+      log_debug "  Using in-place compiled hook: $SYNC_SCRIPT"
+    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
+      log_debug "  Using local dist: $SYNC_SCRIPT"
+    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      SYNC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
+      log_debug "  Using node_modules: $SYNC_SCRIPT"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js" ]; then
+      SYNC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js"
+      log_debug "  Using plugin marketplace: $SYNC_SCRIPT"
+    fi
+
+    if [ -n "$SYNC_SCRIPT" ]; then
+      log_info "  🔄 Syncing $increment_id to living docs..."
+
+      # Run living docs sync (non-blocking, best-effort)
+      if [ -n "$FEATURE_ID" ]; then
+        (cd "$PROJECT_ROOT" && FEATURE_ID="$FEATURE_ID" PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$increment_id") 2>&1 | \
+          grep -E "✅|❌|⚠️|📚" | while read -r line; do echo "  $line"; done || {
+          log_info "  ⚠️  Living docs sync failed (non-blocking)"
+          log_debug "Sync error, but continuing hook execution"
+        }
+      else
+        (cd "$PROJECT_ROOT" && PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$increment_id") 2>&1 | \
+          grep -E "✅|❌|⚠️|📚" | while read -r line; do echo "  $line"; done || {
+          log_info "  ⚠️  Living docs sync failed (non-blocking)"
+          log_debug "Sync error, but continuing hook execution"
+        }
+      fi
+
+      log_info "  ✅ Living docs sync complete!"
+    else
+      log_info "  ⚠️  sync-living-docs.js not found, skipping auto-sync"
+      log_info "  💡 Run /specweave:sync-docs manually to sync living docs"
+    fi
+  else
+    if ! command -v node &> /dev/null; then
+      log_debug "  ⚠️  Node.js not found, skipping living docs sync"
+    else
+      log_debug "  ⚠️  No increment ID, skipping living docs sync"
     fi
   fi
 
