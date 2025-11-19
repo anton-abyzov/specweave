@@ -1043,12 +1043,50 @@ export async function initCommand(
 
           console.log(chalk.green('   ✔ Marketplace registered from GitHub'));
 
-          // CRITICAL: Wait for marketplace cache to fully initialize after remove+add
-          // The remove operation invalidates cache, add fetches from GitHub
-          // We need to wait for: fetch + parse + validate 25 plugins
-          // 2 seconds was too short, increasing to 5 seconds for reliability
-          spinner.text = 'Initializing marketplace cache (this takes a few seconds)...';
-          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
+          // CRITICAL: Wait for marketplace cache to be FULLY ready
+          // Problem: Fixed delays (2s, 5s) are unreliable - cache initialization time varies
+          // Solution: Poll until marketplace.json exists and is readable in cache
+          spinner.text = 'Waiting for marketplace cache to initialize...';
+
+          const marketplaceCachePath = path.join(
+            os.homedir(),
+            '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
+          );
+
+          const maxWaitTime = 30000; // 30 seconds max
+          const pollInterval = 500; // Check every 500ms
+          const startTime = Date.now();
+          let cacheReady = false;
+
+          while (!cacheReady && (Date.now() - startTime) < maxWaitTime) {
+            try {
+              // Check if marketplace.json exists and is readable
+              if (fs.existsSync(marketplaceCachePath)) {
+                const cacheData = JSON.parse(fs.readFileSync(marketplaceCachePath, 'utf-8'));
+
+                // Verify it has plugins (not just an empty/invalid file)
+                if (cacheData.plugins && cacheData.plugins.length >= 25) {
+                  cacheReady = true;
+                  const waitedMs = Date.now() - startTime;
+                  console.log(chalk.gray(`   ⏱  Cache ready in ${Math.round(waitedMs / 1000)}s`));
+                  break;
+                }
+              }
+            } catch (e) {
+              // File exists but not readable yet (still being written)
+            }
+
+            // Wait before next poll
+            await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+            // Update spinner to show we're still waiting
+            const elapsed = Math.round((Date.now() - startTime) / 1000);
+            spinner.text = `Waiting for marketplace cache... (${elapsed}s)`;
+          }
+
+          if (!cacheReady) {
+            console.log(chalk.yellow('   ⚠ Cache initialization timeout, proceeding anyway...'));
+          }
 
           spinner.succeed('SpecWeave marketplace ready');
 
