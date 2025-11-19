@@ -110,7 +110,7 @@ async function parseUserStoryFile(
         const acDescription = acMatch[3].trim();
 
         acceptanceCriteria.push({
-          id: `AC-US${usNumber}-${acNumber}`,
+          id: `AC-US${usNumberPattern}-${acNumber}`,  // Use normalized pattern without leading zeros
           description: acDescription,
           completed,
           priority: frontmatter.priority || undefined,
@@ -146,8 +146,8 @@ export async function parseSpecContent(
     const titleMatch = content.match(/^#\s+(.+)$/m);
     let title = titleMatch ? titleMatch[1].replace(/^SPEC-\d+:\s*/, '') : 'Untitled';
 
-    // Remove ID prefix from title if present
-    title = title.replace(/^\[?[A-Z]{2,4}-[A-Z0-9-]+\]?\s*/, '');
+    // Remove ID prefix from title if present (supports [FS-043], FS-043:, FS-043 formats)
+    title = title.replace(/^\[?[A-Z]{2,4}-[A-Z0-9-]+\]?:?\s*/, '');
 
     // Extract project from path
     // .specweave/docs/internal/specs/{project}/{spec-id}.md

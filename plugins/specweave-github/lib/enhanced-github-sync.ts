@@ -185,7 +185,7 @@ export async function syncSpecWithEnhancedContent(
     } else {
       // Create new issue with labels
       const issue = await client.createEpicIssue(
-        `[${baseSpec.identifier.compact}] ${baseSpec.title}`,
+        `[${baseSpec.project === '_features' ? baseSpec.identifier.display : baseSpec.identifier.compact}] ${baseSpec.title}`,
         description,
         undefined,
         allLabels  // Apply labels at creation

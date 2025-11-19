@@ -155,7 +155,10 @@ async function createGitHubIssue(
   try {
     // Build issue title and body using compact format
     // Examples: [BE-JIRA-AUTH-123] User Authentication, [FE-user-login-ui] Login UI
-    const title = `[${spec.identifier.compact}] ${spec.title}`;
+    // Use display ID for cleaner titles (FS-043 instead of _F-FS-043)
+    // For _features project, display is "FS-043", compact is "_F-FS-043"
+    const titleId = spec.project === '_features' ? spec.identifier.display : spec.identifier.compact;
+    const title = `[${titleId}] ${spec.title}`;
     const body = buildExternalDescription(spec);
 
     if (verbose) {
