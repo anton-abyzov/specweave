@@ -1,0 +1,9 @@
+{
+  "id": "0047-us-task-linkage",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-19T10:19:50Z",
+  "lastActivity": "2025-11-19T10:19:50Z",
+  "testMode": "test-after",
+  "coverageTarget": 80
+}

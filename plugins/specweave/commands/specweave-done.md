@@ -80,6 +80,8 @@ if (!validation.isValid) {
 
   • 17 acceptance criteria still open
   • 13 tasks still pending
+  • 4 ACs uncovered by tasks (NEW - v0.23.0)
+  • 2 orphan tasks detected (NEW - v0.23.0)
 
 Fix these issues before running /specweave:done again
 ```
@@ -89,6 +91,8 @@ Fix these issues before running /specweave:done again
 ✅ Automated validation passed
   • All acceptance criteria completed
   • All tasks completed
+  • 100% AC coverage (29/29 ACs) (NEW - v0.23.0)
+  • 0 orphan tasks (NEW - v0.23.0)
 
 Proceeding to PM validation...
 ```
@@ -98,6 +102,10 @@ Proceeding to PM validation...
 - [ ] All tasks are completed in **tasks.md** (`**Status**: [x] completed`)
 - [ ] Required files exist (`spec.md`, `tasks.md`)
 - [ ] **NEW**: Tasks count in frontmatter matches checked tasks (source of truth validation)
+- [ ] **NEW (v0.23.0)**: AC coverage validation (US-Task Linkage Architecture)
+  - [ ] All ACs covered by at least one task (0% uncovered)
+  - [ ] No orphan tasks (all tasks have **Satisfies ACs** field)
+  - [ ] All US linkage valid (**User Story** field references exist in spec.md)
 
 **⚠️  SOURCE OF TRUTH ENFORCEMENT (CRITICAL)**:
 
@@ -127,6 +135,56 @@ if (tasksInFile < total_tasks) {
 - ❌ Relying on internal TODO lists instead of source files
 - ❌ Marking work "done" without updating acceptance criteria
 - ❌ The critical violation from increment 0044 (2025-11-19)
+
+**⚠️  AC COVERAGE VALIDATION (NEW - v0.23.0)**:
+
+Gate 0 now validates AC coverage to ensure all Acceptance Criteria have implementing tasks:
+
+```typescript
+import { validateACCoverage } from '../../../src/validators/ac-coverage-validator.js';
+
+// Validate AC coverage
+const coverageReport = validateACCoverage(incrementPath, {
+  minCoveragePercentage: 100,  // Require 100% coverage
+  allowOrphans: false,          // Block if orphan tasks exist
+  logger: consoleLogger
+});
+
+// BLOCK if coverage fails
+if (coverageReport.uncoveredACs.length > 0) {
+  throw new ValidationError(
+    `CRITICAL: AC Coverage validation failed!\n` +
+    `\n` +
+    `Uncovered Acceptance Criteria (${coverageReport.uncoveredACs.length}):\n` +
+    coverageReport.uncoveredACs.map(acId => `  • ${acId}`).join('\n') +
+    `\n\n` +
+    `All ACs MUST have at least one implementing task.\n` +
+    `Create tasks with **Satisfies ACs** field linking to these ACs.\n` +
+    `\n` +
+    `Run: /specweave:validate ${incrementId} to see detailed coverage report.`
+  );
+}
+
+if (coverageReport.orphanTasks.length > 0) {
+  throw new ValidationError(
+    `CRITICAL: Orphan tasks detected!\n` +
+    `\n` +
+    `Tasks without AC linkage (${coverageReport.orphanTasks.length}):\n` +
+    coverageReport.orphanTasks.map(taskId => `  • ${taskId}`).join('\n') +
+    `\n\n` +
+    `All tasks MUST have **Satisfies ACs** field linking to acceptance criteria.\n` +
+    `Add AC references to these tasks.\n` +
+    `\n` +
+    `Run: /specweave:validate ${incrementId} to see detailed validation report.`
+  );
+}
+```
+
+**This ensures**:
+- ✅ All ACs covered by at least one task (100% coverage required)
+- ✅ No orphan tasks (all tasks link to valid ACs)
+- ✅ Traceability maintained (AC → Task mapping complete)
+- ✅ Living docs accuracy (sync depends on task-AC linkage)
 
 **Why Gate 0 matters**:
 - **Prevents false completion**: Can't mark increment "completed" with open work

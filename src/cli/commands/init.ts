@@ -17,6 +17,7 @@ import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemP
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { generateInitialIncrement } from '../helpers/init/initial-increment-generator.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -1424,6 +1425,50 @@ export async function initCommand(
 
       // Update config.json with testing configuration
       updateConfigWithTesting(targetDir, testMode, coverageTarget);
+    }
+
+    // 10.8 Create Initial Increment (CRITICAL: Users need somewhere to start!)
+    // ONLY create if:
+    // 1. New project (not continuing existing)
+    // 2. Increments directory is empty
+    const incrementsDir = path.join(targetDir, '.specweave', 'increments');
+    const existingIncrements = fs.existsSync(incrementsDir)
+      ? fs.readdirSync(incrementsDir).filter(dir => {
+          const fullPath = path.join(incrementsDir, dir);
+          return fs.statSync(fullPath).isDirectory() && /^\d{4}-/.test(dir);
+        })
+      : [];
+
+    if (!continueExisting && existingIncrements.length === 0) {
+      console.log('');
+      console.log(chalk.cyan.bold('📦 Creating Initial Increment'));
+      console.log(chalk.gray('   Setting up 0001-project-setup so you can start working immediately'));
+      console.log('');
+
+      try {
+        const incrementId = await generateInitialIncrement({
+          projectPath: targetDir,
+          projectName: finalProjectName,
+          techStack: options.techStack,
+          language: language as SupportedLanguage
+        });
+
+        console.log(chalk.green(`   ✔ Created initial increment: ${incrementId}`));
+        console.log(chalk.gray('   ✔ Status: ACTIVE (ready to work)'));
+        console.log(chalk.gray('   ✔ Files: spec.md, plan.md, tasks.md, metadata.json'));
+        console.log('');
+        console.log(chalk.yellow('   💡 TIP: Delete this increment and create your first real feature:'));
+        console.log(chalk.gray('      rm -rf .specweave/increments/0001-project-setup'));
+        console.log(chalk.gray('      /specweave:increment "my-feature"'));
+        console.log('');
+      } catch (error) {
+        console.log(chalk.yellow('   ⚠️  Could not create initial increment (non-critical)'));
+        if (process.env.DEBUG) {
+          console.log(chalk.gray(`   Error: ${error instanceof Error ? error.message : String(error)}`));
+        }
+        console.log(chalk.gray('   → You can create your first increment manually with /specweave:increment'));
+        console.log('');
+      }
     }
 
     showNextSteps(finalProjectName, toolName, language as SupportedLanguage, usedDotNotation, toolName === 'claude' ? autoInstallSucceeded : undefined);

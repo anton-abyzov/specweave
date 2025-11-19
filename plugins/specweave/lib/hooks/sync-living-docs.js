@@ -103,6 +103,27 @@ async function hierarchicalDistribution(incrementId) {
     console.log(`      Files created/updated: ${result.filesCreated.length + result.filesUpdated.length}`);
 
     const changedFiles = [...result.filesCreated, ...result.filesUpdated];
+
+    // NEW (v0.23.0): Sync tasks from tasks.md to living docs US files
+    // Part of increment 0047-us-task-linkage implementation
+    try {
+      const { syncUSTasksToLivingDocs } = await import("./sync-us-tasks.js");
+      const taskSyncResult = await syncUSTasksToLivingDocs(
+        incrementId,
+        projectRoot,
+        result.featureId,
+        {}
+      );
+
+      if (taskSyncResult.success && taskSyncResult.updatedFiles.length > 0) {
+        changedFiles.push(...taskSyncResult.updatedFiles);
+      }
+    } catch (error) {
+      // Don't fail entire sync if US-Task sync fails (graceful degradation)
+      console.log(`   \u26A0\uFE0F  US-Task sync failed (non-fatal):`, error.message);
+      console.log(`   \u{1F4A1} Tip: This is a new feature (v0.23.0) - may need task parser build`);
+    }
+
     return {
       success: true,
       changedFiles
