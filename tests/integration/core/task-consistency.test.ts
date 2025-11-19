@@ -13,9 +13,13 @@ import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
+import { findProjectRoot } from '../../test-utils/project-root.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Task Consistency Integration', () => {
   const testDir = path.join(os.tmpdir(), `test-increment-consistency-${Date.now()}`);
@@ -47,7 +51,8 @@ describe('Task Consistency Integration', () => {
       `.trim());
 
       // Execute: Run update-tasks-md hook
-      const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
+      // ✅ SAFE: projectRoot is determined from test file location
+      const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       const result = execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
         encoding: 'utf-8'
@@ -72,7 +77,8 @@ describe('Task Consistency Integration', () => {
       `.trim());
 
       // Execute: Run update-tasks-md hook
-      const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
+      // ✅ SAFE: projectRoot is determined from test file location
+      const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
         encoding: 'utf-8'
@@ -203,7 +209,8 @@ describe('Task Consistency Integration', () => {
       `.trim());
 
       // Execute: Run update-tasks-md hook
-      const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
+      // ✅ SAFE: projectRoot is determined from test file location
+      const hookPath = path.join(projectRoot, 'plugins/specweave/lib/hooks/update-tasks-md.js');
       const hookOutput = execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
         encoding: 'utf-8'
