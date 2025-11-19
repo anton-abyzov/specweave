@@ -25,6 +25,12 @@ import {
   ValidationOptions,
   ValidationResult,
 } from '../../utils/plugin-validator.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI validation command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (validation results, warnings, installation progress).
+// Logger infrastructure available for future internal debug logs if needed.
 
 /**
  * Setup validate-plugins command

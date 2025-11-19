@@ -13,6 +13,7 @@
 import { WorkflowOrchestrator, WorkflowExecuteOptions } from '../../core/workflow/workflow-orchestrator.js';
 import { AutonomousExecutor, AutonomousConfig } from '../../core/workflow/autonomous-executor.js';
 import chalk from 'chalk';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 /**
  * Next command configuration
@@ -36,6 +37,8 @@ export interface NextCommandConfig {
   resumeFrom?: string;
   /** Stop on first error (autonomous mode) */
   stopOnError?: boolean;
+  /** Logger for debug/error messages (default: consoleLogger) */
+  logger?: Logger;
 }
 
 /**
@@ -44,6 +47,14 @@ export interface NextCommandConfig {
  * @param config - Command configuration
  */
 export async function executeNextCommand(config: NextCommandConfig = {}): Promise<void> {
+  // Initialize logger (injectable for testing)
+  const logger = config.logger ?? consoleLogger;
+
+  // NOTE: This CLI command is 99% user-facing output (console.log/console.error).
+  // All console.* calls in this file are legitimate user-facing exceptions
+  // as defined in CONTRIBUTING.md (colored messages, workflow suggestions, progress indicators).
+  // Logger is available for any internal debug logs if needed in future.
+
   try {
     if (config.autonomous) {
       await executeAutonomousMode(config);

@@ -8,17 +8,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.22.5] - 2025-11-19
+## [0.22.6] - 2025-11-19
 
 ### Fixed
 
-- **Plugin Installation Race Condition** - Fixed `specweave init` failing to install ~40% of plugins (10/25)
-  - Removed unnecessary marketplace removal that caused cache invalidation
-  - Added 2-second initialization delay for marketplace cache to settle
+- **Plugin Installation Race Condition (CORRECTED FIX)** - Fixed `specweave init` failing to install ~40% of plugins (10/25)
+  - **CRITICAL**: Marketplace removal IS necessary for updates (ensures users get latest plugins)
+  - Increased initialization delay from 2s → 5s after remove+add for reliable cache refresh
   - Added retry logic with exponential backoff for edge cases
   - Expected improvement: 60% → 100% success rate
-  - Affects: Fresh installations, CI/CD environments, new users
+  - Affects: Fresh installations, CI/CD environments, new users, **UPDATES**
   - Details: `.specweave/increments/0046-console-elimination/reports/init-plugin-race-condition-fix.md`
+
+---
+
+## [0.22.5] - 2025-11-19 [YANKED - Incorrect Fix]
+
+### Fixed
+
+- ~~Plugin Installation Race Condition~~ - **INCORRECT**: Removed marketplace removal which broke updates
+  - **Issue**: Claude CLI requires marketplace removal for updates, otherwise shows "already installed" error
+  - **Status**: Yanked, fixed in v0.22.6
 
 ---
 
