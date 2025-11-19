@@ -7,6 +7,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import matter from 'gray-matter';
 import {
   IncrementMetadata,
   IncrementMetadataExtended,
@@ -265,6 +266,10 @@ export class MetadataManager {
    * Validates transition and updates timestamps
    *
    * **CRITICAL**: Also updates active increment state automatically!
+   *
+   * NOTE: This method is now SYNCHRONOUS to ensure spec.md is updated
+   * before returning. This prevents race conditions in tests and ensures
+   * data consistency.
    */
   static updateStatus(
     incrementId: string,
@@ -308,12 +313,16 @@ export class MetadataManager {
     // **NEW (T-005)**: Update spec.md frontmatter to keep in sync with metadata.json
     // AC-US2-01: updateStatus() updates both metadata.json AND spec.md frontmatter
     // AC-US2-03: All status transitions update spec.md
-    // Fire-and-forget async call (don't block on spec.md update)
-    SpecFrontmatterUpdater.updateStatus(incrementId, newStatus).catch((error) => {
+    // SYNCHRONOUS call to ensure spec.md is updated before returning
+    // This prevents race conditions and ensures data consistency
+    try {
+      // Use sync version to avoid race conditions in tests
+      this.updateSpecMdStatusSync(incrementId, newStatus);
+    } catch (error) {
       // Log error but don't fail the status update
       // This maintains backward compatibility if spec.md doesn't exist or has issues
       console.warn(`⚠️  Failed to update spec.md for ${incrementId}:`, error);
-    });
+    }
 
     // **CRITICAL**: Update active increment state
     const activeManager = new ActiveIncrementManager();
@@ -332,6 +341,55 @@ export class MetadataManager {
     }
 
     return metadata;
+  }
+
+  /**
+   * Update spec.md status synchronously (used by updateStatus)
+   *
+   * This is a private helper to avoid async/await in updateStatus() which would
+   * break backward compatibility with callers expecting sync behavior.
+   */
+  private static updateSpecMdStatusSync(
+    incrementId: string,
+    status: IncrementStatus
+  ): void {
+    // Validate status is valid enum value
+    if (!Object.values(IncrementStatus).includes(status)) {
+      throw new MetadataError(
+        `Invalid status value: "${status}". Must be one of: ${Object.values(IncrementStatus).join(', ')}`,
+        incrementId
+      );
+    }
+
+    // Build spec.md path
+    const specPath = path.join(
+      process.cwd(),
+      '.specweave',
+      'increments',
+      incrementId,
+      'spec.md'
+    );
+
+    // Check if spec.md exists
+    if (!fs.existsSync(specPath)) {
+      // Spec doesn't exist - this is OK for legacy increments
+      return;
+    }
+
+    // Read spec.md content (synchronously)
+    const content = fs.readFileSync(specPath, 'utf-8');
+
+    // Parse and update YAML frontmatter using gray-matter
+    const parsed = matter(content);
+    parsed.data.status = status;
+
+    // Stringify updated content
+    const updatedContent = matter.stringify(parsed.content, parsed.data);
+
+    // Atomic write: temp file → rename (synchronously)
+    const tempPath = `${specPath}.tmp`;
+    fs.writeFileSync(tempPath, updatedContent, 'utf-8');
+    fs.renameSync(tempPath, specPath);
   }
 
   /**

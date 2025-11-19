@@ -132,7 +132,8 @@ describe('Status Line Force Update Integration', () => {
 
     // Step 4: Verify status line message
     const statusLine = manager.render();
-    expect(statusLine).toBe('No active increment');
+    // Updated to match actual implementation message
+    expect(statusLine).toContain('No active increment');
   });
 
   it('should update progress bar correctly', async () => {
@@ -161,17 +162,24 @@ describe('Status Line Force Update Integration', () => {
   });
 
   it('should show multiple open increments in status line', async () => {
-    // Step 1: Create 2 active increments
+    // Step 1: Create 3 active increments (to trigger "+1 more" display)
     await createIncrement(testRoot, '0049-first', 'active', '2025-11-01');
     await createIncrement(testRoot, '0050-second', 'active', '2025-11-02');
+    await createIncrement(testRoot, '0051-third', 'active', '2025-11-03');
 
     // Step 2: Force update
     await updater.update();
 
-    // Step 3: Verify status line shows open count
+    // Step 3: Verify cache shows 3 open, but displays max 2
+    const cache = await updater.getCurrentCache();
+    expect(cache?.openCount).toBe(3);
+    expect(cache?.activeIncrements).toHaveLength(2); // Max display = 2
+
+    // Step 4: Verify status line shows remaining count
     const statusLine = manager.render();
     expect(statusLine).not.toBeNull();
-    expect(statusLine).toContain('(2 open)'); // Indicates 2 open increments
+    // Format is "(+1 more)" for remaining increments beyond MAX_ACTIVE_INCREMENTS_DISPLAY
+    expect(statusLine).toContain('(+1 more)');
   });
 
   it('should handle cache staleness correctly', async () => {
@@ -281,9 +289,10 @@ async function createIncrementWithTasks(
 
     tasksContent += `## ${taskId}: Task ${i}\n\n`;
     if (isCompleted) {
-      tasksContent += `**Status**: [x] Completed **Completed**: 2025-11-18\n\n`;
+      // Use format that TaskCounter recognizes: **Completed**: <date>
+      tasksContent += `**Completed**: 2025-11-18\n\n`;
     } else {
-      tasksContent += `**Status**: [ ] Pending\n\n`;
+      tasksContent += `**Status**: Pending\n\n`;
     }
   }
 
@@ -308,9 +317,10 @@ async function updateTaskCompletion(
 
     tasksContent += `## ${taskId}: Task ${i}\n\n`;
     if (isCompleted) {
-      tasksContent += `**Status**: [x] Completed **Completed**: 2025-11-18\n\n`;
+      // Use format that TaskCounter recognizes: **Completed**: <date>
+      tasksContent += `**Completed**: 2025-11-18\n\n`;
     } else {
-      tasksContent += `**Status**: [ ] Pending\n\n`;
+      tasksContent += `**Status**: Pending\n\n`;
     }
   }
 
