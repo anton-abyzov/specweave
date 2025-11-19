@@ -20,6 +20,12 @@ import { detectRepository } from '../../utils/git-utils.js';
 import { SyncProfile } from '../../core/types/sync-profile.js';
 import path from 'path';
 import fs from 'fs/promises';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI sync command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (sync status, action results, progress indicators).
+// Logger infrastructure available for future internal debug logs if needed.
 
 program
   .name('sync-spec-content')

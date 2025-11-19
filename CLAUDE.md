@@ -10,17 +10,32 @@ For **contributors to SpecWeave itself** (not users).
 
 ## 🚨 CRITICAL SAFETY RULES
 
-### 1. Symlink Setup (MANDATORY for Contributors)
+### 1. Dual-Mode Development Setup (MANDATORY for Contributors)
+
+**Context**: SpecWeave contributors need TWO modes:
+1. **Development Mode**: Local repo symlink (for iterating on SpecWeave itself)
+2. **NPM Testing Mode**: Global npm installation (for testing end-user experience)
+
+#### Development Mode (Default for Contributors)
 
 **Problem**: Claude Code executes hooks from `~/.claude/plugins/marketplaces/specweave/`. If this is a **directory** (not symlink), hooks fail with "No such file or directory".
 
-**Fix**:
+**Quick Setup**:
+```bash
+# Switch to development mode (creates symlink)
+bash scripts/dev-mode.sh
+
+# Verify symlink:
+ls -ld ~/.claude/plugins/marketplaces/specweave
+# Must show: lrwxr-xr-x ... -> /path/to/repo (SYMLINK, not drwxr-xr-x)
+```
+
+**Manual Setup** (if scripts fail):
 ```bash
 # Verify symlink exists:
 ls -ld ~/.claude/plugins/marketplaces/specweave
-# Must show: lrwxr-xr-x ... -> /path/to/repo (SYMLINK, not drwxr-xr-x)
 
-# If directory, fix it:
+# If directory or missing, fix it:
 rm -rf ~/.claude/plugins/marketplaces/specweave
 ln -s "$(pwd)" ~/.claude/plugins/marketplaces/specweave
 
@@ -30,6 +45,43 @@ bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 
 **Without symlink**: Hooks fail, status line broken, living docs don't sync.
 **Protection**: Pre-commit hook verifies symlink before each commit.
+
+#### NPM Testing Mode (For End-User Testing)
+
+**When to use**: Testing the npm-installed version as end-users would experience it.
+
+**Setup**:
+```bash
+# 1. Install global npm package (if not already)
+npm install -g specweave
+
+# 2. Switch to npm mode (removes symlink)
+bash scripts/npm-mode.sh
+
+# 3. Test as end-user
+specweave init test-project
+cd test-project
+# ... test commands ...
+
+# 4. Switch back to dev mode when done
+cd /path/to/specweave/repo
+bash scripts/dev-mode.sh
+```
+
+**Key Differences**:
+| Aspect | Development Mode | NPM Testing Mode |
+|--------|------------------|------------------|
+| Symlink | ✅ Points to local repo | ❌ Removed |
+| Changes | ⚡ Instant (after rebuild) | 📦 Requires npm publish |
+| Use Case | Contributing to SpecWeave | Testing end-user experience |
+| Hooks | Use local `plugins/` | Use npm `node_modules/specweave/plugins/` |
+
+**Quick Toggle**:
+```bash
+# Switch modes anytime:
+./scripts/dev-mode.sh   # → Development (symlink)
+./scripts/npm-mode.sh   # → NPM testing (global install)
+```
 
 ### 2. NEVER Pollute Increment Folders
 

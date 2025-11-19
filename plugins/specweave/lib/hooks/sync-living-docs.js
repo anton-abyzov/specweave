@@ -50,42 +50,65 @@ async function intelligentSyncLivingDocs(incrementId, config) {
 }
 async function hierarchicalDistribution(incrementId) {
   try {
-    const { SpecDistributor } = await import("../../../../src/core/living-docs/index.js");
-    console.log("   \u{1F4CA} Parsing and distributing spec into hierarchical structure...");
+    // ============================================================================
+    // LONG-TERM FIX (2025-11-19): Use LivingDocsSync instead of old SpecDistributor
+    // ============================================================================
+    //
+    // Why this change:
+    // - Old SpecDistributor.distribute() method no longer exists (removed in v3.0.0)
+    // - LivingDocsSync is the official, stable API for syncing increments
+    // - Used by /specweave:sync-docs command - battle-tested and maintained
+    // - Future-proof: Won't break when internal APIs change
+    //
+    // Architecture:
+    // - LivingDocsSync delegates to FeatureIDManager, TaskProjectSpecificGenerator, etc.
+    // - Handles greenfield/brownfield detection automatically
+    // - Returns consistent SyncResult interface
+    //
+    // Previous broken code:
+    //   const { SpecDistributor } = await import("../../../../dist/src/core/living-docs/index.js");
+    //   const distributor = new SpecDistributor(projectRoot, { overwriteExisting: false, createBackups: true });
+    //   const result = await distributor.distribute(incrementId);  // ❌ Method doesn't exist
+    //
+    // ============================================================================
+
+    const { LivingDocsSync } = await import("../../../../dist/src/core/living-docs/living-docs-sync.js");
+
+    console.log("   \u{1F4CA} Syncing increment to living docs structure...");
     const projectRoot = process.cwd();
-    const distributor = new SpecDistributor(projectRoot, {
-      overwriteExisting: false,
-      createBackups: true
+
+    // Create logger adapter for LivingDocsSync
+    const logger = {
+      log: (msg) => console.log(`   ${msg}`),
+      error: (msg, err) => console.error(`   ${msg}`, err || ''),
+      warn: (msg) => console.warn(`   ${msg}`)
+    };
+
+    const sync = new LivingDocsSync(projectRoot, { logger });
+    const result = await sync.syncIncrement(incrementId, {
+      dryRun: false,
+      force: false
     });
-    const result = await distributor.distribute(incrementId);
+
     if (!result.success) {
-      console.error(`   \u274C Distribution failed with errors:`);
+      console.error(`   \u274C Sync failed with errors:`);
       for (const error of result.errors) {
         console.error(`      - ${error}`);
       }
       return { success: false, changedFiles: [] };
     }
-    console.log(`   \u2705 Hierarchical distribution complete:`);
-    console.log(`      Epic ID: ${result.specId}`);
-    console.log(`      User Stories: ${result.totalStories}`);
-    console.log(`      Files created: ${result.totalFiles}`);
-    console.log(`      Epic: ${path.basename(result.epicPath)}`);
-    console.log(`      User story files: ${result.userStoryPaths.length}`);
-    if (result.warnings.length > 0) {
-      console.log(`   \u26A0\uFE0F  Warnings:`);
-      for (const warning of result.warnings) {
-        console.log(`      - ${warning}`);
-      }
-    }
-    console.log("   \u{1F4CA} Updating acceptance criteria status from completed tasks...");
-    await distributor.updateAcceptanceCriteriaStatus(incrementId);
-    const changedFiles = [result.epicPath, ...result.userStoryPaths];
+
+    console.log(`   \u2705 Living docs sync complete:`);
+    console.log(`      Feature ID: ${result.featureId}`);
+    console.log(`      Files created/updated: ${result.filesCreated.length + result.filesUpdated.length}`);
+
+    const changedFiles = [...result.filesCreated, ...result.filesUpdated];
     return {
       success: true,
       changedFiles
     };
   } catch (error) {
-    console.error(`   \u274C Hierarchical distribution failed: ${error}`);
+    console.error(`   \u274C Living docs sync failed: ${error}`);
     console.error(error.stack);
     console.error("   \u26A0\uFE0F  Living docs sync skipped due to error");
     console.error("   \u{1F4A1} Tip: Run /specweave:sync-docs manually to retry");
@@ -104,7 +127,7 @@ async function extractAndMergeLivingDocs(incrementId) {
       mergeUserStories,
       generateRelatedDocsLinks,
       writeLivingDocsSpec
-    } = await import("../../../../src/utils/spec-parser.js");
+    } = await import("../../../../dist/src/utils/spec-parser.js");
     const projectRoot = process.cwd();
     const incrementSpecPath = path.join(projectRoot, ".specweave", "increments", incrementId, "spec.md");
     if (!fs.existsSync(incrementSpecPath)) {

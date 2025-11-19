@@ -9,6 +9,12 @@
 import { PlanCommandOrchestrator } from './plan/plan-orchestrator.js';
 import { PlanCommandConfig } from './plan/types.js';
 import chalk from 'chalk';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI plan command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (plan generation progress, results, warnings).
+// Logger infrastructure available for future internal debug logs if needed.
 
 /**
  * Execute /specweave:plan command

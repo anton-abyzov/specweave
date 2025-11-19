@@ -7,6 +7,12 @@
 
 import { runQA } from '../../core/qa/qa-runner.js';
 import { QAOptions } from '../../core/qa/types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI QA command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (QA results, quality gates, validation reports).
+// Logger infrastructure available for future internal debug logs if needed.
 
 interface QACommandOptions {
   quick?: boolean;

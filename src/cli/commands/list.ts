@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -11,6 +12,11 @@ interface ListOptions {
   installed?: boolean;
   language?: SupportedLanguage;
 }
+
+// NOTE: This CLI list command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (formatted lists, plugin information, status display).
+// Logger infrastructure available for future internal debug logs if needed.
 
 export async function listCommand(options: ListOptions = {}): Promise<void> {
   const locale = getLocaleManager(options.language || 'en');

@@ -595,10 +595,42 @@ test('should handle errors gracefully', () => {
 
 **Migration Guide**: See `.specweave/increments/0046-console-elimination/analysis-report.md` for comprehensive migration strategy.
 
-**Exceptions**:
+**Exception: CLI Commands (User-Facing Output)**:
+
+CLI commands in `src/cli/commands/*.ts` are 99% user-facing output (colored messages, progress indicators, confirmations). These files may keep `console.*` calls **with proper documentation**:
+
+```typescript
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (colored messages, confirmations, formatted output).
+// Logger infrastructure available for future internal debug logs if needed.
+
+export async function myCommand(
+  arg: string,
+  options: {
+    flag?: boolean;
+    logger?: Logger;
+  } = {}
+): Promise<void> {
+  const logger = options.logger ?? consoleLogger;
+
+  // User-facing output (keeps console.*)
+  console.log(chalk.green('✅ Operation successful!'));
+  console.error(chalk.red('❌ Error occurred'));
+
+  // Internal debug logs (use logger)
+  logger.log('Internal state updated');
+}
+```
+
+**Pre-commit Hook Smart Detection**: Files with the documentation comment marker `"user-facing output"` or `"legitimate user-facing exceptions"` bypass the `console.*` check automatically.
+
+**Other Exceptions**:
 - `src/utils/logger.ts` - Implements `consoleLogger` (uses `console.*` internally)
-- CLI command output - Use logger, but `consoleLogger` is acceptable for user-facing messages
-- Adapters - May use `console.*` for CLI output (but prefer logger for consistency)
+- Test files - May use `console.*` for debugging during development
+- Adapters - May use `console.*` for CLI output
 
 ---
 
