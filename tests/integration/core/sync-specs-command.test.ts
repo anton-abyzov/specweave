@@ -121,6 +121,58 @@ describe('sync-specs command', () => {
         path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-034')
       )).toBe(false);
     });
+
+    it('should exclude _archive and _backup directories (AC-US1-02)', async () => {
+      // Create valid increments
+      await createTestIncrement(testRoot, '0040-valid', 'completed');
+
+      // Create _archive directory with an increment
+      const archivePath = path.join(testRoot, '.specweave/increments/_archive/0030-archived');
+      await fs.ensureDir(archivePath);
+      await fs.writeFile(
+        path.join(archivePath, 'spec.md'),
+        `---
+increment: 0030-archived
+title: "Archived Increment"
+status: completed
+---
+
+# Archived Increment
+`
+      );
+
+      // Create _backup directory with an increment
+      const backupPath = path.join(testRoot, '.specweave/increments/_backup/0031-backup');
+      await fs.ensureDir(backupPath);
+      await fs.writeFile(
+        path.join(backupPath, 'spec.md'),
+        `---
+increment: 0031-backup
+title: "Backup Increment"
+status: completed
+---
+
+# Backup Increment
+`
+      );
+
+      // Execute sync --all
+      await syncSpecs(['--all']);
+
+      // Should sync only 0040
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-040/FEATURE.md')
+      )).toBe(true);
+
+      // Should NOT sync _archive or _backup
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-030')
+      )).toBe(false);
+
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-031')
+      )).toBe(false);
+    });
   });
 
   describe('Dry Run Mode', () => {

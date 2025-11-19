@@ -2,9 +2,10 @@
 increment: 0044-integration-testing-status-hooks
 title: 'Integration Testing - Status Line and Hooks'
 priority: P2
-status: planning
+status: in-progress
 type: test
 created: 2025-11-19T00:00:00.000Z
+started: 2025-11-19
 test_mode: TDD
 coverage_target: 95
 parent_increment: 0043-spec-md-desync-fix
