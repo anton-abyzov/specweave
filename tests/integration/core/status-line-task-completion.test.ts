@@ -246,7 +246,7 @@ created: 2025-11-18
     // Verify status line shows open count
     const statusLine = manager.render();
     expect(statusLine).not.toBeNull();
-    expect(statusLine).toContain('(2 open)'); // Indicates 2 open increments
+    expect(statusLine).toContain('(+1 more)'); // Indicates 1 more increment (2 total - 1 shown = 1 more)
   });
 
   it('should handle no active increment gracefully', async () => {

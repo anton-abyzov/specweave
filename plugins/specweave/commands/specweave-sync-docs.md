@@ -17,34 +17,60 @@ Arguments provided: [user's arguments]
 
 **Parse the input**:
 - Check for explicit mode: `review`, `update`, or none (auto-detect)
-- Check for increment ID: `0001`, `0002`, etc., or none (find current)
+- Check for increment ID: `0001`, `0002`, etc., or none (sync all - NEW DEFAULT)
+- Check for `--all` flag (explicit sync all)
+
+**NEW DEFAULT BEHAVIOR (v0.23.0+)**:
+- **No arguments** → Sync all increments with spec.md (batch mode)
+- **Specific increment ID** → Sync that increment only
+- **`--all` flag** → Sync all increments (explicit)
 
 **Auto-detect logic**:
 
-1. **If increment ID provided**:
+1. **If no increment ID provided (NEW DEFAULT)**:
+   ```bash
+   # Sync ALL increments with spec.md
+   echo "🔄 Syncing all increments..."
+   npx specweave sync-specs
+   # This will sync all non-archived increments
+   ```
+
+2. **If increment ID provided**:
    ```bash
    # Read the increment's spec.md to check status
    INCREMENT_PATH=".specweave/increments/{increment_id}"
    STATUS=$(grep "^status:" "$INCREMENT_PATH/spec.md" | cut -d: -f2 | tr -d ' ')
    ```
 
-2. **If no increment ID provided**:
-   ```bash
-   # Find the most recent increment
-   LATEST=$(ls -1 .specweave/increments/ | grep -E '^[0-9]{4}' | sort -r | head -1)
-   ```
-
 3. **Determine mode**:
    ```
-   If status = "planned" → REVIEW MODE
-   If status = "in-progress" → UPDATE MODE
-   If status = "completed" → UPDATE MODE
-   If status = "closed" → UPDATE MODE
+   If no increment ID → BATCH SYNC MODE (sync all)
+
+   If increment ID provided:
+     If status = "planned" → REVIEW MODE
+     If status = "in-progress" → UPDATE MODE
+     If status = "completed" → UPDATE MODE
+     If status = "closed" → UPDATE MODE
 
    If explicit mode provided → Use that mode
    ```
 
-**Output**:
+**Output (Batch Mode)**:
+```
+🔄 Syncing all increments...
+
+📚 Syncing 0040-vitest-living-docs-mock-fixes → FS-040...
+   ✅ Synced 3 tasks to US-001
+✅ Synced 0040 → FS-040
+
+📚 Syncing 0041-living-docs-test-fixes → FS-041...
+   ✅ Synced 2 tasks to US-001
+✅ Synced 0041 → FS-041
+
+✅ Sync complete: 15 increments synced, 0 failed
+```
+
+**Output (Single Mode)**:
 ```
 🔍 Detected increment: {increment_id}
 📊 Status: {status}
@@ -679,20 +705,42 @@ Usage: /specweave:sync-docs [review|update] [increment_id]
 
 ## EXAMPLES
 
-### Example 1: Auto-detect mode for current increment
+### Example 1: Sync all increments (NEW DEFAULT)
 ```
 User: /specweave:sync-docs
 
 Output:
-🔍 Detected increment: 0002
+🔄 Syncing all increments...
+
+📚 Syncing 0040-vitest-living-docs-mock-fixes → FS-040...
+   ✅ Synced 3 tasks to US-001
+✅ Synced 0040 → FS-040
+
+📚 Syncing 0041-living-docs-test-fixes → FS-041...
+   ✅ Synced 2 tasks to US-001
+✅ Synced 0041 → FS-041
+
+📚 Syncing 0042-test-infrastructure-cleanup → FS-042...
+   ✅ Synced 5 tasks to US-002
+✅ Synced 0042 → FS-042
+
+✅ Sync complete: 15 increments synced, 0 failed
+```
+
+### Example 2: Sync specific increment
+```
+User: /specweave:sync-docs 0042
+
+Output:
+🔍 Detected increment: 0042
 📊 Status: completed
 🎯 Mode: UPDATE
 
 Proceeding with UPDATE mode...
-{... executes update mode}
+{... executes update mode for 0042 only}
 ```
 
-### Example 2: Explicit review mode
+### Example 3: Explicit review mode
 ```
 User: /specweave:sync-docs review 0003
 
@@ -704,7 +752,7 @@ Output:
 {... shows strategic documentation summary}
 ```
 
-### Example 3: Explicit update mode with increment
+### Example 4: Explicit update mode with increment
 ```
 User: /specweave:sync-docs update 0002
 
