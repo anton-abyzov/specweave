@@ -106,8 +106,11 @@ if [[ -f "$TASKS_FILE" ]]; then
     TOTAL_TASKS=$(grep -cE '^##+ T-' "$TASKS_FILE" 2>/dev/null || echo 0)
     TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '\n\r ' || echo 0)
 
-    # Count completed tasks - use most reliable single marker (**Completed**: format)
-    COMPLETED_TASKS=$(grep -c '\*\*Completed\*\*:' "$TASKS_FILE" 2>/dev/null || echo 0)
+    # Count completed tasks - recognize all three completion marker formats:
+    # 1. **Completed**: <date> (preferred format)
+    # 2. **Status**: [x] (legacy format)
+    # 3. [x] at line start (legacy checkbox format)
+    COMPLETED_TASKS=$(grep -cE '(\*\*Completed\*\*:|\*\*Status\*\*:\s*\[x\]|^\[x\])' "$TASKS_FILE" 2>/dev/null || echo 0)
     COMPLETED_TASKS=$(echo "$COMPLETED_TASKS" | tr -d '\n\r ' || echo 0)
 
     # Calculate percentage
