@@ -8,12 +8,15 @@ import { SpecValidator } from '../test-utils/spec-validator.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { findProjectRoot } from '../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Status Line Hook Integration', () => {
   let testRoot: string;
   let harness: HookTestHarness;
   let testCounter = 0;
-  let originalCwd: string;
 
   beforeEach(async () => {
     testCounter++;
@@ -25,15 +28,15 @@ describe('Status Line Hook Integration', () => {
     await fs.ensureDir(testRoot);
     await fs.ensureDir(path.join(testRoot, '.specweave/state'));
 
+    // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/hooks/lib/update-status-line.sh'
     );
 
     harness = new HookTestHarness(testRoot, hookPath);
 
-    // Mock process.cwd() to return testRoot
-    originalCwd = process.cwd();
+    // Mock process.cwd() to return testRoot for code under test
     vi.spyOn(process, 'cwd').mockReturnValue(testRoot);
   });
 

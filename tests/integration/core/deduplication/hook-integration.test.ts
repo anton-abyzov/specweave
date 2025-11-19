@@ -11,13 +11,16 @@ import { promisify } from 'util';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
+import { findProjectRoot } from '../../../test-utils/project-root.js';
 
 const execAsync = promisify(exec);
 
 describe('Deduplication Hook Integration', () => {
-  const hookPath = path.join(process.cwd(), 'plugins', 'specweave', 'hooks', 'pre-command-deduplication.sh');
+  // ✅ SAFE: Find project root from test file location, not process.cwd()
+  const projectRoot = findProjectRoot(import.meta.url);
+  const hookPath = path.join(projectRoot, 'plugins', 'specweave', 'hooks', 'pre-command-deduplication.sh');
 
-  // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
+  // ✅ SAFE: Use os.tmpdir() instead of process.cwd() to prevent deletion of project files
   const testDir = path.join(os.tmpdir(), 'dedup-hook-test-' + Date.now());
   const cachePath = path.join(testDir, '.specweave', 'state', 'command-invocations.json');
 
@@ -28,12 +31,13 @@ describe('Deduplication Hook Integration', () => {
     // Set SPECWEAVE_ROOT env var so hook uses test directory
     process.env.SPECWEAVE_ROOT = testDir;
 
-    // Ensure dist is built (use absolute path for parallel test execution)
-    // NOTE: Temporarily disabled to debug test failures
-    // const distPath = path.join(process.cwd(), 'dist/src/core/deduplication/command-deduplicator.js');
-    // if (!await fs.pathExists(distPath)) {
-    //   throw new Error('TypeScript not compiled! Run: npm run build');
-    // }
+    // Ensure dist is built - use reliable project root path
+    // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
+    const distPath = path.join(projectRoot, 'dist/src/core/deduplication/command-deduplicator.js');
+
+    if (!await fs.pathExists(distPath)) {
+      throw new Error(`TypeScript not compiled! Run: npm run build\nProject root: ${projectRoot}\nLooked for: ${distPath}`);
+    }
   });
 
   afterEach(async () => {

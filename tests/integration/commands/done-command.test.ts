@@ -7,6 +7,10 @@ import { HookTestHarness } from '../test-utils/hook-test-harness.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { findProjectRoot } from '../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('/specweave:done Command Integration', () => {
   let testRoot: string;
@@ -67,8 +71,9 @@ describe('/specweave:done Command Integration', () => {
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // AND: Execute status line hook
+    // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/hooks/lib/update-status-line.sh'
     );
     const harness = new HookTestHarness(testRoot, hookPath);

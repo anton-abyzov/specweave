@@ -19,6 +19,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('sync-living-docs Hook Integration', () => {
   let testRoot: string;
@@ -129,8 +133,9 @@ completed: 1
 
   it('should execute hook without errors', async () => {
     // Find hook script
+    // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -154,7 +159,7 @@ completed: 1
 
   it('should use LivingDocsSync (not old SpecDistributor)', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -176,7 +181,7 @@ completed: 1
 
   it('should create living docs structure', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -207,7 +212,7 @@ completed: 1
 
   it('should respect config.json settings', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -243,7 +248,7 @@ completed: 1
 
   it('should handle errors gracefully (non-blocking)', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -271,7 +276,7 @@ completed: 1
 
   it('should handle missing increment gracefully', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -291,7 +296,7 @@ completed: 1
 
   it('should log detailed progress', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -316,7 +321,7 @@ completed: 1
 describe('sync-living-docs Hook Architecture', () => {
   it('should have comprehensive documentation comments', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
@@ -331,7 +336,7 @@ describe('sync-living-docs Hook Architecture', () => {
 
   it('should be future-proof (use stable API)', async () => {
     const hookPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/lib/hooks/sync-living-docs.js'
     );
 
