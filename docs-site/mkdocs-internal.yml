@@ -5,7 +5,7 @@ site_url: http://localhost:8001
 
 # INTERNAL documentation only (.specweave/docs/internal/)
 # This site runs locally for framework developers
-docs_dir: .specweave/docs/internal
+docs_dir: ../.specweave/docs/internal
 
 # Serve on different port than public docs
 dev_addr: 127.0.0.1:8001
@@ -45,8 +45,8 @@ theme:
   icon:
     repo: fontawesome/brands/github
 
-  logo: ../../docs-site/static/img/logo.svg
-  favicon: ../../docs-site/static/img/logo.svg
+  logo: ../docs-site/static/img/logo.svg
+  favicon: ../docs-site/static/img/logo.svg
 
 nav:
   - Home: README.md
