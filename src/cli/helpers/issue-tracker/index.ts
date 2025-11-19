@@ -134,12 +134,6 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     },
     {
       type: 'confirm',
-      name: 'includeTaskCheckboxes',
-      message: 'Copy tasks as checkboxes to external issues? (recommended for GitHub/Jira)',
-      default: true
-    },
-    {
-      type: 'confirm',
       name: 'autoApplyLabels',
       message: 'Auto-apply labels based on increment type? ([Bug], [Feature], [Docs])',
       default: true
@@ -487,7 +481,7 @@ async function writeSyncConfig(
   projectPath: string,
   tracker: IssueTracker,
   credentials: TrackerCredentials,
-  syncSettings: { includeStatus: boolean; includeTaskCheckboxes: boolean; autoApplyLabels: boolean },
+  syncSettings: { includeStatus: boolean; autoApplyLabels: boolean },
   repositoryProfiles?: any[],
   monorepoProjects?: string[]
 ): Promise<void> {
@@ -605,7 +599,6 @@ async function writeSyncConfig(
       enabled: true,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
-      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: defaultProfile?.id || 'main',
       settings: {
@@ -636,7 +629,6 @@ async function writeSyncConfig(
       enabled: true,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
-      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
@@ -666,7 +658,6 @@ async function writeSyncConfig(
       enabled: true,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
-      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
@@ -692,7 +683,6 @@ async function writeSyncConfig(
       enabled: true,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
-      includeTaskCheckboxes: syncSettings.includeTaskCheckboxes,  // NEW: Task checkboxes
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
@@ -710,7 +700,6 @@ async function writeSyncConfig(
   console.log(chalk.gray(`   Provider: ${tracker}`));
   console.log(chalk.gray(`   Auto-sync: enabled`));
   console.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
-  console.log(chalk.gray(`   Task checkboxes: ${syncSettings.includeTaskCheckboxes ? 'enabled' : 'disabled'}`));
   console.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
   console.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
 }

@@ -77,6 +77,18 @@ async function hierarchicalDistribution(incrementId) {
     console.log("   \u{1F4CA} Syncing increment to living docs structure...");
     const projectRoot = process.cwd();
 
+    // ========================================================================
+    // USE FEATURE ID FROM ENVIRONMENT (NEW in v0.23.0 - Increment 0047)
+    // ========================================================================
+    // If FEATURE_ID is provided via environment variable (extracted from spec.md),
+    // use it directly instead of auto-generating. This ensures correct traceability.
+    const explicitFeatureId = process.env.FEATURE_ID;
+    if (explicitFeatureId) {
+      console.log(`   \u{1F4CE} Using explicit feature ID from spec.md: ${explicitFeatureId}`);
+    } else {
+      console.log("   \u{1F504} Feature ID will be auto-generated from increment number");
+    }
+
     // Create logger adapter for LivingDocsSync
     const logger = {
       log: (msg) => console.log(`   ${msg}`),
@@ -87,7 +99,9 @@ async function hierarchicalDistribution(incrementId) {
     const sync = new LivingDocsSync(projectRoot, { logger });
     const result = await sync.syncIncrement(incrementId, {
       dryRun: false,
-      force: false
+      force: false,
+      // Pass explicit feature ID if available (v0.23.0+)
+      explicitFeatureId: explicitFeatureId || undefined
     });
 
     if (!result.success) {

@@ -1,4 +1,15 @@
-# Implementation Tasks: {{INCREMENT_TITLE}}
+---
+total_tasks: {{TOTAL_TASKS}}
+completed: 0
+by_user_story:
+  {{#USER_STORIES}}
+  {{US_ID}}: {{TASK_COUNT}}
+  {{/USER_STORIES}}
+test_mode: {{TEST_MODE}}
+coverage_target: {{COVERAGE_TARGET}}
+---
+
+# Tasks: {{INCREMENT_TITLE}}
 
 **Increment**: {{INCREMENT_ID}}
 **Status**: Planning
@@ -6,149 +17,172 @@
 
 ---
 
-## Task Overview
+## Task Format (US-Task Linkage - v0.23.0)
 
-**Total Tasks**: {{TOTAL_TASKS}}
-**Estimated Duration**: {{ESTIMATED_DURATION}}
-**Priority**: {{PRIORITY}}
+**NEW**: All tasks MUST explicitly link to their parent User Story and Acceptance Criteria.
 
----
-
-## Task Template
-
-Use this template for each task:
-
+### Required Fields for Each Task:
 ```markdown
 ### T-XXX: Task Title
-**Priority**: P0 | P1 | P2 | P3
-**Estimate**: X hours
-**Status**: pending | in_progress | completed | blocked
-**AC-IDs**: AC-US-XXX-YY (links to spec.md acceptance criteria)
-**GitHub Issue**: #NNN (auto-populated after sync)
-**Assignee**: @username (optional)
 
-**Description**:
-Brief description of what this task accomplishes.
+**User Story**: US-XXX
+**Satisfies ACs**: AC-USXX-YY, AC-USXX-ZZ
+**Status**: [ ] pending | [x] completed | [~] in_progress | [-] canceled
+**Priority**: P0 (Critical) | P1 (Important) | P2 (Nice-to-have) | P3 (Future)
+**Estimated Effort**: X hours | X days
 
-**Implementation**:
-- [ ] Create/update ClassName with method()
-- [ ] Implement core feature logic
-- [ ] Add error handling for edge cases
-- [ ] Add JSDoc comments
-- [ ] Update related type definitions
+**Description**: What this task accomplishes and why it's needed.
+
+**Implementation Steps**:
+1. Create/update file or component
+2. Implement core logic
+3. Add error handling
+4. Add tests
+5. Update documentation
+
+**Test Plan**:
+- Unit tests: Specific test cases to write
+- Integration tests: End-to-end scenarios
+- Coverage target: 95% (unit), 85% (integration)
+
+**Files Affected**:
+- `path/to/file.ts` (create/modify)
+- `path/to/test.ts` (create)
+
+**Dependencies**: T-XXX (optional - tasks that must complete first)
+```
+
+### Hierarchical Structure
+
+Tasks are **grouped by User Story** for traceability:
+
+```markdown
+## User Story: US-001 - User Story Title
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: X total, Y completed
+
+### T-001: First task for this US
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+...
+
+### T-002: Second task for this US
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-03
+...
+
+---
+
+## User Story: US-002 - Another User Story
+
+**Linked ACs**: AC-US2-01, AC-US2-02
+**Tasks**: X total, Y completed
+
+### T-003: First task for US-002
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01
+...
+```
+
+---
+
+{{#USER_STORIES}}
+## User Story: {{US_ID}} - {{US_TITLE}}
+
+**Linked ACs**: {{AC_IDS}}
+**Tasks**: {{TASK_COUNT}} total, 0 completed
+
+{{#TASKS}}
+### {{TASK_ID}}: {{TASK_TITLE}}
+
+**User Story**: {{US_ID}}
+**Satisfies ACs**: {{SATISFIES_ACS}}
+**Status**: [ ] pending
+**Priority**: {{PRIORITY}}
+**Estimated Effort**: {{ESTIMATE}}
+
+**Description**: {{DESCRIPTION}}
+
+**Implementation Steps**:
+{{#IMPLEMENTATION_STEPS}}
+- [ ] {{STEP}}
+{{/IMPLEMENTATION_STEPS}}
 
 **Test Plan** (BDD):
-- **Given** [precondition describing initial state]
-- **When** [action or event that triggers behavior]
-- **Then** [expected result or outcome]
+- **Given** {{GIVEN}}
+- **When** {{WHEN}}
+- **Then** {{THEN}}
 
 **Test Cases**:
-- Unit (`class-name.test.ts`):
-  - method_withValidInput_returnsExpectedResult
-  - method_withInvalidInput_throwsError
+- Unit (`{{TEST_FILE}}`):
+  {{#UNIT_TESTS}}
+  - {{TEST_NAME}}
+  {{/UNIT_TESTS}}
   - Coverage: >95%
-- Integration (`feature.integration.test.ts`):
-  - fullWorkflow_happyPath_succeeds
+{{#HAS_INTEGRATION_TESTS}}
+- Integration (`{{INTEGRATION_TEST_FILE}}`):
+  {{#INTEGRATION_TESTS}}
+  - {{TEST_NAME}}
+  {{/INTEGRATION_TESTS}}
   - Coverage: >85%
+{{/HAS_INTEGRATION_TESTS}}
 
-**Files to Create** (if applicable):
-- `path/to/new/file.ts`
-- `path/to/another/file.md`
+**Files Affected**:
+{{#FILES_TO_CREATE}}
+- `{{FILE_PATH}}` (create)
+{{/FILES_TO_CREATE}}
+{{#FILES_TO_MODIFY}}
+- `{{FILE_PATH}}` (modify)
+{{/FILES_TO_MODIFY}}
 
-**Files to Modify** (if applicable):
-- `path/to/existing/file.ts`
-- `path/to/another/existing.md`
-
-**Code Examples** (optional - snippets for clarity):
-```typescript
-// Example implementation approach
-export function exampleFunction() {
-  // Code here
-}
-```
-```
-
-**Dependencies** (optional - tasks that must complete first):
-- T-001 (must complete first)
-- T-002 (must complete first)
-
-**Blocks** (optional - tasks waiting on this):
-- T-005 (waiting on this)
-- T-006 (waiting on this)
-
----
-```
+{{#HAS_DEPENDENCIES}}
+**Dependencies**: {{DEPENDENCIES}}
+{{/HAS_DEPENDENCIES}}
 
 ---
 
-## Phase 1: Foundation (Week 1) - X tasks
+{{/TASKS}}
+{{/USER_STORIES}}
 
-### T-001: Example Task
-**Priority**: P0
-**Estimate**: 2 hours
-**Status**: pending
-**AC-IDs**: AC-US1-01, AC-US1-02
-**GitHub Issue**: (will be populated after sync)
-**Assignee**: (assign in GitHub after sync)
+## Validation Rules (v0.23.0)
 
-**Description**:
-This is an example task showing the canonical template format following ADR-0047.
+Before closing this increment, the following MUST be true:
 
-**Implementation**:
-- [ ] Define ExampleInterface with id and name fields
-- [ ] Create ExampleClass implementing ExampleInterface
-- [ ] Add constructor with parameter properties
-- [ ] Add JSDoc comments for interface and class
-- [ ] Export both interface and class
+1. **All tasks completed**: Every task marked `[x] completed`
+2. **All ACs covered**: Every AC-ID from spec.md has at least one task
+3. **No orphan tasks**: Every task has **Satisfies ACs** field
+4. **Valid linkage**: All US-IDs and AC-IDs exist in spec.md
 
-**Test Plan** (BDD):
-- **Given** ExampleClass constructor receives valid id and name
-- **When** new ExampleClass('123', 'Test') is instantiated
-- **Then** instance has correct id and name properties
+**Validation commands**:
+```bash
+# Check AC coverage and task linkage
+/specweave:validate {{INCREMENT_ID}}
 
-**Test Cases**:
-- Unit (`example-class.test.ts`):
-  - constructor_withValidParams_createsInstance
-  - constructor_withEmptyId_throwsError
-  - interface_conformsToContract
-  - Coverage: >95%
-
-**Files to Create**:
-- `src/example/new-file.ts`
-- `tests/unit/example/example-class.test.ts`
-
-**Files to Modify**:
-- `src/example/existing-file.ts`
-
-**Code Examples**:
-```typescript
-export interface ExampleInterface {
-  id: string;
-  name: string;
-}
-
-export class ExampleClass implements ExampleInterface {
-  constructor(public id: string, public name: string) {}
-}
+# Close increment (validates automatically)
+/specweave:done {{INCREMENT_ID}}
 ```
-
-**Dependencies**:
-None (foundation task)
-
-**Blocks**:
-- T-003 (needs types from this task)
-- T-004 (needs interfaces from this task)
 
 ---
 
-## Task Dependencies
+## Progress Tracking
+
+**By User Story**:
+{{#USER_STORIES}}
+- {{US_ID}}: 0/{{TASK_COUNT}} tasks completed (0%)
+{{/USER_STORIES}}
+
+**Overall**: 0/{{TOTAL_TASKS}} tasks completed (0%)
+
+---
+
+## Task Dependencies (Auto-Generated)
 
 ```mermaid
 graph TD
-    T001[T-001: Example Task] --> T003[T-003: Dependent Task]
-    T001 --> T004[T-004: Another Dependent]
-    T002[T-002: Another Foundation] --> T003
-    T003 --> T005[T-005: Higher Level Task]
+{{#TASK_DEPENDENCIES}}
+    {{FROM_TASK}}[{{FROM_TASK_TITLE}}] --> {{TO_TASK}}[{{TO_TASK_TITLE}}]
+{{/TASK_DEPENDENCIES}}
 ```
 
 ---
@@ -156,124 +190,69 @@ graph TD
 ## Testing Checklist
 
 **Unit Tests** (per component):
-- ✅ Component A
-- ✅ Component B
-- ✅ Component C
+{{#COMPONENTS}}
+- [ ] {{COMPONENT_NAME}}
+{{/COMPONENTS}}
 
 **Integration Tests**:
-- ✅ Full workflow (end-to-end)
-- ✅ Error handling
-- ✅ Edge cases
+- [ ] Full workflow (end-to-end)
+- [ ] Error handling
+- [ ] Edge cases
 
 **E2E Tests** (if applicable):
-- ✅ User workflow A
-- ✅ User workflow B
+{{#E2E_TESTS}}
+- [ ] {{E2E_TEST_NAME}}
+{{/E2E_TESTS}}
 
-**Performance Tests** (if applicable):
-- ✅ Load testing
-- ✅ Stress testing
+---
+
+## Success Criteria
+
+**Must Have** (P0/P1):
+- [ ] All critical and important tasks completed
+- [ ] All tests passing (unit, integration, E2E)
+- [ ] 100% AC coverage validated
+- [ ] Documentation updated (CLAUDE.md, README.md)
+- [ ] Code review approved
+
+**Nice to Have** (P2/P3 - can defer):
+{{#NICE_TO_HAVE}}
+- [ ] {{FEATURE}}
+{{/NICE_TO_HAVE}}
 
 ---
 
 ## Rollout Plan
 
 ### Week 1: Foundation
-- Days 1-2: Tasks T-001 to T-003
-- Days 3-5: Tasks T-004 to T-006
+{{#WEEK_1_TASKS}}
+- Days {{DAYS}}: Tasks {{TASK_RANGE}}
+{{/WEEK_1_TASKS}}
 
 ### Week 2: Core Implementation
-- Days 1-3: Tasks T-007 to T-010
-- Days 4-5: Tasks T-011 to T-012
+{{#WEEK_2_TASKS}}
+- Days {{DAYS}}: Tasks {{TASK_RANGE}}
+{{/WEEK_2_TASKS}}
 
 ### Week 3: Integration & Testing
-- Days 1-2: Tasks T-013 to T-014
-- Days 3-5: Comprehensive testing and polish
+{{#WEEK_3_TASKS}}
+- Days {{DAYS}}: Tasks {{TASK_RANGE}}
+{{/WEEK_3_TASKS}}
 
 ---
 
-## Success Criteria
+## Notes
 
-**Must Have**:
-- ✅ All tasks completed
-- ✅ All tests passing
-- ✅ Documentation updated
-- ✅ Code review approved
+**Important**:
+- This tasks.md uses **hierarchical structure grouped by User Story** (v0.23.0+)
+- All tasks MUST link to parent US and ACs for traceability
+- Validation enforces 100% AC coverage before increment closure
+- Living docs sync automatically based on task-AC linkage
 
-**Nice to Have** (for next increment):
-- Future enhancement 1
-- Future enhancement 2
+**See**: `CLAUDE.md` section "Task Format with US-Task Linkage" for detailed guide
 
 ---
 
-## GitHub Sync Instructions
-
-### Initial Sync
-
-After creating this tasks.md file, sync to GitHub:
-
-```bash
-# Sync all tasks to GitHub (creates epic + task issues)
-/specweave.github.sync-tasks {{INCREMENT_ID}}
-```
-
-This will:
-1. Create a GitHub Milestone (e.g., v0.4.0)
-2. Create an Epic Issue for the increment
-3. Create individual GitHub Issues for each task
-4. Link task issues to epic
-5. Update this file with GitHub issue numbers
-6. Store mapping in `.github-sync.yaml`
-
-### During Development
-
-As you work on tasks:
-- `/specweave.do` - Completes next task AND closes GitHub issue
-- Progress automatically syncs to epic issue
-- Subtasks sync as checkboxes in GitHub
-
-### Manual Operations
-
-```bash
-# Force re-sync (if drift detected)
-/specweave.github.sync-tasks {{INCREMENT_ID}} --force
-
-# Check sync status
-/specweave.github.status {{INCREMENT_ID}}
-
-# Manually create issue for specific task
-/specweave.github.create-issue {{INCREMENT_ID}} T-001
-```
-
----
-
-## Field Reference
-
-### Required Fields
-- **Priority**: P0 (critical), P1 (high), P2 (medium), P3 (low)
-- **Estimate**: Hours or days (e.g., "2 hours", "3 days")
-- **Status**: pending, in_progress, completed, blocked
-- **AC-IDs**: Links to spec.md acceptance criteria (e.g., "AC-US1-01, AC-US1-02")
-- **Description**: What this task accomplishes
-- **Implementation**: Checkable technical steps to complete the task
-- **Test Plan (BDD)**: Given-When-Then test scenarios
-- **Test Cases**: Unit and integration test cases with coverage targets
-
-### Optional Fields (Enhanced for GitHub Sync)
-- **GitHub Issue**: Auto-populated after `/specweave.github.sync-tasks`
-- **Assignee**: GitHub username (assign in GitHub UI or via `@username`)
-- **Dependencies**: Tasks that must complete first (linked in GitHub via "depends on")
-- **Blocks**: Tasks waiting on this one (linked in GitHub via "blocks")
-- **Files to Create/Modify**: Context for reviewers and developers
-- **Code Examples**: Snippets showing implementation approach (TypeScript, pseudocode, etc.)
-
-### Task Status Lifecycle
-1. **pending** - Not started, in backlog
-2. **in_progress** - Currently being worked on
-3. **blocked** - Cannot proceed (dependency, blocker)
-4. **completed** - Done, tests passing, reviewed
-
----
-
-**Version**: 1.0
+**Version**: 2.0 (US-Task Linkage)
 **Last Updated**: {{LAST_UPDATED}}
 **Total Estimate**: {{TOTAL_HOURS}} hours ({{TOTAL_WEEKS}} weeks)

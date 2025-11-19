@@ -315,8 +315,8 @@ export async function main() {
   console.log(comment);
 }
 
-// Run if called directly
-if (require.main === module) {
+// Run if called directly (ESM compatible)
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
     console.error('Error generating progress comment:', error.message);
     process.exit(1);
