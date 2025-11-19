@@ -320,6 +320,83 @@ export async function myCommand(options: CommandOptions = {}) {
 
 **Note**: Most standards are enforced by ESLint/Prettier. This list focuses on SpecWeave-specific rules and patterns that can't be auto-fixed by linters.
 
+### 10. Task Format with US-Task Linkage (v0.23.0+)
+
+**CRITICAL**: ALL tasks MUST include User Story linkage fields for proper traceability.
+
+**New Task Format** (increment 0047+):
+```markdown
+### T-001: Task Title
+
+**User Story**: US-001                        ← MANDATORY: Link to parent User Story
+**Satisfies ACs**: AC-US1-01, AC-US1-02      ← MANDATORY: AC coverage mapping
+**Status**: [x] completed
+**Priority**: P0 (Critical)
+**Estimated Effort**: 6 hours
+
+**Description**: Detailed task description...
+
+**Implementation Steps**:
+1. Step one
+2. Step two
+
+**Test Plan**:
+- **File**: `tests/unit/component.test.ts`
+- **Tests**: TC-001, TC-002
+
+**Files Affected**:
+- `src/path/to/file.ts`
+```
+
+**Why This Matters**:
+- **Traceability**: Navigate Task ↔ User Story ↔ Acceptance Criteria ↔ Feature
+- **Living Docs Sync**: Automatic task list updates in living docs US files
+- **AC Coverage**: Validation ensures all acceptance criteria have implementing tasks
+- **Progress Tracking**: Show per-US completion (e.g., "US-001: 8/11 tasks, 73%")
+
+**Hierarchical Structure**:
+```markdown
+## User Story: US-001 - User Authentication
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: 11 total, 8 completed
+
+### T-001: Implement login API
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+...
+
+### T-002: Add JWT token generation
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-02, AC-US1-03
+...
+```
+
+**Validation Rules**:
+1. `userStory` field MUST reference valid US-ID from spec.md (format: `US-XXX`)
+2. `satisfiesACs` field MUST list valid AC-IDs from spec.md (format: `AC-USXX-YY`)
+3. AC-IDs MUST belong to correct User Story (AC-US1-XX belongs to US-001)
+4. Tasks without US linkage trigger warnings during `/specweave:validate`
+5. `/specweave:done` blocks closure if orphan tasks exist (no AC coverage)
+
+**Living Docs Auto-Sync**:
+When task marked completed in tasks.md:
+1. Hook detects change via `post-task-completion.sh`
+2. `sync-living-docs.js` parses tasks with `parseTasksWithUSLinks()`
+3. Updates living docs US file:
+   - Task list: `- [x] [T-001](link): Task title`
+   - AC checkboxes: `- [x] **AC-US1-01**` (if all tasks complete)
+
+**Backward Compatibility**:
+- Old increments (0001-0046) work without US linkage
+- Parser supports both formats (graceful degradation)
+- Migration tool available: `npx tsx scripts/migrate-task-linkage.ts <increment-id>`
+
+**See Also**:
+- Implementation: `.specweave/increments/0047-us-task-linkage/`
+- Proposal: `.specweave/increments/0046-console-elimination/reports/US-TASK-LINKAGE-PROPOSAL.md`
+- Living Docs: `.specweave/docs/public/guides/bidirectional-linking.md`
+
 ---
 
 ## Project Structure

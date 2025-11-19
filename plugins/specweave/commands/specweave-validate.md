@@ -57,7 +57,7 @@ Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--alwa
 
 ### Step 2: Run Rule-Based Validation (Always)
 
-Run 130+ validation rules across 6 categories:
+Run 130+ validation rules across 7 categories:
 
 **CRITICAL: Always run structure validation FIRST to prevent duplicate task files**
 
@@ -104,19 +104,31 @@ Run 130+ validation rules across 6 categories:
    - ADR references exist
    - Diagram references valid
 
+7. **AC Coverage & Traceability (NEW - v0.23.0)**:
+   - All Acceptance Criteria have implementing tasks (0% uncovered)
+   - All tasks link to valid User Stories (**User Story**: US-XXX)
+   - All tasks link to valid Acceptance Criteria (**Satisfies ACs**: AC-USXX-YY)
+   - No orphan tasks (tasks without AC linkage)
+   - AC-Task traceability matrix builds successfully
+   - Per-User Story coverage calculated
+
 **Display results**:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 VALIDATION RESULTS: Increment 0001-authentication
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-✅ Rule-Based Validation: PASSED (135/135 checks)
+✅ Rule-Based Validation: PASSED (141/141 checks)
    ✓ Structure (5/5)
    ✓ Three-File Canonical (10/10) [ADR-0047]
    ✓ Consistency (47/47)
    ✓ Completeness (23/23)
    ✓ Quality (31/31)
    ✓ Traceability (19/19)
+   ✓ AC Coverage & Traceability (6/6) [NEW - v0.23.0]
+      • 100% AC coverage (15/15 ACs covered)
+      • 0 orphan tasks
+      • All tasks linked to valid User Stories
 
 Files validated:
   • spec.md (250 lines, 6 user stories)
@@ -129,13 +141,17 @@ Files validated:
 
 **If errors found**:
 ```
-❌ Rule-Based Validation: FAILED (122/135 checks)
+❌ Rule-Based Validation: FAILED (128/141 checks)
    ❌ Structure (3/5) - 2 CRITICAL ERRORS
    ❌ Three-File Canonical (7/10) - 3 CRITICAL ERRORS [ADR-0047]
    ✓ Consistency (45/47) - 2 errors
    ✓ Completeness (23/23)
    ⚠️  Quality (28/31) - 3 warnings
    ✓ Traceability (19/19)
+   ❌ AC Coverage & Traceability (3/6) - 3 ERRORS [NEW - v0.23.0]
+      • 73% AC coverage (11/15 ACs covered) - 4 uncovered
+      • 2 orphan tasks detected
+      • All US linkage valid
 
 CRITICAL STRUCTURE ERRORS (MUST FIX FIRST):
   ❌ Duplicate task files detected: tasks.md, tasks-detailed.md
@@ -153,6 +169,16 @@ CRITICAL THREE-FILE VIOLATIONS (ADR-0047):
   🚨 spec.md:102 - Contains task ID reference "T-001"
      → Tasks belong in tasks.md, use AC-IDs to link instead
 
+AC COVERAGE ERRORS (3) [NEW - v0.23.0]:
+  🔴 4 Acceptance Criteria uncovered by tasks:
+     → AC-US2-03: Real-time notification delivery (no implementing tasks)
+     → AC-US3-01: API rate limiting (no implementing tasks)
+     → AC-US3-05: Error handling for network failures (no implementing tasks)
+     → AC-US4-02: Audit logging for security events (no implementing tasks)
+  🔴 2 Orphan tasks (no AC linkage):
+     → T-008: Refactor authentication module (no **Satisfies ACs** field)
+     → T-015: Update documentation (no **Satisfies ACs** field)
+
 ERRORS (2):
   🔴 spec.md:45 - Missing acceptance criteria for US-003
   🔴 Inconsistency: spec.md mentions "real-time updates" but plan.md doesn't address it
@@ -168,9 +194,13 @@ Action required:
    - Run refactoring script: .specweave/increments/XXXX/scripts/refactor-tasks-ac-to-implementation.sh
    - Or manually replace "**Acceptance Criteria**:" with "**Implementation**:"
    - Add "**AC-IDs**: AC-US-XX-YY" references to link tasks to spec.md
-3. Fix missing acceptance criteria for US-003
-4. Address "real-time updates" in plan.md or remove from spec.md
-5. Consider breaking down T012 into smaller tasks
+3. 🔴 FIX AC COVERAGE ERRORS (v0.23.0 - US-Task Linkage):
+   - Create tasks for 4 uncovered ACs (AC-US2-03, AC-US3-01, AC-US3-05, AC-US4-02)
+   - Add **Satisfies ACs** field to 2 orphan tasks (T-008, T-015)
+   - Run: /specweave:validate 0001 to verify 100% coverage
+4. Fix missing acceptance criteria for US-003
+5. Address "real-time updates" in plan.md or remove from spec.md
+6. Consider breaking down T012 into smaller tasks
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
