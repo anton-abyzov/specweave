@@ -201,35 +201,50 @@ else
 fi
 
 # ============================================================================
-# EPIC GITHUB ISSUE SYNC (Update Epic issue with fresh task progress)
+# EPIC GITHUB ISSUE SYNC (DEPRECATED v0.24.0+)
+# ============================================================================
+#
+# ⚠️  DEPRECATED: SpecWeave now syncs ONLY at User Story level.
+#
+# Feature/Epic-level issues are no longer updated.
+# Use /specweave-github:sync instead to sync User Story issues.
+#
+# To re-enable (NOT recommended):
+#   export SPECWEAVE_ENABLE_EPIC_SYNC=true
+#
+# @see .specweave/increments/0047-us-task-linkage/reports/GITHUB-TITLE-FORMAT-FIX-PLAN.md
 # ============================================================================
 
-echo "[$(date)] [GitHub] 🔄 Checking for Epic GitHub issue update..." >> "$DEBUG_LOG" 2>/dev/null || true
+if [ "$SPECWEAVE_ENABLE_EPIC_SYNC" = "true" ]; then
+  echo "[$(date)] [GitHub] 🔄 Checking for Epic GitHub issue update (DEPRECATED)..." >> "$DEBUG_LOG" 2>/dev/null || true
 
-# Find active increment ID
-ACTIVE_INCREMENT=$(ls -t .specweave/increments/ | grep -v '^\.' | while read inc; do
-  if [ -f ".specweave/increments/$inc/metadata.json" ]; then
-    STATUS=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' ".specweave/increments/$inc/metadata.json" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' || true)
-    if [ "$STATUS" = "active" ]; then
-      echo "$inc"
-      break
+  # Find active increment ID
+  ACTIVE_INCREMENT=$(ls -t .specweave/increments/ | grep -v '^\.' | while read inc; do
+    if [ -f ".specweave/increments/$inc/metadata.json" ]; then
+      STATUS=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[^"]*"' ".specweave/increments/$inc/metadata.json" 2>/dev/null | sed 's/.*"\([^"]*\)".*/\1/' || true)
+      if [ "$STATUS" = "active" ]; then
+        echo "$inc"
+        break
+      fi
     fi
-  fi
-done | head -1)
+  done | head -1)
 
-if [ -n "$ACTIVE_INCREMENT" ]; then
-  echo "[$(date)] [GitHub] 🎯 Active increment: $ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [ -n "$ACTIVE_INCREMENT" ]; then
+    echo "[$(date)] [GitHub] 🎯 Active increment: $ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
-  # Run Epic sync script (silently, errors logged to debug log)
-  if [ -f "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" ]; then
-    echo "[$(date)] [GitHub] 🚀 Updating Epic GitHub issue..." >> "$DEBUG_LOG" 2>/dev/null || true
-    "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" "$ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>&1 || true
-    echo "[$(date)] [GitHub] ✅ Epic sync complete (see logs for details)" >> "$DEBUG_LOG" 2>/dev/null || true
+    # Run Epic sync script (silently, errors logged to debug log)
+    if [ -f "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" ]; then
+      echo "[$(date)] [GitHub] 🚀 Updating Epic GitHub issue (DEPRECATED)..." >> "$DEBUG_LOG" 2>/dev/null || true
+      "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" "$ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>&1 || true
+      echo "[$(date)] [GitHub] ⚠️  Epic sync is deprecated. Use /specweave-github:sync instead." >> "$DEBUG_LOG" 2>/dev/null || true
+    else
+      echo "[$(date)] [GitHub] ⚠️  Epic sync script not found, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
   else
-    echo "[$(date)] [GitHub] ⚠️  Epic sync script not found, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "[$(date)] [GitHub] ℹ️  No active increment found, skipping Epic sync" >> "$DEBUG_LOG" 2>/dev/null || true
   fi
 else
-  echo "[$(date)] [GitHub] ℹ️  No active increment found, skipping Epic sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] [GitHub] ℹ️  Epic sync disabled (sync at User Story level only)" >> "$DEBUG_LOG" 2>/dev/null || true
 fi
 
 # ============================================================================

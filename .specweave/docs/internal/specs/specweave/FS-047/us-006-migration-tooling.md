@@ -1,13 +1,19 @@
 ---
 id: US-006
 feature: FS-047
-title: "Migration Tooling"
-status: planned
+title: Migration Tooling
+status: active
 priority: P0
 created: 2025-11-19
+external:
+  github:
+    issue: 643
+    url: https://github.com/anton-abyzov/specweave/issues/643
 ---
 
 # US-006: Migration Tooling
+
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/636
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
@@ -35,6 +41,6 @@ created: 2025-11-19
 
 ## Tasks
 
-- [ ] [T-020](../../../../increments/0047-us-task-linkage/tasks.md#T-020): Create migration script with inference algorithm
-- [ ] [T-021](../../../../increments/0047-us-task-linkage/tasks.md#T-021): Add dry-run mode and interactive confirmation
-- [ ] [T-022](../../../../increments/0047-us-task-linkage/tasks.md#T-022): Test migration on increments 0043-0046
+- [ ] **T-020**: Create migration script with inference algorithm
+- [ ] **T-021**: Add dry-run mode and interactive confirmation
+- [ ] **T-022**: Test migration on increments 0043-0046

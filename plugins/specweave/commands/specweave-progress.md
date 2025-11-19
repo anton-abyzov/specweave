@@ -17,120 +17,68 @@ Simple, fast progress check for all active increments.
 
 ```bash
 #!/bin/bash
+#
+# Enhanced progress tracking with User Story grouping (v0.23.0+)
+# Uses TypeScript script for accurate task parsing and US-level progress
+#
 
-echo ""
-echo "📊 Increment Progress"
-echo "================================"
-echo ""
-
-# Counters
-active_count=0
-other_count=0
-
-# Scan all increments
-for dir in .specweave/increments/*/; do
-  [ ! -d "$dir" ] && continue
-
-  increment=$(basename "$dir")
-  metadata="$dir/metadata.json"
-
-  # Skip if no metadata
-  [ ! -f "$metadata" ] && continue
-
-  # Get status
-  inc_status=$(jq -r '.status' "$metadata" 2>/dev/null)
-
-  # Skip completed/archived
-  [ "$inc_status" = "completed" ] && continue
-  [ "$inc_status" = "archived" ] && continue
-
-  # Count for summary
-  if [ "$inc_status" = "in-progress" ]; then
-    active_count=$((active_count + 1))
-  else
-    other_count=$((other_count + 1))
-  fi
-
-  # Get task stats from tasks.md
-  tasks_file="$dir/tasks.md"
-  if [ -f "$tasks_file" ]; then
-    # Count tasks (headers with T-NNN format - both ### and ####)
-    total=$(grep -cE '^#{3,4}\s*T-[0-9]' "$tasks_file" 2>/dev/null | tr -d '\n' || echo "0")
-    # Count completed (various formats)
-    completed=$(grep -cE '(✅ COMPLETE|\[COMPLETED\]|\[x\] Completed)' "$tasks_file" 2>/dev/null | tr -d '\n' || echo "0")
-
-    # Ensure we have valid numbers (fallback to 0 if empty)
-    total=${total:-0}
-    completed=${completed:-0}
-
-    if [ "$total" -gt 0 ] 2>/dev/null; then
-      percent=$((completed * 100 / total))
-    else
-      percent=0
-    fi
-  else
-    total=0
-    completed=0
-    percent=0
-  fi
-
-  # Display based on status
-  if [ "$inc_status" = "in-progress" ]; then
-    echo "🟢 ACTIVE: $increment"
-    echo "   Status: $inc_status"
-    echo "   Tasks: $completed/$total completed ($percent%)"
-    echo "   Next: /specweave:do $increment"
-    echo ""
-  else
-    echo "⏸️  $inc_status: $increment"
-    echo "   Tasks: $completed/$total ($percent%)"
-    echo ""
-  fi
-done
-
-echo "================================"
-echo "Summary:"
-echo "  Active increments: $active_count"
-echo "  Other non-completed: $other_count"
-
-if [ "$active_count" -eq 0 ]; then
-  echo ""
-  echo "💡 No active work. Run /specweave:increment to start new work"
-elif [ "$active_count" -gt 0 ]; then
-  echo ""
-  echo "💡 Continue with /specweave:do"
-fi
-
-echo ""
+# Call TypeScript progress script
+npx tsx "$(dirname "${BASH_SOURCE[0]}")"/../../../scripts/show-progress.ts "$@"
 ```
 
 ## Example Output
 
+### Legacy Format (no User Stories)
 ```
 📊 Increment Progress
-================================
+============================================================
 
 🟢 ACTIVE: 0037-project-specific-tasks
-   Status: in-progress
-   Tasks: 72/85 completed (84%)
+   ████████████████████████░░░░░░ 84% (72/85 tasks)
+
    Next: /specweave:do 0037-project-specific-tasks
 
-⏸️  planning: 0039-ultra-smart-next-command
-   Tasks: 0/45 (0%)
-
-================================
+============================================================
 Summary:
   Active increments: 1
-  Other non-completed: 1
+  Other non-completed: 0
 
 💡 Continue with /specweave:do
 ```
 
+### Enhanced Format (with User Story grouping)
+```
+📊 Increment Progress
+============================================================
+
+⏸️  ACTIVE: 0047-us-task-linkage
+   ██████████████████░░░░░░░░░░░░ 59% (13/22 tasks)
+
+   Progress by User Story:
+   ✅ US-001: ████████████████████ 100% (4/4)
+   ✅ US-002: ████████████████████ 100% (3/3)
+   ├─ US-003: ████████████░░░░░░░░ 60% (3/5)
+   ✅ US-004: ████████████████████ 100% (3/3)
+   ├─ US-005: ░░░░░░░░░░░░░░░░░░░░ 0% (0/4)
+   ├─ US-006: ░░░░░░░░░░░░░░░░░░░░ 0% (0/3)
+
+   Resume: /specweave:resume 0047-us-task-linkage
+
+============================================================
+Summary:
+  Active increments: 0
+  Other non-completed: 1
+
+💡 No active work. Run /specweave:increment to start new work
+```
+
 ## What It Shows
 
-- **Active increments** (in-progress): Shown first with green indicator
-- **Other non-completed**: planning, paused, blocked, etc.
-- **Task completion**: X/Y completed (Z%)
-- **Next action**: Which command to run
+- **Overall progress**: Visual bar + percentage + task count
+- **Per-User Story progress** (if US linkage exists): Completion status for each US
+- **Progress bars**: Color-coded (green ≥80%, yellow 50-79%, red <50%)
+- **Completion indicators**: ✅ for 100% complete USs
+- **Orphan tasks warning**: If tasks exist without User Story linkage
+- **Next action**: Command to continue work
 
-**Note**: Skips completed and archived increments.
+**Note**: Skips completed and archived increments. Automatically detects and displays US-level progress for increments using US-task linkage (v0.23.0+).

@@ -1,13 +1,19 @@
 ---
 id: US-005
 feature: FS-047
-title: "Progress Tracking by User Story"
-status: planned
+title: Progress Tracking by User Story
+status: active
 priority: P0
 created: 2025-11-19
+external:
+  github:
+    issue: 642
+    url: https://github.com/anton-abyzov/specweave/issues/642
 ---
 
 # US-005: Progress Tracking by User Story
+
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/634
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
@@ -34,7 +40,7 @@ created: 2025-11-19
 
 ## Tasks
 
-- [ ] [T-016](../../../../increments/0047-us-task-linkage/tasks.md#T-016): Implement per-US task completion tracking
-- [ ] [T-017](../../../../increments/0047-us-task-linkage/tasks.md#T-017): Update /specweave:progress command with US grouping
-- [ ] [T-018](../../../../increments/0047-us-task-linkage/tasks.md#T-018): Add by_user_story frontmatter to tasks.md
-- [ ] [T-019](../../../../increments/0047-us-task-linkage/tasks.md#T-019): Create progress visualization script
+- [ ] **T-016**: Implement per-US task completion tracking
+- [ ] **T-017**: Update /specweave:progress command with US grouping
+- [ ] **T-018**: Add by_user_story frontmatter to tasks.md
+- [ ] **T-019**: Create progress visualization script
