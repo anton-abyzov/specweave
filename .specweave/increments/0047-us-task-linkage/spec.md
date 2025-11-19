@@ -46,9 +46,10 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (unit tests)
   - **Completed by**: T-001 (parser with validation)
 
-- [ ] **AC-US1-04**: Invalid US references detected and reported (non-existent US-XXX)
+- [x] **AC-US1-04**: Invalid US references detected and reported (non-existent US-XXX)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (validation tests)
+  - **Completed by**: T-002 (validateTaskLinkage function)
 
 ### US-002: AC-Task Mapping
 
@@ -57,21 +58,25 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I can verify all ACs are covered by at least one task
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Every task has **Satisfies ACs** field listing AC-IDs (format: `**Satisfies ACs**: AC-US1-01, AC-US1-02`)
+- [x] **AC-US2-01**: Every task has **Satisfies ACs** field listing AC-IDs (format: `**Satisfies ACs**: AC-US1-01, AC-US1-02`)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (parser validates field)
+  - **Completed by**: T-005 (satisfiesACs parser)
 
-- [ ] **AC-US2-02**: Parser validates AC-IDs exist in spec.md
+- [x] **AC-US2-02**: Parser validates AC-IDs exist in spec.md
   - **Priority**: P1 (Important)
   - **Testable**: Yes (cross-reference validation)
+  - **Completed by**: T-006 (spec-parser with getAllACIds, validateACBelongsToUS)
 
-- [ ] **AC-US2-03**: Multiple tasks can satisfy the same AC (shared coverage)
+- [x] **AC-US2-03**: Multiple tasks can satisfy the same AC (shared coverage)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (coverage aggregation tests)
+  - **Completed by**: T-013 (AC coverage validator handles multiple tasks per AC)
 
-- [ ] **AC-US2-04**: System detects orphan tasks (no satisfiesACs field)
+- [x] **AC-US2-04**: System detects orphan tasks (no satisfiesACs field)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (validation reports orphans)
+  - **Completed by**: T-007, T-013 (orphan detection in validator)
 
 ### US-003: Automatic Living Docs Sync
 

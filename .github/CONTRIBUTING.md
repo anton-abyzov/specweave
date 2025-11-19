@@ -44,80 +44,82 @@ git remote add upstream https://github.com/anton-abyzov/specweave.git
 
 ### Install SpecWeave
 
-SpecWeave uses **Claude Code's native plugin system**. For contributors developing SpecWeave itself:
-
-**🚨 CRITICAL**: You MUST create a marketplace symlink for hooks to work!
+SpecWeave uses **Claude Code's GitHub marketplace** for plugin management. This is the recommended cross-platform workflow.
 
 ```bash
 # 1. Install build dependencies
 npm install
 
 # 2. Build the project
-npm run build
+npm run rebuild
 
-# 3. Create marketplace symlink (MANDATORY!)
-mkdir -p ~/.claude/plugins/marketplaces
-ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
-
-# 4. Verify setup (MANDATORY!)
-bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
-# Must show: ✅ ALL CHECKS PASSED!
-
-# 5. Install git hooks (recommended)
+# 3. Install git hooks (recommended)
 bash scripts/install-git-hooks.sh
+
+# 4. That's it! Claude Code auto-installs from GitHub marketplace
 ```
 
-**Why Symlink is MANDATORY:**
+**How it works:**
+- Claude Code automatically pulls your latest code from GitHub every 5-10 seconds
+- Hooks execute from `~/.claude/plugins/marketplaces/specweave/` (auto-managed)
+- No symlinks or manual setup needed (works on Windows!)
 
-Claude Code's hook execution system looks for hooks in `~/.claude/plugins/marketplaces/specweave/`, NOT in your local repo. Without the symlink:
-- ❌ Post-task-completion hooks fail with "No such file or directory"
-- ❌ Status line doesn't update automatically
-- ❌ Living docs don't sync after task completion
-- ❌ Development workflow is broken
+**Development workflow:**
+```bash
+# Make changes, test locally
+vim src/file.ts
+npm run rebuild && npm test
 
-**Detailed Setup:** See [CLAUDE.md](../CLAUDE.md#local-development-setup-contributors-only) for complete instructions.
+# Push to your branch
+git add . && git commit -m "feat: new feature"
+git push origin develop
+
+# Wait 5-10 seconds → Claude Code auto-updates
+# Test in Claude Code → your latest hooks execute!
+```
+
+**For advanced users** who need instant hook updates without pushing:
+- See [symlink-dev-mode.md](../.specweave/docs/internal/advanced/symlink-dev-mode.md)
+- ⚠️ Unix-only (macOS/Linux), not Windows
+
+**Detailed Setup:** See [CLAUDE.md](../CLAUDE.md#1-local-development-setup) for complete instructions.
 
 ### Verify Installation
 
 ```bash
-# 1. Run automated setup verification
-bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+# 1. Build the project
+npm run rebuild
 
-# Expected output:
-# ✅ ALL CHECKS PASSED! Local development setup is correct.
-# You can now use TodoWrite and other tools without hook errors.
-
-# 2. Build the project
-npm run build
-
-# 3. Run tests to verify everything works
+# 2. Run tests to verify everything works
 npm test
 
-# 4. Test hook execution (use TodoWrite tool - should work without errors)
+# 3. Push a test change to verify GitHub marketplace workflow
+git add . && git commit -m "test: verify setup"
+git push origin your-branch
+# Wait 5-10 seconds → Claude Code updates
 ```
 
 ### Troubleshooting Installation
 
 **Hook errors: "No such file or directory"**
 
-This means the marketplace symlink is missing or broken.
+Ensure your changes are pushed to GitHub. Claude Code auto-updates the marketplace every 5-10 seconds.
 
 ```bash
-# Check if symlink exists
-readlink ~/.claude/plugins/marketplaces/specweave
+# Verify your branch is pushed
+git status
+git push origin your-branch
 
-# If missing or wrong path, recreate:
-rm -f ~/.claude/plugins/marketplaces/specweave
-mkdir -p ~/.claude/plugins/marketplaces
-ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
-
-# Verify setup
-bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+# Wait 5-10 seconds for Claude Code to update
 ```
 
-**Setup verification fails**
+**For symlink mode users** (advanced only):
 
-See the verification script output for specific fix instructions, or consult:
+See [symlink-dev-mode.md](../.specweave/docs/internal/advanced/symlink-dev-mode.md#troubleshooting) for symlink-specific troubleshooting.
+
+**Build or test failures**
+
+Ensure dependencies are installed and TypeScript compiles:
 - `.specweave/increments/0043-spec-md-desync-fix/reports/PLUGIN-HOOK-ERROR-FIX-2025-11-18.md`
 - [CLAUDE.md](../CLAUDE.md#local-development-setup-contributors-only)
 

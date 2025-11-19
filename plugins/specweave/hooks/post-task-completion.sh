@@ -202,6 +202,58 @@ if command -v node &> /dev/null; then
   if [ -n "$CURRENT_INCREMENT" ]; then
     echo "[$(date)] 📚 Checking living docs sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
+    # ========================================================================
+    # EXTRACT FEATURE ID (NEW in v0.23.0 - Increment 0047: US-Task Linkage)
+    # ========================================================================
+    # Extract epic field from spec.md frontmatter (e.g., epic: FS-047)
+    # This ensures sync uses the explicitly defined feature ID rather than
+    # auto-generating one, maintaining traceability with living docs structure.
+
+    FEATURE_ID=""
+    SPEC_MD_PATH=".specweave/increments/$CURRENT_INCREMENT/spec.md"
+
+    if [ -f "$SPEC_MD_PATH" ]; then
+      # Extract epic field from YAML frontmatter
+      FEATURE_ID=$(awk '
+        BEGIN { in_frontmatter=0 }
+        /^---$/ {
+          if (in_frontmatter == 0) {
+            in_frontmatter=1; next
+          } else {
+            exit
+          }
+        }
+        in_frontmatter == 1 && /^epic:/ {
+          gsub(/^epic:[ \t]*/, "");
+          gsub(/["'\'']/, "");
+          print;
+          exit
+        }
+      ' "$SPEC_MD_PATH" | tr -d '\r\n')
+
+      if [ -n "$FEATURE_ID" ]; then
+        echo "[$(date)]   📎 Extracted feature ID from spec.md: $FEATURE_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+      else
+        echo "[$(date)]   ⚠️  No epic field found in spec.md frontmatter" >> "$DEBUG_LOG" 2>/dev/null || true
+        echo "[$(date)]   ℹ️  Sync will auto-generate feature ID from increment number" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
+    else
+      echo "[$(date)]   ⚠️  spec.md not found at $SPEC_MD_PATH" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+
+    # Extract project ID from config or metadata (defaults to "default")
+    PROJECT_ID="default"
+    if [ -f ".specweave/config.json" ]; then
+      # Try to extract activeProject from config
+      if command -v jq >/dev/null 2>&1; then
+        ACTIVE_PROJECT=$(jq -r '.activeProject // "default"' ".specweave/config.json" 2>/dev/null || echo "default")
+        if [ -n "$ACTIVE_PROJECT" ] && [ "$ACTIVE_PROJECT" != "null" ]; then
+          PROJECT_ID="$ACTIVE_PROJECT"
+        fi
+      fi
+    fi
+    echo "[$(date)]   📁 Project ID: $PROJECT_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+
     # Determine which sync script to use (project local or global)
     SYNC_SCRIPT=""
     if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
@@ -223,10 +275,18 @@ if command -v node &> /dev/null; then
     fi
 
     if [ -n "$SYNC_SCRIPT" ]; then
-      # Run living docs sync (non-blocking, best-effort)
-      (cd "$PROJECT_ROOT" && node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
-        echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-      }
+      # Run living docs sync with feature ID (non-blocking, best-effort)
+      # Pass FEATURE_ID and PROJECT_ID as environment variables if available
+      if [ -n "$FEATURE_ID" ]; then
+        (cd "$PROJECT_ROOT" && FEATURE_ID="$FEATURE_ID" PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      else
+        # No explicit feature ID - sync will auto-generate
+        (cd "$PROJECT_ROOT" && PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") 2>&1 | tee -a "$DEBUG_LOG" >/dev/null || {
+          echo "[$(date)] ⚠️  Failed to sync living docs (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+        }
+      fi
     else
       echo "[$(date)] ⚠️  sync-living-docs.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
     fi

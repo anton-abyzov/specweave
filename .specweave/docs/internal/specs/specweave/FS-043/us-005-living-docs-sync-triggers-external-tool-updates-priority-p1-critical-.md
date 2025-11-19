@@ -9,6 +9,8 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-005: Living Docs Sync Triggers External Tool Updates (Priority: P1 - CRITICAL)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/626
+
 **Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
 
 **As a** developer using GitHub/JIRA/ADO sync

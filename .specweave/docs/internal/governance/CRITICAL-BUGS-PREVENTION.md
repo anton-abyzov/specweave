@@ -25,12 +25,19 @@ This document prevents recurrence of **critical regression bugs** that broke cor
 // BEFORE (5 options)
 export type ArchitectureChoice = 'single' | 'multi-with-parent' | 'local-parent' | ...
 
-// AFTER (2 options) - ❌ REMOVED 'github-parent'!
+// AFTER FIX (2 options) - ❌ INCORRECT: Removed 'github-parent' instead of 'local-parent'!
 export type ArchitectureChoice = 'single' | 'local-parent';
 
 // Result: GitHub parent creation HARDCODED to false
 case 'parent':
   return this.configureMultiRepo(true, true); // ❌ Second 'true' = local-only!
+
+// CURRENT STATE (2 options) - ✅ CORRECT: Removed 'local-parent', kept 'github-parent'
+export type ArchitectureChoice = 'single' | 'github-parent';
+
+// Result: GitHub parent creation works correctly
+case 'parent':
+  return this.configureMultiRepo(true, false); // ✅ false = GitHub parent
 ```
 
 **Impact**:

@@ -9,6 +9,8 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-004: Existing Desyncs Detected and Repaired (Priority: P2 - Important)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/625
+
 **Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
 
 **As a** SpecWeave maintainer

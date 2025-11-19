@@ -9,6 +9,8 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-001: Status Line Shows Correct Active Increment (Priority: P1 - CRITICAL)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/622
+
 **Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
 
 **As a** developer working on SpecWeave

@@ -109,7 +109,6 @@
     "enabled": true,
     "provider": "github",
     "includeStatus": true,
-    "includeTaskCheckboxes": true,
     "autoApplyLabels": true,
     "activeProfile": "specweave-dev",
     "settings": {

@@ -605,11 +605,6 @@
           "description": "Include status synchronization (sync increment status to external tool)",
           "default": true
         },
-        "includeTaskCheckboxes": {
-          "type": "boolean",
-          "description": "Copy tasks as checkboxes in external issue descriptions (GitHub markdown checkboxes, Jira checkboxes, ADO HTML checkboxes)",
-          "default": true
-        },
         "autoApplyLabels": {
           "type": "boolean",
           "description": "Automatically apply labels based on increment type ([Bug], [Feature], [Docs])",

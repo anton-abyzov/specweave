@@ -19,6 +19,8 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 export interface SyncOptions {
   dryRun?: boolean;
   force?: boolean;
+  /** Explicit feature ID from spec.md epic field (v0.23.0+) */
+  explicitFeatureId?: string;
 }
 
 export interface SyncResult {
@@ -86,7 +88,15 @@ export class LivingDocsSync {
       await this.featureIdManager.buildRegistry();
 
       // Step 2: Get/assign feature ID
-      const featureId = await this.getFeatureIdForIncrement(incrementId);
+      // NEW (v0.23.0): Use explicitFeatureId from spec.md epic field if provided
+      let featureId: string;
+      if (options.explicitFeatureId) {
+        featureId = options.explicitFeatureId;
+        this.logger.log(`📎 Using explicit feature ID from spec.md: ${featureId}`);
+      } else {
+        featureId = await this.getFeatureIdForIncrement(incrementId);
+        this.logger.log(`🔄 Auto-generated feature ID: ${featureId}`);
+      }
       result.featureId = featureId;
 
       this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
