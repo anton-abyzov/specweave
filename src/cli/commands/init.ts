@@ -16,6 +16,7 @@ import { generateSkillsIndex } from '../../utils/generate-skills-index.js';
 import { LanguageManager, isLanguageSupported, getSupportedLanguages, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -30,6 +31,7 @@ interface InitOptions {
   techStack?: string;
   language?: string;  // Language for i18n support
   force?: boolean;    // Force fresh start (non-interactive)
+  logger?: Logger;    // Logger for debug/error messages (default: consoleLogger)
 }
 
 /**
@@ -176,6 +178,21 @@ export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
+  // Initialize logger (injectable for testing)
+  const logger = options.logger ?? consoleLogger;
+
+  // NOTE: This CLI command is 99% user-facing output (console.log/console.error).
+  // All console.* calls in this function are legitimate user-facing exceptions
+  // as defined in CONTRIBUTING.md (colored messages, confirmations, formatted output).
+  // Logger is available for any internal debug logs if needed in future.
+
+  // Detect CI/non-interactive environment (use throughout function)
+  const isCI = process.env.CI === 'true' ||
+               process.env.GITHUB_ACTIONS === 'true' ||
+               process.env.GITLAB_CI === 'true' ||
+               process.env.CIRCLECI === 'true' ||
+               !process.stdin.isTTY;
+
   // Validate and normalize language option
   const language = options.language?.toLowerCase() || 'en';
 
@@ -231,22 +248,30 @@ export async function initCommand(
 
     // Validate directory name is suitable for project name
     if (!/^[a-z0-9-]+$/.test(dirName)) {
-      console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.invalidDirName', { dirName })}`));
       const suggestedName = dirName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
-      const { name } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'Project name (for templates):',
-          default: suggestedName,
-          validate: (input: string) => {
-            if (/^[a-z0-9-]+$/.test(input)) return true;
-            return 'Project name must be lowercase letters, numbers, and hyphens only';
+      if (isCI) {
+        // CI mode: auto-sanitize directory name without prompting
+        console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.invalidDirName', { dirName })}`));
+        console.log(chalk.gray(`   → CI mode: Auto-sanitizing to "${suggestedName}"`));
+        finalProjectName = suggestedName;
+      } else {
+        // Interactive mode: prompt user
+        console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.invalidDirName', { dirName })}`));
+        const { name } = await inquirer.prompt([
+          {
+            type: 'input',
+            name: 'name',
+            message: 'Project name (for templates):',
+            default: suggestedName,
+            validate: (input: string) => {
+              if (/^[a-z0-9-]+$/.test(input)) return true;
+              return 'Project name must be lowercase letters, numbers, and hyphens only';
+            },
           },
-        },
-      ]);
-      finalProjectName = name;
+        ]);
+        finalProjectName = name;
+      }
     } else {
       finalProjectName = dirName;
     }
@@ -256,19 +281,25 @@ export async function initCommand(
     const existingFiles = allFiles.filter(f => !f.startsWith('.')); // Ignore hidden files
 
     if (existingFiles.length > 0 && !options.force) {
-      console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })}`));
-      const { confirm } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirm',
-          message: 'Initialize SpecWeave in current directory?',
-          default: false,
-        },
-      ]);
+      if (isCI) {
+        // CI mode: allow initialization in non-empty directory without prompting
+        console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })}`));
+        console.log(chalk.gray(`   → CI mode: Proceeding with initialization`));
+      } else {
+        console.log(chalk.yellow(`\n${locale.t('cli', 'init.warnings.directoryNotEmpty', { count: existingFiles.length, plural: existingFiles.length === 1 ? '' : 's' })}`));
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Initialize SpecWeave in current directory?',
+            default: false,
+          },
+        ]);
 
-      if (!confirm) {
-        console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
-        process.exit(0);
+        if (!confirm) {
+          console.log(chalk.yellow(locale.t('cli', 'init.errors.cancelled')));
+          process.exit(0);
+        }
       }
     }
 
@@ -288,24 +319,34 @@ export async function initCommand(
         console.log(chalk.red('   • All configuration and history'));
         console.log(chalk.yellow('\n   💡 TIP: Use "specweave init ." (no --force) for safe updates\n'));
 
-        // ALWAYS require confirmation, even in force mode (safety critical!)
-        const { confirmDeletion } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirmDeletion',
-            message: chalk.red('⚠️  Type "y" to PERMANENTLY DELETE all .specweave/ data:'),
-            default: false,
-          },
-        ]);
+        if (isCI) {
+          // CI mode: proceed with force deletion without prompting (test environment)
+          console.log(chalk.gray('   → CI mode: Proceeding with force deletion'));
+          action = 'fresh';
+        } else {
+          // Interactive mode: ALWAYS require confirmation, even in force mode (safety critical!)
+          const { confirmDeletion } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirmDeletion',
+              message: chalk.red('⚠️  Type "y" to PERMANENTLY DELETE all .specweave/ data:'),
+              default: false,
+            },
+          ]);
 
-        if (!confirmDeletion) {
-          console.log(chalk.green('\n✅ Deletion cancelled. No data lost.'));
-          console.log(chalk.gray('   → Run "specweave init ." (without --force) for safe updates'));
-          process.exit(0);
+          if (!confirmDeletion) {
+            console.log(chalk.green('\n✅ Deletion cancelled. No data lost.'));
+            console.log(chalk.gray('   → Run "specweave init ." (without --force) for safe updates'));
+            process.exit(0);
+          }
+
+          action = 'fresh';
         }
-
-        action = 'fresh';
         console.log(chalk.yellow('\n   🔄 Force mode: Proceeding with fresh start...'));
+      } else if (isCI) {
+        // CI mode: auto-continue with existing project
+        console.log(chalk.gray('   → CI mode: Continuing with existing project'));
+        action = 'continue';
       } else {
         // Interactive mode: Ask user what to do
         const result = await inquirer.prompt([
@@ -343,6 +384,13 @@ export async function initCommand(
 
       if (action === 'fresh') {
         if (!options.force) {
+          if (isCI) {
+            // CI mode: NEVER allow fresh start without explicit --force flag (safety critical!)
+            console.log(chalk.red('\n⛔ ERROR: Cannot start fresh in CI mode without --force flag'));
+            console.log(chalk.gray('   → Use "specweave init . --force" if you really want to delete all data'));
+            process.exit(1);
+          }
+
           // Interactive mode: Ask for confirmation (force mode already confirmed above)
           console.log(chalk.yellow('\n⚠️  WARNING: This will DELETE all increments, docs, and configuration!'));
           const { confirmFresh } = await inquirer.prompt([
@@ -654,13 +702,7 @@ export async function initCommand(
       }
       console.log('');
 
-      // Check if running in CI/non-interactive environment
-      const isCI = process.env.CI === 'true' ||
-                   process.env.GITHUB_ACTIONS === 'true' ||
-                   process.env.GITLAB_CI === 'true' ||
-                   process.env.CIRCLECI === 'true' ||
-                   !process.stdin.isTTY;
-
+      // Use function-level isCI (already defined at function start)
       let confirmTool = true; // Default to yes
 
       if (isCI) {
@@ -894,13 +936,7 @@ export async function initCommand(
     let testMode: 'TDD' | 'test-after' | 'manual' = 'TDD';
     let coverageTarget = 80;
 
-    // Only prompt if interactive (not CI)
-    const isCI = process.env.CI === 'true' ||
-                 process.env.GITHUB_ACTIONS === 'true' ||
-                 process.env.GITLAB_CI === 'true' ||
-                 process.env.CIRCLECI === 'true' ||
-                 !process.stdin.isTTY;
-
+    // Only prompt if interactive (use function-level isCI)
     if (!isCI && !continueExisting) {
       console.log('');
       console.log(chalk.cyan.bold('🧪 Testing Configuration'));
@@ -1063,30 +1099,9 @@ export async function initCommand(
       } else {
         // Claude CLI available → install ALL plugins from marketplace
         try {
-          // Step 1: FORCE marketplace refresh - remove and re-add from GitHub
-          spinner.start('Refreshing SpecWeave marketplace...');
+          // Step 1: Register marketplace from GitHub (idempotent - updates if exists)
+          spinner.start('Registering SpecWeave marketplace...');
 
-          const listResult = execFileNoThrowSync('claude', [
-            'plugin',
-            'marketplace',
-            'list'
-          ]);
-
-          const marketplaceExists = listResult.success &&
-            (listResult.stdout || '').toLowerCase().includes('specweave');
-
-          if (marketplaceExists) {
-            // Always remove existing marketplace to ensure fresh install
-            execFileNoThrowSync('claude', [
-              'plugin',
-              'marketplace',
-              'remove',
-              'specweave'
-            ]);
-            console.log(chalk.blue('   🔄 Removed existing marketplace'));
-          }
-
-          // Add marketplace from GitHub (always fresh)
           const addResult = execFileNoThrowSync('claude', [
             'plugin',
             'marketplace',
@@ -1099,7 +1114,14 @@ export async function initCommand(
           }
 
           console.log(chalk.green('   ✔ Marketplace registered from GitHub'));
-          spinner.succeed('SpecWeave marketplace refreshed');
+
+          // CRITICAL: Wait for marketplace cache to initialize
+          // Without this delay, plugin installation fails with "not found" errors
+          // because Claude CLI is still fetching/parsing the marketplace
+          spinner.text = 'Initializing marketplace cache...';
+          await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+
+          spinner.succeed('SpecWeave marketplace ready');
 
           // Step 2: Load marketplace.json to get ALL available plugins
           spinner.start('Loading available plugins...');
@@ -1119,7 +1141,7 @@ export async function initCommand(
           console.log(chalk.blue(`   📦 Found ${allPlugins.length} plugins to install`));
           spinner.succeed(`Found ${allPlugins.length} plugins`);
 
-          // Step 3: Install ALL plugins (no selective loading!)
+          // Step 3: Install ALL plugins with retry logic (handles remaining race conditions)
           let successCount = 0;
           let failCount = 0;
           const failedPlugins: string[] = [];
@@ -1128,13 +1150,32 @@ export async function initCommand(
             const pluginName = plugin.name;
             spinner.start(`Installing ${pluginName}...`);
 
-            const installResult = execFileNoThrowSync('claude', [
-              'plugin',
-              'install',
-              pluginName
-            ]);
+            // Retry up to 3 times with exponential backoff
+            let installed = false;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+              const installResult = execFileNoThrowSync('claude', [
+                'plugin',
+                'install',
+                pluginName
+              ]);
 
-            if (installResult.success) {
+              if (installResult.success) {
+                installed = true;
+                break;
+              }
+
+              // If "not found" error and not last attempt, wait and retry
+              if (installResult.stderr?.includes('not found') && attempt < 3) {
+                spinner.text = `Installing ${pluginName}... (retry ${attempt}/3)`;
+                await new Promise(resolve => setTimeout(resolve, 500 * attempt)); // 500ms, 1s, 1.5s
+                continue;
+              }
+
+              // Other errors or final attempt - stop retrying
+              break;
+            }
+
+            if (installed) {
               successCount++;
               spinner.succeed(`${pluginName} installed`);
             } else {
@@ -1227,23 +1268,28 @@ export async function initCommand(
           console.log(chalk.gray(`   Current: ${existingTracker.charAt(0).toUpperCase() + existingTracker.slice(1)}`));
           console.log('');
 
-          const { reconfigure } = await inquirer.prompt([{
-            type: 'confirm',
-            name: 'reconfigure',
-            message: 'Do you want to reconfigure your issue tracker?',
-            default: false
-          }]);
-
-          if (!reconfigure) {
-            console.log(chalk.gray('   ✓ Keeping existing configuration\n'));
+          if (isCI) {
+            // CI mode: keep existing configuration without prompting
+            console.log(chalk.gray('   → CI mode: Keeping existing configuration\n'));
           } else {
-            // User wants to reconfigure - run setup
-            await setupIssueTracker({
-              projectPath: targetDir,
-              language: language as SupportedLanguage,
-              maxRetries: 3,
-              isFrameworkRepo
-            });
+            const { reconfigure } = await inquirer.prompt([{
+              type: 'confirm',
+              name: 'reconfigure',
+              message: 'Do you want to reconfigure your issue tracker?',
+              default: false
+            }]);
+
+            if (!reconfigure) {
+              console.log(chalk.gray('   ✓ Keeping existing configuration\n'));
+            } else {
+              // User wants to reconfigure - run setup
+              await setupIssueTracker({
+                projectPath: targetDir,
+                language: language as SupportedLanguage,
+                maxRetries: 3,
+                isFrameworkRepo
+              });
+            }
           }
         } else {
           // No existing config - run setup

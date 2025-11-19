@@ -202,7 +202,7 @@ describe('specweave init . (current directory)', () => {
       );
 
       // Initialize again with --force flag (non-interactive fresh start)
-      const command = `cd ${testDir} && node "${specweaveBin}" init . --force`;
+      const command = `cd ${testDir} && CI=true node "${specweaveBin}" init . --force`;
 
       await execAsync(command, { timeout: 60000 });
 
