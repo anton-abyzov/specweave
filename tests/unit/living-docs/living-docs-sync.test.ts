@@ -9,6 +9,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import * as os from 'os';
 import { LivingDocsSync } from '../../../src/core/living-docs/living-docs-sync.js';
+import { silentLogger } from '../../../src/utils/logger.js';
 
 describe('LivingDocsSync', () => {
   let testRoot: string;
@@ -18,7 +19,7 @@ describe('LivingDocsSync', () => {
     // SAFE: Use isolated temp directory
     testRoot = path.join(os.tmpdir(), `test-living-docs-sync-${Date.now()}`);
     await fs.ensureDir(testRoot);
-    sync = new LivingDocsSync(testRoot);
+    sync = new LivingDocsSync(testRoot, { logger: silentLogger });
   });
 
   afterEach(async () => {

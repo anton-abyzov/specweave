@@ -99,23 +99,26 @@ Test content here.
       expect(specAfter).not.toContain('status: active');
     });
 
-    it('testUpdateStatusCallsSpecFrontmatterUpdater - should call SpecFrontmatterUpdater.updateStatus()', async () => {
+    it('testUpdateStatusSynchronousSpecUpdate - should update spec.md synchronously with metadata.json', async () => {
       // GIVEN an increment with valid metadata and spec.md
       // (already set up in beforeEach)
 
-      // Import SpecFrontmatterUpdater and spy on it
-      const { SpecFrontmatterUpdater } = await import('../../../src/core/increment/spec-frontmatter-updater.js');
-      const updateStatusSpy = vi.spyOn(SpecFrontmatterUpdater, 'updateStatus');
+      // WHEN updateStatus() is called (synchronous operation)
+      const result = MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
-      // WHEN updateStatus() is called
-      MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
+      // THEN metadata.json should be updated immediately
+      expect(result.status).toBe(IncrementStatus.COMPLETED);
 
-      // Wait for async call
-      await new Promise(resolve => setTimeout(resolve, 10));
+      // AND spec.md should ALSO be updated immediately (no async wait needed)
+      // This verifies the implementation uses synchronous update
+      const specAfter = await fs.readFile(specPath, 'utf-8');
+      expect(specAfter).toContain('status: completed');
+      expect(specAfter).not.toContain('status: active');
 
-      // THEN SpecFrontmatterUpdater.updateStatus() should be called
-      expect(updateStatusSpy).toHaveBeenCalledWith(incrementId, IncrementStatus.COMPLETED);
-      expect(updateStatusSpy).toHaveBeenCalledTimes(1);
+      // AND both files should have consistent status
+      const metadataAfter = await fs.readJson(metadataPath);
+      const parsed = matter(specAfter);
+      expect(metadataAfter.status).toBe(parsed.data.status);
     });
 
     it('testUpdateStatusPreservesSpecFrontmatter - should preserve all spec.md frontmatter fields', async () => {

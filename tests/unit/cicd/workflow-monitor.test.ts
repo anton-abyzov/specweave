@@ -8,8 +8,10 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor.js';
 import { StateManager } from '../../../src/core/cicd/state-manager.js';
+import { silentLogger } from '../../../src/utils/logger.js';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 // Mock Octokit
 vi.mock('@octokit/rest');
@@ -20,8 +22,8 @@ describe('WorkflowMonitor', () => {
   let monitor: WorkflowMonitor;
 
   beforeEach(async () => {
-    // Create temp directory
-    testDir = path.join(__dirname, '../../tmp', `test-monitor-${Date.now()}`);
+    // Create temp directory in OS tmpdir (NOT project-relative)
+    testDir = path.join(os.tmpdir(), `test-monitor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     stateManager = new StateManager(testDir);
@@ -32,7 +34,8 @@ describe('WorkflowMonitor', () => {
         owner: 'test-owner',
         repo: 'test-repo',
         pollInterval: 100, // Fast polling for tests
-        debug: false
+        debug: false,
+        logger: silentLogger // Prevent test output pollution
       },
       stateManager
     );

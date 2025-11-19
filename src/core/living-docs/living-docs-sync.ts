@@ -14,6 +14,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 export interface SyncOptions {
   dryRun?: boolean;
@@ -59,10 +60,12 @@ export interface AcceptanceCriterionData {
 export class LivingDocsSync {
   private projectRoot: string;
   private featureIdManager: FeatureIDManager;
+  private logger: Logger;
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.projectRoot = projectRoot;
     this.featureIdManager = new FeatureIDManager(projectRoot);
+    this.logger = options.logger ?? consoleLogger;
   }
 
   /**
@@ -86,7 +89,7 @@ export class LivingDocsSync {
       const featureId = await this.getFeatureIdForIncrement(incrementId);
       result.featureId = featureId;
 
-      console.log(`📚 Syncing ${incrementId} → ${featureId}...`);
+      this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
 
       // Step 3: Parse increment spec
       const parsed = await this.parseIncrementSpec(incrementId);
@@ -129,7 +132,7 @@ export class LivingDocsSync {
         if (existingFile) {
           // Reuse existing file (prevent duplicate creation)
           storyFile = path.join(projectPath, existingFile);
-          console.log(`   ♻️  Reusing existing file: ${existingFile}`);
+          this.logger.log(`   ♻️  Reusing existing file: ${existingFile}`);
         } else {
           // Create new file with standardized naming
           const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -167,14 +170,14 @@ export class LivingDocsSync {
       }
 
       result.success = true;
-      console.log(`✅ Synced ${incrementId} → ${featureId}`);
-      console.log(`   Created: ${result.filesCreated.length} files`);
+      this.logger.log(`✅ Synced ${incrementId} → ${featureId}`);
+      this.logger.log(`   Created: ${result.filesCreated.length} files`);
 
       return result;
 
     } catch (error) {
       result.errors.push(`Sync failed: ${error}`);
-      console.error(`❌ Sync failed for ${incrementId}:`, error);
+      this.logger.error(`❌ Sync failed for ${incrementId}:`, error);
       return result;
     }
   }
@@ -222,10 +225,10 @@ export class LivingDocsSync {
           return metadata.feature;
         } else {
           // ⚠️ Format mismatch - log warning and auto-generate correct format
-          console.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
-          console.warn(`   Found: ${metadata.feature}`);
-          console.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield)'}`);
-          console.warn(`   Auto-generating correct format...`);
+          this.logger.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
+          this.logger.warn(`   Found: ${metadata.feature}`);
+          this.logger.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield)'}`);
+          this.logger.warn(`   Auto-generating correct format...`);
 
           // Fall through to auto-generation
         }
@@ -234,7 +237,7 @@ export class LivingDocsSync {
 
     // Auto-generate for greenfield: FS-040, FS-041, etc.
     const autoGenId = `FS-${String(num).padStart(3, '0')}`;
-    console.log(`   📝 Generated feature ID: ${autoGenId}`);
+    this.logger.log(`   📝 Generated feature ID: ${autoGenId}`);
     return autoGenId;
   }
 
@@ -265,7 +268,7 @@ export class LivingDocsSync {
         frontmatter = yaml.parse(frontmatterMatch[1]) || {};
         bodyContent = content.slice(frontmatterMatch[0].length).trim();
       } catch (error) {
-        console.warn(`Failed to parse frontmatter for ${incrementId}`);
+        this.logger.warn(`Failed to parse frontmatter for ${incrementId}`);
       }
     }
 
@@ -592,9 +595,9 @@ export class LivingDocsSync {
 
         await this.updateTasksSection(storyFile, tasksMarkdown);
 
-        console.log(`   ✅ Synced ${tasks.length} tasks to ${story.id}`);
+        this.logger.log(`   ✅ Synced ${tasks.length} tasks to ${story.id}`);
       } catch (error) {
-        console.error(`   ⚠️  Failed to sync tasks for ${story.id}:`, error);
+        this.logger.error(`   ⚠️  Failed to sync tasks for ${story.id}:`, error);
         // Continue with other user stories even if one fails
       }
     }
@@ -660,7 +663,7 @@ export class LivingDocsSync {
         return;
       }
 
-      console.log(`\n📡 Syncing to external tools: ${externalTools.join(', ')}`);
+      this.logger.log(`\n📡 Syncing to external tools: ${externalTools.join(', ')}`);
 
       // 2. Sync to each configured external tool
       for (const tool of externalTools) {
@@ -676,19 +679,19 @@ export class LivingDocsSync {
               await this.syncToADO(featureId, projectPath);
               break;
             default:
-              console.warn(`   ⚠️  Unknown external tool: ${tool}`);
+              this.logger.warn(`   ⚠️  Unknown external tool: ${tool}`);
           }
         } catch (error) {
           // AC-US5-05: External tool failures are logged but don't break living docs sync
-          console.error(`   ⚠️  Failed to sync to ${tool}:`, error);
-          console.error(`      Living docs sync will continue...`);
+          this.logger.error(`   ⚠️  Failed to sync to ${tool}:`, error);
+          this.logger.error(`      Living docs sync will continue...`);
         }
       }
 
     } catch (error) {
       // AC-US5-05: External tool failures don't break living docs sync
-      console.error(`   ⚠️  External tool sync failed:`, error);
-      console.error(`      Living docs sync completed successfully despite external tool errors`);
+      this.logger.error(`   ⚠️  External tool sync failed:`, error);
+      this.logger.error(`      Living docs sync completed successfully despite external tool errors`);
     }
   }
 
@@ -734,7 +737,7 @@ export class LivingDocsSync {
       return tools;
 
     } catch (error) {
-      console.warn(`   ⚠️  Failed to read metadata.json: ${error}`);
+      this.logger.warn(`   ⚠️  Failed to read metadata.json: ${error}`);
       return [];
     }
   }
@@ -751,7 +754,7 @@ export class LivingDocsSync {
    */
   private async syncToGitHub(featureId: string, projectPath: string): Promise<void> {
     try {
-      console.log(`   🔄 Syncing to GitHub...`);
+      this.logger.log(`   🔄 Syncing to GitHub...`);
 
       // Dynamic import to avoid circular dependencies
       const { GitHubClientV2 } = await import('../../../plugins/specweave-github/lib/github-client-v2.js');
@@ -773,7 +776,7 @@ export class LivingDocsSync {
       };
 
       if (!profile.config.token || !profile.config.owner || !profile.config.repo) {
-        console.warn(`   ⚠️  GitHub credentials not configured (GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO)`);
+        this.logger.warn(`   ⚠️  GitHub credentials not configured (GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO)`);
         return;
       }
 
@@ -785,11 +788,11 @@ export class LivingDocsSync {
       // Sync feature to GitHub (idempotent - safe to run multiple times)
       const result = await sync.syncFeatureToGitHub(featureId);
 
-      console.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
+      this.logger.log(`   ✅ Synced to GitHub: ${result.issuesUpdated} updated, ${result.issuesCreated} created`);
 
     } catch (error) {
       if (error instanceof Error && error.message.includes('Cannot find module')) {
-        console.warn(`   ⚠️  GitHub plugin not installed - skipping GitHub sync`);
+        this.logger.warn(`   ⚠️  GitHub plugin not installed - skipping GitHub sync`);
       } else {
         throw error;
       }
@@ -800,7 +803,7 @@ export class LivingDocsSync {
    * Sync to JIRA (placeholder for future implementation)
    */
   private async syncToJira(featureId: string, projectPath: string): Promise<void> {
-    console.log(`   ⚠️  JIRA sync not yet implemented - skipping`);
+    this.logger.log(`   ⚠️  JIRA sync not yet implemented - skipping`);
     // TODO: Implement JIRA sync when specweave-jira plugin is available
   }
 
@@ -808,7 +811,7 @@ export class LivingDocsSync {
    * Sync to Azure DevOps (placeholder for future implementation)
    */
   private async syncToADO(featureId: string, projectPath: string): Promise<void> {
-    console.log(`   ⚠️  ADO sync not yet implemented - skipping`);
+    this.logger.log(`   ⚠️  ADO sync not yet implemented - skipping`);
     // TODO: Implement ADO sync when specweave-ado plugin is available
   }
 
@@ -845,7 +848,7 @@ export class LivingDocsSync {
       }
 
       // Multiple files found - return most recent
-      console.warn(`   ⚠️  Found ${matchingFiles.length} files for ${userStoryId}, using most recent`);
+      this.logger.warn(`   ⚠️  Found ${matchingFiles.length} files for ${userStoryId}, using most recent`);
       const fileTimes = await Promise.all(
         matchingFiles.map(async (f) => ({
           file: f,
@@ -896,7 +899,7 @@ export class LivingDocsSync {
     // Check for duplicates
     for (const [storyId, storyFiles] of filesByStory.entries()) {
       if (storyFiles.length > 1) {
-        console.warn(`   ⚠️  Found ${storyFiles.length} duplicate files for ${storyId}`);
+        this.logger.warn(`   ⚠️  Found ${storyFiles.length} duplicate files for ${storyId}`);
 
         // Find the most recent file
         const fileTimes = await Promise.all(
@@ -910,13 +913,13 @@ export class LivingDocsSync {
         const keepFile = fileTimes[0].file;
         const deleteFiles = fileTimes.slice(1).map(f => f.file);
 
-        console.warn(`      → Keeping: ${keepFile} (most recent)`);
+        this.logger.warn(`      → Keeping: ${keepFile} (most recent)`);
 
         // Delete older files
         for (const file of deleteFiles) {
           const filePath = path.join(projectPath, file);
           await fs.remove(filePath);
-          console.warn(`      ✅ Deleted: ${file}`);
+          this.logger.warn(`      ✅ Deleted: ${file}`);
         }
       }
     }
@@ -937,7 +940,7 @@ export class LivingDocsSync {
       if (file.endsWith('.tmp') || file.endsWith('.backup')) {
         const filePath = path.join(projectPath, file);
         await fs.remove(filePath);
-        console.log(`   🧹 Cleaned up: ${file}`);
+        this.logger.log(`   🧹 Cleaned up: ${file}`);
       }
     }
   }

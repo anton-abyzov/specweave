@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 /**
  * Unit tests for IncrementArchiver duplicate validation
@@ -7,9 +7,9 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { silentLogger } from '../../../src/utils/logger.js';
 import {
   createTestDir,
   cleanupTestDir,
@@ -22,7 +22,7 @@ describe('IncrementArchiver Duplicate Validation', () => {
 
   beforeEach(async () => {
     testDir = await createTestDir('archiver-validation-test');
-    archiver = new IncrementArchiver(testDir);
+    archiver = new IncrementArchiver(testDir, { logger: silentLogger });
   });
 
   afterEach(async () => {

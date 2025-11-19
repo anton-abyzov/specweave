@@ -2,9 +2,10 @@
 increment: 0045-living-docs-external-sync
 title: 'Sync All Increments by Default'
 priority: P1
-status: planning
+status: in-progress
 type: feature
 created: 2025-11-19T00:00:00.000Z
+started: 2025-11-19T00:00:00.000Z
 test_mode: TDD
 coverage_target: 90
 parent_increment: 0043-spec-md-desync-fix

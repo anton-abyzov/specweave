@@ -48,38 +48,16 @@ describe('sync-specs command', () => {
       )).toBe(true);
     });
 
-    it('should sync latest completed increment when no ID provided', async () => {
+    it('should sync ALL increments when no ID provided (NEW DEFAULT v0.23.0+)', async () => {
       // Create multiple increments
       await createTestIncrement(testRoot, '0039-old', 'completed');
       await createTestIncrement(testRoot, '0040-latest', 'completed');
-      await createTestIncrement(testRoot, '0041-active', 'active'); // Active, not completed
+      await createTestIncrement(testRoot, '0041-active', 'in-progress'); // In-progress, should also be synced
 
-      // Execute sync without increment ID
+      // Execute sync without increment ID (NEW: syncs ALL, not just completed)
       await syncSpecs([]);
 
-      // Should sync 0040 (latest completed)
-      expect(await fs.pathExists(
-        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-040/FEATURE.md')
-      )).toBe(true);
-
-      // Should NOT sync 0041 (active)
-      expect(await fs.pathExists(
-        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-041/FEATURE.md')
-      )).toBe(false);
-    });
-  });
-
-  describe('Sync All Increments', () => {
-    it('should sync all completed increments with --all flag', async () => {
-      // Create multiple increments
-      await createTestIncrement(testRoot, '0039-first', 'completed');
-      await createTestIncrement(testRoot, '0040-second', 'completed');
-      await createTestIncrement(testRoot, '0041-active', 'active');
-
-      // Execute sync --all
-      await syncSpecs(['--all']);
-
-      // Should sync both completed increments
+      // Should sync ALL increments with spec.md (regardless of status)
       expect(await fs.pathExists(
         path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-039/FEATURE.md')
       )).toBe(true);
@@ -88,10 +66,34 @@ describe('sync-specs command', () => {
         path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-040/FEATURE.md')
       )).toBe(true);
 
-      // Should NOT sync active increment
       expect(await fs.pathExists(
         path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-041/FEATURE.md')
-      )).toBe(false);
+      )).toBe(true);
+    });
+  });
+
+  describe('Sync All Increments', () => {
+    it('should sync all increments with --all flag (explicit)', async () => {
+      // Create multiple increments
+      await createTestIncrement(testRoot, '0039-first', 'completed');
+      await createTestIncrement(testRoot, '0040-second', 'completed');
+      await createTestIncrement(testRoot, '0041-active', 'in-progress');
+
+      // Execute sync --all
+      await syncSpecs(['--all']);
+
+      // Should sync ALL increments with spec.md (regardless of status)
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-039/FEATURE.md')
+      )).toBe(true);
+
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-040/FEATURE.md')
+      )).toBe(true);
+
+      expect(await fs.pathExists(
+        path.join(testRoot, '.specweave/docs/internal/specs/_features/FS-041/FEATURE.md')
+      )).toBe(true);
     });
 
     it('should skip increments without spec.md', async () => {

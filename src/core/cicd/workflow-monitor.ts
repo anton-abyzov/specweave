@@ -14,6 +14,7 @@ import {
   WorkflowStatus,
   WorkflowConclusion
 } from './types.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 /**
  * Monitor configuration
@@ -33,6 +34,9 @@ export interface MonitorConfig {
 
   /** Enable debug logging */
   debug?: boolean;
+
+  /** Logger instance (defaults to consoleLogger) */
+  logger?: Logger;
 }
 
 /**
@@ -69,7 +73,8 @@ export interface PollResult {
 export class WorkflowMonitor {
   private octokit: Octokit;
   private stateManager: StateManager;
-  private config: Required<MonitorConfig>;
+  private config: Required<Omit<MonitorConfig, 'logger'>>;
+  private logger: Logger;
   private pollingTimer: NodeJS.Timeout | null = null;
   private lastModified: string | null = null;
   private isPolling = false;
@@ -93,11 +98,14 @@ export class WorkflowMonitor {
     }
 
     this.config = {
-      ...config,
+      token: config.token,
+      owner: config.owner,
+      repo: config.repo,
       pollInterval: config.pollInterval ?? 60000, // Default: 60s
       debug: config.debug ?? false
     };
 
+    this.logger = config.logger ?? consoleLogger;
     this.octokit = new Octokit({ auth: config.token });
     this.stateManager = stateManager;
   }
@@ -258,7 +266,7 @@ export class WorkflowMonitor {
       }
 
       // Handle other errors
-      console.error('Poll error:', error.message);
+      this.logger.error('Poll error:', error.message);
 
       return {
         totalRuns: 0,

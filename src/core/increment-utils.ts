@@ -77,7 +77,13 @@ export class IncrementNumberManager {
     if (useCache) {
       const cached = this.cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        return String(cached.number).padStart(4, '0');
+        // Validate cached value (detect corruption)
+        if (cached.number < 1 || cached.number > 10000) {
+          console.warn('⚠️  Cache corruption detected (invalid number), clearing cache...');
+          this.cache.delete(cacheKey);
+        } else {
+          return String(cached.number).padStart(4, '0');
+        }
       }
     }
 
@@ -194,6 +200,8 @@ export class IncrementNumberManager {
    */
   private static scanAllIncrementDirectories(incrementsDir: string): number {
     let highestNumber = 0;
+    let scannedDirs = 0;
+    let totalIncrements = 0;
 
     // Directories to scan
     const dirsToScan = [
@@ -209,6 +217,7 @@ export class IncrementNumberManager {
 
       try {
         const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+        scannedDirs++;
 
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
@@ -216,6 +225,7 @@ export class IncrementNumberManager {
           // Match pattern: 0032-name or 032-name
           const match = entry.name.match(/^(\d{3,4})-/);
           if (match) {
+            totalIncrements++;
             const number = parseInt(match[1], 10);
             if (number > highestNumber) {
               highestNumber = number;
@@ -227,6 +237,15 @@ export class IncrementNumberManager {
         console.warn(`Warning: Could not scan directory ${dirPath}:`, (error as Error).message);
         continue;
       }
+    }
+
+    // Validation: Detect scan anomalies
+    if (highestNumber === 0 && scannedDirs > 0 && totalIncrements > 0) {
+      // Found increments but highest is 0 - this should never happen
+      throw new Error(
+        `Scan anomaly detected: Found ${totalIncrements} increments but highest number is 0. ` +
+        `This indicates a critical bug in increment number scanning.`
+      );
     }
 
     return highestNumber;

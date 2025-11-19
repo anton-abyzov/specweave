@@ -11,14 +11,20 @@ import { glob } from 'glob';
 import { ConfigManager } from '../config-manager.js';
 import { MetadataManager } from './metadata-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
-// Simple logger implementation
-class Logger {
-  info(message: string) { console.log(`ℹ️  ${message}`); }
-  success(message: string) { console.log(`✅ ${message}`); }
-  warn(message: string) { console.warn(`⚠️  ${message}`); }
-  error(message: string) { console.error(`❌ ${message}`); }
-  debug(message: string) { if (process.env.DEBUG) console.log(`🔍 ${message}`); }
+// Archiver-specific logger with emoji formatting
+class ArchiverLogger implements Logger {
+  constructor(private baseLogger: Logger) {}
+
+  info(message: string) { this.baseLogger.log(`ℹ️  ${message}`); }
+  success(message: string) { this.baseLogger.log(`✅ ${message}`); }
+  warn(message: string) { this.baseLogger.warn(`⚠️  ${message}`); }
+  error(message: string, error?: any) { this.baseLogger.error(`❌ ${message}`, error); }
+  debug(message: string) { if (process.env.DEBUG) this.baseLogger.log(`🔍 ${message}`); }
+
+  // Logger interface implementation
+  log(message: string) { this.baseLogger.log(message); }
 }
 
 export interface ArchiveOptions {
@@ -39,16 +45,16 @@ export interface ArchiveResult {
 }
 
 export class IncrementArchiver {
-  private logger: Logger;
+  private logger: ArchiverLogger;
   private config: ConfigManager;
   private rootDir: string;
   private incrementsDir: string;
   private archiveDir: string;
   private abandonedDir: string;
 
-  constructor(rootDir: string) {
+  constructor(rootDir: string, options: { logger?: Logger } = {}) {
     this.rootDir = rootDir;
-    this.logger = new Logger();
+    this.logger = new ArchiverLogger(options.logger ?? consoleLogger);
     this.config = new ConfigManager(rootDir);
     this.incrementsDir = path.join(rootDir, '.specweave', 'increments');
     this.archiveDir = path.join(this.incrementsDir, '_archive');
@@ -273,6 +279,10 @@ export class IncrementArchiver {
     // Move the directory
     await fs.move(sourcePath, targetPath, { overwrite: false });
 
+    // Clear increment number cache (numbers changed after archiving)
+    const { IncrementNumberManager } = await import('../increment-utils.js');
+    IncrementNumberManager.clearCache();
+
     // Update any references in config or living docs
     await this.updateReferences(increment);
   }
@@ -404,6 +414,11 @@ export class IncrementArchiver {
     }
 
     await fs.move(sourcePath, targetPath);
+
+    // Clear increment number cache (numbers changed after restoring)
+    const { IncrementNumberManager } = await import('../increment-utils.js');
+    IncrementNumberManager.clearCache();
+
     this.logger.success(`Restored ${increment} from archive`);
   }
 
