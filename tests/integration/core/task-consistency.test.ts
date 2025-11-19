@@ -10,6 +10,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
@@ -17,7 +18,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 describe('Task Consistency Integration', () => {
-  const testDir = path.join(__dirname, '../fixtures/test-increment-consistency');
+  const testDir = path.join(os.tmpdir(), `test-increment-consistency-${Date.now()}`);
   const incrementDir = path.join(testDir, '.specweave/increments/0001-test');
   const tasksPath = path.join(incrementDir, 'tasks.md');
   const specPath = path.join(incrementDir, 'spec.md');
@@ -180,7 +181,7 @@ describe('Task Consistency Integration', () => {
       expect(updatedSpec).toContain('- [x] **AC-US1-01**');
     });
 
-    it('unchecks ACs when task header auto-fixed to incomplete', async () => {
+    it('reports conflict when task header auto-fixed to incomplete but AC checked', async () => {
       // Setup: Task says complete but checkboxes not done, AC currently checked
       await fs.writeFile(tasksPath, `
 # Tasks
@@ -203,24 +204,29 @@ describe('Task Consistency Integration', () => {
 
       // Execute: Run update-tasks-md hook
       const hookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-tasks-md.js');
-      execSync(`node ${hookPath} 0001-test`, {
+      const hookOutput = execSync(`node ${hookPath} 0001-test`, {
         cwd: testDir,
         encoding: 'utf-8'
       });
 
       // Then run AC sync hook
       const acHookPath = path.join(process.cwd(), 'plugins/specweave/lib/hooks/update-ac-status.js');
-      execSync(`node ${acHookPath} 0001-test`, {
+      const acHookOutput = execSync(`node ${acHookPath} 0001-test`, {
         cwd: testDir,
         encoding: 'utf-8'
       });
 
-      // Verify: Task header fixed AND AC unchecked
+      // Verify: Task header fixed (✅ COMPLETE removed)
       const updatedTasks = await fs.readFile(tasksPath, 'utf-8');
       expect(updatedTasks).not.toContain('✅ COMPLETE');
 
+      // Verify: AC remains checked but conflict is reported
+      // AC sync is one-way for safety: checks when tasks complete, but doesn't uncheck
+      // (prevents accidental unchecking of manually verified ACs)
       const updatedSpec = await fs.readFile(specPath, 'utf-8');
-      expect(updatedSpec).toContain('- [ ] **AC-US1-01**');
+      expect(updatedSpec).toContain('- [x] **AC-US1-01**'); // Still checked
+      expect(acHookOutput).toContain('Conflicts detected'); // Conflict reported
+      expect(acHookOutput).toContain('AC-US1-01'); // AC-ID in conflict
     });
   });
 

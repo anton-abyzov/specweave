@@ -1,6 +1,6 @@
 ---
 increment: 0043-spec-md-desync-fix
-title: 'Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools'
+title: 'Fix spec.md/metadata.json Desync + Add Validation Tools'
 priority: P1
 status: completed
 type: bug
@@ -10,9 +10,63 @@ completed: 2025-11-19T00:00:00.000Z
 test_mode: TDD
 coverage_target: 90
 epic: FS-043
+scope: reduced
+deferred_to: "0044 (US-001, US-003), 0045 (US-005)"
 ---
 
-# Fix Sync Infrastructure: spec.md Desync + Living Docs → External Tools
+# Fix spec.md/metadata.json Desync + Add Validation Tools
+
+## 🔄 SCOPE REDUCTION (2025-11-19)
+
+**Original Scope**: 5 User Stories (US-001 through US-005)
+**Reduced Scope**: 2 User Stories (US-002, US-004)
+
+### What's IN SCOPE (This Increment)
+
+✅ **US-002**: spec.md and metadata.json Stay in Sync
+- Core desync bug fix
+- `SpecFrontmatterUpdater` implementation
+- `MetadataManager` integration
+- **Status**: COMPLETE (4/4 ACs done)
+
+✅ **US-004**: Existing Desyncs Detected and Repaired
+- Validation script (`validate-status-sync`)
+- Repair script (`repair-status-desync`)
+- Dry-run mode and audit logging
+- **Status**: COMPLETE (3/3 ACs done)
+
+### What's OUT OF SCOPE (Deferred to Future Increments)
+
+🔄 **US-001**: Status Line Shows Correct Active Increment
+- **Reason**: Integration testing, not core fix
+- **Deferred to**: Increment 0044 (Integration Testing)
+- **ACs**: 3 deferred
+
+🔄 **US-003**: Hooks Read Correct Increment Status
+- **Reason**: Integration testing, not core fix
+- **Deferred to**: Increment 0044 (Integration Testing)
+- **ACs**: 3 deferred
+
+🔄 **US-005**: Living Docs Sync Triggers External Tool Updates
+- **Reason**: Separate feature, not part of desync fix
+- **Deferred to**: Increment 0045 (Living Docs External Sync)
+- **ACs**: 7 deferred
+
+### Rationale
+
+The core desync bug (US-002) **is fully fixed**. The validation and repair tools (US-004) **are complete and working**. The remaining work falls into two categories:
+
+1. **Integration Testing** (US-001, US-003): Verifies the fix works in production scenarios - important but separable
+2. **New Feature** (US-005): Automatic external tool sync - a feature enhancement, not the original bug
+
+By descoping to focused deliverables, this increment delivers:
+- ✅ A working fix for the critical desync bug
+- ✅ Tools to detect and repair any future desyncs
+- ✅ Clean separation of concerns for future work
+
+**PM Decision**: Approved for descope on 2025-11-19
+
+---
 
 ## Overview
 

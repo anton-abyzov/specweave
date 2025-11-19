@@ -1,9 +1,33 @@
 ---
 increment: 0043-spec-md-desync-fix
 total_tasks: 24
-completed_tasks: 18
+completed_tasks: 16
+deferred_tasks: 8
 test_mode: TDD
 coverage_target: 90%
+scope: reduced
+deferred_to: "0044 (integration testing), post-merge (documentation)"
+---
+
+# 🔄 SCOPE REDUCTION NOTE
+
+**Reduced Scope**: This increment focuses on core bug fix (US-002, US-004) only.
+
+**Completed in this increment** (16 tasks):
+- Core implementation: T-001 through T-012
+- Core validation: T-015, T-016, T-017
+
+**Deferred to Increment 0044 - Integration Testing** (6 tasks):
+- T-013, T-014: Status line/hooks integration tests
+- T-020, T-021: E2E tests
+- T-022: Performance benchmarks
+- T-023: Manual testing checklist
+
+**Deferred - Documentation** (2 tasks):
+- T-018: ADR (can be done post-merge)
+- T-019: CHANGELOG (done at release time)
+- T-024: User guide (can be done post-merge)
+
 ---
 
 # Implementation Tasks
@@ -580,7 +604,9 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-03, AC-US3-01
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [x] completed
+**Status**: [ ] pending (DEFERRED to Increment 0044 - Integration Testing)
+
+**Deferral Reason**: Core fix (US-002) is complete and unit-tested. This task validates integration with status line hooks in production scenarios. Separable from core bug fix.
 
 **Test Plan**:
 - **Given** an increment is closed via MetadataManager.updateStatus()
@@ -624,7 +650,9 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US1-02
 **Priority**: P1
 **Estimate**: 3 hours
-**Status**: [x] completed
+**Status**: [ ] pending (DEFERRED to Increment 0044 - Integration Testing)
+
+**Deferral Reason**: Core fix (US-002) ensures /done updates spec.md. This task validates end-to-end workflow with all hooks. Separable from core bug fix.
 
 **Test Plan**:
 - **Given** an active increment with all tasks completed
@@ -829,7 +857,9 @@ coverage_target: 90%
 **Acceptance Criteria**: AC-US1-01, AC-US2-01
 **Priority**: P1
 **Estimate**: 4 hours
-**Status**: [x] completed
+**Status**: [ ] pending (DEFERRED to Increment 0044 - Integration Testing)
+
+**Deferral Reason**: Core infrastructure (US-002) complete. This E2E test validates full production workflow including hooks and status line. Separable from core fix.
 
 **Test Plan**:
 - **Given** a SpecWeave project
