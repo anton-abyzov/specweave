@@ -50,26 +50,29 @@ theme:
 
 nav:
   - Home: README.md
-  
+
   - Strategy:
-    - Overview: strategy/index.md
-    # Add strategy docs as they're created
-    
+    - Overview: strategy/README.md
+
+  - Specs:
+    - Overview: specs/README.md
+
   - Architecture:
-    - Overview: architecture/index.md
-    # Add architecture docs as they're created
-    
+    - Overview: architecture/README.md
+    - ADRs: architecture/adr/README.md
+    - HLD: architecture/hld/README.md
+    - Diagrams: architecture/diagrams/README.md
+    - Concepts: architecture/concepts/README.md
+    - Guides: architecture/guides/README.md
+
   - Delivery:
-    - Overview: delivery/index.md
-    # Add delivery docs as they're created
-    
+    - Overview: delivery/README.md
+
   - Operations:
-    - Overview: operations/index.md
-    # Add operations docs as they're created
-    
+    - Overview: operations/README.md
+
   - Governance:
-    - Overview: governance/index.md
-    # Add governance docs as they're created
+    - Overview: governance/README.md
 
 plugins:
   - search:

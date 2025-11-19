@@ -7,6 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { SpecSyncManager } from '../../src/core/increment/spec-sync-manager.js';
+import { silentLogger } from '../../src/utils/logger.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -22,7 +23,7 @@ describe('SpecSyncManager', () => {
     incrementsDir = path.join(testDir, '.specweave', 'increments');
     fs.mkdirSync(incrementsDir, { recursive: true });
 
-    manager = new SpecSyncManager(testDir);
+    manager = new SpecSyncManager(testDir, { logger: silentLogger });
   });
 
   afterEach(() => {
