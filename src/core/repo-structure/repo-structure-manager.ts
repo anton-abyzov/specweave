@@ -120,35 +120,23 @@ export class RepoStructureManager {
     switch (mappedArch) {
       case 'single':
         return this.configureSingleRepo();
-      case 'multi-repo':
       case 'parent':
-        // Pass whether to create GitHub repo for parent
-        return this.configureMultiRepo(
-          architecture === 'multi-with-parent' || architecture === 'local-parent',
-          architecture === 'local-parent' // isLocalParent flag
-        );
-      case 'monorepo':
-        return this.configureMonorepo();
+        // Always use local parent (isLocalParent = true)
+        return this.configureMultiRepo(true, true);
       default:
         throw new Error(`Unknown architecture: ${architecture}`);
     }
   }
 
   /**
-   * Map ArchitectureChoice to internal RepoArchitecture
+   * Map ArchitectureChoice to internal RepoArchitecture (simplified to 2 options)
    */
   private mapArchitectureChoice(choice: ArchitectureChoice): RepoArchitecture {
     switch (choice) {
       case 'single':
         return 'single';
-      case 'multi-with-parent':
-        return 'parent';
       case 'local-parent':
-        return 'parent'; // Same as parent, but won't create GitHub repo
-      case 'multi-without-parent':
-        return 'multi-repo';
-      case 'monorepo':
-        return 'monorepo';
+        return 'parent'; // Local parent folder (NOT pushed to GitHub)
       default:
         return 'single';
     }

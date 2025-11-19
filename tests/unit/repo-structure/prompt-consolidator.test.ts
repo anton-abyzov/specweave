@@ -16,22 +16,19 @@ import {
 } from '../../../src/core/repo-structure/prompt-consolidator.js';
 
 describe('getArchitecturePrompt', () => {
-  it('should return question with 5 architecture options', () => {
+  it('should return question with 2 architecture options (GitHub-only)', () => {
     // Given: No input
     // When: getArchitecturePrompt is called
     const result = getArchitecturePrompt();
 
-    // Then: Returns question + 5 options
+    // Then: Returns question + 2 options (simplified for GitHub)
     expect(result.question).toBeDefined();
     expect(result.question).toContain('architecture');
-    expect(result.options).toHaveLength(5);
+    expect(result.options).toHaveLength(2);
 
     const values = result.options.map((c: any) => c.value);
     expect(values).toContain('single');
-    expect(values).toContain('multi-with-parent');
     expect(values).toContain('local-parent');
-    expect(values).toContain('multi-without-parent');
-    expect(values).toContain('monorepo');
   });
 
   it('should have complete option structure for each choice', () => {
@@ -142,8 +139,8 @@ describe('getVisibilityPrompt', () => {
 
 describe('formatArchitectureChoice', () => {
   it('should format each ArchitectureChoice to human-readable string', () => {
-    // Given: Each ArchitectureChoice value
-    const choices = ['single', 'multi-with-parent', 'multi-without-parent', 'monorepo'];
+    // Given: Each ArchitectureChoice value (simplified to 2 options)
+    const choices = ['single', 'local-parent'];
 
     // When: formatArchitectureChoice is called for each
     choices.forEach(choice => {
