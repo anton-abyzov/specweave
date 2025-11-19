@@ -2,9 +2,9 @@
 id: US-002
 feature: FS-043
 title: "spec.md and metadata.json Stay in Sync (Priority: P1 - CRITICAL)"
-status: planning
+status: completed
 priority: P1
-created: 2025-11-18
+created: 2025-11-18T00:00:00.000Z
 ---
 
 # US-002: spec.md and metadata.json Stay in Sync (Priority: P1 - CRITICAL)
@@ -19,7 +19,10 @@ created: 2025-11-18
 
 ## Acceptance Criteria
 
-No acceptance criteria defined.
+- [x] **AC-US2-01**: `MetadataManager.updateStatus()` updates both metadata.json AND spec.md frontmatter
+- [x] **AC-US2-02**: Sync validation detects desyncs and warns user
+- [x] **AC-US2-03**: All status transitions (active→paused, active→completed, etc.) update spec.md
+- [x] **AC-US2-04**: spec.md status field matches IncrementStatus enum values exactly
 
 ---
 
@@ -32,14 +35,14 @@ No acceptance criteria defined.
 
 ## Tasks
 
-- [ ] **T-001**: Create SpecFrontmatterUpdater Class Foundation
-- [ ] **T-002**: Implement updateStatus() with Atomic Write
-- [ ] **T-003**: Implement readStatus() Method
-- [ ] **T-004**: Implement validate() Method
-- [ ] **T-005**: Add spec.md Sync to MetadataManager.updateStatus()
-- [ ] **T-006**: Implement Rollback on spec.md Update Failure
-- [ ] **T-007**: Test All Status Transitions Update spec.md
-- [ ] **T-015**: Test /specweave:pause and /specweave:resume Update spec.md
+- [x] **T-001**: Create SpecFrontmatterUpdater Class Foundation
+- [x] **T-002**: Implement updateStatus() with Atomic Write
+- [x] **T-003**: Implement readStatus() Method
+- [x] **T-004**: Implement validate() Method
+- [x] **T-005**: Add spec.md Sync to MetadataManager.updateStatus()
+- [x] **T-006**: Implement Rollback on spec.md Update Failure
+- [x] **T-007**: Test All Status Transitions Update spec.md
+- [x] **T-015**: Test /specweave:pause and /specweave:resume Update spec.md
 - [ ] **T-018**: Create ADR-0043 (Spec Frontmatter Sync Strategy)
 - [ ] **T-019**: Update CHANGELOG.md
 - [ ] **T-020**: Write E2E Test (Full Increment Lifecycle)

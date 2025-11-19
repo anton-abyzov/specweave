@@ -8,6 +8,12 @@ import inquirer from 'inquirer';
 import { ProjectManager } from '../../core/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { listProjects } from './init-multiproject.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI switch-project command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (project switching status, confirmations, errors).
+// Logger infrastructure available for future internal debug logs if needed.
 
 export async function switchProject(
   projectRoot: string,

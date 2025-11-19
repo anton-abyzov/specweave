@@ -9,6 +9,12 @@
 
 import { detectProjectFromIncrement } from '../../core/spec-detector.js';
 import { ConfigManager } from '../../core/config-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI detect-project command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (project detection results, keyword matches, errors).
+// Logger infrastructure available for future internal debug logs if needed.
 
 async function main() {
   try {

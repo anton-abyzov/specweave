@@ -1,6 +1,12 @@
 import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI WIP limit command is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (status messages, configuration updates, warnings).
+// Logger infrastructure available for future internal debug logs if needed.
 
 /**
  * Revert WIP limit to original value after temporary adjustment

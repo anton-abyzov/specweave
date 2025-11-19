@@ -4,7 +4,7 @@ title: "Sync All Increments by Default - SpecWeave Implementation"
 feature: FS-045
 project: specweave
 type: feature-context
-status: in-progress
+status: completed
 ---
 
 # Sync All Increments by Default

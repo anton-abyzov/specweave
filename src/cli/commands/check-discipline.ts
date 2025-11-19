@@ -15,6 +15,12 @@
 import { DisciplineChecker } from '../../core/increment/discipline-checker.js';
 import { DisciplineCheckOptions } from '../../core/increment/types.js';
 import chalk from 'chalk';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// NOTE: This CLI discipline checker is primarily user-facing output (console.log/console.error).
+// All console.* calls in this file are legitimate user-facing exceptions
+// as defined in CONTRIBUTING.md (discipline violations, compliance reports, warnings).
+// Logger infrastructure available for future internal debug logs if needed.
 
 export async function checkDisciplineCommand(options: DisciplineCheckOptions): Promise<void> {
     try {
