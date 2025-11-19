@@ -4,7 +4,7 @@ title: "Console.* Elimination - Phase 2: CLI Commands - SpecWeave Implementation
 feature: FS-046
 project: specweave
 type: feature-context
-status: in-progress
+status: completed
 ---
 
 # Console.* Elimination - Phase 2: CLI Commands

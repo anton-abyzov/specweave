@@ -264,7 +264,7 @@ STEP 3: Invoke PM Agent (🚨 MANDATORY - USE TASK TOOL)
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
 Task(
-  subagent_type: "pm",
+  subagent_type: "specweave:pm:pm",
   description: "PM product strategy",
   prompt: "Create product strategy for: [user feature description]
 
@@ -317,7 +317,7 @@ STEP 4: Invoke Architect Agent (🚨 MANDATORY - USE TASK TOOL)
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
 Task(
-  subagent_type: "architect",
+  subagent_type: "specweave:architect:architect",
   description: "Architect technical design",
   prompt: "Create technical architecture for: [user feature description]
 

@@ -194,7 +194,7 @@ Agents are invoked explicitly via Task tool:
 
 ```typescript
 await Task({
-  subagent_type: "pm",
+  subagent_type: "specweave:pm:pm",
   prompt: "Create product requirements for user authentication",
   description: "Product requirements analysis"
 });

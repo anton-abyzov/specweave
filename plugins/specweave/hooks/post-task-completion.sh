@@ -204,7 +204,11 @@ if command -v node &> /dev/null; then
 
     # Determine which sync script to use (project local or global)
     SYNC_SCRIPT=""
-    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
+      # Development: Use in-place compiled hooks (esbuild, not tsc)
+      SYNC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"
+      echo "[$(date)]   Using in-place compiled hook: $SYNC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
       # Development: Use project's compiled files (has node_modules)
       SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
       echo "[$(date)]   Using local dist: $SYNC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -243,7 +247,11 @@ if command -v node &> /dev/null; then
 
     # Determine which AC update script to use (project local or global)
     UPDATE_AC_SCRIPT=""
-    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
+    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
+      # Development: Use in-place compiled hooks (esbuild, not tsc)
+      UPDATE_AC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/update-ac-status.js"
+      echo "[$(date)]   Using in-place compiled hook: $UPDATE_AC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
       # Development: Use project's compiled files (has node_modules)
       UPDATE_AC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js"
       echo "[$(date)]   Using local dist: $UPDATE_AC_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -278,7 +286,11 @@ if command -v node &> /dev/null; then
 
     # Determine which translation script to use (project local or global)
     TRANSLATE_SCRIPT=""
-    if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
+    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
+      # Development: Use in-place compiled hooks (esbuild, not tsc)
+      TRANSLATE_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/translate-living-docs.js"
+      echo "[$(date)]   Using in-place compiled hook: $TRANSLATE_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
       # Development: Use project's compiled files (has node_modules)
       TRANSLATE_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js"
       echo "[$(date)]   Using local dist: $TRANSLATE_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -337,7 +349,11 @@ if command -v node &> /dev/null; then
     if [ -n "$LATEST_TASK" ]; then
       # Determine which reflection script to use (project local or global)
       REFLECTION_SCRIPT=""
-      if [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
+      if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
+        # Development: Use in-place compiled hooks (esbuild, not tsc)
+        REFLECTION_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/prepare-reflection-context.js"
+        echo "[$(date)]   Using in-place compiled hook: $REFLECTION_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true
+      elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
         # Development: Use project's compiled files (has node_modules)
         REFLECTION_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js"
         echo "[$(date)]   Using local dist: $REFLECTION_SCRIPT" >> "$DEBUG_LOG" 2>/dev/null || true

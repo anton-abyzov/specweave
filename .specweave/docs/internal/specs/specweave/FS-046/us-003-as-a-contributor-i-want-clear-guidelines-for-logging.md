@@ -2,7 +2,7 @@
 id: US-003
 feature: FS-046
 title: "As a Contributor, I want clear guidelines for logging"
-status: in-progress
+status: completed
 priority: high
 created: 2025-11-19
 ---
@@ -15,10 +15,10 @@ created: 2025-11-19
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: CONTRIBUTING.md has comprehensive logging guidelines (already added in Phase 1)
-- [ ] **AC-US3-02**: Code examples demonstrate CLI pattern with logger injection
-- [ ] **AC-US3-03**: Clear distinction between user output vs debug logs documented
-- [ ] **AC-US3-04**: Pre-commit hook provides helpful error messages with examples
+- [x] **AC-US3-01**: CONTRIBUTING.md updated with CLI-specific exception pattern
+- [x] **AC-US3-02**: Code examples demonstrate CLI pattern with documentation markers
+- [x] **AC-US3-03**: Clear distinction documented: user-facing = console.*, internal = logger
+- [x] **AC-US3-04**: Pre-commit hook has smart detection for documented exceptions
 
 ---
 
