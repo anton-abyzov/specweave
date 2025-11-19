@@ -91,8 +91,26 @@ fi
 
 # Method 3: Find Epic folder by matching increment ID
 if [ -z "$EPIC_ID" ]; then
-  # Search for Epic folder that contains this increment
-  EPIC_FOLDER_TEMP=$(find .specweave/docs/internal/specs/default -type d -name "FS-*" | while read folder; do
+  # Detect active project from config (v0.23.0+, Increment 0047)
+  PROJECT_ID="default"
+  if [ -f ".specweave/config.json" ]; then
+    if command -v jq >/dev/null 2>&1; then
+      ACTIVE_PROJECT=$(jq -r '.multiProject.activeProject // .project.name // "default"' ".specweave/config.json" 2>/dev/null)
+      if [ -n "$ACTIVE_PROJECT" ] && [ "$ACTIVE_PROJECT" != "null" ]; then
+        PROJECT_ID="$ACTIVE_PROJECT"
+      fi
+    fi
+  fi
+  log_debug "Using project: $PROJECT_ID (from config)"
+
+  # Search for Epic folder that contains this increment (use active project)
+  SPECS_DIR=".specweave/docs/internal/specs/$PROJECT_ID"
+  if [ ! -d "$SPECS_DIR" ]; then
+    log_debug "⚠️  Specs directory not found: $SPECS_DIR (falling back to default)"
+    SPECS_DIR=".specweave/docs/internal/specs/default"
+  fi
+
+  EPIC_FOLDER_TEMP=$(find "$SPECS_DIR" -type d -name "FS-*" | while read folder; do
     if [ -f "$folder/FEATURE.md" ]; then
       # Check if FEATURE.md mentions this increment ID
       if grep -q "$INCREMENT_ID" "$folder/FEATURE.md" 2>/dev/null; then
@@ -129,13 +147,44 @@ fi
 
 log_debug "Detected Epic ID: $EPIC_ID"
 
-# Find Epic folder
-EPIC_FOLDER=$(find .specweave/docs/internal/specs/default -type d -name "${EPIC_ID}*" | head -1)
+# Find Epic folder (use active project from config, v0.23.0+, Increment 0047)
+PROJECT_ID="default"
+if [ -f ".specweave/config.json" ]; then
+  if command -v jq >/dev/null 2>&1; then
+    ACTIVE_PROJECT=$(jq -r '.multiProject.activeProject // .project.name // "default"' ".specweave/config.json" 2>/dev/null)
+    if [ -n "$ACTIVE_PROJECT" ] && [ "$ACTIVE_PROJECT" != "null" ]; then
+      PROJECT_ID="$ACTIVE_PROJECT"
+    fi
+  fi
+fi
+log_debug "Using project: $PROJECT_ID (from config)"
 
-if [ -z "$EPIC_FOLDER" ] || [ ! -f "$EPIC_FOLDER/FEATURE.md" ]; then
-  log_info "⚠️  Epic folder not found for $EPIC_ID, skipping"
-  log_info "   Run /specweave:sync-docs to create Epic folder first"
-  exit 2
+# NEW (v0.23.0+): Look in _features folder for FEATURE.md (feature registry)
+# The structure is:
+#   .specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md (registry)
+#   .specweave/docs/internal/specs/{project}/FS-XXX/README.md + US files (implementation)
+FEATURES_DIR=".specweave/docs/internal/specs/_features"
+EPIC_FOLDER_FEATURES=$(find "$FEATURES_DIR" -type d -name "${EPIC_ID}*" | head -1)
+
+if [ -n "$EPIC_FOLDER_FEATURES" ] && [ -f "$EPIC_FOLDER_FEATURES/FEATURE.md" ]; then
+  # Found in features registry
+  EPIC_FOLDER="$EPIC_FOLDER_FEATURES"
+  log_debug "Found Epic folder in features registry: $EPIC_FOLDER"
+else
+  # Fallback: Look in project-specific specs folder (legacy structure)
+  SPECS_DIR=".specweave/docs/internal/specs/$PROJECT_ID"
+  if [ ! -d "$SPECS_DIR" ]; then
+    log_debug "⚠️  Specs directory not found: $SPECS_DIR (falling back to default)"
+    SPECS_DIR=".specweave/docs/internal/specs/default"
+  fi
+
+  EPIC_FOLDER=$(find "$SPECS_DIR" -type d -name "${EPIC_ID}*" | head -1)
+
+  if [ -z "$EPIC_FOLDER" ] || [ ! -f "$EPIC_FOLDER/FEATURE.md" ]; then
+    log_info "⚠️  Epic folder not found for $EPIC_ID, skipping"
+    log_info "   Run /specweave:sync-docs to create Epic folder first"
+    exit 2
+  fi
 fi
 
 log_debug "Found Epic folder: $EPIC_FOLDER"

@@ -357,7 +357,71 @@ export async function myCommand(options: CommandOptions = {}) {
 
 **Note**: Most standards are enforced by ESLint/Prettier. This list focuses on SpecWeave-specific rules and patterns that can't be auto-fixed by linters.
 
-### 10. Task Format with US-Task Linkage (v0.23.0+)
+### 10. GitHub Issue Format Policy (v0.24.0+)
+
+**CRITICAL**: ALL GitHub issues MUST use User Story-level format.
+
+**ONLY Correct Format**:
+```
+[FS-XXX][US-YYY] User Story Title
+```
+
+**Examples**:
+- ✅ `[FS-043][US-001] Status Line Shows Correct Active Increment`
+- ✅ `[FS-047][US-002] AC-Task Mapping`
+
+**Incorrect Formats** (NEVER use):
+- ❌ `[FS-047]` (Feature-only, missing US-ID)
+- ❌ `[SP-US-006]` (SP prefix, missing Feature ID)
+- ❌ `[SP-FS-047-specweave]` (SP prefix, project name)
+- ❌ `[INC-0047]` (Increment-only)
+
+**How to Create Issues**:
+```bash
+# CORRECT way (creates [FS-XXX][US-YYY] issues)
+node -e "
+const { GitHubFeatureSync } = require('./dist/plugins/specweave-github/lib/github-feature-sync.js');
+const { GitHubClientV2 } = require('./dist/plugins/specweave-github/lib/github-client-v2.js');
+
+const client = GitHubClientV2.fromRepo('anton-abyzov', 'specweave');
+const sync = new GitHubFeatureSync(client, '.specweave/docs/internal/specs', process.cwd());
+sync.syncFeatureToGitHub('FS-047').then(console.log).catch(console.error);
+"
+
+# WRONG way (deprecated, creates [FS-XXX] issues)
+/specweave:increment "feature"  # ← This no longer creates GitHub issues
+```
+
+**Why This Matters**:
+- **Features** are tracked via GitHub **Milestones** (not Issues)
+- **User Stories** are tracked via GitHub **Issues**
+- **Tasks** are tracked as **checkboxes** in User Story issue body
+
+**Architecture**:
+```
+Feature (FS-047)
+  ↓ GitHub Milestone #13
+  ├─ User Story (US-001) → GitHub Issue #638: [FS-047][US-001] Title
+  ├─ User Story (US-002) → GitHub Issue #639: [FS-047][US-002] Title
+  └─ User Story (US-003) → GitHub Issue #640: [FS-047][US-003] Title
+```
+
+**Deprecated Mechanisms**:
+- ❌ `post-increment-planning.sh` hook (disabled by default)
+- ❌ `update-epic-github-issue.sh` script (deprecated)
+- ❌ `generate-epic-issue-body.ts` script (deprecated)
+
+These created Feature-only issues with format `[FS-XXX]` which is INCORRECT.
+
+**Hooks Disabled**:
+- Increment-level GitHub sync in `post-increment-planning.sh` (disabled unless `SPECWEAVE_ENABLE_INCREMENT_GITHUB_SYNC=true`)
+- Epic sync in `post-task-completion.sh` (disabled unless `SPECWEAVE_ENABLE_EPIC_SYNC=true`)
+
+**See Also**:
+- `.specweave/increments/0047-us-task-linkage/reports/GITHUB-TITLE-FORMAT-FIX-PLAN.md`
+- `plugins/specweave-github/lib/user-story-issue-builder.ts:94`
+
+### 11. Task Format with US-Task Linkage (v0.23.0+)
 
 **CRITICAL**: ALL tasks MUST include User Story linkage fields for proper traceability.
 

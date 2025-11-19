@@ -1,14 +1,21 @@
 ---
 id: FS-047
-title: "US-Task Linkage Architecture"
+title: US-Task Linkage Architecture
 type: feature
-status: planned
+status: active
 priority: P0
 created: 2025-11-19
 lastUpdated: 2025-11-19
+external_tools:
+  github:
+    type: milestone
+    id: 13
+    url: https://github.com/anton-abyzov/specweave/milestone/13
 ---
 
 # US-Task Linkage Architecture
+
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/628
 
 ## Overview
 
@@ -18,7 +25,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md) | ⏳ planned | 2025-11-19 |
+| [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md) | ⏳ active | 2025-11-19 |
 
 ## User Stories
 

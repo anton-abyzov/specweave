@@ -1,13 +1,19 @@
 ---
 id: US-001
 feature: FS-047
-title: "Explicit US-Task Linkage in tasks.md"
-status: planned
+title: Explicit US-Task Linkage in tasks.md
+status: active
 priority: P0
 created: 2025-11-19
+external:
+  github:
+    issue: 638
+    url: https://github.com/anton-abyzov/specweave/issues/638
 ---
 
 # US-001: Explicit US-Task Linkage in tasks.md
+
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/630
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
