@@ -21,15 +21,15 @@ import matter from 'gray-matter';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Increment Status Sync - Integration Tests', () => {
   let testRoot: string;
-  let originalCwd: string;
 
   beforeEach(async () => {
-    // Save original cwd
-    originalCwd = process.cwd();
-
     // Create isolated test directory
     testRoot = path.join(os.tmpdir(), `status-sync-test-${Date.now()}`);
     await fs.ensureDir(testRoot);
@@ -44,7 +44,8 @@ describe('Increment Status Sync - Integration Tests', () => {
 
   afterEach(async () => {
     // Restore original cwd
-    process.chdir(originalCwd);
+    // ✅ SAFE: projectRoot is determined from test file location
+    process.chdir(projectRoot);
 
     // Cleanup test directory
     await fs.remove(testRoot);

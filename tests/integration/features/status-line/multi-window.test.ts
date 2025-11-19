@@ -7,10 +7,15 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { StatusLineManager } from '../../src/core/status-line/status-line-manager.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
+import { findProjectRoot } from '../../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Multi-Window Status Line', () => {
   let tempDir: string;
@@ -244,7 +249,7 @@ total_tasks: 5
 
   describe('Scenario 7: Lazy Metadata Initialization', () => {
     it('should show status line after lazy metadata initialization', () => {
-      const { MetadataManager } = require('../../../src/core/increment/metadata-manager.js');
+      // Use MetadataManager from imports (no require needed)
 
       // Remove active increment state (simulate fresh increment without metadata)
       const stateFile = path.join(tempDir, '.specweave/state/active-increment.json');
@@ -255,7 +260,6 @@ total_tasks: 5
 
       // Read increment (triggers lazy initialization with ActiveIncrementManager update)
       // Change working directory to tempDir so MetadataManager can find the increment
-      const originalCwd = process.cwd();
       process.chdir(tempDir);
 
       try {
@@ -277,8 +281,8 @@ total_tasks: 5
         expect(result).toContain('test-increment');
         expect(result).toContain('0/5'); // Initial progress
       } finally {
-        // Restore working directory
-        process.chdir(originalCwd);
+        // Restore working directory to project root
+        process.chdir(projectRoot);
       }
     });
   });

@@ -19,6 +19,10 @@ import { LivingDocsSync } from '../../../src/core/living-docs/living-docs-sync.j
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('sync-docs Integration (Living Specs + Strategic Docs)', () => {
   let testRoot: string;
@@ -252,8 +256,9 @@ status: active
     // Verify the sync-docs.md command file contains the sync-specs call
     // ================================================================
 
+    // ✅ SAFE: projectRoot is determined from test file location
     const syncDocsCommandPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/commands/specweave-sync-docs.md'
     );
 
