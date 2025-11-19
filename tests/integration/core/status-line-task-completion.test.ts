@@ -23,8 +23,12 @@ import * as path from 'path';
 import * as os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { findProjectRoot } from '../../test-utils/project-root.js';
 
 const execAsync = promisify(exec);
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Status Line Updates After Task Completion', () => {
   let testRoot: string;
@@ -80,8 +84,9 @@ created: 2025-11-18
     await fs.writeFile(path.join(incrementDir, 'tasks.md'), tasksContent);
 
     // Step 2: Run update-status-line.sh (simulates hook)
+    // ✅ SAFE: projectRoot is determined from test file location
     const updateScriptPath = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/hooks/lib/update-status-line.sh'
     );
 

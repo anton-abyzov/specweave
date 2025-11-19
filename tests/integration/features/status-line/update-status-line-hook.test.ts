@@ -14,6 +14,10 @@ import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
 import { StatusLineCache } from '../../src/core/status-line/types.js';
+import { findProjectRoot } from '../../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('update-status-line.sh hook', () => {
   let tempDir: string;
@@ -29,13 +33,15 @@ describe('update-status-line.sh hook', () => {
 
     // Create symlink to dist/ so hook can find count-tasks CLI
     // Hook looks for: PROJECT_ROOT/dist/src/cli/count-tasks.js
-    const sourceDistPath = path.join(process.cwd(), 'dist');
+    // ✅ SAFE: projectRoot is determined from test file location
+    const sourceDistPath = path.join(projectRoot, 'dist');
     const targetDistPath = path.join(tempDir, 'dist');
     fs.symlinkSync(sourceDistPath, targetDistPath, 'dir');
 
     // Path to hook script (from project root)
+    // ✅ SAFE: projectRoot is determined from test file location
     hookScript = path.join(
-      process.cwd(),
+      projectRoot,
       'plugins/specweave/hooks/lib/update-status-line.sh'
     );
   });
