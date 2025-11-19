@@ -6,6 +6,25 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [Unreleased]
 
+---
+
+## [0.22.4] - 2025-11-19
+
+### Added
+
+- **Code Standards Infrastructure** - New tools for analyzing and enforcing coding standards
+  - New agent: `code-standards-detective` for codebase analysis
+  - New skill: `code-standards-analyzer` for standards guidance
+  - New command: `/specweave:analyze-standards` for generating comprehensive standards reports
+  - Pre-commit console check script for catching `console.*` usage
+  - Template for coding-standards.md generation
+
+- **Test Infrastructure** - Enhanced testing utilities and integration tests
+  - New test utilities: hook-test-harness, increment-factory, spec-validator
+  - Integration tests for CLI repair workflow, done command, hooks
+  - Performance benchmark for status updates
+  - Enhanced test coverage for sync-specs command
+
 ### Changed
 
 - **Living Docs Sync** - `/specweave:sync-docs` now syncs ALL increments by default instead of just the latest completed increment
@@ -15,9 +34,23 @@ All notable changes to SpecWeave will be documented in this file.
   - Excludes `_archive` and other non-increment directories automatically
   - All tests passing with updated integration test suite
 
-**Increment**: 0045-living-docs-external-sync
-**What Changed**: Default behavior of sync-docs command (enhanced, not breaking)
-**Migration**: No action needed - existing workflows continue to work
+- **CLAUDE.md Critical Updates** - Strengthened development guidelines
+  - Added mandatory source-of-truth workflow (tasks.md/spec.md sync)
+  - Documented incident post-mortem (0044 desync violation)
+  - Enhanced increment folder structure rules (4 files max in root)
+  - Added console elimination guidelines (Rule #8)
+  - Expanded coding standards with auto-discovery information
+
+### Documentation
+
+- Living docs for FS-045 (sync all increments feature)
+- Completion/validation reports for increments 0044, 0045
+- Incident report for source-of-truth violation
+- Updated mkdocs-internal.yml with new architecture docs
+
+**Increment**: 0045-living-docs-external-sync, 0044 updates, 0046 planning
+**What Changed**: Enhanced sync behavior, strengthened development practices, new code standards tools
+**Migration**: No action needed - all changes are backward compatible
 
 ---
 
