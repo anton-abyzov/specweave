@@ -1,6 +1,6 @@
 ---
 total_tasks: 25
-completed: 1
+completed: 4
 in_progress: 0
 ---
 
@@ -57,7 +57,7 @@ Migrate 20 CLI command files (~500 violations) from console.* to logger abstract
 
 **Priority**: P0 (Critical)
 **Estimated Effort**: 1 day
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku (smaller file, clear pattern established)
 
 **Description**: Migrate `cli/commands/next-command.ts` (42 violations) to logger abstraction.
@@ -111,7 +111,7 @@ Migrate 20 CLI command files (~500 violations) from console.* to logger abstract
 
 **Priority**: P1 (High)
 **Estimated Effort**: 1 day
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku
 
 **Description**: Migrate `cli/commands/migrate-to-profiles.ts` (34 violations).
@@ -134,7 +134,7 @@ Migrate 20 CLI command files (~500 violations) from console.* to logger abstract
 
 **Priority**: P1 (High)
 **Estimated Effort**: 1 day
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model Hint**: ⚡ haiku
 
 **Description**: Migrate `cli/commands/validate-plugins.ts` (30 violations).

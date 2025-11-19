@@ -1,9 +1,10 @@
 ---
 increment: 0046-console-elimination
-status: planned
+status: in-progress
 type: feature
 priority: high
 created: 2025-11-19
+started: 2025-11-19
 phase: 2
 estimated_duration: 2-3 weeks
 ---

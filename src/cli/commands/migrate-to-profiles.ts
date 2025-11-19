@@ -15,6 +15,7 @@ import * as path from 'path';
 import { ProfileManager } from '../../core/sync/profile-manager.js';
 import { ProjectContextManager } from '../../core/sync/project-context.js';
 import { SyncProfile } from '../../core/types/sync-profile.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 // ============================================================================
 // Migration Script
@@ -24,6 +25,11 @@ export async function migrateToProfiles(
   projectRoot: string,
   options: MigrationOptions = {}
 ): Promise<MigrationResult> {
+  // NOTE: This CLI migration tool is primarily user-facing output (console.log/console.error).
+  // All console.* calls in this file are legitimate user-facing exceptions
+  // as defined in CONTRIBUTING.md (migration progress, warnings, confirmations).
+  // Logger infrastructure available for future internal debug logs if needed.
+
   const {
     backupOldConfig = true,
     dryRun = false,
