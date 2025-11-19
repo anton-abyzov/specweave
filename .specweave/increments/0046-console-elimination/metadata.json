@@ -1,7 +1,11 @@
 {
   "id": "0046-console-elimination",
-  "status": "planning",
+  "status": "in-progress",
   "type": "feature",
+  "priority": "high",
+  "phase": 2,
   "created": "2025-11-19T07:50:52.733Z",
-  "lastActivity": "2025-11-19T07:50:52.733Z"
+  "started": "2025-11-19T09:00:00.000Z",
+  "lastActivity": "2025-11-19T09:15:00.000Z",
+  "estimatedDuration": "2-3 weeks"
 }

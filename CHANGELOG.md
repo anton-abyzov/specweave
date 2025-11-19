@@ -8,6 +8,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.22.5] - 2025-11-19
+
+### Fixed
+
+- **Plugin Installation Race Condition** - Fixed `specweave init` failing to install ~40% of plugins (10/25)
+  - Removed unnecessary marketplace removal that caused cache invalidation
+  - Added 2-second initialization delay for marketplace cache to settle
+  - Added retry logic with exponential backoff for edge cases
+  - Expected improvement: 60% → 100% success rate
+  - Affects: Fresh installations, CI/CD environments, new users
+  - Details: `.specweave/increments/0046-console-elimination/reports/init-plugin-race-condition-fix.md`
+
+---
+
 ## [0.22.4] - 2025-11-19
 
 ### Added

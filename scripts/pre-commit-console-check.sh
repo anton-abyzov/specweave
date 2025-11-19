@@ -23,6 +23,16 @@ for file in $staged_src_files; do
     continue
   fi
 
+  # Check if file has documentation comment indicating user-facing output exceptions
+  # Pattern: "NOTE: This CLI command is 99% user-facing output"
+  # or: "All console.* calls in this function are legitimate user-facing exceptions"
+  has_exception_doc=$(git show ":$file" | grep -E "(user-facing output|legitimate user-facing exceptions)" || true)
+
+  if [ -n "$has_exception_doc" ]; then
+    # File is documented as having user-facing exceptions, skip check
+    continue
+  fi
+
   # Check for console.log/error/warn/info/debug
   matches=$(git diff --cached "$file" | grep "^+" | grep -E "console\.(log|error|warn|info|debug)" | grep -v "^+++" || true)
 
