@@ -1064,12 +1064,23 @@ export async function initCommand(
               if (fs.existsSync(marketplaceCachePath)) {
                 const cacheData = JSON.parse(fs.readFileSync(marketplaceCachePath, 'utf-8'));
 
-                // Verify it has plugins (not just an empty/invalid file)
+                // CRITICAL: Verify plugins array is FULLY populated with metadata
+                // Not just present, but each plugin has required fields (name, version, etc.)
                 if (cacheData.plugins && cacheData.plugins.length >= 25) {
-                  cacheReady = true;
-                  const waitedMs = Date.now() - startTime;
-                  console.log(chalk.gray(`   ⏱  Cache ready in ${Math.round(waitedMs / 1000)}s`));
-                  break;
+                  // Additional validation: check if plugins have required metadata
+                  const hasMetadata = cacheData.plugins.every((p: any) =>
+                    p.name && p.version && p.description
+                  );
+
+                  if (hasMetadata) {
+                    cacheReady = true;
+                    const waitedMs = Date.now() - startTime;
+                    console.log(chalk.gray(`   ⏱  Cache ready in ${Math.round(waitedMs / 1000)}s`));
+                    break;
+                  } else {
+                    // Plugins exist but metadata incomplete - keep waiting
+                    spinner.text = `Waiting for plugin metadata... (${Math.round((Date.now() - startTime) / 1000)}s)`;
+                  }
                 }
               }
             } catch (e) {
