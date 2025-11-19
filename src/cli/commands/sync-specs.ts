@@ -24,64 +24,85 @@ export async function syncSpecs(args: string[]): Promise<void> {
 
   const sync = new LivingDocsSync(projectRoot);
 
-  try {
-    if (parsedArgs.all) {
-      // Sync all completed increments
-      console.log('🔄 Syncing all completed increments...\n');
-      const increments = await findCompletedIncrements(projectRoot);
+  // Default to --all if no increment ID provided
+  const shouldSyncAll = parsedArgs.all || !parsedArgs.incrementId;
 
-      let successCount = 0;
-      let failCount = 0;
+  if (shouldSyncAll) {
+    // Sync all increments (not just completed)
+    console.log('🔄 Syncing all increments...\n');
 
-      for (const incrementId of increments) {
-        try {
-          const result = await sync.syncIncrement(incrementId, {
-            dryRun: parsedArgs.dryRun,
-            force: parsedArgs.force
-          });
+    let increments: string[];
+    try {
+      increments = await findAllSyncableIncrements(projectRoot);
+    } catch (error) {
+      console.error('❌ Failed to find increments:', error);
+      process.exit(1);
+      return; // For type safety (unreachable)
+    }
 
-          if (result.success) {
-            successCount++;
-          } else {
-            failCount++;
-            console.error(`   ❌ Failed: ${result.errors.join(', ')}`);
-          }
-        } catch (error) {
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const incrementId of increments) {
+      try {
+        const result = await sync.syncIncrement(incrementId, {
+          dryRun: parsedArgs.dryRun,
+          force: parsedArgs.force
+        });
+
+        if (result.success) {
+          successCount++;
+        } else {
           failCount++;
-          console.error(`   ❌ Failed to sync ${incrementId}:`, error);
+          console.error(`   ❌ Failed: ${result.errors.join(', ')}`);
         }
-      }
-
-      console.log(`\n✅ Sync complete: ${successCount} succeeded, ${failCount} failed`);
-
-    } else {
-      // Sync single increment
-      const incrementId = parsedArgs.incrementId || await findLatestCompletedIncrement(projectRoot);
-
-      if (!incrementId) {
-        console.error('❌ No increment specified and no completed increments found');
-        process.exit(1);
-      }
-
-      const result = await sync.syncIncrement(incrementId, {
-        dryRun: parsedArgs.dryRun,
-        force: parsedArgs.force
-      });
-
-      if (!result.success) {
-        console.error('❌ Sync failed:', result.errors.join(', '));
-        process.exit(1);
-      }
-
-      console.log('\n✅ Sync complete!');
-      if (parsedArgs.dryRun) {
-        console.log('   (Dry run - no files were actually created)');
+      } catch (error) {
+        failCount++;
+        console.error(`   ❌ Failed to sync ${incrementId}:`, error);
       }
     }
 
-  } catch (error) {
-    console.error('❌ Sync failed:', error);
-    process.exit(1);
+    console.log(`\n✅ Sync complete: ${successCount} succeeded, ${failCount} failed`);
+
+  } else {
+    // Sync single increment
+    let incrementId: string | null;
+    try {
+      incrementId = parsedArgs.incrementId || await findLatestCompletedIncrement(projectRoot);
+    } catch (error) {
+      console.error('❌ Failed to find latest increment:', error);
+      process.exit(1);
+      return; // For type safety (unreachable)
+    }
+
+    if (!incrementId) {
+      console.error('❌ No increment specified and no completed increments found');
+      process.exit(1);
+      return; // For type safety (unreachable)
+    }
+
+    let result;
+    try {
+      result = await sync.syncIncrement(incrementId, {
+        dryRun: parsedArgs.dryRun,
+        force: parsedArgs.force
+      });
+    } catch (error) {
+      console.error('❌ Sync failed with unexpected error:', error);
+      process.exit(1);
+      return; // For type safety (unreachable)
+    }
+
+    if (!result.success) {
+      console.error('❌ Sync failed:', result.errors.join(', '));
+      process.exit(1);
+      return; // For type safety (unreachable)
+    }
+
+    console.log('\n✅ Sync complete!');
+    if (parsedArgs.dryRun) {
+      console.log('   (Dry run - no files were actually created)');
+    }
   }
 }
 
@@ -107,6 +128,39 @@ function parseArgs(args: string[]): SyncSpecsArgs {
   }
 
   return parsed;
+}
+
+/**
+ * Find all syncable increments (with spec.md, regardless of status)
+ * Excludes non-increment directories like _archive, _backup, etc.
+ */
+async function findAllSyncableIncrements(projectRoot: string): Promise<string[]> {
+  const incrementsDir = path.join(projectRoot, '.specweave/increments');
+
+  if (!await fs.pathExists(incrementsDir)) {
+    return [];
+  }
+
+  const entries = await fs.readdir(incrementsDir);
+  const syncable: string[] = [];
+
+  for (const entry of entries) {
+    // Skip non-increment directories (_archive, _backup, etc.)
+    if (!entry.match(/^\d{4}-/)) {
+      continue;
+    }
+
+    // Require spec.md to exist
+    const specPath = path.join(incrementsDir, entry, 'spec.md');
+    if (!await fs.pathExists(specPath)) {
+      console.log(`   ⚠️  Skipping ${entry} (no spec.md)`);
+      continue;
+    }
+
+    syncable.push(entry);
+  }
+
+  return syncable.sort();
 }
 
 /**
