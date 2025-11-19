@@ -154,19 +154,17 @@ describe('sync-specs command', () => {
       mockExit.mockRestore();
     });
 
-    it('should exit with error if no completed increments and no ID provided', async () => {
-      const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('process.exit called');
-      });
+    it('should succeed with no increments found (empty result)', async () => {
+      // No increments created - should not fail, just return empty
 
-      try {
-        await syncSpecs([]);
-      } catch (error) {
-        // Expected to throw
-      }
+      // Mock console.log to capture output
+      const mockLog = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-      expect(mockExit).toHaveBeenCalledWith(1);
-      mockExit.mockRestore();
+      await syncSpecs([]);
+
+      // Should complete successfully with 0 synced
+      expect(mockLog).toHaveBeenCalledWith(expect.stringContaining('Sync complete: 0 succeeded'));
+      mockLog.mockRestore();
     });
   });
 
