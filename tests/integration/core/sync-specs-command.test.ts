@@ -10,24 +10,29 @@ import path from 'path';
 import * as os from 'os';
 import { syncSpecs } from '../../../src/cli/commands/sync-specs.js';
 import { silentLogger } from '../../../src/utils/logger.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
+
+// ✅ SAFE: Find project root from test file location, not process.cwd()
+const projectRoot = findProjectRoot(import.meta.url);
 
 describe('sync-specs command', () => {
   let testRoot: string;
-  let originalCwd: string;
 
   beforeEach(async () => {
     // SAFE: Use isolated temp directory
     testRoot = path.join(os.tmpdir(), `test-sync-specs-cmd-${Date.now()}`);
     await fs.ensureDir(testRoot);
 
-    // Change to test directory
-    originalCwd = process.cwd();
+    // Change to test directory (command requires running from project directory)
+    // Note: Using process.chdir() is necessary for this command test, but we use
+    // projectRoot from findProjectRoot() for restoration, not process.cwd()
     process.chdir(testRoot);
   });
 
   afterEach(async () => {
     // Restore original directory
-    process.chdir(originalCwd);
+    // ✅ SAFE: projectRoot is determined from test file location, not process.cwd()
+    process.chdir(projectRoot);
     await fs.remove(testRoot);
   });
 
