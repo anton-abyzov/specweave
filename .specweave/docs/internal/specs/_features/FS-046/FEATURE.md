@@ -2,7 +2,7 @@
 id: FS-046
 title: "Console.* Elimination - Phase 2: CLI Commands"
 type: feature
-status: in-progress
+status: completed
 priority: high
 created: 2025-11-19
 lastUpdated: 2025-11-19
@@ -18,7 +18,7 @@ Systematically eliminate all `console.*` violations from the SpecWeave codebase 
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0046-console-elimination](../../../../increments/0046-console-elimination/spec.md) | ⏳ in-progress | 2025-11-19 |
+| [0046-console-elimination](../../../../increments/0046-console-elimination/spec.md) | ✅ completed | 2025-11-19 |
 
 ## User Stories
 

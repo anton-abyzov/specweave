@@ -22,7 +22,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
-import { generateRepoId, ensureUniqueId, validateRepoId } from './repo-id-generator.js';
+import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId } from './repo-id-generator.js';
 import { SetupStateManager, SetupState, type SetupArchitecture, type ParentRepoConfig } from './setup-state-manager.js';
 import { validateRepository, validateOwner } from './github-validator.js';
 import { generateEnvFile, type EnvConfig, type RepoMapping } from '../../utils/env-file-generator.js';
@@ -121,20 +121,23 @@ export class RepoStructureManager {
       case 'single':
         return this.configureSingleRepo();
       case 'parent':
-        // Always use local parent (isLocalParent = true)
-        return this.configureMultiRepo(true, true);
+        // Determine if local parent or GitHub parent based on user choice
+        const isLocalParent = (architecture as ArchitectureChoice) === 'local-parent';
+        return this.configureMultiRepo(true, isLocalParent);
       default:
         throw new Error(`Unknown architecture: ${architecture}`);
     }
   }
 
   /**
-   * Map ArchitectureChoice to internal RepoArchitecture (simplified to 2 options)
+   * Map ArchitectureChoice to internal RepoArchitecture (3 options)
    */
   private mapArchitectureChoice(choice: ArchitectureChoice): RepoArchitecture {
     switch (choice) {
       case 'single':
         return 'single';
+      case 'github-parent':
+        return 'parent'; // GitHub parent repo (pushed to GitHub)
       case 'local-parent':
         return 'parent'; // Local parent folder (NOT pushed to GitHub)
       default:
@@ -281,6 +284,10 @@ export class RepoStructureManager {
    * Configure multi-repository architecture
    * @param useParent - Whether to use parent repository/folder
    * @param isLocalParent - If true, parent folder is local only (NOT pushed to GitHub)
+   *
+   * NOTE: This is primarily user-facing output (console.log/console.error).
+   * All console.* calls in this method are legitimate user-facing exceptions
+   * as defined in CONTRIBUTING.md (colored messages, confirmations, formatted output).
    */
   private async configureMultiRepo(useParent: boolean = true, isLocalParent: boolean = false): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n🎯 Multi-Repository Configuration\n'));
@@ -504,6 +511,7 @@ export class RepoStructureManager {
     console.log(chalk.cyan('\n📦 Configure Each Repository:\n'));
 
     const usedIds = new Set<string>();
+    const configuredRepoNames: string[] = []; // Track configured repo names for smart ID generation
 
     for (let i = 0; i < repoCount; i++) {
       console.log(chalk.white(`\nRepository ${i + 1} of ${repoCount}:`));
@@ -541,37 +549,55 @@ export class RepoStructureManager {
         }
       ]);
 
-      // Auto-generate ID from repository name
-      const baseId = generateRepoId(repoAnswers.name);
-      const { id: suggestedId, wasModified } = ensureUniqueId(baseId, usedIds);
+      // Smart auto-generate ID from repository name (context-aware)
+      const smartId = generateRepoIdSmart(repoAnswers.name, configuredRepoNames);
+      const { id: suggestedId, wasModified } = ensureUniqueId(smartId, usedIds);
 
-      // Show generated ID as editable default (AC-US2-02)
-      const idMessage = wasModified
-        ? `Repository ID (internal identifier): ${chalk.yellow(`(auto-generated from "${baseId}", made unique)`)}`
-        : `Repository ID (internal identifier): ${chalk.gray('(auto-generated)')}`;
+      // Auto-assign ID (no prompt unless conflict detected)
+      let id = suggestedId;
 
-      const { id } = await inquirer.prompt([{
-        type: 'input',
-        name: 'id',
-        message: idMessage,
-        default: suggestedId,
-        validate: (input: string) => {
-          // Validate format
-          const validation = validateRepoId(input);
-          if (!validation.valid) {
-            return validation.error || 'Invalid repository ID';
-          }
+      // Only prompt if ID was modified due to conflict
+      if (wasModified) {
+        console.log(chalk.yellow(`   ⚠️  ID conflict detected: "${smartId}" already used`));
+        console.log(chalk.gray(`   → Suggested unique ID: "${suggestedId}"`));
 
-          // Validate uniqueness
-          if (input !== suggestedId && usedIds.has(input)) {
-            return 'Repository ID must be unique';
-          }
+        const { confirmId } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'confirmId',
+          message: `Use "${suggestedId}" as repository ID?`,
+          default: true
+        }]);
 
-          return true;
+        if (!confirmId) {
+          const { customId } = await inquirer.prompt([{
+            type: 'input',
+            name: 'customId',
+            message: 'Enter custom repository ID:',
+            default: suggestedId,
+            validate: (input: string) => {
+              // Validate format
+              const validation = validateRepoId(input);
+              if (!validation.valid) {
+                return validation.error || 'Invalid repository ID';
+              }
+
+              // Validate uniqueness
+              if (usedIds.has(input)) {
+                return 'Repository ID must be unique';
+              }
+
+              return true;
+            }
+          }]);
+          id = customId;
         }
-      }]);
+      } else {
+        // Show auto-generated ID (no prompt)
+        console.log(chalk.green(`   ✓ Repository ID: ${chalk.bold(id)} ${chalk.gray('(auto-generated)')}`));
+      }
 
       usedIds.add(id);
+      configuredRepoNames.push(repoAnswers.name);
 
       // Ask about visibility
       const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);

@@ -569,7 +569,7 @@ Manually invoke agents using Task tool:
 1. **Invoke PM Agent:**
    ```
    Task(
-     subagent_type: "pm",
+     subagent_type: "specweave:pm:pm",
      prompt: "Create product strategy for: [user description]
              Detect tech stack from: [detected tech info]
              Create living docs in .specweave/docs/internal/strategy/
@@ -581,7 +581,7 @@ Manually invoke agents using Task tool:
 2. **Invoke Architect Agent:**
    ```
    Task(
-     subagent_type: "architect",
+     subagent_type: "specweave:architect:architect",
      prompt: "Read PM's strategy docs from .specweave/docs/internal/strategy/
              Create technical architecture for: [user description]
              Tech stack: [detected tech stack]

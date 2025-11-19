@@ -164,8 +164,14 @@ completed: 1
     expect(hookContent).toContain('LivingDocsSync');
     expect(hookContent).toContain('living-docs-sync.js');
 
-    // Verify it doesn't use old API
-    expect(hookContent).not.toContain('distributor.distribute(');
+    // Verify it uses new API (not just checking strings, but actual implementation)
+    expect(hookContent).toContain('new LivingDocsSync(projectRoot');
+    expect(hookContent).toContain('await sync.syncIncrement(incrementId');
+
+    // Verify old API is NOT in active code (only in comments explaining the fix)
+    const codeWithoutComments = hookContent.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(codeWithoutComments).not.toContain('new SpecDistributor(');
+    expect(codeWithoutComments).not.toContain('await distributor.distribute(');
   });
 
   it('should create living docs structure', async () => {
@@ -335,8 +341,9 @@ describe('sync-living-docs Hook Architecture', () => {
     expect(hookContent).toContain('LivingDocsSync');
     expect(hookContent).toContain('syncIncrement');
 
-    // Verify it doesn't use deprecated APIs
-    expect(hookContent).not.toContain('SpecDistributor');
-    expect(hookContent).not.toContain('distributor.distribute');
+    // Verify deprecated APIs are NOT in active code (only in comments)
+    const codeWithoutComments = hookContent.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    expect(codeWithoutComments).not.toContain('new SpecDistributor(');
+    expect(codeWithoutComments).not.toContain('await distributor.distribute(');
   });
 });

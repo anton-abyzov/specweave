@@ -156,7 +156,7 @@ You manually execute the entire workflow!
 
 **Claude Code (automatic)**:
 ```typescript
-Task({ subagent_type: "pm", prompt: "create spec" })
+Task({ subagent_type: "specweave:pm:pm", prompt: "create spec" })
 → PM agent creates spec.md
 ```
 
