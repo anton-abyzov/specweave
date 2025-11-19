@@ -49,11 +49,11 @@ The codebase currently has **1,863 `console.*` violations** across 128 files (25
 **Description**: Migrate all CLI command files from `console.*` to logger abstraction to enable consistent logging, testability, and production debugging.
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: All CLI command files use logger injection pattern
-- [ ] **AC-US1-02**: Zero `console.*` calls in migrated CLI commands (except legitimate user output)
-- [ ] **AC-US1-03**: All CLI command tests use `silentLogger` to prevent output pollution
-- [ ] **AC-US1-04**: Pre-commit hook prevents new `console.*` violations
-- [ ] **AC-US1-05**: User-facing output quality unchanged or improved
+- [ ] **AC-US1-01**: All CLI command files use logger injection pattern (4/20 complete)
+- [ ] **AC-US1-02**: Zero `console.*` calls in migrated CLI commands (except legitimate user output) (4/20 complete)
+- [ ] **AC-US1-03**: All CLI command tests use `silentLogger` to prevent output pollution (N/A - tests validate user output)
+- [x] **AC-US1-04**: Pre-commit hook prevents new `console.*` violations
+- [x] **AC-US1-05**: User-facing output quality unchanged or improved
 
 **Files Affected**:
 - `cli/commands/init.ts` (246 violations) - Highest priority

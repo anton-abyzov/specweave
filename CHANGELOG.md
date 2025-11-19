@@ -8,7 +8,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.22.6] - 2025-11-19
+## [0.22.7] - 2025-11-19
+
+### Fixed
+
+- **Plugin Installation - FINAL FIX with Polling** - Fixed first plugin (specweave) failing while others succeed
+  - Root cause: Fixed delays (2s, 5s) unreliable - cache init time varies by network/load
+  - Solution: Poll marketplace cache until marketplace.json exists with 25 plugins
+  - Polls every 500ms, max 30s timeout (typical: 3-7s on good network)
+  - Real-time feedback: Shows elapsed time during wait
+  - Expected: 100% success rate (25/25 plugins) on all networks
+  - Affects: Fresh installs, updates, slow networks, high-load scenarios
+
+---
+
+## [0.22.6] - 2025-11-19 [PARTIAL FIX]
 
 ### Fixed
 

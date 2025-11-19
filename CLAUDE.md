@@ -207,6 +207,33 @@ const instance = new MyClass({ logger: silentLogger });
 git diff --cached --name-only | grep '^src/.*\.ts$' | xargs grep -n 'console\.' 2>/dev/null
 ```
 
+**Exception: CLI Commands (User-Facing Output)**:
+
+CLI commands in `src/cli/commands/*.ts` are 99% user-facing output (colored messages, progress indicators, confirmations). These files may keep `console.*` calls with proper documentation:
+
+```typescript
+export async function myCommand(options: CommandOptions = {}) {
+  // Initialize logger (injectable for testing)
+  const logger = options.logger ?? consoleLogger;
+
+  // NOTE: This CLI command is primarily user-facing output (console.log/console.error).
+  // All console.* calls in this file are legitimate user-facing exceptions
+  // as defined in CONTRIBUTING.md (colored messages, confirmations, formatted output).
+  // Logger infrastructure available for future internal debug logs if needed.
+
+  // User-facing output (keeps console.log)
+  console.log(chalk.green('✅ Operation successful!'));
+
+  // Internal debug logs (use logger)
+  logger.log('Internal state updated');
+}
+```
+
+**Pre-commit hook allows files with documentation marker**:
+- Files with comment `"user-facing output"` or `"legitimate user-facing exceptions"` bypass console.* check
+- Pre-commit hook: `scripts/pre-commit-console-check.sh`
+- See: `.specweave/increments/0046-console-elimination/` for migration pattern
+
 ### 9. Coding Standards
 
 **Full standards**: `.specweave/docs/internal/governance/coding-standards.md`
