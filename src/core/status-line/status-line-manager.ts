@@ -103,7 +103,9 @@ export class StatusLineManager {
       const incrementParts: string[] = [];
 
       // Increment ID (truncate if needed)
-      const name = this.truncate(inc.name, 20); // Shorter for multiple
+      // Use longer truncation for single increment, shorter for multiple
+      const maxNameLength = increments.length === 1 ? this.config.maxNameLength : 20;
+      const name = this.truncate(inc.name, maxNameLength);
       incrementParts.push(`[${name}]`);
 
       // Progress bar
