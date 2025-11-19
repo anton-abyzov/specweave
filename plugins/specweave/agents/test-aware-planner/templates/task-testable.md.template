@@ -6,6 +6,18 @@
 **Estimate**: {estimate} hours
 **Status**: [ ] pending
 
+**⚠️  SOURCE OF TRUTH REMINDER** (for AI agents):
+```
+When you complete this task:
+1. ✅ Update internal TODO: TodoWrite([{task: "T-{task_number}", status: "completed"}])
+2. ⚠️  IMMEDIATELY update this line: **Status**: [ ] pending → **Status**: [x] completed
+3. ⚠️  IMMEDIATELY update spec.md: - [ ] **AC-{ac_ids}** → - [x] **AC-{ac_ids}**
+4. ✅ Verify both files before moving to next task
+
+NEVER mark internal TODO as complete without updating these source files!
+See CLAUDE.md Rule #7 for details.
+```
+
 **Test Plan**:
 - **Given** {given_condition}
 - **When** {when_action}

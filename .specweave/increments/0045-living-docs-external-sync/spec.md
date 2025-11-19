@@ -2,10 +2,11 @@
 increment: 0045-living-docs-external-sync
 title: 'Sync All Increments by Default'
 priority: P1
-status: in-progress
+status: completed
 type: feature
 created: 2025-11-19T00:00:00.000Z
 started: 2025-11-19T00:00:00.000Z
+completed: 2025-11-19T08:00:00.000Z
 test_mode: TDD
 coverage_target: 90
 parent_increment: 0043-spec-md-desync-fix
@@ -79,31 +80,31 @@ $ /specweave:sync-docs
 
 **Acceptance Criteria**:
 
-- [ ] **AC-US1-01**: `/specweave:sync-docs` without arguments syncs all increments with spec.md
+- [x] **AC-US1-01**: `/specweave:sync-docs` without arguments syncs all increments with spec.md
   - **Tests**: Integration test - create 3 increments → run command → verify all synced
   - **Priority**: P1
 
-- [ ] **AC-US1-02**: Sync excludes `_archive` directory and other non-increment folders
+- [x] **AC-US1-02**: Sync excludes `_archive` directory and other non-increment folders
   - **Tests**: Integration test - create `_archive` and `_backup` dirs → verify excluded
   - **Priority**: P1
 
-- [ ] **AC-US1-03**: `/specweave:sync-docs <increment-id>` still syncs specific increment (backward compat)
+- [x] **AC-US1-03**: `/specweave:sync-docs <increment-id>` still syncs specific increment (backward compat)
   - **Tests**: Integration test - run with specific ID → verify only that increment synced
   - **Priority**: P1
 
-- [ ] **AC-US1-04**: Command shows progress for each increment being synced
+- [x] **AC-US1-04**: Command shows progress for each increment being synced
   - **Tests**: Integration test - verify console output shows progress for each increment
   - **Priority**: P2
 
-- [ ] **AC-US1-05**: Command shows summary with success/failure counts
+- [x] **AC-US1-05**: Command shows summary with success/failure counts
   - **Tests**: Integration test - verify summary shows "X synced, Y failed"
   - **Priority**: P2
 
-- [ ] **AC-US1-06**: Failures in one increment don't stop sync of other increments
+- [x] **AC-US1-06**: Failures in one increment don't stop sync of other increments
   - **Tests**: Integration test - create increment with invalid spec → verify others still sync
   - **Priority**: P1
 
-- [ ] **AC-US1-07**: `--dry-run` flag works with sync-all mode
+- [x] **AC-US1-07**: `--dry-run` flag works with sync-all mode
   - **Tests**: Integration test - run with --dry-run → verify no files created
   - **Priority**: P2
 

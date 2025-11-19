@@ -4,6 +4,23 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Living Docs Sync** - `/specweave:sync-docs` now syncs ALL increments by default instead of just the latest completed increment
+  - Improves developer experience by eliminating need for manual per-increment syncing
+  - One command syncs all non-archived increments automatically
+  - Backward compatible: `/specweave:sync-docs <increment-id>` still works for single increment sync
+  - Excludes `_archive` and other non-increment directories automatically
+  - All tests passing with updated integration test suite
+
+**Increment**: 0045-living-docs-external-sync
+**What Changed**: Default behavior of sync-docs command (enhanced, not breaking)
+**Migration**: No action needed - existing workflows continue to work
+
+---
+
 ## [0.22.3] - 2025-11-18
 
 ### Fixed

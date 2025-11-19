@@ -10,8 +10,9 @@
 ### T-001: Add findAllSyncableIncrements() function
 **Priority**: P1
 **Estimated**: 1 hour
-**Status**: Pending
+**Status**: Completed
 **File**: `src/cli/commands/sync-specs.ts`
+**AC**: AC-US1-02
 
 **Description**:
 Create new function to find all increments with spec.md, excluding non-increment directories like `_archive`.
@@ -91,8 +92,9 @@ Scenario: Increments directory does not exist
 ### T-002: Update syncSpecs() to default to all mode
 **Priority**: P1
 **Estimated**: 1 hour
-**Status**: Pending
+**Status**: Completed
 **File**: `src/cli/commands/sync-specs.ts`
+**AC**: AC-US1-01, AC-US1-03, AC-US1-04, AC-US1-05, AC-US1-06, AC-US1-07
 
 **Description**:
 Modify `syncSpecs()` function to default to "all" mode when no increment ID is provided.
@@ -183,7 +185,7 @@ Scenario: Dry-run mode with sync-all
 ### T-003: Update console output messages
 **Priority**: P2
 **Estimated**: 30 minutes
-**Status**: Pending
+**Status**: Completed
 **File**: `src/cli/commands/sync-specs.ts`
 
 **Description**:
@@ -221,7 +223,7 @@ Scenario: Show progress for each
 ### T-004: Update specweave-sync-docs command
 **Priority**: P2
 **Estimated**: 30 minutes
-**Status**: Pending
+**Status**: Completed
 **File**: `plugins/specweave/commands/specweave-sync-docs.md`
 
 **Description**:
@@ -263,7 +265,7 @@ Output:
 ### T-005: Update command reference guide
 **Priority**: P2
 **Estimated**: 30 minutes
-**Status**: Pending
+**Status**: Completed
 **File**: `.specweave/docs/public/guides/command-reference-by-priority.md`
 
 **Description**:
@@ -300,7 +302,7 @@ Find `/specweave:sync-docs` entry and update description to mention batch syncin
 ### T-006: Create integration test suite
 **Priority**: P1
 **Estimated**: 2 hours
-**Status**: Pending
+**Status**: Completed
 **File**: `tests/integration/commands/sync-specs-all.test.ts`
 
 **Description**:
@@ -327,7 +329,7 @@ Comprehensive integration tests for sync-all functionality.
 ### T-007: Manual testing & validation
 **Priority**: P1
 **Estimated**: 1 hour
-**Status**: Pending
+**Status**: Completed
 
 **Description**:
 Manual end-to-end testing with real SpecWeave project.
@@ -363,7 +365,7 @@ Manual end-to-end testing with real SpecWeave project.
 ### T-008: Update CHANGELOG.md
 **Priority**: P2
 **Estimated**: 15 minutes
-**Status**: Pending
+**Status**: Completed
 **File**: `CHANGELOG.md`
 
 **Description**:
@@ -388,7 +390,7 @@ Document the behavior change in changelog for next release.
 ### T-009: Run full test suite
 **Priority**: P1
 **Estimated**: 30 minutes
-**Status**: Pending
+**Status**: Completed
 
 **Description**:
 Run all tests to ensure no regressions.
@@ -410,7 +412,7 @@ npm run test:coverage
 ### T-010: Create completion report
 **Priority**: P2
 **Estimated**: 15 minutes
-**Status**: Pending
+**Status**: Completed
 **File**: `.specweave/increments/0045-living-docs-external-sync/reports/COMPLETION-REPORT.md`
 
 **Description**:

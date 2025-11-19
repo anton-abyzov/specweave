@@ -1,11 +1,42 @@
 {
   "id": "0045-living-docs-external-sync",
-  "status": "in-progress",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-19T06:40:53.437Z",
   "started": "2025-11-19T07:35:00.000Z",
-  "lastActivity": "2025-11-19T07:35:00.000Z",
+  "completed": "2025-11-19T08:00:00.000Z",
+  "lastActivity": "2025-11-19T08:00:00.000Z",
   "acSyncEvents": [
+    {
+      "timestamp": "2025-11-19T07:48:20.934Z",
+      "updated": [
+        "AC-US1-02",
+        "AC-US1-01",
+        "AC-US1-03",
+        "AC-US1-04",
+        "AC-US1-05",
+        "AC-US1-06",
+        "AC-US1-07"
+      ],
+      "conflicts": [],
+      "warnings": [],
+      "changesCount": 7
+    },
+    {
+      "timestamp": "2025-11-19T07:46:40.186Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-US1-01: has no tasks mapped",
+        "AC-US1-02: has no tasks mapped",
+        "AC-US1-03: has no tasks mapped",
+        "AC-US1-04: has no tasks mapped",
+        "AC-US1-05: has no tasks mapped",
+        "AC-US1-06: has no tasks mapped",
+        "AC-US1-07: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
     {
       "timestamp": "2025-11-19T07:28:51.094Z",
       "updated": [],
