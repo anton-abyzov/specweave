@@ -97,7 +97,7 @@ Commands you'll use regularly but not every day.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave:sync-docs` | Sync to living docs | `/specweave:sync-docs update` |
+| `/specweave:sync-docs` | Sync all increments to living docs (default) | `/specweave:sync-docs` (syncs all) or `/specweave:sync-docs 0031` (specific) |
 | `/specweave:sync-specs` | Sync specs only | `/specweave:sync-specs 0031` |
 | `/specweave:sync-tasks` | Sync task completion | `/specweave:sync-tasks 0031` |
 

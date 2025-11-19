@@ -96,6 +96,43 @@ specweave init .  # Interactive, never deletes without confirmation
 **Always use**: `/specweave:done 0043` (validates before closing)
 **Never**: Manual `metadata.json` edit (blocked by pre-commit hook)
 
+### 7. NEVER Use `console.*` in Production Code
+
+**Rule**: ALL `src/` code MUST use logger abstraction, NEVER `console.log/error/warn`.
+
+**Why**: `console.*` pollutes test output even when errors are expected and properly handled.
+
+**Use logger injection**:
+```typescript
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+export class MyClass {
+  private logger: Logger;
+
+  constructor(options: { logger?: Logger } = {}) {
+    this.logger = options.logger ?? consoleLogger;
+  }
+
+  doSomething() {
+    this.logger.log('Info message');
+    this.logger.error('Error message', error);
+  }
+}
+```
+
+**In tests, use `silentLogger`**:
+```typescript
+import { silentLogger } from '../../src/utils/logger.js';
+
+const instance = new MyClass({ logger: silentLogger });
+```
+
+**Protection**: Code review + search before commit:
+```bash
+# Check for console.* in src/ before committing:
+git diff --cached --name-only | grep '^src/.*\.ts$' | xargs grep -n 'console\.' 2>/dev/null
+```
+
 ---
 
 ## Project Structure

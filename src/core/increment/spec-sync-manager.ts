@@ -12,6 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { MetadataManager } from './metadata-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 export interface SpecSyncResult {
   synced: boolean;
@@ -64,9 +65,14 @@ export interface SpecChangeDetectionResult {
 
 export class SpecSyncManager {
   private readonly incrementsDir: string;
+  private readonly logger: Logger;
 
-  constructor(private readonly projectRoot: string) {
+  constructor(
+    private readonly projectRoot: string,
+    options: { logger?: Logger } = {}
+  ) {
     this.incrementsDir = path.join(projectRoot, '.specweave', 'increments');
+    this.logger = options.logger ?? consoleLogger;
   }
 
   /**
@@ -594,7 +600,7 @@ export class SpecSyncManager {
 
       fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
     } catch (error) {
-      console.error('Failed to log sync event:', error);
+      this.logger.error('Failed to log sync event:', error);
     }
   }
 

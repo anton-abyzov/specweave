@@ -120,6 +120,11 @@ export class JiraMapper {
       const incrementId = this.getNextIncrementId();
       console.log(`   ✅ Auto-numbered as Increment ${incrementId}`);
 
+      // 4.1. Validate increment before creation (check for duplicates)
+      const { MetadataManager } = await import('../../core/increment/metadata-manager.js');
+      await MetadataManager.validateBeforeCreate(incrementId, this.projectRoot);
+      console.log(`   ✅ Validated increment ID (no duplicates)`);
+
       // 5. Create increment folder structure
       const incrementFolder = path.join(
         this.projectRoot,
