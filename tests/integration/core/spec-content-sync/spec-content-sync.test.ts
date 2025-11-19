@@ -23,8 +23,8 @@ import {
   type SpecUserStory,
   type SpecAcceptanceCriterion,
   type SpecContent,
-} from '../../src/core/spec-content-sync.js';
-import type { SpecIdentifier } from '../../src/core/types/spec-identifier.js';
+} from '../../../../dist/src/core/spec-content-sync.js';
+import type { SpecIdentifier } from '../../../../dist/src/core/types/spec-identifier.js';
 
 /**
  * Helper to create complete SpecIdentifier mock
@@ -139,6 +139,72 @@ Just a simple spec with no user stories.
       expect(spec!.title).toBe('Simple Spec');
       expect(spec!.userStories).toHaveLength(0);
       expect(spec!.metadata.priority).toBe('P2');
+    });
+
+    it('should parse spec with linked User Story files', async () => {
+      const specPath = path.join(fixturesDir, 'FS-043/FEATURE.md');
+      const spec = await parseSpecContent(specPath);
+
+      expect(spec).not.toBeNull();
+      expect(spec!.title).toBe('Task/Epic Synchronization via Syncing Hooks');
+      expect(spec!.userStories.length).toBe(3);
+
+      // Check first user story
+      const us1 = spec!.userStories.find((us) => us.id === 'US-001');
+      expect(us1).toBeDefined();
+      expect(us1!.title).toBe('Sync Increment Metadata');
+      expect(us1!.acceptanceCriteria.length).toBe(4);
+
+      // Check acceptance criteria with completion status
+      const ac1 = us1!.acceptanceCriteria.find((ac) => ac.id === 'AC-US1-01');
+      expect(ac1).toBeDefined();
+      expect(ac1!.completed).toBe(true); // [x] checked
+      expect(ac1!.description).toContain('metadata changes');
+
+      const ac3 = us1!.acceptanceCriteria.find((ac) => ac.id === 'AC-US1-03');
+      expect(ac3).toBeDefined();
+      expect(ac3!.completed).toBe(false); // [ ] unchecked
+
+      // Check second user story
+      const us2 = spec!.userStories.find((us) => us.id === 'US-002');
+      expect(us2).toBeDefined();
+      expect(us2!.title).toBe('Hook Integration');
+      expect(us2!.acceptanceCriteria.length).toBe(3);
+
+      // Check third user story
+      const us3 = spec!.userStories.find((us) => us.id === 'US-003');
+      expect(us3).toBeDefined();
+      expect(us3!.title).toBe('Status Propagation');
+      expect(us3!.acceptanceCriteria.length).toBe(3);
+    });
+
+    it('should handle linked User Story files with missing files gracefully', async () => {
+      const specContent = `---
+title: "Test Spec"
+---
+
+# Test Spec
+
+Spec with broken link to User Story file.
+
+## User Stories
+
+- [US-001: Missing Story](./us-001-missing.md)
+`;
+      const specPath = path.join(tempDir, 'spec-broken-links.md');
+      await fs.writeFile(specPath, specContent);
+
+      const spec = await parseSpecContent(specPath);
+
+      expect(spec).not.toBeNull();
+      // Should create minimal entry even when file is missing (preserves intent)
+      expect(spec!.userStories.length).toBe(1);
+
+      // US-001 should have minimal info (title from link, no ACs)
+      const us1 = spec!.userStories.find((us) => us.id === 'US-001');
+      expect(us1).toBeDefined();
+      expect(us1!.title).toBe('Missing Story'); // Title from link
+      expect(us1!.acceptanceCriteria).toHaveLength(0); // No ACs when file missing
     });
   });
 
