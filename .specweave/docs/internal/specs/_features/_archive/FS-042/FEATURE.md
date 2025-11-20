@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Test Infrastructure Cleanup - Eliminate 48% Duplication
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/659
+
 ## Overview
 
 **Problem Statement**: Critical test infrastructure issues discovered through ultrathink analysis reveal 48% test duplication, 213 dangerous process.cwd() usages, and

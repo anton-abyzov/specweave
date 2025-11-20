@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Complete Vitest Migration - Fix Living Docs Mock Issues
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/655
+
 ## Implementation History
 
 | Increment | Status | Completion Date |

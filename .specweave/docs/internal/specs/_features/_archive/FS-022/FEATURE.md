@@ -10,6 +10,8 @@ lastUpdated: 2025-11-18
 
 # Multi-Repository Initialization UX Improvements
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/644
+
 ## Overview
 
 Comprehensive UX improvements to multi-repository initiali
