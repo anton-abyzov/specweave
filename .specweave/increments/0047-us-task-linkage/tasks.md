@@ -1,6 +1,6 @@
 ---
 total_tasks: 52
-completed: 35
+completed: 40
 by_user_story:
   US-001: 4
   US-002: 3
@@ -1576,8 +1576,8 @@ coverage_target: 90
 ### T-034: Add origin badges to living docs US files
 
 **User Story**: US-009
-**Satisfies ACs**: AC-US9-04, AC-US9-05
-**Status**: [ ] pending
+**Satisfies ACs**: AC-US9-07, AC-US9-08
+**Status**: [x] completed
 **Priority**: P1 (Important)
 **Estimated Effort**: 4 hours
 
@@ -1631,7 +1631,7 @@ coverage_target: 90
 
 **User Story**: US-009A
 **Satisfies ACs**: AC-US9A-06, AC-US9A-10
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 4 hours
 
@@ -1668,7 +1668,7 @@ coverage_target: 90
 
 **User Story**: US-009A
 **Satisfies ACs**: AC-US9A-03, AC-US9A-07, AC-US9A-09
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 6 hours
 
@@ -1709,7 +1709,7 @@ coverage_target: 90
 
 **User Story**: US-009A
 **Satisfies ACs**: AC-US9A-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 3 hours
 
@@ -1750,7 +1750,7 @@ coverage_target: 90
 
 **User Story**: US-009A
 **Satisfies ACs**: AC-US9A-01, AC-US9A-02, AC-US9A-08
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (Important)
 **Estimated Effort**: 3 hours
 
@@ -2401,7 +2401,7 @@ coverage_target: 90
 
 **User Story**: US-012
 **Satisfies ACs**: AC-US12-01, AC-US12-04, AC-US12-05, AC-US12-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 5 hours
 

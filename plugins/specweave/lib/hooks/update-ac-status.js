@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { ACStatusManager } from "../../../../dist/src/core/increment/ac-status-manager.js";
+import { ACStatusManager } from "../vendor/core/increment/ac-status-manager.js";
 async function updateACStatus(incrementId) {
   try {
     const projectRoot = process.cwd();
