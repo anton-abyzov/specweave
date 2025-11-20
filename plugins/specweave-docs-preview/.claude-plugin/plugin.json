@@ -1,7 +1,7 @@
 {
   "name": "specweave-docs-preview",
   "description": "Interactive documentation preview with Docusaurus. Launch local dev server to view living documentation in beautiful UI with hot reload, auto-generated sidebar, and Mermaid diagrams. Build static sites for deployment.",
-  "version": "1.0.0",
+  "version": "0.22.14",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

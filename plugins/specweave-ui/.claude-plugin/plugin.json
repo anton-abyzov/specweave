@@ -1,7 +1,7 @@
 {
   "name": "specweave-ui",
   "description": "Complete UI/UX development toolkit - Playwright E2E testing, Figma design integration, React/Vue/Angular development, design systems, Storybook component testing. Auto-activates for frontend projects.",
-  "version": "1.0.0",
+  "version": "0.22.14",
   "author": {
     "name": "SpecWeave Team",
     "email": "anton.abyzov@gmail.com",

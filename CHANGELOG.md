@@ -29,6 +29,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.22.14] - 2025-11-20
+
+### Fixed
+
+- **Plugin Loading - Critical Hook Schema Fix** - Fixed plugin validation error preventing SpecWeave from loading
+  - Root cause: Invalid hooks schema in plugin.json - used "TodoWrite" as hook event (not valid Claude Code event)
+  - Solution: Changed to "PostToolUse" event with matcher="TodoWrite"
+  - Impact: Plugin would not load with error "hooks: Invalid input"
+  - Affects: All users on v0.22.13 and earlier trying to use TodoWrite hook
+  - Fix committed in b3e2f39, released in v0.22.14
+
+---
+
 ## [0.22.7] - 2025-11-19
 
 ### Fixed

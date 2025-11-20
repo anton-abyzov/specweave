@@ -1,6 +1,6 @@
 {
   "name": "specweave-ado",
-  "version": "0.1.0",
+  "version": "0.22.14",
   "description": "Azure DevOps integration for SpecWeave - sync increments with ADO work items, track progress, and manage project workflows",
   "author": {
     "name": "SpecWeave Team",
