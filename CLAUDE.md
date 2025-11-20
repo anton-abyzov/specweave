@@ -636,6 +636,123 @@ plugins/                # Claude Code components (skills, agents, commands, hook
 
 ---
 
+## Plugin Hook Registration (CRITICAL!)
+
+**When**: Adding or modifying hooks that respond to Claude Code tool events
+
+**Hook Schema Rules** (v0.22.14+):
+1. ✅ **ONLY use valid Claude Code hook events** (e.g., PostToolUse, PreToolUse, SessionStart)
+2. ❌ **NEVER use custom hook names** (e.g., "TodoWrite") as hook events
+3. ✅ **Use matchers** to filter which tool calls trigger the hook
+
+### Valid Claude Code Hook Events
+
+Claude Code supports **only these 10 hook events**:
+- `PostToolUse` - After a tool completes (use this for TodoWrite, Write, Edit, etc.)
+- `PreToolUse` - Before a tool executes
+- `PermissionRequest` - When permission dialogs appear
+- `Notification` - When notifications are sent
+- `UserPromptSubmit` - When users submit prompts
+- `Stop` - When the main agent finishes
+- `SubagentStop` - When subagents finish
+- `PreCompact` - Before compaction operations
+- `SessionStart` - At session initialization
+- `SessionEnd` - When sessions terminate
+
+### Correct Hook Registration Format
+
+**File**: `plugins/*/. claude-plugin/plugin.json`
+
+```json
+{
+  "name": "specweave",
+  "version": "0.22.14",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Schema Breakdown**:
+| Field | Type | Purpose |
+|-------|------|---------|
+| `PostToolUse` | array | Hook event (one of 10 valid events above) |
+| `matcher` | string | Tool name pattern (e.g., "TodoWrite", "Write\|Edit") |
+| `type` | string | Always "command" for shell scripts |
+| `command` | string | Script path (use `${CLAUDE_PLUGIN_ROOT}` for plugin directory) |
+| `timeout` | number | Seconds before timeout (default: 30) |
+
+### Common Mistakes (v0.22.13 Bug)
+
+❌ **WRONG** (Invalid hook event):
+```json
+{
+  "hooks": {
+    "TodoWrite": {
+      "post": "./hooks/post-task-completion.sh"
+    }
+  }
+}
+```
+**Error**: `"TodoWrite"` is not a valid Claude Code hook event
+
+✅ **CORRECT** (Use PostToolUse with matcher):
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [{"type": "command", "command": "..."}]
+      }
+    ]
+  }
+}
+```
+
+### Testing Hook Registration
+
+```bash
+# 1. Update plugin.json with correct schema
+vim plugins/specweave/.claude-plugin/plugin.json
+
+# 2. Commit and push
+git add plugins/specweave/.claude-plugin/plugin.json
+git commit -m "fix: correct hook registration schema"
+git push origin develop
+
+# 3. Wait 5-10 seconds for marketplace auto-update
+
+# 4. Force refresh marketplace (if needed)
+cd ~/.claude/plugins/marketplaces
+rm -rf specweave
+git clone https://github.com/YOUR_USERNAME/specweave.git
+
+# 5. Restart Claude Code
+
+# 6. Verify no plugin loading errors
+# Should NOT see: "hooks: Invalid input" error
+```
+
+### Documentation References
+
+- **Claude Code Plugin Hooks**: https://code.claude.com/docs/en/hooks.md
+- **Hooks Reference**: https://code.claude.com/docs/en/hooks-reference.md
+- **Fix History**: See CHANGELOG.md v0.22.14 for the hook schema bug fix
+
+---
+
 ## Development Workflow
 
 ### Core Commands
