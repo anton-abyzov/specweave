@@ -8,6 +8,22 @@ cost_profile: research
 fallback_behavior: strict
 ---
 
+# code-standards-detective Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:code-standards-detective:code-standards-detective",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: code-standards-detective (folder name)
+// - name: code-standards-detective (from YAML frontmatter above)
+```
 # Code Standards Detective Agent
 
 **Purpose**: Autonomously discover and document coding standards from existing codebases using statistical analysis and pattern detection.

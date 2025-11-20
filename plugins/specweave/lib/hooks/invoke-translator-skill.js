@@ -1,4 +1,5 @@
-import fs from "fs-extra";
+import { existsSync } from "fs";
+import { promises as fs } from "fs";
 import {
   detectLanguage,
   prepareTranslation,
@@ -94,7 +95,7 @@ ${contentToTranslate}`,
   }
 }
 async function translateFile(filePath, targetLang = "en") {
-  if (!await fs.pathExists(filePath)) {
+  if (!existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
   }
   const content = await fs.readFile(filePath, "utf-8");

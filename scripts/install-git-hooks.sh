@@ -150,6 +150,37 @@ if [ -f "scripts/pre-commit-duplicate-check.sh" ]; then
   fi
 fi
 
+# 5. Check for status desyncs (CRITICAL - prevents source-of-truth violations)
+# Incident Reference: 2025-11-20 - Silent failure caused increment 0047 desync
+if [ -f "scripts/pre-commit-desync-check.sh" ]; then
+  if ! bash scripts/pre-commit-desync-check.sh; then
+    echo ""
+    echo "❌ Status desync check failed"
+    echo "   See error output above for resolution steps"
+    exit 1
+  fi
+fi
+
+# 6. Validate plugin directory structure (prevents empty agent/skill directories)
+# Incident Reference: 2025-11-20 - Empty agent directory caused "Agent type not found" error
+if [ -f "scripts/validate-plugin-directories.sh" ]; then
+  if ! bash scripts/validate-plugin-directories.sh; then
+    echo ""
+    echo "❌ Plugin directory validation failed"
+    echo "   Empty or invalid agent/skill directories detected"
+    echo "   See: CLAUDE.md → 'Skills vs Agents: Understanding the Distinction'"
+    exit 1
+  fi
+fi
+
+# 7. Check for fs-extra imports (enforce native fs migration)
+# Incident Reference: 2025-11-20 - fs-extra dependency caused hook failures
+if [ -f "scripts/pre-commit-fs-extra-check.sh" ]; then
+  if ! bash scripts/pre-commit-fs-extra-check.sh; then
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -164,6 +195,9 @@ echo "  - pre-commit: Dangerous test pattern detection"
 echo "  - pre-commit: Mass .specweave/ deletion protection"
 echo "  - pre-commit: Build verification and .js extension check"
 echo "  - pre-commit: Duplicate increment detection (CRITICAL)"
+echo "  - pre-commit: Status line desync detection (CRITICAL)"
+echo "  - pre-commit: Plugin directory validation (prevents empty agent/skill dirs)"
+echo "  - pre-commit: fs-extra import detection (enforces native fs migration)"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"
 echo ""

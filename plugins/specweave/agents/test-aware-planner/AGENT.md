@@ -8,6 +8,22 @@ cost_profile: planning
 fallback_behavior: strict
 ---
 
+# test-aware-planner Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:test-aware-planner:test-aware-planner",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: test-aware-planner (folder name)
+// - name: test-aware-planner (from YAML frontmatter above)
+```
 # Test-Aware Planner Agent
 
 **Role**: Generate implementation tasks with embedded test plans (NO separate tests.md)

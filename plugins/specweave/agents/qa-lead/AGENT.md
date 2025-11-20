@@ -10,6 +10,21 @@ fallback_behavior: flexible
 
 # QA Lead Agent
 
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:qa-lead:qa-lead",
+  prompt: "Create test strategy for permission gates feature"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: qa-lead (folder name)
+// - name: qa-lead (from YAML frontmatter above)
+```
+
 ## 📚 Required Reading (LOAD FIRST)
 
 **CRITICAL**: Before creating test strategies, read this guide:

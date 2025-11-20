@@ -7,7 +7,7 @@
  * @module reflection-storage
  */
 
-import fs from 'fs-extra';
+import { mkdirpSync, writeFileSync, existsSync, readdirSync, statSync, readFileSync, removeSync } from '../utils/fs-native.js';
 import path from 'path';
 import { ReflectionResult, IssueSeverity } from './types/reflection-types';
 
@@ -294,7 +294,7 @@ export function saveReflection(
 ): string {
   // Ensure reflection logs directory exists
   const logDir = getReflectionLogDir(incrementId, projectRoot);
-  fs.mkdirpSync(logDir);
+  mkdirpSync(logDir);
 
   // Generate filename
   const filename = getReflectionFilename(taskId);
@@ -305,7 +305,7 @@ export function saveReflection(
 
   // Write to file
   try {
-    fs.writeFileSync(filepath, markdown, 'utf-8');
+    writeFileSync(filepath, markdown, 'utf-8');
     return filepath;
   } catch (error: any) {
     throw new Error(`Failed to save reflection: ${error.message}`);
@@ -324,17 +324,17 @@ export function listReflections(
 ): string[] {
   const logDir = getReflectionLogDir(incrementId, projectRoot);
 
-  if (!fs.existsSync(logDir)) {
+  if (!existsSync(logDir)) {
     return [];
   }
 
-  const files = fs.readdirSync(logDir)
+  const files = readdirSync(logDir)
     .filter(file => file.endsWith('.md'))
     .map(file => path.join(logDir, file))
     .sort((a, b) => {
       // Sort by modification time (newest first)
-      const statA = fs.statSync(a);
-      const statB = fs.statSync(b);
+      const statA = statSync(a);
+      const statB = statSync(b);
       return statB.mtime.getTime() - statA.mtime.getTime();
     });
 
@@ -349,7 +349,7 @@ export function listReflections(
  */
 export function readReflection(filepath: string): string {
   try {
-    return fs.readFileSync(filepath, 'utf-8');
+    return readFileSync(filepath, 'utf-8');
   } catch (error: any) {
     throw new Error(`Failed to read reflection: ${error.message}`);
   }
@@ -362,7 +362,7 @@ export function readReflection(filepath: string): string {
  */
 export function deleteReflection(filepath: string): void {
   try {
-    fs.removeSync(filepath);
+    removeSync(filepath);
   } catch (error: any) {
     throw new Error(`Failed to delete reflection: ${error.message}`);
   }

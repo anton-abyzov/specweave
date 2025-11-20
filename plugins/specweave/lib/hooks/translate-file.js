@@ -1,4 +1,5 @@
-import fs from "fs-extra";
+import { existsSync } from "fs";
+import { promises as fs } from "fs";
 import {
   detectLanguage,
   prepareTranslation,
@@ -9,7 +10,7 @@ import {
 } from "../vendor/utils/translation.js";
 async function translateFile(options) {
   const { filePath, targetLang, preview, verbose } = options;
-  if (!await fs.pathExists(filePath)) {
+  if (!existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
   }
   if (verbose) {

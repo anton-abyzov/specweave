@@ -7,7 +7,7 @@
  * @module prepare-reflection-context
  */
 
-import fs from 'fs-extra';
+import { mkdirpSync, writeJsonSync } from '../utils/fs-native.js';
 import path from 'path';
 import { createReflectionContext } from './run-self-reflection';
 import { getModifiedFilesSummary } from './git-diff-analyzer';
@@ -37,7 +37,7 @@ export function prepareReflectionContext(
     // Create temp directory for reflection context
     const rootDir = projectRoot || process.cwd();
     const tempDir = path.join(rootDir, '.specweave', 'increments', incrementId, 'logs', 'reflections', '.temp');
-    fs.mkdirpSync(tempDir);
+    mkdirpSync(tempDir);
 
     // Save context to temp file
     const contextFile = path.join(tempDir, 'reflection-context.json');
@@ -62,7 +62,7 @@ export function prepareReflectionContext(
       timestamp: new Date().toISOString()
     };
 
-    fs.writeJsonSync(contextFile, contextData, { spaces: 2 });
+    writeJsonSync(contextFile, contextData, { spaces: 2 });
 
     return contextFile;
   } catch (error: any) {
