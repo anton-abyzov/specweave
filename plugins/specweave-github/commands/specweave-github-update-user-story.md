@@ -53,7 +53,7 @@ description: Update GitHub issue for user story with proper ACs and tasks
 **What Gets Updated**:
 
 ```markdown
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](../../_features/_archive/FS-031/FEATURE.md)
 **Status**: complete
 **Priority**: P1
 **Project**: default

@@ -533,4 +533,46 @@ export class JiraClient {
 
     return response.json() as Promise<any[]>;
   }
+
+  /**
+   * Add comment to JIRA issue (T-034C)
+   *
+   * POST /rest/api/3/issue/{issueIdOrKey}/comment
+   */
+  public async addComment(issueKey: string, comment: string): Promise<void> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${issueKey}/comment`;
+
+    // JIRA comment body uses Atlassian Document Format (ADF) or plain text
+    const body = {
+      body: {
+        type: 'doc',
+        version: 1,
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: comment
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to add comment to JIRA issue ${issueKey}: ${response.status} ${error}`);
+    }
+  }
 }

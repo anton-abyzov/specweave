@@ -36,6 +36,7 @@ export interface FeatureArchiveOptions {
   preserveActiveFeatures?: boolean;
   archiveOrphanedFeatures?: boolean; // Features with no active increments
   archiveOrphanedEpics?: boolean;    // Epics with no active features
+  forceArchiveWhenAllIncrementsArchived?: boolean; // Override preserveActiveFeatures when all increments archived
 }
 
 export interface FeatureArchiveResult {
@@ -83,17 +84,27 @@ export class FeatureArchiver {
 
       // Get all archived increments
       const archivedIncrements = await this.incrementArchiver.listArchived();
+      console.log(`📋 Checking ${archivedIncrements.length} archived increments for feature reorganization...`);
+
+      // Get all active features
+      const allFeatures = await this.getAllFeatures();
+      console.log(`📂 Scanning ${allFeatures.length} active features...`);
 
       // Process features
       const featuresToArchive = await this.identifyFeaturesToArchive(archivedIncrements, options);
+      console.log(`📦 Identified ${featuresToArchive.length} features to archive`);
+
       for (const operation of featuresToArchive) {
         await this.executeArchiveOperation(operation, result, options);
       }
 
       // Process epics (separate logic, not tied to features)
       const epicsToArchive = await this.identifyEpicsToArchive(options);
-      for (const operation of epicsToArchive) {
-        await this.executeArchiveOperation(operation, result, options);
+      if (epicsToArchive.length > 0) {
+        console.log(`📦 Identified ${epicsToArchive.length} epics to archive`);
+        for (const operation of epicsToArchive) {
+          await this.executeArchiveOperation(operation, result, options);
+        }
       }
 
       // Update all links if requested
@@ -123,17 +134,23 @@ export class FeatureArchiver {
       const featurePath = path.join(this.featuresDir, featureId);
       const archivePath = path.join(this.featuresDir, '_archive', featureId);
 
-      // Skip if already archived
-      if (await fs.pathExists(archivePath)) {
+      // Skip if already archived AND source doesn't exist (no duplicate)
+      // Allow operation to proceed if both source and target exist (duplicate cleanup)
+      const sourceExists = await fs.pathExists(featurePath);
+      const targetExists = await fs.pathExists(archivePath);
+
+      if (targetExists && !sourceExists) {
+        // Already archived, no duplicate - skip
         continue;
       }
 
       // Get all increments linked to this feature
       const linkedIncrements = await this.getLinkedIncrements(featureId);
 
-      // Check if all linked increments are archived
+      // Check if all linked increments are archived (EXACT MATCH, not partial)
+      // CRITICAL: Use exact match (===) not .includes() to avoid false positives
       const allIncrementsArchived = linkedIncrements.every(inc =>
-        archivedIncrements.some(archived => archived.includes(inc))
+        archivedIncrements.some(archived => archived === inc)
       );
 
       // Archive orphaned features if option is set
@@ -141,12 +158,23 @@ export class FeatureArchiver {
 
       if (allIncrementsArchived || isOrphaned) {
         // Check if feature is still active in any project
-        if (options.preserveActiveFeatures) {
+        // UNLESS forceArchiveWhenAllIncrementsArchived is true and all increments are archived
+        const shouldCheckActiveProjects =
+          options.preserveActiveFeatures &&
+          !(options.forceArchiveWhenAllIncrementsArchived && allIncrementsArchived);
+
+        if (shouldCheckActiveProjects) {
           const hasActiveProjects = await this.hasActiveProjects(featureId);
           if (hasActiveProjects) {
+            console.log(`⏭️  Skipping ${featureId}: has active user stories (${linkedIncrements.length} increments)`);
             continue;
           }
         }
+
+        // Log reason for archiving
+        const reason = isOrphaned ? 'orphaned' : 'all-increments-archived';
+        const override = options.forceArchiveWhenAllIncrementsArchived && allIncrementsArchived ? ' [FORCE]' : '';
+        console.log(`✓ ${featureId}: ${reason} (${linkedIncrements.length} increments)${override}`);
 
         operations.push({
           type: 'feature',
@@ -156,6 +184,12 @@ export class FeatureArchiver {
           reason: isOrphaned ? 'orphaned' : 'all-increments-archived',
           linkedIncrements
         });
+      } else if (linkedIncrements.length > 0) {
+        // Feature has some active increments (EXACT MATCH, not partial)
+        const activeIncrements = linkedIncrements.filter(inc =>
+          !archivedIncrements.some(archived => archived === inc)
+        );
+        console.log(`⏭️  Skipping ${featureId}: ${activeIncrements.length}/${linkedIncrements.length} increments still active`);
       }
     }
 
@@ -230,7 +264,41 @@ export class FeatureArchiver {
           result.archivedEpics.push(operation.id);
         }
       } else {
-        // Move to archive
+        // ================================================================
+        // PRE-FLIGHT CHECKS (Critical for preventing duplicates)
+        // ================================================================
+
+        // Check 1: Source must exist
+        const sourceExists = await fs.pathExists(operation.sourcePath);
+        if (!sourceExists) {
+          console.log(`⏭️  Skip ${operation.type} ${operation.id}: source already removed`);
+          return; // Source was already moved/deleted - skip silently
+        }
+
+        // Check 2: If target exists, remove source WITHOUT moving
+        // This handles the case where target was archived in previous run
+        // but source was restored by git or living docs sync
+        const targetExists = await fs.pathExists(operation.targetPath);
+        if (targetExists) {
+          console.log(`⚠️  Target exists for ${operation.type} ${operation.id}`);
+          console.log(`   Removing duplicate source: ${operation.sourcePath}`);
+          await fs.remove(operation.sourcePath);
+
+          // Archive project-specific folders if applicable
+          if (operation.type === 'feature') {
+            await this.archiveProjectSpecificFolders(operation.id);
+            result.archivedFeatures.push(operation.id);
+          } else {
+            result.archivedEpics.push(operation.id);
+          }
+
+          console.log(`✅ Cleaned duplicate ${operation.type}: ${operation.id} (target already in archive)`);
+          return;
+        }
+
+        // ================================================================
+        // NORMAL ARCHIVING: Move source to archive
+        // ================================================================
         await fs.ensureDir(path.dirname(operation.targetPath));
         await fs.move(operation.sourcePath, operation.targetPath, { overwrite: false });
 
@@ -264,10 +332,18 @@ export class FeatureArchiver {
       const projectId = path.basename(path.dirname(folder));
       const archivePath = path.join(this.specsDir, projectId, '_archive', featureId);
 
-      await fs.ensureDir(path.dirname(archivePath));
-      await fs.move(folder, archivePath, { overwrite: false });
-
-      console.log(`  ✅ Archived ${projectId}/${featureId}`);
+      // Handle duplicates: if target exists, remove source instead of moving
+      const targetExists = await fs.pathExists(archivePath);
+      if (targetExists) {
+        console.log(`  ⚠️  Target exists for ${projectId}/${featureId}, removing duplicate`);
+        await fs.remove(folder);
+        console.log(`  ✅ Cleaned duplicate ${projectId}/${featureId}`);
+      } else {
+        // Normal archiving: move to archive
+        await fs.ensureDir(path.dirname(archivePath));
+        await fs.move(folder, archivePath, { overwrite: false });
+        console.log(`  ✅ Archived ${projectId}/${featureId}`);
+      }
     }
   }
 
@@ -419,6 +495,7 @@ export class FeatureArchiver {
 
   /**
    * Get increments linked to a feature
+   * CRITICAL: Parses frontmatter feature_id field for exact match (not string search)
    */
   private async getLinkedIncrements(featureId: string): Promise<string[]> {
     const increments: string[] = [];
@@ -429,7 +506,10 @@ export class FeatureArchiver {
 
     for (const file of activeFiles) {
       const content = await fs.readFile(file, 'utf-8');
-      if (content.includes(featureId)) {
+
+      // Parse frontmatter to get feature_id (EXACT MATCH, not string search)
+      const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+      if (featureIdMatch && featureIdMatch[1].trim() === featureId) {
         const incrementDir = path.basename(path.dirname(file));
         increments.push(incrementDir);
       }
@@ -441,7 +521,10 @@ export class FeatureArchiver {
 
     for (const file of archivedFiles) {
       const content = await fs.readFile(file, 'utf-8');
-      if (content.includes(featureId)) {
+
+      // Parse frontmatter to get feature_id (EXACT MATCH, not string search)
+      const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+      if (featureIdMatch && featureIdMatch[1].trim() === featureId) {
         const incrementDir = path.basename(path.dirname(file));
         increments.push(incrementDir);
       }

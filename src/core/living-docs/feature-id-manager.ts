@@ -1,11 +1,14 @@
 /**
  * Feature ID Manager - Manages FS-XXX ID assignment based on creation date
  * Ensures no duplicate IDs and maintains consistent ordering
+ *
+ * NEW (v0.23.0 - T-043): Uses FSIDAllocator for advanced chronological allocation
  */
 
 import fs from 'fs-extra';
 import path from 'path';
 import yaml from 'yaml';
+import { FSIdAllocator } from '../../living-docs/fs-id-allocator.js';
 
 export interface FeatureInfo {
   originalId: string;           // Original ID like FS-25-11-12-external-tool-sync
@@ -413,5 +416,35 @@ export class FeatureIDManager {
       console.warn('   ⚠️ Failed to load registry, rebuilding...');
       await this.buildRegistry();
     }
+  }
+
+  /**
+   * Allocate FS-ID for external work item using chronological allocation
+   * NEW (v0.23.0 - T-043): Uses FSIdAllocator for intelligent allocation
+   *
+   * @param workItem - External work item metadata
+   * @param projectRoot - Project root directory
+   * @returns Allocated FS-ID (e.g., "FS-042E")
+   */
+  public async allocateExternalFeatureId(
+    workItem: { externalId: string; title: string; createdAt: string; source: string; externalUrl?: string },
+    projectRoot: string
+  ): Promise<string> {
+    const allocator = new FSIdAllocator(projectRoot);
+
+    // Create work item for allocator
+    const externalWorkItem = {
+      externalId: workItem.externalId,
+      title: workItem.title,
+      createdAt: workItem.createdAt,
+      externalUrl: workItem.externalUrl || '' // Default to empty string if not provided
+    };
+
+    // Allocate ID chronologically (attempts gap filling, falls back to append)
+    const result = await allocator.allocateId(externalWorkItem);
+
+    console.log(`  📎 Allocated ${result.id} for external item ${workItem.externalId} (created: ${workItem.createdAt}, strategy: ${result.strategy})`);
+
+    return result.id;
   }
 }

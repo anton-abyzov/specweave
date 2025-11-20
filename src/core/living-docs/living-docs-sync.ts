@@ -49,6 +49,14 @@ export interface UserStoryData {
   description: string;
   acceptanceCriteria: string[];
   phase?: string;
+  // Format preservation metadata (T-034A)
+  format_preservation?: boolean;
+  external_title?: string;
+  external_source?: 'github' | 'jira' | 'ado';
+  external_id?: string;
+  external_url?: string;
+  imported_at?: string;
+  origin?: 'internal' | 'external';
 }
 
 export interface AcceptanceCriterionData {
@@ -522,6 +530,30 @@ export class LivingDocsSync {
     lines.push(`status: ${parsed.status}`);
     lines.push(`priority: ${parsed.priority}`);
     lines.push(`created: ${parsed.created}`);
+
+    // Format preservation metadata (T-034A)
+    if (story.format_preservation !== undefined) {
+      lines.push(`format_preservation: ${story.format_preservation}`);
+    }
+    if (story.external_title) {
+      lines.push(`external_title: "${story.external_title}"`);
+    }
+    if (story.external_source) {
+      lines.push(`external_source: ${story.external_source}`);
+    }
+    if (story.external_id) {
+      lines.push(`external_id: "${story.external_id}"`);
+    }
+    if (story.external_url) {
+      lines.push(`external_url: "${story.external_url}"`);
+    }
+    if (story.imported_at) {
+      lines.push(`imported_at: "${story.imported_at}"`);
+    }
+    if (story.origin) {
+      lines.push(`origin: ${story.origin}`);
+    }
+
     lines.push('---');
     lines.push('');
 

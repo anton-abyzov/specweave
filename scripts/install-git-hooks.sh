@@ -140,6 +140,16 @@ if [ -n "$staged_ts_files" ]; then
   fi
 fi
 
+# 4. Check for duplicate increments (CRITICAL - prevents data corruption)
+if [ -f "scripts/pre-commit-duplicate-check.sh" ]; then
+  if ! bash scripts/pre-commit-duplicate-check.sh; then
+    echo ""
+    echo "❌ Duplicate increment check failed"
+    echo "   See error output above for resolution steps"
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -153,6 +163,7 @@ echo "  - pre-commit: Local development setup verification (symlink check)"
 echo "  - pre-commit: Dangerous test pattern detection"
 echo "  - pre-commit: Mass .specweave/ deletion protection"
 echo "  - pre-commit: Build verification and .js extension check"
+echo "  - pre-commit: Duplicate increment detection (CRITICAL)"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"
 echo ""
