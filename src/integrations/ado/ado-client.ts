@@ -560,4 +560,31 @@ export class AdoClient {
       return false;
     }
   }
+
+  /**
+   * Add comment to Azure DevOps work item (T-034C)
+   *
+   * POST /{organization}/{project}/_apis/wit/workitems/{id}/comments?api-version=7.0
+   */
+  public async addComment(workItemId: number, comment: string): Promise<void> {
+    const url = `https://dev.azure.com/${this.credentials.organization}/${this.credentials.project}/_apis/wit/workitems/${workItemId}/comments?api-version=${this.apiVersion}`;
+
+    const body = {
+      text: comment
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to add comment to ADO work item ${workItemId}: ${response.status} ${error}`);
+    }
+  }
 }

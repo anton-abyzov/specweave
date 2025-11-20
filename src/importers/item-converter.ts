@@ -11,6 +11,7 @@ import path from 'path';
 import { FSIdAllocator, type ExternalWorkItem } from '../living-docs/fs-id-allocator.js';
 import { IDRegistry } from '../living-docs/id-registry.js';
 import { createExternalMetadata } from '../core/types/origin-metadata.js';
+import { DuplicateDetector } from './duplicate-detector.js';
 
 export interface ConvertedUserStory {
   /** User Story ID with E suffix (e.g., US-001E) */
@@ -61,6 +62,12 @@ export interface ItemConverterOptions {
 
   /** Enable feature-level organization with FS-ID allocation */
   enableFeatureAllocation?: boolean;
+
+  /** Enable duplicate detection (default: true) */
+  enableDuplicateDetection?: boolean;
+
+  /** Callback for skipped duplicates */
+  onDuplicateSkipped?: (externalId: string, existingUsId: string) => void;
 }
 
 /**
@@ -71,9 +78,20 @@ export interface ItemConverterOptions {
  */
 export class ItemConverter {
   private options: ItemConverterOptions;
+  private duplicateDetector: DuplicateDetector | null = null;
 
   constructor(options: ItemConverterOptions) {
-    this.options = options;
+    this.options = {
+      enableDuplicateDetection: true,
+      ...options,
+    };
+
+    // Initialize duplicate detector if enabled
+    if (this.options.enableDuplicateDetection) {
+      this.duplicateDetector = new DuplicateDetector({
+        specsDir: this.options.specsDir,
+      });
+    }
   }
 
   /**
@@ -146,6 +164,7 @@ export class ItemConverter {
   async convertItems(items: ExternalItem[]): Promise<ConvertedUserStory[]> {
     const startingId = this.options.startingId || 1;
     const converted: ConvertedUserStory[] = [];
+    let skippedCount = 0;
 
     // Ensure specs directory exists
     fs.mkdirSync(this.options.specsDir, { recursive: true });
@@ -153,7 +172,24 @@ export class ItemConverter {
     // Convert each item
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
-      const usId = startingId + i;
+
+      // Check for duplicates if duplicate detection is enabled
+      if (this.duplicateDetector) {
+        const existingReference = await this.duplicateDetector.findExternalIdReference(item.id);
+        if (existingReference) {
+          skippedCount++;
+
+          // Notify callback if provided
+          if (this.options.onDuplicateSkipped) {
+            this.options.onDuplicateSkipped(item.id, existingReference.usId);
+          }
+
+          // Skip this item (duplicate)
+          continue;
+        }
+      }
+
+      const usId = startingId + (i - skippedCount);
 
       const userStory = this.convertItem(item, usId);
       converted.push(userStory);

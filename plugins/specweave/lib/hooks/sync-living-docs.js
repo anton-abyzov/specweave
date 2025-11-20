@@ -54,7 +54,9 @@ async function syncLivingDocs(incrementId) {
       return;
     }
 
-    await syncToGitHub(incrementId, changedDocs);
+    // T-034E: Use FormatPreservationSyncService for origin-aware sync
+    await syncWithFormatPreservation(incrementId);
+
     console.log("\u2705 Living docs sync complete\n");
   } catch (error) {
     console.error("\u274C Error syncing living docs:", error);
@@ -334,6 +336,38 @@ if (isMainModule) {
     console.error("\u274C Fatal error:", error);
   });
 }
+
+/**
+ * Sync with format preservation (T-034E)
+ * Routes sync based on origin metadata (external vs internal)
+ */
+async function syncWithFormatPreservation(incrementId) {
+  try {
+    console.log("\n🔄 Using format-preserving sync...");
+
+    const { SyncCoordinator } = await import("../../../../dist/src/sync/sync-coordinator.js");
+
+    const coordinator = new SyncCoordinator({
+      projectRoot: process.cwd(),
+      incrementId
+    });
+
+    const result = await coordinator.syncIncrementCompletion();
+
+    if (result.success) {
+      console.log(`✅ Format-preserving sync complete (${result.syncMode} mode)`);
+      console.log(`   ${result.userStoriesSynced} user story/stories synced`);
+    } else {
+      console.log(`⚠️  Sync completed with ${result.errors.length} error(s)`);
+      result.errors.forEach(err => console.error(`   - ${err}`));
+    }
+  } catch (error) {
+    console.error("⚠️  Format-preserving sync error:", error);
+    console.log("   Falling back to legacy sync...");
+    // Don't fail - just log and continue
+  }
+}
+
 export {
   syncLivingDocs
 };

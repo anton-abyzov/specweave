@@ -9,6 +9,8 @@ import type { Importer, ExternalItem, ImportConfig, ImportResult } from './exter
 import { GitHubImporter } from './github-importer.js';
 import { JiraImporter } from './jira-importer.js';
 import { ADOImporter } from './ado-importer.js';
+import { updateSyncMetadata, type PlatformSyncMetadata } from '../sync/sync-metadata.js';
+import { RateLimiter, type RateLimitInfo } from './rate-limiter.js';
 
 export interface CoordinatorConfig {
   /** Import from GitHub */
@@ -40,6 +42,21 @@ export interface CoordinatorConfig {
 
   /** Progress callback */
   onProgress?: (platform: string, count: number, total?: number) => void;
+
+  /** Project root for sync metadata (default: process.cwd()) */
+  projectRoot?: string;
+
+  /** Enable sync metadata tracking (default: true) */
+  enableSyncMetadata?: boolean;
+
+  /** Enable rate limiting (default: true) */
+  enableRateLimiting?: boolean;
+
+  /** Callback when rate limit warning */
+  onRateLimitWarning?: (platform: string, rateLimitInfo: RateLimitInfo) => void;
+
+  /** Callback when rate limit pause */
+  onRateLimitPause?: (platform: string, seconds: number) => void;
 }
 
 export interface CoordinatorResult {
@@ -57,6 +74,9 @@ export interface CoordinatorResult {
 
   /** Platforms that were imported from */
   platforms: Array<'github' | 'jira' | 'ado'>;
+
+  /** Total items skipped as duplicates (if duplicate detection enabled) */
+  totalSkipped?: number;
 }
 
 /**
@@ -65,9 +85,23 @@ export interface CoordinatorResult {
 export class ImportCoordinator {
   private importers: Map<string, Importer> = new Map();
   private config: CoordinatorConfig;
+  private rateLimiter: RateLimiter | null = null;
+  private projectRoot: string;
 
   constructor(config: CoordinatorConfig) {
-    this.config = config;
+    this.config = {
+      enableSyncMetadata: true,
+      enableRateLimiting: true,
+      projectRoot: process.cwd(),
+      ...config,
+    };
+    this.projectRoot = this.config.projectRoot!;
+
+    // Initialize rate limiter if enabled
+    if (this.config.enableRateLimiting) {
+      this.rateLimiter = new RateLimiter();
+    }
+
     this.initializeImporters();
   }
 
@@ -186,8 +220,39 @@ export class ImportCoordinator {
           this.config.onProgress(platform, items.length);
         }
       }
+
+      // Update sync metadata if enabled
+      if (this.config.enableSyncMetadata && items.length > 0) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: items.length,
+          lastSyncResult: errors.length > 0 ? 'partial' : 'success',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, platform as 'github' | 'jira' | 'ado', metadata);
+        } catch (error: any) {
+          // Log metadata update error but don't fail the import
+          errors.push(`Failed to update sync metadata: ${error.message}`);
+        }
+      }
     } catch (error: any) {
       errors.push(error.message || String(error));
+
+      // Update sync metadata with failed status
+      if (this.config.enableSyncMetadata) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: 0,
+          lastSyncResult: 'failed',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, platform as 'github' | 'jira' | 'ado', metadata);
+        } catch {
+          // Ignore metadata update errors on failed imports
+        }
+      }
     }
 
     return {

@@ -341,7 +341,7 @@ class CopiedContentSyncManager {
 ```markdown
 # US-001: Implement Authentication (Backend)
 
-**Feature**: [FS-031: External Tool Status Sync](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031: External Tool Status Sync](../../_features/_archive/FS-031/FEATURE.md)
 **Epic**: [Epic-123: Authentication System](../../_epics/epic-123.md)
 
 ---

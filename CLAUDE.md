@@ -615,6 +615,53 @@ ls .specweave/docs/internal/architecture/adr/*.md | \
 # (Extracts unique numbers only, finds max, adds 1)
 ```
 
+### 13. Archiving Logic Anti-Patterns (CRITICAL!)
+
+**NEVER use string search or substring matching for structured data matching**
+
+#### Anti-Pattern #1: String Search for Frontmatter Fields
+
+```typescript
+// ❌ WRONG: Matches ANYWHERE in file (false positives!)
+const content = await fs.readFile('spec.md', 'utf-8');
+if (content.includes('FS-039')) {
+  // This matches:
+  // - feature_id: FS-039 ✓ (correct)
+  // - "See FS-039 for details" ✗ (FALSE POSITIVE!)
+  // - [Related](FS-039) ✗ (FALSE POSITIVE!)
+}
+
+// ✅ CORRECT: Parse frontmatter explicitly
+const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+if (featureIdMatch && featureIdMatch[1].trim() === 'FS-039') {
+  // Only matches actual frontmatter field
+}
+```
+
+#### Anti-Pattern #2: Substring Matching for IDs
+
+```typescript
+// ❌ WRONG: Substring matching (false positives!)
+const isArchived = archivedList.some(item => item.includes(searchId));
+// "0039-ultra-smart-v2".includes("0039-ultra-smart") → TRUE (WRONG!)
+
+// ✅ CORRECT: Exact equality
+const isArchived = archivedList.some(item => item === searchId);
+```
+
+**Why This Matters**:
+- **Incident 2025-11-20**: String search caused 11 features to be incorrectly archived
+- Features that merely REFERENCED another feature appeared to BELONG to it
+- Substring matching confused similar IDs as identical
+
+**Prevention**:
+1. Always parse structured data (YAML frontmatter, JSON) explicitly
+2. Use exact equality (`===`) for ID matching, never `.includes()`
+3. Add comprehensive logging to show matching decisions
+4. Test with edge cases: references, links, partial matches
+
+**See Also**: `.specweave/increments/0047-us-task-linkage/reports/CRITICAL-ARCHIVING-BUGS-FIX.md`
+
 ---
 
 ## Project Structure

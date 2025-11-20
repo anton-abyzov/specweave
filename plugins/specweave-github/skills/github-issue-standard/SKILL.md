@@ -94,7 +94,7 @@ if (repo && taskLink.startsWith('../../')) {
 **I want** feature
 **So that** benefit
 
-📄 View full story: [`us-004-name.md`](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/default/FS-031/us-004-name.md)
+📄 View full story: [`us-004-name.md`](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/default/_archive/FS-031/us-004-name.md)
 
 ---
 
