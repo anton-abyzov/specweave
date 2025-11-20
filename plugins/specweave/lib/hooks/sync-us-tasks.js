@@ -10,7 +10,7 @@
  * Part of increment 0047-us-task-linkage implementation.
  */
 
-import fs from 'fs-extra';
+import { readFileSync, existsSync, promises as fs } from 'fs';
 import path from 'path';
 import { parseTasksWithUSLinks, getAllTasks } from '../vendor/generators/spec/task-parser.js';
 import { glob } from 'glob';
@@ -32,7 +32,7 @@ export async function syncUSTasksToLivingDocs(incrementId, projectRoot, featureI
     const tasksPath = path.join(projectRoot, '.specweave', 'increments', incrementId, 'tasks.md');
 
     // Check if tasks.md exists
-    if (!fs.existsSync(tasksPath)) {
+    if (!existsSync(tasksPath)) {
       console.log(`   ⚠️  tasks.md not found, skipping task sync`);
       return { success: true, updatedFiles: [], errors: [] };
     }
@@ -451,8 +451,8 @@ function getProjectId(projectRoot, incrementId) {
   try {
     // Try to get from metadata.json
     const metadataPath = path.join(projectRoot, '.specweave', 'increments', incrementId, 'metadata.json');
-    if (fs.existsSync(metadataPath)) {
-      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+    if (existsSync(metadataPath)) {
+      const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
       if (metadata.project) {
         return metadata.project;
       }
@@ -460,8 +460,8 @@ function getProjectId(projectRoot, incrementId) {
 
     // Try to get from config.json
     const configPath = path.join(projectRoot, '.specweave', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    if (existsSync(configPath)) {
+      const config = JSON.parse(readFileSync(configPath, 'utf-8'));
       if (config.defaultProject) {
         return config.defaultProject;
       }

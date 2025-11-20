@@ -77,7 +77,7 @@ Delegate to agent via Task tool:
 
 ```typescript
 const result = await Task({
-  subagent_type: "diagrams-architect",
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: `Create ${diagramType} diagram for ${scope}
 
 Context:
@@ -120,7 +120,7 @@ The agent returns diagram content. Save to correct location:
 3. Invoke agent:
 ```typescript
 await Task({
-  subagent_type: "diagrams-architect",
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create C4 context diagram for authentication system. Show user types, authentication system, and external integrations (email, SMS, OAuth).",
   description: "Generate C4 Level 1 diagram"
 });
@@ -139,7 +139,7 @@ await Task({
 3. Invoke agent:
 ```typescript
 await Task({
-  subagent_type: "diagrams-architect",
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create sequence diagram for login flow. Show: User → Browser → AuthService → Database → SessionStore. Include success and failure paths.",
   description: "Generate sequence diagram"
 });
@@ -158,7 +158,7 @@ await Task({
 3. Invoke agent:
 ```typescript
 await Task({
-  subagent_type: "diagrams-architect",
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create ER diagram for authentication data model. Entities: USER, SESSION, REFRESH_TOKEN, PASSWORD_RESET. Show relationships and key fields.",
   description: "Generate ER diagram"
 });

@@ -8,7 +8,8 @@
  */
 
 import { execSync } from 'child_process';
-import fs from 'fs-extra';
+import { existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 
 interface Config {
@@ -27,12 +28,12 @@ export async function translateLivingDocs(incrementId: string): Promise<void> {
   try {
     // 1. Load config
     const configPath = '.specweave/config.json';
-    if (!fs.existsSync(configPath)) {
+    if (!existsSync(configPath)) {
       console.log('[translate-living-docs] No config found, skipping translation');
       return;
     }
 
-    const config: Config = await fs.readJson(configPath);
+    const config: Config = JSON.parse(await fs.readFile(configPath, 'utf-8'));
 
     // 2. Check if translation is enabled
     if (!config.language || config.language === 'en') {

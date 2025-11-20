@@ -59,6 +59,20 @@ You are acting as the Product Manager to validate increment completion before cl
 
 ```typescript
 import { IncrementCompletionValidator } from '../../../src/core/increment/completion-validator.js';
+import { DesyncDetector } from '../../../src/core/increment/desync-detector.js';
+
+// **NEW (2025-11-20)**: Validate no status desync exists
+// This prevents closing increments with inconsistent metadata.json and spec.md
+const desyncDetector = new DesyncDetector();
+try {
+  await desyncDetector.validateOrThrow(incrementId);
+} catch (error) {
+  console.error('❌ CANNOT CLOSE INCREMENT - Status desync detected');
+  console.error('');
+  console.error(error.message);
+  console.error('');
+  process.exit(1);
+}
 
 // Validate increment is ready for completion
 const validation = await IncrementCompletionValidator.validateCompletion(incrementId);

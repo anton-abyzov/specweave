@@ -1,13 +1,14 @@
 import { execSync } from "child_process";
-import fs from "fs-extra";
+import { existsSync } from "fs";
+import { promises as fs } from "fs";
 async function translateLivingDocs(incrementId) {
   try {
     const configPath = ".specweave/config.json";
-    if (!fs.existsSync(configPath)) {
+    if (!existsSync(configPath)) {
       console.log("[translate-living-docs] No config found, skipping translation");
       return;
     }
-    const config = await fs.readJson(configPath);
+    const config = JSON.parse(await fs.readFile(configPath, "utf-8"));
     if (!config.language || config.language === "en") {
       console.log("[translate-living-docs] Project language is English, skipping translation");
       return;

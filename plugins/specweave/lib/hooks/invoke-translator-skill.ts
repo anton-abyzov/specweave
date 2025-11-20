@@ -8,7 +8,8 @@
  * @see plugins/specweave/commands/translate.md
  */
 
-import fs from 'fs-extra';
+import { existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 import {
   detectLanguage,
@@ -186,7 +187,7 @@ export async function translateFile(
   targetLang: SupportedLanguage = 'en'
 ): Promise<TranslationResult & { filePath: string }> {
   // Read file
-  if (!await fs.pathExists(filePath)) {
+  if (!existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
   }
 

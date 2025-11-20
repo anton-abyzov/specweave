@@ -124,6 +124,30 @@ if [ $DUPLICATE_COUNT -gt 0 ]; then
   echo "  Use Task tool for agents, Skill tool or slash commands for skills"
 fi
 
+# Check for missing invocation documentation in agents
+echo ""
+echo "📚 Checking agent invocation documentation..."
+MISSING_INVOCATION_DOCS=0
+for plugin_dir in "$REPO_ROOT"/plugins/specweave*/agents/*/; do
+  if [ -d "$plugin_dir" ] && [ -f "$plugin_dir/AGENT.md" ]; then
+    agent_name=$(basename "$plugin_dir")
+    plugin_name=$(basename "$(dirname "$(dirname "$plugin_dir")")")
+
+    # Check if AGENT.md contains invocation instructions
+    if ! grep -q "How to Invoke This Agent" "$plugin_dir/AGENT.md"; then
+      echo -e "${YELLOW}⚠️  MISSING INVOCATION DOCS: $plugin_name/agents/$agent_name${NC}"
+      echo "   AGENT.md exists but lacks '## How to Invoke This Agent' section"
+      MISSING_INVOCATION_DOCS=$((MISSING_INVOCATION_DOCS + 1))
+      ERRORS=$((ERRORS + 1))
+    fi
+  fi
+done
+
+if [ $MISSING_INVOCATION_DOCS -gt 0 ]; then
+  echo ""
+  echo "Fix by running: bash scripts/add-agent-invocation-docs.sh"
+fi
+
 # Summary
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

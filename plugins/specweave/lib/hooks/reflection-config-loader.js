@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 import { DEFAULT_REFLECTION_CONFIG } from "./types/reflection-types";
 function findSpecweaveRoot(startDir = process.cwd()) {
@@ -6,7 +6,7 @@ function findSpecweaveRoot(startDir = process.cwd()) {
   const root = path.parse(currentDir).root;
   while (currentDir !== root) {
     const specweavePath = path.join(currentDir, ".specweave");
-    if (fs.existsSync(specweavePath)) {
+    if (existsSync(specweavePath)) {
       return currentDir;
     }
     currentDir = path.dirname(currentDir);
@@ -19,11 +19,11 @@ function loadReflectionConfig(projectRoot) {
     return { ...DEFAULT_REFLECTION_CONFIG };
   }
   const configPath = path.join(rootDir, ".specweave", "config.json");
-  if (!fs.existsSync(configPath)) {
+  if (!existsSync(configPath)) {
     return { ...DEFAULT_REFLECTION_CONFIG };
   }
   try {
-    const configContent = fs.readFileSync(configPath, "utf-8");
+    const configContent = readFileSync(configPath, "utf-8");
     const config = JSON.parse(configContent);
     const userReflectionConfig = config.reflection || {};
     const mergedConfig = {

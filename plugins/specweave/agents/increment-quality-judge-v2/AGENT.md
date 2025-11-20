@@ -8,6 +8,22 @@ cost_profile: assessment
 fallback_behavior: flexible
 ---
 
+# increment-quality-judge-v2 Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: increment-quality-judge-v2 (folder name)
+// - name: increment-quality-judge-v2 (from YAML frontmatter above)
+```
 # Increment Quality Judge v2.0 - AI-Powered Quality Assessment Agent
 
 Risk Assessment + Quality Gate Decisions

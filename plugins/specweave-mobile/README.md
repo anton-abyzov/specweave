@@ -107,7 +107,7 @@ For architectural decisions and system design:
 Use the Task tool to invoke the mobile-architect agent:
 
 Task(
-  subagent_type: "mobile-architect",
+  subagent_type: "specweave-mobile:mobile-architect:mobile-architect",
   description: "Design architecture for social media app",
   prompt: "Design a scalable React Native architecture for a social media app
   with feed, messaging, and profile features. Include state management,

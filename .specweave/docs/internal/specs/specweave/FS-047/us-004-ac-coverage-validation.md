@@ -1,19 +1,15 @@
 ---
 id: US-004
 feature: FS-047
-title: AC Coverage Validation
-status: active
+title: "AC Coverage Validation"
+status: completed
 priority: P0
 created: 2025-11-19
-external:
-  github:
-    issue: 641
-    url: https://github.com/anton-abyzov/specweave/issues/641
 ---
 
 # US-004: AC Coverage Validation
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/633
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/691
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 

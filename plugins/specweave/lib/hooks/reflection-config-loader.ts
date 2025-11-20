@@ -7,7 +7,7 @@
  * @module reflection-config-loader
  */
 
-import fs from 'fs-extra';
+import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import { DEFAULT_REFLECTION_CONFIG, ReflectionConfig } from './types/reflection-types';
 
@@ -22,7 +22,7 @@ export function findSpecweaveRoot(startDir: string = process.cwd()): string | nu
 
   while (currentDir !== root) {
     const specweavePath = path.join(currentDir, '.specweave');
-    if (fs.existsSync(specweavePath)) {
+    if (existsSync(specweavePath)) {
       return currentDir;
     }
     currentDir = path.dirname(currentDir);
@@ -51,13 +51,13 @@ export function loadReflectionConfig(projectRoot?: string): ReflectionConfig {
   const configPath = path.join(rootDir, '.specweave', 'config.json');
 
   // Config file doesn't exist, return defaults
-  if (!fs.existsSync(configPath)) {
+  if (!existsSync(configPath)) {
     return { ...DEFAULT_REFLECTION_CONFIG };
   }
 
   try {
     // Read and parse config file
-    const configContent = fs.readFileSync(configPath, 'utf-8');
+    const configContent = readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configContent);
 
     // Extract reflection section (may be undefined)

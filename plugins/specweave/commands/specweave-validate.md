@@ -232,7 +232,16 @@ Choice: _
 
 ### Step 4: Run AI Quality Assessment (If Approved)
 
-**Invoke `increment-quality-judge` skill** with these parameters:
+**IMPORTANT**: Invoke `increment-quality-judge-v2` **agent** (not skill) via Task tool:
+
+```typescript
+Task({
+  subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
+  prompt: `Assess quality of increment ${incrementId}`
+});
+```
+
+Pass these parameters:
 - increment_id: "0001"
 - files: ["spec.md", "plan.md", "tests.md"]
 - dimensions: ["clarity", "testability", "completeness", "feasibility", "maintainability", "edge_cases"]
