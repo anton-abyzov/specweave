@@ -22,7 +22,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
-import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId } from './repo-id-generator.js';
+import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId, suggestRepoName } from './repo-id-generator.js';
 import { SetupStateManager, SetupState, type SetupArchitecture, type ParentRepoConfig } from './setup-state-manager.js';
 import { validateRepository, validateOwner } from './github-validator.js';
 import { generateEnvFile, type EnvConfig, type RepoMapping } from '../../utils/env-file-generator.js';
@@ -513,12 +513,16 @@ export class RepoStructureManager {
     for (let i = 0; i < repoCount; i++) {
       console.log(chalk.white(`\nRepository ${i + 1} of ${repoCount}:`));
 
+      // Smart suggestion for ALL repos (not just first one!)
+      const projectName = path.basename(this.projectPath);
+      const suggestedName = suggestRepoName(projectName, i, repoCount);
+
       const repoAnswers = await inquirer.prompt([
         {
           type: 'input',
           name: 'name',
           message: 'Repository name:',
-          default: i === 0 ? `${path.basename(this.projectPath)}-frontend` : '',
+          default: suggestedName,  // Now suggests for ALL repos!
           validate: async (input: string) => {
             if (!input.trim()) return 'Repository name is required';
 

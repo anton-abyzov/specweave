@@ -63,6 +63,8 @@ else
 fi
 
 print_info "Step 6: Installing SpecWeave plugins..."
+# IMPORTANT: Only list COMPLETE plugins (those with agents/, commands/, or lib/)
+# NEVER add plugins that only have skills/ directory - they will fail to load!
 plugins=(
     "specweave"
     "specweave-github"
@@ -70,19 +72,17 @@ plugins=(
     "specweave-ado"
     "specweave-kubernetes"
     "specweave-infrastructure"
-    "specweave-figma"
-    "specweave-frontend"
     "specweave-backend"
     "specweave-payments"
     "specweave-ml"
-    "specweave-testing"
-    "specweave-docs"
-    "specweave-tooling"
-    "specweave-alternatives"
-    "specweave-ui"
-    "specweave-cost-optimizer"
     "specweave-diagrams"
     "specweave-docs-preview"
+    "specweave-release"
+    "specweave-mobile"
+    "specweave-kafka"
+    "specweave-kafka-streams"
+    "specweave-confluent"
+    "specweave-n8n"
 )
 
 installed=0

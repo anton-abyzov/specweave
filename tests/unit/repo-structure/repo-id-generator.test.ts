@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Test Coverage Target: 90%+
  */
 
-import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId } from '../../../src/core/repo-structure/repo-id-generator.js';
+import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId, suggestRepoName } from '../../../src/core/repo-structure/repo-id-generator.js';
 
 describe('generateRepoId', () => {
   describe('Suffix stripping', () => {
@@ -328,6 +328,96 @@ describe('generateRepoIdSmart', () => {
       const result = generateRepoIdSmart('new-service', existingNames);
       expect(result).toBeDefined();
       expect(result.length).toBeGreaterThan(0);
+    });
+  });
+});
+
+describe('suggestRepoName', () => {
+  describe('Standard suggestions for first 3 repos', () => {
+    it('should suggest frontend for first repository', () => {
+      const result = suggestRepoName('my-project', 0, 3);
+      expect(result).toBe('my-project-frontend');
+    });
+
+    it('should suggest backend for second repository', () => {
+      const result = suggestRepoName('my-project', 1, 3);
+      expect(result).toBe('my-project-backend');
+    });
+
+    it('should suggest mobile for third repository', () => {
+      const result = suggestRepoName('my-project', 2, 3);
+      expect(result).toBe('my-project-mobile');
+    });
+  });
+
+  describe('Extended patterns for more repositories', () => {
+    it('should suggest api for fourth repository', () => {
+      const result = suggestRepoName('my-project', 3, 5);
+      expect(result).toBe('my-project-api');
+    });
+
+    it('should suggest infra for fifth repository', () => {
+      const result = suggestRepoName('my-project', 4, 6);
+      expect(result).toBe('my-project-infra');
+    });
+
+    it('should suggest shared for sixth repository', () => {
+      const result = suggestRepoName('my-project', 5, 7);
+      expect(result).toBe('my-project-shared');
+    });
+
+    it('should suggest worker for seventh repository', () => {
+      const result = suggestRepoName('my-project', 6, 8);
+      expect(result).toBe('my-project-worker');
+    });
+  });
+
+  describe('Fallback for many repositories', () => {
+    it('should use service-N pattern when exhausting predefined types', () => {
+      const result = suggestRepoName('my-project', 10, 15);
+      expect(result).toBe('my-project-service-11');
+    });
+
+    it('should handle very large repository count', () => {
+      const result = suggestRepoName('my-project', 99, 100);
+      expect(result).toBe('my-project-service-100');
+    });
+  });
+
+  describe('Real-world examples from user scenario', () => {
+    it('should suggest intelligent names for markdown editor project', () => {
+      const projectName = 'sw-markdown-editor';
+
+      const repo1 = suggestRepoName(projectName, 0, 3);
+      const repo2 = suggestRepoName(projectName, 1, 3);
+      const repo3 = suggestRepoName(projectName, 2, 3);
+
+      expect(repo1).toBe('sw-markdown-editor-frontend');
+      expect(repo2).toBe('sw-markdown-editor-backend');
+      expect(repo3).toBe('sw-markdown-editor-mobile');
+    });
+
+    it('should work with different project naming styles', () => {
+      expect(suggestRepoName('acme-saas', 0, 2)).toBe('acme-saas-frontend');
+      expect(suggestRepoName('company-app', 1, 2)).toBe('company-app-backend');
+      expect(suggestRepoName('my-startup', 2, 3)).toBe('my-startup-mobile');
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle single repository', () => {
+      const result = suggestRepoName('my-project', 0, 1);
+      expect(result).toBe('my-project-frontend');
+    });
+
+    it('should handle very short project names', () => {
+      const result = suggestRepoName('a', 0, 3);
+      expect(result).toBe('a-frontend');
+    });
+
+    it('should handle project names with hyphens', () => {
+      const result = suggestRepoName('my-cool-project', 1, 3);
+      expect(result).toBe('my-cool-project-backend');
     });
   });
 });

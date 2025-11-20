@@ -6,6 +6,45 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [Unreleased]
 
+### 🐛 Critical Bug Fixes
+
+#### Status Line Not Updating on Increment Closure (2025-11-20)
+
+**CRITICAL BUG**: Status line never refreshed when increment closed via `/specweave:done`, leaving stale data showing completed increments as "active".
+
+**Root Cause**:
+- `metadata.json` updates don't trigger status line refresh
+- Hooks only watched `spec.md`/`tasks.md`, not `metadata.json`
+- `post-increment-completion.sh` was orphaned (never registered or called)
+
+**Impact**: ALL increment closures since v0.24.1 affected (5 increments)
+
+**Solution**:
+- Created `post-metadata-change.sh` dispatcher hook (175 lines)
+- Detects `metadata.json` status changes and routes to appropriate lifecycle hooks
+- Registered in `plugin.json` for both Write and Edit matchers
+- `post-increment-completion.sh` now properly called on closure → updates status line
+
+**Architecture Flow**:
+```
+Write/Edit → post-metadata-change.sh
+  → (status: "completed") → post-increment-completion.sh
+    → update-status-line.sh ✅
+```
+
+**Tests**: 6/6 integration tests pass (added 2 new tests for metadata.json workflow)
+
+**Files Changed**:
+- NEW: `plugins/specweave/hooks/post-metadata-change.sh`
+- UPDATED: `plugins/specweave/.claude-plugin/plugin.json` (hook registration)
+- UPDATED: `tests/integration/core/status-line-increment-completion.test.ts` (+197 lines)
+
+**Documentation**:
+- Report: `.specweave/increments/0047-us-task-linkage/reports/STATUS-LINE-INCREMENT-CLOSE-FIX-2025-11-20.md`
+- Related: CLAUDE.md Rule #7a (Status Line Synchronization)
+
+---
+
 ### Breaking Change: Bidirectional Sync → Three-Permission Architecture (v0.24.0)
 
 **Migration Required**: The old `syncDirection: "bidirectional"` configuration has been replaced with three independent permission flags:

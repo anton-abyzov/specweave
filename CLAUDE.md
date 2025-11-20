@@ -662,6 +662,106 @@ const isArchived = archivedList.some(item => item === searchId);
 
 **See Also**: `.specweave/increments/0047-us-task-linkage/reports/CRITICAL-ARCHIVING-BUGS-FIX.md`
 
+### 14. Marketplace Plugin Completeness (CRITICAL!)
+
+**NEVER add incomplete plugins to `.claude-plugin/marketplace.json`**
+
+**Rule**: ONLY plugins with complete implementation (agents/, commands/, or lib/) may be listed in marketplace.json.
+
+**Why This Matters**:
+When users install `npm i -g specweave`, Claude Code loads ALL plugins listed in marketplace.json. Incomplete plugins (skeleton-only with just skills/) cause loading errors that confuse users and damage the framework's reputation.
+
+**Incomplete Plugin Definition**:
+A plugin is considered INCOMPLETE if it ONLY has:
+- `.claude-plugin/` directory
+- `skills/` directory
+
+A plugin is COMPLETE if it has ANY of:
+- `agents/` directory (specialized Claude Code agents)
+- `commands/` directory (slash commands)
+- `lib/` directory (shared utilities, TypeScript implementations)
+
+**Validation Process** (MANDATORY before ANY marketplace.json changes):
+
+```bash
+# 1. Run validation script
+bash scripts/validate-marketplace-plugins.sh
+
+# Expected output: "✅ VALIDATION PASSED!"
+# If FAILED: Remove incomplete plugins from marketplace.json
+```
+
+**Examples**:
+
+```bash
+# ✅ COMPLETE plugins (may be listed in marketplace.json):
+plugins/specweave-github/
+  ├── .claude-plugin/
+  ├── agents/          ← Has agents
+  ├── commands/        ← Has commands
+  ├── lib/             ← Has lib
+  └── skills/
+
+plugins/specweave-kafka/
+  ├── .claude-plugin/
+  ├── agents/          ← Has agents
+  ├── lib/             ← Has lib
+  └── skills/
+
+# ✗ INCOMPLETE plugins (MUST NOT be listed in marketplace.json):
+plugins/specweave-cost-optimizer/
+  ├── .claude-plugin/
+  └── skills/          ← ONLY skills!
+
+plugins/specweave-figma/
+  ├── .claude-plugin/
+  └── skills/          ← ONLY skills!
+```
+
+**Adding New Plugins**:
+
+```bash
+# 1. Create plugin with COMPLETE structure
+mkdir -p plugins/specweave-newplugin/{.claude-plugin,agents,skills}
+
+# 2. Implement at least ONE of: agents/, commands/, or lib/
+# (Don't just create empty directories!)
+
+# 3. Add to marketplace.json
+vim .claude-plugin/marketplace.json
+
+# 4. VALIDATE (this is CRITICAL!)
+bash scripts/validate-marketplace-plugins.sh
+
+# 5. Update bin/fix-marketplace-errors.sh
+vim bin/fix-marketplace-errors.sh
+# Add "specweave-newplugin" to plugins=(...) array
+
+# 6. Commit
+git add .claude-plugin/marketplace.json bin/fix-marketplace-errors.sh
+git commit -m "feat: add specweave-newplugin to marketplace"
+```
+
+**Pre-Commit Hook** (TODO - add this):
+```bash
+# .git/hooks/pre-commit should run:
+bash scripts/validate-marketplace-plugins.sh
+# Block commit if validation fails
+```
+
+**Incident History**:
+- **2025-11-20**: Global npm install caused 8 incomplete plugins to fail loading, generating confusing errors for users. Root cause: marketplace.json listed skeleton plugins that weren't ready for distribution.
+
+**Prevention**:
+1. Run `bash scripts/validate-marketplace-plugins.sh` before EVERY marketplace.json change
+2. NEVER add plugins to marketplace.json until they have agents/, commands/, or lib/
+3. Update bin/fix-marketplace-errors.sh whenever marketplace.json changes
+4. Test global npm install (`npm pack && npm i -g ./specweave-*.tgz`) before releases
+
+**See Also**:
+- Validation script: `scripts/validate-marketplace-plugins.sh`
+- Fix script: `bin/fix-marketplace-errors.sh`
+
 ---
 
 ## Project Structure
