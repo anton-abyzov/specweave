@@ -314,6 +314,90 @@ npx tsx src/core/status-line-validator.ts
 
 **Incident Reference**: 2025-11-20 - Status line showed 21/52 tasks when actually 26/52 were complete (10% desync). Root cause: Tasks marked complete without using TodoWrite, so hooks never fired. Added validation layer and tests to prevent future occurrences.
 
+### 7b. GitHub Duplicate Prevention (CRITICAL!)
+
+**CRITICAL**: External tool items (GitHub issues, JIRA tickets, ADO work items) MUST NEVER be duplicated.
+
+**Rule**: ALWAYS use DuplicateDetector for GitHub issue creation.
+
+**Why This Matters**:
+- GitHub search has eventual consistency (2-5 second lag)
+- Race conditions can create duplicates if sync runs multiple times quickly
+- Manual search with `--limit 1` hides duplicates
+
+**The ONLY Way to Create GitHub Issues**:
+```typescript
+import { DuplicateDetector } from './duplicate-detector.js';
+
+// ✅ CORRECT: Use DuplicateDetector.createWithProtection()
+const titlePattern = `[${featureId}][${userStory.id}]`;  // e.g., "[FS-047][US-001]"
+const result = await DuplicateDetector.createWithProtection({
+  title: issueContent.title,
+  body: issueContent.body,
+  titlePattern,
+  labels: issueContent.labels,
+  milestone: milestoneTitle,
+  repo: `${owner}/${repo}`
+});
+
+// Provides automatic:
+// ✅ Phase 1 (Detection): Search for existing before create
+// ✅ Phase 2 (Verification): Count-check after creation
+// ✅ Phase 3 (Reflection): Auto-close duplicates, keep oldest
+
+// ❌ WRONG: Manual gh issue create (no duplicate protection!)
+execSync('gh issue create --title "..." --body "..."');
+```
+
+**3-Phase Protection**:
+1. **Detection** - Search GitHub for existing issues BEFORE creating
+2. **Verification** - Count-check AFTER creation (handles eventual consistency)
+3. **Reflection** - Auto-close duplicates if detected, keep oldest
+
+**Search Limits** (CRITICAL!):
+```typescript
+// ❌ WRONG: --limit 1 hides duplicates!
+gh issue list --search "[FS-047][US-001] in:title" --limit 1
+// Returns ONLY 1 result even if 10 duplicates exist!
+
+// ✅ CORRECT: --limit 50 detects duplicates
+gh issue list --search "[FS-047][US-001] in:title" --limit 50
+// Returns up to 50 results, enabling duplicate detection
+```
+
+**Cleanup Existing Duplicates**:
+```bash
+# Preview what will be cleaned up:
+bash scripts/cleanup-duplicate-github-issues.sh --dry-run
+
+# Actually close duplicates (keeps oldest):
+bash scripts/cleanup-duplicate-github-issues.sh
+```
+
+**Validation**:
+```bash
+# Check for duplicates:
+gh issue list --json title,createdAt --limit 100 | \
+  jq -r '.[] | .title' | sort | uniq -d
+
+# If output is empty → No duplicates! ✅
+# If output shows titles → Duplicates exist, investigate!
+```
+
+**Why This Matters**:
+- Incident 2025-11-20: 10+ duplicate User Story issues created
+- Root Cause #1: Race condition (GitHub search eventual consistency lag)
+- Root Cause #2: `--limit 1` bug (hid duplicates in search results)
+- Root Cause #3: No post-create verification
+- **Fix**: DuplicateDetector integration (github-feature-sync.ts:149-227)
+
+**Protected Files**:
+- `plugins/specweave-github/lib/github-feature-sync.ts` - Uses DuplicateDetector
+- `plugins/specweave-github/lib/duplicate-detector.ts` - 3-phase protection
+- `plugins/specweave-github/lib/github-client-v2.ts` - Fixed --limit 50
+
+**Incident Reference**: 2025-11-20 - Duplicate GitHub issues for User Stories ([SP-US-006], [SP-US-007], etc.). Root cause: Race conditions + --limit 1 bug + missing DuplicateDetector integration. Fixed by implementing 3-phase protection. See `.specweave/increments/0047-us-task-linkage/reports/DUPLICATE-GITHUB-ISSUES-ROOT-CAUSE.md`.
+
 ### 8. NEVER Use `console.*` in Production Code
 
 **Rule**: ALL `src/` code MUST use logger abstraction, NEVER `console.log/error/warn`.
