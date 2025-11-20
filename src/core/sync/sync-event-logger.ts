@@ -67,11 +67,13 @@ export class SyncEventLogger {
   private projectRoot: string;
   private logsDir: string;
   private eventsFile: string;
+  private conflictsFile: string;
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
     this.logsDir = path.join(projectRoot, '.specweave', 'logs');
     this.eventsFile = path.join(this.logsDir, 'sync-events.json');
+    this.conflictsFile = path.join(this.logsDir, 'sync-conflicts.log');
   }
 
   /**
@@ -90,12 +92,53 @@ export class SyncEventLogger {
    * Log a conflict resolution event
    *
    * @param event - Conflict event to log
+   * @param writeToConflictsLog - Whether to also write to dedicated conflicts log (default: true)
    */
-  async logConflictEvent(event: ConflictEvent): Promise<void> {
+  async logConflictEvent(event: ConflictEvent, writeToConflictsLog: boolean = true): Promise<void> {
     await this.ensureLogsDir();
     const events = await this.loadAllEvents();
     events.push(event);
     await this.writeEvents(events);
+
+    // Also write to dedicated conflicts log file (AC-US9-09)
+    if (writeToConflictsLog) {
+      await this.writeConflictToLog(event);
+    }
+  }
+
+  /**
+   * Load conflict events from dedicated conflicts log
+   *
+   * @returns Array of conflict events
+   */
+  async loadConflicts(): Promise<ConflictEvent[]> {
+    const exists = await fs.pathExists(this.conflictsFile);
+    if (!exists) {
+      return [];
+    }
+
+    const content = await fs.readFile(this.conflictsFile, 'utf-8');
+    const lines = content.trim().split('\n').filter(l => l.trim());
+
+    return lines.map(line => {
+      try {
+        return JSON.parse(line) as ConflictEvent;
+      } catch {
+        // Skip malformed lines
+        return null;
+      }
+    }).filter((e): e is ConflictEvent => e !== null);
+  }
+
+  /**
+   * Write conflict event to dedicated log file (append mode)
+   *
+   * @param event - Conflict event to write
+   */
+  private async writeConflictToLog(event: ConflictEvent): Promise<void> {
+    await this.ensureLogsDir();
+    const logLine = JSON.stringify(event) + '\n';
+    await fs.appendFile(this.conflictsFile, logLine, 'utf-8');
   }
 
   /**

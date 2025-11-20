@@ -37,6 +37,7 @@ export interface FeatureArchiveOptions {
   archiveOrphanedFeatures?: boolean; // Features with no active increments
   archiveOrphanedEpics?: boolean;    // Epics with no active features
   forceArchiveWhenAllIncrementsArchived?: boolean; // Override preserveActiveFeatures when all increments archived
+  customReason?: string;             // Custom reason for archiving (AC-US13-07)
 }
 
 export interface FeatureArchiveResult {
@@ -147,14 +148,18 @@ export class FeatureArchiver {
       // Get all increments linked to this feature
       const linkedIncrements = await this.getLinkedIncrements(featureId);
 
+      // CRITICAL: Prevent vacuous truth bug!
+      // Empty array .every() returns true, so we must explicitly check length
+      // Archive orphaned features ONLY if option is set
+      const isOrphaned = linkedIncrements.length === 0 && options.archiveOrphanedFeatures;
+
       // Check if all linked increments are archived (EXACT MATCH, not partial)
       // CRITICAL: Use exact match (===) not .includes() to avoid false positives
-      const allIncrementsArchived = linkedIncrements.every(inc =>
-        archivedIncrements.some(archived => archived === inc)
-      );
-
-      // Archive orphaned features if option is set
-      const isOrphaned = linkedIncrements.length === 0 && options.archiveOrphanedFeatures;
+      // SAFETY: If no linked increments and archiveOrphanedFeatures is false, skip
+      const allIncrementsArchived = linkedIncrements.length > 0 &&
+                                    linkedIncrements.every(inc =>
+                                      archivedIncrements.some(archived => archived === inc)
+                                    );
 
       if (allIncrementsArchived || isOrphaned) {
         // Check if feature is still active in any project
@@ -171,8 +176,9 @@ export class FeatureArchiver {
           }
         }
 
-        // Log reason for archiving
-        const reason = isOrphaned ? 'orphaned' : 'all-increments-archived';
+        // Log reason for archiving (use customReason if provided, AC-US13-07)
+        const defaultReason = isOrphaned ? 'orphaned' : 'all-increments-archived';
+        const reason = options.customReason || defaultReason;
         const override = options.forceArchiveWhenAllIncrementsArchived && allIncrementsArchived ? ' [FORCE]' : '';
         console.log(`✓ ${featureId}: ${reason} (${linkedIncrements.length} increments)${override}`);
 
@@ -181,7 +187,7 @@ export class FeatureArchiver {
           id: featureId,
           sourcePath: featurePath,
           targetPath: archivePath,
-          reason: isOrphaned ? 'orphaned' : 'all-increments-archived',
+          reason: reason,
           linkedIncrements
         });
       } else if (linkedIncrements.length > 0) {
@@ -190,6 +196,10 @@ export class FeatureArchiver {
           !archivedIncrements.some(archived => archived === inc)
         );
         console.log(`⏭️  Skipping ${featureId}: ${activeIncrements.length}/${linkedIncrements.length} increments still active`);
+      } else if (linkedIncrements.length === 0 && !options.archiveOrphanedFeatures) {
+        // Feature has NO linked increments AND archiveOrphanedFeatures is false
+        // SAFETY: Don't archive due to vacuous truth bug (empty array .every() = true)
+        console.log(`⏭️  Skipping ${featureId}: no linked increments found (orphan check disabled)`);
       }
     }
 
@@ -230,12 +240,15 @@ export class FeatureArchiver {
       const isOrphaned = linkedFeatures.length === 0 && options.archiveOrphanedEpics;
 
       if (allFeaturesArchived || isOrphaned) {
+        const defaultReason = isOrphaned ? 'orphaned' : 'all-features-archived';
+        const reason = options.customReason || defaultReason;
+
         operations.push({
           type: 'epic',
           id: epicId,
           sourcePath: epicPath,
           targetPath: archivePath,
-          reason: isOrphaned ? 'orphaned' : 'all-features-archived'
+          reason: reason
         });
       }
     }
@@ -301,6 +314,9 @@ export class FeatureArchiver {
         // ================================================================
         await fs.ensureDir(path.dirname(operation.targetPath));
         await fs.move(operation.sourcePath, operation.targetPath, { overwrite: false });
+
+        // Write archive metadata (AC-US13-06, AC-US13-07)
+        await this.writeArchiveMetadata(operation);
 
         // Also archive project-specific folders
         if (operation.type === 'feature') {
@@ -495,7 +511,8 @@ export class FeatureArchiver {
 
   /**
    * Get increments linked to a feature
-   * CRITICAL: Parses frontmatter feature_id field for exact match (not string search)
+   * CRITICAL: Parses frontmatter feature_id OR epic field for exact match (not string search)
+   * Supports both new format (feature_id: FS-XXX) and legacy format (epic: FS-XXX)
    */
   private async getLinkedIncrements(featureId: string): Promise<string[]> {
     const increments: string[] = [];
@@ -507,9 +524,15 @@ export class FeatureArchiver {
     for (const file of activeFiles) {
       const content = await fs.readFile(file, 'utf-8');
 
-      // Parse frontmatter to get feature_id (EXACT MATCH, not string search)
+      // Parse frontmatter to get feature_id OR epic (EXACT MATCH, not string search)
+      // Support both new format (feature_id: FS-XXX) and legacy format (epic: FS-XXX)
       const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
-      if (featureIdMatch && featureIdMatch[1].trim() === featureId) {
+      const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
+
+      const linkedFeature = featureIdMatch ? featureIdMatch[1].trim() :
+                           epicMatch ? epicMatch[1].trim() : null;
+
+      if (linkedFeature === featureId) {
         const incrementDir = path.basename(path.dirname(file));
         increments.push(incrementDir);
       }
@@ -522,9 +545,14 @@ export class FeatureArchiver {
     for (const file of archivedFiles) {
       const content = await fs.readFile(file, 'utf-8');
 
-      // Parse frontmatter to get feature_id (EXACT MATCH, not string search)
+      // Parse frontmatter to get feature_id OR epic (EXACT MATCH, not string search)
       const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
-      if (featureIdMatch && featureIdMatch[1].trim() === featureId) {
+      const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
+
+      const linkedFeature = featureIdMatch ? featureIdMatch[1].trim() :
+                           epicMatch ? epicMatch[1].trim() : null;
+
+      if (linkedFeature === featureId) {
         const incrementDir = path.basename(path.dirname(file));
         increments.push(incrementDir);
       }
@@ -633,6 +661,25 @@ export class FeatureArchiver {
         }
       }
     }
+  }
+
+  /**
+   * Write archive metadata to track when/why item was archived (AC-US13-06, AC-US13-07)
+   */
+  private async writeArchiveMetadata(operation: ArchiveOperation): Promise<void> {
+    const metadataPath = path.join(operation.targetPath, '.archive-metadata.json');
+
+    const metadata = {
+      id: operation.id,
+      type: operation.type,
+      archivedAt: new Date().toISOString(),
+      archivedBy: process.env.USER || process.env.USERNAME || 'unknown',
+      reason: operation.reason,
+      sourcePath: operation.sourcePath,
+      linkedIncrements: operation.linkedIncrements || []
+    };
+
+    await fs.writeJson(metadataPath, metadata, { spaces: 2 });
   }
 
   /**
@@ -815,5 +862,132 @@ export class FeatureArchiver {
     }
 
     return stats;
+  }
+
+  /**
+   * Clean up feature folder duplicates
+   *
+   * Removes active folders that are ALSO in archive (keeps archive version as source of truth)
+   * CRITICAL: Fixes bug where living docs sync recreates archived feature folders
+   *
+   * See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md for root cause analysis
+   */
+  async cleanupDuplicates(): Promise<{
+    cleaned: string[];
+    errors: string[];
+  }> {
+    const result = {
+      cleaned: [] as string[],
+      errors: [] as string[]
+    };
+
+    console.log('🧹 Scanning for duplicate feature folders (active + archive)...');
+
+    try {
+      // Get all archived features
+      const archivePattern = path.join(this.featuresDir, '_archive', 'FS-*');
+      const archivedPaths = await glob(archivePattern);
+
+      console.log(`   Found ${archivedPaths.length} archived features`);
+
+      for (const archivedPath of archivedPaths) {
+        const featureId = path.basename(archivedPath);
+        const activePath = path.join(this.featuresDir, featureId);
+
+        // Check if active folder exists (duplicate in _features/)
+        const activeExists = await fs.pathExists(activePath);
+        const archiveExists = await fs.pathExists(archivedPath);
+
+        let hasDuplicates = false;
+
+        if (activeExists && archiveExists) {
+          console.log(`   ⚠️  Duplicate detected: ${featureId} (_features/)`);
+          console.log(`      → Active: ${activePath}`);
+          console.log(`      → Archive: ${archivedPath}`);
+
+          try {
+            // Remove active folder (keep archive as source of truth)
+            await fs.remove(activePath);
+            console.log(`      ✅ Removed active duplicate (keeping archive)`);
+            result.cleaned.push(`_features/${featureId}`);
+            hasDuplicates = true;
+          } catch (error) {
+            const errMsg = `Failed to clean ${featureId}: ${error}`;
+            console.error(`      ❌ ${errMsg}`);
+            result.errors.push(errMsg);
+          }
+        }
+
+        // ALWAYS check project-specific duplicates (even if _features/ has no duplicate)
+        // This fixes the case where specweave/FS-XXX exists but _features/FS-XXX doesn't
+        const projectDuplicatesFound = await this.cleanupProjectSpecificDuplicates(featureId, result);
+        if (projectDuplicatesFound && !hasDuplicates) {
+          console.log(`   ⚠️  Duplicate detected: ${featureId} (project folders only)`);
+        }
+      }
+
+      console.log(`\n✅ Cleanup complete:`);
+      console.log(`   Cleaned: ${result.cleaned.length} duplicates`);
+      console.log(`   Errors: ${result.errors.length} failures`);
+
+      if (result.cleaned.length > 0) {
+        console.log(`\n📋 Cleaned folders:`);
+        result.cleaned.forEach(folder => console.log(`   - ${folder}`));
+      }
+
+      if (result.errors.length > 0) {
+        console.log(`\n⚠️  Errors:`);
+        result.errors.forEach(err => console.log(`   - ${err}`));
+      }
+
+    } catch (error) {
+      const errMsg = `Cleanup failed: ${error}`;
+      console.error(`❌ ${errMsg}`);
+      result.errors.push(errMsg);
+    }
+
+    return result;
+  }
+
+  /**
+   * Clean up project-specific folder duplicates for a feature
+   *
+   * @returns true if duplicates were found, false otherwise
+   */
+  private async cleanupProjectSpecificDuplicates(
+    featureId: string,
+    result: { cleaned: string[]; errors: string[] }
+  ): Promise<boolean> {
+    let foundDuplicates = false;
+
+    // Get all project folders
+    const projectPattern = path.join(this.specsDir, '*', featureId);
+    const projectActiveFolders = await glob(projectPattern, {
+      ignore: ['**/node_modules/**', '**/_features/**', '**/_epics/**', '**/_archive/**']
+    });
+
+    for (const activeFolder of projectActiveFolders) {
+      const projectId = path.basename(path.dirname(activeFolder));
+      const archiveFolder = path.join(this.specsDir, projectId, '_archive', featureId);
+
+      // If both active and archive exist → remove active (duplicate)
+      const activeExists = await fs.pathExists(activeFolder);
+      const archiveExists = await fs.pathExists(archiveFolder);
+
+      if (activeExists && archiveExists) {
+        try {
+          await fs.remove(activeFolder);
+          console.log(`      ✅ Removed project duplicate: ${projectId}/${featureId}`);
+          result.cleaned.push(`${projectId}/${featureId}`);
+          foundDuplicates = true;
+        } catch (error) {
+          const errMsg = `Failed to clean ${projectId}/${featureId}: ${error}`;
+          console.error(`      ❌ ${errMsg}`);
+          result.errors.push(errMsg);
+        }
+      }
+    }
+
+    return foundDuplicates;
   }
 }

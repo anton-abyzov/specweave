@@ -145,15 +145,15 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I know which User Stories are complete vs in-progress
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: `/specweave:progress` displays task completion grouped by User Story
+- [x] **AC-US5-01**: `/specweave:progress` displays task completion grouped by User Story
   - **Priority**: P1 (Important)
   - **Testable**: Yes (progress command test)
 
-- [ ] **AC-US5-02**: Progress output shows: `US-001: [8/11 tasks completed] 73%`
+- [x] **AC-US5-02**: Progress output shows: `US-001: [8/11 tasks completed] 73%`
   - **Priority**: P1 (Important)
   - **Testable**: Yes (output format validation)
 
-- [ ] **AC-US5-03**: Progress summary includes total tasks by US (metadata.json frontmatter: `by_user_story`)
+- [x] **AC-US5-03**: Progress summary includes total tasks by US (metadata.json frontmatter: `by_user_story`)
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (frontmatter generation test)
 
@@ -227,7 +227,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (interactive prompt test)
   - **Notes**: Warn if import > 100 items, require explicit confirmation
 
-- [ ] **AC-US7-08**: Support GitHub, JIRA, and Azure DevOps imports
+- [x] **AC-US7-08**: Support GitHub, JIRA, and Azure DevOps imports
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (multi-platform import test)
   - **Notes**: Shared importer interface, platform-specific adapters
@@ -268,7 +268,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Completed by**: T-029 (Updated parsers to handle E suffix)
   - **Notes**: Spec.md and tasks.md support both formats simultaneously
 
-- [ ] **AC-US8-05**: ID uniqueness validation before assignment
+- [x] **AC-US8-05**: ID uniqueness validation before assignment
   - **Priority**: P1 (Important)
   - **Testable**: Yes (collision detection test)
   - **Notes**: Abort ID generation if duplicate detected, log error
@@ -292,30 +292,31 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Notes**: Living docs frontmatter `origin`, `externalId`, `externalUrl`
   - **Completed by**: T-032 (origin-metadata.ts + 44 passing tests)
 
-- [ ] **AC-US9-02**: Three independent permission settings in config.json control external tool sync behavior
+- [x] **AC-US9-02**: Three independent permission settings in config.json control external tool sync behavior
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (permission validation test)
   - **Notes**: config.json `sync.settings`: canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus (all default: false for safety). Source of truth is config.json ONLY.
 
-- [ ] **AC-US9-03**: When canUpsertInternalItems=true, internal US creates external item AND syncs ongoing content updates
+- [x] **AC-US9-03**: When canUpsertInternalItems=true, internal US creates external item AND syncs ongoing content updates
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (upsert permission test)
   - **Notes**: UPSERT = CREATE initially + UPDATE as work progresses. Controls: title, description, ACs. Flow: increment → living spec → CREATE external item → UPDATE on task completion. If false, stops before external item creation (local-only workflow).
 
-- [ ] **AC-US9-04**: When canUpdateExternalItems=true, external US content updates sync back to external tool (full content updates)
+- [x] **AC-US9-04**: When canUpdateExternalItems=true, external US content updates sync back to external tool (full content updates)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (external update permission test)
   - **Notes**: Controls: full content updates of externally-originated items (title, description, ACs, tasks/subtasks, success criteria, comments). Flow: increment progress → living spec → UPDATE external tool. If false, no sync to external tool (read-only snapshot).
 
-- [ ] **AC-US9-05**: When canUpdateStatus=true, status updates sync to external tool (for BOTH internal AND external items)
+- [x] **AC-US9-05**: When canUpdateStatus=true, status updates sync to external tool (for BOTH internal AND external items)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (status permission test)
   - **Notes**: Controls: status field ONLY. Works for both internal and external items. If false, no status updates regardless of item origin (manual status management in external tool).
 
-- [ ] **AC-US9-06**: External items preserve original external ID for reference
+- [x] **AC-US9-06**: External items preserve original external ID for reference
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (external ID preservation test)
   - **Notes**: Store externalId (GH-#638, JIRA-SPEC-789, ADO-12345) and externalUrl
+  - **Completed by**: T-032 (ExternalItemMetadata interface with external_id and external_url fields, 44 tests passing)
 
 - [x] **AC-US9-07**: Living docs show origin badge (🏠 Internal, 🔗 GitHub, 🎫 JIRA, 📋 ADO)
   - **Priority**: P1 (Important)
@@ -329,10 +330,11 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Notes**: Validation prevents changing origin field post-creation
   - **Completed by**: T-034 (immutability validation in updateOriginBadge)
 
-- [ ] **AC-US9-09**: Sync logs track origin-based update conflicts (when full sync enabled: all 3 permissions = true)
+- [x] **AC-US9-09**: Sync logs track origin-based update conflicts (when full sync enabled: all 3 permissions = true)
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (conflict logging test)
   - **Notes**: Log file: .specweave/logs/sync-conflicts.log. Conflicts only possible when canUpsertInternalItems + canUpdateExternalItems + canUpdateStatus all enabled.
+  - **Completed by**: Extended SyncEventLogger with loadConflicts() and dedicated sync-conflicts.log file (6 new tests, all passing)
 
 ### US-009A: External Item Format Preservation
 
@@ -341,52 +343,52 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** external stakeholders see their original content with non-invasive completion comments, not SpecWeave-formatted rewrites
 
 **Acceptance Criteria**:
-- [ ] **AC-US9A-01**: External items preserve original title when syncing to external tool
+- [x] **AC-US9A-01**: External items preserve original title when syncing to external tool
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (format preservation test)
   - **Notes**: GitHub issue "My-Specific-Item" remains unchanged, NOT rewritten to "[FS-888][US-001]"
 
-- [ ] **AC-US9A-02**: External items preserve original description structure
+- [x] **AC-US9A-02**: External items preserve original description structure
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (description preservation test)
   - **Notes**: Original description preserved, NO AC/Task checklist injection
 
-- [ ] **AC-US9A-03**: Completion updates posted as comments ONLY (non-invasive)
+- [x] **AC-US9A-03**: Completion updates posted as comments ONLY (non-invasive)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (comment-only update test)
   - **Notes**: Add comment: "✅ [FS-888][T-042] Task completed", do NOT modify issue body
 
-- [ ] **AC-US9A-04**: Status updates ONLY if canUpdateStatus=true
+- [x] **AC-US9A-04**: Status updates ONLY if canUpdateStatus=true
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (status update conditional test)
   - **Notes**: canUpdateStatus=false → no status update, canUpdateStatus=true → update status via comment or API
 
-- [ ] **AC-US9A-05**: Internal items enforce standard [FS-XXX][US-YYY] format
+- [x] **AC-US9A-05**: Internal items enforce standard [FS-XXX][US-YYY] format
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (internal format enforcement test)
   - **Notes**: Internal items CAN be fully rewritten (title, description, status)
 
-- [ ] **AC-US9A-06**: Format preservation flag in living docs frontmatter
+- [x] **AC-US9A-06**: Format preservation flag in living docs frontmatter
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (metadata field test)
   - **Notes**: `format_preservation: true` for external items, `false` for internal
 
-- [ ] **AC-US9A-07**: Completion comment includes task, AC, and progress info
+- [x] **AC-US9A-07**: Completion comment includes task, AC, and progress info
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (comment format test)
   - **Notes**: Comment format: Task completion, AC satisfaction, progress percentage, links to living docs
 
-- [ ] **AC-US9A-08**: Validation blocks format-breaking updates for external items
+- [x] **AC-US9A-08**: Validation blocks format-breaking updates for external items
   - **Priority**: P1 (Important)
   - **Testable**: Yes (validation test)
   - **Notes**: Error if sync attempts to update title/description for external item
 
-- [ ] **AC-US9A-09**: Sync service routes to comment-only mode based on origin
+- [x] **AC-US9A-09**: Sync service routes to comment-only mode based on origin
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (routing logic test)
   - **Notes**: origin=external → comment-only, origin=internal → full sync
 
-- [ ] **AC-US9A-10**: External title stored in metadata for validation
+- [x] **AC-US9A-10**: External title stored in metadata for validation
   - **Priority**: P1 (Important)
   - **Testable**: Yes (metadata storage test)
   - **Notes**: Store `external_title` field for post-sync validation (ensure title unchanged)
@@ -398,62 +400,62 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I can import new external items created after initial setup
 
 **Acceptance Criteria**:
-- [ ] **AC-US10-01**: `/specweave:import-external` command invokes external tool import coordinator
+- [x] **AC-US10-01**: `/specweave:import-external` command invokes external tool import coordinator
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (command execution test)
   - **Notes**: Separate from `specweave init` - for ongoing imports
 
-- [ ] **AC-US10-02**: Command detects configured external tools (GitHub, JIRA, ADO)
+- [x] **AC-US10-02**: Command detects configured external tools (GitHub, JIRA, ADO)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (tool detection test)
   - **Notes**: GitHub: .git/config remote, JIRA: JIRA_HOST env, ADO: ADO_ORG_URL env
 
-- [ ] **AC-US10-03**: Command supports time range filtering (since last import, 1 month, 3 months, all, custom)
+- [x] **AC-US10-03**: Command supports time range filtering (since last import, 1 month, 3 months, all, custom)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (time range filter test)
   - **Notes**: Default: since last import (from .specweave/sync-metadata.json)
 
-- [ ] **AC-US10-04**: Command supports platform filtering (--github-only, --jira-only, --ado-only, or all)
+- [x] **AC-US10-04**: Command supports platform filtering (--github-only, --jira-only, --ado-only, or all)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (platform filter test)
   - **Notes**: `/specweave:import-external --github-only --since=1m`
 
-- [ ] **AC-US10-05**: Command creates living docs files with E suffix (NO increment creation)
+- [x] **AC-US10-05**: Command creates living docs files with E suffix (NO increment creation)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (output validation test)
   - **Notes**: Same behavior as init import - living docs ONLY
 
-- [ ] **AC-US10-06**: Command shows progress indicator (spinner, item count, platform)
+- [x] **AC-US10-06**: Command shows progress indicator (spinner, item count, platform)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (progress output test)
   - **Notes**: "Importing from GitHub... [25/150] ⠋"
 
-- [ ] **AC-US10-07**: Command displays summary report (items imported, duplicates skipped, errors)
+- [x] **AC-US10-07**: Command displays summary report (items imported, duplicates skipped, errors)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (summary output test)
   - **Notes**: "✅ Imported 42 items (GitHub: 30, JIRA: 12). Skipped 5 duplicates."
 
-- [ ] **AC-US10-08**: Command updates sync metadata (last import timestamp per platform)
+- [x] **AC-US10-08**: Command updates sync metadata (last import timestamp per platform)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (metadata update test)
   - **Notes**: .specweave/sync-metadata.json: `{"github": {"lastImport": "2025-11-19T10:30:00Z"}}`
 
-- [ ] **AC-US10-09**: Command handles rate limiting with retry suggestions
+- [x] **AC-US10-09**: Command handles rate limiting with retry suggestions
   - **Priority**: P1 (Important)
   - **Testable**: Yes (rate limit handling test)
   - **Notes**: GitHub: check X-RateLimit-Remaining header, suggest wait time
 
-- [ ] **AC-US10-10**: Command warns for large imports (> 100 items) with confirmation prompt
+- [x] **AC-US10-10**: Command warns for large imports (> 100 items) with confirmation prompt
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (confirmation prompt test)
   - **Notes**: "⚠️  Found 250 items. Continue? (Y/n)"
 
-- [ ] **AC-US10-11**: Command supports dry-run mode (--dry-run) showing what would be imported
+- [x] **AC-US10-11**: Command supports dry-run mode (--dry-run) showing what would be imported
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (dry-run test)
   - **Notes**: `/specweave:import-external --dry-run --since=1m`
 
-- [ ] **AC-US10-12**: Command skips duplicates (checks existing US-IDs with E suffix)
+- [x] **AC-US10-12**: Command skips duplicates (checks existing US-IDs with E suffix)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (duplicate detection test)
   - **Notes**: If GH-#638 already imported as US-042E, skip with log message
@@ -531,7 +533,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Notes**: Prompt for GitHub Personal Access Token if private repos in selection
   - **Completed by**: T-040 (Octokit authentication with GITHUB_TOKEN)
 
-- [ ] **AC-US11-12**: Allow editing repository selection after initial setup
+- [x] **AC-US11-12**: Allow editing repository selection after initial setup
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (config update test)
   - **Notes**: `specweave config github --edit-repos` command to modify selection
@@ -604,62 +606,63 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** living docs stay clean while preserving historical data in archive
 
 **Acceptance Criteria**:
-- [ ] **AC-US13-01**: Create `/specweave:archive` slash command with feature and epic parameters
+- [x] **AC-US13-01**: Create `/specweave:archive` slash command with feature and epic parameters
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (command invocation test)
   - **Notes**: Syntax: `/specweave:archive feature FS-042` or `/specweave:archive epic SP-FS-047-US-003`
 
-- [ ] **AC-US13-02**: When archiving feature, move entire FS-XXX folder to `.specweave/docs/_archive/specs/`
+- [x] **AC-US13-02**: When archiving feature, move entire FS-XXX folder to `.specweave/docs/_archive/specs/`
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (feature archive test)
   - **Notes**: Move `.specweave/docs/internal/specs/FS-042/` → `.specweave/docs/_archive/specs/FS-042/`
 
-- [ ] **AC-US13-03**: When archiving feature, archive ALL related User Stories (all US-XXX within FS-XXX folder)
+- [x] **AC-US13-03**: When archiving feature, archive ALL related User Stories (all US-XXX within FS-XXX folder)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (cascading archive test)
   - **Notes**: If FS-042 has 5 User Stories, all 5 US folders move to archive
 
-- [ ] **AC-US13-04**: When archiving epic (User Story), move only specific US-XXX folder to archive
+- [x] **AC-US13-04**: When archiving epic (User Story), move only specific US-XXX folder to archive
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (epic archive test)
   - **Notes**: Move `FS-042/us-003e-title.md` → `.specweave/docs/_archive/specs/FS-042/us-003e-title.md`
 
-- [ ] **AC-US13-05**: Preserve folder structure in archive (maintain FS-XXX/US-XXX hierarchy)
+- [x] **AC-US13-05**: Preserve folder structure in archive (maintain FS-XXX/US-XXX hierarchy)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (structure preservation test)
   - **Notes**: Archive maintains same structure: `_archive/specs/FS-042/us-001e-title.md`
 
-- [ ] **AC-US13-06**: Add archive metadata (archived_at timestamp, archived_by user, reason)
+- [x] **AC-US13-06**: Add archive metadata (archived_at timestamp, archived_by user, reason)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (metadata tracking test)
   - **Notes**: Create `.archive-metadata.json` in archived folder with timestamp, user, reason
 
-- [ ] **AC-US13-07**: Support optional reason parameter for audit trail
+- [x] **AC-US13-07**: Support optional reason parameter for audit trail
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (reason tracking test)
-  - **Notes**: `/specweave:archive feature FS-042 --reason="Obsolete after pivot"`
+  - **Notes**: `/specweave:archive-features --reason="Obsolete after pivot"`
+  - **Completed by**: Extended FeatureArchiver with writeArchiveMetadata(), added --reason parameter to command, stores in .archive-metadata.json
 
-- [ ] **AC-US13-08**: Prevent archiving if feature/epic has active increments referencing it
+- [x] **AC-US13-08**: Prevent archiving if feature/epic has active increments referencing it
   - **Priority**: P1 (Important)
   - **Testable**: Yes (active reference check test)
   - **Notes**: Block archive if increment 0050 still references FS-042. Warn user.
 
-- [ ] **AC-US13-09**: Support dry-run mode to preview what will be archived
+- [x] **AC-US13-09**: Support dry-run mode to preview what will be archived
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (dry-run test)
   - **Notes**: `/specweave:archive feature FS-042 --dry-run` shows files to be moved
 
-- [ ] **AC-US13-10**: Create `/specweave:restore` command to unarchive features/epics
+- [x] **AC-US13-10**: Create `/specweave:restore` command to unarchive features/epics
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (restore test)
   - **Notes**: `/specweave:restore feature FS-042` moves back from archive to active
 
-- [ ] **AC-US13-11**: Maintain archived ID registry to prevent reuse (archived IDs remain occupied)
+- [x] **AC-US13-11**: Maintain archived ID registry to prevent reuse (archived IDs remain occupied)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (ID registry test)
   - **Notes**: Even archived FS-042 occupies ID space. New features cannot use FS-042 or FS-042E.
 
-- [ ] **AC-US13-12**: Generate archive summary report (count of features/USs archived, storage size)
+- [x] **AC-US13-12**: Generate archive summary report (count of features/USs archived, storage size)
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (summary report test)
   - **Notes**: Output: "✅ Archived FS-042 (5 User Stories, 42 KB). Total archived: 8 features."

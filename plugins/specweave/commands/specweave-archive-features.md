@@ -19,6 +19,7 @@ Archive features and epics based on their increment archive status. Features are
 - `--update-links`: Update all links to archived items (default: true)
 - `--preserve-active`: Don't archive features with active projects (default: true)
 - `--orphaned`: Also archive orphaned features/epics with no increments/features
+- `--reason <text>`: Optional reason for archiving (for audit trail, AC-US13-07)
 
 ## Examples
 
@@ -31,6 +32,9 @@ Archive features and epics based on their increment archive status. Features are
 
 # Archive including orphaned features
 /specweave:archive-features --orphaned
+
+# Archive with custom reason for audit trail (AC-US13-07)
+/specweave:archive-features --reason="Obsolete after product pivot"
 ```
 
 ## Archive Rules
@@ -80,12 +84,18 @@ task.run(async () => {
   const archiver = new FeatureArchiver(process.cwd());
 
   // Parse options
+  const reasonIndex = process.argv.indexOf('--reason');
+  const customReason = reasonIndex !== -1 && reasonIndex + 1 < process.argv.length
+    ? process.argv[reasonIndex + 1]
+    : undefined;
+
   const options = {
     dryRun: process.argv.includes('--dry-run'),
     updateLinks: !process.argv.includes('--no-update-links'),
     preserveActiveFeatures: !process.argv.includes('--no-preserve-active'),
     archiveOrphanedFeatures: process.argv.includes('--orphaned'),
-    archiveOrphanedEpics: process.argv.includes('--orphaned')
+    archiveOrphanedEpics: process.argv.includes('--orphaned'),
+    customReason: customReason
   };
 
   // Execute archiving
