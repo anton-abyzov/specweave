@@ -29,6 +29,56 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.23.0] - 2025-11-20
+
+### 🐛 Critical Bug Fixes
+
+#### Archive Logic Fixes
+- **Fixed critical archiving bugs** that incorrectly archived 11 features (FS-042 through FS-047)
+- **Root causes resolved**:
+  - String search anti-pattern matched feature references instead of frontmatter fields
+  - Substring matching confused similar IDs (e.g., `0039-ultra-smart` vs `0039-ultra-smart-v2`)
+  - Vacuous truth bug (empty array evaluated as "all archived")
+- **Restored features** from archive to active status
+- **Added archive metadata tracking** for better traceability (`.archive-metadata.json`)
+
+#### Hook Architecture Improvements
+- **Self-contained hook architecture** - Hooks no longer depend on `dist/` directory
+  - Hooks now import from `plugins/*/lib/vendor/` (copied during build)
+  - Eliminates symlink/marketplace incompatibility issues
+- **Fixed execute permissions** on core hooks (`post-task-completion.sh`, `update-status-line.sh`)
+
+### ✨ Features
+
+#### US-Task Linkage (FS-047)
+- **Explicit US-Task linkage in tasks.md** with `userStory` and `satisfiesACs` fields
+- **AC-Task mapping** for full traceability (Task → AC → User Story → Feature)
+- **Automatic living docs sync** for task completion updates
+- **AC coverage validation** to prevent orphan tasks (tasks without AC coverage blocked at `/specweave:done`)
+- **Progress tracking by user story** (e.g., "US-001: 8/11 tasks, 73%")
+- **Migration tooling** for backward compatibility with old increments (0001-0046)
+
+#### Sync Architecture
+- **Three-permission sync direction** architecture implemented (see [Unreleased] section for migration guide)
+- **Bidirectional sync** improvements with conflict resolution
+
+### 📚 Documentation
+- **ADR-0049**: Comprehensive hook registration documentation
+- **Archive logic anti-patterns** documented in CLAUDE.md (Section 13)
+- **US-Task linkage proposal** and implementation guides in increment 0047 reports
+
+### 🔧 Technical Improvements
+- TypeScript error fixes in living-docs-sync
+- Improved archive metadata tracking
+- Process.cwd() elimination in tests (100% complete - all 20 files)
+
+### 📋 Related Work
+- See: `.specweave/increments/0047-us-task-linkage/reports/` for detailed technical documentation
+- See: ADR-0049 for hook registration details
+- See: `.specweave/increments/0047-us-task-linkage/reports/ULTRATHINK-ARCHIVE-LOGIC-BUG.md` for root cause analysis
+
+---
+
 ## [0.22.14] - 2025-11-20
 
 ### Fixed
