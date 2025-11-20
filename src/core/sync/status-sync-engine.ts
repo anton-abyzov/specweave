@@ -224,7 +224,7 @@ export class StatusSyncEngine {
   }
 
   /**
-   * Bidirectional sync (SpecWeave ↔ External)
+   * Three-permission sync (SpecWeave ↔ External)
    *
    * Detects conflict and resolves based on strategy.
    * Syncs in the direction indicated by resolution.

@@ -1,7 +1,7 @@
 /**
  * Integration Tests: Spec Content Synchronization
  *
- * Tests bidirectional sync between SpecWeave specs and external tools:
+ * Tests full sync (all permissions enabled) between SpecWeave specs and external tools:
  * - CONTENT (title, description, user stories): SpecWeave → External Tool (we update)
  * - STATUS (state, workflow): External Tool → SpecWeave (we read)
  *

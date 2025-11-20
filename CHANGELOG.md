@@ -6,6 +6,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [Unreleased]
 
+### Breaking Change: Bidirectional Sync → Three-Permission Architecture (v0.24.0)
+
+**Migration Required**: The old `syncDirection: "bidirectional"` configuration has been replaced with three independent permission flags:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,  // CREATE + UPDATE internal items
+      "canUpdateExternalItems": true,  // UPDATE external items (full content)
+      "canUpdateStatus": true          // UPDATE status (both types)
+    }
+  }
+}
+```
+
+**Automatic Migration**: Existing configs with `syncDirection: "bidirectional"` will be automatically migrated to all three permissions set to `true`.
+
+**See Also**: `.specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md`
+
+
 ---
 
 ## [0.22.7] - 2025-11-19
@@ -1255,6 +1276,27 @@ rm -rf .specweave/docs/internal/projects.old/
 
 ## [Unreleased]
 
+### Breaking Change: Bidirectional Sync → Three-Permission Architecture (v0.24.0)
+
+**Migration Required**: The old `syncDirection: "bidirectional"` configuration has been replaced with three independent permission flags:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,  // CREATE + UPDATE internal items
+      "canUpdateExternalItems": true,  // UPDATE external items (full content)
+      "canUpdateStatus": true          // UPDATE status (both types)
+    }
+  }
+}
+```
+
+**Automatic Migration**: Existing configs with `syncDirection: "bidirectional"` will be automatically migrated to all three permissions set to `true`.
+
+**See Also**: `.specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md`
+
+
 ### ✨ Features
 
 #### Multi-Repo Initialization UX Improvements (Increment 0022)
@@ -2493,6 +2535,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [Unreleased]
+
+### Breaking Change: Bidirectional Sync → Three-Permission Architecture (v0.24.0)
+
+**Migration Required**: The old `syncDirection: "bidirectional"` configuration has been replaced with three independent permission flags:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,  // CREATE + UPDATE internal items
+      "canUpdateExternalItems": true,  // UPDATE external items (full content)
+      "canUpdateStatus": true          // UPDATE status (both types)
+    }
+  }
+}
+```
+
+**Automatic Migration**: Existing configs with `syncDirection: "bidirectional"` will be automatically migrated to all three permissions set to `true`.
+
+**See Also**: `.specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md`
+
 
 ---
 
@@ -5091,6 +5154,27 @@ This is a **major architectural transformation** aligning SpecWeave with Claude 
 ---
 
 ## [Unreleased]
+
+### Breaking Change: Bidirectional Sync → Three-Permission Architecture (v0.24.0)
+
+**Migration Required**: The old `syncDirection: "bidirectional"` configuration has been replaced with three independent permission flags:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,  // CREATE + UPDATE internal items
+      "canUpdateExternalItems": true,  // UPDATE external items (full content)
+      "canUpdateStatus": true          // UPDATE status (both types)
+    }
+  }
+}
+```
+
+**Automatic Migration**: Existing configs with `syncDirection: "bidirectional"` will be automatically migrated to all three permissions set to `true`.
+
+**See Also**: `.specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md`
+
 
 ### 🔒 Architecture
 - **CRITICAL: Root-Level .specweave/ Enforcement (ADR-0014)** - SpecWeave now ONLY supports root-level `.specweave/` folders

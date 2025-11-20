@@ -203,7 +203,7 @@ created: 2025-11-15
 
 - [US-002: Task Mapping](us-002-task-level-mapping.md)
 - [US-003: Status Config](us-003-status-mapping-configuration.md)
-- [US-004: Bidirectional Sync](us-004-bidirectional-status-sync.md)
+- [US-004: Full Sync](us-004-full-status-sync.md)
 
 ---
 
@@ -224,7 +224,7 @@ created: 2025-11-15
       expect(result.body).toContain('## Related User Stories');
       expect(result.body).toContain('US-002: Task Mapping');
       expect(result.body).toContain('US-003: Status Config');
-      expect(result.body).toContain('US-004: Bidirectional Sync');
+      expect(result.body).toContain('US-004: Full Sync');
     });
 
     it('should convert relative links to GitHub blob URLs', async () => {

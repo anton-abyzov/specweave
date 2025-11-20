@@ -78,6 +78,9 @@ export interface ImportConfig {
 
   /** Include child items (subtasks) */
   includeChildren?: boolean;
+
+  /** Page size for pagination (default: 100) */
+  pageSize?: number;
 }
 
 /**

@@ -402,7 +402,7 @@ export async function loadSpecMetadata(specPath: string): Promise<SpecMetadata> 
 }
 
 /**
- * Perform bidirectional sync with conflict resolution
+ * Perform three-permission sync with conflict resolution
  */
 export async function performBidirectionalSync(
   specPath: string,

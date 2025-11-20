@@ -404,7 +404,7 @@ class JiraSyncTest {
                 type: 'paragraph',
                 content: [{
                   type: 'text',
-                  text: '✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates bidirectional sync from SpecWeave → Jira.'
+                  text: '✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates full sync (all permissions enabled) from SpecWeave → Jira.'
                 }]
               }]
             }
@@ -456,11 +456,11 @@ class JiraSyncTest {
         name: testName,
         status: successfulSyncs >= 1 ? 'PASS' : 'FAIL',
         duration: Date.now() - start,
-        message: `Verified bidirectional sync for ${successfulSyncs}/${totalSyncs} issues`,
+        message: `Verified full sync (all permissions enabled) for ${successfulSyncs}/${totalSyncs} issues`,
         details: syncResults
       });
 
-      console.log(`\n${successfulSyncs >= 1 ? '✅ PASS' : '❌ FAIL'}: ${successfulSyncs}/${totalSyncs} bidirectional syncs verified\n`);
+      console.log(`\n${successfulSyncs >= 1 ? '✅ PASS' : '❌ FAIL'}: ${successfulSyncs}/${totalSyncs} full sync (all permissions enabled)s verified\n`);
     } catch (error: any) {
       this.results.push({
         name: testName,

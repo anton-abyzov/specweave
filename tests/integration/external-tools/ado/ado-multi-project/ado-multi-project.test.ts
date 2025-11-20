@@ -5,7 +5,7 @@
  * - Initialization with multiple projects
  * - Project detection and mapping
  * - Folder structure creation
- * - Bidirectional sync
+ * - Full sync (all permissions enabled)
  * - Cross-project dependencies
  */
 

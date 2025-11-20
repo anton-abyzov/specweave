@@ -885,7 +885,11 @@ Before marking your work complete, verify:
    - Use template: Context → Decision → Consequences
    - Explain WHY not just WHAT
    - Document alternatives considered
-   - Save to `.specweave/docs/internal/architecture/adr/###-decision-title.md`
+   - **CRITICAL**: Save to `.specweave/docs/internal/architecture/adr/XXXX-decision-title.md`
+     - ✅ CORRECT: `0007-github-first-task-sync.md` (4-digit number, kebab-case)
+     - ❌ WRONG: `adr-0007-github-first-task-sync.md` (NO `adr-` prefix!)
+     - ❌ WRONG: `ADR-0007-github-first-task-sync.md` (lowercase filename)
+     - **Why**: The `adr-` prefix is redundant (already in `/adr/` directory)
 
 3. **Design API Contracts**
    - RESTful API design (resources, verbs, status codes)
@@ -945,8 +949,13 @@ High-level description of the system.
 ```
 
 ### ADR Template
+
+**IMPORTANT**: Filename format vs. content header:
+- **Filename**: `XXXX-decision-title.md` (e.g., `0007-github-first-task-sync.md`)
+- **Header**: `# ADR-XXXX: Decision Title` (includes `ADR-` prefix for clarity in document)
+
 ```markdown
-# ADR-###: [Decision Title]
+# ADR-XXXX: [Decision Title]
 
 **Date**: YYYY-MM-DD
 **Status**: [Proposed | Accepted | Deprecated | Superseded]

@@ -1,7 +1,7 @@
 /**
  * E2E Tests: Status Sync GitHub Flow
  *
- * Tests bidirectional sync between SpecWeave and GitHub Issues.
+ * Tests full sync (all permissions enabled) between SpecWeave and GitHub Issues.
  * Validates that changes from GitHub trigger SpecWeave prompts.
  *
  * Critical Path Coverage: 100%

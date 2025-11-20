@@ -18,6 +18,10 @@ import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { generateInitialIncrement } from '../helpers/init/initial-increment-generator.js';
+import { ImportCoordinator, CoordinatorConfig, CoordinatorResult } from '../../importers/import-coordinator.js';
+import type { ImportConfig } from '../../importers/external-importer.js';
+import { ItemConverter } from '../../importers/item-converter.js';
+import { loadImportConfig } from '../../config/import-config.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -1274,7 +1278,7 @@ export async function initCommand(
           // No existing config - run setup
           if (isFrameworkRepo) {
             console.log(chalk.blue('\n🔍 Detected SpecWeave framework repository'));
-            console.log(chalk.gray('   Recommended: Configure GitHub sync for automatic bidirectional sync'));
+            console.log(chalk.gray('   Recommended: Configure GitHub sync with full permissions (upsert, update, status)'));
             console.log('');
           }
 
@@ -1301,6 +1305,27 @@ export async function initCommand(
         // Non-critical - folders can be created manually later
         if (process.env.DEBUG) {
           console.error(chalk.yellow(`\n⚠️  Multi-project folder creation skipped: ${error.message}`));
+        }
+      }
+
+      // 10.6.5 External Tool Import (T-025)
+      // Import existing work items from GitHub, JIRA, or Azure DevOps
+      // ONLY run if NOT continuing existing project (fresh start or new project)
+      if (!continueExisting) {
+        try {
+          const importResult = await promptAndRunExternalImport(targetDir, isCI);
+          if (importResult.totalCount > 0) {
+            console.log(chalk.green(`\n✅ Imported ${importResult.totalCount} items from ${importResult.platforms.join(', ')}`));
+            console.log(chalk.gray('   → Items saved to .specweave/docs/internal/specs/'));
+            console.log('');
+          }
+        } catch (error: any) {
+          // Non-critical - can import later manually
+          if (process.env.DEBUG) {
+            console.error(chalk.red(`\n❌ Import error: ${error.message}`));
+          }
+          console.log(chalk.yellow('\n⚠️  External tool import skipped (can run later)'));
+          console.log(chalk.gray('   → Use: specweave import --from github'));
         }
       }
     }
@@ -1476,6 +1501,329 @@ export async function initCommand(
     spinner.fail('Failed to create project');
     console.error(chalk.red(`\n${locale.t('cli', 'init.genericError')}`), error);
     process.exit(1);
+  }
+}
+
+/**
+ * Detect GitHub repository owner and name from git remote
+ * Parses .git/config to extract GitHub remote URL
+ */
+function detectGitHubRemote(targetDir: string): { owner: string; repo: string } | null {
+  try {
+    const gitConfigPath = path.join(targetDir, '.git', 'config');
+    if (!fs.existsSync(gitConfigPath)) {
+      return null;
+    }
+
+    const gitConfig = fs.readFileSync(gitConfigPath, 'utf-8');
+
+    // Match GitHub remote URLs (both HTTPS and SSH)
+    // HTTPS: https://github.com/owner/repo.git
+    // SSH: git@github.com:owner/repo.git
+    const httpsMatch = gitConfig.match(/https:\/\/github\.com\/([^/]+)\/([^/\s]+?)(?:\.git)?(?:\s|$)/);
+    const sshMatch = gitConfig.match(/git@github\.com:([^/]+)\/([^/\s]+?)(?:\.git)?(?:\s|$)/);
+
+    const match = httpsMatch || sshMatch;
+    if (match) {
+      return {
+        owner: match[1],
+        repo: match[2].replace(/\.git$/, '')
+      };
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Detect JIRA configuration from environment or .env file
+ */
+function detectJiraConfig(targetDir: string): { host: string; email?: string; apiToken?: string } | null {
+  try {
+    // Check environment variables first
+    const envHost = process.env.JIRA_HOST;
+    const envEmail = process.env.JIRA_EMAIL;
+    const envToken = process.env.JIRA_API_TOKEN;
+
+    if (envHost && envEmail && envToken) {
+      return { host: envHost, email: envEmail, apiToken: envToken };
+    }
+
+    // Check .env file
+    const envPath = path.join(targetDir, '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFile(envContent);
+
+      const fileHost = envVars.JIRA_HOST;
+      const fileEmail = envVars.JIRA_EMAIL;
+      const fileToken = envVars.JIRA_API_TOKEN;
+
+      if (fileHost && fileEmail && fileToken) {
+        return { host: fileHost, email: fileEmail, apiToken: fileToken };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Detect Azure DevOps configuration from environment or .env file
+ */
+function detectADOConfig(targetDir: string): { orgUrl: string; project: string; pat?: string } | null {
+  try {
+    // Check environment variables first
+    const envOrgUrl = process.env.ADO_ORG_URL;
+    const envProject = process.env.ADO_PROJECT;
+    const envPat = process.env.ADO_PAT || process.env.AZURE_DEVOPS_PAT;
+
+    if (envOrgUrl && envProject && envPat) {
+      return { orgUrl: envOrgUrl, project: envProject, pat: envPat };
+    }
+
+    // Check .env file
+    const envPath = path.join(targetDir, '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFile(envContent);
+
+      const fileOrgUrl = envVars.ADO_ORG_URL;
+      const fileProject = envVars.ADO_PROJECT;
+      const filePat = envVars.ADO_PAT || envVars.AZURE_DEVOPS_PAT;
+
+      if (fileOrgUrl && fileProject && filePat) {
+        return { orgUrl: fileOrgUrl, project: fileProject, pat: filePat };
+      }
+    }
+
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Prompt user and run external tool import
+ * Detects GitHub/JIRA/ADO configuration and imports work items
+ */
+async function promptAndRunExternalImport(targetDir: string, isCI: boolean): Promise<CoordinatorResult> {
+  // Load import configuration (T-027)
+  const importConfig = loadImportConfig(targetDir);
+
+  // Check if import is disabled via config
+  if (!importConfig.enabled) {
+    return {
+      results: [],
+      totalCount: 0,
+      allItems: [],
+      errors: {},
+      platforms: []
+    };
+  }
+
+  // Detect available external tools
+  const githubRemote = detectGitHubRemote(targetDir);
+  const jiraConfig = detectJiraConfig(targetDir);
+  const adoConfig = detectADOConfig(targetDir);
+
+  const availableTools: string[] = [];
+  if (githubRemote) availableTools.push('GitHub');
+  if (jiraConfig) availableTools.push('JIRA');
+  if (adoConfig) availableTools.push('Azure DevOps');
+
+  // If no tools detected, skip import
+  if (availableTools.length === 0) {
+    return {
+      results: [],
+      totalCount: 0,
+      allItems: [],
+      errors: {},
+      platforms: []
+    };
+  }
+
+  console.log(chalk.blue('\n🔍 External Tool Detection'));
+  console.log(chalk.gray(`   Found: ${availableTools.join(', ')}`));
+  console.log('');
+
+  // In CI mode, skip import without prompting
+  if (isCI) {
+    console.log(chalk.gray('   → CI mode: Skipping import (can run manually later)\n'));
+    return {
+      results: [],
+      totalCount: 0,
+      allItems: [],
+      errors: {},
+      platforms: []
+    };
+  }
+
+  // Prompt user to import
+  const { shouldImport } = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'shouldImport',
+      message: `Import existing work items from ${availableTools.join(', ')}?`,
+      default: false
+    }
+  ]);
+
+  if (!shouldImport) {
+    console.log(chalk.gray('   ✓ Skipping import\n'));
+    return {
+      results: [],
+      totalCount: 0,
+      allItems: [],
+      errors: {},
+      platforms: []
+    };
+  }
+
+  // Map config timeRangeMonths to closest prompt option
+  let defaultTimeRange = 3; // Default to 3 months
+  if (importConfig.timeRangeMonths === 1) defaultTimeRange = 1;
+  else if (importConfig.timeRangeMonths <= 3) defaultTimeRange = 3;
+  else if (importConfig.timeRangeMonths <= 6) defaultTimeRange = 6;
+  else defaultTimeRange = 999;
+
+  // Prompt for time range (with config default)
+  const { timeRange } = await inquirer.prompt([
+    {
+      type: 'list',
+      name: 'timeRange',
+      message: 'How far back should we import?',
+      choices: [
+        { name: '1 month (recent items only)', value: 1 },
+        { name: '3 months (recommended)', value: 3 },
+        { name: '6 months (comprehensive)', value: 6 },
+        { name: 'All time (warning: may be slow)', value: 999 }
+      ],
+      default: defaultTimeRange
+    }
+  ]);
+
+  // Build coordinator configuration
+  const coordinatorConfig: CoordinatorConfig = {
+    importConfig: {
+      timeRangeMonths: timeRange,
+      includeClosed: false, // Only open/in-progress items
+      pageSize: importConfig.pageSize // Use config page size (T-027)
+    },
+    parallel: true
+  };
+
+  // Add GitHub config if available
+  if (githubRemote) {
+    coordinatorConfig.github = {
+      owner: githubRemote.owner,
+      repo: githubRemote.repo,
+      token: process.env.GITHUB_TOKEN
+    };
+  }
+
+  // Add JIRA config if available
+  if (jiraConfig) {
+    coordinatorConfig.jira = {
+      host: jiraConfig.host,
+      email: jiraConfig.email,
+      apiToken: jiraConfig.apiToken
+    };
+  }
+
+  // Add ADO config if available
+  if (adoConfig) {
+    coordinatorConfig.ado = {
+      orgUrl: adoConfig.orgUrl,
+      project: adoConfig.project,
+      pat: adoConfig.pat
+    };
+  }
+
+  // Run import with progress tracking
+  const spinner = ora('Importing items...').start();
+
+  let totalImported = 0;
+  coordinatorConfig.onProgress = (platform: string, count: number) => {
+    spinner.text = `Importing from ${platform}... (${count} items)`;
+    totalImported = count;
+  };
+
+  try {
+    const coordinator = new ImportCoordinator(coordinatorConfig);
+    const result = await coordinator.importAll();
+
+    spinner.succeed(`Imported ${result.totalCount} items`);
+
+    // Show breakdown by platform
+    if (result.results.length > 0) {
+      console.log('');
+      result.results.forEach(platformResult => {
+        console.log(chalk.gray(`   ✓ ${platformResult.platform}: ${platformResult.count} items`));
+      });
+    }
+
+    // Show errors if any
+    if (Object.keys(result.errors).length > 0) {
+      console.log('');
+      console.log(chalk.yellow('   ⚠️  Some imports failed:'));
+      Object.entries(result.errors).forEach(([platform, errors]) => {
+        console.log(chalk.gray(`   → ${platform}: ${errors.join(', ')}`));
+      });
+    }
+
+    // Warn if many items detected
+    if (result.totalCount > 100) {
+      console.log('');
+      console.log(chalk.yellow(`   ⚠️  Imported ${result.totalCount} items (large dataset)`));
+      console.log(chalk.gray('   → Consider using time range filters for faster imports'));
+    }
+
+    // Convert imported items to living docs User Stories
+    // CRITICAL: This ONLY creates living docs, NOT increments
+    if (result.totalCount > 0) {
+      spinner.start('Converting to living docs...');
+
+      try {
+        const specsDir = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs');
+        const converter = new ItemConverter({ specsDir });
+
+        const convertedStories = await converter.convertItems(result.allItems);
+
+        spinner.succeed(`Converted ${convertedStories.length} User Stories to living docs`);
+        console.log(chalk.gray(`   → Living docs created with E suffix (US-001E, US-002E, ...)`));
+        console.log(chalk.gray(`   → Location: .specweave/docs/internal/specs/`));
+        console.log('');
+
+        // Validate that no increments were auto-created
+        try {
+          ItemConverter.validateNoIncrementsCreated(targetDir);
+        } catch (validationError: any) {
+          spinner.fail('Import validation failed');
+          throw new Error(
+            `CRITICAL ERROR: ${validationError.message}\n` +
+            `This is a bug in the import system. Please report it.`
+          );
+        }
+
+        console.log(chalk.blue('   💡 Next steps:'));
+        console.log(chalk.gray('   → Review imported User Stories in living docs'));
+        console.log(chalk.gray('   → Create increments manually when ready: /specweave:increment "feature"'));
+        console.log('');
+      } catch (conversionError: any) {
+        spinner.fail('Conversion to living docs failed');
+        throw conversionError;
+      }
+    }
+
+    return result;
+  } catch (error: any) {
+    spinner.fail('Import failed');
+    throw error;
   }
 }
 

@@ -706,16 +706,18 @@ EOF
   log_info ""
   log_info "🔗 Checking GitHub issue auto-creation..."
 
-  # Check if auto-create is enabled in config
-  local auto_create=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 2 '"settings"' | grep -o '"autoCreateIssue"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  # Check if upsert permission is enabled in config (v0.24.0+: Three-Permission Architecture)
+  local can_upsert=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 5 '"settings"' | grep -o '"canUpsertInternalItems"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
 
   # DEPRECATED: Override to false unless explicitly enabled via env var
+  # This entire section is deprecated - use /specweave-github:sync for User Story-level issues
   if [ "$SPECWEAVE_ENABLE_INCREMENT_GITHUB_SYNC" != "true" ]; then
-    auto_create="false"
+    can_upsert="false"
     log_debug "Increment GitHub sync disabled (use /specweave-github:sync for User Story-level issues)"
   fi
 
-  log_debug "Auto-create GitHub issue: $auto_create"
+  log_debug "Can upsert internal items (deprecated increment sync): $can_upsert"
+  local auto_create="$can_upsert"  # Backward compatibility alias
 
   if [ "$auto_create" = "true" ]; then
     log_info "  ⚠️  WARNING: Increment-level sync is DEPRECATED"

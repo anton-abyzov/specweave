@@ -137,7 +137,30 @@ You → Manual → Write docs ❌ (4 hours/week wasted)
 
 **Total waste**: 9 hours/week = $35K/year per developer
 
-### The SpecWeave Solution: Bidirectional AI Integration
+### The SpecWeave Solution: AI with Three-Permission Sync
+
+**Control EXACTLY what Claude updates with three simple questions**:
+
+```mermaid
+graph TB
+    A[👤 You + Claude] -->|"Plan feature:\n/specweave:increment"| B{Q1: Can Claude CREATE\nand UPDATE work items\nit created?}
+    B -->|"✅ Yes"| C[📝 Create GitHub Issue #142]
+    B -->|"❌ No"| D[💻 Local Mode Only]
+
+    E[✅ Task Complete] -->|"Update content?"| F{Q2: Can Claude UPDATE\nwork items created\nexternally?}
+    F -->|"✅ Yes"| G[📤 Update PM-Created Issues]
+    F -->|"❌ No"| H[📋 Living Docs Only]
+
+    I[🔔 Issue Closed] -->|"Sync status?"| J{Q3: Can Claude UPDATE\nstatus of work items?}
+    J -->|"✅ Yes"| K[✅ Sync Status]
+    J -->|"❌ No"| L[👤 Manual Management]
+
+    style B fill:#339af0,stroke:#1971c2,stroke-width:3px,color:#fff
+    style F fill:#51cf66,stroke:#2f9e44,stroke-width:3px,color:#fff
+    style J fill:#ff8c42,stroke:#e8590c,stroke-width:3px,color:#fff
+```
+
+**Answer 3 questions during `specweave init`, Claude handles everything else**:
 
 ```
 You → Claude → EVERYTHING (automatic!)
@@ -146,20 +169,20 @@ You → Claude → EVERYTHING (automatic!)
 
 Claude creates:
 ✅ Spec.md (user stories, acceptance criteria)
-✅ JIRA Epic + 5 Stories (auto-created in your JIRA!)
-✅ GitHub Issue #142 (auto-created in your repo!)
+✅ JIRA Epic + 5 Stories (auto-created if Q1=Yes)
+✅ GitHub Issue #142 (auto-created if Q1=Yes)
 ✅ Tasks with embedded tests (BDD format)
 
 /specweave:do
 
 Claude implements Task 1:
 ✅ Code (AuthService.ts, tests, 92% coverage)
-✅ JIRA Story → "Done" (updated automatically!)
-✅ GitHub checkbox → ✓ (updated automatically!)
+✅ JIRA Story → "Done" (if Q2=Yes, updated automatically!)
+✅ GitHub checkbox → ✓ (if Q2=Yes, updated automatically!)
 ✅ Docs synced (ADRs, architecture, runbooks)
 ```
 
-**Your team/client/manager sees updates in real-time. You never touched JIRA.**
+**Your team/client/manager sees updates in real-time. Zero manual work.**
 
 ### What This Means in Practice
 
@@ -187,9 +210,9 @@ Claude implements Task 1:
 
 | Platform | Status | Capabilities |
 |----------|--------|--------------|
-| **GitHub Issues** | ✅ Production | Bidirectional sync, task tracking, auto-close, multi-repo |
-| **JIRA** | ✅ Production | Epic/Story sync, status updates, comments, unlimited projects |
-| **Azure DevOps** | ✅ Production | Work items, hierarchy, area paths, team-based organization |
+| **GitHub Issues** | ✅ Production | Three-permission sync, task tracking, auto-close, multi-repo |
+| **JIRA** | ✅ Production | Three-permission sync, Epic/Story sync, status updates, comments |
+| **Azure DevOps** | ✅ Production | Three-permission sync, Work items, hierarchy, area paths |
 | **Linear** | 🔄 Coming Q1 2026 | Full integration planned |
 | **Asana** | 🔄 Coming Q2 2026 | Full integration planned |
 
@@ -326,7 +349,7 @@ specweave init .
 
 ### Production Features
 
-- 🤖 **AI-Native Enterprise Sync** - Claude updates JIRA/GitHub/ADO automatically (bidirectional!)
+- 🤖 **AI-Native Enterprise Sync** - Claude updates JIRA/GitHub/ADO automatically (three-permission control)
 - 📚 **Living Documentation** - Auto-updates after every task (no manual sync!)
 - 🧪 **Test-Aware Planning** - Embedded tests in BDD format (Given/When/Then)
 - 🎯 **Disciplined Progress** - Can't start increment N+1 until N is DONE

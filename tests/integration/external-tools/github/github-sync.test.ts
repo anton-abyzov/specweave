@@ -460,7 +460,7 @@ class GithubSyncTest {
         return;
       }
 
-      // Test bidirectional sync for each created issue
+      // Test full sync (all permissions enabled) for each created issue
       const syncResults: Array<{ profile: string; issue: string; pushed: boolean; pulled: boolean }> = [];
 
       for (const issue of this.createdIssues) {
@@ -469,7 +469,7 @@ class GithubSyncTest {
           if (!profile) continue;
 
           // 1. PUSH: Add comment (SpecWeave → GitHub)
-          const commentBody = `✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates bidirectional sync from SpecWeave → GitHub.`;
+          const commentBody = `✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates full sync (all permissions enabled) from SpecWeave → GitHub.`;
 
           const pushResult = await execFileNoThrow('gh', [
             'issue',
@@ -519,14 +519,14 @@ class GithubSyncTest {
         name: testName,
         status: successfulSyncs >= 1 ? 'PASS' : 'FAIL',
         duration: Date.now() - start,
-        message: `Verified bidirectional sync for ${successfulSyncs}/${totalSyncs} issues`,
+        message: `Verified full sync (all permissions enabled) for ${successfulSyncs}/${totalSyncs} issues`,
         details: syncResults
       });
 
       if (successfulSyncs >= 1) {
-        console.log(`\n✅ PASS: ${successfulSyncs}/${totalSyncs} bidirectional syncs verified\n`);
+        console.log(`\n✅ PASS: ${successfulSyncs}/${totalSyncs} full sync (all permissions enabled)s verified\n`);
       } else {
-        console.log(`\n❌ FAIL: No successful bidirectional syncs\n`);
+        console.log(`\n❌ FAIL: No successful full sync (all permissions enabled)s\n`);
       }
     } catch (error: any) {
       this.results.push({

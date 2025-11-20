@@ -1,11 +1,20 @@
 /**
  * Bidirectional Sync Engine
  *
+ * @deprecated This module is deprecated as of v0.24.0 (Three-Permission Architecture).
+ * The "bidirectional" and "three-permission sync" terminology has been replaced with granular permission controls:
+ * - canUpsertInternalItems: CREATE + UPDATE internal items
+ * - canUpdateExternalItems: UPDATE external items (full content)
+ * - canUpdateStatus: UPDATE status (both types)
+ *
+ * This file is kept for backward compatibility but is no longer actively maintained.
+ * See: .specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md
+ *
  * Handles synchronization between SpecWeave increments and external systems
  * (GitHub, Jira, ADO) in both directions with conflict detection and resolution.
  *
  * Features:
- * - Bidirectional sync (to-external, from-external, both)
+ * - Three-permission sync (to-external, from-external, both)
  * - Conflict detection (field-level granularity)
  * - Interactive conflict resolution
  * - Change tracking (detect what changed since last sync)

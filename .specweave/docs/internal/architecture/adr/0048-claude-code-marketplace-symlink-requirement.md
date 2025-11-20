@@ -1,4 +1,4 @@
-# ADR-0082: Claude Code Marketplace Symlink Requirement for Local Development
+# ADR-0048: Claude Code Marketplace Symlink Requirement for Local Development
 
 **Status**: ✅ Accepted
 **Date**: 2025-11-18

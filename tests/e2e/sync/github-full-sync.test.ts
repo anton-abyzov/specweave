@@ -1,5 +1,5 @@
 /**
- * E2E Test: GitHub Bidirectional Sync
+ * E2E Test: GitHub Full Sync (All Permissions Enabled)
  *
  * Tests the critical team collaboration workflow:
  * 1. Create increment and sync to GitHub issue
@@ -62,7 +62,7 @@ const mockGitHubAPI = {
   }
 };
 
-test.describe('GitHub Bidirectional Sync (E2E)', () => {
+test.describe('GitHub Full Sync (E2E)', () => {
   let testDir: string;
 
   test.beforeEach(async () => {

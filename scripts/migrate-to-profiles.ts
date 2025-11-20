@@ -41,8 +41,9 @@
  *       }
  *     },
  *     settings: {
- *       autoCreateIssue: false,
- *       syncDirection: "bidirectional"
+ *       canUpsertInternalItems: true,
+ *       canUpdateExternalItems: true,
+ *       canUpdateStatus: true
  *     }
  *   }
  * }
@@ -110,8 +111,9 @@ export function migrateToProfiles(projectPath: string): boolean {
       activeProfile: '',
       profiles: {},
       settings: {
-        autoCreateIssue: false,
-        syncDirection: 'bidirectional'
+        canUpsertInternalItems: false,
+        canUpdateExternalItems: false,
+        canUpdateStatus: false
       }
     };
 

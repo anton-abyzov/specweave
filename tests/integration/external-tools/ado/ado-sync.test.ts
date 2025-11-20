@@ -424,7 +424,7 @@ class AdoSyncTest {
           // 1. PUSH: Add comment (SpecWeave → ADO)
           const commentUrl = `https://dev.azure.com/${org}/${profile.project}/_apis/wit/workitems/${workItem.workItemId}/comments?api-version=7.1-preview`;
           const comment = {
-            text: '✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates bidirectional sync from SpecWeave → ADO.'
+            text: '✅ Task T-001: Integration test progress\n\nProgress: 50% complete (1/2 tasks)\n\nThis demonstrates full sync (all permissions enabled) from SpecWeave → ADO.'
           };
 
           const pushResponse = await fetch(commentUrl, {
@@ -467,11 +467,11 @@ class AdoSyncTest {
         name: testName,
         status: successfulSyncs >= 1 ? 'PASS' : 'FAIL',
         duration: Date.now() - start,
-        message: `Verified bidirectional sync for ${successfulSyncs}/${totalSyncs} work items`,
+        message: `Verified full sync (all permissions enabled) for ${successfulSyncs}/${totalSyncs} work items`,
         details: syncResults
       });
 
-      console.log(`\n${successfulSyncs >= 1 ? '✅ PASS' : '❌ FAIL'}: ${successfulSyncs}/${totalSyncs} bidirectional syncs verified\n`);
+      console.log(`\n${successfulSyncs >= 1 ? '✅ PASS' : '❌ FAIL'}: ${successfulSyncs}/${totalSyncs} full sync (all permissions enabled)s verified\n`);
     } catch (error: any) {
       this.results.push({
         name: testName,

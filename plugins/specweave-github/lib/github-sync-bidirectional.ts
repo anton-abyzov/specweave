@@ -1,6 +1,15 @@
 /**
  * Bidirectional GitHub Sync
  *
+ * @deprecated This module is deprecated as of v0.24.0 (Three-Permission Architecture).
+ * The "bidirectional" terminology has been replaced with granular permission controls:
+ * - canUpsertInternalItems: CREATE + UPDATE internal items
+ * - canUpdateExternalItems: UPDATE external items (full content)
+ * - canUpdateStatus: UPDATE status (both types)
+ *
+ * This file is kept for backward compatibility but is no longer actively maintained.
+ * See: .specweave/increments/0047-us-task-linkage/reports/THREE-PERMISSION-ARCHITECTURE-CHANGES.md
+ *
  * Syncs state from GitHub back to SpecWeave.
  * Handles issue state changes, comments, assignees, labels, milestones.
  *
@@ -90,7 +99,7 @@ export async function syncFromGitHub(incrementId: string): Promise<void> {
     // 7. Update metadata
     await updateMetadata(incrementId, githubState);
 
-    console.log('✅ Bidirectional sync complete');
+    console.log('✅ Three-permission sync complete');
 
   } catch (error) {
     console.error('❌ Error syncing from GitHub:', error);

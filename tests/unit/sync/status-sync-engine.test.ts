@@ -138,7 +138,7 @@ describe('StatusSyncEngine', () => {
   });
 
   describe('bidirectionalSync', () => {
-    it('should perform bidirectional sync (no conflict)', async () => {
+    it('should perform full sync (all permissions enabled) (no conflict)', async () => {
       const result = await engine.bidirectionalSync({
         incrementId: '0031-test',
         tool: 'github',
@@ -153,7 +153,7 @@ describe('StatusSyncEngine', () => {
       expect(result.action).toBe('no-sync-needed');
     });
 
-    it('should perform bidirectional sync (conflict resolved by timestamp)', async () => {
+    it('should perform full sync (all permissions enabled) (conflict resolved by timestamp)', async () => {
       const result = await engine.bidirectionalSync({
         incrementId: '0031-test',
         tool: 'github',
@@ -301,7 +301,7 @@ describe('StatusSyncEngine', () => {
       expect(result.direction).toBe('from-external');
     });
 
-    it('should return bidirectional for bidirectional sync', async () => {
+    it('should return bidirectional for full sync (all permissions enabled)', async () => {
       const result = await engine.bidirectionalSync({
         incrementId: '0031-test',
         tool: 'github',
