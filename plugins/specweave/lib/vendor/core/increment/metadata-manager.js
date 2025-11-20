@@ -39,40 +39,40 @@ export class MetadataManager {
     /**
      * Get metadata file path for increment
      */
-    static getMetadataPath(incrementId) {
-        const specweavePath = path.join(process.cwd(), '.specweave');
+    static getMetadataPath(incrementId, rootDir) {
+        const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
     }
     /**
      * Get increment directory path
      */
-    static getIncrementPath(incrementId) {
-        const specweavePath = path.join(process.cwd(), '.specweave');
+    static getIncrementPath(incrementId, rootDir) {
+        const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
         return path.join(specweavePath, 'increments', incrementId);
     }
     /**
      * Check if metadata file exists
      */
-    static exists(incrementId) {
-        const metadataPath = this.getMetadataPath(incrementId);
+    static exists(incrementId, rootDir) {
+        const metadataPath = this.getMetadataPath(incrementId, rootDir);
         return fs.existsSync(metadataPath);
     }
     /**
      * Read metadata from file
      * Creates default metadata if file doesn't exist (lazy initialization)
      */
-    static read(incrementId) {
-        const metadataPath = this.getMetadataPath(incrementId);
+    static read(incrementId, rootDir) {
+        const metadataPath = this.getMetadataPath(incrementId, rootDir);
         // Lazy initialization: Create metadata if doesn't exist
         if (!fs.existsSync(metadataPath)) {
             // Check if increment folder exists
-            const incrementPath = this.getIncrementPath(incrementId);
+            const incrementPath = this.getIncrementPath(incrementId, rootDir);
             if (!fs.existsSync(incrementPath)) {
                 throw new MetadataError(`Increment not found: ${incrementId}`, incrementId);
             }
             // Create default metadata
             const defaultMetadata = createDefaultMetadata(incrementId);
-            this.write(incrementId, defaultMetadata);
+            this.write(incrementId, defaultMetadata, rootDir);
             // **CRITICAL**: Update active increment state if default status is ACTIVE
             // This ensures that newly created increments are immediately tracked for status line
             // Skip validation to prevent circular dependency during lazy initialization
@@ -148,10 +148,14 @@ export class MetadataManager {
     /**
      * Write metadata to file
      * Uses atomic write (temp file → rename)
+     *
+     * @param incrementId - Increment ID
+     * @param metadata - Metadata to write
+     * @param rootDir - Optional root directory (defaults to process.cwd())
      */
-    static write(incrementId, metadata) {
-        const metadataPath = this.getMetadataPath(incrementId);
-        const incrementPath = this.getIncrementPath(incrementId);
+    static write(incrementId, metadata, rootDir) {
+        const metadataPath = this.getMetadataPath(incrementId, rootDir);
+        const incrementPath = this.getIncrementPath(incrementId, rootDir);
         // Ensure increment directory exists
         if (!fs.existsSync(incrementPath)) {
             throw new MetadataError(`Increment directory not found: ${incrementId}`, incrementId);
@@ -172,8 +176,8 @@ export class MetadataManager {
     /**
      * Delete metadata file
      */
-    static delete(incrementId) {
-        const metadataPath = this.getMetadataPath(incrementId);
+    static delete(incrementId, rootDir) {
+        const metadataPath = this.getMetadataPath(incrementId, rootDir);
         if (!fs.existsSync(metadataPath)) {
             return; // Already deleted
         }
