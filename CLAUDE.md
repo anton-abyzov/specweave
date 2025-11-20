@@ -762,6 +762,190 @@ bash scripts/validate-marketplace-plugins.sh
 - Validation script: `scripts/validate-marketplace-plugins.sh`
 - Fix script: `bin/fix-marketplace-errors.sh`
 
+### 15. Skills vs Agents: Understanding the Distinction (CRITICAL!)
+
+**NEVER confuse skills with agents** - They are different components with different invocation methods.
+
+**The Problem**:
+Empty agent directories cause "Agent type not found" errors when someone tries to invoke them. This happened with `specweave:increment-quality-judge-v2` which existed as a skill but had an empty agent directory.
+
+**Key Differences**:
+
+| Aspect | Skills | Agents |
+|--------|--------|--------|
+| **Location** | `plugins/*/skills/name/SKILL.md` | `plugins/*/agents/name/AGENT.md` |
+| **Invocation** | Skill tool or slash commands | Task tool with `subagent_type` |
+| **Activation** | Automatic (based on keywords) | Explicit (you call them) |
+| **Required File** | `SKILL.md` with YAML frontmatter | `AGENT.md` or agent config |
+| **Purpose** | Expand context with knowledge | Execute multi-step tasks |
+
+**Correct Invocation Examples**:
+
+```typescript
+// ✅ CORRECT: Invoking a skill
+Skill({ skill: "increment-quality-judge-v2" });
+// OR use slash command:
+/specweave:qa 0047
+
+// ✅ CORRECT: Invoking an agent
+Task({
+  subagent_type: "specweave:qa-lead:qa-lead",
+  prompt: "Create test plan for increment 0047"
+});
+
+// ❌ WRONG: Trying to invoke skill as agent
+Task({
+  subagent_type: "specweave:increment-quality-judge-v2",  // ERROR!
+  prompt: "Quality assessment"
+});
+```
+
+**Agent Naming Convention** (CRITICAL!):
+
+Claude Code agents follow a strict naming pattern for `subagent_type`:
+
+**Directory-based agents**: `{plugin-name}:{directory-name}:{name-from-yaml}`
+
+Examples:
+- Agent at `plugins/specweave/agents/qa-lead/AGENT.md` with `name: qa-lead`
+  → Invoke as: `specweave:qa-lead:qa-lead`
+- Agent at `plugins/specweave/agents/pm/AGENT.md` with `name: pm`
+  → Invoke as: `specweave:pm:pm`
+- Agent at `plugins/specweave/agents/architect/AGENT.md` with `name: architect`
+  → Invoke as: `specweave:architect:architect`
+
+**Why the "duplication"?**
+The pattern is `{plugin}:{directory}:{yaml-name}`. When the directory name matches the YAML `name` field (best practice), it creates the appearance of duplication: `qa-lead:qa-lead`.
+
+**File-based agents** (legacy pattern):
+- Agent at `plugins/specweave/agents/code-reviewer.md`
+  → Invoke as: `specweave:code-reviewer` (no duplication)
+
+**How to find the correct agent type**:
+```bash
+# List all available agents
+ls -la plugins/specweave/agents/
+
+# Check YAML name field
+head -5 plugins/specweave/agents/qa-lead/AGENT.md
+# Output: name: qa-lead
+
+# Construct agent type: specweave:qa-lead:qa-lead
+```
+
+**Common Mistakes**:
+```typescript
+// ❌ WRONG: Missing the directory/name duplication
+Task({ subagent_type: "specweave:qa-lead", ... });
+// Error: Agent type 'specweave:qa-lead' not found
+
+// ✅ CORRECT: Full pattern with duplication
+Task({ subagent_type: "specweave:qa-lead:qa-lead", ... });
+```
+
+**Directory Structure Requirements**:
+
+```bash
+# ✅ CORRECT: Skill with SKILL.md
+plugins/specweave/skills/increment-quality-judge-v2/
+  └── SKILL.md  (with YAML frontmatter)
+
+# ✅ CORRECT: Agent with AGENT.md
+plugins/specweave/agents/qa-lead/
+  └── AGENT.md
+
+# ❌ WRONG: Empty agent directory
+plugins/specweave/agents/increment-quality-judge-v2/
+  (empty - no AGENT.md!)
+
+# ❌ WRONG: Skill missing SKILL.md
+plugins/specweave/skills/my-skill/
+  └── some-file.txt  (not SKILL.md!)
+```
+
+**SKILL.md Format** (MANDATORY):
+```yaml
+---
+name: skill-name
+description: What it does AND trigger keywords. Include all variations.
+---
+
+# Skill Content
+
+Your skill documentation here...
+```
+
+**Validation** (MANDATORY before commits):
+
+```bash
+# Check for empty/invalid directories
+bash scripts/validate-plugin-directories.sh
+
+# Auto-fix empty directories
+bash scripts/validate-plugin-directories.sh --fix
+
+# This catches:
+# - Empty agent/skill directories
+# - Missing SKILL.md files
+# - Missing YAML frontmatter
+# - Invalid plugin structures
+```
+
+**Common Mistakes**:
+
+1. **Creating empty agent directories during scaffolding**
+   ```bash
+   # ❌ WRONG
+   mkdir -p plugins/specweave/agents/new-agent
+   git add . && git commit  # Empty directory!
+
+   # ✅ CORRECT
+   mkdir -p plugins/specweave/agents/new-agent
+   echo "---" > plugins/specweave/agents/new-agent/AGENT.md
+   # ... add agent content ...
+   git add . && git commit
+   ```
+
+2. **Copying skill as agent without changing structure**
+   - Skills need `SKILL.md` with YAML
+   - Agents need `AGENT.md` or config
+   - Don't copy-paste between them!
+
+3. **Using wrong invocation method**
+   - Check available skills: Skills list in context
+   - Check available agents: Error message shows all agents
+   - Skills → Skill tool or slash commands
+   - Agents → Task tool
+
+**When to Use Skills vs Agents**:
+
+**Use Skills when**:
+- Providing domain knowledge (e.g., Kafka best practices)
+- Expanding Claude's context with project-specific info
+- Explaining concepts, patterns, frameworks
+- Want automatic activation based on keywords
+
+**Use Agents when**:
+- Need multi-step task execution (e.g., generate docs)
+- Require specialized sub-agent capabilities
+- Building complex workflows with tools
+- Want explicit control over when they run
+
+**Incident History**:
+- **2025-11-20**: `specweave:increment-quality-judge-v2` agent invocation failed because only skill existed. Empty agent directory caused "Agent type not found" error. Fixed by removing empty directory and documenting distinction.
+
+**Prevention**:
+1. Run `bash scripts/validate-plugin-directories.sh` before commits
+2. Never create empty agent/skill directories
+3. Always include required files (SKILL.md, AGENT.md)
+4. Test invocation method matches component type
+5. Use pre-commit hook (blocks invalid structures)
+
+**See Also**:
+- Validation script: `scripts/validate-plugin-directories.sh`
+- Skills index: `plugins/specweave/skills/SKILLS-INDEX.md`
+- Claude Code Skills docs: `~/CLAUDE.md` (Personal skills reference)
+
 ---
 
 ## Project Structure
