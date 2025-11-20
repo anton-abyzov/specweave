@@ -61,7 +61,17 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
     coverageTarget: 80
   };
 
-  MetadataManager.write(incrementId, metadata);
+  // CRITICAL FIX: MetadataManager.write() uses process.cwd() internally,
+  // so we must temporarily change directory to projectPath to ensure
+  // metadata.json is written to the correct location.
+  const originalCwd = process.cwd();
+  try {
+    process.chdir(projectPath);
+    MetadataManager.write(incrementId, metadata);
+  } finally {
+    // Always restore original directory
+    process.chdir(originalCwd);
+  }
 
   return incrementId;
 }
