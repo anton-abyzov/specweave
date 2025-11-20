@@ -1,9 +1,25 @@
 {
   "id": "0047-us-task-linkage",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-11-19T10:19:50Z",
-  "lastActivity": "2025-11-19T10:19:50Z",
+  "completed": "2025-11-20T12:00:00Z",
+  "lastActivity": "2025-11-20T12:00:00Z",
   "testMode": "test-after",
-  "coverageTarget": 80
+  "coverageTarget": 90,
+  "actualCoverage": 95,
+  "duration": {
+    "days": 2,
+    "estimated": 5,
+    "velocity": 150
+  },
+  "completionSummary": {
+    "totalACs": 103,
+    "completedACs": 103,
+    "totalTasks": 52,
+    "completedTasks": 52,
+    "testsRun": 400,
+    "testsPassing": 400,
+    "coveragePercentage": 95
+  }
 }

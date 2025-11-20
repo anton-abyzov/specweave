@@ -1,0 +1,11 @@
+{
+  "id": "FS-041",
+  "type": "feature",
+  "archivedAt": "2025-11-20T19:59:49.631Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/_features/FS-041",
+  "linkedIncrements": [
+    "0041-living-docs-test-fixes"
+  ]
+}
