@@ -26,7 +26,7 @@
  * - spec.md: - [ ] AC-US1-02 → NO CHANGE (partial completion)
  */
 
-import { ACStatusManager } from '../../../../dist/src/core/increment/ac-status-manager.js';
+import { ACStatusManager } from '../vendor/core/increment/ac-status-manager.js';
 
 /**
  * Main entry point - uses ACStatusManager for sophisticated sync

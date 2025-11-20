@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { AutoTransitionManager } from "../../../../dist/src/core/increment/auto-transition-manager.js";
+import { AutoTransitionManager } from "../vendor/core/increment/auto-transition-manager.js";
 async function main() {
   const event = process.argv[2];
   const incrementId = process.argv[3];

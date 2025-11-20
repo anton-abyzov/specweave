@@ -12,7 +12,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import { parseTasksWithUSLinks, getAllTasks } from '../../../../dist/src/generators/spec/task-parser.js';
+import { parseTasksWithUSLinks, getAllTasks } from '../vendor/generators/spec/task-parser.js';
 import { glob } from 'glob';
 import { getCachedTasks, needsSync, recordSync, batchFileUpdates } from './sync-cache.js';
 
@@ -165,7 +165,14 @@ async function updateUSFile(usFilePath, tasks, incrementId) {
   let content = await fs.readFile(usFilePath, 'utf-8');
   let updated = false;
 
-  // 1. Update task list section
+  // 1. Update origin badge (NEW - T-034)
+  const updatedOrigin = updateOriginBadge(content, usFilePath);
+  if (updatedOrigin !== content) {
+    content = updatedOrigin;
+    updated = true;
+  }
+
+  // 2. Update task list section
   const taskList = generateTaskList(tasks, incrementId);
   const newTasksSection = `## Tasks\n\n${taskList}`;
 
@@ -181,7 +188,7 @@ async function updateUSFile(usFilePath, tasks, incrementId) {
     }
   }
 
-  // 2. Update AC checkboxes based on task completion
+  // 3. Update AC checkboxes based on task completion
   const updatedACs = updateACCheckboxes(content, tasks);
   if (updatedACs !== content) {
     content = updatedACs;
@@ -189,6 +196,175 @@ async function updateUSFile(usFilePath, tasks, incrementId) {
   }
 
   return { updated, content };
+}
+
+/**
+ * Update origin badge in User Story file
+ * Detects origin from US ID (E suffix = external)
+ *
+ * @param {string} content - US file content
+ * @param {string} usFilePath - Path to US file
+ * @returns {string} Updated content with origin badge
+ */
+function updateOriginBadge(content, usFilePath) {
+  // Extract US ID from filename (e.g., us-001e-title.md -> US-001E)
+  const filename = path.basename(usFilePath);
+  const usIdMatch = filename.match(/^(us-\d{3}e?)-/i);
+
+  if (!usIdMatch) {
+    return content; // Can't determine US ID, skip
+  }
+
+  const usId = usIdMatch[1].toUpperCase();
+  const isExternal = usId.endsWith('E');
+
+  // Validate origin immutability (prevent internal ↔ external changes)
+  const existingOrigin = extractExistingOrigin(content);
+  if (existingOrigin) {
+    const existingIsExternal = existingOrigin !== 'internal';
+    if (isExternal !== existingIsExternal) {
+      console.log(`   ⚠️  Origin immutable: Cannot change ${usId} from ${existingOrigin} to ${isExternal ? 'external' : 'internal'}`);
+      return content; // Don't modify origin
+    }
+  }
+
+  // Determine origin badge
+  let originBadge;
+  if (isExternal) {
+    // Try to detect external source from metadata
+    const externalSource = detectExternalSource(content);
+    originBadge = getExternalOriginBadge(externalSource, content);
+  } else {
+    originBadge = '🏠 **Internal**';
+  }
+
+  // Check if origin badge already exists
+  const originPattern = /\*\*Origin\*\*:\s*.*/;
+  if (originPattern.test(content)) {
+    // Replace existing origin badge
+    return content.replace(originPattern, `**Origin**: ${originBadge}`);
+  }
+
+  // Add origin badge after frontmatter (if exists) or at beginning
+  const frontmatterEnd = content.match(/^---\n.*?\n---\n/s);
+  if (frontmatterEnd) {
+    const insertPos = frontmatterEnd[0].length;
+    return content.slice(0, insertPos) + `\n**Origin**: ${originBadge}\n\n` + content.slice(insertPos);
+  }
+
+  // No frontmatter, add at beginning after title
+  const titleMatch = content.match(/^#\s+.+\n/);
+  if (titleMatch) {
+    const insertPos = titleMatch[0].length;
+    return content.slice(0, insertPos) + `\n**Origin**: ${originBadge}\n\n` + content.slice(insertPos);
+  }
+
+  // Fallback: add at very beginning
+  return `**Origin**: ${originBadge}\n\n` + content;
+}
+
+/**
+ * Extract existing origin from content (for immutability validation)
+ *
+ * @param {string} content - US file content
+ * @returns {string|null} Existing origin (internal, github, jira, ado) or null
+ */
+function extractExistingOrigin(content) {
+  const originMatch = content.match(/\*\*Origin\*\*:\s*(.+)/);
+  if (!originMatch) {
+    return null;
+  }
+
+  const originText = originMatch[1].toLowerCase();
+  if (originText.includes('internal')) {
+    return 'internal';
+  }
+  if (originText.includes('github')) {
+    return 'github';
+  }
+  if (originText.includes('jira')) {
+    return 'jira';
+  }
+  if (originText.includes('ado') || originText.includes('azure')) {
+    return 'ado';
+  }
+  if (originText.includes('external')) {
+    return 'external'; // Generic external
+  }
+
+  return null;
+}
+
+/**
+ * Detect external source from content metadata
+ *
+ * @param {string} content - US file content
+ * @returns {string} External source (github, jira, ado) or 'unknown'
+ */
+function detectExternalSource(content) {
+  // Check frontmatter for external_source or externalSource
+  const frontmatterMatch = content.match(/^---\n(.*?)\n---/s);
+  if (frontmatterMatch) {
+    const frontmatter = frontmatterMatch[1];
+    if (frontmatter.includes('external_source: github') || frontmatter.includes('externalSource: github')) {
+      return 'github';
+    }
+    if (frontmatter.includes('external_source: jira') || frontmatter.includes('externalSource: jira')) {
+      return 'jira';
+    }
+    if (frontmatter.includes('external_source: ado') || frontmatter.includes('externalSource: ado')) {
+      return 'ado';
+    }
+  }
+
+  // Check for external ID patterns
+  if (content.includes('externalId: GH-') || content.includes('external_id: GH-')) {
+    return 'github';
+  }
+  if (content.includes('externalId: JIRA-') || content.includes('external_id: JIRA-')) {
+    return 'jira';
+  }
+  if (content.includes('externalId: ADO-') || content.includes('external_id: ADO-')) {
+    return 'ado';
+  }
+
+  return 'unknown';
+}
+
+/**
+ * Get external origin badge with link if available
+ *
+ * @param {string} source - External source (github, jira, ado)
+ * @param {string} content - US file content
+ * @returns {string} Origin badge markdown
+ */
+function getExternalOriginBadge(source, content) {
+  // Extract external ID and URL from content
+  const externalIdMatch = content.match(/external_?[iI]d:\s*([^\n]+)/);
+  const externalUrlMatch = content.match(/external_?[uU]rl:\s*([^\n]+)/);
+
+  const externalId = externalIdMatch ? externalIdMatch[1].trim() : null;
+  const externalUrl = externalUrlMatch ? externalUrlMatch[1].trim() : null;
+
+  switch (source) {
+    case 'github':
+      if (externalId && externalUrl) {
+        return `🔗 [GitHub ${externalId}](${externalUrl})`;
+      }
+      return '🔗 **GitHub**';
+    case 'jira':
+      if (externalId && externalUrl) {
+        return `🎫 [JIRA ${externalId}](${externalUrl})`;
+      }
+      return '🎫 **JIRA**';
+    case 'ado':
+      if (externalId && externalUrl) {
+        return `📋 [ADO ${externalId}](${externalUrl})`;
+      }
+      return '📋 **Azure DevOps**';
+    default:
+      return '🔗 **External**';
+  }
 }
 
 /**

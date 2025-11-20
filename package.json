@@ -9,10 +9,11 @@
   },
   "scripts": {
     "clean": "rm -rf dist/",
-    "build": "tsc && npm run copy:locales && npm run copy:plugins",
+    "build": "tsc && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps",
     "rebuild": "npm run clean && npm run build",
     "copy:locales": "node scripts/copy-locales.js",
     "copy:plugins": "node scripts/copy-plugin-js.js",
+    "copy:hook-deps": "node scripts/copy-hook-dependencies.js",
     "dev": "tsc --watch",
     "prepare": "npm run build",
     "prepublishOnly": "npm run rebuild",

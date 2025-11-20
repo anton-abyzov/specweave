@@ -812,9 +812,22 @@ claude plugin marketplace update specweave
 
 ```bash
 npm run rebuild    # Clean + build (use this during development)
-npm run build      # Compile TypeScript
+npm run build      # Compile TypeScript + copy hook dependencies
 npm run clean      # Remove dist/
 ```
+
+**Build Architecture**:
+1. `tsc` compiles `src/**/*.ts` → `dist/src/**/*.js`
+2. `copy:locales` copies translation files
+3. `copy:plugins` compiles plugin TypeScript with esbuild
+4. `copy:hook-deps` **NEW**: Copies hook dependencies to vendor/
+
+**Hook Dependencies** (NEW in v0.22.15):
+- Problem: Hooks imported from `../../../../dist/src/...` (failed in marketplace)
+- Solution: Copy compiled files to `plugins/*/lib/vendor/`
+- Hooks now import from `../vendor/...` (self-contained)
+- Script: `scripts/copy-hook-dependencies.js`
+- Auto-detect deps: `scripts/find-hook-dependencies.js`
 
 **Critical**: Always import with `.js` extensions:
 ```typescript
