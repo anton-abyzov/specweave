@@ -64,7 +64,7 @@ When user runs this command, invoke `ado-manager` agent to perform bidirectional
 
 **Agent Invocation**:
 ```
-Use Task tool with subagent_type: "ado-manager"
+Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
 
 Prompt: "Bidirectional sync for increment 0005-payment-integration with ADO.
 

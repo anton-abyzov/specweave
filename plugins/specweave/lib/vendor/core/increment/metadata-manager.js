@@ -228,20 +228,40 @@ export class MetadataManager {
             metadata.abandonedReason = reason || 'No reason provided';
             metadata.abandonedAt = new Date().toISOString();
         }
-        this.write(incrementId, metadata);
-        // **NEW (T-005)**: Update spec.md frontmatter to keep in sync with metadata.json
+        // **CRITICAL FIX (2025-11-20)**: Atomic transaction with rollback
+        // Update spec.md FIRST, then metadata.json. If spec.md fails, no desync occurs.
+        // This prevents the silent failure bug that caused increment 0047 desync.
+        //
+        // Previous bug: metadata.json updated, spec.md failed silently → desync
+        // New behavior: spec.md fails → error thrown → metadata.json never written
+        //
         // AC-US2-01: updateStatus() updates both metadata.json AND spec.md frontmatter
         // AC-US2-03: All status transitions update spec.md
         // SYNCHRONOUS call to ensure spec.md is updated before returning
         // This prevents race conditions and ensures data consistency
         try {
-            // Use sync version to avoid race conditions in tests
+            // Step 1: Update spec.md (may throw if spec.md exists but has errors)
             this.updateSpecMdStatusSync(incrementId, newStatus);
+            // Step 2: Update metadata.json (only if spec.md succeeded)
+            this.write(incrementId, metadata);
         }
         catch (error) {
-            // Log error but don't fail the status update
-            // This maintains backward compatibility if spec.md doesn't exist or has issues
-            this.logger.error(`Failed to update spec.md for ${incrementId}`, error);
+            // CRITICAL: spec.md update failed - prevent desync by NOT updating metadata.json
+            this.logger.error(`CRITICAL: Failed to update status for ${incrementId} - aborting to prevent desync`, error);
+            // Throw detailed error with fix instructions
+            throw new MetadataError(`Cannot update increment status - spec.md sync failed.\n` +
+                `\n` +
+                `This prevents source-of-truth violations (CLAUDE.md Rule #7).\n` +
+                `Both metadata.json AND spec.md must update atomically.\n` +
+                `\n` +
+                `Error: ${error instanceof Error ? error.message : String(error)}\n` +
+                `\n` +
+                `If this persists, check:\n` +
+                `1. File permissions for .specweave/increments/${incrementId}/spec.md\n` +
+                `2. YAML frontmatter syntax in spec.md\n` +
+                `3. Disk space availability\n` +
+                `\n` +
+                `To check for desyncs, run: /specweave:sync-status`, incrementId, error instanceof Error ? error : undefined);
         }
         // **CRITICAL**: Update active increment state
         const activeManager = new ActiveIncrementManager();

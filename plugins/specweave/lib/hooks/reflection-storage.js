@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { mkdirpSync, writeFileSync, existsSync, readdirSync, statSync, readFileSync, removeSync } from "../utils/fs-native.js";
 import path from "path";
 import { IssueSeverity } from "./types/reflection-types";
 function generateReflectionMarkdown(result) {
@@ -183,12 +183,12 @@ function getReflectionFilename(taskId, timestamp) {
 }
 function saveReflection(result, incrementId, taskId, projectRoot) {
   const logDir = getReflectionLogDir(incrementId, projectRoot);
-  fs.mkdirpSync(logDir);
+  mkdirpSync(logDir);
   const filename = getReflectionFilename(taskId);
   const filepath = path.join(logDir, filename);
   const markdown = generateReflectionMarkdown(result);
   try {
-    fs.writeFileSync(filepath, markdown, "utf-8");
+    writeFileSync(filepath, markdown, "utf-8");
     return filepath;
   } catch (error) {
     throw new Error(`Failed to save reflection: ${error.message}`);
@@ -196,26 +196,26 @@ function saveReflection(result, incrementId, taskId, projectRoot) {
 }
 function listReflections(incrementId, projectRoot) {
   const logDir = getReflectionLogDir(incrementId, projectRoot);
-  if (!fs.existsSync(logDir)) {
+  if (!existsSync(logDir)) {
     return [];
   }
-  const files = fs.readdirSync(logDir).filter((file) => file.endsWith(".md")).map((file) => path.join(logDir, file)).sort((a, b) => {
-    const statA = fs.statSync(a);
-    const statB = fs.statSync(b);
+  const files = readdirSync(logDir).filter((file) => file.endsWith(".md")).map((file) => path.join(logDir, file)).sort((a, b) => {
+    const statA = statSync(a);
+    const statB = statSync(b);
     return statB.mtime.getTime() - statA.mtime.getTime();
   });
   return files;
 }
 function readReflection(filepath) {
   try {
-    return fs.readFileSync(filepath, "utf-8");
+    return readFileSync(filepath, "utf-8");
   } catch (error) {
     throw new Error(`Failed to read reflection: ${error.message}`);
   }
 }
 function deleteReflection(filepath) {
   try {
-    fs.removeSync(filepath);
+    removeSync(filepath);
   } catch (error) {
     throw new Error(`Failed to delete reflection: ${error.message}`);
   }

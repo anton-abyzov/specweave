@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import fs from "fs-extra";
+import { existsSync, readFileSync } from "fs";
 import path from "path";
 function executeGitCommand(command, cwd) {
   try {
@@ -65,10 +65,10 @@ function getFileContent(file, cwd) {
   try {
     const workingDir = cwd || process.cwd();
     const absolutePath = path.isAbsolute(file) ? file : path.join(workingDir, file);
-    if (!fs.existsSync(absolutePath)) {
+    if (!existsSync(absolutePath)) {
       return "";
     }
-    return fs.readFileSync(absolutePath, "utf-8");
+    return readFileSync(absolutePath, "utf-8");
   } catch {
     return "";
   }

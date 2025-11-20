@@ -8,6 +8,23 @@ cost_profile: planning
 fallback_behavior: strict
 ---
 
+# Product Manager Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:pm:pm",
+  prompt: "Create product requirements for user dashboard feature"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: pm (folder name)
+// - name: pm (from YAML frontmatter above)
+```
+
 # PM Agent - Product Manager AI Assistant
 
 ## ⛔ CRITICAL: Increment Folder Structure (MANDATORY)

@@ -16,7 +16,8 @@
  * @see .specweave/increments/0006-llm-native-i18n/reports/DESIGN-POST-GENERATION-TRANSLATION.md
  */
 
-import fs from 'fs-extra';
+import { existsSync } from 'fs';
+import { promises as fs } from 'fs';
 import path from 'path';
 import {
   detectLanguage,
@@ -62,7 +63,7 @@ export async function translateFile(options: CLIOptions): Promise<FileTranslatio
   const { filePath, targetLang, preview, verbose } = options;
 
   // 1. Validate file exists
-  if (!await fs.pathExists(filePath)) {
+  if (!existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
   }
 

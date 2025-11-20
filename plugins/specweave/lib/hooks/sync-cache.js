@@ -11,9 +11,10 @@
  * Part of increment 0047-us-task-linkage (T-012).
  */
 
-import fs from 'fs-extra';
+import { readFileSync, statSync, existsSync, promises as fs } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { mkdirpSync } from '../utils/fs-native.js';
 
 /**
  * In-memory cache with TTL
@@ -97,7 +98,7 @@ const globalCache = new SyncCache();
  */
 export function getFileHash(filePath) {
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
+    const content = readFileSync(filePath, 'utf-8');
     return crypto.createHash('sha256').update(content).digest('hex');
   } catch (error) {
     return null;
@@ -145,7 +146,7 @@ export function getCachedTasks(tasksPath, parser) {
  */
 export function getCachedUSMetadata(usFilePath) {
   try {
-    const stats = fs.statSync(usFilePath);
+    const stats = statSync(usFilePath);
     const cacheKey = `us-metadata:${usFilePath}`;
 
     const cached = globalCache.get(cacheKey);
@@ -156,7 +157,7 @@ export function getCachedUSMetadata(usFilePath) {
     }
 
     // File changed or not in cache - read and cache
-    const content = fs.readFileSync(usFilePath, 'utf-8');
+    const content = readFileSync(usFilePath, 'utf-8');
     const metadata = {
       mtime: stats.mtimeMs,
       metadata: {
@@ -198,7 +199,7 @@ export async function batchFileUpdates(updates) {
   // Write files sequentially within same directory (better disk I/O)
   for (const [dir, fileUpdates] of updatesByDir.entries()) {
     // Ensure directory exists once per directory
-    await fs.ensureDir(dir);
+    await fs.mkdir(dir, { recursive: true });
 
     // Write all files in this directory
     await Promise.all(
@@ -220,13 +221,13 @@ export async function batchFileUpdates(updates) {
 export function needsSync(usFilePath, tasks, tasksPath) {
   try {
     // Check if US file exists
-    if (!fs.existsSync(usFilePath)) {
+    if (!existsSync(usFilePath)) {
       return false; // File doesn't exist, can't sync
     }
 
     // Get file modification times
-    const usStats = fs.statSync(usFilePath);
-    const tasksStats = fs.statSync(tasksPath);
+    const usStats = statSync(usFilePath);
+    const tasksStats = statSync(tasksPath);
 
     // If tasks.md is newer than US file, sync is needed
     if (tasksStats.mtimeMs > usStats.mtimeMs) {

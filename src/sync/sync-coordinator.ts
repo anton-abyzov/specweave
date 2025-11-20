@@ -22,7 +22,7 @@ export interface SyncCoordinatorOptions {
 export interface SyncResult {
   success: boolean;
   userStoriesSynced: number;
-  syncMode: 'comment-only' | 'full-sync' | 'read-only';
+  syncMode: 'comment-only' | 'full-sync' | 'read-only' | 'manual-only';
   errors: string[];
 }
 
@@ -54,13 +54,26 @@ export class SyncCoordinator {
       // 1. Load config
       const config = await this.loadConfig();
 
-      // 2. Check if sync is enabled
+      // 2. Check if sync is enabled (GATE 2: canUpdateExternalItems)
       if (!config.sync?.settings?.canUpdateExternalItems) {
         this.logger.log('ℹ️  External sync disabled (canUpdateExternalItems=false)');
         result.syncMode = 'read-only';
         result.success = true;
         return result;
       }
+
+      // GATE 3: Check if automatic sync is enabled
+      const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? false;
+      if (!autoSync) {
+        this.logger.log('⚠️  Automatic sync disabled (autoSyncOnCompletion=false)');
+        this.logger.log('   Living docs updated locally, but external tools require manual sync');
+        this.logger.log('   Run /specweave-github:sync or /specweave-jira:sync to sync manually');
+        result.syncMode = 'manual-only';
+        result.success = true;
+        return result;
+      }
+
+      this.logger.log('✅ Automatic sync enabled (autoSyncOnCompletion=true)');
 
       // 3. Load living docs User Stories for this increment
       const userStories = await this.loadUserStoriesForIncrement();
@@ -133,7 +146,14 @@ export class SyncCoordinator {
     // Determine external tool and create client
     const externalSource = usFile.external_source || 'github'; // Default to GitHub
 
+    // GATE 4: Check if the specific tool is enabled
     if (externalSource === 'github') {
+      const githubEnabled = config.sync?.github?.enabled ?? false;
+      if (!githubEnabled) {
+        this.logger.log('  ⏭️  GitHub sync SKIPPED (sync.github.enabled = false)');
+        return;
+      }
+
       // Extract owner/repo from config or detect from git
       const githubConfig = config.sync?.github || {};
       const repoInfo = await this.detectGitHubRepo(githubConfig);
@@ -144,8 +164,28 @@ export class SyncCoordinator {
 
       const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
       await syncService.syncUserStory(usFile, completionData, client);
+    } else if (externalSource === 'jira') {
+      const jiraEnabled = config.sync?.jira?.enabled ?? false;
+      if (!jiraEnabled) {
+        this.logger.log('  ⏭️  JIRA sync SKIPPED (sync.jira.enabled = false)');
+        return;
+      }
+
+      // TODO: Implement JIRA sync
+      this.logger.log('  ⚠️  JIRA sync not yet fully implemented');
+      this.logger.log('  💡 Use /specweave-jira:sync for manual JIRA sync');
+    } else if (externalSource === 'ado' || externalSource === 'azure-devops') {
+      const adoEnabled = config.sync?.ado?.enabled ?? false;
+      if (!adoEnabled) {
+        this.logger.log('  ⏭️  Azure DevOps sync SKIPPED (sync.ado.enabled = false)');
+        return;
+      }
+
+      // TODO: Implement ADO sync
+      this.logger.log('  ⚠️  Azure DevOps sync not yet fully implemented');
+      this.logger.log('  💡 Use /specweave-ado:sync for manual ADO sync');
     } else {
-      this.logger.log(`  ⚠️  ${externalSource} sync not yet implemented`);
+      this.logger.log(`  ⚠️  Unknown external source: ${externalSource}`);
     }
   }
 

@@ -22,7 +22,7 @@ When user runs this command, Claude should:
 
 2. **Invoke ADO Manager Agent**:
    ```
-   Use Task tool with subagent_type: "ado-manager"
+   Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
 
    Prompt: "Create ADO work item for increment 0005-payment-integration.
 

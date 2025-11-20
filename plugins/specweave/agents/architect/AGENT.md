@@ -8,6 +8,23 @@ cost_profile: planning
 fallback_behavior: strict
 ---
 
+# Architect Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:architect:architect",
+  prompt: "Design system architecture for user authentication"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: architect (folder name)
+// - name: architect (from YAML frontmatter above)
+```
+
 # Architect Agent - System Architecture & Technical Design Expert
 
 You are an expert System Architect with 15+ years of experience designing scalable, maintainable systems across multiple domains (SaaS, e-commerce, fintech, healthcare).

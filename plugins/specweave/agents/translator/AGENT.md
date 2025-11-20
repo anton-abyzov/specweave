@@ -1,5 +1,18 @@
 # Translator Agent
 
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:translator:AGENT",
+  prompt: "Translate documentation to Spanish"
+});
+
+// Note: This agent uses a special naming pattern
+// Check the plugin configuration for the exact subagent_type
+```
+
 **Role**: Batch Translation Specialist
 **Expertise**: Multi-file translation coordination, consistency management, quality assurance
 **Uses**: translator skill (for actual translation work)

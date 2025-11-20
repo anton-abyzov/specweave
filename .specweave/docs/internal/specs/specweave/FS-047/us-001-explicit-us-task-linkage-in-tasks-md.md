@@ -1,19 +1,15 @@
 ---
 id: US-001
 feature: FS-047
-title: Explicit US-Task Linkage in tasks.md
-status: active
+title: "Explicit US-Task Linkage in tasks.md"
+status: completed
 priority: P0
 created: 2025-11-19
-external:
-  github:
-    issue: 638
-    url: https://github.com/anton-abyzov/specweave/issues/638
 ---
 
 # US-001: Explicit US-Task Linkage in tasks.md
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/630
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/688
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
@@ -41,7 +37,7 @@ external:
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0047-us-task-linkage/tasks.md#T-001): Create task parser with US linkage extraction
-- [x] [T-002](../../../../increments/0047-us-task-linkage/tasks.md#T-002): Add task linkage validation function
-- [x] [T-003](../../../../increments/0047-us-task-linkage/tasks.md#T-003): Update tasks.md template with hierarchical structure
-- [x] [T-004](../../../../increments/0047-us-task-linkage/tasks.md#T-004): Update PM agent prompt to require US linkage
+- [x] **T-001**: Create task parser with US linkage extraction
+- [x] **T-002**: Add task linkage validation function
+- [x] **T-003**: Update tasks.md template with hierarchical structure
+- [x] **T-004**: Update PM agent prompt to require US linkage

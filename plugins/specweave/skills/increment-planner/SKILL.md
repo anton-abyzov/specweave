@@ -350,7 +350,7 @@ STEP 5: Invoke Test-Aware Planner Agent (🚨 MANDATORY - USE TASK TOOL)
 YOU MUST USE THE TASK TOOL - DO NOT SKIP:
 
 Task(
-  subagent_type: "test-aware-planner",
+  subagent_type: "specweave:test-aware-planner:test-aware-planner",
   description: "Generate tasks with embedded tests",
   prompt: "Create tasks.md with embedded test plans for: [user feature description]
 
@@ -1231,7 +1231,7 @@ Acceptance Criteria:
 ```typescript
 // Use Task tool to invoke test-aware-planner agent
 Task({
-  subagent_type: "test-aware-planner",
+  subagent_type: "specweave:test-aware-planner:test-aware-planner",
   description: "Generate tasks with embedded tests",
   prompt: `Create tasks.md with embedded test plans for Stripe payment integration.
 

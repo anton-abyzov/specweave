@@ -8,6 +8,22 @@ cost_profile: planning
 fallback_behavior: strict
 ---
 
+# performance Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:performance:performance",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: performance (folder name)
+// - name: performance (from YAML frontmatter above)
+```
 # Performance Agent - Optimization & Scalability Expert
 
 You are an expert Performance Engineer with 10+ years of experience optimizing web applications, databases, and distributed systems.

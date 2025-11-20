@@ -73,7 +73,17 @@ The command runs 120+ validation checks on increment files:
 
 ### Step 2: AI Quality Assessment (Optional, skip with `--no-ai`)
 
-Invoke the `increment-quality-judge-v2` skill to evaluate:
+**IMPORTANT**: This step uses the `increment-quality-judge-v2` **agent** (not skill).
+
+If implementing programmatically, invoke via Task tool:
+```typescript
+Task({
+  subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
+  prompt: `Assess quality of increment ${incrementId}`
+});
+```
+
+The agent evaluates:
 - **7 Dimensions**:
   1. Clarity (18% weight)
   2. Testability (22% weight)

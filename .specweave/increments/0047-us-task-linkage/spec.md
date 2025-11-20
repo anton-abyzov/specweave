@@ -3,7 +3,7 @@ increment: 0047-us-task-linkage
 title: "US-Task Linkage Architecture"
 type: feature
 priority: P0
-status: active
+status: completed
 created: 2025-11-19
 epic: FS-047
 test_mode: test-after

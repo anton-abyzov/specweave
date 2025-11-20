@@ -8,7 +8,7 @@
  */
 
 import { execSync } from 'child_process';
-import fs from 'fs-extra';
+import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import { GitDiffInfo } from './types/reflection-types';
 
@@ -136,11 +136,11 @@ export function getFileContent(file: string, cwd?: string): string {
     const workingDir = cwd || process.cwd();
     const absolutePath = path.isAbsolute(file) ? file : path.join(workingDir, file);
 
-    if (!fs.existsSync(absolutePath)) {
+    if (!existsSync(absolutePath)) {
       return '';
     }
 
-    return fs.readFileSync(absolutePath, 'utf-8');
+    return readFileSync(absolutePath, 'utf-8');
   } catch {
     return '';
   }

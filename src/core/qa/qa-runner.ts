@@ -248,11 +248,18 @@ async function runAIQualityAssessment(
   mode: QAMode
 ): Promise<QualityAssessment> {
   // STUB: Phase 1 implementation returns mock assessment
-  // TODO (Phase 2): Invoke increment-quality-judge-v2 skill via Task tool
-  //   - Use Task tool with subagent_type: "increment-quality-judge-v2"
+  // TODO (Phase 2): Invoke increment-quality-judge-v2 AGENT via Task tool
+  //   - Use Task tool with subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2"
+  //   - IMPORTANT: Must use full agent name format: {plugin}:{directory}:{yaml-name}
   //   - Pass increment path and mode
   //   - Parse JSON response
   //   - Return structured QualityAssessment
+  //
+  // Example invocation:
+  //   Task({
+  //     subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
+  //     prompt: `Assess quality of increment ${incrementId}. Mode: ${mode}`
+  //   });
 
   // Read spec.md to get some context
   const specPath = path.join(incrementPath, 'spec.md');

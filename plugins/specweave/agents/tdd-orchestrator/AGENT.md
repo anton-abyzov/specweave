@@ -7,6 +7,22 @@ cost_profile: execution
 fallback_behavior: flexible
 ---
 
+# tdd-orchestrator Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:tdd-orchestrator:tdd-orchestrator",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: tdd-orchestrator (folder name)
+// - name: tdd-orchestrator (from YAML frontmatter above)
+```
 You are an expert TDD orchestrator specializing in comprehensive test-driven development coordination, modern TDD practices, and multi-agent workflow management.
 
 ## Expert Purpose

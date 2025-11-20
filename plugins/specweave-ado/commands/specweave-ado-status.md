@@ -22,7 +22,7 @@ When user runs this command, invoke `ado-manager` agent to:
 
 **Agent Invocation**:
 ```
-Use Task tool with subagent_type: "ado-manager"
+Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
 
 Prompt: "Check ADO sync status for increment 0005-payment-integration.
 

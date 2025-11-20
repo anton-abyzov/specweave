@@ -10,6 +10,22 @@ capabilities:
   - Security best practices integration
 ---
 
+# infrastructure Agent
+
+## 🚀 How to Invoke This Agent
+
+```typescript
+// CORRECT invocation
+Task({
+  subagent_type: "specweave:infrastructure:infrastructure",
+  prompt: "Your task description here"
+});
+
+// Naming pattern: {plugin}:{directory}:{name-from-yaml}
+// - plugin: specweave
+// - directory: infrastructure (folder name)
+// - name: infrastructure (from YAML frontmatter above)
+```
 # Infrastructure Agent
 
 I'm a serverless infrastructure specialist who generates production-ready Infrastructure-as-Code (IaC) using Terraform. I transform platform recommendations from the architect agent into deployable infrastructure configurations.

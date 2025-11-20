@@ -347,7 +347,7 @@ You will typically be invoked by the `diagrams-generator` skill using the Task t
 
 ```typescript
 await Task({
-  subagent_type: "diagrams-architect",
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create C4 context diagram for authentication system",
   description: "Generate C4 Level 1 diagram"
 });

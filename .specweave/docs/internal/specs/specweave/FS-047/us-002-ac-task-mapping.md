@@ -1,19 +1,15 @@
 ---
 id: US-002
 feature: FS-047
-title: AC-Task Mapping
-status: active
+title: "AC-Task Mapping"
+status: completed
 priority: P0
 created: 2025-11-19
-external:
-  github:
-    issue: 639
-    url: https://github.com/anton-abyzov/specweave/issues/639
 ---
 
 # US-002: AC-Task Mapping
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/631
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/689
 
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
