@@ -38,6 +38,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-spec.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
+            "timeout": 10
           }
         ]
       },
@@ -48,6 +53,11 @@
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-write-spec.sh",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
+            "timeout": 10
           }
         ]
       }
