@@ -1,7 +1,7 @@
 {
   "name": "specweave-kafka",
   "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
-  "version": "1.0.0",
+  "version": "0.22.14",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

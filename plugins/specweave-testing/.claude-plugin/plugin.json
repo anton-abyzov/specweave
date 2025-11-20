@@ -1,7 +1,7 @@
 {
   "name": "specweave-testing",
   "description": "End-to-end browser testing with Playwright. Validates user flows, captures screenshots, checks accessibility, and visual regression. Test execution infrastructure for SpecWeave increments.",
-  "version": "1.0.0",
+  "version": "0.22.14",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

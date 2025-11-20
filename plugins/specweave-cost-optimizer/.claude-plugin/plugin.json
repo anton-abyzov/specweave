@@ -1,7 +1,7 @@
 {
   "name": "specweave-cost-optimizer",
   "description": "Cloud cost optimization and platform comparison. Analyzes infrastructure requirements and recommends cheapest cloud platform (Hetzner, Vercel, AWS, Railway, Fly.io, DigitalOcean). Shows cost breakdown and savings calculations.",
-  "version": "1.0.0",
+  "version": "0.22.14",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
