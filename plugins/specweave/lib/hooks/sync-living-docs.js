@@ -91,7 +91,8 @@ async function syncLivingDocs(incrementId) {
     // ========================================================================
     // This setting controls whether sync to external tools happens automatically
     // on increment completion or requires manual /specweave:sync-* commands.
-    const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? false;
+    // DEFAULT: true (automatic sync enabled for better UX)
+    const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
 
     if (!autoSync) {
       console.log("\u26A0\uFE0F  Automatic external sync DISABLED (autoSyncOnCompletion = false)");

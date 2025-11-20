@@ -63,7 +63,8 @@ export class SyncCoordinator {
       }
 
       // GATE 3: Check if automatic sync is enabled
-      const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? false;
+      // DEFAULT: true (automatic sync enabled for better UX)
+      const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
       if (!autoSync) {
         this.logger.log('⚠️  Automatic sync disabled (autoSyncOnCompletion=false)');
         this.logger.log('   Living docs updated locally, but external tools require manual sync');

@@ -51,8 +51,10 @@ Controls pushing changes TO external tools.
 
 Controls automatic vs manual sync.
 
-- **`true`**: Sync happens on `/specweave:done`
-- **`false`**: Requires manual `/specweave-github:sync`
+**Default**: `true` (automatic sync enabled)
+
+- **`true`** (default): Sync happens automatically on `/specweave:done`
+- **`false`**: Requires manual `/specweave-github:sync` command
 
 ### canUpdateStatus
 
@@ -92,7 +94,7 @@ Controls status field updates in external tools.
 }
 ```
 
-**Workflow**: Complete increment ’ Review docs ’ Manual sync when ready
+**Workflow**: Complete increment ï¿½ Review docs ï¿½ Manual sync when ready
 
 ### Read-Only External
 
