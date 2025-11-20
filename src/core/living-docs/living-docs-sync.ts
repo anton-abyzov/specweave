@@ -79,6 +79,21 @@ export class LivingDocsSync {
   }
 
   /**
+   * Check if increment is archived
+   *
+   * @param incrementId - Increment ID (e.g., "0039-ultra-smart-next-command")
+   * @returns true if increment is in _archive/ folder, false otherwise
+   */
+  private async isIncrementArchived(incrementId: string): Promise<boolean> {
+    const archivePath = path.join(
+      this.projectRoot,
+      '.specweave/increments/_archive',
+      incrementId
+    );
+    return await fs.pathExists(archivePath);
+  }
+
+  /**
    * Sync an increment to living docs
    */
   async syncIncrement(incrementId: string, options: SyncOptions = {}): Promise<SyncResult> {
@@ -92,6 +107,21 @@ export class LivingDocsSync {
     };
 
     try {
+      // CRITICAL: Skip sync for archived increments (prevents recreating archived folders)
+      // See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md for full analysis
+      const isArchived = await this.isIncrementArchived(incrementId);
+      if (isArchived) {
+        this.logger.log(`⏭️  Skipping sync for archived increment ${incrementId}`);
+        return {
+          success: true,
+          featureId: '',
+          incrementId,
+          filesCreated: [],
+          filesUpdated: [],
+          errors: ['Increment is archived - sync skipped to prevent folder recreation']
+        };
+      }
+
       // Step 1: Build feature registry (auto-generates IDs for greenfield)
       await this.featureIdManager.buildRegistry();
 

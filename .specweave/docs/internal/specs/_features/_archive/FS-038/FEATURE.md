@@ -12,6 +12,8 @@ sourceIncrement: 0038-serverless-architecture-intelligence
 
 # Serverless Architecture Intelligence
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/651
+
 ## Overview
 
 Enhance SpecWeave's architect and infrastructure agents with deep serverless platform awareness, context-aware recommendations, and Infrastructure-as-Code (IaC) patterns. This feature enables developers to make informed serverless vs traditional deployment decisions based on project type, learning goals, budget constraints, and platform capabilities.

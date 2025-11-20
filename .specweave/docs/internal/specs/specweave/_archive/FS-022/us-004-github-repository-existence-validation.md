@@ -9,6 +9,8 @@ created: 2025-11-18
 
 # US-004: GitHub Repository Existence Validation
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/673
+
 **Feature**: [FS-022](../../_features/FS-022/FEATURE.md)
 
 ---

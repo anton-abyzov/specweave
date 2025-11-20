@@ -18,6 +18,8 @@ external_tools:
 
 # Multi-Repository Setup UX Improvements
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/646
+
 ## Overview
 
 Fix critical UX issues in the multi-repository GitHub setup flow that cause user confusion during `specweave init` when selecting multi-repo architecture.

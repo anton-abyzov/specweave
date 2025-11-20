@@ -13,6 +13,8 @@ sourceIncrement: 0035-kafka-event-streaming-plugin
 
 # Kafka Event Streaming Integration Plugin
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/649
+
 ## Overview
 
 This increment creates a comprehensive Kafka event streaming plugin ecosystem for SpecWeave, enabling seamless integration with Apache Kafka, Confluent Cloud, Redpanda, AWS MSK, and Azure Event Hubs. The plugin suite includes MCP server integration, CLI tools (kcat), Terraform modules, and full observability stack (Prometheus/Grafana/OpenTelemetry).
