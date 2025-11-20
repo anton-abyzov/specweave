@@ -511,8 +511,10 @@ export class FeatureArchiver {
 
   /**
    * Get increments linked to a feature
-   * CRITICAL: Parses frontmatter feature_id OR epic field for exact match (not string search)
-   * Supports both new format (feature_id: FS-XXX) and legacy format (epic: FS-XXX)
+   * CRITICAL: Uses both explicit linkage AND auto-inference from increment numbers
+   * Supports:
+   * 1. Explicit linkage (feature_id: FS-XXX or epic: FS-XXX)
+   * 2. Auto-inferred linkage (increment 0041 → FS-041)
    */
   private async getLinkedIncrements(featureId: string): Promise<string[]> {
     const increments: string[] = [];
@@ -523,17 +525,25 @@ export class FeatureArchiver {
 
     for (const file of activeFiles) {
       const content = await fs.readFile(file, 'utf-8');
+      const incrementDir = path.basename(path.dirname(file));
 
-      // Parse frontmatter to get feature_id OR epic (EXACT MATCH, not string search)
-      // Support both new format (feature_id: FS-XXX) and legacy format (epic: FS-XXX)
+      // 1. Check explicit linkage (feature_id or epic in frontmatter)
       const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
       const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
 
-      const linkedFeature = featureIdMatch ? featureIdMatch[1].trim() :
-                           epicMatch ? epicMatch[1].trim() : null;
+      const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
+                             epicMatch ? epicMatch[1].trim() : null;
 
-      if (linkedFeature === featureId) {
-        const incrementDir = path.basename(path.dirname(file));
+      if (explicitLinkage === featureId) {
+        increments.push(incrementDir);
+        continue; // Found explicit match, continue to next increment
+      }
+
+      // 2. Check auto-inferred linkage (increment number → feature ID)
+      // Example: increment "0041-living-docs" → FS-041
+      const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
+
+      if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
       }
     }
@@ -544,21 +554,50 @@ export class FeatureArchiver {
 
     for (const file of archivedFiles) {
       const content = await fs.readFile(file, 'utf-8');
+      const incrementDir = path.basename(path.dirname(file));
 
-      // Parse frontmatter to get feature_id OR epic (EXACT MATCH, not string search)
+      // 1. Check explicit linkage
       const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
       const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
 
-      const linkedFeature = featureIdMatch ? featureIdMatch[1].trim() :
-                           epicMatch ? epicMatch[1].trim() : null;
+      const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
+                             epicMatch ? epicMatch[1].trim() : null;
 
-      if (linkedFeature === featureId) {
-        const incrementDir = path.basename(path.dirname(file));
+      if (explicitLinkage === featureId) {
+        increments.push(incrementDir);
+        continue;
+      }
+
+      // 2. Check auto-inferred linkage
+      const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
+
+      if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
       }
     }
 
     return increments;
+  }
+
+  /**
+   * Infer feature ID from increment number
+   *
+   * Examples:
+   * - "0041-living-docs-test-fixes" → "FS-041"
+   * - "0123-my-feature" → "FS-123"
+   * - "temp-experiment" → null (no number)
+   */
+  private inferFeatureIdFromIncrement(increment: string): string | null {
+    // Extract 4-digit number prefix
+    const match = increment.match(/^(\d{4})/);
+    if (!match) {
+      return null; // Can't infer (no number prefix)
+    }
+
+    const number = parseInt(match[1], 10);
+
+    // Convert to feature ID format: 41 → "FS-041"
+    return `FS-${number.toString().padStart(3, '0')}`;
   }
 
   /**

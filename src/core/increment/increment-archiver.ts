@@ -363,6 +363,87 @@ export class IncrementArchiver {
   }
 
   /**
+   * Update references after restoring (mirror of archiving behavior)
+   *
+   * When an increment is restored from archive, check if its linked feature
+   * is also in the archive. If so, restore the feature to maintain consistency
+   * between increments and living docs.
+   */
+  private async updateReferencesOnRestore(increment: string): Promise<void> {
+    try {
+      this.logger.info(`🔄 Checking living docs sync after restoring ${increment}...`);
+
+      // 1. Parse spec.md to get feature_id (explicit or inferred)
+      const specPath = path.join(this.incrementsDir, increment, 'spec.md');
+
+      if (!await fs.pathExists(specPath)) {
+        this.logger.debug(`No spec.md found for ${increment}, skipping living docs sync`);
+        return;
+      }
+
+      const content = await fs.readFile(specPath, 'utf-8');
+
+      // Get feature ID (explicit or auto-inferred from increment number)
+      const featureId = await this.getFeatureIdForIncrement(increment, content);
+
+      if (!featureId) {
+        this.logger.debug(`No feature linkage for ${increment}, skipping living docs sync`);
+        return;
+      }
+
+      this.logger.info(`   Feature linkage: ${featureId}`);
+
+      // 2. Check if feature is in archive
+      const archivePath = path.join(this.rootDir, '.specweave', 'docs', 'internal', 'specs', '_features', '_archive', featureId);
+      const activePath = path.join(this.rootDir, '.specweave', 'docs', 'internal', 'specs', '_features', featureId);
+
+      const featureInArchive = await fs.pathExists(archivePath);
+      const featureAlreadyActive = await fs.pathExists(activePath);
+
+      if (!featureInArchive) {
+        if (featureAlreadyActive) {
+          this.logger.info(`   ✅ Feature ${featureId} already in active location (no action needed)`);
+        } else {
+          this.logger.debug(`   Feature ${featureId} not found in archive or active (may not exist yet)`);
+        }
+        return;
+      }
+
+      if (featureAlreadyActive) {
+        // Duplicate detected - archive has feature but active also has it
+        // This can happen if living docs sync created the folder after a previous restore
+        this.logger.warn(`   ⚠️  Feature ${featureId} exists in BOTH archive and active locations`);
+        this.logger.info(`   Running duplicate cleanup...`);
+
+        const { FeatureArchiver } = await import('../living-docs/feature-archiver.js');
+        const featureArchiver = new FeatureArchiver(this.rootDir);
+        const cleanupResult = await featureArchiver.cleanupDuplicates();
+
+        if (cleanupResult.cleaned.length > 0) {
+          this.logger.success(`   ✅ Cleaned ${cleanupResult.cleaned.length} duplicate folders`);
+        }
+        return;
+      }
+
+      // 3. Restore feature from archive
+      this.logger.info(`   📦 Restoring feature ${featureId} from archive...`);
+
+      const { FeatureArchiver } = await import('../living-docs/feature-archiver.js');
+      const featureArchiver = new FeatureArchiver(this.rootDir);
+
+      await featureArchiver.restoreFeature(featureId);
+
+      this.logger.success(`✅ Restored feature ${featureId} from archive (linked to ${increment})`);
+      this.logger.info(`   Feature moved: _features/_archive/${featureId}/ → _features/${featureId}/`);
+      this.logger.info(`   Links updated throughout codebase`);
+
+    } catch (error) {
+      this.logger.warn(`Could not sync living docs on restore: ${error}`);
+      this.logger.info(`You may need to manually restore the feature with: /specweave:restore-feature <feature-id>`);
+    }
+  }
+
+  /**
    * Calculate total size of archived increments
    */
   private async calculateSize(increments: string[]): Promise<number> {
@@ -439,6 +520,9 @@ export class IncrementArchiver {
     IncrementNumberManager.clearCache();
 
     this.logger.success(`Restored ${increment} from archive`);
+
+    // Sync living docs on restore (mirror of archiving behavior)
+    await this.updateReferencesOnRestore(increment);
   }
 
   /**
@@ -468,6 +552,59 @@ export class IncrementArchiver {
         const numB = parseInt(b.split('-')[0]);
         return numA - numB;
       });
+  }
+
+  /**
+   * Get feature ID for an increment (explicit or inferred)
+   *
+   * Priority:
+   * 1. Explicit linkage (feature_id or epic in frontmatter)
+   * 2. Auto-inferred from increment number (0041 → FS-041)
+   */
+  private async getFeatureIdForIncrement(increment: string, specContent: string): Promise<string | null> {
+    // 1. Try explicit linkage first
+    const featureIdMatch = specContent.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+    const epicMatch = specContent.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
+
+    const explicitFeatureId = featureIdMatch ? featureIdMatch[1].trim() :
+                             epicMatch ? epicMatch[1].trim() : null;
+
+    if (explicitFeatureId) {
+      this.logger.debug(`Found explicit feature linkage: ${explicitFeatureId}`);
+      return explicitFeatureId;
+    }
+
+    // 2. Auto-infer from increment number
+    const inferredFeatureId = this.inferFeatureIdFromIncrement(increment);
+
+    if (inferredFeatureId) {
+      this.logger.info(`   Auto-inferred feature ID from increment: ${increment} → ${inferredFeatureId}`);
+      return inferredFeatureId;
+    }
+
+    // 3. No linkage possible
+    return null;
+  }
+
+  /**
+   * Infer feature ID from increment number
+   *
+   * Examples:
+   * - "0041-living-docs-test-fixes" → "FS-041"
+   * - "0123-my-feature" → "FS-123"
+   * - "temp-experiment" → null (no number)
+   */
+  private inferFeatureIdFromIncrement(increment: string): string | null {
+    // Extract 4-digit number prefix
+    const match = increment.match(/^(\d{4})/);
+    if (!match) {
+      return null; // Can't infer (no number prefix)
+    }
+
+    const number = parseInt(match[1], 10);
+
+    // Convert to feature ID format: 41 → "FS-041"
+    return `FS-${number.toString().padStart(3, '0')}`;
   }
 
   /**
