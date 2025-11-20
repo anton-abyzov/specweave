@@ -278,3 +278,49 @@ export function validateRepoId(id: string): ValidationResult {
 
   return { valid: true };
 }
+
+/**
+ * Suggest repository name for multi-repo setup based on index.
+ *
+ * Uses common patterns for different repository types:
+ * - Index 0: frontend
+ * - Index 1: backend
+ * - Index 2: mobile/api
+ * - Index 3+: infra, shared, worker, etc.
+ *
+ * @param projectName - Base project name (e.g., "my-saas" or "acme-platform")
+ * @param repoIndex - Zero-based repository index
+ * @param totalRepos - Total number of repositories (helps choose patterns)
+ * @returns Suggested repository name
+ *
+ * @example
+ * suggestRepoName("my-saas", 0, 3) // "my-saas-frontend"
+ * suggestRepoName("my-saas", 1, 3) // "my-saas-backend"
+ * suggestRepoName("my-saas", 2, 3) // "my-saas-mobile"
+ */
+export function suggestRepoName(projectName: string, repoIndex: number, totalRepos: number): string {
+  // Common repository type patterns (order matters!)
+  const repoTypePatterns = [
+    'frontend',    // 0: Web/UI (most common first repo)
+    'backend',     // 1: API/Server (most common second repo)
+    'mobile',      // 2: Mobile app
+    'api',         // 3: API gateway
+    'infra',       // 4: Infrastructure/DevOps
+    'shared',      // 5: Shared libraries
+    'worker',      // 6: Background workers
+    'admin',       // 7: Admin panel
+    'docs',        // 8: Documentation site
+    'analytics'    // 9: Analytics/reporting
+  ];
+
+  // For repos beyond our predefined patterns, use generic "service-N" naming
+  let repoType: string;
+  if (repoIndex < repoTypePatterns.length) {
+    repoType = repoTypePatterns[repoIndex];
+  } else {
+    // Fallback for many repos: service-4, service-5, etc.
+    repoType = `service-${repoIndex + 1}`;
+  }
+
+  return `${projectName}-${repoType}`;
+}

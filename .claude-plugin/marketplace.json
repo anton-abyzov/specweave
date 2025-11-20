@@ -74,28 +74,6 @@
       }
     },
     {
-      "name": "specweave-figma",
-      "description": "Figma design system - MCP integration, design tokens, code generation",
-      "source": "./plugins/specweave-figma",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-frontend",
-      "description": "Frontend development - React, Vue, Angular, Next.js, design systems",
-      "source": "./plugins/specweave-frontend",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-backend",
       "description": "Backend development - Node.js, Python, .NET, REST APIs",
       "source": "./plugins/specweave-backend",
@@ -129,75 +107,9 @@
       }
     },
     {
-      "name": "specweave-testing",
-      "description": "Test execution infrastructure - Playwright E2E, browser automation, visual regression",
-      "source": "./plugins/specweave-testing",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-docs",
-      "description": "Documentation - Docusaurus generation, spec-driven workflows",
-      "source": "./plugins/specweave-docs",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-docs-preview",
       "description": "Interactive documentation preview - Launch Docusaurus dev server with hot reload, auto-generated sidebar, Mermaid diagrams. Build static sites for deployment.",
       "source": "./plugins/specweave-docs-preview",
-      "category": "productivity",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-tooling",
-      "description": "SpecWeave tooling - skill creation, skill routing",
-      "source": "./plugins/specweave-tooling",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-alternatives",
-      "description": "Framework alternative experts - Compare SpecWeave with BMAD, spec-kit, openspec. Gap analysis and recommendations.",
-      "source": "./plugins/specweave-alternatives",
-      "category": "learning",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-ui",
-      "description": "UI components and design systems - Reusable component libraries",
-      "source": "./plugins/specweave-ui",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-cost-optimizer",
-      "description": "Cost optimization - cloud platform comparison, cost breakdown",
-      "source": "./plugins/specweave-cost-optimizer",
       "category": "productivity",
       "version": "1.0.0",
       "author": {
