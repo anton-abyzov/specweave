@@ -290,6 +290,50 @@ export async function parseSpecContent(
       }
     }
 
+    // STRATEGY 3: If still no USs found, look for heading format: ### US-001: Title
+    if (userStories.length === 0) {
+      const headingUsRegex = /^###\s+US-(\d+):\s*(.+)$/gm;
+      const headingUsMatches = [...content.matchAll(headingUsRegex)];
+
+      for (const headingMatch of headingUsMatches) {
+        const usNumber = headingMatch[1];
+        const usId = `US-${usNumber}`;
+        const usTitle = headingMatch[2].trim();
+
+        // Find acceptance criteria for this user story
+        // Support both AC-US001-01 and AC-US1-01 formats
+        const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
+        const acRegex = new RegExp(
+          `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`,
+          'g'
+        );
+
+        const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
+        const acMatches = [...content.matchAll(acRegex)];
+
+        for (const acMatch of acMatches) {
+          const completed = acMatch[1] === 'x';
+          const acNumber = acMatch[2];
+          const acDescription = acMatch[3].trim();
+          const acMetadata = acMatch[4] || '';
+
+          acceptanceCriteria.push({
+            id: `AC-US${usNumber}-${acNumber}`,
+            description: acDescription,
+            completed,
+            priority: acMetadata.includes('P1') ? 'P1' : acMetadata.includes('P2') ? 'P2' : undefined,
+            testable: acMetadata.includes('testable'),
+          });
+        }
+
+        userStories.push({
+          id: usId,
+          title: usTitle,
+          acceptanceCriteria,
+        });
+      }
+    }
+
     return {
       identifier,
       id: identifier.display, // Legacy field for backward compatibility
