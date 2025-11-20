@@ -1,0 +1,11 @@
+{
+  "id": "FS-040",
+  "type": "feature",
+  "archivedAt": "2025-11-20T19:46:31.600Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/_features/FS-040",
+  "linkedIncrements": [
+    "0040-vitest-living-docs-mock-fixes"
+  ]
+}

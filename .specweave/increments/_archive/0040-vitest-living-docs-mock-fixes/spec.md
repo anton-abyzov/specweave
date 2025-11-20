@@ -9,6 +9,7 @@ completed: 2025-11-17
 closed: 2025-11-17
 type: bug
 pm_validated: true
+epic: FS-040
 ---
 
 # Bug Fix: Complete Vitest Migration - Living Docs Mock Issues
