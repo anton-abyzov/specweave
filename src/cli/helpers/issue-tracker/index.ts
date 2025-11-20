@@ -147,24 +147,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     }
   ]);
 
-  console.log('');
-  console.log(chalk.cyan.bold('⚙️  Additional Sync Settings'));
-  console.log('');
-
-  const syncSettings = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'includeStatus',
-      message: 'Include work item status in sync? (e.g., update external tool when increment completes)',
-      default: true
-    },
-    {
-      type: 'confirm',
-      name: 'autoApplyLabels',
-      message: 'Auto-apply labels based on increment type? ([Bug], [Feature], [Docs])',
-      default: true
-    }
-  ]);
+  // Additional Sync Settings - always enabled (configurable manually in .specweave/config.json)
+  const syncSettings = {
+    includeStatus: true,      // Always include work item status in sync
+    autoApplyLabels: true     // Always auto-apply labels based on increment type
+  };
 
   // Step 2: Check for existing credentials
   const existing = await checkExistingCredentials(tracker, projectPath);
