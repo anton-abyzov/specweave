@@ -81,7 +81,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 ### US-003: Automatic Living Docs Sync
 
 **As a** developer completing tasks
-**I want** living docs User Story files to automatically update task lists
+**I want** living docs User Story files to automatically update from increment
 **So that** I don't manually sync tasks.md and living docs
 
 **Acceptance Criteria**:
@@ -105,9 +105,11 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (hook unit test)
   - **Completed by**: T-008 (parseTasksWithUSLinks integration)
 
-- [ ] **AC-US3-05**: Bidirectional sync: tasks.md ↔ living docs US files
-  - **Priority**: P1 (Important)
-  - **Testable**: Yes (E2E sync test)
+- [x] **AC-US3-05**: Increment → Living Docs sync is ALWAYS one-way (never bidirectional)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (sync direction validation test)
+  - **Notes**: Increment is source of truth during active work, living docs is archival. This direction is IMMUTABLE and cannot be configured as bidirectional.
+  - **Completed by**: T-011 (sync direction validation)
 
 ### US-004: AC Coverage Validation
 
@@ -162,21 +164,477 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I don't manually update 40+ existing increments
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Migration script analyzes spec.md and tasks.md to infer US linkage
+- [x] **AC-US6-01**: Migration script analyzes spec.md and tasks.md to infer US linkage
   - **Priority**: P1 (Important)
   - **Testable**: Yes (migration script test)
+  - **Completed by**: T-020, T-022
 
-- [ ] **AC-US6-02**: Script suggests linkage based on task descriptions and AC keywords
+- [x] **AC-US6-02**: Script suggests linkage based on task descriptions and AC keywords
   - **Priority**: P1 (Important)
   - **Testable**: Yes (inference algorithm test)
+  - **Completed by**: T-020, T-022
 
-- [ ] **AC-US6-03**: Script applies linkage with dry-run preview before actual update
+- [x] **AC-US6-03**: Script applies linkage with dry-run preview before actual update
   - **Priority**: P1 (Important)
   - **Testable**: Yes (dry-run mode test)
+  - **Completed by**: T-021, T-022
 
-- [ ] **AC-US6-04**: Migration supports batch processing (all increments in one run)
+- [x] **AC-US6-04**: Migration supports batch processing (all increments in one run)
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (batch migration test)
+  - **Completed by**: T-022
+
+### US-007: External Item Import on Init
+
+**As a** team adopting SpecWeave in a brownfield project
+**I want** to import existing external items (GitHub/JIRA/ADO) during initialization into living docs
+**So that** I don't lose historical context and can manually create increments when ready to work
+
+**Acceptance Criteria**:
+- [ ] **AC-US7-01**: After `specweave init`, CLI prompts to import from detected external tools
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (init command integration test)
+  - **Notes**: Auto-detect GitHub remote, JIRA/ADO config from environment
+
+- [ ] **AC-US7-02**: Import pulls items from configurable time range (default: 1 month)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (time range filter test)
+  - **Notes**: Environment variable SPECWEAVE_IMPORT_TIME_RANGE_MONTHS
+
+- [x] **AC-US7-03**: Pagination support for large imports (100+ items)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (pagination test with 500 items)
+  - **Notes**: GitHub: 100/page, JIRA: 50/page, ADO: continuationToken
+  - **Completed by**: T-023 (GitHub AsyncGenerator pagination)
+
+- [ ] **AC-US7-04**: Imported items get E suffix (US-001E, T-001E)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (ID assignment test)
+  - **Notes**: E suffix permanently indicates external origin
+
+- [ ] **AC-US7-05**: Import creates external US files in living docs (NOT increments)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (living docs creation test)
+  - **Notes**: Create us-001e-title.md in living docs, NO automatic increment creation
+
+- [ ] **AC-US7-06**: Import preserves external metadata (ID, URL, creation date)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (metadata preservation test)
+  - **Notes**: Store in living docs frontmatter: externalId, externalUrl, importedAt
+
+- [ ] **AC-US7-07**: Interactive confirmation before importing large datasets
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (interactive prompt test)
+  - **Notes**: Warn if import > 100 items, require explicit confirmation
+
+- [ ] **AC-US7-08**: Support GitHub, JIRA, and Azure DevOps imports
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (multi-platform import test)
+  - **Notes**: Shared importer interface, platform-specific adapters
+
+- [ ] **AC-US7-09**: NEVER auto-create increments for imported external items
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (validation test ensures no auto-increment creation)
+  - **Notes**: External US lives in living docs ONLY. User MUST manually create increment when ready to work on it. Config validation prevents autoIncrementCreation=true.
+
+### US-008: ID Collision Resolution
+
+**As a** developer creating mixed internal/external items
+**I want** ID generation to avoid collisions between internal and external IDs
+**So that** every item has a unique identifier with clear origin
+
+**Acceptance Criteria**:
+- [ ] **AC-US8-01**: ID generator detects highest sequential number (ignoring suffix)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (ID generation test)
+  - **Notes**: Extract numeric part from US-001, US-002E, US-003, find max
+
+- [ ] **AC-US8-02**: New internal items use next sequential number (no suffix)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (internal ID generation test)
+  - **Notes**: Given [US-001, US-002E, US-003], next internal = US-004
+
+- [ ] **AC-US8-03**: New external items use next sequential number + E suffix
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (external ID generation test)
+  - **Notes**: Given [US-001, US-002E, US-003], next external = US-004E
+
+- [ ] **AC-US8-04**: Mixed IDs allowed in same increment (US-001, US-002E, US-003, US-004E)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (mixed ID validation test)
+  - **Notes**: Spec.md and tasks.md support both formats simultaneously
+
+- [ ] **AC-US8-05**: ID uniqueness validation before assignment
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (collision detection test)
+  - **Notes**: Abort ID generation if duplicate detected, log error
+
+- [ ] **AC-US8-06**: Legacy IDs preserved during migration (no renumbering)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (migration preservation test)
+  - **Notes**: Existing increments (0001-0046) keep internal IDs, first external import starts at US-201E
+
+### US-009: Origin Tracking and Sync Direction Configuration
+
+**As a** PM managing mixed internal/external items
+**I want** clear origin indicators and configurable sync direction between living docs and external tools
+**So that** I can control how changes flow between SpecWeave and external tools
+
+**Acceptance Criteria**:
+- [ ] **AC-US9-01**: Every US/Task has origin field in metadata (internal | external)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (metadata validation test)
+  - **Notes**: Living docs frontmatter `origin`, `externalId`, `externalUrl`
+
+- [ ] **AC-US9-02**: Bidirectional sync configurable in .specweave/config.json (default: false)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (config validation test)
+  - **Notes**: `sync.bidirectional = false` (default, safer). Internal US: push-only. External US: pull-only.
+
+- [ ] **AC-US9-03**: When bidirectional=false (default), internal US syncs one-way to external tool
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (sync direction test)
+  - **Notes**: Living Docs → External Tool (push only). External tool updates do NOT flow back.
+
+- [ ] **AC-US9-04**: When bidirectional=false (default), external US syncs one-way from external tool
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (sync direction test)
+  - **Notes**: External Tool → Living Docs (pull only). Living docs updates do NOT push back.
+
+- [ ] **AC-US9-05**: When bidirectional=true (advanced), both directions enabled for both US types
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (bidirectional sync test)
+  - **Notes**: Living Docs ↔ External Tool (both push and pull). Requires conflict resolution.
+
+- [ ] **AC-US9-06**: External items preserve original external ID for reference
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (external ID preservation test)
+  - **Notes**: Store externalId (GH-#638, JIRA-SPEC-789, ADO-12345) and externalUrl
+
+- [ ] **AC-US9-07**: Living docs show origin badge (🏠 Internal, 🔗 GitHub, 🎫 JIRA, 📋 ADO)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (origin badge rendering test)
+  - **Notes**: us-001-title.md shows "**Origin**: 🏠 Internal"
+
+- [ ] **AC-US9-08**: Origin immutable after creation (can't change internal ↔ external)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (immutability test)
+  - **Notes**: Validation prevents changing origin field post-creation
+
+- [ ] **AC-US9-09**: Sync logs track origin-based update conflicts (bidirectional mode only)
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (conflict logging test)
+  - **Notes**: Log file: .specweave/logs/sync-conflicts.log
+
+### US-009A: External Item Format Preservation
+
+**As a** developer implementing externally-originated work items
+**I want** SpecWeave to preserve the original external format (title, description) when syncing completion updates
+**So that** external stakeholders see their original content with non-invasive completion comments, not SpecWeave-formatted rewrites
+
+**Acceptance Criteria**:
+- [ ] **AC-US9A-01**: External items preserve original title when syncing to external tool
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (format preservation test)
+  - **Notes**: GitHub issue "My-Specific-Item" remains unchanged, NOT rewritten to "[FS-888][US-001]"
+
+- [ ] **AC-US9A-02**: External items preserve original description structure
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (description preservation test)
+  - **Notes**: Original description preserved, NO AC/Task checklist injection
+
+- [ ] **AC-US9A-03**: Completion updates posted as comments ONLY (non-invasive)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (comment-only update test)
+  - **Notes**: Add comment: "✅ [FS-888][T-042] Task completed", do NOT modify issue body
+
+- [ ] **AC-US9A-04**: Status updates ONLY if bidirectional=true
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (status update conditional test)
+  - **Notes**: bidirectional=false → no status update, bidirectional=true → update status
+
+- [ ] **AC-US9A-05**: Internal items enforce standard [FS-XXX][US-YYY] format
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (internal format enforcement test)
+  - **Notes**: Internal items CAN be fully rewritten (title, description, status)
+
+- [ ] **AC-US9A-06**: Format preservation flag in living docs frontmatter
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (metadata field test)
+  - **Notes**: `format_preservation: true` for external items, `false` for internal
+
+- [ ] **AC-US9A-07**: Completion comment includes task, AC, and progress info
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (comment format test)
+  - **Notes**: Comment format: Task completion, AC satisfaction, progress percentage, links to living docs
+
+- [ ] **AC-US9A-08**: Validation blocks format-breaking updates for external items
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (validation test)
+  - **Notes**: Error if sync attempts to update title/description for external item
+
+- [ ] **AC-US9A-09**: Sync service routes to comment-only mode based on origin
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (routing logic test)
+  - **Notes**: origin=external → comment-only, origin=internal → full sync
+
+- [ ] **AC-US9A-10**: External title stored in metadata for validation
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (metadata storage test)
+  - **Notes**: Store `external_title` field for post-sync validation (ensure title unchanged)
+
+### US-010: External Import Slash Command
+
+**As a** developer managing brownfield project
+**I want** dedicated slash command to manually pull external work items on-demand
+**So that** I can import new external items created after initial setup
+
+**Acceptance Criteria**:
+- [ ] **AC-US10-01**: `/specweave:import-external` command invokes external tool import coordinator
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (command execution test)
+  - **Notes**: Separate from `specweave init` - for ongoing imports
+
+- [ ] **AC-US10-02**: Command detects configured external tools (GitHub, JIRA, ADO)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (tool detection test)
+  - **Notes**: GitHub: .git/config remote, JIRA: JIRA_HOST env, ADO: ADO_ORG_URL env
+
+- [ ] **AC-US10-03**: Command supports time range filtering (since last import, 1 month, 3 months, all, custom)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (time range filter test)
+  - **Notes**: Default: since last import (from .specweave/sync-metadata.json)
+
+- [ ] **AC-US10-04**: Command supports platform filtering (--github-only, --jira-only, --ado-only, or all)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (platform filter test)
+  - **Notes**: `/specweave:import-external --github-only --since=1m`
+
+- [ ] **AC-US10-05**: Command creates living docs files with E suffix (NO increment creation)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (output validation test)
+  - **Notes**: Same behavior as init import - living docs ONLY
+
+- [ ] **AC-US10-06**: Command shows progress indicator (spinner, item count, platform)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (progress output test)
+  - **Notes**: "Importing from GitHub... [25/150] ⠋"
+
+- [ ] **AC-US10-07**: Command displays summary report (items imported, duplicates skipped, errors)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (summary output test)
+  - **Notes**: "✅ Imported 42 items (GitHub: 30, JIRA: 12). Skipped 5 duplicates."
+
+- [ ] **AC-US10-08**: Command updates sync metadata (last import timestamp per platform)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (metadata update test)
+  - **Notes**: .specweave/sync-metadata.json: `{"github": {"lastImport": "2025-11-19T10:30:00Z"}}`
+
+- [ ] **AC-US10-09**: Command handles rate limiting with retry suggestions
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (rate limit handling test)
+  - **Notes**: GitHub: check X-RateLimit-Remaining header, suggest wait time
+
+- [ ] **AC-US10-10**: Command warns for large imports (> 100 items) with confirmation prompt
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (confirmation prompt test)
+  - **Notes**: "⚠️  Found 250 items. Continue? (Y/n)"
+
+- [ ] **AC-US10-11**: Command supports dry-run mode (--dry-run) showing what would be imported
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (dry-run test)
+  - **Notes**: `/specweave:import-external --dry-run --since=1m`
+
+- [ ] **AC-US10-12**: Command skips duplicates (checks existing US-IDs with E suffix)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (duplicate detection test)
+  - **Notes**: If GH-#638 already imported as US-042E, skip with log message
+
+### US-011: Multi-Repo Selection Strategy (GitHub Init)
+
+**As a** team lead adopting SpecWeave in a multi-repo organization
+**I want** intelligent repository selection during GitHub init (all org repos, personal repos, pattern matching, or explicit list)
+**So that** I can connect the right set of repositories without manual configuration
+
+**Acceptance Criteria**:
+- [ ] **AC-US11-01**: During `specweave init`, detect if user has access to multiple GitHub organizations
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (GitHub API integration test)
+  - **Notes**: Query `/user/orgs` endpoint to detect organizations user belongs to
+
+- [ ] **AC-US11-02**: Prompt user with multi-repo selection strategy options (4 modes)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (interactive prompt test)
+  - **Notes**: Options: (1) All org repos, (2) All personal repos, (3) Pattern matching, (4) Explicit list
+
+- [ ] **AC-US11-03**: Option 1: Connect all repos from specific organization
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (org repo listing test)
+  - **Notes**: Show list of orgs user belongs to, let user select one, import all repos from that org
+
+- [ ] **AC-US11-04**: Option 2: Connect all repos from user's personal account
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (personal repo listing test)
+  - **Notes**: Query `/user/repos?affiliation=owner` to get repos owned by user
+
+- [ ] **AC-US11-05**: Option 3: Pattern matching for repository names (glob or regex)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (pattern matching test)
+  - **Notes**: Support patterns like "ec-*", "*-backend", "microservice-*". Use minimatch or regex.
+
+- [ ] **AC-US11-06**: Option 4: Explicit comma-separated list of repository names
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (explicit list parsing test)
+  - **Notes**: User enters: "repo1, repo2, repo3". Validate repos exist before proceeding.
+
+- [ ] **AC-US11-07**: Show preview of matched repositories before confirmation
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (preview rendering test)
+  - **Notes**: Display table: Repo Name | Owner | Visibility | Last Updated. Ask "Connect these N repos? (Y/n)"
+
+- [ ] **AC-US11-08**: Handle pagination when listing organization/personal repos (100+ repos)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (pagination test with 250 repos)
+  - **Notes**: GitHub API: 100 repos per page. Use Link header for pagination.
+
+- [ ] **AC-US11-09**: Save selected repos to `.specweave/config.json` under `github.repositories`
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (config persistence test)
+  - **Notes**: Format: `{"github": {"repositories": ["owner/repo1", "owner/repo2"], "selectionStrategy": "pattern", "pattern": "ec-*"}}`
+
+- [ ] **AC-US11-10**: Validate repository access before adding to config (check permissions)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (permission validation test)
+  - **Notes**: Query `/repos/{owner}/{repo}` to verify user has at least read access. Warn if no access.
+
+- [ ] **AC-US11-11**: Support mixed public/private repos (authenticate with PAT if private repos detected)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (authentication test)
+  - **Notes**: Prompt for GitHub Personal Access Token if private repos in selection
+
+- [ ] **AC-US11-12**: Allow editing repository selection after initial setup
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (config update test)
+  - **Notes**: `specweave config github --edit-repos` command to modify selection
+
+### US-012: Intelligent FS-XXX Folder Creation with Chronological ID Allocation
+
+**As a** developer syncing external work items to living docs
+**I want** FS-XXX folders created with chronologically ordered IDs based on work item creation date
+**So that** living docs structure reflects the actual timeline of work items and integrates seamlessly with existing increments
+
+**Acceptance Criteria**:
+- [ ] **AC-US12-01**: Parse work item created date from external tool metadata (createdAt field)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (date parsing test)
+  - **Notes**: Extract createdAt from GitHub issue, JIRA epic, ADO work item metadata
+
+- [ ] **AC-US12-02**: Scan existing living docs FS-XXX folders to determine occupied ID ranges
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (folder scanning test)
+  - **Notes**: Scan `.specweave/docs/internal/specs/` for FS-001, FS-002, etc. Build ID map.
+
+- [ ] **AC-US12-03**: Scan archived increments (_archive/) and consider their IDs as occupied
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (archive scanning test)
+  - **Notes**: CRITICAL - archived IDs are still occupied, cannot reuse even with E suffix
+
+- [ ] **AC-US12-04**: Allocate FS-XXX ID chronologically by comparing work item createdAt to existing increment/feature creation dates
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (chronological allocation test)
+  - **Notes**: If external item created 2025-01-15 and FS-010 created 2025-01-10, FS-020 created 2025-01-20, then allocate FS-011E (insert between)
+
+- [ ] **AC-US12-05**: Default behavior: append to end (increment max ID + 1) with E suffix if chronological insertion not feasible
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (append mode test)
+  - **Notes**: Most common case: external item created after all existing work → allocate FS-{max+1}E
+
+- [ ] **AC-US12-06**: Prevent ID collision - validate no existing FS-XXX or FS-XXXE before allocation
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (collision detection test)
+  - **Notes**: Check both active and archived folders. Error if FS-042 or FS-042E already exists.
+
+- [ ] **AC-US12-07**: Create folder structure: `.specweave/docs/internal/specs/FS-XXXE/` with US subfolders
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (folder creation test)
+  - **Notes**: Create FS-042E/us-001e-title.md, FS-042E/us-002e-title.md
+
+- [ ] **AC-US12-08**: Add origin metadata to feature README.md (external source, import date, original feature ID)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (metadata persistence test)
+  - **Notes**: FS-042E/README.md frontmatter: `external_id: GH-Milestone-#42, imported_at: 2025-11-19`
+
+- [ ] **AC-US12-09**: Update next available ID tracker after allocation (prevent race conditions)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (ID tracker test)
+  - **Notes**: Atomic update to avoid collisions during concurrent imports
+
+### US-013: Archive Command for Features and Epics
+
+**As a** product manager cleaning up obsolete or completed work
+**I want** dedicated command to archive entire features or epics with all related folders
+**So that** living docs stay clean while preserving historical data in archive
+
+**Acceptance Criteria**:
+- [ ] **AC-US13-01**: Create `/specweave:archive` slash command with feature and epic parameters
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (command invocation test)
+  - **Notes**: Syntax: `/specweave:archive feature FS-042` or `/specweave:archive epic SP-FS-047-US-003`
+
+- [ ] **AC-US13-02**: When archiving feature, move entire FS-XXX folder to `.specweave/docs/_archive/specs/`
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (feature archive test)
+  - **Notes**: Move `.specweave/docs/internal/specs/FS-042/` → `.specweave/docs/_archive/specs/FS-042/`
+
+- [ ] **AC-US13-03**: When archiving feature, archive ALL related User Stories (all US-XXX within FS-XXX folder)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (cascading archive test)
+  - **Notes**: If FS-042 has 5 User Stories, all 5 US folders move to archive
+
+- [ ] **AC-US13-04**: When archiving epic (User Story), move only specific US-XXX folder to archive
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (epic archive test)
+  - **Notes**: Move `FS-042/us-003e-title.md` → `.specweave/docs/_archive/specs/FS-042/us-003e-title.md`
+
+- [ ] **AC-US13-05**: Preserve folder structure in archive (maintain FS-XXX/US-XXX hierarchy)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (structure preservation test)
+  - **Notes**: Archive maintains same structure: `_archive/specs/FS-042/us-001e-title.md`
+
+- [ ] **AC-US13-06**: Add archive metadata (archived_at timestamp, archived_by user, reason)
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (metadata tracking test)
+  - **Notes**: Create `.archive-metadata.json` in archived folder with timestamp, user, reason
+
+- [ ] **AC-US13-07**: Support optional reason parameter for audit trail
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (reason tracking test)
+  - **Notes**: `/specweave:archive feature FS-042 --reason="Obsolete after pivot"`
+
+- [ ] **AC-US13-08**: Prevent archiving if feature/epic has active increments referencing it
+  - **Priority**: P1 (Important)
+  - **Testable**: Yes (active reference check test)
+  - **Notes**: Block archive if increment 0050 still references FS-042. Warn user.
+
+- [ ] **AC-US13-09**: Support dry-run mode to preview what will be archived
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (dry-run test)
+  - **Notes**: `/specweave:archive feature FS-042 --dry-run` shows files to be moved
+
+- [ ] **AC-US13-10**: Create `/specweave:restore` command to unarchive features/epics
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (restore test)
+  - **Notes**: `/specweave:restore feature FS-042` moves back from archive to active
+
+- [ ] **AC-US13-11**: Maintain archived ID registry to prevent reuse (archived IDs remain occupied)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (ID registry test)
+  - **Notes**: Even archived FS-042 occupies ID space. New features cannot use FS-042 or FS-042E.
+
+- [ ] **AC-US13-12**: Generate archive summary report (count of features/USs archived, storage size)
+  - **Priority**: P2 (Nice-to-have)
+  - **Testable**: Yes (summary report test)
+  - **Notes**: Output: "✅ Archived FS-042 (5 User Stories, 42 KB). Total archived: 8 features."
 
 ---
 
@@ -216,6 +674,95 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 - Old increments MUST not break when validated
 - Migration MUST be optional (not mandatory)
 - Priority: P1 (Important)
+
+### FR-007: External Import Infrastructure
+- `specweave init` MUST detect and prompt for external tool import (GitHub/JIRA/ADO)
+- Import service MUST support pagination (100+ items per tool)
+- Imported items MUST get E suffix (US-001E, T-001E)
+- Import MUST update living docs with external items
+- Priority: P0 (Critical)
+
+### FR-008: ID Generation with Origin Tracking
+- ID generator MUST detect highest sequential number (ignoring suffix)
+- Internal ID generation: Next sequential number, NO suffix
+- External ID generation: Next sequential number + E suffix
+- Mixed IDs allowed in same increment (US-001, US-002E, US-003)
+- Priority: P0 (Critical)
+
+### FR-009: Sync Direction Configuration
+- Increment → Living Docs sync MUST be one-way ALWAYS (immutable, not configurable)
+- Living Docs ↔ External Tool sync MUST respect bidirectional config (default: false)
+- When bidirectional=false: Internal US push-only, External US pull-only
+- When bidirectional=true: Both directions enabled for both US types
+- Config validation MUST prevent autoIncrementCreation=true (forbidden)
+- Priority: P0 (Critical)
+
+### FR-010: Origin Metadata Management
+- Every US/Task MUST have origin field (internal | external)
+- Origin determines default sync direction (push-only or pull-only)
+- External items MUST preserve externalId, externalUrl, importedAt
+- Living docs MUST show origin badges (🏠 Internal, 🔗 GitHub, 🎫 JIRA, 📋 ADO)
+- Priority: P0 (Critical)
+
+### FR-010A: External Item Format Preservation
+- External items MUST preserve original title (NO rewrite to [FS-XXX][US-YYY] format)
+- External items MUST preserve original description (NO AC/Task checklist injection)
+- Completion updates MUST use comments ONLY (non-invasive updates)
+- Status updates ONLY if bidirectional=true (default: no status update)
+- Internal items MUST enforce standard [FS-XXX][US-YYY] format (full rewrite allowed)
+- Format preservation flag MUST be stored in living docs frontmatter
+- Sync service MUST route to comment-only mode for external items based on origin
+- Validation MUST block format-breaking updates (title/description changes) for external items
+- External title MUST be stored in metadata for post-sync validation
+- Priority: P0 (Critical)
+
+### FR-011: External Import Slash Command
+- `/specweave:import-external` MUST be available as dedicated command for ongoing imports
+- Command MUST detect configured external tools (GitHub, JIRA, ADO) automatically
+- Command MUST support time range filtering (since last import as default)
+- Command MUST support platform filtering (--github-only, --jira-only, --ado-only)
+- Command MUST create living docs files with E suffix ONLY (NO increment creation)
+- Command MUST update sync metadata with last import timestamp per platform
+- Command MUST display progress indicator and summary report
+- Command MUST handle rate limiting with retry suggestions
+- Command MUST skip duplicates (existing external IDs)
+- Priority: P0 (Critical)
+
+### FR-012: Multi-Repo Selection Strategy (GitHub Init)
+- `specweave init` MUST detect user's GitHub organizations and personal repos
+- Init MUST prompt for repository selection strategy (all org, all personal, pattern, explicit list)
+- Pattern matching MUST support glob patterns (e.g., "ec-*", "*-backend")
+- Init MUST show preview of matched repos before confirmation (name, owner, visibility, last updated)
+- Init MUST handle GitHub API pagination for orgs/users with 100+ repos
+- Init MUST save selected repos to `.specweave/config.json` under `github.repositories`
+- Init MUST validate repository access before adding to config
+- Init MUST support mixed public/private repos with PAT authentication
+- Priority: P0 (Critical)
+
+### FR-013: Intelligent FS-XXX Folder Creation with Chronological ID Allocation
+- External import MUST parse work item createdAt timestamp from source metadata
+- ID allocator MUST scan both active living docs and _archive/ folders for occupied IDs
+- ID allocator MUST attempt chronological insertion based on work item creation date
+- ID allocator MUST default to append mode (max ID + 1) if chronological insertion fails
+- ID allocator MUST validate no FS-XXX or FS-XXXE collision before allocation
+- Folder creator MUST create `.specweave/docs/internal/specs/FS-XXXE/` structure
+- Folder creator MUST add origin metadata to feature README.md frontmatter
+- ID tracker MUST update atomically to prevent race conditions
+- Archived IDs MUST remain occupied indefinitely (cannot reuse)
+- Priority: P0 (Critical)
+
+### FR-014: Archive Command for Features and Epics
+- `/specweave:archive` command MUST support both feature and epic targets
+- Feature archiving MUST move entire FS-XXX folder to `.specweave/docs/_archive/specs/`
+- Feature archiving MUST cascade to ALL User Stories within the feature
+- Epic archiving MUST move only specific US-XXX folder to archive
+- Archive MUST preserve folder structure (maintain FS-XXX/US-XXX hierarchy)
+- Archive MUST add metadata (archived_at, archived_by, reason)
+- Archive MUST block if active increments reference the feature/epic
+- Archive MUST maintain ID registry (archived IDs remain occupied)
+- `/specweave:restore` command MUST unarchive features/epics back to active
+- Archive commands MUST support dry-run mode for preview
+- Priority: P0 (Critical)
 
 ---
 
@@ -317,15 +864,16 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 ## Out of Scope
 
 ### Deferred to Future Increments
-- **External tool sync enhancement** (GitHub issue task checkboxes) - Requires GitHub API research
 - **Visual traceability matrix UI** (web-based dashboard) - Requires frontend implementation
 - **Historical linkage inference** (analyzing git history) - Complex, low ROI
 - **Multi-increment AC coverage** (same AC across multiple increments) - Edge case, defer
+- **Webhook-based sync** (real-time external updates) - Requires webhook infrastructure
+- **Conflict resolution UI** (interactive merge tool) - Defer to CLI prompts first
 
 ### Explicitly Not Included
-- Jira/ADO sync enhancements (GitHub-first approach per ADR-0007)
 - Task dependency graph visualization (out of scope)
 - Automated AC generation from code (requires AI, separate feature)
+- External tool write-back for external items (external items remain read-only in this increment)
 
 ---
 
