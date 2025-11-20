@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Ultra-Smart Next Command - Intelligent Workflow Orchestrator
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/653
+
 ## Implementation History
 
 | Increment | Status | Completion Date |

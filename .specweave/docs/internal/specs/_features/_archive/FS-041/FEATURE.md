@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Complete Living Docs Test Fixes
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/657
+
 ## Overview
 
 Complete the Vitest migration for living-docs tests by fixing 9 remaining test failures that were explicitly deferred as "out of scope" in increment 0040. Remove unused ThreeLayerSyncManager stub code to clean up technical debt.

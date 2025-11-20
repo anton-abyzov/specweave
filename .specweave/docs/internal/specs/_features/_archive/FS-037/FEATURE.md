@@ -12,6 +12,8 @@ sourceIncrement: 0037-project-specific-tasks
 
 # Project-Specific Tasks Architecture
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/650
+
 ## Overview
 
 Implement three-level task hierarchy (Increment → Project → User Story) with bidirectional completion tracking to address the critical gap where multi-project features have only generic increment tasks instead of project-specific implementation tasks. This enables backend and frontend teams to work independently with their own task lists while maintaining synchronization with high-level increment tasks.

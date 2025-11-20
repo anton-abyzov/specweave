@@ -18,6 +18,8 @@ external_tools:
 
 # Duplicate Increment Prevention System
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/648
+
 ## Overview
 
 Implement comprehensive validation system to prevent increments from existing in multiple locations (active, archive, abandoned) or having duplicate increment numbers with different names. This addresses critical data integrity issues discovered in increments 0031 and 0032.

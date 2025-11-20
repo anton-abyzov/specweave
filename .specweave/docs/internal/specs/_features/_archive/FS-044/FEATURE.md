@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Integration Testing - Status Line and Hooks
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/661
+
 ## Overview
 
 **Parent Increment**: 0043-spec-md-desync-fix

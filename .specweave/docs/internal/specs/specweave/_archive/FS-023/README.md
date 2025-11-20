@@ -10,6 +10,8 @@ sourceIncrement: 0023-release-management-enhancements
 
 # SpecWeave Implementation: Release Management Plugin Enhancements
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/684
+
 **Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
 
 ## Overview

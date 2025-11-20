@@ -200,11 +200,20 @@ fi
 
 if command -v node &> /dev/null; then
   if [ -n "$CURRENT_INCREMENT" ]; then
-    echo "[$(date)] 📚 Checking living docs sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+    # ========================================================================
+    # SKIP ARCHIVED INCREMENTS (CRITICAL - prevents folder recreation)
+    # ========================================================================
+    # If increment is archived, skip living docs sync entirely
+    # This prevents recreating archived feature folders in active location
+    # See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md for full analysis
+    if [ -d ".specweave/increments/_archive/$CURRENT_INCREMENT" ]; then
+      echo "[$(date)] ⏭️  Skipping living docs sync for archived increment $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+    else
+      echo "[$(date)] 📚 Checking living docs sync for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
-    # ========================================================================
-    # EXTRACT FEATURE ID (NEW in v0.23.0 - Increment 0047: US-Task Linkage)
-    # ========================================================================
+      # ========================================================================
+      # EXTRACT FEATURE ID (NEW in v0.23.0 - Increment 0047: US-Task Linkage)
+      # ========================================================================
     # Extract epic field from spec.md frontmatter (e.g., epic: FS-047)
     # This ensures sync uses the explicitly defined feature ID rather than
     # auto-generating one, maintaining traceability with living docs structure.
@@ -290,6 +299,7 @@ if command -v node &> /dev/null; then
     else
       echo "[$(date)] ⚠️  sync-living-docs.js not found in any location" >> "$DEBUG_LOG" 2>/dev/null || true
     fi
+    fi  # Close the archive check 'else' block
   fi
 fi
 

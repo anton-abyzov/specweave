@@ -10,6 +10,8 @@ lastUpdated: 2025-11-19
 
 # Sync All Increments by Default
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/663
+
 ## Overview
 
 **Purpose**: Make `/specweave:sync-docs` sync ALL non-archived increments by default, improving developer experience and ensuring all increments are kept in sync with living docs.

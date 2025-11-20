@@ -9,6 +9,8 @@ created: 2025-11-18
 
 # US-006: Create .env File with GitHub Configuration
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/676
+
 **Feature**: [FS-022](../../_features/FS-022/FEATURE.md)
 
 ---

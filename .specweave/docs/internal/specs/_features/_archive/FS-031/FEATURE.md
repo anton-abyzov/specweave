@@ -13,6 +13,8 @@ sourceIncrement: 0031-external-tool-status-sync
 
 # External Tool Status Synchronization
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/647
+
 ## Overview
 
 Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with bidirectional status synchronization, rich content sync, and task-level traceability. This addresses critical gaps identified in user feedback (GitHub Issue #37) where external issues show only file references instead of full content, and status changes don't sync automatically.

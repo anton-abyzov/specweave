@@ -18,6 +18,8 @@ external_tools:
 
 # Release Management Plugin Enhancements
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/645
+
 ## Overview
 
 **CRITICAL DISCOVERY**: The `specweave-release` plugin exists with comprehensive documentation (24K lines) but is **incomplete and not registered as a Claude Code plugin**.
