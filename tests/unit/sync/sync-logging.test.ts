@@ -20,6 +20,8 @@ vi.mock('fs-extra', () => ({
     pathExists: vi.fn(),
     readJson: vi.fn(),
     writeJson: vi.fn(),
+    appendFile: vi.fn(),
+    readFile: vi.fn(),
   },
 }));
 
@@ -27,11 +29,14 @@ const mockedEnsureDir = vi.mocked(fs.ensureDir);
 const mockedPathExists = vi.mocked(fs.pathExists);
 const mockedReadJson = vi.mocked(fs.readJson);
 const mockedWriteJson = vi.mocked(fs.writeJson);
+const mockedAppendFile = vi.mocked(fs.appendFile);
+const mockedReadFile = vi.mocked(fs.readFile);
 
 describe('SyncEventLogger', () => {
   let logger: SyncEventLogger;
   const logsDir = '/test/.specweave/logs';
   const eventsFile = path.join(logsDir, 'sync-events.json');
+  const conflictsFile = path.join(logsDir, 'sync-conflicts.log');
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -337,6 +342,175 @@ describe('SyncEventLogger', () => {
     it('should create logger with project root', () => {
       const newLogger = new SyncEventLogger('/my-project');
       expect(newLogger).toBeInstanceOf(SyncEventLogger);
+    });
+  });
+
+  describe('Dedicated Conflict Logging (AC-US9-09)', () => {
+    it('should write conflicts to dedicated log file by default', async () => {
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedAppendFile.mockResolvedValue(undefined as any);
+
+      const conflictEvent: ConflictEvent = {
+        incrementId: '0047-us-task-linkage',
+        tool: 'github',
+        localStatus: 'completed',
+        remoteStatus: 'active',
+        localTimestamp: '2025-11-20T14:00:00Z',
+        remoteTimestamp: '2025-11-20T13:00:00Z',
+        resolutionStrategy: 'last-write-wins',
+        resolvedTo: 'use-local',
+        timestamp: '2025-11-20T14:00:05Z',
+        triggeredBy: 'auto-sync'
+      };
+
+      await logger.logConflictEvent(conflictEvent);
+
+      // Should write to both sync-events.json AND sync-conflicts.log
+      expect(mockedWriteJson).toHaveBeenCalled();
+      expect(mockedAppendFile).toHaveBeenCalledWith(
+        conflictsFile,
+        JSON.stringify(conflictEvent) + '\n',
+        'utf-8'
+      );
+    });
+
+    it('should NOT write to conflicts log when writeToConflictsLog=false', async () => {
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedAppendFile.mockResolvedValue(undefined as any);
+
+      const conflictEvent: ConflictEvent = {
+        incrementId: '0047-us-task-linkage',
+        tool: 'jira',
+        localStatus: 'completed',
+        remoteStatus: 'Done',
+        localTimestamp: '2025-11-20T14:00:00Z',
+        remoteTimestamp: '2025-11-20T13:00:00Z',
+        resolutionStrategy: 'specweave-wins',
+        resolvedTo: 'use-local',
+        timestamp: '2025-11-20T14:00:05Z',
+        triggeredBy: 'user'
+      };
+
+      await logger.logConflictEvent(conflictEvent, false);
+
+      // Should write to sync-events.json but NOT sync-conflicts.log
+      expect(mockedWriteJson).toHaveBeenCalled();
+      expect(mockedAppendFile).not.toHaveBeenCalled();
+    });
+
+    it('should load conflicts from dedicated log file', async () => {
+      const conflict1: ConflictEvent = {
+        incrementId: '0047-us-task-linkage',
+        tool: 'github',
+        localStatus: 'completed',
+        remoteStatus: 'active',
+        localTimestamp: '2025-11-20T14:00:00Z',
+        remoteTimestamp: '2025-11-20T13:00:00Z',
+        resolutionStrategy: 'last-write-wins',
+        resolvedTo: 'use-local',
+        timestamp: '2025-11-20T14:00:05Z',
+        triggeredBy: 'auto-sync'
+      };
+
+      const conflict2: ConflictEvent = {
+        incrementId: '0048-another-feature',
+        tool: 'jira',
+        localStatus: 'active',
+        remoteStatus: 'In Progress',
+        localTimestamp: '2025-11-20T15:00:00Z',
+        remoteTimestamp: '2025-11-20T14:30:00Z',
+        resolutionStrategy: 'external-wins',
+        resolvedTo: 'use-remote',
+        timestamp: '2025-11-20T15:00:05Z',
+        triggeredBy: 'user'
+      };
+
+      const logContent = JSON.stringify(conflict1) + '\n' + JSON.stringify(conflict2) + '\n';
+
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadFile.mockResolvedValue(logContent as any);
+
+      const conflicts = await logger.loadConflicts();
+
+      expect(mockedReadFile).toHaveBeenCalledWith(conflictsFile, 'utf-8');
+      expect(conflicts).toHaveLength(2);
+      expect(conflicts[0].incrementId).toBe('0047-us-task-linkage');
+      expect(conflicts[1].incrementId).toBe('0048-another-feature');
+    });
+
+    it('should return empty array when conflicts log does not exist', async () => {
+      mockedPathExists.mockResolvedValue(false);
+
+      const conflicts = await logger.loadConflicts();
+
+      expect(conflicts).toEqual([]);
+    });
+
+    it('should skip malformed lines in conflicts log', async () => {
+      const validConflict: ConflictEvent = {
+        incrementId: '0047-us-task-linkage',
+        tool: 'github',
+        localStatus: 'completed',
+        remoteStatus: 'active',
+        localTimestamp: '2025-11-20T14:00:00Z',
+        remoteTimestamp: '2025-11-20T13:00:00Z',
+        resolutionStrategy: 'last-write-wins',
+        resolvedTo: 'use-local',
+        timestamp: '2025-11-20T14:00:05Z',
+        triggeredBy: 'auto-sync'
+      };
+
+      const logContent =
+        'MALFORMED LINE\n' +
+        JSON.stringify(validConflict) + '\n' +
+        '{invalid json\n' +
+        '\n'; // empty line
+
+      mockedPathExists.mockResolvedValue(true);
+      mockedReadFile.mockResolvedValue(logContent as any);
+
+      const conflicts = await logger.loadConflicts();
+
+      // Should only return the valid conflict, skipping malformed lines
+      expect(conflicts).toHaveLength(1);
+      expect(conflicts[0].incrementId).toBe('0047-us-task-linkage');
+    });
+
+    it('should track conflicts when all 3 permissions enabled (full sync mode)', async () => {
+      // This test verifies the AC-US9-09 requirement:
+      // "Conflicts only possible when canUpsertInternalItems + canUpdateExternalItems + canUpdateStatus all enabled"
+
+      mockedEnsureDir.mockResolvedValue(undefined as any);
+      mockedPathExists.mockResolvedValue(false);
+      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedAppendFile.mockResolvedValue(undefined as any);
+
+      const fullSyncConflict: ConflictEvent = {
+        incrementId: '0047-us-task-linkage',
+        tool: 'github',
+        localStatus: 'completed',
+        remoteStatus: 'active',
+        localTimestamp: '2025-11-20T14:00:00Z',
+        remoteTimestamp: '2025-11-20T13:00:00Z',
+        resolutionStrategy: 'last-write-wins',
+        resolvedTo: 'use-local',
+        timestamp: '2025-11-20T14:00:05Z',
+        triggeredBy: 'auto-sync'
+      };
+
+      // When all permissions enabled, conflicts get logged
+      await logger.logConflictEvent(fullSyncConflict, true);
+
+      // Verify conflict logged to dedicated file
+      expect(mockedAppendFile).toHaveBeenCalledWith(
+        conflictsFile,
+        expect.stringContaining('"incrementId":"0047-us-task-linkage"'),
+        'utf-8'
+      );
     });
   });
 });

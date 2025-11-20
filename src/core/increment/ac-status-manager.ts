@@ -117,8 +117,10 @@ export class ACStatusManager {
         continue;
       }
 
-      // Check if this line contains AC tags
-      const acMatch = line.match(/\*\*AC\*\*:\s*(.+)/);
+      // Check if this line contains AC tags (supports both old and new formats)
+      // Old format: **AC**: AC-US1-01
+      // New format: **Satisfies ACs**: AC-US1-01, AC-US1-02
+      const acMatch = line.match(/\*\*(?:AC|Satisfies ACs)\*\*:\s*(.+)/);
       if (acMatch && currentTaskId) {
         // Extract AC-IDs (can be comma or space separated)
         const acText = acMatch[1].trim();
