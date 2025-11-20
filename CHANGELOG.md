@@ -6,6 +6,79 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [Unreleased]
 
+### 🔒 Security & Permission System
+
+#### 5-Gate Permission Architecture (v0.24.0) - 2025-11-20
+
+**CRITICAL SECURITY FIX**: Living docs sync was executing BEFORE permission checks, allowing unauthorized internal documentation modifications.
+
+**New Permission Model**: Introduced comprehensive 5-gate permission architecture for fine-grained sync control:
+
+**5 Permission Gates**:
+1. **GATE 1**: `canUpsertInternalItems` - Controls ALL internal docs creation/updates
+2. **GATE 2**: `canUpdateExternalItems` - Controls pushing changes TO external tools (GitHub/JIRA/ADO)
+3. **GATE 3**: `autoSyncOnCompletion` - Automatic vs manual external sync
+4. **GATE 4**: Per-tool `enabled` flags - Individual tool enable/disable (GitHub, JIRA, ADO)
+5. **GATE 5**: `canUpdateStatus` - Status field update control
+
+**Security Improvements**:
+- ✅ Permission checks now execute BEFORE sync operations (not after)
+- ✅ Deny-by-default (all gates default to `false` if undefined, **except `autoSyncOnCompletion` which defaults to `true` for better UX**)
+- ✅ Config error handling (malformed/missing JSON fails safe)
+- ✅ Clear user feedback with actionable instructions
+- ✅ Defense-in-depth (multiple checks for critical operations)
+
+**Configuration**:
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,
+      "canUpdateExternalItems": true,
+      "autoSyncOnCompletion": true,
+      "canUpdateStatus": true
+    },
+    "github": { "enabled": true },
+    "jira": { "enabled": false },
+    "ado": { "enabled": false }
+  }
+}
+```
+
+**Common Scenarios**:
+- **Full Auto-Sync** (greenfield): All gates enabled
+- **Manual External Sync** (staged releases): `autoSyncOnCompletion = false`
+- **Read-Only External** (one-way import): `canUpdateExternalItems = false`
+- **Fully Locked** (analysis mode): `canUpsertInternalItems = false`
+
+**Backward Compatibility**: ✅ NO BREAKING CHANGES
+- Existing projects auto-enable all permissions on first run
+- New projects prompted during `specweave init`
+- Safe migration from v0.23.x
+
+**Files Changed**:
+- `plugins/specweave/lib/hooks/sync-living-docs.js` - GATE 1, 3, config error handling
+- `src/sync/sync-coordinator.ts` - GATE 3, 4, manual-only sync mode
+- `src/sync/format-preservation-sync.ts` - GATE 2, 5 enforcement
+
+**Documentation**:
+- Internal: `.specweave/docs/internal/architecture/hld-permissions.md`
+- Public: `.specweave/docs/public/guides/sync-configuration.md`
+- Reports: `.specweave/increments/0047-us-task-linkage/reports/`
+
+**Tests**: ✅ 5 integration tests added
+- GATE 1 blocking/allowing
+- GATE 3 automatic/manual modes
+- Missing config handling
+- Malformed config handling
+- Default value validation
+
+**See Also**:
+- Implementation: `.specweave/increments/0047-us-task-linkage/reports/PERMISSION-GATES-IMPLEMENTATION-SUMMARY.md`
+- Code Review: `.specweave/increments/0047-us-task-linkage/reports/COMPREHENSIVE-CODE-REVIEW-2025-11-20.md`
+
+---
+
 ### 🐛 Critical Bug Fixes
 
 #### Status Line Not Updating on Increment Closure (2025-11-20)
