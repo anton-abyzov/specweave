@@ -19,7 +19,7 @@
  *   node auto-transition.ts auto-correct 0039-ultra-smart-next-command
  */
 
-import { AutoTransitionManager } from '../../../../dist/src/core/increment/auto-transition-manager.js';
+import { AutoTransitionManager } from '../vendor/core/increment/auto-transition-manager.js';
 
 async function main() {
   const event = process.argv[2];

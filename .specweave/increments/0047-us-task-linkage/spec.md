@@ -317,15 +317,17 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (external ID preservation test)
   - **Notes**: Store externalId (GH-#638, JIRA-SPEC-789, ADO-12345) and externalUrl
 
-- [ ] **AC-US9-07**: Living docs show origin badge (🏠 Internal, 🔗 GitHub, 🎫 JIRA, 📋 ADO)
+- [x] **AC-US9-07**: Living docs show origin badge (🏠 Internal, 🔗 GitHub, 🎫 JIRA, 📋 ADO)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (origin badge rendering test)
   - **Notes**: us-001-title.md shows "**Origin**: 🏠 Internal"
+  - **Completed by**: T-034 (origin badge sync in sync-us-tasks.js)
 
-- [ ] **AC-US9-08**: Origin immutable after creation (can't change internal ↔ external)
+- [x] **AC-US9-08**: Origin immutable after creation (can't change internal ↔ external)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (immutability test)
   - **Notes**: Validation prevents changing origin field post-creation
+  - **Completed by**: T-034 (immutability validation in updateOriginBadge)
 
 - [ ] **AC-US9-09**: Sync logs track origin-based update conflicts (when full sync enabled: all 3 permissions = true)
   - **Priority**: P2 (Nice-to-have)

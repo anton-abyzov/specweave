@@ -6,7 +6,7 @@ import {
   validateTranslation,
   getLanguageName,
   formatCost
-} from "../../../../dist/src/utils/translation.js";
+} from "../vendor/utils/translation.js";
 async function translateFile(options) {
   const { filePath, targetLang, preview, verbose } = options;
   if (!await fs.pathExists(filePath)) {
