@@ -20,8 +20,17 @@
     "living-docs"
   ],
   "hooks": {
-    "TodoWrite": {
-      "post": "./hooks/post-task-completion.sh"
-    }
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
