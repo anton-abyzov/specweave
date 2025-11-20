@@ -99,9 +99,15 @@ Checking increment 0031-external-tool-status-sync...
 ✅ Archived: 0031-external-tool-status-sync
    Location: .specweave/increments/_archive/0031-external-tool-status-sync/
 
+🔄 Auto-archiving orphaned features...
+✅ Auto-archived features: FS-031
+📝 Updated 0 links in living docs
+
 📊 Archive Statistics:
    Active: 32 increments
    Archived: 31 increments (+ 1 new)
+   Auto-archived features: 1
+   Auto-archived epics: 0
 
 Next: /specweave:restore 0031 (if you need to unarchive)
 ```
@@ -236,7 +242,7 @@ Or force archive (not recommended):
 
 - `/specweave:restore <increment-id>` - Restore increment from archive
 - `/specweave:done <increment-id>` - Close increment (does NOT archive!)
-- `/specweave:archive-features` - Archive features/epics (separate system)
+- `/specweave:archive-features` - **DEPRECATED**: Now automatic, no longer needed!
 - `/specweave:status` - View archive statistics
 
 ## Important Notes
@@ -249,12 +255,15 @@ Or force archive (not recommended):
 - ✅ Keep ~10-20 recent increments visible for reference
 - ✅ Archive older work when you're ready
 
-### 🔗 Feature Archiving (Automatic)
+### 🔗 Feature Archiving (FULLY AUTOMATIC!)
 
-**Features/epics ARE auto-archived** when all their increments are archived:
-- After archiving increment 0031, run: `/specweave:archive-features`
-- This updates living docs and archives orphaned features
-- Keeps feature docs in sync with increment archives
+**Features/epics ARE automatically archived** when all their increments are archived:
+- ✅ `/specweave:archive 0031` → **AUTOMATICALLY** archives FS-031 if all increments archived
+- ✅ **AUTOMATICALLY** updates living docs and archives orphaned features
+- ✅ **ONE COMMAND** does everything - no manual `/specweave:archive-features` needed!
+- ✅ Keeps feature docs in sync with increment archives
+
+**You never need to run `/specweave:archive-features` manually anymore!**
 
 ### 📦 Archive is Local Only
 
@@ -302,6 +311,33 @@ task.run(async () => {
     console.error(`❌ Errors: ${result.errors.length} increments`);
   }
 
+  // ✅ AUTOMATIC FEATURE ARCHIVING (NEW!)
+  // When increments are archived, automatically archive orphaned features
+  let featureResult;
+  if (result.archived.length > 0 && !options.dryRun) {
+    console.log('\n🔄 Auto-archiving orphaned features...');
+    const { FeatureArchiver } = await import('../../../dist/src/core/living-docs/feature-archiver.js');
+    const featureArchiver = new FeatureArchiver(process.cwd());
+
+    featureResult = await featureArchiver.archiveFeatures({
+      archiveOrphanedFeatures: true,
+      archiveOrphanedEpics: true,
+      forceArchiveWhenAllIncrementsArchived: true,
+      updateLinks: true,
+      dryRun: false
+    });
+
+    if (featureResult.archivedFeatures.length > 0) {
+      console.log(`✅ Auto-archived features: ${featureResult.archivedFeatures.join(', ')}`);
+    }
+    if (featureResult.archivedEpics.length > 0) {
+      console.log(`✅ Auto-archived epics: ${featureResult.archivedEpics.join(', ')}`);
+    }
+    if (featureResult.updatedLinks.length > 0) {
+      console.log(`📝 Updated ${featureResult.updatedLinks.length} links in living docs`);
+    }
+  }
+
   // Show statistics
   const stats = await archiver.getStats();
   console.log('\n📊 Archive Statistics:');
@@ -310,9 +346,10 @@ task.run(async () => {
   console.log(`   Abandoned: ${stats.abandoned} increments`);
   console.log(`   Total archive size: ${formatSize(stats.totalSize)}`);
 
-  // Suggest next steps
-  if (result.archived.length > 0 && !options.dryRun) {
-    console.log('\n💡 Next: Run /specweave:archive-features to sync feature docs');
+  // Show feature/epic stats if auto-archiving occurred
+  if (featureResult && (featureResult.archivedFeatures.length > 0 || featureResult.archivedEpics.length > 0)) {
+    console.log(`   Auto-archived features: ${featureResult.archivedFeatures.length}`);
+    console.log(`   Auto-archived epics: ${featureResult.archivedEpics.length}`);
   }
 });
 
@@ -349,15 +386,14 @@ Default behavior:
 
 **Recommended Workflow**:
 ```bash
-# 1. Check what would be archived
+# 1. Check what would be archived (dry run)
 /specweave:archive --keep-last 10 --dry-run
 
-# 2. Archive old increments
+# 2. Archive old increments (features auto-archived!)
 /specweave:archive --keep-last 10
 
-# 3. Archive related features
-/specweave:archive-features
-
-# 4. Check results
+# 3. Check results
 /specweave:status
 ```
+
+**That's it!** Features are automatically archived in step 2 - no manual intervention needed!
