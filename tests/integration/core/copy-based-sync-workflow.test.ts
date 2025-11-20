@@ -275,7 +275,7 @@ increment: 0031-external-tool-sync
       expect(content).toMatch(/- \[x\] \*\*T-003\*\*/);
     });
 
-    it('should support bidirectional sync of AC status', async () => {
+    it('should support full sync (all permissions enabled) of AC status', async () => {
       const userStoryPath = join(livingDocsDir, 'US-001-oauth.md');
       const userStoryContent = `---
 id: US-001
@@ -302,7 +302,7 @@ id: US-001
       expect(updatedContent).toMatch(/- \[ \] \*\*AC-US1-02\*\*/);
     });
 
-    it('should support bidirectional sync of task status', async () => {
+    it('should support full sync (all permissions enabled) of task status', async () => {
       const userStoryPath = join(livingDocsDir, 'US-001-oauth.md');
       const userStoryContent = `---
 id: US-001
@@ -357,7 +357,7 @@ id: US-001
       content = content.replace('- [ ] **AC-US1-01**', '- [x] **AC-US1-01**');
       await writeFile(userStoryPath, content);
 
-      // Validate bidirectional sync
+      // Validate full sync (all permissions enabled)
       const syncedContent = await readFile(userStoryPath, 'utf-8');
       expect(syncedContent).toMatch(/- \[x\] \*\*AC-US1-01\*\*/);
     });

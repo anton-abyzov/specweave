@@ -105,10 +105,10 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (hook unit test)
   - **Completed by**: T-008 (parseTasksWithUSLinks integration)
 
-- [x] **AC-US3-05**: Increment → Living Docs sync is ALWAYS one-way (never bidirectional)
+- [x] **AC-US3-05**: Increment → Living Docs sync is ALWAYS one-way (external tools cannot write back to active increments)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (sync direction validation test)
-  - **Notes**: Increment is source of truth during active work, living docs is archival. This direction is IMMUTABLE and cannot be configured as bidirectional.
+  - **Notes**: Increment is source of truth during active work, living docs is archival. This direction is IMMUTABLE - external tools can only READ from living docs, never WRITE to active increments.
   - **Completed by**: T-011 (sync direction validation)
 
 ### US-004: AC Coverage Validation
@@ -191,12 +191,12 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I don't lose historical context and can manually create increments when ready to work
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: After `specweave init`, CLI prompts to import from detected external tools
+- [x] **AC-US7-01**: After `specweave init`, CLI prompts to import from detected external tools
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (init command integration test)
   - **Notes**: Auto-detect GitHub remote, JIRA/ADO config from environment
 
-- [ ] **AC-US7-02**: Import pulls items from configurable time range (default: 1 month)
+- [x] **AC-US7-02**: Import pulls items from configurable time range (default: 1 month)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (time range filter test)
   - **Notes**: Environment variable SPECWEAVE_IMPORT_TIME_RANGE_MONTHS
@@ -207,22 +207,22 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Notes**: GitHub: 100/page, JIRA: 50/page, ADO: continuationToken
   - **Completed by**: T-023 (GitHub AsyncGenerator pagination)
 
-- [ ] **AC-US7-04**: Imported items get E suffix (US-001E, T-001E)
+- [x] **AC-US7-04**: Imported items get E suffix (US-001E, T-001E)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (ID assignment test)
   - **Notes**: E suffix permanently indicates external origin
 
-- [ ] **AC-US7-05**: Import creates external US files in living docs (NOT increments)
+- [x] **AC-US7-05**: Import creates external US files in living docs (NOT increments)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (living docs creation test)
   - **Notes**: Create us-001e-title.md in living docs, NO automatic increment creation
 
-- [ ] **AC-US7-06**: Import preserves external metadata (ID, URL, creation date)
+- [x] **AC-US7-06**: Import preserves external metadata (ID, URL, creation date)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (metadata preservation test)
   - **Notes**: Store in living docs frontmatter: externalId, externalUrl, importedAt
 
-- [ ] **AC-US7-07**: Interactive confirmation before importing large datasets
+- [x] **AC-US7-07**: Interactive confirmation before importing large datasets
   - **Priority**: P1 (Important)
   - **Testable**: Yes (interactive prompt test)
   - **Notes**: Warn if import > 100 items, require explicit confirmation
@@ -232,7 +232,7 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (multi-platform import test)
   - **Notes**: Shared importer interface, platform-specific adapters
 
-- [ ] **AC-US7-09**: NEVER auto-create increments for imported external items
+- [x] **AC-US7-09**: NEVER auto-create increments for imported external items
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (validation test ensures no auto-increment creation)
   - **Notes**: External US lives in living docs ONLY. User MUST manually create increment when ready to work on it. Config validation prevents autoIncrementCreation=true.
@@ -244,24 +244,28 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** every item has a unique identifier with clear origin
 
 **Acceptance Criteria**:
-- [ ] **AC-US8-01**: ID generator detects highest sequential number (ignoring suffix)
+- [x] **AC-US8-01**: ID generator detects highest sequential number (ignoring suffix)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (ID generation test)
   - **Notes**: Extract numeric part from US-001, US-002E, US-003, find max
+  - **Completed by**: T-028 (ID generator with origin suffix support)
 
-- [ ] **AC-US8-02**: New internal items use next sequential number (no suffix)
+- [x] **AC-US8-02**: New internal items use next sequential number (no suffix)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (internal ID generation test)
   - **Notes**: Given [US-001, US-002E, US-003], next internal = US-004
+  - **Completed by**: T-028 (ID generator with origin suffix support)
 
-- [ ] **AC-US8-03**: New external items use next sequential number + E suffix
+- [x] **AC-US8-03**: New external items use next sequential number + E suffix
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (external ID generation test)
   - **Notes**: Given [US-001, US-002E, US-003], next external = US-004E
+  - **Completed by**: T-028 (ID generator with origin suffix support)
 
-- [ ] **AC-US8-04**: Mixed IDs allowed in same increment (US-001, US-002E, US-003, US-004E)
+- [x] **AC-US8-04**: Mixed IDs allowed in same increment (US-001, US-002E, US-003, US-004E)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (mixed ID validation test)
+  - **Completed by**: T-029 (Updated parsers to handle E suffix)
   - **Notes**: Spec.md and tasks.md support both formats simultaneously
 
 - [ ] **AC-US8-05**: ID uniqueness validation before assignment
@@ -269,10 +273,11 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (collision detection test)
   - **Notes**: Abort ID generation if duplicate detected, log error
 
-- [ ] **AC-US8-06**: Legacy IDs preserved during migration (no renumbering)
+- [x] **AC-US8-06**: Legacy IDs preserved during migration (no renumbering)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (migration preservation test)
   - **Notes**: Existing increments (0001-0046) keep internal IDs, first external import starts at US-201E
+  - **Completed by**: T-031 (MIGRATION_GUIDE.md + tests)
 
 ### US-009: Origin Tracking and Sync Direction Configuration
 
@@ -281,30 +286,31 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I can control how changes flow between SpecWeave and external tools
 
 **Acceptance Criteria**:
-- [ ] **AC-US9-01**: Every US/Task has origin field in metadata (internal | external)
+- [x] **AC-US9-01**: Every US/Task has origin field in metadata (internal | external)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (metadata validation test)
   - **Notes**: Living docs frontmatter `origin`, `externalId`, `externalUrl`
+  - **Completed by**: T-032 (origin-metadata.ts + 44 passing tests)
 
-- [ ] **AC-US9-02**: Bidirectional sync configurable in .specweave/config.json (default: false)
+- [ ] **AC-US9-02**: Three independent permission settings in config.json control external tool sync behavior
   - **Priority**: P0 (Critical)
-  - **Testable**: Yes (config validation test)
-  - **Notes**: `sync.bidirectional = false` (default, safer). Internal US: push-only. External US: pull-only.
+  - **Testable**: Yes (permission validation test)
+  - **Notes**: config.json `sync.settings`: canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus (all default: false for safety). Source of truth is config.json ONLY.
 
-- [ ] **AC-US9-03**: When bidirectional=false (default), internal US syncs one-way to external tool
+- [ ] **AC-US9-03**: When canUpsertInternalItems=true, internal US creates external item AND syncs ongoing content updates
   - **Priority**: P0 (Critical)
-  - **Testable**: Yes (sync direction test)
-  - **Notes**: Living Docs → External Tool (push only). External tool updates do NOT flow back.
+  - **Testable**: Yes (upsert permission test)
+  - **Notes**: UPSERT = CREATE initially + UPDATE as work progresses. Controls: title, description, ACs. Flow: increment → living spec → CREATE external item → UPDATE on task completion. If false, stops before external item creation (local-only workflow).
 
-- [ ] **AC-US9-04**: When bidirectional=false (default), external US syncs one-way from external tool
+- [ ] **AC-US9-04**: When canUpdateExternalItems=true, external US content updates sync back to external tool (full content updates)
   - **Priority**: P0 (Critical)
-  - **Testable**: Yes (sync direction test)
-  - **Notes**: External Tool → Living Docs (pull only). Living docs updates do NOT push back.
+  - **Testable**: Yes (external update permission test)
+  - **Notes**: Controls: full content updates of externally-originated items (title, description, ACs, tasks/subtasks, success criteria, comments). Flow: increment progress → living spec → UPDATE external tool. If false, no sync to external tool (read-only snapshot).
 
-- [ ] **AC-US9-05**: When bidirectional=true (advanced), both directions enabled for both US types
-  - **Priority**: P1 (Important)
-  - **Testable**: Yes (bidirectional sync test)
-  - **Notes**: Living Docs ↔ External Tool (both push and pull). Requires conflict resolution.
+- [ ] **AC-US9-05**: When canUpdateStatus=true, status updates sync to external tool (for BOTH internal AND external items)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes (status permission test)
+  - **Notes**: Controls: status field ONLY. Works for both internal and external items. If false, no status updates regardless of item origin (manual status management in external tool).
 
 - [ ] **AC-US9-06**: External items preserve original external ID for reference
   - **Priority**: P0 (Critical)
@@ -321,10 +327,10 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (immutability test)
   - **Notes**: Validation prevents changing origin field post-creation
 
-- [ ] **AC-US9-09**: Sync logs track origin-based update conflicts (bidirectional mode only)
+- [ ] **AC-US9-09**: Sync logs track origin-based update conflicts (when full sync enabled: all 3 permissions = true)
   - **Priority**: P2 (Nice-to-have)
   - **Testable**: Yes (conflict logging test)
-  - **Notes**: Log file: .specweave/logs/sync-conflicts.log
+  - **Notes**: Log file: .specweave/logs/sync-conflicts.log. Conflicts only possible when canUpsertInternalItems + canUpdateExternalItems + canUpdateStatus all enabled.
 
 ### US-009A: External Item Format Preservation
 
@@ -348,10 +354,10 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
   - **Testable**: Yes (comment-only update test)
   - **Notes**: Add comment: "✅ [FS-888][T-042] Task completed", do NOT modify issue body
 
-- [ ] **AC-US9A-04**: Status updates ONLY if bidirectional=true
+- [ ] **AC-US9A-04**: Status updates ONLY if canUpdateStatus=true
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (status update conditional test)
-  - **Notes**: bidirectional=false → no status update, bidirectional=true → update status
+  - **Notes**: canUpdateStatus=false → no status update, canUpdateStatus=true → update status via comment or API
 
 - [ ] **AC-US9A-05**: Internal items enforce standard [FS-XXX][US-YYY] format
   - **Priority**: P0 (Critical)
@@ -524,50 +530,59 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** living docs structure reflects the actual timeline of work items and integrates seamlessly with existing increments
 
 **Acceptance Criteria**:
-- [ ] **AC-US12-01**: Parse work item created date from external tool metadata (createdAt field)
+- [x] **AC-US12-01**: Parse work item created date from external tool metadata (createdAt field)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (date parsing test)
   - **Notes**: Extract createdAt from GitHub issue, JIRA epic, ADO work item metadata
+  - **Completed by**: T-041 (FS-ID allocator with chronological placement - 24/24 tests passing)
 
-- [ ] **AC-US12-02**: Scan existing living docs FS-XXX folders to determine occupied ID ranges
+- [x] **AC-US12-02**: Scan existing living docs FS-XXX folders to determine occupied ID ranges
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (folder scanning test)
   - **Notes**: Scan `.specweave/docs/internal/specs/` for FS-001, FS-002, etc. Build ID map.
+  - **Completed by**: T-041 (scanExistingIds() method scans active features)
 
-- [ ] **AC-US12-03**: Scan archived increments (_archive/) and consider their IDs as occupied
+- [x] **AC-US12-03**: Scan archived increments (_archive/) and consider their IDs as occupied
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (archive scanning test)
   - **Notes**: CRITICAL - archived IDs are still occupied, cannot reuse even with E suffix
+  - **Completed by**: T-041 (scanExistingIds() scans both active and archived - TC-131 passing)
 
-- [ ] **AC-US12-04**: Allocate FS-XXX ID chronologically by comparing work item createdAt to existing increment/feature creation dates
+- [x] **AC-US12-04**: Allocate FS-XXX ID chronologically by comparing work item createdAt to existing increment/feature creation dates
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (chronological allocation test)
   - **Notes**: If external item created 2025-01-15 and FS-010 created 2025-01-10, FS-020 created 2025-01-20, then allocate FS-011E (insert between)
+  - **Completed by**: T-041 (allocateId() with chronological-insert strategy - TC-128 passing)
 
-- [ ] **AC-US12-05**: Default behavior: append to end (increment max ID + 1) with E suffix if chronological insertion not feasible
+- [x] **AC-US12-05**: Default behavior: append to end (increment max ID + 1) with E suffix if chronological insertion not feasible
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (append mode test)
   - **Notes**: Most common case: external item created after all existing work → allocate FS-{max+1}E
+  - **Completed by**: T-041 (allocateId() with append strategy - TC-129 passing)
 
-- [ ] **AC-US12-06**: Prevent ID collision - validate no existing FS-XXX or FS-XXXE before allocation
+- [x] **AC-US12-06**: Prevent ID collision - validate no existing FS-XXX or FS-XXXE before allocation
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (collision detection test)
   - **Notes**: Check both active and archived folders. Error if FS-042 or FS-042E already exists.
+  - **Completed by**: T-041 (hasCollision() method checks both variants - TC-130 passing)
 
-- [ ] **AC-US12-07**: Create folder structure: `.specweave/docs/internal/specs/FS-XXXE/` with US subfolders
+- [x] **AC-US12-07**: Create folder structure: `.specweave/docs/internal/specs/FS-XXXE/` with US subfolders
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (folder creation test)
   - **Notes**: Create FS-042E/us-001e-title.md, FS-042E/us-002e-title.md
+  - **Completed by**: T-042 (createFeatureFolder() method - TC-133, TC-134 passing)
 
-- [ ] **AC-US12-08**: Add origin metadata to feature README.md (external source, import date, original feature ID)
+- [x] **AC-US12-08**: Add origin metadata to feature README.md (external source, import date, original feature ID)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (metadata persistence test)
   - **Notes**: FS-042E/README.md frontmatter: `external_id: GH-Milestone-#42, imported_at: 2025-11-19`
+  - **Completed by**: T-042 (README generation with frontmatter and origin badges - TC-133, TC-134 passing)
 
-- [ ] **AC-US12-09**: Update next available ID tracker after allocation (prevent race conditions)
+- [x] **AC-US12-09**: Update next available ID tracker after allocation (prevent race conditions)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (ID tracker test)
   - **Notes**: Atomic update to avoid collisions during concurrent imports
+  - **Completed by**: T-042 (IDRegistry class with file-based locking - TC-135, TC-136 passing)
 
 ### US-013: Archive Command for Features and Epics
 
@@ -689,11 +704,14 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 - Mixed IDs allowed in same increment (US-001, US-002E, US-003)
 - Priority: P0 (Critical)
 
-### FR-009: Sync Direction Configuration
+### FR-009: External Tool Permission Configuration
 - Increment → Living Docs sync MUST be one-way ALWAYS (immutable, not configurable)
-- Living Docs ↔ External Tool sync MUST respect bidirectional config (default: false)
-- When bidirectional=false: Internal US push-only, External US pull-only
-- When bidirectional=true: Both directions enabled for both US types
+- Living Docs → External Tool sync MUST respect 3 independent permission settings in config.json
+- canUpsertInternalItems: Controls CREATE + UPDATE for internal items (default: false)
+- canUpdateExternalItems: Controls content updates for external items via comments (default: false)
+- canUpdateStatus: Controls status updates for ALL items (default: false)
+- Permissions stored in .specweave/config.json under sync.settings (NOT .env)
+- Init command MUST prompt user with 3 questions to set these permissions
 - Config validation MUST prevent autoIncrementCreation=true (forbidden)
 - Priority: P0 (Critical)
 
@@ -708,8 +726,10 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 - External items MUST preserve original title (NO rewrite to [FS-XXX][US-YYY] format)
 - External items MUST preserve original description (NO AC/Task checklist injection)
 - Completion updates MUST use comments ONLY (non-invasive updates)
-- Status updates ONLY if bidirectional=true (default: no status update)
+- Status updates ONLY if canUpdateStatus=true (default: no status update)
+- Content updates to external items ONLY if canUpdateExternalItems=true (default: skip sync)
 - Internal items MUST enforce standard [FS-XXX][US-YYY] format (full rewrite allowed)
+- Internal item upsert (CREATE + UPDATE) ONLY if canUpsertInternalItems=true (default: skip external item creation)
 - Format preservation flag MUST be stored in living docs frontmatter
 - Sync service MUST route to comment-only mode for external items based on origin
 - Validation MUST block format-breaking updates (title/description changes) for external items

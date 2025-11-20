@@ -141,7 +141,7 @@ Each plugin test suite includes **6 comprehensive tests**:
 3. **List Work Items** - Queries existing work items
 4. **Create Work Item (Sync)** - Creates test Epic (deleted after)
 5. **Add Comment (Push Progress)** - Demonstrates progress sync
-6. **Get & Delete Work Item (Pull + Cleanup)** - Bidirectional sync + cleanup
+6. **Get & Delete Work Item (Pull + Cleanup)** - Full sync + cleanup
 
 ### Jira Tests (`jira-sync.test.ts`)
 
@@ -150,7 +150,7 @@ Each plugin test suite includes **6 comprehensive tests**:
 3. **Query Jira Issues** - Lists recent issues
 4. **Create Issue (Sync)** - Creates test Task (deleted after)
 5. **Add Comment (Push Progress)** - Demonstrates progress sync
-6. **Get & Delete Issue (Pull + Cleanup)** - Bidirectional sync + cleanup
+6. **Get & Delete Issue (Pull + Cleanup)** - Full sync + cleanup
 
 ### GitHub Tests (`github-sync.test.ts`)
 

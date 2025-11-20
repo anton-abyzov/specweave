@@ -1,0 +1,68 @@
+{
+  "$schema": "https://spec-weave.com/schemas/config.json",
+  "version": "0.24.0",
+
+  "sync": {
+    "enabled": true,
+    "provider": "github",
+    "includeStatus": true,
+    "autoApplyLabels": true,
+    "activeProfile": "main",
+
+    "settings": {
+      "canUpsertInternalItems": false,
+      "canUpdateExternalItems": false,
+      "canUpdateStatus": false
+    },
+
+    "profiles": {
+      "main": {
+        "provider": "github",
+        "displayName": "Main GitHub Profile",
+        "description": "Primary GitHub repository",
+        "config": {
+          "owner": "your-org",
+          "repo": "your-repo"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
+      }
+    },
+
+    "statusSync": {
+      "enabled": true,
+      "autoSync": true,
+      "promptUser": false,
+      "conflictResolution": "external-wins",
+      "mappings": {
+        "github": {
+          "planning": "Planning",
+          "in-progress": "In Progress",
+          "completed": "Done",
+          "paused": "On Hold",
+          "abandoned": "Cancelled"
+        },
+        "jira": {
+          "planning": "To Do",
+          "in-progress": "In Progress",
+          "completed": "Done",
+          "paused": "On Hold",
+          "abandoned": "Cancelled"
+        },
+        "ado": {
+          "planning": "New",
+          "in-progress": "Active",
+          "completed": "Closed",
+          "paused": "On Hold",
+          "abandoned": "Removed"
+        }
+      }
+    }
+  }
+}

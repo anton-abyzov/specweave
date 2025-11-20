@@ -153,7 +153,7 @@ npm run install:agents
 2. ✅ Creates/updates GitHub issue
 3. ✅ Adds user stories as description
 4. ✅ Adds tasks as checkable checklist
-5. ✅ Stores issue number for bidirectional sync
+5. ✅ Stores issue number for full sync with all permissions enabled
 
 ## Comparison with Other Adapters
 

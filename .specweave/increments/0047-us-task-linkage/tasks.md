@@ -1,6 +1,6 @@
 ---
 total_tasks: 52
-completed: 20
+completed: 26
 by_user_story:
   US-001: 4
   US-002: 3
@@ -449,11 +449,11 @@ coverage_target: 90
 **Priority**: P0 (Critical)
 **Estimated Effort**: 2 hours
 
-**Description**: Validate that Increment → Living Docs sync is ALWAYS one-way (never bidirectional). This task replaced the original "bidirectional sync" implementation after architectural correction (see SYNC-DIRECTION-ARCHITECTURE-ANALYSIS.md).
+**Description**: Validate that Increment → Living Docs sync is ALWAYS one-way (external tools cannot write back to active increments). This task replaced the original two-way sync implementation after architectural correction (see SYNC-DIRECTION-ARCHITECTURE-ANALYSIS.md).
 
 **ARCHITECTURAL CORRECTION**:
-- **Original task**: "Implement bidirectional sync (tasks.md ↔ living docs)"
-- **Corrected requirement (AC-US3-05)**: "Increment → Living Docs sync is ALWAYS one-way (never bidirectional)"
+- **Original task**: "Implement two-way sync (tasks.md ↔ living docs)"
+- **Corrected requirement (AC-US3-05)**: "Increment → Living Docs sync is ALWAYS one-way (external tools cannot write back to active increments)"
 - **Reason**: Increment is source of truth during active work, living docs is archival
 
 **Implementation Steps**:
@@ -494,7 +494,7 @@ coverage_target: 90
 
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P2 (Nice-to-have)
 **Estimated Effort**: 4 hours
 
@@ -784,7 +784,7 @@ coverage_target: 90
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P2 (Nice-to-have)
 **Estimated Effort**: 3 hours
 
@@ -827,7 +827,7 @@ coverage_target: 90
 
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P3 (Nice-to-have)
 **Estimated Effort**: 4 hours
 
@@ -1061,7 +1061,8 @@ coverage_target: 90
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-08, AC-US7-03
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-20
 **Priority**: P0 (Critical)
 **Estimated Effort**: 10 hours
 
@@ -1108,7 +1109,8 @@ coverage_target: 90
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01, AC-US7-02, AC-US7-07
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-20
 **Priority**: P0 (Critical)
 **Estimated Effort**: 6 hours
 
@@ -1156,7 +1158,8 @@ coverage_target: 90
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-04, AC-US7-05, AC-US7-06, AC-US7-09
-**Status**: [ ] pending
+**Status**: [x] completed
+**Completed**: 2025-11-20
 **Priority**: P0 (Critical)
 **Estimated Effort**: 8 hours
 
@@ -1209,7 +1212,7 @@ coverage_target: 90
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-02, AC-US7-03
-**Status**: [ ] pending
+**Status**: [x] completed (2025-11-20)
 **Priority**: P1 (Important)
 **Estimated Effort**: 4 hours
 
@@ -1262,7 +1265,7 @@ coverage_target: 90
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01, AC-US8-02, AC-US8-03
-**Status**: [ ] pending
+**Status**: [x] completed (2025-11-20)
 **Priority**: P0 (Critical)
 **Estimated Effort**: 6 hours
 
@@ -1309,7 +1312,7 @@ coverage_target: 90
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-04
-**Status**: [ ] pending
+**Status**: [x] completed (2025-11-20)
 **Priority**: P0 (Critical)
 **Estimated Effort**: 5 hours
 
@@ -1355,7 +1358,7 @@ coverage_target: 90
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (Important)
 **Estimated Effort**: 4 hours
 
@@ -1395,7 +1398,7 @@ coverage_target: 90
 
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (Important)
 **Estimated Effort**: 3 hours
 
@@ -1440,7 +1443,7 @@ coverage_target: 90
 
 **User Story**: US-009
 **Satisfies ACs**: AC-US9-01, AC-US9-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 5 hours
 
@@ -1494,34 +1497,37 @@ coverage_target: 90
 **Priority**: P0 (Critical)
 **Estimated Effort**: 8 hours
 
-**Description**: Implement sync coordinator that respects bidirectional config with safe defaults.
+**Description**: Implement sync coordinator that uses three-permission architecture with safe defaults.
 
 **CRITICAL RULES**:
 1. **Increment → Living Docs**: ALWAYS one-way (immutable)
-2. **Living Docs ↔ External Tool**: Configurable (default: one-way per origin)
-3. **Bidirectional config**: Default FALSE (safer)
+2. **Living Docs ↔ External Tool**: Configurable via three permissions
+3. **Permission Defaults**: All FALSE (safest - read-only sync)
 
 **Implementation Steps**:
 1. Create `src/sync/sync-config.ts`:
-   - Define `SyncConfig` interface with bidirectional flag (default: false)
-   - Define sync direction rules (push-only, pull-only, push-pull)
+   - Define `SyncConfig` interface with three permission flags (all default: false)
+   - Define sync behavior based on permission combinations
 2. Create `src/sync/increment-to-living-docs.ts`:
    - ALWAYS one-way (increment → living docs)
    - NEVER pull from living docs to update increment (immutable rule)
 3. Create `src/sync/living-docs-to-external.ts`:
-   - Respect bidirectional config flag
-   - **Default (bidirectional=false)**:
-     - Internal US: push-only (living docs → external tool)
-     - External US: pull-only (external tool → living docs)
-   - **Advanced (bidirectional=true)**:
-     - Internal US: push-pull (bidirectional)
-     - External US: pull-push (bidirectional)
+   - Respect three-permission settings
+   - **Default (all permissions=false)**:
+     - Internal US: no sync (read-only)
+     - External US: no sync (read-only)
+   - **With canUpdateExternalItems=true**:
+     - Internal US: push to external tool (SpecWeave → External)
+   - **With canUpsertInternalItems=true**:
+     - External US: pull from external tool (External → SpecWeave)
+   - **With canUpdateStatus=true**:
+     - Status sync enabled (both directions as appropriate)
 4. Create `src/sync/sync-config-validator.ts`:
    - Validate incrementToLivingDocs = 'one-way' (immutable)
    - Validate autoIncrementCreation = false (forbidden)
-   - Warn if bidirectional = true (advanced mode)
-5. Add conflict detection (bidirectional mode only)
-6. Add integration tests for both modes
+   - Warn if all three permissions = true (full sync mode, higher conflict risk)
+5. Add conflict detection (when multiple permissions enabled)
+6. Add integration tests for all permission combinations
 
 **Test Plan**:
 - **File**: `tests/integration/sync/sync-direction.test.ts`
@@ -1530,24 +1536,28 @@ coverage_target: 90
     - Given active increment with task completion
     - When sync executed
     - Then living docs updated, NO pull from living docs to increment
-  - **TC-091**: Internal US push-only (default mode)
-    - Given internal US-001, bidirectional=false
+  - **TC-091**: Internal US no sync (default: all permissions=false)
+    - Given internal US-001, all permissions=false
     - When sync executed
-    - Then living docs → GitHub (push), NO pull from GitHub
-  - **TC-092**: External US pull-only (default mode)
-    - Given external US-002E, bidirectional=false, GitHub updated
+    - Then NO sync to GitHub (read-only mode)
+  - **TC-092**: External US no sync (default: all permissions=false)
+    - Given external US-002E, all permissions=false, GitHub updated
     - When sync executed
-    - Then GitHub → living docs (pull), NO push to GitHub
-  - **TC-093**: Bidirectional mode for internal US
-    - Given internal US-001, bidirectional=true
+    - Then NO sync from GitHub (read-only mode)
+  - **TC-093**: Internal US push with canUpdateExternalItems=true
+    - Given internal US-001, canUpdateExternalItems=true
     - When sync executed
-    - Then living docs ↔ GitHub (both push and pull)
-  - **TC-094**: Bidirectional mode for external US
-    - Given external US-002E, bidirectional=true
+    - Then living docs → GitHub (push only)
+  - **TC-094**: External US pull with canUpsertInternalItems=true
+    - Given external US-002E, canUpsertInternalItems=true, GitHub updated
     - When sync executed
-    - Then GitHub ↔ living docs (both pull and push)
-  - **TC-095**: Config validation prevents invalid settings
-    - Given config with incrementToLivingDocs='bidirectional'
+    - Then GitHub → living docs (pull only)
+  - **TC-095**: Full sync with all permissions enabled
+    - Given US-001, canUpsertInternalItems=true, canUpdateExternalItems=true, canUpdateStatus=true
+    - When sync executed
+    - Then both push and pull enabled with conflict detection
+  - **TC-096**: Config validation prevents invalid settings
+    - Given config with incrementToLivingDocs='two-way'
     - When validated
     - Then Error: "MUST be one-way"
 - **Coverage Target**: 95%+
@@ -1674,7 +1684,7 @@ coverage_target: 90
    - AC satisfaction info (✅ **AC-USXX-YY**: description)
    - Progress percentage (8/11 tasks, 73%)
    - Links to living docs
-4. Add conditional status update (only if `bidirectional=true`)
+4. Add conditional status update (only if `canUpdateStatus=true`)
 
 **Test Plan**:
 - **File**: `tests/integration/sync/format-preservation-sync.test.ts`
@@ -1682,8 +1692,8 @@ coverage_target: 90
   - TC-034B-01: External US routes to comment-only mode
   - TC-034B-02: Internal US routes to full sync mode
   - TC-034B-03: Completion comment includes all required sections
-  - TC-034B-04: Status NOT updated when bidirectional=false
-  - TC-034B-05: Status updated when bidirectional=true
+  - TC-034B-04: Status NOT updated when canUpdateStatus=false
+  - TC-034B-05: Status updated when canUpdateStatus=true
 - **Coverage Target**: 90%+
 
 **Files Affected**:
@@ -1823,14 +1833,14 @@ coverage_target: 90
    - GitHub issue title remains "My-Specific-Item" (NOT [FS-888][US-001])
    - GitHub issue description unchanged
    - Completion comment added with task/AC info
-   - Status unchanged (bidirectional=false)
+   - Status unchanged (canUpdateStatus=false)
 
 **Test Plan**:
 - **File**: `tests/e2e/external-first-workflow.e2e.test.ts`
 - **Tests**:
   - TC-034F-01: Complete external-first workflow
   - TC-034F-02: Format preservation throughout entire flow
-  - TC-034F-03: Status update with bidirectional=true
+  - TC-034F-03: Status update with canUpdateStatus=true
   - TC-034F-04: Mixed internal/external items in same increment
 - **Coverage Target**: 85%+
 
@@ -2267,7 +2277,7 @@ coverage_target: 90
 
 **User Story**: US-012
 **Satisfies ACs**: AC-US12-01, AC-US12-02, AC-US12-03, AC-US12-04, AC-US12-05, AC-US12-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 10 hours
 
@@ -2332,7 +2342,7 @@ coverage_target: 90
 
 **User Story**: US-012
 **Satisfies ACs**: AC-US12-07, AC-US12-08, AC-US12-09
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 6 hours
 
@@ -2624,13 +2634,13 @@ coverage_target: 90
 **Total Tasks**: 46
 - **US-001**: 4 tasks (Task parser, validation, template, PM agent)
 - **US-002**: 3 tasks (AC mapping, cross-reference, orphan detection)
-- **US-003**: 5 tasks (Living docs sync, AC checkboxes, hooks, bidirectional, performance)
+- **US-003**: 5 tasks (Living docs sync, AC checkboxes, hooks, three-permission sync, performance)
 - **US-004**: 3 tasks (AC coverage validator, /validate integration, /done validation)
 - **US-005**: 4 tasks (Progress tracking, /progress command, frontmatter, visualization)
 - **US-006**: 3 tasks (Migration script, dry-run mode, proof-of-concept migration)
 - **US-007**: 5 tasks (External importers, init integration, item conversion, config) 🆕
 - **US-008**: 4 tasks (ID generator, parser updates, validation, legacy preservation) 🆕
-- **US-009**: 3 tasks (Origin metadata, bidirectional sync, living docs badges) 🆕
+- **US-009**: 3 tasks (Origin metadata, three-permission architecture, living docs badges) 🆕
 - **US-010**: 2 tasks (Import command, sync metadata, duplicate detection) 🆕
 - **US-011**: 4 tasks (Repo selector, pattern matching, preview, init integration) 🆕
 - **US-012**: 3 tasks (FS-ID allocator, folder creation, import integration) 🆕
@@ -2639,7 +2649,7 @@ coverage_target: 90
 **Estimated Effort**: 15-19 days (264 hours total)
 
 **Original Scope**: 22 tasks, 110 hours (US-001 through US-006)
-**Bidirectional Sync Scope**: +12 tasks, +73 hours (US-007 through US-009)
+**Three-Permission Sync Scope**: +12 tasks, +73 hours (US-007 through US-009)
 **External Import Command**: +2 tasks, +18 hours (US-010) - Critical for ongoing brownfield sync
 **Multi-Repo Selection**: +4 tasks, +25 hours (US-011) - Intelligent GitHub integration for multi-repo orgs
 **Chronological FS-ID Allocation**: +3 tasks, +21 hours (US-012) - Timeline-aware folder creation
@@ -2647,7 +2657,7 @@ coverage_target: 90
 
 **Critical Path** (P0 tasks):
 - **Phase 1 (Original)**: T-001 → T-003 → T-008 → T-009 → T-010 → T-013 → T-014 → T-015 (8 tasks, ~40 hours)
-- **Phase 2 (Bidirectional Sync)**: T-023 → T-024 → T-025 → T-026 → T-028 → T-029 → T-032 → T-033 (8 tasks, ~54 hours)
+- **Phase 2 (Three-Permission Sync)**: T-023 → T-024 → T-025 → T-026 → T-028 → T-029 → T-032 → T-033 (8 tasks, ~54 hours)
 - **Phase 3 (Multi-Repo)**: T-037 → T-038 → T-039 → T-040 (4 tasks, ~25 hours)
 - **Phase 4 (FS-ID & Archive)**: T-041 → T-042 → T-043 → T-044 → T-045 (5 tasks, ~35 hours)
 
@@ -2659,7 +2669,7 @@ coverage_target: 90
 - AC coverage validation working
 - **External import functional** (GitHub, JIRA, ADO)
 - **ID collision resolution working** (E suffix for external items)
-- **Origin tracking complete** (bidirectional sync operational)
+- **Origin tracking complete** (three-permission architecture operational)
 - **Multi-repo selection working** (4 strategies: org, personal, pattern, explicit)
 - **GitHub init flow seamless** (detect → select → preview → confirm → import)
 - **Chronological FS-ID allocation working** (timeline-aware folder creation with gap insertion)
@@ -2673,15 +2683,23 @@ coverage_target: 90
 
 **ARCHITECTURAL NOTES**:
 
-### Bidirectional Sync Architecture
-This increment now includes **complete bidirectional sync** architecture, enabling SpecWeave adoption in brownfield projects with existing external tool data (GitHub issues, JIRA epics, ADO work items). This is a **fundamental requirement** for real-world usage, not a nice-to-have feature.
+### Three-Permission Sync Architecture
+This increment now includes **complete three-permission sync** architecture (v0.24.0), enabling SpecWeave adoption in brownfield projects with existing external tool data (GitHub issues, JIRA epics, ADO work items). This is a **fundamental requirement** for real-world usage, not a nice-to-have feature.
 
 **Sync Direction Rules**:
-1. **Increment → Living Docs**: ALWAYS one-way (immutable)
-2. **Living Docs ↔ External Tool**: Configurable (default: one-way per origin)
-3. **Bidirectional config**: Default FALSE (safer)
-   - **Default mode (bidirectional=false)**: Internal US push-only, External US pull-only
-   - **Advanced mode (bidirectional=true)**: Both directions enabled for both types
+1. **Increment → Living Docs**: ALWAYS one-way (immutable - external tools cannot write back to active increments)
+2. **Living Docs ↔ External Tool**: Configurable via three independent permissions
+
+**Three Permissions** (all default: FALSE for safety):
+- **canUpsertInternalItems**: Allow external tools to CREATE + UPDATE internal items (SpecWeave-created work)
+- **canUpdateExternalItems**: Allow SpecWeave to UPDATE external items (tool-created work, full content updates)
+- **canUpdateStatus**: Allow status updates (both internal and external items)
+
+**Permission Combinations**:
+- **Default (all=false)**: Read-only sync, no data changes
+- **Import mode (canUpsertInternalItems=true)**: External tool → SpecWeave only
+- **Export mode (canUpdateExternalItems=true)**: SpecWeave → External tool only
+- **Full sync (all=true)**: Both directions, requires conflict detection (higher risk)
 
 ### Multi-Project Import Detection
 External import (T-023, T-024, T-025) **MUST** detect SpecWeave project structure based on platform:

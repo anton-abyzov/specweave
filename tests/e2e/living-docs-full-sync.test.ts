@@ -76,7 +76,7 @@ project: default
 
 ## Quick Overview
 
-Implement bidirectional status sync between SpecWeave and external tools.
+Implement full status sync (all permissions enabled) between SpecWeave and external tools.
 
 ## User Stories
 

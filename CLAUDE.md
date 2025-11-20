@@ -259,6 +259,61 @@ grep -c "^- \[x\] \*\*AC-" spec.md
 
 **Incident Reference**: 2025-11-19 - Increment 0044 was incorrectly closed with tasks.md showing `[ ] pending` while internal TODO showed "completed". This violated SpecWeave's core principle. See `.specweave/increments/0044-integration-testing-status-hooks/reports/INCIDENT-SOURCE-OF-TRUTH-VIOLATION.md` for full post-mortem.
 
+### 7a. Status Line Synchronization (AUTOMATIC & ENFORCED!)
+
+**CRITICAL**: Status line MUST ALWAYS reflect current task completion status.
+
+**How It Works** (Automatic):
+1. Every TodoWrite call → `post-task-completion.sh` hook fires
+2. Hook calls `update-status-line.sh` → cache updates
+3. Status line displays updated progress immediately
+
+**The ONLY Way to Complete Tasks**:
+```
+ALWAYS use TodoWrite when working on increment tasks!
+- TodoWrite triggers hooks automatically
+- Hooks update status line cache
+- Status line stays synchronized
+```
+
+**❌ NEVER Complete Tasks Without TodoWrite**:
+```typescript
+// ❌ WRONG: Direct Edit without TodoWrite
+Edit("tasks.md", "**Status**: [ ] pending", "**Status**: [x] completed");
+// Status line will NOT update! Hook never fires!
+
+// ✅ CORRECT: TodoWrite triggers automatic update
+TodoWrite([{task: "T-001", status: "in_progress"}]);
+// ... do the work ...
+TodoWrite([{task: "T-001", status: "completed"}]);
+Edit("tasks.md", "**Status**: [ ] pending", "**Status**: [x] completed");
+// Hook fires → status line updates automatically!
+```
+
+**Validation Commands**:
+```bash
+# Check if status line is in sync
+/specweave:validate-status
+
+# Manual update (emergency only)
+bash plugins/specweave/hooks/lib/update-status-line.sh
+
+# Validate all increments
+npx tsx src/core/status-line-validator.ts
+```
+
+**Detection & Recovery**:
+- Pre-commit hook validates sync (blocks commit if desync detected)
+- `/specweave:done` validates before closing (blocks if desync)
+- Automatic tests verify hook fires correctly
+
+**Why This Matters**:
+- Status line is visible to user at ALL times
+- Stale status = broken trust
+- Hooks ensure atomic updates (task complete → status updates together)
+
+**Incident Reference**: 2025-11-20 - Status line showed 21/52 tasks when actually 26/52 were complete (10% desync). Root cause: Tasks marked complete without using TodoWrite, so hooks never fired. Added validation layer and tests to prevent future occurrences.
+
 ### 8. NEVER Use `console.*` in Production Code
 
 **Rule**: ALL `src/` code MUST use logger abstraction, NEVER `console.log/error/warn`.
@@ -497,6 +552,68 @@ When task marked completed in tasks.md:
 - Implementation: `.specweave/increments/0047-us-task-linkage/`
 - Proposal: `.specweave/increments/0046-console-elimination/reports/US-TASK-LINKAGE-PROPOSAL.md`
 - Living Docs: `.specweave/docs/public/guides/bidirectional-linking.md`
+
+### 12. ADR Naming Convention (CRITICAL!)
+
+**Architecture Decision Records (ADRs) MUST follow strict naming convention**:
+
+**Correct Format**:
+- **Filename**: `XXXX-decision-title.md` (4-digit number, kebab-case, NO `adr-` prefix)
+- **Header**: `# ADR-XXXX: Decision Title` (includes `ADR-` prefix for document clarity)
+- **Location**: `.specweave/docs/internal/architecture/adr/`
+
+**Examples**:
+```
+✅ CORRECT:
+  Filename: 0007-github-first-task-sync.md
+  Header:   # ADR-0007: GitHub-First Task-Level Synchronization
+
+✅ CORRECT:
+  Filename: 0032-universal-hierarchy-mapping.md
+  Header:   # ADR-0032: Universal Hierarchy Mapping
+
+❌ WRONG:
+  Filename: adr-0007-github-first-task-sync.md  (NO adr- prefix!)
+  Reason:   Redundant (already in /adr/ directory)
+
+❌ WRONG:
+  Filename: ADR-0007-github-first-task-sync.md  (uppercase)
+  Reason:   Filenames must be lowercase
+
+❌ WRONG:
+  Filename: 007-github-first-task-sync.md  (3-digit)
+  Reason:   MUST be 4-digit (0001-9999)
+```
+
+**Why This Matters**:
+- **Consistency**: All ADRs follow same pattern (sortable, predictable)
+- **Clarity**: File location indicates type (in `/adr/` directory)
+- **Tooling**: Scripts expect 4-digit format for auto-numbering
+- **Cross-references**: Links use `adr/XXXX-name.md` format
+
+**Enforcement**:
+- Architect agent validates format before creating ADRs
+- Pre-commit hook checks for `adr-XXXX-*.md` pattern and rejects
+- `/specweave:validate` command verifies ADR naming
+
+**Common Mistakes**:
+1. Adding `adr-` prefix to filename (copying from header)
+2. Using 3-digit numbers instead of 4-digit (001 vs 0001)
+3. Uppercase filenames (ADR-0007 vs 0007)
+4. Missing kebab-case (spaces or underscores instead of hyphens)
+
+**Auto-Numbering**:
+To find next available ADR number (handles duplicates correctly):
+```bash
+ls .specweave/docs/internal/architecture/adr/*.md | \
+  grep -E '/[0-9]{4}-' | \
+  sed 's/.*\/\([0-9][0-9][0-9][0-9]\)-.*/\1/' | \
+  sort -u | \
+  tail -1 | \
+  awk '{printf "Next ADR: %04d\n", $1 + 1}'
+# Output: Next ADR: 0049
+# (Extracts unique numbers only, finds max, adds 1)
+```
 
 ---
 

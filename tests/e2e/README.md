@@ -18,7 +18,7 @@ tests/e2e/
 ├── multi-project/                     # Multi-project workflows
 ├── serverless/                        # Serverless platform tests
 ├── status-sync/                       # Status synchronization tests
-└── sync/                              # Bidirectional sync tests
+└── sync/                              # Full sync tests (all permissions)
 ```
 
 ---
@@ -154,7 +154,7 @@ Specific integration scenarios:
 - `i18n/` - Multi-language workflows
 - `serverless/` - Platform recommendation and IaC generation
 - `status-sync/` - Status synchronization across tools
-- `sync/` - Bidirectional sync (GitHub, JIRA, ADO)
+- `sync/` - Full sync (GitHub, JIRA, ADO)
 
 ---
 
