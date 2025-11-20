@@ -319,25 +319,44 @@ export class IncrementArchiver {
   private async updateReferences(increment: string): Promise<void> {
     // Import and run feature archiving to maintain consistency
     try {
+      this.logger.info(`🔄 Reorganizing living docs after archiving ${increment}...`);
+
       const { FeatureArchiver } = await import('../living-docs/feature-archiver.js');
       const featureArchiver = new FeatureArchiver(this.rootDir);
 
       // Archive features that have all their increments archived
+      // CRITICAL: Use forceArchiveWhenAllIncrementsArchived to ensure comprehensive reorganization
       const result = await featureArchiver.archiveFeatures({
         dryRun: false,
         updateLinks: true,
         preserveActiveFeatures: true,
         archiveOrphanedFeatures: false,
-        archiveOrphanedEpics: false
+        archiveOrphanedEpics: false,
+        forceArchiveWhenAllIncrementsArchived: true  // Override active projects check when all increments archived
       });
 
       if (result.archivedFeatures.length > 0) {
-        this.logger.success(`Archived ${result.archivedFeatures.length} features linked to increment ${increment}`);
+        this.logger.success(`✅ Archived ${result.archivedFeatures.length} features: ${result.archivedFeatures.join(', ')}`);
+        this.logger.info(`   Features moved to _features/_archive/ and project-specific _archive/ folders`);
+      } else {
+        this.logger.info(`ℹ️  No features to archive (all active or already archived)`);
       }
 
       if (result.archivedEpics.length > 0) {
-        this.logger.success(`Archived ${result.archivedEpics.length} epics`);
+        this.logger.success(`✅ Archived ${result.archivedEpics.length} epics: ${result.archivedEpics.join(', ')}`);
       }
+
+      if (result.updatedLinks.length > 0) {
+        const filesUpdated = new Set(result.updatedLinks.map(u => u.file)).size;
+        this.logger.success(`✅ Updated ${result.updatedLinks.length} links in ${filesUpdated} files`);
+      }
+
+      if (result.errors.length > 0) {
+        this.logger.warn(`⚠️  Encountered ${result.errors.length} errors during reorganization:`);
+        result.errors.forEach(err => this.logger.warn(`   - ${err}`));
+      }
+
+      this.logger.success(`✅ Living docs reorganization complete`);
     } catch (error) {
       this.logger.warn(`Could not update feature archives: ${error}`);
     }

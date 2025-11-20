@@ -29,6 +29,8 @@ const __dirname = getDirname(import.meta.url);
 import { getSpecsFoldersForProfile } from '../../core/sync/folder-mapper.js';
 import { readEnvFile, parseEnvFile } from '../../utils/env-file.js';
 import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
+import { selectRepositories, type RepoSelectionConfig } from '../helpers/github-repo-selector.js';
+import { Octokit } from '@octokit/rest';
 
 interface InitOptions {
   template?: string;
@@ -1682,6 +1684,56 @@ async function promptAndRunExternalImport(targetDir: string, isCI: boolean): Pro
       errors: {},
       platforms: []
     };
+  }
+
+  // US-011: Multi-Repo Selection for GitHub (if GitHub detected and token available)
+  let repoSelectionConfig: RepoSelectionConfig | null = null;
+  if (githubRemote && process.env.GITHUB_TOKEN) {
+    const { useMultiRepo } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'useMultiRepo',
+        message: 'Do you want to import from multiple repositories?',
+        default: false
+      }
+    ]);
+
+    if (useMultiRepo) {
+      try {
+        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+        repoSelectionConfig = await selectRepositories(octokit, process.env.GITHUB_TOKEN);
+
+        if (repoSelectionConfig) {
+          // Save to config.json for future imports
+          const configPath = path.join(targetDir, '.specweave', 'config.json');
+          let config: any = {};
+          if (fs.existsSync(configPath)) {
+            config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+          }
+
+          if (!config.github) {
+            config.github = {};
+          }
+
+          config.github.repositories = repoSelectionConfig.repositories;
+          config.github.selectionStrategy = repoSelectionConfig.selectionStrategy;
+          if (repoSelectionConfig.pattern) {
+            config.github.pattern = repoSelectionConfig.pattern;
+          }
+          if (repoSelectionConfig.organizationName) {
+            config.github.organizationName = repoSelectionConfig.organizationName;
+          }
+
+          fs.ensureDirSync(path.dirname(configPath));
+          fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+          console.log(chalk.green(`✅ Repository selection saved to config.json\n`));
+        }
+      } catch (error) {
+        console.error(chalk.yellow(`⚠️  Failed to select repositories: ${error instanceof Error ? error.message : String(error)}`));
+        console.log(chalk.gray('Continuing with single repository import...\n'));
+      }
+    }
   }
 
   // Map config timeRangeMonths to closest prompt option

@@ -465,60 +465,71 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 **So that** I can connect the right set of repositories without manual configuration
 
 **Acceptance Criteria**:
-- [ ] **AC-US11-01**: During `specweave init`, detect if user has access to multiple GitHub organizations
+- [x] **AC-US11-01**: During `specweave init`, detect if user has access to multiple GitHub organizations
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (GitHub API integration test)
   - **Notes**: Query `/user/orgs` endpoint to detect organizations user belongs to
+  - **Completed by**: T-037 (fetchUserOrganizations implementation)
 
-- [ ] **AC-US11-02**: Prompt user with multi-repo selection strategy options (4 modes)
+- [x] **AC-US11-02**: Prompt user with multi-repo selection strategy options (4 modes)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (interactive prompt test)
   - **Notes**: Options: (1) All org repos, (2) All personal repos, (3) Pattern matching, (4) Explicit list
+  - **Completed by**: T-037 (selectRepositories implementation)
 
-- [ ] **AC-US11-03**: Option 1: Connect all repos from specific organization
+- [x] **AC-US11-03**: Option 1: Connect all repos from specific organization
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (org repo listing test)
   - **Notes**: Show list of orgs user belongs to, let user select one, import all repos from that org
+  - **Completed by**: T-037 (fetchOrgRepositories implementation)
 
-- [ ] **AC-US11-04**: Option 2: Connect all repos from user's personal account
+- [x] **AC-US11-04**: Option 2: Connect all repos from user's personal account
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (personal repo listing test)
   - **Notes**: Query `/user/repos?affiliation=owner` to get repos owned by user
+  - **Completed by**: T-037 (fetchPersonalRepositories implementation)
 
-- [ ] **AC-US11-05**: Option 3: Pattern matching for repository names (glob or regex)
+- [x] **AC-US11-05**: Option 3: Pattern matching for repository names (glob or regex)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (pattern matching test)
   - **Notes**: Support patterns like "ec-*", "*-backend", "microservice-*". Use minimatch or regex.
+  - **Completed by**: T-038 (filterRepositoriesByPattern implementation)
 
-- [ ] **AC-US11-06**: Option 4: Explicit comma-separated list of repository names
+- [x] **AC-US11-06**: Option 4: Explicit comma-separated list of repository names
   - **Priority**: P1 (Important)
   - **Testable**: Yes (explicit list parsing test)
   - **Notes**: User enters: "repo1, repo2, repo3". Validate repos exist before proceeding.
+  - **Completed by**: T-038 (explicit strategy implementation)
 
-- [ ] **AC-US11-07**: Show preview of matched repositories before confirmation
+- [x] **AC-US11-07**: Show preview of matched repositories before confirmation
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (preview rendering test)
   - **Notes**: Display table: Repo Name | Owner | Visibility | Last Updated. Ask "Connect these N repos? (Y/n)"
+  - **Completed by**: T-039 (showRepositoryPreview implementation)
 
-- [ ] **AC-US11-08**: Handle pagination when listing organization/personal repos (100+ repos)
+- [x] **AC-US11-08**: Handle pagination when listing organization/personal repos (100+ repos)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (pagination test with 250 repos)
   - **Notes**: GitHub API: 100 repos per page. Use Link header for pagination.
+  - **Completed by**: T-037 (pagination in fetchOrgRepositories/fetchPersonalRepositories)
 
-- [ ] **AC-US11-09**: Save selected repos to `.specweave/config.json` under `github.repositories`
+- [x] **AC-US11-09**: Save selected repos to `.specweave/config.json` under `github.repositories`
   - **Priority**: P0 (Critical)
   - **Testable**: Yes (config persistence test)
   - **Notes**: Format: `{"github": {"repositories": ["owner/repo1", "owner/repo2"], "selectionStrategy": "pattern", "pattern": "ec-*"}}`
+  - **Completed by**: T-040 (config.json save in init.ts)
 
-- [ ] **AC-US11-10**: Validate repository access before adding to config (check permissions)
+- [x] **AC-US11-10**: Validate repository access before adding to config (check permissions)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (permission validation test)
   - **Notes**: Query `/repos/{owner}/{repo}` to verify user has at least read access. Warn if no access.
+  - **Completed by**: T-038 (validateRepositoryAccess implementation)
 
-- [ ] **AC-US11-11**: Support mixed public/private repos (authenticate with PAT if private repos detected)
+- [x] **AC-US11-11**: Support mixed public/private repos (authenticate with PAT if private repos detected)
   - **Priority**: P1 (Important)
   - **Testable**: Yes (authentication test)
   - **Notes**: Prompt for GitHub Personal Access Token if private repos in selection
+  - **Completed by**: T-040 (Octokit authentication with GITHUB_TOKEN)
 
 - [ ] **AC-US11-12**: Allow editing repository selection after initial setup
   - **Priority**: P2 (Nice-to-have)
