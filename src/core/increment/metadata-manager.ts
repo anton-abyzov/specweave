@@ -56,24 +56,24 @@ export class MetadataManager {
   /**
    * Get metadata file path for increment
    */
-  private static getMetadataPath(incrementId: string): string {
-    const specweavePath = path.join(process.cwd(), '.specweave');
+  private static getMetadataPath(incrementId: string, rootDir?: string): string {
+    const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
   }
 
   /**
    * Get increment directory path
    */
-  private static getIncrementPath(incrementId: string): string {
-    const specweavePath = path.join(process.cwd(), '.specweave');
+  private static getIncrementPath(incrementId: string, rootDir?: string): string {
+    const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId);
   }
 
   /**
    * Check if metadata file exists
    */
-  static exists(incrementId: string): boolean {
-    const metadataPath = this.getMetadataPath(incrementId);
+  static exists(incrementId: string, rootDir?: string): boolean {
+    const metadataPath = this.getMetadataPath(incrementId, rootDir);
     return fs.existsSync(metadataPath);
   }
 
@@ -81,13 +81,13 @@ export class MetadataManager {
    * Read metadata from file
    * Creates default metadata if file doesn't exist (lazy initialization)
    */
-  static read(incrementId: string): IncrementMetadata {
-    const metadataPath = this.getMetadataPath(incrementId);
+  static read(incrementId: string, rootDir?: string): IncrementMetadata {
+    const metadataPath = this.getMetadataPath(incrementId, rootDir);
 
     // Lazy initialization: Create metadata if doesn't exist
     if (!fs.existsSync(metadataPath)) {
       // Check if increment folder exists
-      const incrementPath = this.getIncrementPath(incrementId);
+      const incrementPath = this.getIncrementPath(incrementId, rootDir);
       if (!fs.existsSync(incrementPath)) {
         throw new MetadataError(
           `Increment not found: ${incrementId}`,
@@ -97,7 +97,7 @@ export class MetadataManager {
 
       // Create default metadata
       const defaultMetadata = createDefaultMetadata(incrementId);
-      this.write(incrementId, defaultMetadata);
+      this.write(incrementId, defaultMetadata, rootDir);
 
       // **CRITICAL**: Update active increment state if default status is ACTIVE
       // This ensures that newly created increments are immediately tracked for status line
@@ -223,10 +223,14 @@ export class MetadataManager {
   /**
    * Write metadata to file
    * Uses atomic write (temp file → rename)
+   *
+   * @param incrementId - Increment ID
+   * @param metadata - Metadata to write
+   * @param rootDir - Optional root directory (defaults to process.cwd())
    */
-  static write(incrementId: string, metadata: IncrementMetadata): void {
-    const metadataPath = this.getMetadataPath(incrementId);
-    const incrementPath = this.getIncrementPath(incrementId);
+  static write(incrementId: string, metadata: IncrementMetadata, rootDir?: string): void {
+    const metadataPath = this.getMetadataPath(incrementId, rootDir);
+    const incrementPath = this.getIncrementPath(incrementId, rootDir);
 
     // Ensure increment directory exists
     if (!fs.existsSync(incrementPath)) {
@@ -257,8 +261,8 @@ export class MetadataManager {
   /**
    * Delete metadata file
    */
-  static delete(incrementId: string): void {
-    const metadataPath = this.getMetadataPath(incrementId);
+  static delete(incrementId: string, rootDir?: string): void {
+    const metadataPath = this.getMetadataPath(incrementId, rootDir);
 
     if (!fs.existsSync(metadataPath)) {
       return; // Already deleted
@@ -323,20 +327,49 @@ export class MetadataManager {
       metadata.abandonedAt = new Date().toISOString();
     }
 
-    this.write(incrementId, metadata);
-
-    // **NEW (T-005)**: Update spec.md frontmatter to keep in sync with metadata.json
+    // **CRITICAL FIX (2025-11-20)**: Atomic transaction with rollback
+    // Update spec.md FIRST, then metadata.json. If spec.md fails, no desync occurs.
+    // This prevents the silent failure bug that caused increment 0047 desync.
+    //
+    // Previous bug: metadata.json updated, spec.md failed silently → desync
+    // New behavior: spec.md fails → error thrown → metadata.json never written
+    //
     // AC-US2-01: updateStatus() updates both metadata.json AND spec.md frontmatter
     // AC-US2-03: All status transitions update spec.md
     // SYNCHRONOUS call to ensure spec.md is updated before returning
     // This prevents race conditions and ensures data consistency
+
     try {
-      // Use sync version to avoid race conditions in tests
+      // Step 1: Update spec.md (may throw if spec.md exists but has errors)
       this.updateSpecMdStatusSync(incrementId, newStatus);
+
+      // Step 2: Update metadata.json (only if spec.md succeeded)
+      this.write(incrementId, metadata);
     } catch (error) {
-      // Log error but don't fail the status update
-      // This maintains backward compatibility if spec.md doesn't exist or has issues
-      this.logger.error(`Failed to update spec.md for ${incrementId}`, error);
+      // CRITICAL: spec.md update failed - prevent desync by NOT updating metadata.json
+      this.logger.error(
+        `CRITICAL: Failed to update status for ${incrementId} - aborting to prevent desync`,
+        error
+      );
+
+      // Throw detailed error with fix instructions
+      throw new MetadataError(
+        `Cannot update increment status - spec.md sync failed.\n` +
+          `\n` +
+          `This prevents source-of-truth violations (CLAUDE.md Rule #7).\n` +
+          `Both metadata.json AND spec.md must update atomically.\n` +
+          `\n` +
+          `Error: ${error instanceof Error ? error.message : String(error)}\n` +
+          `\n` +
+          `If this persists, check:\n` +
+          `1. File permissions for .specweave/increments/${incrementId}/spec.md\n` +
+          `2. YAML frontmatter syntax in spec.md\n` +
+          `3. Disk space availability\n` +
+          `\n` +
+          `To check for desyncs, run: /specweave:sync-status`,
+        incrementId,
+        error instanceof Error ? error : undefined
+      );
     }
 
     // **CRITICAL**: Update active increment state

@@ -41,12 +41,12 @@ export declare class MetadataManager {
     /**
      * Check if metadata file exists
      */
-    static exists(incrementId: string): boolean;
+    static exists(incrementId: string, rootDir?: string): boolean;
     /**
      * Read metadata from file
      * Creates default metadata if file doesn't exist (lazy initialization)
      */
-    static read(incrementId: string): IncrementMetadata;
+    static read(incrementId: string, rootDir?: string): IncrementMetadata;
     /**
      * Reserved increment IDs that cannot be used
      * These are status values, special folders, and state files
@@ -65,12 +65,16 @@ export declare class MetadataManager {
     /**
      * Write metadata to file
      * Uses atomic write (temp file → rename)
+     *
+     * @param incrementId - Increment ID
+     * @param metadata - Metadata to write
+     * @param rootDir - Optional root directory (defaults to process.cwd())
      */
-    static write(incrementId: string, metadata: IncrementMetadata): void;
+    static write(incrementId: string, metadata: IncrementMetadata, rootDir?: string): void;
     /**
      * Delete metadata file
      */
-    static delete(incrementId: string): void;
+    static delete(incrementId: string, rootDir?: string): void;
     /**
      * Update increment status
      * Validates transition and updates timestamps
