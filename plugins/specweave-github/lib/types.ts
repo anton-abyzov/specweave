@@ -86,7 +86,7 @@ export interface GitHubSyncOptions {
 }
 
 /**
- * Three-Layer Sync Types (for bidirectional sync)
+ * Three-Layer Sync Types (for three-permission sync)
  */
 export interface AcceptanceCriterion {
   id: string; // e.g., "AC-US1-01"

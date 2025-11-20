@@ -87,10 +87,10 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
     // Split content into lines for line number tracking
     const lines = content.split('\n');
 
-    // Regex patterns for task parsing
-    const taskHeaderRegex = /^###\s+(T-\d{3}):\s*(.+)$/;
-    const userStoryRegex = /^\*\*User Story\*\*:\s*(US-\d{3})/;
-    const satisfiesACsRegex = /^\*\*Satisfies ACs\*\*:\s*(AC-US\d+-\d{2}(?:,\s*AC-US\d+-\d{2})*)/;
+    // Regex patterns for task parsing (T-029: Support E suffix for external IDs)
+    const taskHeaderRegex = /^###\s+(T-\d{3}E?):\s*(.+)$/;
+    const userStoryRegex = /^\*\*User Story\*\*:\s*(US-\d{3}E?)/;
+    const satisfiesACsRegex = /^\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
     const statusRegex = /^\*\*Status\*\*:\s*\[([x ])\]\s*(\w+)/;
     const priorityRegex = /^\*\*Priority\*\*:\s*(.+)/;
     const estimatedEffortRegex = /^\*\*Estimated Effort\*\*:\s*(.+)/;

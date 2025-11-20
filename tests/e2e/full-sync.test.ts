@@ -1,7 +1,7 @@
 /**
- * End-to-End Tests: Bidirectional Sync (T-064)
+ * End-to-End Tests: Full Sync (T-064)
  *
- * Tests complete bidirectional sync across three layers:
+ * Tests complete full sync (all permissions enabled) across three layers:
  * - Layer 1: GitHub Issues (stakeholder UI)
  * - Layer 2: Living Docs User Stories (documentation)
  * - Layer 3: Increment spec.md + tasks.md (source of truth)
@@ -27,7 +27,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { SpecDistributor } from '../../src/core/living-docs/SpecDistributor.js';
 
-test.describe('Bidirectional Sync E2E (T-064)', () => {
+test.describe('Full Sync E2E (T-064)', () => {
   let testDir: string;
   let incrementDir: string;
   let livingDocsDir: string;
@@ -401,7 +401,7 @@ ${layers.increment.task}
     // TODO: Task sync behavior has changed - tasks are now referenced from increment, not copied
     // User story files contain "Task status syncs from increment tasks.md" note
     // This test needs to be updated to match new architecture
-    test.skip('should complete full bidirectional sync cycle', async () => {
+    test.skip('should complete full full sync (all permissions enabled) cycle', async () => {
       // GIVEN: Initial state in increment
       const initialSpec = `# Feature
 
@@ -552,8 +552,8 @@ function validateTaskCompletion(update: { task: string; completed: boolean; hasC
  * ✅ Auto-reopens task if code is missing
  *
  * Complete Three-Layer Sync Workflow
- * ✅ Completes full bidirectional sync cycle
+ * ✅ Completes full full sync (all permissions enabled) cycle
  *
  * Total Tests: 12
- * Coverage: 100% of bidirectional sync workflows
+ * Coverage: 100% of full sync (all permissions enabled) workflows
  */

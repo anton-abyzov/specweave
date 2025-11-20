@@ -56,20 +56,21 @@ export async function parseSpec(specPath: string): Promise<UserStory[]> {
   const content = await fs.readFile(specPath, 'utf-8');
   const userStories: UserStory[] = [];
 
-  // Match user story patterns:
-  // **US-001**: As a developer, I want...
-  const userStoryRegex = /\*\*US-(\d+)\*\*:\s*(.+)/g;
+  // Match user story patterns (T-029: Support E suffix for external IDs):
+  // **US-001**: As a developer, I want... OR **US-001E**: External story...
+  const userStoryRegex = /\*\*US-(\d+)(E?)\*\*:\s*(.+)/g;
   const matches = [...content.matchAll(userStoryRegex)];
 
   for (const match of matches) {
     const usNumber = match[1];
-    const usId = `US-${usNumber}`;
-    const title = match[2].trim();
+    const usESuffix = match[2]; // Will be 'E' or ''
+    const usId = `US-${usNumber}${usESuffix}`;
+    const title = match[3].trim();
 
     // Find acceptance criteria for this user story
-    // Pattern: - [x] **AC-US1-01**: Description (P1, testable)
+    // Pattern: - [x] **AC-US1-01**: Description OR - [x] **AC-US1E-01**: External AC
     const acRegex = new RegExp(
-      `- \\[([ x])\\] \\*\\*AC-US${usNumber}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
+      `- \\[([ x])\\] \\*\\*AC-US${usNumber}${usESuffix}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
       'g'
     );
 
@@ -83,7 +84,7 @@ export async function parseSpec(specPath: string): Promise<UserStory[]> {
       const metadata = acMatch[4] || '';
 
       acceptanceCriteria.push({
-        id: `AC-US${usNumber}-${acNumber}`,
+        id: `AC-US${usNumber}${usESuffix}-${acNumber}`,
         description,
         priority: metadata.includes('P1') ? 'P1' : metadata.includes('P2') ? 'P2' : undefined,
         testable: metadata.includes('testable'),

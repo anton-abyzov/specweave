@@ -322,7 +322,7 @@ export class GitHubSpecSync {
   }
 
   /**
-   * Sync FROM GitHub Project to spec (bidirectional)
+   * Sync FROM GitHub Project to spec (full sync with all permissions)
    */
   async syncFromGitHub(specId: string): Promise<SpecSyncResult> {
     console.log(`\n🔄 Syncing FROM GitHub to spec ${specId}...`);

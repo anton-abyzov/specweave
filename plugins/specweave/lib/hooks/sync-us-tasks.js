@@ -14,6 +14,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { parseTasksWithUSLinks, getAllTasks } from '../../../../dist/src/generators/spec/task-parser.js';
 import { glob } from 'glob';
+import { getCachedTasks, needsSync, recordSync, batchFileUpdates } from './sync-cache.js';
 
 /**
  * Sync tasks from tasks.md to living docs User Story files
@@ -36,10 +37,10 @@ export async function syncUSTasksToLivingDocs(incrementId, projectRoot, featureI
       return { success: true, updatedFiles: [], errors: [] };
     }
 
-    // Parse tasks with US linkage
+    // Parse tasks with US linkage (with caching for performance)
     let tasksByUS;
     try {
-      tasksByUS = parseTasksWithUSLinks(tasksPath);
+      tasksByUS = getCachedTasks(tasksPath, parseTasksWithUSLinks);
     } catch (error) {
       console.error(`   ❌ Failed to parse tasks.md:`, error.message);
       return { success: false, updatedFiles: [], errors: [error.message] };
@@ -59,6 +60,7 @@ export async function syncUSTasksToLivingDocs(incrementId, projectRoot, featureI
 
     const updatedFiles = [];
     const errors = [];
+    const filesToUpdate = []; // Batch file updates
 
     // For each User Story with tasks, update its living docs file
     for (const [usId, tasks] of Object.entries(tasksByUS)) {
@@ -73,17 +75,30 @@ export async function syncUSTasksToLivingDocs(incrementId, projectRoot, featureI
           continue;
         }
 
-        // Update US file with task list
-        const updated = await updateUSFile(usFilePath, tasks, incrementId);
+        // Incremental sync: Check if sync is needed
+        if (!needsSync(usFilePath, tasks, tasksPath)) {
+          console.log(`   ⏭️  ${usId} unchanged, skipping sync`);
+          continue;
+        }
 
-        if (updated) {
-          updatedFiles.push(usFilePath);
-          console.log(`   ✓ Updated ${usId} with ${tasks.length} tasks`);
+        // Update US file with task list
+        const result = await updateUSFile(usFilePath, tasks, incrementId);
+
+        if (result.updated) {
+          filesToUpdate.push({ path: usFilePath, content: result.content });
+          recordSync(usFilePath, tasks); // Cache sync result for next run
+          console.log(`   ✓ Prepared update for ${usId} (${tasks.length} tasks)`);
         }
       } catch (error) {
         console.error(`   ❌ Error updating ${usId}:`, error.message);
         errors.push(`${usId}: ${error.message}`);
       }
+    }
+
+    // Batch write all file updates (reduce I/O)
+    if (filesToUpdate.length > 0) {
+      await batchFileUpdates(filesToUpdate);
+      updatedFiles.push(...filesToUpdate.map(f => f.path));
     }
 
     if (updatedFiles.length > 0) {
@@ -144,7 +159,7 @@ async function findUSFile(projectRoot, projectId, featureId, usId) {
  * @param {string} usFilePath - Path to US markdown file
  * @param {Array} tasks - Tasks linked to this US
  * @param {string} incrementId - Increment ID
- * @returns {Promise<boolean>} True if file was updated
+ * @returns {Promise<{updated: boolean, content: string}>} Update result
  */
 async function updateUSFile(usFilePath, tasks, incrementId) {
   let content = await fs.readFile(usFilePath, 'utf-8');
@@ -173,12 +188,7 @@ async function updateUSFile(usFilePath, tasks, incrementId) {
     updated = true;
   }
 
-  // Write updated content
-  if (updated) {
-    await fs.writeFile(usFilePath, content, 'utf-8');
-  }
-
-  return updated;
+  return { updated, content };
 }
 
 /**

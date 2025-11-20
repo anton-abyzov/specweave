@@ -5,6 +5,8 @@
  * with time range filtering and rate limiting protection.
  */
 
+import { SyncSettings } from './sync-settings.js';
+
 // ============================================================================
 // Provider Types
 // ============================================================================
@@ -469,8 +471,13 @@ export interface SyncConfiguration {
   /** Project contexts */
   projects?: Record<string, ProjectContext>;
 
-  /** Global settings */
-  settings?: {
+  /**
+   * Global settings (v0.24.0+ - Three-Permission Architecture)
+   *
+   * Combines external tool permissions (SyncSettings) with global behavior settings.
+   * All permission settings default to false for safety (explicit opt-in required).
+   */
+  settings?: SyncSettings & {
     /** Auto-detect project from increment description */
     autoDetectProject?: boolean;
 

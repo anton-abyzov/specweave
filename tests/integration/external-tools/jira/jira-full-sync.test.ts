@@ -1,10 +1,10 @@
 /**
  * Jira Bidirectional Sync Test
  *
- * Tests the full bidirectional synchronization workflow:
+ * Tests the full full sync (all permissions enabled)hronization workflow:
  * 1. Import Jira Epic as SpecWeave Increment
  * 2. Verify RFC/docs folder integration
- * 3. Test bidirectional sync
+ * 3. Test full sync (all permissions enabled)
  *
  * Prerequisites:
  * - .env file with JIRA_API_TOKEN, JIRA_EMAIL, JIRA_DOMAIN
@@ -185,7 +185,7 @@ class JiraBidirectionalSyncTest {
         const epic = await this.client.createIssue({
           issueType: 'Epic',
           summary: '[SpecWeave Test] Test Epic for Sync',
-          description: 'This is a test epic for bidirectional sync testing.',
+          description: 'This is a test epic for full sync (all permissions enabled) testing.',
           // priority: 'High', // Skip priority - not available in all projects
           labels: ['specweave-test', 'sync-test']
         }, projectKey);

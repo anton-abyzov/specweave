@@ -1,6 +1,12 @@
 # Bidirectional Sync
 
+> **⚠️ DEPRECATED as of v0.24.0**: The "bidirectional sync" terminology has been replaced with the **Three-Permission Architecture** for more granular control.
+>
+> **Migration Required**: See [Three-Permission Architecture Migration](#migration-to-three-permission-architecture-v0240) below.
+
 **Bidirectional Sync** is a two-way synchronization pattern where changes flow in both directions between SpecWeave (local) and external tools (GitHub, JIRA, Azure DevOps). Unlike one-way sync (export-only or import-only), bidirectional sync keeps both systems in sync automatically, with SpecWeave as the source of truth for content and external tools as the source of truth for status.
+
+**Historical Note**: This document describes the original "bidirectional sync" concept (v0.1-v0.23). For the new architecture, see [Three-Permission Architecture](#migration-to-three-permission-architecture-v0240).
 
 ---
 
@@ -1064,6 +1070,197 @@ Links:
 - [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth principle
 - [Increments](/docs/glossary/terms/increments) - Increment structure
 - [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation
+
+---
+
+## Migration to Three-Permission Architecture (v0.24.0)
+
+### Why the Change?
+
+The old "bidirectional sync" was a binary flag that controlled all sync operations together. The new **Three-Permission Architecture** provides granular control over different types of sync operations:
+
+**Old (v0.23)**:
+```json
+{
+  "sync": {
+    "settings": {
+      "syncDirection": "bidirectional"  // ← All-or-nothing control
+    }
+  }
+}
+```
+
+**New (v0.24)**:
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,   // Q1: CREATE + UPDATE internal items
+      "canUpdateExternalItems": true,   // Q2: UPDATE external items (full content)
+      "canUpdateStatus": true           // Q3: UPDATE status (both types)
+    }
+  }
+}
+```
+
+### Three Permission Types
+
+**1. canUpsertInternalItems** (UPSERT = CREATE + UPDATE)
+- **Controls**: Creating and updating SpecWeave-originated work items
+- **Flow**: Increment progress → Living specs → CREATE/UPDATE external tool
+- **Example**: Creating GitHub issue when running `/specweave:increment`, then updating it as tasks complete
+- **Default**: `false` (explicit opt-in required)
+
+**2. canUpdateExternalItems** (Full Content Updates)
+- **Controls**: Updating externally-originated work items (full content: title, description, ACs, tasks, comments)
+- **Flow**: Increment progress → Living specs → UPDATE external tool work items
+- **Example**: External PM creates GitHub issue, SpecWeave updates its content as implementation progresses
+- **Default**: `false` (explicit opt-in required)
+
+**3. canUpdateStatus** (Status Updates)
+- **Controls**: Updating status for both internal and external items
+- **Flow**: External tool status changes → Living specs → Increment metadata
+- **Example**: Issue closed in GitHub → Status syncs back to SpecWeave
+- **Default**: `false` (explicit opt-in required)
+
+### Migration Mapping
+
+| Old Terminology | New Permission Combination | Description |
+|----------------|---------------------------|-------------|
+| `syncDirection: "bidirectional"` | All 3 permissions = `true` | Full sync (all permissions enabled) |
+| `syncDirection: "export"` | `canUpsertInternalItems: true`, others `false` | Create internal items only |
+| `syncDirection: "import"` | `canUpdateStatus: true`, others `false` | Status updates only |
+| `syncDirection: null` | All 3 permissions = `false` | No sync |
+
+### Automatic Migration
+
+When you upgrade to v0.24.0, SpecWeave automatically migrates your existing configuration:
+
+```typescript
+// Old config detected
+if (config.sync.settings.syncDirection === "bidirectional") {
+  // Automatically converted to:
+  config.sync.settings = {
+    canUpsertInternalItems: true,
+    canUpdateExternalItems: true,
+    canUpdateStatus: true
+  };
+}
+```
+
+### Manual Migration Steps
+
+**Step 1**: Remove old `syncDirection` field from `.specweave/config.json`:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "syncDirection": "bidirectional",  // ← REMOVE THIS LINE
+      ...
+    }
+  }
+}
+```
+
+**Step 2**: Add three permission flags:
+
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,   // ← ADD THESE THREE
+      "canUpdateExternalItems": true,
+      "canUpdateStatus": true,
+      ...
+    }
+  }
+}
+```
+
+**Step 3**: Verify with init command:
+
+```bash
+specweave init .
+# Answer the three permission questions based on your team's needs
+```
+
+### Common Migration Scenarios
+
+**Scenario 1: Solo Developer (Previously "export")**
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,   // Create my work items
+      "canUpdateExternalItems": false,  // No external items to update
+      "canUpdateStatus": false          // Don't care about external status
+    }
+  }
+}
+```
+
+**Scenario 2: Team Collaboration (Previously "bidirectional")**
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,   // Create and update my items
+      "canUpdateExternalItems": true,   // Update PM-created items
+      "canUpdateStatus": true           // Track issue closures
+    }
+  }
+}
+```
+
+**Scenario 3: Read-Only Observer (Previously "import")**
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": false,  // Don't create items
+      "canUpdateExternalItems": false,  // Don't update external items
+      "canUpdateStatus": true           // Only pull status updates
+    }
+  }
+}
+```
+
+### Breaking Changes
+
+**1. Configuration Format**
+- Old: `syncDirection: "bidirectional"`
+- New: Three separate permission flags
+- **Action**: Update `.specweave/config.json` or run `specweave init .`
+
+**2. Command Behavior**
+- Old: `/specweave-github:sync` did everything based on `syncDirection`
+- New: `/specweave-github:sync` respects three permission flags
+- **Action**: Review your sync workflows and adjust permissions
+
+**3. Hook Behavior**
+- Old: `post-task-completion.sh` synced if `syncDirection !== null`
+- New: Hook checks each permission individually
+- **Action**: Hooks work automatically, no changes needed
+
+### Documentation Updates
+
+**Updated Files**:
+- `.specweave/config.json` - New permission structure
+- `src/templates/config.json.template` - Example configuration
+- `src/templates/config-permissions-guide.md` - Comprehensive guide
+- `CHANGELOG.md` - Breaking change notice
+
+**New Tools**:
+- `PermissionChecker` utility - Centralized permission checking
+- `migrateSyncDirection()` function - Automatic config migration
+- Permission validation in `init` command
+
+### See Also
+
+- [Three-Permission Architecture](/docs/architecture/three-permission-architecture) - Full technical specification
+- [Config Permissions Guide](/templates/config-permissions-guide.md) - Detailed usage guide
+- [CHANGELOG v0.24.0](/CHANGELOG.md#v0240) - Full release notes
 
 ---
 

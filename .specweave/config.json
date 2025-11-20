@@ -112,8 +112,9 @@
     "autoApplyLabels": true,
     "activeProfile": "specweave-dev",
     "settings": {
-      "autoCreateIssue": true,
-      "syncDirection": "bidirectional"
+      "canUpsertInternalItems": true,
+      "canUpdateExternalItems": true,
+      "canUpdateStatus": true
     },
     "statusSync": {
       "enabled": true,

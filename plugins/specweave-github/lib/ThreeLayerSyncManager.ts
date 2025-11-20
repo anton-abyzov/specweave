@@ -1,5 +1,5 @@
 /**
- * Three-Layer Bidirectional Sync Manager
+ * Three-Layer Full Sync Manager (All Permissions Enabled)
  *
  * Handles synchronization across three layers:
  * - Layer 1: GitHub Issue (stakeholder UI)

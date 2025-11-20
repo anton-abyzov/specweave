@@ -126,9 +126,9 @@ function extractUserStories(lines: string[]): UserStory[] {
   let currentUS: UserStory | null = null;
   let inACSection = false;
 
-  // Regex patterns
-  const usHeaderRegex = /^###?\s+(US-\d{3}):\s*(.+)$/;  // ### US-001: Title or ## US-001: Title
-  const acRegex = /^-\s*\[[x ]\]\s*\*\*(AC-US\d+-\d{2})\*\*/;  // - [ ] **AC-US1-01**
+  // Regex patterns (T-029: Support E suffix for external IDs)
+  const usHeaderRegex = /^###?\s+(US-\d{3}E?):\s*(.+)$/;  // ### US-001E: Title or ## US-001: Title
+  const acRegex = /^-\s*\[[x ]\]\s*\*\*(AC-US\d+E?-\d{2})\*\*/;  // - [ ] **AC-US1E-01**
   const priorityRegex = /\*\*Priority\*\*:\s*(P[0-3])/;
 
   for (let i = 0; i < lines.length; i++) {

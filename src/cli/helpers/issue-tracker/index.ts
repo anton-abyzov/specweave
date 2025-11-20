@@ -120,9 +120,35 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     return true;
   }
 
-  // Step 1.5: Ask about sync settings (NEW in v0.21.0)
+  // Step 1.5: Ask about sync settings (v0.24.0+: Three-Permission Architecture)
   console.log('');
-  console.log(chalk.cyan.bold('⚙️  Sync Settings'));
+  console.log(chalk.cyan.bold('⚙️  External Tool Sync Permissions'));
+  console.log(chalk.gray('Control what SpecWeave can modify in external tools (GitHub, JIRA, ADO)'));
+  console.log('');
+
+  const syncPermissions = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'canUpsertInternalItems',
+      message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
+      default: false
+    },
+    {
+      type: 'confirm',
+      name: 'canUpdateExternalItems',
+      message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
+      default: false
+    },
+    {
+      type: 'confirm',
+      name: 'canUpdateStatus',
+      message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
+      default: false
+    }
+  ]);
+
+  console.log('');
+  console.log(chalk.cyan.bold('⚙️  Additional Sync Settings'));
   console.log('');
 
   const syncSettings = await inquirer.prompt([
@@ -190,7 +216,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         }
 
         // Step 5.2: Write sync config to .specweave/config.json
-        await writeSyncConfig(projectPath, tracker, credentials, syncSettings, repositoryProfiles, monorepoProjects);
+        await writeSyncConfig(projectPath, tracker, credentials, syncSettings, syncPermissions, repositoryProfiles, monorepoProjects);
 
         // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
         if (tracker === 'jira') {
@@ -272,7 +298,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   }
 
   // Step 5.2: Write sync config to .specweave/config.json
-  await writeSyncConfig(projectPath, tracker, credentials, syncSettings, repositoryProfiles, monorepoProjects);
+  await writeSyncConfig(projectPath, tracker, credentials, syncSettings, syncPermissions, repositoryProfiles, monorepoProjects);
 
   // Step 5.3: Validate project configuration (GitHub only)
   // NOW we can ask about project contexts (after repos are configured)
@@ -482,6 +508,7 @@ async function writeSyncConfig(
   tracker: IssueTracker,
   credentials: TrackerCredentials,
   syncSettings: { includeStatus: boolean; autoApplyLabels: boolean },
+  syncPermissions: { canUpsertInternalItems: boolean; canUpdateExternalItems: boolean; canUpdateStatus: boolean },
   repositoryProfiles?: any[],
   monorepoProjects?: string[]
 ): Promise<void> {
@@ -602,8 +629,9 @@ async function writeSyncConfig(
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: defaultProfile?.id || 'main',
       settings: {
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
+        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+        canUpdateStatus: syncPermissions.canUpdateStatus
       },
       profiles
     };
@@ -632,8 +660,9 @@ async function writeSyncConfig(
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
+        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+        canUpdateStatus: syncPermissions.canUpdateStatus
       },
       profiles
     };
@@ -661,8 +690,9 @@ async function writeSyncConfig(
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
+        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+        canUpdateStatus: syncPermissions.canUpdateStatus
       },
       profiles
     };
@@ -686,8 +716,9 @@ async function writeSyncConfig(
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
       activeProfile: `${tracker}-default`,
       settings: {
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
+        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+        canUpdateStatus: syncPermissions.canUpdateStatus
       },
       profiles
     };

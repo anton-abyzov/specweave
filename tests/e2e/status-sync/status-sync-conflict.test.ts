@@ -13,7 +13,7 @@ test.describe('Status Sync Conflict Resolution', () => {
   test('should detect conflict when both statuses changed', async ({ page }) => {
     // TODO: SpecWeave status = completed (12:00)
     // TODO: GitHub status = closed (11:00)
-    // TODO: Run bidirectional sync
+    // TODO: Run full sync (all permissions enabled)
     // TODO: Verify conflict detected
     expect(true).toBe(true); // Placeholder
   });

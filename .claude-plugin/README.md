@@ -101,7 +101,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
   "plugins": [
     {
       "name": "specweave-github",
-      "description": "GitHub integration - bidirectional sync",
+      "description": "GitHub integration - full sync (all permissions)",
       "source": "../plugins/specweave-github",
       "category": "productivity",
       "version": "1.0.0",
@@ -173,7 +173,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 - `status` - Show GitHub sync status
 
 **Skills**:
-- `github-sync` - Bidirectional sync
+- `github-sync` - Full sync (all permissions)
 - `github-issue-tracker` - Task-level tracking
 
 **Agents**:

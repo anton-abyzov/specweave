@@ -32,7 +32,7 @@ async function syncFromGitHub(incrementId) {
     await resolveConflicts(incrementId, metadata, githubState, conflicts);
     await syncComments(incrementId, githubState.comments);
     await updateMetadata(incrementId, githubState);
-    console.log("\u2705 Bidirectional sync complete");
+    console.log("\u2705 Three-permission sync complete");
   } catch (error) {
     console.error("\u274C Error syncing from GitHub:", error);
     throw error;

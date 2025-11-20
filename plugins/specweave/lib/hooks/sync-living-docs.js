@@ -37,6 +37,23 @@ async function syncLivingDocs(incrementId) {
       return;
     }
     console.log(`\u{1F4C4} Changed/created ${changedDocs.length} file(s)`);
+
+    // ========================================================================
+    // CHECK PERMISSION: canUpdateExternalItems (v0.24.0 - Three-Permission Architecture)
+    // ========================================================================
+    // This permission controls whether SpecWeave can UPDATE externally-created items
+    // (full content: title, description, ACs, tasks, comments).
+    // If false, living docs sync happens locally but doesn't push to external tools.
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+
+    if (!canUpdateExternal) {
+      console.log("\u2139\uFE0F  GitHub sync skipped (canUpdateExternalItems = false)");
+      console.log("   Living docs updated locally only");
+      console.log("   To enable: Set sync.settings.canUpdateExternalItems = true in config.json");
+      console.log("\u2705 Living docs sync complete (local only)\n");
+      return;
+    }
+
     await syncToGitHub(incrementId, changedDocs);
     console.log("\u2705 Living docs sync complete\n");
   } catch (error) {

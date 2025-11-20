@@ -290,7 +290,7 @@ export class JiraMapper {
   }
 
   /**
-   * Bidirectional sync between SpecWeave Increment and Jira Epic
+   * Three-permission sync between SpecWeave Increment and Jira Epic
    */
   public async syncIncrement(incrementId: string): Promise<SyncResult> {
     console.log(`\n🔄 Syncing Increment ${incrementId} with Jira...`);

@@ -279,7 +279,7 @@ export class TaskProjectSpecificGenerator {
   /**
    * Extract task checkboxes from user story markdown
    *
-   * Used for bidirectional sync (reading task state from user story file)
+   * Used for three-permission sync (reading task state from user story file)
    */
   parseTasksFromMarkdown(content: string): ProjectSpecificTask[] {
     const tasks: ProjectSpecificTask[] = [];
@@ -316,7 +316,7 @@ export class TaskProjectSpecificGenerator {
   /**
    * Update task checkboxes in user story markdown
    *
-   * Used for bidirectional sync (updating user story file with new task state)
+   * Used for three-permission sync (updating user story file with new task state)
    */
   updateTaskCheckboxes(
     content: string,
