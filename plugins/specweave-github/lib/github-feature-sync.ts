@@ -22,6 +22,7 @@ import * as yaml from 'yaml';
 import { GitHubClientV2 } from './github-client-v2.js';
 import { UserStoryIssueBuilder } from './user-story-issue-builder.js';
 import { CompletionCalculator } from './completion-calculator.js';
+import { DuplicateDetector } from './duplicate-detector.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 
 interface FeatureFrontmatter {
@@ -145,8 +146,18 @@ export class GitHubFeatureSync {
       // ✅ FIX: Add status to issue content for sync
       issueContent.status = userStory.status;
 
-      // ✅ TRIPLE IDEMPOTENCY CHECK
-      // This ensures 100% safety when running sync multiple times
+      // ✅ DUPLICATE PROTECTION WITH GLOBAL DETECTOR
+      // Uses proven 3-phase protection: Detection → Verification → Reflection
+      //
+      // WHY THIS MATTERS:
+      // - Previous implementation had race conditions (--limit 1, eventual consistency)
+      // - DuplicateDetector handles all edge cases automatically
+      // - Auto-closes duplicates if they slip through
+      //
+      // @see .specweave/increments/0047-us-task-linkage/reports/DUPLICATE-GITHUB-ISSUES-ROOT-CAUSE.md
+
+      let issueNumber: number;
+      let wasUpdated = false;
 
       // Check 1: User Story frontmatter has issue number
       if (userStory.existingIssue) {
@@ -167,34 +178,53 @@ export class GitHubFeatureSync {
         }
       }
 
-      // Check 2: Search GitHub for issue by title
-      const existingByTitle = await this.client.searchIssueByTitle(issueContent.title);
-      if (existingByTitle) {
-        console.log(`      ♻️  Found existing issue by title: #${existingByTitle.number}`);
+      // Check 2 & 3: Use DuplicateDetector for robust duplicate prevention
+      // This handles:
+      // - Search with proper limits (not --limit 1)
+      // - Post-create verification
+      // - Auto-close duplicates
+      // - Eventual consistency race conditions
+      const titlePattern = `[${featureId}][${userStory.id}]`;
+      const milestoneTitle = `${featureData.id}: ${featureData.title}`;
 
-        // Link it in frontmatter
-        await this.updateUserStoryFrontmatter(userStory.filePath, existingByTitle.number);
+      console.log(`      🛡️  Using DuplicateDetector (pattern: ${titlePattern})`);
 
-        // Update content with verification
-        await this.updateUserStoryIssue(existingByTitle.number, issueContent, userStory.filePath);
-        issuesUpdated++;
-        console.log(`      ✅ Linked and updated Issue #${existingByTitle.number}`);
-        continue;
+      const result = await DuplicateDetector.createWithProtection({
+        title: issueContent.title,
+        body: issueContent.body,
+        titlePattern,
+        incrementId: userStory.id,
+        labels: issueContent.labels,
+        milestone: milestoneTitle,
+        repo: `${this.client.getOwner()}/${this.client.getRepo()}`
+      });
+
+      issueNumber = result.issue.number;
+
+      // Log duplicate protection results
+      if (result.wasReused) {
+        console.log(`      ♻️  Reused existing issue #${issueNumber} (duplicate prevented!)`);
+        wasUpdated = true;
+      } else {
+        console.log(`      ✅ Created issue #${issueNumber}`);
       }
 
-      // Check 3: No existing issue found, create new
-      console.log(`      🚀 Creating new issue: ${issueContent.title}`);
-      const milestoneTitle = `${featureData.id}: ${featureData.title}`;
-      const issueNumber = await this.createUserStoryIssue(
-        issueContent,
-        milestoneTitle,
-        userStory.filePath
-      );
-      issuesCreated++;
-      console.log(`      ✅ Created Issue #${issueNumber}`);
+      if (result.duplicatesFound > 0) {
+        console.log(`      🛡️  Duplicates detected: ${result.duplicatesFound}, auto-closed: ${result.duplicatesClosed}`);
+      }
 
-      // Update User Story frontmatter
+      // Update User Story frontmatter with issue link
       await this.updateUserStoryFrontmatter(userStory.filePath, issueNumber);
+
+      // Update completion tracking
+      if (result.wasReused) {
+        // Update existing issue with latest content
+        await this.updateUserStoryIssue(issueNumber, issueContent, userStory.filePath);
+        issuesUpdated++;
+      } else {
+        // New issue created
+        issuesCreated++;
+      }
     }
 
     console.log(`\n✅ Feature sync complete!`);

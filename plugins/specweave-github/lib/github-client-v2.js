@@ -247,7 +247,8 @@ ${body}`;
       "--json",
       "number,title,state,url,labels",
       "--limit",
-      "1"
+      "50"
+      // ✅ FIX: Increased from 1 to 50 to catch duplicates (Issue #0047)
     ]);
     if (result.exitCode !== 0) {
       return null;
