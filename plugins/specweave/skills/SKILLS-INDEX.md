@@ -2,9 +2,9 @@
 
 **Purpose**: Quick reference for all available skills. Read this file BEFORE starting any task.
 
-**Last Updated**: 2025-11-13 (removed deprecated skills: plugin-installer, increment-quality-judge v1)
+**Last Updated**: 2025-11-20 (added increment-quality-judge-v2 as dual skill/agent)
 
-**Total Skills**: 18
+**Total Skills**: 19
 
 ---
 
@@ -105,6 +105,30 @@ Step 4: Execute → Follow the increment planning workflow
 **Description**: Multi-agent orchestration system that coordinates specialized agents (PM, Architect, DevOps, QA, Tech Lead, Security) to work together on complex tasks. Implements hierarchical orchestrator-worker pattern. Activates for complex multi-step requests requiring multiple roles/skills. Keywords: build product, create SaaS, full implementation, end-to-end, multi-agent, orchestrate, coordinate roles, complex project.
 
 **Location**: `.claude/skills/role-orchestrator/SKILL.md`
+
+---
+
+
+### Quality & Testing
+
+#### increment-quality-judge-v2
+
+**Description**: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /specweave:qa command.
+
+**Activates for**: validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate
+
+**Location**: `.claude/skills/increment-quality-judge-v2/SKILL.md`
+
+**Allowed tools**: Read, Grep, Glob
+
+**Special Note**: This exists as BOTH a skill and an agent:
+- **Skill** (this file) → Provides documentation and reference material
+- **Agent** (`plugins/specweave/agents/increment-quality-judge-v2/AGENT.md`) → Provides execution via Task tool
+
+Use **Skill tool** or **/specweave:qa** slash command for quality assessments.
+Use **Task tool** only when programmatically invoking from code (rare).
+
+**Related**: `/specweave:qa` command, `qa-lead` agent
 
 ---
 
