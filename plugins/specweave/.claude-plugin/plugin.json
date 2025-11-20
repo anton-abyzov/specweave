@@ -18,5 +18,10 @@
     "pm",
     "architect",
     "living-docs"
-  ]
+  ],
+  "hooks": {
+    "TodoWrite": {
+      "post": "./hooks/post-task-completion.sh"
+    }
+  }
 }
