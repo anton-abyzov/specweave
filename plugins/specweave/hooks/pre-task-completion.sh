@@ -92,7 +92,7 @@ fi
 # DETECT CURRENT INCREMENT
 # ============================================================================
 
-CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | grep -v "_archive" | head -1)
+CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
 
 if [ -z "$CURRENT_INCREMENT" ]; then
   echo "[$(date)] ⚠️  No active increment found, skipping validation" >> "$DEBUG_LOG" 2>/dev/null || true

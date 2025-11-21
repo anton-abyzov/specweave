@@ -56,7 +56,7 @@ mkdir -p "$LOGS_DIR" 2>/dev/null || true
 echo "[$(date)] [JIRA] 🔗 JIRA sync hook fired" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # Detect current increment
-CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
+CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
 
 if [ -z "$CURRENT_INCREMENT" ]; then
   echo "[$(date)] [JIRA] ℹ️  No active increment, skipping JIRA sync" >> "$DEBUG_LOG" 2>/dev/null || true

@@ -161,6 +161,22 @@
           "maxItemsPerSync": 500,
           "warnThreshold": 100
         }
+      },
+      "easychamp-ado": {
+        "provider": "ado",
+        "displayName": "EasyChamp Azure DevOps",
+        "config": {
+          "organization": "easychamp",
+          "project": "SpecWeaveSync"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
       }
     }
   },
