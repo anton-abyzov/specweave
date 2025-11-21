@@ -1592,6 +1592,124 @@ vim .specweave/docs/internal/architecture/hld-system.md
 vim .specweave/docs/public/guides/user-guide.md
 ```
 
+### Configuration Management
+
+**CRITICAL**: SpecWeave separates secrets from configuration (v0.24.0+)
+
+**Architecture**:
+- **Secrets** (tokens, passwords) → `.env` (gitignored, NEVER commit)
+- **Configuration** (domains, strategies, settings) → `.specweave/config.json` (committed to git)
+
+**Why this matters**:
+- ✅ Team shares configuration via git
+- ✅ Secrets stay local (12-Factor App pattern)
+- ✅ Onboarding: `cp .env.example .env` (fill in your tokens)
+- ✅ Type-safe configuration with validation
+
+**Using ConfigManager**:
+
+```typescript
+import { getConfigManager } from '../core/config/index.js';
+
+// Read configuration
+const configManager = getConfigManager(projectRoot);
+const config = await configManager.read();
+
+// Get specific value
+const domain = await configManager.get('issueTracker.domain');
+
+// Update configuration
+await configManager.update({
+  issueTracker: {
+    provider: 'jira',
+    domain: 'example.atlassian.net',
+    strategy: 'project-per-team'
+  }
+});
+
+// Write entire config (validates before writing)
+await configManager.write(newConfig);
+
+// Set specific value
+await configManager.set('sync.enabled', true);
+```
+
+**Init flow separation** (Jira example):
+
+```typescript
+// Step 1: Save secrets to .env (gitignored)
+const secretEnvVars = getJiraEnvVars(credentials); // ONLY tokens/emails
+saveCredentialsToEnv(projectPath, 'jira', secretEnvVars);
+
+// Step 2: Save config to .specweave/config.json (committed)
+const configManager = getConfigManager(projectPath);
+const jiraConfig = getJiraConfig(credentials); // domain, strategy, projects
+await configManager.update(jiraConfig);
+
+// Step 3: Generate .env.example for team onboarding
+generateEnvExample(projectPath, 'jira');
+```
+
+**What goes where**:
+
+| Data Type | Location | Example | Committed? |
+|-----------|----------|---------|------------|
+| API Tokens | `.env` | `JIRA_API_TOKEN=xyz` | ❌ Never |
+| Emails | `.env` | `JIRA_EMAIL=user@example.com` | ❌ Never |
+| Domains | `config.json` | `"domain": "example.atlassian.net"` | ✅ Yes |
+| Strategies | `config.json` | `"strategy": "project-per-team"` | ✅ Yes |
+| Project Keys | `config.json` | `"projects": [{"key": "PROJ1"}]` | ✅ Yes |
+| Sync Settings | `config.json` | `"includeStatus": true` | ✅ Yes |
+
+**Validation**:
+
+ConfigManager validates configuration before writing:
+
+```typescript
+const result = configManager.validate(config);
+if (!result.valid) {
+  console.error('Validation errors:', result.errors);
+  // Example error:
+  // {
+  //   path: 'issueTracker.provider',
+  //   message: 'Invalid provider. Must be one of: none, jira, github, ado',
+  //   value: 'invalid-provider'
+  // }
+}
+```
+
+**Migration Tool** (for existing projects):
+
+If you have an existing project using the old .env-only format, use the migration tool:
+
+```bash
+# Preview what will be migrated (dry run)
+node -e "require('./dist/src/cli/commands/migrate-config.js').migrateConfig({ dryRun: true })"
+
+# Perform migration
+node -e "require('./dist/src/cli/commands/migrate-config.js').migrateConfig()"
+
+# Force migration even if not needed
+node -e "require('./dist/src/cli/commands/migrate-config.js').migrateConfig({ force: true })"
+```
+
+**What the migration tool does**:
+1. ✅ Analyzes `.env` file and classifies variables
+2. ✅ Creates backup: `.env.backup.TIMESTAMP`
+3. ✅ Updates `.env` (keeps only secrets)
+4. ✅ Creates/updates `.specweave/config.json` (adds config)
+5. ✅ Generates `.env.example` for team onboarding
+
+**Classification logic**:
+- **Secrets** (stay in .env): Variables containing `token`, `api_token`, `pat`, `secret`, `key`, `password`, `credential`, `auth`, or email addresses
+- **Config** (move to config.json): Everything else (domains, strategies, project keys, etc.)
+
+**See also**:
+- ADR-0050: Secrets vs Configuration Separation
+- `src/core/config/config-manager.ts` - ConfigManager implementation
+- `src/core/config/config-migrator.ts` - Migration tool implementation
+- `tests/unit/core/config/config-migrator.test.ts` - Usage examples
+
 ---
 
 ## Troubleshooting

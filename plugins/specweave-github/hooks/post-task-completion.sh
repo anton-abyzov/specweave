@@ -102,7 +102,7 @@ fi
 # Strategy: Use multi-spec detector to find ALL specs referenced in current increment
 
 # 1. Detect current increment (temporary context)
-CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | head -1)
+CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
 
 if [ -z "$CURRENT_INCREMENT" ]; then
   echo "[$(date)] [GitHub] ℹ️  No active increment, checking for spec changes..." >> "$DEBUG_LOG" 2>/dev/null || true

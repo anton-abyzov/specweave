@@ -625,22 +625,10 @@ async function writeSyncConfig(
   repositoryProfiles?: any[],
   monorepoProjects?: string[]
 ): Promise<void> {
-  const configPath = path.join(projectPath, '.specweave', 'config.json');
+  const configManager = getConfigManager(projectPath);
 
-  // Read existing config or create new one
-  let config: any = {
-    project: {
-      name: path.basename(projectPath),
-      version: '0.1.0'
-    },
-    adapters: {
-      default: 'claude'
-    }
-  };
-
-  if (fs.existsSync(configPath)) {
-    config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-  }
+  // Read existing config
+  const config = await configManager.read();
 
   // Add hooks configuration (enables auto-sync!)
   config.hooks = {
@@ -737,6 +725,8 @@ async function writeSyncConfig(
     const defaultProfile = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
     config.sync = {
       enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: false,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
@@ -768,6 +758,8 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: false,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
@@ -798,6 +790,8 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: false,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
@@ -824,6 +818,8 @@ async function writeSyncConfig(
     };
     config.sync = {
       enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: false,
       provider: tracker,                                    // NEW: Exclusive provider
       includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
       autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
@@ -837,8 +833,8 @@ async function writeSyncConfig(
     };
   }
 
-  // Write config
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+  // Write config using ConfigManager
+  await configManager.write(config);
 
   console.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
   console.log(chalk.gray(`   Provider: ${tracker}`));
