@@ -1129,6 +1129,131 @@ bash scripts/validate-plugin-directories.sh --fix
 - Skills index: `plugins/specweave/skills/SKILLS-INDEX.md`
 - Claude Code Skills docs: `~/CLAUDE.md` (Personal skills reference)
 
+### 16. YAML Frontmatter Validation (CRITICAL!)
+
+**Rule**: ALL spec.md files MUST have valid YAML frontmatter with required fields.
+
+**Required Format**:
+```yaml
+---
+increment: 0001-feature-name  # REQUIRED: 4-digit number + kebab-case
+title: Feature Title           # OPTIONAL: Human-readable title
+feature_id: FS-001            # OPTIONAL: Living docs feature ID
+---
+```
+
+**Common Mistakes**:
+
+```yaml
+# ❌ WRONG: Unclosed bracket
+---
+increment: 0001-test
+data: [unclosed
+---
+
+# ❌ WRONG: Unclosed quote
+---
+increment: 0001-test
+title: "unclosed string
+---
+
+# ❌ WRONG: Invalid YAML object
+---
+increment: 0001-test
+config: {key: value, broken
+---
+
+# ❌ WRONG: Invalid increment ID format
+---
+increment: 1-test  # Missing leading zeros
+---
+
+# ❌ WRONG: Invalid increment ID format (uppercase)
+---
+increment: 0001-Test-Feature  # Uppercase letters not allowed
+---
+
+# ❌ WRONG: Missing required field
+---
+title: Feature Title  # Missing increment field!
+---
+
+# ✅ CORRECT: Minimal valid frontmatter
+---
+increment: 0001-feature-name
+---
+
+# ✅ CORRECT: Full frontmatter
+---
+increment: 0042-bug-fix
+title: Critical Bug Fix
+feature_id: FS-013
+---
+```
+
+**Prevention Layers**:
+
+1. **Pre-commit hook** - Validates YAML before commits (blocks malformed frontmatter)
+   ```bash
+   # Runs automatically on git commit
+   scripts/pre-commit-yaml-validation.sh
+   ```
+
+2. **Spec parser** - Uses `js-yaml` library (detects errors at runtime)
+   - Provides descriptive error messages
+   - Shows line numbers for YAML errors
+   - Suggests common fixes
+
+3. **Command validation** - `/specweave:validate` checks YAML syntax
+   ```bash
+   /specweave:validate 0001
+   ```
+
+**Manual YAML Testing**:
+
+```bash
+# Validate YAML in spec.md (manual check)
+node -e "
+  const yaml = require('js-yaml');
+  const fs = require('fs');
+  const content = fs.readFileSync('.specweave/increments/0001-test/spec.md', 'utf-8');
+  const frontmatter = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!frontmatter) throw new Error('No frontmatter found');
+  const parsed = yaml.load(frontmatter[1]);
+  console.log('✅ Valid YAML:', JSON.stringify(parsed, null, 2));
+"
+```
+
+**Error Messages**:
+
+When YAML validation fails, you'll see descriptive errors:
+
+```
+ERROR: Malformed YAML syntax in frontmatter
+DETAILS: Unexpected end of stream
+LOCATION: Lines 2-5
+HINT: Common mistakes:
+  - Unclosed brackets: [unclosed
+  - Unclosed quotes: "unclosed
+  - Invalid YAML object: {key: value, broken
+```
+
+**Why This Matters**:
+- **Silent failures**: Malformed YAML can cause missing/incorrect metadata
+- **Sync issues**: Invalid increment IDs break living docs sync
+- **GitHub sync**: Broken frontmatter prevents issue creation
+- **Validation failures**: Tasks/ACs can't be parsed without valid metadata
+
+**Incident History**:
+- **Test case**: `tests/integration/commands/plan-command.integration.test.ts:626` tests malformed YAML handling
+- **Root cause**: Regex-based parsing was tolerant but unreliable
+- **Solution**: Multi-layered YAML validation with `js-yaml` library
+
+**See Also**:
+- Pre-commit hook: `scripts/pre-commit-yaml-validation.sh`
+- Spec parser: `src/generators/spec/spec-parser.ts` (uses js-yaml)
+- Test suite: `tests/integration/commands/plan-command.integration.test.ts`
+
 ---
 
 ## Project Structure

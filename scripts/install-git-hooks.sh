@@ -181,6 +181,14 @@ if [ -f "scripts/pre-commit-fs-extra-check.sh" ]; then
   fi
 fi
 
+# 8. Validate YAML frontmatter in spec.md files (prevent malformed YAML)
+# Incident Reference: Test case in tests/integration/commands/plan-command.integration.test.ts:626
+if [ -f "scripts/pre-commit-yaml-validation.sh" ]; then
+  if ! bash scripts/pre-commit-yaml-validation.sh; then
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -198,6 +206,7 @@ echo "  - pre-commit: Duplicate increment detection (CRITICAL)"
 echo "  - pre-commit: Status line desync detection (CRITICAL)"
 echo "  - pre-commit: Plugin directory validation (prevents empty agent/skill dirs)"
 echo "  - pre-commit: fs-extra import detection (enforces native fs migration)"
+echo "  - pre-commit: YAML frontmatter validation (prevents malformed spec.md)"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"
 echo ""
