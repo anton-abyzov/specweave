@@ -1,4 +1,4 @@
-# ADR-0050: Three-Tier Dependency Loading Architecture
+# ADR-0056: Three-Tier Dependency Loading Architecture
 
 **Date**: 2025-11-21
 **Status**: Accepted
