@@ -23,6 +23,7 @@ import {
   ensureEnvGitignored
 } from '../../../utils/env-file.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
+import { getConfigManager } from '../../../core/config/index.js';
 
 // GitHub
 import {
@@ -40,6 +41,7 @@ import {
   promptJiraCredentials,
   validateJiraConnection,
   getJiraEnvVars,
+  getJiraConfig,
   showJiraSetupComplete,
   showJiraSetupSkipped
 } from './jira.js';
@@ -241,8 +243,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
           await validateResources(tracker, credentials, projectPath);
         }
 
-        // Install plugin
-        await installPlugin(tracker, language);
+        // Show setup complete message (plugins managed via marketplace)
         showSetupComplete(tracker, language);
         return true;
       } else {
@@ -347,10 +348,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     await validateResources(tracker, credentials, projectPath);
   }
 
-  // Step 6: Install plugin
-  await installPlugin(tracker, language);
-
-  // Step 7: Show success message
+  // Step 6: Show success message (plugins managed via marketplace)
   showSetupComplete(tracker, language);
 
   return true;
@@ -472,7 +470,88 @@ async function validateResources(
 }
 
 /**
- * Save credentials to .env file
+ * Generate .env.example template for team onboarding
+ *
+ * Creates a template file showing required environment variables
+ * with placeholder values and setup instructions
+ */
+function generateEnvExample(projectPath: string, tracker: IssueTracker): void {
+  const examplePath = path.join(projectPath, '.env.example');
+
+  let content = `# SpecWeave Environment Variables
+#
+# IMPORTANT: Copy this file to .env and replace placeholder values with your actual credentials
+# NEVER commit .env to git! It's already in .gitignore
+#
+# Setup Instructions:
+# 1. Copy: cp .env.example .env
+# 2. Replace placeholder values below with your actual credentials
+# 3. Run: specweave init . (to validate credentials)
+
+`;
+
+  if (tracker === 'jira') {
+    content += `# ==========================================
+# Jira Credentials (REQUIRED)
+# ==========================================
+# Get your Jira API token from:
+# Cloud: https://id.atlassian.com/manage-profile/security/api-tokens
+# Server: Your Jira instance → Settings → Personal Access Tokens
+
+JIRA_API_TOKEN=your_jira_api_token_here
+JIRA_EMAIL=your_email@company.com
+
+# NOTE: Domain, strategy, and projects are now in .specweave/config.json
+# (This makes them shareable across the team via git)
+`;
+  } else if (tracker === 'github') {
+    content += `# ==========================================
+# GitHub Credentials (REQUIRED)
+# ==========================================
+# Get your GitHub token from:
+# https://github.com/settings/tokens
+# Required scopes: repo, read:org
+
+GITHUB_TOKEN=your_github_token_here
+`;
+  } else if (tracker === 'ado') {
+    content += `# ==========================================
+# Azure DevOps Credentials (REQUIRED)
+# ==========================================
+# Get your PAT from:
+# https://dev.azure.com/YOUR_ORG/_usersSettings/tokens
+
+ADO_PAT=your_ado_pat_here
+`;
+  }
+
+  content += `
+# ==========================================
+# Optional: Additional Integrations
+# ==========================================
+# Uncomment and configure if you use multiple tools:
+
+# GitHub (if using with Jira)
+# GITHUB_TOKEN=your_github_token_here
+
+# Bitbucket
+# BITBUCKET_TOKEN=your_bitbucket_token_here
+
+# GitLab
+# GITLAB_TOKEN=your_gitlab_token_here
+`;
+
+  fs.writeFileSync(examplePath, content, 'utf-8');
+  console.log(chalk.green('✓ Generated .env.example (commit this to git!)'));
+  console.log(chalk.gray('   Team members can copy it to .env and add their credentials'));
+}
+
+/**
+ * Save credentials to .env file AND configuration to config.json
+ *
+ * NEW (v0.23.0): Implements ADR-0050 secrets/config separation
+ * - Secrets (tokens, emails) → .env (gitignored)
+ * - Configuration (domains, strategies, projects) → config.json (committed)
  */
 async function saveCredentials(
   projectPath: string,
@@ -486,7 +565,7 @@ async function saveCredentials(
     envContent = createEnvFromTemplate(projectPath);
   }
 
-  // Get tracker-specific env vars
+  // Get tracker-specific env vars (ONLY secrets)
   let envVars: Array<{ key: string; value: string }> = [];
 
   switch (tracker) {
@@ -494,7 +573,7 @@ async function saveCredentials(
       envVars = getGitHubEnvVars(credentials as any);
       break;
     case 'jira':
-      envVars = getJiraEnvVars(credentials as any);
+      envVars = getJiraEnvVars(credentials as any); // NOW returns ONLY secrets
       break;
     case 'ado':
       envVars = getAzureDevOpsEnvVars(credentials as any);
@@ -511,6 +590,22 @@ async function saveCredentials(
   ensureEnvGitignored(projectPath);
 
   console.log(chalk.green('✓ Credentials saved to .env (gitignored)'));
+
+  // Save non-sensitive configuration to config.json
+  if (tracker === 'jira') {
+    const configManager = getConfigManager(projectPath);
+    const jiraConfig = getJiraConfig(credentials as any);
+
+    await configManager.update(jiraConfig);
+
+    console.log(chalk.green('✓ Configuration saved to .specweave/config.json'));
+    console.log(chalk.gray(`   Domain: ${jiraConfig.issueTracker.domain}`));
+    console.log(chalk.gray(`   Strategy: ${jiraConfig.issueTracker.strategy}`));
+    console.log(chalk.gray(`   Projects: ${jiraConfig.issueTracker.projects?.map(p => p.key).join(', ')}`));
+  }
+
+  // Generate .env.example for team onboarding
+  generateEnvExample(projectPath, tracker);
 }
 
 /**
@@ -753,41 +848,7 @@ async function writeSyncConfig(
   console.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
 }
 
-/**
- * Install tracker plugin
- */
-async function installPlugin(tracker: IssueTracker, language: string): Promise<void> {
-  const spinner = ora(`Installing ${getTrackerDisplayName(tracker)} plugin...`).start();
-
-  // Check if Claude CLI is available
-  if (!isClaudeCliAvailable()) {
-    spinner.warn('Claude CLI not found');
-    console.log(chalk.yellow('\n📦 Manual plugin installation required:'));
-    console.log(chalk.white(`   /plugin install specweave-${tracker}\n`));
-    return;
-  }
-
-  // Install plugin
-  const result = installTrackerPlugin(tracker);
-
-  if (result.success) {
-    if (result.alreadyInstalled) {
-      spinner.succeed(`${getTrackerDisplayName(tracker)} plugin already installed`);
-    } else {
-      spinner.succeed(`${getTrackerDisplayName(tracker)} plugin installed`);
-    }
-  } else {
-    spinner.fail(`Could not auto-install plugin`);
-    console.log(chalk.yellow('\n📦 Manual plugin installation:'));
-    console.log(chalk.white(`   /plugin install specweave-${tracker}`));
-
-    // Show error details in DEBUG mode
-    if (process.env.DEBUG && result.error) {
-      console.log(chalk.gray(`   Error: ${result.error}`));
-    }
-    console.log('');
-  }
-}
+// Removed installPlugin() function - plugins are managed via marketplace, not during init
 
 /**
  * Show setup complete message

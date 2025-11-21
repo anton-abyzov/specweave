@@ -20,6 +20,12 @@ import type {
   ValidationResult,
   JiraInstanceType
 } from './types.js';
+import type {
+  JiraStrategy,
+  JiraInstanceType as ConfigJiraInstanceType,
+  JiraProjectConfig,
+  JiraBoardConfig
+} from '../../../core/config/types.js';
 import {
   isValidEmail,
   retryWithBackoff,
@@ -28,6 +34,7 @@ import {
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import { RateLimitError } from './types.js';
+import { JiraClient } from '../../../integrations/jira/jira-client.js';
 
 /**
  * Check for existing Jira credentials
@@ -71,6 +78,73 @@ export async function checkExistingJiraCredentials(
 }
 
 /**
+ * Auto-discover Jira projects via API
+ *
+ * @param credentials - Partial credentials (domain, email, token)
+ * @returns Array of selected project keys
+ */
+async function autoDiscoverJiraProjects(credentials: {
+  domain: string;
+  email: string;
+  token: string;
+  instanceType: JiraInstanceType;
+}): Promise<string[]> {
+  const spinner = ora('Fetching accessible Jira projects...').start();
+
+  try {
+    // Determine API endpoint based on instance type
+    const apiBase = credentials.instanceType === 'cloud'
+      ? `https://${credentials.domain}/rest/api/3`
+      : `https://${credentials.domain}/rest/api/2`;
+
+    const projectsEndpoint = `${apiBase}/project`;
+
+    // Basic auth header
+    const auth = Buffer.from(`${credentials.email}:${credentials.token}`).toString('base64');
+
+    // Fetch all projects
+    const response = await fetch(projectsEndpoint, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${errorText}`);
+    }
+
+    const allProjects: any[] = await response.json();
+    spinner.succeed(`Found ${allProjects.length} accessible project(s)`);
+
+    if (allProjects.length === 0) {
+      console.log(chalk.yellow('\n⚠️  No accessible projects found.'));
+      console.log(chalk.gray('   Please check your permissions or create a project first.\n'));
+      return [];
+    }
+
+    // Show multi-select checkbox (like GitHub repos)
+    const { selectedProjects } = await inquirer.prompt<{ selectedProjects: string[] }>({
+      type: 'checkbox',
+      name: 'selectedProjects',
+      message: 'Select Jira projects to sync (use Space to select, Enter to confirm):',
+      choices: allProjects.map((p: any) => ({
+        name: `${p.key} - ${p.name}`,
+        value: p.key,
+        checked: false  // User must explicitly select
+      }))
+    });
+
+    return selectedProjects;
+  } catch (error: any) {
+    spinner.fail('Failed to fetch projects');
+    console.error(chalk.red(`   Error: ${error.message}\n`));
+    throw error;
+  }
+}
+
+/**
  * Prompt user for Jira credentials
  *
  * Supports:
@@ -100,31 +174,7 @@ export async function promptJiraCredentials(
     default: 'cloud'
   }]);
 
-  // Step 1.5: Ask about team organization strategy
-  console.log(chalk.cyan('\n📂 How are teams organized in Jira?\n'));
-  const { strategy } = await inquirer.prompt([{
-    type: 'list',
-    name: 'strategy',
-    message: 'Select team mapping strategy:',
-    choices: [
-      {
-        name: 'Project-per-team (separate projects for each team)',
-        value: 'project-per-team',
-        short: 'Project-per-team'
-      },
-      {
-        name: 'Component-based (one project, multiple components)',
-        value: 'component-based',
-        short: 'Component-based'
-      },
-      {
-        name: 'Board-based (one project, filtered boards)',
-        value: 'board-based',
-        short: 'Board-based'
-      }
-    ],
-    default: 'project-per-team'
-  }]);
+  // Step 1.5: Note - Strategy will be auto-detected after project selection
 
   // Step 2: Show setup instructions
   console.log(chalk.cyan('\n📋 Quick Setup:'));
@@ -202,105 +252,41 @@ export async function promptJiraCredentials(
     }
   ];
 
-  // Strategy-specific questions
-  if (strategy === 'project-per-team') {
-    questions.push({
-      type: 'input',
-      name: 'projects',
-      message: 'Project keys (comma-separated, e.g., FRONTEND,BACKEND,MOBILE):',
-      validate: (input: string) => {
-        if (!input || input.trim() === '') {
-          return 'At least one project key is required';
-        }
-        // Validate project key format (uppercase letters, 2-10 chars)
-        const projects = input.split(',').map(p => p.trim());
-        for (const project of projects) {
-          if (!/^[A-Z0-9]{2,10}$/.test(project)) {
-            return `Invalid project key "${project}". Must be 2-10 uppercase letters/numbers.`;
-          }
-        }
-        return true;
-      }
-    });
-  } else if (strategy === 'component-based') {
-    questions.push(
-      {
-        type: 'input',
-        name: 'project',
-        message: 'Project key (e.g., MAIN):',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'Project key is required';
-          }
-          if (!/^[A-Z0-9]{2,10}$/.test(input)) {
-            return 'Project key must be 2-10 uppercase letters/numbers';
-          }
-          return true;
-        }
-      },
-      {
-        type: 'input',
-        name: 'components',
-        message: 'Component names (comma-separated, e.g., Frontend,Backend,Mobile):',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'At least one component is required';
-          }
-          return true;
-        }
-      }
-    );
-  } else if (strategy === 'board-based') {
-    questions.push(
-      {
-        type: 'input',
-        name: 'project',
-        message: 'Project key (e.g., MAIN):',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'Project key is required';
-          }
-          if (!/^[A-Z0-9]{2,10}$/.test(input)) {
-            return 'Project key must be 2-10 uppercase letters/numbers';
-          }
-          return true;
-        }
-      },
-      {
-        type: 'input',
-        name: 'boards',
-        message: 'Board IDs or Names (comma-separated, e.g., "123,456" or "Frontend,Backend,Mobile"):',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'At least one board is required';
-          }
-          return true;
-        }
-      }
-    );
-  }
-
+  // Get basic credentials first
   const answers = await inquirer.prompt(questions);
 
-  // Build credentials based on strategy
+  // Auto-discover projects using the credentials
+  const selectedProjects = await autoDiscoverJiraProjects({
+    domain: answers.domain,
+    email: answers.email,
+    token: answers.token,
+    instanceType: instanceType as JiraInstanceType
+  });
+
+  if (selectedProjects.length === 0) {
+    console.log(chalk.yellow('⏭️  No projects selected. Jira setup cancelled.\n'));
+    return null;
+  }
+
+  // Auto-detect strategy based on number of selected projects
+  let strategy: string;
+  if (selectedProjects.length === 1) {
+    strategy = 'single-project';
+    console.log(chalk.gray(`\n📊 Detected strategy: Single project (${selectedProjects[0]})\n`));
+  } else {
+    strategy = 'project-per-team';
+    console.log(chalk.gray(`\n📊 Detected strategy: Project-per-team (${selectedProjects.length} projects)\n`));
+  }
+
+  // Build credentials with auto-discovered projects
   const credentials: JiraCredentials = {
     token: answers.token,
     email: answers.email,
     domain: answers.domain,
     instanceType: instanceType as JiraInstanceType,
-    strategy: strategy as any
+    strategy: strategy as any,
+    projects: selectedProjects
   };
-
-  // Add strategy-specific fields
-  if (strategy === 'project-per-team') {
-    credentials.projects = answers.projects.split(',').map((p: string) => p.trim());
-  } else if (strategy === 'component-based') {
-    credentials.project = answers.project;
-    credentials.components = answers.components.split(',').map((c: string) => c.trim());
-  } else if (strategy === 'board-based') {
-    credentials.project = answers.project;
-    credentials.boards = answers.boards.split(',').map((b: string) => b.trim());
-  }
 
   return credentials;
 }
@@ -389,50 +375,87 @@ export async function validateJiraConnection(
 /**
  * Get Jira environment variables for .env file
  *
+ * ONLY SECRETS - All non-sensitive config goes to config.json via getJiraConfig()
+ *
  * @param credentials - Jira credentials
- * @returns Array of key-value pairs for .env
+ * @returns Array of key-value pairs for .env (secrets only)
  */
 export function getJiraEnvVars(credentials: JiraCredentials): Array<{ key: string; value: string }> {
-  const vars = [
+  // ONLY secrets (tokens, emails)
+  return [
     { key: 'JIRA_API_TOKEN', value: credentials.token },
-    { key: 'JIRA_EMAIL', value: credentials.email },
-    { key: 'JIRA_DOMAIN', value: credentials.domain }
+    { key: 'JIRA_EMAIL', value: credentials.email }
   ];
+}
+
+/**
+ * Get Jira configuration for config.json
+ *
+ * Extracts non-sensitive configuration from credentials
+ *
+ * @param credentials - Jira credentials
+ * @returns Partial config object for config.json
+ */
+export function getJiraConfig(credentials: JiraCredentials): {
+  issueTracker: {
+    provider: 'jira';
+    domain: string;
+    instanceType?: ConfigJiraInstanceType;
+    strategy?: JiraStrategy;
+    projects?: JiraProjectConfig[];
+    project?: string;
+    components?: string[];
+    boards?: JiraBoardConfig[];
+  };
+} {
+  const config: {
+    issueTracker: {
+      provider: 'jira';
+      domain: string;
+      instanceType?: ConfigJiraInstanceType;
+      strategy?: JiraStrategy;
+      projects?: JiraProjectConfig[];
+      project?: string;
+      components?: string[];
+      boards?: JiraBoardConfig[];
+    };
+  } = {
+    issueTracker: {
+      provider: 'jira',
+      domain: credentials.domain,
+      instanceType: credentials.instanceType
+    }
+  };
 
   // Add strategy if specified
   if (credentials.strategy) {
-    vars.push({ key: 'JIRA_STRATEGY', value: credentials.strategy });
+    config.issueTracker.strategy = credentials.strategy as JiraStrategy;
   }
 
   // Strategy 1: Project-per-team
   if (credentials.strategy === 'project-per-team' && credentials.projects) {
-    vars.push({ key: 'JIRA_PROJECTS', value: credentials.projects.join(',') });
+    config.issueTracker.projects = credentials.projects.map((key: string) => ({ key }));
   }
   // Strategy 2: Component-based
   else if (credentials.strategy === 'component-based') {
     if (credentials.project) {
-      vars.push({ key: 'JIRA_PROJECT', value: credentials.project });
+      config.issueTracker.project = credentials.project;
     }
     if (credentials.components) {
-      vars.push({ key: 'JIRA_COMPONENTS', value: credentials.components.join(',') });
+      config.issueTracker.components = credentials.components;
     }
   }
   // Strategy 3: Board-based
   else if (credentials.strategy === 'board-based') {
     if (credentials.project) {
-      vars.push({ key: 'JIRA_PROJECT', value: credentials.project });
+      config.issueTracker.project = credentials.project;
     }
     if (credentials.boards) {
-      vars.push({ key: 'JIRA_BOARDS', value: credentials.boards.join(',') });
+      config.issueTracker.boards = credentials.boards.map((id: string) => ({ id }));
     }
   }
 
-  // Add Server-specific variables if needed
-  if (credentials.instanceType === 'server') {
-    vars.push({ key: 'JIRA_INSTANCE_TYPE', value: 'server' });
-  }
-
-  return vars;
+  return config;
 }
 
 /**
@@ -443,12 +466,10 @@ export function getJiraEnvVars(credentials: JiraCredentials): Array<{ key: strin
 export function showJiraSetupComplete(language: SupportedLanguage): void {
   const locale = getLocaleManager(language);
 
-  console.log(chalk.green.bold('\n✅ Jira integration complete!\n'));
-  console.log(chalk.white('Available commands:'));
-  console.log(chalk.gray('  /specweave-jira:sync'));
-  console.log(chalk.gray('  /specweave-jira:status\n'));
-  console.log(chalk.cyan('💡 Tip: Use /specweave:increment "feature" to create an increment'));
-  console.log(chalk.gray('   It will automatically sync to Jira Issues!\n'));
+  console.log(chalk.green.bold('\n✅ Jira integration configured!\n'));
+  console.log(chalk.gray('Credentials saved to .env (gitignored)\n'));
+  console.log(chalk.cyan('💡 Tip: Run /specweave:increment "feature" to create an increment'));
+  console.log(chalk.gray('   It will automatically sync to Jira!\n'));
 }
 
 /**
