@@ -38,6 +38,7 @@ interface InitOptions {
   techStack?: string;
   language?: string;  // Language for i18n support
   force?: boolean;    // Force fresh start (non-interactive)
+  forceRefresh?: boolean;  // Force marketplace refresh (skip cache)
   logger?: Logger;    // Logger for debug/error messages (default: consoleLogger)
 }
 
@@ -1013,100 +1014,80 @@ export async function initCommand(
       } else {
         // Claude CLI available → install ALL plugins from marketplace
         try {
-          // Step 1: Remove existing marketplace to force update (REQUIRED for updates!)
-          // This ensures users get the latest plugins when new ones are added
-          spinner.start('Refreshing SpecWeave marketplace...');
-
-          const listResult = execFileNoThrowSync('claude', [
-            'plugin',
-            'marketplace',
-            'list'
-          ]);
-
-          const marketplaceExists = listResult.success &&
-            (listResult.stdout || '').toLowerCase().includes('specweave');
-
-          if (marketplaceExists) {
-            execFileNoThrowSync('claude', [
-              'plugin',
-              'marketplace',
-              'remove',
-              'specweave'
-            ]);
-            console.log(chalk.blue('   🔄 Removed existing marketplace for update'));
-          }
-
-          // Step 2: Add marketplace from GitHub (always fresh)
-          const addResult = execFileNoThrowSync('claude', [
-            'plugin',
-            'marketplace',
-            'add',
-            'anton-abyzov/specweave'
-          ]);
-
-          if (!addResult.success) {
-            throw new Error('Failed to add marketplace from GitHub');
-          }
-
-          console.log(chalk.green('   ✔ Marketplace registered from GitHub'));
-
-          // CRITICAL: Wait for marketplace cache to be FULLY ready
-          // Problem: Fixed delays (2s, 5s) are unreliable - cache initialization time varies
-          // Solution: Poll until marketplace.json exists and is readable in cache
-          spinner.text = 'Waiting for marketplace cache to initialize...';
-
           const marketplaceCachePath = path.join(
             os.homedir(),
             '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
           );
 
-          const maxWaitTime = 30000; // 30 seconds max
-          const pollInterval = 500; // Check every 500ms
-          const startTime = Date.now();
-          let cacheReady = false;
+          // ULTRAFAST: Check if cache is fresh (< 5 min old) and valid
+          let needsRefresh = true;
+          let cacheAlreadyValid = false;
 
-          while (!cacheReady && (Date.now() - startTime) < maxWaitTime) {
-            try {
-              // Check if marketplace.json exists and is readable
-              if (fs.existsSync(marketplaceCachePath)) {
+          // Skip cache if forceRefresh flag is set
+          if (!options.forceRefresh && fs.existsSync(marketplaceCachePath)) {
+            const cacheStats = fs.statSync(marketplaceCachePath);
+            const cacheAge = Date.now() - cacheStats.mtimeMs;
+            const fiveMinutes = 5 * 60 * 1000;
+
+            if (cacheAge < fiveMinutes) {
+              try {
                 const cacheData = JSON.parse(fs.readFileSync(marketplaceCachePath, 'utf-8'));
+                const hasValidPlugins = cacheData.plugins &&
+                  cacheData.plugins.length >= 25 &&
+                  cacheData.plugins.every((p: any) => p.name && p.version && p.description);
 
-                // CRITICAL: Verify plugins array is FULLY populated with metadata
-                // Not just present, but each plugin has required fields (name, version, etc.)
-                if (cacheData.plugins && cacheData.plugins.length >= 25) {
-                  // Additional validation: check if plugins have required metadata
-                  const hasMetadata = cacheData.plugins.every((p: any) =>
-                    p.name && p.version && p.description
-                  );
-
-                  if (hasMetadata) {
-                    cacheReady = true;
-                    const waitedMs = Date.now() - startTime;
-                    console.log(chalk.gray(`   ⏱  Cache ready in ${Math.round(waitedMs / 1000)}s`));
-                    break;
-                  } else {
-                    // Plugins exist but metadata incomplete - keep waiting
-                    spinner.text = `Waiting for plugin metadata... (${Math.round((Date.now() - startTime) / 1000)}s)`;
-                  }
+                if (hasValidPlugins) {
+                  needsRefresh = false;
+                  cacheAlreadyValid = true;
+                  console.log(chalk.green('   ⚡ Using cached marketplace (fresh)'));
                 }
+              } catch {
+                // Cache exists but invalid, needs refresh
               }
-            } catch (e) {
-              // File exists but not readable yet (still being written)
+            }
+          }
+
+          if (needsRefresh) {
+            // Step 1: Remove existing marketplace to force update
+            spinner.start('Refreshing SpecWeave marketplace...');
+
+            const listResult = execFileNoThrowSync('claude', [
+              'plugin',
+              'marketplace',
+              'list'
+            ]);
+
+            const marketplaceExists = listResult.success &&
+              (listResult.stdout || '').toLowerCase().includes('specweave');
+
+            if (marketplaceExists) {
+              execFileNoThrowSync('claude', [
+                'plugin',
+                'marketplace',
+                'remove',
+                'specweave'
+              ]);
+              console.log(chalk.blue('   🔄 Removed existing marketplace for update'));
             }
 
-            // Wait before next poll
-            await new Promise(resolve => setTimeout(resolve, pollInterval));
+            // Step 2: Add marketplace from GitHub (always fresh)
+            const addResult = execFileNoThrowSync('claude', [
+              'plugin',
+              'marketplace',
+              'add',
+              'anton-abyzov/specweave'
+            ]);
 
-            // Update spinner to show we're still waiting
-            const elapsed = Math.round((Date.now() - startTime) / 1000);
-            spinner.text = `Waiting for marketplace cache... (${elapsed}s)`;
+            if (!addResult.success) {
+              throw new Error('Failed to add marketplace from GitHub');
+            }
+
+            console.log(chalk.green('   ✔ Marketplace registered from GitHub'));
+
+            // NO WAIT NEEDED: We load from source (npm package), not cache
+            // The cache is populated asynchronously by Claude Code and isn't used during init
+            spinner.succeed('SpecWeave marketplace ready');
           }
-
-          if (!cacheReady) {
-            console.log(chalk.yellow('   ⚠ Cache initialization timeout, proceeding anyway...'));
-          }
-
-          spinner.succeed('SpecWeave marketplace ready');
 
           // Step 2: Load marketplace.json to get ALL available plugins
           spinner.start('Loading available plugins...');

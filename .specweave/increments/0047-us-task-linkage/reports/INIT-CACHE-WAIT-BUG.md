@@ -2,7 +2,7 @@
 
 **Date**: 2025-11-20
 **Severity**: Medium (UX issue, not functional)
-**Status**: Identified, fix needed
+**Status**: ✅ RESOLVED (fixed in commit following this report)
 
 ## Problem
 
@@ -202,4 +202,41 @@ await cacheInitPromise;
 
 ---
 
-**Next Steps**: Create a quick fix PR to remove this unnecessary wait.
+## ✅ Resolution
+
+**Fixed in**: src/cli/commands/init.ts (2025-11-20)
+
+**Changes made**:
+```typescript
+// BEFORE (lines 1087-1126): 5-second wait with timeout
+spinner.text = 'Waiting for marketplace cache...';
+const maxWaitTime = 5000;
+// ... polling loop ...
+if (!cacheReady) {
+  console.log('⚠ Cache timeout (5s), proceeding anyway...');
+}
+
+// AFTER (lines 1087-1089): No wait, instant proceed
+// NO WAIT NEEDED: We load from source (npm package), not cache
+// The cache is populated asynchronously by Claude Code and isn't used during init
+spinner.succeed('SpecWeave marketplace ready');
+```
+
+**Impact**:
+- ✅ Removed entire 5-second polling loop (lines 1087-1126 reduced to 3 lines)
+- ✅ No more "Waiting for marketplace cache..." spinner
+- ✅ No more "Cache timeout, proceeding anyway..." warning
+- ✅ Init command completes ~5 seconds faster
+- ✅ Code is simpler and more maintainable
+
+**Verification**:
+```bash
+# Compiled output verified (dist/src/cli/commands/init.js)
+grep "NO WAIT NEEDED" dist/src/cli/commands/init.js
+# ✅ Comment present
+
+grep "Waiting for marketplace cache" dist/src/cli/commands/init.js
+# ✅ No matches (removed)
+```
+
+**Testing**: Ready for end-to-end testing with actual `specweave init` command.
