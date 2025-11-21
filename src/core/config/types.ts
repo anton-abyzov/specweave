@@ -94,6 +94,41 @@ export interface IssueTrackerConfiguration {
 }
 
 /**
+ * Sync profile configuration
+ */
+export interface SyncProfile {
+  provider: string;
+  displayName: string;
+  config: {
+    owner?: string;
+    repo?: string;
+    domain?: string;
+    projectKey?: string;
+    projects?: string[];  // For multi-project Jira
+    organization?: string;
+    project?: string;
+    monorepoProjects?: string[];  // For monorepo GitHub
+  };
+  timeRange: {
+    default: string;
+    max: string;
+  };
+  rateLimits?: {
+    maxItemsPerSync: number;
+    warnThreshold: number;
+  };
+}
+
+/**
+ * Sync settings
+ */
+export interface SyncSettings {
+  canUpsertInternalItems: boolean;
+  canUpdateExternalItems: boolean;
+  canUpdateStatus: boolean;
+}
+
+/**
  * Sync configuration section
  */
 export interface SyncConfiguration {
@@ -102,6 +137,10 @@ export interface SyncConfiguration {
   autoSync: boolean;
   includeStatus: boolean;
   autoApplyLabels: boolean;
+  provider?: string;  // Exclusive provider (jira, github, ado)
+  activeProfile?: string;  // Active profile key
+  settings?: SyncSettings;
+  profiles?: Record<string, SyncProfile>;  // Profile configurations
 }
 
 /**
@@ -114,6 +153,35 @@ export interface PermissionsConfiguration {
 }
 
 /**
+ * Hook configuration
+ */
+export interface HookConfiguration {
+  post_task_completion?: {
+    sync_living_docs?: boolean;
+    sync_tasks_md?: boolean;
+    external_tracker_sync?: boolean;
+  };
+  post_increment_planning?: {
+    auto_create_github_issue?: boolean;
+  };
+}
+
+/**
+ * Project metadata
+ */
+export interface ProjectMetadata {
+  name: string;
+  version: string;
+}
+
+/**
+ * Adapter configuration
+ */
+export interface AdapterConfiguration {
+  default: string;
+}
+
+/**
  * Main SpecWeave configuration
  */
 export interface SpecWeaveConfig {
@@ -121,6 +189,21 @@ export interface SpecWeaveConfig {
    * Config version for migration support
    */
   version: string;
+
+  /**
+   * Project metadata (optional, for backward compatibility)
+   */
+  project?: ProjectMetadata;
+
+  /**
+   * Adapter configuration (optional, for backward compatibility)
+   */
+  adapters?: AdapterConfiguration;
+
+  /**
+   * Hook configuration (optional)
+   */
+  hooks?: HookConfiguration;
 
   /**
    * Repository provider configuration
