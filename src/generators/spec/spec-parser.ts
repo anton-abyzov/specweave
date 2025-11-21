@@ -11,6 +11,7 @@
 
 import { readFileSync } from 'fs';
 import path from 'path';
+import * as yaml from 'js-yaml';
 
 /**
  * User Story metadata
@@ -86,36 +87,121 @@ export function parseSpecMd(specPath: string): SpecMetadata {
 
 /**
  * Parse YAML frontmatter to extract increment ID and title
+ *
+ * Uses js-yaml library for robust, standard-compliant parsing.
+ * Provides descriptive error messages for malformed YAML.
+ *
+ * @param lines - Lines of the spec.md file
+ * @returns Increment ID and title from frontmatter
+ * @throws Error if YAML is malformed or missing required fields
  */
 function parseFrontmatter(lines: string[]): { incrementId: string; title: string } {
-  let incrementId = '';
-  let title = '';
   let inFrontmatter = false;
+  const frontmatterLines: string[] = [];
+  let frontmatterStart = -1;
+  let frontmatterEnd = -1;
 
-  for (const line of lines) {
+  // Extract frontmatter lines between --- markers
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (line.trim() === '---') {
       if (!inFrontmatter) {
         inFrontmatter = true;
+        frontmatterStart = i + 1;
         continue;
       } else {
+        frontmatterEnd = i + 1;
         break; // End of frontmatter
       }
     }
-
     if (inFrontmatter) {
-      const incrementMatch = line.match(/^increment:\s*(.+)$/);
-      if (incrementMatch) {
-        incrementId = incrementMatch[1].trim();
-      }
-
-      const titleMatch = line.match(/^title:\s*["']?(.+?)["']?$/);
-      if (titleMatch) {
-        title = titleMatch[1].trim();
-      }
+      frontmatterLines.push(line);
     }
   }
 
-  return { incrementId, title };
+  // Validate frontmatter exists
+  if (frontmatterLines.length === 0) {
+    throw new Error(
+      'No YAML frontmatter found in spec.md.\n\n' +
+      'Spec.md must start with:\n' +
+      '---\n' +
+      'increment: 0001-feature-name\n' +
+      'title: Feature Title  # Optional\n' +
+      '---\n\n' +
+      'See CLAUDE.md Rule #16 for details.'
+    );
+  }
+
+  // Parse YAML using js-yaml library (robust, standard-compliant)
+  let frontmatter: any;
+  try {
+    frontmatter = yaml.load(frontmatterLines.join('\n'));
+  } catch (error: any) {
+    const errorMsg = error.message || String(error);
+    throw new Error(
+      `Malformed YAML frontmatter (lines ${frontmatterStart}-${frontmatterEnd}):\n\n` +
+      `${errorMsg}\n\n` +
+      'Common mistakes:\n' +
+      '  - Unclosed brackets: [unclosed\n' +
+      '  - Unclosed quotes: "unclosed\n' +
+      '  - Invalid syntax: key: {broken\n' +
+      '  - Mixing tabs and spaces in indentation\n\n' +
+      'Valid example:\n' +
+      '---\n' +
+      'increment: 0001-feature-name\n' +
+      'title: Feature Title\n' +
+      'feature_id: FS-001\n' +
+      '---\n\n' +
+      'See CLAUDE.md Rule #16 for details.'
+    );
+  }
+
+  // Validate frontmatter is an object
+  if (!frontmatter || typeof frontmatter !== 'object') {
+    throw new Error(
+      'YAML frontmatter must be an object with key-value pairs.\n\n' +
+      'Invalid: ---\n' +
+      'Just a string\n' +
+      '---\n\n' +
+      'Valid: ---\n' +
+      'increment: 0001-feature-name\n' +
+      '---'
+    );
+  }
+
+  // Validate required field: increment
+  if (!frontmatter.increment) {
+    throw new Error(
+      'Missing required field: increment\n\n' +
+      'Add to frontmatter:\n' +
+      'increment: 0001-feature-name\n\n' +
+      'See CLAUDE.md Rule #16 for details.'
+    );
+  }
+
+  // Validate increment ID format (0001-feature-name)
+  const incrementIdRegex = /^[0-9]{4}-[a-z0-9-]+$/;
+  if (!incrementIdRegex.test(frontmatter.increment)) {
+    throw new Error(
+      `Invalid increment ID format: "${frontmatter.increment}"\n\n` +
+      'Expected format: 4-digit number + hyphen + kebab-case name\n\n' +
+      'Valid examples:\n' +
+      '  - 0001-feature-name\n' +
+      '  - 0042-bug-fix\n' +
+      '  - 0099-refactor\n\n' +
+      'Invalid examples:\n' +
+      '  - 1-test (missing leading zeros)\n' +
+      '  - 0001_test (underscore instead of hyphen)\n' +
+      '  - 0001-Test (uppercase letters)\n' +
+      '  - 0001 (missing name)\n\n' +
+      'See CLAUDE.md Rule #16 for details.'
+    );
+  }
+
+  return {
+    incrementId: frontmatter.increment,
+    title: frontmatter.title || frontmatter.increment
+  };
 }
 
 /**
