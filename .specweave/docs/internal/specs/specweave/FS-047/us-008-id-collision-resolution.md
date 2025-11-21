@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-008: ID Collision Resolution
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/695
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** developer creating mixed internal/external items

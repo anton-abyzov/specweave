@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-011: Multi-Repo Selection Strategy (GitHub Init)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/698
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** team lead adopting SpecWeave in a multi-repo organization

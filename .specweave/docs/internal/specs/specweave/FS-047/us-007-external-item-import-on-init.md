@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-007: External Item Import on Init
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/694
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** team adopting SpecWeave in a brownfield project
