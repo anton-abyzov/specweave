@@ -1202,6 +1202,62 @@ export async function initCommand(
         }
       }
 
+      // 10.4 Repository Hosting Setup (FUNDAMENTAL!)
+      // Ask about repository hosting BEFORE issue tracker
+      // This determines what issue tracker options are available
+      console.log('');
+      console.log(chalk.cyan.bold('📦 Repository Hosting'));
+      console.log('');
+
+      // Detect existing git remote
+      const gitRemoteDetection = detectGitHubRemote(targetDir);
+      let repositoryHosting: 'github' | 'local' | 'other' = 'local';
+
+      if (!isCI) {
+        const { hosting } = await inquirer.prompt([{
+          type: 'list',
+          name: 'hosting',
+          message: 'How do you host your repository?',
+          choices: [
+            {
+              name: `🐙 GitHub ${gitRemoteDetection ? '(detected)' : '(recommended)'}`,
+              value: 'github'
+            },
+            {
+              name: '💻 Local git only (no remote sync)',
+              value: 'local'
+            },
+            {
+              name: '🔧 Other (GitLab, Bitbucket, etc.)',
+              value: 'other'
+            }
+          ],
+          default: gitRemoteDetection ? 'github' : 'local'
+        }]);
+
+        repositoryHosting = hosting;
+
+        // Show info for non-GitHub choices
+        if (hosting === 'other') {
+          console.log('');
+          console.log(chalk.yellow('⚠️  Note: SpecWeave currently has best integration with GitHub'));
+          console.log(chalk.gray('   • GitHub: Full sync support (issues, milestones, labels)'));
+          console.log(chalk.gray('   • GitLab/Bitbucket: Limited support (manual sync)'));
+          console.log(chalk.gray('   • You can still use SpecWeave locally and sync manually'));
+          console.log('');
+        } else if (hosting === 'local') {
+          console.log('');
+          console.log(chalk.gray('✓ Local-only mode'));
+          console.log(chalk.gray('   • All work tracked locally in .specweave/'));
+          console.log(chalk.gray('   • No remote sync (you can add GitHub later)'));
+          console.log('');
+        }
+      } else {
+        // CI mode: auto-detect
+        repositoryHosting = gitRemoteDetection ? 'github' : 'local';
+        console.log(chalk.gray(`   → CI mode: Auto-detected ${repositoryHosting} hosting\n`));
+      }
+
       // 10.5 Issue Tracker Integration (CRITICAL!)
       // MUST happen AFTER plugin installation is complete
       // Asks user: Which tracker? (GitHub/Jira/ADO/None)
@@ -1253,7 +1309,8 @@ export async function initCommand(
                 projectPath: targetDir,
                 language: language as SupportedLanguage,
                 maxRetries: 3,
-                isFrameworkRepo
+                isFrameworkRepo,
+                repositoryHosting
               });
             }
           }
@@ -1269,7 +1326,8 @@ export async function initCommand(
             projectPath: targetDir,
             language: language as SupportedLanguage,
             maxRetries: 3,
-            isFrameworkRepo
+            isFrameworkRepo,
+            repositoryHosting
           });
         }
       } catch (error: any) {

@@ -64,7 +64,7 @@ import {
  * @returns True if setup completed successfully
  */
 export async function setupIssueTracker(options: SetupOptions): Promise<boolean> {
-  const { projectPath, language, maxRetries = 3 } = options;
+  const { projectPath, language, maxRetries = 3, repositoryHosting } = options;
   const locale = getLocaleManager(language);
 
   // Check if running in CI/non-interactive environment
@@ -89,29 +89,60 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 1: Ask which tracker to use
   const detection = detectDefaultTracker(projectPath);
 
+  // Smart default based on repository hosting
+  let defaultTracker: IssueTracker = detection.tracker;
+  if (repositoryHosting === 'github') {
+    // If hosting on GitHub, strongly suggest GitHub Issues
+    defaultTracker = 'github';
+  } else if (repositoryHosting === 'local') {
+    // If local-only, default to skipping
+    defaultTracker = 'none';
+  }
+
+  // Show contextual message based on repository hosting
+  if (repositoryHosting === 'github') {
+    console.log(chalk.gray('💡 GitHub hosting detected - GitHub Issues recommended for seamless integration'));
+    console.log('');
+  } else if (repositoryHosting === 'local') {
+    console.log(chalk.gray('💡 Local-only repository - you can skip issue tracker or use external tools'));
+    console.log('');
+  }
+
+  // Build choices based on repository hosting
+  const choices: Array<{ name: string; value: IssueTracker }> = [];
+
+  // GitHub Issues - only show if GitHub or local repo (local can add GitHub remote later)
+  if (repositoryHosting === 'github' || repositoryHosting === 'local') {
+    choices.push({
+      name: `🐙 GitHub Issues ${repositoryHosting === 'github' ? '(recommended)' : detection.tracker === 'github' && detection.detected ? '(detected)' : ''}`,
+      value: 'github'
+    });
+  }
+
+  // Jira - available for all repository types
+  choices.push({
+    name: `📋 Jira`,
+    value: 'jira'
+  });
+
+  // Azure DevOps - available for all repository types
+  choices.push({
+    name: `🔷 Azure DevOps ${detection.tracker === 'ado' && detection.detected ? '(detected)' : ''}`,
+    value: 'ado'
+  });
+
+  // None - always available
+  choices.push({
+    name: `⏭️  None (skip)${repositoryHosting === 'local' ? ' - recommended for local-only' : ''}`,
+    value: 'none'
+  });
+
   const { tracker } = await inquirer.prompt([{
     type: 'list',
     name: 'tracker',
     message: 'Which issue tracker do you use?',
-    choices: [
-      {
-        name: `🐙 GitHub Issues ${detection.tracker === 'github' && detection.detected ? '(detected)' : ''}`,
-        value: 'github'
-      },
-      {
-        name: `📋 Jira`,
-        value: 'jira'
-      },
-      {
-        name: `🔷 Azure DevOps ${detection.tracker === 'ado' && detection.detected ? '(detected)' : ''}`,
-        value: 'ado'
-      },
-      {
-        name: '⏭️  None (skip)',
-        value: 'none'
-      }
-    ],
-    default: detection.tracker
+    choices,
+    default: defaultTracker
   }]);
 
   if (tracker === 'none') {
