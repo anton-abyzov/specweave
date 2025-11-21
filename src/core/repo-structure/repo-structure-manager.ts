@@ -355,64 +355,165 @@ export class RepoStructureManager {
         parentAnswers.description = 'Local parent folder (not synced to GitHub)';
         parentAnswers.createOnGitHub = false; // Never create GitHub repo for local parent
       } else {
-        // GitHub parent: Ask all questions including GitHub details
-        // First, ask for owner (separate prompt to avoid validator issues)
-        const ownerPrompt = await inquirer.prompt([
+        // GitHub parent: First ask if using existing or creating new
+        const { parentChoice } = await inquirer.prompt([
           {
-            type: 'input',
-            name: 'owner',
-            message: 'GitHub owner/organization for ALL repos:',
-            validate: async (input: string) => {
-              if (!input.trim()) return 'Owner is required';
-
-              // Validate owner exists on GitHub
-              if (this.githubToken) {
-                const result = await validateOwner(input, this.githubToken);
-                if (!result.valid) {
-                  return result.error || 'Invalid GitHub owner';
-                }
+            type: 'list',
+            name: 'parentChoice',
+            message: 'Parent repository setup:',
+            choices: [
+              {
+                name: `${chalk.green('Use existing parent repository')}\n${chalk.gray('Connect to an existing GitHub repo that already has .specweave/ structure')}`,
+                value: 'existing',
+                short: 'Use existing'
+              },
+              {
+                name: `${chalk.blue('Create new parent repository')}\n${chalk.gray('Create a new GitHub repo for specs, docs, and architecture')}`,
+                value: 'new',
+                short: 'Create new'
               }
-              return true;
-            }
+            ],
+            default: 'new'
           }
         ]);
 
-        // Now ask remaining questions, using the owner value
-        const remainingAnswers = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'parentName',
-            message: 'Parent repository name:',
-            default: `${path.basename(this.projectPath)}-parent`,
-            validate: async (input: string) => {
-              if (!input.trim()) return 'Repository name is required';
+        if (parentChoice === 'existing') {
+          // Using existing parent repository
+          console.log(chalk.cyan('\n📋 Existing Parent Repository\n'));
 
-              // Validate repository doesn't exist
-              if (this.githubToken && ownerPrompt.owner) {
-                const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
-                if (result.exists) {
-                  return `Repository ${ownerPrompt.owner}/${input} already exists at ${result.url}`;
+          // Ask for owner first
+          const ownerPrompt = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'owner',
+              message: 'GitHub owner/organization:',
+              validate: async (input: string) => {
+                if (!input.trim()) return 'Owner is required';
+
+                // Validate owner exists on GitHub
+                if (this.githubToken) {
+                  const result = await validateOwner(input, this.githubToken);
+                  if (!result.valid) {
+                    return result.error || 'Invalid GitHub owner';
+                  }
                 }
+                return true;
               }
-              return true;
             }
-          },
-          {
-            type: 'input',
-            name: 'description',
-            message: 'Parent repository description:',
-            default: 'SpecWeave parent repository - specs, docs, and architecture'
-          },
-          {
-            type: 'confirm',
-            name: 'createOnGitHub',
-            message: 'Create parent repository on GitHub?',
-            default: true
-          }
-        ] as any);
+          ]);
 
-        // Merge the answers
-        parentAnswers = { ...ownerPrompt, ...remainingAnswers };
+          // Ask for existing repo name
+          const repoPrompt = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'parentName',
+              message: 'Existing parent repository name:',
+              default: `${path.basename(this.projectPath)}-parent`,
+              validate: async (input: string) => {
+                if (!input.trim()) return 'Repository name is required';
+
+                // Validate repository EXISTS on GitHub
+                if (this.githubToken && ownerPrompt.owner) {
+                  const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
+                  if (!result.exists) {
+                    return `Repository ${ownerPrompt.owner}/${input} not found on GitHub. Please check the name or choose 'Create new'.`;
+                  }
+                }
+                return true;
+              }
+            }
+          ]);
+
+          // Fetch description from GitHub API (or use default)
+          let description = 'SpecWeave parent repository - specs, docs, and architecture';
+          if (this.githubToken) {
+            try {
+              const response = await fetch(`https://api.github.com/repos/${ownerPrompt.owner}/${repoPrompt.parentName}`, {
+                headers: {
+                  'Authorization': `Bearer ${this.githubToken}`,
+                  'Accept': 'application/vnd.github+json'
+                }
+              });
+              if (response.ok) {
+                const data = await response.json() as any;
+                description = data.description || description;
+              }
+            } catch {
+              // Use default if fetch fails
+            }
+          }
+
+          parentAnswers = {
+            owner: ownerPrompt.owner,
+            parentName: repoPrompt.parentName,
+            description: description,
+            createOnGitHub: false // Don't create, it already exists!
+          };
+
+          console.log(chalk.green(`\n✓ Using existing repository: ${ownerPrompt.owner}/${repoPrompt.parentName}\n`));
+
+        } else {
+          // Creating new parent repository
+          console.log(chalk.cyan('\n✨ New Parent Repository\n'));
+
+          // Ask for owner (separate prompt to avoid validator issues)
+          const ownerPrompt = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'owner',
+              message: 'GitHub owner/organization for ALL repos:',
+              validate: async (input: string) => {
+                if (!input.trim()) return 'Owner is required';
+
+                // Validate owner exists on GitHub
+                if (this.githubToken) {
+                  const result = await validateOwner(input, this.githubToken);
+                  if (!result.valid) {
+                    return result.error || 'Invalid GitHub owner';
+                  }
+                }
+                return true;
+              }
+            }
+          ]);
+
+          // Now ask remaining questions, using the owner value
+          const remainingAnswers = await inquirer.prompt([
+            {
+              type: 'input',
+              name: 'parentName',
+              message: 'Parent repository name:',
+              default: `${path.basename(this.projectPath)}-parent`,
+              validate: async (input: string) => {
+                if (!input.trim()) return 'Repository name is required';
+
+                // Validate repository DOESN'T exist
+                if (this.githubToken && ownerPrompt.owner) {
+                  const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
+                  if (result.exists) {
+                    return `Repository ${ownerPrompt.owner}/${input} already exists at ${result.url}. Please choose 'Use existing' or pick a different name.`;
+                  }
+                }
+                return true;
+              }
+            },
+            {
+              type: 'input',
+              name: 'description',
+              message: 'Parent repository description:',
+              default: 'SpecWeave parent repository - specs, docs, and architecture'
+            },
+            {
+              type: 'confirm',
+              name: 'createOnGitHub',
+              message: 'Create parent repository on GitHub?',
+              default: true
+            }
+          ] as any);
+
+          // Merge the answers
+          parentAnswers = { ...ownerPrompt, ...remainingAnswers };
+        }
       }
 
       // Ask about visibility for parent repo (only if creating on GitHub)

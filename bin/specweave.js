@@ -37,6 +37,7 @@ program
   .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)', 'en')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
+  .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/src/cli/commands/init.js');
     await initCommand(projectName, options);
