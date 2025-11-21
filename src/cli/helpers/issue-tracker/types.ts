@@ -125,6 +125,11 @@ export interface ValidationResult {
 }
 
 /**
+ * Repository hosting types
+ */
+export type RepositoryHosting = 'github' | 'local' | 'other';
+
+/**
  * Setup options
  */
 export interface SetupOptions {
@@ -132,6 +137,7 @@ export interface SetupOptions {
   language: SupportedLanguage;
   maxRetries?: number; // Default: 3
   isFrameworkRepo?: boolean; // True if this is the SpecWeave framework repo itself
+  repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
 }
 
 /**
