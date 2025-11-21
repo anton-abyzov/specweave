@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-010: External Import Slash Command
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/697
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** developer managing brownfield project

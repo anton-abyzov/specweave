@@ -1,17 +1,17 @@
 #!/usr/bin/env node
-import fs from "fs-extra";
+import { existsSync, promises as fs } from "fs";
 import path from "path";
 async function updateTasksMd(incrementId) {
   try {
     console.log(`
 \u{1F504} Updating tasks.md for increment: ${incrementId}`);
     const incrementDir = path.join(process.cwd(), ".specweave", "increments", incrementId);
-    if (!fs.existsSync(incrementDir)) {
+    if (!existsSync(incrementDir)) {
       console.error(`\u274C Increment directory not found: ${incrementDir}`);
       process.exit(1);
     }
     const tasksPath = path.join(incrementDir, "tasks.md");
-    if (!fs.existsSync(tasksPath)) {
+    if (!existsSync(tasksPath)) {
       console.error(`\u274C tasks.md not found: ${tasksPath}`);
       process.exit(1);
     }

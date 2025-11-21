@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-012: Intelligent FS-XXX Folder Creation with Chronological ID Allocation
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/699
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** developer syncing external work items to living docs

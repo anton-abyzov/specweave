@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-013: Archive Command for Features and Epics
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/700
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** product manager cleaning up obsolete or completed work

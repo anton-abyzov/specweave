@@ -23,7 +23,7 @@
  * @version 1.0.0
  */
 
-import fs from 'fs-extra';
+import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 
 interface TaskMatch {
@@ -48,13 +48,13 @@ async function updateTasksMd(incrementId: string): Promise<void> {
 
     // 1. Validate increment exists
     const incrementDir = path.join(process.cwd(), '.specweave', 'increments', incrementId);
-    if (!fs.existsSync(incrementDir)) {
+    if (!existsSync(incrementDir)) {
       console.error(`❌ Increment directory not found: ${incrementDir}`);
       process.exit(1);
     }
 
     const tasksPath = path.join(incrementDir, 'tasks.md');
-    if (!fs.existsSync(tasksPath)) {
+    if (!existsSync(tasksPath)) {
       console.error(`❌ tasks.md not found: ${tasksPath}`);
       process.exit(1);
     }

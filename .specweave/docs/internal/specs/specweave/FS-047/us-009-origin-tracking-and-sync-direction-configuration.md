@@ -9,6 +9,8 @@ created: 2025-11-19
 
 # US-009: Origin Tracking and Sync Direction Configuration
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/696
+
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** PM managing mixed internal/external items

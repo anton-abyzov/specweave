@@ -56,6 +56,24 @@ export class UserStoryIssueBuilder {
     featureId: string,
     repoInfo?: { owner: string; repo: string; branch?: string }
   ) {
+    // ✅ VALIDATION: Ensure featureId is provided and has correct format
+    if (!featureId || featureId.trim() === '') {
+      throw new Error(
+        `UserStoryIssueBuilder: featureId is required but was empty.\n` +
+        `This prevents incorrect issue titles like [undefined][US-XXX] or [SP-US-XXX].\n` +
+        `Provide the correct Feature ID (e.g., "FS-047") when constructing this builder.`
+      );
+    }
+
+    // ✅ VALIDATION: Ensure featureId matches expected pattern (FS-XXX)
+    if (!/^FS-\d{3}$/.test(featureId)) {
+      throw new Error(
+        `UserStoryIssueBuilder: Invalid featureId format "${featureId}".\n` +
+        `Expected format: FS-XXX (e.g., "FS-047", "FS-123").\n` +
+        `This prevents incorrect issue titles like [SP-US-XXX] or [${featureId}][US-XXX].`
+      );
+    }
+
     this.userStoryPath = userStoryPath;
     this.projectRoot = projectRoot;
     this.featureId = featureId;
@@ -91,7 +109,22 @@ export class UserStoryIssueBuilder {
     const tasks = await this.extractTasks(bodyContent, frontmatter.id);
 
     // 3. Build issue title
+    // ✅ VALIDATION: Double-check title format before returning
+    // Expected format: [FS-XXX][US-YYY] Title
+    // This prevents issues like [SP-US-XXX] or [undefined][US-XXX]
     const title = `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
+
+    // ✅ SAFETY CHECK: Ensure title matches expected pattern
+    const titlePattern = /^\[FS-\d{3}\]\[US-\d{3}\] .+$/;
+    if (!titlePattern.test(title)) {
+      throw new Error(
+        `Generated issue title has incorrect format: "${title}"\n` +
+        `Expected: [FS-XXX][US-YYY] Title\n` +
+        `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
+        `Feature ID: ${this.featureId}\n` +
+        `User Story ID: ${frontmatter.id}`
+      );
+    }
 
     // 4. Build issue body
     const body = this.buildBody({
