@@ -10,6 +10,37 @@ For **contributors to SpecWeave itself** (not users).
 
 ## 🚨 CRITICAL SAFETY RULES
 
+### 0. Thinking-Before-Acting Discipline (META RULE!)
+
+**ALWAYS act on your reasoning BEFORE attempting operations that will fail.**
+
+**Anti-pattern**: Running commands you know will fail, then fixing the issue.
+
+```typescript
+// ❌ WRONG: Attempt → Predictable failure → Fix
+node -e "require('./dist/file.js')"  // Fails (you saw this coming!)
+npm run rebuild                       // Then fix
+
+// ✅ CORRECT: Recognize dependency → Fix → Attempt
+npm run rebuild                       // Fix first
+node -e "require('./dist/file.js')"  // Then succeed
+```
+
+**Why**: Wastes time, creates confusion, makes execution harder to follow.
+
+**How to avoid**:
+1. **Read your own thinking process** - What dependencies did you identify?
+2. **Order operations logically** - Prerequisites BEFORE dependent operations
+3. **Catch predictable failures** - If you know it will fail, don't run it yet
+
+**Example patterns to watch for**:
+- Running code before compilation (`tsc`, `npm run build`)
+- Database queries before migrations/setup
+- API calls before authentication
+- File operations before directory creation
+
+---
+
 ### 1. Local Development Setup
 
 **SpecWeave uses Claude Code's GitHub marketplace** for plugin management. This is the **cross-platform, simple approach** that works on macOS, Linux, and Windows.
@@ -461,6 +492,74 @@ export async function myCommand(options: CommandOptions = {}) {
 - Files with comment `"user-facing output"` or `"legitimate user-facing exceptions"` bypass console.* check
 - Pre-commit hook: `scripts/pre-commit-console-check.sh`
 - See: `.specweave/increments/0046-console-elimination/` for migration pattern
+
+### 8a. NEVER Use `fs-extra` (Native fs Migration)
+
+**Rule**: ALL code MUST use native Node.js `fs` module, NEVER `fs-extra`.
+
+**Why**: `fs-extra` causes hook failures when not installed. Native fs is faster, smaller, and always available.
+
+**Migration completed**: 2025-11-20 - All hooks converted to native fs
+
+**Correct usage**:
+```typescript
+// ✅ CORRECT - Native fs (sync operations)
+import { existsSync, readFileSync, statSync } from 'fs';
+
+if (existsSync(configPath)) {
+  const content = readFileSync(configPath, 'utf-8');
+  const stats = statSync(configPath);
+}
+```
+
+```typescript
+// ✅ CORRECT - Native fs (async operations)
+import { promises as fs } from 'fs';
+
+const content = await fs.readFile(configPath, 'utf-8');
+await fs.mkdir(dir, { recursive: true });
+await fs.writeFile(filePath, content, 'utf-8');
+```
+
+```typescript
+// ✅ CORRECT - Custom utilities (from utils/fs-native.js)
+import { mkdirpSync, writeJsonSync, readJsonSync } from '../utils/fs-native.js';
+
+mkdirpSync(dir);                                  // Create directory recursively
+writeJsonSync(path, data);                        // Write JSON file
+const config = readJsonSync(configPath);         // Read JSON file
+```
+
+**Migration guide (fs-extra → native fs)**:
+```typescript
+// ❌ WRONG (fs-extra)
+import fs from 'fs-extra';
+
+fs.existsSync(path);              → existsSync(path)
+fs.readFileSync(path, 'utf-8');   → readFileSync(path, 'utf-8')
+fs.statSync(path);                → statSync(path)
+await fs.readFile(path, 'utf-8'); → await fs.readFile(path, 'utf-8')
+await fs.ensureDir(dir);          → await fs.mkdir(dir, { recursive: true })
+                                      OR mkdirpSync(dir) for sync
+await fs.writeFile(path, content); → await fs.writeFile(path, content, 'utf-8')
+fs.removeSync(path);              → removeSync(path) from fs-native.js
+await fs.copy(src, dest);         → await fs.cp(src, dest, { recursive: true })
+```
+
+**Prevention**:
+1. **Pre-commit hook**: `scripts/pre-commit-fs-extra-check.sh` blocks fs-extra imports
+2. **Installation**: Hook installed automatically via `bash scripts/install-git-hooks.sh`
+3. **Legacy marker**: Add `// legacy fs-extra` comment to bypass check (temporary only)
+
+**Testing**:
+```bash
+# Verify no fs-extra in hooks
+grep -r "from 'fs-extra'" plugins/*/lib/hooks/*.js
+
+# Should return nothing (empty output)
+```
+
+**Incident Reference**: 2025-11-20 - Hook failures due to fs-extra dependency. All hooks converted to native fs. Pre-commit hook added to prevent regression.
 
 ### 9. Coding Standards
 

@@ -4,6 +4,19 @@ This project uses **SpecWeave** - a specification-first AI development framework
 
 ---
 
+## 🚨 Meta-Rule: Thinking-Before-Acting (For Claude)
+
+**If you identify a dependency in your reasoning, satisfy it BEFORE attempting the dependent operation.**
+
+```
+❌ Anti-pattern: node script.js → Error: file not compiled → npm run build
+✅ Correct: npm run build → node script.js → Success
+```
+
+**Why**: Avoids predictable failures when you already know what needs to happen first.
+
+---
+
 ## 🎯 Getting Started
 
 **Initial Increment Created**: `0001-project-setup` (`.specweave/increments/0001-project-setup/`)
