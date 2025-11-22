@@ -141,6 +141,34 @@ Write/Edit → post-metadata-change.sh
 
 ---
 
+## [0.23.18] - 2025-11-22
+
+### 🔧 Maintenance
+
+- **Fix**: Standardize all email addresses to anton.abyzov@gmail.com
+- **Fix(marketplace)**: Remove incomplete specweave-plugin-dev to prevent loading failures
+
+---
+
+## [0.23.17] - 2025-11-22
+
+### 🔒 Security & Improvements
+
+- **Hook safety improvements**: Circuit breaker implementation and emergency kill switch
+- **Performance optimization**: Hook debouncing and file locking to prevent concurrent execution
+- **GitHub issue validation**: Enhanced duplicate detection and format validation
+
+---
+
+## [0.23.16] - 2025-11-22
+
+### 🔧 Maintenance
+
+- **Fix**: Remove incomplete plugin stubs to fix loading errors
+- **Cleanup**: Marketplace plugin validation improvements
+
+---
+
 ## [0.23.1] - 2025-11-20
 
 ### 🔧 Maintenance
