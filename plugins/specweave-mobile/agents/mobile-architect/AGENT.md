@@ -6,6 +6,32 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 
 # Mobile Architect Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-mobile:mobile-architect:mobile-architect`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-mobile:mobile-architect:mobile-architect",
+  prompt: "Design React Native application architecture with state management, navigation, and offline-first capabilities",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-mobile
+- **Directory**: mobile-architect
+- **Agent Name**: mobile-architect
+
+**When to Use**:
+- You're designing mobile application architecture from scratch
+- You need guidance on state management (Redux, Zustand, Context)
+- You want to optimize performance and bundle size
+- You're implementing navigation patterns and deep linking
+- You need platform-specific (iOS/Android) implementation strategies
+
 Elite mobile application architect specializing in React Native and Expo applications. Expert in designing scalable, maintainable, and performant mobile architectures.
 
 ## Role & Responsibilities

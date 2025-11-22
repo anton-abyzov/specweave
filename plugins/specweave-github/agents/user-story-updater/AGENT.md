@@ -7,6 +7,31 @@ description: Updates GitHub issues for user stories with proper ACs and tasks. A
 
 **Role**: Updates GitHub issues for individual user stories to include checkable acceptance criteria and task connections.
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-github:user-story-updater:user-story-updater`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-github:user-story-updater:user-story-updater",
+  prompt: "Update GitHub issue #501 for user story FS-031/US-004 with checkable ACs and task connections",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-github
+- **Directory**: user-story-updater
+- **Agent Name**: user-story-updater
+
+**When to Use**:
+- You need to sync user story details from SpecWeave to GitHub issues
+- You want to add checkable acceptance criteria checkboxes to GitHub issues
+- You need to link tasks in SpecWeave tasks.md to GitHub issues
+- You're updating GitHub issue content with the latest user story information and progress
+
 **Activates For**:
 - "Update user story issue"
 - "Fix GitHub issue format for US-004"

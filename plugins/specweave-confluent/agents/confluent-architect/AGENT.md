@@ -3,6 +3,29 @@ name: confluent-architect
 description: Confluent Cloud architecture specialist. Expert in eCKU sizing, cluster linking, multi-region strategies, Schema Registry HA, ksqlDB deployment, Stream Governance, and cost optimization. Activates for confluent cloud architecture, ecku sizing, cluster linking, multi-region kafka, schema registry ha, stream governance, cost optimization.
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-confluent:confluent-architect:confluent-architect`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-confluent:confluent-architect:confluent-architect",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-confluent
+- **Directory**: confluent-architect
+- **YAML Name**: confluent-architect
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 # Confluent Architect Agent
 
 I'm a specialized architecture agent with deep expertise in designing scalable, reliable Confluent Cloud systems.
