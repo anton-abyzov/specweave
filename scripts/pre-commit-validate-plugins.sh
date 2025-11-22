@@ -17,10 +17,10 @@ fi
 
 echo "🔍 Validating plugin structure..."
 
-# Run validation script
+# Run directory structure validation
 if ! bash "$REPO_ROOT/scripts/validate-plugin-directories.sh"; then
   echo ""
-  echo "❌ Commit blocked: Plugin validation failed"
+  echo "❌ Commit blocked: Plugin directory validation failed"
   echo ""
   echo "Common fixes:"
   echo "  • Remove empty directories: rmdir plugins/*/agents/empty-dir"
@@ -30,5 +30,29 @@ if ! bash "$REPO_ROOT/scripts/validate-plugin-directories.sh"; then
   exit 1
 fi
 
-echo "✅ Plugin structure validation passed"
+echo "✅ Plugin directory validation passed"
+
+# Only run marketplace validation if marketplace.json is being committed
+if git diff --cached --name-only | grep -q ".claude-plugin/marketplace.json"; then
+  echo ""
+  echo "🔍 Validating marketplace.json completeness..."
+
+  # Run enhanced marketplace validation (scoring system)
+  if ! bash "$REPO_ROOT/scripts/validate-marketplace-plugins.sh"; then
+    echo ""
+    echo "❌ Commit blocked: Marketplace validation failed"
+    echo ""
+    echo "Incomplete plugins detected! These plugins MUST NOT be in marketplace.json."
+    echo ""
+    echo "Fix options:"
+    echo "  1. Remove incomplete plugins from .claude-plugin/marketplace.json"
+    echo "  2. Add required functionality (commands/lib/agents) to reach ≥40 points"
+    echo "  3. See: scripts/validate-marketplace-plugins.sh for scoring criteria"
+    echo ""
+    exit 1
+  fi
+
+  echo "✅ Marketplace validation passed"
+fi
+
 exit 0
