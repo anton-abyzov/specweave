@@ -174,7 +174,7 @@ external:
 
 ---
 
-## Risk Analysis (BMAD Pattern)
+## Risk Analysis (Probability × Impact Method)
 
 ### Overall Risk Score: 2.1/10 (LOW) ✅
 
