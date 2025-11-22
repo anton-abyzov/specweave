@@ -129,6 +129,61 @@
       }
     },
     {
+      "name": "specweave-backend",
+      "description": "Backend development - Node.js, Python, .NET, REST APIs, database design, microservices architecture",
+      "source": "./plugins/specweave-backend",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-confluent",
+      "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, enterprise Kafka features",
+      "source": "./plugins/specweave-confluent",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-kubernetes",
+      "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps, cluster management, container orchestration",
+      "source": "./plugins/specweave-kubernetes",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-mobile",
+      "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing",
+      "source": "./plugins/specweave-mobile",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-payments",
+      "description": "Payment processing - Stripe, PayPal, billing, PCI compliance, subscription management, payment gateways",
+      "source": "./plugins/specweave-payments",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
       "name": "specweave-frontend",
       "description": "Frontend development - React, Next.js, component generation, design systems, UI scaffolding",
       "source": "./plugins/specweave-frontend",
