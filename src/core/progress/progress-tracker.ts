@@ -1,162 +1,300 @@
 /**
- * ProgressTracker Core Module
+ * ProgressTracker - Real-time progress tracking with ETA calculation
  *
- * Provides ASCII progress bar, ETA calculation, and project-level status display
+ * Features:
+ * - ASCII progress bar (30 characters)
+ * - Linear ETA extrapolation
+ * - Elapsed time tracking
+ * - Project-level status display (✅ ❌ ⏳)
+ * - Configurable update frequency
+ *
+ * @module core/progress/progress-tracker
  */
 
-import type { Logger } from '../../utils/logger.js';
-import { consoleLogger } from '../../utils/logger.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
-export interface ProgressOptions {
-  updateInterval?: number;
+/**
+ * Item status types
+ */
+export type ItemStatus = 'pending' | 'success' | 'error';
+
+/**
+ * Progress tracker options
+ */
+export interface ProgressTrackerOptions {
+  /** Total number of items to process */
+  total: number;
+  /** Label for the operation (e.g., "Importing projects") */
+  label: string;
+  /** Show ETA calculation */
   showEta?: boolean;
-  barWidth?: number;
+  /** Update frequency (update every N items, default: 5) */
+  updateFrequency?: number;
+  /** Logger instance */
   logger?: Logger;
 }
 
-export interface ProgressItem {
-  id: string;
-  status: 'pending' | 'success' | 'error';
-  error?: string;
+/**
+ * Item with status
+ */
+interface TrackedItem {
+  name: string;
+  status: ItemStatus;
+  timestamp: number;
 }
 
+/**
+ * ProgressTracker - Real-time progress tracking with ASCII progress bar and ETA
+ *
+ * @example
+ * ```typescript
+ * const tracker = new ProgressTracker({
+ *   total: 127,
+ *   label: 'Importing projects',
+ *   showEta: true,
+ *   updateFrequency: 5
+ * });
+ *
+ * for (const project of projects) {
+ *   await importProject(project);
+ *   tracker.update(project.key, 'success');
+ * }
+ *
+ * tracker.finish(120, 5, 2);
+ * ```
+ */
 export class ProgressTracker {
   private total: number;
-  private completed: number = 0;
-  private succeeded: number = 0;
-  private failed: number = 0;
-  private skipped: number = 0;
-  private items: Map<string, ProgressItem> = new Map();
-  private startTime: number;
-  private lastUpdateTime: number = 0;
-  private options: Required<ProgressOptions>;
+  private label: string;
+  private showEta: boolean;
+  private updateFrequency: number;
   private logger: Logger;
 
-  constructor(total: number, options: ProgressOptions = {}) {
-    this.total = total;
+  private items: Map<string, TrackedItem> = new Map();
+  private startTime: number;
+  private lastUpdateCount: number = 0;
+
+  constructor(options: ProgressTrackerOptions) {
+    this.total = options.total;
+    this.label = options.label;
+    this.showEta = options.showEta ?? true;
+    this.updateFrequency = options.updateFrequency ?? 5;
+    this.logger = options.logger ?? consoleLogger;
     this.startTime = Date.now();
-    this.options = {
-      updateInterval: options.updateInterval ?? 5,
-      showEta: options.showEta ?? true,
-      barWidth: options.barWidth ?? 30,
-      logger: options.logger ?? consoleLogger
-    };
-    this.logger = this.options.logger;
   }
 
-  update(item: string, status: 'pending' | 'success' | 'error', error?: string): void {
-    this.items.set(item, { id: item, status, error });
-    if (status === 'success') {
-      this.succeeded++;
-      this.completed++;
-    } else if (status === 'error') {
-      this.failed++;
-      this.completed++;
-    }
-    if (this.shouldUpdate()) {
+  /**
+   * Update progress for a specific item
+   *
+   * @param itemName Item identifier (e.g., project key)
+   * @param status Item status (pending, success, error)
+   */
+  update(itemName: string, status: ItemStatus): void {
+    // Track item
+    this.items.set(itemName, {
+      name: itemName,
+      status,
+      timestamp: Date.now(),
+    });
+
+    const completed = this.getCompletedCount();
+
+    // Only render if we've processed enough items since last update
+    if (
+      completed - this.lastUpdateCount >= this.updateFrequency ||
+      completed === this.total
+    ) {
       this.render();
-      this.lastUpdateTime = Date.now();
+      this.lastUpdateCount = completed;
     }
   }
 
-  finish(succeeded: number, failed: number, skipped: number = 0): void {
-    this.succeeded = succeeded;
-    this.failed = failed;
-    this.skipped = skipped;
-    this.completed = succeeded + failed;
+  /**
+   * Finish progress tracking and show final summary
+   *
+   * @param succeeded Count of successful items
+   * @param failed Count of failed items
+   * @param skipped Count of skipped items
+   */
+  finish(succeeded: number, failed: number, skipped: number): void {
+    // Final render
     this.render();
-    this.logger.log('\n' + this.getSummary());
+
+    // Show summary
+    console.log(''); // Blank line
+    console.log(`✅ Succeeded: ${succeeded}`);
+    if (failed > 0) {
+      console.log(`❌ Failed: ${failed}`);
+    }
+    if (skipped > 0) {
+      console.log(`⏭️  Skipped: ${skipped}`);
+    }
+    console.log(''); // Blank line
   }
 
+  /**
+   * Render progress bar to console
+   */
+  private render(): void {
+    const completed = this.getCompletedCount();
+    const percentage = Math.round((completed / this.total) * 100);
+    const progressBar = this.renderProgressBar(percentage);
+    const elapsed = this.getElapsedTime();
+    const eta = this.showEta ? this.getEta() : '';
+
+    // Clear current line and print progress
+    process.stdout.write('\r'); // Carriage return to beginning of line
+    process.stdout.write(
+      `${this.label}... ${completed}/${this.total} (${percentage}%) ${progressBar} [${elapsed}${eta}]`
+    );
+  }
+
+  /**
+   * Render ASCII progress bar
+   *
+   * @param percentage Completion percentage (0-100)
+   * @returns ASCII progress bar (30 characters)
+   *
+   * @example
+   * renderProgressBar(0)   => "[>                             ]"
+   * renderProgressBar(37)  => "[==========>                   ]"
+   * renderProgressBar(100) => "[==============================]"
+   */
   renderProgressBar(percentage: number): string {
-    const filled = Math.round((percentage / 100) * this.options.barWidth);
-    const empty = this.options.barWidth - filled;
-    const filledChars = '='.repeat(Math.max(0, filled - 1)) + (filled > 0 ? '>' : '');
-    const emptyChars = ' '.repeat(Math.max(0, empty));
-    return '[' + filledChars + emptyChars + ']';
+    const barLength = 30;
+    const filledLength = Math.round((percentage / 100) * barLength);
+    const emptyLength = barLength - filledLength;
+
+    let bar = '[';
+
+    // Filled portion
+    if (filledLength > 0) {
+      bar += '='.repeat(Math.max(0, filledLength - 1));
+      bar += '>';
+      bar += ' '.repeat(Math.max(0, emptyLength));
+    } else {
+      // At 0%, show cursor at start
+      bar += '>';
+      bar += ' '.repeat(Math.max(0, emptyLength - 1));
+    }
+
+    bar += ']';
+
+    return bar;
   }
 
+  /**
+   * Get elapsed time in human-readable format
+   *
+   * @returns Elapsed time string (e.g., "2m 34s", "45s")
+   */
   getElapsedTime(): string {
-    const elapsed = Date.now() - this.startTime;
-    const seconds = Math.floor(elapsed / 1000);
-    if (seconds < 60) {
-      return seconds + 's';
-    } else if (seconds < 3600) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return minutes + 'm ' + remainingSeconds + 's';
-    } else {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      return hours + 'h ' + minutes + 'm';
+    const elapsedMs = Date.now() - this.startTime;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
+    if (elapsedSeconds < 60) {
+      return `${elapsedSeconds}s elapsed`;
     }
+
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const seconds = elapsedSeconds % 60;
+    return `${minutes}m ${seconds}s elapsed`;
   }
 
+  /**
+   * Get estimated time remaining (ETA) using linear extrapolation
+   *
+   * Formula: ETA = (total - completed) * (elapsed / completed)
+   *
+   * @returns ETA string (e.g., ", ~2m remaining", ", ~45s remaining")
+   */
   getEta(): string {
-    if (this.completed === 0 || !this.options.showEta) {
-      return '';
+    const completed = this.getCompletedCount();
+
+    if (completed === 0) {
+      return ', ~? remaining';
     }
-    const elapsed = Date.now() - this.startTime;
-    const avgTimePerItem = elapsed / this.completed;
-    const remaining = this.total - this.completed;
-    const etaMs = avgTimePerItem * remaining;
-    const etaSeconds = Math.ceil(etaMs / 1000);
+
+    if (completed === this.total) {
+      return ', ~0s remaining';
+    }
+
+    const elapsedMs = Date.now() - this.startTime;
+    const avgTimePerItem = elapsedMs / completed;
+    const remaining = this.total - completed;
+    const etaMs = remaining * avgTimePerItem;
+    const etaSeconds = Math.floor(etaMs / 1000);
+
     if (etaSeconds < 60) {
-      return '~' + etaSeconds + 's remaining';
-    } else if (etaSeconds < 3600) {
-      const minutes = Math.ceil(etaSeconds / 60);
-      return '~' + minutes + 'm remaining';
-    } else {
-      const hours = Math.floor(etaSeconds / 3600);
-      const minutes = Math.ceil((etaSeconds % 3600) / 60);
-      return '~' + hours + 'h ' + minutes + 'm remaining';
+      return `, ~${etaSeconds}s remaining`;
     }
+
+    const minutes = Math.floor(etaSeconds / 60);
+    return `, ~${minutes}m remaining`;
   }
 
-  getSummary(): string {
-    const lines = [];
-    if (this.failed > 0) {
-      lines.push('✅ Import Complete (with ' + this.failed + ' error' + (this.failed > 1 ? 's' : '') + ')');
-    } else {
-      lines.push('✅ Import Complete!');
-    }
-    lines.push('');
-    lines.push('Imported: ' + this.succeeded + ' project' + (this.succeeded > 1 ? 's' : ''));
-    if (this.failed > 0) {
-      lines.push('Failed: ' + this.failed + ' project' + (this.failed > 1 ? 's' : ''));
-      const errors = Array.from(this.items.values()).filter(item => item.status === 'error').slice(0, 3);
-      errors.forEach(item => {
-        lines.push('  ❌ ' + item.id + ': ' + (item.error || 'Unknown error'));
-      });
-      if (this.failed > 3) {
-        lines.push('  ... and ' + (this.failed - 3) + ' more errors');
+  /**
+   * Get count of completed items (success + error)
+   */
+  private getCompletedCount(): number {
+    let count = 0;
+    for (const item of this.items.values()) {
+      if (item.status === 'success' || item.status === 'error') {
+        count++;
       }
     }
-    if (this.skipped > 0) {
-      lines.push('Skipped: ' + this.skipped + ' project' + (this.skipped > 1 ? 's' : '') + ' (archived)');
-    }
-    lines.push('');
-    lines.push('Total time: ' + this.getElapsedTime());
-    return lines.join('\n');
+    return count;
   }
 
-  private shouldUpdate(): boolean {
-    if (this.completed === 1 || this.completed === this.total) {
-      return true;
+  /**
+   * Get items by status
+   */
+  getItemsByStatus(status: ItemStatus): TrackedItem[] {
+    const result: TrackedItem[] = [];
+    for (const item of this.items.values()) {
+      if (item.status === status) {
+        result.push(item);
+      }
     }
-    return this.completed % this.options.updateInterval === 0;
+    return result;
   }
 
-  private render(): void {
-    const percentage = Math.round((this.completed / this.total) * 100);
-    const bar = this.renderProgressBar(percentage);
-    const elapsed = this.getElapsedTime();
-    const eta = this.getEta();
-    let output = 'Progress: ' + this.completed + '/' + this.total + ' ' + bar + ' (' + percentage + '%) [' + elapsed;
-    if (eta) {
-      output += ', ' + eta;
+  /**
+   * Get current progress statistics
+   */
+  getStats(): {
+    total: number;
+    completed: number;
+    succeeded: number;
+    failed: number;
+    pending: number;
+    percentage: number;
+    elapsedMs: number;
+    etaMs: number | null;
+  } {
+    const completed = this.getCompletedCount();
+    const succeeded = this.getItemsByStatus('success').length;
+    const failed = this.getItemsByStatus('error').length;
+    const pending = this.getItemsByStatus('pending').length;
+    const percentage = Math.round((completed / this.total) * 100);
+    const elapsedMs = Date.now() - this.startTime;
+
+    let etaMs: number | null = null;
+    if (completed > 0 && completed < this.total) {
+      const avgTimePerItem = elapsedMs / completed;
+      const remaining = this.total - completed;
+      etaMs = remaining * avgTimePerItem;
     }
-    output += ']';
-    process.stdout.write('\r' + output);
+
+    return {
+      total: this.total,
+      completed,
+      succeeded,
+      failed,
+      pending,
+      percentage,
+      elapsedMs,
+      etaMs,
+    };
   }
 }

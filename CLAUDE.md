@@ -211,17 +211,44 @@ import { mkdirpSync, writeJsonSync } from '../utils/fs-native.js';
 
 ### 10. GitHub Issue Format (v0.24.0+)
 
-**ONLY correct format**: `[FS-XXX][US-YYY] User Story Title`
+**CRITICAL**: GitHub issues are ONLY created for User Stories, NEVER for Features!
 
+**ONLY Correct Format**: `[FS-XXX][US-YYY] User Story Title`
+
+**Examples**:
 ```
-✅ [FS-043][US-001] Status Line Shows Correct Active Increment
-❌ [FS-047]             (missing US-ID)
-❌ [SP-US-006]          (SP prefix)
+✅ [FS-048][US-001] Smart Pagination During Init
+✅ [FS-048][US-002] CLI-First Defaults
+❌ [FS-048]             (Feature-only - USE MILESTONE!)
+❌ [SP-FS-048-specweave] (SP prefix - DEPRECATED!)
+❌ [FS-048-specweave]   (Project suffix - README.md ONLY, NOT GitHub!)
 ```
 
-**Architecture**: Feature (FS-047) → Milestone #13 → User Stories (US-001, US-002) → Issues #638, #639
+**Architecture** (ADR-0032 Universal Hierarchy Mapping):
+```
+Feature FS-048 → GitHub Milestone "FS-048: Feature Title"
+├─ User Story US-001 → Issue #XXX: [FS-048][US-001] US Title
+├─ User Story US-002 → Issue #YYY: [FS-048][US-002] US Title
+└─ User Story US-003 → Issue #ZZZ: [FS-048][US-003] US Title
+```
 
-**Create issues**: `GitHubFeatureSync.syncFeatureToGitHub('FS-047')` (NOT `/specweave:increment`)
+**Create issues**:
+```bash
+# ✅ CORRECT: Creates User Story issues
+/specweave-github:sync FS-048
+
+# ❌ WRONG: /specweave:increment does NOT create GitHub issues
+```
+
+**If you see Feature-level issues** (`[FS-XXX]` without `[US-YYY]`):
+1. Close them immediately with comment explaining the violation
+2. Delete any duplicate Feature folders (e.g., FS-050 when FS-048 exists)
+3. Use `/specweave-github:sync FS-XXX` to create correct User Story issues
+4. **REPORT THE BUG** - this should never happen!
+
+**See**:
+- `.specweave/increments/0047-us-task-linkage/reports/FEATURE-LEVEL-GITHUB-SYNC-REMOVAL-PLAN.md`
+- `.specweave/increments/0050-*/reports/GITHUB-ISSUE-BUG-ANALYSIS-2025-11-22.md`
 
 ---
 
