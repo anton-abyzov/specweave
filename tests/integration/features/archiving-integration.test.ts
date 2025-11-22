@@ -17,6 +17,16 @@ import { FeatureArchiver } from '../../../src/core/living-docs/feature-archiver.
 import { createIsolatedTestDir } from '../../test-utils/isolated-test-dir.js';
 import { silentLogger } from '../../../src/utils/logger.js';
 
+// Helper: Check if path exists (native fs replacement for fs-extra's pathExists)
+const pathExists = async (path: string): Promise<boolean> => {
+  try {
+    await fs.access(path);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 describe('Comprehensive Archiving Integration', () => {
   let testDir: string;
   let cleanup: () => Promise<void>;
@@ -110,9 +120,9 @@ See [Implementation](.specweave/docs/internal/specs/specweave/FS-047/README.md)
       );
 
       // Verify setup (before archiving)
-      expect(await fs.pathExists(incrementDir)).toBe(true);
-      expect(await fs.pathExists(sharedFeatureDir)).toBe(true);
-      expect(await fs.pathExists(projectFeatureDir)).toBe(true);
+      expect(await pathExists(incrementDir)).toBe(true);
+      expect(await pathExists(sharedFeatureDir)).toBe(true);
+      expect(await pathExists(projectFeatureDir)).toBe(true);
 
       // ACT: Archive the increment (should automatically archive features)
       const result = await incrementArchiver.archive({
@@ -127,24 +137,24 @@ See [Implementation](.specweave/docs/internal/specs/specweave/FS-047/README.md)
 
       // ASSERT: Increment moved to _archive
       const archivedIncrementDir = path.join(testDir, '.specweave/increments/_archive/0047-us-task-linkage');
-      expect(await fs.pathExists(archivedIncrementDir)).toBe(true);
-      expect(await fs.pathExists(incrementDir)).toBe(false); // Original removed
+      expect(await pathExists(archivedIncrementDir)).toBe(true);
+      expect(await pathExists(incrementDir)).toBe(false); // Original removed
 
       // ASSERT: Shared feature moved to _features/_archive/FS-047
       const archivedSharedFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-047'
       );
-      expect(await fs.pathExists(archivedSharedFeatureDir)).toBe(true);
-      expect(await fs.pathExists(sharedFeatureDir)).toBe(false); // Original removed
+      expect(await pathExists(archivedSharedFeatureDir)).toBe(true);
+      expect(await pathExists(sharedFeatureDir)).toBe(false); // Original removed
 
       // ASSERT: Project feature moved to specs/specweave/_archive/FS-047
       const archivedProjectFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/specweave/_archive/FS-047'
       );
-      expect(await fs.pathExists(archivedProjectFeatureDir)).toBe(true);
-      expect(await fs.pathExists(projectFeatureDir)).toBe(false); // Original removed
+      expect(await pathExists(archivedProjectFeatureDir)).toBe(true);
+      expect(await pathExists(projectFeatureDir)).toBe(false); // Original removed
 
       // ASSERT: Links updated in README.md
       const updatedReadme = await fs.readFile(readmePath, 'utf-8');
@@ -203,7 +213,7 @@ epic: FS-050
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-050'
       );
-      expect(await fs.pathExists(archivedSharedDir)).toBe(true);
+      expect(await pathExists(archivedSharedDir)).toBe(true);
 
       // ASSERT: ALL project folders archived
       for (const project of projects) {
@@ -211,14 +221,14 @@ epic: FS-050
           testDir,
           `.specweave/docs/internal/specs/${project}/_archive/FS-050`
         );
-        expect(await fs.pathExists(archivedProjectDir)).toBe(true);
+        expect(await pathExists(archivedProjectDir)).toBe(true);
 
         // Original removed
         const originalProjectDir = path.join(
           testDir,
           `.specweave/docs/internal/specs/${project}/FS-050`
         );
-        expect(await fs.pathExists(originalProjectDir)).toBe(false);
+        expect(await pathExists(originalProjectDir)).toBe(false);
       }
     });
   });
@@ -285,13 +295,13 @@ epic: FS-051
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-051'
       );
-      expect(await fs.pathExists(archivedSharedDir)).toBe(false); // NOT archived
+      expect(await pathExists(archivedSharedDir)).toBe(false); // NOT archived
 
       // ASSERT: Shared feature still in active location
-      expect(await fs.pathExists(sharedFeatureDir)).toBe(true);
+      expect(await pathExists(sharedFeatureDir)).toBe(true);
 
       // ASSERT: Project feature still in active location
-      expect(await fs.pathExists(projectFeatureDir)).toBe(true);
+      expect(await pathExists(projectFeatureDir)).toBe(true);
     });
 
     it('should archive feature only when ALL linked increments are archived', async () => {
@@ -345,8 +355,8 @@ epic: FS-053
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-053'
       );
-      expect(await fs.pathExists(archivedSharedDir)).toBe(false);
-      expect(await fs.pathExists(sharedFeatureDir)).toBe(true);
+      expect(await pathExists(archivedSharedDir)).toBe(false);
+      expect(await pathExists(sharedFeatureDir)).toBe(true);
 
       // ACT: Archive SECOND increment
       await incrementArchiver.archive({
@@ -356,8 +366,8 @@ epic: FS-053
       });
 
       // ASSERT: NOW feature is archived (all increments archived)
-      expect(await fs.pathExists(archivedSharedDir)).toBe(true);
-      expect(await fs.pathExists(sharedFeatureDir)).toBe(false); // Moved to archive
+      expect(await pathExists(archivedSharedDir)).toBe(true);
+      expect(await pathExists(sharedFeatureDir)).toBe(false); // Moved to archive
     });
   });
 
@@ -394,24 +404,24 @@ epic: FS-053
 
       // ASSERT: Increment restored to active location
       const restoredIncrementDir = path.join(testDir, '.specweave/increments/0055-archived-feature');
-      expect(await fs.pathExists(restoredIncrementDir)).toBe(true);
-      expect(await fs.pathExists(archivedIncrementDir)).toBe(false);
+      expect(await pathExists(restoredIncrementDir)).toBe(true);
+      expect(await pathExists(archivedIncrementDir)).toBe(false);
 
       // ASSERT: Shared feature automatically restored (by increment restoration)
       const restoredSharedFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/_features/FS-055'
       );
-      expect(await fs.pathExists(restoredSharedFeatureDir)).toBe(true);
-      expect(await fs.pathExists(archivedSharedFeatureDir)).toBe(false);
+      expect(await pathExists(restoredSharedFeatureDir)).toBe(true);
+      expect(await pathExists(archivedSharedFeatureDir)).toBe(false);
 
       // ASSERT: Project feature automatically restored (by increment restoration)
       const restoredProjectFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/specweave/FS-055'
       );
-      expect(await fs.pathExists(restoredProjectFeatureDir)).toBe(true);
-      expect(await fs.pathExists(archivedProjectFeatureDir)).toBe(false);
+      expect(await pathExists(restoredProjectFeatureDir)).toBe(true);
+      expect(await pathExists(archivedProjectFeatureDir)).toBe(false);
     });
   });
 
@@ -439,7 +449,7 @@ epic: FS-053
 
       // ASSERT: Increment moved to archive
       const archivedDir = path.join(testDir, '.specweave/increments/_archive/0056-no-feature');
-      expect(await fs.pathExists(archivedDir)).toBe(true);
+      expect(await pathExists(archivedDir)).toBe(true);
     });
 
     it('should handle feature with no increments (orphaned feature)', async () => {
@@ -462,8 +472,8 @@ epic: FS-053
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-099'
       );
-      expect(await fs.pathExists(archivedDir)).toBe(true);
-      expect(await fs.pathExists(orphanedFeatureDir)).toBe(false);
+      expect(await pathExists(archivedDir)).toBe(true);
+      expect(await pathExists(orphanedFeatureDir)).toBe(false);
     });
   });
 });
