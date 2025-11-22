@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-004: Smart Caching with TTL (24-Hour Cache)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/706
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story

@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-006: Azure DevOps Area Path Mapping (Hierarchical Sub-Projects)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/708
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story
