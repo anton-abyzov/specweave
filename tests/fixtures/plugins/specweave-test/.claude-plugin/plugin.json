@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "Test plugin for unit testing",
   "author": {
-    "name": "SpecWeave Test Suite",
-    "email": "test@specweave.dev"
+    "name": "Anton Abyzov",
+    "email": "anton.abyzov@gmail.com"
   },
   "specweave_core_version": ">=0.4.0",
   "provides": {
