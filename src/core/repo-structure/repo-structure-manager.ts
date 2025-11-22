@@ -15,7 +15,7 @@
  * - Split tasks between repositories
  */
 
-import fs from 'fs-extra';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
@@ -174,7 +174,7 @@ export class RepoStructureManager {
     console.log(chalk.cyan('\n📦 Single Repository Configuration\n'));
 
     // Check if repo already exists
-    const hasGit = fs.existsSync(path.join(this.projectPath, '.git'));
+    const hasGit = existsSync(path.join(this.projectPath, '.git'));
 
     if (hasGit) {
       // Try to detect existing remote
@@ -199,15 +199,36 @@ export class RepoStructureManager {
           }]);
 
           if (useExisting) {
+            // Fetch description and visibility from GitHub API
+            let description = `${repo} - SpecWeave project`;
+            let visibility: 'private' | 'public' = 'private';
+            if (this.githubToken) {
+              try {
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+                  headers: {
+                    'Authorization': `Bearer ${this.githubToken}`,
+                    'Accept': 'application/vnd.github+json'
+                  }
+                });
+                if (response.ok) {
+                  const data = await response.json() as any;
+                  description = data.description || description;
+                  visibility = data.private ? 'private' : 'public';
+                }
+              } catch {
+                // Use defaults if fetch fails
+              }
+            }
+
             return {
               architecture: 'single',
               repositories: [{
                 id: 'main',
                 name: repo,
                 owner: owner,
-                description: `${repo} - SpecWeave project`,
+                description: description,
                 path: '.',
-                visibility: 'private', // Default for existing repo
+                visibility: visibility, // Fetched from GitHub API
                 createOnGitHub: false,
                 isNested: false
               }]
@@ -248,19 +269,23 @@ export class RepoStructureManager {
       }
     ]);
 
-    // Ask about visibility
-    const visibilityPrompt = getVisibilityPrompt(answers.repo);
-    const { visibility } = await inquirer.prompt([{
-      type: 'list',
-      name: 'visibility',
-      message: visibilityPrompt.question,
-      choices: visibilityPrompt.options.map(opt => ({
-        name: `${opt.label}\n${chalk.gray(opt.description)}`,
-        value: opt.value,
-        short: opt.label
-      })),
-      default: visibilityPrompt.default
-    }]);
+    // Ask about visibility only if creating a new repository
+    let visibility: 'private' | 'public' = 'private';
+    if (answers.createOnGitHub) {
+      const visibilityPrompt = getVisibilityPrompt(answers.repo);
+      const result = await inquirer.prompt([{
+        type: 'list',
+        name: 'visibility',
+        message: visibilityPrompt.question,
+        choices: visibilityPrompt.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}`,
+          value: opt.value,
+          short: opt.label
+        })),
+        default: visibilityPrompt.default
+      }]);
+      visibility = result.visibility;
+    }
 
     return {
       architecture: 'single',
@@ -424,8 +449,9 @@ export class RepoStructureManager {
             }
           ]);
 
-          // Fetch description from GitHub API (or use default)
+          // Fetch description and visibility from GitHub API (or use defaults)
           let description = 'SpecWeave parent repository - specs, docs, and architecture';
+          let existingVisibility: 'private' | 'public' = 'private';
           if (this.githubToken) {
             try {
               const response = await fetch(`https://api.github.com/repos/${ownerPrompt.owner}/${repoPrompt.parentName}`, {
@@ -437,9 +463,10 @@ export class RepoStructureManager {
               if (response.ok) {
                 const data = await response.json() as any;
                 description = data.description || description;
+                existingVisibility = data.private ? 'private' : 'public';
               }
             } catch {
-              // Use default if fetch fails
+              // Use defaults if fetch fails
             }
           }
 
@@ -447,7 +474,8 @@ export class RepoStructureManager {
             owner: ownerPrompt.owner,
             parentName: repoPrompt.parentName,
             description: description,
-            createOnGitHub: false // Don't create, it already exists!
+            createOnGitHub: false, // Don't create, it already exists!
+            visibility: existingVisibility // Use existing visibility from GitHub
           };
 
           console.log(chalk.green(`\n✓ Using existing repository: ${ownerPrompt.owner}/${repoPrompt.parentName}\n`));
@@ -516,9 +544,10 @@ export class RepoStructureManager {
         }
       }
 
-      // Ask about visibility for parent repo (only if creating on GitHub)
+      // Ask about visibility for parent repo (only if creating NEW repo on GitHub)
       let parentVisibility: 'private' | 'public' = 'private';
-      if (!isLocalParent) {
+      if (!isLocalParent && parentAnswers.createOnGitHub) {
+        // Only prompt for visibility when creating a NEW repository
         const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
         const result = await inquirer.prompt([{
           type: 'list',
@@ -532,6 +561,9 @@ export class RepoStructureManager {
           default: parentVisibilityPrompt.default
         }]);
         parentVisibility = result.parentVisibility;
+      } else if (!isLocalParent && parentAnswers.visibility) {
+        // Use existing repository's visibility (fetched from GitHub API)
+        parentVisibility = parentAnswers.visibility;
       }
 
       config.parentRepo = {
@@ -803,7 +835,7 @@ export class RepoStructureManager {
         type: 'confirm',
         name: 'createOnGitHub',
         message: 'Create repository on GitHub?',
-        default: !fs.existsSync(path.join(this.projectPath, '.git'))
+        default: !existsSync(path.join(this.projectPath, '.git'))
       }
     ]);
 
@@ -1077,7 +1109,7 @@ export class RepoStructureManager {
     if (config.architecture === 'parent') {
       // Parent repo approach: ROOT-LEVEL cloning (not services/!)
       // Initialize parent repo at root
-      if (!fs.existsSync(path.join(this.projectPath, '.git'))) {
+      if (!existsSync(path.join(this.projectPath, '.git'))) {
         execFileNoThrowSync('git', ['init'], { cwd: this.projectPath });
 
         if (config.parentRepo) {
@@ -1091,12 +1123,12 @@ export class RepoStructureManager {
         const repoPath = path.join(this.projectPath, repo.path);
 
         // Create directory if needed
-        if (!fs.existsSync(repoPath)) {
-          fs.mkdirSync(repoPath, { recursive: true });
+        if (!existsSync(repoPath)) {
+          mkdirSync(repoPath, { recursive: true });
         }
 
         // Initialize git
-        if (!fs.existsSync(path.join(repoPath, '.git'))) {
+        if (!existsSync(path.join(repoPath, '.git'))) {
           execFileNoThrowSync('git', ['init'], { cwd: repoPath });
 
           const remoteUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
@@ -1111,11 +1143,11 @@ export class RepoStructureManager {
       for (const repo of config.repositories) {
         const repoPath = path.join(this.projectPath, repo.path);
 
-        if (!fs.existsSync(repoPath)) {
-          fs.mkdirSync(repoPath, { recursive: true });
+        if (!existsSync(repoPath)) {
+          mkdirSync(repoPath, { recursive: true });
         }
 
-        if (!fs.existsSync(path.join(repoPath, '.git'))) {
+        if (!existsSync(path.join(repoPath, '.git'))) {
           execFileNoThrowSync('git', ['init'], { cwd: repoPath });
 
           const remoteUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
@@ -1126,7 +1158,7 @@ export class RepoStructureManager {
       }
     } else {
       // Single repo or monorepo
-      if (!fs.existsSync(path.join(this.projectPath, '.git'))) {
+      if (!existsSync(path.join(this.projectPath, '.git'))) {
         execFileNoThrowSync('git', ['init'], { cwd: this.projectPath });
 
         const repo = config.repositories[0];
@@ -1140,8 +1172,8 @@ export class RepoStructureManager {
       if (config.architecture === 'monorepo' && config.monorepoProjects) {
         for (const project of config.monorepoProjects) {
           const projectPath = path.join(this.projectPath, 'packages', project);
-          if (!fs.existsSync(projectPath)) {
-            fs.mkdirSync(projectPath, { recursive: true });
+          if (!existsSync(projectPath)) {
+            mkdirSync(projectPath, { recursive: true });
           }
           this.createBasicRepoStructure(projectPath, project);
         }
@@ -1162,23 +1194,23 @@ export class RepoStructureManager {
     const dirs = ['src', 'tests'];
     for (const dir of dirs) {
       const dirPath = path.join(repoPath, dir);
-      if (!fs.existsSync(dirPath)) {
-        fs.mkdirSync(dirPath, { recursive: true });
+      if (!existsSync(dirPath)) {
+        mkdirSync(dirPath, { recursive: true });
       }
     }
 
     // Create README.md
     const readmePath = path.join(repoPath, 'README.md');
-    if (!fs.existsSync(readmePath)) {
+    if (!existsSync(readmePath)) {
       const readmeContent = `# ${projectId}\n\n${projectId} service/component.\n\nPart of SpecWeave multi-repository project.\n`;
-      fs.writeFileSync(readmePath, readmeContent);
+      writeFileSync(readmePath, readmeContent);
     }
 
     // Create .gitignore
     const gitignorePath = path.join(repoPath, '.gitignore');
-    if (!fs.existsSync(gitignorePath)) {
+    if (!existsSync(gitignorePath)) {
       const gitignoreContent = `node_modules/\ndist/\n.env\n.DS_Store\n*.log\n`;
-      fs.writeFileSync(gitignorePath, gitignoreContent);
+      writeFileSync(gitignorePath, gitignoreContent);
     }
   }
 
@@ -1203,8 +1235,8 @@ export class RepoStructureManager {
           project.toLowerCase()
         );
 
-        if (!fs.existsSync(projectSpecPath)) {
-          fs.mkdirSync(projectSpecPath, { recursive: true });
+        if (!existsSync(projectSpecPath)) {
+          mkdirSync(projectSpecPath, { recursive: true });
         }
 
         console.log(chalk.gray(`   ✓ Created project structure: ${project}`));
@@ -1220,8 +1252,8 @@ export class RepoStructureManager {
           repo.id
         );
 
-        if (!fs.existsSync(projectSpecPath)) {
-          fs.mkdirSync(projectSpecPath, { recursive: true });
+        if (!existsSync(projectSpecPath)) {
+          mkdirSync(projectSpecPath, { recursive: true });
         }
 
         console.log(chalk.gray(`   ✓ Created project structure: ${repo.id}`));

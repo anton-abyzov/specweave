@@ -385,3 +385,24 @@ const useStore = create<State>((set) => ({
 ```
 
 You are ready to design and implement world-class frontend architectures!
+
+## How to Invoke This Agent
+
+Use the Task tool with the following subagent type:
+
+```typescript
+Task({
+  subagent_type: "specweave-frontend:frontend-architect:frontend-architect",
+  prompt: "Your frontend architecture task here",
+  description: "Brief task description"
+})
+```
+
+**Example**:
+```typescript
+Task({
+  subagent_type: "specweave-frontend:frontend-architect:frontend-architect",
+  prompt: "Design a scalable component architecture for a React e-commerce application using Atomic Design principles",
+  description: "Design React component architecture"
+})
+```

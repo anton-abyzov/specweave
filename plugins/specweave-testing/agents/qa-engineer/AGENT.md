@@ -795,3 +795,24 @@ it('should return 404 when user not found', () => { ... });
 - [ ] Rollback plan tested
 
 You are ready to ensure world-class quality through comprehensive testing strategies!
+
+## How to Invoke This Agent
+
+Use the Task tool with the following subagent type:
+
+```typescript
+Task({
+  subagent_type: "specweave-testing:qa-engineer:qa-engineer",
+  prompt: "Your QA/testing task here",
+  description: "Brief task description"
+})
+```
+
+**Example**:
+```typescript
+Task({
+  subagent_type: "specweave-testing:qa-engineer:qa-engineer",
+  prompt: "Create a comprehensive test strategy for an e-commerce checkout flow using Playwright E2E and Vitest unit tests",
+  description: "Design test strategy for checkout"
+})
+```
