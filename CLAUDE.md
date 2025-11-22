@@ -252,6 +252,61 @@ Feature FS-048 → GitHub Milestone "FS-048: Feature Title"
 
 ---
 
+### 10a. NO Increment-to-Increment References (ADR-0061) ⛔
+
+**CRITICAL ARCHITECTURAL RULE**: Increments NEVER reference other increments!
+
+**The Only Allowed Flow**:
+```
+INCREMENT (metadata.json: feature_id) → FEATURE → USER STORIES
+```
+
+**❌ FORBIDDEN**:
+```yaml
+# In user story frontmatter
+---
+id: US-001
+feature: FS-048
+increments: [0050-external-tool-import]  # ❌ NEVER DO THIS!
+---
+```
+
+```markdown
+# In user story content
+Implemented in increment 0050-external-tool-import  ❌ NEVER DO THIS!
+```
+
+**✅ CORRECT**:
+```yaml
+# Increment metadata.json
+{
+  "feature_id": "FS-048"  ✅ Forward reference only
+}
+
+# User story frontmatter
+---
+id: US-001
+feature: FS-048  ✅ No increment reference needed!
+---
+```
+
+**Why This Matters**:
+
+1. **Hooks Break Without This**: The GitHub sync hook reads increment metadata → finds feature_id → finds all user stories for that feature → creates GitHub issues. If user stories required increment references, this creates circular dependencies and hooks detect 0 specs.
+
+2. **Clean Separation**: Living docs (user stories) are permanent. Increments are temporary implementations. User stories should never know about increments.
+
+3. **Multi-Increment Support**: Multiple increments can implement the same feature (Phase 1a, 1b, 1c). Each auto-syncs ALL user stories without duplication.
+
+**Enforcement**:
+- Pre-commit hook validates NO increment references in living docs
+- Spec-detector ignores reverse references (defensive)
+- **See**: ADR-0061 for complete architectural rationale
+
+**Incident**: 2025-11-22 - Hooks appeared broken (0 specs detected, 0 GitHub issues created) due to old spec-detector logic requiring reverse references. Fixed in v0.24.0+.
+
+---
+
 ### 11. Task Format with US Linkage (v0.23.0+)
 
 **Required fields**:
