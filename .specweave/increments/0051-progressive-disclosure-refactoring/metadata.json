@@ -7,7 +7,7 @@
   "created_at": "2025-11-21T14:35:20.654Z",
   "started_at": "2025-11-21T14:35:20.654Z",
   "completed_at": "2025-11-22T01:50:00.000Z",
-  "lastActivity": "2025-11-22T22:04:01.552Z",
+  "lastActivity": "2025-11-22T22:14:22.432Z",
   "total_tasks": 32,
   "completed_tasks": 32,
   "total_acs": 10,
@@ -36,6 +36,86 @@
     "tasks.md generated retroactively on 2025-11-22"
   ],
   "acSyncEvents": [
+    {
+      "timestamp": "2025-11-22T22:14:22.431Z",
+      "updated": [],
+      "conflicts": [
+        "AC-US3-01: [x] but only 0/10 tasks complete (0%)",
+        "AC-US3-02: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-01: [x] but only 0/4 tasks complete (0%)",
+        "AC-US1-03: [x] but only 0/7 tasks complete (0%)",
+        "AC-US1-04: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-02: [x] but only 0/3 tasks complete (0%)",
+        "AC-US2-02: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-03: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-01: [x] but only 0/2 tasks complete (0%)"
+      ],
+      "warnings": [
+        "AC-US2-04 referenced in tasks.md but not found in spec.md",
+        "AC-US3-03: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-11-22T22:12:15.667Z",
+      "updated": [],
+      "conflicts": [
+        "AC-US3-01: [x] but only 0/10 tasks complete (0%)",
+        "AC-US3-02: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-01: [x] but only 0/4 tasks complete (0%)",
+        "AC-US1-03: [x] but only 0/7 tasks complete (0%)",
+        "AC-US1-04: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-02: [x] but only 0/3 tasks complete (0%)",
+        "AC-US2-02: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-03: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-01: [x] but only 0/2 tasks complete (0%)"
+      ],
+      "warnings": [
+        "AC-US2-04 referenced in tasks.md but not found in spec.md",
+        "AC-US3-03: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-11-22T22:11:47.700Z",
+      "updated": [],
+      "conflicts": [
+        "AC-US3-01: [x] but only 0/10 tasks complete (0%)",
+        "AC-US3-02: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-01: [x] but only 0/4 tasks complete (0%)",
+        "AC-US1-03: [x] but only 0/7 tasks complete (0%)",
+        "AC-US1-04: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-02: [x] but only 0/3 tasks complete (0%)",
+        "AC-US2-02: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-03: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-01: [x] but only 0/2 tasks complete (0%)"
+      ],
+      "warnings": [
+        "AC-US2-04 referenced in tasks.md but not found in spec.md",
+        "AC-US3-03: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-11-22T22:11:03.547Z",
+      "updated": [],
+      "conflicts": [
+        "AC-US3-01: [x] but only 0/10 tasks complete (0%)",
+        "AC-US3-02: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-01: [x] but only 0/4 tasks complete (0%)",
+        "AC-US1-03: [x] but only 0/7 tasks complete (0%)",
+        "AC-US1-04: [x] but only 0/5 tasks complete (0%)",
+        "AC-US1-02: [x] but only 0/3 tasks complete (0%)",
+        "AC-US2-02: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-03: [x] but only 0/2 tasks complete (0%)",
+        "AC-US2-01: [x] but only 0/2 tasks complete (0%)"
+      ],
+      "warnings": [
+        "AC-US2-04 referenced in tasks.md but not found in spec.md",
+        "AC-US3-03: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
     {
       "timestamp": "2025-11-22T22:04:01.552Z",
       "updated": [],
