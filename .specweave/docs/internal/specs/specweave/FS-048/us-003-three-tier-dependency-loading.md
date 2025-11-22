@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-003: Three-Tier Dependency Loading (Init/On-Demand/Bulk)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/705
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story

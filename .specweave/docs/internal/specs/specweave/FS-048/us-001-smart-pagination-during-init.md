@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-001: Smart Pagination During Init (50-Project Limit)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/703
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story

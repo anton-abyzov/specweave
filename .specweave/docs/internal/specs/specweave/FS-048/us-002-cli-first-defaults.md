@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-002: CLI-First Defaults (Select All by Default)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/704
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story

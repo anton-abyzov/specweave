@@ -9,6 +9,8 @@ created: 2025-11-21
 
 # US-007: Progress Tracking (Batch Loading with Cancel)
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/709
+
 **Feature**: [FS-048 - Enhanced External Tool Import](../../../_features/FS-048/FEATURE.md)
 
 ## User Story

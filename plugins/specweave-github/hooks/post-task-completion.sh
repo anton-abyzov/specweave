@@ -27,6 +27,53 @@ if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
 fi
 
 # ============================================================================
+# CIRCUIT BREAKER & FILE LOCKING
+# ============================================================================
+
+# CIRCUIT BREAKER: Auto-disable after consecutive failures
+CIRCUIT_BREAKER_FILE=".specweave/state/.hook-circuit-breaker-github"
+CIRCUIT_BREAKER_THRESHOLD=3
+
+mkdir -p ".specweave/state" 2>/dev/null || true
+
+if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
+  FAILURE_COUNT=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
+  if (( FAILURE_COUNT >= CIRCUIT_BREAKER_THRESHOLD )); then
+    # Circuit breaker is OPEN - hooks are disabled
+    exit 0
+  fi
+fi
+
+# FILE LOCK: Only allow 1 GitHub sync hook at a time
+LOCK_FILE=".specweave/state/.hook-github-sync.lock"
+LOCK_TIMEOUT=15  # seconds (GitHub sync can take longer)
+
+LOCK_ACQUIRED=false
+for i in {1..15}; do
+  if mkdir "$LOCK_FILE" 2>/dev/null; then
+    LOCK_ACQUIRED=true
+    trap 'rmdir "$LOCK_FILE" 2>/dev/null || true' EXIT
+    break
+  fi
+
+  # Check for stale lock
+  if [[ -d "$LOCK_FILE" ]]; then
+    LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
+    if (( LOCK_AGE > LOCK_TIMEOUT )); then
+      rmdir "$LOCK_FILE" 2>/dev/null || true
+      continue
+    fi
+  fi
+
+  sleep 0.2
+done
+
+if [[ "$LOCK_ACQUIRED" == "false" ]]; then
+  # Another instance is running, skip
+  exit 0
+fi
+
+# ============================================================================
 # PROJECT ROOT DETECTION
 # ============================================================================
 
@@ -251,6 +298,12 @@ if [ "$SPECWEAVE_ENABLE_EPIC_SYNC" = "true" ]; then
 else
   echo "[$(date)] [GitHub] ℹ️  Epic sync disabled (sync at User Story level only)" >> "$DEBUG_LOG" 2>/dev/null || true
 fi
+
+# ============================================================================
+# CIRCUIT BREAKER UPDATE
+# ============================================================================
+# Reset circuit breaker on successful completion (all errors are caught above)
+echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
 
 # ============================================================================
 # OUTPUT TO CLAUDE
