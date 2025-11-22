@@ -16,7 +16,7 @@ import {
 } from './types.js';
 
 /**
- * Default quality gate thresholds (BMAD pattern)
+ * Default quality gate thresholds (Probability × Impact scoring)
  */
 export const DEFAULT_THRESHOLDS: QualityGateThresholds = {
   fail: {
@@ -57,7 +57,7 @@ export class QualityGateDecider {
     const concerns: QualityGateIssue[] = [];
     const recommendations: QualityGateIssue[] = [];
 
-    // Check 1: Risk Assessment (BMAD pattern)
+    // Check 1: Risk Assessment (Probability × Impact)
     if (assessment.risk_assessment) {
       this.assessRisks(assessment.risk_assessment, blockers, concerns);
     }

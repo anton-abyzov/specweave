@@ -166,7 +166,8 @@ nav:
         - "0034: Increment Backlog Status": architecture/adr/0034-increment-backlog-status.md
         - "0044: YAML Parser (Gray Matter)": architecture/adr/0044-yaml-parser-gray-matter.md
         - "0045: Autonomous Mode Safety": architecture/adr/0045-autonomous-mode-safety.md
-        - "0082: Claude Code Symlink Requirement": architecture/adr/0082-claude-code-marketplace-symlink-requirement.md
+        - "0048: Claude Code Symlink (DEPRECATED)": architecture/adr/0048-claude-code-marketplace-symlink-requirement.md
+        - "0062: GitHub-First Development Workflow": architecture/adr/0062-github-first-development-workflow.md
 
       - Other ADRs:
         - "0002: Context Loading": architecture/adr/0002-context-loading.md
