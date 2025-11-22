@@ -78,22 +78,41 @@ export async function checkExistingJiraCredentials(
 }
 
 /**
- * Auto-discover Jira projects via API with CLI-first smart pagination
+ * Auto-discover Jira projects via API with CLI-first smart pagination and cache support
  *
- * NEW (v0.24.0): Uses ProjectCountFetcher + ImportStrategyPrompter + AsyncProjectLoader
- * - Counts projects first (< 1 second)
+ * NEW (v0.24.0): Uses ProjectCountFetcher + ImportStrategyPrompter + AsyncProjectLoader + CacheManager
+ * - Checks cache first (24-hour TTL)
+ * - Counts projects first (< 1 second) if cache miss
  * - Prompts for import strategy (import-all is default)
  * - Uses smart pagination (50-project batches) for large imports
+ * - Caches results for future use
  *
  * @param credentials - Partial credentials (domain, email, token)
+ * @param projectRoot - Project root path (for cache manager)
  * @returns Array of selected project keys
  */
-async function autoDiscoverJiraProjects(credentials: {
-  domain: string;
-  email: string;
-  token: string;
-  instanceType: JiraInstanceType;
-}): Promise<string[]> {
+async function autoDiscoverJiraProjects(
+  credentials: {
+    domain: string;
+    email: string;
+    token: string;
+    instanceType: JiraInstanceType;
+  },
+  projectRoot?: string
+): Promise<string[]> {
+  // Step 0: Check cache first (NEW in v0.24.0)
+  if (projectRoot) {
+    const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+    const cacheManager = new CacheManager(projectRoot);
+    const cacheKey = `jira-projects-${credentials.domain}`;
+
+    const cachedProjects = await cacheManager.get<string[]>(cacheKey);
+    if (cachedProjects && cachedProjects.length > 0) {
+      console.log(chalk.cyan('✨ Using cached project list (24h TTL)\n'));
+      return cachedProjects;
+    }
+  }
+
   // Step 1: Count check (< 1 second)
   const { getProjectCount } = await import('../project-count-fetcher.js');
   const countSpinner = ora('Checking accessible Jira projects...').start();
@@ -132,9 +151,11 @@ async function autoDiscoverJiraProjects(credentials: {
     });
 
     // Step 3: Execute based on strategy
+    let selectedProjects: string[] = [];
+
     if (strategyResult.strategy === 'manual-entry') {
       // Manual entry: return provided keys
-      return strategyResult.projectKeys || [];
+      selectedProjects = strategyResult.projectKeys || [];
     } else if (strategyResult.strategy === 'import-all') {
       // Import all: use AsyncProjectLoader with smart pagination
       const { AsyncProjectLoader } = await import('../async-project-loader.js');
@@ -164,8 +185,8 @@ async function autoDiscoverJiraProjects(credentials: {
         console.log(chalk.gray('   Error log: .specweave/logs/import-errors.log\n'));
       }
 
-      // Return project keys
-      return result.projects.map(p => p.key);
+      // Get project keys
+      selectedProjects = result.projects.map(p => p.key);
     } else {
       // Select specific: load first 50 projects, show checkbox with all pre-checked
       const spinner = ora('Loading first 50 projects...').start();
@@ -187,7 +208,7 @@ async function autoDiscoverJiraProjects(credentials: {
         spinner.succeed(`Loaded ${firstBatch.length} project(s)`);
 
         // Show checkbox with ALL pre-checked (CLI-first: deselection workflow)
-        const { selectedProjects } = await inquirer.prompt<{ selectedProjects: string[] }>({
+        const { selectedProjects: selected } = await inquirer.prompt<{ selectedProjects: string[] }>({
           type: 'checkbox',
           name: 'selectedProjects',
           message: 'Select Jira projects to sync (Space to deselect, Enter to confirm):',
@@ -198,13 +219,23 @@ async function autoDiscoverJiraProjects(credentials: {
           }))
         });
 
-        return selectedProjects;
+        selectedProjects = selected;
       } catch (error: any) {
         spinner.fail('Failed to load projects');
         console.error(chalk.red(`   Error: ${error.message}\n`));
         throw error;
       }
     }
+
+    // Step 4: Cache the results (NEW in v0.24.0)
+    if (projectRoot && selectedProjects.length > 0) {
+      const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+      const cacheManager = new CacheManager(projectRoot);
+      const cacheKey = `jira-projects-${credentials.domain}`;
+      await cacheManager.set(cacheKey, selectedProjects);
+    }
+
+    return selectedProjects;
   } catch (error: any) {
     if (countSpinner.isSpinning) {
       countSpinner.fail('Failed to discover projects');
@@ -222,10 +253,12 @@ async function autoDiscoverJiraProjects(credentials: {
  * - Jira Server/Data Center (self-hosted)
  *
  * @param language - User's language
+ * @param projectRoot - Project root path (optional, for cache manager)
  * @returns Credentials or null if skipped
  */
 export async function promptJiraCredentials(
-  language: SupportedLanguage
+  language: SupportedLanguage,
+  projectRoot?: string
 ): Promise<JiraCredentials | null> {
   const locale = getLocaleManager(language);
 
@@ -325,13 +358,16 @@ export async function promptJiraCredentials(
   // Get basic credentials first
   const answers = await inquirer.prompt(questions);
 
-  // Auto-discover projects using the credentials
-  const selectedProjects = await autoDiscoverJiraProjects({
-    domain: answers.domain,
-    email: answers.email,
-    token: answers.token,
-    instanceType: instanceType as JiraInstanceType
-  });
+  // Auto-discover projects using the credentials (with cache support)
+  const selectedProjects = await autoDiscoverJiraProjects(
+    {
+      domain: answers.domain,
+      email: answers.email,
+      token: answers.token,
+      instanceType: instanceType as JiraInstanceType
+    },
+    projectRoot
+  );
 
   if (selectedProjects.length === 0) {
     console.log(chalk.yellow('⏭️  No projects selected. Jira setup cancelled.\n'));

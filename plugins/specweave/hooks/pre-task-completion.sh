@@ -92,15 +92,14 @@ fi
 # DETECT CURRENT INCREMENT
 # ============================================================================
 
-CURRENT_INCREMENT=$(ls -t .specweave/increments/ 2>/dev/null | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
+CURRENT_INCREMENT=$(ls -td .specweave/increments/*/ 2>/dev/null | xargs -n1 basename | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
 
 if [ -z "$CURRENT_INCREMENT" ]; then
-  echo "[$(date)] ⚠️  No active increment found, skipping validation" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] ℹ️  No active increment found, skipping validation" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
   cat <<EOF
 {
-  "continue": true,
-  "systemMessage": "⚠️  Warning: No active increment found. Task completion validation skipped."
+  "continue": true
 }
 EOF
   exit 0
@@ -109,12 +108,11 @@ fi
 TASKS_MD=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
 
 if [ ! -f "$TASKS_MD" ]; then
-  echo "[$(date)] ⚠️  tasks.md not found for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] ℹ️  tasks.md not found for $CURRENT_INCREMENT (increment may be in planning stage)" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
   cat <<EOF
 {
-  "continue": true,
-  "systemMessage": "⚠️  Warning: tasks.md not found. Task completion validation skipped."
+  "continue": true
 }
 EOF
   exit 0

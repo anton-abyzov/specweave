@@ -1,11 +1,11 @@
 ---
 increment: 0051-progressive-disclosure-refactoring
-title: "Progressive Disclosure Refactoring: Reduce Agent Context by 60%"
+title: 'Progressive Disclosure Refactoring: Reduce Agent Context by 60%'
 type: refactor
 priority: P0
-status: in_progress
-created: 2025-11-21
-completed: 2025-11-21
+status: planning
+created: 2025-11-21T00:00:00.000Z
+completed: 2025-11-21T00:00:00.000Z
 test_mode: Standard
 coverage_target: 80
 coverage_actual: 100
