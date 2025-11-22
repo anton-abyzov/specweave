@@ -1,0 +1,22 @@
+{
+  "name": "specweave-tooling",
+  "description": "Plugin development toolkit for SpecWeave. Provides skill creation, validation, packaging, and plugin scaffolding tools. Expert guidance for YAML frontmatter, skill routing, activation patterns, and best practices. Essential for SpecWeave plugin developers.",
+  "version": "0.1.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "specweave",
+    "tooling",
+    "skill-creation",
+    "plugin-development",
+    "yaml-frontmatter",
+    "skill-routing",
+    "plugin-scaffolding",
+    "developer-tools"
+  ]
+}

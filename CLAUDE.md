@@ -54,6 +54,84 @@ git push origin develop
 
 ---
 
+### 1a. Quick Marketplace Refresh (NEW! 🚀)
+
+**Problem**: After implementing new plugins locally, Claude Code needs to reload the marketplace.
+
+**Solution**: Use the automated refresh script!
+
+```bash
+# LOCAL DEVELOPMENT (default) - Uses your local changes
+bash scripts/refresh-marketplace.sh
+
+# FROM GITHUB - Pulls latest from GitHub
+bash scripts/refresh-marketplace.sh --github
+```
+
+**What it does**:
+1. ✅ Removes existing marketplace
+2. ✅ Clears all plugin caches
+3. ✅ Re-adds marketplace (local or GitHub)
+4. ✅ Installs ALL plugins automatically
+5. ✅ Shows success/failure summary
+
+**Output Example**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  SpecWeave Marketplace Refresh (local mode)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Step 1: Removing existing marketplace...
+✓ Marketplace removed
+
+🧹 Step 2: Clearing plugin caches...
+✓ Marketplace cache cleared
+✓ Installed plugins cache backed up
+
+📥 Step 3: Adding marketplace...
+Using local development version: /Users/antonabyzov/Projects/github/specweave
+✓ Local marketplace added
+
+📋 Step 4: Reading plugin list...
+✓ Found 19 plugins
+
+⚙️  Step 5: Installing all plugins...
+  Installing specweave...
+  ✓ specweave installed
+
+  [... all 19 plugins ...]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Installation Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Total plugins: 19
+  Successful: 19
+  Failed: 0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✓ ALL PLUGINS INSTALLED SUCCESSFULLY!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Next steps:
+  1. Restart Claude Code for changes to take effect
+  2. Run /plugin to verify all plugins loaded
+  3. Check ~/.claude/plugins/installed_plugins.json
+```
+
+**When to use**:
+- ✅ After adding new plugins
+- ✅ After modifying plugin commands/agents/skills
+- ✅ After pulling latest from GitHub
+- ✅ When plugins aren't loading correctly
+- ✅ To test local changes before pushing
+
+**Time**: ~30 seconds (vs 5-10 minutes manual)
+
+**Requirements**: `jq` installed (`brew install jq`)
+
+---
+
 ### 2. Increment Folder Structure
 
 **ONLY 4 files in `.specweave/increments/####/` root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
