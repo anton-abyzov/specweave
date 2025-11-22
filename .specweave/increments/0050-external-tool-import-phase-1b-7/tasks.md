@@ -830,11 +830,10 @@ Total time: 2m 34s
 ---
 
 ### T-020: Add Progress Throttling (Update Every 5 Projects)
-**Status**: [x] completed
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P2 (Should Have)
 **Estimated Effort**: 2 hours
 
@@ -869,7 +868,7 @@ Total time: 2m 34s
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05, AC-US7-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (High)
 **Estimated Effort**: 5 hours
 
@@ -909,7 +908,7 @@ Total time: 2m 34s
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (High)
 **Estimated Effort**: 3 hours
 
@@ -947,7 +946,7 @@ Total time: 2m 34s
 
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0 (Critical)
 **Estimated Effort**: 3 hours
 
