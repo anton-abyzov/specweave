@@ -1,6 +1,20 @@
-# Symlink Development Mode (Advanced)
+# ⚠️ DEPRECATED: Symlink Development Mode (Advanced)
 
-**Audience**: Advanced contributors who need instant hook updates without pushing to GitHub
+> **🔴 DEPRECATED AS OF 2025-11-22**
+>
+> **This workflow is no longer supported or recommended.**
+>
+> **Use GitHub marketplace exclusively**: All development now uses GitHub-first workflow with automatic marketplace updates (5-10s sync time).
+>
+> **See**: CLAUDE.md Section 1 "Local Development Setup" for current guidelines.
+>
+> ---
+>
+> **This document is preserved for historical reference only.**
+
+---
+
+**Original Audience**: Advanced contributors who need instant hook updates without pushing to GitHub
 **Platforms**: macOS, Linux only (NOT Windows)
 **Complexity**: High (bash scripts, registry manipulation)
 **Maintenance**: Ongoing (Claude Code fights symlinks)

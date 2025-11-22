@@ -1,7 +1,16 @@
 # ADR-0048: Claude Code Marketplace Symlink Requirement for Local Development
 
-**Status**: ✅ Accepted
-**Date**: 2025-11-18
+> **⚠️ DEPRECATED**: This ADR is **DEPRECATED** as of 2025-11-22.
+>
+> **Reason**: SpecWeave now uses **GitHub marketplace exclusively** for all development workflows. Symlinks are no longer supported or recommended.
+>
+> **See**: ADR-0062 "GitHub-First Development Workflow" for current guidelines.
+>
+> ---
+
+**Status**: ❌ DEPRECATED (Superseded by ADR-0062)
+**Original Status**: ✅ Accepted (2025-11-18)
+**Deprecation Date**: 2025-11-22
 **Context**: Increment 0043 - Plugin Hook Execution Errors Investigation
 **Severity**: 🔴 **CRITICAL** - Affects all SpecWeave contributors
 

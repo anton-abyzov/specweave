@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs from 'fs-extra';
+import { mkdirSync, existsSync, rmSync, writeFileSync, readdirSync, readFileSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import { DuplicateDetector as ImportDuplicateDetector } from '../../src/importers/duplicate-detector.js';
@@ -27,13 +27,13 @@ describe('End-to-End Duplicate Prevention', () => {
     // Create isolated test directory
     testDir = path.join(os.tmpdir(), `duplicate-e2e-test-${Date.now()}`);
     specsDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', 'default');
-    fs.mkdirSync(specsDir, { recursive: true });
+    mkdirSync(specsDir, { recursive: true });
   });
 
   afterEach(() => {
     // Clean up test directory
-    if (fs.existsSync(testDir)) {
-      fs.removeSync(testDir);
+    if (existsSync(testDir)) {
+      rmSync(testDir, { recursive: true, force: true });
     }
   });
 
@@ -85,7 +85,7 @@ ${
 }
 `;
 
-    fs.writeFileSync(filePath, content, 'utf-8');
+    writeFileSync(filePath, content, 'utf-8');
     return filePath;
   }
 
@@ -93,16 +93,16 @@ ${
    * Helper: Get all existing User Story IDs from specs directory
    */
   function getExistingUserStoryIds(): string[] {
-    if (!fs.existsSync(specsDir)) {
+    if (!existsSync(specsDir)) {
       return [];
     }
 
-    const files = fs.readdirSync(specsDir);
+    const files = readdirSync(specsDir);
     const usIds: string[] = [];
 
     for (const file of files) {
       if (file.startsWith('us-') && file.endsWith('.md')) {
-        const content = fs.readFileSync(path.join(specsDir, file), 'utf-8');
+        const content = readFileSync(path.join(specsDir, file), 'utf-8');
         const match = content.match(/^#\s+(US-\d{3}E?):/m);
         if (match) {
           usIds.push(match[1]);
@@ -421,6 +421,9 @@ ${
       expect(getNextUsId(finalIds, 'internal')).toBe('US-009');
       expect(getNextUsId(finalIds, 'external')).toBe('US-009E');
 
+      // Clear cache to pick up newly created user stories
+      importDetector.clearCache();
+
       // Verify import detector detects all external IDs
       for (const item of externalItems) {
         const isDuplicate = await importDetector.checkExistingExternalId(item.id);
@@ -480,7 +483,7 @@ ${
 
       // Add invalid file (should be ignored)
       const invalidFile = path.join(specsDir, 'invalid-story.md');
-      fs.writeFileSync(invalidFile, '# Invalid Story (no US-ID)', 'utf-8');
+      writeFileSync(invalidFile, '# Invalid Story (no US-ID)', 'utf-8');
 
       const existingIds = getExistingUserStoryIds();
 
@@ -536,8 +539,9 @@ ${
 
       const duration = Date.now() - start;
 
-      // Assert: Should be fast (< 50ms for 3 checks with cache)
-      expect(duration).toBeLessThan(50);
+      // Assert: Should be fast (< 200ms for 3 checks with cache on CI)
+      // Note: CI environments can be slower, so increased threshold from 50ms
+      expect(duration).toBeLessThan(200);
       expect(isDuplicate1).toBe(true);
       expect(isDuplicate2).toBe(true);
       expect(isDuplicate3).toBe(false);

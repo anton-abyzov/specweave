@@ -1,6 +1,18 @@
 #!/bin/bash
 # SpecWeave NPM Mode Switcher
-# Switches to global npm installation for end-user testing
+# MIGRATION HELPER: Removes legacy symlinks from deprecated dev-mode.sh workflow
+#
+# ⚠️ NOTE: This script helps users migrate from the DEPRECATED symlink workflow.
+# New contributors should NOT use dev-mode.sh - use GitHub marketplace exclusively.
+#
+# PURPOSE: Removes symlinks and switches to global npm installation for testing
+#
+# MODERN WORKFLOW (Recommended):
+# - Use GitHub marketplace (claude plugin marketplace add github:USER/specweave)
+# - Push to GitHub → Wait 5-10s → Claude Code auto-updates
+# - No symlinks needed!
+#
+# See CLAUDE.md Section 1 "Local Development Setup" for current guidelines.
 
 set -e
 

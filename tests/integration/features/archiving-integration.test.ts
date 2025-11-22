@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs from 'fs-extra';
+import { promises as fs } from 'fs';
 import path from 'path';
 import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js';
 import { FeatureArchiver } from '../../../src/core/living-docs/feature-archiver.js';
@@ -42,16 +42,16 @@ describe('Comprehensive Archiving Integration', () => {
     it('should archive increment and automatically archive feature in ALL locations', async () => {
       // Setup: Create increment 0047 with completed status
       const incrementDir = path.join(testDir, '.specweave/increments/0047-us-task-linkage');
-      await fs.ensureDir(incrementDir);
+      await fs.mkdir(incrementDir, { recursive: true });
 
       // Create metadata.json
-      await fs.writeJson(path.join(incrementDir, 'metadata.json'), {
+      await fs.writeFile(path.join(incrementDir, 'metadata.json'), JSON.stringify({
         id: '0047-us-task-linkage',
         status: 'completed',
         type: 'feature',
         created: '2025-11-19T10:00:00Z',
         completed: '2025-11-19T16:00:00Z'
-      });
+      }, null, 2), 'utf-8');
 
       // Create spec.md with feature reference
       await fs.writeFile(
@@ -71,7 +71,7 @@ Complete requirements in living docs.
 
       // Setup: Create shared feature in _features/FS-047
       const sharedFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/_features/FS-047');
-      await fs.ensureDir(sharedFeatureDir);
+      await fs.mkdir(sharedFeatureDir, { recursive: true });
       await fs.writeFile(
         path.join(sharedFeatureDir, 'FEATURE.md'),
         `---
@@ -89,7 +89,7 @@ Feature documentation here.
 
       // Setup: Create project-specific feature in specs/specweave/FS-047
       const projectFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/specweave/FS-047');
-      await fs.ensureDir(projectFeatureDir);
+      await fs.mkdir(projectFeatureDir, { recursive: true });
       await fs.writeFile(
         path.join(projectFeatureDir, 'README.md'),
         `# FS-047: US-Task Linkage
@@ -157,14 +157,14 @@ See [Implementation](.specweave/docs/internal/specs/specweave/FS-047/README.md)
     it('should handle multiple project folders for the same feature', async () => {
       // Setup: Create increment 0050
       const incrementDir = path.join(testDir, '.specweave/increments/0050-multi-project-feature');
-      await fs.ensureDir(incrementDir);
+      await fs.mkdir(incrementDir, { recursive: true });
 
-      await fs.writeJson(path.join(incrementDir, 'metadata.json'), {
+      await fs.writeFile(path.join(incrementDir, 'metadata.json'), JSON.stringify({
         id: '0050-multi-project-feature',
         status: 'completed',
         type: 'feature',
         created: '2025-11-19T10:00:00Z'
-      });
+      }, null, 2), 'utf-8');
 
       await fs.writeFile(
         path.join(incrementDir, 'spec.md'),
@@ -177,14 +177,14 @@ epic: FS-050
 
       // Setup: Create shared feature
       const sharedFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/_features/FS-050');
-      await fs.ensureDir(sharedFeatureDir);
+      await fs.mkdir(sharedFeatureDir, { recursive: true });
       await fs.writeFile(path.join(sharedFeatureDir, 'FEATURE.md'), '# FS-050');
 
       // Setup: Create feature in MULTIPLE project folders
       const projects = ['specweave', 'frontend', 'backend'];
       for (const project of projects) {
         const projectDir = path.join(testDir, `.specweave/docs/internal/specs/${project}/FS-050`);
-        await fs.ensureDir(projectDir);
+        await fs.mkdir(projectDir, { recursive: true });
         await fs.writeFile(path.join(projectDir, 'README.md'), `# FS-050 - ${project}`);
       }
 
@@ -228,7 +228,7 @@ epic: FS-050
       // Setup: Create TWO increments for the same feature FS-051
       // Increment 1: Active (should prevent archiving)
       const increment1Dir = path.join(testDir, '.specweave/increments/0051-feature-part1');
-      await fs.ensureDir(increment1Dir);
+      await fs.mkdir(increment1Dir, { recursive: true });
       await fs.writeJson(path.join(increment1Dir, 'metadata.json'), {
         id: '0051-feature-part1',
         status: 'active', // ← Still active!
@@ -245,7 +245,7 @@ epic: FS-051
 
       // Increment 2: Completed (we'll archive this)
       const increment2Dir = path.join(testDir, '.specweave/increments/0052-feature-part2');
-      await fs.ensureDir(increment2Dir);
+      await fs.mkdir(increment2Dir, { recursive: true });
       await fs.writeJson(path.join(increment2Dir, 'metadata.json'), {
         id: '0052-feature-part2',
         status: 'completed',
@@ -262,12 +262,12 @@ epic: FS-051
 
       // Setup: Create shared feature FS-051
       const sharedFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/_features/FS-051');
-      await fs.ensureDir(sharedFeatureDir);
+      await fs.mkdir(sharedFeatureDir, { recursive: true });
       await fs.writeFile(path.join(sharedFeatureDir, 'FEATURE.md'), '# FS-051');
 
       // Setup: Create project feature
       const projectFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/specweave/FS-051');
-      await fs.ensureDir(projectFeatureDir);
+      await fs.mkdir(projectFeatureDir, { recursive: true });
       await fs.writeFile(path.join(projectFeatureDir, 'README.md'), '# FS-051');
 
       // ACT: Archive only increment 0052 (part 2)
@@ -297,7 +297,7 @@ epic: FS-051
     it('should archive feature only when ALL linked increments are archived', async () => {
       // Setup: Create two increments for FS-053, both completed
       const increment1Dir = path.join(testDir, '.specweave/increments/0053-feature-part1');
-      await fs.ensureDir(increment1Dir);
+      await fs.mkdir(increment1Dir, { recursive: true });
       await fs.writeJson(path.join(increment1Dir, 'metadata.json'), {
         id: '0053-feature-part1',
         status: 'completed',
@@ -313,7 +313,7 @@ epic: FS-053
       );
 
       const increment2Dir = path.join(testDir, '.specweave/increments/0054-feature-part2');
-      await fs.ensureDir(increment2Dir);
+      await fs.mkdir(increment2Dir, { recursive: true });
       await fs.writeJson(path.join(increment2Dir, 'metadata.json'), {
         id: '0054-feature-part2',
         status: 'completed',
@@ -330,7 +330,7 @@ epic: FS-053
 
       // Setup: Create shared feature
       const sharedFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/_features/FS-053');
-      await fs.ensureDir(sharedFeatureDir);
+      await fs.mkdir(sharedFeatureDir, { recursive: true });
       await fs.writeFile(path.join(sharedFeatureDir, 'FEATURE.md'), '# FS-053');
 
       // ACT: Archive FIRST increment only
@@ -368,7 +368,7 @@ epic: FS-053
         testDir,
         '.specweave/increments/_archive/0055-archived-feature'
       );
-      await fs.ensureDir(archivedIncrementDir);
+      await fs.mkdir(archivedIncrementDir, { recursive: true });
       await fs.writeJson(path.join(archivedIncrementDir, 'metadata.json'), {
         id: '0055-archived-feature',
         status: 'completed'
@@ -379,17 +379,17 @@ epic: FS-053
         testDir,
         '.specweave/docs/internal/specs/_features/_archive/FS-055'
       );
-      await fs.ensureDir(archivedSharedFeatureDir);
+      await fs.mkdir(archivedSharedFeatureDir, { recursive: true });
       await fs.writeFile(path.join(archivedSharedFeatureDir, 'FEATURE.md'), '# FS-055');
 
       const archivedProjectFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/specweave/_archive/FS-055'
       );
-      await fs.ensureDir(archivedProjectFeatureDir);
+      await fs.mkdir(archivedProjectFeatureDir, { recursive: true });
       await fs.writeFile(path.join(archivedProjectFeatureDir, 'README.md'), '# FS-055');
 
-      // ACT: Restore increment
+      // ACT: Restore increment (this automatically restores linked features)
       await incrementArchiver.restore('0055-archived-feature');
 
       // ASSERT: Increment restored to active location
@@ -397,10 +397,7 @@ epic: FS-053
       expect(await fs.pathExists(restoredIncrementDir)).toBe(true);
       expect(await fs.pathExists(archivedIncrementDir)).toBe(false);
 
-      // ACT: Restore feature (would need to be done manually via FeatureArchiver)
-      await featureArchiver.restoreFeature('FS-055');
-
-      // ASSERT: Shared feature restored
+      // ASSERT: Shared feature automatically restored (by increment restoration)
       const restoredSharedFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/_features/FS-055'
@@ -408,7 +405,7 @@ epic: FS-053
       expect(await fs.pathExists(restoredSharedFeatureDir)).toBe(true);
       expect(await fs.pathExists(archivedSharedFeatureDir)).toBe(false);
 
-      // ASSERT: Project feature restored
+      // ASSERT: Project feature automatically restored (by increment restoration)
       const restoredProjectFeatureDir = path.join(
         testDir,
         '.specweave/docs/internal/specs/specweave/FS-055'
@@ -422,7 +419,7 @@ epic: FS-053
     it('should handle increment without corresponding feature gracefully', async () => {
       // Setup: Create increment without feature folders
       const incrementDir = path.join(testDir, '.specweave/increments/0056-no-feature');
-      await fs.ensureDir(incrementDir);
+      await fs.mkdir(incrementDir, { recursive: true });
       await fs.writeJson(path.join(incrementDir, 'metadata.json'), {
         id: '0056-no-feature',
         status: 'completed'
@@ -448,7 +445,7 @@ epic: FS-053
     it('should handle feature with no increments (orphaned feature)', async () => {
       // Setup: Create feature without any increments
       const orphanedFeatureDir = path.join(testDir, '.specweave/docs/internal/specs/_features/FS-099');
-      await fs.ensureDir(orphanedFeatureDir);
+      await fs.mkdir(orphanedFeatureDir, { recursive: true });
       await fs.writeFile(path.join(orphanedFeatureDir, 'FEATURE.md'), '# Orphaned Feature');
 
       // ACT: Try to archive features (with orphaned option)

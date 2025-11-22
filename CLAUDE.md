@@ -51,7 +51,6 @@ git push origin develop
 **Testing Unpushed Changes:**
 - **Option 1**: Temp branch → push → test → delete
 - **Option 2**: Fork-based (`claude plugin marketplace add github:YOUR_USERNAME/specweave`)
-- **Option 3**: Symlink (Unix-only, see `.specweave/docs/internal/advanced/symlink-dev-mode.md`)
 
 ---
 
@@ -611,10 +610,11 @@ npm run rebuild
 **Local setup**:
 ```bash
 git clone https://github.com/YOUR_USERNAME/specweave.git
-cd specweave && npm install
-mkdir -p ~/.claude/plugins/marketplaces
-ln -s "$(pwd)" ~/.claude/plugins/marketplaces/specweave
+cd specweave && npm install && npm run rebuild
 bash scripts/install-git-hooks.sh
+
+# Push changes to GitHub → Claude Code auto-updates marketplace (5-10s)
+# For fork-based testing: claude plugin marketplace add github:YOUR_USERNAME/specweave
 ```
 
 ---

@@ -1,8 +1,32 @@
 #!/bin/bash
-# SpecWeave Development Mode Switcher
-# Switches to local development mode using symlink
+# ⚠️ DEPRECATED: SpecWeave Development Mode Switcher
+#
+# 🔴 THIS SCRIPT IS DEPRECATED AS OF 2025-11-22
+#
+# This script created symlinks for local development, which is NO LONGER SUPPORTED.
+#
+# USE GITHUB MARKETPLACE WORKFLOW INSTEAD:
+# 1. Push changes to GitHub (develop branch)
+# 2. Wait 5-10 seconds for Claude Code auto-update
+# 3. Test with updated marketplace code
+#
+# See CLAUDE.md Section 1 "Local Development Setup" for current guidelines.
+#
+# This script is preserved for historical reference only.
+# ---
 
 set -e
+
+echo "⚠️  WARNING: This script is DEPRECATED!"
+echo "   Use GitHub marketplace workflow instead (see CLAUDE.md)"
+echo ""
+read -p "Continue anyway? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Exiting. See CLAUDE.md for GitHub-first workflow."
+  exit 1
+fi
+echo ""
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/specweave"
