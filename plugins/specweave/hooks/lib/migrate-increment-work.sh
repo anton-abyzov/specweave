@@ -8,7 +8,7 @@
 #   2. Adjust WIP limit (temporarily allow 3 active)
 #   3. Force-close (mark as complete without transferring work)
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # ============================================================================
 # CONFIGURATION

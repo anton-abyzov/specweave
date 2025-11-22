@@ -14,8 +14,12 @@
 # 6. Write to cache
 #
 # Performance: 50-100ms (runs async, user doesn't wait)
+#
+# EMERGENCY FIX (v0.24.4): Changed from set -euo pipefail to set +e
+# CRITICAL: Hooks MUST use set +e to prevent Claude Code crashes!
+# See: CLAUDE.md section 9a - Hook Performance & Safety
 
-set -euo pipefail
+set +e
 
 # Find project root
 find_project_root() {
@@ -149,8 +153,20 @@ INCREMENT_ID=$(echo "$CURRENT_INCREMENT" | grep -oE '^[0-9]{4}')
 INCREMENT_NAME_ONLY=$(echo "$CURRENT_INCREMENT" | sed 's/^[0-9]\{4\}-//')
 INCREMENT_NAME="$INCREMENT_ID-$INCREMENT_NAME_ONLY"
 
-# Step 6: Write cache (now includes AC metrics)
-jq -n \
+# Step 6: Write cache with atomic validation (v0.24.4 - prevents corruption)
+TMP_CACHE_FILE="$PROJECT_ROOT/.specweave/state/.status-line-tmp.json"
+
+# Validate all numeric inputs before jq (prevents jq failures)
+[[ "$TOTAL_TASKS" =~ ^[0-9]+$ ]] || TOTAL_TASKS=0
+[[ "$COMPLETED_TASKS" =~ ^[0-9]+$ ]] || COMPLETED_TASKS=0
+[[ "$PERCENTAGE" =~ ^[0-9]+$ ]] || PERCENTAGE=0
+[[ "$TOTAL_ACS" =~ ^[0-9]+$ ]] || TOTAL_ACS=0
+[[ "$COMPLETED_ACS" =~ ^[0-9]+$ ]] || COMPLETED_ACS=0
+[[ "$OPEN_ACS" =~ ^[0-9]+$ ]] || OPEN_ACS=0
+[[ "$OPEN_COUNT" =~ ^[0-9]+$ ]] || OPEN_COUNT=0
+
+# Generate cache to temp file first (atomic operation)
+if jq -n \
   --arg id "$CURRENT_INCREMENT" \
   --arg name "$INCREMENT_NAME" \
   --argjson completed "$COMPLETED_TASKS" \
@@ -171,6 +187,20 @@ jq -n \
     },
     openCount: $openCount,
     lastUpdate: (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
-  }' > "$CACHE_FILE"
+  }' > "$TMP_CACHE_FILE" 2>/dev/null; then
+
+  # Validate generated JSON before replacing cache (corruption prevention)
+  if jq empty "$TMP_CACHE_FILE" 2>/dev/null; then
+    mv "$TMP_CACHE_FILE" "$CACHE_FILE"
+  else
+    # Invalid JSON generated - keep old cache
+    echo "[$(date)] ERROR: Generated invalid JSON, keeping old cache" >> "$DEBUG_LOG" 2>/dev/null || true
+    rm -f "$TMP_CACHE_FILE"
+  fi
+else
+  # jq generation failed - keep old cache
+  echo "[$(date)] ERROR: jq failed to generate status cache (exit $?)" >> "$DEBUG_LOG" 2>/dev/null || true
+  rm -f "$TMP_CACHE_FILE"
+fi
 
 exit 0

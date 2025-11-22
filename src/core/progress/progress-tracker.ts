@@ -116,19 +116,58 @@ export class ProgressTracker {
    * @param failed Count of failed items
    * @param skipped Count of skipped items
    */
-  finish(succeeded: number, failed: number, skipped: number): void {
+  finish(succeeded: number, failed: number, skipped: number, options?: {
+    errorLogFile?: string;
+    showErrorDetails?: boolean;
+  }): void {
     // Final render
     this.render();
 
+    // Calculate total time
+    const totalTimeMs = Date.now() - this.startTime;
+    const totalTimeSec = Math.floor(totalTimeMs / 1000);
+    const minutes = Math.floor(totalTimeSec / 60);
+    const seconds = totalTimeSec % 60;
+    const totalTimeStr = minutes > 0
+      ? `${minutes}m ${seconds}s`
+      : `${seconds}s`;
+
     // Show summary
     console.log(''); // Blank line
-    console.log(`✅ Succeeded: ${succeeded}`);
+    console.log(`✅ Import Complete!`);
+    console.log('');
+    console.log(`Imported: ${succeeded} projects`);
+
     if (failed > 0) {
-      console.log(`❌ Failed: ${failed}`);
+      const errorLogHint = options?.errorLogFile
+        ? ` (see ${options.errorLogFile})`
+        : '';
+      console.log(`Failed: ${failed} projects${errorLogHint}`);
+
+      // Show error details if requested
+      if (options?.showErrorDetails) {
+        const failedItems = Array.from(this.items.values())
+          .filter(item => item.status === 'error')
+          .slice(0, 5); // Show first 5 errors
+
+        if (failedItems.length > 0) {
+          failedItems.forEach(item => {
+            console.log(`  ❌ ${item.name}`);
+          });
+
+          if (failed > 5) {
+            console.log(`  ... and ${failed - 5} more errors`);
+          }
+        }
+      }
     }
+
     if (skipped > 0) {
-      console.log(`⏭️  Skipped: ${skipped}`);
+      console.log(`Skipped: ${skipped} projects`);
     }
+
+    console.log('');
+    console.log(`Total time: ${totalTimeStr}`);
     console.log(''); // Blank line
   }
 

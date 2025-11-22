@@ -27,7 +27,7 @@
 #
 ###############################################################################
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Arguments
 SPEC_ID="${1:-}"

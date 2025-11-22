@@ -15,7 +15,7 @@
 #   sync-spec-content.sh <spec-path>
 #
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -131,7 +131,7 @@ echo ""
 set +e
 node "$SYNC_CLI" --spec "$SPEC_PATH" --provider "$PROVIDER"
 SYNC_EXIT_CODE=$?
-set -e
+set +e  # EMERGENCY FIX: Changed from set -e to prevent Claude Code crashes
 
 if [ $SYNC_EXIT_CODE -eq 0 ]; then
   echo ""

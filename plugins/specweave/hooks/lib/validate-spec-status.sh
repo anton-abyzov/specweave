@@ -16,7 +16,7 @@
 #
 # Requires: bash 4.0+ (for associative arrays)
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Find project root
 find_project_root() {

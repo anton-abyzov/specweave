@@ -189,6 +189,28 @@ if [ -f "scripts/pre-commit-yaml-validation.sh" ]; then
   fi
 fi
 
+# 9. Enforce ADR-0061: No increment-to-increment references (prevent circular dependencies)
+# Incident Reference: 2025-11-22 - Spec-detector returned 0 specs, GitHub hooks failed
+if [ -f "scripts/pre-commit-no-increment-refs.sh" ]; then
+  if ! bash scripts/pre-commit-no-increment-refs.sh; then
+    echo ""
+    echo "❌ Increment reference check failed"
+    echo "   See: ADR-0061, CLAUDE.md Section 10a"
+    exit 1
+  fi
+fi
+
+# 10. Validate GitHub issue title format (prevent deprecated SP- prefix)
+# Incident Reference: 2025-11-22 - 8 issues created with [SP-US-XXX] format (deprecated)
+if [ -f "scripts/pre-commit-hooks/validate-github-issue-format.sh" ]; then
+  if ! bash scripts/pre-commit-hooks/validate-github-issue-format.sh; then
+    echo ""
+    echo "❌ GitHub issue format check failed"
+    echo "   See: CLAUDE.md Section 10, ADR-0032"
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -207,6 +229,8 @@ echo "  - pre-commit: Status line desync detection (CRITICAL)"
 echo "  - pre-commit: Plugin directory validation (prevents empty agent/skill dirs)"
 echo "  - pre-commit: fs-extra import detection (enforces native fs migration)"
 echo "  - pre-commit: YAML frontmatter validation (prevents malformed spec.md)"
+echo "  - pre-commit: No increment references (prevents circular dependencies - ADR-0061)"
+echo "  - pre-commit: GitHub issue format validation (blocks deprecated SP- prefix - ADR-0032)"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"
 echo ""
