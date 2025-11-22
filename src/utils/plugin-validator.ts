@@ -9,7 +9,7 @@
  * @since 0.9.4
  */
 
-import fs from 'fs-extra';
+import fs from 'fs-extra'; // legacy fs-extra
 import path from 'path';
 import os from 'os';
 import { exec } from 'child_process';
@@ -173,15 +173,13 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'training',
     'dataset',
   ],
-  'specweave-observability': [
+  'specweave-infrastructure': [
     'prometheus',
     'grafana',
     'monitoring',
     'metrics',
     'alerting',
     'observability',
-  ],
-  'specweave-security': [
     'security',
     'owasp',
     'vulnerability',
@@ -189,6 +187,9 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'audit',
     'csrf',
     'xss',
+    'devops',
+    'sre',
+    'cloud',
   ],
   'specweave-diagrams': [
     'diagram',
@@ -198,36 +199,36 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'visualization',
     'flowchart',
   ],
-  'specweave-backend-nodejs': [
+  'specweave-backend': [
     'nodejs',
     'express',
     'fastify',
     'nestjs',
-    'backend',
-    'api',
-  ],
-  'specweave-backend-python': [
     'python',
     'fastapi',
     'django',
     'flask',
-    'backend',
-    'api',
-  ],
-  'specweave-backend-dotnet': [
     'dotnet',
     '.net',
     'aspnet',
     'asp.net',
     'c#',
     'csharp',
+    'backend',
+    'api',
+    'rest',
+    'microservices',
   ],
-  'specweave-e2e-testing': [
+  'specweave-testing': [
     'playwright',
     'e2e',
     'end-to-end',
     'browser',
     'visual regression',
+    'testing',
+    'test coverage',
+    'unit test',
+    'integration test',
   ],
 };
 

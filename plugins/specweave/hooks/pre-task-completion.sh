@@ -44,13 +44,73 @@ PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
 # ============================================================================
-# CONFIGURATION
+# EMERGENCY SAFETY CHECKS (v0.24.4 - Performance Fix)
 # ============================================================================
 
 LOGS_DIR=".specweave/logs"
 DEBUG_LOG="$LOGS_DIR/hooks-debug.log"
-
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
+
+# CIRCUIT BREAKER: Auto-disable after consecutive failures
+CIRCUIT_BREAKER_FILE=".specweave/state/.hook-circuit-breaker-pre"
+CIRCUIT_BREAKER_THRESHOLD=3
+
+mkdir -p ".specweave/state" 2>/dev/null || true
+
+if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
+  FAILURE_COUNT=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
+  if (( FAILURE_COUNT >= CIRCUIT_BREAKER_THRESHOLD )); then
+    # Circuit breaker is OPEN - hooks are disabled
+    exit 0
+  fi
+fi
+
+# FILE LOCK: Only allow 1 pre-task-completion hook at a time
+LOCK_FILE=".specweave/state/.hook-pre-task.lock"
+LOCK_TIMEOUT=5  # seconds (shorter than PostToolUse)
+
+LOCK_ACQUIRED=false
+for i in {1..5}; do
+  if mkdir "$LOCK_FILE" 2>/dev/null; then
+    LOCK_ACQUIRED=true
+    trap 'rmdir "$LOCK_FILE" 2>/dev/null || true' EXIT
+    break
+  fi
+
+  # Check for stale lock
+  if [[ -d "$LOCK_FILE" ]]; then
+    LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
+    if (( LOCK_AGE > LOCK_TIMEOUT )); then
+      rmdir "$LOCK_FILE" 2>/dev/null || true
+      continue
+    fi
+  fi
+
+  sleep 0.1
+done
+
+if [[ "$LOCK_ACQUIRED" == "false" ]]; then
+  # Another instance is running, skip
+  exit 0
+fi
+
+# DEBOUNCING: Prevent duplicate hook fires
+LAST_FIRE_FILE="$LOGS_DIR/last-pre-hook-fire"
+DEBOUNCE_SECONDS=5  # Same as PostToolUse
+
+CURRENT_TIME=$(date +%s)
+
+if [ -f "$LAST_FIRE_FILE" ]; then
+  LAST_FIRE=$(cat "$LAST_FIRE_FILE" 2>/dev/null || echo "0")
+  TIME_DIFF=$((CURRENT_TIME - LAST_FIRE))
+
+  if [ "$TIME_DIFF" -lt "$DEBOUNCE_SECONDS" ]; then
+    # Debounced - skip this execution
+    exit 0
+  fi
+fi
+
+echo "$CURRENT_TIME" > "$LAST_FIRE_FILE"
 
 echo "[$(date)] 🔒 Pre-task-completion hook fired" >> "$DEBUG_LOG" 2>/dev/null || true
 
@@ -170,6 +230,9 @@ if [ "$VALIDATION_EXIT_CODE" = "0" ]; then
   # Validation passed - allow completion
   echo "[$(date)] ✅ AC test validation passed" >> "$DEBUG_LOG" 2>/dev/null || true
 
+  # Reset circuit breaker on success
+  echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
+
   VALIDATION_SUMMARY=$(cat "$VALIDATION_OUTPUT" | tail -5 | tr '\n' ' ')
 
   rm -f "$VALIDATION_OUTPUT"
@@ -183,6 +246,10 @@ EOF
 else
   # Validation failed - block completion
   echo "[$(date)] ❌ AC test validation failed" >> "$DEBUG_LOG" 2>/dev/null || true
+
+  # Increment circuit breaker on failure
+  CURRENT_FAILURES=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
+  echo "$((CURRENT_FAILURES + 1))" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
 
   VALIDATION_ERROR=$(cat "$VALIDATION_OUTPUT" | grep -A 10 "VALIDATION FAILED" | tr '\n' ' ' | cut -c 1-300)
 

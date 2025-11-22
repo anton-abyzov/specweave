@@ -127,7 +127,7 @@ export interface ValidationResult {
 /**
  * Repository hosting types
  */
-export type RepositoryHosting = 'github' | 'local' | 'other';
+export type RepositoryHosting = 'github' | 'github-single' | 'github-multi' | 'local' | 'other';
 
 /**
  * Setup options
