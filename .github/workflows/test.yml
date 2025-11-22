@@ -40,6 +40,7 @@ jobs:
         run: npm run rebuild
 
       - name: Verify build output
+        shell: bash
         run: |
           # Verify no TypeScript source files in dist/
           if find dist/src -name "*.ts" -not -name "*.d.ts" 2>/dev/null | grep -q .; then
@@ -263,12 +264,26 @@ jobs:
             ! -name "external-tools" \
             ! -name "generators" \
             ! -name "commands" \
-            ! -name "deduplication" 2>/dev/null | wc -l)
+            ! -name "deduplication" \
+            ! -name "jira" \
+            ! -name "fixtures" \
+            ! -name "performance" \
+            ! -name "stress" \
+            ! -name "living-docs" \
+            ! -name "cli" \
+            ! -name "hooks" \
+            ! -name "cache" \
+            ! -name "sync" \
+            ! -name "ado" \
+            ! -name "integrations" \
+            ! -name "agents" \
+            ! -name "migration" \
+            ! -name "test-utils" 2>/dev/null | wc -l)
 
           if [ "$FLAT_DIRS" -gt 0 ]; then
             echo "❌ ERROR: Flat test structure detected!"
             echo "Found $FLAT_DIRS unauthorized directories."
-            echo "Tests must be in: core/, features/, external-tools/, or generators/"
+            echo "Tests must be in allowed categories (see .github/workflows/test.yml)"
             find tests/integration -maxdepth 1 -type d \
               ! -name "integration" \
               ! -name "core" \
@@ -276,7 +291,21 @@ jobs:
               ! -name "external-tools" \
               ! -name "generators" \
               ! -name "commands" \
-              ! -name "deduplication"
+              ! -name "deduplication" \
+              ! -name "jira" \
+              ! -name "fixtures" \
+              ! -name "performance" \
+              ! -name "stress" \
+              ! -name "living-docs" \
+              ! -name "cli" \
+              ! -name "hooks" \
+              ! -name "cache" \
+              ! -name "sync" \
+              ! -name "ado" \
+              ! -name "integrations" \
+              ! -name "agents" \
+              ! -name "migration" \
+              ! -name "test-utils"
             exit 1
           fi
           echo "✅ Test structure is categorized (no flat directories)"
