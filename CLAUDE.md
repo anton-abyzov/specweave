@@ -148,6 +148,61 @@ grep -c "^- \[x\] \*\*AC-" spec.md                            # Must equal total
 
 ---
 
+### 7a. AC Presence in spec.md (MANDATORY - v0.24.0+) ⚠️
+
+**CRITICAL RULE**: spec.md MUST contain inline Acceptance Criteria, even when using `structure: user-stories` with external living docs.
+
+**Why**: The AC sync hook (`post-task-completion.sh`) requires ACs in spec.md to function. Without inline ACs, you get 0% AC completion and broken status line.
+
+**Architecture** (ADR-0064):
+```
+spec.md = SOURCE OF TRUTH for ACs
+living docs = DOCUMENTATION LAYER (optional, provides rich context)
+```
+
+**Validation Gates**:
+1. `/specweave:do` (pre-start hook) - **BLOCKS** if ACs missing
+2. `/specweave:validate` - **ERRORS** if ACs missing
+3. `/specweave:increment` - **AUTO-EMBEDS** ACs during creation
+
+**Required Format**:
+```markdown
+## Acceptance Criteria
+
+<!-- Auto-synced from living docs -->
+
+### US-001: User Story Title
+
+- [ ] **AC-US1-01**: Criterion description
+- [ ] **AC-US1-02**: Criterion description
+```
+
+**If ACs are missing**:
+```bash
+# Manual fix: Auto-embed ACs from living docs
+/specweave:embed-acs 0050
+
+# Or add ACs manually to spec.md
+Edit("spec.md", "...", "...\n\n## Acceptance Criteria\n\n...")
+```
+
+**Common mistake**: Generating "pointer-only" spec.md that just references living docs without embedding ACs.
+
+**Incident** (2025-11-22, Increment 0050):
+- spec.md had 0 inline ACs (only references to living docs)
+- tasks.md referenced 39 ACs (AC-US1-01, AC-US4-01, etc.)
+- AC sync hook failed: 38 warnings, 0% completion
+- Fix: `/specweave:embed-acs 0050` → auto-embedded 39 ACs → 100% completion
+
+**Prevention**:
+- Pre-start hook validates AC presence before allowing work to start
+- Spec generators auto-embed ACs when `structure: user-stories` is used
+- Validation command checks AC count matches metadata.json
+
+**See**: ADR-0064, `src/utils/ac-embedder.ts`, `src/core/validators/ac-presence-validator.ts`
+
+---
+
 ### 8. Logger Abstraction (NEVER `console.*`)
 
 **Rule**: ALL `src/` code uses logger injection, NEVER `console.log/error/warn`

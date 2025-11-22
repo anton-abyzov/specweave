@@ -676,4 +676,41 @@ export class JiraClient {
       throw new Error(`Failed to add comment to JIRA issue ${issueKey}: ${response.status} ${error}`);
     }
   }
+
+  /**
+   * Execute raw JQL search query
+   *
+   * NEW (v0.24.0): Used by FilterProcessor for custom JQL filtering
+   *
+   * @param jql - JQL query string
+   * @param maxResults - Maximum results (default: 100)
+   * @returns Search response with issues
+   */
+  public async searchWithJql(jql: string, maxResults: number = 100): Promise<{ issues: JiraIssue[]; total: number }> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/search/jql`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jql,
+        maxResults,
+        fields: ['project', 'summary']  // Minimal fields for filter processing
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`JQL Search API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return {
+      issues: data.issues || [],
+      total: data.total || 0
+    };
+  }
 }

@@ -353,3 +353,6 @@ export function showAzureDevOpsSetupSkipped(language: SupportedLanguage): void {
   console.log(chalk.gray('   AZURE_DEVOPS_AREA_PATHS_Frontend=Web,Admin,Public'));
   console.log(chalk.gray('   AZURE_DEVOPS_TEAMS_Backend=Alpha,Beta\n'));
 }
+
+// Export auto-discovery (NEW in v0.24.0)
+export { autoDiscoverAdoProjects } from './ado-auto-discover.js';
