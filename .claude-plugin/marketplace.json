@@ -19,6 +19,17 @@
       }
     },
     {
+      "name": "specweave-plugin-dev",
+      "description": "Plugin development guide - Create custom Claude Code plugins, skills, agents, hooks, and MCP servers. Essential for SpecWeave contributors and plugin developers.",
+      "source": "./plugins/specweave-plugin-dev",
+      "category": "development-tools",
+      "version": "1.0.0",
+      "author": {
+        "name": "SpecWeave Contributors",
+        "email": "hello@spec-weave.com"
+      }
+    },
+    {
       "name": "specweave-github",
       "description": "GitHub integration - bidirectional sync, issue tracking, task management",
       "source": "./plugins/specweave-github",
