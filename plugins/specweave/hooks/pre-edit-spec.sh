@@ -20,10 +20,16 @@
 #     ↓ read by
 #   PostToolUse:Edit → post-edit-spec.sh
 #
-# Version: v0.24.2 (Tier 2)
+# Version: v0.24.3 (EMERGENCY FIXES)
 # Date: 2025-11-22
 
-set -e
+# EMERGENCY FIX: Remove set -e - it causes Claude Code crashes!
+set +e
+
+# EMERGENCY KILL SWITCH: Disable all hooks if env variable set
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root
 find_project_root() {
@@ -141,4 +147,5 @@ if [[ -f "$METRICS_FILE" ]]; then
   fi
 fi
 
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
 exit 0

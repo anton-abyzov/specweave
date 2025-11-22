@@ -10,6 +10,8 @@ lastUpdated: 2025-11-22
 
 # Enhanced External Tool Import - Phase 1b-7
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/701
+
 ## Implementation History
 
 | Increment | Status | Completion Date |

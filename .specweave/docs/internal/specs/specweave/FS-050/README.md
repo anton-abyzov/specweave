@@ -9,6 +9,8 @@ status: in-progress
 
 # Enhanced External Tool Import - Phase 1b-7
 
+**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/702
+
 **Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
 
 ## User Stories
