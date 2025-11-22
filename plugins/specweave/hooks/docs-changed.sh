@@ -5,7 +5,12 @@
 # Detects if documentation was changed during implementation
 # Triggers review workflow if needed
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root by searching upward for .specweave/ directory
 # Works regardless of where hook is installed (source or .claude/hooks/)
@@ -77,3 +82,6 @@ if [ -n "$DOC_CHANGES" ]; then
   mkdir -p "$LOGS_DIR"
   echo "[$(date)] Documentation changed: $DOC_CHANGES" >> "$LOGS_DIR/hooks.log"
 fi
+
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
+exit 0

@@ -17,7 +17,12 @@
 # Example:
 #   ./post-increment-change.sh 0015-hierarchical-sync spec.md
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root
 find_project_root() {

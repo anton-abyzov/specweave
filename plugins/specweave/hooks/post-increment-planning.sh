@@ -22,7 +22,12 @@
 #
 # @see .specweave/increments/0006-llm-native-i18n/reports/DESIGN-POST-GENERATION-TRANSLATION.md
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # ============================================================================
 # PROJECT ROOT DETECTION

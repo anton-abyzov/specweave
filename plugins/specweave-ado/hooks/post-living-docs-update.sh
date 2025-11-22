@@ -15,7 +15,12 @@
 #
 # ============================================================================
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -351,3 +356,5 @@ main() {
 
 # Run main function
 main "$@"
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
+exit 0

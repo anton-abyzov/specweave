@@ -5,7 +5,12 @@
 #
 # This hook closes GitHub issues automatically when increments complete
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 HOOK_NAME="post-increment-completion"
 INCREMENT_ID="${1:-}"

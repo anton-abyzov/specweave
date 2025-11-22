@@ -8,7 +8,12 @@
 # 2. Log the question/requirement
 # 3. Record in current increment's work log (if applicable)
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root by searching upward for .specweave/ directory
 # Works regardless of where hook is installed (source or .claude/hooks/)
@@ -73,3 +78,6 @@ if [ -n "$CURRENT_WORK" ] && [ -d "$CURRENT_WORK" ]; then
 fi
 
 echo "✅ Hook complete"
+
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
+exit 0
