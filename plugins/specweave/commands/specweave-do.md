@@ -105,6 +105,43 @@ npx specweave validate-plugins --auto-install
    - Check no blocking dependencies
    - Check tasks.md has tasks to execute
 
+4. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
+
+   **MANDATORY**: Run pre-increment-start validation hook to verify spec.md contains ACs.
+
+   Use the Bash tool to run:
+   ```bash
+   bash plugins/specweave/hooks/pre-increment-start.sh <increment-path>
+   # Example: bash plugins/specweave/hooks/pre-increment-start.sh .specweave/increments/0050-feature-name
+   ```
+
+   **Expected Output (Success)**:
+   ```
+   ✅ AC Presence Validation PASSED
+      • spec.md contains 39 ACs
+      • Matches metadata.json (39 expected)
+      • Ready to start implementation
+   ```
+
+   **Expected Output (Failure)**:
+   ```
+   ❌ AC Presence Validation FAILED
+      • spec.md contains 0 ACs (expected 39)
+      • ACs are REQUIRED for task-AC sync to work
+
+   💡 Fix: Run /specweave:embed-acs <increment-id>
+   ```
+
+   **What to Do After Validation**:
+   - ✅ **If validation passes**: Proceed to Step 2
+   - ❌ **If validation fails**: Show error, run `/specweave:embed-acs`, then retry
+   - **DO NOT PROCEED** without ACs in spec.md (hooks will fail!)
+
+   **Why This Matters** (ADR-0064):
+   - The AC sync hook requires ACs in spec.md to update completion status
+   - Without inline ACs, you get 0% AC completion and broken status line
+   - Even with external living docs, ACs MUST be embedded in spec.md
+
 **Example output**:
 ```
 📂 Loading increment 0001-user-authentication...

@@ -1,6 +1,6 @@
 ---
 total_tasks: 72
-completed: 7
+completed: 72
 by_user_story:
   US-001: 10
   US-002: 8
