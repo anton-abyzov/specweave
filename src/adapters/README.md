@@ -266,7 +266,7 @@ src/adapters/cursor/
 
 **Inspiration**:
 - **spec-kit** (GitHub): Agent-agnostic approach, plain text commands
-- **BMAD-METHOD**: Portable prompt bundles work across multiple AIs
+- **Quantitative risk methodologies**: Portable prompt bundles work across multiple AIs
 
 ---
 

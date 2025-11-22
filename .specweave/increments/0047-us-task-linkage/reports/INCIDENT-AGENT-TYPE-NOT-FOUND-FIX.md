@@ -95,7 +95,7 @@ Before this incident, there was no automated check to detect:
 ```yaml
 ---
 name: increment-quality-judge-v2
-description: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions.
+description: Enhanced AI-powered quality assessment with RISK SCORING (Probability × Impact method) and quality gate decisions.
 tools: Read, Grep, Glob
 model: claude-sonnet-4-5-20250929
 model_preference: haiku
