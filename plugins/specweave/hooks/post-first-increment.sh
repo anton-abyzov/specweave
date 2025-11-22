@@ -6,7 +6,7 @@
 #
 # NON-INTERACTIVE: Just shows a message (hooks run in background)
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Get project root (where .specweave/ lives)
 PROJECT_ROOT="$(pwd)"

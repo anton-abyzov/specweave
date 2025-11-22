@@ -29,12 +29,13 @@ REPO=""
 DRY_RUN=false
 
 # Patterns to search (can be overridden via --patterns flag)
+# NOTE: Use CORRECT [FS-XXX][US-YYY] format (v0.24.0+)
+# OLD deprecated formats like [SP-US-XXX] should NOT exist!
 PATTERNS=(
-  "[SP-US-006]"
-  "[SP-US-007]"
-  "[SP-US-008]"
-  "[SP-US-009]"
-  "[SP-FS-023-specweave]"
+  "[FS-048][US-001]"
+  "[FS-048][US-002]"
+  "[FS-048][US-003]"
+  "[FS-033][US-015]"
 )
 
 # ============================================================================
@@ -51,7 +52,8 @@ OPTIONS:
   --repo REPO        GitHub repository (format: owner/repo)
                      If not specified, uses current repo from git remote
   --patterns "P1,P2" Comma-separated list of title patterns to search
-                     Default: [SP-US-006],[SP-US-007],[SP-US-008],[SP-US-009],[SP-FS-023-specweave]
+                     Default: [FS-048][US-001],[FS-048][US-002],[FS-048][US-003]
+                     Format: [FS-XXX][US-YYY] (v0.24.0+, see CLAUDE.md Section 10)
   --dry-run          Show what would be done without actually closing issues
   --help             Show this help message
 

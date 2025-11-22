@@ -215,13 +215,21 @@ import { mkdirpSync, writeJsonSync } from '../utils/fs-native.js';
 
 **ONLY Correct Format**: `[FS-XXX][US-YYY] User Story Title`
 
-**Examples**:
+**PROHIBITED Formats** (Pre-commit hook blocks these):
+```
+❌ [SP-US-XXX] ...          (Deprecated SP- prefix, removed v0.24.0)
+❌ [SP-FS-XXX] ...          (Deprecated SP- prefix, removed v0.24.0)
+❌ [SP-FS-XXX-specweave] ...  (SP prefix + project suffix, DEPRECATED!)
+❌ [FS-048] ...             (Feature-only - USE MILESTONE, NOT ISSUE!)
+❌ [FS-048-specweave] ...   (Project suffix - README.md ONLY, NOT GitHub!)
+❌ [undefined][US-XXX] ...  (Missing Feature ID - validation error!)
+```
+
+**ONLY CORRECT Examples**:
 ```
 ✅ [FS-048][US-001] Smart Pagination During Init
 ✅ [FS-048][US-002] CLI-First Defaults
-❌ [FS-048]             (Feature-only - USE MILESTONE!)
-❌ [SP-FS-048-specweave] (SP prefix - DEPRECATED!)
-❌ [FS-048-specweave]   (Project suffix - README.md ONLY, NOT GitHub!)
+✅ [FS-033][US-015] Task Completion Tracking
 ```
 
 **Architecture** (ADR-0032 Universal Hierarchy Mapping):
@@ -240,15 +248,22 @@ Feature FS-048 → GitHub Milestone "FS-048: Feature Title"
 # ❌ WRONG: /specweave:increment does NOT create GitHub issues
 ```
 
-**If you see Feature-level issues** (`[FS-XXX]` without `[US-YYY]`):
-1. Close them immediately with comment explaining the violation
+**Enforcement**:
+- **Pre-commit hook**: Blocks code commits with prohibited formats
+- **UserStoryIssueBuilder**: Runtime validation throws error if featureId invalid
+- **Pattern matching**: Final safety check before issue creation
+- **Manual review**: Close any wrong-format issues immediately
+
+**If you see wrong-format issues** (e.g., `[SP-US-XXX]`, `[SP-FS-XXX]`, or `[FS-XXX]` alone):
+1. **Close immediately** with comment: "WRONG FORMAT: Violates ADR-0032. Use [FS-XXX][US-YYY] format."
 2. Delete any duplicate Feature folders (e.g., FS-050 when FS-048 exists)
 3. Use `/specweave-github:sync FS-XXX` to create correct User Story issues
-4. **REPORT THE BUG** - this should never happen!
+4. **REPORT THE BUG** - this should never happen with validation!
 
 **See**:
 - `.specweave/increments/0047-us-task-linkage/reports/FEATURE-LEVEL-GITHUB-SYNC-REMOVAL-PLAN.md`
 - `.specweave/increments/0050-*/reports/GITHUB-ISSUE-BUG-ANALYSIS-2025-11-22.md`
+- `.specweave/increments/0050-*/reports/SP-PREFIX-BUG-ROOT-CAUSE-2025-11-22.md`
 
 ---
 
