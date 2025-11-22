@@ -113,7 +113,7 @@ Step 4: Execute → Follow the increment planning workflow
 
 #### increment-quality-judge-v2
 
-**Description**: Enhanced AI-powered quality assessment with RISK SCORING (BMAD pattern) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /specweave:qa command.
+**Description**: Enhanced AI-powered quality assessment with RISK SCORING (Probability × Impact method) and quality gate decisions. Evaluates specifications, plans, and tests for clarity, testability, completeness, feasibility, maintainability, edge cases, and RISKS. Provides PASS/CONCERNS/FAIL decisions. Activates for validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate, /specweave:qa command.
 
 **Activates for**: validate quality, quality check, assess spec, evaluate increment, spec review, quality score, risk assessment, qa check, quality gate
 

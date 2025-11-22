@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 /**
  * Unit tests for RiskCalculator
  *
- * Tests BMAD P×I scoring algorithm and risk utilities
+ * Tests Probability × Impact scoring algorithm and risk utilities
  * @module tests/unit/qa/risk-calculator.test
  */
 

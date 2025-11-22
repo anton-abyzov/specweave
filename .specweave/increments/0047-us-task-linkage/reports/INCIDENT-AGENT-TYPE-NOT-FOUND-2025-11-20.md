@@ -142,7 +142,7 @@ Task({
 **Contents**:
 - Complete YAML frontmatter (name, description, tools, model, cost_profile)
 - 7 evaluation dimensions (Clarity, Testability, Completeness, Feasibility, Maintainability, Edge Cases, **Risk**)
-- BMAD risk assessment methodology (Probability × Impact scoring)
+- Quantitative risk assessment methodology (Probability × Impact scoring)
 - Quality gate decision logic (PASS/CONCERNS/FAIL)
 - JSON output format for programmatic consumption
 - Comprehensive evaluation workflow

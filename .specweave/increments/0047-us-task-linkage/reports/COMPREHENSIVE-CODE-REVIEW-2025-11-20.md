@@ -771,7 +771,7 @@ function categorizeError(error) {
 
 ---
 
-## BMAD Risk Assessment
+## Quantitative Risk Assessment
 
 ### 🔴 **Business Risks**
 

@@ -6,7 +6,7 @@
  */
 
 // ============================================================================
-// Risk Assessment Types (BMAD Pattern)
+// Risk Assessment Types (Probability × Impact Method)
 // ============================================================================
 
 export type RiskCategory = 'security' | 'technical' | 'implementation' | 'operational';

@@ -135,7 +135,7 @@ Debounce Efficiency:  87%
 - **Impact:** Limited troubleshooting when fallback occurs
 - **Mitigation:** Added `detection_method` tracking
 
-### 🔴 CRITICAL RISKS (BMAD Analysis)
+### 🔴 CRITICAL RISKS (Quantitative Risk Analysis)
 
 **RISK-001 (BLOCKER):**
 - **Type:** Assumption validation

@@ -150,7 +150,7 @@ Task({
   prompt: "Assess quality of increment specification and implementation"
 });
 ```
-**Use for**: AI-powered quality assessment, risk scoring (BMAD), quality gate decisions
+**Use for**: AI-powered quality assessment, quantitative risk scoring (Probability × Impact), quality gate decisions
 
 #### Reflective Reviewer
 ```typescript

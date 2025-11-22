@@ -112,12 +112,12 @@ Command: `/specweave:validate 0048 --quality`
 - **Severity**: MAJOR
 - **Recommendation**: Add file locking or detect concurrent writes (see Suggestion 3)
 
-#### 🔴 ISSUE-004: Missing BMAD Risk Scoring
+#### 🔴 ISSUE-004: Missing Quantitative Risk Scoring
 - **Dimension**: Risk Assessment
 - **Location**: plan.md lines 1134-1171 - Risk section lacks Probability × Impact scores
 - **Impact**: Cannot prioritize mitigation efforts
 - **Severity**: MAJOR
-- **Recommendation**: Add formal risk scoring with BMAD pattern (see Suggestion 5)
+- **Recommendation**: Add formal risk scoring with Probability × Impact method (see Suggestion 5)
 
 ### Minor Issues (4)
 
@@ -266,14 +266,14 @@ if (availableSpace < requiredSpace) {
 
 ---
 
-### 🎯 Suggestion 5: Add BMAD Risk Scoring Table
+### 🎯 Suggestion 5: Add Quantitative Risk Scoring Table
 **Priority**: MEDIUM
 **Effort**: 2 hours
 
 Add formal risk assessment to spec.md:
 
 ```markdown
-## Risk Assessment (BMAD Scoring)
+## Risk Assessment (Probability × Impact Scoring)
 
 | Risk ID | Title | Probability | Impact | Score | Severity | Mitigation |
 |---------|-------|-------------|--------|-------|----------|------------|
@@ -330,15 +330,15 @@ fi
 - **Action**: Add file locking in ConfigManager.write()
 
 **CONCERN-003: Unscored Security Risk**
-- Secrets exposure risk lacks formal BMAD scoring
-- **Action**: Add BMAD table with Probability × Impact scores
+- Secrets exposure risk lacks formal quantitative scoring
+- **Action**: Add risk table with Probability × Impact scores
 
 ### Recommendations (4)
 
 1. **Add E2E Performance Test** - Validate "< 30 seconds" init time claim
 2. **Make AC-US3-04 Measurable** - Specify exact .env.example requirements
 3. **Add Auto-Migration Script** - Reduce friction for existing users (Phase 1b)
-4. **Document BMAD Risk Scoring** - Add formal risk prioritization to spec.md
+4. **Document Quantitative Risk Scoring** - Add formal risk prioritization to spec.md
 
 ---
 
@@ -354,7 +354,7 @@ fi
 
 1. Create integration tests for Jira auto-discovery (T-NEW-001)
 2. Add concurrent write protection to ConfigManager (T-NEW-002)
-3. Add BMAD risk scoring to spec.md (T-NEW-003)
+3. Add quantitative risk scoring to spec.md (T-NEW-003)
 4. Create auto-migration script for old .env format (T-NEW-004)
 
 ### Phase 7 Tasks (Performance Validation)
