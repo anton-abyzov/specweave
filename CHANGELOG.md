@@ -6,6 +6,86 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [Unreleased]
 
+### ✨ Features
+
+#### Judge-Based Marketplace Plugin Validation (v0.24.0+) - 2025-11-22
+
+**ENHANCEMENT**: Enhanced marketplace validation with LLM judge-based scoring system to prevent incomplete plugins from causing installation failures.
+
+**What Changed**:
+- ✅ **Judge Scoring System**: 5-tier scoring (Commands: 40, Lib: 40, Agents: 30, Hooks: 20, Skills: 10)
+- ✅ **40-Point Threshold**: Plugins must score ≥40 points to be included in marketplace
+- ✅ **Pre-Commit Integration**: Automatic validation when marketplace.json is modified
+- ✅ **Health Score Reporting**: Visual health metrics (Production-Ready: ≥80, Complete: 40-79, Incomplete: <40)
+- ✅ **6 Incomplete Plugins Removed**: specweave-backend, specweave-confluent, specweave-diagrams, specweave-kubernetes, specweave-mobile, specweave-payments
+- ✅ **100% Health Score**: All 11 remaining plugins are complete and functional
+
+**Root Cause Fixed**:
+- Previously incomplete plugins (skills-only) were added to marketplace.json without validation
+- Installation failed with "Plugin not found in marketplace" error
+- New validation system prevents skeleton/incomplete plugins from being published
+
+**Validation Script**:
+```bash
+bash scripts/validate-marketplace-plugins.sh
+
+# Output:
+# ✅ VALIDATION PASSED!
+# Health Score: 100%
+```
+
+**See**: `.specweave/increments/0051-marketplace-validation/SOLUTION-SUMMARY.md` (15-page ultra-deep analysis)
+
+#### Mandatory Post-Closure Quality Assessment (v0.24.0+) - 2025-11-22
+
+**ENHANCEMENT**: `/specweave:done` and `/specweave:next` now automatically run quality assessment after successful increment closure.
+
+**What Changed**:
+- ✅ **Automatic QA**: `/specweave:qa` now runs automatically after closure (no manual invocation needed)
+- ✅ **7-Dimension Quality Evaluation**: Clarity, Testability, Completeness, Feasibility, Maintainability, Edge Cases, Risk Assessment
+- ✅ **BMAD Risk Scoring**: Probability × Impact scoring (0-10 scale) with OWASP-based security checks
+- ✅ **Quality Gate Decisions**: PASS/CONCERNS/FAIL with automatic follow-up increment creation for critical issues
+- ✅ **Quality Reports**: Auto-generated `.specweave/increments/####/reports/qa-post-closure.md` reports
+- ✅ **Non-Blocking**: QA runs AFTER closure, doesn't block delivery (provides retrospective learning)
+
+**Why This Matters**:
+- PM validation checks **structural completion** (tasks done, tests pass, docs updated)
+- Quality assessment checks **implementation quality** (code quality, architecture, security, technical debt)
+- Systematic tracking of quality metrics, risks, and technical debt across all increments
+- Continuous improvement through retrospective learning
+
+**New Workflow**:
+```bash
+/specweave:done 0001
+# OR
+/specweave:next
+
+# Automatically runs:
+# 1. PM Validation (Gates 0-3)
+# 2. Increment Closure
+# 3. Post-Closure Quality Assessment (NEW!)
+# 4. Quality Report Generation
+```
+
+**Quality Gate Decisions**:
+- **✅ PASS** (Score ≥80): Proceed to next work
+- **🟡 CONCERNS** (Score 60-79): Log concerns, suggest improvements
+- **🔴 FAIL** (Score <60): Create follow-up increment for critical fixes
+
+**Skip Flag** (Optional):
+```bash
+/specweave:done 0001 --skip-qa  # For hotfixes/emergencies
+```
+
+**Files Changed**:
+- `plugins/specweave/commands/specweave-done.md` - Added Step 5.5: Post-Closure Quality Assessment
+- `plugins/specweave/commands/specweave-next.md` - Added Step 3.5: Post-Closure Quality Assessment
+- ADR-0063: Mandatory Post-Closure Quality Assessment (architectural decision)
+
+**See**: ADR-0063 for complete architectural rationale
+
+---
+
 ### 🔒 Security & Permission System
 
 #### 5-Gate Permission Architecture (v0.24.0) - 2025-11-20

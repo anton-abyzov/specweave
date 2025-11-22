@@ -52,42 +52,9 @@
       }
     },
     {
-      "name": "specweave-kubernetes",
-      "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps",
-      "source": "./plugins/specweave-kubernetes",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-infrastructure",
       "description": "Cloud infrastructure - Hetzner, Prometheus, Grafana, monitoring",
       "source": "./plugins/specweave-infrastructure",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-backend",
-      "description": "Backend development - Node.js, Python, .NET, REST APIs",
-      "source": "./plugins/specweave-backend",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-payments",
-      "description": "Payment processing - Stripe, PayPal, billing, PCI compliance",
-      "source": "./plugins/specweave-payments",
       "category": "development",
       "version": "1.0.0",
       "author": {
@@ -118,17 +85,6 @@
       }
     },
     {
-      "name": "specweave-diagrams",
-      "description": "Architecture diagrams - Mermaid, C4 Model, sequence, ER diagrams",
-      "source": "./plugins/specweave-diagrams",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-release",
       "description": "Release management - version alignment, RC workflows, multi-repo coordination, semantic versioning",
       "source": "./plugins/specweave-release",
@@ -140,31 +96,9 @@
       }
     },
     {
-      "name": "specweave-mobile",
-      "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing, Metro bundler configuration",
-      "source": "./plugins/specweave-mobile",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-kafka",
       "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
       "source": "./plugins/specweave-kafka",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-confluent",
-      "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, and enterprise Kafka features",
-      "source": "./plugins/specweave-confluent",
       "category": "development",
       "version": "1.0.0",
       "author": {
