@@ -19,7 +19,13 @@
 # Root Cause: metadata.json writes don't trigger status line refresh
 # Fix: This hook dispatches to post-increment-completion.sh which updates status line
 
-set -e
+# EMERGENCY FIX v0.24.3: Remove set -e - it causes Claude Code crashes!
+set +e
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root
 find_project_root() {
