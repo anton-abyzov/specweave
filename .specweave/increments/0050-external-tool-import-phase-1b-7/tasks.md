@@ -18,7 +18,7 @@ coverage_target: 85
 ## User Story: US-004 - Smart Caching with TTL (24-Hour Cache)
 
 **Linked ACs**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
-**Tasks**: 12 total, 0 completed
+**Tasks**: 12 total, 12 completed
 
 ### T-001: Implement CacheManager with TTL Validation
 
@@ -515,7 +515,7 @@ coverage_target: 85
 ## User Story: US-007 - Progress Tracking (Batch Loading with Cancel)
 
 **Linked ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05, AC-US7-06
-**Tasks**: 10 total, 0 completed
+**Tasks**: 10 total, 10 completed
 
 ### T-013: Implement ProgressTracker Core Module
 **Status**: [x] completed
@@ -940,7 +940,7 @@ Total time: 2m 34s
 ## User Story: US-001 - Smart Pagination During Init (50-Project Limit)
 
 **Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03, AC-US1-04, AC-US1-05
-**Tasks**: 10 total, 0 completed
+**Tasks**: 10 total, 10 completed
 
 ### T-023: Implement fetchProjectCount (Lightweight API Call)
 
@@ -1365,7 +1365,7 @@ Import all 500 projects? (y/N)
 ## User Story: US-002 - CLI-First Defaults (Select All by Default)
 
 **Linked ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04
-**Tasks**: 8 total, 0 completed
+**Tasks**: 8 total, 8 completed
 
 ### T-033: Change Import Strategy Default to "Import All"
 
@@ -1641,7 +1641,7 @@ Import all 500 projects? (y/N)
 ## User Story: US-005 - Dedicated Import Commands (Post-Init Flexibility)
 
 **Linked ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05, AC-US5-06, AC-US5-07
-**Tasks**: 10 total, 0 completed
+**Tasks**: 10 total, 10 completed
 
 ### T-041: Create `/specweave-jira:import-projects` Command Structure
 
@@ -2062,7 +2062,7 @@ Total: 2 projects would be imported
 ## User Story: US-006 - Azure DevOps Area Path Mapping (Hierarchical Sub-Projects)
 
 **Linked ACs**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05, AC-US6-06
-**Tasks**: 12 total, 0 completed
+**Tasks**: 12 total, 12 completed
 
 ### T-051: Implement AreaPathMapper Core Module
 
@@ -2534,7 +2534,7 @@ How would you like to map Azure DevOps area paths?
 ## User Story: US-008 - Smart Filtering (Active Projects, Custom JQL)
 
 **Linked ACs**: AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04, AC-US8-05, AC-US8-06
-**Tasks**: 10 total, 0 completed
+**Tasks**: 10 total, 10 completed
 
 ### T-063: Implement FilterProcessor Core Module
 
