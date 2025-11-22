@@ -378,7 +378,7 @@ graph TB
    - Test coverage targets met?
    - Living docs synced?
 2. AI quality assessment (optional):
-   - Risk scoring (BMAD pattern)
+   - Risk scoring (Probability × Impact method)
    - Quality gate decision (PASS/CONCERNS/FAIL)
 
 **Output**: Validation report
