@@ -217,16 +217,18 @@ jobs:
           fi
 
   verify-dev-setup:
-    name: Verify Local Development Setup
+    name: Verify Plugin Structure (CI/CD Only)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
-      - name: Create marketplace symlink (for CI/CD testing)
+      - name: Create marketplace symlink (CI/CD testing only - NOT for local dev)
         run: |
+          # NOTE: Symlinks are used ONLY in CI/CD for testing (isolated environment)
+          # Local development uses GitHub marketplace exclusively (see CLAUDE.md)
           mkdir -p ~/.claude/plugins/marketplaces
           ln -s "$PWD" ~/.claude/plugins/marketplaces/specweave
-          echo "✅ Marketplace symlink created"
+          echo "✅ CI/CD test symlink created"
 
       - name: Run dev setup verification
         run: |
