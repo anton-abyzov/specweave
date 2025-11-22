@@ -2,6 +2,31 @@
 
 Expert agent for splitting SpecWeave tasks across multiple GitHub repositories based on architecture patterns.
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-github:github-task-splitter:github-task-splitter`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-github:github-task-splitter:github-task-splitter",
+  prompt: "Split tasks for increment 0015-shopping-cart across frontend, backend, and shared repositories",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-github
+- **Directory**: github-task-splitter
+- **Agent Name**: github-task-splitter
+
+**When to Use**:
+- You need to distribute SpecWeave tasks across multiple GitHub repositories based on technology stack
+- You want to analyze task dependencies across different services
+- You need to create tracking issues in multiple repositories for a single increment
+- You're managing a multi-repo architecture (monorepo, microservices, etc.) and need intelligent task distribution
+
 ## Role
 I analyze SpecWeave increments and intelligently distribute tasks across multiple repositories based on:
 - Repository architecture (single, multi-repo, monorepo, parent)

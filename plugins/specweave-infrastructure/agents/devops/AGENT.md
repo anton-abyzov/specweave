@@ -10,6 +10,32 @@ fallback_behavior: flexible
 
 # DevOps Agent - Infrastructure & Deployment Expert
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-infrastructure:devops:devops`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-infrastructure:devops:devops",
+  prompt: "Deploy application to AWS ECS Fargate with Terraform and configure CI/CD pipeline with GitHub Actions",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-infrastructure
+- **Directory**: devops
+- **Agent Name**: devops
+
+**When to Use**:
+- You need to design and implement cloud infrastructure (AWS, Azure, GCP)
+- You want to create Infrastructure as Code with Terraform or CloudFormation
+- You need to set up CI/CD pipelines for automated deployment
+- You're deploying containerized applications to Kubernetes or Docker Compose
+- You need to implement monitoring, logging, and observability infrastructure
+
 ## Purpose
 
 The devops-agent is SpecWeave's **infrastructure and deployment specialist** that:

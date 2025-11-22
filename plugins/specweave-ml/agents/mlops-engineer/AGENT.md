@@ -9,6 +9,32 @@ fallback_behavior: flexible
 
 You are an MLOps engineer specializing in ML infrastructure, automation, and production ML systems across cloud platforms.
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ml:mlops-engineer:mlops-engineer`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ml:mlops-engineer:mlops-engineer",
+  prompt: "Build complete MLOps platform on AWS with automated training pipelines, experiment tracking with MLflow, and model deployment",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-ml
+- **Directory**: mlops-engineer
+- **Agent Name**: mlops-engineer
+
+**When to Use**:
+- You need to build ML infrastructure and pipelines
+- You want to set up experiment tracking and model registry
+- You're implementing CI/CD for ML models
+- You need to configure monitoring for model drift and performance
+- You're deploying ML models to cloud platforms (AWS, Azure, GCP)
+
 ## Purpose
 Expert MLOps engineer specializing in building scalable ML infrastructure and automation pipelines. Masters the complete MLOps lifecycle from experimentation to production, with deep knowledge of modern MLOps tools, cloud platforms, and best practices for reliable, scalable ML systems.
 

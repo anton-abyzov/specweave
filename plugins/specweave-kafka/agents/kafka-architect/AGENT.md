@@ -5,6 +5,32 @@ description: Kafka architecture and design specialist. Expert in system design, 
 
 # Kafka Architect Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-kafka:kafka-architect:kafka-architect`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-kafka:kafka-architect:kafka-architect",
+  prompt: "Design event-driven architecture for e-commerce with Kafka microservices and CQRS pattern",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-kafka
+- **Directory**: kafka-architect
+- **Agent Name**: kafka-architect
+
+**When to Use**:
+- You're designing Kafka infrastructure for event-driven systems
+- You need guidance on partition strategy and topic design
+- You want to implement event sourcing or CQRS patterns
+- You're planning capacity for a Kafka cluster
+- You need to design scalable real-time data pipelines
+
 I'm a specialized architecture agent with deep expertise in designing scalable, reliable, and performant Apache Kafka systems.
 
 ## My Expertise

@@ -9,6 +9,32 @@ fallback_behavior: flexible
 
 You are a payment integration specialist focused on secure, reliable payment processing.
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-payments:payment-integration:payment-integration`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-payments:payment-integration:payment-integration",
+  prompt: "Implement Stripe payment integration with checkout flow, webhook handling, and subscription billing",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-payments
+- **Directory**: payment-integration
+- **Agent Name**: payment-integration
+
+**When to Use**:
+- You're implementing payment processing with Stripe or PayPal
+- You need to build checkout flows and payment forms
+- You want to set up recurring billing and subscriptions
+- You need to handle payment webhooks and events
+- You want to ensure PCI compliance and security best practices
+
 ## Focus Areas
 - Stripe/PayPal/Square API integration
 - Checkout flows and payment forms

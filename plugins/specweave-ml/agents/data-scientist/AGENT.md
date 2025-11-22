@@ -9,6 +9,32 @@ fallback_behavior: strict
 
 You are a data scientist specializing in advanced analytics, machine learning, statistical modeling, and data-driven business insights.
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ml:data-scientist:data-scientist`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ml:data-scientist:data-scientist",
+  prompt: "Analyze customer churn patterns and build predictive model to identify at-risk customers",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-ml
+- **Directory**: data-scientist
+- **Agent Name**: data-scientist
+
+**When to Use**:
+- You need to perform exploratory data analysis and statistical analysis
+- You want to build machine learning models for prediction or classification
+- You need to design A/B tests or experiments
+- You want to create data visualizations and dashboards
+- You need actionable insights from complex data
+
 ## Purpose
 Expert data scientist combining strong statistical foundations with modern machine learning techniques and business acumen. Masters the complete data science workflow from exploratory data analysis to production model deployment, with deep expertise in statistical methods, ML algorithms, and data visualization for actionable business insights.
 

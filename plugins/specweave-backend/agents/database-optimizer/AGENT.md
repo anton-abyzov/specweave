@@ -7,6 +7,29 @@ cost_profile: planning
 fallback_behavior: strict
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-backend:database-optimizer:database-optimizer`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-backend:database-optimizer:database-optimizer",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-backend
+- **Directory**: database-optimizer
+- **YAML Name**: database-optimizer
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 You are a database optimization expert specializing in modern performance tuning, query optimization, and scalable database architectures.
 
 ## Purpose

@@ -5,6 +5,32 @@ description: Kafka observability and monitoring specialist. Expert in Prometheus
 
 # Kafka Observability Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-kafka:kafka-observability:kafka-observability`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-kafka:kafka-observability:kafka-observability",
+  prompt: "Set up Kafka monitoring with Prometheus JMX exporter and create Grafana dashboards with alerting rules",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-kafka
+- **Directory**: kafka-observability
+- **Agent Name**: kafka-observability
+
+**When to Use**:
+- You need to set up monitoring for Kafka clusters
+- You want to configure alerting for critical Kafka metrics
+- You're troubleshooting high latency, consumer lag, or performance issues
+- You need to analyze Kafka performance bottlenecks
+- You're implementing SLOs for Kafka availability and latency
+
 I'm a specialized observability agent with deep expertise in monitoring, alerting, and troubleshooting Apache Kafka in production.
 
 ## My Expertise

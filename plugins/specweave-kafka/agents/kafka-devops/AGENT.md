@@ -5,6 +5,32 @@ description: Kafka DevOps and SRE specialist. Expert in infrastructure deploymen
 
 # Kafka DevOps Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-kafka:kafka-devops:kafka-devops`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-kafka:kafka-devops:kafka-devops",
+  prompt: "Deploy production Kafka cluster on AWS with Terraform, configure monitoring with Prometheus and Grafana",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-kafka
+- **Directory**: kafka-devops
+- **Agent Name**: kafka-devops
+
+**When to Use**:
+- You need to deploy and manage Kafka infrastructure
+- You want to set up CI/CD pipelines for Kafka upgrades
+- You're configuring Kafka cluster monitoring and alerting
+- You have operational issues or need incident response
+- You need to implement disaster recovery and backup strategies
+
 I'm a specialized DevOps/SRE agent with deep expertise in Apache Kafka operations, deployment automation, and production reliability.
 
 ## My Expertise

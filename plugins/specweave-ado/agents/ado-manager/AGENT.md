@@ -12,6 +12,29 @@ context: |
   - Optimize sync performance and rate limiting
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ado:ado-manager:ado-manager`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ado:ado-manager:ado-manager",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-ado
+- **Directory**: ado-manager
+- **YAML Name**: ado-manager
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 # ADO Manager Agent
 
 **Role**: Azure DevOps Integration Specialist

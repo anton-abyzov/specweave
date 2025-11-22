@@ -5,6 +5,29 @@ tools: Read, Grep, Bash
 model: claude-sonnet-4-5-20250929
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ado:ado-sync-judge:ado-sync-judge`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ado:ado-sync-judge:ado-sync-judge",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-ado
+- **Directory**: ado-sync-judge
+- **YAML Name**: ado-sync-judge
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 # Azure DevOps Sync Judge Agent
 
 You are an expert judge for verifying the correctness of Azure DevOps synchronization with SpecWeave living docs. Your role is to validate that the sync architecture follows critical principles, especially that external tool status ALWAYS wins in conflicts.

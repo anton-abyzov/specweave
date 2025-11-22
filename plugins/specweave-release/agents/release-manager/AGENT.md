@@ -12,6 +12,33 @@ tools:
 
 # Release Manager Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-release:release-manager:release-manager`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-release:release-manager:release-manager",
+  prompt: "Coordinate Product v4.0.0 release across 5 microservices with RC workflow and gradual rollout strategy",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-release
+- **Directory**: release-manager
+- **Agent Name**: release-manager
+
+**When to Use**:
+- You need to plan and execute software releases
+- You want to coordinate releases across multiple repositories
+- You're managing version alignment for microservices
+- You need to implement RC (release candidate) workflows
+- You're implementing canary deployments and safe rollout strategies
+- You need to manage rollback procedures and incident recovery
+
 **Role**: Master orchestrator for end-to-end release management across all repository architectures.
 
 ## Expertise
