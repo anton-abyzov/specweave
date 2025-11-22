@@ -535,6 +535,107 @@ export class JiraClient {
   }
 
   /**
+   * Search projects with pagination (for three-tier loading)
+   *
+   * @param options Search options
+   * @returns Paginated project results
+   */
+  public async searchProjects(options: {
+    maxResults?: number;
+    startAt?: number;
+    orderBy?: string;
+  } = {}): Promise<any> {
+    const { maxResults = 50, startAt = 0, orderBy = 'name' } = options;
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/project/search?maxResults=${maxResults}&startAt=${startAt}&orderBy=${orderBy}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get boards for a project
+   *
+   * @param projectKey Project key (e.g., "BACKEND")
+   * @returns Boards array
+   */
+  public async getBoards(projectKey: string): Promise<any> {
+    const url = `${this.baseUrl}/rest/agile/1.0/board?projectKeyOrId=${projectKey}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get components for a project
+   *
+   * @param projectKey Project key (e.g., "BACKEND")
+   * @returns Components array
+   */
+  public async getComponents(projectKey: string): Promise<any[]> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/project/${projectKey}/components`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    return response.json() as Promise<any[]>;
+  }
+
+  /**
+   * Get versions for a project
+   *
+   * @param projectKey Project key (e.g., "BACKEND")
+   * @returns Versions array
+   */
+  public async getVersions(projectKey: string): Promise<any[]> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/project/${projectKey}/versions`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    return response.json() as Promise<any[]>;
+  }
+
+  /**
    * Add comment to JIRA issue (T-034C)
    *
    * POST /rest/api/3/issue/{issueIdOrKey}/comment

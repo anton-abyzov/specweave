@@ -1,0 +1,80 @@
+```mermaid
+sequenceDiagram
+    participant User
+    participant InitFlow as InitFlowOrchestrator
+    participant CountFetcher as ProjectCountFetcher
+    participant StrategySelector as ImportStrategySelector
+    participant Loader as AsyncProjectLoader
+    participant Progress as ProgressTracker
+    participant Cancel as CancelationHandler
+    participant Interactive as InteractiveSelector
+    participant JIRA as JIRA API
+
+    User->>InitFlow: specweave init
+
+    Note over InitFlow: Phase 1: Validate Credentials
+    InitFlow->>JIRA: Test credentials (fast auth)
+    JIRA-->>InitFlow: ✅ Valid
+
+    Note over InitFlow: Phase 2: Count Check (Lightweight)
+    InitFlow->>CountFetcher: fetchProjectCount()
+    CountFetcher->>JIRA: GET /project/search?maxResults=0
+    JIRA-->>CountFetcher: { total: 127, values: [] }
+    CountFetcher-->>InitFlow: 127 projects
+    InitFlow->>User: 📊 Found 127 accessible projects
+
+    Note over InitFlow: Phase 3: Strategy Selection
+    InitFlow->>StrategySelector: selectStrategy(127)
+    StrategySelector->>User: How import? (All/Specific/Manual)
+    User-->>StrategySelector: "Import all" (default)
+    StrategySelector->>User: ⚠️ Import 127 projects? (y/N)
+    User-->>StrategySelector: "Y"
+    StrategySelector-->>InitFlow: strategy = "import-all"
+
+    Note over InitFlow: Phase 4: Async Batch Loading
+    InitFlow->>Loader: fetchAllProjects(127)
+    Loader->>Progress: new ProgressTracker(127)
+    Loader->>Cancel: new CancelationHandler()
+
+    loop Batch 1 (0-49)
+        Loader->>Cancel: shouldCancel()?
+        Cancel-->>Loader: false
+        Loader->>JIRA: GET /project/search?startAt=0&maxResults=50
+        JIRA-->>Loader: 50 projects
+        Loader->>Progress: update(50, 'success')
+        Progress->>User: 🔄 Loading... 50/127 (39%) [~2m remaining]
+    end
+
+    loop Batch 2 (50-99)
+        Loader->>Cancel: shouldCancel()?
+        Cancel-->>Loader: false
+        Loader->>JIRA: GET /project/search?startAt=50&maxResults=50
+        JIRA-->>Loader: 50 projects
+        Loader->>Progress: update(100, 'success')
+        Progress->>User: 🔄 Loading... 100/127 (79%) [~30s remaining]
+    end
+
+    loop Batch 3 (100-126)
+        Loader->>Cancel: shouldCancel()?
+        Cancel-->>Loader: false
+        Loader->>JIRA: GET /project/search?startAt=100&maxResults=50
+        JIRA-->>Loader: 27 projects
+        Loader->>Progress: update(127, 'success')
+        Progress->>User: 🔄 Loading... 127/127 (100%)
+    end
+
+    Loader-->>InitFlow: 127 projects
+    Progress->>User: ✅ Loaded 125 projects (2 failed) in 28s
+
+    Note over InitFlow: Phase 5: Configuration Save
+    InitFlow->>InitFlow: Save project list to config
+    InitFlow->>InitFlow: Create project folders
+
+    InitFlow->>User: ✅ Init Complete! (< 30 seconds)
+
+    Note over User: Alternative: User presses Ctrl+C
+    User->>Cancel: Ctrl+C (SIGINT)
+    Cancel->>Loader: Set canceled flag
+    Loader->>Cancel: saveState({ completed: 50, total: 127 })
+    Cancel->>User: ⚠️ Canceled. Progress saved. Resume with --resume
+```

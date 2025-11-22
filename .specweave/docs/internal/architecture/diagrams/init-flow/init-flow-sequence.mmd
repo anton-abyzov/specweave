@@ -1,0 +1,80 @@
+```mermaid
+sequenceDiagram
+    participant User
+    participant CLI as CLI Command
+    participant Orchestrator as InitFlowOrchestrator
+    participant CountFetcher as ProjectCountFetcher
+    participant Prompt as UpfrontChoicePrompt
+    participant Fetcher as AsyncProjectLoader
+    participant Progress as ProgressTracker
+    participant Cancel as CancelationHandler
+    participant API as External API (JIRA/ADO)
+
+    User->>CLI: specweave init
+    CLI->>Orchestrator: execute(credentials)
+
+    Note over Orchestrator: Phase 1: Validate Credentials
+    Orchestrator->>API: Validate credentials
+    API-->>Orchestrator: ✅ Valid
+
+    Note over Orchestrator: Phase 2: Fetch Project Count (Lightweight)
+    Orchestrator->>CountFetcher: getProjectCount()
+    CountFetcher->>API: GET /project/search?maxResults=0
+    Note right of API: Returns count only,<br/>no metadata (< 1 sec)
+    API-->>CountFetcher: { total: 127, values: [] }
+    CountFetcher-->>Orchestrator: 127 projects
+    Orchestrator->>User: Display: "Found 127 accessible projects"
+
+    Note over Orchestrator: Phase 3: Upfront Strategy Choice
+    Orchestrator->>Prompt: promptStrategyChoice(127)
+    Prompt->>User: Show strategy options
+    Note right of User: Options:<br/>1. Import all 127 (default)<br/>2. Select specific<br/>3. Manual entry
+    User-->>Prompt: Select "Import all"
+
+    alt Project count > 100
+        Prompt->>User: Safety confirmation
+        Note right of User: "Import 127 projects? (y/N)"
+        User-->>Prompt: Confirm (Y)
+    end
+
+    Prompt-->>Orchestrator: strategy = "import-all"
+
+    Note over Orchestrator: Phase 4: Async Batch Fetching
+    Orchestrator->>Fetcher: fetchAllProjects(127, batchSize=50)
+    Fetcher->>Progress: new ProgressTracker(total=127)
+    Fetcher->>Cancel: new CancelationHandler()
+    Progress->>User: Initialize progress bar
+
+    loop For each batch (50 projects)
+        Fetcher->>Cancel: shouldCancel()?
+        Cancel-->>Fetcher: false
+
+        Fetcher->>API: GET /project/search?startAt=X&maxResults=50
+        Note right of API: Batch 1: 0-49<br/>Batch 2: 50-99<br/>Batch 3: 100-126
+        API-->>Fetcher: { values: [50 projects], total: 127 }
+
+        Fetcher->>Progress: update(projectKey, 'success')
+
+        alt Every 5 projects
+            Progress->>User: Update UI
+            Note right of User: "Loading... 50/127 (39%)<br/>[============>    ]<br/>[47s elapsed, ~2m remaining]"
+        end
+    end
+
+    Fetcher-->>Orchestrator: FetchResult { projects: 125, failed: 2 }
+    Progress->>User: Final summary
+    Note right of User: "✅ Loaded 125/127 projects<br/>(2 failed, see logs)<br/>Completed in 28s"
+
+    Note over Orchestrator: Phase 5: Save Configuration
+    Orchestrator->>CLI: Save config to .specweave/config.json
+    CLI-->>User: ✅ Init Complete!
+
+    alt User presses Ctrl+C during fetch
+        User->>Cancel: SIGINT (Ctrl+C)
+        Cancel->>Fetcher: shouldCancel() = true
+        Fetcher->>Cancel: saveState(partial progress)
+        Cancel->>User: Show summary + resume command
+        Note right of User: "Imported 47/127 (37%)<br/>Run --resume to continue"
+        Cancel->>CLI: Exit cleanly (code 0)
+    end
+```

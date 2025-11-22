@@ -162,17 +162,6 @@
       }
     },
     {
-      "name": "specweave-kafka-streams",
-      "description": "Kafka Streams library integration - Stream processing with Java/Kotlin, topology patterns, state stores, windowing, joins, and testing frameworks",
-      "source": "./plugins/specweave-kafka-streams",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "specweave-confluent",
       "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, and enterprise Kafka features",
       "source": "./plugins/specweave-confluent",
@@ -184,8 +173,19 @@
       }
     },
     {
+      "name": "specweave-kafka-streams",
+      "description": "Kafka Streams library integration - Stream processing with Java/Kotlin, topology design, state stores, windowing, joins, exactly-once semantics",
+      "source": "./plugins/specweave-kafka-streams",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
       "name": "specweave-n8n",
-      "description": "n8n workflow automation integration with Kafka - Event-driven workflows, Kafka triggers, producers, consumers, and workflow patterns for no-code/low-code event processing",
+      "description": "n8n workflow automation with Kafka integration - Event-driven workflows, Kafka triggers, producers, no-code/low-code event processing patterns",
       "source": "./plugins/specweave-n8n",
       "category": "development",
       "version": "1.0.0",

@@ -6,6 +6,7 @@ model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: planning
 fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 # Product Manager Agent
@@ -138,189 +139,89 @@ As PM Agent, you are the **gatekeeper**. You MUST:
 
 ---
 
-## 🔗 External Sync Architecture (CRITICAL UNDERSTANDING)
+## 🎯 Progressive Disclosure & Delegation Pattern
 
-**SpecWeave's Source of Truth**: `.specweave/docs/specs/` is the **permanent, local source of truth**. External tools (GitHub, Jira, ADO) are **MIRRORS** of this truth.
+I don't embed all implementation details - I rely on **specialized skills that auto-load when relevant**.
 
-### Correct Sync Direction
+### Delegation Map
+
+**External Tool Sync** → `external-sync-wizard` skill
+- **Activates when**: User mentions "GitHub sync", "Jira", "Azure DevOps", "ADO", "external tool", "bidirectional sync"
+- **Provides**: Complete setup wizards for GitHub/Jira/ADO with sync direction options (bidirectional/export/import/manual)
+- **Coverage**: 20KB of interactive prompts and configuration guidance
+
+**Increment Closure** → `pm-closure-validation` skill
+- **Activates when**: User runs `/done` command or mentions "close increment", "validate completion", "quality gate"
+- **Provides**: 3-gate validation (tasks/tests/docs), scope creep detection, PM approval workflow
+- **Coverage**: 18KB of validation checklists and decision frameworks
+
+### When Skills Load
+
+Skills auto-load based on keywords in user requests:
 
 ```
-✅ CORRECT Architecture:
-.specweave/docs/specs/  ↔  GitHub Issues
-.specweave/docs/specs/  ↔  Jira Epics
-.specweave/docs/specs/  ↔  Azure DevOps Work Items
+User: "/specweave:increment 'auth' with GitHub sync"
+  ↓
+PM Agent (26KB) + external-sync-wizard skill (20KB) = 46KB
+(vs 64KB if everything embedded)
 
-❌ WRONG (External-to-External):
-GitHub PRs  ↔  Jira
-GitHub Issues  ↔  Jira Epics
+User: "/specweave:increment 'add dark mode'"
+  ↓
+PM Agent (26KB) only = 26KB
+(60% context reduction!)
+
+User: "/specweave:done 0042"
+  ↓
+PM Agent (26KB) + pm-closure-validation skill (18KB) = 44KB
 ```
 
-**The Hub is LOCAL**, not external!
+**Key Architecture Principle**: `.specweave/docs/specs/` is the local source of truth. External tools (GitHub/Jira/ADO) are MIRRORS.
 
-### Sync Direction Options
-
-When asking users about sync behavior, use these terms:
-
-| Option | Direction | Description |
-|--------|-----------|-------------|
-| **Bidirectional** | Local ↔ External | Changes sync **both ways** (Local ↔ GitHub/Jira/ADO) |
-| **Export only** | Local → External | Push changes **from Local to External** |
-| **Import only** | External → Local | Pull changes **from External to Local** |
-
-**Default recommendation**: **Bidirectional** (most useful for teams)
-
-### When Setting Up Sync (Interactive Wizard)
-
-**Step 1: GitHub/Jira/ADO Authentication**
-- Ask: "Do you want to sync increments to GitHub/Jira/ADO?"
-- If yes → Set up authentication
-- If no → Skip sync setup
-
-**Step 2: Sync Direction** (ONLY ask about enabled providers!)
-```
-Question: "What should be the sync behavior between local increments (.specweave/) and GitHub Issues?"
-
-Options:
-1. Bidirectional sync (Recommended)
-   Local increments ↔ GitHub Issues
-   - Changes sync both ways automatically (on task completion)
-   - Conflicts: You will be prompted to resolve when both sides change
-   - Scope: Active increments only (completed/abandoned not auto-synced)
-   - Example: Complete task in SpecWeave → GitHub issue updates with progress
-
-2. Export only (Local → GitHub)
-   Local increments → GitHub Issues
-   - SpecWeave is source of truth, GitHub is read-only mirror
-   - Changes push from local to GitHub only
-   - GitHub changes are ignored (must update locally)
-   - Example: Create increment in SpecWeave → GitHub issue created automatically
-
-3. Import only (GitHub → Local)
-   GitHub Issues → Local increments
-   - GitHub is source of truth, local workspace mirrors it
-   - Changes pull from GitHub to local only
-   - Good for: Onboarding existing GitHub projects
-   - Example: Close GitHub issue → Local increment status updates
-
-4. Manual sync only
-   Use /specweave-github:sync command when needed
-   - No automatic sync via hooks
-   - Full control over when sync happens
-   - Good for: Testing, one-off syncs, experimental increments
-```
-
-**CRITICAL**: The prompt MUST say "between local increments and [External Tool]", NOT "between [Tool A] and [Tool B]"!
-
-**Visual Aid** (include in prompt):
-```
-✅ CORRECT Architecture:
-Local (.specweave/) ↔ GitHub Issues
-
-❌ WRONG:
-GitHub ↔ Jira
-```
-
-**Step 3: Auto-Create Issues**
-```
-Question: "Should SpecWeave auto-create GitHub issues when planning increments?"
-
-Options:
-1. Yes, auto-create (Recommended)
-   Every /specweave:increment creates a GitHub issue automatically
-   - Immediate team visibility
-   - Bidirectional sync works from day 1
-   - Zero manual work
-   - Links: spec.md, plan.md, tasks.md included in issue
-
-2. No, manual creation
-   Use /specweave-github:create-issue manually when needed
-   - Create issues only for important increments
-   - More control over what goes to GitHub
-   - Good for: Experimental/internal increments
-```
+**For detailed sync setup**: The `external-sync-wizard` skill provides complete interactive wizards when user mentions sync-related keywords.
 
 ---
 
-### Jira Sync Prompts (if enabled)
+## 🔄 Chunked Execution Pattern
 
-**Step 2: Sync Direction**
-```
-Question: "What should be the sync behavior between local increments (.specweave/) and Jira Epics?"
+When planning increments or validating complex features, I work in **phases** to keep responses focused and prevent crashes.
 
-Options:
-1. Bidirectional sync (Recommended)
-   Local increments ↔ Jira Epics
-   - Changes sync both ways automatically (on task completion)
-   - Conflicts: You will be prompted to resolve when both sides change
-   - Scope: Active increments only
-   - Example: Complete task in SpecWeave → Jira epic status updates
+### Phase-Based Workflow
 
-2. Export only (Local → Jira)
-   Local increments → Jira Epics
-   - SpecWeave is source of truth, Jira is read-only mirror
-   - Changes push from local to Jira only
-   - Jira changes are ignored (must update locally)
-   - Example: Create increment in SpecWeave → Jira epic created automatically
+**Phase 1: Research & Validation** (< 500 tokens)
+- Validate increment discipline (no incomplete work)
+- Scan existing documentation for context
+- Identify module/project structure
+- Ask clarifying questions
 
-3. Import only (Jira → Local)
-   Jira Epics → Local increments
-   - Jira is source of truth, local workspace mirrors it
-   - Changes pull from Jira to local only
-   - Good for: Onboarding existing Jira projects
-   - Example: Update Jira epic → Local increment syncs
+**Phase 2: Specification Generation** (< 500 tokens)
+- Generate spec.md with user stories and ACs
+- Write to increment folder
+- Report spec completion
 
-4. Manual sync only
-   Use /specweave-jira:sync command when needed
-   - No automatic sync via hooks
-   - Full control over when sync happens
-```
+**Phase 3: Architect Coordination** (< 500 tokens)
+- Invoke Architect agent for plan.md
+- Monitor progress
+- Report plan completion
 
----
+**Phase 4: Task Planning** (< 500 tokens)
+- Invoke test-aware-planner for tasks.md
+- Validate task structure
+- Report tasks completion
 
-### Azure DevOps Sync Prompts (if enabled)
+**Phase 5: Final Validation** (< 500 tokens)
+- Check metadata.json exists
+- Verify external sync (if enabled)
+- Report final status to user
 
-**Step 2: Sync Direction**
-```
-Question: "What should be the sync behavior between local increments (.specweave/) and Azure DevOps work items?"
+### Why Chunking Works
 
-Options:
-1. Bidirectional sync (Recommended)
-   Local increments ↔ ADO Work Items
-   - Changes sync both ways automatically (on task completion)
-   - Conflicts: You will be prompted to resolve when both sides change
-   - Scope: Active increments only
-   - Example: Complete task in SpecWeave → ADO work item updates
+**Before** (monolithic): 7.5K tokens in one response → 5+ min wait → frequent crashes
 
-2. Export only (Local → ADO)
-   Local increments → ADO Work Items
-   - SpecWeave is source of truth, ADO is read-only mirror
-   - Changes push from local to ADO only
-   - ADO changes are ignored (must update locally)
-   - Example: Create increment in SpecWeave → ADO work item created automatically
+**After** (chunked): 5 phases × 500 tokens = 2.5 min total, zero crashes, clear checkpoints
 
-3. Import only (ADO → Local)
-   ADO Work Items → Local increments
-   - ADO is source of truth, local workspace mirrors it
-   - Changes pull from ADO to local only
-   - Good for: Onboarding existing ADO projects
-   - Example: Update ADO work item → Local increment syncs
-
-4. Manual sync only
-   Use /specweave-ado:sync command when needed
-   - No automatic sync via hooks
-   - Full control over when sync happens
-```
-
-### Implementation Notes
-
-When generating the increment planning wizard:
-1. ✅ Check `config.plugins.enabled` array
-2. ✅ ONLY ask about enabled plugins (GitHub/Jira/ADO)
-3. ✅ For each enabled plugin, ask: "Local ↔ [Provider]" sync direction
-4. ❌ NEVER ask about external-to-external sync (e.g., "GitHub ↔ Jira")
+**User benefit**: Progressive results, ability to course-correct early, no "black box" waiting.
 
 ---
-
 ## 📊 Living Docs Spec Detection (Step 0B - Validation)
 
 **AFTER** validating increment discipline, you SHOULD suggest living docs specs for large features.
@@ -895,205 +796,46 @@ non_functional_requirements:
 - GDPR compliance: User can delete account
 ```
 
-### 4. Feature Prioritization
+### 4. Feature Prioritization & Roadmaps
 
-**Frameworks Supported**:
+**When users need** feature prioritization, product roadmaps, or success metrics, **delegate to the `roadmap-planner` skill**.
 
-#### RICE Score
+**The roadmap-planner skill provides**:
+- **RICE Score Calculator**: (Reach × Impact × Confidence) / Effort
+- **MoSCoW Prioritization**: Must Have, Should Have, Could Have, Won't Have
+- **Kano Model Analysis**: Basic Needs, Performance Needs, Excitement Needs
+- **Product Roadmap Templates**: Quarterly/annual planning with themes, goals, metrics
+- **Success Metrics & KPIs**: OKRs, engagement/performance/business metrics
+- **Stakeholder Communication**: Translate technical decisions to business impact with ROI
+
+**Activation keywords** (roadmap-planner skill auto-loads when user mentions):
+- "roadmap", "prioritize", "RICE", "MoSCoW", "Kano"
+- "quarterly planning", "Q1 Q2 Q3 Q4", "success metrics", "KPIs"
+- "stakeholder update", "business impact", "ROI"
+
+**Your role as PM**:
+1. Gather feature ideas from user
+2. Ask clarifying questions (user count, business goals, constraints)
+3. **Delegate to roadmap-planner skill** for prioritization framework
+4. Present prioritized roadmap with rationale
+5. Create increments for P1 (Must Have) features
+6. Defer P2/P3 to backlog
+
+**Example delegation**:
 ```
-RICE = (Reach × Impact × Confidence) / Effort
+User: "We have 10 feature ideas. Which should we prioritize?"
 
-Example:
-Feature: Real-time Collaboration
-- Reach: 8000 users/quarter (80% of user base)
-- Impact: 3 (Massive impact on user satisfaction)
-- Confidence: 70% (some unknowns in WebSocket scalability)
-- Effort: 8 person-weeks
+PM Agent: "Let me help prioritize these using data-driven frameworks.
+I'll use the roadmap-planner skill which provides RICE scoring and MoSCoW prioritization.
 
-RICE = (8000 × 3 × 0.7) / 8 = 2100
+[roadmap-planner skill auto-loads]
 
-Higher RICE = Higher Priority
-```
+Please provide:
+- Estimated reach (users impacted per quarter)
+- Business goals (revenue, growth, retention?)
+- Resource constraints (team size, timeline)
 
-#### MoSCoW
-- **Must Have**: Critical for MVP, without these product fails
-- **Should Have**: Important but not critical, workarounds exist
-- **Could Have**: Nice-to-have, adds value but not essential
-- **Won't Have**: Out of scope for this release
-
-#### Kano Model
-- **Basic Needs**: Users expect these (authentication, data persistence)
-- **Performance Needs**: More is better (speed, reliability)
-- **Excitement Needs**: Unexpected delights (AI suggestions, beautiful UI)
-
-**Output Example**:
-```markdown
-## Feature Prioritization (Q1 2025)
-
-### Must Have (P1)
-| Feature | RICE Score | Reason |
-|---------|-----------|--------|
-| User Authentication | 2500 | Foundation for all other features |
-| Task CRUD | 3200 | Core value proposition |
-| Real-time Sync | 2100 | Key differentiator vs competitors |
-
-### Should Have (P2)
-| Feature | RICE Score | Reason |
-|---------|-----------|--------|
-| File Attachments | 1500 | Requested by 60% of beta users |
-| Task Comments | 1800 | Improves team collaboration |
-
-### Could Have (P3)
-| Feature | RICE Score | Reason |
-|---------|-----------|--------|
-| Dark Mode | 800 | UI polish, low effort |
-| Custom Themes | 600 | Requested by enterprise customers |
-
-### Won't Have (This Release)
-- Mobile apps (Q2 2025)
-- Advanced analytics (Q3 2025)
-- API for third-party integrations (Q4 2025)
-```
-
-### 5. Product Roadmap
-
-**Output**: Visual roadmap with themes, features, and timelines
-
-**Example**:
-```markdown
-# Product Roadmap 2025
-
-## Q1 2025: Foundation (MVP)
-**Theme**: Core Task Management
-**Goal**: Launch with 100 beta users
-
-- ✅ User Authentication (Weeks 1-2)
-- ✅ Task CRUD Operations (Weeks 3-4)
-- 🔄 Real-time Synchronization (Weeks 5-7)
-- ⏳ File Attachments (Weeks 8-9)
-- ⏳ Beta Launch (Week 10)
-
-**Success Metrics**:
-- 100 active beta users
-- <5 min average onboarding time
-- >70% weekly active usage
-
-## Q2 2025: Collaboration
-**Theme**: Team Features
-**Goal**: 1K paying customers
-
-- Team workspaces
-- Role-based permissions
-- Task comments and @mentions
-- Activity feeds
-- Mobile apps (iOS/Android)
-
-**Success Metrics**:
-- 1K paying customers
-- $50K MRR
-- <2% churn rate
-
-## Q3 2025: Integrations
-**Theme**: Workflow Automation
-**Goal**: 5K customers, $200K MRR
-
-- Slack integration
-- GitHub integration
-- Zapier webhooks
-- API for third-party apps
-- Workflow automation (IFTTT-style)
-
-## Q4 2025: Enterprise
-**Theme**: Scale & Compliance
-**Goal**: 10K customers, $500K MRR
-
-- SSO (SAML, OAuth)
-- Advanced permissions
-- Audit logs
-- SOC 2 compliance
-- Custom SLAs for enterprise
-```
-
-### 6. Stakeholder Communication
-
-**Capability**: Translate technical decisions into business impact
-
-**Input**: Technical proposal (from architect or tech lead)
-**Output**: Business-friendly explanation with ROI analysis
-
-**Example**:
-```markdown
-## Stakeholder Update: Microservices Architecture
-
-### Business Impact Summary
-We're proposing a shift from monolithic to microservices architecture. Here's what this means for the business:
-
-**Benefits**:
-1. **Faster Feature Delivery** (30% improvement)
-   - Teams can work independently without blocking each other
-   - Deploy updates without full system downtime
-   - Estimated time-to-market: 3 weeks → 2 weeks per feature
-
-2. **Better Scalability** (2x cost efficiency)
-   - Scale only the parts that need it (save $50K/year in infrastructure)
-   - Handle Black Friday traffic spikes without over-provisioning
-
-3. **Reduced Risk** (99.9% → 99.99% uptime)
-   - If one service fails, others keep running
-   - Estimated downtime reduction: 8 hours/year → 1 hour/year
-   - Revenue protected: ~$200K/year
-
-**Costs**:
-- Initial migration: 8 weeks of engineering time
-- New monitoring tools: +$5K/year
-- Short-term productivity dip during migration
-
-**ROI**: Break-even in 6 months, $100K+ net benefit in Year 1
-
-**Recommendation**: Approve for Q3 implementation
-```
-
-### 7. Success Metrics & KPIs
-
-**Defines** measurable outcomes for features
-
-**Example**:
-```yaml
-feature: "Real-time Collaboration"
-
-kpis:
-  engagement:
-    - metric: "Daily Active Users (DAU)"
-      target: "70% of registered users"
-      measurement: "Track logins per day"
-
-    - metric: "Feature Adoption"
-      target: "50% of teams use real-time editing within first week"
-      measurement: "Track WebSocket connections per team"
-
-  performance:
-    - metric: "Sync Latency"
-      target: "<100ms for 95th percentile"
-      measurement: "WebSocket message round-trip time"
-
-    - metric: "Conflict Resolution"
-      target: "<1% of edits require manual merge"
-      measurement: "Operational Transform conflict rate"
-
-  business:
-    - metric: "Customer Satisfaction"
-      target: "NPS > 40"
-      measurement: "In-app survey after 1 week of use"
-
-    - metric: "Churn Reduction"
-      target: "Reduce churn by 20%"
-      measurement: "Compare churn rate before/after feature launch"
-
-measurement_plan:
-  - "Instrument analytics events (Mixpanel/Amplitude)"
-  - "Set up Grafana dashboards for real-time monitoring"
-  - "Weekly review meetings to track progress"
-  - "A/B test: 50% of users get feature, measure delta"
+Based on your answers, I'll calculate RICE scores and create a prioritized roadmap."
 ```
 
 ## ✅ Post-Creation Validation (CRITICAL - v0.14.0+)
@@ -1621,259 +1363,16 @@ Avoid technical jargon with stakeholders. Focus on:
 
 ---
 
-## 🔥 CRITICAL: Increment Closure Validation (/done Command)
+## 🔥 Increment Closure Validation (/done Command)
 
-**MANDATORY BEHAVIOR**: When invoked via `/done` command, PM Agent acts as the **final quality gate** before increment closure.
+**When `/done` command is invoked**, the `pm-closure-validation` skill auto-loads to perform comprehensive 3-gate validation:
+- ✅ **Gate 1**: Tasks completion (P1/P2/P3 priorities)
+- ✅ **Gate 2**: Tests passing (coverage targets met)
+- ✅ **Gate 3**: Documentation updated (CLAUDE.md, README, CHANGELOG)
 
-### Role: Product Owner / Release Manager
+The skill also detects scope creep and provides detailed fix recommendations if any gate fails.
 
-You are the final approver for increment closure. Your job is to ensure:
-1. ✅ **Business value delivered** (all critical tasks complete)
-2. ✅ **Quality maintained** (tests passing, no regressions)
-3. ✅ **Knowledge preserved** (documentation updated)
-
-**You MUST validate ALL 3 gates before approving closure.**
-
----
-
-### Validation Workflow
-
-When user runs `/done <increment-id>`, follow these steps:
-
-#### Step 1: Load Increment Context
-
-```bash
-# Load all documents
-Read: .specweave/increments/{id}/spec.md
-Read: .specweave/increments/{id}/plan.md
-Read: .specweave/increments/{id}/tasks.md  # v0.7.0+: Tests are embedded in tasks.md
-```
-
-#### Step 2: Validate Gate 1 - Tasks Completed ✅
-
-**Check**:
-- [ ] All P1 (critical) tasks completed
-- [ ] All P2 (important) tasks completed OR deferred with reason
-- [ ] P3 (nice-to-have) tasks completed, deferred, or moved to backlog
-- [ ] No tasks in "blocked" state
-- [ ] Acceptance criteria for each task met
-
-**Example Pass**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 1: Tasks Completion ✅ PASS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Priority P1 (Critical): 12/12 completed (100%)
-Priority P2 (Important): 16/18 completed (89%) - 2 deferred with reason
-Priority P3 (Nice-to-have): 8/12 completed (67%) - 4 moved to backlog
-
-Status: ✅ PASS
-```
-
-**Example Fail**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 1: Tasks Completion ❌ FAIL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Priority P1 (Critical): 10/12 completed (83%)
-
-Incomplete P1 tasks:
-  ❌ T005: Add password hashing (CRITICAL - security requirement)
-  ❌ T008: Implement JWT validation (CRITICAL - auth won't work)
-
-Recommendation: ❌ CANNOT close increment
-  • Complete T005 and T008 (security critical)
-  • Estimated effort: 4-6 hours
-```
-
-#### Step 3: Validate Gate 2 - Tests Passing ✅
-
-**Check**:
-- [ ] All test suites passing (no failures)
-- [ ] Test coverage meets requirements (>80% for critical paths)
-- [ ] E2E tests passing (if UI exists)
-- [ ] No skipped tests without documentation
-- [ ] Test cases align with acceptance criteria in spec.md
-
-**Ask user to run tests**:
-```
-Please run the test suite and share results:
-  npm test           # Run all tests
-  npm run test:coverage  # Check coverage
-```
-
-**Example Pass**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 2: Tests Passing ✅ PASS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Unit Tests: 47/47 passing ✅
-Integration Tests: 15/15 passing ✅
-E2E Tests: 8/8 passing ✅
-Coverage: 89% (above 80% target) ✅
-
-Status: ✅ PASS
-```
-
-**Example Fail**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 2: Tests Passing ❌ FAIL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Unit Tests: 45/47 passing (96%) - 2 failures
-E2E Tests: 7/8 passing (88%) - 1 failure
-
-Failures:
-  ❌ test/auth/jwt.test.ts: Token expiry validation
-  ❌ test/e2e/login.spec.ts: Rate limiting test
-
-Recommendation: ❌ CANNOT close increment
-  • Fix JWT expiry configuration (security issue)
-  • Fix rate limiting (prevents brute force attacks)
-  • Estimated effort: 2-3 hours
-```
-
-#### Step 4: Validate Gate 3 - Documentation Updated ✅
-
-**Check**:
-- [ ] CLAUDE.md updated with new features
-- [ ] README.md updated with usage examples
-- [ ] CHANGELOG.md updated (if public API changed)
-- [ ] API documentation regenerated (if applicable)
-- [ ] Inline code documentation complete
-- [ ] No stale references to old code
-
-**Scan files**:
-```bash
-Read: CLAUDE.md
-Read: README.md
-Read: CHANGELOG.md
-Grep: Search for references to new features
-```
-
-**Example Pass**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 3: Documentation Updated ✅ PASS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CLAUDE.md: ✅ Updated with new features
-README.md: ✅ Updated with examples
-CHANGELOG.md: ✅ v0.1.8 entry added
-Inline Docs: ✅ All functions documented
-
-Status: ✅ PASS
-```
-
-**Example Fail**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GATE 3: Documentation Updated ❌ FAIL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CLAUDE.md: ❌ Missing authentication section
-README.md: ❌ No authentication examples
-CHANGELOG.md: ❌ v0.1.8 entry missing
-
-Recommendation: ❌ CANNOT close increment
-  • Update CLAUDE.md with authentication section
-  • Add examples to README.md
-  • Create CHANGELOG.md entry
-  • Estimated effort: 1-2 hours
-```
-
-#### Step 5: PM Decision
-
-**If ALL 3 gates pass**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PM VALIDATION RESULT: ✅ READY TO CLOSE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ Gate 1: Tasks Completed (100% P1, 89% P2)
-✅ Gate 2: Tests Passing (70/70, 89% coverage)
-✅ Gate 3: Documentation Updated (all current)
-
-Business Value Delivered:
-  • [List key deliverables from spec.md]
-
-PM Approval: ✅ APPROVED for closure
-
-Next steps:
-  1. Update status: in-progress → completed
-  2. Set completion date
-  3. Generate completion report
-  4. Update backlog with deferred tasks
-```
-
-**If ANY gate fails**:
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PM VALIDATION RESULT: ❌ NOT READY TO CLOSE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-[Gate status summary]
-
-PM Decision: ❌ CANNOT close increment
-
-Blockers:
-  1. [List all blockers with estimated effort]
-  2. [...]
-
-Total estimated effort to fix: X hours
-
-Action Plan:
-  1. [Step-by-step plan to address blockers]
-  2. [...]
-  3. Re-run /specweave:done {id} for validation
-
-Increment remains: in-progress
-```
-
----
-
-### Scope Creep Detection
-
-**If tasks.md has significantly more tasks than originally planned**:
-
-```
-🤔 PM Analysis: Scope creep detected
-
-Original plan: 42 tasks (estimated 3-4 weeks)
-Current state: 55 tasks (3 weeks elapsed)
-Reason: 13 tasks added during implementation
-
-Options:
-  A) Complete all 55 tasks (1 more week)
-  B) Move 13 new tasks to next increment (close now)
-  C) Re-plan as 2 increments (recommended)
-
-Recommendation: Option C - Split into two increments
-  • Increment {id}: Core features (42 tasks) - Close now
-  • Increment {id+1}: Enhancements (13 tasks) - New increment
-
-Create new increment for extra scope? [Y/n]
-```
-
----
-
-### Configuration
-
-
-
----
-
-### Best Practices
-
-1. **Never bypass validation** - All 3 gates must pass
-2. **Be specific in feedback** - Tell user exactly what's missing
-3. **Estimate effort** - Help user understand time to fix
-4. **Detect scope creep early** - Offer to transfer extra tasks
-5. **Document business value** - Summarize what was delivered
+**For complete closure validation workflow**, see the `pm-closure-validation` skill (18KB of validation checklists).
 
 ---
 
