@@ -743,7 +743,7 @@ coverage_target: 85
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (High)
 **Estimated Effort**: 4 hours
 
@@ -788,7 +788,7 @@ coverage_target: 85
 
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1 (High)
 **Estimated Effort**: 3 hours
 

@@ -4,7 +4,7 @@
 # Fires BEFORE any command executes (UserPromptSubmit hook)
 # Purpose: Prevent duplicate command invocations within configurable time window
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # ==============================================================================
 # PROJECT ROOT DETECTION

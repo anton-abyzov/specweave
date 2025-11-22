@@ -4,7 +4,7 @@
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Discipline validation, context injection, command suggestions
 
-set -euo pipefail
+set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Read input JSON from stdin
 INPUT=$(cat)
