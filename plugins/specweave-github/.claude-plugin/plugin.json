@@ -15,5 +15,19 @@
     "integration",
     "sync",
     "specweave"
-  ]
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "TodoWrite",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -43,9 +43,74 @@ export interface MultiSpecDetectionResult {
 
 /**
  * Detect all specs referenced in an increment
+ *
+ * CRITICAL ARCHITECTURE (v0.24.0+):
+ * - Increments NEVER reference other increments
+ * - Flow: INCREMENT (feature_id) → FEATURE → USER STORIES
+ * - Detection: Read increment metadata.json → Find feature_id → Find all user stories with that feature
  */
 export async function detectSpecsInIncrement(
   incrementPath: string,
+  config: any = {}
+): Promise<MultiSpecDetectionResult> {
+  const specs: DetectedSpec[] = [];
+
+  // STEP 1: Read increment metadata to get feature_id
+  const metadataPath = path.join(incrementPath, 'metadata.json');
+
+  if (!fs.existsSync(metadataPath)) {
+    // Fallback: try spec.md frontmatter
+    const specPath = path.join(incrementPath, 'spec.md');
+    if (fs.existsSync(specPath)) {
+      const specContent = fs.readFileSync(specPath, 'utf-8');
+      const { data: frontmatter } = matter(specContent);
+
+      // No feature_id in frontmatter either - return empty
+      if (!frontmatter.feature_id) {
+        return {
+          specs: [],
+          isMultiSpec: false,
+          projects: []
+        };
+      }
+
+      // Use feature_id from spec.md frontmatter
+      return await detectSpecsByFeatureId(frontmatter.feature_id, config);
+    }
+
+    return {
+      specs: [],
+      isMultiSpec: false,
+      projects: []
+    };
+  }
+
+  const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+  const featureId = metadata.feature_id;
+
+  if (!featureId) {
+    // No feature_id - return empty (increment is standalone)
+    return {
+      specs: [],
+      isMultiSpec: false,
+      projects: []
+    };
+  }
+
+  // STEP 2: Find all user stories for this feature_id
+  return await detectSpecsByFeatureId(featureId, config);
+}
+
+/**
+ * Detect all user stories for a given feature_id
+ *
+ * ARCHITECTURE:
+ * - Scans .specweave/docs/internal/specs/{project}/{feature}/
+ * - Finds all user story files with feature: {featureId} in frontmatter
+ * - Returns detected specs ready for GitHub sync
+ */
+async function detectSpecsByFeatureId(
+  featureId: string,
   config: any = {}
 ): Promise<MultiSpecDetectionResult> {
   const specs: DetectedSpec[] = [];
@@ -70,58 +135,65 @@ export async function detectSpecsInIncrement(
   for (const projectFolder of projectFolders) {
     const projectPath = path.join(specsFolder, projectFolder);
 
-    // Skip if not a directory
-    if (!fs.statSync(projectPath).isDirectory()) {
+    // Skip if not a directory or _features folder
+    if (!fs.statSync(projectPath).isDirectory() || projectFolder === '_features') {
       continue;
     }
 
-    // 3. Scan all spec files in this project
-    const specFiles = fs.readdirSync(projectPath).filter(f => f.endsWith('.md'));
+    // 3. Scan for feature-specific folders (e.g., FS-048/)
+    const featureFolderPath = path.join(projectPath, featureId);
+
+    if (!fs.existsSync(featureFolderPath) || !fs.statSync(featureFolderPath).isDirectory()) {
+      continue;
+    }
+
+    // 4. Scan all user story files in this feature folder
+    const specFiles = fs.readdirSync(featureFolderPath).filter(f => f.endsWith('.md') && f.startsWith('us-'));
 
     for (const specFile of specFiles) {
-      const specPath = path.join(projectPath, specFile);
+      const specPath = path.join(featureFolderPath, specFile);
       const specContent = fs.readFileSync(specPath, 'utf-8');
       const { data: frontmatter, content } = matter(specContent);
 
-      // 4. Check if this spec references the current increment
-      const references = extractIncrementReferences(content, frontmatter);
-
-      if (references.includes(path.basename(incrementPath))) {
-        // 5. Detect identifier for this spec
-        const title = frontmatter.title || extractTitle(content);
-        const specContentObj: SpecContent = {
-          content: specContent,
-          frontmatter,
-          title,
-          project: projectFolder,
-          path: specPath
-        };
-
-        const identifier = detectSpecIdentifier(specContentObj, {
-          existingSpecs: specs.map(s => s.identifier.full),
-          preferTitleSlug: config.specs?.preferTitleSlug ?? true,
-          minSlugLength: config.specs?.minSlugLength ?? 5
-        });
-
-        // 6. Check if sync is enabled for this project
-        const projectConfig = config.specs?.projects?.[projectFolder];
-        const syncEnabled = projectConfig?.syncEnabled !== false;
-
-        specs.push({
-          identifier,
-          project: projectFolder,
-          path: specPath,
-          syncEnabled
-        });
+      // 5. Verify this user story belongs to the feature
+      if (frontmatter.feature !== featureId) {
+        continue;
       }
+
+      // 6. Detect identifier for this spec
+      const title = frontmatter.title || extractTitle(content);
+      const specContentObj: SpecContent = {
+        content: specContent,
+        frontmatter,
+        title,
+        project: projectFolder,
+        path: specPath
+      };
+
+      const identifier = detectSpecIdentifier(specContentObj, {
+        existingSpecs: specs.map(s => s.identifier.full),
+        preferTitleSlug: config.specs?.preferTitleSlug ?? true,
+        minSlugLength: config.specs?.minSlugLength ?? 5
+      });
+
+      // 7. Check if sync is enabled for this project
+      const projectConfig = config.specs?.projects?.[projectFolder];
+      const syncEnabled = projectConfig?.syncEnabled !== false;
+
+      specs.push({
+        identifier,
+        project: projectFolder,
+        path: specPath,
+        syncEnabled
+      });
     }
   }
 
-  // 7. Determine if multi-spec
+  // 8. Determine if multi-spec
   const isMultiSpec = specs.length > 1;
   const projects = [...new Set(specs.map(s => s.project))];
 
-  // 8. Find primary spec (first non-parent spec)
+  // 9. Find primary spec (first non-parent spec)
   const primary = specs.find(s => s.project !== '_parent') || specs[0];
 
   return {
