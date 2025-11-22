@@ -1,5 +1,5 @@
 /**
- * Risk Calculator using BMAD pattern (Probability × Impact)
+ * Risk Calculator using Probability × Impact scoring method
  *
  * @module qa/risk-calculator
  * @since v0.8.0
@@ -9,7 +9,7 @@ import { Risk, RiskAssessmentResult, RiskCategory, RiskSeverity } from './types.
 
 export class RiskCalculator {
   /**
-   * Calculate risk score using BMAD formula: P × I
+   * Calculate risk score using quantitative formula: P × I
    *
    * @param probability - Probability of risk occurring (0.0-1.0)
    * @param impact - Impact severity if risk occurs (1-10)

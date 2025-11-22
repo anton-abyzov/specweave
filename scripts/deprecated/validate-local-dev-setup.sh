@@ -1,7 +1,23 @@
 #!/bin/bash
+#
+# ⚠️ DEPRECATED: SpecWeave Local Development Setup Validator
+#
+# 🔴 THIS SCRIPT IS DEPRECATED AS OF 2025-11-22
+#
+# This script validated symlinks for local development, which is NO LONGER SUPPORTED.
+#
+# NEW WORKFLOW: GitHub marketplace automatically manages plugin installation.
+# No validation needed - Claude Code handles everything.
+#
+# See CLAUDE.md Section 1 "Local Development Setup" for current guidelines.
+#
+# This script is preserved for historical reference only.
+# ---
 
-# SpecWeave Local Development Setup Validator
-# Ensures marketplace symlink is properly configured for contributors
+echo "⚠️  WARNING: This script is DEPRECATED!"
+echo "   Symlink validation is no longer needed."
+echo "   Use GitHub marketplace workflow (see CLAUDE.md)"
+exit 1
 
 set -euo pipefail
 
