@@ -11,6 +11,7 @@ export default defineConfig({
       'tests/unit/**/*.test.ts',
       'tests/integration/**/*.test.ts',
       'tests/performance/**/*.test.ts',
+      'tests/plugin-validation/**/*.test.ts',
     ],
 
     // Exclude patterns

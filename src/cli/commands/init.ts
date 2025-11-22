@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'fs-extra'; // legacy fs-extra
 import * as path from 'path';
 import os from 'os';
 import chalk from 'chalk';
@@ -19,6 +19,7 @@ import { SupportedLanguage } from '../../core/i18n/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { generateInitialIncrement } from '../helpers/init/initial-increment-generator.js';
 import { ImportCoordinator, CoordinatorConfig, CoordinatorResult } from '../../importers/import-coordinator.js';
+import { StatusLineUpdater } from '../../core/status-line/status-line-updater.js';
 import type { ImportConfig } from '../../importers/external-importer.js';
 import { ItemConverter } from '../../importers/item-converter.js';
 import { loadImportConfig } from '../../config/import-config.js';
@@ -1211,7 +1212,9 @@ export async function initCommand(
 
       // Detect existing git remote
       const gitRemoteDetection = detectGitHubRemote(targetDir);
-      let repositoryHosting: 'github' | 'local' | 'other' = 'local';
+      let repositoryHosting: 'github' | 'github-single' | 'github-multi' | 'local' | 'other' = 'local';
+      let isMultiRepo = false;
+      let repoSelectionConfig: RepoSelectionConfig | null = null;
 
       if (!isCI) {
         const { hosting } = await inquirer.prompt([{
@@ -1220,8 +1223,12 @@ export async function initCommand(
           message: 'How do you host your repository?',
           choices: [
             {
-              name: `🐙 GitHub ${gitRemoteDetection ? '(detected)' : '(recommended)'}`,
-              value: 'github'
+              name: `🐙 GitHub - Single repository ${gitRemoteDetection ? '(detected)' : ''}`,
+              value: 'github-single'
+            },
+            {
+              name: '🐙 GitHub - Multiple repositories (microservices, monorepo)',
+              value: 'github-multi'
             },
             {
               name: '💻 Local git only (no remote sync)',
@@ -1232,10 +1239,18 @@ export async function initCommand(
               value: 'other'
             }
           ],
-          default: gitRemoteDetection ? 'github' : 'local'
+          default: gitRemoteDetection ? 'github-single' : 'local'
         }]);
 
         repositoryHosting = hosting;
+
+        // Normalize for backwards compatibility
+        if (hosting === 'github-single') {
+          repositoryHosting = 'github';
+        } else if (hosting === 'github-multi') {
+          repositoryHosting = 'github';
+          isMultiRepo = true;
+        }
 
         // Show info for non-GitHub choices
         if (hosting === 'other') {
@@ -1522,6 +1537,19 @@ export async function initCommand(
         console.log(chalk.green(`   ✔ Created initial increment: ${incrementId}`));
         console.log(chalk.gray('   ✔ Status: ACTIVE (ready to work)'));
         console.log(chalk.gray('   ✔ Files: spec.md, plan.md, tasks.md, metadata.json'));
+
+        // Initialize status line cache for the new increment
+        try {
+          const statusLineUpdater = new StatusLineUpdater(targetDir);
+          await statusLineUpdater.update();
+          console.log(chalk.gray('   ✔ Status line initialized'));
+        } catch (statusLineError) {
+          // Non-critical: Status line will be created on first task completion
+          if (process.env.DEBUG) {
+            console.log(chalk.gray(`   ⚠️  Status line init skipped: ${statusLineError instanceof Error ? statusLineError.message : String(statusLineError)}`));
+          }
+        }
+
         console.log('');
         console.log(chalk.yellow('   💡 TIP: Delete this increment and create your first real feature:'));
         console.log(chalk.gray('      rm -rf .specweave/increments/0001-project-setup'));
@@ -1725,54 +1753,63 @@ async function promptAndRunExternalImport(targetDir: string, isCI: boolean): Pro
     };
   }
 
-  // US-011: Multi-Repo Selection for GitHub (if GitHub detected and token available)
+  // US-011: Multi-Repo Import
+  // NOTE: This is a separate function scope, so we need our own repoSelectionConfig variable
   let repoSelectionConfig: RepoSelectionConfig | null = null;
+
   if (githubRemote && process.env.GITHUB_TOKEN) {
-    const { useMultiRepo } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useMultiRepo',
-        message: 'Do you want to import from multiple repositories?',
-        default: false
-      }
-    ]);
-
-    if (useMultiRepo) {
-      try {
-        const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-        repoSelectionConfig = await selectRepositories(octokit, process.env.GITHUB_TOKEN);
-
-        if (repoSelectionConfig) {
-          // Save to config.json for future imports
-          const configPath = path.join(targetDir, '.specweave', 'config.json');
-          let config: any = {};
-          if (fs.existsSync(configPath)) {
-            config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-          }
-
-          if (!config.github) {
-            config.github = {};
-          }
-
-          config.github.repositories = repoSelectionConfig.repositories;
-          config.github.selectionStrategy = repoSelectionConfig.selectionStrategy;
-          if (repoSelectionConfig.pattern) {
-            config.github.pattern = repoSelectionConfig.pattern;
-          }
-          if (repoSelectionConfig.organizationName) {
-            config.github.organizationName = repoSelectionConfig.organizationName;
-          }
-
-          fs.ensureDirSync(path.dirname(configPath));
-          fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-          console.log(chalk.green(`✅ Repository selection saved to config.json\n`));
+    try {
+      const { useMultiRepo } = await inquirer.prompt([
+        {
+          type: 'confirm',
+          name: 'useMultiRepo',
+          message: 'Do you want to import from multiple repositories?',
+          default: false
         }
-      } catch (error) {
-        console.error(chalk.yellow(`⚠️  Failed to select repositories: ${error instanceof Error ? error.message : String(error)}`));
-        console.log(chalk.gray('Continuing with single repository import...\n'));
+      ]);
+
+      if (useMultiRepo) {
+        try {
+          const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
+          repoSelectionConfig = await selectRepositories(octokit, process.env.GITHUB_TOKEN);
+
+          if (repoSelectionConfig) {
+            try {
+              const configPath = path.join(targetDir, '.specweave', 'config.json');
+              let config: any = {};
+              if (fs.existsSync(configPath)) {
+                config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+              }
+
+              if (!config.github) {
+                config.github = {};
+              }
+
+              config.github.repositories = repoSelectionConfig.repositories;
+              config.github.selectionStrategy = repoSelectionConfig.selectionStrategy;
+              if (repoSelectionConfig.pattern) {
+                config.github.pattern = repoSelectionConfig.pattern;
+              }
+              if (repoSelectionConfig.organizationName) {
+                config.github.organizationName = repoSelectionConfig.organizationName;
+              }
+
+              fs.ensureDirSync(path.dirname(configPath));
+              fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            } catch {
+              // Silent - config save is not critical
+            }
+          }
+        } catch {
+          // Silent - continue with single repo
+        }
       }
+    } catch {
+      // Silent - skip multi-repo prompt
     }
+  } else if (repoSelectionConfig) {
+    // User already configured multi-repo in hosting section - reuse it!
+    console.log(chalk.gray(`✓ Using multi-repository configuration from hosting setup\n`));
   }
 
   // Map config timeRangeMonths to closest prompt option

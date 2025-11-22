@@ -250,16 +250,48 @@ fi
 (
   set +e  # Disable error propagation in background job
 
-  # Detect current increment ONCE
-  CURRENT_INCREMENT=$(ls -td .specweave/increments/*/ 2>/dev/null | xargs -n1 basename | grep -v "_backlog" | grep -v "_archive" | grep -v "_working" | head -1)
+  # ============================================================================
+  # CRITICAL FIX: Read active increments from state file (NOT time-based detection)
+  # ============================================================================
+  # WHY: The old logic used 'ls -td' which:
+  #   1. Could pick up completed increments if recently modified
+  #   2. Caused infinite loops on increments with bad AC data
+  #   3. Wasted resources syncing 50+ completed increments
+  #
+  # NEW: Only sync increments that are ACTIVELY being worked on
+  # Source of truth: .specweave/state/active-increment.json
+  # ============================================================================
 
-  if [[ -z "$CURRENT_INCREMENT" ]]; then
-    echo "[$(date)] No active increment, skipping all background work" >> "$DEBUG_LOG" 2>/dev/null || true
+  ACTIVE_STATE_FILE=".specweave/state/active-increment.json"
+  ACTIVE_INCREMENTS=()
+
+  if [[ ! -f "$ACTIVE_STATE_FILE" ]]; then
+    echo "[$(date)] ⚠️  No active state file found, skipping all background work" >> "$DEBUG_LOG" 2>/dev/null || true
     echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true  # Reset on success
     exit 0
   fi
 
-  echo "[$(date)] Starting consolidated background work for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+  if command -v jq >/dev/null 2>&1; then
+    # Use jq to parse the active increments array
+    # NOTE: mapfile requires bash 4+, macOS has bash 3.2, use while read instead
+    while IFS= read -r increment; do
+      ACTIVE_INCREMENTS+=("$increment")
+    done < <(jq -r '.ids[]' "$ACTIVE_STATE_FILE" 2>/dev/null)
+  else
+    # Fallback: simple grep parsing (less reliable, but works without jq)
+    # Match only increment IDs: 4 digits, dash, then letters/numbers/dashes
+    echo "[$(date)] ⚠️  jq not found, using fallback parsing" >> "$DEBUG_LOG" 2>/dev/null || true
+    ACTIVE_INCREMENTS=($(grep -o '"[0-9]\{4\}-[a-zA-Z0-9][a-zA-Z0-9_-]*"' "$ACTIVE_STATE_FILE" 2>/dev/null | tr -d '"'))
+  fi
+
+  # If no active increments, skip all work
+  if [[ ${#ACTIVE_INCREMENTS[@]} -eq 0 ]]; then
+    echo "[$(date)] ✓ No active increments, skipping all background work (this is normal)" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true  # Reset on success
+    exit 0
+  fi
+
+  echo "[$(date)] 📋 Found ${#ACTIVE_INCREMENTS[@]} active increment(s): ${ACTIVE_INCREMENTS[*]}" >> "$DEBUG_LOG" 2>/dev/null || true
 
   # Only proceed if Node.js is available
   if ! command -v node &> /dev/null; then
@@ -270,6 +302,33 @@ fi
 
   # Track if ANY operation succeeded (for circuit breaker)
   ANY_SUCCESS=false
+
+  # ============================================================================
+  # PROCESS EACH ACTIVE INCREMENT
+  # ============================================================================
+  for CURRENT_INCREMENT in "${ACTIVE_INCREMENTS[@]}"; do
+    echo "[$(date)] 🔄 Processing increment: $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
+
+    # Safety check: Verify increment exists and is not archived
+    if [[ ! -d ".specweave/increments/$CURRENT_INCREMENT" ]]; then
+      echo "[$(date)] ⚠️  Increment $CURRENT_INCREMENT not found, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+      continue
+    fi
+
+    if [[ -d ".specweave/increments/_archive/$CURRENT_INCREMENT" ]]; then
+      echo "[$(date)] ⚠️  Increment $CURRENT_INCREMENT is archived, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+      continue
+    fi
+
+    # Additional safety: Check metadata status (skip completed/abandoned)
+    METADATA_FILE=".specweave/increments/$CURRENT_INCREMENT/metadata.json"
+    if [[ -f "$METADATA_FILE" ]] && command -v jq >/dev/null 2>&1; then
+      INCREMENT_STATUS=$(jq -r '.status // "active"' "$METADATA_FILE" 2>/dev/null || echo "active")
+      if [[ "$INCREMENT_STATUS" == "completed" ]] || [[ "$INCREMENT_STATUS" == "abandoned" ]]; then
+        echo "[$(date)] ⏭️  Skipping $CURRENT_INCREMENT (status: $INCREMENT_STATUS)" >> "$DEBUG_LOG" 2>/dev/null || true
+        continue
+      fi
+    fi
 
   # ============================================================================
   # 1. UPDATE TASKS.MD
@@ -429,8 +488,10 @@ fi
     fi
   fi
 
+  done  # End of ACTIVE_INCREMENTS loop
+
   # ============================================================================
-  # 6. STATUS LINE UPDATE
+  # 6. STATUS LINE UPDATE (GLOBAL - outside loop)
   # ============================================================================
   echo "[$(date)] 📊 Updating status line" >> "$DEBUG_LOG" 2>/dev/null || true
 

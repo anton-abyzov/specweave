@@ -182,6 +182,31 @@ export interface AdapterConfiguration {
 }
 
 /**
+ * Status line configuration
+ */
+export interface StatusLineConfiguration {
+  /**
+   * Enable status line display
+   */
+  enabled: boolean;
+
+  /**
+   * Maximum age of cache before showing stale warning (ms)
+   */
+  maxCacheAge: number;
+
+  /**
+   * Width of progress bar (characters)
+   */
+  progressBarWidth: number;
+
+  /**
+   * Maximum length for increment name
+   */
+  maxNameLength: number;
+}
+
+/**
  * Main SpecWeave configuration
  */
 export interface SpecWeaveConfig {
@@ -224,6 +249,11 @@ export interface SpecWeaveConfig {
    * Permissions configuration
    */
   permissions?: PermissionsConfiguration;
+
+  /**
+   * Status line configuration (optional)
+   */
+  statusLine?: StatusLineConfiguration;
 }
 
 /**
@@ -248,6 +278,12 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     canCreate: true,
     canUpdate: true,
     canUpdateStatus: true
+  },
+  statusLine: {
+    enabled: true,
+    maxCacheAge: 30000, // 30 seconds
+    progressBarWidth: 8,
+    maxNameLength: 30
   }
 };
 

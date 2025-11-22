@@ -101,6 +101,17 @@ else
   exit 0  # Let PostToolUse handle it with mtime fallback
 fi
 
+# ============================================================================
+# EARLY EXIT: Only process .specweave/ files (v0.24.4 Performance Fix)
+# ============================================================================
+# 90% of Write operations are on non-SpecWeave files (src/, tests/, node_modules/)
+# Exit immediately for non-.specweave/ files to reduce hook overhead by 90%
+
+if [[ "$FILE_PATH" != *"/.specweave/"* ]]; then
+  echo "[$(date)] pre-write-spec: Not a .specweave/ file, skipping (performance optimization)" >> "$DEBUG_LOG" 2>/dev/null || true
+  exit 0
+fi
+
 # Check if this is a spec.md or tasks.md file in increments folder
 IS_SPEC_FILE=false
 if [[ "$FILE_PATH" == *"/spec.md" ]] || [[ "$FILE_PATH" == *"/tasks.md" ]]; then
