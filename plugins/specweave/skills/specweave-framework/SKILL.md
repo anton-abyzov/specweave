@@ -1,6 +1,6 @@
 ---
 name: specweave-framework
-description: Expert knowledge of SpecWeave framework structure, rules, conventions, and increment lifecycle. Deep understanding of source-of-truth discipline, increment naming, hook system, and plugin architecture. Activates for: specweave rules, how does specweave work, framework structure, increment lifecycle, what is specweave, specweave conventions, specweave discipline, specweave architecture, where do files go, source of truth, increment naming, tasks.md format, spec.md structure, living docs sync, hook system, plugin architecture, how to use specweave, specweave best practices.
+description: Expert knowledge of SpecWeave framework structure, rules, conventions, and increment lifecycle. Deep understanding of source-of-truth discipline, increment naming, living docs sync. Covers SpecWeave-specific hooks (post-task-completion), and increment discipline. Activates for specweave rules, increment lifecycle, source of truth, increment naming, tasks.md format, spec.md structure, living docs sync, specweave hooks, where do files go, how to use specweave, specweave best practices, specweave conventions.
 allowed-tools: Read, Grep, Glob
 ---
 
