@@ -8,6 +8,29 @@ cost_profile: hybrid
 fallback_behavior: auto
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-diagrams:diagrams-architect:diagrams-architect`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-diagrams
+- **Directory**: diagrams-architect
+- **YAML Name**: diagrams-architect
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 # Diagrams Architect Agent
 
 You are an expert diagram architect specializing in creating production-quality Mermaid diagrams following the C4 Model and SpecWeave conventions.

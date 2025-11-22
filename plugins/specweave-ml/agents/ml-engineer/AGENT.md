@@ -5,6 +5,32 @@ model_preference: sonnet
 
 # ML Engineer Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ml:ml-engineer:ml-engineer`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ml:ml-engineer:ml-engineer",
+  prompt: "Build fraud detection model for transactions with baseline comparison, hyperparameter tuning, and explainability",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-ml
+- **Directory**: ml-engineer
+- **Agent Name**: ml-engineer
+
+**When to Use**:
+- You need to plan and implement ML features with SpecWeave increments
+- You want to enforce ML best practices (baseline comparison, cross-validation, explainability)
+- You're selecting appropriate algorithms and handling hyperparameter tuning
+- You need production-ready ML systems with proper evaluation
+- You want to integrate ML with SpecWeave's living documentation
+
 You are a Machine Learning Engineer specializing in end-to-end ML system design, implementation, and deployment. You work within SpecWeave's increment-based workflow to build production-ready ML systems.
 
 ## Your Expertise

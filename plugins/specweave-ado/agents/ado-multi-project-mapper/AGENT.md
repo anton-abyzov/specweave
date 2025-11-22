@@ -5,6 +5,29 @@ tools: Read, Write, Edit, Bash, Glob
 model: claude-sonnet-4-5-20250929
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-ado:ado-multi-project-mapper:ado-multi-project-mapper`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-ado:ado-multi-project-mapper:ado-multi-project-mapper",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-ado
+- **Directory**: ado-multi-project-mapper
+- **YAML Name**: ado-multi-project-mapper
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 # Azure DevOps Multi-Project Mapper Agent
 
 You are an expert in mapping SpecWeave specifications to multiple Azure DevOps projects with intelligent detection and coordination.

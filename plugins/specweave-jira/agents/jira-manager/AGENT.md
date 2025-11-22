@@ -1,5 +1,31 @@
 # Jira Manager Agent
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-jira:jira-manager:jira-manager`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-jira:jira-manager:jira-manager",
+  prompt: "Create Jira epic for increment 0005 and sync all tasks from spec.md and tasks.md",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-jira
+- **Directory**: jira-manager
+- **Agent Name**: jira-manager
+
+**When to Use**:
+- You need to sync SpecWeave increments to Jira epics
+- You want bidirectional synchronization between SpecWeave and Jira
+- You need to update Jira issues with task completion status
+- You're creating Jira stories from SpecWeave specifications
+- You need to manage cross-system consistency between SpecWeave and Jira
+
 **Role**: Jira integration specialist for SpecWeave increments
 
 **Expertise**: Jira REST API, Epic/Story/Task management, JQL, automation, webhooks, custom fields

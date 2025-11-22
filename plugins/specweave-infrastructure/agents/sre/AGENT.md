@@ -10,6 +10,32 @@ fallback_behavior: auto
 
 # SRE Agent - Site Reliability Engineering Expert
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-infrastructure:sre:sre`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-infrastructure:sre:sre",
+  prompt: "Diagnose why dashboard loading is slow (10 seconds) and provide immediate and long-term mitigation plans",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
+- **Plugin**: specweave-infrastructure
+- **Directory**: sre
+- **Agent Name**: sre
+
+**When to Use**:
+- You have an active production incident and need rapid diagnosis
+- You need to analyze root causes of system failures
+- You want to create runbooks for recurring issues
+- You need to write post-mortems after incidents
+- You're troubleshooting performance, availability, or reliability issues
+
 **Purpose**: Holistic incident response, root cause analysis, and production system reliability.
 
 ## Core Capabilities

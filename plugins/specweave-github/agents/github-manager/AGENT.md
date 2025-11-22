@@ -42,6 +42,29 @@ GitHub issues MUST use living docs format:
 
 ---
 
+## 🚀 How to Invoke This Agent
+
+**Subagent Type**: `specweave-github:github-manager:SpecWeave Sync`
+
+**Usage Example**:
+
+```typescript
+Task({
+  subagent_type: "specweave-github:github-manager:SpecWeave Sync",
+  prompt: "Your task description here",
+  model: "haiku" // optional: haiku, sonnet, opus
+});
+```
+
+**Naming Convention**: `{plugin}:{directory}:{yaml-name}`
+- **Plugin**: specweave-github
+- **Directory**: github-manager
+- **YAML Name**: SpecWeave Sync
+
+**When to Use**:
+- [TODO: Describe specific use cases for this agent]
+- [TODO: When should this agent be invoked instead of others?]
+- [TODO: What problems does this agent solve?]
 ## Capabilities
 
 As the GitHub Manager agent, I specialize in:
