@@ -725,6 +725,48 @@ npm run rebuild
 - ADR-0060 (Three-tier optimization architecture)
 - `.specweave/increments/0050-*/reports/hook-crash-analysis.md` (Incident analysis)
 
+### Active Increment Filtering (v0.24.4 - ARCHITECTURAL FIX)
+
+**Critical architectural change**: Hooks now **ONLY** process active increments.
+
+**Problem**: The old logic used `ls -td` (time-based) which:
+- Processed 50+ increments on every TodoWrite
+- Could pick completed increments if recently modified
+- Caused infinite loops when hitting bad AC data
+- Wasted 90%+ of hook overhead on completed work
+
+**Solution**: State-based filtering (`.specweave/state/active-increment.json`)
+
+```bash
+# NEW: Read active increments from state file
+mapfile -t ACTIVE_INCREMENTS < <(jq -r '.ids[]' "$ACTIVE_STATE_FILE")
+
+# Process ONLY active increments
+for CURRENT_INCREMENT in "${ACTIVE_INCREMENTS[@]}"; do
+  # Safety: Skip if completed/abandoned/archived
+  if [[ "$STATUS" == "completed" ]] || [[ "$STATUS" == "abandoned" ]]; then
+    continue
+  fi
+
+  # Process (tasks.md, AC sync, living docs, etc.)
+done
+```
+
+**Impact**:
+- ✅ 95% reduction in hook overhead (50+ → 1-2 increments)
+- ✅ Zero risk of infinite loops (completed increments never touched)
+- ✅ Clean architecture (source of truth: state file)
+- ✅ Multi-increment support (processes array)
+
+**Fail-safe defaults**:
+- No state file → skip all work
+- Empty array → skip all work (normal when no active increments)
+- Missing directory → skip increment
+- Archived → skip increment
+- Completed/abandoned status → skip increment
+
+**See**: `.specweave/increments/0050-*/reports/ARCHITECTURAL-FIX-ACTIVE-INCREMENT-FILTERING.md`
+
 ---
 
 ## Development Workflow

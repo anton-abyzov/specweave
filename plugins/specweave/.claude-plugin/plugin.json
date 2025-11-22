@@ -1,7 +1,7 @@
 {
   "name": "specweave",
   "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
-  "version": "0.24.0",
+  "version": "0.24.4",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -27,7 +27,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-task-completion.sh",
-            "timeout": 60
+            "timeout": 2
           }
         ]
       },
@@ -37,7 +37,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-spec.sh",
-            "timeout": 2
+            "timeout": 1
           }
         ]
       },
@@ -47,7 +47,7 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-write-spec.sh",
-            "timeout": 2
+            "timeout": 1
           }
         ]
       }
