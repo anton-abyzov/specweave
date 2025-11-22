@@ -12,7 +12,7 @@
 **Complete Architecture**: [System Design](../../docs/internal/architecture/system-design.md)
 
 **Key Architectural Decisions**:
-- [ADR-0050: Three-Tier Dependency Loading Architecture](../../docs/internal/architecture/adr/0050-three-tier-dependency-loading.md)
+- [ADR-0056: Three-Tier Dependency Loading Architecture](../../docs/internal/architecture/adr/0056-three-tier-dependency-loading.md)
 - [ADR-0051: Smart Caching with TTL (24-Hour Cache)](../../docs/internal/architecture/adr/0051-smart-caching-with-ttl.md)
 - [ADR-0052: CLI-First Defaults and Smart Pagination](../../docs/internal/architecture/adr/0052-cli-first-defaults-and-smart-pagination.md)
 - [ADR-0053: Progress Tracking and Cancelation Handling](../../docs/internal/architecture/adr/0053-progress-tracking-and-cancelation.md)
@@ -33,7 +33,7 @@ Current external tool integration (JIRA, Azure DevOps) has severe performance an
 
 **Four-Component Solution**:
 
-1. **Three-Tier Dependency Loading** (ADR-0050)
+1. **Three-Tier Dependency Loading** (ADR-0056)
    - Tier 1 (Init): Metadata only (< 5 seconds)
    - Tier 2 (On-Demand): Lazy loading on first sync
    - Tier 3 (Bulk): Optional pre-load command
@@ -117,7 +117,7 @@ Current external tool integration (JIRA, Azure DevOps) has severe performance an
 
 ### 1. Three-Tier Dependency Loader
 
-**Reference**: ADR-0050
+**Reference**: ADR-0056
 
 #### Component Diagram
 
@@ -681,7 +681,7 @@ interface AreaPath {
 
 **Tasks**:
 1. Create `CacheManager` class with TTL validation (ADR-0051)
-2. Create `JiraDependencyLoader` with Tier 1 loading (ADR-0050)
+2. Create `JiraDependencyLoader` with Tier 1 loading (ADR-0056)
 3. Add `fetchProjectCount()` helper to JIRA client
 4. Write unit tests for cache TTL validation
 5. Write unit tests for Tier 1 loading
@@ -1175,7 +1175,7 @@ Created 127 project folders in .specweave/docs/internal/specs/
 
 ### Architecture (Living Docs)
 
-- [ADR-0050: Three-Tier Dependency Loading](../../docs/internal/architecture/adr/0050-three-tier-dependency-loading.md)
+- [ADR-0056: Three-Tier Dependency Loading](../../docs/internal/architecture/adr/0056-three-tier-dependency-loading.md)
 - [ADR-0051: Smart Caching with TTL](../../docs/internal/architecture/adr/0051-smart-caching-with-ttl.md)
 - [ADR-0052: CLI-First Defaults and Smart Pagination](../../docs/internal/architecture/adr/0052-cli-first-defaults-and-smart-pagination.md)
 - [ADR-0053: Progress Tracking and Cancelation](../../docs/internal/architecture/adr/0053-progress-tracking-and-cancelation.md)

@@ -534,6 +534,88 @@ export class AdoClient {
   }
 
   /**
+   * Search projects with pagination (for three-tier loading)
+   *
+   * @param options Search options
+   * @returns Paginated project results
+   */
+  public async searchProjects(options: {
+    top?: number;
+    skip?: number;
+  } = {}): Promise<any> {
+    const { top = 50, skip = 0 } = options;
+    const url = `https://dev.azure.com/${this.credentials.organization}/_apis/projects?$top=${top}&$skip=${skip}&api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`ADO API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return {
+      value: data.value || [],
+      count: data.count || 0,
+    };
+  }
+
+  /**
+   * Get area paths for a project (classification nodes)
+   *
+   * @param project Project name or ID
+   * @param depth Depth of area path tree (default: 10)
+   * @returns Area path tree
+   */
+  public async getAreaPaths(project: string, depth: number = 10): Promise<any> {
+    const url = `https://dev.azure.com/${this.credentials.organization}/${project}/_apis/wit/classificationnodes/areas?$depth=${depth}&api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`ADO API Error (${response.status}): ${error}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get teams for a project
+   *
+   * @param project Project name or ID
+   * @returns Teams array
+   */
+  public async getTeams(project: string): Promise<any[]> {
+    const url = `https://dev.azure.com/${this.credentials.organization}/_apis/projects/${project}/teams?api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`ADO API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return data.value || [];
+  }
+
+  /**
    * Test connection to Azure DevOps
    */
   public async testConnection(): Promise<boolean> {

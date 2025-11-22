@@ -78,7 +78,12 @@ export async function checkExistingJiraCredentials(
 }
 
 /**
- * Auto-discover Jira projects via API
+ * Auto-discover Jira projects via API with CLI-first smart pagination
+ *
+ * NEW (v0.24.0): Uses ProjectCountFetcher + ImportStrategyPrompter + AsyncProjectLoader
+ * - Counts projects first (< 1 second)
+ * - Prompts for import strategy (import-all is default)
+ * - Uses smart pagination (50-project batches) for large imports
  *
  * @param credentials - Partial credentials (domain, email, token)
  * @returns Array of selected project keys
@@ -89,56 +94,121 @@ async function autoDiscoverJiraProjects(credentials: {
   token: string;
   instanceType: JiraInstanceType;
 }): Promise<string[]> {
-  const spinner = ora('Fetching accessible Jira projects...').start();
+  // Step 1: Count check (< 1 second)
+  const { getProjectCount } = await import('../project-count-fetcher.js');
+  const countSpinner = ora('Checking accessible Jira projects...').start();
 
   try {
-    // Determine API endpoint based on instance type
-    const apiBase = credentials.instanceType === 'cloud'
-      ? `https://${credentials.domain}/rest/api/3`
-      : `https://${credentials.domain}/rest/api/2`;
-
-    const projectsEndpoint = `${apiBase}/project`;
-
-    // Basic auth header
-    const auth = Buffer.from(`${credentials.email}:${credentials.token}`).toString('base64');
-
-    // Fetch all projects
-    const response = await fetch(projectsEndpoint, {
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Accept': 'application/json'
+    const countResult = await getProjectCount({
+      provider: 'jira',
+      credentials: {
+        domain: credentials.domain,
+        email: credentials.email,
+        token: credentials.token,
+        instanceType: credentials.instanceType
       }
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Jira API Error (${response.status}): ${errorText}`);
+    if (countResult.error) {
+      countSpinner.fail('Failed to check project count');
+      console.error(chalk.red(`   Error: ${countResult.error}\n`));
+      throw new Error(countResult.error);
     }
 
-    const allProjects: any[] = await response.json();
-    spinner.succeed(`Found ${allProjects.length} accessible project(s)`);
+    const totalCount = countResult.accessible;
+    countSpinner.succeed(`Found ${totalCount} accessible project(s)`);
 
-    if (allProjects.length === 0) {
+    if (totalCount === 0) {
       console.log(chalk.yellow('\n⚠️  No accessible projects found.'));
       console.log(chalk.gray('   Please check your permissions or create a project first.\n'));
       return [];
     }
 
-    // Show multi-select checkbox (like GitHub repos)
-    const { selectedProjects } = await inquirer.prompt<{ selectedProjects: string[] }>({
-      type: 'checkbox',
-      name: 'selectedProjects',
-      message: 'Select Jira projects to sync (use Space to select, Enter to confirm):',
-      choices: allProjects.map((p: any) => ({
-        name: `${p.key} - ${p.name}`,
-        value: p.key,
-        checked: false  // User must explicitly select
-      }))
+    // Step 2: Prompt for import strategy (CLI-first: "Import all" is default)
+    const { promptImportStrategy } = await import('../import-strategy-prompter.js');
+    const strategyResult = await promptImportStrategy({
+      totalCount,
+      provider: 'jira'
     });
 
-    return selectedProjects;
+    // Step 3: Execute based on strategy
+    if (strategyResult.strategy === 'manual-entry') {
+      // Manual entry: return provided keys
+      return strategyResult.projectKeys || [];
+    } else if (strategyResult.strategy === 'import-all') {
+      // Import all: use AsyncProjectLoader with smart pagination
+      const { AsyncProjectLoader } = await import('../async-project-loader.js');
+      const loader = new AsyncProjectLoader(
+        {
+          domain: credentials.domain,
+          email: credentials.email,
+          token: credentials.token,
+          instanceType: credentials.instanceType
+        },
+        'jira',
+        {
+          batchSize: 50,
+          updateFrequency: 5,
+          showEta: true
+        }
+      );
+
+      const result = await loader.fetchAllProjects(totalCount);
+
+      if (result.canceled) {
+        console.log(chalk.yellow('\n⚠️  Import canceled by user. Returning partial results.\n'));
+      }
+
+      if (result.failed > 0) {
+        console.log(chalk.yellow(`\n⚠️  ${result.failed} project(s) failed to load. Check logs for details.\n`));
+        console.log(chalk.gray('   Error log: .specweave/logs/import-errors.log\n'));
+      }
+
+      // Return project keys
+      return result.projects.map(p => p.key);
+    } else {
+      // Select specific: load first 50 projects, show checkbox with all pre-checked
+      const spinner = ora('Loading first 50 projects...').start();
+
+      try {
+        const { AsyncProjectLoader } = await import('../async-project-loader.js');
+        const loader = new AsyncProjectLoader(
+          {
+            domain: credentials.domain,
+            email: credentials.email,
+            token: credentials.token,
+            instanceType: credentials.instanceType
+          },
+          'jira'
+        );
+
+        // Load first 50 projects
+        const firstBatch = await loader.fetchBatch(0, Math.min(50, totalCount));
+        spinner.succeed(`Loaded ${firstBatch.length} project(s)`);
+
+        // Show checkbox with ALL pre-checked (CLI-first: deselection workflow)
+        const { selectedProjects } = await inquirer.prompt<{ selectedProjects: string[] }>({
+          type: 'checkbox',
+          name: 'selectedProjects',
+          message: 'Select Jira projects to sync (Space to deselect, Enter to confirm):',
+          choices: firstBatch.map((p: any) => ({
+            name: `${p.key} - ${p.name}`,
+            value: p.key,
+            checked: true  // CLI-first: all pre-checked by default
+          }))
+        });
+
+        return selectedProjects;
+      } catch (error: any) {
+        spinner.fail('Failed to load projects');
+        console.error(chalk.red(`   Error: ${error.message}\n`));
+        throw error;
+      }
+    }
   } catch (error: any) {
-    spinner.fail('Failed to fetch projects');
+    if (countSpinner.isSpinning) {
+      countSpinner.fail('Failed to discover projects');
+    }
     console.error(chalk.red(`   Error: ${error.message}\n`));
     throw error;
   }

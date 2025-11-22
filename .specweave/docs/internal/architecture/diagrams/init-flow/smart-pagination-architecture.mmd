@@ -1,0 +1,54 @@
+```mermaid
+flowchart TD
+    Start([User runs specweave init]) --> ValidateCreds[Validate Credentials<br/>Fast auth check]
+
+    ValidateCreds --> FetchCount[ProjectCountFetcher<br/>GET /api?maxResults=0<br/>Returns: total count only]
+
+    FetchCount --> DisplayCount[Display Total Count<br/>'Found 127 accessible projects']
+
+    DisplayCount --> PromptStrategy{InitStrategyPrompt<br/>3 Choices}
+
+    PromptStrategy -->|1. Import All<br/>Recommended| ImportAll[AsyncProjectFetcher<br/>Batch size: 50]
+    PromptStrategy -->|2. Select Specific<br/>Interactive| SelectSpecific[CheckboxSelector<br/>Load first 50]
+    PromptStrategy -->|3. Manual Entry<br/>1-2 projects| ManualEntry[ManualEntryPrompt<br/>Comma-separated]
+
+    ImportAll --> BatchLoop{More batches?}
+    BatchLoop -->|Yes| FetchBatch[Fetch Next Batch<br/>API: startAt={offset}, maxResults=50]
+    FetchBatch --> UpdateProgress[Update Progress<br/>N/M projects, percentage, ETA]
+    UpdateProgress --> CheckCancel{Ctrl+C pressed?}
+    CheckCancel -->|No| BatchLoop
+    CheckCancel -->|Yes| SaveState[Save Partial State<br/>cache/import-state.json]
+    SaveState --> ShowResume[Show Resume Command<br/>/specweave-jira:import --resume]
+    ShowResume --> End2([Partial Init Complete])
+
+    BatchLoop -->|No| AllFetched[All Projects Fetched<br/>127/127 complete]
+
+    SelectSpecific --> LoadFirst50[Load First 50 Projects<br/>With metadata]
+    LoadFirst50 --> ShowCheckboxes[Show Checkboxes<br/>ALL CHECKED by default]
+    ShowCheckboxes --> UserDeselects[User Deselects<br/>Unwanted 5 projects]
+    UserDeselects --> SelectedProjects[45 Projects Selected]
+
+    ManualEntry --> PromptKeys[Prompt for Keys<br/>'BACKEND,FRONTEND,MOBILE']
+    PromptKeys --> ValidateKeys[Validate Keys<br/>API existence check]
+    ValidateKeys --> ParsedProjects[3 Projects Validated]
+
+    AllFetched --> CreateFolders
+    SelectedProjects --> CreateFolders
+    ParsedProjects --> CreateFolders
+
+    CreateFolders[Create Project Folders<br/>.specweave/docs/internal/projects/{key}/]
+    CreateFolders --> SaveConfig[Save Configuration<br/>.specweave/config.json]
+
+    SaveConfig --> ShowSummary[Show Summary<br/>Succeeded/Failed/Skipped counts]
+    ShowSummary --> End([✅ Init Complete<br/>< 30 seconds elapsed])
+
+    style ImportAll fill:#e1f5e1
+    style SelectSpecific fill:#fff3cd
+    style ManualEntry fill:#f8d7da
+    style CreateFolders fill:#cfe2ff
+    style End fill:#d1ecf1
+    style End2 fill:#f8d7da
+
+    classDef criticalPath fill:#e1f5e1,stroke:#28a745,stroke-width:3px
+    class FetchCount,ImportAll,BatchLoop,AllFetched,CreateFolders criticalPath
+```

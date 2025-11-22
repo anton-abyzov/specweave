@@ -1,0 +1,171 @@
+```mermaid
+graph TB
+    subgraph "User Interface Layer"
+        CLI[CLI Command<br/>src/cli/commands/init.ts]
+        User[User Input/Output<br/>Inquirer.js + Ora]
+    end
+
+    subgraph "Orchestration Layer"
+        Orchestrator[InitFlowOrchestrator<br/>src/cli/helpers/init-flow-orchestrator.ts]
+    end
+
+    subgraph "Component Layer"
+        CountFetcher[ProjectCountFetcher<br/>src/cli/helpers/project-fetcher.ts]
+        Prompt[UpfrontChoicePrompt<br/>src/cli/helpers/prompt-builder.ts]
+        Fetcher[AsyncProjectLoader<br/>src/cli/helpers/project-fetcher.ts]
+        Selector[ProjectSelector<br/>plugins/specweave-jira/lib/project-selector.ts]
+    end
+
+    subgraph "Support Layer"
+        Progress[ProgressTracker<br/>src/cli/helpers/progress-tracker.ts]
+        Cancel[CancelationHandler<br/>src/cli/helpers/cancelation-handler.ts]
+        Error[ErrorHandler<br/>src/cli/helpers/issue-tracker/error-handler.ts]
+    end
+
+    subgraph "External APIs"
+        JIRA[JIRA REST API<br/>Cloud v3 / Server v2]
+        ADO[Azure DevOps API<br/>/_apis/projects]
+    end
+
+    subgraph "State Persistence"
+        Config[.specweave/config.json<br/>Configuration Storage]
+        Cache[.specweave/cache/import-state.json<br/>Cancelation State]
+        Logs[.specweave/logs/import-errors.log<br/>Error Logging]
+    end
+
+    subgraph "Dependencies"
+        Inquirer[Inquirer.js<br/>Interactive Prompts]
+        Ora[Ora<br/>Progress Spinners]
+        Chalk[Chalk<br/>Terminal Colors]
+    end
+
+    %% Main Flow
+    User -->|Input| CLI
+    CLI --> Orchestrator
+    Orchestrator --> CountFetcher
+    Orchestrator --> Prompt
+    Orchestrator --> Fetcher
+    Orchestrator --> Selector
+
+    %% Component Dependencies
+    CountFetcher --> JIRA
+    CountFetcher --> ADO
+    Fetcher --> JIRA
+    Fetcher --> ADO
+    Fetcher --> Progress
+    Fetcher --> Cancel
+    Fetcher --> Error
+
+    %% Prompt Dependencies
+    Prompt --> Inquirer
+    Progress --> Ora
+    Progress --> Chalk
+
+    %% State Management
+    Orchestrator --> Config
+    Cancel --> Cache
+    Error --> Logs
+
+    %% Output
+    Orchestrator -->|Result| CLI
+    CLI -->|Output| User
+
+    %% Styling
+    classDef orchestration fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    classDef component fill:#7B68EE,stroke:#5A4FCF,stroke-width:2px,color:#fff
+    classDef support fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
+    classDef external fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
+    classDef storage fill:#FFB84D,stroke:#E69A3A,stroke-width:2px,color:#fff
+    classDef ui fill:#95E1D3,stroke:#6FC5B3,stroke-width:2px,color:#333
+
+    class Orchestrator orchestration
+    class CountFetcher,Prompt,Fetcher,Selector component
+    class Progress,Cancel,Error support
+    class JIRA,ADO external
+    class Config,Cache,Logs storage
+    class CLI,User ui
+```
+
+**Component Responsibilities**:
+
+1. **InitFlowOrchestrator** (Orchestration Layer)
+   - Main workflow controller
+   - Coordinates 5-phase init flow
+   - Error boundaries and rollback
+   - State transition management
+
+2. **ProjectCountFetcher** (Component Layer)
+   - Lightweight count-only API calls
+   - Returns total project count (no metadata)
+   - < 1 second performance target
+   - Supports JIRA Cloud/Server and Azure DevOps
+
+3. **UpfrontChoicePrompt** (Component Layer)
+   - Inquirer.js prompt builder
+   - Strategy selection (import-all/select-specific/manual)
+   - Safety confirmation (> 100 projects)
+   - CLI-first defaults (import-all is default)
+
+4. **AsyncProjectLoader** (Component Layer)
+   - Paginated batch fetching (50 projects per batch)
+   - Async processing with progress tracking
+   - Cancelation support (Ctrl+C)
+   - Error handling (continue-on-failure)
+
+5. **ProjectSelector** (Component Layer)
+   - Interactive checkbox mode
+   - All items pre-checked by default
+   - Search/filter capabilities
+   - Manual entry validation
+
+6. **ProgressTracker** (Support Layer)
+   - Real-time progress bar
+   - Percentage calculation
+   - ETA estimation (rolling average)
+   - Final summary (succeeded/failed/skipped)
+
+7. **CancelationHandler** (Support Layer)
+   - SIGINT signal handler
+   - State persistence to cache
+   - Resume capability (24-hour TTL)
+   - Clean exit (exit code 0)
+
+8. **ErrorHandler** (Support Layer)
+   - Error classification (403, 404, timeout, etc.)
+   - Continue-on-failure logic
+   - Actionable error messages
+   - Error logging with suggestions
+
+**Data Flow**:
+```
+User Input
+  → CLI Command
+  → InitFlowOrchestrator
+  → (Phase 1) Validate Credentials → API
+  → (Phase 2) Fetch Count → ProjectCountFetcher → API
+  → (Phase 3) Prompt Strategy → UpfrontChoicePrompt → User
+  → (Phase 4) Load Projects → AsyncProjectLoader → API
+      ├─ ProgressTracker → User (UI updates)
+      ├─ CancelationHandler → Cache (state save)
+      └─ ErrorHandler → Logs (error logging)
+  → (Phase 5) Save Config → .specweave/config.json
+  → CLI Output → User
+```
+
+**State Persistence**:
+- **Config**: Saved to `.specweave/config.json` (committed to git)
+- **Cache**: Saved to `.specweave/cache/import-state.json` (gitignored)
+- **Logs**: Saved to `.specweave/logs/import-errors.log` (gitignored)
+
+**Performance Characteristics**:
+- Count fetch: < 1 second (single lightweight API call)
+- Batch fetch: 2-3 seconds per 50 projects
+- Total init (100 projects): < 30 seconds (target)
+- Total init (500 projects): < 60 seconds with "Import all"
+
+**Error Handling Strategy**:
+- Continue on failure (1 failed project doesn't block 99 others)
+- Retry with exponential backoff (3 attempts: 1s, 2s, 4s)
+- Graceful degradation (reduce batch size on timeout: 50 → 25 → 10)
+- Rate limit throttling (pause 5s if < 10 requests remaining)
+```

@@ -1,0 +1,32 @@
+%% Before/After Init Flow Comparison
+%% Increment 0049: CLI-First Init Flow with Smart Pagination
+
+sequenceDiagram
+    participant User
+    participant Old as Old Init Flow
+    participant New as New Init Flow
+    participant API as External API
+
+    Note over Old: ❌ BEFORE (2-5 minutes, timeouts)
+    User->>Old: specweave init
+    Old->>API: Fetch ALL projects (100+ API calls)
+    Note right of API: 2-5 minutes wait<br/>No feedback<br/>Timeouts common
+    API-->>Old: 100 projects (timeout at 50)
+    Old-->>User: ❌ Init failed (timeout)
+
+    Note over New: ✅ AFTER (< 30 seconds, zero timeouts)
+    User->>New: specweave init
+    New->>API: GET /project/search?maxResults=0
+    API-->>New: { total: 127, values: [] }
+    New->>User: Found 127 projects
+    New->>User: How to import? <br/>✨ Import all (default)<br/>📋 Select specific<br/>✏️ Manual entry
+    User-->>New: Import all
+    New->>API: Batch 1 (0-50)
+    API-->>New: 50 projects
+    New->>User: Progress: 50/127 (39%)
+    New->>API: Batch 2 (50-100)
+    API-->>New: 50 projects
+    New->>User: Progress: 100/127 (79%)
+    New->>API: Batch 3 (100-127)
+    API-->>New: 27 projects
+    New->>User: ✅ Loaded 127/127 in 28s

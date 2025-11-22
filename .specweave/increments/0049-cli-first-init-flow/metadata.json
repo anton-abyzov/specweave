@@ -1,0 +1,12 @@
+{
+  "id": "0049-cli-first-init-flow",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-21T00:00:00Z",
+  "started": "2025-11-21",
+  "completed": "2025-11-21",
+  "lastActivity": "2025-11-21T00:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 90
+}

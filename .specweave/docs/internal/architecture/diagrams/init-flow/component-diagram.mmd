@@ -1,0 +1,29 @@
+```mermaid
+graph TD
+    A[InitFlowOrchestrator] --> B[ProjectCountFetcher]
+    A --> C[ImportStrategySelector]
+    A --> D[AsyncProjectLoader]
+    D --> E[ProgressTracker]
+    D --> F[CancelationHandler]
+    D --> G[ErrorHandler]
+    D --> H[InteractiveSelector]
+    A --> I[ManualEntryHandler]
+
+    B --> J[JIRA API]
+    B --> K[Azure DevOps API]
+    D --> J
+    D --> K
+
+    E --> L[ora spinner library]
+    E --> M[chalk colors library]
+    F --> N[.specweave/cache/import-state.json]
+    G --> O[.specweave/logs/import-errors.log]
+    H --> P[Inquirer.js prompts]
+
+    style A fill:#4A90E2,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style D fill:#7B68EE,stroke:#5A4FCF,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#3A9B5C,stroke-width:2px,color:#fff
+    style F fill:#FF6B6B,stroke:#CC5555,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#FFA500,stroke-width:2px,color:#000
+    style C fill:#87CEEB,stroke:#4682B4,stroke-width:2px,color:#000
+```
