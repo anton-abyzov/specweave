@@ -11,6 +11,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
+import { writeJson } from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { IncrementArchiver } from '../../../src/core/increment/increment-archiver.js';
 import { FeatureArchiver } from '../../../src/core/living-docs/feature-archiver.js';
@@ -239,7 +240,7 @@ epic: FS-050
       // Increment 1: Active (should prevent archiving)
       const increment1Dir = path.join(testDir, '.specweave/increments/0051-feature-part1');
       await fs.mkdir(increment1Dir, { recursive: true });
-      await fs.writeJson(path.join(increment1Dir, 'metadata.json'), {
+      await writeJson(path.join(increment1Dir, 'metadata.json'), {
         id: '0051-feature-part1',
         status: 'active', // ← Still active!
         type: 'feature'
@@ -256,7 +257,7 @@ epic: FS-051
       // Increment 2: Completed (we'll archive this)
       const increment2Dir = path.join(testDir, '.specweave/increments/0052-feature-part2');
       await fs.mkdir(increment2Dir, { recursive: true });
-      await fs.writeJson(path.join(increment2Dir, 'metadata.json'), {
+      await writeJson(path.join(increment2Dir, 'metadata.json'), {
         id: '0052-feature-part2',
         status: 'completed',
         type: 'feature'
@@ -308,7 +309,7 @@ epic: FS-051
       // Setup: Create two increments for FS-053, both completed
       const increment1Dir = path.join(testDir, '.specweave/increments/0053-feature-part1');
       await fs.mkdir(increment1Dir, { recursive: true });
-      await fs.writeJson(path.join(increment1Dir, 'metadata.json'), {
+      await writeJson(path.join(increment1Dir, 'metadata.json'), {
         id: '0053-feature-part1',
         status: 'completed',
         type: 'feature'
@@ -324,7 +325,7 @@ epic: FS-053
 
       const increment2Dir = path.join(testDir, '.specweave/increments/0054-feature-part2');
       await fs.mkdir(increment2Dir, { recursive: true });
-      await fs.writeJson(path.join(increment2Dir, 'metadata.json'), {
+      await writeJson(path.join(increment2Dir, 'metadata.json'), {
         id: '0054-feature-part2',
         status: 'completed',
         type: 'feature'
@@ -379,7 +380,7 @@ epic: FS-053
         '.specweave/increments/_archive/0055-archived-feature'
       );
       await fs.mkdir(archivedIncrementDir, { recursive: true });
-      await fs.writeJson(path.join(archivedIncrementDir, 'metadata.json'), {
+      await writeJson(path.join(archivedIncrementDir, 'metadata.json'), {
         id: '0055-archived-feature',
         status: 'completed'
       });
@@ -430,7 +431,7 @@ epic: FS-053
       // Setup: Create increment without feature folders
       const incrementDir = path.join(testDir, '.specweave/increments/0056-no-feature');
       await fs.mkdir(incrementDir, { recursive: true });
-      await fs.writeJson(path.join(incrementDir, 'metadata.json'), {
+      await writeJson(path.join(incrementDir, 'metadata.json'), {
         id: '0056-no-feature',
         status: 'completed'
       });
