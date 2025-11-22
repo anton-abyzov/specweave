@@ -13,7 +13,12 @@
 # - We filter for AskUserQuestion specifically to play sound
 # - Non-blocking and fast (<10ms overhead)
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # ============================================================================
 # CONFIGURATION
@@ -131,3 +136,6 @@ else
 }
 EOF
 fi
+
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
+exit 0

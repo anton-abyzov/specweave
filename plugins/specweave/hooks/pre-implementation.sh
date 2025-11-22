@@ -4,7 +4,12 @@
 # Runs before starting implementation of a task
 # Checks regression risk for brownfield projects
 
-set -e
+set +e  # EMERGENCY FIX: Prevents Claude Code crashes
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Find project root by searching upward for .specweave/ directory
 # Works regardless of where hook is installed (source or .claude/hooks/)
@@ -65,3 +70,6 @@ echo "[$(date)] Pre-implementation check complete" >> "$LOGS_DIR/hooks.log"
 
 echo ""
 echo -e "${GREEN}✅ Pre-implementation check complete${NC}"
+
+# ALWAYS exit 0 - NEVER let hook errors crash Claude Code
+exit 0
