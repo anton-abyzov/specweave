@@ -810,6 +810,146 @@ Increment remains: in-progress
 Try again after fixing blockers: /specweave:done 0001
 ```
 
+### Step 5.5: Post-Closure Quality Assessment (NEW - v0.24.0+)
+
+**🎯 MANDATORY**: After successful closure, automatically run quality assessment to validate implementation quality.
+
+**This step runs ONLY if closure succeeded** (all PM gates passed). If gates failed, increment remains in-progress and this step is skipped.
+
+**Why This Step Matters**:
+- PM validation (Gates 0-3) checks **structural completion** (tasks done, tests pass, docs updated, AC coverage)
+- Quality assessment checks **implementation quality** (code quality, architecture decisions, risks, security)
+- Provides retrospective learning and continuous improvement
+- Identifies technical debt and areas for future enhancement
+- Builds quality metrics over time for velocity tracking
+
+**Implementation**:
+
+1. **Invoke QA command automatically**:
+   ```bash
+   /specweave:qa ${incrementId}
+   ```
+
+2. **Quality assessment evaluates 7 dimensions**:
+   - **Clarity**: Problem statement, objectives, terminology consistency
+   - **Testability**: Acceptance criteria testability, measurable success, edge cases
+   - **Completeness**: Requirements coverage, error handling, NFRs
+   - **Feasibility**: Architecture scalability, technical constraints, timeline
+   - **Maintainability**: Modular design, extension points, technical debt
+   - **Edge Cases**: Failure scenarios, performance limits, security considerations
+   - **Risk Assessment** (BMAD): Probability × Impact scoring (0-10 scale)
+
+3. **Quality gate decision**:
+   - **✅ PASS**: Score ≥80, no critical risks → Proceed to next work
+   - **🟡 CONCERNS**: Score 60-79, high risks present → Log concerns, suggest improvements
+   - **🔴 FAIL**: Score <60, critical risks present → Create follow-up increment for fixes
+
+4. **Generate quality report**:
+   - Save to `.specweave/increments/####/reports/qa-post-closure.md`
+   - Include dimension scores, risks identified, recommendations
+   - Link to specific code locations and acceptance criteria
+
+**Example Output (PASS)**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Running quality assessment to validate implementation...
+
+Overall Score: 87/100 (GOOD) ✓
+
+Dimension Scores:
+  Clarity:         92/100 ✓✓
+  Testability:     85/100 ✓
+  Completeness:    90/100 ✓✓
+  Feasibility:     88/100 ✓✓
+  Maintainability: 85/100 ✓
+  Edge Cases:      78/100 ✓
+  Risk Assessment: 75/100 ✓
+
+Quality Gate Decision: ✅ PASS
+
+📋 Report: .specweave/increments/0001-user-authentication/reports/qa-post-closure.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Example Output (CONCERNS)**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Overall Score: 72/100 (ACCEPTABLE) ⚠️
+
+Dimension Scores:
+  Clarity:         85/100 ✓
+  Testability:     68/100 ⚠️
+  Edge Cases:      65/100 ⚠️
+  Risk Assessment: 70/100 ⚠️
+
+Quality Gate Decision: 🟡 CONCERNS
+
+Issues to Address:
+  • Testability: Some acceptance criteria not measurable
+  • Edge cases: Missing error handling for network failures
+  • 2 HIGH risks identified (see report)
+
+Recommendations:
+  1. Add measurable metrics to 3 acceptance criteria
+  2. Implement retry logic for API calls
+  3. Add integration tests for edge cases
+
+📋 Full report: .specweave/increments/0001-*/reports/qa-post-closure.md
+
+These can be addressed in future iterations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Example Output (FAIL)**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Overall Score: 58/100 (POOR) 🔴
+
+Dimension Scores:
+  Risk Assessment: 45/100 🔴 (CRITICAL)
+
+Quality Gate Decision: 🔴 FAIL
+
+CRITICAL Issues Found:
+  🔴 RISK-001: Password storage implementation (9.0/10 - CRITICAL)
+     → No password hashing specified
+     → SECURITY VULNERABILITY: Passwords stored in plain text
+     → MUST FIX: Use bcrypt or Argon2
+
+  🔴 RISK-002: Rate limiting not specified (8.0/10 - HIGH)
+     → No brute-force protection
+     → SECURITY VULNERABILITY: OWASP A07:2021
+
+Recommendation: Create follow-up increment 0002-security-fixes immediately
+
+Options:
+  A. Create follow-up increment now (STRONGLY RECOMMENDED)
+  B. Log as critical technical debt (must fix in next sprint)
+  C. Continue anyway (NOT RECOMMENDED - security risk!)
+
+What would you like to do? [A/B/C]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**IMPORTANT Notes**:
+- Quality assessment runs **AFTER** closure to not block delivery
+- Increment is already closed and can be deployed
+- QA provides learning, continuous improvement, and technical debt identification
+- Critical issues trigger follow-up increment creation for fixes
+- Quality metrics tracked over time for velocity and quality trends
+
 ### Step 6: Handle Incomplete Work
 
 **If increment cannot close due to scope creep**:
@@ -864,6 +1004,25 @@ Closing increment 0001-user-authentication...
 PM Approval: ✅ APPROVED
 
 🎉 Increment 0001 closed successfully!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Running quality assessment to validate implementation...
+
+Overall Score: 87/100 (GOOD) ✓
+
+Dimension Scores:
+  Clarity:         92/100 ✓✓
+  Testability:     85/100 ✓
+  Risk Assessment: 75/100 ✓
+
+Quality Gate Decision: ✅ PASS
+
+📋 Report: .specweave/increments/0001-user-authentication/reports/qa-post-closure.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Next: /specweave:increment "Next feature"
 ```

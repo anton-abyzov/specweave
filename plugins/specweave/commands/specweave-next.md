@@ -199,6 +199,32 @@ Increment 0001-user-authentication is complete!
 
 🎉 Increment 0001 closed successfully!
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Running quality assessment to validate implementation...
+
+/specweave:qa 0001
+
+Overall Score: 87/100 (GOOD) ✓
+
+Dimension Scores:
+  Clarity:         92/100 ✓✓
+  Testability:     85/100 ✓
+  Completeness:    90/100 ✓✓
+  Feasibility:     88/100 ✓✓
+  Maintainability: 85/100 ✓
+  Edge Cases:      78/100 ✓
+  Risk Assessment: 75/100 ✓
+
+Quality Gate Decision: ✅ PASS
+
+📋 Quality report saved:
+   .specweave/increments/0001-user-authentication/reports/qa-post-closure.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Proceeding to suggest next work...
 ```
 
@@ -236,6 +262,106 @@ What would you like to do? [A/B/C]
 ```
 
 **🔥 CRITICAL**: NEVER auto-close with incomplete work! Always give user control.
+
+### Step 3.5: Post-Closure Quality Assessment (NEW - v0.24.0+)
+
+**🎯 MANDATORY**: After successful closure, automatically run quality assessment to validate implementation quality.
+
+**Why This Step Matters**:
+- PM validation (Step 2) checks **structural completion** (tasks done, tests pass, docs updated)
+- Quality assessment checks **implementation quality** (code quality, architecture, risks)
+- Provides retrospective learning and continuous improvement
+- Identifies technical debt and areas for future enhancement
+
+**Implementation**:
+
+1. **Invoke QA command automatically**:
+   ```bash
+   /specweave:qa ${incrementId}
+   ```
+
+2. **Quality assessment evaluates**:
+   - **7 dimensions**: Clarity, Testability, Completeness, Feasibility, Maintainability, Edge Cases, Risk
+   - **BMAD risk scoring**: Probability × Impact (0-10 scale)
+   - **Quality gate decision**: PASS/CONCERNS/FAIL
+   - **Security vulnerabilities**: OWASP-based checks
+   - **Architecture quality**: Design patterns, modularity, scalability
+
+3. **Generate quality report**:
+   - Save to `.specweave/increments/####/reports/qa-post-closure.md`
+   - Include dimension scores, risks identified, recommendations
+   - Link to specific code locations and acceptance criteria
+
+4. **Display results**:
+   ```
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🔍 POST-CLOSURE QUALITY ASSESSMENT
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   Overall Score: 87/100 (GOOD) ✓
+
+   Dimension Scores:
+     Clarity:         92/100 ✓✓
+     Testability:     85/100 ✓
+     Completeness:    90/100 ✓✓
+     Feasibility:     88/100 ✓✓
+     Maintainability: 85/100 ✓
+     Edge Cases:      78/100 ✓
+     Risk Assessment: 75/100 ✓
+
+   Quality Gate Decision: ✅ PASS
+
+   📋 Full report: .specweave/increments/####/reports/qa-post-closure.md
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ```
+
+**Quality Gate Decisions**:
+
+| Decision | Criteria | Action |
+|----------|----------|--------|
+| ✅ PASS | Score ≥80, No critical risks | Proceed to next work |
+| 🟡 CONCERNS | Score 60-79, High risks present | Log concerns, suggest improvements |
+| 🔴 FAIL | Score <60, Critical risks present | Create follow-up increment for fixes |
+
+**If Quality Gate FAILS**:
+```
+🔴 QUALITY GATE: FAIL (Score: 58/100)
+
+Critical Issues Found:
+  • CRITICAL RISK: Password storage implementation (9.0/10)
+  • HIGH RISK: Rate limiting not specified (6.0/10)
+  • Testability: 45/100 (below threshold)
+
+Recommendation: Create follow-up increment 0002-security-fixes
+
+Options:
+  A. Create follow-up increment now (recommended)
+  B. Log as technical debt (track in backlog)
+  C. Continue to next feature (not recommended)
+
+What would you like to do? [A/B/C]
+```
+
+**If Quality Gate CONCERNS**:
+```
+🟡 QUALITY GATE: CONCERNS (Score: 72/100)
+
+Issues to address:
+  • Edge cases coverage: 65/100 (should be 80+)
+  • 2 high-priority risks identified
+  • Recommendations: 5 improvements suggested
+
+📋 Review report: .specweave/increments/####/reports/qa-post-closure.md
+
+These can be addressed in future iterations.
+Proceeding to next work...
+```
+
+**IMPORTANT**: Quality assessment runs AFTER closure to:
+- Not block delivery (increment is already closed and shipped)
+- Provide learning and continuous improvement
+- Identify technical debt for future planning
+- Build quality metrics over time
 
 ### Step 4: Suggest Next Work (After Successful Closure)
 
@@ -339,6 +465,23 @@ Active: 0001-user-authentication
   ✓ WIP freed (1/2 → 0/2)
 
 🎉 Increment 0001 closed successfully!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 POST-CLOSURE QUALITY ASSESSMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Running quality assessment...
+
+Overall Score: 87/100 (GOOD) ✓
+
+Dimension Scores:
+  Clarity:         92/100 ✓✓
+  Testability:     85/100 ✓
+  Risk Assessment: 75/100 ✓
+
+Quality Gate Decision: ✅ PASS
+
+📋 Report: .specweave/increments/0001-user-authentication/reports/qa-post-closure.md
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -482,14 +625,16 @@ Your choice? [A/B/C] _
 | `/specweave:do` | Execute tasks in increment | Implementing planned work |
 | `/specweave:progress` | Check status (no action) | Quick status check |
 | `/specweave:done` | Explicitly close increment | Manual closure with validation |
-| `/specweave:next` ⭐ | **Smart transition** (close + suggest next) | **Natural workflow continuation** |
+| `/specweave:qa` | Quality assessment only | Standalone QA check |
+| `/specweave:next` ⭐ | **Smart transition** (close + QA + suggest next) | **Natural workflow continuation** |
 
 **Why `/specweave:next` is special**:
-- ✅ Combines validation + closure + suggestion in one command
-- ✅ No need to remember `/specweave:done` then `/specweave:increment` sequence
+- ✅ Combines validation + closure + **quality assessment** + suggestion in one command
+- ✅ No need to remember `/specweave:done` then `/specweave:qa` then `/specweave:increment` sequence
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
+- ✅ **NEW (v0.24.0+)**: Automatic post-closure quality assessment
 
 ---
 
