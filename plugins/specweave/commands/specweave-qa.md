@@ -12,7 +12,7 @@ description: Run quality assessment on a SpecWeave increment with risk scoring a
 Run comprehensive quality assessment on an increment using:
 - ✅ Rule-based validation (120 checks)
 - ✅ AI quality assessment (7 dimensions including risk)
-- ✅ BMAD risk scoring (Probability × Impact)
+- ✅ Quantitative risk scoring (Probability × Impact)
 - ✅ Quality gate decisions (PASS/CONCERNS/FAIL)
 
 ## Usage
@@ -93,7 +93,7 @@ The agent evaluates:
   6. Edge Cases (9% weight)
   7. **Risk Assessment (11% weight)**
 
-**Risk Assessment** uses BMAD pattern:
+**Risk Assessment** uses quantitative method:
 - Probability (0.0-1.0) × Impact (1-10) = Risk Score (0.0-10.0)
 - 4 categories: Security, Technical, Implementation, Operational
 - Severity: CRITICAL (≥9.0), HIGH (6.0-8.9), MEDIUM (3.0-5.9), LOW (<3.0)
