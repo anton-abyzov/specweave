@@ -171,6 +171,83 @@
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
       }
+    },
+    {
+      "name": "specweave-diagrams",
+      "description": "Architecture diagram generation - Mermaid, C4 Model, sequence diagrams, ER diagrams, deployment diagrams",
+      "source": "./plugins/specweave-diagrams",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-ui",
+      "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
+      "source": "./plugins/specweave-ui",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-docs",
+      "description": "Documentation generation and management - Docusaurus, spec-driven docs, API documentation, living documentation",
+      "source": "./plugins/specweave-docs",
+      "category": "productivity",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-alternatives",
+      "description": "Technology stack alternatives analysis using BMAD method - Best, Most Appropriate, Design decisions for architecture choices",
+      "source": "./plugins/specweave-alternatives",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-cost-optimizer",
+      "description": "Cloud cost optimization - AWS, GCP, Azure cost analysis, right-sizing, reserved instances, savings plans",
+      "source": "./plugins/specweave-cost-optimizer",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-core",
+      "description": "Core utility commands - Code analysis, refactoring, debugging, performance profiling, dependency management",
+      "source": "./plugins/specweave-core",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
+    },
+    {
+      "name": "specweave-plugin-dev",
+      "description": "Plugin development tools - Create, validate, and scaffold SpecWeave plugins, skills, commands, and agents",
+      "source": "./plugins/specweave-plugin-dev",
+      "category": "development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
     }
   ]
 }

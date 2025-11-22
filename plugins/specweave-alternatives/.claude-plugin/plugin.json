@@ -1,0 +1,10 @@
+{
+  "name": "specweave-alternatives",
+  "version": "0.24.0",
+  "description": "Technology stack alternatives analysis using BMAD method - Best, Most Appropriate, Design decisions for architecture choices",
+  "author": {
+    "name": "Anton Abyzov",
+    "email": "anton.abyzov@gmail.com"
+  },
+  "hooks": {}
+}

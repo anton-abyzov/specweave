@@ -1,0 +1,22 @@
+{
+  "name": "specweave-cost-optimizer",
+  "description": "Cloud cost optimization and analysis for AWS, Azure, GCP, and serverless platforms. Provides cost analysis, optimization recommendations, pricing comparisons, budget alerts, and serverless cost modeling with 2024/2025 pricing.",
+  "version": "0.24.0",
+  "author": {
+    "name": "Anton Abyzov",
+    "email": "anton.abyzov@gmail.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "cost-optimization",
+    "cloud-costs",
+    "aws-pricing",
+    "azure-costs",
+    "gcp-pricing",
+    "serverless-costs",
+    "finops",
+    "specweave"
+  ]
+}
