@@ -54,7 +54,7 @@ export interface SpecAcceptanceCriterion {
 
 export interface ContentSyncResult {
   success: boolean;
-  action: 'created' | 'updated' | 'updated-via-comment' | 'no-change' | 'error';
+  action: 'created' | 'updated' | 'updated-via-comment' | 'no-change' | 'skipped' | 'error';
   externalId?: string;
   externalUrl?: string;
   error?: string;
