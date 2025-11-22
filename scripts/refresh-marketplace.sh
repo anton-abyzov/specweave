@@ -113,10 +113,23 @@ echo ""
 # Step 4: Get list of plugins from marketplace
 echo -e "${YELLOW}📋 Step 4: Reading plugin list...${NC}"
 
-MARKETPLACE_PATH="$HOME/.claude/plugins/marketplaces/$MARKETPLACE_NAME/.claude-plugin/marketplace.json"
+# Get marketplace install location from known_marketplaces.json
+KNOWN_MARKETPLACES="$HOME/.claude/plugins/known_marketplaces.json"
+if [ ! -f "$KNOWN_MARKETPLACES" ]; then
+  echo -e "${RED}✗ Error: known_marketplaces.json not found${NC}"
+  exit 1
+fi
+
+MARKETPLACE_INSTALL_PATH=$(jq -r ".\"$MARKETPLACE_NAME\".installLocation" "$KNOWN_MARKETPLACES")
+if [ "$MARKETPLACE_INSTALL_PATH" = "null" ] || [ -z "$MARKETPLACE_INSTALL_PATH" ]; then
+  echo -e "${RED}✗ Error: Marketplace install location not found${NC}"
+  exit 1
+fi
+
+MARKETPLACE_PATH="$MARKETPLACE_INSTALL_PATH/.claude-plugin/marketplace.json"
 
 if [ ! -f "$MARKETPLACE_PATH" ]; then
-  echo -e "${RED}✗ Error: Marketplace JSON not found${NC}"
+  echo -e "${RED}✗ Error: Marketplace JSON not found at $MARKETPLACE_PATH${NC}"
   exit 1
 fi
 

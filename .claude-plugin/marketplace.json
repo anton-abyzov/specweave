@@ -129,9 +129,9 @@
       }
     },
     {
-      "name": "specweave-backend",
-      "description": "Backend development - Node.js, Python, .NET, REST APIs, database design, microservices architecture",
-      "source": "./plugins/specweave-backend",
+      "name": "specweave-frontend",
+      "description": "Frontend development - React, Next.js, component generation, design systems, UI scaffolding",
+      "source": "./plugins/specweave-frontend",
       "category": "development",
       "version": "1.0.0",
       "author": {
@@ -140,9 +140,9 @@
       }
     },
     {
-      "name": "specweave-confluent",
-      "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, enterprise Kafka features",
-      "source": "./plugins/specweave-confluent",
+      "name": "specweave-testing",
+      "description": "Testing framework - E2E with Playwright, unit testing, test coverage, test generation",
+      "source": "./plugins/specweave-testing",
       "category": "development",
       "version": "1.0.0",
       "author": {
@@ -151,10 +151,10 @@
       }
     },
     {
-      "name": "specweave-kubernetes",
-      "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps, cluster management, container orchestration",
-      "source": "./plugins/specweave-kubernetes",
-      "category": "development",
+      "name": "specweave-figma",
+      "description": "Figma integration - Design import, component sync, design-to-code workflows",
+      "source": "./plugins/specweave-figma",
+      "category": "productivity",
       "version": "1.0.0",
       "author": {
         "name": "Anton Abyzov",
@@ -162,20 +162,9 @@
       }
     },
     {
-      "name": "specweave-mobile",
-      "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing",
-      "source": "./plugins/specweave-mobile",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
-      "name": "specweave-payments",
-      "description": "Payment processing - Stripe, PayPal, billing, PCI compliance, subscription management, payment gateways",
-      "source": "./plugins/specweave-payments",
+      "name": "specweave-tooling",
+      "description": "Development tooling - Skill creation, plugin scaffolding, development utilities",
+      "source": "./plugins/specweave-tooling",
       "category": "development",
       "version": "1.0.0",
       "author": {
