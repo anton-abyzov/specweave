@@ -65,18 +65,51 @@ export async function checkExistingAzureDevOpsCredentials(
 }
 
 /**
- * Prompt user for Azure DevOps credentials
+ * Prompt user for Azure DevOps credentials with cache support
+ *
+ * NEW (v0.24.0): Caches last used organization/project for quick re-initialization
  *
  * @param language - User's language
+ * @param projectRoot - Project root path (optional, for cache manager)
  * @returns Credentials or null if skipped
  */
 export async function promptAzureDevOpsCredentials(
-  language: SupportedLanguage
+  language: SupportedLanguage,
+  projectRoot?: string
 ): Promise<AzureDevOpsCredentials | null> {
   const locale = getLocaleManager(language);
 
   console.log(chalk.white('\n📋 Azure DevOps Integration Setup\n'));
   console.log(chalk.gray('SpecWeave will sync increments with Azure DevOps Work Items.\n'));
+
+  // Step 0: Check cache for previous configuration (NEW in v0.24.0)
+  let cachedConfig: { org: string; project: string; teams?: string[] } | null = null;
+  if (projectRoot) {
+    const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+    const cacheManager = new CacheManager(projectRoot);
+    cachedConfig = await cacheManager.get<{ org: string; project: string; teams?: string[] }>('ado-config');
+
+    if (cachedConfig) {
+      console.log(chalk.cyan('✨ Found cached ADO configuration:\n'));
+      console.log(chalk.gray(`   Organization: ${cachedConfig.org}`));
+      console.log(chalk.gray(`   Project: ${cachedConfig.project}`));
+      if (cachedConfig.teams && cachedConfig.teams.length > 0) {
+        console.log(chalk.gray(`   Teams: ${cachedConfig.teams.join(', ')}`));
+      }
+      console.log('');
+
+      const { reuseConfig } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'reuseConfig',
+        message: 'Use cached configuration?',
+        default: true
+      }]);
+
+      if (!reuseConfig) {
+        cachedConfig = null; // User wants to enter new config
+      }
+    }
+  }
 
   // Show setup instructions
   console.log(chalk.cyan('📋 Quick Setup:'));
@@ -96,65 +129,88 @@ export async function promptAzureDevOpsCredentials(
     return null;
   }
 
-  // Collect credentials
-  const questions: any[] = [
-    {
-      type: 'input',
-      name: 'org',
-      message: 'Azure DevOps organization name:',
-      validate: (input: string) => {
-        if (!input || input.trim() === '') {
-          return 'Organization cannot be empty';
+  // Collect credentials (use cached values as defaults if available)
+  let org: string, project: string, teams: string[];
+
+  if (cachedConfig) {
+    // Use cached configuration
+    org = cachedConfig.org;
+    project = cachedConfig.project;
+    teams = cachedConfig.teams || [];
+  } else {
+    // Prompt for new configuration
+    const questions: any[] = [
+      {
+        type: 'input',
+        name: 'org',
+        message: 'Azure DevOps organization name:',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'Organization cannot be empty';
+          }
+          return true;
         }
-        return true;
+      },
+      {
+        type: 'input',
+        name: 'project',
+        message: 'Project name:',
+        validate: (input: string) => {
+          if (!input || input.trim() === '') {
+            return 'Project cannot be empty';
+          }
+          return true;
+        }
+      },
+      {
+        type: 'input',
+        name: 'teams',
+        message: 'Team name(s) (optional, comma-separated):',
+        default: ''
       }
-    },
-    {
-      type: 'input',
-      name: 'project',
-      message: 'Project name:',
-      validate: (input: string) => {
-        if (!input || input.trim() === '') {
-          return 'Project cannot be empty';
-        }
-        return true;
+    ];
+
+    const answers = await inquirer.prompt(questions);
+    org = answers.org;
+    project = answers.project;
+    teams = answers.teams
+      ? answers.teams.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
+      : [];
+  }
+
+  // Always prompt for PAT (never cache secrets)
+  const { pat } = await inquirer.prompt([{
+    type: 'password',
+    name: 'pat',
+    message: 'Paste your Personal Access Token:',
+    mask: '*',
+    validate: (input: string) => {
+      if (!input || input.length === 0) {
+        return 'Token cannot be empty';
       }
-    },
-    {
-      type: 'input',
-      name: 'teams',
-      message: 'Team name(s) (optional, comma-separated):',
-      default: ''
-    },
-    {
-      type: 'password',
-      name: 'pat',
-      message: 'Paste your Personal Access Token:',
-      mask: '*',
-      validate: (input: string) => {
-        if (!input || input.length === 0) {
-          return 'Token cannot be empty';
-        }
-        // ADO PATs are typically 52 characters, but fine-grained tokens can be >= 40
-        if (input.length < 40) {
-          return 'Azure DevOps tokens should be at least 40 characters';
-        }
-        return true;
+      // ADO PATs are typically 52 characters, but fine-grained tokens can be >= 40
+      if (input.length < 40) {
+        return 'Azure DevOps tokens should be at least 40 characters';
       }
+      return true;
     }
-  ];
+  }]);
 
-  const answers = await inquirer.prompt(questions);
-
-  // Parse comma-separated teams
-  const teams = answers.teams
-    ? answers.teams.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
-    : [];
+  // Cache the configuration (NOT the PAT) for future use
+  if (projectRoot) {
+    const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+    const cacheManager = new CacheManager(projectRoot);
+    await cacheManager.set('ado-config', {
+      org,
+      project,
+      teams: teams.length > 0 ? teams : undefined
+    });
+  }
 
   return {
-    pat: answers.pat,
-    org: answers.org,
-    project: answers.project,  // One project (ADO standard)
+    pat,
+    org,
+    project,  // One project (ADO standard)
     team: teams[0],  // Use first team for backward compatibility
     teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
   };

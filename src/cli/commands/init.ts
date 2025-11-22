@@ -1922,6 +1922,7 @@ function createDirectoryStructure(targetDir: string, adapterName: string): void 
   const directories = [
     // Core increment structure
     '.specweave/increments',
+    '.specweave/cache',                       // External tool cache (24-hour TTL)
 
     // 6-pillar documentation structure
     '.specweave/docs/internal/strategy',      // Business specs (WHAT, WHY)
@@ -2157,12 +2158,51 @@ function createConfigFile(
   const configPath = path.join(targetDir, '.specweave', 'config.json');
 
   const config = {
+    version: '2.0',  // Config version for migration support
     project: {
       name: projectName,
       version: '0.1.0',
     },
     adapters: {
       default: adapter,
+    },
+    // Repository configuration (default: local)
+    repository: {
+      provider: 'local' as const
+    },
+    // Issue tracker configuration (default: none)
+    issueTracker: {
+      provider: 'none' as const
+    },
+    // Sync configuration with settings enabled
+    sync: {
+      enabled: false,
+      direction: 'bidirectional' as const,
+      autoSync: false,
+      includeStatus: true,
+      autoApplyLabels: true,
+      settings: {
+        canUpsertInternalItems: true,  // Allow updating living docs
+        canUpdateExternalItems: true,  // Allow updating external trackers
+        canUpdateStatus: true          // Allow status updates
+      }
+    },
+    // Permissions configuration (all enabled by default)
+    permissions: {
+      canCreate: true,
+      canUpdate: true,
+      canUpdateStatus: true
+    },
+    // Hook configuration (enable automatic living docs sync)
+    hooks: {
+      post_task_completion: {
+        sync_living_docs: true,        // Auto-sync living docs after task completion
+        sync_tasks_md: true,            // Auto-sync tasks.md
+        external_tracker_sync: true     // Auto-sync with external trackers (Jira/GitHub/ADO)
+      },
+      post_increment_planning: {
+        auto_create_github_issue: false // Don't auto-create issues (user decides)
+      }
     },
     // Testing configuration (NEW - v0.18.0+) - only include if provided
     ...(testMode && coverageTarget && {

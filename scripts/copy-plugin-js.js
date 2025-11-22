@@ -21,8 +21,8 @@ const rootDir = path.resolve(__dirname, '..');
 async function transpilePlugins() {
   console.log('📦 Transpiling plugin TypeScript files with esbuild...');
 
-  // Find all .ts files in plugins/*/lib/
-  const tsFiles = await glob('plugins/**/lib/**/*.ts', {
+  // Find all .ts files in plugins/*/lib/ and plugins/*/commands/
+  const tsFiles = await glob('plugins/**/{lib,commands}/**/*.ts', {
     cwd: rootDir,
     ignore: ['**/*.test.ts', '**/*.spec.ts', '**/node_modules/**']
   });
