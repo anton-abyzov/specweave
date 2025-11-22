@@ -105,7 +105,7 @@ graph LR
 
 ### `/specweave:qa` - Quality Assessment with Risk Scoring
 
-**Comprehensive quality gate** - AI-powered assessment with BMAD risk scoring.
+**Comprehensive quality gate** - AI-powered assessment with quantitative risk scoring (Probability × Impact).
 
 ```bash
 /specweave:qa 0007                    # Quick mode (default)
@@ -128,7 +128,7 @@ graph LR
 - 🟡 **CONCERNS** - Should fix before release
 - 🔴 **FAIL** - Must fix before proceeding
 
-**Risk Scoring** (BMAD pattern):
+**Risk Scoring** (Probability × Impact method):
 - CRITICAL (≥9.0) - Immediate action required
 - HIGH (6.0-8.9) - Address before release
 - MEDIUM (3.0-5.9) - Monitor
