@@ -1,3 +1,8 @@
+---
+name: specweave:embed-acs
+description: Auto-embed Acceptance Criteria from living docs into increment spec.md for hook compatibility
+---
+
 # Embed Acceptance Criteria from Living Docs
 
 You are helping the user embed Acceptance Criteria from living documentation into increment spec.md.
