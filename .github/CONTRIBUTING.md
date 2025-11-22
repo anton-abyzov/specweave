@@ -78,10 +78,6 @@ git push origin develop
 # Test in Claude Code → your latest hooks execute!
 ```
 
-**For advanced users** who need instant hook updates without pushing:
-- See [symlink-dev-mode.md](../.specweave/docs/internal/advanced/symlink-dev-mode.md)
-- ⚠️ Unix-only (macOS/Linux), not Windows
-
 **Detailed Setup:** See [CLAUDE.md](../CLAUDE.md#1-local-development-setup) for complete instructions.
 
 ### Verify Installation
@@ -112,10 +108,6 @@ git push origin your-branch
 
 # Wait 5-10 seconds for Claude Code to update
 ```
-
-**For symlink mode users** (advanced only):
-
-See [symlink-dev-mode.md](../.specweave/docs/internal/advanced/symlink-dev-mode.md#troubleshooting) for symlink-specific troubleshooting.
 
 **Build or test failures**
 

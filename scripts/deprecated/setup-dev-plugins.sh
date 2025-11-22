@@ -1,8 +1,33 @@
 #!/bin/bash
-# SpecWeave Plugin Setup for Development
-# Automatically detects environment (local vs VM) and configures appropriately
+# ⚠️ DEPRECATED: SpecWeave Plugin Setup for Development
+#
+# 🔴 THIS SCRIPT IS DEPRECATED AS OF 2025-11-22
+#
+# This script created symlinks for local development, which is NO LONGER SUPPORTED.
+#
+# USE GITHUB MARKETPLACE WORKFLOW INSTEAD:
+# 1. Clone repo: git clone https://github.com/YOUR_USERNAME/specweave.git
+# 2. Install: cd specweave && npm install && npm run rebuild
+# 3. Install hooks: bash scripts/install-git-hooks.sh
+# 4. Push changes to GitHub → Wait 5-10s → Claude Code auto-updates
+#
+# See CLAUDE.md Section 1 "Local Development Setup" for current guidelines.
+#
+# This script is preserved for historical reference only.
+# ---
 
 set -e
+
+echo "⚠️  WARNING: This script is DEPRECATED!"
+echo "   Use GitHub marketplace workflow instead (see CLAUDE.md)"
+echo ""
+read -p "Continue anyway? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Exiting. See CLAUDE.md for GitHub-first workflow."
+  exit 1
+fi
+echo ""
 
 # Colors
 RED='\033[0;31m'
