@@ -153,6 +153,19 @@ async function createGitHubIssue(
   const { specPath, dryRun, verbose } = options;
 
   try {
+    // Check permission: canUpsertInternalItems (CREATE permission)
+    const permissions = await loadSyncPermissions(specPath);
+    if (!permissions.canCreate) {
+      if (verbose) {
+        console.log('   ⚠️  Skipping create - canUpsertInternalItems is disabled in config');
+      }
+      return {
+        success: false,
+        action: 'skipped',
+        error: 'canUpsertInternalItems is disabled in .specweave/config.json',
+      };
+    }
+
     // Build issue title and body using compact format
     // Examples: [BE-JIRA-AUTH-123] User Authentication, [FE-user-login-ui] Login UI
     // Use display ID for cleaner titles (FS-043 instead of _F-FS-043)
@@ -234,6 +247,19 @@ async function updateGitHubIssue(
   const { specPath, dryRun, verbose } = options;
 
   try {
+    // Check permission: canUpdateExternalItems (UPDATE permission)
+    const permissions = await loadSyncPermissions(specPath);
+    if (!permissions.canUpdate) {
+      if (verbose) {
+        console.log('   ⚠️  Skipping update - canUpdateExternalItems is disabled in config');
+      }
+      return {
+        success: false,
+        action: 'skipped',
+        error: 'canUpdateExternalItems is disabled in .specweave/config.json',
+      };
+    }
+
     // Get current issue
     const issue = await client.getIssue(issueNumber);
 
@@ -381,6 +407,47 @@ async function postProgressComment(
 function countUserStoriesInBody(body: string): number {
   const matches = body.match(/###\s+US-\d+:/g);
   return matches ? matches.length : 0;
+}
+
+/**
+ * Load sync permissions from config
+ */
+async function loadSyncPermissions(specPath: string): Promise<{
+  canCreate: boolean;
+  canUpdate: boolean;
+  canUpdateStatus: boolean;
+}> {
+  try {
+    // Find project root
+    let currentDir = path.dirname(specPath);
+    let configPath = path.join(currentDir, '.specweave', 'config.json');
+
+    // Search upward for .specweave/config.json
+    while (!await fs.access(configPath).then(() => true).catch(() => false)) {
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) {
+        // Default: all enabled
+        return { canCreate: true, canUpdate: true, canUpdateStatus: true };
+      }
+      currentDir = parentDir;
+      configPath = path.join(currentDir, '.specweave', 'config.json');
+    }
+
+    // Read config
+    const configContent = await fs.readFile(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    const settings = config.sync?.settings || {};
+
+    return {
+      canCreate: settings.canUpsertInternalItems !== false,  // Default: true
+      canUpdate: settings.canUpdateExternalItems !== false,  // Default: true
+      canUpdateStatus: settings.canUpdateStatus !== false    // Default: true
+    };
+  } catch {
+    // Default: all enabled
+    return { canCreate: true, canUpdate: true, canUpdateStatus: true };
+  }
 }
 
 /**

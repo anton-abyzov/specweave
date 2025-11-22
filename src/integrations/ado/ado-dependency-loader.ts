@@ -19,6 +19,8 @@ import { CacheManager } from '../../core/cache/cache-manager.js';
 import { RateLimitChecker } from '../../core/cache/rate-limit-checker.js';
 import { AdoClient } from './ado-client.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { ProgressTracker } from '../../core/progress/progress-tracker.js';
+import { CancelationHandler } from '../../core/progress/cancelation-handler.js';
 
 /**
  * Project metadata (Tier 1)
@@ -246,7 +248,7 @@ export class AdoDependencyLoader {
    * Tier 3: Bulk pre-load all dependencies (optional command)
    *
    * Performance: 1-2 minutes for 50 projects (150-200 API calls, batched)
-   * Progress: Real-time progress tracking, cancelation support
+   * Progress: Real-time progress tracking with ProgressTracker, cancelation with CancelationHandler
    *
    * @param projectNames Array of project names to preload
    * @returns void (results cached)
@@ -255,7 +257,7 @@ export class AdoDependencyLoader {
     projectNames: string[],
     options: {
       onProgress?: (current: number, total: number) => void;
-      signal?: AbortSignal; // Cancelation support
+      signal?: AbortSignal; // Backward compatibility
     } = {}
   ): Promise<void> {
     const { onProgress, signal } = options;
@@ -263,24 +265,57 @@ export class AdoDependencyLoader {
 
     this.logger.log(`Preloading dependencies for ${total} projects...`);
 
+    // Initialize ProgressTracker
+    const progressTracker = new ProgressTracker({
+      total,
+      label: 'Preloading ADO dependencies',
+      updateFrequency: 5, // Update every 5 projects
+      showEta: true,
+      logger: this.logger
+    });
+
+    // Initialize CancelationHandler
+    let succeeded = 0;
+    let failed = 0;
+    let loadedProjects: string[] = [];
+
+    const cancelHandler = new CancelationHandler({
+      onSaveState: async () => {
+        this.logger.log(`\nPartial preload saved: ${loadedProjects.length}/${total} projects cached`);
+        this.logger.log(`Success: ${succeeded}, Failed: ${failed}`);
+      },
+      logger: this.logger
+    });
+
+    // Register SIGINT handler
+    cancelHandler.register();
+
     for (let i = 0; i < total; i++) {
-      // Check for cancelation
-      if (signal?.aborted) {
-        this.logger.warn('Preload canceled by user');
+      // Check for cancelation (both new handler and legacy signal)
+      if (cancelHandler.shouldCancel() || signal?.aborted) {
+        this.logger.warn('\n⚠️  Preload canceled by user');
+        this.logger.log(`\n💡 Resume with: /specweave-ado:preload-dependencies --resume`);
+        cancelHandler.unregister();
         throw new Error('Preload canceled');
       }
 
       const projectName = projectNames[i];
-      this.logger.log(`[${i + 1}/${total}] Preloading ${projectName}...`);
 
       try {
         await this.loadProjectDependencies(projectName);
+        loadedProjects.push(projectName);
+        succeeded++;
 
-        // Report progress
+        // Update progress
+        progressTracker.update(projectName, 'success');
+
+        // Legacy callback support
         if (onProgress) {
           onProgress(i + 1, total);
         }
       } catch (error: any) {
+        failed++;
+        progressTracker.update(projectName, 'error');
         this.logger.error(`Failed to preload ${projectName}: ${error.message}`);
         // Continue with next project (don't fail entire batch)
       }
@@ -291,6 +326,8 @@ export class AdoDependencyLoader {
       }
     }
 
-    this.logger.log('Preload complete!');
+    // Unregister handler and show final summary
+    cancelHandler.unregister();
+    progressTracker.finish(succeeded, failed, 0);
   }
 }
