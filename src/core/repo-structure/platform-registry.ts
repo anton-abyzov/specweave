@@ -87,13 +87,12 @@ export class GitPlatformRegistry {
       }
     });
 
-    // GitLab (stub - coming soon)
+    // GitLab (fully supported)
     this.registerPlatform({
       type: 'gitlab',
       name: 'GitLab',
       description: 'GitLab.com - DevOps platform',
-      supported: false,
-      status: 'Coming Soon',
+      supported: true,
       config: {
         type: 'gitlab',
         name: 'GitLab',
@@ -103,13 +102,12 @@ export class GitPlatformRegistry {
       }
     });
 
-    // Bitbucket (stub - coming soon)
+    // Bitbucket (fully supported)
     this.registerPlatform({
       type: 'bitbucket',
       name: 'Bitbucket',
       description: 'Bitbucket.org - Atlassian Git hosting',
-      supported: false,
-      status: 'Coming Soon',
+      supported: true,
       config: {
         type: 'bitbucket',
         name: 'Bitbucket',
@@ -119,19 +117,33 @@ export class GitPlatformRegistry {
       }
     });
 
-    // Azure DevOps (stub - coming soon)
+    // Azure DevOps (fully supported)
     this.registerPlatform({
       type: 'azure-devops',
       name: 'Azure DevOps',
       description: 'Azure DevOps Repos - Microsoft DevOps platform',
-      supported: false,
-      status: 'Coming Soon',
+      supported: true,
       config: {
         type: 'azure-devops',
         name: 'Azure DevOps',
         host: 'dev.azure.com',
         apiBaseUrl: 'https://dev.azure.com',
         selfHosted: false
+      }
+    });
+
+    // Local Git (fully supported)
+    this.registerPlatform({
+      type: 'local',
+      name: 'Local Git',
+      description: 'Local-only Git repositories (no remote hosting)',
+      supported: true,
+      config: {
+        type: 'local',
+        name: 'Local Git',
+        host: 'localhost',
+        apiBaseUrl: '',
+        selfHosted: true
       }
     });
   }
