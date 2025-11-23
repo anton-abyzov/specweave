@@ -32,16 +32,25 @@ import {
   getParentRepoBenefits,
   getRepoCountClarification,
   getVisibilityPrompt,
+  getUrlTypePrompt,
   type ArchitectureChoice
 } from './prompt-consolidator.js';
+import { generateGitRemoteUrl } from './url-generator.js';
 import { detectRepositoryHints } from './folder-detector.js';
 import { discoverRepositories, type BulkDiscoveryResult, type DiscoveredRepo } from './repo-bulk-discovery.js';
 import { Octokit } from '@octokit/rest';
+import { initializeProviders } from './providers/index.js';
+import { getPlatformRegistry } from './platform-registry.js';
+import type { GitProvider, GitPlatformType } from './git-provider.js';
+import { getPlatformSelectionPrompt } from './prompt-consolidator.js';
 
 export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
 
 export interface RepoStructureConfig {
   architecture: RepoArchitecture;
+  urlType: 'ssh' | 'https';  // Git remote URL format (SSH recommended)
+  platform: GitPlatformType;  // Git hosting platform (github, gitlab, bitbucket, etc.)
+  provider: GitProvider;      // Git provider instance for API operations
   parentRepo?: {
     name: string;
     owner: string;
@@ -71,6 +80,9 @@ export class RepoStructureManager {
     this.projectPath = projectPath;
     this.githubToken = githubToken;
     this.stateManager = new SetupStateManager(projectPath);
+
+    // Initialize Git providers on instantiation
+    initializeProviders();
   }
 
   /**
@@ -116,15 +128,61 @@ export class RepoStructureManager {
       default: 'single'
     }]);
 
+    // Step 2: Ask about Git hosting platform
+    const registry = getPlatformRegistry();
+    const platformOptions = registry.getPlatformOptions(true); // Include unsupported platforms
+    const platformPromptData = getPlatformSelectionPrompt();
+
+    console.log(chalk.cyan('\n' + platformPromptData.message));
+
+    const { platform } = await inquirer.prompt([{
+      type: 'list',
+      name: 'platform',
+      message: platformPromptData.question,
+      choices: platformOptions.map(opt => ({
+        name: opt.disabled
+          ? `${opt.name}\n${chalk.gray(opt.description)}\n${chalk.yellow('⚠️  ' + opt.disabled)}`
+          : `${opt.name}\n${chalk.gray(opt.description)}`,
+        value: opt.value,
+        short: opt.name,
+        disabled: opt.disabled ? opt.disabled : false
+      })),
+      default: 'github'
+    }]);
+
+    // Get provider instance
+    const provider = registry.getProvider(platform as GitPlatformType);
+    if (!provider) {
+      throw new Error(`Platform ${platform} is not available. This should not happen!`);
+    }
+
+    console.log(chalk.green(`\n✓ Using ${provider.config.name} as Git hosting platform\n`));
+
+    // Step 3: Ask about Git remote URL format (SSH vs HTTPS)
+    const urlTypePromptData = getUrlTypePrompt();
+    const { urlType } = await inquirer.prompt([{
+      type: 'list',
+      name: 'urlType',
+      message: urlTypePromptData.question,
+      choices: urlTypePromptData.options.map(opt => ({
+        name: `${opt.label}\n${chalk.gray(opt.description)}`,
+        value: opt.value,
+        short: opt.label
+      })),
+      default: urlTypePromptData.default
+    }]);
+
+    console.log(chalk.green(`\n✓ Using ${urlType.toUpperCase()} remote URLs\n`));
+
     // Map ArchitectureChoice to internal architecture
     const mappedArch = this.mapArchitectureChoice(architecture as ArchitectureChoice);
 
     switch (mappedArch) {
       case 'single':
-        return this.configureSingleRepo();
+        return this.configureSingleRepo(urlType, platform as GitPlatformType, provider);
       case 'parent':
         // GitHub parent repo (pushed to GitHub)
-        return this.configureMultiRepo(true, false);
+        return this.configureMultiRepo(true, false, urlType, platform as GitPlatformType, provider);
       default:
         throw new Error(`Unknown architecture: ${architecture}`);
     }
@@ -148,9 +206,19 @@ export class RepoStructureManager {
    * Resume setup from saved state
    */
   private async resumeSetup(state: SetupState): Promise<RepoStructureConfig> {
+    // Default to GitHub platform for resumed setups (backward compatibility)
+    const registry = getPlatformRegistry();
+    const provider = registry.getProvider('github');
+    if (!provider) {
+      throw new Error('GitHub provider not available. This should not happen!');
+    }
+
     // Convert saved state back to config format
     const config: RepoStructureConfig = {
       architecture: state.architecture as RepoArchitecture,
+      urlType: 'ssh',  // Default to SSH for resumed setups
+      platform: 'github',  // Default to GitHub for backward compatibility
+      provider: provider,
       parentRepo: state.parentRepo,
       repositories: state.repos.map(r => ({
         id: r.id,
@@ -172,7 +240,11 @@ export class RepoStructureManager {
   /**
    * Configure single repository
    */
-  private async configureSingleRepo(): Promise<RepoStructureConfig> {
+  private async configureSingleRepo(
+    urlType: 'ssh' | 'https' = 'ssh',
+    platform: GitPlatformType = 'github',
+    provider: GitProvider
+  ): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n📦 Single Repository Configuration\n'));
 
     // Check if repo already exists
@@ -224,6 +296,9 @@ export class RepoStructureManager {
 
             return {
               architecture: 'single',
+              urlType,
+              platform,
+              provider,
               repositories: [{
                 id: 'main',
                 name: repo,
@@ -291,6 +366,9 @@ export class RepoStructureManager {
 
     return {
       architecture: 'single',
+      urlType,
+      platform,
+      provider,
       repositories: [{
         id: 'main',
         name: answers.repo,
@@ -308,12 +386,21 @@ export class RepoStructureManager {
    * Configure multi-repository architecture
    * @param useParent - Whether to use parent repository/folder
    * @param isLocalParent - If true, parent folder is local only (NOT pushed to GitHub)
+   * @param urlType - Git remote URL format (ssh or https)
+   * @param platform - Git hosting platform type
+   * @param provider - Git provider instance for API operations
    *
    * NOTE: This is primarily user-facing output (console.log/console.error).
    * All console.* calls in this method are legitimate user-facing exceptions
    * as defined in CONTRIBUTING.md (colored messages, confirmations, formatted output).
    */
-  private async configureMultiRepo(useParent: boolean = true, isLocalParent: boolean = false): Promise<RepoStructureConfig> {
+  private async configureMultiRepo(
+    useParent: boolean = true,
+    isLocalParent: boolean = false,
+    urlType: 'ssh' | 'https' = 'ssh',
+    platform: GitPlatformType = 'github',
+    provider: GitProvider
+  ): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n🎯 Multi-Repository Configuration\n'));
     console.log(chalk.gray('This creates separate repositories for each service/component.\n'));
 
@@ -325,6 +412,9 @@ export class RepoStructureManager {
 
     const config: RepoStructureConfig = {
       architecture: useParent ? 'parent' : 'multi-repo',
+      urlType,
+      platform,
+      provider,
       repositories: []
     };
 
@@ -362,15 +452,15 @@ export class RepoStructureManager {
           {
             type: 'input',
             name: 'owner',
-            message: 'GitHub owner/organization for IMPLEMENTATION repos:',
+            message: `${provider.config.name} owner/organization for IMPLEMENTATION repos:`,
             validate: async (input: string) => {
               if (!input.trim()) return 'Owner is required';
 
-              // Validate owner exists on GitHub
+              // Validate owner exists on the platform
               if (this.githubToken) {
-                const result = await validateOwner(input, this.githubToken);
+                const result = await provider.validateOwner(input, this.githubToken);
                 if (!result.valid) {
-                  return result.error || 'Invalid GitHub owner';
+                  return result.error || `Invalid ${provider.config.name} owner`;
                 }
               }
               return true;
@@ -413,15 +503,15 @@ export class RepoStructureManager {
             {
               type: 'input',
               name: 'owner',
-              message: 'GitHub owner/organization:',
+              message: `${provider.config.name} owner/organization:`,
               validate: async (input: string) => {
                 if (!input.trim()) return 'Owner is required';
 
-                // Validate owner exists on GitHub
+                // Validate owner exists on the platform
                 if (this.githubToken) {
-                  const result = await validateOwner(input, this.githubToken);
+                  const result = await provider.validateOwner(input, this.githubToken);
                   if (!result.valid) {
-                    return result.error || 'Invalid GitHub owner';
+                    return result.error || `Invalid ${provider.config.name} owner`;
                   }
                 }
                 return true;
@@ -439,11 +529,11 @@ export class RepoStructureManager {
               validate: async (input: string) => {
                 if (!input.trim()) return 'Repository name is required';
 
-                // Validate repository EXISTS on GitHub
+                // Validate repository EXISTS on the platform
                 if (this.githubToken && ownerPrompt.owner) {
-                  const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
+                  const result = await provider.validateRepository(ownerPrompt.owner, input, this.githubToken);
                   if (!result.exists) {
-                    return `Repository ${ownerPrompt.owner}/${input} not found on GitHub. Please check the name or choose 'Create new'.`;
+                    return `Repository ${ownerPrompt.owner}/${input} not found on ${provider.config.name}. Please check the name or choose 'Create new'.`;
                   }
                 }
                 return true;
@@ -491,15 +581,15 @@ export class RepoStructureManager {
             {
               type: 'input',
               name: 'owner',
-              message: 'GitHub owner/organization for ALL repos:',
+              message: `${provider.config.name} owner/organization for ALL repos:`,
               validate: async (input: string) => {
                 if (!input.trim()) return 'Owner is required';
 
-                // Validate owner exists on GitHub
+                // Validate owner exists on the platform
                 if (this.githubToken) {
-                  const result = await validateOwner(input, this.githubToken);
+                  const result = await provider.validateOwner(input, this.githubToken);
                   if (!result.valid) {
-                    return result.error || 'Invalid GitHub owner';
+                    return result.error || `Invalid ${provider.config.name} owner`;
                   }
                 }
                 return true;
@@ -519,7 +609,7 @@ export class RepoStructureManager {
 
                 // Validate repository DOESN'T exist
                 if (this.githubToken && ownerPrompt.owner) {
-                  const result = await validateRepository(ownerPrompt.owner, input, this.githubToken);
+                  const result = await provider.validateRepository(ownerPrompt.owner, input, this.githubToken);
                   if (result.exists) {
                     return `Repository ${ownerPrompt.owner}/${input} already exists at ${result.url}. Please choose 'Use existing' or pick a different name.`;
                   }
@@ -646,7 +736,7 @@ export class RepoStructureManager {
     if (this.githubToken && config.parentRepo) {
       const octokit = new Octokit({ auth: this.githubToken });
       const owner = config.parentRepo.owner;
-      const isOrg = await this.isGitHubOrganization(owner);
+      const isOrg = await provider.isOrganization(owner, this.githubToken);
 
       const discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
 
@@ -735,7 +825,7 @@ export class RepoStructureManager {
 
             // Validate repository doesn't exist (skip for discovered repos)
             if (!isDiscovered && this.githubToken && config.parentRepo) {
-              const result = await validateRepository(config.parentRepo.owner, input, this.githubToken);
+              const result = await provider.validateRepository(config.parentRepo.owner, input, this.githubToken);
               if (result.exists) {
                 return `Repository ${config.parentRepo.owner}/${input} already exists at ${result.url}`;
               }
@@ -873,7 +963,11 @@ export class RepoStructureManager {
   /**
    * Configure monorepo
    */
-  private async configureMonorepo(): Promise<RepoStructureConfig> {
+  private async configureMonorepo(
+    urlType: 'ssh' | 'https' = 'ssh',
+    platform: GitPlatformType = 'github',
+    provider: GitProvider
+  ): Promise<RepoStructureConfig> {
     console.log(chalk.cyan('\n📚 Monorepo Configuration\n'));
     console.log(chalk.gray('Single repository with multiple projects/packages.\n'));
 
@@ -939,6 +1033,9 @@ export class RepoStructureManager {
 
     return {
       architecture: 'monorepo',
+      urlType,
+      platform,
+      provider,
       repositories: [{
         id: 'main',
         name: answers.repo,
@@ -954,36 +1051,36 @@ export class RepoStructureManager {
   }
 
   /**
-   * Create repositories on GitHub via API
+   * Create repositories on Git hosting platform via API
    */
-  async createGitHubRepositories(config: RepoStructureConfig): Promise<void> {
+  async createRepositories(config: RepoStructureConfig): Promise<void> {
     if (!this.githubToken) {
-      console.log(chalk.yellow('\n⚠️  No GitHub token available'));
-      console.log(chalk.gray('   Skipping GitHub repository creation'));
+      console.log(chalk.yellow(`\n⚠️  No ${config.provider.config.name} token available`));
+      console.log(chalk.gray(`   Skipping ${config.provider.config.name} repository creation`));
       console.log(chalk.gray('   You can create repositories manually later\n'));
       return;
     }
 
-    const spinner = ora('Creating GitHub repositories...').start();
+    const spinner = ora(`Creating ${config.provider.config.name} repositories...`).start();
     const created: string[] = [];
     const failed: string[] = [];
 
     // Create parent repository if needed
     if (config.parentRepo?.createOnGitHub) {
       try {
-        await this.createGitHubRepo(
-          config.parentRepo.owner,
-          config.parentRepo.name,
-          config.parentRepo.description,
-          config.parentRepo.visibility
-        );
+        await config.provider.createRepository({
+          owner: config.parentRepo.owner,
+          name: config.parentRepo.name,
+          description: config.parentRepo.description,
+          visibility: config.parentRepo.visibility
+        }, this.githubToken);
         created.push(`${config.parentRepo.owner}/${config.parentRepo.name}`);
 
         // Save state: parent repo created
         await this.saveSetupState({
           version: '1.0.0',
           architecture: config.architecture as SetupArchitecture,
-          parentRepo: { ...config.parentRepo!, url: `https://github.com/${config.parentRepo!.owner}/${config.parentRepo!.name}` },
+          parentRepo: { ...config.parentRepo!, url: config.provider.getRemoteUrl(config.parentRepo!.owner, config.parentRepo!.name, config.urlType) },
           repos: [],
           currentStep: 'parent-repo-created',
           timestamp: new Date().toISOString(),
@@ -998,12 +1095,12 @@ export class RepoStructureManager {
     for (const repo of config.repositories) {
       if (repo.createOnGitHub) {
         try {
-          await this.createGitHubRepo(
-            repo.owner,
-            repo.name,
-            repo.description,
-            repo.visibility
-          );
+          await config.provider.createRepository({
+            owner: repo.owner,
+            name: repo.name,
+            description: repo.description,
+            visibility: repo.visibility
+          }, this.githubToken);
           created.push(`${repo.owner}/${repo.name}`);
         } catch (error: any) {
           failed.push(`${repo.owner}/${repo.name}: ${error.message}`);
@@ -1103,7 +1200,7 @@ export class RepoStructureManager {
         path: r.path,
         visibility: r.visibility,
         displayName: r.name,
-        url: `https://github.com/${r.owner}/${r.name}`,
+        url: config.provider.getRemoteUrl(r.owner, r.name, config.urlType),
         created: false
       })),
       currentStep: 'complete',
@@ -1205,20 +1302,22 @@ export class RepoStructureManager {
 
   /**
    * Clone or initialize a repository
-   * If the repo exists on GitHub, clone it; otherwise, init + add remote
+   * If the repo exists on the platform, clone it; otherwise, init + add remote
    */
   private async cloneOrInitRepository(
     repoPath: string,
     owner: string,
     name: string,
-    createOnGitHub: boolean
+    createOnGitHub: boolean,
+    urlType: 'ssh' | 'https' = 'ssh',
+    provider: GitProvider
   ): Promise<void> {
     // If .git already exists, skip
     if (existsSync(path.join(repoPath, '.git'))) {
       return;
     }
 
-    const remoteUrl = `https://github.com/${owner}/${name}.git`;
+    const remoteUrl = provider.getRemoteUrl(owner, name, urlType);
 
     // Check if repository exists on GitHub
     const repoExists = await this.repositoryExistsOnGitHub(owner, name);
@@ -1286,7 +1385,7 @@ export class RepoStructureManager {
         execFileNoThrowSync('git', ['init'], { cwd: this.projectPath });
 
         if (config.parentRepo) {
-          const remoteUrl = `https://github.com/${config.parentRepo.owner}/${config.parentRepo.name}.git`;
+          const remoteUrl = config.provider.getRemoteUrl(config.parentRepo.owner, config.parentRepo.name, config.urlType);
           execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: this.projectPath });
         }
       }
@@ -1296,7 +1395,7 @@ export class RepoStructureManager {
         const repoPath = path.join(this.projectPath, repo.path);
 
         // Clone or initialize repository
-        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub);
+        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub, config.urlType, config.provider);
 
         // Create basic structure (only if repo was just initialized, not cloned)
         if (!repo.createOnGitHub || !await this.repositoryExistsOnGitHub(repo.owner, repo.name)) {
@@ -1309,7 +1408,7 @@ export class RepoStructureManager {
         const repoPath = path.join(this.projectPath, repo.path);
 
         // Clone or initialize repository
-        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub);
+        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub, config.urlType, config.provider);
 
         // Create basic structure (only if repo was just initialized, not cloned)
         if (!repo.createOnGitHub || !await this.repositoryExistsOnGitHub(repo.owner, repo.name)) {
@@ -1323,7 +1422,7 @@ export class RepoStructureManager {
 
         const repo = config.repositories[0];
         if (repo) {
-          const remoteUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
+          const remoteUrl = config.provider.getRemoteUrl(repo.owner, repo.name, config.urlType);
           execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: this.projectPath });
         }
       }

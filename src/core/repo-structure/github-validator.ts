@@ -9,9 +9,12 @@
  * - Owner/organization validation
  * - Retry logic with exponential backoff
  * - Rate limit awareness
+ * - Actionable error messages with troubleshooting steps
  *
  * @module github-validator
  */
+
+import { getActionableError, formatActionableError, type GitApiError } from './git-error-handler.js';
 
 /**
  * Validation result
@@ -87,19 +90,35 @@ export async function validateRepository(
     }
 
     if (response.status === 401 || response.status === 403) {
-      // Authentication or permission error
-      const errorMsg = response.status === 401
-        ? 'Invalid GitHub token'
-        : 'Forbidden - check token permissions or rate limit';
+      // Authentication or permission error - use actionable error handler
+      const apiError: GitApiError = {
+        status: response.status,
+        message: response.statusText,
+        platform: 'github',
+        operation: 'validate_repo',
+        resourceType: 'repository',
+        resourceName: `${owner}/${repo}`
+      };
 
-      return { exists: false, valid: false, error: errorMsg };
+      const actionable = getActionableError(apiError);
+      return { exists: false, valid: false, error: formatActionableError(actionable) };
     }
 
-    // Other error
+    // Other error - use actionable error handler
+    const apiError: GitApiError = {
+      status: response.status,
+      message: response.statusText,
+      platform: 'github',
+      operation: 'validate_repo',
+      resourceType: 'repository',
+      resourceName: `${owner}/${repo}`
+    };
+
+    const actionable = getActionableError(apiError);
     return {
       exists: false,
       valid: false,
-      error: `GitHub API error: ${response.status} ${response.statusText}`
+      error: formatActionableError(actionable)
     };
 
   } catch (error) {
@@ -151,8 +170,18 @@ export async function validateOwner(
       return { valid: true, type: 'org' };
     }
 
-    // Not found
-    return { valid: false, error: 'Owner not found on GitHub' };
+    // Not found - use actionable error handler
+    const apiError: GitApiError = {
+      status: 404,
+      message: 'Not Found',
+      platform: 'github',
+      operation: 'validate_owner',
+      resourceType: 'user',
+      resourceName: owner
+    };
+
+    const actionable = getActionableError(apiError);
+    return { valid: false, error: formatActionableError(actionable) };
 
   } catch (error) {
     return {

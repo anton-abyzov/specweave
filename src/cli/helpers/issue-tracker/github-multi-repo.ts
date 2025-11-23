@@ -86,10 +86,10 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       const manager = new RepoStructureManager(projectPath, githubToken);
       const config = await manager.promptStructure();
 
-      // Create repositories on GitHub if requested
+      // Create repositories on hosting platform if requested
       if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
-        console.log(chalk.cyan('\n🚀 Creating GitHub Repositories\n'));
-        await manager.createGitHubRepositories(config);
+        console.log(chalk.cyan(`\n🚀 Creating ${config.provider.config.name} Repositories\n`));
+        await manager.createRepositories(config);
       }
 
       // Initialize local repos
