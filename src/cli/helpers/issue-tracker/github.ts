@@ -360,12 +360,14 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
  * @param projectPath - Path to project directory
  * @param language - User's language
  * @param githubToken - Optional GitHub token for repository creation
+ * @param repositoryHosting - Optional repository hosting choice from init.ts (prevents duplicate prompts)
  * @returns Repository profiles
  */
 export async function configureGitHubRepositories(
   projectPath: string,
   language: SupportedLanguage,
-  githubToken?: string
+  githubToken?: string,
+  repositoryHosting?: string
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
   // Import the multi-repo module
   const {
@@ -377,8 +379,8 @@ export async function configureGitHubRepositories(
     autoDetectRepositories
   } = await import('./github-multi-repo.js');
 
-  // Pass projectPath and token for enhanced flow with repo creation
-  const setupResult = await promptGitHubSetupType(projectPath, githubToken);
+  // Pass projectPath, token, and repositoryHosting to avoid duplicate prompts
+  const setupResult = await promptGitHubSetupType(projectPath, githubToken, repositoryHosting);
 
   // If RepoStructureManager was used, profiles are already extracted - return them directly
   if (setupResult.profiles) {

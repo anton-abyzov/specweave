@@ -73,9 +73,53 @@ export interface GitHubSetupResult {
  *
  * @param projectPath - Path to project directory
  * @param githubToken - Optional GitHub token for API calls
+ * @param repositoryHosting - Optional repository hosting choice from init.ts (prevents duplicate prompts)
  * @returns Selected setup type with optional profiles (if RepoStructureManager was used)
  */
-export async function promptGitHubSetupType(projectPath?: string, githubToken?: string): Promise<GitHubSetupResult> {
+export async function promptGitHubSetupType(projectPath?: string, githubToken?: string, repositoryHosting?: string): Promise<GitHubSetupResult> {
+  // CRITICAL: Check if user already answered this question in init.ts
+  // If so, skip the duplicate prompt and return immediately
+  if (repositoryHosting) {
+    // User already selected hosting type - convert to setupType
+    if (repositoryHosting === 'github-single') {
+      // Single repository - no need to ask again
+      return { setupType: 'single' };
+    } else if (repositoryHosting === 'github-multi') {
+      // Multiple repositories - ask ONLY about the TYPE (monorepo vs multi-repo vs parent)
+      console.log(chalk.cyan('\n🏗️  Multi-Repository Architecture\n'));
+      console.log(chalk.gray('What type of multi-repository setup do you have?\n'));
+
+      const { multiType } = await inquirer.prompt([{
+        type: 'list',
+        name: 'multiType',
+        message: 'Select architecture type:',
+        choices: [
+          {
+            name: '📚 Monorepo (single repo, multiple projects)',
+            value: 'monorepo',
+            short: 'Monorepo'
+          },
+          {
+            name: '🎯 Multi-repo (separate repos per service)',
+            value: 'multiple',
+            short: 'Multi-repo'
+          },
+          {
+            name: '🔗 Parent repo + nested repos (GitHub)',
+            value: 'github-parent',
+            short: 'Parent+Nested'
+          }
+        ]
+      }]);
+
+      // Map github-parent to 'multiple' for backwards compatibility
+      return { setupType: multiType === 'github-parent' ? 'multiple' : multiType };
+    } else if (repositoryHosting === 'local' || repositoryHosting === 'other') {
+      // Local or other hosting - no GitHub repository configuration needed
+      return { setupType: 'none' };
+    }
+  }
+
   console.log(chalk.cyan('\n📂 Repository Configuration\n'));
   console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
 

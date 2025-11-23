@@ -219,7 +219,8 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
             const { configureGitHubRepositories } = await import('./github.js');
             // Pass the GitHub token for repository creation
             const githubToken = (credentials as any).token;
-            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+            // Pass repositoryHosting to avoid duplicate prompts
+            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting);
             repositoryProfiles = repoConfig.profiles;
             monorepoProjects = repoConfig.monorepoProjects;
           } catch (error: any) {
@@ -300,7 +301,8 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       const { configureGitHubRepositories } = await import('./github.js');
       // Pass the GitHub token for repository creation
       const githubToken = (credentials as any).token;
-      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken);
+      // Pass repositoryHosting to avoid duplicate prompts
+      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting);
       repositoryProfiles = repoConfig.profiles;
       monorepoProjects = repoConfig.monorepoProjects;
     } catch (error: any) {
