@@ -81,34 +81,11 @@ if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
   fi
 fi
 
-# FILE LOCK: Only allow 1 post-task-completion hook at a time
-LOCK_FILE=".specweave/state/.hook-post-task.lock"
-LOCK_TIMEOUT=10  # seconds (longer than others because this does more work)
-
-LOCK_ACQUIRED=false
-for i in {1..10}; do
-  if mkdir "$LOCK_FILE" 2>/dev/null; then
-    LOCK_ACQUIRED=true
-    trap 'rmdir "$LOCK_FILE" 2>/dev/null || true' EXIT
-    break
-  fi
-
-  # Check for stale lock
-  if [[ -d "$LOCK_FILE" ]]; then
-    LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
-    if (( LOCK_AGE > LOCK_TIMEOUT )); then
-      rmdir "$LOCK_FILE" 2>/dev/null || true
-      continue
-    fi
-  fi
-
-  sleep 0.2
-done
-
-if [[ "$LOCK_ACQUIRED" == "false" ]]; then
-  # Another instance is running, skip
-  exit 0
-fi
+# FILE LOCK: Skip - lock moved INSIDE background subshell (v0.24.4 fix)
+# Why: Lock must protect the ACTUAL work, not just the script startup
+# Old behavior: Lock released when main script exits (before background work completes)
+# New behavior: Lock held until background work completes (inside subshell)
+# This prevents race conditions where rapid TodoWrite calls spawn multiple concurrent processes
 
 # ============================================================================
 # CONFIGURATION
@@ -251,6 +228,45 @@ fi
   set +e  # Disable error propagation in background job
 
   # ============================================================================
+  # FILE LOCK (v0.24.4): Protect ACTUAL background work, not just script startup
+  # ============================================================================
+  # CRITICAL FIX: Lock was previously in main script, released before work completed
+  # NOW: Lock is INSIDE background subshell, held until ALL work completes
+  # This prevents race conditions from rapid TodoWrite calls
+
+  LOCK_FILE=".specweave/state/.hook-post-task.lock"
+  LOCK_TIMEOUT=30  # seconds (longer timeout for background work)
+
+  LOCK_ACQUIRED=false
+  for i in {1..30}; do
+    if mkdir "$LOCK_FILE" 2>/dev/null; then
+      LOCK_ACQUIRED=true
+      # Ensure lock is removed when background job exits
+      trap 'rmdir "$LOCK_FILE" 2>/dev/null || true' EXIT
+      break
+    fi
+
+    # Check for stale lock
+    if [[ -d "$LOCK_FILE" ]]; then
+      LOCK_AGE=$(($(date +%s) - $(stat -f "%m" "$LOCK_FILE" 2>/dev/null || echo 0)))
+      if (( LOCK_AGE > LOCK_TIMEOUT )); then
+        echo "[$(date)] 🔓 Removing stale lock (age: ${LOCK_AGE}s)" >> "$DEBUG_LOG" 2>/dev/null || true
+        rmdir "$LOCK_FILE" 2>/dev/null || true
+        continue
+      fi
+    fi
+
+    sleep 1  # Wait longer between attempts (background work can take time)
+  done
+
+  if [[ "$LOCK_ACQUIRED" == "false" ]]; then
+    echo "[$(date)] ⏭️  Another sync in progress, skipping (lock held)" >> "$DEBUG_LOG" 2>/dev/null || true
+    exit 0
+  fi
+
+  echo "[$(date)] 🔒 Lock acquired, starting background work" >> "$DEBUG_LOG" 2>/dev/null || true
+
+  # ============================================================================
   # CRITICAL FIX: Read active increments from state file (NOT time-based detection)
   # ============================================================================
   # WHY: The old logic used 'ls -td' which:
@@ -331,161 +347,39 @@ fi
     fi
 
   # ============================================================================
-  # 1. UPDATE TASKS.MD
+  # CONSOLIDATED SYNC (v0.24.4 - PERFORMANCE OPTIMIZATION)
   # ============================================================================
-  if [ -f ".specweave/increments/$CURRENT_INCREMENT/tasks.md" ]; then
-    echo "[$(date)] 📝 Updating tasks.md" >> "$DEBUG_LOG" 2>/dev/null || true
+  # REPLACES: 5-6 separate Node.js spawns with SINGLE consolidated process
+  # BEFORE: update-tasks-md.js, sync-living-docs.js, update-ac-status.js,
+  #         translate-living-docs.js, prepare-reflection-context.js
+  # AFTER:  consolidated-sync.js (runs all operations sequentially)
+  # IMPACT: 83% reduction in process spawning overhead
+  # ============================================================================
 
-    UPDATE_TASKS_SCRIPT=""
-    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/update-tasks-md.js" ]; then
-      UPDATE_TASKS_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/update-tasks-md.js"
-    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-tasks-md.js" ]; then
-      UPDATE_TASKS_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-tasks-md.js"
-    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-tasks-md.js" ]; then
-      UPDATE_TASKS_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-tasks-md.js"
-    elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-tasks-md.js" ]; then
-      UPDATE_TASKS_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-tasks-md.js"
-    fi
+  echo "[$(date)] 🚀 Running consolidated sync" >> "$DEBUG_LOG" 2>/dev/null || true
 
-    if [ -n "$UPDATE_TASKS_SCRIPT" ]; then
-      if node "$UPDATE_TASKS_SCRIPT" "$CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>&1; then
-        echo "[$(date)] ✅ tasks.md updated" >> "$DEBUG_LOG" 2>/dev/null || true
-        ANY_SUCCESS=true
-      else
-        echo "[$(date)] ⚠️  tasks.md update failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-      fi
-    fi
+  # Find consolidated sync script
+  CONSOLIDATED_SCRIPT=""
+  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
   fi
 
-  # ============================================================================
-  # 2. SYNC LIVING DOCS
-  # ============================================================================
-  # Skip if increment is archived
-  if [ ! -d ".specweave/increments/_archive/$CURRENT_INCREMENT" ]; then
-    echo "[$(date)] 📚 Syncing living docs" >> "$DEBUG_LOG" 2>/dev/null || true
-
-    # Extract feature ID and project ID
-    FEATURE_ID=""
-    SPEC_MD_PATH=".specweave/increments/$CURRENT_INCREMENT/spec.md"
-
-    if [ -f "$SPEC_MD_PATH" ]; then
-      FEATURE_ID=$(awk 'BEGIN{in_fm=0}/^---$/{if(in_fm==0){in_fm=1;next}else{exit}}in_fm==1&&/^epic:/{gsub(/^epic:[ \t]*/,"");gsub(/["'\'']/,"");print;exit}' "$SPEC_MD_PATH" | tr -d '\r\n')
-    fi
-
-    PROJECT_ID="default"
-    if [ -f ".specweave/config.json" ] && command -v jq >/dev/null 2>&1; then
-      ACTIVE_PROJECT=$(jq -r '.activeProject // "default"' ".specweave/config.json" 2>/dev/null || echo "default")
-      if [ -n "$ACTIVE_PROJECT" ] && [ "$ACTIVE_PROJECT" != "null" ]; then
-        PROJECT_ID="$ACTIVE_PROJECT"
-      fi
-    fi
-
-    # Find sync script
-    SYNC_SCRIPT=""
-    if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
-      SYNC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"
-    elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
-      SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
-    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]; then
-      SYNC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
-    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js" ]; then
-      SYNC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js"
-    fi
-
-    if [ -n "$SYNC_SCRIPT" ]; then
-      if [ -n "$FEATURE_ID" ]; then
-        if (cd "$PROJECT_ROOT" && FEATURE_ID="$FEATURE_ID" PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-          echo "[$(date)] ✅ Living docs synced" >> "$DEBUG_LOG" 2>/dev/null || true
-          ANY_SUCCESS=true
-        else
-          echo "[$(date)] ⚠️  Living docs sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        fi
-      else
-        if (cd "$PROJECT_ROOT" && PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-          echo "[$(date)] ✅ Living docs synced" >> "$DEBUG_LOG" 2>/dev/null || true
-          ANY_SUCCESS=true
-        else
-          echo "[$(date)] ⚠️  Living docs sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-        fi
-      fi
-    fi
-  fi
-
-  # ============================================================================
-  # 3. UPDATE AC STATUS
-  # ============================================================================
-  echo "[$(date)] ✓ Updating AC status" >> "$DEBUG_LOG" 2>/dev/null || true
-
-  UPDATE_AC_SCRIPT=""
-  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
-    UPDATE_AC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/update-ac-status.js"
-  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
-    UPDATE_AC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/update-ac-status.js"
-  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-ac-status.js" ]; then
-    UPDATE_AC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/update-ac-status.js"
-  elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-ac-status.js" ]; then
-    UPDATE_AC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/update-ac-status.js"
-  fi
-
-  if [ -n "$UPDATE_AC_SCRIPT" ]; then
-    if (cd "$PROJECT_ROOT" && node "$UPDATE_AC_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-      echo "[$(date)] ✅ AC status updated" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [ -n "$CONSOLIDATED_SCRIPT" ]; then
+    # Run consolidated sync (single Node.js process handles ALL operations)
+    if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
+      echo "[$(date)] ✅ Consolidated sync completed" >> "$DEBUG_LOG" 2>/dev/null || true
       ANY_SUCCESS=true
     else
-      echo "[$(date)] ⚠️  AC status update failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      echo "[$(date)] ⚠️  Consolidated sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
     fi
-  fi
-
-  # ============================================================================
-  # 4. TRANSLATE LIVING DOCS (if needed)
-  # ============================================================================
-  echo "[$(date)] 🌐 Checking translation needs" >> "$DEBUG_LOG" 2>/dev/null || true
-
-  TRANSLATE_SCRIPT=""
-  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
-    TRANSLATE_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/translate-living-docs.js"
-  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
-    TRANSLATE_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/translate-living-docs.js"
-  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/translate-living-docs.js" ]; then
-    TRANSLATE_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/translate-living-docs.js"
-  elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js" ]; then
-    TRANSLATE_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-living-docs.js"
-  fi
-
-  if [ -n "$TRANSLATE_SCRIPT" ]; then
-    if (cd "$PROJECT_ROOT" && node "$TRANSLATE_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-      echo "[$(date)] ✅ Translation checked" >> "$DEBUG_LOG" 2>/dev/null || true
-      ANY_SUCCESS=true
-    fi
-  fi
-
-  # ============================================================================
-  # 5. SELF-REFLECTION (only if all tasks complete)
-  # ============================================================================
-  if [ "$ALL_COMPLETED" = "true" ]; then
-    echo "[$(date)] 🤔 Preparing reflection" >> "$DEBUG_LOG" 2>/dev/null || true
-
-    LATEST_TASK=$(grep "^## T-[0-9]" ".specweave/increments/$CURRENT_INCREMENT/tasks.md" 2>/dev/null | tail -1 | awk '{print $2}' | sed 's/://')
-
-    if [ -n "$LATEST_TASK" ]; then
-      REFLECTION_SCRIPT=""
-      if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
-        REFLECTION_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/prepare-reflection-context.js"
-      elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
-        REFLECTION_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js"
-      elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js" ]; then
-        REFLECTION_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/prepare-reflection-context.js"
-      elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js" ]; then
-        REFLECTION_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/prepare-reflection-context.js"
-      fi
-
-      if [ -n "$REFLECTION_SCRIPT" ]; then
-        if (cd "$PROJECT_ROOT" && node "$REFLECTION_SCRIPT" "$CURRENT_INCREMENT" "$LATEST_TASK") >> "$DEBUG_LOG" 2>&1; then
-          echo "[$(date)] ✅ Reflection prepared" >> "$DEBUG_LOG" 2>/dev/null || true
-          ANY_SUCCESS=true
-        fi
-      fi
-    fi
+  else
+    echo "[$(date)] ⚠️  consolidated-sync.js not found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
   fi
 
   done  # End of ACTIVE_INCREMENTS loop

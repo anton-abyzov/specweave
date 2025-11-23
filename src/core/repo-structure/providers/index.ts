@@ -10,11 +10,15 @@
 export { GitHubProvider, createGitHubProvider } from './github-provider.js';
 export { GitLabProvider, createGitLabProvider } from './gitlab-provider.js';
 export { BitbucketProvider, createBitbucketProvider } from './bitbucket-provider.js';
+export { AzureDevOpsProvider, createAzureDevOpsProvider } from './azure-devops-provider.js';
+export { LocalGitProvider, createLocalGitProvider } from './local-provider.js';
 
 import { getPlatformRegistry } from '../platform-registry.js';
 import { createGitHubProvider } from './github-provider.js';
 import { createGitLabProvider } from './gitlab-provider.js';
 import { createBitbucketProvider } from './bitbucket-provider.js';
+import { createAzureDevOpsProvider } from './azure-devops-provider.js';
+import { createLocalGitProvider } from './local-provider.js';
 
 /**
  * Track whether providers have been initialized
@@ -41,11 +45,17 @@ export function initializeProviders(): void {
   // Register GitHub provider (fully supported)
   registry.registerProvider('github', createGitHubProvider());
 
-  // Register GitLab provider (stub - coming soon)
+  // Register GitLab provider (fully supported)
   registry.registerProvider('gitlab', createGitLabProvider());
 
-  // Register Bitbucket provider (stub - coming soon)
+  // Register Bitbucket provider (fully supported)
   registry.registerProvider('bitbucket', createBitbucketProvider());
+
+  // Register Azure DevOps provider (fully supported)
+  registry.registerProvider('azure-devops', createAzureDevOpsProvider());
+
+  // Register Local Git provider (fully supported)
+  registry.registerProvider('local', createLocalGitProvider());
 
   providersInitialized = true;
 }
@@ -64,7 +74,7 @@ export function resetProviders(): void {
  * @param platform - Platform type
  * @returns Provider instance or undefined
  */
-export function getProvider(platform: 'github' | 'gitlab' | 'bitbucket') {
+export function getProvider(platform: 'github' | 'gitlab' | 'bitbucket' | 'azure-devops' | 'local') {
   const registry = getPlatformRegistry();
   return registry.getProvider(platform);
 }
