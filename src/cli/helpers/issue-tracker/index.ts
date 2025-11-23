@@ -93,7 +93,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
 
   // Smart default based on repository hosting
   let defaultTracker: IssueTracker = detection.tracker;
-  if (repositoryHosting === 'github') {
+  if (repositoryHosting === 'github' || repositoryHosting === 'github-multi') {
     // If hosting on GitHub, strongly suggest GitHub Issues
     defaultTracker = 'github';
   } else if (repositoryHosting === 'local') {
@@ -102,7 +102,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   }
 
   // Show contextual message based on repository hosting
-  if (repositoryHosting === 'github') {
+  if (repositoryHosting === 'github' || repositoryHosting === 'github-multi') {
     console.log(chalk.gray('💡 GitHub hosting detected - GitHub Issues recommended for seamless integration'));
     console.log('');
   } else if (repositoryHosting === 'local') {
@@ -114,9 +114,9 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   const choices: Array<{ name: string; value: IssueTracker }> = [];
 
   // GitHub Issues - only show if GitHub or local repo (local can add GitHub remote later)
-  if (repositoryHosting === 'github' || repositoryHosting === 'local') {
+  if (repositoryHosting === 'github' || repositoryHosting === 'github-multi' || repositoryHosting === 'local') {
     choices.push({
-      name: `🐙 GitHub Issues ${repositoryHosting === 'github' ? '(recommended)' : detection.tracker === 'github' && detection.detected ? '(detected)' : ''}`,
+      name: `🐙 GitHub Issues ${repositoryHosting === 'github' || repositoryHosting === 'github-multi' ? '(recommended)' : detection.tracker === 'github' && detection.detected ? '(detected)' : ''}`,
       value: 'github'
     });
   }
