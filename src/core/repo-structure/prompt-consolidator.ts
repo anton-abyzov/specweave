@@ -167,6 +167,87 @@ export function getVisibilityPrompt(repoName: string): {
 }
 
 /**
+ * Get Git remote URL type prompt (SSH vs HTTPS)
+ *
+ * @returns URL type question and options
+ */
+export function getUrlTypePrompt(): {
+  question: string;
+  options: Array<{ value: 'ssh' | 'https'; label: string; description: string }>;
+  default: 'ssh' | 'https';
+} {
+  return {
+    question: 'Git remote URL format?',
+    options: [
+      {
+        value: 'ssh',
+        label: 'SSH (Recommended)',
+        description: 'git@github.com:owner/repo.git - More secure, no password needed'
+      },
+      {
+        value: 'https',
+        label: 'HTTPS',
+        description: 'https://github.com/owner/repo.git - Works everywhere, uses tokens'
+      }
+    ],
+    default: 'ssh'
+  };
+}
+
+/**
+ * Get platform selection prompt
+ *
+ * @returns Platform selection question and options
+ */
+export function getPlatformSelectionPrompt(): {
+  question: string;
+  message: string;
+} {
+  return {
+    question: 'Select your Git hosting platform:',
+    message: `
+🌐 Git Platform Selection
+
+SpecWeave supports multiple Git hosting platforms.
+Choose where your repositories will be hosted.
+
+Note: Currently, only GitHub is fully supported.
+Other platforms (GitLab, Bitbucket, Azure DevOps) are coming soon!
+    `.trim()
+  };
+}
+
+/**
+ * Get GitHub token permission guidance
+ *
+ * @param isOrganization - Whether creating repos in an organization
+ * @returns Formatted guidance message
+ */
+export function getGitHubTokenGuidance(isOrganization: boolean = false): string {
+  const requiredScopes = [
+    '• repo (Full control of private repositories)',
+  ];
+
+  if (isOrganization) {
+    requiredScopes.push('• admin:org (Manage organization repositories)');
+  }
+
+  return `
+📋 GitHub Personal Access Token Requirements
+
+Required Scopes:
+${requiredScopes.join('\n')}
+
+🔗 Create token at: https://github.com/settings/tokens/new
+
+⚠️  Important:
+   - Select "repo" scope at minimum
+   ${isOrganization ? '- Select "admin:org" if creating in organization\n' : ''}- Token will be stored in .env (never committed)
+   - Keep your token secure
+  `.trim();
+}
+
+/**
  * Format architecture choice for display
  *
  * @param choice - Architecture choice
