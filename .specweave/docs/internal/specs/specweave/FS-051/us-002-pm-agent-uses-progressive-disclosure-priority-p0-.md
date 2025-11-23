@@ -1,45 +1,32 @@
 ---
 id: US-002
 feature: FS-051
-title: "PM Agent Uses Progressive Disclosure (Priority: P0)"
-status: completed
+title: "Three-Tier Permission Model"
+status: planned
 priority: P0
-created: 2025-11-21T00:00:00.000Z
+created: 2025-11-22
 ---
 
-**Origin**: 🏠 **Internal**
-
-
-# US-002: PM Agent Uses Progressive Disclosure (Priority: P0)
+# US-002: Three-Tier Permission Model
 
 **Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
-
-**As a** developer using SpecWeave PM agent
-**I want** the PM agent to load only relevant workflows
-**So that** increment planning doesn't crash
 
 ---
 
 ## Acceptance Criteria
 
-- [x] **AC-US2-01**: PM agent prompt reduced from 60KB → ≤50KB
-- [x] **AC-US2-02**: External sync wizard extracted to skill
-- [x] **AC-US2-03**: Closure validation extracted to skill
+- [ ] **AC-US2-01**: Config supports three independent flags
+- [ ] **AC-US2-02**: GATE 1 (`canUpsertInternalItems`) controls living docs sync
+- [ ] **AC-US2-03**: GATE 2 (`canUpdateExternalItems`) controls external tracker sync
+- [ ] **AC-US2-04**: GATE 3 (`autoSyncOnCompletion`) controls automatic trigger
+- [ ] **AC-US2-05**: GATE 4 (`sync.github.enabled`) controls GitHub-specific sync
+- [ ] **AC-US2-06**: Default config has `autoSyncOnCompletion: true`
+- [ ] **AC-US2-07**: User sees clear message when sync skipped due to permission gates
 
 ---
 
 ## Implementation
 
-**Increment**: [0051-progressive-disclosure-refactoring](../../../../increments/0051-progressive-disclosure-refactoring/spec.md)
+**Increment**: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-- [x] [T-027](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-027): Extract External Sync Wizard from PM Agent
-- [x] [T-028](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-028): Extract PM Closure Validation from PM Agent
-- [x] [T-029](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-029): Add Response Token Limit to PM Agent
-- [x] [T-030](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-030): Document PM Progressive Disclosure Pattern
-- [x] [T-031](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-031): Document PM Chunked Execution Pattern
-- [x] [T-032](../../../../increments/0051-progressive-disclosure-refactoring/tasks.md#T-032): Create PM Agent Integration Tests
