@@ -28,13 +28,14 @@ This skill creates comprehensive, well-structured implementation plans for SpecW
 The increment-planner skill automates the creation of implementation plans for ANY type of work:
 - Auto-numbered increment directories (`0001-9999` 4-digit format)
 - Duplicate detection (prevents creating 0002 when 0002 already exists)
-- Complete increment artifacts (spec.md, plan.md, tasks.md with embedded tests)
+- Complete increment artifacts (spec.md, plan.md, tasks.md with embedded tests, **metadata.json**)
 - Proper context manifests for selective loading
 - Constitutional compliance
 - Separation of WHAT/WHY (spec) from HOW (plan) from STEPS (tasks with test plans)
 - **v0.7.0+**: Test-Aware Planning (bidirectional AC↔Task↔Test linking)
 - **v0.8.0+**: Multi-Project Support (specs organized by project/team)
 - **v0.18.0+**: Bidirectional Task↔User Story Linking (automatic during `/specweave:done`)
+- **v0.24.5+**: **MANDATORY metadata.json creation** (enables status tracking, WIP limits, external tool sync)
 
 ## Bidirectional Linking (v0.18.0+)
 
@@ -593,10 +594,17 @@ Generate the complete feature directory with all required files:
 ├── spec.md                 # Feature specification (WHAT and WHY)
 ├── plan.md                 # Implementation plan (HOW)
 ├── tasks.md                # Executable tasks (STEPS) with embedded test plans (v0.7.0+)
+├── metadata.json           # Increment metadata (MANDATORY - v0.24.5+)
 └── context-manifest.yaml   # Context loading specification
 ```
 
 **v0.7.0 Change**: tests.md eliminated - tests are now embedded in each task in tasks.md
+
+**⚠️ CRITICAL (v0.24.5+)**: `metadata.json` is **MANDATORY** regardless of invocation method (natural language prompt or `/specweave:increment`). Without it:
+- ❌ Status line shows nothing (no active increment tracking)
+- ❌ WIP limits don't work (can't count active increments)
+- ❌ External sync breaks (no GitHub/JIRA/ADO links)
+- ❌ All increment management commands fail (`/status`, `/pause`, `/resume`, `/done`)
 
 ### Step 5: Generate spec.md
 
@@ -1060,7 +1068,89 @@ tags:
 - Token budget to prevent bloat
 - Related features for dependency tracking
 
-### Step 10: Validate and Finalize
+### Step 11: Generate metadata.json (⚠️ MANDATORY - v0.24.5+)
+
+**Purpose**: Create increment metadata for status tracking, WIP limits, and external tool sync.
+
+**CRITICAL**: This step is **NON-NEGOTIABLE** regardless of how the increment was created (natural language prompt, `/specweave:increment`, or any other method).
+
+**Execution Workflow (MUST USE TOOLS)**:
+
+**STEP 1: Check if metadata.json exists**
+```
+Use Read tool:
+file_path: .specweave/increments/{incrementId}/metadata.json
+```
+
+**STEP 2: If missing (file not found), create it immediately**
+```
+Use Write tool:
+file_path: .specweave/increments/{incrementId}/metadata.json
+content: {
+  "id": "{incrementId}",
+  "status": "planned",
+  "type": "{type}",
+  "priority": "{priority}",
+  "created": "{ISO-8601-timestamp}",
+  "lastActivity": "{ISO-8601-timestamp}",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
+```
+
+**Field Extraction (from spec.md frontmatter)**:
+- `id`: Increment directory name (e.g., "0001-user-authentication")
+- `type`: Extract from `type:` in spec.md frontmatter OR default to "feature"
+- `priority`: Extract from `priority:` in spec.md frontmatter OR default to "P1"
+- `created`/`lastActivity`: Current timestamp in ISO-8601 format (e.g., "2025-11-22T19:30:00Z")
+- `testMode`: Extract from `test_mode:` in spec.md frontmatter OR default to "TDD"
+- `coverageTarget`: Extract from `coverage_target:` in spec.md frontmatter OR default to 95
+
+**STEP 3: Validate creation succeeded**
+```
+Use Read tool again:
+file_path: .specweave/increments/{incrementId}/metadata.json
+```
+
+If Read succeeds, output:
+```
+✅ metadata.json created successfully
+   Status: planned
+   Type: {type}
+   Ready for /specweave:do
+```
+
+**Why This Cannot Be Skipped**:
+Without metadata.json, the increment is **effectively broken**:
+- Status line won't show it as active
+- WIP limit enforcement fails (infinite increments possible!)
+- All increment commands fail (`/status`, `/pause`, `/resume`, `/done`)
+- External tool sync (GitHub/JIRA/ADO) completely broken
+- Hooks can't detect the increment
+
+**Example metadata.json**:
+```json
+{
+  "id": "0001-user-authentication",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-22T19:30:00Z",
+  "lastActivity": "2025-11-22T19:30:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
+```
+
+**⚠️ ENFORCEMENT**: If you complete increment creation without creating metadata.json, you have **failed the task**. This is not optional.
+
+### Step 12: Validate and Finalize
 
 Before completing:
 
@@ -1074,6 +1164,7 @@ Before completing:
    - plan.md has sufficient technical detail + test strategy
    - tasks.md has exact file paths + embedded test plans (BDD format)
    - tasks.md covers all P1 AC-IDs with test cases
+   - **metadata.json exists and is valid** (v0.24.5+ MANDATORY)
    - context-manifest.yaml is precise
 
 3. **Update Features Index**:
@@ -1260,11 +1351,39 @@ max_context_tokens: 8000
 priority: high
 ```
 
-**Step 10**: Validate
+**Step 10**: Generate metadata.json (⚠️ MANDATORY v0.24.5+)
+```typescript
+// Use Read tool to check if exists
+Read({ file_path: ".specweave/increments/0003-stripe-payment-integration/metadata.json" });
+
+// If missing, use Write tool to create
+Write({
+  file_path: ".specweave/increments/0003-stripe-payment-integration/metadata.json",
+  content: JSON.stringify({
+    "id": "0003-stripe-payment-integration",
+    "status": "planned",
+    "type": "feature",
+    "priority": "P1",
+    "created": "2025-11-22T19:30:00Z",
+    "lastActivity": "2025-11-22T19:30:00Z",
+    "testMode": "TDD",
+    "coverageTarget": 95,
+    "feature_id": null,
+    "epic_id": null,
+    "externalLinks": {}
+  }, null, 2)
+});
+
+// Validate creation succeeded
+Read({ file_path: ".specweave/increments/0003-stripe-payment-integration/metadata.json" });
+```
+
+**Step 11**: Validate
 - ✅ spec.md is technology-agnostic with AC-IDs
 - ✅ plan.md documents Stripe SDK choice + test strategy
 - ✅ tasks.md has embedded test plans (BDD format)
 - ✅ tasks.md covers all P1 AC-IDs with tests
+- ✅ **metadata.json exists and is valid** (v0.24.5+ MANDATORY)
 - ✅ Constitutional compliance verified
 
 **Output**:
@@ -1276,12 +1395,13 @@ Files created:
 - spec.md (12 user stories, 34 AC-IDs)
 - plan.md (5 phases, architecture diagrams, test strategy)
 - tasks.md (23 tasks with embedded tests, 85% coverage target)
+- metadata.json ✅ (status: planned, type: feature)
 - context-manifest.yaml
 
 Next steps:
 1. Review spec.md - verify user stories and acceptance criteria
 2. Approve plan.md - validate technical approach
-3. Start implementation: specweave implement 0003
+3. Start implementation: /specweave:do 0003
 ```
 
 ## Helper Scripts

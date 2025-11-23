@@ -842,6 +842,8 @@ Based on your answers, I'll calculate RICE scores and create a prioritized roadm
 
 **MANDATORY STEP**: After creating increment files, you MUST ACTUALLY EXECUTE metadata.json validation using Read and Write tools.
 
+**NOTE (v0.24.5+)**: The `increment-planner` skill now has explicit Step 11 for metadata.json creation. This validation is a **safety net** if the skill is bypassed or if you're invoked directly via `/specweave:increment`.
+
 ### Why This Matters
 
 Without metadata.json:

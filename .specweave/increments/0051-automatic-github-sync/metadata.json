@@ -1,0 +1,9 @@
+{
+  "id": "0051-automatic-github-sync",
+  "status": "active",
+  "type": "feature",
+  "created": "2025-11-23T00:00:49Z",
+  "lastActivity": "2025-11-23T00:00:49Z",
+  "testMode": "test-after",
+  "coverageTarget": 80
+}

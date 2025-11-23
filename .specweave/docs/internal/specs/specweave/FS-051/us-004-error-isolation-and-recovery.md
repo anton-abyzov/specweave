@@ -1,0 +1,37 @@
+---
+id: US-004
+feature: FS-051
+title: "Error Isolation and Recovery"
+status: planned
+priority: P0
+created: 2025-11-22
+---
+
+# US-004: Error Isolation and Recovery
+
+**Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
+
+---
+
+## Acceptance Criteria
+
+- [ ] **AC-US4-01**: All sync errors caught and logged (NEVER crash workflow)
+- [ ] **AC-US4-02**: Sync operations wrapped in try-catch with error isolation
+- [ ] **AC-US4-03**: Hooks ALWAYS exit 0 (even on failure)
+- [ ] **AC-US4-04**: User sees clear error message on sync failure
+- [ ] **AC-US4-05**: Partial sync completion allowed (some issues created, others failed)
+- [ ] **AC-US4-06**: Circuit breaker auto-disables hooks after 3 consecutive failures
+- [ ] **AC-US4-07**: Manual recovery command documented: `/specweave-github:sync --retry`
+
+---
+
+## Implementation
+
+**Increment**: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+_No tasks defined for this user story_
