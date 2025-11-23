@@ -347,6 +347,40 @@ specweave init .
 - ☁️ **Cloud Credits Discovery** - AWS Activate, Azure Startup, GCP eligibility
 - 📦 **Repository Selection** - Batch select 1-100+ repos with intelligent routing
 
+### Multi-Platform Git Support (NEW!)
+
+- 🌐 **Platform Choice** - GitHub (fully supported), GitLab & Bitbucket (coming soon)
+- 🔑 **SSH & HTTPS URLs** - Choose your preferred Git authentication method
+- 🏢 **Self-Hosted Support** - GitHub Enterprise, GitLab self-hosted, custom domains
+- 🔄 **Platform-Agnostic Architecture** - Zero hardcoded platform references
+- ✅ **Smart Validation** - Owner/repo/token validation before repository creation
+- 📝 **Actionable Errors** - Platform-specific troubleshooting steps when things go wrong
+
+**During `specweave init`:**
+```bash
+? Select Git hosting platform:
+  > GitHub (Modern, cloud-native development platform)
+    GitLab (Coming soon! Q1 2026)
+    Bitbucket (Coming soon! Q2 2026)
+
+? Choose Git URL format:
+  > SSH (Recommended - More secure, no password prompts)
+    HTTPS (Uses personal access token for authentication)
+```
+
+**Result:**
+```bash
+# SSH URLs (recommended)
+git@github.com:owner/repo.git
+git@gitlab.com:namespace/project.git
+git@bitbucket.org:workspace/repo.git
+
+# HTTPS URLs
+https://github.com/owner/repo.git
+https://gitlab.com/namespace/project.git
+https://bitbucket.org/workspace/repo.git
+```
+
 ### Production Features
 
 - 🤖 **AI-Native Enterprise Sync** - Claude updates JIRA/GitHub/ADO automatically (three-permission control)

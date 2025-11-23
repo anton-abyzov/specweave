@@ -596,6 +596,70 @@ node -e "const yaml = require('js-yaml'); const fs = require('fs'); \
 
 ---
 
+## 17. Git Provider Abstraction (v0.24.0+)
+
+**Architecture**: Interface-driven multi-platform support with registry pattern
+
+**Key files**:
+- `src/core/repo-structure/git-provider.ts` - Interface definition
+- `src/core/repo-structure/platform-registry.ts` - Singleton registry
+- `src/core/repo-structure/providers/` - Platform implementations
+
+**Provider Interface**:
+```typescript
+export interface GitProvider {
+  readonly config: GitProviderConfig;
+
+  validateRepository(owner: string, repo: string, token?: string): Promise<ValidationResult>;
+  validateOwner(owner: string, token?: string): Promise<OwnerValidationResult>;
+  createRepository(params: CreateRepoParams, token: string): Promise<string>;
+  isOrganization(owner: string, token?: string): Promise<boolean>;
+
+  getRemoteUrl(owner: string, repo: string, urlType: 'ssh' | 'https'): string;
+  getTokenUrl(): string;
+  getRequiredScopes(isOrg: boolean): string[];
+}
+```
+
+**Usage pattern**:
+```typescript
+import { initializeProviders } from './providers/index.js';
+import { getPlatformRegistry } from './platform-registry.js';
+
+// Initialize providers (call once during startup)
+initializeProviders();
+
+// Get provider for user-selected platform
+const registry = getPlatformRegistry();
+const provider = registry.getProvider('github'); // or 'gitlab', 'bitbucket'
+
+// Use provider methods (platform-agnostic code)
+const result = await provider.validateRepository('owner', 'repo', token);
+const url = provider.getRemoteUrl('owner', 'repo', 'ssh');
+await provider.createRepository({ owner, name, description, visibility }, token);
+```
+
+**Platform Support**:
+- ✅ GitHub (fully supported): `github-provider.ts`
+- ⏳ GitLab (stub): `gitlab-provider.ts` (throws "coming soon" error)
+- ⏳ Bitbucket (stub): `bitbucket-provider.ts` (throws "coming soon" error)
+
+**Adding new platform**:
+1. Create `src/core/repo-structure/providers/{platform}-provider.ts`
+2. Implement `GitProvider` interface
+3. Register in `providers/index.ts`: `registry.registerProvider('platform', provider)`
+4. Update platform registry metadata: `registry.registerPlatform({ type, name, description, supported })`
+
+**NEVER**:
+- ❌ Hardcode platform names (use `provider.config.name`)
+- ❌ Hardcode API endpoints (use `provider.config.apiBaseUrl`)
+- ❌ Hardcode Git hosts (use `provider.config.host`)
+- ❌ Use GitHub-specific methods (use provider interface)
+
+**See**: ADR-0069 (Git Provider Abstraction Layer)
+
+---
+
 ## Project Structure
 
 ```
