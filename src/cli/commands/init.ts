@@ -1248,7 +1248,9 @@ export async function initCommand(
         if (hosting === 'github-single') {
           repositoryHosting = 'github';
         } else if (hosting === 'github-multi') {
-          repositoryHosting = 'github';
+          // CRITICAL: Keep 'github-multi' value for setupIssueTracker to prevent duplicate prompts
+          // Don't normalize to 'github' here - github-multi-repo.ts needs the original value
+          // to skip the architecture question (ADR-0070)
           isMultiRepo = true;
         }
 

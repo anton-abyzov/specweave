@@ -12,7 +12,7 @@ import type { UrlType } from './url-generator.js';
 /**
  * Git platform type
  */
-export type GitPlatformType = 'github' | 'gitlab' | 'bitbucket' | 'azure-devops' | 'custom';
+export type GitPlatformType = 'github' | 'gitlab' | 'bitbucket' | 'azure-devops' | 'local' | 'custom';
 
 /**
  * Repository visibility

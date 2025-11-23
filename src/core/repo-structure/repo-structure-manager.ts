@@ -87,8 +87,10 @@ export class RepoStructureManager {
 
   /**
    * Prompt user for repository structure decisions
+   *
+   * @param preSelectedArchitecture - Optional pre-selected architecture to skip duplicate prompts
    */
-  async promptStructure(): Promise<RepoStructureConfig> {
+  async promptStructure(preSelectedArchitecture?: ArchitectureChoice): Promise<RepoStructureConfig> {
     console.log(chalk.cyan.bold('\n🏗️  Repository Architecture Setup\n'));
     console.log(chalk.gray('Let\'s configure your repository structure for optimal organization.\n'));
 
@@ -114,19 +116,29 @@ export class RepoStructureManager {
       }
     }
 
-    // Step 1: Ask about architecture type using consolidator
-    const promptData = getArchitecturePrompt();
-    const { architecture } = await inquirer.prompt([{
-      type: 'list',
-      name: 'architecture',
-      message: promptData.question,
-      choices: promptData.options.map(opt => ({
-        name: `${opt.label}\n${chalk.gray(opt.description)}\n${chalk.dim(opt.example)}`,
-        value: opt.value,
-        short: opt.label
-      })),
-      default: 'single'
-    }]);
+    // Step 1: Ask about architecture type using consolidator (SKIP if pre-selected)
+    let architecture: ArchitectureChoice;
+
+    if (preSelectedArchitecture) {
+      // Architecture already selected - skip duplicate prompt
+      architecture = preSelectedArchitecture;
+      console.log(chalk.green(`✓ Architecture: ${this.formatArchitectureForDisplay(architecture)}\n`));
+    } else {
+      // Ask user for architecture choice
+      const promptData = getArchitecturePrompt();
+      const result = await inquirer.prompt([{
+        type: 'list',
+        name: 'architecture',
+        message: promptData.question,
+        choices: promptData.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}\n${chalk.dim(opt.example)}`,
+          value: opt.value,
+          short: opt.label
+        })),
+        default: 'single'
+      }]);
+      architecture = result.architecture;
+    }
 
     // Step 2: Ask about Git hosting platform
     const registry = getPlatformRegistry();
@@ -199,6 +211,23 @@ export class RepoStructureManager {
         return 'parent'; // GitHub parent repo (pushed to GitHub)
       default:
         return 'single';
+    }
+  }
+
+  /**
+   * Format architecture choice for display
+   *
+   * @param choice - Architecture choice
+   * @returns Human-readable format
+   */
+  private formatArchitectureForDisplay(choice: ArchitectureChoice): string {
+    switch (choice) {
+      case 'single':
+        return 'Single repository';
+      case 'github-parent':
+        return 'Parent repo + nested repos (GitHub)';
+      default:
+        return choice;
     }
   }
 
@@ -429,8 +458,174 @@ export class RepoStructureManager {
       envCreated: false
     });
 
-    // Configure parent repository if using that approach
-    if (useParent) {
+    // ========== NEW FLOW: Ask discovery strategy FIRST (before parent questions!) ==========
+
+    // Step 1: Ask how to configure implementation repositories (BEFORE parent questions)
+    let discoveryStrategy: 'manual' | 'pattern-first' = 'manual';
+    let discoveredRepos: DiscoveredRepo[] = [];
+    let owner: string = '';
+
+    if (!isLocalParent && this.githubToken && useParent) {
+      console.log(chalk.cyan('\n🚀 Repository Configuration\n'));
+      console.log(chalk.gray('You can discover repositories automatically or enter them manually.\n'));
+
+      const { configMethod } = await inquirer.prompt([
+        {
+          type: 'list',
+          name: 'configMethod',
+          message: 'How do you want to configure these repositories?',
+          choices: [
+            {
+              name: `${chalk.bold('Manual entry')} - Enter parent and each repository one by one ${chalk.gray('(full control)')}`,
+              value: 'manual'
+            },
+            {
+              name: `${chalk.bold('Pattern matching')} - Discover repositories, then select parent ${chalk.gray('(faster for many repos)')}`,
+              value: 'pattern-first'
+            }
+          ],
+          default: 'manual'
+        }
+      ]);
+
+      discoveryStrategy = configMethod;
+    }
+
+    // Step 2: If pattern/all, discover repos FIRST, then ask which is parent
+    if (discoveryStrategy === 'pattern-first') {
+      // Get owner FIRST (needed for discovery)
+      console.log(chalk.cyan('\n👤 Repository Owner\n'));
+
+      const ownerPrompt = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'owner',
+          message: `${provider.config.name} owner/organization:`,
+          validate: async (input: string) => {
+            if (!input.trim()) return 'Owner is required';
+
+            // Validate owner exists on the platform
+            if (this.githubToken) {
+              const result = await provider.validateOwner(input, this.githubToken);
+              if (!result.valid) {
+                return result.error || `Invalid ${provider.config.name} owner`;
+              }
+            }
+            return true;
+          }
+        }
+      ]);
+
+      owner = ownerPrompt.owner;
+
+      // Discover repositories via pattern matching
+      const octokit = new Octokit({ auth: this.githubToken });
+      const isOrg = await provider.isOrganization(owner, this.githubToken);
+
+      // Retry loop for pattern adjustment
+      let discoveryResult: BulkDiscoveryResult | null = null;
+      while (discoveryResult === null) {
+        discoveryResult = await discoverRepositories(octokit, owner, isOrg, 0); // Pass 0, we'll count later
+        // If null, user selected "go back and adjust pattern", loop will retry
+        // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
+      }
+
+      if (discoveryResult && discoveryResult.strategy !== 'manual') {
+        discoveredRepos = discoveryResult.repositories;
+
+        // Now ask: Which repo is the parent?
+        console.log(chalk.cyan('\n🏠 Select Parent Repository\n'));
+        console.log(chalk.gray('Choose which repository will be the parent (contains .specweave/ structure)\n'));
+
+        const parentChoices = [
+          ...discoveredRepos.map((repo, index) => ({
+            name: `${chalk.bold(repo.name)}\n${chalk.gray(repo.description || '(no description)')}`,
+            value: index.toString(),
+            short: repo.name
+          })),
+          {
+            name: `${chalk.yellow('✏️  Enter parent manually')} ${chalk.gray('(not in discovered list)')}`,
+            value: 'manual',
+            short: 'Enter manually'
+          }
+        ];
+
+        const { parentSelection } = await inquirer.prompt([
+          {
+            type: 'list',
+            name: 'parentSelection',
+            message: 'Which repository is the parent?',
+            choices: parentChoices,
+            pageSize: 15
+          }
+        ]);
+
+        if (parentSelection === 'manual') {
+          // User wants to enter parent manually - fall back to old flow
+          discoveryStrategy = 'manual';
+          discoveredRepos = []; // Clear discovered repos
+        } else {
+          // User selected a parent from discovered list
+          const parentIndex = parseInt(parentSelection);
+          const selectedParent = discoveredRepos[parentIndex];
+
+          // Fetch full repo details from GitHub API
+          let description = selectedParent.description || 'SpecWeave parent repository - specs, docs, and architecture';
+          let existingVisibility: 'private' | 'public' = selectedParent.private ? 'private' : 'public';
+
+          try {
+            const response = await fetch(`https://api.github.com/repos/${owner}/${selectedParent.name}`, {
+              headers: {
+                'Authorization': `Bearer ${this.githubToken}`,
+                'Accept': 'application/vnd.github+json'
+              }
+            });
+            if (response.ok) {
+              const data = await response.json() as any;
+              description = data.description || description;
+              existingVisibility = data.private ? 'private' : 'public';
+            }
+          } catch {
+            // Use defaults if fetch fails
+          }
+
+          // Set parent config
+          config.parentRepo = {
+            name: selectedParent.name,
+            owner: owner,
+            description: description,
+            visibility: existingVisibility,
+            createOnGitHub: false // Already exists!
+          };
+
+          // Remove parent from discovered repos (implementation repos = discovered - parent)
+          discoveredRepos.splice(parentIndex, 1);
+
+          console.log(chalk.green(`\n✓ Using existing repository: ${owner}/${selectedParent.name}\n`));
+          console.log(chalk.gray(`✓ Implementation repositories: ${discoveredRepos.length}\n`));
+
+          // Save state: parent repo configured
+          await this.saveSetupState({
+            version: '1.0.0',
+            architecture: useParent ? 'parent' : 'multi-repo',
+            parentRepo: config.parentRepo,
+            repos: [],
+            currentStep: 'parent-repo-configured',
+            timestamp: new Date().toISOString(),
+            envCreated: false
+          });
+
+          // Skip to repository configuration (lines 794+)
+          // We'll continue below with discoveredRepos
+        }
+      } else {
+        // User selected manual - fall back to old flow
+        discoveryStrategy = 'manual';
+      }
+    }
+
+    // Step 3: Manual flow (existing logic) - only runs if discoveryStrategy === 'manual'
+    if (discoveryStrategy === 'manual' && useParent) {
       let parentAnswers: any;
 
       if (isLocalParent) {
@@ -678,85 +873,93 @@ export class RepoStructureManager {
       });
     }
 
-    // Auto-detect existing folders
-    const hints = await detectRepositoryHints(this.projectPath);
+    // Step 4: Repository count and discovery (skip count question if using pattern-first)
+    let repoCount: number;
+    let bulkDiscoveryStrategy: BulkDiscoveryResult['strategy'] = discoveryStrategy === 'pattern-first' ? 'pattern' : 'manual';
 
-    if (hints.detectedFolders.length > 0) {
-      console.log(chalk.green(`\n✓ Detected ${hints.detectedFolders.length} service folder(s):`));
-      hints.detectedFolders.forEach(f => console.log(chalk.gray(`  • ${f}`)));
-      console.log('');
-    }
+    if (discoveryStrategy === 'pattern-first' && discoveredRepos.length > 0) {
+      // Pattern discovery: repos already discovered, skip count question
+      repoCount = discoveredRepos.length;
+      console.log(chalk.green(`\n✓ Total repositories: ${repoCount + 1} (1 parent + ${repoCount} implementation)\n`));
+    } else {
+      // Manual entry: ask for count
+      // Auto-detect existing folders
+      const hints = await detectRepositoryHints(this.projectPath);
 
-    // Show repository count clarification BEFORE asking
-    if (useParent && config.parentRepo) {
-      console.log(chalk.cyan('\n📊 Repository Count\n'));
-      console.log(chalk.gray('You will create:'));
-      if (isLocalParent) {
-        console.log(chalk.white('  • 1 parent FOLDER (local only, .specweave/ gitignored)'));
-        console.log(chalk.white('  • N implementation repositories (your services/apps on GitHub)'));
-      } else {
-        console.log(chalk.white('  • 1 parent repository (specs, docs, increments)'));
-        console.log(chalk.white('  • N implementation repositories (your services/apps)'));
-      }
-      console.log(chalk.gray('\nNext question asks for: IMPLEMENTATION repositories ONLY (not counting parent)\n'));
-    }
-
-    // Ask how many implementation repositories
-    const { repoCount } = await inquirer.prompt([{
-      type: 'number',
-      name: 'repoCount',
-      message: useParent
-        ? '📦 How many IMPLEMENTATION repositories? (not counting parent)'
-        : 'How many repositories?',
-      default: hints.suggestedCount,  // Use auto-detected count
-      validate: (input: number) => {
-        if (input < 1) return useParent
-          ? 'Need at least 1 implementation repository'
-          : 'Need at least 2 repositories';
-        if (input > 10) return 'Maximum 10 repositories supported';
-        return true;
-      }
-    }]);
-
-    // Show summary AFTER for confirmation
-    if (useParent && config.parentRepo) {
-      if (isLocalParent) {
-        console.log(chalk.green(`\n✓ Total repositories to create: ${repoCount} implementation repos`));
-        console.log(chalk.gray(`  (Parent folder is local only, not counted)\n`));
-      } else {
-        const totalRepos = 1 + repoCount;
-        console.log(chalk.green(`\n✓ Total repositories to create: ${totalRepos} (1 parent + ${repoCount} implementation)\n`));
-      }
-    }
-
-    // Bulk repository discovery (optimization for many repos)
-    let discoveredRepos: DiscoveredRepo[] = [];
-    let bulkDiscoveryStrategy: BulkDiscoveryResult['strategy'] = 'manual';
-
-    if (this.githubToken && config.parentRepo) {
-      const octokit = new Octokit({ auth: this.githubToken });
-      const owner = config.parentRepo.owner;
-      const isOrg = await provider.isOrganization(owner, this.githubToken);
-
-      // Retry loop for pattern adjustment
-      let discoveryResult: BulkDiscoveryResult | null = null;
-      while (discoveryResult === null) {
-        discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
-        // If null, user selected "go back and adjust pattern", loop will retry
-        // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
+      if (hints.detectedFolders.length > 0) {
+        console.log(chalk.green(`\n✓ Detected ${hints.detectedFolders.length} service folder(s):`));
+        hints.detectedFolders.forEach(f => console.log(chalk.gray(`  • ${f}`)));
+        console.log('');
       }
 
-      if (discoveryResult) {
-        bulkDiscoveryStrategy = discoveryResult.strategy;
+      // Show repository count clarification BEFORE asking
+      if (useParent && config.parentRepo) {
+        console.log(chalk.cyan('\n📊 Repository Count\n'));
+        console.log(chalk.gray('You will create:'));
+        if (isLocalParent) {
+          console.log(chalk.white('  • 1 parent FOLDER (local only, .specweave/ gitignored)'));
+          console.log(chalk.white('  • N implementation repositories (your services/apps on GitHub)'));
+        } else {
+          console.log(chalk.white('  • 1 parent repository (specs, docs, increments)'));
+          console.log(chalk.white('  • N implementation repositories (your services/apps)'));
+        }
+        console.log(chalk.gray('\nNext question asks for: IMPLEMENTATION repositories ONLY (not counting parent)\n'));
+      }
 
-        if (discoveryResult.strategy !== 'manual') {
-          discoveredRepos = discoveryResult.repositories;
+      // Ask how many implementation repositories
+      const promptResult = await inquirer.prompt([{
+        type: 'number',
+        name: 'repoCount',
+        message: useParent
+          ? '📦 How many IMPLEMENTATION repositories? (not counting parent)'
+          : 'How many repositories?',
+        default: hints.suggestedCount,  // Use auto-detected count
+        validate: (input: number) => {
+          if (input < 1) return useParent
+            ? 'Need at least 1 implementation repository'
+            : 'Need at least 2 repositories';
+          if (input > 10) return 'Maximum 10 repositories supported';
+          return true;
+        }
+      }]);
+      repoCount = promptResult.repoCount;
 
-          // Update repoCount to match discovered repos
-          if (discoveredRepos.length !== repoCount) {
-            console.log(chalk.yellow(`\n📝 Adjusting repository count from ${repoCount} to ${discoveredRepos.length} (based on discovery)\n`));
-            // Override repoCount with discovered count
-            (repoCount as any) = discoveredRepos.length;
+      // Show summary AFTER for confirmation
+      if (useParent && config.parentRepo) {
+        if (isLocalParent) {
+          console.log(chalk.green(`\n✓ Total repositories to create: ${repoCount} implementation repos`));
+          console.log(chalk.gray(`  (Parent folder is local only, not counted)\n`));
+        } else {
+          const totalRepos = 1 + repoCount;
+          console.log(chalk.green(`\n✓ Total repositories to create: ${totalRepos} (1 parent + ${repoCount} implementation)\n`));
+        }
+      }
+
+      // Bulk repository discovery for manual flow (old behavior)
+      if (this.githubToken && config.parentRepo && discoveryStrategy === 'manual') {
+        const octokit = new Octokit({ auth: this.githubToken });
+        const owner = config.parentRepo.owner;
+        const isOrg = await provider.isOrganization(owner, this.githubToken);
+
+        // Retry loop for pattern adjustment
+        let discoveryResult: BulkDiscoveryResult | null = null;
+        while (discoveryResult === null) {
+          discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
+          // If null, user selected "go back and adjust pattern", loop will retry
+          // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
+        }
+
+        if (discoveryResult) {
+          bulkDiscoveryStrategy = discoveryResult.strategy;
+
+          if (discoveryResult.strategy !== 'manual') {
+            discoveredRepos = discoveryResult.repositories;
+
+            // Update repoCount to match discovered repos
+            if (discoveredRepos.length !== repoCount) {
+              console.log(chalk.yellow(`\n📝 Adjusting repository count from ${repoCount} to ${discoveredRepos.length} (based on discovery)\n`));
+              repoCount = discoveredRepos.length;
+            }
           }
         }
       }

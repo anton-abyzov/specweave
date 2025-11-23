@@ -12,7 +12,7 @@ export interface GitApiError {
   message: string;
   platform: 'github' | 'gitlab' | 'bitbucket' | 'azure-devops';
   operation: 'validate_repo' | 'validate_owner' | 'create_repo' | 'fetch_data';
-  resourceType?: 'repository' | 'organization' | 'user';
+  resourceType?: 'repository' | 'organization' | 'user' | 'project' | 'namespace' | 'workspace';
   resourceName?: string;
 }
 

@@ -185,11 +185,27 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         console.error('');
       }
 
-      // Fall through to legacy prompt below
+      // CRITICAL FIX: If repositoryHosting was already selected in init.ts,
+      // don't re-ask the question! Return based on what was already chosen.
+      // This prevents the duplicate "Select your repository setup" prompt.
+      if (repositoryHosting) {
+        console.log(chalk.yellow('   → Using previously selected setup type\n'));
+
+        if (repositoryHosting === 'github-single') {
+          return { setupType: 'single' };
+        } else if (repositoryHosting === 'github-multi') {
+          // Default to multiple since enhanced flow failed
+          return { setupType: 'multiple' };
+        } else if (repositoryHosting === 'local' || repositoryHosting === 'other') {
+          return { setupType: 'none' };
+        }
+      }
+
+      // Fall through to legacy prompt ONLY if repositoryHosting was NOT provided
     }
   }
 
-  // Legacy prompt (runs if no projectPath/token OR if enhanced flow failed)
+  // Legacy prompt (runs ONLY if no projectPath/token AND no repositoryHosting was provided)
   const { setupType } = await inquirer.prompt([{
     type: 'list',
     name: 'setupType',

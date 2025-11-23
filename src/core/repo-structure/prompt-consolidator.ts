@@ -169,9 +169,10 @@ export function getVisibilityPrompt(repoName: string): {
 /**
  * Get Git remote URL type prompt (SSH vs HTTPS)
  *
+ * @param platform - Optional platform name for examples
  * @returns URL type question and options
  */
-export function getUrlTypePrompt(): {
+export function getUrlTypePrompt(platform: string = 'github.com'): {
   question: string;
   options: Array<{ value: 'ssh' | 'https'; label: string; description: string }>;
   default: 'ssh' | 'https';
@@ -182,12 +183,12 @@ export function getUrlTypePrompt(): {
       {
         value: 'ssh',
         label: 'SSH (Recommended)',
-        description: 'git@github.com:owner/repo.git - More secure, no password needed'
+        description: `git@${platform}:owner/repo.git - More secure, no password needed`
       },
       {
         value: 'https',
         label: 'HTTPS',
-        description: 'https://github.com/owner/repo.git - Works everywhere, uses tokens'
+        description: `https://${platform}/owner/repo.git - Works everywhere, uses tokens`
       }
     ],
     default: 'ssh'
@@ -211,8 +212,14 @@ export function getPlatformSelectionPrompt(): {
 SpecWeave supports multiple Git hosting platforms.
 Choose where your repositories will be hosted.
 
-Note: Currently, only GitHub is fully supported.
-Other platforms (GitLab, Bitbucket, Azure DevOps) are coming soon!
+✅ Fully Supported Platforms:
+   • GitHub (github.com)
+   • GitLab (gitlab.com)
+   • Bitbucket (bitbucket.org)
+   • Azure DevOps (dev.azure.com)
+   • Local Git (local-only repositories)
+
+All platforms include full repository validation, creation, and management capabilities.
     `.trim()
   };
 }
@@ -222,6 +229,7 @@ Other platforms (GitLab, Bitbucket, Azure DevOps) are coming soon!
  *
  * @param isOrganization - Whether creating repos in an organization
  * @returns Formatted guidance message
+ * @deprecated Use getTokenGuidance() for platform-agnostic guidance
  */
 export function getGitHubTokenGuidance(isOrganization: boolean = false): string {
   const requiredScopes = [
@@ -243,6 +251,38 @@ ${requiredScopes.join('\n')}
 ⚠️  Important:
    - Select "repo" scope at minimum
    ${isOrganization ? '- Select "admin:org" if creating in organization\n' : ''}- Token will be stored in .env (never committed)
+   - Keep your token secure
+  `.trim();
+}
+
+/**
+ * Get platform-specific token permission guidance
+ *
+ * @param platform - Platform type
+ * @param tokenUrl - URL to create token
+ * @param scopes - Required scopes/permissions
+ * @param isOrganization - Whether creating repos in an organization
+ * @returns Formatted guidance message
+ */
+export function getTokenGuidance(
+  platform: string,
+  tokenUrl: string,
+  scopes: string[],
+  isOrganization: boolean = false
+): string {
+  const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+
+  return `
+📋 ${platformName} Access Token Requirements
+
+Required Scopes/Permissions:
+${scopes.map(s => `• ${s}`).join('\n')}
+
+🔗 Create token at: ${tokenUrl}
+
+⚠️  Important:
+   - Select all required scopes/permissions above
+   ${isOrganization && platform === 'github' ? '- Select "admin:org" if creating in organization\n' : ''}- Token will be stored in .env (never committed)
    - Keep your token secure
   `.trim();
 }
