@@ -4,6 +4,13 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.24.8] - 2025-11-23
+- Multi-repo initialization with platform registry improvements
+- Git provider abstraction layer for multi-platform support
+- Enhanced GitHub multi-repo validation and error handling
+
+---
+
 ## [Unreleased]
 
 ### ✨ Features
