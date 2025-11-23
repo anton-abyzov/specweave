@@ -2,7 +2,7 @@
 increment: 0051-automatic-github-sync
 title: "Automatic GitHub Sync with Permission Gates"
 priority: P0
-status: planned
+status: active
 type: feature
 feature_id: FS-049
 created: 2025-11-22
