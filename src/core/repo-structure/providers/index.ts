@@ -17,12 +17,25 @@ import { createGitLabProvider } from './gitlab-provider.js';
 import { createBitbucketProvider } from './bitbucket-provider.js';
 
 /**
+ * Track whether providers have been initialized
+ * Prevents re-initialization in long-running sessions (Issue #2 fix)
+ */
+let providersInitialized = false;
+
+/**
  * Initialize and register all Git providers
  *
  * Call this once during application initialization to make
  * all providers available through the platform registry.
+ *
+ * Idempotent: Safe to call multiple times - only initializes once.
  */
 export function initializeProviders(): void {
+  // Idempotency guard: prevent re-initialization (Issue #2 fix)
+  if (providersInitialized) {
+    return;
+  }
+
   const registry = getPlatformRegistry();
 
   // Register GitHub provider (fully supported)
@@ -33,6 +46,16 @@ export function initializeProviders(): void {
 
   // Register Bitbucket provider (stub - coming soon)
   registry.registerProvider('bitbucket', createBitbucketProvider());
+
+  providersInitialized = true;
+}
+
+/**
+ * Reset provider initialization state (for testing only)
+ * @internal
+ */
+export function resetProviders(): void {
+  providersInitialized = false;
 }
 
 /**

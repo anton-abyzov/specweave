@@ -74,9 +74,17 @@ export interface GitHubSetupResult {
  * @param projectPath - Path to project directory
  * @param githubToken - Optional GitHub token for API calls
  * @param repositoryHosting - Optional repository hosting choice from init.ts (prevents duplicate prompts)
+ * @param recursionDepth - Internal recursion tracking to prevent infinite loops (Issue #5 fix)
  * @returns Selected setup type with optional profiles (if RepoStructureManager was used)
  */
-export async function promptGitHubSetupType(projectPath?: string, githubToken?: string, repositoryHosting?: string): Promise<GitHubSetupResult> {
+export async function promptGitHubSetupType(projectPath?: string, githubToken?: string, repositoryHosting?: string, recursionDepth: number = 0): Promise<GitHubSetupResult> {
+  // Issue #5 fix: Prevent infinite recursion
+  const MAX_RECURSION_DEPTH = 3;
+  if (recursionDepth >= MAX_RECURSION_DEPTH) {
+    console.log(chalk.red(`\n❌ Too many setup redirections (${MAX_RECURSION_DEPTH} attempts)`));
+    console.log(chalk.yellow('   Falling back to single repository setup\n'));
+    return { setupType: 'single' };
+  }
   // CRITICAL: Check if user already answered this question in init.ts
   // If so, skip the duplicate prompt and return immediately
   if (repositoryHosting) {
@@ -169,6 +177,14 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       console.log(chalk.yellow('\n⚠️  Enhanced repository setup unavailable'));
       console.log(chalk.gray(`   Reason: ${error.message || 'Unknown error'}`));
       console.log(chalk.gray('   Falling back to simplified setup\n'));
+
+      // Issue #3 fix: Preserve stack trace for debugging
+      if (process.env.DEBUG || process.env.SPECWEAVE_DEBUG) {
+        console.error(chalk.gray('\n📋 Stack trace (DEBUG mode):'));
+        console.error(chalk.gray(error.stack || 'No stack trace available'));
+        console.error('');
+      }
+
       // Fall through to legacy prompt below
     }
   }
@@ -475,9 +491,17 @@ export async function configureMonorepo(projectPath: string): Promise<{
  * Auto-detect and configure repositories
  *
  * @param projectPath - Path to project directory
+ * @param recursionDepth - Internal recursion tracking to prevent infinite loops (Issue #5 fix)
  * @returns Detected profiles
  */
-export async function autoDetectRepositories(projectPath: string): Promise<GitHubProfile[]> {
+export async function autoDetectRepositories(projectPath: string, recursionDepth: number = 0): Promise<GitHubProfile[]> {
+  // Issue #5 fix: Prevent infinite recursion
+  const MAX_RECURSION_DEPTH = 3;
+  if (recursionDepth >= MAX_RECURSION_DEPTH) {
+    console.log(chalk.red(`\n❌ Too many auto-detection attempts (${MAX_RECURSION_DEPTH} attempts)`));
+    console.log(chalk.yellow('   Falling back to single repository setup\n'));
+    return configureSingleRepository(projectPath);
+  }
   const spinner = ora('Detecting GitHub repositories...').start();
 
   const githubRemotes = await detectGitHubRemotes(projectPath);
@@ -508,7 +532,8 @@ export async function autoDetectRepositories(projectPath: string): Promise<GitHu
 
   if (!confirmDetected) {
     // Ask which setup type they want instead
-    const setupResult = await promptGitHubSetupType();
+    // Issue #5 fix: Pass incremented recursion depth to prevent infinite loops
+    const setupResult = await promptGitHubSetupType(projectPath, undefined, undefined, recursionDepth + 1);
     const { setupType } = setupResult;
     switch (setupType) {
       case 'none':

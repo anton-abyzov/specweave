@@ -228,8 +228,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
             console.log(chalk.red(`\n❌ Repository configuration failed: ${error.message}`));
             console.log(chalk.yellow('   Continuing with manual sync configuration\n'));
 
-            if (process.env.DEBUG && error.stack) {
-              console.log(chalk.gray(error.stack));
+            // Issue #3 fix: Enhanced error logging
+            if (process.env.DEBUG || process.env.SPECWEAVE_DEBUG) {
+              console.error(chalk.gray('\n📋 Stack trace (DEBUG mode):'));
+              console.error(chalk.gray(error.stack || 'No stack trace available'));
+              console.error('');
             }
 
             // Leave repositoryProfiles empty - will be created with defaults
@@ -269,16 +272,27 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   if (!validationResult.success) {
     console.log(chalk.red(`\n❌ Connection failed: ${validationResult.error}\n`));
 
+    // Check retry limit to prevent infinite recursion (Issue #1 fix)
+    const setupRetryCount = options.setupRetryCount || 0;
+    const MAX_SETUP_RETRIES = 3;
+
+    if (setupRetryCount >= MAX_SETUP_RETRIES) {
+      console.log(chalk.red(`\n❌ Maximum retry attempts (${MAX_SETUP_RETRIES}) reached`));
+      console.log(chalk.yellow('   Please check your credentials and try again later\n'));
+      showSetupSkipped(tracker, language);
+      return false;
+    }
+
     const { retry } = await inquirer.prompt([{
       type: 'confirm',
       name: 'retry',
-      message: 'Try again?',
+      message: `Try again? (${setupRetryCount + 1}/${MAX_SETUP_RETRIES} attempts)`,
       default: true
     }]);
 
     if (retry) {
-      // Recursive retry (will respect maxRetries in validation)
-      return setupIssueTracker(options);
+      // Recursive retry with incremented counter to prevent stack overflow
+      return setupIssueTracker({ ...options, setupRetryCount: setupRetryCount + 1 });
     }
 
     showSetupSkipped(tracker, language);
@@ -310,8 +324,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       console.log(chalk.red(`\n❌ Repository configuration failed: ${error.message}`));
       console.log(chalk.yellow('   Continuing with manual sync configuration\n'));
 
-      if (process.env.DEBUG && error.stack) {
-        console.log(chalk.gray(error.stack));
+      // Issue #3 fix: Enhanced error logging
+      if (process.env.DEBUG || process.env.SPECWEAVE_DEBUG) {
+        console.error(chalk.gray('\n📋 Stack trace (DEBUG mode):'));
+        console.error(chalk.gray(error.stack || 'No stack trace available'));
+        console.error('');
       }
 
       // Leave repositoryProfiles empty - will be created with defaults

@@ -145,9 +145,41 @@ export class GitPlatformRegistry {
 
   /**
    * Register a provider instance
+   * Idempotent: skips if provider already registered (Issue #4 fix)
    */
   registerProvider(type: GitPlatformType, provider: GitProvider): void {
+    // Issue #4 fix: Idempotency check to prevent unnecessary re-registration
+    if (this.providers.has(type)) {
+      // Provider already registered, skip to avoid replacing existing instance
+      return;
+    }
     this.providers.set(type, provider);
+  }
+
+  /**
+   * Clear all registered providers (for testing/cleanup)
+   * @internal
+   */
+  clearProviders(): void {
+    this.providers.clear();
+  }
+
+  /**
+   * Clear all registered platforms (for testing/cleanup)
+   * @internal
+   */
+  clearPlatforms(): void {
+    this.platforms.clear();
+  }
+
+  /**
+   * Reset the entire registry (for testing only)
+   * @internal
+   */
+  reset(): void {
+    this.providers.clear();
+    this.platforms.clear();
+    this.registerDefaultPlatforms();
   }
 
   /**
