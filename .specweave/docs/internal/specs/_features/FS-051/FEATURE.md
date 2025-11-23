@@ -1,27 +1,28 @@
 ---
 id: FS-051
-title: "Progressive Disclosure Refactoring: Reduce Agent Context by 60%"
+title: "Automatic GitHub Sync with Permission Gates"
 type: feature
-status: completed
+status: planned
 priority: P0
-created: 2025-11-21T00:00:00.000Z
-lastUpdated: 2025-11-22
+created: 2025-11-22
+lastUpdated: 2025-11-23
 ---
 
-# Progressive Disclosure Refactoring: Reduce Agent Context by 60%
+# Automatic GitHub Sync with Permission Gates
 
 ## Overview
 
-**Critical Issue**: SpecWeave agents (architect, PM) crash frequently due to excessive context loading.
+**Complete Requirements**: See [FS-049: Automatic GitHub Sync with Permission Gates](../../docs/internal/specs/_features/FS-049/FEATURE.md)
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0051-progressive-disclosure-refactoring](../../../../increments/0051-progressive-disclosure-refactoring/spec.md) | ✅ completed | 2025-11-21T00:00:00.000Z |
+| [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md) | ⏳ planned | 2025-11-22 |
 
 ## User Stories
 
-- [US-001: Architect Agent Uses Progressive Disclosure (Priority: P0)](../../specweave/FS-051/us-001-architect-agent-uses-progressive-disclosure-priority-p0-.md)
-- [US-002: PM Agent Uses Progressive Disclosure (Priority: P0)](../../specweave/FS-051/us-002-pm-agent-uses-progressive-disclosure-priority-p0-.md)
-- [US-003: Chunked Response Pattern (Priority: P0)](../../specweave/FS-051/us-003-chunked-response-pattern-priority-p0-.md)
+- [US-001: Automatic Issue Creation on Completion](../../specweave/FS-051/us-001-automatic-issue-creation-on-completion.md)
+- [US-002: Three-Tier Permission Model](../../specweave/FS-051/us-002-three-tier-permission-model.md)
+- [US-003: Idempotency via Caching](../../specweave/FS-051/us-003-idempotency-via-caching.md)
+- [US-004: Error Isolation and Recovery](../../specweave/FS-051/us-004-error-isolation-and-recovery.md)

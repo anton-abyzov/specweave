@@ -1,7 +1,7 @@
 # SpecWeave System Design - Architecture Overview
 
-**Last Updated**: 2025-11-21
-**Version**: 2.2
+**Last Updated**: 2025-11-22
+**Version**: 2.3
 **Author**: Architect Agent
 
 ---

@@ -35,6 +35,8 @@ import {
   type ArchitectureChoice
 } from './prompt-consolidator.js';
 import { detectRepositoryHints } from './folder-detector.js';
+import { discoverRepositories, type BulkDiscoveryResult, type DiscoveredRepo } from './repo-bulk-discovery.js';
+import { Octokit } from '@octokit/rest';
 
 export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
 
@@ -637,6 +639,33 @@ export class RepoStructureManager {
       }
     }
 
+    // Bulk repository discovery (optimization for many repos)
+    let discoveredRepos: DiscoveredRepo[] = [];
+    let bulkDiscoveryStrategy: BulkDiscoveryResult['strategy'] = 'manual';
+
+    if (this.githubToken && config.parentRepo) {
+      const octokit = new Octokit({ auth: this.githubToken });
+      const owner = config.parentRepo.owner;
+      const isOrg = await this.isGitHubOrganization(owner);
+
+      const discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
+
+      if (discoveryResult) {
+        bulkDiscoveryStrategy = discoveryResult.strategy;
+
+        if (discoveryResult.strategy !== 'manual') {
+          discoveredRepos = discoveryResult.repositories;
+
+          // Update repoCount to match discovered repos
+          if (discoveredRepos.length !== repoCount) {
+            console.log(chalk.yellow(`\n📝 Adjusting repository count from ${repoCount} to ${discoveredRepos.length} (based on discovery)\n`));
+            // Override repoCount with discovered count
+            (repoCount as any) = discoveredRepos.length;
+          }
+        }
+      }
+    }
+
     // Configure each repository
     console.log(chalk.cyan('\n📦 Configure Each Repository:\n'));
 
@@ -644,23 +673,68 @@ export class RepoStructureManager {
     const configuredRepoNames: string[] = []; // Track configured repo names for smart ID generation
 
     for (let i = 0; i < repoCount; i++) {
+      const discoveredRepo = discoveredRepos[i]; // May be undefined if manual
+      const isDiscovered = bulkDiscoveryStrategy !== 'manual' && discoveredRepo;
+
       console.log(chalk.white(`\nRepository ${i + 1} of ${repoCount}:`));
 
       // Smart suggestion for ALL repos (not just first one!)
       const projectName = path.basename(this.projectPath);
-      const suggestedName = suggestRepoName(projectName, i, repoCount);
+      const suggestedName = isDiscovered ? discoveredRepo.name : suggestRepoName(projectName, i, repoCount);
 
+      // If discovered, show preview and skip prompts (or allow confirmation)
+      if (isDiscovered) {
+        console.log(chalk.green(`   ✓ Discovered: ${chalk.bold(discoveredRepo.name)}`));
+        console.log(chalk.gray(`     Description: ${discoveredRepo.description || '(none)'}`));
+        console.log(chalk.gray(`     Visibility: ${discoveredRepo.private ? 'Private' : 'Public'}`));
+
+        const { confirmDiscovered } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'confirmDiscovered',
+          message: 'Use this repository configuration?',
+          default: true
+        }]);
+
+        if (!confirmDiscovered) {
+          // Allow manual override
+          console.log(chalk.yellow(`   → Switching to manual entry for this repository\n`));
+        } else {
+          // Use discovered repo configuration directly
+          const smartId = generateRepoIdSmart(discoveredRepo.name, configuredRepoNames);
+          const { id: suggestedId } = ensureUniqueId(smartId, usedIds);
+
+          console.log(chalk.green(`   ✓ Repository ID: ${chalk.bold(suggestedId)} ${chalk.gray('(auto-generated)')}`));
+
+          usedIds.add(suggestedId);
+          configuredRepoNames.push(discoveredRepo.name);
+
+          config.repositories.push({
+            id: suggestedId,
+            name: discoveredRepo.name,
+            owner: discoveredRepo.owner,
+            description: discoveredRepo.description || `${discoveredRepo.name} service`,
+            path: useParent ? suggestedId : suggestedId,
+            visibility: discoveredRepo.private ? 'private' : 'public',
+            createOnGitHub: false, // Already exists!
+            isNested: useParent
+          });
+
+          continue; // Skip manual prompts
+        }
+      }
+
+      // Manual entry (original behavior)
       const repoAnswers = await inquirer.prompt([
         {
           type: 'input',
           name: 'name',
           message: 'Repository name:',
-          default: suggestedName,  // Now suggests for ALL repos!
+          default: suggestedName,
           validate: async (input: string) => {
             if (!input.trim()) return 'Repository name is required';
 
-            // Validate repository doesn't exist
-            if (this.githubToken && config.parentRepo) {
+            // Validate repository doesn't exist (skip for discovered repos)
+            if (!isDiscovered && this.githubToken && config.parentRepo) {
               const result = await validateRepository(config.parentRepo.owner, input, this.githubToken);
               if (result.exists) {
                 return `Repository ${config.parentRepo.owner}/${input} already exists at ${result.url}`;
@@ -679,7 +753,7 @@ export class RepoStructureManager {
           type: 'confirm',
           name: 'createOnGitHub',
           message: 'Create this repository on GitHub?',
-          default: true
+          default: !isDiscovered // Default to true for new repos, false for discovered
         }
       ]);
 
@@ -733,19 +807,23 @@ export class RepoStructureManager {
       usedIds.add(id);
       configuredRepoNames.push(repoAnswers.name);
 
-      // Ask about visibility
-      const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);
-      const { visibility } = await inquirer.prompt([{
-        type: 'list',
-        name: 'visibility',
-        message: visibilityPrompt.question,
-        choices: visibilityPrompt.options.map(opt => ({
-          name: `${opt.label}\n${chalk.gray(opt.description)}`,
-          value: opt.value,
-          short: opt.label
-        })),
-        default: visibilityPrompt.default
-      }]);
+      // Ask about visibility only if creating a new repository
+      let visibility: 'private' | 'public' = 'private';
+      if (repoAnswers.createOnGitHub) {
+        const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);
+        const result = await inquirer.prompt([{
+          type: 'list',
+          name: 'visibility',
+          message: visibilityPrompt.question,
+          choices: visibilityPrompt.options.map(opt => ({
+            name: `${opt.label}\n${chalk.gray(opt.description)}`,
+            value: opt.value,
+            short: opt.label
+          })),
+          default: visibilityPrompt.default
+        }]);
+        visibility = result.visibility;
+      }
 
       config.repositories.push({
         id: id,
@@ -839,19 +917,23 @@ export class RepoStructureManager {
       }
     ]);
 
-    // Ask about visibility
-    const visibilityPrompt = getVisibilityPrompt(answers.repo);
-    const { visibility } = await inquirer.prompt([{
-      type: 'list',
-      name: 'visibility',
-      message: visibilityPrompt.question,
-      choices: visibilityPrompt.options.map(opt => ({
-        name: `${opt.label}\n${chalk.gray(opt.description)}`,
-        value: opt.value,
-        short: opt.label
-      })),
-      default: visibilityPrompt.default
-    }]);
+    // Ask about visibility only if creating a new repository
+    let visibility: 'private' | 'public' = 'private';
+    if (answers.createOnGitHub) {
+      const visibilityPrompt = getVisibilityPrompt(answers.repo);
+      const result = await inquirer.prompt([{
+        type: 'list',
+        name: 'visibility',
+        message: visibilityPrompt.question,
+        choices: visibilityPrompt.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}`,
+          value: opt.value,
+          short: opt.label
+        })),
+        default: visibilityPrompt.default
+      }]);
+      visibility = result.visibility;
+    }
 
     const projects = answers.projects.split(',').map((p: string) => p.trim());
 
@@ -1100,6 +1182,97 @@ export class RepoStructureManager {
   }
 
   /**
+   * Check if a repository exists on GitHub
+   */
+  private async repositoryExistsOnGitHub(owner: string, repo: string): Promise<boolean> {
+    if (!this.githubToken) {
+      return false;
+    }
+
+    try {
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        headers: {
+          'Authorization': `Bearer ${this.githubToken}`,
+          'Accept': 'application/vnd.github+json'
+        }
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Clone or initialize a repository
+   * If the repo exists on GitHub, clone it; otherwise, init + add remote
+   */
+  private async cloneOrInitRepository(
+    repoPath: string,
+    owner: string,
+    name: string,
+    createOnGitHub: boolean
+  ): Promise<void> {
+    // If .git already exists, skip
+    if (existsSync(path.join(repoPath, '.git'))) {
+      return;
+    }
+
+    const remoteUrl = `https://github.com/${owner}/${name}.git`;
+
+    // Check if repository exists on GitHub
+    const repoExists = await this.repositoryExistsOnGitHub(owner, name);
+
+    if (repoExists) {
+      // Repository exists - clone it
+      console.log(chalk.gray(`   → Cloning existing repository from GitHub...`));
+
+      try {
+        // Remove directory if it exists and is empty
+        if (existsSync(repoPath)) {
+          const files = require('fs').readdirSync(repoPath);
+          if (files.length === 0) {
+            require('fs').rmdirSync(repoPath);
+          }
+        }
+
+        // Clone the repository
+        const parentDir = path.dirname(repoPath);
+        const repoName = path.basename(repoPath);
+
+        execFileNoThrowSync('git', ['clone', remoteUrl, repoName], { cwd: parentDir });
+        console.log(chalk.green(`   ✓ Cloned ${owner}/${name}`));
+      } catch (error: any) {
+        console.log(chalk.yellow(`   ⚠️  Clone failed: ${error.message}`));
+        console.log(chalk.gray(`   → Falling back to init + remote`));
+
+        // Fallback: init + add remote
+        if (!existsSync(repoPath)) {
+          mkdirSync(repoPath, { recursive: true });
+        }
+        execFileNoThrowSync('git', ['init'], { cwd: repoPath });
+        execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: repoPath });
+      }
+    } else {
+      // Repository doesn't exist - init + add remote
+      if (!createOnGitHub) {
+        console.log(chalk.gray(`   → Repository will be created later (skipping for now)`));
+        return;
+      }
+
+      console.log(chalk.gray(`   → Initializing empty git repository...`));
+
+      if (!existsSync(repoPath)) {
+        mkdirSync(repoPath, { recursive: true });
+      }
+
+      execFileNoThrowSync('git', ['init'], { cwd: repoPath });
+      execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: repoPath });
+      console.log(chalk.green(`   ✓ Initialized ${owner}/${name}`));
+    }
+  }
+
+  /**
    * Initialize local git repositories
    */
   async initializeLocalRepos(config: RepoStructureConfig): Promise<void> {
@@ -1122,39 +1295,26 @@ export class RepoStructureManager {
       for (const repo of config.repositories) {
         const repoPath = path.join(this.projectPath, repo.path);
 
-        // Create directory if needed
-        if (!existsSync(repoPath)) {
-          mkdirSync(repoPath, { recursive: true });
+        // Clone or initialize repository
+        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub);
+
+        // Create basic structure (only if repo was just initialized, not cloned)
+        if (!repo.createOnGitHub || !await this.repositoryExistsOnGitHub(repo.owner, repo.name)) {
+          this.createBasicRepoStructure(repoPath, repo.id);
         }
-
-        // Initialize git
-        if (!existsSync(path.join(repoPath, '.git'))) {
-          execFileNoThrowSync('git', ['init'], { cwd: repoPath });
-
-          const remoteUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
-          execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: repoPath });
-        }
-
-        // Create basic structure
-        this.createBasicRepoStructure(repoPath, repo.id);
       }
     } else if (config.architecture === 'multi-repo') {
       // Standard multi-repo: repos as subdirectories
       for (const repo of config.repositories) {
         const repoPath = path.join(this.projectPath, repo.path);
 
-        if (!existsSync(repoPath)) {
-          mkdirSync(repoPath, { recursive: true });
+        // Clone or initialize repository
+        await this.cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub);
+
+        // Create basic structure (only if repo was just initialized, not cloned)
+        if (!repo.createOnGitHub || !await this.repositoryExistsOnGitHub(repo.owner, repo.name)) {
+          this.createBasicRepoStructure(repoPath, repo.id);
         }
-
-        if (!existsSync(path.join(repoPath, '.git'))) {
-          execFileNoThrowSync('git', ['init'], { cwd: repoPath });
-
-          const remoteUrl = `https://github.com/${repo.owner}/${repo.name}.git`;
-          execFileNoThrowSync('git', ['remote', 'add', 'origin', remoteUrl], { cwd: repoPath });
-        }
-
-        this.createBasicRepoStructure(repoPath, repo.id);
       }
     } else {
       // Single repo or monorepo
