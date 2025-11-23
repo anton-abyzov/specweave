@@ -738,7 +738,13 @@ export class RepoStructureManager {
       const owner = config.parentRepo.owner;
       const isOrg = await provider.isOrganization(owner, this.githubToken);
 
-      const discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
+      // Retry loop for pattern adjustment
+      let discoveryResult: BulkDiscoveryResult | null = null;
+      while (discoveryResult === null) {
+        discoveryResult = await discoverRepositories(octokit, owner, isOrg, repoCount);
+        // If null, user selected "go back and adjust pattern", loop will retry
+        // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
+      }
 
       if (discoveryResult) {
         bulkDiscoveryStrategy = discoveryResult.strategy;
