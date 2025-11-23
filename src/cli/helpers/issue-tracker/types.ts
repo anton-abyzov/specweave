@@ -135,7 +135,8 @@ export type RepositoryHosting = 'github' | 'github-single' | 'github-multi' | 'l
 export interface SetupOptions {
   projectPath: string;
   language: SupportedLanguage;
-  maxRetries?: number; // Default: 3
+  maxRetries?: number; // Default: 3 (for network retries within validation)
+  setupRetryCount?: number; // Default: 0 (tracks full setup retry attempts to prevent infinite recursion)
   isFrameworkRepo?: boolean; // True if this is the SpecWeave framework repo itself
   repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
 }

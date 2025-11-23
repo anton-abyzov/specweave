@@ -3,7 +3,7 @@
 **Increment**: 0051-automatic-github-sync
 **Component**: Repository prompt duplication fix
 **Date**: 2025-11-23
-**Assessor**: Quality Judge v2.0 (BMAD Risk Scoring)
+**Assessor**: Quality Judge v2.0 (PRISM Risk Scoring)
 **Mode**: Implementation Quality Gate
 
 ---
@@ -212,7 +212,7 @@ if (repositoryHosting && !['github-single', 'github-multi', 'local', 'other'].in
 
 ### 7. Risk Assessment (92/100) ✅ EXCELLENT
 
-Using **BMAD Probability × Impact** scoring (0-10 scale):
+Using **PRISM Probability × Impact** scoring (0-10 scale):
 
 ---
 
@@ -472,7 +472,7 @@ await promptGitHubSetupType(path, token, 'github-single');  // Skips prompt
 
 ---
 
-**Assessed by**: Quality Judge v2.0 (BMAD Risk Scoring)
+**Assessed by**: Quality Judge v2.0 (PRISM Risk Scoring)
 **Date**: 2025-11-23
 **Confidence**: **HIGH** (based on comprehensive analysis of implementation, tests, and documentation)
 **Recommendation**: **APPROVE FOR MERGE** ✅
@@ -490,7 +490,7 @@ await promptGitHubSetupType(path, token, 'github-single');  // Skips prompt
 | **Actionable Items** | General recommendations | 2 required, 3 optional |
 
 **Value of v2.0**:
-- ✅ Formal risk scoring (BMAD Probability × Impact)
+- ✅ Formal risk scoring (PRISM Probability × Impact)
 - ✅ Quality gate decision (PASS/CONCERNS/FAIL)
 - ✅ Actionable blockers and concerns
 - ✅ Clear go/no-go signal for merge
