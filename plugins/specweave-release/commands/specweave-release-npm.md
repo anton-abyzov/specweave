@@ -1,11 +1,25 @@
 ---
 name: specweave-release:npm
-description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering.
+description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering. Use --only flag for direct npm publish (skips git push and GitHub Actions).
 ---
 
 # /specweave-release:npm - NPM Release Automation
 
 You are the NPM Release Assistant. Your job is to automate the patch version release process.
+
+## Command Modes
+
+**Default mode** (no flags): Push to GitHub → GitHub Actions publishes to npm
+**Direct mode** (`--only`): Publish directly to npm (skip GitHub push/Actions)
+
+## Detecting Mode
+
+First, check if the user provided `--only` flag:
+- Look at the command invocation (e.g., `/specweave-release:npm --only`)
+- Check conversation context for `--only` parameter
+
+**If `--only` flag detected**: Use DIRECT MODE (skip to section "Direct Mode Workflow")
+**If no flag**: Use DEFAULT MODE (continue with steps below)
 
 ## Your Task
 
@@ -101,10 +115,124 @@ Show the user:
 - ✅ NEVER force push
 - ✅ NEVER skip pre-flight checks
 
-## Success Criteria
+## Success Criteria (Default Mode)
 
 ✅ Version bumped in package.json
 ✅ Git commit created
 ✅ Git tag created
 ✅ Changes pushed to GitHub
 ✅ GitHub Actions workflow triggered
+
+---
+
+## DIRECT MODE WORKFLOW (--only flag)
+
+Use this workflow when `--only` flag is detected. This publishes directly to npm WITHOUT git push or GitHub Actions.
+
+### 1. Pre-flight Checks (Same as Default)
+
+```bash
+# Verify we're on develop branch
+git rev-parse --abbrev-ref HEAD
+
+# Check for uncommitted changes
+git status --porcelain
+
+# Verify current version
+node -p "require('./package.json').version"
+```
+
+**STOP if**:
+- Not on `develop` branch (ask user to switch)
+- Uncommitted changes exist (ask user to commit first)
+
+### 2. Bump Patch Version (Same as Default)
+
+```bash
+# This creates commit + tag automatically
+npm version patch -m "chore: bump version to %s"
+```
+
+**What this does**:
+- Updates `package.json` and `package-lock.json`
+- Creates git commit with message "chore: bump version to X.Y.Z"
+- Creates git tag `vX.Y.Z`
+
+### 3. Extract New Version
+
+```bash
+# Get the new version
+node -p "require('./package.json').version"
+```
+
+### 4. Build Package
+
+```bash
+# Build the package before publishing
+npm run rebuild
+```
+
+**Critical**: Must rebuild to ensure dist/ is up-to-date before publishing.
+
+### 5. Publish to NPM Directly
+
+```bash
+# Publish directly to npm (bypasses GitHub Actions)
+npm publish
+```
+
+**What this does**:
+- Builds package tarball
+- Publishes to npm registry immediately
+- No GitHub Actions involvement
+
+### 6. Push Git Changes (Optional but Recommended)
+
+```bash
+# Push the version bump commit and tag to GitHub
+git push origin develop --follow-tags
+```
+
+**Note**: This syncs GitHub with npm but does NOT trigger publish workflow (already published).
+
+### 7. Report Results (Direct Mode)
+
+Show the user:
+```markdown
+✅ **Published directly to npm!**
+
+📦 **Version**: vX.Y.Z
+🔗 **NPM**: https://www.npmjs.com/package/specweave
+🏷️ **Git Tag**: vX.Y.Z (created locally)
+
+**What happened**:
+- ✅ Version bumped and committed
+- ✅ Git tag created locally
+- ✅ Package built (npm run rebuild)
+- ✅ Published to npm directly
+- ✅ Git changes pushed to GitHub
+
+**Verify**:
+- Check npm: https://www.npmjs.com/package/specweave
+- Verify version: `npm view specweave version`
+- Install globally: `npm install -g specweave@X.Y.Z`
+
+**Note**: Published via direct push (bypassed GitHub Actions)
+```
+
+## Direct Mode Safety Rules
+
+- ✅ ALWAYS rebuild before publishing (`npm run rebuild`)
+- ✅ ALWAYS push git changes after successful publish
+- ✅ Use `--only` for emergency releases or local testing
+- ✅ Default mode (GitHub Actions) is preferred for regular releases
+- ✅ Direct mode gives immediate feedback (no CI wait time)
+
+## Success Criteria (Direct Mode)
+
+✅ Version bumped in package.json
+✅ Git commit created
+✅ Git tag created
+✅ Package rebuilt
+✅ Published to npm directly
+✅ Git changes pushed to GitHub (optional but recommended)

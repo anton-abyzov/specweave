@@ -132,6 +132,76 @@ Next steps:
 
 ---
 
+### 1b. NPM Release Workflow (NEW! 🚀)
+
+**Two release modes**: Default (GitHub Actions) and Direct (`--only` flag)
+
+#### Default Mode (Recommended)
+
+```bash
+# Push to GitHub → GitHub Actions publishes to npm
+/specweave-release:npm
+```
+
+**What happens**:
+1. ✅ Bumps patch version (e.g., 0.24.11 → 0.24.12)
+2. ✅ Creates git commit + tag
+3. ✅ Pushes to GitHub
+4. ✅ Triggers GitHub Actions workflow
+5. ✅ GitHub Actions publishes to npm (1-2 min)
+
+**Use when**: Regular releases, want CI validation
+
+#### Direct Mode (`--only` flag)
+
+```bash
+# Publish directly to npm (bypasses GitHub Actions)
+/specweave-release:npm --only
+```
+
+**What happens**:
+1. ✅ Bumps patch version
+2. ✅ Creates git commit + tag
+3. ✅ Builds package (`npm run rebuild`)
+4. ✅ **Publishes to npm immediately**
+5. ✅ Pushes git changes to GitHub (optional)
+
+**Use when**:
+- 🔥 Emergency releases (hotfix needed NOW)
+- ⚡ Want immediate feedback (no CI wait)
+- 🧪 Testing release process locally
+- 💻 GitHub Actions unavailable
+
+**Example output**:
+```
+✅ Published directly to npm!
+
+📦 Version: v0.24.12
+🔗 NPM: https://www.npmjs.com/package/specweave
+🏷️ Git Tag: v0.24.12 (created locally)
+
+What happened:
+- ✅ Version bumped and committed
+- ✅ Git tag created locally
+- ✅ Package built (npm run rebuild)
+- ✅ Published to npm directly
+- ✅ Git changes pushed to GitHub
+
+Note: Published via direct push (bypassed GitHub Actions)
+```
+
+**Safety**:
+- ✅ Both modes do pre-flight checks (branch, uncommitted changes)
+- ✅ Both create proper git commits/tags
+- ✅ Direct mode rebuilds before publishing
+- ✅ Default mode is preferred for regular releases
+
+**Time comparison**:
+- Default mode: 2-3 minutes (includes CI)
+- Direct mode (`--only`): 30 seconds
+
+---
+
 ### 2. Increment Folder Structure
 
 **ONLY 4 files in `.specweave/increments/####/` root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
