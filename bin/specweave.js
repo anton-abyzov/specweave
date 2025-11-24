@@ -104,6 +104,21 @@ program
     await abandonCommand(incrementId, options);
   });
 
+// Archive command - Archive completed increments and sync living docs
+program
+  .command('archive [increments...]')
+  .description('Archive completed increments and sync living docs (_features/ + project-specific)')
+  .option('--keep-last <n>', 'Keep last N increments, archive the rest', '10')
+  .option('--older-than <days>', 'Archive increments older than N days')
+  .option('--pattern <pattern>', 'Archive increments matching pattern (regex)')
+  .option('--archive-completed', 'Archive all completed increments')
+  .option('--no-preserve-active', 'Allow archiving active/paused increments (dangerous!)')
+  .option('--dry-run', 'Preview what would be archived without moving files')
+  .action(async (incrementIds, options) => {
+    const { archiveCommand } = await import('../dist/src/cli/commands/archive.js');
+    await archiveCommand(incrementIds, options);
+  });
+
 // Delete feature command - Registered dynamically in startup
 // (See registerDeleteFeatureCommand call below)
 
