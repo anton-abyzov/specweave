@@ -283,7 +283,23 @@ export class GitHubClientV2 {
 
     // Add milestone
     if (milestone !== undefined) {
-      args.push('--milestone', String(milestone));
+      // gh CLI requires milestone TITLE, not number
+      if (typeof milestone === 'number') {
+        // Fetch milestone by number to get title
+        const msResult = await execFileNoThrow('gh', [
+          'api',
+          `repos/${this.fullRepo}/milestones/${milestone}`,
+          '--jq',
+          '.title'
+        ]);
+
+        if (msResult.exitCode === 0 && msResult.stdout.trim()) {
+          args.push('--milestone', msResult.stdout.trim());
+        }
+        // If milestone fetch fails, skip milestone assignment (non-blocking)
+      } else {
+        args.push('--milestone', milestone);
+      }
     }
 
     // Create issue (returns URL)
