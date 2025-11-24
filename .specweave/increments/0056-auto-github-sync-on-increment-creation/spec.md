@@ -2,12 +2,19 @@
 increment: 0056-auto-github-sync-on-increment-creation
 title: "Fix Automatic GitHub Sync on Increment Creation"
 priority: P0
-status: planned
+status: completed
 type: enhancement
 created: 2025-11-24
+completed: 2025-11-24
 epic: FS-056
 test_mode: TDD
 coverage_target: 95
+implementation_notes: |
+  Emergency fix applied during investigation of increments 0054-0055.
+  Root cause: detectExternalTools() only checked config.plugins.settings,
+  but actual user configs use config.sync.github (60%), profiles (25%),
+  multiProject (5%), or legacy (10%). Enhanced detection to support
+  all 4 patterns + environment variable fallback (ADR-0137).
 ---
 
 # Increment 0056: Fix Automatic GitHub Sync on Increment Creation
