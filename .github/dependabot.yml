@@ -18,6 +18,15 @@ updates:
       - "automated"
     # Group minor/patch updates to reduce PR noise
     groups:
+      # CRITICAL: Group vitest packages together (strict peer dependencies)
+      vitest-ecosystem:
+        patterns:
+          - "vitest*"
+          - "@vitest/*"
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
       production-dependencies:
         dependency-type: "production"
         update-types:
