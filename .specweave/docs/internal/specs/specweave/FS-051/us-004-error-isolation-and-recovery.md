@@ -7,9 +7,6 @@ priority: P0
 created: 2025-11-22T00:00:00.000Z
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Error Isolation and Recovery
 
 **Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
@@ -37,9 +34,9 @@ created: 2025-11-22T00:00:00.000Z
 
 ## Tasks
 
-- [x] [T-016](../../../../increments/0051-automatic-github-sync/tasks.md#T-016): Implement TypeScript Try-Catch Wrappers (Layer 4)
-- [x] [T-017](../../../../increments/0051-automatic-github-sync/tasks.md#T-017): Implement Per-Issue Error Isolation (Layer 5)
-- [x] [T-018](../../../../increments/0051-automatic-github-sync/tasks.md#T-018): Implement Bash Hook Error Handling (Layer 6)
-- [x] [T-019](../../../../increments/0051-automatic-github-sync/tasks.md#T-019): Implement Circuit Breaker (Layer 2)
-- [x] [T-020](../../../../increments/0051-automatic-github-sync/tasks.md#T-020): Implement User-Facing Error Messages (Layer 7)
-- [x] [T-021](../../../../increments/0051-automatic-github-sync/tasks.md#T-021): Document Manual Recovery Commands
+- [x] **T-016**: Implement TypeScript Try-Catch Wrappers (Layer 4)
+- [x] **T-017**: Implement Per-Issue Error Isolation (Layer 5)
+- [x] **T-018**: Implement Bash Hook Error Handling (Layer 6)
+- [x] **T-019**: Implement Circuit Breaker (Layer 2)
+- [x] **T-020**: Implement User-Facing Error Messages (Layer 7)
+- [x] **T-021**: Document Manual Recovery Commands

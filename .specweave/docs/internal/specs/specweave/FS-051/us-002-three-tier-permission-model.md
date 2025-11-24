@@ -7,9 +7,6 @@ priority: P0
 created: 2025-11-22T00:00:00.000Z
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Three-Tier Permission Model
 
 **Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
@@ -37,10 +34,11 @@ created: 2025-11-22T00:00:00.000Z
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0051-automatic-github-sync/tasks.md#T-001): Add `autoSyncOnCompletion` to Config Schema
-- [x] [T-002](../../../../increments/0051-automatic-github-sync/tasks.md#T-002): Add Tool-Specific Gates to Config Schema
-- [x] [T-003](../../../../increments/0051-automatic-github-sync/tasks.md#T-003): Implement 4-Gate Evaluation Logic in SyncCoordinator
-- [x] [T-004](../../../../increments/0051-automatic-github-sync/tasks.md#T-004): Add User-Facing Gate Messages
-- [x] [T-005](../../../../increments/0051-automatic-github-sync/tasks.md#T-005): Update `specweave init` to Include New Flags
-- [ ] [T-024](../../../../increments/0051-automatic-github-sync/tasks.md#T-024): Create Integration Test for Permission Gates
-- [x] [T-029](../../../../increments/0051-automatic-github-sync/tasks.md#T-029): Remove Duplicate Permissions Configuration
+- [x] **T-001**: Add `autoSyncOnCompletion` to Config Schema
+- [x] **T-002**: Add Tool-Specific Gates to Config Schema
+- [x] **T-003**: Implement 4-Gate Evaluation Logic in SyncCoordinator
+- [x] **T-004**: Add User-Facing Gate Messages
+- [x] **T-005**: Update `specweave init` to Include New Flags
+- [ ] **T-024**: Create Integration Test for Permission Gates
+- [x] **T-025**: Update User Documentation (README)
+- [x] **T-026**: Create Migration Guide (v0.24 → v0.25)

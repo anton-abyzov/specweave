@@ -61,12 +61,30 @@ git push origin develop
 **Solution**: Use the automated refresh script!
 
 ```bash
-# LOCAL DEVELOPMENT (default) - Uses your local changes
+# FROM GITHUB (default, recommended) - Pulls latest from GitHub
 bash scripts/refresh-marketplace.sh
 
-# FROM GITHUB - Pulls latest from GitHub
-bash scripts/refresh-marketplace.sh --github
+# LOCAL DEVELOPMENT - Uses your local changes (ONLY for active development!)
+bash scripts/refresh-marketplace.sh --local
 ```
+
+**🚨 CRITICAL: Always Use GitHub Mode Unless Actively Developing!**
+
+**Why GitHub mode is mandatory:**
+- ✅ **Separate Installation**: Creates proper copy at `~/.claude/plugins/marketplaces/specweave/`
+- ✅ **Stable Source**: Pulls from committed GitHub code, not unstable local changes
+- ✅ **No Path Coupling**: Clear separation between source and runtime
+- ✅ **Production-Ready**: What end users will experience
+
+**Why local mode is dangerous:**
+- ❌ **Filesystem Coupling**: `installLocation` = source directory (no separate copy!)
+- ❌ **Stale Hook Risk**: Any git operations, file deletions, or uncommitted changes affect "installed" plugins
+- ❌ **Path Confusion**: Claude Code expects hooks at `~/.claude/plugins/marketplaces/` but they're in your working directory
+- ❌ **Instability**: Leads to "hook not found" errors like you just experienced
+
+**Rule of thumb:**
+- **Development workflow**: Commit → Push → `bash scripts/refresh-marketplace.sh` (GitHub mode) → Test
+- **Emergency local testing**: Use `--local` ONLY when you need to test uncommitted changes, then immediately switch back to GitHub mode
 
 **What it does**:
 1. ✅ Removes existing marketplace
@@ -78,22 +96,22 @@ bash scripts/refresh-marketplace.sh --github
 **Output Example**:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  SpecWeave Marketplace Refresh (local mode)
+  SpecWeave Marketplace Refresh (github mode)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📦 Step 1: Removing existing marketplace...
 ✓ Marketplace removed
 
 🧹 Step 2: Clearing plugin caches...
-✓ Marketplace cache cleared
 ✓ Installed plugins cache backed up
 
 📥 Step 3: Adding marketplace...
-Using local development version: /Users/antonabyzov/Projects/github/specweave
-✓ Local marketplace added
+Pulling latest from GitHub: anton-abyzov/specweave
+Cloning via SSH: git@github.com:anton-abyzov/specweave.git
+✓ GitHub marketplace added
 
 📋 Step 4: Reading plugin list...
-✓ Found 19 plugins
+✓ Found 27 plugins
 
 ⚙️  Step 5: Installing all plugins...
   Installing specweave...
@@ -120,13 +138,22 @@ Next steps:
 ```
 
 **When to use**:
-- ✅ After adding new plugins
-- ✅ After modifying plugin commands/agents/skills
-- ✅ After pulling latest from GitHub
-- ✅ When plugins aren't loading correctly
-- ✅ To test local changes before pushing
+- ✅ After pushing changes to GitHub (GitHub mode - default)
+- ✅ After pulling latest from GitHub (GitHub mode)
+- ✅ When plugins aren't loading correctly (GitHub mode)
+- ✅ After adding new plugins (commit → push → refresh with GitHub mode)
+- ⚠️  To test uncommitted local changes (local mode - use sparingly!)
 
 **Time**: ~30 seconds (vs 5-10 minutes manual)
+
+**Verification after refresh**:
+```bash
+# Check marketplace source (should be "github")
+cat ~/.claude/plugins/known_marketplaces.json | jq -r '.specweave.source'
+
+# Should output: {"source": "github", "repo": "anton-abyzov/specweave"}
+# NOT: {"source": "directory", "path": "/Users/..."}
+```
 
 **Requirements**: `jq` installed (`brew install jq`)
 
@@ -1009,10 +1036,19 @@ echo "RECURSION_GUARD_FILE: line $guard_line"
 /specweave:increment "feature"  # Plan
 /specweave:do                   # Execute
 /specweave:progress             # Status
+/specweave:sync-progress        # Comprehensive sync (tasks → docs → external tools)
 /specweave:done 0002            # Close (validates)
 /specweave:validate 0001        # Validate
 /specweave:qa 0001              # Quality check
 /specweave:pause/resume/abandon # State management
+
+# Feature deletion
+specweave delete-feature FS-042 --dry-run    # Preview deletion
+specweave delete-feature FS-042              # Safe deletion (requires confirmation)
+specweave delete-feature FS-042 --force      # Force delete (orphans active increments)
+specweave delete-feature FS-042 --no-git     # Skip git operations
+specweave delete-feature FS-042 --no-github  # Skip GitHub issue cleanup
+specweave delete-feature FS-042 --yes        # Skip confirmations (except elevated)
 ```
 
 **Local setup**:
@@ -1149,6 +1185,324 @@ await configManager.update({ issueTracker: { provider: 'jira', domain: 'example.
 - **Tests failing**: `npm run rebuild`
 - **Root polluted**: Move to `.specweave/increments/####/reports/`
 - **Hooks failing**: Push to GitHub (auto-updates 5-10s)
+
+---
+
+## Comprehensive Progress Sync (v0.25.0+)
+
+**Command**: `/specweave:sync-progress`
+
+**Purpose**: Single-button multi-system synchronization. Orchestrates complete flow from task completion → living docs → external tools (GitHub/JIRA/ADO).
+
+### What It Does
+
+**Comprehensive Sync Flow**:
+```
+tasks.md (source of truth)
+  ↓
+spec.md ACs (marked complete)
+  ↓
+Living docs (user stories updated)
+  ↓
+External tools (GitHub/JIRA/ADO synced)
+  ↓
+Status line cache (updated display)
+```
+
+**One command replaces 4 manual steps**:
+```bash
+# OLD: Manual multi-step sync (error-prone)
+/specweave:sync-acs 0053
+/specweave:sync-specs 0053
+/specweave-github:sync 0053
+/specweave:update-status
+
+# NEW: Single comprehensive sync ✅
+/specweave:sync-progress 0053
+```
+
+### Usage
+
+```bash
+# Auto-detect active increment
+/specweave:sync-progress
+
+# Explicit increment ID
+/specweave:sync-progress 0053
+
+# Dry-run mode (preview without executing)
+/specweave:sync-progress 0053 --dry-run
+
+# Skip external tools (local-only sync)
+/specweave:sync-progress 0053 --no-github --no-jira --no-ado
+```
+
+### When to Use
+
+**✅ Use /specweave:sync-progress when**:
+1. After completing tasks in tasks.md
+2. Before closing increment (`/specweave:done`)
+3. Want to update status line with latest progress
+4. Need to sync to external tools (GitHub/JIRA/ADO)
+5. After bulk task completion
+
+**❌ Don't use when**:
+1. Only need to sync ACs → Use `/specweave:sync-acs`
+2. Only need to sync docs → Use `/specweave:sync-specs`
+3. Only need to sync GitHub → Use `/specweave-github:sync`
+
+### Multi-Phase Orchestration
+
+**Phase 1: Tasks → ACs (spec.md)**
+- Reads completed tasks from tasks.md
+- Finds linked ACs via `**Satisfies ACs**` field
+- Marks ACs as complete: `[ ]` → `[x]`
+- Updates metadata.json with AC count
+
+**Phase 2: Spec → Living Docs**
+- Syncs spec.md to living docs structure
+- Updates user story completion status
+- Generates/updates feature ID if needed
+
+**Phase 3: Living Docs → External Tools**
+- **GitHub**: Closes completed user story issues, updates epic checklist
+- **JIRA**: Updates story status, transitions workflow
+- **Azure DevOps**: Updates work item state, adds comments
+
+**Phase 4: Status Line Cache**
+- Updates status line with latest completion %
+
+### Flags
+
+| Flag | Purpose | Example |
+|------|---------|---------|
+| `--dry-run` | Preview without executing | `--dry-run` |
+| `--no-github` | Skip GitHub sync | `--no-github` |
+| `--no-jira` | Skip JIRA sync | `--no-jira` |
+| `--no-ado` | Skip Azure DevOps sync | `--no-ado` |
+| `--force` | Force sync even if validation fails | `--force` |
+
+### Error Handling
+
+**Graceful Degradation**:
+- **Critical errors** (AC sync, docs sync): Abort entire sync
+- **Non-critical errors** (GitHub, JIRA, ADO): Log warning, continue
+
+**Philosophy**: Core sync (tasks → docs) must succeed. External tool sync is best-effort.
+
+### Example Workflow
+
+**Typical increment workflow with progress sync**:
+
+```bash
+# 1. Plan increment
+/specweave:increment "Safe feature deletion"
+
+# 2. Execute tasks
+/specweave:do
+
+# [Complete 5 tasks...]
+
+# 3. Sync progress after batch
+/specweave:sync-progress
+
+# [Complete remaining 32 tasks...]
+
+# 4. Final sync before closure
+/specweave:sync-progress 0053
+
+# 5. Validate quality
+/specweave:validate 0053 --quality
+
+# 6. Close increment
+/specweave:done 0053
+```
+
+### External Tool Auto-Detection
+
+**Automatic detection** from `.specweave/config.json`:
+- GitHub: `"provider": "github"`
+- JIRA: `"provider": "jira"`
+- Azure DevOps: `"provider": "azure-devops"`
+
+**Only configured tools are synced**:
+```
+✅ GitHub integration detected → Will sync
+ℹ️  No JIRA integration → Skip
+ℹ️  No ADO integration → Skip
+```
+
+### Troubleshooting
+
+**"No active increment found"**:
+```bash
+# Provide increment ID explicitly
+/specweave:sync-progress 0053
+```
+
+**"AC sync had warnings: 5 ACs not found"**:
+```bash
+# Embed ACs from living docs into spec.md
+/specweave:embed-acs 0053
+
+# Then retry sync
+/specweave:sync-progress 0053
+```
+
+**"GitHub rate limit exceeded"** (non-critical):
+- Docs are synced successfully
+- Retry GitHub sync later when rate limit resets:
+  ```bash
+  /specweave-github:sync 0053
+  ```
+
+**See**:
+- Skill: `progress-sync` (comprehensive guide)
+- Increment 0053 (added in this increment)
+
+---
+
+## Safe Feature Deletion (v0.25.0+)
+
+**Command**: `specweave delete-feature <feature-id>`
+
+Safe deletion of features with multi-gate validation, automatic cleanup, and audit logging.
+
+### Usage
+
+```bash
+# Preview deletion (recommended first step)
+specweave delete-feature FS-042 --dry-run
+
+# Safe deletion (requires confirmation)
+specweave delete-feature FS-042
+
+# Force deletion (bypasses active increment validation)
+specweave delete-feature FS-042 --force
+
+# Skip git operations
+specweave delete-feature FS-042 --no-git
+
+# Skip GitHub issue cleanup
+specweave delete-feature FS-042 --no-github
+
+# Skip confirmations (except elevated confirmation in force mode)
+specweave delete-feature FS-042 --yes
+```
+
+### Safety Features
+
+**4-Tier Validation**:
+1. **Feature Detection**: Scans living docs and user stories
+2. **Active Increment Check**: Blocks deletion if active increments reference feature (safe mode)
+3. **Git Status Check**: Ensures clean working directory
+4. **GitHub Issue Scan**: Finds related issues for cleanup
+
+**3-Phase Commit Pattern**:
+1. **Validation Phase**: All safety checks
+2. **Staging Phase**: Reversible (file backup, git staging)
+3. **Commit Phase**: Irreversible (git commit, GitHub cleanup, audit log)
+
+**Multi-Gate Confirmation**:
+- Primary Confirmation: y/N prompt for all deletions
+- Elevated Confirmation: Type "delete" for force mode (orphans active increments)
+- GitHub Confirmation: Separate prompt for closing GitHub issues
+
+### What Gets Deleted
+
+✅ Living docs: `.specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md`
+✅ User stories: `.specweave/docs/internal/specs/{project}/FS-XXX/us-*.md`
+✅ README files: `.specweave/docs/internal/specs/{project}/FS-XXX/README.md`
+✅ GitHub issues: Issues matching `[FS-XXX][US-YYY]` pattern (optional)
+
+❌ NOT deleted: Increments (only metadata.json updated if orphaned)
+
+### Modes
+
+**Safe Mode (default)**:
+- Blocks deletion if active increments reference feature
+- Requires clean git working directory
+- Requires explicit confirmation
+
+**Force Mode (`--force`)**:
+- Allows deletion with active increments
+- Updates orphaned increment metadata.json (removes feature_id)
+- Requires elevated confirmation (type "delete")
+
+**Dry-Run Mode (`--dry-run`)**:
+- Preview deletion without executing
+- Shows all files to be deleted
+- Shows git operations
+- Shows GitHub issues to be closed
+
+### Audit Logging
+
+All deletions logged to `.specweave/logs/feature-deletions.log` (JSON Lines format):
+
+```json
+{
+  "featureId": "FS-042",
+  "timestamp": "2025-11-24T01:45:00.000Z",
+  "user": "john-doe",
+  "mode": "safe",
+  "filesDeleted": 6,
+  "commitSha": "abc123def",
+  "githubIssuesClosed": 3,
+  "orphanedIncrements": [],
+  "status": "success"
+}
+```
+
+**Log rotation**: Automatically rotates at 10MB threshold.
+
+### Error Handling
+
+**Non-blocking errors** (logged as warnings):
+- GitHub API rate limits (exponential backoff retry)
+- GitHub issue cleanup failures
+- Audit log write failures
+
+**Blocking errors** (prevent deletion):
+- Feature not found
+- Active increments in safe mode
+- Git working directory not clean (without `--no-git`)
+- Invalid feature ID format (must be FS-XXX)
+
+### Examples
+
+```bash
+# Recommended workflow
+specweave delete-feature FS-042 --dry-run    # Preview
+specweave delete-feature FS-042              # Execute (with confirmation)
+
+# Force delete feature with active increment 0050
+specweave delete-feature FS-042 --force      # Requires typing "delete"
+
+# Delete without git commit (manual git workflow)
+specweave delete-feature FS-042 --no-git
+
+# Delete with auto-yes (CI/CD pipelines)
+specweave delete-feature FS-042 --yes --dry-run  # Still shows preview
+```
+
+### Important Notes
+
+**GitHub Integration**:
+- Owner/repo auto-detected from `git remote get-url origin`
+- If no GitHub remote → GitHub cleanup silently skipped (non-blocking)
+- Pattern detection: `https://github.com/owner/repo.git` or `git@github.com:owner/repo.git`
+
+**No Undo**:
+- Deletion is permanent (files deleted from filesystem)
+- Recovery: `git log --all --full-history -- path/to/deleted/file` → `git checkout <commit> -- path`
+- Audit log: `.specweave/logs/feature-deletions.log` (includes commit SHA)
+
+**Force Mode Risk**:
+- Orphaned increments lose `feature_id` in metadata.json
+- Breaking change: `/specweave:sync-specs` won't sync orphaned increments
+- Recovery: Manually restore `feature_id` in metadata.json
+
+**See**: Increment 0053-safe-feature-deletion for implementation details.
 
 ---
 

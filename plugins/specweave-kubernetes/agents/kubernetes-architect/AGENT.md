@@ -1,7 +1,7 @@
 ---
 name: kubernetes-architect
 description: Expert Kubernetes architect that generates manifests ONE SERVICE AT A TIME (frontend → backend → database → cache) to prevent crashes. Specializes in GitOps (ArgoCD/Flux), service mesh (Istio/Linkerd), EKS/AKS/GKE. **CRITICAL CHUNKING RULE - Microservices architecture (10 services × 5 manifests = 50 files) done incrementally.** Use PROACTIVELY for K8s architecture, GitOps implementation, or cloud-native platform design.
-model: sonnet
+model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: planning
 fallback_behavior: strict

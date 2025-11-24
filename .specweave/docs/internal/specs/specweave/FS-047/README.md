@@ -9,8 +9,6 @@ status: completed
 
 # US-Task Linkage Architecture
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/687
-
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 ## Overview

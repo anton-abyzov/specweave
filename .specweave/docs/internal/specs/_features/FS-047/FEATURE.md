@@ -5,12 +5,10 @@ type: feature
 status: completed
 priority: P0
 created: 2025-11-19
-lastUpdated: 2025-11-20
+lastUpdated: 2025-11-24
 ---
 
 # US-Task Linkage Architecture
-
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/686
 
 ## Overview
 

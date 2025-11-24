@@ -5,12 +5,10 @@ type: feature
 status: completed
 priority: P1
 created: 2025-11-18
-lastUpdated: 2025-11-19
+lastUpdated: 2025-11-24
 ---
 
 # Test Infrastructure Cleanup - Eliminate 48% Duplication
-
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/659
 
 ## Overview
 

@@ -1,10 +1,15 @@
 ---
 id: US-006
 feature: FS-052
-title: "Audit Trail (Priority: P2)"
+title: "Audit Trail"
 status: planned
-priority: P1
+priority: P2
 created: 2025-11-23
+external_tools:
+  github:
+    number: 727
+    url: https://github.com/anton-abyzov/specweave/issues/727
+    created_at: 2025-11-24T07:00:18.460Z
 ---
 
 **Origin**: 🏠 **Internal**

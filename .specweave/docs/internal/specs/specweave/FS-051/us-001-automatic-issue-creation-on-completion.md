@@ -7,9 +7,6 @@ priority: P0
 created: 2025-11-22T00:00:00.000Z
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Automatic Issue Creation on Completion
 
 **Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
@@ -36,12 +33,12 @@ created: 2025-11-22T00:00:00.000Z
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0051-automatic-github-sync/tasks.md#T-006): Implement `createGitHubIssuesForUserStories()` in SyncCoordinator
-- [x] [T-007](../../../../increments/0051-automatic-github-sync/tasks.md#T-007): Implement `createUserStoryIssue()` in GitHubClientV2
-- [x] [T-008](../../../../increments/0051-automatic-github-sync/tasks.md#T-008): Update Increment metadata.json with GitHub Issue Numbers
-- [x] [T-009](../../../../increments/0051-automatic-github-sync/tasks.md#T-009): Add Success Message Logging
-- [x] [T-010](../../../../increments/0051-automatic-github-sync/tasks.md#T-010): Integration Test for Full Issue Creation Flow
-- [ ] [T-022](../../../../increments/0051-automatic-github-sync/tasks.md#T-022): Create E2E Test with Real GitHub Repo
-- [ ] [T-023](../../../../increments/0051-automatic-github-sync/tasks.md#T-023): Create Performance Test (Hook Execution < 10s)
-- [x] [T-025](../../../../increments/0051-automatic-github-sync/tasks.md#T-025): Update User Documentation (README)
-- [x] [T-026](../../../../increments/0051-automatic-github-sync/tasks.md#T-026): Create Migration Guide (v0.24 → v0.25)
+- [x] **T-006**: Implement `createGitHubIssuesForUserStories()` in SyncCoordinator
+- [x] **T-007**: Implement `createUserStoryIssue()` in GitHubClientV2
+- [x] **T-008**: Update Increment metadata.json with GitHub Issue Numbers
+- [x] **T-009**: Add Success Message Logging
+- [x] **T-010**: Integration Test for Full Issue Creation Flow
+- [ ] **T-022**: Create E2E Test with Real GitHub Repo
+- [ ] **T-023**: Create Performance Test (Hook Execution < 10s)
+- [x] **T-025**: Update User Documentation (README)
+- [x] **T-026**: Create Migration Guide (v0.24 → v0.25)

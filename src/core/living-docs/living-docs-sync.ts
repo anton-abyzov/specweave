@@ -9,12 +9,31 @@
  * Uses FeatureIDManager for automatic feature ID assignment (greenfield vs brownfield)
  */
 
-import fs from 'fs-extra';
+import { existsSync, promises as fs } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+
+// Helper functions for fs-extra compatibility
+async function pathExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function readJson(filePath: string): Promise<any> {
+  const content = await fs.readFile(filePath, 'utf-8');
+  return JSON.parse(content);
+}
+
+async function ensureDir(dirPath: string): Promise<void> {
+  await fs.mkdir(dirPath, { recursive: true });
+}
 
 export interface SyncOptions {
   dryRun?: boolean;
@@ -49,6 +68,7 @@ export interface UserStoryData {
   description: string;
   acceptanceCriteria: string[];
   phase?: string;
+  status?: string;  // US-level status: "not_started" | "in_progress" | "completed"
   // Format preservation metadata (T-034A)
   format_preservation?: boolean;
   external_title?: string;
@@ -90,7 +110,7 @@ export class LivingDocsSync {
       '.specweave/increments/_archive',
       incrementId
     );
-    return await fs.pathExists(archivePath);
+    return await pathExists(archivePath);
   }
 
   /**
@@ -150,7 +170,7 @@ export class LivingDocsSync {
       const featureFile = path.join(featurePath, 'FEATURE.md');
 
       if (!options.dryRun) {
-        await fs.ensureDir(featurePath);
+        await ensureDir(featurePath);
         const featureContent = this.generateFeatureFile(featureId, parsed, incrementId);
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
@@ -163,7 +183,7 @@ export class LivingDocsSync {
       const readmePath = path.join(projectPath, 'README.md');
 
       if (!options.dryRun) {
-        await fs.ensureDir(projectPath);
+        await ensureDir(projectPath);
         const readmeContent = this.generateReadmeFile(featureId, parsed, incrementId);
         await fs.writeFile(readmePath, readmeContent, 'utf-8');
         result.filesCreated.push(readmePath);
@@ -254,8 +274,8 @@ export class LivingDocsSync {
       'metadata.json'
     );
 
-    if (await fs.pathExists(metadataPath)) {
-      const metadata = await fs.readJson(metadataPath);
+    if (await pathExists(metadataPath)) {
+      const metadata = await readJson(metadataPath);
 
       // Check if brownfield (imported from external tool)
       const isBrownfield = metadata.imported === true || metadata.source === 'external';
@@ -300,7 +320,7 @@ export class LivingDocsSync {
       'spec.md'
     );
 
-    if (!await fs.pathExists(specPath)) {
+    if (!await pathExists(specPath)) {
       throw new Error(`Spec file not found: ${specPath}`);
     }
 
@@ -347,6 +367,23 @@ export class LivingDocsSync {
     // Extract acceptance criteria
     const acceptanceCriteria = this.extractAcceptanceCriteria(bodyContent);
 
+    // Calculate status for each user story based on AC completion
+    for (const story of userStories) {
+      // Use Set to deduplicate AC IDs (spec.md may have duplicates)
+      const uniqueACIds = [...new Set(story.acceptanceCriteria)];
+      const totalACs = uniqueACIds.length;
+
+      // Count how many unique ACs are completed
+      const completedACIds = new Set(
+        acceptanceCriteria
+          .filter(ac => ac.userStoryId === story.id && ac.completed)
+          .map(ac => ac.id)
+      );
+      const completedACs = completedACIds.size;
+
+      story.status = this.calculateUSStatus(totalACs, completedACs);
+    }
+
     return {
       title,
       overview,
@@ -357,6 +394,34 @@ export class LivingDocsSync {
       acceptanceCriteria,
       frontmatter
     };
+  }
+
+  /**
+   * Calculate user story status based on AC completion
+   *
+   * Status mapping (Universal 5-level hierarchy - Level 2):
+   * - 0% complete → "not_started"
+   * - 1-99% complete → "in_progress"
+   * - 100% complete → "completed"
+   *
+   * @param totalACs - Total number of ACs for this US
+   * @param completedACs - Number of completed ACs
+   * @returns User story status
+   */
+  private calculateUSStatus(totalACs: number, completedACs: number): string {
+    if (totalACs === 0) {
+      return 'not_started'; // No ACs defined yet
+    }
+
+    const percentage = (completedACs / totalACs) * 100;
+
+    if (percentage === 0) {
+      return 'not_started';
+    } else if (percentage === 100) {
+      return 'completed';
+    } else {
+      return 'in_progress';
+    }
   }
 
   /**
@@ -405,7 +470,9 @@ export class LivingDocsSync {
         id,
         title,
         description,
-        acceptanceCriteria: acIds
+        acceptanceCriteria: acIds,
+        // Status will be calculated after we have all ACs extracted
+        status: undefined
       });
     }
 
@@ -557,7 +624,8 @@ export class LivingDocsSync {
     lines.push(`id: ${story.id}`);
     lines.push(`feature: ${featureId}`);
     lines.push(`title: "${story.title}"`);
-    lines.push(`status: ${parsed.status}`);
+    // Use US-level status (based on AC completion), not increment status
+    lines.push(`status: ${story.status || parsed.status}`);
     lines.push(`priority: ${parsed.priority}`);
     lines.push(`created: ${parsed.created}`);
 
@@ -783,12 +851,12 @@ export class LivingDocsSync {
       'metadata.json'
     );
 
-    if (!fs.existsSync(metadataPath)) {
+    if (!existsSync(metadataPath)) {
       return [];
     }
 
     try {
-      const metadata = await fs.readJson(metadataPath);
+      const metadata = await readJson(metadataPath);
       const tools: string[] = [];
 
       // Check for GitHub configuration
@@ -990,7 +1058,7 @@ export class LivingDocsSync {
         // Delete older files
         for (const file of deleteFiles) {
           const filePath = path.join(projectPath, file);
-          await fs.remove(filePath);
+          await fs.rm(filePath, { force: true, recursive: true });
           this.logger.warn(`      ✅ Deleted: ${file}`);
         }
       }
@@ -1011,7 +1079,7 @@ export class LivingDocsSync {
     for (const file of files) {
       if (file.endsWith('.tmp') || file.endsWith('.backup')) {
         const filePath = path.join(projectPath, file);
-        await fs.remove(filePath);
+        await fs.rm(filePath, { force: true });
         this.logger.log(`   🧹 Cleaned up: ${file}`);
       }
     }

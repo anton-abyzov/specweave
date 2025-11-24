@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-21
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-008: Smart Filtering
 
 **Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
@@ -36,13 +33,13 @@ created: 2025-11-21
 
 ## Tasks
 
-- [x] [T-063](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-063): Implement FilterProcessor Core Module
-- [x] [T-064](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-064): Implement Filter Preview (Before Import)
-- [x] [T-065](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-065): Implement Saved Filter Presets
-- [x] [T-066](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-066): Integrate Filtering into Init Flow
-- [x] [T-067](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-067): Integrate Filtering into Import Commands
-- [x] [T-068](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-068): Implement JQL Validation (Client-Side)
-- [x] [T-069](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-069): Handle Complex JQL Performance (Warnings)
-- [x] [T-070](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-070): E2E Test: Full Filtering Workflow
-- [x] [T-071](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-071): Performance Test: JQL Execution Time
-- [x] [T-072](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-072): Document Smart Filtering in User Guide
+- [x] **T-063**: Implement FilterProcessor Core Module
+- [x] **T-064**: Implement Filter Preview (Before Import)
+- [x] **T-065**: Implement Saved Filter Presets
+- [x] **T-066**: Integrate Filtering into Init Flow
+- [x] **T-067**: Integrate Filtering into Import Commands
+- [x] **T-068**: Implement JQL Validation (Client-Side)
+- [x] **T-069**: Handle Complex JQL Performance (Warnings)
+- [x] **T-070**: E2E Test: Full Filtering Workflow
+- [x] **T-071**: Performance Test: JQL Execution Time
+- [x] **T-072**: Document Smart Filtering in User Guide

@@ -9,8 +9,6 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-003: Hooks Read Correct Increment Status (Priority: P1 - CRITICAL)
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/624
-
 **Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
 
 **As a** developer using GitHub/JIRA/ADO sync
@@ -21,9 +19,9 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Acceptance Criteria
 
-- [x] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
-- [x] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
-- [x] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
+- [ ] **AC-US3-01**: Status line hook (`update-status-line.sh`) reads spec.md and finds correct status
+- [ ] **AC-US3-02**: Living docs sync hooks read spec.md frontmatter and get correct status
+- [ ] **AC-US3-03**: GitHub sync reads completed status from spec.md and closes GitHub issue
 
 ---
 
@@ -36,5 +34,5 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Tasks
 
-- [x] **T-013**: Test Status Line Hook Reads Updated spec.md
-- [x] **T-023**: Manual Testing Checklist Execution
+- [ ] **T-013**: Test Status Line Hook Reads Updated spec.md
+- [ ] **T-023**: Manual Testing Checklist Execution

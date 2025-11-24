@@ -265,14 +265,15 @@ export class UserStoryIssueBuilder {
 
     const tasksSection = tasksMatch[1];
 
-    // Pattern: - [x] **T-001**: Task title or - [ ] **T-001**: Task title
-    const taskPattern = /^[-*]\s+\[([x ])\]\s+\*\*(T-\d+)\*\*:\s+(.+)$/gm;
+    // Pattern 1 (NEW): - [x] [T-001](link): Task title
+    // Pattern 2 (OLD): - [x] **T-001**: Task title
+    const taskPattern = /^[-*]\s+\[([x ])\]\s+(?:\[(T-\d+)\]\([^)]+\)|\*\*(T-\d+)\*\*):\s+(.+)$/gm;
 
     let match;
     while ((match = taskPattern.exec(tasksSection)) !== null) {
       const completed = match[1] === 'x';
-      const taskId = match[2];
-      const taskTitle = match[3].trim();
+      const taskId = match[2] || match[3]; // Support both patterns
+      const taskTitle = match[4].trim();
 
       tasks.push({
         id: taskId,
@@ -342,8 +343,8 @@ export class UserStoryIssueBuilder {
       const taskTitle = match[2].trim();
       const taskBody = match[3];
 
-      // Extract AC list
-      const acMatch = taskBody.match(/\*\*AC\*\*:\s*([^\n]+)/);
+      // Extract AC list (support both old and new field names)
+      const acMatch = taskBody.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*([^\n]+)/);
       if (!acMatch) {
         continue; // Skip tasks without AC field
       }

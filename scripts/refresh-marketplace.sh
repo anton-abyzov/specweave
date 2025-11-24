@@ -1,18 +1,21 @@
 #!/bin/bash
 
 # SpecWeave Marketplace Refresh Script
-# Usage: bash scripts/refresh-marketplace.sh [--local|--github]
+# Usage: bash scripts/refresh-marketplace.sh [--github|--local]
 #
 # This script automates the complete marketplace refresh process:
 # 1. Removes existing marketplace
 # 2. Clears all plugin caches
-# 3. Re-adds marketplace (local or GitHub)
+# 3. Re-adds marketplace (GitHub or local)
 # 4. Installs all plugins
 #
 # Options:
-#   --local   : Use local development version (default)
-#   --github  : Pull latest from GitHub
+#   --github  : Pull latest from GitHub (default, recommended)
+#   --local   : Use local development version (ONLY for active dev)
 #   --help    : Show this help message
+#
+# ⚠️  CRITICAL: Always use GitHub mode unless actively developing!
+#     Local mode creates filesystem coupling that can cause stale hooks.
 
 set -e  # Exit on error
 
@@ -29,16 +32,21 @@ GITHUB_REPO="anton-abyzov/specweave"
 LOCAL_PATH="/Users/antonabyzov/Projects/github/specweave"
 
 # Parse arguments
-MODE="local"
-if [ "$1" = "--github" ]; then
+MODE="github"  # ✅ DEFAULT TO GITHUB (stable, production-ready)
+if [ "$1" = "--local" ]; then
+  MODE="local"  # ⚠️  Only for active development
+elif [ "$1" = "--github" ]; then
   MODE="github"
 elif [ "$1" = "--help" ]; then
-  echo "Usage: bash scripts/refresh-marketplace.sh [--local|--github]"
+  echo "Usage: bash scripts/refresh-marketplace.sh [--github|--local]"
   echo ""
   echo "Options:"
-  echo "  --local   Use local development version (default)"
-  echo "  --github  Pull latest from GitHub"
+  echo "  --github  Pull latest from GitHub (default, recommended)"
+  echo "  --local   Use local development version (ONLY for active dev)"
   echo "  --help    Show this help message"
+  echo ""
+  echo "⚠️  CRITICAL: Always use GitHub mode unless actively developing!"
+  echo "    Local mode creates filesystem coupling that can cause stale hooks."
   exit 0
 fi
 

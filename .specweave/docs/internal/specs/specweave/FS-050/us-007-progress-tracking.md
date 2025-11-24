@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-21
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-007: Progress Tracking
 
 **Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
@@ -36,13 +33,13 @@ created: 2025-11-21
 
 ## Tasks
 
-- [x] [T-013](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-013): Implement ProgressTracker Core Module
-- [x] [T-014](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-014): Implement CancelationHandler Core Module
-- [x] [T-015](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-015): Create ImportState Data Structure
-- [x] [T-016](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-016): Integrate Progress Tracking into JIRA Batch Operations
-- [x] [T-017](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-017): Integrate Progress Tracking into ADO Batch Operations
-- [x] [T-018](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-018): Implement Error Handling (Continue on Failure)
-- [x] [T-019](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-019): Implement Final Summary Report
-- [x] [T-020](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-020): Add Progress Throttling (Update Every 5 Projects)
-- [x] [T-021](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-021): E2E Test: Full Progress Workflow with Cancelation
-- [x] [T-022](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-022): Performance Test: Progress Overhead < 5%
+- [x] **T-013**: Implement ProgressTracker Core Module
+- [x] **T-014**: Implement CancelationHandler Core Module
+- [x] **T-015**: Create ImportState Data Structure
+- [x] **T-016**: Integrate Progress Tracking into JIRA Batch Operations
+- [x] **T-017**: Integrate Progress Tracking into ADO Batch Operations
+- [x] **T-018**: Implement Error Handling (Continue on Failure)
+- [x] **T-019**: Implement Final Summary Report
+- [x] **T-020**: Add Progress Throttling (Update Every 5 Projects)
+- [x] **T-021**: E2E Test: Full Progress Workflow with Cancelation
+- [x] **T-022**: Performance Test: Progress Overhead < 5%

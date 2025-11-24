@@ -9,8 +9,6 @@ created: 2025-11-19
 
 # US-005: Progress Tracking by User Story
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/692
-
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** developer checking increment status

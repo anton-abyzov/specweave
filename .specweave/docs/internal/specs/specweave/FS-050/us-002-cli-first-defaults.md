@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-21
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: CLI-First Defaults
 
 **Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
@@ -34,11 +31,11 @@ created: 2025-11-21
 
 ## Tasks
 
-- [x] [T-033](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-033): Change Import Strategy Default to "Import All"
-- [x] [T-034](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-034): Change Checkbox Defaults to `checked: true`
-- [x] [T-035](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-035): Add Clear Deselection Instructions
-- [x] [T-036](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-036): Implement `<a>` Toggle Shortcut (Easy Override)
-- [x] [T-037](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-037): E2E Test: Keystroke Comparison (80% Reduction)
-- [x] [T-038](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-038): Update ADR-0053 with Implementation Details
-- [x] [T-039](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-039): Apply CLI-First Defaults to ADO Init Flow
-- [x] [T-040](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-040): User Feedback Collection (Optional - Post-Launch)
+- [x] **T-033**: Change Import Strategy Default to "Import All"
+- [x] **T-034**: Change Checkbox Defaults to `checked: true`
+- [x] **T-035**: Add Clear Deselection Instructions
+- [x] **T-036**: Implement `<a>` Toggle Shortcut (Easy Override)
+- [x] **T-037**: E2E Test: Keystroke Comparison (80% Reduction)
+- [x] **T-038**: Update ADR-0053 with Implementation Details
+- [x] **T-039**: Apply CLI-First Defaults to ADO Init Flow
+- [x] **T-040**: User Feedback Collection (Optional - Post-Launch)

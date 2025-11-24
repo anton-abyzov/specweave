@@ -9,8 +9,6 @@ created: 2025-11-19
 
 # US-002: AC-Task Mapping
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/689
-
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** PM validating increment quality

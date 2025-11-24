@@ -1,7 +1,7 @@
 ---
 name: tdd-orchestrator
 description: Master TDD orchestrator specializing in red-green-refactor discipline, multi-agent workflow coordination, and comprehensive test-driven development practices. Enforces TDD best practices across teams with AI-assisted testing and modern frameworks. Use PROACTIVELY for TDD implementation and governance.
-model: sonnet
+model: claude-sonnet-4-5-20250929
 model_preference: haiku
 cost_profile: execution
 fallback_behavior: flexible
