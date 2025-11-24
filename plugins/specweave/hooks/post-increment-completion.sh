@@ -25,6 +25,32 @@ fi
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 INCREMENT_DIR="$PROJECT_ROOT/.specweave/increments/$INCREMENT_ID"
 
+# ============================================================================
+# RECURSION PREVENTION (v0.26.1 - CRITICAL)
+# ============================================================================
+# PROBLEM: consolidated-sync.js does Edit/Write operations which trigger hooks.
+# If no guard exists, those hooks will run full sync → more Edit/Write → INFINITE LOOP.
+#
+# SOLUTION: Create recursion guard file BEFORE calling any sync scripts.
+# Other hooks check this file and exit early if it exists.
+#
+# See: ADR-0073 (Hook Recursion Prevention Strategy)
+# See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+
+if [[ -f "$RECURSION_GUARD_FILE" ]]; then
+  # Silent exit - we're already inside a hook chain
+  exit 0
+fi
+
+# Create guard file (atomic operation)
+mkdir -p "$PROJECT_ROOT/.specweave/state" 2>/dev/null || true
+touch "$RECURSION_GUARD_FILE"
+
+# Ensure guard file is ALWAYS removed when script exits (even on error)
+trap 'rm -f "$RECURSION_GUARD_FILE" 2>/dev/null || true' EXIT SIGINT SIGTERM
+
 # Check if increment exists
 if [ ! -d "$INCREMENT_DIR" ]; then
   echo "⚠️  $HOOK_NAME: Increment $INCREMENT_ID not found" >&2
@@ -230,6 +256,113 @@ if command -v node &> /dev/null; then
 else
   echo "  ⚠️  Node.js not found - skipping living docs sync" >&2
   echo "  💡 Install Node.js to enable automatic living docs sync" >&2
+  echo ""
+fi
+
+# ============================================================================
+# GITHUB SYNC (v0.26.1 - CRITICAL FIX)
+# ============================================================================
+# After living docs sync, create GitHub issues for user stories.
+# This is the AUTOMATIC GitHub sync that runs once per increment completion.
+#
+# CRITICAL: This was MISSING in v0.26.0, causing GitHub issues to NEVER be
+# created automatically. The consolidated-sync.js has the full logic for:
+# - Creating GitHub issues for user stories (with 3-layer idempotency)
+# - Syncing task completion comments to existing issues
+# - Format preservation sync for external tools
+#
+# GATE SYSTEM (4 gates - all checked inside consolidated-sync.js):
+# - GATE 1: canUpsertInternalItems (living docs sync enabled)
+# - GATE 2: canUpdateExternalItems (external tool sync enabled)
+# - GATE 3: autoSyncOnCompletion (automatic sync enabled)
+# - GATE 4: sync.github.enabled (GitHub-specific sync enabled)
+#
+# RECURSION SAFETY:
+# - Recursion guard created at script start (line 49)
+# - consolidated-sync.js does Edit/Write operations
+# - Other hooks see the guard and exit early
+# - Guard removed via trap on script exit
+#
+# USER PROJECT COMPATIBILITY:
+# - Script detection works for: development, dist/, node_modules/, marketplace
+# - Works in both SpecWeave framework repo AND user projects using SpecWeave
+# - GITHUB_TOKEN loaded from project's .env file
+#
+# See: Root cause analysis in initial implementation planning
+# See: ADR-0073 (Hook Recursion Prevention Strategy)
+
+if command -v node &> /dev/null; then
+  echo ""
+  echo "🔗 Creating GitHub issues for user stories..."
+
+  # ========================================================================
+  # LOCATE CONSOLIDATED SYNC SCRIPT
+  # ========================================================================
+  # Find consolidated-sync.js in order of preference:
+  # 1. In-place compiled (development, esbuild output)
+  # 2. Local dist (development, tsc output)
+  # 3. node_modules (installed as dependency) ← USER PROJECTS
+  # 4. Plugin marketplace (Claude Code global installation)
+
+  CONSOLIDATED_SCRIPT=""
+  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    # Development: Use in-place compiled hooks (esbuild, not tsc)
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
+    echo "  🔧 Using in-place compiled hook (development mode)"
+  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    # Development: Use project's compiled files (has node_modules)
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+    echo "  🔧 Using local dist (development mode)"
+  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    # Installed as dependency: Use node_modules version (MOST USER PROJECTS)
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+    echo "  📦 Using node_modules version"
+  elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
+    # Fallback: Plugin marketplace (may fail if deps missing)
+    CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
+    echo "  🌐 Using plugin marketplace version"
+  fi
+
+  # ========================================================================
+  # EXECUTE GITHUB SYNC
+  # ========================================================================
+  # Run consolidated sync to create GitHub issues and sync task completion.
+  # Non-blocking: Errors logged but don't crash hook (increment already closed)
+  #
+  # CRITICAL: Do NOT set SKIP_GITHUB_SYNC=true here!
+  # That flag is ONLY for post-task-completion hook to prevent duplicate comments.
+  # On increment completion, we WANT GitHub sync to run.
+
+  if [ -n "$CONSOLIDATED_SCRIPT" ]; then
+    # Load GITHUB_TOKEN from .env for gh CLI authentication
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+      # Extract GITHUB_TOKEN from .env (handles various formats)
+      GITHUB_TOKEN_FROM_ENV=$(grep -E '^GITHUB_TOKEN=' "$PROJECT_ROOT/.env" 2>/dev/null | head -1 | cut -d'=' -f2- | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+      if [ -n "$GITHUB_TOKEN_FROM_ENV" ]; then
+        export GITHUB_TOKEN="$GITHUB_TOKEN_FROM_ENV"
+        echo "  🔑 GitHub token loaded from .env"
+      fi
+    fi
+
+    # Run consolidated sync (synchronous - user sees immediate feedback)
+    # This creates GitHub issues, syncs comments, and performs format preservation
+    if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$INCREMENT_ID") 2>&1; then
+      echo "  ✅ GitHub sync complete"
+      echo ""
+    else
+      echo "  ⚠️  Failed to sync GitHub issues (non-blocking - you can run /specweave-github:sync manually)" >&2
+      echo "  💡 Check that sync.github.enabled=true in .specweave/config.json" >&2
+      echo ""
+    fi
+  else
+    echo "  ⚠️  consolidated-sync.js not found in any location - skipping GitHub sync" >&2
+    echo "  💡 To manually sync: /specweave-github:sync" >&2
+    echo ""
+  fi
+else
+  echo ""
+  echo "  ⚠️  Node.js not found - skipping GitHub sync" >&2
+  echo "  💡 Install Node.js to enable automatic GitHub sync" >&2
   echo ""
 fi
 

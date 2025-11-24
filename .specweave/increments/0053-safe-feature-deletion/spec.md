@@ -3,9 +3,10 @@ increment: 0053-safe-feature-deletion
 title: "Safe Feature Deletion Command"
 feature_id: FS-052
 priority: P1
-status: planning
+status: in-progress
 type: feature
 created: 2025-11-23
+started: 2025-11-24
 test_mode: TDD
 coverage_target: 85
 tech_stack:

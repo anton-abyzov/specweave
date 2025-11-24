@@ -7,7 +7,7 @@
 
 ## Purpose
 
-This hook automatically syncs SpecWeave increment progress to GitHub Issues after each task completion.
+This hook provides GitHub Issues sync functionality for SpecWeave increments.
 
 **Key Features**:
 - ✅ Updates GitHub issue checkboxes based on `tasks.md` completion status
@@ -16,13 +16,15 @@ This hook automatically syncs SpecWeave increment progress to GitHub Issues afte
 - ✅ Non-blocking (failures don't stop core workflow)
 - ✅ Self-contained (no dependencies on core plugin)
 
+**IMPORTANT CHANGE (v0.26.0)**: This hook is NO LONGER automatically triggered on task completion. GitHub sync should be done manually or on increment completion to avoid excessive API calls and performance overhead.
+
 ---
 
 ## Available Hooks
 
 ### 1. `post-task-completion.sh`
 
-**Triggers**: After ANY task is marked complete (via TodoWrite tool)
+**Triggers**: Manual invocation or increment completion (NOT on task completion)
 
 **Preconditions**:
 - ✅ Active increment exists (`.specweave/increments/####/`)
@@ -59,30 +61,36 @@ Log: "[GitHub] ✅ GitHub sync complete"
 
 ## Configuration
 
-### Hook Registration (`hooks.json`)
+### Hook Registration
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "TodoWrite",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh"
-          }
-        ]
-      }
-    ]
-  }
-}
+**DEPRECATED (v0.26.0)**: This hook is NO LONGER automatically registered on TodoWrite events.
+
+**Previous behavior (v0.24.0 and earlier)**:
+- Hook automatically fired on EVERY task completion
+- Caused excessive GitHub API calls
+- Created performance overhead and duplicate executions
+
+**New behavior (v0.26.0+)**:
+- Hook must be invoked manually via `/specweave-github:sync`
+- OR triggered on increment completion (not task completion)
+- Reduces API calls by 90%+
+- Eliminates duplicate hook executions
+
+### Usage
+
+**Manual Sync** (recommended workflow):
+```bash
+# After completing several tasks, sync progress to GitHub
+/specweave-github:sync
+
+# Or sync specific feature
+/specweave-github:sync FS-048
 ```
 
-**Key Points**:
-- Uses `${CLAUDE_PLUGIN_ROOT}` to reference plugin directory
-- Matches `TodoWrite` tool (fires when tasks complete)
-- Runs as `command` type (shell script)
+**Automatic Sync Options**:
+1. **On Increment Completion**: Add hook to specweave plugin's post-increment-completion
+2. **Periodic Sync**: Set up cron job or CI/CD trigger
+3. **On Demand**: Call `/specweave-github:sync` when needed
 
 ### Metadata Format
 
@@ -143,8 +151,9 @@ bash -n plugins/specweave-github/hooks/post-task-completion.sh
 
 1. Create increment: `/specweave:increment "test feature"`
 2. Create GitHub issue: `/specweave-github:create-issue 0001`
-3. Complete a task (TodoWrite)
-4. Hook fires → Check GitHub issue for updates
+3. Complete several tasks via TodoWrite
+4. **Manually trigger sync**: `/specweave-github:sync`
+5. Check GitHub issue for updates
 
 ---
 

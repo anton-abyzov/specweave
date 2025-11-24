@@ -1,12 +1,13 @@
 {
   "id": "0053-safe-feature-deletion",
-  "status": "planning",
+  "status": "in-progress",
   "type": "feature",
   "priority": "P1",
   "feature_id": "FS-052",
   "created": "2025-11-24T03:36:54Z",
-  "lastActivity": "2025-11-24T03:36:54Z",
-  "testMode": "TDD",
+  "started": "2025-11-24T06:25:00.000Z",
+  "lastActivity": "2025-11-24T06:25:00.000Z",
+  "testMode": "test-after",
   "coverageTarget": 85,
   "total_acs": 70,
   "completed_acs": 0

@@ -2,9 +2,9 @@
 id: US-003
 feature: FS-051
 title: "Idempotency via Caching"
-status: active
+status: completed
 priority: P0
-created: 2025-11-22
+created: 2025-11-22T00:00:00.000Z
 ---
 
 **Origin**: 🏠 **Internal**

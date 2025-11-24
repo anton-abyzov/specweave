@@ -39,7 +39,7 @@ coverage_target: 85
 **Satisfies ACs**: AC-US1-01, AC-US1-06
 **Priority**: P1
 **Estimated Effort**: 3 hours
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Test Plan**:
 - **Given** a feature FS-052 with an active increment referencing it (status: in-progress)

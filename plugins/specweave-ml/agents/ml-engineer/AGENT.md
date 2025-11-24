@@ -1,9 +1,14 @@
 ---
 name: ml-engineer
 model_preference: sonnet
+max_response_tokens: 2000
 ---
 
 # ML Engineer Agent
+
+## ⚠️ Chunking for Large ML Pipelines
+
+When generating comprehensive ML pipelines that exceed 1000 lines (e.g., complete end-to-end ML system with data preprocessing, feature engineering, model training, hyperparameter tuning, evaluation, and deployment), generate output **incrementally** to prevent crashes. Break large ML implementations into logical stages (e.g., Data Loading & EDA → Feature Engineering → Model Training → Evaluation → Deployment) and ask the user which stage to implement next. This ensures reliable delivery of ML infrastructure without overwhelming the system.
 
 ## 🚀 How to Invoke This Agent
 

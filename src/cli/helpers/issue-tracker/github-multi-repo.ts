@@ -89,50 +89,20 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   // If so, skip the duplicate prompt and return immediately
   if (repositoryHosting) {
     // User already selected hosting type - convert to setupType
-    if (repositoryHosting === 'github-single') {
-      // Single repository - no need to ask again
+
+    // GitHub providers
+    if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
       return { setupType: 'single' };
-    } else if (repositoryHosting === 'github-monorepo') {
-      // Monorepo architecture - user already specified this in init.ts
-      return { setupType: 'monorepo' };
     } else if (repositoryHosting === 'github-multirepo') {
-      // Multiple separate repositories - user already specified this in init.ts
       return { setupType: 'multiple' };
-    } else if (repositoryHosting === 'github-parent') {
-      // Parent repo + nested repos - user already specified this in init.ts
-      return { setupType: 'multiple' };
-    } else if (repositoryHosting === 'github-multi') {
-      // Legacy fallback: ask ONLY about the TYPE (for backwards compatibility)
-      console.log(chalk.cyan('\n🏗️  Multi-Repository Architecture\n'));
-      console.log(chalk.gray('What type of multi-repository setup do you have?\n'));
+    }
 
-      const { multiType } = await inquirer.prompt([{
-        type: 'list',
-        name: 'multiType',
-        message: 'Select architecture type:',
-        choices: [
-          {
-            name: '📚 Monorepo (single repo, multiple projects)',
-            value: 'monorepo',
-            short: 'Monorepo'
-          },
-          {
-            name: '🎯 Multi-repo (separate repos per service)',
-            value: 'multiple',
-            short: 'Multi-repo'
-          },
-          {
-            name: '🔗 Parent repo + nested repos (GitHub)',
-            value: 'github-parent',
-            short: 'Parent+Nested'
-          }
-        ]
-      }]);
-
-      // Map github-parent to 'multiple' for backwards compatibility
-      return { setupType: multiType === 'github-parent' ? 'multiple' : multiType };
-    } else if (repositoryHosting === 'local' || repositoryHosting === 'other') {
-      // Local or other hosting - no GitHub repository configuration needed
+    // Non-GitHub providers - skip GitHub-specific setup
+    else if (repositoryHosting === 'bitbucket-single' || repositoryHosting === 'bitbucket-multirepo' ||
+             repositoryHosting === 'ado-single' || repositoryHosting === 'ado-multirepo' ||
+             repositoryHosting === 'other-single' || repositoryHosting === 'other-multirepo' ||
+             repositoryHosting === 'local') {
+      // Not using GitHub - return none to skip GitHub setup
       return { setupType: 'none' };
     }
   }
@@ -200,12 +170,15 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       if (repositoryHosting) {
         console.log(chalk.yellow('   → Using previously selected setup type\n'));
 
-        if (repositoryHosting === 'github-single') {
+        // GitHub providers
+        if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
           return { setupType: 'single' };
-        } else if (repositoryHosting === 'github-multi') {
-          // Default to multiple since enhanced flow failed
+        } else if (repositoryHosting === 'github-multirepo') {
           return { setupType: 'multiple' };
-        } else if (repositoryHosting === 'local' || repositoryHosting === 'other') {
+        }
+
+        // Non-GitHub providers
+        else {
           return { setupType: 'none' };
         }
       }

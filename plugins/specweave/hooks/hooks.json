@@ -16,15 +16,6 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "TodoWrite",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Write",
         "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/(spec|plan|tasks)\\.md",
         "hooks": [
