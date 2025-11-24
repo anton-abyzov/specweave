@@ -38,27 +38,17 @@ describe('Plan Command Integration Tests', () => {
   let testDir: string;
   let specweaveDir: string;
   let orchestrator: PlanCommandOrchestrator;
-  let originalCwd: string;
 
   beforeEach(() => {
-    // Save original working directory
-    originalCwd = process.cwd();
-
-    // Create temporary test directory
+    // ✅ SAFE: Uses os.tmpdir() for complete isolation from project root
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-plan-test-'));
     specweaveDir = path.join(testDir, '.specweave', 'increments');
     fs.mkdirSync(specweaveDir, { recursive: true });
-
-    // Change to test directory (needed for MetadataManager)
-    process.chdir(testDir);
 
     orchestrator = new PlanCommandOrchestrator(testDir);
   });
 
   afterEach(() => {
-    // Restore original working directory
-    process.chdir(originalCwd);
-
     // Clean up test directory
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
