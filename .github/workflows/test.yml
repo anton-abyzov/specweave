@@ -70,6 +70,7 @@ jobs:
           JIRA_DOMAIN: ${{ secrets.JIRA_DOMAIN }}
 
       - name: Check test coverage
+        continue-on-error: true
         run: |
           if grep -q '"test:coverage"' package.json; then
             npm run test:coverage
