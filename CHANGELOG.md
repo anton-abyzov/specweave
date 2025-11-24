@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.26.14] - 2025-11-24
+
+### 🐛 Bug Fixes
+- **Init Prompt Fix**: Fixed repository structure prompt showing as text input instead of selectable options
+  - Root cause: Inquirer v13 renamed `type: 'list'` to `type: 'select'`
+  - Fixed 46 occurrences across 18 source files and 4 plugin documentation files
+  - All interactive list prompts now work correctly with arrow-key selection
+
+---
+
 ## [0.26.11] - 2025-11-24
 
 ### 🐛 Bug Fixes
