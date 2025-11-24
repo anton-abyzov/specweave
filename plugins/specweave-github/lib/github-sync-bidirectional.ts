@@ -16,7 +16,7 @@
  * @module github-sync-bidirectional
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 import {

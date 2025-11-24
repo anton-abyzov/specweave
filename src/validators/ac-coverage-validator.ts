@@ -328,7 +328,7 @@ export async function exportCoverageReportJSON(
   report: ACCoverageReport,
   outputPath: string
 ): Promise<void> {
-  const fs = await import('fs-extra');
+  const fs = await import('../utils/fs-native.js');
 
   // Convert Maps to plain objects for JSON serialization
   const serializable = {

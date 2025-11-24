@@ -243,7 +243,7 @@ export class AutonomousExecutor {
   private async preflightCheck(incrementId: string): Promise<{ passed: boolean; reason?: string }> {
     // Check increment exists
     const incrementPath = path.join(process.cwd(), '.specweave/increments', incrementId);
-    const fs = await import('fs-extra');
+    const fs = await import('../../utils/fs-native.js');
 
     if (!await fs.pathExists(incrementPath)) {
       return {

@@ -7,7 +7,7 @@
  * @module github-sync-increment-changes
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
 import {

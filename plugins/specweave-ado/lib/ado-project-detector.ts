@@ -5,7 +5,7 @@
  * based on content analysis, folder structure, and configuration.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import { AzureDevOpsStrategy } from '../../../src/cli/helpers/issue-tracker/types';
 
