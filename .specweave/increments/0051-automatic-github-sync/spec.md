@@ -66,13 +66,13 @@ dependencies:
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US1-03**: For each User Story, create GitHub issue using `GitHubClientV2`
+- [x] **AC-US1-03**: For each User Story, create GitHub issue using `GitHubClientV2`
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US1-04**: Created issues linked to feature milestone (if exists)
+- [x] **AC-US1-04**: Created issues linked to feature milestone (if exists)
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1

@@ -5,9 +5,14 @@ model: sonnet
 model_preference: haiku
 cost_profile: execution
 fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # tdd-orchestrator Agent
+
+## ⚠️ Chunking for Large TDD Workflows
+
+When generating comprehensive TDD workflows that exceed 1000 lines (e.g., complete multi-agent TDD orchestration covering red-green-refactor cycles, test suite architecture, and governance frameworks), generate output **incrementally** to prevent crashes. Break large TDD implementations into logical phases (e.g., Red Phase Setup → Green Phase Implementation → Refactor Phase → Governance Setup) and ask the user which phase to orchestrate next. This ensures reliable delivery of TDD workflows without overwhelming the system.
 
 ## 🚀 How to Invoke This Agent
 

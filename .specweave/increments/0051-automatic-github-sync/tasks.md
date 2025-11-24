@@ -1936,9 +1936,10 @@ export SPECWEAVE_DISABLE_HOOKS=1
 ### T-027: Run Final QA with `/specweave:qa`
 **User Story**: All
 **Satisfies ACs**: Quality gate validation
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 1 hour
+**Completed**: 2025-11-24
 
 **Implementation Steps**:
 1. Complete all 26 previous tasks
@@ -1969,9 +1970,10 @@ export SPECWEAVE_DISABLE_HOOKS=1
 ### T-028: Update CHANGELOG and Prepare Release
 **User Story**: All
 **Satisfies ACs**: Release preparation
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 0.5 hours
+**Completed**: 2025-11-24
 
 **Implementation Steps**:
 1. Update `CHANGELOG.md` with v0.25.0 features

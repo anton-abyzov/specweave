@@ -307,7 +307,7 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     default: 'claude',
   },
   testing: {
-    defaultTestMode: 'TDD',
+    defaultTestMode: 'test-after',
     defaultCoverageTarget: 80,
     coverageTargets: {
       unit: 85,

@@ -204,14 +204,33 @@ Note: Published via direct push (bypassed GitHub Actions)
 
 ### 2. Increment Folder Structure
 
-**ONLY 4 files in `.specweave/increments/####/` root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
+**CRITICAL RULES**:
+
+**At `.specweave/increments/` root - ONLY 3 things allowed**:
+1. Numbered increment folders: `####-increment-name/` (e.g., `0053-safe-feature-deletion/`)
+2. Archive folder: `_archive/`
+3. README.md (optional documentation)
+
+**❌ NOT ALLOWED at root**: `_working/`, `reports/`, `logs/`, `scripts/`, or ANY other folders/files
+
+**Inside each increment folder - ONLY 4 files at root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
 
 **Everything else → subfolders**: `reports/`, `scripts/`, `logs/`
 
 ```bash
+# ❌ WRONG: .specweave/increments/_working/fix/
+# ❌ WRONG: .specweave/increments/reports/
 # ❌ WRONG: .specweave/increments/0046/analysis-report.md
 # ✅ CORRECT: .specweave/increments/0046/reports/analysis-report.md
 ```
+
+**Validation**:
+```bash
+# Check for violations at root (should output NOTHING)
+ls -1 .specweave/increments/ | grep -v "^[0-9]" | grep -v "^_archive" | grep -v "^README.md"
+```
+
+**See**: `.specweave/docs/internal/governance/increment-folder-structure.md` (complete standard)
 
 ---
 
@@ -711,8 +730,10 @@ await provider.createRepository({ owner, name, description, visibility }, token)
 
 **Platform Support**:
 - ✅ GitHub (fully supported): `github-provider.ts`
-- ⏳ GitLab (stub): `gitlab-provider.ts` (throws "coming soon" error)
-- ⏳ Bitbucket (stub): `bitbucket-provider.ts` (throws "coming soon" error)
+- ✅ GitLab (fully supported): `gitlab-provider.ts`
+- ✅ Bitbucket (fully supported): `bitbucket-provider.ts`
+- ✅ Azure DevOps (fully supported): `azure-devops-provider.ts`
+- ✅ Local Git (fully supported): `local-provider.ts`
 
 **Adding new platform**:
 1. Create `src/core/repo-structure/providers/{platform}-provider.ts`

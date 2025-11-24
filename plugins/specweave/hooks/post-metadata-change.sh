@@ -62,43 +62,48 @@ fi
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
 # ============================================================================
+# READ STDIN (v0.26.1 - CRITICAL FIX)
+# ============================================================================
+# PostToolUse hooks receive JSON data from Claude Code via STDIN, NOT env vars!
+# This was the critical bug: hook was looking for environment variables that don't exist.
+#
+# Example STDIN data:
+# {"tool": "Edit", "tool_input": {"file_path": "/path/to/file.md", ...}}
+# {"tool": "Write", "tool_input": {"file_path": "/path/to/file.md", ...}}
+
+STDIN_DATA=$(mktemp)
+cat > "$STDIN_DATA"
+
+echo "[$(date)] post-metadata-change: Hook fired" >> "$DEBUG_LOG" 2>/dev/null || true
+echo "[$(date)] Input JSON:" >> "$DEBUG_LOG" 2>/dev/null || true
+cat "$STDIN_DATA" >> "$DEBUG_LOG" 2>/dev/null || true
+echo "" >> "$DEBUG_LOG" 2>/dev/null || true
+
+# ============================================================================
 # EARLY EXIT OPTIMIZATION (v0.25.0): Ultra-Fast Rejection of Non-Metadata Changes
 # ============================================================================
 # This hook should ONLY run for metadata.json changes.
 # 99.9% of Edit/Write operations are NOT metadata.json.
 # Do fastest possible check first to minimize overhead.
 
-# Quick check: If TOOL_USE_CONTENT doesn't contain "metadata.json", exit immediately
-if [[ -n "${TOOL_USE_CONTENT:-}" ]] && [[ "$TOOL_USE_CONTENT" != *"metadata.json"* ]]; then
+# Quick check: If STDIN doesn't contain "metadata.json", exit immediately
+if ! grep -q "metadata\.json" "$STDIN_DATA" 2>/dev/null; then
+  echo "[$(date)] post-metadata-change: Not metadata.json - exiting" >> "$DEBUG_LOG" 2>/dev/null || true
+  rm -f "$STDIN_DATA"
   exit 0  # Fast path: Not metadata.json
 fi
 
-# Quick check: If TOOL_USE_ARGS doesn't contain "metadata.json", exit immediately
-if [[ -n "${TOOL_USE_ARGS:-}" ]] && [[ "$TOOL_USE_ARGS" != *"metadata.json"* ]]; then
-  exit 0  # Fast path: Not metadata.json
-fi
+echo "[$(date)] post-metadata-change: metadata.json detected in input" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
-# STANDARD FILE DETECTION (Only if quick checks passed)
+# EXTRACT FILE PATH FROM STDIN JSON
 # ============================================================================
 
-# Extract modified file from environment variables (Claude Code provides this)
-MODIFIED_FILE=""
+# Parse file_path from JSON (handles both Edit and Write tool formats)
+MODIFIED_FILE=$(grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' "$STDIN_DATA" | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
 
-# Method 1: TOOL_USE_CONTENT environment variable (primary for Write)
-if [[ -n "${TOOL_USE_CONTENT:-}" ]]; then
-  MODIFIED_FILE="$TOOL_USE_CONTENT"
-fi
-
-# Method 2: TOOL_RESULT environment variable (fallback)
-if [[ -z "$MODIFIED_FILE" ]] && [[ -n "${TOOL_RESULT:-}" ]]; then
-  MODIFIED_FILE=$(echo "$TOOL_RESULT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
-fi
-
-# Method 3: Parse tool use arguments (last resort for Edit)
-if [[ -z "$MODIFIED_FILE" ]] && [[ -n "${TOOL_USE_ARGS:-}" ]]; then
-  MODIFIED_FILE=$(echo "$TOOL_USE_ARGS" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
-fi
+# Clean up temp file
+rm -f "$STDIN_DATA"
 
 echo "[$(date)] post-metadata-change: Detected file: ${MODIFIED_FILE:-<none>}" >> "$DEBUG_LOG" 2>/dev/null || true
 
