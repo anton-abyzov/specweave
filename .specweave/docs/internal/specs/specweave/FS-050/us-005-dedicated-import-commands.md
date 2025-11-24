@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-21
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-005: Dedicated Import Commands
 
 **Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
@@ -37,13 +34,13 @@ created: 2025-11-21
 
 ## Tasks
 
-- [x] [T-041](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-041): Create `/specweave-jira:import-projects` Command Structure
-- [x] [T-042](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-042): Implement Smart Filtering (Active, Type, Lead, JQL)
-- [x] [T-043](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-043): Implement Resume Support (ImportState)
-- [x] [T-044](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-044): Implement Dry-Run Mode (Preview)
-- [x] [T-045](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-045): Implement Progress Tracking for Import Commands
-- [x] [T-046](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-046): Create `/specweave-ado:import-projects` Command
-- [x] [T-047](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-047): Implement Saved Filter Presets
-- [x] [T-048](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-048): E2E Test: Full Import Command Workflow
-- [x] [T-049](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-049): Update .env Management Utilities
-- [x] [T-050](../../../../increments/0050-external-tool-import-phase-1b-7/tasks.md#T-050): Document Import Commands in User Guide
+- [x] **T-041**: Create `/specweave-jira:import-projects` Command Structure
+- [x] **T-042**: Implement Smart Filtering (Active, Type, Lead, JQL)
+- [x] **T-043**: Implement Resume Support (ImportState)
+- [x] **T-044**: Implement Dry-Run Mode (Preview)
+- [x] **T-045**: Implement Progress Tracking for Import Commands
+- [x] **T-046**: Create `/specweave-ado:import-projects` Command
+- [x] **T-047**: Implement Saved Filter Presets
+- [x] **T-048**: E2E Test: Full Import Command Workflow
+- [x] **T-049**: Update .env Management Utilities
+- [x] **T-050**: Document Import Commands in User Guide

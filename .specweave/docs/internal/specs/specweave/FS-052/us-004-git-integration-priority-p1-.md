@@ -1,10 +1,15 @@
 ---
 id: US-004
 feature: FS-052
-title: "Git Integration (Priority: P1)"
+title: "Git Integration"
 status: planned
 priority: P1
 created: 2025-11-23
+external_tools:
+  github:
+    number: 725
+    url: https://github.com/anton-abyzov/specweave/issues/725
+    created_at: 2025-11-24T07:00:13.859Z
 ---
 
 **Origin**: 🏠 **Internal**

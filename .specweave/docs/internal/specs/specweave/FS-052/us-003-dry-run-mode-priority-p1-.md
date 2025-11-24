@@ -1,10 +1,15 @@
 ---
 id: US-003
 feature: FS-052
-title: "Dry-Run Mode (Priority: P1)"
+title: "Dry-Run Mode"
 status: planned
 priority: P1
 created: 2025-11-23
+external_tools:
+  github:
+    number: 724
+    url: https://github.com/anton-abyzov/specweave/issues/724
+    created_at: 2025-11-24T07:00:11.861Z
 ---
 
 **Origin**: 🏠 **Internal**

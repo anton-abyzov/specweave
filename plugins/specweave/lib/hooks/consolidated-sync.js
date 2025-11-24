@@ -47,6 +47,9 @@ import { ACStatusManager } from '../vendor/core/increment/ac-status-manager.js';
 import { SyncCoordinator } from '../../../../dist/src/sync/sync-coordinator.js';
 import { consoleLogger } from '../vendor/utils/logger.js';
 
+// Import US completion orchestrator (NEW in v0.25.0+)
+import { syncCompletedUserStories } from './us-completion-orchestrator.js';
+
 // ============================================================================
 // WRAPPER: UPDATE AC STATUS
 // ============================================================================
@@ -172,7 +175,20 @@ async function runConsolidatedSync(incrementId) {
       results.translate = { success: false, error: error.message };
     }
 
-    // OPERATION 5: Sync to GitHub (NEW in v0.24.0+)
+    // OPERATION 5: Detect and sync newly completed user stories (NEW in v0.25.0+)
+    // CRITICAL: This operation runs AFTER AC sync to ensure ACs are up-to-date
+    // When a user story becomes fully complete (all ACs satisfied), this:
+    // - Detects the completion
+    // - Updates living docs
+    // - Triggers external tool sync (GitHub/JIRA/ADO)
+    try {
+      results.usCompletion = await syncCompletedUserStories(incrementId);
+    } catch (error) {
+      console.error('❌ Error detecting completed user stories:', error.message);
+      results.usCompletion = { success: false, error: error.message };
+    }
+
+    // OPERATION 6: Sync to GitHub (NEW in v0.24.0+)
     // FIX (v0.26.0): Skip GitHub sync in post-task-completion hook!
     // WHY: GitHub sync should ONLY run on increment COMPLETION, not task completion
     // This prevents 27 duplicate comments on every TodoWrite (see root cause analysis)
@@ -180,10 +196,11 @@ async function runConsolidatedSync(incrementId) {
     // GitHub sync is now ONLY triggered by:
     // - post-increment-completion.sh (when status → "completed")
     // - Manual sync via /specweave-github:sync command
+    // - US completion orchestrator (OPERATION 5) when user stories complete
     //
     // See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
     if (process.env.SKIP_GITHUB_SYNC === 'true') {
-      console.log('\n⏭️  [5/5] GitHub sync SKIPPED (called from post-task-completion hook)');
+      console.log('\n⏭️  [6/6] GitHub sync SKIPPED (called from post-task-completion hook)');
       console.log('    GitHub sync will run automatically on increment completion.');
       results.syncGitHub = { success: true, skipped: true };
     } else {

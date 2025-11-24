@@ -9,8 +9,6 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-001: Status Line Shows Correct Active Increment (Priority: P1 - CRITICAL)
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/622
-
 **Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
 
 **As a** developer working on SpecWeave
@@ -21,9 +19,9 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Acceptance Criteria
 
-- [x] **AC-US1-01**: When closing increment via `/specweave:done`, status line updates to next active increment
-- [x] **AC-US1-02**: Status line never shows completed increments as active
-- [x] **AC-US1-03**: Status line hook reads spec.md and finds correct status (not stale "active")
+- [ ] **AC-US1-01**: When closing increment via `/specweave:done`, status line updates to next active increment
+- [ ] **AC-US1-02**: Status line never shows completed increments as active
+- [ ] **AC-US1-03**: Status line hook reads spec.md and finds correct status (not stale "active")
 
 ---
 
@@ -36,8 +34,8 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Tasks
 
-- [x] **T-013**: Test Status Line Hook Reads Updated spec.md
-- [x] **T-014**: Test /specweave:done Updates spec.md
-- [x] **T-020**: Write E2E Test (Full Increment Lifecycle)
-- [x] **T-023**: Manual Testing Checklist Execution
-- [x] **T-024**: Update User Guide (Troubleshooting Section)
+- [ ] **T-013**: Test Status Line Hook Reads Updated spec.md
+- [ ] **T-014**: Test /specweave:done Updates spec.md
+- [ ] **T-020**: Write E2E Test (Full Increment Lifecycle)
+- [ ] **T-023**: Manual Testing Checklist Execution
+- [ ] **T-024**: Update User Guide (Troubleshooting Section)

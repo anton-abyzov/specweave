@@ -1,10 +1,15 @@
 ---
 id: US-001
 feature: FS-052
-title: "Safe Deletion with Validation (Priority: P1)"
+title: "Safe Deletion with Validation"
 status: planned
 priority: P1
 created: 2025-11-23
+external_tools:
+  github:
+    number: 722
+    url: https://github.com/anton-abyzov/specweave/issues/722
+    created_at: 2025-11-24T07:00:07.360Z
 ---
 
 **Origin**: 🏠 **Internal**
