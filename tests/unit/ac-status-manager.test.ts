@@ -851,4 +851,201 @@ describe('ACStatusManager.syncACStatus', () => {
       expect(updatedSpec).toContain('- [ ] AC-US11-03: Partially complete');
     });
   });
+
+  /**
+   * REGRESSION TEST for bug discovered 2025-11-24
+   *
+   * CRITICAL BUG: AC sync hook was only detecting list format (`- [x]`)
+   * and missing field format (`**Status**: [x] completed`).
+   *
+   * This caused ALL 70 ACs in increment 0053 to show "0% tasks complete"
+   * even though tasks.md showed 37/37 completed!
+   *
+   * Root Cause: Line 137 of ac-status-manager.ts only checked for `line.includes('- [')`
+   *
+   * Fix: Added support for field format matching:
+   * - `**Status**: [x] completed` (complete)
+   * - `**Status**: [ ] pending` (incomplete)
+   *
+   * See: .specweave/increments/0053-safe-feature-deletion/metadata.json
+   *      (acSyncEvents showing all conflicts)
+   */
+  describe('Task status field format (v0.23.0+) - REGRESSION TEST', () => {
+    it('should detect completed tasks with field format: **Status**: [x] completed', () => {
+      const tasksContent = `
+### T-001: Implement Active Increment Validation
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-06
+**Priority**: P1
+**Estimated Effort**: 3 hours
+**Status**: [x] completed
+
+**Test Plan**:
+- Given a feature FS-052 with an active increment
+- When validation runs
+- Then validation should fail
+      `;
+
+      const result = manager.parseTasksForACStatus(tasksContent);
+
+      // AC-US1-01 should be detected as complete
+      expect(result.has('AC-US1-01')).toBe(true);
+      expect(result.get('AC-US1-01')?.totalTasks).toBe(1);
+      expect(result.get('AC-US1-01')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-01')?.percentage).toBe(100);
+      expect(result.get('AC-US1-01')?.isComplete).toBe(true);
+
+      // AC-US1-06 should also be complete (same task)
+      expect(result.has('AC-US1-06')).toBe(true);
+      expect(result.get('AC-US1-06')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-06')?.percentage).toBe(100);
+    });
+
+    it('should detect incomplete tasks with field format: **Status**: [ ] pending', () => {
+      const tasksContent = `
+### T-002: Implement Validation Report
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-02
+**Priority**: P1
+**Status**: [ ] pending
+
+**Test Plan**:
+- Given validation passed
+- When report displays
+- Then show all details
+      `;
+
+      const result = manager.parseTasksForACStatus(tasksContent);
+
+      // AC-US1-02 should be detected as incomplete
+      expect(result.has('AC-US1-02')).toBe(true);
+      expect(result.get('AC-US1-02')?.totalTasks).toBe(1);
+      expect(result.get('AC-US1-02')?.completedTasks).toBe(0);
+      expect(result.get('AC-US1-02')?.percentage).toBe(0);
+      expect(result.get('AC-US1-02')?.isComplete).toBe(false);
+    });
+
+    it('should handle mixed format tasks (field format + list format)', () => {
+      const tasksContent = `
+### T-001: Task with field format
+**Satisfies ACs**: AC-US1-01
+**Status**: [x] completed
+
+### T-002: Task with list format
+**Satisfies ACs**: AC-US1-01
+- [x] Done
+
+### T-003: Task with pending field format
+**Satisfies ACs**: AC-US1-02
+**Status**: [ ] pending
+
+### T-004: Task with unchecked list
+**Satisfies ACs**: AC-US1-02
+- [ ] Not done
+      `;
+
+      const result = manager.parseTasksForACStatus(tasksContent);
+
+      // AC-US1-01 should have 2 completed tasks (mixed formats)
+      expect(result.get('AC-US1-01')?.totalTasks).toBe(2);
+      expect(result.get('AC-US1-01')?.completedTasks).toBe(2);
+      expect(result.get('AC-US1-01')?.percentage).toBe(100);
+
+      // AC-US1-02 should have 0 completed tasks (both incomplete)
+      expect(result.get('AC-US1-02')?.totalTasks).toBe(2);
+      expect(result.get('AC-US1-02')?.completedTasks).toBe(0);
+      expect(result.get('AC-US1-02')?.percentage).toBe(0);
+    });
+
+    it('should match field format case-insensitively', () => {
+      const tasksContent = `
+### T-001: Lowercase status
+**Satisfies ACs**: AC-US1-01
+**status**: [x] completed
+
+### T-002: Mixed case status
+**Satisfies ACs**: AC-US1-02
+**StAtUs**: [x] done
+
+### T-003: All caps status
+**Satisfies ACs**: AC-US1-03
+**STATUS**: [x] COMPLETED
+      `;
+
+      const result = manager.parseTasksForACStatus(tasksContent);
+
+      // All should be detected as complete (case-insensitive)
+      expect(result.get('AC-US1-01')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-02')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-03')?.completedTasks).toBe(1);
+    });
+
+    it('should handle tasks.md from increment 0053 (real-world regression)', () => {
+      // This is the EXACT format from increment 0053 that broke AC sync
+      const tasksContent = `
+### T-001: Implement Active Increment Validation
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-06
+**Priority**: P1
+**Estimated Effort**: 3 hours
+**Status**: [x] completed
+
+**Test Plan**:
+- **Given** a feature FS-052 with an active increment referencing it (status: in-progress)
+- **When** validation runs in safe mode (no --force flag)
+- **Then** validation should fail and block deletion
+- **And** error message should list the active increment ID
+
+**Implementation**:
+1. Create file: src/core/feature-deleter/validator.ts
+2. Define FeatureValidator class with validate() method
+3. Implement scanIncrementReferences() to scan all .specweave/increments/*/metadata.json
+4. Parse metadata.json and extract feature_id field
+5. Filter increments by status (active = NOT completed/abandoned/archived)
+6. If active increments found and no --force flag → validation fails
+
+---
+
+### T-002: Implement Completed Increment Validation (Warning Mode)
+
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-02
+**Priority**: P1
+**Estimated Effort**: 2 hours
+**Status**: [x] completed
+
+**Test Plan**:
+- **Given** a feature FS-052 with a completed increment referencing it (status: completed)
+- **When** validation runs in safe mode
+- **Then** validation should pass with warning (not blocking)
+- **And** warning message should list the completed increment ID
+      `;
+
+      const result = manager.parseTasksForACStatus(tasksContent);
+
+      // AC-US1-01 should be complete (T-001)
+      expect(result.get('AC-US1-01')?.totalTasks).toBe(1);
+      expect(result.get('AC-US1-01')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-01')?.percentage).toBe(100);
+      expect(result.get('AC-US1-01')?.isComplete).toBe(true);
+
+      // AC-US1-06 should be complete (T-001)
+      expect(result.get('AC-US1-06')?.totalTasks).toBe(1);
+      expect(result.get('AC-US1-06')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-06')?.percentage).toBe(100);
+      expect(result.get('AC-US1-06')?.isComplete).toBe(true);
+
+      // AC-US1-02 should be complete (T-002)
+      expect(result.get('AC-US1-02')?.totalTasks).toBe(1);
+      expect(result.get('AC-US1-02')?.completedTasks).toBe(1);
+      expect(result.get('AC-US1-02')?.percentage).toBe(100);
+      expect(result.get('AC-US1-02')?.isComplete).toBe(true);
+
+      // This was the BUG: All these ACs showed "0% tasks complete"
+      // Now they should all show 100%!
+    });
+  });
 });
