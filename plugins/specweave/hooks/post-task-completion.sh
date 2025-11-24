@@ -36,10 +36,13 @@
 
 set +e  # NEVER use set -e in hooks - it causes crashes
 
-# EMERGENCY KILL SWITCH FIRST (before anything else)
-if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
-  exit 0
-fi
+# ============================================================================
+# PROJECT ROOT DETECTION (MUST BE FIRST - v0.26.1 FIX)
+# ============================================================================
+# CRITICAL FIX: PROJECT_ROOT must be defined BEFORE recursion guard creation
+# BUG (v0.26.0): Used $PROJECT_ROOT on line 71 but defined it on line 112
+# RESULT: Guard file created at wrong path (/.specweave/...) → recursion not prevented
+# See: Incident 2025-11-24 (3x PreToolUse hook fires, Claude Code crash)
 
 # Find project root by searching upward for .specweave/ directory
 # Works regardless of where hook is installed (source or .claude/hooks/)
@@ -62,6 +65,60 @@ find_project_root() {
 
 PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 cd "$PROJECT_ROOT" 2>/dev/null || true
+
+# ============================================================================
+# RECURSION PREVENTION (CRITICAL - v0.26.0 - FILE-BASED GUARD)
+# ============================================================================
+# PROBLEM: Hooks that write files trigger other hooks, causing infinite loops.
+# OLD SOLUTION (v0.25.1): Environment variable SPECWEAVE_IN_HOOK=1
+# WHY IT FAILED: Background processes (&) create NEW shells that don't inherit env vars!
+#
+# NEW SOLUTION (v0.26.0): File-based recursion guard
+# - Guard file exists = already inside hook chain
+# - Works across ALL processes (not just current shell)
+# - Atomic operation (mkdir -p ensures thread safety)
+# - Cleanup guaranteed by trap EXIT
+#
+# Example infinite loop (BEFORE fix):
+#   TodoWrite → post-task-completion.sh (sets SPECWEAVE_IN_HOOK=1)
+#     → spawns background process (&)
+#       → consolidated-sync.js (SPECWEAVE_IN_HOOK=0! lost!)
+#         → fs.writeFile(tasks.md)
+#           → post-edit-write-consolidated.sh (guard fails!)
+#             → INFINITE RECURSION → 27 duplicate GitHub comments!
+#
+# With file-based guard (AFTER fix):
+#   TodoWrite → post-task-completion.sh (creates .hook-recursion-guard file)
+#     → spawns background process (&)
+#       → consolidated-sync.js (inherits guard file!)
+#         → fs.writeFile(tasks.md)
+#           → post-edit-write-consolidated.sh (checks file, exits)
+#             → NO RECURSION ✅
+#
+# See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+# See: ADR-0073 (Hook Recursion Prevention Strategy)
+
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+
+if [[ -f "$RECURSION_GUARD_FILE" ]]; then
+  # Silent exit - we're already inside a hook chain
+  echo "[$(date)] ⏭️  Recursion guard detected - skipping (already in hook)" >> "$DEBUG_LOG" 2>/dev/null || true
+  exit 0
+fi
+
+# Create guard file (atomic operation)
+mkdir -p "$PROJECT_ROOT/.specweave/state" 2>/dev/null || true
+touch "$RECURSION_GUARD_FILE"
+
+# Ensure guard file is ALWAYS removed when script exits (even on error)
+trap 'rm -f "$RECURSION_GUARD_FILE" 2>/dev/null || true' EXIT SIGINT SIGTERM
+
+echo "[$(date)] 🔒 Recursion guard created" >> "$DEBUG_LOG" 2>/dev/null || true
+
+# EMERGENCY KILL SWITCH (after recursion guard)
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # ============================================================================
 # EMERGENCY SAFETY CHECKS
@@ -364,38 +421,50 @@ fi
   # See: ADR-0072 (Post-Task Hook Simplification)
   # ============================================================================
 
-  # DISABLED: consolidated-sync.js call (causes crashes)
-  # Uncomment ONLY after implementing HOOK_CONTEXT environment variable
-  # to prevent cascading hooks during sync operations
+  # RE-ENABLED: Automatic sync on each TodoWrite (ACCEPTING CRASH RISK)
+  # WARNING: This can cause Claude Code crashes if too many TodoWrite events fire rapidly
+  # User explicitly requested re-enabling despite crash risk
 
-  # echo "[$(date)] 🚀 Running consolidated sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  #
-  # # Find consolidated sync script
-  # CONSOLIDATED_SCRIPT=""
-  # if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
-  # elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
-  # elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
-  # elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
-  #   CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
-  # fi
-  #
-  # if [ -n "$CONSOLIDATED_SCRIPT" ]; then
-  #   # Run consolidated sync (single Node.js process handles ALL operations)
-  #   if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-  #     echo "[$(date)] ✅ Consolidated sync completed" >> "$DEBUG_LOG" 2>/dev/null || true
-  #     ANY_SUCCESS=true
-  #   else
-  #     echo "[$(date)] ⚠️  Consolidated sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-  #   fi
-  # else
-  #   echo "[$(date)] ⚠️  consolidated-sync.js not found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  # fi
+  echo "[$(date)] 🚀 Running consolidated sync" >> "$DEBUG_LOG" 2>/dev/null || true
 
-  echo "[$(date)] ⏭️  Consolidated sync DISABLED (emergency fix - prevents crashes)" >> "$DEBUG_LOG" 2>/dev/null || true
-  echo "[$(date)] ℹ️  Living docs will sync at session end or via /specweave:sync-docs" >> "$DEBUG_LOG" 2>/dev/null || true
+  # Find consolidated sync script
+  CONSOLIDATED_SCRIPT=""
+  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
+    CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
+  fi
+
+  if [ -n "$CONSOLIDATED_SCRIPT" ]; then
+    # Load GITHUB_TOKEN from .env for gh CLI authentication
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+      # Extract GITHUB_TOKEN from .env (handles various formats)
+      GITHUB_TOKEN_FROM_ENV=$(grep -E '^GITHUB_TOKEN=' "$PROJECT_ROOT/.env" 2>/dev/null | head -1 | cut -d'=' -f2- | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+      if [ -n "$GITHUB_TOKEN_FROM_ENV" ]; then
+        export GITHUB_TOKEN="$GITHUB_TOKEN_FROM_ENV"
+        echo "[$(date)] ✅ GitHub token loaded from .env" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
+    fi
+
+    # FIX (v0.26.0): Skip GitHub sync in post-task-completion hook
+    # GitHub sync should ONLY run on increment COMPLETION, not task completion
+    # This prevents 27 duplicate comments (see root cause analysis)
+    export SKIP_GITHUB_SYNC=true
+
+    # Run consolidated sync (single Node.js process handles ALL operations)
+    if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
+      echo "[$(date)] ✅ Consolidated sync completed" >> "$DEBUG_LOG" 2>/dev/null || true
+      ANY_SUCCESS=true
+    else
+      echo "[$(date)] ⚠️  Consolidated sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  else
+    echo "[$(date)] ⚠️  consolidated-sync.js not found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  fi
 
   done  # End of ACTIVE_INCREMENTS loop
 

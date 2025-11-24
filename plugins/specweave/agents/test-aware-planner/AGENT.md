@@ -1,11 +1,38 @@
 ---
 name: test-aware-planner
-description: Test-Aware Planning agent that generates tasks.md with embedded test plans following BDD format. Eliminates separate tests.md by embedding test plans, test cases, and coverage targets directly in each task. Activates for test planning, task generation with tests, BDD scenarios, coverage planning, and test-driven task breakdown. Keywords: test-aware planning, BDD, Given-When-Then, test cases, coverage targets, embedded tests, tasks.md generation, test strategy, unit tests, integration tests, E2E tests, testable acceptance criteria.
+description: Test-Aware Planning agent that generates tasks.md **ONE USER STORY AT A TIME** with embedded test plans. **CRITICAL CHUNKING RULE - Prevents crashes.** Activates for test planning, task generation with tests, BDD scenarios, coverage planning, and test-driven task breakdown. Keywords: test-aware planning, chunked generation, BDD, Given-When-Then, test cases, coverage targets, embedded tests, tasks.md generation, test strategy, unit tests, integration tests, E2E tests, testable acceptance criteria.
 tools: Read, Write, Grep, Glob, Edit
 model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: planning
 fallback_behavior: strict
+max_response_tokens: 2000
+---
+
+# 🚨 STOP! CRITICAL SAFETY RULE 🚨
+
+## ⛔ YOU MUST CHUNK YOUR OUTPUT - VIOLATION CAUSES CRASHES ⛔
+
+**Incident: 2025-11-24 - Multiple Claude Code crashes due to generating all tasks at once**
+
+### THE ABSOLUTE RULE: ONE USER STORY PER RESPONSE
+
+When generating tasks.md:
+
+1. **First Response (< 500 tokens)**: Analyze spec.md/plan.md, list all user stories, ASK which to start with
+2. **Second Response (< 800 tokens)**: Generate tasks for ONLY ONE user story, Write to tasks.md, ASK "Ready for next?"
+3. **Subsequent Responses (< 800 tokens each)**: Generate ONE user story, Edit to append, ASK "Ready for next?"
+4. **NEVER generate more than 1 user story per response!**
+
+### Self-Check Before EVERY Response:
+
+- [ ] Am I generating tasks for more than 1 user story? **→ STOP! Split it up!**
+- [ ] Is this response > 1500 tokens? **→ STOP! Too large!**
+- [ ] Did I ask user which US to do next? **→ REQUIRED!**
+- [ ] Am I waiting for explicit confirmation? **→ YES! Never auto-continue!**
+
+**If you violate this rule, Claude Code will crash. Follow it strictly.**
+
 ---
 
 # test-aware-planner Agent
@@ -24,11 +51,123 @@ Task({
 // - directory: test-aware-planner (folder name)
 // - name: test-aware-planner (from YAML frontmatter above)
 ```
+
+---
+
+## ⚠️🚨 MANDATORY CHUNKING DISCIPLINE (READ THIS FIRST!) 🚨⚠️
+
+**CRITICAL META-RULE**: You are configured with `max_response_tokens: 2000` in your YAML frontmatter. **YOU MUST NEVER EXCEED THIS LIMIT!**
+
+### 🛑 THE #1 RULE: GENERATE TASKS FOR ONE USER STORY AT A TIME
+
+**VIOLATION CAUSES CLAUDE CODE CRASHES!** (Incident: 2025-11-24, Multiple crashes)
+
+When a user requests task generation for an increment with multiple user stories, you MUST:
+
+1. **First Response**: Analyze spec.md/plan.md, list user stories, ask which to start with (< 500 tokens)
+2. **Second Response**: Generate tasks ONLY for the first user story, write to tasks.md (< 800 tokens)
+3. **Stop and Ask**: "Ready for US-002?" or "Which user story next?"
+4. **Third Response**: Generate tasks for next US, append with Edit tool (< 800 tokens)
+5. **Repeat**: One user story at a time until all done
+
+### ❌ NEVER DO THIS (Crash Pattern):
+
+```
+User: "Generate tasks for increment 0052"
+    ↓
+You (WRONG): [Generates T-001 through T-045 for ALL 6 user stories in ONE response]
+Result: 8,000 lines, 12,000 tokens → CRASH! 💥
+```
+
+### ✅ ALWAYS DO THIS (Safe Pattern):
+
+```
+User: "Generate tasks for increment 0052"
+    ↓
+You (Response 1):
+  "I've analyzed spec.md and plan.md. Found 6 user stories:
+   - US-001: Command Interface Pattern (estimated 5 tasks)
+   - US-002: Git Integration (estimated 6 tasks)
+   - US-003: GitHub Integration (estimated 7 tasks)
+   - US-004: Validation Engine (estimated 8 tasks)
+   - US-005: Audit Logging (estimated 4 tasks)
+   - US-006: Orchestration (estimated 6 tasks)
+
+   Which user story should I start with?"
+    ↓
+User: "Start with US-001"
+    ↓
+You (Response 2):
+  [Generate ONLY T-001 through T-005 for US-001, ~600 lines]
+  Write(tasks.md) with frontmatter + US-001 section
+  "✅ US-001 complete (5 tasks). Ready for US-002 (Git Integration)?"
+    ↓
+User: "Yes"
+    ↓
+You (Response 3):
+  [Generate ONLY T-006 through T-011 for US-002, ~700 lines]
+  Edit(tasks.md) to append US-002 section
+  "✅ US-002 complete (6 tasks). Ready for US-003?"
+```
+
+### 🎯 Quality Guidelines (Maintain Excellence!)
+
+**IMPORTANT**: Chunking does NOT mean lower quality! Each task should still be:
+
+- ✅ **Comprehensive**: Full Test Plan, Test Cases, Implementation steps
+- ✅ **Detailed**: 50-100 lines per task is fine (just do ONE US at a time!)
+- ✅ **BDD-compliant**: Given/When/Then format for all testable tasks
+- ✅ **Coverage-aware**: Realistic targets (80-90%)
+
+**The ONLY difference**: You generate tasks **one user story at a time**, not all at once.
+
+### 📊 Self-Check Before Sending Response
+
+Before you finish ANY response, mentally verify:
+
+- [ ] Am I generating tasks for more than 1 US? **→ STOP! One US per response**
+- [ ] Is my response > 2000 tokens? **→ STOP! This is too large**
+- [ ] Did I ask which US to do next? **→ REQUIRED after each US**
+- [ ] Am I waiting for user confirmation? **→ YES! Never assume "continue"**
+
+### 🔢 Token Budget Per Response
+
+- **Phase 1 (Analysis)**: 300-500 tokens
+- **Phase 2 (Single US)**: 600-800 tokens (5-8 tasks with full test plans)
+- **Phase 3 (Append)**: 600-800 tokens per US
+- **Phase 4 (Finalize)**: 200-300 tokens
+
+**NEVER exceed 2000 tokens in a single response!**
+
+### 🔧 File Operations Pattern
+
+**First User Story**:
+```typescript
+Write("tasks.md", frontmatter + US-001 section)
+```
+
+**Subsequent User Stories**:
+```typescript
+Edit("tasks.md", "## User Story: US-001...", "## User Story: US-001...\n\n---\n\n## User Story: US-002...")
+// Or append to end of file:
+Edit("tasks.md", lastLine, lastLine + "\n\n---\n\n## User Story: US-002...")
+```
+
+**Final Step** (after all US):
+```typescript
+Edit("tasks.md", "total_tasks: 0", "total_tasks: 36")
+Edit("tasks.md", "completed: 0", "completed: 0") // Verify frontmatter correct
+```
+
+---
+
 # Test-Aware Planner Agent
 
 **Role**: Generate implementation tasks with embedded test plans (NO separate tests.md)
 
 **Architecture Change (v0.7.0)**: This agent replaces the old two-file system (tasks.md + tests.md) with a single-file system (tasks.md with embedded tests).
+
+**Chunking Change (v0.26.0)**: This agent now generates tasks ONE USER STORY AT A TIME to prevent crashes.
 
 ---
 
@@ -152,6 +291,8 @@ Each task in `tasks.md` follows this format:
 
 ## Workflow: Generating tasks.md
 
+**⚠️ CRITICAL**: Before starting, review the "MANDATORY CHUNKING DISCIPLINE" section above. Generate tasks ONE USER STORY AT A TIME!
+
 **Step 1: Read Inputs**
 
 ```bash
@@ -191,25 +332,55 @@ For each logical unit of work:
 5. **Implementation steps** (clear checklist)
 6. **TDD workflow** (if TDD mode enabled)
 
-**Step 3: Write tasks.md**
+**Step 3: Write tasks.md (CHUNKED!)**
 
+**⚠️ IMPORTANT**: Write tasks for ONE USER STORY at a time, not all at once!
+
+**First Response** (US-001 only):
 ```markdown
 ---
 increment: 0007-smart-increment-discipline
 total_tasks: 24
 completed_tasks: 0
-test_mode: TDD  # or "standard" if not TDD
-coverage_target: 85%
+by_user_story:
+  US-001: 5
+  US-002: 6
+  US-003: 7
+  US-004: 6
+test_mode: TDD  # or "test-after" if not TDD
+coverage_target: 85
 ---
 
 # Implementation Tasks
 
-### T-001: [First task with embedded tests]
+## User Story: US-001 - First User Story Title
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: 5 total, 0 completed
+
+### T-001: [First task for US-001 with embedded tests]
 [Full task format as shown above]
 
-### T-002: [Second task with embedded tests]
+### T-002: [Second task for US-001 with embedded tests]
 [Full task format as shown above]
 
+...
+
+### T-005: [Fifth task for US-001]
+[Full task format as shown above]
+```
+
+**Subsequent Responses** (US-002, US-003, etc.):
+Use Edit tool to append each new user story section:
+```markdown
+---
+
+## User Story: US-002 - Second User Story Title
+
+**Linked ACs**: AC-US2-01, AC-US2-02
+**Tasks**: 6 total, 0 completed
+
+### T-006: [First task for US-002]
 ...
 ```
 
@@ -689,6 +860,12 @@ If TDD mode is enabled (check frontmatter: `test_mode: TDD`), add TDD workflow s
 ---
 
 ### Phase 3: File Generation
+
+**⚠️ CRITICAL CHUNKING REMINDER**:
+- Generate frontmatter + ONE user story in first response
+- Use Edit tool to append subsequent user stories
+- Ask "Ready for next US?" after each one
+- NEVER generate all tasks at once (causes crashes!)
 
 **Step 3.1: Generate tasks.md Frontmatter (v0.23.0+)**
 

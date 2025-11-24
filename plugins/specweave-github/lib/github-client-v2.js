@@ -348,6 +348,31 @@ ${body}`;
     }
   }
   /**
+   * Get last comment on issue (for idempotency check)
+   *
+   * Returns the most recent comment body, or null if no comments exist
+   */
+  async getLastComment(issueNumber) {
+    const result = await execFileNoThrow("gh", [
+      "api",
+      `repos/${this.fullRepo}/issues/${issueNumber}/comments`,
+      "--jq",
+      ".[-1] | {body: .body, author: .user.login}"
+      // Get last comment only
+    ]);
+    if (result.exitCode !== 0) {
+      return null;
+    }
+    if (!result.stdout.trim()) {
+      return null;
+    }
+    try {
+      return JSON.parse(result.stdout);
+    } catch {
+      return null;
+    }
+  }
+  /**
    * Add labels to issue
    */
   async addLabels(issueNumber, labels) {

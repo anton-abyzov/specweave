@@ -22,6 +22,17 @@
 
 set +e  # EMERGENCY FIX: Prevents Claude Code crashes
 
+# ============================================================================
+# RECURSION PREVENTION (CRITICAL - v0.25.1)
+# ============================================================================
+# Skip if we're already inside a hook to prevent infinite recursion
+if [[ "${SPECWEAVE_IN_HOOK:-0}" == "1" ]]; then
+  exit 0
+fi
+
+# Mark that we're now inside a hook
+export SPECWEAVE_IN_HOOK=1
+
 # EMERGENCY KILL SWITCH
 if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
   exit 0
