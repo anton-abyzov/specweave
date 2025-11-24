@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.24.13",
+  "version": "0.25.2",
   "description": "Spec-driven development framework for Claude Code. AI-native workflow with living documentation, intelligent agents, and multilingual support (9 languages). Enterprise-grade traceability with permanent specs and temporary increments.",
   "type": "module",
   "main": "dist/index.js",
@@ -83,7 +83,6 @@
     "axios": "^1.13.2",
     "chalk": "^5.3.0",
     "commander": "^14.0.2",
-    "fs-extra": "^11.2.0",
     "glob": "^11.0.3",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
@@ -96,7 +95,6 @@
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
     "@playwright/test": "^1.48.0",
-    "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.10.0",

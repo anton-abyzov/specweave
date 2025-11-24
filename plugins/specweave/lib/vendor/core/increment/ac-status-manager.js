@@ -56,12 +56,26 @@ export class ACStatusManager {
                 continue;
             }
             // Check task completion status
-            if (currentTaskId && line.includes('- [')) {
-                if (line.includes('- [ ]')) {
-                    hasUncheckedBoxes = true;
+            // Support BOTH formats:
+            // 1. List items: - [x] or - [ ]
+            // 2. Field format: **Status**: [x] completed (NEW - v0.23.0+)
+            if (currentTaskId) {
+                // Check for list item checkboxes
+                if (line.includes('- [')) {
+                    if (line.includes('- [ ]')) {
+                        hasUncheckedBoxes = true;
+                    }
+                    else if (line.includes('- [x]')) {
+                        hasCheckedBoxes = true;
+                    }
                 }
-                else if (line.includes('- [x]')) {
+                // Check for field format: **Status**: [x] completed
+                else if (line.match(/\*\*Status\*\*:\s*\[x\]/i)) {
                     hasCheckedBoxes = true;
+                }
+                // Check for field format: **Status**: [ ] pending
+                else if (line.match(/\*\*Status\*\*:\s*\[\s\]/i)) {
+                    hasUncheckedBoxes = true;
                 }
             }
         }

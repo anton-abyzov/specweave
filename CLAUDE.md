@@ -397,6 +397,109 @@ Edit("spec.md", "...", "...\n\n## Acceptance Criteria\n\n...")
 
 ---
 
+### 7b. AC Sync Parser - Task Status Format (CRITICAL - v0.25.2+) 🔥
+
+**CRITICAL BUG FIXED 2025-11-24**: AC sync hook was only detecting list format checkboxes, missing field format entirely!
+
+**The Bug**: Parser in `ac-status-manager.ts` only looked for `- [x]` list items, completely missing `**Status**: [x] completed` field format introduced in v0.23.0. This caused ALL 70 ACs in increment 0053 to show false "0% tasks complete" even though tasks.md showed 37/37 completed!
+
+**Impact**:
+- ❌ Data integrity violation (metadata.json polluted with false conflicts)
+- ❌ Violated Source of Truth principle (tasks.md said "done", hook said "0%")
+- ❌ Potential for closing increments with incomplete work (hook gave false positives)
+
+**Root Cause** (before fix):
+```typescript
+// ac-status-manager.ts:137 (BROKEN - only detected list format!)
+if (currentTaskId && line.includes('- [')) {  // ❌ MISSED FIELD FORMAT!
+  if (line.includes('- [ ]')) {
+    hasUncheckedBoxes = true;
+  } else if (line.includes('- [x]')) {
+    hasCheckedBoxes = true;
+  }
+}
+```
+
+**The Fix** (v0.25.2):
+```typescript
+// Now supports BOTH formats!
+if (currentTaskId) {
+  // 1. List format: - [x] or - [ ]
+  if (line.includes('- [')) {
+    if (line.includes('- [ ]')) {
+      hasUncheckedBoxes = true;
+    } else if (line.includes('- [x]')) {
+      hasCheckedBoxes = true;
+    }
+  }
+  // 2. Field format: **Status**: [x] completed (NEW!)
+  else if (line.match(/\*\*Status\*\*:\s*\[x\]/i)) {
+    hasCheckedBoxes = true;
+  }
+  // 3. Field format: **Status**: [ ] pending (NEW!)
+  else if (line.match(/\*\*Status\*\*:\s*\[\s\]/i)) {
+    hasUncheckedBoxes = true;
+  }
+}
+```
+
+**Supported Task Formats** (both work now):
+
+**Format 1: List items** (legacy, still supported):
+```markdown
+### T-001: Task Title
+**Satisfies ACs**: AC-US1-01
+- [x] Completed
+- [x] Done
+```
+
+**Format 2: Field format** (v0.23.0+, NOW WORKS!):
+```markdown
+### T-001: Task Title
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Priority**: P1
+**Status**: [x] completed  ← THIS NOW WORKS!
+```
+
+**Validation** (ensure fix is present):
+```bash
+# Check parser supports field format
+grep -A 5 "Check for field format" src/core/increment/ac-status-manager.ts
+
+# Should see: line.match(/\*\*Status\*\*:\s*\[x\]/i)
+```
+
+**Regression Tests** (5 new tests added):
+```bash
+npm test -- ac-status-manager.test.ts -t "Task status field format"
+
+# Tests:
+# 1. Field format detection (completed)
+# 2. Field format detection (incomplete)
+# 3. Mixed format support (field + list)
+# 4. Case-insensitive matching
+# 5. Real-world increment 0053 format
+```
+
+**Incident** (2025-11-24, Increment 0053):
+- All 70 ACs showed "AC-USXX-YY: [x] but only 0/1 tasks complete (0%)"
+- tasks.md clearly showed 37/37 tasks with `**Status**: [x] completed`
+- Hook logged 280 conflict messages (4 acSyncEvents × 70 conflicts each)
+- Fix: Updated parser → rebuilt → verified 0 conflicts
+
+**Prevention**:
+- ✅ 5 comprehensive regression tests (tests/unit/ac-status-manager.test.ts:855-1051)
+- ✅ Tests include real-world increment 0053 format
+- ✅ CI/CD runs all 43 AC status manager tests on every commit
+- ✅ Emergency recovery guide: `.specweave/docs/internal/emergency-procedures/AC-SYNC-CONFLICT-FIX-2025-11-24.md`
+
+**CRITICAL**: When introducing new task formats, ALWAYS update ALL parsers and add regression tests!
+
+**See**: Emergency fix report (AC-SYNC-CONFLICT-FIX-2025-11-24.md), increment 0053 metadata.json (acSyncEvents)
+
+---
+
 ### 8. Logger Abstraction (NEVER `console.*`)
 
 **Rule**: ALL `src/` code uses logger injection, NEVER `console.log/error/warn`
@@ -824,9 +927,12 @@ plugins/                # Skills, agents, commands, hooks
 **Critical incidents**:
 - 2025-11-22 - Multiple Claude Code crashes due to hook overhead
 - 2025-11-23 - Hook process storm (6 hooks per Edit/Write → 300 processes/min)
-- 2025-11-24 - PROJECT_ROOT order bug (recursion guard at wrong path → crashes)
+- 2025-11-24 (AM) - PROJECT_ROOT order bug (recursion guard at wrong path → crashes)
+- **2025-11-24 (PM) - TodoWrite crash: US sync triggers unguarded external tool cascade → infinite recursion** ⚠️
 
-**Root cause**: Process exhaustion from spawning 6 bash processes per Edit/Write operation
+**Root cause**:
+- **Original**: Process exhaustion from spawning 6 bash processes per Edit/Write operation
+- **NEW (v0.25.1)**: US completion orchestrator triggers `livingDocsSync.syncIncrement()` which calls `syncToExternalTools()` without checking `SKIP_GITHUB_SYNC` → Edit/Write operations → new hook chains → infinite recursion → crash
 
 **LONG-TERM FIX (v0.25.0)**: Hook Consolidation
 - **Reduced from 6 → 4 hooks per Edit/Write** (33% reduction)
@@ -1026,6 +1132,93 @@ echo "RECURSION_GUARD_FILE: line $guard_line"
 - `.specweave/increments/0051-*/reports/PROJECT-ROOT-ORDER-BUG-2025-11-24.md`
 - `scripts/validate-hook-variable-order.sh` (validation script)
 - `tests/unit/hooks/recursion-guard.test.ts` (regression tests)
+
+---
+
+### TodoWrite Crash (v0.25.1 - EMERGENCY FIX) ⚠️
+
+**CRITICAL BUG**: Marking tasks complete via TodoWrite crashes Claude Code due to unguarded external tool sync cascade.
+
+**Incident** (2025-11-24 PM): User reported Claude Code crash when marking tasks complete in increment 0053-safe-feature-deletion.
+
+**Root Cause**:
+1. US completion orchestrator (`us-completion-orchestrator.js`) detects all 6 USs as "newly complete" (perfect storm when last task marked)
+2. Calls `livingDocsSync.syncIncrement()` without checking `SKIP_US_SYNC` flag
+3. Living docs sync calls `syncToExternalTools()` without checking `SKIP_GITHUB_SYNC` flag
+4. External tool sync creates/updates GitHub issues (Edit/Write operations)
+5. Edit/Write hooks trigger NEW hook chains (recursion guard doesn't protect Edit/Write events)
+6. **Infinite recursion** → Process exhaustion → Claude Code crash
+
+**Crash Flow**:
+```
+TodoWrite → post-task-completion.sh
+  → consolidated-sync.js (operation 5/6)
+    → us-completion-orchestrator.js
+      → livingDocsSync.syncIncrement()
+        → syncToExternalTools() ← NO GUARD!
+          → syncToGitHub()
+            → Edit/Write operations
+              → NEW HOOK CHAIN
+                → INFINITE RECURSION
+                  → 💥 CRASH
+```
+
+**Emergency Hotfix** (v0.25.1 - ✅ DEPLOYED):
+```bash
+# File: plugins/specweave/hooks/post-task-completion.sh (line 463)
+export SKIP_US_SYNC=true
+```
+
+**Impact**:
+- ✅ **NO MORE CRASHES**: TodoWrite is now safe
+- ⚠️  **Manual sync required**: Must run `/specweave:sync-progress` after completing tasks
+- ✅ **Living docs still work**: AC sync, tasks.md updates, status line all function
+
+**Verification**:
+```bash
+# 1. Check hotfix applied
+grep "SKIP_US_SYNC=true" plugins/specweave/hooks/post-task-completion.sh
+
+# 2. Test task completion
+TodoWrite([{ content: "T-001", status: "completed" }])
+
+# 3. Verify no crash
+tail -50 .specweave/logs/hooks-debug.log | grep "SKIP_US_SYNC"
+# Expected: ℹ️  User story sync skipped (SKIP_US_SYNC=true)
+
+# 4. Manual sync when ready
+/specweave:sync-progress 0053
+```
+
+**Long-Term Fix** (v0.26.0 - PLANNED):
+- **Tier 1**: Add `SKIP_EXTERNAL_SYNC` check in `LivingDocsSync.syncIncrement()`
+- **Tier 2**: Universal recursion guard (ALL hooks check same guard file)
+- **Tier 3**: Smart throttling (60-second window for US sync)
+- **Result**: Restore automatic US sync (now safe with guard rails!)
+
+**Recovery** (If crash occurs):
+```bash
+# 1. Kill stuck processes
+ps aux | grep -E "consolidated-sync|us-completion" | awk '{print $2}' | xargs kill -9
+
+# 2. Disable hooks
+export SPECWEAVE_DISABLE_HOOKS=1
+
+# 3. Clean locks
+rm -rf .specweave/state/.hook-*.lock
+rm -f .specweave/state/.hook-recursion-guard
+
+# 4. Apply hotfix (see above)
+
+# 5. Re-enable hooks
+unset SPECWEAVE_DISABLE_HOOKS
+```
+
+**See**:
+- `.specweave/increments/0053-safe-feature-deletion/reports/EXECUTIVE-SUMMARY-CRASH-FIX-2025-11-24.md` (Executive summary)
+- `.specweave/increments/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md` (Detailed analysis)
+- `.specweave/docs/internal/emergency-procedures/TODOWRITE-CRASH-RECOVERY.md` (Recovery guide)
+- `.specweave/docs/internal/architecture/adr/0129-us-sync-guard-rails.md` (ADR-0129)
 
 ---
 
