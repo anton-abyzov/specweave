@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.26.3] - 2025-11-24
+
+### 🔧 Maintenance
+- **Version Alignment**: Bump to v0.26.3 to align with documentation references
+  - Documentation mentions v0.26.0 (planned features) and v0.26.1 (hook variable order fix)
+  - v0.26.2 was published directly to npm bypassing GitHub Actions
+  - v0.26.3 includes CHANGELOG entry for successful GitHub Actions workflow
+- **GitHub Actions Fix**: Added CHANGELOG validation compliance
+  - Ensures Release & Publish workflow can complete successfully
+  - Maintains proper release documentation standards
+
+---
+
 ## [0.25.2] - 2025-11-24 🔥 CRITICAL DATA INTEGRITY FIX
 
 ### 🔥 Critical Bug Fix
