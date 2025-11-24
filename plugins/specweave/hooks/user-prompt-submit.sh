@@ -303,25 +303,37 @@ if [[ -d ".specweave/increments" ]]; then
   done)
 
   if [[ -n "$ACTIVE_INCREMENT" ]]; then
-    # Simple status: parse tasks.md for completion
-    TASKS_FILE=".specweave/increments/$ACTIVE_INCREMENT/tasks.md"
-    if [[ -f "$TASKS_FILE" ]]; then
-      # Count tasks (headers with T-NNN format - both ### and ####)
-      TOTAL_TASKS=$(grep -cE '^#{3,4}\s*T-[0-9]' "$TASKS_FILE" 2>/dev/null | tr -d '\n' || echo "0")
-      # Count completed (various formats)
-      COMPLETED_TASKS=$(grep -cE '(✅ COMPLETE|\[COMPLETED\]|\[x\] Completed)' "$TASKS_FILE" 2>/dev/null | tr -d '\n' || echo "0")
+    # Read from status-line.json cache (single source of truth)
+    CACHE_FILE=".specweave/state/status-line.json"
+
+    if [[ -f "$CACHE_FILE" ]] && command -v jq >/dev/null 2>&1; then
+      # Parse cache file for accurate counts
+      TOTAL_TASKS=$(jq -r '.current.total // 0' "$CACHE_FILE" 2>/dev/null || echo "0")
+      COMPLETED_TASKS=$(jq -r '.current.completed // 0' "$CACHE_FILE" 2>/dev/null || echo "0")
+      TOTAL_ACS=$(jq -r '.current.acsTotal // 0' "$CACHE_FILE" 2>/dev/null || echo "0")
+      COMPLETED_ACS=$(jq -r '.current.acsCompleted // 0' "$CACHE_FILE" 2>/dev/null || echo "0")
 
       # Ensure valid numbers
       TOTAL_TASKS=${TOTAL_TASKS:-0}
       COMPLETED_TASKS=${COMPLETED_TASKS:-0}
+      TOTAL_ACS=${TOTAL_ACS:-0}
+      COMPLETED_ACS=${COMPLETED_ACS:-0}
 
       if [[ "$TOTAL_TASKS" -gt 0 ]] 2>/dev/null; then
         PERCENTAGE=$(( COMPLETED_TASKS * 100 / TOTAL_TASKS ))
-        CONTEXT="✓ Active: $ACTIVE_INCREMENT ($COMPLETED_TASKS/$TOTAL_TASKS tasks, $PERCENTAGE%)"
+
+        # Include AC count if available
+        if [[ "$TOTAL_ACS" -gt 0 ]] 2>/dev/null; then
+          AC_PERCENTAGE=$(( COMPLETED_ACS * 100 / TOTAL_ACS ))
+          CONTEXT="✓ Active: $ACTIVE_INCREMENT ($COMPLETED_TASKS/$TOTAL_TASKS tasks, $PERCENTAGE% | $COMPLETED_ACS/$TOTAL_ACS ACs, $AC_PERCENTAGE%)"
+        else
+          CONTEXT="✓ Active: $ACTIVE_INCREMENT ($COMPLETED_TASKS/$TOTAL_TASKS tasks, $PERCENTAGE%)"
+        fi
       else
         CONTEXT="✓ Active: $ACTIVE_INCREMENT"
       fi
     else
+      # Fallback: No cache or no jq, show basic status
       CONTEXT="✓ Active: $ACTIVE_INCREMENT"
     fi
   fi

@@ -263,6 +263,114 @@ As a user...
       expect(result.overallComplete).toBe(false); // No ACs = not complete
       expect(result.acsTotal).toBe(0);
     });
+
+    it('should parse tasks with "Satisfies ACs" field format', async () => {
+      // Arrange: User story with all ACs complete
+      const userStoryPath = path.join(tempDir, 'us-002.md');
+      await writeFile(
+        userStoryPath,
+        `---
+id: US-002
+feature: FS-058
+title: Auto GitHub Sync on Status Change
+status: complete
+---
+
+## Acceptance Criteria
+
+- [x] **AC-US2-01**: First criterion
+- [x] **AC-US2-02**: Second criterion
+- [x] **AC-US2-03**: Third criterion
+
+## Implementation
+
+**Increment**: [0001-test](...)
+`
+      );
+
+      // Arrange: Tasks with "Satisfies ACs" format (new format)
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      await writeFile(
+        tasksPath,
+        `### T-004: Create StatusChangeSyncTrigger class
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
+**Status**: [x] completed
+**Priority**: P0
+
+Create a new class to handle automatic sync on status changes.
+
+---
+
+### T-006: Integrate trigger into MetadataManager.updateStatus()
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01, AC-US2-02
+**Status**: [x] completed
+**Priority**: P0
+
+Add StatusChangeSyncTrigger call to updateStatus() method.
+`
+      );
+
+      // Act
+      const result = await calculator.calculateCompletion(userStoryPath);
+
+      // Assert
+      expect(result.overallComplete).toBe(true);
+      expect(result.acsCompleted).toBe(3);
+      expect(result.acsTotal).toBe(3);
+      expect(result.tasksCompleted).toBe(2);
+      expect(result.tasksTotal).toBe(2);
+      expect(result.blockingAcs).toHaveLength(0);
+      expect(result.blockingTasks).toHaveLength(0);
+    });
+
+    it('should parse tasks with "Satisfies AC" singular field format', async () => {
+      // Arrange: User story with one AC
+      const userStoryPath = path.join(tempDir, 'us-003.md');
+      await writeFile(
+        userStoryPath,
+        `---
+id: US-003
+feature: FS-058
+title: Test Singular AC Format
+status: complete
+---
+
+## Acceptance Criteria
+
+- [x] **AC-US3-01**: Only criterion
+
+## Implementation
+
+**Increment**: [0001-test](...)
+`
+      );
+
+      // Arrange: Task with "Satisfies AC" singular format
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      await writeFile(
+        tasksPath,
+        `### T-007: Single AC task
+**User Story**: US-003
+**Satisfies AC**: AC-US3-01
+**Status**: [x] completed
+**Priority**: P0
+
+Task implementing a single AC.
+`
+      );
+
+      // Act
+      const result = await calculator.calculateCompletion(userStoryPath);
+
+      // Assert
+      expect(result.overallComplete).toBe(true);
+      expect(result.acsCompleted).toBe(1);
+      expect(result.acsTotal).toBe(1);
+      expect(result.tasksCompleted).toBe(1);
+      expect(result.tasksTotal).toBe(1);
+    });
   });
 
   describe('buildCompletionComment', () => {

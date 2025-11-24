@@ -14,6 +14,8 @@ For **contributors to SpecWeave itself** (not users).
 
 **NEVER run commands you know will fail.** Act on reasoning BEFORE execution.
 
+**Context Management**: Active increment with 10+ tasks + editing unrelated 2000+ line file = crash risk (context overflow). Pause first: `/specweave:pause XXXX` → edit → `/specweave:resume XXXX`. See ADR-0133, Section 15.
+
 ```bash
 # ❌ WRONG: node -e "require('./dist/file.js')" (before build)
 # ✅ CORRECT: npm run rebuild && node -e "require('./dist/file.js')"
@@ -69,11 +71,36 @@ bash scripts/refresh-marketplace.sh --local  # Local dev only (filesystem coupli
 3. `README.md` (optional)
 
 **Inside increment folders - ONLY at root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
-**Everything else → subfolders**: `reports/`, `scripts/`, `logs/`
+
+**Everything else → subfolders**:
+- `reports/` - Completion reports, investigation findings, final summaries
+- `scripts/` - Helper scripts, automation, migration tools
+- `logs/` - Debug logs, performance logs, execution traces
+- `backups/` - Backup files, .backup versions
+- `docs/` - Additional documentation, diagrams, references
+
+**Examples**:
+```
+0055-feature/
+├── spec.md              ✅ Required
+├── plan.md              ✅ Required
+├── tasks.md             ✅ Required
+├── metadata.json        ✅ Required
+├── reports/             ✅ Good organization
+│   ├── completion-summary.md
+│   └── FINAL-REPORT.md
+├── scripts/             ✅ Good organization
+│   └── migration.sh
+└── backups/             ✅ Good organization
+    └── SKILL.md.backup
+```
 
 ```bash
 # Validation (should output NOTHING):
 ls -1 .specweave/increments/ | grep -v "^[0-9]" | grep -v "^_archive" | grep -v "^README.md"
+
+# Check for misplaced files in increment roots:
+find .specweave/increments -maxdepth 2 -type f ! -name "spec.md" ! -name "plan.md" ! -name "tasks.md" ! -name "metadata.json" | grep -E "/[0-9]{4}-"
 ```
 
 ---
@@ -293,7 +320,9 @@ Task({
 - ✅ Data processing agents (no large generation)
 - ❌ Content generators (specs, ADRs, plans, tasks)
 
-**Reference**: ADR-0133, Architect crash incident (2025-11-24, Increment 0052)
+**Main Context Pattern**: Same explosion occurs when editing files outside active increments. Large increment spec (800+ lines) + unrelated file edit (2000+ lines) + tool invocation (AskUserQuestion) = crash. Solution: Pause increment before editing unrelated files (see Section 0).
+
+**Reference**: ADR-0133, Architect crash incident (2025-11-24, Increment 0052); Context explosion incident (2025-11-24, Increment 0058, init.ts edit)
 
 ---
 
@@ -575,12 +604,13 @@ plugins/                # Skills, agents, commands, hooks
 
 **Remember**:
 1. Push → GitHub → auto-updates (5-10s)
-2. Keep root clean (reports in increment subfolders)
+2. **Keep increment roots clean**: Only spec.md, plan.md, tasks.md, metadata.json. Everything else in subfolders (reports/, scripts/, logs/, backups/, docs/)
 3. Test before commit
 4. NEVER delete `.specweave/`
 5. Use `/specweave:done` (not manual edits)
 6. ALWAYS use GitHub mode for marketplace refresh (unless actively developing uncommitted changes)
 7. tasks.md + spec.md are SOURCE OF TRUTH (not internal TODO)
+8. Pause large increments (10+ tasks) before editing unrelated files to prevent crashes
 
 **See**: `.github/CONTRIBUTING.md`, https://spec-weave.com
 
@@ -590,8 +620,8 @@ plugins/                # Skills, agents, commands, hooks
 
 **ADRs**: 0032 (GitHub Hierarchy), 0050 (Config Management), 0051 (Caching), 0060 (Hook Optimization), 0061 (No Increment References), 0064 (AC Presence), 0069 (Git Provider Abstraction), 0070 (Hook Consolidation), 0129 (US Sync Guard Rails), 0132 (No Early Returns)
 
-**Emergency Procedures**: `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`, `TODOWRITE-CRASH-RECOVERY.md`, `AC-SYNC-CONFLICT-FIX-2025-11-24.md`
+**Emergency Procedures**: `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`, `TODOWRITE-CRASH-RECOVERY.md`, `AC-SYNC-CONFLICT-FIX-2025-11-24.md`, `CONTEXT-EXPLOSION-PREVENTION.md`
 
-**Incident Reports**: See increment 0044 (TODO desync), 0047 (GitHub sync removal), 0050 (Hook crashes, AC presence, GitHub issues), 0051 (PROJECT_ROOT order), 0053 (Safe deletion, TodoWrite crash, AC parser, GitHub multi-repo)
+**Incident Reports**: See increment 0044 (TODO desync), 0047 (GitHub sync removal), 0050 (Hook crashes, AC presence, GitHub issues), 0051 (PROJECT_ROOT order), 0053 (Safe deletion, TodoWrite crash, AC parser, GitHub multi-repo), 0058 (Context explosion, init.ts edit crash)
 
 **Validation Scripts**: `validate-marketplace-plugins.sh`, `validate-plugin-directories.sh`, `validate-hook-variable-order.sh`, `cleanup-duplicate-github-issues.sh`

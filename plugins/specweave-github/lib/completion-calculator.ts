@@ -266,8 +266,8 @@ export class CompletionCalculator {
       const taskTitle = match[2].trim();
       const taskBody = match[3];
 
-      // Extract AC list
-      const acMatch = taskBody.match(/\*\*AC\*\*:\s*([^\n]+)/);
+      // Extract AC list (support both old and new field names)
+      const acMatch = taskBody.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*([^\n]+)/);
       if (!acMatch) {
         continue; // Skip tasks without AC field
       }

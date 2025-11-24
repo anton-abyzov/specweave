@@ -992,8 +992,8 @@ content: {
   "priority": "{priority}",  // Extract from spec.md frontmatter
   "created": "{ISO-8601-timestamp}",
   "lastActivity": "{ISO-8601-timestamp}",
-  "testMode": "{testMode}",  // Extract from spec.md frontmatter or use "TDD"
-  "coverageTarget": {coverageTarget}  // Extract from spec.md frontmatter or use 95
+  "testMode": "{testMode}",  // Extract from spec.md frontmatter OR config.json (config.testing.defaultTestMode) OR default "TDD"
+  "coverageTarget": {coverageTarget}  // Extract from spec.md frontmatter OR config.json (config.testing.defaultCoverageTarget) OR default 95
 }
 ```
 
@@ -1070,17 +1070,23 @@ When creating metadata.json, extract values from spec.md frontmatter:
   "priority": "P1",
   "created": "2025-11-14T10:00:00Z",
   "lastActivity": "2025-11-14T10:00:00Z",
-  "testMode": "TDD",
-  "coverageTarget": 95,
+  "testMode": "test-after",  // Example: read from config.json
+  "coverageTarget": 80,  // Example: read from config.json
   "epic": "FS-25-11-14"
 }
 ```
 
-**Extract from spec.md frontmatter**:
+**Extract from spec.md frontmatter OR config.json**:
 - `type`: Look for `type: bug|feature|hotfix|change-request|refactor|experiment`
 - `priority`: Look for `priority: P1|P2|P3`
-- `testMode`: Look for `test_mode: TDD|BDD|Standard` (default: "TDD")
-- `coverageTarget`: Look for `coverage_target: 80|85|90|95|100` (default: 95)
+- `testMode`: Priority order:
+  1. spec.md frontmatter: `test_mode: TDD|test-after|manual`
+  2. config.json: `config.testing.defaultTestMode`
+  3. Default: "TDD"
+- `coverageTarget`: Priority order:
+  1. spec.md frontmatter: `coverage_target: 80|85|90|95|100`
+  2. config.json: `config.testing.defaultCoverageTarget`
+  3. Default: 95
 - `epic`: **CRITICAL - Format depends on increment type**:
   - **Greenfield** (SpecWeave-native): Leave EMPTY (auto-generated as `FS-{increment-number}` during sync)
   - **Brownfield** (imported from Jira/GitHub/ADO): Use `epic: FS-YY-MM-DD-name` + add `imported: true`

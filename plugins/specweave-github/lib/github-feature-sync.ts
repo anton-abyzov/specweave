@@ -57,6 +57,11 @@ export class GitHubFeatureSync {
   private projectRoot: string;
   private calculator: CompletionCalculator;
 
+  // SYNC LOCK: Prevent concurrent syncs of the same feature
+  // Maps featureId → last sync timestamp
+  private static syncLocks: Map<string, number> = new Map();
+  private static readonly LOCK_DURATION_MS = 30000; // 30 seconds
+
   constructor(client: GitHubClientV2, specsDir: string, projectRoot: string) {
     this.client = client;
     this.specsDir = specsDir;
@@ -80,6 +85,30 @@ export class GitHubFeatureSync {
     issuesUpdated: number;
     userStoriesProcessed: number;
   }> {
+    // SYNC LOCK CHECK: Prevent concurrent/rapid syncs of the same feature
+    // Root cause: Two sync paths (task completion + status change) can fire simultaneously
+    // Result: Duplicate GitHub comments due to race condition
+    const now = Date.now();
+    const lastSync = GitHubFeatureSync.syncLocks.get(featureId);
+
+    if (lastSync && (now - lastSync) < GitHubFeatureSync.LOCK_DURATION_MS) {
+      const secondsRemaining = Math.ceil((GitHubFeatureSync.LOCK_DURATION_MS - (now - lastSync)) / 1000);
+      console.log(`\n⏭️  Sync already in progress for ${featureId} (or completed ${Math.floor((now - lastSync) / 1000)}s ago)`);
+      console.log(`   ℹ️  Sync will be available in ${secondsRemaining}s to prevent duplicates`);
+      console.log(`   💡 This prevents race conditions between task completion and status change syncs`);
+
+      // Return placeholder result (sync was skipped, not failed)
+      return {
+        milestoneNumber: 0,
+        milestoneUrl: '',
+        issuesCreated: 0,
+        issuesUpdated: 0,
+        userStoriesProcessed: 0
+      };
+    }
+
+    // Acquire lock
+    GitHubFeatureSync.syncLocks.set(featureId, now);
     console.log(`\n🔄 Syncing Feature ${featureId} to GitHub...`);
 
     // 1. Load Feature FEATURE.md
@@ -216,13 +245,20 @@ export class GitHubFeatureSync {
       // Update User Story frontmatter with issue link
       await this.updateUserStoryFrontmatter(userStory.filePath, issueNumber);
 
+      // ✅ CRITICAL FIX (2025-11-24): Check completion for ALL issues (new AND reused)
+      // BUG: Previously only checked completion for reused issues, not new ones
+      // RESULT: New issues stayed OPEN even if status:complete
+      //
+      // Now we always call updateUserStoryIssue() which:
+      // 1. Calculates ACTUAL completion from [x] checkboxes
+      // 2. Closes issue if all ACs and tasks verified complete
+      // 3. Updates status labels automatically
+      await this.updateUserStoryIssue(issueNumber, issueContent, userStory.filePath);
+
       // Update completion tracking
       if (result.wasReused) {
-        // Update existing issue with latest content
-        await this.updateUserStoryIssue(issueNumber, issueContent, userStory.filePath);
         issuesUpdated++;
       } else {
-        // New issue created
         issuesCreated++;
       }
     }
@@ -336,13 +372,40 @@ export class GitHubFeatureSync {
   }
 
   /**
-   * Create GitHub Milestone for Feature
+   * Create GitHub Milestone for Feature (with duplicate detection)
    */
   private async createMilestone(featureData: FeatureFrontmatter): Promise<{
     number: number;
     url: string;
   }> {
     const title = `${featureData.id}: ${featureData.title}`;
+
+    // CRITICAL: Check if milestone already exists before creating
+    const existingResult = await execFileNoThrow('gh', [
+      'api',
+      'repos/:owner/:repo/milestones',
+      '--jq',
+      `.[] | select(.title == "${title}") | {number, html_url}`,
+    ]);
+
+    // DEBUG: Log detection result
+    console.log(`   🔍 Milestone detection: exitCode=${existingResult.exitCode}, stdout length=${existingResult.stdout.length}`);
+    if (existingResult.exitCode !== 0) {
+      console.log(`   ⚠️  Detection failed: ${existingResult.stderr}`);
+    }
+
+    if (existingResult.exitCode === 0 && existingResult.stdout.trim()) {
+      const existing = JSON.parse(existingResult.stdout);
+      console.log(`   ♻️  Reusing existing Milestone #${existing.number}`);
+      return {
+        number: existing.number,
+        url: existing.html_url,
+      };
+    }
+
+    console.log(`   ℹ️  No existing milestone found, creating new one...`);
+
+    // Milestone doesn't exist, create new one
     const description = `Feature ${featureData.id}\n\nStatus: ${featureData.status}\nCreated: ${featureData.created}`;
 
     const result = await execFileNoThrow('gh', [
@@ -428,17 +491,10 @@ export class GitHubFeatureSync {
         `      ✅ Created and verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
       );
     } else {
-      // ⚠️ INCOMPLETE - Leave open with progress comment
-      await execFileNoThrow('gh', [
-        'issue',
-        'comment',
-        issueNumber.toString(),
-        '--body',
-        this.calculator.buildProgressComment(completion),
-      ]);
-      console.log(
-        `      📊 Created: ${completion.acsPercentage.toFixed(0)}% ACs, ${completion.tasksPercentage.toFixed(0)}% tasks`
-      );
+      // ⚠️ INCOMPLETE - Leave open with progress comment (with deduplication)
+      // Note: For newly created issues, this is the first comment so deduplication
+      // will likely pass through, but the logic is here for consistency
+      await this.postProgressCommentIfChanged(issueNumber, completion);
     }
 
     return issueNumber;
@@ -511,21 +567,168 @@ export class GitHubFeatureSync {
           `      ⚠️ Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
         );
       } else {
-        // Update progress comment
-        await execFileNoThrow('gh', [
-          'issue',
-          'comment',
-          issueNumber.toString(),
-          '--body',
-          this.calculator.buildProgressComment(completion),
-        ]);
-        console.log(
-          `      📊 Progress: ${completion.acsPercentage.toFixed(0)}% ACs, ${completion.tasksPercentage.toFixed(0)}% tasks`
-        );
+        // Update progress comment (with deduplication)
+        await this.postProgressCommentIfChanged(issueNumber, completion);
       }
     }
 
-    // Note: Labels are not updated to avoid overwriting manually added labels
+    // **NEW (2025-11-24)**: Update status labels based on completion
+    await this.updateStatusLabels(issueNumber, completion);
+  }
+
+  /**
+   * Update status labels on GitHub issue based on completion state
+   *
+   * SMART LABEL MANAGEMENT:
+   * - Only manages status:* labels (status:not_started, status:in-progress, status:completed)
+   * - Preserves all other labels (priority, type, custom labels)
+   * - Ensures exactly one status label is present
+   */
+  private async updateStatusLabels(
+    issueNumber: number,
+    completion: {
+      overallComplete: boolean;
+      acsPercentage: number;
+      tasksPercentage: number;
+    }
+  ): Promise<void> {
+    try {
+      // Get current issue labels
+      const issueData = await this.client.getIssue(issueNumber);
+      const currentLabels = issueData.labels || [];
+
+      // Separate status labels from other labels
+      const statusLabels = currentLabels.filter((label: string) => label.startsWith('status:'));
+      const otherLabels = currentLabels.filter((label: string) => !label.startsWith('status:'));
+
+      // Determine correct status label based on completion
+      // NOTE: Label names must match repository labels exactly
+      let newStatusLabel: string;
+      if (completion.overallComplete) {
+        newStatusLabel = 'status:complete'; // Repository uses "complete" not "completed"
+      } else if (completion.acsPercentage > 0 || completion.tasksPercentage > 0) {
+        newStatusLabel = 'status:active'; // Repository uses "active" not "in-progress"
+      } else {
+        newStatusLabel = 'status:not_started';
+      }
+
+      // Check if update needed
+      const needsUpdate = statusLabels.length !== 1 || !statusLabels.includes(newStatusLabel);
+
+      if (!needsUpdate) {
+        return; // Status label already correct
+      }
+
+      // Update labels using gh CLI
+      // Strategy: Remove old status labels first (if any), then add new one
+
+      // Step 1: Remove old status labels (only if they exist)
+      if (statusLabels.length > 0) {
+        await execFileNoThrow('gh', [
+          'issue',
+          'edit',
+          issueNumber.toString(),
+          '--remove-label',
+          ...statusLabels,
+        ]);
+      }
+
+      // Step 2: Add new status label
+      const result = await execFileNoThrow('gh', [
+        'issue',
+        'edit',
+        issueNumber.toString(),
+        '--add-label',
+        newStatusLabel,
+      ]);
+
+      if (result.exitCode === 0) {
+        console.log(`      🏷️  Updated label: ${newStatusLabel}`);
+      } else {
+        console.warn(`      ⚠️  Failed to add label ${newStatusLabel}: ${result.stderr}`);
+      }
+    } catch (error) {
+      // Non-blocking: Label update failure shouldn't break sync
+      console.warn(`      ⚠️  Failed to update status labels: ${(error as Error).message}`);
+    }
+  }
+
+  /**
+   * Post progress comment only if it differs from the last comment
+   *
+   * DEDUPLICATION FIX (2025-11-24):
+   * - Prevents posting identical consecutive comments
+   * - Fetches last comment from issue
+   * - Compares content (ignoring timestamps)
+   * - Only posts if progress has changed
+   *
+   * Root Cause: updateUserStoryIssue() was posting progress comments on EVERY sync,
+   * even when progress hadn't changed, causing 4+ duplicate comments.
+   *
+   * @param issueNumber - GitHub issue number
+   * @param completion - Completion status with AC/task metrics
+   */
+  private async postProgressCommentIfChanged(
+    issueNumber: number,
+    completion: any
+  ): Promise<void> {
+    try {
+      // 1. Fetch last comment from the issue
+      const commentsResult = await execFileNoThrow('gh', [
+        'api',
+        'repos/:owner/:repo/issues/' + issueNumber + '/comments',
+        '--jq',
+        '.[-1] | {body: .body, created_at: .created_at}',  // Get last comment only
+      ]);
+
+      let lastCommentBody = '';
+      if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
+        try {
+          const lastComment = JSON.parse(commentsResult.stdout);
+          lastCommentBody = lastComment.body || '';
+        } catch {
+          // No valid last comment, proceed with posting
+        }
+      }
+
+      // 2. Build new progress comment
+      const newCommentBody = this.calculator.buildProgressComment(completion);
+
+      // 3. Normalize both comments for comparison (remove timestamps, whitespace differences)
+      const normalizeComment = (text: string): string => {
+        return text
+          .replace(/🤖 Auto-updated by SpecWeave AC Completion Gate/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      };
+
+      const normalizedLast = normalizeComment(lastCommentBody);
+      const normalizedNew = normalizeComment(newCommentBody);
+
+      // 4. Check if comments are identical (ignoring formatting differences)
+      if (normalizedLast === normalizedNew) {
+        console.log(
+          `      ⏭️  Progress unchanged (${completion.acsPercentage.toFixed(0)}% ACs, ${completion.tasksPercentage.toFixed(0)}% tasks) - skipping duplicate comment`
+        );
+        return;
+      }
+
+      // 5. Post new comment only if progress has changed
+      await execFileNoThrow('gh', [
+        'issue',
+        'comment',
+        issueNumber.toString(),
+        '--body',
+        newCommentBody,
+      ]);
+      console.log(
+        `      📊 Progress: ${completion.acsPercentage.toFixed(0)}% ACs, ${completion.tasksPercentage.toFixed(0)}% tasks (updated)`
+      );
+
+    } catch (error) {
+      // Non-blocking: Log error but don't break sync
+      console.error(`      ⚠️  Failed to check/post progress comment: ${(error as Error).message}`);
+    }
   }
 
   /**
