@@ -280,6 +280,7 @@ jobs:
             ! -name "integrations" \
             ! -name "agents" \
             ! -name "migration" \
+            ! -name "increment" \
             ! -name "test-utils" 2>/dev/null | wc -l)
 
           if [ "$FLAT_DIRS" -gt 0 ]; then
@@ -307,6 +308,7 @@ jobs:
               ! -name "integrations" \
               ! -name "agents" \
               ! -name "migration" \
+              ! -name "increment" \
               ! -name "test-utils"
             exit 1
           fi
