@@ -48,6 +48,8 @@ bash scripts/refresh-marketplace.sh --local  # Local dev only (filesystem coupli
 **Use GitHub mode**: Proper install path, stable source, no hook coupling (~30s)
 **Verify**: `jq -r '.specweave.source' ~/.claude/plugins/known_marketplaces.json` → should be `"github"`
 
+**Note**: GitHub mode shows "AC test validator not available" warning because `dist/` is gitignored. Use `--local` mode when developing hooks/validators to test with built artifacts. Regular users with `npm install specweave` won't see this (validator found in `node_modules/`).
+
 ---
 
 ### 1b. NPM Release
