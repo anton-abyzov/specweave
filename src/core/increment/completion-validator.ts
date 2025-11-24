@@ -4,6 +4,7 @@ import { ACStatusManager } from './ac-status-manager.js';
 import { parseTasksWithUSLinks } from '../../generators/spec/task-parser.js';
 import type { Logger } from '../../utils/logger.js';
 import { consoleLogger } from '../../utils/logger.js';
+import { ExternalToolDriftDetector } from '../../utils/external-tool-drift-detector.js';
 
 /**
  * Validation result for increment completion
@@ -32,6 +33,10 @@ export class IncrementCompletionValidator {
    * 4. NEW (v0.23.0): AC coverage validation
    *    - All P0 ACs have at least one implementing task
    *    - No orphan tasks (all tasks reference valid ACs)
+   * 5. NEW (v0.26.2): External tool drift detection
+   *    - Warns if external tools (GitHub/JIRA/ADO) not synced in >24h
+   *    - Blocks closure if drift >7 days (critical staleness)
+   *    - Prevents "completed locally but external tools never updated" scenarios
    *
    * @param incrementId - The increment ID to validate
    * @param options - Validation options
@@ -126,6 +131,43 @@ export class IncrementCompletionValidator {
     } catch (error) {
       logger.warn(`AC coverage validation failed: ${error instanceof Error ? error.message : String(error)}`);
       warnings.push('AC coverage validation skipped due to error');
+    }
+
+    // NEW (v0.26.2): Detect external tool drift
+    // Warns if external tools (GitHub/JIRA/ADO) haven't been synced in >24h
+    // This prevents "completed locally but external tools never updated" scenarios
+    // See: ADR-0131 (External Tool Sync Context Detection)
+    try {
+      const driftDetector = new ExternalToolDriftDetector(process.cwd(), { logger });
+      const drift = await driftDetector.detectDrift(incrementId);
+
+      if (drift.externalToolsConfigured && drift.hasDrift) {
+        const hoursSince = drift.hoursSinceSync || 0;
+
+        // CRITICAL: Block closure if drift > 7 days (168 hours)
+        if (hoursSince > 168) {
+          errors.push(
+            `CRITICAL: External tools severely out of sync (${Math.floor(hoursSince / 168)} weeks)!\n` +
+            `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
+            `  External tools (GitHub/JIRA/ADO) are critically stale.\n` +
+            `  Run: /specweave:sync-progress ${incrementId} before closing.\n\n` +
+            `  Closing without sync will leave external tools outdated.`
+          );
+        }
+        // WARNING: Drift > 24h but < 7 days (non-blocking, but strongly recommended)
+        else if (hoursSince > 24) {
+          const daysAgo = Math.floor(hoursSince / 24);
+          warnings.push(
+            `⚠️  External tools not synced recently (${daysAgo} days ago)\n` +
+            `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
+            `  Recommendation: Run /specweave:sync-progress ${incrementId} before closing\n` +
+            `  This ensures GitHub/JIRA/ADO reflect latest progress.`
+          );
+        }
+      }
+    } catch (error) {
+      logger.warn(`Drift detection failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push('External tool drift detection skipped due to error');
     }
 
     return {

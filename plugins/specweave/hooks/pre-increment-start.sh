@@ -19,7 +19,12 @@
 # **See**: ADR-0062 (AC Embedding Architecture)
 #
 
-set -euo pipefail
+# CRITICAL (v0.25.2): NEVER use 'set -e' in hooks - causes Claude Code crashes
+# See: CLAUDE.md Section 9a (Hook Safety Checklist), ADR-0060 (Hook Performance)
+# NOTE: This validation hook explicitly exits with code 1 on failures (controlled behavior)
+set +e  # Allow commands to fail without terminating script
+set -u  # Fail on undefined variables
+set -o pipefail  # Fail if any command in pipeline fails
 
 # Get increment path from environment or argument
 INCREMENT_PATH="${1:-}"

@@ -86,24 +86,25 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     return { setupType: 'single' };
   }
   // CRITICAL: Check if user already answered this question in init.ts
-  // If so, skip the duplicate prompt and return immediately
+  // Map repositoryHosting to architecture type for RepoStructureManager
+  let preSelectedArchitecture: 'single' | 'github-parent' | undefined = undefined;
+
   if (repositoryHosting) {
-    // User already selected hosting type - convert to setupType
-
-    // GitHub providers
-    if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
-      return { setupType: 'single' };
-    } else if (repositoryHosting === 'github-multirepo') {
-      return { setupType: 'multiple' };
-    }
-
     // Non-GitHub providers - skip GitHub-specific setup
-    else if (repositoryHosting === 'bitbucket-single' || repositoryHosting === 'bitbucket-multirepo' ||
-             repositoryHosting === 'ado-single' || repositoryHosting === 'ado-multirepo' ||
-             repositoryHosting === 'other-single' || repositoryHosting === 'other-multirepo' ||
-             repositoryHosting === 'local') {
+    if (repositoryHosting === 'bitbucket-single' || repositoryHosting === 'bitbucket-multirepo' ||
+        repositoryHosting === 'ado-single' || repositoryHosting === 'ado-multirepo' ||
+        repositoryHosting === 'other-single' || repositoryHosting === 'other-multirepo' ||
+        repositoryHosting === 'local') {
       // Not using GitHub - return none to skip GitHub setup
       return { setupType: 'none' };
+    }
+
+    // GitHub providers - map to architecture for RepoStructureManager
+    if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
+      preSelectedArchitecture = 'single';
+    } else if (repositoryHosting === 'github-multirepo') {
+      // 🔥 FIX: Don't return early! Pass to RepoStructureManager which has parent repo logic!
+      preSelectedArchitecture = 'github-parent';
     }
   }
 
@@ -115,7 +116,8 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   if (projectPath && githubToken) {
     try {
       const manager = new RepoStructureManager(projectPath, githubToken);
-      const config = await manager.promptStructure();
+      // 🔥 FIX: Pass preSelectedArchitecture to avoid duplicate prompts!
+      const config = await manager.promptStructure(preSelectedArchitecture);
 
       // Create repositories on hosting platform if requested
       if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
@@ -170,20 +172,28 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       if (repositoryHosting) {
         console.log(chalk.yellow('   → Using previously selected setup type\n'));
 
-        // GitHub providers
-        if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
+        // GitHub providers - use preSelectedArchitecture mapping
+        if (preSelectedArchitecture === 'single') {
           return { setupType: 'single' };
-        } else if (repositoryHosting === 'github-multirepo') {
+        } else if (preSelectedArchitecture === 'github-parent') {
           return { setupType: 'multiple' };
         }
 
         // Non-GitHub providers
-        else {
-          return { setupType: 'none' };
-        }
+        return { setupType: 'none' };
       }
 
       // Fall through to legacy prompt ONLY if repositoryHosting was NOT provided
+    }
+  }
+
+  // If repositoryHosting was provided but we didn't use RepoStructureManager
+  // (e.g., no projectPath/githubToken), map directly to setupType
+  if (repositoryHosting && preSelectedArchitecture) {
+    if (preSelectedArchitecture === 'single') {
+      return { setupType: 'single' };
+    } else if (preSelectedArchitecture === 'github-parent') {
+      return { setupType: 'multiple' };
     }
   }
 

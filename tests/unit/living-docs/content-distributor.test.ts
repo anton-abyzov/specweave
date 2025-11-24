@@ -17,11 +17,18 @@ import { ProjectContext } from '../../../src/core/living-docs/project-detector.j
 import path from 'path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock fs-extra BEFORE importing it
-vi.mock('fs-extra');
+// Mock fs-native module
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  existsSync: vi.fn(),
+  readdir: vi.fn(),
+  ensureDir: vi.fn(),
+  readJSON: vi.fn(),
+}));
 
 // Import after mock
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);
