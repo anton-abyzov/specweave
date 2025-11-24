@@ -2,10 +2,13 @@
 id: US-004
 feature: FS-051
 title: "Error Isolation and Recovery"
-status: planned
+status: active
 priority: P0
 created: 2025-11-22
 ---
+
+**Origin**: 🏠 **Internal**
+
 
 # US-004: Error Isolation and Recovery
 
@@ -34,4 +37,9 @@ created: 2025-11-22
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [ ] [T-016](../../../../increments/0051-automatic-github-sync/tasks.md#T-016): Implement TypeScript Try-Catch Wrappers (Layer 4)
+- [ ] [T-017](../../../../increments/0051-automatic-github-sync/tasks.md#T-017): Implement Per-Issue Error Isolation (Layer 5)
+- [ ] [T-018](../../../../increments/0051-automatic-github-sync/tasks.md#T-018): Implement Bash Hook Error Handling (Layer 6)
+- [ ] [T-019](../../../../increments/0051-automatic-github-sync/tasks.md#T-019): Implement Circuit Breaker (Layer 2)
+- [ ] [T-020](../../../../increments/0051-automatic-github-sync/tasks.md#T-020): Implement User-Facing Error Messages (Layer 7)
+- [ ] [T-021](../../../../increments/0051-automatic-github-sync/tasks.md#T-021): Document Manual Recovery Commands

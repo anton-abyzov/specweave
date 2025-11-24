@@ -1,9 +1,16 @@
 #!/bin/bash
 #
-# Post-Edit Hook: Update Status Line After spec.md or tasks.md Edits
+# Post-Edit/Write Consolidated Hook: Update Status Line After spec.md or tasks.md Changes
 #
-# Triggers: After Edit tool modifies spec.md (AC updates) or tasks.md (task completion)
+# Purpose: Unified hook for both Edit and Write tools
+# Triggers: After Edit/Write modifies spec.md (AC updates) or tasks.md (task completion)
 # Action: Updates status line cache to reflect latest AC/task progress
+#
+# CONSOLIDATION (v0.25.0):
+# - Replaces post-edit-spec.sh and post-write-spec.sh (identical code)
+# - Reduces hook overhead by 50% (2 post-hooks → 1)
+# - Single point of maintenance
+# - Combined with pre-edit-write-consolidated.sh, reduces 4 hooks → 2 hooks
 #
 # This ensures status line stays in sync when ACs are marked complete via Edit tool
 # (not just TodoWrite, which only tracks internal todo lists)
@@ -16,14 +23,14 @@
 # - Complete error isolation: Never let errors reach Claude Code
 #
 # TIER 1 IMPROVEMENTS (v0.24.2):
-# - Debouncing: Skip if updated less than 1 second ago (90% overhead reduction)
+# - Debouncing: Skip if updated less than 5 seconds ago (90% overhead reduction)
 # - File mtime detection: Check recently modified spec.md/tasks.md as fallback
 # - Non-blocking: Run update-status-line.sh in background
 # - Smart detection: Only update if spec/tasks files actually changed
 #
 # Previous fix (v0.24.1): Enhanced file detection for increment completion
-# - Detects edits via TOOL_USE_CONTENT, TOOL_RESULT, and argument parsing
-# - Always updates status line for ANY spec.md/tasks.md edit in increments folder
+# - Detects changes via TOOL_USE_CONTENT, TOOL_RESULT, and argument parsing
+# - Always updates status line for ANY spec.md/tasks.md change in increments folder
 
 # CRITICAL: Remove set -e to prevent hook errors from crashing Claude Code
 set +e
@@ -66,7 +73,7 @@ if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
 fi
 
 # EMERGENCY FILE LOCK: Prevent concurrent executions
-LOCK_FILE="$PROJECT_ROOT/.specweave/state/.hook-post-edit.lock"
+LOCK_FILE="$PROJECT_ROOT/.specweave/state/.hook-post-edit-write.lock"
 LOCK_TIMEOUT=5  # seconds
 
 # Try to acquire lock with timeout
@@ -91,7 +98,7 @@ for i in {1..5}; do
 done
 
 if [[ "$LOCK_ACQUIRED" == "false" ]]; then
-  echo "[$(date)] post-edit-spec: Could not acquire lock, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] post-edit-write: Could not acquire lock, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
   exit 0
 fi
 
@@ -106,7 +113,7 @@ fi
 # TIER 1 FIX: Debouncing (Prevent Redundant Updates)
 # ============================================================================
 # Skip update if we updated less than 5 seconds ago (INCREASED FROM 1s)
-# This handles rapid consecutive edits (e.g., 10 tasks marked complete quickly)
+# This handles rapid consecutive changes (e.g., 10 tasks marked complete quickly)
 LAST_UPDATE_FILE="$PROJECT_ROOT/.specweave/state/.last-status-update"
 DEBOUNCE_SECONDS=5
 
@@ -116,7 +123,7 @@ if [[ -f "$LAST_UPDATE_FILE" ]]; then
   TIME_SINCE_UPDATE=$((NOW - LAST_UPDATE))
 
   if (( TIME_SINCE_UPDATE < DEBOUNCE_SECONDS )); then
-    echo "[$(date)] post-edit-spec: Debounced (${TIME_SINCE_UPDATE}s since last update)" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "[$(date)] post-edit-write: Debounced (${TIME_SINCE_UPDATE}s since last update)" >> "$DEBUG_LOG" 2>/dev/null || true
     exit 0  # Skip this update
   fi
 fi
@@ -126,22 +133,22 @@ fi
 # ============================================================================
 PENDING_FILE="$PROJECT_ROOT/.specweave/state/.pending-status-update"
 METRICS_FILE="$PROJECT_ROOT/.specweave/state/hook-metrics.jsonl"
-EDITED_FILE=""
+DETECTED_FILE=""
 DETECTION_METHOD="none"
 
 # First, check if PreToolUse hook left a signal
 if [[ -f "$PENDING_FILE" ]]; then
-  EDITED_FILE=$(cat "$PENDING_FILE" 2>/dev/null || echo "")
+  DETECTED_FILE=$(cat "$PENDING_FILE" 2>/dev/null || echo "")
   # Delete pending file immediately (consume signal)
   rm "$PENDING_FILE" 2>/dev/null || true
 
-  if [[ -n "$EDITED_FILE" ]]; then
+  if [[ -n "$DETECTED_FILE" ]]; then
     DETECTION_METHOD="pretooluse"
-    echo "[$(date)] post-edit-spec: File from PreToolUse signal: $EDITED_FILE" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "[$(date)] post-edit-write: File from PreToolUse signal: $DETECTED_FILE" >> "$DEBUG_LOG" 2>/dev/null || true
 
     # Record Tier 2 success metric
     TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    echo "{\"timestamp\":\"$TIMESTAMP\",\"hook\":\"post-edit-spec\",\"event\":\"tier2_success\",\"method\":\"pretooluse\"}" >> "$METRICS_FILE" 2>/dev/null || true
+    echo "{\"timestamp\":\"$TIMESTAMP\",\"hook\":\"post-edit-write\",\"event\":\"tier2_success\",\"method\":\"pretooluse\"}" >> "$METRICS_FILE" 2>/dev/null || true
   fi
 fi
 
@@ -149,41 +156,41 @@ fi
 # TIER 1 FALLBACK: Environment Variable Detection
 # ============================================================================
 # If PreToolUse didn't provide signal, fall back to Tier 1 methods
-if [[ -z "$EDITED_FILE" ]]; then
+if [[ -z "$DETECTED_FILE" ]]; then
   # Method 1: TOOL_USE_CONTENT environment variable
   if [[ -n "${TOOL_USE_CONTENT:-}" ]]; then
-    EDITED_FILE="$TOOL_USE_CONTENT"
+    DETECTED_FILE="$TOOL_USE_CONTENT"
     DETECTION_METHOD="env_content"
   fi
 
   # Method 2: TOOL_RESULT environment variable
-  if [[ -z "$EDITED_FILE" ]] && [[ -n "${TOOL_RESULT:-}" ]]; then
-    EDITED_FILE=$(echo "$TOOL_RESULT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
+  if [[ -z "$DETECTED_FILE" ]] && [[ -n "${TOOL_RESULT:-}" ]]; then
+    DETECTED_FILE=$(echo "$TOOL_RESULT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
     DETECTION_METHOD="env_result"
   fi
 
   # Method 3: TOOL_USE_ARGS
-  if [[ -z "$EDITED_FILE" ]] && [[ -n "${TOOL_USE_ARGS:-}" ]]; then
-    EDITED_FILE=$(echo "$TOOL_USE_ARGS" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
+  if [[ -z "$DETECTED_FILE" ]] && [[ -n "${TOOL_USE_ARGS:-}" ]]; then
+    DETECTED_FILE=$(echo "$TOOL_USE_ARGS" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "")
     DETECTION_METHOD="env_args"
   fi
 
   # Log env var detection (for metrics)
-  if [[ -n "$EDITED_FILE" ]]; then
-    echo "[$(date)] post-edit-spec: File from env vars ($DETECTION_METHOD): $EDITED_FILE" >> "$DEBUG_LOG" 2>/dev/null || true
+  if [[ -n "$DETECTED_FILE" ]]; then
+    echo "[$(date)] post-edit-write: File from env vars ($DETECTION_METHOD): $DETECTED_FILE" >> "$DEBUG_LOG" 2>/dev/null || true
   fi
 fi
 
-# Check if we detected a spec.md or tasks.md edit in increments folder
+# Check if we detected a spec.md or tasks.md change in increments folder
 SHOULD_UPDATE=false
 
-if [[ -n "$EDITED_FILE" ]]; then
+if [[ -n "$DETECTED_FILE" ]]; then
   # Check if the file is spec.md or tasks.md
-  if [[ "$EDITED_FILE" == *"/spec.md" ]] || [[ "$EDITED_FILE" == *"/tasks.md" ]]; then
+  if [[ "$DETECTED_FILE" == *"/spec.md" ]] || [[ "$DETECTED_FILE" == *"/tasks.md" ]]; then
     # Check if it's in an increment folder
-    if [[ "$EDITED_FILE" == *"/.specweave/increments/"* ]]; then
+    if [[ "$DETECTED_FILE" == *"/.specweave/increments/"* ]]; then
       SHOULD_UPDATE=true
-      echo "[$(date)] post-edit-spec: Increment file edited - will update status line" >> "$DEBUG_LOG" 2>/dev/null || true
+      echo "[$(date)] post-edit-write: Increment file changed - will update status line" >> "$DEBUG_LOG" 2>/dev/null || true
     fi
   fi
 fi
@@ -193,8 +200,8 @@ fi
 # ============================================================================
 # If we couldn't detect the file via environment variables, check which files
 # were modified recently (within last 2 seconds) instead of blindly updating
-if [[ -z "$EDITED_FILE" ]]; then
-  echo "[$(date)] post-edit-spec: Env vars empty - checking file mtimes" >> "$DEBUG_LOG" 2>/dev/null || true
+if [[ -z "$DETECTED_FILE" ]]; then
+  echo "[$(date)] post-edit-write: Env vars empty - checking file mtimes" >> "$DEBUG_LOG" 2>/dev/null || true
 
   NOW=$(date +%s)
   INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
@@ -210,11 +217,11 @@ if [[ -z "$EDITED_FILE" ]]; then
           MTIME=$(stat -c "%Y" "$file" 2>/dev/null || echo 0)
         fi
 
-        # If file was modified in last 2 seconds, consider it the edited file
+        # If file was modified in last 2 seconds, consider it the changed file
         TIME_DIFF=$((NOW - MTIME))
         if (( TIME_DIFF <= 2 )); then
-          EDITED_FILE="$file"
-          echo "[$(date)] post-edit-spec: Detected recent modification: $file (${TIME_DIFF}s ago)" >> "$DEBUG_LOG" 2>/dev/null || true
+          DETECTED_FILE="$file"
+          echo "[$(date)] post-edit-write: Detected recent modification: $file (${TIME_DIFF}s ago)" >> "$DEBUG_LOG" 2>/dev/null || true
           SHOULD_UPDATE=true
           break
         fi
@@ -222,9 +229,9 @@ if [[ -z "$EDITED_FILE" ]]; then
     done
   fi
 
-  # If still no file detected, skip update (not a spec/tasks edit)
-  if [[ -z "$EDITED_FILE" ]]; then
-    echo "[$(date)] post-edit-spec: No spec/tasks modifications detected - skipping" >> "$DEBUG_LOG" 2>/dev/null || true
+  # If still no file detected, skip update (not a spec/tasks change)
+  if [[ -z "$DETECTED_FILE" ]]; then
+    echo "[$(date)] post-edit-write: No spec/tasks modifications detected - skipping" >> "$DEBUG_LOG" 2>/dev/null || true
     exit 0
   fi
 fi
@@ -234,23 +241,23 @@ fi
 # ============================================================================
 # Update status line if needed
 if [[ "$SHOULD_UPDATE" == "true" ]]; then
-  echo "[$(date)] post-edit-spec: Running update-status-line.sh (background)" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] post-edit-write: Running update-status-line.sh (background)" >> "$DEBUG_LOG" 2>/dev/null || true
 
   # Record update time BEFORE spawning background process
   # This ensures debouncing works even if update hasn't completed yet
   echo "$(date +%s)" > "$LAST_UPDATE_FILE"
 
   # Run status line update in background with COMPLETE error isolation
-  # This prevents Edit tool from waiting for status line computation
+  # This prevents Edit/Write tool from waiting for status line computation
   (
     set +e  # Disable error propagation
 
     if "$PROJECT_ROOT/plugins/specweave/hooks/lib/update-status-line.sh" 2>&1 | tee -a "$DEBUG_LOG" >/dev/null; then
-      echo "[$(date)] post-edit-spec: Status line updated successfully" >> "$DEBUG_LOG" 2>/dev/null || true
+      echo "[$(date)] post-edit-write: Status line updated successfully" >> "$DEBUG_LOG" 2>/dev/null || true
       # Reset circuit breaker on success
       echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
     else
-      echo "[$(date)] post-edit-spec: Warning - status line update failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+      echo "[$(date)] post-edit-write: Warning - status line update failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
       # Increment circuit breaker
       CURRENT_FAILURES=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
       echo "$((CURRENT_FAILURES + 1))" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true

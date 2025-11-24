@@ -1212,7 +1212,7 @@ export async function initCommand(
 
       // Detect existing git remote
       const gitRemoteDetection = detectGitHubRemote(targetDir);
-      let repositoryHosting: 'github' | 'github-single' | 'github-multi' | 'local' | 'other' = 'local';
+      let repositoryHosting: 'github' | 'github-single' | 'github-monorepo' | 'github-multirepo' | 'github-parent' | 'local' | 'other' = 'local';
       let isMultiRepo = false;
       let repoSelectionConfig: RepoSelectionConfig | null = null;
 
@@ -1227,8 +1227,16 @@ export async function initCommand(
               value: 'github-single'
             },
             {
-              name: '🐙 GitHub - Multiple repositories (microservices, monorepo)',
-              value: 'github-multi'
+              name: '📚 GitHub - Monorepo (single repo, multiple projects)',
+              value: 'github-monorepo'
+            },
+            {
+              name: '🎯 GitHub - Multiple separate repositories (microservices)',
+              value: 'github-multirepo'
+            },
+            {
+              name: '🔗 GitHub - Parent repo + nested repos',
+              value: 'github-parent'
             },
             {
               name: '💻 Local git only (no remote sync)',
@@ -1247,10 +1255,9 @@ export async function initCommand(
         // Normalize for backwards compatibility
         if (hosting === 'github-single') {
           repositoryHosting = 'github';
-        } else if (hosting === 'github-multi') {
-          // CRITICAL: Keep 'github-multi' value for setupIssueTracker to prevent duplicate prompts
-          // Don't normalize to 'github' here - github-multi-repo.ts needs the original value
-          // to skip the architecture question (ADR-0070)
+        } else if (hosting === 'github-monorepo' || hosting === 'github-multirepo' || hosting === 'github-parent') {
+          // CRITICAL: Keep specific architecture value for github-multi-repo.ts
+          // This prevents duplicate architecture questions (ADR-0070)
           isMultiRepo = true;
         }
 

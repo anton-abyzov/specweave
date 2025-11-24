@@ -98,6 +98,48 @@ describe('promptGitHubSetupType - Conditional Logic', () => {
     });
   });
 
+  describe('when repositoryHosting is github-monorepo', () => {
+    it('should return monorepo setupType without prompting', async () => {
+      // Given: repositoryHosting is github-monorepo
+      const { promptGitHubSetupType } = await import('../../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
+
+      // When: promptGitHubSetupType is called with github-monorepo
+      const result = await promptGitHubSetupType(undefined, undefined, 'github-monorepo');
+
+      // Then: Should return monorepo without prompting
+      expect(result).toEqual({ setupType: 'monorepo' });
+      expect(inquirer.prompt).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when repositoryHosting is github-multirepo', () => {
+    it('should return multiple setupType without prompting', async () => {
+      // Given: repositoryHosting is github-multirepo
+      const { promptGitHubSetupType } = await import('../../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
+
+      // When: promptGitHubSetupType is called with github-multirepo
+      const result = await promptGitHubSetupType(undefined, undefined, 'github-multirepo');
+
+      // Then: Should return multiple without prompting
+      expect(result).toEqual({ setupType: 'multiple' });
+      expect(inquirer.prompt).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when repositoryHosting is github-parent', () => {
+    it('should return multiple setupType without prompting', async () => {
+      // Given: repositoryHosting is github-parent
+      const { promptGitHubSetupType } = await import('../../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
+
+      // When: promptGitHubSetupType is called with github-parent
+      const result = await promptGitHubSetupType(undefined, undefined, 'github-parent');
+
+      // Then: Should return multiple without prompting (parent+nested maps to multiple)
+      expect(result).toEqual({ setupType: 'multiple' });
+      expect(inquirer.prompt).not.toHaveBeenCalled();
+    });
+  });
+
   describe('when repositoryHosting is local', () => {
     it('should return none setupType without prompting', async () => {
       // Given: repositoryHosting is local
@@ -163,7 +205,10 @@ describe('promptGitHubSetupType - Conditional Logic', () => {
 
       const testCases = [
         { hosting: 'github-single', expectedCalls: 0 },
-        { hosting: 'github-multi', expectedCalls: 1 }, // Only asks about TYPE
+        { hosting: 'github-monorepo', expectedCalls: 0 }, // NEW: No prompt
+        { hosting: 'github-multirepo', expectedCalls: 0 }, // NEW: No prompt
+        { hosting: 'github-parent', expectedCalls: 0 }, // NEW: No prompt
+        { hosting: 'github-multi', expectedCalls: 1 }, // Legacy: Only asks about TYPE
         { hosting: 'local', expectedCalls: 0 },
         { hosting: 'other', expectedCalls: 0 }
       ];

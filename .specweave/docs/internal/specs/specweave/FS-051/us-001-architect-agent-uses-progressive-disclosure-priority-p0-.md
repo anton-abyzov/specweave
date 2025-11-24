@@ -2,10 +2,13 @@
 id: US-001
 feature: FS-051
 title: "Automatic Issue Creation on Completion"
-status: planned
+status: active
 priority: P0
 created: 2025-11-22
 ---
+
+**Origin**: 🏠 **Internal**
+
 
 # US-001: Automatic Issue Creation on Completion
 

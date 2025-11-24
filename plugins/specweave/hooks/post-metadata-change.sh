@@ -48,6 +48,27 @@ HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Ensure logs directory exists
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
+# ============================================================================
+# EARLY EXIT OPTIMIZATION (v0.25.0): Ultra-Fast Rejection of Non-Metadata Changes
+# ============================================================================
+# This hook should ONLY run for metadata.json changes.
+# 99.9% of Edit/Write operations are NOT metadata.json.
+# Do fastest possible check first to minimize overhead.
+
+# Quick check: If TOOL_USE_CONTENT doesn't contain "metadata.json", exit immediately
+if [[ -n "${TOOL_USE_CONTENT:-}" ]] && [[ "$TOOL_USE_CONTENT" != *"metadata.json"* ]]; then
+  exit 0  # Fast path: Not metadata.json
+fi
+
+# Quick check: If TOOL_USE_ARGS doesn't contain "metadata.json", exit immediately
+if [[ -n "${TOOL_USE_ARGS:-}" ]] && [[ "$TOOL_USE_ARGS" != *"metadata.json"* ]]; then
+  exit 0  # Fast path: Not metadata.json
+fi
+
+# ============================================================================
+# STANDARD FILE DETECTION (Only if quick checks passed)
+# ============================================================================
+
 # Extract modified file from environment variables (Claude Code provides this)
 MODIFIED_FILE=""
 
