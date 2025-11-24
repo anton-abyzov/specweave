@@ -22,12 +22,7 @@
 # EMERGENCY FIX v0.24.3: Remove set -e - it causes Claude Code crashes!
 set +e
 
-# EMERGENCY KILL SWITCH
-if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
-  exit 0
-fi
-
-# Find project root
+# Find project root (must be BEFORE recursion guard to get PROJECT_ROOT)
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
@@ -44,6 +39,24 @@ PROJECT_ROOT=$(find_project_root)
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 DEBUG_LOG="$LOGS_DIR/hooks-debug.log"
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ============================================================================
+# RECURSION PREVENTION (CRITICAL - v0.26.0 - FILE-BASED GUARD)
+# ============================================================================
+# NEW SOLUTION (v0.26.0): File-based recursion guard
+# See: ADR-0073 (Hook Recursion Prevention Strategy)
+
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+
+if [[ -f "$RECURSION_GUARD_FILE" ]]; then
+  # Silent exit - we're already inside a hook chain
+  exit 0
+fi
+
+# EMERGENCY KILL SWITCH
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Ensure logs directory exists
 mkdir -p "$LOGS_DIR" 2>/dev/null || true

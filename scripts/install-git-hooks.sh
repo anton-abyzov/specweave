@@ -211,6 +211,20 @@ if [ -f "scripts/pre-commit-hooks/validate-github-issue-format.sh" ]; then
   fi
 fi
 
+# 11. Validate hook variable initialization order (CRITICAL - prevents recursion guard bypass)
+# Incident Reference: 2025-11-24 - PROJECT_ROOT order bug caused 3x hook fires and crashes
+# See: .specweave/increments/0051-*/reports/PROJECT-ROOT-ORDER-BUG-2025-11-24.md
+# See: ADR-0073, CLAUDE.md Section 9a (Hook Variable Initialization Order v0.26.1)
+if [ -f "scripts/validate-hook-variable-order.sh" ]; then
+  if ! bash scripts/validate-hook-variable-order.sh > /dev/null 2>&1; then
+    echo ""
+    echo "❌ Hook variable order validation failed"
+    echo "   Run: bash scripts/validate-hook-variable-order.sh"
+    echo "   See: CLAUDE.md Section 9a (Hook Variable Initialization Order)"
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -231,6 +245,7 @@ echo "  - pre-commit: fs-extra import detection (enforces native fs migration)"
 echo "  - pre-commit: YAML frontmatter validation (prevents malformed spec.md)"
 echo "  - pre-commit: No increment references (prevents circular dependencies - ADR-0061)"
 echo "  - pre-commit: GitHub issue format validation (blocks deprecated SP- prefix - ADR-0032)"
+echo "  - pre-commit: Hook variable initialization order (CRITICAL - prevents recursion guard bypass)"
 echo ""
 echo "To skip hook temporarily: git commit --no-verify"
 echo ""

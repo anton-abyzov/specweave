@@ -2230,7 +2230,8 @@ function createConfigFile(
       settings: {
         canUpsertInternalItems: true,  // Allow updating living docs
         canUpdateExternalItems: true,  // Allow updating external trackers
-        canUpdateStatus: true          // Allow status updates
+        canUpdateStatus: true,         // Allow status updates
+        autoSyncOnCompletion: true     // Auto-sync external tools on increment completion (v0.25.0+)
       }
     },
     // Permissions configuration (all enabled by default)

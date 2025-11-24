@@ -35,12 +35,7 @@
 # CRITICAL: Remove set -e to prevent hook errors from crashing Claude Code
 set +e
 
-# EMERGENCY KILL SWITCH: Disable all hooks if env variable set
-if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
-  exit 0
-fi
-
-# Find project root
+# Find project root (must be BEFORE recursion guard to get PROJECT_ROOT)
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
@@ -56,6 +51,39 @@ find_project_root() {
 PROJECT_ROOT=$(find_project_root)
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 DEBUG_LOG="$LOGS_DIR/hooks-debug.log"
+
+# ============================================================================
+# RECURSION PREVENTION (CRITICAL - v0.26.0 - FILE-BASED GUARD)
+# ============================================================================
+# PROBLEM: Hooks that write files trigger other hooks, causing infinite loops.
+# OLD SOLUTION (v0.25.1): Environment variable SPECWEAVE_IN_HOOK=1
+# WHY IT FAILED: Background processes (&) create NEW shells that don't inherit env vars!
+#
+# NEW SOLUTION (v0.26.0): File-based recursion guard
+# - Guard file exists = already inside hook chain
+# - Works across ALL processes (not just current shell)
+# - Atomic operation (mkdir -p ensures thread safety)
+# - Cleanup guaranteed by trap EXIT
+#
+# See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+# See: ADR-0073 (Hook Recursion Prevention Strategy)
+
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+
+if [[ -f "$RECURSION_GUARD_FILE" ]]; then
+  # Silent exit - we're already inside a hook chain
+  # This is NORMAL and prevents recursion (not an error!)
+  exit 0
+fi
+
+# Don't create guard file here - we only CHECK it
+# Guard file is ONLY created by post-task-completion.sh (the entry point)
+# All other hooks just check for its existence
+
+# EMERGENCY KILL SWITCH: Disable all hooks if env variable set
+if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+  exit 0
+fi
 
 # Ensure state and logs directories exist
 mkdir -p "$PROJECT_ROOT/.specweave/state" "$LOGS_DIR" 2>/dev/null || true
@@ -107,6 +135,41 @@ if [[ -f "$DEBUG_LOG" ]] && [[ $(wc -c < "$DEBUG_LOG" 2>/dev/null || echo 0) -gt
   tail -100 "$DEBUG_LOG" > "$DEBUG_LOG.tmp" 2>/dev/null || true
   mv "$DEBUG_LOG.tmp" "$DEBUG_LOG" 2>/dev/null || true
   echo "[$(date)] Log rotated" >> "$DEBUG_LOG" 2>/dev/null || true
+fi
+
+# ============================================================================
+# BURST WRITE DETECTION (v0.26.2 - Prevent Write Storms)
+# ============================================================================
+# Problem: Architect agent creating multiple ADRs in one response (6+ writes/minute)
+# Solution: Detect burst writes and throttle if necessary
+# Incident: 2025-11-24 (Increment 0052 - architect created 6 ADRs at once)
+BURST_TIMESTAMPS_FILE="$PROJECT_ROOT/.specweave/state/.write-timestamps"
+BURST_WINDOW=10      # seconds
+BURST_THRESHOLD=5    # max writes in window
+BURST_THROTTLE=2     # seconds to wait if burst detected
+
+# Record this write timestamp
+mkdir -p "$(dirname "$BURST_TIMESTAMPS_FILE")" 2>/dev/null || true
+echo "$(date +%s)" >> "$BURST_TIMESTAMPS_FILE" 2>/dev/null || true
+
+# Count writes in the last BURST_WINDOW seconds
+if [[ -f "$BURST_TIMESTAMPS_FILE" ]]; then
+  NOW=$(date +%s)
+  CUTOFF=$((NOW - BURST_WINDOW))
+
+  # Clean up old timestamps (older than BURST_WINDOW)
+  grep -v "^$" "$BURST_TIMESTAMPS_FILE" 2>/dev/null | \
+    awk -v cutoff="$CUTOFF" '$1 > cutoff' > "$BURST_TIMESTAMPS_FILE.tmp" 2>/dev/null || true
+  mv "$BURST_TIMESTAMPS_FILE.tmp" "$BURST_TIMESTAMPS_FILE" 2>/dev/null || true
+
+  # Count recent writes
+  RECENT_WRITES=$(wc -l < "$BURST_TIMESTAMPS_FILE" 2>/dev/null || echo 0)
+
+  if (( RECENT_WRITES > BURST_THRESHOLD )); then
+    echo "[$(date)] ⚠️  BURST DETECTED: $RECENT_WRITES writes in ${BURST_WINDOW}s (threshold: $BURST_THRESHOLD)" >> "$DEBUG_LOG" 2>/dev/null || true
+    echo "[$(date)] Throttling for ${BURST_THROTTLE}s to prevent overload..." >> "$DEBUG_LOG" 2>/dev/null || true
+    sleep "$BURST_THROTTLE"
+  fi
 fi
 
 # ============================================================================

@@ -18,13 +18,13 @@ created: 2025-11-22
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: All sync errors caught and logged (NEVER crash workflow)
-- [ ] **AC-US4-02**: Sync operations wrapped in try-catch with error isolation
-- [ ] **AC-US4-03**: Hooks ALWAYS exit 0 (even on failure)
-- [ ] **AC-US4-04**: User sees clear error message on sync failure
-- [ ] **AC-US4-05**: Partial sync completion allowed (some issues created, others failed)
-- [ ] **AC-US4-06**: Circuit breaker auto-disables hooks after 3 consecutive failures
-- [ ] **AC-US4-07**: Manual recovery command documented: `/specweave-github:sync --retry`
+- [x] **AC-US4-01**: All sync errors caught and logged (NEVER crash workflow)
+- [x] **AC-US4-02**: Sync operations wrapped in try-catch with error isolation
+- [x] **AC-US4-03**: Hooks ALWAYS exit 0 (even on failure)
+- [x] **AC-US4-04**: User sees clear error message on sync failure
+- [x] **AC-US4-05**: Partial sync completion allowed (some issues created, others failed)
+- [x] **AC-US4-06**: Circuit breaker auto-disables hooks after 3 consecutive failures
+- [x] **AC-US4-07**: Manual recovery command documented: `/specweave-github:sync --retry`
 
 ---
 
@@ -37,9 +37,9 @@ created: 2025-11-22
 
 ## Tasks
 
-- [ ] [T-016](../../../../increments/0051-automatic-github-sync/tasks.md#T-016): Implement TypeScript Try-Catch Wrappers (Layer 4)
-- [ ] [T-017](../../../../increments/0051-automatic-github-sync/tasks.md#T-017): Implement Per-Issue Error Isolation (Layer 5)
-- [ ] [T-018](../../../../increments/0051-automatic-github-sync/tasks.md#T-018): Implement Bash Hook Error Handling (Layer 6)
-- [ ] [T-019](../../../../increments/0051-automatic-github-sync/tasks.md#T-019): Implement Circuit Breaker (Layer 2)
-- [ ] [T-020](../../../../increments/0051-automatic-github-sync/tasks.md#T-020): Implement User-Facing Error Messages (Layer 7)
-- [ ] [T-021](../../../../increments/0051-automatic-github-sync/tasks.md#T-021): Document Manual Recovery Commands
+- [x] [T-016](../../../../increments/0051-automatic-github-sync/tasks.md#T-016): Implement TypeScript Try-Catch Wrappers (Layer 4)
+- [x] [T-017](../../../../increments/0051-automatic-github-sync/tasks.md#T-017): Implement Per-Issue Error Isolation (Layer 5)
+- [x] [T-018](../../../../increments/0051-automatic-github-sync/tasks.md#T-018): Implement Bash Hook Error Handling (Layer 6)
+- [x] [T-019](../../../../increments/0051-automatic-github-sync/tasks.md#T-019): Implement Circuit Breaker (Layer 2)
+- [x] [T-020](../../../../increments/0051-automatic-github-sync/tasks.md#T-020): Implement User-Facing Error Messages (Layer 7)
+- [x] [T-021](../../../../increments/0051-automatic-github-sync/tasks.md#T-021): Document Manual Recovery Commands

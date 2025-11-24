@@ -35,6 +35,25 @@ find_project_root() {
 }
 
 PROJECT_ROOT=$(find_project_root)
+
+# ============================================================================
+# RECURSION PREVENTION (CRITICAL - v0.26.0 - FILE-BASED GUARD)
+# ============================================================================
+# FIX: Don't update status line from within hook chain
+# WHY: Status line writes status-line.json which triggers post-edit-write hook
+#      which tries to update status line AGAIN → infinite recursion!
+#
+# This is a CRITICAL part of Fix #4 in the root cause analysis:
+# See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+
+if [[ -f "$RECURSION_GUARD_FILE" ]]; then
+  # We're inside a hook chain - skip status line update to prevent recursion
+  # This is NORMAL behavior (not an error!)
+  exit 0
+fi
+
 CACHE_FILE="$PROJECT_ROOT/.specweave/state/status-line.json"
 INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
 TMP_FILE="$PROJECT_ROOT/.specweave/state/.status-line-tmp.txt"

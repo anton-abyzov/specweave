@@ -618,7 +618,8 @@ export class SyncCoordinator {
             external_id: fm.external_id,
             external_url: fm.external_url,
             imported_at: fm.imported_at,
-            origin: fm.origin
+            origin: fm.origin,
+            external_tools: fm.external_tools  // FIX: Include external_tools (Layer 1 cache)
           });
         }
       }

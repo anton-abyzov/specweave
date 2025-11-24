@@ -42,6 +42,11 @@ import { translateLivingDocs } from './translate-living-docs.js';
 // Import for AC status (uses ACStatusManager directly)
 import { ACStatusManager } from '../vendor/core/increment/ac-status-manager.js';
 
+// Import for GitHub sync (uses SyncCoordinator directly)
+// NOTE: Import from project root dist (not relative path)
+import { SyncCoordinator } from '../../../../dist/src/sync/sync-coordinator.js';
+import { consoleLogger } from '../vendor/utils/logger.js';
+
 // ============================================================================
 // WRAPPER: UPDATE AC STATUS
 // ============================================================================
@@ -88,6 +93,36 @@ async function updateACStatus(incrementId) {
 }
 
 // ============================================================================
+// WRAPPER: GITHUB SYNC
+// ============================================================================
+async function syncGitHub(incrementId) {
+  try {
+    console.log(`\n🔗 [5/5] Syncing to GitHub...`);
+
+    const projectRoot = process.cwd();
+
+    const coordinator = new SyncCoordinator({
+      projectRoot,
+      incrementId,
+      logger: consoleLogger
+    });
+
+    const result = await coordinator.syncIncrementCompletion();
+
+    if (result.success) {
+      console.log(`✅ GitHub sync completed (${result.userStoriesSynced} user stories synced)`);
+    } else {
+      console.warn(`⚠️  GitHub sync had errors (see logs)`);
+    }
+
+    return { success: result.success, result };
+  } catch (error) {
+    console.error('❌ Error syncing to GitHub:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+// ============================================================================
 // MAIN EXECUTION
 // ============================================================================
 async function runConsolidatedSync(incrementId) {
@@ -100,7 +135,7 @@ async function runConsolidatedSync(incrementId) {
 
   try {
     // OPERATION 1: Update tasks.md (uses imported function)
-    console.log('\n🔄 [1/4] Updating tasks.md...');
+    console.log('\n🔄 [1/5] Updating tasks.md...');
     try {
       await updateTasksMd(incrementId);
       results.updateTasks = { success: true };
@@ -110,7 +145,7 @@ async function runConsolidatedSync(incrementId) {
     }
 
     // OPERATION 2: Sync living docs (uses imported function)
-    console.log('\n📚 [2/4] Syncing living docs...');
+    console.log('\n📚 [2/5] Syncing living docs...');
     try {
       await syncLivingDocs(incrementId);
       results.syncDocs = { success: true };
@@ -128,13 +163,36 @@ async function runConsolidatedSync(incrementId) {
     }
 
     // OPERATION 4: Translate living docs (uses imported function)
-    console.log('\n🌐 [4/4] Checking translation needs...');
+    console.log('\n🌐 [4/5] Checking translation needs...');
     try {
       await translateLivingDocs(incrementId);
       results.translate = { success: true };
     } catch (error) {
       console.error('❌ Error translating docs:', error.message);
       results.translate = { success: false, error: error.message };
+    }
+
+    // OPERATION 5: Sync to GitHub (NEW in v0.24.0+)
+    // FIX (v0.26.0): Skip GitHub sync in post-task-completion hook!
+    // WHY: GitHub sync should ONLY run on increment COMPLETION, not task completion
+    // This prevents 27 duplicate comments on every TodoWrite (see root cause analysis)
+    //
+    // GitHub sync is now ONLY triggered by:
+    // - post-increment-completion.sh (when status → "completed")
+    // - Manual sync via /specweave-github:sync command
+    //
+    // See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+    if (process.env.SKIP_GITHUB_SYNC === 'true') {
+      console.log('\n⏭️  [5/5] GitHub sync SKIPPED (called from post-task-completion hook)');
+      console.log('    GitHub sync will run automatically on increment completion.');
+      results.syncGitHub = { success: true, skipped: true };
+    } else {
+      try {
+        results.syncGitHub = await syncGitHub(incrementId);
+      } catch (error) {
+        console.error('❌ Error syncing to GitHub:', error.message);
+        results.syncGitHub = { success: false, error: error.message };
+      }
     }
 
     const duration = Date.now() - startTime;

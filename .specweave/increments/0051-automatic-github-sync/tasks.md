@@ -264,9 +264,10 @@ describe('SyncCoordinator Permission Gates', () => {
 ### T-004: Add User-Facing Gate Messages
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-07
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1 hour
+**Completed**: 2025-11-23
 
 **Implementation Steps**:
 1. Add logger messages for each gate state (enabled/disabled)
@@ -331,7 +332,7 @@ describe('SyncCoordinator User Messages', () => {
 ### T-005: Update `specweave init` to Include New Flags
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1.5 hours
 
@@ -384,7 +385,7 @@ describe('specweave init Config Generation', () => {
 ### T-006: Implement `createGitHubIssuesForUserStories()` in SyncCoordinator
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 3 hours
 
@@ -468,7 +469,7 @@ describe('SyncCoordinator.createGitHubIssuesForUserStories', () => {
 ### T-007: Implement `createUserStoryIssue()` in GitHubClientV2
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-03, AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 2.5 hours
 
@@ -572,7 +573,7 @@ describe('GitHubClientV2.createUserStoryIssue', () => {
 ### T-008: Update Increment metadata.json with GitHub Issue Numbers
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 2 hours
 
@@ -653,7 +654,7 @@ describe('MetadataUpdater.addGitHubIssues', () => {
 ### T-009: Add Success Message Logging
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1 hour
 
@@ -711,7 +712,7 @@ describe('SyncCoordinator Success Message Logging', () => {
 ### T-010: Integration Test for Full Issue Creation Flow
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01 through AC-US1-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 3.5 hours
 
@@ -785,7 +786,7 @@ describe('GitHub Issue Creation Integration', () => {
 ### T-011: Implement Frontmatter Cache Check (Layer 1)
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 2 hours
 
@@ -854,7 +855,7 @@ describe('FrontmatterCacheChecker', () => {
 ### T-012: Implement Metadata Cache Check (Layer 2)
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 1.5 hours
 
@@ -914,7 +915,7 @@ describe('MetadataCacheChecker', () => {
 ### T-013: Implement GitHub API Duplicate Detection (Layer 3)
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-02, AC-US3-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 3 hours
 
@@ -994,7 +995,7 @@ describe('GitHub API Duplicate Detection', () => {
 ### T-014: Implement 3-Layer Cache Integration
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01 through AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 2 hours
 
@@ -1106,7 +1107,7 @@ describe('Three-Layer Idempotency Cache Integration', () => {
 ### T-015: Add Idempotency Logging
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1.5 hours
 
@@ -1167,7 +1168,7 @@ describe('Idempotency Logging', () => {
 ### T-016: Implement TypeScript Try-Catch Wrappers (Layer 4)
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01, AC-US4-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 1.5 hours
 
@@ -1226,7 +1227,7 @@ describe('TypeScript Error Isolation (Layer 4)', () => {
 ### T-017: Implement Per-Issue Error Isolation (Layer 5)
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 1.5 hours
 
@@ -1298,7 +1299,7 @@ describe('Per-Issue Error Isolation (Layer 5)', () => {
 ### T-018: Implement Bash Hook Error Handling (Layer 6)
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 1 hour
 
@@ -1343,7 +1344,7 @@ end
 ### T-019: Implement Circuit Breaker (Layer 2)
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 2 hours
 
@@ -1441,7 +1442,7 @@ describe('Circuit Breaker (Layer 2)', () => {
 ### T-020: Implement User-Facing Error Messages (Layer 7)
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1.5 hours
 
@@ -1526,7 +1527,7 @@ describe('User-Facing Error Messages (Layer 7)', () => {
 ### T-021: Document Manual Recovery Commands
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-07
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 0.5 hours
 
@@ -1576,7 +1577,7 @@ gh auth login
 ### T-022: Create E2E Test with Real GitHub Repo
 **User Story**: US-001
 **Satisfies ACs**: All US-001 ACs
-**Status**: [ ] pending
+**Status**: [~] deferred
 **Priority**: P0
 **Estimated**: 3 hours
 
@@ -1649,7 +1650,7 @@ describe('GitHub Auto-Sync E2E', () => {
 ### T-023: Create Performance Test (Hook Execution < 10s)
 **User Story**: US-001
 **Satisfies ACs**: NFR-001 (Performance)
-**Status**: [ ] pending
+**Status**: [~] deferred
 **Priority**: P0
 **Estimated**: 2 hours
 
@@ -1726,7 +1727,7 @@ describe('Hook Execution Performance', () => {
 ### T-024: Create Integration Test for Permission Gates
 **User Story**: US-002
 **Satisfies ACs**: All US-002 ACs
-**Status**: [ ] pending
+**Status**: [~] deferred
 **Priority**: P0
 **Estimated**: 2.5 hours
 
@@ -1810,7 +1811,7 @@ describe('Permission Gates Integration', () => {
 ### T-025: Update User Documentation (README)
 **User Story**: US-001, US-002
 **Satisfies ACs**: Documentation requirements
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1.5 hours
 
@@ -1864,7 +1865,7 @@ See [GitHub Sync Recovery Guide](docs/github-sync-recovery.md) for troubleshooti
 ### T-026: Create Migration Guide (v0.24 → v0.25)
 **User Story**: US-001, US-002
 **Satisfies ACs**: Migration documentation
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 **Estimated**: 1 hour
 

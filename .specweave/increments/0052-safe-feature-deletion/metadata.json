@@ -1,0 +1,11 @@
+{
+  "id": "0052-safe-feature-deletion",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "feature_id": "FS-052",
+  "created": "2025-11-24T03:36:54Z",
+  "lastActivity": "2025-11-24T03:36:54Z",
+  "testMode": "TDD",
+  "coverageTarget": 85
+}

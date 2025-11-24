@@ -100,10 +100,22 @@ export class FormatPreservationSyncService {
     // Build completion comment
     const comment = this.buildCompletionComment(completionData);
 
-    // Post comment to external tool
+    // Post comment to external tool with idempotency check
     if (externalClient instanceof GitHubClientV2) {
-      const issueNumber = this.extractIssueNumber(usFile.external_id || '');
+      // FIX (v0.26.0): Idempotency check to prevent duplicate comments
+      // See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
+      const issueNumber = usFile.external_tools?.github?.number || 0;
+
+      // Check if we already posted this exact comment
+      const lastComment = await externalClient.getLastComment(issueNumber);
+
+      if (lastComment && lastComment.body === comment) {
+        this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
+        return;  // Idempotency: Don't post duplicate!
+      }
+
       await externalClient.addComment(issueNumber, comment);
+      this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
     } else if (externalClient instanceof JiraClient) {
       const issueKey = usFile.external_id || '';
       await externalClient.addComment(issueKey, comment);
@@ -140,10 +152,20 @@ export class FormatPreservationSyncService {
       // Build completion comment
       const comment = this.buildCompletionComment(completionData);
 
-      // Post comment
+      // Post comment with idempotency check
       if (externalClient instanceof GitHubClientV2) {
-        const issueNumber = this.extractIssueNumber(usFile.external_id || '');
-        await externalClient.addComment(issueNumber, comment);
+        // FIX (v0.26.0): Idempotency check to prevent duplicate comments
+        const issueNumber = usFile.external_tools?.github?.number || 0;
+
+        // Check if we already posted this exact comment
+        const lastComment = await externalClient.getLastComment(issueNumber);
+
+        if (lastComment && lastComment.body === comment) {
+          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
+        } else {
+          await externalClient.addComment(issueNumber, comment);
+          this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
+        }
 
         // Update title/description if needed
         // TODO: Implement title/description update logic
