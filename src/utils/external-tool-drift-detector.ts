@@ -13,8 +13,13 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 import { Logger, consoleLogger } from './logger.js';
+
+// Drift thresholds (extracted constants for P0-5 fix)
+const DRIFT_THRESHOLD_HOURS = 24;      // Warning threshold
+const WARNING_THRESHOLD_HOURS = 48;    // Elevated warning
+const CRITICAL_THRESHOLD_HOURS = 168;  // 7 days - critical staleness
 
 export interface DriftStatus {
   hasDrift: boolean;
@@ -22,6 +27,7 @@ export interface DriftStatus {
   hoursSinceSync: number | null;
   externalToolsConfigured: boolean;
   recommendation: string;
+  error?: string;  // P0-5: Expose errors instead of masking
 }
 
 export class ExternalToolDriftDetector {
@@ -34,6 +40,105 @@ export class ExternalToolDriftDetector {
   }
 
   /**
+   * Validate increment ID format to prevent path traversal attacks
+   * P0-1: Path traversal vulnerability fix
+   *
+   * @param incrementId - Increment ID to validate
+   * @throws Error if increment ID format is invalid
+   */
+  private validateIncrementId(incrementId: string): void {
+    // Expected format: 4 digits + hyphen + kebab-case (e.g., "0053-safe-feature-deletion")
+    if (!/^\d{4}-[a-z0-9-]+$/.test(incrementId)) {
+      throw new Error(`Invalid increment ID format: ${incrementId}. Expected format: XXXX-kebab-case`);
+    }
+
+    // Additional safety: reject path traversal attempts
+    if (incrementId.includes('..') || incrementId.includes('/') || incrementId.includes('\\')) {
+      throw new Error(`Path traversal attempt detected in increment ID: ${incrementId}`);
+    }
+  }
+
+  /**
+   * Safely parse and validate metadata.json
+   * P0-2: JSON injection protection
+   *
+   * @param metadataPath - Path to metadata.json
+   * @returns Parsed metadata object
+   * @throws Error if JSON is invalid or malformed
+   */
+  private async readAndValidateMetadata(metadataPath: string): Promise<any> {
+    const content = await fs.readFile(metadataPath, 'utf-8');
+
+    let metadata;
+    try {
+      metadata = JSON.parse(content);
+    } catch (error) {
+      throw new Error(`Invalid JSON in metadata file: ${error instanceof Error ? error.message : 'Parse error'}`);
+    }
+
+    // Validate JSON structure
+    if (typeof metadata !== 'object' || metadata === null) {
+      throw new Error('Metadata must be a valid JSON object');
+    }
+
+    return metadata;
+  }
+
+  /**
+   * Get most recent sync time across ALL external tools
+   * P1-1: Check all tools instead of just first configured tool
+   *
+   * @param metadata - Parsed metadata.json
+   * @returns Most recent sync date or null if no syncs found
+   */
+  private getMostRecentSync(metadata: any): Date | null {
+    const syncTimes: Date[] = [];
+
+    // Collect all sync times from configured external tools
+    if (metadata.github?.lastSync) {
+      const date = this.parseSafeDate(metadata.github.lastSync);
+      if (date) syncTimes.push(date);
+    }
+
+    if (metadata.jira?.lastSync) {
+      const date = this.parseSafeDate(metadata.jira.lastSync);
+      if (date) syncTimes.push(date);
+    }
+
+    if (metadata.ado?.lastSync) {
+      const date = this.parseSafeDate(metadata.ado.lastSync);
+      if (date) syncTimes.push(date);
+    }
+
+    if (syncTimes.length === 0) {
+      return null;
+    }
+
+    // Return most recent sync time (sort descending, take first)
+    return syncTimes.sort((a, b) => b.getTime() - a.getTime())[0];
+  }
+
+  /**
+   * Safely parse date string with validation
+   *
+   * @param dateString - ISO date string
+   * @returns Date object or null if invalid
+   */
+  private parseSafeDate(dateString: string): Date | null {
+    if (typeof dateString !== 'string') return null;
+
+    const date = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      this.logger.warn(`Invalid date format: ${dateString}`);
+      return null;
+    }
+
+    return date;
+  }
+
+  /**
    * Detect drift for a specific increment
    *
    * @param incrementId - Increment ID (e.g., "0053-safe-feature-deletion")
@@ -41,7 +146,10 @@ export class ExternalToolDriftDetector {
    */
   async detectDrift(incrementId: string): Promise<DriftStatus> {
     try {
-      // Read metadata.json to check last external sync time
+      // P0-1: Validate increment ID to prevent path traversal
+      this.validateIncrementId(incrementId);
+
+      // P0-4: Use async fs operations (replaced existsSync/readFileSync)
       const metadataPath = path.join(
         this.projectRoot,
         '.specweave/increments',
@@ -49,7 +157,10 @@ export class ExternalToolDriftDetector {
         'metadata.json'
       );
 
-      if (!fs.existsSync(metadataPath)) {
+      // Check if metadata exists (async)
+      try {
+        await fs.access(metadataPath);
+      } catch {
         return {
           hasDrift: false,
           lastSyncTime: null,
@@ -59,7 +170,8 @@ export class ExternalToolDriftDetector {
         };
       }
 
-      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      // P0-2: Safe JSON parsing with validation
+      const metadata = await this.readAndValidateMetadata(metadataPath);
 
       // Check if external tools are configured
       const hasGitHub = metadata.github && metadata.github.issues && metadata.github.issues.length > 0;
@@ -78,16 +190,8 @@ export class ExternalToolDriftDetector {
         };
       }
 
-      // Get last sync time from metadata
-      let lastSyncTime: Date | null = null;
-
-      if (hasGitHub && metadata.github.lastSync) {
-        lastSyncTime = new Date(metadata.github.lastSync);
-      } else if (hasJira && metadata.jira.lastSync) {
-        lastSyncTime = new Date(metadata.jira.lastSync);
-      } else if (hasADO && metadata.ado.lastSync) {
-        lastSyncTime = new Date(metadata.ado.lastSync);
-      }
+      // P1-1: Get most recent sync time across ALL external tools (not just first one)
+      const lastSyncTime = this.getMostRecentSync(metadata);
 
       if (!lastSyncTime) {
         return {
@@ -103,15 +207,14 @@ export class ExternalToolDriftDetector {
       const now = new Date();
       const hoursSinceSync = (now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60);
 
-      // Drift threshold: 24 hours
-      const DRIFT_THRESHOLD_HOURS = 24;
+      // Use extracted constants (P0-5 fix)
       const hasDrift = hoursSinceSync > DRIFT_THRESHOLD_HOURS;
 
       let recommendation = '';
       if (hasDrift) {
-        if (hoursSinceSync < 48) {
+        if (hoursSinceSync < WARNING_THRESHOLD_HOURS) {
           recommendation = 'External tools synced 1-2 days ago - consider running /specweave:sync-progress';
-        } else if (hoursSinceSync < 168) {
+        } else if (hoursSinceSync < CRITICAL_THRESHOLD_HOURS) {
           recommendation = `External tools synced ${Math.floor(hoursSinceSync / 24)} days ago - run /specweave:sync-progress soon`;
         } else {
           recommendation = `External tools synced ${Math.floor(hoursSinceSync / 168)} weeks ago - URGENT: run /specweave:sync-progress`;
@@ -128,13 +231,17 @@ export class ExternalToolDriftDetector {
         recommendation
       };
     } catch (error) {
+      // P0-5: Don't mask errors - expose them in return value
       this.logger.error(`Error detecting drift for ${incrementId}:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
       return {
         hasDrift: false,
         lastSyncTime: null,
         hoursSinceSync: null,
         externalToolsConfigured: false,
-        recommendation: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        recommendation: `Error detecting drift: ${errorMessage}`,
+        error: errorMessage  // Expose error for caller to handle
       };
     }
   }

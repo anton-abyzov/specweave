@@ -127,18 +127,30 @@ export class LivingDocsSync {
     };
 
     try {
-      // CRITICAL: Skip sync for archived increments (prevents recreating archived folders)
+      // P0-3: CRITICAL FIX - Atomic check to prevent TOCTOU race condition
+      // Instead of checking if archived, check if increment exists in ACTIVE folder
+      // This is atomic and prevents race where increment moves to archive between check and use
       // See: ULTRATHINK-ARCHIVE-REORGANIZATION-BUG.md for full analysis
-      const isArchived = await this.isIncrementArchived(incrementId);
-      if (isArchived) {
-        this.logger.log(`⏭️  Skipping sync for archived increment ${incrementId}`);
+      const activeIncrementPath = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        incrementId
+      );
+
+      // Atomic existence check for active increment
+      try {
+        await fs.access(activeIncrementPath);
+        // If we reach here, increment exists in active folder - proceed with sync
+      } catch {
+        // Increment not in active folder (archived, moved, or doesn't exist)
+        this.logger.log(`⏭️  Skipping sync for non-active increment ${incrementId}`);
         return {
           success: true,
           featureId: '',
           incrementId,
           filesCreated: [],
           filesUpdated: [],
-          errors: ['Increment is archived - sync skipped to prevent folder recreation']
+          errors: ['Increment not in active folder - sync skipped to prevent issues']
         };
       }
 
@@ -229,10 +241,15 @@ export class LivingDocsSync {
 
       // Step 7: Sync to external tools (GitHub, JIRA, ADO)
       // CRITICAL (v0.25.1): Check SKIP_EXTERNAL_SYNC to prevent recursion cascade
+      // P1-3 FIX: Proper boolean parsing (handles "false" string correctly)
       // See: ADR-0129 (US Sync Guard Rails), TODOWRITE-CRASH-RECOVERY.md
-      if (!options.dryRun && !process.env.SKIP_EXTERNAL_SYNC) {
+      const skipExternalSync = ['true', '1', 'yes'].includes(
+        (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
+      );
+
+      if (!options.dryRun && !skipExternalSync) {
         await this.syncToExternalTools(incrementId, featureId, projectPath);
-      } else if (process.env.SKIP_EXTERNAL_SYNC) {
+      } else if (skipExternalSync) {
         this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
         this.logger.log(`   ℹ️  Run /specweave:sync-progress to manually sync when ready`);
       }

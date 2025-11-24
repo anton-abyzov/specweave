@@ -112,51 +112,18 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
 
   // If we have projectPath and token, TRY to use RepoStructureManager for enhanced flow
-  // CRITICAL: Wrap in try-catch to fall back to legacy flow if it fails
+  // P1-2 FIX: Split large try-catch into granular error handling for better debugging
   if (projectPath && githubToken) {
+    const manager = new RepoStructureManager(projectPath, githubToken);
+
+    // Step 1: Prompt for repository structure
+    let config;
     try {
-      const manager = new RepoStructureManager(projectPath, githubToken);
       // 🔥 FIX: Pass preSelectedArchitecture to avoid duplicate prompts!
-      const config = await manager.promptStructure(preSelectedArchitecture);
-
-      // Create repositories on hosting platform if requested
-      if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
-        console.log(chalk.cyan(`\n🚀 Creating ${config.provider.config.name} Repositories\n`));
-        await manager.createRepositories(config);
-      }
-
-      // Initialize local repos
-      console.log(chalk.cyan('\n📁 Setting Up Local Repositories\n'));
-      await manager.initializeLocalRepos(config);
-
-      // Create SpecWeave structure
-      await manager.createSpecWeaveStructure(config);
-
-      // Extract profiles from config to avoid duplicate prompts
-      const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
-        id: repo.id,
-        displayName: repo.description || repo.name,
-        owner: repo.owner,
-        repo: repo.name,
-        isDefault: index === 0  // First repo is default
-      }));
-
-      // Map to setup type
-      const setupType: GitHubSetupType =
-        config.architecture === 'single' ? 'single' :
-        config.architecture === 'monorepo' ? 'monorepo' :
-        'multiple';
-
-      // Return profiles directly - no need to call configureMultipleRepositories()
-      return {
-        setupType,
-        profiles,
-        monorepoProjects: config.monorepoProjects
-      };
+      config = await manager.promptStructure(preSelectedArchitecture);
     } catch (error: any) {
-      // Enhanced flow failed - fall back to legacy prompt
-      console.log(chalk.yellow('\n⚠️  Enhanced repository setup unavailable'));
-      console.log(chalk.gray(`   Reason: ${error.message || 'Unknown error'}`));
+      console.log(chalk.yellow('\n⚠️  Failed to prompt repository structure'));
+      console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));
       console.log(chalk.gray('   Falling back to simplified setup\n'));
 
       // Issue #3 fix: Preserve stack trace for debugging
@@ -166,24 +133,93 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         console.error('');
       }
 
-      // CRITICAL FIX: If repositoryHosting was already selected in init.ts,
-      // don't re-ask the question! Return based on what was already chosen.
-      // This prevents the duplicate "Select your repository setup" prompt.
+      // CRITICAL FIX: Use repositoryHosting if already selected
       if (repositoryHosting) {
         console.log(chalk.yellow('   → Using previously selected setup type\n'));
-
-        // GitHub providers - use preSelectedArchitecture mapping
         if (preSelectedArchitecture === 'single') {
           return { setupType: 'single' };
         } else if (preSelectedArchitecture === 'github-parent') {
           return { setupType: 'multiple' };
         }
-
-        // Non-GitHub providers
         return { setupType: 'none' };
       }
 
-      // Fall through to legacy prompt ONLY if repositoryHosting was NOT provided
+      // Fall through to legacy prompt
+      // (continue after outer if block)
+      config = null;
+    }
+
+    // If config was successfully obtained, proceed with setup
+    if (config) {
+      // Step 2: Create repositories on GitHub (non-fatal - can continue without)
+      if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
+        try {
+          console.log(chalk.cyan(`\n🚀 Creating ${config.provider.config.name} Repositories\n`));
+          await manager.createRepositories(config);
+        } catch (error: any) {
+          console.log(chalk.yellow('\n⚠️  Failed to create GitHub repositories'));
+          console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));
+          console.log(chalk.yellow('   → Continuing with local setup only\n'));
+          // Continue - repositories can be created manually later
+        }
+      }
+
+      // Step 3: Initialize local repositories
+      try {
+        console.log(chalk.cyan('\n📁 Setting Up Local Repositories\n'));
+        await manager.initializeLocalRepos(config);
+      } catch (error: any) {
+        console.log(chalk.red('\n❌ Failed to initialize local repositories'));
+        console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));
+
+        // This is more critical - fall back to legacy flow
+        if (repositoryHosting) {
+          console.log(chalk.yellow('   → Using previously selected setup type\n'));
+          if (preSelectedArchitecture === 'single') {
+            return { setupType: 'single' };
+          } else if (preSelectedArchitecture === 'github-parent') {
+            return { setupType: 'multiple' };
+          }
+          return { setupType: 'none' };
+        }
+
+        // Fall through to legacy prompt
+        config = null;
+      }
+
+      // Step 4: Create SpecWeave structure (non-fatal)
+      if (config) {
+        try {
+          await manager.createSpecWeaveStructure(config);
+        } catch (error: any) {
+          console.log(chalk.yellow('\n⚠️  Failed to create SpecWeave structure'));
+          console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));
+          console.log(chalk.yellow('   → Structure can be created manually later\n'));
+          // Continue - structure can be created manually
+        }
+
+        // Success! Extract profiles and return
+        const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
+          id: repo.id,
+          displayName: repo.description || repo.name,
+          owner: repo.owner,
+          repo: repo.name,
+          isDefault: index === 0  // First repo is default
+        }));
+
+        // Map to setup type
+        const setupType: GitHubSetupType =
+          config.architecture === 'single' ? 'single' :
+          config.architecture === 'monorepo' ? 'monorepo' :
+          'multiple';
+
+        // Return profiles directly - no need to call configureMultipleRepositories()
+        return {
+          setupType,
+          profiles,
+          monorepoProjects: config.monorepoProjects
+        };
+      }
     }
   }
 
@@ -298,6 +334,10 @@ export async function configureSingleRepository(projectPath: string): Promise<Gi
         if (!input.trim()) {
           return 'Owner is required';
         }
+        // P1-4: Regex DoS protection - length check before regex
+        if (input.length > 256) {
+          return 'Owner name too long (max 256 characters)';
+        }
         if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(input)) {
           return 'Invalid GitHub username/organization format';
         }
@@ -312,6 +352,10 @@ export async function configureSingleRepository(projectPath: string): Promise<Gi
       validate: (input: string) => {
         if (!input.trim()) {
           return 'Repository name is required';
+        }
+        // P1-4: Regex DoS protection - length check before regex
+        if (input.length > 256) {
+          return 'Repository name too long (max 256 characters)';
         }
         if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
           return 'Invalid repository name format';
@@ -395,6 +439,10 @@ export async function configureMultipleRepositories(projectPath: string): Promis
           if (input.includes(',')) {
             return 'One ID at a time (no commas)';
           }
+          // P1-4: Regex DoS protection - length check before regex
+          if (input.length < 2 || input.length > 64) {
+            return 'ID must be 2-64 characters';
+          }
           if (!/^[a-z][a-z0-9-]*$/.test(input)) {
             return 'ID must be lowercase letters, numbers, and hyphens';
           }
@@ -408,7 +456,16 @@ export async function configureMultipleRepositories(projectPath: string): Promis
         type: 'input',
         name: 'displayName',
         message: 'Display name (e.g., Frontend Application):',
-        validate: (input: string) => !!input.trim() || 'Display name is required'
+        validate: (input: string) => {
+          if (!input.trim()) {
+            return 'Display name is required';
+          }
+          // P1-4: Regex DoS protection - length check
+          if (input.length > 256) {
+            return 'Display name too long (max 256 characters)';
+          }
+          return true;
+        }
       },
       {
         type: 'input',
@@ -418,6 +475,10 @@ export async function configureMultipleRepositories(projectPath: string): Promis
         validate: (input: string) => {
           if (!input.trim()) {
             return 'Owner is required';
+          }
+          // P1-4: Regex DoS protection - length check before regex
+          if (input.length > 256) {
+            return 'Owner name too long (max 256 characters)';
           }
           if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(input)) {
             return 'Invalid GitHub username/organization format';
@@ -433,6 +494,10 @@ export async function configureMultipleRepositories(projectPath: string): Promis
         validate: (input: string) => {
           if (!input.trim()) {
             return 'Repository name is required';
+          }
+          // P1-4: Regex DoS protection - length check before regex
+          if (input.length > 256) {
+            return 'Repository name too long (max 256 characters)';
           }
           if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
             return 'Invalid repository name format';
@@ -587,6 +652,10 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
             if (!input.trim()) {
               return 'ID is required';
             }
+            // P1-4: Regex DoS protection - length check before regex
+            if (input.length < 2 || input.length > 64) {
+              return 'ID must be 2-64 characters';
+            }
             if (!/^[a-z][a-z0-9-]*$/.test(input)) {
               return 'ID must be lowercase letters, numbers, and hyphens';
             }
@@ -602,7 +671,17 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
           message: 'Display name:',
           default: repo.repo.split('-').map((w: string) =>
             w.charAt(0).toUpperCase() + w.slice(1)
-          ).join(' ')  // Smart default: "frontend-app" -> "Frontend App"
+          ).join(' '),  // Smart default: "frontend-app" -> "Frontend App"
+          validate: (input: string) => {
+            if (!input.trim()) {
+              return 'Display name is required';
+            }
+            // P1-4: Regex DoS protection - length check
+            if (input.length > 256) {
+              return 'Display name too long (max 256 characters)';
+            }
+            return true;
+          }
         }
       ]);
 
