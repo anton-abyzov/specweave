@@ -1,0 +1,125 @@
+```mermaid
+flowchart TD
+    Start([detectExternalTools]) --> L1[Level 1: metadata.json<br/>Increment-specific cache]
+
+    L1 --> CheckMeta{metadata.github<br/>exists?}
+    CheckMeta -->|Yes| ReturnMeta[✅ Return: github]
+    CheckMeta -->|No| L2[Level 2: config.json<br/>Global project config]
+
+    L2 --> M1[Method 1: config.sync.github]
+    M1 --> CheckM1{enabled: true<br/>owner: xxx<br/>repo: xxx?}
+    CheckM1 -->|Yes| ReturnM1[✅ Return: github<br/>60% of users]
+    CheckM1 -->|No| M2[Method 2: config.sync.profiles]
+
+    M2 --> CheckM2{activeProfile exists<br/>provider: github<br/>owner + repo?}
+    CheckM2 -->|Yes| ReturnM2[✅ Return: github<br/>25% of users]
+    CheckM2 -->|No| M3[Method 3: multiProject]
+
+    M3 --> CheckM3{enabled: true<br/>activeProject<br/>externalTools.github?}
+    CheckM3 -->|Yes| ReturnM3[✅ Return: github<br/>5% of users]
+    CheckM3 -->|No| M4[Method 4: plugins.settings]
+
+    M4 --> CheckM4{settings<br/>specweave-github<br/>activeProfile?}
+    CheckM4 -->|Yes| ReturnM4[✅ Return: github<br/>10% of users<br/>Legacy]
+    CheckM4 -->|No| L3[Level 3: Environment Variables<br/>Fallback for CI/CD]
+
+    L3 --> CheckEnv{GITHUB_TOKEN<br/>AND<br/>GITHUB_OWNER/REPO?}
+    CheckEnv -->|Yes| ReturnEnv[✅ Return: github<br/>CI/CD setups]
+    CheckEnv -->|No| ReturnEmpty[❌ Return: []<br/>No GitHub detected]
+
+    ReturnMeta --> End([Return tools array])
+    ReturnM1 --> End
+    ReturnM2 --> End
+    ReturnM3 --> End
+    ReturnM4 --> End
+    ReturnEnv --> End
+    ReturnEmpty --> End
+
+    style Start fill:#e1f5e1
+    style End fill:#e1f5e1
+    style ReturnMeta fill:#90EE90
+    style ReturnM1 fill:#90EE90
+    style ReturnM2 fill:#90EE90
+    style ReturnM3 fill:#90EE90
+    style ReturnM4 fill:#90EE90
+    style ReturnEnv fill:#90EE90
+    style ReturnEmpty fill:#FFB6C1
+
+    style M1 fill:#E6F3FF
+    style M2 fill:#E6F3FF
+    style M3 fill:#E6F3FF
+    style M4 fill:#E6F3FF
+```
+
+**Config Pattern Examples**:
+
+**Pattern 1 (60% - Recommended)**:
+```json
+{
+  "sync": {
+    "github": {
+      "enabled": true,
+      "owner": "anton-abyzov",
+      "repo": "specweave"
+    }
+  }
+}
+```
+
+**Pattern 2 (25% - Multi-team)**:
+```json
+{
+  "sync": {
+    "activeProfile": "specweave-dev",
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        }
+      }
+    }
+  }
+}
+```
+
+**Pattern 3 (5% - Multi-project)**:
+```json
+{
+  "multiProject": {
+    "enabled": true,
+    "activeProject": "specweave",
+    "projects": {
+      "specweave": {
+        "externalTools": {
+          "github": {
+            "repository": "anton-abyzov/specweave"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Pattern 4 (10% - Legacy)**:
+```json
+{
+  "plugins": {
+    "settings": {
+      "specweave-github": {
+        "activeProfile": "default"
+      }
+    }
+  }
+}
+```
+
+**Level 3 (Fallback)**:
+```bash
+# .env
+GITHUB_TOKEN=ghp_xxx
+GITHUB_OWNER=anton-abyzov
+GITHUB_REPO=specweave
+```

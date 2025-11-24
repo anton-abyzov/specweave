@@ -1,0 +1,120 @@
+```mermaid
+flowchart TD
+    Start([User: TodoWrite - Mark Task Complete]) --> Hook[post-task-completion.sh]
+
+    Hook --> Guard{Recursion<br/>Guard?}
+    Guard -->|File exists| Skip1[Skip - Already in hook chain]
+    Guard -->|Create guard| Debounce{Debounced?<br/>< 5s since<br/>last fire}
+
+    Debounce -->|Yes| Skip2[Skip - Too soon]
+    Debounce -->|No| Active{Active<br/>Increments?}
+
+    Active -->|None| Skip3[Skip - No work to do]
+    Active -->|Found| SetEnv[Set SKIP_GITHUB_SYNC=true<br/>Prevent duplicate syncs]
+
+    SetEnv --> Consolidated[consolidated-sync.js]
+
+    Consolidated --> Op1[1/6: Update tasks.md]
+    Op1 --> Op2[2/6: Sync living docs]
+    Op2 --> Op3[3/6: Update AC status]
+    Op3 --> Op4[4/6: Translate docs]
+    Op4 --> Op5[5/6: US Completion Orchestrator]
+
+    Op5 --> Throttle{Throttle<br/>Check<br/>60s window}
+    Throttle -->|Throttled| ThrottleMsg[Log: Wait 60s or use<br/>/specweave:sync-progress]
+    Throttle -->|OK| DetectUS[Detect Newly<br/>Completed USs]
+
+    DetectUS --> USComplete{Any US<br/>100%<br/>Complete?}
+    USComplete -->|No| Op6[6/6: Update status line]
+    USComplete -->|Yes| LogUS[Log: Detected N newly<br/>completed user stories]
+
+    LogUS --> SyncLD[LivingDocsSync.syncIncrement]
+
+    SyncLD --> BuildReg[Build Feature Registry]
+    BuildReg --> GetID[Get/Assign Feature ID]
+    GetID --> Parse[Parse spec.md]
+    Parse --> CreateLD[Create Living Docs<br/>FEATURE.md + us-*.md]
+
+    CreateLD --> CheckSkip{SKIP_EXTERNAL_SYNC<br/>env var?}
+    CheckSkip -->|true| SkipExt[Skip external sync<br/>Prevent recursion]
+    CheckSkip -->|false| DetectTools[detectExternalTools]
+
+    DetectTools --> Level1{Level 1:<br/>metadata.json<br/>has github?}
+
+    Level1 -->|Yes| FoundGH[✅ GitHub Detected<br/>metadata.json]
+    Level1 -->|No| Level2{Level 2:<br/>config.json<br/>checks}
+
+    Level2 --> Method1{Method 1:<br/>sync.github<br/>enabled?}
+    Method1 -->|Yes| FoundM1[✅ GitHub Detected<br/>config.sync.github]
+    Method1 -->|No| Method2{Method 2:<br/>sync.profiles<br/>activeProfile?}
+
+    Method2 -->|Yes| FoundM2[✅ GitHub Detected<br/>active profile]
+    Method2 -->|No| Method3{Method 3:<br/>multiProject<br/>externalTools?}
+
+    Method3 -->|Yes| FoundM3[✅ GitHub Detected<br/>multiProject]
+    Method3 -->|No| Method4{Method 4:<br/>plugins.settings<br/>legacy?}
+
+    Method4 -->|Yes| FoundM4[✅ GitHub Detected<br/>legacy config]
+    Method4 -->|No| Level3{Level 3:<br/>GITHUB_TOKEN<br/>env var?}
+
+    Level3 -->|Yes| FoundL3[✅ GitHub Detected<br/>environment variables]
+    Level3 -->|No| NoTools[No external tools<br/>detected]
+
+    FoundGH --> SyncExt[syncToExternalTools]
+    FoundM1 --> SyncExt
+    FoundM2 --> SyncExt
+    FoundM3 --> SyncExt
+    FoundM4 --> SyncExt
+    FoundL3 --> SyncExt
+    NoTools --> Op6
+    SkipExt --> Op6
+
+    SyncExt --> SyncGH[syncToGitHub]
+    SyncGH --> LoadProfile[Load GitHub Profile<br/>from .env]
+    LoadProfile --> InitClient[Initialize GitHubClientV2]
+    InitClient --> FeatureSync[GitHubFeatureSync.syncFeatureToGitHub]
+
+    FeatureSync --> CheckMilestone{Milestone<br/>Exists?}
+    CheckMilestone -->|No| CreateMS[Create Milestone]
+    CheckMilestone -->|Yes| ReuseMS[Reuse Existing<br/>Milestone]
+
+    CreateMS --> SyncUS[Sync User Stories]
+    ReuseMS --> SyncUS
+
+    SyncUS --> Loop[For each US]
+    Loop --> CheckIssue{Issue<br/>Exists?}
+
+    CheckIssue -->|No| CreateIssue[Create GitHub Issue<br/>[FS-XXX][US-YYY] Title]
+    CheckIssue -->|Yes| UpdateIssue[Update GitHub Issue<br/>with AC checkboxes]
+
+    CreateIssue --> SaveMeta[Update metadata.json<br/>with issue IDs]
+    UpdateIssue --> SaveMeta
+
+    SaveMeta --> MoreUS{More<br/>USs?}
+    MoreUS -->|Yes| Loop
+    MoreUS -->|No| LogSuccess[✅ Log: GitHub synced<br/>N issues updated/created]
+
+    LogSuccess --> RecordThrottle[Record Sync Time<br/>for throttle]
+    RecordThrottle --> Op6
+
+    Op6 --> UpdateStatus[Update Status Line<br/>Cache]
+    UpdateStatus --> End([Return to Claude Code])
+
+    ThrottleMsg --> Op6
+    Skip1 --> End
+    Skip2 --> End
+    Skip3 --> End
+
+    style Start fill:#e1f5e1
+    style End fill:#e1f5e1
+    style FoundGH fill:#90EE90
+    style FoundM1 fill:#90EE90
+    style FoundM2 fill:#90EE90
+    style FoundM3 fill:#90EE90
+    style FoundM4 fill:#90EE90
+    style FoundL3 fill:#90EE90
+    style LogSuccess fill:#90EE90
+    style NoTools fill:#FFB6C1
+    style SkipExt fill:#FFB6C1
+    style ThrottleMsg fill:#FFE4B5
+```
