@@ -4,8 +4,8 @@
  * Drop-in replacements for fs-extra methods using only Node.js stdlib.
  * All methods use native Node.js 20+ APIs with no external dependencies.
  *
- * Migration from fs-extra:
- * - import fs from 'fs-extra' → import * as fs from './utils/fs-native.js'
+ * Migration from fs-extra: // legacy fs-extra (documentation only)
+ * - import fs from 'fs-extra' → import * as fs from './utils/fs-native.js' // legacy fs-extra
  * - All fs-extra methods work as drop-in replacements
  *
  * Benefits:
@@ -221,6 +221,99 @@ export function ensureFileSync(filePath: string): void {
   }
 }
 
+/**
+ * Move a file or directory
+ * @param src - Source path
+ * @param dest - Destination path
+ * @param options - Move options
+ */
+export async function move(
+  src: string,
+  dest: string,
+  options?: { overwrite?: boolean }
+): Promise<void> {
+  // Ensure destination directory exists
+  await fsPromises.mkdir(path.dirname(dest), { recursive: true });
+
+  // Check if destination exists
+  if (existsSync(dest)) {
+    if (options?.overwrite) {
+      await remove(dest);
+    } else {
+      throw new Error(`Destination already exists: ${dest}`);
+    }
+  }
+
+  // Try rename first (faster if same filesystem)
+  try {
+    await fsPromises.rename(src, dest);
+  } catch (err: any) {
+    // If rename fails (different filesystems), copy then delete
+    if (err.code === 'EXDEV') {
+      await copy(src, dest);
+      await remove(src);
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
+ * Synchronous version of move
+ */
+export function moveSync(
+  src: string,
+  dest: string,
+  options?: { overwrite?: boolean }
+): void {
+  // Ensure destination directory exists
+  mkdirSync(path.dirname(dest), { recursive: true });
+
+  // Check if destination exists
+  if (existsSync(dest)) {
+    if (options?.overwrite) {
+      removeSync(dest);
+    } else {
+      throw new Error(`Destination already exists: ${dest}`);
+    }
+  }
+
+  // Try rename first (faster if same filesystem)
+  try {
+    execSync(`mv "${src}" "${dest}"`);
+  } catch (err: any) {
+    // If rename fails (different filesystems), copy then delete
+    if (err.code === 'EXDEV') {
+      copySync(src, dest);
+      removeSync(src);
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
+ * Rename a file or directory (synchronous)
+ * @param src - Source path
+ * @param dest - Destination path
+ */
+export function renameSync(src: string, dest: string): void {
+  execSync(`mv "${src}" "${dest}"`);
+}
+
+/**
+ * Copy a single file (async)
+ */
+export async function copyFile(src: string, dest: string): Promise<void> {
+  await fsPromises.copyFile(src, dest);
+}
+
+// Aliases for fs-extra compatibility (uppercase JSON)
+export const readJSON = readJson;
+export const writeJSON = writeJson;
+export const readJSONSync = readJsonSync;
+export const writeJSONSync = writeJsonSync;
+
 // Re-export common fs/promises methods for convenience
 export const {
   readFile,
@@ -244,6 +337,7 @@ export {
   unlinkSync,
   mkdirSync,
   rmSync,
+  copyFileSync,
 };
 
 // Default export for convenience
@@ -253,8 +347,12 @@ export default {
   pathExists,
   readJson,
   writeJson,
+  readJSON,
+  writeJSON,
   remove,
   copy,
+  copyFile,
+  move,
   ensureFile,
   readFile,
   writeFile,
@@ -263,6 +361,7 @@ export default {
   readdir,
   access,
   unlink,
+  rename,
 
   // Sync methods
   ensureDirSync,
@@ -270,8 +369,13 @@ export default {
   existsSync,
   readJsonSync,
   writeJsonSync,
+  readJSONSync,
+  writeJSONSync,
   removeSync,
   copySync,
+  copyFileSync,
+  moveSync,
+  renameSync,
   ensureFileSync,
   readFileSync,
   writeFileSync,

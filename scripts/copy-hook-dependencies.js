@@ -14,7 +14,9 @@
 // - Marketplace-compatible (no build step required)
 // - Simple build process (just copy files)
 
-import fs from 'fs-extra';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -40,20 +42,20 @@ const PLUGIN_DEPENDENCIES = {
 
 // Copy a single file and its .d.ts if exists
 async function copyFile(srcPath, destPath) {
-  await fs.ensureDir(path.dirname(destPath));
-  await fs.copy(srcPath, destPath);
+  await fs.mkdir(path.dirname(destPath), { recursive: true });
+  await fs.copyFile(srcPath, destPath);
 
   // Copy .d.ts file if it exists
   const dtsPath = srcPath.replace(/\.js$/, '.d.ts');
-  if (await fs.pathExists(dtsPath)) {
+  if (existsSync(dtsPath)) {
     const destDtsPath = destPath.replace(/\.js$/, '.d.ts');
-    await fs.copy(dtsPath, destDtsPath);
+    await fs.copyFile(dtsPath, destDtsPath);
   }
 
   // Copy .js.map if it exists
   const mapPath = srcPath + '.map';
-  if (await fs.pathExists(mapPath)) {
-    await fs.copy(mapPath, destPath + '.map');
+  if (existsSync(mapPath)) {
+    await fs.copyFile(mapPath, destPath + '.map');
   }
 }
 
@@ -65,8 +67,8 @@ async function copyPluginDependencies(pluginName, dependencies) {
   const vendorDir = path.join(pluginDir, 'lib', 'vendor');
 
   // Clean vendor directory
-  if (await fs.pathExists(vendorDir)) {
-    await fs.remove(vendorDir);
+  if (existsSync(vendorDir)) {
+    await fs.rm(vendorDir, { recursive: true, force: true });
   }
 
   let copiedCount = 0;
@@ -74,7 +76,7 @@ async function copyPluginDependencies(pluginName, dependencies) {
   for (const dep of dependencies) {
     const srcPath = path.join(projectRoot, dep);
 
-    if (!await fs.pathExists(srcPath)) {
+    if (!existsSync(srcPath)) {
       console.warn(`   ⚠️  Source not found: ${dep}`);
       continue;
     }
@@ -97,7 +99,7 @@ async function main() {
 
   // Check if dist/ exists
   const distPath = path.join(projectRoot, 'dist');
-  if (!await fs.pathExists(distPath)) {
+  if (!existsSync(distPath)) {
     console.error('❌ dist/ directory not found. Run `npm run build` first.');
     process.exit(1);
   }
@@ -118,4 +120,4 @@ async function main() {
   }
 }
 
-main();
+main();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
