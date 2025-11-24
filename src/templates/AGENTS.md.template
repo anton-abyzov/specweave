@@ -11,7 +11,7 @@
 |---------|------------|---------|
 | Rules | `#essential-rules` | Critical rules, file organization |
 | Commands | `#commands` | All SpecWeave commands |
-| Non-Claude | `#non-claude-tools` | Manual workflow for Cursor/Copilot |
+| **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
 | Sync | `#sync-workflow` | When/how to sync |
 | Context | `#context-loading` | Token savings (70%+) |
 | Troubleshoot | `#troubleshooting` | Common issues |
@@ -82,70 +82,190 @@
 | Feature | Claude Code | Cursor/Copilot |
 |---------|-------------|----------------|
 | Commands | Slash syntax works | Manual workflow |
-| Hooks | Auto-run on events | None |
+| Hooks | Auto-run on events | **YOU must mimic** |
 | Task sync | Automatic | Manual |
-| GitHub sync | Automatic | Manual |
+| GitHub/Jira sync | Automatic | Manual |
+| Living docs | Auto-updated | Manual |
 
-### Manual Command Execution
+### Hook Behavior You Must Mimic
 
-In non-Claude tools, commands are markdown workflows. Execute them manually:
+**Claude Code hooks do these automatically. YOU must do them manually:**
 
+#### 1. After EVERY Task Completion
 ```bash
-# Step 1: Find the command file
-cat plugins/specweave/commands/specweave-increment.md
+# Claude hook: PostTaskCompletion
+# You must run these commands:
 
-# Step 2: Read the workflow instructions
-# Step 3: Execute each step manually
-# Step 4: Update tasks.md when done
+# Step 1: Update tasks.md (source of truth)
+# Change: **Status**: [ ] pending → **Status**: [x] completed
+
+# Step 2: Update spec.md ACs (if task satisfies any)
+# Change: - [ ] AC-US1-01 → - [x] AC-US1-01
+
+# Step 3: Sync to external tools (if configured)
+/specweave:sync-tasks
+/specweave-github:sync <increment-id>   # If GitHub enabled
+/specweave-jira:sync <increment-id>     # If Jira enabled
 ```
 
-### After EVERY Task Completion (MANDATORY)
-
+#### 2. After User Story Completion (all ACs satisfied)
 ```bash
-# 1. Update tasks.md source of truth
-/specweave:sync-tasks
+# Claude hook: PostUserStoryCompletion
+# When ALL acceptance criteria for a user story are [x] checked:
 
-# 2. Sync to living docs
+# Step 1: Sync to living docs
 /specweave:sync-docs update
 
-# 3. Sync to external tracker (if enabled)
+# Step 2: Update GitHub/Jira issue status
 /specweave-github:sync <increment-id>
 ```
 
-Without these manual syncs, your progress won't be tracked!
+#### 3. After Increment Completion
+```bash
+# Claude hook: PostIncrementDone
+# When running /specweave:done:
+
+# Step 1: Validate all tasks complete
+/specweave:validate <increment-id>
+
+# Step 2: Sync living docs
+/specweave:sync-docs update
+
+# Step 3: Close external issues
+/specweave-github:close-issue <increment-id>
+```
+
+#### 4. After Writing to spec.md or tasks.md
+```bash
+# Claude hook: PostToolUse (Write/Edit to spec/tasks files)
+# After any edit to spec.md or tasks.md:
+
+# Sync status line cache
+/specweave:sync-tasks
+
+# If external tools configured, sync progress
+/specweave-github:sync <increment-id>
+```
+
+### How to Check if External Tools Configured
+
+```bash
+# Check increment metadata for external tool config
+cat .specweave/increments/<id>/metadata.json
+
+# Look for these fields:
+# "github": { "issue": 123 }     → GitHub enabled
+# "jira": { "issue": "PROJ-123" } → Jira enabled
+# "ado": { "item": 456 }          → Azure DevOps enabled
+```
+
+### Manual Command Execution
+
+In non-Claude tools, commands are markdown workflows:
+
+```bash
+# Find and read command file
+cat plugins/specweave/commands/specweave-increment.md
+# Follow the workflow steps manually
+```
+
+### Quick Reference: After EVERY Task
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ AFTER COMPLETING ANY TASK (MANDATORY FOR NON-CLAUDE TOOLS)  │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Update tasks.md: [ ] → [x]                               │
+│ 2. Update spec.md ACs if satisfied: [ ] → [x]               │
+│ 3. Run: /specweave:sync-tasks                               │
+│ 4. Run: /specweave-github:sync <id>  (if GitHub configured) │
+│ 5. If all ACs for US done: /specweave:sync-docs update      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Without these manual steps, your work won't be tracked!**
 
 ---
 
 ## Sync Workflow {#sync-workflow}
 
-### Source of Truth Discipline
+### Source of Truth Hierarchy
 
 ```
-tasks.md + spec.md = SOURCE OF TRUTH
-↓
-Living docs (.specweave/docs/internal/specs/) = Derived
-↓
-External tools (GitHub/Jira/ADO) = Mirror
+┌─────────────────────────────────────────────────────────────┐
+│ SOURCE OF TRUTH (edit here first!)                          │
+│ ├── tasks.md: Task completion status                        │
+│ └── spec.md: Acceptance criteria checkboxes                 │
+├─────────────────────────────────────────────────────────────┤
+│ DERIVED (auto-updated via sync commands)                    │
+│ └── .specweave/docs/internal/specs/: Living documentation   │
+├─────────────────────────────────────────────────────────────┤
+│ MIRROR (synced to external tools)                           │
+│ ├── GitHub Issues: Task checklist, AC progress              │
+│ ├── Jira Stories: Status, story points, completion          │
+│ └── Azure DevOps: Work item state, task list                │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Update Order**: Always update tasks.md FIRST, then sync outward.
+**Update Order**: ALWAYS tasks.md/spec.md FIRST → sync-tasks → sync-docs → external tools
 
-### When to Sync
+### Sync Commands Reference
 
-| Event | Action |
-|-------|--------|
-| Task completed | Update tasks.md `[ ]` → `[x]`, run sync commands |
-| AC satisfied | Update spec.md checkbox |
-| Increment done | `/specweave:done` → auto-syncs everything |
-| Before PR | Verify all syncs complete |
+| Command | What It Does | When to Run |
+|---------|--------------|-------------|
+| `/specweave:sync-tasks` | Recalculates progress from tasks.md | After editing tasks.md |
+| `/specweave:sync-docs update` | Updates living docs from increment | After US complete |
+| `/specweave-github:sync <id>` | Syncs progress to GitHub issue | After each task |
+| `/specweave-github:close-issue <id>` | Closes GitHub issue | On increment done |
+| `/specweave-jira:sync <id>` | Syncs progress to Jira story | After each task |
+| `/specweave-ado:sync <id>` | Syncs to Azure DevOps work item | After each task |
+
+### Complete Sync Flow (Non-Claude Tools)
+
+```
+TASK COMPLETED
+     │
+     ▼
+┌─────────────────────────────┐
+│ 1. Edit tasks.md            │
+│    [ ] pending → [x] done   │
+└─────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────┐
+│ 2. Edit spec.md ACs         │
+│    [ ] AC → [x] AC          │
+└─────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────┐
+│ 3. /specweave:sync-tasks    │
+│    Updates progress cache   │
+└─────────────────────────────┘
+     │
+     ▼
+┌─────────────────────────────┐
+│ 4. /specweave-github:sync   │
+│    Updates GitHub issue     │
+└─────────────────────────────┘
+     │
+     ▼ (if all ACs for US done)
+┌─────────────────────────────┐
+│ 5. /specweave:sync-docs     │
+│    Updates living docs      │
+└─────────────────────────────┘
+```
 
 ### Claude Code Hooks (Automatic)
 
-These hooks run automatically in Claude Code:
-- `UserPromptSubmit`: Discipline checks, WIP limits
-- `PostToolUse`: Task completion sync to GitHub
+| Hook | Trigger | What It Does |
+|------|---------|--------------|
+| `UserPromptSubmit` | Every prompt | WIP limits, discipline checks |
+| `PostToolUse` | File write/edit | Detects task completion, syncs |
+| `PostTaskCompletion` | Task done | Updates GitHub/Jira progress |
+| `PostIncrementDone` | Increment closed | Closes issues, syncs all docs |
 
-**Non-Claude tools**: No hooks exist. You must run sync commands manually.
+**Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 
 ---
 
