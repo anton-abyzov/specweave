@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import * as fs from "../../../src/utils/fs-native.js";
 import * as path from "path";
 import * as yaml from "yaml";
 const STATUS_MAPPING = {
