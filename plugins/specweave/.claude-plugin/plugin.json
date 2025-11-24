@@ -1,7 +1,7 @@
 {
   "name": "specweave",
   "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
-  "version": "0.24.4",
+  "version": "0.25.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -36,8 +36,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-spec.sh",
-            "timeout": 1
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-write-consolidated.sh",
+            "timeout": 1,
+            "description": "Consolidated pre-hook for Edit (v0.25.0)"
           }
         ]
       },
@@ -46,8 +47,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-write-spec.sh",
-            "timeout": 1
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-write-consolidated.sh",
+            "timeout": 1,
+            "description": "Consolidated pre-hook for Write (v0.25.0)"
           }
         ]
       }
@@ -68,13 +70,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-spec.sh",
-            "timeout": 5
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-write-consolidated.sh",
+            "timeout": 5,
+            "description": "Consolidated post-hook for Edit (v0.25.0)"
           },
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
-            "timeout": 10
+            "timeout": 2,
+            "description": "Fast early-exit for non-metadata.json (v0.25.0)"
           }
         ]
       },
@@ -83,13 +87,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-write-spec.sh",
-            "timeout": 5
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-write-consolidated.sh",
+            "timeout": 5,
+            "description": "Consolidated post-hook for Write (v0.25.0)"
           },
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
-            "timeout": 10
+            "timeout": 2,
+            "description": "Fast early-exit for non-metadata.json (v0.25.0)"
           }
         ]
       }

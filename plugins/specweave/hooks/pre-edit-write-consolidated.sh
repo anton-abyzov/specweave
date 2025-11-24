@@ -1,27 +1,35 @@
 #!/bin/bash
 #
-# Pre-Write Hook: Capture File Path BEFORE Write Executes (Tier 2)
+# Pre-Edit/Write Consolidated Hook: Capture File Path BEFORE Edit/Write Executes
 #
-# Purpose: Detect which file will be written BEFORE the Write tool runs
-# Strategy: PreToolUse has better access to tool arguments than PostToolUse
+# Purpose: Unified hook for both Edit and Write tools
+# Strategy: Detect file path, signal post-hook if it's a spec/tasks file
+#
+# CONSOLIDATION (v0.25.0):
+# - Replaces pre-edit-spec.sh and pre-write-spec.sh (identical code)
+# - Reduces hook overhead by 50% (2 pre-hooks → 1)
+# - Single point of maintenance
 #
 # TIER 2 COORDINATION:
-# 1. Extract file_path from TOOL_USE_ARGS (more reliable in PreToolUse)
+# 1. Extract file_path from TOOL_USE_ARGS (reliable in PreToolUse)
 # 2. If it's spec.md/tasks.md in increments folder, signal PostToolUse hook
 # 3. Write file path to .pending-status-update for PostToolUse to consume
 #
-# This eliminates the need for mtime-based fallback detection (Tier 1)
-# and reduces false positives to near zero.
-#
 # Architecture:
-#   PreToolUse:Write → pre-write-spec.sh (this file)
+#   PreToolUse:Edit/Write → pre-edit-write-consolidated.sh (this file)
 #     ↓ writes to
 #   .specweave/state/.pending-status-update
 #     ↓ read by
-#   PostToolUse:Write → post-write-spec.sh
+#   PostToolUse:Edit/Write → post-edit-write-consolidated.sh
 #
-# Version: v0.24.3 (EMERGENCY FIXES)
-# Date: 2025-11-22
+# Version: v0.25.0 (HOOK CONSOLIDATION)
+# Date: 2025-11-23
+#
+# EMERGENCY FIXES (v0.24.3):
+# - Kill switch: Set SPECWEAVE_DISABLE_HOOKS=1 to disable ALL hooks
+# - Circuit breaker: Auto-disable after 3 consecutive failures
+# - File locking: Prevent concurrent executions
+# - Complete error isolation: Never let errors reach Claude Code
 
 # EMERGENCY FIX: Remove set -e - it causes Claude Code crashes!
 set +e
@@ -95,27 +103,29 @@ fi
 
 # Log what we detected (for debugging PreToolUse effectiveness)
 if [[ -n "$FILE_PATH" ]]; then
-  echo "[$(date)] pre-write-spec: Detected file_path: $FILE_PATH" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] pre-edit-write: Detected file_path: $FILE_PATH" >> "$DEBUG_LOG" 2>/dev/null || true
 else
-  echo "[$(date)] pre-write-spec: No file_path detected (will fall back to Tier 1)" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] pre-edit-write: No file_path detected (will fall back to Tier 1)" >> "$DEBUG_LOG" 2>/dev/null || true
   exit 0  # Let PostToolUse handle it with mtime fallback
 fi
 
 # ============================================================================
 # EARLY EXIT: Only process .specweave/ files (v0.24.4 Performance Fix)
 # ============================================================================
-# 90% of Write operations are on non-SpecWeave files (src/, tests/, node_modules/)
+# 90% of Edit/Write operations are on non-SpecWeave files (src/, tests/, node_modules/)
 # Exit immediately for non-.specweave/ files to reduce hook overhead by 90%
 
-if [[ "$FILE_PATH" != *"/.specweave/"* ]]; then
-  echo "[$(date)] pre-write-spec: Not a .specweave/ file, skipping (performance optimization)" >> "$DEBUG_LOG" 2>/dev/null || true
+# Handle both absolute and relative paths: /.specweave/ or .specweave/
+if [[ "$FILE_PATH" != *"/.specweave/"* ]] && [[ "$FILE_PATH" != ".specweave/"* ]]; then
+  echo "[$(date)] pre-edit-write: Not a .specweave/ file, skipping (performance optimization)" >> "$DEBUG_LOG" 2>/dev/null || true
   exit 0
 fi
 
 # Check if this is a spec.md or tasks.md file in increments folder
 IS_SPEC_FILE=false
 if [[ "$FILE_PATH" == *"/spec.md" ]] || [[ "$FILE_PATH" == *"/tasks.md" ]]; then
-  if [[ "$FILE_PATH" == *"/.specweave/increments/"* ]]; then
+  # Handle both absolute (/.specweave/increments/) and relative (.specweave/increments/) paths
+  if [[ "$FILE_PATH" == *"/.specweave/increments/"* ]] || [[ "$FILE_PATH" == ".specweave/increments/"* ]]; then
     # Exclude archived increments
     if [[ "$FILE_PATH" != *"/_archive/"* ]]; then
       IS_SPEC_FILE=true
@@ -125,7 +135,7 @@ fi
 
 # If not a spec/tasks file, exit silently (no signal to PostToolUse)
 if [[ "$IS_SPEC_FILE" != "true" ]]; then
-  echo "[$(date)] pre-write-spec: Not a spec/tasks file - no signal" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] pre-edit-write: Not a spec/tasks file - no signal" >> "$DEBUG_LOG" 2>/dev/null || true
   exit 0
 fi
 
@@ -136,7 +146,7 @@ fi
 # Write file path to pending file for PostToolUse to consume
 echo "$FILE_PATH" > "$PENDING_FILE" 2>/dev/null || true
 
-echo "[$(date)] pre-write-spec: Signaled PostToolUse for: $FILE_PATH" >> "$DEBUG_LOG" 2>/dev/null || true
+echo "[$(date)] pre-edit-write: Signaled PostToolUse for: $FILE_PATH" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # ============================================================================
 # TIER 2: Metrics Collection
@@ -144,7 +154,7 @@ echo "[$(date)] pre-write-spec: Signaled PostToolUse for: $FILE_PATH" >> "$DEBUG
 
 # Record metrics (JSONL format - one JSON object per line)
 TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-METRIC_ENTRY="{\"timestamp\":\"$TIMESTAMP\",\"hook\":\"pre-write-spec\",\"event\":\"file_detected\",\"file_path\":\"$FILE_PATH\",\"method\":\"TOOL_USE_ARGS\"}"
+METRIC_ENTRY="{\"timestamp\":\"$TIMESTAMP\",\"hook\":\"pre-edit-write\",\"event\":\"file_detected\",\"file_path\":\"$FILE_PATH\",\"method\":\"TOOL_USE_ARGS\"}"
 
 # Append to metrics file (JSONL)
 echo "$METRIC_ENTRY" >> "$METRICS_FILE" 2>/dev/null || true

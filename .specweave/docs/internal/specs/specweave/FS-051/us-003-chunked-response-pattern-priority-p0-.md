@@ -2,10 +2,13 @@
 id: US-003
 feature: FS-051
 title: "Idempotency via Caching"
-status: planned
+status: active
 priority: P0
 created: 2025-11-22
 ---
+
+**Origin**: 🏠 **Internal**
+
 
 # US-003: Idempotency via Caching
 

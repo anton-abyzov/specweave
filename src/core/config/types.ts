@@ -126,6 +126,52 @@ export interface SyncSettings {
   canUpsertInternalItems: boolean;
   canUpdateExternalItems: boolean;
   canUpdateStatus: boolean;
+  /**
+   * GATE 3: Controls automatic sync on increment completion
+   * When true, sync happens automatically when increment completes
+   * When false, user must manually trigger sync via /specweave-github:sync
+   * @default true (opt-in UX, as per ADR-0065)
+   */
+  autoSyncOnCompletion?: boolean;
+}
+
+/**
+ * GitHub-specific configuration
+ */
+export interface GitHubConfig {
+  /**
+   * GATE 4: Enable/disable GitHub sync specifically
+   * @default true (when GitHub is configured)
+   */
+  enabled?: boolean;
+  owner?: string;
+  repo?: string;
+}
+
+/**
+ * Jira-specific configuration
+ */
+export interface JiraConfig {
+  /**
+   * GATE 4: Enable/disable Jira sync specifically
+   * @default false (opt-in)
+   */
+  enabled?: boolean;
+  domain?: string;
+  projectKey?: string;
+}
+
+/**
+ * Azure DevOps-specific configuration
+ */
+export interface AzureDevOpsConfig {
+  /**
+   * GATE 4: Enable/disable Azure DevOps sync specifically
+   * @default false (opt-in)
+   */
+  enabled?: boolean;
+  organization?: string;
+  project?: string;
 }
 
 /**
@@ -141,15 +187,11 @@ export interface SyncConfiguration {
   activeProfile?: string;  // Active profile key
   settings?: SyncSettings;
   profiles?: Record<string, SyncProfile>;  // Profile configurations
-}
 
-/**
- * Permission configuration section
- */
-export interface PermissionsConfiguration {
-  canCreate: boolean;
-  canUpdate: boolean;
-  canUpdateStatus: boolean;
+  // Tool-specific configurations (GATE 4)
+  github?: GitHubConfig;
+  jira?: JiraConfig;
+  ado?: AzureDevOpsConfig;
 }
 
 /**
@@ -246,11 +288,6 @@ export interface SpecWeaveConfig {
   sync?: SyncConfiguration;
 
   /**
-   * Permissions configuration
-   */
-  permissions?: PermissionsConfiguration;
-
-  /**
    * Status line configuration (optional)
    */
   statusLine?: StatusLineConfiguration;
@@ -273,11 +310,6 @@ export const DEFAULT_CONFIG: SpecWeaveConfig = {
     autoSync: false,
     includeStatus: true,
     autoApplyLabels: true
-  },
-  permissions: {
-    canCreate: true,
-    canUpdate: true,
-    canUpdateStatus: true
   },
   statusLine: {
     enabled: true,

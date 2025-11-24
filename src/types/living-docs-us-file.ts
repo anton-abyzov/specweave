@@ -64,6 +64,25 @@ export interface LivingDocsUSFile {
    * Derived from ID suffix (E = external)
    */
   origin?: 'internal' | 'external';
+
+  /**
+   * External tools metadata (frontmatter cache for issue numbers)
+   * Used for Layer 1 idempotency caching (fastest check, <1ms)
+   */
+  external_tools?: {
+    github?: {
+      number?: number;
+      url?: string;
+    };
+    jira?: {
+      key?: string;
+      url?: string;
+    };
+    ado?: {
+      id?: number;
+      url?: string;
+    };
+  };
 }
 
 /**

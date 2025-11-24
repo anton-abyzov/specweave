@@ -163,6 +163,27 @@ FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.
     }
   }
   /**
+   * Create User Story issue (for automatic GitHub sync)
+   *
+   * CRITICAL: This is the CORRECT format for User Story GitHub issues
+   * Title format: [FS-XXX][US-YYY] User Story Title
+   *
+   * Used by: SyncCoordinator.createGitHubIssuesForUserStories()
+   *
+   * @param params - User story issue parameters
+   * @returns Created GitHub issue
+   */
+  async createUserStoryIssue(params) {
+    const formattedTitle = `[${params.featureId}][${params.userStoryId}] ${params.title}`;
+    const allLabels = params.labels || [];
+    return await this.createEpicIssue(
+      formattedTitle,
+      params.body,
+      params.milestone || void 0,
+      allLabels
+    );
+  }
+  /**
    * Create epic issue (increment-level)
    */
   async createEpicIssue(title, body, milestone, labels = []) {

@@ -10,8 +10,8 @@ created: 2025-11-22
 external_tools:
   github:
     type: issue
-    number: null
-    url: null
+    number: 718
+    url: https://github.com/anton-abyzov/specweave/issues/718
 ---
 
 # US-003: Idempotency via Caching

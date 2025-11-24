@@ -10,8 +10,8 @@ created: 2025-11-22
 external_tools:
   github:
     type: issue
-    number: null
-    url: null
+    number: 716
+    url: https://github.com/anton-abyzov/specweave/issues/716
 ---
 
 # US-001: Automatic Issue Creation on Completion
