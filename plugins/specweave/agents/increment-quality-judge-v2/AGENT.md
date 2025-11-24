@@ -6,6 +6,7 @@ model: claude-sonnet-4-5-20250929
 model_preference: haiku
 cost_profile: assessment
 fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # increment-quality-judge-v2 Agent

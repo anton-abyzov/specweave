@@ -7,6 +7,11 @@ description: |
   and technical debt. Activates after task completion to provide constructive
   feedback and catch issues early before code review.
 allowed-tools: Read, Grep, Glob
+model: claude-sonnet-4-5-20250929
+model_preference: haiku
+cost_profile: assessment
+fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # reflective-reviewer Agent
