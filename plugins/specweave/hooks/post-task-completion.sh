@@ -349,38 +349,53 @@ fi
   # ============================================================================
   # CONSOLIDATED SYNC (v0.24.4 - PERFORMANCE OPTIMIZATION)
   # ============================================================================
-  # REPLACES: 5-6 separate Node.js spawns with SINGLE consolidated process
-  # BEFORE: update-tasks-md.js, sync-living-docs.js, update-ac-status.js,
-  #         translate-living-docs.js, prepare-reflection-context.js
-  # AFTER:  consolidated-sync.js (runs all operations sequentially)
-  # IMPACT: 83% reduction in process spawning overhead
+  # EMERGENCY FIX (v0.26.0-hotfix): DISABLED TO PREVENT CLAUDE CODE CRASHES
+  #
+  # ROOT CAUSE: consolidated-sync.js makes 5+ Edit/Write operations, each triggering
+  # 3 hooks (PreToolUse, PostToolUse×2), resulting in 15+ hook invocations per task.
+  # This causes process exhaustion and Claude Code crashes.
+  #
+  # NEW STRATEGY: Run consolidated sync ONLY at:
+  # 1. Session end (all tasks done + 120s inactivity)
+  # 2. Manual sync (/specweave:sync-docs command)
+  # 3. Increment closure (/specweave:done validation)
+  #
+  # See: .specweave/increments/0051-*/reports/CLAUDE-CODE-CRASH-ROOT-CAUSE-2025-11-23.md
+  # See: ADR-0072 (Post-Task Hook Simplification)
   # ============================================================================
 
-  echo "[$(date)] 🚀 Running consolidated sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  # DISABLED: consolidated-sync.js call (causes crashes)
+  # Uncomment ONLY after implementing HOOK_CONTEXT environment variable
+  # to prevent cascading hooks during sync operations
 
-  # Find consolidated sync script
-  CONSOLIDATED_SCRIPT=""
-  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
-  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
-  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
-    CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
-  elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
-    CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
-  fi
+  # echo "[$(date)] 🚀 Running consolidated sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  #
+  # # Find consolidated sync script
+  # CONSOLIDATED_SCRIPT=""
+  # if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/consolidated-sync.js"
+  # elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  # elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js" ]; then
+  #   CONSOLIDATED_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/consolidated-sync.js"
+  # elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js" ]; then
+  #   CONSOLIDATED_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/consolidated-sync.js"
+  # fi
+  #
+  # if [ -n "$CONSOLIDATED_SCRIPT" ]; then
+  #   # Run consolidated sync (single Node.js process handles ALL operations)
+  #   if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
+  #     echo "[$(date)] ✅ Consolidated sync completed" >> "$DEBUG_LOG" 2>/dev/null || true
+  #     ANY_SUCCESS=true
+  #   else
+  #     echo "[$(date)] ⚠️  Consolidated sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+  #   fi
+  # else
+  #   echo "[$(date)] ⚠️  consolidated-sync.js not found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+  # fi
 
-  if [ -n "$CONSOLIDATED_SCRIPT" ]; then
-    # Run consolidated sync (single Node.js process handles ALL operations)
-    if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
-      echo "[$(date)] ✅ Consolidated sync completed" >> "$DEBUG_LOG" 2>/dev/null || true
-      ANY_SUCCESS=true
-    else
-      echo "[$(date)] ⚠️  Consolidated sync failed (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
-    fi
-  else
-    echo "[$(date)] ⚠️  consolidated-sync.js not found, skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
-  fi
+  echo "[$(date)] ⏭️  Consolidated sync DISABLED (emergency fix - prevents crashes)" >> "$DEBUG_LOG" 2>/dev/null || true
+  echo "[$(date)] ℹ️  Living docs will sync at session end or via /specweave:sync-docs" >> "$DEBUG_LOG" 2>/dev/null || true
 
   done  # End of ACTIVE_INCREMENTS loop
 
