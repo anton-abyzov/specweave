@@ -1224,11 +1224,11 @@ export async function initCommand(
           message: 'What is your repository structure?',
           choices: [
             {
-              name: '📦 Single repository',
+              name: '📦 Single repository - Standard monorepo or single project',
               value: 'single'
             },
             {
-              name: '🎯 Multiple repositories (with parent repo)',
+              name: '🎯 Multiple repositories - Microservices, EDA, or parent repo coordinating child repos',
               value: 'multirepo'
             }
           ],
