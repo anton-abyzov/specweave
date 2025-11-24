@@ -5,7 +5,7 @@
 # Run after cloning the repo or if you see "No such file or directory" hook errors.
 #
 # Usage:
-#   bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+#   bash scripts/verify-dev-setup.sh
 #
 # Exit codes:
 #   0 - All checks passed
@@ -18,8 +18,8 @@ echo ""
 
 FAILED=0
 
-# Get repository root (works from any subdirectory)
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+# Get repository root (scripts/ is one level deep from repo root)
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 echo "📁 Repository root: $REPO_ROOT"
 echo ""
 
