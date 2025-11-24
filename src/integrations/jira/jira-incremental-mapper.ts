@@ -21,7 +21,7 @@ export interface WorkItem {
   jira_id: string;
   title: string;
   description: string;
-  status: 'planned' | 'in-progress' | 'completed';
+  status: 'planning' | 'in-progress' | 'completed';
   priority: 'P1' | 'P2' | 'P3';
   assignee?: string;
   labels?: string[];
@@ -374,7 +374,7 @@ export class JiraIncrementalMapper {
     const frontmatter = {
       increment_id: incrementId,
       title,
-      status: 'planned',
+      status: 'planning',
       priority: 'P2',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -561,12 +561,12 @@ export class JiraIncrementalMapper {
     return String(description);
   }
 
-  private mapJiraStatusToSpecWeave(jiraStatus: string): 'planned' | 'in-progress' | 'completed' {
+  private mapJiraStatusToSpecWeave(jiraStatus: string): 'planning' | 'in-progress' | 'completed' {
     const statusLower = jiraStatus.toLowerCase();
-    if (statusLower.includes('to do') || statusLower.includes('backlog')) return 'planned';
+    if (statusLower.includes('to do') || statusLower.includes('backlog')) return 'planning';
     if (statusLower.includes('in progress')) return 'in-progress';
     if (statusLower.includes('done')) return 'completed';
-    return 'planned';
+    return 'planning';
   }
 
   private mapJiraPriorityToSpecWeave(jiraPriority: string | undefined): 'P1' | 'P2' | 'P3' {

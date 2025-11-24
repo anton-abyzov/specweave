@@ -3,7 +3,7 @@ increment: 0053-safe-feature-deletion
 title: "Safe Feature Deletion Command"
 feature_id: FS-052
 priority: P1
-status: planned
+status: planning
 type: feature
 created: 2025-11-23
 test_mode: TDD
@@ -49,6 +49,65 @@ Currently, manually deleting features with `rm -rf` fails because:
 - GitHub CLI (gh) for issue deletion
 - Living docs structure (`.specweave/docs/internal/specs/`)
 - Increment metadata system (metadata.json with feature_id)
+
+---
+
+## Acceptance Criteria
+
+<!-- Auto-synced from living docs -->
+
+### US-001: Safe Deletion with Validation
+
+- [ ] **AC-US1-01**: Command validates no active increments reference the feature
+- [ ] **AC-US1-02**: Command validates no completed increments reference the feature (warns, doesn't block)
+- [ ] **AC-US1-03**: Command shows detailed validation report before deletion
+- [ ] **AC-US1-04**: Validation report includes file paths, increment IDs, git status
+- [ ] **AC-US1-05**: Command requires explicit confirmation before deletion (interactive prompt)
+- [ ] **AC-US1-06**: Deletion is blocked if active increments found (safe mode)
+
+### US-002: Force Deletion Mode
+
+- [ ] **AC-US2-01**: `--force` flag bypasses active increment validation
+- [ ] **AC-US2-02**: Force deletion logs warning about orphaned increments
+- [ ] **AC-US2-03**: Force deletion updates orphaned increment metadata (removes feature_id field)
+- [ ] **AC-US2-04**: Force deletion still requires explicit confirmation
+- [ ] **AC-US2-05**: Force deletion report shows which increments will be orphaned
+
+### US-003: Dry-Run Mode
+
+- [ ] **AC-US3-01**: `--dry-run` flag shows deletion plan without executing
+- [ ] **AC-US3-02**: Dry-run report includes file list (living docs, user stories, etc.)
+- [ ] **AC-US3-03**: Dry-run report includes git status (tracked vs untracked files)
+- [ ] **AC-US3-04**: Dry-run report includes increment references (active/completed/archived)
+- [ ] **AC-US3-05**: Dry-run can be combined with --force to preview force deletion
+- [ ] **AC-US3-06**: Dry-run exits with code 0 (no error)
+
+### US-004: Git Integration
+
+- [ ] **AC-US4-01**: Command uses `git rm` for tracked files
+- [ ] **AC-US4-02**: Command uses regular `rm` for untracked files
+- [ ] **AC-US4-03**: Command commits deletion with descriptive message
+- [ ] **AC-US4-04**: Commit message includes feature ID, user, timestamp, reason
+- [ ] **AC-US4-05**: Command handles git errors gracefully (e.g., merge conflicts)
+- [ ] **AC-US4-06**: Git operations can be skipped with `--no-git` flag
+
+### US-005: GitHub Issue Deletion
+
+- [ ] **AC-US5-01**: Command finds all GitHub issues linked to feature's user stories
+- [ ] **AC-US5-02**: Command shows list of issues to be deleted (with titles)
+- [ ] **AC-US5-03**: Command requires separate confirmation for GitHub deletion
+- [ ] **AC-US5-04**: GitHub deletion can be skipped with `--no-github` flag
+- [ ] **AC-US5-05**: GitHub deletion handles API errors gracefully (e.g., rate limits)
+- [ ] **AC-US5-06**: Command logs GitHub API responses (issue IDs deleted)
+
+### US-006: Audit Trail
+
+- [ ] **AC-US6-01**: Deletion event logged to `.specweave/logs/feature-deletions.log`
+- [ ] **AC-US6-02**: Log entry includes feature ID, timestamp, user, reason, mode (safe/force)
+- [ ] **AC-US6-03**: Log entry includes file count (living docs, user stories, etc.)
+- [ ] **AC-US6-04**: Log entry includes orphaned increment IDs (if any)
+- [ ] **AC-US6-05**: Log entry includes git commit SHA (if committed)
+- [ ] **AC-US6-06**: Deletion history can be viewed with `/specweave:audit-deletions`
 
 ---
 
