@@ -771,11 +771,22 @@ plugins/                # Skills, agents, commands, hooks
 
 ---
 
-## 9a. Hook Performance & Safety (CRITICAL - v0.24.3)
+## 9a. Hook Performance & Safety (CRITICAL - v0.25.0)
 
-**Critical incidents**: 2025-11-22 - Multiple Claude Code crashes due to hook overhead
+**Critical incidents**:
+- 2025-11-22 - Multiple Claude Code crashes due to hook overhead
+- 2025-11-23 - Hook process storm (6 hooks per Edit/Write → 300 processes/min)
 
-**Root cause**: Process exhaustion from spawning 6+ Node.js processes per task completion
+**Root cause**: Process exhaustion from spawning 6 bash processes per Edit/Write operation
+
+**LONG-TERM FIX (v0.25.0)**: Hook Consolidation
+- **Reduced from 6 → 4 hooks per Edit/Write** (33% reduction)
+- **Consolidated hooks**:
+  - `pre-edit-write-consolidated.sh` (replaces pre-edit-spec + pre-write-spec)
+  - `post-edit-write-consolidated.sh` (replaces post-edit-spec + post-write-spec)
+  - `post-metadata-change.sh` (enhanced with ultra-fast early exit)
+- **Performance**: 50% reduction in hook overhead
+- **See**: ADR-0070 (Hook Consolidation)
 
 **Emergency fixes implemented (v0.24.3)**:
 

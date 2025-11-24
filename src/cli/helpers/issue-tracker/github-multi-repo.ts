@@ -92,8 +92,17 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     if (repositoryHosting === 'github-single') {
       // Single repository - no need to ask again
       return { setupType: 'single' };
+    } else if (repositoryHosting === 'github-monorepo') {
+      // Monorepo architecture - user already specified this in init.ts
+      return { setupType: 'monorepo' };
+    } else if (repositoryHosting === 'github-multirepo') {
+      // Multiple separate repositories - user already specified this in init.ts
+      return { setupType: 'multiple' };
+    } else if (repositoryHosting === 'github-parent') {
+      // Parent repo + nested repos - user already specified this in init.ts
+      return { setupType: 'multiple' };
     } else if (repositoryHosting === 'github-multi') {
-      // Multiple repositories - ask ONLY about the TYPE (monorepo vs multi-repo vs parent)
+      // Legacy fallback: ask ONLY about the TYPE (for backwards compatibility)
       console.log(chalk.cyan('\n🏗️  Multi-Repository Architecture\n'));
       console.log(chalk.gray('What type of multi-repository setup do you have?\n'));
 

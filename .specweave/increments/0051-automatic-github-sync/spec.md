@@ -54,13 +54,13 @@ dependencies:
 
 ### US-001: Automatic Issue Creation on Completion
 
-- [ ] **AC-US1-01**: When increment completes, `SyncCoordinator.syncIncrementCompletion()` called automatically
+- [x] **AC-US1-01**: When increment completes, `SyncCoordinator.syncIncrementCompletion()` called automatically
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US1-02**: `SyncCoordinator` detects all User Stories linked to increment's feature
+- [x] **AC-US1-02**: `SyncCoordinator` detects all User Stories linked to increment's feature
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
@@ -78,13 +78,13 @@ dependencies:
   - **Priority**: P1
   - **Testable**: Yes
 
-- [ ] **AC-US1-05**: `metadata.json` updated with GitHub issue numbers
+- [x] **AC-US1-05**: `metadata.json` updated with GitHub issue numbers
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US1-06**: User sees success message: "Created 4 GitHub issues for FS-049"
+- [x] **AC-US1-06**: User sees success message: "Created 4 GitHub issues for FS-049"
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
@@ -92,43 +92,43 @@ dependencies:
 
 ### US-002: Three-Tier Permission Model
 
-- [ ] **AC-US2-01**: Config supports three independent flags
+- [x] **AC-US2-01**: Config supports three independent flags
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US2-02**: GATE 1 (`canUpsertInternalItems`) controls living docs sync
+- [x] **AC-US2-02**: GATE 1 (`canUpsertInternalItems`) controls living docs sync
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US2-03**: GATE 2 (`canUpdateExternalItems`) controls external tracker sync
+- [x] **AC-US2-03**: GATE 2 (`canUpdateExternalItems`) controls external tracker sync
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US2-04**: GATE 3 (`autoSyncOnCompletion`) controls automatic trigger
+- [x] **AC-US2-04**: GATE 3 (`autoSyncOnCompletion`) controls automatic trigger
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US2-05**: GATE 4 (`sync.github.enabled`) controls GitHub-specific sync
+- [x] **AC-US2-05**: GATE 4 (`sync.github.enabled`) controls GitHub-specific sync
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US2-06**: Default config has `autoSyncOnCompletion: true`
+- [x] **AC-US2-06**: Default config has `autoSyncOnCompletion: true`
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
   - **Testable**: Yes
 
-- [ ] **AC-US2-07**: User sees clear message when sync skipped due to permission gates
+- [x] **AC-US2-07**: User sees clear message when sync skipped due to permission gates
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
@@ -136,37 +136,37 @@ dependencies:
 
 ### US-003: Idempotency via Caching
 
-- [ ] **AC-US3-01**: Before creating issue, check User Story frontmatter for existing `github.number`
+- [x] **AC-US3-01**: Before creating issue, check User Story frontmatter for existing `github.number`
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US3-02**: If frontmatter missing, query GitHub API to detect duplicates
+- [x] **AC-US3-02**: If frontmatter missing, query GitHub API to detect duplicates
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US3-03**: Use `DuplicateDetector.createWithProtection()` for GitHub queries
+- [x] **AC-US3-03**: Use `DuplicateDetector.createWithProtection()` for GitHub queries
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US3-04**: After issue created, update User Story frontmatter with issue number
+- [x] **AC-US3-04**: After issue created, update User Story frontmatter with issue number
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US3-05**: After all issues created, update increment `metadata.json` with issue list
+- [x] **AC-US3-05**: After all issues created, update increment `metadata.json` with issue list
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US3-06**: Re-running sync skips existing issues and reports: "Skipped 2 existing, created 2 new"
+- [x] **AC-US3-06**: Re-running sync skips existing issues and reports: "Skipped 2 existing, created 2 new"
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
@@ -174,43 +174,43 @@ dependencies:
 
 ### US-004: Error Isolation and Recovery
 
-- [ ] **AC-US4-01**: All sync errors caught and logged (NEVER crash workflow)
+- [x] **AC-US4-01**: All sync errors caught and logged (NEVER crash workflow)
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US4-02**: Sync operations wrapped in try-catch with error isolation
+- [x] **AC-US4-02**: Sync operations wrapped in try-catch with error isolation
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US4-03**: Hooks ALWAYS exit 0 (even on failure)
+- [x] **AC-US4-03**: Hooks ALWAYS exit 0 (even on failure)
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US4-04**: User sees clear error message on sync failure
+- [x] **AC-US4-04**: User sees clear error message on sync failure
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
   - **Testable**: Yes
 
-- [ ] **AC-US4-05**: Partial sync completion allowed (some issues created, others failed)
+- [x] **AC-US4-05**: Partial sync completion allowed (some issues created, others failed)
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1
   - **Testable**: Yes
 
-- [ ] **AC-US4-06**: Circuit breaker auto-disables hooks after 3 consecutive failures
+- [x] **AC-US4-06**: Circuit breaker auto-disables hooks after 3 consecutive failures
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P0
   - **Testable**: Yes
 
-- [ ] **AC-US4-07**: Manual recovery command documented: `/specweave-github:sync --retry`
+- [x] **AC-US4-07**: Manual recovery command documented: `/specweave-github:sync --retry`
   - **Tests**: (placeholder - filled by test-aware-planner)
   - **Tasks**: (placeholder - filled by test-aware-planner)
   - **Priority**: P1

@@ -132,10 +132,30 @@ function filterByRegex(repos: DiscoveredRepo[], regexPattern: string): Discovere
 }
 
 /**
- * Show repository preview table
+ * Show repository preview table with enhanced context
  */
-function showRepositoryPreview(repos: DiscoveredRepo[], maxDisplay: number = 20): void {
-  console.log(chalk.cyan('\n📋 Discovered Repositories:\n'));
+function showRepositoryPreview(
+  repos: DiscoveredRepo[],
+  owner: string,
+  strategy: string,
+  pattern?: string,
+  maxDisplay: number = 20
+): void {
+  console.log(chalk.cyan(`\n📋 Discovered Repositories from ${chalk.bold(owner)}:\n`));
+
+  // Show discovery context
+  if (strategy === 'pattern' && pattern) {
+    console.log(chalk.gray(`   Strategy: Pattern matching`));
+    console.log(chalk.gray(`   Pattern: ${pattern}`));
+    console.log(chalk.gray(`   Matches: ${repos.length} repositories\n`));
+  } else if (strategy === 'regex' && pattern) {
+    console.log(chalk.gray(`   Strategy: Regex matching`));
+    console.log(chalk.gray(`   Pattern: ${pattern}`));
+    console.log(chalk.gray(`   Matches: ${repos.length} repositories\n`));
+  } else if (strategy === 'all-repos') {
+    console.log(chalk.gray(`   Strategy: All repositories`));
+    console.log(chalk.gray(`   Found: ${repos.length} repositories\n`));
+  }
 
   if (repos.length === 0) {
     console.log(chalk.yellow('   No repositories found matching criteria\n'));
@@ -156,7 +176,7 @@ function showRepositoryPreview(repos: DiscoveredRepo[], maxDisplay: number = 20)
     console.log(chalk.gray(`\n   ... and ${repos.length - maxDisplay} more repositories`));
   }
 
-  console.log(chalk.cyan(`\n   Total: ${repos.length} repositories\n`));
+  console.log(chalk.green(`\n✅ Ready to configure! Next: Select which one is the parent.\n`));
 }
 
 /**
@@ -273,7 +293,7 @@ export async function discoverRepositories(
   }
 
   // Step 4: Show preview
-  showRepositoryPreview(filteredRepos);
+  showRepositoryPreview(filteredRepos, owner, strategy, pattern);
 
   // Step 5: Validate count
   if (filteredRepos.length === 0) {

@@ -2,10 +2,10 @@
 id: FS-051
 title: "Automatic GitHub Sync with Permission Gates"
 type: feature
-status: planned
+status: active
 priority: P0
 created: 2025-11-22
-lastUpdated: 2025-11-23
+lastUpdated: 2025-11-24
 ---
 
 # Automatic GitHub Sync with Permission Gates
@@ -18,7 +18,7 @@ lastUpdated: 2025-11-23
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md) | ⏳ planned | 2025-11-22 |
+| [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md) | ⏳ active | 2025-11-22 |
 
 ## User Stories
 

@@ -114,7 +114,19 @@
     "settings": {
       "canUpsertInternalItems": true,
       "canUpdateExternalItems": true,
-      "canUpdateStatus": true
+      "canUpdateStatus": true,
+      "autoSyncOnCompletion": true
+    },
+    "github": {
+      "enabled": true,
+      "owner": "anton-abyzov",
+      "repo": "specweave"
+    },
+    "jira": {
+      "enabled": false
+    },
+    "ado": {
+      "enabled": false
     },
     "statusSync": {
       "enabled": true,

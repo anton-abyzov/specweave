@@ -461,38 +461,53 @@ export class RepoStructureManager {
     // ========== NEW FLOW: Ask discovery strategy FIRST (before parent questions!) ==========
 
     // Step 1: Ask how to configure implementation repositories (BEFORE parent questions)
-    let discoveryStrategy: 'manual' | 'pattern-first' = 'manual';
+    let discoveryStrategy: 'manual' | 'bulk-discovery' = 'manual';
     let discoveredRepos: DiscoveredRepo[] = [];
     let owner: string = '';
 
     if (!isLocalParent && this.githubToken && useParent) {
-      console.log(chalk.cyan('\n🚀 Repository Configuration\n'));
-      console.log(chalk.gray('You can discover repositories automatically or enter them manually.\n'));
+      console.log(chalk.cyan('\n🚀 Repository Discovery\n'));
+      console.log(chalk.gray('You\'re setting up multiple repositories. We can discover them automatically!\n'));
 
       const { configMethod } = await inquirer.prompt([
         {
           type: 'list',
           name: 'configMethod',
-          message: 'How do you want to configure these repositories?',
+          message: 'How do you want to configure repositories?',
           choices: [
             {
-              name: `${chalk.bold('Manual entry')} - Enter parent and each repository one by one ${chalk.gray('(full control)')}`,
-              value: 'manual'
+              name: [
+                chalk.bold.green('🎯 Bulk Discovery (RECOMMENDED)'),
+                chalk.gray('  Automatically discover repos from ' + provider.config.name),
+                chalk.gray('  • Select parent from discovered list'),
+                chalk.gray('  • Auto-configure implementation repos'),
+                chalk.gray('  • Supports: all, pattern, regex filtering'),
+                ''
+              ].join('\n'),
+              value: 'bulk-discovery',
+              short: 'Bulk Discovery'
             },
             {
-              name: `${chalk.bold('Pattern matching')} - Discover repositories, then select parent ${chalk.gray('(faster for many repos)')}`,
-              value: 'pattern-first'
+              name: [
+                chalk.bold('✏️  Manual Entry'),
+                chalk.gray('  Enter each repository manually'),
+                chalk.gray('  • Full control over settings'),
+                chalk.gray('  • Best for new repos or custom setup'),
+                ''
+              ].join('\n'),
+              value: 'manual',
+              short: 'Manual'
             }
           ],
-          default: 'manual'
+          default: 'bulk-discovery'  // Make bulk discovery the default!
         }
       ]);
 
       discoveryStrategy = configMethod;
     }
 
-    // Step 2: If pattern/all, discover repos FIRST, then ask which is parent
-    if (discoveryStrategy === 'pattern-first') {
+    // Step 2: If bulk discovery, discover repos FIRST, then ask which is parent
+    if (discoveryStrategy === 'bulk-discovery') {
       // Get owner FIRST (needed for discovery)
       console.log(chalk.cyan('\n👤 Repository Owner\n'));
 
@@ -873,12 +888,12 @@ export class RepoStructureManager {
       });
     }
 
-    // Step 4: Repository count and discovery (skip count question if using pattern-first)
+    // Step 4: Repository count and discovery (skip count question if using bulk discovery)
     let repoCount: number;
-    let bulkDiscoveryStrategy: BulkDiscoveryResult['strategy'] = discoveryStrategy === 'pattern-first' ? 'pattern' : 'manual';
+    let bulkDiscoveryStrategy: BulkDiscoveryResult['strategy'] = discoveryStrategy === 'bulk-discovery' ? 'pattern' : 'manual';
 
-    if (discoveryStrategy === 'pattern-first' && discoveredRepos.length > 0) {
-      // Pattern discovery: repos already discovered, skip count question
+    if (discoveryStrategy === 'bulk-discovery' && discoveredRepos.length > 0) {
+      // Bulk discovery: repos already discovered, skip count question
       repoCount = discoveredRepos.length;
       console.log(chalk.green(`\n✓ Total repositories: ${repoCount + 1} (1 parent + ${repoCount} implementation)\n`));
     } else {

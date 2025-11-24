@@ -4,7 +4,7 @@ title: "Automatic GitHub Sync with Permission Gates - SpecWeave Implementation"
 feature: FS-051
 project: specweave
 type: feature-context
-status: planned
+status: active
 ---
 
 # Automatic GitHub Sync with Permission Gates

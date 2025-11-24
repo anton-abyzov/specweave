@@ -17,6 +17,12 @@ All notable changes to SpecWeave will be documented in this file.
 - Judge-Based Marketplace Plugin Validation (LLM scoring system, 40-point threshold)
 - Mandatory Post-Closure Quality Assessment (automatic QA after `/specweave:done`)
 
+### 🗑️ Removed
+- **Dead Code Cleanup**: Removed unused `PermissionsConfiguration` interface and top-level `permissions` config section
+  - Legacy from pre-v0.23 architecture, replaced by `sync.settings.*` three-permission model
+  - No impact on existing functionality (0 usage in codebase)
+  - See ADR-0047 for three-permission architecture rationale
+
 ---
 
 ## [0.23.21] - 2025-11-22

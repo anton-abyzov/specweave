@@ -221,6 +221,40 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Create User Story issue (for automatic GitHub sync)
+   *
+   * CRITICAL: This is the CORRECT format for User Story GitHub issues
+   * Title format: [FS-XXX][US-YYY] User Story Title
+   *
+   * Used by: SyncCoordinator.createGitHubIssuesForUserStories()
+   *
+   * @param params - User story issue parameters
+   * @returns Created GitHub issue
+   */
+  async createUserStoryIssue(params: {
+    featureId: string;
+    userStoryId: string;
+    title: string;
+    body: string;
+    labels?: string[];
+    milestone?: number | null;
+  }): Promise<GitHubIssue> {
+    // Format title: [FS-XXX][US-YYY] Title
+    const formattedTitle = `[${params.featureId}][${params.userStoryId}] ${params.title}`;
+
+    // Use only provided labels (don't add defaults that may not exist)
+    const allLabels = params.labels || [];
+
+    // Create issue using standard method
+    return await this.createEpicIssue(
+      formattedTitle,
+      params.body,
+      params.milestone || undefined,
+      allLabels
+    );
+  }
+
+  /**
    * Create epic issue (increment-level)
    */
   async createEpicIssue(

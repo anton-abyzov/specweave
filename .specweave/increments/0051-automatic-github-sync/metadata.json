@@ -3,7 +3,70 @@
   "status": "active",
   "type": "feature",
   "created": "2025-11-23T00:00:49Z",
-  "lastActivity": "2025-11-23T00:00:49Z",
+  "lastActivity": "2025-11-23T21:09:19.194Z",
   "testMode": "test-after",
-  "coverageTarget": 80
+  "coverageTarget": 80,
+  "acSyncEvents": [
+    {
+      "timestamp": "2025-11-23T21:09:19.194Z",
+      "updated": [
+        "AC-US2-01",
+        "AC-US2-06",
+        "AC-US2-05",
+        "AC-US2-02",
+        "AC-US2-03",
+        "AC-US2-04",
+        "AC-US2-07",
+        "AC-US1-01",
+        "AC-US1-02",
+        "AC-US1-05",
+        "AC-US1-06",
+        "AC-US3-01",
+        "AC-US3-04",
+        "AC-US3-05",
+        "AC-US3-02",
+        "AC-US3-03",
+        "AC-US3-06",
+        "AC-US4-01",
+        "AC-US4-02",
+        "AC-US4-05",
+        "AC-US4-03",
+        "AC-US4-06",
+        "AC-US4-04",
+        "AC-US4-07"
+      ],
+      "conflicts": [],
+      "warnings": [],
+      "changesCount": 24
+    }
+  ],
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 716,
+        "url": "https://github.com/anton-abyzov/specweave/issues/716",
+        "createdAt": "2025-11-23T21:17:00.000Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 717,
+        "url": "https://github.com/anton-abyzov/specweave/issues/717",
+        "createdAt": "2025-11-23T21:17:00.000Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 718,
+        "url": "https://github.com/anton-abyzov/specweave/issues/718",
+        "createdAt": "2025-11-23T21:17:00.000Z"
+      },
+      {
+        "userStory": "US-004",
+        "number": 719,
+        "url": "https://github.com/anton-abyzov/specweave/issues/719",
+        "createdAt": "2025-11-23T21:17:00.000Z"
+      }
+    ],
+    "lastSync": "2025-11-23T21:17:00.000Z"
+  }
 }
