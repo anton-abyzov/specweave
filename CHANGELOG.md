@@ -4,6 +4,37 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.26.10] - 2025-11-24
+
+### 🔧 Maintenance
+- **Archive Management**: Restore FS-049 from archive and update archive command
+  - Fixed archive restoration functionality
+  - Improved archive command handling
+
+---
+
+## [0.26.9] - 2025-11-24
+
+### 🐛 Bug Fixes
+- **Type Safety**: Add type assertion for error in archive command
+  - Fixed TypeScript strict mode compliance
+
+### ✨ Features
+- **Increment Archiving**: Archive completed increments and fix GitHub sync
+  - Automatic archival of completed increments
+  - Fixed GitHub synchronization during archive operations
+
+---
+
+## [0.26.7] - 2025-11-24
+
+### ✨ Features
+- **Init Flow Improvement**: Improve repository structure question in init flow
+  - Better UX for new project initialization
+  - Clearer prompts for repository structure selection
+
+---
+
 ## [0.26.5] - 2025-11-24
 
 ### 🔧 Maintenance

@@ -3,7 +3,7 @@ increment: 0058-fix-status-sync-and-auto-github-update
 title: Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change
 type: bug
 priority: P0
-status: active
+status: completed
 created: 2025-11-24T00:00:00.000Z
 test_mode: TDD
 coverage_target: 95
