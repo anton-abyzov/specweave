@@ -14,13 +14,31 @@
 // - Marketplace-compatible (no build step required)
 // - Simple build process (just copy files)
 
-import fs from 'fs-extra';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, copyFileSync, rmSync, promises as fsPromises } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
+
+// Native fs helpers (fs-extra compatibility)
+const fs = {
+  async ensureDir(dir) {
+    await fsPromises.mkdir(dir, { recursive: true });
+  },
+  async copy(src, dest) {
+    await fsPromises.copyFile(src, dest);
+  },
+  async pathExists(filepath) {
+    return existsSync(filepath);
+  },
+  async remove(filepath) {
+    if (existsSync(filepath)) {
+      rmSync(filepath, { recursive: true, force: true });
+    }
+  }
+};
 
 // Dependencies to copy for each plugin
 // Auto-detected by scripts/find-hook-dependencies.js
