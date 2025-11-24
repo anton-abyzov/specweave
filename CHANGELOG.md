@@ -4,6 +4,52 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.25.2] - 2025-11-24 🔥 CRITICAL DATA INTEGRITY FIX
+
+### 🔥 Critical Bug Fix
+- **AC Sync Parser Fix**: Fixed critical parser bug causing false "0% tasks complete" conflicts
+  - **Root Cause**: AC sync hook only detected list format (`- [x]`), missing field format (`**Status**: [x] completed`)
+  - **Impact**: ALL 70 ACs in increment 0053 showed false "0% completion" despite 37/37 tasks completed
+  - **Fix**: Added dual-format support (list + field) with case-insensitive matching
+  - **Verification**: All 43 AC status manager tests passing, 0 conflicts on increment 0053
+  - **Prevention**: 5 comprehensive regression tests added
+  - **See**: `.specweave/docs/internal/emergency-procedures/AC-SYNC-CONFLICT-FIX-2025-11-24.md`
+
+### 📚 Documentation
+- Added emergency recovery guide for AC sync conflicts
+- Updated CLAUDE.md with AC sync parser section (7b)
+
+---
+
+## [0.25.1] - 2025-11-24 🚨 EMERGENCY HOTFIX
+
+### 🔥 Critical Bug Fix
+- **TodoWrite Crash Fix**: Emergency hotfix for Claude Code crash when marking tasks complete
+  - **Root Cause**: US completion orchestrator triggered unguarded external tool sync cascade
+    - `livingDocsSync.syncIncrement()` called without checking `SKIP_US_SYNC`
+    - External tool sync created Edit/Write operations → new hook chains → infinite recursion
+    - Process exhaustion → Claude Code crash
+  - **Emergency Fix**: Added `export SKIP_US_SYNC=true` to post-task-completion hook (line 463)
+  - **Impact**:
+    - ✅ NO MORE CRASHES: TodoWrite is now safe
+    - ⚠️  Manual sync required: Must run `/specweave:sync-progress` after completing tasks
+    - ✅ Living docs still work: AC sync, tasks.md updates, status line all function normally
+  - **Verification**: `grep "SKIP_US_SYNC=true" plugins/specweave/hooks/post-task-completion.sh`
+  - **Recovery**: See `.specweave/docs/internal/emergency-procedures/TODOWRITE-CRASH-RECOVERY.md`
+  - **Long-term Fix**: v0.26.0 will implement 3-tier guard rail system (ADR-0129)
+  - **See**:
+    - Executive Summary: `.specweave/increments/0053-safe-feature-deletion/reports/EXECUTIVE-SUMMARY-CRASH-FIX-2025-11-24.md`
+    - Root Cause Analysis: `.specweave/increments/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
+    - ADR-0129: US Sync Guard Rails and Safe Automatic Synchronization
+
+### 📚 Documentation
+- Added comprehensive crash recovery documentation
+- Updated CLAUDE.md with TodoWrite crash section (9a)
+- Created emergency procedures guide
+- Created ADR-0129 for long-term architectural fix
+
+---
+
 ## [0.24.8] - 2025-11-23
 - Multi-repo initialization with platform registry improvements
 - Git provider abstraction layer for multi-platform support
