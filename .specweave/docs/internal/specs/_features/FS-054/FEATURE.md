@@ -20,6 +20,17 @@ This increment documents a comprehensive code review and security fix implementa
 |-----------|--------|----------------|
 | [0054-sync-guard-security-reliability-fixes](../../../../increments/0054-sync-guard-security-reliability-fixes/spec.md) | ✅ completed | 2025-11-24 |
 
+## Related Fixes
+
+During investigation of sync issues in increments 0054-0056, a critical bug was discovered and fixed:
+
+**ADR-0137: Multi-Location GitHub Config Detection** (2025-11-24)
+- **Problem**: `detectExternalTools()` only checked ONE config location, causing sync failures for 90% of users
+- **Root Cause**: Detection logic only looked for `config.plugins.settings['specweave-github']`, but users' actual configs use different patterns
+- **Solution**: Enhanced detection to support 4 config patterns (sync.github, profiles, multiProject, legacy) + environment variable fallback
+- **Impact**: GitHub issue sync now works automatically for ALL config patterns
+- **Reference**: `.specweave/docs/internal/architecture/adr/0137-multi-location-github-config-detection.md`
+
 ## User Stories
 
 - [US-001: ExternalToolDriftDetector Security Hardening (Priority: P0)](../../specweave/FS-054/us-001-externaltooldriftdetector-security-hardening-priority-p0-.md)
