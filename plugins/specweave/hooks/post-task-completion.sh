@@ -455,12 +455,12 @@ fi
     # This prevents 27 duplicate comments (see root cause analysis)
     export SKIP_GITHUB_SYNC=true
 
-    # EMERGENCY FIX (v0.25.1): Skip US sync in post-task-completion hook
-    # CRITICAL: US sync triggers livingDocsSync.syncIncrement() which calls
-    # syncToExternalTools() without respecting SKIP_GITHUB_SYNC, causing
-    # Edit/Write operations that trigger new hook chains → infinite recursion → crash
-    # See: ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md
-    export SKIP_US_SYNC=true
+    # v0.26.1: SKIP_US_SYNC removed - no longer needed!
+    # Automatic US sync restored with multi-layer protection:
+    # 1. SKIP_EXTERNAL_SYNC guard at LivingDocsSync layer (prevents recursion)
+    # 2. Smart throttle (60s window prevents spam)
+    # 3. fs.writeFile() confirmed to NOT trigger hooks (test validated)
+    # See: FS-WRITEFILE-HOOK-TEST-RESULTS-2025-11-24.md, ADR-0129
 
     # Run consolidated sync (single Node.js process handles ALL operations)
     if (cd "$PROJECT_ROOT" && node "$CONSOLIDATED_SCRIPT" "$CURRENT_INCREMENT") >> "$DEBUG_LOG" 2>&1; then
