@@ -1,6 +1,6 @@
 ---
 increment: 0058-fix-status-sync-and-auto-github-update
-status: active
+status: completed
 estimated_tasks: 12
 completed_tasks: 12
 ---

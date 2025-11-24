@@ -1,10 +1,11 @@
 {
   "id": "0058-fix-status-sync-and-auto-github-update",
-  "status": "active",
+  "status": "completed",
   "type": "bug",
   "priority": "P0",
   "created": "2025-11-24T16:20:00Z",
-  "lastActivity": "2025-11-24T18:52:15.855Z",
+  "completed": "2025-11-24T19:12:00Z",
+  "lastActivity": "2025-11-24T19:12:00Z",
   "testMode": "test-after",
   "coverageTarget": 80,
   "feature_id": null,
@@ -12,10 +13,28 @@
   "externalLinks": {},
   "scope": {
     "tasksPlanned": 12,
-    "tasksCompleted": 0,
+    "tasksCompleted": 12,
     "tasksTransferred": 0
   },
   "acSyncEvents": [
+    {
+      "timestamp": "2025-11-24T19:08:11.740Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-US2-06: [x] but no tasks found (manual verification?)"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-11-24T19:07:49.306Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-US2-06: [x] but no tasks found (manual verification?)"
+      ],
+      "changesCount": 0
+    },
     {
       "timestamp": "2025-11-24T18:52:15.855Z",
       "updated": [],
