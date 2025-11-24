@@ -67,6 +67,14 @@ PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
 # ============================================================================
+# ULTRA-FAST EARLY EXIT FOR NON-SPECWEAVE PROJECTS (T-006 - v0.26.15)
+# ============================================================================
+# Skip ALL processing if not a SpecWeave project - saves ~50-100ms
+if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+  exit 0
+fi
+
+# ============================================================================
 # RECURSION PREVENTION (CRITICAL - v0.26.0 - FILE-BASED GUARD)
 # ============================================================================
 # PROBLEM: Hooks that write files trigger other hooks, causing infinite loops.

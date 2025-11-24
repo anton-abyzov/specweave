@@ -41,7 +41,7 @@ describe('ImportStrategyPrompter', () => {
       expect(inquirer.prompt).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
-            type: 'list',
+            type: 'select',
             name: 'strategy',
             default: 'import-all',
             choices: expect.arrayContaining([

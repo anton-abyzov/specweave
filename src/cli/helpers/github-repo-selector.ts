@@ -183,7 +183,7 @@ export async function selectRepositories(
 
   const { strategy } = await inquirer.prompt<{ strategy: RepoSelectionConfig['selectionStrategy'] }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'strategy',
       message: 'How do you want to select repositories?',
       choices: strategyChoices
@@ -202,7 +202,7 @@ export async function selectRepositories(
       // Prompt to select organization
       const { selectedOrg } = await inquirer.prompt<{ selectedOrg: string }>([
         {
-          type: 'list',
+          type: 'select',
           name: 'selectedOrg',
           message: 'Select organization:',
           choices: orgs
@@ -230,7 +230,7 @@ export async function selectRepositories(
 
       const { source } = await inquirer.prompt<{ source: string }>([
         {
-          type: 'list',
+          type: 'select',
           name: 'source',
           message: 'Select repository source:',
           choices: sourceChoices

@@ -408,7 +408,7 @@ export class JiraResourceValidator {
         // Prompt user
         const { action } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'action',
             message: `What would you like to do for project "${projectKey}"?`,
             choices: [
@@ -433,7 +433,7 @@ export class JiraResourceValidator {
         if (action === 'select') {
           const { selectedProject } = await inquirer.prompt([
             {
-              type: 'list',
+              type: 'select',
               name: 'selectedProject',
               message: 'Select a project:',
               choices: existingProjects.map((p) => ({
@@ -1109,7 +1109,7 @@ export class AzureDevOpsResourceValidator {
         // Prompt user
         const { action } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'action',
             message: `What would you like to do for project "${projectName}"?`,
             choices: [
@@ -1135,7 +1135,7 @@ export class AzureDevOpsResourceValidator {
         if (action === 'select') {
           const { selectedProject } = await inquirer.prompt([
             {
-              type: 'list',
+              type: 'select',
               name: 'selectedProject',
               message: 'Select a project:',
               choices: existingProjects.map((p) => ({

@@ -87,7 +87,7 @@ if (active.length === 0) {
 if (active.length > 1) {
   // Multiple active - ask which one
   const choice = await prompt({
-    type: 'list',
+    type: 'select',
     message: 'Which increment to update?',
     choices: active.map(inc => ({ name: inc.id, value: inc.id }))
   });
@@ -120,7 +120,7 @@ const report = fs.readFileSync(reportPath, 'utf-8');
 
 ```typescript
 const changeType = await prompt({
-  type: 'list',
+  type: 'select',
   message: 'What changed?',
   choices: [
     'Added user story',

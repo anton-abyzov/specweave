@@ -41,7 +41,7 @@ export async function installCommand(
     // Interactive mode
     const { action } = await inquirer.prompt([
       {
-        type: 'list',
+        type: 'select',
         name: 'action',
         message: 'What would you like to install?',
         choices: [
@@ -64,7 +64,7 @@ export async function installCommand(
 
       const { component } = await inquirer.prompt([
         {
-          type: 'list',
+          type: 'select',
           name: 'component',
           message: 'Select component to install:',
           choices,

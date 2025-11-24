@@ -127,7 +127,7 @@ export class RepoStructureManager {
       // Ask user for architecture choice
       const promptData = getArchitecturePrompt();
       const result = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'architecture',
         message: promptData.question,
         choices: promptData.options.map(opt => ({
@@ -148,7 +148,7 @@ export class RepoStructureManager {
     console.log(chalk.cyan('\n' + platformPromptData.message));
 
     const { platform } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'platform',
       message: platformPromptData.question,
       choices: platformOptions.map(opt => ({
@@ -173,7 +173,7 @@ export class RepoStructureManager {
     // Step 3: Ask about Git remote URL format (SSH vs HTTPS)
     const urlTypePromptData = getUrlTypePrompt();
     const { urlType } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'urlType',
       message: urlTypePromptData.question,
       choices: urlTypePromptData.options.map(opt => ({
@@ -380,7 +380,7 @@ export class RepoStructureManager {
     if (answers.createOnGitHub) {
       const visibilityPrompt = getVisibilityPrompt(answers.repo);
       const result = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'visibility',
         message: visibilityPrompt.question,
         choices: visibilityPrompt.options.map(opt => ({
@@ -471,7 +471,7 @@ export class RepoStructureManager {
 
       const { configMethod } = await inquirer.prompt([
         {
-          type: 'list',
+          type: 'select',
           name: 'configMethod',
           message: 'How do you want to configure repositories?',
           choices: [
@@ -567,7 +567,7 @@ export class RepoStructureManager {
 
         const { parentSelection } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'parentSelection',
             message: 'Which repository is the parent?',
             choices: parentChoices,
@@ -685,7 +685,7 @@ export class RepoStructureManager {
         // GitHub parent: First ask if using existing or creating new
         const { parentChoice } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'parentChoice',
             message: 'Parent repository setup:',
             choices: [
@@ -852,7 +852,7 @@ export class RepoStructureManager {
         // Only prompt for visibility when creating a NEW repository
         const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
         const result = await inquirer.prompt([{
-          type: 'list',
+          type: 'select',
           name: 'parentVisibility',
           message: parentVisibilityPrompt.question,
           choices: parentVisibilityPrompt.options.map(opt => ({
@@ -1126,7 +1126,7 @@ export class RepoStructureManager {
       if (repoAnswers.createOnGitHub) {
         const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);
         const result = await inquirer.prompt([{
-          type: 'list',
+          type: 'select',
           name: 'visibility',
           message: visibilityPrompt.question,
           choices: visibilityPrompt.options.map(opt => ({
@@ -1240,7 +1240,7 @@ export class RepoStructureManager {
     if (answers.createOnGitHub) {
       const visibilityPrompt = getVisibilityPrompt(answers.repo);
       const result = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'visibility',
         message: visibilityPrompt.question,
         choices: visibilityPrompt.options.map(opt => ({

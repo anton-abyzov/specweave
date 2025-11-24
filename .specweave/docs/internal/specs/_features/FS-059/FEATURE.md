@@ -1,16 +1,11 @@
 ---
 id: FS-059
-title: Context Optimization & Crash Prevention
+title: "Context Optimization & Crash Prevention"
 type: feature
 status: active
 priority: P0
 created: 2025-11-24
 lastUpdated: 2025-11-24
-external_tools:
-  github:
-    type: milestone
-    id: 18
-    url: https://github.com/anton-abyzov/specweave/milestone/18
 ---
 
 # Context Optimization & Crash Prevention

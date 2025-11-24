@@ -3,6 +3,59 @@ import { USCompletionDetector } from "../../../../dist/src/core/us-completion-de
 import { LivingDocsSync } from "../../../../dist/src/core/living-docs/living-docs-sync.js";
 import { USSyncThrottle } from "../../../../dist/src/core/us-sync-throttle.js";
 import { consoleLogger } from "../vendor/utils/logger.js";
+import { spawn } from "child_process";
+import { existsSync } from "fs";
+import * as path from "path";
+async function triggerUserStoryCompleteHook(incrementId, usId, projectRoot) {
+  const hookPaths = [
+    path.join(projectRoot, "plugins/specweave/hooks/post-user-story-complete.sh"),
+    path.join(projectRoot, ".claude/hooks/post-user-story-complete.sh")
+  ];
+  let hookPath = null;
+  for (const p of hookPaths) {
+    if (existsSync(p)) {
+      hookPath = p;
+      break;
+    }
+  }
+  if (!hookPath) {
+    console.log(`   \u2139\uFE0F  post-user-story-complete.sh hook not found (skipping external sync)`);
+    return;
+  }
+  return new Promise((resolve, reject) => {
+    const hookProcess = spawn("bash", [hookPath, incrementId, usId], {
+      cwd: projectRoot,
+      env: {
+        ...process.env,
+        SPECWEAVE_INCREMENT_ID: incrementId,
+        SPECWEAVE_USER_STORY_ID: usId
+      },
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+    let stdout = "";
+    let stderr = "";
+    hookProcess.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+    hookProcess.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+    hookProcess.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Hook exited with code ${code}: ${stderr || stdout}`));
+      }
+    });
+    hookProcess.on("error", (error) => {
+      reject(new Error(`Hook spawn failed: ${error.message}`));
+    });
+    setTimeout(() => {
+      hookProcess.kill("SIGTERM");
+      reject(new Error("Hook timed out after 30s"));
+    }, 3e4);
+  });
+}
 async function syncCompletedUserStories(incrementId) {
   try {
     console.log(`
@@ -52,7 +105,15 @@ async function syncCompletedUserStories(incrementId) {
       console.log(`   Feature: ${syncResult.featureId}`);
       console.log(`   Files updated: ${syncResult.filesCreated.length + syncResult.filesUpdated.length}`);
       console.log(`
-\u{1F4E1} External tool sync completed (GitHub/JIRA/ADO updated if configured)`);
+\u{1F4E1} Triggering external tool updates for ${newlyCompleted.length} completed user stories...`);
+      for (const us of newlyCompleted) {
+        try {
+          await triggerUserStoryCompleteHook(incrementId, us.usId, projectRoot);
+          console.log(`   \u2705 ${us.usId}: External tool updated`);
+        } catch (hookError) {
+          console.warn(`   \u26A0\uFE0F  ${us.usId}: Hook failed (${hookError.message})`);
+        }
+      }
       throttle.recordSync(incrementId);
       console.log(`   \u23F1\uFE0F  Throttle recorded (next sync allowed in 60s)`);
     } else {

@@ -236,7 +236,7 @@ if (activeCount >= limits.maxActiveIncrements) {
     console.log(chalk.dim('   Accept productivity cost (20% slower)\n'));
 
     const choice = await prompt({
-      type: 'list',
+      type: 'select',
       message: 'Choose an option:',
       choices: [
         { name: 'Complete current work', value: 'complete' },

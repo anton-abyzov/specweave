@@ -44,7 +44,7 @@ export async function importDocs(
     let source = args.source;
     if (!source) {
       const { sourceType } = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'sourceType',
         message: 'Select source type:',
         choices: [
@@ -66,7 +66,7 @@ export async function importDocs(
 
     if (!args.project && allProjects.length > 1) {
       const { projectId } = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'projectId',
         message: 'Select target project:',
         choices: allProjects.map(p => ({

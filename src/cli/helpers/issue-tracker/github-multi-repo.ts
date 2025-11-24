@@ -235,7 +235,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
 
   // Legacy prompt (runs ONLY if no projectPath/token AND no repositoryHosting was provided)
   const { setupType } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'setupType',
     message: 'Select your repository setup:',
     choices: [

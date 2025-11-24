@@ -360,7 +360,7 @@ export async function initCommand(
         // Interactive mode: Ask user what to do
         const result = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'action',
             message: 'What would you like to do?',
             choices: [
@@ -505,7 +505,7 @@ export async function initCommand(
 
           const { action } = await inquirer.prompt([
             {
-              type: 'list',
+              type: 'select',
               name: 'action',
               message: 'What would you like to do?',
               choices: [
@@ -735,7 +735,7 @@ export async function initCommand(
         // Let user choose from available tools
         const { selectedTool } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'selectedTool',
             message: locale.t('cli', 'init.toolDetection.selectPrompt'),
             choices: [
@@ -1219,7 +1219,7 @@ export async function initCommand(
       if (!isCI) {
         // Step 1: Ask about repository structure
         const { structure } = await inquirer.prompt([{
-          type: 'list',
+          type: 'select',
           name: 'structure',
           message: 'What is your repository structure?',
           choices: [
@@ -1239,7 +1239,7 @@ export async function initCommand(
 
         // Step 2: Ask about git provider
         const { provider } = await inquirer.prompt([{
-          type: 'list',
+          type: 'select',
           name: 'provider',
           message: 'Which Git provider do you use?',
           choices: [
@@ -1426,7 +1426,7 @@ export async function initCommand(
 
       const { selectedTestMode } = await inquirer.prompt([
         {
-          type: 'list',
+          type: 'select',
           name: 'selectedTestMode',
           message: 'Select your testing approach:',
           choices: [
@@ -1455,7 +1455,7 @@ export async function initCommand(
       if (testMode !== 'manual') {
         const { selectedCoverageLevel } = await inquirer.prompt([
           {
-            type: 'list',
+            type: 'select',
             name: 'selectedCoverageLevel',
             message: 'Select your coverage target level:',
             choices: [
@@ -1828,7 +1828,7 @@ async function promptAndRunExternalImport(targetDir: string, isCI: boolean): Pro
   // Prompt for time range (with config default)
   const { timeRange } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'select',
       name: 'timeRange',
       message: 'How far back should we import?',
       choices: [

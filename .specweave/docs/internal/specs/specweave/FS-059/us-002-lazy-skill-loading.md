@@ -1,14 +1,10 @@
 ---
 id: US-002
 feature: FS-059
-title: Lazy Skill Loading
+title: "Lazy Skill Loading"
 status: not_started
 priority: P0
 created: 2025-11-24
-external:
-  github:
-    issue: 746
-    url: https://github.com/anton-abyzov/specweave/issues/746
 ---
 
 # US-002: Lazy Skill Loading

@@ -86,7 +86,7 @@ export async function setupJiraCredentials(): Promise<JiraCredentials> {
   // Interactive credential entry
   const answers = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'select',
       name: 'setupType',
       message: 'How would you like to connect to Jira?',
       choices: [

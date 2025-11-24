@@ -250,7 +250,7 @@ async function promptBudget(): Promise<BudgetType> {
  */
 async function promptMethodology(): Promise<'agile' | 'waterfall'> {
   const { methodology } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'methodology',
     message: 'How will your team work?',
     choices: [

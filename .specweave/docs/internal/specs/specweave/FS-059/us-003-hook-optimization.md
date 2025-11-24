@@ -2,7 +2,7 @@
 id: US-003
 feature: FS-059
 title: "Hook Optimization"
-status: not_started
+status: completed
 priority: P0
 created: 2025-11-24
 ---
@@ -19,10 +19,10 @@ created: 2025-11-24
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: Discipline check cached for 30 seconds
-- [ ] **AC-US3-02**: Deduplication uses in-memory state (not node spawn)
-- [ ] **AC-US3-03**: Hooks skip when no .specweave/ directory
-- [ ] **AC-US3-04**: 90%+ reduction in hook overhead
+- [x] **AC-US3-01**: Discipline check cached for 30 seconds
+- [x] **AC-US3-02**: Deduplication uses in-memory state (not node spawn)
+- [x] **AC-US3-03**: Hooks skip when no .specweave/ directory
+- [x] **AC-US3-04**: 90%+ reduction in hook overhead
 
 ---
 
@@ -37,6 +37,6 @@ created: 2025-11-24
 
 - [x] **T-004**: Add caching to user-prompt-submit.sh
 - [x] **T-005**: Add caching to pre-command-deduplication.sh
-- [ ] **T-006**: Add early exit for non-SpecWeave projects
-- [ ] **T-007**: Measure hook performance improvement
+- [x] **T-006**: Add early exit for non-SpecWeave projects
+- [x] **T-007**: Measure hook performance improvement
 - [ ] **T-012**: End-to-end crash prevention test

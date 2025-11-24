@@ -319,7 +319,7 @@ export class GitHubProfileManager {
     }
 
     const { selectedId } = await inquirer.prompt([{
-      type: 'list',
+      type: 'select',
       name: 'selectedId',
       message,
       choices: profiles.map(p => ({
