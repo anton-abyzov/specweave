@@ -273,7 +273,7 @@ export class AreaPathMapper {
 
     const { granularity } = await inquirer.prompt<{ granularity: AreaPathGranularity }>([
       {
-        type: 'list',
+        type: 'select',
         name: 'granularity',
         message: 'Select area path granularity for project organization:',
         choices: [

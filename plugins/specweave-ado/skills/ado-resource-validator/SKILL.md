@@ -428,7 +428,7 @@ export async function validateAzureDevOpsResources(
    ```typescript
    const { action } = await inquirer.prompt([
      {
-       type: 'list',
+       type: 'select',
        name: 'action',
        message: `Project "${projectName}" not found. What would you like to do?`,
        choices: [

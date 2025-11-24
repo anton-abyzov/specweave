@@ -46,7 +46,7 @@ export async function promptAreaPathGranularity(
 
   const answer = await inquirer.prompt<{ granularity: AreaPathGranularity }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'granularity',
       message: 'Select organization level:',
       default: 'project',
@@ -86,7 +86,7 @@ export async function promptTeamSelection(
 
   const answer = await inquirer.prompt<{ team: string }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'team',
       message: 'Select team:',
       choices: options.availableTeams.map(team => ({
@@ -127,7 +127,7 @@ export async function promptAreaPathSelection(
 
   const answer = await inquirer.prompt<{ areaPath: string }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'areaPath',
       message: 'Select area path:',
       choices: filteredPaths.map(path => ({

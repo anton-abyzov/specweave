@@ -36,7 +36,7 @@ async function selectGitHubRepos(options = {}) {
 `);
   const { selectionMethod } = await inquirer.prompt([
     {
-      type: "list",
+      type: "select",
       name: "selectionMethod",
       message: "How would you like to select repositories?",
       choices: [

@@ -2,7 +2,7 @@
 increment: 0059-context-optimization-crash-prevention
 title: "Context Optimization & Crash Prevention"
 priority: P0
-status: active
+status: completed
 type: performance
 feature_id: FS-059
 ---
@@ -29,11 +29,11 @@ Claude Code crashes 10-50 seconds after starting in the SpecWeave project due to
 **So that** my AI tool doesn't crash from context overload
 
 **Acceptance Criteria**:
-- [ ] AC-US1-01: Template reduced from 2402 to ~400 lines
-- [ ] AC-US1-02: All essential instructions preserved (hooks, sync, commands)
-- [ ] AC-US1-03: Non-Claude workflow instructions maintained
-- [ ] AC-US1-04: Section index with search patterns kept
-- [ ] AC-US1-05: Critical rules and file organization preserved
+- [x] AC-US1-01: Template reduced from 2402 to ~400 lines
+- [x] AC-US1-02: All essential instructions preserved (hooks, sync, commands)
+- [x] AC-US1-03: Non-Claude workflow instructions maintained
+- [x] AC-US1-04: Section index with search patterns kept
+- [x] AC-US1-05: Critical rules and file organization preserved
 
 ### US-002: Lazy Skill Loading
 **As a** Claude Code user
@@ -41,10 +41,10 @@ Claude Code crashes 10-50 seconds after starting in the SpecWeave project due to
 **So that** startup doesn't load 117 skills (1.28 MB) upfront
 
 **Acceptance Criteria**:
-- [ ] AC-US2-01: Skills index loaded at startup (not full content)
-- [ ] AC-US2-02: Full SKILL.md loaded only on keyword match
-- [ ] AC-US2-03: Skill activation triggers documented in index
-- [ ] AC-US2-04: 80%+ reduction in initial skill context
+- [x] AC-US2-01: Skills index loaded at startup (not full content)
+- [x] AC-US2-02: Full SKILL.md loaded only on keyword match
+- [x] AC-US2-03: Skill activation triggers documented in index
+- [x] AC-US2-04: 80%+ reduction in initial skill context
 
 ### US-003: Hook Optimization
 **As a** Claude Code user
@@ -52,10 +52,10 @@ Claude Code crashes 10-50 seconds after starting in the SpecWeave project due to
 **So that** every prompt doesn't spawn multiple node processes
 
 **Acceptance Criteria**:
-- [ ] AC-US3-01: Discipline check cached for 30 seconds
-- [ ] AC-US3-02: Deduplication uses in-memory state (not node spawn)
-- [ ] AC-US3-03: Hooks skip when no .specweave/ directory
-- [ ] AC-US3-04: 90%+ reduction in hook overhead
+- [x] AC-US3-01: Discipline check cached for 30 seconds
+- [x] AC-US3-02: Deduplication uses in-memory state (not node spawn)
+- [x] AC-US3-03: Hooks skip when no .specweave/ directory
+- [x] AC-US3-04: 90%+ reduction in hook overhead
 
 ### US-004: Progressive Plugin Disclosure
 **As a** SpecWeave developer
@@ -63,10 +63,10 @@ Claude Code crashes 10-50 seconds after starting in the SpecWeave project due to
 **So that** 27 plugins don't load 24.6 MB markdown at startup
 
 **Acceptance Criteria**:
-- [ ] AC-US4-01: Plugin manifest (name, description, keywords) loaded
-- [ ] AC-US4-02: Full plugin content loaded on first use
-- [ ] AC-US4-03: Unused plugins never fully loaded
-- [ ] AC-US4-04: 80%+ reduction in plugin context at startup
+- [x] AC-US4-01: Plugin manifest (name, description, keywords) loaded
+- [x] AC-US4-02: Full plugin content loaded on first use
+- [x] AC-US4-03: Unused plugins never fully loaded
+- [x] AC-US4-04: 80%+ reduction in plugin context at startup
 
 ## Success Metrics
 

@@ -201,7 +201,7 @@ describe('E2E: CLI-First Init Flow (0049)', () => {
       expect(inquirer.prompt).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({
-            type: 'list',
+            type: 'select',
             name: 'strategy',
             default: 'import-all' // CLI-first default
           })

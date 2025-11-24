@@ -194,7 +194,7 @@ export async function discoverRepositories(
   // Step 1: Ask how to configure
   const { strategy } = await inquirer.prompt<{ strategy: BulkDiscoveryResult['strategy'] }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'strategy',
       message: 'How do you want to configure these repositories?',
       choices: [
@@ -306,7 +306,7 @@ export async function discoverRepositories(
 
     const { proceed } = await inquirer.prompt<{ proceed: 'use-discovered' | 'adjust-count' | 'manual' }>([
       {
-        type: 'list',
+        type: 'select',
         name: 'proceed',
         message: 'What would you like to do?',
         choices: [

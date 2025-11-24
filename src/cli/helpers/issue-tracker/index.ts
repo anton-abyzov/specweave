@@ -122,7 +122,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   });
 
   const { tracker } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'tracker',
     message: 'Which issue tracker do you use?',
     choices,

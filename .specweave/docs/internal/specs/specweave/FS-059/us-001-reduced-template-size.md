@@ -1,14 +1,16 @@
 ---
 id: US-001
 feature: FS-059
-title: Reduced Template Size
-status: active
+title: "Reduced Template Size"
+status: complete
 priority: P0
 created: 2025-11-24
+completed: 2025-11-24
 external:
   github:
     issue: 745
     url: https://github.com/anton-abyzov/specweave/issues/745
+    state: closed
 ---
 
 # US-001: Reduced Template Size
@@ -23,11 +25,11 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: Template reduced from 2402 to ~400 lines
-- [ ] **AC-US1-02**: All essential instructions preserved (hooks, sync, commands)
-- [ ] **AC-US1-03**: Non-Claude workflow instructions maintained
-- [ ] **AC-US1-04**: Section index with search patterns kept
-- [ ] **AC-US1-05**: Critical rules and file organization preserved
+- [x] **AC-US1-01**: Template reduced from 2402 to ~400 lines
+- [x] **AC-US1-02**: All essential instructions preserved (hooks, sync, commands)
+- [x] **AC-US1-03**: Non-Claude workflow instructions maintained
+- [x] **AC-US1-04**: Section index with search patterns kept
+- [x] **AC-US1-05**: Critical rules and file organization preserved
 
 ---
 
@@ -42,5 +44,5 @@ external:
 
 - [x] **T-001**: Analyze current template structure
 - [x] **T-002**: Create reduced AGENTS.md.template
-- [ ] **T-003**: Validate template with non-Claude tool
+- [x] **T-003**: Validate template with non-Claude tool
 - [ ] **T-012**: End-to-end crash prevention test

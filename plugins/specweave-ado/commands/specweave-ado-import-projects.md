@@ -100,7 +100,7 @@ const allProjects = result.projects;
 import { AreaPathMapper } from '../../../src/integrations/ado/area-path-mapper.js';
 
 const { selectedProject } = await inquirer.prompt([{
-  type: 'list',
+  type: 'select',
   name: 'selectedProject',
   message: 'Select ADO project to import area paths from:',
   choices: allProjects.map(p => ({ name: p.name, value: p.name }))

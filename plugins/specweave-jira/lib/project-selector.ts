@@ -103,7 +103,7 @@ export async function selectJiraProjects(
   // Decide selection method
   const { selectionMethod } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'select',
       name: 'selectionMethod',
       message: 'How would you like to select projects?',
       choices: [

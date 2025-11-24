@@ -36,9 +36,18 @@ if ! echo "$PROMPT" | grep -qE "(specweave|/specweave:|increment|add|create|impl
 fi
 
 # ==============================================================================
+# EARLY EXIT FOR NON-SPECWEAVE PROJECTS (T-006 - v0.26.15)
+# ==============================================================================
+# Even if prompt contains SpecWeave keywords, exit if no .specweave directory
+SPECWEAVE_DIR=".specweave"
+if [[ ! -d "$SPECWEAVE_DIR" ]]; then
+  echo '{"decision":"approve"}'
+  exit 0
+fi
+
+# ==============================================================================
 # CACHED ACTIVE INCREMENT DETECTION (ONCE - reused throughout!)
 # ==============================================================================
-SPECWEAVE_DIR=".specweave"
 ACTIVE_INCREMENT=""
 ACTIVE_COUNT=0
 ACTIVE_LIST=""

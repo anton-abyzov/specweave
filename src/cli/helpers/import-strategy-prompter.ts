@@ -57,7 +57,7 @@ export async function promptImportStrategy(
   // Show strategy prompt
   const strategyAnswer = await inquirer.prompt<{ strategy: ImportStrategy }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'strategy',
       message: 'How would you like to import projects?',
       default: 'import-all', // CLI-first default

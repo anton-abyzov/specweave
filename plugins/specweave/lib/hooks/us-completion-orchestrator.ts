@@ -39,6 +39,88 @@ import { USCompletionDetector } from '../../../../dist/src/core/us-completion-de
 import { LivingDocsSync } from '../../../../dist/src/core/living-docs/living-docs-sync.js';
 import { USSyncThrottle } from '../../../../dist/src/core/us-sync-throttle.js';
 import { consoleLogger } from '../vendor/utils/logger.js';
+import { spawn } from 'child_process';
+import { existsSync } from 'fs';
+import * as path from 'path';
+
+/**
+ * Trigger post-user-story-complete hook for external tool updates
+ *
+ * This bridges the orchestrator to the shell hook that handles:
+ * - GitHub issue closure with completion comment
+ * - JIRA story transition (if implemented)
+ * - ADO work item completion (if implemented)
+ *
+ * @param incrementId - Increment ID (e.g., "0059-context-optimization")
+ * @param usId - User story ID (e.g., "US-003")
+ * @param projectRoot - Project root path
+ */
+async function triggerUserStoryCompleteHook(
+  incrementId: string,
+  usId: string,
+  projectRoot: string
+): Promise<void> {
+  // Find the hook in multiple possible locations
+  const hookPaths = [
+    path.join(projectRoot, 'plugins/specweave/hooks/post-user-story-complete.sh'),
+    path.join(projectRoot, '.claude/hooks/post-user-story-complete.sh'),
+  ];
+
+  let hookPath: string | null = null;
+  for (const p of hookPaths) {
+    if (existsSync(p)) {
+      hookPath = p;
+      break;
+    }
+  }
+
+  if (!hookPath) {
+    console.log(`   ℹ️  post-user-story-complete.sh hook not found (skipping external sync)`);
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    // Call hook with spec-id and user-story-id as arguments
+    const hookProcess = spawn('bash', [hookPath, incrementId, usId], {
+      cwd: projectRoot,
+      env: {
+        ...process.env,
+        SPECWEAVE_INCREMENT_ID: incrementId,
+        SPECWEAVE_USER_STORY_ID: usId,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    hookProcess.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    hookProcess.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    hookProcess.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`Hook exited with code ${code}: ${stderr || stdout}`));
+      }
+    });
+
+    hookProcess.on('error', (error) => {
+      reject(new Error(`Hook spawn failed: ${error.message}`));
+    });
+
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      hookProcess.kill('SIGTERM');
+      reject(new Error('Hook timed out after 30s'));
+    }, 30000);
+  });
+}
 
 export interface USSyncResult {
   success: boolean;
@@ -146,9 +228,30 @@ export async function syncCompletedUserStories(incrementId: string): Promise<USS
       console.log(`   Feature: ${syncResult.featureId}`);
       console.log(`   Files updated: ${syncResult.filesCreated.length + syncResult.filesUpdated.length}`);
 
-      // External tool sync happens automatically inside livingDocsSync.syncIncrement()
-      // It calls syncToExternalTools() which handles GitHub/JIRA/ADO
-      console.log(`\n📡 External tool sync completed (GitHub/JIRA/ADO updated if configured)`);
+      // ========================================================================
+      // EXTERNAL TOOL SYNC: Close issues for completed user stories (v0.26.15)
+      // ========================================================================
+      // livingDocsSync.syncIncrement() updates CONTENT but doesn't CLOSE issues.
+      // We need to explicitly trigger post-user-story-complete hook for each US.
+      //
+      // Flow:
+      // 1. For each newly completed US
+      // 2. Call post-user-story-complete.sh with spec-id and us-id
+      // 3. Hook handles: find issue, add completion comment, close issue
+      //
+      // Gate checks happen inside the hook based on config flags.
+
+      console.log(`\n📡 Triggering external tool updates for ${newlyCompleted.length} completed user stories...`);
+
+      for (const us of newlyCompleted) {
+        try {
+          await triggerUserStoryCompleteHook(incrementId, us.usId, projectRoot);
+          console.log(`   ✅ ${us.usId}: External tool updated`);
+        } catch (hookError: any) {
+          // Non-blocking: Log but continue with next US
+          console.warn(`   ⚠️  ${us.usId}: Hook failed (${hookError.message})`);
+        }
+      }
 
       // Record successful sync for throttling
       throttle.recordSync(incrementId);

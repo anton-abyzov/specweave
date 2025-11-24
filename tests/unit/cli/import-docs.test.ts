@@ -95,7 +95,7 @@ describe('import-docs command', () => {
       await importDocs(mockProjectRoot, args);
 
       expect(mockPrompt).toHaveBeenCalledWith([{
-        type: 'list',
+        type: 'select',
         name: 'sourceType',
         message: 'Select source type:',
         choices: expect.any(Array)
@@ -226,7 +226,7 @@ describe('import-docs command', () => {
       await importDocs(mockProjectRoot, args);
 
       expect(mockPrompt).toHaveBeenCalledWith([{
-        type: 'list',
+        type: 'select',
         name: 'projectId',
         message: 'Select target project:',
         choices: expect.any(Array),

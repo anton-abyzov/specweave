@@ -139,7 +139,7 @@ export async function promptFilterCriteria(provider: FilterProvider): Promise<Fi
   // Step 1: Filter type
   const filterType = await inquirer.prompt<{ type: 'none' | 'query' | 'keys' }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'type',
       message: 'How would you like to filter projects?',
       default: 'none',

@@ -39,7 +39,7 @@ async function setupJiraCredentials() {
   }
   const answers = await inquirer.prompt([
     {
-      type: "list",
+      type: "select",
       name: "setupType",
       message: "How would you like to connect to Jira?",
       choices: [

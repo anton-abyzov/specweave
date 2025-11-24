@@ -45,6 +45,11 @@ find_project_root() {
 PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
+# ULTRA-FAST EARLY EXIT FOR NON-SPECWEAVE PROJECTS (T-006 - v0.26.15)
+if [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+  exit 0
+fi
+
 LOGS_DIR=".specweave/logs"
 DEBUG_LOG="$LOGS_DIR/hooks-debug.log"
 

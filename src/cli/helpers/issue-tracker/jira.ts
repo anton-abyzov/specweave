@@ -267,7 +267,7 @@ export async function promptJiraCredentials(
 
   // Step 1: Ask about instance type (Cloud vs Server)
   const { instanceType } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'instanceType',
     message: 'Which Jira instance are you using?',
     choices: [

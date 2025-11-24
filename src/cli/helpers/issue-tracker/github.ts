@@ -93,7 +93,7 @@ export async function promptGitHubCredentials(
 
   // Step 1: Ask about instance type (Cloud vs Enterprise)
   const { instanceType } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'instanceType',
     message: 'Which GitHub instance are you using?',
     choices: [
@@ -149,7 +149,7 @@ export async function promptGitHubCredentials(
   ];
 
   const { method } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'method',
     message: 'How would you like to authenticate?',
     choices
@@ -173,7 +173,7 @@ export async function promptGitHubCredentials(
 
       // Fallback to manual entry
       const { retryMethod } = await inquirer.prompt([{
-        type: 'list',
+        type: 'select',
         name: 'retryMethod',
         message: 'What would you like to do?',
         choices: [

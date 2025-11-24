@@ -45,16 +45,49 @@ echo "🎉 Post-User-Story-Complete Hook"
 echo "   Spec: $SPEC_ID"
 echo "   User Story: $USER_STORY_ID"
 
-# Find spec file
-SPEC_FILE=""
-if [[ -f ".specweave/docs/internal/specs/$SPEC_ID.md" ]]; then
-  SPEC_FILE=".specweave/docs/internal/specs/$SPEC_ID.md"
-elif [[ -f ".specweave/docs/internal/projects/default/specs/$SPEC_ID.md" ]]; then
-  SPEC_FILE=".specweave/docs/internal/projects/default/specs/$SPEC_ID.md"
-else
-  echo "❌ Error: Spec file not found for $SPEC_ID"
+# Find user story file in living docs
+# Input: SPEC_ID = increment ID (e.g., "0059-context-optimization-crash-prevention")
+#        USER_STORY_ID = US ID (e.g., "US-001")
+# Search in: .specweave/docs/internal/specs/**/us-*.md
+
+# STEP 1: Get feature ID from increment spec.md
+INCREMENT_SPEC=".specweave/increments/$SPEC_ID/spec.md"
+FEATURE_ID=""
+
+if [[ -f "$INCREMENT_SPEC" ]]; then
+  FEATURE_ID=$(head -20 "$INCREMENT_SPEC" | grep "^feature_id:" | head -1 | sed 's/feature_id: *//; s/ *$//' || echo "")
+fi
+
+echo "   🔍 Looking for $USER_STORY_ID in feature $FEATURE_ID"
+
+# STEP 2: Find user story file by ID AND feature
+# Prioritize files in the correct feature folder
+US_FILE=""
+while IFS= read -r file; do
+  # Check if file has matching user story ID in frontmatter
+  if head -20 "$file" 2>/dev/null | grep -q "^id: $USER_STORY_ID"; then
+    # If feature ID is known, verify the file is in the correct feature folder
+    if [[ -n "$FEATURE_ID" ]]; then
+      FILE_FEATURE=$(head -20 "$file" 2>/dev/null | grep "^feature:" | head -1 | sed 's/feature: *//; s/ *$//' || echo "")
+      if [[ "$FILE_FEATURE" == "$FEATURE_ID" ]]; then
+        US_FILE="$file"
+        break
+      fi
+    else
+      # No feature filter - take first match
+      US_FILE="$file"
+      break
+    fi
+  fi
+done < <(find .specweave/docs/internal/specs -name "us-*.md" -type f 2>/dev/null)
+
+if [[ -z "$US_FILE" ]]; then
+  echo "❌ Error: User story file not found for $USER_STORY_ID (feature: $FEATURE_ID) in increment $SPEC_ID"
   exit 1
 fi
+
+echo "   📄 Found user story file: $US_FILE"
+SPEC_FILE="$US_FILE"
 
 # Load config to check if auto-sync is enabled
 CONFIG_FILE=".specweave/config.json"
@@ -71,41 +104,48 @@ if [[ "$AUTO_SYNC" != "true" ]]; then
   exit 0
 fi
 
-# Parse spec frontmatter to detect external links
-# Check if GitHub link exists
-GITHUB_LINK=$(grep -A 10 "^externalLinks:" "$SPEC_FILE" | grep -A 5 "github:" | grep "projectId:" | sed 's/.*projectId: *//; s/ *$//' || echo "")
+# Parse user story frontmatter to detect external links
+# User story files have format:
+#   external:
+#     github:
+#       issue: 745
+#       url: https://github.com/...
 
-# Check if Jira link exists
-JIRA_LINK=$(grep -A 10 "^externalLinks:" "$SPEC_FILE" | grep -A 5 "jira:" | grep "epicKey:" | sed 's/.*epicKey: *//; s/ *$//' || echo "")
+# Extract GitHub issue number from frontmatter
+GITHUB_ISSUE=$(head -20 "$SPEC_FILE" | grep -A 5 "github:" | grep "issue:" | head -1 | sed 's/.*issue: *//; s/ *$//' || echo "")
 
-# Check if ADO link exists
-ADO_LINK=$(grep -A 10 "^externalLinks:" "$SPEC_FILE" | grep -A 5 "ado:" | grep "featureId:" | sed 's/.*featureId: *//; s/ *$//' || echo "")
+# Extract Jira issue from frontmatter
+JIRA_ISSUE=$(head -20 "$SPEC_FILE" | grep -A 5 "jira:" | grep "issue:" | head -1 | sed 's/.*issue: *//; s/ *$//' || echo "")
+
+# Extract ADO work item from frontmatter
+ADO_ITEM=$(head -20 "$SPEC_FILE" | grep -A 5 "ado:" | grep "item:" | head -1 | sed 's/.*item: *//; s/ *$//' || echo "")
 
 # Determine which provider to sync
 PROVIDER=""
-if [[ -n "$GITHUB_LINK" ]]; then
+EXTERNAL_ID=""
+if [[ -n "$GITHUB_ISSUE" ]]; then
   PROVIDER="github"
-  EXTERNAL_ID="$GITHUB_LINK"
-elif [[ -n "$JIRA_LINK" ]]; then
+  EXTERNAL_ID="$GITHUB_ISSUE"
+elif [[ -n "$JIRA_ISSUE" ]]; then
   PROVIDER="jira"
-  EXTERNAL_ID="$JIRA_LINK"
-elif [[ -n "$ADO_LINK" ]]; then
+  EXTERNAL_ID="$JIRA_ISSUE"
+elif [[ -n "$ADO_ITEM" ]]; then
   PROVIDER="ado"
-  EXTERNAL_ID="$ADO_LINK"
+  EXTERNAL_ID="$ADO_ITEM"
 fi
 
 # No external link found - skip sync
 if [[ -z "$PROVIDER" ]]; then
-  echo "   ℹ️  Spec not linked to external tool, skipping sync"
+  echo "   ℹ️  User story not linked to external tool, skipping sync"
   exit 0
 fi
 
-echo "   🔗 Detected external link: $PROVIDER"
+echo "   🔗 Detected external link: $PROVIDER (ID: $EXTERNAL_ID)"
 
 # Update external tool based on provider
 case "$PROVIDER" in
   github)
-    echo "   🔄 Updating GitHub Issue for $USER_STORY_ID..."
+    echo "   🔄 Updating GitHub Issue #$EXTERNAL_ID for $USER_STORY_ID..."
 
     # Check if GitHub CLI is available
     if ! command -v gh &> /dev/null; then
@@ -113,26 +153,37 @@ case "$PROVIDER" in
       exit 0
     fi
 
-    # Find GitHub Issue for this user story
-    # Search for issue with title pattern "[USER_STORY_ID]"
+    # Use issue number from frontmatter (EXTERNAL_ID = issue number)
+    ISSUE_NUMBER="$EXTERNAL_ID"
     REPO=$(git remote get-url origin | sed -E 's/.*github\.com[:/]([^/]+\/[^/]+)(\.git)?$/\1/')
 
-    # Search for issue
-    ISSUE_NUMBER=$(gh issue list --repo "$REPO" --search "\"[$USER_STORY_ID]\" in:title" --json number --jq '.[0].number' 2>/dev/null || echo "")
-
-    if [[ -z "$ISSUE_NUMBER" ]]; then
-      echo "   ⚠️  GitHub Issue not found for $USER_STORY_ID"
+    if [[ -z "$ISSUE_NUMBER" || "$ISSUE_NUMBER" == "null" ]]; then
+      echo "   ⚠️  No GitHub Issue number found in user story metadata"
       exit 0
     fi
 
-    echo "   📝 Found GitHub Issue #$ISSUE_NUMBER"
+    echo "   📝 Using GitHub Issue #$ISSUE_NUMBER from metadata"
 
-    # Close issue
-    gh issue close "$ISSUE_NUMBER" --repo "$REPO" --comment "✅ User story completed
+    # Check if issue is already closed
+    ISSUE_STATE=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json state --jq '.state' 2>/dev/null || echo "")
+    if [[ "$ISSUE_STATE" == "CLOSED" ]]; then
+      echo "   ✅ GitHub Issue #$ISSUE_NUMBER already closed"
+      exit 0
+    fi
 
-🤖 Auto-closed by SpecWeave hook
+    # Close issue with completion comment
+    gh issue close "$ISSUE_NUMBER" --repo "$REPO" --comment "✅ **User Story Verified Complete**
+
+📊 **Completion Status**:
+- ✅ All Acceptance Criteria satisfied
+- ✅ All implementation tasks complete
+
+**User Story**: $USER_STORY_ID
+**Increment**: $SPEC_ID
+
+🤖 Auto-closed by SpecWeave US Completion Hook
 Completed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)" 2>/dev/null || {
-      echo "   ⚠️  Failed to close issue"
+      echo "   ⚠️  Failed to close issue (may already be closed)"
       exit 0
     }
 

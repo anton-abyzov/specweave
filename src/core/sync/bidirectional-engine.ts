@@ -345,7 +345,7 @@ export class BidirectionalSyncEngine {
 
     const { resolution } = await inquirer.prompt([
       {
-        type: 'list',
+        type: 'select',
         name: 'resolution',
         message: `How should this conflict be resolved?`,
         choices: [

@@ -100,7 +100,7 @@ describe('T-044: Methodology Selection', () => {
     it('should default to Agile when no selection is made', () => {
       // The inquirer prompt has default: 'agile' configured
       const promptConfig = {
-        type: 'list',
+        type: 'select',
         name: 'methodology',
         message: 'How will your team work?',
         default: 'agile'
