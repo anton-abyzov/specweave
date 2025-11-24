@@ -180,11 +180,11 @@ export class PlanCommandOrchestrator {
     incrementId: string
   ): Promise<{ from: IncrementStatus; to: IncrementStatus } | undefined> {
     try {
-      const metadata = MetadataManager.read(incrementId);
+      const metadata = MetadataManager.read(incrementId, this.projectRoot);
 
       // Transition PLANNING → ACTIVE (tasks.md now exists)
       if (metadata.status === IncrementStatus.PLANNING) {
-        MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
+        MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE, this.projectRoot);
 
         return {
           from: IncrementStatus.PLANNING,
