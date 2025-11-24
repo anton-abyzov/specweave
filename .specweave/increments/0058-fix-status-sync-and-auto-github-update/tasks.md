@@ -2,7 +2,7 @@
 increment: 0058-fix-status-sync-and-auto-github-update
 status: active
 estimated_tasks: 12
-completed_tasks: 0
+completed_tasks: 12
 ---
 
 # Implementation Tasks
@@ -12,7 +12,7 @@ completed_tasks: 0
 ### T-001: Fix increment-reopener to use updateStatus()
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Replace direct `metadata.status` assignment with `MetadataManager.updateStatus()` call in `reopenIncrement()`.
@@ -51,7 +51,7 @@ describe('IncrementReopener', () => {
 ### T-002: Add reopen desync test
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-03, AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Add comprehensive test coverage for reopen desync scenario.
@@ -107,7 +107,7 @@ describe('Reopen Desync Prevention', () => {
 ### T-003: Update increment-reopener documentation
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P2
 
 Add JSDoc comments explaining the sync behavior.
@@ -119,7 +119,7 @@ Add JSDoc comments explaining the sync behavior.
 ### T-004: Create StatusChangeSyncTrigger class
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Create a new class to handle automatic sync on status changes.
@@ -248,7 +248,7 @@ describe('StatusChangeSyncTrigger', () => {
 ### T-005: Create SyncCircuitBreaker class
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-02, AC-US3-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Implement circuit breaker pattern to prevent sync storms.
@@ -364,7 +364,7 @@ describe('SyncCircuitBreaker', () => {
 ### T-006: Integrate trigger into MetadataManager.updateStatus()
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-04, AC-US2-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Add StatusChangeSyncTrigger call to updateStatus() method.
@@ -468,20 +468,35 @@ describe('MetadataManager.updateStatus with auto-sync', () => {
 ### T-007: Add error handling and logging
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-04, AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 
 Add comprehensive error handling with user-friendly messages.
+
+**Completed**: Error handling is comprehensive in StatusChangeSyncTrigger:
+- Try-catch blocks with detailed logging (lines 64-69, 122-134)
+- Circuit breaker integration prevents sync storms
+- User-friendly error messages with recovery instructions
+- Non-blocking execution ensures status updates never fail
+- Logger abstraction for testing
 
 ---
 
 ### T-008: Add diagnostics command
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P2
 
 Create `/specweave:sync-diagnostics` to show circuit breaker state.
+
+**Completed**: Implemented `/specweave:sync-diagnostics` command:
+- Shows circuit breaker state (closed/open/half-open)
+- Displays failure count and last failure timestamp
+- Shows auto-reset countdown
+- Lists active increments with sync status
+- Provides troubleshooting guidance
+- File: `plugins/specweave/commands/sync-diagnostics.md`
 
 ---
 
@@ -490,17 +505,25 @@ Create `/specweave:sync-diagnostics` to show circuit breaker state.
 ### T-009: Unit tests for circuit breaker
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-02, AC-US3-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Comprehensive unit tests for SyncCircuitBreaker (see T-005 for tests).
+
+**Completed**: Comprehensive test suite with 20+ test cases:
+- State transitions (closed → open → half-open → closed)
+- Failure threshold (opens after 3 failures)
+- Auto-reset after 5 minutes
+- Manual reset functionality
+- Edge cases and rapid failures
+- File: `tests/unit/increment/sync-circuit-breaker.test.ts`
 
 ---
 
 ### T-010: Integration tests for auto-sync
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Integration tests for end-to-end sync flow.
@@ -544,7 +567,7 @@ describe('Auto-Sync Integration', () => {
 ### T-011: E2E test: Create → Activate → Complete → GitHub
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P1
 
 Full E2E test covering entire increment lifecycle with GitHub sync.
@@ -554,10 +577,19 @@ Full E2E test covering entire increment lifecycle with GitHub sync.
 ### T-012: Crash resistance test
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 
 Test that sync failures don't crash Claude Code.
+
+**Completed**: Integration test suite verifying crash resistance:
+- Status updates always succeed even if sync fails
+- Circuit breaker opens after repeated failures
+- System remains operational during GitHub downtime
+- Manual sync fallback works
+- User-friendly error messages
+- No error leakage to calling code
+- File: `tests/integration/increment/crash-resistance.test.ts`
 
 **Test Coverage**:
 ```typescript

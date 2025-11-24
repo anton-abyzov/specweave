@@ -35,11 +35,26 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
   const incrementId = '0001-project-setup';
   const incrementPath = path.join(projectPath, '.specweave', 'increments', incrementId);
 
+  // Read config to get testMode and coverageTarget defaults
+  const configPath = path.join(projectPath, '.specweave', 'config.json');
+  let testMode: 'TDD' | 'test-after' | 'manual' = 'test-after';
+  let coverageTarget = 80;
+
+  if (fs.existsSync(configPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      testMode = config?.testing?.defaultTestMode || 'test-after';
+      coverageTarget = config?.testing?.defaultCoverageTarget || 80;
+    } catch (error) {
+      // Fallback to defaults if config reading fails
+    }
+  }
+
   // Create increment directory
   fs.ensureDirSync(incrementPath);
 
-  // Generate spec.md
-  const specContent = generateSpecMd(projectName, techStack);
+  // Generate spec.md (pass testMode and coverageTarget)
+  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget);
   fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent, 'utf-8');
 
   // Generate plan.md
@@ -50,15 +65,15 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
   const tasksContent = generateTasksMd(projectName, techStack);
   fs.writeFileSync(path.join(incrementPath, 'tasks.md'), tasksContent, 'utf-8');
 
-  // Generate metadata.json
+  // Generate metadata.json (use values from config)
   const metadata: IncrementMetadata = {
     id: incrementId,
     type: IncrementType.FEATURE,
     status: IncrementStatus.ACTIVE,
     created: new Date().toISOString().split('T')[0],
     lastActivity: new Date().toISOString().split('T')[0],
-    testMode: 'test-after',
-    coverageTarget: 80
+    testMode: testMode,  // FROM CONFIG!
+    coverageTarget: coverageTarget  // FROM CONFIG!
   };
 
   // Write metadata using explicit rootDir parameter (no process.chdir needed!)
@@ -70,7 +85,12 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
 /**
  * Generate spec.md content
  */
-function generateSpecMd(projectName: string, techStack?: string): string {
+function generateSpecMd(
+  projectName: string,
+  techStack: string | undefined,
+  testMode: 'TDD' | 'test-after' | 'manual',
+  coverageTarget: number
+): string {
   const techStackSection = techStack
     ? `**Tech Stack**: ${techStack}\n`
     : '';
@@ -83,8 +103,8 @@ priority: P0
 status: active
 created: ${new Date().toISOString().split('T')[0]}
 epic: SETUP-001
-test_mode: test-after
-coverage_target: 80
+test_mode: ${testMode}
+coverage_target: ${coverageTarget}
 ---
 
 # Feature: Project Setup
@@ -130,6 +150,17 @@ ${techStackSection}
 2. Run \`/specweave:plan\` to generate implementation tasks
 3. Run \`/specweave:do\` to start working on tasks
 4. Create your first feature with \`/specweave:increment "your-feature"\`
+
+**Folder Organization**:
+Keep increment root clean - only these files allowed at root:
+- \`spec.md\`, \`plan.md\`, \`tasks.md\`, \`metadata.json\`
+
+Everything else goes in subfolders:
+- \`reports/\` - Completion reports, investigation findings
+- \`scripts/\` - Helper scripts, automation tools
+- \`logs/\` - Debug logs, execution traces
+- \`backups/\` - Backup files
+- \`docs/\` - Additional documentation
 
 You can also delete this increment if you prefer to start fresh:
 - Delete \`.specweave/increments/0001-project-setup/\`
@@ -184,6 +215,10 @@ Next actions:
 ## Notes
 
 This is a placeholder plan created by \`specweave init\`.
+
+**Folder Organization Reminder**:
+- Keep increment root clean: only spec.md, plan.md, tasks.md, metadata.json
+- Use subfolders: reports/, scripts/, logs/, backups/, docs/
 
 **Recommended**: Create a new increment for your first real feature instead of using this setup increment.
 `;
@@ -256,6 +291,17 @@ Keep this increment and add your own tasks:
 /specweave:plan  # Regenerate tasks based on updated spec.md
 /specweave:do    # Start working on tasks
 \`\`\`
+
+**Folder Organization Tip**:
+As you work on increments, keep the root clean. Only these files should be at increment root:
+- spec.md, plan.md, tasks.md, metadata.json
+
+Put everything else in subfolders:
+- reports/ (completion reports, summaries)
+- scripts/ (helper scripts, tools)
+- logs/ (debug logs, traces)
+- backups/ (backup files)
+- docs/ (additional documentation)
 
 **Recommended**: Go with Option 1 and create meaningful increments for your project!
 `;

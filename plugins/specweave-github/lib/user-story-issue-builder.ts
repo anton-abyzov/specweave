@@ -23,7 +23,7 @@ interface UserStoryFrontmatter {
   id: string;
   feature: string;
   title: string;
-  status: 'complete' | 'active' | 'planning' | 'not-started';
+  status: 'complete' | 'completed' | 'active' | 'in-progress' | 'planning' | 'not-started';
   project?: string;  // ✅ Optional - not all user stories specify project
   priority?: string;
   created: string;
@@ -557,13 +557,41 @@ export class UserStoryIssueBuilder {
 
   /**
    * Build labels for the issue
+   *
+   * CRITICAL: Label names must match repository labels exactly!
+   * Repository uses: status:complete, status:active, status:not_started
    */
   private buildLabels(frontmatter: UserStoryFrontmatter): string[] {
     const labels: string[] = ['user-story', 'specweave'];
 
-    // Add status label
+    // Add status label with proper mapping
+    // Map living docs status values to GitHub repository label names
     if (frontmatter.status) {
-      labels.push(`status:${frontmatter.status}`);
+      let statusLabel: string;
+
+      // Map status values to correct GitHub labels
+      switch (frontmatter.status) {
+        case 'completed':
+        case 'complete':
+          statusLabel = 'status:complete'; // Repository uses "complete" not "completed"
+          break;
+
+        case 'active':
+        case 'in-progress':
+          statusLabel = 'status:active'; // Repository uses "active" not "in-progress"
+          break;
+
+        case 'planning':
+        case 'not-started':
+          statusLabel = 'status:not_started'; // Note: underscore, not dash!
+          break;
+
+        default:
+          // Defensive: Use original value if unknown
+          statusLabel = `status:${frontmatter.status}`;
+      }
+
+      labels.push(statusLabel);
     }
 
     // Add priority label

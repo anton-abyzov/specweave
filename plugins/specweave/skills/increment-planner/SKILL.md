@@ -92,7 +92,7 @@ Every increment MUST have `metadata.json` or:
 - ❌ External sync fails (GitHub/Jira/ADO)
 - ❌ All increment commands fail
 
-**Complete template**:
+**Complete template** (values from `.specweave/config.json`):
 ```json
 {
   "id": "0001-feature-name",
@@ -101,13 +101,15 @@ Every increment MUST have `metadata.json` or:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "TDD",
-  "coverageTarget": 95,
+  "testMode": "<FROM config.testing.defaultTestMode OR 'TDD'>",
+  "coverageTarget": <FROM config.testing.defaultCoverageTarget OR 95>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
 }
 ```
+
+**NOTE**: Always read `testMode` and `coverageTarget` from config, don't hardcode!
 
 ### 4. Increment Structure
 
@@ -125,6 +127,23 @@ Every increment MUST have `metadata.json` or:
 ---
 
 ## Workflow (Safe, Self-Contained)
+
+### STEP 0: Read Config Values (MANDATORY)
+
+**Read testing configuration from `.specweave/config.json`**:
+
+```bash
+# Read testMode (default: "TDD")
+testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"')
+
+# Read coverageTarget (default: 95)
+coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95')
+
+echo "Using testMode: $testMode"
+echo "Using coverageTarget: $coverageTarget"
+```
+
+**Store these values for use in STEP 4 and STEP 7!**
 
 ### STEP 1: Get Next Increment Number
 
@@ -166,8 +185,8 @@ priority: P1
 status: planned
 created: 2025-11-24
 structure: user-stories
-test_mode: TDD
-coverage_target: 95
+test_mode: <VALUE FROM config.testing.defaultTestMode OR 'TDD'>
+coverage_target: <VALUE FROM config.testing.defaultCoverageTarget OR 95>
 ---
 
 # Feature: [Title]
@@ -324,6 +343,14 @@ Create `.specweave/increments/0021-feature-name/tasks.md`:
 
 ### STEP 7: Create metadata.json (MANDATORY)
 
+**IMPORTANT**: Read `testMode` and `coverageTarget` from `.specweave/config.json`:
+
+```bash
+# Read config to get defaultTestMode and defaultCoverageTarget
+cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"'
+cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95'
+```
+
 Create `.specweave/increments/0021-feature-name/metadata.json`:
 
 ```json
@@ -334,8 +361,8 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "TDD",
-  "coverageTarget": 95,
+  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'TDD'>",
+  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 95>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
@@ -343,6 +370,29 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
 ```
 
 **Use Write tool to create this file immediately after creating increment.**
+
+**Example Logic**:
+```javascript
+// Read config
+const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
+const testMode = config?.testing?.defaultTestMode || 'TDD';
+const coverageTarget = config?.testing?.defaultCoverageTarget || 95;
+
+// Create metadata with config values
+const metadata = {
+  id: "0021-feature-name",
+  status: "planned",
+  type: "feature",
+  priority: "P1",
+  created: new Date().toISOString(),
+  lastActivity: new Date().toISOString(),
+  testMode: testMode,  // ← FROM CONFIG!
+  coverageTarget: coverageTarget,  // ← FROM CONFIG!
+  feature_id: null,
+  epic_id: null,
+  externalLinks: {}
+};
+```
 
 ### STEP 8: Guide User to Complete Planning
 

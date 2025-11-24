@@ -1042,14 +1042,47 @@ export class LivingDocsSync {
       const { GitHubClientV2 } = await import('../../../plugins/specweave-github/lib/github-client-v2.js');
       const { GitHubFeatureSync } = await import('../../../plugins/specweave-github/lib/github-feature-sync.js');
 
-      // Load GitHub config from environment
+      // CRITICAL FIX (2025-11-24): Load GitHub config from config.json FIRST, then environment
+      // Bug: Was only reading from env vars, ignoring config.json completely
+      const configPath = path.join(this.projectRoot, '.specweave/config.json');
+      let owner = process.env.GITHUB_OWNER || '';
+      let repo = process.env.GITHUB_REPO || '';
+      const token = process.env.GITHUB_TOKEN || '';
+
+      if (existsSync(configPath)) {
+        try {
+          const config = await readJson(configPath);
+          // Method 1: Read from config.sync.github (most common)
+          if (config.sync?.github?.owner && config.sync?.github?.repo) {
+            owner = config.sync.github.owner;
+            repo = config.sync.github.repo;
+            this.logger.log(`   📝 Using GitHub config: ${owner}/${repo}`);
+          }
+          // Method 2: Read from multiProject.projects[activeProject].externalTools.github
+          else if (config.multiProject?.enabled && config.multiProject?.activeProject) {
+            const activeProject = config.multiProject.activeProject;
+            const projectConfig = config.multiProject.projects?.[activeProject];
+            if (projectConfig?.externalTools?.github?.repository) {
+              const repoParts = projectConfig.externalTools.github.repository.split('/');
+              if (repoParts.length === 2) {
+                owner = repoParts[0];
+                repo = repoParts[1];
+                this.logger.log(`   📝 Using GitHub config (multiProject): ${owner}/${repo}`);
+              }
+            }
+          }
+        } catch (error) {
+          this.logger.warn(`   ⚠️  Failed to read config.json, using environment variables`);
+        }
+      }
+
       const profile = {
         provider: 'github' as const,
         displayName: 'GitHub',
         config: {
-          owner: process.env.GITHUB_OWNER || '',
-          repo: process.env.GITHUB_REPO || '',
-          token: process.env.GITHUB_TOKEN || ''
+          owner,
+          repo,
+          token
         },
         timeRange: {
           default: '1M' as const,  // 1 month
@@ -1057,8 +1090,13 @@ export class LivingDocsSync {
         }
       };
 
-      if (!profile.config.token || !profile.config.owner || !profile.config.repo) {
-        this.logger.warn(`   ⚠️  GitHub credentials not configured (GITHUB_TOKEN, GITHUB_OWNER, GITHUB_REPO)`);
+      if (!profile.config.token) {
+        this.logger.warn(`   ⚠️  GITHUB_TOKEN not found in .env file`);
+        return;
+      }
+      if (!profile.config.owner || !profile.config.repo) {
+        this.logger.warn(`   ⚠️  GitHub owner/repo not configured in config.json`);
+        this.logger.warn(`   💡 Set sync.github.owner and sync.github.repo in .specweave/config.json`);
         return;
       }
 

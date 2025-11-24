@@ -12,7 +12,7 @@ lastUpdated: 2025-11-24
 
 ## Overview
 
-**Complete Requirements**: See [FS-049: Automatic GitHub Sync with Permission Gates](../../docs/internal/specs/_features/FS-049/FEATURE.md)
+**Complete Requirements**: See [FS-049: Automatic GitHub Sync with Permission Gates](../_archive/FS-049/FEATURE.md)
 
 ## Implementation History
 

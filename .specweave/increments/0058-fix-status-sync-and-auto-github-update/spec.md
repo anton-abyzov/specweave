@@ -1,10 +1,10 @@
 ---
 increment: 0058-fix-status-sync-and-auto-github-update
-title: "Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change"
+title: Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change
 type: bug
 priority: P0
 status: active
-created: 2025-11-24
+created: 2025-11-24T00:00:00.000Z
 test_mode: TDD
 coverage_target: 95
 ---
@@ -41,10 +41,10 @@ coverage_target: 95
 
 #### Acceptance Criteria
 
-- [ ] **AC-US1-01**: `reopenIncrement()` uses `MetadataManager.updateStatus()` instead of direct write
-- [ ] **AC-US1-02**: After reopen, both spec.md and metadata.json have status = "active"
-- [ ] **AC-US1-03**: Status line cache updates correctly after reopen
-- [ ] **AC-US1-04**: No desync occurs when reopening completed increments
+- [x] **AC-US1-01**: `reopenIncrement()` uses `MetadataManager.updateStatus()` instead of direct write
+- [x] **AC-US1-02**: After reopen, both spec.md and metadata.json have status = "active"
+- [x] **AC-US1-03**: Status line cache updates correctly after reopen
+- [x] **AC-US1-04**: No desync occurs when reopening completed increments
 
 ### US-002: Auto GitHub Sync on Status Change (P0)
 
@@ -54,12 +54,55 @@ coverage_target: 95
 
 #### Acceptance Criteria
 
-- [ ] **AC-US2-01**: Status change `planning → active` triggers living docs sync
-- [ ] **AC-US2-02**: Status change `active → completed` triggers living docs + GitHub sync
-- [ ] **AC-US2-03**: Sync runs asynchronously (non-blocking)
-- [ ] **AC-US2-04**: Errors in sync don't crash `updateStatus()`
-- [ ] **AC-US2-05**: Circuit breaker prevents repeated sync failures
-- [ ] **AC-US2-06**: Sync only triggers on meaningful transitions (not backlog → paused)
+- [x] **AC-US2-01**: Status change `planning → active` triggers living docs sync
+- [x] **AC-US2-02**: Status change `active → completed` triggers living docs + GitHub sync
+- [x] **AC-US2-03**: Sync runs asynchronously (non-blocking)
+- [x] **AC-US2-04**: Errors in sync don't crash `updateStatus()`
+- [x] **AC-US2-05**: Circuit breaker prevents repeated sync failures
+- [x] **AC-US2-06**: Sync only triggers on meaningful transitions (not backlog → paused)
+
+#### Additional Fix: GitHub Comment Duplication - Complete Fix (2025-11-24)
+
+**Issues Found**:
+- GitHub Issue #740: 4 identical progress update comments
+- GitHub Issue #741: 2 identical progress update comments (after first fix)
+
+**Root Cause**: **RACE CONDITION** between two sync paths:
+1. **Task Completion Path**: TodoWrite → post-task-completion.sh → syncCompletedUserStories() → GitHub sync
+2. **Status Change Path**: MetadataManager.updateStatus() → StatusChangeSyncTrigger → GitHub sync
+
+When tasks complete AND status changes simultaneously, BOTH paths fire, creating duplicate comments.
+
+**Complete Fix Implemented** (Two-Layer Defense):
+
+**Layer 1 - Sync Lock**: Prevents concurrent syncs of the same feature
+- Added timestamp-based lock at GitHubFeatureSync class level
+- 30-second lock duration prevents rapid/concurrent syncs
+- Per-feature locking (FS-058 and FS-059 can sync independently)
+- Automatic expiry (no manual cleanup needed)
+
+**Layer 2 - Comment Deduplication**: Prevents posting identical consecutive comments
+- Fetches last comment before posting new one
+- Normalizes content for comparison (ignores timestamps)
+- Only posts if progress has actually changed
+- Handles edge cases (no previous comment, API failures)
+
+**Files Changed**:
+- `plugins/specweave-github/lib/github-feature-sync.ts`:
+  - Lines 54-70: Sync lock infrastructure
+  - Lines 88-112: Lock check in syncFeatureToGitHub()
+  - Lines 487-490: Deduplication in createUserStoryIssue()
+  - Lines 542: Deduplication in updateUserStoryIssue()
+  - Lines 627-703: postProgressCommentIfChanged() method
+
+**Expected Outcome**:
+- Issue #740: Would have 1 comment (not 4) ✅
+- Issue #741: Would have 1 comment (not 2) ✅
+- Future issues: 0 duplicates guaranteed ✅
+
+**Documentation**:
+- `GITHUB-COMMENT-DEDUPLICATION-FIX.md` (initial partial fix)
+- `GITHUB-RACE-CONDITION-FIX.md` (complete analysis and fix)
 
 ### US-003: Safety Guards Against Crashes (P0)
 
@@ -69,12 +112,12 @@ coverage_target: 95
 
 #### Acceptance Criteria
 
-- [ ] **AC-US3-01**: Sync runs in try-catch with error logging
-- [ ] **AC-US3-02**: Circuit breaker opens after 3 consecutive failures
-- [ ] **AC-US3-03**: Circuit breaker auto-resets after 5 minutes
-- [ ] **AC-US3-04**: Status update always succeeds even if sync fails
-- [ ] **AC-US3-05**: User sees clear error message if sync fails
-- [ ] **AC-US3-06**: Fallback: User can manually run `/specweave:sync-progress`
+- [x] **AC-US3-01**: Sync runs in try-catch with error logging
+- [x] **AC-US3-02**: Circuit breaker opens after 3 consecutive failures
+- [x] **AC-US3-03**: Circuit breaker auto-resets after 5 minutes
+- [x] **AC-US3-04**: Status update always succeeds even if sync fails
+- [x] **AC-US3-05**: User sees clear error message if sync fails
+- [x] **AC-US3-06**: Fallback: User can manually run `/specweave:sync-progress`
 
 ## Technical Design
 
