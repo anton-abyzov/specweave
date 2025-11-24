@@ -212,8 +212,11 @@ export class CompletionCalculator {
    * Process:
    * 1. Find increment link in user story's "Implementation" section
    * 2. Read increment's tasks.md
-   * 3. Filter tasks that reference this user story's ACs
+   * 3. Filter tasks that reference this user story (via **User Story** field OR AC-IDs)
    * 4. Extract completion status from **Status**: [x] or [ ]
+   *
+   * IMPORTANT: Checks **User Story** field FIRST (handles multi-story tasks like "US-001, US-002"),
+   * then falls back to AC-based filtering. Also handles "Satisfies ACs: All" correctly.
    */
   private async extractTasks(userStoryContent: string, userStoryId: string): Promise<Task[]> {
     const tasks: Task[] = [];
@@ -252,12 +255,20 @@ export class CompletionCalculator {
 
     const tasksContent = await readFile(tasksPath, 'utf-8');
 
-    // Extract tasks that reference this User Story via AC-IDs
+    // Normalize the current user story ID for comparison
+    // Handles: "US-001", "US-1", "US001", "001"
+    const normalizeUsId = (id: string): string => {
+      const num = id.replace(/^US-?0*/, ''); // Remove "US-", "US", and leading zeros
+      return `US-${num.padStart(3, '0')}`; // Normalize to "US-001" format
+    };
+    const normalizedCurrentUs = normalizeUsId(userStoryId);
+
+    // Extract tasks that reference this User Story
     // Pattern:
     // ### T-001: Task Title
-    // **User Story**: ...
-    // **Status**: [x] (100% - Completed) or [ ] (0% - Not started)
-    // **AC**: AC-US1-01, AC-US1-02
+    // **User Story**: US-001, US-002  ← Check this FIRST!
+    // **Satisfies ACs**: AC-US1-01, AC-US1-02 (or "All")
+    // **Status**: [x] completed
     const taskPattern = /###?\s+(T-\d+):\s*([^\n]+)\n([\s\S]*?)(?=\n###?\s+T-\d+:|$)/g;
     let match;
 
@@ -266,34 +277,41 @@ export class CompletionCalculator {
       const taskTitle = match[2].trim();
       const taskBody = match[3];
 
-      // Extract AC list (support both old and new field names)
-      const acMatch = taskBody.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*([^\n]+)/);
-      if (!acMatch) {
-        continue; // Skip tasks without AC field
+      // PRIORITY 1: Check **User Story** field directly (handles multi-story tasks!)
+      // Pattern: **User Story**: US-001, US-002, US-003
+      const userStoryFieldMatch = taskBody.match(/\*\*User Story\*\*:\s*([^\n]+)/);
+      let belongsToThisUS = false;
+
+      if (userStoryFieldMatch) {
+        const userStoryList = userStoryFieldMatch[1].trim();
+        // Split by comma and check if any matches current user story
+        const userStoryIds = userStoryList.split(',').map((us) => us.trim());
+        belongsToThisUS = userStoryIds.some((usId) => {
+          return normalizeUsId(usId) === normalizedCurrentUs;
+        });
       }
-      const acList = acMatch[1].trim();
 
-      // Check if any AC in this task belongs to current User Story
-      // AC-US1-01 → US-001
-      // AC-US001-01 → US-001
-      const acIds = acList.split(',').map((ac) => ac.trim());
-      const belongsToThisUS = acIds.some((acId) => {
-        // Extract US ID from AC-ID
-        // AC-US1-01 → US1 → US-001
-        // AC-US001-01 → US001 → US-001
-        const usMatch = acId.match(/AC-([A-Z]+\d+)-/);
-        if (!usMatch) return false;
+      // PRIORITY 2: Fall back to AC-based filtering (legacy support)
+      if (!belongsToThisUS) {
+        const acMatch = taskBody.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*([^\n]+)/);
+        if (acMatch) {
+          const acList = acMatch[1].trim();
 
-        // Normalize to US-XXX format (pad with zeros)
-        const extractedUsId = usMatch[1]; // e.g., "US1" or "US001"
-        const extractedNum = extractedUsId.replace(/^US/, ''); // "1" or "001"
-        const normalizedExtracted = `US-${extractedNum.padStart(3, '0')}`; // "US-001"
+          // Handle special "All" case - if "All", include task if User Story field matched
+          // (already handled above), otherwise skip AC-based check for "All"
+          if (acList.toLowerCase() !== 'all') {
+            const acIds = acList.split(',').map((ac) => ac.trim());
+            belongsToThisUS = acIds.some((acId) => {
+              // Extract US ID from AC-ID: AC-US1-01 → US-001
+              const usMatch = acId.match(/AC-([A-Z]+\d+)-/);
+              if (!usMatch) return false;
 
-        const currentNum = userStoryId.replace(/^US-?/, ''); // "001" or "1"
-        const normalizedCurrent = `US-${currentNum.padStart(3, '0')}`; // "US-001"
-
-        return normalizedExtracted === normalizedCurrent;
-      });
+              const extractedUsId = usMatch[1]; // e.g., "US1" or "US001"
+              return normalizeUsId(extractedUsId) === normalizedCurrentUs;
+            });
+          }
+        }
+      }
 
       if (!belongsToThisUS) {
         continue;
@@ -302,6 +320,10 @@ export class CompletionCalculator {
       // ✅ Extract completion status from **Status**: [x] or [ ]
       const statusMatch = taskBody.match(/\*\*Status\*\*:\s*\[([x ])\]/);
       const completed = statusMatch ? statusMatch[1] === 'x' : false;
+
+      // Extract AC list for userStories field (for backward compatibility)
+      const acMatch = taskBody.match(/\*\*(?:Satisfies ACs?|AC)\*\*:\s*([^\n]+)/);
+      const acIds = acMatch ? acMatch[1].trim().split(',').map((ac) => ac.trim()) : [];
 
       tasks.push({
         id: taskId,
