@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 import { syncSpecs } from '../../../src/cli/commands/sync-specs.js';

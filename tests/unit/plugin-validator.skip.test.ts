@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { PluginValidator, PLUGIN_KEYWORDS } from '../../src/utils/plugin-validator.js';

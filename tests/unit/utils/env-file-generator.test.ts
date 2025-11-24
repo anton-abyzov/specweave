@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Test Coverage Target: 85%
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import {
   generateEnvFile,
   envFileExists,

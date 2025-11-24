@@ -7,7 +7,7 @@
 import { runProjectManagerBenchmarks } from './project-manager.bench';
 import { runBrownfieldImportBenchmarks } from './brownfield-import.bench';
 import { runAnalyzerBenchmarks } from './analyzer.bench';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';

@@ -6,7 +6,7 @@
  * Critical for ensuring status line always reflects reality.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import { Logger, consoleLogger } from '../utils/logger.js';
 

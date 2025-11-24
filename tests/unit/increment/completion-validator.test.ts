@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { IncrementCompletionValidator, ValidationResult } from '../../../src/core/increment/completion-validator.js';

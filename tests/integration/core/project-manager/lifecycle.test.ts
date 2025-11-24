@@ -8,7 +8,7 @@
 import { ProjectManager, ProjectContext } from '../../src/core/project-manager.js';
 import { ConfigManager } from '../../src/core/config-manager.js';
 import { withTempDir } from '../../utils/temp-dir.js';
-import fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 
 describe('ProjectManager - Full Lifecycle (Integration)', () => {

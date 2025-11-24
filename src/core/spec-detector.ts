@@ -7,7 +7,7 @@
  * - Parent coordination specs (_parent project)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { detectSpecIdentifier, SpecContent } from './spec-identifier-detector.js';

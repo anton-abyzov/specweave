@@ -5,7 +5,7 @@
  * and that increment vs spec lifecycles are properly separated.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import * as yaml from 'yaml';

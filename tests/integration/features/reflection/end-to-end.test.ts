@@ -9,7 +9,7 @@
  * 5. Storage
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';

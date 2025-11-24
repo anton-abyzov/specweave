@@ -6,7 +6,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import * as fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { IncrementStatus, IncrementType } from '../../src/core/types/increment-metadata.js';

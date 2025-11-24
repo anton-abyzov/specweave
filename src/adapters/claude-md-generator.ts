@@ -14,7 +14,7 @@
 
 import { DocGenerator } from './doc-generator.js';
 import * as path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import { getDirname } from '../utils/esm-helpers.js';
 
 const __dirname = getDirname(import.meta.url);

@@ -12,7 +12,7 @@ import {
   DEFAULT_IMPORT_CONFIG
 } from '../../../src/config/import-config.js';
 import type { ImportConfig, ProjectConfig } from '../../../src/config/import-config.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 

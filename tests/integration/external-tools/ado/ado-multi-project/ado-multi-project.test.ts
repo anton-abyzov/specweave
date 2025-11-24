@@ -9,7 +9,7 @@
  * - Cross-project dependencies
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { AdoProjectDetector } from '../../plugins/specweave-ado/lib/ado-project-detector.js';

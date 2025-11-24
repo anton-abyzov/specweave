@@ -7,7 +7,7 @@
  * CRITICAL: Import this file in jest.setup.ts to enable global protection.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../src/utils/fs-native.js';
 import * as path from 'path';
 
 // Store original fs.remove and fs.rm functions

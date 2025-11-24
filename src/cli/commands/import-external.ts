@@ -13,7 +13,7 @@ import { loadSyncMetadata, getLastImportTimestamp } from '../../sync/sync-metada
 import { RateLimiter, type RateLimitInfo } from '../../importers/rate-limiter.js';
 import { shouldConfirmLargeImport } from '../../importers/rate-limiter.js';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import type { ExternalItem } from '../../importers/external-importer.js';
 
 // NOTE: This CLI import command is primarily user-facing output (console.log/console.error).

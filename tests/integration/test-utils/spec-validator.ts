@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import matter from 'gray-matter';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 

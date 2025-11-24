@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { MetadataManager, MetadataError } from '../../../src/core/increment/metadata-manager.js';
 import { IncrementStatus, IncrementType, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
 import { ActiveIncrementManager } from '../../../src/core/increment/active-increment-manager.js';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 

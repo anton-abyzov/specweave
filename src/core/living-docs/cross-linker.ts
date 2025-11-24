@@ -6,7 +6,7 @@
  * @module living-docs/cross-linker
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { DistributionResult, DistributedFile } from './content-distributor.js';
 import { ContentCategory } from './content-classifier.js';

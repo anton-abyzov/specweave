@@ -5,7 +5,7 @@
  * for testing duplicate detection and conflict resolution.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import * as path from 'path';
 import { tmpdir } from 'os';
 import { IncrementStatus } from '../../src/core/types/increment-metadata.js';

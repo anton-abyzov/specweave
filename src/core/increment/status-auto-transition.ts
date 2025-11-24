@@ -9,7 +9,7 @@
  * Part of increment 0039: Ultra-Smart Next Command
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';

@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * marketplace symlink issues and prevent hook errors.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { execSync } from 'child_process';

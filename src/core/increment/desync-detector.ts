@@ -11,7 +11,7 @@
  * CLAUDE.md Rule #7: spec.md and metadata.json are BOTH source of truth and MUST stay in sync.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { IncrementStatus } from '../types/increment-metadata.js';

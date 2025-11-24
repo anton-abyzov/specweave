@@ -13,7 +13,7 @@
  */
 
 import * as path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import { AgentsMdGenerator } from '../agents-md-generator.js';

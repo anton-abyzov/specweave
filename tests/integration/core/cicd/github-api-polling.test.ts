@@ -6,7 +6,7 @@
 
 import { WorkflowMonitor } from '../../src/core/cicd/workflow-monitor.js';
 import { StateManager } from '../../src/core/cicd/state-manager.js';
-import * as fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 
 // Mock Octokit for integration tests

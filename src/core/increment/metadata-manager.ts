@@ -5,7 +5,7 @@
  * Part of increment 0007: Smart Status Management
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import {

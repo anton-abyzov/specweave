@@ -13,7 +13,7 @@
  * Supports: Windows 10+, macOS 10.15+, Linux (Ubuntu, Debian, RHEL, etc.)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import yaml from 'js-yaml';
 

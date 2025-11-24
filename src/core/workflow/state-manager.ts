@@ -9,7 +9,7 @@
  * @since v0.22.0
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { WorkflowPhase } from './types.js';
 

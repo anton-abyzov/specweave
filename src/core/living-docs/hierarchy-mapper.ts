@@ -19,7 +19,7 @@
  * @version 4.0.0 (Universal Hierarchy with FS-XXX)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { ConfigManager } from '../config-manager.js';
 import { SpecweaveConfig, MultiProjectConfig, ProjectConfig } from '../types/config.js';

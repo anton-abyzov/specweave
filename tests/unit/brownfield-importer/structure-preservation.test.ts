@@ -8,7 +8,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { BrownfieldImporter } from '../../../src/core/brownfield/importer.js';
 import { FileClassification } from '../../../src/core/brownfield/analyzer.js';
 import { withTempDir } from '../../utils/temp-dir.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
 describe('BrownfieldImporter - Structure Preservation', () => {

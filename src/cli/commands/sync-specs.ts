@@ -4,7 +4,7 @@
  * Syncs increment specifications to living docs structure
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { LivingDocsSync, SyncOptions } from '../../core/living-docs/living-docs-sync.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
