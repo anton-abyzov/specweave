@@ -316,10 +316,12 @@ const result = await provider.validateRepository('owner', 'repo', token);
 **Targets**: <100ms, 0-2 processes, 0 breaker trips
 
 **Critical Fixes**:
-- v0.25.1: TodoWrite crash → `SKIP_US_SYNC=true` → manual `/specweave:sync-progress` required
+- v0.26.1: **Automatic US sync restored!** `SKIP_US_SYNC` removed → Smart throttle (60s window) → fs.writeFile() validated safe
+- v0.25.2: `SKIP_EXTERNAL_SYNC` guard at LivingDocsSync layer → prevents recursion cascade
+- v0.25.1: TodoWrite crash → emergency `SKIP_US_SYNC=true` → manual `/specweave:sync-progress` (temporary fix)
 - v0.25.0: 6→4 hooks (33% reduction)
 - v0.24.4: State-based filtering (95% overhead reduction)
-- v0.26.1: PROJECT_ROOT before RECURSION_GUARD_FILE
+- v0.26.1: PROJECT_ROOT before RECURSION_GUARD_FILE (order bug fix)
 
 ---
 
