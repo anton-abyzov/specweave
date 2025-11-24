@@ -128,8 +128,11 @@ describe('GitPlatformRegistry', () => {
 
     it('should return only supported platforms', () => {
       const supported = registry.getSupportedPlatforms();
-      expect(supported).toHaveLength(1);
-      expect(supported[0].type).toBe('github');
+      // Should include at least GitHub (others may be registered by initializeProviders)
+      expect(supported.length).toBeGreaterThanOrEqual(1);
+      const githubPlatform = supported.find(p => p.type === 'github');
+      expect(githubPlatform).toBeDefined();
+      expect(githubPlatform?.supported).toBe(true);
     });
   });
 
@@ -153,9 +156,11 @@ describe('GitPlatformRegistry', () => {
 
     it('should return only supported platforms by default', () => {
       const options = registry.getPlatformOptions(false);
-      expect(options).toHaveLength(1);
-      expect(options[0].value).toBe('github');
-      expect(options[0].disabled).toBe(false); // Supported platforms have disabled: false
+      // Should include at least GitHub (others may be registered by initializeProviders)
+      expect(options.length).toBeGreaterThanOrEqual(1);
+      const githubOption = options.find(opt => opt.value === 'github');
+      expect(githubOption).toBeDefined();
+      expect(githubOption?.disabled).toBe(false); // Supported platforms have disabled: false
     });
 
     it('should return all platforms when includeUnsupported=true', () => {
@@ -212,7 +217,8 @@ describe('GitPlatformRegistry', () => {
     });
 
     it('should return false for unregistered platform', () => {
-      expect(registry.isSupported('azure-devops')).toBe(false);
+      // Use a platform that definitely won't be registered
+      expect(registry.isSupported('unknown-platform' as any)).toBe(false);
     });
   });
 

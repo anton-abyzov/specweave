@@ -116,7 +116,7 @@ expect.extend({
    * Check if a path exists on filesystem
    */
   async toExistOnFilesystem(received: string) {
-    const fs = await import('fs-extra');
+    const fs = await import('../../src/utils/fs-native.js');
     const exists = await fs.pathExists(received);
 
     const message = () => {
@@ -137,7 +137,7 @@ expect.extend({
    * Check if a file contains specific content
    */
   async toHaveFileContent(received: string, expectedContent: string) {
-    const fs = await import('fs-extra');
+    const fs = await import('../../src/utils/fs-native.js');
 
     try {
       const exists = await fs.pathExists(received);

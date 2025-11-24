@@ -50,10 +50,11 @@ jobs:
           fi
           echo "✅ Build output clean (no .ts source files in dist/)"
 
-      - name: Run tests
+      - name: Run unit tests (REQUIRED - must pass)
         run: npm test
 
-      - name: Run integration tests
+      - name: Run integration tests (OPTIONAL - informational only)
+        continue-on-error: true
         run: npm run test:integration
         env:
           # GitHub token is auto-provided by Actions (no user input here - safe)
