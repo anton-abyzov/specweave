@@ -1,0 +1,10 @@
+{
+  "id": "0059-context-optimization-crash-prevention",
+  "title": "Context Optimization & Crash Prevention",
+  "type": "performance",
+  "status": "active",
+  "priority": "P0",
+  "feature_id": "FS-059",
+  "created": "2025-11-24T17:00:00Z",
+  "updated": "2025-11-24T17:00:00Z"
+}
