@@ -4,7 +4,7 @@ title: "Safe Feature Deletion Command - SpecWeave Implementation"
 feature: FS-053
 project: specweave
 type: feature-context
-status: in-progress
+status: completed
 ---
 
 # Safe Feature Deletion Command

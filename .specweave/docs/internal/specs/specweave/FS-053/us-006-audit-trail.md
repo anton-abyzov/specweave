@@ -4,7 +4,7 @@ feature: FS-053
 title: "Audit Trail (Priority: P2)"
 status: completed
 priority: P1
-created: 2025-11-23
+created: 2025-11-23T00:00:00.000Z
 ---
 
 # US-006: Audit Trail (Priority: P2)

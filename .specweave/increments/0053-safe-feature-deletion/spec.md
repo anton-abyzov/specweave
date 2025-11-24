@@ -1,7 +1,7 @@
 ---
 increment: 0053-safe-feature-deletion
 title: Safe Feature Deletion Command
-feature_id: FS-052
+feature_id: FS-053
 priority: P1
 status: completed
 type: feature

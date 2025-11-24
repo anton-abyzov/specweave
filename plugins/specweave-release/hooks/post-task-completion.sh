@@ -6,7 +6,11 @@
 #
 # Integration: plugins/specweave-release/hooks/hooks.json
 
-set -euo pipefail
+# CRITICAL (v0.25.2): NEVER use 'set -e' in hooks - causes Claude Code crashes
+# See: CLAUDE.md Section 9a (Hook Safety Checklist), ADR-0060 (Hook Performance)
+set +e  # Allow commands to fail without terminating script
+set -u  # Fail on undefined variables
+set -o pipefail  # Fail if any command in pipeline fails
 
 # Constants
 SPECWEAVE_ROOT="${SPECWEAVE_ROOT:-$(pwd)}"

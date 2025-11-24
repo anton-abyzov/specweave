@@ -228,8 +228,13 @@ export class LivingDocsSync {
       }
 
       // Step 7: Sync to external tools (GitHub, JIRA, ADO)
-      if (!options.dryRun) {
+      // CRITICAL (v0.25.1): Check SKIP_EXTERNAL_SYNC to prevent recursion cascade
+      // See: ADR-0129 (US Sync Guard Rails), TODOWRITE-CRASH-RECOVERY.md
+      if (!options.dryRun && !process.env.SKIP_EXTERNAL_SYNC) {
         await this.syncToExternalTools(incrementId, featureId, projectPath);
+      } else if (process.env.SKIP_EXTERNAL_SYNC) {
+        this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
+        this.logger.log(`   ℹ️  Run /specweave:sync-progress to manually sync when ready`);
       }
 
       // Step 8: Final cleanup (remove any temp files created during sync)
@@ -280,21 +285,26 @@ export class LivingDocsSync {
       // Check if brownfield (imported from external tool)
       const isBrownfield = metadata.imported === true || metadata.source === 'external';
 
-      if (metadata.feature) {
+      // CRITICAL (v0.26.2): Check for feature_id field (primary) or feature (legacy)
+      // Bug fix: metadata.json uses "feature_id" not "feature"
+      // See: Living docs sync bug report (2025-11-24)
+      const featureId = metadata.feature_id || metadata.feature;
+
+      if (featureId) {
         // Validate format matches increment type
-        const isDateFormat = /^FS-\d{2}-\d{2}-\d{2}/.test(metadata.feature);
-        const isIncrementFormat = /^FS-\d{3}$/.test(metadata.feature);
+        const isDateFormat = /^FS-\d{2}-\d{2}-\d{2}/.test(featureId);
+        const isIncrementFormat = /^FS-\d{3}$/.test(featureId);
 
         if (isBrownfield && isDateFormat) {
           // ✅ Brownfield with correct date format
-          return metadata.feature;
+          return featureId;
         } else if (!isBrownfield && isIncrementFormat) {
           // ✅ Greenfield with correct increment format
-          return metadata.feature;
+          return featureId;
         } else {
           // ⚠️ Format mismatch - log warning and auto-generate correct format
           this.logger.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
-          this.logger.warn(`   Found: ${metadata.feature}`);
+          this.logger.warn(`   Found: ${featureId}`);
           this.logger.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield)'}`);
           this.logger.warn(`   Auto-generating correct format...`);
 
@@ -322,6 +332,25 @@ export class LivingDocsSync {
 
     if (!await pathExists(specPath)) {
       throw new Error(`Spec file not found: ${specPath}`);
+    }
+
+    // CRITICAL (v0.26.2): Read metadata.json for source-of-truth status
+    // spec.md frontmatter status is NOT updated when increment completes
+    // See: Living docs sync bug report (2025-11-24)
+    const metadataPath = path.join(
+      this.projectRoot,
+      '.specweave/increments',
+      incrementId,
+      'metadata.json'
+    );
+    let incrementStatus = 'planning'; // Default fallback
+    if (await pathExists(metadataPath)) {
+      try {
+        const metadata = await readJson(metadataPath);
+        incrementStatus = metadata.status || 'planning';
+      } catch (error) {
+        this.logger.warn(`Failed to read metadata.json for ${incrementId}, using fallback status`);
+      }
     }
 
     const content = await fs.readFile(specPath, 'utf-8');
@@ -387,7 +416,7 @@ export class LivingDocsSync {
     return {
       title,
       overview,
-      status: frontmatter.status || 'planning',
+      status: incrementStatus, // FIXED (v0.26.2): Use metadata.json status (source of truth)
       priority: frontmatter.priority || 'P1',
       created: frontmatter.created || new Date().toISOString().split('T')[0],
       userStories,

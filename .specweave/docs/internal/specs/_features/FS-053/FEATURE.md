@@ -2,9 +2,9 @@
 id: FS-053
 title: "Safe Feature Deletion Command"
 type: feature
-status: in-progress
+status: completed
 priority: P1
-created: 2025-11-23
+created: 2025-11-23T00:00:00.000Z
 lastUpdated: 2025-11-24
 ---
 
@@ -18,7 +18,7 @@ lastUpdated: 2025-11-24
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0053-safe-feature-deletion](../../../../increments/0053-safe-feature-deletion/spec.md) | ⏳ in-progress | 2025-11-23 |
+| [0053-safe-feature-deletion](../../../../increments/0053-safe-feature-deletion/spec.md) | ✅ completed | 2025-11-23T00:00:00.000Z |
 
 ## User Stories
 

@@ -12,12 +12,7 @@ import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 // Mock dependencies
 vi.mock('../../../src/cli/commands/validate-status-sync.js');
 vi.mock('../../../src/core/increment/spec-frontmatter-updater.js');
-vi.mock('fs-extra', () => ({
-  default: {
-    copyFile: vi.fn(),
-    writeFile: vi.fn(),
-    ensureDir: vi.fn(),
-  },
+vi.mock('../../../src/utils/fs-native.js', () => ({
   copyFile: vi.fn(),
   writeFile: vi.fn(),
   ensureDir: vi.fn(),
