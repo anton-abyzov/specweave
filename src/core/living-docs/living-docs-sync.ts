@@ -888,7 +888,22 @@ export class LivingDocsSync {
    *
    * Returns: Array of tool names (['github'], ['github', 'jira'], or [])
    */
+  /**
+   * Detect external tools configured for this increment
+   *
+   * ADR-0134: Enhanced detection checks BOTH levels:
+   * - Level 1 (metadata.json): Increment-specific configuration (cached links)
+   * - Level 2 (config.json): Global project configuration (active profiles)
+   *
+   * Precedence: Level 1 > Level 2 (increment metadata takes priority)
+   *
+   * @param incrementId - Increment ID (e.g., "0056-auto-github-sync")
+   * @returns Array of tool names (['github'], ['github', 'jira'], or [])
+   */
   private async detectExternalTools(incrementId: string): Promise<string[]> {
+    const tools: string[] = [];
+
+    // LEVEL 1: Check metadata.json (increment-specific configuration)
     const metadataPath = path.join(
       this.projectRoot,
       '.specweave',
@@ -897,35 +912,116 @@ export class LivingDocsSync {
       'metadata.json'
     );
 
-    if (!existsSync(metadataPath)) {
-      return [];
+    if (existsSync(metadataPath)) {
+      try {
+        const metadata = await readJson(metadataPath);
+
+        // Check GitHub configuration (both old and new formats)
+        if (metadata.github && (metadata.github.milestone || metadata.github.user_story_issues)) {
+          tools.push('github');
+        } else if (metadata.external_links?.github) {
+          tools.push('github');
+        }
+
+        // Check JIRA configuration
+        if (metadata.jira) {
+          tools.push('jira');
+        }
+
+        // Check ADO configuration
+        if (metadata.ado || metadata.azure_devops) {
+          tools.push('ado');
+        }
+      } catch (error) {
+        this.logger.warn(`   ⚠️  Failed to read metadata.json: ${error}`);
+        // Fall through to Level 2 check
+      }
     }
 
-    try {
-      const metadata = await readJson(metadataPath);
-      const tools: string[] = [];
+    // LEVEL 2: Check config.json (global project configuration)
+    // ADR-0134 ENHANCED: Check multiple config locations for GitHub/JIRA/ADO
+    const configPath = path.join(this.projectRoot, '.specweave/config.json');
+    if (existsSync(configPath)) {
+      try {
+        const config = await readJson(configPath);
 
-      // Check for GitHub configuration
-      if (metadata.github && (metadata.github.milestone || metadata.github.user_story_issues)) {
+        // GitHub detection (4 methods in order of preference)
+        if (!tools.includes('github')) {
+          // Method 1: sync.github section (most common)
+          if (config.sync?.github?.enabled && config.sync?.github?.owner && config.sync?.github?.repo) {
+            this.logger.log(`   ✅ GitHub sync enabled (config.sync.github, owner: ${config.sync.github.owner})`);
+            tools.push('github');
+          }
+          // Method 2: sync.profiles[activeProfile] (multi-profile setup)
+          else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'github') {
+            const profile = config.sync.profiles[config.sync.activeProfile];
+            if (profile.config?.owner && profile.config?.repo) {
+              this.logger.log(`   ✅ GitHub sync enabled (active profile: ${config.sync.activeProfile})`);
+              tools.push('github');
+            }
+          }
+          // Method 3: multiProject.projects[activeProject].externalTools.github
+          else if (config.multiProject?.enabled && config.multiProject?.activeProject) {
+            const activeProject = config.multiProject.activeProject;
+            const projectConfig = config.multiProject.projects?.[activeProject];
+            if (projectConfig?.externalTools?.github?.repository) {
+              this.logger.log(`   ✅ GitHub sync enabled (multiProject, repo: ${projectConfig.externalTools.github.repository})`);
+              tools.push('github');
+            }
+          }
+          // Method 4: Legacy plugins.settings (backward compatibility)
+          else if (config.plugins?.settings?.['specweave-github']?.activeProfile) {
+            this.logger.log(`   ✅ GitHub sync enabled (legacy plugins.settings)`);
+            tools.push('github');
+          }
+        }
+
+        // Jira detection
+        if (!tools.includes('jira')) {
+          if (config.sync?.jira?.enabled) {
+            this.logger.log(`   ✅ Jira sync enabled (config.sync.jira)`);
+            tools.push('jira');
+          } else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'jira') {
+            this.logger.log(`   ✅ Jira sync enabled (active profile: ${config.sync.activeProfile})`);
+            tools.push('jira');
+          }
+        }
+
+        // ADO detection
+        if (!tools.includes('ado')) {
+          if (config.sync?.ado?.enabled) {
+            this.logger.log(`   ✅ ADO sync enabled (config.sync.ado)`);
+            tools.push('ado');
+          } else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'ado') {
+            this.logger.log(`   ✅ ADO sync enabled (active profile: ${config.sync.activeProfile})`);
+            tools.push('ado');
+          }
+        }
+      } catch (error) {
+        this.logger.warn(`   ⚠️  Failed to read config.json: ${error}`);
+        // Continue with whatever we detected from metadata
+      }
+    }
+
+    // LEVEL 3: Check environment variables (fallback for simple setups)
+    // Useful for CI/CD or when config.json is minimal
+    if (!tools.includes('github')) {
+      if (process.env.GITHUB_TOKEN && (process.env.GITHUB_OWNER || process.env.GITHUB_REPOSITORY)) {
+        this.logger.log(`   ✅ GitHub sync enabled (environment variables)`);
         tools.push('github');
       }
-
-      // Check for JIRA configuration
-      if (metadata.jira) {
-        tools.push('jira');
-      }
-
-      // Check for ADO configuration
-      if (metadata.ado || metadata.azure_devops) {
-        tools.push('ado');
-      }
-
-      return tools;
-
-    } catch (error) {
-      this.logger.warn(`   ⚠️  Failed to read metadata.json: ${error}`);
-      return [];
     }
+
+    // Enhanced logging for debugging
+    if (tools.length === 0) {
+      this.logger.log(`   ℹ️  No external tools detected for ${incrementId}`);
+      this.logger.log(`      - Checked metadata.json: ${existsSync(metadataPath) ? 'exists' : 'missing'}`);
+      this.logger.log(`      - Checked config.json: ${existsSync(configPath) ? 'exists' : 'missing'}`);
+    } else {
+      this.logger.log(`   📡 External tools detected: ${tools.join(', ')}`);
+    }
+
+    return tools;
   }
 
   /**

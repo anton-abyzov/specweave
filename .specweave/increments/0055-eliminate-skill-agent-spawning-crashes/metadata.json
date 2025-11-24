@@ -1,0 +1,14 @@
+{
+  "id": "0055-eliminate-skill-agent-spawning-crashes",
+  "status": "completed",
+  "type": "refactor",
+  "priority": "P0",
+  "created": "2025-11-24T20:00:00Z",
+  "completed": "2025-11-24T22:00:00Z",
+  "lastActivity": "2025-11-24T22:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 85,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

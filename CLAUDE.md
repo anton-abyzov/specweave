@@ -264,6 +264,37 @@ ls .specweave/docs/internal/architecture/adr/*.md | grep -E '/[0-9]{4}-' | \
 
 **Agent naming**: `{plugin}:{directory}:{yaml-name}`
 
+### Skills Must NOT Spawn Large Content-Generating Agents (ADR-0133)
+
+**CRITICAL**: Skills spawning agents via `Task()` causes Claude Code crashes due to context explosion.
+
+**Problem**: Skill (1500 lines) + Agent (600 lines) + Agent output (2000+ lines) = 4000+ lines in memory = CRASH 💥
+
+**❌ FORBIDDEN**:
+```typescript
+// In a skill SKILL.md:
+Task({
+  subagent_type: "specweave:architect:architect",  // ❌ Generates 1000-3000 lines
+  subagent_type: "specweave:pm:pm",                // ❌ Generates 500-2000 lines
+  subagent_type: "specweave:test-aware-planner",   // ❌ Generates 500-1500 lines
+});
+```
+
+**✅ CORRECT**:
+```typescript
+// Skills create templates and guide users:
+1. Create basic templates (< 50 lines each)
+2. Output: "Tell Claude: 'Complete the spec for increment 0005-feature'"
+3. Agents activate in MAIN context (not nested) = SAFE
+```
+
+**When to use Task() from skills**:
+- ✅ Small utility agents (output < 200 lines)
+- ✅ Data processing agents (no large generation)
+- ❌ Content generators (specs, ADRs, plans, tasks)
+
+**Reference**: ADR-0133, Architect crash incident (2025-11-24, Increment 0052)
+
 ---
 
 ## 16. YAML Frontmatter

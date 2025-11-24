@@ -1,0 +1,134 @@
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#1e88e5','primaryTextColor':'#fff','primaryBorderColor':'#1565c0','lineColor':'#424242','secondaryColor':'#43a047','tertiaryColor':'#fff'}}}%%
+
+sequenceDiagram
+    autonumber
+    participant User
+    participant CLI as /specweave:increment
+    participant Planner as increment-planner skill
+    participant PM as PM Agent
+    participant Arch as Architect Agent
+    participant TAP as test-aware-planner
+    participant Hook as post-increment-planning.sh
+    participant SyncScript as sync-living-docs.js
+    participant LDS as LivingDocsSync
+    participant DET as detectExternalTools()
+    participant CFG as ConfigManager
+    participant GH as GitHub Sync
+
+    rect rgb(230, 240, 255)
+        Note over User,CLI: PHASE 1: Increment Creation
+        User->>CLI: /specweave:increment "feature description"
+        CLI->>Planner: Invoke skill
+
+        Planner->>PM: Task(subagent_type: "pm")
+        PM->>PM: Create spec.md with user stories
+        PM-->>Planner: spec.md created (4 user stories, 13 ACs)
+
+        Planner->>Arch: Task(subagent_type: "architect")
+        Arch->>Arch: Create plan.md + ADRs
+        Arch-->>Planner: plan.md + 3 ADRs created
+
+        Planner->>TAP: Task(subagent_type: "test-aware-planner")
+        TAP->>TAP: Create tasks.md with embedded tests
+        TAP-->>Planner: tasks.md created (15 tasks)
+
+        Planner->>Planner: Create metadata.json
+        Note over Planner: { externalLinks: {}, status: "planned" }
+    end
+
+    rect rgb(255, 245, 230)
+        Note over Planner,Hook: PHASE 2: Post-Increment Hook Trigger
+        Planner->>Hook: Notify: IncrementCreated
+        Note over Hook: Event: increment 0056 created
+        Hook->>Hook: Load GITHUB_TOKEN from .env
+        Hook->>SyncScript: node sync-living-docs.js 0056
+    end
+
+    rect rgb(230, 255, 240)
+        Note over SyncScript,LDS: PHASE 3: Living Docs Sync
+        SyncScript->>LDS: syncIncrement('0056')
+        LDS->>LDS: Parse spec.md (user stories, ACs)
+        LDS->>LDS: Create feature overview
+        Note over LDS: .specweave/docs/internal/specs/_features/FS-056/FEATURE.md
+        LDS->>LDS: Create user story files
+        Note over LDS: .specweave/docs/internal/specs/specweave/FS-056/us-001.md
+        Note over LDS: .specweave/docs/internal/specs/specweave/FS-056/us-002.md
+        Note over LDS: .specweave/docs/internal/specs/specweave/FS-056/us-003.md
+        Note over LDS: .specweave/docs/internal/specs/specweave/FS-056/us-004.md
+    end
+
+    rect rgb(255, 240, 245)
+        Note over LDS,DET: PHASE 4: External Tool Detection (ADR-0134)
+        LDS->>DET: detectExternalTools('0056')
+
+        DET->>DET: Check metadata.json
+        Note over DET: externalLinks: {} (empty!)
+
+        DET->>CFG: Load .specweave/config.json
+        CFG-->>DET: { plugins.settings.specweave-github.activeProfile: "default" }
+
+        DET->>DET: GitHub profile found!
+        Note over DET: ✅ GitHub sync enabled (global config)
+        DET-->>LDS: tools: ['github']
+    end
+
+    rect rgb(240, 255, 255)
+        Note over LDS,GH: PHASE 5: GitHub Sync
+        LDS->>GH: syncToGitHub(FS-056, projectPath)
+
+        GH->>GH: Load GitHub profile
+        Note over GH: owner: anton-abyzov<br/>repo: specweave<br/>token: ghp_***
+
+        GH->>GH: Create milestone
+        Note over GH: Milestone #17: "FS-056: Auto GitHub Sync"
+
+        GH->>GH: Create issue for US-001
+        Note over GH: Issue #740: US-001 Auto Sync to Living Docs
+
+        GH->>GH: Create issue for US-002
+        Note over GH: Issue #741: US-002 Auto Create GitHub Issues
+
+        GH->>GH: Create issue for US-003
+        Note over GH: Issue #742: US-003 Maintain Task Completion Sync
+
+        GH->>GH: Create issue for US-004
+        Note over GH: Issue #743: US-004 Error Handling
+
+        GH-->>LDS: { milestone: 17, issues: [740, 741, 742, 743] }
+    end
+
+    rect rgb(255, 255, 230)
+        Note over LDS,Hook: PHASE 6: Metadata Update
+        LDS->>LDS: Update metadata.json
+        Note over LDS: external_links: {<br/>  github: {<br/>    milestone: 17,<br/>    issues: [740, 741, 742, 743]<br/>  }<br/>}
+
+        LDS-->>SyncScript: Sync complete
+        SyncScript-->>Hook: Exit 0
+        Hook-->>Planner: Hook complete (background)
+    end
+
+    rect rgb(240, 240, 255)
+        Note over Planner,User: PHASE 7: User Notification
+        Planner-->>CLI: Increment ready
+        CLI-->>User: ✅ Increment 0056 created<br/>✅ Synced to living docs<br/>✅ GitHub issues created<br/>   - Milestone #17<br/>   - Issues: #740, #741, #742, #743
+    end
+
+    rect rgb(255, 230, 230)
+        Note over User,GH: Alternative: Error Handling
+        alt GitHub API Fails
+            GH-->>LDS: Error: Rate limit exceeded
+            LDS->>LDS: Log warning (non-blocking)
+            Note over LDS: ⚠️  GitHub sync failed<br/>Living docs sync succeeded
+            LDS-->>CLI: Partial success
+            CLI-->>User: ✅ Increment created<br/>⚠️  GitHub sync failed<br/>💡 Manual sync: /specweave-github:sync 0056
+        end
+    end
+
+    rect rgb(230, 255, 255)
+        Note over User,Hook: Future: Task Completion (Already Works!)
+        User->>User: Complete task T-001
+        Note over User: TodoWrite: T-001 completed
+        Hook->>DET: detectExternalTools('0056')
+        Note over DET: metadata.json has GitHub links<br/>✅ Cached detection (fast!)
+        Hook->>GH: Update issue #740<br/>Post comment: "T-001 completed"
+    end
