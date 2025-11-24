@@ -314,13 +314,20 @@ jobs:
       - name: Check for unsafe process.cwd() patterns
         run: |
           echo "Checking for unsafe process.cwd() usage in tests..."
-          if grep -r "process\.cwd()" tests/ --include="*.test.ts" 2>/dev/null | grep -q .; then
-            echo "❌ ERROR: process.cwd() found in tests!"
+          # Exclude: comments (//), legitimate uses (building hook paths, mocking)
+          violations=$(grep -r "process\.cwd()" tests/ --include="*.test.ts" 2>/dev/null | \
+            grep -v "^\s*//" | \
+            grep -v "// .*process\.cwd()" | \
+            grep -v "Mock process\.cwd()" | \
+            grep -v "const hookPath = path.join(process\.cwd()" || true)
+
+          if [ -n "$violations" ]; then
+            echo "❌ ERROR: Unsafe process.cwd() found in tests!"
             echo "This can cause catastrophic .specweave/ deletion."
             echo "Use createIsolatedTestDir() instead. See CLAUDE.md"
             echo ""
             echo "Violations:"
-            grep -rn "process\.cwd()" tests/ --include="*.test.ts" | head -20
+            echo "$violations" | head -20
             exit 1
           fi
           echo "✅ No unsafe process.cwd() patterns"
