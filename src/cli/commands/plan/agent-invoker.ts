@@ -410,7 +410,7 @@ ${userStories.map((us, i) => `${i + 1}. ${us}`).join('\n')}
 
 ---
 increment: ${incrementId}
-status: planned
+status: planning
 test_mode: TDD
 coverage_target: 95%
 ---
