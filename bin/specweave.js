@@ -104,6 +104,9 @@ program
     await abandonCommand(incrementId, options);
   });
 
+// Delete feature command - Registered dynamically in startup
+// (See registerDeleteFeatureCommand call below)
+
 program
   .command('status')
   .alias('progress')
@@ -335,6 +338,17 @@ async function checkForDuplicates() {
 // Run startup check, then parse arguments
 (async () => {
   await checkForDuplicates();
+
+  // Register delete-feature command
+  try {
+    const { registerDeleteFeatureCommand } = await import('../dist/src/cli/commands/delete-feature.js');
+    registerDeleteFeatureCommand(program);
+  } catch (error) {
+    // Silently fail if command not available (may not be built yet)
+    if (process.env.DEBUG) {
+      console.error(chalk.dim(`[DEBUG] Failed to register delete-feature command: ${error}`));
+    }
+  }
 
   // Parse arguments
   program.parse(process.argv);

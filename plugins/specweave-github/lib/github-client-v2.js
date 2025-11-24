@@ -202,7 +202,19 @@ FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.
       args.push("--label", label);
     }
     if (milestone !== void 0) {
-      args.push("--milestone", String(milestone));
+      if (typeof milestone === "number") {
+        const msResult = await execFileNoThrow("gh", [
+          "api",
+          `repos/${this.fullRepo}/milestones/${milestone}`,
+          "--jq",
+          ".title"
+        ]);
+        if (msResult.exitCode === 0 && msResult.stdout.trim()) {
+          args.push("--milestone", msResult.stdout.trim());
+        }
+      } else {
+        args.push("--milestone", milestone);
+      }
     }
     const createResult = await execFileNoThrow("gh", args);
     if (createResult.exitCode !== 0) {

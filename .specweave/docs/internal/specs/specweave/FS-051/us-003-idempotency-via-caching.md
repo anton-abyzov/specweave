@@ -7,9 +7,6 @@ priority: P0
 created: 2025-11-22T00:00:00.000Z
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Idempotency via Caching
 
 **Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
@@ -36,8 +33,8 @@ created: 2025-11-22T00:00:00.000Z
 
 ## Tasks
 
-- [x] [T-011](../../../../increments/0051-automatic-github-sync/tasks.md#T-011): Implement Frontmatter Cache Check (Layer 1)
-- [x] [T-012](../../../../increments/0051-automatic-github-sync/tasks.md#T-012): Implement Metadata Cache Check (Layer 2)
-- [x] [T-013](../../../../increments/0051-automatic-github-sync/tasks.md#T-013): Implement GitHub API Duplicate Detection (Layer 3)
-- [x] [T-014](../../../../increments/0051-automatic-github-sync/tasks.md#T-014): Implement 3-Layer Cache Integration
-- [x] [T-015](../../../../increments/0051-automatic-github-sync/tasks.md#T-015): Add Idempotency Logging
+- [x] **T-011**: Implement Frontmatter Cache Check (Layer 1)
+- [x] **T-012**: Implement Metadata Cache Check (Layer 2)
+- [x] **T-013**: Implement GitHub API Duplicate Detection (Layer 3)
+- [x] **T-014**: Implement 3-Layer Cache Integration
+- [x] **T-015**: Add Idempotency Logging

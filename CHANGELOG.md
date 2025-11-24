@@ -39,6 +39,17 @@ All notable changes to SpecWeave will be documented in this file.
   - Layer 5: Per-issue try-catch (partial completion: 2 of 4 OK)
   - Layer 6: Bash `set +e` + `exit 0` (NEVER crash Claude Code)
   - Layer 7: User-facing error messages (actionable recovery)
+- **🗑️ Safe Feature Deletion** (FS-053): Production-ready feature deletion with multi-gate validation
+  - CLI command: `specweave delete-feature <feature-id>`
+  - 4-tier validation: feature detection, active increments, git status, GitHub issues
+  - 3-phase commit pattern: validation → staging (reversible) → commit (irreversible)
+  - Multi-gate confirmation: primary (y/N), elevated (type "delete"), GitHub (separate)
+  - Force mode: allows deletion with active increments (orphans metadata)
+  - Dry-run mode: preview without execution
+  - Audit logging: JSON Lines format with 10MB rotation
+  - GitHub integration: auto-detects owner/repo from git remote
+  - Error handling: non-blocking (GitHub failures), blocking (validation failures)
+  - See Increment 0053 for comprehensive implementation details
 - Judge-Based Marketplace Plugin Validation (LLM scoring system, 40-point threshold)
 - Mandatory Post-Closure Quality Assessment (automatic QA after `/specweave:done`)
 

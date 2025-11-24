@@ -1,10 +1,15 @@
 ---
 id: US-005
 feature: FS-052
-title: "GitHub Issue Deletion (Priority: P1)"
+title: "GitHub Issue Deletion"
 status: planned
 priority: P1
 created: 2025-11-23
+external_tools:
+  github:
+    number: 726
+    url: https://github.com/anton-abyzov/specweave/issues/726
+    created_at: 2025-11-24T07:00:16.291Z
 ---
 
 **Origin**: 🏠 **Internal**

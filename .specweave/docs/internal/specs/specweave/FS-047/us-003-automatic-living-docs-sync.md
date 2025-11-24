@@ -9,8 +9,6 @@ created: 2025-11-19
 
 # US-003: Automatic Living Docs Sync
 
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/690
-
 **Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
 
 **As a** developer completing tasks

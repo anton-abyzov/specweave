@@ -5,12 +5,10 @@ type: feature
 status: completed
 priority: P2
 created: 2025-11-19T00:00:00.000Z
-lastUpdated: 2025-11-19
+lastUpdated: 2025-11-24
 ---
 
 # Integration Testing - Status Line and Hooks
-
-**GitHub Project**: https://github.com/anton-abyzov/specweave/issues/661
 
 ## Overview
 
