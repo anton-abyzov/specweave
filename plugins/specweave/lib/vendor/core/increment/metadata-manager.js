@@ -4,7 +4,7 @@
  * Handles CRUD operations for increment metadata (status, type, timestamps).
  * Part of increment 0007: Smart Status Management
  */
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { IncrementStatus, IncrementType, createDefaultMetadata, isValidTransition, isStale, shouldAutoAbandon } from '../types/increment-metadata.js';
