@@ -1,0 +1,12 @@
+{
+  "id": "FS-054",
+  "type": "feature",
+  "archivedAt": "2025-11-24T20:28:18.191Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/_features/FS-054",
+  "linkedIncrements": [
+    "0054-sync-guard-security-reliability-fixes",
+    "0054-sync-guard-security-reliability-fixes"
+  ]
+}

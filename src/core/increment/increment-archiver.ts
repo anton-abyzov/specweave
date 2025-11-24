@@ -142,6 +142,9 @@ export class IncrementArchiver {
 
   /**
    * Filter increments based on archive options
+   *
+   * CRITICAL SAFETY: If no filtering options are provided, defaults to keepLast: 3
+   * to prevent accidental archiving of ALL increments.
    */
   private async filterIncrements(
     increments: string[],
@@ -166,10 +169,25 @@ export class IncrementArchiver {
       filtered = filtered.filter(inc => regex.test(inc));
     }
 
+    // CRITICAL SAFETY: Determine effective keepLast value
+    // If no explicit filtering criteria provided, default to keeping last 3
+    const hasExplicitCriteria = options.pattern !== undefined ||
+                                 options.olderThanDays !== undefined ||
+                                 options.archiveCompleted === true;
+
+    const effectiveKeepLast = options.keepLast !== undefined
+      ? options.keepLast
+      : (hasExplicitCriteria ? undefined : 3); // Default to 3 when no criteria
+
     // Keep last N increments
-    if (options.keepLast !== undefined) {
-      const toKeep = increments.slice(-options.keepLast);
+    if (effectiveKeepLast !== undefined) {
+      const toKeep = increments.slice(-effectiveKeepLast);
       filtered = filtered.filter(inc => !toKeep.includes(inc));
+
+      if (options.keepLast === undefined && !hasExplicitCriteria) {
+        this.logger.warn(`No filtering criteria provided - defaulting to --keep-last 3 for safety`);
+        this.logger.info(`Use --keep-last N to explicitly set how many increments to keep`);
+      }
     }
 
     // Filter by age

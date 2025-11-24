@@ -539,7 +539,14 @@ export class FeatureArchiver {
         continue; // Found explicit match, continue to next increment
       }
 
-      // 2. Check auto-inferred linkage (increment number → feature ID)
+      // BUGFIX (v0.26.12): If explicit linkage EXISTS to a DIFFERENT feature, skip auto-inference
+      // This prevents dual-linkage where increment 0051 with feature_id: FS-049
+      // would also be incorrectly linked to FS-051 via auto-inference
+      if (explicitLinkage !== null) {
+        continue; // Explicit linkage exists but doesn't match - skip this increment entirely
+      }
+
+      // 2. Check auto-inferred linkage ONLY if no explicit linkage exists
       // Example: increment "0041-living-docs" → FS-041
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
 
@@ -568,7 +575,12 @@ export class FeatureArchiver {
         continue;
       }
 
-      // 2. Check auto-inferred linkage
+      // BUGFIX (v0.26.12): Skip auto-inference if explicit linkage exists to different feature
+      if (explicitLinkage !== null) {
+        continue;
+      }
+
+      // 2. Check auto-inferred linkage ONLY if no explicit linkage exists
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
 
       if (inferredFeatureId === featureId) {
@@ -944,22 +956,49 @@ export class FeatureArchiver {
           console.log(`      → Active: ${activePath}`);
           console.log(`      → Archive: ${archivedPath}`);
 
-          try {
-            // Remove active folder (keep archive as source of truth)
-            await fs.remove(activePath);
-            console.log(`      ✅ Removed active duplicate (keeping archive)`);
-            result.cleaned.push(`_features/${featureId}`);
-            hasDuplicates = true;
-          } catch (error) {
-            const errMsg = `Failed to clean ${featureId}: ${error}`;
-            console.error(`      ❌ ${errMsg}`);
-            result.errors.push(errMsg);
+          // BUGFIX (v0.26.12): Check if feature has active increments before removing
+          const linkedIncrements = await this.getLinkedIncrements(featureId);
+          const archivedIncrements = await this.incrementArchiver.listArchived();
+          const hasActiveIncrements = linkedIncrements.some(inc =>
+            !archivedIncrements.includes(inc)
+          );
+
+          if (hasActiveIncrements) {
+            // Feature has active increments → remove ARCHIVE, keep ACTIVE
+            try {
+              await fs.remove(archivedPath);
+              console.log(`      ✅ Removed archive duplicate (feature has active increments)`);
+              result.cleaned.push(`_features/_archive/${featureId}`);
+              hasDuplicates = true;
+            } catch (error) {
+              const errMsg = `Failed to clean archive ${featureId}: ${error}`;
+              console.error(`      ❌ ${errMsg}`);
+              result.errors.push(errMsg);
+            }
+          } else {
+            // All increments archived → remove ACTIVE, keep ARCHIVE
+            try {
+              await fs.remove(activePath);
+              console.log(`      ✅ Removed active duplicate (all increments archived)`);
+              result.cleaned.push(`_features/${featureId}`);
+              hasDuplicates = true;
+            } catch (error) {
+              const errMsg = `Failed to clean ${featureId}: ${error}`;
+              console.error(`      ❌ ${errMsg}`);
+              result.errors.push(errMsg);
+            }
           }
         }
 
         // ALWAYS check project-specific duplicates (even if _features/ has no duplicate)
         // This fixes the case where specweave/FS-XXX exists but _features/FS-XXX doesn't
-        const projectDuplicatesFound = await this.cleanupProjectSpecificDuplicates(featureId, result);
+        // BUGFIX (v0.26.12): Pass hasActiveIncrements check result to project cleanup
+        const linkedIncrements = await this.getLinkedIncrements(featureId);
+        const archivedIncrements = await this.incrementArchiver.listArchived();
+        const featureHasActiveIncrements = linkedIncrements.some(inc =>
+          !archivedIncrements.includes(inc)
+        );
+        const projectDuplicatesFound = await this.cleanupProjectSpecificDuplicates(featureId, result, featureHasActiveIncrements);
         if (projectDuplicatesFound && !hasDuplicates) {
           console.log(`   ⚠️  Duplicate detected: ${featureId} (project folders only)`);
         }
@@ -991,11 +1030,17 @@ export class FeatureArchiver {
   /**
    * Clean up project-specific folder duplicates for a feature
    *
+   * BUGFIX (v0.26.12): Now respects hasActiveIncrements to decide which duplicate to remove
+   *
+   * @param featureId - The feature ID to clean up
+   * @param result - The result object to track cleaned folders and errors
+   * @param hasActiveIncrements - If true, keep active folder; if false, keep archive
    * @returns true if duplicates were found, false otherwise
    */
   private async cleanupProjectSpecificDuplicates(
     featureId: string,
-    result: { cleaned: string[]; errors: string[] }
+    result: { cleaned: string[]; errors: string[] },
+    hasActiveIncrements: boolean = false
   ): Promise<boolean> {
     let foundDuplicates = false;
 
@@ -1009,15 +1054,23 @@ export class FeatureArchiver {
       const projectId = path.basename(path.dirname(activeFolder));
       const archiveFolder = path.join(this.specsDir, projectId, '_archive', featureId);
 
-      // If both active and archive exist → remove active (duplicate)
+      // If both active and archive exist → determine which to remove
       const activeExists = await fs.pathExists(activeFolder);
       const archiveExists = await fs.pathExists(archiveFolder);
 
       if (activeExists && archiveExists) {
         try {
-          await fs.remove(activeFolder);
-          console.log(`      ✅ Removed project duplicate: ${projectId}/${featureId}`);
-          result.cleaned.push(`${projectId}/${featureId}`);
+          if (hasActiveIncrements) {
+            // Feature has active increments → remove ARCHIVE, keep ACTIVE
+            await fs.remove(archiveFolder);
+            console.log(`      ✅ Removed project archive duplicate: ${projectId}/_archive/${featureId}`);
+            result.cleaned.push(`${projectId}/_archive/${featureId}`);
+          } else {
+            // All increments archived → remove ACTIVE, keep ARCHIVE
+            await fs.remove(activeFolder);
+            console.log(`      ✅ Removed project duplicate: ${projectId}/${featureId}`);
+            result.cleaned.push(`${projectId}/${featureId}`);
+          }
           foundDuplicates = true;
         } catch (error) {
           const errMsg = `Failed to clean ${projectId}/${featureId}: ${error}`;

@@ -1,0 +1,11 @@
+{
+  "id": "FS-050",
+  "type": "feature",
+  "archivedAt": "2025-11-24T19:38:43.544Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/_features/FS-050",
+  "linkedIncrements": [
+    "0050-external-tool-import-phase-1b-7"
+  ]
+}
