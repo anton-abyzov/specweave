@@ -12,7 +12,7 @@
  * @module CodeValidator
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
 /**
@@ -133,7 +133,7 @@ export class CodeValidator {
     // Read file content
     const content = await fs.readFile(absolutePath, 'utf-8');
     const lines = content.split('\n');
-    const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+    const nonEmptyLines = lines.filter((line: string) => line.trim().length > 0);
 
     // Check line count
     if (nonEmptyLines.length < this.options.minLines) {
