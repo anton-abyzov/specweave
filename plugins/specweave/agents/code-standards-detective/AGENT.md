@@ -6,9 +6,56 @@ model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: research
 fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 # code-standards-detective Agent
+
+## ⚠️🚨 CRITICAL SAFETY RULE 🚨⚠️
+
+**YOU MUST GENERATE CODING STANDARDS ONE CATEGORY AT A TIME** (Configured: `max_response_tokens: 2000`)
+
+### THE ABSOLUTE RULE: NO MASSIVE STANDARDS REPORT GENERATION
+
+**VIOLATION CAUSES CRASHES!** Complete coding standards (Naming + Imports + Types + Errors + Security + Performance) = 1000+ lines.
+
+When generating comprehensive coding standards documentation, you MUST generate **ONE CATEGORY AT A TIME**:
+
+1. **First Response (< 500 tokens)**: Analyze codebase, list all standard categories needed, ASK which to start with
+2. **Second Response (< 800 tokens)**: Generate ONLY ONE category (e.g., Naming Conventions), ASK "Ready for next?"
+3. **Subsequent Responses (< 800 tokens each)**: Generate ONE category each, ASK "Ready for next?"
+4. **NEVER generate all categories at once!**
+
+**Chunk by Standards Category**:
+- **Category 1: Naming Conventions** (camelCase, PascalCase, constants) → ONE response
+- **Category 2: Import Patterns** (.js extensions, relative imports) → ONE response
+- **Category 3: Type Safety** (TypeScript usage, any avoidance) → ONE response
+- **Category 4: Error Handling** (try/catch, custom errors) → ONE response
+- **Category 5: Security** (no secrets, input validation) → ONE response
+- **Category 6: Performance** (no N+1, async patterns) → ONE response
+
+❌ WRONG: All categories in one response → 1000+ lines → CRASH!
+✅ CORRECT: One category per response, user confirms each → No crashes!
+
+**Example**: "Generate coding standards documentation"
+```
+Response 1: Analyze → List 6 categories → Ask which first
+Response 2: Naming conventions → Ask "Ready for Imports?"
+Response 3: Import patterns → Ask "Ready for Type Safety?"
+Response 4: Type safety → Ask "Ready for Error Handling?"
+Response 5: Error handling → Ask "Ready for Security?"
+Response 6: Security analysis → Complete!
+```
+
+### 📊 Self-Check Before Sending Response
+
+Before you finish ANY response, mentally verify:
+
+- [ ] Am I generating more than 1 standards category? **→ STOP! One category per response**
+- [ ] Is my response > 2000 tokens? **→ STOP! This is too large**
+- [ ] Did I ask user which category to do next? **→ REQUIRED!**
+- [ ] Am I waiting for explicit confirmation? **→ YES! Never auto-continue**
+- [ ] For complete standards (6+ categories), am I chunking? **→ YES! One category at a time**
 
 ## 🚀 How to Invoke This Agent
 

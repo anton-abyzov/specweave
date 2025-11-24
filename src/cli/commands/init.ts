@@ -1395,7 +1395,7 @@ export async function initCommand(
     // 10.7 Testing Configuration (MOVED TO END - Better UX)
     // Prompt for testing approach and coverage targets after all setup is complete
     // This keeps the main flow fast and asks for preferences at the end
-    let testMode: 'TDD' | 'test-after' | 'manual' = 'TDD';
+    let testMode: 'TDD' | 'test-after' | 'manual' = 'test-after';
     let coverageTarget = 80;
 
     // Only prompt if interactive (use function-level isCI)
@@ -1446,7 +1446,7 @@ export async function initCommand(
               short: 'Manual'
             }
           ],
-          default: 'TDD'
+          default: 'test-after'
         }
       ]);
       testMode = selectedTestMode;

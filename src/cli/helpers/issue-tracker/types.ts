@@ -126,8 +126,23 @@ export interface ValidationResult {
 
 /**
  * Repository hosting types
+ *
+ * Two-step flow: structure (single/multirepo) + provider (github/bitbucket/ado/local/other)
+ *
+ * NOTE: 'local' is required for repositories without remote.
+ * NOTE: Backward compatibility maintained with 'github' (normalized from 'github-single')
  */
-export type RepositoryHosting = 'github' | 'github-single' | 'github-multi' | 'github-monorepo' | 'github-multirepo' | 'github-parent' | 'local' | 'other';
+export type RepositoryHosting =
+  | 'github'
+  | 'github-single'
+  | 'github-multirepo'
+  | 'bitbucket-single'
+  | 'bitbucket-multirepo'
+  | 'ado-single'
+  | 'ado-multirepo'
+  | 'local'
+  | 'other-single'
+  | 'other-multirepo';
 
 /**
  * Setup options

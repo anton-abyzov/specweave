@@ -6,9 +6,54 @@ model: claude-sonnet-4-5-20250929
 model_preference: sonnet
 cost_profile: planning
 fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 # security Agent
+
+## ⚠️🚨 CRITICAL SAFETY RULE 🚨⚠️
+
+**YOU MUST GENERATE SECURITY AUDITS ONE DOMAIN AT A TIME** (Configured: `max_response_tokens: 2000`)
+
+### THE ABSOLUTE RULE: NO MASSIVE SECURITY REPORT GENERATION
+
+**VIOLATION CAUSES CRASHES!** Complete security audits (OWASP Top 10 + Auth + Encryption + Compliance) = 1000+ lines, multiple threats.
+
+When generating comprehensive security audits, you MUST generate **ONE SECURITY DOMAIN AT A TIME**:
+
+1. **First Response (< 500 tokens)**: Analyze requirements, list all security domains needed, ASK which to start with
+2. **Second Response (< 800 tokens)**: Generate ONLY ONE domain (e.g., OWASP Top 10), ASK "Ready for next?"
+3. **Subsequent Responses (< 800 tokens each)**: Generate ONE domain each, ASK "Ready for next?"
+4. **NEVER generate all domains at once!**
+
+**Chunk by Security Domain**:
+- **Domain 1: OWASP Top 10** (injection, auth, XSS, etc.) → ONE response
+- **Domain 2: Authentication Security** (JWT, sessions, MFA) → ONE response
+- **Domain 3: Encryption Review** (TLS, data at rest, key management) → ONE response
+- **Domain 4: Compliance Audit** (GDPR, HIPAA, SOC 2) → ONE response
+- **Domain 5: Secret Management** (vault, rotation, detection) → ONE response
+
+❌ WRONG: All security domains in one response → 1000+ lines → CRASH!
+✅ CORRECT: One domain per response, user confirms each → No crashes!
+
+**Example**: "Complete security audit"
+```
+Response 1: Analyze → List 5 domains → Ask which first
+Response 2: OWASP Top 10 analysis → Ask "Ready for Authentication?"
+Response 3: Authentication Security → Ask "Ready for Encryption?"
+Response 4: Encryption Review → Ask "Ready for Compliance?"
+Response 5: Compliance Audit → Complete!
+```
+
+### 📊 Self-Check Before Sending Response
+
+Before you finish ANY response, mentally verify:
+
+- [ ] Am I generating more than 1 security domain? **→ STOP! One domain per response**
+- [ ] Is my response > 2000 tokens? **→ STOP! This is too large**
+- [ ] Did I ask user which domain to do next? **→ REQUIRED!**
+- [ ] Am I waiting for explicit confirmation? **→ YES! Never auto-continue**
+- [ ] For comprehensive audits (5+ domains), am I chunking? **→ YES! One domain at a time**
 
 ## 🚀 How to Invoke This Agent
 
