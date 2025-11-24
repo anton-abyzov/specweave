@@ -1212,73 +1212,70 @@ export async function initCommand(
 
       // Detect existing git remote
       const gitRemoteDetection = detectGitHubRemote(targetDir);
-      let repositoryHosting: 'github' | 'github-single' | 'github-monorepo' | 'github-multirepo' | 'github-parent' | 'local' | 'other' = 'local';
+      let repositoryHosting: 'github' | 'github-single' | 'github-multirepo' | 'bitbucket-single' | 'bitbucket-multirepo' | 'ado-single' | 'ado-multirepo' | 'local' | 'other-single' | 'other-multirepo' = 'github-single';
       let isMultiRepo = false;
       let repoSelectionConfig: RepoSelectionConfig | null = null;
 
       if (!isCI) {
-        const { hosting } = await inquirer.prompt([{
+        // Step 1: Ask about repository structure
+        const { structure } = await inquirer.prompt([{
           type: 'list',
-          name: 'hosting',
-          message: 'How do you host your repository?',
+          name: 'structure',
+          message: 'What is your repository structure?',
           choices: [
             {
-              name: `🐙 GitHub - Single repository ${gitRemoteDetection ? '(detected)' : ''}`,
-              value: 'github-single'
+              name: '📦 Single repository',
+              value: 'single'
             },
             {
-              name: '📚 GitHub - Monorepo (single repo, multiple projects)',
-              value: 'github-monorepo'
+              name: '🎯 Multiple repositories (with parent repo)',
+              value: 'multirepo'
+            }
+          ],
+          default: 'single'
+        }]);
+
+        isMultiRepo = structure === 'multirepo';
+
+        // Step 2: Ask about git provider
+        const { provider } = await inquirer.prompt([{
+          type: 'list',
+          name: 'provider',
+          message: 'Which Git provider do you use?',
+          choices: [
+            {
+              name: `🐙 GitHub ${gitRemoteDetection ? '(detected)' : '(recommended)'}`,
+              value: 'github'
             },
             {
-              name: '🎯 GitHub - Multiple separate repositories (microservices)',
-              value: 'github-multirepo'
+              name: '🪣 Bitbucket',
+              value: 'bitbucket'
             },
             {
-              name: '🔗 GitHub - Parent repo + nested repos',
-              value: 'github-parent'
+              name: '🔷 Azure DevOps',
+              value: 'ado'
             },
             {
-              name: '💻 Local git only (no remote sync)',
+              name: '💻 Local (no remote)',
               value: 'local'
             },
             {
-              name: '🔧 Other (GitLab, Bitbucket, etc.)',
+              name: '🔧 Other (GitLab, etc - coming soon)',
               value: 'other'
             }
           ],
-          default: gitRemoteDetection ? 'github-single' : 'local'
+          default: gitRemoteDetection ? 'github' : 'local'
         }]);
 
-        repositoryHosting = hosting;
-
-        // Normalize for backwards compatibility
-        if (hosting === 'github-single') {
-          repositoryHosting = 'github';
-        } else if (hosting === 'github-monorepo' || hosting === 'github-multirepo' || hosting === 'github-parent') {
-          // CRITICAL: Keep specific architecture value for github-multi-repo.ts
-          // This prevents duplicate architecture questions (ADR-0070)
-          isMultiRepo = true;
-        }
-
-        // Show info for non-GitHub choices
-        if (hosting === 'other') {
-          console.log('');
-          console.log(chalk.yellow('⚠️  Note: SpecWeave currently has best integration with GitHub'));
-          console.log(chalk.gray('   • GitHub: Full sync support (issues, milestones, labels)'));
-          console.log(chalk.gray('   • GitLab/Bitbucket: Limited support (manual sync)'));
-          console.log(chalk.gray('   • You can still use SpecWeave locally and sync manually'));
-          console.log('');
-        } else if (hosting === 'local') {
-          console.log('');
-          console.log(chalk.gray('✓ Local-only mode'));
-          console.log(chalk.gray('   • All work tracked locally in .specweave/'));
-          console.log(chalk.gray('   • No remote sync (you can add GitHub later)'));
-          console.log('');
+        // Combine structure + provider (except for local which doesn't need structure)
+        if (provider === 'local') {
+          repositoryHosting = 'local';
+        } else {
+          repositoryHosting = `${provider}-${structure}` as typeof repositoryHosting;
         }
       } else {
         // CI mode: auto-detect
-        repositoryHosting = gitRemoteDetection ? 'github' : 'local';
+        repositoryHosting = gitRemoteDetection ? 'github-single' : 'local';
         console.log(chalk.gray(`   → CI mode: Auto-detected ${repositoryHosting} hosting\n`));
       }
 
@@ -2233,12 +2230,6 @@ function createConfigFile(
         canUpdateStatus: true,         // Allow status updates
         autoSyncOnCompletion: true     // Auto-sync external tools on increment completion (v0.25.0+)
       }
-    },
-    // Permissions configuration (all enabled by default)
-    permissions: {
-      canCreate: true,
-      canUpdate: true,
-      canUpdateStatus: true
     },
     // Hook configuration (enable automatic living docs sync)
     hooks: {
