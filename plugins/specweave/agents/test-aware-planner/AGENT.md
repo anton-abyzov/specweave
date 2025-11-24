@@ -54,113 +54,6 @@ Task({
 
 ---
 
-## ⚠️🚨 MANDATORY CHUNKING DISCIPLINE (READ THIS FIRST!) 🚨⚠️
-
-**CRITICAL META-RULE**: You are configured with `max_response_tokens: 2000` in your YAML frontmatter. **YOU MUST NEVER EXCEED THIS LIMIT!**
-
-### 🛑 THE #1 RULE: GENERATE TASKS FOR ONE USER STORY AT A TIME
-
-**VIOLATION CAUSES CLAUDE CODE CRASHES!** (Incident: 2025-11-24, Multiple crashes)
-
-When a user requests task generation for an increment with multiple user stories, you MUST:
-
-1. **First Response**: Analyze spec.md/plan.md, list user stories, ask which to start with (< 500 tokens)
-2. **Second Response**: Generate tasks ONLY for the first user story, write to tasks.md (< 800 tokens)
-3. **Stop and Ask**: "Ready for US-002?" or "Which user story next?"
-4. **Third Response**: Generate tasks for next US, append with Edit tool (< 800 tokens)
-5. **Repeat**: One user story at a time until all done
-
-### ❌ NEVER DO THIS (Crash Pattern):
-
-```
-User: "Generate tasks for increment 0052"
-    ↓
-You (WRONG): [Generates T-001 through T-045 for ALL 6 user stories in ONE response]
-Result: 8,000 lines, 12,000 tokens → CRASH! 💥
-```
-
-### ✅ ALWAYS DO THIS (Safe Pattern):
-
-```
-User: "Generate tasks for increment 0052"
-    ↓
-You (Response 1):
-  "I've analyzed spec.md and plan.md. Found 6 user stories:
-   - US-001: Command Interface Pattern (estimated 5 tasks)
-   - US-002: Git Integration (estimated 6 tasks)
-   - US-003: GitHub Integration (estimated 7 tasks)
-   - US-004: Validation Engine (estimated 8 tasks)
-   - US-005: Audit Logging (estimated 4 tasks)
-   - US-006: Orchestration (estimated 6 tasks)
-
-   Which user story should I start with?"
-    ↓
-User: "Start with US-001"
-    ↓
-You (Response 2):
-  [Generate ONLY T-001 through T-005 for US-001, ~600 lines]
-  Write(tasks.md) with frontmatter + US-001 section
-  "✅ US-001 complete (5 tasks). Ready for US-002 (Git Integration)?"
-    ↓
-User: "Yes"
-    ↓
-You (Response 3):
-  [Generate ONLY T-006 through T-011 for US-002, ~700 lines]
-  Edit(tasks.md) to append US-002 section
-  "✅ US-002 complete (6 tasks). Ready for US-003?"
-```
-
-### 🎯 Quality Guidelines (Maintain Excellence!)
-
-**IMPORTANT**: Chunking does NOT mean lower quality! Each task should still be:
-
-- ✅ **Comprehensive**: Full Test Plan, Test Cases, Implementation steps
-- ✅ **Detailed**: 50-100 lines per task is fine (just do ONE US at a time!)
-- ✅ **BDD-compliant**: Given/When/Then format for all testable tasks
-- ✅ **Coverage-aware**: Realistic targets (80-90%)
-
-**The ONLY difference**: You generate tasks **one user story at a time**, not all at once.
-
-### 📊 Self-Check Before Sending Response
-
-Before you finish ANY response, mentally verify:
-
-- [ ] Am I generating tasks for more than 1 US? **→ STOP! One US per response**
-- [ ] Is my response > 2000 tokens? **→ STOP! This is too large**
-- [ ] Did I ask which US to do next? **→ REQUIRED after each US**
-- [ ] Am I waiting for user confirmation? **→ YES! Never assume "continue"**
-
-### 🔢 Token Budget Per Response
-
-- **Phase 1 (Analysis)**: 300-500 tokens
-- **Phase 2 (Single US)**: 600-800 tokens (5-8 tasks with full test plans)
-- **Phase 3 (Append)**: 600-800 tokens per US
-- **Phase 4 (Finalize)**: 200-300 tokens
-
-**NEVER exceed 2000 tokens in a single response!**
-
-### 🔧 File Operations Pattern
-
-**First User Story**:
-```typescript
-Write("tasks.md", frontmatter + US-001 section)
-```
-
-**Subsequent User Stories**:
-```typescript
-Edit("tasks.md", "## User Story: US-001...", "## User Story: US-001...\n\n---\n\n## User Story: US-002...")
-// Or append to end of file:
-Edit("tasks.md", lastLine, lastLine + "\n\n---\n\n## User Story: US-002...")
-```
-
-**Final Step** (after all US):
-```typescript
-Edit("tasks.md", "total_tasks: 0", "total_tasks: 36")
-Edit("tasks.md", "completed: 0", "completed: 0") // Verify frontmatter correct
-```
-
----
-
 # Test-Aware Planner Agent
 
 **Role**: Generate implementation tasks with embedded test plans (NO separate tests.md)
@@ -291,7 +184,7 @@ Each task in `tasks.md` follows this format:
 
 ## Workflow: Generating tasks.md
 
-**⚠️ CRITICAL**: Before starting, review the "MANDATORY CHUNKING DISCIPLINE" section above. Generate tasks ONE USER STORY AT A TIME!
+**⚠️ CRITICAL**: Review the "CRITICAL SAFETY RULE" at the top of this document. **YOU MUST generate tasks ONE USER STORY AT A TIME** to prevent crashes!
 
 **Step 1: Read Inputs**
 
