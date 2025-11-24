@@ -421,10 +421,26 @@ export class IncrementArchiver {
       if (!featureInArchive) {
         if (featureAlreadyActive) {
           this.logger.info(`   ✅ Feature ${featureId} already in active location (no action needed)`);
+          return;
         } else {
-          this.logger.debug(`   Feature ${featureId} not found in archive or active (may not exist yet)`);
+          // Feature doesn't exist - CREATE it by syncing from increment
+          this.logger.info(`   📝 Feature ${featureId} doesn't exist - creating from increment spec...`);
+
+          try {
+            const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
+            const sync = new LivingDocsSync(this.rootDir);
+            const result = await sync.syncIncrement(increment);
+
+            if (result.success) {
+              this.logger.success(`   ✅ Created feature ${featureId} with ${result.filesCreated.length} files`);
+            } else {
+              this.logger.warn(`   ⚠️  Failed to create feature: ${result.errors.join(', ')}`);
+            }
+          } catch (syncError) {
+            this.logger.warn(`   ⚠️  Could not create feature: ${syncError}`);
+          }
+          return;
         }
-        return;
       }
 
       if (featureAlreadyActive) {

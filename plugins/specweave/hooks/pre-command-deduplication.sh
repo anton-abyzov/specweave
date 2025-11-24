@@ -1,83 +1,73 @@
 #!/bin/bash
 
-# SpecWeave Pre-Command Deduplication Hook
+# SpecWeave Pre-Command Deduplication Hook (v0.26.14 - OPTIMIZED)
 # Fires BEFORE any command executes (UserPromptSubmit hook)
 # Purpose: Prevent duplicate command invocations within configurable time window
+#
+# OPTIMIZATIONS (v0.26.14):
+# 1. Early exit for non-SpecWeave projects (<1ms)
+# 2. Skip node spawn if deduplicator not available
+# 3. Pure bash stdin reading
 
-set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
+set +e
 
 # ==============================================================================
-# PROJECT ROOT DETECTION
+# ULTRA-FAST EARLY EXIT
 # ==============================================================================
 
-# Find project root by searching upward for .specweave/ directory
-find_project_root() {
-  local dir="$1"
-  while [ "$dir" != "/" ]; do
-    if [ -d "$dir/.specweave" ]; then
-      echo "$dir"
-      return 0
-    fi
-    dir="$(dirname "$dir")"
-  done
-  # Fallback: try current directory
-  if [ -d "$(pwd)/.specweave" ]; then
-    pwd
-  else
-    echo "$(pwd)"
-  fi
-}
-
-PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
-cd "$PROJECT_ROOT" 2>/dev/null || true
+# Quick check: If no .specweave in cwd or nearby, just approve
+if [[ ! -d ".specweave" ]] && [[ ! -d "../.specweave" ]] && [[ ! -d "../../.specweave" ]]; then
+  cat /dev/stdin > /dev/null  # Drain stdin
+  echo '{"decision":"approve"}'
+  exit 0
+fi
 
 # Read input JSON from stdin
 INPUT=$(cat)
 
 # ==============================================================================
-# DEDUPLICATION CHECK: Block duplicate commands within 1 second
+# DEDUPLICATION CHECK: Pure bash with file-based cache
 # ==============================================================================
 
-# Check if deduplication module is available
-if command -v node >/dev/null 2>&1 && [[ -f "dist/src/core/deduplication/command-deduplicator.js" ]]; then
-  # Use dedicated wrapper script for ES module compatibility
-  DEDUP_RESULT=$(echo "$INPUT" | node scripts/check-deduplication.js 2>/dev/null || echo "OK")
+# Use file-based deduplication (no node!) with 1-second TTL
+CACHE_DIR=".specweave/state/.dedup-cache"
+mkdir -p "$CACHE_DIR" 2>/dev/null || true
 
-  # Parse result
-  STATUS=$(echo "$DEDUP_RESULT" | head -1)
+# Extract command from input (use jq if available, fallback to grep)
+if command -v jq >/dev/null 2>&1; then
+  COMMAND=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null | head -c 100 | tr -d '\n' | tr '/' '_' | tr ' ' '_')
+else
+  COMMAND=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]{0,100}' 2>/dev/null | tr '/' '_' | tr ' ' '_')
+fi
 
-  if [[ "$STATUS" == "DUPLICATE" ]]; then
-    # Get stats
-    STATS=$(echo "$DEDUP_RESULT" | tail -1)
+# Only check for SpecWeave commands
+if [[ "$COMMAND" == *specweave* ]]; then
+  CACHE_FILE="$CACHE_DIR/${COMMAND:0:50}.lock"
 
-    # Extract command and stats for readable message
-    COMMAND=$(echo "$STATS" | grep -o '"lastCommand":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
-    TOTAL_BLOCKED=$(echo "$STATS" | grep -o '"totalDuplicatesBlocked":[0-9]*' | cut -d':' -f2 || echo "1")
-    CACHE_SIZE=$(echo "$STATS" | grep -o '"currentCacheSize":[0-9]*' | cut -d':' -f2 || echo "1")
-
-    # Build error message WITHOUT embedding JSON (avoid escaping issues)
-    MESSAGE=$(cat <<'EOF'
+  # Check if cached and recent (within 1 second)
+  if [[ -f "$CACHE_FILE" ]]; then
+    CACHE_AGE=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)))
+    if [[ "$CACHE_AGE" -lt 1 ]]; then
+      cat <<EOF
 {
   "decision": "block",
-  "reason": "🚫 DUPLICATE COMMAND DETECTED\n\nCommand: `COMMAND_PLACEHOLDER`\nTime window: 1 second\n\nThis command was just executed! To prevent unintended duplicates, this invocation has been blocked.\n\n💡 If you meant to run this command again:\n  1. Wait 1 second\n  2. Run the command again\n\nDeduplication Stats:\n- Total duplicates blocked: BLOCKED_PLACEHOLDER\n- Commands in cache: CACHE_PLACEHOLDER"
+  "reason": "Duplicate command detected (within 1 second). Wait a moment and try again."
 }
 EOF
-)
-    # Replace placeholders (avoids JSON escaping issues)
-    # Use | as sed delimiter to avoid conflicts with / in command names
-    echo "$MESSAGE" | sed "s|COMMAND_PLACEHOLDER|$COMMAND|g" | sed "s|BLOCKED_PLACEHOLDER|$TOTAL_BLOCKED|g" | sed "s|CACHE_PLACEHOLDER|$CACHE_SIZE|g"
-    exit 0
+      exit 0
+    fi
   fi
+
+  # Update cache timestamp
+  touch "$CACHE_FILE" 2>/dev/null || true
+
+  # Cleanup old cache files (>10 seconds old)
+  find "$CACHE_DIR" -type f -mmin +1 -delete 2>/dev/null &
 fi
 
 # ==============================================================================
-# PASS THROUGH: No duplicate detected, proceed with command
+# PASS THROUGH: No duplicate detected
 # ==============================================================================
 
-cat <<EOF
-{
-  "decision": "approve"
-}
-EOF
-
+echo '{"decision":"approve"}'
 exit 0
