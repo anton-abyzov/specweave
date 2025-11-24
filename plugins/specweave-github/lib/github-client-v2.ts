@@ -461,6 +461,37 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Get last comment on issue (for idempotency check)
+   *
+   * Returns the most recent comment body, or null if no comments exist
+   */
+  async getLastComment(issueNumber: number): Promise<{body: string; author: string} | null> {
+    // Get all comments (sorted by creation date, newest last)
+    const result = await execFileNoThrow('gh', [
+      'api',
+      `repos/${this.fullRepo}/issues/${issueNumber}/comments`,
+      '--jq',
+      '.[-1] | {body: .body, author: .user.login}',  // Get last comment only
+    ]);
+
+    if (result.exitCode !== 0) {
+      // If error, return null (no comments or API error)
+      return null;
+    }
+
+    if (!result.stdout.trim()) {
+      // Empty response = no comments
+      return null;
+    }
+
+    try {
+      return JSON.parse(result.stdout);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Add labels to issue
    */
   async addLabels(issueNumber: number, labels: string[]): Promise<void> {

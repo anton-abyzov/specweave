@@ -776,6 +776,7 @@ plugins/                # Skills, agents, commands, hooks
 **Critical incidents**:
 - 2025-11-22 - Multiple Claude Code crashes due to hook overhead
 - 2025-11-23 - Hook process storm (6 hooks per Edit/Write → 300 processes/min)
+- 2025-11-24 - PROJECT_ROOT order bug (recursion guard at wrong path → crashes)
 
 **Root cause**: Process exhaustion from spawning 6 bash processes per Edit/Write operation
 
@@ -825,13 +826,14 @@ exit 0  # ALWAYS exit 0, never block workflow
 ### Hook Safety Checklist (MANDATORY)
 
 **✅ EVERY hook MUST have**:
-1. Kill switch check (`SPECWEAVE_DISABLE_HOOKS`)
-2. Circuit breaker check (3 failure threshold)
-3. File locking (prevent concurrent runs)
-4. Debouncing (5s minimum)
-5. Error isolation (`set +e`, `exit 0`)
-6. Background work wrapped in subshell
-7. Circuit breaker updates on success/failure
+1. `PROJECT_ROOT` defined BEFORE any path variables (CRITICAL - v0.26.1)
+2. Kill switch check (`SPECWEAVE_DISABLE_HOOKS`)
+3. Circuit breaker check (3 failure threshold)
+4. File locking (prevent concurrent runs)
+5. Debouncing (5s minimum)
+6. Error isolation (`set +e`, `exit 0`)
+7. Background work wrapped in subshell
+8. Circuit breaker updates on success/failure
 
 **❌ NEVER in hooks**:
 - `set -e` (causes crashes)
@@ -911,6 +913,71 @@ done
 - Completed/abandoned status → skip increment
 
 **See**: `.specweave/increments/0050-*/reports/ARCHITECTURAL-FIX-ACTIVE-INCREMENT-FILTERING.md`
+
+### Hook Variable Initialization Order (v0.26.1 - CRITICAL FIX)
+
+**CRITICAL BUG PATTERN**: Variables used in path construction MUST be defined BEFORE they're used!
+
+**Incident** (2025-11-24): Claude Code crashed 3x due to `PROJECT_ROOT` being used before definition in `post-task-completion.sh`.
+
+**The Bug**:
+```bash
+# ❌ WRONG: Uses $PROJECT_ROOT before it's defined
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"  # Line 71
+# ... 40 lines later ...
+PROJECT_ROOT="$(find_project_root ...)"  # Line 112 - TOO LATE!
+
+# Result: Guard file created at wrong path (/.specweave/state/...)
+```
+
+**What Happened**:
+1. Guard file created at **invalid path** (`/.specweave/state/.hook-recursion-guard`)
+2. Other hooks check guard at **correct path** (`/full/project/path/.specweave/state/...`)
+3. Guard not found → hooks don't exit early → **INFINITE RECURSION**
+4. PreToolUse hook fired 3x → Claude Code crashed
+
+**✅ CORRECT Pattern**:
+```bash
+# 1. Define find_project_root() function FIRST (line 40)
+find_project_root() { ... }
+
+# 2. Set PROJECT_ROOT IMMEDIATELY (line 50)
+PROJECT_ROOT="$(find_project_root ...)"
+
+# 3. NOW use PROJECT_ROOT in paths (line 60+)
+RECURSION_GUARD_FILE="$PROJECT_ROOT/.specweave/state/.hook-recursion-guard"
+```
+
+**Validation** (automated script):
+```bash
+# Run the validation script (validates all hooks automatically)
+bash scripts/validate-hook-variable-order.sh
+
+# Expected output: ✅ ALL HOOKS VALIDATED SUCCESSFULLY
+# If fails: Script shows exactly which hooks have wrong variable order
+```
+
+**Enforcement** (✅ DONE - v0.26.1):
+- ✅ Pre-commit hook added: runs `validate-hook-variable-order.sh` on every commit
+- ✅ Regression tests added: `tests/unit/hooks/recursion-guard.test.ts` (29 tests)
+- ✅ Validates all hooks with RECURSION_GUARD_FILE have correct variable order
+- ✅ Blocks commits where `PROJECT_ROOT` is defined after `RECURSION_GUARD_FILE`
+
+**Manual validation**:
+```bash
+# Check specific hook manually
+hook="plugins/specweave/hooks/post-task-completion.sh"
+guard_line=$(grep -n "^RECURSION_GUARD_FILE=" "$hook" | cut -d: -f1)
+root_line=$(grep -n "^PROJECT_ROOT=" "$hook" | cut -d: -f1)
+echo "PROJECT_ROOT: line $root_line"
+echo "RECURSION_GUARD_FILE: line $guard_line"
+# root_line MUST be < guard_line
+```
+
+**See**:
+- `.specweave/increments/0051-*/reports/PROJECT-ROOT-ORDER-BUG-2025-11-24.md`
+- `scripts/validate-hook-variable-order.sh` (validation script)
+- `tests/unit/hooks/recursion-guard.test.ts` (regression tests)
 
 ---
 

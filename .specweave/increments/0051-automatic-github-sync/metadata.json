@@ -1,10 +1,11 @@
 {
   "id": "0051-automatic-github-sync",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "feature_id": "FS-049",
   "created": "2025-11-23T00:00:49Z",
-  "lastActivity": "2025-11-23T21:09:19.194Z",
+  "completed": "2025-11-23T22:50:00.000Z",
+  "lastActivity": "2025-11-23T22:50:00.000Z",
   "testMode": "test-after",
   "coverageTarget": 80,
   "acSyncEvents": [
@@ -40,34 +41,5 @@
       "warnings": [],
       "changesCount": 24
     }
-  ],
-  "github": {
-    "issues": [
-      {
-        "userStory": "US-001",
-        "number": 716,
-        "url": "https://github.com/anton-abyzov/specweave/issues/716",
-        "createdAt": "2025-11-23T21:17:00.000Z"
-      },
-      {
-        "userStory": "US-002",
-        "number": 717,
-        "url": "https://github.com/anton-abyzov/specweave/issues/717",
-        "createdAt": "2025-11-23T21:17:00.000Z"
-      },
-      {
-        "userStory": "US-003",
-        "number": 718,
-        "url": "https://github.com/anton-abyzov/specweave/issues/718",
-        "createdAt": "2025-11-23T21:17:00.000Z"
-      },
-      {
-        "userStory": "US-004",
-        "number": 719,
-        "url": "https://github.com/anton-abyzov/specweave/issues/719",
-        "createdAt": "2025-11-23T21:17:00.000Z"
-      }
-    ],
-    "lastSync": "2025-11-23T21:17:00.000Z"
-  }
+  ]
 }
