@@ -148,7 +148,7 @@ As a developer, I want input validation.
       expect(tasksContent).toContain('0001-test-feature');
 
       // Assert: Metadata updated to ACTIVE
-      const updatedMetadata = MetadataManager.read(incrementId);
+      const updatedMetadata = MetadataManager.read(incrementId, testDir);
       expect(updatedMetadata.status).toBe(IncrementStatus.ACTIVE);
     });
 
@@ -452,7 +452,7 @@ increment: 0003-auto-detect
         to: IncrementStatus.ACTIVE
       });
 
-      const updatedMetadata = MetadataManager.read(incrementId);
+      const updatedMetadata = MetadataManager.read(incrementId, testDir);
       expect(updatedMetadata.status).toBe(IncrementStatus.ACTIVE);
     });
 
@@ -487,7 +487,7 @@ increment: 0003-auto-detect
       // Assert: Either succeeds with no transition OR fails (validator may reject ACTIVE)
       if (result.success) {
         expect(result.statusTransition).toBeUndefined();
-        const updatedMetadata = MetadataManager.read(incrementId);
+        const updatedMetadata = MetadataManager.read(incrementId, testDir);
         expect(updatedMetadata.status).toBe(IncrementStatus.ACTIVE); // Unchanged
       } else {
         // Validator may reject re-planning ACTIVE increments
