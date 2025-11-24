@@ -184,30 +184,35 @@ export class IncrementReopener {
         result.wipLimitExceeded = true;
       }
 
-      // 5. Update metadata: COMPLETED → ACTIVE
+      // 5. Update status: COMPLETED → ACTIVE (atomically updates both spec.md and metadata.json)
       const previousStatus = metadata.status;
-      metadata.status = IncrementStatus.ACTIVE;
-      metadata.lastActivity = new Date().toISOString();
+      MetadataManager.updateStatus(
+        incrementId,
+        IncrementStatus.ACTIVE,
+        `Reopened: ${reason}`
+      );
 
       // 6. Add reopen history (audit trail)
-      if (!metadata.reopened) {
-        metadata.reopened = { count: 0, history: [] };
+      // Re-read metadata after status update
+      const updatedMetadata = MetadataManager.read(incrementId) as IncrementMetadataWithReopen;
+
+      if (!updatedMetadata.reopened) {
+        updatedMetadata.reopened = { count: 0, history: [] };
       }
 
-      metadata.reopened.count++;
-      metadata.reopened.history.push({
+      updatedMetadata.reopened.count++;
+      updatedMetadata.reopened.history.push({
         date: new Date().toISOString(),
         reason,
         previousStatus,
         by: 'user'
       });
 
-      // 7. Write metadata
-      MetadataManager.write(incrementId, metadata);
+      // 7. Write updated metadata (with reopen history)
+      MetadataManager.write(incrementId, updatedMetadata);
 
-      // 8. Update active increment cache
-      const activeManager = new ActiveIncrementManager();
-      activeManager.setActive(incrementId);
+      // 8. Active increment cache is already updated by updateStatus()
+      // No need to call activeManager.setActive() again
 
       // 9. Reopen uncompleted tasks (if any)
       const tasksReopened = await this.reopenUncompletedTasks(incrementId, reason);
@@ -216,7 +221,7 @@ export class IncrementReopener {
       // Success!
       result.success = true;
       result.itemsReopened.push(`Increment ${incrementId}`);
-      result.metadata = metadata;
+      result.metadata = updatedMetadata;
 
       return result;
 

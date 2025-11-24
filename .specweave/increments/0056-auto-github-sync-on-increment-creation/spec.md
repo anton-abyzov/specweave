@@ -1,11 +1,11 @@
 ---
 increment: 0056-auto-github-sync-on-increment-creation
-title: "Fix Automatic GitHub Sync on Increment Creation"
+title: Fix Automatic GitHub Sync on Increment Creation
 priority: P0
-status: completed
+status: planned
 type: enhancement
-created: 2025-11-24
-completed: 2025-11-24
+created: 2025-11-24T00:00:00.000Z
+completed: 2025-11-24T00:00:00.000Z
 epic: FS-056
 test_mode: TDD
 coverage_target: 95

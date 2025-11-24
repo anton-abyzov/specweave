@@ -296,6 +296,7 @@ export class MetadataManager {
     reason?: string
   ): IncrementMetadata {
     const metadata = this.read(incrementId);
+    const oldStatus = metadata.status; // ← Capture old status for sync trigger
 
     // Validate transition
     if (!isValidTransition(metadata.status, newStatus)) {
@@ -386,6 +387,28 @@ export class MetadataManager {
     ) {
       // Increment no longer active → smart update (find next active or clear)
       activeManager.smartUpdate();
+    }
+
+    // **NEW (2025-11-24)**: Auto-trigger sync for meaningful status transitions
+    // This ensures GitHub issues update automatically when work starts/completes
+    // Safety: Non-blocking, circuit breaker protected, errors isolated
+    try {
+      // Dynamic import to avoid circular dependency
+      const { StatusChangeSyncTrigger } = require('./status-change-sync-trigger.js');
+
+      StatusChangeSyncTrigger.triggerIfNeeded(
+        incrementId,
+        oldStatus,
+        newStatus
+      ).catch((error: Error) => {
+        // Log but don't throw - sync failure shouldn't break status update
+        this.logger.warn(
+          `Auto-sync failed for ${incrementId}: ${error.message}`
+        );
+      });
+    } catch (importError) {
+      // Module not available yet (during build?) - skip sync
+      this.logger.debug('Status sync trigger not available');
     }
 
     return metadata;
