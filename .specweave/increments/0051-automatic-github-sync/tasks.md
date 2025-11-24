@@ -117,7 +117,7 @@ describe('GitHubConfig Tool-Specific Gate', () => {
 ### T-003: Implement 4-Gate Evaluation Logic in SyncCoordinator
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Priority**: P0
 **Estimated**: 3 hours
 
@@ -2008,6 +2008,76 @@ export SPECWEAVE_DISABLE_HOOKS=1
 **Acceptance Criteria Validation**:
 - [x] CHANGELOG updated
 - [x] Release prepared
+
+---
+
+## Ad-Hoc Cleanup (Completed During Increment)
+
+### T-029: Remove Duplicate Permissions Configuration
+**User Story**: US-002 (Permission Gates)
+**Satisfies ACs**: AC-US2-01 (Config supports independent flags)
+**Status**: [x] completed
+**Priority**: P0
+**Estimated**: 1 hour
+**Actual**: 1.5 hours (including ADR-0071 documentation)
+**Completed**: 2025-11-23
+
+**Context**: During increment 0051 work, discovered duplicate permission configuration that caused confusion:
+- `sync.settings.canUpdateStatus` (ACTIVE, used in 9+ files)
+- `permissions.canUpdateStatus` (DEAD CODE, zero usage)
+
+**Implementation Steps**:
+1. Verified zero usage via comprehensive grep analysis
+2. Removed `PermissionsConfiguration` interface from `src/core/config/types.ts`
+3. Removed `permissions` field from `SpecWeaveConfig` interface
+4. Removed `permissions` from `DEFAULT_CONFIG`
+5. Created ADR-0071 documenting architectural decision
+6. Updated CHANGELOG.md with removal notice
+7. Verified all tests pass (3,215 passing, zero breaks)
+8. Documented in increment 0051 tasks.md (source of truth)
+
+**Files Modified**:
+- `src/core/config/types.ts` (-18 lines: removed interface, field, default)
+- `CHANGELOG.md` (+4 lines: documented removal)
+- `.specweave/docs/internal/architecture/adr/0071-remove-unused-permissions-configuration.md` (NEW, 250+ lines)
+- `.specweave/increments/0051-automatic-github-sync/tasks.md` (this file, documented work)
+
+**Verification**:
+```bash
+# Confirmed zero usage
+grep -r "config\.permissions\." src/  # 0 results
+grep -r "PermissionsConfiguration" src/  # Only definition (removed)
+
+# Confirmed active usage of sync.settings
+grep -r "sync\.settings\.canUpdateStatus" src/  # 9 files, 21+ matches ✅
+
+# Confirmed no config.json files affected
+grep -r '"permissions":' .specweave/ --include="config.json"  # 0 results
+```
+
+**Rationale** (from ADR-0071):
+- Legacy cruft from pre-ADR-0047 architecture (v0.23.0)
+- Zero usage = zero impact on users
+- Eliminates confusion for 4-gate permission model
+- Reduces code complexity (18 lines removed)
+- Prevents future developers from using wrong permission model
+
+**Related**:
+- ADR-0071: Remove Unused Top-Level Permissions Configuration
+- ADR-0047: Three-Permission Architecture (introduced sync.settings)
+- ADR-0065: Three-Tier Permission Gates (4-gate model for 0051)
+
+**Acceptance Criteria Validation**:
+- [x] Zero usage verified (grep analysis)
+- [x] Code removed from types.ts
+- [x] Tests pass (3,215 passing)
+- [x] ADR-0071 created
+- [x] CHANGELOG updated
+- [x] Documented in tasks.md
+
+**Test Coverage**: N/A (removal of dead code, no new functionality)
+
+---
 
 ## Task Summary
 
