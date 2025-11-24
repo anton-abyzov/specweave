@@ -52,7 +52,7 @@ set +e
 # - Eliminates 33% of hook overhead (1 of 3 hooks per operation)
 # - Falls back to PostToolUse mtime detection (slower but works)
 #
-# See: ADR-0074 (Hierarchical Hook Early Exit Strategy)
+# See: ADR-0128 (Hierarchical Hook Early Exit Strategy)
 
 if [[ -z "${TOOL_USE_ARGS:-}" ]]; then
   # Telemetry: Track PreToolUse disabled events (lightweight counter)
