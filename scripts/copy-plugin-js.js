@@ -8,8 +8,10 @@
  * them in-place with minimal type checking.
  */
 
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 import { execSync } from 'child_process';
-import fs from 'fs-extra';
+import { existsSync, statSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { glob } from 'glob';
@@ -40,9 +42,9 @@ async function transpilePlugins() {
     const jsPath = fullPath.replace(/\.ts$/, '.js');
 
     // Skip if .js already exists and is newer than .ts
-    if (fs.existsSync(jsPath)) {
-      const tsStats = fs.statSync(fullPath);
-      const jsStats = fs.statSync(jsPath);
+    if (existsSync(jsPath)) {
+      const tsStats = statSync(fullPath);
+      const jsStats = statSync(jsPath);
       if (jsStats.mtimeMs > tsStats.mtimeMs) {
         skipCount++;
         continue;
@@ -67,4 +69,4 @@ async function transpilePlugins() {
 transpilePlugins().catch(err => {
   console.error('❌ Error transpiling plugin files:', err);
   process.exit(1);
-});
+});                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
