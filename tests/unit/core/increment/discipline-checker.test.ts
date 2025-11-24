@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { DisciplineChecker } from '../../../../src/core/increment/discipline-checker.js';
 import { ValidationResult, DisciplineLimits } from '../../../../src/core/increment/types.js';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import os from 'os';
 
 describe('DisciplineChecker', () => {

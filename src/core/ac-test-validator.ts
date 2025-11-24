@@ -20,7 +20,7 @@ import { Task } from '../generators/spec/task-parser.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import chalk from 'chalk';
 
 const execAsync = promisify(exec);

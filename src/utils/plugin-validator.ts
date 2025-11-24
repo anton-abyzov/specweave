@@ -9,7 +9,7 @@
  * @since 0.9.4
  */
 
-import fs from 'fs-extra'; // legacy fs-extra
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { exec } from 'child_process';

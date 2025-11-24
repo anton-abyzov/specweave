@@ -11,7 +11,7 @@
  * 3. All tasks removed/moved with documentation
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 
 export interface PendingTask {

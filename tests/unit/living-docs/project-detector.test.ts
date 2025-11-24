@@ -10,7 +10,7 @@ import {
   createProjectDetector,
 } from '../../../src/core/living-docs/project-detector.js';
 import { ParsedSpec } from '../../../src/core/living-docs/content-parser.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
 

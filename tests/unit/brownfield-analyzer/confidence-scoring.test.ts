@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { BrownfieldAnalyzer } from '../../../src/core/brownfield/analyzer.js';
 import { withTempDir } from '../../utils/temp-dir.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
 describe('BrownfieldAnalyzer - Confidence Scoring', () => {

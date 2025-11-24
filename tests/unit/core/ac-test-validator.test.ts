@@ -10,7 +10,7 @@ import { ACTestValidator, TestRunnerConfig, ACTestValidationResult } from '../..
 import { Task } from '../../../src/generators/spec/task-parser.js';
 import os from 'os';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 

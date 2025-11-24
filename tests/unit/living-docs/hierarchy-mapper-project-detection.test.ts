@@ -8,7 +8,7 @@
 
 import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper.js';
 import { ConfigManager } from '../../../src/core/config-manager.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
 // Mock dependencies

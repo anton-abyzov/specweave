@@ -4,7 +4,7 @@
  */
 
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import { checkNodeVersion, installDocusaurus, isDocusaurusInstalled } from './package-installer.js';
 import { buildSidebar, writeSidebar, countDocuments, countCategories } from './sidebar-builder.js';
 import { writeDocusaurusConfig, writePackageJSON, writeCustomCSS, writeIndexPage, writeIndexModuleCSS } from './config-generator.js';

@@ -1,5 +1,5 @@
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 export interface IncrementConfig {
   status: string;

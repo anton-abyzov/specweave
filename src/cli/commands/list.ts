@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
 import { getDirname } from '../../utils/esm-helpers.js';

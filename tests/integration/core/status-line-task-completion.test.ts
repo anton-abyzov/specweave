@@ -18,7 +18,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { StatusLineManager } from '../../../src/core/status-line/status-line-manager.js';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { exec } from 'child_process';

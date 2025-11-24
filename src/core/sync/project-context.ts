@@ -5,7 +5,7 @@
  * Handles project detection, specs folder organization, and project-increment mapping.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import {
   ProjectContext,

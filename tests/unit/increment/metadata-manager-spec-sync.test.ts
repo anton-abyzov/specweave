@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';

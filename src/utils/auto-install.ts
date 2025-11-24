@@ -5,7 +5,7 @@
  * Components are copied from the npm package to .claude/ directories.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import { getDirname } from './esm-helpers.js';
 

@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 import { StatusLineValidator } from '../../src/core/status-line-validator.js';

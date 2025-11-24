@@ -13,7 +13,7 @@ import { ImportCoordinator } from '../../../src/importers/import-coordinator.js'
 import { ItemConverter } from '../../../src/importers/item-converter.js';
 import { loadSyncMetadata } from '../../../src/sync/sync-metadata.js';
 import * as inquirer from 'inquirer';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 // Mock dependencies
 vi.mock('../../../src/importers/import-coordinator');

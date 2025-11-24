@@ -7,7 +7,7 @@
  * Persistence: Stores data in .specweave/logs/costs.json
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import type { Model } from '../types/model-selection.js';
 import type { TokenUsage, CostSession, IncrementCostReport } from '../types/cost-tracking.js';

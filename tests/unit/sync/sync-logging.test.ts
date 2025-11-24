@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { SyncEventLogger, SyncEvent, ConflictEvent } from '../../../src/core/sync/sync-event-logger.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
 // Mock fs-extra

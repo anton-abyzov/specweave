@@ -7,7 +7,7 @@
  * that feature are archived.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { glob } from 'glob';
 import { IncrementArchiver } from '../increment/increment-archiver.js';

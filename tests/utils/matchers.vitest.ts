@@ -1,5 +1,5 @@
 import { expect } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 
 /**
  * Custom Vitest matchers for SpecWeave tests

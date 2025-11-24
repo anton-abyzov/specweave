@@ -14,7 +14,7 @@
  * @version 2.0.0
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 
 // ============================================================================

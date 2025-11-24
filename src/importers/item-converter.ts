@@ -6,7 +6,7 @@
  */
 
 import type { ExternalItem } from './external-importer.js';
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import { FSIdAllocator, type ExternalWorkItem } from '../living-docs/fs-id-allocator.js';
 import { IDRegistry } from '../living-docs/id-registry.js';

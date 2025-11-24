@@ -21,7 +21,7 @@
  * - Reorganization detection (moved issues, split/merged stories)
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import inquirer from 'inquirer';
 import { SyncProvider } from '../types/sync-profile.js';

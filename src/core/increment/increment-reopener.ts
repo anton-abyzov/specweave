@@ -7,7 +7,7 @@
  * Part of smart reopen functionality (increment 0032)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { MetadataManager } from './metadata-manager.js';
 import { ActiveIncrementManager } from './active-increment-manager.js';

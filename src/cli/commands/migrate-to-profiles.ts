@@ -10,7 +10,7 @@
  * - Azure DevOps (.env: AZURE_DEVOPS_PAT, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT)
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { ProfileManager } from '../../core/sync/profile-manager.js';
 import { ProjectContextManager } from '../../core/sync/project-context.js';

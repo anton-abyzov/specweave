@@ -6,7 +6,7 @@
  */
 
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import { BrownfieldAnalyzer, FileClassification } from './analyzer.js';
 import { ProjectManager } from '../project-manager.js';
 import { ConfigManager } from '../config-manager.js';

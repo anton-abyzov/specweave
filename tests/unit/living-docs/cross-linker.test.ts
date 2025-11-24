@@ -18,7 +18,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 vi.mock('fs-extra');
 
 // Import after mock
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

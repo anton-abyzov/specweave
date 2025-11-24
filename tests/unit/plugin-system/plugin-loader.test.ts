@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { PluginLoader } from '../../../src/core/plugin-loader.js';
 import { ManifestValidationError, PluginNotFoundError } from '../../../src/core/types/plugin.js';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 describe('PluginLoader', () => {
   let loader: PluginLoader;

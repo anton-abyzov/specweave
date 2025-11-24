@@ -12,7 +12,7 @@
  * - Archive-aware (scans both active and archived features)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { formatOrigin, type ExternalItemMetadata } from '../core/types/origin-metadata.js';
