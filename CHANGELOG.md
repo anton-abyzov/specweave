@@ -23,6 +23,12 @@ All notable changes to SpecWeave will be documented in this file.
   - No impact on existing functionality (0 usage in codebase)
   - See ADR-0047 for three-permission architecture rationale
 
+### 🐛 Fixed
+- **Init Command**: Fixed `specweave init` still creating dead `permissions` config block
+  - Types were removed in v0.24.12 (ADR-0071) but init.ts wasn't updated
+  - Now only creates active `sync.settings.*` permissions (4-gate model)
+  - No migration needed (config validator ignores unknown fields)
+
 ---
 
 ## [0.23.21] - 2025-11-22
