@@ -1,11 +1,23 @@
 ---
 name: specweave:archive
-description: Manually archive completed increments - NEVER auto-archives, explicit user action only
+description: Manually archive completed increments and sync living docs - NEVER auto-archives, explicit user action only
 ---
 
 # Archive Increments (Manual Only)
 
 **CRITICAL POLICY**: Increments are **NEVER** auto-archived. Archiving is **MANUAL ONLY** and requires explicit user action via this command.
+
+## NEW: CLI Command Available!
+
+You can now use the CLI command for archiving:
+
+```bash
+specweave archive [increments...] [options]
+```
+
+This command automatically synchronizes living docs by archiving features in:
+- `.specweave/docs/internal/specs/_features/_archive/`
+- `.specweave/docs/internal/specs/{project}/_archive/`
 
 ## Philosophy
 

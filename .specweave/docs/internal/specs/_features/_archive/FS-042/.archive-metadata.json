@@ -1,0 +1,11 @@
+{
+  "id": "FS-042",
+  "type": "feature",
+  "archivedAt": "2025-11-24T19:00:56.868Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/_features/FS-042",
+  "linkedIncrements": [
+    "0042-test-infrastructure-cleanup"
+  ]
+}
