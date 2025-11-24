@@ -16,7 +16,7 @@
  * Performance: ~50-100ms (acceptable for user-facing commands)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { StatusLineCache, CurrentIncrement } from './types.js';
 import { TaskCounter } from './task-counter.js';

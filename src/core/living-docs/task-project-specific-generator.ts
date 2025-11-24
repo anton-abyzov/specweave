@@ -25,7 +25,7 @@
  *     - [ ] T-002: Create React component
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 
 export interface ProjectSpecificTask {

@@ -5,7 +5,7 @@
  * handling of large state files.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import { StateManager } from '../../src/core/cicd/state-manager.js';
 import { CICDMonitorState, FailureRecord } from '../../src/core/cicd/types.js';

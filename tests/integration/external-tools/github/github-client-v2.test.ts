@@ -6,7 +6,7 @@
  * Run: npm run test:integration
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';

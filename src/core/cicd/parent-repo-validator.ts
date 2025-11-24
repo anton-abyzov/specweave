@@ -10,7 +10,7 @@
  * when using multi-project mode with -shared flag.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import chalk from 'chalk';

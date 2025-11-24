@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import os from 'os';
 import path from 'path';
 import { PermissionChecker } from '../../../src/core/utils/permission-checker.js';

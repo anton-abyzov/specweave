@@ -5,7 +5,7 @@
  * Provides type-safe access to configuration with defaults.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import { SpecweaveConfig, DEFAULT_CONFIG } from './types/config.js';
 

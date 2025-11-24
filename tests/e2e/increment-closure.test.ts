@@ -14,7 +14,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import * as path from 'path';
 import matter from 'gray-matter';
 import { exec } from 'child_process';

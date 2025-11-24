@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Unit tests for Git Diff Analyzer
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
 import {

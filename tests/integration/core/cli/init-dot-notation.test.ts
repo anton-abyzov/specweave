@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 
 const execAsync = promisify(exec);

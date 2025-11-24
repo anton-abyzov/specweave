@@ -7,7 +7,7 @@
  * 3. User prompt (fallback)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import inquirer from 'inquirer';
 import { ConfigManager } from '../core/config-manager.js';

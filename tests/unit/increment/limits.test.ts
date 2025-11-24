@@ -16,7 +16,7 @@ import {
 } from '../../../src/core/increment/limits.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { IncrementType, IncrementStatus, createDefaultMetadata } from '../../../src/core/types/increment-metadata.js';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 

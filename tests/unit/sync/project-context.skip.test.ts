@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Tests for multi-project context management and smart detection.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { ProjectContextManager } from '../../../src/core/sync/project-context.js';

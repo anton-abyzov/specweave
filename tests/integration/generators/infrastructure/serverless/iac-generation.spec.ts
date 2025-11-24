@@ -17,7 +17,7 @@
 
 import { test, expect } from '@playwright/test';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../../../src/utils/fs-native.js';
 import os from 'os';
 
 // TODO: Import IaC generator when implemented

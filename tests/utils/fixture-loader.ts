@@ -1,5 +1,5 @@
 import * as path from 'path';
-import * as fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import * as matter from 'gray-matter';
 
 export interface FixtureMeta data {

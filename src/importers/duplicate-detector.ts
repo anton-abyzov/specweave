@@ -5,7 +5,7 @@
  * Prevents re-importing items that have already been imported.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { glob } from 'glob';

@@ -11,7 +11,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 

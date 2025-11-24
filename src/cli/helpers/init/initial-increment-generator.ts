@@ -7,7 +7,7 @@
  * Part of: Empty increments folder fix (2025-11-19)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus, IncrementType, IncrementMetadata } from '../../../core/types/increment-metadata.js';
 import { MetadataManager } from '../../../core/increment/metadata-manager.js';

@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import * as fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 import { findProjectRoot } from '../../../test-utils/project-root.js';

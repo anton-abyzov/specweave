@@ -6,7 +6,7 @@
  * @module core/i18n
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { SupportedLanguage, LocaleStrings } from './types.js';

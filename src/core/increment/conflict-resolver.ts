@@ -7,7 +7,7 @@
  * Part of increment 0033: Duplicate Increment Prevention System
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import type { Duplicate, IncrementLocation } from './duplicate-detector.js';
 

@@ -13,7 +13,7 @@
  * Part of increment 0021: Fix Active Increment Tracking
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus } from '../types/increment-metadata.js';
 import { MetadataManager } from './metadata-manager.js';

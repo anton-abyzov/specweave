@@ -5,7 +5,7 @@
  * Supports multiple notification channels (console, file, webhook).
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { FailureRecord } from './types.js';
 

@@ -11,7 +11,7 @@
  */
 
 import { ContentParser, ContentClassifier, ProjectDetector, ContentDistributor, CrossLinker } from '../../src/core/living-docs/index.js';
-import fs from 'fs-extra';
+import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 
 describe('Intelligent Living Docs Sync - Integration', () => {

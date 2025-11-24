@@ -6,7 +6,7 @@
  */
 
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import { ConfigManager } from './config-manager.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../utils/project-detection.js';
 import { ProjectContext } from './living-docs/types.js';

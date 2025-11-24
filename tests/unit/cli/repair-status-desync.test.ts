@@ -25,7 +25,7 @@ vi.mock('fs-extra', () => ({
 
 import { validateStatusSync } from '../../../src/cli/commands/validate-status-sync.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 
 const mockValidateStatusSync = vi.mocked(validateStatusSync);
 const mockUpdateStatus = vi.mocked(SpecFrontmatterUpdater.updateStatus);

@@ -5,7 +5,7 @@
  * Enables SpecWeave to work with ANY AI coding tool.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import * as YAML from 'yaml';
 import { execSync } from 'child_process';

@@ -7,7 +7,7 @@
  * Part of increment 0037: Hook Health Check System
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import {
   HookExecutionResult,

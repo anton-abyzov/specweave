@@ -12,7 +12,7 @@
  * - Working directory dependencies
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 

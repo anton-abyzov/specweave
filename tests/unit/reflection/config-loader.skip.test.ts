@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Unit tests for Reflection Configuration Loader
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import {
   findSpecweaveRoot,

@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import os from 'os';
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import { execSync } from 'child_process';
 
 describe('AC Test Validation Workflow (Integration)', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import path from 'path';
 import os from 'os';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import { HookTestHarness } from '../test-utils/hook-test-harness.js';
 import { IncrementFactory } from '../test-utils/increment-factory.js';
 import { SpecValidator } from '../test-utils/spec-validator.js';

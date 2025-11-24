@@ -8,7 +8,7 @@
 
 import { ProjectManager } from '../../src/core/multi-project/project-manager';
 import { ConfigManager } from '../../src/core/config-manager';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';

@@ -5,7 +5,7 @@
  * .specweave/config.json with validation and defaults.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { MonitorServiceConfig } from './monitor-service.js';
 import { NotificationChannel } from './notifier.js';

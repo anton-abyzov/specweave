@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { UserStoryIssueBuilder } from '../../plugins/specweave-github/lib/user-story-issue-builder.js';
-import fs from 'fs-extra';
+import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
 

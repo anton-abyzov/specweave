@@ -12,7 +12,7 @@
  * @module spec-metadata-manager
  */
 
-import fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';

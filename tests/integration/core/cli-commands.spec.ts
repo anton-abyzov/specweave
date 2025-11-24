@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import os from 'os';
 
 const execAsync = promisify(exec);

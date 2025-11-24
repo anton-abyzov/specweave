@@ -62,7 +62,7 @@ vi.mock('../../../src/utils/project-detection.js', () => ({
 // ✅ CORRECT: ES6 imports with .js extensions
 // ❌ WRONG: const { MyModule } = require('...') - NO require()!
 
-import fs from 'fs-extra';
+import * as fs from '../src/utils/fs-native.js';
 import inquirer from 'inquirer';
 import { YourModule } from '../../../src/your-feature/your-module.js';
 import { HelperFunction } from '../../../src/utils/helper.js';

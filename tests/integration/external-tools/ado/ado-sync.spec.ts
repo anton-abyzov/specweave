@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import * as path from 'path';
 import { promises as fs } from 'fs';
-import { ensureDir, remove } from 'fs-extra';
+import { ensureDir, remove } from '../../../../src/utils/fs-native.js';
 import { fileURLToPath } from 'url';
 import { AdoClient, createAdoClient } from '../../plugins/specweave-ado/lib/ado-client';
 

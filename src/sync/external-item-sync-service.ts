@@ -13,7 +13,7 @@
  * Part of increment 0047-us-task-linkage (T-034B)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import type { Logger } from '../utils/logger.js';

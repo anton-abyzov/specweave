@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * including state persistence, locking, and deduplication.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import {

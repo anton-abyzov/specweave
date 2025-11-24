@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { WorkflowMonitor } from '../../../src/core/cicd/workflow-monitor.js';
 import { StateManager } from '../../../src/core/cicd/state-manager.js';
 import { silentLogger } from '../../../src/utils/logger.js';
-import * as fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
 

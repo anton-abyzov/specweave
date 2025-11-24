@@ -5,7 +5,7 @@
  * Concrete adapters extend this class and implement tool-specific logic.
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import { execSync } from 'child_process';
 import {

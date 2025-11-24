@@ -1,4 +1,4 @@
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { ACStatusManager } from './ac-status-manager.js';
 import { parseTasksWithUSLinks } from '../../generators/spec/task-parser.js';

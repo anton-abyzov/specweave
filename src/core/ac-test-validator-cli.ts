@@ -15,7 +15,7 @@
  */
 
 import path from 'path';
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import { createACTestValidator, ACTestValidationResult } from './ac-test-validator.js';
 import { parseTasksWithUSLinks, getAllTasks } from '../generators/spec/task-parser.js';
 import chalk from 'chalk';

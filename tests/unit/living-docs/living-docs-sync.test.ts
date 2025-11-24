@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs-extra';
+import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import * as os from 'os';
 import { LivingDocsSync } from '../../../src/core/living-docs/living-docs-sync.js';

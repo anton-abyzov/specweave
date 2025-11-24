@@ -5,7 +5,7 @@
  * Handles CRUD operations, validation, and profile selection.
  */
 
-import * as fs from 'fs-extra';
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import {
   SyncProfile,

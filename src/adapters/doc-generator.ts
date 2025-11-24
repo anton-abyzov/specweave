@@ -5,7 +5,7 @@
  * for use in adapter instruction files (.cursorrules, instructions.md, etc.)
  */
 
-import fs from 'fs-extra';
+import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import * as YAML from 'yaml';
 import { getDirname } from '../utils/esm-helpers.js';

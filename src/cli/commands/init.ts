@@ -1,4 +1,4 @@
-import fs from 'fs-extra'; // legacy fs-extra
+import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import os from 'os';
 import chalk from 'chalk';
