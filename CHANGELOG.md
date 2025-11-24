@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.26.5] - 2025-11-24
+
+### 🔧 Maintenance
+- **NPM Release Process**: Automated release workflow validation
+  - Added proper CHANGELOG entry for GitHub Actions compatibility
+  - Ensures Release & Publish workflow completes successfully
+  - Maintains npm package publishing standards
+
+---
+
 ## [0.26.4] - 2025-11-24
 
 ### 🐛 Bug Fixes
