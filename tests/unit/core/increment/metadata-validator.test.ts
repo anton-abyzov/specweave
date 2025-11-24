@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Unit Tests: MetadataValidator
@@ -7,9 +7,9 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * metadata.json and actual increment state (tasks.md).
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MetadataValidator } from '../../../../src/core/increment/metadata-validator.js';
 import * as fs from '../../../../src/utils/fs-native.js';
+import { promises as fsPromises } from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
@@ -19,7 +19,7 @@ describe('MetadataValidator', () => {
 
   beforeEach(async () => {
     // Create temporary project directory
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-validator-test-'));
+    tempDir = await fsPromises.mkdtemp(path.join(os.tmpdir(), 'specweave-validator-test-'));
     validator = new MetadataValidator(tempDir);
 
     // Create .specweave structure

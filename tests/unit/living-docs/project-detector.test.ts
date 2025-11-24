@@ -10,16 +10,26 @@ import {
   createProjectDetector,
 } from '../../../src/core/living-docs/project-detector.js';
 import { ParsedSpec } from '../../../src/core/living-docs/content-parser.js';
-import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
-import { execSync } from 'child_process';
-
-// Mock fs-extra
-vi.mock('fs-extra');
-// Mock child_process to prevent real git calls
-vi.mock('child_process');
-
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
+// Mock fs-native module
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  existsSync: vi.fn(),
+  readJSON: vi.fn(),
+  readFile: vi.fn(),
+  readFileSync: vi.fn(),
+  writeFile: vi.fn(),
+  ensureDir: vi.fn(),
+}));
+
+// Mock child_process to prevent real git calls
+vi.mock('child_process', () => ({
+  execSync: vi.fn(),
+}));
+
+import * as fs from '../../../src/utils/fs-native.js';
+import { execSync } from 'child_process';
 
 // Type-safe mocked functions
 const mockExistsSync = vi.mocked(fs.existsSync);
@@ -39,12 +49,12 @@ describe('ProjectDetector', () => {
     mockConfigPath = '/test/.specweave/config.json';
 
     // Mock execSync to prevent real git calls and ensure 'default' fallback
-    vi.mocked(execSync).mockImplementation(() => {
+    mockExecSync.mockImplementation(() => {
       throw new Error('Not a git repository');
     });
 
     // Default: no config file exists
-    mockExistsSync.mockReturnValue(false);
+    mockExistsSync.mockImplementation(() => false);
   });
 
   describe('Constructor and Initialization', () => {
@@ -91,8 +101,8 @@ describe('ProjectDetector', () => {
         },
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
 
@@ -104,7 +114,7 @@ describe('ProjectDetector', () => {
     });
 
     it('should handle invalid config file gracefully', () => {
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
       mockReadFileSync.mockImplementation(() => {
         throw new Error('Parse error');
       });
@@ -123,8 +133,8 @@ describe('ProjectDetector', () => {
         multiProject: {},
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
 
@@ -161,8 +171,8 @@ describe('ProjectDetector', () => {
         },
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
     });
@@ -373,8 +383,8 @@ describe('ProjectDetector', () => {
         },
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
     });
@@ -482,7 +492,7 @@ describe('ProjectDetector', () => {
     });
 
     it('should validate project structure', async () => {
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
 
       const result = await detector.validateProjectStructure('default');
 
@@ -491,7 +501,7 @@ describe('ProjectDetector', () => {
     });
 
     it('should detect missing folders in project structure', async () => {
-      mockExistsSync.mockReturnValue(false);
+      mockExistsSync.mockImplementation(() => false);
 
       const result = await detector.validateProjectStructure('default');
 
@@ -500,7 +510,7 @@ describe('ProjectDetector', () => {
     });
 
     it('should create project structure', async () => {
-      mockExistsSync.mockReturnValue(false);
+      mockExistsSync.mockImplementation(() => false);
 
       await detector.createProjectStructure('default');
 
@@ -509,7 +519,7 @@ describe('ProjectDetector', () => {
     });
 
     it('should not overwrite existing README', async () => {
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
 
       await detector.createProjectStructure('default');
 
@@ -612,8 +622,8 @@ describe('ProjectDetector', () => {
         },
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
 
@@ -646,8 +656,8 @@ describe('ProjectDetector', () => {
         },
       };
 
-      mockExistsSync.mockReturnValue(true);
-      mockReadFileSync.mockReturnValue(JSON.stringify(mockConfig));
+      mockExistsSync.mockImplementation(() => true);
+      mockReadFileSync.mockImplementation(() => JSON.stringify(mockConfig));
 
       detector = new ProjectDetector({ configPath: mockConfigPath });
 
