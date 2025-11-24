@@ -4,8 +4,8 @@
  * Drop-in replacements for fs-extra methods using only Node.js stdlib.
  * All methods use native Node.js 20+ APIs with no external dependencies.
  *
- * Migration from fs-extra:
- * - import fs from 'fs-extra' → import * as fs from './utils/fs-native.js'
+ * Migration from fs-extra: // legacy fs-extra (documentation only)
+ * - import fs from 'fs-extra' → import * as fs from './utils/fs-native.js' // legacy fs-extra
  * - All fs-extra methods work as drop-in replacements
  *
  * Benefits:
@@ -15,7 +15,7 @@
  * - Better debugging (native stack traces)
  */
 
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync } from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';
 
@@ -103,6 +103,30 @@ export function writeJsonSync(
   const content = JSON.stringify(data, null, spaces);
   writeFileSync(filePath, content, 'utf-8');
 }
+
+/**
+ * fs-extra compatibility: readJSON (uppercase J)
+ * Alias for readJson
+ */
+export const readJSON = readJson;
+
+/**
+ * fs-extra compatibility: readJSONSync (uppercase J)
+ * Alias for readJsonSync
+ */
+export const readJSONSync = readJsonSync;
+
+/**
+ * fs-extra compatibility: writeJSON (uppercase J)
+ * Alias for writeJson
+ */
+export const writeJSON = writeJson;
+
+/**
+ * fs-extra compatibility: writeJSONSync (uppercase J)
+ * Alias for writeJsonSync
+ */
+export const writeJSONSync = writeJsonSync;
 
 /**
  * Remove a file or directory (recursively)
@@ -221,6 +245,77 @@ export function ensureFileSync(filePath: string): void {
   }
 }
 
+/**
+ * Move a file or directory
+ * @param src - Source path
+ * @param dest - Destination path
+ * @param options - Move options
+ */
+export async function move(
+  src: string,
+  dest: string,
+  options?: { overwrite?: boolean }
+): Promise<void> {
+  // Ensure destination directory exists
+  await fsPromises.mkdir(path.dirname(dest), { recursive: true });
+
+  // Check if destination exists
+  if (existsSync(dest)) {
+    if (options?.overwrite) {
+      await remove(dest);
+    } else {
+      throw new Error(`Destination already exists: ${dest}`);
+    }
+  }
+
+  // Try rename first (faster if same filesystem)
+  try {
+    await fsPromises.rename(src, dest);
+  } catch (err: any) {
+    // If rename fails (different filesystems), copy then delete
+    if (err.code === 'EXDEV') {
+      await copy(src, dest);
+      await remove(src);
+    } else {
+      throw err;
+    }
+  }
+}
+
+/**
+ * Synchronous version of move
+ */
+export function moveSync(
+  src: string,
+  dest: string,
+  options?: { overwrite?: boolean }
+): void {
+  // Ensure destination directory exists
+  mkdirSync(path.dirname(dest), { recursive: true });
+
+  // Check if destination exists
+  if (existsSync(dest)) {
+    if (options?.overwrite) {
+      removeSync(dest);
+    } else {
+      throw new Error(`Destination already exists: ${dest}`);
+    }
+  }
+
+  // Try rename first (faster if same filesystem)
+  try {
+    fsRenameSync(src, dest);
+  } catch (err: any) {
+    // If rename fails (different filesystems), copy then delete
+    if (err.code === 'EXDEV') {
+      copySync(src, dest);
+      removeSync(src);
+    } else {
+      throw err;
+    }
+  }
+}
+
 // Re-export common fs/promises methods for convenience
 export const {
   readFile,
@@ -233,7 +328,11 @@ export const {
   rmdir,
   rename,
   chmod,
+  copyFile,
 } = fsPromises;
+
+// Create renameSync alias for fs-extra compatibility
+export const renameSync = fsRenameSync;
 
 // Re-export common synchronous methods
 export {
@@ -244,6 +343,7 @@ export {
   unlinkSync,
   mkdirSync,
   rmSync,
+  copyFileSync,
 };
 
 // Default export for convenience
@@ -253,8 +353,11 @@ export default {
   pathExists,
   readJson,
   writeJson,
+  readJSON,  // fs-extra compat
+  writeJSON,  // fs-extra compat
   remove,
   copy,
+  move,
   ensureFile,
   readFile,
   writeFile,
@@ -263,6 +366,8 @@ export default {
   readdir,
   access,
   unlink,
+  rename,
+  copyFile,
 
   // Sync methods
   ensureDirSync,
@@ -270,8 +375,11 @@ export default {
   existsSync,
   readJsonSync,
   writeJsonSync,
+  readJSONSync,  // fs-extra compat
+  writeJSONSync,  // fs-extra compat
   removeSync,
   copySync,
+  moveSync,
   ensureFileSync,
   readFileSync,
   writeFileSync,
@@ -280,4 +388,6 @@ export default {
   unlinkSync,
   mkdirSync,
   rmSync,
+  copyFileSync,
+  renameSync,
 };
