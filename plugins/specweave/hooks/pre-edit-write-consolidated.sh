@@ -3,17 +3,23 @@
 # Pre-Edit/Write Consolidated Hook: Capture File Path BEFORE Edit/Write Executes
 #
 # Purpose: Unified hook for both Edit and Write tools
-# Strategy: Detect file path, signal post-hook if it's a spec/tasks file
+# Strategy: Hierarchical early exit for maximum performance
 #
 # CONSOLIDATION (v0.25.0):
 # - Replaces pre-edit-spec.sh and pre-write-spec.sh (identical code)
 # - Reduces hook overhead by 50% (2 pre-hooks → 1)
 # - Single point of maintenance
 #
-# TIER 2 COORDINATION:
-# 1. Extract file_path from TOOL_USE_ARGS (reliable in PreToolUse)
-# 2. If it's spec.md/tasks.md in increments folder, signal PostToolUse hook
-# 3. Write file path to .pending-status-update for PostToolUse to consume
+# HIERARCHICAL EARLY EXIT (v0.26.1):
+# - Tier 0: TOOL_USE_ARGS check (< 1ms) - Exit if empty (Claude Code bug)
+# - Tier 1: .specweave/ path check (< 5ms) - Exit if not SpecWeave file
+# - Tier 2: Active increment check (< 10ms) - Exit if archived/completed
+# - Tier 3: Full processing - AC sync, status line, living docs
+#
+# GRACEFUL DEGRADATION:
+# - PreToolUse works if TOOL_USE_ARGS is available (fast filtering)
+# - PostToolUse fallback uses mtime if PreToolUse disabled (slower but works)
+# - Self-tuning: Disables PreToolUse if consistently useless
 #
 # Architecture:
 #   PreToolUse:Edit/Write → pre-edit-write-consolidated.sh (this file)
@@ -22,8 +28,8 @@
 #     ↓ read by
 #   PostToolUse:Edit/Write → post-edit-write-consolidated.sh
 #
-# Version: v0.25.0 (HOOK CONSOLIDATION)
-# Date: 2025-11-23
+# Version: v0.26.1 (HIERARCHICAL EARLY EXIT)
+# Date: 2025-11-24
 #
 # EMERGENCY FIXES (v0.24.3):
 # - Kill switch: Set SPECWEAVE_DISABLE_HOOKS=1 to disable ALL hooks
@@ -33,6 +39,37 @@
 
 # EMERGENCY FIX: Remove set -e - it causes Claude Code crashes!
 set +e
+
+# ============================================================================
+# TIER 0: ULTRA-FAST REJECTION (< 1ms) - v0.26.1 CRITICAL FIX
+# ============================================================================
+# Problem: Claude Code doesn't pass TOOL_USE_ARGS to PreToolUse hooks (bug)
+# Result: PreToolUse hooks are "blind" - can't filter files, fire for everything
+# Impact: Massive overhead (1 pre-hook per Edit/Write on ANY file)
+#
+# Solution: Exit immediately if TOOL_USE_ARGS is empty
+# - No find_project_root, no file path extraction, no processing
+# - Eliminates 33% of hook overhead (1 of 3 hooks per operation)
+# - Falls back to PostToolUse mtime detection (slower but works)
+#
+# See: ADR-0074 (Hierarchical Hook Early Exit Strategy)
+
+if [[ -z "${TOOL_USE_ARGS:-}" ]]; then
+  # Telemetry: Track PreToolUse disabled events (lightweight counter)
+  # This helps us understand if Claude Code ever fixes the TOOL_USE_ARGS bug
+  TELEMETRY_DIR="${HOME}/.claude/.specweave-telemetry"
+  mkdir -p "$TELEMETRY_DIR" 2>/dev/null || true
+  echo "$(date -u +%s)" >> "$TELEMETRY_DIR/pretooluse-disabled.log" 2>/dev/null || true
+
+  # Silent exit - PreToolUse is useless without TOOL_USE_ARGS
+  # PostToolUse will handle via mtime fallback
+  exit 0
+fi
+
+# Telemetry: Track PreToolUse enabled events (TOOL_USE_ARGS available)
+TELEMETRY_DIR="${HOME}/.claude/.specweave-telemetry"
+mkdir -p "$TELEMETRY_DIR" 2>/dev/null || true
+echo "$(date -u +%s)" >> "$TELEMETRY_DIR/pretooluse-enabled.log" 2>/dev/null || true
 
 # Find project root (must be BEFORE recursion guard to get PROJECT_ROOT)
 find_project_root() {
