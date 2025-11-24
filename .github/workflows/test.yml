@@ -235,7 +235,7 @@ jobs:
 
       - name: Run dev setup verification
         run: |
-          bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+          bash scripts/verify-dev-setup.sh
           echo "Note: Marketplace registration check may be skipped in CI/CD"
 
       - name: Verify hooks are accessible

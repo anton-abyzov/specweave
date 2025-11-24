@@ -4,6 +4,23 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.26.11] - 2025-11-24
+
+### 🐛 Bug Fixes
+- **CI/CD Pipeline Fixes**: Fixed multiple workflow failures
+  - **CHANGELOG Validation**: Added pre-commit hook (step 13) to prevent missing CHANGELOG entries
+  - **Test & Validate**: Fixed missing `verify-dev-setup.sh` reference (moved from archived increment to `scripts/`)
+  - **Version Bump Script**: Created `bump-version.sh` that auto-creates CHANGELOG placeholders
+
+### 🔧 Maintenance
+- Moved `verify-dev-setup.sh` to stable `scripts/` location
+- Simplified CLAUDE.md documentation
+- Added sync-architecture.md documentation
+
+---
+
+
+
 ## [0.26.10] - 2025-11-24
 
 ### 🔧 Maintenance
