@@ -7,6 +7,7 @@ status: completed
 created: 2025-11-24T00:00:00.000Z
 test_mode: manual
 coverage_target: 0
+feature_id: FS-057
 ---
 
 # Test Status Line Sync Verification

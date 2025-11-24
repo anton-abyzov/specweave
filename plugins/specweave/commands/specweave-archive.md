@@ -53,11 +53,20 @@ This command automatically synchronizes living docs by archiving features in:
 
 - `<increment-ids>`: Specific increment IDs to archive (e.g., "1", "0001", "0031")
 - `--older-than <days>`: Archive increments older than N days
-- `--keep-last <n>`: Keep last N increments, archive the rest (default: 10)
+- `--keep-last <n>`: Keep last N increments, archive the rest (**default: 3** when no other filters)
 - `--pattern <regex>`: Archive increments matching pattern
 - `--archive-completed`: Archive all completed increments (use with caution!)
 - `--preserve-active`: Never archive active/paused increments (default: true)
 - `--dry-run`: Show what would be archived without moving files
+
+## CRITICAL SAFETY FEATURE
+
+**Default `--keep-last 3`**: When called without any filtering options (no increment IDs, no pattern, no `--older-than`, no `--archive-completed`), the archiver **automatically defaults to `--keep-last 3`** to prevent accidentally archiving ALL increments.
+
+This safety feature ensures:
+- ✅ Running `/specweave:archive` without options won't archive everything
+- ✅ Last 3 increments always remain visible for easy reference
+- ✅ Explicit criteria required to archive recent work
 
 ## Archive Rules
 

@@ -90,9 +90,9 @@ Search pattern: `#command-{name}`
 - [/specweave:costs](#command-costs) - AI cost dashboard
 
 **Plugin Commands** (if installed):
-- [/specweave:github:sync](#command-github-sync) - Sync to GitHub
-- [/specweave:jira:sync](#command-jira-sync) - Sync to Jira
-- [/specweave:ado:sync](#command-ado-sync) - Sync to Azure DevOps
+- [/specweave-github:sync](#command-github-sync) - Sync to GitHub
+- [/specweave-jira:sync](#command-jira-sync) - Sync to Jira
+- [/specweave-ado:sync](#command-ado-sync) - Sync to Azure DevOps
 
 ### 🎓 Skills (When You Need Specific Capability)
 Search pattern: `#skill-{name}`
@@ -226,7 +226,10 @@ This is a **SpecWeave project** where specifications and documentation are the s
 ⛔ ONLY 3 files in increment root: spec.md, plan.md, tasks.md
 ⛔ All reports/scripts/logs go in increment subfolders!
 ⛔ Always check: git status (before committing)!
+⛔ Active increment (10+ tasks) + large file (2000+ lines) = CRASH RISK!
 ```
+
+**Crash Prevention**: Pause/close increment before editing large unrelated files.
 
 #### File Organization {#file-organization}
 
@@ -281,10 +284,14 @@ After completing EACH task, you MUST run:
 
 1. /specweave:sync-tasks                  # Update tasks.md
 2. /specweave:sync-docs update            # Sync living docs
-3. /specweave:github:sync <increment-id>  # Sync to GitHub (if enabled)
+3. /specweave-github:sync <increment-id>  # Sync to GitHub (if enabled)
 
 Without these, your work won't be tracked properly!
 ```
+
+**Source of Truth**: `tasks.md` + `spec.md` are authoritative. Update both after completing work:
+- `tasks.md`: `[ ] pending` → `[x] completed`
+- `spec.md`: `- [ ] AC-US1-01` → `- [x] AC-US1-01`
 
 ### When to Use Which Command
 
@@ -295,8 +302,8 @@ Without these, your work won't be tracked properly!
 | "What's the status?"      | `/specweave:progress`              |
 | "Is this ready?"          | `/specweave:validate 0001`         |
 | "We're done"              | `/specweave:done 0001`             |
-| "Sync to GitHub"          | `/specweave:github:sync`           |
-| "Sync to Jira"            | `/specweave:jira:sync`             |
+| "Sync to GitHub"          | `/specweave-github:sync`           |
+| "Sync to Jira"            | `/specweave-jira:sync`             |
 | "Update docs"             | `/specweave:sync-docs update`      |
 
 ---
@@ -478,15 +485,7 @@ At session start, note which plugins are active:
 
 ### Why Manual Loading Is Required
 
-**Claude Code**: Has native plugin marketplace, auto-loads plugins, manages dependencies.
-
-**Other Tools**: No plugin system, so you must:
-- ✅ Discover plugins in `plugins/` folder
-- ✅ Read plugin skills/agents/commands manually
-- ✅ Make them available in your context
-- ✅ Use them like core components
-
-**This is NOT optional** - plugins extend SpecWeave capabilities. Without loading them, you're missing critical functionality (GitHub sync, Jira integration, tech-specific skills, etc.).
+**Claude Code**: Auto-loads plugins. **Other Tools**: Must manually discover `plugins/`, read skills/agents/commands, and load them. **Not optional** - plugins provide GitHub sync, Jira integration, etc.
 
 ### Example: Session Start Routine (Non-Claude Tools)
 
@@ -525,10 +524,10 @@ Plugin commands use namespace pattern:
 - `/specweave:progress` → Core framework
 
 **Plugin commands** (with namespace):
-- `/specweave:github:sync` → GitHub plugin
-- `/specweave:github:create-issue` → GitHub plugin
-- `/specweave:jira:sync` → Jira plugin
-- `/specweave:jira:create-ticket` → Jira plugin
+- `/specweave-github:sync` → GitHub plugin
+- `/specweave-github:create-issue` → GitHub plugin
+- `/specweave-jira:sync` → Jira plugin
+- `/specweave-jira:create-ticket` → Jira plugin
 
 **In non-Claude tools**: Read the command file when user requests the action:
 ```bash
@@ -591,36 +590,12 @@ ls plugins/specweave-github/commands/
 
 ### How to Execute Commands (Step-by-Step)
 
-**When user says**: "create new increment for user auth" or "run /specweave:increment user auth"
+**When user says**: "create new increment" or "/specweave:increment"
 
-**You should**:
-
-1. **Identify the command**:
-   - Keywords match: "create increment" → `specweave-increment.md`
-   - Explicit slash: "/specweave:increment" → `specweave-increment.md`
-   - Map request to command file
-
-2. **Read the command file**:
-   ```bash
-   cat plugins/specweave/commands/specweave-increment.md
-   ```
-
-3. **Parse the workflow**:
-   - Read YAML frontmatter for metadata
-   - Read markdown body for steps
-   - Note required parameters
-   - Understand expected output
-
-4. **Execute the workflow**:
-   - Follow instructions EXACTLY as written
-   - Use parameters from user request
-   - Reference related files (spec templates, etc.)
-   - Show progress as you work
-
-5. **Provide output**:
-   - Confirm completion
-   - Show created files
-   - Suggest next steps
+1. **Map to command file**: Keywords → `specweave-increment.md`
+2. **Read**: `cat plugins/specweave/commands/specweave-increment.md`
+3. **Execute**: Follow workflow EXACTLY, use user's parameters
+4. **Confirm**: Show created files, suggest next steps
 
 ### Example: Executing /specweave:increment Command
 
@@ -888,33 +863,13 @@ git commit -m "chore: mark T-001 as complete"
 
 ### Command Execution Pattern (Template)
 
-Use this pattern for ANY command execution:
-
 ```bash
-# 1. User request
-# User: "sync to GitHub"
-
-# 2. Identify command
-# Keywords: "sync", "GitHub" → github-sync.md
-
-# 3. Read command file
-cat plugins/specweave-github/commands/github-sync.md
-
-# 4. Parse workflow
-# - Requires: increment ID, GitHub token
-# - Creates: GitHub issue
-# - Syncs: tasks, progress, labels
-
-# 5. Execute workflow
-# Follow steps in github-sync.md:
-#   - Load increment
-#   - Create/update GitHub issue
-#   - Sync task checklist
-#   - Add labels and milestone
-#   - Post comment with summary
-
-# 6. Confirm completion
-# "✅ Synced increment 0001 to GitHub issue #42"
+# Pattern for ANY command: identify → read → execute → confirm
+# Example: User: "sync to GitHub"
+# 1. Keywords "sync", "GitHub" → plugins/specweave-github/commands/github-sync.md
+# 2. Read: cat plugins/specweave-github/commands/github-sync.md
+# 3. Execute workflow steps from the command file
+# 4. Confirm: "✅ Synced increment 0001 to GitHub issue #42"
 ```
 
 ### Why This Matters (Claude Code vs Other Tools)
@@ -1371,10 +1326,10 @@ SPEC_FILE=$(find .specweave/docs/internal/specs/ -name "spec-0001*.md" | head -1
 **Plugin Commands** (when plugin installed):
 | Command | Purpose | Plugin |
 |---------|---------|--------|
-| `/specweave:github:sync` | Sync to GitHub | specweave-github |
-| `/specweave:github:create-issue` | Create GitHub issue | specweave-github |
-| `/specweave:jira:sync` | Sync to Jira | specweave-jira |
-| `/specweave:jira:create-ticket` | Create Jira ticket | specweave-jira |
+| `/specweave-github:sync` | Sync to GitHub | specweave-github |
+| `/specweave-github:create-issue` | Create GitHub issue | specweave-github |
+| `/specweave-jira:sync` | Sync to Jira | specweave-jira |
+| `/specweave-jira:create-ticket` | Create Jira ticket | specweave-jira |
 
 **For non-Claude tools**: Read the command file when user requests the action:
 ```bash
@@ -1875,29 +1830,9 @@ After you:
 
 ### Why This Matters
 
-**Without documentation updates**:
-- ❌ Specs diverge from implementation (specs become useless)
-- ❌ Team members don't know what changed
-- ❌ Future AI sessions have outdated context
-- ❌ SpecWeave's core principle (living documentation) breaks down
+**Without updates**: Specs diverge from code, AI sessions have outdated context, SpecWeave's living docs principle breaks.
 
-**With documentation updates**:
-- ✅ Specs stay synchronized with code
-- ✅ Clear audit trail of changes
-- ✅ AI agents have accurate context
-- ✅ Team members stay informed
-- ✅ SpecWeave philosophy is maintained
-
-### Tools That Need Manual Updates
-
-These tools **DO NOT** have automatic documentation hooks:
-- GitHub Copilot (all versions)
-- Cursor
-- Windsurf
-- Gemini CLI
-- Generic AI tools (ChatGPT, Claude web, etc.)
-
-Only **Claude Code** has automatic hooks that remind you to update docs.
+**Tools needing manual updates**: GitHub Copilot, Cursor, Windsurf, Gemini CLI, ChatGPT, Claude web. Only **Claude Code** has automatic hooks.
 
 ---
 
@@ -2134,23 +2069,6 @@ When you complete a task in non-Claude tools, **run these slash commands**:
 /specweave-ado:sync <increment-id>
 ```
 
-#### Example Full Workflow
-
-```bash
-# After completing a task in your current increment:
-
-# Step 1: Update tasks.md
-/specweave:sync-tasks
-
-# Step 2: Sync living docs
-/specweave:sync-docs update
-
-# Step 3: Sync to GitHub (if using GitHub tracking)
-/specweave-github:sync <increment-id>  # e.g., /specweave-github:sync 0016
-
-# Done! Continue to next task.
-```
-
 **Remember**: In Claude Code, all of this happens **automatically via hooks**. In other tools (Cursor, Copilot, ChatGPT), **YOU must run these commands manually** after each task!
 
 ---
@@ -2233,26 +2151,7 @@ When you encounter a new task:
 
 **Symptoms**: `/specweave:increment` or other commands don't work
 
-**Solutions (Non-Claude Tools)**:
-1. **Commands are NOT slash commands in Cursor/Copilot** - They're workflows!
-   - Search this file for: `#command-increment`, `#command-do`, etc.
-   - Read the workflow from that section
-   - Execute manually (step by step)
-
-2. **Example**: User says "create increment"
-   ```
-   You search: "#command-increment"
-   You find: ## Command: /specweave:increment {#command-increment}
-   You read: Workflow section (PM-led planning, spec creation, etc.)
-   You execute: Follow those steps manually
-   ```
-
-3. **Command workflow unclear**:
-   - Each command section has detailed workflow
-   - Check "When to use", "Parameters", "Workflow", "Example"
-   - Follow step-by-step
-
-**Remember**: In non-Claude tools, commands are manual workflows, not automatic slash commands!
+**Solution**: In Cursor/Copilot, commands are **manual workflows**, not slash commands. Search this file for `#command-{name}` (e.g., `#command-increment`), read the workflow, execute step-by-step.
 
 ---
 
@@ -2266,7 +2165,7 @@ When you encounter a new task:
    # After EACH task completion:
    /specweave:sync-tasks                  # Update tasks.md
    /specweave:sync-docs update            # Sync living docs
-   /specweave:github:sync <increment-id>  # Sync to GitHub
+   /specweave-github:sync <increment-id>  # Sync to GitHub
    ```
 
 2. **Living docs sync not working**:
