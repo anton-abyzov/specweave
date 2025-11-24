@@ -10,20 +10,19 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  */
 
 import { SyncEventLogger, SyncEvent, ConflictEvent } from '../../../src/core/sync/sync-event-logger.js';
-import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 
-// Mock fs-extra
-vi.mock('fs-extra', () => ({
-  default: {
-    ensureDir: vi.fn(),
-    pathExists: vi.fn(),
-    readJson: vi.fn(),
-    writeJson: vi.fn(),
-    appendFile: vi.fn(),
-    readFile: vi.fn(),
-  },
+// Mock fs-native module
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  ensureDir: vi.fn(),
+  pathExists: vi.fn(),
+  readJson: vi.fn(),
+  writeJson: vi.fn(),
+  appendFile: vi.fn(),
+  readFile: vi.fn(),
 }));
+
+import * as fs from '../../../src/utils/fs-native.js';
 
 const mockedEnsureDir = vi.mocked(fs.ensureDir);
 const mockedPathExists = vi.mocked(fs.pathExists);
@@ -45,9 +44,9 @@ describe('SyncEventLogger', () => {
 
   describe('logSyncEvent', () => {
     it('should log successful sync event', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
 
       const event: SyncEvent = {
         incrementId: '0001-feature',
@@ -84,11 +83,11 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(true);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(true);
       // Return a copy to avoid mutation affecting test expectations
-      mockedReadJson.mockResolvedValue([...existingEvents]);
-      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedReadJson.mockResolvedValueOnce([...existingEvents]);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
 
       const newEvent: SyncEvent = {
         incrementId: '0001-feature',
@@ -112,9 +111,9 @@ describe('SyncEventLogger', () => {
     });
 
     it('should log failed sync event with error', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
 
       const event: SyncEvent = {
         incrementId: '0001-feature',
@@ -137,9 +136,9 @@ describe('SyncEventLogger', () => {
 
   describe('logConflictEvent', () => {
     it('should log conflict resolution event', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0001-feature',
@@ -165,9 +164,9 @@ describe('SyncEventLogger', () => {
     });
 
     it('should log prompt conflict resolution', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0002-feature',
@@ -215,8 +214,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadJson.mockResolvedValueOnce(events);
 
       const history = await logger.loadSyncHistory();
 
@@ -226,7 +225,7 @@ describe('SyncEventLogger', () => {
     });
 
     it('should return empty array when log file does not exist', async () => {
-      mockedPathExists.mockResolvedValue(false);
+      mockedPathExists.mockResolvedValueOnce(false);
 
       const history = await logger.loadSyncHistory();
 
@@ -257,8 +256,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadJson.mockResolvedValueOnce(events);
 
       const history = await logger.loadSyncHistory({ incrementId: '0001-feature' });
 
@@ -290,8 +289,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadJson.mockResolvedValueOnce(events);
 
       const history = await logger.loadSyncHistory({ tool: 'jira' });
 
@@ -324,8 +323,8 @@ describe('SyncEventLogger', () => {
         }
       ];
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadJson.mockResolvedValue(events);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadJson.mockResolvedValueOnce(events);
 
       const successHistory = await logger.loadSyncHistory({ success: true });
       const failureHistory = await logger.loadSyncHistory({ success: false });
@@ -347,10 +346,10 @@ describe('SyncEventLogger', () => {
 
   describe('Dedicated Conflict Logging (AC-US9-09)', () => {
     it('should write conflicts to dedicated log file by default', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
-      mockedAppendFile.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
+      mockedAppendFile.mockResolvedValueOnce(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0047-us-task-linkage',
@@ -377,10 +376,10 @@ describe('SyncEventLogger', () => {
     });
 
     it('should NOT write to conflicts log when writeToConflictsLog=false', async () => {
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
-      mockedAppendFile.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
+      mockedAppendFile.mockResolvedValueOnce(undefined as any);
 
       const conflictEvent: ConflictEvent = {
         incrementId: '0047-us-task-linkage',
@@ -431,8 +430,8 @@ describe('SyncEventLogger', () => {
 
       const logContent = JSON.stringify(conflict1) + '\n' + JSON.stringify(conflict2) + '\n';
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadFile.mockResolvedValue(logContent as any);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadFile.mockResolvedValueOnce(logContent as any);
 
       const conflicts = await logger.loadConflicts();
 
@@ -443,7 +442,7 @@ describe('SyncEventLogger', () => {
     });
 
     it('should return empty array when conflicts log does not exist', async () => {
-      mockedPathExists.mockResolvedValue(false);
+      mockedPathExists.mockResolvedValueOnce(false);
 
       const conflicts = await logger.loadConflicts();
 
@@ -470,8 +469,8 @@ describe('SyncEventLogger', () => {
         '{invalid json\n' +
         '\n'; // empty line
 
-      mockedPathExists.mockResolvedValue(true);
-      mockedReadFile.mockResolvedValue(logContent as any);
+      mockedPathExists.mockResolvedValueOnce(true);
+      mockedReadFile.mockResolvedValueOnce(logContent as any);
 
       const conflicts = await logger.loadConflicts();
 
@@ -484,10 +483,10 @@ describe('SyncEventLogger', () => {
       // This test verifies the AC-US9-09 requirement:
       // "Conflicts only possible when canUpsertInternalItems + canUpdateExternalItems + canUpdateStatus all enabled"
 
-      mockedEnsureDir.mockResolvedValue(undefined as any);
-      mockedPathExists.mockResolvedValue(false);
-      mockedWriteJson.mockResolvedValue(undefined as any);
-      mockedAppendFile.mockResolvedValue(undefined as any);
+      mockedEnsureDir.mockResolvedValueOnce(undefined as any);
+      mockedPathExists.mockResolvedValueOnce(false);
+      mockedWriteJson.mockResolvedValueOnce(undefined as any);
+      mockedAppendFile.mockResolvedValueOnce(undefined as any);
 
       const fullSyncConflict: ConflictEvent = {
         incrementId: '0047-us-task-linkage',

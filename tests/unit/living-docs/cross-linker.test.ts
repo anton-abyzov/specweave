@@ -14,8 +14,12 @@ import { ContentCategory } from '../../../src/core/living-docs/content-classifie
 import path from 'path';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock fs-extra BEFORE importing
-vi.mock('fs-extra');
+// Mock fs-native module
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  existsSync: vi.fn(),
+}));
 
 // Import after mock
 import * as fs from '../../../src/utils/fs-native.js';
@@ -34,7 +38,7 @@ describe('CrossLinker', () => {
     mockBasePath = '/test/.specweave/docs/internal';
 
     // Default mocks - set existsSync to true so documentsRelated() can find links
-    mockExistsSync.mockReturnValue(true);
+    mockExistsSync.mockImplementation(() => true);
     // Return content with cross-references to trigger link detection
     mockReadFile.mockResolvedValue(
       '# Document\n\nSee authentication-architecture and 0001-use-oauth-authentication for details about us-001-user-authentication'
@@ -110,7 +114,7 @@ describe('CrossLinker', () => {
       };
 
       // Mock files exist and have content with cross-references
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
       // Content mentions the other file basenames for cross-reference detection
       // Note: Must match actual basenames from test data above
       mockReadFile.mockResolvedValue(
@@ -258,7 +262,7 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
 
       await linker.generateLinks(result);
 
@@ -272,7 +276,7 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
       mockReadFile.mockResolvedValue('# Document\n\nContent\n\n---\n\nFooter');
 
       await linker.generateLinks(result);
@@ -357,7 +361,7 @@ describe('CrossLinker', () => {
     });
 
     it('should detect relationships from content cross-references', async () => {
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
       mockReadFile.mockImplementation(async (filePath: any) => {
         if (filePath.includes('user-login')) {
           return 'User login uses authentication-system';
@@ -456,7 +460,7 @@ describe('CrossLinker', () => {
         updateExisting: true,
       });
 
-      mockExistsSync.mockReturnValue(true);
+      mockExistsSync.mockImplementation(() => true);
     });
 
     it('should add links section to document without one', async () => {
@@ -781,7 +785,7 @@ describe('CrossLinker', () => {
     it('should handle missing files gracefully', async () => {
       linker = new CrossLinker({ basePath: mockBasePath, dryRun: false, updateExisting: true });
 
-      mockExistsSync.mockReturnValue(false);
+      mockExistsSync.mockImplementation(() => false);
 
       const result: DistributionResult = {
         created: [

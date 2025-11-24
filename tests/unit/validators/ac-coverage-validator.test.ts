@@ -38,6 +38,7 @@ describe('AC Coverage Validator', () => {
     it('should validate 100% AC coverage with no orphans', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 
@@ -115,6 +116,7 @@ coverage_target: 90
     it('should detect uncovered ACs', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 
@@ -164,6 +166,7 @@ coverage_target: 90
     it('should detect orphan tasks', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 
@@ -212,6 +215,7 @@ coverage_target: 90
     it('should handle multiple tasks satisfying same AC', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 
@@ -261,6 +265,7 @@ coverage_target: 90
     it('should calculate per-User Story coverage', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 
@@ -334,7 +339,7 @@ coverage_target: 90
 
     it('should throw error if tasks.md not found', async () => {
       // Arrange
-      await fs.writeFile(path.join(incrementPath, 'spec.md'), '### US-001\n- [ ] **AC-US1-01**', 'utf-8');
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), '---\nincrement: 0047-test-increment\n---\n\n### US-001\n- [ ] **AC-US1-01**', 'utf-8');
 
       // Act & Assert
       expect(() => validateACCoverage(incrementPath)).toThrow('tasks.md not found');
@@ -342,7 +347,7 @@ coverage_target: 90
 
     it('should handle empty spec.md', async () => {
       // Arrange
-      await fs.writeFile(path.join(incrementPath, 'spec.md'), '# Empty Spec', 'utf-8');
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), '---\nincrement: 0047-test-increment\n---\n\n# Empty Spec', 'utf-8');
       await fs.writeFile(path.join(incrementPath, 'tasks.md'), '---\ntotal_tasks: 0\n---\n# Tasks', 'utf-8');
 
       // Act
@@ -356,6 +361,7 @@ coverage_target: 90
     it('should handle tasks with multiple ACs', async () => {
       // Arrange
       const specContent = `---
+increment: 0047-test-increment
 title: Test Increment
 ---
 

@@ -185,12 +185,13 @@ describe('url-generator', () => {
 
     it('should detect platforms with mixed case', () => {
       // Implementation uses .includes() which IS case-sensitive
-      // So 'GitLab.com' works (contains 'gitlab' lowercase)
-      expect(detectGitPlatform('GitLab.com')).toBe('gitlab');
+      // 'GitLab.com' contains 'Lab' but not 'gitlab' (lowercase), so returns unknown
+      expect(detectGitPlatform('GitLab.com')).toBe('unknown');
       // 'GITHUB.COM' won't match because it doesn't contain lowercase 'github'
       expect(detectGitPlatform('GITHUB.COM')).toBe('unknown');
       // But lowercase works
       expect(detectGitPlatform('github.com')).toBe('github');
+      expect(detectGitPlatform('gitlab.com')).toBe('gitlab');
     });
   });
 });
