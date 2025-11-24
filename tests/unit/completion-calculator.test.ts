@@ -1,5 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
 /**
  * Unit tests for CompletionCalculator
  *
@@ -370,6 +368,121 @@ Task implementing a single AC.
       expect(result.acsTotal).toBe(1);
       expect(result.tasksCompleted).toBe(1);
       expect(result.tasksTotal).toBe(1);
+    });
+
+    it('should handle multi-story tasks with "Satisfies ACs: All"', async () => {
+      // Arrange: User story US-001 with 3 tasks, where T-012 is shared across multiple stories
+      const userStoryPath = path.join(tempDir, 'us-001.md');
+      await writeFile(
+        userStoryPath,
+        `---
+id: US-001
+feature: FS-059
+title: Reduced Template Size
+status: active
+---
+
+## Acceptance Criteria
+
+- [x] **AC-US1-01**: Template reduced from 2402 to ~400 lines
+- [ ] **AC-US1-02**: All essential instructions preserved
+
+## Implementation
+
+**Increment**: [0001-test](...)
+`
+      );
+
+      // Arrange: Tasks including T-012 with multiple user stories and "Satisfies ACs: All"
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      await writeFile(
+        tasksPath,
+        `### T-001: Analyze current template structure
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [x] completed
+
+### T-002: Create reduced AGENTS.md.template
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+**Status**: [x] completed
+
+### T-003: Validate template with non-Claude tool
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-02
+**Status**: [ ] pending
+
+### T-012: End-to-end crash prevention test
+**User Story**: US-001, US-002, US-003, US-004
+**Satisfies ACs**: All
+**Status**: [ ] pending
+
+This is the final validation task shared across all user stories.
+`
+      );
+
+      // Act
+      const result = await calculator.calculateCompletion(userStoryPath);
+
+      // Assert - Should include ALL 4 tasks for US-001, including T-012
+      expect(result.tasksTotal).toBe(4); // T-001, T-002, T-003, T-012
+      expect(result.tasksCompleted).toBe(2); // T-001, T-002
+      expect(result.blockingTasks).toEqual(['T-003', 'T-012']);
+      expect(result.acsCompleted).toBe(1);
+      expect(result.acsTotal).toBe(2);
+      expect(result.overallComplete).toBe(false);
+    });
+
+    it('should match user stories with different ID formats', async () => {
+      // Arrange: User story with US-001 format
+      const userStoryPath = path.join(tempDir, 'us-001.md');
+      await writeFile(
+        userStoryPath,
+        `---
+id: US-001
+feature: FS-001
+title: Test ID Normalization
+status: active
+---
+
+## Acceptance Criteria
+
+- [x] **AC-US1-01**: Test criterion
+
+## Implementation
+
+**Increment**: [0001-test](...)
+`
+      );
+
+      // Arrange: Tasks with various US ID formats
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      await writeFile(
+        tasksPath,
+        `### T-001: Task with US-001
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [x] completed
+
+### T-002: Task with US-1 (no padding)
+**User Story**: US-1
+**Satisfies ACs**: AC-US1-01
+**Status**: [x] completed
+
+### T-003: Task for different story (should not match)
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01
+**Status**: [ ] pending
+`
+      );
+
+      // Act
+      const result = await calculator.calculateCompletion(userStoryPath);
+
+      // Assert - Should match both T-001 and T-002 (US-001 and US-1 are the same)
+      expect(result.tasksTotal).toBe(2);
+      expect(result.tasksCompleted).toBe(2);
+      expect(result.blockingTasks).toHaveLength(0);
     });
   });
 

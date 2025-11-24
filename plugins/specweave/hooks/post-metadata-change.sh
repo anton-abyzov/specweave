@@ -192,6 +192,15 @@ case "$CURRENT_STATUS" in
     fi
     ;;
 
+  active|planning|in-progress)
+    # Increment became active - MUST register in active-increment.json!
+    # CRITICAL FIX (v0.26.15): post-task-completion.sh depends on this file
+    # Without registration, ALL sync operations are skipped!
+    echo "[$(date)] post-metadata-change: Status is $CURRENT_STATUS - registering as active + updating status line" >> "$DEBUG_LOG" 2>/dev/null || true
+    bash "$HOOK_DIR/lib/update-active-increment.sh" 2>/dev/null || true
+    bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+    ;;
+
   *)
     # Other metadata changes (e.g., task completion count, AC count)
     # Just update status line to reflect new progress

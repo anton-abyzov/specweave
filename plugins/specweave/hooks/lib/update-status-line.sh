@@ -148,16 +148,17 @@ SPEC_FILE="$INCREMENTS_DIR/$CURRENT_INCREMENT/spec.md"
 read -r TOTAL_TASKS COMPLETED_TASKS < <(
   awk '
     /^###? T-/ { total++ }
-    /\*\*Completed\*\*:|\*\*Status\*\*:\s*\[x\]/ { completed++ }
+    /\*\*Completed\*\*:|\*\*Status\*\*:[ \t]*\[x\]/ { completed++ }
     END { print total+0, completed+0 }
   ' "$TASKS_FILE" 2>/dev/null || echo "0 0"
 )
 
 # Count ACs with single awk call
+# Supports both formats: "- [ ] AC-US1-01:" and "- [ ] **AC-US1-01**:"
 read -r TOTAL_ACS COMPLETED_ACS < <(
   awk '
-    /^- \[(x| )\] \*\*AC-/ { total++ }
-    /^- \[x\] \*\*AC-/ { completed++ }
+    /^- \[(x| )\] (\*\*)?AC-/ { total++ }
+    /^- \[x\] (\*\*)?AC-/ { completed++ }
     END { print total+0, completed+0 }
   ' "$SPEC_FILE" 2>/dev/null || echo "0 0"
 )
