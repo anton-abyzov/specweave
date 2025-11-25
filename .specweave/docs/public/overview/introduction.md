@@ -101,15 +101,15 @@ Your work syncs to [GitHub](/docs/glossary/terms/github-actions) Issues, JIRA, a
 
 ## Core Features
 
-| Feature | Benefit |
-|---------|---------|
-| **15+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously |
-| **Living Documentation** | Specs auto-update after every task via hooks |
-| **70% Token Reduction** | Context precision loads only what you need |
-| **Quality Gates** | Three-gate validation before closing increments |
-| **External Sync** | GitHub/JIRA/Azure DevOps bidirectional sync |
-| **[Brownfield](/docs/glossary/terms/brownfield) Support** | Import existing docs, create retroactive specs |
-| **Multi-Language** | Work in ANY language (Russian, Spanish, Chinese, etc.) |
+| Feature | Benefit | Uniqueness |
+|---------|---------|------------|
+| **70%+ Token Reduction** | Plugin architecture loads only active increment + relevant agent = ~15K tokens (vs 200K+) | ⭐ Unique |
+| **[Brownfield](/docs/glossary/terms/brownfield) Excellence** | Import existing docs (Notion, Confluence, Wiki), create retroactive specs, ADRs | ⭐ Unique |
+| **Living Documentation** | Specs auto-update after every task via hooks—never drift from code | ⭐ Unique |
+| **External Sync** | Bidirectional GitHub/JIRA/Azure DevOps sync—keep existing workflows | Strong |
+| **Quality Gates** | Three-gate validation (tasks + 60%+ tests + docs) before closing | Strong |
+| **15+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously | Good |
+| **Universal Stack** | Works with ANY tech stack and ANY AI tool (Claude, Cursor, Copilot) | Expected |
 
 ## What You Get vs. Current State
 

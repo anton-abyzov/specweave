@@ -165,20 +165,27 @@ function FeaturesSection(): ReactNode {
           <p>Build production software with autonomous AI agents that just work—minimal interaction, maximum productivity.</p>
         </div>
         <div className={styles.featuresGrid}>
+          {/* TIER 1: TRUE DIFFERENTIATORS - What makes SpecWeave unique */}
           <FeatureHighlight
-            icon="⚡"
-            title="Autonomous & Deterministic"
-            description="Spec-driven development ensures predictable, fast outcomes. Type one command, get production code in hours (not days). Auto-resume, auto-close. Minimal interaction, maximum velocity."
+            icon="🔌"
+            title="70%+ Token Reduction"
+            description="Modular plugin architecture loads only what you need. Active increment + relevant plugin + one agent = ~15K tokens (vs 200K+ monolithic). Measurable AI cost savings."
           />
           <FeatureHighlight
-            icon="📝"
-            title="Specification-First (Source of Truth)"
-            description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows. Complete traceability from requirements to tests."
+            icon="🏢"
+            title="Brownfield Excellence"
+            description="The hardest problem solved: import existing docs (Notion, Confluence, Wiki), create retroactive specs, generate ADRs and C4 diagrams. Perfect for legacy codebases."
           />
           <FeatureHighlight
-            icon="🤖"
-            title="10+ Specialized AI Agents"
-            description="PM, Architect, DevOps, QA, Security—work in parallel to minimize context usage. Pre-installed, auto-activating, production-ready."
+            icon="📚"
+            title="Living Documentation (Auto-Sync)"
+            description="Specs and docs auto-update after every task via hooks. Always in sync with code—no drift, no manual updates, no surprises. Unique hook-based mechanism."
+          />
+          {/* TIER 2: STRONG DIFFERENTIATORS */}
+          <FeatureHighlight
+            icon="🔗"
+            title="External Tool Sync (GitHub/JIRA/ADO)"
+            description="Bidirectional sync with GitHub Issues, JIRA, and Azure DevOps. Keep your existing workflow—no tool lock-in. Progress auto-syncs between SpecWeave tasks and issue trackers."
           />
           <FeatureHighlight
             icon="🧪"
@@ -186,29 +193,25 @@ function FeaturesSection(): ReactNode {
             description="4-level testing strategy with full traceability—unit, integration, E2E, acceptance tests. Embedded in tasks.md. 85-90% coverage targets enforced."
           />
           <FeatureHighlight
-            icon="📚"
-            title="Living Documentation (Auto-Sync)"
-            description="Specs and docs auto-update after every task via hooks. Always in sync with code—no drift, no manual updates, no surprises."
+            icon="🤖"
+            title="15+ Specialized AI Agents"
+            description="PM, Architect, DevOps, QA, Security, Tech Lead—work in parallel to minimize context usage. Pre-installed, auto-activating, production-ready."
+          />
+          {/* TIER 3: SUPPORTING FEATURES */}
+          <FeatureHighlight
+            icon="📝"
+            title="Specification-First (Source of Truth)"
+            description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows. Complete traceability from requirements to tests."
           />
           <FeatureHighlight
-            icon="🏢"
-            title="Brownfield Excellence"
-            description="The hardest problem solved: merge existing docs, create complex architecture (ADRs, HLDs, C4 diagrams), maintain living documentation. Perfect for legacy codebases."
+            icon="⚡"
+            title="Autonomous & Deterministic"
+            description="Type one command, get production code in hours (not days). Auto-resume, auto-close. Minimal interaction, maximum velocity."
           />
           <FeatureHighlight
             icon="🌐"
             title="Universal Support (Any Stack, Any AI)"
             description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude Code, Cursor, Copilot, Gemini, ChatGPT)."
-          />
-          <FeatureHighlight
-            icon="🔌"
-            title="Plugin Architecture (70%+ Token Reduction)"
-            description="Modular plugins load only what you need. Core + GitHub + Frontend = 16K tokens (vs 50K monolithic). Built on Claude Code's native plugin system."
-          />
-          <FeatureHighlight
-            icon="🔗"
-            title="External Tool Sync (GitHub/JIRA/ADO)"
-            description="Bidirectional sync with GitHub Issues, JIRA, and Azure DevOps. Keep your existing workflow—no tool lock-in. Progress auto-syncs between SpecWeave tasks and issue trackers."
           />
         </div>
       </div>
