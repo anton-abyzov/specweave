@@ -58,10 +58,12 @@ cd "$PROJECT_ROOT" 2>/dev/null || true
 # CONFIGURATION
 # ============================================================================
 
-# Translation settings (can be overridden by .specweave/config.json)
-TRANSLATION_ENABLED=true
-AUTO_TRANSLATE_INTERNAL_DOCS=true
-TARGET_LANGUAGE="en"  # Always translate TO English (for maintainability)
+# Translation settings (loaded from .specweave/config.json)
+TRANSLATION_ENABLED=false  # Opt-in: User MUST enable in config
+AUTO_TRANSLATE_INCREMENT_SPECS=false  # Opt-in: scope.incrementSpecs
+AUTO_TRANSLATE_LIVING_DOCS=false  # Opt-in: scope.livingDocs
+TARGET_LANGUAGE="en"  # Loaded from config.language (default: en)
+KEEP_ENGLISH_ORIGINALS=false  # If true, create .en.md backups
 
 # Paths
 SPECWEAVE_DIR=".specweave"
@@ -96,24 +98,59 @@ log_error() {
 
 load_config() {
   if [ ! -f "$CONFIG_FILE" ]; then
-    log_debug "No config file found, using defaults"
+    log_debug "No config file found, using defaults (translation disabled)"
     return
   fi
 
-  # Check if translation is enabled in config
-  local translation_enabled=$(cat "$CONFIG_FILE" | grep -o '"enabled"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "true")
-
-  if [ "$translation_enabled" = "false" ]; then
-    TRANSLATION_ENABLED=false
-    log_debug "Translation disabled in config"
+  # Load target language from config.language (default: en)
+  local config_language=$(cat "$CONFIG_FILE" | grep -o '"language"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/' || echo "en")
+  if [ -n "$config_language" ]; then
+    TARGET_LANGUAGE="$config_language"
+    log_debug "Target language: $TARGET_LANGUAGE"
   fi
 
-  # Check if auto-translation of internal docs is enabled
-  local auto_translate=$(cat "$CONFIG_FILE" | grep -o '"autoTranslateInternalDocs"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "true")
+  # If target language is English, no translation needed
+  if [ "$TARGET_LANGUAGE" = "en" ]; then
+    TRANSLATION_ENABLED=false
+    log_debug "Target language is English, translation not needed"
+    return
+  fi
 
-  if [ "$auto_translate" = "false" ]; then
-    AUTO_TRANSLATE_INTERNAL_DOCS=false
-    log_debug "Auto-translation of internal docs disabled in config"
+  # Check if translation is enabled in config.translation.enabled
+  # Search within "translation" block for "enabled"
+  local translation_section=$(cat "$CONFIG_FILE" | awk '/"translation"[[:space:]]*:/,/^[[:space:]]*}/' 2>/dev/null)
+  local translation_enabled=$(echo "$translation_section" | grep -o '"enabled"[[:space:]]*:[[:space:]]*\(true\|false\)' | head -1 | grep -o '\(true\|false\)' || echo "false")
+
+  if [ "$translation_enabled" = "true" ]; then
+    TRANSLATION_ENABLED=true
+    log_debug "Translation enabled in config"
+  else
+    TRANSLATION_ENABLED=false
+    log_debug "Translation disabled in config (opt-in required)"
+  fi
+
+  # Check translation scope (within translation.scope block)
+  local scope_section=$(echo "$translation_section" | awk '/"scope"[[:space:]]*:/,/^[[:space:]]*}/' 2>/dev/null)
+
+  # scope.incrementSpecs - translate spec.md, plan.md, tasks.md
+  local scope_increment=$(echo "$scope_section" | grep -o '"incrementSpecs"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  if [ "$scope_increment" = "true" ]; then
+    AUTO_TRANSLATE_INCREMENT_SPECS=true
+    log_debug "Auto-translate increment specs enabled"
+  fi
+
+  # scope.livingDocs - translate living docs on update
+  local scope_living=$(echo "$scope_section" | grep -o '"livingDocs"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  if [ "$scope_living" = "true" ]; then
+    AUTO_TRANSLATE_LIVING_DOCS=true
+    log_debug "Auto-translate living docs enabled"
+  fi
+
+  # keepEnglishOriginals - create .en.md backups
+  local keep_originals=$(echo "$translation_section" | grep -o '"keepEnglishOriginals"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
+  if [ "$keep_originals" = "true" ]; then
+    KEEP_ENGLISH_ORIGINALS=true
+    log_debug "Keep English originals enabled"
   fi
 }
 
@@ -168,21 +205,21 @@ detect_file_language() {
 translate_file() {
   local file_path="$1"
   local file_name=$(basename "$file_path")
+  local target_lang="${TARGET_LANGUAGE:-en}"
 
-  log_info "  📄 Translating $file_name..."
+  log_info "  📄 Translating $file_name to $target_lang..."
 
   # Call the translate-file.ts script
-  # In production, this would invoke the LLM via Task tool
-  # For now, we'll create a marker file to indicate translation is needed
+  # Uses TARGET_LANGUAGE from config (default: en)
 
   if [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-file.js" ]; then
     # Production: Use compiled TypeScript
-    node "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-file.js" "$file_path" --target-lang en --verbose 2>&1 | while read -r line; do
+    node "${CLAUDE_PLUGIN_ROOT}/lib/hooks/translate-file.js" "$file_path" --target-lang "$target_lang" --verbose 2>&1 | while read -r line; do
       echo "     $line"
     done
 
     if [ ${PIPESTATUS[0]} -eq 0 ]; then
-      log_info "  ✅ $file_name translated successfully"
+      log_info "  ✅ $file_name translated to $target_lang"
       return 0
     else
       log_error "  ⚠️  Translation failed for $file_name"
@@ -191,7 +228,7 @@ translate_file() {
   else
     # Development/Testing: Just mark the file
     log_info "  ℹ️  Translation script not compiled (run 'npm run build')"
-    log_info "  ℹ️  In production, $file_name would be translated to English"
+    log_info "  ℹ️  In production, $file_name would be translated to $target_lang"
     return 0
   fi
 }
@@ -584,26 +621,20 @@ main() {
   # 1. Load configuration
   load_config
 
+  # Check if translation is needed (non-English target + enabled)
   if [ "$TRANSLATION_ENABLED" = "false" ]; then
-    log_debug "Translation disabled, exiting"
-    cat <<EOF
-{
-  "continue": true,
-  "message": "Translation disabled in config"
-}
-EOF
-    exit 0
+    log_debug "Translation disabled or target is English, skipping translation"
+    # Continue with other hook tasks (GitHub sync, living docs, etc.)
   fi
 
-  if [ "$AUTO_TRANSLATE_INTERNAL_DOCS" = "false" ]; then
-    log_debug "Auto-translation of internal docs disabled, exiting"
-    cat <<EOF
-{
-  "continue": true,
-  "message": "Auto-translation of internal docs disabled"
-}
-EOF
-    exit 0
+  # Log translation configuration
+  if [ "$TRANSLATION_ENABLED" = "true" ]; then
+    log_info ""
+    log_info "🌐 Translation Configuration:"
+    log_info "   Target language: $TARGET_LANGUAGE"
+    log_info "   Increment specs: $AUTO_TRANSLATE_INCREMENT_SPECS"
+    log_info "   Living docs: $AUTO_TRANSLATE_LIVING_DOCS"
+    log_info "   Keep English originals: $KEEP_ENGLISH_ORIGINALS"
   fi
 
   # 2. Get latest increment directory
@@ -656,16 +687,24 @@ EOF
     fi
   fi
 
-  # 4. Translate increment files (if needed)
+  # 4. Translate increment files (if enabled in scope and non-English content detected)
   local increment_success_count=0
   local increment_total_count=${#files_to_translate[@]}
 
-  if [ "$needs_translation" = "true" ] && [ ${#files_to_translate[@]} -gt 0 ]; then
-    # 5. Perform translation of increment files
+  if [ "$TRANSLATION_ENABLED" = "true" ] && [ "$AUTO_TRANSLATE_INCREMENT_SPECS" = "true" ] && [ "$needs_translation" = "true" ] && [ ${#files_to_translate[@]} -gt 0 ]; then
+    # 5. Perform translation of increment files TO user's language
     log_info ""
-    log_info "🌐 Detected non-English content in increment $increment_id"
-    log_info "   Translating increment files to English..."
+    log_info "🌐 Translating increment $increment_id to $TARGET_LANGUAGE..."
     log_info ""
+
+    # Create English backups if configured
+    if [ "$KEEP_ENGLISH_ORIGINALS" = "true" ]; then
+      for file in "${files_to_translate[@]}"; do
+        local backup="${file%.md}.en.md"
+        cp "$file" "$backup" 2>/dev/null || true
+        log_debug "Created English backup: $backup"
+      done
+    fi
 
     for file in "${files_to_translate[@]}"; do
       if translate_file "$file"; then
@@ -675,19 +714,24 @@ EOF
 
     log_info ""
     if [ "$increment_success_count" -eq "$increment_total_count" ]; then
-      log_info "✅ Increment files translation complete! All $increment_total_count file(s) now in English"
+      log_info "✅ Increment files translated to $TARGET_LANGUAGE! ($increment_total_count file(s))"
     else
-      log_error "Increment files translation completed with errors: $increment_success_count/$increment_total_count files translated"
+      log_error "Translation completed with errors: $increment_success_count/$increment_total_count files"
     fi
-  else
-    log_info "✅ All increment files already in English"
+  elif [ "$TRANSLATION_ENABLED" = "true" ] && [ "$AUTO_TRANSLATE_INCREMENT_SPECS" = "false" ]; then
+    log_debug "Increment spec translation disabled in scope.incrementSpecs"
+  elif [ "$needs_translation" = "false" ]; then
+    log_debug "All increment files already in target language"
   fi
 
-  # 6. Translate living docs specs (if any were created)
-  log_info ""
-  log_info "🌐 Checking living docs for translation..."
-
-  translate_living_docs_specs "$increment_id"
+  # 6. Translate living docs specs (if enabled in scope)
+  if [ "$TRANSLATION_ENABLED" = "true" ] && [ "$AUTO_TRANSLATE_LIVING_DOCS" = "true" ]; then
+    log_info ""
+    log_info "🌐 Checking living docs for translation to $TARGET_LANGUAGE..."
+    translate_living_docs_specs "$increment_id"
+  else
+    log_debug "Living docs translation disabled (scope.livingDocs=$AUTO_TRANSLATE_LIVING_DOCS)"
+  fi
 
   # ============================================================================
   # INCREMENT-LEVEL GITHUB ISSUE CREATION (DEPRECATED v0.24.0+)

@@ -1,144 +1,110 @@
 ---
 sidebar_position: 8
 title: "Lesson 7: External Tools"
-description: "Integrate SpecWeave with GitHub, JIRA, and Azure DevOps"
+description: "Connect GitHub, JIRA, and Azure DevOps"
 ---
 
-# Lesson 7: External Tool Integration
+# Lesson 7: External Tools
 
-**Duration**: 45 minutes
-**Prerequisites**: Lessons 1-6, external tool account
-**Outcome**: Set up bidirectional sync with your project management tools
+**Time**: 35 minutes
+**Goal**: Set up sync with project management tools
 
 ---
 
 ## Why Integrate?
 
-### The Manual Sync Problem
+### Without Integration
 
 ```
-Without integration:
-
 Developer finishes task
     │
     ├── Updates tasks.md ✓
-    │
-    ├── Opens GitHub... updates issue... ⏰ (2 min)
-    │
-    ├── Opens JIRA... updates story... ⏰ (3 min)
-    │
-    └── Forgets to update something... ❌
+    ├── Opens GitHub... (2 min)
+    ├── Opens JIRA... (3 min)
+    └── Forgets something... ❌
 
-Time wasted: 5+ minutes per task
-Things missed: Frequent
+Time wasted: 5+ min per task
 ```
 
-### The SpecWeave Solution
+### With Integration
 
 ```
-With integration:
-
 Developer finishes task
     │
     └── Updates tasks.md ✓
             │
             └── Hook fires automatically
-                    │
-                    ├── GitHub issue updated ✓
-                    ├── JIRA story updated ✓
-                    └── Azure DevOps synced ✓
+                    ├── GitHub issue ✓
+                    ├── JIRA story ✓
+                    └── ADO work item ✓
 
-Time wasted: 0 minutes
-Things missed: Never
+Time wasted: 0 min
 ```
 
 ---
 
 ## Supported Platforms
 
-| Platform | Capabilities |
-|----------|--------------|
-| **GitHub Issues** | Create, update, close, progress sync, checkbox tracking |
-| **JIRA** | Epic/Story hierarchy, status sync, custom fields |
-| **Azure DevOps** | Work items, area paths, iteration sync |
-| **Linear** | Coming Q1 2026 |
+| Platform | Features |
+|----------|----------|
+| **GitHub Issues** | Create, update, close, checkbox sync |
+| **[JIRA](/docs/glossary/terms/jira)** | Epic/Story hierarchy, status sync |
+| **[Azure DevOps](/docs/glossary/terms/azure-devops)** | Work items, area paths |
 
 ---
 
-## GitHub Integration
+## GitHub Setup
 
-### Setup
+### Step 1: Create Token
 
-**Step 1: Create GitHub Token**
-
-```bash
-# Go to: GitHub → Settings → Developer settings → Personal access tokens
-# Create token with scopes:
-#   - repo (full control)
-#   - read:org (if using org repos)
+```
+GitHub → Settings → Developer settings → Personal access tokens
+Scopes: repo, read:org
 ```
 
-**Step 2: Configure SpecWeave**
+### Step 2: Configure
 
 ```bash
-# Add to .env (gitignored)
+# In .env (gitignored)
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Or during init:
 specweave init .
-# Answer "GitHub" for git provider
-# Paste token when prompted
 ```
 
-**Step 3: Verify Connection**
+### Step 3: Verify
 
 ```bash
 /specweave-github:status
 ```
 
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-GITHUB CONNECTION STATUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 ✅ Connected to GitHub
   Repository: owner/repo-name
-  Token: Valid (expires: never)
-  Permissions: repo, read:org
+  Token: Valid
 
 Ready for sync!
 ```
 
-### Creating Issues from Increments
+### Creating Issues
 
 ```bash
 /specweave-github:create-issue 0001
 ```
 
-**Generated GitHub Issue**:
-
+Creates:
 ```markdown
 ## [FS-001][US-001] User Authentication
 
-### Summary
-Enable users to securely log in to the platform.
-
 ### Acceptance Criteria
-- [ ] AC-US1-01: Login form validates email format
-- [ ] AC-US1-02: Error message shown for invalid credentials
-- [ ] AC-US1-03: Session persists for 24 hours
-- [ ] AC-US1-04: Three failed attempts trigger lockout
+- [ ] AC-US1-01: Login form validates email
+- [ ] AC-US1-02: Error message for invalid creds
 
 ### Tasks
 - [ ] T-001: Create AuthService
 - [ ] T-002: Implement password hashing
-- [ ] T-003: Add JWT token generation
-- [ ] T-004: Create login endpoint
-- [ ] T-005: Write integration tests
 
----
 📋 Managed by SpecWeave
-🔗 Increment: 0001-user-authentication
 ```
 
 ### Syncing Progress
@@ -147,75 +113,36 @@ Enable users to securely log in to the platform.
 /specweave-github:sync 0001
 ```
 
-**What syncs**:
-- Task completion (checkboxes)
-- AC completion (checkboxes)
-- Status changes (open/closed)
-- Comments (from SpecWeave to GitHub)
-
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SYNCING TO GITHUB
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Increment: 0001-user-authentication
-GitHub Issue: #42
-
-Changes detected:
+Changes synced:
   ✓ T-001: completed → checkbox checked
-  ✓ T-002: completed → checkbox checked
   ✓ AC-US1-01: verified → checkbox checked
   ✓ Progress: 40% → comment added
 
 Sync complete!
 ```
 
-### Bidirectional Sync
-
-GitHub changes sync back to SpecWeave:
-
-```
-GitHub Issue #42 (external):
-  - [ ] T-003: Add JWT token generation  ← Someone unchecked this!
-
-↓ /specweave:sync-progress
-
-tasks.md updated:
-  T-003: status changed from completed → pending
-
-⚠️ External change detected - tasks.md updated
-```
-
 ---
 
-## JIRA Integration
+## JIRA Setup
 
-### Setup
+### Step 1: Get API Token
 
-**Step 1: Get JIRA Credentials**
-
-```bash
-# Go to: Atlassian → Account Settings → Security → API tokens
-# Create new API token
+```
+Atlassian → Account Settings → Security → API tokens
 ```
 
-**Step 2: Configure SpecWeave**
+### Step 2: Configure
 
 ```bash
-# Add to .env (gitignored)
+# In .env
 JIRA_EMAIL=your-email@company.com
 JIRA_API_TOKEN=xxxxxxxxxxxxxx
 JIRA_BASE_URL=https://your-domain.atlassian.net
 JIRA_PROJECT_KEY=PROJ
 ```
 
-**Step 3: Verify Connection**
-
-```bash
-/specweave-jira:sync --status
-```
-
-### JIRA Hierarchy Mapping
+### Hierarchy Mapping
 
 ```
 SpecWeave              JIRA
@@ -231,154 +158,75 @@ Task (T-XXX)      →    Sub-task
 /specweave-jira:sync 0001 --create
 ```
 
-**Creates**:
-1. Epic for the increment
-2. Stories for each user story
-3. Sub-tasks for each task
-
+Creates:
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CREATING JIRA ITEMS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Increment: 0001-user-authentication
-
-Created:
-  Epic: PROJ-100 "User Authentication Feature"
-    └── Story: PROJ-101 "US-001: User Login"
-        ├── Sub-task: PROJ-102 "T-001: Create AuthService"
-        ├── Sub-task: PROJ-103 "T-002: Password hashing"
-        └── Sub-task: PROJ-104 "T-003: JWT generation"
-    └── Story: PROJ-105 "US-002: Password Reset"
-        ├── Sub-task: PROJ-106 "T-004: Reset endpoint"
-        └── Sub-task: PROJ-107 "T-005: Email service"
-
-All items linked to increment metadata.
+Epic: PROJ-100 "User Authentication Feature"
+  └── Story: PROJ-101 "US-001: User Login"
+      ├── Sub-task: PROJ-102 "T-001: AuthService"
+      └── Sub-task: PROJ-103 "T-002: Password hashing"
 ```
-
-### Status Mapping
-
-| SpecWeave Status | JIRA Status |
-|------------------|-------------|
-| `planning` | To Do |
-| `in-progress` | In Progress |
-| `completed` | Done |
-| `paused` | On Hold |
-| `abandoned` | Cancelled |
-
-### Syncing Status
-
-```bash
-/specweave-jira:sync 0001
-```
-
-**Bidirectional rules**:
-- **External wins**: If JIRA status changes, SpecWeave updates
-- **Conflict resolution**: Most recent change wins
-- **Audit trail**: All syncs logged
 
 ---
 
-## Azure DevOps Integration
+## Azure DevOps Setup
 
-### Setup
+### Step 1: Create PAT
 
-**Step 1: Create PAT**
-
-```bash
-# Go to: Azure DevOps → User Settings → Personal Access Tokens
-# Create with scopes:
-#   - Work Items: Read & Write
-#   - Project and Team: Read
+```
+Azure DevOps → User Settings → Personal Access Tokens
+Scopes: Work Items (Read & Write)
 ```
 
-**Step 2: Configure SpecWeave**
+### Step 2: Configure
 
 ```bash
-# Add to .env
+# In .env
 ADO_PAT=xxxxxxxxxxxxxxxxxxxx
 ADO_ORGANIZATION=your-org
 ADO_PROJECT=your-project
 ```
 
-### Creating Work Items
+### Syncing
 
 ```bash
-/specweave-ado:create-workitem 0001
-```
-
-### ADO Hierarchy Mapping
-
-```
-SpecWeave              Azure DevOps
-─────────              ────────────
-Feature (FS-XXX)  →    Feature
-User Story (US-XXX) →  User Story
-Task (T-XXX)      →    Task
-```
-
-### Area Path Mapping
-
-For multi-team projects:
-
-```json
-// .specweave/config.json
-{
-  "ado": {
-    "areaPathMapping": {
-      "frontend": "Project\\Team-Frontend",
-      "backend": "Project\\Team-Backend",
-      "mobile": "Project\\Team-Mobile"
-    }
-  }
-}
+/specweave-ado:sync 0001
 ```
 
 ---
 
 ## Full Sync Command
 
-The master sync command:
+The master command syncs everything:
 
 ```bash
 /specweave:sync-progress
 ```
 
-**What it does**:
-
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FULL PROGRESS SYNC
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Step 1: Sync tasks.md from actual status
+Step 1: Sync tasks.md
   ✓ 12 tasks verified
-  ✓ 2 status updates applied
 
-Step 2: Sync to living documentation
+Step 2: Sync to living docs
   ✓ FEATURES.md updated
-  ✓ Feature folder synced
 
 Step 3: Sync to external tools
-  GitHub:
-    ✓ Issue #42 updated (3 checkboxes)
-  JIRA:
-    ✓ Epic PROJ-100 updated
-    ✓ 5 sub-tasks status changed
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-SYNC COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  GitHub: ✓ Issue #42 updated
+  JIRA: ✓ Epic PROJ-100 synced
 
 All systems in sync!
-Last sync: 2025-11-25 14:32:00
 ```
 
 ---
 
 ## Sync Strategies
 
-### Strategy 1: Bidirectional (Default)
+Configure in `.specweave/config.json`:
+
+### Bidirectional (Default)
 
 ```json
 {
@@ -389,11 +237,9 @@ Last sync: 2025-11-25 14:32:00
 }
 ```
 
-- Changes flow both ways
-- External tool status wins on conflict
-- Best for teams using both tools
+Changes flow both ways. External tool wins on conflict.
 
-### Strategy 2: Export Only
+### Export Only
 
 ```json
 {
@@ -403,11 +249,9 @@ Last sync: 2025-11-25 14:32:00
 }
 ```
 
-- SpecWeave → External only
-- External changes ignored
-- Best for SpecWeave-first teams
+SpecWeave → External only.
 
-### Strategy 3: Import Only
+### Import Only
 
 ```json
 {
@@ -417,126 +261,49 @@ Last sync: 2025-11-25 14:32:00
 }
 ```
 
-- External → SpecWeave only
-- Good for brownfield projects
-- Brings external data into SpecWeave
-
----
-
-## Automatic Sync (Hooks)
-
-Set up automatic sync on task completion:
-
-```json
-// plugins/specweave/hooks/hooks.json
-{
-  "hooks": [
-    {
-      "event": "PostToolUse",
-      "tools": ["Edit"],
-      "match": "tasks.md",
-      "command": "specweave sync-progress --silent"
-    }
-  ]
-}
-```
-
-**Result**: Every time tasks.md changes, external tools update automatically.
+External → SpecWeave only.
 
 ---
 
 ## Troubleshooting
 
-### Issue: "Authentication failed"
+### Authentication Failed
 
 ```bash
-# Check token validity
 /specweave-github:status
-
-# If expired, regenerate and update .env
-# Then reinitialize:
-specweave init . --reconfigure
+# Check if token valid/expired
 ```
 
-### Issue: "Issue not found"
+### Sync Conflict
 
 ```bash
-# Verify issue exists
-gh issue view 42
-
-# Re-link increment to issue
-/specweave-github:create-issue 0001 --link-existing 42
-```
-
-### Issue: "Sync conflict"
-
-```bash
-# View sync status
-/specweave-github:status 0001
-
-# Force sync from SpecWeave (overwrites external)
+# Force from SpecWeave
 /specweave-github:sync 0001 --force
 
-# Force sync from external (overwrites SpecWeave)
+# Force from external
 /specweave:sync-progress --from-external
 ```
 
-### Issue: "Rate limit exceeded"
+### Rate Limit
 
 ```bash
-# Check rate limit status
 /specweave:sync-diagnostics
-
-# Wait and retry, or use token with higher limits
+# Wait for reset or use different token
 ```
 
 ---
 
-## Practice Exercise
+## Glossary Terms Used
 
-### Exercise 1: GitHub Integration
-
-```bash
-# 1. Set up GitHub token
-# 2. Create increment
-/specweave:increment "Test GitHub sync"
-
-# 3. Create GitHub issue
-/specweave-github:create-issue 0001
-
-# 4. Complete some tasks
-/specweave:do --until T-002
-
-# 5. Sync and verify
-/specweave-github:sync 0001
-# Check GitHub issue - tasks should be checked!
-```
-
-### Exercise 2: Test Bidirectional Sync
-
-```bash
-# 1. With increment synced to GitHub
-# 2. Manually uncheck a task in GitHub issue
-# 3. Run sync
-/specweave:sync-progress
-
-# 4. Check tasks.md - task should be unchecked!
-```
+- **[JIRA](/docs/glossary/terms/jira)** — Atlassian project tracking
+- **[Azure DevOps](/docs/glossary/terms/azure-devops)** — Microsoft DevOps platform
+- **[Epic](/docs/glossary/terms/epic)** — Large story spanning sprints
+- **[Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)** — Two-way synchronization
 
 ---
 
-## Summary
+## Key Commands
 
-External tool integration provides:
-
-| Feature | Benefit |
-|---------|---------|
-| **Auto-create issues** | No manual issue creation |
-| **Progress sync** | Checkboxes update automatically |
-| **Status mapping** | Status flows both ways |
-| **Living connection** | Always in sync |
-
-**Key commands**:
 ```bash
 /specweave:sync-progress          # Full sync
 /specweave-github:sync 0001       # GitHub sync
@@ -544,4 +311,10 @@ External tool integration provides:
 /specweave-ado:sync 0001          # ADO sync
 ```
 
-:next → [Lesson 8: AI Model Selection](./08-ai-model-selection)
+---
+
+## What's Next?
+
+Learn how to choose the right AI model for each task.
+
+**:next** → [Lesson 8: AI Model Selection](./08-ai-model-selection)

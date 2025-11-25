@@ -15,8 +15,8 @@ We need to analyze GitHub Actions failure logs using Claude AI to:
 4. **Analyze** root causes and generate fix proposals
 
 **Two Models Available**:
-- **Haiku 3.5**: Fast, cheap ($0.25/MTok input, $1.25/MTok output)
-- **Sonnet 4.0**: Intelligent, expensive ($3/MTok input, $15/MTok output)
+- **Haiku 4.5**: Fast, cheap ($0.25/MTok input, $1.25/MTok output)
+- **Sonnet 4.5**: Intelligent, expensive ($3/MTok input, $15/MTok output)
 
 **Cost Target**: < $0.10 per failure analysis
 
@@ -631,9 +631,9 @@ interface AnalysisMetrics {
 ## References
 
 **Anthropic Pricing** (as of 2025-11-12):
-- Haiku 3.5: $0.25/MTok input, $1.25/MTok output
-- Sonnet 4.0: $3/MTok input, $15/MTok output
-- Opus 3.5: $15/MTok input, $75/MTok output
+- Haiku 4.5: $0.25/MTok input, $1.25/MTok output
+- Sonnet 4.5: $3/MTok input, $15/MTok output
+- Opus 4.5: $15/MTok input, $75/MTok output
 
 **Documentation**:
 - https://docs.anthropic.com/en/docs/models-overview

@@ -1,152 +1,95 @@
 ---
 sidebar_position: 9
 title: "Lesson 8: AI Model Selection"
-description: "Choose the right AI model for each task"
+description: "Choose the right model for each task"
 ---
 
-# Lesson 8: AI Model Selection Strategy
+# Lesson 8: AI Model Selection
 
-**Duration**: 30 minutes
-**Prerequisites**: Lessons 1-7 completed
-**Outcome**: Understand when to use Opus, Sonnet, or Haiku for optimal results and cost
-
----
-
-## The AI Landscape in 2025
-
-### Claude Model Family
-
-| Model | Best For | Token Cost | Speed |
-|-------|----------|------------|-------|
-| **Opus 4.5** | Complex architecture, multi-file refactoring | $$$ | Slower |
-| **Sonnet 4** | Daily coding, feature implementation | $$ | Fast |
-| **Haiku 3.5** | Quick lookups, simple edits, bulk operations | $ | Fastest |
-
-### Key Insight
-
-> **The most expensive model isn't always the best choice.**
->
-> Using Opus for a typo fix is like using a sledgehammer for a thumbtack.
+**Time**: 25 minutes
+**Goal**: Optimize cost and quality by choosing the right model
 
 ---
 
-## Model Selection by Task Type
+## Claude Models
 
-### Use Opus 4.5 When:
+| Model | Best For | Cost | Speed |
+|-------|----------|------|-------|
+| **Opus 4.5** | Architecture, complex analysis | $$$ | Slower |
+| **Sonnet 4.5** | Daily coding, features, tests | $$ | Fast |
+| **Haiku 3.5** | Quick lookups, simple edits | $ | Fastest |
+
+> **The most expensive model isn't always best.**
+> Using Opus for a typo is like a sledgehammer for a thumbtack.
+
+---
+
+## When to Use Each Model
+
+### Opus 4.5
 
 ```
 ✅ Architecture decisions
 ✅ Complex multi-file refactoring
-✅ System design and planning
-✅ Debugging intricate issues
-✅ Writing comprehensive specs
+✅ System design
 ✅ Security reviews
-✅ Performance optimization analysis
+✅ Comprehensive specs
 ```
 
-**Example Tasks**:
+**Example commands:**
 ```bash
-# Planning a new increment (uses Opus by default)
-/specweave:increment "Implement real-time collaboration"
-
-# Quality assessment
-/specweave:qa 0001
-
-# Architecture decisions
-"Design the caching layer for 10M daily requests"
+/specweave:increment "..."  # Uses Opus for planning
+/specweave:qa 0001          # Uses Opus for analysis
 ```
 
-### Use Sonnet 4 When:
+### Sonnet 4.5
 
 ```
 ✅ Feature implementation
 ✅ Writing tests
-✅ Code reviews
 ✅ Bug fixes
-✅ Documentation updates
-✅ Daily development tasks
+✅ Code reviews
+✅ Daily development
 ```
 
-**Example Tasks**:
+**Example commands:**
 ```bash
-# Executing increment tasks
-/specweave:do
-
-# Regular development
-"Add input validation to the registration form"
-"Write unit tests for UserService"
+/specweave:do   # Uses Sonnet for execution
 ```
 
-### Use Haiku 3.5 When:
+### Haiku 3.5
 
 ```
 ✅ Quick lookups
 ✅ Simple file edits
 ✅ Bulk find-and-replace
-✅ Formatting code
-✅ Quick questions
 ✅ Syntax checks
 ```
 
-**Example Tasks**:
-```bash
-# Quick lookups
+**Example:**
+```
 "What's the export name in utils/constants.ts?"
-
-# Simple edits
-"Change the button color from blue to green"
-
-# Bulk operations
-"Add 'use strict' to all JavaScript files"
+"Change button color from blue to green"
 ```
 
 ---
 
-## SpecWeave's Smart Model Selection
+## SpecWeave Default Selection
 
-### Default Behavior
-
-SpecWeave automatically selects models based on task complexity:
+SpecWeave picks automatically:
 
 ```
-/specweave:increment    → Opus 4.5 (complex planning)
-/specweave:do           → Sonnet 4 (balanced execution)
-/specweave:qa           → Opus 4.5 (deep analysis)
-/specweave:sync-progress → Haiku 3.5 (fast sync)
-```
-
-### Agent Model Configuration
-
-When spawning agents, specify the model:
-
-```typescript
-// Complex architecture task
-Task({
-  subagent_type: "specweave:architect:architect",
-  model: "opus",  // Use Opus for architecture
-  prompt: "Design authentication system"
-});
-
-// Quick exploration
-Task({
-  subagent_type: "Explore",
-  model: "haiku",  // Fast, cheap exploration
-  prompt: "Find all files importing AuthService"
-});
-
-// Standard implementation
-Task({
-  subagent_type: "specweave:tech-lead:tech-lead",
-  model: "sonnet",  // Balanced for coding
-  prompt: "Implement the login endpoint"
-});
+/specweave:increment    → Opus (complex planning)
+/specweave:do           → Sonnet (balanced execution)
+/specweave:qa           → Opus (deep analysis)
+/specweave:sync-progress → Haiku (fast sync)
 ```
 
 ---
 
-## Cost Optimization Strategies
+## Cost Optimization
 
-### Strategy 1: Progressive Complexity
+### Strategy 1: Progressive Escalation
 
 Start cheap, escalate as needed:
 
@@ -156,230 +99,54 @@ Step 1: Haiku exploration
   Cost: ~$0.001
 
 Step 2: Sonnet analysis
-  "Explain the auth flow in these 3 files"
+  "Explain the auth flow"
   Cost: ~$0.02
 
 Step 3: Opus architecture (if needed)
-  "Redesign auth to support multi-tenant"
+  "Redesign for multi-tenant"
   Cost: ~$0.15
 ```
 
 ### Strategy 2: Batch Similar Tasks
 
-Group cheap operations:
+```
+❌ Expensive: 10 separate Opus calls
+  "Fix typo in file1.ts"
+  "Fix typo in file2.ts"
+  ...
 
-```bash
-# ❌ Expensive: 10 separate Opus calls
-"Fix typo in file1.ts"
-"Fix typo in file2.ts"
-...
-
-# ✅ Cheap: 1 Haiku bulk operation
-"Fix all typos: file1.ts, file2.ts, ... file10.ts"
+✅ Cheap: 1 Haiku bulk operation
+  "Fix all typos: file1.ts, file2.ts, ..."
 ```
 
-### Strategy 3: Cache Exploration Results
+### Strategy 3: Explore First
 
 ```bash
-# First time: Explore with Haiku, save results
+# Cheap exploration with Haiku
 /specweave:do --explore-only
 
-# Implementation: Use Sonnet with cached context
+# Then implement with Sonnet
 /specweave:do --continue
 ```
 
 ---
 
-## Real-World Scenarios
+## Real-World Example
 
-### Scenario 1: New Feature Planning
+**Task**: "Add payment processing"
 
-```
-Task: "Add payment processing"
-
-Phase 1: Research (Haiku)
-  → "What payment libraries exist in package.json?"
-  → "Find existing payment-related code"
-  Cost: $0.005
-
-Phase 2: Planning (Opus)
-  → /specweave:increment "Payment processing"
-  → Generates spec.md, plan.md, tasks.md
-  Cost: $0.20
-
-Phase 3: Implementation (Sonnet)
-  → /specweave:do
-  → Implements each task
-  Cost: $0.15 × 8 tasks = $1.20
-
-Total: ~$1.40 (vs ~$3.00 all-Opus)
-```
-
-### Scenario 2: Bug Investigation
-
-```
-Task: "Users can't log in after password reset"
-
-Phase 1: Gather Info (Haiku)
-  → "Show me the password reset flow"
-  → "Find recent changes to auth files"
-  Cost: $0.003
-
-Phase 2: Analyze (Sonnet → Opus if needed)
-  → "Explain what changed in AuthService"
-  → If complex: escalate to Opus
-  Cost: $0.02 - $0.15
-
-Phase 3: Fix (Sonnet)
-  → Implement the fix
-  Cost: $0.03
-
-Total: ~$0.05 - $0.18
-```
-
-### Scenario 3: Refactoring
-
-```
-Task: "Extract common validation logic"
-
-Phase 1: Identify (Haiku)
-  → "Find all validation functions"
-  → List 15 files with validation
-  Cost: $0.002
-
-Phase 2: Plan (Opus)
-  → "Design unified validation library"
-  → Creates architecture
-  Cost: $0.15
-
-Phase 3: Execute (Sonnet)
-  → Refactor each file sequentially
-  Cost: $0.10 × 15 files = $1.50
-
-Total: ~$1.65
-```
-
----
-
-## Non-Claude AI Tools
-
-### When to Use Other Tools
-
-| Tool | Best For |
-|------|----------|
-| **GitHub Copilot** | Inline completions, boilerplate |
-| **Cursor** | IDE-integrated AI editing |
-| **ChatGPT** | General research, explanations |
-| **Gemini** | Google ecosystem integration |
-
-### SpecWeave Integration
-
-SpecWeave is AI-model agnostic for documentation:
-
-```markdown
-<!-- spec.md can be written with any AI -->
-
-## Feature: User Authentication
-
-### User Stories
-- US-001: As a user, I want to log in...
-
-<!-- Then use Claude for implementation -->
-/specweave:do
-```
-
-### Hybrid Workflow
-
-```
-1. Research with ChatGPT (free tier)
-   → "Explain OAuth2 PKCE flow"
-
-2. Plan with Claude Opus
-   → /specweave:increment "OAuth2 PKCE authentication"
-
-3. Code with Copilot (inline)
-   → Tab-complete boilerplate
-
-4. Implement with Claude Sonnet
-   → /specweave:do
-
-5. Review with Claude Opus
-   → /specweave:qa
-```
-
----
-
-## Claude Desktop & Web Sessions
-
-### Claude Desktop (2025)
-
-New capabilities:
-
-```
-✅ Extended context (200K tokens)
-✅ File system access
-✅ Local tool execution
-✅ Multi-modal input (images, PDFs)
-✅ Persistent sessions
-```
-
-**With SpecWeave**:
-```bash
-# Claude Desktop can read your entire codebase
-"Review the authentication module"
-# → Reads all relevant files automatically
-```
-
-### Web Sessions
-
-For quick tasks without CLI:
-
-```
-1. Go to claude.ai
-2. Upload spec.md
-3. Ask: "Review this spec for completeness"
-4. Copy feedback back to local files
-```
-
-**Limitation**: No direct file system access in web
-
----
-
-## Model Selection Cheat Sheet
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  WHICH MODEL?                           │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  "I need to..."                                         │
-│                                                         │
-│  ┌─────────────────┐                                    │
-│  │ Design/Architect │ ──────────────────► OPUS 4.5     │
-│  │ Complex refactor │                                   │
-│  │ Security review  │                                   │
-│  └─────────────────┘                                    │
-│                                                         │
-│  ┌─────────────────┐                                    │
-│  │ Write features  │ ──────────────────► SONNET 4     │
-│  │ Fix bugs        │                                   │
-│  │ Write tests     │                                   │
-│  └─────────────────┘                                   │
-│                                                         │
-│  ┌─────────────────┐                                    │
-│  │ Quick lookup    │ ──────────────────► HAIKU 3.5    │
-│  │ Simple edit     │                                   │
-│  │ Bulk operation  │                                   │
-│  └─────────────────┘                                   │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
+| Phase | Model | Cost | Action |
+|-------|-------|------|--------|
+| Research | Haiku | $0.005 | Find existing code |
+| Planning | Opus | $0.20 | Create increment |
+| Implementation | Sonnet | $1.20 | Build 8 tasks |
+| **Total** | | **$1.40** | vs $3.00 all-Opus |
 
 ---
 
 ## Configuration
 
-### Setting Default Models
+### Default Models
 
 In `.specweave/config.json`:
 
@@ -388,7 +155,6 @@ In `.specweave/config.json`:
   "ai": {
     "defaultModel": "sonnet",
     "planningModel": "opus",
-    "executionModel": "sonnet",
     "explorationModel": "haiku"
   }
 }
@@ -396,62 +162,62 @@ In `.specweave/config.json`:
 
 ### Per-Increment Override
 
-In `spec.md` frontmatter:
+In spec.md frontmatter:
 
 ```yaml
 ---
 increment: 0001-complex-refactor
 ai:
-  model: opus  # Use Opus for this complex increment
+  model: opus  # Use Opus throughout
 ---
 ```
 
 ---
 
-## Practice Exercise
+## Quick Reference
 
-### Exercise 1: Cost Comparison
-
-```bash
-# Try the same task with different models:
-
-# Haiku (observe speed and quality)
-"Using Haiku: explain the auth flow"
-
-# Sonnet (compare)
-"Using Sonnet: explain the auth flow"
-
-# Opus (note the difference)
-"Using Opus: explain the auth flow"
 ```
-
-### Exercise 2: Progressive Escalation
-
-```bash
-# Start with Haiku
-"Find all TODO comments in the codebase"
-
-# Escalate to Sonnet for analysis
-"Prioritize these TODOs by importance"
-
-# Use Opus for planning
-"Create an increment to address the top 5 TODOs"
+┌─────────────────────────────────────────────────────────┐
+│              WHICH MODEL?                               │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  "I need to..."                                         │
+│                                                         │
+│  Design / Architect     ────────────► OPUS 4.5         │
+│  Complex refactor                                       │
+│  Security review                                        │
+│                                                         │
+│  Write features         ────────────► SONNET 4.5       │
+│  Fix bugs                                               │
+│  Write tests                                            │
+│                                                         │
+│  Quick lookup           ────────────► HAIKU 3.5        │
+│  Simple edit                                            │
+│  Bulk operation                                         │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Summary
+## Glossary Terms Used
 
-| Model | When to Use | Cost |
-|-------|-------------|------|
-| **Opus 4.5** | Architecture, complex analysis | $$$ |
-| **Sonnet 4** | Daily development, features | $$ |
-| **Haiku 3.5** | Quick tasks, exploration | $ |
+- **[LLM](/docs/glossary/terms/llm)** — Large Language Model
+- **[Inference](/docs/glossary/terms/inference)** — Using trained models
 
-**Golden Rules**:
-1. Start cheap (Haiku), escalate as needed
-2. Use Opus for planning, Sonnet for execution
-3. Batch similar operations
-4. Cache exploration results
+---
 
-:next → [Lesson 9: Troubleshooting](./09-troubleshooting)
+## Key Takeaways
+
+1. **Start cheap** (Haiku), escalate as needed
+2. **Use Opus** for planning, Sonnet for execution
+3. **Batch** similar operations
+4. **Cache** exploration results
+
+---
+
+## What's Next?
+
+Learn how to fix common issues.
+
+**:next** → [Lesson 9: Troubleshooting](./09-troubleshooting)
