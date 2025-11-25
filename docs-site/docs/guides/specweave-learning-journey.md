@@ -202,10 +202,10 @@ Code → Build → Test → Deploy → Monitor
 
 | Metric | Elite | High | Medium | Low |
 |--------|-------|------|--------|-----|
-| Deployment Frequency | Multiple/day | Weekly | Monthly | <6mo |
-| Lead Time for Changes | <1 hour | <1 week | <1 month | >6mo |
-| Change Failure Rate | 0-15% | 16-30% | 31-45% | >45% |
-| Mean Time to Recovery | <1 hour | <1 day | <1 week | >1mo |
+| Deployment Frequency | Multiple/day | Weekly | Monthly | &lt;6mo |
+| Lead Time for Changes | &lt;1 hour | &lt;1 week | &lt;1 month | &gt;6mo |
+| Change Failure Rate | 0-15% | 16-30% | 31-45% | &gt;45% |
+| Mean Time to Recovery | &lt;1 hour | &lt;1 day | &lt;1 week | &gt;1mo |
 
 **SpecWeave tracks DORA automatically:**
 ```
@@ -473,7 +473,7 @@ Week 6: Security audit
 |--------|---------|
 | Time to onboard new dev | 2-4 weeks |
 | Documentation accuracy | ~40% current |
-| Architecture decisions recorded | <20% |
+| Architecture decisions recorded | &lt;20% |
 | Knowledge lost per team churn | 30-50% |
 
 **Why Traditional Docs Fail:**
