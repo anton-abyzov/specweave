@@ -4,6 +4,32 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.0] - 2025-11-25
+
+### ✨ Features
+- **Multi-Repo Init UX Improvements**: Streamlined initialization flow for multi-repository projects
+  - Removed slow upfront repository counting from bulk discovery
+  - Clearer messaging and progress indicators during multi-repo setup
+  - Hook improvements for post-edit-write operations
+- **README Overhaul**: Comprehensive documentation rewrite with better organization and examples
+
+### 📚 Documentation
+- Complete README restructure with clearer getting started guide
+- Improved cost tracking documentation
+- Added increment 0061 specs for multi-repo init UX
+
+---
+
+## [0.27.0] - 2025-11-25
+
+### ✨ Features
+- **Inquirer Migration to Modular API v13**: Major architecture update
+  - Migrated all interactive prompts to `@inquirer/prompts` modular API
+  - Init command refactored to modular architecture for better maintainability
+  - Improved prompt handling across all CLI commands
+
+---
+
 ## [0.26.17] - 2025-11-24
 
 ### 🐛 Bug Fixes
