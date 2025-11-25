@@ -4,6 +4,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.11] - 2025-11-25
+
+### ✨ Features
+- Added umbrella multi-repo support with intelligent repository pattern detection
+- New multi-repo detector for umbrella repository patterns
+- New umbrella-repo-detector skill for auto-detecting multi-repo setups
+
+### 📚 Documentation
+- Streamlined learning journey lessons (01-08) for clarity and consistency
+- Added ADRs 0141 (repo-name-as-project-id) and 0142 (umbrella-multi-repo-support)
+
+### 🔧 Improvements
+- Enhanced repo-id-generator with simplified detection logic
+- Enhanced PM agent and post-increment-planning hook
+- Added pre-task-completion-edit hook
+
+---
+
+
+
 ## [0.28.9] - 2025-11-25
 
 ### 📚 Documentation
