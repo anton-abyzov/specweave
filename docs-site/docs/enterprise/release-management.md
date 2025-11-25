@@ -26,7 +26,7 @@ Release management is the difference between chaos and control. This guide shows
 - Deploy to prod 1x/week or 1x/month
 - Formal release process (CAB, change windows, approvals)
 - Coordinated across 5-15 teams
-- Regulatory compliance (SOX, HIPAA, PCI-DSS)
+- Regulatory compliance (SOX, [HIPAA](/docs/glossary/terms/hipaa), PCI-DSS)
 - Customer SLAs (99.9% uptime, scheduled maintenance)
 
 **SpecWeave's Role**: Track increments → releases → deployments with full audit trail.

@@ -125,6 +125,60 @@ The test-aware-planner agent is responsible for generating `tasks.md` with **emb
 
 **CRITICAL**: v0.23.0+ requires hierarchical structure grouped by User Story.
 
+### ⚠️ Multi-Project Mode Detection (v0.29.0+)
+
+**BEFORE generating tasks, check for multi-project mode:**
+
+```bash
+# Check if multi-project mode is active
+cat .specweave/config.json | jq '.umbrella.enabled'
+```
+
+**If multi-project detected:**
+- User stories will have prefixes: `US-FE-001`, `US-BE-001`, `US-SHARED-001`
+- AC-IDs will have prefixes: `AC-FE-US1-01`, `AC-BE-US1-01`
+- **Match the format from spec.md exactly!**
+
+### Single-Project Format (umbrella.enabled: false)
+
+```markdown
+## User Story: US-001 - User Story Title
+
+**Linked ACs**: AC-US1-01, AC-US1-02, AC-US1-03
+**Tasks**: X total, 0 completed
+```
+
+### Multi-Project Format (umbrella.enabled: true)
+
+```markdown
+## Phase 1: Shared Library (sw-app-shared)
+
+### User Story: US-SHARED-001 - Common Types & Validators
+
+**Linked ACs**: AC-SHARED-US1-01, AC-SHARED-US1-02
+**Tasks**: X total, 0 completed
+
+---
+
+## Phase 2: Backend (sw-app-be)
+
+### User Story: US-BE-001 - API Endpoints
+
+**Linked ACs**: AC-BE-US1-01, AC-BE-US1-02
+**Tasks**: X total, 0 completed
+
+---
+
+## Phase 3: Frontend (sw-app-fe)
+
+### User Story: US-FE-001 - UI Components
+
+**Linked ACs**: AC-FE-US1-01, AC-FE-US1-02
+**Tasks**: X total, 0 completed
+```
+
+---
+
 Each task in `tasks.md` follows this format:
 
 ```markdown

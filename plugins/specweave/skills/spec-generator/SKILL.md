@@ -46,6 +46,12 @@ description: Generates comprehensive specifications (spec.md, plan.md, tasks.md 
 ### Target Audience
 
 ## User Stories & Acceptance Criteria
+
+<!--
+⚠️ MULTI-PROJECT MODE: If umbrella.enabled=true in config.json,
+   user stories MUST be project-scoped! See section below.
+-->
+
 ### US-001: [Title]
 **As a** [user type]
 **I want** [goal]
@@ -348,15 +354,172 @@ spec_generator:
 
 ---
 
+## 🔀 Multi-Project User Story Generation (v0.29.0+)
+
+**CRITICAL**: When umbrella/multi-project mode is detected, user stories MUST be generated per-project!
+
+### Detection (MANDATORY FIRST STEP)
+
+**Before generating spec.md, ALWAYS check for multi-project mode:**
+
+```bash
+# 1. Check config.json for umbrella mode
+cat .specweave/config.json | jq '.umbrella.enabled'
+
+# 2. Check for childRepos configuration
+cat .specweave/config.json | jq '.umbrella.childRepos[]'
+
+# 3. Check for project folders in specs/
+ls -la .specweave/docs/internal/specs/
+```
+
+**If ANY of these conditions are TRUE → Multi-project mode ACTIVE:**
+- `umbrella.enabled: true` in config.json
+- `umbrella.childRepos` has entries
+- Multiple project folders exist in `specs/` (e.g., `sw-app-fe/`, `sw-app-be/`, `sw-app-shared/`)
+- User prompt mentions: "3 repos", "frontend repo", "backend API", "shared library"
+
+### Project-Scoped User Story Format (MANDATORY in Multi-Project Mode)
+
+**❌ WRONG (Single-Project Format - DO NOT USE in multi-project!):**
+```markdown
+## User Stories
+
+### US-001: Thumbnail Upload
+As a content creator, I want to upload thumbnails...
+
+### US-002: CTR Prediction API
+As a system, I want to predict click-through rates...
+```
+
+**✅ CORRECT (Multi-Project Format - ALWAYS USE when umbrella detected!):**
+```markdown
+## User Stories by Project
+
+### Frontend (sw-thumbnail-ab-fe)
+
+#### US-FE-001: Thumbnail Upload & Comparison (P1)
+**Related Repo**: sw-thumbnail-ab-fe
+**As a** content creator
+**I want** to upload multiple thumbnail variants and compare them side-by-side
+**So that** I can visually evaluate my options before testing
+
+**Acceptance Criteria**:
+- [ ] **AC-FE-US1-01**: User can drag-and-drop up to 5 thumbnail images (JPG, PNG, WebP)
+- [ ] **AC-FE-US1-02**: Images are validated for YouTube specs (1280x720 min, <2MB)
+- [ ] **AC-FE-US1-03**: Side-by-side comparison view displays all variants
+
+---
+
+### Backend (sw-thumbnail-ab-be)
+
+#### US-BE-001: Thumbnail Analysis API (P1)
+**Related Repo**: sw-thumbnail-ab-be
+**As a** frontend application
+**I want** to call POST /predict-ctr endpoint
+**So that** I can get AI-powered click-through rate predictions
+
+**Acceptance Criteria**:
+- [ ] **AC-BE-US1-01**: POST /predict-ctr endpoint accepts thumbnail image
+- [ ] **AC-BE-US1-02**: ML model analyzes: face detection, text readability, color psychology
+
+---
+
+### Shared Library (sw-thumbnail-ab-shared)
+
+#### US-SHARED-001: Common Types & Validators (P1)
+**Related Repo**: sw-thumbnail-ab-shared
+**As a** developer in FE or BE repos
+**I want** shared TypeScript types and validators
+**So that** API contracts are consistent across projects
+
+**Acceptance Criteria**:
+- [ ] **AC-SHARED-US1-01**: ThumbnailMetadata type exported
+- [ ] **AC-SHARED-US1-02**: Validation schemas for image specs
+```
+
+### Project Classification Rules
+
+When analyzing user descriptions, classify each user story by keywords:
+
+| Keywords | Project | Prefix |
+|----------|---------|--------|
+| UI, component, page, form, view, drag-drop, theme, builder, menu display | Frontend | FE |
+| API, endpoint, CRUD, webhook, analytics, database, service, ML model | Backend | BE |
+| types, schemas, validators, utilities, localization, common | Shared | SHARED |
+| iOS, Android, mobile app, push notification | Mobile | MOBILE |
+| Terraform, K8s, Docker, CI/CD, deployment | Infrastructure | INFRA |
+
+### AC-ID Format by Project
+
+```
+AC-{PROJECT}-US{story}-{number}
+
+Examples:
+- AC-FE-US1-01 (Frontend, User Story 1, AC #1)
+- AC-BE-US1-01 (Backend, User Story 1, AC #1)
+- AC-SHARED-US1-01 (Shared, User Story 1, AC #1)
+- AC-MOBILE-US1-01 (Mobile, User Story 1, AC #1)
+```
+
+### tasks.md Must Reference Project-Scoped User Stories
+
+```markdown
+### T-001: Create Thumbnail Upload Component
+**User Story**: US-FE-001           ← MUST reference project-scoped ID!
+**Satisfies ACs**: AC-FE-US1-01, AC-FE-US1-02
+**Status**: [ ] Not Started
+
+### T-004: Database Schema & Migrations
+**User Story**: US-BE-001, US-BE-002   ← Backend stories only!
+**Satisfies ACs**: AC-BE-US1-01, AC-BE-US2-01
+**Status**: [ ] Not Started
+```
+
+### Workflow Summary
+
+```
+1. DETECT multi-project mode (check config.json, folder structure)
+   ↓
+2. If multi-project → Group user stories by project (FE/BE/SHARED/MOBILE/INFRA)
+   ↓
+3. Generate prefixed user stories: US-FE-001, US-BE-001, US-SHARED-001
+   ↓
+4. Generate prefixed ACs: AC-FE-US1-01, AC-BE-US1-01
+   ↓
+5. Generate tasks referencing correct project user stories
+   ↓
+6. Each project folder gets its own filtered spec
+```
+
+### Why This Matters
+
+Without project-scoped stories:
+- ❌ All issues created in ONE repo (wrong!)
+- ❌ No clarity which team owns what
+- ❌ Tasks reference wrong user stories
+- ❌ GitHub sync broken across repos
+
+With project-scoped stories:
+- ✅ Each repo gets only its user stories
+- ✅ Clear ownership per team/repo
+- ✅ GitHub issues in correct repo
+- ✅ Clean separation of concerns
+
+---
+
 ## Related Skills
 
 - **Planning workflow**: Guides increment planning (uses Spec Generator internally)
 - **Context loading**: Loads relevant context for specification generation
 - **Quality validation**: Validates generated specifications for completeness
+- **multi-project-spec-mapper**: Splits specs into project-specific files
+- **umbrella-repo-detector**: Detects multi-repo architecture
 
 ---
 
 ## Version History
 
+- **v2.0.0** (0.29.0): Added multi-project user story generation support
 - **v1.0.0** (0.8.0): Initial release with flexible template system
 - Based on: Flexible Spec Generator (V2) - context-aware, non-rigid templates

@@ -501,7 +501,7 @@ Now extract from: "${receiptText}"`;
 const messages = [
   {
     role: 'system',
-    content: 'You are a senior software architect. Provide detailed, production-ready code with error handling and tests.'
+    content: 'You are a senior software architect. Provide detailed, production-ready code with error handling and [tests](/docs/glossary/terms/unit-testing).'
   },
   {
     role: 'user',
@@ -1301,7 +1301,7 @@ await openai.chat.completions.create({ /* small prompt */ });
 - Create AI increment: `/specweave:increment "ai-code-review"`
 - Document model selection in ADRs
 - Track AI costs in increment reports
-- Use BDD tests for AI behavior validation
+- Use [BDD](/docs/glossary/terms/bdd) tests for AI behavior validation
 
 **Further Reading:**
 - [OpenAI Documentation](https://platform.openai.com/docs)

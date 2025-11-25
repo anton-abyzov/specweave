@@ -652,9 +652,9 @@ test('User can login', async ({ page }) => {
 
 ---
 
-## Test-Driven Development (TDD)
+## [Test-Driven Development (TDD)](/docs/glossary/terms/tdd)
 
-**TDD**: Write tests **before** writing implementation code.
+**[TDD](/docs/glossary/terms/tdd)**: Write tests **before** writing implementation code.
 
 ### The Red-Green-Refactor Cycle
 
@@ -815,9 +815,9 @@ export function validatePassword(password: string): boolean {
 
 ---
 
-## Behavior-Driven Development (BDD)
+## [Behavior-Driven Development (BDD)](/docs/glossary/terms/bdd)
 
-**BDD**: Extend TDD with natural language to describe behavior from user perspective.
+**[BDD](/docs/glossary/terms/bdd)**: Extend [TDD](/docs/glossary/terms/tdd) with natural language to describe behavior from user perspective.
 
 ### Given-When-Then Format
 
@@ -968,11 +968,11 @@ Then('I should see {string}', async function (text: string) {
 
 ---
 
-## Test Coverage
+## [Test Coverage](/docs/glossary/terms/test-coverage)
 
 ### What is Coverage?
 
-**Coverage** measures which parts of your code are executed during tests.
+**[Coverage](/docs/glossary/terms/test-coverage)** measures which parts of your code are executed during tests.
 
 ### Coverage Types
 
@@ -1719,7 +1719,7 @@ jobs:
             playwright-report/
 ```
 
-### Quality Gates
+### [Quality Gates](/docs/glossary/terms/quality-gate)
 
 **Require tests to pass before merging**:
 
@@ -2065,9 +2065,9 @@ coverage_target: 85%
 **Dependencies**: None
 ```
 
-### Quality Gates
+### [Quality Gates](/docs/glossary/terms/quality-gate)
 
-**`/specweave:validate` command checks**:
+**[`/specweave:validate`](/docs/glossary/terms/specweave-validate) command checks**:
 - ✅ All AC-IDs from spec.md covered in tasks.md
 - ✅ Test plans exist for each task
 - ✅ Coverage targets met (80-90%)

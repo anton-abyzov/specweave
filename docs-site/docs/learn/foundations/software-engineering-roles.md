@@ -55,7 +55,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Output**: Test plans, quality assessment reports
 
 **5. TDD Orchestrator Agent** (`tdd-orchestrator`)
-- **Role**: TDD (Test-Driven Development) Workflow Leader
+- **Role**: [TDD](/docs/glossary/terms/tdd) (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow
 - **Commands**: `/specweave:tdd-cycle`, `/specweave:tdd-red`, `/specweave:tdd-green`, `/specweave:tdd-refactor`
@@ -63,7 +63,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 
 **6. Test-Aware Planner Agent** (`test-aware-planner`)
 - **Role**: Test-Focused Task Planner
-- **Expertise**: Creating tasks with embedded test plans (BDD format)
+- **Expertise**: Creating tasks with embedded test plans ([BDD](/docs/glossary/terms/bdd) format)
 - **Activates**: When generating `tasks.md` with test coverage
 - **Output**: `tasks.md` with BDD test plans, AC-ID traceability
 
@@ -84,8 +84,8 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 **9. Docs Writer Agent** (`docs-writer`)
 - **Role**: Technical Writer
 - **Expertise**: Documentation creation, API docs, user guides
-- **Activates**: When generating documentation, updating living docs
-- **Output**: Updated README.md, API documentation, user guides
+- **Activates**: When generating documentation, updating [living docs](/docs/glossary/terms/living-docs)
+- **Output**: Updated README.md, [API](/docs/glossary/terms/api) documentation, user guides
 
 ### Utility Agents
 
@@ -111,7 +111,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 **Traditional Responsibilities**:
 - Define product vision and strategy
 - Gather requirements from stakeholders
-- Write user stories with acceptance criteria
+- Write [user stories](/docs/glossary/terms/user-stories) with [acceptance criteria](/docs/glossary/terms/acceptance-criteria)
 - Prioritize features using frameworks (RICE, MoSCoW)
 - Track progress and report to stakeholders
 
@@ -129,7 +129,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
    - Acceptance criteria with AC-IDs (AC-US1-01, AC-US1-02, etc.)
    - Success metrics
    - Priority assignments (P1, P2, P3)
-2. Creates living docs in .specweave/docs/internal/specs/
+2. Creates [living docs](/docs/glossary/terms/living-docs) in .specweave/docs/internal/specs/
 3. Links to external PM tools (Jira, ADO, GitHub Issues)
 4. Validates increment completion via /specweave:done
 ```
@@ -162,7 +162,7 @@ PM Agent auto-generates this structure from high-level descriptions, with AC-IDs
 
 **Traditional Responsibilities**:
 - Design system architecture (high-level and low-level)
-- Create Architecture Decision Records (ADRs)
+- Create Architecture Decision Records ([ADRs](/docs/glossary/terms/adr))
 - Document design patterns and best practices
 - Create C4 diagrams (context, container, component)
 - Make technology stack decisions
@@ -221,7 +221,7 @@ Use PostgreSQL for transactional data, Redis for session cache.
 - MySQL: Weaker JSON support than PostgreSQL (rejected)
 ```
 
-Architect Agent stores ADRs permanently in living docs, updated via `/specweave:sync-docs`.
+Architect Agent stores [ADRs](/docs/glossary/terms/adr) permanently in [living docs](/docs/glossary/terms/living-docs), updated via `/specweave:sync-docs`.
 
 ---
 
@@ -307,7 +307,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 - Ensures AC-ID traceability (spec.md AC → tasks.md tests)
 
 **Test-Aware Planner Agent**:
-- Embeds test plans in tasks.md (BDD format: Given/When/Then)
+- Embeds test plans in tasks.md ([BDD](/docs/glossary/terms/bdd) format: Given/When/Then)
 - Maps tests to acceptance criteria (AC-US1-01)
 - Defines coverage targets per task (80-90%)
 - Ensures test-first workflow (TDD support)
@@ -475,14 +475,14 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 # Docs Writer updates documentation after feature completion
 # Invoked via /specweave:sync-docs or manually
 
-1. Living Docs Sync:
-   - Updates .specweave/docs/internal/ (architecture, ADRs)
+1. [Living Docs](/docs/glossary/terms/living-docs) Sync:
+   - Updates .specweave/docs/internal/ (architecture, [ADRs](/docs/glossary/terms/adr))
    - Updates .specweave/docs/public/ (user guides)
    - Syncs spec.md → living docs (permanent archive)
 
 2. User-Facing Docs:
    - Updates README.md with new features
-   - Generates API documentation (OpenAPI → Markdown)
+   - Generates [API](/docs/glossary/terms/api) documentation (OpenAPI → Markdown)
    - Updates CHANGELOG.md
 
 3. Docs Site:

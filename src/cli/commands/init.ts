@@ -32,6 +32,7 @@ import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
 import {
   type InitOptions,
   type RepositoryHosting,
+  type LanguageSelectionResult,
   findSourceDir,
   findPackageRoot,
   detectNestedSpecweave,
@@ -41,6 +42,8 @@ import {
   setupRepositoryHosting,
   promptTestingConfig,
   updateConfigWithTesting,
+  promptLanguageSelection,
+  getDefaultLanguageSelection,
   promptTranslationConfig,
   updateConfigWithTranslation,
   getDefaultTranslationConfig,
@@ -165,16 +168,31 @@ export async function initCommand(
                process.env.CIRCLECI === 'true' ||
                !process.stdin.isTTY;
 
-  // Validate language
-  const language = (options.language?.toLowerCase() || 'en') as SupportedLanguage;
-  if (options.language && !isLanguageSupported(language)) {
-    const locale = getLocaleManager('en');
-    console.error(chalk.red('\n' + locale.t('cli', 'init.errors.invalidLanguage', { language: options.language })));
-    console.error(chalk.yellow(locale.t('cli', 'init.errors.supportedLanguages', { languages: getSupportedLanguages().join(', ') }) + '\n'));
+  // STEP 1: LANGUAGE SELECTION (FIRST QUESTION!)
+  // This must be asked before anything else so all prompts are in user's language
+  let languageResult: LanguageSelectionResult;
+
+  // Validate CLI language option if provided
+  const cliLanguage = options.language?.toLowerCase() as SupportedLanguage | undefined;
+  if (cliLanguage && !isLanguageSupported(cliLanguage)) {
+    console.error(chalk.red('\n❌ Invalid language: ' + options.language));
+    console.error(chalk.yellow('Supported languages: ' + getSupportedLanguages().join(', ') + '\n'));
     process.exit(1);
   }
 
+  // Ask for language (or use CLI option / CI default)
+  if (isCI) {
+    languageResult = getDefaultLanguageSelection(cliLanguage || 'en');
+  } else if (cliLanguage) {
+    languageResult = getDefaultLanguageSelection(cliLanguage);
+  } else {
+    languageResult = await promptLanguageSelection(isCI);
+  }
+
+  const language = languageResult.language;
   const locale = getLocaleManager(language);
+
+  // Now show welcome message in selected language
   console.log(chalk.blue.bold('\n' + locale.t('cli', 'init.welcome') + '\n'));
 
   let targetDir: string;
@@ -420,7 +438,7 @@ export async function initCommand(
 
       // Repository hosting setup
       const gitHubRemote = detectGitHubRemote(targetDir);
-      const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote });
+      const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
 
       // Issue tracker setup
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
@@ -449,19 +467,15 @@ export async function initCommand(
     }
 
     // Translation configuration (CRITICAL: Must ask user - cost implications!)
-    // Translation can ~2x token usage, user MUST explicitly opt-in
-    if (!isCI && !continueExisting) {
-      const translationResult = await promptTranslationConfig();
+    // Language already selected in step 1, now ask about auto-translation scope
+    if (!isCI && !continueExisting && language !== 'en') {
+      // Only ask about translation if non-English language selected
+      const translationResult = await promptTranslationConfig(languageResult);
       updateConfigWithTranslation(targetDir, translationResult);
-
-      // Update language for subsequent operations if changed
-      if (translationResult.language !== 'en') {
-        // Language is now set in config, will be used by hooks
-        console.log(chalk.gray(`   Language set to ${translationResult.language} in config.json`));
-      }
-    } else if (isCI) {
-      // CI mode: Use defaults (English, no translation)
+    } else {
+      // English or CI mode: Use defaults (no auto-translation needed)
       const defaultTranslation = getDefaultTranslationConfig(language);
+      defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
       updateConfigWithTranslation(targetDir, defaultTranslation);
     }
 

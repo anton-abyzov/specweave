@@ -15,6 +15,7 @@ import { GitHubIssue } from '../../plugins/specweave-github/lib/types.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { FrontmatterUpdater } from './frontmatter-updater.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
+import { UserStoryContentBuilder } from '../../plugins/specweave-github/lib/user-story-content-builder.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -139,7 +140,9 @@ export class SyncCoordinator {
           );
 
           if (cachedIssue) {
-            this.logger.log(`  ⏭️  ${usFile.id} - Issue #${cachedIssue.number} already exists (cached in frontmatter)`);
+            this.logger.log(`  🔍 ${usFile.id} - Issue #${cachedIssue.number} exists (cached)`);
+            // Check if issue needs content update (has placeholder body)
+            await this.updateIssueIfPlaceholder(cachedIssue.number, usFile.id, featureId, client, repoInfo);
             continue;
           }
 
@@ -157,9 +160,10 @@ export class SyncCoordinator {
             const githubIssues = metadata.github?.issues || [];
             const found = githubIssues.find((i: any) => i.userStory === usFile.id);
             if (found) {
-              this.logger.log(`  ⏭️  ${usFile.id} - Issue #${found.number} already exists (cached in metadata)`);
+              this.logger.log(`  🔍 ${usFile.id} - Issue #${found.number} exists (metadata)`);
+              // Check if issue needs content update
+              await this.updateIssueIfPlaceholder(found.number, usFile.id, featureId, client, repoInfo);
               existingIssue = found.number;
-              // TODO: Backfill Layer 1 (update user story frontmatter)
               continue;
             }
           }
@@ -169,7 +173,46 @@ export class SyncCoordinator {
           const existingOnGitHub = await client.searchIssueByTitle(searchTitle);
 
           if (existingOnGitHub) {
-            this.logger.log(`  ⏭️  ${usFile.id} - Issue #${existingOnGitHub.number} already exists on GitHub`);
+            this.logger.log(`  🔍 ${usFile.id} - Issue #${existingOnGitHub.number} already exists on GitHub`);
+
+            // CHECK: Does issue have placeholder content that needs updating?
+            const hasPlaceholderBody = existingOnGitHub.body?.includes('This issue was auto-created by SpecWeave')
+              && !existingOnGitHub.body?.includes('## Acceptance Criteria');
+
+            if (hasPlaceholderBody) {
+              this.logger.log(`  📝 Issue has placeholder content - updating with rich body...`);
+              try {
+                // Find the user story file in living docs
+                const featurePath = path.join(
+                  this.projectRoot,
+                  '.specweave/docs/internal/specs',
+                  this.projectId,
+                  featureId
+                );
+
+                const usIdNumber = usFile.id.toLowerCase().replace('us-', '');
+                const featureFiles = existsSync(featurePath) ? await fs.readdir(featurePath) : [];
+                const usFileName = featureFiles.find(f =>
+                  f.startsWith(`us-${usIdNumber}-`) && f.endsWith('.md')
+                );
+
+                if (usFileName) {
+                  const usFilePath = path.join(featurePath, usFileName);
+                  const contentBuilder = new UserStoryContentBuilder(usFilePath, this.projectRoot);
+                  const richBody = await contentBuilder.buildIssueBody(`${repoInfo.owner}/${repoInfo.repo}`);
+
+                  // Update the issue body via gh CLI
+                  await client.updateIssueBody(existingOnGitHub.number, richBody);
+                  this.logger.log(`  ✅ Updated issue #${existingOnGitHub.number} with rich content (ACs, tasks)`);
+                } else {
+                  this.logger.log(`  ⚠️ User story file not found - keeping placeholder content`);
+                }
+              } catch (error) {
+                this.logger.log(`  ⚠️ Failed to update issue body: ${error}`);
+              }
+            } else {
+              this.logger.log(`  ⏭️ Issue already has rich content - skipping update`);
+            }
 
             // Backfill Layer 1 (frontmatter) and Layer 2 (metadata)
             await this.frontmatterUpdater.updateUserStoryFrontmatter({
@@ -215,8 +258,39 @@ export class SyncCoordinator {
           // All 3 layers miss - create new issue
           this.logger.log(`  📝 Creating GitHub issue for ${usFile.id}...`);
 
-          // Format issue body
-          const issueBody = this.formatUserStoryBody(usFile);
+          // Format issue body - use UserStoryContentBuilder for rich content with ACs
+          let issueBody: string;
+          try {
+            // Find the user story file in living docs
+            const featurePath = path.join(
+              this.projectRoot,
+              '.specweave/docs/internal/specs',
+              this.projectId,
+              featureId
+            );
+
+            // Search for file matching us-{number}-*.md pattern
+            const usIdNumber = usFile.id.toLowerCase().replace('us-', '');
+            const featureFiles = existsSync(featurePath) ? await fs.readdir(featurePath) : [];
+            const usFileName = featureFiles.find(f =>
+              f.startsWith(`us-${usIdNumber}-`) && f.endsWith('.md')
+            );
+
+            if (usFileName) {
+              const usFilePath = path.join(featurePath, usFileName);
+              const contentBuilder = new UserStoryContentBuilder(usFilePath, this.projectRoot);
+              issueBody = await contentBuilder.buildIssueBody(`${repoInfo.owner}/${repoInfo.repo}`);
+              this.logger.log(`  📄 Built rich issue body with ACs from ${usFileName}`);
+            } else {
+              // Fallback to basic body if file not found
+              this.logger.log(`  ⚠️ User story file not found for ${usFile.id}, using basic body`);
+              issueBody = this.formatUserStoryBody(usFile);
+            }
+          } catch (error) {
+            // Fallback to basic body on any error
+            this.logger.log(`  ⚠️ Failed to build rich body: ${error}, using fallback`);
+            issueBody = this.formatUserStoryBody(usFile);
+          }
 
           // Create issue
           const issue = await client.createUserStoryIssue({
@@ -502,6 +576,69 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       result.errors.push(`Sync closure error: ${error}`);
       this.logger.error('❌ Increment closure sync failed:', error);
       return result;
+    }
+  }
+
+  /**
+   * Update issue if it has placeholder content
+   * Fetches issue from GitHub, checks for placeholder, and updates with rich content
+   */
+  private async updateIssueIfPlaceholder(
+    issueNumber: number,
+    userStoryId: string,
+    featureId: string,
+    client: GitHubClientV2,
+    repoInfo: { owner: string; repo: string }
+  ): Promise<void> {
+    try {
+      // Fetch issue from GitHub to check body content
+      const issue = await client.getIssue(issueNumber);
+
+      if (!issue) {
+        this.logger.log(`    ⚠️ Could not fetch issue #${issueNumber}`);
+        return;
+      }
+
+      // Check if issue has placeholder content
+      const hasPlaceholderBody = issue.body?.includes('This issue was auto-created by SpecWeave')
+        && !issue.body?.includes('## Acceptance Criteria');
+
+      if (!hasPlaceholderBody) {
+        this.logger.log(`    ✓ Issue already has rich content`);
+        return;
+      }
+
+      this.logger.log(`    📝 Updating placeholder content with rich body...`);
+
+      // Find the user story file in living docs
+      const featurePath = path.join(
+        this.projectRoot,
+        '.specweave/docs/internal/specs',
+        this.projectId,
+        featureId
+      );
+
+      const usIdNumber = userStoryId.toLowerCase().replace('us-', '');
+      const featureFiles = existsSync(featurePath) ? await fs.readdir(featurePath) : [];
+      const usFileName = featureFiles.find(f =>
+        f.startsWith(`us-${usIdNumber}-`) && f.endsWith('.md')
+      );
+
+      if (!usFileName) {
+        this.logger.log(`    ⚠️ User story file not found - keeping placeholder`);
+        return;
+      }
+
+      const usFilePath = path.join(featurePath, usFileName);
+      const contentBuilder = new UserStoryContentBuilder(usFilePath, this.projectRoot);
+      const richBody = await contentBuilder.buildIssueBody(`${repoInfo.owner}/${repoInfo.repo}`);
+
+      // Update the issue body
+      await client.updateIssueBody(issueNumber, richBody);
+      this.logger.log(`    ✅ Updated issue #${issueNumber} with ACs and tasks`);
+
+    } catch (error) {
+      this.logger.log(`    ⚠️ Failed to update: ${error}`);
     }
   }
 

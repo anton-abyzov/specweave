@@ -58,9 +58,17 @@ fi
 # ============================================================================
 # TTL CHECK (10 seconds - balanced for UX vs performance)
 # ============================================================================
+# TTL check (skip if --force flag provided or SPECWEAVE_FORCE_STATUS_UPDATE=1)
+# ============================================================================
 TTL_SECONDS=10
+FORCE_UPDATE=0
 
-if [[ -f "$CACHE_FILE" ]]; then
+# Check for --force flag
+if [[ "${1:-}" == "--force" ]] || [[ "${SPECWEAVE_FORCE_STATUS_UPDATE:-0}" == "1" ]]; then
+  FORCE_UPDATE=1
+fi
+
+if [[ "$FORCE_UPDATE" -eq 0 ]] && [[ -f "$CACHE_FILE" ]]; then
   if [[ "$(uname)" == "Darwin" ]]; then
     CACHE_AGE=$(( $(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0) ))
   else

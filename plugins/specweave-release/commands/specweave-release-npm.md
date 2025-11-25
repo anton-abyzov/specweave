@@ -1,6 +1,6 @@
 ---
 name: specweave-release:npm
-description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering. Use --only flag for direct npm publish (skips git push and GitHub Actions).
+description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering. Use --only flag for quick local release (bumps version, builds, publishes to npm directly - NO git push, NO pipeline).
 ---
 
 # /specweave-release:npm - NPM Release Automation
@@ -9,8 +9,8 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 
 ## Command Modes
 
-**Default mode** (no flags): Push to GitHub → GitHub Actions publishes to npm
-**Direct mode** (`--only`): Publish directly to npm (skip GitHub push/Actions)
+**Default mode** (no flags): Bump → Push to GitHub → GitHub Actions publishes to npm
+**Direct mode** (`--only`): Bump → Build → Publish to npm directly (NO git push, NO pipeline)
 
 ## Detecting Mode
 
@@ -186,16 +186,7 @@ npm publish
 - Publishes to npm registry immediately
 - No GitHub Actions involvement
 
-### 6. Push Git Changes (Optional but Recommended)
-
-```bash
-# Push the version bump commit and tag to GitHub
-git push origin develop --follow-tags
-```
-
-**Note**: This syncs GitHub with npm but does NOT trigger publish workflow (already published).
-
-### 7. Report Results (Direct Mode)
+### 6. Report Results (Direct Mode)
 
 Show the user:
 ```markdown
@@ -203,36 +194,37 @@ Show the user:
 
 📦 **Version**: vX.Y.Z
 🔗 **NPM**: https://www.npmjs.com/package/specweave
-🏷️ **Git Tag**: vX.Y.Z (created locally)
+🏷️ **Git Tag**: vX.Y.Z (local only)
 
 **What happened**:
-- ✅ Version bumped and committed
+- ✅ Version bumped and committed locally
 - ✅ Git tag created locally
 - ✅ Package built (npm run rebuild)
 - ✅ Published to npm directly
-- ✅ Git changes pushed to GitHub
+- ⏸️ Git NOT pushed (use `git push origin develop --follow-tags` later if needed)
 
 **Verify**:
 - Check npm: https://www.npmjs.com/package/specweave
 - Verify version: `npm view specweave version`
 - Install globally: `npm install -g specweave@X.Y.Z`
 
-**Note**: Published via direct push (bypassed GitHub Actions)
+**Note**: Local release only. Push to GitHub manually when ready:
+`git push origin develop --follow-tags`
 ```
 
 ## Direct Mode Safety Rules
 
 - ✅ ALWAYS rebuild before publishing (`npm run rebuild`)
-- ✅ ALWAYS push git changes after successful publish
-- ✅ Use `--only` for emergency releases or local testing
+- ✅ Use `--only` for emergency/quick releases or local testing
 - ✅ Default mode (GitHub Actions) is preferred for regular releases
 - ✅ Direct mode gives immediate feedback (no CI wait time)
+- ⚠️ Remember to push git changes later to sync GitHub
 
 ## Success Criteria (Direct Mode)
 
 ✅ Version bumped in package.json
-✅ Git commit created
-✅ Git tag created
+✅ Git commit created locally
+✅ Git tag created locally
 ✅ Package rebuilt
 ✅ Published to npm directly
-✅ Git changes pushed to GitHub (optional but recommended)
+⏸️ Git NOT pushed (manual sync later)

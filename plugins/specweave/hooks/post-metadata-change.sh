@@ -170,6 +170,20 @@ CURRENT_STATUS=$(jq -r '.status // "unknown"' "$METADATA_PATH" 2>/dev/null)
 
 echo "[$(date)] post-metadata-change: Current status: $CURRENT_STATUS" >> "$DEBUG_LOG" 2>/dev/null || true
 
+# ============================================================================
+# CRITICAL FIX (v0.28.12): Remove guard BEFORE calling sub-hooks
+# ============================================================================
+# PROBLEM: Sub-hooks (post-increment-completion.sh) check for recursion guard
+# and exit immediately if it exists. But the guard was created HERE (line 77),
+# so sub-hooks NEVER ran - causing status line to never update!
+#
+# SOLUTION: Temporarily remove the guard before calling sub-hooks.
+# The guard's purpose is to prevent THIS hook from being called recursively
+# (if sub-hooks modify metadata.json). Sub-hooks have their OWN guards.
+#
+# See: Root cause analysis 2025-11-25 - status line never updates after /done
+rm -f "$RECURSION_GUARD_FILE" 2>/dev/null || true
+
 # Dispatch to appropriate lifecycle hook based on status
 case "$CURRENT_STATUS" in
   completed)
@@ -186,9 +200,9 @@ case "$CURRENT_STATUS" in
       }
     else
       echo "[$(date)] post-metadata-change: post-increment-completion.sh not found or not executable" >> "$DEBUG_LOG" 2>/dev/null || true
-      # Fallback: Update status line directly
-      bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
     fi
+    # ALWAYS update status line after completion (force bypass TTL cache)
+    bash "$HOOK_DIR/lib/update-status-line.sh" --force 2>/dev/null || true
     ;;
 
   paused|resumed|abandoned)
@@ -205,9 +219,9 @@ case "$CURRENT_STATUS" in
       }
     else
       echo "[$(date)] post-metadata-change: post-increment-status-change.sh not found" >> "$DEBUG_LOG" 2>/dev/null || true
-      # Fallback: Update status line directly
-      bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
     fi
+    # ALWAYS update status line after status change (force bypass TTL cache)
+    bash "$HOOK_DIR/lib/update-status-line.sh" --force 2>/dev/null || true
     ;;
 
   active|planning|in-progress)

@@ -8,7 +8,7 @@ Monitor your increment progress and work-in-progress limits with the `/status` c
 
 ## Overview
 
-The `/status` command provides a **high-level overview** of all your increments, showing what's active, paused, completed, and helping you understand your current workload.
+The `/status` command provides a **high-level overview** of all your [increments](/docs/glossary/terms/increments), showing what's active, paused, completed, and helping you understand your current workload.
 
 :::tip Intelligent Automation
 SpecWeave **automatically manages** increment status. The system detects blockages, pauses work, and resumes when ready - you rarely need manual intervention.
@@ -92,7 +92,7 @@ Get instant visibility:
 | **completed** | All tasks done, shipped | ❌ No |
 | **abandoned** | Work cancelled | ❌ No |
 
-## WIP Limits
+## [WIP Limits](/docs/glossary/terms/wip-limits)
 
 :::tip Default: ONE Active Increment
 SpecWeave defaults to **1 active increment** maximum. This enforces focus and prevents context switching.

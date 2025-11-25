@@ -281,17 +281,135 @@ Suggestions:
 
 ---
 
+## Command Reference by Workflow Stage
+
+Here's a comprehensive reference of commands organized by when you'll use them:
+
+### Planning Phase
+
+```bash
+# Create new work
+/specweave:increment "feature"      # New feature increment
+/specweave:increment "fix" --type bug       # Bug fix
+/specweave:increment "spike" --type spike   # Exploration
+
+# Review specs
+cat .specweave/increments/0001-feature/spec.md
+cat .specweave/increments/0001-feature/plan.md
+cat .specweave/increments/0001-feature/tasks.md
+```
+
+### Implementation Phase
+
+```bash
+# Execute work
+/specweave:do                        # Auto-resume active increment
+/specweave:do 0001                   # Specific increment
+
+# Check progress
+/specweave:progress                  # All increments
+/specweave:progress 0001             # Specific increment
+
+# Workflow guidance
+/specweave:workflow                  # Smart suggestions
+/specweave:next                      # What to do next
+```
+
+### Quality Phase
+
+```bash
+# Validation
+/specweave:validate 0001             # Rule-based checks (120+ rules)
+/specweave:qa 0001                   # AI quality assessment
+/specweave:qa 0001 --pre             # Before starting work
+/specweave:qa 0001 --gate            # Before closing
+
+# Testing
+/specweave:check-tests 0001          # Test coverage check
+```
+
+### Completion Phase
+
+```bash
+# Close increment
+/specweave:done 0001                 # Normal close (validates gates)
+/specweave:done 0001 --expedite      # Emergency close (skip gates)
+
+# Sync documentation
+/specweave:sync-docs update          # Update living docs
+/specweave:sync-progress             # Full sync to all systems
+```
+
+### Lifecycle Management
+
+```bash
+# Status transitions
+/specweave:pause 0001                # Pause (blocked, deprioritized)
+/specweave:resume 0001               # Resume paused work
+/specweave:backlog 0001              # Move to backlog
+/specweave:abandon 0001              # Cancel (obsolete, requirements changed)
+
+# Workspace cleanup
+/specweave:archive 0001              # Archive completed increment
+/specweave:archive --completed       # Archive all completed
+/specweave:restore 0001              # Restore archived increment
+
+# Status overview
+/specweave:status                    # All increments
+/specweave:status --all              # Include completed
+/specweave:sync-status               # Fix status desync
+```
+
+### External Tool Sync
+
+```bash
+# GitHub
+/specweave-github:status             # Check connection
+/specweave-github:create-issue 0001  # Create issue
+/specweave-github:sync 0001          # Sync progress
+/specweave-github:close-issue 0001   # Close issue
+
+# JIRA
+/specweave-jira:status               # Check connection
+/specweave-jira:sync 0001            # Sync to JIRA
+/specweave-jira:sync 0001 --create   # Create Epic hierarchy
+
+# Azure DevOps
+/specweave-ado:status                # Check connection
+/specweave-ado:sync 0001             # Sync to ADO
+/specweave-ado:create-workitem 0001  # Create work item
+```
+
+---
+
 ## Glossary Terms Used
 
 - **[Microservices](/docs/glossary/terms/microservices)** — Independent service architecture
 - **[Feature Flags](/docs/glossary/terms/feature-flags)** — Toggle features on/off
 - **[Branching Strategy](/docs/glossary/terms/branching-strategy)** — Git workflow
+- **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint
+- **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
+
+---
+
+## Continue Learning
+
+You've completed the core curriculum! For specialized topics, continue with:
+
+### Deep-Dive Lessons
+
+- [Lesson 11: The Vibe Coding Problem](./11-vibe-coding-problem) — Why SpecWeave exists
+- [Lesson 12: The specweave init Deep Dive](./12-init-deep-dive) — Master initialization
+- [Lesson 13: Increment Lifecycle Management](./13-increment-lifecycle) — Status, cleanup, archiving
+- [Lesson 14: GitHub Integration Guide](./14-github-integration) — Complete GitHub setup
+- [Lesson 15: JIRA Integration Guide](./15-jira-integration) — Complete JIRA setup
+- [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration) — Complete ADO setup
 
 ---
 
 ## Congratulations!
 
-You've completed the SpecWeave Academy.
+You've completed the SpecWeave Academy core curriculum.
 
 ### Core Philosophy
 
@@ -302,6 +420,7 @@ You've completed the SpecWeave Academy.
 ### What's Next
 
 - **Practice**: Apply patterns to real projects
+- **Deep-dive**: Explore lessons 11-16 for specialized topics
 - **Customize**: Adapt to your team's needs
 - **Contribute**: Share patterns with the community
 
@@ -314,4 +433,4 @@ You've completed the SpecWeave Academy.
 
 ---
 
-🎉 **Now go build something amazing with SpecWeave!**
+**Now go build something amazing with SpecWeave!**

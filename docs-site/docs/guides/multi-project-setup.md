@@ -59,7 +59,7 @@ Multi-project mode allows you to organize SpecWeave documentation by project or 
 
 **Use when**:
 - Multiple teams or repos
-- Microservices architecture
+- [Microservices](/docs/glossary/terms/microservices) architecture
 - Platform engineering managing multiple projects
 - Different tech stacks per team
 - Enterprise with multiple products
@@ -101,7 +101,7 @@ Create additional projects? (besides "default") (y/N): y
 Project ID (kebab-case): web-app
 Project name: Web Application
 Description: Customer-facing web application
-Tech stack (comma-separated): React, TypeScript, Node.js, PostgreSQL
+Tech stack (comma-separated): [React](/docs/glossary/terms/react), [TypeScript](/docs/glossary/terms/typescript), [Node.js](/docs/glossary/terms/nodejs), PostgreSQL
 Team name: Frontend Team
 Tech lead email (optional): lead@example.com
 Product manager email (optional): pm@example.com
@@ -540,6 +540,74 @@ modules/
 
 ---
 
+## Saving Changes Across Repos
+
+Use `/specweave:save` to commit and push changes across all repos with a single command:
+
+```bash
+# Save all repos with same commit message
+/specweave:save "feat: Add user authentication"
+
+# Preview what would happen
+/specweave:save --dry-run
+
+# Save specific repos only
+/specweave:save "fix: Bug fixes" --repos frontend,backend
+```
+
+### Example Workflow
+
+```
+/specweave:save "feat: Complete user registration"
+
+Scanning for repositories...
+Mode: Umbrella (3 child repos)
+
+frontend:
+  Status: 4 files changed
+  ✓ Committed and pushed
+
+backend:
+  Status: 2 files changed
+  ✓ Committed and pushed
+
+shared:
+  Status: No changes (skipping)
+
+Summary:
+  ✓ Saved: 2/3 repositories
+```
+
+### Remote Setup
+
+If a repo has no remote configured, the command will:
+
+1. **Check umbrella config** - Use `githubUrl` if configured
+2. **Prompt for URL** - Ask you to enter manually or use GitHub convention
+3. **Skip** - Continue without saving that repo
+
+**Tip**: Configure `githubUrl` in your umbrella config for seamless remote setup:
+
+```json
+{
+  "umbrella": {
+    "childRepos": [
+      {
+        "id": "myapp-frontend",
+        "path": "./myapp-frontend",
+        "githubUrl": "https://github.com/myorg/myapp-frontend"
+      }
+    ]
+  }
+}
+```
+
+**ID Strategy**: The `id` MUST match the repo name exactly (e.g., `myapp-frontend`), not arbitrary abbreviations like `fe`.
+
+See the full [/specweave:save command reference](/docs/commands/save) for more options.
+
+---
+
 ## See Also
 
 - **Brownfield Import Guide** (coming soon) - Import existing docs from external sources
@@ -547,6 +615,7 @@ modules/
 - `/specweave:init-multiproject` - CLI command reference
 - `/specweave:switch-project` - CLI command reference
 - `/specweave:import-docs` - CLI command reference
+- `/specweave:save` - Save changes across all repos
 
 ---
 

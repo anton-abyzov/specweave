@@ -439,7 +439,41 @@ graph TD
 
 ## 🔀 Multi-Repo Project-Scoped User Stories (v0.28.8+)
 
-**CRITICAL**: When user describes a multi-repo architecture, you MUST generate **project-scoped user stories** with prefixes!
+**⚠️ CRITICAL - MANDATORY CHECK BEFORE GENERATING ANY SPEC.MD!**
+
+### STEP 0: Multi-Project Detection (RUN FIRST!)
+
+**YOU MUST CHECK THIS BEFORE WRITING ANY USER STORIES:**
+
+```bash
+# 1. Check config.json for umbrella mode
+cat .specweave/config.json | jq '.umbrella.enabled'
+
+# 2. Check for childRepos
+cat .specweave/config.json | jq '.umbrella.childRepos[]'
+
+# 3. Check for project folders
+ls -la .specweave/docs/internal/specs/
+```
+
+**Decision Flow:**
+```
+Is umbrella.enabled: true?
+  → YES → MUST use project-scoped user stories (US-FE-001, US-BE-001)
+  → NO → Check for multiple project folders in specs/
+          → YES → MUST use project-scoped user stories
+          → NO → Use standard user stories (US-001, US-002)
+```
+
+**If multi-project detected, NEVER generate:**
+- ❌ `US-001`, `US-002` (generic format)
+- ❌ `AC-US1-01`, `AC-US2-01` (generic AC format)
+
+**ALWAYS generate:**
+- ✅ `US-FE-001`, `US-BE-001`, `US-SHARED-001` (project-scoped)
+- ✅ `AC-FE-US1-01`, `AC-BE-US1-01` (project-scoped ACs)
+
+---
 
 ### Detection Patterns
 
@@ -552,13 +586,16 @@ If `.specweave/config.json` has umbrella config:
   "umbrella": {
     "enabled": true,
     "childRepos": [
-      { "id": "fe", "prefix": "FE" },
-      { "id": "be", "prefix": "BE" },
-      { "id": "shared", "prefix": "SHARED" }
+      { "id": "sw-app-fe", "prefix": "FE" },
+      { "id": "sw-app-be", "prefix": "BE" },
+      { "id": "sw-app-shared", "prefix": "SHARED" }
     ]
   }
 }
 ```
+
+**ID Strategy**: `id` MUST match repo name (e.g., `sw-app-fe`), NOT arbitrary abbreviations (`fe`).
+The `prefix` (for user stories like `US-FE-001`) can be short.
 
 Use these prefixes for user stories. If no config, infer from user prompt.
 
