@@ -40,16 +40,17 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Commit and push metrics (or create PR)
+        id: commit-metrics
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .specweave/metrics/dora-latest.json .specweave/metrics/dora-report.md
 
           if git diff --staged --quiet; then
             echo "ℹ️ No changes to commit"
+            echo "result=no-changes" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -59,6 +60,7 @@ jobs:
           # Try direct push first (works if bot has bypass or no protection)
           if git push origin HEAD:develop 2>&1; then
             echo "✅ Successfully pushed metrics update directly"
+            echo "result=pushed" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -67,15 +69,28 @@ jobs:
           # Create unique branch for this update
           BRANCH_NAME="automated/dora-metrics-$(date +%Y%m%d-%H%M%S)"
           git checkout -b "$BRANCH_NAME"
-          git push -u origin "$BRANCH_NAME"
+
+          if ! git push -u origin "$BRANCH_NAME" 2>&1; then
+            echo "❌ Failed to push branch. Check permissions."
+            echo "result=branch-push-failed" >> $GITHUB_OUTPUT
+            exit 0  # Don't fail - metrics were calculated successfully
+          fi
 
           # Create PR with simple body
-          gh pr create --title "$COMMIT_MSG" --body "Automated DORA metrics update. Merge to update the report on GitHub."
-
-          echo "✅ Created PR for metrics update"
-
-          # Try to enable auto-merge
-          gh pr merge --auto --squash 2>/dev/null || echo "💡 Auto-merge not enabled - PR requires manual merge"
+          if gh pr create --title "$COMMIT_MSG" --body "Automated DORA metrics update. Merge to update the report on GitHub." 2>&1; then
+            echo "✅ Created PR for metrics update"
+            echo "result=pr-created" >> $GITHUB_OUTPUT
+            # Try to enable auto-merge
+            gh pr merge --auto --squash 2>/dev/null || echo "💡 Auto-merge not enabled - PR requires manual merge"
+          else
+            echo "⚠️ Could not create PR. This is expected if GitHub Actions is not permitted to create PRs."
+            echo "💡 To fix: Go to repo Settings > Actions > General > Workflow permissions"
+            echo "   Enable 'Allow GitHub Actions to create and approve pull requests'"
+            echo "📊 Metrics were calculated successfully but could not be committed."
+            echo "result=pr-creation-blocked" >> $GITHUB_OUTPUT
+            # Delete the orphan branch
+            git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
+          fi
 
       - name: Create error issue on failure
         if: failure()
