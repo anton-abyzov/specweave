@@ -14,7 +14,7 @@ import { calculateLeadTime } from './calculators/lead-time.js';
 import { calculateChangeFailureRate } from './calculators/change-failure-rate.js';
 import { calculateMTTR } from './calculators/mttr.js';
 import { generateMarkdownReport, writeReport } from './report-generator.js';
-import { DORAMetrics, GitHubConfig, Release, Issue } from './types.js';
+import { DORAMetrics, GitHubConfig, Release, Issue, Commit } from './types.js';
 
 /**
  * Calculate all DORA metrics
@@ -26,19 +26,25 @@ export async function calculateDORAMetrics(client: GitHubClient): Promise<{
   metrics: DORAMetrics;
   releases: Release[];
   issues: Issue[];
+  deploymentCommits: Commit[];
 }> {
   // Query data from GitHub (last 30 days)
   const since = new Date();
   since.setDate(since.getDate() - 30);
 
   console.log('📊 Fetching data from GitHub API...');
+
+  // Get commits to develop branch (each commit = deployment for AI-assisted dev)
+  const deploymentCommits = await client.getCommitsToDefaultBranch(since, 'develop');
+  console.log(`   ✓ Found ${deploymentCommits.length} commits to develop (deployments)`);
+
   const releases = await client.getReleases(since);
-  console.log(`   ✓ Found ${releases.length} releases`);
+  console.log(`   ✓ Found ${releases.length} formal releases`);
 
   const commits = releases.length > 0
     ? await client.getCommits(releases[0].target_commitish, new Date())
-    : [];
-  console.log(`   ✓ Found ${commits.length} commits`);
+    : deploymentCommits;  // Fallback to deployment commits for lead time
+  console.log(`   ✓ Found ${commits.length} commits for lead time calc`);
 
   const issues = await client.getIssues(['incident', 'production-bug'], since);
   console.log(`   ✓ Found ${issues.length} incidents`);
@@ -46,7 +52,8 @@ export async function calculateDORAMetrics(client: GitHubClient): Promise<{
   // Calculate metrics
   console.log('\n🔢 Calculating DORA metrics...');
 
-  const deploymentFrequency = calculateDeploymentFrequency(releases);
+  // Use commits to develop for deployment frequency (not just releases)
+  const deploymentFrequency = calculateDeploymentFrequency(deploymentCommits);
   console.log(`   ✓ Deployment Frequency: ${deploymentFrequency.value} ${deploymentFrequency.unit} (${deploymentFrequency.tier})`);
 
   const leadTime = calculateLeadTime(releases, commits);
@@ -72,6 +79,7 @@ export async function calculateDORAMetrics(client: GitHubClient): Promise<{
     metrics: metricsResult,
     releases,
     issues,
+    deploymentCommits,
   };
 }
 
