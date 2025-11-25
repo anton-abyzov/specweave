@@ -487,6 +487,34 @@ Closing increment 0001-user-authentication...
 
 ### Step 5: Post-Closure Sync (AUTOMATIC)
 
+**CRITICAL**: After increment closes, the following syncs happen AUTOMATICALLY via the `post-increment-completion.sh` hook:
+
+#### 0) Sync spec.md Status (ALWAYS - v0.28.8+)
+
+**MANDATORY**: Ensures spec.md frontmatter status matches metadata.json.
+
+```
+🔄 Syncing spec.md status to 'completed'...
+✅ spec.md status updated: active → completed
+✅ Status line cache updated
+```
+
+**Why this matters**:
+- Prevents desyncs between metadata.json and spec.md
+- Ensures status line shows correct increment count
+- Maintains source-of-truth discipline
+- No need to manually run `/specweave:sync-status`
+
+**What gets synced**:
+1. spec.md YAML frontmatter `status` field → `completed`
+2. Status line cache updated via `lib/update-status-line.sh`
+
+**If you still see desync after closure**:
+```bash
+# Manual fix (should rarely be needed)
+/specweave:sync-status --fix
+```
+
 **CRITICAL**: After increment closes, automatically perform these syncs:
 
 #### A) Sync Living Docs to GitHub Project
