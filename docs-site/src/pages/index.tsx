@@ -124,6 +124,38 @@ function FeatureHighlight({
   );
 }
 
+function DogfoodingBanner(): ReactNode {
+  return (
+    <section className={styles.dogfoodingSection}>
+      <div className="container">
+        <div className={styles.dogfoodingContent}>
+          <div className={styles.dogfoodingBadge}>🔄 DOGFOODING</div>
+          <Heading as="h2">SpecWeave is Built With SpecWeave</Heading>
+          <p>
+            This isn't just a framework we made — it's the framework we use every day.
+            <strong> 60+ completed increments</strong>, full specs, living docs, and real DORA metrics.
+            Every feature you see was built spec-first.
+          </p>
+          <div className={styles.dogfoodingStats}>
+            <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.dogfoodingStat}>
+              <span className={styles.dogfoodingNumber}>60+</span>
+              <span className={styles.dogfoodingLabel}>Increments</span>
+            </Link>
+            <Link to="https://spec-weave.com/docs/metrics" className={styles.dogfoodingStat}>
+              <span className={styles.dogfoodingNumber}>Live</span>
+              <span className={styles.dogfoodingLabel}>DORA Metrics</span>
+            </Link>
+            <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/docs" className={styles.dogfoodingStat}>
+              <span className={styles.dogfoodingNumber}>Auto</span>
+              <span className={styles.dogfoodingLabel}>Living Docs</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FeaturesSection(): ReactNode {
   return (
     <section className={styles.featuresSection}>
@@ -251,6 +283,7 @@ export default function Home(): ReactNode {
       description="Build production software with autonomous AI agents that just work. Minimal interaction, maximum productivity. Works with Claude, Cursor, Copilot, Gemini, and any AI tool.">
       <HomepageHeader />
       <main>
+        <DogfoodingBanner />
         <FeaturesSection />
         <ComparisonSection />
         <HomepageFeatures />

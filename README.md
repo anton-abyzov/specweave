@@ -9,6 +9,24 @@
 
 ---
 
+## 🔄 Built With SpecWeave (Dogfooding)
+
+> **SpecWeave is 100% built using SpecWeave.** Every feature, every bug fix, every release — all spec-driven.
+
+This isn't just a framework we made — it's the framework we use every day. Our entire development workflow runs on SpecWeave:
+- **60+ completed increments** with full specs, plans, and tasks
+- **Living docs** that auto-update after every task
+- **DORA metrics** tracking real delivery performance
+
+[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+
+**[→ Live Dashboard](https://spec-weave.com/docs/metrics)** | **[→ Detailed Report](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/metrics/dora-report.md)** | **[→ Browse Our Increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
+
+---
+
 ## What Makes SpecWeave Different
 
 Every AI coding tool promises productivity. But after the chat ends:
@@ -22,7 +40,11 @@ Every AI coding tool promises productivity. But after the chat ends:
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
 ```
-Your Idea → Spec (permanent) → Plan (permanent) → Tasks (permanent) → Code → Living Docs (auto-synced)
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Your    │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
+│  Idea    │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
+│          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
 ```
 
 ---
@@ -31,35 +53,35 @@ Your Idea → Spec (permanent) → Plan (permanent) → Tasks (permanent) → Co
 
 ```mermaid
 flowchart TB
-    subgraph INPUT["1. YOU TYPE ONE COMMAND"]
-        A["<b>/specweave:increment</b><br/>'Add user authentication with OAuth'"]
+    subgraph INPUT["1. TYPE ONE COMMAND"]
+        A["/specweave:increment<br/>'Add dark mode'"]
     end
 
-    subgraph AGENTS["2. AI AGENTS CREATE YOUR FOUNDATION"]
+    subgraph AGENTS["2. AI AGENTS CREATE"]
         direction TB
-        PM["<b>PM Agent</b><br/>User stories, acceptance criteria,<br/>market research"]
-        ARCH["<b>Architect Agent</b><br/>System design, ADRs,<br/>tech stack decisions"]
-        PLAN["<b>Planner Agent</b><br/>Tasks with embedded tests,<br/>coverage targets"]
+        PM["PM Agent<br/>User stories + ACs"]
+        ARCH["Architect Agent<br/>Design + ADRs"]
+        PLAN["Planner Agent<br/>Tasks + Tests"]
         PM --> ARCH --> PLAN
     end
 
-    subgraph OUTPUT["3. THREE PERMANENT FILES"]
+    subgraph OUTPUT["3. PERMANENT FILES"]
         direction LR
-        SPEC["<b>spec.md</b><br/>WHAT & WHY<br/>(User Stories + ACs)"]
-        PLANF["<b>plan.md</b><br/>HOW<br/>(Architecture + ADRs)"]
-        TASKS["<b>tasks.md</b><br/>DO<br/>(Tasks + Tests)"]
+        SPEC["spec.md<br/>WHAT"]
+        PLANF["plan.md<br/>HOW"]
+        TASKS["tasks.md<br/>DO"]
     end
 
-    subgraph EXECUTE["4. ONE COMMAND TO BUILD"]
-        B["<b>/specweave:do</b><br/>Autonomous execution through all tasks"]
+    subgraph EXECUTE["4. BUILD"]
+        B["/specweave:do<br/>Autonomous execution"]
     end
 
-    subgraph SYNC["5. AUTO-SYNC EVERYWHERE"]
+    subgraph SYNC["5. AUTO-SYNC"]
         direction LR
-        GH["<b>GitHub Issues</b><br/>Checkboxes update"]
-        JIRA["<b>JIRA</b><br/>Epic/Story hierarchy"]
-        ADO["<b>Azure DevOps</b><br/>Work items"]
-        DOCS["<b>Living Docs</b><br/>Always current"]
+        GH["GitHub"]
+        JIRA["JIRA"]
+        ADO["ADO"]
+        DOCS["Docs"]
     end
 
     INPUT --> AGENTS
@@ -86,37 +108,26 @@ specweave init .
 
 Then in Claude Code:
 ```bash
-/specweave:increment "User authentication with OAuth"  # AI creates spec + plan + tasks
-/specweave:do                                          # Autonomous implementation
-/specweave:done 0001                                   # Quality-validated completion
+/specweave:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
+/specweave:do                                # Autonomous implementation
+/specweave:done 0001                         # Quality-validated completion
 ```
+
+**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **[Full Quickstart Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)**
 
 ---
 
-## Why SpecWeave Over Alternatives?
+## Key Strengths
 
-### vs. BMAD Method (18K GitHub Stars)
-
-| Aspect | BMAD | SpecWeave |
-|--------|------|-----------|
-| **Focus** | Greenfield microservices | **Brownfield + Greenfield** |
-| **Context Efficiency** | Context crashes documented | **70%+ token reduction** |
-| **Multi-Repo** | Single repo focus | **Multi-project mode** |
-| **External Sync** | None | **GitHub/JIRA/ADO bidirectional** |
-| **Quality Gates** | Optional | **3-gate PM validation** |
-| **Learning Curve** | Steep (YAML/agents) | Medium (CLI commands) |
-
-### vs. GitHub Spec Kit
-
-| Aspect | Spec Kit | SpecWeave |
-|--------|----------|-----------|
-| **Maturity** | Experimental | **Production-ready** |
-| **Brownfield** | Not supported | **Core strength** |
-| **Implementation Quality** | "Poor" (user reports) | **Quality gates enforce standards** |
-| **Human Oversight** | Batch execution | **Milestone validation** |
-| **Enterprise Features** | None | **Compliance, multi-team, DORA** |
+- **Brownfield + Greenfield** — Works with existing codebases, not just new projects
+- **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
+- **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
+- **Bidirectional Sync** — GitHub Issues, JIRA, Azure DevOps stay in sync automatically
+- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
+- **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
+- **Living Documentation** — Specs auto-update after every task via hooks
 
 ---
 
@@ -172,31 +183,12 @@ flowchart LR
 
 ---
 
-## DORA Metrics Integration
-
-SpecWeave automatically calculates your team's [DORA metrics](https://dora.dev/) from GitHub data:
-
-```bash
-npm run metrics:dora
-```
-
-| Metric | What It Measures | Elite Performance |
-|--------|------------------|-------------------|
-| **Deployment Frequency** | How often you release | Multiple per day |
-| **Lead Time for Changes** | Commit to production | Less than 1 day |
-| **Change Failure Rate** | % of releases causing issues | 0-15% |
-| **Mean Time to Recovery** | Time to restore service | Less than 1 hour |
-
-**Connect your spec-driven workflow directly to industry-standard metrics.**
-
----
-
 ## The Three-File Foundation
 
 Every feature generates three permanent files:
 
 ```
-.specweave/increments/0001-user-authentication/
+.specweave/increments/0001-dark-mode/
 ├── spec.md    ← WHAT: User stories, acceptance criteria, requirements
 ├── plan.md    ← HOW: Architecture, tech decisions, ADRs
 └── tasks.md   ← DO: Implementation tasks with embedded tests
@@ -206,26 +198,26 @@ Every feature generates three permanent files:
 ```markdown
 ## User Stories
 
-### US-001: User Login
-As a user, I want to log in with OAuth so that I don't need to remember passwords.
+### US-001: Dark Mode Toggle
+As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 **Acceptance Criteria:**
-- [x] AC-US1-01: Google OAuth integration works
-- [x] AC-US1-02: Session persists across browser refresh
-- [ ] AC-US1-03: Logout clears all tokens
+- [x] AC-US1-01: Toggle switch in settings persists preference
+- [x] AC-US1-02: Theme applies to all components instantly
+- [ ] AC-US1-03: System preference detected on first visit
 ```
 
 ### tasks.md (DO)
 ```markdown
-### T-001: Implement OAuth Service
+### T-001: Implement Theme Provider
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02
 **Status**: [x] completed
 
 **Embedded Tests** (AC-US1-01):
-- test_google_oauth_redirects_correctly
-- test_callback_exchanges_code_for_token
-- test_user_profile_is_fetched
+- test_theme_toggle_persists_to_localstorage
+- test_theme_applies_to_all_components
+- test_toggle_updates_ui_instantly
 ```
 
 ---
@@ -319,7 +311,7 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 ## Requirements
 
 - Node.js 20+
-- Claude Code (recommended) or compatible AI assistant
+- Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2025](https://www.anthropic.com/news/claude-opus-4-5)
 - Git repository
 
 ---

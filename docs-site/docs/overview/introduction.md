@@ -1,10 +1,14 @@
 # What is SpecWeave?
 
-**SpecWeave** is a specification-first AI development framework that transforms how you build production software. Instead of "vibe coding" where implementation leads and documentation follows (or never comes), SpecWeave inverts the paradigm: **specifications and documentation are the SOURCE OF TRUTH**, and code is the expression of these specifications.
+**SpecWeave is the AI development framework that doesn't lose your work.**
 
-## The Problem: Vibe Coding
+Every AI coding tool promises productivity. But after the chat ends, your specs disappear into chat history, your architecture decisions are forgotten, and new team members start from zero.
 
-Traditional AI-assisted development often looks like this:
+**SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
+
+## The Problem: Lost Work
+
+Traditional AI-assisted development:
 
 1. Tell AI: "Build me a feature"
 2. AI generates code
@@ -13,26 +17,20 @@ Traditional AI-assisted development often looks like this:
 5. (Maybe) document it later
 6. Repeat for next feature
 
-**Problems**:
+**The result:**
 - No documentation = regression risk
 - No specs = unclear requirements
 - Manual testing = inconsistent quality
 - Context bloat = expensive AI costs
 - No architecture = technical debt
+- New team members = 2 weeks onboarding
 
-## The SpecWeave Solution
+## The Solution: Permanent Knowledge
 
-SpecWeave enforces a **Spec-Driven Development** workflow:
+SpecWeave enforces **Spec-Driven Development**:
 
-```mermaid
-graph TD
-    A[Create Specification] --> B[Design Architecture]
-    B --> C[Plan Increment]
-    C --> D[Load Context Selectively]
-    D --> E[Implement Feature]
-    E --> F[Run Tests Automatically]
-    F --> G[Update Documentation]
-    G --> H[Deploy with Confidence]
+```
+Your Idea -> Spec (permanent) -> Plan (permanent) -> Tasks (permanent) -> Code -> Living Docs (auto-synced)
 ```
 
 ### Key Principles
@@ -42,114 +40,107 @@ graph TD
 3. **Context Precision** - Load only what's needed (70%+ token reduction)
 4. **Test-Validated Features** - Every feature proven through automated tests
 5. **Regression Prevention** - Document existing code before modification
-6. **Framework Agnostic** - Works with ANY tech stack ([TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, etc.)
+6. **Framework Agnostic** - Works with ANY tech stack
 
 ## How It Works
 
-### 1. Documentation-First
+### 1. One Command Creates Foundation
 
-Create comprehensive specifications in `.specweave/docs/internal/strategy/`:
-
-```markdown
-## User Story: US1-001 - User Login
-
-**As a** user
-**I want to** log in with email and password
-**So that** I can access my account
-
-**Acceptance Criteria** (Test Cases):
-- [ ] **TC-0001**: Valid credentials → redirect to dashboard
-- [ ] **TC-0002**: Invalid password → error message shown
+```bash
+/specweave:increment "User authentication with OAuth"
 ```
 
-### 2. Architecture Design
-
-Design technical architecture in `.specweave/docs/internal/architecture/`:
-
-- System design (C4 diagrams)
-- [Architecture Decision Records (ADRs)](/docs/glossary/terms/adr)
-- Component diagrams
-- Data models
-
-### 3. Incremental Implementation
-
-Plan work in auto-numbered increments:
+AI agents (PM, Architect, Planner) create:
 
 ```
-.specweave/increments/
-├── 0001-user-authentication/
-│   ├── spec.md              # What and Why
-│   ├── plan.md              # How
-│   ├── tasks.md             # Checklist
-│                            # Tests embedded in tasks.md (v0.7.0+)
-└── 0002-payment-processing/
-    └── ...
+.specweave/increments/0001-user-authentication/
+├── spec.md    <- WHAT: User stories, acceptance criteria
+├── plan.md    <- HOW: Architecture, ADRs, tech decisions
+└── tasks.md   <- DO: Tasks with embedded tests
 ```
 
-### 4. Context-Aware Execution
+### 2. One Command Builds
 
-Load only relevant specifications via context manifests (70%+ token reduction):
-
-```yaml
-# context-manifest.yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/login-spec.md
-documentation:
-  - .specweave/docs/internal/architecture/adr/0001-auth-method.md
+```bash
+/specweave:do
 ```
 
-### 5. Automated Testing
+Autonomous execution through all tasks with quality validation.
 
-Four levels of testing with full traceability ([test pyramid](/docs/glossary/terms/test-pyramid)):
+### 3. One Command Closes
 
-1. **Specification Acceptance Criteria** (TC-0001 format)
-2. **Feature Test Strategy** (maps TC-0001 to implementations)
-3. **Skill Test Cases** (YAML-based validation)
-4. **Code Tests** ([E2E](/docs/glossary/terms/e2e), [integration](/docs/glossary/terms/integration-testing), [unit](/docs/glossary/terms/unit-testing))
+```bash
+/specweave:done 0001
+```
+
+Three quality gates validate completion:
+- All tasks complete
+- 60%+ test coverage
+- Living docs updated
+
+### 4. Auto-Sync Everywhere
+
+Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 
 ## Who Should Use SpecWeave?
 
 ### Perfect For
 
-✅ **Enterprise teams** building production systems
-✅ **Startups** needing scalable architecture from day one
-✅ **Solo developers** building complex applications
-✅ **Regulated industries** ([healthcare - HIPAA](/docs/glossary/terms/hipaa), [finance - SOC 2](/docs/glossary/terms/soc2), government)
-✅ **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
+- **Enterprise teams** building production systems
+- **Startups** needing scalable architecture from day one
+- **Solo developers** building complex applications
+- **Regulated industries** (healthcare - HIPAA, finance - SOC 2)
+- **Teams migrating brownfield codebases** to modern practices
 
 ### Use Cases
 
-- **[Greenfield](/docs/glossary/terms/greenfield) projects**: Start with comprehensive specs (500-600+ pages for enterprise)
-- **[Brownfield](/docs/glossary/terms/brownfield) projects**: Document existing code before modification
-- **Iterative development**: Build documentation gradually (like Microsoft)
+- **Greenfield projects**: Start with comprehensive specs
+- **Brownfield projects**: Document existing code before modification
+- **Iterative development**: Build documentation gradually
 - **Compliance-heavy**: Maintain audit trails and traceability
 
 ## Core Features
 
-- **Framework-agnostic**: Works with [TypeScript](/docs/glossary/terms/typescript), Python, Go, Rust, Java, C#, etc.
-- **AI-powered agents**: 11 specialized agents (PM, Architect, Tech Lead, QA, Security, Performance, [TDD](/docs/glossary/terms/tdd), etc.)
-- **Context precision**: 70%+ token reduction vs loading full specs
-- **Auto-role routing**: Skills detect expertise automatically
-- **Living documentation**: Auto-update via Claude hooks
-- **Mermaid diagrams**: C4 Model architecture diagrams
-- **External integrations**: JIRA, Azure DevOps, [GitHub](/docs/glossary/terms/github-actions) sync
-- **Regression prevention**: Document before modifying existing code
+| Feature | Benefit |
+|---------|---------|
+| **15+ AI Agents** | PM, Architect, Tech Lead, QA, Security, DevOps work autonomously |
+| **Living Documentation** | Specs auto-update after every task via hooks |
+| **70% Token Reduction** | Context precision loads only what you need |
+| **Quality Gates** | Three-gate validation before closing increments |
+| **External Sync** | GitHub/JIRA/Azure DevOps bidirectional sync |
+| **Brownfield Support** | Import existing docs, create retroactive specs |
+| **Multi-Language** | Work in ANY language (Russian, Spanish, Chinese, etc.) |
 
-## Getting Started
+## What You Get vs. Current State
 
-Ready to build production software the right way?
-
-- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
-- [Installation](/docs/guides/getting-started/installation) - Detailed installation instructions
-- [Core Concepts](/docs/guides/core-concepts/specifications) - Understand the fundamentals
-
-## Philosophy
-
-Learn more about the principles behind SpecWeave:
-
-- [Philosophy](/docs/overview/philosophy) - Core principles and design decisions
-- [Documentation Approaches](/docs/guides/core-concepts/specifications) - Comprehensive vs Incremental
+| Before | After SpecWeave |
+|--------|-----------------|
+| Specs in chat history | **Permanent, searchable specs** |
+| Manual JIRA/GitHub updates | **Auto-sync on every task** |
+| Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
+| Architecture in your head | **ADRs captured automatically** |
+| "Ask John, he knows" | **Living docs, always current** |
+| Onboarding: 2 weeks | **Onboarding: 1 day** |
 
 ---
 
-**Next**: [Key Features](/docs/overview/features) →
+## Getting Started
+
+```bash
+npm install -g specweave
+cd your-project
+specweave init .
+```
+
+Then in Claude Code:
+```bash
+/specweave:increment "Your first feature"
+/specweave:do
+/specweave:done 0001
+```
+
+**[Full Quickstart Guide](/docs/guides/getting-started/quickstart)**
+
+---
+
+**Next**: [Key Features](/docs/overview/features) ->

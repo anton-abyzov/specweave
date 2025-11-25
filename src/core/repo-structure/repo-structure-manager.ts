@@ -25,7 +25,7 @@ import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId, suggestRepoName } from './repo-id-generator.js';
 import { SetupStateManager, SetupState, type SetupArchitecture, type ParentRepoConfig } from './setup-state-manager.js';
 import { validateRepository, validateOwner } from './github-validator.js';
-import { generateEnvFile, type EnvConfig, type RepoMapping } from '../../utils/env-file-generator.js';
+import { generateEnvFile, type EnvConfig } from '../../utils/env-file-generator.js';
 import { generateSetupSummary, type SummaryConfig } from './setup-summary.js';
 import {
   getArchitecturePrompt,
@@ -1294,29 +1294,23 @@ export class RepoStructureManager {
   }
 
   /**
-   * Generate .env file with GitHub configuration
+   * Generate .env file with GitHub token (only when gh CLI not available)
    */
   private async generateEnvFile(config: RepoStructureConfig): Promise<void> {
     const spinner = ora('Generating .env configuration...').start();
 
     try {
+      // .env now only contains secrets (token)
+      // All other config goes to config.json
       const envConfig: EnvConfig = {
         githubToken: this.githubToken,
-        githubOwner: config.parentRepo?.owner || config.repositories[0]?.owner,
-        repos: config.repositories.map(r => ({
-          id: r.id,
-          repo: r.name
-        })),
-        syncEnabled: true,
-        autoCreateIssue: true,
-        syncDirection: 'bidirectional'
       };
 
       await generateEnvFile(this.projectPath, envConfig);
 
-      spinner.succeed('.env file created');
+      spinner.succeed('.env file created (token only)');
       console.log(chalk.gray('   File: .env (permissions: 0600)'));
-      console.log(chalk.gray('   File: .env.example (safe to commit)'));
+      console.log(chalk.gray('   TIP: gh CLI auth is recommended over tokens'));
       console.log(chalk.yellow('   ⚠️  DO NOT commit .env to git (contains secrets!)'));
 
       // Save state: env created

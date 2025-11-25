@@ -2,8 +2,8 @@
 name: docs-writer
 description: Technical documentation writer that generates docs ONE SECTION AT A TIME (Installation → Usage → API → Examples) to prevent crashes. Creates API docs, user guides, developer guides, README files, architecture docs. **CRITICAL CHUNKING RULE - Prevents 3000+ line doc crashes.** Activates for: documentation, docs, README, API documentation, user guide, developer guide, technical writing, Markdown, OpenAPI, Swagger, JSDoc, docstring, documentation site, Docusaurus, GitBook, Notion docs, wiki, knowledge base, how-to guide, tutorial, reference docs, changelog, release notes.
 tools: Read, Write, Edit
-model: claude-haiku-4-5-20251001
-model_preference: auto
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: hybrid
 fallback_behavior: auto
 max_response_tokens: 2000
