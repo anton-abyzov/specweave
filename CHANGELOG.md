@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.5] - 2025-11-25
+
+### 📚 Documentation
+- Cleaned SVG flow diagram - removed verbose "(permanent ✓)" subtitles for cleaner visuals
+
+---
+
+
+
 ## [0.28.3] - 2025-11-25
 
 ### 📚 Documentation
