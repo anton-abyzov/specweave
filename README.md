@@ -40,7 +40,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/specweave-flow.svg" alt="SpecWeave Flow: Your Idea → Spec → Plan → Tasks → Code → Living Docs" width="800"/>
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/specweave-flow.svg?v=2" alt="SpecWeave Flow: Your Idea → Spec → Plan → Tasks → Code → Living Docs" width="800"/>
 </p>
 
 ---
