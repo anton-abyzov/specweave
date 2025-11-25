@@ -35,9 +35,7 @@
   <!-- Box 2: Spec -->
   <g transform="translate(170, 25)">
     <rect x="0" y="0" width="110" height="90" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
-    <text x="55" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Spec</text>
-    <text x="55" y="56" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#dcfce7">(permanent</text>
-    <text x="55" y="72" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#fff">✓)</text>
+    <text x="55" y="50" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Spec</text>
   </g>
 
   <!-- Arrow 2 -->
@@ -46,9 +44,7 @@
   <!-- Box 3: Plan -->
   <g transform="translate(320, 25)">
     <rect x="0" y="0" width="110" height="90" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
-    <text x="55" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Plan</text>
-    <text x="55" y="56" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#dcfce7">(permanent</text>
-    <text x="55" y="72" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#fff">✓)</text>
+    <text x="55" y="50" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Plan</text>
   </g>
 
   <!-- Arrow 3 -->
@@ -57,9 +53,7 @@
   <!-- Box 4: Tasks -->
   <g transform="translate(470, 25)">
     <rect x="0" y="0" width="110" height="90" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
-    <text x="55" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Tasks</text>
-    <text x="55" y="56" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#dcfce7">(permanent</text>
-    <text x="55" y="72" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" fill="#fff">✓)</text>
+    <text x="55" y="50" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Tasks</text>
   </g>
 
   <!-- Arrow 4 -->
@@ -77,8 +71,7 @@
   <!-- Box 6: Living Docs -->
   <g transform="translate(770, 25)">
     <rect x="0" y="0" width="110" height="90" rx="8" fill="url(#blueGrad)" stroke="#2563eb" stroke-width="1.5" filter="url(#shadow)"/>
-    <text x="55" y="38" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Living</text>
-    <text x="55" y="54" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Docs</text>
-    <text x="55" y="72" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#dbeafe">(auto-sync)</text>
+    <text x="55" y="42" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Living</text>
+    <text x="55" y="58" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#fff">Docs</text>
   </g>
 </svg>

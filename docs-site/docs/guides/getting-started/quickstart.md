@@ -82,6 +82,15 @@ After `specweave init .`:
 | **Hooks** | 8 | Automation (doc updates, quality validation) |
 | **CLAUDE.md** | 1 | Your project reference guide |
 
+### Why This Architecture?
+
+Anthropic's engineering research shows [code execution beats direct MCP tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) — achieving **98% token reduction**.
+
+SpecWeave applies this insight:
+- **Skills load on-demand** (not all tools upfront)
+- **Code is deterministic** (no LLM in the middle of data flow)
+- **Sub-agents isolate context** (no bloat accumulation)
+
 ---
 
 ## Essential Commands

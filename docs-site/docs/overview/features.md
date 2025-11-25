@@ -626,9 +626,10 @@ All commands adapt to detected tech stack.
   - Auto-translates specs, plans, tasks, and living docs to English
   - Zero translation costs (uses same LLM session)
 
-- **Cost optimization**: 75%+ context reduction through intelligent plugin architecture
-  - Plugin-based system loads only what you need
-  - MCP protocol for efficient context management
+- **Cost optimization**: 70-98% token reduction through code-first architecture
+  - Skills load on-demand (not all tools upfront)
+  - Code execution beats MCP tool calls ([Anthropic research](https://www.anthropic.com/engineering/code-execution-with-mcp))
+  - Sub-agents isolate context (no bloat accumulation)
   - Typical savings: $60-120/month per developer
 
 - **Figma integration**: Design sync capabilities via specweave-figma plugin
