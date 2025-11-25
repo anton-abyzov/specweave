@@ -37,21 +37,34 @@ const DEFAULT_GITHUB_LABELS: LabelConfig = {
   experiment: 'experiment'
 };
 
-const DEFAULT_USER_LABELS: LabelConfig = {
-  bug: '[Bug]',
-  feature: '[Feature]',
-  docs: '[Docs]',
-  hotfix: '[Hotfix]',
-  refactor: '[Refactor]',
-  chore: '[Chore]',
-  experiment: '[Experiment]'
+/**
+ * User-friendly labels for display purposes ONLY.
+ *
+ * CRITICAL: These are NOT for use in GitHub issue titles!
+ * GitHub issue titles MUST follow [FS-XXX][US-YYY] format.
+ *
+ * Use these labels:
+ * - As GitHub issue labels (via addLabels)
+ * - For display in CLI output
+ * - For categorization in reports
+ *
+ * DO NOT use in issue titles - that causes format violations like issue #749.
+ */
+const DEFAULT_USER_DISPLAY_LABELS: LabelConfig = {
+  bug: 'Bug',
+  feature: 'Feature',
+  docs: 'Docs',
+  hotfix: 'Hotfix',
+  refactor: 'Refactor',
+  chore: 'Chore',
+  experiment: 'Experiment'
 };
 
 export class LabelDetector {
   private labelConfig: LabelConfig;
 
   constructor(labelConfig?: Partial<LabelConfig>, useUserFormat: boolean = true) {
-    const defaults = useUserFormat ? DEFAULT_USER_LABELS : DEFAULT_GITHUB_LABELS;
+    const defaults = useUserFormat ? DEFAULT_USER_DISPLAY_LABELS : DEFAULT_GITHUB_LABELS;
     this.labelConfig = { ...defaults, ...labelConfig };
   }
 

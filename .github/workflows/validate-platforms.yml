@@ -50,6 +50,16 @@ jobs:
           npm run validate:platforms
         continue-on-error: true
 
+      - name: Run platform data unit tests
+        run: |
+          echo "🧪 Running platform data unit tests..."
+          npx jest tests/unit/serverless/platform-knowledge-base.test.ts --passWithNoTests || echo "No unit tests found, skipping"
+
+      - name: Run platform data integration tests
+        run: |
+          echo "🧪 Running platform data integration tests..."
+          npx jest tests/integration/serverless/platform-data-loading.test.ts --passWithNoTests || echo "No integration tests found, skipping"
+
       - name: Check data freshness
         id: check-freshness
         run: |

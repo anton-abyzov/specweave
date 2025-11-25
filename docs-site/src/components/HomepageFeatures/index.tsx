@@ -12,7 +12,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Greenfield SaaS & Web Apps',
-    image: require('@site/static/img/hero/software-engineering.png').default,
+    image: require('@site/static/img/hero/greenfield.jpg').default,
     description: (
       <>
         Start new projects with specs from day one. Full-stack apps, APIs, microservices —
@@ -23,7 +23,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Brownfield Modernization',
-    image: require('@site/static/img/hero/software-engineering.png').default,
+    image: require('@site/static/img/hero/brownfield.jpg').default,
     description: (
       <>
         Document existing code before modifying. Import from Notion, Confluence, GitHub Wiki.

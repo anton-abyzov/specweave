@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# Pre-push hook for SpecWeave
+# Blocks pushing version tags if CHANGELOG entry is missing
+#
+# Related: release.yml, bump-version.sh, validate-changelog-version.sh
+# Incident: 2025-11-24 - v0.27.0 release failed due to missing CHANGELOG
+#
+# Installation: bash scripts/install-git-hooks.sh
+#
+
+set -e
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Read refs being pushed
+while read local_ref local_sha remote_ref remote_sha; do
+  # Check if pushing a version tag (v0.0.0, v1.2.3, etc.)
+  if [[ "$local_ref" =~ ^refs/tags/v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+    VERSION="${BASH_REMATCH[1]}"
+
+    echo -e "${YELLOW}🏷️  Pushing version tag: v${VERSION}${NC}"
+
+    # Check if CHANGELOG entry exists
+    if ! grep -q "## \[$VERSION\]" CHANGELOG.md 2>/dev/null; then
+      echo ""
+      echo -e "${RED}🚨 ═══════════════════════════════════════════════════════════════${NC}"
+      echo -e "${RED}🚨  BLOCKED: Missing CHANGELOG Entry for v$VERSION${NC}"
+      echo -e "${RED}🚨 ═══════════════════════════════════════════════════════════════${NC}"
+      echo ""
+      echo "  The Release & Publish workflow WILL FAIL without a CHANGELOG entry."
+      echo ""
+      echo -e "  ${GREEN}✅ SOLUTION: Use the release script instead:${NC}"
+      echo ""
+      echo "     bash scripts/bump-version.sh patch   # or minor/major"
+      echo ""
+      echo "  This script will:"
+      echo "    1. Bump the version in package.json"
+      echo "    2. Create CHANGELOG entry automatically"
+      echo "    3. Guide you through the release process"
+      echo ""
+      echo -e "  ${YELLOW}📋 Or manually add to CHANGELOG.md:${NC}"
+      echo ""
+      echo "     ## [$VERSION] - $(date +%Y-%m-%d)"
+      echo ""
+      echo "     ### Changes"
+      echo "     - Your changes here"
+      echo ""
+      echo "     ---"
+      echo ""
+      echo -e "  ${YELLOW}⚠️  To force push anyway: git push --no-verify${NC}"
+      echo "      (But Release & Publish will still fail!)"
+      echo ""
+      echo -e "${RED}🚨 ═══════════════════════════════════════════════════════════════${NC}"
+      echo ""
+      exit 1
+    fi
+
+    # Verify CHANGELOG has meaningful content (at least 3 lines)
+    NOTES=$(awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md)
+    NOTES_LINES=$(echo "$NOTES" | grep -v '^[[:space:]]*$' | wc -l | tr -d ' ')
+
+    if [ "$NOTES_LINES" -lt 2 ]; then
+      echo ""
+      echo -e "${YELLOW}⚠️  WARNING: CHANGELOG entry for v$VERSION appears empty${NC}"
+      echo "    Found only $NOTES_LINES non-empty lines."
+      echo "    Consider adding meaningful release notes."
+      echo ""
+      # Don't block, just warn (maybe they have a one-liner)
+    fi
+
+    echo -e "${GREEN}✅ CHANGELOG entry found for v${VERSION}${NC}"
+  fi
+done
+
+exit 0

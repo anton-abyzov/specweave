@@ -34,7 +34,12 @@
     "docs:build": "cd docs-site && npm run build",
     "docs:install": "cd docs-site && npm install --legacy-peer-deps",
     "docs:internal": "mkdocs serve -f docs-site/mkdocs-internal.yml",
-    "docs:internal:build": "mkdocs build -f docs-site/mkdocs-internal.yml"
+    "docs:internal:build": "mkdocs build -f docs-site/mkdocs-internal.yml",
+    "release:patch": "bash scripts/bump-version.sh patch",
+    "release:minor": "bash scripts/bump-version.sh minor",
+    "release:major": "bash scripts/bump-version.sh major",
+    "release": "bash scripts/bump-version.sh",
+    "setup:hooks": "bash scripts/install-git-hooks.sh"
   },
   "keywords": [
     "specweave",

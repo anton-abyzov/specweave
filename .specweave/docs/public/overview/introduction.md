@@ -31,8 +31,8 @@ SpecWeave enforces **Spec-Driven Development**:
 
 ```
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│  Your    │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
-│  Idea    │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
+│   Your   │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
+│   Idea   │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
 │          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
 └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
 ```

@@ -896,8 +896,12 @@ EOF_MINIMAL
     local spec_md_path="$increment_dir/spec.md"
 
     if [ -f "$spec_md_path" ]; then
+      # Extract feature ID from multiple possible frontmatter fields:
+      # - epic: (preferred)
+      # - feature_id:
+      # - feature:
       FEATURE_ID=$(awk '
-        BEGIN { in_frontmatter=0 }
+        BEGIN { in_frontmatter=0; feature_id="" }
         /^---$/ {
           if (in_frontmatter == 0) {
             in_frontmatter=1; next
@@ -908,15 +912,32 @@ EOF_MINIMAL
         in_frontmatter == 1 && /^epic:/ {
           gsub(/^epic:[ \t]*/, "");
           gsub(/["'\'']/, "");
-          print;
-          exit
+          feature_id = $0;
         }
+        in_frontmatter == 1 && /^feature_id:/ {
+          gsub(/^feature_id:[ \t]*/, "");
+          gsub(/["'\'']/, "");
+          if (feature_id == "") feature_id = $0;
+        }
+        in_frontmatter == 1 && /^feature:/ {
+          gsub(/^feature:[ \t]*/, "");
+          gsub(/["'\'']/, "");
+          if (feature_id == "") feature_id = $0;
+        }
+        END { print feature_id }
       ' "$spec_md_path" | tr -d '\r\n')
 
       if [ -n "$FEATURE_ID" ]; then
         log_debug "  📎 Extracted feature ID: $FEATURE_ID"
       else
-        log_debug "  ⚠️  No epic field in spec.md, sync will auto-generate ID"
+        # AUTO-GENERATE feature ID from increment number (NEW - ADR-0139)
+        local increment_num=$(echo "$increment_id" | grep -oE '^[0-9]+')
+        if [ -n "$increment_num" ]; then
+          FEATURE_ID="FS-${increment_num}"
+          log_info "  📝 Auto-generated feature ID: $FEATURE_ID (no epic/feature_id in spec.md)"
+        else
+          log_debug "  ⚠️  No feature ID found and could not auto-generate"
+        fi
       fi
     fi
 
@@ -979,10 +1000,96 @@ EOF_MINIMAL
     fi
   fi
 
-  # Note: Spec-level sync (SPECS → GitHub Projects/JIRA Epics) is handled separately
-  # See: /specweave-github:sync-spec, /specweave-jira:sync-spec, /specweave-ado:sync-spec
+  # ============================================================================
+  # STEP 8: EXPLICIT GITHUB ISSUE CREATION (NEW - ADR-0139)
+  # ============================================================================
+  # After living docs are created, explicitly create GitHub issues for User Stories.
+  # This ensures GitHub issues are created even if sync-living-docs.js gates fail.
+  #
+  # Why this is needed:
+  # - sync-living-docs.js has 5 config gates that can silently skip GitHub sync
+  # - Living docs exist but GitHub issues might not be created
+  # - User expects GitHub issues after /specweave:increment
+  #
+  # Retry mechanism: 2 attempts with 3 second delay
+  # ============================================================================
 
-  # 8. Sync spec content to external tools (if configured)
+  log_info ""
+  log_info "🐙 Creating GitHub issues for User Stories..."
+
+  # Check if GitHub is enabled
+  local github_enabled=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"github"' | grep -o '"enabled"[[:space:]]*:[[:space:]]*\(true\|false\)' | head -1 | grep -o '\(true\|false\)' || echo "false")
+
+  if [ "$github_enabled" = "true" ] && [ -n "$FEATURE_ID" ]; then
+    # Find the GitHub feature sync script
+    # Priority: dist/ first (compiled with correct imports), then marketplace
+    local GITHUB_SYNC_SCRIPT=""
+    if [ -f "$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" ]; then
+      # Prefer dist/ (compiled with correct imports)
+      GITHUB_SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js"
+    elif [ -n "${CLAUDE_PLUGIN_ROOT}" ]; then
+      # Try specweave-github plugin path (marketplace)
+      local github_plugin_root="${CLAUDE_PLUGIN_ROOT/specweave/specweave-github}"
+      if [ -f "$github_plugin_root/lib/github-feature-sync-cli.js" ]; then
+        GITHUB_SYNC_SCRIPT="$github_plugin_root/lib/github-feature-sync-cli.js"
+      fi
+    elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" ]; then
+      # Try node_modules (npm install)
+      GITHUB_SYNC_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave-github/lib/github-feature-sync-cli.js"
+    fi
+
+    if [ -n "$GITHUB_SYNC_SCRIPT" ]; then
+      log_info "  🔄 Syncing $FEATURE_ID to GitHub..."
+
+      # Load GitHub token
+      local GITHUB_TOKEN=""
+      if [ -f "$PROJECT_ROOT/.env" ]; then
+        GITHUB_TOKEN=$(grep -E '^GITHUB_TOKEN=' "$PROJECT_ROOT/.env" 2>/dev/null | head -1 | cut -d'=' -f2- | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+      fi
+
+      if [ -z "$GITHUB_TOKEN" ]; then
+        log_info "  ⚠️  GITHUB_TOKEN not found in .env - skipping GitHub sync"
+        log_info "  💡 To enable: Add GITHUB_TOKEN=ghp_xxx to .env"
+      else
+        # Retry mechanism: 2 attempts
+        local github_sync_success=false
+        local max_attempts=2
+
+        for attempt in $(seq 1 $max_attempts); do
+          log_debug "  GitHub sync attempt $attempt of $max_attempts..."
+
+          if GITHUB_TOKEN="$GITHUB_TOKEN" node "$GITHUB_SYNC_SCRIPT" "$FEATURE_ID" 2>&1 | \
+            grep -E "✅|❌|⚠️|📝|🎯|Issue|Milestone" | while read -r line; do echo "  $line"; done; then
+            github_sync_success=true
+            break
+          else
+            if [ "$attempt" -lt "$max_attempts" ]; then
+              log_info "  ⚠️  Attempt $attempt failed, retrying in 3 seconds..."
+              sleep 3
+            fi
+          fi
+        done
+
+        if [ "$github_sync_success" = "true" ]; then
+          log_info "  ✅ GitHub issues created successfully!"
+        else
+          log_info "  ⚠️  GitHub sync failed after $max_attempts attempts (non-blocking)"
+          log_info "  💡 Run /specweave-github:sync $FEATURE_ID manually to retry"
+        fi
+      fi
+    else
+      log_debug "  GitHub sync script not found"
+      log_info "  ℹ️  GitHub sync will be handled by living docs sync"
+    fi
+  elif [ "$github_enabled" != "true" ]; then
+    log_info "  ℹ️  GitHub sync disabled (sync.github.enabled = false)"
+    log_info "  💡 To enable: Set sync.github.enabled = true in config.json"
+  elif [ -z "$FEATURE_ID" ]; then
+    log_info "  ⚠️  No feature ID - GitHub issues cannot be created"
+    log_info "  💡 Add epic: FS-XXX or feature_id: FS-XXX to spec.md frontmatter"
+  fi
+
+  # 9. Sync spec content to external tools (if configured)
   log_info ""
   log_info "🔗 Checking spec content sync..."
 

@@ -225,29 +225,60 @@ if [ -f "scripts/validate-hook-variable-order.sh" ]; then
   fi
 fi
 
+# 12. Validate CHANGELOG entry exists for current version (CRITICAL - prevents release failures)
+# Incident Reference: 2025-11-24 - v0.27.0, v0.26.16, v0.26.13 releases ALL FAILED due to missing CHANGELOG
+# This catches the issue at commit time, BEFORE pushing tags
+if [ -f "scripts/validate-changelog-version.sh" ]; then
+  if ! bash scripts/validate-changelog-version.sh; then
+    echo ""
+    echo "💡 Use: bash scripts/bump-version.sh patch|minor|major"
+    echo "   This will auto-create the CHANGELOG entry for you!"
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
 
 chmod +x "$HOOKS_DIR/pre-commit"
 
+# Install pre-push hook (CHANGELOG validation for version tags)
+# Incident Reference: 2025-11-24 - Multiple releases failed due to missing CHANGELOG entries
+if [ -f "scripts/git-hooks/pre-push" ]; then
+  cp "scripts/git-hooks/pre-push" "$HOOKS_DIR/pre-push"
+  chmod +x "$HOOKS_DIR/pre-push"
+  echo "   ✅ Installed pre-push hook (CHANGELOG tag validation)"
+else
+  echo "   ⚠️  pre-push hook not found at scripts/git-hooks/pre-push"
+fi
+
 echo "✅ Git hooks installed successfully!"
 echo ""
 echo "Installed hooks:"
-echo "  - pre-commit: Local development setup verification (symlink check)"
-echo "  - pre-commit: Dangerous test pattern detection"
-echo "  - pre-commit: Mass .specweave/ deletion protection"
-echo "  - pre-commit: Build verification and .js extension check"
-echo "  - pre-commit: Duplicate increment detection (CRITICAL)"
-echo "  - pre-commit: Status line desync detection (CRITICAL)"
-echo "  - pre-commit: Plugin directory validation (prevents empty agent/skill dirs)"
-echo "  - pre-commit: fs-extra import detection (enforces native fs migration)"
-echo "  - pre-commit: YAML frontmatter validation (prevents malformed spec.md)"
-echo "  - pre-commit: No increment references (prevents circular dependencies - ADR-0061)"
-echo "  - pre-commit: GitHub issue format validation (blocks deprecated SP- prefix - ADR-0032)"
-echo "  - pre-commit: Hook variable initialization order (CRITICAL - prevents recursion guard bypass)"
 echo ""
-echo "To skip hook temporarily: git commit --no-verify"
+echo "  📋 PRE-COMMIT (runs on every commit):"
+echo "    - Local development setup verification (symlink check)"
+echo "    - Dangerous test pattern detection"
+echo "    - Mass .specweave/ deletion protection (>50 files)"
+echo "    - Build verification and .js extension check"
+echo "    - Duplicate increment detection (CRITICAL)"
+echo "    - Status line desync detection (CRITICAL)"
+echo "    - Plugin directory validation (prevents empty agent/skill dirs)"
+echo "    - fs-extra import detection (enforces native fs migration)"
+echo "    - YAML frontmatter validation (prevents malformed spec.md)"
+echo "    - No increment references (prevents circular dependencies - ADR-0061)"
+echo "    - GitHub issue format validation (blocks deprecated SP- prefix - ADR-0032)"
+echo "    - Hook variable initialization order (CRITICAL - prevents recursion guard bypass)"
+echo "    - CHANGELOG entry validation (CRITICAL - prevents release failures)"
 echo ""
-echo "💡 Tip: Run the dev setup verification manually:"
-echo "   bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh"
+echo "  🏷️  PRE-PUSH (runs when pushing tags):"
+echo "    - Blocks version tags (vX.Y.Z) if CHANGELOG entry missing"
+echo "    - Prevents failed releases BEFORE they happen"
+echo ""
+echo "To skip hooks temporarily:"
+echo "  git commit --no-verify"
+echo "  git push --no-verify"
+echo ""
+echo "💡 Tip: Use the release script to avoid CHANGELOG issues:"
+echo "   bash scripts/bump-version.sh patch|minor|major"

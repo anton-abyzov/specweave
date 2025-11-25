@@ -9,6 +9,7 @@ Thank you for considering contributing to SpecWeave! This document provides guid
 - [Development Workflow](#development-workflow)
 - [Contributing Guidelines](#contributing-guidelines)
 - [Pull Request Process](#pull-request-process)
+- [Release Process (Maintainers)](#release-process-maintainers)
 - [Testing Requirements](#testing-requirements)
 - [Documentation](#documentation)
 - [Community](#community)
@@ -656,6 +657,106 @@ Use the PR template to ensure you've covered:
 3. **Feedback** - Address review comments
 4. **Approval** - Get approval from maintainers
 5. **Merge** - Maintainers merge when approved
+
+---
+
+## Release Process (Maintainers)
+
+### Quick Start: Releasing a New Version
+
+```bash
+# Option 1: Interactive (recommended for first-time)
+npm run release:patch    # or release:minor / release:major
+# Edit CHANGELOG.md to describe changes
+# Then commit, tag, push manually (instructions shown)
+
+# Option 2: Fully Automated (for experienced maintainers)
+bash scripts/bump-version.sh patch --release
+# Only works if CHANGELOG already has proper content
+```
+
+### Why Releases Fail (and How We Prevent It)
+
+**Incident (2025-11-24)**: Versions 0.27.0, 0.26.16, and 0.26.13 ALL failed because tags were pushed **before** CHANGELOG entries were added.
+
+**Root Cause**: The Release & Publish workflow validates:
+```yaml
+if ! grep -q "## [$VERSION]" CHANGELOG.md; then
+  exit 1  # FAILS if no CHANGELOG entry
+fi
+```
+
+### Multi-Layer Protection (Implemented 2025-11-24)
+
+| Layer | When | What | Bypass |
+|-------|------|------|--------|
+| **Pre-commit hook** | Every commit | Validates CHANGELOG entry exists for package.json version | `--no-verify` |
+| **Pre-push hook** | Pushing `vX.Y.Z` tags | Blocks tag push if CHANGELOG missing | `--no-verify` |
+| **Release workflow** | GitHub Actions | Final validation before npm publish | None |
+
+### Correct Release Flow
+
+```bash
+# 1. Bump version + auto-create CHANGELOG placeholder
+npm run release:patch   # or minor/major
+
+# 2. Edit CHANGELOG.md (replace "TODO: Describe..." with real content)
+vim CHANGELOG.md
+
+# 3. Commit with standard message
+git add -A && git commit -m "chore: bump version to X.Y.Z"
+
+# 4. Push branch first
+git push origin develop
+
+# 5. Create and push tag
+git tag vX.Y.Z && git push origin vX.Y.Z
+
+# 6. GitHub Actions handles npm publish
+```
+
+### Common Mistakes (Don't Do These!)
+
+```bash
+# ❌ WRONG: Tag before CHANGELOG
+git tag v0.27.0 && git push origin v0.27.0  # FAILS!
+
+# ❌ WRONG: Manual version bump without CHANGELOG
+npm version patch  # Bumps version but no CHANGELOG entry!
+git tag v0.27.0 && git push origin v0.27.0  # FAILS!
+
+# ✅ CORRECT: Always use the release script
+npm run release:patch  # Auto-creates CHANGELOG entry
+```
+
+### Troubleshooting Failed Releases
+
+If a release failed:
+
+```bash
+# 1. Check if CHANGELOG entry exists
+grep "## \[0.27.0\]" CHANGELOG.md
+
+# 2. If missing, add it
+# 3. Delete the failed tag locally
+git tag -d v0.27.0
+
+# 4. Delete from remote (if pushed)
+git push origin :refs/tags/v0.27.0
+
+# 5. Re-run the release process
+npm run release:patch --release
+```
+
+### NPM Scripts for Releases
+
+| Script | Description |
+|--------|-------------|
+| `npm run release` | Show release tool help |
+| `npm run release:patch` | Bump patch version (0.0.X) |
+| `npm run release:minor` | Bump minor version (0.X.0) |
+| `npm run release:major` | Bump major version (X.0.0) |
+| `npm run setup:hooks` | Install git hooks (includes CHANGELOG validation) |
 
 ---
 

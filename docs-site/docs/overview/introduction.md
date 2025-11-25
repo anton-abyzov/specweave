@@ -30,7 +30,11 @@ Traditional AI-assisted development:
 SpecWeave enforces **Spec-Driven Development**:
 
 ```
-Your Idea -> Spec (permanent) -> Plan (permanent) -> Tasks (permanent) -> Code -> Living Docs (auto-synced)
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│   Your   │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
+│   Idea   │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
+│          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
 ```
 
 ### Key Principles
