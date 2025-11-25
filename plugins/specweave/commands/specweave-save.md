@@ -1,6 +1,6 @@
 ---
 name: specweave:save
-description: Save and push changes across all repositories in an umbrella setup. Detects repos with changes, sets up remotes if missing, commits with user-provided message, and pushes to origin. Works for single repos and multi-repo umbrella setups.
+description: Save and push changes across all repositories in an umbrella setup. Detects repos with changes, sets up remotes if missing, auto-generates or accepts user commit message, and pushes to origin. Works for single repos and multi-repo umbrella setups.
 ---
 
 # /specweave:save - Save Changes Across Repositories
@@ -12,16 +12,16 @@ Save and push changes across all repositories in your project. Works for both si
 1. **Detects repositories** - Finds all repos (umbrella childRepos or current repo)
 2. **Checks for changes** - Identifies repos with uncommitted changes
 3. **Sets up remotes** - Prompts for remote URL if missing
-4. **Commits changes** - Stages all changes with user-provided message
+4. **Auto-generates or accepts commit message** - Smart message generation from changes
 5. **Pushes to remote** - Pushes commits to origin
 
 ## Usage
 
 ```bash
-# Interactive (prompts for commit message)
+# Auto-generate commit message from changes (NEW!)
 /specweave:save
 
-# With commit message
+# With explicit commit message
 /specweave:save "feat: Add menu builder feature"
 
 # Dry run (show what would happen, don't execute)
@@ -32,6 +32,288 @@ Save and push changes across all repositories in your project. Works for both si
 
 # Skip repos without remote (don't prompt)
 /specweave:save "chore: Updates" --skip-no-remote
+```
+
+## Auto-Generated Commit Messages (IMPORTANT!)
+
+When no commit message is provided, **automatically analyze git changes and generate a conventional commit message**.
+
+### Step-by-Step Algorithm
+
+#### 1. Get Git Changes
+
+```bash
+# Get file status
+git status --porcelain
+
+# Get diff stats for context
+git diff --stat HEAD
+
+# Check for active increment
+ls .specweave/increments/*/metadata.json 2>/dev/null | head -1
+```
+
+#### 2. Categorize Files by Type
+
+Parse `git status --porcelain` output. Status codes:
+- `??` = untracked (new)
+- ` M` or `M ` = modified
+- ` D` or `D ` = deleted
+- `R ` = renamed
+- `A ` = added (staged)
+
+**File Category Rules:**
+
+| Pattern | Category | Commit Type |
+|---------|----------|-------------|
+| `*.md`, `docs/`, `README*`, `CHANGELOG*` | docs | `docs:` |
+| `src/**/*.ts` (excluding `*.test.ts`) | source | `feat:` or `refactor:` |
+| `*.test.ts`, `tests/`, `__tests__/`, `*.spec.ts` | tests | `test:` |
+| `package.json`, `package-lock.json`, `*.config.*`, `tsconfig*` | config | `chore:` |
+| `.github/`, `.gitlab-ci*`, `Jenkinsfile`, `.circleci/` | ci | `ci:` |
+| `esbuild*`, `webpack*`, `dist/`, `build/` | build | `build:` |
+| `.specweave/increments/*/` | increment | use increment name |
+| `*.css`, `*.scss`, `*.less` | styles | `style:` |
+| `scripts/`, `bin/` | scripts | `chore:` |
+
+#### 3. Determine Primary Type
+
+```
+Count files per category:
+  docs: 5 files
+  source: 2 files
+  tests: 1 file
+
+Primary = category with most files
+If tie → prefer in order: feat > docs > test > chore
+```
+
+#### 4. Determine Action Verb
+
+```
+Count by status:
+  new (??, A): 3 files → "add"
+  modified (M): 5 files → "update"
+  deleted (D): 0 files → "remove"
+  renamed (R): 0 files → "rename"
+
+Primary action = most common status
+If new > modified → "add"
+If deleted > others → "remove"
+Else → "update"
+```
+
+#### 5. Derive Scope from Common Path
+
+```
+Files:
+  docs-site/docs/guides/file1.md
+  docs-site/docs/overview/file2.md
+  docs-site/docs/intro.md
+
+Common path = docs-site/docs/
+Scope = "docs-site" (first significant directory)
+
+Rules:
+- If all files share a common directory → use as scope
+- If files are in src/[subdir]/ → use subdir as scope
+- If files are scattered → no scope (omit parentheses)
+- Special scopes: cli, hooks, plugins, docs-site
+```
+
+#### 6. Check for Increment Context
+
+```bash
+# Find active increment
+ACTIVE=$(cat .specweave/increments/*/metadata.json 2>/dev/null | \
+  grep -l '"status": "active"' | head -1)
+
+if [ -n "$ACTIVE" ]; then
+  INCREMENT_NAME=$(dirname "$ACTIVE" | xargs basename)
+  # Example: 0001-academy-restructure
+fi
+```
+
+**If increment is active AND increment files are in changes:**
+- Include increment reference in message
+- Use increment title/name for context
+
+#### 7. Generate Message
+
+**Format:** `type(scope): action description`
+
+**Generation Rules:**
+
+```
+# Pattern 1: Pure docs changes
+docs(docs-site): update learning journey documentation
+
+# Pattern 2: New feature with tests
+feat(auth): add user authentication service
+
+# Pattern 3: Increment-related work
+docs: add academy section (0001-academy-restructure)
+
+# Pattern 4: Mixed changes
+chore: update config and documentation
+
+# Pattern 5: Single file change
+refactor(cli): simplify init command logic
+
+# Pattern 6: Dependency updates
+chore(deps): update package dependencies
+```
+
+**Description Templates:**
+
+| Action | File Count | Template |
+|--------|------------|----------|
+| add | 1 | `add [filename without ext]` |
+| add | 2-5 | `add [primary thing] and [count-1] more` |
+| add | >5 | `add [category] files` |
+| update | 1 | `update [filename]` |
+| update | 2-5 | `update [primary thing] and related files` |
+| update | >5 | `update [scope/category]` |
+| remove | any | `remove [thing(s)]` |
+
+#### 8. Present for Confirmation
+
+```markdown
+📊 **Analyzing changes...**
+
+Detected:
+  📄 5 modified documentation files
+  📁 1 new increment folder (0001-academy-restructure)
+  📁 1 new docs section (academy/)
+
+🤖 **Auto-generated commit message:**
+
+  `docs(docs-site): add academy section and update learning journey`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? **Choose action:**
+  1️⃣  Use this message
+  2️⃣  Edit message
+  3️⃣  Enter custom message
+```
+
+### Example Auto-Generations
+
+**Example 1: Documentation updates**
+```
+Input:
+ M docs-site/docs/guides/specweave-learning-journey.md
+ M docs-site/docs/intro.md
+ M docs-site/docs/overview/features.md
+?? docs-site/docs/academy/
+
+Output: docs(docs-site): add academy section and update documentation
+```
+
+**Example 2: Feature development**
+```
+Input:
+?? src/services/payment.ts
+?? src/services/payment.test.ts
+ M src/types/index.ts
+
+Output: feat: add payment service with tests
+```
+
+**Example 3: CI/CD changes**
+```
+Input:
+ M .github/workflows/ci.yml
+ M .github/workflows/release.yml
+
+Output: ci: update CI and release workflows
+```
+
+**Example 4: Dependency update**
+```
+Input:
+ M package.json
+ M package-lock.json
+
+Output: chore(deps): update dependencies
+```
+
+**Example 5: Refactoring**
+```
+Input:
+ M src/cli/commands/init.ts
+ M src/cli/helpers/init/types.ts
+ M src/cli/helpers/init/config-detection.ts
+
+Output: refactor(cli): update init command structure
+```
+
+**Example 6: Mixed changes with increment**
+```
+Input:
+ M src/components/Menu.tsx
+ M docs/api.md
+?? .specweave/increments/0042-menu-builder/
+
+Active increment: 0042-menu-builder
+
+Output: feat: implement menu builder (0042)
+```
+
+**Example 7: Test additions**
+```
+Input:
+?? tests/integration/auth.test.ts
+?? tests/integration/payment.test.ts
+ M jest.config.js
+
+Output: test: add integration tests for auth and payment
+```
+
+**Example 8: Single file**
+```
+Input:
+ M README.md
+
+Output: docs: update README
+```
+
+### Fallback Behavior
+
+If analysis cannot determine a meaningful message:
+
+```markdown
+⚠️ Could not auto-generate a meaningful commit message.
+
+Changes detected:
+  - 15 files across multiple categories
+  - No clear primary category
+
+? Please enter a commit message:
+> _
+```
+
+### Multi-Repo Message Generation
+
+For umbrella setups, generate per-repo messages:
+
+```markdown
+📊 Analyzing changes across repositories...
+
+**frontend** (4 files):
+  Auto-generated: `feat(components): add menu builder UI`
+
+**backend** (2 files):
+  Auto-generated: `feat(api): add menu endpoints`
+
+**shared** (1 file):
+  Auto-generated: `chore: update shared types`
+
+? Use same message for all, or per-repo messages?
+  1️⃣  Same message (enter custom)
+  2️⃣  Use auto-generated per-repo messages
+  3️⃣  Edit each message
 ```
 
 ## Workflow
@@ -103,13 +385,36 @@ Using: https://github.com/user/sw-qr-menu-fe
 git remote add origin https://github.com/user/sw-qr-menu-fe
 ```
 
-### Step 4: Get Commit Message
+### Step 4: Get or Generate Commit Message
 
+**If message was provided in command:**
 ```markdown
-? Enter commit message (applies to all repos):
-> feat: Add menu builder with drag-drop support
-
 Commit message: "feat: Add menu builder with drag-drop support"
+```
+
+**If NO message provided (auto-generate):**
+```markdown
+📊 Analyzing changes...
+
+Detected:
+  📄 3 modified source files (src/components/)
+  📄 2 new test files
+  📁 1 new increment folder
+
+🤖 Auto-generated commit message:
+
+  feat(components): add menu builder with drag-drop support
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? Choose action:
+  1. ✅ Use this message
+  2. ✏️  Edit message
+  3. 📝 Enter custom message
+
+> 1
+
+Using: "feat(components): add menu builder with drag-drop support"
 ```
 
 ### Step 5: Execute Save
@@ -321,6 +626,7 @@ Summary:
 | `--all` | Include repos outside umbrella config |
 | `--no-push` | Commit but don't push |
 | `--force` | Force push (use with caution!) |
+| `--yes` or `-y` | Accept auto-generated message without confirmation |
 
 ## Best Practices
 
@@ -368,6 +674,79 @@ backend:
 Summary:
   Saved: 2/3 repositories
   Skipped: 1 (no changes)
+```
+
+### Auto-Generated Message (No Args)
+
+```
+User: /specweave:save
+
+Claude:
+Scanning for repositories...
+Mode: Single repository
+Repository: my-app (.)
+
+Checking git status...
+
+my-app:
+  Status: 7 files changed
+  Remote: origin -> github.com/user/my-app
+
+📊 Analyzing changes...
+
+Detected:
+  📄 5 modified documentation files
+  📁 1 new docs section (academy/)
+  📁 1 new increment folder
+
+🤖 Auto-generated commit message:
+
+  docs(docs-site): add academy section and update documentation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? Choose action:
+  1. ✅ Use this message
+  2. ✏️  Edit message
+  3. 📝 Enter custom message
+
+User: 1
+
+Saving changes...
+
+my-app:
+  git add -A
+  git commit -m "docs(docs-site): add academy section and update documentation"
+  git push origin develop
+
+Summary:
+  ✅ Saved: 1/1 repository
+  📝 Message: docs(docs-site): add academy section and update documentation
+```
+
+### Quick Auto-Save (--yes flag)
+
+```
+User: /specweave:save --yes
+
+Claude:
+Scanning for repositories...
+Mode: Single repository
+
+📊 Auto-analyzing changes...
+
+Detected: 3 modified source files in src/cli/
+
+🤖 Auto-generated: refactor(cli): update command handlers
+
+Saving changes (auto-confirmed)...
+
+my-app:
+  git add -A
+  git commit -m "refactor(cli): update command handlers"
+  git push origin develop
+
+✅ Done! Saved with auto-generated message.
 ```
 
 ### First-Time Remote Setup

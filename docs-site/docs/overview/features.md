@@ -257,7 +257,7 @@ SpecWeave detects your tech stack from:
     └── ...
 \`\`\`
 
-### WIP Limits
+### [WIP Limits](/docs/glossary/terms/wip-limits)
 
 Prevent context-switching:
 - **Solo/small teams**: 1-2 in progress

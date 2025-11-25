@@ -95,11 +95,11 @@ Today's best teams combine:
 **Where SpecWeave Fits:**
 
 SpecWeave is **spec-driven but agile** — you get the rigor of documented specs with the flexibility of incremental delivery. Every increment is:
-- **Planned** (spec.md)
-- **Designed** (plan.md)
-- **Executed** (tasks.md)
-- **Validated** (quality gates)
-- **Delivered** (living docs)
+- **Planned** ([spec.md](/docs/glossary/terms/spec-md))
+- **Designed** ([plan.md](/docs/glossary/terms/plan-md))
+- **Executed** ([tasks.md](/docs/glossary/terms/tasks-md))
+- **Validated** ([quality gates](/docs/glossary/terms/quality-gate))
+- **Delivered** ([living docs](/docs/glossary/terms/living-docs))
 
 > **:next** → *Lesson 1.3: The Testing Pyramid*
 
@@ -155,7 +155,7 @@ Every task in `tasks.md` includes embedded tests:
   - Coverage: >95%
 ```
 
-**Quality Gates Enforce This:**
+**[Quality Gates](/docs/glossary/terms/quality-gate) Enforce This:**
 - Gate 1: All tasks complete
 - Gate 2: Tests passing (60%+ coverage minimum)
 - Gate 3: Documentation updated
@@ -701,7 +701,7 @@ One command. Full workflow.
 
 ---
 
-### Lesson 3.4: Quality Gates
+### Lesson 3.4: [Quality Gates](/docs/glossary/terms/quality-gate)
 
 **Three Gates Before Closure:**
 

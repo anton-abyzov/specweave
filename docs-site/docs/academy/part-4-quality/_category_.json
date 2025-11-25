@@ -1,0 +1,9 @@
+{
+  "label": "Part 4: Quality",
+  "position": 4,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Code quality, quality gates, and documentation best practices."
+  }
+}
