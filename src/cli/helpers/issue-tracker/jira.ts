@@ -7,7 +7,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, input, confirm, checkbox, password } from '@inquirer/prompts';
 import ora from 'ora';
 import { getJiraAuth } from '../../../utils/auth-helpers.js';
 import {
@@ -208,9 +208,7 @@ async function autoDiscoverJiraProjects(
         spinner.succeed(`Loaded ${firstBatch.length} project(s)`);
 
         // Show checkbox with ALL pre-checked (CLI-first: deselection workflow)
-        const { selectedProjects: selected } = await inquirer.prompt<{ selectedProjects: string[] }>({
-          type: 'checkbox',
-          name: 'selectedProjects',
+        const selected = await checkbox({
           message: 'Select Jira projects to sync (Space to deselect, Enter to confirm):',
           choices: firstBatch.map((p: any) => ({
             name: `${p.key} - ${p.name}`,
@@ -266,16 +264,14 @@ export async function promptJiraCredentials(
   console.log(chalk.gray('SpecWeave will sync increments with Jira Issues.\n'));
 
   // Step 1: Ask about instance type (Cloud vs Server)
-  const { instanceType } = await inquirer.prompt([{
-    type: 'select',
-    name: 'instanceType',
+  const instanceType = await select({
     message: 'Which Jira instance are you using?',
     choices: [
       { name: 'Jira Cloud (*.atlassian.net)', value: 'cloud' },
       { name: 'Jira Server/Data Center (self-hosted)', value: 'server' }
     ],
     default: 'cloud'
-  }]);
+  });
 
   // Step 1.5: Note - Strategy will be auto-detected after project selection
 
@@ -294,76 +290,65 @@ export async function promptJiraCredentials(
     console.log(chalk.gray('   4. Copy the token\n'));
   }
 
-  const { continueSetup } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'continueSetup',
+  const continueSetup = await confirm({
     message: 'Continue with Jira setup?',
     default: true
-  }]);
+  });
 
   if (!continueSetup) {
     return null;
   }
 
   // Step 3: Collect credentials
-  const questions: any[] = [
-    {
-      type: 'input',
-      name: 'domain',
-      message: instanceType === 'cloud'
-        ? 'Jira domain (e.g., your-company.atlassian.net):'
-        : 'Jira Server URL (e.g., jira.company.com):',
-      validate: (input: string) => {
-        if (!input || input.trim() === '') {
-          return 'Domain cannot be empty';
-        }
+  const domain = await input({
+    message: instanceType === 'cloud'
+      ? 'Jira domain (e.g., your-company.atlassian.net):'
+      : 'Jira Server URL (e.g., jira.company.com):',
+    validate: (val: string) => {
+      if (!val || val.trim() === '') {
+        return 'Domain cannot be empty';
+      }
 
-        // Prevent SSRF attacks - block localhost and internal IP addresses
-        if (/localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\./i.test(input)) {
-          return 'Internal IP addresses and localhost are not allowed';
-        }
+      // Prevent SSRF attacks - block localhost and internal IP addresses
+      if (/localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\./i.test(val)) {
+        return 'Internal IP addresses and localhost are not allowed';
+      }
 
-        // For cloud, suggest .atlassian.net but don't enforce (user might have custom domain)
-        if (instanceType === 'cloud' && !input.includes('.')) {
-          return 'Please enter a valid domain (e.g., your-company.atlassian.net)';
-        }
-        return true;
+      // For cloud, suggest .atlassian.net but don't enforce (user might have custom domain)
+      if (instanceType === 'cloud' && !val.includes('.')) {
+        return 'Please enter a valid domain (e.g., your-company.atlassian.net)';
       }
-    },
-    {
-      type: 'input',
-      name: 'email',
-      message: 'Your Jira email:',
-      validate: (input: string) => {
-        if (!isValidEmail(input)) {
-          return 'Please enter a valid email address';
-        }
-        return true;
-      }
-    },
-    {
-      type: 'password',
-      name: 'token',
-      message: 'Paste your Jira API token:',
-      mask: '*',
-      validate: (input: string) => {
-        if (!input || input.length === 0) {
-          return 'Token cannot be empty';
-        }
-        return true;
-      }
+      return true;
     }
-  ];
+  });
 
-  // Get basic credentials first
-  const answers = await inquirer.prompt(questions);
+  const email = await input({
+    message: 'Your Jira email:',
+    validate: (val: string) => {
+      if (!isValidEmail(val)) {
+        return 'Please enter a valid email address';
+      }
+      return true;
+    }
+  });
+
+  const token = await password({
+    message: 'Paste your Jira API token:',
+    mask: '*',
+    validate: (val: string) => {
+      if (!val || val.length === 0) {
+        return 'Token cannot be empty';
+      }
+      return true;
+    }
+  });
 
   // Auto-discover projects using the credentials (with cache support)
   const selectedProjects = await autoDiscoverJiraProjects(
     {
-      domain: answers.domain,
-      email: answers.email,
-      token: answers.token,
+      domain,
+      email,
+      token,
       instanceType: instanceType as JiraInstanceType
     },
     projectRoot
@@ -386,9 +371,9 @@ export async function promptJiraCredentials(
 
   // Build credentials with auto-discovered projects
   const credentials: JiraCredentials = {
-    token: answers.token,
-    email: answers.email,
-    domain: answers.domain,
+    token: token,
+    email: email,
+    domain: domain,
     instanceType: instanceType as JiraInstanceType,
     strategy: strategy as any,
     projects: selectedProjects

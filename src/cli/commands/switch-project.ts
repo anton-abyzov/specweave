@@ -4,7 +4,6 @@
  * Switch active project for increment planning
  */
 
-import inquirer from 'inquirer';
 import { ProjectManager } from '../../core/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { listProjects } from './init-multiproject.js';

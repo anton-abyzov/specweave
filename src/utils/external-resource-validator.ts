@@ -14,7 +14,7 @@
 
 import * as fs from '../utils/fs-native.js';
 import path from 'path';
-import inquirer from 'inquirer';
+import { select, input } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -406,19 +406,15 @@ export class JiraResourceValidator {
         const existingProjects = await this.fetchProjects();
 
         // Prompt user
-        const { action } = await inquirer.prompt([
-          {
-            type: 'select',
-            name: 'action',
-            message: `What would you like to do for project "${projectKey}"?`,
-            choices: [
-              { name: 'Select an existing project', value: 'select' },
-              { name: 'Create a new project', value: 'create' },
-              { name: 'Skip this project', value: 'skip' },
-              { name: 'Cancel validation', value: 'cancel' },
-            ],
-          },
-        ]);
+        const action = await select({
+          message: `What would you like to do for project "${projectKey}"?`,
+          choices: [
+            { name: 'Select an existing project', value: 'select' },
+            { name: 'Create a new project', value: 'create' },
+            { name: 'Skip this project', value: 'skip' },
+            { name: 'Cancel validation', value: 'cancel' },
+          ],
+        });
 
         if (action === 'cancel') {
           result.valid = false;
@@ -431,17 +427,13 @@ export class JiraResourceValidator {
         }
 
         if (action === 'select') {
-          const { selectedProject } = await inquirer.prompt([
-            {
-              type: 'select',
-              name: 'selectedProject',
-              message: 'Select a project:',
-              choices: existingProjects.map((p) => ({
-                name: `${p.key} - ${p.name}`,
-                value: p.key,
-              })),
-            },
-          ]);
+          const selectedProject = await select({
+            message: 'Select a project:',
+            choices: existingProjects.map((p) => ({
+              name: `${p.key} - ${p.name}`,
+              value: p.key,
+            })),
+          });
 
           // Fetch full project details to get ID
           const selectedProjectDetails = await this.checkProject(selectedProject);
@@ -479,14 +471,10 @@ export class JiraResourceValidator {
             name: selectedProjectDetails.name,
           });
         } else if (action === 'create') {
-          const { projectName } = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'projectName',
-              message: 'Enter project name:',
-              default: projectKey,
-            },
-          ]);
+          const projectName = await input({
+            message: 'Enter project name:',
+            default: projectKey,
+          });
 
           const newProject = await this.createProject(projectKey, projectName);
 
@@ -1107,19 +1095,15 @@ export class AzureDevOpsResourceValidator {
         const existingProjects = await this.fetchProjects();
 
         // Prompt user
-        const { action } = await inquirer.prompt([
-          {
-            type: 'select',
-            name: 'action',
-            message: `What would you like to do for project "${projectName}"?`,
-            choices: [
-              { name: 'Select an existing project', value: 'select' },
-              { name: 'Create a new project', value: 'create' },
-              { name: 'Skip this project', value: 'skip' },
-              { name: 'Cancel validation', value: 'cancel' },
-            ],
-          },
-        ]);
+        const action = await select({
+          message: `What would you like to do for project "${projectName}"?`,
+          choices: [
+            { name: 'Select an existing project', value: 'select' },
+            { name: 'Create a new project', value: 'create' },
+            { name: 'Skip this project', value: 'skip' },
+            { name: 'Cancel validation', value: 'cancel' },
+          ],
+        });
 
         if (action === 'cancel') {
           result.valid = false;
@@ -1133,17 +1117,13 @@ export class AzureDevOpsResourceValidator {
         }
 
         if (action === 'select') {
-          const { selectedProject } = await inquirer.prompt([
-            {
-              type: 'select',
-              name: 'selectedProject',
-              message: 'Select a project:',
-              choices: existingProjects.map((p) => ({
-                name: `${p.name}${p.description ? ` - ${p.description}` : ''}`,
-                value: p.name,
-              })),
-            },
-          ]);
+          const selectedProject = await select({
+            message: 'Select a project:',
+            choices: existingProjects.map((p) => ({
+              name: `${p.name}${p.description ? ` - ${p.description}` : ''}`,
+              value: p.name,
+            })),
+          });
 
           // Fetch full project details
           const selectedProjectDetails = await this.checkProject(selectedProject);
@@ -1172,14 +1152,10 @@ export class AzureDevOpsResourceValidator {
           });
           result.envUpdated = true;
         } else if (action === 'create') {
-          const { description } = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'description',
-              message: 'Enter project description (optional):',
-              default: `${projectName} project`,
-            },
-          ]);
+          const description = await input({
+            message: 'Enter project description (optional):',
+            default: `${projectName} project`,
+          });
 
           const newProject = await this.createProject(projectName, description);
 

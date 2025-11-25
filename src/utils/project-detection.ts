@@ -9,7 +9,7 @@
 
 import * as fs from '../utils/fs-native.js';
 import path from 'path';
-import inquirer from 'inquirer';
+import { input } from '@inquirer/prompts';
 import { ConfigManager } from '../core/config-manager.js';
 import { SyncProfile } from '../core/types/sync-profile.js';
 
@@ -152,31 +152,29 @@ export function detectProjectIdFromSync(projectRoot: string): string | null {
  * // Returns: "web-app"
  */
 export async function promptForProjectId(suggestedId?: string): Promise<string> {
-  const { projectId } = await inquirer.prompt([{
-    type: 'input',
-    name: 'projectId',
+  const projectId = await input({
     message: 'Project ID (matches GitHub repo, JIRA project, or ADO project):',
     default: suggestedId || 'default',
-    validate: (input: string) => {
-      if (!input) {
+    validate: (value: string) => {
+      if (!value) {
         return 'Project ID is required';
       }
 
-      if (!/^[a-z0-9_-]+$/.test(input)) {
+      if (!/^[a-z0-9_-]+$/.test(value)) {
         return 'Project ID must be lowercase, alphanumeric, with hyphens or underscores';
       }
 
-      if (input.length < 2) {
+      if (value.length < 2) {
         return 'Project ID must be at least 2 characters';
       }
 
-      if (input.length > 64) {
+      if (value.length > 64) {
         return 'Project ID must be at most 64 characters';
       }
 
       return true;
     }
-  }]);
+  });
 
   return projectId;
 }

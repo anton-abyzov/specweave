@@ -10,7 +10,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 
 /**
  * GitHub repository profile
@@ -318,16 +318,13 @@ export class GitHubProfileManager {
       return profiles[0];
     }
 
-    const { selectedId } = await inquirer.prompt([{
-      type: 'select',
-      name: 'selectedId',
+    const selectedId = await select({
       message,
       choices: profiles.map(p => ({
         name: `${p.displayName} (${p.config.owner}/${p.config.repo})`,
-        value: p.id,
-        short: p.id
+        value: p.id
       }))
-    }]);
+    });
 
     return this.getProfile(selectedId);
   }

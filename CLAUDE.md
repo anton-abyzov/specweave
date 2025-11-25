@@ -46,6 +46,45 @@ Task({ subagent_type: "specweave:architect:architect" }); // 1000-3000 lines out
 // ✅ CORRECT: Skills create templates, guide user to invoke agents in main context
 ```
 
+### 5. NEVER Spawn Parallel Agents for Multi-File Migrations (CRITICAL!)
+
+**Parallel agents reading large files = CRASH** (context shared, not isolated!)
+
+```
+❌ FORBIDDEN (Crash pattern from 2025-11-24):
+"This is a large migration (46 files)... Let me use parallel agents"
+→ 4 parallel tech-lead agents × 36k tokens each = 144k tokens → CRASH!
+
+✅ CORRECT: Sequential single-agent execution:
+- Process files ONE BY ONE in main context
+- Use Edit tool directly (not agents) for simple find-replace
+- For complex migrations: ONE file per response, ask "Ready for next?"
+```
+
+**Rule**: Multi-file migrations MUST be sequential, NEVER parallel agents.
+
+### 6. Emergency Minimal Mode (Explicit Activation Only)
+
+**Activates ONLY when user says**: "emergency mode", "minimal mode ON", "crashed N times"
+**Does NOT activate on**: "be careful", "small chunks" (normal caution ≠ emergency)
+
+**Emergency mode rules:**
+```
+READ: limit:50 | EDIT: 1 per response | AGENTS: none | FLOW: "Done. Next?"
+```
+
+**User emergency phrase:** `EMERGENCY MODE. 1 edit. 50 lines max. No agents.`
+
+### 7. Writing Effective Claude Instructions
+
+**Terse imperatives > verbose explanations:**
+```
+❌ "Please consider making smaller edits and waiting for my confirmation"
+✅ "1 edit. STOP. Wait for 'next'."
+```
+
+**Format:** `ACTION. CONSTRAINT. CONSTRAINT.` (periods, not commas)
+
 ---
 
 ## Development Setup
@@ -75,6 +114,12 @@ git add . && git commit -m "feat: feature" && git push origin develop
 4. **Filesystem**: Native `fs` only (NEVER `fs-extra`)
 5. **Code**: Functions < 100 lines, avoid `any`, custom error types
 
+### File Size Limits
+
+**Max 1500 lines/file** (2000+ = crash risk). Check: `wc -l file.ts`
+- >1000 lines → extract before adding code
+- Split pattern: See ADR-0138 (`init.ts` → `init/` folder)
+
 ---
 
 ## Folder Structure
@@ -83,6 +128,25 @@ git add . && git commit -m "feat: feature" && git push origin develop
 
 **Inside increment folders - ONLY at root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
 **Everything else → subfolders**: `reports/`, `scripts/`, `logs/`, `backups/`, `docs/`
+
+### CLI Command Structure (ADR-0138)
+
+**Init command** is modular - DO NOT add logic to main file:
+```
+src/cli/commands/init.ts           ← Orchestrator only (~600 lines)
+src/cli/helpers/init/
+├── types.ts                       ← Shared interfaces
+├── path-utils.ts                  ← findPackageRoot, findSourceDir
+├── config-detection.ts            ← detectGitHubRemote/Jira/ADO
+├── smart-reinit.ts                ← Re-init prompts (SINGLE source!)
+├── plugin-installer.ts            ← Claude plugin installation
+├── repository-setup.ts            ← Git provider selection
+├── testing-config.ts              ← Test mode prompts
+├── external-import.ts             ← Import from external tools
+├── directory-structure.ts         ← .specweave/ creation
+└── next-steps.ts                  ← Post-init instructions
+```
+**Rule**: Add new init features to appropriate helper, NOT to init.ts
 
 ---
 
@@ -171,9 +235,17 @@ npm run test:all    # All tests (80%+ coverage required)
 
 ## Emergency
 
+**Crash loop / prompt duplication? Disable hooks FIRST:**
 ```bash
-export SPECWEAVE_DISABLE_HOOKS=1
+export SPECWEAVE_DISABLE_HOOKS=1   # In terminal before starting Claude
+# OR rename hooks.json:
+mv plugins/specweave/hooks/hooks.json plugins/specweave/hooks/hooks.json.bak
+```
+
+**Then clean state:**
+```bash
 rm -f .specweave/state/.hook-*
+rm -rf .specweave/state/.dedup-cache
 npm run rebuild
 ```
 

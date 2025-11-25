@@ -264,35 +264,31 @@ export class AreaPathMapper {
   async promptAreaPathGranularity(
     areaPathTree: AreaPathNode
   ): Promise<AreaPathGranularity> {
-    const inquirer = (await import('inquirer')).default;
+    const { select } = await import('@inquirer/prompts');
 
     // Calculate counts for each granularity
     const topLevelCount = this.getNodesByLevel(areaPathTree, 1).length;
     const twoLevelCount = this.getNodesByLevel(areaPathTree, 2).length;
     const fullTreeCount = this.getAllNodes(areaPathTree).length;
 
-    const { granularity } = await inquirer.prompt<{ granularity: AreaPathGranularity }>([
-      {
-        type: 'select',
-        name: 'granularity',
-        message: 'Select area path granularity for project organization:',
-        choices: [
-          {
-            name: `Top-level only (${topLevelCount} projects) - e.g., Backend, Frontend`,
-            value: 'top-level'
-          },
-          {
-            name: `Two-level (${twoLevelCount} projects) - e.g., Backend-API, Backend-Database`,
-            value: 'two-level'
-          },
-          {
-            name: `Full tree (${fullTreeCount} projects) - All levels`,
-            value: 'full-tree'
-          }
-        ],
-        default: 'two-level' // Most common use case
-      }
-    ]);
+    const granularity = await select<AreaPathGranularity>({
+      message: 'Select area path granularity for project organization:',
+      choices: [
+        {
+          name: `Top-level only (${topLevelCount} projects) - e.g., Backend, Frontend`,
+          value: 'top-level' as const
+        },
+        {
+          name: `Two-level (${twoLevelCount} projects) - e.g., Backend-API, Backend-Database`,
+          value: 'two-level' as const
+        },
+        {
+          name: `Full tree (${fullTreeCount} projects) - All levels`,
+          value: 'full-tree' as const
+        }
+      ],
+      default: 'two-level' // Most common use case
+    });
 
     return granularity;
   }

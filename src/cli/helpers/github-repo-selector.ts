@@ -12,7 +12,7 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import inquirer from 'inquirer';
+import { select, input, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { minimatch } from 'minimatch';
 
@@ -174,21 +174,17 @@ export async function selectRepositories(
   const orgs = await fetchUserOrganizations(octokit);
 
   // Step 2: Prompt for selection strategy
-  const strategyChoices = [
+  const strategyChoices: Array<{ name: string; value: RepoSelectionConfig['selectionStrategy']; disabled?: string | boolean }> = [
     { name: 'All repositories from a specific organization', value: 'all-org', disabled: orgs.length === 0 ? 'No organizations found' : false },
     { name: 'All repositories from your personal account', value: 'all-personal' },
     { name: 'Pattern matching (e.g., "ec-*", "*-backend")', value: 'pattern' },
     { name: 'Explicit list (comma-separated repo names)', value: 'explicit' }
   ];
 
-  const { strategy } = await inquirer.prompt<{ strategy: RepoSelectionConfig['selectionStrategy'] }>([
-    {
-      type: 'select',
-      name: 'strategy',
-      message: 'How do you want to select repositories?',
-      choices: strategyChoices
-    }
-  ]);
+  const strategy = await select({
+    message: 'How do you want to select repositories?',
+    choices: strategyChoices
+  });
 
   let selectedRepos: GitHubRepo[] = [];
   let selectionConfig: RepoSelectionConfig = {
@@ -200,14 +196,10 @@ export async function selectRepositories(
   switch (strategy) {
     case 'all-org': {
       // Prompt to select organization
-      const { selectedOrg } = await inquirer.prompt<{ selectedOrg: string }>([
-        {
-          type: 'select',
-          name: 'selectedOrg',
-          message: 'Select organization:',
-          choices: orgs
-        }
-      ]);
+      const selectedOrg = await select({
+        message: 'Select organization:',
+        choices: orgs.map(org => ({ name: org, value: org }))
+      });
 
       console.log(chalk.gray(`\n⏳ Fetching repositories from ${selectedOrg}...\n`));
       selectedRepos = await fetchOrgRepositories(octokit, selectedOrg);
@@ -228,14 +220,10 @@ export async function selectRepositories(
         ...orgs.map(org => ({ name: `Organization: ${org}`, value: `org:${org}` }))
       ];
 
-      const { source } = await inquirer.prompt<{ source: string }>([
-        {
-          type: 'select',
-          name: 'source',
-          message: 'Select repository source:',
-          choices: sourceChoices
-        }
-      ]);
+      const source = await select({
+        message: 'Select repository source:',
+        choices: sourceChoices
+      });
 
       let allRepos: GitHubRepo[] = [];
       if (source === 'personal') {
@@ -249,14 +237,10 @@ export async function selectRepositories(
       }
 
       // Prompt for pattern
-      const { pattern } = await inquirer.prompt<{ pattern: string }>([
-        {
-          type: 'input',
-          name: 'pattern',
-          message: 'Enter pattern (e.g., "ec-*", "*-backend", "microservice-*"):',
-          validate: (input: string) => input.trim() ? true : 'Pattern is required'
-        }
-      ]);
+      const pattern = await input({
+        message: 'Enter pattern (e.g., "ec-*", "*-backend", "microservice-*"):',
+        validate: (value: string) => value.trim() ? true : 'Pattern is required'
+      });
 
       selectedRepos = filterRepositoriesByPattern(allRepos, pattern.trim());
       selectionConfig.pattern = pattern.trim();
@@ -269,14 +253,10 @@ export async function selectRepositories(
     }
 
     case 'explicit': {
-      const { repoList } = await inquirer.prompt<{ repoList: string }>([
-        {
-          type: 'input',
-          name: 'repoList',
-          message: 'Enter repository names (comma-separated, e.g., "repo1, repo2, repo3"):',
-          validate: (input: string) => input.trim() ? true : 'At least one repository is required'
-        }
-      ]);
+      const repoList = await input({
+        message: 'Enter repository names (comma-separated, e.g., "repo1, repo2, repo3"):',
+        validate: (value: string) => value.trim() ? true : 'At least one repository is required'
+      });
 
       const repoNames = repoList.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -306,16 +286,12 @@ export async function selectRepositories(
   // Step 4: Show preview and confirm
   showRepositoryPreview(selectedRepos);
 
-  const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
-    {
-      type: 'confirm',
-      name: 'confirm',
-      message: `Connect these ${selectedRepos.length} repositories?`,
-      default: true
-    }
-  ]);
+  const confirmed = await confirm({
+    message: `Connect these ${selectedRepos.length} repositories?`,
+    default: true
+  });
 
-  if (!confirm) {
+  if (!confirmed) {
     console.log(chalk.gray('\n✓ Repository selection cancelled\n'));
     return null;
   }

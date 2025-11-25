@@ -9,7 +9,7 @@
  * - Validates project keys
  */
 
-import inquirer from 'inquirer';
+import { select, checkbox, input, Separator } from '@inquirer/prompts';
 import { JiraClient } from '../../../src/integrations/jira/jira-client.js';
 
 // ============================================================================
@@ -101,31 +101,27 @@ export async function selectJiraProjects(
   console.log(`   Total: ${allProjects.length} projects\n`);
 
   // Decide selection method
-  const { selectionMethod } = await inquirer.prompt([
-    {
-      type: 'select',
-      name: 'selectionMethod',
-      message: 'How would you like to select projects?',
-      choices: [
-        {
-          name: `📋 Interactive (browse and select from ${allProjects.length} projects)`,
-          value: 'interactive',
-        },
-        {
-          name: '✏️  Manual entry (type project keys)',
-          value: 'manual',
-        },
-        ...(allowSelectAll
-          ? [
-              {
-                name: `✨ Select all (${allProjects.length} projects)`,
-                value: 'all',
-              },
-            ]
-          : []),
-      ],
-    },
-  ]);
+  const selectionMethod = await select({
+    message: 'How would you like to select projects?',
+    choices: [
+      {
+        name: `📋 Interactive (browse and select from ${allProjects.length} projects)`,
+        value: 'interactive' as const,
+      },
+      {
+        name: '✏️  Manual entry (type project keys)',
+        value: 'manual' as const,
+      },
+      ...(allowSelectAll
+        ? [
+            {
+              name: `✨ Select all (${allProjects.length} projects)`,
+              value: 'all' as const,
+            },
+          ]
+        : []),
+    ],
+  });
 
   if (selectionMethod === 'all') {
     return {
@@ -160,45 +156,40 @@ async function interactiveProjectSelection(
 ): Promise<ProjectSelectionResult> {
   console.log('💡 Use <space> to select, <a> to toggle all, <i> to invert\n');
 
-  const choices = allProjects.map((p) => ({
-    name: formatProjectChoice(p),
-    value: p.key,
-    checked: preSelected.includes(p.key),
-  }));
-
-  // Add manual entry option at the end
-  choices.push(
-    new inquirer.Separator(),
+  const choices = [
+    ...allProjects.map((p) => ({
+      name: formatProjectChoice(p),
+      value: p.key,
+      checked: preSelected.includes(p.key),
+    })),
+    // Add separator and manual entry option at the end
+    new Separator(),
     {
       name: '✏️  Enter project keys manually instead',
       value: '__MANUAL__',
       checked: false,
-    } as any
-  );
-
-  const { selectedKeys } = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'selectedKeys',
-      message: `Select Jira projects (${minSelection}${maxSelection ? `-${maxSelection}` : '+'} required):`,
-      choices,
-      pageSize,
-      loop: false,
-      validate: (selected: string[]) => {
-        const actualSelected = selected.filter((k) => k !== '__MANUAL__');
-
-        if (actualSelected.length < minSelection) {
-          return `Please select at least ${minSelection} project(s)`;
-        }
-
-        if (maxSelection && actualSelected.length > maxSelection) {
-          return `Please select at most ${maxSelection} project(s)`;
-        }
-
-        return true;
-      },
     },
-  ]);
+  ];
+
+  const selectedKeys = await checkbox({
+    message: `Select Jira projects (${minSelection}${maxSelection ? `-${maxSelection}` : '+'} required):`,
+    choices,
+    pageSize,
+    loop: false,
+    validate: (selected: readonly string[]) => {
+      const actualSelected = selected.filter((k) => k !== '__MANUAL__');
+
+      if (actualSelected.length < minSelection) {
+        return `Please select at least ${minSelection} project(s)`;
+      }
+
+      if (maxSelection && actualSelected.length > maxSelection) {
+        return `Please select at most ${maxSelection} project(s)`;
+      }
+
+      return true;
+    },
+  });
 
   // Check if user chose manual entry
   if (selectedKeys.includes('__MANUAL__')) {
@@ -235,39 +226,35 @@ async function manualProjectEntry(
     console.log('');
   }
 
-  const { manualKeys } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'manualKeys',
-      message: 'Project keys:',
-      validate: (input: string) => {
-        if (!input.trim()) {
-          return 'Please enter at least one project key';
-        }
+  const manualKeys = await input({
+    message: 'Project keys:',
+    validate: (inputValue: string) => {
+      if (!inputValue.trim()) {
+        return 'Please enter at least one project key';
+      }
 
-        const keys = input
-          .split(',')
-          .map((k) => k.trim().toUpperCase())
-          .filter((k) => k.length > 0);
+      const keys = inputValue
+        .split(',')
+        .map((k) => k.trim().toUpperCase())
+        .filter((k) => k.length > 0);
 
-        if (keys.length < minSelection) {
-          return `Please enter at least ${minSelection} project key(s)`;
-        }
+      if (keys.length < minSelection) {
+        return `Please enter at least ${minSelection} project key(s)`;
+      }
 
-        if (maxSelection && keys.length > maxSelection) {
-          return `Please enter at most ${maxSelection} project key(s)`;
-        }
+      if (maxSelection && keys.length > maxSelection) {
+        return `Please enter at most ${maxSelection} project key(s)`;
+      }
 
-        // Validate format (uppercase letters/numbers only)
-        const invalidKeys = keys.filter((k) => !/^[A-Z0-9]+$/.test(k));
-        if (invalidKeys.length > 0) {
-          return `Invalid project key format: ${invalidKeys.join(', ')}. Use uppercase letters/numbers only.`;
-        }
+      // Validate format (uppercase letters/numbers only)
+      const invalidKeys = keys.filter((k) => !/^[A-Z0-9]+$/.test(k));
+      if (invalidKeys.length > 0) {
+        return `Invalid project key format: ${invalidKeys.join(', ')}. Use uppercase letters/numbers only.`;
+      }
 
-        return true;
-      },
+      return true;
     },
-  ]);
+  });
 
   const selectedKeys = manualKeys
     .split(',')

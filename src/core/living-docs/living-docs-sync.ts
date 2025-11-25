@@ -169,6 +169,12 @@ export class LivingDocsSync {
       }
       result.featureId = featureId;
 
+      // CRITICAL FIX (2025-11-24): Write feature_id back to metadata.json
+      // This ensures the generated feature_id persists and is reused on subsequent syncs
+      if (!options.dryRun) {
+        await this.updateMetadataFeatureId(incrementId, featureId);
+      }
+
       this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
 
       // Step 3: Parse increment spec
@@ -334,6 +340,51 @@ export class LivingDocsSync {
     const autoGenId = `FS-${String(num).padStart(3, '0')}`;
     this.logger.log(`   📝 Generated feature ID: ${autoGenId}`);
     return autoGenId;
+  }
+
+  /**
+   * Update metadata.json with feature_id
+   *
+   * CRITICAL FIX (2025-11-24): Write back generated feature_id to metadata.json
+   * This ensures:
+   * 1. feature_id persists across sessions
+   * 2. Subsequent syncs reuse the same feature_id
+   * 3. External tools (GitHub, JIRA, ADO) can find the feature
+   *
+   * @param incrementId - Increment ID
+   * @param featureId - Feature ID to write
+   */
+  private async updateMetadataFeatureId(incrementId: string, featureId: string): Promise<void> {
+    const metadataPath = path.join(
+      this.projectRoot,
+      '.specweave/increments',
+      incrementId,
+      'metadata.json'
+    );
+
+    try {
+      if (!await pathExists(metadataPath)) {
+        this.logger.warn(`   ⚠️  metadata.json not found for ${incrementId}, skipping feature_id update`);
+        return;
+      }
+
+      const metadata = await readJson(metadataPath);
+
+      // Only update if feature_id is null/undefined or different
+      if (metadata.feature_id !== featureId) {
+        metadata.feature_id = featureId;
+
+        // Atomic write: temp file → rename
+        const tempPath = `${metadataPath}.tmp`;
+        await fs.writeFile(tempPath, JSON.stringify(metadata, null, 2), 'utf-8');
+        await fs.rename(tempPath, metadataPath);
+
+        this.logger.log(`   ✅ Updated metadata.json with feature_id: ${featureId}`);
+      }
+    } catch (error) {
+      // Non-fatal - log warning but continue with sync
+      this.logger.warn(`   ⚠️  Failed to update metadata.json with feature_id: ${error}`);
+    }
   }
 
   /**

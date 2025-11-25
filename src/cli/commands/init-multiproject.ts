@@ -4,7 +4,7 @@
  * Initialize multi-project mode for SpecWeave
  */
 
-import inquirer from 'inquirer';
+import { confirm, input } from '@inquirer/prompts';
 import path from 'path';
 import { ProjectManager, ProjectContext } from '../../core/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
@@ -39,12 +39,10 @@ export async function initMultiProject(projectRoot: string): Promise<void> {
     console.log('');
 
     // 2. Prompt: Enable multi-project mode?
-    const { enableMulti } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'enableMulti',
+    const enableMulti = await confirm({
       message: 'Enable multi-project mode? (supports multiple teams/repos)',
       default: false
-    }]);
+    });
 
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.load();
@@ -82,12 +80,10 @@ export async function initMultiProject(projectRoot: string): Promise<void> {
     console.log('\n✅ Multi-project mode enabled!');
 
     // 4. Prompt: Create additional projects?
-    const { createMore } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'createMore',
+    const createMore = await confirm({
       message: `Create additional projects? (besides "${projectId}")`,
       default: false
-    }]);
+    });
 
     if (createMore) {
       await createAdditionalProjects(projectRoot);
@@ -121,60 +117,59 @@ async function createAdditionalProjects(projectRoot: string): Promise<void> {
     const existingProjects = projectManager.getAllProjects();
     const existingIds = existingProjects.map(p => p.projectId);
 
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'id',
-        message: 'Project ID (kebab-case):',
-        validate: (input: string) => {
-          if (!input) return 'Project ID is required';
-          if (!/^[a-z0-9-]+$/.test(input)) {
-            return 'Project ID must be kebab-case (lowercase, hyphens only)';
-          }
-          if (existingIds.includes(input)) {
-            return `Project ID "${input}" already exists. Choose a different ID.`;
-          }
-          return true;
+    const projectIdAnswer = await input({
+      message: 'Project ID (kebab-case):',
+      validate: (val: string) => {
+        if (!val) return 'Project ID is required';
+        if (!/^[a-z0-9-]+$/.test(val)) {
+          return 'Project ID must be kebab-case (lowercase, hyphens only)';
         }
-      },
-      {
-        type: 'input',
-        name: 'name',
-        message: 'Project name:',
-        validate: (input: string) => input ? true : 'Project name is required'
-      },
-      {
-        type: 'input',
-        name: 'description',
-        message: 'Description:',
-        default: ''
-      },
-      {
-        type: 'input',
-        name: 'techStack',
-        message: 'Tech stack (comma-separated):',
-        default: '',
-        filter: (input: string) => input.split(',').map(s => s.trim()).filter(Boolean)
-      },
-      {
-        type: 'input',
-        name: 'team',
-        message: 'Team name:',
-        default: 'Engineering Team'
-      },
-      {
-        type: 'input',
-        name: 'leadEmail',
-        message: 'Tech lead email (optional):',
-        default: ''
-      },
-      {
-        type: 'input',
-        name: 'pmEmail',
-        message: 'Product manager email (optional):',
-        default: ''
+        if (existingIds.includes(val)) {
+          return `Project ID "${val}" already exists. Choose a different ID.`;
+        }
+        return true;
       }
-    ]);
+    });
+
+    const projectNameAnswer = await input({
+      message: 'Project name:',
+      validate: (val: string) => val ? true : 'Project name is required'
+    });
+
+    const descriptionAnswer = await input({
+      message: 'Description:',
+      default: ''
+    });
+
+    const techStackAnswer = await input({
+      message: 'Tech stack (comma-separated):',
+      default: ''
+    });
+
+    const teamAnswer = await input({
+      message: 'Team name:',
+      default: 'Engineering Team'
+    });
+
+    const leadEmailAnswer = await input({
+      message: 'Tech lead email (optional):',
+      default: ''
+    });
+
+    const pmEmailAnswer = await input({
+      message: 'Product manager email (optional):',
+      default: ''
+    });
+
+    const answers = {
+      id: projectIdAnswer,
+      name: projectNameAnswer,
+      description: descriptionAnswer,
+      techStack: techStackAnswer.split(',').map(s => s.trim()).filter(Boolean),
+      team: teamAnswer,
+      leadEmail: leadEmailAnswer,
+      pmEmail: pmEmailAnswer
+    };
 
     // Create project context
     const project: ProjectContext = {
@@ -194,14 +189,10 @@ async function createAdditionalProjects(projectRoot: string): Promise<void> {
     }
 
     // Prompt to create another
-    const { another } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'another',
+    createAnother = await confirm({
       message: 'Create another project?',
       default: false
-    }]);
-
-    createAnother = another;
+    });
   }
 }
 

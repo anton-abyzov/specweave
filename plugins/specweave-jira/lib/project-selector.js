@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import { select, checkbox, input, Separator } from "@inquirer/prompts";
 async function fetchAllJiraProjects(client) {
   console.log("\u{1F50D} Fetching Jira projects...");
   try {
@@ -31,29 +31,25 @@ async function selectJiraProjects(client, options = {}) {
   console.log("\u{1F4CB} Available Jira Projects:\n");
   console.log(`   Total: ${allProjects.length} projects
 `);
-  const { selectionMethod } = await inquirer.prompt([
-    {
-      type: "select",
-      name: "selectionMethod",
-      message: "How would you like to select projects?",
-      choices: [
+  const selectionMethod = await select({
+    message: "How would you like to select projects?",
+    choices: [
+      {
+        name: `\u{1F4CB} Interactive (browse and select from ${allProjects.length} projects)`,
+        value: "interactive"
+      },
+      {
+        name: "\u270F\uFE0F  Manual entry (type project keys)",
+        value: "manual"
+      },
+      ...allowSelectAll ? [
         {
-          name: `\u{1F4CB} Interactive (browse and select from ${allProjects.length} projects)`,
-          value: "interactive"
-        },
-        {
-          name: "\u270F\uFE0F  Manual entry (type project keys)",
-          value: "manual"
-        },
-        ...allowSelectAll ? [
-          {
-            name: `\u2728 Select all (${allProjects.length} projects)`,
-            value: "all"
-          }
-        ] : []
-      ]
-    }
-  ]);
+          name: `\u2728 Select all (${allProjects.length} projects)`,
+          value: "all"
+        }
+      ] : []
+    ]
+  });
   if (selectionMethod === "all") {
     return {
       selectedKeys: allProjects.map((p) => p.key),
@@ -73,39 +69,36 @@ async function selectJiraProjects(client, options = {}) {
 }
 async function interactiveProjectSelection(allProjects, preSelected, minSelection, maxSelection, pageSize) {
   console.log("\u{1F4A1} Use <space> to select, <a> to toggle all, <i> to invert\n");
-  const choices = allProjects.map((p) => ({
-    name: formatProjectChoice(p),
-    value: p.key,
-    checked: preSelected.includes(p.key)
-  }));
-  choices.push(
-    new inquirer.Separator(),
+  const choices = [
+    ...allProjects.map((p) => ({
+      name: formatProjectChoice(p),
+      value: p.key,
+      checked: preSelected.includes(p.key)
+    })),
+    // Add separator and manual entry option at the end
+    new Separator(),
     {
       name: "\u270F\uFE0F  Enter project keys manually instead",
       value: "__MANUAL__",
       checked: false
     }
-  );
-  const { selectedKeys } = await inquirer.prompt([
-    {
-      type: "checkbox",
-      name: "selectedKeys",
-      message: `Select Jira projects (${minSelection}${maxSelection ? `-${maxSelection}` : "+"} required):`,
-      choices,
-      pageSize,
-      loop: false,
-      validate: (selected) => {
-        const actualSelected = selected.filter((k) => k !== "__MANUAL__");
-        if (actualSelected.length < minSelection) {
-          return `Please select at least ${minSelection} project(s)`;
-        }
-        if (maxSelection && actualSelected.length > maxSelection) {
-          return `Please select at most ${maxSelection} project(s)`;
-        }
-        return true;
+  ];
+  const selectedKeys = await checkbox({
+    message: `Select Jira projects (${minSelection}${maxSelection ? `-${maxSelection}` : "+"} required):`,
+    choices,
+    pageSize,
+    loop: false,
+    validate: (selected) => {
+      const actualSelected = selected.filter((k) => k !== "__MANUAL__");
+      if (actualSelected.length < minSelection) {
+        return `Please select at least ${minSelection} project(s)`;
       }
+      if (maxSelection && actualSelected.length > maxSelection) {
+        return `Please select at most ${maxSelection} project(s)`;
+      }
+      return true;
     }
-  ]);
+  });
   if (selectedKeys.includes("__MANUAL__")) {
     return await manualProjectEntry(allProjects, minSelection, maxSelection);
   }
@@ -127,30 +120,26 @@ async function manualProjectEntry(allProjects, minSelection, maxSelection) {
     );
     console.log("");
   }
-  const { manualKeys } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "manualKeys",
-      message: "Project keys:",
-      validate: (input) => {
-        if (!input.trim()) {
-          return "Please enter at least one project key";
-        }
-        const keys = input.split(",").map((k) => k.trim().toUpperCase()).filter((k) => k.length > 0);
-        if (keys.length < minSelection) {
-          return `Please enter at least ${minSelection} project key(s)`;
-        }
-        if (maxSelection && keys.length > maxSelection) {
-          return `Please enter at most ${maxSelection} project key(s)`;
-        }
-        const invalidKeys = keys.filter((k) => !/^[A-Z0-9]+$/.test(k));
-        if (invalidKeys.length > 0) {
-          return `Invalid project key format: ${invalidKeys.join(", ")}. Use uppercase letters/numbers only.`;
-        }
-        return true;
+  const manualKeys = await input({
+    message: "Project keys:",
+    validate: (inputValue) => {
+      if (!inputValue.trim()) {
+        return "Please enter at least one project key";
       }
+      const keys = inputValue.split(",").map((k) => k.trim().toUpperCase()).filter((k) => k.length > 0);
+      if (keys.length < minSelection) {
+        return `Please enter at least ${minSelection} project key(s)`;
+      }
+      if (maxSelection && keys.length > maxSelection) {
+        return `Please enter at most ${maxSelection} project key(s)`;
+      }
+      const invalidKeys = keys.filter((k) => !/^[A-Z0-9]+$/.test(k));
+      if (invalidKeys.length > 0) {
+        return `Invalid project key format: ${invalidKeys.join(", ")}. Use uppercase letters/numbers only.`;
+      }
+      return true;
     }
-  ]);
+  });
   const selectedKeys = manualKeys.split(",").map((k) => k.trim().toUpperCase()).filter((k) => k.length > 0);
   const knownKeys = allProjects.map((p) => p.key);
   const unknownKeys = selectedKeys.filter((k) => !knownKeys.includes(k));

@@ -48,8 +48,19 @@ export class StatusChangeSyncTrigger {
     oldStatus: IncrementStatus,
     newStatus: IncrementStatus
   ): Promise<void> {
-    // Check if this transition needs sync
-    if (!this.isSyncWorthy(oldStatus, newStatus)) {
+    // CRITICAL FIX (2025-11-24): Check if feature_id is null for ACTIVE increments
+    // This handles the case where increment was created directly with "active" status
+    // but living docs sync never ran (no FS-XXX folder created)
+    let forceSync = false;
+    if (newStatus === IncrementStatus.ACTIVE) {
+      forceSync = await this.hasMissingFeatureId(incrementId);
+      if (forceSync) {
+        this.logger.log(`📚 Increment ${incrementId} missing feature_id - forcing living docs sync...`);
+      }
+    }
+
+    // Check if this transition needs sync (or force sync for missing feature_id)
+    if (!forceSync && !this.isSyncWorthy(oldStatus, newStatus)) {
       return;
     }
 
@@ -67,6 +78,49 @@ export class StatusChangeSyncTrigger {
         this.logger.error(`❌ Auto-sync failed for ${incrementId}:`, error.message);
         this.logger.log('💡 Run /specweave:sync-progress to retry');
       });
+  }
+
+  /**
+   * Check if increment has missing feature_id (living docs not synced)
+   * AND spec.md exists (required for sync to work)
+   *
+   * CRITICAL FIX (2025-11-24): Also check spec.md exists
+   * In single-prompt scenarios, feature_id may be null because spec.md
+   * doesn't exist yet. We should only force sync if spec.md is ready.
+   *
+   * @param incrementId - Increment ID
+   * @returns true if feature_id is null/undefined AND spec.md exists
+   */
+  private static async hasMissingFeatureId(incrementId: string): Promise<boolean> {
+    try {
+      const { promises: fs, existsSync } = await import('fs');
+      const path = await import('path');
+
+      const incrementPath = path.join(
+        process.cwd(),
+        '.specweave/increments',
+        incrementId
+      );
+
+      // First check if spec.md exists - if not, sync would fail anyway
+      const specPath = path.join(incrementPath, 'spec.md');
+      if (!existsSync(specPath)) {
+        // spec.md doesn't exist yet - don't force sync
+        // Sync will trigger when spec.md is created
+        return false;
+      }
+
+      // Now check if feature_id is missing
+      const metadataPath = path.join(incrementPath, 'metadata.json');
+      const content = await fs.readFile(metadataPath, 'utf-8');
+      const metadata = JSON.parse(content);
+
+      // Check if feature_id is null, undefined, or empty string
+      return !metadata.feature_id;
+    } catch {
+      // File doesn't exist or can't be read - don't force sync
+      return false;
+    }
   }
 
   /**

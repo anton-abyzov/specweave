@@ -8,6 +8,7 @@
  */
 
 import chalk from 'chalk';
+import { checkbox } from '@inquirer/prompts';
 import type { AdoCredentials } from '../project-count-fetcher.js';
 
 export interface AdoAutoDiscoverOptions {
@@ -117,19 +118,15 @@ export async function autoDiscoverAdoProjects(
     const allProjects = result.projects.map(p => ({ name: p.name, value: p.name }));
 
     // Show checkbox (all pre-selected per US-002 CLI-first defaults)
-    const inquirer = (await import('inquirer')).default;
-    const selected = await inquirer.prompt([
-      {
-        type: 'checkbox',
-        name: 'projects',
-        message: 'Select projects to import:',
-        choices: allProjects,
-        default: allProjects.map(p => p.value), // All selected by default
-        pageSize: 20
-      }
-    ]);
-
-    projectNames = selected.projects;
+    projectNames = await checkbox({
+      message: 'Select projects to import:',
+      choices: allProjects.map(p => ({
+        name: p.name,
+        value: p.value,
+        checked: true  // All selected by default (CLI-first)
+      })),
+      pageSize: 20
+    });
 
   } else if (strategyResult.strategy === 'manual-entry') {
     // Manual entry: use provided keys

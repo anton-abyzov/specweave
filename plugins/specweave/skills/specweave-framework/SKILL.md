@@ -23,10 +23,12 @@ SpecWeave follows **spec-driven development** with **increment-based workflows**
 ### What is an Increment?
 
 An **increment** = a complete feature with:
-- `spec.md` - Product requirements (WHAT and WHY)
-- `plan.md` - Technical architecture (HOW to implement)
-- `tasks.md` - Task breakdown (WORK to do)
-- `tests.md` - Quality gates (TEST coverage)
+- `spec.md` - Product requirements (WHAT and WHY) — **required**
+- `plan.md` - Technical architecture (HOW to implement) — **optional**, for complex features only
+- `tasks.md` - Task breakdown (WORK to do) — **required**
+- `metadata.json` - State tracking — **required**
+
+> **When to skip plan.md**: Bug fixes, simple migrations, hotfixes, and straightforward tasks where spec.md already describes the approach.
 
 ### Increment Naming Convention (v0.6.0+)
 

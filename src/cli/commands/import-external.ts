@@ -4,7 +4,7 @@
  * Import external work items from GitHub, JIRA, or Azure DevOps
  */
 
-import inquirer from 'inquirer';
+import { confirm as confirmPrompt } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
 import { ImportCoordinator, type CoordinatorConfig } from '../../importers/import-coordinator.js';
@@ -264,16 +264,12 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
       }
       console.log(chalk.yellow('\n   This may take 5-10 minutes and use significant API quota.\n'));
 
-      const { confirm } = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'confirm',
-          message: 'Continue?',
-          default: true,
-        },
-      ]);
+      const shouldContinue = await confirmPrompt({
+        message: 'Continue?',
+        default: true,
+      });
 
-      if (!confirm) {
+      if (!shouldContinue) {
         console.log(chalk.red('\n❌ Import cancelled\n'));
         return;
       }

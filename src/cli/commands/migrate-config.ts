@@ -7,7 +7,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import { ConfigMigrator } from '../../core/config/config-migrator.js';
 import type { MigrationResult } from '../../core/config/config-migrator.js';
@@ -111,16 +111,12 @@ export async function migrateConfig(options: MigrateConfigOptions = {}): Promise
     console.log(chalk.gray('  3. Create/update .specweave/config.json (add config)'));
     console.log(chalk.gray('  4. Generate .env.example (team template)\n'));
 
-    const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
-      {
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Proceed with migration?',
-        default: false
-      }
-    ]);
+    const confirmResult = await confirm({
+      message: 'Proceed with migration?',
+      default: false
+    });
 
-    if (!confirm) {
+    if (!confirmResult) {
       console.log(chalk.yellow('\n⚠️  Migration cancelled\n'));
       return;
     }

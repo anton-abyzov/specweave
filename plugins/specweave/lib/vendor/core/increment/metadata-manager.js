@@ -160,6 +160,13 @@ export class MetadataManager {
         if (!fs.existsSync(incrementPath)) {
             throw new MetadataError(`Increment directory not found: ${incrementId}`, incrementId);
         }
+        // CRITICAL FIX (2025-11-24): Detect if this is a NEW active increment
+        // When creating a new increment directly with status ACTIVE (bypassing updateStatus),
+        // we need to trigger living docs sync to create FS-XXX folders
+        // This does NOT cause double-sync because updateStatus() only calls write()
+        // when the file ALREADY EXISTS (for updates, not creation)
+        const isNewFile = !fs.existsSync(metadataPath);
+        const isActiveStatus = metadata.status === IncrementStatus.ACTIVE;
         try {
             // Validate before writing
             this.validate(metadata);
@@ -171,6 +178,45 @@ export class MetadataManager {
         catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             throw new MetadataError(`Failed to write metadata for ${incrementId}: ${errorMessage}`, incrementId, error instanceof Error ? error : new Error(String(error)));
+        }
+        // NEW: Trigger living docs sync for NEW active increments
+        // This ensures FS-XXX folders are created when increment is created with ACTIVE status
+        // CRITICAL FIX (2025-11-24): Only trigger if spec.md EXISTS
+        // In single-prompt scenarios, metadata.json is created BEFORE spec.md
+        // Triggering sync before spec.md exists causes "Spec file not found" error
+        if (isNewFile && isActiveStatus) {
+            const specPath = path.join(incrementPath, 'spec.md');
+            const specExists = fs.existsSync(specPath);
+            if (!specExists) {
+                this.logger.log(`📚 New active increment detected, but spec.md not yet created`);
+                this.logger.log(`   Living docs sync will trigger when spec.md is ready`);
+                // Don't trigger sync yet - will happen via:
+                // 1. AutoTransitionManager.handleTasksCreated() → updateStatus() → StatusChangeSyncTrigger
+                // 2. Or manual /specweave:sync-specs command
+            }
+            else {
+                this.logger.log(`📚 New active increment detected - triggering living docs sync...`);
+                // Non-blocking async sync (same pattern as updateStatus)
+                (async () => {
+                    try {
+                        const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
+                        const sync = new LivingDocsSync(rootDir || process.cwd(), {
+                            logger: this.logger
+                        });
+                        const result = await sync.syncIncrement(incrementId);
+                        if (result.success) {
+                            this.logger.log(`✅ Living docs synced for ${incrementId} → ${result.featureId}`);
+                        }
+                        else {
+                            this.logger.warn(`⚠️  Living docs sync completed with errors for ${incrementId}`);
+                        }
+                    }
+                    catch (error) {
+                        this.logger.error(`❌ Living docs sync failed for ${incrementId}:`, error);
+                        this.logger.log(`💡 Run /specweave:sync-specs ${incrementId} to retry`);
+                    }
+                })();
+            }
         }
     }
     /**

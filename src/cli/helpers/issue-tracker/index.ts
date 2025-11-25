@@ -8,7 +8,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, confirm } from '@inquirer/prompts';
 import ora from 'ora';
 import fs from 'fs';
 import path from 'path';
@@ -121,13 +121,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     value: 'none'
   });
 
-  const { tracker } = await inquirer.prompt([{
-    type: 'select',
-    name: 'tracker',
+  const tracker = await select<IssueTracker>({
     message: 'Which issue tracker do you use?',
     choices,
     default: defaultTracker
-  }]);
+  });
 
   if (tracker === 'none') {
     console.log(chalk.gray('\n⏭️  Skipping issue tracker setup'));
@@ -141,26 +139,19 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   console.log(chalk.gray('Control what SpecWeave can modify in external tools (GitHub, JIRA, ADO)'));
   console.log('');
 
-  const syncPermissions = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'canUpsertInternalItems',
-      message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
-      default: false
-    },
-    {
-      type: 'confirm',
-      name: 'canUpdateExternalItems',
-      message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
-      default: false
-    },
-    {
-      type: 'confirm',
-      name: 'canUpdateStatus',
-      message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
-      default: false
-    }
-  ]);
+  const canUpsertInternalItems = await confirm({
+    message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
+    default: false
+  });
+  const canUpdateExternalItems = await confirm({
+    message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
+    default: false
+  });
+  const canUpdateStatus = await confirm({
+    message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
+    default: false
+  });
+  const syncPermissions = { canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus };
 
   // Additional Sync Settings - always enabled (configurable manually in .specweave/config.json)
   const syncSettings = {
@@ -174,12 +165,10 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   if (existing) {
     console.log(chalk.green(`\n✓ Found existing credentials (${existing.source})`));
 
-    const { useExisting } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'useExisting',
+    const useExisting = await confirm({
       message: `Use existing ${getTrackerDisplayName(tracker)} credentials?`,
       default: true
-    }]);
+    });
 
     if (useExisting) {
       // Validate existing credentials
@@ -265,12 +254,10 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       return false;
     }
 
-    const { retry } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'retry',
+    const retry = await confirm({
       message: `Try again? (${setupRetryCount + 1}/${MAX_SETUP_RETRIES} attempts)`,
       default: true
-    }]);
+    });
 
     if (retry) {
       // Recursive retry with incremented counter to prevent stack overflow

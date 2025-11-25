@@ -198,21 +198,37 @@ Machine learning and AI integration.
 
 SpecWeave-specific concepts and features.
 
+### Core Concepts
 - [Increments](/docs/glossary/terms/increments) - Focused units of work (spec.md, plan.md, tasks.md)
 - [Living Docs](/docs/glossary/terms/living-docs) - Auto-synced documentation
 - [Specs](/docs/glossary/terms/specs) - Permanent knowledge base specifications
+- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single authoritative data source
+- [WIP Limits](/docs/glossary/terms/wip-limits) - Work in progress limits (1 active default)
+
+### User Stories & Requirements
+- [User Stories](/docs/glossary/terms/user-stories) - User story format (As a...I want...So that)
+- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - AC format with AC-IDs
+- [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers (AC-US1-01)
+
+### Sync & Integration
+- [Three-Permission Architecture](/docs/glossary/terms/three-permission-architecture) - Granular sync control (v0.24.0+)
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
+- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization (*deprecated, see Three-Permission*)
+
+### Automation
+- [Hooks](/docs/glossary/terms/hooks) - Automated scripts at lifecycle events
+- [Role Orchestrator](/docs/glossary/terms/role-orchestrator) - Multi-agent coordination (PM → Architect → Tech Lead)
+- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) - Auto-activating knowledge vs explicit workers
+
+### Initialization
+- [Strategic Init](/docs/glossary/terms/strategic-init) - 6-phase AI-powered project initialization
+
+### Intelligent Features
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution (v0.18.0+)
 - [Content Classification](/docs/glossary/terms/content-classification) - 9-category automatic classification
 - [Project Detection](/docs/glossary/terms/project-detection) - Auto-detect backend/frontend/mobile
 - [Cross-Linking](/docs/glossary/terms/cross-linking) - Automatic bidirectional document linking
 - [Docusaurus Frontmatter](/docs/glossary/terms/docusaurus-frontmatter) - Auto-generated YAML metadata
-- [Source of Truth](/docs/glossary/terms/source-of-truth) - Single authoritative data source
-- [User Stories](/docs/glossary/terms/user-stories) - User story format (As a...I want...So that)
-- [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - AC format with AC-IDs
-- [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers (AC-US1-01)
-- [WIP Limits](/docs/glossary/terms/wip-limits) - Work in progress limits (1 active default)
 
 **Learn More →**
 

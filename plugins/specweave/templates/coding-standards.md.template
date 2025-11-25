@@ -192,6 +192,42 @@
 
 ---
 
+### File Size Limits
+
+**Critical for AI-assisted development** - Large files cause context overflow crashes.
+
+| Lines | Status | Action Required |
+|-------|--------|-----------------|
+| 0-500 | ✅ OK | Normal development |
+| 500-1000 | ⚠️ Watch | Review before adding major features |
+| 1000-1500 | 🔶 Large | Extract modules before adding 100+ lines |
+| 1500-2000 | 🔴 Critical | **MUST SPLIT** before any changes |
+| 2000+ | ⛔ Forbidden | Immediate refactor required |
+
+**Current Large Files** ({{large_file_count}} files >1000 lines):
+{{large_files_list}}
+
+**How to Split Large Files**:
+```
+src/feature/module.ts              ← Orchestrator only (300-500 lines)
+src/feature/module/
+├── index.ts                       ← Barrel exports (re-export public API)
+├── types.ts                       ← Interfaces and types
+├── domain-logic-a.ts              ← Single responsibility
+├── domain-logic-b.ts              ← Single responsibility
+└── internal-utils.ts              ← Private helpers
+```
+
+**Split Triggers**:
+- File has 3+ distinct responsibilities
+- Multiple unrelated import groups
+- Testing requires mocking large portions
+- Functions within file don't share state
+
+**Recommendation**: {{file_size_recommendation}}
+
+---
+
 ### Function Style
 
 **Detected Pattern**:

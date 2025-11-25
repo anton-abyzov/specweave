@@ -7,7 +7,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { confirm, input, password } from '@inquirer/prompts';
 import ora from 'ora';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import {
@@ -98,12 +98,10 @@ export async function promptAzureDevOpsCredentials(
       }
       console.log('');
 
-      const { reuseConfig } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'reuseConfig',
+      const reuseConfig = await confirm({
         message: 'Use cached configuration?',
         default: true
-      }]);
+      });
 
       if (!reuseConfig) {
         cachedConfig = null; // User wants to enter new config
@@ -118,12 +116,10 @@ export async function promptAzureDevOpsCredentials(
   console.log(chalk.gray('   3. Scopes: Work Items (Read, Write, Manage), Code (Read), Project (Read)'));
   console.log(chalk.gray('   4. Copy the token\n'));
 
-  const { continueSetup } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'continueSetup',
+  const continueSetup = await confirm({
     message: 'Continue with Azure DevOps setup?',
     default: true
-  }]);
+  });
 
   if (!continueSetup) {
     return null;
@@ -139,62 +135,50 @@ export async function promptAzureDevOpsCredentials(
     teams = cachedConfig.teams || [];
   } else {
     // Prompt for new configuration
-    const questions: any[] = [
-      {
-        type: 'input',
-        name: 'org',
-        message: 'Azure DevOps organization name:',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'Organization cannot be empty';
-          }
-          return true;
+    org = await input({
+      message: 'Azure DevOps organization name:',
+      validate: (value: string) => {
+        if (!value || value.trim() === '') {
+          return 'Organization cannot be empty';
         }
-      },
-      {
-        type: 'input',
-        name: 'project',
-        message: 'Project name:',
-        validate: (input: string) => {
-          if (!input || input.trim() === '') {
-            return 'Project cannot be empty';
-          }
-          return true;
-        }
-      },
-      {
-        type: 'input',
-        name: 'teams',
-        message: 'Team name(s) (optional, comma-separated):',
-        default: ''
+        return true;
       }
-    ];
+    });
 
-    const answers = await inquirer.prompt(questions);
-    org = answers.org;
-    project = answers.project;
-    teams = answers.teams
-      ? answers.teams.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
+    project = await input({
+      message: 'Project name:',
+      validate: (value: string) => {
+        if (!value || value.trim() === '') {
+          return 'Project cannot be empty';
+        }
+        return true;
+      }
+    });
+
+    const teamsInput = await input({
+      message: 'Team name(s) (optional, comma-separated):',
+      default: ''
+    });
+    teams = teamsInput
+      ? teamsInput.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
       : [];
   }
 
   // Always prompt for PAT (never cache secrets)
-  const { pat } = await inquirer.prompt([{
-    type: 'password',
-    name: 'pat',
+  const pat = await password({
     message: 'Paste your Personal Access Token:',
     mask: '*',
-    validate: (input: string) => {
-      if (!input || input.length === 0) {
+    validate: (value: string) => {
+      if (!value || value.length === 0) {
         return 'Token cannot be empty';
       }
       // ADO PATs are typically 52 characters, but fine-grained tokens can be >= 40
-      if (input.length < 40) {
+      if (value.length < 40) {
         return 'Azure DevOps tokens should be at least 40 characters';
       }
       return true;
     }
-  }]);
+  });
 
   // Cache the configuration (NOT the PAT) for future use
   if (projectRoot) {

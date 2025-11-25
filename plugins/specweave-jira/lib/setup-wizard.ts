@@ -7,7 +7,7 @@
  * 3. Never ask twice for same credentials
  */
 
-import inquirer from 'inquirer';
+import { confirm, select, input, password } from '@inquirer/prompts';
 import { credentialsManager, JiraCredentials } from '../../../src/core/credentials-manager.js';
 
 // ============================================================================
@@ -64,14 +64,10 @@ export async function setupJiraCredentials(): Promise<JiraCredentials> {
 
   if (detected.found) {
     // Ask user if they want to use existing or re-enter
-    const { useExisting } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'useExisting',
-        message: `Found credentials in ${detected.source}. Use these credentials?`,
-        default: true,
-      },
-    ]);
+    const useExisting = await confirm({
+      message: `Found credentials in ${detected.source}. Use these credentials?`,
+      default: true,
+    });
 
     if (useExisting) {
       return detected.credentials!;
@@ -84,59 +80,53 @@ export async function setupJiraCredentials(): Promise<JiraCredentials> {
   }
 
   // Interactive credential entry
-  const answers = await inquirer.prompt([
-    {
-      type: 'select',
-      name: 'setupType',
-      message: 'How would you like to connect to Jira?',
-      choices: [
-        {
-          name: 'Cloud (*.atlassian.net)',
-          value: 'cloud',
-        },
-        {
-          name: 'Server/Data Center (self-hosted)',
-          value: 'server',
-        },
-      ],
-    },
-    {
-      type: 'input',
-      name: 'domain',
-      message: (answers: any) =>
-        answers.setupType === 'cloud'
-          ? 'Jira domain (e.g., mycompany.atlassian.net):'
-          : 'Jira server URL (e.g., jira.mycompany.com):',
-      validate: (value: string) => {
-        if (!value) return 'Domain is required';
-        if (answers.setupType === 'cloud' && !value.includes('.atlassian.net')) {
-          return 'Cloud domain must end with .atlassian.net';
-        }
-        return true;
+  const setupType = await select({
+    message: 'How would you like to connect to Jira?',
+    choices: [
+      {
+        name: 'Cloud (*.atlassian.net)',
+        value: 'cloud',
       },
-    },
-    {
-      type: 'input',
-      name: 'email',
-      message: 'Email address:',
-      validate: (value: string) => {
-        if (!value) return 'Email is required';
-        if (!value.includes('@')) return 'Must be a valid email';
-        return true;
+      {
+        name: 'Server/Data Center (self-hosted)',
+        value: 'server',
       },
+    ],
+  });
+
+  const domain = await input({
+    message: setupType === 'cloud'
+      ? 'Jira domain (e.g., mycompany.atlassian.net):'
+      : 'Jira server URL (e.g., jira.mycompany.com):',
+    validate: (value: string) => {
+      if (!value) return 'Domain is required';
+      if (setupType === 'cloud' && !value.includes('.atlassian.net')) {
+        return 'Cloud domain must end with .atlassian.net';
+      }
+      return true;
     },
-    {
-      type: 'password',
-      name: 'apiToken',
-      message: 'API token:',
-      mask: '*',
-      validate: (value: string) => {
-        if (!value) return 'API token is required';
-        if (value.length < 10) return 'API token seems too short';
-        return true;
-      },
+  });
+
+  const email = await input({
+    message: 'Email address:',
+    validate: (value: string) => {
+      if (!value) return 'Email is required';
+      if (!value.includes('@')) return 'Must be a valid email';
+      return true;
     },
-  ]);
+  });
+
+  const apiToken = await password({
+    message: 'API token:',
+    mask: '*',
+    validate: (value: string) => {
+      if (!value) return 'API token is required';
+      if (value.length < 10) return 'API token seems too short';
+      return true;
+    },
+  });
+
+  const answers = { setupType, domain, email, apiToken };
 
   const credentials: JiraCredentials = {
     domain: answers.domain,
@@ -152,14 +142,10 @@ export async function setupJiraCredentials(): Promise<JiraCredentials> {
     console.log('❌ Failed to connect to Jira');
     console.log('💡 Please check your credentials and try again\n');
 
-    const { retry } = await inquirer.prompt([
-      {
-        type: 'confirm',
-        name: 'retry',
-        message: 'Would you like to try again?',
-        default: true,
-      },
-    ]);
+    const retry = await confirm({
+      message: 'Would you like to try again?',
+      default: true,
+    });
 
     if (retry) {
       return setupJiraCredentials();
@@ -219,14 +205,10 @@ async function testJiraConnection(credentials: JiraCredentials): Promise<boolean
 async function saveCredentialsToEnv(credentials: JiraCredentials): Promise<void> {
   console.log('💡 Save credentials to .env for future use\n');
 
-  const { saveToEnv } = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'saveToEnv',
-      message: 'Save credentials to .env file?',
-      default: true,
-    },
-  ]);
+  const saveToEnv = await confirm({
+    message: 'Save credentials to .env file?',
+    default: true,
+  });
 
   if (saveToEnv) {
     credentialsManager.saveToEnvFile({ jira: credentials });

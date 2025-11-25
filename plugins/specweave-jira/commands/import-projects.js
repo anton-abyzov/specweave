@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import inquirer from "inquirer";
+import { confirm } from "@inquirer/prompts";
 import { existsSync } from "fs";
 import path from "path";
 import { JiraClient } from "../../../src/integrations/jira/jira-client.js";
@@ -98,12 +98,10 @@ async function importProjects(options = {}) {
 `));
     return;
   }
-  const { confirmed } = await inquirer.prompt([{
-    type: "confirm",
-    name: "confirmed",
+  const confirmed = await confirm({
     message: `Import ${newProjects.length} new project(s)?`,
     default: true
-  }]);
+  });
   if (!confirmed) {
     console.log(chalk.yellow("\n\u23ED\uFE0F  Import canceled\n"));
     return;

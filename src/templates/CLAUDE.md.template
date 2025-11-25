@@ -30,6 +30,14 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 **Format**: `####-descriptive-name` (e.g., `0001-user-auth`)
 **Check before creating**: `ls -1 .specweave/increments/ | grep -E "^[0-9]{4}-" | sort | tail -5`
 
+### 4. Emergency Minimal Mode
+
+**Activates ONLY on**: "emergency mode", "minimal mode ON", "crashed N times"
+
+**Rules:** `READ: limit:50 | EDIT: 1/response | AGENTS: none | FLOW: "Done. Next?"`
+
+**Phrase:** `EMERGENCY MODE. 1 edit. 50 lines max. No agents.`
+
 ---
 
 ## Core Workflow
@@ -156,6 +164,12 @@ After **EVERY task completion**, hooks automatically:
 - E2E tests: When UI exists
 
 **Test Files**: `.test.ts` (Vitest), NOT `.spec.ts`
+
+---
+
+## File Size
+
+**Max 1500 lines/file**. Over 1000 → extract before adding code.
 
 ---
 

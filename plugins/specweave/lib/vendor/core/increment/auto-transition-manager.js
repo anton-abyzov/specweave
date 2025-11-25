@@ -55,6 +55,11 @@ export class AutoTransitionManager {
     /**
      * Handle tasks.md creation event
      * PLANNING/BACKLOG → ACTIVE
+     *
+     * CRITICAL FIX (2025-11-24): Also trigger living docs sync if feature_id is null
+     * In single-prompt scenarios, increment may be created with "active" status
+     * directly, bypassing the normal transition flow. When tasks.md is created,
+     * we know spec.md exists and can safely sync living docs.
      */
     async handleTasksCreated(incrementId) {
         try {
@@ -64,12 +69,18 @@ export class AutoTransitionManager {
                 const from = metadata.status;
                 validateTransition(from, IncrementStatus.ACTIVE);
                 MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
+                // Note: updateStatus() triggers StatusChangeSyncTrigger which handles living docs sync
                 return {
                     transitioned: true,
                     from,
                     to: IncrementStatus.ACTIVE,
                     reason: 'tasks.md created - execution phase started'
                 };
+            }
+            // CRITICAL FIX: Even if already ACTIVE, check if living docs need sync
+            // This handles single-prompt scenarios where increment was created with "active" status
+            if (metadata.status === IncrementStatus.ACTIVE) {
+                await this.triggerLivingDocsSyncIfNeeded(incrementId);
             }
             return {
                 transitioned: false,
@@ -81,6 +92,40 @@ export class AutoTransitionManager {
                 transitioned: false,
                 reason: `Error: ${error instanceof Error ? error.message : String(error)}`
             };
+        }
+    }
+    /**
+     * Trigger living docs sync if feature_id is missing
+     *
+     * Called when tasks.md is created but increment is already ACTIVE.
+     * At this point spec.md exists, so sync will succeed.
+     */
+    async triggerLivingDocsSyncIfNeeded(incrementId) {
+        try {
+            const metadataPath = path.join(this.projectRoot, '.specweave/increments', incrementId, 'metadata.json');
+            if (!fs.existsSync(metadataPath)) {
+                return;
+            }
+            const content = fs.readFileSync(metadataPath, 'utf-8');
+            const metadata = JSON.parse(content);
+            // Only sync if feature_id is missing
+            if (!metadata.feature_id) {
+                console.log(`📚 Increment ${incrementId} missing feature_id - triggering living docs sync...`);
+                // Dynamic import to avoid circular dependency
+                const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
+                const sync = new LivingDocsSync(this.projectRoot);
+                const result = await sync.syncIncrement(incrementId);
+                if (result.success) {
+                    console.log(`✅ Living docs synced for ${incrementId} → ${result.featureId}`);
+                }
+                else {
+                    console.warn(`⚠️  Living docs sync completed with errors for ${incrementId}`);
+                }
+            }
+        }
+        catch (error) {
+            // Non-fatal - log warning but don't fail the transition
+            console.warn(`⚠️  Failed to check/trigger living docs sync: ${error}`);
         }
     }
     /**
