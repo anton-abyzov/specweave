@@ -205,6 +205,11 @@ function FeaturesSection(): ReactNode {
             title="Plugin Architecture (70%+ Token Reduction)"
             description="Modular plugins load only what you need. Core + GitHub + Frontend = 16K tokens (vs 50K monolithic). Built on Claude Code's native plugin system."
           />
+          <FeatureHighlight
+            icon="🔗"
+            title="External Tool Sync (GitHub/JIRA/ADO)"
+            description="Bidirectional sync with GitHub Issues, JIRA, and Azure DevOps. Keep your existing workflow—no tool lock-in. Progress auto-syncs between SpecWeave tasks and issue trackers."
+          />
         </div>
       </div>
     </section>

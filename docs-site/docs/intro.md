@@ -38,13 +38,21 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
+```mermaid
+flowchart LR
+    A["Your Idea"] --> B["Spec ✓"]
+    B --> C["Plan ✓"]
+    C --> D["Tasks ✓"]
+    D --> E["Code"]
+    E --> F["Living Docs"]
+
+    style B fill:#d4edda,stroke:#28a745
+    style C fill:#d4edda,stroke:#28a745
+    style D fill:#d4edda,stroke:#28a745
+    style F fill:#cce5ff,stroke:#0d6efd
 ```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│   Your   │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
-│   Idea   │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
-│          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
-└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
-```
+
+**Permanent** = survives chat sessions | **Auto-sync** = updates automatically after each task
 
 ---
 

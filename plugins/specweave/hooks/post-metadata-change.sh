@@ -62,6 +62,24 @@ fi
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
 # ============================================================================
+# CREATE RECURSION GUARD (v0.28.2 - CRITICAL FIX)
+# ============================================================================
+# PROBLEM FIXED: Guard was only created in post-increment-completion.sh, but
+# post-increment-status-change.sh had NO guard protection.
+#
+# SOLUTION: Create guard here in the dispatcher so ALL dispatches are protected.
+# The sub-hooks (post-increment-completion.sh, post-increment-status-change.sh)
+# will see this guard and exit early if they're called recursively.
+#
+# This prevents infinite loops if any sync operation modifies metadata.json.
+
+mkdir -p "$PROJECT_ROOT/.specweave/state" 2>/dev/null || true
+touch "$RECURSION_GUARD_FILE"
+
+# Ensure guard file is ALWAYS removed when script exits (even on error)
+trap 'rm -f "$RECURSION_GUARD_FILE" 2>/dev/null || true' EXIT SIGINT SIGTERM
+
+# ============================================================================
 # READ STDIN (v0.26.1 - CRITICAL FIX)
 # ============================================================================
 # PostToolUse hooks receive JSON data from Claude Code via STDIN, NOT env vars!

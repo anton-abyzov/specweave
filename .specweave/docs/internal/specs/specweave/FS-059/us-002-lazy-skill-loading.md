@@ -2,9 +2,15 @@
 id: US-002
 feature: FS-059
 title: "Lazy Skill Loading"
-status: not_started
+status: completed
 priority: P0
 created: 2025-11-24
+completed: 2025-11-24
+external:
+  github:
+    issue: 746
+    url: https://github.com/anton-abyzov/specweave/issues/746
+    state: closed
 ---
 
 # US-002: Lazy Skill Loading
@@ -19,10 +25,10 @@ created: 2025-11-24
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Skills index loaded at startup (not full content)
-- [ ] **AC-US2-02**: Full SKILL.md loaded only on keyword match
-- [ ] **AC-US2-03**: Skill activation triggers documented in index
-- [ ] **AC-US2-04**: 80%+ reduction in initial skill context
+- [x] **AC-US2-01**: Skills index loaded at startup (not full content)
+- [x] **AC-US2-02**: Full SKILL.md loaded only on keyword match
+- [x] **AC-US2-03**: Skill activation triggers documented in index
+- [x] **AC-US2-04**: 80%+ reduction in initial skill context
 
 ---
 
@@ -35,6 +41,6 @@ created: 2025-11-24
 
 ## Tasks
 
-- [ ] **T-008**: Add trigger keywords to SKILLS-INDEX.md
-- [ ] **T-009**: Document lazy loading pattern
-- [ ] **T-012**: End-to-end crash prevention test
+- [x] **T-008**: Add trigger keywords to SKILLS-INDEX.md
+- [x] **T-009**: Document lazy loading pattern
+- [x] **T-012**: End-to-end crash prevention test

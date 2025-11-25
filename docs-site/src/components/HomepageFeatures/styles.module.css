@@ -5,10 +5,10 @@
   width: 100%;
 }
 
-/* Organic, varied image styles - different sizes and shapes */
+/* Uniform 16:9 image styles */
 .featureSvg {
   width: 100%;
-  height: auto;
+  aspect-ratio: 16 / 9;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.15);
   transition: all 0.3s ease;

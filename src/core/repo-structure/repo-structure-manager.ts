@@ -941,43 +941,28 @@ export class RepoStructureManager {
       const projectName = path.basename(this.projectPath);
       const suggestedName = isDiscovered ? discoveredRepo.name : suggestRepoName(projectName, i, repoCount);
 
-      // If discovered, show preview and skip prompts (or allow confirmation)
+      // If discovered, auto-use without confirmation (repos exist on GitHub)
       if (isDiscovered) {
-        console.log(chalk.green(`   ✓ Discovered: ${chalk.bold(discoveredRepo.name)}`));
-        console.log(chalk.gray(`     Description: ${discoveredRepo.description || '(none)'}`));
-        console.log(chalk.gray(`     Visibility: ${discoveredRepo.private ? 'Private' : 'Public'}`));
+        const smartId = generateRepoIdSmart(discoveredRepo.name, configuredRepoNames);
+        const { id: suggestedId } = ensureUniqueId(smartId, usedIds);
 
-        const confirmDiscovered = await confirm({
-          message: 'Use this repository configuration?',
-          default: true
+        console.log(chalk.green(`   ✓ Using: ${chalk.bold(discoveredRepo.name)} ${chalk.gray(`(id: ${suggestedId})`)}`));
+
+        usedIds.add(suggestedId);
+        configuredRepoNames.push(discoveredRepo.name);
+
+        config.repositories.push({
+          id: suggestedId,
+          name: discoveredRepo.name,
+          owner: discoveredRepo.owner,
+          description: discoveredRepo.description || `${discoveredRepo.name} service`,
+          path: discoveredRepo.name, // Use full repo name as folder (not short ID)
+          visibility: discoveredRepo.private ? 'private' : 'public',
+          createOnGitHub: false, // Already exists!
+          isNested: useParent
         });
 
-        if (!confirmDiscovered) {
-          // Allow manual override
-          console.log(chalk.yellow(`   → Switching to manual entry for this repository\n`));
-        } else {
-          // Use discovered repo configuration directly
-          const smartId = generateRepoIdSmart(discoveredRepo.name, configuredRepoNames);
-          const { id: suggestedId } = ensureUniqueId(smartId, usedIds);
-
-          console.log(chalk.green(`   ✓ Repository ID: ${chalk.bold(suggestedId)} ${chalk.gray('(auto-generated)')}`));
-
-          usedIds.add(suggestedId);
-          configuredRepoNames.push(discoveredRepo.name);
-
-          config.repositories.push({
-            id: suggestedId,
-            name: discoveredRepo.name,
-            owner: discoveredRepo.owner,
-            description: discoveredRepo.description || `${discoveredRepo.name} service`,
-            path: useParent ? suggestedId : suggestedId,
-            visibility: discoveredRepo.private ? 'private' : 'public',
-            createOnGitHub: false, // Already exists!
-            isNested: useParent
-          });
-
-          continue; // Skip manual prompts
-        }
+        continue; // Skip manual prompts
       }
 
       // Manual entry (original behavior)
@@ -1083,7 +1068,7 @@ export class RepoStructureManager {
         name: repoAnswers.name,
         owner: config.parentRepo?.owner || '',
         description: repoAnswers.description,
-        path: useParent ? id : id, // Root-level cloning (not services/)
+        path: repoAnswers.name, // Use full repo name as folder (not short ID)
         visibility: visibility,
         createOnGitHub: repoAnswers.createOnGitHub,
         isNested: useParent
@@ -1668,7 +1653,7 @@ export class RepoStructureManager {
           mkdirSync(projectSpecPath, { recursive: true });
         }
 
-        console.log(chalk.gray(`   ✓ Created project structure: ${repo.id}`));
+        console.log(chalk.gray(`   ✓ Created project structure: ${repo.path}`));
       }
     }
   }

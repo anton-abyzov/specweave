@@ -264,24 +264,53 @@ Prevent context-switching:
 - **Large teams**: 3-5 in progress
 - **Force override**: Available but discouraged
 
-## 🔗 External Integrations
+## 🔗 External Tool Sync (GitHub/JIRA/ADO)
+
+**No Tool Lock-in**: SpecWeave integrates with your existing project management tools. Keep your workflow—just add specifications.
+
+### Why This Matters
+
+| Problem | Without SpecWeave | With SpecWeave |
+|---------|-------------------|----------------|
+| **Team uses JIRA** | Abandon JIRA or maintain two systems | Bidirectional sync, single source of truth |
+| **GitHub Issues workflow** | Manual updates, drift | Auto-sync progress to issues |
+| **Azure DevOps enterprise** | Complex migration | Native integration, no disruption |
+| **Multiple tools** | Constant context switching | SpecWeave syncs to all |
+
+### GitHub Issues Sync
+```bash
+/specweave-github:sync
+```
+- **Milestones** ↔ Release Plans
+- **Issues** ↔ User Stories/Tasks with checkable subtasks
+- **Progress** auto-updates as tasks complete
+- **Labels** auto-generated from increment metadata
 
 ### JIRA Sync
-- Bidirectional conversion
-- Epics ↔ Increments
-- Stories ↔ PRDs/RFCs
-- Tasks ↔ Tasks
+```bash
+/specweave-jira:sync
+```
+- **Bidirectional conversion** - changes sync both ways
+- **Epics** ↔ Features/Increments
+- **Stories** ↔ User Stories (PRDs/RFCs)
+- **Tasks** ↔ Tasks with AC-ID mapping
 
 ### Azure DevOps Sync
-- 4-level hierarchy support
-- Epics → Features → User Stories → Tasks
-- Area Paths and Iterations
-- Work item synchronization
+```bash
+/specweave-ado:sync
+```
+- **4-level hierarchy** support (Epics → Features → User Stories → Tasks)
+- **Area Paths** and **Iterations** mapping
+- **Work item synchronization** with status updates
+- **Enterprise-ready** with PAT authentication
 
-### GitHub Sync
-- Milestones ↔ Release Plans
-- Issues ↔ RFCs/Tasks
-- Checkable subtasks
+### Key Benefits
+
+1. **Keep Your Workflow** - Teams continue using familiar tools
+2. **Single Source of Truth** - Specs drive everything, tools reflect state
+3. **Auto-Sync Progress** - Complete a task → issue updates automatically
+4. **Gradual Adoption** - Start with one project, expand when ready
+5. **Audit Trail** - All syncs logged in increment metadata
 
 ## 🏢 [Brownfield](/docs/glossary/terms/brownfield) Excellence (The Hardest Problem Solved)
 

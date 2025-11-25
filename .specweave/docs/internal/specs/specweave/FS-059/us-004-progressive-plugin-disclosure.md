@@ -2,9 +2,15 @@
 id: US-004
 feature: FS-059
 title: "Progressive Plugin Disclosure"
-status: not_started
+status: completed
 priority: P0
 created: 2025-11-24
+completed: 2025-11-24
+external:
+  github:
+    issue: 748
+    url: https://github.com/anton-abyzov/specweave/issues/748
+    state: closed
 ---
 
 # US-004: Progressive Plugin Disclosure
@@ -19,10 +25,10 @@ created: 2025-11-24
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: Plugin manifest (name, description, keywords) loaded
-- [ ] **AC-US4-02**: Full plugin content loaded on first use
-- [ ] **AC-US4-03**: Unused plugins never fully loaded
-- [ ] **AC-US4-04**: 80%+ reduction in plugin context at startup
+- [x] **AC-US4-01**: Plugin manifest (name, description, keywords) loaded
+- [x] **AC-US4-02**: Full plugin content loaded on first use
+- [x] **AC-US4-03**: Unused plugins never fully loaded
+- [x] **AC-US4-04**: 80%+ reduction in plugin context at startup
 
 ---
 
@@ -35,6 +41,6 @@ created: 2025-11-24
 
 ## Tasks
 
-- [ ] **T-010**: Create minimal plugin manifest format
-- [ ] **T-011**: Document progressive loading for plugins
-- [ ] **T-012**: End-to-end crash prevention test
+- [x] **T-010**: Create minimal plugin manifest format
+- [x] **T-011**: Document progressive loading for plugins
+- [x] **T-012**: End-to-end crash prevention test

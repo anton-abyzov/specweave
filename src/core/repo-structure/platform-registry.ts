@@ -87,12 +87,13 @@ export class GitPlatformRegistry {
       }
     });
 
-    // GitLab (fully supported)
+    // GitLab (repo operations only - no issue sync plugin yet)
     this.registerPlatform({
       type: 'gitlab',
       name: 'GitLab',
       description: 'GitLab.com - DevOps platform',
-      supported: true,
+      supported: false,
+      status: 'repo-only, issue sync coming soon',
       config: {
         type: 'gitlab',
         name: 'GitLab',
