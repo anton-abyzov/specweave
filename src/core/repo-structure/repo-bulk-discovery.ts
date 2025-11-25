@@ -179,6 +179,11 @@ function showRepositoryPreview(
   console.log(chalk.green(`\n✅ Ready to configure! Next: Select which one is the parent.\n`));
 }
 
+export interface DiscoveryOptions {
+  /** Skip validation against expectedCount (for discovery-first flows) */
+  skipValidation?: boolean;
+}
+
 /**
  * Main bulk discovery flow
  */
@@ -186,7 +191,8 @@ export async function discoverRepositories(
   octokit: Octokit,
   owner: string,
   isOrg: boolean,
-  expectedCount: number
+  expectedCount: number,
+  options?: DiscoveryOptions
 ): Promise<BulkDiscoveryResult | null> {
   console.log(chalk.cyan('\n🚀 Repository Configuration Optimization\n'));
   console.log(chalk.gray('You can bulk-discover repositories instead of entering them one by one.\n'));
@@ -289,8 +295,10 @@ export async function discoverRepositories(
     return null;
   }
 
-  if (filteredRepos.length !== expectedCount) {
-    console.log(chalk.yellow(`⚠️  Found ${filteredRepos.length} repositories, but you specified ${expectedCount}`));
+  // Only validate count when explicitly requested (count-first flows)
+  // Skip validation for discovery-first flows where user hasn't specified a count
+  if (!options?.skipValidation && expectedCount > 0 && filteredRepos.length !== expectedCount) {
+    console.log(chalk.yellow(`⚠️  Found ${filteredRepos.length} repositories, but expected ${expectedCount}`));
 
     const proceed = await select<'use-discovered' | 'adjust-count' | 'manual'>({
       message: 'What would you like to do?',
