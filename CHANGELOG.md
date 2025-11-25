@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.14] - 2025-11-25
+
+### ✨ Features
+- Fix external import multi-repo support with proper project detection
+- Reorganize spec folders from `_features/` to project-scoped `specweave/` structure
+- Enhanced multi-project mode for feature archiver, hierarchy mapper, and import coordinator
+
+### 📚 Documentation
+- Added academy sections for testing, quality, full-stack, and DevOps
+- Enhanced commands overview documentation
+
+---
+
 ## [0.28.13] - 2025-11-25
 
 ### ✨ Features
