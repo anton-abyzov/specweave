@@ -14,6 +14,7 @@ jobs:
     permissions:
       contents: write  # Required to push metrics JSON or create branch
       pull-requests: write  # Required to create PR if branch protection blocks push
+      issues: write  # Required to create error issue on failure
 
     steps:
       - name: Checkout code
@@ -75,23 +76,19 @@ jobs:
             gh pr close "$EXISTING_PR" --delete-branch 2>/dev/null || true
           fi
 
-          # Create new PR with auto-merge
+          # Create new PR
           PR_URL=$(gh pr create \
             --title "$COMMIT_MSG" \
-            --body "$(cat <<'EOF'
-          ## Automated DORA Metrics Update
+            --body "## Automated DORA Metrics Update
 
           This PR updates the DORA metrics report with the latest calculations.
 
           **Changes:**
-          - Updated `.specweave/metrics/dora-latest.json` with current metrics
-          - Updated `.specweave/metrics/dora-report.md` with formatted report
+          - Updated \`.specweave/metrics/dora-latest.json\` with current metrics
+          - Updated \`.specweave/metrics/dora-report.md\` with formatted report
 
           ---
-          🤖 This PR was automatically created by the DORA Metrics workflow.
-          EOF
-          )" \
-            --label "automated" 2>&1)
+          🤖 This PR was automatically created by the DORA Metrics workflow." 2>&1)
 
           echo "✅ Created PR: $PR_URL"
 
@@ -136,6 +133,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: title,
-              body: body,
-              labels: ['dora-metrics-error', 'automated']
+              body: body
             });
