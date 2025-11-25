@@ -71,6 +71,49 @@ async function syncLivingDocs(incrementId) {
     console.log(`\u{1F4C4} Changed/created ${changedDocs.length} file(s)`);
 
     // ========================================================================
+    // TRANSLATION TRIGGER (v0.29.0+ - Multi-Language Support)
+    // ========================================================================
+    // After living docs sync, check if translation is needed.
+    // User MUST opt-in during init (cost warning shown).
+    // Translation only happens if:
+    // - config.language != 'en'
+    // - config.translation.enabled == true
+    // - config.translation.scope.livingDocs == true
+    const targetLang = config.language || 'en';
+    const translationEnabled = config.translation?.enabled ?? false;
+    const translateLivingDocs = config.translation?.scope?.livingDocs ?? false;
+
+    if (targetLang !== 'en' && translationEnabled && translateLivingDocs && changedDocs.length > 0) {
+      console.log(`\n\u{1F30D} Translating ${changedDocs.length} updated file(s) to ${targetLang}...`);
+
+      try {
+        // Try to load translate-file module
+        const { translateFile } = await import('./translate-file.js');
+
+        for (const docPath of changedDocs) {
+          try {
+            await translateFile({
+              filePath: docPath,
+              targetLang,
+              preview: false,
+              verbose: false,
+            });
+            console.log(`   \u2705 ${path.basename(docPath)}`);
+          } catch (err) {
+            console.warn(`   \u26A0\uFE0F  Failed to translate ${path.basename(docPath)}: ${err.message}`);
+          }
+        }
+        console.log(`\u2705 Living docs translation complete`);
+      } catch (importErr) {
+        // translate-file.js may not be compiled yet
+        console.log(`   \u2139\uFE0F  Translation module not available (run 'npm run build')`);
+        console.log(`   \u{1F4A1} Tip: Run /specweave:translate to translate manually`);
+      }
+    } else if (targetLang !== 'en' && !translationEnabled) {
+      console.log(`   \u2139\uFE0F  Translation disabled (use /specweave:translate manually)`);
+    }
+
+    // ========================================================================
     // CHECK PERMISSION: canUpdateExternalItems (v0.24.0 - Three-Permission Architecture)
     // ========================================================================
     // This permission controls whether SpecWeave can UPDATE externally-created items

@@ -249,6 +249,123 @@ export interface StatusLineConfiguration {
 }
 
 /**
+ * Child repo configuration for umbrella mode
+ */
+export interface ChildRepoConfig {
+  /** Repo identifier (e.g., 'fe', 'be', 'shared') */
+  id: string;
+  /** Path to repo (relative or absolute) */
+  path: string;
+  /** User story prefix (e.g., 'FE', 'BE', 'SHARED') */
+  prefix: string;
+  /** GitHub URL for this repo */
+  githubUrl?: string;
+  /** Tech stack keywords for story routing */
+  techStack?: string[];
+}
+
+/**
+ * Umbrella/multi-repo configuration
+ */
+export interface UmbrellaConfig {
+  /** Enable umbrella mode */
+  enabled: boolean;
+  /** Optional parent/coordination repo name */
+  parentRepo?: string;
+  /** Child repos with their prefixes */
+  childRepos: ChildRepoConfig[];
+  /** Story routing configuration */
+  storyRouting?: {
+    /** Enable automatic story routing by keywords */
+    enabled: boolean;
+    /** Default repo for cross-cutting stories */
+    defaultRepo: string;
+  };
+}
+
+/**
+ * Supported languages for SpecWeave
+ * Re-exported here for config type completeness
+ */
+export type SupportedLanguage =
+  | 'en'
+  | 'ru'
+  | 'es'
+  | 'zh'
+  | 'de'
+  | 'fr'
+  | 'ja'
+  | 'ko'
+  | 'pt';
+
+/**
+ * Translation scope - what gets auto-translated
+ *
+ * CRITICAL: Translation can ~2x token usage
+ * User MUST explicitly opt-in during init
+ */
+export interface TranslationScope {
+  /** Auto-translate spec.md, plan.md, tasks.md after creation */
+  incrementSpecs: boolean;
+  /** Auto-translate living docs on update */
+  livingDocs: boolean;
+  /** Auto-translate GitHub/JIRA/ADO issues on sync */
+  externalSync: boolean;
+}
+
+/**
+ * Translation configuration
+ *
+ * Controls automatic translation of SpecWeave content.
+ * English is always the source language (for maintainability).
+ * User's configured language is the output language.
+ */
+export interface TranslationConfiguration {
+  /**
+   * Master switch for auto-translation
+   * When false, user must use /specweave:translate manually
+   */
+  enabled: boolean;
+
+  /**
+   * Enabled languages for this project
+   * Always includes 'en' as source language
+   */
+  languages: SupportedLanguage[];
+
+  /**
+   * Primary output language for user
+   * This is the language content will be translated TO
+   */
+  primary: SupportedLanguage;
+
+  /**
+   * Translation method
+   * - 'auto': Hooks trigger translation automatically
+   * - 'manual': User must run /specweave:translate
+   * - 'none': Translation disabled entirely
+   */
+  method: 'auto' | 'manual' | 'none';
+
+  /**
+   * Keep SpecWeave framework terms in English
+   * e.g., increment, spec.md, tasks.md, /specweave:*
+   */
+  preserveFrameworkTerms: boolean;
+
+  /**
+   * What to auto-translate (only when method='auto')
+   */
+  scope: TranslationScope;
+
+  /**
+   * Keep English originals as .en.md files
+   * Safer option but uses more storage
+   */
+  keepEnglishOriginals: boolean;
+}
+
+/**
  * Main SpecWeave configuration
  */
 export interface SpecWeaveConfig {
@@ -256,6 +373,22 @@ export interface SpecWeaveConfig {
    * Config version for migration support
    */
   version: string;
+
+  /**
+   * Project display language
+   * Content will be translated TO this language if translation is enabled
+   * @default 'en'
+   */
+  language?: SupportedLanguage;
+
+  /**
+   * Translation configuration
+   * Controls automatic translation of specs, living docs, and external sync
+   *
+   * CRITICAL: Translation can ~2x token usage
+   * User MUST explicitly opt-in during init
+   */
+  translation?: TranslationConfiguration;
 
   /**
    * Project metadata (optional, for backward compatibility)
@@ -291,6 +424,11 @@ export interface SpecWeaveConfig {
    * Status line configuration (optional)
    */
   statusLine?: StatusLineConfiguration;
+
+  /**
+   * Umbrella/multi-repo configuration (optional)
+   */
+  umbrella?: UmbrellaConfig;
 }
 
 /**

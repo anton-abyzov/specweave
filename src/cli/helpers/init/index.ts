@@ -49,6 +49,15 @@ export {
   type TestingConfigResult,
 } from './testing-config.js';
 
+// Translation configuration
+export {
+  promptTranslationConfig,
+  updateConfigWithTranslation,
+  getDefaultTranslationConfig,
+  type TranslationConfigResult,
+  type TranslationScope,
+} from './translation-config.js';
+
 // External import
 export {
   promptAndRunExternalImport,

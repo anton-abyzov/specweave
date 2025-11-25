@@ -22,7 +22,7 @@ import { select, input, confirm, number } from '@inquirer/prompts';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
-import { generateRepoId, generateRepoIdSmart, ensureUniqueId, validateRepoId, suggestRepoName } from './repo-id-generator.js';
+import { normalizeRepoName, validateRepoId, suggestRepoName } from './repo-id-generator.js';
 import { SetupStateManager, SetupState, type SetupArchitecture, type ParentRepoConfig } from './setup-state-manager.js';
 import { validateRepository, validateOwner } from './github-validator.js';
 import { generateEnvFile, type EnvConfig } from '../../utils/env-file-generator.js';
@@ -943,26 +943,26 @@ export class RepoStructureManager {
 
       // If discovered, auto-use without confirmation (repos exist on GitHub)
       if (isDiscovered) {
-        const smartId = generateRepoIdSmart(discoveredRepo.name, configuredRepoNames);
-        const { id: suggestedId } = ensureUniqueId(smartId, usedIds);
+        // Use normalized repo name as ID (repo names are unique in GitHub)
+        const repoId = normalizeRepoName(discoveredRepo.name);
 
-        console.log(chalk.green(`   ✓ Using: ${chalk.bold(discoveredRepo.name)} ${chalk.gray(`(id: ${suggestedId})`)}`));
+        console.log(chalk.green(`   ✓ Using: ${chalk.bold(discoveredRepo.name)} ${chalk.gray(`(id: ${repoId})`)}`));
 
-        usedIds.add(suggestedId);
+        usedIds.add(repoId);
         configuredRepoNames.push(discoveredRepo.name);
 
         config.repositories.push({
-          id: suggestedId,
+          id: repoId,
           name: discoveredRepo.name,
           owner: discoveredRepo.owner,
           description: discoveredRepo.description || `${discoveredRepo.name} service`,
-          path: discoveredRepo.name, // Use full repo name as folder (not short ID)
+          path: discoveredRepo.name,
           visibility: discoveredRepo.private ? 'private' : 'public',
-          createOnGitHub: false, // Already exists!
+          createOnGitHub: false,
           isNested: useParent
         });
 
-        continue; // Skip manual prompts
+        continue;
       }
 
       // Manual entry (original behavior)
@@ -1003,48 +1003,9 @@ export class RepoStructureManager {
         createOnGitHub: repoCreateOnGitHub
       };
 
-      // Smart auto-generate ID from repository name (context-aware)
-      const smartId = generateRepoIdSmart(repoAnswers.name, configuredRepoNames);
-      const { id: suggestedId, wasModified } = ensureUniqueId(smartId, usedIds);
-
-      // Auto-assign ID (no prompt unless conflict detected)
-      let id = suggestedId;
-
-      // Only prompt if ID was modified due to conflict
-      if (wasModified) {
-        console.log(chalk.yellow(`   ⚠️  ID conflict detected: "${smartId}" already used`));
-        console.log(chalk.gray(`   → Suggested unique ID: "${suggestedId}"`));
-
-        const confirmIdAnswer = await confirm({
-          message: `Use "${suggestedId}" as repository ID?`,
-          default: true
-        });
-
-        if (!confirmIdAnswer) {
-          const customId = await input({
-            message: 'Enter custom repository ID:',
-            default: suggestedId,
-            validate: (val: string) => {
-              // Validate format
-              const validation = validateRepoId(val);
-              if (!validation.valid) {
-                return validation.error || 'Invalid repository ID';
-              }
-
-              // Validate uniqueness
-              if (usedIds.has(val)) {
-                return 'Repository ID must be unique';
-              }
-
-              return true;
-            }
-          });
-          id = customId;
-        }
-      } else {
-        // Show auto-generated ID (no prompt)
-        console.log(chalk.green(`   ✓ Repository ID: ${chalk.bold(id)} ${chalk.gray('(auto-generated)')}`));
-      }
+      // Use normalized repo name as ID (repo names are unique)
+      const id = normalizeRepoName(repoAnswers.name);
+      console.log(chalk.green(`   ✓ Repository ID: ${chalk.bold(id)}`))
 
       usedIds.add(id);
       configuredRepoNames.push(repoAnswers.name);

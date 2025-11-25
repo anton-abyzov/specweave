@@ -1,6 +1,6 @@
 **Name:** hetzner-provisioner
 **Type:** Infrastructure / DevOps
-**Model:** Claude Sonnet 4 (balanced for IaC generation)
+**Model:** Claude Sonnet 4.5 (balanced for IaC generation)
 **Status:** Planned
 
 ---

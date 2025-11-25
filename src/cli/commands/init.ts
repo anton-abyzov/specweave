@@ -41,6 +41,9 @@ import {
   setupRepositoryHosting,
   promptTestingConfig,
   updateConfigWithTesting,
+  promptTranslationConfig,
+  updateConfigWithTranslation,
+  getDefaultTranslationConfig,
   promptAndRunExternalImport,
   createDirectoryStructure,
   copyTemplates,
@@ -443,6 +446,23 @@ export async function initCommand(
     if (!isCI && !continueExisting) {
       const testingResult = await promptTestingConfig();
       updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget);
+    }
+
+    // Translation configuration (CRITICAL: Must ask user - cost implications!)
+    // Translation can ~2x token usage, user MUST explicitly opt-in
+    if (!isCI && !continueExisting) {
+      const translationResult = await promptTranslationConfig();
+      updateConfigWithTranslation(targetDir, translationResult);
+
+      // Update language for subsequent operations if changed
+      if (translationResult.language !== 'en') {
+        // Language is now set in config, will be used by hooks
+        console.log(chalk.gray(`   Language set to ${translationResult.language} in config.json`));
+      }
+    } else if (isCI) {
+      // CI mode: Use defaults (English, no translation)
+      const defaultTranslation = getDefaultTranslationConfig(language);
+      updateConfigWithTranslation(targetDir, defaultTranslation);
     }
 
     // Initial increment

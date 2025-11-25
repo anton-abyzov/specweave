@@ -1,109 +1,123 @@
 ---
 sidebar_position: 2
 title: "Lesson 1: Getting Started"
-description: "Install SpecWeave and understand the core philosophy"
+description: "Install SpecWeave and run your first command in 15 minutes"
 ---
 
-# Lesson 1: Getting Started with SpecWeave
+# Lesson 1: Getting Started
 
-**Duration**: 30 minutes
-**Prerequisites**: Node.js 20+, Git, Claude Code CLI
-**Outcome**: Understand SpecWeave's philosophy and have it installed
+**Time**: 15 minutes
+**Goal**: Install SpecWeave and understand why it exists
 
 ---
 
-## The Problem SpecWeave Solves
+## The Problem: Where Did That Decision Go?
 
-### Before SpecWeave: The Knowledge Decay Problem
+Picture this:
 
 ```
-Monday:
-  Developer: "Claude, design user authentication"
-  Claude: "Here's a JWT-based system with refresh tokens..."
-  → Brilliant conversation with architectural decisions
+Monday morning:
+  You: "Claude, help me design the user profile feature"
+  Claude: "Sure! Let's use a flexible schema with avatar uploads..."
+  → Great conversation, smart decisions made
   → Session ends
 
-Wednesday:
-  New Developer: "How does our auth work?"
-  Team: "Uh... check the code? Maybe there's a Slack thread?"
-  → Knowledge lost
-  → Inconsistent decisions
-  → Onboarding nightmare
+Thursday:
+  Teammate: "Why did we use that schema for profiles?"
+  You: "Uh... let me check Slack? Maybe there's a doc somewhere?"
+  → Decision lost
+  → Context missing
+  → Knowledge evaporated
 ```
 
-### After SpecWeave: Permanent Knowledge
-
-```
-Monday:
-  /specweave:increment "user authentication"
-  → spec.md created (requirements, acceptance criteria)
-  → plan.md created (architecture, technical decisions)
-  → tasks.md created (implementation steps, tests)
-
-Wednesday:
-  New Developer: "How does our auth work?"
-  → cat .specweave/increments/0001-user-auth/spec.md
-  → Complete understanding in 10 minutes
-```
+**This happens every day.** AI conversations are brilliant but ephemeral. When the session ends, the knowledge disappears.
 
 ---
 
-## Core Philosophy
+## The Solution: Specs as [Source of Truth](/docs/glossary/terms/source-of-truth)
 
-### 1. Specs Are Source of Truth
-
-```
-NOT this:                      THIS:
-
-Code → Maybe docs              Specs → Code → Auto-docs
-(docs rot)                     (specs verified)
-```
-
-**Rule**: No code without spec. Every decision documented.
-
-### 2. The Three-File Foundation
-
-Every feature produces exactly three files:
+SpecWeave solves this by making specifications permanent:
 
 ```
-.specweave/increments/0001-feature/
-├── spec.md    # WHAT: Business requirements
-├── plan.md    # HOW: Technical architecture
-└── tasks.md   # DO: Implementation steps
+Monday:
+  /specweave:increment "user profile feature"
+
+  → Creates spec.md (requirements)
+  → Creates plan.md (technical design)
+  → Creates tasks.md (implementation steps)
+
+Thursday:
+  Teammate: "Why did we use that schema?"
+  → cat .specweave/increments/0001-user-profile/plan.md
+  → Complete context in 2 minutes
 ```
 
-### 3. Living Documentation
+**The key insight**: Instead of code being the record, *specifications* become the record. Every decision is documented, every conversation preserved.
 
-Documentation updates **automatically** via hooks:
+---
 
-```
-Task Completed → Hook Fires → Docs Updated → External Tools Synced
-```
+## Core Concepts
+
+Before we install, let's understand three key ideas:
+
+### 1. [Increments](/docs/glossary/terms/increments) = Units of Work
+
+An **increment** is any focused piece of work:
+- A new feature
+- A bug fix
+- A refactoring
+- An experiment
+
+Each increment creates its own folder with documentation.
+
+### 2. Three Files = Complete Knowledge
+
+Every increment produces exactly three files:
+
+| File | Purpose | Question It Answers |
+|------|---------|---------------------|
+| **spec.md** | Business requirements | "What are we building?" |
+| **plan.md** | Technical design | "How will we build it?" |
+| **tasks.md** | Implementation steps | "What steps do we take?" |
+
+### 3. [Living Docs](/docs/glossary/terms/living-docs) = Always Current
+
+Documentation updates automatically as you work. No more stale docs.
 
 ---
 
 ## Installation
 
-### Step 1: Install SpecWeave CLI
+### Step 1: Install SpecWeave
 
 ```bash
 npm install -g specweave
 ```
 
-### Step 2: Verify Installation
+### Step 2: Verify It Worked
 
 ```bash
 specweave --version
-# Output: specweave v0.28.x
+# Should show: specweave v0.28.x
 ```
 
-### Step 3: Navigate to Your Project
+### Step 3: Go to Your Project
 
 ```bash
 cd your-project
+
 # Must be a git repository
-git status  # Verify it's a git repo
+git status
 ```
+
+:::tip No project yet?
+Create a test project:
+```bash
+mkdir specweave-demo && cd specweave-demo
+npm init -y
+git init
+```
+:::
 
 ### Step 4: Initialize SpecWeave
 
@@ -111,29 +125,27 @@ git status  # Verify it's a git repo
 specweave init .
 ```
 
-**The wizard asks**:
-1. **Git provider**: GitHub, GitLab, or Azure DevOps?
-2. **External tools**: Connect JIRA, GitHub Issues?
-3. **Documentation approach**: Comprehensive or Incremental?
+The wizard will ask a few questions:
+- **Git provider**: GitHub, GitLab, or Azure DevOps?
+- **External tools**: Want to connect JIRA or GitHub Issues?
+- **Documentation approach**: Start simple (recommended)
 
-### Step 5: Verify Initialization
+For this lesson, accept the defaults.
+
+### Step 5: Check the Structure
 
 ```bash
 ls -la .specweave/
 ```
 
-**Expected structure**:
+You should see:
 ```
 .specweave/
-├── config.json        # Project configuration
-├── increments/        # Your work lives here
-│   └── README.md
-├── docs/              # Living documentation
-│   ├── public/        # User-facing docs
-│   └── internal/      # Team docs
-├── cache/             # Performance optimization
-├── state/             # Hook state
-└── metrics/           # DORA metrics
+├── config.json      # Your settings
+├── increments/      # Your work lives here
+├── docs/            # Living documentation
+├── cache/           # Performance optimization
+└── state/           # Internal state
 ```
 
 ---
@@ -146,11 +158,12 @@ Let's verify everything works:
 /specweave:status
 ```
 
-**Expected output**:
+You should see something like:
+
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SPECWEAVE STATUS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Project: your-project
 Initialized: ✓
@@ -159,139 +172,72 @@ Config: .specweave/config.json
 Active Increments: 0
 Completed: 0
 WIP Limit: 2/2 available
-
-External Tools:
-  GitHub: Not configured
-  JIRA: Not configured
 ```
+
+If you see this, you're ready!
 
 ---
 
-## Understanding the Workflow
+## The 5-Command Workflow
 
-Here's the complete SpecWeave workflow:
+Here's the entire SpecWeave workflow. You'll learn each command in the following lessons:
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                    THE SPECWEAVE CYCLE                       │
-├──────────────────────────────────────────────────────────────┤
-│                                                              │
-│  1. PLAN                                                     │
-│     /specweave:increment "feature"                           │
-│     → PM Agent creates spec.md                               │
-│     → Architect creates plan.md                              │
-│     → Tech Lead creates tasks.md                             │
-│                                                              │
-│  2. EXECUTE                                                  │
-│     /specweave:do                                            │
-│     → Tasks executed sequentially                            │
-│     → Tests run after each task                              │
-│     → Hooks update living docs                               │
-│                                                              │
-│  3. MONITOR                                                  │
-│     /specweave:progress                                      │
-│     → See completion percentage                              │
-│     → Track blockers                                         │
-│                                                              │
-│  4. COMPLETE                                                 │
-│     /specweave:next                                          │
-│     → Validate quality gates                                 │
-│     → Auto-close if ready                                    │
-│     → Suggest next work                                      │
-│                                                              │
-│  5. REPEAT                                                   │
-│     → Next increment                                         │
-│     → Continuous improvement                                 │
-│                                                              │
-└──────────────────────────────────────────────────────────────┘
+1. /specweave:increment "feature"  → Plan the work
+2. /specweave:do                   → Execute tasks
+3. /specweave:progress             → Check status
+4. /specweave:next                 → Close or continue
+5. (repeat)
 ```
+
+That's it. Five commands cover 90% of daily use.
 
 ---
 
-## Key Concepts Summary
+## Quick Exercise
 
-| Concept | Description |
-|---------|-------------|
-| **Increment** | A unit of work (feature, bug fix, refactor) |
-| **spec.md** | Business requirements (WHAT) |
-| **plan.md** | Technical architecture (HOW) |
-| **tasks.md** | Implementation steps (DO) |
-| **Quality Gates** | 3 checks before closure (tasks, tests, docs) |
-| **Living Docs** | Auto-updating documentation |
-| **`:next`** | Smart workflow continuation command |
-
----
-
-## Common Mistakes to Avoid
-
-### Mistake 1: Starting Without Specs
+**Goal**: Verify your installation works.
 
 ```bash
-# ❌ WRONG: Just start coding
-vim src/auth.ts
-
-# ✅ CORRECT: Create increment first
-/specweave:increment "user authentication"
-```
-
-### Mistake 2: Ignoring Quality Gates
-
-```bash
-# ❌ WRONG: Force close with incomplete work
-/specweave:done 0001 --force
-
-# ✅ CORRECT: Complete the work
-/specweave:next  # Validates and guides you
-```
-
-### Mistake 3: Manual Documentation
-
-```bash
-# ❌ WRONG: Manually edit living docs
-vim .specweave/docs/public/FEATURES.md
-
-# ✅ CORRECT: Let hooks handle it
-# Update tasks.md → hooks sync docs automatically
-```
-
----
-
-## Practice Exercise
-
-**Goal**: Initialize SpecWeave in a test project
-
-```bash
-# 1. Create a test project
-mkdir specweave-test && cd specweave-test
-npm init -y
-git init
-
-# 2. Initialize SpecWeave
-specweave init .
-
-# 3. Check status
+# 1. Check status
 /specweave:status
 
-# 4. Explore the structure
-ls -la .specweave/
+# 2. Explore the structure
+ls .specweave/
+
+# 3. View config
 cat .specweave/config.json
 ```
 
 **Success criteria**:
-- [ ] `.specweave/` directory created
-- [ ] `config.json` exists
-- [ ] `/specweave:status` shows "Initialized: ✓"
+- [ ] Status shows "Initialized: ✓"
+- [ ] `.specweave/` directory exists
+- [ ] `config.json` is readable
+
+---
+
+## Key Takeaways
+
+You now understand:
+
+1. **The problem**: AI conversations are ephemeral; knowledge gets lost
+2. **The solution**: Specs as permanent, living documentation
+3. **The structure**: Three files per increment (spec, plan, tasks)
+4. **The workflow**: Five commands for daily work
+
+---
+
+## Glossary Terms Used
+
+- **[Increment](/docs/glossary/terms/increments)** — A unit of work
+- **[Source of Truth](/docs/glossary/terms/source-of-truth)** — Single authoritative data source
+- **[Living Docs](/docs/glossary/terms/living-docs)** — Auto-synced documentation
+- **[Specs](/docs/glossary/terms/specs)** — Specification files
 
 ---
 
 ## What's Next?
 
-You now understand:
-- ✅ Why SpecWeave exists (knowledge preservation)
-- ✅ Core philosophy (specs as source of truth)
-- ✅ Basic installation and setup
-- ✅ The workflow overview
+In the next lesson, you'll dive deep into the three-file structure with a simple, hands-on example.
 
-**Next lesson**: Deep dive into the three-file structure with real examples.
-
-:next → [Lesson 2: The Three-File Structure](./02-three-file-structure)
+**:next** → [Lesson 2: The Three-File Structure](./02-three-file-structure)

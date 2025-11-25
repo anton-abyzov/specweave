@@ -1,35 +1,36 @@
 ---
 sidebar_position: 7
 title: "Lesson 6: TDD Workflow"
-description: "Test-Driven Development with SpecWeave's specialized commands"
+description: "Test-Driven Development with SpecWeave"
 ---
 
-# Lesson 6: TDD Workflow with SpecWeave
+# Lesson 6: TDD Workflow
 
-**Duration**: 60 minutes
-**Prerequisites**: Lessons 1-5 completed
-**Outcome**: Master test-first development using SpecWeave's TDD commands
+**Time**: 45 minutes
+**Goal**: Master test-first development
 
 ---
 
 ## Why TDD?
 
-### The Traditional Approach (Test-After)
+:::info TDD is Optional
+[TDD](/docs/glossary/terms/tdd) improves code quality but slows development. Use it when correctness matters (critical logic, APIs). Skip it for prototyping.
+:::
+
+### Test-After (Traditional)
 
 ```
-Write Code → Write Tests → Find Bugs → Fix Code → Repeat
-     │
-     └── Often: "Tests are optional" → No tests
+Write Code → Write Tests → Find Bugs → Fix → Repeat
+                                └── Often: No tests at all
 ```
 
-### The TDD Approach (Test-First)
+### Test-First (TDD)
 
 ```
 Write Test → Watch Fail → Write Code → Watch Pass → Refactor
-     │           │            │            │           │
-     ▼           ▼            ▼            ▼           ▼
-  Define      Verify       Minimal      Verify     Improve
- behavior    test works   implement    it works   quality
+    ▼            ▼            ▼            ▼            ▼
+ Define       Verify       Minimal      Verify      Improve
+behavior   test works    implement    it works    quality
 ```
 
 ---
@@ -37,52 +38,27 @@ Write Test → Watch Fail → Write Code → Watch Pass → Refactor
 ## The Red-Green-Refactor Cycle
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                   TDD CYCLE                                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│                    ┌─────────┐                              │
-│                    │   RED   │                              │
-│                    │ (Fail)  │                              │
-│                    └────┬────┘                              │
-│                         │                                   │
-│     Write failing       │                                   │
-│     test first          ▼                                   │
-│                    ┌─────────┐                              │
-│                    │  GREEN  │                              │
-│                    │ (Pass)  │                              │
-│                    └────┬────┘                              │
-│                         │                                   │
-│     Write minimal       │                                   │
-│     code to pass        ▼                                   │
-│                    ┌─────────┐                              │
-│                    │REFACTOR │                              │
-│                    │(Improve)│                              │
-│                    └────┬────┘                              │
-│                         │                                   │
-│     Clean up code       │                                   │
-│     keep tests green    │                                   │
-│                         ▼                                   │
-│                    [Next Test]                              │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+         ┌─────────┐
+         │   RED   │  Write failing test
+         └────┬────┘
+              ▼
+         ┌─────────┐
+         │  GREEN  │  Minimal code to pass
+         └────┬────┘
+              ▼
+         ┌─────────┐
+         │REFACTOR │  Clean up, keep green
+         └────┬────┘
+              ▼
+        [Next Test]
 ```
 
 ---
 
 ## SpecWeave TDD Commands
 
-### Full Cycle Orchestration
-
 ```bash
-/specweave:tdd-cycle
-```
-
-Orchestrates the complete red-green-refactor workflow.
-
-### Individual Phase Commands
-
-```bash
+/specweave:tdd-cycle     # Full orchestration
 /specweave:tdd-red       # Write failing tests
 /specweave:tdd-green     # Implement to pass
 /specweave:tdd-refactor  # Clean up code
@@ -90,423 +66,109 @@ Orchestrates the complete red-green-refactor workflow.
 
 ---
 
-## Practical Example: Building a Calculator
+## Example: Calculator
 
-Let's build a calculator using TDD with SpecWeave.
+Let's build a calculator using TDD.
 
-### Step 1: Create the Increment
+### Step 1: Create Increment
 
 ```bash
 /specweave:increment "Calculator with basic operations"
 ```
 
-**Generated tasks.md** (relevant portion):
-
-```markdown
-### T-001: Implement add() Function (P1)
-
-**AC-IDs**: AC-US1-01
-
-**Test Plan** (BDD):
-- **Given** two numbers (2 and 3)
-- **When** add() is called
-- **Then** result is 5
-
-- **Given** negative numbers (-5 and 3)
-- **When** add() is called
-- **Then** result is -2
-
-**Test Cases**:
-- add_twoPositives_returnsSum
-- add_negativeNumbers_returnsCorrectSum
-- add_zeros_returnsZero
-- add_largeNumbers_handlesOverflow
-
-**Status**: [ ] pending
-```
-
-### Step 2: Start TDD Cycle
+### Step 2: Start TDD
 
 ```bash
 /specweave:tdd-cycle
-```
-
-**Output**:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TDD CYCLE: T-001 - Implement add() Function
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Phase: RED (Writing Failing Tests)
-
-Creating test file: tests/calculator.test.ts
 ```
 
 ### Phase 1: RED (Write Failing Tests)
 
 ```typescript
-// tests/calculator.test.ts (generated by /specweave:tdd-red)
-
+// tests/calculator.test.ts
 import { describe, it, expect } from 'vitest';
 import { add } from '../src/calculator';
 
-describe('Calculator: add()', () => {
-  describe('basic addition', () => {
-    it('add_twoPositives_returnsSum', () => {
-      expect(add(2, 3)).toBe(5);
-    });
-
-    it('add_negativeNumbers_returnsCorrectSum', () => {
-      expect(add(-5, 3)).toBe(-2);
-    });
-
-    it('add_zeros_returnsZero', () => {
-      expect(add(0, 0)).toBe(0);
-    });
+describe('add()', () => {
+  it('adds two positives', () => {
+    expect(add(2, 3)).toBe(5);
   });
 
-  describe('edge cases', () => {
-    it('add_largeNumbers_handlesOverflow', () => {
-      const result = add(Number.MAX_SAFE_INTEGER, 1);
-      expect(result).toBe(Number.MAX_SAFE_INTEGER + 1);
-    });
+  it('adds negatives', () => {
+    expect(add(-5, 3)).toBe(-2);
+  });
 
-    it('add_decimals_maintainsPrecision', () => {
-      expect(add(0.1, 0.2)).toBeCloseTo(0.3);
-    });
+  it('handles zero', () => {
+    expect(add(0, 0)).toBe(0);
   });
 });
 ```
 
-**Running tests**:
-
+**Running tests:**
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RUNNING TESTS (Expecting failures)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAIL tests/calculator.test.ts
+  ✕ adds two positives
+  ✕ adds negatives
+  ✕ handles zero
 
- FAIL  tests/calculator.test.ts
-  ✕ add_twoPositives_returnsSum
-  ✕ add_negativeNumbers_returnsCorrectSum
-  ✕ add_zeros_returnsZero
-  ✕ add_largeNumbers_handlesOverflow
-  ✕ add_decimals_maintainsPrecision
+5 tests failed (expected!)
 
- 5 tests failed (expected - we haven't written code yet!)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ RED PHASE COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Tests are properly failing. Ready for GREEN phase.
-
-Next: /specweave:tdd-green (or continue with cycle)
 ```
 
 ### Phase 2: GREEN (Make Tests Pass)
 
-```bash
-# Continues automatically in tdd-cycle, or manually:
-/specweave:tdd-green
-```
-
-**Generated implementation**:
-
 ```typescript
-// src/calculator.ts (generated by /specweave:tdd-green)
-
-/**
- * Adds two numbers together.
- * @param a First number
- * @param b Second number
- * @returns Sum of a and b
- */
+// src/calculator.ts
 export function add(a: number, b: number): number {
   return a + b;
 }
 ```
 
-**Running tests**:
-
+**Running tests:**
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RUNNING TESTS (Expecting passes)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS tests/calculator.test.ts
+  ✓ adds two positives
+  ✓ adds negatives
+  ✓ handles zero
 
- PASS  tests/calculator.test.ts
-  ✓ add_twoPositives_returnsSum (2ms)
-  ✓ add_negativeNumbers_returnsCorrectSum (1ms)
-  ✓ add_zeros_returnsZero (1ms)
-  ✓ add_largeNumbers_handlesOverflow (1ms)
-  ✓ add_decimals_maintainsPrecision (1ms)
+5 tests passed!
 
- 5 tests passed!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ GREEN PHASE COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-All tests passing. Ready for REFACTOR phase.
-
-Next: /specweave:tdd-refactor (or continue with cycle)
 ```
 
 ### Phase 3: REFACTOR (Improve Code)
 
-```bash
-# Continues automatically in tdd-cycle, or manually:
-/specweave:tdd-refactor
-```
-
-**Analysis**:
-
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-REFACTOR ANALYSIS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Current implementation: src/calculator.ts
-
-Analysis:
-  ✓ Function is simple and readable
-  ✓ TypeScript types are correct
-  ✓ JSDoc documentation present
-  ⚠ Could add input validation for NaN
-  ⚠ Could add overflow protection
-
-Suggested improvements:
-  1. Add NaN handling
-  2. Add BigInt support for large numbers
-
-Apply improvements? [Y/n]
-```
-
-**After refactoring**:
-
 ```typescript
 // src/calculator.ts (after refactor)
-
-/**
- * Adds two numbers together.
- *
- * @param a First number
- * @param b Second number
- * @returns Sum of a and b
- * @throws {TypeError} If either argument is not a valid number
- *
- * @example
- * add(2, 3) // returns 5
- * add(-5, 3) // returns -2
- */
 export function add(a: number, b: number): number {
   if (typeof a !== 'number' || typeof b !== 'number') {
     throw new TypeError('Both arguments must be numbers');
   }
-
   if (Number.isNaN(a) || Number.isNaN(b)) {
     throw new TypeError('Arguments cannot be NaN');
   }
-
   return a + b;
 }
 ```
 
-**Verification**:
-
+**Verification:**
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-VERIFYING REFACTOR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PASS tests/calculator.test.ts
+  ✓ All original tests passing
+  + 2 new validation tests added
 
-Running tests after refactor...
-
- PASS  tests/calculator.test.ts
-  ✓ All 5 original tests passing
-  + 2 new tests added for validation:
-    ✓ add_withNaN_throwsTypeError
-    ✓ add_withNonNumber_throwsTypeError
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ REFACTOR PHASE COMPLETE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Tests still green after refactor.
-
-TDD Cycle complete for T-001!
-Moving to next task...
-```
-
----
-
-## Complete TDD Workflow Example
-
-### Building a Full Calculator
-
-```bash
-# Start full TDD cycle for increment
-/specweave:tdd-cycle
-
-# This orchestrates:
-# 1. T-001: add() - RED → GREEN → REFACTOR
-# 2. T-002: subtract() - RED → GREEN → REFACTOR
-# 3. T-003: multiply() - RED → GREEN → REFACTOR
-# 4. T-004: divide() - RED → GREEN → REFACTOR (with zero handling)
-# 5. T-005: Integration tests
-```
-
-### Final Test Suite
-
-```typescript
-// tests/calculator.test.ts (complete)
-
-import { describe, it, expect } from 'vitest';
-import { Calculator } from '../src/calculator';
-
-describe('Calculator', () => {
-  let calc: Calculator;
-
-  beforeEach(() => {
-    calc = new Calculator();
-  });
-
-  describe('add()', () => {
-    it('adds two positive numbers', () => {
-      expect(calc.add(2, 3)).toBe(5);
-    });
-
-    it('adds negative numbers', () => {
-      expect(calc.add(-5, 3)).toBe(-2);
-    });
-
-    it('handles zero', () => {
-      expect(calc.add(5, 0)).toBe(5);
-    });
-  });
-
-  describe('subtract()', () => {
-    it('subtracts two numbers', () => {
-      expect(calc.subtract(5, 3)).toBe(2);
-    });
-
-    it('handles negative result', () => {
-      expect(calc.subtract(3, 5)).toBe(-2);
-    });
-  });
-
-  describe('multiply()', () => {
-    it('multiplies two numbers', () => {
-      expect(calc.multiply(3, 4)).toBe(12);
-    });
-
-    it('handles zero', () => {
-      expect(calc.multiply(5, 0)).toBe(0);
-    });
-
-    it('handles negative numbers', () => {
-      expect(calc.multiply(-3, 4)).toBe(-12);
-    });
-  });
-
-  describe('divide()', () => {
-    it('divides two numbers', () => {
-      expect(calc.divide(10, 2)).toBe(5);
-    });
-
-    it('throws on division by zero', () => {
-      expect(() => calc.divide(10, 0)).toThrow('Division by zero');
-    });
-
-    it('handles decimal results', () => {
-      expect(calc.divide(7, 2)).toBe(3.5);
-    });
-  });
-
-  describe('chained operations', () => {
-    it('performs multiple operations', () => {
-      // (2 + 3) * 4 - 10 / 2 = 5 * 4 - 5 = 20 - 5 = 15
-      const result = calc.subtract(
-        calc.multiply(calc.add(2, 3), 4),
-        calc.divide(10, 2)
-      );
-      expect(result).toBe(15);
-    });
-  });
-});
-```
-
-### Final Implementation
-
-```typescript
-// src/calculator.ts (complete)
-
-/**
- * A simple calculator with basic arithmetic operations.
- *
- * @example
- * const calc = new Calculator();
- * calc.add(2, 3);      // 5
- * calc.subtract(5, 3); // 2
- * calc.multiply(3, 4); // 12
- * calc.divide(10, 2);  // 5
- */
-export class Calculator {
-  /**
-   * Adds two numbers.
-   */
-  add(a: number, b: number): number {
-    this.validateNumbers(a, b);
-    return a + b;
-  }
-
-  /**
-   * Subtracts b from a.
-   */
-  subtract(a: number, b: number): number {
-    this.validateNumbers(a, b);
-    return a - b;
-  }
-
-  /**
-   * Multiplies two numbers.
-   */
-  multiply(a: number, b: number): number {
-    this.validateNumbers(a, b);
-    return a * b;
-  }
-
-  /**
-   * Divides a by b.
-   * @throws {Error} If b is zero
-   */
-  divide(a: number, b: number): number {
-    this.validateNumbers(a, b);
-    if (b === 0) {
-      throw new Error('Division by zero');
-    }
-    return a / b;
-  }
-
-  private validateNumbers(...nums: number[]): void {
-    for (const n of nums) {
-      if (typeof n !== 'number' || Number.isNaN(n)) {
-        throw new TypeError('Invalid number');
-      }
-    }
-  }
-}
 ```
 
 ---
 
 ## BDD in tasks.md
 
-### The Test Plan Format
-
-Every task in tasks.md includes BDD test plans:
+Every task includes [BDD](/docs/glossary/terms/bdd) test plans:
 
 ```markdown
-### T-004: Implement divide() (P1)
+### T-004: Implement divide()
 
 **Test Plan** (BDD):
 
@@ -520,80 +182,48 @@ Every task in tasks.md includes BDD test plans:
 - **When** divide(10, 0) is called
 - **Then** Error "Division by zero" is thrown
 
-**Scenario 3: Decimal result**
-- **Given** two numbers 7 and 2
-- **When** divide(7, 2) is called
-- **Then** result is 3.5
-
 **Test Cases**:
 - divide_normalDivision_returnsQuotient
 - divide_byZero_throwsError
-- divide_decimalResult_returnsFloat
-- divide_negativeNumbers_handlesSign
-```
-
-### Generating Tests from BDD
-
-SpecWeave translates BDD to actual tests:
-
-```typescript
-// Generated from BDD in tasks.md
-
-describe('divide()', () => {
-  // Scenario 1: Normal division
-  // Given two numbers 10 and 2
-  // When divide(10, 2) is called
-  // Then result is 5
-  it('divide_normalDivision_returnsQuotient', () => {
-    expect(calc.divide(10, 2)).toBe(5);
-  });
-
-  // Scenario 2: Division by zero
-  // Given divisor is 0
-  // When divide(10, 0) is called
-  // Then Error "Division by zero" is thrown
-  it('divide_byZero_throwsError', () => {
-    expect(() => calc.divide(10, 0)).toThrow('Division by zero');
-  });
-
-  // Scenario 3: Decimal result
-  // Given two numbers 7 and 2
-  // When divide(7, 2) is called
-  // Then result is 3.5
-  it('divide_decimalResult_returnsFloat', () => {
-    expect(calc.divide(7, 2)).toBe(3.5);
-  });
-});
 ```
 
 ---
 
 ## TDD Best Practices
 
-### 1. Test Behavior, Not Implementation
+### Test Behavior, Not Implementation
 
 ```typescript
-// ❌ BAD: Testing implementation details
-it('should use the _calculateInternal method', () => {
+// ❌ BAD: Testing implementation
+it('uses _calculateInternal method', () => {
   const spy = vi.spyOn(calc, '_calculateInternal');
   calc.add(1, 2);
   expect(spy).toHaveBeenCalled();
 });
 
 // ✅ GOOD: Testing behavior
-it('adds two numbers correctly', () => {
+it('adds two numbers', () => {
   expect(calc.add(1, 2)).toBe(3);
 });
 ```
 
-### 2. One Assertion Per Test (When Practical)
+### Descriptive Test Names
+
+```typescript
+// ❌ BAD
+it('test1', () => { ... });
+
+// ✅ GOOD
+it('add_twoPositives_returnsSum', () => { ... });
+```
+
+### One Assertion Per Test
 
 ```typescript
 // ❌ BAD: Multiple unrelated assertions
 it('calculator works', () => {
   expect(calc.add(1, 2)).toBe(3);
   expect(calc.subtract(5, 3)).toBe(2);
-  expect(calc.multiply(2, 3)).toBe(6);
 });
 
 // ✅ GOOD: Focused tests
@@ -606,76 +236,36 @@ it('subtracts numbers', () => {
 });
 ```
 
-### 3. Descriptive Test Names
-
-```typescript
-// ❌ BAD: Unclear names
-it('test1', () => { ... });
-it('works', () => { ... });
-
-// ✅ GOOD: Descriptive names
-it('add_twoPositiveIntegers_returnsTheirSum', () => { ... });
-it('divide_byZero_throwsDivisionByZeroError', () => { ... });
-```
-
-### 4. Arrange-Act-Assert Pattern
-
-```typescript
-it('divide_byZero_throwsError', () => {
-  // Arrange
-  const calc = new Calculator();
-  const dividend = 10;
-  const divisor = 0;
-
-  // Act & Assert
-  expect(() => calc.divide(dividend, divisor)).toThrow('Division by zero');
-});
-```
-
 ---
 
-## Practice Exercise
+## Try It Yourself
 
-### Challenge: Build a String Calculator
+Build a string calculator using TDD:
 
-Using TDD, implement a string calculator with these requirements:
-
-**User Story**:
-```
-As a developer,
-I want a string calculator
-So that I can parse and calculate from string input.
-```
-
-**Acceptance Criteria**:
-- AC-01: `"1,2"` returns `3`
-- AC-02: Empty string returns `0`
-- AC-03: Single number returns that number
-- AC-04: Newlines work as delimiters (`"1\n2,3"` returns `6`)
-- AC-05: Negative numbers throw error
-
-### Steps:
+**Requirements**:
+- `"1,2"` returns `3`
+- Empty string returns `0`
+- Single number returns that number
+- Negative numbers throw error
 
 ```bash
-# 1. Create increment
 /specweave:increment "String calculator with TDD"
-
-# 2. Review the generated BDD tests in tasks.md
-
-# 3. Start TDD cycle
 /specweave:tdd-cycle
-
-# 4. Follow RED → GREEN → REFACTOR for each task
-
-# 5. Complete and close
 /specweave:next
 ```
 
 ---
 
-## Summary
+## Glossary Terms Used
 
-TDD with SpecWeave:
+- **[TDD](/docs/glossary/terms/tdd)** — Test-Driven Development
+- **[BDD](/docs/glossary/terms/bdd)** — Behavior-Driven Development (Given/When/Then)
+- **[Unit Testing](/docs/glossary/terms/unit-testing)** — Testing individual functions
+- **[Test Coverage](/docs/glossary/terms/test-coverage)** — Percentage of code tested
+
+---
+
+## Key Takeaways
 
 | Command | Phase | Purpose |
 |---------|-------|---------|
@@ -689,4 +279,10 @@ TDD with SpecWeave:
 2. **Green**: Make it pass (minimal code)
 3. **Refactor**: Clean up (keep tests green)
 
-:next → [Lesson 7: External Tool Integration](./07-external-tools)
+---
+
+## What's Next?
+
+Connect SpecWeave to your project management tools.
+
+**:next** → [Lesson 7: External Tools](./07-external-tools)

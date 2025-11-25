@@ -399,7 +399,7 @@ coverage_target: 85%
 11. Run tests: `npm test sonnet-analyzer` (should pass: 9/9)
 12. Verify coverage, cost, latency: `npm run coverage` (≥90%, cost < $0.08, latency < 30s)
 
-**Model**: Claude Sonnet 4.0 ($3/MTok input, $15/MTok output)
+**Model**: Claude Sonnet 4.5 ($3/MTok input, $15/MTok output)
 
 ---
 
@@ -1466,7 +1466,7 @@ coverage_target: 85%
 
 **External**:
 - GitHub Actions API (REST)
-- Anthropic Claude API (Haiku 3.5 + Sonnet 4.0)
+- Anthropic Claude API (Haiku 4.5 + Sonnet 4.5)
 - GitHub CLI (`gh` command)
 
 **Internal**:

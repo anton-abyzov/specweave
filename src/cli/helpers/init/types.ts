@@ -91,6 +91,41 @@ export interface TestingConfig {
 }
 
 /**
+ * Translation scope - what gets auto-translated
+ */
+export interface TranslationScope {
+  /** Auto-translate spec.md, plan.md, tasks.md after creation */
+  incrementSpecs: boolean;
+  /** Auto-translate living docs on update */
+  livingDocs: boolean;
+  /** Auto-translate GitHub/JIRA/ADO issues on sync */
+  externalSync: boolean;
+}
+
+/**
+ * Translation configuration for config.json
+ *
+ * CRITICAL: Translation can ~2x token usage
+ * User MUST explicitly opt-in during init
+ */
+export interface TranslationConfig {
+  /** Master switch for auto-translation */
+  enabled: boolean;
+  /** Enabled languages (always includes 'en' as source) */
+  languages: SupportedLanguage[];
+  /** Primary output language for user */
+  primary: SupportedLanguage;
+  /** Translation method: auto (hooks), manual (/specweave:translate), none */
+  method: 'auto' | 'manual' | 'none';
+  /** Keep SpecWeave framework terms in English (increment, spec.md, etc.) */
+  preserveFrameworkTerms: boolean;
+  /** What to auto-translate */
+  scope: TranslationScope;
+  /** Keep English originals as .en.md files */
+  keepEnglishOriginals: boolean;
+}
+
+/**
  * Context passed between init steps
  */
 export interface InitContext {

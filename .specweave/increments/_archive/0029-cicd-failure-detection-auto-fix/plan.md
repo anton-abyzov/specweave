@@ -56,8 +56,8 @@
 - Node.js 18+
 - GitHub Actions REST API
 - Anthropic Claude API:
-  - Haiku 3.5 ($0.25/MTok input, $1.25/MTok output)
-  - Sonnet 4.0 ($3/MTok input, $15/MTok output)
+  - Haiku 4.5 ($0.25/MTok input, $1.25/MTok output)
+  - Sonnet 4.5 ($3/MTok input, $15/MTok output)
 - SQLite (optional, pattern learning)
 - node-notifier (desktop notifications)
 

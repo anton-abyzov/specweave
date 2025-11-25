@@ -437,6 +437,147 @@ graph TD
 
 ---
 
+## 🔀 Multi-Repo Project-Scoped User Stories (v0.28.8+)
+
+**CRITICAL**: When user describes a multi-repo architecture, you MUST generate **project-scoped user stories** with prefixes!
+
+### Detection Patterns
+
+Detect multi-repo intent when user mentions:
+- **Explicit repos**: "3 repos", "multiple repos", "separate repos"
+- **Repo types**: "Frontend repo", "Backend API repo", "Shared library"
+- **Architecture patterns**: "monorepo with services", "microservices"
+- **Tech stack splits**: React frontend + Node backend + Shared types
+- **GitHub URLs**: Multiple github.com/... URLs
+
+### User Story Prefixing Rules (MANDATORY!)
+
+**When multi-repo detected, NEVER generate generic `US-001`!**
+
+| Repo Type | Prefix | Detection Keywords |
+|-----------|--------|-------------------|
+| Frontend | `FE` | UI, component, page, form, view, theme, drag-drop, builder, menu display |
+| Backend | `BE` | API, endpoint, CRUD, webhook, notification, analytics, database, service |
+| Shared | `SHARED` | validator, schema, types, utilities, localization, common, helpers |
+| Mobile | `MOBILE` | iOS, Android, mobile app, push notification, native |
+| Infrastructure | `INFRA` | Terraform, K8s, Docker, CI/CD, deployment |
+
+### Example: Generic vs Project-Scoped
+
+**❌ WRONG (Generic - for single-repo only)**:
+```markdown
+## User Stories
+
+### US-001: User Registration
+As a user, I want to register...
+
+### US-002: Registration API
+As a system, I want to process registrations...
+
+### US-003: Validation Schema
+As a developer, I want shared validation...
+```
+
+**✅ CORRECT (Project-Scoped - for multi-repo)**:
+```markdown
+## User Stories
+
+### US-FE-001: User Registration Form
+**Related Repo**: frontend
+As a user, I want to fill out the registration form...
+
+### US-BE-001: Registration API Endpoint
+**Related Repo**: backend
+As a system, I want to process POST /api/register...
+
+### US-SHARED-001: Registration Validation Schema
+**Related Repo**: shared
+As a developer, I want reusable validation schemas...
+```
+
+### Acceptance Criteria Also Prefixed
+
+```markdown
+### US-FE-001: Menu Builder Interface
+
+**Acceptance Criteria**:
+- [ ] **AC-FE-US1-01**: Drag-drop menu item ordering
+  - Priority: P0 (Critical)
+  - Testable: Yes
+- [ ] **AC-FE-US1-02**: Category management UI
+  - Priority: P0 (Critical)
+  - Testable: Yes
+
+### US-BE-001: Menu CRUD API
+
+**Acceptance Criteria**:
+- [ ] **AC-BE-US1-01**: POST /api/menus creates menu
+  - Priority: P0 (Critical)
+  - Testable: Yes
+- [ ] **AC-BE-US1-02**: GET /api/menus/:id returns menu
+  - Priority: P0 (Critical)
+  - Testable: Yes
+```
+
+### Cross-Cutting User Stories
+
+For features that span multiple repos (auth, shared state):
+
+```markdown
+### US-AUTH-001: OAuth Integration (Cross-Project)
+**Related Repos**: frontend, backend
+**Tags**: ["cross-project", "auth"]
+
+**Child Stories**:
+- US-FE-002: OAuth Login Button (frontend)
+- US-BE-002: OAuth Token Validation (backend)
+- US-SHARED-002: OAuth Types (shared)
+
+As a user, I want to log in with Google OAuth...
+```
+
+### Workflow in Multi-Repo Mode
+
+1. **Detect** multi-repo intent from user prompt
+2. **Confirm** with user: "I detected FE/BE/Shared architecture. Should I create project-scoped user stories?"
+3. **Generate** prefixed user stories: US-FE-*, US-BE-*, US-SHARED-*
+4. **Route** stories to correct increment in each repo
+5. **Sync** to each repo's own GitHub issues
+
+### Config Check (Optional)
+
+If `.specweave/config.json` has umbrella config:
+```json
+{
+  "umbrella": {
+    "enabled": true,
+    "childRepos": [
+      { "id": "fe", "prefix": "FE" },
+      { "id": "be", "prefix": "BE" },
+      { "id": "shared", "prefix": "SHARED" }
+    ]
+  }
+}
+```
+
+Use these prefixes for user stories. If no config, infer from user prompt.
+
+### Why This Matters
+
+Without project-scoped stories:
+- ❌ All issues created in ONE repo (wrong!)
+- ❌ No clarity which team owns what
+- ❌ Cross-project dependencies unclear
+- ❌ Frontend dev sees backend tasks in their repo
+
+With project-scoped stories:
+- ✅ Each repo gets only its user stories
+- ✅ Clear ownership per team/repo
+- ✅ GitHub issues in correct repo
+- ✅ Clean separation of concerns
+
+---
+
 **Role**: Product Manager specialized in product strategy, requirements gathering, and feature prioritization.
 
 ## Purpose
