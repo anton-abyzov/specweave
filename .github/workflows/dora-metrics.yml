@@ -43,6 +43,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .specweave/metrics/dora-latest.json .specweave/metrics/dora-report.md
@@ -55,8 +56,8 @@ jobs:
           COMMIT_MSG="chore: update DORA metrics - $(date '+%b %d, %Y') [skip ci]"
           git commit -m "$COMMIT_MSG"
 
-          # Try direct push first
-          if git push 2>/dev/null; then
+          # Try direct push first (works if bot has bypass or no protection)
+          if git push origin HEAD:develop 2>&1; then
             echo "✅ Successfully pushed metrics update directly"
             exit 0
           fi
@@ -68,32 +69,13 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           git push -u origin "$BRANCH_NAME"
 
-          # Check for existing open PR
-          EXISTING_PR=$(gh pr list --head "automated/dora-metrics" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+          # Create PR with simple body
+          gh pr create --title "$COMMIT_MSG" --body "Automated DORA metrics update. Merge to update the report on GitHub."
 
-          if [ -n "$EXISTING_PR" ]; then
-            echo "📋 Closing existing PR #$EXISTING_PR"
-            gh pr close "$EXISTING_PR" --delete-branch 2>/dev/null || true
-          fi
+          echo "✅ Created PR for metrics update"
 
-          # Create new PR
-          PR_URL=$(gh pr create \
-            --title "$COMMIT_MSG" \
-            --body "## Automated DORA Metrics Update
-
-          This PR updates the DORA metrics report with the latest calculations.
-
-          **Changes:**
-          - Updated \`.specweave/metrics/dora-latest.json\` with current metrics
-          - Updated \`.specweave/metrics/dora-report.md\` with formatted report
-
-          ---
-          🤖 This PR was automatically created by the DORA Metrics workflow." 2>&1)
-
-          echo "✅ Created PR: $PR_URL"
-
-          # Try to enable auto-merge (will fail silently if not enabled for repo)
-          gh pr merge --auto --squash 2>/dev/null || echo "💡 Auto-merge not enabled - PR requires manual approval"
+          # Try to enable auto-merge
+          gh pr merge --auto --squash 2>/dev/null || echo "💡 Auto-merge not enabled - PR requires manual merge"
 
       - name: Create error issue on failure
         if: failure()
