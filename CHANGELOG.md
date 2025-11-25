@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.9] - 2025-11-25
+
+### 📚 Documentation
+- Added complete learning journey lessons (04-10): next command, quality gates, TDD workflow, external tools, AI model selection, troubleshooting, and advanced patterns
+- Enhanced specweave-done command documentation with quality gates
+- Improved post-increment-completion hook with living docs sync
+
+---
+
+
+
 ## [0.28.7] - 2025-11-25
 
 ### ✨ Features
