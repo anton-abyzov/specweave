@@ -47,50 +47,9 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ## The Workflow
 
-```mermaid
-flowchart TB
-    subgraph INPUT["1. TYPE ONE COMMAND"]
-        A["/specweave:increment<br/>'Add dark mode'"]
-    end
-
-    subgraph AGENTS["2. AI AGENTS CREATE"]
-        direction TB
-        PM["PM Agent<br/>User stories + ACs"]
-        ARCH["Architect Agent<br/>Design + ADRs"]
-        PLAN["Planner Agent<br/>Tasks + Tests"]
-        PM --> ARCH --> PLAN
-    end
-
-    subgraph OUTPUT["3. PERMANENT FILES"]
-        direction LR
-        SPEC["spec.md<br/>WHAT"]
-        PLANF["plan.md<br/>HOW"]
-        TASKS["tasks.md<br/>DO"]
-    end
-
-    subgraph EXECUTE["4. BUILD"]
-        B["/specweave:do<br/>Autonomous execution"]
-    end
-
-    subgraph SYNC["5. AUTO-SYNC"]
-        direction LR
-        GH["GitHub"]
-        JIRA["JIRA"]
-        ADO["ADO"]
-        DOCS["Docs"]
-    end
-
-    INPUT --> AGENTS
-    AGENTS --> OUTPUT
-    OUTPUT --> EXECUTE
-    EXECUTE --> SYNC
-
-    style INPUT fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style AGENTS fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    style OUTPUT fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style EXECUTE fill:#fce4ec,stroke:#e91e63,stroke-width:2px
-    style SYNC fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/workflow-diagram.svg" alt="SpecWeave Workflow: Command → AI Agents → Permanent Files → Build → Auto-Sync" width="700"/>
+</p>
 
 ---
 
@@ -131,31 +90,9 @@ Then in Claude Code:
 
 SpecWeave keeps your project management tools in sync **automatically**:
 
-```mermaid
-flowchart LR
-    subgraph SPECWEAVE["SpecWeave"]
-        TASK["Task Completed"]
-        US["User Story Updated"]
-        INC["Increment Progress"]
-    end
-
-    subgraph EXTERNAL["Your Tools (Bidirectional)"]
-        GH["<b>GitHub Issues</b><br/>Checkboxes, comments,<br/>labels auto-update"]
-        JIRA["<b>JIRA</b><br/>Epic/Story hierarchy,<br/>status transitions"]
-        ADO["<b>Azure DevOps</b><br/>Work items,<br/>area paths"]
-    end
-
-    TASK -->|"hooks auto-fire"| GH
-    TASK -->|"hooks auto-fire"| JIRA
-    TASK -->|"hooks auto-fire"| ADO
-
-    GH -->|"import existing"| INC
-    JIRA -->|"import existing"| INC
-    ADO -->|"import existing"| INC
-
-    style SPECWEAVE fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    style EXTERNAL fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/external-sync-diagram.svg" alt="SpecWeave External Tool Integration: Bidirectional sync with GitHub, JIRA, Azure DevOps" width="800"/>
+</p>
 
 | Platform | Capabilities |
 |----------|--------------|
@@ -222,25 +159,9 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 ### Autonomous Multi-Agent Orchestration
 
-```mermaid
-flowchart LR
-    subgraph AGENTS["15+ Specialized Agents"]
-        PM["PM Agent"]
-        ARCH["Architect"]
-        TECH["Tech Lead"]
-        QA["QA Lead"]
-        SEC["Security"]
-        DEVOPS["DevOps"]
-    end
-
-    PM -->|"spec.md"| ARCH
-    ARCH -->|"plan.md"| TECH
-    TECH -->|"code"| QA
-    QA -->|"tests"| SEC
-    SEC -->|"security review"| DEVOPS
-
-    style AGENTS fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/agents-diagram.svg" alt="SpecWeave Multi-Agent Orchestration: PM → Architect → Tech Lead → QA → Security → DevOps" width="850"/>
+</p>
 
 - **PM Agent**: User stories, acceptance criteria, market analysis
 - **Architect Agent**: System design, ADRs, tech stack decisions
@@ -271,6 +192,28 @@ Three gates before any increment closes:
 - Skills auto-activate based on keywords
 - Context optimizer removes irrelevant specs
 - Sub-agent parallelization isolates context
+
+### Why Skills, Not MCP?
+
+**Community insight**: Anthropic's engineering team discovered that [code execution beats direct tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) for AI agent efficiency.
+
+**The MCP Problem**:
+| Issue | Impact |
+|-------|--------|
+| Tool definition bloat | All tools loaded upfront → context waste |
+| Data duplication | Same data flows through model 2-3× |
+| Token explosion | 150,000 tokens vs 2,000 with code-first |
+
+**SpecWeave's Approach**:
+```
+❌ MCP: Load 50 tools → model picks → fetch → model processes → call another
+✅ Skills: Load 1 skill on-demand → Claude writes code → process locally
+```
+
+> "LLMs are adept at writing code and developers should take advantage of this strength."
+> — [Anthropic Engineering](https://www.anthropic.com/engineering/code-execution-with-mcp)
+
+**Result**: 98%+ token reduction, deterministic execution, reusable skill library.
 
 ---
 
