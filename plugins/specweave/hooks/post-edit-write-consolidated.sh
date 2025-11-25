@@ -306,6 +306,93 @@ if [[ -z "$DETECTED_FILE" ]]; then
 fi
 
 # ============================================================================
+# LIVING DOCS SYNC FOR NEW INCREMENTS (v0.27.1 - Critical Fix)
+# ============================================================================
+# When a NEW spec.md is created, trigger living docs sync to create FS-XXX folder.
+# This was previously in post-increment-planning.sh (hooks.json) but hooks.json
+# is NOT used - plugin.json is the active config and it only calls this script.
+#
+# Detection: spec.md in increment folder + no FS-XXX folder in living docs yet
+# See: Incident 2025-11-24 (FS-061 not created automatically)
+
+if [[ "$SHOULD_UPDATE" == "true" ]] && [[ "$DETECTED_FILE" == *"/spec.md" ]]; then
+  # Extract increment ID from path (e.g., 0061-fix-multi-repo-init-ux)
+  INCREMENT_ID=$(echo "$DETECTED_FILE" | grep -o '[0-9][0-9][0-9][0-9]-[^/]*' | head -1)
+
+  if [[ -n "$INCREMENT_ID" ]]; then
+    # Extract feature_id from spec.md frontmatter
+    FEATURE_ID=$(awk '
+      BEGIN { in_frontmatter=0 }
+      /^---$/ {
+        if (in_frontmatter == 0) { in_frontmatter=1; next }
+        else { exit }
+      }
+      in_frontmatter == 1 && /^feature_id:/ {
+        gsub(/^feature_id:[ \t]*/, "");
+        gsub(/["'"'"']/, "");
+        print;
+        exit
+      }
+    ' "$DETECTED_FILE" 2>/dev/null | tr -d '\r\n')
+
+    # Check if living docs folder exists for this feature
+    LIVING_DOCS_PATH="$PROJECT_ROOT/.specweave/docs/internal/specs"
+    FEATURE_FOLDER_EXISTS=false
+
+    if [[ -n "$FEATURE_ID" ]]; then
+      # Check in all project subfolders (multi-project support)
+      for project_dir in "$LIVING_DOCS_PATH"/*; do
+        if [[ -d "$project_dir/$FEATURE_ID" ]]; then
+          FEATURE_FOLDER_EXISTS=true
+          break
+        fi
+      done
+    fi
+
+    if [[ "$FEATURE_FOLDER_EXISTS" == "false" ]]; then
+      echo "[$(date)] post-edit-write: NEW increment detected ($INCREMENT_ID) - triggering living docs sync" >> "$DEBUG_LOG" 2>/dev/null || true
+
+      # Find sync script (same logic as post-increment-planning.sh)
+      SYNC_SCRIPT=""
+      if [[ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" ]]; then
+        SYNC_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"
+      elif [[ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" ]]; then
+        SYNC_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js"
+      elif [[ -n "${CLAUDE_PLUGIN_ROOT:-}" ]] && [[ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js" ]]; then
+        SYNC_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-living-docs.js"
+      fi
+
+      if [[ -n "$SYNC_SCRIPT" ]]; then
+        # Run living docs sync in background (non-blocking)
+        (
+          set +e
+          cd "$PROJECT_ROOT" || exit 0
+
+          if [[ -n "$FEATURE_ID" ]]; then
+            FEATURE_ID="$FEATURE_ID" node "$SYNC_SCRIPT" "$INCREMENT_ID" >> "$DEBUG_LOG" 2>&1
+          else
+            node "$SYNC_SCRIPT" "$INCREMENT_ID" >> "$DEBUG_LOG" 2>&1
+          fi
+
+          if [[ $? -eq 0 ]]; then
+            echo "[$(date)] post-edit-write: Living docs sync completed for $INCREMENT_ID" >> "$DEBUG_LOG" 2>/dev/null || true
+          else
+            echo "[$(date)] post-edit-write: Living docs sync FAILED for $INCREMENT_ID (non-blocking)" >> "$DEBUG_LOG" 2>/dev/null || true
+          fi
+        ) &
+        disown 2>/dev/null || true
+
+        echo "[$(date)] post-edit-write: Living docs sync triggered in background" >> "$DEBUG_LOG" 2>/dev/null || true
+      else
+        echo "[$(date)] post-edit-write: sync-living-docs.js not found - skipping living docs sync" >> "$DEBUG_LOG" 2>/dev/null || true
+      fi
+    else
+      echo "[$(date)] post-edit-write: Living docs folder already exists for $FEATURE_ID - skipping sync" >> "$DEBUG_LOG" 2>/dev/null || true
+    fi
+  fi
+fi
+
+# ============================================================================
 # TIER 1 FIX: Non-Blocking Background Update with COMPLETE ERROR ISOLATION
 # ============================================================================
 # Update status line if needed

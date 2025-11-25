@@ -147,7 +147,7 @@ savings = baselineCost - actualCost
 **Columns**:
 ```csv
 Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,sonnet,/specweave:inc,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
+session_123,pm,sonnet,/specweave:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
 ```
 
 ---
@@ -193,7 +193,7 @@ const tracker = new CostTracker({
 });
 
 // Start session
-const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave:inc');
+const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave:increment');
 
 // Record tokens
 tracker.recordTokens(5000, 2000, sessionId);

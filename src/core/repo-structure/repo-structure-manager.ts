@@ -37,7 +37,7 @@ import {
 } from './prompt-consolidator.js';
 import { generateGitRemoteUrl } from './url-generator.js';
 import { detectRepositoryHints } from './folder-detector.js';
-import { discoverRepositories, type BulkDiscoveryResult, type DiscoveredRepo } from './repo-bulk-discovery.js';
+import { discoverRepositories, type BulkDiscoveryResult, type DiscoveredRepo, type DiscoveryOptions } from './repo-bulk-discovery.js';
 import { Octokit } from '@octokit/rest';
 import { initializeProviders } from './providers/index.js';
 import { getPlatformRegistry } from './platform-registry.js';
@@ -510,7 +510,8 @@ export class RepoStructureManager {
       // Retry loop for pattern adjustment
       let discoveryResult: BulkDiscoveryResult | null = null;
       while (discoveryResult === null) {
-        discoveryResult = await discoverRepositories(octokit, owner, isOrg, 0); // Pass 0, we'll count later
+        // Discovery-first flow: skip count validation since user discovers THEN selects
+        discoveryResult = await discoverRepositories(octokit, owner, isOrg, 0, { skipValidation: true });
         // If null, user selected "go back and adjust pattern", loop will retry
         // If user selected "manual", discoveryResult will be { repositories: [], strategy: 'manual' }
       }
@@ -1002,10 +1003,14 @@ export class RepoStructureManager {
         default: `${path.basename(repoName)} service`
       });
 
-      const repoCreateOnGitHub = await confirm({
-        message: 'Create this repository on GitHub?',
-        default: !isDiscovered
-      });
+      // Skip "Create on GitHub?" for discovered repos - they already exist!
+      let repoCreateOnGitHub = false;
+      if (!isDiscovered) {
+        repoCreateOnGitHub = await confirm({
+          message: 'Create this repository on GitHub?',
+          default: true
+        });
+      }
 
       const repoAnswers = {
         name: repoName,

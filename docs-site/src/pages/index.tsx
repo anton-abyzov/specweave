@@ -68,7 +68,7 @@ function HomepageHeader() {
             </div>
             <pre className={styles.codePre}>
               <code>{`# 1. Describe your feature (natural language)
-/specweave:inc "Add real-time chat with typing indicators"
+/specweave:increment "Add real-time chat with typing indicators"
 
 🤖 PM Agent asks: "Who will be chatting? Store messages? Scale?"
 ✅ Creates: spec.md (user stories + AC-IDs)
@@ -201,12 +201,12 @@ function ComparisonSection(): ReactNode {
           <div className={styles.comparisonColumn}>
             <h3>✅ With SpecWeave</h3>
             <ul>
-              <li>Type <code>/specweave:inc "feature"</code></li>
+              <li>Type <code>/specweave:increment "feature"</code></li>
               <li>Autonomous agents ask clarifying questions, create spec/plan/tasks, review with you</li>
               <li>Type <code>/specweave:do</code></li>
               <li>Agents work in parallel, auto-resume, validate at milestones, update docs continuously</li>
               <li>Type <code>/specweave:progress</code> anytime to see status</li>
-              <li>Type <code>/specweave:inc "next"</code> to seamlessly move forward</li>
+              <li>Type <code>/specweave:increment "next"</code> to seamlessly move forward</li>
             </ul>
             <p className={styles.comparisonResult}>
               <strong>Result:</strong> Minimal interaction, natural flow. Production-ready software with living documentation and full traceability.

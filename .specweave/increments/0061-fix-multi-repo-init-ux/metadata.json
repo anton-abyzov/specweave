@@ -1,0 +1,33 @@
+{
+  "increment": "0061-fix-multi-repo-init-ux",
+  "title": "Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message",
+  "type": "bug",
+  "status": "in-progress",
+  "priority": "P1",
+  "created": "2025-11-24T21:00:00Z",
+  "feature_id": "FS-061",
+  "description": "Fix confusing UX in multi-repo init flow where bulk discovery shows 'you specified 0' message. Streamline discovery flow to be more intuitive.",
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 750,
+        "url": "https://github.com/anton-abyzov/specweave/issues/750",
+        "createdAt": "2025-11-25T03:57:36.810Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 751,
+        "url": "https://github.com/anton-abyzov/specweave/issues/751",
+        "createdAt": "2025-11-25T03:57:39.075Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 752,
+        "url": "https://github.com/anton-abyzov/specweave/issues/752",
+        "createdAt": "2025-11-25T03:57:41.192Z"
+      }
+    ],
+    "lastSync": "2025-11-25T03:57:41.192Z"
+  }
+}
