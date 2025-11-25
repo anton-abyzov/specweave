@@ -1,10 +1,13 @@
 /**
  * Project ID Auto-Detection Utilities
  *
- * Detects project ID from:
- * 1. Git remote (GitHub repo name)
- * 2. Sync configuration (JIRA project key, ADO project name)
- * 3. User prompt (fallback)
+ * Detects project ID from (priority order):
+ * 1. Active sync profile ID (for multi-profile monorepos)
+ * 2. Git remote (GitHub repo name)
+ * 3. Sync configuration (JIRA project key, ADO project name)
+ * 4. User prompt (fallback)
+ *
+ * Also provides repo name parsing for domain context understanding.
  */
 
 import * as fs from '../utils/fs-native.js';
@@ -12,6 +15,125 @@ import path from 'path';
 import { input } from '@inquirer/prompts';
 import { ConfigManager } from '../core/config-manager.js';
 import { SyncProfile } from '../core/types/sync-profile.js';
+
+/**
+ * Parsed repo name structure for domain understanding
+ *
+ * @example
+ * parseRepoName('sw-qr-menu-be')
+ * // Returns: { prefix: 'sw', product: 'qr-menu', component: 'be', full: 'sw-qr-menu-be' }
+ */
+export interface ParsedRepoName {
+  /** Short prefix (e.g., 'sw' for company/project abbreviation) */
+  prefix: string | null;
+  /** Product/domain name (e.g., 'qr-menu') */
+  product: string;
+  /** Component suffix (e.g., 'be', 'fe', 'shared', 'api', 'web', 'mobile') */
+  component: string | null;
+  /** Full original repo name */
+  full: string;
+  /** Detected domain context based on product name */
+  domain: string | null;
+}
+
+/** Known component suffixes that indicate sub-project type */
+const KNOWN_COMPONENTS = ['be', 'fe', 'backend', 'frontend', 'api', 'web', 'mobile', 'shared', 'common', 'core', 'lib', 'ui', 'app', 'service', 'services'];
+
+/** Domain detection patterns */
+const DOMAIN_PATTERNS: Array<{ pattern: RegExp; domain: string }> = [
+  { pattern: /qr[-_]?menu|menu[-_]?qr|restaurant|food|dining/i, domain: 'hospitality/restaurant' },
+  { pattern: /e[-_]?commerce|shop|store|cart|checkout/i, domain: 'retail/ecommerce' },
+  { pattern: /health|medical|patient|clinic|hospital/i, domain: 'healthcare' },
+  { pattern: /finance|banking|payment|wallet|money/i, domain: 'fintech' },
+  { pattern: /edu|learn|school|course|student/i, domain: 'education' },
+  { pattern: /social|chat|message|community/i, domain: 'social' },
+  { pattern: /iot|sensor|device|smart[-_]?home/i, domain: 'iot' },
+  { pattern: /ai|ml|model|predict/i, domain: 'ai/ml' },
+  { pattern: /game|play|score/i, domain: 'gaming' },
+  { pattern: /travel|booking|hotel|flight/i, domain: 'travel' },
+];
+
+/**
+ * Parse repo name to extract product, component, and domain context
+ *
+ * Understands naming conventions like:
+ * - `sw-qr-menu-be` → prefix: sw, product: qr-menu, component: be
+ * - `my-app-frontend` → prefix: null, product: my-app, component: frontend
+ * - `ecommerce-api` → prefix: null, product: ecommerce, component: api
+ *
+ * @param repoName - Repository name (e.g., "sw-qr-menu-be")
+ * @returns Parsed repo name structure
+ */
+export function parseRepoName(repoName: string): ParsedRepoName {
+  const normalized = repoName.toLowerCase().trim();
+  const parts = normalized.split(/[-_]+/);
+
+  let prefix: string | null = null;
+  let component: string | null = null;
+  let productParts: string[] = parts;
+
+  // Check if last part is a known component
+  if (parts.length > 1) {
+    const lastPart = parts[parts.length - 1];
+    if (KNOWN_COMPONENTS.includes(lastPart)) {
+      component = lastPart;
+      productParts = parts.slice(0, -1);
+    }
+  }
+
+  // Check if first part is a short prefix (2-3 chars, likely abbreviation)
+  if (productParts.length > 1 && productParts[0].length <= 3) {
+    prefix = productParts[0];
+    productParts = productParts.slice(1);
+  }
+
+  const product = productParts.join('-');
+
+  // Detect domain from product name
+  let domain: string | null = null;
+  for (const { pattern, domain: detectedDomain } of DOMAIN_PATTERNS) {
+    if (pattern.test(product) || pattern.test(normalized)) {
+      domain = detectedDomain;
+      break;
+    }
+  }
+
+  return {
+    prefix,
+    product,
+    component,
+    full: normalized,
+    domain,
+  };
+}
+
+/**
+ * Detect active profile ID from sync configuration
+ *
+ * For multi-profile monorepos, the active profile ID should be used
+ * as the project folder name (e.g., "be", "fe", "shared")
+ *
+ * @param projectRoot - Project root directory
+ * @returns Active profile ID or null if not in multi-profile mode
+ */
+export function detectActiveProfileId(projectRoot: string): string | null {
+  try {
+    const configManager = new ConfigManager(projectRoot);
+    const config = configManager.load();
+
+    // Multi-profile mode: use active profile ID as folder name
+    if (config.sync?.activeProfile && config.sync?.profiles) {
+      const activeProfileId = config.sync.activeProfile;
+      if (config.sync.profiles[activeProfileId]) {
+        return activeProfileId.toLowerCase();
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Auto-detect project ID from git remote URL
@@ -183,16 +305,22 @@ export async function promptForProjectId(suggestedId?: string): Promise<string> 
  * Auto-detect project ID synchronously (no prompts)
  *
  * Priority:
- * 1. Git remote (GitHub repo name)
- * 2. Sync configuration (JIRA/ADO project)
- * 3. "default" (fallback)
+ * 1. Active sync profile ID (for multi-profile monorepos like sw-qr-menu)
+ * 2. Git remote (GitHub repo name) - for single-repo projects
+ * 3. Sync configuration (JIRA/ADO project) - legacy fallback
+ * 4. "default" (fallback)
  *
  * @param projectRoot - Project root directory
  * @param options - Detection options
  * @returns Detected project ID or "default"
  *
  * @example
- * // In git repo: https://github.com/anton-abyzov/specweave.git
+ * // Multi-profile monorepo with activeProfile: "be"
+ * autoDetectProjectIdSync('/path/to/sw-qr-menu')
+ * // Returns: "be" (profile ID, NOT "sw-qr-menu-be")
+ *
+ * @example
+ * // Single repo: https://github.com/anton-abyzov/specweave.git
  * autoDetectProjectIdSync('/path/to/project')
  * // Returns: "specweave"
  *
@@ -209,7 +337,16 @@ export function autoDetectProjectIdSync(
 ): string {
   const { silent = false } = options;
 
-  // 1. Try git remote
+  // 1. Try active profile ID (highest priority for multi-profile monorepos)
+  const activeProfileId = detectActiveProfileId(projectRoot);
+  if (activeProfileId) {
+    if (!silent) {
+      console.log(`✅ Detected active profile: ${activeProfileId}`);
+    }
+    return activeProfileId;
+  }
+
+  // 2. Try git remote (for single-repo projects)
   const gitProjectId = detectProjectIdFromGit(projectRoot);
   if (gitProjectId) {
     if (!silent) {
@@ -218,7 +355,7 @@ export function autoDetectProjectIdSync(
     return gitProjectId;
   }
 
-  // 2. Try sync config
+  // 3. Try sync config (legacy fallback)
   const syncProjectId = detectProjectIdFromSync(projectRoot);
   if (syncProjectId) {
     if (!silent) {
@@ -227,7 +364,7 @@ export function autoDetectProjectIdSync(
     return syncProjectId;
   }
 
-  // 3. Fallback to "default"
+  // 4. Fallback to "default"
   return 'default';
 }
 
@@ -235,14 +372,21 @@ export function autoDetectProjectIdSync(
  * Auto-detect project ID with fallback chain (async version with prompts)
  *
  * Priority:
- * 1. Git remote (GitHub repo name)
- * 2. Sync configuration (JIRA/ADO project)
- * 3. User prompt (with detected suggestion)
- * 4. "default" (if user accepts default in prompt)
+ * 1. Active sync profile ID (for multi-profile monorepos)
+ * 2. Git remote (GitHub repo name)
+ * 3. Sync configuration (JIRA/ADO project)
+ * 4. User prompt (with detected suggestion)
+ * 5. "default" (if user accepts default in prompt)
  *
  * @param projectRoot - Project root directory
  * @param options - Detection options
  * @returns Detected or prompted project ID
+ *
+ * @example
+ * // Multi-profile monorepo with activeProfile: "be"
+ * await autoDetectProjectId('/path/to/sw-qr-menu')
+ * // Output: "✅ Detected active profile: be"
+ * // Returns: "be"
  *
  * @example
  * // In git repo: https://github.com/anton-abyzov/specweave.git
@@ -266,7 +410,16 @@ export async function autoDetectProjectId(
 ): Promise<string> {
   const { silent = false, promptIfNotDetected = true } = options;
 
-  // 1. Try git remote
+  // 1. Try active profile ID (highest priority for multi-profile monorepos)
+  const activeProfileId = detectActiveProfileId(projectRoot);
+  if (activeProfileId) {
+    if (!silent) {
+      console.log(`✅ Detected active profile: ${activeProfileId}`);
+    }
+    return activeProfileId;
+  }
+
+  // 2. Try git remote
   const gitProjectId = detectProjectIdFromGit(projectRoot);
   if (gitProjectId) {
     if (!silent) {
@@ -275,7 +428,7 @@ export async function autoDetectProjectId(
     return gitProjectId;
   }
 
-  // 2. Try sync config
+  // 3. Try sync config
   const syncProjectId = detectProjectIdFromSync(projectRoot);
   if (syncProjectId) {
     if (!silent) {
@@ -284,7 +437,7 @@ export async function autoDetectProjectId(
     return syncProjectId;
   }
 
-  // 3. Prompt user (if enabled)
+  // 4. Prompt user (if enabled)
   if (promptIfNotDetected) {
     if (!silent) {
       console.log('\n📝 No git repository or sync configuration detected.');
@@ -299,7 +452,7 @@ export async function autoDetectProjectId(
     return await promptForProjectId();
   }
 
-  // 4. Fallback to "default" (no prompt)
+  // 5. Fallback to "default" (no prompt)
   return 'default';
 }
 
@@ -367,4 +520,120 @@ export function validateProjectId(projectId: string): true | string {
   }
 
   return true;
+}
+
+/**
+ * Full project context for intelligent user story routing and domain awareness
+ */
+export interface ProjectContext {
+  /** Active project/profile ID (folder name under specs/) */
+  projectId: string;
+  /** How projectId was detected */
+  detectedFrom: 'activeProfile' | 'gitRemote' | 'syncConfig' | 'fallback';
+  /** Parsed repo name with domain context (if git remote detected) */
+  repoInfo: ParsedRepoName | null;
+  /** All available profiles (for multi-profile monorepos) */
+  availableProfiles: string[];
+  /** Active profile config (if multi-profile) */
+  activeProfile: {
+    id: string;
+    displayName: string;
+    provider: string;
+    repo?: string;
+  } | null;
+}
+
+/**
+ * Get full project context for intelligent routing and domain awareness
+ *
+ * Use this to understand:
+ * - Which project folder to use for specs (projectId)
+ * - What domain/product this project is about (repoInfo.domain)
+ * - What component type this is (repoInfo.component: be/fe/shared)
+ * - What other profiles are available (for cross-project user stories)
+ *
+ * @param projectRoot - Project root directory
+ * @returns Full project context
+ *
+ * @example
+ * // sw-qr-menu monorepo with activeProfile: "be"
+ * getProjectContext('/path/to/sw-qr-menu')
+ * // Returns:
+ * // {
+ * //   projectId: 'be',
+ * //   detectedFrom: 'activeProfile',
+ * //   repoInfo: { prefix: 'sw', product: 'qr-menu', component: 'be', domain: 'hospitality/restaurant' },
+ * //   availableProfiles: ['be', 'fe', 'shared'],
+ * //   activeProfile: { id: 'be', displayName: 'sw-qr-menu-be service', provider: 'github', repo: 'sw-qr-menu-be' }
+ * // }
+ */
+export function getProjectContext(projectRoot: string): ProjectContext {
+  let projectId = 'default';
+  let detectedFrom: ProjectContext['detectedFrom'] = 'fallback';
+  let repoInfo: ParsedRepoName | null = null;
+  let availableProfiles: string[] = [];
+  let activeProfile: ProjectContext['activeProfile'] = null;
+
+  try {
+    const configManager = new ConfigManager(projectRoot);
+    const config = configManager.load();
+
+    // Collect available profiles
+    if (config.sync?.profiles) {
+      availableProfiles = Object.keys(config.sync.profiles);
+    }
+
+    // 1. Try active profile ID (highest priority)
+    if (config.sync?.activeProfile && config.sync?.profiles) {
+      const profileId = config.sync.activeProfile;
+      const profile = config.sync.profiles[profileId] as SyncProfile;
+
+      if (profile) {
+        projectId = profileId.toLowerCase();
+        detectedFrom = 'activeProfile';
+
+        activeProfile = {
+          id: profileId,
+          displayName: profile.displayName || profileId,
+          provider: profile.provider,
+          repo: (profile.config as any)?.repo,
+        };
+
+        // Parse repo name for domain context
+        if (activeProfile.repo) {
+          repoInfo = parseRepoName(activeProfile.repo);
+        }
+      }
+    }
+  } catch {
+    // Config doesn't exist, continue to git detection
+  }
+
+  // 2. Try git remote (if no active profile)
+  if (detectedFrom === 'fallback') {
+    const gitProjectId = detectProjectIdFromGit(projectRoot);
+    if (gitProjectId) {
+      projectId = gitProjectId;
+      detectedFrom = 'gitRemote';
+      repoInfo = parseRepoName(gitProjectId);
+    }
+  }
+
+  // 3. Try sync config (legacy fallback)
+  if (detectedFrom === 'fallback') {
+    const syncProjectId = detectProjectIdFromSync(projectRoot);
+    if (syncProjectId) {
+      projectId = syncProjectId;
+      detectedFrom = 'syncConfig';
+      repoInfo = parseRepoName(syncProjectId);
+    }
+  }
+
+  return {
+    projectId,
+    detectedFrom,
+    repoInfo,
+    availableProfiles,
+    activeProfile,
+  };
 }
