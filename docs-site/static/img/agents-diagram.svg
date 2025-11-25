@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 850 160">
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4ade80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- Container -->
+  <rect x="10" y="10" width="830" height="140" rx="12" fill="#e8f5e9" stroke="#4caf50" stroke-width="2" filter="url(#shadow)"/>
+  <text x="425" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#2e7d32">15+ Specialized Agents</text>
+
+  <!-- PM Agent -->
+  <g transform="translate(30, 50)">
+    <rect x="0" y="0" width="110" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="55" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">PM Agent</text>
+    <text x="55" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">spec.md</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path d="M145 90 L165 90" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- Architect Agent -->
+  <g transform="translate(170, 50)">
+    <rect x="0" y="0" width="110" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="55" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">Architect</text>
+    <text x="55" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">plan.md</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path d="M285 90 L305 90" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- Tech Lead Agent -->
+  <g transform="translate(310, 50)">
+    <rect x="0" y="0" width="110" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="55" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">Tech Lead</text>
+    <text x="55" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">code</text>
+  </g>
+
+  <!-- Arrow 3 -->
+  <path d="M425 90 L445 90" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- QA Lead Agent -->
+  <g transform="translate(450, 50)">
+    <rect x="0" y="0" width="110" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="55" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">QA Lead</text>
+    <text x="55" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">tests</text>
+  </g>
+
+  <!-- Arrow 4 -->
+  <path d="M565 90 L585 90" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- Security Agent -->
+  <g transform="translate(590, 50)">
+    <rect x="0" y="0" width="110" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="55" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">Security</text>
+    <text x="55" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">security review</text>
+  </g>
+
+  <!-- Arrow 5 -->
+  <path d="M705 90 L725 90" stroke="#6b7280" stroke-width="2" fill="none" marker-end="url(#arrowhead)"/>
+
+  <!-- DevOps Agent -->
+  <g transform="translate(730, 50)">
+    <rect x="0" y="0" width="100" height="80" rx="8" fill="url(#greenGrad)" stroke="#16a34a" stroke-width="1.5" filter="url(#shadow)"/>
+    <text x="50" y="35" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" fill="#fff">DevOps</text>
+    <text x="50" y="55" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#dcfce7">deploy</text>
+  </g>
+</svg>
