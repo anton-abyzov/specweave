@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.6] - 2025-11-25
+
+### 📚 Documentation
+- Renamed "bidirectional sync" terminology to "external tool sync" across all documentation
+- Added new learning journey guide for new users
+- Added specweave-workflow command reference
+- Deleted deprecated spec-bidirectional-sync.md in favor of external-tool-sync.md
+- Updated metrics, features, and introduction docs with consistent terminology
+
+### 🔧 Maintenance
+- Minor code cleanup in sync-coordinator and frontmatter-updater
+
+---
+
 ## [0.28.5] - 2025-11-25
 
 ### 📚 Documentation
