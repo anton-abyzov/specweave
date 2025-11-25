@@ -1,0 +1,9 @@
+{
+  "label": "Module 12: Linting & Formatting",
+  "position": 12,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "description": "ESLint, Prettier, and code consistency"
+  }
+}

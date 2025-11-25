@@ -80,11 +80,13 @@ export class FSIdAllocator {
   private projectRoot: string;
   private specsPath: string;
   private archivePath: string;
+  private projectId: string;
   private existingFeatures: Map<string, FeatureMetadata> = new Map();
   private scanned: boolean = false;
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, projectId: string = 'default') {
     this.projectRoot = projectRoot;
+    this.projectId = projectId;
     this.specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
     this.archivePath = path.join(projectRoot, '.specweave/docs/_archive/specs');
   }
@@ -93,18 +95,23 @@ export class FSIdAllocator {
    * Scan existing FS-IDs (both active and archived)
    *
    * CRITICAL: Archives are scanned to prevent ID reuse
+   *
+   * Structure: specs/{projectId}/FS-XXX/ (FEATURE.md + user stories)
+   * Archive: specs/{projectId}/_archive/FS-XXX/
    */
   async scanExistingIds(): Promise<void> {
     this.existingFeatures.clear();
 
-    // Scan active features
-    if (await fs.pathExists(this.specsPath)) {
-      await this.scanDirectory(this.specsPath, 'active');
+    // Scan project-specific folder: specs/{projectId}/FS-XXX/
+    const projectSpecsPath = path.join(this.specsPath, this.projectId);
+    if (await fs.pathExists(projectSpecsPath)) {
+      await this.scanDirectory(projectSpecsPath, 'active');
     }
 
-    // Scan archived features (CRITICAL - prevents ID reuse)
-    if (await fs.pathExists(this.archivePath)) {
-      await this.scanDirectory(this.archivePath, 'archived');
+    // Scan project archive: specs/{projectId}/_archive/FS-XXX/
+    const projectArchivePath = path.join(projectSpecsPath, '_archive');
+    if (await fs.pathExists(projectArchivePath)) {
+      await this.scanDirectory(projectArchivePath, 'archived');
     }
 
     this.scanned = true;
@@ -372,7 +379,9 @@ export class FSIdAllocator {
   }
 
   /**
-   * Create feature folder with README.md and metadata
+   * Create feature folder with FEATURE.md and metadata
+   *
+   * Structure: specs/{projectId}/FS-XXX/FEATURE.md
    *
    * @param fsId - Feature ID (e.g., "FS-042E")
    * @param workItem - External work item metadata
@@ -384,8 +393,8 @@ export class FSIdAllocator {
     workItem: ExternalWorkItem,
     metadata: ExternalItemMetadata
   ): Promise<string> {
-    // Create folder path
-    const featurePath = path.join(this.specsPath, fsId);
+    // Create folder path under project: specs/{projectId}/FS-XXX/
+    const featurePath = path.join(this.specsPath, this.projectId, fsId);
     await fs.ensureDir(featurePath);
 
     // Generate README.md with frontmatter

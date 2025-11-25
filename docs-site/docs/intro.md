@@ -286,12 +286,28 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 
 ---
 
+## Learn Software Engineering with SpecWeave
+
+**New to software engineering?** The [Software Engineering Academy](./academy/) takes you from complete beginner to Fortune 500 enterprise developer:
+
+| Path | Duration | For |
+|------|----------|-----|
+| **[Quick Start](./academy/#path-1-quick-start-2-hours)** | 2 hours | Experienced devs wanting SpecWeave |
+| **[Beginner](./academy/#path-2-beginner-developer-4-weeks)** | 4 weeks | New to software engineering |
+| **[Full-Stack](./academy/#path-3-full-stack-developer-10-weeks)** | 10 weeks | Building complete web apps |
+| **[Enterprise](./academy/#path-5-enterprise-developer-16-weeks)** | 16 weeks | Fortune 500-ready skills |
+
+**14 parts, 44 modules** — from single-file scripts to microservices with CI/CD.
+
+---
+
 ## Next Steps
 
 - **[Quickstart Guide](./guides/getting-started/quickstart)** - Get running in 30 seconds
 - **[Core Concepts](./guides/core-concepts/specifications)** - Understand the fundamentals
 - **[Key Features](./overview/features)** - Deep dive into capabilities
 - **[Philosophy](./overview/philosophy)** - Why spec-driven development
+- **[Academy](./academy/)** - Complete software engineering curriculum
 
 ---
 

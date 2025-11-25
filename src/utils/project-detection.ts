@@ -2,10 +2,11 @@
  * Project ID Auto-Detection Utilities
  *
  * Detects project ID from (priority order):
- * 1. Active sync profile ID (for multi-profile monorepos)
- * 2. Git remote (GitHub repo name)
- * 3. Sync configuration (JIRA project key, ADO project name)
- * 4. User prompt (fallback)
+ * 1. multiProject.activeProject (explicit project folder config)
+ * 2. sync.activeProfile (ONLY for legacy umbrella repos without multiProject)
+ * 3. Git remote (GitHub repo name)
+ * 4. Sync configuration (JIRA project key, ADO project name)
+ * 5. User prompt (fallback)
  *
  * Also provides repo name parsing for domain context understanding.
  */
@@ -108,22 +109,39 @@ export function parseRepoName(repoName: string): ParsedRepoName {
 }
 
 /**
- * Detect active profile ID from sync configuration
+ * Detect active project ID from configuration
  *
- * For multi-profile monorepos, the active profile ID should be used
- * as the project folder name (e.g., "be", "fe", "shared")
+ * Priority:
+ * 1. multiProject.activeProject - explicit project folder configuration
+ * 2. sync.activeProfile - ONLY for umbrella repos where profile maps to folder
+ *    (skipped if profile name differs from multiProject.activeProject)
  *
  * @param projectRoot - Project root directory
- * @returns Active profile ID or null if not in multi-profile mode
+ * @returns Active project ID or null if not configured
  */
 export function detectActiveProfileId(projectRoot: string): string | null {
   try {
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.load();
 
-    // Multi-profile mode: use active profile ID as folder name
+    // Priority 1: Explicit multiProject.activeProject (most reliable)
+    if (config.multiProject?.activeProject && config.multiProject.activeProject !== 'default') {
+      return config.multiProject.activeProject.toLowerCase();
+    }
+
+    // Priority 2: sync.activeProfile ONLY for umbrella repos
+    // where profile IS a folder (like "be", "fe", "shared")
+    // Skip if multiProject is configured (activeProfile is just a sync config name)
     if (config.sync?.activeProfile && config.sync?.profiles) {
       const activeProfileId = config.sync.activeProfile;
+
+      // If multiProject is enabled, sync.activeProfile is just a connection name
+      // NOT a project folder - skip it
+      if (config.multiProject?.enabled) {
+        return null;
+      }
+
+      // Legacy umbrella repos: profile maps to folder
       if (config.sync.profiles[activeProfileId]) {
         return activeProfileId.toLowerCase();
       }
@@ -315,7 +333,7 @@ export async function promptForProjectId(suggestedId?: string): Promise<string> 
  * @returns Detected project ID or "default"
  *
  * @example
- * // Multi-profile monorepo with activeProfile: "be"
+ * // Multi-project setup with activeProject: "be"
  * autoDetectProjectIdSync('/path/to/sw-qr-menu')
  * // Returns: "be" (profile ID, NOT "sw-qr-menu-be")
  *
@@ -383,7 +401,7 @@ export function autoDetectProjectIdSync(
  * @returns Detected or prompted project ID
  *
  * @example
- * // Multi-profile monorepo with activeProfile: "be"
+ * // Multi-project setup with activeProject: "be"
  * await autoDetectProjectId('/path/to/sw-qr-menu')
  * // Output: "✅ Detected active profile: be"
  * // Returns: "be"

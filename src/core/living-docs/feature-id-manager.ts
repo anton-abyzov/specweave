@@ -2,6 +2,9 @@
  * Feature ID Manager - Manages FS-XXX ID assignment based on creation date
  * Ensures no duplicate IDs and maintains consistent ordering
  *
+ * v5.0.0: Unified Project Structure - Features now live in {project}/FS-XXX/
+ * No more separate _features folder.
+ *
  * NEW (v0.23.0 - T-043): Uses FSIDAllocator for advanced chronological allocation
  */
 
@@ -147,40 +150,58 @@ export class FeatureIDManager {
   }
 
   /**
-   * Scan existing _features folder
+   * Scan existing features from project folders
+   * v5.0.0: Features now live in {project}/FS-XXX/ (not _features/)
    */
   private async scanExistingFeatures(): Promise<FeatureInfo[]> {
     const features: FeatureInfo[] = [];
-    const featuresDir = path.join(this.specsBaseDir, '_features');
 
-    if (!await fs.pathExists(featuresDir)) {
+    if (!await fs.pathExists(this.specsBaseDir)) {
       return features;
     }
 
-    const folders = await fs.readdir(featuresDir);
+    // Scan all project folders
+    const projectEntries = await fs.readdir(this.specsBaseDir, { withFileTypes: true });
 
-    for (const folder of folders) {
-      const featurePath = path.join(featuresDir, folder, 'FEATURE.md');
+    for (const projectEntry of projectEntries) {
+      if (!projectEntry.isDirectory()) continue;
 
-      if (!await fs.pathExists(featurePath)) continue;
+      const projectId = projectEntry.name;
+      // Skip special folders
+      if (projectId.startsWith('_')) continue;
 
-      try {
-        const content = await fs.readFile(featurePath, 'utf-8');
-        const frontmatter = this.extractFrontmatter(content);
+      const projectPath = path.join(this.specsBaseDir, projectId);
 
-        const created = frontmatter.created
-          ? new Date(frontmatter.created)
-          : new Date();
+      // Scan for FS-* folders in this project
+      const entries = await fs.readdir(projectPath, { withFileTypes: true });
 
-        features.push({
-          originalId: folder,
-          assignedId: '', // Will be assigned later
-          title: frontmatter.title || folder,
-          created,
-          projects: frontmatter.projects || ['default']
-        });
-      } catch (error) {
-        console.warn(`  ⚠️ Error processing feature ${folder}: ${error}`);
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        if (!entry.name.match(/^FS-\d+/)) continue;
+
+        const featureFolder = entry.name;
+        const featurePath = path.join(projectPath, featureFolder, 'FEATURE.md');
+
+        if (!await fs.pathExists(featurePath)) continue;
+
+        try {
+          const content = await fs.readFile(featurePath, 'utf-8');
+          const frontmatter = this.extractFrontmatter(content);
+
+          const created = frontmatter.created
+            ? new Date(frontmatter.created)
+            : new Date();
+
+          features.push({
+            originalId: featureFolder,
+            assignedId: '', // Will be assigned later
+            title: frontmatter.title || featureFolder,
+            created,
+            projects: frontmatter.projects || [projectId]
+          });
+        } catch (error) {
+          console.warn(`  ⚠️ Error processing feature ${projectId}/${featureFolder}: ${error}`);
+        }
       }
     }
 

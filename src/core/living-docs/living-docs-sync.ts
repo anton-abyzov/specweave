@@ -2,13 +2,15 @@
  * Living Docs Sync - Simplified sync mechanism
  *
  * Syncs increment specs to living docs structure:
- * - .specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md
- * - .specweave/docs/internal/specs/{project}/FS-XXX/README.md
+ * - .specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md
  * - .specweave/docs/internal/specs/{project}/FS-XXX/us-*.md
  *
+ * All features live directly under the project folder.
+ * Archive: .specweave/docs/internal/specs/{project}/_archive/FS-XXX/
+ *
  * Project folder is auto-detected from:
- * 1. Git remote (GitHub repo name)
- * 2. Sync configuration (JIRA/ADO project)
+ * 1. multiProject.activeProject (config)
+ * 2. Git remote (GitHub repo name)
  * 3. "default" (fallback)
  *
  * Uses FeatureIDManager for automatic feature ID assignment (greenfield vs brownfield)
@@ -203,33 +205,21 @@ export class LivingDocsSync {
       const parsed = await this.parseIncrementSpec(incrementId);
 
       // Step 4: Create living docs structure
+      // Structure: specs/{project}/FS-XXX/FEATURE.md (+ user stories)
       const basePath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
 
-      // Create _features/FS-XXX/FEATURE.md
-      const featurePath = path.join(basePath, '_features', featureId);
-      const featureFile = path.join(featurePath, 'FEATURE.md');
+      // Create {project}/FS-XXX/FEATURE.md
+      const projectPath = path.join(basePath, this.projectId, featureId);
+      this.logger.log(`   📁 Feature folder: ${this.projectId}/${featureId}/`);
+      const featureFile = path.join(projectPath, 'FEATURE.md');
 
       if (!options.dryRun) {
-        await ensureDir(featurePath);
+        await ensureDir(projectPath);
         const featureContent = this.generateFeatureFile(featureId, parsed, incrementId);
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
       } else {
         result.filesCreated.push(featureFile + ' (dry-run)');
-      }
-
-      // Create {project}/FS-XXX/README.md (project detected from git remote or config)
-      const projectPath = path.join(basePath, this.projectId, featureId);
-      this.logger.log(`   📁 Project folder: ${this.projectId}/`);
-      const readmePath = path.join(projectPath, 'README.md');
-
-      if (!options.dryRun) {
-        await ensureDir(projectPath);
-        const readmeContent = this.generateReadmeFile(featureId, parsed, incrementId);
-        await fs.writeFile(readmePath, readmeContent, 'utf-8');
-        result.filesCreated.push(readmePath);
-      } else {
-        result.filesCreated.push(readmePath + ' (dry-run)');
       }
 
       // Create user story files
@@ -289,8 +279,6 @@ export class LivingDocsSync {
       }
 
       // Step 9: Validate consistency (auto-repair if needed)
-      // CRITICAL FIX (2025-11-25): Ensure _features and project folders are in sync
-      // This prevents orphaned _features folders without corresponding project folders
       if (!options.dryRun) {
         await this.validateAndRepairConsistency(featureId);
       }
@@ -717,7 +705,7 @@ export class LivingDocsSync {
 
     lines.push(`# ${parsed.title}`);
     lines.push('');
-    lines.push(`**Feature**: [${featureId}](../../_features/${featureId}/FEATURE.md)`);
+    lines.push(`**Feature**: [${featureId}](./FEATURE.md)`);
     lines.push('');
 
     if (parsed.overview) {
@@ -787,7 +775,7 @@ export class LivingDocsSync {
     lines.push('');
 
     // Feature link
-    lines.push(`**Feature**: [${featureId}](../../_features/${featureId}/FEATURE.md)`);
+    lines.push(`**Feature**: [${featureId}](./FEATURE.md)`);
     lines.push('');
 
     // Description
@@ -1347,56 +1335,31 @@ export class LivingDocsSync {
   }
 
   /**
-   * Validate and repair consistency between _features and project folders
+   * Validate feature folder consistency
    *
-   * CRITICAL FIX (2025-11-25): Post-sync validation to prevent orphaned folders
-   *
-   * This method:
-   * 1. Checks if the just-synced feature exists in both _features/ and project folder
-   * 2. Auto-repairs if discrepancy found (creates missing project folder)
-   * 3. Logs warnings for manual intervention if auto-repair not possible
+   * Verifies that the feature folder was created correctly:
+   * - FEATURE.md exists in {project}/FS-XXX/
+   * - Logs warning if missing
    *
    * @param featureId - Feature ID that was just synced (e.g., "FS-062")
    */
   private async validateAndRepairConsistency(featureId: string): Promise<void> {
     try {
-      const validator = new FeatureConsistencyValidator(this.projectRoot, {
-        logger: this.logger,
-        defaultProject: 'specweave'
-      });
-
-      // Quick check for the specific feature we just synced
-      const featuresPath = path.join(
-        this.projectRoot,
-        '.specweave/docs/internal/specs/_features',
-        featureId
-      );
       const projectPath = path.join(
         this.projectRoot,
-        '.specweave/docs/internal/specs/specweave',
+        '.specweave/docs/internal/specs',
+        this.projectId,
         featureId
       );
+      const featureFile = path.join(projectPath, 'FEATURE.md');
 
-      // Check if _features exists but project folder doesn't
-      if (existsSync(featuresPath) && !existsSync(projectPath)) {
-        this.logger.warn(`   ⚠️  Consistency issue detected: ${featureId} missing from specweave/`);
-
-        // Run full validation with auto-repair for this feature
-        const result = await validator.validate(true);
-
-        if (result.repairs && result.repairs.length > 0) {
-          const repair = result.repairs.find(r => r.featureId === featureId);
-          if (repair?.success) {
-            this.logger.log(`   ✅ Auto-repaired: created specweave/${featureId}/`);
-          } else {
-            this.logger.warn(`   ⚠️  Auto-repair failed for ${featureId}: ${repair?.error}`);
-          }
-        }
+      // Verify FEATURE.md exists
+      if (!existsSync(featureFile)) {
+        this.logger.warn(`   ⚠️  FEATURE.md missing in ${this.projectId}/${featureId}/`);
       }
     } catch (error) {
       // Non-fatal - log warning but continue
-      this.logger.warn(`   ⚠️  Consistency validation failed: ${error}`);
-      this.logger.warn(`      Sync completed but consistency not verified`);
+      this.logger.warn(`   ⚠️  Validation failed: ${error}`);
     }
   }
 }

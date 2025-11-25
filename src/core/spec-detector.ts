@@ -135,8 +135,8 @@ async function detectSpecsByFeatureId(
   for (const projectFolder of projectFolders) {
     const projectPath = path.join(specsFolder, projectFolder);
 
-    // Skip if not a directory or _features folder
-    if (!fs.statSync(projectPath).isDirectory() || projectFolder === '_features') {
+    // Skip if not a directory or special folders (v5.0.0: no more _features folder)
+    if (!fs.statSync(projectPath).isDirectory() || projectFolder.startsWith('_')) {
       continue;
     }
 

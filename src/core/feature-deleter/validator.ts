@@ -154,6 +154,7 @@ export class FeatureValidator {
 
   /**
    * T-005: Detect all feature files (living docs + user stories)
+   * v5.0.0: Features now live in {project}/FS-XXX/ (no _features folder)
    */
   private async detectFeatureFiles(featureId: string): Promise<{
     livingDocsFiles: string[];
@@ -163,16 +164,8 @@ export class FeatureValidator {
     const livingDocsFiles: string[] = [];
     const userStoryFiles: string[] = [];
 
-    // Scan living docs folder: .specweave/docs/internal/specs/_features/{featureId}/
-    const livingDocsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs/_features', featureId);
-    try {
-      const files = await this.getAllFiles(livingDocsPath);
-      livingDocsFiles.push(...files);
-    } catch (error) {
-      // Living docs folder doesn't exist - not an error
-    }
-
-    // Scan user story files: .specweave/docs/internal/specs/*/{featureId}/us-*.md
+    // v5.0.0: Features live in project folders {project}/FS-XXX/
+    // Scan all project folders for this feature
     const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
     try {
       const projects = await fs.readdir(specsPath, { withFileTypes: true });
@@ -181,6 +174,13 @@ export class FeatureValidator {
           const featurePath = path.join(specsPath, project.name, featureId);
           try {
             const files = await fs.readdir(featurePath);
+
+            // FEATURE.md goes to livingDocsFiles
+            if (files.includes('FEATURE.md')) {
+              livingDocsFiles.push(path.join(featurePath, 'FEATURE.md'));
+            }
+
+            // User stories go to userStoryFiles
             const userStoryPaths = files
               .filter(f => f.startsWith('us-') && f.endsWith('.md'))
               .map(f => path.join(featurePath, f));
