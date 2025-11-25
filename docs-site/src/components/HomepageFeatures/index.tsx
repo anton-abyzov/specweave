@@ -11,35 +11,35 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Real Estate Operations',
-    image: require('@site/static/img/hero/real-estate.png').default,
-    description: (
-      <>
-        Manage property listings, client contracts, and documentation with
-        spec-driven workflows. From property details to closing documents,
-        keep everything organized and traceable.
-      </>
-    ),
-  },
-  {
-    title: 'Software Engineering',
+    title: 'Greenfield SaaS & Web Apps',
     image: require('@site/static/img/hero/software-engineering.png').default,
     description: (
       <>
-        Build production software with specifications as the source of truth.
-        Define WHAT and WHY before HOW. 70% token reduction, automated testing,
-        and living documentation for any tech stack.
+        Start new projects with specs from day one. Full-stack apps, APIs, microservices —
+        all with permanent documentation, automated testing (85%+ coverage), and
+        living docs that never drift from code.
       </>
     ),
   },
   {
-    title: 'Trading & Finance',
-    image: require('@site/static/img/hero/trading.png').default,
+    title: 'Brownfield Modernization',
+    image: require('@site/static/img/hero/software-engineering.png').default,
     description: (
       <>
-        Document trading strategies, market analysis, and financial models with
-        precision. Track decisions, maintain compliance documentation, and ensure
-        audit-ready traceability.
+        Document existing code before modifying. Import from Notion, Confluence, GitHub Wiki.
+        Create retroactive specs, ADRs, and architecture diagrams. Reduce onboarding
+        from weeks to days.
+      </>
+    ),
+  },
+  {
+    title: 'Regulated & Enterprise',
+    image: require('@site/static/img/hero/software-engineering.png').default,
+    description: (
+      <>
+        Healthcare (HIPAA), Finance (SOC 2, PCI-DSS), Government — compliance-ready
+        with full audit trails. Every decision documented, every change traceable,
+        every requirement linked to tests.
       </>
     ),
   },

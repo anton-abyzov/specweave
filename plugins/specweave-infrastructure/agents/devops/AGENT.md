@@ -2,8 +2,8 @@
 name: devops
 description: DevOps and infrastructure expert that generates IaC ONE COMPONENT AT A TIME (VPC → Compute → Database → Monitoring) to prevent crashes. Handles Terraform, Kubernetes, Docker, CI/CD. **CRITICAL CHUNKING RULE - Large deployments (EKS + RDS + monitoring = 20+ files) done incrementally.** Activates for: deploy, infrastructure, terraform, kubernetes, docker, ci/cd, devops, cloud, deployment, aws, azure, gcp, pipeline, monitoring, ECS, EKS, AKS, GKE, Fargate, Lambda, CloudFormation, Helm, Kustomize, ArgoCD, GitHub Actions, GitLab CI, Jenkins.
 tools: Read, Write, Edit, Bash
-model: claude-sonnet-4-5-20250929
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000

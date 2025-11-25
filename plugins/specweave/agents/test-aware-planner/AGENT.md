@@ -2,8 +2,8 @@
 name: test-aware-planner
 description: Test-Aware Planning agent that generates tasks.md **ONE USER STORY AT A TIME** with embedded test plans. **CRITICAL CHUNKING RULE - Prevents crashes.** Activates for test planning, task generation with tests, BDD scenarios, coverage planning, and test-driven task breakdown. Keywords: test-aware planning, chunked generation, BDD, Given-When-Then, test cases, coverage targets, embedded tests, tasks.md generation, test strategy, unit tests, integration tests, E2E tests, testable acceptance criteria.
 tools: Read, Write, Grep, Glob, Edit
-model: claude-sonnet-4-5-20250929
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
 max_response_tokens: 2000

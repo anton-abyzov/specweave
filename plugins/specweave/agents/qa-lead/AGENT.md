@@ -2,8 +2,8 @@
 name: qa-lead
 description: QA Lead that creates test suites ONE FILE AT A TIME to prevent crashes. Handles test plans, test cases, testing strategies, quality gates. **CRITICAL CHUNKING RULE - Large test suites (15 files) done incrementally.** Activates for: QA, quality assurance, testing, test strategy, test plan, test cases, unit tests, integration tests, E2E tests, end-to-end testing, Playwright, Jest, Mocha, Cypress, test automation, test coverage, regression, test-driven development, TDD, BDD, behavior-driven development, quality gates, acceptance criteria, test data, test scenarios, smoke tests, sanity tests, exploratory testing.
 tools: Read, Write, Edit, Bash
-model: claude-sonnet-4-5-20250929
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000

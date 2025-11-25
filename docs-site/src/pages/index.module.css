@@ -265,6 +265,85 @@
   border-left: 4px solid #667eea;
 }
 
+/* Dogfooding Banner */
+.dogfoodingSection {
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  text-align: center;
+}
+
+.dogfoodingContent {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dogfoodingBadge {
+  display: inline-block;
+  background: linear-gradient(120deg, #ffd700 0%, #ffed4e 100%);
+  color: #1e293b;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+}
+
+.dogfoodingContent h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.dogfoodingContent p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.dogfoodingStats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.dogfoodingStat {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  transition: transform 0.2s, background 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dogfoodingStat:hover {
+  transform: translateY(-4px);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  text-decoration: none;
+}
+
+.dogfoodingNumber {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #ffd700;
+  margin-bottom: 0.25rem;
+}
+
+.dogfoodingLabel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 /* CTA Section */
 .ctaSection {
   padding: 5rem 2rem;

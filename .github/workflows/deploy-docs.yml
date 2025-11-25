@@ -8,7 +8,13 @@ on:
     paths:
       - 'docs-site/**'
       - '.specweave/docs/public/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
       - '.github/workflows/deploy-docs.yml'
+
+  # Scheduled deployment twice daily (9 AM and 9 PM UTC)
+  schedule:
+    - cron: '0 9,21 * * *'
 
   # Allow manual deployment from Actions tab
   workflow_dispatch:
@@ -44,6 +50,14 @@ jobs:
         run: |
           cd docs-site
           npm ci
+
+      - name: Sync root README to docs-site
+        run: |
+          # Copy README.md to docs-site as an overview page
+          cp README.md docs-site/docs/overview/readme.md
+          # Add frontmatter for Docusaurus
+          sed -i '1i---\nsidebar_position: 0\ntitle: README\ndescription: SpecWeave project overview from GitHub README\n---\n' docs-site/docs/overview/readme.md
+          echo "✅ Synced README.md to docs-site"
 
       - name: Build documentation
         run: |

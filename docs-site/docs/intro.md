@@ -2,245 +2,293 @@
 sidebar_position: 1
 ---
 
-# Welcome to SpecWeave
+# SpecWeave
 
-**Spec-Driven Development Framework with AI-Powered Autonomous Agents**
+**The AI Development Framework That Doesn't Lose Your Work**
 
-SpecWeave is a **disciplined development framework** that acts as your AI tutor, guiding you through structured, incremental software delivery. Specifications and documentation are the SOURCE OF TRUTH. Code is the expression of these specifications.
-
-**The Core Philosophy**: You can't build a stats chart feature when you haven't built the UI components yet. SpecWeave enforces natural dependencies, ensuring you build in the right order and complete each increment before moving forward.
-
-Think of it as **"structured coding with a tutor"** - SpecWeave understands your intent, guides you through the right steps, and helps you not miss anything.
-
-## Why SpecWeave?
-
-- **🎯 Disciplined Progress** - Complete increment N before starting N+1. Natural dependencies enforced (foundation → features → advanced features). SpecWeave acts as your tutor preventing chaos.
-- **🤖 Just Works** - Autonomous agents ask clarifying questions, review output, validate quality—minimal interaction required
-- **⏸️ Smart Status Management** (v0.7.0) - Pause when blocked (API keys, design assets), resume when ready, abandon obsolete work. **Note**: Pause is for blocked work, NOT for working on multiple increments simultaneously.
-- **🧪 Test-Aware Planning** (v0.7.0) - Tests embedded in tasks (BDD format), bidirectional AC↔Task↔Test linking, 80%+ coverage validation
-- **⚡ Smart Workflow** - Auto-resume, auto-close, progress tracking—natural flow without overhead
-- **🎯 10 Agents + 35+ Skills** - PM, Architect, DevOps, QA, Security work in parallel (minimizes context usage). Easily extensible!
-- **🔍 Progressive Disclosure** (NEW) - Skills indexed for 90% token savings via SKILLS-INDEX.md. Works with ALL AI tools!
-- **📝 Specification-First** - Define WHAT and WHY before HOW—specifications are the source of truth
-- **🌍 Multilingual** - Work in ANY language (Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese)! LLM-native translation at zero cost.
-- **🌐 Universal** - Works with ANY tech stack AND ANY AI tool (Claude Code by default, Cursor, Copilot, Gemini, ChatGPT)
-- **📚 Living Docs** - Specs auto-update after every operation and test—always in sync with code
-- **🚀 Intent-Based Commands** - Natural language works too! Say "create auth feature" → auto-invokes `/pi "auth"` (optional slash commands for explicit control)
-
-## 🚀 Quickstart
-
-### 1. Install SpecWeave
-
-```bash
-npm install -g specweave
-```
-
-### 2. Initialize Your Project
-
-```bash
-mkdir my-project && cd my-project
-specweave init .
-```
-
-**Note**: SpecWeave automatically detects and configures for **Claude Code** (default), providing the best experience with native skills, agents, and slash commands. For other tools (Cursor, Copilot, etc.), use `specweave init . --adapter <tool>`.
-
-This creates the `.specweave/` structure with:
-- 5-pillar documentation framework
-- Increment-based feature planning
-- Context manifests for precision loading
-- Test strategy templates
-- `.claude/` directory (Claude Code only - populated with 35+ skills, SKILLS-INDEX.md, 10 agents, 14 commands)
-
-### 3. Start Building
-
-**Two ways to start:**
-
-#### **Option A: Interactive Quick Build** (Fastest)
-
-Simply describe what you want to build - SpecWeave guides you through:
-
-```bash
-"build a very simple web calculator app"
-```
-
-**SpecWeave's interactive assistant asks:**
-
-1. **Approach** - Choose your workflow:
-   ```
-   ❯ Quick build - just code it now
-     SpecWeave increment - plan first
-     Type something...
-   ```
-
-2. **Features** - Multi-select what you need:
-   ```
-   ☑ Basic operations (+, -, ×, ÷)
-   ☑ Additional functions (%, √, clear, backspace)
-   ☑ Keyboard support
-   ☑ Calculation history
-   ☐ Type something...
-   ```
-
-3. **Tech Stack** - Pick your tools:
-   ```
-   ❯ Vanilla HTML/CSS/JS
-     React
-     Your choice
-     Type something...
-   ```
-
-4. **Review & Submit** - Confirm your choices and start building!
-
-**Perfect for:** Small projects, quick prototypes, learning SpecWeave
-
-#### **Option B: Specification-First** (Best Practice)
-
-**EXPLICIT SLASH COMMANDS** for full control:
-
-```bash
-# Create your first feature (use slash command!)
-/pi "user authentication with email and OAuth"
-# PI = Plan Product Increment (Agile terminology)
-
-# SpecWeave creates:
-✅ .specweave/increments/0001-user-authentication/
-   ├── spec.md (requirements from PM agent)
-   ├── plan.md (architecture from Architect agent)
-   ├── tasks.md (implementation steps + embedded test plans - v0.7.0)
-   └── context-manifest.yaml (selective loading)
-
-# Start working on the increment
-/si 0001
-
-# Implement with regular conversation (no slash command needed)
-"Implement the authentication backend based on plan.md"
-
-# Validate quality
-/vi 0001 --quality
-
-# Close when done
-/done 0001
-```
-
-**Perfect for:** Production features, team projects, complex systems
-
-**Available Slash Commands**:
-- `/specweave:increment` - **Plan Product Increment** (most important!)
-- `/specweave:do` - Execute implementation
-- `/specweave:validate` - Run validation + quality check
-- `/specweave:done` - Close increment
-- `/specweave:status` - Show increment status overview
-- `/specweave:progress` - Check current increment progress
-- `/specweave:sync-github` - Sync increment to GitHub issues
-
-**Status Management**:
-- `/specweave:pause <id> --reason="..."` - Pause blocked increment
-- `/specweave:resume <id>` - Resume paused increment
-- `/specweave:abandon <id> --reason="..."` - Abandon obsolete increment
-- `/specweave:check-tests` - Check test coverage (80%+ target)
-
-**Increment Types**: SpecWeave supports six types of work:
-- **feature** (standard development, max 2 active)
-- **hotfix** (critical production fixes, unlimited)
-- **bug** (SRE investigation, unlimited)
-- **change-request** (stakeholder requests, max 2 active)
-- **refactor** (code improvement, max 1 active)
-- **experiment** (POCs/spikes, unlimited)
-
-**The Iron Rule: Complete Before Starting**
-
-⚠️ **You CANNOT start increment N+1 until increment N is DONE**. This is enforced by SpecWeave to maintain discipline.
-
-**Natural Build Order Example**:
-1. ✅ First: Build basic UI components (buttons, forms, layouts)
-2. ✅ Then: Build authentication system (uses UI components)
-3. ✅ Then: Build stats dashboard (uses auth + UI)
-4. ❌ WRONG: Start stats dashboard before UI exists
-
-**Big Increments Are OK**: The rule isn't about size - you can have substantial increments. The rule is about **completion**: finish what you start before moving to the next thing.
-
-**Pause/Resume is NOT for Parallel Work**: Use pause when you're **blocked** (waiting for API keys, design approval, etc.), not when you want to work on multiple things at once.
-
-**Why slash commands?**
-- ✅ **100% reliable** - Always works, no guessing
-- ✅ **Clear intent** - You know exactly when SpecWeave is active
-- ✅ **Fast** - Short aliases like `/pi` save keystrokes
-
-**Remember**: Type `/pi` first, THEN implement! Otherwise you lose all SpecWeave benefits (specs, architecture, test strategy).
-
-## What You Get
-
-### Directory Structure
-```
-your-project/
-├── .specweave/                     # Framework internals
-│   ├── docs/                       # 5-pillar documentation
-│   │   ├── internal/
-│   │   │   ├── strategy/           # Business specs (WHAT, WHY)
-│   │   │   ├── architecture/       # Technical design (HOW)
-│   │   │   ├── delivery/           # Roadmap, CI/CD, guides
-│   │   │   ├── operations/         # Runbooks, SLOs
-│   │   │   └── governance/         # Security, compliance
-│   │   └── public/                 # Published docs
-│   ├── increments/                 # Features (auto-numbered)
-│   │   └── 0001-feature-name/
-│   │       ├── spec.md             # WHAT & WHY
-│   │       ├── plan.md             # HOW
-│   │       ├── tasks.md            # Implementation + embedded tests (v0.7.0)
-│   │       └── context-manifest.yaml  # What to load
-│   └── tests/                      # Centralized test repository
-│
-├── .claude/                        # Installed components
-│   ├── agents/                     # Installed agents (selective)
-│   ├── skills/                     # Installed skills (selective)
-│   └── commands/                   # Slash commands
-│
-├── CLAUDE.md                       # Quick reference (ONLY file we add)
-└── src/                            # Your source code (unchanged)
-```
-
-## Next Steps
-
-- **[Core Concepts](./tutorial-basics/core-concepts)** - Understand the 5-pillar framework
-- **[Agents & Skills](./tutorial-basics/agents-skills)** - Learn about specialized agents
-- **[Increment Lifecycle](./tutorial-basics/increment-lifecycle)** - Feature planning workflow
-- **[Context Precision](./tutorial-basics/context-precision)** - 70-80% token reduction
-- **[Validation](./tutorial-basics/validation)** - 120 automated quality rules
-- **[Multilingual Support](./tutorial-extras/multilingual-support)** - Work in ANY language with screenshots
-
-## Resources
-
-- **Website**: [https://spec-weave.com](https://spec-weave.com)
-- **GitHub**: [https://github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specweave)
-- **npm**: [https://www.npmjs.com/package/specweave](https://www.npmjs.com/package/specweave)
-
-## Comparison to Other Frameworks
-
-### vs **spec-kit** (GitHub)
-
-| Feature | SpecWeave | spec-kit |
-|---------|-----------|----------|
-| **Slash Commands** | ✅ `/specweave:increment`, `/specweave:do`, `/specweave:done` | ✅ Similar approach |
-| **Multi-Agent** | ✅ 10 agents | ❌ Commands only |
-| **Pre-Installed** | ✅ All ready | ❌ Manual setup |
-| **Quality Gates** | ✅ 120 rules | ❌ Manual |
-| **Auto-numbering** | ✅ 0001-9999 | ❌ Manual |
-
-### vs **BMAD-METHOD**
-
-| Feature | SpecWeave | BMAD |
-|---------|-----------|------|
-| **Documentation** | ✅ 5 pillars | ❌ Single README |
-| **Incremental Planning** | ✅ Auto-numbered | ❌ Manual |
-| **Context Precision** | ✅ Selective loading | ❌ Load all |
-| **Test Strategy** | ✅ 4 levels | ❌ Ad-hoc |
-| **Framework Agnostic** | ✅ Any stack | ✅ Any stack |
+[![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
+[![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
 ---
 
-**Get Started Now**:
+## Engineering Metrics (DORA)
+
+[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+
+**SpecWeave builds SpecWeave using SpecWeave.** These are real metrics from our own development.
+
+**[Live Dashboard](https://spec-weave.com/docs/metrics)** | **[Detailed Report](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/metrics/dora-report.md)**
+
+---
+
+## What Makes SpecWeave Different
+
+Every AI coding tool promises productivity. But after the chat ends:
+
+- **Your specs disappear** into chat history
+- **Your architecture decisions are forgotten**
+- **Your tests are never written**
+- **Your GitHub/JIRA stays outdated**
+- **New team members start from zero**
+
+**SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  Your    │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
+│  Idea    │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
+│          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
+```
+
+---
+
+## Quick Start (30 Seconds)
+
 ```bash
-npm install -g specweave && specweave init my-project
-cd my-project
-# Then use slash commands: /specweave:increment "your first feature"
+npm install -g specweave
+cd your-project
+specweave init .
+```
+
+Then in Claude Code:
+```bash
+/specweave:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
+/specweave:do                                # Autonomous implementation
+/specweave:done 0001                         # Quality-validated completion
+```
+
+**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+
+**[Full Quickstart Guide](./guides/getting-started/quickstart)**
+
+---
+
+## The Workflow
+
+```mermaid
+flowchart TB
+    subgraph INPUT["1. TYPE ONE COMMAND"]
+        A["/specweave:increment<br/>'Add dark mode'"]
+    end
+
+    subgraph AGENTS["2. AI AGENTS CREATE"]
+        direction TB
+        PM["PM Agent<br/>User stories + ACs"]
+        ARCH["Architect Agent<br/>Design + ADRs"]
+        PLAN["Planner Agent<br/>Tasks + Tests"]
+        PM --> ARCH --> PLAN
+    end
+
+    subgraph OUTPUT["3. PERMANENT FILES"]
+        direction LR
+        SPEC["spec.md<br/>WHAT"]
+        PLANF["plan.md<br/>HOW"]
+        TASKS["tasks.md<br/>DO"]
+    end
+
+    subgraph EXECUTE["4. BUILD"]
+        B["/specweave:do<br/>Autonomous execution"]
+    end
+
+    subgraph SYNC["5. AUTO-SYNC"]
+        direction LR
+        GH["GitHub"]
+        JIRA["JIRA"]
+        ADO["ADO"]
+        DOCS["Docs"]
+    end
+
+    INPUT --> AGENTS
+    AGENTS --> OUTPUT
+    OUTPUT --> EXECUTE
+    EXECUTE --> SYNC
+
+    style INPUT fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style AGENTS fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+    style OUTPUT fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style EXECUTE fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    style SYNC fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+```
+
+---
+
+## What You Get
+
+| Before | After SpecWeave |
+|--------|-----------------|
+| Specs in chat history | **Permanent, searchable specs** |
+| Manual JIRA/GitHub updates | **Auto-sync on every task** |
+| Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
+| Architecture in your head | **ADRs captured automatically** |
+| "Ask John, he knows" | **Living docs, always current** |
+| Onboarding: 2 weeks | **Onboarding: 1 day** |
+
+---
+
+## Key Strengths
+
+- **Brownfield + Greenfield** — Works with existing codebases, not just new projects
+- **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
+- **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
+- **Bidirectional Sync** — GitHub Issues, JIRA, Azure DevOps stay in sync automatically
+- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
+- **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
+- **Living Documentation** — Specs auto-update after every task via hooks
+
+---
+
+## The Three-File Foundation
+
+Every feature generates three permanent files:
+
+```
+.specweave/increments/0001-dark-mode/
+├── spec.md    <- WHAT: User stories, acceptance criteria, requirements
+├── plan.md    <- HOW: Architecture, tech decisions, ADRs
+└── tasks.md   <- DO: Implementation tasks with embedded tests
+```
+
+### spec.md (WHAT)
+```markdown
+## User Stories
+
+### US-001: Dark Mode Toggle
+As a user, I want to toggle dark mode so that I can reduce eye strain at night.
+
+**Acceptance Criteria:**
+- [x] AC-US1-01: Toggle switch in settings persists preference
+- [x] AC-US1-02: Theme applies to all components instantly
+- [ ] AC-US1-03: System preference detected on first visit
+```
+
+### tasks.md (DO)
+```markdown
+### T-001: Implement Theme Provider
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01, AC-US1-02
+**Status**: [x] completed
+
+**Embedded Tests** (AC-US1-01):
+- test_theme_toggle_persists_to_localstorage
+- test_theme_applies_to_all_components
+- test_toggle_updates_ui_instantly
+```
+
+---
+
+## Key Features
+
+### Autonomous Multi-Agent Orchestration
+
+- **PM Agent**: User stories, acceptance criteria, market analysis
+- **Architect Agent**: System design, ADRs, tech stack decisions
+- **Tech Lead Agent**: Implementation, code review, best practices
+- **QA Lead Agent**: Test strategy, E2E tests, coverage validation
+- **Security Agent**: Threat modeling, OWASP, vulnerability assessment
+- **DevOps Agent**: IaC, Kubernetes, CI/CD pipelines
+
+### Living Documentation
+
+Documentation updates **after every task** via hooks:
+- Strategic specs sync to `.specweave/docs/`
+- ADRs captured automatically
+- Runbooks and SLOs generated
+- No manual doc updates ever
+
+### Quality Gates
+
+Three gates before any increment closes:
+1. **Tasks**: All tasks marked complete
+2. **Tests**: 60%+ coverage minimum (configurable)
+3. **Documentation**: Living docs updated
+
+### Token Efficiency
+
+70%+ context reduction through:
+- Progressive plugin loading (load only what you need)
+- Skills auto-activate based on keywords
+- Context optimizer removes irrelevant specs
+- Sub-agent parallelization isolates context
+
+---
+
+## External Tool Integration
+
+SpecWeave keeps your project management tools in sync **automatically**:
+
+| Platform | Capabilities |
+|----------|--------------|
+| **GitHub Issues** | Create, update, close, bidirectional sync, checkbox tracking |
+| **JIRA** | Epic/Story hierarchy, bidirectional sync, custom fields |
+| **Azure DevOps** | Work items, area paths, bidirectional sync |
+| **Linear** | Coming Q1 2026 |
+
+---
+
+## Brownfield & Greenfield
+
+**New Projects**: Start spec-driven from day one.
+
+**Existing Projects**:
+```bash
+specweave init .
+/specweave:import-docs ~/exports/notion --source=notion
+```
+
+Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically and creates retroactive specifications.
+
+---
+
+## Commands Reference
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave:increment "feature"` | Plan new increment (PM -> Architect -> Tasks) |
+| `/specweave:do` | Execute all tasks autonomously |
+| `/specweave:done 0001` | Complete with quality gate validation |
+| `/specweave:progress` | Show real-time status |
+| `/specweave:validate 0001` | Run quality checks |
+| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
+
+**[Full Command Reference](./reference/commands/overview)**
+
+---
+
+## Requirements
+
+- Node.js 20+
+- Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2025](https://www.anthropic.com/news/claude-opus-4-5)
+- Git repository
+
+---
+
+## Community
+
+- **[Documentation](https://spec-weave.com)** - Full guides and tutorials
+- **[Discord](https://discord.gg/UYg4BGJ65V)** - Get help, share tips
+- **[YouTube](https://www.youtube.com/@antonabyzov)** - Video tutorials
+- **[GitHub Issues](https://github.com/anton-abyzov/specweave/issues)** - Bug reports and features
+
+---
+
+## Next Steps
+
+- **[Quickstart Guide](./guides/getting-started/quickstart)** - Get running in 30 seconds
+- **[Core Concepts](./guides/core-concepts/specifications)** - Understand the fundamentals
+- **[Key Features](./overview/features)** - Deep dive into capabilities
+- **[Philosophy](./overview/philosophy)** - Why spec-driven development
+
+---
+
+**Stop losing your AI work. Start building permanent knowledge.**
+
+```bash
+npm install -g specweave
 ```
