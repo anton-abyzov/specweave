@@ -14,7 +14,7 @@ specweave abandon <increment-id> [options]
 
 ## Description
 
-The `abandon` command permanently cancels work on an increment by moving it to the `_archive/` folder. This preserves all work for reference while freeing up your WIP limit.
+The `abandon` command permanently cancels work on an [increment](/docs/glossary/terms/increments) by moving it to the `_archive/` folder. This preserves all work for reference while freeing up your [WIP limit](/docs/glossary/terms/wip-limits).
 
 **Use abandon when**:
 - 🔄 Requirements changed (feature no longer needed)
@@ -202,7 +202,7 @@ graph LR
         └── metadata.json (status: abandoned)
 ```
 
-### WIP Limit Impact
+### [WIP Limit](/docs/glossary/terms/wip-limits) Impact
 
 ```bash
 # Before abandon
@@ -534,10 +534,10 @@ ls .specweave/increments/_archive/
 
 ## See Also
 
-- `pause` - Temporarily pause work (reversible)
-- `resume` - Resume paused/abandoned work
-- [`status`](/docs/glossary/terms/status) - View all increment statuses
-- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
+- [`pause`](/docs/commands/pause) - Temporarily pause work (reversible)
+- [`resume`](/docs/commands/resume) - Resume paused/abandoned work
+- [`status`](/docs/commands/status) - View all increment statuses
+- [Status Management](/docs/commands/status-management) - Complete workflow guide
 
 ## Summary
 

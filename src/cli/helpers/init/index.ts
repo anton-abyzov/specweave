@@ -49,6 +49,14 @@ export {
   type TestingConfigResult,
 } from './testing-config.js';
 
+// Language selection (MUST be first in init)
+export {
+  promptLanguageSelection,
+  getDefaultLanguageSelection,
+  getLanguageNativeName,
+  type LanguageSelectionResult,
+} from './language-selection.js';
+
 // Translation configuration
 export {
   promptTranslationConfig,

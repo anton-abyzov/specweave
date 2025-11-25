@@ -122,6 +122,32 @@ umbrella-project/                 # Optional parent repo
         └── ...                  # sync → my-app-shared GitHub issues
 ```
 
+## Project ID Strategy
+
+**CRITICAL**: The `id` field MUST match your canonical source name - no arbitrary abbreviations!
+
+| Scenario | ID Source | Example |
+|----------|-----------|---------|
+| **1:1 Repo Mapping** | Exact repo name | `sw-qr-menu-fe` |
+| **JIRA Project** | Project key (lowercase) | `WEBAPP` → `webapp` |
+| **ADO Project** | Project name (kebab-case) | `Frontend Team` → `frontend-team` |
+| **Area Path** | Last segment (kebab-case) | `Product\Web` → `web` |
+
+```
+✅ CORRECT: id matches repo name
+   id: "sw-qr-menu-fe"
+   path: "./sw-qr-menu-fe"
+   githubUrl: "https://github.com/user/sw-qr-menu-fe"
+
+❌ WRONG: arbitrary abbreviation
+   id: "fe"              ← What if you have 2 frontend repos?
+   path: "./sw-qr-menu-fe"
+```
+
+**Note**: The `prefix` (for user stories like `US-FE-001`) can be short even if `id` is long:
+- `id: "sw-qr-menu-fe"` (full repo name)
+- `prefix: "FE"` (short, for user story IDs)
+
 ## Config Example
 
 **Parent umbrella config** (`.specweave/config.json`):
@@ -131,33 +157,51 @@ umbrella-project/                 # Optional parent repo
     "enabled": true,
     "childRepos": [
       {
-        "id": "fe",
-        "path": "./my-app-fe",
+        "id": "sw-qr-menu-fe",
+        "path": "./sw-qr-menu-fe",
         "prefix": "FE",
-        "githubUrl": "https://github.com/myorg/my-app-fe"
+        "githubUrl": "https://github.com/myorg/sw-qr-menu-fe"
       },
       {
-        "id": "be",
-        "path": "./my-app-be",
+        "id": "sw-qr-menu-be",
+        "path": "./sw-qr-menu-be",
         "prefix": "BE",
-        "githubUrl": "https://github.com/myorg/my-app-be"
+        "githubUrl": "https://github.com/myorg/sw-qr-menu-be"
       },
       {
-        "id": "shared",
-        "path": "./my-app-shared",
+        "id": "sw-qr-menu-shared",
+        "path": "./sw-qr-menu-shared",
         "prefix": "SHARED",
-        "githubUrl": "https://github.com/myorg/my-app-shared"
+        "githubUrl": "https://github.com/myorg/sw-qr-menu-shared"
       }
     ]
   }
 }
 ```
 
-**Child repo config** (`my-app-fe/.specweave/config.json`):
+**JIRA-based project** (when JIRA is source of truth):
+```json
+{
+  "umbrella": {
+    "enabled": true,
+    "childRepos": [
+      {
+        "id": "webapp",
+        "path": "./frontend",
+        "prefix": "WEBAPP",
+        "jiraProject": "WEBAPP",
+        "githubUrl": "https://github.com/myorg/frontend"
+      }
+    ]
+  }
+}
+```
+
+**Child repo config** (`sw-qr-menu-fe/.specweave/config.json`):
 ```json
 {
   "project": {
-    "name": "My App Frontend",
+    "name": "QR Menu Frontend",
     "prefix": "FE"
   },
   "sync": {
@@ -167,7 +211,7 @@ umbrella-project/                 # Optional parent repo
         "provider": "github",
         "config": {
           "owner": "myorg",
-          "repo": "my-app-fe"
+          "repo": "sw-qr-menu-fe"
         }
       }
     }
@@ -211,9 +255,32 @@ Which would you like to do?
 | iOS, Android, mobile, push notification | Mobile | MOBILE |
 | Terraform, K8s, Docker, CI/CD | Infrastructure | INFRA |
 
+## Saving Changes Across Repos
+
+Use `/specweave:save` to commit and push changes across all repos at once:
+
+```bash
+# Save all repos with same commit message
+/specweave:save "feat: Add user authentication"
+
+# Preview what would happen
+/specweave:save --dry-run
+
+# Save specific repos only
+/specweave:save "fix: Bug fixes" --repos frontend,backend
+```
+
+**Features:**
+- Auto-detects repos with changes
+- Sets up remotes if missing (prompts for URL or uses umbrella config)
+- Commits with same message to all repos
+- Pushes to origin
+- Skips repos with no changes
+
 ## Important Notes
 
 1. **Each repo is independent** - Own `.specweave/`, own increments, own external tool sync
 2. **Parent repo is optional** - Can have umbrella config or just independent repos
 3. **User stories MUST have project prefix** - Never generate generic `US-001` in multi-repo mode
 4. **Cross-project stories get special handling** - Tagged and linked across repos
+5. **Use `/specweave:save`** - Single command to save changes across all repos

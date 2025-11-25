@@ -101,13 +101,13 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 - **Enterprise teams** building production systems
 - **Startups** needing scalable architecture from day one
 - **Solo developers** building complex applications
-- **Regulated industries** (healthcare - HIPAA, finance - SOC 2)
-- **Teams migrating brownfield codebases** to modern practices
+- **Regulated industries** (healthcare - [HIPAA](/docs/glossary/terms/hipaa), finance - [SOC 2](/docs/glossary/terms/soc2))
+- **Teams migrating [brownfield](/docs/glossary/terms/brownfield) codebases** to modern practices
 
 ### Use Cases
 
-- **Greenfield projects**: Start with comprehensive specs
-- **Brownfield projects**: Document existing code before modification
+- **[Greenfield](/docs/glossary/terms/greenfield) projects**: Start with comprehensive specs
+- **[Brownfield](/docs/glossary/terms/brownfield) projects**: Document existing code before modification
 - **Iterative development**: Build documentation gradually
 - **Compliance-heavy**: Maintain audit trails and traceability
 
@@ -130,7 +130,7 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 | Specs in chat history | **Permanent, searchable specs** |
 | Manual JIRA/GitHub updates | **Auto-sync on every task** |
 | Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
-| Architecture in your head | **ADRs captured automatically** |
+| Architecture in your head | **[ADRs](/docs/glossary/terms/adr) captured automatically** |
 | "Ask John, he knows" | **Living docs, always current** |
 | Onboarding: 2 weeks | **Onboarding: 1 day** |
 

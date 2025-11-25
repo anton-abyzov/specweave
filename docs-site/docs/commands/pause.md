@@ -18,7 +18,7 @@ This is primarily a **system command** used by SpecWeave internally. SpecWeave *
 
 ## Description
 
-The `pause` command temporarily suspends work on an active increment. SpecWeave calls this automatically when it detects you're blocked.
+The `pause` command temporarily suspends work on an active [increment](/docs/glossary/terms/increments). SpecWeave calls this automatically when it detects you're blocked.
 
 **SpecWeave automatically pauses when**:
 - 🚧 Missing dependencies (API keys, credentials, configuration)
@@ -97,7 +97,7 @@ $ 2
 - ✅ Detected blockage automatically
 - ✅ Paused increment (status → `paused`)
 - ✅ Filed IT ticket for you
-- ✅ Freed WIP limit slot
+- ✅ Freed [WIP limit](/docs/glossary/terms/wip-limits) slot
 - ✅ Suggested next action
 
 ### Example 2: Manual Pause (Business Decision)
@@ -196,7 +196,7 @@ graph LR
 }
 ```
 
-### WIP Limit Impact
+### [WIP Limit](/docs/glossary/terms/wip-limits) Impact
 
 ```bash
 # Before pause
@@ -400,10 +400,10 @@ $ specweave abandon 0007 --reason "Requirements changed"
 
 ## See Also
 
-- `resume` - Restart paused work
-- [`abandon`](/docs/glossary/terms/abandon) - Cancel work permanently
-- [`status`](/docs/glossary/terms/status) - Check current status
-- [Status Management Guide](/docs/glossary/terms/status-management) - Complete workflow guide
+- [`resume`](/docs/commands/resume) - Restart paused work
+- [`abandon`](/docs/commands/abandon) - Cancel work permanently
+- [`status`](/docs/commands/status) - Check current status
+- [Status Management](/docs/commands/status-management) - Complete workflow guide
 
 ## Summary
 

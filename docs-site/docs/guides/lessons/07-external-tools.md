@@ -9,6 +9,13 @@ description: "Connect GitHub, JIRA, and Azure DevOps"
 **Time**: 35 minutes
 **Goal**: Set up sync with project management tools
 
+:::tip Deep-Dive Guides Available
+This lesson provides an overview. For comprehensive setup guides, see:
+- [Lesson 14: GitHub Integration Guide](./14-github-integration)
+- [Lesson 15: JIRA Integration Guide](./15-jira-integration)
+- [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration)
+:::
+
 ---
 
 ## Why Integrate?
@@ -40,6 +47,15 @@ Developer finishes task
 
 Time wasted: 0 min
 ```
+
+### The Real Benefits
+
+Beyond time savings, integration provides:
+
+1. **PM Visibility**: Non-technical stakeholders see progress without accessing code
+2. **Audit Trail**: Requirements link to implementation to completion
+3. **Team Sync**: Everyone sees the same status, everywhere
+4. **Automation**: Close issues when increments complete
 
 ---
 
@@ -293,6 +309,171 @@ External → SpecWeave only.
 
 ---
 
+## Practical Example: Full Integration Workflow
+
+Here's a real-world example showing how integration works end-to-end:
+
+### Scenario: Building a User Profile Feature
+
+```bash
+# 1. Create increment (GitHub issue auto-created)
+/specweave:increment "User profile feature"
+
+# Output:
+✓ Increment 0050-user-profile created
+✓ GitHub Issue #200 created: "User Profile Feature"
+  URL: https://github.com/your-org/your-repo/issues/200
+```
+
+### The GitHub Issue Created
+
+```markdown
+## [FS-001][US-001] User Profile Feature
+
+Implementation of user profile viewing and editing.
+
+### Acceptance Criteria
+- [ ] AC-US1-01: User can view their profile
+- [ ] AC-US1-02: Profile shows name, email, avatar
+- [ ] AC-US1-03: User can edit profile fields
+- [ ] AC-US1-04: Changes persist after refresh
+
+### Tasks
+- [ ] T-001: Create ProfileService
+- [ ] T-002: Build profile view component
+- [ ] T-003: Implement edit functionality
+- [ ] T-004: Write unit tests
+- [ ] T-005: Write E2E tests
+
+📋 Managed by SpecWeave | Increment: 0050-user-profile
+```
+
+### During Development
+
+```bash
+# 2. Implement tasks
+/specweave:do
+
+# As each task completes, GitHub syncs automatically:
+T-001: Create ProfileService
+├── Creating src/services/ProfileService.ts
+├── Tests: ✓ 4/4 passing
+├── GitHub: ✓ Checkbox checked
+└── ✓ Complete
+
+# PM checks GitHub issue and sees:
+- [x] T-001: Create ProfileService  ← Auto-checked!
+- [ ] T-002: Build profile view component
+...
+```
+
+### Completion
+
+```bash
+# 3. Finish and close
+/specweave:done 0050
+
+# Output:
+✓ All tasks complete (5/5)
+✓ Quality gates passed
+✓ GitHub Issue #200 closed
+✓ Completion comment added
+```
+
+### The Final GitHub Comment
+
+```markdown
+✅ **Increment Complete!**
+
+**Final Status:**
+- Tasks: 5/5 (100%)
+- Tests: 18/18 passing
+- Coverage: 92%
+
+**Deliverables:**
+- ProfileService (src/services/ProfileService.ts)
+- ProfileView component (src/components/ProfileView.tsx)
+- ProfileEdit component (src/components/ProfileEdit.tsx)
+
+🎉 Closed by SpecWeave
+```
+
+---
+
+## Choosing Your Integration
+
+### Decision Matrix
+
+| Scenario | Best Choice |
+|----------|-------------|
+| **Startup, technical team** | GitHub Issues |
+| **Enterprise, existing JIRA** | JIRA |
+| **Microsoft shop, ADO pipelines** | Azure DevOps |
+| **Multiple tools needed** | Configure all, use primary |
+
+### Can I Use Multiple Tools?
+
+Yes! Configure multiple integrations:
+
+```json
+{
+  "sync": {
+    "github": {
+      "enabled": true,
+      "primary": true
+    },
+    "jira": {
+      "enabled": true,
+      "primary": false
+    }
+  }
+}
+```
+
+The **primary** tool is where issues are created by default.
+
+---
+
+## The Init Questions Explained
+
+During `specweave init`, you'll be asked:
+
+### Question 1: "Which Git provider?"
+
+```
+? Which Git provider are you using?
+  ❯ GitHub (github.com)
+    GitLab
+    Azure DevOps
+```
+
+**Why it matters**: Determines which plugin gets installed and how commits link to issues.
+
+### Question 2: "Sync with issue tracker?"
+
+```
+? Do you want to sync increments with an external issue tracker?
+  ❯ Yes, GitHub Issues
+    Yes, JIRA
+    Yes, Azure DevOps Work Items
+    No, keep everything local
+```
+
+**Why it matters**: "No" means all tracking stays in `.specweave/`. "Yes" enables bidirectional sync.
+
+### Question 3: Team Strategy
+
+```
+? How is your team organized?
+  ❯ Repository-per-team (microservices)
+    Team-based (monorepo)
+    Team-multi-repo (platform teams)
+```
+
+**Why it matters**: Determines how specs map to external tool structure.
+
+---
+
 ## Glossary Terms Used
 
 - **[JIRA](/docs/glossary/terms/jira)** — Atlassian project tracking
@@ -305,16 +486,33 @@ External → SpecWeave only.
 ## Key Commands
 
 ```bash
-/specweave:sync-progress          # Full sync
-/specweave-github:sync 0001       # GitHub sync
-/specweave-jira:sync 0001         # JIRA sync
-/specweave-ado:sync 0001          # ADO sync
+# Status & Diagnostics
+/specweave-github:status          # Check GitHub connection
+/specweave-jira:status            # Check JIRA connection
+/specweave-ado:status             # Check ADO connection
+/specweave:sync-diagnostics       # Rate limits, errors
+
+# Syncing
+/specweave:sync-progress          # Full sync (all systems)
+/specweave-github:sync 0001       # GitHub sync (one increment)
+/specweave-jira:sync 0001         # JIRA sync (one increment)
+/specweave-ado:sync 0001          # ADO sync (one increment)
+
+# Issue Management
+/specweave-github:create-issue 0001   # Create GitHub issue
+/specweave-github:close-issue 0001    # Close GitHub issue
 ```
 
 ---
 
-## What's Next?
+## Next Steps
 
-Learn how to choose the right AI model for each task.
+This lesson gave you the overview. For complete setup instructions:
+
+- **GitHub users** → [Lesson 14: GitHub Integration Guide](./14-github-integration)
+- **JIRA users** → [Lesson 15: JIRA Integration Guide](./15-jira-integration)
+- **Azure DevOps users** → [Lesson 16: Azure DevOps Integration Guide](./16-ado-integration)
+
+Or continue to learn about AI model selection:
 
 **:next** → [Lesson 8: AI Model Selection](./08-ai-model-selection)

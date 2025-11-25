@@ -43,10 +43,10 @@ graph LR
 
 **What it does**:
 - 🔍 Detects tech stack automatically
-- 📋 PM-led planning (market research, spec.md, plan)
-- ✅ Auto-generates tasks.md from plan
+- 📋 [PM](/docs/glossary/terms/pm-agent)-led planning (market research, [spec.md](/docs/glossary/terms/spec-md), plan)
+- ✅ Auto-generates [tasks.md](/docs/glossary/terms/tasks-md) from [plan](/docs/glossary/terms/plan-md)
 - 🧪 Creates test strategy
-- 👥 Strategic agent review (Architect, Security, QA, Tech Lead)
+- 👥 Strategic agent review ([Architect](/docs/glossary/terms/architect-agent), Security, [QA](/docs/glossary/terms/qa-lead-agent), [Tech Lead](/docs/glossary/terms/tech-lead-agent))
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
@@ -75,7 +75,7 @@ graph LR
 **Key Features**:
 - **Cost optimization**: Uses Haiku for simple tasks (3x faster, 20x cheaper)
 - **Automatic hooks**: Runs after EVERY task completion
-- **Living docs sync**: Updates `.specweave/docs/` after all tasks complete
+- **[Living docs](/docs/glossary/terms/living-docs) sync**: Updates `.specweave/docs/` after all tasks complete
 
 <!-- TODO: Add dedicated do command documentation -->
 
@@ -97,7 +97,7 @@ graph LR
 - ✅ Consistency (spec → plan → tasks)
 - ✅ Completeness (all required sections)
 - ✅ Quality (testable criteria, actionable tasks)
-- ✅ Traceability (AC-IDs, ADR references)
+- ✅ Traceability ([AC-IDs](/docs/glossary/terms/ac-id), [ADR](/docs/glossary/terms/adr) references)
 
 <!-- TODO: Add dedicated validate command documentation -->
 
@@ -105,7 +105,7 @@ graph LR
 
 ### `/specweave:qa` - Quality Assessment with Risk Scoring
 
-**Comprehensive quality gate** - AI-powered assessment with quantitative risk scoring (Probability × Impact).
+**Comprehensive [quality gate](/docs/glossary/terms/quality-gate)** - AI-powered assessment with quantitative risk scoring (Probability × Impact).
 
 ```bash
 /specweave:qa 0007                    # Quick mode (default)
@@ -146,7 +146,7 @@ graph LR
 
 **What it checks**:
 - 📊 Per-task coverage (unit, integration, [E2E](/docs/glossary/terms/e2e))
-- ✅ AC-ID coverage (all acceptance criteria tested)
+- ✅ [AC-ID](/docs/glossary/terms/ac-id) coverage (all [acceptance criteria](/docs/glossary/terms/acceptance-criteria) tested)
 - 🎯 Overall coverage vs target (80-90%)
 - 📝 Missing tests and recommendations
 
@@ -156,7 +156,7 @@ graph LR
 
 ### `/specweave:done` - Close Increment
 
-**PM validation before closing** - Ensures quality gates pass.
+**[PM](/docs/glossary/terms/pm-agent) validation before closing** - Ensures [quality gates](/docs/glossary/terms/quality-gate) pass.
 
 ```bash
 /specweave:done 0007
@@ -166,7 +166,7 @@ graph LR
 - ✅ Validates all tasks complete
 - ✅ Runs `/specweave:qa --gate` (quality gate check)
 - ✅ PM agent validates completion
-- ✅ Creates completion report
+- ✅ Creates [completion report](/docs/glossary/terms/completion-report)
 - 🔗 Closes GitHub issues (if plugin enabled)
 
 <!-- TODO: Add dedicated done command documentation -->
@@ -175,7 +175,7 @@ graph LR
 
 ### `/specweave:sync-docs` - Synchronize Living Documentation
 
-**Bidirectional sync** - Keep strategic docs and implementation in sync.
+**[Bidirectional sync](/docs/glossary/terms/bidirectional-sync)** - Keep strategic docs and implementation in sync.
 
 ```bash
 /specweave:sync-docs review          # Before implementation (review strategic docs)
@@ -221,6 +221,7 @@ graph LR
 - `/specweave:check-tests` - Test coverage check ⭐ **TEST VALIDATION**
 - `/specweave:done` - Close increment ⭐ **FINISH**
 - `/specweave:sync-docs` - Synchronize living docs ⭐ **KEEP DOCS CURRENT**
+- `/specweave:save` - Save & push to all repos ⭐ **MULTI-REPO GIT**
 
 ---
 
@@ -351,7 +352,7 @@ All commands respect `.specweave/config.json`:
 
 ## Glossary Links
 
-Understanding SpecWeave terminology:
+Understanding SpecWeave terminology (see [full glossary](/docs/glossary)):
 
 - **[ADR](/docs/glossary/terms/adr)** - Architecture Decision Records
 - **[RFC](/docs/glossary/terms/rfc)** - Request for Comments (specification format)
@@ -362,6 +363,16 @@ Understanding SpecWeave terminology:
 - **[GraphQL](/docs/glossary/terms/graphql)** - Query language for APIs
 - **[Microservices](/docs/glossary/terms/microservices)** - Distributed architecture pattern
 - **[IaC](/docs/glossary/terms/iac)** - Infrastructure as Code
+
+**SpecWeave-Specific Terms**:
+- **[Increments](/docs/glossary/terms/increments)** - Work units in SpecWeave
+- **[spec.md](/docs/glossary/terms/spec-md)** - Specification file format
+- **[plan.md](/docs/glossary/terms/plan-md)** - Architecture plan format
+- **[tasks.md](/docs/glossary/terms/tasks-md)** - Task tracking format
+- **[PM Agent](/docs/glossary/terms/pm-agent)** - Product Manager agent
+- **[Architect Agent](/docs/glossary/terms/architect-agent)** - System design agent
+- **[Quality Gate](/docs/glossary/terms/quality-gate)** - Validation checkpoints
+- **[WIP Limits](/docs/glossary/terms/wip-limits)** - Work-in-progress limits
 
 [View full glossary →](/docs/glossary)
 

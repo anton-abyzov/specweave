@@ -196,9 +196,9 @@ Data Team:
 └── ml-pipeline (Python)
 
 DevOps Team:
-├── infrastructure (Terraform)
+├── infrastructure ([Terraform](/docs/glossary/terms/terraform))
 ├── monitoring (Prometheus/Grafana)
-├── ci-cd (GitHub Actions)
+├── ci-cd ([GitHub Actions](/docs/glossary/terms/github-actions))
 └── secrets-manager (Vault)
 ```
 

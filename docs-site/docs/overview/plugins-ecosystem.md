@@ -45,12 +45,12 @@ The foundation of SpecWeave, always loaded in every project.
 # - User stories with acceptance criteria
 # - Technical design with architecture
 # - Task breakdown with embedded test plans
-# - BDD format (Given/When/Then)
+# - [BDD](/docs/glossary/terms/bdd) format (Given/When/Then)
 ```
 
 **Skills Highlight:**
 - **increment-planner**: Automatically activates when you say "plan feature", "new increment", "build X"
-- **tdd-workflow**: Activates on "TDD", "test-driven", "red-green-refactor"
+- **tdd-workflow**: Activates on "[TDD](/docs/glossary/terms/tdd)", "test-driven", "red-green-refactor"
 - **brownfield-analyzer**: Detects existing projects and maps documentation to SpecWeave structure
 
 ---
@@ -181,7 +181,7 @@ Connect designs to implementation.
 ### 💻 Tech Stack Plugins
 
 #### **specweave-frontend** - Frontend Development
-React, Vue, Angular, Next.js expertise.
+[React](/docs/glossary/terms/react), Vue, [Angular](/docs/glossary/terms/angular), [Next.js](/docs/glossary/terms/nextjs) expertise.
 
 **Agents:**
 - **frontend-architect**: Component architecture, state management patterns
@@ -210,7 +210,7 @@ React, Vue, Angular, Next.js expertise.
 ---
 
 #### **specweave-backend** - Backend Development
-Node.js, Python, .NET expertise.
+[Node.js](/docs/glossary/terms/nodejs), Python, .NET expertise.
 
 **Agents:**
 - **backend-architect**: API design, microservices, authentication
@@ -291,7 +291,7 @@ Cloud infrastructure with Hetzner, DigitalOcean, monitoring.
 ---
 
 #### **specweave-kubernetes** - Kubernetes Orchestration
-Cloud-native K8s architecture, GitOps, service mesh.
+Cloud-native [Kubernetes](/docs/glossary/terms/kubernetes) architecture, GitOps, service mesh.
 
 **Agent:**
 - **kubernetes-architect**: EKS/AKS/GKE, Helm, ArgoCD/Flux, Istio

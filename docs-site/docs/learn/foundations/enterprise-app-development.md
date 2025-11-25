@@ -57,9 +57,9 @@ Enterprise applications operate at a fundamentally different scale and with diff
 | **Team Size** | 1-5 developers | 10-100+ developers across multiple teams |
 | **Lifespan** | 1-2 years | 5-10+ years (decades for some systems) |
 | **Cost of Failure** | Minor inconvenience | Revenue loss, legal liability, reputational damage |
-| **Testing** | Manual testing, basic unit tests | Automated test suites, 80%+ coverage |
-| **Deployment** | Manual deploy, single server | CI/CD pipelines, multiple environments (dev/staging/prod) |
-| **Documentation** | README, inline comments | Comprehensive docs, architecture diagrams, ADRs |
+| **Testing** | Manual testing, basic [unit tests](/docs/glossary/terms/unit-testing) | Automated test suites, 80%+ [coverage](/docs/glossary/terms/test-coverage) |
+| **Deployment** | Manual deploy, single server | [CI/CD](/docs/glossary/terms/ci-cd) pipelines, multiple environments (dev/staging/prod) |
+| **Documentation** | README, inline comments | Comprehensive docs, architecture diagrams, [ADRs](/docs/glossary/terms/adr) |
 | **Monitoring** | Basic error logs | Centralized logging, metrics dashboards, alerting |
 
 ### Key Characteristics
@@ -153,7 +153,7 @@ graph TB
 
 ### Modern Microservices Architecture
 
-As applications grow, the monolithic business logic layer often splits into **microservices**—small, independent services that each handle a specific business capability.
+As applications grow, the monolithic business logic layer often splits into **[microservices](/docs/glossary/terms/microservices)**—small, independent services that each handle a specific business capability.
 
 ```mermaid
 graph TB
@@ -255,8 +255,8 @@ graph LR
 
 **Key Artifacts**
 - **Product Requirements Document (PRD)**: Business objectives, target users, success criteria
-- **User Stories**: "As a [user], I want [feature] so that [benefit]"
-- **Acceptance Criteria**: Measurable conditions for done
+- **[User Stories](/docs/glossary/terms/user-stories)**: "As a [user], I want [feature] so that [benefit]"
+- **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)**: Measurable conditions for done
 
 **Example User Story**
 ```
@@ -282,9 +282,9 @@ Acceptance Criteria:
 
 **Activities**
 - High-Level Design (HLD): System architecture, component interactions
-- Low-Level Design (LLD): Class diagrams, API contracts, database schema
+- Low-Level Design (LLD): Class diagrams, [API](/docs/glossary/terms/api) contracts, database schema
 - Technology stack selection (languages, frameworks, databases)
-- Architecture Decision Records (ADRs): Document WHY we chose X over Y
+- Architecture Decision Records ([ADRs](/docs/glossary/terms/adr)): Document WHY we chose X over Y
 
 **Key Artifacts**
 - **Architecture Diagrams**: C4 model (context, container, component, code)
@@ -325,7 +325,7 @@ Status: Accepted
 **Activities**
 - Setting up development environment
 - Writing application code
-- Writing unit tests (TDD: test-first approach)
+- Writing unit tests ([TDD](/docs/glossary/terms/tdd): test-first approach)
 - Code reviews (peer validation)
 - Continuous integration (automated build/test)
 
@@ -390,9 +390,9 @@ graph TB
 - Moderate speed (seconds)
 - Example: POST /users endpoint saves to DB
 
-**End-to-End (E2E) Tests**
+**[End-to-End (E2E)](/docs/glossary/terms/e2e) Tests**
 - Test complete user workflows
-- Browser automation (Playwright, Cypress)
+- Browser automation ([Playwright](/docs/glossary/terms/playwright), Cypress)
 - Slow (minutes)
 - Example: User signup → login → add to cart → checkout
 
@@ -445,8 +445,8 @@ graph LR
 - **Canary**: Roll out to 5% of users, then 50%, then 100%
 - **Rolling**: Update servers one at a time (no downtime)
 
-**Infrastructure as Code (IaC)**
-- Define infrastructure in code (Terraform, CloudFormation)
+**[Infrastructure as Code (IaC)](/docs/glossary/terms/iac)**
+- Define infrastructure in code ([Terraform](/docs/glossary/terms/terraform), CloudFormation)
 - Version control for infrastructure
 - Reproducible deployments
 
@@ -499,9 +499,9 @@ Enterprise applications require diverse expertise across multiple roles:
 |------|-----------------|--------|-----------------|
 | **Product Manager (PM)** | Define requirements, prioritize features, stakeholder communication | Business analysis, user research, roadmap planning | PM Agent (spec) |
 | **Software Architect** | Design system architecture, technology decisions, ADRs | System design, scalability, trade-off analysis | Architect Agent (plan) |
-| **Backend Developer** | Implement APIs, business logic, database design | Java, Python, Node.js, SQL, API design | Tech Lead Agent (tasks) |
-| **Frontend Developer** | Build user interfaces, client-side logic | React, Angular, Vue, TypeScript, CSS | Frontend Agent (plugin) |
-| **DevOps Engineer** | CI/CD pipelines, infrastructure, deployment automation | Docker, Kubernetes, Terraform, AWS/Azure | DevOps Agent (plugin) |
+| **Backend Developer** | Implement [APIs](/docs/glossary/terms/api), business logic, database design | Java, Python, [Node.js](/docs/glossary/terms/nodejs), SQL, API design | Tech Lead Agent (tasks) |
+| **Frontend Developer** | Build user interfaces, client-side logic | [React](/docs/glossary/terms/react), [Angular](/docs/glossary/terms/angular), Vue, [TypeScript](/docs/glossary/terms/typescript), CSS | Frontend Agent (plugin) |
+| **DevOps Engineer** | [CI/CD](/docs/glossary/terms/ci-cd) pipelines, infrastructure, deployment automation | [Docker](/docs/glossary/terms/docker), [Kubernetes](/docs/glossary/terms/kubernetes), [Terraform](/docs/glossary/terms/terraform), AWS/Azure | DevOps Agent (plugin) |
 | **QA Engineer** | Test planning, automation, quality assurance | Selenium, Playwright, test frameworks | QA Agent (plugin) |
 | **Security Engineer** | Security audits, compliance, threat modeling | OWASP, penetration testing, cryptography | Security Agent (plugin) |
 | **Data Engineer** | Data pipelines, ETL, analytics infrastructure | Spark, Airflow, SQL, data modeling | Data Agent (plugin) |

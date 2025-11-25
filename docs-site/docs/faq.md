@@ -370,7 +370,7 @@ monorepo/
         └── 0008-mobile-basic-login/
 ```
 
-**2. [Microservices](/docs/glossary/terms/[microservices](/docs/glossary/terms/microservices)) (Multiple Repos)**:
+**2. [Microservices](/docs/glossary/terms/microservices) (Multiple Repos)**:
 ```
 parent-folder/                     ← Create parent folder
 ├── .specweave/                    ← One SpecWeave for entire system

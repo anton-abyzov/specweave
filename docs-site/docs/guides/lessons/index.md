@@ -23,7 +23,7 @@ Lesson 3 → Build your first real feature
     ...and so on
 ```
 
-**Time commitment**: ~5 hours total for all 10 lessons.
+**Time commitment**: ~5 hours for core lessons (1-10), ~9 hours for full curriculum including deep-dives (1-16).
 
 ---
 
@@ -79,6 +79,22 @@ Lesson 3 → Build your first real feature
 
 ---
 
+### 🎓 Path 5: Deep Dive (Lessons 11-16)
+
+**For**: Users who want comprehensive knowledge
+**Goal**: Master SpecWeave philosophy and integrations
+
+| Lesson | What You'll Learn | Time |
+|--------|-------------------|------|
+| [**11. The Vibe Coding Problem**](./11-vibe-coding-problem) | Why SpecWeave exists, pain points solved | 30 min |
+| [**12. The specweave init Deep Dive**](./12-init-deep-dive) | Every init question explained | 40 min |
+| [**13. Increment Lifecycle**](./13-increment-lifecycle) | Cleanup, archive, status management | 45 min |
+| [**14. GitHub Integration**](./14-github-integration) | Complete GitHub setup guide | 45 min |
+| [**15. JIRA Integration**](./15-jira-integration) | Complete JIRA setup guide | 45 min |
+| [**16. Azure DevOps Integration**](./16-ado-integration) | Complete ADO setup guide | 45 min |
+
+---
+
 ## Quick Reference Card
 
 Save this for later:
@@ -120,8 +136,20 @@ Start here → [Lesson 1: Getting Started](./01-getting-started)
 **Already familiar with basics?**
 Jump to → [Lesson 4: The :next Command](./04-the-next-command)
 
+**Want to understand WHY SpecWeave?**
+Start with → [Lesson 11: The Vibe Coding Problem](./11-vibe-coding-problem)
+
+**Setting up a new project?**
+Deep dive → [Lesson 12: The specweave init Deep Dive](./12-init-deep-dive)
+
 **Want to connect external tools?**
-Skip to → [Lesson 7: External Tools](./07-external-tools)
+Overview → [Lesson 7: External Tools](./07-external-tools)
+GitHub → [Lesson 14: GitHub Integration](./14-github-integration)
+JIRA → [Lesson 15: JIRA Integration](./15-jira-integration)
+Azure DevOps → [Lesson 16: Azure DevOps Integration](./16-ado-integration)
+
+**Need to manage increment lifecycle?**
+Complete guide → [Lesson 13: Increment Lifecycle Management](./13-increment-lifecycle)
 
 ---
 

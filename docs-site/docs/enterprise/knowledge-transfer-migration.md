@@ -16,7 +16,7 @@ Your entire project's intellectual property becomes **portable specs** that can 
 - **Transferred** between companies
 - **Reimplemented** in any tech stack
 - **Modernized** from legacy to cutting-edge
-- **Scaled** from monolith to microservices
+- **Scaled** from [monolith](/docs/glossary/terms/monolith) to [microservices](/docs/glossary/terms/microservices)
 :::
 
 ## Use Case 1: Cross-Company Knowledge Transfer
@@ -98,7 +98,7 @@ graph LR
 templates/
 ├── ecommerce-platform/      # 200 user stories, proven architecture
 ├── fintech-compliance/       # 150 user stories, regulatory included
-├── healthcare-ehr/           # 300 user stories, HIPAA-compliant
+├── healthcare-ehr/           # 300 user stories, [HIPAA](/docs/glossary/terms/hipaa)-compliant
 └── saas-multitenant/         # 180 user stories, full platform
 
 # Client implementation
@@ -199,7 +199,7 @@ specweave generate-migration-plan --target microservices
 ### Tools & Automation
 - **AI-Powered Extraction**: GPT-4 analyzes code → generates specs
 - **Multi-Language Support**: Extract from any language
-- **Compliance Templates**: HIPAA, PCI, SOC2 built-in
+- **Compliance Templates**: [HIPAA](/docs/glossary/terms/hipaa), PCI, [SOC2](/docs/glossary/terms/soc2) built-in
 - **CI/CD Integration**: Automated spec validation
 
 ## Success Stories

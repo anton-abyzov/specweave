@@ -21,8 +21,8 @@ if [ -z "$INCREMENT_ID" ]; then
   exit 0
 fi
 
-# Get project root
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
+# Get project root (3 levels up from plugins/specweave/hooks/)
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 INCREMENT_DIR="$PROJECT_ROOT/.specweave/increments/$INCREMENT_ID"
 
 # ============================================================================
@@ -135,6 +135,7 @@ if [ -f "$SPEC_FILE" ]; then
   echo "🔄 Syncing spec.md status to 'completed'..."
 
   # Read current status from spec.md frontmatter
+  # Use heredoc to avoid quote escaping issues in awk
   SPEC_STATUS=$(awk '
     BEGIN { in_frontmatter=0 }
     /^---$/ {
@@ -146,7 +147,7 @@ if [ -f "$SPEC_FILE" ]; then
     }
     in_frontmatter == 1 && /^status:/ {
       gsub(/^status:[ \t]*/, "");
-      gsub(/["'\''']/, "");
+      gsub(/["'"'"']/, "");
       print;
       exit
     }

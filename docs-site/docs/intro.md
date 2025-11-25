@@ -141,7 +141,7 @@ flowchart TB
 
 ## Key Strengths
 
-- **Brownfield + Greenfield** — Works with existing codebases, not just new projects
+- **[Brownfield](/docs/glossary/terms/brownfield) + [Greenfield](/docs/glossary/terms/greenfield)** — Works with existing codebases, not just new projects
 - **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
 - **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
 - **External Tool Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
@@ -197,9 +197,9 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 - **PM Agent**: User stories, acceptance criteria, market analysis
 - **Architect Agent**: System design, ADRs, tech stack decisions
 - **Tech Lead Agent**: Implementation, code review, best practices
-- **QA Lead Agent**: Test strategy, E2E tests, coverage validation
+- **QA Lead Agent**: Test strategy, [E2E](/docs/glossary/terms/e2e) tests, coverage validation
 - **Security Agent**: Threat modeling, OWASP, vulnerability assessment
-- **DevOps Agent**: IaC, Kubernetes, CI/CD pipelines
+- **DevOps Agent**: [IaC](/docs/glossary/terms/iac), [Kubernetes](/docs/glossary/terms/kubernetes), [CI/CD](/docs/glossary/terms/ci-cd) pipelines
 
 ### Living Documentation
 
@@ -209,9 +209,9 @@ Documentation updates **after every task** via hooks:
 - Runbooks and SLOs generated
 - No manual doc updates ever
 
-### Quality Gates
+### [Quality Gates](/docs/glossary/terms/quality-gate)
 
-Three gates before any increment closes:
+Three gates before any [increment](/docs/glossary/terms/increments) closes:
 1. **Tasks**: All tasks marked complete
 2. **Tests**: 60%+ coverage minimum (configurable)
 3. **Documentation**: Living docs updated

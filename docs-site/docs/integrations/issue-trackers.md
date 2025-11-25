@@ -33,7 +33,7 @@ GitHub supports **3 strategies** for organizing teams and repositories.
 
 ### Strategy 1: Repository-per-Team (Most Common)
 
-**Use when**: Each team owns separate repositories (microservices, multi-repo architecture).
+**Use when**: Each team owns separate repositories ([microservices](/docs/glossary/terms/microservices), multi-repo architecture).
 
 **Example**: Frontend team owns `frontend-app`, Backend team owns `backend-api`.
 

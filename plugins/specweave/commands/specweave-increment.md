@@ -372,6 +372,36 @@ Proceeding with hotfix 0006...
 - Find highest number across both directories (e.g., 032)
 - Next increment: 033
 
+### Step 1.5: Detect Multi-Project Mode (CRITICAL!)
+
+**⚠️ MANDATORY CHECK before generating spec.md:**
+
+```bash
+# Check for umbrella configuration
+UMBRELLA_ENABLED=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.enabled // false')
+CHILD_REPOS=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.childRepos[]?.id // empty' | tr '\n' ',')
+PROJECT_FOLDERS=$(ls -1 .specweave/docs/internal/specs/ 2>/dev/null | grep -v "^_" | head -5)
+```
+
+**If multi-project detected:**
+```
+📁 Multi-Project Mode Detected!
+
+Child Repos:
+  • FE: sw-thumbnail-ab-fe
+  • BE: sw-thumbnail-ab-be
+  • SHARED: sw-thumbnail-ab-shared
+
+User stories will be generated with project prefixes:
+  • US-FE-001, US-FE-002 (Frontend stories)
+  • US-BE-001, US-BE-002 (Backend stories)
+  • US-SHARED-001 (Shared library stories)
+
+Each story will include "Related Repo" field for clarity.
+```
+
+**Pass this context to increment-planner skill!**
+
 ### Step 2: Detect tech stack (CRITICAL - framework-agnostic)
    - Settings auto-detected
    - If not found, detect from project files:

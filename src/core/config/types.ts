@@ -250,16 +250,44 @@ export interface StatusLineConfiguration {
 
 /**
  * Child repo configuration for umbrella mode
+ *
+ * ID STRATEGY (IMPORTANT):
+ * The `id` field should match the canonical name from your source of truth:
+ *
+ * | Scenario              | ID Source                | Example                          |
+ * |-----------------------|--------------------------|----------------------------------|
+ * | 1:1 Repo Mapping      | Exact repo name          | `sw-qr-menu-fe`                  |
+ * | JIRA Project          | Project key (lowercase)  | `WEBAPP` → `webapp`              |
+ * | ADO Project           | Project name (kebab)     | `Frontend Team` → `frontend-team`|
+ * | Area Path             | Last segment (kebab)     | `Product\Web` → `web`            |
+ * | Monorepo Package      | Package name             | `@acme/frontend` → `frontend`    |
+ *
+ * RULE: ID should be predictable from source - no arbitrary abbreviations!
+ * - ✅ `id: "sw-qr-menu-fe"` (matches repo name)
+ * - ❌ `id: "fe"` (arbitrary, what if 2 frontend repos?)
  */
 export interface ChildRepoConfig {
-  /** Repo identifier (e.g., 'fe', 'be', 'shared') */
+  /**
+   * Repo identifier - MUST match canonical source name:
+   * - GitHub repo: exact repo name (e.g., 'sw-qr-menu-fe')
+   * - JIRA: project key lowercase (e.g., 'webapp')
+   * - ADO: project name kebab-case (e.g., 'frontend-team')
+   */
   id: string;
   /** Path to repo (relative or absolute) */
   path: string;
-  /** User story prefix (e.g., 'FE', 'BE', 'SHARED') */
+  /**
+   * User story prefix for US-{PREFIX}-001 format.
+   * Can be short (FE, BE) even if id is long.
+   * Example: id='sw-qr-menu-fe', prefix='FE' → US-FE-001
+   */
   prefix: string;
   /** GitHub URL for this repo */
   githubUrl?: string;
+  /** JIRA project key (if JIRA is source of truth for this project) */
+  jiraProject?: string;
+  /** ADO project name (if ADO is source of truth for this project) */
+  adoProject?: string;
   /** Tech stack keywords for story routing */
   techStack?: string[];
 }
