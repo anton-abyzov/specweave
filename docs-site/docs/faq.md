@@ -416,6 +416,56 @@ enterprise-project/
 
 ---
 
+## Architecture & Performance
+
+### Why does SpecWeave use Skills instead of MCP?
+
+**Short Answer**: Code execution achieves 98% token reduction vs MCP tool calls. This is based on [Anthropic's own engineering research](https://www.anthropic.com/engineering/code-execution-with-mcp).
+
+**The Problem with MCP**:
+
+| Issue | Impact |
+|-------|--------|
+| **Tool definition bloat** | All tools loaded upfront → context window consumed |
+| **Data duplication** | Same data flows through model 2-3× |
+| **Token explosion** | 150,000 tokens for tasks achievable in 2,000 |
+
+**How SpecWeave Solves This**:
+
+```
+❌ MCP Pattern:
+   Load 50 tools → Claude picks one → fetch data → process → call another tool
+   = Multiple round trips, all definitions in context, data duplicated
+
+✅ SpecWeave Pattern:
+   Skill activates on-demand → Claude writes code → execute locally → minimal tokens
+   = 98% reduction, deterministic, reusable code
+```
+
+**Key Quote from Anthropic**:
+> "LLMs are adept at writing code and developers should take advantage of this strength to build agents that interact with MCP servers more efficiently."
+
+**Practical Benefits**:
+- **Reusable**: Code commits to git, runs in CI/CD
+- **Deterministic**: Same code = same result every time
+- **Debuggable**: Full stack traces, not opaque tool failures
+- **Cheaper**: 70-98% token savings
+
+**For Non-Claude Tools (Cursor, Copilot, etc.)**:
+This is even MORE important! MCP support varies across tools, but `npx` works everywhere:
+
+```bash
+# Instead of Playwright MCP:
+npx playwright test
+
+# Instead of Kafka MCP:
+import { Kafka } from 'kafkajs';
+```
+
+See [ADR-0140](/docs/architecture/adr/0140-code-over-mcp) for the full technical decision.
+
+---
+
 ## Getting Started
 
 ### I'm new to SpecWeave. Where do I start?

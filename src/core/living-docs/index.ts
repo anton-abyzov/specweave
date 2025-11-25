@@ -24,4 +24,5 @@ export { ContentClassifier } from './content-classifier.js';
 export { ProjectDetector } from './project-detector.js';
 export { ContentDistributor } from './content-distributor.js';
 export { CrossLinker } from './cross-linker.js';
+export { FeatureConsistencyValidator } from './feature-consistency-validator.js';
 export * from './types.js';

@@ -11,10 +11,11 @@ Create and execute automated browser workflows using Playwright. Generate script
 ## What I Do
 
 1. **Workflow Planning**: Define step-by-step browser automation sequences
-2. **Script Generation**: Create Playwright TypeScript/JavaScript code
-3. **MCP Integration**: Use Playwright MCP server for browser control
-4. **Error Handling**: Add retry logic, timeouts, and fallbacks
-5. **Output Collection**: Capture screenshots, data, and validation results
+2. **Script Generation**: Create Playwright TypeScript/JavaScript code (code-first approach)
+3. **Error Handling**: Add retry logic, timeouts, and fallbacks
+4. **Output Collection**: Capture screenshots, data, and validation results
+
+> **Why Code-First?** Anthropic research shows [code execution beats MCP tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) with 98% token reduction. Playwright code is reusable, committable, CI-runnable, and deterministic.
 
 ## Workflow Types
 
@@ -106,30 +107,6 @@ async function automateWorkflow() {
 }
 
 automateWorkflow();
-```
-
-## MCP Server Integration
-
-Uses Playwright MCP server for enhanced capabilities:
-- **Session Management**: Reuse browser contexts
-- **Network Interception**: Mock APIs, block resources
-- **Performance Metrics**: Collect timing data
-- **Video Recording**: Capture automation runs
-- **Parallel Execution**: Run multiple automations concurrently
-
-### MCP Configuration
-
-Add to `.claude/mcp_server_config.json`:
-```json
-{
-  "playwright": {
-    "command": "npx",
-    "args": ["playwright-mcp-server"],
-    "env": {
-      "PLAYWRIGHT_BROWSERS_PATH": "~/.cache/playwright"
-    }
-  }
-}
 ```
 
 ## Use Cases

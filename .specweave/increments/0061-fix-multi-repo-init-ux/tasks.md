@@ -1,6 +1,6 @@
 ---
 increment: 0061-fix-multi-repo-init-ux
-status: in-progress
+status: completed
 ---
 
 # Implementation Tasks

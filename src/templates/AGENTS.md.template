@@ -77,6 +77,48 @@
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
 
+### Code-First Approach (MANDATORY for Non-Claude Tools)
+
+> **Engineering insight**: [Anthropic research](https://www.anthropic.com/engineering/code-execution-with-mcp) shows code execution achieves **98% token reduction** vs MCP tool calls.
+>
+> **For non-Claude tools, this is even MORE important** - MCP support varies, but `npx` works everywhere!
+
+**Rule**: Always prefer direct code execution over MCP:
+
+```bash
+# ❌ DON'T: Use Playwright MCP for testing
+# ✅ DO: Write Playwright tests and run with npx
+npx playwright test
+
+# ❌ DON'T: Use Kafka MCP for messaging
+# ✅ DO: Write kafkajs code
+import { Kafka } from 'kafkajs';
+const kafka = new Kafka({ brokers: ['localhost:9092'] });
+
+# ❌ DON'T: Chain multiple MCP tool calls
+# ✅ DO: Write a script that does all the work
+npx ts-node scripts/process-data.ts
+```
+
+**Why code is better**:
+| Aspect | MCP | Code (`npx`) |
+|--------|-----|--------------|
+| Token cost | High (tool defs + data duplication) | Low (only results) |
+| Reusability | Ephemeral | Committed to git |
+| CI/CD | Usually can't run | Native execution |
+| Debugging | Limited | Full stack traces |
+| Works with | Tools with MCP support | ANY tool |
+
+**Pattern for non-Claude tools**:
+```
+1. AI writes code (test, script, automation)
+2. You run: npx <command>
+3. AI analyzes output
+4. Repeat
+```
+
+This gives you the SAME experience as Claude Code with MCP, but deterministic and reusable!
+
 ### What's Different
 
 | Feature | Claude Code | Cursor/Copilot |
@@ -327,7 +369,40 @@ max_context_tokens: 10000
 
 {SKILLS_SECTION}
 
-**Usage**: Check SKILLS-INDEX.md, match task to skill, follow workflow.
+**Usage for Claude Code**: Skills auto-activate based on keywords in your prompt.
+
+**Usage for Non-Claude Tools (Cursor, Copilot, etc.)**:
+Skills don't auto-activate. You must manually load them:
+
+```bash
+# Step 1: Find relevant skill
+ls plugins/specweave*/skills/
+
+# Step 2: Read the skill file
+cat plugins/specweave/skills/increment-planner/SKILL.md
+
+# Step 3: Tell AI to follow the skill's workflow
+"Follow the increment-planner skill workflow to create my feature"
+
+# Step 4: AI reads skill content and follows instructions
+```
+
+**Skill Simulation Pattern**:
+```
+Non-Claude AI Tools simulate skills by:
+1. Reading SKILL.md files from plugins/ folder
+2. Following the workflow instructions inside
+3. Using the patterns and templates provided
+4. Running `npx` commands instead of MCP tools (code-first!)
+```
+
+**Example** - Creating increment with Cursor:
+```
+User: "Create an increment for user authentication"
+AI: [Reads plugins/specweave/skills/increment-planner/SKILL.md]
+AI: [Follows PM workflow: research → spec → plan → tasks]
+AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
+```
 
 ---
 
@@ -436,19 +511,27 @@ Or run: `/specweave:sync-tasks`
 
 ### Skills/Agents Not Activating
 
-**Non-Claude tools**: Skills don't auto-activate.
+**Non-Claude tools**: Skills don't auto-activate. This is EXPECTED.
 
-**Manual activation**:
+**Manual activation (Cursor, Copilot, Windsurf, etc.)**:
 ```bash
-# 1. Check skills index
-cat .claude/skills/SKILLS-INDEX.md
+# 1. Find skills in plugins folder (NOT .claude/)
+ls plugins/specweave*/skills/
 
-# 2. Match your task to a skill
-# 3. Load the skill manually
-cat .claude/skills/increment-planner/SKILL.md
+# 2. Read the skill file
+cat plugins/specweave/skills/e2e-playwright/SKILL.md
 
-# 4. Follow the skill's workflow
+# 3. Tell AI to follow it
+"Read the e2e-playwright skill and write tests for my login page"
+
+# 4. AI writes code, YOU run it (code-first!)
+npx playwright test
 ```
+
+**Remember**: Non-Claude tools get SAME functionality by:
+- Reading skill files manually
+- Following the workflows inside
+- Running `npx` instead of MCP tools (better anyway!)
 
 ---
 

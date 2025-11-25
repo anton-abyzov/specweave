@@ -14,6 +14,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
+import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
 // Helper functions for fs-extra compatibility
@@ -263,6 +264,13 @@ export class LivingDocsSync {
       // Step 8: Final cleanup (remove any temp files created during sync)
       if (!options.dryRun) {
         await this.cleanupTempFiles(projectPath);
+      }
+
+      // Step 9: Validate consistency (auto-repair if needed)
+      // CRITICAL FIX (2025-11-25): Ensure _features and project folders are in sync
+      // This prevents orphaned _features folders without corresponding project folders
+      if (!options.dryRun) {
+        await this.validateAndRepairConsistency(featureId);
       }
 
       result.success = true;
@@ -1313,6 +1321,60 @@ export class LivingDocsSync {
         await fs.rm(filePath, { force: true });
         this.logger.log(`   🧹 Cleaned up: ${file}`);
       }
+    }
+  }
+
+  /**
+   * Validate and repair consistency between _features and project folders
+   *
+   * CRITICAL FIX (2025-11-25): Post-sync validation to prevent orphaned folders
+   *
+   * This method:
+   * 1. Checks if the just-synced feature exists in both _features/ and project folder
+   * 2. Auto-repairs if discrepancy found (creates missing project folder)
+   * 3. Logs warnings for manual intervention if auto-repair not possible
+   *
+   * @param featureId - Feature ID that was just synced (e.g., "FS-062")
+   */
+  private async validateAndRepairConsistency(featureId: string): Promise<void> {
+    try {
+      const validator = new FeatureConsistencyValidator(this.projectRoot, {
+        logger: this.logger,
+        defaultProject: 'specweave'
+      });
+
+      // Quick check for the specific feature we just synced
+      const featuresPath = path.join(
+        this.projectRoot,
+        '.specweave/docs/internal/specs/_features',
+        featureId
+      );
+      const projectPath = path.join(
+        this.projectRoot,
+        '.specweave/docs/internal/specs/specweave',
+        featureId
+      );
+
+      // Check if _features exists but project folder doesn't
+      if (existsSync(featuresPath) && !existsSync(projectPath)) {
+        this.logger.warn(`   ⚠️  Consistency issue detected: ${featureId} missing from specweave/`);
+
+        // Run full validation with auto-repair for this feature
+        const result = await validator.validate(true);
+
+        if (result.repairs && result.repairs.length > 0) {
+          const repair = result.repairs.find(r => r.featureId === featureId);
+          if (repair?.success) {
+            this.logger.log(`   ✅ Auto-repaired: created specweave/${featureId}/`);
+          } else {
+            this.logger.warn(`   ⚠️  Auto-repair failed for ${featureId}: ${repair?.error}`);
+          }
+        }
+      }
+    } catch (error) {
+      // Non-fatal - log warning but continue
+      this.logger.warn(`   ⚠️  Consistency validation failed: ${error}`);
+      this.logger.warn(`      Sync completed but consistency not verified`);
     }
   }
 }

@@ -7,6 +7,23 @@ description: MCP server integration for Kafka operations. Auto-activates on keyw
 
 Expert knowledge for integrating SpecWeave with Kafka MCP (Model Context Protocol) servers. Supports 4 MCP server implementations with auto-detection and configuration guidance.
 
+---
+
+> **Code-First Recommendation**: For most Kafka automation tasks, [writing code is better than MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) (98% token reduction). Use **kafkajs** or **kafka-node** directly:
+>
+> ```typescript
+> import { Kafka } from 'kafkajs';
+> const kafka = new Kafka({ brokers: ['localhost:9092'] });
+> const producer = kafka.producer();
+> await producer.send({ topic: 'events', messages: [{ value: 'Hello' }] });
+> ```
+>
+> **When MCP IS useful**: Quick interactive debugging, topic exploration, Claude Desktop integration.
+>
+> **When to use code instead**: CI/CD pipelines, test automation, production scripts, anything that should be committed and reusable.
+
+---
+
 ## Supported MCP Servers
 
 ### 1. kanapuli/mcp-kafka (Node.js)

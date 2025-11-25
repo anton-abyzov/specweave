@@ -2,7 +2,7 @@
 increment: 0061-fix-multi-repo-init-ux
 title: "Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message"
 priority: P1
-status: in-progress
+status: completed
 created: 2025-11-24
 feature_id: FS-061
 tech_stack:

@@ -125,7 +125,9 @@ type HookEvent =
 
 ## MCP (Model Context Protocol)
 
-**MCP Server Integration**:
+> **Code-First Preferred**: Anthropic research shows [code execution achieves 98% token reduction vs MCP](https://www.anthropic.com/engineering/code-execution-with-mcp). Use MCP only for: quick debugging, Claude Desktop integration, or tools with no code equivalent. For automation, CI/CD, and production - write code instead.
+
+**MCP Server Integration** (when needed):
 ```typescript
 // Connect to MCP server
 const mcp = await connectMCP({
