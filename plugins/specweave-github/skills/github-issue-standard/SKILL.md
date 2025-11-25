@@ -11,6 +11,49 @@ description: Standard format for ALL GitHub issues created by SpecWeave. Ensures
 - Increments (0001-* folders)
 - Specs (spec-*.md files)
 
+## Issue Title Format (MANDATORY)
+
+### ✅ ONLY Allowed Title Formats
+
+```
+[FS-XXX][US-YYY] User Story Title    ← STANDARD (User Stories)
+[FS-XXX] Feature Title               ← Rare (Feature-level only)
+```
+
+**Examples**:
+- ✅ `[FS-059][US-003] Hook Optimization (P0)`
+- ✅ `[FS-054][US-001] Fix Reopen Desync Bug (P0)`
+- ✅ `[FS-048] Smart Pagination Feature`
+
+### ❌ PROHIBITED Title Formats (NEVER USE)
+
+```
+[BUG] Title                          ← WRONG! Bug is a LABEL, not title prefix
+[HOTFIX] Title                       ← WRONG! Hotfix is a LABEL
+[FEATURE] Title                      ← WRONG! Feature is a LABEL
+[DOCS] Title                         ← WRONG! Docs is a LABEL
+[Increment XXXX] Title               ← DEPRECATED! Old format
+```
+
+**Why?** Type-based prefixes like `[BUG]` break traceability:
+- Cannot link to Feature Spec (FS-XXX)
+- Cannot link to User Story (US-YYY)
+- Violates SpecWeave's data flow: `Increment → Living Docs → GitHub`
+
+**What to do instead?**
+1. Link work to a Feature (FS-XXX) in living docs
+2. Create User Story (US-YYY) under that feature
+3. Use GitHub **labels** for categorization: `bug`, `enhancement`, `hotfix`
+
+### Validation
+
+The GitHub client (`github-client-v2.ts`) enforces this:
+- Rejects titles starting with `[BUG]`, `[HOTFIX]`, `[FEATURE]`, etc.
+- Rejects deprecated `[Increment XXXX]` format
+- Only allows `[FS-XXX][US-YYY]` or `[FS-XXX]` formats
+
+---
+
 ## The Standard Format
 
 ### ✅ Required Elements

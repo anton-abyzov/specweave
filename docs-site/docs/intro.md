@@ -40,8 +40,8 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ```
 ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│  Your    │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
-│  Idea    │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
+│   Your   │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
+│   Idea   │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
 │          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
 └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
 ```

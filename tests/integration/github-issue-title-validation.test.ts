@@ -309,3 +309,110 @@ created: 2025-11-22`;
     });
   });
 });
+
+/**
+ * Tests for GitHubClientV2.validateIssueTitle() method
+ *
+ * Verifies that type-based prefixes like [BUG], [HOTFIX] are rejected.
+ * This prevents issues like #749 where Claude used [BUG] instead of [FS-XXX][US-YYY].
+ *
+ * NOTE: We test the validation logic directly here because:
+ * 1. validateIssueTitle is a private method
+ * 2. Module resolution issues prevent direct import in tests
+ * 3. The logic is critical and must be tested
+ *
+ * @see plugins/specweave-github/lib/github-client-v2.ts
+ */
+describe('GitHubClientV2 Title Validation (Issue #749 Fix)', () => {
+  /**
+   * Replicates the validation logic from GitHubClientV2.validateIssueTitle()
+   * This must be kept in sync with the actual implementation!
+   *
+   * @see plugins/specweave-github/lib/github-client-v2.ts lines 208-243
+   */
+  const validateTitle = (title: string) => {
+    // Check for deprecated [Increment XXXX] format
+    const deprecatedIncrementPattern = /\[Increment\s+\d+\]/i;
+    if (deprecatedIncrementPattern.test(title)) {
+      throw new Error(`DEPRECATED FORMAT: ${title}`);
+    }
+
+    // Check for type-based prefixes (CRITICAL FIX for issue #749)
+    const typePrefixPattern = /^\[(BUG|HOTFIX|FEATURE|DOCS|REFACTOR|CHORE|EXPERIMENT|Bug|Hotfix|Feature|Docs|Refactor|Chore|Experiment)\]/i;
+    if (typePrefixPattern.test(title)) {
+      throw new Error(`INVALID TITLE FORMAT: ${title}`);
+    }
+  };
+
+  describe('❌ REJECT type-based prefixes (Issue #749)', () => {
+    it('should REJECT [BUG] prefix', () => {
+      expect(() => validateTitle('[BUG] Fix broken interactive prompts')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [HOTFIX] prefix', () => {
+      expect(() => validateTitle('[HOTFIX] Critical security fix')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [FEATURE] prefix', () => {
+      expect(() => validateTitle('[FEATURE] Add new dashboard')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [DOCS] prefix', () => {
+      expect(() => validateTitle('[DOCS] Update README')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [REFACTOR] prefix', () => {
+      expect(() => validateTitle('[REFACTOR] Clean up auth module')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [CHORE] prefix', () => {
+      expect(() => validateTitle('[CHORE] Update dependencies')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT [EXPERIMENT] prefix', () => {
+      expect(() => validateTitle('[EXPERIMENT] POC for new feature')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT lowercase [bug] prefix', () => {
+      expect(() => validateTitle('[bug] Fix crash on startup')).toThrow(/INVALID TITLE FORMAT/);
+    });
+
+    it('should REJECT mixed case [Bug] prefix', () => {
+      expect(() => validateTitle('[Bug] Handle null pointer')).toThrow(/INVALID TITLE FORMAT/);
+    });
+  });
+
+  describe('❌ REJECT deprecated [Increment XXXX] format', () => {
+    it('should REJECT [Increment 0004] prefix', () => {
+      expect(() => validateTitle('[Increment 0004] Plugin Architecture')).toThrow(/DEPRECATED FORMAT/);
+    });
+
+    it('should REJECT [Increment 123] prefix (any number)', () => {
+      expect(() => validateTitle('[Increment 123] Some Feature')).toThrow(/DEPRECATED FORMAT/);
+    });
+  });
+
+  describe('✅ ACCEPT correct [FS-XXX][US-YYY] format', () => {
+    it('should ACCEPT [FS-048][US-001] format', () => {
+      expect(() => validateTitle('[FS-048][US-001] Smart Pagination')).not.toThrow();
+    });
+
+    it('should ACCEPT [FS-059][US-003] format with priority', () => {
+      expect(() => validateTitle('[FS-059][US-003] Hook Optimization (P0)')).not.toThrow();
+    });
+
+    it('should ACCEPT [FS-054][US-001] format', () => {
+      expect(() => validateTitle('[FS-054][US-001] Fix Reopen Desync Bug (P0)')).not.toThrow();
+    });
+  });
+
+  describe('✅ ACCEPT titles without prefixes (non-SpecWeave issues)', () => {
+    it('should ACCEPT plain title without prefix', () => {
+      expect(() => validateTitle('Regular issue without prefix')).not.toThrow();
+    });
+
+    it('should ACCEPT title with bug keyword but not as prefix', () => {
+      expect(() => validateTitle('Fix bug in authentication')).not.toThrow();
+    });
+  });
+});

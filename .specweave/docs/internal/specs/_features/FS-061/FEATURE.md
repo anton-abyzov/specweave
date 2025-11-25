@@ -1,11 +1,16 @@
 ---
 id: FS-061
-title: "Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message"
+title: Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message
 type: feature
 status: in-progress
 priority: P1
 created: 2025-11-24
 lastUpdated: 2025-11-25
+external_tools:
+  github:
+    type: milestone
+    id: 21
+    url: https://github.com/anton-abyzov/specweave/milestone/21
 ---
 
 # Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message

@@ -98,8 +98,16 @@ export class SyncCoordinator {
       }
 
       if (!featureId) {
-        this.logger.log('⚠️  No feature ID found in increment spec - skipping GitHub sync');
-        return createdIssues;
+        // AUTO-GENERATE feature ID from increment number (ADR-0139)
+        const incrementMatch = this.incrementId.match(/^(\d+)/);
+        if (incrementMatch) {
+          featureId = `FS-${incrementMatch[1]}`;
+          this.logger.log(`📝 Auto-generated feature ID: ${featureId} (no epic/feature_id in spec.md)`);
+        } else {
+          this.logger.log('⚠️  No feature ID found and could not auto-generate - skipping GitHub sync');
+          this.logger.log('   💡 Add epic: FS-XXX or feature_id: FS-XXX to spec.md frontmatter');
+          return createdIssues;
+        }
       }
 
       // Try to find or create milestone for the feature
@@ -268,6 +276,228 @@ export class SyncCoordinator {
     } catch (error) {
       this.logger.error('❌ Failed to create GitHub issues:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Close GitHub issues for all User Stories when increment completes (NEW in v0.28.1)
+   *
+   * This is the CRITICAL missing feature that was causing GitHub issues to remain
+   * open after increments were closed.
+   *
+   * Called by: syncIncrementClosure() when increment status changes to "completed"
+   *
+   * Flow:
+   * 1. Get feature ID from increment spec
+   * 2. Load all user stories for that feature
+   * 3. For each user story with a GitHub issue, close it with completion comment
+   *
+   * @param config - Project configuration
+   * @returns Array of closed issue numbers
+   */
+  async closeGitHubIssuesForUserStories(config: any): Promise<number[]> {
+    const closedIssues: number[] = [];
+
+    try {
+      // Load user stories for this increment
+      const userStories = await this.loadUserStoriesForIncrement();
+
+      if (userStories.length === 0) {
+        this.logger.log('📚 No user stories found for this increment');
+        return closedIssues;
+      }
+
+      this.logger.log(`📚 Found ${userStories.length} user story/stories for GitHub issue closure`);
+
+      // Get GitHub config
+      const githubConfig = config.sync?.github || {};
+      const repoInfo = await this.detectGitHubRepo(githubConfig);
+
+      if (!repoInfo) {
+        throw new Error('GitHub repository not configured');
+      }
+
+      const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
+
+      // Get feature ID from increment spec
+      const specFile = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        this.incrementId,
+        'spec.md'
+      );
+
+      let featureId = '';
+      if (existsSync(specFile)) {
+        const content = await fs.readFile(specFile, 'utf-8');
+        const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+        if (frontmatterMatch) {
+          const frontmatter = yaml.parse(frontmatterMatch[1]);
+          featureId = frontmatter.feature_id || frontmatter.epic || frontmatter.feature || '';
+        }
+      }
+
+      if (!featureId) {
+        // AUTO-GENERATE feature ID from increment number (same logic as create)
+        const incrementMatch = this.incrementId.match(/^(\d+)/);
+        if (incrementMatch) {
+          featureId = `FS-${incrementMatch[1]}`;
+          this.logger.log(`📝 Auto-generated feature ID: ${featureId}`);
+        } else {
+          this.logger.log('⚠️  No feature ID found - skipping GitHub issue closure');
+          return closedIssues;
+        }
+      }
+
+      // Close issue for each user story
+      for (const usFile of userStories) {
+        try {
+          // Search for the GitHub issue by title pattern
+          const searchTitle = `[${featureId}][${usFile.id}]`;
+          const existingIssue = await client.searchIssueByTitle(searchTitle);
+
+          if (!existingIssue) {
+            this.logger.log(`  ⏭️  ${usFile.id} - No GitHub issue found (skipping)`);
+            continue;
+          }
+
+          // Check if already closed (GitHub returns lowercase state)
+          if (existingIssue.state === 'closed') {
+            this.logger.log(`  ⏭️  ${usFile.id} - Issue #${existingIssue.number} already closed`);
+            continue;
+          }
+
+          // Close the issue with completion comment
+          this.logger.log(`  🔒 Closing GitHub issue #${existingIssue.number} for ${usFile.id}...`);
+
+          const completionComment = `## ✅ User Story Complete
+
+Increment \`${this.incrementId}\` has been marked as **completed**.
+
+**User Story**: ${usFile.id} - ${usFile.title || 'N/A'}
+
+### Completion Details
+- ✅ All acceptance criteria satisfied
+- ✅ All related tasks completed
+- ✅ Tests passing
+- ✅ Documentation updated
+
+---
+🤖 Auto-closed by SpecWeave on increment completion`;
+
+          await client.closeIssue(existingIssue.number, completionComment);
+          closedIssues.push(existingIssue.number);
+          this.logger.log(`  ✅ Closed issue #${existingIssue.number}`);
+
+        } catch (error) {
+          this.logger.error(`  ❌ Failed to close issue for ${usFile.id}:`, error);
+        }
+      }
+
+      if (closedIssues.length > 0) {
+        this.logger.log(`\n✅ Closed ${closedIssues.length} GitHub issue(s) for ${featureId}`);
+      } else {
+        this.logger.log('\n✅ No GitHub issues needed closing (all already closed or not found)');
+      }
+
+      return closedIssues;
+    } catch (error) {
+      this.logger.error('❌ Failed to close GitHub issues:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sync increment closure to external tools (NEW in v0.28.1)
+   *
+   * This method is called when an increment is marked as "completed".
+   * It handles the complete closure flow including:
+   * - Creating any missing GitHub issues (idempotent)
+   * - Closing all User Story GitHub issues
+   * - Syncing final status to external tools
+   *
+   * CRITICAL: This was the missing piece causing issues to stay open!
+   *
+   * @returns SyncResult with closure details
+   */
+  async syncIncrementClosure(): Promise<SyncResult & { closedIssues: number[] }> {
+    const result: SyncResult & { closedIssues: number[] } = {
+      success: false,
+      userStoriesSynced: 0,
+      syncMode: 'read-only',
+      errors: [],
+      closedIssues: []
+    };
+
+    try {
+      this.logger.log(`\n🔒 Syncing increment CLOSURE for ${this.incrementId}...`);
+
+      // 1. Load config
+      const config = await this.loadConfig();
+
+      // Check gates (same as syncIncrementCompletion)
+      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+      const githubEnabled = config.sync?.github?.enabled ?? false;
+      const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
+
+      if (!canUpdateExternal) {
+        this.logger.log('ℹ️  External tool sync disabled (canUpdateExternalItems=false)');
+        this.logger.log('   GitHub issues will NOT be closed automatically');
+        result.syncMode = 'living-docs-only';
+        result.success = true;
+        return result;
+      }
+
+      if (!autoSync) {
+        this.logger.log('⚠️  Automatic external sync disabled (autoSyncOnCompletion=false)');
+        this.logger.log('   GitHub issues will NOT be closed automatically');
+        this.logger.log('   Run /specweave-github:sync to close issues manually');
+        result.syncMode = 'manual-only';
+        result.success = true;
+        return result;
+      }
+
+      if (!githubEnabled) {
+        this.logger.log('ℹ️  GitHub sync disabled (sync.github.enabled=false)');
+        result.syncMode = 'external-disabled';
+        result.success = true;
+        return result;
+      }
+
+      this.logger.log('✅ All gates passed - closing GitHub issues for user stories');
+
+      // 2. First, ensure all issues exist (idempotent creation)
+      this.logger.log('\n🔹 Step 1: Ensuring all GitHub issues exist...');
+      try {
+        await this.createGitHubIssuesForUserStories(config);
+      } catch (error) {
+        this.logger.error('⚠️  GitHub issue creation failed (non-blocking):', error);
+        result.errors.push(`GitHub issue creation error: ${error}`);
+      }
+
+      // 3. Close all User Story issues
+      this.logger.log('\n🔹 Step 2: Closing GitHub issues for completed user stories...');
+      try {
+        result.closedIssues = await this.closeGitHubIssuesForUserStories(config);
+      } catch (error) {
+        this.logger.error('⚠️  GitHub issue closure failed:', error);
+        result.errors.push(`GitHub issue closure error: ${error}`);
+      }
+
+      result.success = result.errors.length === 0;
+      result.syncMode = 'full-sync';
+
+      this.logger.log(`\n✅ Increment closure sync complete`);
+      this.logger.log(`   Issues closed: ${result.closedIssues.length}`);
+      if (result.errors.length > 0) {
+        this.logger.log(`   ⚠️  ${result.errors.length} error(s) occurred`);
+      }
+
+      return result;
+    } catch (error) {
+      result.errors.push(`Sync closure error: ${error}`);
+      this.logger.error('❌ Increment closure sync failed:', error);
+      return result;
     }
   }
 

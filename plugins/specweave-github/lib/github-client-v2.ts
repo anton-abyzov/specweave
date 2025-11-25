@@ -196,26 +196,48 @@ export class GitHubClientV2 {
    * Validate issue title format
    *
    * CRITICAL: Enforces correct data flow architecture
-   * - ✅ CORRECT: "US-XXX: Title" or "FS-YY-MM-DD: Title"
+   * - ✅ CORRECT: "[FS-XXX][US-YYY] Title" (User Story - STANDARD)
+   * - ✅ CORRECT: "[FS-XXX] Title" (Feature-level, rare)
    * - ❌ WRONG: "[Increment XXXX] Title" (deprecated old format)
+   * - ❌ WRONG: "[BUG] Title" (type prefixes are labels, not title)
+   * - ❌ WRONG: "[HOTFIX] Title" (type prefixes are labels, not title)
+   * - ❌ WRONG: "[FEATURE] Title" (type prefixes are labels, not title)
    *
-   * @throws Error if title uses deprecated [Increment XXXX] format
+   * @throws Error if title uses invalid format
    */
   private validateIssueTitle(title: string): void {
     // Check for deprecated [Increment XXXX] format
-    const deprecatedPattern = /\[Increment\s+\d+\]/i;
-
-    if (deprecatedPattern.test(title)) {
+    const deprecatedIncrementPattern = /\[Increment\s+\d+\]/i;
+    if (deprecatedIncrementPattern.test(title)) {
       throw new Error(
         `❌ DEPRECATED FORMAT DETECTED: "${title}"\n\n` +
         `GitHub issues MUST use living docs format:\n` +
-        `  ✅ CORRECT: "US-XXX: Title" (User Story)\n` +
-        `  ✅ CORRECT: "FS-YY-MM-DD: Title" (Feature Spec)\n` +
+        `  ✅ CORRECT: "[FS-XXX][US-YYY] Title" (User Story)\n` +
         `  ❌ WRONG: "[Increment XXXX] Title" (old format)\n\n` +
         `WHY: Correct data flow is: Increment → Living Docs → GitHub\n` +
         `      Living docs are the source of truth for GitHub sync.\n\n` +
-        `FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.\n` +
-        `     OR: Use US/FS ID format directly if creating issues manually.`
+        `FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.`
+      );
+    }
+
+    // Check for type-based prefixes (CRITICAL FIX for issue #749)
+    // These prefixes belong as LABELS, not in the issue title!
+    const typePrefixPattern = /^\[(BUG|HOTFIX|FEATURE|DOCS|REFACTOR|CHORE|EXPERIMENT|Bug|Hotfix|Feature|Docs|Refactor|Chore|Experiment)\]/i;
+    if (typePrefixPattern.test(title)) {
+      const match = title.match(typePrefixPattern);
+      const badPrefix = match ? match[0] : '[TYPE]';
+      throw new Error(
+        `❌ INVALID TITLE FORMAT: "${title}"\n\n` +
+        `Type prefixes like ${badPrefix} belong as LABELS, not in the title!\n\n` +
+        `GitHub issues MUST use this format:\n` +
+        `  ✅ CORRECT: "[FS-XXX][US-YYY] Title" (User Story)\n` +
+        `  ❌ WRONG: "${badPrefix} Title" (use 'bug' label instead)\n\n` +
+        `WHY: All SpecWeave issues follow [FS-XXX][US-YYY] format for traceability.\n` +
+        `     Use GitHub labels for categorization (bug, enhancement, etc.).\n\n` +
+        `FIX:\n` +
+        `  1. Link this work to a Feature (FS-XXX) and User Story (US-YYY)\n` +
+        `  2. Use /specweave-github:sync to create issue with correct format\n` +
+        `  3. Add '${match ? match[1].toLowerCase() : 'bug'}' as a label instead`
       );
     }
   }

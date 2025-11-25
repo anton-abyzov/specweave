@@ -37,13 +37,24 @@ GitHub supports **3 strategies** for organizing teams and repositories.
 
 **Example**: Frontend team owns `frontend-app`, Backend team owns `backend-api`.
 
-**Environment Variables**:
-```bash
-GH_TOKEN=ghp_your-token-here
-GITHUB_STRATEGY=repository-per-team
-GITHUB_OWNER=myorg
-GITHUB_REPOS=frontend-app,backend-api,mobile-app,qa-tools
+**Configuration** (in `.specweave/config.json`):
+```json
+{
+  "sync": {
+    "github": {
+      "authMethod": "gh-cli",
+      "owner": "myorg"
+    }
+  },
+  "multiProject": {
+    "projects": {
+      "frontend-app": { "externalTools": { "github": { "repository": "myorg/frontend-app" }}},
+      "backend-api": { "externalTools": { "github": { "repository": "myorg/backend-api" }}}
+    }
+  }
+}
 ```
+**Note**: Use `gh auth login` for authentication (recommended) or `GITHUB_TOKEN` in `.env` for CI/CD.
 
 **Folder Structure**:
 ```
@@ -427,35 +438,30 @@ Examples:
 
 ---
 
-## Migration Guide
+## Authentication
 
-### From Legacy Format to Strategies
+### GitHub (Recommended: gh CLI)
 
-**GitHub Legacy** (still works):
 ```bash
-GITHUB_REPOS=repo1,repo2,repo3
+# Best approach - no tokens in files
+gh auth login
 ```
 
-**GitHub New** (recommended):
-```bash
-GITHUB_STRATEGY=repository-per-team
-GITHUB_OWNER=myorg
-GITHUB_REPOS=repo1,repo2,repo3
+SpecWeave automatically detects gh CLI authentication. Fallback to `GITHUB_TOKEN` in `.env` for CI/CD environments.
+
+### Configuration Location
+
+All sync configuration is in `.specweave/config.json`, NOT in `.env`.
+
+```json
+{
+  "sync": {
+    "github": { "authMethod": "gh-cli", "owner": "myorg" }
+  }
+}
 ```
 
-**Jira Legacy** (still works):
-```bash
-JIRA_PROJECT=MAIN
-```
-
-**Jira New** (recommended):
-```bash
-JIRA_STRATEGY=component-based
-JIRA_PROJECT=MAIN
-JIRA_COMPONENTS=Frontend,Backend
-```
-
-**No migration required** - legacy formats continue to work!
+Only secrets (tokens) go in `.env` when gh CLI is unavailable.
 
 ---
 

@@ -1,10 +1,14 @@
 ---
 id: US-001
 feature: FS-061
-title: "Bulk Discovery Without Count"
+title: Bulk Discovery Without Count
 status: completed
 priority: P1
 created: 2025-11-24
+external:
+  github:
+    issue: 750
+    url: https://github.com/anton-abyzov/specweave/issues/750
 ---
 
 # US-001: Bulk Discovery Without Count

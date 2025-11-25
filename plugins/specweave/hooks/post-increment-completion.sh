@@ -366,4 +366,88 @@ else
   echo ""
 fi
 
+# ============================================================================
+# GITHUB ISSUE CLOSURE (v0.28.1 - CRITICAL FIX)
+# ============================================================================
+# After creating/syncing GitHub issues, close User Story issues for this increment.
+# This was the MISSING feature causing issues to stay open indefinitely.
+#
+# WHY THIS IS SEPARATE FROM consolidated-sync.js:
+# - consolidated-sync.js handles task-level sync (called by post-task-completion too)
+# - sync-increment-closure.js ONLY runs on increment completion
+# - Closing issues is a DESTRUCTIVE operation that should only happen once
+#
+# GATE CHECK: All gates are checked inside sync-increment-closure.js
+# - canUpdateExternalItems must be true
+# - autoSyncOnCompletion must be true
+# - sync.github.enabled must be true
+#
+# See: Root cause analysis - User Story issues created but never closed
+
+if command -v node &> /dev/null; then
+  echo ""
+  echo "🔒 Closing GitHub issues for completed user stories..."
+
+  # ========================================================================
+  # LOCATE CLOSURE SYNC SCRIPT
+  # ========================================================================
+  # Find sync-increment-closure.js in order of preference:
+  # 1. In-place compiled (development, esbuild output)
+  # 2. Local dist (development, tsc output)
+  # 3. node_modules (installed as dependency) ← USER PROJECTS
+  # 4. Plugin marketplace (Claude Code global installation)
+
+  CLOSURE_SCRIPT=""
+  if [ -f "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-increment-closure.js" ]; then
+    # Development: Use in-place compiled hooks (esbuild, not tsc)
+    CLOSURE_SCRIPT="$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-increment-closure.js"
+    echo "  🔧 Using in-place compiled hook (development mode)"
+  elif [ -f "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-increment-closure.js" ]; then
+    # Development: Use project's compiled files (has node_modules)
+    CLOSURE_SCRIPT="$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-increment-closure.js"
+    echo "  🔧 Using local dist (development mode)"
+  elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-increment-closure.js" ]; then
+    # Installed as dependency: Use node_modules version (MOST USER PROJECTS)
+    CLOSURE_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/plugins/specweave/lib/hooks/sync-increment-closure.js"
+    echo "  📦 Using node_modules version"
+  elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-increment-closure.js" ]; then
+    # Fallback: Plugin marketplace (may fail if deps missing)
+    CLOSURE_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/hooks/sync-increment-closure.js"
+    echo "  🌐 Using plugin marketplace version"
+  fi
+
+  # ========================================================================
+  # EXECUTE CLOSURE SYNC
+  # ========================================================================
+  # Run closure sync to close all User Story GitHub issues.
+  # Non-blocking: Errors logged but don't crash hook (increment already closed)
+
+  if [ -n "$CLOSURE_SCRIPT" ]; then
+    # Ensure GITHUB_TOKEN is available (may have been set earlier)
+    if [ -z "$GITHUB_TOKEN" ] && [ -f "$PROJECT_ROOT/.env" ]; then
+      GITHUB_TOKEN_FROM_ENV=$(grep -E '^GITHUB_TOKEN=' "$PROJECT_ROOT/.env" 2>/dev/null | head -1 | cut -d'=' -f2- | sed 's/^["'\'']//' | sed 's/["'\'']$//')
+      if [ -n "$GITHUB_TOKEN_FROM_ENV" ]; then
+        export GITHUB_TOKEN="$GITHUB_TOKEN_FROM_ENV"
+      fi
+    fi
+
+    # Run closure sync (synchronous - user sees immediate feedback)
+    if (cd "$PROJECT_ROOT" && node "$CLOSURE_SCRIPT" "$INCREMENT_ID") 2>&1; then
+      echo "  ✅ GitHub issue closure complete"
+      echo ""
+    else
+      echo "  ⚠️  Failed to close GitHub issues (non-blocking - you can close manually)" >&2
+      echo ""
+    fi
+  else
+    echo "  ⚠️  sync-increment-closure.js not found in any location - skipping issue closure" >&2
+    echo "  💡 User Story GitHub issues may remain open until manually closed" >&2
+    echo ""
+  fi
+else
+  echo ""
+  echo "  ⚠️  Node.js not found - skipping GitHub issue closure" >&2
+  echo ""
+fi
+
 exit 0

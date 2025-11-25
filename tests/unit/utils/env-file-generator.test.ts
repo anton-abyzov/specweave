@@ -1,10 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 /**
  * Unit Tests for Environment File Generator
  *
  * Following BDD Given/When/Then format for test cases
- * Test Coverage Target: 85%
  */
 
 import * as fs from '../../../src/utils/fs-native.js';
@@ -14,48 +13,58 @@ import {
   loadEnvConfig,
 } from '../../../src/utils/env-file-generator.js';
 
-// Mock fs-extra
-vi.mock('fs-extra', () => ({
-  default: {
-    writeFile: vi.fn(),
-    readFile: vi.fn(),
-    pathExists: vi.fn(),
-    chmod: vi.fn(),
-  },
+// Mock fs-native
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  writeFile: vi.fn(),
+  readFile: vi.fn(),
+  pathExists: vi.fn(),
+  chmod: vi.fn(),
 }));
 
 const mockedWriteFile = vi.mocked(fs.writeFile);
 const mockedPathExists = vi.mocked(fs.pathExists);
 const mockedReadFile = vi.mocked(fs.readFile);
-const mockedChmod = vi.mocked(fs.chmod);
 
 describe('generateEnvFile', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should create .env with required environment variables', async () => {
-    // Given: valid config
+  it('should create .env with GITHUB_TOKEN only', async () => {
+    // Given: valid config with token
     const projectRoot = '/test/project';
     const config = {
-      owner: 'myorg',
-      repos: [
-        { id: 'frontend', repo: 'frontend' },
-        { id: 'backend', repo: 'backend' }
-      ],
-      token: 'ghp_test123',
+      githubToken: 'ghp_test123',
     };
 
     // When: generateEnvFile is called
     await generateEnvFile(projectRoot, config);
 
-    // Then: .env contains required variables
+    // Then: .env contains only GITHUB_TOKEN
     expect(mockedWriteFile).toHaveBeenCalled();
     const writeCall = mockedWriteFile.mock.calls[0];
-    const envContent = writeCall[1];
-    expect(envContent).toContain('GITHUB_TOKEN');
-    expect(envContent).toContain('GITHUB_OWNER');
-    expect(envContent).toContain('GITHUB_REPOS');
+    const envContent = writeCall[1] as string;
+    expect(envContent).toContain('GITHUB_TOKEN=ghp_test123');
+    expect(envContent).toContain('gh CLI authentication is recommended');
+    expect(envContent).not.toContain('GITHUB_REPOS');
+    expect(envContent).not.toContain('GITHUB_SYNC_ENABLED');
+  });
+
+  it('should create .env.example with gh CLI recommendation', async () => {
+    // Given: any config
+    const projectRoot = '/test/project';
+    const config = {};
+
+    // When: generateEnvFile is called
+    await generateEnvFile(projectRoot, config);
+
+    // Then: .env.example recommends gh CLI
+    const exampleWriteCall = mockedWriteFile.mock.calls[1];
+    const exampleContent = exampleWriteCall[1] as string;
+    expect(exampleContent).toContain('RECOMMENDED: Use gh CLI');
+    expect(exampleContent).toContain('gh auth login');
+    expect(exampleContent).toContain('GITHUB_TOKEN');
+    expect(exampleContent).not.toContain('GITHUB_REPOS');
   });
 });
 
@@ -95,25 +104,18 @@ describe('loadEnvConfig', () => {
     vi.clearAllMocks();
   });
 
-  it('should parse valid .env file and return EnvConfig', async () => {
-    // Given: valid .env file
+  it('should parse GITHUB_TOKEN from .env file', async () => {
+    // Given: valid .env file with token
     const projectRoot = '/test/project';
     mockedPathExists.mockResolvedValue(true);
-    mockedReadFile.mockResolvedValue(
-      'GITHUB_TOKEN=ghp_test123\nGITHUB_OWNER=myorg\nGITHUB_REPOS=frontend:frontend,backend:backend\n' as any
-    );
+    mockedReadFile.mockResolvedValue('GITHUB_TOKEN=ghp_test123\n' as any);
 
     // When: loadEnvConfig is called
     const result = await loadEnvConfig(projectRoot);
 
-    // Then: returns EnvConfig with parsed values
+    // Then: returns config with token
     expect(result).toBeDefined();
     expect(result?.githubToken).toBe('ghp_test123');
-    expect(result?.githubOwner).toBe('myorg');
-    expect(result?.repos).toEqual([
-      { id: 'frontend', repo: 'frontend' },
-      { id: 'backend', repo: 'backend' }
-    ]);
   });
 
   it('should return null when .env file missing', async () => {
@@ -126,5 +128,20 @@ describe('loadEnvConfig', () => {
 
     // Then: returns null
     expect(result).toBeNull();
+  });
+
+  it('should ignore comments and empty lines', async () => {
+    // Given: .env with comments
+    const projectRoot = '/test/project';
+    mockedPathExists.mockResolvedValue(true);
+    mockedReadFile.mockResolvedValue(
+      '# Comment\n\nGITHUB_TOKEN=ghp_abc\n# Another comment\n' as any
+    );
+
+    // When: loadEnvConfig is called
+    const result = await loadEnvConfig(projectRoot);
+
+    // Then: parses token correctly
+    expect(result?.githubToken).toBe('ghp_abc');
   });
 });
