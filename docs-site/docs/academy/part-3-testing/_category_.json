@@ -1,0 +1,9 @@
+{
+  "label": "Part 3: Testing Mastery",
+  "position": 3,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Master testing - unit tests, integration tests, E2E tests, and TDD workflow."
+  }
+}

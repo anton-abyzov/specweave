@@ -1,0 +1,9 @@
+{
+  "label": "Part 10: Security",
+  "position": 10,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "description": "Security fundamentals, authentication, and compliance (HIPAA, SOC2, PCI-DSS)."
+  }
+}

@@ -2068,17 +2068,17 @@ coverage_target: 85%
 ### [Quality Gates](/docs/glossary/terms/quality-gate)
 
 **[`/specweave:validate`](/docs/glossary/terms/specweave-validate) command checks**:
-- ✅ All AC-IDs from spec.md covered in tasks.md
+- ✅ All [AC-IDs](/docs/glossary/terms/ac-id) from [spec.md](/docs/glossary/terms/spec-md) covered in [tasks.md](/docs/glossary/terms/tasks-md)
 - ✅ Test plans exist for each task
 - ✅ Coverage targets met (80-90%)
-- ✅ BDD format used (Given/When/Then)
+- ✅ [BDD](/docs/glossary/terms/bdd) format used (Given/When/Then)
 
 **`/specweave:check-tests` command validates**:
 - ✅ Test files exist (unit, integration, E2E)
 - ✅ Tests reference AC-IDs
 - ✅ Coverage reports meet targets
 
-**`/specweave:done` requires**:
+**[`/specweave:done`](/docs/glossary/terms/specweave-done) requires**:
 - ✅ All tests passing
 - ✅ Coverage targets met
 - ✅ No failing validation

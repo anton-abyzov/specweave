@@ -194,10 +194,10 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 ### Autonomous Multi-Agent Orchestration
 
-- **PM Agent**: User stories, acceptance criteria, market analysis
-- **Architect Agent**: System design, ADRs, tech stack decisions
-- **Tech Lead Agent**: Implementation, code review, best practices
-- **QA Lead Agent**: Test strategy, [E2E](/docs/glossary/terms/e2e) tests, coverage validation
+- **[PM Agent](/docs/glossary/terms/pm-agent)**: [User stories](/docs/glossary/terms/user-stories), [acceptance criteria](/docs/glossary/terms/acceptance-criteria), market analysis
+- **[Architect Agent](/docs/glossary/terms/architect-agent)**: System design, [ADRs](/docs/glossary/terms/adr), tech stack decisions
+- **[Tech Lead Agent](/docs/glossary/terms/tech-lead-agent)**: Implementation, code review, best practices
+- **[QA Lead Agent](/docs/glossary/terms/qa-lead-agent)**: Test strategy, [E2E](/docs/glossary/terms/e2e) tests, [coverage](/docs/glossary/terms/test-coverage) validation
 - **Security Agent**: Threat modeling, OWASP, vulnerability assessment
 - **DevOps Agent**: [IaC](/docs/glossary/terms/iac), [Kubernetes](/docs/glossary/terms/kubernetes), [CI/CD](/docs/glossary/terms/ci-cd) pipelines
 
