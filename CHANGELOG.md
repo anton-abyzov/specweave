@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.3] - 2025-11-25
+
+### 📚 Documentation
+- Updated introduction page content
+- Improved landing page layout and features
+
+---
+
+
+
 ## [0.28.1] - 2025-11-25
 
 ### ✨ Features
