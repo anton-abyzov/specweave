@@ -29,13 +29,9 @@ Traditional AI-assisted development:
 
 SpecWeave enforces **Spec-Driven Development**:
 
-```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│   Your   │    │   Spec   │    │   Plan   │    │  Tasks   │    │   Code   │    │  Living  │
-│   Idea   │───▶│(permanent│───▶│(permanent│───▶│(permanent│───▶│          │───▶│   Docs   │
-│          │    │    ✓)    │    │    ✓)    │    │    ✓)    │    │          │    │(auto-sync│
-└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/specweave-flow.svg" alt="SpecWeave Flow: Your Idea → Spec → Plan → Tasks → Code → Living Docs" width="800"/>
+</p>
 
 ### Key Principles
 
