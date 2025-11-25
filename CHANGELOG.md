@@ -4,6 +4,25 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.1] - 2025-11-25
+
+### ✨ Features
+- **Unified GitHub Sync**: ADR-0139 for unified post-increment GitHub sync architecture
+- **GitHub Feature Sync CLI**: New CLI utility for feature synchronization
+- **Improved Label Detection**: Enhanced label detector and sync coordinator
+
+### 📚 Documentation
+- Updated docs-site with new hero images and homepage features
+- Improved issue tracker integration documentation
+- Updated introduction and overview pages
+
+### 🔧 Maintenance
+- Consolidated workflow files (removed validate-serverless-platforms)
+- Updated env file generator and templates
+- Pre-push git hook improvements
+
+---
+
 ## [0.28.0] - 2025-11-25
 
 ### ✨ Features
