@@ -14,7 +14,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, input, confirm, number } from '@inquirer/prompts';
 import ora from 'ora';
 import path from 'path';
 import {
@@ -234,42 +234,35 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   }
 
   // Legacy prompt (runs ONLY if no projectPath/token AND no repositoryHosting was provided)
-  const { setupType } = await inquirer.prompt([{
-    type: 'select',
-    name: 'setupType',
+  const setupType = await select<GitHubSetupType>({
     message: 'Select your repository setup:',
     choices: [
       {
         name: '⏭️  No repository yet (configure later)',
-        value: 'none',
-        short: 'No repo'
+        value: 'none' as const
       },
       {
         name: '📦 Single repository',
-        value: 'single',
-        short: 'Single'
+        value: 'single' as const
       },
       {
         name: '🎯 Multiple repositories (microservices/polyrepo)',
-        value: 'multiple',
-        short: 'Multiple'
+        value: 'multiple' as const
       },
       {
         name: '📚 Monorepo (single repo, multiple projects)',
-        value: 'monorepo',
-        short: 'Monorepo'
+        value: 'monorepo' as const
       },
       {
         name: '🔍 Auto-detect from git remotes',
-        value: 'auto-detect',
-        short: 'Auto-detect'
+        value: 'auto-detect' as const
       }
     ],
     default: 'single'
-  }]);
+  });
 
   // Return just the setup type (profiles will be collected by configure* functions)
-  return { setupType: setupType as GitHubSetupType };
+  return { setupType };
 }
 
 /**
@@ -305,12 +298,10 @@ export async function configureSingleRepository(projectPath: string): Promise<Gi
     defaultOwner = primaryRemote.owner;
     defaultRepo = primaryRemote.repo;
 
-    const { useDetected } = await inquirer.prompt([{
-      type: 'confirm',
-      name: 'useDetected',
+    const useDetected = await confirm({
       message: 'Use detected repository?',
       default: true
-    }]);
+    });
 
     if (useDetected) {
       return [{
@@ -324,52 +315,47 @@ export async function configureSingleRepository(projectPath: string): Promise<Gi
   }
 
   // Manual entry
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'owner',
-      message: 'GitHub owner/organization:',
-      default: defaultOwner,
-      validate: (input: string) => {
-        if (!input.trim()) {
-          return 'Owner is required';
-        }
-        // P1-4: Regex DoS protection - length check before regex
-        if (input.length > 256) {
-          return 'Owner name too long (max 256 characters)';
-        }
-        if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(input)) {
-          return 'Invalid GitHub username/organization format';
-        }
-        return true;
+  const owner = await input({
+    message: 'GitHub owner/organization:',
+    default: defaultOwner,
+    validate: (val: string) => {
+      if (!val.trim()) {
+        return 'Owner is required';
       }
-    },
-    {
-      type: 'input',
-      name: 'repo',
-      message: 'Repository name:',
-      default: defaultRepo,
-      validate: (input: string) => {
-        if (!input.trim()) {
-          return 'Repository name is required';
-        }
-        // P1-4: Regex DoS protection - length check before regex
-        if (input.length > 256) {
-          return 'Repository name too long (max 256 characters)';
-        }
-        if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
-          return 'Invalid repository name format';
-        }
-        return true;
+      // P1-4: Regex DoS protection - length check before regex
+      if (val.length > 256) {
+        return 'Owner name too long (max 256 characters)';
       }
+      if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(val)) {
+        return 'Invalid GitHub username/organization format';
+      }
+      return true;
     }
-  ]);
+  });
+
+  const repo = await input({
+    message: 'Repository name:',
+    default: defaultRepo,
+    validate: (val: string) => {
+      if (!val.trim()) {
+        return 'Repository name is required';
+      }
+      // P1-4: Regex DoS protection - length check before regex
+      if (val.length > 256) {
+        return 'Repository name too long (max 256 characters)';
+      }
+      if (!/^[a-zA-Z0-9._-]+$/.test(val)) {
+        return 'Invalid repository name format';
+      }
+      return true;
+    }
+  });
 
   return [{
     id: 'main',
     displayName: 'Main Repository',
-    owner: answers.owner,
-    repo: answers.repo,
+    owner,
+    repo,
     isDefault: true
   }];
 }
@@ -384,21 +370,19 @@ export async function configureMultipleRepositories(projectPath: string): Promis
   console.log(chalk.cyan('\n🎯 Multiple Repositories Setup\n'));
   console.log(chalk.gray('Configure each repository for your microservices/polyrepo architecture.\n'));
 
-  const { repoCount } = await inquirer.prompt([{
-    type: 'number',
-    name: 'repoCount',
+  const repoCount = await number({
     message: 'How many repositories?',
     default: 2,
-    validate: (input: number) => {
-      if (input < 2) {
+    validate: (val: number | undefined) => {
+      if (val === undefined || val < 2) {
         return 'Please enter at least 2 repositories';
       }
-      if (input > 10) {
+      if (val > 10) {
         return 'Maximum 10 repositories supported';
       }
       return true;
     }
-  }]);
+  }) ?? 2;
 
   const profiles: GitHubProfile[] = [];
 
@@ -426,92 +410,85 @@ export async function configureMultipleRepositories(projectPath: string): Promis
       defaultRepo = uniqueRepos[i].repo;
     }
 
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'id',
-        message: 'Repository ID (single identifier, e.g., "frontend" or "backend"):',
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return 'ID is required';
-          }
-          // Explicit comma check
-          if (input.includes(',')) {
-            return 'One ID at a time (no commas)';
-          }
-          // P1-4: Regex DoS protection - length check before regex
-          if (input.length < 2 || input.length > 64) {
-            return 'ID must be 2-64 characters';
-          }
-          if (!/^[a-z][a-z0-9-]*$/.test(input)) {
-            return 'ID must be lowercase letters, numbers, and hyphens';
-          }
-          if (profiles.some(p => p.id === input)) {
-            return 'ID must be unique';
-          }
-          return true;
+    const id = await input({
+      message: 'Repository ID (single identifier, e.g., "frontend" or "backend"):',
+      validate: (val: string) => {
+        if (!val.trim()) {
+          return 'ID is required';
         }
-      },
-      {
-        type: 'input',
-        name: 'displayName',
-        message: 'Display name (e.g., Frontend Application):',
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return 'Display name is required';
-          }
-          // P1-4: Regex DoS protection - length check
-          if (input.length > 256) {
-            return 'Display name too long (max 256 characters)';
-          }
-          return true;
+        // Explicit comma check
+        if (val.includes(',')) {
+          return 'One ID at a time (no commas)';
         }
-      },
-      {
-        type: 'input',
-        name: 'owner',
-        message: 'GitHub owner/organization:',
-        default: defaultOwner || (profiles[0]?.owner || ''),  // Reuse previous owner
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return 'Owner is required';
-          }
-          // P1-4: Regex DoS protection - length check before regex
-          if (input.length > 256) {
-            return 'Owner name too long (max 256 characters)';
-          }
-          if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(input)) {
-            return 'Invalid GitHub username/organization format';
-          }
-          return true;
+        // P1-4: Regex DoS protection - length check before regex
+        if (val.length < 2 || val.length > 64) {
+          return 'ID must be 2-64 characters';
         }
-      },
-      {
-        type: 'input',
-        name: 'repo',
-        message: 'Repository name:',
-        default: defaultRepo,
-        validate: (input: string) => {
-          if (!input.trim()) {
-            return 'Repository name is required';
-          }
-          // P1-4: Regex DoS protection - length check before regex
-          if (input.length > 256) {
-            return 'Repository name too long (max 256 characters)';
-          }
-          if (!/^[a-zA-Z0-9._-]+$/.test(input)) {
-            return 'Invalid repository name format';
-          }
-          return true;
+        if (!/^[a-z][a-z0-9-]*$/.test(val)) {
+          return 'ID must be lowercase letters, numbers, and hyphens';
         }
+        if (profiles.some(p => p.id === val)) {
+          return 'ID must be unique';
+        }
+        return true;
       }
-    ]);
+    });
+
+    const displayName = await input({
+      message: 'Display name (e.g., Frontend Application):',
+      validate: (val: string) => {
+        if (!val.trim()) {
+          return 'Display name is required';
+        }
+        // P1-4: Regex DoS protection - length check
+        if (val.length > 256) {
+          return 'Display name too long (max 256 characters)';
+        }
+        return true;
+      }
+    });
+
+    const repoOwner = await input({
+      message: 'GitHub owner/organization:',
+      default: defaultOwner || (profiles[0]?.owner || ''),  // Reuse previous owner
+      validate: (val: string) => {
+        if (!val.trim()) {
+          return 'Owner is required';
+        }
+        // P1-4: Regex DoS protection - length check before regex
+        if (val.length > 256) {
+          return 'Owner name too long (max 256 characters)';
+        }
+        if (!/^[a-zA-Z0-9]([a-zA-Z0-9-])*$/.test(val)) {
+          return 'Invalid GitHub username/organization format';
+        }
+        return true;
+      }
+    });
+
+    const repoName = await input({
+      message: 'Repository name:',
+      default: defaultRepo,
+      validate: (val: string) => {
+        if (!val.trim()) {
+          return 'Repository name is required';
+        }
+        // P1-4: Regex DoS protection - length check before regex
+        if (val.length > 256) {
+          return 'Repository name too long (max 256 characters)';
+        }
+        if (!/^[a-zA-Z0-9._-]+$/.test(val)) {
+          return 'Invalid repository name format';
+        }
+        return true;
+      }
+    });
 
     profiles.push({
-      id: answers.id,
-      displayName: answers.displayName,
-      owner: answers.owner,
-      repo: answers.repo,
+      id,
+      displayName,
+      owner: repoOwner,
+      repo: repoName,
       isDefault: i === 0  // First repo is default
     });
   }
@@ -539,21 +516,19 @@ export async function configureMonorepo(projectPath: string): Promise<{
   console.log(chalk.cyan('\n📂 Projects in Monorepo\n'));
   console.log(chalk.gray('List the projects/packages in your monorepo.\n'));
 
-  const { projectsInput } = await inquirer.prompt([{
-    type: 'input',
-    name: 'projectsInput',
+  const projectsInput = await input({
     message: 'Project names (comma-separated, e.g., frontend,backend,shared):',
-    validate: (input: string) => {
-      if (!input.trim()) {
+    validate: (val: string) => {
+      if (!val.trim()) {
         return 'At least one project is required';
       }
-      const projects = input.split(',').map(p => p.trim());
+      const projects = val.split(',').map(p => p.trim());
       if (projects.length < 2) {
         return 'Monorepo should have at least 2 projects';
       }
       return true;
     }
-  }]);
+  });
 
   const projects = projectsInput.split(',').map((p: string) => p.trim());
 
@@ -596,12 +571,10 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
     console.log(chalk.white(`  ${index + 1}. ${repo.owner}/${repo.repo}`));
   });
 
-  const { confirmDetected } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'confirmDetected',
+  const confirmDetected = await confirm({
     message: 'Use all detected repositories?',
     default: true
-  }]);
+  });
 
   if (!confirmDetected) {
     // Ask which setup type they want instead
@@ -642,48 +615,43 @@ export async function autoDetectRepositories(projectPath: string, recursionDepth
       // Multiple repos - need IDs
       console.log(chalk.white(`\n📦 Repository: ${repo.owner}/${repo.repo}`));
 
-      const { id, displayName } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'id',
-          message: 'Repository ID:',
-          default: repo.repo.replace(/-app$|-service$|-api$/, ''),  // Smart default
-          validate: (input: string) => {
-            if (!input.trim()) {
-              return 'ID is required';
-            }
-            // P1-4: Regex DoS protection - length check before regex
-            if (input.length < 2 || input.length > 64) {
-              return 'ID must be 2-64 characters';
-            }
-            if (!/^[a-z][a-z0-9-]*$/.test(input)) {
-              return 'ID must be lowercase letters, numbers, and hyphens';
-            }
-            if (profiles.some(p => p.id === input)) {
-              return 'ID must be unique';
-            }
-            return true;
+      const id = await input({
+        message: 'Repository ID:',
+        default: repo.repo.replace(/-app$|-service$|-api$/, ''),  // Smart default
+        validate: (val: string) => {
+          if (!val.trim()) {
+            return 'ID is required';
           }
-        },
-        {
-          type: 'input',
-          name: 'displayName',
-          message: 'Display name:',
-          default: repo.repo.split('-').map((w: string) =>
-            w.charAt(0).toUpperCase() + w.slice(1)
-          ).join(' '),  // Smart default: "frontend-app" -> "Frontend App"
-          validate: (input: string) => {
-            if (!input.trim()) {
-              return 'Display name is required';
-            }
-            // P1-4: Regex DoS protection - length check
-            if (input.length > 256) {
-              return 'Display name too long (max 256 characters)';
-            }
-            return true;
+          // P1-4: Regex DoS protection - length check before regex
+          if (val.length < 2 || val.length > 64) {
+            return 'ID must be 2-64 characters';
           }
+          if (!/^[a-z][a-z0-9-]*$/.test(val)) {
+            return 'ID must be lowercase letters, numbers, and hyphens';
+          }
+          if (profiles.some(p => p.id === val)) {
+            return 'ID must be unique';
+          }
+          return true;
         }
-      ]);
+      });
+
+      const displayName = await input({
+        message: 'Display name:',
+        default: repo.repo.split('-').map((w: string) =>
+          w.charAt(0).toUpperCase() + w.slice(1)
+        ).join(' '),  // Smart default: "frontend-app" -> "Frontend App"
+        validate: (val: string) => {
+          if (!val.trim()) {
+            return 'Display name is required';
+          }
+          // P1-4: Regex DoS protection - length check
+          if (val.length > 256) {
+            return 'Display name too long (max 256 characters)';
+          }
+          return true;
+        }
+      });
 
       profiles.push({
         id,

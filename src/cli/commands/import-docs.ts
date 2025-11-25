@@ -5,7 +5,7 @@
  */
 
 import path from 'path';
-import inquirer from 'inquirer';
+import { select, confirm as confirmPrompt } from '@inquirer/prompts';
 import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer.js';
 import { ProjectManager } from '../../core/project-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
@@ -43,9 +43,7 @@ export async function importDocs(
     // Get source type if not provided
     let source = args.source;
     if (!source) {
-      const { sourceType } = await inquirer.prompt([{
-        type: 'select',
-        name: 'sourceType',
+      source = await select({
         message: 'Select source type:',
         choices: [
           { name: 'Notion (markdown export)', value: 'notion' },
@@ -53,8 +51,7 @@ export async function importDocs(
           { name: 'GitHub Wiki (git repository)', value: 'wiki' },
           { name: 'Custom (any markdown folder)', value: 'custom' }
         ]
-      }]);
-      source = sourceType;
+      });
     }
 
     // Get target project
@@ -65,17 +62,14 @@ export async function importDocs(
     let targetProject = args.project || activeProject.projectId;
 
     if (!args.project && allProjects.length > 1) {
-      const { projectId } = await inquirer.prompt([{
-        type: 'select',
-        name: 'projectId',
+      targetProject = await select({
         message: 'Select target project:',
         choices: allProjects.map(p => ({
           name: `${p.projectName} (${p.projectId})`,
           value: p.projectId
         })),
         default: activeProject.projectId
-      }]);
-      targetProject = projectId;
+      });
     }
 
     // Confirm before import (unless dry run)
@@ -86,14 +80,12 @@ export async function importDocs(
       console.log(`  Target project: ${targetProject}`);
       console.log(`  Preserve structure: ${args.preserveStructure ? 'Yes' : 'No'}\n`);
 
-      const { confirm } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'confirm',
+      const shouldProceed = await confirmPrompt({
         message: 'Proceed with import?',
         default: true
-      }]);
+      });
 
-      if (!confirm) {
+      if (!shouldProceed) {
         console.log('\n❌ Import cancelled\n');
         return;
       }

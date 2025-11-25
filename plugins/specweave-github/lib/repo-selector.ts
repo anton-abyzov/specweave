@@ -9,7 +9,7 @@
  * - Validates repo names
  */
 
-import inquirer from 'inquirer';
+import { select, checkbox, input, Separator } from '@inquirer/prompts';
 import { GitHubClient } from './github-client.js';
 
 // ============================================================================
@@ -109,31 +109,27 @@ export async function selectGitHubRepos(
   console.log(`   Total: ${allRepos.length} repositories\n`);
 
   // Decide selection method
-  const { selectionMethod } = await inquirer.prompt([
-    {
-      type: 'select',
-      name: 'selectionMethod',
-      message: 'How would you like to select repositories?',
-      choices: [
-        {
-          name: `📋 Interactive (browse and select from ${allRepos.length} repositories)`,
-          value: 'interactive',
-        },
-        {
-          name: '✏️  Manual entry (type repository names)',
-          value: 'manual',
-        },
-        ...(allowSelectAll
-          ? [
-              {
-                name: `✨ Select all (${allRepos.length} repositories)`,
-                value: 'all',
-              },
-            ]
-          : []),
-      ],
-    },
-  ]);
+  const selectionMethod = await select({
+    message: 'How would you like to select repositories?',
+    choices: [
+      {
+        name: `📋 Interactive (browse and select from ${allRepos.length} repositories)`,
+        value: 'interactive',
+      },
+      {
+        name: '✏️  Manual entry (type repository names)',
+        value: 'manual',
+      },
+      ...(allowSelectAll
+        ? [
+            {
+              name: `✨ Select all (${allRepos.length} repositories)`,
+              value: 'all',
+            },
+          ]
+        : []),
+    ],
+  });
 
   if (selectionMethod === 'all') {
     return {
@@ -175,38 +171,35 @@ async function interactiveRepoSelection(
   }));
 
   // Add manual entry option at the end
-  choices.push(
-    new inquirer.Separator(),
+  const allChoices = [
+    ...choices,
+    new Separator(),
     {
       name: '✏️  Enter repository names manually instead',
       value: '__MANUAL__',
       checked: false,
-    } as any
-  );
-
-  const { selectedRepos } = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'selectedRepos',
-      message: `Select GitHub repositories (${minSelection}${maxSelection ? `-${maxSelection}` : '+'} required):`,
-      choices,
-      pageSize,
-      loop: false,
-      validate: (selected: string[]) => {
-        const actualSelected = selected.filter((k) => k !== '__MANUAL__');
-
-        if (actualSelected.length < minSelection) {
-          return `Please select at least ${minSelection} repository(ies)`;
-        }
-
-        if (maxSelection && actualSelected.length > maxSelection) {
-          return `Please select at most ${maxSelection} repository(ies)`;
-        }
-
-        return true;
-      },
     },
-  ]);
+  ];
+
+  const selectedRepos = await checkbox({
+    message: `Select GitHub repositories (${minSelection}${maxSelection ? `-${maxSelection}` : '+'} required):`,
+    choices: allChoices,
+    pageSize,
+    loop: false,
+    validate: (selected: readonly string[]) => {
+      const actualSelected = selected.filter((k) => k !== '__MANUAL__');
+
+      if (actualSelected.length < minSelection) {
+        return `Please select at least ${minSelection} repository(ies)`;
+      }
+
+      if (maxSelection && actualSelected.length > maxSelection) {
+        return `Please select at most ${maxSelection} repository(ies)`;
+      }
+
+      return true;
+    },
+  });
 
   // Check if user chose manual entry
   if (selectedRepos.includes('__MANUAL__')) {
@@ -243,39 +236,35 @@ async function manualRepoEntry(
     console.log('');
   }
 
-  const { manualRepos } = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'manualRepos',
-      message: 'Repository names:',
-      validate: (input: string) => {
-        if (!input.trim()) {
-          return 'Please enter at least one repository name';
-        }
+  const manualRepos = await input({
+    message: 'Repository names:',
+    validate: (inputValue: string) => {
+      if (!inputValue.trim()) {
+        return 'Please enter at least one repository name';
+      }
 
-        const repos = input
-          .split(',')
-          .map((r) => r.trim())
-          .filter((r) => r.length > 0);
+      const repos = inputValue
+        .split(',')
+        .map((r) => r.trim())
+        .filter((r) => r.length > 0);
 
-        if (repos.length < minSelection) {
-          return `Please enter at least ${minSelection} repository name(s)`;
-        }
+      if (repos.length < minSelection) {
+        return `Please enter at least ${minSelection} repository name(s)`;
+      }
 
-        if (maxSelection && repos.length > maxSelection) {
-          return `Please enter at most ${maxSelection} repository name(s)`;
-        }
+      if (maxSelection && repos.length > maxSelection) {
+        return `Please enter at most ${maxSelection} repository name(s)`;
+      }
 
-        // Validate format (owner/repo)
-        const invalidRepos = repos.filter((r) => !/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(r));
-        if (invalidRepos.length > 0) {
-          return `Invalid repository format: ${invalidRepos.join(', ')}. Use owner/repo format (e.g., octocat/Hello-World).`;
-        }
+      // Validate format (owner/repo)
+      const invalidRepos = repos.filter((r) => !/^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+$/.test(r));
+      if (invalidRepos.length > 0) {
+        return `Invalid repository format: ${invalidRepos.join(', ')}. Use owner/repo format (e.g., octocat/Hello-World).`;
+      }
 
-        return true;
-      },
+      return true;
     },
-  ]);
+  });
 
   const selectedRepos = manualRepos
     .split(',')

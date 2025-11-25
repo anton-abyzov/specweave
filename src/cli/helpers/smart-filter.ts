@@ -8,7 +8,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, input, confirm } from '@inquirer/prompts';
 
 export type FilterProvider = 'jira' | 'ado';
 
@@ -137,103 +137,82 @@ export async function promptFilterCriteria(provider: FilterProvider): Promise<Fi
   const criteria: FilterCriteria = { provider };
 
   // Step 1: Filter type
-  const filterType = await inquirer.prompt<{ type: 'none' | 'query' | 'keys' }>([
-    {
-      type: 'select',
-      name: 'type',
-      message: 'How would you like to filter projects?',
-      default: 'none',
-      choices: [
-        {
-          name: chalk.green('No filter') + chalk.gray(' - Import all projects'),
-          value: 'none'
-        },
-        {
-          name: `Custom ${provider === 'jira' ? 'JQL' : 'WIQL'} query` + chalk.gray(' - Advanced filtering'),
-          value: 'query'
-        },
-        {
-          name: 'Specific project keys' + chalk.gray(' - Manual selection'),
-          value: 'keys'
-        }
-      ]
-    }
-  ]);
+  const filterTypeResult = await select<'none' | 'query' | 'keys'>({
+    message: 'How would you like to filter projects?',
+    default: 'none',
+    choices: [
+      {
+        name: chalk.green('No filter') + chalk.gray(' - Import all projects'),
+        value: 'none' as const
+      },
+      {
+        name: `Custom ${provider === 'jira' ? 'JQL' : 'WIQL'} query` + chalk.gray(' - Advanced filtering'),
+        value: 'query' as const
+      },
+      {
+        name: 'Specific project keys' + chalk.gray(' - Manual selection'),
+        value: 'keys' as const
+      }
+    ]
+  });
+  const filterType = { type: filterTypeResult };
 
   if (filterType.type === 'query') {
     // Custom query
-    const queryAnswer = await inquirer.prompt<{ query: string }>([
-      {
-        type: 'input',
-        name: 'query',
-        message: `Enter ${provider === 'jira' ? 'JQL' : 'WIQL'} query:`,
-        validate: (input: string) => {
-          const validation = provider === 'jira'
-            ? validateJQL(input)
-            : validateWIQL(input);
+    const query = await input({
+      message: `Enter ${provider === 'jira' ? 'JQL' : 'WIQL'} query:`,
+      validate: (value: string) => {
+        const validation = provider === 'jira'
+          ? validateJQL(value)
+          : validateWIQL(value);
 
-          return validation.valid || chalk.red(validation.error || 'Invalid query');
-        }
+        return validation.valid || chalk.red(validation.error || 'Invalid query');
       }
-    ]);
+    });
 
-    criteria.query = queryAnswer.query;
+    criteria.query = query;
 
   } else if (filterType.type === 'keys') {
     // Specific project keys
-    const keysAnswer = await inquirer.prompt<{ keys: string }>([
-      {
-        type: 'input',
-        name: 'keys',
-        message: 'Enter project keys (comma-separated):',
-        validate: (input: string) => {
-          const trimmed = input.trim();
-          if (!trimmed) {
-            return chalk.red('Project keys cannot be empty');
-          }
-
-          const keys = trimmed.split(',').map(k => k.trim()).filter(k => k.length > 0);
-          if (keys.length === 0) {
-            return chalk.red('At least one project key required');
-          }
-
-          return true;
+    const keys = await input({
+      message: 'Enter project keys (comma-separated):',
+      validate: (value: string) => {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return chalk.red('Project keys cannot be empty');
         }
-      }
-    ]);
 
-    criteria.projectKeys = keysAnswer.keys.split(',').map(k => k.trim()).filter(k => k.length > 0);
+        const keysList = trimmed.split(',').map(k => k.trim()).filter(k => k.length > 0);
+        if (keysList.length === 0) {
+          return chalk.red('At least one project key required');
+        }
+
+        return true;
+      }
+    });
+
+    criteria.projectKeys = keys.split(',').map(k => k.trim()).filter(k => k.length > 0);
   }
 
   // Step 2: Additional filters
-  const additionalFilters = await inquirer.prompt<{
-    excludeArchived: boolean;
-    excludeDeleted: boolean;
-    onlyActive: boolean;
-  }>([
-    {
-      type: 'confirm',
-      name: 'excludeArchived',
-      message: 'Exclude archived projects?',
-      default: true
-    },
-    {
-      type: 'confirm',
-      name: 'excludeDeleted',
-      message: 'Exclude deleted projects?',
-      default: true
-    },
-    {
-      type: 'confirm',
-      name: 'onlyActive',
-      message: 'Only import active projects?',
-      default: false
-    }
-  ]);
+  const excludeArchived = await confirm({
+    message: 'Exclude archived projects?',
+    default: true
+  });
 
-  criteria.excludeArchived = additionalFilters.excludeArchived;
-  criteria.excludeDeleted = additionalFilters.excludeDeleted;
-  criteria.onlyActive = additionalFilters.onlyActive;
+  const excludeDeleted = await confirm({
+    message: 'Exclude deleted projects?',
+    default: true
+  });
+
+  const onlyActive = await confirm({
+    message: 'Only import active projects?',
+    default: false
+  });
+
+  criteria.excludeArchived = excludeArchived;
+  criteria.excludeDeleted = excludeDeleted;
+  criteria.onlyActive = onlyActive;
 
   return criteria;
 }
@@ -320,14 +299,10 @@ export async function previewFilterResults(result: FilterResult): Promise<boolea
   }
 
   // Confirmation
-  const answer = await inquirer.prompt<{ proceed: boolean }>([
-    {
-      type: 'confirm',
-      name: 'proceed',
-      message: 'Proceed with import?',
-      default: true
-    }
-  ]);
+  const proceed = await confirm({
+    message: 'Proceed with import?',
+    default: true
+  });
 
-  return answer.proceed;
+  return proceed;
 }

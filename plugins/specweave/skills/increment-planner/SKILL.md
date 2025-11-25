@@ -113,14 +113,16 @@ Every increment MUST have `metadata.json` or:
 
 ### 4. Increment Structure
 
-**Complete directory structure**:
+**Directory structure**:
 ```
 .specweave/increments/0001-feature-name/
-├── spec.md          # WHAT & WHY (user stories, acceptance criteria)
-├── plan.md          # HOW (technical design, architecture)
-├── tasks.md         # STEPS (implementation tasks with embedded tests)
-└── metadata.json    # Metadata (MANDATORY)
+├── spec.md          # WHAT & WHY (user stories, acceptance criteria) - REQUIRED
+├── plan.md          # HOW (technical design, architecture) - OPTIONAL
+├── tasks.md         # STEPS (implementation tasks with embedded tests) - REQUIRED
+└── metadata.json    # Metadata - REQUIRED
 ```
+
+**plan.md is OPTIONAL** - create only for complex features with architecture decisions. Skip for bug fixes, migrations, hotfixes.
 
 **NO separate tests.md** - tests embedded in tasks.md (v0.7.0+)
 
@@ -597,6 +599,8 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 
 **✅ DO**:
 - Always create metadata.json (MANDATORY)
+- Always create spec.md and tasks.md (MANDATORY)
+- Create plan.md only for complex features with architecture decisions
 - Use descriptive increment names
 - Include AC-IDs in all acceptance criteria
 - Embed tests in tasks.md (NO separate tests.md)
@@ -607,6 +611,7 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 - Use bare numbers (0001) without description
 - Spawn agents from this skill (causes crashes)
 - Skip metadata.json creation
+- Create plan.md for bug fixes, simple migrations, or hotfixes
 - Create separate tests.md (deprecated v0.7.0+)
 - Reference SpecWeave internal docs/ADRs (users won't have them)
 - Over-plan in skill (keep templates simple)

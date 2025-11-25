@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import { confirm, select, input, password } from "@inquirer/prompts";
 import { credentialsManager } from "../../../src/core/credentials-manager.js";
 import { JiraCredentials as JiraCredentials2 } from "../../../src/core/credentials-manager.js";
 async function detectJiraCredentials() {
@@ -21,14 +21,10 @@ async function setupJiraCredentials() {
   console.log("\n\u{1F527} Jira Setup Wizard\n");
   const detected = await detectJiraCredentials();
   if (detected.found) {
-    const { useExisting } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "useExisting",
-        message: `Found credentials in ${detected.source}. Use these credentials?`,
-        default: true
-      }
-    ]);
+    const useExisting = await confirm({
+      message: `Found credentials in ${detected.source}. Use these credentials?`,
+      default: true
+    });
     if (useExisting) {
       return detected.credentials;
     }
@@ -37,56 +33,47 @@ async function setupJiraCredentials() {
     console.log("\u26A0\uFE0F  No Jira credentials found\n");
     console.log("\u{1F4DD} Let's set up your Jira connection:\n");
   }
-  const answers = await inquirer.prompt([
-    {
-      type: "select",
-      name: "setupType",
-      message: "How would you like to connect to Jira?",
-      choices: [
-        {
-          name: "Cloud (*.atlassian.net)",
-          value: "cloud"
-        },
-        {
-          name: "Server/Data Center (self-hosted)",
-          value: "server"
-        }
-      ]
-    },
-    {
-      type: "input",
-      name: "domain",
-      message: (answers2) => answers2.setupType === "cloud" ? "Jira domain (e.g., mycompany.atlassian.net):" : "Jira server URL (e.g., jira.mycompany.com):",
-      validate: (value) => {
-        if (!value) return "Domain is required";
-        if (answers.setupType === "cloud" && !value.includes(".atlassian.net")) {
-          return "Cloud domain must end with .atlassian.net";
-        }
-        return true;
+  const setupType = await select({
+    message: "How would you like to connect to Jira?",
+    choices: [
+      {
+        name: "Cloud (*.atlassian.net)",
+        value: "cloud"
+      },
+      {
+        name: "Server/Data Center (self-hosted)",
+        value: "server"
       }
-    },
-    {
-      type: "input",
-      name: "email",
-      message: "Email address:",
-      validate: (value) => {
-        if (!value) return "Email is required";
-        if (!value.includes("@")) return "Must be a valid email";
-        return true;
+    ]
+  });
+  const domain = await input({
+    message: setupType === "cloud" ? "Jira domain (e.g., mycompany.atlassian.net):" : "Jira server URL (e.g., jira.mycompany.com):",
+    validate: (value) => {
+      if (!value) return "Domain is required";
+      if (setupType === "cloud" && !value.includes(".atlassian.net")) {
+        return "Cloud domain must end with .atlassian.net";
       }
-    },
-    {
-      type: "password",
-      name: "apiToken",
-      message: "API token:",
-      mask: "*",
-      validate: (value) => {
-        if (!value) return "API token is required";
-        if (value.length < 10) return "API token seems too short";
-        return true;
-      }
+      return true;
     }
-  ]);
+  });
+  const email = await input({
+    message: "Email address:",
+    validate: (value) => {
+      if (!value) return "Email is required";
+      if (!value.includes("@")) return "Must be a valid email";
+      return true;
+    }
+  });
+  const apiToken = await password({
+    message: "API token:",
+    mask: "*",
+    validate: (value) => {
+      if (!value) return "API token is required";
+      if (value.length < 10) return "API token seems too short";
+      return true;
+    }
+  });
+  const answers = { setupType, domain, email, apiToken };
   const credentials = {
     domain: answers.domain,
     email: answers.email,
@@ -97,14 +84,10 @@ async function setupJiraCredentials() {
   if (!isValid) {
     console.log("\u274C Failed to connect to Jira");
     console.log("\u{1F4A1} Please check your credentials and try again\n");
-    const { retry } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "retry",
-        message: "Would you like to try again?",
-        default: true
-      }
-    ]);
+    const retry = await confirm({
+      message: "Would you like to try again?",
+      default: true
+    });
     if (retry) {
       return setupJiraCredentials();
     }
@@ -146,14 +129,10 @@ async function testJiraConnection(credentials) {
 }
 async function saveCredentialsToEnv(credentials) {
   console.log("\u{1F4A1} Save credentials to .env for future use\n");
-  const { saveToEnv } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "saveToEnv",
-      message: "Save credentials to .env file?",
-      default: true
-    }
-  ]);
+  const saveToEnv = await confirm({
+    message: "Save credentials to .env file?",
+    default: true
+  });
   if (saveToEnv) {
     credentialsManager.saveToEnvFile({ jira: credentials });
     console.log("\u2705 Credentials saved to .env");

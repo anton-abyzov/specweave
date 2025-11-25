@@ -36,8 +36,20 @@ export declare class AutoTransitionManager {
     /**
      * Handle tasks.md creation event
      * PLANNING/BACKLOG → ACTIVE
+     *
+     * CRITICAL FIX (2025-11-24): Also trigger living docs sync if feature_id is null
+     * In single-prompt scenarios, increment may be created with "active" status
+     * directly, bypassing the normal transition flow. When tasks.md is created,
+     * we know spec.md exists and can safely sync living docs.
      */
     handleTasksCreated(incrementId: string): Promise<AutoTransitionResult>;
+    /**
+     * Trigger living docs sync if feature_id is missing
+     *
+     * Called when tasks.md is created but increment is already ACTIVE.
+     * At this point spec.md exists, so sync will succeed.
+     */
+    private triggerLivingDocsSyncIfNeeded;
     /**
      * Handle first task started event
      * PLANNING → ACTIVE

@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import { SupportedLanguage } from '../../core/i18n/types.js';
@@ -39,19 +39,15 @@ export async function installCommand(
 
   if (!componentName) {
     // Interactive mode
-    const { action } = await inquirer.prompt([
-      {
-        type: 'select',
-        name: 'action',
-        message: 'What would you like to install?',
-        choices: [
-          { name: 'All components (agents + skills)', value: 'all' },
-          { name: 'All agents only', value: 'agents' },
-          { name: 'All skills only', value: 'skills' },
-          { name: 'Specific component', value: 'specific' },
-        ],
-      },
-    ]);
+    const action = await select({
+      message: 'What would you like to install?',
+      choices: [
+        { name: 'All components (agents + skills)', value: 'all' },
+        { name: 'All agents only', value: 'agents' },
+        { name: 'All skills only', value: 'skills' },
+        { name: 'Specific component', value: 'specific' },
+      ],
+    });
 
     if (action === 'specific') {
       const availableAgents = fs.existsSync(agentsDir) ? fs.readdirSync(agentsDir).filter(f => fs.statSync(path.join(agentsDir, f)).isDirectory()) : [];
@@ -62,17 +58,13 @@ export async function installCommand(
         ...availableSkills.map(name => ({ name: `Skill: ${name}`, value: `skill:${name}` })),
       ];
 
-      const { component } = await inquirer.prompt([
-        {
-          type: 'select',
-          name: 'component',
-          message: 'Select component to install:',
-          choices,
-        },
-      ]);
+      const component = await select({
+        message: 'Select component to install:',
+        choices,
+      });
 
       const [type, name] = component.split(':');
-      await installComponent(name, type, targetBase, locale);
+      await installComponent(name, type as 'agent' | 'skill', targetBase, locale);
     } else if (action === 'all') {
       await installAll(targetBase, locale);
     } else if (action === 'agents') {

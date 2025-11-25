@@ -12,7 +12,7 @@
  * Synthesizes insights → Architecture recommendation → Project structure
  */
 
-import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import { VisionAnalyzer } from './research/VisionAnalyzer.js';
 import { ComplianceDetector } from './compliance/ComplianceDetector.js';
 import { TeamRecommender } from './team/TeamRecommender.js';
@@ -249,24 +249,20 @@ async function promptBudget(): Promise<BudgetType> {
  * AC-US5-12: Support both Agile and Waterfall methodologies
  */
 async function promptMethodology(): Promise<'agile' | 'waterfall'> {
-  const { methodology } = await inquirer.prompt([{
-    type: 'select',
-    name: 'methodology',
+  const methodology = await select<'agile' | 'waterfall'>({
     message: 'How will your team work?',
     choices: [
       {
         name: '✨ Agile (Recommended) - Iterative sprints, continuous delivery. SpecWeave increments = 1-2 week sprints.',
-        value: 'agile',
-        short: 'Agile'
+        value: 'agile' as const
       },
       {
         name: '📋 Waterfall - Sequential phases, planned releases. SpecWeave increments = project phases.',
-        value: 'waterfall',
-        short: 'Waterfall'
+        value: 'waterfall' as const
       }
     ],
     default: 'agile'
-  }]);
+  });
 
   console.log(`\n✓ Methodology: ${methodology === 'agile' ? 'Agile (iterative sprints)' : 'Waterfall (sequential phases)'}`);
 

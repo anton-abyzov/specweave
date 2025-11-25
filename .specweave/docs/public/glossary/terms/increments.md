@@ -35,14 +35,16 @@ graph LR
 
 ## Increment Structure
 
-Each increment has **three core files**:
+Each increment has **two required files** and one **optional file**:
 
 ```
 .specweave/increments/0008-user-authentication/
-├── spec.md                # WHAT: Requirements & acceptance criteria
-├── plan.md                # HOW: Implementation approach & architecture
-└── tasks.md               # DO: Task checklist with embedded tests
+├── spec.md                # WHAT: Requirements & acceptance criteria (REQUIRED)
+├── plan.md                # HOW: Implementation approach & architecture (OPTIONAL)
+└── tasks.md               # DO: Task checklist with embedded tests (REQUIRED)
 ```
+
+> **When is plan.md needed?** Create `plan.md` for complex features with architectural decisions, multi-component design, or technology choices that need documentation. **Skip it** for bug fixes, simple migrations, hotfixes, and straightforward tasks where the spec already describes the approach.
 
 ### 1. spec.md - Requirements
 
@@ -105,11 +107,23 @@ and rate limiting. Supports OAuth 2.0 for future social login integration.
 - ✅ Performance: &lt;200ms login latency
 ```
 
-### 2. plan.md - Implementation Approach
+### 2. plan.md - Implementation Approach (OPTIONAL)
 
-**Purpose**: Define HOW we'll build it
+**Purpose**: Define HOW we'll build it (only for complex features)
 
-**Contents**:
+**When to create plan.md:**
+- Architecture decisions needed (JWT vs sessions, microservices vs monolith)
+- Multi-component design (frontend + backend + infrastructure)
+- Technology choices requiring documentation
+- Complex integrations with external systems
+
+**When to skip plan.md:**
+- Bug fixes (the fix approach is straightforward)
+- Simple migrations (mechanical find-replace patterns)
+- Hotfixes (time-critical, approach emerges during fix)
+- Features where spec.md already describes the approach
+
+**Contents** (when used):
 - Architecture overview (system design)
 - Technical decisions (tech stack, libraries)
 - Dependencies (what we need first)
@@ -296,7 +310,8 @@ SpecWeave supports **six increment types** for different work scenarios:
 
 **Key Insights**:
 - **Types are for tracking** (git log shows hotfixes vs features)
-- **Same structure** (spec.md, plan.md, tasks.md) for ALL types
+- **Required files**: spec.md, tasks.md for ALL types
+- **Optional file**: plan.md (typically skipped for bug/hotfix types)
 - **Experiments auto-abandon** after 14 days of inactivity (prevents stale POCs)
 
 **Example: Bug Increment**
@@ -375,7 +390,7 @@ graph TB
 
 **What Happens**:
 1. PM agent generates spec.md (user stories, AC)
-2. Architect agent generates plan.md (architecture, tech decisions)
+2. Architect agent generates plan.md (architecture, tech decisions) — **optional**, use `/specweave:plan` for complex features
 3. Test-aware planner generates tasks.md (task checklist with tests)
 4. Hooks fire (GitHub issue auto-created if configured)
 
@@ -756,7 +771,8 @@ tasks.md: All tasks with embedded tests
 ## Summary
 
 **Increments** are the fundamental building block of SpecWeave:
-- **Structure**: spec.md (WHAT), plan.md (HOW), tasks.md (DO)
+- **Required files**: spec.md (WHAT), tasks.md (DO)
+- **Optional file**: plan.md (HOW) — only for complex features with architecture decisions
 - **Naming**: `####-descriptive-name` (e.g., 0008-user-authentication)
 - **Types**: feature, hotfix, bug, change-request, refactor, experiment
 - **WIP Limit**: 1 active (focus), 2 max (emergency)

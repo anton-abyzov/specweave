@@ -10,7 +10,7 @@
  * @module cli/helpers/import-strategy-prompter
  */
 
-import inquirer from 'inquirer';
+import { select, input, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
@@ -55,30 +55,24 @@ export async function promptImportStrategy(
   logger.log(chalk.cyan(`\nFound ${totalCount} accessible ${provider.toUpperCase()} projects.`));
 
   // Show strategy prompt
-  const strategyAnswer = await inquirer.prompt<{ strategy: ImportStrategy }>([
-    {
-      type: 'select',
-      name: 'strategy',
-      message: 'How would you like to import projects?',
-      default: 'import-all', // CLI-first default
-      choices: [
-        {
-          name: chalk.green('✓ Import all projects (Recommended)') + chalk.gray(' - All selected by default'),
-          value: 'import-all'
-        },
-        {
-          name: 'Select specific projects' + chalk.gray(' - Choose from checkbox list'),
-          value: 'select-specific'
-        },
-        {
-          name: 'Manual entry' + chalk.gray(' - Enter project keys manually'),
-          value: 'manual-entry'
-        }
-      ]
-    }
-  ]);
-
-  const strategy = strategyAnswer.strategy;
+  const strategy = await select<ImportStrategy>({
+    message: 'How would you like to import projects?',
+    default: 'import-all', // CLI-first default
+    choices: [
+      {
+        name: chalk.green('✓ Import all projects (Recommended)') + chalk.gray(' - All selected by default'),
+        value: 'import-all' as ImportStrategy
+      },
+      {
+        name: 'Select specific projects' + chalk.gray(' - Choose from checkbox list'),
+        value: 'select-specific' as ImportStrategy
+      },
+      {
+        name: 'Manual entry' + chalk.gray(' - Enter project keys manually'),
+        value: 'manual-entry' as ImportStrategy
+      }
+    ]
+  });
 
   // Handle manual entry
   if (strategy === 'manual-entry') {
@@ -111,31 +105,27 @@ export async function promptImportStrategy(
 async function handleManualEntry(logger: Logger): Promise<StrategyPromptResult> {
   logger.log(chalk.gray('\n💡 Tip: Enter project keys separated by commas (e.g., BACKEND,FRONTEND,MOBILE)'));
 
-  const manualAnswer = await inquirer.prompt<{ projectKeys: string }>([
-    {
-      type: 'input',
-      name: 'projectKeys',
-      message: 'Enter project keys (comma-separated):',
-      validate: (input: string) => {
-        // Validate format: alphanumeric, underscores, hyphens, and commas only
-        const trimmed = input.trim();
-        if (!trimmed) {
-          return chalk.red('Project keys cannot be empty. Please enter at least one project key.');
-        }
-
-        // Check format (allow A-Z, 0-9, _, -, and commas)
-        const validFormat = /^[A-Z0-9_,-]+$/i.test(trimmed);
-        if (!validFormat) {
-          return chalk.red('Invalid format. Use only letters, numbers, underscores, hyphens, and commas.');
-        }
-
-        return true;
+  const projectKeysInput = await input({
+    message: 'Enter project keys (comma-separated):',
+    validate: (val: string) => {
+      // Validate format: alphanumeric, underscores, hyphens, and commas only
+      const trimmed = val.trim();
+      if (!trimmed) {
+        return chalk.red('Project keys cannot be empty. Please enter at least one project key.');
       }
+
+      // Check format (allow A-Z, 0-9, _, -, and commas)
+      const validFormat = /^[A-Z0-9_,-]+$/i.test(trimmed);
+      if (!validFormat) {
+        return chalk.red('Invalid format. Use only letters, numbers, underscores, hyphens, and commas.');
+      }
+
+      return true;
     }
-  ]);
+  });
 
   // Parse and clean project keys
-  const projectKeys = manualAnswer.projectKeys
+  const projectKeys = projectKeysInput
     .split(',')
     .map(key => key.trim().toUpperCase())
     .filter(key => key.length > 0);
@@ -166,14 +156,10 @@ async function showSafetyConfirmation(totalCount: number, logger: Logger): Promi
   logger.log(chalk.yellow(`\n⚠️  Large import detected: ${totalCount} projects`));
   logger.log(chalk.gray(`   Estimated time: ${estimatedTime} (${estimatedBatches} batches)`));
 
-  const confirmation = await inquirer.prompt<{ confirmed: boolean }>([
-    {
-      type: 'confirm',
-      name: 'confirmed',
-      message: `Import all ${totalCount} projects?`,
-      default: false // Safe default (prevent accidents)
-    }
-  ]);
+  const confirmed = await confirm({
+    message: `Import all ${totalCount} projects?`,
+    default: false // Safe default (prevent accidents)
+  });
 
-  return confirmation.confirmed;
+  return confirmed;
 }

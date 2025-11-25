@@ -10,7 +10,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
 import { GitHubProfileManager } from './profile-manager.js';
 
 /**

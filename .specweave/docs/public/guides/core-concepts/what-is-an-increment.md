@@ -19,11 +19,13 @@ graph LR
 ```
 
 **Each increment contains:**
-- 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria)
-- 🏗️ **plan.md** - How (architecture, test strategy, implementation approach)
-- ✅ **tasks.md** - Checklist with embedded tests (v0.7.0+)
+- 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria) — **required**
+- 🏗️ **plan.md** - How (architecture, test strategy, implementation approach) — **optional**, for complex features
+- ✅ **tasks.md** - Checklist with embedded tests (v0.7.0+) — **required**
 - 📊 **logs/** - Execution history
 - 📝 **reports/** - Completion summaries, scope changes
+
+> **When is plan.md needed?** Create `plan.md` for features with architectural decisions, multi-component design, or technology choices. Skip it for bug fixes, simple migrations, and straightforward tasks where the spec already describes the approach.
 
 ## Anatomy of an Increment
 
@@ -34,10 +36,10 @@ graph LR
 │                        # - US-002: Password reset
 │                        # - AC-US1-01: Valid credentials → dashboard
 │
-├── plan.md              # HOW: Architecture + test strategy
-│                        # - JWT authentication design
-│                        # - Database schema
-│                        # - Test coverage targets (85% unit, 80% integration)
+├── plan.md              # HOW: Architecture + test strategy (OPTIONAL)
+│                        # - Only for complex features needing design docs
+│                        # - Skip for bug fixes, simple migrations
+│                        # - Example: JWT auth design, database schema
 │
 ├── tasks.md             # Checklist + embedded tests (v0.7.0+)
 │                        # - T-001: AuthService [in_progress]
@@ -159,7 +161,7 @@ stateDiagram-v2
 1. **Don't start multiple increments** - Causes context switching
 2. **Don't skip specs** - Leads to unclear requirements
 3. **Don't modify completed increments** - They're immutable snapshots
-4. **Don't work without a plan** - Create plan.md before implementation
+4. **Don't create unnecessary plan.md** - Only for complex features with architecture decisions
 5. **Don't forget tests** - Every task needs test validation
 
 ## Real-World Examples

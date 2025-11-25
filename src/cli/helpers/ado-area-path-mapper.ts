@@ -7,7 +7,7 @@
  * @module cli/helpers/ado-area-path-mapper
  */
 
-import inquirer from 'inquirer';
+import { select } from '@inquirer/prompts';
 import chalk from 'chalk';
 
 export type AreaPathGranularity = 'project' | 'team' | 'area-path';
@@ -44,30 +44,26 @@ export async function promptAreaPathGranularity(
   console.log(chalk.cyan('\n📂 ADO Area Path Mapping\n'));
   console.log(chalk.white('How would you like to organize work items?\n'));
 
-  const answer = await inquirer.prompt<{ granularity: AreaPathGranularity }>([
-    {
-      type: 'select',
-      name: 'granularity',
-      message: 'Select organization level:',
-      default: 'project',
-      choices: [
-        {
-          name: chalk.green('Project-level') + chalk.gray(' - Simple (all items in project root)'),
-          value: 'project'
-        },
-        {
-          name: 'Team-level' + chalk.gray(' - Organized by team'),
-          value: 'team'
-        },
-        {
-          name: 'Area Path-level' + chalk.gray(' - Most granular (by feature/component)'),
-          value: 'area-path'
-        }
-      ]
-    }
-  ]);
+  const granularity = await select<AreaPathGranularity>({
+    message: 'Select organization level:',
+    default: 'project',
+    choices: [
+      {
+        name: chalk.green('Project-level') + chalk.gray(' - Simple (all items in project root)'),
+        value: 'project' as const
+      },
+      {
+        name: 'Team-level' + chalk.gray(' - Organized by team'),
+        value: 'team' as const
+      },
+      {
+        name: 'Area Path-level' + chalk.gray(' - Most granular (by feature/component)'),
+        value: 'area-path' as const
+      }
+    ]
+  });
 
-  return answer.granularity;
+  return granularity;
 }
 
 /**
@@ -84,19 +80,15 @@ export async function promptTeamSelection(
     return undefined;
   }
 
-  const answer = await inquirer.prompt<{ team: string }>([
-    {
-      type: 'select',
-      name: 'team',
-      message: 'Select team:',
-      choices: options.availableTeams.map(team => ({
-        name: team,
-        value: team
-      }))
-    }
-  ]);
+  const team = await select({
+    message: 'Select team:',
+    choices: options.availableTeams.map(t => ({
+      name: t,
+      value: t
+    }))
+  });
 
-  return answer.team;
+  return team;
 }
 
 /**
@@ -125,20 +117,15 @@ export async function promptAreaPathSelection(
     return undefined;
   }
 
-  const answer = await inquirer.prompt<{ areaPath: string }>([
-    {
-      type: 'select',
-      name: 'areaPath',
-      message: 'Select area path:',
-      choices: filteredPaths.map(path => ({
-        name: path,
-        value: path
-      })),
-      pageSize: 15
-    }
-  ]);
+  const areaPath = await select({
+    message: 'Select area path:',
+    choices: filteredPaths.map(p => ({
+      name: p,
+      value: p
+    }))
+  });
 
-  return answer.areaPath;
+  return areaPath;
 }
 
 /**

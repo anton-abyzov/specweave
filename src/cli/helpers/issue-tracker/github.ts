@@ -8,7 +8,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, input, password } from '@inquirer/prompts';
 import ora from 'ora';
 import { getGitHubAuth } from '../../../utils/auth-helpers.js';
 import {
@@ -92,16 +92,14 @@ export async function promptGitHubCredentials(
   console.log(chalk.gray('SpecWeave will sync increments with GitHub Issues.\n'));
 
   // Step 1: Ask about instance type (Cloud vs Enterprise)
-  const { instanceType } = await inquirer.prompt([{
-    type: 'select',
-    name: 'instanceType',
+  const instanceType = await select<GitHubInstanceType>({
     message: 'Which GitHub instance are you using?',
     choices: [
       { name: 'GitHub.com (cloud)', value: 'cloud' },
       { name: 'GitHub Enterprise (self-hosted)', value: 'enterprise' }
     ],
     default: 'cloud'
-  }]);
+  });
 
   let apiEndpoint: string | undefined;
 
@@ -111,20 +109,16 @@ export async function promptGitHubCredentials(
   if (instanceType === 'enterprise') {
     console.log(chalk.gray('\nGitHub Enterprise requires a custom API endpoint.\n'));
 
-    const { endpoint } = await inquirer.prompt([{
-      type: 'input',
-      name: 'endpoint',
+    apiEndpoint = await input({
       message: 'GitHub Enterprise API endpoint:',
       default: 'https://github.company.com/api/v3',
-      validate: (input: string) => {
-        if (!input.startsWith('https://')) {
+      validate: (value: string) => {
+        if (!value.startsWith('https://')) {
           return 'API endpoint must use HTTPS (http:// is not secure)';
         }
         return true;
       }
-    }]);
-
-    apiEndpoint = endpoint;
+    });
   }
 
   // Step 3: Show setup instructions
@@ -148,12 +142,10 @@ export async function promptGitHubCredentials(
     { name: 'Skip for now', value: 'skip' }
   ];
 
-  const { method } = await inquirer.prompt([{
-    type: 'select',
-    name: 'method',
+  const method = await select({
     message: 'How would you like to authenticate?',
     choices
-  }]);
+  });
 
   if (method === 'skip') {
     return null;
@@ -172,15 +164,13 @@ export async function promptGitHubCredentials(
       console.log(chalk.yellow('   Make sure you\'re logged in: gh auth login\n'));
 
       // Fallback to manual entry
-      const { retryMethod } = await inquirer.prompt([{
-        type: 'select',
-        name: 'retryMethod',
+      const retryMethod = await select({
         message: 'What would you like to do?',
         choices: [
           { name: 'Enter token manually', value: 'manual' },
           { name: 'Skip for now', value: 'skip' }
         ]
-      }]);
+      });
 
       if (retryMethod === 'skip') {
         return null;
@@ -192,24 +182,22 @@ export async function promptGitHubCredentials(
 
   // Manual token entry
   if (method === 'manual' || !token!) {
-    const { manualToken } = await inquirer.prompt([{
-      type: 'password',
-      name: 'manualToken',
+    const manualToken = await password({
       message: 'Paste your GitHub token:',
       mask: '*',
-      validate: (input: string) => {
-        if (!input || input.length < 20) {
+      validate: (value: string) => {
+        if (!value || value.length < 20) {
           return 'Invalid token format (should be at least 20 characters)';
         }
         // GitHub tokens start with ghp_ (classic) or github_pat_ (fine-grained)
         if (instanceType === 'cloud') {
-          if (!input.startsWith('ghp_') && !input.startsWith('github_pat_')) {
+          if (!value.startsWith('ghp_') && !value.startsWith('github_pat_')) {
             return 'GitHub tokens typically start with "ghp_" or "github_pat_"';
           }
         }
         return true;
       }
-    }]);
+    });
 
     token = manualToken;
   }

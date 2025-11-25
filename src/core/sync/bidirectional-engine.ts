@@ -23,7 +23,7 @@
 
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
-import inquirer from 'inquirer';
+import { select, input } from '@inquirer/prompts';
 import { SyncProvider } from '../types/sync-profile.js';
 
 // ============================================================================
@@ -343,37 +343,29 @@ export class BidirectionalSyncEngine {
     console.log(`   ${this.provider} value: ${conflict.externalValue}`);
     console.log(`   Last sync value: ${conflict.lastSyncValue || '(unknown)'}\n`);
 
-    const { resolution } = await inquirer.prompt([
-      {
-        type: 'select',
-        name: 'resolution',
-        message: `How should this conflict be resolved?`,
-        choices: [
-          {
-            name: `Use local value: "${conflict.localValue}"`,
-            value: 'local',
-          },
-          {
-            name: `Use ${this.provider} value: "${conflict.externalValue}"`,
-            value: 'external',
-          },
-          {
-            name: 'Enter custom value (merge)',
-            value: 'merge',
-          },
-        ],
-      },
-    ]);
+    const resolution = await select<'local' | 'external' | 'merge'>({
+      message: `How should this conflict be resolved?`,
+      choices: [
+        {
+          name: `Use local value: "${conflict.localValue}"`,
+          value: 'local' as const,
+        },
+        {
+          name: `Use ${this.provider} value: "${conflict.externalValue}"`,
+          value: 'external' as const,
+        },
+        {
+          name: 'Enter custom value (merge)',
+          value: 'merge' as const,
+        },
+      ],
+    });
 
     if (resolution === 'merge') {
-      const { mergedValue } = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'mergedValue',
-          message: `Enter merged value for ${conflict.field}:`,
-          default: conflict.localValue,
-        },
-      ]);
+      const mergedValue = await input({
+        message: `Enter merged value for ${conflict.field}:`,
+        default: conflict.localValue,
+      });
 
       conflict.resolution = 'merged';
       conflict.mergedValue = mergedValue;

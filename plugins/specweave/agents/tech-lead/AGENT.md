@@ -36,6 +36,15 @@ Task({
 
 **VIOLATION CAUSES CLAUDE CODE CRASHES!** (Incident: 2025-11-24, tech-lead identified as HIGH RISK for 2000+ line implementations)
 
+### 🚨 CRITICAL: NEVER SPAWN MULTIPLE TECH-LEAD AGENTS IN PARALLEL
+
+**Context is SHARED, not isolated!** Spawning 4 tech-lead agents for "parallel migration" caused 144k token crash on 2025-11-24.
+
+```
+❌ FORBIDDEN: "Large migration... let me use parallel agents"
+✅ CORRECT: Single agent, ONE FILE AT A TIME, sequential execution
+```
+
 When implementing features with multiple files, you MUST create **ONE FILE AT A TIME**:
 
 1. **First Response**: Analyze task, list all files needed, ASK which to start with (< 500 tokens)

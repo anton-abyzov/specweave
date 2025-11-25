@@ -8,7 +8,7 @@
 import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { confirm } from '@inquirer/prompts';
 
 export interface ProjectValidationResult {
   valid: boolean;
@@ -73,12 +73,10 @@ export async function promptCreateProject(projectPath: string): Promise<boolean>
   console.log(chalk.gray('   Project contexts organize specs and increments by team/service'));
   console.log(chalk.gray('   GitHub sync requires at least one project context\n'));
 
-  const { createProject } = await inquirer.prompt([{
-    type: 'confirm',
-    name: 'createProject',
+  const createProject = await confirm({
     message: 'Create a project context now?',
     default: true
-  }]);
+  });
 
   return createProject;
 }

@@ -13,7 +13,7 @@
  */
 
 import { Octokit } from '@octokit/rest';
-import inquirer from 'inquirer';
+import { select, input, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { minimatch } from 'minimatch';
 
@@ -192,32 +192,28 @@ export async function discoverRepositories(
   console.log(chalk.gray('You can bulk-discover repositories instead of entering them one by one.\n'));
 
   // Step 1: Ask how to configure
-  const { strategy } = await inquirer.prompt<{ strategy: BulkDiscoveryResult['strategy'] }>([
-    {
-      type: 'select',
-      name: 'strategy',
-      message: 'How do you want to configure these repositories?',
-      choices: [
-        {
-          name: `${chalk.bold('Manual entry')} - Enter each repository one by one ${chalk.gray('(current behavior)')}`,
-          value: 'manual'
-        },
-        {
-          name: `${chalk.bold('Bulk import')} - Discover all repositories from ${owner} ${chalk.gray('(automatic)')}`,
-          value: 'all-repos'
-        },
-        {
-          name: `${chalk.bold('Pattern matching')} - Filter by pattern (starts-with, ends-with, contains, glob) ${chalk.gray('(e.g., "sw-*")')}`,
-          value: 'pattern'
-        },
-        {
-          name: `${chalk.bold('Regex matching')} - Advanced filtering with regular expressions ${chalk.gray('(e.g., "^ec-.*-api$")')}`,
-          value: 'regex'
-        }
-      ],
-      default: 'manual'
-    }
-  ]);
+  const strategy = await select<BulkDiscoveryResult['strategy']>({
+    message: 'How do you want to configure these repositories?',
+    choices: [
+      {
+        name: `${chalk.bold('Manual entry')} - Enter each repository one by one ${chalk.gray('(current behavior)')}`,
+        value: 'manual' as const
+      },
+      {
+        name: `${chalk.bold('Bulk import')} - Discover all repositories from ${owner} ${chalk.gray('(automatic)')}`,
+        value: 'all-repos' as const
+      },
+      {
+        name: `${chalk.bold('Pattern matching')} - Filter by pattern (starts-with, ends-with, contains, glob) ${chalk.gray('(e.g., "sw-*")')}`,
+        value: 'pattern' as const
+      },
+      {
+        name: `${chalk.bold('Regex matching')} - Advanced filtering with regular expressions ${chalk.gray('(e.g., "^ec-.*-api$")')}`,
+        value: 'regex' as const
+      }
+    ],
+    default: 'manual'
+  });
 
   // If manual, return early
   if (strategy === 'manual') {
@@ -247,15 +243,11 @@ export async function discoverRepositories(
     console.log(chalk.gray('   • sw-*             - Glob pattern (supports *, ?, [])'));
     console.log(chalk.gray('   • *-api            - Glob pattern\n'));
 
-    const { patternInput } = await inquirer.prompt<{ patternInput: string }>([
-      {
-        type: 'input',
-        name: 'patternInput',
-        message: 'Enter pattern:',
-        default: `starts:${owner.split('-')[0] || 'my'}-`,
-        validate: (input: string) => (input.trim() ? true : 'Pattern is required')
-      }
-    ]);
+    const patternInput = await input({
+      message: 'Enter pattern:',
+      default: `starts:${owner.split('-')[0] || 'my'}-`,
+      validate: (value: string) => (value.trim() ? true : 'Pattern is required')
+    });
 
     pattern = patternInput.trim();
     filteredRepos = filterByPattern(allRepos, pattern);
@@ -265,23 +257,19 @@ export async function discoverRepositories(
     console.log(chalk.gray('   • .*-api$          - Ends with "-api"'));
     console.log(chalk.gray('   • ^ec-\\w+-service$ - Matches "ec-NAME-service"\n'));
 
-    const { regexInput } = await inquirer.prompt<{ regexInput: string }>([
-      {
-        type: 'input',
-        name: 'regexInput',
-        message: 'Enter regex pattern:',
-        default: `^${owner.split('-')[0] || 'my'}-.*`,
-        validate: (input: string) => {
-          if (!input.trim()) return 'Regex pattern is required';
-          try {
-            new RegExp(input.trim());
-            return true;
-          } catch (error) {
-            return `Invalid regex: ${error instanceof Error ? error.message : String(error)}`;
-          }
+    const regexInput = await input({
+      message: 'Enter regex pattern:',
+      default: `^${owner.split('-')[0] || 'my'}-.*`,
+      validate: (value: string) => {
+        if (!value.trim()) return 'Regex pattern is required';
+        try {
+          new RegExp(value.trim());
+          return true;
+        } catch (error) {
+          return `Invalid regex: ${error instanceof Error ? error.message : String(error)}`;
         }
       }
-    ]);
+    });
 
     pattern = regexInput.trim();
     try {
@@ -304,27 +292,23 @@ export async function discoverRepositories(
   if (filteredRepos.length !== expectedCount) {
     console.log(chalk.yellow(`⚠️  Found ${filteredRepos.length} repositories, but you specified ${expectedCount}`));
 
-    const { proceed } = await inquirer.prompt<{ proceed: 'use-discovered' | 'adjust-count' | 'manual' }>([
-      {
-        type: 'select',
-        name: 'proceed',
-        message: 'What would you like to do?',
-        choices: [
-          {
-            name: `Use discovered ${filteredRepos.length} repositories (update count)`,
-            value: 'use-discovered'
-          },
-          {
-            name: `Go back and adjust the pattern`,
-            value: 'adjust-count'
-          },
-          {
-            name: `Switch to manual entry`,
-            value: 'manual'
-          }
-        ]
-      }
-    ]);
+    const proceed = await select<'use-discovered' | 'adjust-count' | 'manual'>({
+      message: 'What would you like to do?',
+      choices: [
+        {
+          name: `Use discovered ${filteredRepos.length} repositories (update count)`,
+          value: 'use-discovered' as const
+        },
+        {
+          name: `Go back and adjust the pattern`,
+          value: 'adjust-count' as const
+        },
+        {
+          name: `Switch to manual entry`,
+          value: 'manual' as const
+        }
+      ]
+    });
 
     if (proceed === 'adjust-count') {
       return null; // Return null to trigger retry
@@ -338,16 +322,12 @@ export async function discoverRepositories(
   }
 
   // Step 6: Confirm
-  const { confirm } = await inquirer.prompt<{ confirm: boolean }>([
-    {
-      type: 'confirm',
-      name: 'confirm',
-      message: `Use these ${filteredRepos.length} repositories?`,
-      default: true
-    }
-  ]);
+  const confirmResult = await confirm({
+    message: `Use these ${filteredRepos.length} repositories?`,
+    default: true
+  });
 
-  if (!confirm) {
+  if (!confirmResult) {
     console.log(chalk.gray('\n✓ Repository discovery cancelled. Switching to manual entry.\n'));
     return { repositories: [], strategy: 'manual' };
   }

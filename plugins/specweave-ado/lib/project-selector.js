@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import { select, checkbox, input, Separator } from "@inquirer/prompts";
 async function fetchAllAdoProjects(client) {
   console.log("\u{1F50D} Fetching Azure DevOps projects...");
   try {
@@ -31,29 +31,25 @@ async function selectAdoProjects(client, options = {}) {
   console.log("\u{1F4CB} Available Azure DevOps Projects:\n");
   console.log(`   Total: ${allProjects.length} projects
 `);
-  const { selectionMethod } = await inquirer.prompt([
-    {
-      type: "select",
-      name: "selectionMethod",
-      message: "How would you like to select projects?",
-      choices: [
+  const selectionMethod = await select({
+    message: "How would you like to select projects?",
+    choices: [
+      {
+        name: `\u{1F4CB} Interactive (browse and select from ${allProjects.length} projects)`,
+        value: "interactive"
+      },
+      {
+        name: "\u270F\uFE0F  Manual entry (type project names)",
+        value: "manual"
+      },
+      ...allowSelectAll ? [
         {
-          name: `\u{1F4CB} Interactive (browse and select from ${allProjects.length} projects)`,
-          value: "interactive"
-        },
-        {
-          name: "\u270F\uFE0F  Manual entry (type project names)",
-          value: "manual"
-        },
-        ...allowSelectAll ? [
-          {
-            name: `\u2728 Select all (${allProjects.length} projects)`,
-            value: "all"
-          }
-        ] : []
-      ]
-    }
-  ]);
+          name: `\u2728 Select all (${allProjects.length} projects)`,
+          value: "all"
+        }
+      ] : []
+    ]
+  });
   if (selectionMethod === "all") {
     return {
       selectedNames: allProjects.map((p) => p.name),
@@ -73,39 +69,36 @@ async function selectAdoProjects(client, options = {}) {
 }
 async function interactiveProjectSelection(allProjects, preSelected, minSelection, maxSelection, pageSize) {
   console.log("\u{1F4A1} Use <space> to select, <a> to toggle all, <i> to invert\n");
-  const choices = allProjects.map((p) => ({
-    name: formatProjectChoice(p),
-    value: p.name,
-    checked: preSelected.includes(p.name)
-  }));
-  choices.push(
-    new inquirer.Separator(),
+  const choices = [
+    ...allProjects.map((p) => ({
+      name: formatProjectChoice(p),
+      value: p.name,
+      checked: preSelected.includes(p.name)
+    })),
+    // Add separator and manual entry option at the end
+    new Separator(),
     {
       name: "\u270F\uFE0F  Enter project names manually instead",
       value: "__MANUAL__",
       checked: false
     }
-  );
-  const { selectedNames } = await inquirer.prompt([
-    {
-      type: "checkbox",
-      name: "selectedNames",
-      message: `Select Azure DevOps projects (${minSelection}${maxSelection ? `-${maxSelection}` : "+"} required):`,
-      choices,
-      pageSize,
-      loop: false,
-      validate: (selected) => {
-        const actualSelected = selected.filter((k) => k !== "__MANUAL__");
-        if (actualSelected.length < minSelection) {
-          return `Please select at least ${minSelection} project(s)`;
-        }
-        if (maxSelection && actualSelected.length > maxSelection) {
-          return `Please select at most ${maxSelection} project(s)`;
-        }
-        return true;
+  ];
+  const selectedNames = await checkbox({
+    message: `Select Azure DevOps projects (${minSelection}${maxSelection ? `-${maxSelection}` : "+"} required):`,
+    choices,
+    pageSize,
+    loop: false,
+    validate: (selected) => {
+      const actualSelected = selected.filter((k) => k !== "__MANUAL__");
+      if (actualSelected.length < minSelection) {
+        return `Please select at least ${minSelection} project(s)`;
       }
+      if (maxSelection && actualSelected.length > maxSelection) {
+        return `Please select at most ${maxSelection} project(s)`;
+      }
+      return true;
     }
-  ]);
+  });
   if (selectedNames.includes("__MANUAL__")) {
     return await manualProjectEntry(allProjects, minSelection, maxSelection);
   }
@@ -127,26 +120,22 @@ async function manualProjectEntry(allProjects, minSelection, maxSelection) {
     );
     console.log("");
   }
-  const { manualNames } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "manualNames",
-      message: "Project names:",
-      validate: (input) => {
-        if (!input.trim()) {
-          return "Please enter at least one project name";
-        }
-        const names = input.split(",").map((n) => n.trim()).filter((n) => n.length > 0);
-        if (names.length < minSelection) {
-          return `Please enter at least ${minSelection} project name(s)`;
-        }
-        if (maxSelection && names.length > maxSelection) {
-          return `Please enter at most ${maxSelection} project name(s)`;
-        }
-        return true;
+  const manualNames = await input({
+    message: "Project names:",
+    validate: (inputValue) => {
+      if (!inputValue.trim()) {
+        return "Please enter at least one project name";
       }
+      const names = inputValue.split(",").map((n) => n.trim()).filter((n) => n.length > 0);
+      if (names.length < minSelection) {
+        return `Please enter at least ${minSelection} project name(s)`;
+      }
+      if (maxSelection && names.length > maxSelection) {
+        return `Please enter at most ${maxSelection} project name(s)`;
+      }
+      return true;
     }
-  ]);
+  });
   const selectedNames = manualNames.split(",").map((n) => n.trim()).filter((n) => n.length > 0);
   const knownNames = allProjects.map((p) => p.name);
   const unknownNames = selectedNames.filter((n) => !knownNames.includes(n));

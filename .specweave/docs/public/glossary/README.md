@@ -140,14 +140,19 @@ This glossary helps you:
 - **[SSG (Static Site Generation)](./terms/ssg)** - Pre-building pages at build time
 
 **SpecWeave-Specific Terms**:
-- **[Bidirectional Sync](./terms/bidirectional-sync)** - Two-way synchronization (Local ↔ External)
+- **[Bidirectional Sync](./terms/bidirectional-sync)** - Two-way synchronization (Local ↔ External) - *Deprecated: See Three-Permission Architecture*
 - **[Content Classification](./terms/content-classification)** - 9-category automatic classification system
 - **[Cross-Linking](./terms/cross-linking)** - Automatic bidirectional document linking
 - **[Docusaurus Frontmatter](./terms/docusaurus-frontmatter)** - Auto-generated YAML metadata
+- **[Hooks](./terms/hooks)** - Automated scripts at lifecycle events (post-task, post-done)
 - **[Intelligent Living Docs Sync](./terms/intelligent-living-docs-sync)** - Smart content distribution (v0.18.0+)
 - **[Profile-Based Sync](./terms/profile-based-sync)** - Multi-repo sync configuration
 - **[Project Detection](./terms/project-detection)** - Auto-detect backend/frontend/mobile projects
+- **[Role Orchestrator](./terms/role-orchestrator)** - Multi-agent coordination (PM → Architect → Tech Lead)
+- **[Skills vs Agents](./terms/skills-vs-agents)** - Auto-activating knowledge vs explicit workers
 - **[Source of Truth](./terms/source-of-truth)** - Single authoritative data source
+- **[Strategic Init](./terms/strategic-init)** - 6-phase AI-powered project initialization
+- **[Three-Permission Architecture](./terms/three-permission-architecture)** - Granular sync control (v0.24.0+)
 
 ### T
 - **[TDD (Test-Driven Development)](./terms/tdd)** - Writing tests before code

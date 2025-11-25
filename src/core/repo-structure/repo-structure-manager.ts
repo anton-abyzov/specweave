@@ -18,7 +18,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import { select, input, confirm, number } from '@inquirer/prompts';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
@@ -101,12 +101,10 @@ export class RepoStructureManager {
       console.log(chalk.gray(`   Last step: ${resumedState.currentStep}`));
       console.log(chalk.gray(`   Time: ${new Date(resumedState.timestamp).toLocaleString()}\n`));
 
-      const { shouldResume } = await inquirer.prompt([{
-        type: 'confirm',
-        name: 'shouldResume',
+      const shouldResume = await confirm({
         message: 'Resume previous setup?',
         default: true
-      }]);
+      });
 
       if (shouldResume) {
         return this.resumeSetup(resumedState);
@@ -126,18 +124,14 @@ export class RepoStructureManager {
     } else {
       // Ask user for architecture choice
       const promptData = getArchitecturePrompt();
-      const result = await inquirer.prompt([{
-        type: 'select',
-        name: 'architecture',
+      architecture = await select<ArchitectureChoice>({
         message: promptData.question,
         choices: promptData.options.map(opt => ({
           name: `${opt.label}\n${chalk.gray(opt.description)}\n${chalk.dim(opt.example)}`,
-          value: opt.value,
-          short: opt.label
+          value: opt.value as ArchitectureChoice
         })),
         default: 'single'
-      }]);
-      architecture = result.architecture;
+      });
     }
 
     // Step 2: Ask about Git hosting platform
@@ -147,20 +141,17 @@ export class RepoStructureManager {
 
     console.log(chalk.cyan('\n' + platformPromptData.message));
 
-    const { platform } = await inquirer.prompt([{
-      type: 'select',
-      name: 'platform',
+    const platform = await select({
       message: platformPromptData.question,
       choices: platformOptions.map(opt => ({
         name: opt.disabled
           ? `${opt.name}\n${chalk.gray(opt.description)}\n${chalk.yellow('⚠️  ' + opt.disabled)}`
           : `${opt.name}\n${chalk.gray(opt.description)}`,
         value: opt.value,
-        short: opt.name,
         disabled: opt.disabled ? opt.disabled : false
       })),
       default: 'github'
-    }]);
+    });
 
     // Get provider instance
     const provider = registry.getProvider(platform as GitPlatformType);
@@ -172,17 +163,14 @@ export class RepoStructureManager {
 
     // Step 3: Ask about Git remote URL format (SSH vs HTTPS)
     const urlTypePromptData = getUrlTypePrompt();
-    const { urlType } = await inquirer.prompt([{
-      type: 'select',
-      name: 'urlType',
+    const urlType = await select({
       message: urlTypePromptData.question,
       choices: urlTypePromptData.options.map(opt => ({
         name: `${opt.label}\n${chalk.gray(opt.description)}`,
-        value: opt.value,
-        short: opt.label
+        value: opt.value
       })),
       default: urlTypePromptData.default
-    }]);
+    });
 
     console.log(chalk.green(`\n✓ Using ${urlType.toUpperCase()} remote URLs\n`));
 
@@ -294,12 +282,10 @@ export class RepoStructureManager {
 
           console.log(chalk.green(`✓ Existing repository detected: ${owner}/${repo}`));
 
-          const { useExisting } = await inquirer.prompt([{
-            type: 'confirm',
-            name: 'useExisting',
+          const useExisting = await confirm({
             message: 'Use existing repository?',
             default: true
-          }]);
+          });
 
           if (useExisting) {
             // Fetch description and visibility from GitHub API
@@ -347,50 +333,46 @@ export class RepoStructureManager {
     }
 
     // Manual configuration
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'owner',
-        message: 'GitHub owner/organization:',
-        validate: (input: string) => !!input.trim() || 'Owner is required'
-      },
-      {
-        type: 'input',
-        name: 'repo',
-        message: 'Repository name:',
-        default: path.basename(this.projectPath),
-        validate: (input: string) => !!input.trim() || 'Repository name is required'
-      },
-      {
-        type: 'input',
-        name: 'description',
-        message: 'Repository description:',
-        default: 'My SpecWeave project'
-      },
-      {
-        type: 'confirm',
-        name: 'createOnGitHub',
-        message: 'Create repository on GitHub?',
-        default: !hasGit
-      }
-    ]);
+    const ownerAnswer = await input({
+      message: 'GitHub owner/organization:',
+      validate: (val: string) => !!val.trim() || 'Owner is required'
+    });
+
+    const repoAnswer = await input({
+      message: 'Repository name:',
+      default: path.basename(this.projectPath),
+      validate: (val: string) => !!val.trim() || 'Repository name is required'
+    });
+
+    const descriptionAnswer = await input({
+      message: 'Repository description:',
+      default: 'My SpecWeave project'
+    });
+
+    const createOnGitHubAnswer = await confirm({
+      message: 'Create repository on GitHub?',
+      default: !hasGit
+    });
+
+    const answers = {
+      owner: ownerAnswer,
+      repo: repoAnswer,
+      description: descriptionAnswer,
+      createOnGitHub: createOnGitHubAnswer
+    };
 
     // Ask about visibility only if creating a new repository
     let visibility: 'private' | 'public' = 'private';
     if (answers.createOnGitHub) {
       const visibilityPrompt = getVisibilityPrompt(answers.repo);
-      const result = await inquirer.prompt([{
-        type: 'select',
-        name: 'visibility',
+      visibility = await select({
         message: visibilityPrompt.question,
         choices: visibilityPrompt.options.map(opt => ({
           name: `${opt.label}\n${chalk.gray(opt.description)}`,
-          value: opt.value,
-          short: opt.label
+          value: opt.value as 'private' | 'public'
         })),
         default: visibilityPrompt.default
-      }]);
-      visibility = result.visibility;
+      });
     }
 
     return {
@@ -469,41 +451,35 @@ export class RepoStructureManager {
       console.log(chalk.cyan('\n🚀 Repository Discovery\n'));
       console.log(chalk.gray('You\'re setting up multiple repositories. We can discover them automatically!\n'));
 
-      const { configMethod } = await inquirer.prompt([
-        {
-          type: 'select',
-          name: 'configMethod',
-          message: 'How do you want to configure repositories?',
-          choices: [
-            {
-              name: [
-                chalk.bold.green('🎯 Bulk Discovery (RECOMMENDED)'),
-                chalk.gray('  Automatically discover repos from ' + provider.config.name),
-                chalk.gray('  • Select parent from discovered list'),
-                chalk.gray('  • Auto-configure implementation repos'),
-                chalk.gray('  • Supports: all, pattern, regex filtering'),
-                ''
-              ].join('\n'),
-              value: 'bulk-discovery',
-              short: 'Bulk Discovery'
-            },
-            {
-              name: [
-                chalk.bold('✏️  Manual Entry'),
-                chalk.gray('  Enter each repository manually'),
-                chalk.gray('  • Full control over settings'),
-                chalk.gray('  • Best for new repos or custom setup'),
-                ''
-              ].join('\n'),
-              value: 'manual',
-              short: 'Manual'
-            }
-          ],
-          default: 'bulk-discovery'  // Make bulk discovery the default!
-        }
-      ]);
+      const configMethod = await select({
+        message: 'How do you want to configure repositories?',
+        choices: [
+          {
+            name: [
+              chalk.bold.green('🎯 Bulk Discovery (RECOMMENDED)'),
+              chalk.gray('  Automatically discover repos from ' + provider.config.name),
+              chalk.gray('  • Select parent from discovered list'),
+              chalk.gray('  • Auto-configure implementation repos'),
+              chalk.gray('  • Supports: all, pattern, regex filtering'),
+              ''
+            ].join('\n'),
+            value: 'bulk-discovery'
+          },
+          {
+            name: [
+              chalk.bold('✏️  Manual Entry'),
+              chalk.gray('  Enter each repository manually'),
+              chalk.gray('  • Full control over settings'),
+              chalk.gray('  • Best for new repos or custom setup'),
+              ''
+            ].join('\n'),
+            value: 'manual'
+          }
+        ],
+        default: 'bulk-discovery'
+      });
 
-      discoveryStrategy = configMethod;
+      discoveryStrategy = configMethod as 'manual' | 'bulk-discovery';
     }
 
     // Step 2: If bulk discovery, discover repos FIRST, then ask which is parent
@@ -511,27 +487,21 @@ export class RepoStructureManager {
       // Get owner FIRST (needed for discovery)
       console.log(chalk.cyan('\n👤 Repository Owner\n'));
 
-      const ownerPrompt = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'owner',
-          message: `${provider.config.name} owner/organization:`,
-          validate: async (input: string) => {
-            if (!input.trim()) return 'Owner is required';
+      owner = await input({
+        message: `${provider.config.name} owner/organization:`,
+        validate: async (val: string) => {
+          if (!val.trim()) return 'Owner is required';
 
-            // Validate owner exists on the platform
-            if (this.githubToken) {
-              const result = await provider.validateOwner(input, this.githubToken);
-              if (!result.valid) {
-                return result.error || `Invalid ${provider.config.name} owner`;
-              }
+          // Validate owner exists on the platform
+          if (this.githubToken) {
+            const result = await provider.validateOwner(val, this.githubToken);
+            if (!result.valid) {
+              return result.error || `Invalid ${provider.config.name} owner`;
             }
-            return true;
           }
+          return true;
         }
-      ]);
-
-      owner = ownerPrompt.owner;
+      });
 
       // Discover repositories via pattern matching
       const octokit = new Octokit({ auth: this.githubToken });
@@ -565,15 +535,11 @@ export class RepoStructureManager {
           }
         ];
 
-        const { parentSelection } = await inquirer.prompt([
-          {
-            type: 'select',
-            name: 'parentSelection',
-            message: 'Which repository is the parent?',
-            choices: parentChoices,
-            pageSize: 15
-          }
-        ]);
+        const parentSelection = await select({
+          message: 'Which repository is the parent?',
+          choices: parentChoices,
+          pageSize: 15
+        });
 
         if (parentSelection === 'manual') {
           // User wants to enter parent manually - fall back to old flow
@@ -648,108 +614,96 @@ export class RepoStructureManager {
         console.log(chalk.blue('\n💡 Local Parent Folder Setup'));
         console.log(chalk.gray('This folder will contain .specweave/ but will NOT be pushed to GitHub.\n'));
 
-        parentAnswers = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'parentName',
-            message: 'Parent folder name:',
-            default: `${path.basename(this.projectPath)}`,
-            validate: (input: string) => {
-              if (!input.trim()) return 'Folder name is required';
-              return true;
-            }
-          },
-          {
-            type: 'input',
-            name: 'owner',
-            message: `${provider.config.name} owner/organization for IMPLEMENTATION repos:`,
-            validate: async (input: string) => {
-              if (!input.trim()) return 'Owner is required';
-
-              // Validate owner exists on the platform
-              if (this.githubToken) {
-                const result = await provider.validateOwner(input, this.githubToken);
-                if (!result.valid) {
-                  return result.error || `Invalid ${provider.config.name} owner`;
-                }
-              }
-              return true;
-            }
+        const parentNameAnswer = await input({
+          message: 'Parent folder name:',
+          default: `${path.basename(this.projectPath)}`,
+          validate: (val: string) => {
+            if (!val.trim()) return 'Folder name is required';
+            return true;
           }
-        ]);
+        });
+
+        const ownerForLocalAnswer = await input({
+          message: `${provider.config.name} owner/organization for IMPLEMENTATION repos:`,
+          validate: async (val: string) => {
+            if (!val.trim()) return 'Owner is required';
+
+            // Validate owner exists on the platform
+            if (this.githubToken) {
+              const result = await provider.validateOwner(val, this.githubToken);
+              if (!result.valid) {
+                return result.error || `Invalid ${provider.config.name} owner`;
+              }
+            }
+            return true;
+          }
+        });
+
+        parentAnswers = {
+          parentName: parentNameAnswer,
+          owner: ownerForLocalAnswer
+        };
 
         // Set defaults for local parent
         parentAnswers.description = 'Local parent folder (not synced to GitHub)';
         parentAnswers.createOnGitHub = false; // Never create GitHub repo for local parent
       } else {
         // GitHub parent: First ask if using existing or creating new
-        const { parentChoice } = await inquirer.prompt([
-          {
-            type: 'select',
-            name: 'parentChoice',
-            message: 'Parent repository setup:',
-            choices: [
-              {
-                name: `${chalk.green('Use existing parent repository')}\n${chalk.gray('Connect to an existing GitHub repo that already has .specweave/ structure')}`,
-                value: 'existing',
-                short: 'Use existing'
-              },
-              {
-                name: `${chalk.blue('Create new parent repository')}\n${chalk.gray('Create a new GitHub repo for specs, docs, and architecture')}`,
-                value: 'new',
-                short: 'Create new'
-              }
-            ],
-            default: 'new'
-          }
-        ]);
+        const parentChoice = await select({
+          message: 'Parent repository setup:',
+          choices: [
+            {
+              name: `${chalk.green('Use existing parent repository')}\n${chalk.gray('Connect to an existing GitHub repo that already has .specweave/ structure')}`,
+              value: 'existing'
+            },
+            {
+              name: `${chalk.blue('Create new parent repository')}\n${chalk.gray('Create a new GitHub repo for specs, docs, and architecture')}`,
+              value: 'new'
+            }
+          ],
+          default: 'new'
+        });
 
         if (parentChoice === 'existing') {
           // Using existing parent repository
           console.log(chalk.cyan('\n📋 Existing Parent Repository\n'));
 
           // Ask for owner first
-          const ownerPrompt = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'owner',
-              message: `${provider.config.name} owner/organization:`,
-              validate: async (input: string) => {
-                if (!input.trim()) return 'Owner is required';
+          const existingOwner = await input({
+            message: `${provider.config.name} owner/organization:`,
+            validate: async (val: string) => {
+              if (!val.trim()) return 'Owner is required';
 
-                // Validate owner exists on the platform
-                if (this.githubToken) {
-                  const result = await provider.validateOwner(input, this.githubToken);
-                  if (!result.valid) {
-                    return result.error || `Invalid ${provider.config.name} owner`;
-                  }
+              // Validate owner exists on the platform
+              if (this.githubToken) {
+                const result = await provider.validateOwner(val, this.githubToken);
+                if (!result.valid) {
+                  return result.error || `Invalid ${provider.config.name} owner`;
                 }
-                return true;
               }
+              return true;
             }
-          ]);
+          });
+          const ownerPrompt = { owner: existingOwner };
 
           // Ask for existing repo name
-          const repoPrompt = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'parentName',
-              message: 'Existing parent repository name:',
-              default: `${path.basename(this.projectPath)}-parent`,
-              validate: async (input: string) => {
-                if (!input.trim()) return 'Repository name is required';
+          const existingParentName = await input({
+            message: 'Existing parent repository name:',
+            default: `${path.basename(this.projectPath)}-parent`,
+            validate: async (val: string) => {
+              if (!val.trim()) return 'Repository name is required';
 
-                // Validate repository EXISTS on the platform
-                if (this.githubToken && ownerPrompt.owner) {
-                  const result = await provider.validateRepository(ownerPrompt.owner, input, this.githubToken);
-                  if (!result.exists) {
-                    return `Repository ${ownerPrompt.owner}/${input} not found on ${provider.config.name}. Please check the name or choose 'Create new'.`;
-                  }
+              // Validate repository EXISTS on the platform
+              if (this.githubToken && ownerPrompt.owner) {
+                const result = await provider.validateRepository(ownerPrompt.owner, val, this.githubToken);
+                if (!result.exists) {
+                  return `Repository ${ownerPrompt.owner}/${val} not found on ${provider.config.name}. Please check the name or choose 'Create new'.`;
                 }
-                return true;
               }
+              return true;
             }
-          ]);
+          });
+          const repoPrompt = { parentName: existingParentName };
 
           // Fetch description and visibility from GitHub API (or use defaults)
           let description = 'SpecWeave parent repository - specs, docs, and architecture';
@@ -787,62 +741,58 @@ export class RepoStructureManager {
           console.log(chalk.cyan('\n✨ New Parent Repository\n'));
 
           // Ask for owner (separate prompt to avoid validator issues)
-          const ownerPrompt = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'owner',
-              message: `${provider.config.name} owner/organization for ALL repos:`,
-              validate: async (input: string) => {
-                if (!input.trim()) return 'Owner is required';
+          const newOwner = await input({
+            message: `${provider.config.name} owner/organization for ALL repos:`,
+            validate: async (val: string) => {
+              if (!val.trim()) return 'Owner is required';
 
-                // Validate owner exists on the platform
-                if (this.githubToken) {
-                  const result = await provider.validateOwner(input, this.githubToken);
-                  if (!result.valid) {
-                    return result.error || `Invalid ${provider.config.name} owner`;
-                  }
+              // Validate owner exists on the platform
+              if (this.githubToken) {
+                const result = await provider.validateOwner(val, this.githubToken);
+                if (!result.valid) {
+                  return result.error || `Invalid ${provider.config.name} owner`;
                 }
-                return true;
               }
+              return true;
             }
-          ]);
+          });
+          const ownerPrompt = { owner: newOwner };
 
           // Now ask remaining questions, using the owner value
-          const remainingAnswers = await inquirer.prompt([
-            {
-              type: 'input',
-              name: 'parentName',
-              message: 'Parent repository name:',
-              default: `${path.basename(this.projectPath)}-parent`,
-              validate: async (input: string) => {
-                if (!input.trim()) return 'Repository name is required';
+          const newParentName = await input({
+            message: 'Parent repository name:',
+            default: `${path.basename(this.projectPath)}-parent`,
+            validate: async (val: string) => {
+              if (!val.trim()) return 'Repository name is required';
 
-                // Validate repository DOESN'T exist
-                if (this.githubToken && ownerPrompt.owner) {
-                  const result = await provider.validateRepository(ownerPrompt.owner, input, this.githubToken);
-                  if (result.exists) {
-                    return `Repository ${ownerPrompt.owner}/${input} already exists at ${result.url}. Please choose 'Use existing' or pick a different name.`;
-                  }
+              // Validate repository DOESN'T exist
+              if (this.githubToken && ownerPrompt.owner) {
+                const result = await provider.validateRepository(ownerPrompt.owner, val, this.githubToken);
+                if (result.exists) {
+                  return `Repository ${ownerPrompt.owner}/${val} already exists at ${result.url}. Please choose 'Use existing' or pick a different name.`;
                 }
-                return true;
               }
-            },
-            {
-              type: 'input',
-              name: 'description',
-              message: 'Parent repository description:',
-              default: 'SpecWeave parent repository - specs, docs, and architecture'
-            },
-            {
-              type: 'confirm',
-              name: 'createOnGitHub',
-              message: 'Create parent repository on GitHub?',
-              default: true
+              return true;
             }
-          ] as any);
+          });
+
+          const newParentDesc = await input({
+            message: 'Parent repository description:',
+            default: 'SpecWeave parent repository - specs, docs, and architecture'
+          });
+
+          const createParentOnGitHub = await confirm({
+            message: 'Create parent repository on GitHub?',
+            default: true
+          });
 
           // Merge the answers
-          parentAnswers = { ...ownerPrompt, ...remainingAnswers };
+          parentAnswers = {
+            ...ownerPrompt,
+            parentName: newParentName,
+            description: newParentDesc,
+            createOnGitHub: createParentOnGitHub
+          };
         }
       }
 
@@ -851,18 +801,14 @@ export class RepoStructureManager {
       if (!isLocalParent && parentAnswers.createOnGitHub) {
         // Only prompt for visibility when creating a NEW repository
         const parentVisibilityPrompt = getVisibilityPrompt(parentAnswers.parentName);
-        const result = await inquirer.prompt([{
-          type: 'select',
-          name: 'parentVisibility',
+        parentVisibility = await select({
           message: parentVisibilityPrompt.question,
           choices: parentVisibilityPrompt.options.map(opt => ({
             name: `${opt.label}\n${chalk.gray(opt.description)}`,
-            value: opt.value,
-            short: opt.label
+            value: opt.value as 'private' | 'public'
           })),
           default: parentVisibilityPrompt.default
-        }]);
-        parentVisibility = result.parentVisibility;
+        });
       } else if (!isLocalParent && parentAnswers.visibility) {
         // Use existing repository's visibility (fetched from GitHub API)
         parentVisibility = parentAnswers.visibility;
@@ -922,22 +868,20 @@ export class RepoStructureManager {
       }
 
       // Ask how many implementation repositories
-      const promptResult = await inquirer.prompt([{
-        type: 'number',
-        name: 'repoCount',
+      const repoCountAnswer = await number({
         message: useParent
           ? '📦 How many IMPLEMENTATION repositories? (not counting parent)'
           : 'How many repositories?',
         default: hints.suggestedCount,  // Use auto-detected count
-        validate: (input: number) => {
-          if (input < 1) return useParent
+        validate: (val: number | undefined) => {
+          if (val === undefined || val < 1) return useParent
             ? 'Need at least 1 implementation repository'
             : 'Need at least 2 repositories';
-          if (input > 10) return 'Maximum 10 repositories supported';
+          if (val > 10) return 'Maximum 10 repositories supported';
           return true;
         }
-      }]);
-      repoCount = promptResult.repoCount;
+      });
+      repoCount = repoCountAnswer ?? hints.suggestedCount;
 
       // Show summary AFTER for confirmation
       if (useParent && config.parentRepo) {
@@ -1002,12 +946,10 @@ export class RepoStructureManager {
         console.log(chalk.gray(`     Description: ${discoveredRepo.description || '(none)'}`));
         console.log(chalk.gray(`     Visibility: ${discoveredRepo.private ? 'Private' : 'Public'}`));
 
-        const { confirmDiscovered } = await inquirer.prompt([{
-          type: 'confirm',
-          name: 'confirmDiscovered',
+        const confirmDiscovered = await confirm({
           message: 'Use this repository configuration?',
           default: true
-        }]);
+        });
 
         if (!confirmDiscovered) {
           // Allow manual override
@@ -1038,38 +980,38 @@ export class RepoStructureManager {
       }
 
       // Manual entry (original behavior)
-      const repoAnswers = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'Repository name:',
-          default: suggestedName,
-          validate: async (input: string) => {
-            if (!input.trim()) return 'Repository name is required';
+      const repoName = await input({
+        message: 'Repository name:',
+        default: suggestedName,
+        validate: async (val: string) => {
+          if (!val.trim()) return 'Repository name is required';
 
-            // Validate repository doesn't exist (skip for discovered repos)
-            if (!isDiscovered && this.githubToken && config.parentRepo) {
-              const result = await provider.validateRepository(config.parentRepo.owner, input, this.githubToken);
-              if (result.exists) {
-                return `Repository ${config.parentRepo.owner}/${input} already exists at ${result.url}`;
-              }
+          // Validate repository doesn't exist (skip for discovered repos)
+          if (!isDiscovered && this.githubToken && config.parentRepo) {
+            const result = await provider.validateRepository(config.parentRepo.owner, val, this.githubToken);
+            if (result.exists) {
+              return `Repository ${config.parentRepo.owner}/${val} already exists at ${result.url}`;
             }
-            return true;
           }
-        },
-        {
-          type: 'input',
-          name: 'description',
-          message: 'Repository description:',
-          default: (answers: any) => `${path.basename(answers.name)} service`
-        },
-        {
-          type: 'confirm',
-          name: 'createOnGitHub',
-          message: 'Create this repository on GitHub?',
-          default: !isDiscovered // Default to true for new repos, false for discovered
+          return true;
         }
-      ]);
+      });
+
+      const repoDescription = await input({
+        message: 'Repository description:',
+        default: `${path.basename(repoName)} service`
+      });
+
+      const repoCreateOnGitHub = await confirm({
+        message: 'Create this repository on GitHub?',
+        default: !isDiscovered
+      });
+
+      const repoAnswers = {
+        name: repoName,
+        description: repoDescription,
+        createOnGitHub: repoCreateOnGitHub
+      };
 
       // Smart auto-generate ID from repository name (context-aware)
       const smartId = generateRepoIdSmart(repoAnswers.name, configuredRepoNames);
@@ -1083,34 +1025,30 @@ export class RepoStructureManager {
         console.log(chalk.yellow(`   ⚠️  ID conflict detected: "${smartId}" already used`));
         console.log(chalk.gray(`   → Suggested unique ID: "${suggestedId}"`));
 
-        const { confirmId } = await inquirer.prompt([{
-          type: 'confirm',
-          name: 'confirmId',
+        const confirmIdAnswer = await confirm({
           message: `Use "${suggestedId}" as repository ID?`,
           default: true
-        }]);
+        });
 
-        if (!confirmId) {
-          const { customId } = await inquirer.prompt([{
-            type: 'input',
-            name: 'customId',
+        if (!confirmIdAnswer) {
+          const customId = await input({
             message: 'Enter custom repository ID:',
             default: suggestedId,
-            validate: (input: string) => {
+            validate: (val: string) => {
               // Validate format
-              const validation = validateRepoId(input);
+              const validation = validateRepoId(val);
               if (!validation.valid) {
                 return validation.error || 'Invalid repository ID';
               }
 
               // Validate uniqueness
-              if (usedIds.has(input)) {
+              if (usedIds.has(val)) {
                 return 'Repository ID must be unique';
               }
 
               return true;
             }
-          }]);
+          });
           id = customId;
         }
       } else {
@@ -1125,18 +1063,14 @@ export class RepoStructureManager {
       let visibility: 'private' | 'public' = 'private';
       if (repoAnswers.createOnGitHub) {
         const visibilityPrompt = getVisibilityPrompt(repoAnswers.name);
-        const result = await inquirer.prompt([{
-          type: 'select',
-          name: 'visibility',
+        visibility = await select({
           message: visibilityPrompt.question,
           choices: visibilityPrompt.options.map(opt => ({
             name: `${opt.label}\n${chalk.gray(opt.description)}`,
-            value: opt.value,
-            short: opt.label
+            value: opt.value as 'private' | 'public'
           })),
           default: visibilityPrompt.default
-        }]);
-        visibility = result.visibility;
+        });
       }
 
       config.repositories.push({
@@ -1195,62 +1129,58 @@ export class RepoStructureManager {
     console.log(chalk.cyan('\n📚 Monorepo Configuration\n'));
     console.log(chalk.gray('Single repository with multiple projects/packages.\n'));
 
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'owner',
-        message: 'GitHub owner/organization:',
-        validate: (input: string) => !!input.trim() || 'Owner is required'
-      },
-      {
-        type: 'input',
-        name: 'repo',
-        message: 'Repository name:',
-        default: path.basename(this.projectPath),
-        validate: (input: string) => !!input.trim() || 'Repository name is required'
-      },
-      {
-        type: 'input',
-        name: 'description',
-        message: 'Repository description:',
-        default: 'Monorepo project'
-      },
-      {
-        type: 'input',
-        name: 'projects',
-        message: 'Project names (comma-separated, e.g., frontend,backend,shared):',
-        validate: (input: string) => {
-          const projects = input.split(',').map(p => p.trim()).filter(Boolean);
-          if (projects.length < 2) {
-            return 'Monorepo should have at least 2 projects';
-          }
-          return true;
+    const monoOwner = await input({
+      message: 'GitHub owner/organization:',
+      validate: (val: string) => !!val.trim() || 'Owner is required'
+    });
+
+    const monoRepo = await input({
+      message: 'Repository name:',
+      default: path.basename(this.projectPath),
+      validate: (val: string) => !!val.trim() || 'Repository name is required'
+    });
+
+    const monoDescription = await input({
+      message: 'Repository description:',
+      default: 'Monorepo project'
+    });
+
+    const monoProjects = await input({
+      message: 'Project names (comma-separated, e.g., frontend,backend,shared):',
+      validate: (val: string) => {
+        const projects = val.split(',').map(p => p.trim()).filter(Boolean);
+        if (projects.length < 2) {
+          return 'Monorepo should have at least 2 projects';
         }
-      },
-      {
-        type: 'confirm',
-        name: 'createOnGitHub',
-        message: 'Create repository on GitHub?',
-        default: !existsSync(path.join(this.projectPath, '.git'))
+        return true;
       }
-    ]);
+    });
+
+    const monoCreateOnGitHub = await confirm({
+      message: 'Create repository on GitHub?',
+      default: !existsSync(path.join(this.projectPath, '.git'))
+    });
+
+    const answers = {
+      owner: monoOwner,
+      repo: monoRepo,
+      description: monoDescription,
+      projects: monoProjects,
+      createOnGitHub: monoCreateOnGitHub
+    };
 
     // Ask about visibility only if creating a new repository
     let visibility: 'private' | 'public' = 'private';
     if (answers.createOnGitHub) {
       const visibilityPrompt = getVisibilityPrompt(answers.repo);
-      const result = await inquirer.prompt([{
-        type: 'select',
-        name: 'visibility',
+      visibility = await select({
         message: visibilityPrompt.question,
         choices: visibilityPrompt.options.map(opt => ({
           name: `${opt.label}\n${chalk.gray(opt.description)}`,
-          value: opt.value,
-          short: opt.label
+          value: opt.value as 'private' | 'public'
         })),
         default: visibilityPrompt.default
-      }]);
-      visibility = result.visibility;
+      });
     }
 
     const projects = answers.projects.split(',').map((p: string) => p.trim());

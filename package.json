@@ -1,6 +1,6 @@
 {
   "name": "specweave",
-  "version": "0.26.16",
+  "version": "0.26.17",
   "description": "Spec-driven development framework for Claude Code. AI-native workflow with living documentation, intelligent agents, and multilingual support (9 languages). Enterprise-grade traceability with permanent specs and temporary increments.",
   "type": "module",
   "main": "dist/index.js",
@@ -78,6 +78,7 @@
   ],
   "dependencies": {
     "@anthropic-ai/sdk": "^0.70.1",
+    "@inquirer/prompts": "^8.0.1",
     "@octokit/rest": "^22.0.1",
     "@types/handlebars": "^4.0.40",
     "axios": "^1.13.2",
@@ -86,7 +87,6 @@
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
     "handlebars": "^4.7.8",
-    "inquirer": "^13.0.1",
     "js-yaml": "^4.1.0",
     "open": "^11.0.0",
     "ora": "^9.0.0",
@@ -95,7 +95,6 @@
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.12.0",
     "@playwright/test": "^1.48.0",
-    "@types/inquirer": "^9.0.7",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^24.10.0",
     "@vitest/coverage-v8": "^2.1.9",

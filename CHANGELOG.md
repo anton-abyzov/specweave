@@ -4,9 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.26.14] - 2025-11-24
+## [0.26.17] - 2025-11-24
 
 ### 🐛 Bug Fixes
+- **Inquirer Migration**: Properly fixed interactive prompts by migrating to `@inquirer/prompts` modular API
+  - Previous fix (v0.26.14) was incorrect - `type: 'select'` doesn't work in legacy `inquirer.prompt()` API
+  - Migrated all 46 occurrences across 20 source files and 4 plugin files to modular API
+  - Now uses `select()`, `input()`, `confirm()`, `checkbox()` functions from `@inquirer/prompts`
+  - All interactive prompts (init, repo selection, project selection) now work correctly
+
+---
+
+## [0.26.14] - 2025-11-24
+
+### 🐛 Bug Fixes (SUPERSEDED by v0.26.17)
 - **Init Prompt Fix**: Fixed repository structure prompt showing as text input instead of selectable options
   - Root cause: Inquirer v13 renamed `type: 'list'` to `type: 'select'`
   - Fixed 46 occurrences across 18 source files and 4 plugin documentation files
