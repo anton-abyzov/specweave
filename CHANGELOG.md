@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.7] - 2025-11-25
+
+### ✨ Features
+- Enhanced project-detection with repo name parsing and domain context understanding
+- Added parseRepoName() function for extracting prefix, product, component from repository names
+- Added domain detection patterns for hospitality, ecommerce, healthcare, fintech, education, and more
+
+### 📚 Documentation
+- Added learning journey lessons for new users (getting started, three-file structure, first increment)
+
+---
+
 ## [0.28.6] - 2025-11-25
 
 ### 📚 Documentation
