@@ -87,6 +87,37 @@ export class GitHubClient {
   }
 
   /**
+   * Get commits to the default branch (develop/main) since a date
+   *
+   * For AI-assisted development workflows, each push to develop
+   * represents a deployment. This is more accurate than counting
+   * only formal releases.
+   *
+   * @param since - Date to fetch commits from
+   * @param branch - Branch name (defaults to 'develop')
+   * @returns Array of commits
+   */
+  async getCommitsToDefaultBranch(since: Date, branch: string = 'develop'): Promise<Commit[]> {
+    try {
+      const response = await this.octokit.rest.repos.listCommits({
+        owner: this.owner,
+        repo: this.repo,
+        sha: branch,
+        per_page: 100,
+        since: since.toISOString(),
+      });
+
+      return response.data as unknown as Commit[];
+    } catch (error: any) {
+      if (error.status === 403) {
+        await this.handleRateLimit(error);
+        return this.getCommitsToDefaultBranch(since, branch);  // Retry
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Get issues with specific labels
    *
    * @param labels - Array of label names to filter by

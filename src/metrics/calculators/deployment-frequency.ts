@@ -2,38 +2,42 @@
  * Deployment Frequency Calculator
  *
  * Calculates how often deployments occur (DORA metric #1)
- * Data source: GitHub Releases API
+ * Data source: Commits to develop branch (each push = deployment)
+ *
+ * For AI-assisted development workflows, counting commits to the
+ * default branch is more accurate than counting formal releases.
  */
 
-import { Release, DeploymentFrequencyMetric } from '../types.js';
+import { Commit, DeploymentFrequencyMetric } from '../types.js';
 import { classifyDeploymentFrequency } from '../utils/tier-classifier.js';
 
 /**
- * Calculate Deployment Frequency from releases
+ * Calculate Deployment Frequency from commits to develop
  *
  * Methodology:
- * 1. Count releases in last 30 days
- * 2. Calculate deploys per month
- * 3. Classify into DORA tier
+ * 1. Count commits to develop in last 30 days
+ * 2. Each commit = 1 deployment (trunk-based development)
+ * 3. Calculate deploys per month
+ * 4. Classify into DORA tier
  *
- * @param releases - Array of GitHub releases
+ * @param commits - Array of commits to default branch
  * @returns Deployment frequency metric
  */
 export function calculateDeploymentFrequency(
-  releases: Release[]
+  commits: Commit[]
 ): DeploymentFrequencyMetric {
-  // Handle zero releases
-  if (releases.length === 0) {
+  // Handle zero commits
+  if (commits.length === 0) {
     return {
       value: 0,
       unit: 'deploys/month',
       tier: 'N/A',
-      description: 'No releases yet',
+      description: 'No deployments yet',
     };
   }
 
-  // Count releases
-  const deployCount = releases.length;
+  // Count commits as deployments
+  const deployCount = commits.length;
 
   // Calculate deploys per year (for tier classification)
   // Assumes 30-day window, so multiply by 12 to get annual rate

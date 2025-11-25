@@ -1,9 +1,9 @@
 name: DORA Metrics
 
 on:
-  # Run daily at 06:00 UTC
+  # Run twice daily at 06:00 and 18:00 UTC (single cron more reliable than multiple)
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 6,18 * * *'
 
   # Allow manual triggers
   workflow_dispatch:
@@ -12,7 +12,8 @@ jobs:
   calculate-metrics:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Required to push metrics JSON
+      contents: write  # Required to push metrics JSON or create branch
+      pull-requests: write  # Required to create PR if branch protection blocks push
 
     steps:
       - name: Checkout code
@@ -37,33 +38,65 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
-      - name: Commit metrics files
+      - name: Commit and push metrics (or create PR)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add .specweave/metrics/dora-latest.json .specweave/metrics/dora-report.md
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: update DORA metrics and report [skip ci]"
-            # Push with retry logic for branch protection
-            for i in {1..3}; do
-              if git push; then
-                echo "✅ Successfully pushed metrics update"
-                break
-              else
-                if [ $i -lt 3 ]; then
-                  echo "⚠️ Push attempt $i failed, retrying..."
-                  sleep 2
-                else
-                  echo "❌ Failed to push metrics after 3 attempts"
-                  echo "📋 Note: Metrics were calculated successfully but not committed to repository"
-                  echo "💡 This is expected if branch protection requires pull requests"
-                fi
-              fi
-            done
-          else
+
+          if git diff --staged --quiet; then
             echo "ℹ️ No changes to commit"
+            exit 0
           fi
-        continue-on-error: true
+
+          COMMIT_MSG="chore: update DORA metrics - $(date '+%b %d, %Y') [skip ci]"
+          git commit -m "$COMMIT_MSG"
+
+          # Try direct push first
+          if git push 2>/dev/null; then
+            echo "✅ Successfully pushed metrics update directly"
+            exit 0
+          fi
+
+          echo "⚠️ Direct push failed (branch protection). Creating PR..."
+
+          # Create unique branch for this update
+          BRANCH_NAME="automated/dora-metrics-$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH_NAME"
+          git push -u origin "$BRANCH_NAME"
+
+          # Check for existing open PR
+          EXISTING_PR=$(gh pr list --head "automated/dora-metrics" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "📋 Closing existing PR #$EXISTING_PR"
+            gh pr close "$EXISTING_PR" --delete-branch 2>/dev/null || true
+          fi
+
+          # Create new PR with auto-merge
+          PR_URL=$(gh pr create \
+            --title "$COMMIT_MSG" \
+            --body "$(cat <<'EOF'
+          ## Automated DORA Metrics Update
+
+          This PR updates the DORA metrics report with the latest calculations.
+
+          **Changes:**
+          - Updated `.specweave/metrics/dora-latest.json` with current metrics
+          - Updated `.specweave/metrics/dora-report.md` with formatted report
+
+          ---
+          🤖 This PR was automatically created by the DORA Metrics workflow.
+          EOF
+          )" \
+            --label "automated" 2>&1)
+
+          echo "✅ Created PR: $PR_URL"
+
+          # Try to enable auto-merge (will fail silently if not enabled for repo)
+          gh pr merge --auto --squash 2>/dev/null || echo "💡 Auto-merge not enabled - PR requires manual approval"
 
       - name: Create error issue on failure
         if: failure()

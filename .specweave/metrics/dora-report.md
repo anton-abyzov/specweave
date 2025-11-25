@@ -1,6 +1,6 @@
 # DORA Metrics Report
 
-**Generated**: Nov 18, 2025 at 1:04:09 AM
+**Generated**: Nov 24, 2025 at 11:54:06 PM
 **Period**: Last 30 days
 
 ---
@@ -9,8 +9,8 @@
 
 | Metric | Value | Tier | Status |
 |--------|-------|------|--------|
-| **Deployment Frequency** | 52 deploys/month | 🏆 Elite | ✅ |
-| **Lead Time for Changes** | 7.3 hours | ⭐ High | ✅ |
+| **Deployment Frequency** | 100 deploys/month | 🏆 Elite | ✅ |
+| **Lead Time for Changes** | 3.4 hours | ⭐ High | ✅ |
 | **Change Failure Rate** | 0% | 🏆 Elite | ✅ |
 | **Mean Time to Recovery** | 0 minutes | ⚪ N/A | ℹ️ |
 
@@ -20,7 +20,7 @@
 
 ## 🚀 Deployment Frequency
 
-**Current**: 52 deploys/month (🏆 Elite)
+**Current**: 100 deploys/month (🏆 Elite)
 
 **Industry Benchmarks**:
 - 🏆 Elite: Multiple deploys per day (>365/year)
@@ -37,8 +37,8 @@
 
 ## ⚡ Lead Time for Changes
 
-**Current**: 7.3 hours (⭐ High)
-**Percentiles**: P50 = 2.2h, P90 = 23h
+**Current**: 3.4 hours (⭐ High)
+**Percentiles**: P50 = 1.2h, P90 = 8.4h
 
 **Industry Benchmarks**:
 - 🏆 Elite: Less than 1 hour
@@ -49,7 +49,7 @@
 ### Insights
 
 - ✅ **Strong Performance**: Lead time under 1 week is competitive
-- 📊 **Distribution**: 50% of changes deploy in 2.2h, 90% in 23h
+- 📊 **Distribution**: 50% of changes deploy in 1.2h, 90% in 8.4h
 - 📈 **Next Level**: Focus on reducing p90 to reach elite tier
 - 💡 **Tip**: Identify bottlenecks in slowest 10% of deployments
 
@@ -58,7 +58,7 @@
 ## ✅ Change Failure Rate
 
 **Current**: 0% (🏆 Elite)
-**Failed Releases**: 0 / 52
+**Failed Releases**: 0 / 65
 
 **Industry Benchmarks**:
 - 🏆 Elite: 0-15%
@@ -94,17 +94,16 @@
 
 ## 📈 Recent Activity
 
-### Recent Releases (52 in last 30 days)
+### Recent Releases (65 in last 30 days)
 
-- **[v0.22.0](https://github.com/anton-abyzov/specweave/releases/tag/v0.22.0)** - Nov 17, 2025
-  _v0.22.0 - Strategic Init & Copy-Based Sync_
-- **[v0.21.3](https://github.com/anton-abyzov/specweave/releases/tag/v0.21.3)** - Nov 17, 2025
-- **[v0.21.2](https://github.com/anton-abyzov/specweave/releases/tag/v0.21.2)** - Nov 16, 2025
-- **[v0.21.1](https://github.com/anton-abyzov/specweave/releases/tag/v0.21.1)** - Nov 16, 2025
-  _v0.21.1 - Claude Code GitHub Workflows_
-- **[v0.20.1](https://github.com/anton-abyzov/specweave/releases/tag/v0.20.1)** - Nov 15, 2025
+- **[v0.22.3](https://github.com/anton-abyzov/specweave/releases/tag/untagged-d624803a9f0b8e190848)** - Nov 18, 2025
+  _v0.22.3 - spec.md Desync Fix + Validation Tools_
+- **[v0.28.0](https://github.com/anton-abyzov/specweave/releases/tag/v0.28.0)** - Nov 24, 2025
+- **[v0.26.14](https://github.com/anton-abyzov/specweave/releases/tag/v0.26.14)** - Nov 24, 2025
+- **[v0.26.11](https://github.com/anton-abyzov/specweave/releases/tag/v0.26.11)** - Nov 24, 2025
+- **[v0.26.5](https://github.com/anton-abyzov/specweave/releases/tag/v0.26.5)** - Nov 24, 2025
 
-_...and 47 more releases_
+_...and 60 more releases_
 
 ### Production Incidents
 
@@ -134,4 +133,4 @@ _...and 47 more releases_
 ---
 
 _This report was generated automatically by SpecWeave DORA Metrics Calculator_
-_Last updated: Nov 18, 2025_
+_Last updated: Nov 24, 2025_
