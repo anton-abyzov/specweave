@@ -30,24 +30,51 @@ graph TB
 
 ## The SpecWeave Brownfield Approach
 
-```mermaid
-graph LR
-    A[Analyze Code] --> B[Document Current State]
-    B --> C[Create Tests]
-    C --> D[Plan Changes]
-    D --> E[Implement Safely]
-    E --> F[Validate No Regression]
+**Choose your path based on project size:**
 
-    style A fill:#e3f2fd
-    style F fill:#c8e6c9
+```mermaid
+graph TB
+    A[Existing Codebase] --> B{Project Size?}
+
+    B -->|Large 50k+ LOC| C[Quick Start Path]
+    B -->|Small <50k LOC| D[Comprehensive Path]
+
+    C --> E[Init + Document Core Only]
+    E --> F[Create Increment]
+    F --> G[Implement with<br/>Existing Code Context]
+    G --> H[Document Changes]
+    H --> I{More Features?}
+    I -->|Yes| F
+    I -->|No| J[Complete]
+
+    D --> K[Full Documentation]
+    K --> L[Baseline Tests]
+    L --> M[Create Increment]
+    M --> N[Implement]
+    N --> I
+
+    style A fill:#ffccbc
+    style C fill:#e8f5e9
+    style D fill:#fff9c4
+    style J fill:#c8e6c9
 ```
 
-**Key principles:**
-1. **Document BEFORE modifying** (safety first)
-2. **Create baseline tests** (capture current behavior)
-3. **Retroactive architecture** (understand before changing)
-4. **Merge existing docs** (consolidate knowledge)
-5. **Living documentation** (keep current forever)
+### Quick Start (Recommended for Large Projects)
+
+| Aspect | Quick Start | Comprehensive |
+|--------|-------------|---------------|
+| **Best For** | 50k+ LOC, fast iteration | \<50k LOC, regulated industries |
+| **Upfront Work** | 1-2 hours (core only) | 1-2 weeks (everything) |
+| **How It Works** | Document core → start immediately → docs grow with changes | Full docs → baseline tests → then increments |
+| **Benefits** | Start in hours, not weeks | Complete context upfront |
+
+**Key principle:** SpecWeave **considers existing code** when planning—you don't need to document every module before making any changes!
+
+**Key practices:**
+1. **Choose your path** (Quick Start for large projects, Comprehensive for small)
+2. **Create baseline tests** for modules you're modifying
+3. **Merge existing docs** (consolidate scattered knowledge)
+4. **Living documentation** (auto-updates as you work)
 
 ## Complete Workflow
 

@@ -34,7 +34,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Regulated & Enterprise',
-    image: require('@site/static/img/hero/software-engineering.png').default,
+    image: require('@site/static/img/hero/compliance.jpg').default,
     description: (
       <>
         Healthcare (HIPAA), Finance (SOC 2, PCI-DSS), Government — compliance-ready

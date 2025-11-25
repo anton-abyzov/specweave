@@ -34,6 +34,16 @@
             "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-edit.sh"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/metadata\\.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh"
+          }
+        ]
       }
     ]
   }

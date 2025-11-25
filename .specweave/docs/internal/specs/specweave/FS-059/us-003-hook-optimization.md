@@ -39,4 +39,4 @@ created: 2025-11-24
 - [x] **T-005**: Add caching to pre-command-deduplication.sh
 - [x] **T-006**: Add early exit for non-SpecWeave projects
 - [x] **T-007**: Measure hook performance improvement
-- [ ] **T-012**: End-to-end crash prevention test
+- [x] **T-012**: End-to-end crash prevention test

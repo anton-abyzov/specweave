@@ -214,12 +214,14 @@ Choose where your repositories will be hosted.
 
 ✅ Fully Supported Platforms:
    • GitHub (github.com)
-   • GitLab (gitlab.com)
    • Bitbucket (bitbucket.org)
    • Azure DevOps (dev.azure.com)
    • Local Git (local-only repositories)
 
-All platforms include full repository validation, creation, and management capabilities.
+⏳ Coming Soon:
+   • GitLab (repo operations work, issue sync pending)
+
+Fully supported platforms include repository validation, creation, and issue tracking sync.
     `.trim()
   };
 }

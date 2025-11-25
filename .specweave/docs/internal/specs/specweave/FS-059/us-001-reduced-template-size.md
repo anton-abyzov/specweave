@@ -45,4 +45,4 @@ external:
 - [x] **T-001**: Analyze current template structure
 - [x] **T-002**: Create reduced AGENTS.md.template
 - [x] **T-003**: Validate template with non-Claude tool
-- [ ] **T-012**: End-to-end crash prevention test
+- [x] **T-012**: End-to-end crash prevention test

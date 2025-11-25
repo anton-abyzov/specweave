@@ -257,24 +257,37 @@ graph TB
 
 ```mermaid
 graph TB
-    A[Existing Code] --> B[Document Current State]
-    B --> C[Analyze Module]
-    C --> D[Plan Modifications]
-    D --> E[Implement Safely]
-    E --> F[Validate No Regression]
-    F --> G{More Modules?}
-    G -->|Yes| C
-    G -->|No| H[Complete]
+    A[Existing Code] --> B{Project Size?}
+    B -->|Large 50k+ LOC| C[Quick Start Path]
+    B -->|Small <50k LOC| D[Comprehensive Path]
+
+    C --> E[Init + Core Docs Only]
+    E --> F[Create Increment]
+    F --> G[Implement with Existing Code Context]
+    G --> H[Document What You Changed]
+    H --> I{More Features?}
+    I -->|Yes| F
+    I -->|No| J[Complete]
+
+    D --> K[Full Documentation Upfront]
+    K --> L[Create Increment]
+    L --> M[Implement]
+    M --> I
 
     style A fill:#ffccbc
-    style H fill:#c8e6c9
+    style C fill:#e8f5e9
+    style D fill:#fff9c4
+    style J fill:#c8e6c9
 ```
 
-**Characteristics:**
-- Start with existing code
-- Document before modifying
-- Prevent regressions
-- Gradual modernization
+**Two Paths** (choose based on project size):
+
+| Path | Best For | Upfront Work | How It Works |
+|------|----------|--------------|--------------|
+| **Quick Start** | Large (50k+ LOC) | 1-2 hours | Document core, start immediately, docs grow with changes |
+| **Comprehensive** | Small (under 50k LOC) | 1-2 weeks | Full docs upfront, then increments |
+
+**Key Point**: SpecWeave **considers existing code** when planning increments—no mandatory module-by-module documentation loop!
 
 **[→ Brownfield Guide](/docs/workflows/brownfield)**
 
@@ -310,7 +323,7 @@ graph TB
 | Workflow | Duration | Planning | Testing | Use When |
 |----------|----------|----------|---------|----------|
 | **[Greenfield](/docs/glossary/terms/greenfield)** | Weeks-Months | Comprehensive | Full [TDD](/docs/glossary/terms/tdd) | New project |
-| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Document first | Regression focus | Existing code |
+| **[Brownfield](/docs/glossary/terms/brownfield)** | Days-Weeks | Quick Start or Comprehensive | Regression focus | Existing code |
 | **Hotfix** | Hours-Days | Minimal | Critical paths | Production bug |
 | **Experiment** | Days | Lightweight | Basic | POC/spike |
 

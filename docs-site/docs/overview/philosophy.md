@@ -277,7 +277,7 @@ SpecWeave supports TWO valid approaches:
 1. **Specification-First**: Always define before implementing
 2. **Living Documentation**: Auto-update via hooks
 3. **Context Precision**: Load only what's needed
-4. **Regression Prevention**: Document before modifying
+4. **Regression Prevention**: Baseline tests + living docs
 5. **Architecture Clarity**: ADRs for all major decisions
 6. **Truth-Telling Tests**: [E2E](/docs/glossary/terms/e2e) tests must be honest
 

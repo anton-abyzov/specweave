@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as yaml from 'js-yaml';
+import { execSync } from 'child_process';
 
 export interface GitHubAuth {
   token: string;
@@ -44,7 +45,18 @@ export function getGitHubAuth(): GitHubAuth {
     return { token: process.env.GH_TOKEN, source: 'GH_TOKEN' };
   }
 
-  // 3. Try to parse gh CLI config (~/.config/gh/hosts.yml)
+  // 3. Try to get token via gh CLI command (works with Keychain, plain-text, etc.)
+  try {
+    const token = execSync('gh auth token', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    if (token && token.length > 0) {
+      return { token, source: 'gh-cli' };
+    }
+  } catch (error) {
+    // gh CLI not installed or not authenticated - silently fail
+  }
+
+  // 4. Fallback: Try to parse gh CLI config directly (~/.config/gh/hosts.yml)
+  // This covers edge cases where gh CLI isn't available but config file exists
   try {
     const ghConfigPath = path.join(os.homedir(), '.config', 'gh', 'hosts.yml');
     if (fs.existsSync(ghConfigPath)) {

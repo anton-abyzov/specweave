@@ -27,7 +27,7 @@ Traditional development with AI assistants suffers from:
 
 ✅ **Specifications are SOURCE OF TRUTH** - Code expresses specs in a language
 ✅ **Context Precision** - Load only what's needed (70%+ token reduction)
-✅ **Regression Prevention** - Document before modifying (brownfield-ready)
+✅ **Regression Prevention** - Baseline tests + context-aware planning (brownfield-ready)
 ✅ **Framework-Agnostic** - Works with ANY tech stack (TypeScript, Python, Go, Rust, Java)
 ✅ **Living Documentation** - Auto-updates via Claude Code hooks
 ✅ **Test-Validated** - E2E tests ensure features work (closed-loop validation)
