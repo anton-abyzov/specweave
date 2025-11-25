@@ -181,17 +181,17 @@ export function getUrlTypePrompt(platform: string = 'github.com'): {
     question: 'Git remote URL format?',
     options: [
       {
-        value: 'ssh',
-        label: 'SSH (Recommended)',
-        description: `git@${platform}:owner/repo.git - More secure, no password needed`
-      },
-      {
         value: 'https',
         label: 'HTTPS',
         description: `https://${platform}/owner/repo.git - Works everywhere, uses tokens`
+      },
+      {
+        value: 'ssh',
+        label: 'SSH',
+        description: `git@${platform}:owner/repo.git - More secure, no password needed`
       }
     ],
-    default: 'ssh'
+    default: 'https'
   };
 }
 

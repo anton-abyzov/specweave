@@ -16,6 +16,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { autoDetectProjectIdSync } from '../utils/project-detection.js';
 
 export interface GitHubIssueInfo {
   number: number;
@@ -33,9 +34,32 @@ export interface FrontmatterUpdateOptions {
 
 export class FrontmatterUpdater {
   private logger: Logger;
+  private projectRoot: string | null = null;
+  private cachedProjectId: string | null = null;
 
-  constructor(options: { logger?: Logger } = {}) {
+  constructor(options: { logger?: Logger; projectRoot?: string } = {}) {
     this.logger = options.logger ?? consoleLogger;
+    this.projectRoot = options.projectRoot ?? null;
+    // Cache project ID if projectRoot is provided
+    if (this.projectRoot) {
+      this.cachedProjectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
+    }
+  }
+
+  /**
+   * Get project ID for a given project root
+   * Uses cached value if available, otherwise auto-detects
+   */
+  private getProjectId(projectRoot: string): string {
+    // Return cached value if available and roots match
+    if (this.cachedProjectId && this.projectRoot === projectRoot) {
+      return this.cachedProjectId;
+    }
+    // Auto-detect and cache for this project root
+    const projectId = autoDetectProjectIdSync(projectRoot, { silent: true });
+    this.projectRoot = projectRoot;
+    this.cachedProjectId = projectId;
+    return projectId;
   }
 
   /**
@@ -151,10 +175,14 @@ export class FrontmatterUpdater {
     // Convert user story ID to file name (US-001 → us-001-*.md)
     const usPrefix = userStoryId.toLowerCase();
 
-    // Search in .specweave/docs/internal/specs/specweave/{featureId}/
+    // Get auto-detected project ID (from git remote, sync config, or "default")
+    const projectId = this.getProjectId(projectRoot);
+
+    // Search in .specweave/docs/internal/specs/{project}/{featureId}/
     const featurePath = path.join(
       projectRoot,
-      '.specweave/docs/internal/specs/specweave',
+      '.specweave/docs/internal/specs',
+      projectId,
       featureId
     );
 

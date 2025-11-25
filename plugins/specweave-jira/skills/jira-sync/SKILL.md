@@ -1,6 +1,6 @@
 ---
 name: jira-sync
-description: Bidirectional sync between SpecWeave increments and JIRA epics/stories (two-way sync by default). Activates ONLY when user asks questions about JIRA integration or needs help configuring JIRA sync. Does NOT activate for slash commands. For syncing, use /specweave-jira:sync command instead. Coordinates with specweave-jira-mapper agent.
+description: Sync SpecWeave increments with JIRA epics/stories. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Activates ONLY when user asks questions about JIRA integration or needs help configuring JIRA sync. Does NOT activate for slash commands. For syncing, use /specweave-jira:sync command instead. Coordinates with specweave-jira-mapper agent.
 allowed-tools: Read, Write, Edit, Task, Bash
 ---
 
@@ -8,7 +8,7 @@ allowed-tools: Read, Write, Edit, Task, Bash
 
 Coordinates JIRA synchronization by delegating to `specweave-jira-mapper` agent.
 
-**Default Behavior**: **Bidirectional (two-way) sync** - Changes synchronized in both directions automatically
+**Sync Behavior**: Content (specs, tasks) syncs SpecWeave → JIRA. Status (open/closed) syncs JIRA → SpecWeave.
 
 **⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about JIRA sync. For actual syncing, users should use the `/specweave-jira:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
@@ -17,7 +17,7 @@ Coordinates JIRA synchronization by delegating to `specweave-jira-mapper` agent.
 ✅ **Do activate when**:
 - User asks: "How do I set up JIRA sync?"
 - User asks: "What JIRA credentials do I need?"
-- User asks: "How does bidirectional sync work?"
+- User asks: "How does JIRA sync work?"
 - User needs help configuring JIRA integration
 
 ❌ **Do NOT activate when**:
@@ -29,7 +29,7 @@ Coordinates JIRA synchronization by delegating to `specweave-jira-mapper` agent.
 
 1. Answer questions about JIRA sync configuration
 2. Help validate prerequisites (JIRA credentials, increment structure)
-3. Explain sync direction options (bidirectional, export, import)
+3. Explain sync directions: content (SpecWeave→JIRA), status (JIRA→SpecWeave)
 4. Provide troubleshooting guidance
 
 ---

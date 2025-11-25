@@ -103,11 +103,15 @@ await syncSpecs(args);
 
 **This will**:
 1. Auto-generate feature ID for greenfield increments (FS-040, FS-041, etc.)
-2. Parse spec.md for user stories and acceptance criteria
-3. Create living docs structure:
+2. **Auto-detect project folder** from:
+   - Git remote (GitHub repo name)
+   - Sync configuration (JIRA/ADO project)
+   - Falls back to "default" if not detected
+3. Parse spec.md for user stories and acceptance criteria
+4. Create living docs structure:
    - `.specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md`
-   - `.specweave/docs/internal/specs/specweave/FS-XXX/README.md`
-   - `.specweave/docs/internal/specs/specweave/FS-XXX/us-*.md`
+   - `.specweave/docs/internal/specs/{project}/FS-XXX/README.md`
+   - `.specweave/docs/internal/specs/{project}/FS-XXX/us-*.md`
 
 ---
 
@@ -168,6 +172,11 @@ Title: {title from spec.md}
 📂 FILE STRUCTURE
 ───────────────────────────────────────────────────────
 
+**Project folder is auto-detected** from:
+- Git remote (e.g., `sw-qr-menu` for `github.com/user/sw-qr-menu.git`)
+- Sync config (JIRA project key or ADO project name)
+- Falls back to "default" if not detected
+
 .specweave/docs/internal/specs/
 ├── _epics/                     {if epic created}
 │   └── {EPIC-ID}/
@@ -175,7 +184,7 @@ Title: {title from spec.md}
 ├── _features/
 │   └── {FS-ID}/
 │       └── FEATURE.md          ← Cross-project feature
-└── {project}/                  ← Per-project stories
+└── {project}/                  ← Per-project stories (auto-detected!)
     └── {FS-ID}/
         ├── README.md            ← Project context
         ├── us-001-{title}.md    ← User story 1

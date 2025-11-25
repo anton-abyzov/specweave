@@ -3,8 +3,13 @@
  *
  * Syncs increment specs to living docs structure:
  * - .specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md
- * - .specweave/docs/internal/specs/specweave/FS-XXX/README.md
- * - .specweave/docs/internal/specs/specweave/FS-XXX/us-*.md
+ * - .specweave/docs/internal/specs/{project}/FS-XXX/README.md
+ * - .specweave/docs/internal/specs/{project}/FS-XXX/us-*.md
+ *
+ * Project folder is auto-detected from:
+ * 1. Git remote (GitHub repo name)
+ * 2. Sync configuration (JIRA/ADO project)
+ * 3. "default" (fallback)
  *
  * Uses FeatureIDManager for automatic feature ID assignment (greenfield vs brownfield)
  */
@@ -16,6 +21,7 @@ import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 
 // Helper functions for fs-extra compatibility
 async function pathExists(filePath: string): Promise<boolean> {
@@ -92,11 +98,26 @@ export class LivingDocsSync {
   private projectRoot: string;
   private featureIdManager: FeatureIDManager;
   private logger: Logger;
+  private projectId: string;
 
   constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.projectRoot = projectRoot;
     this.featureIdManager = new FeatureIDManager(projectRoot);
     this.logger = options.logger ?? consoleLogger;
+    // Auto-detect project ID from git remote, sync config, or use "default"
+    this.projectId = autoDetectProjectIdSync(projectRoot, { silent: true });
+  }
+
+  /**
+   * Get current project ID
+   *
+   * Priority:
+   * 1. Git remote (GitHub repo name)
+   * 2. Sync configuration (JIRA/ADO project)
+   * 3. "default" (fallback)
+   */
+  getProjectId(): string {
+    return this.projectId;
   }
 
   /**
@@ -197,8 +218,9 @@ export class LivingDocsSync {
         result.filesCreated.push(featureFile + ' (dry-run)');
       }
 
-      // Create specweave/FS-XXX/README.md
-      const projectPath = path.join(basePath, 'specweave', featureId);
+      // Create {project}/FS-XXX/README.md (project detected from git remote or config)
+      const projectPath = path.join(basePath, this.projectId, featureId);
+      this.logger.log(`   📁 Project folder: ${this.projectId}/`);
       const readmePath = path.join(projectPath, 'README.md');
 
       if (!options.dryRun) {

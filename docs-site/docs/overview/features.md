@@ -272,7 +272,7 @@ Prevent context-switching:
 
 | Problem | Without SpecWeave | With SpecWeave |
 |---------|-------------------|----------------|
-| **Team uses JIRA** | Abandon JIRA or maintain two systems | Bidirectional sync, single source of truth |
+| **Team uses JIRA** | Abandon JIRA or maintain two systems | Specs push to JIRA, status reads back |
 | **GitHub Issues workflow** | Manual updates, drift | Auto-sync progress to issues |
 | **Azure DevOps enterprise** | Complex migration | Native integration, no disruption |
 | **Multiple tools** | Constant context switching | SpecWeave syncs to all |
@@ -290,7 +290,7 @@ Prevent context-switching:
 ```bash
 /specweave-jira:sync
 ```
-- **Bidirectional conversion** - changes sync both ways
+- **Content sync** - specs push to JIRA, status reads back
 - **Epics** ↔ Features/Increments
 - **Stories** ↔ User Stories (PRDs/RFCs)
 - **Tasks** ↔ Tasks with AC-ID mapping

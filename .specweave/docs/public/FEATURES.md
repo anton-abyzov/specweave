@@ -205,7 +205,7 @@ Comprehensive overview of what SpecWeave supports.
 | Auto-sync | **Production** | Docs update on task completion |
 | Content classification | **Production** | 9 categories auto-detected |
 | Project detection | **Production** | backend/frontend/mobile routing |
-| Cross-linking | **Production** | Bidirectional document links |
+| Cross-linking | **Production** | Inter-document links |
 | Docusaurus frontmatter | **Production** | Auto-generated YAML |
 
 ### Document Types

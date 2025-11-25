@@ -119,7 +119,7 @@ Your work syncs to GitHub Issues, JIRA, and Azure DevOps automatically.
 | **Living Documentation** | Specs auto-update after every task via hooks |
 | **70% Token Reduction** | Context precision loads only what you need |
 | **Quality Gates** | Three-gate validation before closing increments |
-| **External Sync** | GitHub/JIRA/Azure DevOps bidirectional sync |
+| **External Sync** | Push specs to GitHub/JIRA/ADO, read status back |
 | **Brownfield Support** | Import existing docs, create retroactive specs |
 | **Multi-Language** | Work in ANY language (Russian, Spanish, Chinese, etc.) |
 

@@ -1,6 +1,12 @@
-# Bidirectional Sync
+# External Tool Sync
 
-**Bidirectional Sync** is a two-way synchronization pattern where changes flow in both directions between SpecWeave (local) and external tools (GitHub, JIRA, Azure DevOps). Unlike one-way sync (export-only or import-only), bidirectional sync keeps both systems in sync automatically, with SpecWeave as the source of truth for content and external tools as the source of truth for status.
+> **Note**: This was previously called "Bidirectional Sync" but has been renamed to avoid confusion. SpecWeave does NOT support true bidirectional sync where the same data can be edited in either system. Instead, different data types flow in different directions.
+
+**External Tool Sync** is SpecWeave's synchronization pattern with external tools (GitHub, JIRA, Azure DevOps). It uses a **split source of truth** architecture where:
+- **Content** (specs, user stories, tasks) flows **one-way from SpecWeave → External**
+- **Status** (open/closed, progress) flows **one-way from External → SpecWeave**
+
+This is NOT true bidirectional sync—you cannot edit specs in GitHub and have them sync back to SpecWeave.
 
 ---
 
