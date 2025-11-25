@@ -355,7 +355,7 @@ export class IncrementArchiver {
 
       if (result.archivedFeatures.length > 0) {
         this.logger.success(`✅ Archived ${result.archivedFeatures.length} features: ${result.archivedFeatures.join(', ')}`);
-        this.logger.info(`   Features moved to _features/_archive/ and project-specific _archive/ folders`);
+        this.logger.info(`   Features moved to {project}/_archive/ folders`);
       } else {
         this.logger.info(`ℹ️  No features to archive (all active or already archived)`);
       }
@@ -411,9 +411,17 @@ export class IncrementArchiver {
 
       this.logger.info(`   Feature linkage: ${featureId}`);
 
-      // 2. Check if feature is in archive
-      const archivePath = path.join(this.rootDir, '.specweave', 'docs', 'internal', 'specs', '_features', '_archive', featureId);
-      const activePath = path.join(this.rootDir, '.specweave', 'docs', 'internal', 'specs', '_features', featureId);
+      // 2. Check if feature is in archive (v5.0.0: check project folders, not _features)
+      // Get the default/first project to check
+      const specsDir = path.join(this.rootDir, '.specweave', 'docs', 'internal', 'specs');
+      const projectFolders = await fs.readdir(specsDir, { withFileTypes: true });
+      const projects = projectFolders
+        .filter(d => d.isDirectory() && !d.name.startsWith('_'))
+        .map(d => d.name);
+
+      const defaultProject = projects[0] || 'default';
+      const archivePath = path.join(specsDir, defaultProject, '_archive', featureId);
+      const activePath = path.join(specsDir, defaultProject, featureId);
 
       const featureInArchive = await fs.pathExists(archivePath);
       const featureAlreadyActive = await fs.pathExists(activePath);
@@ -468,7 +476,7 @@ export class IncrementArchiver {
       await featureArchiver.restoreFeature(featureId);
 
       this.logger.success(`✅ Restored feature ${featureId} from archive (linked to ${increment})`);
-      this.logger.info(`   Feature moved: _features/_archive/${featureId}/ → _features/${featureId}/`);
+      this.logger.info(`   Feature moved: {project}/_archive/${featureId}/ → {project}/${featureId}/`);
       this.logger.info(`   Links updated throughout codebase`);
 
     } catch (error) {

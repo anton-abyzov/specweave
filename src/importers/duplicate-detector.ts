@@ -124,14 +124,20 @@ export class DuplicateDetector {
 
   /**
    * Find all User Story markdown files in specs directory
+   *
+   * Searches recursively in all subdirectories including:
+   * - Root level (legacy)
+   * - Feature folders (FS-XXX)
+   * - Project folders
+   * - Archive folders
    */
   private async findUserStoryFiles(): Promise<string[]> {
     if (!fs.existsSync(this.options.specsDir)) {
       return [];
     }
 
-    // Match us-*.md files
-    const pattern = path.join(this.options.specsDir, 'us-*.md');
+    // Match us-*.md files recursively in all subdirectories
+    const pattern = path.join(this.options.specsDir, '**/us-*.md');
     const files = await glob(pattern, { nodir: true });
 
     return files;

@@ -71,9 +71,10 @@ Result: Code works AND...
 | Lesson | Topic | Duration |
 |--------|-------|----------|
 | [06.1 What is SpecWeave?](./01-what-is-specweave) | The philosophy and approach | 45 min |
-| [06.2 Core Workflow](./02-core-workflow) | Increment → Do → Done | 60 min |
+| [06.2 Core Workflow](./02-core-workflow) | Increment → Do → Done → Next | 60 min |
 | [06.3 Your First Increment](./03-first-increment) | Hands-on with SpecWeave | 60 min |
 | [06.4 Understanding the Artifacts](./04-artifacts) | spec.md, plan.md, tasks.md | 45 min |
+| [06.5 Advanced Commands](./05-advanced-commands) | Save, sync, status management | 45 min |
 
 ---
 

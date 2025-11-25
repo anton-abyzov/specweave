@@ -407,7 +407,7 @@ console.log(42 == "42");     // true (loose)
 2. **Avoid `var`** — use modern declarations
 3. **JavaScript has 7 primitive types** — string, number, boolean, null, undefined, symbol, bigint
 4. **Use `===` for comparison** — avoid loose equality
-5. **Template literals** (\`${var}\`) are cleaner than concatenation
+5. **Template literals** (`` `${expression}` ``) are cleaner than concatenation
 
 ---
 

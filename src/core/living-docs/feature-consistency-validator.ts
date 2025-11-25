@@ -1,17 +1,17 @@
 /**
  * Feature Consistency Validator
+ * v5.0.0 - Unified Project Structure
  *
- * Validates and repairs consistency between:
- * - .specweave/docs/internal/specs/_features/FS-XXX/
- * - .specweave/docs/internal/specs/{project}/FS-XXX/
+ * Validates feature folder consistency within project folders:
+ * - .specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md
  *
  * PROBLEM SOLVED:
- * Living docs sync creates _features/ and {project}/ folders sequentially.
- * If sync fails midway or increment is deleted, folders can get out of sync.
+ * Features in project folders should have proper FEATURE.md files.
+ * If sync fails midway or increment is deleted, features can be orphaned.
  *
  * SOLUTION:
- * 1. Detect discrepancies (orphaned _features without project folders)
- * 2. Auto-repair by creating missing project folders
+ * 1. Detect orphaned features (no FEATURE.md or linked increment deleted)
+ * 2. Auto-repair by archiving orphaned features
  * 3. Report issues for manual intervention when auto-repair not possible
  *
  * @see ADR-0142 (if created) for architectural decision
@@ -26,15 +26,15 @@ export interface DiscrepancyReport {
   /** Feature ID (e.g., "FS-062") */
   featureId: string;
   /** Type of discrepancy */
-  type: 'missing_project_folder' | 'missing_features_folder' | 'orphaned_feature';
+  type: 'missing_feature_md' | 'orphaned_feature';
   /** Description of the issue */
   description: string;
   /** Can this be auto-repaired? */
   autoRepairable: boolean;
-  /** Path to _features folder (if exists) */
-  featuresPath?: string;
-  /** Path to project folder (if exists) */
-  projectPath?: string;
+  /** Path to feature folder in project */
+  featurePath?: string;
+  /** Project ID */
+  projectId?: string;
   /** Linked increment ID (if found in FEATURE.md) */
   linkedIncrementId?: string;
   /** Whether linked increment exists */
@@ -86,7 +86,8 @@ export class FeatureConsistencyValidator {
   }
 
   /**
-   * Validate consistency between _features and project folders
+   * Validate feature folder consistency within project folders
+   * v5.0.0: Features now live in {project}/FS-XXX/ (no _features folder)
    *
    * @param autoRepair - If true, attempt to auto-repair discrepancies
    * @returns Validation result with discrepancies and repair results
@@ -101,54 +102,56 @@ export class FeatureConsistencyValidator {
 
     this.logger.log('🔍 Validating feature folder consistency...');
 
-    // Step 1: Get all features from _features folder
-    const featuresDir = path.join(this.specsPath, '_features');
-    if (!existsSync(featuresDir)) {
-      this.logger.log('   ℹ️  No _features folder found, nothing to validate');
+    // Step 1: Get all project folders
+    const projectFolders = await this.getProjectFolders();
+
+    if (projectFolders.length === 0) {
+      this.logger.log('   ℹ️  No project folders found, nothing to validate');
       return result;
     }
 
-    const featureFolders = await this.getFeatureFolders(featuresDir);
-    result.totalFeatures = featureFolders.length;
+    // Step 2: Scan all features in each project
+    for (const projectId of projectFolders) {
+      const projectPath = path.join(this.specsPath, projectId);
+      const featureFolders = await this.getFeatureFoldersInProject(projectPath);
 
-    // Step 2: Get all project folders
-    const projectFolders = await this.getProjectFolders();
+      for (const featureId of featureFolders) {
+        result.totalFeatures++;
+        const discrepancy = await this.checkFeatureConsistency(
+          featureId,
+          projectId
+        );
 
-    // Step 3: Check each feature for consistency
-    for (const featureId of featureFolders) {
-      const discrepancy = await this.checkFeatureConsistency(
-        featureId,
-        projectFolders
-      );
+        if (discrepancy) {
+          result.discrepancies.push(discrepancy);
 
-      if (discrepancy) {
-        result.discrepancies.push(discrepancy);
+          // Attempt auto-repair if enabled
+          if (autoRepair && discrepancy.autoRepairable) {
+            const repairResult = await this.repairDiscrepancy(discrepancy);
+            result.repairs!.push(repairResult);
 
-        // Attempt auto-repair if enabled
-        if (autoRepair && discrepancy.autoRepairable) {
-          const repairResult = await this.repairDiscrepancy(discrepancy);
-          result.repairs!.push(repairResult);
-
-          if (repairResult.success) {
-            result.consistentCount++; // Count as consistent after repair
+            if (repairResult.success) {
+              result.consistentCount++; // Count as consistent after repair
+            }
           }
+        } else {
+          result.consistentCount++;
         }
-      } else {
-        result.consistentCount++;
       }
     }
 
-    // Step 4: Log summary
+    // Step 3: Log summary
     this.logValidationSummary(result);
 
     return result;
   }
 
   /**
-   * Get all feature folder IDs from _features directory
+   * Get all feature folder IDs from a project directory
+   * v5.0.0: Features now live in {project}/FS-XXX/
    */
-  private async getFeatureFolders(featuresDir: string): Promise<string[]> {
-    const entries = await fs.readdir(featuresDir, { withFileTypes: true });
+  private async getFeatureFoldersInProject(projectDir: string): Promise<string[]> {
+    const entries = await fs.readdir(projectDir, { withFileTypes: true });
     const folders: string[] = [];
 
     for (const entry of entries) {
@@ -190,23 +193,25 @@ export class FeatureConsistencyValidator {
   }
 
   /**
-   * Check if a feature has consistent folders across _features and projects
+   * Check if a feature has proper FEATURE.md and linked increment
+   * v5.0.0: Features live in {project}/FS-XXX/
    */
   private async checkFeatureConsistency(
     featureId: string,
-    projectFolders: string[]
+    projectId: string
   ): Promise<DiscrepancyReport | null> {
-    const featuresPath = path.join(this.specsPath, '_features', featureId);
-    const featureFilePath = path.join(featuresPath, 'FEATURE.md');
+    const featurePath = path.join(this.specsPath, projectId, featureId);
+    const featureFilePath = path.join(featurePath, 'FEATURE.md');
 
     // Check if FEATURE.md exists
     if (!existsSync(featureFilePath)) {
       return {
         featureId,
-        type: 'orphaned_feature',
-        description: `_features/${featureId}/ exists but has no FEATURE.md`,
+        type: 'missing_feature_md',
+        description: `${projectId}/${featureId}/ exists but has no FEATURE.md`,
         autoRepairable: false,
-        featuresPath
+        featurePath,
+        projectId
       };
     }
 
@@ -216,44 +221,20 @@ export class FeatureConsistencyValidator {
       ? this.checkIncrementExists(linkedIncrement)
       : false;
 
-    // Check if feature exists in any project folder
-    let foundInProjects: string[] = [];
-    for (const project of projectFolders) {
-      const projectFeaturePath = path.join(this.specsPath, project, featureId);
-      if (existsSync(projectFeaturePath)) {
-        foundInProjects.push(project);
-      }
-    }
+    // Check if this is an orphaned feature (increment deleted, not external)
+    const isExternalFeature = await this.isExternalFeature(featureFilePath);
 
-    if (foundInProjects.length === 0) {
-      // Check if this is an orphaned feature (increment deleted, not external)
-      const isExternalFeature = await this.isExternalFeature(featureFilePath);
-
-      if (!incrementExists && !isExternalFeature && linkedIncrement) {
-        // ORPHANED: Increment was deleted, feature is not external - should be archived
-        // This prevents creating project folders for features whose increments no longer exist
-        return {
-          featureId,
-          type: 'orphaned_feature',
-          description: `Feature ${featureId} references deleted increment ${linkedIncrement} - should be archived`,
-          autoRepairable: true, // Can auto-repair via archiver
-          featuresPath,
-          linkedIncrementId: linkedIncrement,
-          incrementExists: false
-        };
-      }
-
-      // Normal case: increment exists OR external feature OR no linked increment
-      // Create missing project folder
+    if (!incrementExists && !isExternalFeature && linkedIncrement) {
+      // ORPHANED: Increment was deleted, feature is not external - should be archived
       return {
         featureId,
-        type: 'missing_project_folder',
-        description: `Feature ${featureId} exists in _features/ but not in any project folder`,
-        autoRepairable: true, // We can create the missing folder
-        featuresPath,
-        projectPath: path.join(this.specsPath, this.defaultProject, featureId),
+        type: 'orphaned_feature',
+        description: `Feature ${featureId} references deleted increment ${linkedIncrement} - should be archived`,
+        autoRepairable: true, // Can auto-repair via archiver
+        featurePath,
+        projectId,
         linkedIncrementId: linkedIncrement,
-        incrementExists
+        incrementExists: false
       };
     }
 
@@ -341,6 +322,7 @@ export class FeatureConsistencyValidator {
 
   /**
    * Attempt to repair a discrepancy
+   * v5.0.0: Only orphaned_feature repairs supported (archiving)
    */
   private async repairDiscrepancy(discrepancy: DiscrepancyReport): Promise<RepairResult> {
     const result: RepairResult = {
@@ -351,21 +333,21 @@ export class FeatureConsistencyValidator {
 
     try {
       switch (discrepancy.type) {
-        case 'missing_project_folder':
-          result.action = await this.repairMissingProjectFolder(discrepancy);
-          result.success = true;
-          break;
-
         case 'orphaned_feature':
           // Auto-archive orphaned features (increment was deleted)
           if (discrepancy.autoRepairable) {
             result.action = await this.archiveOrphanedFeature(discrepancy);
             result.success = true;
           } else {
-            // No FEATURE.md or other issue - needs manual intervention
-            result.action = 'Skipped - requires manual intervention (no FEATURE.md)';
+            result.action = 'Skipped - requires manual intervention';
             result.success = false;
           }
+          break;
+
+        case 'missing_feature_md':
+          // Cannot auto-repair missing FEATURE.md
+          result.action = 'Cannot auto-repair - FEATURE.md must be created manually or via /specweave:sync-specs';
+          result.success = false;
           break;
 
         default:
@@ -382,7 +364,7 @@ export class FeatureConsistencyValidator {
 
   /**
    * Archive an orphaned feature (increment was deleted)
-   * Delegates to FeatureArchiver for consistent archiving behavior
+   * v5.0.0: Delegates to FeatureArchiver for consistent archiving behavior
    */
   private async archiveOrphanedFeature(discrepancy: DiscrepancyReport): Promise<string> {
     // Dynamic import to avoid circular dependency
@@ -400,7 +382,7 @@ export class FeatureConsistencyValidator {
     });
 
     if (archiveResult.archivedFeatures.includes(discrepancy.featureId)) {
-      this.logger.log(`   ✅ Archived ${discrepancy.featureId} to _archive/`);
+      this.logger.log(`   ✅ Archived ${discrepancy.featureId} to ${discrepancy.projectId}/_archive/`);
       return `Archived orphaned feature ${discrepancy.featureId} (increment ${discrepancy.linkedIncrementId} deleted)`;
     } else if (archiveResult.errors.length > 0) {
       throw new Error(archiveResult.errors.join(', '));
@@ -408,81 +390,6 @@ export class FeatureConsistencyValidator {
       // Feature might have been archived by another process or already in archive
       return `Feature ${discrepancy.featureId} already archived or cleaned up`;
     }
-  }
-
-  /**
-   * Create missing project folder for a feature
-   */
-  private async repairMissingProjectFolder(discrepancy: DiscrepancyReport): Promise<string> {
-    const projectPath = discrepancy.projectPath!;
-    const featuresPath = discrepancy.featuresPath!;
-
-    // Create project folder
-    await fs.mkdir(projectPath, { recursive: true });
-
-    // Extract info from FEATURE.md to create README.md
-    const featureFilePath = path.join(featuresPath, 'FEATURE.md');
-    const featureContent = await fs.readFile(featureFilePath, 'utf-8');
-
-    // Extract title from FEATURE.md
-    let title = discrepancy.featureId;
-    const titleMatch = featureContent.match(/^#\s+(.+)$/m);
-    if (titleMatch) {
-      title = titleMatch[1];
-    }
-
-    // Extract frontmatter
-    let status = 'in-progress';
-    const frontmatterMatch = featureContent.match(/^---\n([\s\S]*?)\n---/);
-    if (frontmatterMatch) {
-      try {
-        const frontmatter = yaml.parse(frontmatterMatch[1]);
-        status = frontmatter.status || status;
-      } catch {
-        // Ignore YAML parse errors
-      }
-    }
-
-    // Create README.md in project folder
-    const readmeContent = `---
-id: ${discrepancy.featureId}-${this.defaultProject}
-title: "${title} - ${this.defaultProject.charAt(0).toUpperCase() + this.defaultProject.slice(1)} Implementation"
-feature: ${discrepancy.featureId}
-project: ${this.defaultProject}
-type: feature-context
-status: ${status}
-auto_repaired: true
-repaired_at: ${new Date().toISOString()}
----
-
-# ${title}
-
-**Feature**: [${discrepancy.featureId}](../../_features/${discrepancy.featureId}/FEATURE.md)
-
-## Overview
-
-This project context was auto-created by consistency validator.
-
-## User Stories
-
-See user story files in this directory.
-
-## Note
-
-This folder was auto-created because _features/${discrepancy.featureId}/ existed
-but ${this.defaultProject}/${discrepancy.featureId}/ was missing.
-
-${discrepancy.linkedIncrementId
-  ? `**Linked Increment**: ${discrepancy.linkedIncrementId} (${discrepancy.incrementExists ? 'exists' : 'not found'})`
-  : '**Linked Increment**: Not found in FEATURE.md'}
-`;
-
-    const readmePath = path.join(projectPath, 'README.md');
-    await fs.writeFile(readmePath, readmeContent, 'utf-8');
-
-    this.logger.log(`   ✅ Created ${this.defaultProject}/${discrepancy.featureId}/README.md`);
-
-    return `Created ${projectPath}/README.md`;
   }
 
   /**
@@ -545,12 +452,13 @@ ${discrepancy.linkedIncrementId
   }
 
   /**
-   * Get list of orphaned features (features in _features without corresponding project folder)
+   * Get list of orphaned features (features with deleted increments)
+   * v5.0.0: Now checks features in project folders, not _features
    */
   async getOrphanedFeatures(): Promise<string[]> {
     const result = await this.validate(false);
     return result.discrepancies
-      .filter(d => d.type === 'missing_project_folder')
+      .filter(d => d.type === 'orphaned_feature')
       .map(d => d.featureId);
   }
 }

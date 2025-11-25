@@ -55,6 +55,9 @@ export interface ExternalItem {
 
   /** Platform this item came from */
   platform: 'github' | 'jira' | 'ado';
+
+  /** Source repository (owner/repo format for multi-repo imports) */
+  sourceRepo?: string;
 }
 
 /**
@@ -120,4 +123,10 @@ export interface ImportResult {
 
   /** Platform */
   platform: 'github' | 'jira' | 'ado';
+
+  /** Estimated total items (for progress tracking) */
+  totalEstimate?: number;
+
+  /** Source repository (for multi-repo imports) */
+  sourceRepo?: string;
 }

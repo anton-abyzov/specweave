@@ -1,6 +1,10 @@
 /**
  * Feature & Epic Archiver - Smart archiving system for features and epics
  *
+ * v5.0.0 - Unified Project Structure
+ * Features now live directly in project folders: {project}/FS-XXX/
+ * No more separate _features folder.
+ *
  * Works in tandem with IncrementArchiver to maintain consistency between
  * increments, features, and epics. When an increment is archived, its
  * associated feature is automatically archived if all increments for
@@ -50,7 +54,6 @@ export interface FeatureArchiveResult {
 export class FeatureArchiver {
   private rootDir: string;
   private specsDir: string;
-  private featuresDir: string;
   private epicsDir: string;
   private incrementArchiver: IncrementArchiver;
   private hierarchyMapper: HierarchyMapper;
@@ -59,7 +62,7 @@ export class FeatureArchiver {
   constructor(rootDir: string) {
     this.rootDir = rootDir;
     this.specsDir = path.join(rootDir, '.specweave', 'docs', 'internal', 'specs');
-    this.featuresDir = path.join(this.specsDir, '_features');
+    // v5.0.0: No more _features folder - features live in {project}/FS-XXX/
     this.epicsDir = path.join(this.specsDir, '_epics');
     this.incrementArchiver = new IncrementArchiver(rootDir);
     this.hierarchyMapper = new HierarchyMapper(rootDir);
@@ -123,17 +126,17 @@ export class FeatureArchiver {
 
   /**
    * Identify features that should be archived
+   * v5.0.0: Features now live in {project}/FS-XXX/, archives go to {project}/_archive/FS-XXX/
    */
   private async identifyFeaturesToArchive(
     archivedIncrements: string[],
     options: FeatureArchiveOptions
   ): Promise<ArchiveOperation[]> {
     const operations: ArchiveOperation[] = [];
-    const features = await this.getAllFeatures();
+    const featureLocations = await this.getAllFeatureLocations();
 
-    for (const featureId of features) {
-      const featurePath = path.join(this.featuresDir, featureId);
-      const archivePath = path.join(this.featuresDir, '_archive', featureId);
+    for (const { featureId, projectId, featurePath } of featureLocations) {
+      const archivePath = path.join(this.specsDir, projectId, '_archive', featureId);
 
       // Skip if already archived AND source doesn't exist (no duplicate)
       // Allow operation to proceed if both source and target exist (duplicate cleanup)
@@ -335,13 +338,14 @@ export class FeatureArchiver {
   }
 
   /**
-   * Archive project-specific folders for a feature
+   * Archive all project folders containing this feature
+   * v5.0.0: Features live directly in {project}/FS-XXX/, archived to {project}/_archive/FS-XXX/
    */
   private async archiveProjectSpecificFolders(featureId: string): Promise<void> {
-    // Get all project folders
+    // Get all project folders containing this feature
     const projectPattern = path.join(this.specsDir, '*', featureId);
     const projectFolders = await glob(projectPattern, {
-      ignore: ['**/node_modules/**', '**/_features/**', '**/_epics/**', '**/_archive/**']
+      ignore: ['**/node_modules/**', '**/_epics/**', '**/_archive/**']
     });
 
     for (const folder of projectFolders) {
@@ -392,6 +396,7 @@ export class FeatureArchiver {
 
   /**
    * Update links in a single file
+   * v5.0.0: Features live in {project}/FS-XXX/, no more _features folder
    */
   private async updateLinksInFile(
     filePath: string,
@@ -406,32 +411,35 @@ export class FeatureArchiver {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
-      // Check for feature links
+      // Check for feature links - now only in project folders
       for (const featureId of archivedFeatures) {
-        const patterns = [
-          new RegExp(`(\\[.*?\\]\\()([^)]*\/_features\/${featureId}\/[^)]*)\\)`, 'g'),
-          new RegExp(`(\\[.*?\\]\\()([^)]*\/specs\/[^/]+\/${featureId}\/[^)]*)\\)`, 'g')
-        ];
+        // v5.0.0: Features are in {project}/FS-XXX/, archive to {project}/_archive/FS-XXX/
+        const pattern = new RegExp(`(\\[.*?\\]\\()([^)]*\/specs\/([^/]+)\/${featureId}\/[^)]*)\\)`, 'g');
 
-        for (const pattern of patterns) {
-          const matches = [...line.matchAll(pattern)];
-          for (const match of matches) {
-            const oldPath = match[2];
-            const newPath = oldPath.replace(
-              new RegExp(`(\/_features|\/specs\/[^/]+)\/${featureId}\/`),
-              `$1/_archive/${featureId}/`
-            );
+        const matches = [...line.matchAll(pattern)];
+        for (const match of matches) {
+          const oldPath = match[2];
+          const projectId = match[3];
 
-            lines[i] = lines[i].replace(oldPath, newPath);
-            modified = true;
-
-            updates.push({
-              file: filePath,
-              oldLink: oldPath,
-              newLink: newPath,
-              lineNumber: i + 1
-            });
+          // Skip if already in archive
+          if (oldPath.includes('/_archive/')) {
+            continue;
           }
+
+          const newPath = oldPath.replace(
+            new RegExp(`\/specs\/${projectId}\/${featureId}\/`),
+            `/specs/${projectId}/_archive/${featureId}/`
+          );
+
+          lines[i] = lines[i].replace(oldPath, newPath);
+          modified = true;
+
+          updates.push({
+            file: filePath,
+            oldLink: oldPath,
+            newLink: newPath,
+            lineNumber: i + 1
+          });
         }
       }
 
@@ -466,25 +474,62 @@ export class FeatureArchiver {
   }
 
   /**
-   * Get all features
+   * Get all features (just IDs, for backward compatibility)
+   * v5.0.0: Scans project folders for FS-* directories
    */
   private async getAllFeatures(): Promise<string[]> {
-    if (!await fs.pathExists(this.featuresDir)) {
-      return [];
+    const locations = await this.getAllFeatureLocations();
+    // Return unique feature IDs
+    return [...new Set(locations.map(loc => loc.featureId))];
+  }
+
+  /**
+   * Get all feature locations with project context
+   * v5.0.0: Features live in {project}/FS-XXX/
+   * @returns Array of { featureId, projectId, featurePath }
+   */
+  private async getAllFeatureLocations(): Promise<Array<{
+    featureId: string;
+    projectId: string;
+    featurePath: string;
+  }>> {
+    const results: Array<{ featureId: string; projectId: string; featurePath: string }> = [];
+
+    if (!await fs.pathExists(this.specsDir)) {
+      return results;
     }
 
-    const pattern = path.join(this.featuresDir, 'FS-*');
-    const folders = await glob(pattern);
+    // Scan all project folders
+    const projectEntries = await fs.readdir(this.specsDir, { withFileTypes: true });
 
-    const features = [];
-    for (const folder of folders) {
-      const stats = await fs.stat(folder);
-      if (stats.isDirectory() && !folder.includes('_archive')) {
-        features.push(path.basename(folder));
+    for (const projectEntry of projectEntries) {
+      if (!projectEntry.isDirectory()) continue;
+
+      const projectId = projectEntry.name;
+      // Skip special folders
+      if (projectId.startsWith('_')) continue;
+
+      const projectPath = path.join(this.specsDir, projectId);
+
+      // Scan for FS-* folders in this project
+      const featurePattern = path.join(projectPath, 'FS-*');
+      const featureFolders = await glob(featurePattern, {
+        ignore: ['**/_archive/**']
+      });
+
+      for (const folder of featureFolders) {
+        const stats = await fs.stat(folder);
+        if (stats.isDirectory()) {
+          results.push({
+            featureId: path.basename(folder),
+            projectId,
+            featurePath: folder
+          });
+        }
       }
     }
 
-    return features;
+    return results;
   }
 
   /**
@@ -614,15 +659,16 @@ export class FeatureArchiver {
 
   /**
    * Get features linked to an epic
+   * v5.0.0: Features live in {project}/FS-XXX/
    */
   private async getLinkedFeatures(epicId: string): Promise<string[]> {
     const features: string[] = [];
-    const allFeatures = await this.getAllFeatures();
+    const locations = await this.getAllFeatureLocations();
 
-    for (const featureId of allFeatures) {
-      const featurePath = path.join(this.featuresDir, featureId, 'FEATURE.md');
-      if (await fs.pathExists(featurePath)) {
-        const content = await fs.readFile(featurePath, 'utf-8');
+    for (const { featureId, featurePath } of locations) {
+      const featureFile = path.join(featurePath, 'FEATURE.md');
+      if (await fs.pathExists(featureFile)) {
+        const content = await fs.readFile(featureFile, 'utf-8');
 
         // Check if feature references the epic
         if (content.includes(epicId)) {
@@ -631,15 +677,17 @@ export class FeatureArchiver {
       }
     }
 
-    // Also check archived features
-    const archivedPattern = path.join(this.featuresDir, '_archive', 'FS-*', 'FEATURE.md');
+    // Also check archived features in all project folders
+    const archivedPattern = path.join(this.specsDir, '*', '_archive', 'FS-*', 'FEATURE.md');
     const archivedFiles = await glob(archivedPattern);
 
     for (const file of archivedFiles) {
       const content = await fs.readFile(file, 'utf-8');
       if (content.includes(epicId)) {
         const featureId = path.basename(path.dirname(file));
-        features.push(featureId);
+        if (!features.includes(featureId)) {
+          features.push(featureId);
+        }
       }
     }
 
@@ -648,6 +696,7 @@ export class FeatureArchiver {
 
   /**
    * Check if all features are archived
+   * v5.0.0: Features live in {project}/FS-XXX/, archives in {project}/_archive/FS-XXX/
    */
   private async areAllFeaturesArchived(featureIds: string[]): Promise<boolean> {
     if (featureIds.length === 0) {
@@ -655,11 +704,14 @@ export class FeatureArchiver {
     }
 
     for (const featureId of featureIds) {
-      const archivePath = path.join(this.featuresDir, '_archive', featureId);
-      const activePath = path.join(this.featuresDir, featureId);
+      // Check if feature exists in any active project folder
+      const activePattern = path.join(this.specsDir, '*', featureId);
+      const activeFolders = await glob(activePattern, {
+        ignore: ['**/_archive/**']
+      });
 
-      // If feature exists in active location, it's not archived
-      if (await fs.pathExists(activePath) && !await fs.pathExists(archivePath)) {
+      // If feature exists in any active location, it's not archived
+      if (activeFolders.length > 0) {
         return false;
       }
     }
@@ -669,12 +721,13 @@ export class FeatureArchiver {
 
   /**
    * Check if feature has active projects
+   * v5.0.0: Features live in {project}/FS-XXX/
    */
   private async hasActiveProjects(featureId: string): Promise<boolean> {
     // Check all project folders for this feature
     const projectPattern = path.join(this.specsDir, '*', featureId);
     const projectFolders = await glob(projectPattern, {
-      ignore: ['**/node_modules/**', '**/_features/**', '**/_epics/**', '**/_archive/**']
+      ignore: ['**/node_modules/**', '**/_epics/**', '**/_archive/**']
     });
 
     for (const folder of projectFolders) {
@@ -696,9 +749,10 @@ export class FeatureArchiver {
 
   /**
    * Ensure archive directories exist
+   * v5.0.0: No more _features folder - archives go to {project}/_archive/
    */
   private async ensureArchiveDirectories(): Promise<void> {
-    await fs.ensureDir(path.join(this.featuresDir, '_archive'));
+    // Ensure epics archive
     await fs.ensureDir(path.join(this.epicsDir, '_archive'));
 
     // Ensure project-specific archive directories
@@ -786,29 +840,26 @@ export class FeatureArchiver {
 
   /**
    * Restore a feature from archive
+   * v5.0.0: Features live in {project}/FS-XXX/, archives in {project}/_archive/FS-XXX/
    */
   async restoreFeature(featureId: string): Promise<void> {
-    const archivePath = path.join(this.featuresDir, '_archive', featureId);
-    const targetPath = path.join(this.featuresDir, featureId);
-
-    if (!await fs.pathExists(archivePath)) {
-      throw new Error(`Feature ${featureId} not found in archive`);
-    }
-
-    if (await fs.pathExists(targetPath)) {
-      throw new Error(`Feature ${featureId} already exists in active location`);
-    }
-
-    // Restore feature
-    await fs.move(archivePath, targetPath);
-
-    // Restore project-specific folders
+    // Find all archived folders for this feature
     const projectPattern = path.join(this.specsDir, '*', '_archive', featureId);
     const archivedFolders = await glob(projectPattern);
 
+    if (archivedFolders.length === 0) {
+      throw new Error(`Feature ${featureId} not found in any archive`);
+    }
+
+    // Restore in all project folders
     for (const folder of archivedFolders) {
       const projectId = path.basename(path.dirname(path.dirname(folder)));
       const targetProjectPath = path.join(this.specsDir, projectId, featureId);
+
+      if (await fs.pathExists(targetProjectPath)) {
+        console.log(`  ⚠️  ${projectId}/${featureId} already exists, skipping`);
+        continue;
+      }
 
       await fs.move(folder, targetProjectPath);
       console.log(`  ✅ Restored ${projectId}/${featureId}`);
@@ -822,6 +873,7 @@ export class FeatureArchiver {
 
   /**
    * Update links for restored feature
+   * v5.0.0: Features live in {project}/FS-XXX/, no _features folder
    */
   private async updateLinksForRestoredFeature(featureId: string): Promise<void> {
     const pattern = path.join(this.rootDir, '**/*.md');
@@ -833,12 +885,9 @@ export class FeatureArchiver {
     for (const file of files) {
       const content = await fs.readFile(file, 'utf-8');
 
-      // Update archive links back to active
+      // Update archive links back to active (in project folders)
       const updatedContent = content
-        .replace(new RegExp(`(\/_features\/_archive\/${featureId}\/)`, 'g'), `/_features/${featureId}/`)
-        .replace(new RegExp(`(\/specs\/[^/]+\/_archive\/${featureId}\/)`, 'g'), (match, p1) => {
-          return match.replace('/_archive/', '/');
-        });
+        .replace(new RegExp(`(\/specs\/[^/]+)\/_archive\/${featureId}\/`, 'g'), `$1/${featureId}/`);
 
       if (content !== updatedContent) {
         await fs.writeFile(file, updatedContent, 'utf-8');
@@ -853,6 +902,7 @@ export class FeatureArchiver {
 
   /**
    * Get archive statistics
+   * v5.0.0: Features live in {project}/FS-XXX/, no _features folder
    */
   async getArchiveStats(): Promise<{
     features: {
@@ -876,15 +926,6 @@ export class FeatureArchiver {
       projects: {}
     };
 
-    // Count features
-    const activeFeatures = await this.getAllFeatures();
-    stats.features.active = activeFeatures.length;
-
-    if (await fs.pathExists(path.join(this.featuresDir, '_archive'))) {
-      const archivedFeatures = await glob(path.join(this.featuresDir, '_archive', 'FS-*'));
-      stats.features.archived = archivedFeatures.length;
-    }
-
     // Count epics
     const activeEpics = await this.getAllEpics();
     stats.epics.active = activeEpics.length;
@@ -894,7 +935,7 @@ export class FeatureArchiver {
       stats.epics.archived = archivedEpics.length;
     }
 
-    // Count per project
+    // Count per project (this now also gives us total features)
     const projectDirs = await glob(path.join(this.specsDir, '*'));
     for (const dir of projectDirs) {
       const dirStats = await fs.stat(dir);
@@ -909,6 +950,10 @@ export class FeatureArchiver {
         const archived = (await glob(archivedPattern)).length;
 
         stats.projects[projectId] = { active, archived };
+
+        // Aggregate to total features
+        stats.features.active += active;
+        stats.features.archived += archived;
       }
     }
 
@@ -917,6 +962,7 @@ export class FeatureArchiver {
 
   /**
    * Clean up feature folder duplicates
+   * v5.0.0: Features live in {project}/FS-XXX/, archives in {project}/_archive/FS-XXX/
    *
    * Removes active folders that are ALSO in archive (keeps archive version as source of truth)
    * CRITICAL: Fixes bug where living docs sync recreates archived feature folders
@@ -935,72 +981,30 @@ export class FeatureArchiver {
     console.log('🧹 Scanning for duplicate feature folders (active + archive)...');
 
     try {
-      // Get all archived features
-      const archivePattern = path.join(this.featuresDir, '_archive', 'FS-*');
+      // Get all archived features from all project folders
+      const archivePattern = path.join(this.specsDir, '*', '_archive', 'FS-*');
       const archivedPaths = await glob(archivePattern);
 
-      console.log(`   Found ${archivedPaths.length} archived features`);
-
+      // Collect unique feature IDs
+      const uniqueFeatureIds = new Set<string>();
       for (const archivedPath of archivedPaths) {
-        const featureId = path.basename(archivedPath);
-        const activePath = path.join(this.featuresDir, featureId);
+        uniqueFeatureIds.add(path.basename(archivedPath));
+      }
 
-        // Check if active folder exists (duplicate in _features/)
-        const activeExists = await fs.pathExists(activePath);
-        const archiveExists = await fs.pathExists(archivedPath);
+      console.log(`   Found ${uniqueFeatureIds.size} unique archived features`);
 
-        let hasDuplicates = false;
-
-        if (activeExists && archiveExists) {
-          console.log(`   ⚠️  Duplicate detected: ${featureId} (_features/)`);
-          console.log(`      → Active: ${activePath}`);
-          console.log(`      → Archive: ${archivedPath}`);
-
-          // BUGFIX (v0.26.12): Check if feature has active increments before removing
-          const linkedIncrements = await this.getLinkedIncrements(featureId);
-          const archivedIncrements = await this.incrementArchiver.listArchived();
-          const hasActiveIncrements = linkedIncrements.some(inc =>
-            !archivedIncrements.includes(inc)
-          );
-
-          if (hasActiveIncrements) {
-            // Feature has active increments → remove ARCHIVE, keep ACTIVE
-            try {
-              await fs.remove(archivedPath);
-              console.log(`      ✅ Removed archive duplicate (feature has active increments)`);
-              result.cleaned.push(`_features/_archive/${featureId}`);
-              hasDuplicates = true;
-            } catch (error) {
-              const errMsg = `Failed to clean archive ${featureId}: ${error}`;
-              console.error(`      ❌ ${errMsg}`);
-              result.errors.push(errMsg);
-            }
-          } else {
-            // All increments archived → remove ACTIVE, keep ARCHIVE
-            try {
-              await fs.remove(activePath);
-              console.log(`      ✅ Removed active duplicate (all increments archived)`);
-              result.cleaned.push(`_features/${featureId}`);
-              hasDuplicates = true;
-            } catch (error) {
-              const errMsg = `Failed to clean ${featureId}: ${error}`;
-              console.error(`      ❌ ${errMsg}`);
-              result.errors.push(errMsg);
-            }
-          }
-        }
-
-        // ALWAYS check project-specific duplicates (even if _features/ has no duplicate)
-        // This fixes the case where specweave/FS-XXX exists but _features/FS-XXX doesn't
-        // BUGFIX (v0.26.12): Pass hasActiveIncrements check result to project cleanup
+      for (const featureId of uniqueFeatureIds) {
+        // Check if feature has active increments
         const linkedIncrements = await this.getLinkedIncrements(featureId);
         const archivedIncrements = await this.incrementArchiver.listArchived();
         const featureHasActiveIncrements = linkedIncrements.some(inc =>
           !archivedIncrements.includes(inc)
         );
+
+        // Clean up project-specific duplicates
         const projectDuplicatesFound = await this.cleanupProjectSpecificDuplicates(featureId, result, featureHasActiveIncrements);
-        if (projectDuplicatesFound && !hasDuplicates) {
-          console.log(`   ⚠️  Duplicate detected: ${featureId} (project folders only)`);
+        if (projectDuplicatesFound) {
+          console.log(`   ⚠️  Duplicate detected: ${featureId}`);
         }
       }
 
@@ -1029,6 +1033,7 @@ export class FeatureArchiver {
 
   /**
    * Clean up project-specific folder duplicates for a feature
+   * v5.0.0: Features live in {project}/FS-XXX/, archives in {project}/_archive/FS-XXX/
    *
    * BUGFIX (v0.26.12): Now respects hasActiveIncrements to decide which duplicate to remove
    *
@@ -1044,10 +1049,10 @@ export class FeatureArchiver {
   ): Promise<boolean> {
     let foundDuplicates = false;
 
-    // Get all project folders
+    // Get all active project folders containing this feature
     const projectPattern = path.join(this.specsDir, '*', featureId);
     const projectActiveFolders = await glob(projectPattern, {
-      ignore: ['**/node_modules/**', '**/_features/**', '**/_epics/**', '**/_archive/**']
+      ignore: ['**/node_modules/**', '**/_epics/**', '**/_archive/**']
     });
 
     for (const activeFolder of projectActiveFolders) {

@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { select, confirm } from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
-import { ImportCoordinator, CoordinatorConfig, CoordinatorResult } from '../../../importers/import-coordinator.js';
+import { ImportCoordinator, CoordinatorConfig, CoordinatorResult, ProgressInfo } from '../../../importers/import-coordinator.js';
 import { ItemConverter } from '../../../importers/item-converter.js';
 import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
@@ -97,16 +97,27 @@ export async function promptAndRunExternalImport(
       includeClosed: false,
       pageSize: importConfig.pageSize
     },
-    parallel: true
+    parallel: true,
+    projectRoot: targetDir
   };
 
-  // Add GitHub config if available
+  // Add GitHub config - prefer multi-repo if selected
   if (github) {
-    coordinatorConfig.github = {
-      owner: github.owner,
-      repo: github.repo,
-      token: process.env.GITHUB_TOKEN
-    };
+    if (repoSelectionConfig && repoSelectionConfig.repositories.length > 0) {
+      // Multi-repo mode: import from all selected repositories
+      coordinatorConfig.githubRepositories = repoSelectionConfig.repositories.map(fullRepo => {
+        const [owner, repo] = fullRepo.split('/');
+        return { owner, repo };
+      });
+      coordinatorConfig.githubToken = process.env.GITHUB_TOKEN;
+    } else {
+      // Single repo mode (backwards compatible)
+      coordinatorConfig.github = {
+        owner: github.owner,
+        repo: github.repo,
+        token: process.env.GITHUB_TOKEN
+      };
+    }
   }
 
   // Add JIRA config if available
@@ -192,9 +203,51 @@ async function runImport(
   coordinatorConfig: CoordinatorConfig
 ): Promise<CoordinatorResult> {
   const spinner = ora('Importing items...').start();
+  let lastRepo = '';
 
-  coordinatorConfig.onProgress = (platform: string, count: number) => {
-    spinner.text = `Importing from ${platform}... (${count} items)`;
+  // Enhanced progress callback with percentage and ETA
+  coordinatorConfig.onProgressEnhanced = (info: ProgressInfo) => {
+    const parts: string[] = [];
+
+    // Show repo name for multi-repo imports
+    if (info.sourceRepo && info.sourceRepo !== lastRepo) {
+      lastRepo = info.sourceRepo;
+    }
+
+    const repoLabel = info.sourceRepo ? ` (${info.sourceRepo})` : '';
+
+    // Build progress string
+    if (info.total && info.percentage !== undefined) {
+      parts.push(`[${info.current}/${info.total}] ${info.percentage}%`);
+    } else {
+      parts.push(`${info.current} items`);
+    }
+
+    // Add rate if available
+    if (info.rate !== undefined && info.rate > 0) {
+      parts.push(`${info.rate}/s`);
+    }
+
+    // Add ETA if available
+    if (info.eta !== undefined && info.eta > 0) {
+      const minutes = Math.floor(info.eta / 60);
+      const seconds = info.eta % 60;
+      if (minutes > 0) {
+        parts.push(`ETA: ${minutes}m ${seconds}s`);
+      } else {
+        parts.push(`ETA: ${seconds}s`);
+      }
+    }
+
+    spinner.text = `Importing from ${info.platform}${repoLabel}... ${parts.join(' | ')}`;
+  };
+
+  // Legacy progress callback (fallback)
+  coordinatorConfig.onProgress = (platform: string, count: number, total?: number) => {
+    if (!coordinatorConfig.onProgressEnhanced) {
+      const totalStr = total ? `/${total}` : '';
+      spinner.text = `Importing from ${platform}... (${count}${totalStr} items)`;
+    }
   };
 
   try {
@@ -251,12 +304,39 @@ async function convertToLivingDocs(
 
   try {
     const specsDir = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs');
-    const converter = new ItemConverter({ specsDir });
+
+    // Track archived items count
+    let archivedCount = 0;
+
+    // Enable feature allocation for proper folder structure (FS-XXX/US-XXXE)
+    const converter = new ItemConverter({
+      specsDir,
+      projectRoot: targetDir,
+      enableFeatureAllocation: true,
+      projectId: 'default',
+      autoArchiveAfterDays: 30,  // Archive items older than 1 month
+      onFeatureCreated: (featureId, featurePath) => {
+        spinner.text = `Created feature folder: ${featureId}`;
+      },
+      onItemArchived: (usId, reason) => {
+        archivedCount++;
+        spinner.text = `Archived ${usId} (${reason})`;
+      }
+    });
 
     const convertedStories = await converter.convertItems(result.allItems);
 
+    // Count unique features created
+    const uniqueFeatures = new Set(convertedStories.map(s => s.featureId).filter(Boolean));
+
     spinner.succeed(`Converted ${convertedStories.length} User Stories to living docs`);
     console.log(chalk.gray('   → Living docs created with E suffix (US-001E, US-002E, ...)'));
+    if (uniqueFeatures.size > 0) {
+      console.log(chalk.gray(`   → Organized into ${uniqueFeatures.size} feature folder(s)`));
+    }
+    if (archivedCount > 0) {
+      console.log(chalk.gray(`   → Auto-archived ${archivedCount} items older than 30 days`));
+    }
     console.log(chalk.gray('   → Location: .specweave/docs/internal/specs/'));
     console.log('');
 

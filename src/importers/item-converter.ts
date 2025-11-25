@@ -41,6 +41,7 @@ export interface ConvertedUserStory {
     createdAt: string;
     updatedAt: string;
     labels: string[];
+    sourceRepo?: string;
   };
 
   /** Living docs file path */
@@ -48,6 +49,9 @@ export interface ConvertedUserStory {
 
   /** Living docs markdown content */
   markdown: string;
+
+  /** Feature ID this user story belongs to (when feature allocation enabled) */
+  featureId?: string;
 }
 
 export interface ItemConverterOptions {
@@ -63,11 +67,23 @@ export interface ItemConverterOptions {
   /** Enable feature-level organization with FS-ID allocation */
   enableFeatureAllocation?: boolean;
 
+  /** Project ID for multi-project mode (default: 'default') */
+  projectId?: string;
+
   /** Enable duplicate detection (default: true) */
   enableDuplicateDetection?: boolean;
 
+  /** Auto-archive items older than this many days (default: 30, 0 to disable) */
+  autoArchiveAfterDays?: number;
+
   /** Callback for skipped duplicates */
   onDuplicateSkipped?: (externalId: string, existingUsId: string) => void;
+
+  /** Callback for feature folder creation */
+  onFeatureCreated?: (featureId: string, featurePath: string) => void;
+
+  /** Callback for archived items */
+  onItemArchived?: (usId: string, reason: string) => void;
 }
 
 /**
@@ -79,10 +95,15 @@ export interface ItemConverterOptions {
 export class ItemConverter {
   private options: ItemConverterOptions;
   private duplicateDetector: DuplicateDetector | null = null;
+  private fsIdAllocator: FSIdAllocator | null = null;
+  /** Cache of created feature folders to avoid duplicates */
+  private createdFeatures: Map<string, string> = new Map();
 
   constructor(options: ItemConverterOptions) {
     this.options = {
       enableDuplicateDetection: true,
+      projectId: 'default',
+      autoArchiveAfterDays: 30,  // Default: archive items older than 1 month
       ...options,
     };
 
@@ -92,12 +113,24 @@ export class ItemConverter {
         specsDir: this.options.specsDir,
       });
     }
+
+    // Initialize FS-ID allocator if feature allocation is enabled
+    if (this.options.enableFeatureAllocation && this.options.projectRoot) {
+      this.fsIdAllocator = new FSIdAllocator(
+        this.options.projectRoot,
+        this.options.projectId || 'default'
+      );
+    }
   }
 
   /**
    * Convert a single external item to a User Story with E suffix
+   *
+   * @param item - External item to convert
+   * @param usId - User Story ID number
+   * @param featureId - Optional feature ID for folder organization
    */
-  convertItem(item: ExternalItem, usId: number): ConvertedUserStory {
+  convertItem(item: ExternalItem, usId: number, featureId?: string): ConvertedUserStory {
     // Generate US-ID with E suffix
     const id = `US-${String(usId).padStart(3, '0')}E`;
 
@@ -126,13 +159,39 @@ export class ItemConverter {
         importedAt: new Date().toISOString(),
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
-        labels: item.labels
+        labels: item.labels,
+        sourceRepo: item.sourceRepo
       }
     });
 
-    // Generate file path
+    // Generate file path (with feature folder if allocated)
     const fileName = this.generateFileName(id, item.title);
-    const filePath = path.join(this.options.specsDir, fileName);
+    let filePath: string;
+
+    // Check if item should be auto-archived (older than threshold)
+    const shouldArchive = this.shouldAutoArchive(item.createdAt);
+
+    if (featureId && this.options.enableFeatureAllocation) {
+      // Feature folder structure: specs/{projectId}/{featureId}/us-xxxe-title.md
+      // Or archive: specs/{projectId}/_archive/{featureId}/us-xxxe-title.md
+      const projectDir = path.join(this.options.specsDir, this.options.projectId || 'default');
+      const targetDir = shouldArchive
+        ? path.join(projectDir, '_archive', featureId)
+        : path.join(projectDir, featureId);
+      filePath = path.join(targetDir, fileName);
+    } else {
+      // Legacy: direct in specs or archive folder
+      const targetDir = shouldArchive
+        ? path.join(this.options.specsDir, '_archive')
+        : this.options.specsDir;
+      filePath = path.join(targetDir, fileName);
+    }
+
+    // Notify callback if item was archived
+    if (shouldArchive && this.options.onItemArchived) {
+      const age = Math.floor((Date.now() - item.createdAt.getTime()) / (1000 * 60 * 60 * 24));
+      this.options.onItemArchived(id, `Item is ${age} days old (threshold: ${this.options.autoArchiveAfterDays} days)`);
+    }
 
     return {
       id,
@@ -148,10 +207,12 @@ export class ItemConverter {
         importedAt: new Date().toISOString(),
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
-        labels: item.labels
+        labels: item.labels,
+        sourceRepo: item.sourceRepo
       },
       filePath,
-      markdown
+      markdown,
+      featureId
     };
   }
 
@@ -169,36 +230,169 @@ export class ItemConverter {
     // Ensure specs directory exists
     fs.mkdirSync(this.options.specsDir, { recursive: true });
 
-    // Convert each item
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    // If feature allocation is enabled, scan existing IDs first
+    if (this.fsIdAllocator) {
+      await this.fsIdAllocator.scanExistingIds();
+    }
 
-      // Check for duplicates if duplicate detection is enabled
-      if (this.duplicateDetector) {
-        const existingReference = await this.duplicateDetector.findExternalIdReference(item.id);
-        if (existingReference) {
-          skippedCount++;
+    // Group items by source (for multi-repo) or treat as single group
+    const itemGroups = this.groupItemsByFeature(items);
 
-          // Notify callback if provided
-          if (this.options.onDuplicateSkipped) {
-            this.options.onDuplicateSkipped(item.id, existingReference.usId);
-          }
+    // Process each group
+    for (const [groupKey, groupItems] of itemGroups.entries()) {
+      // Allocate feature ID for this group if feature allocation is enabled
+      let featureId: string | undefined;
 
-          // Skip this item (duplicate)
-          continue;
-        }
+      if (this.fsIdAllocator && this.options.enableFeatureAllocation && groupItems.length > 0) {
+        const firstItem = groupItems[0];
+        featureId = await this.allocateFeatureForGroup(firstItem, groupKey);
       }
 
-      const usId = startingId + (i - skippedCount);
+      // Convert each item in the group
+      for (let i = 0; i < groupItems.length; i++) {
+        const item = groupItems[i];
 
-      const userStory = this.convertItem(item, usId);
-      converted.push(userStory);
+        // Check for duplicates if duplicate detection is enabled
+        if (this.duplicateDetector) {
+          const existingReference = await this.duplicateDetector.findExternalIdReference(item.id);
+          if (existingReference) {
+            skippedCount++;
 
-      // Write living docs file
-      fs.writeFileSync(userStory.filePath, userStory.markdown, 'utf-8');
+            // Notify callback if provided
+            if (this.options.onDuplicateSkipped) {
+              this.options.onDuplicateSkipped(item.id, existingReference.usId);
+            }
+
+            // Skip this item (duplicate)
+            continue;
+          }
+        }
+
+        const usId = startingId + (converted.length);
+
+        const userStory = this.convertItem(item, usId, featureId);
+        converted.push(userStory);
+
+        // Ensure directory exists for feature folders
+        const fileDir = path.dirname(userStory.filePath);
+        fs.mkdirSync(fileDir, { recursive: true });
+
+        // Write living docs file
+        fs.writeFileSync(userStory.filePath, userStory.markdown, 'utf-8');
+      }
     }
 
     return converted;
+  }
+
+  /**
+   * Group items by feature (based on source repo or labels)
+   * Items without clear grouping go into a default group
+   */
+  private groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
+    const groups = new Map<string, ExternalItem[]>();
+
+    for (const item of items) {
+      // Group by source repo if available
+      const groupKey = item.sourceRepo || 'default';
+
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, []);
+      }
+      groups.get(groupKey)!.push(item);
+    }
+
+    return groups;
+  }
+
+  /**
+   * Allocate a feature ID for a group of items
+   */
+  private async allocateFeatureForGroup(firstItem: ExternalItem, groupKey: string): Promise<string> {
+    // Check if we already created a feature for this group
+    if (this.createdFeatures.has(groupKey)) {
+      return this.createdFeatures.get(groupKey)!;
+    }
+
+    if (!this.fsIdAllocator) {
+      throw new Error('FSIdAllocator not initialized');
+    }
+
+    // Create external work item for allocation
+    const workItem: ExternalWorkItem = {
+      externalId: firstItem.id,
+      title: firstItem.sourceRepo || firstItem.title,
+      createdAt: firstItem.createdAt.toISOString(),
+      externalUrl: firstItem.url
+    };
+
+    // Allocate feature ID
+    const allocation = await this.fsIdAllocator.allocateId(workItem);
+    const featureId = allocation.id;
+
+    // Create feature folder with FEATURE.md
+    const featurePath = await this.createFeatureFolder(featureId, firstItem, groupKey);
+
+    // Cache for reuse
+    this.createdFeatures.set(groupKey, featureId);
+
+    // Notify callback
+    if (this.options.onFeatureCreated) {
+      this.options.onFeatureCreated(featureId, featurePath);
+    }
+
+    return featureId;
+  }
+
+  /**
+   * Create feature folder with FEATURE.md
+   */
+  private async createFeatureFolder(featureId: string, firstItem: ExternalItem, groupKey: string): Promise<string> {
+    const projectDir = path.join(this.options.specsDir, this.options.projectId || 'default');
+    const featurePath = path.join(projectDir, featureId);
+
+    // Create directory
+    fs.mkdirSync(featurePath, { recursive: true });
+
+    // Generate FEATURE.md content
+    const featureTitle = firstItem.sourceRepo
+      ? `Feature: ${firstItem.sourceRepo} External Items`
+      : `Feature: Imported from ${firstItem.platform}`;
+
+    const featureContent = `---
+id: ${featureId}
+title: ${featureTitle}
+origin: external
+source: ${firstItem.platform}
+source_repo: ${firstItem.sourceRepo || 'unknown'}
+created: ${new Date().toISOString()}
+---
+
+# ${featureTitle}
+
+**Origin**: 🔗 Imported from ${firstItem.platform}
+
+## Description
+
+This feature folder contains User Stories imported from external tools.
+
+${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
+
+## User Stories
+
+User stories in this feature will be listed here.
+
+## Status
+
+- **Created**: ${new Date().toISOString()}
+- **Source**: ${firstItem.platform}
+`;
+
+    // Write FEATURE.md
+    const featureFile = path.join(featurePath, 'FEATURE.md');
+    fs.writeFileSync(featureFile, featureContent, 'utf-8');
+
+    return featurePath;
   }
 
   /**
@@ -213,6 +407,26 @@ export class ItemConverter {
     };
 
     return statusMap[externalStatus] || 'Open';
+  }
+
+  /**
+   * Check if an item should be auto-archived based on creation date
+   *
+   * @param createdAt - Item creation date
+   * @returns True if item is older than autoArchiveAfterDays threshold
+   */
+  private shouldAutoArchive(createdAt: Date): boolean {
+    const threshold = this.options.autoArchiveAfterDays;
+
+    // Disabled if threshold is 0 or undefined
+    if (!threshold || threshold <= 0) {
+      return false;
+    }
+
+    const ageMs = Date.now() - createdAt.getTime();
+    const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+
+    return ageDays >= threshold;
   }
 
   /**
@@ -259,6 +473,7 @@ export class ItemConverter {
       createdAt: string;
       updatedAt: string;
       labels: string[];
+      sourceRepo?: string;
     };
   }): string {
     const parts: string[] = [];
@@ -315,6 +530,9 @@ export class ItemConverter {
     parts.push(`- **Updated At**: ${data.metadata.updatedAt}`);
     if (data.metadata.labels.length > 0) {
       parts.push(`- **Labels**: ${data.metadata.labels.join(', ')}`);
+    }
+    if (data.metadata.sourceRepo) {
+      parts.push(`- **Source Repository**: ${data.metadata.sourceRepo}`);
     }
 
     return parts.join('\n');

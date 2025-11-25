@@ -185,7 +185,7 @@ export interface DiscoveryOptions {
 }
 
 /**
- * Main bulk discovery flow
+ * Main bulk discovery flow with ability to go back and change strategy
  */
 export async function discoverRepositories(
   octokit: Octokit,
@@ -194,158 +194,201 @@ export async function discoverRepositories(
   expectedCount: number,
   options?: DiscoveryOptions
 ): Promise<BulkDiscoveryResult | null> {
-  console.log(chalk.cyan('\n🚀 Repository Configuration Optimization\n'));
-  console.log(chalk.gray('You can bulk-discover repositories instead of entering them one by one.\n'));
+  // Cache fetched repos to avoid re-fetching when changing strategy
+  let cachedRepos: DiscoveredRepo[] | null = null;
 
-  // Step 1: Ask how to configure
-  const strategy = await select<BulkDiscoveryResult['strategy']>({
-    message: 'How do you want to configure these repositories?',
-    choices: [
-      {
-        name: `${chalk.bold('Manual entry')} - Enter each repository one by one ${chalk.gray('(current behavior)')}`,
-        value: 'manual' as const
-      },
-      {
-        name: `${chalk.bold('Bulk import')} - Discover all repositories from ${owner} ${chalk.gray('(automatic)')}`,
-        value: 'all-repos' as const
-      },
-      {
-        name: `${chalk.bold('Pattern matching')} - Filter by pattern (starts-with, ends-with, contains, glob) ${chalk.gray('(e.g., "sw-*")')}`,
-        value: 'pattern' as const
-      },
-      {
-        name: `${chalk.bold('Regex matching')} - Advanced filtering with regular expressions ${chalk.gray('(e.g., "^ec-.*-api$")')}`,
-        value: 'regex' as const
-      }
-    ],
-    default: 'manual'
-  });
+  // Main loop - allows going back to strategy selection
+  while (true) {
+    console.log(chalk.cyan('\n🚀 Repository Configuration Optimization\n'));
+    console.log(chalk.gray('You can bulk-discover repositories instead of entering them one by one.\n'));
 
-  // If manual, return early
-  if (strategy === 'manual') {
-    return { repositories: [], strategy: 'manual' };
-  }
-
-  // Step 2: Fetch all repositories
-  console.log(chalk.gray(`\n⏳ Fetching repositories from ${owner}...\n`));
-  const allRepos = await fetchAllRepositories(octokit, owner, isOrg);
-
-  if (allRepos.length === 0) {
-    console.log(chalk.yellow(`⚠️  No repositories found for ${owner}\n`));
-    return null;
-  }
-
-  console.log(chalk.green(`✓ Found ${allRepos.length} repositories\n`));
-
-  let filteredRepos = allRepos;
-  let pattern: string | undefined;
-
-  // Step 3: Apply filtering based on strategy
-  if (strategy === 'pattern') {
-    console.log(chalk.cyan('📝 Pattern Matching Options:\n'));
-    console.log(chalk.gray('   • starts:PREFIX    - Repositories starting with PREFIX'));
-    console.log(chalk.gray('   • ends:SUFFIX      - Repositories ending with SUFFIX'));
-    console.log(chalk.gray('   • contains:TEXT    - Repositories containing TEXT'));
-    console.log(chalk.gray('   • sw-*             - Glob pattern (supports *, ?, [])'));
-    console.log(chalk.gray('   • *-api            - Glob pattern\n'));
-
-    const patternInput = await input({
-      message: 'Enter pattern:',
-      default: `starts:${owner.split('-')[0] || 'my'}-`,
-      validate: (value: string) => (value.trim() ? true : 'Pattern is required')
-    });
-
-    pattern = patternInput.trim();
-    filteredRepos = filterByPattern(allRepos, pattern);
-  } else if (strategy === 'regex') {
-    console.log(chalk.cyan('🔧 Regex Matching:\n'));
-    console.log(chalk.gray('   • ^sw-.*$          - Starts with "sw-"'));
-    console.log(chalk.gray('   • .*-api$          - Ends with "-api"'));
-    console.log(chalk.gray('   • ^ec-\\w+-service$ - Matches "ec-NAME-service"\n'));
-
-    const regexInput = await input({
-      message: 'Enter regex pattern:',
-      default: `^${owner.split('-')[0] || 'my'}-.*`,
-      validate: (value: string) => {
-        if (!value.trim()) return 'Regex pattern is required';
-        try {
-          new RegExp(value.trim());
-          return true;
-        } catch (error) {
-          return `Invalid regex: ${error instanceof Error ? error.message : String(error)}`;
-        }
-      }
-    });
-
-    pattern = regexInput.trim();
-    try {
-      filteredRepos = filterByRegex(allRepos, pattern);
-    } catch (error) {
-      console.log(chalk.red(`\n❌ ${error instanceof Error ? error.message : String(error)}\n`));
-      return null;
-    }
-  }
-
-  // Step 4: Show preview
-  showRepositoryPreview(filteredRepos, owner, strategy, pattern);
-
-  // Step 5: Validate count
-  if (filteredRepos.length === 0) {
-    console.log(chalk.yellow('⚠️  No repositories match the criteria. Please try again.\n'));
-    return null;
-  }
-
-  // Only validate count when explicitly requested (count-first flows)
-  // Skip validation for discovery-first flows where user hasn't specified a count
-  if (!options?.skipValidation && expectedCount > 0 && filteredRepos.length !== expectedCount) {
-    console.log(chalk.yellow(`⚠️  Found ${filteredRepos.length} repositories, but expected ${expectedCount}`));
-
-    const proceed = await select<'use-discovered' | 'adjust-count' | 'manual'>({
-      message: 'What would you like to do?',
+    // Step 1: Ask how to configure
+    const strategy = await select<BulkDiscoveryResult['strategy']>({
+      message: 'How do you want to configure these repositories?',
       choices: [
         {
-          name: `Use discovered ${filteredRepos.length} repositories (update count)`,
-          value: 'use-discovered' as const
-        },
-        {
-          name: `Go back and adjust the pattern`,
-          value: 'adjust-count' as const
-        },
-        {
-          name: `Switch to manual entry`,
+          name: `${chalk.bold('Manual entry')} - Enter each repository one by one ${chalk.gray('(current behavior)')}`,
           value: 'manual' as const
+        },
+        {
+          name: `${chalk.bold('Bulk import')} - Discover all repositories from ${owner} ${chalk.gray('(automatic)')}`,
+          value: 'all-repos' as const
+        },
+        {
+          name: `${chalk.bold('Pattern matching')} - Filter by pattern (starts-with, ends-with, contains, glob) ${chalk.gray('(e.g., "sw-*")')}`,
+          value: 'pattern' as const
+        },
+        {
+          name: `${chalk.bold('Regex matching')} - Advanced filtering with regular expressions ${chalk.gray('(e.g., "^ec-.*-api$")')}`,
+          value: 'regex' as const
         }
-      ]
+      ],
+      default: 'manual'
     });
 
-    if (proceed === 'adjust-count') {
-      return null; // Return null to trigger retry
-    }
-
-    if (proceed === 'manual') {
+    // If manual, return early
+    if (strategy === 'manual') {
       return { repositories: [], strategy: 'manual' };
     }
 
-    // proceed === 'use-discovered' - continue with discovered repos
+    // Step 2: Fetch all repositories (use cache if available)
+    let allRepos: DiscoveredRepo[];
+    if (cachedRepos) {
+      allRepos = cachedRepos;
+      console.log(chalk.gray(`\n📦 Using cached ${allRepos.length} repositories\n`));
+    } else {
+      console.log(chalk.gray(`\n⏳ Fetching repositories from ${owner}...\n`));
+      allRepos = await fetchAllRepositories(octokit, owner, isOrg);
+      cachedRepos = allRepos; // Cache for potential retry
+
+      if (allRepos.length === 0) {
+        console.log(chalk.yellow(`⚠️  No repositories found for ${owner}\n`));
+        return null;
+      }
+
+      console.log(chalk.green(`✓ Found ${allRepos.length} repositories\n`));
+    }
+
+    let filteredRepos = allRepos;
+    let pattern: string | undefined;
+
+    // Step 3: Apply filtering based on strategy
+    if (strategy === 'pattern') {
+      console.log(chalk.cyan('📝 Pattern Matching Options:\n'));
+      console.log(chalk.gray('   • starts:PREFIX    - Repositories starting with PREFIX'));
+      console.log(chalk.gray('   • ends:SUFFIX      - Repositories ending with SUFFIX'));
+      console.log(chalk.gray('   • contains:TEXT    - Repositories containing TEXT'));
+      console.log(chalk.gray('   • sw-*             - Glob pattern (supports *, ?, [])'));
+      console.log(chalk.gray('   • *-api            - Glob pattern\n'));
+
+      const patternInput = await input({
+        message: 'Enter pattern:',
+        default: `starts:${owner.split('-')[0] || 'my'}-`,
+        validate: (value: string) => (value.trim() ? true : 'Pattern is required')
+      });
+
+      pattern = patternInput.trim();
+      filteredRepos = filterByPattern(allRepos, pattern);
+    } else if (strategy === 'regex') {
+      console.log(chalk.cyan('🔧 Regex Matching:\n'));
+      console.log(chalk.gray('   • ^sw-.*$          - Starts with "sw-"'));
+      console.log(chalk.gray('   • .*-api$          - Ends with "-api"'));
+      console.log(chalk.gray('   • ^ec-\\w+-service$ - Matches "ec-NAME-service"\n'));
+
+      const regexInput = await input({
+        message: 'Enter regex pattern:',
+        default: `^${owner.split('-')[0] || 'my'}-.*`,
+        validate: (value: string) => {
+          if (!value.trim()) return 'Regex pattern is required';
+          try {
+            new RegExp(value.trim());
+            return true;
+          } catch (error) {
+            return `Invalid regex: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        }
+      });
+
+      pattern = regexInput.trim();
+      try {
+        filteredRepos = filterByRegex(allRepos, pattern);
+      } catch (error) {
+        console.log(chalk.red(`\n❌ ${error instanceof Error ? error.message : String(error)}\n`));
+        // Allow retry with different strategy
+        const retryChoice = await select<'retry' | 'manual'>({
+          message: 'What would you like to do?',
+          choices: [
+            { name: '← Go back and choose a different strategy', value: 'retry' as const },
+            { name: 'Switch to manual entry', value: 'manual' as const }
+          ]
+        });
+        if (retryChoice === 'manual') {
+          return { repositories: [], strategy: 'manual' };
+        }
+        continue; // Restart loop
+      }
+    }
+
+    // Step 4: Show preview
+    showRepositoryPreview(filteredRepos, owner, strategy, pattern);
+
+    // Step 5: Validate count
+    if (filteredRepos.length === 0) {
+      console.log(chalk.yellow('⚠️  No repositories match the criteria.\n'));
+      const retryChoice = await select<'retry' | 'manual'>({
+        message: 'What would you like to do?',
+        choices: [
+          { name: '← Go back and choose a different strategy', value: 'retry' as const },
+          { name: 'Switch to manual entry', value: 'manual' as const }
+        ]
+      });
+      if (retryChoice === 'manual') {
+        return { repositories: [], strategy: 'manual' };
+      }
+      continue; // Restart loop
+    }
+
+    // Only validate count when explicitly requested (count-first flows)
+    // Skip validation for discovery-first flows where user hasn't specified a count
+    if (!options?.skipValidation && expectedCount > 0 && filteredRepos.length !== expectedCount) {
+      console.log(chalk.yellow(`⚠️  Found ${filteredRepos.length} repositories, but expected ${expectedCount}`));
+
+      const proceed = await select<'use-discovered' | 'change-strategy' | 'manual'>({
+        message: 'What would you like to do?',
+        choices: [
+          {
+            name: `Use discovered ${filteredRepos.length} repositories (update count)`,
+            value: 'use-discovered' as const
+          },
+          {
+            name: `← Go back and choose a different strategy`,
+            value: 'change-strategy' as const
+          },
+          {
+            name: `Switch to manual entry`,
+            value: 'manual' as const
+          }
+        ]
+      });
+
+      if (proceed === 'change-strategy') {
+        continue; // Restart loop
+      }
+
+      if (proceed === 'manual') {
+        return { repositories: [], strategy: 'manual' };
+      }
+
+      // proceed === 'use-discovered' - continue with discovered repos
+    }
+
+    // Step 6: Confirm with option to go back
+    const confirmChoice = await select<'yes' | 'change-strategy' | 'manual'>({
+      message: `Use these ${filteredRepos.length} repositories?`,
+      choices: [
+        { name: 'Yes, use these repositories', value: 'yes' as const },
+        { name: '← Go back and choose a different strategy', value: 'change-strategy' as const },
+        { name: 'Switch to manual entry', value: 'manual' as const }
+      ],
+      default: 'yes'
+    });
+
+    if (confirmChoice === 'change-strategy') {
+      continue; // Restart loop
+    }
+
+    if (confirmChoice === 'manual') {
+      console.log(chalk.gray('\n✓ Repository discovery cancelled. Switching to manual entry.\n'));
+      return { repositories: [], strategy: 'manual' };
+    }
+
+    console.log(chalk.green(`\n✅ Discovered ${filteredRepos.length} repositories\n`));
+
+    return {
+      repositories: filteredRepos,
+      strategy,
+      pattern,
+      source: isOrg ? `org:${owner}` : 'personal'
+    };
   }
-
-  // Step 6: Confirm
-  const confirmResult = await confirm({
-    message: `Use these ${filteredRepos.length} repositories?`,
-    default: true
-  });
-
-  if (!confirmResult) {
-    console.log(chalk.gray('\n✓ Repository discovery cancelled. Switching to manual entry.\n'));
-    return { repositories: [], strategy: 'manual' };
-  }
-
-  console.log(chalk.green(`\n✅ Discovered ${filteredRepos.length} repositories\n`));
-
-  return {
-    repositories: filteredRepos,
-    strategy,
-    pattern,
-    source: isOrg ? `org:${owner}` : 'personal'
-  };
 }

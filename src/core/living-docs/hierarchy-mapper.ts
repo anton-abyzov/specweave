@@ -1,22 +1,25 @@
 /**
- * SpecWeave Hierarchy Mapper (v4.0.0 - Universal Hierarchy with FS-XXX)
+ * SpecWeave Hierarchy Mapper (v5.0.0 - Unified Project Structure)
  *
- * Maps increments to universal hierarchy following work item type matrix:
+ * Maps increments to unified hierarchy:
  * - Epic (EPIC-{id}) -> Cross-project strategic themes (_epics/)
- * - Feature (FS-XXX) -> Cross-project features (_features/ + project folders)
- * - User Story (us-{id}) -> Project-specific requirements (project/FS-XXX/us-{id}.md)
- * - Task (T-{id}) -> Increment-specific implementation (increments/{id}/tasks.md)
+ * - Feature (FS-XXX) -> {project}/FS-XXX/FEATURE.md (+ user stories)
+ * - User Story (us-{id}) -> {project}/FS-XXX/us-{id}.md
+ * - Task (T-{id}) -> increments/{id}/tasks.md
+ *
+ * All features live directly under the project folder.
+ * Archive: {project}/_archive/FS-XXX/
  *
  * Key Principles:
  * - NO HARDCODED PROJECT NAMES (backend, frontend are examples)
  * - Projects are DYNAMIC from config.json -> multiProject.projects
- * - Single-project mode: ['default'] (always)
- * - Multi-project mode: User-configured project names
+ * - Single-project mode: one project folder (e.g., 'specweave')
+ * - Multi-project mode: multiple project folders
  * - Feature IDs assigned by creation date (FS-001, FS-002, etc.)
  * - NO DUPLICATE FEATURE IDS (enforced by FeatureIDManager)
  *
  * @author SpecWeave Team
- * @version 4.0.0 (Universal Hierarchy with FS-XXX)
+ * @version 5.0.0 (Unified Project Structure)
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -39,11 +42,11 @@ export interface HierarchyConfig {
 }
 
 /**
- * HierarchyMapper - Maps increments to universal hierarchy
+ * HierarchyMapper - Maps increments to unified project structure
  *
- * Universal Hierarchy (v4.0.0):
+ * Structure (v5.0.0):
  * 1. Epic (EPIC-YYYY-QN-{name}) -> _epics/EPIC-{id}/EPIC.md
- * 2. Feature (FS-XXX) -> _features/FS-XXX/FEATURE.md + {project}/FS-XXX/
+ * 2. Feature (FS-XXX) -> {project}/FS-XXX/FEATURE.md
  * 3. User Story (us-NNN-{name}) -> {project}/FS-XXX/us-{id}.md
  * 4. Task (T-NNN) -> increments/{id}/tasks.md
  */
@@ -104,17 +107,14 @@ export class HierarchyMapper {
 
   /**
    * Check if a feature is archived
+   *
+   * Archive location: specs/{project}/_archive/FS-XXX/
    */
   async isFeatureArchived(featureId: string): Promise<boolean> {
-    const archivePaths = [
-      path.join(this.config.specsBaseDir, '_features', '_archive', featureId),
-      // Check project-specific archives
-      ...(await this.getConfiguredProjects()).map(project =>
-        path.join(this.config.specsBaseDir, project, '_archive', featureId)
-      )
-    ];
-
-    for (const archivePath of archivePaths) {
+    // Check project-specific archives (the only location now)
+    const projects = await this.getConfiguredProjects();
+    for (const project of projects) {
+      const archivePath = path.join(this.config.specsBaseDir, project, '_archive', featureId);
       if (await fs.pathExists(archivePath)) {
         return true;
       }
@@ -532,13 +532,17 @@ export class HierarchyMapper {
 
     // Use final ID for folders
     const featureFolder = finalFeatureId;
-    const featurePath = path.join(this.config.specsBaseDir, '_features', featureFolder);
 
     // Build project paths map using final ID
+    // Feature path is the primary project's feature folder
     const projectPaths = new Map<string, string>();
     for (const project of projects) {
       projectPaths.set(project, path.join(this.config.specsBaseDir, project, finalFeatureId));
     }
+
+    // Feature path is the first project's feature folder
+    const primaryProject = projects[0] || 'default';
+    const featurePath = path.join(this.config.specsBaseDir, primaryProject, featureFolder);
 
     return {
       featureId: finalFeatureId,
@@ -685,87 +689,103 @@ export class HierarchyMapper {
   /**
    * Find existing feature folder (exact or fuzzy match)
    *
+   * Searches in: {project}/FS-XXX/
+   *
    * CRITICAL: For greenfield (FS-XXX), only exact match.
    * For brownfield (FS-YY-MM-DD-name), fuzzy match allowed.
    */
   private async findExistingFeatureFolder(featureId: string): Promise<string | null> {
-    const featuresDir = path.join(this.config.specsBaseDir, '_features');
+    // Search in all project folders
+    const projects = await this.getConfiguredProjects();
 
-    if (!fs.existsSync(featuresDir)) {
-      return null;
-    }
+    for (const project of projects) {
+      const projectDir = path.join(this.config.specsBaseDir, project);
 
-    try {
-      const folders = await fs.readdir(featuresDir);
-
-      // Exact match (always try this first)
-      if (folders.includes(featureId)) {
-        return featureId;
+      if (!fs.existsSync(projectDir)) {
+        continue;
       }
 
-      // Fuzzy match ONLY for brownfield (date-based) IDs
-      // Greenfield IDs (FS-XXX) should NEVER fuzzy match
-      const isGreenfield = /^FS-\d{3}$/.test(featureId);
-      if (isGreenfield) {
-        return null; // No fuzzy match for greenfield
-      }
+      try {
+        const folders = await fs.readdir(projectDir);
 
-      // Fuzzy match for brownfield (feature name is substring)
-      // Example: FS-25-11-14-external-tool-sync matches FS-25-11-14-external-tool-status-sync
-      const featureNamePart = featureId.split('-').slice(3).join('-'); // external-tool-sync
-      if (!featureNamePart) {
-        return null; // No feature name part, skip fuzzy match
-      }
+        // Exact match (always try this first)
+        if (folders.includes(featureId)) {
+          return featureId;
+        }
 
-      for (const folder of folders) {
-        if (folder.includes(featureNamePart)) {
-          const folderPath = path.join(featuresDir, folder);
-          const stats = await fs.stat(folderPath);
-          if (stats.isDirectory()) {
-            return folder;
+        // Fuzzy match ONLY for brownfield (date-based) IDs
+        // Greenfield IDs (FS-XXX) should NEVER fuzzy match
+        const isGreenfield = /^FS-\d{3}E?$/.test(featureId);
+        if (isGreenfield) {
+          continue; // No fuzzy match for greenfield
+        }
+
+        // Fuzzy match for brownfield (feature name is substring)
+        const featureNamePart = featureId.split('-').slice(3).join('-');
+        if (!featureNamePart) {
+          continue;
+        }
+
+        for (const folder of folders) {
+          if (folder.includes(featureNamePart)) {
+            const folderPath = path.join(projectDir, folder);
+            const stats = await fs.stat(folderPath);
+            if (stats.isDirectory()) {
+              return folder;
+            }
           }
         }
+      } catch (error) {
+        console.warn(`   ⚠️  Failed to find feature folder in ${project}: ${error}`);
       }
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to find feature folder: ${error}`);
     }
 
     return null;
   }
 
   /**
-   * Get all feature folders
+   * Get all feature folders from all project folders
+   *
+   * Scans: {project}/FS-XXX/
    */
   async getAllFeatureFolders(): Promise<string[]> {
-    const featuresDir = path.join(this.config.specsBaseDir, '_features');
+    const featureFolders = new Set<string>();
+    const projects = await this.getConfiguredProjects();
 
-    if (!fs.existsSync(featuresDir)) {
-      return [];
-    }
+    for (const project of projects) {
+      const projectDir = path.join(this.config.specsBaseDir, project);
 
-    try {
-      const folders = await fs.readdir(featuresDir);
-      const featureFolders: string[] = [];
-
-      for (const folder of folders) {
-        // Skip special files/folders
-        if (folder.startsWith('.') || folder.startsWith('_')) {
-          continue;
-        }
-
-        const folderPath = path.join(featuresDir, folder);
-        const stats = await fs.stat(folderPath);
-
-        if (stats.isDirectory()) {
-          featureFolders.push(folder);
-        }
+      if (!fs.existsSync(projectDir)) {
+        continue;
       }
 
-      return featureFolders.sort();
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to get feature folders: ${error}`);
-      return [];
+      try {
+        const folders = await fs.readdir(projectDir);
+
+        for (const folder of folders) {
+          // Only include FS-XXX folders (feature folders)
+          if (folder.startsWith('.') || folder.startsWith('_')) {
+            continue;
+          }
+
+          // Match FS-XXX or FS-XXXE pattern
+          if (!/^FS-\d{3}E?$/.test(folder)) {
+            continue;
+          }
+
+          const folderPath = path.join(projectDir, folder);
+          const stats = await fs.stat(folderPath);
+
+          if (stats.isDirectory()) {
+            featureFolders.add(folder);
+          }
+        }
+      } catch (error) {
+        console.warn(`   ⚠️  Failed to get feature folders from ${project}: ${error}`);
+      }
     }
+
+    return Array.from(featureFolders).sort();
   }
 
   /**

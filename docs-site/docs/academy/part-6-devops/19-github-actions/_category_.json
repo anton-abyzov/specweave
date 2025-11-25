@@ -1,0 +1,9 @@
+{
+  "label": "Module 19: GitHub Actions",
+  "position": 19,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "description": "Writing CI/CD workflows"
+  }
+}

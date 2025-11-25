@@ -253,6 +253,74 @@ Validating increment 0001-task-tracker-cli...
 
 ---
 
+## The Flow Command: `/specweave:next`
+
+**Pro tip**: Instead of running `/specweave:done` then deciding what's next, use `/specweave:next`:
+
+```bash
+/specweave:next
+```
+
+This single command:
+
+1. **Validates current increment** — Checks if work is complete
+2. **Auto-closes if ready** — PM validates and closes automatically
+3. **Runs quality assessment** — Post-closure quality check
+4. **Suggests next work** — Intelligent recommendations
+
+### Example: Happy Path
+
+```
+/specweave:next
+
+📊 Checking current increment...
+
+Active: 0001-task-tracker-cli
+
+🔍 PM Validation:
+  ✅ Gate 1: All tasks complete (10/10)
+  ✅ Gate 2: All tests passing (85% coverage)
+  ✅ Gate 3: Documentation updated
+
+🎯 Auto-closing increment 0001...
+  ✓ Status: completed
+  ✓ Quality score: 87/100 (GOOD)
+
+🎉 Increment 0001 closed successfully!
+
+🎯 Next Work Suggestions:
+
+No planned increments found.
+Time to plan your next feature!
+
+Run: /specweave:increment "feature description"
+```
+
+### Example: Not Ready Yet
+
+```
+/specweave:next
+
+📊 Checking current increment...
+
+❌ Gate 1: 2 P1 tasks incomplete (8/10)
+
+Options:
+A. Complete remaining work (recommended)
+B. Force close and defer tasks
+C. Stay on current increment
+
+What would you like to do? [A/B/C]
+```
+
+**Why `/specweave:next` is special**:
+- ✅ One command for the entire completion flow
+- ✅ No need to remember `/done` → `/qa` → `/increment` sequence
+- ✅ Intelligent suggestions from backlog
+- ✅ Never forces actions — you stay in control
+
+---
+
 ## Supporting Commands
 
 ### `/specweave:status`

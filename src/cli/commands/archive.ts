@@ -3,7 +3,6 @@
  *
  * Archives increments to .specweave/increments/_archive/ and automatically
  * archives corresponding features in:
- * - .specweave/docs/internal/specs/_features/_archive/
  * - .specweave/docs/internal/specs/{project}/_archive/
  */
 
@@ -54,9 +53,7 @@ export async function archiveCommand(incrementIds: string[], options: any): Prom
     // so feature archiving happens automatically! Just show completion message.
     if (result.archived.length > 0 && !options.dryRun) {
       console.log(chalk.blue('\n✅ Living docs synchronization complete!'));
-      console.log('   Features archived in:');
-      console.log('   - .specweave/docs/internal/specs/_features/_archive/');
-      console.log('   - .specweave/docs/internal/specs/{project}/_archive/');
+      console.log('   Features archived in: .specweave/docs/internal/specs/{project}/_archive/');
     }
 
     // Show statistics

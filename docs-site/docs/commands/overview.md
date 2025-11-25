@@ -17,7 +17,7 @@ graph LR
     A["/specweave:increment"] --> B["/specweave:do"]
     B --> C["/specweave:progress"]
     C --> D["/specweave:validate or /specweave:qa"]
-    D --> E["/specweave:done"]
+    D --> E["/specweave:next"]
     E --> F["/specweave:sync-docs"]
     F --> A
 
@@ -28,6 +28,8 @@ graph LR
     style E fill:#ff8b94
     style F fill:#d4a5ff
 ```
+
+**Pro tip**: Use `/specweave:next` instead of `/specweave:done` — it auto-closes and suggests next work!
 
 ## 1. Planning Commands
 
@@ -154,6 +156,52 @@ graph LR
 
 ## 4. Completion Commands
 
+### `/specweave:next` - Smart Workflow Transition
+
+**The flow command** - Auto-close current work, suggest next.
+
+```bash
+/specweave:next
+```
+
+**What it does**:
+- 🔍 Validates current increment (3 gates: tasks, tests, docs)
+- 🎯 Auto-closes if all gates pass
+- 📊 Runs post-closure quality assessment
+- 💡 Suggests next work (backlog or new feature)
+
+**Why use `/specweave:next` instead of `/specweave:done`**:
+
+| `/specweave:done` | `/specweave:next` |
+|-------------------|-------------------|
+| Closes increment | Closes AND suggests next |
+| Requires increment ID | Auto-detects active increment |
+| Manual next step | Intelligent recommendations |
+| Single action | Complete workflow transition |
+
+**Example**:
+```
+/specweave:next
+
+📊 Checking current increment...
+Active: 0007-user-authentication
+
+🔍 PM Validation:
+  ✅ Gate 1: All tasks complete (15/15)
+  ✅ Gate 2: Tests passing (87% coverage)
+  ✅ Gate 3: Docs updated
+
+🎯 Auto-closing increment 0007...
+  ✓ Quality score: 87/100 (GOOD)
+
+🎉 Increment 0007 closed!
+
+🎯 Next: 0008-payment-processing (P1, ready to start)
+   Run: /specweave:do 0008
+```
+
+---
+
 ### `/specweave:done` - Close Increment
 
 **[PM](/docs/glossary/terms/pm-agent) validation before closing** - Ensures [quality gates](/docs/glossary/terms/quality-gate) pass.
@@ -192,7 +240,108 @@ graph LR
 
 ---
 
-## 5. Monitoring Commands
+## 5. Sync & Repository Commands
+
+### `/specweave:save` - Save Changes Across Repositories
+
+**One command for git operations** - Works for single repos and multi-repo umbrella setups.
+
+```bash
+# Auto-generate commit message
+/specweave:save
+
+# With explicit message
+/specweave:save "feat: Add user authentication"
+
+# Dry run (preview)
+/specweave:save --dry-run
+```
+
+**What it does**:
+- 📊 Analyzes changes to auto-generate commit message
+- 🔍 Detects all repos (umbrella or single)
+- ⚡ Commits and pushes to all repos with one command
+- 🔧 Sets up remotes if missing
+
+**Options**:
+- `--dry-run` - Preview without executing
+- `--repos <list>` - Specific repos only
+- `--yes` / `-y` - Accept auto-message without prompt
+- `--no-push` - Commit only, don't push
+
+---
+
+### `/specweave:sync-specs` - Sync Specs to Living Docs
+
+**Quick specs-only sync** - Updates user stories and features only.
+
+```bash
+/specweave:sync-specs 0007
+/specweave:sync-specs --dry-run
+```
+
+**What it syncs**:
+- User stories to `.specweave/docs/internal/specs/`
+- Feature documentation
+- Bidirectional task links
+
+**When to use**: After making changes to spec.md and wanting quick sync.
+
+---
+
+### `/specweave:sync-progress` - Sync to External Tools
+
+**Full external sync** - Updates all connected platforms.
+
+```bash
+/specweave:sync-progress
+/specweave:sync-progress 0007
+```
+
+**What it syncs**:
+- Living docs (user stories, features)
+- GitHub Issues (checkboxes, comments)
+- JIRA (if configured)
+- Azure DevOps (if configured)
+
+---
+
+### `/specweave:validate-status` - Fix Status Line
+
+**Validate and auto-fix status line desync**.
+
+```bash
+/specweave:validate-status
+```
+
+**What it checks**:
+- [ ] Task count matches frontmatter
+- [ ] Cache matches tasks.md reality
+- [ ] Percentage calculations correct
+
+**When to use**: Status line shows wrong percentage, after manual edits, after git conflicts.
+
+---
+
+### `/specweave:workflow` - Dashboard View
+
+**Complete workflow navigator** - Shows phase, status, and next steps.
+
+```bash
+/specweave:workflow
+/specweave:workflow 0007
+```
+
+**What it shows**:
+- Current phase (Planning, Implementing, Review, etc.)
+- Task and AC completion
+- External tools status
+- Living docs status
+- Suggested next actions
+
+---
+
+## 6. Monitoring Commands
 
 ### `/specweave:progress` - Check Increment Progress
 
@@ -215,13 +364,18 @@ graph LR
 ### Essential Workflow (Use These!)
 - `/specweave:increment` - Plan new increment ⭐ **START HERE**
 - `/specweave:do` - Execute tasks ⭐ **MAIN WORK**
+- `/specweave:next` - Smart workflow transition ⭐ **FLOW COMMAND** (auto-close + suggest next)
 - `/specweave:progress` - Check status ⭐ **VISIBILITY**
 - `/specweave:validate` - Quick validation ⭐ **PRE-CHECK**
 - `/specweave:qa` - Quality assessment ⭐ **QUALITY GATE**
 - `/specweave:check-tests` - Test coverage check ⭐ **TEST VALIDATION**
 - `/specweave:done` - Close increment ⭐ **FINISH**
 - `/specweave:sync-docs` - Synchronize living docs ⭐ **KEEP DOCS CURRENT**
+- `/specweave:sync-specs` - Sync specs only ⭐ **QUICK SPEC SYNC**
+- `/specweave:sync-progress` - Sync to external tools ⭐ **EXTERNAL SYNC**
 - `/specweave:save` - Save & push to all repos ⭐ **MULTI-REPO GIT**
+- `/specweave:workflow` - Dashboard view ⭐ **NAVIGATION**
+- `/specweave:validate-status` - Fix status line ⭐ **STATUS FIX**
 
 ---
 
