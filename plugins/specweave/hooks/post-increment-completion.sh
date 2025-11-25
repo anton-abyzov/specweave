@@ -117,9 +117,68 @@ Increment \`$INCREMENT_ID\` has been marked as complete.
   fi
 fi
 
+# ============================================================================
+# SYNC SPEC.MD STATUS (CRITICAL - v0.28.8)
+# ============================================================================
+# PROBLEM: metadata.json is updated to "completed" but spec.md frontmatter
+# may still say "active". This causes desyncs that break status line.
+#
+# SOLUTION: Explicitly update spec.md frontmatter to match metadata.json.
+# This ensures source-of-truth discipline is maintained.
+#
+# See: Incident 2025-11-20 - metadata.json="completed" but spec.md="active"
+# See: /specweave:sync-status command for manual recovery
+
+SPEC_FILE="$INCREMENT_DIR/spec.md"
+
+if [ -f "$SPEC_FILE" ]; then
+  echo "🔄 Syncing spec.md status to 'completed'..."
+
+  # Read current status from spec.md frontmatter
+  SPEC_STATUS=$(awk '
+    BEGIN { in_frontmatter=0 }
+    /^---$/ {
+      if (in_frontmatter == 0) {
+        in_frontmatter=1; next
+      } else {
+        exit
+      }
+    }
+    in_frontmatter == 1 && /^status:/ {
+      gsub(/^status:[ \t]*/, "");
+      gsub(/["'\''']/, "");
+      print;
+      exit
+    }
+  ' "$SPEC_FILE" | tr -d '\r\n')
+
+  if [ "$SPEC_STATUS" != "completed" ]; then
+    # Update spec.md frontmatter to "completed"
+    # Use sed for atomic in-place update
+    if [[ "$(uname)" == "Darwin" ]]; then
+      # macOS sed requires different syntax
+      sed -i '' 's/^status:.*$/status: completed/' "$SPEC_FILE" 2>/dev/null || {
+        echo "⚠️  Failed to update spec.md status (non-blocking)" >&2
+      }
+    else
+      # GNU sed
+      sed -i 's/^status:.*$/status: completed/' "$SPEC_FILE" 2>/dev/null || {
+        echo "⚠️  Failed to update spec.md status (non-blocking)" >&2
+      }
+    fi
+    echo "✅ spec.md status updated: $SPEC_STATUS → completed"
+  else
+    echo "✅ spec.md status already 'completed'"
+  fi
+else
+  echo "⚠️  spec.md not found at $SPEC_FILE" >&2
+fi
+
 # Update status line cache (increment no longer open)
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
+echo "✅ Status line cache updated"
 
 # ============================================================================
 # SYNC LIVING DOCS (NEW in v0.24.0 - Critical Missing Feature)

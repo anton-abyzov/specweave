@@ -288,6 +288,68 @@ const sidebars: SidebarsConfig = {
   learnSidebar: [
     {
       type: 'category',
+      label: '🎓 SpecWeave Academy',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/lessons/index',
+          label: 'Academy Overview',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/01-getting-started',
+          label: 'Lesson 1: Getting Started',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/02-three-file-structure',
+          label: 'Lesson 2: Three-File Structure',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/03-your-first-increment',
+          label: 'Lesson 3: Your First Increment',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/04-the-next-command',
+          label: 'Lesson 4: The :next Command',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/05-quality-gates',
+          label: 'Lesson 5: Quality Gates',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/06-tdd-workflow',
+          label: 'Lesson 6: TDD Workflow',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/07-external-tools',
+          label: 'Lesson 7: External Tools',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/08-ai-model-selection',
+          label: 'Lesson 8: AI Model Selection',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/09-troubleshooting',
+          label: 'Lesson 9: Troubleshooting',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/10-advanced-patterns',
+          label: 'Lesson 10: Advanced Patterns',
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: 'Foundations',
       collapsed: false,
       items: [
