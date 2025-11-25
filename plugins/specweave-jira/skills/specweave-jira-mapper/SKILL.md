@@ -1,6 +1,6 @@
 ---
 name: specweave-jira-mapper
-description: Expert in bidirectional conversion between SpecWeave increments and JIRA epics/stories/subtasks. Handles export (increment → JIRA), import (JIRA → increment), and bidirectional sync with conflict resolution. Activates for JIRA sync, issue creation, import from JIRA.
+description: Expert in mapping SpecWeave increments to JIRA epics/stories/subtasks. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Handles export (increment → JIRA), import (JIRA → increment). Activates for JIRA sync, issue creation, import from JIRA.
 tools: Read, Write, Edit, Bash
 model: claude-sonnet-4-5-20250929
 ---
@@ -13,7 +13,7 @@ You are an expert in mapping SpecWeave concepts to JIRA and vice versa with prec
 
 1. **Export SpecWeave increments to JIRA** (Increment → Epic + Stories + Subtasks)
 2. **Import JIRA epics as SpecWeave increments** (Epic → Increment structure)
-3. **Bidirectional sync** with conflict detection and resolution
+3. **Sync**: Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave
 4. **Maintain traceability** (store keys, URLs, timestamps)
 5. **Validate mapping accuracy** using test cases
 6. **Handle edge cases** (missing fields, invalid statuses, API errors)
@@ -54,7 +54,7 @@ You are an expert in mapping SpecWeave concepts to JIRA and vice versa with prec
 | **Status: To Do** | Status: planned | Not started |
 | **Status: In Progress** | Status: in-progress | Active |
 | **Status: Done** | Status: completed | Finished |
-| **Custom Field: Spec URL** | spec.md link | Bidirectional reference |
+| **Custom Field: Spec URL** | spec.md link | Cross-reference |
 
 ---
 

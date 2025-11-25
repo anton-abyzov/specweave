@@ -144,7 +144,7 @@ flowchart TB
 - **Brownfield + Greenfield** — Works with existing codebases, not just new projects
 - **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
 - **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
-- **Bidirectional Sync** — GitHub Issues, JIRA, Azure DevOps stay in sync automatically
+- **External Tool Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
 - **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
 - **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
 - **Living Documentation** — Specs auto-update after every task via hooks
@@ -232,9 +232,9 @@ SpecWeave keeps your project management tools in sync **automatically**:
 
 | Platform | Capabilities |
 |----------|--------------|
-| **GitHub Issues** | Create, update, close, bidirectional sync, checkbox tracking |
-| **JIRA** | Epic/Story hierarchy, bidirectional sync, custom fields |
-| **Azure DevOps** | Work items, area paths, bidirectional sync |
+| **GitHub Issues** | Create, update, close, progress sync, checkbox tracking |
+| **JIRA** | Epic/Story hierarchy, status sync, custom fields |
+| **Azure DevOps** | Work items, area paths, status sync |
 | **Linear** | Coming Q1 2026 |
 
 ---

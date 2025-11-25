@@ -14,6 +14,7 @@ import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client
 import { GitHubIssue } from '../../plugins/specweave-github/lib/types.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { FrontmatterUpdater } from './frontmatter-updater.js';
+import { autoDetectProjectIdSync } from '../utils/project-detection.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -33,12 +34,15 @@ export class SyncCoordinator {
   private incrementId: string;
   private logger: Logger;
   private frontmatterUpdater: FrontmatterUpdater;
+  private projectId: string;
 
   constructor(options: SyncCoordinatorOptions) {
     this.projectRoot = options.projectRoot;
     this.incrementId = options.incrementId;
     this.logger = options.logger ?? consoleLogger;
     this.frontmatterUpdater = new FrontmatterUpdater({ logger: this.logger });
+    // Auto-detect project ID from git remote, sync config, or use "default"
+    this.projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
   }
 
   /**
@@ -781,7 +785,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       tasks,
       acceptanceCriteria: acs,
       progressPercentage,
-      livingDocsUrl: `${this.projectRoot}/.specweave/docs/internal/specs/specweave/${usFile.id}/`
+      livingDocsUrl: `${this.projectRoot}/.specweave/docs/internal/specs/${this.projectId}/${usFile.id}/`
     };
   }
 
@@ -815,10 +819,11 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       return [];
     }
 
-    // Find living docs for this feature
+    // Find living docs for this feature (uses auto-detected project ID)
     const featurePath = path.join(
       this.projectRoot,
-      '.specweave/docs/internal/specs/specweave',
+      '.specweave/docs/internal/specs',
+      this.projectId,
       featureId
     );
 

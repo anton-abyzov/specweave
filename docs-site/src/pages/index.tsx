@@ -185,7 +185,7 @@ function FeaturesSection(): ReactNode {
           <FeatureHighlight
             icon="🔗"
             title="External Tool Sync (GitHub/JIRA/ADO)"
-            description="Bidirectional sync with GitHub Issues, JIRA, and Azure DevOps. Keep your existing workflow—no tool lock-in. Progress auto-syncs between SpecWeave tasks and issue trackers."
+            description="Push specs to GitHub Issues, JIRA, and Azure DevOps. Read status back automatically. Keep your existing workflow—no tool lock-in."
           />
           <FeatureHighlight
             icon="🧪"

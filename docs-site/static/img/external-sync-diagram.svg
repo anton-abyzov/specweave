@@ -51,7 +51,7 @@
   <!-- External Tools Section -->
   <g transform="translate(480, 20)">
     <rect x="0" y="0" width="300" height="240" rx="12" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2" filter="url(#shadow)"/>
-    <text x="150" y="30" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#7b1fa2">Your Tools (Bidirectional)</text>
+    <text x="150" y="30" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" fill="#7b1fa2">Your Tools (Status Sync)</text>
 
     <!-- GitHub Issues -->
     <rect x="20" y="50" width="260" height="50" rx="6" fill="url(#purpleGrad)" stroke="#9333ea" stroke-width="1.5"/>

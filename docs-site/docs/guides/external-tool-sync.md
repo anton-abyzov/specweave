@@ -1,10 +1,12 @@
-# Bidirectional Spec Synchronization
+# External Tool Sync
 
 **Automatic synchronization between SpecWeave specs and external tools (GitHub, JIRA, Azure DevOps).**
 
+> **Clarification**: This is NOT true bidirectional sync where you can edit in either place. Different data types flow in different directions—content always flows FROM SpecWeave, status always flows TO SpecWeave.
+
 ## Overview
 
-SpecWeave implements **bidirectional sync** with different sync directions for different types of data:
+SpecWeave implements **split-direction sync** with different sync directions for different types of data:
 
 | Data Type | Sync Direction | Source of Truth | What Syncs |
 |-----------|---------------|-----------------|------------|
@@ -16,7 +18,7 @@ SpecWeave implements **bidirectional sync** with different sync directions for d
 
 ---
 
-## Architecture: Why Bidirectional?
+## Architecture: Split Source of Truth
 
 ### The Problem
 
@@ -26,7 +28,7 @@ Traditional approaches force you to choose:
 
 **Both approaches fail!** One system becomes stale.
 
-### The Solution: Bidirectional Sync
+### The Solution: Split-Direction Sync
 
 SpecWeave syncs **different data types in different directions**:
 
