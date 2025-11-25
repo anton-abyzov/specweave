@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.13] - 2025-11-25
+
+### ✨ Features
+- Enhanced `/specweave:save` command with auto-generated commit messages
+- Smart analysis of git changes to generate conventional commit messages
+- Added `--yes` flag for quick auto-save without confirmation
+
+### 📚 Documentation
+- Added comprehensive Software Engineering Academy (14-part curriculum)
+- Part 1: Foundations (development setup, git, engineering principles)
+- Part 2: First Application (JavaScript basics, first project, SpecWeave intro)
+
+---
+
+
+
 ## [0.28.11] - 2025-11-25
 
 ### ✨ Features
