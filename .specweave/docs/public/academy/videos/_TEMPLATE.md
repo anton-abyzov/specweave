@@ -25,7 +25,7 @@
 ## Public Repos
 
 All demos in this video use public repositories:
-- **SpecWeave**: https://github.com/anthropics/specweave
+- **SpecWeave**: https://github.com/anton-abyzov/specweave
 - [Other relevant repos]
 
 > EasyChamp repos shown are proprietary - techniques work identically on any project.
@@ -89,6 +89,6 @@ All demos in this video use public repositories:
 
 ## Questions?
 
-- Check the [SpecWeave docs](https://github.com/anthropics/specweave)
+- Check the [SpecWeave docs](https://github.com/anton-abyzov/specweave)
 - Open an issue on GitHub
 - Join the community discussions

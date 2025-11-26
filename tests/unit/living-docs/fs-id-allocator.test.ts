@@ -437,6 +437,158 @@ title: Feature via README
     });
   });
 
+  describe('TC-133: Unified Numeric Sequence (No FS-001/FS-001E Collision)', () => {
+    it('should skip index 1 when internal FS-001 exists (allocate FS-002E)', async () => {
+      // Given: Internal FS-001 exists
+      await createFeatureFolder(testDir, 'FS-001', '2025-01-01T00:00:00Z');
+
+      // When: Allocate external feature
+      const workItem: ExternalWorkItem = {
+        externalId: 'GH-#100',
+        title: 'External Feature',
+        createdAt: '2025-01-15T00:00:00Z',
+        externalUrl: 'https://github.com/owner/repo/issues/100'
+      };
+
+      const result = await allocator.allocateId(workItem);
+
+      // Then: Should allocate FS-002E (NOT FS-001E - collision with FS-001)
+      expect(result.id).toBe('FS-002E');
+      expect(result.number).toBe(2);
+    });
+
+    it('should skip index 1 when external FS-001E exists (allocate FS-002E)', async () => {
+      // Given: External FS-001E exists
+      await createFeatureFolder(testDir, 'FS-001E', '2025-01-01T00:00:00Z');
+
+      // When: Allocate another external feature
+      const workItem: ExternalWorkItem = {
+        externalId: 'GH-#200',
+        title: 'Second External Feature',
+        createdAt: '2025-01-15T00:00:00Z',
+        externalUrl: 'https://github.com/owner/repo/issues/200'
+      };
+
+      const result = await allocator.allocateId(workItem);
+
+      // Then: Should allocate FS-002E (index 1 already used by FS-001E)
+      expect(result.id).toBe('FS-002E');
+      expect(result.number).toBe(2);
+    });
+
+    it('should append when work item is after all existing (unified sequence)', async () => {
+      // Given: FS-001, FS-002E, FS-004 exist (gap at 3)
+      await createFeatureFolder(testDir, 'FS-001', '2025-01-01T00:00:00Z');
+      await createFeatureFolder(testDir, 'FS-002E', '2025-01-02T00:00:00Z');
+      await createFeatureFolder(testDir, 'FS-004', '2025-01-04T00:00:00Z');
+
+      // When: Allocate external feature created AFTER all existing
+      const workItem: ExternalWorkItem = {
+        externalId: 'GH-#300',
+        title: 'New Feature After All',
+        createdAt: '2025-01-15T00:00:00Z',
+        externalUrl: 'https://github.com/owner/repo/issues/300'
+      };
+
+      const result = await allocator.allocateId(workItem);
+
+      // Then: Should append FS-005E (max+1), not fill gap at 3
+      // Unified sequence prevents collision but doesn't change allocation strategy
+      expect(result.id).toBe('FS-005E');
+      expect(result.number).toBe(5);
+      expect(result.strategy).toBe('append');
+    });
+
+    it('should report collision for numeric index used by either suffix', async () => {
+      // Given: FS-005 (internal) exists
+      await createFeatureFolder(testDir, 'FS-005', '2025-01-05T00:00:00Z');
+
+      await allocator.scanExistingIds();
+
+      // When: Check isNumericIndexUsed
+      const isUsed = allocator.isNumericIndexUsed(5);
+
+      // Then: Should return true (index 5 is used)
+      expect(isUsed).toBe(true);
+    });
+
+    it('should report index unused when neither suffix exists', async () => {
+      // Given: FS-001, FS-003 exist (gap at 2)
+      await createFeatureFolder(testDir, 'FS-001', '2025-01-01T00:00:00Z');
+      await createFeatureFolder(testDir, 'FS-003', '2025-01-03T00:00:00Z');
+
+      await allocator.scanExistingIds();
+
+      // When: Check isNumericIndexUsed for gap
+      const isUsed = allocator.isNumericIndexUsed(2);
+
+      // Then: Should return false (neither FS-002 nor FS-002E exists)
+      expect(isUsed).toBe(false);
+    });
+  });
+
+  describe('TC-134: Per-Project Sequences (Project Isolation)', () => {
+    it('should allow same index in different projects', async () => {
+      // Given: Project A with FS-001, Project B setup
+      const projectAPath = path.join(testDir, '.specweave/docs/internal/specs/project-a');
+      const projectBPath = path.join(testDir, '.specweave/docs/internal/specs/project-b');
+      await fs.ensureDir(projectAPath);
+      await fs.ensureDir(projectBPath);
+
+      // Create FS-001 in project-a
+      const fsAPath = path.join(projectAPath, 'FS-001');
+      await fs.ensureDir(fsAPath);
+      await fs.writeFile(
+        path.join(fsAPath, 'FEATURE.md'),
+        `---\ncreated: 2025-01-01T00:00:00Z\ntitle: Project A Feature 1\n---\n# Feature`
+      );
+
+      // When: Create allocator for project-b (separate sequence)
+      const allocatorB = new FSIdAllocator(testDir, 'project-b');
+
+      const workItem: ExternalWorkItem = {
+        externalId: 'GH-#1',
+        title: 'Project B First Feature',
+        createdAt: '2025-01-01T00:00:00Z',
+        externalUrl: 'https://github.com/owner/repo/issues/1'
+      };
+
+      const result = await allocatorB.allocateId(workItem);
+
+      // Then: Project B should get its own FS-001E (isolated from Project A)
+      expect(result.id).toBe('FS-001E');
+      expect(result.number).toBe(1);
+    });
+
+    it('should maintain separate sequences per project', async () => {
+      // Given: Two separate projects
+      const projectAPath = path.join(testDir, '.specweave/docs/internal/specs/project-a');
+      const projectBPath = path.join(testDir, '.specweave/docs/internal/specs/project-b');
+      await fs.ensureDir(projectAPath);
+      await fs.ensureDir(projectBPath);
+
+      // Create features in project-a
+      const fsA1 = path.join(projectAPath, 'FS-001');
+      const fsA2 = path.join(projectAPath, 'FS-002E');
+      await fs.ensureDir(fsA1);
+      await fs.ensureDir(fsA2);
+      await fs.writeFile(path.join(fsA1, 'FEATURE.md'), `---\ncreated: 2025-01-01T00:00:00Z\n---\n# F1`);
+      await fs.writeFile(path.join(fsA2, 'FEATURE.md'), `---\ncreated: 2025-01-02T00:00:00Z\n---\n# F2`);
+
+      // Create allocator for project-a
+      const allocatorA = new FSIdAllocator(testDir, 'project-a');
+      await allocatorA.scanExistingIds();
+
+      // Then: Project A should see max ID as 2
+      expect(allocatorA.getMaxId()).toBe(2);
+
+      // And: Project B allocator should see empty (max ID 0)
+      const allocatorB = new FSIdAllocator(testDir, 'project-b');
+      await allocatorB.scanExistingIds();
+      expect(allocatorB.getMaxId()).toBe(0);
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle very old timestamps (epoch)', async () => {
       // Given: Feature with epoch timestamp
@@ -471,7 +623,7 @@ title: Feature via README
 
       const result = await allocator.allocateId(workItem);
 
-      // Then: Should detect no gap (consecutive IDs) and append
+      // Then: Should detect no gap (consecutive IDs 1,2) and append FS-003E
       expect(result.id).toBe('FS-003E');
       expect(result.strategy).toBe('append');
     });
@@ -496,12 +648,12 @@ async function createFeatureFolder(
   createdAt: string,
   location: 'active' | 'archived' = 'active'
 ): Promise<void> {
-  const basePath =
-    location === 'active'
-      ? path.join(testDir, '.specweave/docs/internal/specs')
-      : path.join(testDir, '.specweave/docs/_archive/specs');
+  // Archive is now a subfolder WITHIN specs/, not separate
+  const basePath = path.join(testDir, '.specweave/docs/internal/specs');
+  const featurePath = location === 'active'
+    ? path.join(basePath, fsId)
+    : path.join(basePath, '_archive', fsId);
 
-  const featurePath = path.join(basePath, fsId);
   await fs.ensureDir(featurePath);
 
   const content = `---

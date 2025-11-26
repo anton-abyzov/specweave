@@ -16,22 +16,23 @@
 | 0:00 | Hook (The Pain → The Solution) | 1.5 min |
 | 1:30 | The Problem (BMAD, SpecKit, chaos) | 5 min |
 | 6:30 | What is SpecWeave? (15 agents, quick wins) | 4 min |
-| 10:30 | Enterprise Engineering 101 + Hierarchy Mapping | 6 min |
-| 16:30 | Project-Aware Sync & The /next Flow | 4 min |
-| 20:30 | Plugins & Skills System | 4 min |
-| 24:30 | Installation Mac & Windows | 5 min |
-| 29:30 | VS Code + 4-Terminal Setup | 3 min |
-| 32:30 | DEMO 1: Greenfield Project | 4 min |
-| 36:30 | DEMO 2: Translation Feature | 3 min |
-| 39:30 | DEMO 3: Brownfield (EasyChamp) — DEEP DIVE | 8 min |
-| 47:30 | DEMO 4: GitHub Sync | 3 min |
-| 50:30 | DEMO 5: JIRA Sync | 3 min |
-| 53:30 | DEMO 6: Azure DevOps Sync | 3 min |
-| 56:30 | AGENT.md for Non-Claude Tools | 2 min |
-| 58:30 | Academy + Resources | 1.5 min |
-| 60:00 | Outro (This was HUGE work!) | 1 min |
+| 10:30 | Docs Architecture: Internal vs Public + Hosting | 3 min |
+| 13:30 | Enterprise Engineering 101 + Hierarchy Mapping | 6 min |
+| 19:30 | Project-Aware Sync & The /next Flow | 4 min |
+| 23:30 | Plugins & Skills System | 4 min |
+| 27:30 | Installation Mac & Windows | 5 min |
+| 32:30 | VS Code + 4-Terminal Setup | 4 min |
+| 36:30 | DEMO 1: Greenfield Project | 4 min |
+| 40:30 | DEMO 2: Translation Feature | 3 min |
+| 43:30 | DEMO 3: Brownfield (EasyChamp) — DEEP DIVE | 8 min |
+| 51:30 | DEMO 4: GitHub Sync | 3 min |
+| 54:30 | DEMO 5: JIRA Sync | 3 min |
+| 57:30 | DEMO 6: Azure DevOps Sync | 3 min |
+| 60:30 | AGENT.md for Non-Claude Tools | 2 min |
+| 62:30 | Academy + Resources | 1.5 min |
+| 64:00 | Outro (This was HUGE work!) | 1 min |
 
-**Total: ~61 minutes** (demos shortened, fast-forward during waits)
+**Total: ~65 minutes** (demos shortened, fast-forward during waits)
 
 ---
 
@@ -194,6 +195,74 @@
 | Free & Open | MIT license, no vendor lock-in |
 
 > "All of this — free. Open source. On my GitHub right now. But first — let me teach you the foundation."
+
+#### Documentation Architecture: Internal vs Public
+
+**[VISUAL: Folder structure diagram]**
+
+> "One thing that makes SpecWeave different — it separates your documentation into TWO categories."
+
+```
+.specweave/docs/
+├── internal/           ← Team-only: ADRs, architecture, secrets docs
+│   ├── architecture/
+│   │   └── adr/        ← Architecture Decision Records
+│   ├── governance/     ← Coding standards, team processes
+│   └── emergency/      ← Runbooks, incident procedures
+│
+└── public/             ← User-facing: API docs, guides, tutorials
+    ├── academy/        ← Learning materials
+    ├── api/            ← API reference
+    └── guides/         ← How-to guides
+```
+
+> "Why does this matter?
+
+> **Internal docs** — Architecture decisions, coding standards, emergency runbooks. Stuff your TEAM needs but users don't. This stays in your repo, version-controlled with your code.
+
+> **Public docs** — User guides, API reference, tutorials. This is what you publish to your docs site.
+
+> The magic? Both live in the same repo. Both update with your code. But they serve DIFFERENT audiences."
+
+#### One Command to Preview Everything
+
+**[VISUAL: Terminal showing docs preview]**
+
+> "Want to see your docs before publishing? One command."
+
+```bash
+# From your project root
+cd docs-site && npm run start
+
+# Opens at localhost:3016
+# Hot reload - edit markdown, see changes instantly
+```
+
+> "That's it. Docusaurus spins up, hot reloads everything. Edit your markdown, see it live. No build step needed for development."
+
+#### Hosting Options
+
+**[VISUAL: Hosting providers logos]**
+
+> "When you're ready to publish:"
+
+```bash
+# Build static site
+npm run build
+
+# Output in docs-site/build/
+# Deploy ANYWHERE that hosts static files
+```
+
+> "Options:
+
+> **GitHub Pages** — Free. Push to `gh-pages` branch, done. Perfect for open source.
+
+> **Vercel/Netlify** — Free tier. Connect repo, auto-deploys on push. Zero config.
+
+> **Self-hosted** — It's just HTML/CSS/JS. Nginx, Apache, S3, whatever.
+
+> The point? Your docs are YOURS. Not locked in Notion. Not trapped in Confluence. Version-controlled markdown that deploys anywhere."
 
 ---
 
@@ -830,6 +899,18 @@ source ~/.zshrc
 
 **[VISUAL: VS Code with 4 terminals split]**
 
+> "Here's how I actually work. Four terminals, each with its own Claude session. Let me show you how to set this up."
+
+**Creating Multiple Terminals:**
+
+> "In VS Code, use **Cmd+\\** (Mac) or **Ctrl+\\** (Windows) to split your terminal. Or click the split icon in the terminal panel.
+
+> Quick note: **Cmd+\\** might conflict with 1Password's autofill shortcut. If nothing happens when you press it, check your 1Password settings and change one of the shortcuts.
+
+> To create a NEW terminal (not split), use **Ctrl+Shift+\`** (backtick). Each new terminal auto-launches Claude with our config."
+
+**[VISUAL: Demonstrating terminal creation]**
+
 ```
 ┌─────────────────────────┬─────────────────────────┐
 │   TERMINAL 1            │   TERMINAL 2            │
@@ -842,9 +923,21 @@ source ~/.zshrc
 └─────────────────────────┴─────────────────────────┘
 ```
 
-> "Terminal 1: main work. Terminal 2: questions without interrupting. Terminal 3: tests always running. Terminal 4: server logs. Never context-switch. Never lose focus."
+> "Here's why this matters:
 
-**[VISUAL: Demo splitting terminals in VS Code]**
+> **Terminal 1** — Your main Claude. This is where you do the actual work. `/specweave:do`, implementing features, writing code.
+
+> **Terminal 2** — Research Claude. Ask questions without interrupting your main work. 'Hey Claude, how does this API work?' Your main session stays focused.
+
+> **Terminal 3** — Tests running in watch mode. Every save triggers tests. Instant feedback.
+
+> **Terminal 4** — Dev server logs. See errors immediately.
+
+> The magic? Each Claude session is INDEPENDENT. Different context. Different conversation. You can have one Claude building a feature while another one helps you understand the codebase.
+
+> Never context-switch. Never lose focus. This is how I ship features 3x faster."
+
+**[VISUAL: Demo showing all 4 terminals active]**
 
 > "Let's see it in action."
 
@@ -1470,7 +1563,7 @@ EOF
 
 **[VISUAL: URLs appearing]**
 
-> "GitHub: All public repos — github.com/anthropics/specweave
+> "GitHub: All public repos — github.com/anton-abyzov/specweave
 >
 > Docs: spec-weave.com
 >
@@ -1599,11 +1692,11 @@ BONUS:
 • Works with GPT/Gemini/Copilot (not just Claude!)
 • Full script in the academy (free)
 
-⭐ STAR THE REPO: https://github.com/anthropics/specweave
+⭐ STAR THE REPO: https://github.com/anton-abyzov/specweave
 Stars help other developers find this!
 
 LINKS:
-• SpecWeave: https://github.com/anthropics/specweave
+• SpecWeave: https://github.com/anton-abyzov/specweave
 • Claude Code: https://github.com/anthropics/claude-code
 • Academy: .specweave/docs/public/academy/
 
@@ -1731,7 +1824,7 @@ I've been building this for months. Free. Open source.
 
 Full masterclass (61 min): [LINK]
 
-⭐ Star if useful: github.com/anthropics/specweave
+⭐ Star if useful: github.com/anton-abyzov/specweave
 ```
 
 **LinkedIn:**

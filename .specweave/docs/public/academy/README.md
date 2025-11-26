@@ -137,7 +137,7 @@ Step-by-step guides you can follow at your own pace.
 
 All demos use public repositories you can explore:
 
-- **SpecWeave itself**: https://github.com/anthropics/specweave
+- **SpecWeave itself**: https://github.com/anton-abyzov/specweave
 - **Example projects**: Referenced in video scripts
 
 > **Note**: Some videos reference EasyChamp projects - these are proprietary. The techniques work identically on any project.
@@ -147,5 +147,5 @@ All demos use public repositories you can explore:
 ## Contributing
 
 Found an error? Want to suggest a video topic?
-- Open an issue: https://github.com/anthropics/specweave/issues
+- Open an issue: https://github.com/anton-abyzov/specweave/issues
 - Star the repo if this helps you!

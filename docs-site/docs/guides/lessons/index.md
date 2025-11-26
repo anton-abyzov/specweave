@@ -18,7 +18,9 @@ Prefer watching? Start with the Complete Masterclass:
 
 | Video | Duration | What's Covered |
 |-------|----------|----------------|
-| 🎬 **[Complete Masterclass](./00-complete-masterclass)** | 61 min | Full journey: concepts, 6 live demos, GitHub/JIRA/ADO sync |
+| 🎬 **[Complete Masterclass](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/public/academy/videos/001-specweave-complete-masterclass.md)** | 61 min | Full journey: concepts, 6 live demos, GitHub/JIRA/ADO sync |
+
+📺 **[Watch on YouTube](#)** *(link coming Nov 27, 2025)*
 
 More videos coming soon: Your First Increment, Daily Workflow, Integration Deep Dives.
 
