@@ -232,16 +232,17 @@ Choice: _
 
 ### Step 4: Run AI Quality Assessment (If Approved)
 
-**IMPORTANT**: Invoke `increment-quality-judge-v2` **agent** (not skill) via Task tool:
+**IMPORTANT**: Use the `increment-quality-judge-v2` **skill** (auto-activated) or CLI command:
 
-```typescript
-Task({
-  subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
-  prompt: `Assess quality of increment ${incrementId}`
-});
+```bash
+# Preferred: Use CLI command directly
+specweave qa 0001 --pre
+
+# The skill auto-activates when assessing quality
+# DO NOT spawn agents - use CLI instead
 ```
 
-Pass these parameters:
+Assessment parameters:
 - increment_id: "0001"
 - files: ["spec.md", "plan.md", "tests.md"]
 - dimensions: ["clarity", "testability", "completeness", "feasibility", "maintainability", "edge_cases"]

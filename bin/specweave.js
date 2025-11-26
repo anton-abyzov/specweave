@@ -35,7 +35,7 @@ program
   .option('-t, --template <type>', 'Project template (saas, api, fullstack)', 'saas')
   .option('-a, --adapter <tool>', 'AI tool adapter (claude, cursor, copilot, generic)', undefined)
   .option('--tech-stack <language>', 'Technology stack (nodejs, python, etc.)', undefined)
-  .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)', 'en')
+  .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
   .action(async (projectName, options) => {

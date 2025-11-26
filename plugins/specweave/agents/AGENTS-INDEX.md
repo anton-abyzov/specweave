@@ -134,14 +134,16 @@ Task({
 
 ### Quality Assurance Agents
 
-#### Increment Quality Judge v2
-```typescript
-Task({
-  subagent_type: "specweave:increment-quality-judge-v2:increment-quality-judge-v2",
-  prompt: "Assess quality of increment specification and implementation"
-});
+#### Quality Assessment (Skill-Based)
+
+**NOTE**: Quality assessment uses the `increment-quality-judge-v2` **skill** (auto-activated), not an agent.
+
+```bash
+# Use CLI command directly - DO NOT spawn agents
+specweave qa 0001 --pre
 ```
-**Use for**: AI-powered quality assessment, quantitative risk scoring (Probability × Impact), quality gate decisions
+
+The skill auto-activates when you discuss quality assessment. See `plugins/specweave/skills/increment-quality-judge-v2/SKILL.md`.
 
 #### Reflective Reviewer
 ```typescript
