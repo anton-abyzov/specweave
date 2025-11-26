@@ -32,15 +32,15 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0071-fix-feature-id-collision-github-import](../../../../increments/0071-fix-feature-id-collision-github-import/spec.md)
+**Increment**: `0071-fix-feature-id-collision-github-import`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-001): Analyze current FS-ID allocation algorithm
-- [x] [T-003](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-003): Implement unified numeric sequence for FS-IDs (within project)
-- [x] [T-004](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-004): Add collision detection logging
-- [x] [T-005](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-005): Update getMaxId() to consider both suffixes
-- [x] [T-011](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-011): Add unit tests for FS-ID collision prevention
+- [x] T-001: Analyze current FS-ID allocation algorithm
+- [x] T-003: Implement unified numeric sequence for FS-IDs (within project)
+- [x] T-004: Add collision detection logging
+- [x] T-005: Update getMaxId() to consider both suffixes
+- [x] T-011: Add unit tests for FS-ID collision prevention

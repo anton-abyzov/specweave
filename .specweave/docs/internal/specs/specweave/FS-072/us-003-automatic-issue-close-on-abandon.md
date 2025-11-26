@@ -30,12 +30,12 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
+**Increment**: `0072-github-status-reconciliation`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0072-github-status-reconciliation/tasks.md#T-007): Add close logic to post-increment-status-change.sh
-- [x] [T-008](../../../../increments/0072-github-status-reconciliation/tasks.md#T-008): Create close-github-issues-abandoned.ts script
+- [x] T-007: Add close logic to post-increment-status-change.sh
+- [x] T-008: Create close-github-issues-abandoned.ts script

@@ -33,17 +33,17 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0071-fix-feature-id-collision-github-import](../../../../increments/0071-fix-feature-id-collision-github-import/spec.md)
+**Increment**: `0071-fix-feature-id-collision-github-import`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-002): Analyze GitHub import flow for missing issues
-- [x] [T-006](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-006): Add prompt for including closed issues
-- [x] [T-007](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-007): Add progress indicator for pagination
-- [x] [T-008](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-008): Verify parent repo included in umbrella import
-- [x] [T-009](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-009): Add per-repo import summary
-- [x] [T-010](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-010): Implement dry-run mode for import
-- [x] [T-012](../../../../increments/0071-fix-feature-id-collision-github-import/tasks.md#T-012): Add integration test for GitHub import completeness
+- [x] T-002: Analyze GitHub import flow for missing issues
+- [x] T-006: Add prompt for including closed issues
+- [x] T-007: Add progress indicator for pagination
+- [x] T-008: Verify parent repo included in umbrella import
+- [x] T-009: Add per-repo import summary
+- [x] T-010: Implement dry-run mode for import
+- [x] T-012: Add integration test for GitHub import completeness

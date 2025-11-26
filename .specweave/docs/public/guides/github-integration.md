@@ -403,7 +403,7 @@ None (foundation task)
 
 ---
 🤖 Synced from SpecWeave increment `0005-user-authentication`
-- **Task**: [tasks.md#T-001](link)
+- **Task**: T-001 (User Model Schema)
 ```
 
 ---

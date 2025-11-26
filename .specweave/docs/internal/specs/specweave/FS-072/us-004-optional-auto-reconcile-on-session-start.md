@@ -31,14 +31,14 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
+**Increment**: `0072-github-status-reconciliation`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-009](../../../../increments/0072-github-status-reconciliation/tasks.md#T-009): Add config option for auto-reconcile
-- [x] [T-010](../../../../increments/0072-github-status-reconciliation/tasks.md#T-010): Create session-start reconcile hook
-- [x] [T-011](../../../../increments/0072-github-status-reconciliation/tasks.md#T-011): Add error handling for session start
-- [x] [T-012](../../../../increments/0072-github-status-reconciliation/tasks.md#T-012): Update hooks.json for SessionStart
+- [x] T-009: Add config option for auto-reconcile
+- [x] T-010: Create session-start reconcile hook
+- [x] T-011: Add error handling for session start
+- [x] T-012: Update hooks.json for SessionStart
