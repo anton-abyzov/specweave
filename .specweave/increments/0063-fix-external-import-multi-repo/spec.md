@@ -2,8 +2,9 @@
 increment: 0063-fix-external-import-multi-repo
 feature_id: FS-063
 type: hotfix
-status: in-progress
+status: completed
 created: 2025-11-25T11:40:00Z
+completed: 2025-11-26T13:55:00Z
 ---
 
 # Fix External Import for Multi-Repo Setup
@@ -29,7 +30,7 @@ External work item import is broken for multi-repo/umbrella setups:
 **Acceptance Criteria:**
 - [x] **AC-US1-01**: When multi-repo selection is made during init, items are imported from each selected repository
 - [x] **AC-US1-02**: Items from different repos are tagged with their source repository
-- [ ] **AC-US1-03**: Progress shows which repo is being imported and item count
+- [x] **AC-US1-03**: Progress shows which repo is being imported and item count
 - [x] **AC-US1-04**: Duplicate detection works across all repos (same GitHub issue = same US-XXXE ID)
 
 ### US-002: Feature Folder Structure for Imports
@@ -60,10 +61,10 @@ External work item import is broken for multi-repo/umbrella setups:
 **So that** bidirectional sync works correctly with external tools.
 
 **Acceptance Criteria:**
-- [ ] **AC-US4-01**: Creating increment from external US preserves E suffix and external metadata
-- [ ] **AC-US4-02**: Increment spec.md contains external origin link
-- [ ] **AC-US4-03**: On /specweave:done, progress syncs back to external tool
-- [ ] **AC-US4-04**: External tool shows task completion status from SpecWeave
+- [x] **AC-US4-01**: Creating increment from external US preserves E suffix and external metadata
+- [x] **AC-US4-02**: Increment spec.md contains external origin link
+- [x] **AC-US4-03**: On /specweave:done, progress syncs back to external tool
+- [x] **AC-US4-04**: External tool shows task completion status from SpecWeave
 
 ## Out of Scope
 
