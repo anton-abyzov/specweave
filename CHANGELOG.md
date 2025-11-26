@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.30] - 2025-11-26
+
+### 🐛 Bug Fixes
+- Fix feature ID collision: FS-XXX and FS-XXXE no longer share same numeric index within a project
+- Fix per-project sequences: each project now starts from FS-001 independently
+- Add prompt for including closed issues during GitHub import (default: Yes)
+- Add per-repo import summary with open/closed issue counts
+
+### 🧪 Tests
+- Add TC-133: Unified Numeric Sequence tests for FS-ID collision prevention
+- Add TC-134: Per-Project Sequences tests for project isolation
+
+---
+
 ## [0.28.29] - 2025-11-26
 
 ### 🔧 Improvements
