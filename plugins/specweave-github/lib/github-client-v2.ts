@@ -478,6 +478,32 @@ export class GitHubClientV2 {
   }
 
   /**
+   * Reopen a closed issue (NEW in v0.28.33)
+   *
+   * Used by GitHub reconciliation when increment is resumed/reopened
+   * and the GitHub issue should reflect that state.
+   */
+  async reopenIssue(issueNumber: number, comment?: string): Promise<void> {
+    if (comment) {
+      await this.addComment(issueNumber, comment);
+    }
+
+    const result = await execFileNoThrow('gh', [
+      'issue',
+      'reopen',
+      String(issueNumber),
+      '--repo',
+      this.fullRepo,
+    ]);
+
+    if (result.exitCode !== 0) {
+      throw new Error(
+        `Failed to reopen issue #${issueNumber}: ${result.stderr || result.stdout}`
+      );
+    }
+  }
+
+  /**
    * Add comment to issue
    */
   async addComment(issueNumber: number, comment: string): Promise<void> {
@@ -553,6 +579,48 @@ export class GitHubClientV2 {
       throw new Error(
         `Failed to add labels to issue #${issueNumber}: ${result.stderr || result.stdout}`
       );
+    }
+  }
+
+  /**
+   * Search for issues by feature ID and user story pattern (NEW in v0.28.33)
+   *
+   * Searches for issues with title matching pattern: [FS-XXX][US-YYY]
+   * Used by GitHubReconciler to find issues not stored in metadata.json
+   */
+  async searchIssuesByFeature(
+    featureId: string,
+    userStoryId?: string
+  ): Promise<GitHubIssue[]> {
+    // Build search pattern
+    // e.g., "[FS-063]" or "[FS-063][US-001]"
+    const pattern = userStoryId
+      ? `[${featureId}][${userStoryId}]`
+      : `[${featureId}]`;
+
+    const result = await execFileNoThrow('gh', [
+      'issue',
+      'list',
+      '--repo',
+      this.fullRepo,
+      '--search',
+      `"${pattern}" in:title`,
+      '--json',
+      'number,title,state,url',
+      '--state',
+      'all',  // Include both open and closed
+      '--limit',
+      '100',
+    ]);
+
+    if (result.exitCode !== 0 || !result.stdout) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(result.stdout);
+    } catch {
+      return [];
     }
   }
 

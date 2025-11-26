@@ -58,7 +58,10 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/core/ac-test-validator.js',
     'dist/src/core/ac-test-validator-cli.js',
     'dist/src/utils/fs-native.js',
-    'dist/src/utils/chalk-fallback.js'
+    'dist/src/utils/chalk-fallback.js',
+    // GitHub Reconciler - reconciles GitHub issue states with increment statuses
+    // Used by reopen-github-issues.js and close-github-issues-abandoned.js hooks
+    'dist/src/sync/github-reconciler.js'
   ]
 };
 

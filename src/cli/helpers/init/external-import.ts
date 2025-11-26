@@ -749,6 +749,11 @@ async function runImport(
 
     const repoLabel = info.sourceRepo ? ` (${info.sourceRepo})` : '';
 
+    // Add page number if available (shows pagination progress)
+    if (info.page !== undefined && info.page > 0) {
+      parts.push(`page ${info.page}`);
+    }
+
     // Build progress string
     if (info.total && info.percentage !== undefined) {
       parts.push(`[${info.current}/${info.total}] ${info.percentage}%`);

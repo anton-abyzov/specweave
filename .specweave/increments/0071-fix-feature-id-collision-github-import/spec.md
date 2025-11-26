@@ -2,10 +2,10 @@
 increment: 0071-fix-feature-id-collision-github-import
 title: "Fix Feature ID Collision and GitHub Import Completeness"
 priority: P1
-status: in-progress
+status: completed
 type: bug
 created: 2025-11-26
-feature_id: null
+completed: 2025-11-26
 ---
 
 # Fix Feature ID Collision and GitHub Issue Import Completeness
@@ -54,11 +54,11 @@ Two critical issues identified in the external import and feature ID allocation 
 **So that** I can reference features unambiguously without confusion
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: When `FS-001` exists (internal), next external feature gets `FS-002E` (not `FS-001E`)
-- [ ] **AC-US1-02**: When `FS-001E` exists (external), next internal feature gets `FS-002` (not `FS-001`)
-- [ ] **AC-US1-03**: Per-project sequences remain isolated (FS-001 in project-A, FS-001 in project-B are OK)
-- [ ] **AC-US1-04**: Collision detection logs warning if numeric overlap detected
-- [ ] **AC-US1-05**: Existing projects with collisions are not broken (backward compatible)
+- [x] **AC-US1-01**: When `FS-001` exists (internal), next external feature gets `FS-002E` (not `FS-001E`)
+- [x] **AC-US1-02**: When `FS-001E` exists (external), next internal feature gets `FS-002` (not `FS-001`)
+- [x] **AC-US1-03**: Per-project sequences remain isolated (FS-001 in project-A, FS-001 in project-B are OK)
+- [x] **AC-US1-04**: Collision detection logs warning if numeric overlap detected
+- [x] **AC-US1-05**: Existing projects with collisions are not broken (backward compatible)
 
 ### US-002: Complete GitHub Issue Import
 
@@ -67,12 +67,12 @@ Two critical issues identified in the external import and feature ID allocation 
 **So that** no work items are missed during brownfield onboarding
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Import includes both open AND closed issues (configurable)
-- [ ] **AC-US2-02**: Import fetches ALL pages (smart pagination with progress indicator)
-- [ ] **AC-US2-03**: Parent repo is included in umbrella mode import
-- [ ] **AC-US2-04**: Rate limit handling with automatic retry/backoff
-- [ ] **AC-US2-05**: Summary shows total issues per repo and any skipped items
-- [ ] **AC-US2-06**: Dry-run mode shows what WOULD be imported without creating files
+- [x] **AC-US2-01**: Import includes both open AND closed issues (configurable)
+- [x] **AC-US2-02**: Import fetches ALL pages (smart pagination with progress indicator)
+- [x] **AC-US2-03**: Parent repo is included in umbrella mode import
+- [x] **AC-US2-04**: Rate limit handling with automatic retry/backoff
+- [x] **AC-US2-05**: Summary shows total issues per repo and any skipped items
+- [x] **AC-US2-06**: Dry-run mode shows what WOULD be imported without creating files
 
 ---
 
