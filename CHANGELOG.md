@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.17] - 2025-11-26
+
+### ✨ Features
+- Make `/specweave:save` command prompt-free by default (removes deprecated `--yes` flag)
+
+---
+
+
+
 ## [0.28.15] - 2025-11-26
 
 ### 🐛 Bug Fixes
