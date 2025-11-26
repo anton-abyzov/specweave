@@ -41,8 +41,8 @@ export class FeatureDeletionGitHubService {
 
       const issues = JSON.parse(result.stdout);
 
-      // Filter to exact pattern: [FS-XXX][US-YYY]
-      const pattern = new RegExp(`\\[${featureId}\\]\\[US-\\d{3}\\]`);
+      // Filter to exact pattern: [FS-XXX][US-YYY] (3+ digits)
+      const pattern = new RegExp(`\\[${featureId}\\]\\[US-\\d{3,}\\]`);
       const filteredIssues = issues.filter((issue: any) => pattern.test(issue.title));
 
       this.logger.log(`Found ${filteredIssues.length} GitHub issues for ${featureId}`);

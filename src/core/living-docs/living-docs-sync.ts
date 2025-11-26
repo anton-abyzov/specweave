@@ -25,6 +25,7 @@ import { FeatureConsistencyValidator } from './feature-consistency-validator.js'
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
+import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
 
 // Helper functions for fs-extra compatibility
 async function pathExists(filePath: string): Promise<boolean> {
@@ -199,8 +200,11 @@ export class LivingDocsSync {
         // Extract increment number for auto-generation
         const match = incrementId.match(/^(\d{4})-/);
         if (match) {
-          const num = parseInt(match[1], 10);
-          featureId = `FS-${String(num).padStart(3, '0')}`;
+          const baseNum = parseInt(match[1], 10);
+          // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
+          const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+          const safeNum = findNextAvailableInternalIdSync(baseNum, specsPath, this.projectId, { logger: this.logger });
+          featureId = `FS-${String(safeNum).padStart(3, '0')}`;
           this.logger.warn(`⚠️ Invalid feature ID "${invalidValue}" replaced with auto-generated: ${featureId}`);
         } else {
           throw new Error(`Cannot sync increment ${incrementId}: invalid feature ID "${invalidValue}" and unable to auto-generate`);
@@ -350,19 +354,19 @@ export class LivingDocsSync {
       if (featureId) {
         // Validate format matches increment type
         const isDateFormat = /^FS-\d{2}-\d{2}-\d{2}/.test(featureId);
-        const isIncrementFormat = /^FS-\d{3}$/.test(featureId);
+        const isIncrementFormat = /^FS-\d{3,}$/.test(featureId);
 
         if (isBrownfield && isDateFormat) {
           // ✅ Brownfield with correct date format
           return featureId;
         } else if (!isBrownfield && isIncrementFormat) {
-          // ✅ Greenfield with correct increment format
+          // ✅ Greenfield with correct increment format (3+ digits)
           return featureId;
         } else {
           // ⚠️ Format mismatch - log warning and auto-generate correct format
           this.logger.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
           this.logger.warn(`   Found: ${featureId}`);
-          this.logger.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield)'}`);
+          this.logger.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield, 3+ digits)'}`);
           this.logger.warn(`   Auto-generating correct format...`);
 
           // Fall through to auto-generation
@@ -371,7 +375,10 @@ export class LivingDocsSync {
     }
 
     // Auto-generate for greenfield: FS-040, FS-041, etc.
-    const autoGenId = `FS-${String(num).padStart(3, '0')}`;
+    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
+    const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+    const safeNum = findNextAvailableInternalIdSync(num, specsPath, this.projectId, { logger: this.logger });
+    const autoGenId = `FS-${String(safeNum).padStart(3, '0')}`;
     this.logger.log(`   📝 Generated feature ID: ${autoGenId}`);
     return autoGenId;
   }

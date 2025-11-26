@@ -19,14 +19,14 @@ Bulk operation (12 user story file edits):
   × 4 hooks per Edit (v0.25.0 consolidated)
   × 2-3 Node.js subprocesses per hook
   = 48 hooks + 96-144 subprocesses
-  = 144-192 total processes in <5 seconds
+  = 144-192 total processes in `<5 seconds`
   → Process exhaustion → Circuit breaker → CRASH
 ```
 
 **Incidents**:
 - 2025-11-22: Multiple crashes during multi-file sync operations
 - 2025-11-23: Hook process storm (300 processes/min)
-- **2025-11-24**: Claude Code crash during increment 0053 completion (56-84 processes in <5s)
+- **2025-11-24**: Claude Code crash during increment 0053 completion (56-84 processes in `<5s`)
 
 ### Current Architecture (v0.25.0)
 
@@ -319,7 +319,7 @@ Bulk Edit (12 files):
 
 1. **No crashes** during bulk operations (10+ files)
 2. **Process count < 30** for 12-file bulk edit (vs 120+ without batching)
-3. **Single edits unaffected** (still run immediately, <500ms)
+3. **Single edits unaffected** (still run immediately, `<500ms`)
 4. **User workflow unchanged** (no manual intervention required)
 
 ### Monitoring Metrics

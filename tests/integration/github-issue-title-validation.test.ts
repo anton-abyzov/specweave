@@ -231,8 +231,8 @@ created: 2025-11-22`;
 
         const result = await builder.buildIssueBody();
 
-        // Verify title matches pattern: [FS-XXX][US-YYY] Title
-        expect(result.title).toMatch(/^\[FS-\d{3}\]\[US-\d{3}\] .+$/);
+        // Verify title matches pattern: [FS-XXX][US-YYY] Title (3+ digits each)
+        expect(result.title).toMatch(/^\[FS-\d{3,}\]\[US-\d{3,}\] .+$/);
 
         // Verify exact format
         expect(result.title).toBe('[FS-048][US-001] Smart Pagination During Init');

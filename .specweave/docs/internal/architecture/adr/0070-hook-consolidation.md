@@ -123,7 +123,7 @@ System runs out of process handles/memory
   fi
   ```
 - Reduced timeout: 10s → 2s
-- 99.9% of Edit/Write operations exit in <1ms
+- 99.9% of Edit/Write operations exit in `<1ms`
 
 ---
 
@@ -164,7 +164,7 @@ System runs out of process handles/memory
 - Edit operation: **2-3 bash processes** (pre, post, metadata with fast exit)
 - 50 Edit/min: **100-150 process spawns/min** (50% reduction)
 - Hook overhead: **2-5 seconds per Edit** (50% faster)
-- Post-metadata: **<1ms for 99.9% of operations** (not metadata.json)
+- Post-metadata: **`<1ms` for 99.9% of operations** (not metadata.json)
 
 ---
 
@@ -174,7 +174,7 @@ System runs out of process handles/memory
 # Test pre-hook with non-SpecWeave file (should exit immediately)
 export TOOL_USE_ARGS='{"file_path":"src/cli/commands/init.ts"}'
 bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
-# Result: ✓ Exits in <1ms
+# Result: ✓ Exits in `<1ms`
 
 # Test pre-hook with SpecWeave file (should signal post-hook)
 export TOOL_USE_ARGS='{"file_path":".specweave/increments/0051/spec.md"}'
@@ -186,7 +186,7 @@ time for i in {1..100}; do
   export TOOL_USE_ARGS='{"file_path":"src/test.ts"}'
   bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
 done
-# Result: ✓ <2 seconds (20ms/hook)
+# Result: ✓ `<2 seconds` (20ms/hook)
 ```
 
 ---
@@ -250,7 +250,7 @@ done
 | Date | Decision | Rationale |
 |------|----------|-----------|
 | 2025-11-23 | Consolidate Edit/Write hooks | Reduce overhead by 50% |
-| 2025-11-23 | Add ultra-fast early exit to post-metadata-change | 99.9% operations exit in <1ms |
+| 2025-11-23 | Add ultra-fast early exit to post-metadata-change | 99.9% operations exit in `<1ms` |
 | 2025-11-23 | Reduce post-metadata timeout (10s → 2s) | Fast early exit makes 10s unnecessary |
 | 2025-11-23 | Handle relative paths in hooks | Claude Code provides relative paths sometimes |
 

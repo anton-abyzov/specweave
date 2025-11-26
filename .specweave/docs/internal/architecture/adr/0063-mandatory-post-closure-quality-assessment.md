@@ -84,7 +84,7 @@ Step 4: Suggest Next Work
 |----------|----------|--------|
 | ✅ **PASS** | Score ≥80, No critical risks | Proceed to next work |
 | 🟡 **CONCERNS** | Score 60-79, High risks present | Log concerns, suggest improvements |
-| 🔴 **FAIL** | Score <60, Critical risks present | **Create follow-up increment for fixes** |
+| 🔴 **FAIL** | Score `<60`, Critical risks present | **Create follow-up increment for fixes** |
 
 **Report Location**: `.specweave/increments/####/reports/qa-post-closure.md`
 

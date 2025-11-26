@@ -212,7 +212,7 @@ unset SPECWEAVE_DISABLE_HOOKS
 # 1. Check hook execution time
 tail -100 .specweave/logs/hooks-debug.log | grep "Consolidated background work completed"
 
-# Expected: <500ms execution time
+# Expected: `<500ms` execution time
 # If >1000ms: Performance degradation! Investigate
 
 # 2. Check circuit breaker status

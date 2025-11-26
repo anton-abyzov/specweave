@@ -65,11 +65,11 @@ export class UserStoryIssueBuilder {
       );
     }
 
-    // ✅ VALIDATION: Ensure featureId matches expected pattern (FS-XXX)
-    if (!/^FS-\d{3}$/.test(featureId)) {
+    // ✅ VALIDATION: Ensure featureId matches expected pattern (FS-XXX, 3+ digits)
+    if (!/^FS-\d{3,}$/.test(featureId)) {
       throw new Error(
         `UserStoryIssueBuilder: Invalid featureId format "${featureId}".\n` +
-        `Expected format: FS-XXX (e.g., "FS-047", "FS-123").\n` +
+        `Expected format: FS-XXX (e.g., "FS-047", "FS-123", "FS-1000").\n` +
         `This prevents incorrect issue titles like [SP-US-XXX] or [${featureId}][US-XXX].`
       );
     }
@@ -114,12 +114,12 @@ export class UserStoryIssueBuilder {
     // This prevents issues like [SP-US-XXX] or [undefined][US-XXX]
     const title = `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
 
-    // ✅ SAFETY CHECK: Ensure title matches expected pattern
-    const titlePattern = /^\[FS-\d{3}\]\[US-\d{3}\] .+$/;
+    // ✅ SAFETY CHECK: Ensure title matches expected pattern (3+ digits)
+    const titlePattern = /^\[FS-\d{3,}\]\[US-\d{3,}\] .+$/;
     if (!titlePattern.test(title)) {
       throw new Error(
         `Generated issue title has incorrect format: "${title}"\n` +
-        `Expected: [FS-XXX][US-YYY] Title\n` +
+        `Expected: [FS-XXX][US-YYY] Title (3+ digits each)\n` +
         `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
         `Feature ID: ${this.featureId}\n` +
         `User Story ID: ${frontmatter.id}`

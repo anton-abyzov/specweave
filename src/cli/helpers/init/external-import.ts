@@ -379,13 +379,16 @@ export async function promptAndRunExternalImport(
   else defaultTimeRange = 999;
 
   // Prompt for time range
+  // NOTE: GitHub API 'since' filter uses 'updated_at' (not 'created_at')
+  // Issues not updated within the range won't be imported even if recently created
+  console.log(chalk.gray('   ℹ️  Note: GitHub filters by "updated at" date, not "created at"'));
   const timeRange = await select({
     message: 'How far back should we import?',
     choices: [
-      { name: '1 month (recent items only)', value: 1 },
+      { name: '1 month (recently updated items)', value: 1 },
       { name: '3 months (recommended)', value: 3 },
       { name: '6 months (comprehensive)', value: 6 },
-      { name: 'All time (warning: may be slow)', value: 999 }
+      { name: 'All time (imports everything, may be slow)', value: 999 }
     ],
     default: defaultTimeRange
   });
@@ -877,7 +880,33 @@ async function runImport(
 
     // Convert imported items to living docs User Stories
     if (result.totalCount > 0) {
+      // DIAGNOSTIC: Log items before conversion
+      console.log('');
+      console.log(chalk.cyan('   📊 Import Summary by Repo:'));
+      const repoCounts = new Map<string, number>();
+      for (const item of result.allItems) {
+        const repo = item.sourceRepo || 'unknown';
+        repoCounts.set(repo, (repoCounts.get(repo) || 0) + 1);
+      }
+      for (const [repo, count] of repoCounts) {
+        console.log(chalk.gray(`      ${repo}: ${count} items`));
+      }
+      console.log(chalk.gray(`      Total in allItems: ${result.allItems.length}`));
+      console.log('');
+
       await convertToLivingDocs(targetDir, result, spinner);
+    } else {
+      // T-008: Show troubleshooting checklist when 0 items imported
+      console.log('');
+      console.log(chalk.yellow('   ⚠️  No items imported. Troubleshooting checklist:'));
+      console.log(chalk.gray('   ┌─ Time range: GitHub filters by "updated_at" not "created_at"'));
+      console.log(chalk.gray('   │  → Try "All time" option if issues were not recently updated'));
+      console.log(chalk.gray('   ├─ Include closed: Set to "Yes" to import resolved issues'));
+      console.log(chalk.gray('   ├─ Repository access: Check GitHub token has repo access'));
+      console.log(chalk.gray('   ├─ Issues vs PRs: Only Issues are imported (not Pull Requests)'));
+      console.log(chalk.gray('   └─ Labels filter: If using labels, verify they exist in the repo'));
+      console.log('');
+      console.log(chalk.gray('   💡 Run with SPECWEAVE_DEBUG=1 for verbose API logging'));
     }
 
     return result;

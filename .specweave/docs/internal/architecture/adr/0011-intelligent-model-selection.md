@@ -1,3 +1,9 @@
+---
+id: adr-0011-intelligent-model-selection
+title: "ADR-0011: Intelligent Model Selection (SUPERSEDED)"
+sidebar_label: "0011: Model Selection (Superseded)"
+---
+
 # ADR-0011: Intelligent Model Selection (SUPERSEDED)
 
 ---

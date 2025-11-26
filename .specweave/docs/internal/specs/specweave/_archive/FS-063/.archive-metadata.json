@@ -1,0 +1,11 @@
+{
+  "id": "FS-063",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:54.730Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-063",
+  "linkedIncrements": [
+    "0063-fix-external-import-multi-repo"
+  ]
+}

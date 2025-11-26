@@ -388,8 +388,8 @@ feature: FS-25-11-15-external
 
       // Should use date-based ID from frontmatter
       expect(feature050?.originalId).toBe('FS-25-11-15-external');
-      // Assigned ID is sequential (from brownfield pool)
-      expect(feature050?.assignedId).toMatch(/^FS-\d{3}$/);
+      // Assigned ID is sequential (from brownfield pool, 3+ digits)
+      expect(feature050?.assignedId).toMatch(/^FS-\d{3,}$/);
     });
 
     it('should handle mix of greenfield and brownfield', async () => {

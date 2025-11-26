@@ -144,23 +144,63 @@ stateDiagram-v2
 - **Completed**: All tasks done, tests passing
 - **Abandoned**: Work canceled (with reason)
 
+## Increment Sizing: Keep It Small
+
+:::tip Golden Rule
+**5-15 tasks, 1-3 user stories, completable in 1-3 days.**
+:::
+
+| Metric | Target | Why |
+|--------|--------|-----|
+| **Tasks** | 5-15 | Trackable, achievable in reasonable time |
+| **User Stories** | 1-3 | Focused scope, clear goals |
+| **Duration** | 1-3 days | Fast feedback, quick wins |
+
+### Why Small Increments?
+
+**For Humans:**
+- ✅ "12 of 15 tasks done" feels achievable
+- ✅ Ship something every few days
+- ✅ Always know exactly what to do next
+
+**For AI Tools:**
+- ✅ Better context retention (smaller specs fit in context windows)
+- ✅ Higher accuracy per task
+- ✅ Easier to validate acceptance criteria
+
+### Anti-Pattern: The Mega-Increment
+
+```
+❌ BAD: 50-task increment running for 3 weeks
+   - You lose mental context after week 1
+   - AI tools struggle with sprawling specs
+   - Progress feels slow ("10% done after 3 days?")
+   - Higher risk of incomplete delivery
+```
+
+**If your increment has 15+ tasks → split it into smaller increments!**
+
+---
+
 ## Best Practices
 
 ### ✅ DO
 
-1. **Keep increments focused** - One feature or fix per increment
-2. **Complete before starting new** - Finish 0001 before 0002
-3. **Use descriptive names** - `0001-user-authentication` not `0001`
-4. **Document scope changes** - Use `/specweave:update-scope`
-5. **Close properly** - Validate tests, update docs, create completion report
+1. **Keep increments small** - 5-15 tasks, 1-3 user stories
+2. **Keep increments focused** - One feature or fix per increment
+3. **Complete before starting new** - Finish 0001 before 0002
+4. **Use descriptive names** - `0001-user-authentication` not `0001`
+5. **Document scope changes** - Use `/specweave:update-scope`
+6. **Close properly** - Validate tests, update docs, create completion report
 
 ### ❌ DON'T
 
-1. **Don't start multiple increments** - Causes context switching
-2. **Don't skip specs** - Leads to unclear requirements
-3. **Don't modify completed increments** - They're immutable snapshots
-4. **Don't work without a plan** - Create plan.md before implementation
-5. **Don't forget tests** - Every task needs test validation
+1. **Don't create mega-increments** - Split 20+ task increments
+2. **Don't start multiple increments** - Causes context switching
+3. **Don't skip specs** - Leads to unclear requirements
+4. **Don't modify completed increments** - They're immutable snapshots
+5. **Don't work without a plan** - Create plan.md before implementation
+6. **Don't forget tests** - Every task needs test validation
 
 ## Real-World Examples
 
@@ -179,23 +219,41 @@ Structure:
 └── reports/COMPLETION-REPORT.md
 ```
 
-### Example 2: Complex Feature
+### Example 2: Payment Feature (Split into Multiple Increments)
+
+:::caution Better Approach
+Instead of one 18-task, 3-week increment, **split into focused increments**:
+:::
 
 ```
-Increment: 0012-payment-processing
-Duration: 3 weeks
-Tasks: 18
+# Instead of ONE mega-increment, split into THREE focused ones:
+
+Increment: 0012-stripe-checkout
+Duration: 3 days
+Tasks: 8
 Type: feature
+├── spec.md (2 user stories: basic checkout, payment confirmation)
+├── plan.md (Stripe Checkout integration)
+└── tasks.md (8 tasks, embedded tests, 85% coverage)
 
-Structure:
-├── spec.md (5 user stories, 15 AC-IDs)
-├── plan.md (Stripe integration, webhooks, refunds)
-├── tasks.md (18 tasks, embedded tests, 90% coverage)
-├── logs/ (multiple sessions)
-└── reports/
-    ├── COMPLETION-REPORT.md
-    └── scope-changes-2025-11-10.md
+Increment: 0013-stripe-webhooks
+Duration: 2 days
+Tasks: 6
+Type: feature
+├── spec.md (2 user stories: webhook handling, event processing)
+├── plan.md (Webhook endpoints, event verification)
+└── tasks.md (6 tasks, embedded tests, 90% coverage)
+
+Increment: 0014-stripe-refunds
+Duration: 2 days
+Tasks: 5
+Type: feature
+├── spec.md (1 user story: refund processing)
+├── plan.md (Refund API, admin UI)
+└── tasks.md (5 tasks, embedded tests, 85% coverage)
 ```
+
+**Result**: Same total scope, but with 3 shippable milestones instead of 1 risky mega-increment!
 
 ### Example 3: Emergency Hotfix
 
@@ -238,6 +296,7 @@ Answer: Read living docs
 ## Summary
 
 - **Increment = complete feature unit** (spec, plan, tasks, tests)
+- **Keep it small**: 5-15 tasks, 1-3 user stories, 1-3 days
 - **Immutable snapshots** preserved forever
 - **Clear lifecycle** (planning → active → completed)
 - **Focus on ONE** increment at a time

@@ -1,0 +1,11 @@
+{
+  "id": "FS-067",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:55.600Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-067",
+  "linkedIncrements": [
+    "0067-multi-project-init-bugs"
+  ]
+}

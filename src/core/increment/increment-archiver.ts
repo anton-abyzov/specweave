@@ -63,6 +63,19 @@ export class IncrementArchiver {
 
   /**
    * Archive increments based on options
+   *
+   * CRITICAL FIX (2025-11-26): --keep-last N now means "exactly N increments remain"
+   *
+   * Previous bug: External sync protection would ADD exceptions on top of keepLast,
+   * resulting in more than N increments remaining. Now we use a "greedy archive"
+   * algorithm that archives from oldest until exactly N remain.
+   *
+   * Algorithm:
+   * 1. Sort all increments by number (oldest first)
+   * 2. Calculate how many need to remain: keepLast (or apply other filters)
+   * 3. Walk from oldest, archiving each eligible increment
+   * 4. Protected increments (external sync, active) count toward the "remaining" quota
+   * 5. Stop when exactly keepLast increments remain
    */
   async archive(options: ArchiveOptions = {}): Promise<ArchiveResult> {
     const result: ArchiveResult = {
@@ -77,42 +90,232 @@ export class IncrementArchiver {
       await fs.ensureDir(this.archiveDir);
     }
 
-    // Get all increments
-    const increments = await this.getIncrements();
+    // Get all increments sorted by number (oldest first)
+    const allIncrements = await this.getIncrements();
 
-    // Filter increments based on options
-    const toArchive = await this.filterIncrements(increments, options);
-
-    // Process each increment
-    for (const increment of toArchive) {
-      try {
-        const shouldArchive = await this.shouldArchive(increment, options);
-
-        if (shouldArchive) {
-          if (options.dryRun) {
-            this.logger.info(`[DRY RUN] Would archive: ${increment}`);
-            result.archived.push(increment);
-          } else {
-            await this.archiveIncrement(increment);
-            result.archived.push(increment);
-            this.logger.success(`Archived: ${increment}`);
-          }
-        } else {
-          result.skipped.push(increment);
-          this.logger.debug(`Skipped: ${increment}`);
-        }
-      } catch (error) {
-        result.errors.push(increment);
-        this.logger.error(`Failed to archive ${increment}: ${error}`);
-      }
+    // Handle specific increments mode (explicit list)
+    if (options.increments && options.increments.length > 0) {
+      return this.archiveSpecificIncrements(options.increments, options, result);
     }
 
-    // Calculate total size
+    // Handle pattern mode
+    if (options.pattern) {
+      return this.archiveByPattern(allIncrements, options, result);
+    }
+
+    // Handle olderThanDays mode
+    if (options.olderThanDays !== undefined) {
+      return this.archiveByAge(allIncrements, options, result);
+    }
+
+    // Handle keepLast mode (default behavior)
+    // CRITICAL SAFETY: Default to 3 if no criteria provided
+    const effectiveKeepLast = options.keepLast ?? 3;
+
+    if (options.keepLast === undefined) {
+      this.logger.warn(`No filtering criteria provided - defaulting to --keep-last 3 for safety`);
+      this.logger.info(`Use --keep-last N to explicitly set how many increments to keep`);
+    }
+
+    return this.archiveWithKeepLast(allIncrements, effectiveKeepLast, options, result);
+  }
+
+  /**
+   * Archive specific increments by ID
+   */
+  private async archiveSpecificIncrements(
+    incrementIds: string[],
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<ArchiveResult> {
+    const allIncrements = await this.getIncrements();
+
+    for (const target of incrementIds) {
+      const increment = allIncrements.find(inc => {
+        const incNumber = inc.split('-')[0];
+        return inc === target || incNumber === target.padStart(4, '0');
+      });
+
+      if (!increment) {
+        this.logger.warn(`Increment not found: ${target}`);
+        result.errors.push(target);
+        continue;
+      }
+
+      await this.tryArchiveIncrement(increment, options, result);
+    }
+
     if (!options.dryRun) {
       result.totalSize = await this.calculateSize(result.archived);
     }
 
     return result;
+  }
+
+  /**
+   * Archive increments matching a pattern
+   */
+  private async archiveByPattern(
+    allIncrements: string[],
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<ArchiveResult> {
+    const regex = new RegExp(options.pattern!, 'i');
+    const matching = allIncrements.filter(inc => regex.test(inc));
+
+    for (const increment of matching) {
+      await this.tryArchiveIncrement(increment, options, result);
+    }
+
+    if (!options.dryRun) {
+      result.totalSize = await this.calculateSize(result.archived);
+    }
+
+    return result;
+  }
+
+  /**
+   * Archive increments older than N days
+   */
+  private async archiveByAge(
+    allIncrements: string[],
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<ArchiveResult> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays!);
+
+    for (const increment of allIncrements) {
+      const metadata = await this.getMetadata(increment);
+      let isOldEnough = false;
+
+      if (metadata?.lastActivity) {
+        const lastActivity = new Date(metadata.lastActivity);
+        isOldEnough = lastActivity < cutoffDate;
+      } else {
+        const incPath = path.join(this.incrementsDir, increment);
+        const stats = await fs.stat(incPath);
+        isOldEnough = stats.mtime < cutoffDate;
+      }
+
+      if (isOldEnough) {
+        await this.tryArchiveIncrement(increment, options, result);
+      }
+    }
+
+    if (!options.dryRun) {
+      result.totalSize = await this.calculateSize(result.archived);
+    }
+
+    return result;
+  }
+
+  /**
+   * Archive with --keep-last N semantics
+   *
+   * CRITICAL: This ensures EXACTLY N increments remain after archiving.
+   * Protected increments (external sync, active) count toward the N remaining.
+   *
+   * Algorithm:
+   * 1. Start from oldest increment
+   * 2. Try to archive each one
+   * 3. Count remaining = (total - archived)
+   * 4. Stop when remaining == keepLast
+   * 5. Protected increments naturally stay and count toward keepLast
+   */
+  private async archiveWithKeepLast(
+    allIncrements: string[],
+    keepLast: number,
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<ArchiveResult> {
+    const total = allIncrements.length;
+
+    if (total <= keepLast) {
+      this.logger.info(`Only ${total} increments exist, nothing to archive (keeping ${keepLast})`);
+      return result;
+    }
+
+    // How many we need to archive to reach exactly keepLast
+    let targetArchiveCount = total - keepLast;
+
+    this.logger.debug(`Total: ${total}, Keep: ${keepLast}, Target to archive: ${targetArchiveCount}`);
+
+    // Process from oldest to newest
+    for (const increment of allIncrements) {
+      // Check if we've archived enough
+      if (result.archived.length >= targetArchiveCount) {
+        this.logger.debug(`Reached target archive count (${targetArchiveCount}), stopping`);
+        break;
+      }
+
+      // Calculate current remaining
+      const currentRemaining = total - result.archived.length;
+
+      // Safety check: never go below keepLast
+      if (currentRemaining <= keepLast) {
+        this.logger.debug(`Would go below keepLast (${keepLast}), stopping`);
+        break;
+      }
+
+      // Try to archive this increment
+      const archiveAttempt = await this.tryArchiveIncrement(increment, options, result);
+
+      // If increment was protected (skipped), it counts toward remaining
+      // So we need to archive one MORE to compensate
+      if (!archiveAttempt.archived && !archiveAttempt.error) {
+        // Increment was skipped (protected) - it will remain active
+        // We need to archive more to compensate
+        targetArchiveCount++;
+        this.logger.debug(`${increment} is protected, adjusted target to ${targetArchiveCount}`);
+      }
+    }
+
+    // Final verification
+    const finalRemaining = total - result.archived.length;
+    if (finalRemaining !== keepLast && result.skipped.length > 0) {
+      this.logger.info(`Note: ${finalRemaining} increments remain (requested ${keepLast})`);
+      this.logger.info(`${result.skipped.length} increments have active external sync and cannot be archived`);
+    }
+
+    if (!options.dryRun) {
+      result.totalSize = await this.calculateSize(result.archived);
+    }
+
+    return result;
+  }
+
+  /**
+   * Try to archive a single increment, handling all checks
+   * Returns { archived: boolean, error: boolean }
+   */
+  private async tryArchiveIncrement(
+    increment: string,
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<{ archived: boolean; error: boolean }> {
+    try {
+      const canArchive = await this.shouldArchive(increment, options);
+
+      if (canArchive) {
+        if (options.dryRun) {
+          this.logger.info(`[DRY RUN] Would archive: ${increment}`);
+          result.archived.push(increment);
+        } else {
+          await this.archiveIncrement(increment);
+          result.archived.push(increment);
+          this.logger.success(`Archived: ${increment}`);
+        }
+        return { archived: true, error: false };
+      } else {
+        result.skipped.push(increment);
+        return { archived: false, error: false };
+      }
+    } catch (error) {
+      result.errors.push(increment);
+      this.logger.error(`Failed to archive ${increment}: ${error}`);
+      return { archived: false, error: true };
+    }
   }
 
   /**
@@ -138,77 +341,6 @@ export class IncrementArchiver {
         const numB = parseInt(b.split('-')[0]);
         return numA - numB;
       });
-  }
-
-  /**
-   * Filter increments based on archive options
-   *
-   * CRITICAL SAFETY: If no filtering options are provided, defaults to keepLast: 3
-   * to prevent accidental archiving of ALL increments.
-   */
-  private async filterIncrements(
-    increments: string[],
-    options: ArchiveOptions
-  ): Promise<string[]> {
-    let filtered = [...increments];
-
-    // If specific increments provided, use only those
-    if (options.increments && options.increments.length > 0) {
-      filtered = filtered.filter(inc => {
-        const incNumber = inc.split('-')[0];
-        return options.increments!.some(target => {
-          return inc === target || incNumber === target.padStart(4, '0');
-        });
-      });
-      return filtered;
-    }
-
-    // Apply pattern filter
-    if (options.pattern) {
-      const regex = new RegExp(options.pattern, 'i');
-      filtered = filtered.filter(inc => regex.test(inc));
-    }
-
-    // CRITICAL SAFETY: Determine effective keepLast value
-    // If no explicit filtering criteria provided, default to keeping last 3
-    const hasExplicitCriteria = options.pattern !== undefined ||
-                                 options.olderThanDays !== undefined ||
-                                 options.archiveCompleted === true;
-
-    const effectiveKeepLast = options.keepLast !== undefined
-      ? options.keepLast
-      : (hasExplicitCriteria ? undefined : 3); // Default to 3 when no criteria
-
-    // Keep last N increments
-    if (effectiveKeepLast !== undefined) {
-      const toKeep = increments.slice(-effectiveKeepLast);
-      filtered = filtered.filter(inc => !toKeep.includes(inc));
-
-      if (options.keepLast === undefined && !hasExplicitCriteria) {
-        this.logger.warn(`No filtering criteria provided - defaulting to --keep-last 3 for safety`);
-        this.logger.info(`Use --keep-last N to explicitly set how many increments to keep`);
-      }
-    }
-
-    // Filter by age
-    if (options.olderThanDays !== undefined) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays);
-
-      filtered = await Promise.all(filtered.map(async inc => {
-        const metadata = await this.getMetadata(inc);
-        if (metadata?.lastActivity) {
-          const lastActivity = new Date(metadata.lastActivity);
-          return lastActivity < cutoffDate ? inc : null;
-        }
-        // Check directory modification time as fallback
-        const incPath = path.join(this.incrementsDir, inc);
-        const stats = await fs.stat(incPath);
-        return stats.mtime < cutoffDate ? inc : null;
-      })).then(results => results.filter(Boolean) as string[]);
-    }
-
-    return filtered;
   }
 
   /**

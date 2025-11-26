@@ -1,0 +1,11 @@
+{
+  "id": "FS-060",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:54.136Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-060",
+  "linkedIncrements": [
+    "0060-migrate-inquirer-to-modular-api"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "FS-057",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:53.079Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-057",
+  "linkedIncrements": [
+    "0057-test-status-line-sync"
+  ]
+}

@@ -285,6 +285,9 @@ export class ItemConverter {
     const converted: ConvertedUserStory[] = [];
     let skippedCount = 0;
 
+    // DIAGNOSTIC: Log input items count
+    console.log(`   📥 ItemConverter received: ${items.length} items for project: ${this.options.projectId || 'default'}`);
+
     // Ensure specs directory exists
     fs.mkdirSync(this.options.specsDir, { recursive: true });
 
@@ -295,6 +298,12 @@ export class ItemConverter {
 
     // Group items by source (for multi-repo) or treat as single group
     const itemGroups = this.groupItemsByFeature(items);
+
+    // DIAGNOSTIC: Log grouping results
+    console.log(`   📁 Grouped into ${itemGroups.size} groups:`);
+    for (const [groupKey, groupItems] of itemGroups) {
+      console.log(`      → ${groupKey}: ${groupItems.length} items`);
+    }
 
     // Process each group
     for (const [groupKey, groupItems] of itemGroups.entries()) {
@@ -542,7 +551,15 @@ User stories in this feature will be listed here.
     const name = platformName[item.platform] || item.platform;
 
     // Extract issue/ticket number from external ID
-    const issueNumber = item.id.replace(/^(GITHUB|JIRA|ADO)-/, '');
+    // v0.29+ format: github#owner/repo#123 → extract "123"
+    // Legacy format: github#123 → extract "123"
+    let issueNumber = item.id;
+    const newFormatMatch = item.id.match(/#(\d+)$/);
+    if (newFormatMatch) {
+      issueNumber = newFormatMatch[1];
+    } else {
+      issueNumber = item.id.replace(/^(GITHUB|JIRA|ADO)-/, '');
+    }
 
     return `${emoji} [${name} #${issueNumber}](${item.url})`;
   }

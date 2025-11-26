@@ -107,6 +107,10 @@ SpecWeave applies this insight:
 
 ## Example: Build an Event Management SaaS
 
+:::tip Keep Increments Small
+**Best practice**: Split large projects into 5-15 task increments. This works better for both humans (easier tracking) and AI (better context retention).
+:::
+
 ```bash
 # Install
 npm install -g specweave
@@ -114,25 +118,34 @@ npm install -g specweave
 # Create project
 mkdir eventmgmt && cd eventmgmt
 specweave init .
-
-# Open Claude Code and describe:
-"Build an event management SaaS with Next.js 14, Prisma, NextAuth.js,
-Stripe payments, deployed on Hetzner Cloud"
-
-# SpecWeave autonomously creates:
-# - PRD with market research
-# - Architecture with C4 diagrams
-# - Database schema (Prisma)
-# - Auth system (NextAuth.js)
-# - Payment integration (Stripe)
-# - Infrastructure (Terraform for Hetzner)
-# - Deployment pipeline (GitHub Actions)
-# - Tests (Playwright E2E + Jest)
-# - Living documentation (auto-updates)
-
-# Then say: "Implement the MVP"
-# SpecWeave builds the entire application!
 ```
+
+**Break it into focused increments:**
+
+```bash
+# Increment 1: Project Foundation (1 day)
+/specweave:increment "Setup Next.js 14 with Prisma and basic layout"
+
+# Increment 2: Authentication (2 days)
+/specweave:increment "User auth with NextAuth.js"
+
+# Increment 3: Event CRUD (2 days)
+/specweave:increment "Create, read, update, delete events"
+
+# Increment 4: Payments (2 days)
+/specweave:increment "Stripe payment integration for tickets"
+
+# Increment 5: Deployment (1 day)
+/specweave:increment "Deploy to Hetzner with Terraform"
+```
+
+**Each increment completes with:**
+- ✅ Working code
+- ✅ Tests passing (60%+ coverage)
+- ✅ Documentation updated
+- ✅ Ready to ship
+
+**Why split?** You ship working software after each increment. If priorities change after Increment 3, you have a deployable app!
 
 ---
 

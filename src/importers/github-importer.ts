@@ -67,8 +67,16 @@ export class GitHubImporter implements Importer {
     const since = new Date();
     since.setMonth(since.getMonth() - timeRangeMonths);
 
+    // DIAGNOSTIC: Log import parameters (helps debug "only 1 issue" reports)
+    console.log(`   📋 GitHub Import: ${this.owner}/${this.repo}`);
+    console.log(`      → State: ${includeClosed ? 'all (open + closed)' : 'open only'}`);
+    console.log(`      → Since: ${since.toISOString().split('T')[0]} (${timeRangeMonths} months ago)`);
+    if (labels.length > 0) console.log(`      → Labels: ${labels.join(', ')}`);
+
     let page = 1;
     let totalFetched = 0;
+    let totalFromApi = 0;
+    let totalPRsFiltered = 0;
 
     while (totalFetched < maxItems) {
       try {
@@ -83,6 +91,11 @@ export class GitHubImporter implements Importer {
           per_page: 100,
           page,
         });
+
+        // DIAGNOSTIC: Count API response
+        totalFromApi += response.data.length;
+        const prCount = response.data.filter((i: any) => i.pull_request).length;
+        totalPRsFiltered += prCount;
 
         // Check rate limiting
         const remaining = parseInt(response.headers['x-ratelimit-remaining'] || '0', 10);
@@ -117,6 +130,15 @@ export class GitHubImporter implements Importer {
         }
         throw error;
       }
+    }
+
+    // DIAGNOSTIC: Summary after pagination completes
+    console.log(`      → API returned: ${totalFromApi} items (${totalPRsFiltered} PRs filtered, ${totalFetched} issues imported)`);
+    if (totalFetched === 0) {
+      console.log(`      ⚠️  No issues found! Check:`);
+      console.log(`         - Are there open issues? (use --include-closed for closed)`);
+      console.log(`         - Were issues updated after ${since.toISOString().split('T')[0]}?`);
+      console.log(`         - GitHub API: https://github.com/${this.owner}/${this.repo}/issues`);
     }
   }
 
@@ -153,8 +175,11 @@ export class GitHubImporter implements Importer {
       status = 'in-progress';
     }
 
+    // CRITICAL FIX (2025-11-26): Include repo in external ID to prevent cross-repo collisions
+    // Bug: Multiple repos with same issue number (e.g., #1) were being deduplicated incorrectly
+    // because external ID was only `github#1` for all repos
     return {
-      id: `github#${issue.number}`,
+      id: `github#${this.owner}/${this.repo}#${issue.number}`,
       type,
       title: issue.title,
       description: issue.body || '',

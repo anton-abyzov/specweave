@@ -1,0 +1,11 @@
+{
+  "id": "FS-070",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:32:11.857Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-070",
+  "linkedIncrements": [
+    "0070-fix-parent-repo-sync-profile"
+  ]
+}

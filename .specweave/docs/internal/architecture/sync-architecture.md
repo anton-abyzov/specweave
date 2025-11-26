@@ -127,7 +127,7 @@ npm run rebuild
 
 ### Performance Targets
 
-- <100ms execution
+- `<100ms` execution
 - 0-2 processes
 - 0 breaker trips
 

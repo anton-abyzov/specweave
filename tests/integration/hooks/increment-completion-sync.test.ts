@@ -259,8 +259,8 @@ completed: 3
     const usFile = path.join(livingDocsPath, userStoryFiles[0]);
     const usContent = await fs.readFile(usFile, 'utf-8');
 
-    // Should contain task references
-    expect(usContent).toMatch(/T-\d{3}/);
+    // Should contain task references (3+ digits)
+    expect(usContent).toMatch(/T-\d{3,}/);
   });
 
   it('should work without GitHub issue linked', async () => {

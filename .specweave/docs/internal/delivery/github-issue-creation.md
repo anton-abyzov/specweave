@@ -80,7 +80,7 @@ priority: P0
 
 **As a** developer initializing SpecWeave with 100+ GitHub projects
 **I want** automatic pagination with a 50-project default limit
-**So that** I can avoid rate limit exhaustion and complete init in <2 minutes
+**So that** I can avoid rate limit exhaustion and complete init in `<2 minutes`
 
 ## Acceptance Criteria
 

@@ -73,6 +73,10 @@ Then in Claude Code:
 
 **Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
+:::tip Keep Increments Small
+**5-15 tasks, 1-3 user stories, completable in 1-3 days.** Small increments are easier to track, ship faster, and work better with AI tools (better context retention, higher accuracy). If your increment has 20+ tasks, split it!
+:::
+
 **[Full Quickstart Guide](./guides/getting-started/quickstart)**
 
 ---
