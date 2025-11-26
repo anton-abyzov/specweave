@@ -253,7 +253,7 @@ export async function initCommand(
 
     // Smart re-initialization
     if (fs.existsSync(path.join(targetDir, '.specweave'))) {
-      const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force });
+      const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
       if (result.action === 'cancel') {
         process.exit(0);
       }
@@ -276,7 +276,7 @@ export async function initCommand(
       const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
 
       if (hasSpecweave) {
-        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force });
+        const result = await promptSmartReinit({ targetDir, isCI, hasForce: !!options.force, language });
         if (result.action === 'cancel') {
           process.exit(0);
         }
@@ -450,7 +450,7 @@ export async function initCommand(
       // External import
       if (!continueExisting) {
         try {
-          const importResult = await promptAndRunExternalImport(targetDir, isCI);
+          const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
           if (importResult.totalCount > 0) {
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
           }
@@ -462,8 +462,8 @@ export async function initCommand(
 
     // Testing configuration
     if (!isCI && !continueExisting) {
-      const testingResult = await promptTestingConfig();
-      updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget);
+      const testingResult = await promptTestingConfig(language);
+      updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
     }
 
     // Translation configuration (CRITICAL: Must ask user - cost implications!)

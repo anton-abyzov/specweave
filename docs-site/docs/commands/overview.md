@@ -52,7 +52,7 @@ graph LR
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
-<!-- TODO: Add dedicated increment command documentation -->
+**Reference**: [Command Decision Tree](/docs/reference/command-decision-tree) for workflow guidance.
 
 ---
 
@@ -79,8 +79,6 @@ graph LR
 - **Automatic hooks**: Runs after EVERY task completion
 - **[Living docs](/docs/glossary/terms/living-docs) sync**: Updates `.specweave/docs/` after all tasks complete
 
-<!-- TODO: Add dedicated do command documentation -->
-
 ---
 
 ## 3. Quality Assurance Commands
@@ -100,8 +98,6 @@ graph LR
 - ✅ Completeness (all required sections)
 - ✅ Quality (testable criteria, actionable tasks)
 - ✅ Traceability ([AC-IDs](/docs/glossary/terms/ac-id), [ADR](/docs/glossary/terms/adr) references)
-
-<!-- TODO: Add dedicated validate command documentation -->
 
 ---
 
@@ -135,8 +131,6 @@ graph LR
 - HIGH (6.0-8.9) - Address before release
 - MEDIUM (3.0-5.9) - Monitor
 - LOW (\&lt;3.0) - Acceptable
-
-<!-- TODO: Add dedicated qa command documentation -->
 
 ---
 
@@ -217,8 +211,6 @@ Active: 0007-user-authentication
 - ✅ Creates [completion report](/docs/glossary/terms/completion-report)
 - 🔗 Closes GitHub issues (if plugin enabled)
 
-<!-- TODO: Add dedicated done command documentation -->
-
 ---
 
 ### `/specweave:sync-docs` - Synchronize Living Documentation
@@ -235,8 +227,6 @@ Active: 0007-user-authentication
 - 🏗️ Architecture diagrams (planned → actual)
 - 📖 [API](/docs/glossary/terms/api) documentation (contracts → endpoints)
 - 📋 Feature lists (planned → completed)
-
-<!-- TODO: Add dedicated sync-docs command documentation -->
 
 ---
 
@@ -427,13 +417,13 @@ Active: 0007-user-authentication
 
 ```bash
 # Create GitHub issue from increment
-/github-create-issue 0007
+/specweave-github:specweave-github-create-issue 0007
 
 # Sync progress to GitHub
-/github-sync 0007
+/specweave-github:specweave-github-sync 0007
 
 # Close GitHub issue when done
-/github-close-issue 0007
+/specweave-github:specweave-github-close-issue 0007
 ```
 
 **Automatic sync**: When GitHub plugin enabled, `/specweave:do` and `/specweave:done` automatically sync to GitHub.

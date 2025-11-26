@@ -42,7 +42,14 @@ graph LR
 
 ## Learning Paths
 
-Choose your journey based on your goals and experience:
+Choose your journey based on your goals and experience.
+
+> **Terminology**:
+> - **Parts** (Part 1-14) - Major sections of the curriculum
+> - **Modules** (01-44) - Individual topics within each part
+> - **Lessons** (01.1, 01.2, etc.) - Sub-lessons within each module
+>
+> See [Curriculum Overview](#curriculum-overview) for the complete module list.
 
 ### Path 1: Quick Start (2 hours)
 
@@ -59,11 +66,11 @@ Choose your journey based on your goals and experience:
 
 **For**: Those new to software engineering
 
-| Part | Topics | Duration |
-|------|--------|----------|
-| [Part 1: Foundations](./part-1-foundations/) | Environment, Git, Principles | 2 weeks |
-| [Part 2: First Application](./part-2-first-application/) | Single-repo, SpecWeave basics | 1 week |
-| [Part 3: Testing](./part-3-testing/) | Unit, Integration, E2E | 1 week |
+| Part | Modules | Topics | Duration |
+|------|---------|--------|----------|
+| [Part 1: Foundations](./part-1-foundations/) | 01-03 | Environment, Git, Principles | 2 weeks |
+| [Part 2: First Application](./part-2-first-application/) | 04-06 | Single-repo, SpecWeave basics | 1 week |
+| [Part 3: Testing](./part-3-testing/) | 07-11 | Unit, Integration, E2E | 1 week |
 
 ---
 
@@ -71,12 +78,12 @@ Choose your journey based on your goals and experience:
 
 **For**: Building complete web applications
 
-| Part | Topics | Duration |
-|------|--------|----------|
-| Parts 1-3 | Foundations, First App, Testing | 4 weeks |
-| [Part 4: Quality](./part-4-quality/) | Code quality, Quality gates | 1 week |
-| [Part 5: Full-Stack](./part-5-full-stack/) | Frontend, Backend, Full-Stack Project | 3 weeks |
-| [Part 6: DevOps](./part-6-devops/) | CI/CD, Docker, Kubernetes | 2 weeks |
+| Part | Modules | Topics | Duration |
+|------|---------|--------|----------|
+| Parts 1-3 | 01-11 | Foundations, First App, Testing | 4 weeks |
+| [Part 4: Quality](./part-4-quality/) | 12-14 | Code quality, Quality gates | 1 week |
+| [Part 5: Full-Stack](./part-5-full-stack/) | 15-17 | Frontend, Backend, Full-Stack Project | 3 weeks |
+| [Part 6: DevOps](./part-6-devops/) | 18-22 | CI/CD, Containers, Kubernetes, IaC | 2 weeks |
 
 ---
 
@@ -84,10 +91,10 @@ Choose your journey based on your goals and experience:
 
 **For**: Those focused on deployment and infrastructure
 
-| Part | Topics | Duration |
-|------|--------|----------|
-| [Part 6: DevOps](./part-6-devops/) | CI/CD, Containers, Kubernetes, IaC | 2 weeks |
-| [Part 7: Environments](./part-7-environments/) | Dev/Staging/Prod, Release Management | 1 week |
+| Part | Modules | Topics | Duration |
+|------|---------|--------|----------|
+| [Part 6: DevOps](./part-6-devops/) | 18-22 | CI/CD, Containers, Kubernetes, IaC | 2 weeks |
+| [Part 7: Environments](./part-7-environments/) | 23-24 | Dev/Staging/Prod, Release Management | 1 week |
 
 ---
 
@@ -95,13 +102,13 @@ Choose your journey based on your goals and experience:
 
 **For**: Enterprise-ready development skills
 
-| Part | Topics | Duration |
-|------|--------|----------|
-| Parts 1-7 | Full-Stack + DevOps | 10 weeks |
-| [Part 8: Architecture](./part-8-architecture/) | Monolith, Microservices, Multi-repo | 2 weeks |
-| [Part 9: Scale](./part-9-scale-performance/) | Scaling, Performance | 1 week |
-| [Part 10: Security](./part-10-security/) | Security, Auth, Compliance | 1 week |
-| [Part 11: Enterprise](./part-11-enterprise/) | GitHub/JIRA/ADO Integration | 2 weeks |
+| Part | Modules | Topics | Duration |
+|------|---------|--------|----------|
+| Parts 1-7 | 01-24 | Full-Stack + DevOps | 10 weeks |
+| [Part 8: Architecture](./part-8-architecture/) | 25-28 | Monolith, Microservices, Multi-repo | 2 weeks |
+| [Part 9: Scale](./part-9-scale-performance/) | 29-30 | Scaling, Performance | 1 week |
+| [Part 10: Security](./part-10-security/) | 31-33 | Security, Auth, Compliance | 1 week |
+| [Part 11: Enterprise](./part-11-enterprise/) | 34-37 | GitHub/JIRA/ADO Integration | 2 weeks |
 
 ---
 
@@ -109,12 +116,12 @@ Choose your journey based on your goals and experience:
 
 **For**: Comprehensive mastery with capstone projects
 
-| Part | Topics | Duration |
-|------|--------|----------|
-| Parts 1-11 | Full Enterprise Developer Path | 16 weeks |
-| [Part 12: Fortune 500](./part-12-enterprise-practices/) | Enterprise Standards, SRE, Governance | 2 weeks |
-| [Part 13: AI-Native](./part-13-ai-development/) | AI Revolution, SpecWeave Mastery | 1 week |
-| [Part 14: Capstones](./part-14-capstones/) | 4 Real-World Projects | 5 weeks |
+| Part | Modules | Topics | Duration |
+|------|---------|--------|----------|
+| Parts 1-11 | 01-37 | Full Enterprise Developer Path | 16 weeks |
+| [Part 12: Fortune 500](./part-12-enterprise-practices/) | 38-41 | Enterprise Standards, SRE, Governance | 2 weeks |
+| [Part 13: AI-Native](./part-13-ai-development/) | 42-44 | AI Revolution, SpecWeave Mastery | 1 week |
+| [Part 14: Capstones](./part-14-capstones/) | — | 4 Real-World Projects | 5 weeks |
 
 ---
 

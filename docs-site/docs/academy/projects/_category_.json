@@ -1,0 +1,10 @@
+{
+  "label": "Projects",
+  "position": 20,
+  "collapsed": false,
+  "collapsible": true,
+  "link": {
+    "type": "doc",
+    "id": "academy/projects/index"
+  }
+}

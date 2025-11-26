@@ -650,4 +650,4 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
-**Last Updated**: 2025-11-04 (v0.7.0)
+**Last Updated**: 2025-11-26 (v0.28.14)

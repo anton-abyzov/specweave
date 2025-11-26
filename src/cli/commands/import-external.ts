@@ -7,8 +7,8 @@
 import { confirm as confirmPrompt } from '@inquirer/prompts';
 import ora from 'ora';
 import chalk from 'chalk';
-import { ImportCoordinator, type CoordinatorConfig } from '../../importers/import-coordinator.js';
-import { ItemConverter } from '../../importers/item-converter.js';
+import { ImportCoordinator, type CoordinatorConfig, type CoordinatorResult } from '../../importers/import-coordinator.js';
+import { ItemConverter, type ConvertedUserStory } from '../../importers/item-converter.js';
 import { loadSyncMetadata, getLastImportTimestamp } from '../../sync/sync-metadata.js';
 import { RateLimiter, type RateLimitInfo } from '../../importers/rate-limiter.js';
 import { shouldConfirmLargeImport } from '../../importers/rate-limiter.js';
@@ -36,6 +36,80 @@ export interface ImportExternalArgs {
 
   /** Dry run mode (preview only) */
   dryRun?: boolean;
+}
+
+/**
+ * Get existing sync profiles from config.json
+ * Returns array of "owner/repo" strings if profiles exist
+ */
+function getExistingSyncProfiles(projectRoot: string): string[] | null {
+  try {
+    const configPath = path.join(projectRoot, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Check for sync.profiles structure (umbrella repo setup)
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      const profiles = config.sync.profiles;
+      const repos: string[] = [];
+
+      for (const [profileId, profile] of Object.entries(profiles)) {
+        const p = profile as { config?: { owner?: string; repo?: string } };
+        if (p.config?.owner && p.config?.repo) {
+          repos.push(`${p.config.owner}/${p.config.repo}`);
+        }
+      }
+
+      return repos.length > 0 ? repos : null;
+    }
+
+    return null;
+  } catch (error) {
+    // Log warning for debugging - config parsing errors shouldn't be silent
+    console.warn(chalk.yellow(`   ⚠️  Failed to read sync profiles: ${error instanceof Error ? error.message : String(error)}`));
+    return null;
+  }
+}
+
+/**
+ * Group items by their source repository
+ * Items without sourceRepo go into '_default' group
+ */
+function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, ExternalItem[]> {
+  const groups = new Map<string, ExternalItem[]>();
+
+  for (const item of items) {
+    // Extract repo name from sourceRepo (e.g., "owner/repo" -> "repo")
+    let repoKey = '_default';
+    if (item.sourceRepo) {
+      const parts = item.sourceRepo.split('/');
+      const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
+
+      // Sanitize repo name to prevent path injection:
+      // - Allow only alphanumeric, hyphens, underscores
+      // - Trim leading/trailing hyphens
+      // - Limit to 100 chars
+      repoKey = rawRepoName
+        .replace(/[^a-zA-Z0-9-_]/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 100);
+
+      // Fall back to _default if sanitization results in empty string
+      if (!repoKey) {
+        repoKey = '_default';
+      }
+    }
+
+    if (!groups.has(repoKey)) {
+      groups.set(repoKey, []);
+    }
+    groups.get(repoKey)!.push(item);
+  }
+
+  return groups;
 }
 
 /**
@@ -159,10 +233,26 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
     // Detect configured tools
     const configuredTools = detectConfiguredTools();
 
+    // Check for existing sync profiles (multi-repo umbrella setup)
+    const existingProfiles = getExistingSyncProfiles(projectRoot);
+    let useMultiRepo = false;
+    let githubRepositories: Array<{ owner: string; repo: string }> | undefined;
+
+    if (existingProfiles && existingProfiles.length > 0 && !args.jiraOnly && !args.adoOnly) {
+      console.log(chalk.dim(`   Using sync profiles: ${existingProfiles.length} repositories`));
+      useMultiRepo = true;
+      githubRepositories = existingProfiles.map(fullRepo => {
+        const [owner, repo] = fullRepo.split('/');
+        return { owner, repo };
+      });
+    }
+
     // Apply platform filters
     const config: any = {};
     if (args.githubOnly) {
-      if (configuredTools.github) {
+      if (useMultiRepo) {
+        // Multi-repo mode takes priority
+      } else if (configuredTools.github) {
         config.github = configuredTools.github;
       }
     } else if (args.jiraOnly) {
@@ -174,12 +264,20 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
         config.ado = configuredTools.ado;
       }
     } else {
-      // All platforms
-      Object.assign(config, configuredTools);
+      // All platforms (but prefer multi-repo for GitHub)
+      if (!useMultiRepo && configuredTools.github) {
+        config.github = configuredTools.github;
+      }
+      if (configuredTools.jira) {
+        config.jira = configuredTools.jira;
+      }
+      if (configuredTools.ado) {
+        config.ado = configuredTools.ado;
+      }
     }
 
     // Validate at least one platform configured
-    if (!config.github && !config.jira && !config.ado) {
+    if (!useMultiRepo && !config.github && !config.jira && !config.ado) {
       throw new Error(
         'No external platforms configured.\n\n' +
           '💡 Ensure one of these is set:\n' +
@@ -215,6 +313,12 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
         console.log(chalk.yellow(`\n${rateLimiter.formatPauseMessage(platform, seconds)}\n`));
       },
     };
+
+    // Add multi-repo GitHub configuration if using sync profiles
+    if (useMultiRepo && githubRepositories) {
+      coordinatorConfig.githubRepositories = githubRepositories;
+      coordinatorConfig.githubToken = process.env.GITHUB_TOKEN;
+    }
 
     // Create import coordinator
     const coordinator = new ImportCoordinator(coordinatorConfig);
@@ -283,24 +387,48 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
     if (args.dryRun) {
       console.log(chalk.cyan('\n🔍 Dry run - no files will be created\n'));
     } else {
-      const converter = new ItemConverter({
-        specsDir,
-        projectRoot,
-        enableFeatureAllocation: true,
-        enableDuplicateDetection: true,
-        onDuplicateSkipped: (externalId, existingUsId) => {
-          console.log(chalk.dim(`  ⏭️  Skipped duplicate: ${externalId} (already imported as ${existingUsId})`));
-        },
-      });
-
       const conversionSpinner = ora('Converting items to living docs...').start();
 
       try {
-        const converted = await converter.convertItems(allItems);
-        convertedCount = converted.length;
+        // Group items by sourceRepo for proper multi-repo folder allocation
+        const itemsByRepo = groupItemsBySourceRepo(allItems);
+        const repoCount = itemsByRepo.size;
+        const allConverted: ConvertedUserStory[] = [];
+
+        for (const [repoKey, items] of itemsByRepo.entries()) {
+          // Determine project ID:
+          // - For multi-repo: use repo name (e.g., "sw-thumbnail-ab-be")
+          // - For single-repo/no sourceRepo: undefined (items go directly to specs/)
+          const projectId = repoKey === '_default' ? undefined : repoKey;
+
+          conversionSpinner.text = projectId
+            ? `Converting items from ${projectId}...`
+            : 'Converting items to living docs...';
+
+          // Create converter for this project/repo
+          const converter = new ItemConverter({
+            specsDir,
+            projectRoot,
+            enableFeatureAllocation: true,
+            enableDuplicateDetection: true,
+            projectId,
+            onDuplicateSkipped: (externalId, existingUsId) => {
+              console.log(chalk.dim(`  ⏭️  Skipped duplicate: ${externalId} (already imported as ${existingUsId})`));
+            },
+          });
+
+          const converted = await converter.convertItems(items);
+          allConverted.push(...converted);
+        }
+
+        convertedCount = allConverted.length;
         skippedCount = allItems.length - convertedCount;
 
-        conversionSpinner.succeed(`Converted ${convertedCount} items to living docs`);
+        if (repoCount > 1) {
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${repoCount} project folders)`);
+        } else {
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs`);
+        }
       } catch (error: any) {
         conversionSpinner.fail(`Conversion failed: ${error.message}`);
         throw error;

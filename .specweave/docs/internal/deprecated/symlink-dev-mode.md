@@ -98,13 +98,18 @@ chmod 444 ~/.claude/plugins/known_marketplaces.json
 
 ### Step 3: Verify Setup
 
-```bash
-bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
-```
+> **Note**: The verification script from increment 0043 has been archived and removed.
+> Use manual verification steps below instead.
 
-**Expected output**:
-```
-✅ ALL CHECKS PASSED! Local development setup is correct.
+**Manual verification**:
+```bash
+# Check symlink exists and points to repo
+ls -ld ~/.claude/plugins/marketplaces/specweave
+# Must show: lrwxr-xr-x ... -> /path/to/repo
+
+# Check registry is locked
+ls -l ~/.claude/plugins/known_marketplaces.json
+# Must show: -r--r--r-- (read-only)
 ```
 
 ---
@@ -275,8 +280,8 @@ The pre-commit hook checks for symlink existence (optional warning):
 
 ## See Also
 
-- `.specweave/increments/0046-console-elimination/reports/HOOK-ERROR-RESOLUTION-FINAL.md`
-- `.specweave/increments/0046-console-elimination/reports/SIMPLE-DEV-SETUP-RECOMMENDATION.md`
-- `scripts/dev-mode.sh` - Symlink creation script
-- `scripts/npm-mode.sh` - Revert to npm install mode
-- `.specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh` - Verification script
+> **Note**: The increments 0043 and 0046 referenced in the original document have been archived and removed.
+
+- `scripts/dev-mode.sh` - Symlink creation script (if still present)
+- `scripts/npm-mode.sh` - Revert to npm install mode (if still present)
+- **Current workflow**: See CLAUDE.md "Local Development Setup" section

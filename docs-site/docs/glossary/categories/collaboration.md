@@ -295,7 +295,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 
 ```bash
 # Create Jira issue from increment
-/jira-create-issue 0035
+/specweave-jira:specweave-jira-sync 0035 --mode=export
 
 # Result:
 # ✅ Created Jira epic: PLAT-100 "User Registration"
@@ -305,7 +305,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 # ✅ Linked to increment: 0035-user-registration
 
 # Sync status: SpecWeave → Jira
-/jira-sync 0035
+/specweave-jira:specweave-jira-sync 0035
 
 # Result:
 # ✅ T-001 done → PLAT-101 status updated to "Done"
@@ -346,25 +346,25 @@ Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
 
 ### 2. External PM Tool Integration
 
-**specweave-github plugin** (available):
+**specweave-github plugin**:
 ```bash
 # Sync increment ↔ GitHub issue
-/github-create-issue 0035 "User Registration"
-/github-sync 0035
+/specweave-github:specweave-github-create-issue 0035
+/specweave-github:specweave-github-sync 0035
 ```
 
-**specweave-jira plugin** (planned):
+**specweave-jira plugin**:
 ```bash
 # Sync increment ↔ Jira epic/stories
-/jira-create-issue 0035
-/jira-sync 0035
+/specweave-jira:specweave-jira-sync 0035 --mode=export
+/specweave-jira:specweave-jira-sync 0035
 ```
 
-**specweave-ado plugin** (planned):
+**specweave-ado plugin**:
 ```bash
 # Sync increment ↔ Azure DevOps work item
-/ado-create-issue 0035
-/ado-sync 0035
+/specweave-ado:specweave-ado-create-workitem 0035
+/specweave-ado:specweave-ado-sync 0035
 ```
 
 ### 3. Living Documentation for Collaboration
